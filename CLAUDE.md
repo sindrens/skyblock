@@ -17,7 +17,7 @@ This is a **large, long-term project** (launch in ~3 years). Quality beats speed
 8. [`docs/REVIEW.md`](docs/REVIEW.md): known problems with default decisions. Defaults apply until the owner changes them. Check it before coding a phase.
 
 ## Owner rules
-- **Never run tests or test servers without the owner's permission.** Write the code, build with `./gradlew build -x test`, and send/release it. The owner tests, or tells you when to run tests.
+- **Unit tests are allowed (owner, 2026-10-29):** run `./gradlew build` (includes `test`, no server) before every merge; all tests must pass. **Never start a test server** (`runServer`, local Paper) without the owner's permission.
 - **The owner allows you to edit configs on the test server and run console commands** (via the deploy key, `tmux send-keys -t skyblock`) to verify a release, e.g. walk through the milestone checklist yourself. Always restore what you changed.
 - **Tab completion on every command and every argument, always** (players, offline players, modules, files, amounts, enum choices, sub-commands). No command ships without it.
 
@@ -30,7 +30,7 @@ After every milestone: commit, push to GitHub and release with `server/scripts/d
 1. **One thing at a time.** Pick the next unchecked item in the current roadmap phase. Don't start the next until this one is done.
 2. **Plan first.** Before coding, write a short plan: classes, data, config keys, messages, permissions, GUI flow, tests, edge cases. Check it against DESIGN and STANDARDS.
 3. **Implement** in the right module (`modules/<feature>`) using the shared framework in `common`. If the framework lacks something, add it to `common` properly instead of hacking around it.
-4. **Build, don't test.** Write unit tests for all logic, but only run them when the owner allows it. Build with `./gradlew build -x test`. Write the manual test checklist (Java + Bedrock) for the owner.
+4. **Build and unit-test.** Write unit tests for all logic and run `./gradlew build` (unit tests only, no server). Write the manual test checklist (Java + Bedrock) for the owner.
 5. **Document.** Update DESIGN (if behavior was clarified), COMMANDS, ROADMAP checkbox, and `CHANGELOG.md`.
 6. **Commit** with conventional commits (`feat(island): add role permission GUI`). One logical change per commit.
 
@@ -45,7 +45,7 @@ After every milestone: commit, push to GitHub and release with `server/scripts/d
 
 ## Build and run
 ```bash
-./gradlew build -x test  # compile (tests only with owner permission), produces plugin/build/libs/PhoenixSkyblock-*.jar
+./gradlew build          # compile + unit tests (allowed), produces plugin/build/libs/PhoenixSkyblock-*.jar
 ./gradlew test           # tests only
 ./gradlew runServer      # local Paper 26.3 test server with the plugin (run-paper)
 ```
@@ -64,3 +64,8 @@ docs/            design, standards, roadmap, commands, open questions
 2. Add `include("modules:<name>")` in `settings.gradle.kts` and `implementation(project(":modules:<name>"))` in `plugin/build.gradle.kts`.
 3. Implement `SkyblockModule`, register it in `SkyblockPlugin#registerModules`.
 4. Add config/messages resources, tests, `/help` entry, COMMANDS entries.
+
+## Agents and state
+- Work queue: `docs/QUEUE.md`; current state: `docs/STATUS.md`. A fresh session reads both and continues.
+- Max 3 agents at once, each in its own git worktree on branch `q/<item>`, one lane each. Merge as soon as one finishes (`./gradlew build` on its branch), release, then start the next item.
+- Open questions never block: safest default + `docs/OPEN_QUESTIONS.md` → "Waiting for owner".

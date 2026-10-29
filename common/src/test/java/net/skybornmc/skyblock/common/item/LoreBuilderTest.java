@@ -67,8 +67,8 @@ class LoreBuilderTest {
     @Test
     void dynamicValuesAreEscaped() {
         List<String> lore = new LoreBuilder(L).enchant("<red>evil").build();
-        assertFalse(lore.get(1).contains("<red>"));
-        assertTrue(lore.get(1).contains("\\<red>"));
+        assertTrue(lore.get(1).contains("\\<red>"), lore.get(1));
+        assertFalse(lore.get(1).replace("\\<red>", "").contains("<red>"), lore.get(1));
     }
 
     @Test

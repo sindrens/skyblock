@@ -33,7 +33,7 @@ public final class ConfigManager {
 
     private final File folder;
     private final Logger log;
-    private final Map<ModuleConfig, Map<Field, Object>> defaults = new IdentityHashMap<>();
+    private final Map<ModuleConfig, Map<String, Object>> defaults = new IdentityHashMap<>();
     private final Map<String, ModuleConfig> loaded = new LinkedHashMap<>();
     private final Map<String, List<String>> problems = new LinkedHashMap<>();
 
@@ -146,11 +146,11 @@ public final class ConfigManager {
 
     /** All settings of {@code config} with current values, defaults and limits. */
     public List<SettingInfo> describe(ModuleConfig config) {
-        Map<Field, Object> defs = defaults.computeIfAbsent(config, this::snapshotDefaults);
+        Map<String, Object> defs = defaults.computeIfAbsent(config, this::snapshotDefaults);
         List<SettingInfo> out = new ArrayList<>();
         for (Field field : settingFields(config)) {
             Setting s = field.getAnnotation(Setting.class);
-            out.add(new SettingInfo(pathOf(field, s), s.desc(), field.getType(), read(field, config), defs.get(field),
+            out.add(new SettingInfo(pathOf(field, s), s.desc(), field.getType(), read(field, config), defs.get(field.getName()),
                     s.min(), s.max(), s.restart(), s.level()));
         }
         return Collections.unmodifiableList(out);
@@ -177,10 +177,10 @@ public final class ConfigManager {
         return changed;
     }
 
-    private Map<Field, Object> snapshotDefaults(ModuleConfig config) {
-        Map<Field, Object> map = new IdentityHashMap<>();
+    private Map<String, Object> snapshotDefaults(ModuleConfig config) {
+        Map<String, Object> map = new java.util.HashMap<>();
         for (Field field : settingFields(config)) {
-            map.put(field, read(field, config));
+            map.put(field.getName(), read(field, config));
         }
         return map;
     }

@@ -51,8 +51,8 @@ class MotdRendererTest {
         var stream = Objects.requireNonNull(getClass().getResourceAsStream("/motd.yml"));
         YamlConfiguration config = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
         ConfigurationSection motds = config.getConfigurationSection("motds");
-        String header = config.getString("header");
-        assertTrue(header != null && !header.isBlank(), "shared header exists");
+        String header = config.getString("brand");
+        assertTrue(header != null && !header.isBlank(), "shared brand exists");
         assertFalse(motds.getKeys(false).isEmpty());
         for (String id : motds.getKeys(false)) {
             for (String key : new String[]{"line1", "line2"}) {

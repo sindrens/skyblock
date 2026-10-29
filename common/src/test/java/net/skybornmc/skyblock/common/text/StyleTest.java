@@ -45,7 +45,7 @@ class StyleTest {
         Files.writeString(file, YAML);
         Style style = new Style();
         style.load(file.toFile());
-        assertEquals("<gradient:#c21f2b:#ff8a1f>Hi</gradient>", style.preprocess("<grad:phoenix>Hi</grad>", false));
+        assertEquals("<gradient:#C21F2B:#FF8A1F>Hi</gradient>", style.preprocess("<grad:phoenix>Hi</grad>", false));
         assertEquals("<color:dark_red>Hi</color>", style.preprocess("<grad:phoenix>Hi</grad>", true));
     }
 

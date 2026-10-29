@@ -11,10 +11,11 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
-- Last released bundle: update29 (main at 9fd75bc). Next bundle number: 30.
+- Last released bundle: update30. Next bundle number: 31.
+- Owner gets a push notification on every release (PushNotification tool).
 
 ## Owner rules (always)
-- Never run tests or test servers without permission; build with `./gradlew build -x test` (+ `compileTestJava`).
+- Unit tests allowed: `./gradlew build` (with tests) must pass before every merge. Never a test server without permission.
 - Tab completion on every command/argument. All text in messages files, all numbers in typed configs, everything audited.
 - Ask before adding new commands. Open questions never block: safest default + add to `docs/OPEN_QUESTIONS.md` → "Waiting for owner".
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).

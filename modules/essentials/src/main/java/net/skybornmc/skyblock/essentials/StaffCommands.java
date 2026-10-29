@@ -40,11 +40,21 @@ import java.util.concurrent.ConcurrentHashMap;
 /** Staff tools: gamemode, fly, speed, god, heal, feed, clear, time, weather, skull, more, /i and /give. */
 final class StaffCommands extends CommandGroup implements Listener {
 
-    private static final List<String> MATERIALS = Arrays.stream(Material.values())
-            .filter(m -> m.isItem() && !m.isAir() && !m.isLegacy())
-            .map(m -> m.getKey().getKey())
-            .sorted()
-            .toList();
+    /** Item ids for tab completion, built on first use (needs a running server, so not in a static initializer). */
+    private static volatile List<String> materials;
+
+    private static List<String> materials() {
+        List<String> list = materials;
+        if (list == null) {
+            list = Arrays.stream(Material.values())
+                    .filter(m -> m.isItem() && !m.isAir() && !m.isLegacy())
+                    .map(m -> m.getKey().getKey())
+                    .sorted()
+                    .toList();
+            materials = list;
+        }
+        return list;
+    }
 
     private final Set<UUID> god = ConcurrentHashMap.newKeySet();
     /** staff uuid → (target uuid, expires at) for /clear <player> confirmation. */
@@ -407,7 +417,7 @@ final class StaffCommands extends CommandGroup implements Listener {
                 throw fail("give.unknown-item", Msg.p("input", raw));
             }
             return m;
-        }, Suggest.of(() -> MATERIALS));
+        }, Suggest.of(StaffCommands::materials));
     }
 
     private void give(CommandSender sender, Player target, Material material, int amount) {
