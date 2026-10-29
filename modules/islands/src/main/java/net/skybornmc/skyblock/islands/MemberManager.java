@@ -849,6 +849,69 @@ final class MemberManager {
         }, main);
     }
 
+    // ------------------------------------------------------------------ staff hooks (M2.7 /isadmin)
+
+    /**
+     * Staff adds {@code target} as a member (no invite; season join limit and join cooldown skipped, slots and one island
+     * per player kept). Cached, logged ({@code island_join} with {@code staff}), the player and the members are told.
+     */
+    CompletableFuture<MemberStore.AddResult> addByStaff(Island island, UUID target, Actor actor) {
+        return store.addMember(island.id(), target, actor.uuid(), config().memberLimits()).thenApplyAsync(result -> {
+            if (!(result instanceof MemberStore.AddResult.Added added) || islands.byId(island.id()) != island) {
+                return result;
+            }
+            invites.removeTarget(target);
+            islands.cacheJoin(island, target, Role.MEMBER, added.joinedAt(), actor.uuid());
+            if (added.converted()) {
+                island.markTeam();
+            }
+            String name = islands.displayName(island);
+            String targetName = islands.name(target);
+            core.audit().log(AuditCategory.ISLAND, "island_join", actor, island.id().toString(), name, null, null,
+                    Map.of("player", target.toString(), "player_name", targetName, "staff", true, "season", config().seasonId,
+                            "members", island.memberCount(), "slots", islands.slots(island), "became_team", added.converted()));
+            Player player = Bukkit.getPlayer(target);
+            if (player != null) {
+                msg.send(player, "admin.addmember.you", Msg.p("island", name));
+                core.sounds().play(player, "unlock");
+            }
+            notifyMembers(island, target, "notify.joined", Msg.p("player", targetName), Msg.p("members", island.memberCount()),
+                    Msg.p("slots", islands.slots(island)));
+            return result;
+        }, main);
+    }
+
+    /**
+     * Staff makes the member {@code newLeader} the leader (the old leader becomes a mod, like {@code /is transfer}).
+     * Cached, logged ({@code island_transfer} with {@code staff}), both players and the members are told.
+     */
+    CompletableFuture<Boolean> setOwnerByStaff(Island island, UUID newLeader, Actor actor) {
+        UUID old = island.owner();
+        return store.transfer(island.id(), old, newLeader).thenApplyAsync(saved -> {
+            if (!saved || islands.byId(island.id()) != island) {
+                return false;
+            }
+            islands.cacheTransfer(island, old, newLeader);
+            String name = islands.displayName(island);
+            String newName = islands.name(newLeader);
+            core.audit().log(AuditCategory.ISLAND, "island_transfer", actor, island.id().toString(), name, null, null,
+                    Map.of("old_leader", old.toString(), "new_leader", newLeader.toString(), "new_leader_name", newName, "staff", true));
+            Player leader = Bukkit.getPlayer(newLeader);
+            if (leader != null) {
+                msg.send(leader, "admin.setowner.you", Msg.p("island", name));
+                msg.title(leader, "transfer.title");
+                core.sounds().play(leader, "unlock");
+            }
+            Player before = Bukkit.getPlayer(old);
+            if (before != null) {
+                msg.send(before, "admin.setowner.old", Msg.p("player", newName));
+                core.sounds().play(before, "warning");
+            }
+            notifyMembers(island, Set.of(old, newLeader), "notify.transferred", Msg.p("player", newName), Msg.p("by", actor.name()));
+            return true;
+        }, main);
+    }
+
     CompletableFuture<Optional<Long>> joinBlockedUntil(UUID player) {
         return store.blockedUntil(player);
     }

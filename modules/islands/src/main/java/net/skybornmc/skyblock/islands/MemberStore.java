@@ -68,9 +68,26 @@ final class MemberStore {
         }
     }
 
+    /** Result of a staff {@code /isadmin addmember}. */
+    sealed interface AddResult {
+        record Added(long joinedAt, boolean converted) implements AddResult {
+        }
+
+        record IslandGone() implements AddResult {
+        }
+
+        record HasIsland() implements AddResult {
+        }
+
+        record Full(int slots) implements AddResult {
+        }
+    }
+
     static final String LEFT_LEAVE = "leave";
     static final String LEFT_KICK = "kick";
     static final String LEFT_REMOVED = "removed";
+    /** The island was removed (disband, staff delete or reset, M2.7): recorded for history, never starts the join cooldown. */
+    static final String LEFT_DISBAND = "disband";
 
     private final Database db;
 
@@ -111,6 +128,24 @@ final class MemberStore {
     CompletableFuture<Optional<Role>> removeMember(UUID islandId, UUID uuid, String reason, int seasonId) {
         long now = System.currentTimeMillis();
         return db.transaction(c -> removeMember(c, islandId, uuid, reason, seasonId, now));
+    }
+
+    /**
+     * Staff: adds {@code uuid} as a member without an invite (M2.7 {@code /isadmin addmember}). Skips the season join
+     * limit and the join cooldown (the row is not counted) but keeps one island per player and the member slots.
+     */
+    CompletableFuture<AddResult> addMember(UUID islandId, UUID uuid, UUID addedBy, Limits limits) {
+        long now = System.currentTimeMillis();
+        return db.async(c -> {
+            try {
+                return inTransaction(c, () -> addMember(c, islandId, uuid, addedBy, now, limits));
+            } catch (SQLException e) {
+                if (IslandStore.isConstraintViolation(e)) {
+                    return new AddResult.HasIsland(); // joined another island at the same moment
+                }
+                throw e;
+            }
+        });
     }
 
     CompletableFuture<Boolean> setRole(UUID islandId, UUID uuid, Role expected, Role next) {
@@ -203,14 +238,16 @@ final class MemberStore {
     static JoinRules.History history(Connection c, UUID uuid, int seasonId) throws SQLException {
         int joins = Sql.queryOne(c, "SELECT COUNT(*) FROM player_island_joins WHERE uuid = ? AND season_id = ? AND counted = ?",
                 rs -> rs.getInt(1), uuid, seasonId, true).orElse(0);
-        Long[] last = Sql.queryOne(c, "SELECT MAX(CASE WHEN counted = ? THEN joined_at END), MAX(left_at) FROM player_island_joins WHERE uuid = ?",
+        // A leave because the island was removed (M2.7: disband, staff delete, reset) never starts the join cooldown.
+        Long[] last = Sql.queryOne(c, "SELECT MAX(CASE WHEN counted = ? THEN joined_at END), "
+                        + "MAX(CASE WHEN left_reason IS NULL OR left_reason <> ? THEN left_at END) FROM player_island_joins WHERE uuid = ?",
                 rs -> {
                     long join = rs.getLong(1);
                     Long j = rs.wasNull() ? null : join;
                     long left = rs.getLong(2);
                     Long l = rs.wasNull() ? null : left;
                     return new Long[]{j, l};
-                }, true, uuid).orElse(new Long[]{null, null});
+                }, true, LEFT_DISBAND, uuid).orElse(new Long[]{null, null});
         return new JoinRules.History(joins, last[0], last[1]);
     }
 
@@ -280,6 +317,30 @@ final class MemberStore {
         Sql.update(c, "DELETE FROM island_invites WHERE target_uuid = ?", target);
         Sql.update(c, "DELETE FROM island_coops WHERE island_id = ? AND uuid = ?", islandId, target);
         return new AcceptResult.Joined(islandId, now, inviter.get());
+    }
+
+    static AddResult addMember(Connection c, UUID islandId, UUID uuid, UUID addedBy, long now, Limits limits) throws SQLException {
+        Optional<IslandRow> island = lockIsland(c, islandId);
+        if (island.isEmpty()) {
+            return new AddResult.IslandGone();
+        }
+        if (islandOf(c, uuid).isPresent()) {
+            return new AddResult.HasIsland();
+        }
+        int slots = MemberRules.slots(island.get().memberSlots(), limits.startSlots(), limits.maxSlots());
+        if (memberCount(c, islandId) >= slots) {
+            return new AddResult.Full(slots);
+        }
+        // A second member makes a solo island a team island forever (DESIGN 3.2), also when staff adds them.
+        boolean converted = !island.get().team()
+                && Sql.update(c, "UPDATE islands SET type = ? WHERE id = ? AND type = ?", "team", islandId, "solo") == 1;
+        Sql.update(c, "INSERT INTO island_members (island_id, uuid, role, joined_at, invited_by) VALUES (?, ?, ?, ?, ?)",
+                islandId, uuid, "member", now, addedBy);
+        Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, counted) VALUES (?, ?, ?, ?, ?)",
+                uuid, islandId, limits.seasonId(), now, false);
+        Sql.update(c, "DELETE FROM island_invites WHERE target_uuid = ?", uuid);
+        Sql.update(c, "DELETE FROM island_coops WHERE island_id = ? AND uuid = ?", islandId, uuid);
+        return new AddResult.Added(now, converted);
     }
 
     static Optional<Role> removeMember(Connection c, UUID islandId, UUID uuid, String reason, int seasonId, long now) throws SQLException {

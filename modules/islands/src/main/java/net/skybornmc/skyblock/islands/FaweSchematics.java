@@ -10,6 +10,8 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.world.block.BlockTypes;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import org.bukkit.World;
 
@@ -58,5 +60,20 @@ final class FaweSchematics {
         }
         return new Pasted(min.x() - origin.x(), min.y() - origin.y(), min.z() - origin.z(),
                 max.x() - origin.x(), max.y() - origin.y(), max.z() - origin.z());
+    }
+
+    /**
+     * Sets every block of the cuboid (both corners inclusive) to air without history (M2.7 slot clearing). Blocking:
+     * call off the main thread. Returns the number of changed blocks as reported by FAWE.
+     */
+    static int clear(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) throws IOException {
+        com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(world);
+        CuboidRegion region = new CuboidRegion(weWorld, BlockVector3.at(minX, minY, minZ), BlockVector3.at(maxX, maxY, maxZ));
+        try (EditSession session = WorldEdit.getInstance().newEditSessionBuilder().world(weWorld)
+                .changeSetNull().fastMode(true).limitUnlimited().build()) {
+            return session.setBlocks((com.sk89q.worldedit.regions.Region) region, BlockTypes.AIR.getDefaultState());
+        } catch (com.sk89q.worldedit.WorldEditException e) {
+            throw new IOException("Clearing failed: " + e.getMessage(), e);
+        }
     }
 }
