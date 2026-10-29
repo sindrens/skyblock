@@ -16,9 +16,12 @@ skyblock.economy.pay:
 skyblock.economy.transactions:
   description: See your own transaction history (/transactions)
   default: true
+skyblock.economy.withdraw:
+  description: Turn money into a tradeable money note (/withdraw); redeeming a note needs no permission
+  default: true
 skyblock.owner.economy:
-  description: Change balances (/eco give|take|set|reset), always logged
+  description: Change balances (/eco give|take|set|reset) and make money notes (/eco note), always logged
   default: op
 skyblock.staff.economy.alerts:
-  description: Get a chat alert when staff change a balance with /eco
+  description: Get a chat alert when staff change a balance or make a note with /eco
   default: op

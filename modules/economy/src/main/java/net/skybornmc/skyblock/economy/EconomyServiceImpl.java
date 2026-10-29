@@ -63,6 +63,11 @@ final class EconomyServiceImpl implements EconomyService {
 
     @Override
     public CompletableFuture<TxResult> execute(Transaction tx) {
+        return execute(tx, null);
+    }
+
+    /** {@link #execute(Transaction)} with extra SQL that commits or rolls back together with it (money notes). */
+    CompletableFuture<TxResult> execute(Transaction tx, EconomyStore.Guard guard) {
         String problem = tx.problem();
         if (problem != null) {
             log.warning("Economy: refused invalid transaction (" + problem + "): " + tx);
@@ -70,7 +75,7 @@ final class EconomyServiceImpl implements EconomyService {
         }
         CompletableFuture<TxResult> future;
         try {
-            future = store.execute(tx);
+            future = store.execute(tx, guard);
         } catch (RuntimeException e) {
             future = CompletableFuture.failedFuture(e);
         }

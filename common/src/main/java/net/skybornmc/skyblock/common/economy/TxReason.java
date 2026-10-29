@@ -21,6 +21,8 @@ public final class TxReason {
     public static final String BANK_WITHDRAW = "bank_withdraw";
     public static final String NOTE_WITHDRAW = "note_withdraw";
     public static final String NOTE_REDEEM = "note_redeem";
+    /** Staff made a money note out of nothing ({@code /eco note}); audit action only, the money moves on redeem. */
+    public static final String ADMIN_NOTE = "admin_note";
     public static final String START_BALANCE = "start_balance";
     public static final String ADMIN_GIVE = "admin_give";
     public static final String ADMIN_TAKE = "admin_take";

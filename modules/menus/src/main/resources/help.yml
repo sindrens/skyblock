@@ -34,7 +34,7 @@ categories:
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, selling, banks, the", "<c:text>auction house and trading."]
-    topics: [money, auction]
+    topics: [money, notes, auction]
   progression:
     icon: experience_bottle
     status: active
@@ -428,6 +428,38 @@ topics:
           - "<c:text>balances: who paid you, what you sold"
           - "<c:text>and bought. Filter by currency, type"
           - "<c:text>and time. <c:value>/baltop</c:value> <c:text>shows the richest."
+
+  notes:
+    icon: paper
+    aliases: [withdraw, note, money-note, money-notes, cheque]
+    name: "<c:flame>Money notes"
+    summary: ["<c:text>Turn money into an item you", "<c:text>can trade, store or give away."]
+    commands: [Economy]
+    pages:
+      - title: "<c:value>Making a note"
+        lines:
+          - "<c:value>/withdraw 50k</c:value> <c:text>takes $50,000 from your"
+          - "<c:text>balance and gives you a <c:value>Money Note</c:value><c:text>."
+          - "<c:text>Keep a slot free: nothing is taken"
+          - "<c:text>when your inventory is full."
+      - title: "<c:value>Cashing a note"
+        lines:
+          - "<c:text>Hold the note and <c:value>right-click</c:value><c:text>."
+          - "<c:text>The money goes straight to your"
+          - "<c:text>balance. Anyone holding the note can"
+          - "<c:text>cash it, so keep it safe."
+      - title: "<c:value>Trading"
+        lines:
+          - "<c:text>Notes can be traded, dropped and kept"
+          - "<c:text>in chests like any item. They can't be"
+          - "<c:text>sold on the auction house. New players"
+          - "<c:text>can make notes after some play time."
+      - title: "<c:value>Copies don't work"
+        lines:
+          - "<c:text>Every note has its own id and can be"
+          - "<c:text>cashed only once. A copied note is"
+          - "<c:text>taken away and staff are told, so"
+          - "<c:text>only accept notes from people you trust."
 
   auction:
     icon: gold_block

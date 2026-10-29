@@ -1,8 +1,9 @@
 # LuckPerms grants for the economy module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
 # Node definitions: modules/economy/src/main/resources/permissions/economy.yml. One console command per line; # = comment.
-# Player nodes (/bal, /baltop, /pay, /transactions) default to true, so they need no grants.
+# Player nodes (/bal, /baltop, /pay, /transactions, /withdraw) default to true, so they need no grants.
+# Dupe alerts for copied money notes use skyblock.staff.notify (granted in base.txt with the other staff alerts).
 
 # --- Economy (staff) ---
 lp group helper permission set skyblock.staff.economy.alerts true
-# Balance changes are owner-only by default (STANDARDS: economy edits = owner). See docs/OPEN_QUESTIONS.md.
+# Balance changes and /eco note are owner-only by default (STANDARDS: economy edits = owner). See docs/OPEN_QUESTIONS.md.
 lp group owner permission set skyblock.owner.economy true

@@ -89,6 +89,61 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "transactions.page-size", desc = "Entries per page in the /transactions menu.", min = 7, max = 28)
     public int transactionPageSize = 28;
 
+    // ------------------------------------------------------------------ money notes (M3.2: /withdraw, /eco note)
+
+    @Setting(path = "notes.currencies", desc = "Currencies players can /withdraw as a note (must also be tradeable). Owner "
+            + "decision: money only.", level = Setting.Level.OWNER)
+    public List<String> noteCurrencies = List.of("money");
+
+    @Setting(path = "notes.min.money", desc = "Smallest money note.", min = 1, level = Setting.Level.OWNER)
+    public long noteMinMoney = 100;
+
+    @Setting(path = "notes.min.tokens", desc = "Smallest tokens note (only if tokens are in notes.currencies).", min = 1,
+            level = Setting.Level.OWNER)
+    public long noteMinTokens = 1;
+
+    @Setting(path = "notes.min.gems", desc = "Smallest gems note (only if gems are in notes.currencies).", min = 1,
+            level = Setting.Level.OWNER)
+    public long noteMinGems = 1;
+
+    @Setting(path = "notes.min.shards", desc = "Smallest shards note (only if shards are in notes.currencies).", min = 1,
+            level = Setting.Level.OWNER)
+    public long noteMinShards = 1;
+
+    @Setting(path = "notes.max.money", desc = "Largest money note (also the limit of /eco note).", min = 1, level = Setting.Level.OWNER)
+    public long noteMaxMoney = 1_000_000_000_000L;
+
+    @Setting(path = "notes.max.tokens", desc = "Largest tokens note.", min = 1, level = Setting.Level.OWNER)
+    public long noteMaxTokens = 1_000_000_000L;
+
+    @Setting(path = "notes.max.gems", desc = "Largest gems note.", min = 1, level = Setting.Level.OWNER)
+    public long noteMaxGems = 1_000_000L;
+
+    @Setting(path = "notes.max.shards", desc = "Largest shards note.", min = 1, level = Setting.Level.OWNER)
+    public long noteMaxShards = 1_000_000_000L;
+
+    @Setting(path = "notes.withdraw-cooldown-seconds", desc = "Seconds between two /withdraw of the same player. 0 = none.",
+            min = 0, max = 3600)
+    public int noteWithdrawCooldownSeconds = 10;
+
+    @Setting(path = "notes.new-account-minutes", desc = "Playtime (minutes) needed before /withdraw works; notes are a way "
+            + "to pay, and new accounts can't pay (balance sheet R3). 0 = off.", min = 0, level = Setting.Level.OWNER)
+    public int noteMinPlaytimeMinutes = 120;
+
+    @Setting(path = "notes.item.material", desc = "Material of the money note item (a resource-pack model can replace the "
+            + "look later).", restart = true)
+    public String noteMaterial = "PAPER";
+
+    @Setting(path = "notes.item.rarity", desc = "Rarity shown in the note's footer: common, uncommon, rare, epic, legendary, "
+            + "mythic, special.", restart = true)
+    public String noteRarity = "rare";
+
+    @Setting(path = "notes.item.glint", desc = "Money notes have the enchant glint.", restart = true)
+    public boolean noteGlint = true;
+
+    @Setting(path = "notes.date-format", desc = "Date on the note (java DateTimeFormatter pattern, UTC).")
+    public String noteDateFormat = "yyyy-MM-dd";
+
     @Setting(desc = "Icon per currency in menus: currency:MATERIAL.")
     public List<String> icons = List.of("money:GOLD_INGOT", "tokens:AMETHYST_SHARD", "gems:DIAMOND", "shards:PRISMARINE_SHARD");
 
@@ -141,6 +196,24 @@ public final class EconomyConfig extends ModuleConfig {
             }
         }
         return fallback;
+    }
+
+    long noteMin(Currency currency) {
+        return switch (currency) {
+            case MONEY -> noteMinMoney;
+            case TOKENS -> noteMinTokens;
+            case GEMS -> noteMinGems;
+            case SHARDS -> noteMinShards;
+        };
+    }
+
+    long noteMax(Currency currency) {
+        return switch (currency) {
+            case MONEY -> noteMaxMoney;
+            case TOKENS -> noteMaxTokens;
+            case GEMS -> noteMaxGems;
+            case SHARDS -> noteMaxShards;
+        };
     }
 
     long payConfirmAbove(Currency currency) {
