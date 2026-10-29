@@ -58,7 +58,7 @@ public final class LogsConfig extends ModuleConfig {
     public String header() {
         return """
                 Staff log viewer (/logs). Which categories a staff member may see is set by permissions:
-                skyblock.staff.logs.category.<category> (see server/permissions/luckperms.txt).
+                skyblock.staff.logs.category.<category> (see server/permissions/logs.txt).
                 Reload: /skyblock reload logs""";
     }
 }

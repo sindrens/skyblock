@@ -5,7 +5,7 @@
 - [ ] Follows docs/DESIGN.md (or DESIGN updated with owner-approved changes)
 - [ ] All values/messages/items configurable, editable in-game via /admin
 - [ ] GUI path + command shortcut, /help entry
-- [ ] Permissions added to docs/COMMANDS.md
+- [ ] Permissions in the module's `permissions/<module>.yml`, grants in `server/permissions/<module>.txt`, commands in `docs/commands/<module>.md`
 - [ ] Unit tests added, `./gradlew build` green
 - [ ] No blocking I/O on main thread; per-tick/per-block code profiled
 - [ ] Exploit/dupe paths considered (offline, restart, full inventory, concurrency)

@@ -52,6 +52,31 @@ class ModuleRegistryTest {
     }
 
     @Test
+    void lifecycleHooksWrapEnableAndUndoOnFailureOrDisable() {
+        registry.beforeEnable(id -> events.add("before:" + id));
+        registry.afterFailedEnable(id -> events.add("failed:" + id));
+        registry.afterDisable(id -> events.add("after:" + id));
+        registry.register(module("economy", Set.of(), true));
+        registry.register(module("islands", Set.of("economy"), false));
+        registry.register(module("chat", Set.of(), false));
+
+        registry.enableAll();
+        registry.disableAll();
+
+        // islands is skipped (dependency failed) before any hook runs.
+        assertEquals(List.of("before:economy", "failed:economy", "before:chat", "enable:chat",
+                "disable:chat", "after:chat"), events);
+    }
+
+    @Test
+    void throwingBeforeEnableHookDoesNotBlockTheModule() {
+        registry.beforeEnable(id -> { throw new IllegalStateException("bad file"); });
+        registry.register(module("chat", Set.of(), false));
+        registry.enableAll();
+        assertEquals(ModuleRegistry.State.ENABLED, registry.state("chat"));
+    }
+
+    @Test
     void rejectsDuplicateAndInvalidIds() {
         registry.register(module("economy", Set.of(), false));
         assertThrows(IllegalArgumentException.class, () -> registry.register(module("economy", Set.of(), false)));

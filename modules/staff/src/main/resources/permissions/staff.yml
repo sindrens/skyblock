@@ -1,0 +1,23 @@
+# Permissions of the staff module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/staff.txt. Commands: docs/commands/staff.md.
+skyblock.staff.mode:
+  description: Staff mode (/staff)
+  default: op
+skyblock.staff.freeze:
+  description: Freeze players (/freeze, /unfreeze) and see frozen chat
+  default: op
+skyblock.staff.freeze.exempt:
+  description: Can't be frozen
+  default: op
+skyblock.staff.inspect:
+  description: Inspect players (/inspect)
+  default: op
+skyblock.staff.reports:
+  description: See, claim and close reports (/reports) and get report alerts
+  default: op
+skyblock.player.report:
+  description: Report players (/report)
+  default: true
+skyblock.report.bypass-cooldown:
+  description: No cooldown between reports

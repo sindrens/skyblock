@@ -83,7 +83,7 @@ public final class BuiltinPlaceholders {
         registry.registerText(OWNER, "bedrock", p -> p == null ? "false" : String.valueOf(bedrock.isBedrock(p.getUniqueId())));
     }
 
-    /** LuckPerms prefixes may use legacy {@code &} codes (our luckperms.txt) or MiniMessage. */
+    /** LuckPerms prefixes may use legacy {@code &} codes (our server/permissions/base.txt) or MiniMessage. */
     static Component prefixComponent(String prefix) {
         if (prefix == null || prefix.isEmpty()) {
             return Component.empty();

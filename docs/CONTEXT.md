@@ -26,7 +26,7 @@ The facts every task depends on. If something here is out of date, fix it first:
 |---|---|---|---|
 | Geyser-Spigot | 2.12.x | Bedrock crossplay | `auth-type: floodgate` |
 | Floodgate | 2.2.5 | Bedrock auth | Floodgate API: detect Bedrock players (`FloodgateApi.isFloodgatePlayer`) |
-| LuckPerms | 5.5.x | Ranks/permissions | **LuckPerms API** for prefix, weight, group (softdepend). Staff ranks in `server/permissions/luckperms.txt` |
+| LuckPerms | 5.5.x | Ranks/permissions | **LuckPerms API** for prefix, weight, group (softdepend). Staff ranks in `server/permissions/base.txt`, module grants in `server/permissions/<module>.txt` |
 | GrimAC | 2.3.x | Anticheat | Alerts permission `grim.alerts` |
 | FastAsyncWorldEdit | 2.16.x | Builders + **schematic pasting** for islands | FAWE API (softdepend) |
 | ViaVersion / ViaBackwards | 5.12.x | Older clients 1.21.5+ | Nothing to do in code |

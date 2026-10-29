@@ -16,5 +16,5 @@ Later phases (5+): progression (pillars, island level, `/is upgrade`), skills pe
 1. **Read first:** `CONTEXT.md`, `DESIGN.md`, `STANDARDS.md`, `UI_STYLE.md`, `REVIEW.md`, and the phase plan.
 2. **No guessing.** Anything unclear goes to the owner as a question *before* coding. Unanswered questions are listed at the end of each plan with the default that applies if the owner doesn't object.
 3. **Every action that changes data is logged** through the audit log (Phase 0 M0.8), so staff can always see who did what.
-4. **Every feature has:** GUI + command, `/help` entry, configurable messages/values, permissions in `COMMANDS.md`, Bedrock-safe menus, audit events, and a test checklist.
+4. **Every feature has:** GUI + command, `/help` entry, configurable messages/values, permissions in the module's `permissions/<module>.yml` + `docs/commands/<module>.md`, Bedrock-safe menus, audit events, and a test checklist.
 5. **Build:** `./gradlew build -x test`. Tests are written but only run when the owner allows it.

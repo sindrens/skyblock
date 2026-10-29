@@ -11,7 +11,7 @@ This is a **large, long-term project** (launch in ~3 years). Quality beats speed
 2. [`docs/STANDARDS.md`](docs/STANDARDS.md): *how* to build it (UX, staff, code, testing, Definition of Done).
 3. [`docs/ROADMAP.md`](docs/ROADMAP.md): *in which order*. Work on the current phase only.
 4. [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md): unresolved decisions. **Never guess on design. Add a question and ask the owner.**
-5. [`docs/COMMANDS.md`](docs/COMMANDS.md): every command and permission. Keep it updated.
+5. [`docs/COMMANDS.md`](docs/COMMANDS.md): index of every module's commands and permissions (`docs/commands/<module>.md`). Keep them updated.
 6. [`docs/UI_STYLE.md`](docs/UI_STYLE.md): colors, lore template, GUI layout, sounds, HUD, help. **Every GUI/item/message must follow it.**
 7. [`docs/WORLD.md`](docs/WORLD.md): worlds, builds, tier tables, vanilla rules.
 8. [`docs/REVIEW.md`](docs/REVIEW.md): known problems with default decisions. Defaults apply until the owner changes them. Check it before coding a phase.
@@ -31,7 +31,7 @@ After every milestone: commit, push to GitHub and release with `server/scripts/d
 2. **Plan first.** Before coding, write a short plan: classes, data, config keys, messages, permissions, GUI flow, tests, edge cases. Check it against DESIGN and STANDARDS.
 3. **Implement** in the right module (`modules/<feature>`) using the shared framework in `common`. If the framework lacks something, add it to `common` properly instead of hacking around it.
 4. **Build and unit-test.** Write unit tests for all logic and run `./gradlew build` (unit tests only, no server). Write the manual test checklist (Java + Bedrock) for the owner.
-5. **Document.** Update DESIGN (if behavior was clarified), COMMANDS, ROADMAP checkbox, and `CHANGELOG.md`.
+5. **Document.** Update DESIGN (if behavior was clarified), `docs/commands/<module>.md`, ROADMAP checkbox, and `CHANGELOG.md`.
 6. **Commit** with conventional commits (`feat(island): add role permission GUI`). One logical change per commit.
 
 ## Non-negotiables
@@ -63,7 +63,11 @@ docs/            design, standards, roadmap, commands, open questions
 1. Create `modules/<name>/` with `build.gradle.kts` (copy an existing module).
 2. Add `include("modules:<name>")` in `settings.gradle.kts` and `implementation(project(":modules:<name>"))` in `plugin/build.gradle.kts`.
 3. Implement `SkyblockModule`, register it in `SkyblockPlugin#registerModules`.
-4. Add config/messages resources, tests, `/help` entry, COMMANDS entries.
+4. Add config/messages resources, tests, `/help` entry.
+5. **Every module owns its own files; never add module entries to the shared ones** (`plugin.yml` keeps plugin metadata and plugin-level permissions only):
+   - Permissions: `modules/<name>/src/main/resources/permissions/<name>.yml` (same format as plugin.yml's `permissions:` section: `description`, `default: true|false|op|not op`, missing = op). Registered automatically right before the module enables and removed when it disables; no code needed. Each node has exactly one owner (`PermissionFilesTest` fails the build on duplicates).
+   - Rank grants: `server/permissions/<name>.txt` (LuckPerms console commands). `server/permissions/base.txt` holds groups, weights, prefixes, colors, wildcards and people and is applied first; module files follow alphabetically (`server/scripts/apply-permissions.sh`). Every granted `skyblock.*` node must be declared.
+   - Commands: `docs/commands/<name>.md` (table: Command, Description, Permission, Status), then `./gradlew commandsIndex` to refresh the index in `docs/COMMANDS.md`.
 
 ## Agents and state
 - Work queue: `docs/QUEUE.md`; current state: `docs/STATUS.md`. A fresh session reads both and continues.

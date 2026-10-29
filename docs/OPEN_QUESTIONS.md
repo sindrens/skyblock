@@ -8,6 +8,7 @@
 - Achievements as their own module with progress tracking? (default: yes, later, F3)
 - Deleted titles/tags: keep in DB hidden (default) or wipe?
 - Discord webhook for punishments now or with the Discord integration? (default: later)
+- F2: `server/permissions/luckperms.txt` was split into `base.txt` + one file per module. Updates copy files without deleting, so the old file stays on the VPS; delete `/opt/skyblock/server/permissions/luckperms.txt` once, or make `update-vps.sh`/`deploy.sh` delete removed files? (default: the apply script ignores the stale file and says so)
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 

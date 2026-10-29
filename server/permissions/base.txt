@@ -1,0 +1,96 @@
+# Staff ranks for SkybornMC: groups, weights, colors, prefixes, inheritance, third-party plugins, wildcards, people.
+# Applied first by scripts/apply-permissions.sh after every update/deploy, then every other *.txt here (one per
+# module, alphabetical). One console command per line. Lines starting with # are ignored. Every command is safe to run repeatedly.
+# Donor ranks (Squire -> Monarch) are added when the store/ranks phase is built.
+
+# --- Groups and weights (higher = more important) ---
+lp creategroup builder
+lp creategroup helper
+lp creategroup mod
+lp creategroup admin
+lp creategroup owner
+lp group default setweight 0
+lp group builder setweight 5
+lp group helper setweight 10
+lp group mod setweight 20
+lp group admin setweight 30
+lp group owner setweight 100
+
+# --- Rank colors (hex) for our chat/tab/nametags; prefixes below stay classic colors for Bedrock and other plugins ---
+lp group default meta set color "#C9C9C9"
+lp group builder meta set color "#FFD23F"
+lp group helper meta set color "#63B8FF"
+lp group mod meta set color "#FF8A1F"
+lp group admin meta set color "#FF3D2E"
+lp group owner meta set color "#C21F2B"
+
+# --- Display names and chat prefixes (Phoenix palette, Bedrock-safe classic colors) ---
+lp group builder setdisplayname Builder
+lp group helper setdisplayname Helper
+lp group mod setdisplayname Moderator
+lp group admin setdisplayname Admin
+lp group owner setdisplayname Owner
+lp group builder meta removeprefix 5
+lp group builder meta addprefix 5 "&e&lBUILDER &e"
+lp group helper meta removeprefix 10
+lp group helper meta addprefix 10 "&b&lHELPER &b"
+lp group mod meta removeprefix 20
+lp group mod meta addprefix 20 "&6&lMOD &6"
+lp group admin meta removeprefix 30
+lp group admin meta addprefix 30 "&c&lADMIN &c"
+lp group owner meta removeprefix 100
+lp group owner meta addprefix 100 "&4&lOWNER &4"
+
+# --- Inheritance: helper < mod < admin < owner. Admin can also build. ---
+lp group helper parent add default
+lp group mod parent add helper
+lp group admin parent add mod
+lp group admin parent add builder
+lp group owner parent add admin
+
+# --- Builder: build spawn, the Depths and the warzone ---
+lp group builder permission set worldedit.* true
+lp group builder permission set fawe.* true
+lp group builder permission set minecraft.command.gamemode true
+lp group builder permission set minecraft.command.teleport true
+lp group builder permission set minecraft.command.time true
+lp group builder permission set skyblock.admin.worlds true
+# Axiom (needs the Axiom client mod). axiom.default = everything recommended; plus entities (display entities) and blueprints.
+lp group builder permission set axiom.default true
+lp group builder permission set axiom.entity.* true
+lp group builder permission set axiom.blueprint.* true
+
+# --- Helper: see cheat alerts (staff chat: chat.txt) ---
+lp group helper permission set grim.alerts true
+
+# --- Moderator: moderation and teleporting ---
+lp group mod permission set minecraft.command.kick true
+lp group mod permission set minecraft.command.ban true
+lp group mod permission set minecraft.command.pardon true
+lp group helper permission set skyblock.staff.notify true
+lp group mod permission set minecraft.command.teleport true
+lp group mod permission set minecraft.command.gamemode true
+lp group mod permission set grim.brand true
+lp group mod permission set coreprotect.inspect true
+lp group mod permission set coreprotect.lookup true
+
+# Plugin-level nodes (plugin.yml): config editor. Owner-level config comes from owner's *.
+lp group admin permission set skyblock.admin.config true
+
+# --- Admin: server administration (not permission editing) ---
+lp group admin permission set skyblock.admin.* true
+lp group admin permission set minecraft.command.* true
+lp group admin permission set grim.* true
+lp group admin permission set coreprotect.* true
+lp group admin permission set viaversion.admin true
+lp group admin permission set geyser.command.* true
+lp group admin permission set floodgate.command.* true
+
+# Every staff tool (incl. editing inventories, /give, /skull, /more).
+lp group admin permission set skyblock.staff.* true
+
+# --- Owner: everything ---
+lp group owner permission set * true
+
+# --- People (add rank holders here: lp user <name> parent add <rank>) ---
+lp user Pouched parent add owner

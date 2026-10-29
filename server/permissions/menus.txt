@@ -1,0 +1,5 @@
+# LuckPerms grants for the menus module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/menus/src/main/resources/permissions/menus.yml. One console command per line; # = comment.
+
+# Staff hub (M1.12).
+lp group helper permission set skyblock.staff.menu true

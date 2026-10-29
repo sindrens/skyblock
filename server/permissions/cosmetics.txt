@@ -1,0 +1,8 @@
+# LuckPerms grants for the cosmetics module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/cosmetics/src/main/resources/permissions/cosmetics.yml. One console command per line; # = comment.
+
+# Titles & tags (M1.11). Everyone can open /tags and /titles (plugin default).
+lp group mod permission set skyblock.staff.cosmetics.give true
+lp group admin permission set skyblock.admin.cosmetics.item true
+lp group admin permission set skyblock.admin.cosmetics.edit true
+lp group admin permission set skyblock.admin.display true

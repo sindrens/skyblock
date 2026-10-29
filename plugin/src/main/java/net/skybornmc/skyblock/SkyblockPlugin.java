@@ -37,6 +37,7 @@ import net.skybornmc.skyblock.common.config.ConfigManager;
 import net.skybornmc.skyblock.common.config.CoreConfig;
 import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.SettingInfo;
+import net.skybornmc.skyblock.common.module.ModulePermissions;
 import net.skybornmc.skyblock.common.module.ModuleRegistry;
 import net.skybornmc.skyblock.common.text.BedrockCheck;
 import net.skybornmc.skyblock.common.text.Messages;
@@ -144,9 +145,14 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         dupes.start();
 
         modules = new ModuleRegistry(getLogger());
+        // F2: each module's permissions/<id>.yml is registered right before it enables and removed when it stops.
+        ModulePermissions permissions = new ModulePermissions(getServer().getPluginManager(), this::getResource, getLogger());
+        modules.beforeEnable(permissions::register);
+        modules.afterFailedEnable(permissions::unregister);
         modules.afterDisable(id -> {
             core.services().unregisterAll(id);
             core.placeholders().unregisterAll(id);
+            permissions.unregister(id);
         });
         registerModules();
         modules.enableAll();
