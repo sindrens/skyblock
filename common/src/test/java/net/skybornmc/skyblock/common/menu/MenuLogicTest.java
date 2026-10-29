@@ -66,4 +66,36 @@ class MenuLogicTest {
         assertEquals(Long.MAX_VALUE, NumberPickerMenu.add(Long.MAX_VALUE - 1, 100, 0, Long.MAX_VALUE));
         assertEquals(7, NumberPickerMenu.clamp(7, 1, 10));
     }
+
+    @Test
+    void frameRolesFollowTheStyleGuide() {
+        assertEquals(MenuService.FrameRole.ACCENT, MenuService.frameRole(0, 6));
+        assertEquals(MenuService.FrameRole.GLOW, MenuService.frameRole(1, 6));
+        assertEquals(MenuService.FrameRole.BORDER, MenuService.frameRole(4, 6));
+        assertEquals(MenuService.FrameRole.BORDER, MenuService.frameRole(9, 6));
+        assertEquals(MenuService.FrameRole.INNER, MenuService.frameRole(10, 6));
+        assertEquals(MenuService.FrameRole.ACCENT, MenuService.frameRole(53, 6));
+        assertEquals(MenuService.FrameRole.GLOW, MenuService.frameRole(46, 6));
+        assertEquals(MenuService.FrameRole.ACCENT, MenuService.frameRole(18, 3));
+        assertEquals(MenuService.FrameRole.INNER, MenuService.frameRole(13, 3));
+    }
+
+    @Test
+    void longTitlesDropLeadingCrumbsFirst() {
+        java.util.List<String> crumbs = java.util.List.of("Island", "Upgrades", "Member Slots");
+        // marker "▸ " = 2, separator " » " = 3
+        assertEquals(0, MenuTitles.firstKept(crumbs, 2, 3, 40));
+        assertEquals(1, MenuTitles.firstKept(crumbs, 2, 3, 25));
+        assertEquals(2, MenuTitles.firstKept(crumbs, 2, 3, 10));
+        assertEquals("Member S..", MenuTitles.shorten("Member Slots", 10));
+        assertEquals("Short", MenuTitles.shorten("Short", 10));
+    }
+
+    @Test
+    void headSourcesAreRecognised() {
+        assertTrue(MenuHeads.isPlayerName("MHF_ArrowLeft"));
+        assertFalse(MenuHeads.isPlayerName("not a name"));
+        assertTrue(MenuHeads.looksLikeTexture("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWJjIn19fQ=="));
+        assertFalse(MenuHeads.looksLikeTexture("MHF_ArrowLeft"));
+    }
 }

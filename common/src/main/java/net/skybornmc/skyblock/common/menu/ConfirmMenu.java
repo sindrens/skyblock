@@ -2,18 +2,25 @@ package net.skybornmc.skyblock.common.menu;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * 3-row confirmation (UI_STYLE §5.2): 11 = Confirm (lime concrete, lore = exactly what happens + cost),
- * 13 = the thing being confirmed, 15 = Cancel. One-shot: a confirm can never run twice.
+ * 3-row confirmation (UI_STYLE §5.2). Big click targets so it works with taps on Bedrock:
+ * <pre>
+ *  R O B B B B B O R
+ *  B ✔ ✔ ✔ ◆ ✘ ✘ ✘ B     10-12 Confirm (lime, 11 = concrete), 13 = what is confirmed, 14-16 Cancel (red, 15 = concrete)
+ *  R O B B B B B O R
+ * </pre>
+ * The Confirm lore lists exactly what happens and what it costs. One-shot: a confirm can never run twice.
  *
  * <pre>{@code
- * new ConfirmMenu(v -> service.text(v, "island", "disband.title"), shownItem,
+ * new ConfirmMenu(v -> service.text(v, "island", "disband.crumb"), shownItem,
  *         v -> service.lines(v, "island", "disband.consequences"),
  *         player -> islands.disband(player), player -> {}).parent(this)
  * }</pre>
@@ -23,26 +30,30 @@ public final class ConfirmMenu extends Menu {
     /** Action with the confirming player. */
     @FunctionalInterface
     public interface Action {
-        void run(org.bukkit.entity.Player player);
+        void run(Player player);
     }
 
-    private final Function<org.bukkit.entity.Player, Component> title;
+    private static final int[] CONFIRM_SLOTS = {10, 11, 12};
+    private static final int[] CANCEL_SLOTS = {14, 15, 16};
+    private static final int SLOT_SHOWN = 13;
+
+    private final Function<Player, Component> crumb;
     private final ItemStack shown;
-    private final Function<org.bukkit.entity.Player, List<Component>> details;
+    private final Function<Player, List<Component>> details;
     private final Action onConfirm;
     private final Action onCancel;
     private boolean used;
 
     /**
-     * @param title     chest title for the viewer ({@code null} = default "Are you sure?")
-     * @param shown     the item/action being confirmed (slot 13)
-     * @param details   lines on the Confirm button: what exactly happens and what it costs
+     * @param crumb     title breadcrumb for the viewer, e.g. "Disband island" ({@code null} = "Are you sure?")
+     * @param shown     the item/action being confirmed (middle slot); {@code null} = a default "?" item
+     * @param details   lines on the Confirm buttons: what exactly happens and what it costs
      * @param onConfirm runs once on confirm (after the menu closes; open another menu from here if needed)
      * @param onCancel  runs on cancel (after going back to the parent, or closing)
      */
-    public ConfirmMenu(Function<org.bukkit.entity.Player, Component> title, ItemStack shown,
-                       Function<org.bukkit.entity.Player, List<Component>> details, Action onConfirm, Action onCancel) {
-        this.title = title;
+    public ConfirmMenu(Function<Player, Component> crumb, ItemStack shown,
+                       Function<Player, List<Component>> details, Action onConfirm, Action onCancel) {
+        this.crumb = crumb;
         this.shown = shown;
         this.details = details;
         this.onConfirm = onConfirm;
@@ -56,15 +67,17 @@ public final class ConfirmMenu extends Menu {
 
     @Override
     public Component title() {
-        return title != null ? title.apply(viewer) : service.text(viewer, "confirm.title");
+        return service.title(viewer, crumb != null ? crumb.apply(viewer) : service.text(viewer, "confirm.crumb"));
     }
 
     @Override
     protected void build() {
         frame();
-        List<Component> lore = new ArrayList<>(details == null ? List.of() : details.apply(viewer));
+        List<Component> lore = new ArrayList<>(service.lines(viewer, "confirm.yes.lore-top"));
+        lore.addAll(details == null ? List.of() : details.apply(viewer));
         lore.addAll(service.lines(viewer, "confirm.yes.lore"));
-        set(11, service.item(Material.LIME_CONCRETE, service.text(viewer, "confirm.yes.name"), lore), click -> {
+        Component yesName = service.text(viewer, "confirm.yes.name");
+        Consumer<MenuClick> confirm = click -> {
             if (used) {
                 return;
             }
@@ -72,11 +85,15 @@ public final class ConfirmMenu extends Menu {
             click.player().closeInventory();
             service.sound(click.player(), "success");
             onConfirm.run(click.player());
-        });
-        if (shown != null) {
-            set(13, shown);
+        };
+        for (int slot : CONFIRM_SLOTS) {
+            Material material = slot == 11 ? Material.LIME_CONCRETE : Material.LIME_STAINED_GLASS_PANE;
+            set(slot, service.item(material, yesName, lore), confirm);
         }
-        set(15, service.item(Material.RED_CONCRETE, viewer, "confirm.no"), click -> {
+
+        set(SLOT_SHOWN, shown != null ? shown : service.item(Material.PAPER, viewer, "confirm.shown"));
+
+        Consumer<MenuClick> cancel = click -> {
             if (used) {
                 return;
             }
@@ -85,6 +102,10 @@ public final class ConfirmMenu extends Menu {
             if (onCancel != null) {
                 onCancel.run(click.player());
             }
-        });
+        };
+        ItemStack no = service.item(Material.RED_CONCRETE, viewer, "confirm.no");
+        for (int slot : CANCEL_SLOTS) {
+            set(slot, slot == 15 ? no : service.item(Material.RED_STAINED_GLASS_PANE, viewer, "confirm.no"), cancel);
+        }
     }
 }

@@ -11,13 +11,16 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * Pick a whole number between {@code min} and {@code max}: −/+ step buttons (default 1/10/100), a "type a value"
- * chat prompt (accepts 1.5k / 2M) and Confirm. Works without shift-click (Bedrock).
+ * Pick a whole number between {@code min} and {@code max}: −/+ step buttons (default 1/10/100), minimum/maximum
+ * shortcuts, a "type a value" chat prompt (accepts 1.5k / 2M) and Confirm. Works with taps only (Bedrock).
  *
  * <pre>
- * 19 −100  20 −10  21 −1   22 value   23 +1  24 +10  25 +100
- *                          31 type a value
- *                          40 confirm
+ *  R O B B B B B O R
+ *  B · · · · · · · B
+ *  B −100 −10 −1 [value] +1 +10 +100 B      19-21 / 22 / 23-25
+ *  B · · Min [type] Max · · B               30 / 31 / 32
+ *  B · · ✔ [CONFIRM] ✔ · · B                39-41
+ *  ← O B ?  ✘  H B O R                      45 back, 48 info, 49 close, 50 help
  * </pre>
  */
 public final class NumberPickerMenu extends Menu {
@@ -82,7 +85,7 @@ public final class NumberPickerMenu extends Menu {
 
     @Override
     public Component title() {
-        return title != null ? title.apply(viewer) : service.text(viewer, "number.title");
+        return service.title(viewer, title != null ? title.apply(viewer) : service.text(viewer, "number.crumb"));
     }
 
     @Override
@@ -93,18 +96,41 @@ public final class NumberPickerMenu extends Menu {
     @Override
     protected void build() {
         frame();
+        ItemStack inner = service.innerFiller();
+        for (int slot = 10; slot <= 43; slot++) {
+            int col = slot % 9;
+            if (col != 0 && col != 8) {
+                set(slot, inner);
+            }
+        }
         for (int i = 0; i < Math.min(3, steps.length); i++) {
             long step = steps[i];
             set(MINUS_SLOTS[i], stepItem(Material.RED_DYE, "number.minus", step), click -> change(-step));
             set(PLUS_SLOTS[i], stepItem(Material.LIME_DYE, "number.plus", step), click -> change(step));
         }
-        set(22, service.item(Material.GOLD_NUGGET, viewer, "number.value",
-                Msg.p("value", Format.number(value)), Msg.p("min", Format.number(min)), Msg.p("max", Format.number(max))));
+        set(22, service.item(Material.SUNFLOWER, viewer, "number.value", Msg.p("value", Format.number(value)),
+                Msg.p("compact", Format.compact(value)), Msg.p("min", Format.number(min)), Msg.p("max", Format.number(max))));
+        set(30, service.item(Material.BUCKET, viewer, "number.set-min", Msg.p("min", Format.number(min))), click -> setTo(min));
         set(31, service.item(Material.NAME_TAG, viewer, "number.custom"), click -> askCustom(click.player()));
-        set(40, service.item(Material.LIME_CONCRETE, viewer, "number.confirm", Msg.p("value", Format.number(value))), click -> {
-            click.player().closeInventory();
-            onConfirm.accept(click.player(), value);
-        });
+        set(32, service.item(Material.WATER_BUCKET, viewer, "number.set-max", Msg.p("max", Format.number(max))), click -> setTo(max));
+        ItemStack confirm = service.item(Material.LIME_CONCRETE, viewer, "number.confirm", Msg.p("value", Format.number(value)));
+        ItemStack confirmSide = service.item(Material.LIME_STAINED_GLASS_PANE, viewer, "number.confirm", Msg.p("value", Format.number(value)));
+        for (int slot = 39; slot <= 41; slot++) {
+            set(slot, slot == 40 ? confirm : confirmSide, click -> {
+                click.player().closeInventory();
+                service.sound(click.player(), "success");
+                onConfirm.accept(click.player(), value);
+            });
+        }
+    }
+
+    private void setTo(long target) {
+        if (target == value) {
+            service.sound(viewer, "error");
+            return;
+        }
+        value = target;
+        refresh();
     }
 
     private ItemStack stepItem(Material material, String key, long step) {

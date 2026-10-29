@@ -188,24 +188,45 @@ Rules:
 ## 5. GUIs
 
 ### 5.1 Layout standard (6-row chest = 54 slots)
+Built by the menu framework (`common/menu`, `frame()`), so every menu looks the same automatically.
 ```
-Row 1:  [ border / header items ]
-Rows 2–5: content (28 slots inside a 1-slot border, or full rows for lists)
-Row 6:  45 Back · 46 – · 47 – · 48 Info (?) · 49 Close · 50 Help · 51 – · 52 – · 53 Next page
+ R  O  B  B  B  B  B  O  R      R = red pane (corner accent)   O = orange pane (ember glow)
+ B  .  .  .  .  .  .  .  B      B = black pane (border)         . = content (28 slots: 10-16, 19-25, 28-34, 37-43)
+ B  .  .  .  .  .  .  .  B
+ B  .  .  .  .  .  .  .  B
+ B  .  .  .  .  .  .  .  B
+ ←  O  B  ?  ✘  H  B  O  →      45 Back/Previous · 48 Info · 49 Close · 50 Help · 53 Next
 ```
-- **Fixed slots everywhere:** Back = 45 (arrow), Info = 48 (book), Close = 49 (barrier), Help = 50 (knowledge book), Previous page = 45 on page 2+ (on page 1 slot 45 is Back; decided 2026-10-29 so nothing needs a right-click on Bedrock), Next page = 53 (arrow).
-- **Frame:** top row and bottom row (except the button slots) are `red_stained_glass_pane`; the side columns are `black_stained_glass_pane`. All filler panes have an empty name (` `). Pillar menus may swap the top row for the pillar's color pane.
-- **Title format:** dark red is unreadable as a chest title on dark backgrounds, so chest titles use default dark gray text with a red `▸` marker: `<c:brand>▸</c> Island » Upgrades`.
-- Titles stay short enough for Bedrock (max ~24 chars).
-- Smaller GUIs (3-row) for simple choices and confirmations.
+- **Why this frame:** full red rows (the old look) were loud and fought with red error items and the content. A dark border makes items pop; red only on the corners with an orange "glow" next to them is the phoenix accent, like embers at the edges. Content slots stay empty (no filler), so the list reads cleanly. All panes have no tooltip at all.
+- **Fixed slots everywhere:** 45 = Back on page 1 (only when there is a parent menu) and Previous page on page 2+ (decided 2026-10-29, no right-click needed on Bedrock); 48 = Info (book: what this screen does + opens `/help <topic>`); 49 = Close (barrier); 50 = Help (knowledge book); 53 = Next page.
+- **Navigation heads:** Back/Previous/Next are textured player heads (Mojang's official `MHF_ArrowLeft` / `MHF_ArrowRight` by default, or any minecraft-heads.com texture value in `menus.yml → heads.*`); loaded once in the background, with a plain arrow until ready or if the lookup fails. Bedrock shows a player head with the same name.
+- **Title format:** `▸ Island » Upgrades (2/5)`: red `▸` marker, crumbs in title gray `#3F3F3F` (readable on the light chest background), separator and page in `#8B8B8B`. Built with `service.title(viewer, crumbs…)`. Max **32 characters** (`menus.yml → title.max-length`): leading crumbs are dropped first, then the last one is shortened with `..`.
+- **Page indicator:** in the title (`(2/5)`, only when there is more than one page) and in the lore of Previous/Next ("Go to page 3 of 5").
+- **Button lore:** name = color word + white value; lore = description lines (`<c:text>`), an empty line, then the action line `▸ Click to …` in `<c:action>`. No italics anywhere.
+- **States:** Loading = clock "⌛ Loading..."; Error = red stained glass "✘ Couldn't load this"; Empty list = cobweb in slot 22 "Nothing here yet" + a hint (per-menu key); Toggle = lime dye "✔ Enabled" / red dye "✘ Disabled" + "▸ Click to switch".
+- Smaller GUIs (3-row) for simple choices and confirmations: same frame, inner slots filled with gray panes.
 
 ### 5.2 Confirmation dialog (3-row)
 ```
-11 = Confirm (lime concrete, "✔ Confirm", lore = exactly what happens + cost)
-13 = The item/action being confirmed
-15 = Cancel (red concrete, "✘ Cancel")
+ R  O  B  B  B  B  B  O  R
+ B  ✔  ✔  ✔  ◆  ✘  ✘  ✘  B      10-12 Confirm (11 lime concrete, 10/12 lime panes: one big target)
+ R  O  B  B  B  B  B  O  R      13 the item/action being confirmed · 14-16 Cancel (15 red concrete, 14/16 red panes)
 ```
+- Confirm lore: "This will:" + exactly what happens and what it costs + "▸ Click to confirm". Cancel: "Nothing will change."
+- One-shot: a confirm can never run twice. Cancel returns to the parent menu.
+- Title: `▸ Disband island` (or the default `▸ Are you sure?`).
+
 Required for: anything irreversible, anything above a money threshold, solo→team, disband, prestige, merges, leaving islands, buying with gems.
+
+### 5.2.1 Number picker (6-row)
+```
+ R  O  B  B  B  B  B  O  R
+ B  ·  ·  ·  ·  ·  ·  ·  B      · = gray pane
+ B −100 −10 −1  $  +1 +10 +100 B   19-21 red dye (stack size = step), 22 sunflower = value (exact + compact, min/max)
+ B  ·  · Min  ✎  Max ·  ·  B     30 bucket = set minimum, 31 name tag = type an amount in chat (1.5k/2M), 32 water bucket = set maximum
+ B  ·  ·  ✔ [✔]  ✔  ·  ·  B     39-41 Confirm (40 lime concrete)
+ ←  O  B  ?  ✘  H  B  O  R
+```
 
 ### 5.3 Help on every screen
 - **Info item (slot 48):** what this screen does, in 2–4 lines, plus "Click for full help". Opens `/help <topic>` for that screen.

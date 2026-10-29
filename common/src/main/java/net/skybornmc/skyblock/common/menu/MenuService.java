@@ -66,6 +66,7 @@ public final class MenuService implements Listener {
     private final Debounce debounce;
     private final Map<UUID, Menu> open = new ConcurrentHashMap<>();
     private final Map<UUID, Prompt> prompts = new ConcurrentHashMap<>();
+    private final MenuHeads heads;
     private BukkitTask ticker;
 
     private record Prompt(Consumer<String> onInput, Runnable onCancel, int maxLength, BukkitTask timeout) {
@@ -78,6 +79,7 @@ public final class MenuService implements Listener {
         this.sounds = sounds;
         this.menuItemKey = new NamespacedKey(plugin, "menu_item");
         this.debounce = new Debounce(config.clickDebounceMs);
+        this.heads = new MenuHeads(plugin.getLogger());
         reload();
     }
 
@@ -109,6 +111,9 @@ public final class MenuService implements Listener {
         configs.load(config);
         messages.load(MODULE);
         debounce.interval(config.clickDebounceMs);
+        heads.load("back", config.headBack);
+        heads.load("previous", config.headPrevious);
+        heads.load("next", config.headNext);
     }
 
     public JavaPlugin plugin() {
@@ -129,8 +134,8 @@ public final class MenuService implements Listener {
         }
         cancelPrompt(player, false);
         Menu previous = open.remove(player.getUniqueId());
-        if (previous != null) {
-            previous.detach();
+        if (previous != null && previous != menu) {
+            previous.detach(); // re-opening the same menu (e.g. page turn with a new title) is not a close
         }
         int rows = Math.max(1, Math.min(6, menu.rows()));
         // The holder must exist before the inventory; the title needs the viewer for Bedrock colors.
@@ -196,13 +201,64 @@ public final class MenuService implements Listener {
 
     /** An item with a name and lore, no italics, vanilla tooltips hidden. */
     public ItemStack item(Material material, Component name, List<Component> lore) {
-        ItemStack item = new ItemStack(material);
+        return item(new ItemStack(material), name, lore);
+    }
+
+    /** Names {@code base} (a copy) with a name and lore, no italics, vanilla tooltips hidden. */
+    public ItemStack item(ItemStack base, Component name, List<Component> lore) {
+        ItemStack item = base.clone();
         item.editMeta(meta -> {
             meta.displayName(name.decoration(TextDecoration.ITALIC, false));
             meta.lore(lore.stream().map(l -> l.decoration(TextDecoration.ITALIC, false)).toList());
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE);
         });
         return item;
+    }
+
+    /**
+     * A navigation button: textured head ({@code heads.<headKey>} in menus.yml) with {@code fallback} until it is loaded,
+     * named {@code <key>.name} / {@code <key>.lore}.
+     */
+    public ItemStack navItem(String headKey, Material fallback, Player viewer, String key, TagResolver... placeholders) {
+        return item(heads.item(headKey, fallback), text(viewer, key + ".name", placeholders), lines(viewer, key + ".lore", placeholders));
+    }
+
+    /**
+     * The standard chest title: {@code ▸ Island » Upgrades}. Crumbs are shown in title gray (readable on the light chest
+     * background); if the title is too long for Bedrock, the leading crumbs are dropped first.
+     */
+    public Component title(Player viewer, Component... crumbs) {
+        return title(viewer, List.of(crumbs), null);
+    }
+
+    /** Title from message keys, e.g. {@code titleKeys(p, "island", "title.island", "title.upgrades")}. */
+    public Component titleKeys(Player viewer, String module, String... keys) {
+        List<Component> crumbs = new ArrayList<>();
+        for (String key : keys) {
+            crumbs.add(text(viewer, module, key));
+        }
+        return title(viewer, crumbs, null);
+    }
+
+    /** Title with an optional suffix (e.g. the page indicator {@code (2/5)}). */
+    public Component title(Player viewer, List<Component> crumbs, Component suffix) {
+        PlainTextComponentSerializer plain = PlainTextComponentSerializer.plainText();
+        Component separator = text(viewer, "title.separator");
+        Component end = suffix == null ? Component.empty() : suffix;
+        int fixed = plain.serialize(text(viewer, "title.format", Msg.c("crumbs", Component.empty()), Msg.c("suffix", end))).length();
+        List<String> plainCrumbs = crumbs.stream().map(plain::serialize).toList();
+        int max = config.titleMaxLength;
+        int first = MenuTitles.firstKept(plainCrumbs, fixed, plain.serialize(separator).length(), max);
+        Component joined = Component.empty();
+        for (int i = first; i < crumbs.size(); i++) {
+            Component crumb = crumbs.get(i);
+            if (i == crumbs.size() - 1 && MenuTitles.length(plainCrumbs, first, fixed, plain.serialize(separator).length()) > max) {
+                int room = max - (MenuTitles.length(plainCrumbs, first, fixed, plain.serialize(separator).length()) - plainCrumbs.get(i).length());
+                crumb = Component.text(MenuTitles.shorten(plainCrumbs.get(i), Math.max(3, room)));
+            }
+            joined = i == first ? crumb : joined.append(separator).append(crumb);
+        }
+        return text(viewer, "title.format", Msg.c("crumbs", joined), Msg.c("suffix", end));
     }
 
     /** A filler pane with no tooltip at all. */
@@ -235,7 +291,12 @@ public final class MenuService implements Listener {
     }
 
     MenuButton errorItem(Player viewer) {
-        return MenuButton.display(item(Material.BARRIER, viewer, "error-item"));
+        return MenuButton.display(item(Material.RED_STAINED_GLASS, viewer, "error-item"));
+    }
+
+    /** Filler for empty slots inside small menus (confirm, number picker). */
+    ItemStack innerFiller() {
+        return filler(material(config.frameInner, Material.GRAY_STAINED_GLASS_PANE));
     }
 
     /** Material from a config id, or {@code fallback} (logged) if unknown. */
@@ -251,18 +312,20 @@ public final class MenuService implements Listener {
     /** See {@link Menu#frame()}. */
     void applyFrame(Menu menu) {
         int rows = menu.rows();
-        ItemStack topBottom = filler(material(config.frameTopBottom, Material.RED_STAINED_GLASS_PANE));
-        ItemStack sides = filler(material(config.frameSides, Material.BLACK_STAINED_GLASS_PANE));
-        ItemStack inner = filler(material(config.frameInner, Material.BLACK_STAINED_GLASS_PANE));
+        ItemStack border = filler(material(config.frameBorder, Material.BLACK_STAINED_GLASS_PANE));
+        ItemStack accent = filler(material(config.frameAccent, Material.RED_STAINED_GLASS_PANE));
+        ItemStack glow = filler(material(config.frameAccentGlow, Material.ORANGE_STAINED_GLASS_PANE));
+        ItemStack inner = innerFiller();
         for (int slot = 0; slot < rows * 9; slot++) {
-            int row = slot / 9;
-            int col = slot % 9;
-            if (row == 0 || row == rows - 1) {
-                menu.set(slot, topBottom);
-            } else if (col == 0 || col == 8) {
-                menu.set(slot, sides);
-            } else if (rows <= 3) {
-                menu.set(slot, inner);
+            switch (frameRole(slot, rows)) {
+                case ACCENT -> menu.set(slot, accent);
+                case GLOW -> menu.set(slot, glow);
+                case BORDER -> menu.set(slot, border);
+                case INNER -> {
+                    if (rows <= 3) {
+                        menu.set(slot, inner);
+                    }
+                }
             }
         }
         if (rows != 6) {
@@ -270,7 +333,7 @@ public final class MenuService implements Listener {
         }
         Player viewer = menu.viewer();
         if (menu.parent() != null) {
-            menu.set(Menu.SLOT_BACK, item(Material.ARROW, viewer, "frame.back"), click -> click.menu().back());
+            menu.set(Menu.SLOT_BACK, navItem("back", Material.ARROW, viewer, "frame.back"), click -> click.menu().back());
         }
         if (menu.infoKey() != null) {
             List<Component> lore = new ArrayList<>(lines(viewer, menu.messageModule(), menu.infoKey()));
@@ -280,6 +343,26 @@ public final class MenuService implements Listener {
         }
         menu.set(Menu.SLOT_CLOSE, item(Material.BARRIER, viewer, "frame.close"), click -> click.player().closeInventory());
         menu.set(Menu.SLOT_HELP, item(Material.KNOWLEDGE_BOOK, viewer, "frame.help"), click -> runHelp(click.player(), null));
+    }
+
+    /** What a slot of the standard frame shows (docs/UI_STYLE.md §5.1). */
+    enum FrameRole { ACCENT, GLOW, BORDER, INNER }
+
+    /** Corners = red accent, the slot next to each corner on the top/bottom row = ember glow, rest of the edge = border. */
+    static FrameRole frameRole(int slot, int rows) {
+        int row = slot / 9;
+        int col = slot % 9;
+        boolean edgeRow = row == 0 || row == rows - 1;
+        if (edgeRow && (col == 0 || col == 8)) {
+            return FrameRole.ACCENT;
+        }
+        if (edgeRow && (col == 1 || col == 7)) {
+            return FrameRole.GLOW;
+        }
+        if (edgeRow || col == 0 || col == 8) {
+            return FrameRole.BORDER;
+        }
+        return FrameRole.INNER;
     }
 
     private void runHelp(Player player, String topic) {
@@ -295,7 +378,7 @@ public final class MenuService implements Listener {
         List<Component> lore = new ArrayList<>(lines(viewer, module, key + ".lore"));
         lore.addAll(lines(viewer, state ? "toggle.on" : "toggle.off"));
         lore.addAll(lines(viewer, "toggle.action"));
-        ItemStack item = item(state ? Material.LIME_DYE : Material.GRAY_DYE, text(viewer, module, key + ".name"), lore);
+        ItemStack item = item(state ? Material.LIME_DYE : Material.RED_DYE, text(viewer, module, key + ".name"), lore);
         return MenuButton.of(item, click -> {
             change.accept(!state);
             click.menu().refresh();

@@ -18,8 +18,9 @@ import java.util.logging.Level;
  * Base class of every chest menu. One instance per viewer: subclasses describe the content in {@link #build()} with
  * {@link #set}; the {@link MenuService} handles opening, click protection, debounce, sounds and live updates.
  *
- * <p>Layout (docs/UI_STYLE.md §5): call {@link #frame()} first in {@code build()} for the standard red/black frame and the
- * fixed buttons (45 back, 48 info, 49 close, 50 help).</p>
+ * <p>Layout (docs/UI_STYLE.md §5): call {@link #frame()} first in {@code build()} for the standard frame (black border,
+ * red corners with ember glow) and the fixed buttons (45 back, 48 info, 49 close, 50 help). Build titles with
+ * {@link MenuService#title} so every menu reads {@code ▸ Island » Upgrades}.</p>
  */
 public abstract class Menu implements InventoryHolder {
 
@@ -41,7 +42,7 @@ public abstract class Menu implements InventoryHolder {
     /** Number of rows (1-6). */
     public abstract int rows();
 
-    /** The chest title (keep it short for Bedrock, ~24 characters). */
+    /** The chest title: use {@code service.title(viewer, crumbs...)} (length-safe for Bedrock). */
     public abstract Component title();
 
     /** Fills the menu with {@link #set}. Called on open and on every {@link #refresh()}. */
@@ -120,7 +121,7 @@ public abstract class Menu implements InventoryHolder {
         }));
     }
 
-    /** Standard frame: red top/bottom rows, black sides, and for 6-row menus the fixed buttons. */
+    /** Standard frame: black border, red corners, ember glow next to them; for 6-row menus also the fixed buttons. */
     protected final void frame() {
         service.applyFrame(this);
     }

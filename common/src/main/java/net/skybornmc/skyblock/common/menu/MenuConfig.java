@@ -3,17 +3,33 @@ package net.skybornmc.skyblock.common.menu;
 import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 
-/** Menu framework settings ({@code menus.yml}). Texts live in {@code messages/menus.yml}. */
+/** Menu framework settings ({@code menus.yml}). Texts live in {@code messages/menus.yml}. Layout: docs/UI_STYLE.md §5. */
 public final class MenuConfig extends ModuleConfig {
 
-    @Setting(path = "frame.top-bottom", desc = "Filler item of the top and bottom rows (item id, e.g. red_stained_glass_pane).")
-    public String frameTopBottom = "red_stained_glass_pane";
+    @Setting(path = "frame.border", desc = "Border pane of every menu (item id). Dark, so the content stands out.")
+    public String frameBorder = "black_stained_glass_pane";
 
-    @Setting(path = "frame.sides", desc = "Filler item of the side columns.")
-    public String frameSides = "black_stained_glass_pane";
+    @Setting(path = "frame.accent", desc = "Corner accent pane (Phoenix red).")
+    public String frameAccent = "red_stained_glass_pane";
 
-    @Setting(path = "frame.inner", desc = "Filler for empty slots inside small menus (confirm dialog).")
-    public String frameInner = "black_stained_glass_pane";
+    @Setting(path = "frame.accent-glow", desc = "Pane next to each corner (ember orange), so the corners fade like a flame.")
+    public String frameAccentGlow = "orange_stained_glass_pane";
+
+    @Setting(path = "frame.inner", desc = "Filler for empty slots inside small menus (confirm dialog, number picker).")
+    public String frameInner = "gray_stained_glass_pane";
+
+    @Setting(path = "heads.back", desc = "Back button head: a player name (e.g. MHF_ArrowLeft) or a base64 texture value from minecraft-heads.com. Empty = arrow item.")
+    public String headBack = "MHF_ArrowLeft";
+
+    @Setting(path = "heads.previous", desc = "Previous page head (player name or base64 texture). Empty = arrow item.")
+    public String headPrevious = "MHF_ArrowLeft";
+
+    @Setting(path = "heads.next", desc = "Next page head (player name or base64 texture). Empty = arrow item.")
+    public String headNext = "MHF_ArrowRight";
+
+    @Setting(path = "title.max-length", desc = "Longest chest title in characters (Bedrock cuts long titles). Leading breadcrumbs are dropped first.",
+            min = 12, max = 48)
+    public int titleMaxLength = 32;
 
     @Setting(desc = "Minimum milliseconds between two clicks of one player in a menu (anti double-click dupes).",
             min = 0, max = 2000)
@@ -37,7 +53,7 @@ public final class MenuConfig extends ModuleConfig {
     @Override
     public String header() {
         return """
-                Menu (GUI) framework settings. Menu texts are in messages/menus.yml.
+                Menu (GUI) look and behaviour. Menu texts are in messages/menus.yml. Layout rules: docs/UI_STYLE.md section 5.
                 Reload: /skyblock reload core""";
     }
 }
