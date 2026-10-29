@@ -254,7 +254,7 @@ public final class ConfigManager {
                 }
             }
         } catch (NumberFormatException | ArithmeticException e) {
-            throw new IllegalArgumentException("'" + text + "' is not a valid " + type.getSimpleName());
+            throw new IllegalArgumentException("'" + text + "' is not a valid " + friendlyType(type));
         }
         throw new IllegalArgumentException("unsupported setting type " + type.getSimpleName());
     }
@@ -267,6 +267,21 @@ public final class ConfigManager {
                         + format(setting.min()) + " to " + format(setting.max()));
             }
         }
+    }
+
+    static String friendlyType(Class<?> type) {
+        if (type == int.class || type == Integer.class || type == long.class || type == Long.class) {
+            return "whole number";
+        }
+        if (type == double.class || type == Double.class) {
+            return "number";
+        }
+        return type.getSimpleName();
+    }
+
+    /** Value as it is written in the YAML file (enums in lower kebab-case). */
+    public static String display(Object value) {
+        return String.valueOf(toYaml(value));
     }
 
     /** Description plus allowed range, written above each key. */

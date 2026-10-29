@@ -15,7 +15,7 @@ Depends on Phases 0–3 (sell, tokens). Design: `DESIGN.md` §5–6, `WORLD.md` 
 All custom tools, blueprints and skins are **tradeable** (trade + auction house) and have **no durability**. Each tool is a unique item (PDC id + UUID; dupe detection from M0.7). Definitions in `tools.yml`.
 
 **a) Starter kit: Quartermaster NPC (spawn)**
-- Free basic custom pickaxe, axe, hoe, sword, rod. Re-claim every 30 min (only the pieces you don't have). First tutorial step later.
+- Free basic custom pickaxe, axe, hoe, sword, rod. Re-claim **every 24 h** (owner decision; only the pieces you don't have). First tutorial step later.
 
 **b) The Forge: Blacksmith NPC (spawn) + `/forge`**
 - Menu tabs per tool type; each tool tier shows recipe (Depths materials + money), stats, requirement (skill level / Depths tier), owned ✔ / craftable / locked ✘ with progress.
@@ -24,7 +24,18 @@ All custom tools, blueprints and skins are **tradeable** (trade + auction house)
 
 **c) Living tools (levels 1–50)**
 - XP per block/log/kill with that tool; level-up sound + action bar; lore shows level bar, stats and history (blocks mined, kills).
-- Levels raise speed/fortune and unlock **perk slots** at set levels (e.g. 5/15/30/45). Custom enchants go into perk slots (Phase 6 `/enchanter`; slots shown as "empty" until then).
+- Levels raise speed/fortune and unlock **perk slots at Lv 5 / 15 / 30 / 45** (owner decision). Custom enchants go into perk slots (Phase 6 `/enchanter`; slots shown as "empty" until then).
+- **Balance (owner: "it has to make sense in gameplay")**, pacing targets for an active player, tuned in the M3.0 balance sheet:
+  | Slot | Level | Reached after (active play) | Why |
+  |---|---|---|---|
+  | 1 | 5 | ~1 hour | First reward fast, teaches the system |
+  | 2 | 15 | ~day 2 | Daily goal |
+  | 3 | 30 | ~week 1 | Mid-season power spike |
+  | 4 | 45 | ~week 3–4 | Long-term goal for dedicated players |
+  | 5 | Prestige | ~week 6+ | See below |
+  - XP curve per level ~1.12× the previous (configurable); a higher tool tier gives more XP per block, so upgrading speeds levelling but is never required to reach a slot.
+  - **Prestige:** at Lv 50 the tool can prestige: level back to 1, keeps perks and stats, gains **+1 perk slot** (max 1 prestige per tool per season) and a prestige star in the name. It costs the time to level again, so slot 5 is a real achievement, not a purchase.
+  - Perks scale with slot count, not tool tier, so a cheaper tool with 4 slots stays competitive for a while (keeps the AH market for levelled tools alive).
 - Break speed via item attribute modifiers (`block_break_speed`/mining efficiency), no client hacks, works on Bedrock.
 
 **d) Blueprints**
@@ -112,5 +123,6 @@ Row 6  standard navigation
 - Omnitool removed: starter kit + Forge + living tools + blueprints + skins; all tradeable; no durability.
 
 ## Open questions (defaults apply unless changed)
-1. Perk slot levels: 5 / 15 / 30 / 45 (4 slots), +1 slot from prestige?
-2. Re-claim cooldown for the starter kit: 30 min?
+- Perk slots at 5 / 15 / 30 / 45 + 1 from prestige; starter kit every 24 h (owner, 2026-10-29).
+
+1. Starter kit pieces: tradeable via `/trade`, but **not listable on the AH** (otherwise the AH fills with free tools from alts). Default: as written.

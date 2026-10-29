@@ -28,7 +28,7 @@ Visual details (colors, lore template, GUI slots, sounds, HUD) are specified in 
 
 ### 1.4 Commands
 - Short and predictable: `/<feature>` opens its GUI, and subcommands follow `/<feature> <verb> [args]`.
-- Full **tab completion** with permission filtering.
+- Full **tab completion on every command, sub-command and argument** with permission filtering (owner rule, no exceptions). The command framework (M0.5) refuses to register an argument without a suggestion source.
 - Aliases are configurable.
 - Wrong usage shows usage plus a clickable example.
 

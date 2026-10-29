@@ -251,14 +251,14 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         }
         sender.sendMessage(MM.deserialize(PREFIX + "<white><file> <gray>(active values):", Placeholder.unparsed("file", config.fileName())));
         for (SettingInfo info : configs.describe(config)) {
-            boolean isDefault = String.valueOf(info.value()).equals(String.valueOf(info.defaultValue()));
+            boolean isDefault = ConfigManager.display(info.value()).equals(ConfigManager.display(info.defaultValue()));
             sender.sendMessage(MM.deserialize(
                     " <hover:show_text:'<gray><desc><newline><dark_gray>Default: <default>'><#C9C9C9><path></hover>"
                             + "<dark_gray>:</dark_gray> " + (isDefault ? "<white>" : "<#FFD23F>") + "<value>",
                     Placeholder.unparsed("path", info.path()),
                     Placeholder.unparsed("desc", info.description()),
-                    Placeholder.unparsed("default", String.valueOf(info.defaultValue())),
-                    Placeholder.unparsed("value", String.valueOf(info.value()))));
+                    Placeholder.unparsed("default", ConfigManager.display(info.defaultValue())),
+                    Placeholder.unparsed("value", ConfigManager.display(info.value()))));
         }
     }
 

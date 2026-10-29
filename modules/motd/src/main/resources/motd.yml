@@ -5,13 +5,16 @@
 # Animation: Minecraft asks for the MOTD every time the server list refreshes; each refresh shows the next
 # frame, so {phase} gradients "flow" through the text.
 #
-# Color rules (docs/UI_STYLE.md): red #C21F2B/#FF3D2E = brand only, ember #FF8A1F + flame #FFD23F = highlights,
-# white = important words, gray #C9C9C9 = normal text, dark gray #7A7A7A = separators.
+# Color rules (docs/UI_STYLE.md):
+#   SkybornMC (network, from the logo) = frost blue: #E4EBF0 frost, #9FC6E8 ice, #6CA1D6 blue.
+#   Phoenix Skyblock (gamemode)        = phoenix fire: #C21F2B red, #FF3D2E bright red, #FF8A1F ember, #FFD23F flame.
+#   Network info (Discord, versions, Java & Bedrock) uses ice; gameplay hooks use fire.
+#   white = important words, #C9C9C9 = normal text, #7A7A7A = separators.
 
-header: "<bold><white>SKYBORN</white><#C21F2B>MC</#C21F2B></bold> <#7A7A7A>»</#7A7A7A> <bold><gradient:#C21F2B:#FF3D2E:#FF8A1F:#FF3D2E:#C21F2B:{phase}>PHOENIX SKYBLOCK</gradient></bold>"
+header: "<bold><gradient:#E4EBF0:#9FC6E8:#E4EBF0:{phase}>SKYBORN</gradient><#6CA1D6>MC</#6CA1D6></bold> <#7A7A7A>»</#7A7A7A> <bold><gradient:#C21F2B:#FF3D2E:#FF8A1F:#FF3D2E:#C21F2B:{phase}>PHOENIX SKYBLOCK</gradient></bold>"
 
 # Which messages rotate (ids from the list below), in order.
-active: [coming-soon, rise, features, platforms, discord]
+active: [coming-soon, rise, features, teams, platforms, discord]
 
 mode: rotate          # rotate = next message every rotate-seconds, random = random each refresh
 rotate-seconds: 6
@@ -25,30 +28,33 @@ center: true
 
 # Shown when hovering over the player count (colors are reduced to the 16 classic colors there).
 hover:
-  - "<dark_red><bold>SkybornMC</bold></dark_red> <dark_gray>»</dark_gray> <red>Phoenix Skyblock"
+  - "<aqua><bold>SkybornMC</bold></aqua> <dark_gray>»</dark_gray> <red><bold>Phoenix Skyblock</bold></red>"
   - ""
   - "<gray>Status: <gold>Season 1 in development"
-  - "<gray>Versions: <white>Java 1.21.5 - 26.3 + Bedrock"
-  - "<gray>Discord: <white>discord.skybornmc.net"
-  - "<gray>Website: <white>skybornmc.net"
+  - "<gray>Versions: <white>Java 1.21.5 - 26.3 <gray>+ <white>Bedrock"
+  - "<gray>Discord: <aqua>discord.skybornmc.net"
+  - "<gray>Website: <aqua>skybornmc.net"
 
 motds:
 
   # --- Development (active now) ---
   coming-soon:
-    line2: "<#FF8A1F>✦</#FF8A1F> <bold><gradient:#FF8A1F:#FFD23F:#FF8A1F:{phase}>COMING SOON</gradient></bold> <#FF8A1F>✦</#FF8A1F> <#7A7A7A>|</#7A7A7A> <#C9C9C9>discord.skybornmc.net</#C9C9C9>"
+    line2: "<#FFD23F>✦</#FFD23F> <bold><gradient:#FF8A1F:#FFD23F:#FF8A1F:{phase}>SEASON 1 COMING SOON</gradient></bold> <#FFD23F>✦</#FFD23F>"
 
   rise:
-    line2: "<gradient:#FF3D2E:#FF8A1F:#FFD23F:{phase}>Rise from the ashes</gradient> <#7A7A7A>|</#7A7A7A> <#C9C9C9>Season 1 in development</#C9C9C9>"
+    line2: "<gradient:#FF3D2E:#FF8A1F:#FFD23F:{phase}>Rise from the ashes</gradient> <#7A7A7A>·</#7A7A7A> <#C9C9C9>your island in the sky</#C9C9C9>"
 
   features:
-    line2: "<white>Islands</white> <#FF8A1F>·</#FF8A1F> <white>The Depths</white> <#FF8A1F>·</#FF8A1F> <white>KOTH</white> <#FF8A1F>·</#FF8A1F> <white>Envoys</white> <#FF8A1F>·</#FF8A1F> <white>Pets</white>"
+    line2: "<white>Islands</white> <#FF8A1F>·</#FF8A1F> <white>The Depths</white> <#FF8A1F>·</#FF8A1F> <white>Forge</white> <#FF8A1F>·</#FF8A1F> <white>Pets</white> <#FF8A1F>·</#FF8A1F> <white>KOTH</white>"
+
+  teams:
+    line2: "<#C9C9C9>Solo or team</#C9C9C9> <#7A7A7A>·</#7A7A7A> <white>seasonal leaderboards</white> <#7A7A7A>·</#7A7A7A> <#FFD23F>top prizes</#FFD23F>"
 
   platforms:
-    line2: "<white>Java</white> <#C9C9C9>&</#C9C9C9> <white>Bedrock</white> <#7A7A7A>|</#7A7A7A> <#C9C9C9>Versions</#C9C9C9> <#FFD23F>1.21.5 - 26.3</#FFD23F>"
+    line2: "<#9FC6E8>Java</#9FC6E8> <#C9C9C9>&</#C9C9C9> <#9FC6E8>Bedrock</#9FC6E8> <#7A7A7A>·</#7A7A7A> <#C9C9C9>versions</#C9C9C9> <#E4EBF0>1.21.5 - 26.3</#E4EBF0>"
 
   discord:
-    line2: "<#C9C9C9>Sneak peeks & updates:</#C9C9C9> <white>discord.skybornmc.net</white>"
+    line2: "<#C9C9C9>News & sneak peeks</#C9C9C9> <#7A7A7A>»</#7A7A7A> <#9FC6E8>discord.skybornmc.net</#9FC6E8>"
 
   # --- Launch / events (set these in 'active' when the time comes) ---
   season-live:

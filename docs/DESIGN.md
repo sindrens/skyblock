@@ -215,7 +215,7 @@ Four connected systems. **All custom tools, blueprints and skins are tradeable**
 
 | System | How it works |
 |---|---|
-| **Starter kit** (Quartermaster NPC at spawn) | Free basic custom pickaxe, axe, hoe, sword and rod. Re-claimable every 30 min if lost. The first step of the tutorial |
+| **Starter kit** (Quartermaster NPC at spawn) | Free basic custom pickaxe, axe, hoe, sword and rod. Re-claimable every 24 h if lost. The first step of the tutorial |
 | **The Forge** (blacksmith NPC at spawn) | Forges tier tools (pickaxe, axe, hoe, sword, rod) from **Depths materials + money**. Each Depths tier unlocks the next tool tier (Coal Pickaxe → Copper → Iron → … → Voidstone). Grinding a tier gives the materials for the next tool |
 | **Living tools** | Every custom tool gains XP when used and levels **1–50**. Levels give speed/fortune and unlock **perk slots** where custom enchants go (`/enchanter`, tokens). The tool remembers its stats (blocks mined, kills…) |
 | **Blueprints** | Rare drops in the Depths and from bosses (e.g. *Blueprint: Magma Pickaxe*, Epic). Blueprint + materials at the Forge = a special tool with a unique ability. Valuable trade items |

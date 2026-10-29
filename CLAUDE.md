@@ -18,6 +18,8 @@ This is a **large, long-term project** (launch in ~3 years). Quality beats speed
 
 ## Owner rules
 - **Never run tests or test servers without the owner's permission.** Write the code, build with `./gradlew build -x test`, and send/release it. The owner tests, or tells you when to run tests.
+- **The owner allows you to edit configs on the test server and run console commands** (via the deploy key, `tmux send-keys -t skyblock`) to verify a release, e.g. walk through the milestone checklist yourself. Always restore what you changed.
+- **Tab completion on every command and every argument, always** (players, offline players, modules, files, amounts, enum choices, sub-commands). No command ships without it.
 
 ## Releasing
 After every milestone: commit, push to GitHub and release with `server/scripts/deploy.sh` (uses the deploy key in `~/Development/.skyborn-claude/`). Send the owner the milestone's test checklist.

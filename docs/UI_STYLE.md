@@ -8,7 +8,21 @@ All colors, symbols and templates below live in a shared `style.yml` in `common`
 
 ## 1. Color palette
 
-Network: **SkybornMC** (`play.skybornmc.net`). Gamemode: **Phoenix Skyblock**, themed on the phoenix. This guide covers Phoenix Skyblock; the network brand (hub, website) is defined separately.
+Network: **SkybornMC** (`play.skybornmc.net`). Gamemode: **Phoenix Skyblock**, themed on the phoenix.
+
+**Two identities, one look (decided 2026-10-29 with the new logo):**
+- **SkybornMC (network) = frost blue**, taken from the logo (icy silver-blue S, steel-blue spiked plate, white cloud). Used for the network name, website, Discord, MOTD network parts, "Java & Bedrock", store/network info.
+- **Phoenix Skyblock (gamemode) = phoenix fire**, everything below. All gameplay UI (GUIs, scoreboard, items, chat) uses the fire palette.
+
+| Network name | Hex | Legacy | Use |
+|---|---|---|---|
+| `sky_frost` | `#E4EBF0` | white `§f` | Lightest: start of the SKYBORN gradient, highlights |
+| `sky_ice` | `#9FC6E8` | aqua `§b` | Main network color |
+| `sky_blue` | `#6CA1D6` | blue `§9` | "MC", network links |
+| `sky_steel` | `#49649E` | dark_blue `§1` | Separators/frames on network screens (never small text, too dark) |
+| `sky_cloud` | `#FBFCFF` | white `§f` | Cloud white |
+
+**SkybornMC gradient:** `<gradient:#E4EBF0:#9FC6E8:#6CA1D6>` (frost → ice → blue). Bedrock shows the first color, so it starts readable.
 Theme: **phoenix fire**, mainly **red**, balanced with ember orange, flame gold, deep charcoal and parchment, plus clear status colors. Red carries the identity (headers, borders, scoreboard, details); the other colors keep it readable and never monotone.
 
 **Balance rule:** in any GUI, message or HUD, red is the *frame* (title, borders, accents), not the body. Body text stays neutral (gray/white), values stay white, and actions stay flame gold. Roughly 30% red, 15% ember/gold, 55% neutral.
@@ -304,7 +318,7 @@ All sounds are configurable and can be muted in `/settings`.
 | Names | Network: **SkybornMC** (one word, capital S and MC). Gamemode: **Phoenix Skyblock**. Short form in chat: **Phoenix** |
 | Domain | `play.skybornmc.net` (Java + Bedrock), website `skybornmc.net`, store `store.skybornmc.net` |
 | Logo | A phoenix (owner's artwork). Needed: original file (PNG/SVG, transparent) |
-| SkybornMC logo | `branding/skybornmc-logo.svg` (+ 128/512/1024 PNG): a chunky 3D **red S** (white→red gradient, deep maroon extrusion, glossy bevel) with white feathered wings (gold coverts, small red tips), on a night-to-sunrise sky disc with a gold rim and red gems, a cloud ring, a small floating sky island, birds and gold/white sparkles. Colors: red `#FF3D2E`/`#B0141F`, maroon `#3D0710`, sky navy `#0B1E4C`→blue `#1F4FA8`→sunrise `#F2A65A`, gold `#E0A92E`, cloud white |
+| SkybornMC logo | **Owner's logo (2026-10-29):** `branding/skybornmc-logo-source.png` (transparent, cropped) + 128/512/1024 PNG. A chunky 3D **icy marble S** (frost white → ice blue, deep navy extrusion) on a scalloped steel-blue plate with silver spikes, white sparkles, sitting on a puffy white cloud. Colors: frost `#E4EBF0`, ice `#9FC6E8`, blue `#6CA1D6`, steel `#49649E`, navy `#192F66`, cloud `#FBFCFF`. Old red concept in `branding/old/` |
 | Server icon | `server/server-icon.png`, **64×64 PNG**: the SkybornMC S logo (deployed with the server configs) |
 | MOTD | Animated hex gradients from the `motd` module (`motd.yml`): 4 designs (coming soon, the phoenix rises, season live, double XP), rotation, auto-centering, hover info. Once the network has a proxy, the same module/config moves there |
 | Resource pack glyph | The phoenix as a font glyph (for chat prefix, scoreboard title, tab). Needs a Geyser mapping so Bedrock shows it too; until then, fall back to `✦` |
