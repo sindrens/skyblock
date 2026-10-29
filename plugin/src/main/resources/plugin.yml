@@ -340,4 +340,18 @@ permissions:
     default: true
   skyblock.report.bypass-cooldown:
     description: No cooldown between reports
+  skyblock.staff.logs:
+    description: Open the staff log viewer (/logs); which categories show depends on skyblock.staff.logs.category.*
+    default: op
+  skyblock.staff.logs.category.*:
+    description: See every log category in /logs
+    default: op
+  skyblock.staff.logs.staff:
+    description: Search what staff members did (/logs staff)
+    default: op
+  skyblock.staff.logs.export:
+    description: Export logs as CSV (/logs export, export buttons)
+    default: op
+  skyblock.staff.logs.teleport:
+    description: Teleport to the place of a log entry
     default: op

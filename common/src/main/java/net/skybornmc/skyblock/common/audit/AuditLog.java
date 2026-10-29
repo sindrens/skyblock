@@ -448,6 +448,11 @@ public final class AuditLog implements AutoCloseable {
 
     // ------------------------------------------------------------------------------------------------ stats
 
+    /** Largest page {@link #query} returns ({@code query.max-rows}); page through with this size. */
+    public int maxQueryRows() {
+        return config.maxQueryRows;
+    }
+
     /** Rows waiting to be written. */
     public int queued() {
         return queued.get();

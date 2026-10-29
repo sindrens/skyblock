@@ -1,0 +1,330 @@
+# Staff log viewer (/logs) texts. MiniMessage + style tags (style.yml). Placeholders are written as <name>.
+# Reload: /skyblock reload logs
+
+usage:
+  - "<prefix><c:value>Log viewer</c:value> <c:muted><sym:dot></c:muted> <c:text>search the audit log"
+  - " <c:ember><sym:bullet></c:ember> <c:value>/logs player <name> [category] [time]</c:value> <c:text>everything about a player"
+  - " <c:ember><sym:bullet></c:ember> <c:value>/logs pay <name> [other]</c:value> <c:text>money between players"
+  - " <c:ember><sym:bullet></c:ember> <c:value>/logs trade|chat|commands <name> [time]</c:value>"
+  - " <c:ember><sym:bullet></c:ember> <c:value>/logs island <name|id></c:value> <c:muted><sym:dot></c:muted> <c:value>/logs item <uuid></c:value>"
+  - " <c:ember><sym:bullet></c:ember> <c:value>/logs staff <name> [time]</c:value> <c:muted><sym:dot></c:muted> <c:value>/logs export <name|last></c:value>"
+  - " <c:ember><sym:bullet></c:ember> <c:value>/logs page <n></c:value> <c:text>next pages of your last search"
+
+title:
+  staff: "Staff"
+  logs: "Logs"
+  pick-player: "Pick a player"
+  category: "Category"
+
+# ------------------------------------------------------------------ hub (/logs)
+hub:
+  info:
+    - "<c:text>Choose <c:value>who</c:value> to look at, a <c:value>category</c:value>"
+    - "<c:text>and a <c:value>time range</c:value>, then press <c:success>Search</c:success>."
+    - "<c:muted>Shortcuts: /logs player, /logs pay, /logs chat ..."
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>Current search"
+    lore:
+      - "<c:text>Who: <c:value><subject>"
+      - "<c:text>Category: <c:value><categories>"
+      - "<c:text>Time: <c:value><range>"
+  selected:
+    - ""
+    - "<c:success><sym:check> Selected: <c:value><subject>"
+  online:
+    name: "<c:flame>Online player"
+    lore:
+      - "<c:text>Everything a player online now did"
+      - "<c:text>or had done to them."
+      - ""
+      - "<c:action>Click to pick a player"
+  any:
+    name: "<c:flame>Any player"
+    lore:
+      - "<c:text>Online or offline: type the name"
+      - "<c:text>in chat."
+      - ""
+      - "<c:action>Click to type a name"
+  staff:
+    name: "<c:flame>Staff member"
+    lore:
+      - "<c:text>Only what a staff member <c:value>did</c:value>."
+      - "<c:text>For accountability."
+      - ""
+      - "<c:action>Click to type a name"
+  near:
+    name: "<c:flame>Near me"
+    lore:
+      - "<c:text>Actions around where you stand."
+      - "<c:text>Change the radius below."
+      - ""
+      - "<c:action>Click to search around you"
+  item:
+    name: "<c:flame>Item"
+    lore:
+      - "<c:text>The full life of a unique item:"
+      - "<c:text>created, traded, sold, flagged as dupe."
+      - "<c:text>Uses the item in your hand, or type its id."
+      - ""
+      - "<c:action>Click to choose the item"
+  island:
+    name: "<c:flame>Island"
+    lore:
+      - "<c:text>Invites, kicks, roles, bank, upgrades."
+      - "<c:text>Type the owner's name or the island id."
+      - ""
+      - "<c:action>Click to type a name or id"
+  all:
+    name: "<c:flame>Everything"
+    lore:
+      - "<c:text>All actions on the server, newest first."
+      - ""
+      - "<c:action>Click to select"
+  category:
+    name: "<c:value>Category"
+    lore:
+      - "<c:text>Now: <c:value><categories>"
+      - ""
+      - "<c:action>Click to choose"
+  time:
+    name: "<c:value>Time range"
+    lore:
+      - "<c:text>Now: <c:value><range>"
+      - "<c:muted>Options: <options>"
+      - ""
+      - "<c:action>Click for the next range"
+  radius:
+    name: "<c:value>Radius"
+    lore:
+      - "<c:text>Now: <c:value><radius> blocks"
+      - "<c:muted>Options: <options>"
+      - ""
+      - "<c:action>Click for the next radius"
+  reset:
+    name: "<c:error>Reset"
+    lore:
+      - "<c:text>Clear who, category and time."
+      - ""
+      - "<c:action>Click to reset"
+  search:
+    name: "<c:success><bold>SEARCH</bold>"
+    lore:
+      - "<c:text>Show the logs of <c:value><subject></c:value>,"
+      - "<c:text>newest first."
+      - ""
+      - "<c:action>Click to search"
+  export:
+    name: "<c:value>Export as CSV"
+    lore:
+      - "<c:text>Saves every result of this search to"
+      - "<c:value>plugins/PhoenixSkyblock/exports/</c:value>"
+      - "<c:text>for appeals and evidence."
+      - ""
+      - "<c:action>Click to export"
+
+# ------------------------------------------------------------------ results
+results:
+  info:
+    - "<c:text>Newest first. <c:value>Hover</c:value> an entry for details."
+    - "<c:text>Left-click: teleport there (if it has a place)."
+    - "<c:text>Right-click: full details in chat."
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>Search"
+    lore:
+      - "<c:text>Who: <c:value><subject>"
+      - "<c:text>Category: <c:value><categories>"
+      - "<c:text>Time: <c:value><range>"
+      - ""
+      - "<c:text>Results: <c:value><total>"
+      - "<c:text>Page <c:value><page></c:value> of <c:value><pages>"
+  filters:
+    name: "<c:value>Change search"
+    lore:
+      - "<c:text>Back to who, category and time."
+      - ""
+      - "<c:action>Click to change"
+  chat:
+    name: "<c:value>Show in chat"
+    lore:
+      - "<c:text>Prints this page in chat, one line per"
+      - "<c:text>entry with hover details."
+      - ""
+      - "<c:action>Click to show"
+  refresh:
+    name: "<c:value>Refresh"
+    lore:
+      - "<c:text>Load the newest entries."
+      - ""
+      - "<c:action>Click to refresh"
+  export:
+    name: "<c:value>Export as CSV"
+    lore:
+      - "<c:text>Every result of this search, saved to"
+      - "<c:value>plugins/PhoenixSkyblock/exports/"
+      - ""
+      - "<c:action>Click to export"
+  empty:
+    name: "<c:text>No logs found"
+    lore:
+      - "<c:muted>Nothing matches this search."
+      - "<c:muted>Try a longer time range or All categories."
+
+# ------------------------------------------------------------------ category picker
+category-menu:
+  info:
+    - "<c:text>Search one category, or all you may see."
+    - "<c:muted>Which categories you see depends on your rank."
+  all:
+    name: "<c:flame>All categories"
+    lore:
+      - "<c:text>Every category you may see."
+  entry:
+    name: "<c:flame><category>"
+  selected:
+    - ""
+    - "<c:success><sym:check> Selected"
+  click:
+    - ""
+    - "<c:action>Click to select"
+  descriptions:
+    economy: ["<c:text>Payments, money given or taken, banks."]
+    trade: ["<c:text>Secure trades, with both sides."]
+    auction: ["<c:text>Auction listings, purchases, expiries."]
+    island: ["<c:text>Invites, kicks, roles, bank, upgrades."]
+    punishment: ["<c:text>Bans, mutes, unbans, warnings."]
+    staff: ["<c:text>What staff did: give, teleport, edit ..."]
+    config: ["<c:text>Config reloads and setting changes."]
+    command: ["<c:text>Every command players ran (30 days)."]
+    chat: ["<c:text>Chat and private messages (30 days)."]
+    item: ["<c:text>Item events and dupe alerts (30 days)."]
+    auth: ["<c:text>Joins and quits."]
+    world: ["<c:text>World events."]
+
+categories:
+  all: "All you can see"
+  separator: ", "
+  economy: "Economy"
+  trade: "Trade"
+  auction: "Auction"
+  island: "Island"
+  punishment: "Punishment"
+  staff: "Staff"
+  config: "Config"
+  command: "Commands"
+  chat: "Chat"
+  item: "Items"
+  auth: "Joins"
+  world: "World"
+
+ranges:
+  all: "All time"
+  last: "Last <range>"
+
+subjects:
+  all: "Everyone"
+  player: "<name>"
+  actor: "<name> (as actor)"
+  between: "<name> & <other>"
+  item: "Item <id>"
+  island: "Island <id>"
+  island-of: "<name>'s island"
+  near: "Near <x>, <z> (<radius>)"
+
+# ------------------------------------------------------------------ one entry
+entry:
+  name: "<c:flame><actor></c:flame> <c:text><action></c:text> <c:muted><sym:dot> <ago>"
+  time: "<c:muted><utc>"
+  who: "<c:value><actor></c:value> <c:ember><sym:arrow></c:ember> <c:value><target>"
+  who-solo: "<c:text>By <c:value><actor>"
+  amount: "<c:text>Amount: <c:value><amount>"
+  text: "<c:text>Text: <c:value><text>"
+  location: "<c:text>Where: <c:value><world> <x>, <y>, <z>"
+  details-header: "<c:ember>Details"
+  detail: " <c:muted>•</c:muted> <c:text><line>"
+  meta: "<c:muted>#<id> <sym:dot> <server> <sym:dot> season <season> <sym:dot> <raw-action>"
+  click-teleport: "<c:action>Click to teleport there"
+  right-click-chat: "<c:action>Right-click: full details in chat"
+  click-chat: "<c:action>Click: full details in chat"
+
+hover:
+  header: "<c:flame><category></c:flame> <c:muted><sym:dot> <utc>"
+  json: "<c:muted><line>"
+
+# ------------------------------------------------------------------ chat output
+chat:
+  loading: "<prefix><c:text>Searching the logs..."
+  header: "<prefix><c:value>Logs</c:value> <c:muted><sym:dot></c:muted> <c:value><subject></c:value> <c:muted><sym:dot></c:muted> <c:text><categories> <c:muted><sym:dot></c:muted> <c:text><range> <c:muted><sym:dot></c:muted> <c:value><total></c:value> <c:text>results"
+  empty: " <c:muted>No logs match this search.</c:muted>"
+  line: " <c:muted><ago></c:muted> <c:value><actor></c:value> <c:text><action></c:text><target-part><amount-part><text-part>"
+  target: " <c:value><target>"
+  amount: " <c:muted>(</c:muted><c:value><amount></c:value><c:muted>)</c:muted>"
+  text: "<c:muted>:</c:muted> <c:text><text>"
+  location: " <c:info>[<x>, <y>, <z>]"
+  location-hover: "<c:text>Teleport to <c:value><world> <x>, <y>, <z>"
+  previous: "<c:action>[« Previous]"
+  previous-off: "<c:muted>[« Previous]"
+  next: "<c:action>[Next <sym:arrow>]"
+  next-off: "<c:muted>[Next <sym:arrow>]"
+  footer: " <previous> <c:muted>Page <c:value><page></c:value>/<c:value><pages></c:value></c:muted> <next>"
+
+# ------------------------------------------------------------------ prompts (typed in chat)
+prompt:
+  player: "<prefix><c:text>Type the <c:value>player name</c:value> in chat. <c:muted>(<cancel> to cancel, <seconds>s)"
+  staff: "<prefix><c:text>Type the <c:value>staff member's name</c:value> in chat. <c:muted>(<cancel> to cancel, <seconds>s)"
+  item: "<prefix><c:text>Type the <c:value>item id</c:value> (UUID) in chat. <c:muted>(<cancel> to cancel, <seconds>s)"
+  island: "<prefix><c:text>Type the <c:value>owner's name</c:value> or the <c:value>island id</c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
+
+# ------------------------------------------------------------------ results of actions
+teleported: "<prefix><c:success><sym:check> Teleported to <c:value><world> <x>, <y>, <z></c:value>."
+export:
+  started: "<prefix><c:text>Exporting... <c:muted>you get a message when the file is ready."
+  done: "<prefix><c:success><sym:check> Exported <c:value><rows></c:value> rows to <c:value><file></c:value>. <c:muted>(max <max> per export)"
+  failed: "<prefix><c:error><sym:cross> The export failed: <c:value><reason></c:value>. Check the console."
+
+errors:
+  unknown-category: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a category. Choose one of: <c:value><choices>"
+  not-uuid: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not an item id. It looks like 2f1c0b6e-...-000000000000 (shift-hover the item or use the one in your hand)."
+  no-search: "<prefix><c:error><sym:cross> You have no search yet. Start one with <c:value>/logs</c:value>."
+  unknown-player: "<prefix><c:error><sym:cross> <c:value><input></c:value> has never played here. Check the spelling (Bedrock names start with a dot)."
+  no-access: "<prefix><c:error><sym:cross> Your rank can't see these logs. Pick another category."
+  search-failed: "<prefix><c:error><sym:cross> The search failed. Try again or check the console."
+  no-teleport: "<prefix><c:error><sym:cross> You can't teleport from logs."
+  no-export: "<prefix><c:error><sym:cross> Only admins can export logs."
+  world-unloaded: "<prefix><c:error><sym:cross> The world <c:value><world></c:value> is not loaded."
+
+# ------------------------------------------------------------------ readable actions ("Steve paid Alex $500")
+# Anything not listed is shown with underscores replaced by spaces.
+actions:
+  pay: "paid"
+  join: "joined"
+  quit: "left"
+  command: "ran"
+  chat: "said"
+  dm: "messaged"
+  staff_chat: "said in staff chat"
+  reload: "reloaded"
+  unban: "unbanned"
+  unban_ip: "unbanned IP"
+  ban: "banned"
+  mute: "muted"
+  kick: "kicked"
+  warn: "warned"
+  dupe: "flagged a dupe of"
+  logs_view: "viewed logs of"
+  logs_export: "exported logs of"
+  logs_teleport: "teleported from logs"
+  audit_purge: "archived old logs"
+  audit_export: "exported the audit log"
+  setting_change: "changed setting"
+  nick_set: "set nickname"
+  nick_remove: "removed nickname"
+  socialspy_on: "turned socialspy on"
+  socialspy_off: "turned socialspy off"
+  ignore: "ignored"
+  unignore: "unignored"
+  whois: "looked up"
+  setspawn: "set the spawn"
+  sudo_command: "forced a command on"
+  sudo_chat: "forced chat on"
+  trash: "trashed items"
+  repair: "repaired"

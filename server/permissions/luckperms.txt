@@ -192,3 +192,20 @@ lp group helper permission set skyblock.staff.freeze true
 lp group helper permission set skyblock.staff.mode true
 lp group helper permission set skyblock.report.bypass-cooldown true
 lp group admin permission set skyblock.staff.freeze.exempt true
+# Staff log viewer (/logs, M1.10): helper = chat/commands/joins, mod = + economy/trade/auction/island/item/punishment/world
+# and teleport, admin = + staff actions, export; owner = everything incl. config (owner has *).
+lp group helper permission set skyblock.staff.logs true
+lp group helper permission set skyblock.staff.logs.category.chat true
+lp group helper permission set skyblock.staff.logs.category.command true
+lp group helper permission set skyblock.staff.logs.category.auth true
+lp group mod permission set skyblock.staff.logs.category.economy true
+lp group mod permission set skyblock.staff.logs.category.trade true
+lp group mod permission set skyblock.staff.logs.category.auction true
+lp group mod permission set skyblock.staff.logs.category.island true
+lp group mod permission set skyblock.staff.logs.category.item true
+lp group mod permission set skyblock.staff.logs.category.punishment true
+lp group mod permission set skyblock.staff.logs.category.world true
+lp group mod permission set skyblock.staff.logs.teleport true
+lp group admin permission set skyblock.staff.logs.category.staff true
+lp group admin permission set skyblock.staff.logs.staff true
+lp group admin permission set skyblock.staff.logs.export true

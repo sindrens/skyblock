@@ -24,6 +24,8 @@ public final class AuditQuery {
     private String actorName;
     private String target;
     private UUID actorOrTarget;
+    private UUID betweenA;
+    private UUID betweenB;
     private final Set<AuditCategory> categories = EnumSet.noneOf(AuditCategory.class);
     private final Set<String> actions = new LinkedHashSet<>();
     private Long from;
@@ -68,6 +70,13 @@ public final class AuditQuery {
     /** Rows where this player is the actor <b>or</b> the target ("everything about Steve"). */
     public AuditQuery involving(UUID player) {
         this.actorOrTarget = player;
+        return this;
+    }
+
+    /** Rows between two players in either direction (A did it to B, or B to A), e.g. payments between them. */
+    public AuditQuery between(UUID a, UUID b) {
+        this.betweenA = a;
+        this.betweenB = b;
         return this;
     }
 
@@ -117,6 +126,12 @@ public final class AuditQuery {
         return this;
     }
 
+    /** A copy of this filter for another page (used by exports and chat paging). */
+    public AuditQuery copyPage(int page, int size) {
+        int lim = Math.max(1, size);
+        return withPage(Math.max(0, page) * lim, lim);
+    }
+
     int limit() {
         return limit;
     }
@@ -131,6 +146,8 @@ public final class AuditQuery {
         copy.actorName = actorName;
         copy.target = target;
         copy.actorOrTarget = actorOrTarget;
+        copy.betweenA = betweenA;
+        copy.betweenB = betweenB;
         copy.categories.addAll(categories);
         copy.actions.addAll(actions);
         copy.from = from;
@@ -168,6 +185,13 @@ public final class AuditQuery {
             sql.append(" AND (actor_uuid = ? OR target = ?)");
             params.add(actorOrTarget);
             params.add(actorOrTarget.toString());
+        }
+        if (betweenA != null && betweenB != null) {
+            sql.append(" AND ((actor_uuid = ? AND target = ?) OR (actor_uuid = ? AND target = ?))");
+            params.add(betweenA);
+            params.add(betweenB.toString());
+            params.add(betweenB);
+            params.add(betweenA.toString());
         }
         if (!categories.isEmpty()) {
             sql.append(" AND category IN (").append("?,".repeat(categories.size() - 1)).append("?)");
