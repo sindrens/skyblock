@@ -51,10 +51,14 @@ class MotdRendererTest {
         var stream = Objects.requireNonNull(getClass().getResourceAsStream("/motd.yml"));
         YamlConfiguration config = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
         ConfigurationSection motds = config.getConfigurationSection("motds");
-        assertEquals(4, motds.getKeys(false).size());
+        String header = config.getString("header");
+        assertTrue(header != null && !header.isBlank(), "shared header exists");
+        assertFalse(motds.getKeys(false).isEmpty());
         for (String id : motds.getKeys(false)) {
             for (String key : new String[]{"line1", "line2"}) {
-                Component line = renderer.line(motds.getString(id + "." + key), 0.5, false);
+                String template = motds.getString(id + "." + key, "line1".equals(key) ? header : null);
+                assertTrue(template != null, id + "." + key + " is set");
+                Component line = renderer.line(template, 0.5, false);
                 String plain = PlainTextComponentSerializer.plainText().serialize(line);
                 assertFalse(plain.contains("<") || plain.contains("{phase}"), id + "." + key + " has unparsed tags: " + plain);
                 assertTrue(MotdRenderer.width(line) <= MotdRenderer.LINE_WIDTH,

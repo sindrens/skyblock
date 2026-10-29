@@ -94,6 +94,7 @@ public final class MotdModule implements SkyblockModule, Listener {
         }
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 
+        String header = config.getString("header", "");
         ConfigurationSection motds = config.getConfigurationSection("motds");
         List<Motd> chosen = new ArrayList<>();
         for (String id : config.getStringList("active")) {
@@ -102,7 +103,7 @@ public final class MotdModule implements SkyblockModule, Listener {
                 plugin.getLogger().warning("motd.yml: active MOTD '" + id + "' does not exist.");
                 continue;
             }
-            chosen.add(new Motd(id, section.getString("line1", ""), section.getString("line2", "")));
+            chosen.add(new Motd(id, section.getString("line1", header), section.getString("line2", "")));
         }
 
         LegacyComponentSerializer legacy = LegacyComponentSerializer.legacySection();
