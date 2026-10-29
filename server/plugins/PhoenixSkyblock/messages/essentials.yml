@@ -198,8 +198,8 @@ menu-item:
   coming-soon: "<prefix><c:text>The main menu is coming soon."
 
 build:
-  on: "<prefix><c:warning>Build mode <c:success>on</c:success><c:warning>: you can change protected worlds. <c:muted>/build to turn it off."
-  off: "<prefix><c:text>Build mode <c:error>off</c:error>."
+  "on": "<prefix><c:warning>Build mode <c:success>on</c:success><c:warning>: you can change protected worlds. <c:muted>/build to turn it off."
+  "off": "<prefix><c:text>Build mode <c:error>off</c:error>."
   hint: "<c:muted>Protected area <sym:dot> use </c:muted><c:value>/build</c:value><c:muted> to edit</c:muted>"
 
 setspawn:

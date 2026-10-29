@@ -10,6 +10,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **Phase 2 started:** M2.1 islands (grid, /is, FAWE/placeholder starter island, borders, home) merged.
 - **M3.1 economy core** merged (EconomyService in common, /bal /baltop /pay /transactions /eco). **M4.5 skills** merged (SkillService in common, /skills).
 - Before each release run `python3 tools/sync_server_configs.py` (tracked server configs follow module resources).
+- **M2.2 island protection** merged. **Phase P** (owner's punishment spec) added as its own phase with priority; spec in `docs/specs/`.
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -27,7 +28,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- M2.2 island protection
+- P0 punishment/staff bug fixes
 - M3.6 auction house
 - M4.1 Depths layout
 

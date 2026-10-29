@@ -46,6 +46,8 @@
 - **M2.1 islands:** 512×512 spiral grid, `/is` create (confirm menu, FAWE schematic or placeholder Ember Meadow), starter chest, `/is home`, `/is sethome`, per-player island borders, void rescue, basic protection, IslandService + placeholders.
 - **M3.1 economy:** money/tokens/gems/shards, atomic ledger, EconomyService, `/bal`, `/baltop`, `/pay` (confirm ≥ $1M), `/transactions`, `/eco`, $1,000 start balance.
 - **M4.5 skills:** Mining/Foraging XP from The Depths, Combat XP from kills, level-ups, `/skills`, settings toggle for the XP bar.
+- **M2.2 island protection:** role permissions (Leader/Mod/Member/Coop/visitor, 14 actions), Y 0–256, cross-border protection, PvP off, portals off, `/is bypass`.
+- **Fix:** YAML keys `yes/no/on/off` were read as booleans, so some texts showed `[missing: …]` (confirm buttons, staff mode on/off, toggles); all quoted + `YamlKeysTest`.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.

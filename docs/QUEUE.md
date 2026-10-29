@@ -10,11 +10,26 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` | — | common/command, plugin, server/permissions, scripts | ✅ |
 | F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | ⬜ |
 
+## Phase P: Punishment system v2 (owner spec `docs/specs/PUNISH_SPEC.md` + `PUNISH_SPEC_NOTES.md`) — one lane (modules/moderation), sequential, priority
+| # | Item | Depends on | Lane | Status |
+|---|---|---|---|---|
+| P0 | Bugs: freeze doesn't stop movement (and after relog), frozen player must not break/chat/do anything; staff-mode vanish item placeholder name; spyglass tool zooms; YAML boolean keys (fixed in main) | — | modules/staff, modules/essentials (vanish) | 🔄 |
+| P1 | Spec §1–11: `/p` single-screen menu from YAML, warn counter + rules (notify/auto), `/warns`, validation + safe reload + build test of tracked YAML; release script pulls owner's GitHub edits | P0 | modules/moderation, server/scripts | ⬜ |
+| P2 | §12.1 undo, §12.2 double-punish, §12.3 offence expiry, §12.10 `/pstats` | P1 | modules/moderation | ⬜ |
+| P3 | §12.4 evidence, 12.5 notes, 12.6 ack, 12.7 weights, 12.8 suggestion API, 12.9 report link, 12.11 Discord sink, 12.12 `/mypunishments` | P2 | modules/moderation, modules/staff (report API), common (DiscordSink) | ⬜ |
+| P4 | §13.4 approval, 13.13 mute ended, 13.7 probation, 13.5 watchlist | P3 | modules/moderation | ⬜ |
+| P5 | §13.8 bulk, 13.11 punish from logs, 13.10 appeals (in-game + webhook) | P4 | modules/moderation, modules/logs (API) | ⬜ |
+| P6 | §13.9 raid lockdown, 13.3 anticheat suggestions (`/psuggest`, Grim config notes), 13.12 network-ready | P5 | modules/moderation, server/CONFIG_NOTES.md | ⬜ |
+| P7 | §13.1 sanctions (economy SanctionProvider), 13.2 island punishments | P6, M2.3 | modules/moderation, modules/economy, modules/islands | ⬜ |
+| P8 | §14.2 rule numbers, 14.9 notification settings, 14.6 training mode | P7 | modules/moderation | ⬜ |
+| P9 | §14.1 guard + rollback, 14.5 false reports, 14.10 purge | P8 | modules/moderation, modules/staff | ⬜ |
+| P10 | §14.8 monthly report, 14.11 "Honorable" title | P9 | modules/moderation, modules/cosmetics | ⬜ |
+
 ## Phase 2: Islands (docs/phases/PHASE-2-ISLANDS.md) — one lane, sequential
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | M2.1 | Grid, creation (FAWE placeholder schematic), 3×3 chunks, per-player border, home | Phase 1 | modules/islands | ✅ |
-| M2.2 | Protection (role perms, Y 0–256, cross-border) | M2.1 | modules/islands | 🔄 |
+| M2.2 | Protection (role perms, Y 0–256, cross-border) | M2.1 | modules/islands | ✅ |
 | M2.3 | Members & roles, invites (solo→team warning), coop, limits | M2.2 | modules/islands | ⬜ |
 | M2.4 | Visiting, lock, ban, warps, ratings | M2.3 | modules/islands | ⬜ |
 | M2.5 | Island menu + settings, `/is chat` | M2.3 | modules/islands | ⬜ |

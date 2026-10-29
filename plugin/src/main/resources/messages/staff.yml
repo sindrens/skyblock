@@ -4,8 +4,8 @@ command-missing: "<prefix><c:error><sym:cross> <c:value>/<command></c:value> isn
 
 # --- Staff mode (/staffmode) ---
 mode:
-  on: "<prefix><c:success><sym:check> <c:text>Staff mode <c:success>on</c:success>. <c:muted>Your inventory is saved; /staffmode to leave."
-  off: "<prefix><c:text>Staff mode <c:error>off</c:error>. <c:muted>Your inventory is back."
+  "on": "<prefix><c:success><sym:check> <c:text>Staff mode <c:success>on</c:success>. <c:muted>Your inventory is saved; /staffmode to leave."
+  "off": "<prefix><c:text>Staff mode <c:error>off</c:error>. <c:muted>Your inventory is back."
   staff-on: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>entered staff mode."
   staff-off: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>left staff mode."
   save-failed: "<prefix><c:error><sym:cross> Staff mode was cancelled: your inventory couldn't be saved to the database. Nothing was lost."
@@ -30,10 +30,10 @@ tool:
     name: "<c:ember><bold>Logs here</bold></c:ember> <c:muted><sym:dot> Right-click"
     lore: ["<c:text>Recent actions around you.", "", "<c:action><sym:bullet> Right-click"]
   vanish:
-    on:
+    "on":
       name: "<c:success><bold>Vanished</bold></c:success> <c:muted><sym:dot> Right-click"
       lore: ["<c:text>Players can't see you.", "", "<c:action><sym:bullet> Right-click to show yourself"]
-    off:
+    "off":
       name: "<c:muted><bold>Visible</bold></c:muted> <c:muted><sym:dot> Right-click"
       lore: ["<c:warning>Players can see you!", "", "<c:action><sym:bullet> Right-click to vanish"]
   punish:

@@ -74,8 +74,8 @@ protection:
     spawners: "change spawners"
 
 bypass:
-  on: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>Logged. /is bypass to turn it off."
-  off: "<prefix><c:success><sym:check> <c:text>Island bypass <c:value>off</c:value>."
+  "on": "<prefix><c:warning><sym:bullet></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>Logged. /is bypass to turn it off."
+  "off": "<prefix><c:success><sym:check> <c:text>Island bypass <c:value>off</c:value>."
 
 void:
   rescued: "<c:ember><sym:bullet></c:ember> <c:text>Caught you! Back on solid ground."

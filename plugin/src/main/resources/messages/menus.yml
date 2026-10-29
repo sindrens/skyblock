@@ -49,8 +49,8 @@ empty:
   lore: ["<c:muted>This list fills up as you play."]
 
 toggle:
-  on: ["", "<c:text>Status: <c:success><sym:check> Enabled"]
-  off: ["", "<c:text>Status: <c:error><sym:cross> Disabled"]
+  "on": ["", "<c:text>Status: <c:success><sym:check> Enabled"]
+  "off": ["", "<c:text>Status: <c:error><sym:cross> Disabled"]
   action: ["", "<c:action><sym:bullet> Click to switch"]
 
 confirm:
@@ -58,11 +58,11 @@ confirm:
   shown:
     name: "<c:warning>Please confirm"
     lore: ["<c:text>Check the details on the green button."]
-  yes:
+  "yes":
     name: "<c:success><sym:check> Confirm"
     lore-top: ["<c:text>This will:"]
     lore: ["", "<c:action><sym:bullet> Click to confirm"]
-  no:
+  "no":
     name: "<c:error><sym:cross> Cancel"
     lore: ["<c:text>Nothing will change.", "", "<c:action><sym:bullet> Click to cancel"]
 
