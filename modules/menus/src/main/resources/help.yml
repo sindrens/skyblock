@@ -396,6 +396,12 @@ topics:
         lines:
           - "<c:text>Fell into the void? No worries: you land"
           - "<c:text>back on your island without damage."
+      - title: "<c:value>Starting over"
+        lines:
+          - "<c:text>The leader can delete the island with"
+          - "<c:value>/is disband</c:value><c:text>: confirm, then type the word."
+          - "<c:text>Members are removed. You can create"
+          - "<c:text>a new island after a short cooldown."
   money:
     icon: gold_ingot
     aliases: [economy, balance, bal, pay, baltop, transactions, currencies]

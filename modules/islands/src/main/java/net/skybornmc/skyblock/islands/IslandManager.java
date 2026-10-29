@@ -51,6 +51,8 @@ final class IslandManager implements IslandService {
     private final Map<UUID, Island> byId = new ConcurrentHashMap<>();
     private final Map<Long, Island> bySlot = new ConcurrentHashMap<>();
     private final Map<UUID, Island> byMember = new ConcurrentHashMap<>();
+    /** State of every slot ever handed out (M2.7: admin overview, tab completion of slot ids). Slot id = spiral index. */
+    private final Map<Integer, SlotState> slotStates = new ConcurrentHashMap<>();
     /** O(1) allocation-free "island at block" for protection (main thread only). */
     private final Territory territory = new Territory();
     private RolePermissions rolePermissions = RolePermissions.none();
@@ -106,6 +108,10 @@ final class IslandManager implements IslandService {
         bySlot.clear();
         byMember.clear();
         territory.clear();
+        slotStates.clear();
+        for (IslandStore.SlotRow row : store.slotsBlocking()) {
+            slotStates.put(row.id(), SlotState.byKey(row.state()).orElse(SlotState.CLEARING));
+        }
         for (Island island : store.loadAllBlocking(config.world)) {
             index(island);
         }
@@ -117,6 +123,55 @@ final class IslandManager implements IslandService {
         bySlot.put(IslandGrid.key(island.gridX(), island.gridZ()), island);
         territory.put(island);
         island.members().keySet().forEach(member -> byMember.put(member, island));
+        slotStates.put(island.slotId(), SlotState.USED);
+    }
+
+    /**
+     * Removes an island from every cache (M2.7, after the database removed it): lookups, territory (protection now
+     * treats its slot as void), member index and coop players. The slot becomes {@code clearing}.
+     */
+    void deindex(Island island) {
+        byId.remove(island.id(), island);
+        bySlot.remove(IslandGrid.key(island.gridX(), island.gridZ()), island);
+        territory.remove(island);
+        byMember.values().removeIf(value -> value == island);
+        island.clearCoops();
+        slotStates.put(island.slotId(), SlotState.CLEARING);
+    }
+
+    /** Updates the cached state of a slot (the clearer freed it). */
+    void slotState(int slotId, SlotState state) {
+        slotStates.put(slotId, state);
+    }
+
+    /** Cached state of a slot, or empty if it was never handed out. */
+    Optional<SlotState> slotState(int slotId) {
+        return Optional.ofNullable(slotStates.get(slotId));
+    }
+
+    /** Ids of every slot ever handed out, ascending (tab completion). */
+    List<Integer> slotIds() {
+        return slotStates.keySet().stream().sorted().toList();
+    }
+
+    /** Number of slots per state (admin overview). */
+    Map<SlotState, Integer> slotCounts() {
+        Map<SlotState, Integer> counts = new java.util.EnumMap<>(SlotState.class);
+        for (SlotState state : SlotState.values()) {
+            counts.put(state, 0);
+        }
+        slotStates.values().forEach(state -> counts.merge(state, 1, Integer::sum));
+        return counts;
+    }
+
+    /** The active island in grid cell gx/gz, or null. */
+    Island islandInCell(int gridX, int gridZ) {
+        return territory.inCell(gridX, gridZ);
+    }
+
+    /** True while {@code player}'s island is being built (creation or rebuild). */
+    boolean isBuilding(UUID player) {
+        return building.contains(player);
     }
 
     // ------------------------------------------------------------------ lookups (internal, fast)
@@ -259,6 +314,21 @@ final class IslandManager implements IslandService {
 
     int count() {
         return byId.size();
+    }
+
+    /** Re-sends (or removes) the border of players in the islands world after {@code island} changed or was removed. */
+    void refreshBorders(Island island) {
+        if (borders != null) {
+            borders.refresh(island);
+        }
+    }
+
+    /** The owner's name (cached on the island; main thread or tab completion). */
+    String ownerName(Island island) {
+        if (island.ownerName() == null) {
+            island.ownerName(name(island.owner()));
+        }
+        return island.ownerName();
     }
 
     /** The island name shown to players: the custom name, or "&lt;owner&gt;'s Island". */
@@ -520,8 +590,30 @@ final class IslandManager implements IslandService {
         }, main);
     }
 
+    /**
+     * Staff reset (M2.7): a new island for {@code owner} right away (no creation cooldown). Built and entered at once when
+     * the owner is online; otherwise built the next time they use {@code /is} (offline islands are never loaded).
+     */
+    CompletableFuture<IslandStore.CreateResult> createFor(UUID owner, Actor actor) {
+        return store.create(owner, config.seasonId, config.startSize(), 0, config.world).thenApplyAsync(result -> {
+            if (result instanceof IslandStore.CreateResult.Created created) {
+                Island island = created.island();
+                island.ownerName(name(owner));
+                index(island);
+                core.audit().log(AuditCategory.ISLAND, "island_create", actor, island.id().toString(), displayName(island), null,
+                        new Location(Bukkit.getWorld(island.world()), island.centerX(), config.surfaceY, island.centerZ()),
+                        Map.of("slot", island.slotId(), "grid_x", island.gridX(), "grid_z", island.gridZ(),
+                                "size", island.sizeChunks(), "season", island.seasonId(), "reset", true));
+                if (Bukkit.getPlayer(owner) != null && !building.contains(owner)) {
+                    buildAndArrive(owner, island, true);
+                }
+            }
+            return result;
+        }, main);
+    }
+
     /** Builds (or rebuilds after a crash) the starter islet, saves the home and brings {@code playerId} there. */
-    private void buildAndArrive(UUID playerId, Island island, boolean created) {
+    void buildAndArrive(UUID playerId, Island island, boolean created) {
         building.add(playerId);
         builder.build(island).whenCompleteAsync((build, error) -> {
             building.remove(playerId);

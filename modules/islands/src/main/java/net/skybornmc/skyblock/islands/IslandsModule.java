@@ -31,7 +31,8 @@ import java.util.Set;
  * permission protection ({@link IslandProtection}), cross-border rules ({@link BorderProtection}), Y 0-256 build limit,
  * PvP off, staff {@code /is bypass}. M2.3: members and roles ({@link MemberManager}: invite with the Team Island warning,
  * accept/deny, kick, leave, promote/demote, transfer, coop/uncoop, {@code /is members} and the permission matrix,
- * join limits). Publishes {@link IslandService} and the placeholders {@code island_name},
+ * join limits). M2.7: lifecycle ({@link IslandLifecycle}: {@code /is disband}, slot clearing by {@link IslandClearer}) and
+ * the staff tools {@code /isadmin} ({@link IslandAdmin}). Publishes {@link IslandService} and the placeholders {@code island_name},
  * {@code island_level} and {@code island_rank}.
  */
 public final class IslandsModule implements SkyblockModule, Listener {
@@ -49,6 +50,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandBorders borders;
     private IslandProtection protection;
     private BorderProtection borderProtection;
+    private IslandLifecycle lifecycle;
     private RolePermissions rolePermissions = RolePermissions.none();
     private net.skybornmc.skyblock.common.util.Scheduler.Task sweepTask;
 
@@ -82,6 +84,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
         manager.borders(borders);
         protection = new IslandProtection(this, manager);
         borderProtection = new BorderProtection(this, manager, protection);
+        lifecycle = new IslandLifecycle(this, manager);
+        lifecycle.load();
         Bukkit.getPluginManager().registerEvents(borders, core.plugin());
         Bukkit.getPluginManager().registerEvents(protection, core.plugin());
         Bukkit.getPluginManager().registerEvents(borderProtection, core.plugin());
@@ -90,6 +94,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         core.services().register(ID, IslandService.class, manager);
         registerPlaceholders();
         registerCommands();
+        new IslandAdmin(this, manager, lifecycle, protection).register();
         Bukkit.getOnlinePlayers().forEach(borders::update);
         if (Bukkit.getWorld(config.world) == null) {
             core.plugin().getLogger().warning("Islands: world '" + config.world + "' is not loaded; /is can't create islands.");
@@ -114,6 +119,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
 
     @Override
     public void disable() {
+        if (lifecycle != null) {
+            lifecycle.stop();
+        }
         if (borders != null) {
             borders.clearAll();
             HandlerList.unregisterAll(borders);
@@ -173,6 +181,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
 
     ModuleMessages msg() {
         return msg;
+    }
+
+    IslandLifecycle lifecycle() {
+        return lifecycle;
     }
 
     List<StarterItems.Entry> starterItems() {
@@ -268,6 +280,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("members").description("Your island's members, roles and permissions").permission(PERM_USE)
                         .playerOnly().example("is members")
                         .executes(ctx -> members.openMembers(ctx.player())))
+                .sub(CommandSpec.sub("disband").description("Delete your island for good (leader; confirm + type the word)")
+                        .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(3)).example("is disband")
+                        .executes(ctx -> lifecycle.disband(ctx.player())))
                 .sub(CommandSpec.sub("sethome").description("Set your island home where you stand (leader/mod)").permission(PERM_USE).playerOnly()
                         .cooldown(Duration.ofSeconds(3)).example("is sethome")
                         .executes(ctx -> manager.setHome(ctx.player())))
