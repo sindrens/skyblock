@@ -63,6 +63,19 @@ class ChatLogicTest {
     }
 
     @Test
+    void stripColorsKeepsTextAndHover() {
+        var hover = net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("tip"));
+        var colored = net.kyori.adventure.text.Component.text("Hi ", net.kyori.adventure.text.format.NamedTextColor.RED)
+                .append(net.kyori.adventure.text.Component.text("item").hoverEvent(hover)
+                        .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        var plain = ChatModule.stripColors(colored);
+        assertNull(plain.color());
+        assertNull(plain.children().getFirst().color());
+        assertEquals(hover, plain.children().getFirst().hoverEvent());
+        assertEquals("Hi item", net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(plain));
+    }
+
+    @Test
     void teamNamesSortByWeightThenName() {
         String owner = TabService.teamName(100, "Zed");
         String mod = TabService.teamName(20, "Alex");

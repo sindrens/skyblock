@@ -32,6 +32,9 @@ final class Display {
         this.config = config;
     }
 
+    /** Parsed legacy prefixes ({@code "&c&lADMIN &c"} → Component); a handful of ranks, so this stays tiny. */
+    private final java.util.Map<String, Component> legacyPrefixes = new java.util.concurrent.ConcurrentHashMap<>();
+
     /** LuckPerms prefix ({@code &} codes like Essentials, or MiniMessage), empty if the rank has none. */
     Component rank(Audience viewer, Player player) {
         String prefix = core.ranks().prefix(player);
@@ -39,9 +42,33 @@ final class Display {
             return Component.empty();
         }
         if (LegacyColors.hasCodes(prefix) || prefix.indexOf('<') < 0) {
-            return LegacyColors.toComponent(prefix);
+            if (legacyPrefixes.size() > 256) {
+                legacyPrefixes.clear();
+            }
+            return legacyPrefixes.computeIfAbsent(prefix, LegacyColors::toComponent);
         }
         return core.messages().parse(viewer, prefix);
+    }
+
+    /**
+     * Cheap fingerprint of everything that changes how a player looks (no parsing, no components built): prefix, rank
+     * color, weight, display name, AFK, title, tag. When it is unchanged, nothing needs to be rebuilt or resent.
+     */
+    String key(Player player) {
+        TextColor color = color(player);
+        return core.ranks().prefix(player) + '\u0000' + color.value() + '\u0000' + core.ranks().weight(player) + '\u0000'
+                + (hasNick(player) ? PlainTextComponentSerializer.plainText().serialize(player.displayName())
+                        + player.displayName().hashCode() : "") + '\u0000'
+                + afk(player) + '\u0000' + hookText(player, "title") + '\u0000' + hookText(player, "tag");
+    }
+
+    private String hookText(Player player, String key) {
+        return core.placeholders().has(key) ? core.placeholders().text(player, key).orElse("") : "";
+    }
+
+    /** Forgets cached prefix components (reload / LuckPerms prefix edits). */
+    void clearCache() {
+        legacyPrefixes.clear();
     }
 
     /** The rank's name color: hex {@code color} meta, else the prefix color, else gray. */

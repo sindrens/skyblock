@@ -17,6 +17,9 @@ import net.skybornmc.skyblock.common.command.CommandService;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.placeholder.Placeholder;
+import net.skybornmc.skyblock.common.settings.PlayerSettings;
+import net.skybornmc.skyblock.common.settings.SettingCategory;
+import net.skybornmc.skyblock.common.settings.SettingToggle;
 import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.text.LegacyColors;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
@@ -68,8 +71,12 @@ public final class ChatModule implements SkyblockModule, Listener {
     static final String PERM_STAFF_CHAT = "skyblock.staff.chat";
     static final String PERM_TAB_STAFF = "skyblock.staff.tab";
 
-    /** Player setting read for mention sounds ({@code /settings} toggles it in M1.7). */
-    static final String SETTING_MENTIONS = "chat.mentions";
+    // /settings toggles (PlayerSettings service from the menus module; ids match its "coming soon" placeholders)
+    static final String SETTING_MENTIONS = "mentions-sound";
+    static final String SETTING_COLORS = "chat-colors";
+    static final String SETTING_TIMESTAMPS = "chat-timestamps";
+    private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
+            .withZone(ZoneId.systemDefault());
 
     private static final Pattern ITEM_TOKEN = Pattern.compile("(?i)\\[(?:item|i)]");
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
@@ -90,6 +97,7 @@ public final class ChatModule implements SkyblockModule, Listener {
     private final Set<UUID> staffChatToggled = ConcurrentHashMap.newKeySet();
     private volatile boolean locked;
     private volatile int slowSeconds;
+    private volatile PlayerSettings settings;
 
     public ChatModule(Core core) {
         this.core = core;
@@ -113,18 +121,44 @@ public final class ChatModule implements SkyblockModule, Listener {
         registerPlaceholders();
         registerCommands();
         tab.start();
+        // The menus module (which publishes PlayerSettings) enables after us; register our toggles one tick later.
+        core.scheduler().later("chat:settings", 1L, this::registerSettings);
+    }
+
+    private void registerSettings() {
+        PlayerSettings service = core.services().optional(PlayerSettings.class).orElse(null);
+        if (service == null) {
+            return;
+        }
+        service.register(new SettingToggle(ID, SETTING_MENTIONS, SettingCategory.CHAT, Material.BELL, true, null,
+                "navigation", "settings.toggles." + SETTING_MENTIONS, false));
+        service.register(new SettingToggle(ID, SETTING_COLORS, SettingCategory.CHAT, Material.RED_DYE, true, null,
+                "navigation", "settings.toggles." + SETTING_COLORS, false));
+        service.register(new SettingToggle(ID, SETTING_TIMESTAMPS, SettingCategory.CHAT, Material.CLOCK, false, null,
+                "navigation", "settings.toggles." + SETTING_TIMESTAMPS, false));
+        settings = service;
+    }
+
+    /** A /settings value, or the default while the settings service is not available. */
+    private boolean setting(UUID player, String id, boolean fallback) {
+        PlayerSettings s = settings;
+        return s == null ? fallback : s.get(player, id);
     }
 
     @Override
     public void reload() {
         core.configs().load(config);
         core.messages().load(ID);
-        tab.restartTask();
-        Bukkit.getOnlinePlayers().forEach(tab::update);
+        tab.reloaded();
     }
 
     @Override
     public void disable() {
+        PlayerSettings s = settings;
+        if (s != null) {
+            s.unregisterAll(ID);
+            settings = null;
+        }
         tab.stop();
         HandlerList.unregisterAll(this);
         HandlerList.unregisterAll(tab);
@@ -406,10 +440,18 @@ public final class ChatModule implements SkyblockModule, Listener {
                     .hoverEvent(HoverEvent.showText(hover(viewer, player)))
                     .clickEvent(ClickEvent.suggestCommand("/msg " + player.getName() + " "));
             Component body = message;
-            if (config.mentions && viewer instanceof Player target && !target.equals(player)) {
+            Player target = viewer instanceof Player t ? t : null;
+            if (target != null && !setting(target.getUniqueId(), SETTING_COLORS, true)) {
+                body = stripColors(body);
+            }
+            if (config.mentions && target != null && !target.equals(player)) {
                 body = highlight(target, body);
             }
-            return core.messages().parse(viewer, config.chatFormat, display.chatParts(viewer, player, name, body));
+            Component line = core.messages().parse(viewer, config.chatFormat, display.chatParts(viewer, player, name, body));
+            if (target != null && setting(target.getUniqueId(), SETTING_TIMESTAMPS, false)) {
+                line = msg.component(viewer, "timestamp", Msg.p("time", CLOCK.format(Instant.now()))).append(line);
+            }
+            return line;
         });
         if (config.mentions) {
             String plain = PlainTextComponentSerializer.plainText().serialize(event.message());
@@ -426,7 +468,18 @@ public final class ChatModule implements SkyblockModule, Listener {
     }
 
     private boolean wantsMentions(Player p) {
-        return core.players().get(p.getUniqueId()).map(d -> !"false".equals(d.setting(SETTING_MENTIONS, "true"))).orElse(true);
+        return setting(p.getUniqueId(), SETTING_MENTIONS, true);
+    }
+
+    /** Removes colors and decorations (keeps hover/click, e.g. [item] tooltips) for players who turned chat colors off. */
+    static Component stripColors(Component component) {
+        net.kyori.adventure.text.format.Style style = net.kyori.adventure.text.format.Style.style()
+                .hoverEvent(component.hoverEvent()).clickEvent(component.clickEvent()).build();
+        List<Component> children = new ArrayList<>(component.children().size());
+        for (Component child : component.children()) {
+            children.add(stripColors(child));
+        }
+        return component.style(style).children(children);
     }
 
     static boolean mentions(String text, String name) {
@@ -434,9 +487,6 @@ public final class ChatModule implements SkyblockModule, Listener {
     }
 
     private Component highlight(Player target, Component body) {
-        if (!wantsMentions(target)) {
-            return body;
-        }
         Pattern pattern = Pattern.compile("(?i)(?<![\\w])@?" + Pattern.quote(target.getName()) + "(?![\\w])");
         Component styled = msg.component(target, "mention", Msg.p("name", target.getName()));
         return body.replaceText(TextReplacementConfig.builder().match(pattern).replacement(styled).build());
