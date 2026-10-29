@@ -253,6 +253,8 @@ islands world: one 512×512 slot per island, spiral from 0,0     outposts world:
 
 **Distances and the border problem (critique):** each tier zone is about 80 × 80 blocks plus a 20–40 block causeway between zones, so 12 Mine tiers in a straight line reach about X -1,400. A 2000 border (radius 1000) can't hold that. **Recommended:** each wing **bends into a U**: go out 6 tiers, turn, come back 6 tiers on a parallel causeway ~60 blocks away. Everything then fits in radius ~800, and late tiers end near the Gate (nice for high-level players). Alternative: raise the border in `worlds.yml` to 3,200. (assumption; §14 Q4)
 
+**Where the coordinates live (M4.1):** the plugin ships this layout in `plugins/PhoenixSkyblock/zones.yml` (every zone's cuboid, field cuboids, gate opening, exit, causeway, arrival pad, the boss portal and arena) and builds a code placeholder of it with `/depths generate`. Build on top of the placeholder or replace it; then the dev copies your metadata coordinates into `zones.yml` and sets the zone to `built: true`, after which the placeholder generator never touches it again.
+
 **Why tiers are separate zones, not one big cave:** each tier is its own place with its own gate (code opens it per player), palette and ore field. Players teleport between tiers with `/dungeon`, so walking the wing is never required, but the causeway lets them walk, explore and show off.
 
 ---

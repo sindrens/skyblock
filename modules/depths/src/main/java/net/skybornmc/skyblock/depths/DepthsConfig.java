@@ -5,7 +5,7 @@ import net.skybornmc.skyblock.common.config.Setting;
 
 /**
  * Typed settings of {@code depths.yml}. The {@code regions} section of the same file (boxes with their resource
- * blocks) is read by {@link RegionLoader}; zones registered by code come later (M4.1).
+ * blocks) is read by {@link RegionLoader}; the layout (zones, fields, gates) lives in {@code zones.yml} (M4.1).
  */
 public final class DepthsConfig extends ModuleConfig {
 
@@ -46,6 +46,26 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "anti-fast-break.alert-cooldown-seconds", desc = "Minimum seconds between two alerts about the same player.", min = 0, max = 3600)
     public int fastBreakAlertCooldownSeconds = 30;
 
+    // ------------------------------------------------------------------ zones (M4.1)
+
+    @Setting(path = "zones.register-fields", desc = "Register the ore/log fields of zones.yml with the per-player blocks engine.")
+    public boolean registerZoneFields = true;
+
+    @Setting(path = "zones.portals", desc = "The boss portal in the last combat tier and the return portal in the boss arena teleport players.")
+    public boolean portalsEnabled = true;
+
+    @Setting(path = "generate.blocks-per-tick", desc = "/depths generate: most blocks changed per tick (keeps the server smooth).", min = 100, max = 50000)
+    public int generateBlocksPerTick = 3000;
+
+    @Setting(path = "generate.positions-per-tick", desc = "/depths generate: most positions checked per tick (unchanged blocks are only read).", min = 1000, max = 500000)
+    public int generatePositionsPerTick = 20000;
+
+    @Setting(path = "generate.max-millis-per-tick", desc = "/depths generate: most milliseconds of a tick spent building.", min = 1, max = 40)
+    public int generateMaxMillisPerTick = 8;
+
+    @Setting(path = "generate.progress-seconds", desc = "/depths generate: seconds between progress updates to whoever started it.", min = 1, max = 300)
+    public int generateProgressSeconds = 3;
+
     @Override
     public String fileName() {
         return "depths.yml";
@@ -61,6 +81,7 @@ public final class DepthsConfig extends ModuleConfig {
                   corner-2: "50, 90, 50"
                   resources:
                     - { block: iron_ore, depleted: tuff, respawn-seconds: 10 }
+                The layout (The Gate, wings, tier zones, ore/log fields, boss arena) is in zones.yml.
                 Texts are in messages/depths.yml. Reload: /skyblock reload depths""";
     }
 }

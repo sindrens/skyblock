@@ -1,5 +1,10 @@
 # LuckPerms grants for the depths module. Applied by scripts/apply-permissions.sh after base.txt.
 # Node definitions: modules/depths/src/main/resources/permissions/depths.yml.
+lp group helper permission set skyblock.depths.command true
 lp group helper permission set skyblock.depths.alerts true
 lp group helper permission set skyblock.depths.debug true
+lp group helper permission set skyblock.depths.tp true
+lp group builder permission set skyblock.depths.command true
+lp group builder permission set skyblock.depths.tp true
 lp group admin permission set skyblock.depths.build true
+lp group admin permission set skyblock.depths.generate true
