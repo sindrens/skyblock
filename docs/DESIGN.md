@@ -192,6 +192,7 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 
 ### 4.3 Auction house and player shops
 - `/ah` auction house and player shops.
+- Auction house (M3.6, built): money only; 1% listing fee + 5% sales tax (decided); 12/24/48 h listings; 5 listings by default, more by rank (`skyblock.auction.slots.<n>`); tag items, tools, blueprints and skins can be sold, starter-kit items and money notes can't; players with < 2 h playtime can't list or buy; sold money reaches the seller even offline; expired/cancelled items wait in a collection bin. Details: `docs/commands/auction.md`.
 - No extra money sinks beyond gameplay costs (owner decision). Inflation is controlled by price floors, interest caps and offline fuel.
 
 ### 4.4 Banks (`/bank` shows both)

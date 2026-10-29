@@ -55,6 +55,16 @@
 - Skills (M4.5): own `/settings` toggle "Skill XP in the action bar" (Display, default on) instead of reusing `tips`/`ui-sounds`. OK? (default: yes)
 - Skills (M4.5): level-up audit rows use category `world` (no progression category). Add a `progression` audit category? (default: `world`)
 - Skills (M4.5): anyone may view another player's skills with `/skills <player>` (`skyblock.skills.others`, default true). Keep public? (default: yes)
+- Auction (M3.6): the 1% listing fee is not refunded when the seller cancels (`auction.yml → fee.refund-on-cancel: false`); expired listings never get it back. Refund on cancel? (default: no)
+- Auction (M3.6): new accounts (< 2 h played) can neither list nor buy (`anti-abuse.new-account.block-listing/block-buying`). The balance sheet only says "can't sell"; allow buying? (default: both blocked)
+- Auction (M3.6): extra listing slots per rank (`skyblock.auction.slots.<n>`, default 5, cap 54). Which store/bank ranks get how many? (default: nobody has extra slots until the store ranks exist)
+- Auction (M3.6): money notes are not listable (`items.allow-money-notes: false`) until the notes module (M3.2) decides. OK? (default: not listable)
+- Auction (M3.6): filled shulker boxes and bundles can't be listed (their contents could hide starter kit tools or dupes; `items.allow-filled-containers: false`). OK? (default: must be empty)
+- Auction (M3.6): anti-abuse defaults: price $10 to $1T, 10 s between listings, the same item at most 3 times per 30 min. OK? (all in `auction.yml`)
+- Auction (M3.6): `/ah sell <price> [duration]` was added as a sub-command of the planned `/ah` (needed to list from chat; the menu can do the same). OK? (default: keep)
+- Auction (M3.6): staff remove listings from the `/ah` menu (`skyblock.staff.auction.remove`, mods+, reasons in `auction.yml → staff.remove-reasons`); no staff command. Add `/ah admin` (e.g. view a player's listings/collection bin)? (default: no command until approved)
+- Auction (M3.6): staff alert for sales far above an item's 7-day median or between linked accounts (balance sheet R4) is left to the M3.8 anomaly alerts. OK? (default: M3.8)
+- Auction (M3.6): money only for now; listings in shards ("filters (currency later)") later? (default: money only)
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 

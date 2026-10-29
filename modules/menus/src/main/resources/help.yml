@@ -34,7 +34,7 @@ categories:
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, selling, banks, the", "<c:text>auction house and trading."]
-    topics: [money]
+    topics: [money, auction]
   progression:
     icon: experience_bottle
     status: active
@@ -428,6 +428,39 @@ topics:
           - "<c:text>balances: who paid you, what you sold"
           - "<c:text>and bought. Filter by currency, type"
           - "<c:text>and time. <c:value>/baltop</c:value> <c:text>shows the richest."
+
+  auction:
+    icon: gold_block
+    aliases: [ah, auctions, auction-house, sell-items, collection-bin]
+    name: "<c:flame>Auction house"
+    summary: ["<c:text>Buy and sell items with other", "<c:text>players, even when they're offline."]
+    take-me-there: "ah"
+    commands: [Economy]
+    pages:
+      - title: "<c:value>Buying"
+        lines:
+          - "<c:value>/ah</c:value> <c:text>shows everything for sale. Pick a"
+          - "<c:text>category, sort by price or time, or"
+          - "<c:text>search by name. Click an item and"
+          - "<c:text>confirm to buy it."
+      - title: "<c:value>Selling"
+        lines:
+          - "<c:text>Hold the item and click <c:value>Sell held item</c:value>"
+          - "<c:text>or type <c:value>/ah sell 1.5k 24h</c:value>. Listing costs a"
+          - "<c:text>1% fee; when it sells you get the price"
+          - "<c:text>minus 5% tax, even while offline."
+      - title: "<c:value>Getting items back"
+        lines:
+          - "<c:text>Unsold, cancelled and bought items that"
+          - "<c:text>don't fit wait in your <c:value>Collection bin</c:value><c:text>."
+          - "<c:text>Cancel a listing in <c:value>My listings</c:value><c:text>."
+          - "<c:text>You can have 5 listings at once."
+      - title: "<c:value>Rules"
+        lines:
+          - "<c:text>New players can use it after 2 hours"
+          - "<c:text>of play. Starter kit items and money"
+          - "<c:text>notes can't be sold here. Every sale is"
+          - "<c:text>logged, so scams get caught."
 
   staff:
     icon: shield

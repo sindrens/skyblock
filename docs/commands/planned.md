@@ -21,7 +21,7 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/dungeon` | The Depths tier selector | `skyblock.depths` | ⬜ |
 | `/withdraw` | Money notes (M3.2); `/bal`, `/pay`, `/baltop`, `/transactions`, `/eco` are live: see `economy.md` | `skyblock.economy.*` | ⬜ |
 | `/bank` | Personal + island bank | `skyblock.bank` | ⬜ |
-| `/sell`, `/ah`, `/shop` | Selling and trading | `skyblock.sell`, `skyblock.ah` | ⬜ |
+| `/sell`, `/shop` (`/ah` built: [auction](auction.md)) | Selling and trading | `skyblock.sell` | ⬜ |
 | `/sets`, `/enchanter` (`/skills` built: [skills](skills.md)) | Progression | … | ⬜ |
 | `/crates`, `/vote`, `/daily`, `/quests`, `/pass`, `/blackmarket`, `/collection` | Rewards | … | ⬜ |
 | `/pets`, `/duel`, `/events`, `/report`, `/pv` | Misc | … | ⬜ |

@@ -1,0 +1,35 @@
+# Permissions of the auction module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/auction.txt. Commands: docs/commands/auction.md.
+skyblock.auction.use:
+  description: Open the auction house and buy items (/ah)
+  default: true
+skyblock.auction.sell:
+  description: List items on the auction house (/ah sell)
+  default: true
+skyblock.auction.bypass-playtime:
+  description: Use the auction house before the new-account playtime (testing)
+  default: op
+skyblock.staff.auction.remove:
+  description: Remove any listing from the auction house (item goes to the seller's collection bin, logged)
+  default: op
+# Extra listing slots: the highest skyblock.auction.slots.<n> a player has wins (default 5, auction.yml listing.slots).
+# Any number works; these are declared so LuckPerms can suggest them.
+skyblock.auction.slots.6:
+  description: 6 auction listings at once
+  default: false
+skyblock.auction.slots.7:
+  description: 7 auction listings at once
+  default: false
+skyblock.auction.slots.8:
+  description: 8 auction listings at once
+  default: false
+skyblock.auction.slots.10:
+  description: 10 auction listings at once
+  default: false
+skyblock.auction.slots.15:
+  description: 15 auction listings at once
+  default: false
+skyblock.auction.slots.20:
+  description: 20 auction listings at once
+  default: false

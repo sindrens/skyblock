@@ -200,6 +200,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.islands.IslandsModule(core));
         modules.register(new net.skybornmc.skyblock.economy.EconomyModule(core));
         modules.register(new net.skybornmc.skyblock.skills.SkillsModule(core));
+        modules.register(new net.skybornmc.skyblock.auction.AuctionModule(core));
     }
 
     public ModuleRegistry modules() {

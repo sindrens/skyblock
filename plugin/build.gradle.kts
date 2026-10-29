@@ -22,6 +22,7 @@ dependencies {
     implementation(project(":modules:skills"))
     // implementation(project(":modules:islands"))
     implementation(project(":modules:islands"))
+    implementation(project(":modules:auction"))
 }
 
 tasks {
