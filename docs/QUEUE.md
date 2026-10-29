@@ -8,12 +8,13 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 |---|---|---|---|---|
 | F1 | Hook remaining `/settings` toggles: join-messages, tpa-requests (essentials), scoreboard (hud), ui-sounds | Phase 1 | modules/essentials, modules/hud | ⬜ |
 | F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` | — | common/command, plugin, server/permissions, scripts | ✅ |
+| F4 | Move a TeleportService interface (warmup, guards) into common so /dungeon, /spawn, /tpa, /is home share one warmup | — | common, essentials, depths | ⬜ |
 | F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | ⬜ |
 
 ## UX polish (owner, 2026-10-30) — top priority, starts at the next free slot
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
-| UX1 | Rank change shows on scoreboard/tab instantly; `/baltop` fast + async (short cache, refresh after big changes); all messages short, direct, normal words, one consistent color scheme and format (UI_STYLE 3-role palette); tag after the name in parentheses-style; cleaner scoreboard + tab with better colors | — | modules/hud, chat, cosmetics, economy (baltop), social, essentials, perks, staff, logs, menus, auction + their messages; style.yml; UI_STYLE §3/§6 | ⬜ |
+| UX1 | Rank change shows on scoreboard/tab instantly; `/baltop` fast + async (short cache, refresh after big changes); all messages short, direct, normal words, one consistent color scheme and format (UI_STYLE 3-role palette); tag after the name in parentheses-style; cleaner scoreboard + tab with better colors | — | modules/hud, chat, cosmetics, economy (baltop), social, essentials, perks, staff, logs, menus, auction + their messages; style.yml; UI_STYLE §3/§6 | 🔄 |
 | UX2 | Same message cleanup for moderation, depths, islands messages (after P1, M4.6, M2.7 merge) | UX1, P1, M4.6, M2.7 | their messages files | ⬜ |
 | FI | Owner answers `docs/FEATURE_IDEAS.md` (yes/no) → yes-items get queued | owner | docs | ⬜ |
 
@@ -63,7 +64,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M4.1 | Depths layout from `depths.yml` (placeholder zones by code, U-shaped wings) | M4.3 | modules/depths (zones pkg) | ✅ |
 | M4.5 | Skill core (XP/levels, `/skills`) | Phase 1 | modules/skills | ✅ |
 | M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | ⬜ |
-| M4.6 | Tiers, unlocks, `/dungeon` | M4.1, M4.5 | modules/depths | 🔄 |
+| M4.6 | Tiers, unlocks, `/dungeon` | M4.1, M4.5 | modules/depths | ✅ |
 | M4.2 | Tools: starter kit (24 h), Forge, living tools (perk slots 5/15/30/45 + prestige), blueprints, skins; `/tool give`, `/blueprint give`, `/skin give` | M3.1, M4.5 | modules/tools | ⬜ |
 | M4.7 | Forest | M4.3, M4.1 | modules/depths | ⬜ |
 | M4.8 | Combat zones (shared mobs) | M4.1 | modules/depths (combat pkg) | ⬜ |
