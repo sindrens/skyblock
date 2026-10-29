@@ -20,8 +20,10 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Ask before adding new commands. Open questions never block: safest default + add to `docs/OPEN_QUESTIONS.md` → "Waiting for owner".
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
-## Running agents
-(none)
+## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
+- F2 per-module permission/command files (workflow task wvlmosevv)
+- M3.0 economy balance sheet (wvuu761qp)
+- M4.3 per-player block engine (wdryd969y)
 
 ## Parked / broken
 (none)

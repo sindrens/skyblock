@@ -7,7 +7,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | F1 | Hook remaining `/settings` toggles: join-messages, tpa-requests (essentials), scoreboard (hud), ui-sounds | Phase 1 | modules/essentials, modules/hud | ⬜ |
-| F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` (if owner approves) | — | common/command, plugin, server/permissions, scripts | ⬜ (waiting for owner) |
+| F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` (if owner approves) | — | common/command, plugin, server/permissions, scripts | 🔄 |
 | F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | ⬜ |
 
 ## Phase 2: Islands (docs/phases/PHASE-2-ISLANDS.md) — one lane, sequential
@@ -24,7 +24,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 ## Phase 3: Economy (docs/phases/PHASE-3-ECONOMY.md)
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
-| M3.0 | Balance sheet `docs/ECONOMY_BALANCE.md` (owner approves before prices go live) | — | docs only | ⬜ |
+| M3.0 | Balance sheet `docs/ECONOMY_BALANCE.md` (owner approves before prices go live) | — | docs only | 🔄 |
 | M3.1 | Currencies + ledger, EconomyService, `/bal /baltop /pay /transactions /eco` | Phase 1 | modules/economy | ⬜ |
 | M3.2 | Money notes (`/withdraw`, `/eco note`) | M3.1 | modules/economy | ⬜ |
 | M3.4 | Selling + dynamic prices (`/sell`) | M3.1 | modules/economy (sell pkg) | ⬜ |
@@ -37,7 +37,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 ## Phase 4: Tools + The Depths (docs/phases/PHASE-4-DEPTHS.md)
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
-| M4.3 | Per-player blocks engine (depleted state per player, 10 s respawn, timing wheel) | Phase 1 | modules/depths (engine pkg) | ⬜ |
+| M4.3 | Per-player blocks engine (depleted state per player, 10 s respawn, timing wheel) | Phase 1 | modules/depths (engine pkg) | 🔄 |
 | M4.1 | Depths layout from `depths.yml` (placeholder zones by code, U-shaped wings) | M4.3 | modules/depths (zones pkg) | ⬜ |
 | M4.5 | Skill core (XP/levels, `/skills`) | Phase 1 | modules/skills | ⬜ |
 | M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | ⬜ |
