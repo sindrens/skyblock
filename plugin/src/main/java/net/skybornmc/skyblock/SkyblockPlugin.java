@@ -1,16 +1,13 @@
 package net.skybornmc.skyblock;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
-import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.command.CommandService;
@@ -18,11 +15,9 @@ import net.skybornmc.skyblock.common.command.OfflineNames;
 import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.db.DatabaseConfig;
 import net.skybornmc.skyblock.common.db.Migrations;
-import net.skybornmc.skyblock.common.item.DemoItems;
 import net.skybornmc.skyblock.common.item.DupeDetector;
 import net.skybornmc.skyblock.common.item.ItemRegistry;
 import net.skybornmc.skyblock.common.item.ItemsConfig;
-import net.skybornmc.skyblock.common.menu.DemoMenu;
 import net.skybornmc.skyblock.common.menu.MenuService;
 import net.skybornmc.skyblock.common.player.PlayerService;
 import net.skybornmc.skyblock.common.config.ConfigManager;
@@ -51,7 +46,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -112,7 +106,6 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         msg = core.messages("core");
         players.start();
         menus.enable();
-        DemoItems.register(items, messages);
         dupes.start();
 
         modules = new ModuleRegistry(getLogger());
@@ -218,9 +211,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                 Commands.literal("skyblock")
                         .requires(src -> src.getSender().hasPermission("skyblock.admin.modules")
                                 || src.getSender().hasPermission("skyblock.admin.reload")
-                                || src.getSender().hasPermission("skyblock.admin.worlds")
-                                || src.getSender().hasPermission("skyblock.admin.demo")
-                                || src.getSender().hasPermission("skyblock.admin.items"))
+                                || src.getSender().hasPermission("skyblock.admin.worlds"))
                         .then(Commands.literal("modules")
                                 .requires(src -> src.getSender().hasPermission("skyblock.admin.modules"))
                                 .executes(ctx -> run(() -> sendModuleStatus(ctx.getSource().getSender()))))
@@ -242,23 +233,6 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                         .then(Commands.literal("style")
                                 .requires(src -> src.getSender().hasPermission("skyblock.admin.reload"))
                                 .executes(ctx -> run(() -> sendStylePreview(ctx.getSource().getSender()))))
-                        .then(Commands.literal("demo-menu")
-                                .requires(src -> src.getSender().hasPermission("skyblock.admin.demo") && src.getSender() instanceof Player)
-                                .executes(ctx -> run(() -> core.menus().open((Player) ctx.getSource().getSender(), new DemoMenu()))))
-                        .then(Commands.literal("give-item")
-                                .requires(src -> src.getSender().hasPermission("skyblock.admin.items"))
-                                .then(Commands.argument("id", StringArgumentType.word())
-                                        .suggests(suggest(() -> core.items().ids()))
-                                        .executes(ctx -> run(() -> giveItem(ctx.getSource().getSender(),
-                                                StringArgumentType.getString(ctx, "id"), null, 1)))
-                                        .then(Commands.argument("player", ArgumentTypes.player())
-                                                .executes(ctx -> run(() -> giveItem(ctx.getSource().getSender(),
-                                                        StringArgumentType.getString(ctx, "id"), target(ctx), 1)))
-                                                .then(Commands.argument("amount", IntegerArgumentType.integer(1, 64))
-                                                        .suggests(suggest(() -> List.of("1", "16", "64")))
-                                                        .executes(ctx -> run(() -> giveItem(ctx.getSource().getSender(),
-                                                                StringArgumentType.getString(ctx, "id"), target(ctx),
-                                                                IntegerArgumentType.getInteger(ctx, "amount"))))))))
                         .then(Commands.literal("worlds")
                                 .requires(src -> src.getSender().hasPermission("skyblock.admin.worlds"))
                                 .executes(ctx -> run(() -> sendWorlds(ctx.getSource().getSender()))))
@@ -271,52 +245,6 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                         .build(),
                 "Phoenix Skyblock admin commands",
                 List.of("sb")));
-    }
-
-    private static Player target(CommandContext<CommandSourceStack> ctx) {
-        try {
-            return ctx.getArgument("player", PlayerSelectorArgumentResolver.class).resolve(ctx.getSource()).getFirst();
-        } catch (CommandSyntaxException e) {
-            return null;
-        }
-    }
-
-    private void giveItem(CommandSender sender, String id, Player target, int amount) {
-        ModuleMessages im = core.messages().of("items");
-        if (target == null) {
-            if (!(sender instanceof Player self)) {
-                im.send(sender, "give.unknown", Msg.p("id", id));
-                return;
-            }
-            target = self;
-        }
-        if (core.items().get(id).isEmpty()) {
-            im.send(sender, "give.unknown", Msg.p("id", id));
-            return;
-        }
-        Player receiver = target;
-        int given = 0;
-        boolean full = false;
-        // Unique items are always created one at a time.
-        while (given < amount) {
-            ItemStack stack = core.items().create(id, amount - given, "admin:" + sender.getName(), null);
-            if (stack.getAmount() <= 0) {
-                break;
-            }
-            given += stack.getAmount();
-            var left = receiver.getInventory().addItem(stack);
-            if (!left.isEmpty()) {
-                full = true;
-                left.values().forEach(rest -> receiver.getWorld().dropItemNaturally(receiver.getLocation(), rest));
-            }
-        }
-        if (full) {
-            im.send(sender, "give.inventory-full", Msg.p("player", receiver.getName()));
-        }
-        im.send(sender, "give.given", Msg.p("amount", given), Msg.p("item", id), Msg.p("player", receiver.getName()));
-        if (receiver != sender) {
-            im.send(receiver, "give.received", Msg.p("amount", given), Msg.p("item", id));
-        }
     }
 
     private static int run(Runnable action) {
