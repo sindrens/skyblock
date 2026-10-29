@@ -10,11 +10,15 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/** Database access for staff mode snapshots and reports. All methods are async. */
+/** Database access for staff mode snapshots, frozen players and reports. All methods are async. */
 final class StaffStore {
 
     /** A saved staff-mode snapshot. */
     record Snapshot(UUID uuid, byte[] contents, String gameMode, boolean allowFlight, boolean flying, boolean wasVanished) {
+    }
+
+    /** A frozen player (row in {@code staff_frozen}); flight fields are their own state before the freeze. */
+    record Frozen(UUID uuid, String name, String frozenBy, UUID frozenByUuid, long frozenAt, boolean allowFlight, boolean flying) {
     }
 
     private static final String REPORT_COLUMNS = "id, created_at, reporter, reporter_name, target, target_name, reason, details, "
@@ -46,6 +50,29 @@ final class StaffStore {
 
     CompletableFuture<Void> deleteSnapshot(UUID uuid) {
         return db.run(c -> Sql.update(c, "DELETE FROM staff_mode WHERE uuid = ?", Sql.toBytes(uuid)));
+    }
+
+    // ------------------------------------------------------------------ freeze
+
+    CompletableFuture<List<Frozen>> frozenPlayers() {
+        return db.async(c -> Sql.query(c, "SELECT uuid, name, frozen_by, frozen_by_uuid, frozen_at, allow_flight, flying FROM staff_frozen",
+                rs -> new Frozen(Sql.uuid(rs, "uuid"), rs.getString("name"), rs.getString("frozen_by"), Sql.uuid(rs, "frozen_by_uuid"),
+                        rs.getLong("frozen_at"), rs.getBoolean("allow_flight"), rs.getBoolean("flying"))));
+    }
+
+    /** Inserts or replaces the row (one transaction). */
+    CompletableFuture<Void> saveFrozen(Frozen f) {
+        return db.transaction(c -> {
+            Sql.update(c, "DELETE FROM staff_frozen WHERE uuid = ?", Sql.toBytes(f.uuid()));
+            Sql.update(c, "INSERT INTO staff_frozen (uuid, name, frozen_by, frozen_by_uuid, frozen_at, allow_flight, flying) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?)", Sql.toBytes(f.uuid()), f.name(), f.frozenBy(),
+                    f.frozenByUuid() == null ? null : Sql.toBytes(f.frozenByUuid()), f.frozenAt(), f.allowFlight(), f.flying());
+            return null;
+        });
+    }
+
+    CompletableFuture<Void> deleteFrozen(UUID uuid) {
+        return db.run(c -> Sql.update(c, "DELETE FROM staff_frozen WHERE uuid = ?", Sql.toBytes(uuid)));
     }
 
     // ------------------------------------------------------------------ reports
