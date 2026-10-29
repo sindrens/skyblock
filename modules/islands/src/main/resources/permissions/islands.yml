@@ -5,5 +5,5 @@ skyblock.island:
   description: Use /is (create your island, /is home, /is go, /is sethome)
   default: true
 skyblock.island.bypass:
-  description: Build on any island and outside island borders (basic protection; the /is bypass toggle comes with M2.2)
+  description: Staff - /is bypass toggles ignoring island protection (build, containers, borders); every toggle is logged
   default: op

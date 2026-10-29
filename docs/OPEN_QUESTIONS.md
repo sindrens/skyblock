@@ -26,6 +26,12 @@
 - M3.0: dynamic price recovery as 2% of the gap per 10 min (default) instead of a fixed 2 points; Hot Item +25% for 24 h?
 - M3.0: personal bank tier unlock cost 2% of the tier's capacity (default: yes)?
 - M2.1 `/is go <member island?>`: what should the argument mean once teams exist (M2.3)? (default: `/is go` = `/is home` without an argument until then)
+- M2.2 island protection: hostile mobs can be hurt by everyone, visitors too (self-defense; there is no "monsters" permission in the plan). OK? (default: yes)
+- M2.2: `/is bypass` is granted to admins only (`server/permissions/islands.txt`). Also moderators/helpers? (default: admins only)
+- M2.2: the staff bypass toggle is per session (off after relog, every toggle and the quit-off logged). Persist it? (default: per session)
+- M2.2: default role permissions (`islands.yml → permissions.defaults`): Mod everything; Member everything except spawners; Coop everything except fire and spawners; visitors nothing. OK? (default: as listed)
+- M2.2: a player inside an island border can't walk/fly/be pushed out of it (also with /fly; creative/spectator and bypass excepted); they leave by /spawn, /is home etc. OK? (default: yes, `protection.keep-players-inside`)
+- M2.2: falling blocks (sand, gravel, anvils) that would land outside their own island's border disappear instead of dropping an item (prevents gravity dupes at the border). OK? (default: yes)
 - M2.1 Who may move the island home with `/is sethome`? (default: leader only until M2.3 makes it a role permission)
 - M2.1 Players still join at spawn (`essentials.yml` `join.teleport-to-spawn: true`). Join at your island instead once islands exist? (default: keep spawn)
 - M2.1 Staff build bypass on islands is permission-only (`skyblock.island.bypass`, admins) until M2.2 adds the logged `/is bypass` toggle. OK? (default: yes)

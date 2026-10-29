@@ -50,6 +50,11 @@ final class IslandManager implements IslandService {
     private final Map<UUID, Island> byId = new ConcurrentHashMap<>();
     private final Map<Long, Island> bySlot = new ConcurrentHashMap<>();
     private final Map<UUID, Island> byMember = new ConcurrentHashMap<>();
+    /** O(1) allocation-free "island at block" for protection (main thread only). */
+    private final Territory territory = new Territory();
+    private RolePermissions rolePermissions = RolePermissions.none();
+    /** The islands world once seen (identity check in hot paths), cleared when another world object shows up. */
+    private World islandWorld;
     /** Players whose island is being created or rebuilt right now (one at a time per player). */
     private final Set<UUID> building = new HashSet<>();
     private final Set<UUID> rescuing = new HashSet<>();
@@ -82,6 +87,7 @@ final class IslandManager implements IslandService {
         byId.clear();
         bySlot.clear();
         byMember.clear();
+        territory.clear();
         for (Island island : store.loadAllBlocking(config.world)) {
             index(island);
         }
@@ -91,6 +97,7 @@ final class IslandManager implements IslandService {
     private void index(Island island) {
         byId.put(island.id(), island);
         bySlot.put(IslandGrid.key(island.gridX(), island.gridZ()), island);
+        territory.put(island);
         island.members().keySet().forEach(member -> byMember.put(member, island));
     }
 
@@ -98,18 +105,83 @@ final class IslandManager implements IslandService {
 
     @Override
     public boolean isIslandWorld(World world) {
-        return world != null && world.getName().equals(config.world);
+        if (world == null) {
+            return false;
+        }
+        if (world == islandWorld) {
+            return true;
+        }
+        if (world.getName().equals(config.world)) {
+            islandWorld = world;
+            return true;
+        }
+        return false;
     }
 
-    /** Island whose playable area contains block x/z of the islands world, or null. */
+    /** Island whose playable area contains block x/z of the islands world, or null (O(1), no allocation). */
     Island islandAt(int x, int z) {
-        Island island = islandInSlotAt(x, z);
-        return island != null && island.bounds().contains(x, z) ? island : null;
+        return territory.at(x, z);
     }
 
-    /** Island whose slot contains block x/z, or null. */
+    /** Island whose slot contains block x/z, or null (O(1), no allocation). */
     Island islandInSlotAt(int x, int z) {
-        return bySlot.get(IslandGrid.key(IslandGrid.cell(x), IslandGrid.cell(z)));
+        return territory.inSlot(x, z);
+    }
+
+    Territory territory() {
+        return territory;
+    }
+
+    // ------------------------------------------------------------------ role permissions (M2.2; GUI in M2.3)
+
+    RolePermissions rolePermissions() {
+        return rolePermissions;
+    }
+
+    void rolePermissions(RolePermissions rolePermissions) {
+        this.rolePermissions = rolePermissions;
+    }
+
+    /** The permission role of {@code player} on {@code island}: their stored role, or visitor. */
+    PermRole permRole(Island island, UUID player) {
+        return PermRole.of(island.roleOrNull(player));
+    }
+
+    /** True if {@code player} (by role, no bypass) may do {@code perm} on {@code island}. */
+    boolean roleAllows(Island island, UUID player, IslandPerm perm) {
+        return rolePermissions.allows(island.perms(), permRole(island, player), perm);
+    }
+
+    /**
+     * Sets ({@code TRUE}/{@code FALSE}) or resets ({@code null} = server default) one permission of a role on an
+     * island: saved first (atomic), then cached and logged ({@code island_perm}). The leader can't be changed.
+     * Used by the M2.3 permission matrix and the M2.5 visitor settings.
+     *
+     * @return false if the island is unknown, the role is the leader, or saving failed
+     */
+    CompletableFuture<Boolean> setRolePermission(UUID islandId, PermRole role, IslandPerm perm, Boolean allowed, Actor actor) {
+        Island island = byId.get(islandId);
+        if (island == null || !role.editable()) {
+            return CompletableFuture.completedFuture(false);
+        }
+        Boolean before = island.perms().override(role, perm);
+        return store.savePerm(islandId, role, perm, allowed).thenApplyAsync(ignored -> {
+            if (byId.get(islandId) != island) {
+                return false;
+            }
+            island.perms().set(role, perm, allowed);
+            core.audit().log(AuditCategory.ISLAND, "island_perm", actor, island.id().toString(), displayName(island), null, null,
+                    Map.of("role", role.key(), "perm", perm.key(), "old", overrideText(before), "new", overrideText(allowed)));
+            return true;
+        }, main).exceptionally(error -> {
+            core.plugin().getLogger().log(Level.SEVERE, "Islands: saving permission " + perm.key() + " of " + islandId + " failed",
+                    Database.cause(error));
+            return false;
+        });
+    }
+
+    private static String overrideText(Boolean value) {
+        return value == null ? "default" : value ? "allow" : "deny";
     }
 
     Optional<Island> islandOfPlayer(UUID player) {

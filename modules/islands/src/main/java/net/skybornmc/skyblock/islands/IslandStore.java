@@ -80,6 +80,14 @@ public final class IslandStore {
                 sizeChunks, islandId) == 1);
     }
 
+    /**
+     * Saves one role permission override of an island ({@code null} = back to the default: the row is removed).
+     * Delete + insert in one transaction, so a row is never half-written.
+     */
+    public CompletableFuture<Void> savePerm(UUID islandId, PermRole role, IslandPerm perm, Boolean allowed) {
+        return db.run(c -> savePerm(c, islandId, role, perm, allowed, System.currentTimeMillis()));
+    }
+
     /** Every slot ever handed out, in spiral order (admin overview). */
     public CompletableFuture<List<SlotRow>> slots() {
         return db.async(IslandStore::slots);
@@ -103,7 +111,32 @@ public final class IslandStore {
             }
             return null;
         });
+        loadPerms(c, islands);
         return ordered;
+    }
+
+    /** Role permission overrides (rows with an unknown role/permission key, e.g. from a newer version, are skipped). */
+    static void loadPerms(Connection c, Map<UUID, Island> islands) throws SQLException {
+        Sql.query(c, "SELECT island_id, role, perm, allowed FROM island_role_perms", rs -> {
+            Island island = islands.get(Sql.uuid(rs, "island_id"));
+            Optional<PermRole> role = PermRole.byKey(rs.getString("role"));
+            Optional<IslandPerm> perm = IslandPerm.byKey(rs.getString("perm"));
+            if (island != null && role.isPresent() && perm.isPresent()) {
+                island.perms().set(role.get(), perm.get(), rs.getBoolean("allowed"));
+            }
+            return null;
+        });
+    }
+
+    static void savePerm(Connection c, UUID islandId, PermRole role, IslandPerm perm, Boolean allowed, long now) throws SQLException {
+        inTransaction(c, () -> {
+            Sql.update(c, "DELETE FROM island_role_perms WHERE island_id = ? AND role = ? AND perm = ?", islandId, role.key(), perm.key());
+            if (allowed != null) {
+                Sql.update(c, "INSERT INTO island_role_perms (island_id, role, perm, allowed, updated_at) VALUES (?, ?, ?, ?, ?)",
+                        islandId, role.key(), perm.key(), allowed, now);
+            }
+            return null;
+        });
     }
 
     private static Island island(ResultSet rs, String world) throws SQLException {
