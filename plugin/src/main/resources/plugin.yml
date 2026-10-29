@@ -5,7 +5,7 @@ api-version: '26.3'
 description: Phoenix Skyblock core (SkybornMC network)
 website: https://skybornmc.net
 authors: [SlickyMatt]
-softdepend: [LuckPerms, floodgate]
+softdepend: [LuckPerms, floodgate, PlaceholderAPI]
 permissions:
   skyblock.admin.modules:
     description: View module status

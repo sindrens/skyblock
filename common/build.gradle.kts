@@ -6,4 +6,8 @@ dependencies {
     implementation("org.mariadb.jdbc:mariadb-java-client:3.5.11") { exclude(group = "org.slf4j") }
     implementation("com.h2database:h2:2.5.252")
     testImplementation("org.slf4j:slf4j-api:2.0.17")
+
+    // Optional integrations (M0.9): provided by the server when installed, never shaded.
+    compileOnly("net.luckperms:api:5.5")
+    compileOnly("me.clip:placeholderapi:2.12.3")
 }
