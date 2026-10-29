@@ -95,3 +95,21 @@ Settings in `essentials.yml`, texts in `messages/essentials.yml`. Every staff ac
 
 Other: `skyblock.staff.teleport.bypass` skips warmups, cooldowns and teleport restrictions.
 Ranks (luckperms.txt): builder = `/i /give /gm c+s /fly /speed /time /weather /tppos /top`; helper = `/tp /vanish /invsee /ecsee` (view only); mod = all teleports, gamemode, fly, heal, feed, god, clear, back, homes; admin = everything incl. editing inventories, `/skull`, `/more`.
+## Social (`modules/social`)
+| Command | What it does | Permission | Status |
+|---|---|---|---|
+| `/msg <player> <message>` (`/w`, `/tell`, `/whisper`, `/m`, `/pm`) | Private message; click a name to reply; rate-limited; logged (30 days) | `skyblock.social.msg` | ✅ |
+| `/r <message>` (`/reply`) | Reply to your last private message | `skyblock.social.msg` | ✅ |
+| `/ignore <player>` / `/ignore list` | Block a player's private messages (staff can't be ignored) | `skyblock.social.ignore` | ✅ |
+| `/unignore <player>` | Stop ignoring | `skyblock.social.ignore` | ✅ |
+| `/afk` | Toggle AFK (auto after `social.yml → afk.auto-minutes`) | `skyblock.social.afk` | ✅ |
+| `/list` (`/online`, `/who`) | Online players grouped by rank | `skyblock.social.list` | ✅ |
+| `/ping [player]` | Connection delay | `skyblock.social.ping` | ✅ |
+| `/playtime [player]` (`/pt`) | Total play time | `skyblock.social.playtime` | ✅ |
+| `/seen <player>` | Last online / first joined | `skyblock.social.seen` (+ `skyblock.staff.seen.details`) | ✅ |
+| `/discord`, `/store`, `/vote`, `/website`, `/rules` | Clickable links (URLs in `social.yml`) | `skyblock.social.links` | ✅ |
+| `/socialspy` | Staff: see all private messages | `skyblock.staff.socialspy` | ✅ |
+| `/whois <player>` | Staff: UUID, rank, platform, times, location, names; IP + alts with `skyblock.staff.whois.ip` | `skyblock.staff.whois` | ✅ |
+| `/broadcast <message>` (`/bc`, `/announce`) | Staff: announcement in chat + title + sound (MiniMessage) | `skyblock.staff.broadcast` | ✅ |
+
+Other: `skyblock.staff.unignorable` (private messages always delivered), `skyblock.staff.vanish.see` (see vanished players in `/list` and tab completion; defined by the vanish feature).

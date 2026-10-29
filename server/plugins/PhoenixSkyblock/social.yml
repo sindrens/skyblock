@@ -1,0 +1,33 @@
+# Phoenix Skyblock social settings (private messages, AFK, broadcasts, links).
+# Texts are in messages/social.yml. Reload: /skyblock reload social
+
+dm:
+  # Longest private message (characters).
+  # Allowed: 16 to 1024
+  max-length: 256
+  rate-limit:
+    # Private messages allowed per window before slowing down.
+    # Allowed: 1 to 100
+    messages: 5
+    # Length of the private message rate-limit window (seconds).
+    # Allowed: 1 to 300
+    seconds: 5
+afk:
+  # Minutes without activity before a player is marked AFK. 0 = never.
+  # Allowed: 0 to 240
+  auto-minutes: 5
+  # Tell everyone when a player goes AFK or comes back.
+  broadcast: true
+broadcast:
+  # Also show /broadcast messages as a title on screen.
+  title: true
+links:
+  # Link used by /discord.
+  discord: https://discord.skybornmc.net
+  # Link used by /store.
+  store: https://store.skybornmc.net
+  # Link used by /vote.
+  vote: https://skybornmc.net/vote
+  # Link used by /website.
+  website: https://skybornmc.net
+config-version: 1

@@ -182,6 +182,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new MotdModule(core));
         modules.register(new ModerationModule(core));
         modules.register(new net.skybornmc.skyblock.essentials.EssentialsModule(core));
+        modules.register(new net.skybornmc.skyblock.social.SocialModule(core));
     }
 
     public ModuleRegistry modules() {

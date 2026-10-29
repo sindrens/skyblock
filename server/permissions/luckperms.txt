@@ -137,3 +137,10 @@ lp group mod permission set skyblock.staff.clear.others true
 lp group mod permission set skyblock.staff.vanish.others true
 # Admin: every staff tool (incl. editing inventories, /give, /skull, /more).
 lp group admin permission set skyblock.staff.* true
+# --- Social module (staff) ---
+lp group helper permission set skyblock.staff.socialspy true
+lp group helper permission set skyblock.staff.whois true
+lp group helper permission set skyblock.staff.seen.details true
+lp group helper permission set skyblock.staff.unignorable true
+lp group mod permission set skyblock.staff.whois.ip true
+lp group admin permission set skyblock.staff.broadcast true
