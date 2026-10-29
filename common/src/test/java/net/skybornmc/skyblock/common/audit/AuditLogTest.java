@@ -73,6 +73,19 @@ class AuditLogTest {
     }
 
     @Test
+    void betweenFindsBothDirectionsOnly() throws Exception {
+        UUID a = UUID.randomUUID();
+        UUID b = UUID.randomUUID();
+        UUID c = UUID.randomUUID();
+        audit.logPlayer(AuditCategory.ECONOMY, "pay", Actor.player(a, "A"), b, "B", 10L, null, null);
+        audit.logPlayer(AuditCategory.ECONOMY, "pay", Actor.player(b, "B"), a, "A", 20L, null, null);
+        audit.logPlayer(AuditCategory.ECONOMY, "pay", Actor.player(a, "A"), c, "C", 30L, null, null);
+        audit.flush();
+        assertEquals(2, audit.query(AuditQuery.create().between(a, b)).get().size());
+        assertEquals(2, audit.query(AuditQuery.create().between(a, b).copyPage(0, 1).page(0, 5)).get().size());
+    }
+
+    @Test
     void pagingAndNewestFirst() throws Exception {
         for (int i = 0; i < 12; i++) {
             audit.log(AuditCategory.STAFF, "step_" + i, Actor.SYSTEM, Map.of());
