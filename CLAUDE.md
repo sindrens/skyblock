@@ -23,6 +23,8 @@ This is a **large, long-term project** (launch in ~3 years). Quality beats speed
 
 ## Releasing
 After every milestone: commit, push to GitHub and release with `server/scripts/deploy.sh` (uses the deploy key in `~/Development/.skyborn-claude/`). Send the owner the milestone's test checklist.
+- When releasing from the owner's Mac via the device shell, keep the shell alive until deploy.sh prints `== Released.` (start it in the background and `sleep` in the **same** call); a background job is killed when the call returns. Verify with `md5sum` of the jar on the VPS.
+- Copy jars to the Mac under a **new file name** each time (e.g. `phoenix-u23.jar`), then `cp` into place: re-sending the same path can deliver a stale copy.
 
 ## How you work
 1. **One thing at a time.** Pick the next unchecked item in the current roadmap phase. Don't start the next until this one is done.

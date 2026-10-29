@@ -14,7 +14,7 @@
 brand: "<bold><gradient:#E4EBF0:#9FC6E8:#E4EBF0:{phase}>SKYBORN</gradient><#6CA1D6>MC</#6CA1D6></bold>"
 
 # Which messages rotate (ids from 'motds' below), in order.
-active: [coming-soon, discord, join, platforms, countdown]
+active: [discord]          # owner: only this MOTD for now
 
 mode: rotate          # rotate = next message every rotate-seconds, random = random each refresh
 rotate-seconds: 5
