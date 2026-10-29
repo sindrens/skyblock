@@ -24,6 +24,11 @@ cd ~/Development/skyblock && ./server/scripts/install-on-vps.sh ubuntu@<vps-addr
 ```
 It uploads the configs, runs `setup-vps.sh` (Java 25, MariaDB, firewall, fail2ban, systemd service, daily backups, memory sized to the VPS), downloads Paper + plugins, accepts the EULA (after asking you), starts the server and whitelists you.
 
+**Updates (every time after the first install):** no questions, just:
+```bash
+cd ~/Development/skyblock && ./server/scripts/update-vps.sh
+```
+
 Console: `ssh ubuntu@<vps-address>` then `sudo -u minecraft tmux attach -t skyblock` (leave with Ctrl+B, then D).
 Restart: `sudo systemctl restart skyblock`. Logs: `/opt/skyblock/server/logs/latest.log`.
 

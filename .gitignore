@@ -24,6 +24,7 @@ server/eula.txt
 server/wepif.yml
 server/.console_history
 server/session.lock
+server/.vps-target
 server/plugins/**
 !server/plugins/*/
 !server/plugins/Geyser-Spigot/config.yml

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Installs the test server on a fresh Ubuntu VPS, run FROM YOUR MAC:
+# FIRST-TIME install of the test server on a fresh Ubuntu VPS (for later updates use update-vps.sh). Run FROM YOUR MAC:
 #   cd ~/Development/skyblock && ./server/scripts/install-on-vps.sh ubuntu@<vps-address>
 # You type the VPS password once. Takes ~5-10 minutes.
 set -euo pipefail
 TARGET="${1:?Usage: ./server/scripts/install-on-vps.sh user@host   (e.g. ubuntu@vps-xxxx.vps.ovh.net)}"
 HOST="${TARGET#*@}"
+# Remember the address so update-vps.sh needs no arguments.
+echo "$TARGET" > "$(cd "$(dirname "$0")/.." && pwd)/.vps-target"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SOCK="/tmp/skyborn-ssh-$$"
 SSH=(ssh -o ControlMaster=auto -o ControlPath="$SOCK" -o ControlPersist=20m -o StrictHostKeyChecking=accept-new)
