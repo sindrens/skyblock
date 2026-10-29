@@ -53,7 +53,7 @@ After that, every push to `main` builds, tests and deploys to the test VPS (conf
 `spawn`, `islands`, `outposts`, `depths`, `warzone`: void worlds created by the plugin from `plugins/PhoenixSkyblock/worlds.yml`. In game: `/skyblock worlds` (click to teleport) or `/skyblock tp <world>`. Each spawn has a small platform so builders can start right away.
 
 ## External plugins
-Geyser, Floodgate, LuckPerms, CoreProtect, Grim, FastAsyncWorldEdit, ViaVersion, ViaBackwards (DESIGN.md §14). Java players on 1.21.5 to 26.3 can join. spark is built into Paper.
+Geyser, Floodgate, LuckPerms, CoreProtect, Grim, FastAsyncWorldEdit, ViaVersion, ViaBackwards, Axiom (DESIGN.md §14). Axiom needs the Axiom client mod (Fabric, Java only; https://axiom.moulberry.com) and the builder rank. Java players on 1.21.5 to 26.3 can join. spark is built into Paper.
 CoreProtect has no 26.3 release yet; `fetch.sh` skips it until one exists.
 
 Never commit passwords or tokens. They live in `/opt/skyblock/.env` on the VPS and are applied by `scripts/apply-secrets.sh`.

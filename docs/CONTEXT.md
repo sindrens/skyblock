@@ -30,6 +30,7 @@ The facts every task depends on. If something here is out of date, fix it first:
 | GrimAC | 2.3.x | Anticheat | Alerts permission `grim.alerts` |
 | FastAsyncWorldEdit | 2.16.x | Builders + **schematic pasting** for islands | FAWE API (softdepend) |
 | ViaVersion / ViaBackwards | 5.12.x | Older clients 1.21.5+ | Nothing to do in code |
+| Axiom Paper Plugin | 6.0.x (for 26.3) | Builder tool (owner request) for spawn/Depths/warzone builds. Needs the **Axiom client mod** (Java/Fabric only) | Nothing to do in code. Builder group has `axiom.default` + entities + blueprints; islands/outposts blocked in its config |
 | CoreProtect | pending 26.3 | Block logging | `fetch.sh` adds it when released |
 | spark | built into Paper | Profiling | `/spark` |
 | PlaceholderAPI | *optional* | Not installed | Our plugin registers a `%phoenix_…%` expansion **only if** PlaceholderAPI is present |
