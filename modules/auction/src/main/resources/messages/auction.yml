@@ -1,0 +1,314 @@
+# Auction house (M3.6): /ah, /ah sell. MiniMessage + style tags (style.yml).
+# Money placeholders (<price>, <fee>, <tax>, <net>, <balance>, <min>, <max>) are already colored (format.money).
+# Reload: /skyblock reload auction
+
+format:
+  money: "<cur:money><sym:money><value></cur:money>"
+
+error: "<prefix><c:error><sym:cross> Something went wrong. <c:text>Your items and money are safe; try again in a moment."
+frozen: "<prefix><c:error><sym:cross> You can't use the auction house while you are frozen."
+no-permission-sell: "<prefix><c:error><sym:cross> You can't sell on the auction house."
+
+# Why a listing or purchase was refused.
+rules:
+  price-too-low: "<prefix><c:error><sym:cross> The lowest price is <min><c:error>."
+  price-too-high: "<prefix><c:error><sym:cross> The highest price is <max><c:error>."
+  new-account: "<prefix><c:error><sym:cross> New players can sell on the auction house after <c:value><hours></c:value> of play. <c:text>Time left: <c:value><time>"
+  new-account-buy: "<prefix><c:error><sym:cross> New players can buy on the auction house after <c:value><hours></c:value> of play. <c:text>Time left: <c:value><time>"
+  no-slots: "<prefix><c:error><sym:cross> You already have <c:value><slots></c:value> listings, your maximum. <c:text>Cancel one or wait until one sells."
+  cooldown: "<prefix><c:error><sym:cross> Wait <c:value><time></c:value> before listing again."
+  relist-limit: "<prefix><c:error><sym:cross> You listed this item <c:value><limit></c:value> times recently. <c:text>Try again later (limit per <window>)."
+
+# Why an item can't be listed.
+items:
+  no-item: "<prefix><c:error><sym:cross> Hold the item you want to sell in your main hand."
+  dupe-flagged: "<prefix><c:error><sym:cross> This item was flagged as a possible dupe and can't be sold. <c:text>Ask staff."
+  starter: "<prefix><c:error><sym:cross> Starter kit items can't be sold on the auction house. <c:text>You can still trade them."
+  note: "<prefix><c:error><sym:cross> Money notes can't be sold on the auction house."
+  blocked: "<prefix><c:error><sym:cross> This item can't be sold on the auction house."
+  filled-container: "<prefix><c:error><sym:cross> Empty this container first. <c:text>Shulker boxes and bundles must be empty to be sold."
+
+sell:
+  crumb: "Sell"
+  ask-price: "<prefix><c:text>Type the price for <c:value><item></c:value> in chat, like <c:value>1500</c:value>, <c:value>1.5k</c:value> or <c:value>2M</c:value> (lowest <min><c:text>). Type <c:value><cancel></c:value> to stop (<seconds>s)."
+  bad-price: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a price. <c:text>Use a number like 1500, 1.5k or 2M."
+  bad-duration: "<prefix><c:error><sym:cross> Choose one of: <c:value><choices>"
+  cannot-afford-fee: "<prefix><c:error><sym:cross> The listing fee is <fee><c:error>, you have <balance><c:error>."
+  item-changed: "<prefix><c:error><sym:cross> The item in your hand changed. <c:text>Nothing was listed; try again."
+  listed: "<prefix><c:success><sym:check> Listed <c:value><amount>x <item></c:value> <c:success>for <price><c:success> for <c:value><time></c:value>. <c:muted>Fee paid: </c:muted><fee>"
+  fee-unpaid: "<prefix><c:error><sym:cross> You couldn't pay the listing fee of <fee><c:error>. <c:text>Your item is back (or in your collection bin)."
+  pending: "<prefix><c:warning>Your listing is being processed. <c:text>It appears in a moment; if it can't be listed, the item goes to your collection bin."
+  busy: "<prefix><c:error><sym:cross> Your last listing is still being processed. <c:text>Try again in a second."
+  duration:
+    name: "<c:success>List for <c:value><time>"
+    lore:
+      - "<c:text><amount>x <c:value><item>"
+      - ""
+      - "<c:text>This will:"
+      - "<c:ember><sym:bullet></c:ember> <c:text>take the item from your hand"
+      - "<c:ember><sym:bullet></c:ember> <c:text>charge a fee of <fee> <c:muted>(<fee-percent>%)"
+      - "<c:ember><sym:bullet></c:ember> <c:text>list it for <price>"
+      - "<c:text>When it sells you get <net> <c:muted>(<tax-percent>% tax: </c:muted><tax><c:muted>)"
+      - "<c:muted>Unsold items come back to your collection bin."
+      - ""
+      - "<c:action><sym:bullet> Click to list for <time>"
+
+buy:
+  crumb: "Buy item"
+  confirm-lines:
+    - "<c:ember><sym:bullet></c:ember> <c:text>pay <price> <c:text>to <c:value><seller>"
+    - "<c:ember><sym:bullet></c:ember> <c:text>give you <c:value><amount>x <item>"
+    - "<c:muted>Your balance: </c:muted><balance>"
+    - "<c:muted>Purchases can't be undone."
+  bought: "<prefix><c:success><sym:check> You bought <c:value><amount>x <item></c:value> <c:success>from <c:value><seller></c:value> <c:success>for <price><c:success>. <c:muted>Balance: </c:muted><balance>"
+  insufficient: "<prefix><c:error><sym:cross> You need <price><c:error>, you have <balance><c:error>."
+  gone: "<prefix><c:error><sym:cross> <c:value><item></c:value> <c:error>was already sold, cancelled or ran out of time."
+  own: "<prefix><c:error><sym:cross> That's your own listing. <c:text>Open <c:value>My listings</c:value> to cancel it."
+  busy: "<prefix><c:error><sym:cross> Someone is buying <c:value><item></c:value> <c:error>right now. <c:text>Try again in a moment."
+  processing: "<prefix><c:warning>Your purchase of <c:value><item></c:value> <c:warning>is being processed. <c:text>You get the item or keep your money; check your collection bin in a minute."
+
+cancel:
+  crumb: "Cancel listing"
+  confirm-lines:
+    - "<c:ember><sym:bullet></c:ember> <c:text>remove <c:value><amount>x <item></c:value> <c:text>from the auction house"
+    - "<c:ember><sym:bullet></c:ember> <c:text>give the item back <c:muted>(collection bin if your inventory is full)"
+    - "<c:muted>The listing fee (</c:muted><fee><c:muted>) is not refunded."
+  confirm-lines-refund:
+    - "<c:ember><sym:bullet></c:ember> <c:text>remove <c:value><amount>x <item></c:value> <c:text>from the auction house"
+    - "<c:ember><sym:bullet></c:ember> <c:text>give the item back <c:muted>(collection bin if your inventory is full)"
+    - "<c:ember><sym:bullet></c:ember> <c:text>refund the listing fee of <fee>"
+  done: "<prefix><c:success><sym:check> Cancelled your listing of <c:value><item></c:value><c:success>."
+  busy: "<prefix><c:error><sym:cross> Someone is buying this right now. <c:text>Try again in a moment."
+  gone: "<prefix><c:error><sym:cross> <c:value><item></c:value> <c:error>was already sold or ran out of time."
+
+staff:
+  crumb: "Staff"
+  entry:
+    - ""
+    - "<c:muted>Staff: buy it, or remove it with a reason."
+  buy:
+    name: "<c:success>Buy for <price>"
+    lore:
+      - "<c:text>Buy it like any player."
+      - ""
+      - "<c:action><sym:bullet> Click to buy"
+  remove:
+    name: "<c:error>Remove: <c:value><reason>"
+    lore:
+      - "<c:text>The item goes back to <c:value><seller></c:value><c:text>'s"
+      - "<c:text>collection bin. Logged with this reason."
+      - ""
+      - "<c:action><sym:bullet> Click to remove"
+  removed: "<prefix><c:success><sym:check> Removed the listing of <c:value><item></c:value> <c:success>by <c:value><seller></c:value><c:success>. The item is in their collection bin."
+  removed-seller: "<prefix><c:warning>Staff removed your listing of <c:value><item></c:value><c:warning>. <c:text>The item is in your collection bin (<c:value>/ah</c:value>)."
+
+collection:
+  title: "Collection bin"
+  info:
+    - "<c:text>Items that came back to you:"
+    - "<c:text>expired, cancelled or bought while"
+    - "<c:text>your inventory was full."
+  empty:
+    name: "<c:muted>Nothing here"
+    lore:
+      - "<c:text>Returned and bought items wait here"
+      - "<c:text>when your inventory is full."
+  take-all:
+    name: "<c:value>Take all <c:muted>(<count>)"
+    lore:
+      - "<c:text>Moves items into your inventory"
+      - "<c:text>until it is full."
+      - ""
+      - "<c:action><sym:bullet> Click to take all"
+  unreadable:
+    name: "<c:error>Unreadable item"
+    lore:
+      - "<c:text>Ask staff to restore it from /logs."
+  entry:
+    - ""
+    - "<c:text>Why: <source>"
+    - "<c:muted><ago> ago"
+    - ""
+    - "<c:action><sym:bullet> Click to take"
+  source:
+    expired: "<c:value>ran out of time"
+    cancelled: "<c:value>you cancelled it"
+    removed: "<c:value>removed by staff"
+    bought: "<c:value>you bought it"
+    failed: "<c:value>listing fee not paid"
+    returned: "<c:value>didn't fit in your inventory"
+  full: "<prefix><c:warning>Your inventory is full: <c:value><item></c:value> <c:warning>is in your collection bin. <click:run_command:'/ah'><hover:show_text:'<c:text>Opens /ah'><c:action>[OPEN /ah]</c:action></hover></click>"
+  delivered: "<prefix><c:success><sym:check> <c:value><item></c:value> <c:success>is in your inventory."
+  no-space: "<prefix><c:error><sym:cross> Your inventory is full. <c:text>Make room first."
+  took: "<prefix><c:success><sym:check> Took <c:value><count></c:value> <c:success>item(s) from your collection bin."
+
+notify:
+  sold: "<prefix><c:success><sym:check> <c:value><buyer></c:value> <c:success>bought your <c:value><amount>x <item></c:value> <c:success>for <price><c:success>. You received <net> <c:muted>(tax </c:muted><tax><c:muted>)"
+  expired: "<prefix><c:warning>Your listing of <c:value><amount>x <item></c:value> <c:warning>ran out of time. <c:text>It's in your collection bin (<c:value>/ah</c:value>)."
+  sold-offline: "<prefix><c:success><sym:check> While you were away <c:value><buyer></c:value> <c:success>bought your <c:value><amount>x <item></c:value> <c:muted>(+</c:muted><net><c:muted>)"
+  sold-more: "<prefix><c:text>... and <c:value><count></c:value> more sales."
+  sold-total: "<prefix><c:success><sym:check> <c:value><count></c:value> <c:success>auction sale(s) earned you <net><c:success>."
+  expired-offline: "<prefix><c:warning><c:value><count></c:value> <c:warning>of your listings ran out of time."
+  collection: "<prefix><c:text>You have <c:value><count></c:value> item(s) in your auction collection bin. <click:run_command:'/ah'><hover:show_text:'<c:text>Opens /ah'><c:action>[OPEN /ah]</c:action></hover></click>"
+
+search:
+  ask: "<prefix><c:text>Type what to search for (item name, or a seller's exact name). Type <c:value><cancel></c:value> to stop (<seconds>s)."
+
+categories:
+  all: "<c:value>Everything"
+  tools: "<c:value>Tools & weapons"
+  armor: "<c:value>Armor"
+  blocks: "<c:value>Blocks"
+  materials: "<c:value>Materials"
+  consumables: "<c:value>Food & potions"
+  cosmetics: "<c:value>Cosmetics"
+  special: "<c:value>Special items"
+
+sort:
+  newest: "<c:value>Newest"
+  ending-soon: "<c:value>Ending soon"
+  price-low: "<c:value>Lowest price"
+  price-high: "<c:value>Highest price"
+
+browse:
+  title: "Auction House"
+  info:
+    - "<c:text>Items other players are selling."
+    - "<c:text>Click an item to buy it. Filter and"
+    - "<c:text>sort with the buttons at the bottom."
+  empty:
+    name: "<c:muted>Nothing for sale yet"
+    lore:
+      - "<c:text>Be the first: hold an item and"
+      - "<c:text>click <c:value>Sell held item</c:value> above."
+  empty-filtered:
+    name: "<c:muted>No matches"
+    lore:
+      - "<c:text>Try another category or search."
+  sell:
+    name: "<c:success>Sell held item"
+    lore:
+      - "<c:text>Put the item in your hand up for"
+      - "<c:text>sale. You type the price, then pick"
+      - "<c:text>how long it stays listed."
+      - "<c:muted>Lowest price: </c:muted><min>"
+      - "<c:muted>Also: </c:muted><c:value><command> 1.5k 24h"
+      - ""
+      - "<c:action><sym:bullet> Click to sell"
+  mine:
+    name: "<c:value>My listings <c:muted>(<used>/<slots>)"
+    lore:
+      - "<c:text>Your items on sale. Cancel one"
+      - "<c:text>to get it back."
+      - ""
+      - "<c:action><sym:bullet> Click to open"
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>Auction House"
+    lore:
+      - "<c:text>Items for sale: <c:value><listings>"
+      - "<c:text>Your balance: </c:text><balance>"
+      - ""
+      - "<c:muted>Listing fee <fee>%, paid when listing."
+      - "<c:muted>Sales tax <tax>%, taken from the price."
+  collection:
+    name: "<c:value>Collection bin"
+    lore:
+      - "<c:text>Returned and bought items that"
+      - "<c:text>didn't fit in your inventory."
+      - "<c:muted>Empty."
+      - ""
+      - "<c:action><sym:bullet> Click to open"
+  collection-full:
+    name: "<c:flame>Collection bin <c:muted>(<count>)"
+    lore:
+      - "<c:text>Returned and bought items that"
+      - "<c:text>didn't fit in your inventory."
+      - "<c:value><count></c:value> <c:text>item(s) waiting."
+      - ""
+      - "<c:action><sym:bullet> Click to open"
+  refresh:
+    name: "<c:value>Refresh"
+    lore:
+      - "<c:text>Load the newest listings."
+      - ""
+      - "<c:action><sym:bullet> Click to refresh"
+  category:
+    name: "<c:value>Category: <value>"
+    lore-top:
+      - ""
+    lore:
+      - ""
+      - "<c:action><sym:bullet> Click for the next one"
+  sort:
+    name: "<c:value>Sort: <value>"
+    lore-top:
+      - ""
+    lore:
+      - ""
+      - "<c:action><sym:bullet> Click to change"
+  search:
+    name: "<c:value>Search"
+    lore:
+      - "<c:text>Find items by name, or all items"
+      - "<c:text>of one seller (exact name)."
+      - ""
+      - "<c:action><sym:bullet> Click to type a search"
+  search-active:
+    name: "<c:value>Search: <c:flame><search>"
+    lore:
+      - "<c:text>Showing items matching your search."
+      - ""
+      - "<c:action><sym:bullet> Click to search again"
+  clear-search:
+    name: "<c:error>Clear search"
+    lore:
+      - "<c:text>Show all items again."
+      - ""
+      - "<c:action><sym:bullet> Click to clear"
+  list-selected: "<c:flame><sym:bullet></c:flame> <name>"
+  list-other: "<c:muted>  <name>"
+  entry:
+    lore:
+      - ""
+      - "<c:muted><sym:line></c:muted> <c:text>Seller: <c:value><seller>"
+      - "<c:muted><sym:line></c:muted> <c:text>Price: </c:text><price>"
+      - "<c:muted><sym:line></c:muted> <c:text>Ends in: <c:value><time>"
+    buy:
+      - ""
+      - "<c:action><sym:bullet> Click to buy"
+    own:
+      - ""
+      - "<c:muted>This is your listing."
+      - "<c:action><sym:bullet> Click to cancel it"
+    staff:
+      - ""
+      - "<c:action><sym:bullet> Click to buy or remove (staff)"
+
+mine:
+  title: "My listings"
+  info:
+    - "<c:text>Your items on sale. Click one to"
+    - "<c:text>cancel it and get the item back."
+  empty:
+    name: "<c:muted>You have no listings"
+    lore:
+      - "<c:text>Hold an item and use <c:value>/ah sell 1.5k"
+      - "<c:text>or the Sell button in <c:value>/ah</c:value><c:text>."
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>My listings"
+    lore:
+      - "<c:text>Listings: <c:value><used></c:value><c:muted>/</c:muted><c:value><slots>"
+      - "<c:muted>Ranks can unlock more slots."
+  entry:
+    active:
+      - ""
+      - "<c:action><sym:bullet> Click to cancel"
+    ending:
+      - ""
+      - "<c:muted>Ended; moving to your collection bin."
+    buying:
+      - ""
+      - "<c:warning>Someone is buying this right now."
+    pending:
+      - ""
+      - "<c:muted>Being listed..."
