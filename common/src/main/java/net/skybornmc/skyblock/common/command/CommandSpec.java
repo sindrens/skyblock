@@ -38,6 +38,10 @@ public final class CommandSpec {
     private boolean hidden;
     private Duration cooldown = Duration.ZERO;
     private int confirmSeconds;
+    private java.util.function.Predicate<CmdContext> confirmWhen;
+    private String confirmModule;
+    private String confirmKey;
+    private java.util.function.Function<CmdContext, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[]> confirmPlaceholders;
     private String example;
     private final List<String> aliases = new ArrayList<>();
     private final List<Arg<?>> args = new ArrayList<>();
@@ -107,6 +111,28 @@ public final class CommandSpec {
             throw new IllegalArgumentException("confirm seconds must be > 0");
         }
         this.confirmSeconds = seconds;
+        return this;
+    }
+
+    /**
+     * Asks to confirm only when {@code when} is true for the parsed arguments (e.g. {@code /pay} above $1M); otherwise the
+     * command runs at once. Typing {@code confirm} when no confirmation is needed simply runs the command.
+     */
+    public CommandSpec confirmIf(int seconds, java.util.function.Predicate<CmdContext> when) {
+        confirm(seconds);
+        this.confirmWhen = Objects.requireNonNull(when, "when");
+        return this;
+    }
+
+    /**
+     * Uses {@code key} in {@code messages/<module>.yml} instead of the generic confirm text. Placeholders {@code <command>}
+     * (the line to run with {@code confirm}, without slash) and {@code <time>} are added to {@code placeholders}' result.
+     */
+    public CommandSpec confirmMessage(String module, String key,
+                                      java.util.function.Function<CmdContext, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[]> placeholders) {
+        this.confirmModule = Objects.requireNonNull(module, "module");
+        this.confirmKey = Objects.requireNonNull(key, "key");
+        this.confirmPlaceholders = Objects.requireNonNull(placeholders, "placeholders");
         return this;
     }
 
@@ -202,6 +228,24 @@ public final class CommandSpec {
 
     String example() {
         return example;
+    }
+
+    /** Whether this run needs a confirmation (always when {@link #confirm} was used without a condition). */
+    boolean needsConfirm(CmdContext ctx) {
+        return confirmSeconds > 0 && (confirmWhen == null || confirmWhen.test(ctx));
+    }
+
+    String confirmModule() {
+        return confirmModule;
+    }
+
+    String confirmKey() {
+        return confirmKey;
+    }
+
+    net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[] confirmPlaceholders(CmdContext ctx) {
+        return confirmPlaceholders == null ? new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[0]
+                : confirmPlaceholders.apply(ctx);
     }
 
     List<String> aliases() {

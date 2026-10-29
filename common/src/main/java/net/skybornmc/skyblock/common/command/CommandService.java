@@ -8,6 +8,7 @@ import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.text.Messages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.text.Sounds;
@@ -228,25 +229,33 @@ public final class CommandService {
             String cooldownKey = sender instanceof Player p ? p.getUniqueId() + ":" + node.path() : null;
             checkCooldown(sender, cooldownKey);
 
-            if (spec.confirmSeconds() > 0) {
+            String base = viaConfirm && input.endsWith(" " + CONFIRM) ? input.substring(0, input.length() - CONFIRM.length() - 1) : input;
+            CmdContext context = new CmdContext(sender, values, base);
+            if (spec.needsConfirm(context)) {
                 String senderKey = sender instanceof Player p ? p.getUniqueId().toString() : "console:" + sender.getName();
                 if (!viaConfirm) {
                     pending.put(senderKey, new Pending(input, System.currentTimeMillis() + spec.confirmSeconds() * 1000L));
-                    messages.send(sender, MESSAGES, "confirm", Msg.p("command", input),
-                            Msg.p("time", Format.duration(Duration.ofSeconds(spec.confirmSeconds()))));
+                    TagResolver[] extra = spec.confirmPlaceholders(context);
+                    TagResolver[] all = java.util.Arrays.copyOf(extra, extra.length + 2);
+                    all[extra.length] = Msg.p("command", input);
+                    all[extra.length + 1] = Msg.p("time", Format.duration(Duration.ofSeconds(spec.confirmSeconds())));
+                    if (spec.confirmKey() != null) {
+                        messages.send(sender, spec.confirmModule(), spec.confirmKey(), all);
+                    } else {
+                        messages.send(sender, MESSAGES, "confirm", all);
+                    }
                     if (sender instanceof Player p) {
                         sounds.play(p, "warning");
                     }
                     return Command.SINGLE_SUCCESS;
                 }
-                String base = input.endsWith(" " + CONFIRM) ? input.substring(0, input.length() - CONFIRM.length() - 1) : input;
                 Pending request = pending.remove(senderKey);
                 if (request == null || request.expiresAt() < System.currentTimeMillis() || !request.input().equalsIgnoreCase(base)) {
                     throw CommandFailure.of("confirm-expired", Msg.p("command", base));
                 }
             }
 
-            spec.executor().run(new CmdContext(sender, values, input));
+            spec.executor().run(context);
             if (cooldownKey != null && !cooldown.isZero() && !sender.hasPermission(PERM_COOLDOWN_BYPASS)) {
                 cooldowns.put(cooldownKey, System.currentTimeMillis() + cooldown.toMillis());
             }
