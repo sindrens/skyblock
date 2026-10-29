@@ -34,6 +34,11 @@
 - **Social:** `/msg`, `/r`, `/ignore`, `/socialspy`, `/afk` (auto 5 min), `/list` by rank, `/ping`, `/playtime`, `/seen`, `/whois` (alts/IP for mods), `/broadcast`, `/discord /store /vote /website /rules`.
 - **Perks:** `/craft`, `/ec`, `/hat`, `/nick` + `/setnick` + `/realname`, `/trash` (donators); staff-only `/repair`, `/sudo` (owner only).
 - **PlaceholderAPI** added to the server; `&4 &c &b`, `&l`, `&#hex` color codes supported (LegacyColors) for prefixes, nicks and chat.
+- **M1.1 join flow + spawn:** first-join title/welcome/broadcast #N, welcome back, rank-only join/quit messages, spawn protection, void → spawn, `/build`, `/setspawn`.
+- **M1.3 chat + M1.5 tab/nametags:** `[RANK] Name » msg` with LuckPerms `&` prefixes and hex rank colors, hover profile card, mentions, `[item]`, color tiers, filters (spam/caps/links/IP/new-player delay), `/sc`, `/clearchat`, `/mutechat`, `/chat slow`; tab header/footer, sorted by rank, [AFK], nametags.
+- **M1.4 scoreboard:** flicker-free per-player sidebar, rank, currencies (`-` until economy), island, online.
+- **M1.6 `/menu` + `/help`, M1.7 `/settings`:** hub with auto "Coming soon", menu item in slot 9 (one implementation, in the menus module), help categories/topics/command lists, settings with a shared PlayerSettings service.
+- **Builder brief** (`docs/BUILDER_BRIEF.md`) for every build.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.

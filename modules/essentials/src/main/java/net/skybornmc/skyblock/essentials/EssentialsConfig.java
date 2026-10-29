@@ -79,14 +79,8 @@ public final class EssentialsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ M1.1 menu item
 
-    @Setting(path = "menu-item.enabled", desc = "Give everyone the menu item (Nether Star) in the hotbar.")
-    public boolean menuItemEnabled = true;
 
-    @Setting(path = "menu-item.slot", desc = "Hotbar slot of the menu item (0 = first, 8 = ninth).", min = 0, max = 8)
-    public int menuItemSlot = 8;
 
-    @Setting(path = "menu-item.command", desc = "Command the menu item runs (without /).")
-    public String menuItemCommand = "menu";
 
     @Override
     public String fileName() {

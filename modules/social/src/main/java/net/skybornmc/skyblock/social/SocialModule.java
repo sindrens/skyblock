@@ -273,7 +273,7 @@ public final class SocialModule implements SkyblockModule, Listener {
                 .executes(ctx -> broadcast(ctx.sender(), ctx.get(broadcastText))));
 
         link("discord", "Get the Discord invite", () -> config.discordUrl);
-        link("store", "Open the store", () -> config.storeUrl, "shop", "buy");
+        link("store", "Open the store", () -> config.storeUrl, "buy");
         link("vote", "Vote for rewards", () -> config.voteUrl);
         link("website", "Open the website", () -> config.websiteUrl, "web");
         commands.register(CommandSpec.command("rules")
