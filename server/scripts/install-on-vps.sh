@@ -16,7 +16,14 @@ read -r -p "Do you accept the EULA? [y/N] " EULA
 [[ "$EULA" =~ ^[Yy]$ ]] || { echo "EULA not accepted. Stopping."; exit 1; }
 
 echo "== Connecting (enter the VPS password if asked)"
-"${SSH[@]}" -t "$TARGET" "echo Connected to \$(hostname)"
+"${SSH[@]}" -t "$TARGET" "echo Connected to \$(hostname)" || true
+# A forced password change on first login ends the session; reconnect with the new password.
+if ! "${SSH[@]}" "$TARGET" true 2>/dev/null; then
+  ssh -o ControlPath="$SOCK" -O exit "$TARGET" 2>/dev/null || true
+  echo "== Reconnecting (enter your NEW password)"
+  "${SSH[@]}" -t "$TARGET" "echo Connected to \$(hostname)"
+  "${SSH[@]}" "$TARGET" true || { echo "Could not log in. Run the script again."; exit 1; }
+fi
 
 echo "== Uploading server configs"
 LIST=$(mktemp)
