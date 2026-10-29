@@ -11,7 +11,7 @@
 
 **Phoenix Skyblock** on the **SkybornMC** network (`play.skybornmc.net`): a brand-new, heavily custom **seasonal Skyblock** server for **Java + Bedrock (Geyser)** on **Paper 26.3**, built to hold **200–300 concurrent players** stably.
 
-> **Version policy (decided 2026-10-29):** stay on the **latest stable Minecraft version** Paper and Geyser support (currently **26.3**, Java 25). Bedrock clients auto-update, so Geyser must stay current, and Geyser only supports the newest Java version. Update with each Minecraft release during development.
+> **Version policy (decided 2026-10-29):** stay on the **latest stable Minecraft version** Paper and Geyser support (currently **26.3**, Java 25). Bedrock clients auto-update, so Geyser must stay current, and Geyser only supports the newest Java version. Update with each Minecraft release during development. **Client versions:** players on **1.21.5 up to the current version** can join (ViaVersion + ViaBackwards). 1.21.5 is the minimum because older protocols are exploitable and miss features we use (custom item models, pale oak).
 
 Audience: everyone (casual players, grinders, PvPers, younger players, free-to-play and paying players).
 
@@ -327,6 +327,7 @@ All gameplay and server features are **custom**. External plugins only where bui
 | FastAsyncWorldEdit | **Use** (builders/staff only) | Building spawn, Depths, warzone |
 | LuckPerms | **Use** (confirmed) | Permissions/ranks backbone, invisible to players |
 | CoreProtect | **Use** (confirmed), blocks only | Block logging/rollback at scale. Economy/item/staff logs are custom |
+| ViaVersion + ViaBackwards | **Use** | Lets players on 1.21.5+ join the newest-version server |
 | PacketEvents | **Library**, shaded into our jar | Per-player blocks, border, NPC packets |
 
 Custom (not plugins): punishments, Discord bot, essentials (spawn/tpa/back/homes/vanish), chat, scoreboard, tab, holograms (TextDisplay), NPCs (mannequins), world management, economy (no Vault needed), Tebex integration via API, Votifier receiver, crates, everything gameplay.

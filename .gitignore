@@ -32,6 +32,8 @@ server/plugins/**
 !server/plugins/GrimAC/*.yml
 !server/plugins/FastAsyncWorldEdit/config.yml
 !server/plugins/FastAsyncWorldEdit/worldedit-config.yml
+!server/plugins/ViaVersion/config.yml
+!server/plugins/ViaBackwards/config.yml
 *.log
 *.db
 *.sqlite

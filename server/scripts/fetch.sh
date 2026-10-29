@@ -42,6 +42,8 @@ get "$url" plugins/LuckPerms-Bukkit.jar
 modrinth coreprotect        CoreProtect.jar
 modrinth grimac             GrimAC.jar
 modrinth fastasyncworldedit FastAsyncWorldEdit.jar
+modrinth viaversion         ViaVersion.jar       # lets other client versions join (min version: plugins/ViaVersion/config.yml)
+modrinth viabackwards       ViaBackwards.jar     # needed for clients OLDER than the server
 
 # spark is built into Paper (use /spark). No separate plugin needed.
 echo "Done. Start with ./start.sh"

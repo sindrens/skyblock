@@ -30,7 +30,7 @@ Restart: `sudo systemctl restart skyblock`. Logs: `/opt/skyblock/server/logs/lat
 **Automatic deploys (later):** create an SSH key for deploys, put the public key in `/opt/skyblock/.ssh/authorized_keys`, and add `TEST_HOST`, `TEST_USER` (`minecraft`), `TEST_SSH_KEY` as GitHub secrets. Every push to `main` then builds, tests and deploys.
 
 ## External plugins
-Geyser, Floodgate, LuckPerms, CoreProtect, Grim, FastAsyncWorldEdit (DESIGN.md §14). spark is built into Paper.
+Geyser, Floodgate, LuckPerms, CoreProtect, Grim, FastAsyncWorldEdit, ViaVersion, ViaBackwards (DESIGN.md §14). Java players on 1.21.5 to 26.3 can join. spark is built into Paper.
 CoreProtect has no 26.3 release yet; `fetch.sh` skips it until one exists.
 
 Never commit passwords or tokens. They live in `/opt/skyblock/.env` on the VPS and are applied by `scripts/apply-secrets.sh`.

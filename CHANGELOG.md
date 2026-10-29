@@ -15,3 +15,4 @@
 - `server/scripts/run-local.sh`: one command to build and run the test server locally.
 - Network renamed to **SkybornMC** (play.skybornmc.net). The skyblock gamemode is **Phoenix Skyblock** (phoenix theme kept). Package `net.skybornmc.skyblock`.
 - `install-on-vps.sh`: one-command VPS install from the Mac; setup script sizes Java memory to the VPS RAM.
+- ViaVersion + ViaBackwards: Java clients 1.21.5 to 26.3 can join (older versions get a friendly kick message).

@@ -94,4 +94,6 @@ spark is built into Paper. Use `/spark profiler` and `/spark tps`.
 | `LuckPerms/config.yml` | `server: skyblock`. Storage: H2 locally, **MariaDB on the VPS** (the setup script switches it) |
 | `GrimAC/database.yml` | `server-name: skyblock-test` |
 | `FastAsyncWorldEdit/config.yml` | Update notifications off |
+| `ViaVersion/config.yml` | `block-versions: '<1.21.5'`: players on **1.21.5 up to 26.3** can join. Friendly kick message for older versions. Update checks off, supported versions shown in the server list. Why 1.21.5 and not 1.21.4: ViaVersion warns that the 1.20.5–1.21.4 protocol is easily exploitable |
+| `ViaBackwards/config.yml` | Defaults (needed for clients older than the server). Emulated-menu colors changed from blue to the Phoenix red/gold palette. Grim warns that vehicles (boats/minecarts) can glitch for older clients with ViaBackwards; acceptable since vehicles are not core gameplay |
 | CoreProtect | **Not yet released for 26.3.** The newest version (24.1) checks the Minecraft version and **refuses to start** above 26.2, so it can't be used yet. `fetch.sh` downloads it automatically once a 26.3 build exists. Config will use MariaDB |
