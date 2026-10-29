@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":modules:essentials"))
     implementation(project(":modules:social"))
     implementation(project(":modules:perks"))
+    implementation(project(":modules:menus"))
     // implementation(project(":modules:islands"))
 }
 

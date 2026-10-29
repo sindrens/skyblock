@@ -226,3 +226,13 @@ permissions:
   skyblock.sudo.exempt:
     description: Can't be targeted by /sudo
     default: op
+  # --- menus module ---
+  skyblock.menu:
+    description: Open the main menu (/menu) and use the menu item
+    default: true
+  skyblock.help:
+    description: Open the help menu (/help)
+    default: true
+  skyblock.settings:
+    description: Change your own settings (/settings)
+    default: true

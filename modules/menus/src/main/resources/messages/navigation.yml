@@ -1,0 +1,252 @@
+# Navigation texts: /menu, /help, /settings and the menu item. MiniMessage + style tags (style.yml).
+# Item names: one color + white value, never italic. Lore: description in <c:text>, empty line, then
+# "<c:action><sym:bullet> Click to ...". Placeholders: <name>. Help page contents live in help.yml.
+# Reload: /skyblock reload menus
+
+# The locked look of anything that isn't built yet (hub entries, help categories, settings).
+coming-soon:
+  name: "<c:muted><name> <dark_gray>(Coming soon)"
+  lore:
+    - ""
+    - "<c:muted><sym:time> Coming soon"
+    - "<c:muted>Keep an eye on /discord for news."
+
+menu-item:
+  name: "<c:flame><bold>Menu</bold></c:flame> <c:muted><sym:dot></c:muted> <c:text>Right-click"
+  lore:
+    - "<c:text>Every feature in one place."
+    - ""
+    - "<c:action><sym:bullet> Right-click to open the menu"
+
+hub:
+  title: "Menu"
+  info:
+    - "<c:text>Every feature of Phoenix Skyblock."
+    - "<c:text>Gray icons are coming soon."
+  action: ["", "<c:action><sym:bullet> Click to open"]
+  locked: ["", "<c:error><sym:cross> Your rank can't open this yet."]
+  profile:
+    name: "<ph:displayname>"
+    lore:
+      - "<c:text>Rank: <ph:rank>"
+      - "<c:text>Playtime: <c:value><playtime>"
+      - "<c:text>Joined: <c:value><joined>"
+      - ""
+      - "<c:action><sym:bullet> Click to open your settings"
+  entries:
+    island:
+      name: "<c:flame><bold>Island"
+      lore: ["<c:text>Your island in the sky: build,", "<c:text>grow it and invite friends."]
+    depths:
+      name: "<c:flame><bold>The Depths"
+      lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and tokens."]
+    shop:
+      name: "<c:flame><bold>Shop"
+      lore: ["<c:text>Building blocks, farming and", "<c:text>utility items."]
+    sell:
+      name: "<c:flame><bold>Sell"
+      lore: ["<c:text>Sell your loot at live prices."]
+    bank:
+      name: "<c:flame><bold>Bank"
+      lore: ["<c:text>Keep money safe and earn", "<c:text>interest, even offline."]
+    auction:
+      name: "<c:flame><bold>Auction House"
+      lore: ["<c:text>Buy and sell items with", "<c:text>other players."]
+    black-market:
+      name: "<c:flame><bold>Black Market"
+      lore: ["<c:text>Rare offers that change", "<c:text>every few hours."]
+    skills:
+      name: "<c:flame><bold>Skills"
+      lore: ["<c:text>Level Mining, Foraging, Combat", "<c:text>and more for perks."]
+    sets:
+      name: "<c:flame><bold>Sets"
+      lore: ["<c:text>Armor sets with bonuses for", "<c:text>every playstyle."]
+    enchanter:
+      name: "<c:flame><bold>Enchanter"
+      lore: ["<c:text>Custom enchants for your", "<c:text>tools and gear."]
+    quests:
+      name: "<c:flame><bold>Quests"
+      lore: ["<c:text>Daily and weekly goals", "<c:text>with rewards."]
+    crates:
+      name: "<c:flame><bold>Crates"
+      lore: ["<c:text>Open crates with keys", "<c:text>you earn by playing."]
+    events:
+      name: "<c:flame><bold>Events"
+      lore: ["<c:text>KOTH, envoys and boss", "<c:text>fights: when and where."]
+    pets:
+      name: "<c:flame><bold>Pets"
+      lore: ["<c:text>Companions that level up", "<c:text>and help you grind."]
+    warps:
+      name: "<c:flame><bold>Warps"
+      lore: ["<c:text>Visit the best islands and", "<c:text>shops of other players."]
+    collection:
+      name: "<c:flame><bold>Collection"
+      lore: ["<c:text>Everything you've found,", "<c:text>with rewards for milestones."]
+    leaderboards:
+      name: "<c:flame><bold>Leaderboards"
+      lore: ["<c:text>Top islands and players", "<c:text>of the season."]
+    titles:
+      name: "<c:flame><bold>Titles & Tags"
+      lore: ["<c:text>Show off in chat and tab", "<c:text>with titles and tags."]
+    store:
+      name: "<c:flame><bold>Store"
+      lore: ["<c:text>Ranks and cosmetics.", "<c:text>Every purchase supports us."]
+    vote:
+      name: "<c:flame><bold>Vote"
+      lore: ["<c:text>Vote daily for rewards."]
+    discord:
+      name: "<c:flame><bold>Discord"
+      lore: ["<c:text>News, sneak peeks, support", "<c:text>and giveaways."]
+    spawn:
+      name: "<c:flame><bold>Spawn"
+      lore: ["<c:text>Back to spawn."]
+    rules:
+      name: "<c:flame><bold>Rules"
+      lore: ["<c:text>The server rules."]
+    settings:
+      name: "<c:flame><bold>Settings"
+      lore: ["<c:text>Chat, display and sound", "<c:text>settings."]
+    help:
+      name: "<c:flame><bold>Help"
+      lore: ["<c:text>Guides for every feature", "<c:text>and all your commands."]
+    website:
+      name: "<c:flame><bold>Website"
+      lore: ["<c:text>skybornmc.net"]
+
+settings:
+  title: "Settings"
+  info:
+    - "<c:text>Click a switch to turn it on or off."
+    - "<c:text>Changes are saved right away."
+  categories:
+    chat:
+      name: "<c:ember><bold>Chat"
+      lore: ["<c:text>Messages, mentions and", "<c:text>how chat looks."]
+    social:
+      name: "<c:ember><bold>Social"
+      lore: ["<c:text>Requests from other players."]
+    display:
+      name: "<c:ember><bold>Display"
+      lore: ["<c:text>What you see on screen."]
+    sounds:
+      name: "<c:ember><bold>Sounds"
+      lore: ["<c:text>Menu and event sounds."]
+  empty:
+    name: "<c:muted>Nothing here yet"
+    lore: ["<c:muted>New settings appear here as", "<c:muted>features arrive."]
+  toggles:
+    private-messages:
+      name: "<c:value>Private messages"
+      lore: ["<c:text>Let other players send you", "<c:text>messages with /msg."]
+    mentions-sound:
+      name: "<c:value>Mention sound"
+      lore: ["<c:text>Play a sound when someone", "<c:text>says your name in chat."]
+    join-messages:
+      name: "<c:value>Join & leave messages"
+      lore: ["<c:text>Show when players join", "<c:text>or leave."]
+    chat-colors:
+      name: "<c:value>Chat colors"
+      lore: ["<c:text>Show colors in other players'", "<c:text>messages."]
+    chat-timestamps:
+      name: "<c:value>Chat timestamps"
+      lore: ["<c:text>Show the time next to", "<c:text>chat messages."]
+    tpa-requests:
+      name: "<c:value>Teleport requests"
+      lore: ["<c:text>Let players send you /tpa", "<c:text>and /tpahere requests."]
+    trade-requests:
+      name: "<c:value>Trade requests"
+      lore: ["<c:text>Let players send you", "<c:text>trade requests."]
+    island-invites:
+      name: "<c:value>Island invites"
+      lore: ["<c:text>Let players invite you to", "<c:text>their island."]
+    afk-broadcast:
+      name: "<c:value>AFK announcements"
+      lore: ["<c:text>Show when players go", "<c:text>AFK or come back."]
+    scoreboard:
+      name: "<c:value>Scoreboard"
+      lore: ["<c:text>The info panel on the right", "<c:text>of your screen."]
+    menu-item:
+      name: "<c:value>Menu item"
+      lore: ["<c:text>The Nether Star in hotbar", "<c:text>slot 9 that opens /menu."]
+    tips:
+      name: "<c:value>Tips"
+      lore: ["<c:text>Short tips in chat the first", "<c:text>time you open a feature."]
+    particles:
+      name: "<c:value>Particles"
+      lore: ["<c:text>Cosmetic particles of", "<c:text>other players."]
+    depths-visibility:
+      name: "<c:value>Players in The Depths"
+      lore: ["<c:text>See other players while", "<c:text>mining in The Depths."]
+    ui-sounds:
+      name: "<c:value>Menu sounds"
+      lore: ["<c:text>Clicks and confirmations", "<c:text>in menus."]
+    event-sounds:
+      name: "<c:value>Event sounds"
+      lore: ["<c:text>Sounds for events, bosses", "<c:text>and announcements."]
+  changed-on: "<prefix><c:success><sym:check> <setting> <c:text>is now <c:success>on</c:success>."
+  changed-off: "<prefix><c:success><sym:check> <setting> <c:text>is now <c:error>off</c:error>."
+  unknown: "<prefix><c:error><sym:cross> There's no setting called <c:value><setting></c:value>. <c:text>Press Tab to see them all."
+  not-yet: "<prefix><c:error><sym:cross> <c:value><setting></c:value> is coming soon. <c:text>It unlocks when its feature arrives."
+  failed: "<prefix><c:error><sym:cross> That setting couldn't be changed right now. Try again in a moment."
+
+help:
+  title: "Help"
+  all-commands: "Commands"
+  info:
+    - "<c:text>Pick a category to read the guides."
+    - "<c:text>Tip: /help <topic> opens one directly."
+  topic-info:
+    - "<c:text>Hover the pages to read them."
+    - "<c:text>Take me there brings you to the feature."
+  commands-info:
+    - "<c:text>Every command you can use."
+    - "<c:text>Click one to put it in your chat."
+  category-topics: ["<c:text>Topics: <c:value><count>"]
+  open-action: ["", "<c:action><sym:bullet> Click to open"]
+  topic-pages: ["<c:text>Pages: <c:value><count>"]
+  read-action: ["", "<c:action><sym:bullet> Click to read"]
+  empty:
+    name: "<c:text>No topics yet"
+    lore: ["<c:muted>Guides are added as features open."]
+  page-name: "<c:ember><page>.</c:ember> <title>"
+  page-footer: ["<c:muted>Page <page> of <pages>"]
+  no-pages:
+    name: "<c:text>Nothing written yet"
+    lore: ["<c:muted>This guide is still being written."]
+  show-in-chat:
+    name: "<c:info>Show in chat"
+    lore: ["<c:text>Prints this guide in chat so you", "<c:text>can read it while you play.", "", "<c:action><sym:bullet> Click to show in chat"]
+  take-me-there:
+    name: "<c:success>Take me there"
+    lore: ["<c:text>Runs <c:value><command></c:value> for you.", "", "<c:action><sym:bullet> Click to go"]
+  commands-button:
+    name: "<c:ember>Commands"
+    lore: ["<c:text>Commands for this topic", "<c:text>you can use: <c:value><count>", "", "<c:action><sym:bullet> Click to see them"]
+  command:
+    name: "<c:value><usage>"
+    description: "<c:text><description>"
+    category: "<c:muted>Category: <category>"
+    aliases: "<c:muted>Also: <aliases>"
+    example: "<c:muted>Example: <c:text><example>"
+    action: ["", "<c:action><sym:bullet> Click to put it in your chat"]
+  no-commands:
+    name: "<c:text>No commands here"
+    lore: ["<c:muted>You don't have any commands in this list."]
+  coming-soon: "<prefix><c:muted><name> <c:text>help is coming soon, together with the feature."
+  unknown: "<prefix><c:error><sym:cross> No help topic called <c:value><topic></c:value>. <c:text>Here are all categories."
+  chat:
+    header: "<prefix><c:value>Help <c:text>(click a category):"
+    category: " <c:ember><sym:bullet></c:ember> <click:run_command:'/help <id>'><hover:show_text:'<lore>'><name></hover></click>"
+    category-locked: " <c:muted><sym:bullet> <name> (Coming soon)"
+    footer: " <c:muted>Tip: <c:text>/help commands <c:muted>lists every command you can use."
+    category-header: "<prefix><name> <c:text>(click a topic):"
+    topic-line: " <c:ember><sym:bullet></c:ember> <click:run_command:'/help <id>'><hover:show_text:'<summary>'><name></hover></click>"
+    topic-header: "<prefix><name>"
+    page-title: " <c:ember><sym:bullet></c:ember> <title>"
+    page-line: "   <line>"
+    take-me-there: " <click:run_command:'/<command>'><hover:show_text:'<c:text>Runs /<command>'><c:success>[Take me there]</c:success></hover></click>"
+    commands-header: " <c:ember><sym:bullet></c:ember> <c:value>Commands <c:muted>(click to put in chat)"
+    all-commands-header: "<prefix><c:value>Your commands <c:text>(<count>, click to put in chat):"
+    commands-category: " <c:ember><category>"
+    command-line: "   <click:suggest_command:'<command>'><hover:show_text:'<c:text><description>'><c:value><usage></c:value></hover></click> <c:muted><description>"
+    suggest: "<prefix><click:suggest_command:'<command>'><hover:show_text:'<c:text>Click to put it in your chat'><c:action>[Click]</c:action> <c:value><usage></c:value></hover></click> <c:muted><description>"
