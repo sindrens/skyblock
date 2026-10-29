@@ -8,6 +8,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
+- Queue agents are launched with `Workflow({scriptPath: '/home/claude/wfscripts/queue-item.js', args: {item, task}})` (copy kept in `tools/queue-item.js`).
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
@@ -21,9 +22,9 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- F2 per-module permission/command files (workflow task wvlmosevv)
 - M3.0 economy balance sheet (wvuu761qp)
 - M4.3 per-player block engine (wdryd969y)
+- M2.1 islands grid + creation
 
 ## Parked / broken
 (none)

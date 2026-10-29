@@ -39,6 +39,8 @@
 - **M1.4 scoreboard:** flicker-free per-player sidebar, rank, currencies (`-` until economy), island, online.
 - **M1.6 `/menu` + `/help`, M1.7 `/settings`:** hub with auto "Coming soon", menu item in slot 9 (one implementation, in the menus module), help categories/topics/command lists, settings with a shared PlayerSettings service.
 - **Builder brief** (`docs/BUILDER_BRIEF.md`) for every build.
+- **Phase 1 rest:** punishments (`/punish`, ladders, alts), staff mode (`/staffmode`), freeze, inspect, reports, `/logs`, tags & titles, `/display`, `/admin`.
+- **Per-module files (F2):** permissions in `permissions/<module>.yml`, LuckPerms grants in `server/permissions/<module>.txt`, command docs in `docs/commands/<module>.md` (index via `./gradlew commandsIndex`).
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
