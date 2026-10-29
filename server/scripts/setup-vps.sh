@@ -21,7 +21,8 @@ apt-get upgrade -y
 apt-get install -y curl wget gnupg ca-certificates apt-transport-https tmux ufw fail2ban mariadb-server python3 rsync unzip
 
 echo "== Java 25"
-if ! command -v java >/dev/null || ! java -version 2>&1 | grep -qE 'version "(2[5-9]|[3-9][0-9])'; then
+JAVA_VER=$(java -version 2>&1 || true)
+if ! grep -qE 'version "(2[5-9]|[3-9][0-9])' <<<"$JAVA_VER"; then
   # Ubuntu 26.04+ ships OpenJDK 25; older releases use the Eclipse Temurin repo.
   if ! apt-get install -y openjdk-25-jre-headless; then
     install -d -m 0755 /etc/apt/keyrings
@@ -41,7 +42,7 @@ install -d -o "$MC_USER" -g "$MC_USER" "$SERVER" "$BASE/backups" "$SERVER/plugin
 echo "== MariaDB (databases: skyblock, luckperms, coreprotect)"
 ENV_FILE=$BASE/.env
 if [ ! -f "$ENV_FILE" ]; then
-  DB_PASS=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
+  DB_PASS=$(openssl rand -hex 24)
   cat > "$ENV_FILE" <<ENV
 DB_HOST=127.0.0.1
 DB_PORT=3306

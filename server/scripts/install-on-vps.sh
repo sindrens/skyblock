@@ -43,7 +43,7 @@ echo "== Installing server files"
 
 echo "== Starting the server"
 "${SSH[@]}" -t "$TARGET" "sudo systemctl restart skyblock; \
-  for i in \$(seq 1 90); do sudo grep -q 'Done (' /opt/skyblock/server/logs/latest.log 2>/dev/null && break; sleep 2; done; \
+  for i in \$(seq 1 150); do sudo grep -q 'Done (' /opt/skyblock/server/logs/latest.log 2>/dev/null && break; sleep 2; done; \
   sudo -u minecraft tmux send-keys -t skyblock 'whitelist add $MCNAME' Enter; \
   sudo -u minecraft tmux send-keys -t skyblock 'op $MCNAME' Enter; \
   sleep 2; sudo tail -n 5 /opt/skyblock/server/logs/latest.log"

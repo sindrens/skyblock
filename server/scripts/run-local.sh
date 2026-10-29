@@ -13,7 +13,8 @@ if [ -x /usr/libexec/java_home ] && /usr/libexec/java_home -v 25 >/dev/null 2>&1
   export JAVA="$JAVA_HOME/bin/java"
 fi
 JAVA="${JAVA:-java}"
-if ! "$JAVA" -version 2>&1 | grep -qE 'version "(2[5-9]|[3-9][0-9])'; then
+JAVA_VER=$("$JAVA" -version 2>&1 || true)
+if ! grep -qE 'version "(2[5-9]|[3-9][0-9])' <<<"$JAVA_VER"; then
   echo "Java 25 is required."
   echo "  Mac: download 'Temurin 25 (JDK)' from https://adoptium.net and install it,"
   echo "       or with Homebrew: brew install --cask temurin@25"
