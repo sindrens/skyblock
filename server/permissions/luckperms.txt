@@ -167,3 +167,11 @@ lp group helper permission set skyblock.chat.format true
 lp group mod permission set skyblock.chat.bypass true
 lp group mod permission set skyblock.chat.links true
 lp group admin permission set skyblock.chat.hex true
+
+# --- M1.9 staff mode, freeze, inspect, reports ---
+lp group helper permission set skyblock.staff.reports true
+lp group helper permission set skyblock.staff.inspect true
+lp group helper permission set skyblock.staff.freeze true
+lp group helper permission set skyblock.staff.mode true
+lp group helper permission set skyblock.report.bypass-cooldown true
+lp group admin permission set skyblock.staff.freeze.exempt true

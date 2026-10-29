@@ -1,0 +1,88 @@
+package net.skybornmc.skyblock.staff;
+
+import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.command.Arg;
+import net.skybornmc.skyblock.common.command.Args;
+import net.skybornmc.skyblock.common.command.CommandSpec;
+import net.skybornmc.skyblock.common.db.Migrations;
+import net.skybornmc.skyblock.common.module.SkyblockModule;
+import net.skybornmc.skyblock.common.text.ModuleMessages;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+
+import java.util.List;
+
+/**
+ * Staff tools (M1.9): staff mode ({@code /staff}), {@code /freeze}, {@code /inspect}, {@code /report} and {@code /reports}.
+ * Settings in {@code staff.yml}, texts in {@code messages/staff.yml}, data in {@code db/staff}.
+ */
+public final class StaffModule implements SkyblockModule {
+
+    /** What menus and tools need from the module. */
+    record Services(Core core, ModuleMessages messages, StaffStore store, FreezeService freeze, ReportService reports) {
+    }
+
+    private final Core core;
+    private final StaffConfig config = new StaffConfig();
+    private FreezeService freeze;
+    private ReportService reports;
+    private StaffMode mode;
+
+    public StaffModule(Core core) {
+        this.core = core;
+    }
+
+    @Override
+    public String id() {
+        return StaffFeature.MODULE;
+    }
+
+    @Override
+    public void enable() throws Exception {
+        new Migrations(core.database(), core.plugin().getLogger()).migrate(id(), getClass().getClassLoader());
+        core.configs().load(config);
+        ModuleMessages msg = core.messages(id());
+        StaffStore store = new StaffStore(core.database());
+        freeze = new FreezeService(core, config, msg, store);
+        reports = new ReportService(core, config, msg, store);
+        Services services = new Services(core, msg, store, freeze, reports);
+        mode = new StaffMode(core, config, msg, store, freeze, reports, services);
+
+        freeze.register();
+        reports.register();
+        mode.register();
+        Arg<String> inspectTarget = Args.offlinePlayer("player");
+        core.commands().register(CommandSpec.command("inspect")
+                .description("Profile, inventory, reports and logs of a player").category("Staff")
+                .permission(StaffPerms.INSPECT).playerOnly().arg(inspectTarget).aliases("check").example("inspect Steve")
+                .executes(ctx -> InspectMenu.open(services, ctx.player(), ctx.get(inspectTarget))));
+
+        for (Listener listener : listeners()) {
+            core.plugin().getServer().getPluginManager().registerEvents(listener, core.plugin());
+        }
+        freeze.start();
+        reports.start();
+    }
+
+    private List<Listener> listeners() {
+        return List.of(freeze, reports, mode);
+    }
+
+    @Override
+    public void reload() {
+        core.configs().load(config);
+        core.messages().load(id());
+    }
+
+    @Override
+    public void disable() {
+        if (mode == null) {
+            return;
+        }
+        mode.shutdown();
+        freeze.stop();
+        for (Listener listener : listeners()) {
+            HandlerList.unregisterAll(listener);
+        }
+    }
+}

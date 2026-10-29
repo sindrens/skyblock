@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":modules:moderation"))
     implementation(project(":modules:essentials"))
     implementation(project(":modules:hud"))
+    implementation(project(":modules:staff"))
     implementation(project(":modules:social"))
     implementation(project(":modules:perks"))
     implementation(project(":modules:chat"))

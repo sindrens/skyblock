@@ -1,0 +1,270 @@
+# Staff tools: staff mode, freeze, inspect, reports. MiniMessage + style tags (style.yml).
+
+command-missing: "<prefix><c:error><sym:cross> <c:value>/<command></c:value> isn't available yet."
+
+# --- Staff mode (/staff) ---
+mode:
+  on: "<prefix><c:success><sym:check> <c:text>Staff mode <c:success>on</c:success>. <c:muted>Your inventory is saved; /staff to leave."
+  off: "<prefix><c:text>Staff mode <c:error>off</c:error>. <c:muted>Your inventory is back."
+  staff-on: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>entered staff mode."
+  staff-off: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>left staff mode."
+  save-failed: "<prefix><c:error><sym:cross> Staff mode was cancelled: your inventory couldn't be saved to the database. Nothing was lost."
+  recovered: "<prefix><c:warning>Your inventory from staff mode was restored (the server stopped while you were in staff mode)."
+  wait: "<prefix><c:error><sym:cross> One moment, your saved staff-mode inventory is still being checked."
+  check-failed: "<prefix><c:error><sym:cross> Couldn't check your saved staff-mode inventory, so /staff is blocked until you rejoin. Tell an admin if this repeats."
+
+tool:
+  need-target: "<c:error><sym:cross> Look at a player (or right-click one).</c:error>"
+  inspect:
+    name: "<c:info><bold>Inspect</bold></c:info> <c:muted><sym:dot> Right-click a player"
+    lore: ["<c:text>Profile, inventory, reports and logs.", "", "<c:action><sym:bullet> Right-click a player"]
+  freeze:
+    name: "<c:sky_ice><bold>Freeze</bold></c:sky_ice> <c:muted><sym:dot> Right-click a player"
+    lore: ["<c:text>Freeze or unfreeze for a check.", "", "<c:action><sym:bullet> Right-click a player"]
+  random-tp:
+    name: "<c:flame><bold>Random player</bold></c:flame> <c:muted><sym:dot> Right-click"
+    lore: ["<c:text>Teleport to a random player", "<c:text>(other staff are skipped).", "", "<c:action><sym:bullet> Right-click"]
+    none: "<c:muted>No players to teleport to.</c:muted>"
+    done: "<c:text>Teleported to <c:value><player></c:value>"
+  logs:
+    name: "<c:ember><bold>Logs here</bold></c:ember> <c:muted><sym:dot> Right-click"
+    lore: ["<c:text>Recent actions around you.", "", "<c:action><sym:bullet> Right-click"]
+  vanish:
+    on:
+      name: "<c:success><bold>Vanished</bold></c:success> <c:muted><sym:dot> Right-click"
+      lore: ["<c:text>Players can't see you.", "", "<c:action><sym:bullet> Right-click to show yourself"]
+    off:
+      name: "<c:muted><bold>Visible</bold></c:muted> <c:muted><sym:dot> Right-click"
+      lore: ["<c:warning>Players can see you!", "", "<c:action><sym:bullet> Right-click to vanish"]
+  punish:
+    name: "<c:error><bold>Punish</bold></c:error> <c:muted><sym:dot> Right-click a player"
+    lore: ["<c:text>Opens the punishment menu.", "", "<c:action><sym:bullet> Right-click a player"]
+  reports:
+    name: "<c:parchment><bold>Reports</bold></c:parchment> <c:muted><sym:dot> Right-click"
+    lore: ["<c:text>Open player reports.", "", "<c:action><sym:bullet> Right-click"]
+  exit:
+    name: "<c:brand_bright><bold>Leave staff mode</bold></c:brand_bright>"
+    lore: ["<c:text>Gives your own inventory back.", "", "<c:action><sym:bullet> Right-click"]
+
+# --- Freeze ---
+freeze:
+  done: "<prefix><c:text>Froze <c:value><player></c:value>."
+  undone: "<prefix><c:text>Unfroze <c:value><player></c:value>."
+  released: "<prefix><c:success><sym:check> <c:text>You were unfrozen by <c:value><staff></c:value>. Thanks for waiting!"
+  staff-on: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>froze <c:value><player></c:value>."
+  staff-off: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>unfroze <c:value><player></c:value>."
+  self: "<prefix><c:error><sym:cross> You can't freeze yourself."
+  exempt: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be frozen."
+  not-frozen: "<prefix><c:error><sym:cross> <c:value><player></c:value> is not frozen."
+  no-commands: "<prefix><c:error><sym:cross> You can't use commands while frozen. Chat goes to staff."
+  title:
+    title: "<c:sky_ice><bold>FROZEN</bold></c:sky_ice>"
+    subtitle: "<c:text>Don't log out <sym:dot> read the chat"
+    fade-in: 0
+    stay: 220
+    fade-out: 10
+  instructions:
+    - ""
+    - "  <c:sky_ice><bold>You have been frozen by staff.</bold></c:sky_ice>"
+    - "  <c:text>Don't log out: that counts as refusing the check."
+    - "  <c:text>Type in chat to talk to staff, or join our Discord:"
+    - "  <click:open_url:'https://discord.skybornmc.net'><hover:show_text:'<c:text>Open discord.skybornmc.net'><c:action><u>discord.skybornmc.net</u></c:action></hover></click>"
+    - ""
+  chat: "<c:sky_ice>[Frozen]</c:sky_ice> <c:value><player></c:value><c:muted>:</c:muted> <c:text><message>"
+  logout: "<c:muted>[Staff]</c:muted> <c:error><sym:cross></c:error> <c:value><player></c:value> <c:warning>logged out while frozen <c:muted>(action: <action>)"
+  rejoined: "<c:muted>[Staff]</c:muted> <c:value><player></c:value> <c:text>came back and is frozen again."
+
+# --- Inspect ---
+inspect:
+  unknown: "<prefix><c:error><sym:cross> No player named <c:value><player></c:value> has joined before."
+
+# --- Reports (players) ---
+report:
+  unknown: "<prefix><c:error><sym:cross> No player named <c:value><player></c:value> has joined before."
+  self: "<prefix><c:error><sym:cross> You can't report yourself."
+  cooldown: "<prefix><c:error><sym:cross> You can report again in <c:value><time></c:value>."
+  playtime: "<prefix><c:error><sym:cross> You need <c:value><minutes> minutes</c:value> of playtime before you can report players."
+  too-many: "<prefix><c:error><sym:cross> You already have <c:value><max></c:value> open reports. Staff will look at them soon."
+  already: "<prefix><c:error><sym:cross> You already reported this player. Staff will look at it soon."
+  failed: "<prefix><c:error><sym:cross> Your report couldn't be saved. Please try again in a moment."
+  sent: "<prefix><c:success><sym:check> <c:text>Report <c:value>#<id></c:value> about <c:value><player></c:value> sent. <c:muted>Thanks! You'll hear the result."
+  prompt: "<prefix><c:text>Type what <c:value><player></c:value> did in chat <c:muted>(one line). Type <c:value><cancel></c:value><c:muted> to cancel (<seconds>s)."
+  staff-alert:
+    - "<c:muted>[Report #<id>]</c:muted> <c:value><reporter></c:value> <c:text>reported <c:value><player></c:value> <c:text>for <c:warning><reason></c:warning> <c:muted>(<open> open, <total> total)"
+    - "  <c:muted><details></c:muted>"
+    - "  <click:run_command:'/tp <player>'><hover:show_text:'<c:text>Teleport to <player>'><c:action>[Teleport]</c:action></hover></click> <click:run_command:'/inspect <player>'><hover:show_text:'<c:text>Inspect <player>'><c:info>[Inspect]</c:info></hover></click> <click:run_command:'/reports claim <id>'><hover:show_text:'<c:text>Claim this report'><c:success>[Claim]</c:success></hover></click>"
+  closed-punished: "<prefix><c:success><sym:check> <c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was handled: <c:success>action was taken</c:success>. Thank you!"
+  closed-warned: "<prefix><c:success><sym:check> <c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was handled: <c:success>the player was warned</c:success>. Thank you!"
+  closed-no-evidence: "<prefix><c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was checked, but staff found <c:warning>no evidence</c:warning>. Thanks anyway!"
+  closed-invalid: "<prefix><c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was closed: <c:muted>no rule was broken</c:muted>."
+  closed-duplicate: "<prefix><c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was already being handled in another report. Thanks!"
+
+# --- Reports (staff) ---
+reports:
+  invalid-id: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a report number."
+  not-found: "<prefix><c:error><sym:cross> Report <c:value>#<id></c:value> doesn't exist."
+  not-changed: "<prefix><c:error><sym:cross> Report <c:value>#<id></c:value> couldn't be changed (already closed or claimed by someone else?)."
+  claimed: "<prefix><c:success><sym:check> <c:text>You claimed report <c:value>#<id></c:value>."
+  unclaimed: "<prefix><c:text>Report <c:value>#<id></c:value> is open again."
+  staff-claimed: "<c:muted>[Report #<id>]</c:muted> <c:text>claimed by <c:value><staff></c:value>."
+  closed: "<prefix><c:success><sym:check> <c:text>Report <c:value>#<id></c:value> closed: <c:value><outcome></c:value>."
+  join-notice: "<prefix><c:warning>There are <c:value><count></c:value> open report(s). <click:run_command:'/reports'><hover:show_text:'<c:text>Open /reports'><c:action>[View]</c:action></hover></click>"
+
+outcome:
+  punished:
+    name: "<c:success><bold>Punished</bold></c:success>"
+    lore: ["<c:text>The report was right and <c:value><player></c:value>", "<c:text>was punished.", "", "<c:muted>Tells <reporter>: action was taken.", "<c:action><sym:bullet> Click to close"]
+  warned:
+    name: "<c:flame><bold>Warned</bold></c:flame>"
+    lore: ["<c:text><c:value><player></c:value> was warned.", "", "<c:muted>Tells <reporter>: the player was warned.", "<c:action><sym:bullet> Click to close"]
+  no-evidence:
+    name: "<c:warning><bold>No evidence</bold></c:warning>"
+    lore: ["<c:text>Checked, but nothing was found.", "", "<c:muted>Tells <reporter>: no evidence.", "<c:action><sym:bullet> Click to close"]
+  invalid:
+    name: "<c:error><bold>Invalid</bold></c:error>"
+    lore: ["<c:text>No rule was broken.", "", "<c:muted>Tells <reporter>: closed, no rule broken.", "<c:action><sym:bullet> Click to close"]
+  duplicate:
+    name: "<c:muted><bold>Duplicate</bold></c:muted>"
+    lore: ["<c:text>Already handled in another report.", "", "<c:muted>Tells <reporter>: duplicate.", "<c:action><sym:bullet> Click to close"]
+
+# --- Menus ---
+menu:
+  report:
+    title: "Report <player>"
+    info: ["<c:text>Pick what this player did.", "<c:text>Staff get your report right away.", "<c:muted>False reports can be punished."]
+    target:
+      name: "<c:value><bold><player></bold></c:value>"
+      lore: ["<c:text>You are reporting this player."]
+    reason:
+      name: "<c:warning><bold><reason></bold></c:warning>"
+      lore: ["<c:text>Report <c:value><player></c:value> for <reason>.", "", "<c:action><sym:bullet> Click to send"]
+    other:
+      name: "<c:warning><bold><reason></bold></c:warning>"
+      lore: ["<c:text>Something else? Describe it", "<c:text>in one line in chat.", "", "<c:action><sym:bullet> Click to type"]
+
+  reports:
+    title: "Reports"
+    about: "About <player>"
+    info: ["<c:text>Open: waiting for staff.", "<c:text>Claimed: someone is on it.", "<c:text>Closed: handled, with the outcome.", "<c:muted>Click a report to act on it."]
+    empty:
+      name: "<c:success><bold>Nothing here</bold></c:success>"
+      lore: ["<c:text>No reports in this list."]
+    tab:
+      open:
+        name: "Open"
+        lore: ["<c:text>Reports nobody has claimed yet.", "", "<c:action><sym:bullet> Click to show"]
+      open-selected:
+        name: "<c:value><bold>Open</bold></c:value>"
+        lore: ["<c:success>Showing open reports."]
+      claimed:
+        name: "Claimed"
+        lore: ["<c:text>Reports a staff member is handling.", "", "<c:action><sym:bullet> Click to show"]
+      claimed-selected:
+        name: "<c:value><bold>Claimed</bold></c:value>"
+        lore: ["<c:success>Showing claimed reports."]
+      closed:
+        name: "Closed"
+        lore: ["<c:text>Recently closed reports.", "", "<c:action><sym:bullet> Click to show"]
+      closed-selected:
+        name: "<c:value><bold>Closed</bold></c:value>"
+        lore: ["<c:success>Showing closed reports."]
+    entry:
+      open:
+        name: "<c:warning><bold>#<id></bold></c:warning> <c:value><player></c:value> <c:muted><sym:dot> <reason>"
+        lore:
+          - "<c:ember>Reporter</c:ember> <c:value><reporter>"
+          - "<c:ember>Details</c:ember> <c:text><details>"
+          - "<c:ember>When</c:ember> <c:text><ago> ago"
+          - "<c:ember>Where</c:ember> <c:text><where>"
+          - ""
+          - "<c:action><sym:bullet> Click to open"
+      claimed:
+        name: "<c:info><bold>#<id></bold></c:info> <c:value><player></c:value> <c:muted><sym:dot> <reason>"
+        lore:
+          - "<c:ember>Claimed by</c:ember> <c:value><claimer>"
+          - "<c:ember>Reporter</c:ember> <c:value><reporter>"
+          - "<c:ember>Details</c:ember> <c:text><details>"
+          - "<c:ember>When</c:ember> <c:text><ago> ago"
+          - "<c:ember>Where</c:ember> <c:text><where>"
+          - ""
+          - "<c:action><sym:bullet> Click to open"
+      closed:
+        name: "<c:muted><bold>#<id></bold></c:muted> <c:value><player></c:value> <c:muted><sym:dot> <reason>"
+        lore:
+          - "<c:ember>Outcome</c:ember> <c:value><outcome>"
+          - "<c:ember>Closed by</c:ember> <c:value><closer>"
+          - "<c:ember>Reporter</c:ember> <c:value><reporter>"
+          - "<c:ember>Details</c:ember> <c:text><details>"
+          - "<c:ember>Filed</c:ember> <c:text><ago> ago"
+          - ""
+          - "<c:action><sym:bullet> Click to open"
+
+  report-view:
+    title: "#<id>"
+    info: ["<c:text>Claim the report so others know you", "<c:text>are on it, check the player, then", "<c:text>close it with the outcome."]
+    claim:
+      name: "<c:success><bold>Claim</bold></c:success>"
+      lore: ["<c:text>Tell other staff you handle this.", "<c:muted>Current: <claimer>", "", "<c:action><sym:bullet> Click to claim"]
+    unclaim:
+      name: "<c:warning><bold>Unclaim</bold></c:warning>"
+      lore: ["<c:text>Put the report back in the open list.", "", "<c:action><sym:bullet> Click to unclaim"]
+    teleport:
+      name: "<c:value><bold>Teleport</bold></c:value>"
+      lore: ["<c:text>Go to <c:value><player></c:value>.", "", "<c:action><sym:bullet> Click to teleport"]
+    offline:
+      name: "<c:muted><bold>Offline</bold></c:muted>"
+      lore: ["<c:text><player> is not online."]
+    inspect:
+      name: "<c:info><bold>Inspect</bold></c:info>"
+      lore: ["<c:text>Profile, inventory, history.", "", "<c:action><sym:bullet> Click to inspect"]
+    punish:
+      name: "<c:error><bold>Punish</bold></c:error>"
+      lore: ["<c:text>Open the punishment menu.", "", "<c:action><sym:bullet> Click to punish"]
+    close:
+      name: "<c:brand_bright><bold>Close report</bold></c:brand_bright>"
+      lore: ["<c:text>Choose the outcome.", "<c:muted>The reporter is told the result.", "", "<c:action><sym:bullet> Click to close"]
+
+  outcome:
+    title: "Close #<id>"
+
+  inspect:
+    title: "Inspect <player>"
+    info: ["<c:text>Everything about this player.", "<c:muted>Opening this is logged."]
+    profile:
+      name: "<c:value><bold><player></bold></c:value> <c:muted><sym:dot> <status>"
+      lore:
+        - "<c:ember>Rank</c:ember> <c:value><rank>"
+        - "<c:ember>Playtime</c:ember> <c:value><playtime>"
+        - "<c:ember>First joined</c:ember> <c:value><first> UTC"
+        - "<c:ember>Last seen</c:ember> <c:value><last>"
+        - "<c:ember>Platform</c:ember> <c:value><platform>"
+        - "<c:ember>Ping</c:ember> <c:value><ping>"
+        - "<c:ember>Location</c:ember> <c:value><location>"
+        - "<c:ember>Game mode</c:ember> <c:value><gamemode>"
+    reports:
+      name: "<c:parchment><bold>Reports</bold></c:parchment>"
+      lore: ["<c:ember>Open</c:ember> <c:value><open>", "<c:ember>Total</c:ember> <c:value><total>", "", "<c:action><sym:bullet> Click to see them"]
+    inventory:
+      name: "<c:value><bold>Inventory</bold></c:value>"
+      lore: ["<c:text>Look into <player>'s inventory.", "", "<c:action><sym:bullet> Click to open"]
+    enderchest:
+      name: "<c:value><bold>Ender chest</bold></c:value>"
+      lore: ["<c:text>Look into <player>'s ender chest.", "", "<c:action><sym:bullet> Click to open"]
+    teleport:
+      name: "<c:value><bold>Teleport</bold></c:value>"
+      lore: ["<c:text>Go to <player>.", "", "<c:action><sym:bullet> Click to teleport"]
+    freeze:
+      name: "<c:sky_ice><bold>Freeze</bold></c:sky_ice>"
+      lore: ["<c:text>Freeze <player> for a check.", "", "<c:action><sym:bullet> Click to freeze"]
+    unfreeze:
+      name: "<c:sky_ice><bold>Unfreeze</bold></c:sky_ice>"
+      lore: ["<c:warning><player> is frozen.", "", "<c:action><sym:bullet> Click to unfreeze"]
+    offline:
+      name: "<c:muted><bold>Offline</bold></c:muted>"
+      lore: ["<c:text>Inventory, teleport and freeze", "<c:text>need <player> to be online."]
+    punish:
+      name: "<c:error><bold>Punish</bold></c:error>"
+      lore: ["<c:text>Open the punishment menu.", "", "<c:action><sym:bullet> Click to punish"]
+    logs:
+      name: "<c:ember><bold>Logs</bold></c:ember>"
+      lore: ["<c:text>Everything <player> did.", "", "<c:action><sym:bullet> Click to open"]
