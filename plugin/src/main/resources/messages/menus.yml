@@ -1,0 +1,130 @@
+# Menu (GUI) framework texts. MiniMessage + style tags (style.yml). Lore can be a list (one line per entry).
+# Items never show italics. Titles: dark gray text with a red marker, max ~24 characters (Bedrock).
+# Reload: /skyblock reload core
+
+error: "<prefix><c:error><sym:cross> Something went wrong. Please try again."
+
+frame:
+  back:
+    name: "<c:ember><sym:arrow></c:ember> <c:value>Back"
+    lore: ["<c:action>Click to go back"]
+  close:
+    name: "<c:error><sym:cross> <c:value>Close"
+    lore: ["<c:action>Click to close"]
+  help:
+    name: "<c:info>Help"
+    lore:
+      - "<c:text>Guides for every feature."
+      - ""
+      - "<c:action>Click to open /help"
+  info:
+    name: "<c:info>? <c:value>About this menu"
+    footer:
+      - ""
+      - "<c:action>Click for full help"
+  previous:
+    name: "<c:ember><sym:arrow></c:ember> <c:value>Previous page"
+    lore: ["<c:text>Page <c:value><page></c:value>/<pages>", "<c:action>Click to go back a page"]
+  next:
+    name: "<c:value>Next page <c:ember><sym:arrow>"
+    lore: ["<c:text>Page <c:value><page></c:value>/<pages>", "<c:action>Click for the next page"]
+
+loading:
+  name: "<c:text>Loading..."
+  lore: ["<c:muted>One moment"]
+error-item:
+  name: "<c:error><sym:cross> Could not load"
+  lore: ["<c:text>Close and open the menu again."]
+empty:
+  name: "<c:text>Nothing here yet"
+  lore: []
+
+toggle:
+  on: ["", "<c:text>Status: <c:success>ON"]
+  off: ["", "<c:text>Status: <c:error>OFF"]
+  action: ["<c:action>Click to toggle"]
+
+confirm:
+  title: "<c:brand><sym:bullet></c:brand> Are you sure?"
+  yes:
+    name: "<c:success><sym:check> Confirm"
+    lore: ["", "<c:action>Click to confirm"]
+  no:
+    name: "<c:error><sym:cross> Cancel"
+    lore: ["<c:text>Nothing will change.", "", "<c:action>Click to cancel"]
+
+number:
+  title: "<c:brand><sym:bullet></c:brand> Choose an amount"
+  info:
+    - "<c:text>Use <c:error>-</c:error> and <c:success>+</c:success> to change the amount,"
+    - "<c:text>or type an exact value in chat."
+  minus:
+    name: "<c:error>- <step>"
+    lore: ["<c:action>Click to remove <step>"]
+  plus:
+    name: "<c:success>+ <step>"
+    lore: ["<c:action>Click to add <step>"]
+  value:
+    name: "<c:value><value>"
+    lore: ["<c:text>Min <c:value><min></c:value> <c:muted><sym:dot></c:muted> Max <c:value><max>"]
+  custom:
+    name: "<c:value>Type a value"
+    lore: ["<c:text>Write the amount in chat.", "<c:text>Examples: <c:value>1500</c:value>, <c:value>1.5k</c:value>, <c:value>2M", "", "<c:action>Click to type"]
+  confirm:
+    name: "<c:success><sym:check> Confirm <c:value><value>"
+    lore: ["", "<c:action>Click to confirm"]
+  ask: "<prefix><c:text>Type an amount between <c:value><min></c:value> and <c:value><max></c:value> in chat. <c:muted>(type <c:value><cancel></c:value> to cancel, <seconds>s)"
+  invalid: "<prefix><c:error><sym:cross> That's not a valid amount. <c:text>Use a number between <c:value><min></c:value> and <c:value><max></c:value> (like 1500 or 1.5k)."
+
+players:
+  title: "<c:brand><sym:bullet></c:brand> Choose a player"
+  info: ["<c:text>All online players.", "<c:text>Click a head to choose that player."]
+  entry:
+    name: "<c:value><player>"
+    lore: ["", "<c:action>Click to choose"]
+  empty:
+    name: "<c:text>No other players online"
+    lore: []
+  offline: "<prefix><c:error><sym:cross> <c:value><player></c:value> just went offline."
+
+prompt:
+  cancelled: "<prefix><c:text>Cancelled."
+  timeout: "<prefix><c:error><sym:cross> You took too long. <c:text>Nothing was changed."
+  too-long: "<prefix><c:error><sym:cross> That's too long. <c:text>Use at most <c:value><max></c:value> characters, or type it again."
+
+demo:
+  title: "<c:brand><sym:bullet></c:brand> Menu demo"
+  info:
+    - "<c:text>Staff demo of the menu framework."
+    - "<c:text>Try to take items out: it can't be done."
+  entry:
+    name: "<c:value>Sample #<number>"
+    lore: ["<c:text>A paged list entry.", "", "<c:action>Click to test a click"]
+  clicked: "<prefix><c:text>You clicked sample <c:value>#<number></c:value> <c:muted>(<click>)"
+  player-picker:
+    name: "<c:value>Player picker"
+    lore: ["<c:text>Opens a list of online players.", "", "<c:action>Click to open"]
+  picked: "<prefix><c:text>You picked <c:value><player></c:value>."
+  number:
+    name: "<c:value>Number picker"
+    lore: ["<c:text>Current amount: <cur:money><value></cur:money>", "", "<c:action>Click to change"]
+  number-chosen: "<prefix><c:text>Amount set to <cur:money><value></cur:money>."
+  live:
+    name: "<c:value>Live slot"
+    lore: ["<c:text>Menu open for <c:value><time></c:value>", "<c:muted>Updates every second"]
+  toggle:
+    name: "<c:value>Toggle"
+    lore: ["<c:text>A setting you can switch on and off."]
+  async:
+    name: "<c:value>Loaded!"
+    lore: ["<c:text>This slot loaded in the background", "<c:text>without freezing the menu."]
+  confirm:
+    name: "<c:warning>Confirm dialog"
+    lore: ["<c:text>Opens a confirmation.", "", "<c:action>Click to open"]
+  confirm-details: ["<c:text>This is only a demo.", "<c:text>Cost: <cur:money>$0</cur:money>"]
+  confirmed: "<prefix><c:success><sym:check> Confirmed."
+  cancelled: "<prefix><c:text>Cancelled."
+  text:
+    name: "<c:value>Text input"
+    lore: ["<c:text>Last typed: <c:value><value>", "", "<c:action>Click to type in chat"]
+  text-ask: "<prefix><c:text>Type any text in chat. <c:muted>(type <c:value><cancel></c:value> to cancel, <seconds>s)"
