@@ -16,6 +16,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **P0** merged: freeze really holds (snap-back teleport was self-cancelled), persisted, no commands; Inspect tool = ender eye.
 - **M3.2 money notes** merged (`/withdraw`, `/eco note`).
 - Release script on the Mac (`~/Development/.skyborn-claude/release.sh`) first merges owner edits from GitHub; if it writes `from-github.bundle`, stage it and merge it into the cloud repo.
+- **M2.3 island members & roles** merged (invite/accept/kick/leave/promote/demote/transfer/coop, members GUI, permission matrix).
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -35,7 +36,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - P1 /p menu + warn system (Phase P)
 - M4.6 Depths tiers, unlocks, /dungeon
-- M2.3 island members & roles
+- M2.7 island lifecycle (disband/reset) + /isadmin
 
 ## Parked / broken
 (none)
