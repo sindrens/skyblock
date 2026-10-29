@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -133,6 +135,31 @@ class IslandStoreTest {
         assertEquals(1, back.seasonId());
         assertTrue(!back.team());
         assertEquals(1, db.blocking(IslandStore::slots).size());
+    }
+
+    @Test
+    void rolePermissionOverridesRoundTrip() {
+        Island island = ((IslandStore.CreateResult.Created) create(UUID.randomUUID(), 1000L)).island();
+        db.blocking(c -> {
+            IslandStore.savePerm(c, island.id(), PermRole.VISITOR, IslandPerm.INTERACT, true, 1L);
+            IslandStore.savePerm(c, island.id(), PermRole.MEMBER, IslandPerm.CONTAINERS, true, 2L);
+            IslandStore.savePerm(c, island.id(), PermRole.MEMBER, IslandPerm.CONTAINERS, false, 3L); // overwrite, no duplicate
+            IslandStore.savePerm(c, island.id(), PermRole.COOP, IslandPerm.FIRE, true, 4L);
+            IslandStore.savePerm(c, island.id(), PermRole.COOP, IslandPerm.FIRE, null, 5L);          // back to default
+            // a row written by a newer version with an unknown permission is ignored on load
+            return Sql.update(c, "INSERT INTO island_role_perms (island_id, role, perm, allowed, updated_at) VALUES (?, ?, ?, ?, ?)",
+                    island.id(), "member", "teleport-cats", true, 6L);
+        });
+        int rows = db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM island_role_perms", rs -> rs.getInt(1)).orElse(0));
+        assertEquals(3, rows);
+        Island back = db.blocking(c -> IslandStore.loadAll(c, "islands")).getFirst();
+        assertEquals(Boolean.TRUE, back.perms().override(PermRole.VISITOR, IslandPerm.INTERACT));
+        assertEquals(Boolean.FALSE, back.perms().override(PermRole.MEMBER, IslandPerm.CONTAINERS));
+        assertNull(back.perms().override(PermRole.COOP, IslandPerm.FIRE));
+        RolePermissions defaults = new IslandsConfig().rolePermissions().permissions();
+        assertTrue(defaults.allows(back.perms(), PermRole.VISITOR, IslandPerm.INTERACT));
+        assertFalse(defaults.allows(back.perms(), PermRole.VISITOR, IslandPerm.BREAK));
+        assertFalse(defaults.allows(back.perms(), PermRole.MEMBER, IslandPerm.CONTAINERS));
     }
 
     @Test

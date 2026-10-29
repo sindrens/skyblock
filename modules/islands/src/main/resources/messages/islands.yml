@@ -48,9 +48,34 @@ sethome:
   height: "<prefix><c:error><sym:cross> The home must be between <c:value>Y <min></c:value> and <c:value>Y <max></c:value>."
   unsafe: "<prefix><c:error><sym:cross> This spot isn't safe. Stand on solid ground with room above you, away from water and lava."
 
+# Protection (action bar, at most one message per protection.message-cooldown-ms). <action> = one of the actions below.
 protection:
-  not-member: "<c:error><sym:cross> <c:text>This isn't your island."
+  visitor: "<c:error><sym:cross> <c:text>You're visiting: you can't <action> here."
+  role: "<c:error><sym:cross> <c:text>Your island role can't <action>."
   outside: "<c:error><sym:cross> <c:text>You can only build inside an island's border."
+  height: "<c:error><sym:cross> <c:text>You can only build between <c:value>Y <min></c:value> and <c:value>Y <max></c:value>."
+  pvp: "<c:error><sym:cross> <c:text>PvP is off on islands."
+  portal: "<c:error><sym:cross> <c:text>Portals don't work on islands."
+  border: "<c:error><sym:cross> <c:text>That's the edge of the island."
+  actions:
+    break: "break blocks"
+    place: "place blocks"
+    interact: "use doors, buttons and levers"
+    containers: "open containers"
+    redstone: "change redstone"
+    animals: "touch animals"
+    villagers: "trade with villagers"
+    pickup: "pick up items"
+    drop: "drop items"
+    armor-stands: "use armor stands and item frames"
+    vehicles: "use boats and minecarts"
+    fire: "light fires"
+    ender-pearls: "teleport here"
+    spawners: "change spawners"
+
+bypass:
+  on: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>Logged. /is bypass to turn it off."
+  off: "<prefix><c:success><sym:check> <c:text>Island bypass <c:value>off</c:value>."
 
 void:
   rescued: "<c:ember><sym:bullet></c:ember> <c:text>Caught you! Back on solid ground."

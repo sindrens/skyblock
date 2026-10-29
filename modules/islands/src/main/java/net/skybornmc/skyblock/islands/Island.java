@@ -30,7 +30,13 @@ public final class Island {
     private final long createdAt;
     private final String world;
     private final Map<UUID, Role> members = new LinkedHashMap<>();
+    private final IslandPerms perms = new IslandPerms();
     private int sizeChunks;
+    // The playable area as plain ints (protection checks run per block event: no Bounds allocation there).
+    private int minX;
+    private int minZ;
+    private int maxX;
+    private int maxZ;
     private Home home;
     private String name;
     private String ownerName;
@@ -49,6 +55,15 @@ public final class Island {
         this.name = name;
         this.createdAt = createdAt;
         this.world = world;
+        updateArea();
+    }
+
+    private void updateArea() {
+        int half = sizeChunks / 2;
+        minX = IslandGrid.slotMin(gridX) + (IslandGrid.CENTER_CHUNK - half) * IslandGrid.CHUNK;
+        minZ = IslandGrid.slotMin(gridZ) + (IslandGrid.CENTER_CHUNK - half) * IslandGrid.CHUNK;
+        maxX = minX + sizeChunks * IslandGrid.CHUNK - 1;
+        maxZ = minZ + sizeChunks * IslandGrid.CHUNK - 1;
     }
 
     public UUID id() {
@@ -93,6 +108,33 @@ public final class Island {
 
     void sizeChunks(int sizeChunks) {
         this.sizeChunks = sizeChunks;
+        updateArea();
+    }
+
+    /** True if block x/z is inside the border (allocation-free; same result as {@code bounds().contains(x, z)}). */
+    public boolean contains(int x, int z) {
+        return x >= minX && x <= maxX && z >= minZ && z <= maxZ;
+    }
+
+    public int minX() {
+        return minX;
+    }
+
+    public int minZ() {
+        return minZ;
+    }
+
+    public int maxX() {
+        return maxX;
+    }
+
+    public int maxZ() {
+        return maxZ;
+    }
+
+    /** Role permission overrides of this island (M2.2; edited by the M2.3 matrix GUI through IslandManager). */
+    public IslandPerms perms() {
+        return perms;
     }
 
     /** Empty until the island was built (a missing home means the paste never finished: it is rebuilt on /is). */
@@ -127,6 +169,11 @@ public final class Island {
 
     public Optional<Role> role(UUID player) {
         return Optional.ofNullable(members.get(player));
+    }
+
+    /** The stored role of {@code player}, or null (allocation-free, for protection checks). */
+    Role roleOrNull(UUID player) {
+        return members.get(player);
     }
 
     public Bounds bounds() {

@@ -24,8 +24,9 @@ import java.util.Set;
 /**
  * Phase 2 islands. M2.1: the 512×512 slot grid in the islands world (spiral allocation), creation via {@code /is} with a
  * confirm menu, the starter islet (FAWE schematic or the code-built "Ember Meadow" placeholder) with a filled starter
- * chest, {@code /is home}, {@code /is sethome}, {@code /is go}, per-player island borders, void rescue and basic
- * protection (members only) until M2.2. Publishes {@link IslandService} and the placeholders {@code island_name},
+ * chest, {@code /is home}, {@code /is sethome}, {@code /is go}, per-player island borders and void rescue. M2.2: role
+ * permission protection ({@link IslandProtection}), cross-border rules ({@link BorderProtection}), Y 0-256 build limit,
+ * PvP off, staff {@code /is bypass}. Publishes {@link IslandService} and the placeholders {@code island_name},
  * {@code island_level} and {@code island_rank}.
  */
 public final class IslandsModule implements SkyblockModule, Listener {
@@ -41,6 +42,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandManager manager;
     private IslandBorders borders;
     private IslandProtection protection;
+    private BorderProtection borderProtection;
+    private RolePermissions rolePermissions = RolePermissions.none();
+    private net.skybornmc.skyblock.common.util.Scheduler.Task sweepTask;
 
     public IslandsModule(Core core) {
         this.core = core;
@@ -62,12 +66,16 @@ public final class IslandsModule implements SkyblockModule, Listener {
         loadConfig();
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         manager = new IslandManager(this, new IslandStore(core.database()));
+        manager.rolePermissions(rolePermissions);
         manager.load();
         borders = new IslandBorders(manager);
         manager.borders(borders);
         protection = new IslandProtection(this, manager);
+        borderProtection = new BorderProtection(this, manager, protection);
         Bukkit.getPluginManager().registerEvents(borders, core.plugin());
         Bukkit.getPluginManager().registerEvents(protection, core.plugin());
+        Bukkit.getPluginManager().registerEvents(borderProtection, core.plugin());
+        startSweep();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         core.services().register(ID, IslandService.class, manager);
         registerPlaceholders();
@@ -83,6 +91,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
     @Override
     public void reload() {
         loadConfig();
+        if (manager != null) {
+            manager.rolePermissions(rolePermissions);
+        }
+        startSweep();
         core.messages().load(ID);
         Bukkit.getOnlinePlayers().forEach(borders::update);
     }
@@ -93,8 +105,16 @@ public final class IslandsModule implements SkyblockModule, Listener {
             borders.clearAll();
             HandlerList.unregisterAll(borders);
         }
+        if (sweepTask != null) {
+            sweepTask.cancel();
+            sweepTask = null;
+        }
         if (protection != null) {
+            protection.clearBypass();
             HandlerList.unregisterAll(protection);
+        }
+        if (borderProtection != null) {
+            HandlerList.unregisterAll(borderProtection);
         }
         HandlerList.unregisterAll(this);
     }
@@ -108,6 +128,21 @@ public final class IslandsModule implements SkyblockModule, Listener {
         });
         parsed.problems().forEach(problem -> core.plugin().getLogger().warning("islands.yml: " + problem));
         starterItems = parsed.entries();
+        RolePermissions.Result perms = config.rolePermissions();
+        perms.problems().forEach(problem -> core.plugin().getLogger().warning("islands.yml: " + problem));
+        rolePermissions = perms.permissions();
+    }
+
+    /** (Re)starts the sweep that returns entities pushed out of island borders. */
+    private void startSweep() {
+        if (sweepTask != null) {
+            sweepTask.cancel();
+            sweepTask = null;
+        }
+        if (borderProtection != null && config.returnEntities) {
+            long period = config.returnEntitiesIntervalTicks;
+            sweepTask = core.scheduler().repeat("island-return-entities", period, period, borderProtection::sweep);
+        }
     }
 
     // ------------------------------------------------------------------ shared helpers
@@ -177,7 +212,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
                         .executes(ctx -> manager.teleportHome(ctx.player())))
                 .sub(CommandSpec.sub("sethome").description("Set your island home where you stand").permission(PERM_USE).playerOnly()
                         .cooldown(Duration.ofSeconds(3)).example("is sethome")
-                        .executes(ctx -> manager.setHome(ctx.player()))));
+                        .executes(ctx -> manager.setHome(ctx.player())))
+                .sub(CommandSpec.sub("bypass").description("Staff: toggle island protection bypass (logged)").permission(PERM_BYPASS)
+                        .playerOnly().example("is bypass")
+                        .executes(ctx -> protection.toggleBypass(ctx.player()))));
     }
 
     @EventHandler

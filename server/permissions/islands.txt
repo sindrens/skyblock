@@ -2,5 +2,6 @@
 # Node definitions: modules/islands/src/main/resources/permissions/islands.yml. One console command per line; # = comment.
 
 # Islands (M2.1). Everyone can use /is (plugin default true).
-# Staff build bypass on islands: admins only until M2.2 adds the logged /is bypass toggle.
+# Staff protection bypass (M2.2): /is bypass toggles it, every toggle is logged (audit category staff).
+# Admins only for now (open question: also moderators?).
 lp group admin permission set skyblock.island.bypass true

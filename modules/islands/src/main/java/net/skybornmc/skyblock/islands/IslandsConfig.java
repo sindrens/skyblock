@@ -74,6 +74,53 @@ public final class IslandsConfig extends ModuleConfig {
             min = 0, max = 10_000)
     public int protectionMessageCooldownMs = 1500;
 
+    @Setting(path = "protection.pvp", desc = "Players can hurt each other in the islands world (owner decision: off).")
+    public boolean pvp = false;
+
+    @Setting(path = "protection.disable-portals", desc = "Nether and end portals can't be built or used in the islands world.")
+    public boolean disablePortals = true;
+
+    @Setting(path = "protection.keep-players-inside", desc = "A player inside an island border can't be pushed or walk out of it "
+            + "(backup for clients that ignore the border, e.g. Bedrock).")
+    public boolean keepPlayersInside = true;
+
+    @Setting(path = "protection.return-entities.enabled", desc = "Mobs, animals, items and vehicles pushed out of an island border "
+            + "are put back inside.")
+    public boolean returnEntities = true;
+
+    @Setting(path = "protection.return-entities.interval-ticks", desc = "How often (ticks) the chunks around occupied islands are "
+            + "checked for entities outside the border.", min = 5, max = 1200)
+    public int returnEntitiesIntervalTicks = 40;
+
+    @Setting(path = "protection.return-entities.ring-chunks", desc = "How many chunk rings outside the border are checked.", min = 1, max = 4)
+    public int returnEntitiesRingChunks = 1;
+
+    @Setting(path = "protection.return-entities.margin-blocks", desc = "How far inside the border a returned entity is put.", min = 0.5,
+            max = 8)
+    public double returnEntitiesMargin = 1.5;
+
+    @Setting(path = "permissions.defaults.mod", desc = "Default permissions of island mods (keys: break, place, interact, containers, "
+            + "redstone, animals, villagers, pickup, drop, armor-stands, vehicles, fire, ender-pearls, spawners; * = all). "
+            + "The leader always has everything. Islands can change these (M2.3 permission menu).")
+    public List<String> defaultsMod = List.of("*");
+
+    @Setting(path = "permissions.defaults.member", desc = "Default permissions of island members.")
+    public List<String> defaultsMember = List.of("break", "place", "interact", "containers", "redstone", "animals", "villagers",
+            "pickup", "drop", "armor-stands", "vehicles", "fire", "ender-pearls");
+
+    @Setting(path = "permissions.defaults.coop", desc = "Default permissions of coop players (temporary trust while the leader is online).")
+    public List<String> defaultsCoop = List.of("break", "place", "interact", "containers", "redstone", "animals", "villagers",
+            "pickup", "drop", "armor-stands", "vehicles", "ender-pearls");
+
+    @Setting(path = "permissions.defaults.visitor", desc = "Default permissions of visitors (empty = walk and look only). "
+            + "Islands can change this in their settings (M2.5).")
+    public List<String> defaultsVisitor = List.of();
+
+    /** The role defaults parsed from {@code permissions.defaults.*} (problems = unknown keys). */
+    public RolePermissions.Result rolePermissions() {
+        return RolePermissions.parse(defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor);
+    }
+
     /** The max size made valid: odd (an even value is lowered by one), at least 1. */
     public int maxSize() {
         return odd(maxChunks);
