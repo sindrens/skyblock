@@ -27,6 +27,7 @@ public final class Nav {
     final ModuleMessages msg;
     final SettingsRegistry settings;
     volatile HubLayout hub = new HubLayout(List.of());
+    volatile HubLayout staff = new HubLayout(List.of());
     volatile HelpBook help = HelpBook.empty();
 
     Nav(Core core, SettingsRegistry settings) {

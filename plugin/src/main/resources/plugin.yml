@@ -272,3 +272,28 @@ permissions:
   skyblock.settings:
     description: Change your own settings (/settings)
     default: true
+  # --- cosmetics module (M1.11) + staff hub / config editor (M1.12) ---
+  skyblock.cosmetics:
+    description: Open /tags and /titles and equip your own
+    default: true
+  skyblock.staff.cosmetics.give:
+    description: Give or take titles and tags (/tags give|take, /titles give|take)
+    default: op
+  skyblock.admin.cosmetics.item:
+    description: Create redeemable tag items (/tags item)
+    default: op
+  skyblock.admin.cosmetics.edit:
+    description: Create and edit titles and tags in-game
+    default: op
+  skyblock.admin.display:
+    description: Edit chat, tab and nametag formats (/display)
+    default: op
+  skyblock.staff.menu:
+    description: Open the staff hub (/staff)
+    default: op
+  skyblock.admin.config:
+    description: Use the in-game config editor (/admin) for normal settings
+    default: op
+  skyblock.owner.config:
+    description: Edit owner-level settings in /admin (economy, season)
+    default: op
