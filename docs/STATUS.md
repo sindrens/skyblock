@@ -13,6 +13,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **M2.2 island protection** merged. **Phase P** (owner's punishment spec) added as its own phase with priority; spec in `docs/specs/`.
 - **M4.1 Depths layout** merged (`zones.yml` written on first start, not tracked; `/depths generate`, `/depths tp`).
 - **M3.6 auction house** merged (modules/auction, `/ah`, `/ah sell`).
+- **P0** merged: freeze really holds (snap-back teleport was self-cancelled), persisted, no commands; Inspect tool = ender eye.
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -20,7 +21,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
-- Last released bundle: update33. Next bundle number: 34.
+- Last released bundle: update35 (base for next: main at release). Next bundle number: 36.
 - Owner gets a push notification on every release (PushNotification tool).
 
 ## Owner rules (always)
@@ -30,7 +31,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- P0 punishment/staff bug fixes
+- P1 /p menu + warn system (Phase P)
 - M3.2 money notes
 - M2.3 island members & roles
 
