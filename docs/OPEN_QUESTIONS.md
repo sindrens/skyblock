@@ -25,6 +25,13 @@
 - M3.0: island production only counts as "online" while a member was active in the last 15 min, otherwise it burns fuel (default: yes)? Also: does time in The Depths earn island fuel? (default: no, as DESIGN §5.4 says "on the island")
 - M3.0: dynamic price recovery as 2% of the gap per 10 min (default) instead of a fixed 2 points; Hot Item +25% for 24 h?
 - M3.0: personal bank tier unlock cost 2% of the tier's capacity (default: yes)?
+- Skills (M4.5): max skill level 66 (= the highest tier unlock, Voidstone); XP keeps counting after it for leaderboards (`skills.yml → curve.max-level`). Higher cap for Phase 6 perks? (default: 66)
+- Skills (M4.5): combat XP per kill is priced for the same XP per hour as the mine at the same unlock level (zombie 5, skeleton 10, spider 22, slime 40, drowned 72, witch 135, pillager/vindicator 250, blaze 420, wither skeleton 700, ravager/evoker 1,200). OK? (default: yes; M4.8 custom mobs will set their own XP)
+- Skills (M4.5): Mining/Foraging XP only from The Depths, not from island blocks (generator ores, island trees); Combat XP from any mob a player kills (also on islands), but never from spawner mobs. OK? (default: yes)
+- Skills (M4.5): staff `/skills set|add <player> <skill> <amount>` was not in the plan, so it is not built (the service already has an audited `setXp`). Add it? (default: no command until approved)
+- Skills (M4.5): own `/settings` toggle "Skill XP in the action bar" (Display, default on) instead of reusing `tips`/`ui-sounds`. OK? (default: yes)
+- Skills (M4.5): level-up audit rows use category `world` (no progression category). Add a `progression` audit category? (default: `world`)
+- Skills (M4.5): anyone may view another player's skills with `/skills <player>` (`skyblock.skills.others`, default true). Keep public? (default: yes)
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 

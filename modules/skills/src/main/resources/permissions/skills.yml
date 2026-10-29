@@ -1,0 +1,9 @@
+# Permissions of the skills module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/skills.txt. Commands: docs/commands/skills.md.
+skyblock.skills:
+  description: Open /skills (your skill levels and progress)
+  default: true
+skyblock.skills.others:
+  description: View another player's skills (/skills <player>)
+  default: true

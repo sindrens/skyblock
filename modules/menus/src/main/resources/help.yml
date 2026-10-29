@@ -37,11 +37,11 @@ categories:
     topics: []
   progression:
     icon: experience_bottle
-    status: coming-soon
+    status: active
     slot: 15
     name: "<c:flame><bold>Progression"
     lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and masteries."]
-    topics: []
+    topics: [skills]
   gear:
     icon: smithing_table
     status: coming-soon
@@ -186,6 +186,38 @@ topics:
           - "<c:text>Gray switches belong to features that"
           - "<c:text>aren't open yet. They unlock by"
           - "<c:text>themselves when the feature arrives."
+
+  skills:
+    icon: experience_bottle
+    aliases: [skill, mining, foraging, combat]
+    name: "<c:flame>Skills"
+    summary: ["<c:text>Level up Mining, Foraging and", "<c:text>Combat to open new tiers."]
+    take-me-there: "skills"
+    commands: [Progression]
+    pages:
+      - title: "<c:value>What skills are"
+        lines:
+          - "<c:text>You have five skills. <pillar:mining>Mining</pillar:mining><c:text>,"
+          - "<pillar:foraging>Foraging</pillar:foraging> <c:text>and <pillar:combat>Combat</pillar:combat> <c:text>are open now;"
+          - "<pillar:farming>Farming</pillar:farming> <c:text>and <pillar:fishing>Fishing</pillar:fishing> <c:text>come later."
+          - "<c:text>Skills are yours alone and reset each season."
+      - title: "<c:value>Earning XP"
+        lines:
+          - "<c:text>Mine ore and chop logs in The Depths,"
+          - "<c:text>and defeat monsters yourself."
+          - "<c:text>Higher tiers give much more XP."
+          - "<c:text>Gains show above your hotbar."
+      - title: "<c:value>Levels and unlocks"
+        lines:
+          - "<c:text>Each level needs a bit more XP."
+          - "<c:text>Levels open new Depths tiers: see"
+          - "<c:text>'Next unlock' in <c:value>/skills</c:value>."
+          - "<c:text>Perks for skills arrive later."
+      - title: "<c:value>Tips"
+        lines:
+          - "<c:text>Look at a friend's skills:"
+          - "<c:value>/skills <player></c:value>"
+          - "<c:text>Hide the XP line in <c:value>/settings</c:value>."
 
   rules:
     icon: lectern
