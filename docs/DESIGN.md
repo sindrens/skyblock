@@ -1,0 +1,309 @@
+# Game Design Specification
+
+> **Status:** Living document, v0.1 (2026-10-29). This is the single source of truth for *what* we build.
+> Values marked **(tunable)** are starting points and must live in config, never in code.
+> Anything not decided yet is listed in [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Do not guess; ask the owner.
+
+---
+
+## 0. Vision and pillars of the design
+
+A brand-new, heavily custom **seasonal Skyblock** server for **Java + Bedrock (Geyser)** on **Paper 1.21.11**, built to hold **200–300 concurrent players** stably.
+
+Audience: everyone (casual players, grinders, PvPers, younger players, free-to-play and paying players).
+
+Design rules that apply to *every* feature:
+
+1. **Synergy.** Every system feeds others. Nobody wins by grinding one thing for 100 hours.
+2. **Less is more.** Simple to understand, deep to master. If a feature needs a wall of text to explain, redesign it.
+3. **Fast, felt progress.** Players should *feel* progress within their first minutes and every session after.
+4. **Always something to do.** Mining, foraging, farming, combat, conquest, quests and events, all within 1–2 clicks.
+5. **User-friendliness first.** Every feature is discoverable from `/menu` and `/help`, and every action is GUI-based. See [`STANDARDS.md`](STANDARDS.md).
+6. **100% configurable in-game.** Every value, message, item, schematic, reward and timer is editable from an in-game admin GUI (permission-gated) and saved to config.
+7. **Gameplay only, no lore.**
+8. **English only.**
+
+---
+
+## 1. Seasons
+
+| Item | Value |
+|---|---|
+| Season length | 3 months (tunable) |
+| Pre-season | 1 week of normal gameplay with faster progress (global boost, tunable), then a full wipe |
+| Wiped at reset | Islands, outposts, levels, pillars, skills, tools, money, tokens, shards, items, loot |
+| Kept at reset | Titles, cosmetics, ranks (gems: see open questions) |
+| Final week | Double Conquest XP + extra KOTHs, so the island top is never decided early |
+
+### Season leaderboard rewards (store credit, placeholders)
+
+| Place | Solo islands | Team islands |
+|---|---|---|
+| 1 | 150 | 400 |
+| 2 | 100 | TBD |
+| 3 | 50 | TBD |
+
+There are also **weekly mini-leaderboards** (island level gained, pillars, skills, boss damage) with smaller relevant rewards.
+
+---
+
+## 2. First join and tutorial
+
+- The player spawns at a **medieval spawn**. An NPC guide offers the **optional, short tutorial** (never forced, skippable at any time, re-openable with `/tutorial`).
+- Tutorial target: **under 3 minutes.** Steps: get the **Omnitool** → create island → break first blocks in the mine → chop a tree → sell → see `/is upgrade`. Done.
+- The tutorial gives a completion reward.
+- The whole start is a "soft tutorial": action bar hints, a clear next-step objective on the scoreboard, and clickable chat links.
+
+---
+
+## 3. Islands
+
+### 3.1 Creation and grid
+- A custom island system (no third-party island plugin).
+- Islands are **aligned to chunks**. The island border expands in whole chunks.
+- The starting island is a **configurable schematic**, swappable in-game.
+- Every player gets a **solo island** (no solo/team prompt).
+
+### 3.2 Solo → team (permanent)
+- The moment a player **invites** someone, the island permanently becomes a **team island** (tracked by island UUID).
+- It does **not** revert to solo when members are kicked or leave.
+- A **confirmation warning** is shown before the first invite is sent, explaining that the change is permanent and that solo and team islands compete on separate leaderboards.
+- Attempts to bypass (e.g. kicking everyone to re-enter the solo top) get a clear, friendly explanation.
+
+### 3.3 Roles and permissions
+- Preset roles: **Leader, Mod, Member, Coop/Trust**.
+- The Leader edits each role's permissions in a **GUI** (build, break, containers, spawners, bank withdraw/deposit, invite, kick, warps, upgrades, biomes, outposts, settings).
+
+### 3.4 Visiting
+- `/is visit <player>` and the warp GUI.
+- 3 public **island warps** per island (tunable), with a warp browser ranked by visits/votes, as an **island showcase**.
+- The Leader can **lock** the island. Members get notified when someone tries to visit, arrives or leaves.
+
+### 3.5 Upgrades = masteries (`/is upgrade`)
+`/is upgrade` and `/is masteries` are the **same GUI**. Every upgrade has levels. Each level requires:
+- **Tasks** relevant to the upgrade (e.g. Island Size I: mine 500 coal ore + chop 300 oak logs), progressing **automatically while playing**, and
+- A **money** cost (a sink).
+
+Difficulty rises progressively. Early levels are easy.
+
+Upgrades (all tunable, list can grow):
+
+| Upgrade | Effect |
+|---|---|
+| Island Size | Border +1 chunk ring |
+| Member Slots | Max members |
+| Generator | Better custom-generator ore tiers |
+| Spawner Rate | Faster spawners |
+| Spawner Stack Limit | More spawners per stack |
+| Crop Growth | Faster crops |
+| Harvest Yield | Chance for double crops |
+| Lumberjack | Chance for double logs or rare drops |
+| Mine Fortune | Island-wide bonus in the mine |
+| Mob Loot | Extra spawner drops |
+| Sell Multiplier | Island-wide sell bonus |
+| Bank Capacity / Bank Interest | Island bank |
+| Island Vault | Shared storage size |
+| Warp Slots | Public warps |
+| Outpost Slots | See §3.7 |
+| Biome Tier / Biome Fusion | See §3.8 |
+| Fuel Tank | Offline production storage (§5.4) |
+| KOTH Banner | Small capture bonus |
+| Envoy Luck | Better envoy crate odds |
+| XP Boost | Island-wide skill XP bonus |
+
+**No hopper limit.** Hoppers are priced so having many isn't worth it.
+
+### 3.6 Island level: the 5 pillars
+
+**Island Level = Σ pillar levels + Σ completed upgrade levels.**
+
+| Pillar | Fed by |
+|---|---|
+| Mining | Blocks broken in the mine (higher ore tier = more XP) |
+| Foraging | Logs in the forest (higher tree tier = more XP) |
+| Farming | Crops, custom crops, fishing |
+| Combat | Mobs, spawner kills, dungeon zones, bosses (damage share) |
+| Conquest | KOTH, envoys, events, treasure hunts |
+
+Rules:
+- **No caps.** Synergy comes from the cost curve: XP for the next pillar level = `base × 1.12^level` (tunable). Your weakest pillar is always the cheapest place to gain island levels.
+- **Balance bonus:** +2% XP to all pillars for each pillar within 10 levels of the highest pillar (max +10%).
+- **Synergy milestones:** All pillars ≥ 10 / 25 / 40 / 60 unlock big island rewards (outposts, fusion, perks).
+- **Selling gives no XP.** Money buys upgrades, and upgrades give levels, so the economy counts without allowing "dumping".
+- **Offline output** gives 25% of manual Farming XP.
+- Level never decreases within a season.
+- Team islands get faster with more members but only compete with other team islands. No scaling.
+
+XP per tier (tunable): each tier gives ~1.45× the previous. Example ore table:
+
+| Tier | 1 Coal | 2 Copper | 3 Iron | 4 Gold | 5 Redstone | 6 Lapis | 7 Diamond | 8 Emerald | 9–12 Custom |
+|---|---|---|---|---|---|---|---|---|---|
+| XP | 1 | 1.5 | 2.5 | 4 | 6 | 9 | 13 | 19 | 28 / 40 / 58 / 85 |
+
+Target pace (1 active player, ~1 block/s): pillar 30 ≈ 3–4 h, pillar 60 ≈ 35 h, pillar 80 ≈ 300 h+ (the natural ceiling for hardcore teams).
+
+**`/is stats` GUI:** totals per category (blocks mined, logs, crops, farm output, items sold, money earned, KOTH time, bosses), per-member contribution, this week vs. last week, and progress to the next level. Island top tie-breaker: total XP.
+
+### 3.7 Outposts
+Small extra islands for farms, unlocked by progression. **Max 3.**
+
+| Outpost | Unlock (tunable) | Biomes |
+|---|---|---|
+| 1: Greenhold (farming) | All pillars ≥ 10 | Plains (crop growth), Jungle (crop yield), Desert (crop sell value) |
+| 2: Wildwood (combat/spawners) | All pillars ≥ 25 + first world boss defeated | Dark Forest (spawner speed), Swamp (mob drops), Snowy Taiga (XP drops) |
+| 3: Emberdeep (late game) | All pillars ≥ 40 + Combat tier X | Nether Wastes (spawner stack), Crimson Forest (rare drops), Soul Sand Valley (boss key chance) |
+
+### 3.8 Biomes
+- The main island starts with normal biomes.
+- Each outpost has **its own set of 3 biomes**. A biome belongs to exactly one outpost.
+- Biomes **unlock** through the related pillar, and are **upgradeable** (Tier I–V).
+- **Biome Fusion** (outpost upgrade): Fusion I merges 2 biomes, Fusion II merges all 3. Merged biomes give 75% of each effect (tunable).
+
+---
+
+## 4. Economy
+
+### 4.1 Currencies
+
+| Currency | Earned by | Used for |
+|---|---|---|
+| **Money** | Selling, quests, events, interest | Upgrades, shop, auction house, everything general |
+| **Tokens** | Using the Omnitool (breaking, killing, chopping, farming) | Omnitool upgrades, sets, custom enchants (`/enchanter`) |
+| **Gems** | Store credits, voting, saying "gg" when someone buys from the store | Premium items in-game |
+| **Shards** | (see open questions) | The **Black Market** (rotating rare shop) |
+
+- `/pay <player> <amount> [currency]`. Tradeable currencies are configurable per currency.
+- Money can be withdrawn as **physical notes**.
+
+### 4.2 Selling and dynamic prices
+- `/sell` GUI, sell wand, auto-sell chest, chunk collector.
+- **Global dynamic prices.** Each item has a base price. Global sales push the price down, and it recovers toward base over time (e.g. 2% per 10 min). Floor 40% / ceiling 150% of base (tunable). Unsold items climb above base, which rewards selling a mix.
+- The GUI shows price, trend arrow and % from base. A daily **Hot Item** gets a temporary boost.
+- Prices reset at season start.
+- **Max total sell multiplier** (upgrades + rank + boosters + sets) is capped (tunable).
+
+### 4.3 Auction house and player shops
+- `/ah` auction house and player shops.
+- No extra money sinks beyond gameplay costs (owner decision). Inflation is controlled by price floors, interest caps and offline fuel.
+
+### 4.4 Banks (`/bank` shows both)
+| | Island bank | Personal bank |
+|---|---|---|
+| Access | Members, by role permission | Owner only |
+| Capacity | Grows with Bank Capacity upgrade | Grows with personal tiers |
+| Interest | 0.25% every 3 h (tunable) | 0.15% every 3 h (tunable) |
+| Payout cap | Per payout, grows with upgrades | Per payout, grows with tier |
+| Early withdrawal | Forfeits current cycle's interest + ~2% fee | Same |
+| Special | Funds upgrades | Safe if you leave/are kicked; **10 balance tiers** unlock useful perks (lower AH tax, extra AH slots, sell bonus, etc.) |
+
+- Interest is paid every 3 hours, **offline too**. The GUI shows the time until the next payout.
+
+---
+
+## 5. The Omnitool, The Depths and gathering
+
+### 5.1 Omnitool
+- Given in the tutorial. **Not droppable, not sellable**, one per player.
+- It **becomes** the right tool for the context (pickaxe in the mine, axe in the forest, sword vs. mobs, hoe on crops, rod for fishing) and changes when you enter an area.
+- Right-click opens a GUI: stats, level, upgrades, custom enchants.
+- **Max tool level 10**, upgraded with tokens (+ requirements).
+- Gives tokens on use.
+
+### 5.2 The Depths (one big shared area)
+- A single large area containing the **mine, the forest and the combat/dungeon zones**, each split into **tiers**.
+- **`/dungeon`** opens a GUI to teleport to any unlocked tier in any aspect (mining, foraging, combat), including going back to earlier tiers.
+- The next tier unlocks by **blocks broken** (logs chopped / mobs killed for the other aspects) (tunable).
+- **Per-player blocks:** each player sees their own ore/log blocks (packet-based), so nobody steals ore. A broken block **respawns after 10 s** (tunable).
+- **Visibility setting:** see other players: everyone / island only / none.
+- **No PvP** in The Depths. Ambient mobs exist. Danger scales with tier but is never too hard.
+- Mine drops: (see open questions).
+- Custom ores and trees after vanilla tiers. Names: proposed by the developer, approved by the owner.
+
+### 5.3 Island generators, farms and spawners
+- **Custom cobble generators** with upgradeable ore tiers.
+- **Custom crops** + **harvester hoe** (Omnitool hoe mode).
+- **Spawners:** the best ones are obtainable, stackable (max stack tunable). Types are **not** tier-gated by Combat pillar.
+- **Mob stacking** for performance.
+- **Minions/collectors:** yes (automation exists).
+- **Auto-sell chests and chunk collectors:** Tier 1–5. **Merge 2 of the same tier into the next tier** (faster pickup, more storage). Obtained **only** from crates, the store and the monthly crate (not craftable).
+
+### 5.4 Offline production: Island Fuel
+- Every minute a member spends on the island adds 1 minute of **fuel**.
+- When all members are offline, farms, collectors and spawners run on fuel.
+- Starting max: 12 h, grows with the **Fuel Tank** upgrade.
+
+---
+
+## 6. Skills, sets and enchants
+
+### 6.1 Skills (per player, reset each season)
+Mining, Foraging, Farming, Combat, Fishing. Balanced levels with perks along the way. Skill leaderboards. Player skill XP also feeds the matching island pillar.
+
+### 6.2 Sets (`/sets`)
+`/sets` shows all set types, their pieces and bonuses. Proposed sets (2-piece and 4-piece bonuses, tunable):
+
+| Set | Theme |
+|---|---|
+| Farmer | Crops near you grow faster, Haste, extra crops when harvesting |
+| Miner | More tokens, faster block breaking in the mine |
+| Merchant | More money when selling |
+| Forager | Double logs chance, faster chopping |
+| Warrior | Damage/defense vs. mobs and bosses |
+| Angler | Better fishing loot and speed |
+| Conqueror | Envoy luck, KOTH capture speed |
+
+### 6.3 Custom enchants (`/enchanter`)
+- A decent, balanced number across all tools and armor, in tiers.
+- **Always guaranteed** (no fail/destroy chance).
+- Bought inside the Omnitool/enchanter GUI with **tokens** earned by using the tools.
+- Can be levelled, removed and moved.
+- Area enchants (explosive, vein miner, treefeller) are included, balanced.
+- Enchants work in PvP.
+
+---
+
+## 7. PvE
+
+- Custom mobs with abilities (difficulty by tier).
+- **World bosses** + summonable bosses, damage leaderboard with top-3 rewards.
+- Custom gear sets with set bonuses, and a stat system.
+- **Pets:** the monthly crate gives a pet egg, which opens into a random pet egg of a rarity level. Pets level up through use and give buffs.
+- Custom fishing system.
+
+## 8. Conquest and PvP
+
+- **KOTH:** the player captures; it also gives Conquest XP to their island. Normal rules, scheduled.
+- **Envoys:** scheduled supply drops with loot tiers.
+- PvP zones besides KOTH/envoys, `/duel` with wagers.
+- Islands are always safe.
+- Fairness for new players (e.g. low-level events).
+
+## 9. Crates, rewards and quests
+
+- **Crates:** Common, Uncommon, Rare, Epic, Legendary (+ Monthly). Physical crates at spawn **and** `/crates`. Animations.
+- **Keys** are earned by voting, custom-enchant quests and the store. Keys are **virtual** but can be withdrawn as items in the `/crates` GUI. Tradeable.
+- Daily rewards / login streak, voting with vote parties.
+- Daily + weekly quests, battle pass (free + paid track), achievements, **collection log** (titles carry over between seasons).
+- **Black Market:** rotating limited-stock shop paid in shards.
+- **Prestige** on the Omnitool (reset level for a permanent title/cosmetic + small seasonal bonus).
+- No rank-up system. Island level + skills are the progression.
+
+## 10. Events (automatic)
+
+Treasure hunt, money event, farming event, mining rush, double XP and more, all **automatic** on a configurable scheduler. **No** drop parties or build contests. Boss-bar countdowns and Discord announcements.
+
+## 11. Ranks and store
+
+- Players buy **credits** on the store (Tebex). Credits buy things in-game.
+- **5 donor ranks:** proposed names **Squire → Knight → Paladin → Warlord → Monarch**.
+- Perks: worth it but not overpowered: more `/pv` vaults, cosmetics, convenience, and a **Progress Boost** of 2/4/6/8/10%.
+- Progress Boost math: pillar level cost grows 12% per level, so +10% XP ≈ `ln(1.10)/ln(1.12)` ≈ **0.84 pillar levels ahead** at equal playtime, i.e. ~4 island levels across 5 pillars. Noticeable, not decisive. The boost counts toward the global multiplier cap.
+
+> ⚠️ Owner is aware: selling gameplay advantages risks Mojang's commercial usage guidelines.
+
+## 12. Community and integration
+- Full **Discord** integration: account linking (with reward), event/KOTH/boss announcements, ticket bot, store announcements.
+- Guilds/alliances between islands.
+
+## 13. Endgame (months 2–3)
+Omnitool prestige, collection log, high-tier dungeon zones with leaderboards, weekly leaderboards, Final Week, limited late-season cosmetics.

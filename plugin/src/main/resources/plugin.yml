@@ -1,0 +1,14 @@
+name: Skyblock
+version: '${version}'
+main: dev.slickymatt.skyblock.SkyblockPlugin
+api-version: '1.21.11'
+description: Custom seasonal Skyblock core
+authors: [SlickyMatt]
+softdepend: [LuckPerms, floodgate]
+permissions:
+  skyblock.admin.modules:
+    description: View module status
+    default: op
+  skyblock.admin.reload:
+    description: Reload all module configs
+    default: op

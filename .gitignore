@@ -1,0 +1,39 @@
+# Build
+.gradle/
+build/
+out/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local test server (./gradlew runServer)
+run/
+
+# Server runtime: never commit jars, worlds, logs, caches or secrets
+server/*.jar
+server/cache/
+server/libraries/
+server/versions/
+server/logs/
+server/crash-reports/
+server/world*/
+server/plugins/*.jar
+server/plugins/.paper-remapped/
+server/plugins/bStats/
+server/usercache.json
+server/banned-*.json
+server/ops.json
+server/whitelist.json
+server/session.lock
+server/.console_history
+*.log
+*.db
+*.sqlite
+
+# Secrets
+.env
+**/secrets.yml
