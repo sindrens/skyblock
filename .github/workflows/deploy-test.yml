@@ -47,18 +47,6 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
 
-      - name: Upload configs and plugin
+      - name: Deploy (configs, plugin, restart, permissions)
         if: env.HOST != ''
-        run: |
-          U=${{ secrets.TEST_USER }}
-          # Configs and scripts only (no --delete: worlds, jars and data on the server are untouched).
-          rsync -az server/ "$U@$HOST:/opt/skyblock/server/"
-          ssh "$U@$HOST" 'rm -f /opt/skyblock/server/plugins/PhoenixSkyblock-*.jar'
-          scp plugin/build/libs/PhoenixSkyblock-*.jar "$U@$HOST:/opt/skyblock/server/plugins/"
-          ssh "$U@$HOST" 'cd /opt/skyblock/server && ./scripts/apply-secrets.sh'
-
-      - name: Restart server
-        if: env.HOST != ''
-        run: |
-          U=${{ secrets.TEST_USER }}
-          ssh "$U@$HOST" 'cd /opt/skyblock/server && ./scripts/restart-and-apply.sh'
+        run: ./server/scripts/deploy.sh ~/.ssh/id_ed25519 "${{ secrets.TEST_USER }}@$HOST"

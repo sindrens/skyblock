@@ -1,0 +1,7 @@
+# Moderation messages (MiniMessage). Placeholders: <player> = target, <staff> = who ran the command.
+messages:
+  prefix: "<gradient:#C21F2B:#FF3D2E>Phoenix</gradient> <#FF8A1F>»</#FF8A1F> "
+  unbanned: "<#6BDB7A>✔ <white><player></white> <#C9C9C9>has been unbanned."
+  unbanned-ip: "<#6BDB7A>✔ <#C9C9C9>IP <white><player></white> has been unbanned."
+  staff-notify: "<#7A7A7A>[Staff]</#7A7A7A> <white><staff></white> <#C9C9C9>unbanned</#C9C9C9> <white><player></white>"
+  not-banned: "<#FF5C5C>✘ <white><player></white> is not banned. <#C9C9C9>Check the name (Bedrock players start with a dot)."

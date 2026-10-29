@@ -38,6 +38,7 @@ server/plugins/**
 !server/plugins/ViaBackwards/config.yml
 !server/plugins/PhoenixSkyblock/worlds.yml
 !server/plugins/PhoenixSkyblock/motd.yml
+!server/plugins/PhoenixSkyblock/moderation.yml
 *.log
 *.db
 *.sqlite

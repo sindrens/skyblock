@@ -7,6 +7,7 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.skybornmc.skyblock.common.module.ModuleRegistry;
+import net.skybornmc.skyblock.moderation.ModerationModule;
 import net.skybornmc.skyblock.motd.MotdModule;
 import net.skybornmc.skyblock.worlds.VoidChunkGenerator;
 import net.skybornmc.skyblock.worlds.WorldSettings;
@@ -52,6 +53,7 @@ public final class SkyblockPlugin extends JavaPlugin {
         worlds = new WorldsModule(this);
         modules.register(worlds);
         modules.register(new MotdModule(this));
+        modules.register(new ModerationModule(this));
     }
 
     public ModuleRegistry modules() {

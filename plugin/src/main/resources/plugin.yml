@@ -16,3 +16,9 @@ permissions:
   skyblock.admin.worlds:
     description: List worlds and teleport between them (/skyblock worlds, /skyblock tp)
     default: op
+  skyblock.staff.unban:
+    description: Unban players or IP addresses (/unban)
+    default: op
+  skyblock.staff.notify:
+    description: See staff actions (unbans, punishments) in chat
+    default: op

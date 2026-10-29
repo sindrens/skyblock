@@ -57,6 +57,8 @@ lp group mod permission set skyblock.staff.inspect true
 lp group mod permission set minecraft.command.kick true
 lp group mod permission set minecraft.command.ban true
 lp group mod permission set minecraft.command.pardon true
+lp group mod permission set skyblock.staff.unban true
+lp group helper permission set skyblock.staff.notify true
 lp group mod permission set minecraft.command.teleport true
 lp group mod permission set minecraft.command.gamemode true
 lp group mod permission set grim.brand true

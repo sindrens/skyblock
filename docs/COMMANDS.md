@@ -44,6 +44,7 @@ Permission root: `skyblock.`. Status: ⬜ planned · 🟡 in progress · ✅ don
 | `/skyblock worlds` | List worlds (click to teleport) | `skyblock.admin.worlds` | ✅ |
 | `/skyblock tp <world>` | Teleport to a world's spawn | `skyblock.admin.worlds` | ✅ |
 | `/season` | Season tools (reset, pre-season) | `skyblock.owner.season` | ⬜ |
+| `/unban <player\|ip>` | Unban a player (tab-completes banned names) or IP; staff are notified | `skyblock.staff.unban` | ✅ |
 | `/sc <msg>` | Staff chat | `skyblock.staff.chat` | ⬜ |
 | `/maintenance` | Maintenance mode + whitelist | `skyblock.admin.maintenance` | ⬜ |
 | `/eco admin` | Economy dashboard and corrections (logged) | `skyblock.owner.economy` | ⬜ |

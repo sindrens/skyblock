@@ -37,6 +37,12 @@ Restart: `sudo systemctl restart skyblock`. Logs: `/opt/skyblock/server/logs/lat
 ## Staff ranks
 Builder, Helper, Moderator, Admin, Owner: defined in `permissions/luckperms.txt`, applied automatically after every update. To give someone a rank, add a line at the bottom (e.g. `lp user Steve parent add builder`) and run `update-vps.sh`.
 
+## Releases by Claude (one-time setup)
+```bash
+cd ~/Development/skyblock && ./server/scripts/authorize-claude.sh
+```
+Allows Claude's own deploy key (stored next to the repo in `~/Development/.skyborn-claude/`, never in git) to log in to the VPS as `minecraft` (no sudo) and to push to GitHub. After that Claude builds, commits, pushes and releases (`server/scripts/deploy.sh`) without you running anything. Revoke any time by removing the key from `/opt/skyblock/.ssh/authorized_keys` and from GitHub → Settings → Deploy keys.
+
 ## Automatic deploys from GitHub (one-time setup)
 ```bash
 cd ~/Development/skyblock && ./server/scripts/setup-github-deploy.sh
