@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":modules:perks"))
     implementation(project(":modules:chat"))
     implementation(project(":modules:menus"))
+    implementation(project(":modules:cosmetics"))
     // implementation(project(":modules:islands"))
 }
 
