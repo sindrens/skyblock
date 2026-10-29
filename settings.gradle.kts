@@ -1,3 +1,16 @@
+pluginManagement {
+    repositories {
+        // PaperMC's repo mirrors Maven Central (avoids Central rate limits); plugin markers come from the portal.
+        maven("https://repo.papermc.io/repository/maven-public/")
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    // Downloads Java 25 automatically if it is not installed.
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 rootProject.name = "skyblock"
 
 include("common")

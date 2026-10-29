@@ -15,7 +15,7 @@ All tier values are **(tunable)** and live in config. Only **vanilla blocks** ar
 | `depths` | Built | The Depths: mine, forest, combat zones, world boss arena |
 | `warzone` | Built | KOTH, envoys, PvP arena, duels |
 
-Nether and End dimensions are **disabled** (see §6).
+The vanilla Nether and End dimensions are **disabled**. The owner plans a different use for them later as custom worlds (see §6).
 
 ---
 
@@ -148,12 +148,12 @@ Fishing works in any water. Loot tables scale with the Fishing skill (junk → f
 
 | Topic | Rule | Why |
 |---|---|---|
-| Nether / End portals | Disabled | Resources come from the shop and the Depths; keeps economy controlled |
+| Nether / End | **No portals from islands** (vanilla dimensions disabled). The owner has a different future use for Nether/End (TBD); they will be custom worlds | Decided 2026-10-29 |
 | Natural mob spawning on islands | Off (mobs only from spawners) | Performance and economy control |
-| Villagers / wandering traders | No trading, no breeding, wandering traders off | Trading breaks the economy; villager AI is laggy |
-| Iron golem farms | Not possible (no villagers) | |
+| Villagers / wandering traders | **Trading allowed** (owner decision). Villager AI tuned for performance in paper config; trade prices to be watched in the economy dashboard | Decided 2026-10-29 |
+| Iron golem farms | Natural iron golem spawning off on islands (economy + lag); golems from players only | Proposal |
 | Vanilla enchanting / anvils | Allowed on vanilla gear only | Custom enchants stay on Omnitool + sets |
-| Elytra | Not obtainable. `/fly` on own island is a perk | |
+| Elytra | **Allowed** (owner decision; obtained via crates/Black Market/events since the End is closed). Disabled in the warzone | Decided 2026-10-29 |
 | Redstone | Allowed. Per-chunk limits on pistons/observers (tunable); lag machines detected and disabled | |
 | Hoppers | No count limit (expensive); transfer rate per Paper config | Owner decision |
 | Entities per chunk | Cap (e.g. 30 mobs, 20 item frames/armor stands); mob stacking on | Performance |

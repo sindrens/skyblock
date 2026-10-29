@@ -21,7 +21,7 @@ tasks {
     build { dependsOn(shadowJar) }
     jar { enabled = false }
     runServer {
-        minecraftVersion("1.21.11")
+        minecraftVersion("26.3")
         runDirectory.set(rootProject.layout.projectDirectory.dir("run"))
     }
 }

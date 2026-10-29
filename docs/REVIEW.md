@@ -38,7 +38,7 @@ So "blocks broken" from the owner's answer becomes skill XP, which comes *from* 
 **Problem:** Nothing stops a strong player from joining island A for the week, then island B, carrying each.
 **Default:** XP a member earned **stays with the island they earned it on**. Rejoin cooldown 24 h after leaving/kick (tunable). Max **join count per season** (e.g. 3). Team size cap (see B1).
 
-### A6 🟡 Season-top store credits for teams
+### A6 ✅ Season-top store credits for teams (decided: split by contribution)
 **Problem:** "400 credits for team #1": to whom?
 **Default:** Paid to the **leader**, who distributes, *or* split evenly among members with ≥ X% contribution. Owner decides. Proposal: split by contribution share, minimum 5%.
 
@@ -67,7 +67,7 @@ Team islands compete on one leaderboard, so a 25-member island beats everyone. *
 Not defined anywhere: sand, gravel, clay, glass, dirt, ice, nether/end blocks, dyes, string, slime, etc.
 **Default:** a **Builder Shop** (`/shop`) selling building blocks for money (a real money sink), plus a few drops from Depths tiers. See `WORLD.md` §6 for the full vanilla rules proposal.
 
-### B3 🔴 Nether, End, villagers, vanilla enchanting, elytra, redstone, mob farms
+### B3 ✅ Nether, End, villagers, vanilla enchanting, elytra, redstone, mob farms (decided, see WORLD §6)
 All undefined. They hugely affect economy and performance. **Defaults are in `WORLD.md` §6** (Nether/End off, villagers no trading, elytra not obtainable, redstone allowed with limits, vanilla mob farms limited by entity caps).
 
 ### B4 🔴 Offline production must be simulated, not chunk-loaded
@@ -127,10 +127,10 @@ Undefined: starting balance, tutorial rewards, hopper price, first upgrade costs
 
 ## D. Staff, safety and legal
 
-### D1 🔴 Crates and paid keys = loot boxes, with young players in the audience
+### D1 ✅ Crates and paid keys (decided: keys are earn-only, never sold)
 - **Show drop odds** in every crate preview (required by Tebex and many countries, and fair).
 - Belgium/Netherlands have strict loot box rules. Decide whether keys are sold for money at all, or only earned.
-- **Default:** odds shown, keys purchasable, and the owner checks Tebex rules + local law before launch.
+- **Decided 2026-10-29:** keys are **earned only** (voting, quests, events). They are never sold for money or gems. Odds are still shown in every crate preview.
 
 ### D2 🔴 Privacy (GDPR, Norway/EU)
 The store, Discord linking and stored IPs (punishments) are personal data. Needed: privacy policy, data retention, deletion requests. Players under 13 need care. **Default:** privacy policy + rules page before launch; IPs hashed where possible.

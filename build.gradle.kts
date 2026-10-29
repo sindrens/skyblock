@@ -1,10 +1,11 @@
 plugins {
     java
-    id("com.gradleup.shadow") version "8.3.9" apply false
-    id("xyz.jpenilla.run-paper") version "2.3.1" apply false
+    id("com.gradleup.shadow") version "9.6.1" apply false
+    id("xyz.jpenilla.run-paper") version "3.1.0" apply false
 }
 
-val paperVersion = "1.21.11-R0.1-SNAPSHOT"
+// Minecraft 26.3. Bump the build number when updating Paper.
+val paperVersion = "26.3.build.230-stable"
 
 allprojects {
     group = "dev.slickymatt.skyblock"
@@ -21,7 +22,7 @@ subprojects {
     apply(plugin = "java-library")
 
     extensions.configure<JavaPluginExtension> {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+        toolchain.languageVersion.set(JavaLanguageVersion.of(25))
     }
 
     dependencies {
@@ -34,7 +35,7 @@ subprojects {
 
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
-        options.release.set(21)
+        options.release.set(25)
         options.compilerArgs.addAll(listOf("-Xlint:all", "-Xlint:-processing", "-Xlint:-serial"))
     }
 

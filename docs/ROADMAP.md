@@ -26,6 +26,9 @@ Target: everything below is in season 1. Launch is in ~3 years. There is time to
 - [x] Repository, `.gitignore`, docs, CI workflow
 - [x] Gradle multi-module skeleton (`common`, `plugin`, `modules/`)
 - [x] `SkyblockModule` interface + module registry
+- [x] Minecraft 26.3 / Java 25 / Gradle 9 toolchain
+- [x] Test server: tuned Paper configs (`server/`, see `server/CONFIG_NOTES.md`), external plugins via `server/scripts/fetch.sh`, start script, VPS setup script, deploy-to-test workflow
+- [ ] CoreProtect: add once it releases a 26.3 build (`fetch.sh` picks it up automatically)
 - [ ] Config framework (typed config objects, reload, validation)
 - [ ] Messages framework (MiniMessage, placeholders, prefix)
 - [ ] Database layer (HikariCP, async executor, migrations)

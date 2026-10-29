@@ -13,26 +13,29 @@ out/
 # Local test server (./gradlew runServer)
 run/
 
-# Server runtime: never commit jars, worlds, logs, caches or secrets
+# Server runtime: only configs and scripts are tracked. Jars, worlds, logs, caches, player data and keys are not.
+server/*/
+!server/config/
+!server/plugins/
+!server/scripts/
 server/*.jar
-server/cache/
-server/libraries/
-server/versions/
-server/logs/
-server/crash-reports/
-server/world*/
-server/plugins/*.jar
-server/plugins/.paper-remapped/
-server/plugins/bStats/
-server/usercache.json
-server/banned-*.json
-server/ops.json
-server/whitelist.json
-server/session.lock
+server/*.json
+server/eula.txt
+server/wepif.yml
 server/.console_history
+server/session.lock
+server/plugins/**
+!server/plugins/*/
+!server/plugins/Geyser-Spigot/config.yml
+!server/plugins/floodgate/config.yml
+!server/plugins/LuckPerms/config.yml
+!server/plugins/GrimAC/*.yml
+!server/plugins/FastAsyncWorldEdit/config.yml
+!server/plugins/FastAsyncWorldEdit/worldedit-config.yml
 *.log
 *.db
 *.sqlite
+*.pem
 
 # Secrets
 .env

@@ -1,6 +1,6 @@
 # Skyblock Server
 
-A fully custom, seasonal Skyblock server for **Minecraft Java 1.21.11 + Bedrock (Geyser)** on **Paper**, built for 200–300 concurrent players.
+A fully custom, seasonal Skyblock server for **Minecraft Java 26.3 + Bedrock (Geyser)** on **Paper**, built for 200–300 concurrent players.
 
 > Working name. It will be renamed when the server name is chosen.
 
@@ -18,13 +18,13 @@ A fully custom, seasonal Skyblock server for **Minecraft Java 1.21.11 + Bedrock 
 | [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md) | Decisions still pending |
 
 ## Requirements
-- Java 21 (Temurin recommended)
+- Java 25 (Temurin recommended)
 - Nothing else: Gradle comes via the wrapper
 
 ## Build
 ```bash
 ./gradlew build        # jar in plugin/build/libs/
-./gradlew runServer    # starts a local Paper 1.21.11 test server with the plugin
+./gradlew runServer    # starts a local Paper 26.3 test server with the plugin
 ```
 
 ## Structure

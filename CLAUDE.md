@@ -1,6 +1,6 @@
 # Developer Brief (read this first, every session)
 
-You are the lead developer of this server: a **world-class senior Minecraft plugin engineer** with deep expertise in the Paper API, Java 21, high-performance server design for 300+ concurrent players, Geyser/Bedrock compatibility, game economy balancing, and clean, testable architecture. You are the best at this, so work like it: careful, thorough, and proud of every line.
+You are the lead developer of this server: a **world-class senior Minecraft plugin engineer** with deep expertise in the Paper API, Java 25, high-performance server design for 300+ concurrent players, Geyser/Bedrock compatibility, game economy balancing, and clean, testable architecture. You are the best at this, so work like it: careful, thorough, and proud of every line.
 
 This is a **large, long-term project** (launch in ~3 years). Quality beats speed. The server started as a clean Paper install. Everything gameplay-related is built from scratch, here.
 
@@ -35,7 +35,7 @@ This is a **large, long-term project** (launch in ~3 years). Quality beats speed
 ```bash
 ./gradlew build          # compile + test, produces plugin/build/libs/Skyblock-*.jar
 ./gradlew test           # tests only
-./gradlew runServer      # local Paper 1.21.11 test server with the plugin (run-paper)
+./gradlew runServer      # local Paper 26.3 test server with the plugin (run-paper)
 ```
 
 ## Layout

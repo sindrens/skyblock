@@ -8,3 +8,6 @@
 - `/skyblock modules` and `/skyblock reload` admin commands.
 - Design review #1 (docs/REVIEW.md), UI style guide (docs/UI_STYLE.md), world and block spec (docs/WORLD.md).
 - Decided external plugin list (DESIGN §14).
+- Switched to Minecraft 26.3 (Java 25, Gradle 9.8) so Geyser stays current.
+- Test server setup: tuned server.properties, bukkit/spigot/paper configs, plugin configs (Geyser, Floodgate, LuckPerms, Grim, FAWE), fetch/start scripts, Ubuntu VPS setup script with MariaDB, firewall, backups, systemd, and a deploy-to-test GitHub workflow.
+- Owner decisions: crate keys earn-only, team prizes split by contribution, LuckPerms + CoreProtect confirmed, vanilla Nether/End off, villager trading and elytra allowed.

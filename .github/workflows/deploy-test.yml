@@ -1,0 +1,65 @@
+name: Deploy to test server
+
+# Every push to main is built, tested and deployed to the TEST server.
+# Inactive until these repository secrets exist (Settings -> Secrets and variables -> Actions):
+#   TEST_HOST     server IP or hostname
+#   TEST_USER     ssh user (minecraft)
+#   TEST_SSH_KEY  private key whose public key is in /opt/skyblock/.ssh/authorized_keys
+# Production deploys will use a separate workflow triggered by version tags (v*), added before beta.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-test
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HOST: ${{ secrets.TEST_HOST }}
+    steps:
+      - name: Skip if the test server is not configured
+        if: env.HOST == ''
+        run: echo "No TEST_HOST secret. Skipping deploy."
+
+      - uses: actions/checkout@v4
+        if: env.HOST != ''
+      - uses: actions/setup-java@v4
+        if: env.HOST != ''
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+        if: env.HOST != ''
+      - name: Build and test
+        if: env.HOST != ''
+        run: ./gradlew build --no-daemon
+
+      - name: Set up SSH
+        if: env.HOST != ''
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.TEST_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload configs and plugin
+        if: env.HOST != ''
+        run: |
+          U=${{ secrets.TEST_USER }}
+          # Configs and scripts only (no --delete: worlds, jars and data on the server are untouched).
+          rsync -az server/ "$U@$HOST:/opt/skyblock/server/"
+          ssh "$U@$HOST" 'rm -f /opt/skyblock/server/plugins/Skyblock-*.jar'
+          scp plugin/build/libs/Skyblock-*.jar "$U@$HOST:/opt/skyblock/server/plugins/"
+          ssh "$U@$HOST" 'cd /opt/skyblock/server && ./scripts/apply-secrets.sh'
+
+      - name: Restart server
+        if: env.HOST != ''
+        run: |
+          U=${{ secrets.TEST_USER }}
+          ssh "$U@$HOST" "tmux send-keys -t skyblock 'say Updating: restart in 10 seconds' Enter; sleep 10; tmux send-keys -t skyblock 'stop' Enter" || true
+          echo "systemd restarts the server automatically."

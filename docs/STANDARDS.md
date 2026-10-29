@@ -59,7 +59,7 @@ See `DESIGN.md` §14 for the decided list. Everything else is custom.
 
 ## 3. Code
 
-- **Java 21, Paper 1.21.11 API, Gradle (Kotlin DSL).** Adventure + MiniMessage for all text.
+- **Java 25, Paper 26.3 API, Gradle (Kotlin DSL).** Adventure + MiniMessage for all text.
 - **Architecture:** one plugin jar. `common` = shared framework, each feature = a **module** under `modules/` implementing `SkyblockModule` and registered in the plugin. Modules talk through **services/interfaces and events**, never by reaching into each other's internals.
 - **Nothing hardcoded:** values → `config.yml` of the module, text → `messages.yml`, items → item definitions in config.
 - **Main thread is sacred:** all database and file I/O is async. Target: the server stays at 20 TPS / MSPT < 40 at 300 players. Profile with spark.

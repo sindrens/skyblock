@@ -9,7 +9,9 @@
 
 ## 0. Vision and pillars of the design
 
-A brand-new, heavily custom **seasonal Skyblock** server for **Java + Bedrock (Geyser)** on **Paper 1.21.11**, built to hold **200–300 concurrent players** stably.
+A brand-new, heavily custom **seasonal Skyblock** server for **Java + Bedrock (Geyser)** on **Paper 26.3**, built to hold **200–300 concurrent players** stably.
+
+> **Version policy (decided 2026-10-29):** stay on the **latest stable Minecraft version** Paper and Geyser support (currently **26.3**, Java 25). Bedrock clients auto-update, so Geyser must stay current, and Geyser only supports the newest Java version. Update with each Minecraft release during development.
 
 Audience: everyone (casual players, grinders, PvPers, younger players, free-to-play and paying players).
 
@@ -40,7 +42,7 @@ Design rules that apply to *every* feature:
 
 | Place | Solo islands | Team islands |
 |---|---|---|
-| 1 | 150 | 400 |
+| 1 | 150 | 400 (team prizes split by contribution share, min. 5%) |
 | 2 | 100 | TBD |
 | 3 | 50 | TBD |
 
@@ -284,7 +286,7 @@ Mining, Foraging, Farming, Combat, Fishing. Balanced levels with perks along the
 ## 9. Crates, rewards and quests
 
 - **Crates:** Common, Uncommon, Rare, Epic, Legendary (+ Monthly). Physical crates at spawn **and** `/crates`. Animations.
-- **Keys** are earned by voting, custom-enchant quests and the store. Keys are **virtual** but can be withdrawn as items in the `/crates` GUI. Tradeable.
+- **Keys are earned only** (voting, quests, events). Never sold for money or gems (owner decision 2026-10-29). Keys are **virtual** but can be withdrawn as items in the `/crates` GUI. Tradeable.
 - Daily rewards / login streak, voting with vote parties.
 - Daily + weekly quests, battle pass (free + paid track), achievements, **collection log** (titles carry over between seasons).
 - **Black Market:** rotating limited-stock shop paid in shards.
@@ -321,10 +323,10 @@ All gameplay and server features are **custom**. External plugins only where bui
 |---|---|---|
 | Geyser + Floodgate | **Use** | Bedrock protocol translation |
 | Grim (anticheat) | **Use** | Specialist work, Bedrock-aware |
-| spark | **Use** | Profiling |
+| spark | **Built into Paper**, no separate plugin | Profiling (`/spark`) |
 | FastAsyncWorldEdit | **Use** (builders/staff only) | Building spawn, Depths, warzone |
-| LuckPerms | **Recommended**, owner to confirm | Permissions/ranks backbone, invisible to players |
-| CoreProtect | **Recommended for blocks only**, owner to confirm | Block logging/rollback at scale. Economy/item/staff logs are custom |
+| LuckPerms | **Use** (confirmed) | Permissions/ranks backbone, invisible to players |
+| CoreProtect | **Use** (confirmed), blocks only | Block logging/rollback at scale. Economy/item/staff logs are custom |
 | PacketEvents | **Library**, shaded into our jar | Per-player blocks, border, NPC packets |
 
 Custom (not plugins): punishments, Discord bot, essentials (spawn/tpa/back/homes/vanish), chat, scoreboard, tab, holograms (TextDisplay), NPCs (mannequins), world management, economy (no Vault needed), Tebex integration via API, Votifier receiver, crates, everything gameplay.
