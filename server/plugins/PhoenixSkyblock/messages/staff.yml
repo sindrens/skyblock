@@ -56,7 +56,8 @@ freeze:
   self: "<prefix><c:error><sym:cross> You can't freeze yourself."
   exempt: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be frozen."
   not-frozen: "<prefix><c:error><sym:cross> <c:value><player></c:value> is not frozen."
-  no-commands: "<prefix><c:error><sym:cross> You can't use commands while frozen. Chat goes to staff."
+  no-commands: "<prefix><c:error><sym:cross> You can't use commands while frozen. Type in chat to talk to staff."
+  save-failed: "<prefix><c:warning>The freeze change works now, but couldn't be saved to the database, so it may not last through a restart. Tell an admin if this repeats."
   title:
     title: "<c:sky_ice><bold>FROZEN</bold></c:sky_ice>"
     subtitle: "<c:text>Don't log out <sym:dot> read the chat"

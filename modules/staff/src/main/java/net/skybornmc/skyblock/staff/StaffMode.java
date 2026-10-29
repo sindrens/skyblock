@@ -54,9 +54,12 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 final class StaffMode extends StaffFeature implements Listener {
 
-    /** The kit. Slots are the hotbar positions. */
+    /**
+     * The kit. Slots are the hotbar positions. Inspect's item comes from {@code mode.inspect-tool-material} (default ender
+     * eye): it used to be a spyglass, which zooms on the client and the server can't cancel that.
+     */
     enum Tool {
-        INSPECT(0, Material.SPYGLASS),
+        INSPECT(0, Material.ENDER_EYE),
         FREEZE(1, Material.PACKED_ICE),
         RANDOM_TP(2, Material.COMPASS),
         LOGS(3, Material.CLOCK),
@@ -89,6 +92,7 @@ final class StaffMode extends StaffFeature implements Listener {
     private final Map<UUID, Long> lastUse = new ConcurrentHashMap<>();
     /** Players whose crash-recovery check is still running: /staff waits so a saved inventory is never overwritten. */
     private final java.util.Set<UUID> checking = ConcurrentHashMap.newKeySet();
+    private final java.util.Set<String> warnedMaterial = ConcurrentHashMap.newKeySet();
 
     StaffMode(Core core, StaffConfig config, ModuleMessages msg, StaffStore store, FreezeService freeze, ReportService reports,
               StaffModule.Services services) {
@@ -213,10 +217,32 @@ final class StaffMode extends StaffFeature implements Listener {
         player.getInventory().setHeldItemSlot(Tool.INSPECT.slot);
     }
 
+    /** Message key of a kit item (name = key + ".name", lore = key + ".lore"); the vanish item has an on and an off state. */
+    static String toolKey(Tool tool, boolean vanished) {
+        return "tool." + tool.key() + (tool == Tool.VANISH ? (vanished ? ".on" : ".off") : "");
+    }
+
+    private Material material(Player viewer, Tool tool) {
+        return switch (tool) {
+            case VANISH -> vanished(viewer) ? Material.LIME_DYE : Material.GRAY_DYE;
+            case INSPECT -> {
+                Material configured = Material.matchMaterial(config.inspectToolMaterial);
+                if (configured == null || !configured.isItem() || configured.isAir()) {
+                    if (warnedMaterial.add(config.inspectToolMaterial)) {
+                        core.plugin().getLogger().warning("staff.yml → mode.inspect-tool-material: '" + config.inspectToolMaterial
+                                + "' is not an item, using " + tool.material.name().toLowerCase(Locale.ROOT));
+                    }
+                    yield tool.material;
+                }
+                yield configured;
+            }
+            default -> tool.material;
+        };
+    }
+
     private ItemStack tool(Player viewer, Tool tool) {
-        Material material = tool == Tool.VANISH && !vanished(viewer) ? Material.GRAY_DYE : tool.material;
-        ItemStack item = new ItemStack(material);
-        String key = "tool." + tool.key() + (tool == Tool.VANISH ? (vanished(viewer) ? ".on" : ".off") : "");
+        ItemStack item = new ItemStack(material(viewer, tool));
+        String key = toolKey(tool, vanished(viewer));
         item.editMeta(meta -> {
             meta.displayName(msg.component(viewer, key + ".name").decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
             List<Component> lore = new ArrayList<>();
@@ -321,7 +347,16 @@ final class StaffMode extends StaffFeature implements Listener {
             case LOGS -> dispatch(staff, "logs near");
             case VANISH -> {
                 dispatch(staff, "vanish");
-                Bukkit.getScheduler().runTask(core.plugin(), () -> staff.getInventory().setItem(Tool.VANISH.slot, tool(staff, Tool.VANISH)));
+                Bukkit.getScheduler().runTask(core.plugin(), () -> {
+                    if (!staff.isOnline() || !inStaffMode(staff)) {
+                        return;
+                    }
+                    staff.getInventory().setItem(Tool.VANISH.slot, tool(staff, Tool.VANISH));
+                    // Showing yourself removes vanish's night vision; staff mode keeps its own.
+                    if (config.modeNightVision && !staff.hasPotionEffect(PotionEffectType.NIGHT_VISION)) {
+                        staff.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, PotionEffect.INFINITE_DURATION, 0, false, false, false));
+                    }
+                });
             }
             case PUNISH -> target(staff, clicked).ifPresentOrElse(t -> dispatch(staff, "punish " + t.getName()),
                     () -> msg.actionBar(staff, "tool.need-target"));

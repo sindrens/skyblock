@@ -1,6 +1,11 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- P0 freeze: frozen players get **no commands at all** by default (`staff.yml → freeze.allowed-commands: []`, the old default allowed /msg /r /tell /w /discord /rules /help). Chat still goes to staff only. Allow `/discord` and `/rules`? (default: none)
+- P0 freeze: staff and plugin teleports (`/tp`, `/tphere`, a `/spawn` warmup that was already running) still move a frozen player and they stay frozen at the new spot (`freeze.allowed-teleport-causes: [command, plugin]`). OK, or staff-only? (default: command + plugin)
+- P0 freeze: a frozen player hovers (flight on, no gravity) so they can't fall away; on unfreeze their own flight comes back and fall damage is ignored for `freeze.fall-grace-seconds` (10). OK? (default: yes)
+- P0 freeze: with `freeze.logout-action: ban` the freeze is still stored, so after an unban they come back frozen. Clear the freeze on a ban instead? (default: keep it)
+- P0 staff mode: the Inspect tool is now an ender eye (`mode.inspect-tool-material`), because a spyglass always zooms on the player's screen. Another item? (default: ender eye)
 - Punishment ladders in `punishments.yml` (default proposal: Hacking 30d → perm; Toxicity warn → 1h → 1d → 7d → perm mute).
 - Public ban/mute announcements for players? (default: on)
 - Helpers may freeze / use staff mode and see join logs (auth)? (default: yes, IPs hidden)

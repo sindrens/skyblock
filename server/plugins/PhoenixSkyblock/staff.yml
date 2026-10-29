@@ -11,16 +11,26 @@ mode:
   # How far the Inspect/Freeze/Punish tools reach when you look at a player (blocks).
   # Allowed: 2 to 64
   inspect-range: 16
+  # Item of the Inspect tool. Use one that does nothing on its own: a spyglass zooms on the player's screen and that can't be stopped by the server.
+  inspect-tool-material: ender_eye
 freeze:
-  # Commands a frozen player may still use (without /).
-  allowed-commands:
-  - msg
-  - r
-  - tell
-  - w
-  - discord
-  - rules
-  - help
+  # Commands a frozen player may still use (without /). Empty = none. Chat always goes to staff only; don't add /msg, /r or /tell unless frozen players may message others.
+  allowed-commands: []
+  # Teleports that may still move a frozen player (staff /tp, /tphere, plugins). Others (ender-pearl, chorus-fruit, consumable-effect, nether-portal, end-portal, end-gateway, spectate, exit-bed, dismount) are blocked.
+  allowed-teleport-causes:
+  - command
+  - plugin
+  # Slowness effect level shown to frozen players as a hint (0 = none). Only visual: the freeze itself holds them in place.
+  # Allowed: 0 to 10
+  slowness-level: 3
+  # Take away the jump of frozen players (visual hint; the freeze itself holds them in place).
+  block-jump: true
+  # How often (ticks) frozen players are checked: back to the freeze spot, out of vehicles, flight kept. Movement is also stopped on every move.
+  # Allowed: 5 to 100
+  check-ticks: 10
+  # After an unfreeze, fall damage is ignored this long (frozen players hover, so someone frozen in the air would otherwise fall when released).
+  # Allowed: 0 to 60
+  fall-grace-seconds: 10
   # How often a frozen player gets the title and chat instructions again.
   # Allowed: 3 to 120
   reminder-seconds: 10
@@ -28,7 +38,7 @@ freeze:
   logout-action: alert
   # Console command for logout-action ban (<player> is replaced).
   ban-command: ban <player> Logged out while frozen
-  # A frozen player who logs out is still frozen when they come back.
+  # A frozen player who logs out is still frozen when they come back (also after a restart). Off: logging out ends the freeze.
   keep-on-rejoin: true
 reports:
   # Seconds between two reports from the same player.
