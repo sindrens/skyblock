@@ -1,6 +1,8 @@
 # Moderation (punishments) texts. MiniMessage + style tags. Reload: /skyblock reload moderation
 # Common placeholders: <player> target, <staff> issuer (or "Staff" when announce.show-staff is off), <staff_real> issuer,
 # <reason>, <id>, <type>, <length> (total), <expires> (time left), <date>, <appeal> (link), <target> (for clicks).
+# Phase P: every text of punishments.yml lives here (reason names, warn buttons, /p menu, warn rules, config errors);
+# punishments.yml only holds ids, slots, icons, ladders and rules.
 
 words:
   permanent: "permanent"
@@ -11,6 +13,65 @@ words:
   account: "account"
   removed-by: "Removed by"
   alt-of: "Alt account of"
+  system: "System"
+  system-auto: "System (auto)"
+  never: "never"
+  "yes": "yes"
+  "no": "no"
+
+# How a ladder step / rule action reads ("Next step: Mute 1h"). <length> = time or "permanent".
+steps:
+  warn: "Warning"
+  kick: "Kick"
+  mute: "Mute <length>"
+  ban: "Ban <length>"
+  ipban: "IP-ban <length>"
+
+# Reason names (ids from punishments.yml → categories). Also the reason text stored with the punishment.
+categories:
+  cheating: "Cheating"
+  chat: "Chat"
+  gameplay: "Gameplay"
+  other: "Name / build / skin"
+reasons:
+  hacking: "Hacked client"
+  xray: "X-ray / ESP"
+  macro: "Macros / auto-clicker"
+  alt-abuse: "Ban evasion"
+  toxicity: "Toxicity / harassment"
+  spam: "Spam / flooding"
+  advertising: "Advertising"
+  hate: "Hate speech / slurs"
+  personal-info: "Sharing personal info"
+  disrespect-staff: "Disrespecting staff"
+  exploiting: "Exploiting bugs / duping"
+  scamming: "Scamming"
+  griefing: "Griefing (coop abuse)"
+  afk-farming: "Illegal AFK farming"
+  rmt: "Real-money trading"
+  inappropriate-name: "Inappropriate name or nickname"
+  inappropriate-build: "Inappropriate build"
+  inappropriate-skin: "Inappropriate skin"
+
+# Plain warn buttons of the /p menu (ids from punishments.yml → menu.warns). name = button, reason = stored text.
+warn-buttons:
+  warn-language:
+    name: "Language"
+    reason: "Inappropriate language"
+  warn-caps-spam:
+    name: "Caps / light spam"
+    reason: "Caps or light spam"
+  warn-rules:
+    name: "Rule reminder"
+    reason: "Not following the rules"
+  warn-other:
+    name: "Other warning"
+    reason: "Staff warning"
+
+# Reason text stored with punishments from the automatic warn rules. <count> = the rule's warn count, <window> = repeat-window.
+warn-rules:
+  reason: "Automatic rule: <count> warnings"
+  repeat-reason: "Automatic rule: repeated within <window>"
 
 types:
   ban: "<c:error>Ban</c:error>"
@@ -60,6 +121,11 @@ muted:
   you: "<prefix><c:warning>You have been muted (<c:value><length></c:value>). <c:text>Reason: <c:value><reason>"
   unmuted: "<prefix><c:success><sym:check> You are no longer muted."
   blocked: "<prefix><c:error><sym:cross> You are muted<c:text>: <c:value><reason></c:value> <c:muted>(ends: <expires>, #<id>)"
+  # Extra line for mutes from the automatic warn rules (<count> = warnings of the rule).
+  auto: "<prefix><c:text>You received <c:value><count> warnings</c:value>, so you are muted for <c:value><length></c:value>."
+  auto-repeat: "<prefix><c:text>You were warned again soon after an earlier automatic rule, so you are muted for <c:value><length></c:value>."
+  # On join while muted (e.g. muted while offline).
+  join: "<prefix><c:warning>You are muted<c:text>: <c:value><reason></c:value> <c:muted>(ends: <expires>, #<id>)"
 
 warned:
   you: "<prefix><c:warning>You have been warned: <c:value><reason></c:value>. <c:text>More warnings lead to mutes or bans."
@@ -99,6 +165,11 @@ error:
   not-muted: "<prefix><c:error><sym:cross> <c:value><player></c:value> is not muted."
   not-warned: "<prefix><c:error><sym:cross> <c:value><player></c:value> has no active warnings."
   kick-offline: "<prefix><c:error><sym:cross> <c:value><player></c:value> is offline, so this step (kick) can't be applied now."
+  no-permission-type: "<prefix><c:error><sym:cross> You can't give this kind of punishment (<type_name>)."
+  no-permission-menu: "<prefix><c:error><sym:cross> You no longer have permission to punish."
+  no-permission-suggestion: "<prefix><c:error><sym:cross> You can't handle punishment suggestions."
+  already-muted: "<prefix><c:warning>Nothing applied: <c:value><player></c:value> is already muted for longer (<c:value><left></c:value> left, #<id>). <c:text>Use /unmute first to change it."
+  already-banned: "<prefix><c:warning>Nothing applied: <c:value><player></c:value> is already banned for longer (<c:value><left></c:value> left, #<id>). <c:text>Use /unban first to change it."
 
 history:
   header: "<prefix><c:value>History of <player></c:value> <c:muted>(<total>)</c:muted> <c:text><bans> bans <sym:dot> <mutes> mutes <sym:dot> <warns> warnings <sym:dot> <kicks> kicks"
@@ -185,3 +256,185 @@ menu:
       - ""
       - "<c:success>Removed by <c:value><by></c:value> on <c:value><removed_date>"
       - "<c:text>Why: <c:value><removed_reason>"
+
+# ---------------------------------------------------------------- /p <player> (single-screen menu, Phase P)
+punish:
+  title: "Punish"
+  info:
+    - "<c:text>Left: mutes (top) and warnings (bottom)."
+    - "<c:text>Right: bans (top) and small things (bottom)."
+    - "<c:text>One click applies the next ladder step."
+  kick-reason: "Kicked by staff. Please follow the rules."
+  click: "<c:action><sym:bullet> Click to apply"
+  # Why a button can't be used right now (same checks as the click).
+  blocked:
+    self: "<c:error><sym:cross> You can't punish yourself"
+    exempt: "<c:error><sym:cross> This player can't be punished by you"
+    offline: "<c:error><sym:cross> Player is offline (kick needs them online)"
+    permission: "<c:error><sym:cross> Your rank can't give this punishment"
+    length-limit: "<c:error><sym:cross> Too long for your rank (max <max>)"
+    never-shorten:
+      - "<c:warning>Already punished for longer (<left> left)"
+      - "<c:muted>Clicking changes nothing (never shortens)"
+  reason:
+    name: "<c:value><reason>"
+    lore:
+      - "<c:text>This is offence <c:value>#<offence></c:value>."
+      - "<c:text>Next step: <c:flame><step>"
+    after: "<c:muted>Then: <step>"
+    after-repeat: "<c:muted>Then: <step> (last step repeats)"
+  warn-button:
+    name: "<c:flame><name>"
+    lore:
+      - "<c:text>One warning: <c:value><reason>"
+      - "<c:muted>Counts toward the automatic rules."
+  summary:
+    ban-left: "<c:error>Banned: <left> left <c:muted>(<reason>)"
+    mute-left: "<c:warning>Muted: <left> left <c:muted>(<reason>)"
+    pending:
+      - ""
+      - "<c:warning>Pending: suggested <action>"
+      - "<c:action><sym:bullet> Click to apply or dismiss"
+  counter:
+    name: "<c:flame>Warnings: <c:value><count> / <next>"
+    "off":
+      - "<c:muted>Automatic warn rules are off."
+    next: "<c:text>At <c:value><at></c:value> warnings: <c:flame><action>"
+    no-next: "<c:muted>No automatic rule left to fire."
+    repeat:
+      - "<c:warning>Repeat window open until <until>:"
+      - "<c:warning>any warning or mute suggests <action>"
+    expiries-header: "<c:text>Active warnings expire:"
+    expiry: " <c:muted><sym:bullet> <date>"
+    mode:
+      notify: "<c:muted>Staff decide: [Apply] / [Dismiss]"
+      auto: "<c:muted>Mode: applied automatically"
+    pending:
+      - "<c:warning>Pending: suggested <action>"
+      - "<c:action><sym:bullet> Click to apply or dismiss"
+  # Bottom row. Sanctions, bulk and dry run arrive in later milestones.
+  buttons:
+    sanctions:
+      name: "<c:muted>Sanctions"
+      lore:
+        - "<c:muted>Not available yet."
+    kick:
+      name: "<c:value>Kick"
+      lore:
+        - "<c:text>Kick with the default reason."
+    bulk:
+      name: "<c:muted>Bulk punish"
+      lore:
+        - "<c:muted>Not available yet."
+    history:
+      name: "<c:value>Punishment history"
+      lore:
+        - "<c:text><total> punishment(s) on record."
+        - ""
+        - "<c:action><sym:bullet> Click to view"
+    close:
+      name: "<c:error>Close"
+      lore: []
+    more-reasons:
+      name: "<c:value>More reasons"
+      lore:
+        - "<c:text>All <reasons> reasons by category"
+        - "<c:muted>(<unplaced> not placed on this screen)"
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    dry-run:
+      name: "<c:muted>Dry run"
+      lore:
+        - "<c:muted>Not available yet."
+
+# ---------------------------------------------------------------- suggestions from the warn rules
+# Placeholders: <player>, <target> (clicks), <sid> (suggestion id), <count>, <action>, <reason>, <window>, <date>,
+# <expires>, <staff> (who handled it), <status>, <left> (time left of an existing mute/ban).
+suggest:
+  notify: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>reached <c:value><count> warnings</c:value>. Suggested: <c:flame><action></c:flame>.  <click:run_command:'/warns <target> apply <sid>'><hover:show_text:'<c:action>Apply <action> now'><c:success>[Apply]</c:success></hover></click> <click:run_command:'/warns <target> dismiss <sid>'><hover:show_text:'<c:action>Not too bad: apply nothing'><c:error>[Dismiss]</c:error></hover></click> <click:run_command:'/p <target>'><hover:show_text:'<c:action>Open the punish menu'><c:sky_ice>[Open /p]</c:sky_ice></hover></click>"
+  notify-repeat: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>was punished again within <c:value><window></c:value> of the last automatic rule. Suggested: <c:flame><action></c:flame>.  <click:run_command:'/warns <target> apply <sid>'><hover:show_text:'<c:action>Apply <action> now'><c:success>[Apply]</c:success></hover></click> <click:run_command:'/warns <target> dismiss <sid>'><hover:show_text:'<c:action>Not too bad: apply nothing'><c:error>[Dismiss]</c:error></hover></click> <click:run_command:'/p <target>'><hover:show_text:'<c:action>Open the punish menu'><c:sky_ice>[Open /p]</c:sky_ice></hover></click>"
+  auto: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>reached <c:value><count> warnings</c:value>: automatically <c:flame><action></c:flame> <c:muted>(#<id>)</c:muted>. <click:run_command:'/history <target>'><hover:show_text:'<c:action>Click for history'><c:sky_ice>[History]</c:sky_ice></hover></click>"
+  auto-repeat: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>was punished again within <c:value><window></c:value>: automatically <c:flame><action></c:flame> <c:muted>(#<id>)</c:muted>. <click:run_command:'/history <target>'><hover:show_text:'<c:action>Click for history'><c:sky_ice>[History]</c:sky_ice></hover></click>"
+  skipped-exempt: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>would have been given <c:flame><action></c:flame> by the warn rules, but is exempt. Nothing applied."
+  skipped-already: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>is already punished for longer (<c:value><left></c:value> left), so <c:flame><action></c:flame> was skipped (never shortens)."
+  applied: "<c:muted>[Punish]</c:muted> <c:value><staff></c:value> <c:success>applied</c:success> <c:text>the suggestion for <c:value><player></c:value>: <c:flame><action></c:flame>"
+  dismissed: "<c:muted>[Punish]</c:muted> <c:value><staff></c:value> <c:text>dismissed the suggestion for <c:value><player></c:value> (<action>). The counter restarts."
+  already-handled: "<prefix><c:warning>Already handled by <c:value><staff></c:value> <c:muted>(<status>)</c:muted>."
+  expired: "<prefix><c:warning>This suggestion expired (nobody handled it in time)."
+  not-found: "<prefix><c:error><sym:cross> No such suggestion. <c:text>Type /warns and the player name to see what is waiting."
+  status:
+    pending: "pending"
+    applied: "applied"
+    dismissed: "dismissed"
+    auto: "applied automatically"
+    skipped: "skipped"
+  menu:
+    title: "Suggestion"
+    info:
+      name: "<c:flame>Suggested: <action>"
+      lore:
+        - "<c:text>Player: <c:value><player>"
+        - "<c:text>Reason: <c:value><reason>"
+        - "<c:text>Warnings: <c:value><count>"
+        - "<c:text>Created: <c:value><date>"
+        - "<c:text>Disappears in: <c:value><expires>"
+    apply:
+      name: "<c:success><sym:check> Apply"
+      lore:
+        - "<c:text>Applies <c:flame><action></c:flame> now, as you."
+        - "<c:muted>Undo any time with /unmute or /unban."
+    dismiss:
+      name: "<c:error><sym:cross> Dismiss"
+      lore:
+        - "<c:text>Not too bad: apply nothing."
+        - "<c:muted>The warning counter still restarts."
+
+# ---------------------------------------------------------------- /warns <player>
+warns:
+  header: "<prefix><c:value>Warnings of <player></c:value> <c:flame><count> / <next></c:flame>  <click:run_command:'/p <target>'><hover:show_text:'<c:action>Open the punish menu'><c:sky_ice>[Open /p]</c:sky_ice></hover></click>"
+  rules-off: " <c:muted>Automatic warn rules are off."
+  mode: " <c:text>Mode: <c:value><mode></c:value> <c:muted><sym:dot></c:muted> <c:text>warnings expire after <c:value><expire>"
+  modes:
+    notify: "staff decide"
+    auto: "automatic"
+  rule: " <c:text>At <c:value><at></c:value> warnings: <c:flame><action>"
+  repeat-rule: " <c:text>Again within <c:value><window></c:value> of a rule: <c:flame><action>"
+  none: " <c:success><sym:check> No warnings count right now."
+  line: " <c:ember><sym:bullet></c:ember> <hover:show_text:'<c:text>By <staff> on <date>'><c:muted>#<id></c:muted> <c:text><reason></hover> <c:muted>(stops counting <expires>)"
+  repeat-open: " <c:warning>Repeat window open until <until>: any warning or mute suggests <action>."
+  pending: " <c:warning>Pending: suggested <action> <c:muted>(<reason>, disappears in <expires>)</c:muted>  <click:run_command:'/warns <target> apply <sid>'><c:success>[Apply]</c:success></click> <click:run_command:'/warns <target> dismiss <sid>'><c:error>[Dismiss]</c:error></click>"
+  footer: " <click:run_command:'/history <target>'><hover:show_text:'<c:action>All punishments'><c:action>Full history</c:action></hover></click>"
+
+# ---------------------------------------------------------------- punishments.yml validation (console + staff)
+# <file>, <line>, <path> are always there; <value>, <other>, <section>, <detail> where it makes sense.
+# <hint> = config.hint when a close match exists ("did you mean").
+config:
+  hint: " (did you mean \"<suggestion>\"?)"
+  loaded: "punishments.yml loaded: <reasons> reasons, <rules> warn rule(s), mode <mode>."
+  rejected: "<prefix><c:error><sym:cross> punishments.yml has <count> error(s). The previous working config stays active."
+  rejected-default: "<prefix><c:error><sym:cross> punishments.yml has <count> error(s). Using the built-in default until it is fixed."
+  line: " <c:error><sym:bullet></c:error> <c:text><problem>"
+  more: " <c:muted>... and <more> more (see the console)."
+  yaml-invalid: "<file> line <line>: not valid YAML: <detail>"
+  missing-section: "<file>: missing section '<section>'"
+  missing-optional: "<file>: no '<section>' section, using defaults"
+  not-a-section: "<file> line <line>: <path>: '<value>' must be a section"
+  bad-id: "<file> line <line>: <path>: id '<value>' may only use a-z, 0-9 and -"
+  duplicate-id: "<file> line <line>: <path>: id '<value>' is already used at <other>"
+  empty-ladder: "<file> line <line>: <path>: needs a list with at least one step, e.g. [\"warn\", \"mute 1h\"]"
+  bad-step: "<file> line <line>: <path>: unknown step \"<value>\"<hint>. Steps: warn, kick, mute 1h, ban 7d, ipban perm"
+  bad-step-time: "<file> line <line>: <path>: \"<value>\" has a bad time (use 30m, 1h, 7d or perm; warn and kick take no time)"
+  bad-icon: "<file> line <line>: <path>: '<value>' is not an item<hint>"
+  unknown-reason: "<file> line <line>: <path>: no reason '<value>' in categories<hint>"
+  unknown-button: "<file> line <line>: <path>: unknown button '<value>'<hint>"
+  reason-placed-twice: "<file> line <line>: <path>: reason '<value>' is already placed at <other>"
+  bad-slot: "<file> line <line>: <path>: slot '<value>' must be a number from 0 to 53"
+  duplicate-slot: "<file> line <line>: <path>: slot <value> is already used by <other>"
+  bad-boolean: "<file> line <line>: <path>: '<value>' must be true or false"
+  bad-mode: "<file> line <line>: <path>: mode '<value>' must be notify or auto<hint>"
+  bad-duration: "<file> line <line>: <path>: '<value>' is not a time (use 30m, 1h, 7d)"
+  bad-rules: "<file> line <line>: <path>: must be a list of rules (- at: 2 / action: \"mute 1h\")"
+  bad-rule-at: "<file> line <line>: <path>: 'at' must be a whole number of 1 or more, not '<value>'"
+  duplicate-rule-at: "<file> line <line>: <path>: there is already a rule at <value> warnings"
+  bad-rule-action: "<file> line <line>: <path>: \"<value>\" is not allowed: automatic actions must be a mute or ban (never warn or kick)"
+  repeat-incomplete: "<file> line <line>: <path>: repeat-window and repeat-action go together; the repeat rule is off"

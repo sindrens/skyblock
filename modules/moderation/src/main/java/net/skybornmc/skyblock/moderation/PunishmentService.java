@@ -46,7 +46,12 @@ final class PunishmentService {
 
     /** What a staff member asked for. {@code duration == null} = permanent (ban/mute). */
     record Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
-                   boolean ipWide, String ip, String template, Integer ladderStep) {
+                   boolean ipWide, String ip, String template, Integer ladderStep, String source) {
+
+        Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
+                boolean ipWide, String ip, String template, Integer ladderStep) {
+            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null);
+        }
     }
 
     private final Core core;
@@ -119,30 +124,250 @@ final class PunishmentService {
         return max == null ? text(null, "words.permanent") : Format.duration(max);
     }
 
-    // ------------------------------------------------------------------ issue
+    // ------------------------------------------------------------------ issue (the single pipeline)
 
-    /** Stores and applies a punishment; completes with the stored row (on the main thread). */
-    CompletableFuture<Punishment> issue(CommandSender sender, Request r) {
+    private final PunishDecision decision = PunishDecision.standard();
+    private java.util.function.Supplier<WarnRules.Settings> warnRules = () -> WarnRules.Settings.DISABLED;
+
+    void warnRules(java.util.function.Supplier<WarnRules.Settings> source) {
+        this.warnRules = source;
+    }
+
+    PunishDecision decision() {
+        return decision;
+    }
+
+    /** Permissions of {@code sender} as a pipeline actor. Main thread (reads permissions). */
+    PunishDecision.Actor actor(CommandSender sender) {
+        java.util.Set<Punishment.Type> types = java.util.EnumSet.noneOf(Punishment.Type.class);
+        for (Punishment.Type type : Punishment.Type.values()) {
+            if (sender.hasPermission(ModerationModule.permissionFor(type, false))) {
+                types.add(type);
+            }
+        }
+        return new PunishDecision.Actor(sender.getName(), false, java.util.Set.copyOf(types),
+                sender.hasPermission(ModerationModule.PERM_IPBAN), sender.hasPermission(ModerationModule.PERM_SILENT),
+                maxDuration(sender), sender.hasPermission(ModerationModule.PERM_EXEMPT_BYPASS));
+    }
+
+    /** The pipeline input for {@code sender} punishing {@code target}. Main thread. Active punishments are filled in later. */
+    PunishDecision.Input input(CommandSender sender, UUID target, String targetName, Punishment.Type type, Duration duration,
+                               boolean ipWide, boolean silent, long now) {
+        Player online = target == null ? null : Bukkit.getPlayer(target);
+        boolean exempt = online != null && online.hasPermission(ModerationModule.PERM_EXEMPT);
+        boolean self = sender instanceof Player p && (target != null ? p.getUniqueId().equals(target)
+                : p.getName().equalsIgnoreCase(targetName));
+        return new PunishDecision.Input(actor(sender), type, duration, ipWide, silent, exempt, self, online != null, null, null, now);
+    }
+
+    /** What {@code viewer} would get for this step right now (menu lore), using the active mute/ban already loaded. */
+    PunishDecision.Verdict preview(CommandSender viewer, UUID target, String targetName, Templates.Step step, boolean silent,
+                                   Punishment activeMute, Punishment activeBan) {
+        return decision.decide(input(viewer, target, targetName, step.type(), step.duration(), step.ipWide(), silent,
+                System.currentTimeMillis()).withActive(activeMute, activeBan));
+    }
+
+    private PunishmentStore.RuleHook ruleHook(UUID target, long now) {
+        WarnRules.Settings settings = warnRules.get();
+        if (!settings.enabled() || target == null) {
+            return null;
+        }
+        String auto = text(null, "words.system-auto");
+        PunishDecision.Input template = input(Bukkit.getConsoleSender(), target, null, Punishment.Type.MUTE, null, false,
+                false, now);
+        template = new PunishDecision.Input(PunishDecision.Actor.system(auto), template.type(), null, false, false,
+                template.targetExempt(), false, template.targetOnline(), null, null, now);
+        return new PunishmentStore.RuleHook(settings, decision, template, auto, trigger -> trigger.repeat()
+                ? text(null, "warn-rules.repeat-reason", Msg.p("window", PunishConfig.text(settings.repeatWindow())))
+                : text(null, "warn-rules.reason", Msg.p("count", trigger.ruleAt())));
+    }
+
+    /**
+     * Decides, stores and applies a punishment (main thread in, main thread out). Every way of punishing ends here:
+     * BLOCKED/SKIPPED verdicts are told to the sender, applied ones are enforced, announced and audited, and a warn rule
+     * that fires in the same transaction is reported to staff.
+     */
+    CompletableFuture<PunishmentStore.IssueResult> issue(CommandSender sender, Request r) {
         long now = System.currentTimeMillis();
         UUID issuer = sender instanceof Player p ? p.getUniqueId() : null;
-        Long expires = r.duration() == null || r.type() == Punishment.Type.WARN || r.type() == Punishment.Type.KICK
-                ? null : now + r.duration().toMillis();
+        PunishDecision.Input in = input(sender, r.target(), r.targetName(), r.type(), r.duration(), r.ipWide(), r.silent(), now);
+        PunishmentStore.RuleHook hook = ruleHook(r.target(), now);
         CompletableFuture<String> ipFuture = r.ipWide() && r.ip() == null && r.target() != null
                 ? store.lastIp(r.target()).thenApply(o -> o.orElse(null))
                 : CompletableFuture.completedFuture(r.ip());
         return ipFuture.thenCompose(ip -> {
-            if (r.ipWide() && ip == null) {
+            if (r.ipWide() && ip == null && in.actor().ipBan()) {
                 throw new IllegalStateException("no-ip");
             }
-            Punishment row = new Punishment(0, r.type(), r.target(), r.targetName(), ip, r.ipWide(), r.reason(), r.template(),
-                    r.ladderStep(), issuer, sender.getName(), now, expires, r.silent(), null, null, null, null);
-            return store.insert(row);
-        }).thenApplyAsync(p -> {
-            apply(p);
-            announce(sender, p);
-            audit(sender, p);
-            return p;
+            Punishment draft = new Punishment(0, r.type(), r.target(), r.targetName(), ip, r.ipWide(), r.reason(), r.template(),
+                    r.ladderStep(), issuer, sender.getName(), now, null, r.silent(), null, null, null, null, r.source());
+            return store.issue(draft, in, decision, hook);
+        }).thenApplyAsync(result -> {
+            handle(sender, r.targetName(), result);
+            return result;
         }, main);
+    }
+
+    private void handle(CommandSender sender, String targetName, PunishmentStore.IssueResult result) {
+        PunishDecision.Verdict v = result.verdict();
+        if (!v.applied()) {
+            tell(sender, v, targetName);
+            return;
+        }
+        Punishment p = result.punishment();
+        apply(p);
+        announce(sender, p);
+        audit(sender, p);
+        if (result.trigger() != null) {
+            reportTrigger(result.trigger());
+        }
+    }
+
+    /** Tells the actor why nothing was applied. */
+    void tell(CommandSender sender, PunishDecision.Verdict v, String targetName) {
+        java.util.List<TagResolver> tags = new java.util.ArrayList<>();
+        v.args().forEach((k, val) -> tags.add(Msg.p(k, val)));
+        tags.add(Msg.p("player", targetName == null ? "?" : targetName));
+        if ("permission".equals(v.stage()) && v.args().containsKey("type")) {
+            tags.add(Msg.p("type_name", text(sender instanceof Player pl ? pl : null, "types." + v.args().get("type"))));
+        }
+        msg.send(sender, v.key(), tags.toArray(TagResolver[]::new));
+        if (sender instanceof Player pl) {
+            core.sounds().play(pl, "error");
+        }
+    }
+
+    // ------------------------------------------------------------------ warn rules: staff side
+
+    /** A rule fired in the issue transaction: tell staff, enforce an auto punishment, audit. Main thread. */
+    void reportTrigger(PunishmentStore.TriggerResult t) {
+        Suggestion s = t.suggestion();
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("suggestion", s.id());
+        details.put("rule", s.repeat() ? "repeat" : s.ruleAt());
+        details.put("count", s.warnCount());
+        details.put("action", s.action());
+        details.put("status", s.status().name().toLowerCase(Locale.ROOT));
+        if (s.note() != null) {
+            details.put("note", s.note());
+        }
+        switch (s.status()) {
+            case PENDING -> {
+                notifyStaff(null, s.repeat() ? "suggest.notify-repeat" : "suggest.notify", suggestionParts(null, s));
+                for (Player staff : Bukkit.getOnlinePlayers()) {
+                    if (staff.hasPermission(ModerationModule.PERM_NOTIFY)) {
+                        core.sounds().play(staff, "notify");
+                    }
+                }
+                core.audit().log(AuditCategory.PUNISHMENT, "warn_rule_trigger", Actor.system("warn-rule"),
+                        s.target().toString(), s.targetName(), null, null, details);
+            }
+            case AUTO -> {
+                Punishment auto = t.autoPunishment();
+                details.put("id", auto.id());
+                apply(auto);
+                notifyStaff(null, s.repeat() ? "suggest.auto-repeat" : "suggest.auto", suggestionParts(null, s),
+                        Msg.p("id", auto.id()));
+                core.audit().log(AuditCategory.PUNISHMENT, "warn_rule_auto", Actor.system("warn-rule"), s.target().toString(),
+                        s.targetName(), auto.expires() == null ? null : auto.expires() - auto.created(), null, details);
+                auditPunishment(Actor.system("warn-rule"), null, auto);
+            }
+            case SKIPPED -> {
+                PunishDecision.Verdict v = t.verdict();
+                String key = Suggestion.NOTE_EXEMPT.equals(s.note()) ? "suggest.skipped-exempt" : "suggest.skipped-already";
+                notifyStaff(null, key, suggestionParts(null, s), Msg.p("left", v == null ? "?" : v.args().getOrDefault("left", "?")));
+                core.audit().log(AuditCategory.PUNISHMENT, "warn_rule_skipped", Actor.system("warn-rule"), s.target().toString(),
+                        s.targetName(), null, null, details);
+            }
+            default -> {
+                // APPLIED/DISMISSED never come from a fresh trigger
+            }
+        }
+    }
+
+    /** Placeholders of a suggestion for chat lines (clickable [Apply] / [Dismiss] / [Open /p]). */
+    TagResolver suggestionParts(Player viewer, Suggestion s) {
+        Templates.Step step = s.step();
+        WarnRules.Settings settings = warnRules.get();
+        return TagResolver.resolver(Msg.p("player", s.targetName()), pre("target", s.targetName()), pre("sid", s.id()),
+                Msg.p("count", s.warnCount()), Msg.p("action", stepText(viewer, step)), Msg.p("reason", s.reason()),
+                Msg.p("window", settings.repeatWindow() == null ? "-" : PunishConfig.text(settings.repeatWindow())),
+                Msg.p("date", DATE.format(Instant.ofEpochMilli(s.created()))),
+                Msg.p("expires", s.expires() == null ? text(viewer, "words.never")
+                        : Format.duration(Duration.ofMillis(Math.max(1000, s.expires() - System.currentTimeMillis())))),
+                Msg.p("staff", s.handledByName() == null ? text(viewer, "words.system") : s.handledByName()),
+                Msg.p("status", text(viewer, "suggest.status." + s.status().name().toLowerCase(Locale.ROOT))));
+    }
+
+    /** [Apply] on a suggestion as {@code sender} (first click wins). Main thread in and out. */
+    CompletableFuture<PunishmentStore.HandleResult> applySuggestion(CommandSender sender, long id) {
+        UUID by = sender instanceof Player p ? p.getUniqueId() : null;
+        return store.suggestion(id).thenComposeAsync(found -> {
+            if (found.isEmpty()) {
+                return CompletableFuture.completedFuture(new PunishmentStore.HandleResult(PunishmentStore.HandleKind.NOT_FOUND,
+                        null, null, null));
+            }
+            Suggestion s = found.get();
+            Templates.Step step = s.step();
+            long now = System.currentTimeMillis();
+            PunishDecision.Input in = input(sender, s.target(), s.targetName(), step.type(), step.duration(), step.ipWide(),
+                    false, now);
+            return store.apply(id, x -> in, decision, by, sender.getName(), now);
+        }, main).thenApplyAsync(r -> {
+            handleClick(sender, r);
+            return r;
+        }, main);
+    }
+
+    /** [Dismiss] on a suggestion as {@code sender} (first click wins). */
+    CompletableFuture<PunishmentStore.HandleResult> dismissSuggestion(CommandSender sender, long id) {
+        UUID by = sender instanceof Player p ? p.getUniqueId() : null;
+        return store.dismiss(id, by, sender.getName(), System.currentTimeMillis()).thenApplyAsync(r -> {
+            handleClick(sender, r);
+            return r;
+        }, main);
+    }
+
+    private void handleClick(CommandSender sender, PunishmentStore.HandleResult r) {
+        Player viewer = sender instanceof Player p ? p : null;
+        Suggestion s = r.suggestion();
+        switch (r.kind()) {
+            case NOT_FOUND -> msg.send(sender, "suggest.not-found");
+            case EXPIRED -> msg.send(sender, "suggest.expired", suggestionParts(viewer, s));
+            case ALREADY_HANDLED -> msg.send(sender, "suggest.already-handled", suggestionParts(viewer, s));
+            case BLOCKED -> tell(sender, r.verdict(), s.targetName());
+            case SKIPPED -> {
+                msg.send(sender, "suggest.skipped-already", suggestionParts(viewer, s),
+                        Msg.p("left", r.verdict().args().getOrDefault("left", "?")));
+                core.audit().log(AuditCategory.PUNISHMENT, "suggestion_skip", Actor.of(sender), s.target().toString(),
+                        s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(), "note", Suggestion.NOTE_ALREADY));
+            }
+            case DISMISSED -> {
+                notifyStaff(sender, "suggest.dismissed", suggestionParts(viewer, s), Msg.p("staff", sender.getName()));
+                core.audit().log(AuditCategory.PUNISHMENT, "suggestion_dismiss", Actor.of(sender), s.target().toString(),
+                        s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(),
+                                "rule", s.repeat() ? "repeat" : String.valueOf(s.ruleAt())));
+            }
+            case APPLIED -> {
+                Punishment p = r.punishment();
+                apply(p);
+                announce(sender, p);
+                audit(sender, p);
+                notifyStaff(sender, "suggest.applied", suggestionParts(viewer, s), Msg.p("staff", sender.getName()));
+                core.audit().log(AuditCategory.PUNISHMENT, "suggestion_apply", Actor.of(sender), s.target().toString(),
+                        s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(), "id", p.id()));
+            }
+        }
+        if (viewer != null && r.kind() != PunishmentStore.HandleKind.APPLIED && r.kind() != PunishmentStore.HandleKind.DISMISSED) {
+            core.sounds().play(viewer, "error");
+        }
+    }
+
+    /** "Mute 1h", "Ban permanent", "Warning" for a step (messages steps.*). */
+    String stepText(Player viewer, Templates.Step step) {
+        String kind = step.ipWide() ? "ipban" : step.type().name().toLowerCase(Locale.ROOT);
+        String length = step.duration() == null ? text(viewer, "words.permanent") : Format.duration(step.duration());
+        return text(viewer, "steps." + kind, Msg.p("length", length));
     }
 
     /** Kicks/bans online players hit by the punishment, updates mute caches and the vanilla ban list. */
@@ -152,8 +377,13 @@ final class PunishmentService {
                 case BAN -> online.kick(banScreen(online, p));
                 case KICK -> online.kick(msg.component(online, "screen.kick", parts(online, p)));
                 case MUTE -> {
-                    mutes.put(online.getUniqueId(), p);
+                    cacheMute(online.getUniqueId(), longer(mutes.get(online.getUniqueId()), p));
                     msg.send(online, "muted.you", parts(online, p));
+                    if (p.automatic()) {
+                        String rule = p.source().substring(p.source().lastIndexOf(':') + 1);
+                        msg.send(online, "repeat".equals(rule) ? "muted.auto-repeat" : "muted.auto", parts(online, p),
+                                Msg.p("count", rule));
+                    }
                     core.sounds().play(online, "error");
                 }
                 case WARN -> {
@@ -262,6 +492,15 @@ final class PunishmentService {
         }
     }
 
+    /** The one that lasts longer (an inactive one never wins). */
+    static Punishment longer(Punishment current, Punishment candidate) {
+        long now = System.currentTimeMillis();
+        if (current == null || !current.active(now)) {
+            return candidate;
+        }
+        return PunishDecision.covers(current.expires(), candidate.expires()) ? current : candidate;
+    }
+
     void forget(UUID player) {
         mutes.remove(player);
     }
@@ -294,9 +533,9 @@ final class PunishmentService {
         return msg.component(Bukkit.getConsoleSender(), p.expires() == null ? "screen.ban" : "screen.tempban", parts(null, p));
     }
 
-    String text(Player viewer, String key) {
+    String text(Player viewer, String key, TagResolver... placeholders) {
         return net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
-                .serialize(msg.component(viewer == null ? Bukkit.getConsoleSender() : viewer, key));
+                .serialize(msg.component(viewer == null ? Bukkit.getConsoleSender() : viewer, key, placeholders));
     }
 
     /** Appeal link: moderation.yml appeal-url, else social.yml links.discord. */
@@ -346,6 +585,7 @@ final class PunishmentService {
         }
     }
 
+    /** To staff with skyblock.staff.notify, plus the sender (console included). {@code sender == null}: console log. */
     void notifyStaff(CommandSender sender, String key, TagResolver... placeholders) {
         for (Player staff : Bukkit.getOnlinePlayers()) {
             if (staff.hasPermission(ModerationModule.PERM_NOTIFY) || staff.equals(sender)) {
@@ -353,11 +593,15 @@ final class PunishmentService {
             }
         }
         if (!(sender instanceof Player)) {
-            msg.send(sender, key, placeholders);
+            msg.send(sender == null ? Bukkit.getConsoleSender() : sender, key, placeholders);
         }
     }
 
     private void audit(CommandSender sender, Punishment p) {
+        auditPunishment(Actor.of(sender), sender instanceof Player pl ? pl.getLocation() : null, p);
+    }
+
+    private void auditPunishment(Actor actor, org.bukkit.Location where, Punishment p) {
         String action = switch (p.type()) {
             case BAN -> p.ipWide() ? "ipban" : p.expires() == null ? "ban" : "tempban";
             case MUTE -> p.expires() == null ? "mute" : "tempmute";
@@ -380,8 +624,11 @@ final class PunishmentService {
         if (p.ip() != null) {
             details.put("ip", p.ip());
         }
-        core.audit().log(AuditCategory.PUNISHMENT, action, Actor.of(sender),
+        if (p.source() != null) {
+            details.put("source", p.source());
+        }
+        core.audit().log(AuditCategory.PUNISHMENT, action, actor,
                 p.target() == null ? p.ip() : p.target().toString(), p.targetName(),
-                p.expires() == null ? null : p.expires() - p.created(), sender instanceof Player pl ? pl.getLocation() : null, details);
+                p.expires() == null ? null : p.expires() - p.created(), where, details);
     }
 }
