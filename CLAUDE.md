@@ -14,6 +14,9 @@ This is a **large, long-term project** (launch in ~3 years). Quality beats speed
 7. [`docs/WORLD.md`](docs/WORLD.md): worlds, builds, tier tables, vanilla rules.
 8. [`docs/REVIEW.md`](docs/REVIEW.md): known problems with default decisions. Defaults apply until the owner changes them. Check it before coding a phase.
 
+## Owner rules
+- **Never run tests or test servers without the owner's permission.** Write the code, build with `./gradlew build -x test`, and send/release it. The owner tests, or tells you when to run tests.
+
 ## How you work
 1. **One thing at a time.** Pick the next unchecked item in the current roadmap phase. Don't start the next until this one is done.
 2. **Plan first.** Before coding, write a short plan: classes, data, config keys, messages, permissions, GUI flow, tests, edge cases. Check it against DESIGN and STANDARDS.

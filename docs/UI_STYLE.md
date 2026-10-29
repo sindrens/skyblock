@@ -303,7 +303,7 @@ All sounds are configurable and can be muted in `/settings`.
 | Names | Network: **SkybornMC** (one word, capital S and MC). Gamemode: **Phoenix Skyblock**. Short form in chat: **Phoenix** |
 | Domain | `play.skybornmc.net` (Java + Bedrock), website `skybornmc.net`, store `store.skybornmc.net` |
 | Logo | A phoenix (owner's artwork). Needed: original file (PNG/SVG, transparent) |
-| SkybornMC logo | `branding/skybornmc-logo.svg` (+ 128/512/1024 PNG): a chunky 3D **S** in sky white→cyan→blue with a navy extrusion and golden cracks, white wings with gold tips, a night-sky disc in a cloud ring, gold/white sparkles. Network colors: sky white `#FFFFFF`, cyan `#58C2FF`, blue `#2B78F0`, navy `#061638`, gold `#FFD23F` |
+| SkybornMC logo | `branding/skybornmc-logo.svg` (+ 128/512/1024 PNG): a chunky 3D **red S** (white→red gradient, deep maroon extrusion, glossy bevel) with white feathered wings (gold coverts, small red tips), on a night-to-sunrise sky disc with a gold rim and red gems, a cloud ring, a small floating sky island, birds and gold/white sparkles. Colors: red `#FF3D2E`/`#B0141F`, maroon `#3D0710`, sky navy `#0B1E4C`→blue `#1F4FA8`→sunrise `#F2A65A`, gold `#E0A92E`, cloud white |
 | Server icon | `server/server-icon.png`, **64×64 PNG**: the SkybornMC S logo (deployed with the server configs) |
 | MOTD | Animated hex gradients from the `motd` module (`motd.yml`): 4 designs (coming soon, the phoenix rises, season live, double XP), rotation, auto-centering, hover info. Once the network has a proxy, the same module/config moves there |
 | Resource pack glyph | The phoenix as a font glyph (for chat prefix, scoreboard title, tab). Needs a Geyser mapping so Bedrock shows it too; until then, fall back to `✦` |
