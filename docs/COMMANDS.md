@@ -43,6 +43,7 @@ Permission root: `skyblock.`. Status: ⬜ planned · 🟡 in progress · ✅ don
 | `/admin` | In-game config editor | `skyblock.admin.config` | ⬜ |
 | `/skyblock modules` | Module status | `skyblock.admin.modules` | ✅ |
 | `/skyblock reload [core\|module]` | Reload everything, core.yml or one module; shows config problems | `skyblock.admin.reload` | ✅ |
+| `/skyblock style` | Preview palette (hover = hex + Bedrock fallback), symbols, gradients, number formats, message types, title, action bar and a sound | `skyblock.admin.reload` | ✅ |
 | `/skyblock config [file]` | List config files with status / show a file's active values (hover = description + default) | `skyblock.admin.reload` | ✅ |
 | `/skyblock worlds` | List worlds (click to teleport) | `skyblock.admin.worlds` | ✅ |
 | `/skyblock tp <world>` | Teleport to a world's spawn | `skyblock.admin.worlds` | ✅ |

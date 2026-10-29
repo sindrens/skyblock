@@ -1,0 +1,14 @@
+# Named sounds: "<sound id> <volume 0-10> <pitch 0.5-2>". Sound ids: https://minecraft.wiki/w/Sounds.json
+# Reload: /skyblock reload core
+success: "minecraft:entity.experience_orb.pickup 0.6 1.4"
+error: "minecraft:block.note_block.bass 0.8 0.6"
+warning: "minecraft:block.note_block.pling 0.6 0.8"
+click: "minecraft:ui.button.click 0.4 1.2"
+menu-open: "minecraft:block.chest.open 0.5 1.3"
+menu-close: "minecraft:block.chest.close 0.4 1.3"
+page: "minecraft:item.book.page_turn 0.6 1.0"
+level-up: "minecraft:entity.player.levelup 0.7 1.0"
+unlock: "minecraft:ui.toast.challenge_complete 0.5 1.0"
+teleport: "minecraft:entity.enderman.teleport 0.5 1.2"
+money: "minecraft:block.amethyst_block.chime 0.8 1.5"
+notify: "minecraft:block.note_block.chime 0.6 1.6"

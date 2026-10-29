@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.motd;
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.config.ConfigManager;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import org.bukkit.configuration.ConfigurationSection;
@@ -48,9 +49,9 @@ public final class MotdModule implements SkyblockModule, Listener {
     private volatile Instant countdownTarget;
     private volatile String countdownFinished = "NOW";
 
-    public MotdModule(JavaPlugin plugin, ConfigManager configs) {
-        this.plugin = plugin;
-        this.configs = configs;
+    public MotdModule(Core core) {
+        this.plugin = core.plugin();
+        this.configs = core.configs();
     }
 
     @Override

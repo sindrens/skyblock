@@ -7,23 +7,21 @@ import io.papermc.paper.ban.BanListType;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
+import net.skybornmc.skyblock.common.text.ModuleMessages;
+import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.BanEntry;
 import org.bukkit.Bukkit;
 import org.bukkit.ban.IpBanList;
 import org.bukkit.ban.ProfileBanList;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,11 +35,13 @@ public final class ModerationModule implements SkyblockModule {
     static final String PERM_NOTIFY = "skyblock.staff.notify";
 
     private final JavaPlugin plugin;
-    private final MiniMessage mm = MiniMessage.miniMessage();
-    private volatile YamlConfiguration config = new YamlConfiguration();
+    private final Core core;
+    private final ModuleMessages msg;
 
-    public ModerationModule(JavaPlugin plugin) {
-        this.plugin = plugin;
+    public ModerationModule(Core core) {
+        this.core = core;
+        this.plugin = core.plugin();
+        this.msg = core.messages("moderation");
     }
 
     @Override
@@ -51,7 +51,6 @@ public final class ModerationModule implements SkyblockModule {
 
     @Override
     public void enable() {
-        loadConfig();
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> event.registrar().register(
                 Commands.literal("unban")
                         .requires(src -> src.getSender().hasPermission(PERM_UNBAN))
@@ -72,7 +71,7 @@ public final class ModerationModule implements SkyblockModule {
 
     @Override
     public void reload() {
-        loadConfig();
+        core.messages().load("moderation");
     }
 
     @Override
@@ -113,13 +112,11 @@ public final class ModerationModule implements SkyblockModule {
         plugin.getLogger().info(staff + " unbanned " + target);
         Bukkit.getOnlinePlayers().stream()
                 .filter(p -> p.hasPermission(PERM_NOTIFY) && !p.equals(sender))
-                .forEach(p -> p.sendMessage(mm.deserialize(message("staff-notify"),
-                        Placeholder.unparsed("staff", staff), Placeholder.unparsed("player", target))));
+                .forEach(p -> msg.send(p, "staff-notify", Msg.p("staff", staff), Msg.p("player", target)));
     }
 
     private void send(CommandSender sender, String key, String target) {
-        sender.sendMessage(mm.deserialize(message("prefix") + message(key),
-                Placeholder.unparsed("player", target), Placeholder.unparsed("staff", sender.getName())));
+        msg.send(sender, key, Msg.p("player", target), Msg.p("staff", sender.getName()));
     }
 
     /** Banned player names mapped to their profile. */
@@ -131,15 +128,5 @@ public final class ModerationModule implements SkyblockModule {
                 .collect(Collectors.toMap(PlayerProfile::getName, Function.identity(), (a, b) -> a));
     }
 
-    private String message(String key) {
-        return Objects.requireNonNullElse(config.getString("messages." + key), "");
-    }
 
-    private void loadConfig() {
-        File file = new File(plugin.getDataFolder(), "moderation.yml");
-        if (!file.exists()) {
-            plugin.saveResource("moderation.yml", false);
-        }
-        config = YamlConfiguration.loadConfiguration(file);
-    }
 }
