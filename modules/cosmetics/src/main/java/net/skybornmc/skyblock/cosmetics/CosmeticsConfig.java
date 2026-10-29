@@ -12,6 +12,14 @@ public final class CosmeticsConfig extends ModuleConfig {
     @Setting(path = "tag-item.max-amount", desc = "Most tag items one /tags item command can create.", min = 1, max = 64)
     public int tagItemMaxAmount = 16;
 
+    @Setting(path = "tag.format", desc = "How an equipped tag looks in chat, tab and menus. <tag> = the tag's own display "
+            + "(its colors). Default: the tag in muted parentheses, e.g. Pouched (Phoenix).")
+    public String tagFormat = "<c:muted>(</c:muted><tag><c:muted>)</c:muted>";
+
+    @Setting(path = "tag.strip-brackets", desc = "Remove [ ] around a tag's own display, so older tags written as [Name] "
+            + "don't show as ([Name]).")
+    public boolean tagStripBrackets = true;
+
     @Override
     public String fileName() {
         return "cosmetics.yml";

@@ -1,5 +1,6 @@
 # Titles and tags (/tags, /titles). Edit here or in-game: /tags -> Edit (staff).
 # display: MiniMessage with style tags (<c:ember>, <grad:phoenix>...) or & codes.
+# Tags: write only the name in its colors (no brackets); cosmetics.yml -> tag.format puts it in muted ( ) after the name.
 # rarity: common, uncommon, rare, epic, legendary, mythic, special.
 # source: how to get it, shown on locked entries.
 # secret: titles only, shown as "???" until earned.
@@ -79,32 +80,32 @@ titles:
 
 tags:
   phoenix:
-    display: "<c:brand>[<grad:phoenix>Phoenix</grad>]</c:brand>"
+    display: "<grad:phoenix>Phoenix</grad>"
     rarity: legendary
     source: "Legendary crate or the store."
     season-persistent: true
   og:
-    display: "<c:flame>[OG]"
+    display: "<c:flame>OG"
     rarity: epic
     source: "Store."
     season-persistent: true
   ember:
-    display: "<c:ember>[Ember]"
+    display: "<c:ember>Ember"
     rarity: rare
     source: "Rare crate."
     season-persistent: true
   skyborn:
-    display: "<grad:skyborn>[Skyborn]</grad>"
+    display: "<grad:skyborn>Skyborn</grad>"
     rarity: epic
     source: "Epic crate or the store."
     season-persistent: true
   ashes:
-    display: "<c:muted>[Ashes]"
+    display: "<c:text>Ashes"
     rarity: uncommon
     source: "Uncommon crate."
     season-persistent: true
   inferno:
-    display: "<gradient:#C21F2B:#FF8A1F:#FFD23F>[Inferno]</gradient>"
+    display: "<gradient:#C21F2B:#FF8A1F:#FFD23F>Inferno</gradient>"
     rarity: mythic
     source: "Monthly crate."
     season-persistent: true

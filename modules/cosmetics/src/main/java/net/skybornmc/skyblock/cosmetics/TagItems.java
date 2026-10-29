@@ -59,14 +59,14 @@ final class TagItems implements Listener {
                     @Override
                     public String name(ItemStack stack, ItemDefinition definition) {
                         return tagOf(stack).flatMap(id -> module.registry().get(Cosmetics.Kind.TAG, id))
-                                .map(tag -> LoreBuilder.fill(module.raw("item.name-with-tag"), Map.of("tag", mini(tag.display()))))
+                                .map(tag -> LoreBuilder.fill(module.raw("item.name-with-tag"), Map.of("tag", module.service().displayRaw(tag, TagItems::mini))))
                                 .orElse(definition.name());
                     }
 
                     @Override
                     public void lore(ItemStack stack, ItemDefinition definition, LoreBuilder lore) {
                         tagOf(stack).flatMap(id -> module.registry().get(Cosmetics.Kind.TAG, id)).ifPresent(tag -> {
-                            lore.line(LoreBuilder.fill(module.raw("item.preview"), Map.of("tag", mini(tag.display()))));
+                            lore.line(LoreBuilder.fill(module.raw("item.preview"), Map.of("tag", module.service().displayRaw(tag, TagItems::mini))));
                             lore.line(LoreBuilder.fill(module.raw("item.rarity"),
                                     Map.of("rarity", "<rarity:" + tag.rarity().name().toLowerCase(Locale.ROOT) + ">"
                                             + tag.rarity().name().charAt(0) + tag.rarity().name().substring(1).toLowerCase(Locale.ROOT))));

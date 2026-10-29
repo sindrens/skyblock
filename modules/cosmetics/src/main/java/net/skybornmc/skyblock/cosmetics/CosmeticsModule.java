@@ -71,6 +71,7 @@ public final class CosmeticsModule implements SkyblockModule {
         registry.load(this::problem);
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         service.autoTitle(config.autoTitle);
+        service.tagStyle(config.tagFormat, config.tagStripBrackets);
         core.services().register(ID, Cosmetics.class, service);
         core.placeholders().register(ID, "title", (Placeholder) p -> service.placeholder(p, Cosmetics.Kind.TITLE));
         core.placeholders().register(ID, "tag", (Placeholder) p -> service.placeholder(p, Cosmetics.Kind.TAG));
@@ -89,6 +90,7 @@ public final class CosmeticsModule implements SkyblockModule {
         core.messages().load(ID);
         registry.load(this::problem);
         service.autoTitle(config.autoTitle);
+        service.tagStyle(config.tagFormat, config.tagStripBrackets);
     }
 
     @Override
