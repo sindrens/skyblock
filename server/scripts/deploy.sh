@@ -5,6 +5,7 @@
 #   ./server/scripts/deploy.sh [ssh-key] [minecraft@host]
 # Defaults: key ../.skyborn-claude/deploy_key (next to the repo), host from server/.vps-target.
 set -euo pipefail
+export COPYFILE_DISABLE=1   # macOS: never pack ._ metadata files
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 KEY="${1:-$ROOT/../.skyborn-claude/deploy_key}"
 HOST_DEFAULT="$(sed -E 's/^[^@]*@//' "$ROOT/server/.vps-target" 2>/dev/null || true)"
@@ -25,6 +26,6 @@ git -C "$ROOT" ls-files server > "$LIST"
 echo "== Deploying $(basename "$JAR") + configs to $TARGET"
 tar -czf - -C "$ROOT" -T "$LIST" -C "$STAGE" "server/plugins/$(basename "$JAR")" 2>/dev/null \
   | "${SSH[@]}" "$TARGET" 'set -e; cd /opt/skyblock && rm -f server/plugins/PhoenixSkyblock-*.jar && tar -xzf - 2>/dev/null \
-      && chmod +x server/start.sh server/scripts/*.sh && cd server && ./scripts/fetch.sh && ./scripts/apply-secrets.sh \
+      && find server -name "._*" -type f -delete && chmod +x server/start.sh server/scripts/*.sh && cd server && ./scripts/fetch.sh && ./scripts/apply-secrets.sh \
       && ./scripts/restart-and-apply.sh'
 echo "== Released."

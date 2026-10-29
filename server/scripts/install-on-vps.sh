@@ -3,6 +3,7 @@
 #   cd ~/Development/skyblock && ./server/scripts/install-on-vps.sh ubuntu@<vps-address>
 # You type the VPS password once. Takes ~5-10 minutes.
 set -euo pipefail
+export COPYFILE_DISABLE=1   # macOS: never pack ._ metadata files
 TARGET="${1:?Usage: ./server/scripts/install-on-vps.sh user@host   (e.g. ubuntu@vps-xxxx.vps.ovh.net)}"
 HOST="${TARGET#*@}"
 # Remember the address so update-vps.sh needs no arguments.

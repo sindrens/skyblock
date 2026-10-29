@@ -3,6 +3,7 @@
 # Run FROM YOUR MAC:   cd ~/Development/skyblock && ./server/scripts/update-vps.sh
 # The VPS address is remembered from install-on-vps.sh (stored in server/.vps-target, not in git).
 set -euo pipefail
+export COPYFILE_DISABLE=1   # macOS: never pack ._ metadata files
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 TARGET="${1:-$(cat "$ROOT/server/.vps-target" 2>/dev/null || true)}"
 [ -n "$TARGET" ] || { echo "Usage: ./server/scripts/update-vps.sh ubuntu@<vps-address>   (only needed the first time)"; exit 1; }
@@ -22,6 +23,7 @@ rm -f "$LIST"
 echo "== Installing and restarting"
 "${SSH[@]}" -t "$TARGET" "sudo rsync -a ~/skyborn-upload/server/ /opt/skyblock/server/ \
   && if [ -n '$JAR' ]; then sudo rm -f /opt/skyblock/server/plugins/PhoenixSkyblock-*.jar; sudo cp ~/skyborn-upload/$JAR /opt/skyblock/server/plugins/; fi \
+  && sudo find /opt/skyblock/server -name '._*' -type f -delete \
   && sudo chown -R minecraft:minecraft /opt/skyblock/server \
   && sudo -u minecraft bash -c 'cd /opt/skyblock/server && ./scripts/fetch.sh && ./scripts/apply-secrets.sh' \
   && { sudo -u minecraft tmux send-keys -t skyblock 'say Updating: restart in 10 seconds' Enter 2>/dev/null || true; } \
