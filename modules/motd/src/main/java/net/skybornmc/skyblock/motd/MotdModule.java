@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.motd;
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.skybornmc.skyblock.common.config.ConfigManager;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -14,7 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -28,6 +28,8 @@ public final class MotdModule implements SkyblockModule, Listener {
     }
 
     private final JavaPlugin plugin;
+    private final ConfigManager configs;
+    private final MotdConfig config = new MotdConfig();
     private final MotdRenderer renderer = new MotdRenderer();
 
     private volatile List<Motd> active = List.of();
@@ -39,8 +41,9 @@ public final class MotdModule implements SkyblockModule, Listener {
     private volatile int frames;
     private volatile boolean center;
 
-    public MotdModule(JavaPlugin plugin) {
+    public MotdModule(JavaPlugin plugin, ConfigManager configs) {
         this.plugin = plugin;
+        this.configs = configs;
     }
 
     @Override
@@ -92,15 +95,23 @@ public final class MotdModule implements SkyblockModule, Listener {
         if (!file.exists()) {
             plugin.saveResource("motd.yml", false);
         }
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        // Typed settings: validated, merged; a wrong value keeps the previous one.
+        configs.load(config);
 
-        String header = config.getString("header", "");
-        ConfigurationSection motds = config.getConfigurationSection("motds");
+        // Free-text parts (header + message texts). If the YAML is broken, the previous MOTDs stay active.
+        YamlConfiguration yaml = new YamlConfiguration();
+        try {
+            yaml.load(file);
+        } catch (Exception e) {
+            return;
+        }
+        String header = yaml.getString("header", "");
+        ConfigurationSection motds = yaml.getConfigurationSection("motds");
         List<Motd> chosen = new ArrayList<>();
-        for (String id : config.getStringList("active")) {
+        for (String id : config.active) {
             ConfigurationSection section = motds == null ? null : motds.getConfigurationSection(id);
             if (section == null) {
-                plugin.getLogger().warning("motd.yml: active MOTD '" + id + "' does not exist.");
+                plugin.getLogger().warning("motd.yml → active: MOTD '" + id + "' does not exist under 'motds' (skipped).");
                 continue;
             }
             chosen.add(new Motd(id, section.getString("line1", header), section.getString("line2", "")));
@@ -109,17 +120,19 @@ public final class MotdModule implements SkyblockModule, Listener {
         LegacyComponentSerializer legacy = LegacyComponentSerializer.legacySection();
         MiniMessage mm = MiniMessage.miniMessage();
         List<String> hover = new ArrayList<>();
-        for (String line : config.getStringList("hover")) {
+        for (String line : config.hover) {
             hover.add(legacy.serialize(mm.deserialize(line)));
         }
 
-        random = "random".equals(config.getString("mode", "rotate").toLowerCase(Locale.ROOT));
-        rotateMillis = Math.max(1, config.getLong("rotate-seconds", 10)) * 1000L;
-        animate = config.getBoolean("animation.enabled", true);
-        cycleMillis = Math.max(1, config.getLong("animation.cycle-seconds", 6)) * 1000L;
-        frames = Math.max(1, config.getInt("animation.frames", 12));
-        center = config.getBoolean("center", true);
+        random = config.mode == MotdConfig.Mode.RANDOM;
+        rotateMillis = config.rotateSeconds * 1000L;
+        animate = config.animationEnabled;
+        cycleMillis = config.animationCycleSeconds * 1000L;
+        frames = config.animationFrames;
+        center = config.center;
         hoverLines = List.copyOf(hover);
-        active = List.copyOf(chosen);
+        if (!chosen.isEmpty()) {
+            active = List.copyOf(chosen);
+        }
     }
 }

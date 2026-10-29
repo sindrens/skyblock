@@ -42,7 +42,8 @@ Permission root: `skyblock.`. Status: ⬜ planned · 🟡 in progress · ✅ don
 | `/inspect <player>` | Player overview GUI | `skyblock.staff.inspect` | ⬜ |
 | `/admin` | In-game config editor | `skyblock.admin.config` | ⬜ |
 | `/skyblock modules` | Module status | `skyblock.admin.modules` | ✅ |
-| `/skyblock reload` | Reload configs | `skyblock.admin.reload` | ✅ |
+| `/skyblock reload [core\|module]` | Reload everything, core.yml or one module; shows config problems | `skyblock.admin.reload` | ✅ |
+| `/skyblock config [file]` | List config files with status / show a file's active values (hover = description + default) | `skyblock.admin.reload` | ✅ |
 | `/skyblock worlds` | List worlds (click to teleport) | `skyblock.admin.worlds` | ✅ |
 | `/skyblock tp <world>` | Teleport to a world's spawn | `skyblock.admin.worlds` | ✅ |
 | `/season` | Season tools (reset, pre-season) | `skyblock.owner.season` | ⬜ |

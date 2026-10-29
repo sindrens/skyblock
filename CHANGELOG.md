@@ -18,6 +18,7 @@
 - ViaVersion + ViaBackwards: Java clients 1.21.5 to 26.3 can join (older versions get a friendly kick message).
 - Worlds module (5 configured void worlds, `/skyblock worlds`, `/skyblock tp`), MOTD module (animated hex MOTDs), staff ranks via LuckPerms, `setup-github-deploy.sh`.
 - SkybornMC logo (branding/) and server icon.
+- **M0.1 config framework:** typed `@Setting` config classes with descriptions, ranges and kebab-case keys; new keys merged on update without touching edits; `config-version` + rename migrations; wrong values reported (file → key: reason) and the old value kept; broken YAML never overwrites the file; `core.yml`; `motd.yml` settings now validated; `/skyblock reload [core|module]`, `/skyblock config [file]`; staff see config problems on join.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.

@@ -34,7 +34,7 @@ Target: everything below is in season 1. Launch is in ~3 years. There is time to
 - [x] MOTD module: animated hex-gradient MOTDs, rotation, centering, hover info (`motd.yml`)
 - [x] Staff ranks + permissions (LuckPerms, applied automatically on update/deploy)
 - [x] Deploy tooling: `install-on-vps.sh`, `update-vps.sh`, `setup-github-deploy.sh` (push to main = deploy to test)
-- [ ] Config framework (typed config objects, reload, validation)
+- [x] Config framework (typed config objects, reload, validation)
 - [ ] Messages framework (MiniMessage, placeholders, prefix)
 - [ ] Database layer (HikariCP, async executor, migrations)
 - [ ] GUI framework (paged menus, back/close, Bedrock-safe)

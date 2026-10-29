@@ -91,6 +91,29 @@ public final class ModuleRegistry {
         return failed;
     }
 
+    /**
+     * Reloads one enabled module.
+     *
+     * @return {@code true} on success, {@code false} if it threw (logged)
+     * @throws IllegalArgumentException if no enabled module has this id
+     */
+    public boolean reload(String id) {
+        SkyblockModule module = enableOrder.stream().filter(m -> m.id().equals(id)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No enabled module '" + id + "'"));
+        try {
+            module.reload();
+            return true;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Module '" + id + "' failed to reload.", e);
+            return false;
+        }
+    }
+
+    /** Ids of enabled modules, in enable order. */
+    public List<String> enabledIds() {
+        return enableOrder.stream().map(SkyblockModule::id).toList();
+    }
+
     public State state(String id) {
         return states.get(id);
     }
