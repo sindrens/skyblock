@@ -41,3 +41,12 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 ## Phase plans (defaults apply unless the owner changes them; details in docs/phases/)
 
 Answered 2026-10-29 (moved into the plans): retention 30 days / forever, `/transactions` yes, AH 1%+5% and 5 listings, `/pay` confirm >$1M, gems not tradeable, start $1,000, island build Y 0–256, Depths logs 10 s + personal blocks, Omnitool replaced by Forge/living tools/blueprints/skins (tradeable, no durability), titles + tags in one menu.
+
+## Decided 2026-10-29 (batch 3)
+- Our `/tp`, `/give`, `/gamemode`, `/msg`, `/list`, `/help` replace the vanilla commands.
+- Spawn point fixed at 0, 100, 0 (`worlds.yml`: 0.5 / 100 / 0.5); any `/setspawn` change is copied into the tracked file.
+- Join IP history (`/whois`, alts) and `auth` audit rows are kept **forever** (security).
+- Nicknames get a visible marker (`~Phoenix`) and reset when the player loses the rank that allowed them.
+- Depths wings bend into a U inside the 2000 border; boss arena on its own north island via a portal from tier 10.
+- Spawn gets the Forge Quarter (Quartermaster, Blacksmith, Enchanter).
+- Builds are done by a separate builder agent/team from `docs/BUILDER_BRIEF.md`.
