@@ -10,6 +10,9 @@ This is a **large, long-term project** (launch in ~3 years). Quality beats speed
 3. [`docs/ROADMAP.md`](docs/ROADMAP.md): *in which order*. Work on the current phase only.
 4. [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md): unresolved decisions. **Never guess on design. Add a question and ask the owner.**
 5. [`docs/COMMANDS.md`](docs/COMMANDS.md): every command and permission. Keep it updated.
+6. [`docs/UI_STYLE.md`](docs/UI_STYLE.md): colors, lore template, GUI layout, sounds, HUD, help. **Every GUI/item/message must follow it.**
+7. [`docs/WORLD.md`](docs/WORLD.md): worlds, builds, tier tables, vanilla rules.
+8. [`docs/REVIEW.md`](docs/REVIEW.md): known problems with default decisions. Defaults apply until the owner changes them. Check it before coding a phase.
 
 ## How you work
 1. **One thing at a time.** Pick the next unchecked item in the current roadmap phase. Don't start the next until this one is done.

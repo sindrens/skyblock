@@ -26,3 +26,11 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 13. Hosting specs (decides plugin budget). Owner will handle; single server at start.
 14. Spawner types and the max stack size.
 15. Rank perk table per rank (vault count, cosmetics, convenience).
+
+## From design review #1 (see REVIEW.md for details and defaults)
+16. Loot boxes: sell keys for money, or earned only? (D1)
+17. Team season prize: leader or split by contribution? (A6)
+18. LuckPerms and CoreProtect: confirm external, or build custom? (DESIGN §14)
+19. Team size cap: 4 → 8 with upgrades OK? (B1)
+20. Death rules in PvP zones (B7)
+21. Vanilla rules table (WORLD §6): approve or change

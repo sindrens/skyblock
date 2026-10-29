@@ -24,6 +24,14 @@ Permission root: `skyblock.`. Status: ⬜ planned · 🟡 in progress · ✅ don
 | `/skills`, `/sets`, `/enchanter` | Progression | `skyblock.skills` … | ⬜ |
 | `/crates`, `/vote`, `/daily`, `/quests`, `/pass`, `/blackmarket`, `/collection` | Rewards | … | ⬜ |
 | `/pets`, `/duel`, `/events`, `/report`, `/pv` | Misc | … | ⬜ |
+| `/is leave`, `/is disband`, `/is transfer <member>`, `/is chat` | Island membership (REVIEW B10) | `skyblock.island.*` | ⬜ |
+| `/trade <player>` | Secure two-sided trade | `skyblock.trade` | ⬜ |
+| `/msg`, `/r`, `/ignore`, `/mail` | Messaging | `skyblock.msg` … | ⬜ |
+| `/settings` | Personal toggles | `skyblock.settings` | ⬜ |
+| `/stats [player]`, `/titles`, `/cosmetics` | Profile, titles, cosmetics | `skyblock.stats` … | ⬜ |
+| `/satchel` | Depths satchel + sell all | `skyblock.depths.satchel` | ⬜ |
+| `/fly` | Fly on own island (perk) | `skyblock.fly` | ⬜ |
+| `/trash`, `/afk`, `/rules`, `/discord`, `/store`, `/halloffame` | Utility | … | ⬜ |
 
 ## Staff
 | Command | Description | Permission | Status |
@@ -34,3 +42,6 @@ Permission root: `skyblock.`. Status: ⬜ planned · 🟡 in progress · ✅ don
 | `/skyblock modules` | Module status | `skyblock.admin.modules` | ✅ |
 | `/skyblock reload` | Reload configs | `skyblock.admin.reload` | ✅ |
 | `/season` | Season tools (reset, pre-season) | `skyblock.owner.season` | ⬜ |
+| `/sc <msg>` | Staff chat | `skyblock.staff.chat` | ⬜ |
+| `/maintenance` | Maintenance mode + whitelist | `skyblock.admin.maintenance` | ⬜ |
+| `/eco admin` | Economy dashboard and corrections (logged) | `skyblock.owner.economy` | ⬜ |

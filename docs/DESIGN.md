@@ -3,6 +3,7 @@
 > **Status:** Living document, v0.1 (2026-10-29). This is the single source of truth for *what* we build.
 > Values marked **(tunable)** are starting points and must live in config, never in code.
 > Anything not decided yet is listed in [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md). Do not guess; ask the owner.
+> Companion specs: [`UI_STYLE.md`](UI_STYLE.md) (colors, lore, GUIs, sounds, help), [`WORLD.md`](WORLD.md) (worlds, builds, tiers, vanilla rules), [`REVIEW.md`](REVIEW.md) (open problems with default decisions; defaults apply until the owner changes them).
 
 ---
 
@@ -91,7 +92,7 @@ Upgrades (all tunable, list can grow):
 | Upgrade | Effect |
 |---|---|
 | Island Size | Border +1 chunk ring |
-| Member Slots | Max members |
+| Member Slots | Max members: 4 at start, up to 8 (REVIEW B1) |
 | Generator | Better custom-generator ore tiers |
 | Spawner Rate | Faster spawners |
 | Spawner Stack Limit | More spawners per stack |
@@ -116,6 +117,8 @@ Upgrades (all tunable, list can grow):
 ### 3.6 Island level: the 5 pillars
 
 **Island Level = Σ pillar levels + Σ completed upgrade levels.**
+
+> Upgrade levels are weighted by tier and can never be bought with gems (REVIEW A1).
 
 | Pillar | Fed by |
 |---|---|
@@ -212,11 +215,11 @@ Small extra islands for farms, unlocked by progression. **Max 3.**
 ### 5.2 The Depths (one big shared area)
 - A single large area containing the **mine, the forest and the combat/dungeon zones**, each split into **tiers**.
 - **`/dungeon`** opens a GUI to teleport to any unlocked tier in any aspect (mining, foraging, combat), including going back to earlier tiers.
-- The next tier unlocks by **blocks broken** (logs chopped / mobs killed for the other aspects) (tunable).
+- The next tier unlocks by the player's **skill level** in that aspect. Skill XP comes from blocks broken / logs chopped / mobs killed (see REVIEW A2). Tier tables: `WORLD.md` §4.
 - **Per-player blocks:** each player sees their own ore/log blocks (packet-based), so nobody steals ore. A broken block **respawns after 10 s** (tunable).
 - **Visibility setting:** see other players: everyone / island only / none.
 - **No PvP** in The Depths. Ambient mobs exist. Danger scales with tier but is never too hard.
-- Mine drops: (see open questions).
+- Mine drops go to the per-player **Depths Satchel** (REVIEW B5). Drop mix: see open questions.
 - Custom ores and trees after vanilla tiers. Names: proposed by the developer, approved by the owner.
 
 ### 5.3 Island generators, farms and spawners
@@ -307,3 +310,21 @@ Treasure hunt, money event, farming event, mining rush, double XP and more, all 
 
 ## 13. Endgame (months 2–3)
 Omnitool prestige, collection log, high-tier dungeon zones with leaderboards, weekly leaderboards, Final Week, limited late-season cosmetics.
+
+---
+
+## 14. Plugins: custom vs. external (decided 2026-10-29)
+
+All gameplay and server features are **custom**. External plugins only where building our own would be worse and cost years:
+
+| Plugin | Status | Reason |
+|---|---|---|
+| Geyser + Floodgate | **Use** | Bedrock protocol translation |
+| Grim (anticheat) | **Use** | Specialist work, Bedrock-aware |
+| spark | **Use** | Profiling |
+| FastAsyncWorldEdit | **Use** (builders/staff only) | Building spawn, Depths, warzone |
+| LuckPerms | **Recommended**, owner to confirm | Permissions/ranks backbone, invisible to players |
+| CoreProtect | **Recommended for blocks only**, owner to confirm | Block logging/rollback at scale. Economy/item/staff logs are custom |
+| PacketEvents | **Library**, shaded into our jar | Per-player blocks, border, NPC packets |
+
+Custom (not plugins): punishments, Discord bot, essentials (spawn/tpa/back/homes/vanish), chat, scoreboard, tab, holograms (TextDisplay), NPCs (mannequins), world management, economy (no Vault needed), Tebex integration via API, Votifier receiver, crates, everything gameplay.

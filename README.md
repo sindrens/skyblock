@@ -11,6 +11,9 @@ A fully custom, seasonal Skyblock server for **Minecraft Java 1.21.11 + Bedrock 
 | [docs/DESIGN.md](docs/DESIGN.md) | Full game design |
 | [docs/STANDARDS.md](docs/STANDARDS.md) | UX, staff, code and testing standards + Definition of Done |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Build order, phase by phase |
+| [docs/UI_STYLE.md](docs/UI_STYLE.md) | Colors, item lore, GUI layout, sounds, HUD, help |
+| [docs/WORLD.md](docs/WORLD.md) | Worlds, builds, tier tables, vanilla rules |
+| [docs/REVIEW.md](docs/REVIEW.md) | Design review: problems + default decisions |
 | [docs/COMMANDS.md](docs/COMMANDS.md) | Commands and permissions |
 | [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md) | Decisions still pending |
 

@@ -6,6 +6,8 @@ Every feature must meet **all** of these before it counts as done. They exist so
 
 ## 1. Player experience (user-friendliness)
 
+Visual details (colors, lore template, GUI slots, sounds, HUD) are specified in [`UI_STYLE.md`](UI_STYLE.md).
+
 ### 1.1 Discoverability
 - **`/menu`** (also opened by a menu item in the hotbar, and the `F` swap-hand key where possible) is the hub for *everything*: island, The Depths, shop, sell, bank, crates, quests, skills, sets, events, settings, help.
 - **`/help`** opens a categorized GUI help with short descriptions and clickable "Take me there" buttons. `/help <topic>` jumps straight to a topic.
@@ -50,20 +52,8 @@ Every feature must meet **all** of these before it counts as done. They exist so
 - **Automation:** anticheat auto-punish rules, `/report` → Discord, chat filter, auto-mute rules, Discord ticket bot, automatic restart warnings, automatic backups.
 - Staff never need console or file access for normal operations.
 
-### Recommended (non-gameplay) infrastructure plugins
-Gameplay is custom. Proven infrastructure should not be reinvented:
-
-| Purpose | Plugin |
-|---|---|
-| Permissions | LuckPerms |
-| Block logging / rollback | CoreProtect |
-| Punishments | LiteBans |
-| Anticheat (Bedrock-aware) | Grim (evaluate alternatives) |
-| Crossplay | Geyser + Floodgate |
-| Discord | DiscordSRV (or custom bot) |
-| Profiling | spark |
-| Store | Tebex |
-| Packets | PacketEvents (for per-player blocks) |
+### External plugins
+See `DESIGN.md` §14 for the decided list. Everything else is custom.
 
 ---
 
