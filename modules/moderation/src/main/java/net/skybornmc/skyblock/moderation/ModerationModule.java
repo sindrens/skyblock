@@ -1,13 +1,11 @@
 package net.skybornmc.skyblock.moderation;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import io.papermc.paper.ban.BanListType;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.command.Arg;
+import net.skybornmc.skyblock.common.command.CommandService;
+import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
@@ -20,13 +18,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Staff moderation commands. Currently: {@code /unban <player|ip>}.
+ * Staff moderation commands. Currently: {@code /unban <player|ip>} (reference example for the command framework).
  * Later phases add custom punishments, staff mode, reports and appeals here.
  */
 public final class ModerationModule implements SkyblockModule {
@@ -36,11 +33,13 @@ public final class ModerationModule implements SkyblockModule {
 
     private final JavaPlugin plugin;
     private final Core core;
+    private final CommandService commands;
     private final ModuleMessages msg;
 
-    public ModerationModule(Core core) {
+    public ModerationModule(Core core, CommandService commands) {
         this.core = core;
         this.plugin = core.plugin();
+        this.commands = commands;
         this.msg = core.messages("moderation");
     }
 
@@ -51,22 +50,18 @@ public final class ModerationModule implements SkyblockModule {
 
     @Override
     public void enable() {
-        plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> event.registrar().register(
-                Commands.literal("unban")
-                        .requires(src -> src.getSender().hasPermission(PERM_UNBAN))
-                        .then(Commands.argument("target", StringArgumentType.word())
-                                .suggests((ctx, builder) -> {
-                                    BanTargets.suggestions(bannedNames().keySet(), builder.getRemaining())
-                                            .forEach(builder::suggest);
-                                    return builder.buildFuture();
-                                })
-                                .executes(ctx -> {
-                                    unban(ctx.getSource(), StringArgumentType.getString(ctx, "target"));
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .build(),
-                "Unban a player (or an IP address)",
-                List.of()));
+        // Banned names + banned IPs; matching is done by BanTargets (Bedrock names, case-insensitive).
+        Arg<String> target = Arg.word("target", (sender, raw) -> raw, (ctx, builder) -> {
+            BanTargets.suggestions(bannedNames().keySet(), builder.getRemaining()).forEach(builder::suggest);
+            return builder.buildFuture();
+        });
+        commands.register(CommandSpec.command("unban")
+                .description("Unban a player (or an IP address)")
+                .category("Staff")
+                .permission(PERM_UNBAN)
+                .arg(target)
+                .example("unban Steve")
+                .executes(ctx -> unban(ctx.sender(), ctx.get(target))));
     }
 
     @Override
@@ -79,9 +74,7 @@ public final class ModerationModule implements SkyblockModule {
         // Commands are unregistered by the server with the plugin.
     }
 
-    private void unban(CommandSourceStack source, String target) {
-        CommandSender sender = source.getSender();
-
+    private void unban(CommandSender sender, String target) {
         if (BanTargets.looksLikeIp(target)) {
             IpBanList ipBans = Bukkit.getBanList(BanListType.IP);
             try {
@@ -127,6 +120,4 @@ public final class ModerationModule implements SkyblockModule {
                 .filter(profile -> profile != null && profile.getName() != null)
                 .collect(Collectors.toMap(PlayerProfile::getName, Function.identity(), (a, b) -> a));
     }
-
-
 }

@@ -1,0 +1,299 @@
+package net.skybornmc.skyblock.common.command;
+
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import net.skybornmc.skyblock.common.text.Messages;
+import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.text.Sounds;
+import net.skybornmc.skyblock.common.util.Format;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+
+/**
+ * Registers {@link CommandSpec}s on Paper's Brigadier and gives every command the same behavior:
+ * permission-filtered visibility and tab completion, player/console-only checks, cooldowns, confirmation for
+ * dangerous actions, typed arguments with clear errors, usage with a clickable example, configurable aliases
+ * ({@code commands.yml}) and a help index.
+ *
+ * <p>Modules call {@link #register} in {@code enable()}; the tree is built when Paper fires the COMMANDS event.</p>
+ */
+public final class CommandService {
+
+    /** Message file for framework texts: {@code messages/commands.yml}. */
+    public static final String MESSAGES = "commands";
+    public static final String PERM_COOLDOWN_BYPASS = "skyblock.cooldown.bypass";
+    private static final String CONFIRM = "confirm";
+
+    private record Node(CommandSpec spec, String path, CommandSpec top, List<String> permissions) {
+    }
+
+    private record Pending(String input, long expiresAt) {
+    }
+
+    private final JavaPlugin plugin;
+    private final Messages messages;
+    private final Sounds sounds;
+    private final CommandsFile file;
+    private final Map<String, CommandSpec> specs = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Map<String, Long> cooldowns = new ConcurrentHashMap<>();
+    private final Map<String, Pending> pending = new ConcurrentHashMap<>();
+
+    public CommandService(JavaPlugin plugin, Messages messages, Sounds sounds) {
+        this.plugin = plugin;
+        this.messages = messages;
+        this.sounds = sounds;
+        this.file = new CommandsFile(new File(plugin.getDataFolder(), "commands.yml"));
+        messages.load(MESSAGES);
+        plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
+            List<CommandSpec> all;
+            synchronized (specs) {
+                all = List.copyOf(specs.values());
+            }
+            file.load(all).forEach(plugin.getLogger()::warning);
+            for (CommandSpec spec : all) {
+                event.registrar().register(literal(new Node(spec, spec.name(), spec, permissions(List.of(), spec))).build(),
+                        spec.description(), file.get(spec).aliases());
+            }
+        });
+    }
+
+    /**
+     * Adds a command. Validates the whole tree immediately (missing executors, bad argument order, …) so mistakes
+     * fail at startup with a clear message.
+     */
+    public void register(CommandSpec spec) {
+        spec.validate(spec.name());
+        if (specs.putIfAbsent(spec.name(), spec) != null) {
+            throw new IllegalStateException("Command '/" + spec.name() + "' is registered twice");
+        }
+    }
+
+    /** Re-reads {@code commands.yml} (cooldowns apply now, aliases after a restart) and the framework messages. */
+    public List<String> reload() {
+        messages.load(MESSAGES);
+        List<CommandSpec> all;
+        synchronized (specs) {
+            all = List.copyOf(specs.values());
+        }
+        return file.load(all);
+    }
+
+    /** Current problems in {@code commands.yml}. */
+    public List<String> problems() {
+        return file.problems();
+    }
+
+    /** Every runnable, non-hidden command, in registration order. */
+    public List<HelpEntry> helpIndex() {
+        List<HelpEntry> out = new ArrayList<>();
+        synchronized (specs) {
+            for (CommandSpec spec : specs.values()) {
+                collect(new Node(spec, spec.name(), spec, permissions(List.of(), spec)), out);
+            }
+        }
+        return out;
+    }
+
+    /** The help entries {@code sender} may use (all permissions on the path). */
+    public List<HelpEntry> helpIndex(CommandSender sender) {
+        return helpIndex().stream().filter(e -> e.permissions().stream().allMatch(sender::hasPermission)).toList();
+    }
+
+    private void collect(Node node, List<HelpEntry> out) {
+        CommandSpec spec = node.spec();
+        if (spec.executor() != null && !spec.isHidden()) {
+            out.add(new HelpEntry(node.path(), spec.usage(node.path()), example(node), spec.description(), spec.category(),
+                    node.permissions(), spec == node.top() ? file.get(spec).aliases() : List.of(), spec.isPlayerOnly()));
+        }
+        for (CommandSpec child : spec.children()) {
+            collect(new Node(child, node.path() + " " + child.name(), node.top(), permissions(node.permissions(), child)), out);
+        }
+    }
+
+    private static List<String> permissions(List<String> parent, CommandSpec spec) {
+        if (spec.permission() == null || spec.permission().isBlank()) {
+            return parent;
+        }
+        List<String> list = new ArrayList<>(parent);
+        list.add(spec.permission());
+        return List.copyOf(list);
+    }
+
+    /** Forgets a player's cooldowns (staff tools / tests). */
+    public void clearCooldowns(java.util.UUID player) {
+        String prefix = player + ":";
+        cooldowns.keySet().removeIf(k -> k.startsWith(prefix));
+    }
+
+    // ---------------------------------------------------------------- tree building
+
+    private LiteralArgumentBuilder<CommandSourceStack> literal(Node node) {
+        CommandSpec spec = node.spec();
+        LiteralArgumentBuilder<CommandSourceStack> lit = Commands.literal(spec.name());
+        if (spec.permission() != null && !spec.permission().isBlank()) {
+            lit.requires(src -> src.getSender().hasPermission(spec.permission()));
+        }
+        for (CommandSpec child : spec.children()) {
+            lit.then(literal(new Node(child, node.path() + " " + child.name(), node.top(), permissions(node.permissions(), child))));
+        }
+
+        List<Arg<?>> args = spec.args();
+        ArgumentBuilder<CommandSourceStack, ?> next = null;
+        for (int i = args.size() - 1; i >= 0; i--) {
+            Arg<?> arg = args.get(i);
+            RequiredArgumentBuilder<CommandSourceStack, String> argNode = Commands.argument(arg.name(), arg.brigadierType());
+            argNode.suggests(arg.suggestions());
+            boolean runnable = i + 1 >= spec.requiredArgs();
+            argNode.executes(ctx -> runnable ? execute(ctx, node, false) : usage(ctx.getSource().getSender(), node));
+            if (runnable && spec.confirmSeconds() > 0) {
+                argNode.then(Commands.literal(CONFIRM).executes(ctx -> execute(ctx, node, true)));
+            }
+            if (next != null) {
+                argNode.then(next);
+            }
+            next = argNode;
+        }
+        if (next != null) {
+            lit.then(next);
+        }
+        if (spec.executor() != null && spec.requiredArgs() == 0) {
+            lit.executes(ctx -> execute(ctx, node, false));
+            if (spec.confirmSeconds() > 0) {
+                lit.then(Commands.literal(CONFIRM).executes(ctx -> execute(ctx, node, true)));
+            }
+        } else {
+            lit.executes(ctx -> usage(ctx.getSource().getSender(), node));
+        }
+        return lit;
+    }
+
+    // ---------------------------------------------------------------- execution
+
+    private int usage(CommandSender sender, Node node) {
+        CommandSpec spec = node.spec();
+        String usage;
+        if (spec.executor() == null && !spec.children().isEmpty()) {
+            List<String> visible = spec.children().stream()
+                    .filter(c -> c.permission() == null || sender.hasPermission(c.permission()))
+                    .map(CommandSpec::name).toList();
+            usage = "/" + node.path() + " <" + String.join("|", visible) + ">";
+        } else {
+            usage = spec.usage(node.path());
+        }
+        messages.send(sender, MESSAGES, "usage", Msg.p("usage", usage), Msg.p("example", example(node)),
+                Msg.p("description", spec.description()));
+        playError(sender);
+        return 0;
+    }
+
+    private int execute(CommandContext<CommandSourceStack> bctx, Node node, boolean viaConfirm) {
+        CommandSender sender = bctx.getSource().getSender();
+        CommandSpec spec = node.spec();
+        String input = stripSlash(bctx.getInput());
+        try {
+            if (spec.isPlayerOnly() && !(sender instanceof Player)) {
+                throw CommandFailure.of("players-only");
+            }
+            if (spec.isConsoleOnly() && sender instanceof Player) {
+                throw CommandFailure.of("console-only");
+            }
+            Map<String, Object> values = new LinkedHashMap<>();
+            for (Arg<?> arg : spec.args()) {
+                String raw;
+                try {
+                    raw = bctx.getArgument(arg.name(), String.class);
+                } catch (IllegalArgumentException absent) {
+                    continue;
+                }
+                values.put(arg.name(), arg.parse(sender, raw));
+            }
+            Duration cooldown = spec == node.top() ? file.get(spec).cooldown() : spec.cooldown();
+            String cooldownKey = sender instanceof Player p ? p.getUniqueId() + ":" + node.path() : null;
+            checkCooldown(sender, cooldownKey);
+
+            if (spec.confirmSeconds() > 0) {
+                String senderKey = sender instanceof Player p ? p.getUniqueId().toString() : "console:" + sender.getName();
+                if (!viaConfirm) {
+                    pending.put(senderKey, new Pending(input, System.currentTimeMillis() + spec.confirmSeconds() * 1000L));
+                    messages.send(sender, MESSAGES, "confirm", Msg.p("command", input),
+                            Msg.p("time", Format.duration(Duration.ofSeconds(spec.confirmSeconds()))));
+                    if (sender instanceof Player p) {
+                        sounds.play(p, "warning");
+                    }
+                    return Command.SINGLE_SUCCESS;
+                }
+                String base = input.endsWith(" " + CONFIRM) ? input.substring(0, input.length() - CONFIRM.length() - 1) : input;
+                Pending request = pending.remove(senderKey);
+                if (request == null || request.expiresAt() < System.currentTimeMillis() || !request.input().equalsIgnoreCase(base)) {
+                    throw CommandFailure.of("confirm-expired", Msg.p("command", base));
+                }
+            }
+
+            spec.executor().run(new CmdContext(sender, values, input));
+            if (cooldownKey != null && !cooldown.isZero() && !sender.hasPermission(PERM_COOLDOWN_BYPASS)) {
+                cooldowns.put(cooldownKey, System.currentTimeMillis() + cooldown.toMillis());
+            }
+            return Command.SINGLE_SUCCESS;
+        } catch (CommandFailure failure) {
+            messages.send(sender, failure.module(), failure.key(), failure.placeholders());
+            playError(sender);
+            return 0;
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Command '/" + input + "' by " + sender.getName() + " failed", e);
+            messages.send(sender, MESSAGES, "error");
+            playError(sender);
+            return 0;
+        }
+    }
+
+    private void checkCooldown(CommandSender sender, String key) {
+        if (key == null || sender.hasPermission(PERM_COOLDOWN_BYPASS)) {
+            return;
+        }
+        Long until = cooldowns.get(key);
+        long now = System.currentTimeMillis();
+        if (until == null) {
+            return;
+        }
+        if (until <= now) {
+            cooldowns.remove(key);
+            return;
+        }
+        throw CommandFailure.of("cooldown", Msg.p("time", Format.duration(Duration.ofMillis(until - now + 999))));
+    }
+
+    private String example(Node node) {
+        String example = node.spec().example();
+        if (example != null && !example.isBlank()) {
+            return "/" + stripSlash(example);
+        }
+        return "/" + node.path() + " ";
+    }
+
+    private static String stripSlash(String input) {
+        return input.startsWith("/") ? input.substring(1) : input;
+    }
+
+    private void playError(CommandSender sender) {
+        if (sender instanceof Player p) {
+            sounds.play(p, "error");
+        }
+    }
+}
