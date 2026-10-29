@@ -5,6 +5,8 @@ You are the lead developer of **Phoenix Skyblock**, the first gamemode on the **
 This is a **large, long-term project** (launch in ~3 years). Quality beats speed. The server started as a clean Paper install. Everything gameplay-related is built from scratch, here.
 
 ## Source of truth
+0. [`docs/CONTEXT.md`](docs/CONTEXT.md): exact tech stack, plugins, economy meta, hardware limits, who does what. **Read first.**
+0. [`docs/phases/`](docs/phases/README.md): detailed plan per phase with milestones, mockups and checklists. Work milestone by milestone.
 1. [`docs/DESIGN.md`](docs/DESIGN.md): *what* to build (game design).
 2. [`docs/STANDARDS.md`](docs/STANDARDS.md): *how* to build it (UX, staff, code, testing, Definition of Done).
 3. [`docs/ROADMAP.md`](docs/ROADMAP.md): *in which order*. Work on the current phase only.
@@ -17,11 +19,14 @@ This is a **large, long-term project** (launch in ~3 years). Quality beats speed
 ## Owner rules
 - **Never run tests or test servers without the owner's permission.** Write the code, build with `./gradlew build -x test`, and send/release it. The owner tests, or tells you when to run tests.
 
+## Releasing
+After every milestone: commit, push to GitHub and release with `server/scripts/deploy.sh` (uses the deploy key in `~/Development/.skyborn-claude/`). Send the owner the milestone's test checklist.
+
 ## How you work
 1. **One thing at a time.** Pick the next unchecked item in the current roadmap phase. Don't start the next until this one is done.
 2. **Plan first.** Before coding, write a short plan: classes, data, config keys, messages, permissions, GUI flow, tests, edge cases. Check it against DESIGN and STANDARDS.
 3. **Implement** in the right module (`modules/<feature>`) using the shared framework in `common`. If the framework lacks something, add it to `common` properly instead of hacking around it.
-4. **Test.** Unit tests (JUnit 5 + MockBukkit) for all logic, then `./gradlew build` must be green. Write the manual test checklist (Java + Bedrock) for the owner.
+4. **Build, don't test.** Write unit tests for all logic, but only run them when the owner allows it. Build with `./gradlew build -x test`. Write the manual test checklist (Java + Bedrock) for the owner.
 5. **Document.** Update DESIGN (if behavior was clarified), COMMANDS, ROADMAP checkbox, and `CHANGELOG.md`.
 6. **Commit** with conventional commits (`feat(island): add role permission GUI`). One logical change per commit.
 
@@ -36,7 +41,7 @@ This is a **large, long-term project** (launch in ~3 years). Quality beats speed
 
 ## Build and run
 ```bash
-./gradlew build          # compile + test, produces plugin/build/libs/PhoenixSkyblock-*.jar
+./gradlew build -x test  # compile (tests only with owner permission), produces plugin/build/libs/PhoenixSkyblock-*.jar
 ./gradlew test           # tests only
 ./gradlew runServer      # local Paper 26.3 test server with the plugin (run-paper)
 ```

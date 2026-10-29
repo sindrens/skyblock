@@ -32,6 +32,8 @@ Permission root: `skyblock.`. Status: ⬜ planned · 🟡 in progress · ✅ don
 | `/satchel` | Depths satchel + sell all | `skyblock.depths.satchel` | ⬜ |
 | `/fly` | Fly on own island (perk) | `skyblock.fly` | ⬜ |
 | `/trash`, `/afk`, `/rules`, `/discord`, `/store`, `/halloffame` | Utility | … | ⬜ |
+| `/tags` | Choose an owned cosmetic tag shown in chat/tab | `skyblock.tags` | ⬜ |
+| `/is fuel` | Island Fuel status (offline production) | `skyblock.island.fuel` | ⬜ |
 
 ## Staff
 | Command | Description | Permission | Status |

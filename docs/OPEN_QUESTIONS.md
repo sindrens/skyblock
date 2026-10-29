@@ -37,3 +37,10 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 24. Network brand: logo drafted (sky-blue S, see branding/). Confirm or request changes. Phoenix Skyblock stays red/phoenix.
 25. Other gamemodes planned, and when? (decides when the proxy + hub are needed)
 26. Hub/lobby: what should it contain?
+
+## Phase plans (defaults apply unless the owner changes them; details in docs/phases/)
+27. Audit retention: chat/commands 90 d, item pickups 30 d, economy/punishments/staff forever (Phase 0)
+28. Players see their own money history via `/transactions` (Phase 0/3)
+29. Island height full range; starter chest contents; island level hidden until Phase 5 (Phase 2)
+30. AH fee 1% + tax 5%, 5 listings; `/pay` confirm above $1M; gems not tradeable, shards tradeable; start $1,000 (Phase 3)
+31. Log respawn 10 s like ore; broken blocks fully personal; Omnitool on first join until the tutorial exists (Phase 4)

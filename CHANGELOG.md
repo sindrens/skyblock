@@ -22,3 +22,5 @@
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
 - Deploy scripts no longer upload macOS `._` metadata files (they caused a harmless plugin load error).
+- Planning: `docs/CONTEXT.md` (exact stack, plugins, economy meta, hardware, roles) and detailed phase plans `docs/phases/` (0–4) with milestones, UI mockups, staff log system, test checklists. New phase order: Islands → Economy → Depths.
+- UI decisions: detailed scoreboard (name, rank, money, tokens, gems, island level; no fuel/members), tab `[RANK] Name [Title] [Tag]` editable by staff, `/tags`, join messages for ranks only, menu item in slot 9.

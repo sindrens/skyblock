@@ -1,16 +1,16 @@
 # Roadmap
 
-**One phase at a time. One feature at a time.** A phase starts only when the previous one meets the Definition of Done ([`STANDARDS.md`](STANDARDS.md) §4). Order is chosen so every phase builds on a tested foundation.
+**One phase at a time. One milestone at a time.** Order decided 2026-10-29: Islands → Economy → Depths. Detailed plans: [`phases/`](phases/README.md). A phase starts only when the previous one meets the Definition of Done ([`STANDARDS.md`](STANDARDS.md) §4). Order is chosen so every phase builds on a tested foundation.
 
 Target: everything below is in season 1. Launch is in ~3 years. There is time to do it properly.
 
 | Phase | Name | Contents | Status |
 |---|---|---|---|
-| 0 | **Foundation** | Repo, Gradle, CI, module system, config + messages framework, database layer (HikariCP, migrations), GUI framework (Bedrock-safe), command framework, player data cache, scheduler utils, test harness | 🟡 Repo + skeleton done |
-| 1 | **Core player experience** | Spawn, `/menu`, `/help`, teleports (`/spawn`, `/tpa`, `/back`, `/warp`), scoreboard/tab/chat format, `/staff` mode, `/admin` config GUI base, audit log, LuckPerms integration | ⬜ |
-| 2 | **Economy** | Currencies (money, tokens, gems, shards), `/bal`, `/pay`, notes, banks + interest, dynamic `/sell`, auction house, player shops | ⬜ |
-| 3 | **Islands** | Chunk grid, schematic creation, roles + permission GUI, solo → team conversion, visit/lock/notifications, warps, island bank hookup, `/is stats` tracking | ⬜ |
-| 4 | **Omnitool and The Depths** | Omnitool, per-player packet blocks, mine tiers, forest tiers, combat zones, `/dungeon` tier GUI, visibility setting | ⬜ |
+| 0 | **Foundation** ([plan](phases/PHASE-0-FOUNDATION.md)) | Config, style/messages, database (MariaDB/H2, migrations), player data, commands, menus, items, services/placeholders (+ optional PlaceholderAPI), **audit log** | 🟡 Repo, deploy, worlds, MOTD, `/unban` done |
+| 1 | **Core player experience** ([plan](phases/PHASE-1-CORE.md)) | Spawn/join flow, teleports, chat + ranks everywhere (chat/tab/nametags), scoreboard, tab, `/menu`, `/help`, `/settings`, custom punishments, staff mode, **`/logs` viewer**, reports, `/admin` | ⬜ |
+| 2 | **Islands** ([plan](phases/PHASE-2-ISLANDS.md)) | Grid, creation (placeholder schematic), protection, roles + permission GUI, solo → team, visiting/warps/ratings, island menu, stats tracking, admin tools | ⬜ |
+| 3 | **Economy** ([plan](phases/PHASE-3-ECONOMY.md)) | Balance sheet first, currencies + ledger, `/pay`, `/transactions`, notes, banks + interest, dynamic `/sell`, builder shop, auction house, secure `/trade`, economy dashboard | ⬜ |
+| 4 | **Omnitool and The Depths** ([plan](phases/PHASE-4-DEPTHS.md)) | Placeholder Depths build, Omnitool, per-player blocks, satchel, skill core (XP/levels), tiers + `/dungeon`, forest, combat zones, tokens | ⬜ |
 | 5 | **Progression core** | 5 pillars + island level, `/is upgrade` masteries with tasks, leaderboards (solo/team/weekly) | ⬜ |
 | 6 | **Skills, sets, enchants** | 5 skills, `/sets`, `/enchanter` custom enchants, tokens economy tuning | ⬜ |
 | 7 | **Island production** | Custom generators, custom crops, spawners + stacking, mob stacking, collectors/auto-sell (T1–5 merge), Island Fuel, outposts + biomes + fusion | ⬜ |

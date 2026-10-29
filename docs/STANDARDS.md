@@ -77,6 +77,6 @@ Every feature ships with:
 2. **A manual test checklist** in the PR (`.github/PULL_REQUEST_TEMPLATE.md`) run on a local test server, **Java and Bedrock**.
 3. **Edge cases:** offline players, server restart mid-action, full inventory, concurrent actions (two members clicking at once), duplication attempts.
 4. **Performance check** for anything that runs per tick, per block or per player.
-5. **`./gradlew build` green** locally and in CI before merging.
+5. **`./gradlew build -x test` compiles.** Tests are run only when the owner allows it (owner rule).
 
-**Definition of Done:** spec followed · configurable in-game · GUI + command · `/help` entry · messages in `messages.yml` · permissions documented in `COMMANDS.md` · tests pass · manual checklist done · docs updated · CHANGELOG entry.
+**Definition of Done:** spec followed · configurable in-game · GUI + command · `/help` entry · messages in `messages.yml` · permissions documented in `COMMANDS.md` · tests written (run with owner permission) · audit events logged · manual checklist done · docs updated · CHANGELOG entry.

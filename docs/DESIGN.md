@@ -168,6 +168,9 @@ Small extra islands for farms, unlocked by progression. **Max 3.**
 
 ## 4. Economy
 
+### 4.0 Income meta (decided 2026-10-29)
+The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, partly offline), quests/events/KOTH ≈ 15%. **Big numbers**: start $1,000, mid-game millions, late-game billions. Details: `CONTEXT.md` §3, `phases/PHASE-3-ECONOMY.md`.
+
 ### 4.1 Currencies
 
 | Currency | Earned by | Used for |
