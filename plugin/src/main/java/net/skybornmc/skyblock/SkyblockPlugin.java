@@ -298,7 +298,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                     .append("'><").append(section).append(':').append(name).append(">■</").append(section).append(":")
                     .append(name).append("></hover>"));
             sender.sendMessage(core.messages().component(sender, "core", "style.section",
-                    Msg.p("name", section), Msg.mm("colors", line.toString())));
+                    Msg.p("name", Style.sectionKey(section)), Msg.mm("colors", line.toString())));
         });
         msg.send(sender, "style.symbols", Msg.p("symbols", String.join(" ", style.symbols().values())));
         msg.send(sender, "style.gradients");

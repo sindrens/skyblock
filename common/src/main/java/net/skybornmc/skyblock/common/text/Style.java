@@ -64,11 +64,19 @@ public final class Style {
             Map<String, Color> map = new LinkedHashMap<>();
             ConfigurationSection cs = yaml.getConfigurationSection(sectionKey(section));
             if (cs != null) {
+                Map<String, Color> previous = colors.getOrDefault(section, Map.of());
                 for (String name : cs.getKeys(false)) {
-                    parseColor(cs.getString(name, ""), name, problems, sectionKey(section)).ifPresent(c -> map.put(name, c));
+                    int before = problems.size();
+                    java.util.Optional<Color> parsed = parseColor(cs.getString(name, ""), name, problems, sectionKey(section));
+                    if (parsed.isPresent()) {
+                        map.put(name, parsed.get());
+                    } else if (previous.containsKey(name) && problems.size() > before) {
+                        map.put(name, previous.get(name));
+                        problems.set(problems.size() - 1, problems.getLast().replace("(skipped)", "(keeping the previous color)"));
+                    }
                 }
             }
-            newColors.put(section, Map.copyOf(map));
+            newColors.put(section, java.util.Collections.unmodifiableMap(map));
         }
 
         Map<String, String> newSymbols = new LinkedHashMap<>();
@@ -86,7 +94,9 @@ public final class Style {
                 List<Color> stops = new ArrayList<>();
                 for (String stop : grad.getStringList(name)) {
                     Color c = newColors.get("c").get(stop);
-                    if (c == null) {
+                    if (c == null && !stop.startsWith("#")) {
+                        problems.add(file.getName() + " → gradients." + name + ": unknown color '" + stop + "' (skipped)");
+                    } else if (c == null) {
                         parseColor(stop, name, problems, "gradients").ifPresent(stops::add);
                     } else {
                         stops.add(c);
@@ -103,15 +113,16 @@ public final class Style {
         Set<Integer> safe = new HashSet<>();
         yaml.getString("bedrock-safe-symbols", "").codePoints().filter(cp -> !Character.isWhitespace(cp)).forEach(safe::add);
 
-        colors = Map.copyOf(newColors);
-        symbols = Map.copyOf(newSymbols);
-        gradients = Map.copyOf(newGradients);
+        colors = java.util.Collections.unmodifiableMap(newColors);
+        symbols = java.util.Collections.unmodifiableMap(newSymbols);
+        gradients = java.util.Collections.unmodifiableMap(newGradients);
         prefix = yaml.getString("prefix", "");
         bedrockSafe = Set.copyOf(safe);
         return problems;
     }
 
-    private static String sectionKey(String tag) {
+    /** The YAML section name of a color tag ({@code c} → {@code colors}). */
+    public static String sectionKey(String tag) {
         return switch (tag) {
             case "c" -> "colors";
             case "cur" -> "currencies";
