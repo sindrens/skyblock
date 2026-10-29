@@ -23,7 +23,7 @@ The vanilla Nether and End dimensions are **disabled**. The owner plans a differ
 
 **Size:** ~200×200, compact. Every key spot within 30 s walk, and everything is also reachable by `/menu`.
 **Palette:** stone bricks, mossy/cracked stone bricks, deepslate tiles, polished andesite paths, spruce + dark oak timber framing, white/light-gray terracotta walls, lanterns + chains, barrels, campfires (smoke), flower boxes.
-**PhoenixMC red details** (mainly red, balanced): red nether brick and red terracotta trims, red/black/gold banners (phoenix pattern), red concrete roof accents on key buildings, copper and gold block highlights, magma/lava glow features behind glass, campfires and soul-free (orange) lanterns. Stone and wood stay the base so red reads as accent, not as a wall of red.
+**Phoenix Skyblock red details** (mainly red, balanced): red nether brick and red terracotta trims, red/black/gold banners (phoenix pattern), red concrete roof accents on key buildings, copper and gold block highlights, magma/lava glow features behind glass, campfires and soul-free (orange) lanterns. Stone and wood stay the base so red reads as accent, not as a wall of red.
 **Centerpiece:** a large **phoenix statue** in the Castle Courtyard (red/orange/gold blocks, wings spread, rising from a lava-and-campfire brazier, with `flame` particles). It's the spawn point landmark and the logo in 3D.
 
 | District | Contents |

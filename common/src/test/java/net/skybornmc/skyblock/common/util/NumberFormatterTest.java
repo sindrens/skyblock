@@ -1,4 +1,4 @@
-package net.phoenixmc.skyblock.common.util;
+package net.skybornmc.skyblock.common.util;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

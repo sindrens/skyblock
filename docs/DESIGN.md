@@ -9,7 +9,7 @@
 
 ## 0. Vision and pillars of the design
 
-**PhoenixMC** (`play.phoenixmc.net`): a brand-new, heavily custom **seasonal Skyblock** server for **Java + Bedrock (Geyser)** on **Paper 26.3**, built to hold **200–300 concurrent players** stably.
+**Phoenix Skyblock** on the **SkybornMC** network (`play.skybornmc.net`): a brand-new, heavily custom **seasonal Skyblock** server for **Java + Bedrock (Geyser)** on **Paper 26.3**, built to hold **200–300 concurrent players** stably.
 
 > **Version policy (decided 2026-10-29):** stay on the **latest stable Minecraft version** Paper and Geyser support (currently **26.3**, Java 25). Bedrock clients auto-update, so Geyser must stay current, and Geyser only supports the newest Java version. Update with each Minecraft release during development.
 
@@ -330,3 +330,16 @@ All gameplay and server features are **custom**. External plugins only where bui
 | PacketEvents | **Library**, shaded into our jar | Per-player blocks, border, NPC packets |
 
 Custom (not plugins): punishments, Discord bot, essentials (spawn/tpa/back/homes/vanish), chat, scoreboard, tab, holograms (TextDisplay), NPCs (mannequins), world management, economy (no Vault needed), Tebex integration via API, Votifier receiver, crates, everything gameplay.
+
+---
+
+## 15. SkybornMC network (decided 2026-10-29)
+
+- **SkybornMC** (`play.skybornmc.net`) is a **network**. **Phoenix Skyblock** is its first gamemode, with the phoenix theme (mainly red). Other gamemodes may follow with their own themes.
+- During development, Phoenix Skyblock runs as **one standalone Paper server**.
+- Before beta, the network gets a **Velocity proxy** + **hub/lobby** server. Geyser and Floodgate then move to the proxy, and the MOTD/server list is set there.
+- **Build for this from day one** (so no rewrite is needed later):
+  - All persistent data in the **database** (MariaDB), keyed by player UUID. No gameplay data in local files.
+  - No assumptions that the skyblock server is the only server (e.g. join/quit can be a server switch, not a network leave).
+  - Network-wide things (ranks via LuckPerms, punishments, Discord linking, store credits, cosmetics) stored so other servers can read them.
+  - Chat/announcements that may later go network-wide go through one service, so they can be swapped for cross-server messaging.

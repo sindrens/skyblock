@@ -1,4 +1,4 @@
-package net.phoenixmc.skyblock.common.module;
+package net.skybornmc.skyblock.common.module;
 
 import org.junit.jupiter.api.Test;
 

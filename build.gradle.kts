@@ -8,7 +8,7 @@ plugins {
 val paperVersion = "26.3.build.230-stable"
 
 allprojects {
-    group = "net.phoenixmc.skyblock"
+    group = "net.skybornmc.skyblock"
     version = "0.1.0-SNAPSHOT"
 
     repositories {

@@ -1,4 +1,4 @@
-package net.phoenixmc.skyblock.common.util;
+package net.skybornmc.skyblock.common.util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

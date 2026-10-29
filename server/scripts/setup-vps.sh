@@ -8,7 +8,10 @@ set -euo pipefail
 BASE=/opt/skyblock
 SERVER=$BASE/server
 MC_USER=minecraft
-MEMORY="${MEMORY:-6G}"   # test server default; production: 16G-24G
+# Java heap: RAM minus 1.5 GB for the OS + MariaDB (min 1 GB). Override: sudo MEMORY=10G bash setup-vps.sh
+TOTAL_MB=$(awk '/MemTotal/{print int($2/1024)}' /proc/meminfo)
+AUTO_MB=$(( TOTAL_MB - 1536 )); [ "$AUTO_MB" -lt 1024 ] && AUTO_MB=1024
+MEMORY="${MEMORY:-${AUTO_MB}M}"
 
 [ "$(id -u)" -eq 0 ] || { echo "Run as root (sudo)."; exit 1; }
 

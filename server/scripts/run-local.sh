@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One command to run the PhoenixMC test server on your own computer (Mac/Linux).
+# One command to run the Phoenix Skyblock test server on your own computer (Mac/Linux).
 #   cd ~/Development/skyblock && ./server/scripts/run-local.sh
 # 1) checks Java 25, 2) builds our plugin, 3) downloads Paper + plugins (first time), 4) starts the server.
 # Memory: MEMORY=4G ./server/scripts/run-local.sh   (default 3G, fine for a few testers)

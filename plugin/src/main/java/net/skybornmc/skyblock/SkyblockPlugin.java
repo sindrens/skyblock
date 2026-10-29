@@ -1,7 +1,7 @@
-package net.phoenixmc.skyblock;
+package net.skybornmc.skyblock;
 
 import com.mojang.brigadier.Command;
-import net.phoenixmc.skyblock.common.module.ModuleRegistry;
+import net.skybornmc.skyblock.common.module.ModuleRegistry;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -24,7 +24,7 @@ public final class SkyblockPlugin extends JavaPlugin {
         registerModules();
         modules.enableAll();
         registerCommands();
-        getLogger().info("PhoenixMC Skyblock enabled with " + modules.states().size() + " module(s).");
+        getLogger().info("Phoenix Skyblock enabled with " + modules.states().size() + " module(s).");
     }
 
     @Override

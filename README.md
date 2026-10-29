@@ -1,8 +1,8 @@
-# PhoenixMC Skyblock
+# Phoenix Skyblock · SkybornMC
 
 A fully custom, seasonal Skyblock server for **Minecraft Java 26.3 + Bedrock (Geyser)** on **Paper**, built for 200–300 concurrent players.
 
-`play.phoenixmc.net` · Logo: the phoenix · Colors: mainly red (see docs/UI_STYLE.md).
+**Phoenix Skyblock** is the first gamemode on the **SkybornMC** network (`play.skybornmc.net`). Theme: the phoenix, mainly red (see docs/UI_STYLE.md).
 
 ## Documentation
 | Doc | What it is |

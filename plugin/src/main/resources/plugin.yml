@@ -1,9 +1,9 @@
 name: PhoenixSkyblock
 version: '${version}'
-main: net.phoenixmc.skyblock.SkyblockPlugin
+main: net.skybornmc.skyblock.SkyblockPlugin
 api-version: '26.3'
-description: PhoenixMC custom seasonal Skyblock core
-website: https://phoenixmc.net
+description: Phoenix Skyblock core (SkybornMC network)
+website: https://skybornmc.net
 authors: [SlickyMatt]
 softdepend: [LuckPerms, floodgate]
 permissions:

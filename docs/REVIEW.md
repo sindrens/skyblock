@@ -166,6 +166,9 @@ Each season gets a `season_id`. Wipes create a new season id instead of deleting
 
 ---
 
+### E5 🔴 Network-ready from the start
+SkybornMC is a network. Defaults: Velocity proxy + hub before beta; Phoenix Skyblock code keeps all data in MariaDB and treats join/quit as possibly a server switch (see DESIGN §15). LuckPerms must use MariaDB on every server so ranks are shared.
+
 ## F. Owner answers that need a follow-up
 
 | # | Topic | Question |

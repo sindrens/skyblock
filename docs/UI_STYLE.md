@@ -8,7 +8,7 @@ All colors, symbols and templates below live in a shared `style.yml` in `common`
 
 ## 1. Color palette
 
-Brand: **PhoenixMC** (`play.phoenixmc.net`). Logo: a phoenix.
+Network: **SkybornMC** (`play.skybornmc.net`). Gamemode: **Phoenix Skyblock**, themed on the phoenix. This guide covers Phoenix Skyblock; the network brand (hub, website) is defined separately.
 Theme: **phoenix fire**, mainly **red**, balanced with ember orange, flame gold, deep charcoal and parchment, plus clear status colors. Red carries the identity (headers, borders, scoreboard, details); the other colors keep it readable and never monotone.
 
 **Balance rule:** in any GUI, message or HUD, red is the *frame* (title, borders, accents), not the body. Body text stays neutral (gray/white), values stay white, and actions stay flame gold. Roughly 30% red, 15% ember/gold, 55% neutral.
@@ -246,13 +246,13 @@ Required for: anything irreversible, anything above a money threshold, solo→te
  Island Lv 34 (#12)    ← level + rank
  Fuel ⌛ 6h 20m          
                        
- play.phoenixmc.net    ← address, ember
+ play.skybornmc.net    ← address, ember
 ```
 Labels (`Island Lv`, `Fuel`) in `ember`, values in `value` white, currency symbols in their currency color, blank-line separators. Red appears only in the title and as `▸` markers.
 Contextual: in The Depths, the island lines are replaced by tier + satchel `Satchel 412/640`. During events: the event timer.
 
 ### 6.2 Tab list
-Header: `PHOENIXMC` in the fire gradient + online count + season (e.g. `Season 1 · Day 23`), with a thin red line of `▬` above and below. Footer: `/menu · /help · /discord · /store`. Players sorted by rank, then name. Format: `[title] [rank] name`.
+Header: `SKYBORNMC` (network) above `Phoenix Skyblock` in the fire gradient + online count + season (e.g. `Season 1 · Day 23`), with a thin red line of `▬` above and below. Footer: `/menu · /help · /discord · /store`. Players sorted by rank, then name. Format: `[title] [rank] name`.
 
 ### 6.3 Action bar
 Skill XP gains (`+12 Mining XP (68%)`), tool mode changes, satchel full warnings. Max one message per 1.5 s.
@@ -300,10 +300,10 @@ All sounds are configurable and can be muted in `/settings`.
 
 | Asset | Spec |
 |---|---|
-| Name | **PhoenixMC** (one word, capital P and MC). Short form in chat: **Phoenix** |
-| Domain | `play.phoenixmc.net` (Java + Bedrock), website `phoenixmc.net`, store `store.phoenixmc.net` |
+| Names | Network: **SkybornMC** (one word, capital S and MC). Gamemode: **Phoenix Skyblock**. Short form in chat: **Phoenix** |
+| Domain | `play.skybornmc.net` (Java + Bedrock), website `skybornmc.net`, store `store.skybornmc.net` |
 | Logo | A phoenix (owner's artwork). Needed: original file (PNG/SVG, transparent) |
 | Server icon | `server/server-icon.png`, **64×64 PNG**, phoenix head/silhouette on transparent or charcoal, readable at tiny size |
-| MOTD | Line 1: `PHOENIXMC` in red/gold + `» Skyblock`. Line 2: season/status in gray |
+| MOTD | Line 1: `SKYBORNMC` + `» Phoenix Skyblock` (red). Line 2: season/status in gray. Once the network has a hub/proxy, the MOTD is set on the proxy |
 | Resource pack glyph | The phoenix as a font glyph (for chat prefix, scoreboard title, tab). Needs a Geyser mapping so Bedrock shows it too; until then, fall back to `✦` |
 | Particles | Brand particles: `flame`, `small_flame`, `lava` drips, `dust` in brand red. Used at spawn, crates, level-ups |

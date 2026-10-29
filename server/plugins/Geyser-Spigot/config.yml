@@ -94,8 +94,8 @@ java:
 motd:
   # The MOTD that will be broadcasted to Minecraft: Bedrock Edition clients. This is irrelevant if "passthrough-motd" is set to true.
   # If either of these are empty, the respective string will default to "Geyser"
-  primary-motd: PhoenixMC
-  secondary-motd: Skyblock
+  primary-motd: SkybornMC
+  secondary-motd: Phoenix Skyblock
 
   # Whether Geyser should relay the MOTD from the Java server to Bedrock players.
   passthrough-motd: true
@@ -118,7 +118,7 @@ motd:
 # Gameplay options that affect Bedrock players
 gameplay:
   # The server name that will be sent to Minecraft: Bedrock Edition clients. This is visible in both the pause menu and the settings menu.
-  server-name: PhoenixMC
+  server-name: SkybornMC
 
   # Allow a fake cooldown indicator to be sent. Bedrock players otherwise do not see a cooldown as they still use 1.8 combat.
   # Please note: with the integrated pack disabled, some users may see a black box during the cooldown sequence, like below:
