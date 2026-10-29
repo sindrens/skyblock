@@ -17,7 +17,7 @@ Why each setting is what it is: [`CONFIG_NOTES.md`](CONFIG_NOTES.md).
    - **Friends elsewhere:** wait for the test VPS (opening ports on a home router is not recommended).
 5. Stop: type `stop` in the console.
 
-## Test VPS (Ubuntu 24.04)
+## Test VPS (Ubuntu 26.04 or 24.04)
 1. `sudo bash scripts/setup-vps.sh`: Java 25, MariaDB, firewall, fail2ban, systemd service, daily backups.
 2. Create an SSH key for deploys, put the public key in `/opt/skyblock/.ssh/authorized_keys`, and add `TEST_HOST`, `TEST_USER` (`minecraft`), `TEST_SSH_KEY` as GitHub secrets.
 3. Push to `main`: GitHub builds, tests and deploys automatically (`.github/workflows/deploy-test.yml`).

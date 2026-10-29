@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-time setup of a fresh Ubuntu 24.04 VPS for the Skyblock server.
+# One-time setup of a fresh Ubuntu 24.04/26.04 VPS for the Skyblock server.
 # Run as root:  curl/scp this file to the server, then:  sudo bash setup-vps.sh
 # Installs: Java 25 (Temurin), MariaDB, tmux, firewall (ufw), fail2ban, a 'minecraft' user,
 # a systemd service, daily backups. Safe to re-run.
@@ -17,14 +17,17 @@ apt-get update -y
 apt-get upgrade -y
 apt-get install -y curl wget gnupg ca-certificates apt-transport-https tmux ufw fail2ban mariadb-server python3 rsync unzip
 
-echo "== Java 25 (Eclipse Temurin)"
-if ! command -v java >/dev/null || ! java -version 2>&1 | grep -q '"25'; then
-  install -d -m 0755 /etc/apt/keyrings
-  wget -qO- https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg
-  echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb $(. /etc/os-release; echo "$VERSION_CODENAME") main" \
-    > /etc/apt/sources.list.d/adoptium.list
-  apt-get update -y
-  apt-get install -y temurin-25-jre
+echo "== Java 25"
+if ! command -v java >/dev/null || ! java -version 2>&1 | grep -qE 'version "(2[5-9]|[3-9][0-9])'; then
+  # Ubuntu 26.04+ ships OpenJDK 25; older releases use the Eclipse Temurin repo.
+  if ! apt-get install -y openjdk-25-jre-headless; then
+    install -d -m 0755 /etc/apt/keyrings
+    wget -qO- https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb $(. /etc/os-release; echo "$VERSION_CODENAME") main" \
+      > /etc/apt/sources.list.d/adoptium.list
+    apt-get update -y
+    apt-get install -y temurin-25-jre
+  fi
 fi
 java -version
 
