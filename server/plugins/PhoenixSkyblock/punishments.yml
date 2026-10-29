@@ -1,98 +1,155 @@
-# Punishment templates for /punish <player> (and /punish <player> <reason>).
-# Each reason has an escalation ladder: the 1st offence uses the 1st step, the 2nd offence the 2nd step, and so on
-# (the last step repeats). Offences = earlier punishments with the same reason that were not pardoned.
+# Punishment config for /p <player> (alias of /punish) and /p <player> <reason-id> [-s] [-ip].
+#
+# ONE SOURCE OF TRUTH: server/plugins/PhoenixSkyblock/punishments.yml in the GitHub repo (edit it there, see
+# docs/specs/PUNISH_SPEC_NOTES.md "Owner edits on GitHub"). The copy inside the plugin jar
+# (modules/moderation/src/main/resources/punishments.yml) is only the first-run default and is kept identical.
+# Every edit is validated: a broken file is rejected as a whole, the previous working config stays active, and the
+# console + online staff (skyblock.admin.reload) get the error with the line number. The build also parses this file,
+# so a bad edit fails CI before it can be deployed. Reload: /skyblock reload moderation
+#
+# Only ids, slots, icons, ladders and rules live here. ALL TEXTS (reason names, warn button names, menu texts) are in
+# messages/moderation.yml (reasons.<id>, categories.<id>, warn-buttons.<id>.name / .reason).
+#
+# Ladders: the 1st offence uses the 1st step, the 2nd offence the 2nd step, and so on (the last step repeats).
+# Offences = earlier punishments with the same reason that were not pardoned.
 # Steps: warn | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>   (times: 30m, 1h, 12h, 1d, 7d, 30d)
-# icon = any item name. Reload: /skyblock reload moderation
+# Reason ids: lowercase a-z, 0-9 and - only, unique. icon = any item id.
 
 categories:
   cheating:
-    name: "Cheating"
     icon: DIAMOND_SWORD
     reasons:
       hacking:
-        name: "Hacked client"
         icon: IRON_SWORD
         ladder: ["ban 30d", "ban perm"]
       xray:
-        name: "X-ray / ESP"
         icon: DIAMOND_ORE
         ladder: ["ban 14d", "ban 60d", "ban perm"]
       macro:
-        name: "Macros / auto-clicker"
         icon: STONE_BUTTON
         ladder: ["warn", "ban 3d", "ban 14d", "ban perm"]
       alt-abuse:
-        name: "Ban evasion"
         icon: PLAYER_HEAD
         ladder: ["ipban perm"]
 
   chat:
-    name: "Chat"
     icon: WRITABLE_BOOK
     reasons:
       toxicity:
-        name: "Toxicity / harassment"
         icon: MAGMA_CREAM
         ladder: ["warn", "mute 1h", "mute 1d", "mute 7d", "mute perm"]
       spam:
-        name: "Spam / flooding"
         icon: PAPER
         ladder: ["warn", "mute 30m", "mute 6h", "mute 3d"]
       advertising:
-        name: "Advertising"
         icon: OAK_SIGN
         ladder: ["mute 1d", "ban 7d", "ban perm"]
       hate:
-        name: "Hate speech / slurs"
         icon: BARRIER
         ladder: ["mute 7d", "ban 30d", "ban perm"]
       personal-info:
-        name: "Sharing personal info"
         icon: NAME_TAG
         ladder: ["mute 1d", "ban 7d", "ban perm"]
 
   gameplay:
-    name: "Gameplay"
     icon: GRASS_BLOCK
     reasons:
       exploiting:
-        name: "Exploiting bugs / duping"
         icon: TNT
         ladder: ["ban 7d", "ban 30d", "ban perm"]
       scamming:
-        name: "Scamming"
         icon: EMERALD
         ladder: ["warn", "ban 3d", "ban 14d", "ban perm"]
       griefing:
-        name: "Griefing (coop abuse)"
         icon: FLINT_AND_STEEL
         ladder: ["warn", "ban 1d", "ban 7d", "ban 30d"]
       afk-farming:
-        name: "Illegal AFK farming"
         icon: CLOCK
         ladder: ["warn", "kick", "ban 1d", "ban 7d"]
       rmt:
-        name: "Real-money trading"
         icon: GOLD_INGOT
         ladder: ["ban 30d", "ban perm"]
 
   other:
-    name: "Name / build / skin"
     icon: ARMOR_STAND
     reasons:
       inappropriate-name:
-        name: "Inappropriate name or nickname"
         icon: NAME_TAG
         ladder: ["kick", "ban 1d", "ban perm"]
       inappropriate-build:
-        name: "Inappropriate build"
         icon: BRICKS
         ladder: ["warn", "ban 1d", "ban 7d"]
       inappropriate-skin:
-        name: "Inappropriate skin"
         icon: LEATHER_CHESTPLATE
         ladder: ["kick", "ban 1d", "ban 7d"]
       disrespect-staff:
-        name: "Disrespecting staff"
         icon: IRON_HELMET
         ladder: ["warn", "mute 1h", "mute 1d", "ban 3d"]
+
+# ---------- /p menu layout (single screen) ----------
+# Slots 0-53 (row 1 = 0-8, row 2 = 9-17, ...). Left side = columns 0-3, right side = columns 5-8, middle = column 4.
+# A reason that is not placed here is still reachable through "More reasons". No two things may share a slot.
+menu:
+  confirm: false                    # owner decision: no "are you sure?" click (true = confirm menu before applying)
+  keep-open: true                   # stay open and refresh after applying
+  filler: GRAY_STAINED_GLASS_PANE
+  divider: RED_STAINED_GLASS_PANE
+  divider-slots: [13, 22, 40]       # column 4 between the halves (the warn counter sits on 31)
+  summary-slot: 4                   # player head + summary (click it to handle a pending suggestion)
+  warn-counter-slot: 31
+  warn-counter-icon: YELLOW_CONCRETE
+  unavailable-icon: GRAY_DYE        # buttons of later milestones ("Not available yet")
+  buttons:                          # bottom row
+    sanctions: { slot: 45, icon: GRAY_DYE }        # P7
+    kick: { slot: 46, icon: LEATHER_BOOTS }
+    bulk: { slot: 47, icon: GRAY_DYE }             # P5
+    history: { slot: 48, icon: WRITABLE_BOOK }
+    close: { slot: 49, icon: BARRIER }
+    more-reasons: { slot: 50, icon: BOOKSHELF }
+    dry-run: { slot: 52, icon: GRAY_DYE }          # P8
+
+  # Four quarters (owner decision). Reason ids come from categories above.
+  mutes:                            # TOP-LEFT (slots 9-12, 18-21)
+    toxicity: 9
+    spam: 10
+    advertising: 11
+    hate: 12
+    personal-info: 18
+    disrespect-staff: 19
+  warns:                            # BOTTOM-LEFT (slots 27-30, 36-39): plain warn buttons, one warning each, no ladder
+    warn-language: { slot: 27, icon: PAPER }
+    warn-caps-spam: { slot: 28, icon: WRITABLE_BOOK }
+    warn-rules: { slot: 29, icon: BOOK }
+    warn-other: { slot: 30, icon: YELLOW_DYE }
+  bans:                             # TOP-RIGHT (slots 14-17, 23-26)
+    hacking: 14
+    xray: 15
+    macro: 16
+    alt-abuse: 17
+    exploiting: 23
+    rmt: 24
+    scamming: 25
+    griefing: 26
+  small:                            # BOTTOM-RIGHT (slots 32-35, 41-44): minor things (kick is the fixed button 46)
+    afk-farming: 32
+    inappropriate-name: 33
+    inappropriate-build: 34
+    inappropriate-skin: 35
+
+# ---------- automatic warn system ----------
+# Only active warns count (not removed with /unwarn, younger than warn-expire). The counter is calculated from the
+# database, never stored. Rule actions must be a mute or ban (never warn or kick, so a rule can't trigger itself).
+warn-rules:
+  enabled: true
+  mode: notify                # owner decision: staff decide with [Apply] / [Dismiss]. "auto" applies at once as "System (auto)"
+  warn-expire: 30d            # owner decision: a warn stops counting after this (perm = never)
+  reset-after-trigger: true   # owner decision: the counter restarts from 0 after a suggestion is applied OR dismissed
+  pending-expire: 24h         # an unhandled suggestion disappears after this
+  rules:
+    - at: 2                   # 2 active warns -> suggest a 1 hour mute
+      action: "mute 1h"
+  repeat-window: 7d           # after a rule fired: another warn OR any mute within this time ...
+  repeat-action: "mute 1d"    # ... suggests this instead
+  # No 4-warn ban (owner dropped it). Example if wanted later:
+  #   - at: 4
+  #     action: "ban 1d"
