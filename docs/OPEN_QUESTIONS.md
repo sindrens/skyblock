@@ -8,6 +8,17 @@
 - Achievements as their own module with progress tracking? (default: yes, later, F3)
 - Deleted titles/tags: keep in DB hidden (default) or wipe?
 - Discord webhook for punishments now or with the Discord integration? (default: later)
+- M3.0 balance sheet (`docs/ECONOMY_BALANCE.md`, DRAFT): approve or change it before M3.4 prices go live. Checklist in its §12.
+- M3.0: day-3 target $5M (top) vs model ~$15M: accept the smooth curve (default) or reshape tiers 1-8 / 9-12 prices?
+- M3.0: endless late money sink "Mastery" after upgrade level 12 (default: yes; without it the sink ratio falls to ~25% after day 60)?
+- M3.0: tool XP curve x1.21 per level instead of x1.12 so perk slots land at ~1 h / day 2 / week 1 / week 4 (default: x1.21)?
+- M3.0: combat skill thresholds per tier 0/6/12/18/24/30/38/46/55/66 (default: as proposed)?
+- M3.0: interest on the lowest balance of each 3 h cycle + interest only for accounts with >= 2 h play in the last 7 days (default: both on)?
+- M3.0: tokens tradeable via /pay or AH? (default: no, prevents alt farming)
+- M3.0: new accounts (< 2 h played) can't /pay or list on the AH (default: yes)?
+- M3.0: island production only counts as "online" while a member was active in the last 15 min, otherwise it burns fuel (default: yes)? Also: does time in The Depths earn island fuel? (default: no, as DESIGN §5.4 says "on the island")
+- M3.0: dynamic price recovery as 2% of the gap per 10 min (default) instead of a fixed 2 points; Hot Item +25% for 24 h?
+- M3.0: personal bank tier unlock cost 2% of the tier's capacity (default: yes)?
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 
