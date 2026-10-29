@@ -9,7 +9,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **M3.0 balance sheet** merged as DRAFT (`docs/ECONOMY_BALANCE.md`, model `tools/economy_model.py --check`); owner must approve §12 before M3.4 prices go live.
 - **Phase 2 started:** M2.1 islands (grid, /is, FAWE/placeholder starter island, borders, home) merged.
 - **M3.1 economy core** merged (EconomyService in common, /bal /baltop /pay /transactions /eco). **M4.5 skills** merged (SkillService in common, /skills).
-- Before each release run `python3 tools/sync_server_configs.py` (tracked server configs follow module resources).
+- Before each release run `python3 tools/sync_server_configs.py` (two-way: the newer committed copy wins, so owner GitHub edits of tracked configs are kept).
 - **M2.2 island protection** merged. **Phase P** (owner's punishment spec) added as its own phase with priority; spec in `docs/specs/`.
 - **M4.1 Depths layout** merged (`zones.yml` written on first start, not tracked; `/depths generate`, `/depths tp`).
 - **M3.6 auction house** merged (modules/auction, `/ah`, `/ah sell`).
@@ -18,6 +18,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Release script on the Mac (`~/Development/.skyborn-claude/release.sh`) first merges owner edits from GitHub; if it writes `from-github.bundle`, stage it and merge it into the cloud repo.
 - **M2.3 island members & roles** merged (invite/accept/kick/leave/promote/demote/transfer/coop, members GUI, permission matrix).
 - **M4.6 Depths tiers** merged (per-player gate bars, /dungeon).
+- **P1** merged: `/p` single-screen menu from punishments.yml, `/warns`, warn rules, PunishDecision pipeline, safe reload.
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -35,7 +36,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- P1 /p menu + warn system (Phase P)
+- P2 undo, double-punish, offence expiry, /pstats (Phase P)
 - UX1 messages/scoreboard/tab polish + rank refresh + fast /baltop
 - M2.7 island lifecycle (disband/reset) + /isadmin
 

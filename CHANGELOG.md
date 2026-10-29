@@ -54,6 +54,7 @@
 - **M3.2 money notes:** `/withdraw` makes a unique tradeable note (right-click to cash), copies can never be cashed twice (confiscated, staff alerted, audited), staff `/eco note`.
 - **M2.3 island members & roles:** `/is invite` (Team Island warning), accept/deny/kick/leave/promote/demote/transfer/coop/uncoop, `/is members` GUI with the permission matrix, 4 slots (8 with upgrades), 3 joins per season + 24 h cooldown.
 - **M4.6 Depths tiers:** tier locks by skill level with per-player gate bars, push back, first-visit titles, `/dungeon` menu with teleport warmup.
+- **P1 punishments v2:** `/p` single-screen menu from `punishments.yml`, `/p <player> <reason> [-s] [-ip]`, `/warns`, warn counter with Apply/Dismiss suggestions (2 warns → mute 1h, repeat in 7 d → 1 d), one decision pipeline that never shortens a punishment, safe reload with line-numbered errors.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
