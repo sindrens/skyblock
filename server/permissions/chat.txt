@@ -1,0 +1,13 @@
+# LuckPerms grants for the chat module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/chat/src/main/resources/permissions/chat.yml. One console command per line; # = comment.
+
+# Helper: staff chat.
+lp group helper permission set skyblock.staff.chat true
+# --- Chat module ---
+lp group helper permission set skyblock.staff.chat.manage true
+lp group helper permission set skyblock.staff.tab true
+lp group helper permission set skyblock.chat.color true
+lp group helper permission set skyblock.chat.format true
+lp group mod permission set skyblock.chat.bypass true
+lp group mod permission set skyblock.chat.links true
+lp group admin permission set skyblock.chat.hex true

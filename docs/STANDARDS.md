@@ -79,4 +79,4 @@ Every feature ships with:
 4. **Performance check** for anything that runs per tick, per block or per player.
 5. **`./gradlew build -x test` compiles.** Tests are run only when the owner allows it (owner rule).
 
-**Definition of Done:** spec followed · configurable in-game · GUI + command · `/help` entry · messages in `messages.yml` · permissions documented in `COMMANDS.md` · tests written (run with owner permission) · audit events logged · manual checklist done · docs updated · CHANGELOG entry.
+**Definition of Done:** spec followed · configurable in-game · GUI + command · `/help` entry · messages in `messages.yml` · permissions in `permissions/<module>.yml` and documented in `docs/commands/<module>.md` · tests written (run with owner permission) · audit events logged · manual checklist done · docs updated · CHANGELOG entry.

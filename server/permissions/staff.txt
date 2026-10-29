@@ -1,0 +1,14 @@
+# LuckPerms grants for the staff module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/staff/src/main/resources/permissions/staff.yml. One console command per line; # = comment.
+
+# Moderator: staff mode and inspect (helper also gets them below).
+lp group mod permission set skyblock.staff.mode true
+lp group mod permission set skyblock.staff.inspect true
+
+# --- M1.9 staff mode, freeze, inspect, reports ---
+lp group helper permission set skyblock.staff.reports true
+lp group helper permission set skyblock.staff.inspect true
+lp group helper permission set skyblock.staff.freeze true
+lp group helper permission set skyblock.staff.mode true
+lp group helper permission set skyblock.report.bypass-cooldown true
+lp group admin permission set skyblock.staff.freeze.exempt true

@@ -48,3 +48,32 @@ subprojects {
         testLogging { events("passed", "skipped", "failed") }
     }
 }
+
+// F2: docs/COMMANDS.md is an index of docs/commands/<module>.md. Regenerates the table between the markers:
+// core first, then modules alphabetically, then the planned list. Title = the file's first "# " heading.
+tasks.register("commandsIndex") {
+    group = "documentation"
+    description = "Regenerates the module table in docs/COMMANDS.md from docs/commands/*.md"
+    val dir = layout.projectDirectory.dir("docs/commands").asFile
+    val index = layout.projectDirectory.file("docs/COMMANDS.md").asFile
+    doLast {
+        val begin = "<!-- BEGIN GENERATED INDEX (./gradlew commandsIndex) -->"
+        val end = "<!-- END GENERATED INDEX -->"
+        val files = (dir.listFiles { f -> f.isFile && f.name.endsWith(".md") } ?: emptyArray()).toList()
+        fun rank(name: String) = when (name) { "core" -> 0; "planned" -> 2; else -> 1 }
+        val rows = files.map { it.nameWithoutExtension to it }
+            .sortedWith(compareBy({ rank(it.first) }, { it.first }))
+            .map { (name, file) ->
+                val title = file.readLines().firstOrNull { it.startsWith("# ") }?.removePrefix("# ")?.trim() ?: name
+                "| [$name](commands/${file.name}) | $title |"
+            }
+        val table = listOf("| Module | Contents |", "|---|---|") + rows
+        val text = index.readText()
+        val start = text.indexOf(begin)
+        val stop = text.indexOf(end)
+        require(start >= 0 && stop > start) { "Markers not found in docs/COMMANDS.md" }
+        val updated = text.substring(0, start + begin.length) + "\n" + table.joinToString("\n") + "\n" + text.substring(stop)
+        if (updated != text) index.writeText(updated)
+        println("docs/COMMANDS.md: ${rows.size} command file(s) indexed.")
+    }
+}

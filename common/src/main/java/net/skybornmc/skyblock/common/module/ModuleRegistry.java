@@ -25,10 +25,22 @@ public final class ModuleRegistry {
     private final Map<String, State> states = new LinkedHashMap<>();
     private final List<SkyblockModule> enableOrder = new ArrayList<>();
     private java.util.function.Consumer<String> afterDisable = id -> { };
+    private java.util.function.Consumer<String> beforeEnable = id -> { };
+    private java.util.function.Consumer<String> afterFailedEnable = id -> { };
 
     /** Called with the module id after each module disables (used to drop its services and placeholders). */
     public void afterDisable(java.util.function.Consumer<String> hook) {
         this.afterDisable = Objects.requireNonNull(hook);
+    }
+
+    /** Called with the module id right before {@link SkyblockModule#enable()} (used to register its permissions). */
+    public void beforeEnable(java.util.function.Consumer<String> hook) {
+        this.beforeEnable = Objects.requireNonNull(hook);
+    }
+
+    /** Called with the module id when its {@link SkyblockModule#enable()} threw (undoes {@link #beforeEnable}). */
+    public void afterFailedEnable(java.util.function.Consumer<String> hook) {
+        this.afterFailedEnable = Objects.requireNonNull(hook);
     }
 
     public ModuleRegistry(Logger logger) {
@@ -57,6 +69,11 @@ public final class ModuleRegistry {
                 continue;
             }
             try {
+                beforeEnable.accept(module.id());
+            } catch (RuntimeException e) {
+                logger.log(Level.WARNING, "Preparing module '" + module.id() + "' failed.", e);
+            }
+            try {
                 module.enable();
                 states.put(module.id(), State.ENABLED);
                 enableOrder.add(module);
@@ -64,6 +81,11 @@ public final class ModuleRegistry {
             } catch (Exception e) {
                 states.put(module.id(), State.FAILED);
                 logger.log(Level.SEVERE, "Module '" + module.id() + "' failed to enable.", e);
+                try {
+                    afterFailedEnable.accept(module.id());
+                } catch (RuntimeException cleanup) {
+                    logger.log(Level.WARNING, "Cleanup after failed enable of '" + module.id() + "' failed.", cleanup);
+                }
             }
         }
     }

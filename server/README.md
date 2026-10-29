@@ -35,7 +35,7 @@ Restart: `sudo systemctl restart skyblock`. Logs: `/opt/skyblock/server/logs/lat
 **Automatic deploys (later):** create an SSH key for deploys, put the public key in `/opt/skyblock/.ssh/authorized_keys`, and add `TEST_HOST`, `TEST_USER` (`minecraft`), `TEST_SSH_KEY` as GitHub secrets. Every push to `main` then builds, tests and deploys.
 
 ## Staff ranks
-Builder, Helper, Moderator, Admin, Owner: defined in `permissions/luckperms.txt`, applied automatically after every update. To give someone a rank, add a line at the bottom (e.g. `lp user Steve parent add builder`) and run `update-vps.sh`.
+Builder, Helper, Moderator, Admin, Owner: defined in `permissions/base.txt` (groups, prefixes, wildcards, people); each module's grants live in `permissions/<module>.txt`. `scripts/apply-permissions.sh` applies base.txt first, then the module files alphabetically, after every update. To give someone a rank, add a line in the People section of `permissions/base.txt` (e.g. `lp user Steve parent add builder`) and run `update-vps.sh`.
 
 ## Releases by Claude (one-time setup)
 ```bash

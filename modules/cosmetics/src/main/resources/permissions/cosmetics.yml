@@ -1,0 +1,18 @@
+# Permissions of the cosmetics module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/cosmetics.txt. Commands: docs/commands/cosmetics.md.
+skyblock.cosmetics:
+  description: Open /tags and /titles and equip your own
+  default: true
+skyblock.staff.cosmetics.give:
+  description: Give or take titles and tags (/tags give|take, /titles give|take)
+  default: op
+skyblock.admin.cosmetics.item:
+  description: Create redeemable tag items (/tags item)
+  default: op
+skyblock.admin.cosmetics.edit:
+  description: Create and edit titles and tags in-game
+  default: op
+skyblock.admin.display:
+  description: Edit chat, tab and nametag formats (/display)
+  default: op

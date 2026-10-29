@@ -1,0 +1,10 @@
+# LuckPerms grants for the social module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/social/src/main/resources/permissions/social.yml. One console command per line; # = comment.
+
+# --- Social module (staff) ---
+lp group helper permission set skyblock.staff.socialspy true
+lp group helper permission set skyblock.staff.whois true
+lp group helper permission set skyblock.staff.seen.details true
+lp group helper permission set skyblock.staff.unignorable true
+lp group mod permission set skyblock.staff.whois.ip true
+lp group admin permission set skyblock.staff.broadcast true
