@@ -25,3 +25,121 @@ permissions:
   skyblock.cooldown.bypass:
     description: Skip command cooldowns
     default: op
+  # --- Essentials (teleports + staff tools) ---
+  skyblock.player.spawn:
+    description: Teleport to spawn (/spawn)
+    default: true
+  skyblock.player.tpa:
+    description: Send and answer teleport requests (/tpa, /tpahere, /tpaccept, /tpdeny, /tpcancel)
+    default: true
+  skyblock.staff.teleport.bypass:
+    description: No warmup, cooldown or teleport restrictions
+    default: op
+  skyblock.staff.tp:
+    description: Teleport to players (/tp)
+    default: op
+  skyblock.staff.tp.others:
+    description: Teleport a player to another player (/tp <player> <target>)
+    default: op
+  skyblock.staff.tphere:
+    description: Teleport a player to you (/tphere)
+    default: op
+  skyblock.staff.tppos:
+    description: Teleport to coordinates (/tppos)
+    default: op
+  skyblock.staff.top:
+    description: Teleport to the highest block (/top)
+    default: op
+  skyblock.staff.back:
+    description: Return to the previous location or death point (/back)
+    default: op
+  skyblock.staff.home:
+    description: Staff homes (/home, /sethome, /delhome)
+    default: op
+  skyblock.staff.gamemode:
+    description: Use /gm (each mode needs its own permission below)
+    default: op
+  skyblock.staff.gamemode.creative:
+    description: Creative mode (/gm c, /gmc)
+    default: op
+  skyblock.staff.gamemode.survival:
+    description: Survival mode (/gm s, /gms)
+    default: op
+  skyblock.staff.gamemode.spectator:
+    description: Spectator mode (/gm sp, /gmsp)
+    default: op
+  skyblock.staff.gamemode.adventure:
+    description: Adventure mode (/gm a, /gma)
+    default: op
+  skyblock.staff.gamemode.others:
+    description: Change other players' game mode
+    default: op
+  skyblock.staff.fly:
+    description: Toggle flying (/fly)
+    default: op
+  skyblock.staff.fly.others:
+    description: Toggle flying for others
+    default: op
+  skyblock.staff.speed:
+    description: Set fly/walk speed (/speed)
+    default: op
+  skyblock.staff.god:
+    description: God mode (/god)
+    default: op
+  skyblock.staff.god.others:
+    description: God mode for others
+    default: op
+  skyblock.staff.heal:
+    description: Heal (/heal)
+    default: op
+  skyblock.staff.heal.others:
+    description: Heal others
+    default: op
+  skyblock.staff.feed:
+    description: Feed (/feed)
+    default: op
+  skyblock.staff.feed.others:
+    description: Feed others
+    default: op
+  skyblock.staff.clear:
+    description: Clear your inventory (/clear)
+    default: op
+  skyblock.staff.clear.others:
+    description: Clear other players' inventories (asks to confirm, logged)
+    default: op
+  skyblock.staff.invsee:
+    description: View player inventories (/invsee)
+    default: op
+  skyblock.staff.invsee.edit:
+    description: Edit player inventories (every change logged)
+    default: op
+  skyblock.staff.ecsee:
+    description: View player ender chests (/ecsee)
+    default: op
+  skyblock.staff.ecsee.edit:
+    description: Edit player ender chests (every change logged)
+    default: op
+  skyblock.staff.vanish:
+    description: Vanish (/vanish)
+    default: op
+  skyblock.staff.vanish.others:
+    description: Vanish other staff
+    default: op
+  skyblock.staff.vanish.see:
+    description: See vanished staff
+    default: op
+  skyblock.staff.give:
+    description: Give vanilla items (/i, /give)
+    default: op
+  skyblock.staff.time:
+    description: Set the time (/time)
+    default: op
+  skyblock.staff.weather:
+    description: Set the weather (/weather)
+    default: op
+  skyblock.staff.skull:
+    description: Get player heads (/skull)
+    default: op
+  skyblock.staff.more:
+    description: Fill the held stack (/more)
+    default: op

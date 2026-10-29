@@ -91,3 +91,49 @@ lp group owner permission set * true
 
 # --- People ---
 lp user Pouched parent add owner
+
+# --- Essentials (teleports + staff tools) ---
+# Builder: build tools only.
+lp group builder permission set skyblock.staff.give true
+lp group builder permission set skyblock.staff.gamemode true
+lp group builder permission set skyblock.staff.gamemode.creative true
+lp group builder permission set skyblock.staff.gamemode.survival true
+lp group builder permission set skyblock.staff.fly true
+lp group builder permission set skyblock.staff.speed true
+lp group builder permission set skyblock.staff.time true
+lp group builder permission set skyblock.staff.weather true
+lp group builder permission set skyblock.staff.tppos true
+lp group builder permission set skyblock.staff.top true
+# Helper: look, don't touch.
+lp group helper permission set skyblock.staff.tp true
+lp group helper permission set skyblock.staff.vanish true
+lp group helper permission set skyblock.staff.vanish.see true
+lp group helper permission set skyblock.staff.invsee true
+lp group helper permission set skyblock.staff.ecsee true
+# Moderator: moderate players (inherits helper).
+lp group mod permission set skyblock.staff.tp.others true
+lp group mod permission set skyblock.staff.tphere true
+lp group mod permission set skyblock.staff.tppos true
+lp group mod permission set skyblock.staff.top true
+lp group mod permission set skyblock.staff.back true
+lp group mod permission set skyblock.staff.home true
+lp group mod permission set skyblock.staff.teleport.bypass true
+lp group mod permission set skyblock.staff.gamemode true
+lp group mod permission set skyblock.staff.gamemode.creative true
+lp group mod permission set skyblock.staff.gamemode.survival true
+lp group mod permission set skyblock.staff.gamemode.spectator true
+lp group mod permission set skyblock.staff.gamemode.adventure true
+lp group mod permission set skyblock.staff.gamemode.others true
+lp group mod permission set skyblock.staff.fly true
+lp group mod permission set skyblock.staff.fly.others true
+lp group mod permission set skyblock.staff.speed true
+lp group mod permission set skyblock.staff.god true
+lp group mod permission set skyblock.staff.heal true
+lp group mod permission set skyblock.staff.heal.others true
+lp group mod permission set skyblock.staff.feed true
+lp group mod permission set skyblock.staff.feed.others true
+lp group mod permission set skyblock.staff.clear true
+lp group mod permission set skyblock.staff.clear.others true
+lp group mod permission set skyblock.staff.vanish.others true
+# Admin: every staff tool (incl. editing inventories, /give, /skull, /more).
+lp group admin permission set skyblock.staff.* true
