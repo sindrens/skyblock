@@ -1,0 +1,10 @@
+# Permissions of the depths module (node: {description, default}).
+skyblock.depths.debug:
+  description: "Use /depths debug (region at your feet, depleted blocks, engine numbers)."
+  default: op
+skyblock.depths.alerts:
+  description: "Receive fast-break alerts from The Depths."
+  default: op
+skyblock.depths.build:
+  description: "Change blocks inside Depths regions for real while in creative mode."
+  default: op
