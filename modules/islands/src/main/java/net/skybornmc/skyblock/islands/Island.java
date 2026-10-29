@@ -5,9 +5,12 @@ import net.skybornmc.skyblock.common.island.IslandService.IslandInfo;
 import net.skybornmc.skyblock.common.island.IslandService.Role;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -22,14 +25,21 @@ public final class Island {
 
     private final UUID id;
     private final int seasonId;
-    private final UUID owner;
-    private final boolean team;
+    private UUID owner;
+    private boolean team;
     private final int slotId;
     private final int gridX;
     private final int gridZ;
     private final long createdAt;
     private final String world;
     private final Map<UUID, Role> members = new LinkedHashMap<>();
+    /** When each stored member joined (epoch millis) and who invited them (M2.3; null = leader/unknown). */
+    private final Map<UUID, Long> joinedAt = new HashMap<>();
+    private final Map<UUID, UUID> invitedBy = new HashMap<>();
+    /** Coop players (temporary trust, never stored members, REVIEW A4). */
+    private final Set<UUID> coops = new LinkedHashSet<>();
+    /** Member Slots of this island ({@code null} = members.start-slots). */
+    private Integer memberSlots;
     private final IslandPerms perms = new IslandPerms();
     private int sizeChunks;
     // The playable area as plain ints (protection checks run per block event: no Bounds allocation there).
@@ -80,6 +90,26 @@ public final class Island {
 
     public boolean team() {
         return team;
+    }
+
+    /** Solo → team is one-way (DESIGN §3.2): there is no way back. */
+    void markTeam() {
+        this.team = true;
+    }
+
+    /** New leader after {@code /is transfer} (the cached owner name is reset). */
+    void owner(UUID owner) {
+        this.owner = owner;
+        this.ownerName = null;
+    }
+
+    /** Member Slots stored on the island ({@code null} = the start value from islands.yml). */
+    public Integer memberSlots() {
+        return memberSlots;
+    }
+
+    void memberSlots(Integer memberSlots) {
+        this.memberSlots = memberSlots;
     }
 
     public int slotId() {
@@ -167,13 +197,65 @@ public final class Island {
         members.put(uuid, role);
     }
 
+    /** Adds or updates a stored member with join time and inviter (coop status of the same player ends). */
+    void putMember(UUID uuid, Role role, long joined, UUID inviter) {
+        members.put(uuid, role);
+        joinedAt.put(uuid, joined);
+        if (inviter != null) {
+            invitedBy.put(uuid, inviter);
+        }
+        coops.remove(uuid);
+    }
+
+    void removeMember(UUID uuid) {
+        members.remove(uuid);
+        joinedAt.remove(uuid);
+        invitedBy.remove(uuid);
+    }
+
+    /** When {@code uuid} joined (epoch millis), or {@code createdAt} for rows without a time. */
+    public long joinedAt(UUID uuid) {
+        Long joined = joinedAt.get(uuid);
+        return joined == null ? createdAt : joined;
+    }
+
+    /** Who invited {@code uuid}, or null. */
+    public UUID invitedBy(UUID uuid) {
+        return invitedBy.get(uuid);
+    }
+
+    public Set<UUID> coops() {
+        return Collections.unmodifiableSet(coops);
+    }
+
+    void addCoop(UUID uuid) {
+        coops.add(uuid);
+    }
+
+    boolean removeCoop(UUID uuid) {
+        return coops.remove(uuid);
+    }
+
+    void clearCoops() {
+        coops.clear();
+    }
+
+    /** Number of stored members (leader included; coop players never count). */
+    public int memberCount() {
+        return members.size();
+    }
+
     public Optional<Role> role(UUID player) {
         return Optional.ofNullable(members.get(player));
     }
 
-    /** The stored role of {@code player}, or null (allocation-free, for protection checks). */
+    /** The stored role of {@code player}, {@link Role#COOP} for coop players, or null (allocation-free, for protection). */
     Role roleOrNull(UUID player) {
-        return members.get(player);
+        Role role = members.get(player);
+        if (role == null && !coops.isEmpty() && coops.contains(player)) {
+            return Role.COOP;
+        }
+        return role;
     }
 
     public Bounds bounds() {

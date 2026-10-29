@@ -43,7 +43,7 @@ home:
 
 sethome:
   done: "<prefix><c:success><sym:check> <c:text>Island home set where you stand."
-  not-leader: "<prefix><c:error><sym:cross> Only the island leader can move the home."
+  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can move the home."
   outside: "<prefix><c:error><sym:cross> Stand inside your island's border to set the home."
   height: "<prefix><c:error><sym:cross> The home must be between <c:value>Y <min></c:value> and <c:value>Y <max></c:value>."
   unsafe: "<prefix><c:error><sym:cross> This spot isn't safe. Stand on solid ground with room above you, away from water and lava."
@@ -92,6 +92,350 @@ placeholder:
   level-none: "-"
 
 error:
+  island-gone: "<prefix><c:error><sym:cross> That island doesn't exist anymore."
   database: "<prefix><c:error><sym:cross> The island data couldn't be loaded or saved. Try again in a moment."
   world: "<prefix><c:error><sym:cross> The island world <c:value><world></c:value> isn't loaded. Tell a staff member."
   teleport: "<prefix><c:error><sym:cross> Couldn't teleport you to your island. Try again."
+
+# ---------------------------------------------------------------- M2.3 members and roles
+# Role names (also used in the permission matrix rows).
+role:
+  leader: "Leader"
+  mod: "Mod"
+  member: "Member"
+  coop: "Coop"
+  visitor: "Visitor"
+  leader-only: "<prefix><c:error><sym:cross> Only the island leader can do that."
+
+menu:
+  crumb: "Island"
+
+member:
+  busy: "<prefix><c:text>One moment, your last island action is still being saved."
+  not-found: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't a member of your island."
+  changed: "<prefix><c:error><sym:cross> That member changed meanwhile. Check <click:run_command:'/is members'><c:action>/is members</c:action></click> and try again."
+
+invite:
+  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can invite players."
+  self: "<prefix><c:error><sym:cross> You can't invite yourself."
+  already-member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already on your island."
+  has-island: "<prefix><c:error><sym:cross> <c:value><player></c:value> already has an island. They have to leave it before they can join yours."
+  full: "<prefix><c:error><sym:cross> Your island is full (<c:value><slots></c:value> members). Member Slots upgrades come later."
+  too-many: "<prefix><c:error><sym:cross> Your island already has <c:value><max></c:value> open invites. Wait until some are answered or expire."
+  target-blocked: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't join islands right now."
+  target-season-limit: "<prefix><c:error><sym:cross> <c:value><player></c:value> already joined <c:value><max></c:value> islands this season, the most allowed."
+  target-cooldown: "<prefix><c:error><sym:cross> <c:value><player></c:value> changed islands recently and can join again in <c:value><time></c:value>."
+  sent: "<prefix><c:success><sym:check> <c:text>Invite sent to <c:value><player></c:value>. <c:muted>It expires in <time>."
+  now-team: "<prefix><c:warning><sym:star></c:warning> <c:text>Your island is now a <c:value>Team Island</c:value>. <c:muted>It competes on the team leaderboard from now on."
+  received: "<prefix><c:ember><sym:star></c:ember> <c:value><player></c:value> <c:text>invited you to <c:value><island></c:value> <c:muted>(<members>/<slots> members)</c:muted><newline><click:run_command:'/is accept <from>'><hover:show_text:'<c:text>Join <island>'><c:success>[Accept]</c:success></hover></click> <click:run_command:'/is deny <from>'><hover:show_text:'<c:text>Decline the invite'><c:error>[Deny]</c:error></hover></click> <c:muted>Expires in <time>."
+  expired-inviter: "<prefix><c:muted>Your island invite to <c:value><player></c:value> expired."
+  expired-target: "<prefix><c:muted>Your invite to <c:value><island></c:value> expired."
+  solo:
+    crumb: "Make it a Team Island?"
+    shown:
+      name: "<c:warning><bold>Invite <player>"
+      lore:
+        - "<c:text>Inviting makes your island a"
+        - "<c:value>Team Island</c:value> <c:text>forever."
+    details:
+      - "<c:warning>Inviting makes your island a"
+      - "<c:warning><bold>Team Island forever.</bold>"
+      - "<c:text>Solo and team islands are on"
+      - "<c:text>separate leaderboards."
+      - ""
+      - "<c:text>It stays a team island even if"
+      - "<c:text>everyone leaves later."
+      - "<c:muted>Want help without that? Use /is coop."
+    cancelled: "<prefix><c:text>No invite sent. Your island stays a <c:value>solo island</c:value>. <c:muted>Tip: <click:suggest_command:'/is coop '><c:action>/is coop</c:action></click> <c:muted>lets a friend help while you're online."
+
+accept:
+  none: "<prefix><c:error><sym:cross> You have no island invites right now."
+  none-from: "<prefix><c:error><sym:cross> You have no invite from <c:value><player></c:value>'s island."
+  has-island: "<prefix><c:error><sym:cross> You already have an island. Leave it first to join another one."
+  expired: "<prefix><c:error><sym:cross> That invite expired. Ask for a new one."
+  full: "<prefix><c:error><sym:cross> That island is full (<c:value><slots></c:value> members)."
+  blocked: "<prefix><c:error><sym:cross> You can't join islands right now."
+  season-limit: "<prefix><c:error><sym:cross> You already joined <c:value><max></c:value> islands this season, the most allowed."
+  cooldown: "<prefix><c:error><sym:cross> You changed islands recently. You can join another island in <c:value><time></c:value>."
+  joined: "<prefix><c:success><sym:check> <c:text>You joined <c:value><island></c:value>! <click:run_command:'/is home'><c:action>[Go there]</c:action></click> <click:run_command:'/is members'><c:action>[Members]</c:action></click>"
+  title:
+    title: "<grad:phoenix><bold>NEW ISLAND</bold></grad>"
+    subtitle: "<c:text>Welcome to <c:value><island>"
+    fade-in: 10
+    stay: 50
+    fade-out: 20
+
+deny:
+  done: "<prefix><c:text>You declined the invite to <c:value><island></c:value>."
+  notify: "<prefix><c:muted><player> declined your island invite."
+
+kick:
+  self: "<prefix><c:error><sym:cross> You can't kick yourself. Use <c:value>/is leave</c:value>."
+  not-allowed: "<prefix><c:error><sym:cross> You can't kick <c:value><player></c:value>. <c:muted>The leader kicks mods and members, mods kick members."
+  crumb: "Kick member"
+  shown:
+    name: "<c:error><bold>Kick <player>"
+    lore:
+      - "<c:text>Removes <c:value><player></c:value> from your island."
+  details:
+    - "<c:text><c:value><player></c:value> is removed from your island"
+    - "<c:text>and sent to spawn if they're on it."
+    - "<c:text>XP they earned stays with the island."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>was removed from your island."
+  you: "<prefix><c:error><sym:cross> <c:text>You were removed from <c:value><island></c:value> by <c:value><player></c:value>."
+  you-reason: "<prefix><c:error><sym:cross> <c:text>You were removed from <c:value><island></c:value>. Reason: <c:value><reason></c:value>"
+
+leave:
+  leader: "<prefix><c:error><sym:cross> The leader can't leave. Hand the island over first with <click:suggest_command:'/is transfer '><c:action>/is transfer</c:action></click>."
+  crumb: "Leave island"
+  shown:
+    name: "<c:error><bold>Leave <island>"
+    lore:
+      - "<c:text>You stop being a member."
+  details:
+    - "<c:text>You leave <c:value><island></c:value>."
+    - "<c:text>XP you earned stays with the island."
+    - "<c:warning>You can join another island"
+    - "<c:warning>after <hours> hours.</c:warning>"
+  done: "<prefix><c:text>You left <c:value><island></c:value>. <c:muted>You can join another island in <hours> hours, or create your own with</c:muted> <click:run_command:'/is'><c:action>/is</c:action></click>."
+
+promote:
+  not-possible: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be promoted. <c:muted>Members can become mods; mods are the highest role below the leader."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now a <c:value><role></c:value>."
+  you: "<prefix><c:success><sym:star> <c:text>You are now a <c:value><role></c:value> on your island <c:muted>(by <player>)</c:muted>."
+
+demote:
+  not-possible: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't a mod."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now a <c:value><role></c:value>."
+  you: "<prefix><c:warning><sym:bullet></c:warning> <c:text>You are now a <c:value><role></c:value> on your island <c:muted>(by <player>)</c:muted>."
+
+transfer:
+  not-possible: "<prefix><c:error><sym:cross> You can only hand the island to one of its members."
+  crumb: "Transfer island"
+  shown:
+    name: "<c:warning><bold>Make <player> the leader"
+    lore:
+      - "<c:text>Step 1 of 2"
+  details:
+    - "<c:value><player></c:value> <c:text>becomes the island leader."
+    - "<c:text>You become a <c:value>Mod</c:value>."
+    - "<c:muted>One more confirmation follows."
+  final:
+    crumb: "Are you really sure?"
+    shown:
+      name: "<c:error><bold>Final step: <player> leads"
+      lore:
+        - "<c:text>Step 2 of 2"
+    details:
+      - "<c:error>This can't be undone by you."
+      - "<c:text>Only <c:value><player></c:value> <c:text>can give it back."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now the island leader. You are a <c:value>Mod</c:value>."
+  you: "<prefix><c:success><sym:star> <c:text>You are now the leader of <c:value><island></c:value> <c:muted>(from <player>)</c:muted>."
+  title:
+    title: "<grad:phoenix><bold>ISLAND LEADER</bold></grad>"
+    subtitle: "<c:text>The island is yours now"
+    fade-in: 10
+    stay: 50
+    fade-out: 20
+
+coop:
+  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can coop players."
+  self: "<prefix><c:error><sym:cross> You can't coop yourself."
+  member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already a member of your island."
+  already: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already coop on your island."
+  full: "<prefix><c:error><sym:cross> Your island already has <c:value><max></c:value> coop players."
+  blocked: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be cooped right now."
+  not-coop: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't coop on your island."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is coop on your island while you or a mod is online. <c:muted>No XP, no bank, your island stays as it is."
+  you: "<prefix><c:ember><sym:star></c:ember> <c:value><player></c:value> <c:text>made you coop on <c:value><island></c:value>: you can help build there while its leader or a mod is online."
+  removed: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is no longer coop on your island."
+  you-removed: "<prefix><c:muted>You are no longer coop on <c:value><island></c:value>."
+  you-removed-reason: "<prefix><c:muted>You are no longer coop on <c:value><island></c:value>. Reason: <c:value><reason></c:value>"
+  ended: "<prefix><c:muted>Your coop on <c:value><island></c:value> ended: its leader and mods went offline."
+
+# Sent to the island's online members on every member change.
+notify:
+  invited: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>invited <c:value><target></c:value> to the island."
+  joined: "<c:success><sym:bullet></c:success> <c:value><player></c:value> <c:text>joined the island! <c:muted>(<members>/<slots>)"
+  left: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>left the island."
+  kicked: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>was removed from the island <c:muted>(by <by>)</c:muted>."
+  promoted: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>is now a <c:value><role></c:value> <c:muted>(by <by>)</c:muted>."
+  demoted: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>is now a <c:value><role></c:value> <c:muted>(by <by>)</c:muted>."
+  transferred: "<c:ember><sym:star></c:ember> <c:value><player></c:value> <c:text>is the new island leader <c:muted>(from <by>)</c:muted>."
+  cooped: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>is coop on the island <c:muted>(by <by>)</c:muted>."
+  uncooped: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>is no longer coop on the island."
+  still-team: "<prefix><c:muted>Your island stays a Team Island even with only you on it: solo and team leaderboards are kept apart for fairness."
+
+members:
+  crumb: "Members"
+  info:
+    - "<c:text>Everyone on your island and their role."
+    - "<c:text>Click a head for actions."
+    - "<c:muted>Leader > Mod > Member. Coop players are"
+    - "<c:muted>temporary and only help while you're online."
+  empty:
+    name: "<c:muted>Nobody here"
+    lore:
+      - "<c:text>Invite friends with <c:value>/is invite"
+  summary:
+    name: "<c:flame><bold><island>"
+    lore-solo:
+      - "<c:text>Type: <c:value>Solo island"
+      - "<c:text>Members: <c:value><members>/<slots>"
+      - "<c:text>Coop: <c:value><coops>/<max-coops>"
+      - ""
+      - "<c:muted>Inviting someone makes it a Team Island."
+    lore-team:
+      - "<c:text>Type: <c:value>Team island"
+      - "<c:text>Members: <c:value><members>/<slots></c:value> <c:muted>(up to <max-slots> with upgrades)"
+      - "<c:text>Coop: <c:value><coops>/<max-coops>"
+  entry:
+    name: "<c:value><player></c:value> <c:muted>· <role>"
+    name-leader: "<c:flame><sym:star></c:flame> <c:value><player></c:value> <c:muted>· <role>"
+    role:
+      - "<c:text>Role: <c:value><role>"
+    joined:
+      - "<c:text>Joined: <c:value><date>"
+    invited-by:
+      - "<c:text>Invited by: <c:value><inviter>"
+    coop:
+      - "<c:text>Temporary trust, no XP, no bank."
+    online:
+      - "<c:success>● Online"
+    offline:
+      - "<c:muted>● Offline"
+    click:
+      - "<c:action>Click for actions"
+  invite:
+    name: "<c:flame><bold>Invite a player"
+    crumb: "Invite"
+    lore:
+      - "<c:text>Pick an online player without"
+      - "<c:text>an island. Members: <c:value><members>/<slots>"
+      - ""
+      - "<c:action>Click to choose"
+    lore-full:
+      - "<c:error>Your island is full (<members>/<slots>)."
+  permissions:
+    name: "<c:flame><bold>Permissions"
+    lore-edit:
+      - "<c:text>What each role may do on your island."
+      - ""
+      - "<c:action>Click to edit"
+    lore-view:
+      - "<c:text>What each role may do on your island."
+      - "<c:muted>Only the leader and mods can change it."
+      - ""
+      - "<c:action>Click to view"
+
+actions:
+  crumb: "<player>"
+  head:
+    name: "<c:value><player>"
+    lore:
+      - "<c:text>Role: <c:value><role>"
+  gone:
+    name: "<c:muted>No longer on the island"
+    lore:
+      - "<c:text>Go back and refresh."
+  promote:
+    name: "<c:success><bold>Promote to Mod"
+    lore:
+      - "<c:text>Mods can invite, kick members, coop"
+      - "<c:text>players and move the home."
+      - ""
+      - "<c:action>Click to promote"
+  demote:
+    name: "<c:warning><bold>Demote to Member"
+    lore:
+      - "<c:text><player> loses the mod powers."
+      - ""
+      - "<c:action>Click to demote"
+  transfer:
+    name: "<c:warning><bold>Make leader"
+    lore:
+      - "<c:text>Hand the island to <c:value><player></c:value>."
+      - "<c:text>You become a mod. Two confirmations."
+      - ""
+      - "<c:action>Click to continue"
+  kick:
+    name: "<c:error><bold>Kick"
+    lore:
+      - "<c:text>Remove <c:value><player></c:value> from the island."
+      - ""
+      - "<c:action>Click to continue"
+  uncoop:
+    name: "<c:error><bold>End coop"
+    lore:
+      - "<c:text><player> can't build here anymore."
+      - ""
+      - "<c:action>Click to end the coop"
+  leave:
+    name: "<c:error><bold>Leave the island"
+    lore:
+      - "<c:text>Stop being a member."
+      - ""
+      - "<c:action>Click to continue"
+  back:
+    name: "<c:text>Back"
+    lore:
+      - "<c:muted>To the member list"
+
+# Permission matrix (rows = roles, columns = actions; 7 actions per page).
+perms:
+  crumb: "Permissions"
+  info:
+    - "<c:text>Rows are roles, columns are actions."
+    - "<c:success>Lime</c:success> <c:text>= allowed, <c:error>red</c:error> <c:text>= denied. Click to switch."
+    - "<c:text>The <c:value>Leader</c:value> can always do everything."
+    - "<c:muted>Mods can't change Mod permissions."
+  no-longer: "<prefix><c:error><sym:cross> You can't change that permission anymore."
+  word:
+    allowed: "allowed"
+    denied: "denied"
+  header:
+    name: "<c:flame><bold><perm>"
+    lore:
+      - "<c:text>Lets a role <c:value><action></c:value>."
+  role:
+    name: "<c:value><bold><role>"
+    lore-edit:
+      - "<c:text>Click a block in this row"
+      - "<c:text>to switch a permission."
+    lore-locked:
+      - "<c:muted>You can't change this row."
+  cell:
+    name: "<c:value><role></c:value> <c:muted>·</c:muted> <c:value><perm>"
+    lore:
+      - "<c:text><role>s may <action>?"
+    allowed:
+      - "<c:success><sym:check> Allowed"
+    denied:
+      - "<c:error><sym:cross> Denied"
+    default:
+      - "<c:muted>Server default"
+    changed:
+      - "<c:muted>Changed by your island (default: <default>)"
+    click-deny:
+      - "<c:action>Click to deny"
+    click-allow:
+      - "<c:action>Click to allow"
+    locked:
+      - "<c:muted>Only the leader or a mod can change this."
+    locked-mod:
+      - "<c:muted>Only the leader can change Mod permissions."
+  names:
+    break: "Break"
+    place: "Place"
+    interact: "Doors & buttons"
+    containers: "Containers"
+    redstone: "Redstone"
+    animals: "Animals"
+    villagers: "Villagers"
+    pickup: "Pick up items"
+    drop: "Drop items"
+    armor-stands: "Armor stands"
+    vehicles: "Vehicles"
+    fire: "Fire"
+    ender-pearls: "Ender pearls"
+    spawners: "Spawners"

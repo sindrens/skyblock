@@ -3,7 +3,10 @@ package net.skybornmc.skyblock.islands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.command.Arg;
+import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandSpec;
+import net.skybornmc.skyblock.common.command.Suggest;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
@@ -26,7 +29,9 @@ import java.util.Set;
  * confirm menu, the starter islet (FAWE schematic or the code-built "Ember Meadow" placeholder) with a filled starter
  * chest, {@code /is home}, {@code /is sethome}, {@code /is go}, per-player island borders and void rescue. M2.2: role
  * permission protection ({@link IslandProtection}), cross-border rules ({@link BorderProtection}), Y 0-256 build limit,
- * PvP off, staff {@code /is bypass}. Publishes {@link IslandService} and the placeholders {@code island_name},
+ * PvP off, staff {@code /is bypass}. M2.3: members and roles ({@link MemberManager}: invite with the Team Island warning,
+ * accept/deny, kick, leave, promote/demote, transfer, coop/uncoop, {@code /is members} and the permission matrix,
+ * join limits). Publishes {@link IslandService} and the placeholders {@code island_name},
  * {@code island_level} and {@code island_rank}.
  */
 public final class IslandsModule implements SkyblockModule, Listener {
@@ -40,6 +45,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private final IslandsConfig config = new IslandsConfig();
     private List<StarterItems.Entry> starterItems = List.of();
     private IslandManager manager;
+    private MemberManager members;
     private IslandBorders borders;
     private IslandProtection protection;
     private BorderProtection borderProtection;
@@ -68,6 +74,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
         manager = new IslandManager(this, new IslandStore(core.database()));
         manager.rolePermissions(rolePermissions);
         manager.load();
+        members = new MemberManager(this, manager, new MemberStore(core.database()));
+        manager.members(members);
+        members.load();
+        members.startSweep();
         borders = new IslandBorders(manager);
         manager.borders(borders);
         protection = new IslandProtection(this, manager);
@@ -95,6 +105,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
             manager.rolePermissions(rolePermissions);
         }
         startSweep();
+        if (members != null) {
+            members.startSweep();
+        }
         core.messages().load(ID);
         Bukkit.getOnlinePlayers().forEach(borders::update);
     }
@@ -108,6 +121,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
         if (sweepTask != null) {
             sweepTask.cancel();
             sweepTask = null;
+        }
+        if (members != null) {
+            members.stopSweep();
         }
         if (protection != null) {
             protection.clearBypass();
@@ -200,6 +216,15 @@ public final class IslandsModule implements SkyblockModule, Listener {
     }
 
     private void registerCommands() {
+        Arg<Player> invitee = Args.onlinePlayer("player");
+        Arg<Player> cooped = Args.onlinePlayer("player");
+        Arg<String> inviter = Args.word("player", Suggest.bySender(members::inviterNames));
+        Arg<String> denied = Args.word("player", Suggest.bySender(members::inviterNames));
+        Arg<String> kickable = Args.word("player", Suggest.bySender(s -> members.memberNames(s, MemberRules::canKick)));
+        Arg<String> promotable = Args.word("player", Suggest.bySender(s -> members.memberNames(s, MemberRules::canPromote)));
+        Arg<String> demotable = Args.word("player", Suggest.bySender(s -> members.memberNames(s, MemberRules::canDemote)));
+        Arg<String> heir = Args.word("player", Suggest.bySender(s -> members.memberNames(s, MemberRules::canTransfer)));
+        Arg<String> uncooped = Args.word("player", Suggest.bySender(members::coopNames));
         core.commands().register(CommandSpec.command("is")
                 .description("Your island: create it, or go home").category("Island")
                 .permission(PERM_USE).playerOnly().aliases("island")
@@ -210,7 +235,40 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("go").description("Teleport to your island (same as /is home)").permission(PERM_USE).playerOnly()
                         .cooldown(Duration.ofSeconds(3)).example("is go")
                         .executes(ctx -> manager.teleportHome(ctx.player())))
-                .sub(CommandSpec.sub("sethome").description("Set your island home where you stand").permission(PERM_USE).playerOnly()
+                .sub(CommandSpec.sub("invite").description("Invite a player to your island (leader/mod)").permission(PERM_USE).playerOnly()
+                        .cooldown(Duration.ofSeconds(2)).arg(invitee).example("is invite Steve")
+                        .executes(ctx -> members.invite(ctx.player(), ctx.get(invitee), null)))
+                .sub(CommandSpec.sub("accept").description("Accept an island invite").permission(PERM_USE).playerOnly()
+                        .optional(inviter).example("is accept")
+                        .executes(ctx -> members.accept(ctx.player(), ctx.getOr(inviter, null))))
+                .sub(CommandSpec.sub("deny").description("Decline an island invite").permission(PERM_USE).playerOnly()
+                        .optional(denied).example("is deny")
+                        .executes(ctx -> members.deny(ctx.player(), ctx.getOr(denied, null))))
+                .sub(CommandSpec.sub("kick").description("Remove a member from your island (confirm)").permission(PERM_USE).playerOnly()
+                        .arg(kickable).example("is kick Steve")
+                        .executes(ctx -> members.kick(ctx.player(), ctx.get(kickable), null)))
+                .sub(CommandSpec.sub("leave").description("Leave your island (confirm)").permission(PERM_USE).playerOnly()
+                        .example("is leave")
+                        .executes(ctx -> members.leave(ctx.player(), null)))
+                .sub(CommandSpec.sub("promote").description("Make a member a mod (leader)").permission(PERM_USE).playerOnly()
+                        .arg(promotable).example("is promote Steve")
+                        .executes(ctx -> members.promote(ctx.player(), ctx.get(promotable))))
+                .sub(CommandSpec.sub("demote").description("Make a mod a member again (leader)").permission(PERM_USE).playerOnly()
+                        .arg(demotable).example("is demote Steve")
+                        .executes(ctx -> members.demote(ctx.player(), ctx.get(demotable))))
+                .sub(CommandSpec.sub("transfer").description("Hand your island to a member (leader, double confirm)").permission(PERM_USE)
+                        .playerOnly().arg(heir).example("is transfer Steve")
+                        .executes(ctx -> members.transfer(ctx.player(), ctx.get(heir), null)))
+                .sub(CommandSpec.sub("coop").description("Trust a player while you are online (no XP, no bank)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).arg(cooped).example("is coop Steve")
+                        .executes(ctx -> members.coop(ctx.player(), ctx.get(cooped))))
+                .sub(CommandSpec.sub("uncoop").description("End a player's coop trust").permission(PERM_USE).playerOnly()
+                        .arg(uncooped).example("is uncoop Steve")
+                        .executes(ctx -> members.uncoop(ctx.player(), ctx.get(uncooped))))
+                .sub(CommandSpec.sub("members").description("Your island's members, roles and permissions").permission(PERM_USE)
+                        .playerOnly().example("is members")
+                        .executes(ctx -> members.openMembers(ctx.player())))
+                .sub(CommandSpec.sub("sethome").description("Set your island home where you stand (leader/mod)").permission(PERM_USE).playerOnly()
                         .cooldown(Duration.ofSeconds(3)).example("is sethome")
                         .executes(ctx -> manager.setHome(ctx.player())))
                 .sub(CommandSpec.sub("bypass").description("Staff: toggle island protection bypass (logged)").permission(PERM_BYPASS)
@@ -221,5 +279,6 @@ public final class IslandsModule implements SkyblockModule, Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         manager.forget(event.getPlayer().getUniqueId());
+        members.onQuit(event.getPlayer());
     }
 }

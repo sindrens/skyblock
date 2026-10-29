@@ -2,6 +2,8 @@
 # Node definitions: modules/islands/src/main/resources/permissions/islands.yml. One console command per line; # = comment.
 
 # Islands (M2.1). Everyone can use /is (plugin default true).
+# Members and roles (M2.3: invite, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members) use the
+# same node; who may do what is decided by the island role, not by LuckPerms.
 # Staff protection bypass (M2.2): /is bypass toggles it, every toggle is logged (audit category staff).
 # Admins only for now (open question: also moderators?).
 lp group admin permission set skyblock.island.bypass true

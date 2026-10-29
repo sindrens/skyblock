@@ -2,7 +2,7 @@
 # Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
 # LuckPerms grants for these nodes: server/permissions/islands.txt. Commands: docs/commands/islands.md.
 skyblock.island:
-  description: Use /is (create your island, /is home, /is go, /is sethome)
+  description: Use /is (create your island, home, go, sethome, invite, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members)
   default: true
 skyblock.island.bypass:
   description: Staff - /is bypass toggles ignoring island protection (build, containers, borders); every toggle is logged
