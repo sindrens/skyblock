@@ -13,8 +13,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 ## Phase 2: Islands (docs/phases/PHASE-2-ISLANDS.md) — one lane, sequential
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
-| M2.1 | Grid, creation (FAWE placeholder schematic), 3×3 chunks, per-player border, home | Phase 1 | modules/islands | 🔄 |
-| M2.2 | Protection (role perms, Y 0–256, cross-border) | M2.1 | modules/islands | ⬜ |
+| M2.1 | Grid, creation (FAWE placeholder schematic), 3×3 chunks, per-player border, home | Phase 1 | modules/islands | ✅ |
+| M2.2 | Protection (role perms, Y 0–256, cross-border) | M2.1 | modules/islands | 🔄 |
 | M2.3 | Members & roles, invites (solo→team warning), coop, limits | M2.2 | modules/islands | ⬜ |
 | M2.4 | Visiting, lock, ban, warps, ratings | M2.3 | modules/islands | ⬜ |
 | M2.5 | Island menu + settings, `/is chat` | M2.3 | modules/islands | ⬜ |
