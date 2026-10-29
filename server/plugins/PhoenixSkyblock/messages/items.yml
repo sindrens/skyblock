@@ -1,0 +1,51 @@
+# Custom item texts (MiniMessage + style tags). Lore is generated from these formats; never edit lore on items.
+# {tokens} are filled by the plugin; <placeholders> are used in chat messages.
+# Layout follows docs/UI_STYLE.md §4: max ~36 visible characters per line, Bedrock-safe symbols only.
+
+lore:
+  description: "<c:text>{text}"
+  stats: "<c:muted>Stats"
+  stat: " <{color}><sym:bullet></{color}> <c:text>{label} <c:value>{value}"
+  enchants: "<c:muted>Enchants"
+  perk-slots: "<c:muted>Perk slots <c:value>{used}/{total}"
+  enchant: " <c:enchant>{name}"
+  empty-slot: " <c:muted><sym:bullet> Empty slot"
+  action: "<c:action>▶ {input} <c:text>{text}"
+  level: "<c:text>Lv <c:value>{level}</c:value> {bar} <c:value>{percent}%"
+  level-bar: "<c:flame>{filled}</c:flame><c:muted>{empty}</c:muted>"
+  level-bar-filled: "●"
+  level-bar-empty: "●"
+  footer: "<rarity:{rarity}><bold>{rarity-name} {type-name}"
+
+rarity:
+  common: "COMMON"
+  uncommon: "UNCOMMON"
+  rare: "RARE"
+  epic: "EPIC"
+  legendary: "LEGENDARY"
+  mythic: "MYTHIC"
+  special: "SPECIAL"
+
+type:
+  tool: "TOOL"
+  armor: "ARMOR"
+  set-piece: "SET PIECE"
+  collector: "COLLECTOR"
+  crate-key: "CRATE KEY"
+  pet-egg: "PET EGG"
+  pet: "PET"
+  consumable: "CONSUMABLE"
+  material: "MATERIAL"
+  note: "NOTE"
+  cosmetic: "COSMETIC"
+  menu: ""
+
+dupe:
+  alert: "<c:error><bold>DUPE</bold></c:error> <c:text>Item <c:value><item></c:value> <c:muted>(<uuid>)</c:muted> found <c:value><count>x</c:value>, source <c:value><source></c:value>. Both copies are flagged."
+  holder: " <c:muted><sym:bullet></c:muted> <c:text><where>"
+
+give:
+  given: "<prefix><c:success><sym:check> Gave <c:value><amount>x <item></c:value> to <c:value><player></c:value>."
+  received: "<prefix><c:text>You received <c:value><amount>x <item></c:value>."
+  unknown: "<prefix><c:error><sym:cross> Unknown item <c:value><id></c:value>. Press Tab to see all items."
+  inventory-full: "<prefix><c:warning>Inventory full: the rest was dropped at <c:value><player></c:value>'s feet."

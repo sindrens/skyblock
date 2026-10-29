@@ -49,3 +49,6 @@ PY
 chmod 600 "$SB"
 echo "PhoenixSkyblock -> MariaDB"
 # CoreProtect gets its DB settings here once it supports 26.3.
+
+# Audit log archive folder (M0.8): chat/command/item logs older than 30 days are archived here before purge.
+mkdir -p /opt/skyblock/backups/audit-archive 2>/dev/null || true

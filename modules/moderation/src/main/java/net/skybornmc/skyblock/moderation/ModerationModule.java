@@ -3,6 +3,8 @@ package net.skybornmc.skyblock.moderation;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import io.papermc.paper.ban.BanListType;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.command.Arg;
 import net.skybornmc.skyblock.common.command.CommandService;
 import net.skybornmc.skyblock.common.command.CommandSpec;
@@ -14,6 +16,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ban.IpBanList;
 import org.bukkit.ban.ProfileBanList;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.InetAddress;
@@ -104,6 +107,8 @@ public final class ModerationModule implements SkyblockModule {
         send(sender, messageKey, target);
         String staff = sender.getName();
         plugin.getLogger().info(staff + " unbanned " + target);
+        core.audit().log(AuditCategory.PUNISHMENT, messageKey.equals("unbanned-ip") ? "unban_ip" : "unban", Actor.of(sender),
+                target, target, null, sender instanceof Player p ? p.getLocation() : null, Map.of());
         Bukkit.getOnlinePlayers().stream()
                 .filter(p -> p.hasPermission(PERM_NOTIFY) && !p.equals(sender))
                 .forEach(p -> msg.send(p, "staff-notify", Msg.p("staff", staff), Msg.p("player", target)));

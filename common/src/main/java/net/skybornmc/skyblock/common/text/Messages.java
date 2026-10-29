@@ -42,6 +42,7 @@ public final class Messages {
     private final Logger log;
     private final MiniMessage mm = MiniMessage.miniMessage();
     private volatile BedrockCheck bedrock = BedrockCheck.NONE;
+    private volatile net.skybornmc.skyblock.common.placeholder.PlaceholderRegistry placeholders;
 
     private final Map<String, Map<String, String>> texts = new ConcurrentHashMap<>();
     private final Set<String> reportedMissing = ConcurrentHashMap.newKeySet();
@@ -52,6 +53,11 @@ public final class Messages {
         this.folder = new File(plugin.getDataFolder(), "messages");
         this.style = style;
         this.log = plugin.getLogger();
+    }
+
+    /** Enables {@code <ph:key>} in every message. */
+    public void placeholders(net.skybornmc.skyblock.common.placeholder.PlaceholderRegistry registry) {
+        this.placeholders = registry;
     }
 
     public void bedrockCheck(BedrockCheck check) {
@@ -184,7 +190,9 @@ public final class Messages {
     /** Parses any MiniMessage text with the style tags for {@code viewer}. */
     public Component parse(Audience viewer, String text, TagResolver... placeholders) {
         boolean be = isBedrock(viewer);
-        TagResolver resolver = TagResolver.resolver(TagResolver.standard(), style.fullResolver(be, mm), TagResolver.resolver(placeholders));
+        var registry = this.placeholders;
+        TagResolver ph = registry == null ? TagResolver.empty() : registry.resolver(viewer instanceof Player p ? p : null);
+        TagResolver resolver = TagResolver.resolver(TagResolver.standard(), style.fullResolver(be, mm), ph, TagResolver.resolver(placeholders));
         try {
             return mm.deserialize(style.preprocess(text, be), resolver);
         } catch (RuntimeException e) {

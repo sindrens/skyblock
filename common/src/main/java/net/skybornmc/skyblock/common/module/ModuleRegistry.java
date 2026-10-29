@@ -24,6 +24,12 @@ public final class ModuleRegistry {
     private final Map<String, SkyblockModule> modules = new LinkedHashMap<>();
     private final Map<String, State> states = new LinkedHashMap<>();
     private final List<SkyblockModule> enableOrder = new ArrayList<>();
+    private java.util.function.Consumer<String> afterDisable = id -> { };
+
+    /** Called with the module id after each module disables (used to drop its services and placeholders). */
+    public void afterDisable(java.util.function.Consumer<String> hook) {
+        this.afterDisable = Objects.requireNonNull(hook);
+    }
 
     public ModuleRegistry(Logger logger) {
         this.logger = Objects.requireNonNull(logger, "logger");
@@ -73,6 +79,11 @@ public final class ModuleRegistry {
                 logger.log(Level.SEVERE, "Module '" + module.id() + "' threw while disabling.", e);
             }
             states.put(module.id(), State.DISABLED);
+            try {
+                afterDisable.accept(module.id());
+            } catch (RuntimeException e) {
+                logger.log(Level.WARNING, "Cleanup after disabling '" + module.id() + "' failed.", e);
+            }
         }
         enableOrder.clear();
     }

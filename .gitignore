@@ -36,9 +36,10 @@ server/plugins/**
 !server/plugins/FastAsyncWorldEdit/worldedit-config.yml
 !server/plugins/ViaVersion/config.yml
 !server/plugins/ViaBackwards/config.yml
-!server/plugins/PhoenixSkyblock/worlds.yml
-!server/plugins/PhoenixSkyblock/motd.yml
-!server/plugins/PhoenixSkyblock/moderation.yml
+!server/plugins/PhoenixSkyblock/*.yml
+!server/plugins/PhoenixSkyblock/messages/
+!server/plugins/PhoenixSkyblock/messages/*.yml
+!server/plugins/AxiomPaper/config.yml
 *.log
 *.db
 *.sqlite
@@ -49,3 +50,4 @@ server/plugins/**
 **/secrets.yml
 .claude/
 server/plugins/PhoenixSkyblock/data/
+server/plugins/PhoenixSkyblock/database.yml

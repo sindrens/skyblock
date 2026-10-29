@@ -1,0 +1,5 @@
+# Moderation messages. Placeholders: <player> = target, <staff> = who ran the command.
+unbanned: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>has been unbanned."
+unbanned-ip: "<prefix><c:success><sym:check> <c:text>IP <c:value><player></c:value> has been unbanned."
+staff-notify: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>unbanned</c:text> <c:value><player></c:value>"
+not-banned: "<prefix><c:error><sym:cross> <c:value><player></c:value> is not banned. <c:text>Check the name (Bedrock players start with a dot)."

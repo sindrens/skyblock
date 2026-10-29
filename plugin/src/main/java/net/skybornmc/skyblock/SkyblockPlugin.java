@@ -10,6 +10,10 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.audit.AuditCategory;
+import net.skybornmc.skyblock.common.audit.AuditConfig;
+import net.skybornmc.skyblock.common.audit.AuditLog;
 import net.skybornmc.skyblock.common.command.CommandService;
 import net.skybornmc.skyblock.common.command.OfflineNames;
 import net.skybornmc.skyblock.common.db.Database;
@@ -19,7 +23,16 @@ import net.skybornmc.skyblock.common.item.DupeDetector;
 import net.skybornmc.skyblock.common.item.ItemRegistry;
 import net.skybornmc.skyblock.common.item.ItemsConfig;
 import net.skybornmc.skyblock.common.menu.MenuService;
+import net.skybornmc.skyblock.common.hook.BedrockInfo;
+import net.skybornmc.skyblock.common.hook.PapiHook;
+import net.skybornmc.skyblock.common.hook.RankProvider;
+import net.skybornmc.skyblock.common.placeholder.BuiltinPlaceholders;
+import net.skybornmc.skyblock.common.placeholder.PlaceholderRegistry;
+import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.player.PlayerService;
+import net.skybornmc.skyblock.common.service.ServiceRegistry;
+import net.skybornmc.skyblock.common.util.Scheduler;
+import net.skybornmc.skyblock.common.util.SlowOperationTimer;
 import net.skybornmc.skyblock.common.config.ConfigManager;
 import net.skybornmc.skyblock.common.config.CoreConfig;
 import net.skybornmc.skyblock.common.config.ModuleConfig;
@@ -43,8 +56,12 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.server.ServerCommandEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -68,6 +85,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
     private final List<String> styleProblems = new ArrayList<>();
     private final DatabaseConfig dbConfig = new DatabaseConfig();
     private final ItemsConfig itemsConfig = new ItemsConfig();
+    private final AuditConfig auditConfig = new AuditConfig();
 
     @Override
     public void onEnable() {
@@ -93,6 +111,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        configs.load(auditConfig);                                                                    // M0.8
+        AuditLog audit = new AuditLog(database, auditConfig, getDataFolder(), getLogger());
+        audit.start();
         PlayerService players = new PlayerService(this, database, messages, bedrock);                 // M0.4
         CommandService commands = new CommandService(this, messages, sounds);                         // M0.5
         OfflineNames.use(players.nameSuggestions());
@@ -102,13 +123,31 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         ItemRegistry items = new ItemRegistry(messages);
         DupeDetector dupes = new DupeDetector(this, itemsConfig, messages.of("items"));
 
-        core = new Core(this, coreConfig, configs, style, messages, sounds, database, players, commands, menus, items, dupes);
+        ServiceRegistry services = new ServiceRegistry(getLogger());                                  // M0.9
+        PlaceholderRegistry placeholders = new PlaceholderRegistry(getLogger());
+        RankProvider ranks = RankProvider.create(this);
+        BedrockInfo bedrockInfo = BedrockInfo.create(this, bedrock);
+        Scheduler scheduler = new Scheduler(this, new SlowOperationTimer(getLogger(), () -> coreConfig.slowOperationMs));
+        BuiltinPlaceholders.register(placeholders, getServer(), ranks, bedrock,
+                uuid -> players.get(uuid).map(PlayerData::playtimeMillis).orElse(0L));
+        messages.placeholders(placeholders);
+
+        core = new Core(this, coreConfig, configs, style, messages, sounds, database, players, commands, menus, items, dupes,
+                audit, services, placeholders, ranks, bedrockInfo, scheduler);
+        PapiHook.registerIfPresent(this, placeholders);
+        dupes.addHandler(r -> audit.log(AuditCategory.ITEM, "dupe", Actor.system("dupe-detector"), r.itemUuid().toString(),
+                r.itemId(), null, null, Map.of("source", r.source(), "holders", r.holders(),
+                        "players", r.playerIds().stream().map(java.util.UUID::toString).toList())));
         msg = core.messages("core");
         players.start();
         menus.enable();
         dupes.start();
 
         modules = new ModuleRegistry(getLogger());
+        modules.afterDisable(id -> {
+            core.services().unregisterAll(id);
+            core.placeholders().unregisterAll(id);
+        });
         registerModules();
         modules.enableAll();
         registerCommands();
@@ -129,7 +168,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         }
         if (core != null) {
             core.dupes().stop();
+            core.ranks().close();
             core.players().shutdown();
+            core.audit().close();
             core.database().close();
         }
     }
@@ -189,6 +230,34 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                         () -> msg.send(player, "config.join-notice", Msg.p("count", count)), 40L);
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void auditJoin(PlayerJoinEvent event) {
+        Player p = event.getPlayer();
+        core.audit().logPlayer(AuditCategory.AUTH, "join", Actor.player(p), p.getUniqueId(), p.getName(), null, p.getLocation(),
+                Map.of("ip", p.getAddress() == null ? "?" : p.getAddress().getAddress().getHostAddress(),
+                        "bedrock", core.players().get(p.getUniqueId()).map(PlayerData::bedrock).orElse(false)));
+    }
+
+    /** Every command (ours, vanilla and other plugins) goes to the audit log (category command, kept 30 days). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void auditCommand(PlayerCommandPreprocessEvent event) {
+        Player p = event.getPlayer();
+        core.audit().log(AuditCategory.COMMAND, "command", Actor.player(p), null, null, null, p.getLocation(),
+                Map.of("line", event.getMessage(), "cancelled", event.isCancelled()));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void auditConsoleCommand(ServerCommandEvent event) {
+        core.audit().log(AuditCategory.COMMAND, "command", Actor.of(event.getSender()), null, null, null, null,
+                Map.of("line", event.getCommand()));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void auditQuit(PlayerQuitEvent event) {
+        Player p = event.getPlayer();
+        core.audit().logPlayer(AuditCategory.AUTH, "quit", Actor.player(p), p.getUniqueId(), p.getName(), null, p.getLocation(), Map.of());
     }
 
     // ------------------------------------------------------------------ commands
@@ -265,6 +334,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         if (target == null || target.equals("core")) {
             core.configs().load(core.config());
             core.configs().load(itemsConfig);
+            core.configs().load(auditConfig);
             loadStyle(core.style(), core.sounds());
             core.messages().load("core");
             core.messages().load("items");
@@ -299,6 +369,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                 core.sounds().play(p, "success");
             }
         }
+        core.audit().log(AuditCategory.CONFIG, "reload", Actor.of(sender), target == null ? "all" : target, null, null, null,
+                Map.of("problems", allProblems().size(), "failed", failed));
         sendProblems(sender);
     }
 

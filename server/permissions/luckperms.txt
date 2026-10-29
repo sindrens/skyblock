@@ -15,6 +15,14 @@ lp group mod setweight 20
 lp group admin setweight 30
 lp group owner setweight 100
 
+# --- Rank colors (hex) for our chat/tab/nametags; prefixes below stay classic colors for Bedrock and other plugins ---
+lp group default meta set color "#C9C9C9"
+lp group builder meta set color "#FFD23F"
+lp group helper meta set color "#63B8FF"
+lp group mod meta set color "#FF8A1F"
+lp group admin meta set color "#FF3D2E"
+lp group owner meta set color "#C21F2B"
+
 # --- Display names and chat prefixes (Phoenix palette, Bedrock-safe classic colors) ---
 lp group builder setdisplayname Builder
 lp group helper setdisplayname Helper

@@ -1,0 +1,54 @@
+# Core messages (MiniMessage + style tags from style.yml). Placeholders are written as <name>.
+# Edit freely; /skyblock reload core applies changes. New keys are added automatically on updates.
+
+reload:
+  done-all: "<prefix><c:success><sym:check> Everything reloaded."
+  done-one: "<prefix><c:success><sym:check> <c:value><target></c:value> reloaded."
+  failed: "<prefix><c:error><sym:cross> Reload failed for: <c:value><list></c:value>. Check the console."
+  unknown: "<prefix><c:error><sym:cross> Unknown module <c:value><target></c:value>. Choose one of: <c:value><list>"
+
+config:
+  problems-header: "<prefix><c:warning><sym:cross> Config problems <c:text>(old values are still active):"
+  problem: " <c:muted>•</c:muted> <c:text><problem>"
+  list-header: "<prefix><c:value>Config files <c:text>(click to view):"
+  list-ok: " <c:ember><sym:bullet></c:ember> <click:run_command:'/skyblock config <name>'><hover:show_text:'<c:text>Show settings of <name>.yml'><c:value><name>.yml</c:value></hover></click> <c:muted><sym:dot></c:muted> <c:success><sym:check> ok"
+  list-problems: " <c:ember><sym:bullet></c:ember> <click:run_command:'/skyblock config <name>'><hover:show_text:'<c:text>Show settings of <name>.yml'><c:value><name>.yml</c:value></hover></click> <c:muted><sym:dot></c:muted> <c:warning><sym:cross> <count> problem(s)"
+  unknown: "<prefix><c:error><sym:cross> No config <c:value><name></c:value>. Use <c:value>/skyblock config</c:value> to list them."
+  header: "<prefix><c:value><file> <c:text>(active values):"
+  line-default: " <hover:show_text:'<c:text><desc><newline><c:muted>Default: <default>'><c:text><path></c:text></hover><c:muted>:</c:muted> <c:value><value>"
+  line-changed: " <hover:show_text:'<c:text><desc><newline><c:muted>Default: <default>'><c:text><path></c:text></hover><c:muted>:</c:muted> <c:flame><value>"
+  join-notice: "<prefix><c:warning><sym:cross> There are <c:value><count></c:value> config problem(s). <click:run_command:'/skyblock config'><c:action>[Click to view]</c:action></click>"
+
+modules:
+  header: "<prefix><c:value>Modules:"
+  none: "<prefix><c:text>No modules registered yet."
+  enabled: " <c:value><id></c:value> <c:success>ENABLED"
+  failed: " <c:value><id></c:value> <c:error>FAILED"
+  other: " <c:value><id></c:value> <c:muted><state>"
+
+worlds:
+  header: "<prefix><c:value>Worlds <c:text>(click to teleport):"
+  loaded: " <c:ember><sym:bullet></c:ember> <click:run_command:'/skyblock tp <name>'><hover:show_text:'<c:text>Teleport to <name>'><c:value><name></c:value></hover></click> <c:muted><sym:dot></c:muted> <c:success>loaded</c:success> <c:muted><sym:dot></c:muted> <c:text><players> players <sym:dot> <chunks> chunks"
+  not-loaded: " <c:ember><sym:bullet></c:ember> <c:value><name></c:value> <c:muted><sym:dot></c:muted> <c:error>not loaded"
+  teleported: "<prefix><c:text>Teleported to <c:value><world></c:value>."
+  teleport-failed: "<prefix><c:error><sym:cross> Teleport to <world> failed. Try again."
+
+style:
+  header: "<prefix><c:value>Style preview <c:text>(hover a color for its name and Bedrock fallback):"
+  section: " <c:ember><sym:bullet></c:ember> <c:value><name>:</c:value> <colors>"
+  symbols: " <c:ember><sym:bullet></c:ember> <c:value>Symbols:</c:value> <c:text><symbols>"
+  gradients: " <c:ember><sym:bullet></c:ember> <c:value>Gradients:</c:value> <grad:phoenix>Phoenix fire</grad> <c:muted><sym:dot></c:muted> <grad:flame>Flame</grad> <c:muted><sym:dot></c:muted> <grad:skyborn>SkybornMC</grad> <c:muted><sym:dot></c:muted> <grad:legendary>Legendary</grad> <c:muted><sym:dot></c:muted> <grad:mythic>Mythic</grad>"
+  formats: " <c:ember><sym:bullet></c:ember> <c:value>Formats:</c:value> <cur:money><money></cur:money> <c:muted><sym:dot></c:muted> <cur:money><big-money></cur:money> <c:muted><sym:dot></c:muted> <cur:tokens><sym:tokens> <number></cur:tokens> <c:muted><sym:dot></c:muted> <c:value><duration>"
+  samples-header: " <c:ember><sym:bullet></c:ember> <c:value>Message types:"
+  sample-success: "   <c:success><sym:check> Island created."
+  sample-error: "   <c:error><sym:cross> You need <cur:money>$5,000</cur:money> more to do that."
+  sample-warning: "   <c:warning>This can't be undone."
+  sample-info: "   <c:info>Tip: <c:text>open <c:value>/menu</c:value> to see everything."
+  sample-action: "   <c:action>Click to teleport"
+  title:
+    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    subtitle: "<c:text>Style preview <c:muted><sym:dot></c:muted> <grad:skyborn>SkybornMC</grad>"
+    fade-in: 10
+    stay: 50
+    fade-out: 15
+  action-bar: "<c:ember><sym:tokens></c:ember> <c:text>Action bar preview <c:muted><sym:dot></c:muted> <cur:money>$1.2M</cur:money>"

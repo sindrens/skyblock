@@ -6,7 +6,7 @@ Target: everything below is in season 1. Launch is in ~3 years. There is time to
 
 | Phase | Name | Contents | Status |
 |---|---|---|---|
-| 0 | **Foundation** ([plan](phases/PHASE-0-FOUNDATION.md)) | Config, style/messages, database (MariaDB/H2, migrations), player data, commands, menus, items, services/placeholders (+ optional PlaceholderAPI), **audit log** | 🟡 Repo, deploy, worlds, MOTD, `/unban`, M0.1–M0.7 done |
+| 0 | **Foundation** ([plan](phases/PHASE-0-FOUNDATION.md)) | Config, style/messages, database (MariaDB/H2, migrations), player data, commands, menus, items, services/placeholders (+ optional PlaceholderAPI), **audit log** | 🟡 Repo, deploy, worlds, MOTD, `/unban`, **Phase 0 complete** (M0.1–M0.10) |
 | 1 | **Core player experience** ([plan](phases/PHASE-1-CORE.md)) | Spawn/join flow, teleports, chat + ranks everywhere (chat/tab/nametags), scoreboard, tab, `/menu`, `/help`, `/settings`, custom punishments, staff mode, **`/logs` viewer**, reports, `/admin` | ⬜ |
 | 2 | **Islands** ([plan](phases/PHASE-2-ISLANDS.md)) | Grid, creation (placeholder schematic), protection, roles + permission GUI, solo → team, visiting/warps/ratings, island menu, stats tracking, admin tools | ⬜ |
 | 3 | **Economy** ([plan](phases/PHASE-3-ECONOMY.md)) | Balance sheet first, currencies + ledger, `/pay`, `/transactions`, notes, banks + interest, dynamic `/sell`, builder shop, auction house, secure `/trade`, economy dashboard | ⬜ |
@@ -41,4 +41,6 @@ Target: everything below is in season 1. Launch is in ~3 years. There is time to
 - [x] Command framework (Brigadier, enforced tab completion, cooldowns, confirm, typed args, help index)
 - [x] Player data cache (load before join, autosave, save on quit/shutdown, name history)
 - [x] Item framework (registry, PDC id/UUID, lore builder, dupe detection)
-- [ ] Local test server workflow (`./gradlew runServer`) documented
+- [x] Local test server workflow (`server/scripts/run-local.sh`, H2 database) documented
+- [x] Audit log (batched, partitioned, 30 days / forever, archives)
+- [x] Services, placeholders (`<ph:key>`, PlaceholderAPI optional), LuckPerms/Floodgate hooks, scheduler + slow-operation timer

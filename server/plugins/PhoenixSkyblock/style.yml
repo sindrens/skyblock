@@ -1,0 +1,85 @@
+# Phoenix Skyblock style (docs/UI_STYLE.md). Used by every message, menu, item and HUD.
+# In messages: <c:brand>text</c:brand>, <rarity:epic>, <pillar:mining>, <cur:money>, <sym:money>, <grad:phoenix>text</grad>, <prefix>
+# Each color: "<hex> <legacy fallback for Bedrock>". Legacy names: black dark_blue dark_green dark_aqua dark_red
+# dark_purple gold gray dark_gray blue green aqua red light_purple yellow white
+# Reload: /skyblock reload core
+
+prefix: "<grad:phoenix><bold>PHOENIX</bold></grad> <c:ember>»</c:ember> "
+
+colors:
+  # Phoenix Skyblock core
+  brand: "#C21F2B dark_red"
+  brand_bright: "#FF3D2E red"
+  ember: "#FF8A1F gold"
+  flame: "#FFD23F yellow"
+  charcoal: "#2B2B2B black"
+  parchment: "#E8DCC0 white"
+  text: "#C9C9C9 gray"
+  muted: "#7A7A7A dark_gray"
+  value: "#FFFFFF white"
+  action: "#FFD23F yellow"
+  # Status
+  success: "#6BDB7A green"
+  error: "#FF5C5C red"
+  warning: "#FFB347 gold"
+  info: "#63B8FF aqua"
+  enchant: "#C77DFF light_purple"
+  # SkybornMC network (from the logo)
+  sky_frost: "#E4EBF0 white"
+  sky_ice: "#9FC6E8 aqua"
+  sky_blue: "#6CA1D6 blue"
+  sky_steel: "#49649E dark_blue"
+  sky_cloud: "#FBFCFF white"
+
+currencies:
+  money: "#5BE37D green"
+  tokens: "#C77DFF light_purple"
+  gems: "#4FD1FF aqua"
+  shards: "#FF6B6B red"
+  credits: "#FF8A1F gold"
+
+rarity:
+  common: "#D9D9D9 white"
+  uncommon: "#6BDB7A green"
+  rare: "#4F9DFF blue"
+  epic: "#B266FF dark_purple"
+  legendary: "#FFAA00 gold"
+  mythic: "#FF55D4 light_purple"
+  special: "#FF4040 red"
+
+pillar:
+  mining: "#B7C0CC gray"
+  foraging: "#8BCB5A green"
+  farming: "#F0D264 yellow"
+  combat: "#E5534B red"
+  conquest: "#F0883E gold"
+  fishing: "#5AC8E6 aqua"
+
+# Gradients: color names from 'colors' or hex values. Bedrock shows the first color only.
+gradients:
+  phoenix: [brand, brand_bright, ember]
+  flame: [ember, flame]
+  skyborn: [sky_frost, sky_ice, sky_blue]
+  legendary: ["#FFAA00", "#FFD23F"]
+  mythic: ["#FF55D4", "#B266FF"]
+
+symbols:
+  money: "$"
+  tokens: "✦"
+  gems: "◆"
+  shards: "✧"
+  arrow: "»"
+  bullet: "▸"
+  dot: "·"
+  check: "✔"
+  cross: "✘"
+  star: "★"
+  sword: "⚔"
+  pickaxe: "⛏"
+  heart: "❤"
+  time: "⌛"
+  line: "│"
+
+# Only these symbols (plus normal letters) are allowed in messages; anything else is reported at load
+# because Bedrock may not show it. Add a symbol here only after testing it on a Bedrock client.
+bedrock-safe-symbols: "✦ ✧ ◆ ● ▸ ▶ ★ ✔ ✘ ⚔ ⛏ ❤ ⌛ » « │ · •"

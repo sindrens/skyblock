@@ -25,6 +25,11 @@
 - **M0.6 menu framework:** red/black 6-row frame, paged lists, confirm, number picker, player picker, toggles, chat prompts, async/live slots, total click protection, debounce, escaped menu items purged; `/skyblock demo-menu`.
 - **M0.7 item framework:** item registry with PDC id, UUID for unique items, UI_STYLE lore builder, no italics/vanilla tooltips, item_model ready, dupe detection with staff alerts; `/skyblock give-item`.
 - **Axiom** (Paper plugin 26.3 build) for builders; disabled in the islands/outposts worlds.
+- **M0.8 audit log:** every action in MariaDB (`audit_log`, monthly partitions); batched async writes; spool file if the DB is down; chat/command/item kept 30 days then archived to `yyyy-MM.jsonl.gz`, everything else forever; all commands, joins/quits (IP), reloads, unbans and dupes are logged; query API for `/logs`.
+- **M0.9 services & placeholders:** service registry; `<ph:key>` in messages and `%phoenix_<key>%` (PlaceholderAPI optional); LuckPerms rank info with hex `color` meta per rank; Floodgate device info; scheduler with slow-operation warnings; cooldowns.
+- **Menu redesign:** dark frame with phoenix corners, breadcrumb titles (`▸ Island » Upgrades (2/5)`), textured arrow heads, final texts, empty/loading/error states, new confirm and number picker layouts.
+- Removed the demo menu, demo items and `/skyblock give-item`.
+- Axiom config tracked (blocked on islands/outposts); all PhoenixSkyblock configs and messages are now tracked and deployed.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
