@@ -36,6 +36,13 @@
 - Economy (M3.1): balances are global and the ledger records the season (0 until the season service exists). At season start, which currencies are wiped (money, tokens, shards) and which kept (gems: see Economy question 2)? The starting $1,000 is given once per season per player. (default: decide with the season system)
 - Economy (M3.1): `/bal <player>` lets every player see others' balances (`skyblock.economy.balance.others`, default true). OK, or staff only? (default: everyone)
 - Economy (M3.1): the staff reason of `/eco` is shown to the player in `/transactions` (as the note, max 64 characters). OK? (default: yes)
+- Skills (M4.5): max skill level 66 (= the highest tier unlock, Voidstone); XP keeps counting after it for leaderboards (`skills.yml → curve.max-level`). Higher cap for Phase 6 perks? (default: 66)
+- Skills (M4.5): combat XP per kill is priced for the same XP per hour as the mine at the same unlock level (zombie 5, skeleton 10, spider 22, slime 40, drowned 72, witch 135, pillager/vindicator 250, blaze 420, wither skeleton 700, ravager/evoker 1,200). OK? (default: yes; M4.8 custom mobs will set their own XP)
+- Skills (M4.5): Mining/Foraging XP only from The Depths, not from island blocks (generator ores, island trees); Combat XP from any mob a player kills (also on islands), but never from spawner mobs. OK? (default: yes)
+- Skills (M4.5): staff `/skills set|add <player> <skill> <amount>` was not in the plan, so it is not built (the service already has an audited `setXp`). Add it? (default: no command until approved)
+- Skills (M4.5): own `/settings` toggle "Skill XP in the action bar" (Display, default on) instead of reusing `tips`/`ui-sounds`. OK? (default: yes)
+- Skills (M4.5): level-up audit rows use category `world` (no progression category). Add a `progression` audit category? (default: `world`)
+- Skills (M4.5): anyone may view another player's skills with `/skills <player>` (`skyblock.skills.others`, default true). Keep public? (default: yes)
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 

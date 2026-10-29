@@ -1,0 +1,5 @@
+# LuckPerms grants for the skills module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/skills/src/main/resources/permissions/skills.yml. One console command per line; # = comment.
+
+# /skills and /skills <player> are for everyone (plugin default: true); nothing to grant yet.
+# Staff tools (/skills set|add) are not approved yet (docs/OPEN_QUESTIONS.md).
