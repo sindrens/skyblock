@@ -200,3 +200,17 @@ Settings in `staff.yml`, texts in `messages/staff.yml`, data in `db/staff` (`sta
 | `/reports [open/claimed/closed]` · `/reports claim/unclaim <id>` · `/reports close <id> <outcome>` · `/reports player <name>` | Report list GUI, claim, close with outcome (punished, warned, no-evidence, invalid, duplicate); the reporter is told the result (also later on join) | `skyblock.staff.reports` | ✅ |
 
 Staff tools dispatch `/punish` (moderation module), `/logs` (M1.10) and `/invsee`/`/ecsee` (essentials); missing ones say "isn't available yet".
+## Cosmetics module (`modules/cosmetics`): M1.11 · Staff hub and `/admin` (`modules/menus`): M1.12
+Titles & tags: `tags-titles.yml` (registry, editable in-game), `cosmetics.yml`, texts `messages/cosmetics.yml`.
+
+| Command | Description | Permission | Status |
+|---|---|---|---|
+| `/tags` (`/tag`), `/titles` (`/title`) | One menu, two tabs: equip one title + one tag, locked titles show how to earn them, preview of your chat/tab line; staff get an Edit button (create/edit/delete titles and tags) | `skyblock.cosmetics` (everyone); editor `skyblock.admin.cosmetics.edit` | ✅ |
+| `/tags give\|take <player> <tag>`, `/titles give\|take <player> <title>` | Give/remove (online or offline), logged | `skyblock.staff.cosmetics.give` | ✅ |
+| `/tags item <tag> [amount] [player]` | Create unique tag items (right-click to redeem with confirm; tradeable, AH-sellable) | `skyblock.admin.cosmetics.item` | ✅ |
+| `/display` (`/displayformat`) | Display editor: chat/tab/nametag formats (chat.yml) with live preview and confirm; applied instantly, logged | `skyblock.admin.display` | ✅ |
+| `/staff` (`/staffmenu`) | Staff hub: Display, Config editor, Titles & Tags, staff tools (unbuilt ones "Coming soon") | `skyblock.staff.menu` | ✅ |
+| `/admin` (`/config`) | Config editor generated from every module's typed config: toggle, cycle, number picker, chat input, list editor; validated, saved, applied live (or "needs restart"), logged `config/edit` old→new. database.yml hidden | `skyblock.admin.config`; owner-level settings `skyblock.owner.config` | ✅ |
+
+Achievements hook for other modules: `core.services().get(Cosmetics.class).grantTitle(uuid, "id", "reason")`. Placeholders: `<ph:title>`, `<ph:tag>`, `<ph:title_id>`, `<ph:tag_id>`.
+Nicknames now show a `~` marker (perks.yml `nick.marker`) and reset when the rank that allowed them is lost (colors are dropped if only the color permission is lost; staff-set nicknames stay).

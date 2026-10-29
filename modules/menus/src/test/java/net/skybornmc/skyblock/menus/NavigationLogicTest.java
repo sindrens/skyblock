@@ -70,6 +70,19 @@ class NavigationLogicTest {
     }
 
     @Test
+    void adminHelpers() {
+        assertEquals(List.of("Main-thread work slower than this", "(milliseconds) is logged."),
+                AdminFileMenu.wrap("Main-thread work slower than this (milliseconds) is logged.", 34));
+        assertEquals(1, AdminFileMenu.steps(50)[0]);
+        assertEquals(100, AdminFileMenu.steps(5_000)[2]);
+        assertEquals(1_000_000_000L, AdminFileMenu.steps(Long.MAX_VALUE)[2]);
+        assertEquals("abc", AdminFileMenu.shorten("abc"));
+        assertEquals(60, AdminFileMenu.shorten("x".repeat(100)).length());
+        assertEquals("5", AdminFileMenu.number(5.0));
+        assertEquals("0.7", AdminFileMenu.number(0.7));
+    }
+
+    @Test
     void hubReservesTheFrame() {
         assertTrue(HubLayout.RESERVED.contains(0));
         assertTrue(HubLayout.RESERVED.contains(4));   // profile head row

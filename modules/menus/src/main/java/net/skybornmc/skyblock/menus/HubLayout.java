@@ -44,9 +44,14 @@ public record HubLayout(List<Entry> entries) {
     static final Set<Integer> RESERVED = reserved();
 
     static HubLayout parse(YamlConfiguration yaml, Consumer<String> problem) {
+        return parse(yaml, "entries", problem);
+    }
+
+    /** Parses one section of entries ({@code entries} = /menu, {@code staff-entries} = /staff). */
+    static HubLayout parse(YamlConfiguration yaml, String sectionName, Consumer<String> problem) {
         List<Entry> entries = new ArrayList<>();
         Set<Integer> used = new HashSet<>();
-        ConfigurationSection section = yaml.getConfigurationSection("entries");
+        ConfigurationSection section = yaml.getConfigurationSection(sectionName);
         if (section != null) {
             for (String id : section.getKeys(false)) {
                 ConfigurationSection e = section.getConfigurationSection(id);
@@ -55,17 +60,17 @@ public record HubLayout(List<Entry> entries) {
                 }
                 int slot = e.getInt("slot", -1);
                 if (slot < 0 || slot >= 54 || RESERVED.contains(slot)) {
-                    problem.accept("menu.yml → entries." + id + ".slot: " + slot + " is not an inner slot of the menu (skipped)");
+                    problem.accept("menu.yml → " + sectionName + "." + id + ".slot: " + slot + " is not an inner slot of the menu (skipped)");
                     continue;
                 }
                 if (!used.add(slot)) {
-                    problem.accept("menu.yml → entries." + id + ".slot: slot " + slot + " is already used (skipped)");
+                    problem.accept("menu.yml → " + sectionName + "." + id + ".slot: slot " + slot + " is already used (skipped)");
                     continue;
                 }
                 String iconName = e.getString("icon", "book");
                 Material icon = Material.matchMaterial(iconName);
                 if (icon == null || !icon.isItem()) {
-                    problem.accept("menu.yml → entries." + id + ".icon: unknown item '" + iconName + "' (using book)");
+                    problem.accept("menu.yml → " + sectionName + "." + id + ".icon: unknown item '" + iconName + "' (using book)");
                     icon = Material.BOOK;
                 }
                 String status = e.getString("status", "auto").toLowerCase(Locale.ROOT).replace('_', '-');

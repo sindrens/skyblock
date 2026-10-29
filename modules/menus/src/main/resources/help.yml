@@ -69,7 +69,7 @@ categories:
     slot: 23
     name: "<c:flame><bold>Community"
     lore: ["<c:text>Chat, messages, teleporting", "<c:text>and rank perks."]
-    topics: [chat, teleporting, afk, perks, links]
+    topics: [chat, teleporting, afk, tags, perks, links]
   faq:
     icon: lectern
     status: active
@@ -308,6 +308,96 @@ topics:
         lines:
           - "<c:value>/store</c:value> <c:text>for ranks and cosmetics,"
           - "<c:value>/website</c:value> <c:text>for everything else."
+
+  tags:
+    icon: name_tag
+    aliases: [titles, title, tag, cosmetics]
+    name: "<c:flame>Titles & tags"
+    summary: ["<c:text>Show off next to your name", "<c:text>in chat and tab."]
+    take-me-there: "tags"
+    commands: [Cosmetics]
+    pages:
+      - title: "<c:value>Titles"
+        lines:
+          - "<c:text>Titles are earned with achievements:"
+          - "<c:text>big wins, but also cool and secret"
+          - "<c:text>things. Locked ones tell you how."
+      - title: "<c:value>Tags"
+        lines:
+          - "<c:text>Tags come from crates and the store"
+          - "<c:text>as a tag item. Right-click it to add"
+          - "<c:text>the tag to your account."
+      - title: "<c:value>Extra copies"
+        lines:
+          - "<c:text>Already own a tag? Trade the item"
+          - "<c:text>or sell it on the auction house."
+      - title: "<c:value>Wearing them"
+        lines:
+          - "<c:value>/tags</c:value> <c:text>or</c:text> <c:value>/titles</c:value> <c:text>opens one menu with"
+          - "<c:text>both tabs. Equip one title and one tag;"
+          - "<c:text>the head at the top shows your look."
+
+  staff:
+    icon: shield
+    aliases: [staff-hub]
+    name: "<c:flame>Staff hub"
+    summary: ["<c:text>Staff tools in one place."]
+    take-me-there: "staff"
+    commands: [Staff]
+    pages:
+      - title: "<c:value>Opening it"
+        lines:
+          - "<c:value>/staff</c:value> <c:text>opens the hub. Tools your rank"
+          - "<c:text>can't use are shown locked."
+      - title: "<c:value>Everything is logged"
+        lines:
+          - "<c:text>Every staff action is stored in the"
+          - "<c:text>audit log with who, what and when."
+
+  display:
+    icon: painting
+    aliases: [display-editor, formats]
+    name: "<c:flame>Display editor"
+    summary: ["<c:text>How players look in chat,", "<c:text>tab and above heads."]
+    take-me-there: "display"
+    pages:
+      - title: "<c:value>Editing a part"
+        lines:
+          - "<c:text>Click a part, type the new format in"
+          - "<c:text>chat and check the preview head"
+          - "<c:text>before you confirm."
+      - title: "<c:value>Parts"
+        lines:
+          - "<c:value><rank> <name> <title> <tag></c:value>"
+          - "<c:value><message></c:value> <c:text>in chat,</c:text> <c:value><afk></c:value> <c:text>in tab."
+          - "<c:text>Type</c:text> <c:value>default</c:value> <c:text>to reset a part."
+      - title: "<c:value>Applied instantly"
+        lines:
+          - "<c:text>Changes apply to everyone right"
+          - "<c:text>away and are logged."
+
+  admin:
+    icon: comparator
+    aliases: [config, config-editor]
+    name: "<c:flame>Config editor"
+    summary: ["<c:text>Change server settings", "<c:text>without touching files."]
+    take-me-there: "admin"
+    pages:
+      - title: "<c:value>Finding a setting"
+        lines:
+          - "<c:value>/admin</c:value> <c:text>lists every config file. Gold"
+          - "<c:text>settings differ from the default."
+      - title: "<c:value>Changing it"
+        lines:
+          - "<c:text>Switches flip, choices cycle, numbers"
+          - "<c:text>use a picker, text uses chat input."
+          - "<c:text>Wrong values are refused with a reason."
+      - title: "<c:value>Safe by design"
+        lines:
+          - "<c:text>Every change is saved, applied live"
+          - "<c:text>(or after a restart when marked) and"
+          - "<c:text>logged with the old and new value."
+          - "<c:text>Economy and season settings: owner only."
 
   faq:
     icon: lectern

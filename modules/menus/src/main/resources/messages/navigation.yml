@@ -250,3 +250,92 @@ help:
     commands-category: " <c:ember><category>"
     command-line: "   <click:suggest_command:'<command>'><hover:show_text:'<c:text><description>'><c:value><usage></c:value></hover></click> <c:muted><description>"
     suggest: "<prefix><click:suggest_command:'<command>'><hover:show_text:'<c:text>Click to put it in your chat'><c:action>[Click]</c:action> <c:value><usage></c:value></hover></click> <c:muted><description>"
+
+staff:
+  title: "Staff"
+  info:
+    - "<c:text>Every staff tool in one place."
+    - "<c:text>Gray tools are coming soon."
+  header:
+    name: "<c:brand><bold>Staff hub"
+    lore: ["<c:text>Thanks for keeping SkybornMC", "<c:text>fair and friendly."]
+  locked: ["", "<c:error><sym:cross> Your rank can't use this."]
+  entries:
+    display:
+      name: "<c:flame><bold>Display"
+      lore: ["<c:text>How players look in chat,", "<c:text>tab and above heads."]
+    admin:
+      name: "<c:flame><bold>Config editor"
+      lore: ["<c:text>Every setting of every module,", "<c:text>validated and logged."]
+    cosmetics:
+      name: "<c:flame><bold>Titles & Tags"
+      lore: ["<c:text>Create and edit titles and", "<c:text>tags (Edit button inside)."]
+    staff-mode:
+      name: "<c:flame><bold>Staff mode"
+      lore: ["<c:text>Vanish, inspect, freeze and", "<c:text>teleport tools."]
+    logs:
+      name: "<c:flame><bold>Logs"
+      lore: ["<c:text>Who paid whom, chat, commands,", "<c:text>trades and island actions."]
+    reports:
+      name: "<c:flame><bold>Reports"
+      lore: ["<c:text>Open player reports."]
+    vanish:
+      name: "<c:flame><bold>Vanish"
+      lore: ["<c:text>Hide from players."]
+    staff-chat:
+      name: "<c:flame><bold>Staff chat"
+      lore: ["<c:text>Talk with the staff team."]
+    modules:
+      name: "<c:flame><bold>Modules"
+      lore: ["<c:text>Status of every module."]
+    worlds:
+      name: "<c:flame><bold>Worlds"
+      lore: ["<c:text>Loaded worlds, click to", "<c:text>teleport."]
+
+admin:
+  title: "Config"
+  info:
+    - "<c:text>Every config file of the server."
+    - "<c:text>Changes are validated and logged."
+  file-info:
+    - "<c:text>Click a setting to change it."
+    - "<c:text>Gold names differ from the default."
+  file:
+    name: "<c:value><file>"
+    lore: ["<c:text>Settings: <c:value><settings>", "<c:text>You can edit: <c:value><editable>", "<c:text>Changed: <c:value><changed>"]
+    problems: ["<c:warning><sym:cross> <count> problem(s), see /skyblock config"]
+  setting:
+    name: "<c:value><path>"
+    name-changed: "<c:flame><path>"
+    description: "<c:text><text>"
+    value: "<c:text>Now: <c:value><value>"
+    default: "<c:text>Default: <c:muted><value>"
+    range: "<c:text>Allowed: <c:value><min></c:value> <c:muted>to</c:muted> <c:value><max>"
+    choices: "<c:text>Choices: <c:muted><choices>"
+    restart: ["<c:warning>Needs a restart to take effect."]
+    owner: ["<c:brand>Owner only"]
+    locked: ["", "<c:error><sym:cross> Only the owner can change this."]
+    action-toggle: ["", "<c:action><sym:bullet> Click to switch"]
+    action-cycle: ["", "<c:action><sym:bullet> Click for the next choice"]
+    action-list: ["", "<c:action><sym:bullet> Click to edit the list"]
+    action-edit: ["", "<c:action><sym:bullet> Click to change"]
+  prompt: "<prefix><c:text>Type a new value for <c:value><path></c:value> (now: <c:muted><value></c:muted>). <c:value>default</c:value> resets it, <c:value><cancel></c:value> cancels (<seconds>s)."
+  saved: "<prefix><c:success><sym:check> <c:value><file></c:value> <c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to</c:text> <c:value><new></c:value><c:text>. Applied."
+  saved-restart: "<prefix><c:success><sym:check> <c:value><file></c:value> <c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to</c:text> <c:value><new></c:value><c:text>. <c:warning>Applies after a restart."
+  failed: "<prefix><c:error><sym:cross> <c:value><path></c:value> wasn't changed: <c:text><reason>"
+  no-permission: "<prefix><c:error><sym:cross> Only the owner can change this setting."
+  list:
+    info:
+      - "<c:text>Click an entry to remove it."
+      - "<c:text>Use + to add one."
+    entry: "<c:value><value>"
+    entry-lore: ["", "<c:action><sym:bullet> Click to remove"]
+    remove-crumb: "Remove entry"
+    remove-details: ["<c:text>Removes <c:value><value></c:value> from the list."]
+    add:
+      name: "<c:success>+ Add"
+      lore: ["<c:text>Add an entry by typing it.", "", "<c:action><sym:bullet> Click to add"]
+    prompt: "<prefix><c:text>Type the entry to add to <c:value><path></c:value>. <c:value><cancel></c:value> cancels (<seconds>s)."
+    empty:
+      name: "<c:text>The list is empty"
+      lore: ["<c:muted>Use + to add the first entry."]

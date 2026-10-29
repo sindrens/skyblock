@@ -64,6 +64,14 @@ class NickRulesTest {
     }
 
     @Test
+    void requiredTierOfStoredNicks() {
+        assertEquals(NickRules.Tier.PLAIN, NickRules.requiredTier("Phoenix"));
+        assertEquals(NickRules.Tier.COLOR, NickRules.requiredTier("<red><bold>Fire<gold>Bird"));
+        assertEquals(NickRules.Tier.HEX, NickRules.requiredTier("<gradient:#FF3D2E:#FFD23F>Phoenix</gradient>"));
+        assertEquals(NickRules.Tier.HEX, NickRules.requiredTier("<#FF0000>Red"));
+    }
+
+    @Test
     void reservedWordsAndImpersonation() {
         assertEquals("admin", NickRules.reservedWord("TheAdminGuy", List.of("admin", "owner")));
         assertNull(NickRules.reservedWord("Phoenix", List.of("admin")));

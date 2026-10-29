@@ -1,0 +1,10 @@
+# Phoenix Skyblock titles & tags (/tags, /titles) and the display editor (/display).
+# Titles and tags are defined in tags-titles.yml (or in-game: /tags -> Edit). Reload: /skyblock reload cosmetics
+
+# Title every player gets on their first join (id from tags-titles.yml). Empty = none.
+auto-title: newcomer
+tag-item:
+  # Most tag items one /tags item command can create.
+  # Allowed: 1 to 64
+  max-amount: 16
+config-version: 1

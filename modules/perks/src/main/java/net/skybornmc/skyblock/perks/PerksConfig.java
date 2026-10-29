@@ -18,6 +18,9 @@ public final class PerksConfig extends ModuleConfig {
             min = 0, max = 86400)
     public int nickCooldownSeconds = 60;
 
+    @Setting(path = "nick.marker", desc = "Shown in front of every nickname so players know it isn't a real name (MiniMessage). Empty = none.")
+    public String nickMarker = "~";
+
     @Setting(path = "nick.reserved", desc = "Words a nickname may not contain (case-insensitive). Bypass: skyblock.perks.nick.bypass.")
     public List<String> nickReserved = List.of("admin", "owner", "staff", "moderator", "helper", "console", "server",
             "skyborn", "phoenix", "system", "official", "support");

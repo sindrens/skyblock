@@ -209,3 +209,11 @@ lp group mod permission set skyblock.staff.logs.teleport true
 lp group admin permission set skyblock.staff.logs.category.staff true
 lp group admin permission set skyblock.staff.logs.staff true
 lp group admin permission set skyblock.staff.logs.export true
+# --- Titles & tags, staff hub, config editor (M1.11/M1.12) ---
+# Everyone can open /tags and /titles (plugin default). Owner has * (owner-level config included).
+lp group helper permission set skyblock.staff.menu true
+lp group mod permission set skyblock.staff.cosmetics.give true
+lp group admin permission set skyblock.admin.cosmetics.item true
+lp group admin permission set skyblock.admin.cosmetics.edit true
+lp group admin permission set skyblock.admin.display true
+lp group admin permission set skyblock.admin.config true

@@ -33,6 +33,7 @@ public final class MenusModule implements SkyblockModule {
     static final String PERM_MENU = "skyblock.menu";
     static final String PERM_HELP = "skyblock.help";
     static final String PERM_SETTINGS = "skyblock.settings";
+    static final String PERM_STAFF = "skyblock.staff.menu";
 
     private final Core core;
     private final MenusConfig config = new MenusConfig();
@@ -87,6 +88,7 @@ public final class MenusModule implements SkyblockModule {
         YamlConfiguration hub = YamlFiles.load(core.plugin(), "menu.yml", this::problem);
         if (hub != null) {
             nav.hub = HubLayout.parse(hub, this::problem);
+            nav.staff = HubLayout.parse(hub, "staff-entries", this::problem);
         }
         YamlConfiguration help = YamlFiles.load(core.plugin(), "help.yml", this::problem);
         if (help != null) {
@@ -138,6 +140,16 @@ public final class MenusModule implements SkyblockModule {
                 .description("Open the main menu with every feature").category("Info")
                 .permission(PERM_MENU).playerOnly().aliases("gui")
                 .executes(ctx -> core.menus().open(ctx.player(), new HubMenu(nav))));
+
+        commands.register(CommandSpec.command("staff")
+                .description("Staff hub: display editor, config editor and staff tools").category("Staff")
+                .permission(PERM_STAFF).playerOnly().aliases("staffmenu")
+                .executes(ctx -> core.menus().open(ctx.player(), new StaffMenu(nav))));
+
+        commands.register(CommandSpec.command("admin")
+                .description("In-game config editor (every module's settings, validated and logged)").category("Staff")
+                .permission(net.skybornmc.skyblock.common.config.ConfigEdits.PERM_ADMIN).playerOnly().aliases("config")
+                .executes(ctx -> core.menus().open(ctx.player(), new AdminMenu(nav))));
 
         Arg<String> topic = Args.word("topic", Suggest.bySender(sender -> {
             List<String> ids = new ArrayList<>(nav.help.ids());

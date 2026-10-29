@@ -66,6 +66,8 @@ public final class PerksModule implements SkyblockModule {
     private final PerksConfig config = new PerksConfig();
     private NickService nicks;
     private TrashMenu trash;
+    private volatile boolean active;
+    private boolean rankHookRegistered;
     private final Map<UUID, Long> lastNickChange = new java.util.concurrent.ConcurrentHashMap<>();
 
     public PerksModule(Core core) {
@@ -82,14 +84,27 @@ public final class PerksModule implements SkyblockModule {
     public void enable() throws Exception {
         core.configs().load(config);
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
-        nicks = new NickService(core.plugin(), core.database());
+        nicks = new NickService(core.plugin(), core.database(), this::marker);
+        nicks.onLoaded(this::enforceNick);
+        active = true;
+        if (!rankHookRegistered) {
+            // LuckPerms has no unsubscribe through RankProvider, so register once and check the flag.
+            rankHookRegistered = true;
+            core.ranks().onRankChange(uuid -> {
+                Player player = Bukkit.getPlayer(uuid);
+                if (active && player != null) {
+                    enforceNick(player);
+                }
+            });
+        }
         trash = new TrashMenu(core, config, msg);
         Bukkit.getPluginManager().registerEvents(nicks, core.plugin());
         Bukkit.getPluginManager().registerEvents(trash, core.plugin());
         nicks.loadOnline();
         core.placeholders().registerText(ID, "realname", p -> p == null ? "" : p.getName());
         core.placeholders().register(ID, "nick", p -> p == null ? Component.empty()
-                : nicks.nick(p.getUniqueId()).map(NickService.StoredNick::component).orElse(Component.text(p.getName())));
+                : nicks.nick(p.getUniqueId()).map(n -> Component.empty().append(marker()).append(n.component()))
+                        .orElse(Component.text(p.getName())));
         core.placeholders().registerText(ID, "has_nick", p -> p != null && nicks.nick(p.getUniqueId()).isPresent() ? "true" : "false");
         registerCommands();
     }
@@ -98,10 +113,51 @@ public final class PerksModule implements SkyblockModule {
     public void reload() {
         core.configs().load(config);
         core.messages().load(ID);
+        if (nicks != null) {
+            nicks.reapplyAll();
+        }
+    }
+
+    /** The visible nickname marker (owner decision: {@code ~}), MiniMessage from perks.yml. */
+    private Component marker() {
+        return config.nickMarker == null || config.nickMarker.isEmpty() ? Component.empty() : NickRules.SAFE.deserialize(config.nickMarker);
+    }
+
+    /**
+     * Owner decision: a nickname resets when the player loses the rank/permission that allowed it. Checked after the
+     * nickname loads (join) and whenever LuckPerms recalculates the player. Nicknames staff set with /setnick stay.
+     * Losing only the color permission keeps the letters and drops the colors.
+     */
+    private void enforceNick(Player player) {
+        NickService.StoredNick nick = nicks.nick(player.getUniqueId()).orElse(null);
+        if (nick == null || nick.setByStaff()) {
+            return;
+        }
+        if (!player.hasPermission(PERM_NICK)) {
+            nicks.remove(player.getUniqueId()).thenAccept(removed -> {
+                if (removed) {
+                    core.audit().logPlayer(AuditCategory.AUTH, "nick_reset", Actor.system("perks"), player.getUniqueId(),
+                            player.getName(), null, null, Map.of("nick", nick.formatted(), "reason", "no_permission"));
+                    msg.send(player, "nick.reset-rank");
+                }
+            });
+            return;
+        }
+        if (NickRules.requiredTier(nick.formatted()).ordinal() > tierOf(player).ordinal()) {
+            NickRules.Nick plain = new NickRules.Nick(nick.plain(), nick.plain());
+            nicks.set(player.getUniqueId(), plain, player.getUniqueId().toString()).thenAccept(result -> {
+                if (result == NickService.SetResult.OK) {
+                    core.audit().logPlayer(AuditCategory.AUTH, "nick_reset", Actor.system("perks"), player.getUniqueId(),
+                            player.getName(), null, null, Map.of("nick", nick.formatted(), "reason", "lost_colors"));
+                    msg.send(player, "nick.reset-colors");
+                }
+            });
+        }
     }
 
     @Override
     public void disable() {
+        active = false;
         if (trash != null) {
             trash.closeAll();
             HandlerList.unregisterAll(trash);

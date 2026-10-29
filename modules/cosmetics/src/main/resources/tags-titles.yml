@@ -1,0 +1,110 @@
+# Titles and tags (/tags, /titles). Edit here or in-game: /tags -> Edit (staff).
+# display: MiniMessage with style tags (<c:ember>, <grad:phoenix>...) or & codes.
+# rarity: common, uncommon, rare, epic, legendary, mythic, special.
+# source: how to get it, shown on locked entries.
+# secret: titles only, shown as "???" until earned.
+# season-persistent: kept when a new season starts (owner decision: yes for all).
+#
+# Titles are EARNED: other modules grant them through the achievements hook (Cosmetics#grantTitle).
+# Tags are OWNED: won from crates or bought in the store as a tag item (right-click to redeem), or given by staff.
+# Reload: /skyblock reload cosmetics
+
+titles:
+  newcomer:
+    display: "<c:text>Newcomer"
+    rarity: common
+    source: "Join Phoenix Skyblock for the first time."
+    secret: false
+    season-persistent: true
+  founder:
+    display: "<grad:phoenix>Founder</grad>"
+    rarity: legendary
+    source: "Play during the pre-season week of Season 1."
+    secret: false
+    season-persistent: true
+  island_architect:
+    display: "<c:ember>Architect"
+    rarity: rare
+    source: "Reach island level 50."
+    secret: false
+    season-persistent: true
+  deep_diver:
+    display: "<c:sky_ice>Deep Diver"
+    rarity: rare
+    source: "Unlock the last tier of The Depths."
+    secret: false
+    season-persistent: true
+  tycoon:
+    display: "<cur:money>Tycoon"
+    rarity: epic
+    source: "Have $1B in your balance at once."
+    secret: false
+    season-persistent: true
+  phoenix_reborn:
+    display: "<grad:flame>Reborn</grad>"
+    rarity: epic
+    source: "Prestige a tool for the first time."
+    secret: false
+    season-persistent: true
+  boss_slayer:
+    display: "<c:error>Boss Slayer"
+    rarity: epic
+    source: "Land the final hit on a world boss."
+    secret: false
+    season-persistent: true
+  koth_king:
+    display: "<c:flame>King of the Hill"
+    rarity: legendary
+    source: "Win a KOTH event."
+    secret: false
+    season-persistent: true
+  collector:
+    display: "<rarity:mythic>Collector"
+    rarity: mythic
+    source: "Complete the whole collection log."
+    secret: false
+    season-persistent: true
+  night_owl:
+    display: "<c:sky_blue>Night Owl"
+    rarity: uncommon
+    source: "A secret: play when the server is quietest."
+    secret: true
+    season-persistent: true
+  season_champion:
+    display: "<grad:legendary>Season Champion</grad>"
+    rarity: mythic
+    source: "Finish #1 on the island leaderboard at the end of a season."
+    secret: false
+    season-persistent: true
+
+tags:
+  phoenix:
+    display: "<c:brand>[<grad:phoenix>Phoenix</grad>]</c:brand>"
+    rarity: legendary
+    source: "Legendary crate or the store."
+    season-persistent: true
+  og:
+    display: "<c:flame>[OG]"
+    rarity: epic
+    source: "Store."
+    season-persistent: true
+  ember:
+    display: "<c:ember>[Ember]"
+    rarity: rare
+    source: "Rare crate."
+    season-persistent: true
+  skyborn:
+    display: "<grad:skyborn>[Skyborn]</grad>"
+    rarity: epic
+    source: "Epic crate or the store."
+    season-persistent: true
+  ashes:
+    display: "<c:muted>[Ashes]"
+    rarity: uncommon
+    source: "Uncommon crate."
+    season-persistent: true
+  inferno:
+    display: "<gradient:#C21F2B:#FF8A1F:#FFD23F>[Inferno]</gradient>"
+    rarity: mythic
+    source: "Monthly crate."
+    season-persistent: true
