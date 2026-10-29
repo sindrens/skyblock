@@ -30,6 +30,12 @@
 - M2.1 Players still join at spawn (`essentials.yml` `join.teleport-to-spawn: true`). Join at your island instead once islands exist? (default: keep spawn)
 - M2.1 Staff build bypass on islands is permission-only (`skyblock.island.bypass`, admins) until M2.2 adds the logged `/is bypass` toggle. OK? (default: yes)
 - M2.1 Scoreboard shows "Lv -" for island level until Phase 5 and no island position (`island_rank` empty). OK? (default: yes)
+- Economy (M3.1): `/eco give|take|set|reset` is owner-only (`skyblock.owner.economy`); should admins get it too? (default: owner only, STANDARDS "economy edits = owner")
+- Economy (M3.1): tokens can't be paid with `/pay` (`economy.yml → tradeable.tokens: false`). Should tokens be tradeable? (default: no; money and shards yes, gems no as decided)
+- Economy (M3.1): `/pay` minimums $10 / 1 token / 1 gem / 1 shard and confirm thresholds $1M (decided) / 10,000 tokens / 100 gems / 1,000 shards. OK? (all in `economy.yml`)
+- Economy (M3.1): balances are global and the ledger records the season (0 until the season service exists). At season start, which currencies are wiped (money, tokens, shards) and which kept (gems: see Economy question 2)? The starting $1,000 is given once per season per player. (default: decide with the season system)
+- Economy (M3.1): `/bal <player>` lets every player see others' balances (`skyblock.economy.balance.others`, default true). OK, or staff only? (default: everyone)
+- Economy (M3.1): the staff reason of `/eco` is shown to the player in `/transactions` (as the note, max 64 characters). OK? (default: yes)
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 

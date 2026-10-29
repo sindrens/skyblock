@@ -1,0 +1,149 @@
+# Economy (M3.1): /bal, /baltop, /pay, /transactions, /eco. MiniMessage + style tags (style.yml).
+# Amount placeholders (<amount>, <balance>, <min>) are already colored with their currency (see format.*).
+# Reload: /skyblock reload economy
+
+# How amounts look. <value> = 12,500 below 100k, 1.2M above; <exact> = every digit.
+format:
+  money: "<hover:show_text:'<c:text><exact>'><cur:money><sym:money><value></cur:money></hover>"
+  tokens: "<hover:show_text:'<c:text><exact>'><cur:tokens><sym:tokens> <value></cur:tokens></hover>"
+  gems: "<hover:show_text:'<c:text><exact>'><cur:gems><sym:gems> <value></cur:gems></hover>"
+  shards: "<hover:show_text:'<c:text><exact>'><cur:shards><sym:shards> <value></cur:shards></hover>"
+
+names:
+  money: "<cur:money>Money</cur:money>"
+  tokens: "<cur:tokens>Tokens</cur:tokens>"
+  gems: "<cur:gems>Gems</cur:gems>"
+  shards: "<cur:shards>Shards</cur:shards>"
+
+# Shown by the balance placeholders (scoreboard) for a moment after joining.
+placeholder:
+  loading: "..."
+
+error: "<prefix><c:error><sym:cross> Something went wrong, nothing was changed. <c:text>Try again; staff can see the details in the console."
+unknown-player: "<prefix><c:error><sym:cross> No player named <c:value><player></c:value> has joined before. <c:text>Check the spelling (Bedrock names start with a dot)."
+
+bal:
+  header-self: "<prefix><c:text>Your balance:"
+  header-other: "<prefix><c:text>Balance of <c:value><player></c:value>:"
+  line: " <c:ember><sym:bullet></c:ember> <c:text><currency><c:muted>:</c:muted> <amount>"
+  no-permission-others: "<prefix><c:error><sym:cross> You can only see your own balance. <c:text>Type <c:value>/bal</c:value>."
+
+baltop:
+  loading: "<prefix><c:warning>The top list is being calculated. <c:text>Try again in a few seconds."
+  header: "<prefix><c:text>Richest players <c:muted>(<currency><c:muted>)</c:muted> <c:muted><sym:dot> updated <ago> ago, every <refresh>"
+  line: " <c:muted>#<rank></c:muted> <c:value><player></c:value> <c:muted><sym:dot></c:muted> <amount>"
+  line-you: " <c:flame>#<rank></c:flame> <c:flame><player></c:flame> <c:muted><sym:dot></c:muted> <amount> <c:muted>(you)"
+  not-listed: " <c:muted>You are not in the top <size>. Your balance: </c:muted><amount>"
+  empty: " <c:muted>Nobody has any yet."
+
+pay:
+  sent: "<prefix><c:success><sym:check> You paid <amount> <c:success>to <c:value><player></c:value>. <c:muted>Your balance: </c:muted><balance>"
+  received: "<prefix><c:success><sym:check> You received <amount> <c:success>from <c:value><player></c:value>. <c:muted>Your balance: </c:muted><balance>"
+  confirm: "<prefix><c:warning>Send <amount> <c:warning>to <c:value><player></c:value>? Payments can't be undone. <click:run_command:'/<command> confirm'><hover:show_text:'<c:text>Runs /<command> confirm'><c:action><bold>[CONFIRM]</bold></c:action></hover></click> <c:text>or type <c:value>/<command> confirm</c:value> within <time>."
+  insufficient: "<prefix><c:error><sym:cross> You don't have <amount><c:error>. <c:text>Your balance: </c:text><balance>"
+  overflow: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't hold that much. Nothing was sent."
+  self: "<prefix><c:error><sym:cross> You can't pay yourself."
+  frozen: "<prefix><c:error><sym:cross> You can't pay while you are frozen. <c:text>Wait for staff."
+  not-tradeable: "<prefix><c:error><sym:cross> <currency> <c:error>can't be paid to other players."
+  below-minimum: "<prefix><c:error><sym:cross> The smallest payment is <min><c:error>."
+
+eco:
+  done-give: "<prefix><c:success><sym:check> Gave <amount> <c:success>to <c:value><player></c:value>. <c:muted>New balance: </c:muted><balance> <c:muted>(<reason>)"
+  done-take: "<prefix><c:success><sym:check> Took <amount> <c:success>from <c:value><player></c:value>. <c:muted>New balance: </c:muted><balance> <c:muted>(<reason>)"
+  done-set: "<prefix><c:success><sym:check> Set <c:value><player></c:value><c:success>'s <currency> <c:success>to <balance><c:success>. <c:muted>(<reason>)"
+  done-reset: "<prefix><c:success><sym:check> Reset <c:value><player></c:value><c:success>'s <currency> <c:success>to <balance><c:success>. <c:muted>(<reason>)"
+  alert-give: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>gave <amount> <c:text>to <c:value><player></c:value> <c:muted>(<reason>) <sym:dot> now <balance>"
+  alert-take: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>took <amount> <c:text>from <c:value><player></c:value> <c:muted>(<reason>) <sym:dot> now <balance>"
+  alert-set: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>set <c:value><player></c:value><c:text>'s <currency> <c:text>to <balance> <c:muted>(<reason>)"
+  alert-reset: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>reset <c:value><player></c:value><c:text>'s <currency> <c:text>to <balance> <c:muted>(<reason>)"
+  insufficient: "<prefix><c:error><sym:cross> <c:value><player></c:value> only has <balance><c:error>. <c:text>Use <c:value>/eco set</c:value> to set an exact balance."
+  overflow: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't hold that much. Nothing was changed."
+  notify: "<prefix><c:info>Staff changed your <currency><c:info>. <c:text>New balance: </c:text><balance> <c:muted>(see /transactions)"
+
+# Ledger reasons as players read them (/transactions). Groups ("ah", "bank" ...) are used by the reason filter.
+reasons:
+  pay: "Payment"
+  sell: "Selling"
+  shop: "Shop"
+  shop_buy: "Shop purchase"
+  ah: "Auction house"
+  ah_buy: "Auction purchase"
+  ah_sale: "Auction sale"
+  ah_fee: "Auction fee"
+  trade: "Trade"
+  interest: "Interest"
+  bank: "Bank"
+  bank_deposit: "Bank deposit"
+  bank_withdraw: "Bank withdrawal"
+  note: "Money notes"
+  note_withdraw: "Money note made"
+  note_redeem: "Money note cashed"
+  start_balance: "Starting balance"
+  admin: "Staff"
+  admin_give: "Given by staff"
+  admin_take: "Taken by staff"
+  admin_set: "Set by staff"
+  admin_reset: "Reset by staff"
+
+menu:
+  title: "Transactions"
+  info:
+    - "<c:text>Every change to your balances,"
+    - "<c:text>newest first."
+    - "<c:text>Click the buttons at the bottom to filter."
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>Your balances"
+    lore:
+      - "<c:text>Matching transactions: <c:value><total>"
+      - ""
+    line: "<c:ember><sym:bullet></c:ember> <c:text><currency><c:muted>:</c:muted> <amount>"
+  any: "<c:value>All"
+  any-time: "<c:value>All time"
+  last: "<c:value>Last <time>"
+  filter-currency:
+    name: "<c:value>Currency: <value>"
+    lore:
+      - "<c:text>Show one currency or all."
+      - ""
+      - "<c:action><sym:bullet> Click to change"
+  filter-reason:
+    name: "<c:value>Type: <value>"
+    lore:
+      - "<c:text>Payments, selling, shop, auctions ..."
+      - ""
+      - "<c:action><sym:bullet> Click to change"
+  filter-time:
+    name: "<c:value>Time: <value>"
+    lore:
+      - "<c:text>How far back to look."
+      - ""
+      - "<c:action><sym:bullet> Click to change"
+  refresh:
+    name: "<c:value>Refresh"
+    lore:
+      - "<c:text>Load the newest transactions."
+      - ""
+      - "<c:action><sym:bullet> Click to refresh"
+  empty:
+    name: "<c:muted>Nothing here"
+    lore:
+      - "<c:text>No transactions match these filters."
+  entry:
+    island: "Island bank"
+    server: "Server"
+    in:
+      name: "<c:success>+</c:success><amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
+      lore:
+        - "<c:text>From: <c:value><other>"
+        - "<c:text>Balance after: <balance>"
+    out:
+      name: "<c:error>-</c:error><amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
+      lore:
+        - "<c:text>To: <c:value><other>"
+        - "<c:text>Balance after: <balance>"
+    reference:
+      - "<c:text>Note: <c:value><reference>"
+    footer:
+      - ""
+      - "<c:muted><ago> ago <sym:dot> <date> UTC"
+      - "<c:muted>#<id>"

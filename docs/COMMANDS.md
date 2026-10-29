@@ -22,6 +22,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [chat](commands/chat.md) | Chat, tab list, nametags (`modules/chat`) |
 | [cosmetics](commands/cosmetics.md) | Cosmetics module (`modules/cosmetics`): M1.11 |
 | [depths](commands/depths.md) | Depths commands |
+| [economy](commands/economy.md) | Economy (`modules/economy`) |
 | [essentials](commands/essentials.md) | Essentials (module `essentials`) |
 | [hud](commands/hud.md) | Scoreboard (M1.4, module `hud`) |
 | [islands](commands/islands.md) | Islands module (`modules/islands`): M2.1 |

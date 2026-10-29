@@ -1,0 +1,24 @@
+# Permissions of the economy module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/economy.txt. Commands: docs/commands/economy.md.
+skyblock.economy.balance:
+  description: See your balances (/bal)
+  default: true
+skyblock.economy.balance.others:
+  description: See other players' balances (/bal <player>)
+  default: true
+skyblock.economy.baltop:
+  description: See the richest players (/baltop)
+  default: true
+skyblock.economy.pay:
+  description: Pay other players (/pay)
+  default: true
+skyblock.economy.transactions:
+  description: See your own transaction history (/transactions)
+  default: true
+skyblock.owner.economy:
+  description: Change balances (/eco give|take|set|reset), always logged
+  default: op
+skyblock.staff.economy.alerts:
+  description: Get a chat alert when staff change a balance with /eco
+  default: op

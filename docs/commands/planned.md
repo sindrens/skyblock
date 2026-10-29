@@ -19,7 +19,7 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/is stats`, `/is top` | Stats, leaderboards | `skyblock.island.stats` | ⬜ |
 | `/is outposts`, `/is biomes` | Outposts and biomes | `skyblock.island.outposts` | ⬜ |
 | `/dungeon` | The Depths tier selector | `skyblock.depths` | ⬜ |
-| `/bal`, `/pay`, `/withdraw` | Currencies | `skyblock.economy.*` | ⬜ |
+| `/withdraw` | Money notes (M3.2); `/bal`, `/pay`, `/baltop`, `/transactions`, `/eco` are live: see `economy.md` | `skyblock.economy.*` | ⬜ |
 | `/bank` | Personal + island bank | `skyblock.bank` | ⬜ |
 | `/sell`, `/ah`, `/shop` | Selling and trading | `skyblock.sell`, `skyblock.ah` | ⬜ |
 | `/skills`, `/sets`, `/enchanter` | Progression | `skyblock.skills` … | ⬜ |
