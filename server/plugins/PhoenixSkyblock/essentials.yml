@@ -4,9 +4,9 @@
 spawn:
   # World that /spawn teleports to (its spawn point is set by worlds.yml).
   world: spawn
-  # Seconds to stand still before /spawn teleports (0 = instant).
+  # Seconds to stand still before /spawn teleports (0 = instant, owner decision).
   # Allowed: 0 to 30
-  warmup-seconds: 3
+  warmup-seconds: 0
   # Seconds between two /spawn uses.
   # Allowed: 0 to 3600
   cooldown-seconds: 5
@@ -46,4 +46,42 @@ clear:
 vanish:
   # Give vanished staff night vision.
   night-vision: true
+join:
+  # Teleport every player to spawn when they join (until islands exist).
+  teleport-to-spawn: true
+  # Announce new players to everyone with their join number.
+  first-join-broadcast: true
+  # Show a short 'Welcome back' title to returning players.
+  welcome-back-title: true
+  # Only players with this permission get a join/quit message (ranks + staff).
+  message-permission: skyblock.join.message
+respawn:
+  # Players respawn at spawn after dying.
+  at-spawn: true
+protection:
+  # Worlds with spawn protection (no building, damage, hunger, drops or mob spawning).
+  worlds:
+  - spawn
+  # Blocks players may still use in protected worlds (* = wildcard).
+  interact-allowed:
+  - '*_door'
+  - '*_button'
+  - lever
+  - '*_pressure_plate'
+  - '*_fence_gate'
+  - ender_chest
+  - crafting_table
+  - '*_sign'
+  - '*_hanging_sign'
+  # Falling below this Y in a protected world teleports back to spawn.
+  # Allowed: -2048 to 320
+  void-y: 0
+menu-item:
+  # Give everyone the menu item (Nether Star) in the hotbar.
+  enabled: true
+  # Hotbar slot of the menu item (0 = first, 8 = ninth).
+  # Allowed: 0 to 8
+  slot: 8
+  # Command the menu item runs (without /).
+  command: menu
 config-version: 1

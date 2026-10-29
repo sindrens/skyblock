@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":modules:motd"))
     implementation(project(":modules:moderation"))
     implementation(project(":modules:essentials"))
+    implementation(project(":modules:hud"))
     implementation(project(":modules:social"))
     implementation(project(":modules:perks"))
     // implementation(project(":modules:islands"))

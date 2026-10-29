@@ -226,3 +226,13 @@ permissions:
   skyblock.sudo.exempt:
     description: Can't be targeted by /sudo
     default: op
+  # --- M1.1 join flow + spawn protection ---
+  skyblock.join.message:
+    description: Shows a join/quit message for this player (ranks and staff only)
+    default: false
+  skyblock.build.spawn:
+    description: Can build in protected worlds after turning on /build
+    default: op
+  skyblock.admin.setspawn:
+    description: Set the spawn point (/setspawn)
+    default: op

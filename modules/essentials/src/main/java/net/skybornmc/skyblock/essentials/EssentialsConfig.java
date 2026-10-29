@@ -9,8 +9,8 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "spawn.world", desc = "World that /spawn teleports to (its spawn point is set by worlds.yml).")
     public String spawnWorld = "spawn";
 
-    @Setting(path = "spawn.warmup-seconds", desc = "Seconds to stand still before /spawn teleports (0 = instant).", min = 0, max = 30)
-    public int spawnWarmupSeconds = 3;
+    @Setting(path = "spawn.warmup-seconds", desc = "Seconds to stand still before /spawn teleports (0 = instant, owner decision).", min = 0, max = 30)
+    public int spawnWarmupSeconds = 0;
 
     @Setting(path = "spawn.cooldown-seconds", desc = "Seconds between two /spawn uses.", min = 0, max = 3600)
     public int spawnCooldownSeconds = 5;
@@ -47,6 +47,46 @@ public final class EssentialsConfig extends ModuleConfig {
 
     @Setting(path = "vanish.night-vision", desc = "Give vanished staff night vision.")
     public boolean vanishNightVision = true;
+
+    // ------------------------------------------------------------------ M1.1 join flow
+
+    @Setting(path = "join.teleport-to-spawn", desc = "Teleport every player to spawn when they join (until islands exist).")
+    public boolean joinTeleportToSpawn = true;
+
+    @Setting(path = "join.first-join-broadcast", desc = "Announce new players to everyone with their join number.")
+    public boolean firstJoinBroadcast = true;
+
+    @Setting(path = "join.welcome-back-title", desc = "Show a short 'Welcome back' title to returning players.")
+    public boolean welcomeBackTitle = true;
+
+    @Setting(path = "join.message-permission", desc = "Only players with this permission get a join/quit message (ranks + staff).")
+    public String joinMessagePermission = "skyblock.join.message";
+
+    @Setting(path = "respawn.at-spawn", desc = "Players respawn at spawn after dying.")
+    public boolean respawnAtSpawn = true;
+
+    // ------------------------------------------------------------------ M1.1 spawn protection
+
+    @Setting(path = "protection.worlds", desc = "Worlds with spawn protection (no building, damage, hunger, drops or mob spawning).")
+    public java.util.List<String> protectedWorlds = java.util.List.of("spawn");
+
+    @Setting(path = "protection.interact-allowed", desc = "Blocks players may still use in protected worlds (* = wildcard).")
+    public java.util.List<String> interactAllowed = java.util.List.of("*_door", "*_button", "lever", "*_pressure_plate",
+            "*_fence_gate", "ender_chest", "crafting_table", "*_sign", "*_hanging_sign");
+
+    @Setting(path = "protection.void-y", desc = "Falling below this Y in a protected world teleports back to spawn.", min = -2048, max = 320)
+    public int voidY = 0;
+
+    // ------------------------------------------------------------------ M1.1 menu item
+
+    @Setting(path = "menu-item.enabled", desc = "Give everyone the menu item (Nether Star) in the hotbar.")
+    public boolean menuItemEnabled = true;
+
+    @Setting(path = "menu-item.slot", desc = "Hotbar slot of the menu item (0 = first, 8 = ninth).", min = 0, max = 8)
+    public int menuItemSlot = 8;
+
+    @Setting(path = "menu-item.command", desc = "Command the menu item runs (without /).")
+    public String menuItemCommand = "menu";
 
     @Override
     public String fileName() {

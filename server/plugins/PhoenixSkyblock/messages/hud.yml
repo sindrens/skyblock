@@ -1,0 +1,42 @@
+# HUD texts. MiniMessage + style tags. Reload: /skyblock reload hud
+#
+# Sidebar layouts: scoreboard.<layout>.title + lines (max 15 lines; Bedrock shows 15).
+#   "default" is used everywhere, unless a layout with the world's name exists (e.g. scoreboard.depths) or a
+#   module picks one (The Depths, events).
+# Built-in values: <name> (rank color), <rank>, <money>, <tokens>, <gems>, <island>, <objective>, <online>.
+#   Any placeholder works too: <ph:playtime>, <ph:ping>, <ph:world> ...
+# An empty line "" is a blank separator. Separators use strikethrough spaces (Bedrock shows them as blank lines).
+
+scoreboard:
+  default:
+    title: "<grad:phoenix><bold><sym:tokens> PHOENIX SKYBLOCK <sym:tokens></bold></grad>"
+    lines:
+      - "<c:muted><st>                      </st>"
+      - "<c:brand><sym:bullet></c:brand> <objective>"
+      - ""
+      - "<name>"
+      - "<c:ember>Rank</c:ember>    <rank>"
+      - "<c:ember>Money</c:ember>   <money>"
+      - "<c:ember>Tokens</c:ember>  <tokens>"
+      - "<c:ember>Gems</c:ember>    <gems>"
+      - ""
+      - "<c:ember>Island</c:ember>  <island>"
+      - ""
+      - "<c:ember>Online</c:ember>  <c:value><online>"
+      - "<c:muted><st>                      </st>"
+      - "<c:ember>play.skybornmc.net"
+
+  # Example for later (The Depths): copy 'default' to a section named after the world and change the lines.
+  # depths:
+  #   title: "<grad:phoenix><bold><sym:tokens> THE DEPTHS <sym:tokens></bold></grad>"
+  #   lines: [...]
+
+values:
+  dash: "<c:muted>-"   # "—" would need a Bedrock test first (style.yml bedrock-safe-symbols)
+  money: "<cur:money><sym:money><value>"
+  tokens: "<cur:tokens><sym:tokens> <value>"
+  gems: "<cur:gems><sym:gems> <value>"
+  island: "<c:value>Lv <level></c:value> <c:muted>(#<position>)"
+  island-no-rank: "<c:value>Lv <level>"
+  objective: "<c:text>Next: <c:value><value>"
+  objective-default: "<c:text>Next: <c:value>Explore /menu"

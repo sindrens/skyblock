@@ -129,3 +129,17 @@ Rank perks are permission-gated; donor ranks receive them with the store (Phase 
 | `/sudo <player> <command\|c:message>` | Run a command or chat as a player; never same/higher rank or `skyblock.sudo.exempt`; blocked command list in `perks.yml`; always audited | `skyblock.admin.sudo` (owner only) | ✅ |
 
 Placeholders: `<ph:nick>` (nickname or name), `<ph:realname>`, `<ph:has_nick>`; nicknames also become the player's display name (`<ph:displayname>`).
+
+## Spawn and join flow (M1.1, module `essentials`)
+| Command | What | Permission | Status |
+|---|---|---|---|
+| `/build` | Build mode in protected worlds (spawn); without it builders can't break anything by accident | `skyblock.build.spawn` | ✅ |
+| `/setspawn` | Set the spawn point where you stand (saved to `worlds.yml`) | `skyblock.admin.setspawn` | ✅ |
+
+- `/spawn` is now instant (`essentials.yml → spawn.warmup-seconds: 0`).
+- Join/quit messages only for players with `skyblock.join.message` (staff ranks now, donor ranks later). First-join welcome + broadcast with join number for everyone.
+- Menu item: Nether Star in hotbar slot 9, runs `/menu`; service `MenuItem` (`setEnabled(player, bool)` for `/settings`).
+- Spawn protection in `protection.worlds`: no build/break, whitelisted blocks only, no damage/hunger/drops/natural mobs/explosions, void → spawn.
+
+## Scoreboard (M1.4, module `hud`)
+No commands. Layout in `messages/hud.yml`, settings in `hud.yml`. Service `HudService`: `setEnabled(player, bool)` (for `/settings`), `addLayout(owner, layout, predicate)` (Depths/events), `scoreboard(player)` (nametag teams for M1.5).

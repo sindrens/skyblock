@@ -159,3 +159,53 @@ invsee:
   logged: "<prefix><c:muted>Logged <count> change(s) to <player>'s items."
   target-left: "<prefix><c:muted><player> left, the view was closed."
   self: "<prefix><c:error><sym:cross> That's your own inventory."
+
+# --- M1.1 join flow ---
+join:
+  # Join/quit lines are only shown for players with the join-message permission (ranks + staff).
+  message: "<c:muted>[</c:muted><c:success>+</c:success><c:muted>]</c:muted> <player> <c:text>joined the server."
+  quit: "<c:muted>[</c:muted><c:error>-</c:error><c:muted>]</c:muted> <player> <c:text>left the server."
+  first-broadcast: "<c:ember><sym:tokens></c:ember> <c:text>Welcome <c:value><player></c:value> to <grad:phoenix><bold>Phoenix Skyblock</bold></grad><c:text>! <c:muted>(#<number>)"
+  first-title:
+    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    subtitle: "<c:text>Welcome, <c:value><player></c:value>"
+    fade-in: 10
+    stay: 70
+    fade-out: 20
+  welcome-back:
+    title: ""
+    subtitle: "<c:text>Welcome back, <c:value><player></c:value>"
+    fade-in: 5
+    stay: 40
+    fade-out: 10
+  first-welcome:
+    - ""
+    - "  <grad:phoenix><bold>Welcome to Phoenix Skyblock!</bold></grad>"
+    - "  <c:text>Rise from the ashes and build your island in the sky."
+    - ""
+    - "  <c:ember><sym:bullet></c:ember> <click:run_command:'/menu'><hover:show_text:'<c:text>Open the main menu'><c:action>/menu</c:action></hover></click> <c:text>everything in one place <c:muted>(or the Nether Star)"
+    - "  <c:ember><sym:bullet></c:ember> <click:run_command:'/help'><hover:show_text:'<c:text>Open the help'><c:action>/help</c:action></hover></click> <c:text>how everything works"
+    - "  <c:ember><sym:bullet></c:ember> <click:run_command:'/discord'><hover:show_text:'<c:text>Join our Discord'><c:action>/discord</c:action></hover></click> <c:text>news and support"
+    - ""
+
+menu-item:
+  name: "<grad:phoenix><bold>Menu</bold></grad> <c:muted><sym:dot> Right-click"
+  lore:
+    - "<c:text>Everything on the server:"
+    - "<c:text>island, Depths, shop, settings and more."
+    - ""
+    - "<c:action><sym:bullet> Right-click to open"
+  coming-soon: "<prefix><c:text>The main menu is coming soon."
+
+build:
+  on: "<prefix><c:warning>Build mode <c:success>on</c:success><c:warning>: you can change protected worlds. <c:muted>/build to turn it off."
+  off: "<prefix><c:text>Build mode <c:error>off</c:error>."
+  hint: "<c:muted>Protected area <sym:dot> use </c:muted><c:value>/build</c:value><c:muted> to edit</c:muted>"
+
+setspawn:
+  done: "<prefix><c:success><sym:check> <c:text>Spawn of <c:value><world></c:value> set to <c:value><position></c:value> and saved to worlds.yml."
+  live-only: "<prefix><c:warning>Spawn of <c:value><world></c:value> set to <c:value><position></c:value>, but this world isn't in worlds.yml, so it resets on restart."
+
+protection:
+  no-drop: "<c:muted>You can't drop items here.</c:muted>"
+  void: "<c:text>Caught you! Back to spawn.</c:text>"

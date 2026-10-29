@@ -46,6 +46,9 @@ final class Perms {
     static final String MORE = "skyblock.staff.more";
     static final String NOTIFY = "skyblock.staff.notify";
 
+    static final String BUILD_SPAWN = "skyblock.build.spawn";
+    static final String SETSPAWN = "skyblock.admin.setspawn";
+
     private Perms() {
     }
 
