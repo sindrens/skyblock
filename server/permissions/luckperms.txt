@@ -144,3 +144,11 @@ lp group helper permission set skyblock.staff.seen.details true
 lp group helper permission set skyblock.staff.unignorable true
 lp group mod permission set skyblock.staff.whois.ip true
 lp group admin permission set skyblock.staff.broadcast true
+# --- Perks module (/craft /ec /hat /nick /trash are rank perks: donor groups get them in Phase 11) ---
+# Staff: realname from helper, repair + nicknames of others from mod. /sudo is owner-only (owner has *).
+lp group helper permission set skyblock.staff.realname true
+lp group mod permission set skyblock.staff.repair true
+lp group mod permission set skyblock.staff.repair.others true
+lp group mod permission set skyblock.staff.nick.others true
+lp group admin permission set skyblock.admin.sudo false
+lp group owner permission set skyblock.admin.sudo true
