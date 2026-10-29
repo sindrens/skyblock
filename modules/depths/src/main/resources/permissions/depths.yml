@@ -17,3 +17,9 @@ skyblock.depths.generate:
 skyblock.depths.tp:
   description: "Use /depths tp (teleport to The Gate, a tier zone or the boss arena, ignoring locks)."
   default: op
+skyblock.depths.dungeon:
+  description: "Use /dungeon (teleport to your unlocked Depths tiers, see what the locked ones need)."
+  default: true
+skyblock.depths.bypass:
+  description: "Ignore Depths tier locks (all gates open, enter any zone, mine anywhere) and skip the /dungeon warmup."
+  default: op

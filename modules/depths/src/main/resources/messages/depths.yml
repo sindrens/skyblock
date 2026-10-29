@@ -46,3 +46,72 @@ zones:
     boss: "<c:ember><sym:sword></c:ember> <c:text>Entering the <c:value><name></c:value>"
     back: "<c:ember><sym:arrow></c:ember> <c:text>Back to <c:value><name></c:value>"
     locked: "<c:error><sym:cross> <skill> <required> needed <c:muted>(<level>/<required>)"
+
+# Tiers (M4.6): locks, gates, unlocks. Placeholders in every tiers.* / dungeon.* text:
+#   <skill> <required> <level> <missing> <name> (zone name) <tier> <wing>
+tiers:
+  wing:
+    mine: "<pillar:mining>Mine"
+    forest: "<pillar:foraging>Forest"
+    combat: "<pillar:combat>Combat"
+  # Action bar when a locked zone blocks you (walking, teleport, pearl, mining).
+  locked: "<c:error><sym:cross> <skill> <required> needed <c:muted>(<level>/<required>) <sym:dot> <wing> Tier <tier>"
+  kicked: "<prefix><c:warning><wing> Tier <tier> <c:value><name></c:value> needs <skill> <required> <c:muted>(you: <level>)</c:muted>. Sent back to The Gate."
+  unlocked: "<prefix><c:success><sym:star> New tier unlocked: <wing> <c:value>Tier <tier></c:value> <c:text><name></c:text>! <click:run_command:'/dungeon'><hover:show_text:'<c:text>Open /dungeon'><c:action>[Teleport]</c:action></hover></click>"
+  first-visit:
+    title: "<c:value><name>"
+    subtitle: "<wing> <c:muted><sym:dot></c:muted> <c:text>Tier <tier>"
+    fade-in: 10
+    stay: 50
+    fade-out: 15
+
+# /dungeon menu (M4.6). Lore lines max ~32 characters (Bedrock).
+dungeon:
+  title: "The Depths"
+  info:
+    - "<c:text>Teleport to any tier you have"
+    - "<c:text>unlocked. Locked tiers show the"
+    - "<c:text>skill level they need."
+  tab:
+    name: "<wing>"
+    lore:
+      - "<c:muted>Wing <sym:dot> <skill> <c:muted>Lv <level>"
+      - ""
+      - "<c:text>Tiers open: <c:value><open></c:value><c:muted>/<total>"
+    next: "<c:text>Next: <c:value>Tier <tier></c:value> <c:muted>at <skill> <c:muted><required>"
+    all-open: "<c:success><sym:check> <c:text>Every tier open"
+    selected: "<c:ember><sym:bullet> <c:text>Showing this wing"
+    click: "<c:action>Click to show"
+  tier:
+    name: "<c:value>Tier <tier> <c:muted><sym:dot></c:muted> <c:text><name>"
+    locked-name: "<c:muted>Tier <tier> <sym:dot> <name>"
+    subtitle: "<c:muted><wing> <c:muted><sym:dot> Tier <tier>"
+    resource: "<c:text>Resource: <c:value><resource>"
+    requirement-met: "<c:text>Needs <skill> <c:value><required></c:value> <c:success><sym:check>"
+    requirement-none: "<c:text>Open for everyone <c:success><sym:check>"
+    requirement-missing: "<c:error><sym:cross> <skill> <required> needed <c:muted><sym:dot> <level>/<required>"
+    progress: "<bar> <c:muted>(<missing> to go)"
+    here: "<c:ember><sym:bullet> <c:text>You are here"
+    teleport: "<c:success><sym:check> Click to teleport"
+    how:
+      - "<c:text>Level up <skill> <c:text>to open it:"
+      - "<c:value>/skills"
+  bar:
+    filled: "<c:flame>●</c:flame>"
+    empty: "<c:muted>●</c:muted>"
+  empty:
+    name: "<c:muted>No tiers yet"
+    lore: ["<c:text>This wing has no zones in", "<c:text>zones.yml yet."]
+  warmup: "<prefix><c:text>Teleporting to <wing> <c:value>Tier <tier></c:value> in <c:value><seconds> s</c:value>. Don't move."
+  countdown: "<c:ember><sym:time></c:ember> <c:text>Teleporting to <c:value><name></c:value> in <c:value><seconds></c:value>..."
+  cancelled: "<prefix><c:error><sym:cross> Teleport cancelled <c:muted>(you moved or took damage)</c:muted>. Use <c:action>/dungeon</c:action> again."
+  arrived: "<c:ember><sym:pickaxe></c:ember> <wing> <c:value>Tier <tier></c:value> <c:muted><sym:dot></c:muted> <c:text><name>"
+  failed: "<prefix><c:error><sym:cross> Could not teleport to <c:value><name></c:value>. Try again in a moment."
+  locked: "<prefix><c:error><sym:cross> <wing> Tier <tier> needs <skill> <required> <c:muted>(you: <level>)</c:muted>. Level up in <c:action>/skills</c:action>."
+
+# Placeholders (scoreboard, tab): <ph:depths_zone>, <ph:depths_tier>
+placeholders:
+  none: "<c:muted>-"
+  zone: "<c:value><name>"
+  hub: "<c:value>The Gate"
+  tier: "<wing> <c:muted><sym:dot></c:muted> <c:value>Tier <tier>"

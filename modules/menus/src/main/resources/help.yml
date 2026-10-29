@@ -23,11 +23,11 @@ categories:
     topics: [island]
   depths:
     icon: iron_pickaxe
-    status: coming-soon
+    status: active
     slot: 13
     name: "<c:flame><bold>The Depths"
     lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and tokens."]
-    topics: []
+    topics: [depths]
   economy:
     icon: emerald
     status: active
@@ -186,6 +186,39 @@ topics:
           - "<c:text>Gray switches belong to features that"
           - "<c:text>aren't open yet. They unlock by"
           - "<c:text>themselves when the feature arrives."
+
+  depths:
+    icon: iron_pickaxe
+    aliases: [dungeon, tiers, tier]
+    name: "<c:flame>The Depths"
+    summary: ["<c:text>Tiered zones to mine, chop and", "<c:text>fight in. Skills open new tiers."]
+    take-me-there: "dungeon"
+    commands: [Depths]
+    pages:
+      - title: "<c:value>The wings"
+        lines:
+          - "<c:text>The Depths has three wings:"
+          - "<pillar:mining>Mine</pillar:mining><c:text>, <pillar:foraging>Forest</pillar:foraging> <c:text>and <pillar:combat>Combat</pillar:combat><c:text>."
+          - "<c:text>Each wing is a row of tiers, and"
+          - "<c:text>every tier is its own zone."
+      - title: "<c:value>Unlocking tiers"
+        lines:
+          - "<c:text>Tier 1 is open for everyone."
+          - "<c:text>Higher tiers need a skill level:"
+          - "<c:text>Mining for the Mine, Foraging for"
+          - "<c:text>the Forest, Combat for Combat."
+      - title: "<c:value>Locked gates"
+        lines:
+          - "<c:text>A locked tier shows bars in its"
+          - "<c:text>gate, only for you. Your action"
+          - "<c:text>bar says what it needs, e.g."
+          - "<c:error>Mining 15 needed (9/15)"
+      - title: "<c:value>Teleporting"
+        lines:
+          - "<c:value>/dungeon</c:value> <c:text>lists every tier. Click an"
+          - "<c:text>open one to teleport there."
+          - "<c:text>Locked ones show your progress."
+          - "<c:text>Stand still for the countdown."
 
   skills:
     icon: experience_bottle

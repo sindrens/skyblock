@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 /** {@code /depths generate [zone|all]} and {@code /depths tp <zone>}. */
 public final class ZoneCommands {
@@ -24,6 +25,9 @@ public final class ZoneCommands {
     private final ZoneGenerator generator;
     private final DepthsConfig config;
     private final ModuleMessages msg;
+    /** Runs before a staff teleport into a zone (M4.6: a pass through that zone's tier lock). */
+    private BiConsumer<Player, String> beforeZoneTeleport = (player, zone) -> {
+    };
 
     public ZoneCommands(ZoneManager zones, ZoneGenerator generator, DepthsConfig config, ModuleMessages msg) {
         this.zones = zones;
@@ -99,6 +103,11 @@ public final class ZoneCommands {
                 Msg.p("blocks", config.generateBlocksPerTick));
     }
 
+    /** {@code /depths tp} ignores tier locks: {@code hook} grants the pass (zone id) right before the teleport. */
+    public void beforeZoneTeleport(BiConsumer<Player, String> hook) {
+        this.beforeZoneTeleport = hook;
+    }
+
     public void teleport(Player player, String id) {
         Optional<Point> point = zones.spawnOf(id);
         Location target = point.map(zones::location).orElse(null);
@@ -107,6 +116,7 @@ public final class ZoneCommands {
             return;
         }
         String name = nameOf(id);
+        zones.zone(id).ifPresent(zone -> beforeZoneTeleport.accept(player, zone.id()));
         player.teleportAsync(target).thenAccept(ok -> msg.send(player, ok ? "zones.tp.done" : "zones.tp.failed",
                 Msg.p("zone", id), Msg.p("name", name)));
     }
