@@ -1,0 +1,29 @@
+# Phoenix Skyblock perks: /craft, /ec, /hat, /nick, /trash (rank perks) and /repair, /sudo, /realname (staff).
+# Edit, then run /skyblock reload perks. Wrong values are reported in the console and the old value stays active.
+
+nick:
+  # Shortest nickname (visible letters, without colors).
+  # Allowed: 2 to 16
+  min-length: 3
+  # Longest nickname (visible letters, without colors). Java names are max 16.
+  # Allowed: 3 to 24
+  max-length: 16
+  # Seconds between nickname changes for players (bypass: skyblock.cooldown.bypass).
+  # Allowed: 0 to 86400
+  cooldown-seconds: 60
+  # Words a nickname may not contain (case-insensitive). Bypass: skyblock.perks.nick.bypass.
+  reserved: [admin, owner, staff, moderator, helper, console, server, skyborn, phoenix, system, official, support]
+hat:
+  # Materials that can't be worn with /hat, e.g. [tnt, lava_bucket].
+  blocked: []
+trash:
+  # Rows of the /trash menu, including the bottom bar.
+  # Allowed: 2 to 6
+  rows: 4
+  # Tell the player in chat when custom items (tools, notes, keys) were destroyed.
+  warn-custom-items: true
+sudo:
+  # Commands /sudo may never run (first word, without /).
+  blocked-commands: [sudo, op, deop, lp, luckperms, perm, perms, permissions, stop, restart, reload, rl, pl, plugins,
+    skyblock, sb, eco, pay, trade, ah, withdraw]
+config-version: 1

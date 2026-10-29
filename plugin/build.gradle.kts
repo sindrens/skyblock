@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":modules:worlds"))
     implementation(project(":modules:motd"))
     implementation(project(":modules:moderation"))
+    implementation(project(":modules:perks"))
     // implementation(project(":modules:islands"))
 }
 

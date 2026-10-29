@@ -25,3 +25,46 @@ permissions:
   skyblock.cooldown.bypass:
     description: Skip command cooldowns
     default: op
+  # --- perks module (rank perks: donor ranks get these in Phase 11; ops/staff for now) ---
+  skyblock.perks.craft:
+    description: Open a crafting table anywhere (/craft)
+    default: op
+  skyblock.perks.enderchest:
+    description: Open your ender chest anywhere (/ec)
+    default: op
+  skyblock.perks.hat:
+    description: Wear the held item as a hat (/hat)
+    default: op
+  skyblock.perks.nick:
+    description: Set your own nickname, letters/numbers only (/nick)
+    default: op
+  skyblock.perks.nick.color:
+    description: Use & color codes in your nickname
+    default: op
+  skyblock.perks.nick.hex:
+    description: Use hex colors and gradients in your nickname
+    default: op
+  skyblock.perks.nick.bypass:
+    description: Ignore the reserved-word list for nicknames
+    default: op
+  skyblock.perks.trash:
+    description: Open the trash can (/trash), donators
+    default: op
+  skyblock.staff.nick.others:
+    description: Set or remove other players' nicknames (/setnick)
+    default: op
+  skyblock.staff.realname:
+    description: See the real name behind a nickname (/realname)
+    default: op
+  skyblock.staff.repair:
+    description: Repair your own vanilla items (/repair)
+    default: op
+  skyblock.staff.repair.others:
+    description: Repair other players' vanilla items (/repair <mode> <player>)
+    default: op
+  skyblock.admin.sudo:
+    description: Run commands or chat as another player (/sudo), owner only, fully logged
+    default: false
+  skyblock.sudo.exempt:
+    description: Can't be targeted by /sudo
+    default: op

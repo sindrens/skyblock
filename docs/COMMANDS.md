@@ -65,3 +65,20 @@ Applied automatically after every update/deploy. Add people at the bottom of the
 
 
 Other permissions: `skyblock.cooldown.bypass` skips command cooldowns. Per-command aliases and cooldowns live in `commands.yml`.
+
+## Perks module (`modules/perks`)
+Rank perks are permission-gated; donor ranks receive them with the store (Phase 11). Until then only ops/staff have them. Settings: `perks.yml`, texts: `messages/perks.yml`.
+
+| Command | Description | Permission | Status |
+|---|---|---|---|
+| `/craft` (`/workbench`, `/wb`) | Crafting table anywhere | `skyblock.perks.craft` | ✅ |
+| `/ec` (`/enderchest`) | Your ender chest anywhere | `skyblock.perks.enderchest` | ✅ |
+| `/hat` | Wear the held item as a hat (safe swap, Curse of Binding respected) | `skyblock.perks.hat` | ✅ |
+| `/nick <nickname\|off>` | Set/remove your nickname: letters, numbers, `_`; 3-16 letters; reserved words and other players' names blocked; unique; cooldown | `skyblock.perks.nick` (+ `.color` for `&` codes, `.hex` for hex/gradients, `.bypass` for reserved words) | ✅ |
+| `/setnick <player> <nickname\|off>` | Set/remove another online player's nickname | `skyblock.staff.nick.others` | ✅ |
+| `/realname <nickname>` (`/whonick`) | Who is behind a nickname (online or offline) | `skyblock.staff.realname` | ✅ |
+| `/trash` (`/disposal`) | Trash menu: items left inside are destroyed on close (logged) | `skyblock.perks.trash` (donators) | ✅ |
+| `/repair [hand\|all] [player]` (`/fix`) | Repair vanilla durability (custom tools have none) | `skyblock.staff.repair` (+ `.others`) | ✅ |
+| `/sudo <player> <command\|c:message>` | Run a command or chat as a player; never same/higher rank or `skyblock.sudo.exempt`; blocked command list in `perks.yml`; always audited | `skyblock.admin.sudo` (owner only) | ✅ |
+
+Placeholders: `<ph:nick>` (nickname or name), `<ph:realname>`, `<ph:has_nick>`; nicknames also become the player's display name (`<ph:displayname>`).

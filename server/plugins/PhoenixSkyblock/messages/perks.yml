@@ -1,0 +1,70 @@
+# Perks messages: /craft, /ec, /hat, /nick, /setnick, /realname, /trash, /repair, /sudo.
+# MiniMessage + style tags (style.yml). Placeholders are written as <name>. Reload: /skyblock reload perks
+
+craft:
+  title: "<c:text>Crafting"
+
+hat:
+  done: "<prefix><c:success><sym:check> <c:text>You're now wearing <c:value><item></c:value>. Looking sharp."
+  empty-hand: "<prefix><c:error><sym:cross> Hold the item you want to wear in your main hand."
+  blocked: "<prefix><c:error><sym:cross> <c:value><item></c:value> can't be worn as a hat."
+  binding: "<prefix><c:error><sym:cross> Your helmet has Curse of Binding and can't be taken off."
+
+nick:
+  set: "<prefix><c:success><sym:check> <c:text>Your nickname is now <nick><c:text>. Remove it with <c:value>/nick off</c:value>."
+  set-other: "<prefix><c:success><sym:check> <c:text>Set <c:value><player></c:value>'s nickname to <nick><c:text>."
+  set-by-staff: "<prefix><c:text>Staff set your nickname to <nick><c:text>."
+  removed: "<prefix><c:success><sym:check> <c:text>Your nickname was removed."
+  removed-other: "<prefix><c:success><sym:check> <c:text>Removed <c:value><player></c:value>'s nickname."
+  removed-by-staff: "<prefix><c:text>Staff removed your nickname."
+  none: "<prefix><c:error><sym:cross> You don't have a nickname."
+  none-other: "<prefix><c:error><sym:cross> <c:value><player></c:value> doesn't have a nickname."
+  cooldown: "<prefix><c:error><sym:cross> You can change your nickname again in <c:value><time></c:value>."
+  too-short: "<prefix><c:error><sym:cross> Nicknames need at least <c:value><min></c:value> letters (colors don't count)."
+  too-long: "<prefix><c:error><sym:cross> Nicknames can have at most <c:value><max></c:value> letters (colors don't count)."
+  too-long-raw: "<prefix><c:error><sym:cross> That nickname has too much formatting. Keep it simpler."
+  invalid-chars: "<prefix><c:error><sym:cross> Nicknames can only use letters, numbers and <c:value>_</c:value>. Magic text isn't allowed."
+  no-format: "<prefix><c:error><sym:cross> Your rank can't use colors in nicknames. <c:text>Use letters, numbers and _ only."
+  no-hex: "<prefix><c:error><sym:cross> Your rank can use <c:value>&</c:value> color codes, but not hex colors or gradients."
+  reserved: "<prefix><c:error><sym:cross> Nicknames can't contain <c:value><word></c:value>."
+  is-player: "<prefix><c:error><sym:cross> That's another player's name. Pick something of your own."
+  taken: "<prefix><c:error><sym:cross> <c:value><nick></c:value> is already someone's nickname."
+  error: "<prefix><c:error><sym:cross> The nickname couldn't be saved right now. Try again in a moment."
+
+realname:
+  found: "<prefix><c:text>Nickname <c:value><nick></c:value> belongs to <c:value><player></c:value> <status><c:text>."
+  none: "<prefix><c:error><sym:cross> Nobody uses the nickname <c:value><nick></c:value>."
+  online: "<c:success>(online)"
+  offline: "<c:muted>(offline)"
+
+trash:
+  title: "Trash"
+  info:
+    name: "<c:brand><bold>Trash</bold>"
+    lore:
+      - "<c:text>Put items you don't need in the"
+      - "<c:text>slots above."
+      - ""
+      - "<c:error>Everything left inside is destroyed"
+      - "<c:error>forever when you close this menu."
+  destroyed: "<prefix><c:text>Destroyed <c:value><amount></c:value> item(s)."
+  destroyed-custom: "<prefix><c:warning>Heads up: <c:value><amount></c:value> custom item(s) were destroyed too."
+
+repair:
+  done: "<prefix><c:success><sym:check> <c:text>Repaired <c:value><amount></c:value> item(s)."
+  done-other: "<prefix><c:success><sym:check> <c:text>Repaired <c:value><amount></c:value> item(s) of <c:value><player></c:value>."
+  done-by-staff: "<prefix><c:text>Staff repaired <c:value><amount></c:value> of your items."
+  nothing-hand: "<prefix><c:error><sym:cross> The item in your hand isn't damaged (custom tools never break)."
+  nothing-all: "<prefix><c:error><sym:cross> Nothing in that inventory needs repairing."
+  console-needs-player: "<prefix><c:error><sym:cross> From the console, name a player: <c:value>/repair all Steve</c:value>"
+  no-permission-others: "<prefix><c:error><sym:cross> You can only repair your own items."
+
+sudo:
+  chat-done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>said: <c:value><line>"
+  command-done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>ran <c:value>/<line>"
+  command-failed: "<prefix><c:error><sym:cross> <c:value>/<line></c:value> doesn't exist or failed for <c:value><player></c:value>."
+  self: "<prefix><c:error><sym:cross> You can't sudo yourself."
+  exempt: "<prefix><c:error><sym:cross> <c:value><player></c:value> is protected from sudo."
+  higher-rank: "<prefix><c:error><sym:cross> You can't sudo <c:value><player></c:value>: same or higher rank."
+  blocked: "<prefix><c:error><sym:cross> <c:value>/<command></c:value> can't be used with sudo."
+  empty: "<prefix><c:error><sym:cross> Add a command or <c:value>c:</c:value> and a chat message."
