@@ -1,0 +1,21 @@
+# The Depths: per-player resource blocks (M4.3). MiniMessage + style tags (style.yml). Placeholders: <name>.
+# Reload: /skyblock reload depths
+
+# Action bar when breaking a non-resource block or placing a block inside a region.
+protected: "<c:error><sym:cross> You can only mine resource blocks here."
+
+alert:
+  fast-break: "<c:muted>[Depths]</c:muted> <c:value><player></c:value> <c:warning>broke <block> too fast</c:warning> <c:muted>(<actual> ms, needs at least <min> ms of <expected> ms with <tool>) <sym:dot> <count> flags in <seconds> s"
+  no-start: "<c:muted>[Depths]</c:muted> <c:value><player></c:value> <c:warning>broke <block> without starting to mine it</c:warning> <c:muted>(needs <expected> ms with <tool>) <sym:dot> <count> flags in <seconds> s"
+
+debug:
+  header: "<prefix><c:text>Depths debug for <c:value><player></c:value>"
+  region: " <c:ember><sym:bullet></c:ember> <c:text>Region at feet: <c:value><region></c:value> <c:muted>(<world> <min> to <max>, <resources> resource blocks, from <source>)"
+  no-region: " <c:ember><sym:bullet></c:ember> <c:text>Region at feet: <c:muted>none in <world>"
+  target-plain: " <c:ember><sym:bullet></c:ember> <c:text>Looking at <c:value><block></c:value> <c:muted>(not a resource block here)"
+  target-resource: " <c:ember><sym:bullet></c:ember> <c:text>Looking at <c:value><block></c:value> <c:success>resource</c:success> <c:muted>(depleted: <depleted>, respawn <seconds> s)"
+  target-depleted: " <c:ember><sym:bullet></c:ember> <c:text>Looking at <c:value><block></c:value> <c:warning>depleted for this player</c:warning> <c:muted>(shows <depleted>, respawn <seconds> s)"
+  depleted: " <c:ember><sym:bullet></c:ember> <c:text>Depleted for <player>: <c:value><count></c:value> <c:muted><sym:dot> all players: <total> (<players> tracked)"
+  timers: " <c:ember><sym:bullet></c:ember> <c:text>Timers pending: <c:value><timers></c:value> <c:muted><sym:dot> pool <capacity>, wheel <slots> ticks <sym:dot> regions: <regions>"
+  perf: " <c:ember><sym:bullet></c:ember> <c:text>Break handling: avg <c:value><avg> ms</c:value> <c:muted><sym:dot> max <max> ms <sym:dot> <breaks> breaks"
+  flags: " <c:ember><sym:bullet></c:ember> <c:text>Fast-break flags for <player>: <c:value><window></c:value> <c:muted>in window <sym:dot> <total> this session <sym:dot> <all> on the server"

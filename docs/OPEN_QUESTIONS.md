@@ -8,6 +8,11 @@
 - Achievements as their own module with progress tracking? (default: yes, later, F3)
 - Deleted titles/tags: keep in DB hidden (default) or wipe?
 - Discord webhook for punishments now or with the Discord integration? (default: later)
+- Depths (M4.3): impossibly fast breaks are silently ignored (no reward, no message to the player); staff get an alert + audit row at 3 flags in 10 s (`depths.yml → anti-fast-break`). OK, or should the player see a message / get kicked? (default: silent)
+- Depths (M4.3): fast-break audit rows use category `world` (there is no anti-cheat category). Add an `anticheat` audit category? (default: `world`)
+- Depths (M4.3): the Depths visibility choice (everyone / island / none) is kept in memory only and resets to "everyone" on rejoin until the `/settings` toggle is built. Persist it? (default: persist once the toggle exists)
+- Depths (M4.3): inside regions players can't break non-resource blocks or place blocks (`engine.protect-regions: true`). Keep? (default: yes)
+- Depths (M4.3): right after a break the real ore may flash for one tick (50 ms) before the depleted block shows (the server re-sends the real block when a break is cancelled). Acceptable? (default: yes; a packet-level fix would need ProtocolLib/PacketEvents)
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 
