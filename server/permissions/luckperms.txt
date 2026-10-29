@@ -46,6 +46,10 @@ lp group builder permission set minecraft.command.gamemode true
 lp group builder permission set minecraft.command.teleport true
 lp group builder permission set minecraft.command.time true
 lp group builder permission set skyblock.admin.worlds true
+# Axiom (needs the Axiom client mod). axiom.default = everything recommended; plus entities (display entities) and blueprints.
+lp group builder permission set axiom.default true
+lp group builder permission set axiom.entity.* true
+lp group builder permission set axiom.blueprint.* true
 
 # --- Helper: see cheat alerts, staff chat ---
 lp group helper permission set grim.alerts true
