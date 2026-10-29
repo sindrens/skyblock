@@ -1,5 +1,14 @@
 # Open Questions
 
+## Waiting for owner (answer in one sitting)
+- Punishment ladders in `punishments.yml` (default proposal: Hacking 30d → perm; Toxicity warn → 1h → 1d → 7d → perm mute).
+- Public ban/mute announcements for players? (default: on)
+- Helpers may freeze / use staff mode and see join logs (auth)? (default: yes, IPs hidden)
+- Logout while frozen: alert (default) or auto-ban?
+- Achievements as their own module with progress tracking? (default: yes, later, F3)
+- Deleted titles/tags: keep in DB hidden (default) or wipe?
+- Discord webhook for punishments now or with the Discord integration? (default: later)
+
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 
 ## Economy

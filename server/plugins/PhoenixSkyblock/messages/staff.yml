@@ -2,16 +2,16 @@
 
 command-missing: "<prefix><c:error><sym:cross> <c:value>/<command></c:value> isn't available yet."
 
-# --- Staff mode (/staff) ---
+# --- Staff mode (/staffmode) ---
 mode:
-  on: "<prefix><c:success><sym:check> <c:text>Staff mode <c:success>on</c:success>. <c:muted>Your inventory is saved; /staff to leave."
+  on: "<prefix><c:success><sym:check> <c:text>Staff mode <c:success>on</c:success>. <c:muted>Your inventory is saved; /staffmode to leave."
   off: "<prefix><c:text>Staff mode <c:error>off</c:error>. <c:muted>Your inventory is back."
   staff-on: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>entered staff mode."
   staff-off: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>left staff mode."
   save-failed: "<prefix><c:error><sym:cross> Staff mode was cancelled: your inventory couldn't be saved to the database. Nothing was lost."
   recovered: "<prefix><c:warning>Your inventory from staff mode was restored (the server stopped while you were in staff mode)."
   wait: "<prefix><c:error><sym:cross> One moment, your saved staff-mode inventory is still being checked."
-  check-failed: "<prefix><c:error><sym:cross> Couldn't check your saved staff-mode inventory, so /staff is blocked until you rejoin. Tell an admin if this repeats."
+  check-failed: "<prefix><c:error><sym:cross> Couldn't check your saved staff-mode inventory, so /staffmode is blocked until you rejoin. Tell an admin if this repeats."
 
 tool:
   need-target: "<c:error><sym:cross> Look at a player (or right-click one).</c:error>"

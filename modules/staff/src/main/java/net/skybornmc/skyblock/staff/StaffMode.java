@@ -100,9 +100,9 @@ final class StaffMode extends StaffFeature implements Listener {
     }
 
     void register() {
-        core.commands().register(CommandSpec.command("staff")
+        core.commands().register(CommandSpec.command("staffmode")
                 .description("Toggle staff mode").category("Staff")
-                .permission(StaffPerms.MODE).playerOnly().aliases("staffmode", "mod")
+                .permission(StaffPerms.MODE).playerOnly().aliases("sm", "mod")
                 .executes(ctx -> toggle(ctx.player())));
     }
 
