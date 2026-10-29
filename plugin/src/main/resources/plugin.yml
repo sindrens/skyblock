@@ -272,3 +272,51 @@ permissions:
   skyblock.settings:
     description: Change your own settings (/settings)
     default: true
+  skyblock.staff.punish.warn:
+    description: Warn players (/warn)
+    default: op
+  skyblock.staff.punish.kick:
+    description: Kick players (/kick)
+    default: op
+  skyblock.staff.punish.mute:
+    description: Mute players (/mute, /tempmute)
+    default: op
+  skyblock.staff.punish.ban:
+    description: Ban players (/ban, /tempban)
+    default: op
+  skyblock.staff.punish.ipban:
+    description: IP bans (/ipban, -ip flag)
+    default: op
+  skyblock.staff.punish.unmute:
+    description: Unmute players (/unmute)
+    default: op
+  skyblock.staff.punish.unwarn:
+    description: Remove warnings (/unwarn)
+    default: op
+  skyblock.staff.punish.silent:
+    description: Punish silently (-s flag)
+    default: op
+  skyblock.staff.punish.gui:
+    description: Punish with templates (/punish)
+    default: op
+  skyblock.staff.punish.history:
+    description: View punishment history (/history)
+    default: op
+  skyblock.staff.punish.alts:
+    description: View accounts sharing an IP (/alts) and alt alerts
+    default: op
+  skyblock.staff.punish.exempt:
+    description: Can't be punished (except by staff with exempt.bypass)
+    default: false
+  skyblock.staff.punish.exempt.bypass:
+    description: Can punish exempt staff
+    default: op
+  skyblock.staff.punish.max.helper:
+    description: Punishment length tier 'helper' (moderation.yml limits.max-duration)
+    default: false
+  skyblock.staff.punish.max.mod:
+    description: Punishment length tier 'mod' (moderation.yml limits.max-duration)
+    default: false
+  skyblock.staff.punish.max.admin:
+    description: Punishment length tier 'admin' (moderation.yml limits.max-duration)
+    default: op

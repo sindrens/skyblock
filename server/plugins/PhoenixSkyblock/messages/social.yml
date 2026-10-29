@@ -9,6 +9,7 @@ dm:
   received: "<hover:show_text:'<c:text>Received <time>'><c:muted>[</c:muted><click:suggest_command:'/msg <sender> '><hover:show_text:'<c:action>Click to reply to <sender>'><c:value><sender></c:value></hover></click> <c:muted><sym:arrow></c:muted> <c:ember>me</c:ember><c:muted>]</c:muted></hover> <c:parchment><message>"
   self: "<prefix><c:error><sym:cross> You can't message yourself."
   disabled: "<prefix><c:error><sym:cross> <c:value><player></c:value> has private messages turned off."
+  muted: "<prefix><c:error><sym:cross> You are muted, so you can't send private messages."
   too-long: "<prefix><c:error><sym:cross> That message is too long (max <c:value><max></c:value> characters)."
   slow-down: "<prefix><c:error><sym:cross> You're sending messages too fast. Try again in <c:value><time></c:value>."
   no-reply: "<prefix><c:error><sym:cross> Nobody to reply to yet. Use <c:value>/msg <player> <message></c:value>."

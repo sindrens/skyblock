@@ -167,3 +167,21 @@ lp group helper permission set skyblock.chat.format true
 lp group mod permission set skyblock.chat.bypass true
 lp group mod permission set skyblock.chat.links true
 lp group admin permission set skyblock.chat.hex true
+
+# --- Punishments (M1.8). Length limits: moderation.yml limits.max-duration (helper 1d, mod 30d, admin perm) ---
+lp group helper permission set skyblock.staff.punish.warn true
+lp group helper permission set skyblock.staff.punish.kick true
+lp group helper permission set skyblock.staff.punish.mute true
+lp group helper permission set skyblock.staff.punish.gui true
+lp group helper permission set skyblock.staff.punish.history true
+lp group helper permission set skyblock.staff.punish.max.helper true
+lp group mod permission set skyblock.staff.punish.ban true
+lp group mod permission set skyblock.staff.punish.unmute true
+lp group mod permission set skyblock.staff.punish.unwarn true
+lp group mod permission set skyblock.staff.punish.alts true
+lp group mod permission set skyblock.staff.punish.silent true
+lp group mod permission set skyblock.staff.punish.max.mod true
+lp group admin permission set skyblock.staff.punish.ipban true
+lp group admin permission set skyblock.staff.punish.max.admin true
+lp group admin permission set skyblock.staff.punish.exempt true
+lp group admin permission set skyblock.staff.punish.exempt.bypass true

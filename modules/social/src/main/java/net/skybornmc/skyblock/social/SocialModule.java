@@ -383,6 +383,11 @@ public final class SocialModule implements SkyblockModule, Listener {
         if (target.equals(sender)) {
             throw fail("dm.self");
         }
+        // Muted players (moderation module, placeholder "muted") can't send private messages.
+        if (sender instanceof Player self && core.placeholders().has("muted")
+                && core.placeholders().text(self, "muted").map("true"::equalsIgnoreCase).orElse(false)) {
+            throw fail("dm.muted");
+        }
         if (target instanceof Player t && !sender.hasPermission(PERM_UNIGNORABLE)
                 && !setting(t.getUniqueId(), SETTING_PMS, true)) {
             throw fail("dm.disabled", Msg.p("player", t.getName()));

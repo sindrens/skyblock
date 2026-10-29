@@ -1,5 +1,187 @@
-# Moderation messages. Placeholders: <player> = target, <staff> = who ran the command.
-unbanned: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>has been unbanned."
-unbanned-ip: "<prefix><c:success><sym:check> <c:text>IP <c:value><player></c:value> has been unbanned."
-staff-notify: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>unbanned</c:text> <c:value><player></c:value>"
-not-banned: "<prefix><c:error><sym:cross> <c:value><player></c:value> is not banned. <c:text>Check the name (Bedrock players start with a dot)."
+# Moderation (punishments) texts. MiniMessage + style tags. Reload: /skyblock reload moderation
+# Common placeholders: <player> target, <staff> issuer (or "Staff" when announce.show-staff is off), <staff_real> issuer,
+# <reason>, <id>, <type>, <length> (total), <expires> (time left), <date>, <appeal> (link), <target> (for clicks).
+
+words:
+  permanent: "permanent"
+  staff: "Staff"
+  no-reason: "No reason given"
+  silent: "[silent]"
+  ip-wide: "IP-wide"
+  account: "account"
+  removed-by: "Removed by"
+  alt-of: "Alt account of"
+
+types:
+  ban: "<c:error>Ban</c:error>"
+  mute: "<c:warning>Mute</c:warning>"
+  warn: "<c:flame>Warning</c:flame>"
+  kick: "<c:text>Kick</c:text>"
+
+status:
+  active: "Active"
+  expired: "Expired"
+  removed: "Removed"
+  done: "Done"
+
+# Disconnect screens.
+screen:
+  ban:
+    - "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    - ""
+    - "<c:error><bold>You are permanently banned.</bold>"
+    - ""
+    - "<c:text>Reason: <c:value><reason>"
+    - "<c:text>Banned by: <c:value><staff>"
+    - "<c:text>Ban ID: <c:value>#<id>"
+    - ""
+    - "<c:text>Appeal on Discord: <c:sky_ice><appeal>"
+  tempban:
+    - "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    - ""
+    - "<c:error><bold>You are banned.</bold>"
+    - ""
+    - "<c:text>Reason: <c:value><reason>"
+    - "<c:text>Banned by: <c:value><staff>"
+    - "<c:text>Ends in: <c:value><expires>"
+    - "<c:text>Ban ID: <c:value>#<id>"
+    - ""
+    - "<c:text>Appeal on Discord: <c:sky_ice><appeal>"
+  kick:
+    - "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    - ""
+    - "<c:warning><bold>You were kicked.</bold>"
+    - ""
+    - "<c:text>Reason: <c:value><reason>"
+    - ""
+    - "<c:text>You can rejoin. Please read <c:value>/rules</c:value>."
+
+muted:
+  you: "<prefix><c:warning>You have been muted (<c:value><length></c:value>). <c:text>Reason: <c:value><reason>"
+  unmuted: "<prefix><c:success><sym:check> You are no longer muted."
+  blocked: "<prefix><c:error><sym:cross> You are muted<c:text>: <c:value><reason></c:value> <c:muted>(ends: <expires>, #<id>)"
+
+warned:
+  you: "<prefix><c:warning>You have been warned: <c:value><reason></c:value>. <c:text>More warnings lead to mutes or bans."
+  title: "<c:warning><bold>WARNING</bold>"
+  subtitle: "<c:text><reason>"
+
+# Staff notifications (staff with skyblock.staff.notify). Hover = details, click = /history.
+notify:
+  ban: "<c:muted>[Staff]</c:muted> <hover:show_text:'<c:text>ID #<id><newline>Reason: <reason><newline>Length: <length><newline><c:action>Click for history'><click:run_command:'/history <target>'><c:value><staff></c:value> <c:error>banned</c:error> <c:value><player></c:value> <c:text>for <c:value><reason></c:value> <c:muted><silent></c:muted></click></hover>"
+  tempban: "<c:muted>[Staff]</c:muted> <hover:show_text:'<c:text>ID #<id><newline>Reason: <reason><newline>Length: <length><newline><c:action>Click for history'><click:run_command:'/history <target>'><c:value><staff></c:value> <c:error>banned</c:error> <c:value><player></c:value> <c:text>for <c:value><length></c:value>: <c:value><reason></c:value> <c:muted><silent></c:muted></click></hover>"
+  ipban: "<c:muted>[Staff]</c:muted> <hover:show_text:'<c:text>ID #<id><newline>Reason: <reason><newline>IP-wide<newline><c:action>Click for history'><click:run_command:'/history <target>'><c:value><staff></c:value> <c:error>IP-banned</c:error> <c:value><player></c:value> <c:text>for <c:value><reason></c:value> <c:muted><silent></c:muted></click></hover>"
+  mute: "<c:muted>[Staff]</c:muted> <hover:show_text:'<c:text>ID #<id><newline>Reason: <reason><newline><c:action>Click for history'><click:run_command:'/history <target>'><c:value><staff></c:value> <c:warning>muted</c:warning> <c:value><player></c:value> <c:text>for <c:value><reason></c:value> <c:muted><silent></c:muted></click></hover>"
+  tempmute: "<c:muted>[Staff]</c:muted> <hover:show_text:'<c:text>ID #<id><newline>Reason: <reason><newline>Length: <length><newline><c:action>Click for history'><click:run_command:'/history <target>'><c:value><staff></c:value> <c:warning>muted</c:warning> <c:value><player></c:value> <c:text>for <c:value><length></c:value>: <c:value><reason></c:value> <c:muted><silent></c:muted></click></hover>"
+  ipmute: "<c:muted>[Staff]</c:muted> <hover:show_text:'<c:text>ID #<id><newline>Reason: <reason><newline>IP-wide<newline><c:action>Click for history'><click:run_command:'/history <target>'><c:value><staff></c:value> <c:warning>IP-muted</c:warning> <c:value><player></c:value> <c:text>for <c:value><reason></c:value> <c:muted><silent></c:muted></click></hover>"
+  warn: "<c:muted>[Staff]</c:muted> <hover:show_text:'<c:text>ID #<id><newline><c:action>Click for history'><click:run_command:'/history <target>'><c:value><staff></c:value> <c:flame>warned</c:flame> <c:value><player></c:value><c:text>: <c:value><reason></c:value></click></hover>"
+  kick: "<c:muted>[Staff]</c:muted> <hover:show_text:'<c:text>ID #<id><newline><c:action>Click for history'><click:run_command:'/history <target>'><c:value><staff></c:value> <c:text>kicked</c:text> <c:value><player></c:value><c:text>: <c:value><reason></c:value></click></hover>"
+  unban: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:action>Click for history'><c:value><staff></c:value> <c:success>unbanned</c:success> <c:value><player></c:value><c:text>: <reason></hover></click>"
+  unmute: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:action>Click for history'><c:value><staff></c:value> <c:success>unmuted</c:success> <c:value><player></c:value><c:text>: <reason></hover></click>"
+  unwarn: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:action>Click for history'><c:value><staff></c:value> <c:success>removed a warning of</c:success> <c:value><player></c:value><c:text>: <reason></hover></click>"
+
+# Public announcements (not for -s silent punishments; announce.public in moderation.yml).
+public:
+  ban: "<prefix><c:value><player></c:value> <c:text>was banned: <c:value><reason>"
+  mute: "<prefix><c:value><player></c:value> <c:text>was muted: <c:value><reason>"
+
+error:
+  no-silent: "<prefix><c:error><sym:cross> You can't punish silently (-s)."
+  no-ip: "<prefix><c:error><sym:cross> You can't use IP-wide punishments (-ip)."
+  too-long: "<prefix><c:error><sym:cross> That's longer than your rank allows (max <c:value><max></c:value>). <c:text>Ask a higher staff member."
+  self: "<prefix><c:error><sym:cross> You can't punish yourself."
+  exempt: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be punished by you."
+  unknown: "<prefix><c:error><sym:cross> No player named <c:value><player></c:value> has joined before."
+  unknown-template: "<prefix><c:error><sym:cross> Unknown reason <c:value><reason></c:value>. <c:text>Press Tab to see all reasons."
+  failed: "<prefix><c:error><sym:cross> Something went wrong. Staff can see the details in the console."
+  no-known-ip: "<prefix><c:error><sym:cross> No IP address is known for that player yet (they must join once)."
+  not-banned: "<prefix><c:error><sym:cross> <c:value><player></c:value> is not banned."
+  not-muted: "<prefix><c:error><sym:cross> <c:value><player></c:value> is not muted."
+  not-warned: "<prefix><c:error><sym:cross> <c:value><player></c:value> has no active warnings."
+  kick-offline: "<prefix><c:error><sym:cross> <c:value><player></c:value> is offline, so this step (kick) can't be applied now."
+
+history:
+  header: "<prefix><c:value>History of <player></c:value> <c:muted>(<total>)</c:muted> <c:text><bans> bans <sym:dot> <mutes> mutes <sym:dot> <warns> warnings <sym:dot> <kicks> kicks"
+  empty: " <c:success><sym:check> No punishments."
+  line: " <c:ember><sym:bullet></c:ember> <hover:show_text:'<c:text>By <staff_real> on <date><newline>Length: <length><newline><removed>'><c:muted>#<id></c:muted> <type> <c:text><reason> <c:muted>(<status>)</c:muted></hover>"
+  more: " <click:run_command:'/history <target> menu'><hover:show_text:'<c:action>Open the menu'><c:action>... and <more> more. Click to open the menu.</c:action></hover></click>"
+
+alts:
+  header: "<prefix><c:value>Accounts sharing an IP with <player></c:value> <c:muted>(<count>)"
+  none: " <c:success><sym:check> No other accounts found."
+  line: " <c:ember><sym:bullet></c:ember> <click:run_command:'/history <target>'><hover:show_text:'<c:action>Click for history'><c:value><player></c:value></hover></click> <status> <c:muted>(seen <seen> ago)"
+  banned: "<c:error>[banned]</c:error>"
+  muted: "<c:warning>[muted]</c:warning>"
+  clean: ""
+  alert: "<c:muted>[Staff]</c:muted> <c:warning><sym:cross> Alt alert:</c:warning> <click:run_command:'/alts <target>'><hover:show_text:'<c:action>Click to see all alts'><c:value><player></c:value> <c:text>shares an IP with <c:value><count></c:value> punished account(s): <c:value><alts></hover></click>"
+
+menu:
+  summary:
+    name: "<c:value><player>"
+    lore:
+      - "<c:text>Banned: <banned>"
+      - "<c:text>Muted: <muted>"
+      - ""
+      - "<c:text>Bans: <c:value><bans></c:value> <c:muted><sym:dot></c:muted> <c:text>Mutes: <c:value><mutes>"
+      - "<c:text>Warnings: <c:value><warns></c:value> <c:muted><sym:dot></c:muted> <c:text>Kicks: <c:value><kicks>"
+  punish:
+    title: "Punish"
+    info:
+      - "<c:text>Pick a category, then a reason."
+      - "<c:text>The reason's ladder decides the punishment:"
+      - "<c:text>1st offence, 2nd offence, and so on."
+    history-button:
+      name: "<c:value>Punishment history"
+      lore:
+        - "<c:text><total> punishment(s) on record."
+        - ""
+        - "<c:action><sym:bullet> Click to view"
+  category:
+    name: "<c:value><category>"
+    lore:
+      - "<c:text><reasons> reason(s)"
+      - ""
+      - "<c:action><sym:bullet> Click to choose a reason"
+  empty-category:
+    name: "<c:text>No reasons here"
+    lore:
+      - "<c:muted>Add reasons in punishments.yml."
+  reason:
+    name: "<c:value><reason>"
+    lore:
+      - "<c:text>This is offence <c:value>#<offence></c:value>."
+      - "<c:text>Punishment: <c:flame><step>"
+      - ""
+      - "<c:muted>Ladder:"
+    click: "<c:action><sym:bullet> Click to punish"
+    too-long: "<c:error><sym:cross> Your rank can't do this (max <max>)"
+  ladder-current: " <c:flame><sym:bullet> <n>. <step></c:flame>"
+  ladder-step: " <c:muted><n>. <step>"
+  confirm:
+    title: "Punish <player>"
+    details:
+      - "<c:text>Player: <c:value><player>"
+      - "<c:text>Reason: <c:value><reason>"
+      - "<c:text>Offence: <c:value>#<offence>"
+      - "<c:text>Punishment: <c:flame><step>"
+  history:
+    title: "History"
+    info:
+      - "<c:text>Every punishment of this player,"
+      - "<c:text>newest first. Kept forever."
+    empty:
+      name: "<c:success><sym:check> Clean record"
+      lore:
+        - "<c:text>This player was never punished."
+    name: "<type> <c:muted>#<id> (<status>)"
+    entry:
+      - "<c:text>Reason: <c:value><reason>"
+      - "<c:text>By: <c:value><staff>"
+      - "<c:text>Date: <c:value><date>"
+      - "<c:text>Length: <c:value><length></c:value> <c:muted><sym:dot></c:muted> <c:text>Left: <c:value><left>"
+      - "<c:text>Template: <c:value><template>"
+      - "<c:text>Scope: <c:value><scope>"
+    removed:
+      - ""
+      - "<c:success>Removed by <c:value><by></c:value> on <c:value><removed_date>"
+      - "<c:text>Why: <c:value><removed_reason>"

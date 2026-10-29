@@ -1,0 +1,98 @@
+# Punishment templates for /punish <player> (and /punish <player> <reason>).
+# Each reason has an escalation ladder: the 1st offence uses the 1st step, the 2nd offence the 2nd step, and so on
+# (the last step repeats). Offences = earlier punishments with the same reason that were not pardoned.
+# Steps: warn | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>   (times: 30m, 1h, 12h, 1d, 7d, 30d)
+# icon = any item name. Reload: /skyblock reload moderation
+
+categories:
+  cheating:
+    name: "Cheating"
+    icon: DIAMOND_SWORD
+    reasons:
+      hacking:
+        name: "Hacked client"
+        icon: IRON_SWORD
+        ladder: ["ban 30d", "ban perm"]
+      xray:
+        name: "X-ray / ESP"
+        icon: DIAMOND_ORE
+        ladder: ["ban 14d", "ban 60d", "ban perm"]
+      macro:
+        name: "Macros / auto-clicker"
+        icon: STONE_BUTTON
+        ladder: ["warn", "ban 3d", "ban 14d", "ban perm"]
+      alt-abuse:
+        name: "Ban evasion"
+        icon: PLAYER_HEAD
+        ladder: ["ipban perm"]
+
+  chat:
+    name: "Chat"
+    icon: WRITABLE_BOOK
+    reasons:
+      toxicity:
+        name: "Toxicity / harassment"
+        icon: MAGMA_CREAM
+        ladder: ["warn", "mute 1h", "mute 1d", "mute 7d", "mute perm"]
+      spam:
+        name: "Spam / flooding"
+        icon: PAPER
+        ladder: ["warn", "mute 30m", "mute 6h", "mute 3d"]
+      advertising:
+        name: "Advertising"
+        icon: OAK_SIGN
+        ladder: ["mute 1d", "ban 7d", "ban perm"]
+      hate:
+        name: "Hate speech / slurs"
+        icon: BARRIER
+        ladder: ["mute 7d", "ban 30d", "ban perm"]
+      personal-info:
+        name: "Sharing personal info"
+        icon: NAME_TAG
+        ladder: ["mute 1d", "ban 7d", "ban perm"]
+
+  gameplay:
+    name: "Gameplay"
+    icon: GRASS_BLOCK
+    reasons:
+      exploiting:
+        name: "Exploiting bugs / duping"
+        icon: TNT
+        ladder: ["ban 7d", "ban 30d", "ban perm"]
+      scamming:
+        name: "Scamming"
+        icon: EMERALD
+        ladder: ["warn", "ban 3d", "ban 14d", "ban perm"]
+      griefing:
+        name: "Griefing (coop abuse)"
+        icon: FLINT_AND_STEEL
+        ladder: ["warn", "ban 1d", "ban 7d", "ban 30d"]
+      afk-farming:
+        name: "Illegal AFK farming"
+        icon: CLOCK
+        ladder: ["warn", "kick", "ban 1d", "ban 7d"]
+      rmt:
+        name: "Real-money trading"
+        icon: GOLD_INGOT
+        ladder: ["ban 30d", "ban perm"]
+
+  other:
+    name: "Name / build / skin"
+    icon: ARMOR_STAND
+    reasons:
+      inappropriate-name:
+        name: "Inappropriate name or nickname"
+        icon: NAME_TAG
+        ladder: ["kick", "ban 1d", "ban perm"]
+      inappropriate-build:
+        name: "Inappropriate build"
+        icon: BRICKS
+        ladder: ["warn", "ban 1d", "ban 7d"]
+      inappropriate-skin:
+        name: "Inappropriate skin"
+        icon: LEATHER_CHESTPLATE
+        ladder: ["kick", "ban 1d", "ban 7d"]
+      disrespect-staff:
+        name: "Disrespecting staff"
+        icon: IRON_HELMET
+        ladder: ["warn", "mute 1h", "mute 1d", "ban 3d"]
