@@ -95,11 +95,9 @@ final class TabService implements Listener {
 
     void start() {
         running = true;
-        core.ranks().onRankChange(uuid -> {
-            if (running) {
-                dirty.add(uuid);
-            }
-        });
+        // Forced rebuild (not just a fingerprint check): the rank provider notifies right after the change and again
+        // once it settled, so the tab name, sort order and nametag follow within a second.
+        core.ranks().onRankChange(this::markDirty);
         boards.add(Bukkit.getScoreboardManager().getMainScoreboard());
         for (Player p : Bukkit.getOnlinePlayers()) {
             track(p);

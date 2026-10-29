@@ -109,6 +109,28 @@ public interface RankProvider {
         }
     };
 
+    /** A group a player is directly in, with its LuckPerms weight. */
+    record GroupWeight(String group, int weight) {
+    }
+
+    /**
+     * The display rank: the heaviest group the player is directly in (LuckPerms' default
+     * {@code primary-group-calculation: parents-by-weight}); on a tie the first one wins, like LuckPerms. Falls back to
+     * {@code fallback} (LuckPerms' cached primary group), then {@code default}, when the player has no groups.
+     */
+    static String pickPrimary(Iterable<GroupWeight> parents, String fallback) {
+        GroupWeight best = null;
+        for (GroupWeight g : parents) {
+            if (g != null && g.group() != null && (best == null || g.weight() > best.weight())) {
+                best = g;
+            }
+        }
+        if (best != null) {
+            return best.group();
+        }
+        return fallback == null || fallback.isBlank() ? "default" : fallback;
+    }
+
     /**
      * Parses a rank color: {@code #RRGGBB}, a legacy name ({@code gold}) or a legacy code ({@code &6}).
      * Returns null when it can't be parsed.
