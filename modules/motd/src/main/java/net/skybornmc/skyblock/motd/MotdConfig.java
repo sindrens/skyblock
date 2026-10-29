@@ -31,6 +31,15 @@ public final class MotdConfig extends ModuleConfig {
     @Setting(desc = "Center both lines in the server list.")
     public boolean center = true;
 
+    @Setting(path = "countdown.target", desc = "Release date/time for {countdown}, e.g. 2027-06-01T18:00. Empty = messages with {countdown} are skipped.")
+    public String countdownTarget = "";
+
+    @Setting(path = "countdown.zone", desc = "Time zone of countdown.target.")
+    public String countdownZone = "Europe/Oslo";
+
+    @Setting(path = "countdown.finished", desc = "Text shown instead of the countdown once the time has passed.")
+    public String countdownFinished = "NOW";
+
     @Setting(desc = "Shown when hovering over the player count (only the 16 classic colors work there).")
     public List<String> hover = List.of();
 

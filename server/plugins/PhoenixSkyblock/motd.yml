@@ -1,23 +1,23 @@
 # Server list MOTD (the 2 lines under the server name). Hex colors + animated gradients.
 # Text is MiniMessage: https://docs.advntr.dev/minimessage/format.html
 #
-# Line 1 is the fixed brand header (same on every MOTD). Line 2 rotates through the active messages.
-# Animation: Minecraft asks for the MOTD every time the server list refreshes; each refresh shows the next
-# frame, so {phase} gradients "flow" through the text.
+# Style (owner, 2026-10-29): short, general, loud. Brand left, one big headline, a "Join Now" call to action.
+# No gray. Colors:
+#   SkybornMC (network, logo) = frost #E4EBF0, ice #9FC6E8, blue #6CA1D6
+#   Phoenix (gamemode)        = red #C21F2B, bright red #FF3D2E, ember #FF8A1F, flame #FFD23F
+#   white = the important words. Separator lines = <st> on spaces in blue.
 #
-# Color rules (docs/UI_STYLE.md):
-#   SkybornMC (network, from the logo) = frost blue: #E4EBF0 frost, #9FC6E8 ice, #6CA1D6 blue.
-#   Phoenix Skyblock (gamemode)        = phoenix fire: #C21F2B red, #FF3D2E bright red, #FF8A1F ember, #FFD23F flame.
-#   Network info (Discord, versions, Java & Bedrock) uses ice; gameplay hooks use fire.
-#   white = important words, #C9C9C9 = normal text, #7A7A7A = separators.
+# Tokens: {brand} = the brand below, {phase} = animation phase (for gradients), {countdown} = time left until
+# countdown.target ("2d 1h"). Messages with {countdown} are skipped while countdown.target is empty.
+# Animation: every server list refresh shows the next frame, so {phase} gradients "flow".
 
-header: "<bold><gradient:#E4EBF0:#9FC6E8:#E4EBF0:{phase}>SKYBORN</gradient><#6CA1D6>MC</#6CA1D6></bold> <#7A7A7A>»</#7A7A7A> <bold><gradient:#C21F2B:#FF3D2E:#FF8A1F:#FF3D2E:#C21F2B:{phase}>PHOENIX SKYBLOCK</gradient></bold>"
+brand: "<bold><gradient:#E4EBF0:#9FC6E8:#E4EBF0:{phase}>SKYBORN</gradient><#6CA1D6>MC</#6CA1D6></bold>"
 
-# Which messages rotate (ids from the list below), in order.
-active: [coming-soon, rise, features, teams, platforms, discord]
+# Which messages rotate (ids from 'motds' below), in order.
+active: [coming-soon, discord, join, platforms, countdown]
 
 mode: rotate          # rotate = next message every rotate-seconds, random = random each refresh
-rotate-seconds: 6
+rotate-seconds: 5
 
 animation:
   enabled: true
@@ -26,39 +26,52 @@ animation:
 
 center: true
 
-# Shown when hovering over the player count (colors are reduced to the 16 classic colors there).
+countdown:
+  target: ""          # e.g. "2027-06-01T18:00" -> enables the 'countdown' message
+  zone: Europe/Oslo
+  finished: "NOW"
+
+# Shown when hovering over the player count (only the 16 classic colors work there).
 hover:
-  - "<aqua><bold>SkybornMC</bold></aqua> <dark_gray>»</dark_gray> <red><bold>Phoenix Skyblock</bold></red>"
+  - "<aqua><bold>SkybornMC</bold></aqua> <blue>»</blue> <red><bold>Phoenix Skyblock</bold></red>"
   - ""
-  - "<gray>Status: <gold>Season 1 in development"
-  - "<gray>Versions: <white>Java 1.21.5 - 26.3 <gray>+ <white>Bedrock"
-  - "<gray>Discord: <aqua>discord.skybornmc.net"
-  - "<gray>Website: <aqua>skybornmc.net"
+  - "<white>Status: <gold>Season 1 coming soon"
+  - "<white>Versions: <aqua>Java 1.21.5 - 26.3 <white>+ <aqua>Bedrock"
+  - "<white>Discord: <aqua>discord.skybornmc.net"
+  - "<white>Website: <aqua>skybornmc.net"
 
 motds:
 
-  # --- Development (active now) ---
+  # --- Before launch (active now) ---
   coming-soon:
-    line2: "<#FFD23F>✦</#FFD23F> <bold><gradient:#FF8A1F:#FFD23F:#FF8A1F:{phase}>SEASON 1 COMING SOON</gradient></bold> <#FFD23F>✦</#FFD23F>"
-
-  rise:
-    line2: "<gradient:#FF3D2E:#FF8A1F:#FFD23F:{phase}>Rise from the ashes</gradient> <#7A7A7A>·</#7A7A7A> <#C9C9C9>your island in the sky</#C9C9C9>"
-
-  features:
-    line2: "<white>Islands</white> <#FF8A1F>·</#FF8A1F> <white>The Depths</white> <#FF8A1F>·</#FF8A1F> <white>Forge</white> <#FF8A1F>·</#FF8A1F> <white>Pets</white> <#FF8A1F>·</#FF8A1F> <white>KOTH</white>"
-
-  teams:
-    line2: "<#C9C9C9>Solo or team</#C9C9C9> <#7A7A7A>·</#7A7A7A> <white>seasonal leaderboards</white> <#7A7A7A>·</#7A7A7A> <#FFD23F>top prizes</#FFD23F>"
-
-  platforms:
-    line2: "<#9FC6E8>Java</#9FC6E8> <#C9C9C9>&</#C9C9C9> <#9FC6E8>Bedrock</#9FC6E8> <#7A7A7A>·</#7A7A7A> <#C9C9C9>versions</#C9C9C9> <#E4EBF0>1.21.5 - 26.3</#E4EBF0>"
+    line1: "{brand}   <bold><gradient:#C21F2B:#FF3D2E:#FF8A1F:#FF3D2E:#C21F2B:{phase}>SKYBLOCK</gradient> <white>COMING SOON!</white></bold>"
+    line2: "<st><#6CA1D6>       </#6CA1D6></st> <bold><#FFD23F>Join Now</#FFD23F></bold> <white>and rise from the ashes!</white> <st><#6CA1D6>       </#6CA1D6></st>"
 
   discord:
-    line2: "<#C9C9C9>News & sneak peeks</#C9C9C9> <#7A7A7A>»</#7A7A7A> <#9FC6E8>discord.skybornmc.net</#9FC6E8>"
+    line1: "{brand}   <bold><gradient:#FF3D2E:#FF8A1F:#FFD23F:#FF8A1F:#FF3D2E:{phase}>PHOENIX SKYBLOCK</gradient></bold>"
+    line2: "<#9FC6E8>Updates at</#9FC6E8> <white><u>discord.skybornmc.net</u></white><#9FC6E8>!</#9FC6E8>"
 
-  # --- Launch / events (set these in 'active' when the time comes) ---
+  join:
+    line1: "{brand}   <bold><gradient:#9FC6E8:#E4EBF0:#9FC6E8:{phase}>A NEW SKYBLOCK</gradient> <white>IS RISING!</white></bold>"
+    line2: "<bold><#FF3D2E>Join Now</#FF3D2E></bold> <#6CA1D6>|</#6CA1D6> <white>play.skybornmc.net</white>"
+
+  platforms:
+    line1: "{brand}   <bold><#9FC6E8>JAVA</#9FC6E8> <white>&</white> <#9FC6E8>BEDROCK</#9FC6E8></bold>"
+    line2: "<st><#6CA1D6>     </#6CA1D6></st> <#FF8A1F>1.21.5 - 26.3</#FF8A1F> <st><#6CA1D6>     </#6CA1D6></st> <bold><#FFD23F>Join Now!</#FFD23F></bold> <st><#6CA1D6>     </#6CA1D6></st>"
+
+  countdown:
+    line1: "{brand}   <bold><gradient:#C21F2B:#FF3D2E:#FF8A1F:#FF3D2E:#C21F2B:{phase}>SKYBLOCK RELEASE</gradient> <white>IN {countdown}!</white></bold>"
+    line2: "<st><#6CA1D6>     </#6CA1D6></st> <bold><#FFD23F>Join Now</#FFD23F></bold> <white>to be ready on day one!</white> <st><#6CA1D6>     </#6CA1D6></st>"
+
+  # --- Launch / events (put these in 'active' when the time comes) ---
   season-live:
-    line2: "<bold><gradient:#FF3D2E:#FF8A1F:#FFD23F:{phase}>SEASON 1 IS LIVE!</gradient></bold> <#7A7A7A>|</#7A7A7A> <bold><#FFD23F>Join Now</#FFD23F></bold>"
+    line1: "{brand}   <bold><gradient:#FF3D2E:#FF8A1F:#FFD23F:#FF8A1F:#FF3D2E:{phase}>SKYBLOCK</gradient> <white>OUT NOW!</white></bold>"
+    line2: "<bold><#FFD23F>Join Now</#FFD23F></bold> <#6CA1D6>|</#6CA1D6> <white><u>discord.skybornmc.net</u></white>"
+
+  just-released:
+    line1: "{brand}   <bold><gradient:#C21F2B:#FF3D2E:#FF8A1F:#FFD23F:{phase}>SKYBLOCK JUST RELEASED!</gradient></bold>"
+    line2: "<st><#6CA1D6>      </#6CA1D6></st> <bold><#FFD23F>Join Now</#FFD23F></bold> <white>and claim your island!</white> <st><#6CA1D6>      </#6CA1D6></st>"
 
   double-xp:
-    line2: "<bold><gradient:#FF8A1F:#FFD23F:#FF8A1F:{phase}>DOUBLE XP WEEKEND</gradient></bold> <#7A7A7A>|</#7A7A7A> <#C9C9C9>Ends Sunday</#C9C9C9>"
+    line1: "{brand}   <bold><gradient:#FF8A1F:#FFD23F:#FF8A1F:{phase}>DOUBLE XP</gradient> <white>WEEKEND!</white></bold>"
+    line2: "<bold><#FF3D2E>Join Now</#FF3D2E></bold> <#6CA1D6>|</#6CA1D6> <white>ends Sunday</white>"

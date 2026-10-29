@@ -13,6 +13,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.time.DateTimeException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +45,8 @@ public final class MotdModule implements SkyblockModule, Listener {
     private volatile long cycleMillis;
     private volatile int frames;
     private volatile boolean center;
+    private volatile Instant countdownTarget;
+    private volatile String countdownFinished = "NOW";
 
     public MotdModule(JavaPlugin plugin, ConfigManager configs) {
         this.plugin = plugin;
@@ -72,11 +79,19 @@ public final class MotdModule implements SkyblockModule, Listener {
         List<Motd> motds = active;
         if (!motds.isEmpty()) {
             long now = System.currentTimeMillis();
-            Motd motd = random
-                    ? motds.get(ThreadLocalRandom.current().nextInt(motds.size()))
-                    : motds.get((int) ((now / Math.max(1000, rotateMillis)) % motds.size()));
-            double phase = animate ? MotdRenderer.phaseAt(now, cycleMillis, frames) : 0;
-            event.motd(renderer.render(motd.line1(), motd.line2(), phase, center));
+            Instant target = countdownTarget;
+            List<Motd> usable = target == null
+                    ? motds.stream().filter(m -> !m.line1().contains("{countdown}") && !m.line2().contains("{countdown}")).toList()
+                    : motds;
+            if (!usable.isEmpty()) {
+                Motd motd = random
+                        ? usable.get(ThreadLocalRandom.current().nextInt(usable.size()))
+                        : usable.get((int) ((now / Math.max(1000, rotateMillis)) % usable.size()));
+                String countdown = target == null ? "" : countdown(target, Instant.ofEpochMilli(now));
+                double phase = animate ? MotdRenderer.phaseAt(now, cycleMillis, frames) : 0;
+                event.motd(renderer.render(motd.line1().replace("{countdown}", countdown),
+                        motd.line2().replace("{countdown}", countdown), phase, center));
+            }
         }
 
         List<String> hover = hoverLines;
@@ -105,7 +120,7 @@ public final class MotdModule implements SkyblockModule, Listener {
         } catch (Exception e) {
             return;
         }
-        String header = yaml.getString("header", "");
+        String brand = yaml.getString("brand", yaml.getString("header", ""));
         ConfigurationSection motds = yaml.getConfigurationSection("motds");
         List<Motd> chosen = new ArrayList<>();
         for (String id : config.active) {
@@ -114,7 +129,8 @@ public final class MotdModule implements SkyblockModule, Listener {
                 plugin.getLogger().warning("motd.yml → active: MOTD '" + id + "' does not exist under 'motds' (skipped).");
                 continue;
             }
-            chosen.add(new Motd(id, section.getString("line1", header), section.getString("line2", "")));
+            chosen.add(new Motd(id, section.getString("line1", "{brand}").replace("{brand}", brand),
+                    section.getString("line2", "").replace("{brand}", brand)));
         }
 
         LegacyComponentSerializer legacy = LegacyComponentSerializer.legacySection();
@@ -130,9 +146,42 @@ public final class MotdModule implements SkyblockModule, Listener {
         cycleMillis = config.animationCycleSeconds * 1000L;
         frames = config.animationFrames;
         center = config.center;
+        countdownFinished = config.countdownFinished;
+        countdownTarget = parseTarget(config.countdownTarget, config.countdownZone);
         hoverLines = List.copyOf(hover);
         if (!chosen.isEmpty()) {
             active = List.copyOf(chosen);
         }
+    }
+
+    private Instant parseTarget(String target, String zone) {
+        if (target == null || target.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDateTime.parse(target.trim()).atZone(ZoneId.of(zone)).toInstant();
+        } catch (DateTimeException e) {
+            plugin.getLogger().severe("motd.yml → countdown: '" + target + "' / '" + zone
+                    + "' is not a valid date-time (use 2027-06-01T18:00 and a zone like Europe/Oslo). Countdown messages are skipped.");
+            return null;
+        }
+    }
+
+    /** "2d 1h", "5h 12m", "12m 30s", or the finished text. */
+    String countdown(Instant target, Instant now) {
+        Duration left = Duration.between(now, target);
+        if (left.isNegative() || left.isZero()) {
+            return countdownFinished;
+        }
+        long days = left.toDays();
+        long hours = left.toHoursPart();
+        long minutes = left.toMinutesPart();
+        if (days > 0) {
+            return days + "d " + hours + "h";
+        }
+        if (hours > 0) {
+            return hours + "h " + minutes + "m";
+        }
+        return minutes + "m " + left.toSecondsPart() + "s";
     }
 }
