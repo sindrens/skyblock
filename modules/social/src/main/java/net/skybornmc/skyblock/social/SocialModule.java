@@ -18,12 +18,16 @@ import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.placeholder.Placeholder;
 import net.skybornmc.skyblock.common.player.PlayerData;
+import net.skybornmc.skyblock.common.settings.PlayerSettings;
+import net.skybornmc.skyblock.common.settings.SettingCategory;
+import net.skybornmc.skyblock.common.settings.SettingToggle;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -96,6 +100,10 @@ public final class SocialModule implements SkyblockModule, Listener {
     private SocialStore store;
     private Executor main;
     private Scheduler.Task afkTask;
+    private volatile PlayerSettings settings;
+
+    static final String SETTING_PMS = "private-messages";
+    static final String SETTING_AFK_BROADCAST = "afk-broadcast";
 
     public SocialModule(Core core) {
         this.core = core;
@@ -123,6 +131,26 @@ public final class SocialModule implements SkyblockModule, Listener {
             loadIgnores(p.getUniqueId());
         }
         afkTask = core.scheduler().repeat("social:auto-afk", 200L, 200L, this::checkAutoAfk);
+        // The menus module (which publishes PlayerSettings) enables after us; register our toggles one tick later.
+        core.scheduler().later("social:settings", 1L, this::registerSettings);
+    }
+
+    private void registerSettings() {
+        PlayerSettings service = core.services().optional(PlayerSettings.class).orElse(null);
+        if (service == null) {
+            return;
+        }
+        service.register(new SettingToggle(ID, SETTING_PMS, SettingCategory.CHAT, Material.WRITABLE_BOOK, true, null,
+                "navigation", "settings.toggles." + SETTING_PMS, false));
+        service.register(new SettingToggle(ID, SETTING_AFK_BROADCAST, SettingCategory.SOCIAL, Material.RED_BED, true, null,
+                "navigation", "settings.toggles." + SETTING_AFK_BROADCAST, false));
+        settings = service;
+    }
+
+    /** A /settings value, or the default while the settings service is not available. */
+    private boolean setting(UUID player, String id, boolean fallback) {
+        PlayerSettings s = settings;
+        return s == null ? fallback : s.get(player, id);
     }
 
     @Override
@@ -133,6 +161,11 @@ public final class SocialModule implements SkyblockModule, Listener {
 
     @Override
     public void disable() {
+        PlayerSettings s = settings;
+        if (s != null) {
+            s.unregisterAll(ID);
+            settings = null;
+        }
         if (afkTask != null) {
             afkTask.cancel();
         }
@@ -350,6 +383,10 @@ public final class SocialModule implements SkyblockModule, Listener {
         if (target.equals(sender)) {
             throw fail("dm.self");
         }
+        if (target instanceof Player t && !sender.hasPermission(PERM_UNIGNORABLE)
+                && !setting(t.getUniqueId(), SETTING_PMS, true)) {
+            throw fail("dm.disabled", Msg.p("player", t.getName()));
+        }
         if (text.length() > config.dmMaxLength) {
             throw fail("dm.too-long", Msg.number("max", config.dmMaxLength));
         }
@@ -521,7 +558,7 @@ public final class SocialModule implements SkyblockModule, Listener {
     private void announceAfk(Player player, boolean nowAfk) {
         if (config.afkBroadcast) {
             for (Player p : Bukkit.getOnlinePlayers()) {
-                if (!hiddenFrom(player, p)) {
+                if (!hiddenFrom(player, p) && (p.equals(player) || setting(p.getUniqueId(), SETTING_AFK_BROADCAST, true))) {
                     msg.send(p, nowAfk ? "afk.now-afk" : "afk.back", Msg.p("player", player.getName()));
                 }
             }

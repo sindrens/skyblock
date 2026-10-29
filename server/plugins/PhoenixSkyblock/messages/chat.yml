@@ -16,6 +16,9 @@ hover:
   - "<c:action><sym:bullet> Click to message"
 hover-nick: "<c:text>Real name: <c:value><real_name>"
 
+# Shown before chat lines for players who turned on "Chat timestamps" in /settings.
+timestamp: "<c:muted>[<time>]</c:muted> "
+
 # A viewer's own name in someone else's message.
 mention: "<c:flame><bold>@<name></bold></c:flame>"
 
