@@ -15,6 +15,10 @@ allprojects {
         // PaperMC's repo also proxies Maven Central.
         maven("https://repo.papermc.io/repository/maven-public/")
         mavenCentral()
+        // PlaceholderAPI (compileOnly, optional integration).
+        maven("https://repo.extendedclip.com/releases/") {
+            content { includeGroup("me.clip") }
+        }
     }
 }
 
