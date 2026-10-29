@@ -39,7 +39,6 @@ server/plugins/**
 !server/plugins/PhoenixSkyblock/*.yml
 !server/plugins/PhoenixSkyblock/messages/
 !server/plugins/PhoenixSkyblock/messages/*.yml
-!server/plugins/AxiomPaper/config.yml
 *.log
 *.db
 *.sqlite

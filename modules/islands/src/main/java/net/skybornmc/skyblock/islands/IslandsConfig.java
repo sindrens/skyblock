@@ -28,7 +28,7 @@ public final class IslandsConfig extends ModuleConfig {
 
     @Setting(path = "creation.cooldown-hours", desc = "Hours after disbanding before the same player can create a new island.",
             min = 0, max = 720)
-    public int creationCooldownHours = 24;
+    public int creationCooldownHours = 0;   // owner 2026-10-30: no cooldown after disband
 
     @Setting(path = "creation.schematic", desc = "Starter schematic in plugins/PhoenixSkyblock/schematics/ (without .schem). "
             + "Missing file or no FastAsyncWorldEdit = the built-in placeholder islet.")
