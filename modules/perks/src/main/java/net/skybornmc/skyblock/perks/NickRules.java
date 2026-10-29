@@ -134,6 +134,26 @@ public final class NickRules {
         return false;
     }
 
+    private static final Pattern TAG = Pattern.compile("<[^>]*>");
+
+    /**
+     * The lowest tier that may use an already stored (formatted) nickname: no tags = PLAIN; only tags that classic
+     * {@code &} codes produce = COLOR; anything else (hex, gradients, rainbow) = HEX.
+     */
+    public static Tier requiredTier(String formatted) {
+        Matcher m = TAG.matcher(formatted);
+        Tier tier = Tier.PLAIN;
+        while (m.find()) {
+            String tag = m.group();
+            if (LEGACY_TAGS.containsValue(tag)) {
+                tier = Tier.COLOR;
+            } else {
+                return Tier.HEX;
+            }
+        }
+        return tier;
+    }
+
     static String legacyToMini(String raw) {
         StringBuilder out = new StringBuilder();
         Matcher m = LEGACY.matcher(raw);

@@ -30,6 +30,8 @@ nick:
   is-player: "<prefix><c:error><sym:cross> That's another player's name. Pick something of your own."
   taken: "<prefix><c:error><sym:cross> <c:value><nick></c:value> is already someone's nickname."
   error: "<prefix><c:error><sym:cross> The nickname couldn't be saved right now. Try again in a moment."
+  reset-rank: "<prefix><c:warning>Your nickname was removed because your rank no longer includes nicknames."
+  reset-colors: "<prefix><c:warning>Your nickname lost its colors because your rank no longer includes them."
 
 realname:
   found: "<prefix><c:text>Nickname <c:value><nick></c:value> belongs to <c:value><player></c:value> <status><c:text>."

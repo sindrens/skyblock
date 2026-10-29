@@ -11,6 +11,8 @@ nick:
   # Seconds between nickname changes for players (bypass: skyblock.cooldown.bypass).
   # Allowed: 0 to 86400
   cooldown-seconds: 60
+  # Shown in front of every nickname so players know it isn't a real name (MiniMessage). Empty = none.
+  marker: "~"
   # Words a nickname may not contain (case-insensitive). Bypass: skyblock.perks.nick.bypass.
   reserved: [admin, owner, staff, moderator, helper, console, server, skyborn, phoenix, system, official, support]
 hat:

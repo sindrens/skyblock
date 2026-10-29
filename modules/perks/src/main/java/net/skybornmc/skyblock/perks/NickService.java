@@ -29,10 +29,15 @@ import java.util.logging.Level;
  */
 public final class NickService implements Listener {
 
-    /** A stored nickname. */
-    public record StoredNick(UUID uuid, String formatted, String plain) {
+    /** A stored nickname. {@code setBy} uuid string of who set it (the player themself, or staff via /setnick), may be null */
+    public record StoredNick(UUID uuid, String formatted, String plain, String setBy) {
         public Component component() {
             return NickRules.SAFE.deserialize(formatted);
+        }
+
+        /** True if staff set it for this player (then rank checks don't reset it). */
+        public boolean setByStaff() {
+            return setBy != null && !setBy.equals(uuid.toString());
         }
     }
 
@@ -42,10 +47,29 @@ public final class NickService implements Listener {
     private final Plugin plugin;
     private final Database db;
     private final Map<UUID, StoredNick> online = new ConcurrentHashMap<>();
+    private final java.util.function.Supplier<Component> marker;
+    private volatile java.util.function.Consumer<Player> onLoaded = p -> { };
 
-    public NickService(Plugin plugin, Database db) {
+    /** @param marker shown in front of every nickname (owner decision: {@code ~}), re-read on every apply */
+    public NickService(Plugin plugin, Database db, java.util.function.Supplier<Component> marker) {
         this.plugin = plugin;
         this.db = db;
+        this.marker = marker;
+    }
+
+    /** Called on the main thread after a player's nickname was loaded (rank checks). */
+    public void onLoaded(java.util.function.Consumer<Player> callback) {
+        this.onLoaded = callback;
+    }
+
+    /** Re-applies every online nickname (marker changed on reload). */
+    public void reapplyAll() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            StoredNick nick = online.get(player.getUniqueId());
+            if (nick != null) {
+                apply(player, nick);
+            }
+        }
     }
 
     /** Loads nicknames of players already online (module enable / reload). */
@@ -77,13 +101,17 @@ public final class NickService implements Listener {
 
     private void load(Player player) {
         UUID uuid = player.getUniqueId();
-        db.async(c -> Sql.queryOne(c, "SELECT nick, nick_plain FROM perks_nicknames WHERE uuid = ?",
-                        rs -> new StoredNick(uuid, rs.getString("nick"), rs.getString("nick_plain")), Sql.toBytes(uuid)))
+        db.async(c -> Sql.queryOne(c, "SELECT nick, nick_plain, set_by FROM perks_nicknames WHERE uuid = ?",
+                        rs -> new StoredNick(uuid, rs.getString("nick"), rs.getString("nick_plain"), rs.getString("set_by")),
+                        Sql.toBytes(uuid)))
                 .thenAcceptAsync(found -> {
                     if (!player.isOnline()) {
                         return;
                     }
                     found.ifPresentOrElse(nick -> apply(player, nick), () -> online.remove(uuid));
+                    if (found.isPresent()) {
+                        onLoaded.accept(player);
+                    }
                 }, new MainThread(plugin))
                 .exceptionally(error -> {
                     plugin.getLogger().log(Level.WARNING, "Could not load the nickname of " + player.getName(), Database.cause(error));
@@ -93,7 +121,7 @@ public final class NickService implements Listener {
 
     private void apply(Player player, StoredNick nick) {
         online.put(player.getUniqueId(), nick);
-        player.displayName(nick.component());
+        player.displayName(Component.empty().append(marker.get()).append(nick.component()));
     }
 
     /** The nickname of an online player, if any. */
@@ -133,7 +161,7 @@ public final class NickService implements Listener {
         }).thenApplyAsync(result -> {
             Player player = Bukkit.getPlayer(target);
             if (result == SetResult.OK && player != null) {
-                apply(player, new StoredNick(target, nick.formatted(), nick.plain()));
+                apply(player, new StoredNick(target, nick.formatted(), nick.plain(), setBy));
             }
             return result;
         }, new MainThread(plugin));
