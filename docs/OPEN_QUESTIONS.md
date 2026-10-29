@@ -70,6 +70,14 @@
 - Auction (M3.6): staff remove listings from the `/ah` menu (`skyblock.staff.auction.remove`, mods+, reasons in `auction.yml → staff.remove-reasons`); no staff command. Add `/ah admin` (e.g. view a player's listings/collection bin)? (default: no command until approved)
 - Auction (M3.6): staff alert for sales far above an item's 7-day median or between linked accounts (balance sheet R4) is left to the M3.8 anomaly alerts. OK? (default: M3.8)
 - Auction (M3.6): money only for now; listings in shards ("filters (currency later)") later? (default: money only)
+- Money notes (M3.2): money notes stay NOT listable on the auction house (`auction.yml → items.allow-money-notes: false`). Allow them? (default: not listable)
+- Money notes (M3.2): `/eco note` sits under `/eco`, so it is owner-only (`skyblock.owner.economy`) like `/eco give`, although the plan says "staff". Give admins (or moderators) a separate node for it? (default: owner only, it creates money)
+- Money notes (M3.2): limits $100 minimum / $1T maximum per note, 10 s between `/withdraw`, no fee (balance sheet §9.4). OK? (all in `economy.yml → notes`)
+- Money notes (M3.2): new accounts (< 2 h played, `notes.new-account-minutes: 120`) can't `/withdraw`, the same as the balance sheet's "new accounts can't /pay" (a note is a way to pay). Cashing a note is allowed for everyone. OK? (default: yes; note `/pay` itself does not have this rule yet)
+- Money notes (M3.2): notes are money only (`notes.currencies: [money]`). Also shard notes? (default: money only)
+- Money notes (M3.2): a note whose id is not in the database (e.g. spawned with a generic item give) is confiscated like a copy, with the same staff alert and a `note_dupe` audit row (`why: unknown`). OK? (default: yes)
+- Money notes (M3.2): if the server crashes in the instant between taking the money and handing out the note, the note row stays active without an item; staff can see it in `/logs` (`note_withdraw`) and re-issue it with `/eco note`. Automatic recovery (e.g. a "pending" state re-delivered on join)? (default: manual, very rare)
+- Money notes (M3.2): notes can't be crafted with, sold to villagers or used in a cartography table (they are paper). OK? (default: yes)
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 

@@ -47,6 +47,7 @@ import java.util.concurrent.Executor;
 /**
  * Economy core (M3.1): currencies and accounts, the atomic transaction ledger, {@link EconomyService} for other
  * modules, placeholders for the HUD, and {@code /bal}, {@code /baltop}, {@code /pay}, {@code /transactions}, {@code /eco}.
+ * Money notes (M3.2): {@code /withdraw}, {@code /eco note} and the redeemable note item ({@link MoneyNotes}).
  * Settings: {@code economy.yml}; texts: {@code messages/economy.yml}; data: {@code db/economy}.
  */
 public final class EconomyModule implements SkyblockModule, Listener {
@@ -61,6 +62,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
     static final String PERM_ECO = "skyblock.owner.economy";
     static final String PERM_ALERTS = "skyblock.staff.economy.alerts";
 
+    /** Tab hints for the reason of {@code /eco note}. */
+    private static final List<String> NOTE_REASONS = List.of("Event prize", "Compensation for a bug", "Giveaway", "Refund",
+            "Testing");
+
     private static final List<String> STAFF_REASONS = List.of("Compensation for a bug", "Event prize", "Refund", "Dupe removal",
             "Testing");
 
@@ -68,6 +73,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     final ModuleMessages msg;
     final EconomyConfig config = new EconomyConfig();
     private EconomyServiceImpl service;
+    private MoneyNotes notes;
     private Baltop baltop;
     private Executor main;
     private Scheduler.Task baltopTask;
@@ -94,6 +100,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 currency -> core.style().symbol(currency.key()), () -> 0, core.plugin().getLogger());
         baltop = new Baltop(store::top, System::currentTimeMillis);
         core.services().register(ID, EconomyService.class, service);
+        notes = new MoneyNotes(this, new NoteService(core.database(), service, System::currentTimeMillis, core.plugin().getLogger()));
+        notes.enable();
         registerPlaceholders();
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
@@ -116,11 +124,18 @@ public final class EconomyModule implements SkyblockModule, Listener {
         if (baltopTask != null) {
             baltopTask.cancel();
         }
+        if (notes != null) {
+            notes.disable();
+        }
         HandlerList.unregisterAll(this);
     }
 
     EconomyServiceImpl service() {
         return service;
+    }
+
+    Executor mainThread() {
+        return main;
     }
 
     // ================================================================== players
@@ -216,13 +231,13 @@ public final class EconomyModule implements SkyblockModule, Listener {
         return core.players().offline(name).thenApply(s -> s.map(snap -> new Found(snap.uuid(), snap.name())));
     }
 
-    private boolean frozen(Player player) {
+    boolean frozen(Player player) {
         return core.placeholders().has("frozen")
                 && core.placeholders().text(player, "frozen").map("true"::equalsIgnoreCase).orElse(false);
     }
 
     /** Hops to the main thread and logs failures, so a database problem always gives the player an answer. */
-    private <T> void then(CommandSender sender, CompletableFuture<T> future, java.util.function.Consumer<T> action) {
+    <T> void then(CommandSender sender, CompletableFuture<T> future, java.util.function.Consumer<T> action) {
         future.whenCompleteAsync((value, error) -> {
             if (error != null) {
                 core.plugin().getLogger().warning("Economy command by " + sender.getName() + " failed: " + error);
@@ -290,6 +305,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 .aliases("txs")
                 .executes(ctx -> core.menus().open(ctx.player(), new TransactionsMenu(this, AccountRef.player(ctx.player().getUniqueId())))));
 
+        core.commands().register(notes.withdrawCommand());
+
         registerEco();
     }
 
@@ -321,9 +338,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
         Arg<String> reasonTake = Args.text("reason", reasons);
         Arg<String> reasonSet = Args.text("reason", reasons);
         Arg<String> reasonReset = Args.text("reason", reasons);
+        String[] noteReasons = NOTE_REASONS.toArray(String[]::new);
 
         core.commands().register(CommandSpec.command("eco")
-                .description("Staff: change a player's balance (always logged)")
+                .description("Staff: change a player's balance or give a money note (always logged)")
                 .category("Staff")
                 .permission(PERM_ECO)
                 .aliases("economy")
@@ -354,7 +372,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
                             List<Currency> list = which.equalsIgnoreCase("all") ? List.of(Currency.values())
                                     : List.of(Currency.byKey(which).orElseThrow());
                             eco(ctx.sender(), EcoAction.RESET, ctx.get(player), list, 0, ctx.get(reasonReset));
-                        })));
+                        }))
+                .sub(notes.ecoNoteCommand(noteReasons)));
     }
 
     // ================================================================== /bal

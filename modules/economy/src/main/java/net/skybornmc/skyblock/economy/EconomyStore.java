@@ -82,7 +82,22 @@ final class EconomyStore {
 
     /** Runs a transaction on a database thread. Completes exceptionally only on a database error (after retries). */
     CompletableFuture<TxResult> execute(Transaction tx) {
-        return db.async(c -> withRetry(() -> run(c, tx)));
+        return execute(tx, null);
+    }
+
+    /**
+     * Extra work that must commit or roll back together with a transaction (money notes: insert the note row on
+     * withdraw, lock it and mark it used on redeem). Runs inside the database transaction before the accounts are locked.
+     */
+    @FunctionalInterface
+    interface Guard {
+        /** @return false to abort: everything is rolled back and the result is {@link TxResult.Status#DUPLICATE} */
+        boolean holds(Connection c) throws SQLException;
+    }
+
+    /** {@link #execute(Transaction)} with a {@link Guard} in the same database transaction ({@code guard} may be null). */
+    CompletableFuture<TxResult> execute(Transaction tx, Guard guard) {
+        return db.async(c -> withRetry(() -> run(c, tx, guard)));
     }
 
     /** Result of {@link #set}: the transaction result and the balance before. */
@@ -125,6 +140,10 @@ final class EconomyStore {
     }
 
     TxResult run(Connection c, Transaction tx) throws SQLException {
+        return run(c, tx, null);
+    }
+
+    TxResult run(Connection c, Transaction tx, Guard guard) throws SQLException {
         if (tx.problem() != null) {
             return TxResult.of(TxResult.Status.INVALID);
         }
@@ -144,6 +163,9 @@ final class EconomyStore {
             ensureAccount(c, account, currency);
         }
         return inTransaction(c, () -> {
+            if (guard != null && !guard.holds(c)) {
+                throw new Abort(TxResult.of(TxResult.Status.DUPLICATE));
+            }
             for (AccountRef account : accounts) {
                 lock(c, account, currency);
             }

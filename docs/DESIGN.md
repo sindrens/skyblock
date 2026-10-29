@@ -181,7 +181,7 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 | **Shards** | (see open questions) | The **Black Market** (rotating rare shop) |
 
 - `/pay <player> <amount> [currency]`. Tradeable currencies are configurable per currency.
-- Money can be withdrawn as **physical notes**.
+- Money can be withdrawn as **physical notes** (M3.2, built): `/withdraw <amount>` (money only, no fee, $100 to $1T, 10 s cooldown, not for accounts under 2 h played) gives a unique Money Note; right-click cashes it. Every note is a database row cashed in one transaction, so a copy can never be cashed twice: it is confiscated, staff are alerted and it is audited. Staff: `/eco note`. Details: `docs/commands/economy.md`.
 
 ### 4.2 Selling and dynamic prices
 - `/sell` GUI, sell wand, auto-sell chest, chunk collector.
