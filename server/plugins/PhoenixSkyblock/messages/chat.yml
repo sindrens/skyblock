@@ -1,0 +1,61 @@
+# Chat, tab list and nametag texts. The chat/tab line formats themselves are data in chat.yml (format.*).
+# MiniMessage + style tags. Player text is never parsed. Reload: /skyblock reload chat
+
+# Hover card on a name in chat.
+hover:
+  - "<name>"
+  - "<c:muted><st>                              </st></c:muted>"
+  - "<c:text>Rank: <c:value><rank_name>"
+  - "<nick_line>"
+  - "<c:text>Island: <c:value><island>"
+  - "<c:text>Playtime: <c:value><playtime>"
+  - "<c:text>Joined: <c:value><first>"
+  - "<c:text>Discord: <discord>"
+  - "<c:text>Ping: <c:value><ping> ms"
+  - ""
+  - "<c:action><sym:bullet> Click to message"
+hover-nick: "<c:text>Real name: <c:value><real_name>"
+
+# A viewer's own name in someone else's message.
+mention: "<c:flame><bold>@<name></bold></c:flame>"
+
+# [item] / [i] in chat. <item> has the item tooltip on hover.
+item-show: "<c:muted>[</c:muted><item><c:muted> x<amount>]</c:muted>"
+
+blocked:
+  locked: "<prefix><c:error><sym:cross> The chat is locked by staff right now."
+  slow: "<prefix><c:error><sym:cross> Slow mode is on. You can chat again in <c:value><time></c:value>."
+  new-player: "<prefix><c:error><sym:cross> Welcome! You can chat in <c:value><time></c:value>. <c:text>Meanwhile, open <c:value>/menu</c:value> to look around."
+  rate: "<prefix><c:error><sym:cross> You're chatting too fast. Wait a moment."
+  duplicate: "<prefix><c:error><sym:cross> Please don't repeat the same message."
+  link: "<prefix><c:error><sym:cross> Links to other websites are not allowed in chat."
+  ip: "<prefix><c:error><sym:cross> Server addresses are not allowed in chat."
+  phone: "<prefix><c:error><sym:cross> For your safety, phone numbers are not allowed in chat."
+  word: "<prefix><c:error><sym:cross> Your message was blocked by the chat filter."
+
+staff-alert: "<c:muted>[Staff]</c:muted> <c:warning>Filter:</c:warning> <c:value><player></c:value> <c:text>tried to say: <c:parchment><message>"
+
+moderation:
+  cleared: "<prefix><c:text>The chat was cleared by <c:value><staff></c:value>."
+  locked: "<prefix><c:warning>The chat was locked by <c:value><staff></c:value>."
+  unlocked: "<prefix><c:success><sym:check> The chat was unlocked by <c:value><staff></c:value>."
+  slow-on: "<prefix><c:warning>Slow mode: one message every <c:value><seconds>s</c:value> <c:muted>(by <staff>)"
+  slow-off: "<prefix><c:success><sym:check> Slow mode is off <c:muted>(by <staff>)"
+
+staffchat:
+  line: "<c:brand><bold>STAFF</bold></c:brand> <name> <c:muted>»</c:muted> <c:info><message>"
+  toggle-on: "<prefix><c:success><sym:check> Staff chat mode <c:value>on</c:value>. <c:text>Your chat messages now go to staff only. Type <c:value>/sc</c:value> again to leave."
+  toggle-off: "<prefix><c:text>Staff chat mode <c:value>off</c:value>."
+
+tab:
+  header:
+    - ""
+    - "<c:brand><st>            </st></c:brand>  <bold><grad:skyborn>SKYBORN</grad><c:sky_blue>MC</c:sky_blue></bold>  <c:brand><st>            </st></c:brand>"
+    - "<bold><grad:phoenix>Phoenix Skyblock</grad></bold>"
+    - "<c:value><online></c:value> <c:text>online <c:muted><sym:dot></c:muted> <c:text><season>"
+    - ""
+  footer:
+    - ""
+    - "<c:value>/menu</c:value> <c:muted><sym:dot></c:muted> <c:value>/help</c:value> <c:muted><sym:dot></c:muted> <c:value>/discord</c:value> <c:muted><sym:dot></c:muted> <c:value>/store</c:value>"
+    - "<c:sky_ice>play.skybornmc.net</c:sky_ice>"
+  footer-staff: "<c:muted>TPS <c:value><tps></c:value> <sym:dot> <c:value><ping> ms</c:value></c:muted>"

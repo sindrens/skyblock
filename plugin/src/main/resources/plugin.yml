@@ -226,3 +226,30 @@ permissions:
   skyblock.sudo.exempt:
     description: Can't be targeted by /sudo
     default: op
+  skyblock.chat.color:
+    description: Use classic & colors (&0-&9, &a-&f) in chat
+    default: false
+  skyblock.chat.format:
+    description: Use & formats (&l bold, &o italic, &n underline, &m strike) in chat
+    default: false
+  skyblock.chat.hex:
+    description: Use hex colors (&#RRGGBB) in chat
+    default: false
+  skyblock.chat.links:
+    description: Post links and server addresses in chat
+    default: op
+  skyblock.chat.item:
+    description: Show your held item in chat with [item]
+    default: true
+  skyblock.chat.bypass:
+    description: Bypass chat lock, slow mode, rate limit and filters
+    default: op
+  skyblock.staff.chat:
+    description: Staff chat (/sc)
+    default: op
+  skyblock.staff.chat.manage:
+    description: Chat moderation (/chat clear|lock|slow, /clearchat, /mutechat)
+    default: op
+  skyblock.staff.tab:
+    description: See TPS and ping in the tab footer
+    default: op

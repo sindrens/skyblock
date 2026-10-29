@@ -152,3 +152,12 @@ lp group mod permission set skyblock.staff.repair.others true
 lp group mod permission set skyblock.staff.nick.others true
 lp group admin permission set skyblock.admin.sudo false
 lp group owner permission set skyblock.admin.sudo true
+
+# --- Chat module ---
+lp group helper permission set skyblock.staff.chat.manage true
+lp group helper permission set skyblock.staff.tab true
+lp group helper permission set skyblock.chat.color true
+lp group helper permission set skyblock.chat.format true
+lp group mod permission set skyblock.chat.bypass true
+lp group mod permission set skyblock.chat.links true
+lp group admin permission set skyblock.chat.hex true
