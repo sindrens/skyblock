@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":modules:logs"))
     implementation(project(":modules:cosmetics"))
     implementation(project(":modules:depths"))
+    implementation(project(":modules:economy"))
     // implementation(project(":modules:islands"))
 }
 

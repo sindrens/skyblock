@@ -296,6 +296,11 @@ errors:
 # Anything not listed is shown with underscores replaced by spaces.
 actions:
   pay: "paid"
+  admin_give: "gave money to"
+  admin_take: "took money from"
+  admin_set: "set the balance of"
+  admin_reset: "reset the balance of"
+  start_balance: "gave the starting balance to"
   join: "joined"
   quit: "left"
   command: "ran"

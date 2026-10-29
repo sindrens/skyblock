@@ -49,6 +49,8 @@ public final class StaffModule implements SkyblockModule {
         mode = new StaffMode(core, config, msg, store, freeze, reports, services);
 
         freeze.register();
+        // Other modules read this (e.g. /pay refuses frozen players).
+        core.placeholders().registerText(id(), "frozen", p -> p != null && freeze.isFrozen(p) ? "true" : "false");
         reports.register();
         mode.register();
         Arg<String> inspectTarget = Args.offlinePlayer("player");
