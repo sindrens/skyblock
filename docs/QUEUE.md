@@ -10,6 +10,13 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` | — | common/command, plugin, server/permissions, scripts | ✅ |
 | F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | ⬜ |
 
+## UX polish (owner, 2026-10-30) — top priority, starts at the next free slot
+| # | Item | Depends on | Lane | Status |
+|---|---|---|---|---|
+| UX1 | Rank change shows on scoreboard/tab instantly; `/baltop` fast + async (short cache, refresh after big changes); all messages short, direct, normal words, one consistent color scheme and format (UI_STYLE 3-role palette); tag after the name in parentheses-style; cleaner scoreboard + tab with better colors | — | modules/hud, chat, cosmetics, economy (baltop), social, essentials, perks, staff, logs, menus, auction + their messages; style.yml; UI_STYLE §3/§6 | ⬜ |
+| UX2 | Same message cleanup for moderation, depths, islands messages (after P1, M4.6, M2.7 merge) | UX1, P1, M4.6, M2.7 | their messages files | ⬜ |
+| FI | Owner answers `docs/FEATURE_IDEAS.md` (yes/no) → yes-items get queued | owner | docs | ⬜ |
+
 ## Phase P: Punishment system v2 (owner spec `docs/specs/PUNISH_SPEC.md` + `PUNISH_SPEC_NOTES.md`) — one lane (modules/moderation), sequential, priority
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
