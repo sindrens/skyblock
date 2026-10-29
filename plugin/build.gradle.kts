@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":modules:hud"))
     implementation(project(":modules:social"))
     implementation(project(":modules:perks"))
+    implementation(project(":modules:chat"))
     // implementation(project(":modules:islands"))
 }
 

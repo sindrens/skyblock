@@ -159,3 +159,11 @@ lp group builder permission set skyblock.join.message true
 lp group helper permission set skyblock.join.message true
 lp group builder permission set skyblock.build.spawn true
 lp group admin permission set skyblock.build.spawn true
+# --- Chat module ---
+lp group helper permission set skyblock.staff.chat.manage true
+lp group helper permission set skyblock.staff.tab true
+lp group helper permission set skyblock.chat.color true
+lp group helper permission set skyblock.chat.format true
+lp group mod permission set skyblock.chat.bypass true
+lp group mod permission set skyblock.chat.links true
+lp group admin permission set skyblock.chat.hex true
