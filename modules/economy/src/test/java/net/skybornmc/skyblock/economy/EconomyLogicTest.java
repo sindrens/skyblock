@@ -63,7 +63,7 @@ class EconomyLogicTest {
         assertTrue(c.tradeable(Currency.SHARDS));
         assertFalse(c.tradeable(Currency.GEMS));
         assertEquals(1_000_000, c.payConfirmAbove(Currency.MONEY));
-        assertEquals(5, c.baltopRefreshMinutes);
+        assertEquals(30, c.baltopRefreshSeconds);
     }
 
     @Test

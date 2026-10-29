@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -57,6 +58,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
     static final String PERM_BALANCE = "skyblock.economy.balance";
     static final String PERM_BALANCE_OTHERS = "skyblock.economy.balance.others";
     static final String PERM_BALTOP = "skyblock.economy.baltop";
+    /** How often the background task checks whether a /baltop list is older than refresh-seconds (5 s). */
+    private static final long BALTOP_CHECK_TICKS = 100L;
     static final String PERM_PAY = "skyblock.economy.pay";
     static final String PERM_TRANSACTIONS = "skyblock.economy.transactions";
     static final String PERM_ECO = "skyblock.owner.economy";
@@ -109,8 +112,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
             load(p);
         }
         baltop.refreshIfOlder(0, config.baltopSize);
-        baltopTask = core.scheduler().repeat("economy:baltop", 20L * 60, 20L * 60,
-                () -> baltop.refreshIfOlder(config.baltopRefreshMinutes * 60_000L, config.baltopSize));
+        // Checks every 5 s (a timestamp compare); a list is only read again once it is older than refresh-seconds.
+        baltopTask = core.scheduler().repeat("economy:baltop", BALTOP_CHECK_TICKS, BALTOP_CHECK_TICKS,
+                () -> baltop.refreshIfOlder(baltopMaxAge(), config.baltopSize));
     }
 
     @Override
@@ -414,15 +418,44 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     // ================================================================== /baltop
 
+    private long baltopMaxAge() {
+        return config.baltopRefreshSeconds * 1000L;
+    }
+
+    /**
+     * Shows the cached list right away (never waits for the database). An older list starts a background refresh;
+     * only the very first /baltop after a restart waits for it, and then gets the list sent when it is ready.
+     */
     private void baltop(CommandSender sender, Currency currency) {
         Baltop.Snapshot top = baltop.get(currency);
-        if (top == null) {
-            throw fail("baltop.loading");
+        CompletableFuture<Baltop.Snapshot> refresh = baltop.refreshIfOlder(currency, baltopMaxAge(), config.baltopSize);
+        if (top != null) {
+            showBaltop(sender, currency, top);
+            return;
+        }
+        msg.send(sender, "baltop.loading");
+        if (refresh != null) {
+            refresh.thenAcceptAsync(fresh -> {
+                if (fresh != null && (!(sender instanceof Player p) || p.isOnline())) {
+                    showBaltop(sender, currency, fresh);
+                }
+            }, main);
+        }
+    }
+
+    private void showBaltop(CommandSender sender, Currency currency, Baltop.Snapshot cached) {
+        Baltop.Snapshot top = cached;
+        OptionalLong mine = OptionalLong.empty();
+        if (sender instanceof Player p) {
+            mine = service.cached(p.getUniqueId(), currency);
+            if (mine.isPresent()) {
+                top = cached.withLive(p.getUniqueId(), p.getName(), mine.getAsLong(), config.baltopSize);
+            }
         }
         long ago = Math.max(0, System.currentTimeMillis() - top.time());
         msg.send(sender, "baltop.header", Msg.c("currency", currencyName(sender, currency)),
                 Msg.p("ago", Format.duration(Duration.ofMillis(ago))),
-                Msg.p("refresh", Format.duration(Duration.ofMinutes(config.baltopRefreshMinutes))));
+                Msg.p("refresh", Format.duration(Duration.ofSeconds(config.baltopRefreshSeconds))));
         if (top.entries().isEmpty()) {
             msg.send(sender, "baltop.empty");
             return;
@@ -435,7 +468,6 @@ public final class EconomyModule implements SkyblockModule, Listener {
                     amountTag("amount", sender, currency, e.balance()), Msg.p("exact", Format.number(e.balance())));
         }
         if (sender instanceof Player p && top.rank(p.getUniqueId()) == 0) {
-            var mine = service.cached(p.getUniqueId(), currency);
             msg.send(sender, "baltop.not-listed", Msg.number("size", top.entries().size()),
                     amountTag("amount", sender, currency, mine.orElse(0)));
         }
