@@ -1,0 +1,51 @@
+# Server list MOTD (the 2 lines under the server name). Hex colors + animated gradients.
+# Text is MiniMessage: https://docs.advntr.dev/minimessage/format.html
+#
+# Animation: Minecraft asks for the MOTD every time the server list refreshes. Each refresh shows the next
+# animation frame: {phase} inside a gradient is replaced with a value that moves over time, so the colors
+# "flow" through the text. Rotation switches between the active MOTDs.
+
+# Which MOTDs are shown (ids from the list below), in order.
+active: [coming-soon, phoenix-rising]
+
+# rotate = change every rotate-seconds, random = random on every refresh
+mode: rotate
+rotate-seconds: 10
+
+animation:
+  enabled: true
+  cycle-seconds: 6     # time for the colors to flow through the text once
+  frames: 12           # smoothness of the flow
+
+center: true           # auto-center both lines in the server list
+
+# Shown when hovering over the player count (plain lines, colors are reduced to the 16 classic colors there).
+hover:
+  - "<gradient:#C21F2B:#FF8A1F><bold>SkybornMC Network</bold></gradient>"
+  - ""
+  - "<gray>Gamemode: <red>Phoenix Skyblock"
+  - "<gray>Versions: <white>Java 1.21.5 - 26.3 + Bedrock"
+  - "<gray>Discord: <white>discord.skybornmc.net"
+  - "<gray>Website: <white>skybornmc.net"
+
+motds:
+
+  # Development / pre-launch
+  coming-soon:
+    line1: "<bold><gradient:#FFFFFF:#AFC6FF:{phase}>SKYBORN</gradient><white>MC</white></bold> <#5A5A5A>»</#5A5A5A> <bold><gradient:#C21F2B:#FF3D2E:#FF8A1F:#FFD23F:{phase}>PHOENIX SKYBLOCK</gradient></bold>"
+    line2: "<#FF8A1F>✦</#FF8A1F> <bold><gradient:#FFD23F:#FF8A1F:#FF3D2E:{phase}>COMING SOON</gradient></bold> <#5A5A5A>|</#5A5A5A> <gray>discord.skybornmc.net</gray> <#FF8A1F>✦</#FF8A1F>"
+
+  # Brand / any time
+  phoenix-rising:
+    line1: "<bold><gradient:#FFD23F:#FF8A1F:#FF3D2E:#C21F2B:#FF3D2E:#FF8A1F:#FFD23F:{phase}>✦ THE PHOENIX RISES ✦</gradient></bold>"
+    line2: "<white>SkybornMC</white> <#5A5A5A>|</#5A5A5A> <gradient:#C21F2B:#FF8A1F>Phoenix Skyblock</gradient> <#5A5A5A>|</#5A5A5A> <gray>1.21.5 - 26.3</gray>"
+
+  # Launch day / new season
+  season-live:
+    line1: "<bold><white>SKYBORN</white><#C21F2B>MC</#C21F2B></bold> <#5A5A5A>»</#5A5A5A> <bold><gradient:#FF3D2E:#FF8A1F:#FFD23F:#FF8A1F:#FF3D2E:{phase}>SEASON 1 IS LIVE!</gradient></bold>"
+    line2: "<bold><#FF3D2E>Join Now</#FF3D2E></bold> <#5A5A5A>|</#5A5A5A> <gradient:#FFD23F:#FF8A1F>New islands, KOTH & The Depths</gradient>"
+
+  # Events
+  double-xp:
+    line1: "<bold><gradient:#C21F2B:#FF3D2E:{phase}>SkybornMC</gradient></bold> <#5A5A5A>»</#5A5A5A> <bold><gradient:#FFD23F:#FF8A1F:#FFD23F:{phase}>DOUBLE XP WEEKEND</gradient></bold>"
+    line2: "<#FF8A1F>⌛</#FF8A1F> <white>Ends Sunday</white> <#5A5A5A>|</#5A5A5A> <bold><#FF3D2E>Join Now</#FF3D2E></bold> <#5A5A5A>|</#5A5A5A> <gray>play.skybornmc.net</gray>"

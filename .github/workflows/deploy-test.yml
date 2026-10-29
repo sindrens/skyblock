@@ -61,5 +61,4 @@ jobs:
         if: env.HOST != ''
         run: |
           U=${{ secrets.TEST_USER }}
-          ssh "$U@$HOST" "tmux send-keys -t skyblock 'say Updating: restart in 10 seconds' Enter; sleep 10; tmux send-keys -t skyblock 'stop' Enter" || true
-          echo "systemd restarts the server automatically."
+          ssh "$U@$HOST" 'cd /opt/skyblock/server && ./scripts/restart-and-apply.sh'

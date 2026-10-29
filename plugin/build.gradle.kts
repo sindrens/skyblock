@@ -5,6 +5,8 @@ plugins {
 
 dependencies {
     implementation(project(":common"))
+    implementation(project(":modules:worlds"))
+    implementation(project(":modules:motd"))
     // implementation(project(":modules:islands"))
 }
 

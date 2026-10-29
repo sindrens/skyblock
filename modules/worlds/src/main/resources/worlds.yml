@@ -1,0 +1,112 @@
+# Phoenix Skyblock worlds (see docs/WORLD.md).
+# Every world listed here is created on startup if it doesn't exist (void, no terrain) and its settings are re-applied
+# on every start, so this file is the single source of truth. Edit, then restart or /skyblock reload.
+#
+# create:      false = the world is made by the server itself (the main world from server.properties level-name)
+# biome:       vanilla biome id used for the whole void world
+# spawn:       world spawn point; a small platform is placed under it if there is nothing there yet (for builders)
+# border:      world border diameter in blocks (0 = no border). Islands/outposts get per-island borders from the plugin later
+# time:        fixed time of day (0-24000) when advance_time is false; omit to leave as is
+# gamerules:   vanilla game rule ids (26.x snake_case names, e.g. advance_weather)
+
+defaults:
+  gamerules:
+    show_advancement_messages: false   # vanilla advancements are disabled; we have custom achievements
+    show_death_messages: false         # custom death messages
+    keep_inventory: true               # death rules are handled by the plugin (docs/REVIEW.md B7)
+    immediate_respawn: true
+    spawn_phantoms: false
+    spawn_patrols: false
+    spawn_wardens: false
+    raids: false
+    mob_griefing: false
+    command_blocks_work: false
+    fire_spread_radius_around_player: 0  # no fire spread (griefing + lag)
+    locator_bar: false
+    log_admin_commands: true
+    send_command_feedback: true
+
+worlds:
+  spawn:
+    create: false
+    biome: the_void
+    difficulty: peaceful
+    spawn: { x: 0.5, y: 100, z: 0.5, yaw: 0 }
+    platform: polished_deepslate
+    border: 1000
+    time: 6000
+    gamerules:
+      advance_time: false
+      advance_weather: false
+      spawn_mobs: false
+      spawn_monsters: false
+      spawn_wandering_traders: false
+      pvp: false
+      fall_damage: false
+      random_tick_speed: 0       # protects the build (no leaf decay, no growth)
+
+  islands:
+    create: true
+    biome: plains
+    difficulty: normal           # must not be peaceful: spawner mobs would despawn
+    spawn: { x: 0.5, y: 100, z: 0.5, yaw: 0 }
+    platform: stone_bricks
+    border: 0
+    gamerules:
+      advance_time: true
+      advance_weather: false
+      spawn_mobs: false          # natural spawning off; mobs come from spawners
+      spawn_monsters: false
+      spawner_blocks_work: true
+      spawn_wandering_traders: true
+      pvp: false
+      random_tick_speed: 3
+
+  outposts:
+    create: true
+    biome: plains
+    difficulty: normal
+    spawn: { x: 0.5, y: 100, z: 0.5, yaw: 0 }
+    platform: stone_bricks
+    border: 0
+    gamerules:
+      advance_time: true
+      advance_weather: false
+      spawn_mobs: false
+      spawn_monsters: false
+      spawner_blocks_work: true
+      spawn_wandering_traders: false
+      pvp: false
+      random_tick_speed: 3
+
+  depths:
+    create: true
+    biome: the_void
+    difficulty: normal
+    spawn: { x: 0.5, y: 100, z: 0.5, yaw: 0 }
+    platform: tuff_bricks
+    border: 2000
+    time: 18000                  # night sky over the Depths
+    gamerules:
+      advance_time: false
+      advance_weather: false
+      spawn_mobs: false          # mobs are spawned by the plugin per tier
+      spawn_monsters: false
+      pvp: false
+      random_tick_speed: 0
+
+  warzone:
+    create: true
+    biome: plains
+    difficulty: normal
+    spawn: { x: 0.5, y: 100, z: 0.5, yaw: 0 }
+    platform: cracked_stone_bricks
+    border: 1000
+    time: 13000                  # dusk battlefield
+    gamerules:
+      advance_time: false
+      advance_weather: false
+      spawn_mobs: false
+      spawn_monsters: false
+      pvp: true
+      random_tick_speed: 0

@@ -13,3 +13,6 @@ permissions:
   skyblock.admin.reload:
     description: Reload all module configs
     default: op
+  skyblock.admin.worlds:
+    description: List worlds and teleport between them (/skyblock worlds, /skyblock tp)
+    default: op

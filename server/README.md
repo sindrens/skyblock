@@ -34,6 +34,18 @@ Restart: `sudo systemctl restart skyblock`. Logs: `/opt/skyblock/server/logs/lat
 
 **Automatic deploys (later):** create an SSH key for deploys, put the public key in `/opt/skyblock/.ssh/authorized_keys`, and add `TEST_HOST`, `TEST_USER` (`minecraft`), `TEST_SSH_KEY` as GitHub secrets. Every push to `main` then builds, tests and deploys.
 
+## Staff ranks
+Builder, Helper, Moderator, Admin, Owner: defined in `permissions/luckperms.txt`, applied automatically after every update. To give someone a rank, add a line at the bottom (e.g. `lp user Steve parent add builder`) and run `update-vps.sh`.
+
+## Automatic deploys from GitHub (one-time setup)
+```bash
+cd ~/Development/skyblock && ./server/scripts/setup-github-deploy.sh
+```
+After that, every push to `main` builds, tests and deploys to the test VPS (configs, plugin, restart, permissions).
+
+## Worlds
+`spawn`, `islands`, `outposts`, `depths`, `warzone`: void worlds created by the plugin from `plugins/PhoenixSkyblock/worlds.yml`. In game: `/skyblock worlds` (click to teleport) or `/skyblock tp <world>`. Each spawn has a small platform so builders can start right away.
+
 ## External plugins
 Geyser, Floodgate, LuckPerms, CoreProtect, Grim, FastAsyncWorldEdit, ViaVersion, ViaBackwards (DESIGN.md §14). Java players on 1.21.5 to 26.3 can join. spark is built into Paper.
 CoreProtect has no 26.3 release yet; `fetch.sh` skips it until one exists.

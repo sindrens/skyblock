@@ -41,7 +41,19 @@ Permission root: `skyblock.`. Status: ⬜ planned · 🟡 in progress · ✅ don
 | `/admin` | In-game config editor | `skyblock.admin.config` | ⬜ |
 | `/skyblock modules` | Module status | `skyblock.admin.modules` | ✅ |
 | `/skyblock reload` | Reload configs | `skyblock.admin.reload` | ✅ |
+| `/skyblock worlds` | List worlds (click to teleport) | `skyblock.admin.worlds` | ✅ |
+| `/skyblock tp <world>` | Teleport to a world's spawn | `skyblock.admin.worlds` | ✅ |
 | `/season` | Season tools (reset, pre-season) | `skyblock.owner.season` | ⬜ |
 | `/sc <msg>` | Staff chat | `skyblock.staff.chat` | ⬜ |
 | `/maintenance` | Maintenance mode + whitelist | `skyblock.admin.maintenance` | ⬜ |
 | `/eco admin` | Economy dashboard and corrections (logged) | `skyblock.owner.economy` | ⬜ |
+
+## Staff ranks (LuckPerms, `server/permissions/luckperms.txt`)
+| Rank | Weight | Inherits | Can |
+|---|---|---|---|
+| Builder | 5 | default | WorldEdit/FAWE, gamemode, teleport, time, `/skyblock worlds` + `tp` |
+| Helper | 10 | default | Cheat alerts, staff chat |
+| Moderator | 20 | Helper | Staff mode, inspect, kick, ban, teleport, gamemode, block lookups |
+| Admin | 30 | Moderator + Builder | All `skyblock.admin.*`, all vanilla commands, Grim, CoreProtect, Via, Geyser |
+| Owner | 100 | Admin | Everything (`*`) |
+Applied automatically after every update/deploy. Add people at the bottom of the file (`lp user <name> parent add <rank>`).

@@ -304,6 +304,6 @@ All sounds are configurable and can be muted in `/settings`.
 | Domain | `play.skybornmc.net` (Java + Bedrock), website `skybornmc.net`, store `store.skybornmc.net` |
 | Logo | A phoenix (owner's artwork). Needed: original file (PNG/SVG, transparent) |
 | Server icon | `server/server-icon.png`, **64×64 PNG**, phoenix head/silhouette on transparent or charcoal, readable at tiny size |
-| MOTD | Line 1: `SKYBORNMC` + `» Phoenix Skyblock` (red). Line 2: season/status in gray. Once the network has a hub/proxy, the MOTD is set on the proxy |
+| MOTD | Animated hex gradients from the `motd` module (`motd.yml`): 4 designs (coming soon, the phoenix rises, season live, double XP), rotation, auto-centering, hover info. Once the network has a proxy, the same module/config moves there |
 | Resource pack glyph | The phoenix as a font glyph (for chat prefix, scoreboard title, tab). Needs a Geyser mapping so Bedrock shows it too; until then, fall back to `✦` |
 | Particles | Brand particles: `flame`, `small_flame`, `lava` drips, `dust` in brand red. Used at spawn, crates, level-ups |

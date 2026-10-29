@@ -24,5 +24,7 @@ echo "== Installing and restarting"
   && if [ -n '$JAR' ]; then sudo rm -f /opt/skyblock/server/plugins/PhoenixSkyblock-*.jar; sudo cp ~/skyborn-upload/$JAR /opt/skyblock/server/plugins/; fi \
   && sudo chown -R minecraft:minecraft /opt/skyblock/server \
   && sudo -u minecraft bash -c 'cd /opt/skyblock/server && ./scripts/fetch.sh && ./scripts/apply-secrets.sh' \
-  && sudo -u minecraft tmux send-keys -t skyblock 'say Updating: restart in 10 seconds' Enter 2>/dev/null; sleep 10; sudo systemctl restart skyblock && echo 'Server restarting with the update.'"
-echo "Done. The server is back in about a minute."
+  && { sudo -u minecraft tmux send-keys -t skyblock 'say Updating: restart in 10 seconds' Enter 2>/dev/null || true; } \
+  && sleep 10 && SINCE=\$(date +%s) && sudo systemctl restart skyblock && echo 'Server restarting with the update.' \
+  && sudo -u minecraft /opt/skyblock/server/scripts/apply-permissions.sh \$SINCE"
+echo "Done. The server is running the update."

@@ -15,6 +15,8 @@ All tier values are **(tunable)** and live in config. Only **vanilla blocks** ar
 | `depths` | Built | The Depths: mine, forest, combat zones, world boss arena |
 | `warzone` | Built | KOTH, envoys, PvP arena, duels |
 
+All five are **void worlds** created and configured by the `worlds` module from `server/plugins/PhoenixSkyblock/worlds.yml` (game rules, difficulty, spawn, fixed time, border, a small spawn platform for builders). Staff/builders list and jump between them with `/skyblock worlds` and `/skyblock tp <world>`.
+
 The vanilla Nether and End dimensions are **disabled**. The owner plans a different use for them later as custom worlds (see §6).
 
 ---

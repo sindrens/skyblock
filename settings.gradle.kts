@@ -17,4 +17,6 @@ include("common")
 include("plugin")
 
 // Feature modules, one per feature. Add new ones here (see CLAUDE.md "Adding a module").
+include("modules:worlds")
+include("modules:motd")
 // include("modules:islands")
