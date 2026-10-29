@@ -8,3 +8,12 @@ skyblock.depths.alerts:
 skyblock.depths.build:
   description: "Change blocks inside Depths regions for real while in creative mode."
   default: op
+skyblock.depths.command:
+  description: "Use /depths (each sub-command also needs its own permission)."
+  default: op
+skyblock.depths.generate:
+  description: "Use /depths generate (build the placeholder Depths layout; never touches zones marked built)."
+  default: op
+skyblock.depths.tp:
+  description: "Use /depths tp (teleport to The Gate, a tier zone or the boss arena, ignoring locks)."
+  default: op

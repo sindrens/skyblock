@@ -8,6 +8,11 @@ import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.depths.engine.Depths;
 import net.skybornmc.skyblock.depths.engine.DepthsEngine;
+import net.skybornmc.skyblock.depths.zones.ZoneCommands;
+import net.skybornmc.skyblock.depths.zones.ZoneGenerator;
+import net.skybornmc.skyblock.depths.zones.ZoneManager;
+import net.skybornmc.skyblock.depths.zones.ZonePortals;
+import net.skybornmc.skyblock.depths.zones.ZoneService;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 
@@ -16,8 +21,9 @@ import java.util.List;
 
 /**
  * The Depths (Phase 4). M4.3: the per-player blocks engine ({@link DepthsEngine}), published as the {@link Depths}
- * service, plus {@code /depths debug} for staff. Settings and regions in {@code depths.yml}, texts in
- * {@code messages/depths.yml}.
+ * service, plus {@code /depths debug} for staff. M4.1: the layout from {@code zones.yml} ({@link ZoneManager}, published
+ * as {@link ZoneService}; its ore/log fields become engine regions), {@code /depths generate} (placeholder builds) and
+ * {@code /depths tp}. Settings and regions in {@code depths.yml}, texts in {@code messages/depths.yml}.
  */
 public final class DepthsModule implements SkyblockModule {
 
@@ -26,6 +32,9 @@ public final class DepthsModule implements SkyblockModule {
     private final Core core;
     private final DepthsConfig config = new DepthsConfig();
     private DepthsEngine engine;
+    private ZoneManager zones;
+    private ZoneGenerator generator;
+    private ZonePortals portals;
     private ModuleMessages msg;
 
     public DepthsModule(Core core) {
@@ -47,13 +56,37 @@ public final class DepthsModule implements SkyblockModule {
         core.services().register(ID, Depths.class, engine);
         core.plugin().getServer().getPluginManager().registerEvents(engine, core.plugin());
 
+        zones = new ZoneManager(core, config, engine);
+        loadZones();
+        core.services().register(ID, ZoneService.class, zones);
+        generator = new ZoneGenerator(core, config, msg);
+        portals = new ZonePortals(zones, config, msg);
+        core.plugin().getServer().getPluginManager().registerEvents(portals, core.plugin());
+        ZoneCommands zoneCommands = new ZoneCommands(zones, generator, config, msg);
+
         Arg<Player> target = Args.onlinePlayer("player");
+        Arg<String> generateTarget = Args.oneOf("zone", zoneCommands::generateTargets);
+        Arg<String> tpTarget = Args.oneOf("zone", zones::teleportIds);
         core.commands().register(CommandSpec.command("depths")
-                .description("The Depths staff tools").category("Staff").permission(DepthsPerms.DEBUG)
+                .description("The Depths staff tools").category("Staff").permission(DepthsPerms.COMMAND)
                 .sub(CommandSpec.sub("debug")
                         .description("Region at your feet, depleted blocks and engine numbers")
                         .permission(DepthsPerms.DEBUG).playerOnly().optional(target).example("depths debug")
-                        .executes(ctx -> DepthsDebug.show(engine, msg, ctx.player(), ctx.getOr(target, ctx.player())))));
+                        .executes(ctx -> DepthsDebug.show(engine, msg, ctx.player(), ctx.getOr(target, ctx.player()))))
+                .sub(CommandSpec.sub("generate")
+                        .description("Build the placeholder layout (The Gate, zones, boss arena); skips zones marked built")
+                        .permission(DepthsPerms.GENERATE).optional(generateTarget)
+                        .confirmIf(15, ctx -> ZoneCommands.ALL.equalsIgnoreCase(ctx.getOr(generateTarget, ZoneCommands.ALL)))
+                        .example("depths generate mine_t01")
+                        .executes(ctx -> zoneCommands.generate(ctx.sender(), ctx.getOr(generateTarget, ZoneCommands.ALL))))
+                .sub(CommandSpec.sub("tp")
+                        .description("Teleport to The Gate, a tier zone or the boss arena (ignores locks)")
+                        .permission(DepthsPerms.TP).playerOnly().arg(tpTarget).example("depths tp mine_t01")
+                        .executes(ctx -> zoneCommands.teleport(ctx.player(), ctx.get(tpTarget)))));
+    }
+
+    private void loadZones() {
+        zones.load();
     }
 
     private List<net.skybornmc.skyblock.depths.engine.DepthsRegion> loadRegions() {
@@ -66,10 +99,20 @@ public final class DepthsModule implements SkyblockModule {
         core.configs().load(config);
         core.messages().load(ID);
         engine.configRegions(loadRegions());
+        loadZones();
     }
 
     @Override
     public void disable() {
+        if (generator != null) {
+            generator.stop();
+        }
+        if (portals != null) {
+            HandlerList.unregisterAll(portals);
+        }
+        if (zones != null) {
+            zones.unload();
+        }
         if (engine == null) {
             return;
         }

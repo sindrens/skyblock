@@ -1,0 +1,629 @@
+# The Depths layout (M4.1): The Gate, the three wings and the world boss arena.
+# Generated from ZoneLayout (U-shaped wings inside the 2000 border); edit freely, the code never rewrites it.
+# Real builds only change coordinates here, never code. Coordinates are world coordinates (inclusive corners).
+#
+# Per zone:
+#   aspect: mine | forest | combat      tier: 1..   required-level: skill level to enter (Mining/Foraging/Combat)
+#   built: true once a builder's real build stands here -> /depths generate never touches it again
+#   region: the zone cuboid            spawn: "x, y, z, yaw, pitch" (arrival pad, /depths tp and /dungeon target)
+#   gate: tier gate opening (5x5)      exit: opening toward the next tier      causeway: walled path into the zone
+#   fields: ore/log cuboids registered with the per-player blocks engine as region <zone>_<field>
+#     resources: [{ block, depleted, respawn-seconds }]  (missing = depths.yml engine defaults)
+#   arena: combat fighting area        biome: set by the placeholder build      palette: placeholder blocks
+# Reload: /skyblock reload depths      Build placeholders: /depths generate [zone|all]
+
+world: depths
+floor-y: 100
+
+hub:
+  name: "The Gate"
+  built: false
+  region: { corner-1: "-48, 91, -48", corner-2: "47, 116, 47" }
+  spawn: "0.5, 100, 38.5, 180, 0"
+  wing-gates:
+    mine: { corner-1: "-45, 100, -4", corner-2: "-44, 111, 4" }
+    forest: { corner-1: "43, 100, -4", corner-2: "44, 111, 4" }
+    combat: { corner-1: "-4, 100, -45", corner-2: "4, 111, -44" }
+  palette: { floor: "tuff_bricks", inlay: "red_nether_bricks", base: "deepslate", wall: "polished_tuff", trim: "polished_blackstone", light: "lantern", pad: "chiseled_stone_bricks", fire: "campfire", gate-mine: "deepslate_tiles", gate-forest: "oak_log", gate-combat: "cracked_stone_bricks" }
+
+boss-arena:
+  name: "World Boss Arena"
+  built: false
+  region: { corner-1: "0, 91, -912", corner-2: "111, 110, -801" }
+  spawn: "56.5, 100, -814.5, 180, 0"
+  portal-zone: combat_t10
+  portal: { corner-1: "127, 100, -89", corner-2: "129, 103, -89" }
+  return-portal: { corner-1: "55, 100, -809", corner-2: "57, 103, -809" }
+  palette: { floor: "polished_blackstone_bricks", inlay: "red_nether_bricks", base: "blackstone", wall: "cracked_polished_blackstone_bricks", trim: "gilded_blackstone", light: "lantern", pad: "chiseled_polished_blackstone", fire: "campfire" }
+
+zones:
+  # ---------------------------------------------------------------- mine wing
+  mine_t01:
+    aspect: mine
+    tier: 1
+    name: "The Old Shaft"
+    resource-name: "Coal"
+    required-level: 0
+    built: false
+    region: { corner-1: "-160, 94, -48", corner-2: "-81, 110, 31" }
+    spawn: "-85.5, 100, 0.5, 90, 0"
+    gate: { corner-1: "-81, 100, -2", corner-2: "-81, 104, 2" }
+    exit: { corner-1: "-160, 100, -2", corner-2: "-160, 104, 2" }
+    causeway: { corner-1: "-80, 96, -4", corner-2: "-49, 105, 4" }
+    fields:
+      ore:
+        corner-1: "-140, 97, -28"
+        corner-2: "-101, 99, 11"
+        resources:
+          - { block: coal_ore, depleted: "cobblestone" }
+    palette: { floor: "stone", base: "stone", wall: "cobblestone", trim: "oak_log", light: "lantern", pad: "chiseled_stone_bricks" }
+  mine_t02:
+    aspect: mine
+    tier: 2
+    name: "Verdigris Cut"
+    resource-name: "Copper"
+    required-level: 5
+    built: false
+    region: { corner-1: "-272, 94, -48", corner-2: "-193, 110, 31" }
+    spawn: "-197.5, 100, 0.5, 90, 0"
+    gate: { corner-1: "-193, 100, -2", corner-2: "-193, 104, 2" }
+    exit: { corner-1: "-272, 100, -2", corner-2: "-272, 104, 2" }
+    causeway: { corner-1: "-192, 96, -4", corner-2: "-161, 105, 4" }
+    fields:
+      ore:
+        corner-1: "-252, 97, -28"
+        corner-2: "-213, 99, 11"
+        resources:
+          - { block: copper_ore, depleted: "granite" }
+    palette: { floor: "polished_granite", base: "granite", wall: "stone", trim: "waxed_weathered_cut_copper", light: "lantern", pad: "chiseled_stone_bricks" }
+  mine_t03:
+    aspect: mine
+    tier: 3
+    name: "The Ironworks"
+    resource-name: "Iron"
+    required-level: 10
+    built: false
+    region: { corner-1: "-384, 94, -48", corner-2: "-305, 110, 31" }
+    spawn: "-309.5, 100, 0.5, 90, 0"
+    gate: { corner-1: "-305, 100, -2", corner-2: "-305, 104, 2" }
+    exit: { corner-1: "-384, 100, -2", corner-2: "-384, 104, 2" }
+    causeway: { corner-1: "-304, 96, -4", corner-2: "-273, 105, 4" }
+    fields:
+      ore:
+        corner-1: "-364, 97, -28"
+        corner-2: "-325, 99, 11"
+        resources:
+          - { block: iron_ore, depleted: "diorite" }
+    palette: { floor: "polished_diorite", base: "stone", wall: "stone_bricks", trim: "iron_block", light: "lantern", pad: "chiseled_stone_bricks" }
+  mine_t04:
+    aspect: mine
+    tier: 4
+    name: "The Sunken Vault"
+    resource-name: "Gold"
+    required-level: 15
+    built: false
+    region: { corner-1: "-496, 94, -48", corner-2: "-417, 110, 31" }
+    spawn: "-421.5, 100, 0.5, 90, 0"
+    gate: { corner-1: "-417, 100, -2", corner-2: "-417, 104, 2" }
+    exit: { corner-1: "-496, 100, -2", corner-2: "-496, 104, 2" }
+    causeway: { corner-1: "-416, 96, -4", corner-2: "-385, 105, 4" }
+    fields:
+      ore:
+        corner-1: "-476, 97, -28"
+        corner-2: "-437, 99, 11"
+        resources:
+          - { block: gold_ore, depleted: "smooth_sandstone" }
+    palette: { floor: "cut_sandstone", base: "sandstone", wall: "sandstone", trim: "gold_block", light: "lantern", pad: "chiseled_stone_bricks" }
+  mine_t05:
+    aspect: mine
+    tier: 5
+    name: "The Red Depths"
+    resource-name: "Redstone"
+    required-level: 20
+    built: false
+    region: { corner-1: "-608, 94, -48", corner-2: "-529, 110, 31" }
+    spawn: "-533.5, 100, 0.5, 90, 0"
+    gate: { corner-1: "-529, 100, -2", corner-2: "-529, 104, 2" }
+    exit: { corner-1: "-608, 100, -2", corner-2: "-608, 104, 2" }
+    causeway: { corner-1: "-528, 96, -4", corner-2: "-497, 105, 4" }
+    fields:
+      ore:
+        corner-1: "-588, 97, -28"
+        corner-2: "-549, 99, 11"
+        resources:
+          - { block: redstone_ore, depleted: "cobbled_deepslate" }
+    palette: { floor: "polished_deepslate", base: "deepslate", wall: "deepslate_bricks", trim: "polished_blackstone", light: "redstone_lamp[lit=true]", pad: "chiseled_stone_bricks" }
+  mine_t06:
+    aspect: mine
+    tier: 6
+    name: "The Flooded Mine"
+    resource-name: "Lapis"
+    required-level: 25
+    built: false
+    region: { corner-1: "-720, 94, -48", corner-2: "-641, 110, 31" }
+    spawn: "-645.5, 100, 0.5, 90, 0"
+    gate: { corner-1: "-641, 100, -2", corner-2: "-641, 104, 2" }
+    exit: { corner-1: "-683, 100, 31", corner-2: "-679, 104, 31" }
+    causeway: { corner-1: "-640, 96, -4", corner-2: "-609, 105, 4" }
+    fields:
+      ore:
+        corner-1: "-700, 97, -28"
+        corner-2: "-661, 99, 11"
+        resources:
+          - { block: lapis_ore, depleted: "deepslate_tiles" }
+    palette: { floor: "dark_prismarine", base: "deepslate", wall: "prismarine_bricks", trim: "deepslate_tiles", light: "sea_lantern", pad: "chiseled_stone_bricks" }
+  mine_t07:
+    aspect: mine
+    tier: 7
+    name: "The Glittering Deep"
+    resource-name: "Diamond"
+    required-level: 30
+    built: false
+    region: { corner-1: "-720, 94, 80", corner-2: "-641, 110, 159" }
+    spawn: "-680.5, 100, 85.5, 0, 0"
+    gate: { corner-1: "-683, 100, 80", corner-2: "-679, 104, 80" }
+    exit: { corner-1: "-641, 100, 126", corner-2: "-641, 104, 130" }
+    causeway: { corner-1: "-685, 96, 32", corner-2: "-677, 105, 79" }
+    fields:
+      ore:
+        corner-1: "-700, 97, 100"
+        corner-2: "-661, 99, 139"
+        resources:
+          - { block: deepslate_diamond_ore, depleted: "tuff" }
+    palette: { floor: "calcite", base: "deepslate", wall: "deepslate", trim: "smooth_basalt", light: "soul_lantern", pad: "chiseled_stone_bricks" }
+  mine_t08:
+    aspect: mine
+    tier: 8
+    name: "The Lush Hollow"
+    resource-name: "Emerald"
+    required-level: 35
+    built: false
+    region: { corner-1: "-608, 94, 80", corner-2: "-529, 110, 159" }
+    spawn: "-602.5, 100, 128.5, -90, 0"
+    gate: { corner-1: "-608, 100, 126", corner-2: "-608, 104, 130" }
+    exit: { corner-1: "-529, 100, 126", corner-2: "-529, 104, 130" }
+    causeway: { corner-1: "-640, 96, 124", corner-2: "-609, 105, 132" }
+    fields:
+      ore:
+        corner-1: "-588, 97, 100"
+        corner-2: "-549, 99, 139"
+        resources:
+          - { block: deepslate_emerald_ore, depleted: "mossy_cobblestone" }
+    biome: lush_caves
+    palette: { floor: "moss_block", base: "deepslate", wall: "mossy_stone_bricks", trim: "deepslate_bricks", light: "lantern", pad: "chiseled_stone_bricks" }
+  mine_t09:
+    aspect: mine
+    tier: 9
+    name: "The Geode"
+    resource-name: "Amethyst"
+    required-level: 42
+    built: false
+    region: { corner-1: "-496, 94, 80", corner-2: "-417, 110, 159" }
+    spawn: "-490.5, 100, 128.5, -90, 0"
+    gate: { corner-1: "-496, 100, 126", corner-2: "-496, 104, 130" }
+    exit: { corner-1: "-417, 100, 126", corner-2: "-417, 104, 130" }
+    causeway: { corner-1: "-528, 96, 124", corner-2: "-497, 105, 132" }
+    fields:
+      ore:
+        corner-1: "-476, 97, 100"
+        corner-2: "-437, 99, 139"
+        resources:
+          - { block: amethyst_block, depleted: "calcite" }
+    palette: { floor: "smooth_basalt", base: "smooth_basalt", wall: "calcite", trim: "polished_tuff", light: "pearlescent_froglight", pad: "chiseled_stone_bricks" }
+  mine_t10:
+    aspect: mine
+    tier: 10
+    name: "The Ember Rift"
+    resource-name: "Quartz"
+    required-level: 50
+    built: false
+    region: { corner-1: "-384, 94, 80", corner-2: "-305, 110, 159" }
+    spawn: "-378.5, 100, 128.5, -90, 0"
+    gate: { corner-1: "-384, 100, 126", corner-2: "-384, 104, 130" }
+    exit: { corner-1: "-305, 100, 126", corner-2: "-305, 104, 130" }
+    causeway: { corner-1: "-416, 96, 124", corner-2: "-385, 105, 132" }
+    fields:
+      ore:
+        corner-1: "-364, 97, 100"
+        corner-2: "-325, 99, 139"
+        resources:
+          - { block: nether_quartz_ore, depleted: "netherrack" }
+    biome: crimson_forest
+    palette: { floor: "nether_bricks", base: "blackstone", wall: "red_nether_bricks", trim: "crimson_stem", light: "shroomlight", pad: "chiseled_stone_bricks" }
+  mine_t11:
+    aspect: mine
+    tier: 11
+    name: "The Forge Heart"
+    resource-name: "Netherite"
+    required-level: 58
+    built: false
+    region: { corner-1: "-272, 94, 80", corner-2: "-193, 110, 159" }
+    spawn: "-266.5, 100, 128.5, -90, 0"
+    gate: { corner-1: "-272, 100, 126", corner-2: "-272, 104, 130" }
+    exit: { corner-1: "-193, 100, 126", corner-2: "-193, 104, 130" }
+    causeway: { corner-1: "-304, 96, 124", corner-2: "-273, 105, 132" }
+    fields:
+      ore:
+        corner-1: "-252, 97, 100"
+        corner-2: "-213, 99, 139"
+        resources:
+          - { block: ancient_debris, depleted: "blackstone" }
+    palette: { floor: "polished_blackstone_bricks", base: "blackstone", wall: "basalt", trim: "gilded_blackstone", light: "lantern", pad: "chiseled_stone_bricks" }
+  mine_t12:
+    aspect: mine
+    tier: 12
+    name: "The Void Edge"
+    resource-name: "Voidstone"
+    required-level: 66
+    built: false
+    region: { corner-1: "-160, 94, 80", corner-2: "-81, 110, 159" }
+    spawn: "-154.5, 100, 128.5, -90, 0"
+    gate: { corner-1: "-160, 100, 126", corner-2: "-160, 104, 130" }
+    causeway: { corner-1: "-192, 96, 124", corner-2: "-161, 105, 132" }
+    fields:
+      ore:
+        corner-1: "-140, 97, 100"
+        corner-2: "-101, 99, 139"
+        resources:
+          - { block: crying_obsidian, depleted: "end_stone" }
+    palette: { floor: "end_stone_bricks", base: "end_stone", wall: "purpur_block", trim: "obsidian", light: "end_rod", pad: "chiseled_stone_bricks" }
+  # ---------------------------------------------------------------- forest wing
+  forest_t01:
+    aspect: forest
+    tier: 1
+    name: "Hearthwood Glade"
+    resource-name: "Oak"
+    required-level: 0
+    built: false
+    region: { corner-1: "80, 94, -48", corner-2: "159, 110, 31" }
+    spawn: "85.5, 100, 0.5, -90, 0"
+    gate: { corner-1: "80, 100, -2", corner-2: "80, 104, 2" }
+    exit: { corner-1: "159, 100, -2", corner-2: "159, 104, 2" }
+    causeway: { corner-1: "48, 96, -4", corner-2: "79, 105, 4" }
+    fields:
+      logs:
+        corner-1: "100, 100, -28"
+        corner-2: "139, 107, 11"
+        resources:
+          - { block: oak_log, depleted: "stripped_oak_log" }
+    biome: forest
+    palette: { floor: "grass_block", base: "dirt", wall: "mossy_cobblestone", trim: "oak_log", light: "lantern", pad: "chiseled_stone_bricks", ground: "grass_block", leaves: "oak_leaves[persistent=true]" }
+  forest_t02:
+    aspect: forest
+    tier: 2
+    name: "Silverbark Grove"
+    resource-name: "Birch"
+    required-level: 5
+    built: false
+    region: { corner-1: "192, 94, -48", corner-2: "271, 110, 31" }
+    spawn: "197.5, 100, 0.5, -90, 0"
+    gate: { corner-1: "192, 100, -2", corner-2: "192, 104, 2" }
+    exit: { corner-1: "271, 100, -2", corner-2: "271, 104, 2" }
+    causeway: { corner-1: "160, 96, -4", corner-2: "191, 105, 4" }
+    fields:
+      logs:
+        corner-1: "212, 100, -28"
+        corner-2: "251, 107, 11"
+        resources:
+          - { block: birch_log, depleted: "stripped_birch_log" }
+    biome: birch_forest
+    palette: { floor: "grass_block", base: "dirt", wall: "stone_bricks", trim: "birch_log", light: "lantern", pad: "chiseled_stone_bricks", ground: "grass_block", leaves: "birch_leaves[persistent=true]" }
+  forest_t03:
+    aspect: forest
+    tier: 3
+    name: "Frostpine Hollow"
+    resource-name: "Spruce"
+    required-level: 10
+    built: false
+    region: { corner-1: "304, 94, -48", corner-2: "383, 110, 31" }
+    spawn: "309.5, 100, 0.5, -90, 0"
+    gate: { corner-1: "304, 100, -2", corner-2: "304, 104, 2" }
+    exit: { corner-1: "383, 100, -2", corner-2: "383, 104, 2" }
+    causeway: { corner-1: "272, 96, -4", corner-2: "303, 105, 4" }
+    fields:
+      logs:
+        corner-1: "324, 100, -28"
+        corner-2: "363, 107, 11"
+        resources:
+          - { block: spruce_log, depleted: "stripped_spruce_log" }
+    biome: snowy_taiga
+    palette: { floor: "podzol", base: "dirt", wall: "cobblestone", trim: "spruce_log", light: "lantern", pad: "chiseled_stone_bricks", ground: "podzol", leaves: "spruce_leaves[persistent=true]" }
+  forest_t04:
+    aspect: forest
+    tier: 4
+    name: "Emerald Canopy"
+    resource-name: "Jungle"
+    required-level: 15
+    built: false
+    region: { corner-1: "416, 94, -48", corner-2: "495, 110, 31" }
+    spawn: "421.5, 100, 0.5, -90, 0"
+    gate: { corner-1: "416, 100, -2", corner-2: "416, 104, 2" }
+    exit: { corner-1: "495, 100, -2", corner-2: "495, 104, 2" }
+    causeway: { corner-1: "384, 96, -4", corner-2: "415, 105, 4" }
+    fields:
+      logs:
+        corner-1: "436, 100, -28"
+        corner-2: "475, 107, 11"
+        resources:
+          - { block: jungle_log, depleted: "stripped_jungle_log" }
+    biome: jungle
+    palette: { floor: "grass_block", base: "dirt", wall: "mossy_stone_bricks", trim: "jungle_log", light: "ochre_froglight", pad: "chiseled_stone_bricks", ground: "grass_block", leaves: "jungle_leaves[persistent=true]" }
+  forest_t05:
+    aspect: forest
+    tier: 5
+    name: "Sunset Savanna"
+    resource-name: "Acacia"
+    required-level: 20
+    built: false
+    region: { corner-1: "528, 94, -48", corner-2: "607, 110, 31" }
+    spawn: "533.5, 100, 0.5, -90, 0"
+    gate: { corner-1: "528, 100, -2", corner-2: "528, 104, 2" }
+    exit: { corner-1: "607, 100, -2", corner-2: "607, 104, 2" }
+    causeway: { corner-1: "496, 96, -4", corner-2: "527, 105, 4" }
+    fields:
+      logs:
+        corner-1: "548, 100, -28"
+        corner-2: "587, 107, 11"
+        resources:
+          - { block: acacia_log, depleted: "stripped_acacia_log" }
+    biome: savanna
+    palette: { floor: "coarse_dirt", base: "dirt", wall: "orange_terracotta", trim: "acacia_log", light: "lantern", pad: "chiseled_stone_bricks", ground: "coarse_dirt", leaves: "acacia_leaves[persistent=true]" }
+  forest_t06:
+    aspect: forest
+    tier: 6
+    name: "Duskwood"
+    resource-name: "Dark Oak"
+    required-level: 25
+    built: false
+    region: { corner-1: "640, 94, -48", corner-2: "719, 110, 31" }
+    spawn: "645.5, 100, 0.5, -90, 0"
+    gate: { corner-1: "640, 100, -2", corner-2: "640, 104, 2" }
+    exit: { corner-1: "678, 100, 31", corner-2: "682, 104, 31" }
+    causeway: { corner-1: "608, 96, -4", corner-2: "639, 105, 4" }
+    fields:
+      logs:
+        corner-1: "660, 100, -28"
+        corner-2: "699, 107, 11"
+        resources:
+          - { block: dark_oak_log, depleted: "stripped_dark_oak_log" }
+    biome: dark_forest
+    palette: { floor: "podzol", base: "dirt", wall: "mossy_cobblestone", trim: "dark_oak_log", light: "shroomlight", pad: "chiseled_stone_bricks", ground: "podzol", leaves: "dark_oak_leaves[persistent=true]" }
+  forest_t07:
+    aspect: forest
+    tier: 7
+    name: "Rootmire"
+    resource-name: "Mangrove"
+    required-level: 30
+    built: false
+    region: { corner-1: "640, 94, 80", corner-2: "719, 110, 159" }
+    spawn: "680.5, 100, 85.5, 0, 0"
+    gate: { corner-1: "678, 100, 80", corner-2: "682, 104, 80" }
+    exit: { corner-1: "640, 100, 126", corner-2: "640, 104, 130" }
+    causeway: { corner-1: "676, 96, 32", corner-2: "684, 105, 79" }
+    fields:
+      logs:
+        corner-1: "660, 100, 100"
+        corner-2: "699, 107, 139"
+        resources:
+          - { block: mangrove_log, depleted: "stripped_mangrove_log" }
+    biome: mangrove_swamp
+    palette: { floor: "mangrove_planks", base: "dirt", wall: "mud_bricks", trim: "mangrove_log", light: "verdant_froglight", pad: "chiseled_stone_bricks", ground: "mud", leaves: "mangrove_leaves[persistent=true]" }
+  forest_t08:
+    aspect: forest
+    tier: 8
+    name: "Petalfall"
+    resource-name: "Cherry"
+    required-level: 35
+    built: false
+    region: { corner-1: "528, 94, 80", corner-2: "607, 110, 159" }
+    spawn: "602.5, 100, 128.5, 90, 0"
+    gate: { corner-1: "607, 100, 126", corner-2: "607, 104, 130" }
+    exit: { corner-1: "528, 100, 126", corner-2: "528, 104, 130" }
+    causeway: { corner-1: "608, 96, 124", corner-2: "639, 105, 132" }
+    fields:
+      logs:
+        corner-1: "548, 100, 100"
+        corner-2: "587, 107, 139"
+        resources:
+          - { block: cherry_log, depleted: "stripped_cherry_log" }
+    biome: cherry_grove
+    palette: { floor: "grass_block", base: "dirt", wall: "cherry_planks", trim: "cherry_log", light: "lantern", pad: "chiseled_stone_bricks", ground: "grass_block", leaves: "cherry_leaves[persistent=true]" }
+  forest_t09:
+    aspect: forest
+    tier: 9
+    name: "The Pale Garden"
+    resource-name: "Pale Oak"
+    required-level: 42
+    built: false
+    region: { corner-1: "416, 94, 80", corner-2: "495, 110, 159" }
+    spawn: "490.5, 100, 128.5, 90, 0"
+    gate: { corner-1: "495, 100, 126", corner-2: "495, 104, 130" }
+    exit: { corner-1: "416, 100, 126", corner-2: "416, 104, 130" }
+    causeway: { corner-1: "496, 96, 124", corner-2: "527, 105, 132" }
+    fields:
+      logs:
+        corner-1: "436, 100, 100"
+        corner-2: "475, 107, 139"
+        resources:
+          - { block: pale_oak_log, depleted: "stripped_pale_oak_log" }
+    biome: pale_garden
+    palette: { floor: "pale_moss_block", base: "dirt", wall: "pale_oak_planks", trim: "pale_oak_log", light: "soul_lantern", pad: "chiseled_stone_bricks", ground: "pale_moss_block", leaves: "pale_oak_leaves[persistent=true]" }
+  forest_t10:
+    aspect: forest
+    tier: 10
+    name: "Crimson Wilds"
+    resource-name: "Crimson"
+    required-level: 50
+    built: false
+    region: { corner-1: "304, 94, 80", corner-2: "383, 110, 159" }
+    spawn: "378.5, 100, 128.5, 90, 0"
+    gate: { corner-1: "383, 100, 126", corner-2: "383, 104, 130" }
+    exit: { corner-1: "304, 100, 126", corner-2: "304, 104, 130" }
+    causeway: { corner-1: "384, 96, 124", corner-2: "415, 105, 132" }
+    fields:
+      logs:
+        corner-1: "324, 100, 100"
+        corner-2: "363, 107, 139"
+        resources:
+          - { block: crimson_stem, depleted: "stripped_crimson_stem" }
+    biome: crimson_forest
+    palette: { floor: "netherrack", base: "netherrack", wall: "nether_bricks", trim: "crimson_stem", light: "shroomlight", pad: "chiseled_stone_bricks", ground: "crimson_nylium", leaves: "nether_wart_block" }
+  forest_t11:
+    aspect: forest
+    tier: 11
+    name: "Warped Reach"
+    resource-name: "Warped"
+    required-level: 58
+    built: false
+    region: { corner-1: "192, 94, 80", corner-2: "271, 110, 159" }
+    spawn: "266.5, 100, 128.5, 90, 0"
+    gate: { corner-1: "271, 100, 126", corner-2: "271, 104, 130" }
+    causeway: { corner-1: "272, 96, 124", corner-2: "303, 105, 132" }
+    fields:
+      logs:
+        corner-1: "212, 100, 100"
+        corner-2: "251, 107, 139"
+        resources:
+          - { block: warped_stem, depleted: "stripped_warped_stem" }
+    biome: warped_forest
+    palette: { floor: "soul_soil", base: "netherrack", wall: "polished_blackstone_bricks", trim: "warped_stem", light: "soul_lantern", pad: "chiseled_stone_bricks", ground: "warped_nylium", leaves: "warped_wart_block" }
+  # ---------------------------------------------------------------- combat wing
+  combat_t01:
+    aspect: combat
+    tier: 1
+    name: "Graveyard"
+    resource-name: "Zombies"
+    required-level: 0
+    built: false
+    region: { corner-1: "-48, 94, -160", corner-2: "31, 110, -81" }
+    spawn: "0.5, 100, -85.5, 180, 0"
+    gate: { corner-1: "-2, 100, -81", corner-2: "2, 104, -81" }
+    exit: { corner-1: "-2, 100, -160", corner-2: "2, 104, -160" }
+    causeway: { corner-1: "-4, 96, -80", corner-2: "4, 105, -49" }
+    arena: { corner-1: "-33, 100, -145", corner-2: "16, 110, -96" }
+    palette: { floor: "coarse_dirt", base: "stone", wall: "cracked_stone_bricks", trim: "dark_oak_log", light: "lantern", pad: "chiseled_stone_bricks", arena: "podzol" }
+  combat_t02:
+    aspect: combat
+    tier: 2
+    name: "Bone Crypt"
+    resource-name: "Skeletons"
+    required-level: 6
+    built: false
+    region: { corner-1: "-48, 94, -272", corner-2: "31, 110, -193" }
+    spawn: "0.5, 100, -197.5, 180, 0"
+    gate: { corner-1: "-2, 100, -193", corner-2: "2, 104, -193" }
+    exit: { corner-1: "-2, 100, -272", corner-2: "2, 104, -272" }
+    causeway: { corner-1: "-4, 96, -192", corner-2: "4, 105, -161" }
+    arena: { corner-1: "-33, 100, -257", corner-2: "16, 110, -208" }
+    palette: { floor: "stone_bricks", base: "stone", wall: "bone_block", trim: "polished_basalt", light: "lantern", pad: "chiseled_stone_bricks", arena: "polished_deepslate" }
+  combat_t03:
+    aspect: combat
+    tier: 3
+    name: "Spider Den"
+    resource-name: "Spiders"
+    required-level: 12
+    built: false
+    region: { corner-1: "-48, 94, -384", corner-2: "31, 110, -305" }
+    spawn: "0.5, 100, -309.5, 180, 0"
+    gate: { corner-1: "-2, 100, -305", corner-2: "2, 104, -305" }
+    exit: { corner-1: "-2, 100, -384", corner-2: "2, 104, -384" }
+    causeway: { corner-1: "-4, 96, -304", corner-2: "4, 105, -273" }
+    arena: { corner-1: "-33, 100, -369", corner-2: "16, 110, -320" }
+    palette: { floor: "tuff", base: "stone", wall: "deepslate", trim: "tuff_bricks", light: "lantern", pad: "chiseled_stone_bricks", arena: "cobbled_deepslate" }
+  combat_t04:
+    aspect: combat
+    tier: 4
+    name: "Slime Bog"
+    resource-name: "Slimes"
+    required-level: 18
+    built: false
+    region: { corner-1: "-48, 94, -496", corner-2: "31, 110, -417" }
+    spawn: "0.5, 100, -421.5, 180, 0"
+    gate: { corner-1: "-2, 100, -417", corner-2: "2, 104, -417" }
+    exit: { corner-1: "-2, 100, -496", corner-2: "2, 104, -496" }
+    causeway: { corner-1: "-4, 96, -416", corner-2: "4, 105, -385" }
+    arena: { corner-1: "-33, 100, -481", corner-2: "16, 110, -432" }
+    palette: { floor: "packed_mud", base: "stone", wall: "mud_bricks", trim: "mangrove_log", light: "verdant_froglight", pad: "chiseled_stone_bricks", arena: "mud_bricks" }
+  combat_t05:
+    aspect: combat
+    tier: 5
+    name: "Sunken Ruins"
+    resource-name: "Drowned"
+    required-level: 24
+    built: false
+    region: { corner-1: "-48, 94, -608", corner-2: "31, 110, -529" }
+    spawn: "0.5, 100, -533.5, 180, 0"
+    gate: { corner-1: "-2, 100, -529", corner-2: "2, 104, -529" }
+    exit: { corner-1: "31, 100, -571", corner-2: "31, 104, -567" }
+    causeway: { corner-1: "-4, 96, -528", corner-2: "4, 105, -497" }
+    arena: { corner-1: "-33, 100, -593", corner-2: "16, 110, -544" }
+    palette: { floor: "prismarine_bricks", base: "stone", wall: "dark_prismarine", trim: "prismarine", light: "sea_lantern", pad: "chiseled_stone_bricks", arena: "dark_prismarine" }
+  combat_t06:
+    aspect: combat
+    tier: 6
+    name: "Witch Hollow"
+    resource-name: "Witches"
+    required-level: 30
+    built: false
+    region: { corner-1: "80, 94, -608", corner-2: "159, 110, -529" }
+    spawn: "85.5, 100, -568.5, -90, 0"
+    gate: { corner-1: "80, 100, -571", corner-2: "80, 104, -567" }
+    exit: { corner-1: "126, 100, -529", corner-2: "130, 104, -529" }
+    causeway: { corner-1: "32, 96, -573", corner-2: "79, 105, -565" }
+    arena: { corner-1: "95, 100, -593", corner-2: "144, 110, -544" }
+    palette: { floor: "podzol", base: "stone", wall: "dark_oak_planks", trim: "spruce_log", light: "pearlescent_froglight", pad: "chiseled_stone_bricks", arena: "moss_block" }
+  combat_t07:
+    aspect: combat
+    tier: 7
+    name: "Pillager Outpost"
+    resource-name: "Pillagers"
+    required-level: 38
+    built: false
+    region: { corner-1: "80, 94, -496", corner-2: "159, 110, -417" }
+    spawn: "128.5, 100, -490.5, 0, 0"
+    gate: { corner-1: "126, 100, -496", corner-2: "130, 104, -496" }
+    exit: { corner-1: "126, 100, -417", corner-2: "130, 104, -417" }
+    causeway: { corner-1: "124, 96, -528", corner-2: "132, 105, -497" }
+    arena: { corner-1: "95, 100, -481", corner-2: "144, 110, -432" }
+    palette: { floor: "cobblestone", base: "stone", wall: "dark_oak_log", trim: "dark_oak_planks", light: "lantern", pad: "chiseled_stone_bricks", arena: "spruce_planks" }
+  combat_t08:
+    aspect: combat
+    tier: 8
+    name: "Blaze Forge"
+    resource-name: "Blazes"
+    required-level: 46
+    built: false
+    region: { corner-1: "80, 94, -384", corner-2: "159, 110, -305" }
+    spawn: "128.5, 100, -378.5, 0, 0"
+    gate: { corner-1: "126, 100, -384", corner-2: "130, 104, -384" }
+    exit: { corner-1: "126, 100, -305", corner-2: "130, 104, -305" }
+    causeway: { corner-1: "124, 96, -416", corner-2: "132, 105, -385" }
+    arena: { corner-1: "95, 100, -369", corner-2: "144, 110, -320" }
+    palette: { floor: "blackstone", base: "stone", wall: "nether_bricks", trim: "iron_block", light: "shroomlight", pad: "chiseled_stone_bricks", arena: "nether_bricks" }
+  combat_t09:
+    aspect: combat
+    tier: 9
+    name: "Wither Keep"
+    resource-name: "Wither Skeletons"
+    required-level: 55
+    built: false
+    region: { corner-1: "80, 94, -272", corner-2: "159, 110, -193" }
+    spawn: "128.5, 100, -266.5, 0, 0"
+    gate: { corner-1: "126, 100, -272", corner-2: "130, 104, -272" }
+    exit: { corner-1: "126, 100, -193", corner-2: "130, 104, -193" }
+    causeway: { corner-1: "124, 96, -304", corner-2: "132, 105, -273" }
+    arena: { corner-1: "95, 100, -257", corner-2: "144, 110, -208" }
+    palette: { floor: "polished_blackstone", base: "stone", wall: "polished_blackstone_bricks", trim: "chiseled_polished_blackstone", light: "lantern", pad: "chiseled_stone_bricks", arena: "blackstone" }
+  combat_t10:
+    aspect: combat
+    tier: 10
+    name: "Warlord's Citadel"
+    resource-name: "Ravagers"
+    required-level: 66
+    built: false
+    region: { corner-1: "80, 94, -160", corner-2: "159, 110, -81" }
+    spawn: "128.5, 100, -154.5, 0, 0"
+    gate: { corner-1: "126, 100, -160", corner-2: "130, 104, -160" }
+    causeway: { corner-1: "124, 96, -192", corner-2: "132, 105, -161" }
+    arena: { corner-1: "95, 100, -145", corner-2: "144, 110, -96" }
+    palette: { floor: "polished_blackstone_bricks", base: "stone", wall: "red_nether_bricks", trim: "gold_block", light: "lantern", pad: "chiseled_stone_bricks", arena: "red_nether_bricks" }

@@ -13,6 +13,12 @@
 - Depths (M4.3): fast-break audit rows use category `world` (there is no anti-cheat category). Add an `anticheat` audit category? (default: `world`)
 - Depths (M4.3): the Depths visibility choice (everyone / island / none) is kept in memory only and resets to "everyone" on rejoin until the `/settings` toggle is built. Persist it? (default: persist once the toggle exists)
 - Depths (M4.3): inside regions players can't break non-resource blocks or place blocks (`engine.protect-regions: true`). Keep? (default: yes)
+- Depths (M4.1): the Mine and Forest wings come back on a row **south** of their outward row (the Combat U fills the north band). The strip directly south of The Gate (x -80..79) stays free for a possible fourth wing, which would need its own U. OK? (default: yes)
+- Depths (M4.1): Combat tier unlock levels are not in WORLD.md; `zones.yml` uses the M3.0 proposal 0/6/12/18/24/30/38/46/55/66. OK? (default: yes)
+- Depths (M4.1): the `depths` world spawn (worlds.yml, 0.5 100 0.5) is the center of The Gate, kept free under the brazier canopy; the arrival pad and `/depths tp gate` use the south pad (0.5 100 38.5). Move the world spawn to the arrival pad? (default: keep)
+- Depths (M4.1): tier gates are open frames until M4.6 adds the per-player doors; the boss portal in Combat tier 10 already checks the tier's Combat level. OK? (default: yes)
+- Depths (M4.1): `zones.yml` is not copied into the tracked `server/plugins/PhoenixSkyblock/` configs, so a deploy never overwrites coordinates builders changed on the server (the plugin writes the default on first start). OK? (default: yes)
+- Depths (M4.1): `/depths generate` is admin only; builders get `/depths tp`. Should builders also be allowed to generate placeholders? (default: admin only)
 - Depths (M4.3): right after a break the real ore may flash for one tick (50 ms) before the depleted block shows (the server re-sends the real block when a break is cancelled). Acceptable? (default: yes; a packet-level fix would need ProtocolLib/PacketEvents)
 - M3.0 balance sheet (`docs/ECONOMY_BALANCE.md`, DRAFT): approve or change it before M3.4 prices go live. Checklist in its §12.
 - M3.0: day-3 target $5M (top) vs model ~$15M: accept the smooth curve (default) or reshape tiers 1-8 / 9-12 prices?
