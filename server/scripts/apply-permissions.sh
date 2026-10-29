@@ -17,6 +17,8 @@ for _ in $(seq 1 180); do
   sleep 2
 done
 grep -q 'Done (' "$LOG" 2>/dev/null || { echo "Server did not finish starting; permissions not applied."; exit 1; }
+# Paper finishes world setup a moment after "Done"; commands sent in the same tick fail (getLevel() null).
+sleep 8
 
 COUNT=0
 while IFS= read -r line || [ -n "$line" ]; do
