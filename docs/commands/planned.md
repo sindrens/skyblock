@@ -25,7 +25,7 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/sets`, `/enchanter` (`/skills` built: [skills](skills.md)) | Progression | … | ⬜ |
 | `/crates`, `/vote`, `/daily`, `/quests`, `/pass`, `/blackmarket`, `/collection` | Rewards | … | ⬜ |
 | `/pets`, `/duel`, `/events`, `/report`, `/pv` | Misc | … | ⬜ |
-| `/is leave`, `/is disband`, `/is transfer <member>`, `/is chat` | Island membership (REVIEW B10) | `skyblock.island.*` | ⬜ |
+| `/is chat` (`/is leave`, `/is disband`, `/is transfer` built: [islands](islands.md)) | Island membership (REVIEW B10) | `skyblock.island.*` | ⬜ |
 | `/trade <player>` | Secure two-sided trade | `skyblock.trade` | ⬜ |
 | `/msg`, `/r`, `/ignore`, `/mail` | Messaging | `skyblock.msg` … | ⬜ |
 | `/settings` | Personal toggles | `skyblock.settings` | ⬜ |
