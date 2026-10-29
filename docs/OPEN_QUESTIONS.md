@@ -34,6 +34,6 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 23. Elytra: how are they obtained without the End? (proposal: crates/Black Market/events)
 
 ## Network (SkybornMC)
-24. Network brand: logo and colors for SkybornMC itself (hub, website, store). Phoenix Skyblock stays red/phoenix.
+24. Network brand: logo drafted (sky-blue S, see branding/). Confirm or request changes. Phoenix Skyblock stays red/phoenix.
 25. Other gamemodes planned, and when? (decides when the proxy + hub are needed)
 26. Hub/lobby: what should it contain?

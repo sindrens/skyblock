@@ -303,7 +303,8 @@ All sounds are configurable and can be muted in `/settings`.
 | Names | Network: **SkybornMC** (one word, capital S and MC). Gamemode: **Phoenix Skyblock**. Short form in chat: **Phoenix** |
 | Domain | `play.skybornmc.net` (Java + Bedrock), website `skybornmc.net`, store `store.skybornmc.net` |
 | Logo | A phoenix (owner's artwork). Needed: original file (PNG/SVG, transparent) |
-| Server icon | `server/server-icon.png`, **64×64 PNG**, phoenix head/silhouette on transparent or charcoal, readable at tiny size |
+| SkybornMC logo | `branding/skybornmc-logo.svg` (+ 128/512/1024 PNG): a chunky 3D **S** in sky white→cyan→blue with a navy extrusion and golden cracks, white wings with gold tips, a night-sky disc in a cloud ring, gold/white sparkles. Network colors: sky white `#FFFFFF`, cyan `#58C2FF`, blue `#2B78F0`, navy `#061638`, gold `#FFD23F` |
+| Server icon | `server/server-icon.png`, **64×64 PNG**: the SkybornMC S logo (deployed with the server configs) |
 | MOTD | Animated hex gradients from the `motd` module (`motd.yml`): 4 designs (coming soon, the phoenix rises, season live, double XP), rotation, auto-centering, hover info. Once the network has a proxy, the same module/config moves there |
 | Resource pack glyph | The phoenix as a font glyph (for chat prefix, scoreboard title, tab). Needs a Geyser mapping so Bedrock shows it too; until then, fall back to `✦` |
 | Particles | Brand particles: `flame`, `small_flame`, `lava` drips, `dust` in brand red. Used at spawn, crates, level-ups |
