@@ -47,6 +47,7 @@ NPCs use 1.21.9+ **mannequin** entities (custom built), with name + one-line rol
 
 - Each island owns one **region-file slot (512 × 512 blocks)**. Island center = center of the region. Deleting/resetting an island = deleting one region file (fast, safe).
 - Start size **3×3 chunks (48×48)**, Island Size upgrade grows by 1 chunk ring per level, max **15×15 chunks (240×240)**.
+- Slots are numbered in a square spiral from grid 0,0 (freed slots are reused first). Because islands are chunk-aligned with an odd width, the island center is chunk 16 of the slot (center point = slot corner + 264, not 256): start 3×3 = slot blocks 240–287, 15×15 = 144–383 (implemented in M2.1, `IslandGrid`).
 - The border is a per-player world border (packet), shown in the island's border color (cosmetic).
 - Height: world range -64 to 320, but **building on islands is limited to Y 0–256** (owner decision).
 - Starting schematic: configurable. Default: small medieval islet (grass/dirt, 1 oak tree, a chest with starter items, a sign "Open /menu").

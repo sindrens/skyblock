@@ -16,11 +16,11 @@ categories:
     topics: [welcome, menu, help, settings, rules]
   islands:
     icon: grass_block
-    status: coming-soon
+    status: active
     slot: 12
     name: "<c:flame><bold>Islands"
     lore: ["<c:text>Your own island in the sky:", "<c:text>build, grow and team up."]
-    topics: []
+    topics: [island]
   depths:
     icon: iron_pickaxe
     status: coming-soon
@@ -336,6 +336,34 @@ topics:
           - "<c:value>/tags</c:value> <c:text>or</c:text> <c:value>/titles</c:value> <c:text>opens one menu with"
           - "<c:text>both tabs. Equip one title and one tag;"
           - "<c:text>the head at the top shows your look."
+
+  island:
+    icon: grass_block
+    aliases: [islands, is, home, sethome]
+    name: "<c:flame>Your island"
+    summary: ["<c:text>Create your island and find", "<c:text>your way back home."]
+    take-me-there: "is"
+    commands: [Island]
+    pages:
+      - title: "<c:value>Getting one"
+        lines:
+          - "<c:text>Type <c:value>/is</c:value> and confirm. Your own small"
+          - "<c:text>meadow is built and you're taken there."
+          - "<c:text>The starter chest has your first items."
+      - title: "<c:value>Going home"
+        lines:
+          - "<c:value>/is</c:value> <c:text>or</c:text> <c:value>/is home</c:value> <c:text>takes you back to your"
+          - "<c:text>island. Stand somewhere safe on it and"
+          - "<c:text>use <c:value>/is sethome</c:value> to move your home."
+      - title: "<c:value>The border"
+        lines:
+          - "<c:text>The border you see is your island's edge:"
+          - "<c:text>you can only build inside it. It starts"
+          - "<c:text>at 3x3 chunks and grows with upgrades."
+      - title: "<c:value>Falling off"
+        lines:
+          - "<c:text>Fell into the void? No worries: you land"
+          - "<c:text>back on your island without damage."
 
   staff:
     icon: shield

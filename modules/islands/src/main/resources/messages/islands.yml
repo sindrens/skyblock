@@ -1,0 +1,72 @@
+# Islands (/is). MiniMessage + style tags (style.yml). Placeholders in <angle> brackets. Reload: /skyblock reload islands
+
+# Shown wherever the island has no custom name yet (<owner> = the owner's name).
+default-name: "<owner>'s Island"
+
+no-island: "<prefix><c:error><sym:cross> You don't have an island yet. <click:run_command:'/is'><hover:show_text:'<c:text>Create your island'><c:action>[Create one]</c:action></hover></click>"
+
+create:
+  menu:
+    crumb: "Create your island"
+    shown:
+      name: "<c:flame><bold>Your own island"
+      lore:
+        - "<c:text>A small meadow in the sky,"
+        - "<c:text>all yours to build on."
+        - ""
+        - "<c:text>Start size: <c:value><size>x<size> chunks</c:value> <c:muted>(<blocks>x<blocks> blocks)"
+    details:
+      - "<c:text>Creates your <c:value>solo island</c:value> and"
+      - "<c:text>takes you there. Free."
+      - "<c:text>Border: <c:value><size>x<size></c:value> chunks, grows to <c:value><max>x<max></c:value>."
+  started: "<prefix><c:ember><sym:time></c:ember> <c:text>Building your island, one moment..."
+  busy: "<prefix><c:text>Your island is being built. You'll be teleported when it's ready."
+  already: "<prefix><c:error><sym:cross> You already have an island. Use <click:run_command:'/is home'><c:action>/is home</c:action></click>."
+  cooldown: "<prefix><c:error><sym:cross> You disbanded an island recently. You can create a new one in <c:value><time></c:value>."
+  cancelled: "<prefix><c:text>No problem. Type <click:run_command:'/is'><c:action>/is</c:action></click> <c:text>when you're ready."
+  build-failed: "<prefix><c:error><sym:cross> Something went wrong while building your island. Try <c:value>/is</c:value> again in a moment or tell a staff member."
+  title:
+    title: "<grad:phoenix><bold>YOUR ISLAND</bold></grad>"
+    subtitle: "<c:text>Rise from the ashes"
+    fade-in: 10
+    stay: 60
+    fade-out: 20
+  welcome: "<prefix><c:success><sym:check> <c:text>Welcome to your island! Your starter chest is right in front of you."
+  objective: "<c:brand><sym:bullet></c:brand> <c:text>Next: <c:value>Open your starter chest</c:value> <c:muted>· then <click:run_command:'/menu'><c:action>/menu</c:action></click>"
+
+home:
+  destination: "your island"
+  arrived: "<c:ember><sym:bullet></c:ember> <c:text>Welcome home"
+  moved-safe: "<prefix><c:warning>Your home wasn't safe, so you were taken to the nearest safe spot. <c:muted>Set a new one with <c:value>/is sethome</c:value>."
+  rescued: "<prefix><c:warning>Your island had no safe spot left, so a block was placed under your home."
+  rebuilding: "<prefix><c:text>Your island wasn't finished last time. Building it now..."
+
+sethome:
+  done: "<prefix><c:success><sym:check> <c:text>Island home set where you stand."
+  not-leader: "<prefix><c:error><sym:cross> Only the island leader can move the home."
+  outside: "<prefix><c:error><sym:cross> Stand inside your island's border to set the home."
+  height: "<prefix><c:error><sym:cross> The home must be between <c:value>Y <min></c:value> and <c:value>Y <max></c:value>."
+  unsafe: "<prefix><c:error><sym:cross> This spot isn't safe. Stand on solid ground with room above you, away from water and lava."
+
+protection:
+  not-member: "<c:error><sym:cross> <c:text>This isn't your island."
+  outside: "<c:error><sym:cross> <c:text>You can only build inside an island's border."
+
+void:
+  rescued: "<c:ember><sym:bullet></c:ember> <c:text>Caught you! Back on solid ground."
+
+starter:
+  # The 4 lines of the starter island's sign (Bedrock-safe, max ~15 characters each).
+  sign:
+    - ""
+    - "<c:ember>Open"
+    - "<c:brand><bold>/menu"
+    - ""
+
+placeholder:
+  level-none: "-"
+
+error:
+  database: "<prefix><c:error><sym:cross> The island data couldn't be loaded or saved. Try again in a moment."
+  world: "<prefix><c:error><sym:cross> The island world <c:value><world></c:value> isn't loaded. Tell a staff member."
+  teleport: "<prefix><c:error><sym:cross> Couldn't teleport you to your island. Try again."

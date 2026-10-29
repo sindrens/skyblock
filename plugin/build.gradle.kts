@@ -17,7 +17,7 @@ dependencies {
     implementation(project(":modules:menus"))
     implementation(project(":modules:logs"))
     implementation(project(":modules:cosmetics"))
-    // implementation(project(":modules:islands"))
+    implementation(project(":modules:islands"))
 }
 
 tasks {
