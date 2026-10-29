@@ -21,12 +21,12 @@ done < <(find permissions -maxdepth 1 -type f -name '*.txt' | LC_ALL=C sort)
 echo "Waiting for the server to finish starting..."
 for _ in $(seq 1 180); do
   if tmux has-session -t skyblock 2>/dev/null && [ -f "$LOG" ] \
-     && [ "$(stat -c %Y "$LOG")" -ge "$SINCE" ] && grep -q 'Done (' "$LOG"; then
+     && [ "$(stat -c %Y "$LOG")" -ge "$SINCE" ] && grep -q 'For help, type "help"' "$LOG"; then
     break
   fi
   sleep 2
 done
-grep -q 'Done (' "$LOG" 2>/dev/null || { echo "Server did not finish starting; permissions not applied."; exit 1; }
+grep -q 'For help, type "help"' "$LOG" 2>/dev/null || { echo "Server did not finish starting; permissions not applied."; exit 1; }
 # Paper finishes world setup a moment after "Done"; commands sent in the same tick fail (getLevel() null).
 sleep 8
 
