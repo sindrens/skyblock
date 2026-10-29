@@ -34,10 +34,14 @@ import java.util.stream.Stream;
  *
  * <p>SQL must run on both MariaDB and H2 (MySQL mode): no {@code ENGINE=}, indexes via
  * {@code CREATE INDEX IF NOT EXISTS idx_<table>_<col> ON <table> (...)}, statements end with {@code ;} at line end.</p>
+ *
+ * <p><b>Dialect variants:</b> when one database needs its own DDL (e.g. MariaDB partitioning), add
+ * {@code V002__audit.mariadb.sql} and/or {@code V002__audit.h2.sql}. The variant for the running database wins over a
+ * generic {@code V002__audit.sql}; variants for the other database are ignored.</p>
  */
 public final class Migrations {
 
-    static final Pattern FILE = Pattern.compile("V(\\d{3,})__([A-Za-z0-9_]+)\\.sql");
+    static final Pattern FILE = Pattern.compile("V(\\d{3,})__([A-Za-z0-9_]+)(?:\\.(mariadb|h2))?\\.sql");
     private static final Pattern STATEMENT_END = Pattern.compile(";\\s*(?:\\r?\\n|$)");
 
     /** A migration that could not be applied. */
@@ -70,7 +74,7 @@ public final class Migrations {
         }
         List<Migration> migrations;
         try {
-            migrations = find(module, loader);
+            migrations = find(module, loader, db.type().name().toLowerCase(java.util.Locale.ROOT));
         } catch (IOException | URISyntaxException e) {
             throw new MigrationException("Could not read migrations in db/" + module + "/: " + e.getMessage(), e);
         }
@@ -140,8 +144,16 @@ public final class Migrations {
         return count;
     }
 
-    /** Finds and orders the migration files of a module. */
+    /** Finds and orders the generic migration files of a module (no dialect variants). */
     static List<Migration> find(String module, ClassLoader loader) throws IOException, URISyntaxException {
+        return find(module, loader, null);
+    }
+
+    /**
+     * Finds and orders the migration files of a module for {@code dialect} ({@code "mariadb"}/{@code "h2"}, or
+     * {@code null} for generic files only).
+     */
+    static List<Migration> find(String module, ClassLoader loader, String dialect) throws IOException, URISyntaxException {
         String dir = "db/" + module;
         Map<Integer, Migration> byVersion = new TreeMap<>();
         List<URL> urls = new ArrayList<>(java.util.Collections.list(loader.getResources(dir)));
@@ -162,6 +174,14 @@ public final class Migrations {
                     continue;
                 }
                 int version = Integer.parseInt(m.group(1));
+                String variant = m.group(3);
+                if (variant != null && !variant.equals(dialect)) {
+                    continue; // for the other database
+                }
+                Migration existing = byVersion.get(version);
+                if (existing != null && variant == null && existing.file().contains("." + dialect + ".")) {
+                    continue; // the dialect variant already won
+                }
                 String sql;
                 try (InputStream in = loader.getResourceAsStream(dir + "/" + name)) {
                     if (in == null) {
@@ -170,7 +190,9 @@ public final class Migrations {
                     sql = new String(in.readAllBytes(), StandardCharsets.UTF_8);
                 }
                 Migration previous = byVersion.put(version, new Migration(version, m.group(2).replace('_', ' '), name, sql));
-                if (previous != null && !previous.file().equals(name)) {
+                boolean variantReplacesGeneric = previous != null && variant != null && !previous.file().contains("." + variant + ".")
+                        && previous.file().replace(".sql", "").equals(name.replace("." + variant + ".sql", ""));
+                if (previous != null && !previous.file().equals(name) && !variantReplacesGeneric) {
                     throw new IOException(dir + ": two migrations with version " + version + " (" + previous.file() + ", " + name + ")");
                 }
             }
