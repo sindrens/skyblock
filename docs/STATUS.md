@@ -27,8 +27,11 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
-- Last released bundle: update35 (base for next: main at release). Next bundle number: 36.
+- Last released bundle: update40 (main at release). Next bundle number: 41.
 - Owner gets a push notification on every release (PushNotification tool).
+
+## Owner answers page
+- Round-2 questions are answered in the artifact https://claude.ai/artifact/QHrsxdXw45E9Tti5jHtVVy (db doc `answers/owner`: map code → {c: d=suggested | n=no | o=other, t: text}, `done: true` when finished). Read it with ArtifactData `get` collection `answers` doc `owner`. Source questions: `docs/QUESTIONS_ROUND2.md`.
 
 ## Owner rules (always)
 - Unit tests allowed: `./gradlew build` (with tests) must pass before every merge. Never a test server without permission.
