@@ -25,7 +25,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | M3.0 | Balance sheet `docs/ECONOMY_BALANCE.md` (owner approves before prices go live) | — | docs only | 🔄 |
-| M3.1 | Currencies + ledger, EconomyService, `/bal /baltop /pay /transactions /eco` | Phase 1 | modules/economy | ⬜ |
+| M3.1 | Currencies + ledger, EconomyService, `/bal /baltop /pay /transactions /eco` | Phase 1 | modules/economy | 🔄 |
 | M3.2 | Money notes (`/withdraw`, `/eco note`) | M3.1 | modules/economy | ⬜ |
 | M3.4 | Selling + dynamic prices (`/sell`) | M3.1 | modules/economy (sell pkg) | ⬜ |
 | M3.5 | Builder shop `/shop` | M3.1 | modules/shop | ⬜ |
@@ -37,7 +37,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 ## Phase 4: Tools + The Depths (docs/phases/PHASE-4-DEPTHS.md)
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
-| M4.3 | Per-player blocks engine (depleted state per player, 10 s respawn, timing wheel) | Phase 1 | modules/depths (engine pkg) | 🔄 |
+| M4.3 | Per-player blocks engine (depleted state per player, 10 s respawn, timing wheel) | Phase 1 | modules/depths (engine pkg) | ✅ |
 | M4.1 | Depths layout from `depths.yml` (placeholder zones by code, U-shaped wings) | M4.3 | modules/depths (zones pkg) | ⬜ |
 | M4.5 | Skill core (XP/levels, `/skills`) | Phase 1 | modules/skills | ⬜ |
 | M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | ⬜ |

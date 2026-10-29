@@ -41,6 +41,7 @@
 - **Builder brief** (`docs/BUILDER_BRIEF.md`) for every build.
 - **Phase 1 rest:** punishments (`/punish`, ladders, alts), staff mode (`/staffmode`), freeze, inspect, reports, `/logs`, tags & titles, `/display`, `/admin`.
 - **Per-module files (F2):** permissions in `permissions/<module>.yml`, LuckPerms grants in `server/permissions/<module>.txt`, command docs in `docs/commands/<module>.md` (index via `./gradlew commandsIndex`).
+- **M4.3 per-player blocks engine:** personal ore/log depletion with 10 s respawn (timing wheel), chunk-resend safe, `ResourceBreakEvent` + Depths API, anti fast-break with staff alerts, `/depths debug`.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
