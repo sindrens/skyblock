@@ -91,3 +91,11 @@ lp group owner permission set * true
 
 # --- People ---
 lp user Pouched parent add owner
+
+# --- Social module (staff) ---
+lp group helper permission set skyblock.staff.socialspy true
+lp group helper permission set skyblock.staff.whois true
+lp group helper permission set skyblock.staff.seen.details true
+lp group helper permission set skyblock.staff.unignorable true
+lp group mod permission set skyblock.staff.whois.ip true
+lp group admin permission set skyblock.staff.broadcast true

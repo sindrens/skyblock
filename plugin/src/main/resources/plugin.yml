@@ -25,3 +25,45 @@ permissions:
   skyblock.cooldown.bypass:
     description: Skip command cooldowns
     default: op
+  skyblock.social.msg:
+    description: Send private messages (/msg, /r)
+    default: true
+  skyblock.social.ignore:
+    description: Ignore players (/ignore, /unignore)
+    default: true
+  skyblock.social.afk:
+    description: Mark yourself AFK (/afk)
+    default: true
+  skyblock.social.list:
+    description: See online players (/list)
+    default: true
+  skyblock.social.ping:
+    description: See ping (/ping)
+    default: true
+  skyblock.social.playtime:
+    description: See play time (/playtime)
+    default: true
+  skyblock.social.seen:
+    description: See when a player was last online (/seen)
+    default: true
+  skyblock.social.links:
+    description: Link commands (/discord, /store, /vote, /website, /rules)
+    default: true
+  skyblock.staff.socialspy:
+    description: See all private messages (/socialspy)
+    default: op
+  skyblock.staff.whois:
+    description: Player info (/whois)
+    default: op
+  skyblock.staff.whois.ip:
+    description: See addresses and alt accounts in /whois
+    default: op
+  skyblock.staff.seen.details:
+    description: See UUID and platform in /seen
+    default: op
+  skyblock.staff.broadcast:
+    description: Server announcements (/broadcast)
+    default: op
+  skyblock.staff.unignorable:
+    description: Private messages can't be ignored
+    default: op
