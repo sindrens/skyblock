@@ -49,7 +49,7 @@ final class MemberStore {
 
     /** Result of accepting an invite. */
     sealed interface AcceptResult {
-        record Joined(UUID islandId, long joinedAt, UUID inviter) implements AcceptResult {
+        record Joined(UUID islandId, long joinedAt, UUID inviter, boolean converted) implements AcceptResult {
         }
 
         record NoInvite() implements AcceptResult {
@@ -278,10 +278,8 @@ final class MemberStore {
         if (!(check instanceof JoinRules.Check.Ok)) {
             return new InviteResult.Limited(check);
         }
+        // Owner 2026-10-30: the island only becomes a team island when the invite is ACCEPTED (see accept()).
         boolean converted = false;
-        if (!island.get().team()) {
-            converted = Sql.update(c, "UPDATE islands SET type = ? WHERE id = ? AND type = ?", "team", islandId, "solo") == 1;
-        }
         Sql.update(c, "DELETE FROM island_invites WHERE island_id = ? AND target_uuid = ?", islandId, target);
         Sql.update(c, "INSERT INTO island_invites (island_id, target_uuid, inviter_uuid, created_at, expires_at) VALUES (?, ?, ?, ?, ?)",
                 islandId, target, inviter, now, expiresAt);
@@ -310,13 +308,16 @@ final class MemberStore {
         if (!(check instanceof JoinRules.Check.Ok)) {
             return new AcceptResult.Limited(check);
         }
+        // A second member makes a solo island a team island forever (DESIGN 3.2), in the same transaction as the join.
+        boolean converted = !island.get().team()
+                && Sql.update(c, "UPDATE islands SET type = ? WHERE id = ? AND type = ?", "team", islandId, "solo") == 1;
         Sql.update(c, "INSERT INTO island_members (island_id, uuid, role, joined_at, invited_by) VALUES (?, ?, ?, ?, ?)",
                 islandId, target, "member", now, inviter.get());
         Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, counted) VALUES (?, ?, ?, ?, ?)",
                 target, islandId, limits.seasonId(), now, true);
         Sql.update(c, "DELETE FROM island_invites WHERE target_uuid = ?", target);
         Sql.update(c, "DELETE FROM island_coops WHERE island_id = ? AND uuid = ?", islandId, target);
-        return new AcceptResult.Joined(islandId, now, inviter.get());
+        return new AcceptResult.Joined(islandId, now, inviter.get(), converted);
     }
 
     static AddResult addMember(Connection c, UUID islandId, UUID uuid, UUID addedBy, long now, Limits limits) throws SQLException {

@@ -271,12 +271,19 @@ final class MemberManager {
             islands.fail(player, "error.island-gone");
             return;
         }
+        if (joined.converted()) {
+            island.markTeam();
+        }
         islands.cacheJoin(island, player.getUniqueId(), Role.MEMBER, joined.joinedAt(), joined.inviter());
         String name = islands.displayName(island);
         core.audit().log(AuditCategory.ISLAND, "island_join", Actor.player(player), island.id().toString(), name, null, null,
                 Map.of("player", player.getUniqueId().toString(), "inviter", joined.inviter().toString(),
-                        "season", config().seasonId, "members", island.memberCount(), "slots", islands.slots(island)));
+                        "season", config().seasonId, "members", island.memberCount(), "slots", islands.slots(island),
+                        "became_team", joined.converted()));
         msg.send(player, "accept.joined", Msg.p("island", name));
+        if (joined.converted()) {
+            notifyMembers(island, player.getUniqueId(), "invite.now-team");
+        }
         msg.title(player, "accept.title", Msg.p("island", name));
         core.sounds().play(player, "unlock");
         notifyMembers(island, player.getUniqueId(), "notify.joined", Msg.p("player", player.getName()),
