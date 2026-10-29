@@ -249,7 +249,7 @@ spawn world (border 1000)            depths world (border 2000*, night)         
 islands world: one 512×512 slot per island, spiral from 0,0     outposts world: same grid, outpost schematics
 ```
 
-**Placement in the Depths (assumption, matches WORLD.md "The Gate with three wings"):** The Gate at the world spawn (0, 100, 0). Mine wing extends **west** (negative X), Forest wing **east** (positive X), Combat wing **north** (negative Z), world boss arena at the far north end of Combat. South of the Gate stays empty (room for a future fourth wing, e.g. Fishing, if the owner adds one).
+**Placement in the Depths (assumption, matches WORLD.md "The Gate with three wings"):** The Gate at the world spawn (0, 100, 0). Mine wing extends **west** (negative X), Forest wing **east** (positive X), Combat wing **north** (negative Z). Because the wings bend into a U (see below), tier 10 ends back near the Gate, so the **world boss arena is not at the end of the walk**: it sits on its own floating island at the **far north apex** (around Z -850, beyond the U's turn), reached by a **boss portal** in tier 10 (and a `/boss` warp later). This keeps the "distant fortress silhouette" visible from the Combat Gate and the U turn. South of the Gate stays empty (room for a future fourth wing, e.g. Fishing, if the owner adds one).
 
 **Distances and the border problem (critique):** each tier zone is about 80 × 80 blocks plus a 20–40 block causeway between zones, so 12 Mine tiers in a straight line reach about X -1,400. A 2000 border (radius 1000) can't hold that. **Recommended:** each wing **bends into a U**: go out 6 tiers, turn, come back 6 tiers on a parallel causeway ~60 blocks away. Everything then fits in radius ~800, and late tiers end near the Gate (nice for high-level players). Alternative: raise the border in `worlds.yml` to 3,200. (assumption; §14 Q4)
 
@@ -301,7 +301,7 @@ Seven areas around one courtyard, like a **wheel**: each area is reached by one 
 
 **As if standing there:** You appear on a slightly raised circular dais of polished deepslate and chiseled stone bricks, inlaid with a ring of red nether brick and a flat gold-and-orange sunburst in slabs. In front of you, 15–20 blocks away, the **Phoenix Statue** rises about **40 blocks**: a stylised phoenix with wings spread up and back, body in red nether bricks and red terracotta, feathers grading from red at the root through orange terracotta and cut copper to yellow terracotta and a few gold blocks at the tips, eyes of shroomlight. It rises out of a wide brazier of polished blackstone and chains, filled with campfires and magma under glass, so it always burns. Code adds flame particles at the brazier and wing tips. Behind the statue the **castle keep** towers over everything (dark stone, red banners, red-and-gold roofs): the landmark you can see from every point of spawn and from the decor islands.
 
-Around you, the courtyard is ringed by low arcades (stone brick arches, spruce beams, lanterns on chains). The **five roads** leave between them, each through a **wing arch** of red nether brick with a district banner and a signpost (code text display: "◆ Market Square", "⛏ Forge Quarter"…). Roads are polished andesite with stone brick borders and a tuff brick center line the eye follows.
+Around you, the courtyard is ringed by low arcades (stone brick arches, spruce beams, lanterns on chains). The **six roads** (one per district: seven areas including the courtyard itself) leave between them, each through a **wing arch** of red nether brick with a district banner and a signpost (code text display: "◆ Market Square", "⛏ Forge Quarter"…). Roads are polished andesite with stone brick borders and a tuff brick center line the eye follows.
 
 At your right hand, 4–6 blocks from the spawn point and inside the first view, stands the **Guide NPC** pad with a brazier beside it and the **info board** (code text: "Start here → /menu"). New players cannot miss it.
 
@@ -460,14 +460,14 @@ Mostly **exterior**: height to ~Y 175, big red cone and hip roofs with feather t
 | **Avoid** | Soul lanterns/soul fire, sea lanterns (cold light belongs to frost), concrete walls, glazed terracotta floors, end rods everywhere, neon colors |
 
 ### 5.17 Deliverables
-- `spawn_citadel_vN.schem` (origin 0,100,0) + `spawn_citadel_vN.yml`: spawn point; NPC pads (guide, quartermaster, blacksmith, enchanter, shop, sell, bank, ah, black_market, quests, daily, vote, showcase, help: **14**); all hologram/leaderboard spots; 6 crate tops; 5 portal cuboids + landing spots; particle points; secrets; the protected region.
+- `spawn_citadel_vN.schem` (origin 0,100,0) + `spawn_citadel_vN.yml`: spawn point; NPC pads (guide, quartermaster, blacksmith, enchanter, shop, sell, bank, ah, black_market, quests, daily, vote, help: **13**) + the showcase **display spot** (5 mannequin plinths + hologram, no NPC; see Q-showcase); all hologram/leaderboard spots; 6 crate tops; 5 portal cuboids + landing spots; particle points; secrets; the protected region.
 - Screenshots: arrival view, each district, top view.
 - A note listing entities used (target 0).
 
 ### 5.18 Acceptance checklist (spawn)
 - [ ] First view from the spawn point shows the statue, the keep and the Guide NPC.
 - [ ] Every district reachable in under 30 s of walking; no jumps or ladders on main routes.
-- [ ] All 14 NPC pads at walking height with a 3×3 clear area in front.
+- [ ] All 13 NPC pads at walking height with a 3×3 clear area in front.
 - [ ] Light level ≥ 8 on every walkable block.
 - [ ] No accidental falls; no access to roofs from decorations.
 - [ ] Crates in rarity order, terrace ≥ 30 × 20.
@@ -606,7 +606,7 @@ The Depths is the **main income loop** (~50% of income). The Gate is its hub: pl
 You step out of the arrival portal on the south side of a vast **circular stone court** carved into a floating rock, under a starry night sky. In the center, a **great brazier tower**: a 12-block column of polished blackstone with a wide fire bowl on top (campfires, magma under glass) and four phoenix wing arches around its base, lighting the whole court orange. Around the edge, three monumental **wing gates**, each 9 wide × 12 tall, each themed like its wing and topped by its icon:
 - **West: The Mine Gate** — deepslate tiles and tuff bricks, copper beams, minecart rails (decor) disappearing into the gate, an iron pickaxe crest (built from blocks), hanging lanterns. Through the gate you see the causeway descending into a cave mouth glowing with ore specks.
 - **East: The Forest Gate** — two huge living trees (oak and birch, 20 tall) forming the arch, moss and vines, glow berries for warm light, a stone path continuing into a meadow under the stars.
-- **North: The Combat Gate** — cracked stone bricks, iron bars, chains, skull-like shapes (bone blocks), red banners, crossed swords crest; beyond it a dark causeway lit by braziers leading toward a distant fortress silhouette (the Warlord's Citadel / boss arena, far north).
+- **North: The Combat Gate** — cracked stone bricks, iron bars, chains, skull-like shapes (bone blocks), red banners, crossed swords crest; beyond it a dark causeway lit by braziers leading toward a distant fortress silhouette (the Warlord's Citadel / boss arena on its own island at the far north apex; players reach it through the boss portal in tier 10, see §9 placement).
 
 Between the gates, around the court: **services** under small stone pavilions:
 | Element | Count | Notes |
@@ -741,7 +741,7 @@ For every tier: theme, as-if-standing-there, palette, field ore, proposed deplet
 **Tier 12 — Voidstone (`crying_obsidian`), Mining 66: "The Void Edge"**
 - *Standing there:* the end of the world: the cave opens to the void and stars, end stone islands floating, purpur ruins, end rods for light, obsidian spikes. Silent and mysterious. The SkybornMC sky meets the phoenix world here.
 - *Palette:* end stone, end stone bricks, purpur blocks/pillars, obsidian, crying obsidian (only in the field), end rods (accent light only), black stained glass.
-- *Depleted:* `obsidian`. *Landmark:* a huge floating obsidian ring. *Mobs:* endermen (neutral).
+- *Depleted:* `end_stone` (pale and matte, the opposite of dark, glowing crying obsidian; **not** obsidian, which looks almost the same and breaks the contrast rule in §9.2). *Landmark:* a huge floating obsidian ring. *Mobs:* endermen (neutral).
 - *Critique:* open void edges: walls or glass at every edge players can reach. Nobody may fall off in the final tier.
 
 ### 9.4 Mine wing causeway
@@ -976,6 +976,7 @@ Each has a default used in this brief. Answer only the ones you disagree with.
 | Q1 | Add a **Forge Quarter** district at spawn (Quartermaster, Blacksmith, Enchanter) instead of putting them in the Market? | Yes, 7 areas around the courtyard |
 | Q2 | Do players **choose a starting island style** (Meadow + Frost Cliff + Desert Mesa + Cherry Grove), or is there one starter island? | One (Ember Meadow); variants only if you say yes |
 | Q3 | Island surface height **Y 100** (same as world spawn)? | Yes |
+| Q-showcase | Store & Discord showcase: pavilion with mannequins only (default, 13 NPCs), or also a "Herald" NPC that opens the store/Discord menu (14 NPCs)? | Mannequins only |
 | Q4 | Depths layout: wings **bend into a U** to fit the 2000 border, or **raise the border** to ~3,200 and keep straight wings? | U-shaped wings |
 | Q5 | Should **The Gate** have its own Sell NPC and Forge NPC so players don't go back to spawn? | Yes |
 | Q6 | Are **instanced party dungeons** wanted later, or are the combat tiers the dungeons? | Combat tiers are the dungeons |
