@@ -51,6 +51,7 @@
 - **M4.1 Depths layout:** `zones.yml` with The Gate, U-shaped wings, 33 tier zones, fields, boss arena + portal; `/depths generate`, `/depths tp`; ZoneService.
 - **M3.6 auction house:** `/ah` with categories, search, sort, `/ah sell` (12/24/48 h), 1% fee + 5% tax, collection bin, offline payouts, dupe-safe storage with crash recovery, all in `/logs`.
 - **Fix (P0):** `/freeze` really holds players (its own snap-back was cancelled), blocks every action and command (no `/msg`), persists across relog and restart, `/unfreeze` works offline; Inspect tool is an ender eye (spyglass zoomed); message-key test for all staff texts.
+- **M3.2 money notes:** `/withdraw` makes a unique tradeable note (right-click to cash), copies can never be cashed twice (confiscated, staff alerted, audited), staff `/eco note`.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.

@@ -14,6 +14,8 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **M4.1 Depths layout** merged (`zones.yml` written on first start, not tracked; `/depths generate`, `/depths tp`).
 - **M3.6 auction house** merged (modules/auction, `/ah`, `/ah sell`).
 - **P0** merged: freeze really holds (snap-back teleport was self-cancelled), persisted, no commands; Inspect tool = ender eye.
+- **M3.2 money notes** merged (`/withdraw`, `/eco note`).
+- Release script on the Mac (`~/Development/.skyborn-claude/release.sh`) first merges owner edits from GitHub; if it writes `from-github.bundle`, stage it and merge it into the cloud repo.
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -32,7 +34,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - P1 /p menu + warn system (Phase P)
-- M3.2 money notes
+- M4.6 Depths tiers, unlocks, /dungeon
 - M2.3 island members & roles
 
 ## Parked / broken
