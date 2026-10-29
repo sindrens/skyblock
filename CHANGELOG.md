@@ -30,6 +30,10 @@
 - **Menu redesign:** dark frame with phoenix corners, breadcrumb titles (`▸ Island » Upgrades (2/5)`), textured arrow heads, final texts, empty/loading/error states, new confirm and number picker layouts.
 - Removed the demo menu, demo items and `/skyblock give-item`.
 - Axiom config tracked (blocked on islands/outposts); all PhoenixSkyblock configs and messages are now tracked and deployed.
+- **Essentials (owner-approved):** `/spawn`, `/tpa` family, staff `/tp /tphere /tppos /top /back /home`, `/gm`, `/fly`, `/speed`, `/god`, `/heal`, `/feed`, `/clear`, `/invsee`, `/ecsee`, `/vanish`, `/i`, `/give`, `/time`, `/weather`, `/skull`, `/more` (all audited, tab completion everywhere).
+- **Social:** `/msg`, `/r`, `/ignore`, `/socialspy`, `/afk` (auto 5 min), `/list` by rank, `/ping`, `/playtime`, `/seen`, `/whois` (alts/IP for mods), `/broadcast`, `/discord /store /vote /website /rules`.
+- **Perks:** `/craft`, `/ec`, `/hat`, `/nick` + `/setnick` + `/realname`, `/trash` (donators); staff-only `/repair`, `/sudo` (owner only).
+- **PlaceholderAPI** added to the server; `&4 &c &b`, `&l`, `&#hex` color codes supported (LegacyColors) for prefixes, nicks and chat.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.

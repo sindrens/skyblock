@@ -88,6 +88,9 @@ Gradients only for: the server name, Legendary/Mythic item names, season titles 
 
 **Phoenix fire gradient** (the signature): `<gradient:#C21F2B:#FF3D2E:#FF8A1F>`, dark red → bright red → ember. Used for `PHOENIX` in the scoreboard title, tab header, join title and announcements.
 
+### 1.6b Essentials-style color codes (owner request)
+Besides MiniMessage, `&` codes work wherever players or staff type colors: LuckPerms prefixes/suffixes, nicknames, player chat (by permission), broadcasts. Supported: `&0-&9 &a-&f`, `&l &o &n &m &k &r`, hex `&#FF3D2E` or `{#FF3D2E}` (`LegacyColors` in common). Rank prefixes stay classic `&` colors so Bedrock and other plugins read them; our chat/tab/nametags may add the rank's hex `color` meta on top.
+
 ### 1.7 Brand vs. errors
 Brand red (`§4` on Bedrock) and error red (`§c`) must never be confused:
 - Errors always start with `✘` and are sentences; brand red is only used for names, titles and frames.
