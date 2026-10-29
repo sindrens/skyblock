@@ -33,8 +33,8 @@ public final class PlayerPickerMenu extends PagedMenu<Player> {
     }
 
     @Override
-    public Component title() {
-        return title != null ? title.apply(viewer) : service.text(viewer, "players.title");
+    protected List<Component> titleCrumbs() {
+        return List.of(title != null ? title.apply(viewer) : service.text(viewer, "players.crumb"));
     }
 
     @Override
