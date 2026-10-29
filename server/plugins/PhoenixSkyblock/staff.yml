@@ -1,0 +1,60 @@
+# Staff tools: staff mode (/staff), /freeze, /inspect, /report and /reports.
+# Texts are in messages/staff.yml. Reload: /skyblock reload staff
+
+mode:
+  # Vanish when entering staff mode.
+  vanish: true
+  # Night vision in staff mode.
+  night-vision: true
+  # Random teleport skips other staff members.
+  random-tp-skip-staff: true
+  # How far the Inspect/Freeze/Punish tools reach when you look at a player (blocks).
+  # Allowed: 2 to 64
+  inspect-range: 16
+freeze:
+  # Commands a frozen player may still use (without /).
+  allowed-commands:
+  - msg
+  - r
+  - tell
+  - w
+  - discord
+  - rules
+  - help
+  # How often a frozen player gets the title and chat instructions again.
+  # Allowed: 3 to 120
+  reminder-seconds: 10
+  # What happens when a frozen player logs out: alert (staff alert + note) or ban (runs the ban command).
+  logout-action: alert
+  # Console command for logout-action ban (<player> is replaced).
+  ban-command: ban <player> Logged out while frozen
+  # A frozen player who logs out is still frozen when they come back.
+  keep-on-rejoin: true
+reports:
+  # Seconds between two reports from the same player.
+  # Allowed: 0 to 3600
+  cooldown-seconds: 60
+  # How many open reports one player can have at once.
+  # Allowed: 1 to 20
+  max-open-per-player: 3
+  # Minutes a player must have played before they can report (anti-abuse; 0 = no limit).
+  # Allowed: 0 to 600
+  min-playtime-minutes: 0
+  # Maximum length of the free-text details.
+  # Allowed: 10 to 255
+  details-max-length: 120
+  # Report reasons shown in the picker (the last one asks for free text).
+  reasons:
+  - Hacking
+  - X-ray
+  - Toxicity
+  - Spam
+  - Advertising
+  - Exploiting
+  - Inappropriate build
+  - Inappropriate name
+  - Other
+  # How many recently closed reports /reports shows.
+  # Allowed: 10 to 500
+  closed-shown: 100
+config-version: 1
