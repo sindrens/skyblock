@@ -176,7 +176,7 @@ Rules:
 ### 4.3 Special items
 | Item | Rule |
 |---|---|
-| Custom tool | Name = tier + type in rarity color (`Iron Pickaxe`), subtitle `Tool · Tier 3`. Level line `Lv 23 ▰▰▰▰▰▰▱▱▱▱ 62%`, stats, perk slots (`3/5`), skin name if applied, `Blocks mined: 48,210`. Footer `RARE TOOL` |
+| Custom tool | Name = tier + type in rarity color (`Iron Pickaxe`), subtitle `Tool · Tier 3`. Level line `Lv 23 ●●●●●●○○○○ 62%` (filled `●` in flame, empty `●` in muted; ▰/▱ only after a Bedrock test), stats, perk slots (`3/5`), skin name if applied, `Blocks mined: 48,210`. Footer `RARE TOOL` |
 | Tag item | `<rarity>Tag: [Phoenix]` + preview line, "Right-click to redeem", tradeable note |
 | Money note | `<c:money>$50,000 Note`, signed-by line, unique id |
 | Keys | `<rarity>Rare Crate Key`, "Use at /crates or a crate at spawn" |
@@ -193,7 +193,7 @@ Row 1:  [ border / header items ]
 Rows 2–5: content (28 slots inside a 1-slot border, or full rows for lists)
 Row 6:  45 Back · 46 – · 47 – · 48 Info (?) · 49 Close · 50 Help · 51 – · 52 – · 53 Next page
 ```
-- **Fixed slots everywhere:** Back = 45 (arrow), Info = 48 (book), Close = 49 (barrier), Help = 50 (knowledge book), Previous page = 45 when paging (Back moves into the info item), Next page = 53 (arrow).
+- **Fixed slots everywhere:** Back = 45 (arrow), Info = 48 (book), Close = 49 (barrier), Help = 50 (knowledge book), Previous page = 45 on page 2+ (on page 1 slot 45 is Back; decided 2026-10-29 so nothing needs a right-click on Bedrock), Next page = 53 (arrow).
 - **Frame:** top row and bottom row (except the button slots) are `red_stained_glass_pane`; the side columns are `black_stained_glass_pane`. All filler panes have an empty name (` `). Pillar menus may swap the top row for the pillar's color pane.
 - **Title format:** dark red is unreadable as a chest title on dark backgrounds, so chest titles use default dark gray text with a red `▸` marker: `<c:brand>▸</c> Island » Upgrades`.
 - Titles stay short enough for Bedrock (max ~24 chars).

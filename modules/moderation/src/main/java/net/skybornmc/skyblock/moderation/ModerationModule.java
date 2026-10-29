@@ -36,7 +36,8 @@ public final class ModerationModule implements SkyblockModule {
     private final CommandService commands;
     private final ModuleMessages msg;
 
-    public ModerationModule(Core core, CommandService commands) {
+    public ModerationModule(Core core) {
+        CommandService commands = core.commands();
         this.core = core;
         this.plugin = core.plugin();
         this.commands = commands;

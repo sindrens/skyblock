@@ -47,3 +47,5 @@ server/plugins/**
 # Secrets
 .env
 **/secrets.yml
+.claude/
+server/plugins/PhoenixSkyblock/data/

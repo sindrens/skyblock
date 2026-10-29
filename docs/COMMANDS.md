@@ -44,6 +44,8 @@ Permission root: `skyblock.`. Status: ⬜ planned · 🟡 in progress · ✅ don
 | `/skyblock modules` | Module status | `skyblock.admin.modules` | ✅ |
 | `/skyblock reload [core\|module]` | Reload everything, core.yml or one module; shows config problems | `skyblock.admin.reload` | ✅ |
 | `/skyblock style` | Preview palette (hover = hex + Bedrock fallback), symbols, gradients, number formats, message types, title, action bar and a sound | `skyblock.admin.reload` | ✅ |
+| `/skyblock demo-menu` | Staff demo of every menu building block | `skyblock.admin.demo` | ✅ |
+| `/skyblock give-item <id> [player] [amount]` | Give a custom item (Tab lists ids) | `skyblock.admin.items` | ✅ |
 | `/skyblock config [file]` | List config files with status / show a file's active values (hover = description + default) | `skyblock.admin.reload` | ✅ |
 | `/skyblock worlds` | List worlds (click to teleport) | `skyblock.admin.worlds` | ✅ |
 | `/skyblock tp <world>` | Teleport to a world's spawn | `skyblock.admin.worlds` | ✅ |
@@ -62,3 +64,6 @@ Permission root: `skyblock.`. Status: ⬜ planned · 🟡 in progress · ✅ don
 | Admin | 30 | Moderator + Builder | All `skyblock.admin.*`, all vanilla commands, Grim, CoreProtect, Via, Geyser |
 | Owner | 100 | Admin | Everything (`*`) |
 Applied automatically after every update/deploy. Add people at the bottom of the file (`lp user <name> parent add <rank>`).
+
+
+Other permissions: `skyblock.cooldown.bypass` skips command cooldowns. Per-command aliases and cooldowns live in `commands.yml`.

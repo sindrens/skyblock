@@ -23,6 +23,7 @@ colors:
   error: "#FF5C5C red"
   warning: "#FFB347 gold"
   info: "#63B8FF aqua"
+  enchant: "#C77DFF light_purple"
   # SkybornMC network (from the logo)
   sky_frost: "#E4EBF0 white"
   sky_ice: "#9FC6E8 aqua"

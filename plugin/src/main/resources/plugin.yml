@@ -22,3 +22,12 @@ permissions:
   skyblock.staff.notify:
     description: See staff actions (unbans, punishments) in chat
     default: op
+  skyblock.admin.demo:
+    description: Open the menu framework demo (/skyblock demo-menu)
+    default: op
+  skyblock.admin.items:
+    description: Give custom items (/skyblock give-item)
+    default: op
+  skyblock.cooldown.bypass:
+    description: Skip command cooldowns
+    default: op

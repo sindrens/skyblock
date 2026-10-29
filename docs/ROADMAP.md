@@ -6,7 +6,7 @@ Target: everything below is in season 1. Launch is in ~3 years. There is time to
 
 | Phase | Name | Contents | Status |
 |---|---|---|---|
-| 0 | **Foundation** ([plan](phases/PHASE-0-FOUNDATION.md)) | Config, style/messages, database (MariaDB/H2, migrations), player data, commands, menus, items, services/placeholders (+ optional PlaceholderAPI), **audit log** | 🟡 Repo, deploy, worlds, MOTD, `/unban`, M0.1 config, M0.2 style/messages done |
+| 0 | **Foundation** ([plan](phases/PHASE-0-FOUNDATION.md)) | Config, style/messages, database (MariaDB/H2, migrations), player data, commands, menus, items, services/placeholders (+ optional PlaceholderAPI), **audit log** | 🟡 Repo, deploy, worlds, MOTD, `/unban`, M0.1–M0.7 done |
 | 1 | **Core player experience** ([plan](phases/PHASE-1-CORE.md)) | Spawn/join flow, teleports, chat + ranks everywhere (chat/tab/nametags), scoreboard, tab, `/menu`, `/help`, `/settings`, custom punishments, staff mode, **`/logs` viewer**, reports, `/admin` | ⬜ |
 | 2 | **Islands** ([plan](phases/PHASE-2-ISLANDS.md)) | Grid, creation (placeholder schematic), protection, roles + permission GUI, solo → team, visiting/warps/ratings, island menu, stats tracking, admin tools | ⬜ |
 | 3 | **Economy** ([plan](phases/PHASE-3-ECONOMY.md)) | Balance sheet first, currencies + ledger, `/pay`, `/transactions`, notes, banks + interest, dynamic `/sell`, builder shop, auction house, secure `/trade`, economy dashboard | ⬜ |
@@ -36,8 +36,9 @@ Target: everything below is in season 1. Launch is in ~3 years. There is time to
 - [x] Deploy tooling: `install-on-vps.sh`, `update-vps.sh`, `setup-github-deploy.sh` (push to main = deploy to test)
 - [x] Config framework (typed config objects, reload, validation)
 - [x] Messages framework (MiniMessage, placeholders, prefix, style.yml palette, sounds, Bedrock fallbacks)
-- [ ] Database layer (HikariCP, async executor, migrations)
-- [ ] GUI framework (paged menus, back/close, Bedrock-safe)
-- [ ] Command framework (subcommands, tab completion, permissions, usage help) (evaluate Paper Brigadier API)
-- [ ] Player data cache (load on join, async save, save on quit/shutdown)
+- [x] Database layer (MariaDB/H2, HikariCP, virtual-thread executor, migrations)
+- [x] GUI framework (frame, paged lists, confirm, number/player picker, chat input, click protection)
+- [x] Command framework (Brigadier, enforced tab completion, cooldowns, confirm, typed args, help index)
+- [x] Player data cache (load before join, autosave, save on quit/shutdown, name history)
+- [x] Item framework (registry, PDC id/UUID, lore builder, dupe detection)
 - [ ] Local test server workflow (`./gradlew runServer`) documented

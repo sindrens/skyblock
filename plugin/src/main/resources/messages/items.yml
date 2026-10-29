@@ -8,7 +8,7 @@ lore:
   stat: " <{color}><sym:bullet></{color}> <c:text>{label} <c:value>{value}"
   enchants: "<c:muted>Enchants"
   perk-slots: "<c:muted>Perk slots <c:value>{used}/{total}"
-  enchant: " <#C77DFF>{name}"
+  enchant: " <c:enchant>{name}"
   empty-slot: " <c:muted><sym:bullet> Empty slot"
   action: "<c:action>▶ {input} <c:text>{text}"
   level: "<c:text>Lv <c:value>{level}</c:value> {bar} <c:value>{percent}%"
