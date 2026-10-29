@@ -116,9 +116,55 @@ public final class IslandsConfig extends ModuleConfig {
             + "Islands can change this in their settings (M2.5).")
     public List<String> defaultsVisitor = List.of();
 
+    @Setting(path = "members.start-slots", desc = "Members an island can have at the start, leader included (REVIEW B1: 4). "
+            + "The Member Slots upgrade (Phase 5) raises an island's own value.", min = 1, max = 32, level = Setting.Level.OWNER)
+    public int startSlots = 4;
+
+    @Setting(path = "members.max-slots", desc = "Most members any island can have, leader included (Member Slots upgrade cap: 8).",
+            min = 1, max = 32, level = Setting.Level.OWNER)
+    public int maxSlots = 8;
+
+    @Setting(path = "members.max-joins-per-season", desc = "How many islands a player can join per season by accepting invites "
+            + "(REVIEW A5: 3; 0 = unlimited).", min = 0, max = 100, level = Setting.Level.OWNER)
+    public int maxJoinsPerSeason = 3;
+
+    @Setting(path = "members.join-cooldown-hours", desc = "Hours a player waits after joining, leaving or being kicked from an island "
+            + "before joining another one (REVIEW A5: 24; 0 = off).", min = 0, max = 720, level = Setting.Level.OWNER)
+    public int joinCooldownHours = 24;
+
+    @Setting(path = "members.invite-expiry-seconds", desc = "Seconds an island invite stays valid (5 min).", min = 30, max = 3600)
+    public int inviteExpirySeconds = 300;
+
+    @Setting(path = "members.max-pending-invites", desc = "Open invites an island can have at the same time (spam guard).", min = 1, max = 32)
+    public int maxPendingInvites = 8;
+
+    @Setting(path = "members.invite-sweep-seconds", desc = "How often expired invites are removed and both players told.", min = 1, max = 60)
+    public int inviteSweepSeconds = 5;
+
+    @Setting(path = "members.max-coops", desc = "Coop players an island can have at the same time.", min = 0, max = 32)
+    public int maxCoops = 4;
+
+    @Setting(path = "members.date-format", desc = "How join dates are shown in /is members (Java DateTimeFormatter pattern).")
+    public String dateFormat = "yyyy-MM-dd";
+
     /** The role defaults parsed from {@code permissions.defaults.*} (problems = unknown keys). */
     public RolePermissions.Result rolePermissions() {
         return RolePermissions.parse(defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor);
+    }
+
+    /** The join limits for invites and accepts (REVIEW A5, B1). */
+    MemberStore.Limits memberLimits() {
+        return new MemberStore.Limits(seasonId, maxJoinsPerSeason, java.time.Duration.ofHours(joinCooldownHours).toMillis(),
+                Math.min(startSlots, maxSlots), maxSlots);
+    }
+
+    /** {@code members.date-format}, or {@code yyyy-MM-dd} when invalid. */
+    public java.time.format.DateTimeFormatter dateFormatter() {
+        try {
+            return java.time.format.DateTimeFormatter.ofPattern(dateFormat).withZone(java.time.ZoneId.systemDefault());
+        } catch (IllegalArgumentException e) {
+            return java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(java.time.ZoneId.systemDefault());
+        }
     }
 
     /** The max size made valid: odd (an even value is lowered by one), at least 1. */
@@ -143,6 +189,14 @@ public final class IslandsConfig extends ModuleConfig {
         }
         if (minBuildY >= maxBuildY) {
             problems.add("islands.yml: build.min-y must be below build.max-y.");
+        }
+        if (startSlots > maxSlots) {
+            problems.add("islands.yml: members.start-slots is bigger than members.max-slots; using " + maxSlots + ".");
+        }
+        try {
+            java.time.format.DateTimeFormatter.ofPattern(dateFormat);
+        } catch (IllegalArgumentException e) {
+            problems.add("islands.yml: members.date-format '" + dateFormat + "' is not a valid date pattern; using yyyy-MM-dd.");
         }
         return problems;
     }

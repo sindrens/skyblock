@@ -6,6 +6,13 @@
 - P0 freeze: a frozen player hovers (flight on, no gravity) so they can't fall away; on unfreeze their own flight comes back and fall damage is ignored for `freeze.fall-grace-seconds` (10). OK? (default: yes)
 - P0 freeze: with `freeze.logout-action: ban` the freeze is still stored, so after an unban they come back frozen. Clear the freeze on a ban instead? (default: keep it)
 - P0 staff mode: the Inspect tool is now an ender eye (`mode.inspect-tool-material`), because a spyglass always zooms on the player's screen. Another item? (default: ender eye)
+- Islands (M2.3): the member cap (4, upgradable to 8) counts the leader, so a starting team is 4 players in total. OK? (default: yes, leader included)
+- Islands (M2.3): join cooldown counts 24 h from the later of the last join and the last leave/kick (stricter than "between joins"). OK? (default: yes)
+- Islands (M2.3): a player who already owns an island (even a fresh solo one) can't accept invites until they leave it; a solo leader can only leave by disbanding (M2.7). Allow accepting an invite to auto-disband an untouched starter island? (default: no, they must disband first)
+- Islands (M2.3): invite, kick and coop are fixed to Leader + Mod (not toggles in the permission matrix). Make them matrix toggles too? (default: fixed)
+- Islands (M2.3): after `/is transfer` the old leader becomes a Mod. Or a Member? (default: Mod)
+- Islands (M2.3): coop limit per island `members.max-coops` = 4, and a coop player can be coop on several islands at once. OK? (default: yes)
+- Islands (M2.3): `/is go` stays "go to your island home" (same as `/is home`); visiting other islands is `/is visit` in M2.4. OK? (default: yes)
 - Punishment ladders in `punishments.yml` (default proposal: Hacking 30d → perm; Toxicity warn → 1h → 1d → 7d → perm mute).
 - Public ban/mute announcements for players? (default: on)
 - Helpers may freeze / use staff mode and see join logs (auth)? (default: yes, IPs hidden)

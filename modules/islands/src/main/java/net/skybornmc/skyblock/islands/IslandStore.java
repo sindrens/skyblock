@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 /**
- * Database access of the islands module (tables from {@code db/islands/V001}). Every method runs off the main thread
+ * Database access of the islands module (tables from {@code db/islands/V001}, V002; members/invites/coops: {@link MemberStore}). Every method runs off the main thread
  * through {@link Database}; creation is one transaction (slot + island + owner membership, all or nothing).
  */
 public final class IslandStore {
@@ -99,19 +99,20 @@ public final class IslandStore {
         Map<UUID, Island> islands = new HashMap<>();
         List<Island> ordered = new ArrayList<>();
         for (Island island : Sql.query(c, "SELECT i.id, i.season_id, i.owner_uuid, i.type, i.slot_id, i.size_chunks, i.home_x, i.home_y, "
-                + "i.home_z, i.home_yaw, i.home_pitch, i.name, i.created_at, s.grid_x, s.grid_z FROM islands i "
+                + "i.home_z, i.home_yaw, i.home_pitch, i.name, i.created_at, i.member_slots, s.grid_x, s.grid_z FROM islands i "
                 + "JOIN island_slots s ON s.id = i.slot_id WHERE i.deleted_at IS NULL ORDER BY i.created_at", rs -> island(rs, world))) {
             islands.put(island.id(), island);
             ordered.add(island);
         }
-        Sql.query(c, "SELECT island_id, uuid, role FROM island_members", rs -> {
+        Sql.query(c, "SELECT island_id, uuid, role, joined_at, invited_by FROM island_members ORDER BY joined_at", rs -> {
             Island island = islands.get(Sql.uuid(rs, "island_id"));
             if (island != null) {
-                island.putMember(Sql.uuid(rs, "uuid"), role(rs.getString("role")));
+                island.putMember(Sql.uuid(rs, "uuid"), role(rs.getString("role")), rs.getLong("joined_at"), Sql.uuid(rs, "invited_by"));
             }
             return null;
         });
         loadPerms(c, islands);
+        MemberStore.loadCoops(c, islands);
         return ordered;
     }
 
@@ -143,9 +144,12 @@ public final class IslandStore {
         double hx = rs.getDouble("home_x");
         Island.Home home = rs.wasNull() ? null : new Island.Home(hx, rs.getDouble("home_y"), rs.getDouble("home_z"),
                 rs.getFloat("home_yaw"), rs.getFloat("home_pitch"));
-        return new Island(Sql.uuid(rs, "id"), rs.getInt("season_id"), Sql.uuid(rs, "owner_uuid"), "team".equals(rs.getString("type")),
-                rs.getInt("slot_id"), rs.getInt("grid_x"), rs.getInt("grid_z"), rs.getInt("size_chunks"), home, rs.getString("name"),
-                rs.getLong("created_at"), world);
+        Island island = new Island(Sql.uuid(rs, "id"), rs.getInt("season_id"), Sql.uuid(rs, "owner_uuid"),
+                "team".equals(rs.getString("type")), rs.getInt("slot_id"), rs.getInt("grid_x"), rs.getInt("grid_z"),
+                rs.getInt("size_chunks"), home, rs.getString("name"), rs.getLong("created_at"), world);
+        int slots = rs.getInt("member_slots");
+        island.memberSlots(rs.wasNull() ? null : slots);
+        return island;
     }
 
     static Role role(String stored) {
@@ -209,7 +213,7 @@ public final class IslandStore {
         Sql.update(c, "INSERT INTO island_members (island_id, uuid, role, joined_at) VALUES (?, ?, ?, ?)",
                 islandId, owner, "leader", now);
         Island island = new Island(islandId, seasonId, owner, false, slot[0], slot[1], slot[2], sizeChunks, null, null, now, world);
-        island.putMember(owner, Role.LEADER);
+        island.putMember(owner, Role.LEADER, now, null);
         return new CreateResult.Created(island);
     }
 

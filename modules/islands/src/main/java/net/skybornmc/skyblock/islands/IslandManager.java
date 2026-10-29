@@ -34,7 +34,8 @@ import java.util.logging.Level;
 
 /**
  * The island cache and every island action of M2.1 (main thread): creation, build, home, sethome, size, void rescue.
- * Published as {@link IslandService}. All active islands are kept in memory (a few hundred bytes each) so "island at
+ * Published as {@link IslandService}; member actions (M2.3) live in {@link MemberManager}, which updates this cache only
+ * after the database committed. All active islands are kept in memory (a few hundred bytes each) so "island at
  * location" is a map lookup; offline islands' chunks are never kept loaded.
  */
 final class IslandManager implements IslandService {
@@ -59,6 +60,7 @@ final class IslandManager implements IslandService {
     private final Set<UUID> building = new HashSet<>();
     private final Set<UUID> rescuing = new HashSet<>();
     private IslandBorders borders;
+    private MemberManager members;
 
     IslandManager(IslandsModule module, IslandStore store) {
         this.module = module;
@@ -72,6 +74,22 @@ final class IslandManager implements IslandService {
 
     void borders(IslandBorders borders) {
         this.borders = borders;
+    }
+
+    void members(MemberManager members) {
+        this.members = members;
+    }
+
+    MemberManager memberManager() {
+        return members;
+    }
+
+    IslandsModule module() {
+        return module;
+    }
+
+    IslandStore store() {
+        return store;
     }
 
     Core core() {
@@ -188,6 +206,57 @@ final class IslandManager implements IslandService {
         return Optional.ofNullable(byMember.get(player));
     }
 
+    /** The cached island by id, or null. */
+    Island byId(UUID islandId) {
+        return byId.get(islandId);
+    }
+
+    /** Every cached island (main thread; do not keep the view). */
+    java.util.Collection<Island> islands() {
+        return byId.values();
+    }
+
+    // ------------------------------------------------------------------ member cache (M2.3, after a commit only)
+
+    void cacheJoin(Island island, UUID player, Role role, long joinedAt, UUID inviter) {
+        island.putMember(player, role, joinedAt, inviter);
+        byMember.put(player, island);
+    }
+
+    void cacheLeave(Island island, UUID player) {
+        island.removeMember(player);
+        byMember.remove(player, island);
+    }
+
+    void cacheRole(Island island, UUID player, Role role) {
+        island.putMember(player, role);
+    }
+
+    void cacheTransfer(Island island, UUID oldLeader, UUID newLeader) {
+        island.putMember(oldLeader, Role.MOD);
+        island.putMember(newLeader, Role.LEADER);
+        island.owner(newLeader);
+    }
+
+    /** A player's last known name (online name, server user cache), or "?" (main thread, no network). */
+    String name(UUID player) {
+        Player online = Bukkit.getPlayer(player);
+        if (online != null) {
+            return online.getName();
+        }
+        String name = Bukkit.getOfflinePlayer(player).getName();
+        return name == null ? "?" : name;
+    }
+
+    /** Sends a player who no longer belongs on {@code island} (kick, leave) to the fallback spawn if they stand in its slot. */
+    void sendOff(Player player, Island island) {
+        Location at = player.getLocation();
+        if (!isIslandWorld(at.getWorld()) || !island.slotBounds().contains(at.getBlockX(), at.getBlockZ())) {
+            return;
+        }
+        toFallback(player, () -> player.setFallDistance(0));
+    }
+
     int count() {
         return byId.size();
     }
@@ -285,6 +354,49 @@ final class IslandManager implements IslandService {
             }
             return saved;
         }, main);
+    }
+
+    @Override
+    public java.util.Set<UUID> coops(UUID islandId) {
+        Island island = byId.get(islandId);
+        return island == null ? java.util.Set.of() : java.util.Set.copyOf(island.coops());
+    }
+
+    @Override
+    public boolean isCoop(UUID islandId, UUID player) {
+        Island island = byId.get(islandId);
+        return island != null && island.coops().contains(player);
+    }
+
+    @Override
+    public int memberSlots(UUID islandId) {
+        Island island = byId.get(islandId);
+        return island == null ? 0 : slots(island);
+    }
+
+    /** Effective member slots of a cached island. */
+    int slots(Island island) {
+        return MemberRules.slots(island.memberSlots(), Math.min(config.startSlots, config.maxSlots), config.maxSlots);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> setMemberSlots(UUID islandId, int slots, Actor actor) {
+        return members.setMemberSlots(islandId, slots, actor);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> removeMember(UUID islandId, UUID player, String reason, Actor actor) {
+        return members.removeByService(islandId, player, reason, actor);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> blockJoining(UUID player, long untilEpochMillis, String reason, Actor actor) {
+        return members.blockJoining(player, untilEpochMillis, reason, actor);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Long>> joinBlockedUntil(UUID player) {
+        return members.joinBlockedUntil(player);
     }
 
     private IslandInfo info(Island island) {
@@ -517,9 +629,9 @@ final class IslandManager implements IslandService {
             return;
         }
         Island island = own.get();
-        // M2.3 turns this into a role permission; until then only the leader moves the home.
-        if (island.role(player.getUniqueId()).orElse(Role.MEMBER) != Role.LEADER) {
-            fail(player, "sethome.not-leader");
+        // M2.3: Leader + Mod move the home.
+        if (!MemberRules.canSetHome(island.roleOrNull(player.getUniqueId()))) {
+            fail(player, "sethome.not-allowed");
             return;
         }
         Location at = player.getLocation();
@@ -587,7 +699,7 @@ final class IslandManager implements IslandService {
         toFallback(player, done);
     }
 
-    private void toFallback(Player player, Runnable done) {
+    void toFallback(Player player, Runnable done) {
         World fallback = Bukkit.getWorld(config.fallbackWorld);
         if (fallback == null) {
             fallback = Bukkit.getWorlds().getFirst();
@@ -625,12 +737,12 @@ final class IslandManager implements IslandService {
         }, main);
     }
 
-    private void fail(Player player, String key, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver... placeholders) {
+    void fail(Player player, String key, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver... placeholders) {
         msg.send(player, key, placeholders);
         core.sounds().play(player, "error");
     }
 
-    private Void databaseError(Player player, String what, Throwable error) {
+    Void databaseError(Player player, String what, Throwable error) {
         core.plugin().getLogger().log(Level.SEVERE, "Islands: database error during " + what, Database.cause(error));
         core.plugin().getServer().getScheduler().runTask(core.plugin(), () -> {
             if (player.isOnline()) {
