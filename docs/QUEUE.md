@@ -25,11 +25,11 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | M3.0 | Balance sheet `docs/ECONOMY_BALANCE.md` (owner approves before prices go live) | — | docs only | ✅ (draft, owner approval pending) |
-| M3.1 | Currencies + ledger, EconomyService, `/bal /baltop /pay /transactions /eco` | Phase 1 | modules/economy | 🔄 |
+| M3.1 | Currencies + ledger, EconomyService, `/bal /baltop /pay /transactions /eco` | Phase 1 | modules/economy | ✅ |
 | M3.2 | Money notes (`/withdraw`, `/eco note`) | M3.1 | modules/economy | ⬜ |
 | M3.4 | Selling + dynamic prices (`/sell`) | M3.1 | modules/economy (sell pkg) | ⬜ |
 | M3.5 | Builder shop `/shop` | M3.1 | modules/shop | ⬜ |
-| M3.6 | Auction house `/ah` | M3.1 | modules/auction | ⬜ |
+| M3.6 | Auction house `/ah` | M3.1 | modules/auction | 🔄 |
 | M3.7 | Secure trade `/trade` | M3.1 | modules/trade | ⬜ |
 | M3.3 | Banks + interest (personal + island) | M3.1, M2.3 | modules/economy (bank pkg) | ⬜ |
 | M3.8 | Economy dashboard + anomaly alerts | M3.1–M3.7 | modules/economy (admin pkg) | ⬜ |
@@ -38,8 +38,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | M4.3 | Per-player blocks engine (depleted state per player, 10 s respawn, timing wheel) | Phase 1 | modules/depths (engine pkg) | ✅ |
-| M4.1 | Depths layout from `depths.yml` (placeholder zones by code, U-shaped wings) | M4.3 | modules/depths (zones pkg) | ⬜ |
-| M4.5 | Skill core (XP/levels, `/skills`) | Phase 1 | modules/skills | 🔄 |
+| M4.1 | Depths layout from `depths.yml` (placeholder zones by code, U-shaped wings) | M4.3 | modules/depths (zones pkg) | 🔄 |
+| M4.5 | Skill core (XP/levels, `/skills`) | Phase 1 | modules/skills | ✅ |
 | M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | ⬜ |
 | M4.6 | Tiers, unlocks, `/dungeon` | M4.1, M4.5 | modules/depths | ⬜ |
 | M4.2 | Tools: starter kit (24 h), Forge, living tools (perk slots 5/15/30/45 + prestige), blueprints, skins; `/tool give`, `/blueprint give`, `/skin give` | M3.1, M4.5 | modules/tools | ⬜ |

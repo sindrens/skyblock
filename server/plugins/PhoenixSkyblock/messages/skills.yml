@@ -1,0 +1,130 @@
+# Skills (M4.5): XP, levels, /skills. MiniMessage + style tags (style.yml). Placeholders: <name>.
+# Reload: /skyblock reload skills
+
+# Skill names (with their pillar color), short description and how XP is earned (menu lore, max ~32 chars per line).
+skill:
+  mining:
+    name: "<pillar:mining>Mining"
+    description: ["<c:text>Break ore in the Mine of", "<c:text>The Depths."]
+    how: [" <pillar:mining><sym:bullet> <c:text>Mine ore in The Depths", " <pillar:mining><sym:bullet> <c:text>Better tiers give more XP"]
+  foraging:
+    name: "<pillar:foraging>Foraging"
+    description: ["<c:text>Chop logs in the Forest of", "<c:text>The Depths."]
+    how: [" <pillar:foraging><sym:bullet> <c:text>Chop logs in The Depths", " <pillar:foraging><sym:bullet> <c:text>Better tiers give more XP"]
+  combat:
+    name: "<pillar:combat>Combat"
+    description: ["<c:text>Defeat monsters in the", "<c:text>Combat zones."]
+    how: [" <pillar:combat><sym:bullet> <c:text>Kill monsters yourself", " <pillar:combat><sym:bullet> <c:text>Stronger mobs give more XP", " <pillar:combat><sym:bullet> <c:text>Spawner mobs give no XP"]
+  farming:
+    name: "<pillar:farming>Farming"
+    description: ["<c:text>Grow and harvest crops on", "<c:text>your island."]
+    how: []
+  fishing:
+    name: "<pillar:fishing>Fishing"
+    description: ["<c:text>Catch fish and treasure."]
+    how: []
+
+# Action bar on XP gain (max one line per 1.5 s, gains in between are added up). <skill> <amount> <percent> <level>
+action-bar:
+  gain: "<c:success>+<amount></c:success> <skill> <c:text>XP</c:text> <c:muted>(<percent>%)"
+  separator: " <c:muted><sym:dot></c:muted> "
+
+# Level-up: title + sound (skills.yml → level-up.sound) + chat. <skill> <level> <from>
+level-up:
+  title:
+    title: "<skill> <c:value><level>"
+    subtitle: "<c:flame>Level up!"
+    fade-in: 5
+    stay: 50
+    fade-out: 15
+  chat: "<prefix><c:success><sym:star> <skill> <c:text>is now level <c:value><level></c:value>! <click:run_command:'/skills'><hover:show_text:'<c:text>Open your skills'><c:action>[View skills]</c:action></hover></click>"
+  next-unlock: "<prefix><c:text>Next unlock at level <c:value><level></c:value>: <unlock>"
+
+# Unlock texts per skill and level (levels: skills.yml → unlocks). Missing levels use 'generic'.
+unlock:
+  generic: "<skill> <c:value>level <level></c:value> <c:text>reward"
+  mining:
+    5: "<c:value>Mine Tier II</c:value> <c:muted>·</c:muted> <c:text>Copper"
+    10: "<c:value>Mine Tier III</c:value> <c:muted>·</c:muted> <c:text>Iron"
+    15: "<c:value>Mine Tier IV</c:value> <c:muted>·</c:muted> <c:text>Gold"
+    20: "<c:value>Mine Tier V</c:value> <c:muted>·</c:muted> <c:text>Redstone"
+    25: "<c:value>Mine Tier VI</c:value> <c:muted>·</c:muted> <c:text>Lapis"
+    30: "<c:value>Mine Tier VII</c:value> <c:muted>·</c:muted> <c:text>Diamond"
+    35: "<c:value>Mine Tier VIII</c:value> <c:muted>·</c:muted> <c:text>Emerald"
+    42: "<c:value>Mine Tier IX</c:value> <c:muted>·</c:muted> <c:text>Amethyst"
+    50: "<c:value>Mine Tier X</c:value> <c:muted>·</c:muted> <c:text>Quartz"
+    58: "<c:value>Mine Tier XI</c:value> <c:muted>·</c:muted> <c:text>Netherite"
+    66: "<c:value>Mine Tier XII</c:value> <c:muted>·</c:muted> <c:text>Voidstone"
+  foraging:
+    5: "<c:value>Forest Tier II</c:value> <c:muted>·</c:muted> <c:text>Birch"
+    10: "<c:value>Forest Tier III</c:value> <c:muted>·</c:muted> <c:text>Spruce"
+    15: "<c:value>Forest Tier IV</c:value> <c:muted>·</c:muted> <c:text>Jungle"
+    20: "<c:value>Forest Tier V</c:value> <c:muted>·</c:muted> <c:text>Acacia"
+    25: "<c:value>Forest Tier VI</c:value> <c:muted>·</c:muted> <c:text>Dark Oak"
+    30: "<c:value>Forest Tier VII</c:value> <c:muted>·</c:muted> <c:text>Mangrove"
+    35: "<c:value>Forest Tier VIII</c:value> <c:muted>·</c:muted> <c:text>Cherry"
+    42: "<c:value>Forest Tier IX</c:value> <c:muted>·</c:muted> <c:text>Pale Oak"
+    50: "<c:value>Forest Tier X</c:value> <c:muted>·</c:muted> <c:text>Crimson"
+    58: "<c:value>Forest Tier XI</c:value> <c:muted>·</c:muted> <c:text>Warped"
+  combat:
+    6: "<c:value>Combat Tier II</c:value> <c:muted>·</c:muted> <c:text>Bone Crypt"
+    12: "<c:value>Combat Tier III</c:value> <c:muted>·</c:muted> <c:text>Spider Den"
+    18: "<c:value>Combat Tier IV</c:value> <c:muted>·</c:muted> <c:text>Slime Bog"
+    24: "<c:value>Combat Tier V</c:value> <c:muted>·</c:muted> <c:text>Sunken Ruins"
+    30: "<c:value>Combat Tier VI</c:value> <c:muted>·</c:muted> <c:text>Witch Hollow"
+    38: "<c:value>Combat Tier VII</c:value> <c:muted>·</c:muted> <c:text>Pillager Outpost"
+    46: "<c:value>Combat Tier VIII</c:value> <c:muted>·</c:muted> <c:text>Blaze Forge"
+    55: "<c:value>Combat Tier IX</c:value> <c:muted>·</c:muted> <c:text>Wither Keep"
+    66: "<c:value>Combat Tier X</c:value> <c:muted>·</c:muted> <c:text>Warlord's Citadel"
+
+# Menu /skills [player]
+menu:
+  title: "Skills"
+  title-other: "<player>"
+  info:
+    - "<c:text>Your skill levels. Skills grow"
+    - "<c:text>by mining, chopping and fighting"
+    - "<c:text>and unlock new Depths tiers."
+  head:
+    name: "<c:value><player>"
+    lore:
+      - "<c:muted>Skills"
+      - ""
+      - "<c:text>Total skill levels: <c:value><total>"
+  bar:
+    filled: "<c:flame>●</c:flame>"
+    empty: "<c:muted>●</c:muted>"
+  skill:
+    name: "<skill> <c:value>Lv <level>"
+    locked-name: "<skill> <c:muted><sym:dot> Coming soon"
+    subtitle: "<c:muted>Skill <sym:dot> Lv <level>/<max>"
+    progress: "<c:text>Lv <level> <bar> <c:value><percent>%"
+    xp: "<c:value><into></c:value><c:muted>/<step> XP to level <next>"
+    total: "<c:text>Total XP: <c:value><total>"
+    maxed: "<c:success><sym:check> Maxed"
+    next-unlock:
+      - "<c:muted>Next unlock"
+      - " <c:ember><sym:bullet></c:ember> <unlock>"
+      - " <c:text>at level <c:value><level></c:value> <c:muted>(<missing> to go)"
+    all-unlocked: "<c:success><sym:check> <c:text>Everything unlocked"
+    how-header: "<c:muted>How to earn XP"
+    coming-soon:
+      - "<c:error><sym:cross> Locked"
+      - "<c:text>Coming in a later update."
+
+# /settings toggle (Display)
+settings:
+  skill-xp-bar:
+    name: "<c:value>Skill XP in the action bar"
+    lore: ["<c:text>Show '+12 Mining XP' above", "<c:text>your hotbar when you earn XP."]
+
+# /skills <player>
+others-no-permission: "<prefix><c:error><sym:cross> You can only view your own skills. Use <click:run_command:'/skills'><c:action>/skills</c:action></click>."
+loading: "<prefix><c:text>Loading the skills of <c:value><player></c:value>..."
+load-failed: "<prefix><c:error><sym:cross> Couldn't load the skills of <c:value><player></c:value>. Try again in a moment."
+unknown-player: "<prefix><c:error><sym:cross> <c:value><player></c:value> has never played here. Check the name."
+
+# Kick messages when skill data can't be loaded at login (protects the data).
+login:
+  slow: "<c:error>Your skills took too long to load.<newline><c:text>Please rejoin in a moment."
+  failed: "<c:error>Your skills couldn't be loaded.<newline><c:text>Please rejoin. If this keeps happening, tell staff on Discord."

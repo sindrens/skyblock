@@ -8,6 +8,8 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **Phase 4 started:** M4.3 per-player blocks engine merged (modules/depths).
 - **M3.0 balance sheet** merged as DRAFT (`docs/ECONOMY_BALANCE.md`, model `tools/economy_model.py --check`); owner must approve §12 before M3.4 prices go live.
 - **Phase 2 started:** M2.1 islands (grid, /is, FAWE/placeholder starter island, borders, home) merged.
+- **M3.1 economy core** merged (EconomyService in common, /bal /baltop /pay /transactions /eco). **M4.5 skills** merged (SkillService in common, /skills).
+- Before each release run `python3 tools/sync_server_configs.py` (tracked server configs follow module resources).
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -15,7 +17,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
-- Last released bundle: update32 (pending) . Next bundle number: 33.
+- Last released bundle: update33. Next bundle number: 34.
 - Owner gets a push notification on every release (PushNotification tool).
 
 ## Owner rules (always)
@@ -26,8 +28,8 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - M2.2 island protection
-- M3.1 economy core + ledger (wuq5d9qg0)
-- M4.5 skill core
+- M3.6 auction house
+- M4.1 Depths layout
 
 ## Parked / broken
 (none)

@@ -16,11 +16,11 @@ categories:
     topics: [welcome, menu, help, settings, rules]
   islands:
     icon: grass_block
-    status: coming-soon
+    status: active
     slot: 12
     name: "<c:flame><bold>Islands"
     lore: ["<c:text>Your own island in the sky:", "<c:text>build, grow and team up."]
-    topics: []
+    topics: [island]
   depths:
     icon: iron_pickaxe
     status: coming-soon
@@ -30,18 +30,18 @@ categories:
     topics: []
   economy:
     icon: emerald
-    status: coming-soon
+    status: active
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, selling, banks, the", "<c:text>auction house and trading."]
-    topics: []
+    topics: [money]
   progression:
     icon: experience_bottle
-    status: coming-soon
+    status: active
     slot: 15
     name: "<c:flame><bold>Progression"
     lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and masteries."]
-    topics: []
+    topics: [skills]
   gear:
     icon: smithing_table
     status: coming-soon
@@ -186,6 +186,38 @@ topics:
           - "<c:text>Gray switches belong to features that"
           - "<c:text>aren't open yet. They unlock by"
           - "<c:text>themselves when the feature arrives."
+
+  skills:
+    icon: experience_bottle
+    aliases: [skill, mining, foraging, combat]
+    name: "<c:flame>Skills"
+    summary: ["<c:text>Level up Mining, Foraging and", "<c:text>Combat to open new tiers."]
+    take-me-there: "skills"
+    commands: [Progression]
+    pages:
+      - title: "<c:value>What skills are"
+        lines:
+          - "<c:text>You have five skills. <pillar:mining>Mining</pillar:mining><c:text>,"
+          - "<pillar:foraging>Foraging</pillar:foraging> <c:text>and <pillar:combat>Combat</pillar:combat> <c:text>are open now;"
+          - "<pillar:farming>Farming</pillar:farming> <c:text>and <pillar:fishing>Fishing</pillar:fishing> <c:text>come later."
+          - "<c:text>Skills are yours alone and reset each season."
+      - title: "<c:value>Earning XP"
+        lines:
+          - "<c:text>Mine ore and chop logs in The Depths,"
+          - "<c:text>and defeat monsters yourself."
+          - "<c:text>Higher tiers give much more XP."
+          - "<c:text>Gains show above your hotbar."
+      - title: "<c:value>Levels and unlocks"
+        lines:
+          - "<c:text>Each level needs a bit more XP."
+          - "<c:text>Levels open new Depths tiers: see"
+          - "<c:text>'Next unlock' in <c:value>/skills</c:value>."
+          - "<c:text>Perks for skills arrive later."
+      - title: "<c:value>Tips"
+        lines:
+          - "<c:text>Look at a friend's skills:"
+          - "<c:value>/skills <player></c:value>"
+          - "<c:text>Hide the XP line in <c:value>/settings</c:value>."
 
   rules:
     icon: lectern
@@ -336,6 +368,66 @@ topics:
           - "<c:value>/tags</c:value> <c:text>or</c:text> <c:value>/titles</c:value> <c:text>opens one menu with"
           - "<c:text>both tabs. Equip one title and one tag;"
           - "<c:text>the head at the top shows your look."
+
+  island:
+    icon: grass_block
+    aliases: [islands, is, home, sethome]
+    name: "<c:flame>Your island"
+    summary: ["<c:text>Create your island and find", "<c:text>your way back home."]
+    take-me-there: "is"
+    commands: [Island]
+    pages:
+      - title: "<c:value>Getting one"
+        lines:
+          - "<c:text>Type <c:value>/is</c:value> and confirm. Your own small"
+          - "<c:text>meadow is built and you're taken there."
+          - "<c:text>The starter chest has your first items."
+      - title: "<c:value>Going home"
+        lines:
+          - "<c:value>/is</c:value> <c:text>or</c:text> <c:value>/is home</c:value> <c:text>takes you back to your"
+          - "<c:text>island. Stand somewhere safe on it and"
+          - "<c:text>use <c:value>/is sethome</c:value> to move your home."
+      - title: "<c:value>The border"
+        lines:
+          - "<c:text>The border you see is your island's edge:"
+          - "<c:text>you can only build inside it. It starts"
+          - "<c:text>at 3x3 chunks and grows with upgrades."
+      - title: "<c:value>Falling off"
+        lines:
+          - "<c:text>Fell into the void? No worries: you land"
+          - "<c:text>back on your island without damage."
+  money:
+    icon: gold_ingot
+    aliases: [economy, balance, bal, pay, baltop, transactions, currencies]
+    name: "<c:flame>Money & currencies"
+    summary: ["<c:text>Your balances, paying players", "<c:text>and your money history."]
+    take-me-there: "transactions"
+    commands: [Economy]
+    pages:
+      - title: "<c:value>Four currencies"
+        lines:
+          - "<cur:money>Money</cur:money> <c:text>for almost everything,"
+          - "<cur:tokens>Tokens</cur:tokens> <c:text>from your tools, <cur:gems>Gems</cur:gems>"
+          - "<c:text>for premium items and <cur:shards>Shards</cur:shards> <c:text>for"
+          - "<c:text>the Black Market. See them: <c:value>/bal</c:value>"
+      - title: "<c:value>Paying players"
+        lines:
+          - "<c:value>/pay Steve 1.5k</c:value> <c:text>works even when"
+          - "<c:text>Steve is offline. Use k, M and B:"
+          - "<c:value>2M</c:value> <c:text>= 2,000,000. Big payments ask"
+          - "<c:text>you to confirm first."
+      - title: "<c:value>What can be paid"
+        lines:
+          - "<c:text>Money and shards can be paid."
+          - "<c:text>Gems stay with you."
+          - "<c:text>Payments can't be undone, so check"
+          - "<c:text>the name before you confirm."
+      - title: "<c:value>Your history"
+        lines:
+          - "<c:value>/transactions</c:value> <c:text>lists every change to your"
+          - "<c:text>balances: who paid you, what you sold"
+          - "<c:text>and bought. Filter by currency, type"
+          - "<c:text>and time. <c:value>/baltop</c:value> <c:text>shows the richest."
 
   staff:
     icon: shield
