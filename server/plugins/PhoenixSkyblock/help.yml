@@ -1,0 +1,333 @@
+# /help content: categories » topics » pages. MiniMessage + style tags (style.yml), Bedrock-safe symbols only.
+# Category: icon, status (active | coming-soon), slot (inner slot of the 6-row menu), name, lore, topics, all-commands.
+# Topic: icon, name, summary (2-3 lines), pages (3-6 short pages: title + lines), take-me-there (command run by the
+#        "Take me there" button, without /), commands (command categories listed under "Commands"), aliases (other
+#        ids for /help <id>; menus open these with their "?" button).
+# Command lists are generated automatically from the commands each player may use; never list commands by hand.
+# Reload: /skyblock reload menus
+
+categories:
+  getting-started:
+    icon: nether_star
+    status: active
+    slot: 11
+    name: "<c:flame><bold>Getting started"
+    lore: ["<c:text>New here? Start with these."]
+    topics: [welcome, menu, help, settings, rules]
+  islands:
+    icon: grass_block
+    status: coming-soon
+    slot: 12
+    name: "<c:flame><bold>Islands"
+    lore: ["<c:text>Your own island in the sky:", "<c:text>build, grow and team up."]
+    topics: []
+  depths:
+    icon: iron_pickaxe
+    status: coming-soon
+    slot: 13
+    name: "<c:flame><bold>The Depths"
+    lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and tokens."]
+    topics: []
+  economy:
+    icon: emerald
+    status: coming-soon
+    slot: 14
+    name: "<c:flame><bold>Economy"
+    lore: ["<c:text>Money, selling, banks, the", "<c:text>auction house and trading."]
+    topics: []
+  progression:
+    icon: experience_bottle
+    status: coming-soon
+    slot: 15
+    name: "<c:flame><bold>Progression"
+    lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and masteries."]
+    topics: []
+  gear:
+    icon: smithing_table
+    status: coming-soon
+    slot: 20
+    name: "<c:flame><bold>Gear"
+    lore: ["<c:text>Tools, the Forge, sets,", "<c:text>enchants and blueprints."]
+    topics: []
+  combat-events:
+    icon: clock
+    status: coming-soon
+    slot: 21
+    name: "<c:flame><bold>Combat & Events"
+    lore: ["<c:text>Bosses, KOTH, envoys and", "<c:text>seasonal events."]
+    topics: []
+  rewards:
+    icon: tripwire_hook
+    status: coming-soon
+    slot: 22
+    name: "<c:flame><bold>Rewards"
+    lore: ["<c:text>Crates, quests, voting", "<c:text>and daily rewards."]
+    topics: []
+  community:
+    icon: bell
+    status: active
+    slot: 23
+    name: "<c:flame><bold>Community"
+    lore: ["<c:text>Chat, messages, teleporting", "<c:text>and rank perks."]
+    topics: [chat, teleporting, afk, perks, links]
+  faq:
+    icon: lectern
+    status: active
+    slot: 24
+    name: "<c:flame><bold>FAQ"
+    lore: ["<c:text>Quick answers to the", "<c:text>questions we get most."]
+    topics: [faq]
+  commands:
+    icon: command_block
+    status: active
+    slot: 31
+    all-commands: true
+    name: "<c:flame><bold>All commands"
+    lore: ["<c:text>Every command you can use,", "<c:text>with examples. Click one to", "<c:text>put it in your chat."]
+    topics: []
+
+topics:
+  welcome:
+    icon: nether_star
+    name: "<c:flame>Welcome to Phoenix Skyblock"
+    summary: ["<c:text>What this server is and how", "<c:text>to find your way around."]
+    take-me-there: "spawn"
+    commands: [Info]
+    pages:
+      - title: "<c:value>Welcome"
+        lines:
+          - "<c:text>Phoenix Skyblock is part of the"
+          - "<grad:skyborn>SkybornMC</grad> <c:text>network."
+          - "<c:text>Rise from the ashes: build an island,"
+          - "<c:text>grow it and climb the leaderboards."
+      - title: "<c:value>Getting around"
+        lines:
+          - "<c:text>Everything is one click away in the"
+          - "<c:text>main menu: <c:value>/menu</c:value> or the <c:flame>Nether Star</c:flame>"
+          - "<c:text>in your last hotbar slot."
+          - "<c:text>Back to spawn at any time: <c:value>/spawn</c:value>"
+      - title: "<c:value>Need help?"
+        lines:
+          - "<c:text>Every menu has a <c:info>?</c:info> button that"
+          - "<c:text>explains that screen."
+          - "<c:text>Ask in chat or on Discord: <c:value>/discord</c:value>"
+      - title: "<c:value>Play fair"
+        lines:
+          - "<c:text>Read the rules once: <c:value>/rules</c:value>"
+          - "<c:text>Staff are here to help. Report problems"
+          - "<c:text>to a staff member or on Discord."
+
+  menu:
+    icon: nether_star
+    aliases: [menus, hub, gui, main-menu]
+    name: "<c:flame>The main menu"
+    summary: ["<c:text>Every feature in one place."]
+    take-me-there: "menu"
+    pages:
+      - title: "<c:value>Opening it"
+        lines:
+          - "<c:text>Type <c:value>/menu</c:value> or click the <c:flame>Nether Star</c:flame>"
+          - "<c:text>in hotbar slot 9."
+          - "<c:text>Don't want the star? Turn it off in"
+          - "<c:value>/settings</c:value> <c:muted>»</c:muted> <c:text>Display."
+      - title: "<c:value>Coming soon"
+        lines:
+          - "<c:text>Features that aren't open yet are shown"
+          - "<c:text>in gray with <c:muted>Coming soon</c:muted>."
+          - "<c:text>They keep their place, so the menu"
+          - "<c:text>never moves around on you."
+      - title: "<c:value>Moving around menus"
+        lines:
+          - "<c:ember>«</c:ember> <c:text>Back (bottom left) returns to the"
+          - "<c:text>previous screen. <c:error>✘</c:error> <c:text>closes the menu."
+          - "<c:info>?</c:info> <c:text>explains the screen, the book opens help."
+          - "<c:text>Items can never be taken out of a menu."
+
+  help:
+    icon: knowledge_book
+    aliases: [guides, how-to]
+    name: "<c:flame>Using help"
+    summary: ["<c:text>How to find answers fast."]
+    pages:
+      - title: "<c:value>Help menu"
+        lines:
+          - "<c:value>/help</c:value> <c:text>opens the guides, sorted by"
+          - "<c:text>category. Each topic has short pages,"
+          - "<c:text>a <c:value>Take me there</c:value> button and its commands."
+      - title: "<c:value>Help in chat"
+        lines:
+          - "<c:value>/help <topic></c:value> <c:text>opens one topic directly,"
+          - "<c:text>for example <c:value>/help settings</c:value>."
+          - "<c:text>Every topic has a <c:value>Show in chat</c:value> button."
+      - title: "<c:value>All commands"
+        lines:
+          - "<c:value>/help commands</c:value> <c:text>lists every command you"
+          - "<c:text>can use. Click one to put it in chat."
+
+  settings:
+    icon: comparator
+    aliases: [options, prefs]
+    name: "<c:flame>Your settings"
+    summary: ["<c:text>Make the server work the way", "<c:text>you like it."]
+    take-me-there: "settings"
+    pages:
+      - title: "<c:value>Changing a setting"
+        lines:
+          - "<c:text>Open <c:value>/settings</c:value> and click a switch:"
+          - "<c:success>✔ green</c:success> <c:text>is on,</c:text> <c:error>✘ red</c:error> <c:text>is off."
+          - "<c:text>Changes apply right away and are saved."
+      - title: "<c:value>From chat"
+        lines:
+          - "<c:value>/settings <setting> on|off</c:value>"
+          - "<c:text>Press Tab after <c:value>/settings</c:value> to see"
+          - "<c:text>every setting you can change."
+      - title: "<c:value>Coming soon"
+        lines:
+          - "<c:text>Gray switches belong to features that"
+          - "<c:text>aren't open yet. They unlock by"
+          - "<c:text>themselves when the feature arrives."
+
+  rules:
+    icon: lectern
+    aliases: [rule]
+    name: "<c:flame>Server rules"
+    summary: ["<c:text>The short version, and where", "<c:text>to read the full rules."]
+    take-me-there: "rules"
+    pages:
+      - title: "<c:value>Be respectful"
+        lines:
+          - "<c:text>No harassment, hate or spam."
+          - "<c:text>Keep chat friendly for everyone."
+      - title: "<c:value>Play fair"
+        lines:
+          - "<c:text>No cheats, hacked clients, x-ray or"
+          - "<c:text>exploits. Found a bug? Report it."
+      - title: "<c:value>The full rules"
+        lines:
+          - "<c:text>Read them all with <c:value>/rules</c:value>."
+          - "<c:text>Not knowing a rule is never an excuse."
+
+  chat:
+    icon: oak_sign
+    aliases: [messages, msg, dm]
+    name: "<c:flame>Chat & messages"
+    summary: ["<c:text>Talking to everyone or to", "<c:text>one player privately."]
+    commands: [Social]
+    pages:
+      - title: "<c:value>Private messages"
+        lines:
+          - "<c:value>/msg <player> <message></c:value> <c:text>sends a"
+          - "<c:text>private message. Reply with <c:value>/r</c:value>."
+      - title: "<c:value>Ignoring someone"
+        lines:
+          - "<c:value>/ignore <player></c:value> <c:text>hides their chat and"
+          - "<c:text>messages. <c:value>/unignore</c:value> <c:text>undoes it."
+      - title: "<c:value>Who's online"
+        lines:
+          - "<c:value>/list</c:value> <c:text>shows everyone online by rank."
+          - "<c:value>/ping</c:value> <c:text>shows your connection."
+          - "<c:value>/seen</c:value> <c:text>and</c:text> <c:value>/playtime</c:value> <c:text>show activity."
+
+  teleporting:
+    icon: ender_pearl
+    aliases: [tpa, teleport, tp]
+    name: "<c:flame>Teleporting"
+    summary: ["<c:text>Getting to spawn and to", "<c:text>your friends."]
+    take-me-there: "spawn"
+    commands: [Teleport]
+    pages:
+      - title: "<c:value>Spawn"
+        lines:
+          - "<c:value>/spawn</c:value> <c:text>takes you back to spawn."
+      - title: "<c:value>Teleport requests"
+        lines:
+          - "<c:value>/tpa <player></c:value> <c:text>asks to teleport to them."
+          - "<c:value>/tpahere <player></c:value> <c:text>asks them to come"
+          - "<c:text>to you."
+      - title: "<c:value>Answering a request"
+        lines:
+          - "<c:value>/tpaccept</c:value> <c:text>or</c:text> <c:value>/tpdeny</c:value><c:text>, or click the buttons"
+          - "<c:text>in chat. <c:value>/tpcancel</c:value> <c:text>cancels your own."
+
+  afk:
+    icon: red_bed
+    aliases: [away]
+    name: "<c:flame>Being away"
+    summary: ["<c:text>Let others know you're", "<c:text>not at your keyboard."]
+    commands: [Social]
+    pages:
+      - title: "<c:value>Going AFK"
+        lines:
+          - "<c:value>/afk</c:value> <c:text>marks you as away. Moving or"
+          - "<c:text>chatting marks you as back."
+      - title: "<c:value>Automatically"
+        lines:
+          - "<c:text>If you don't move for a while you're"
+          - "<c:text>marked as away by yourself."
+
+  perks:
+    icon: diamond
+    aliases: [ranks, rank-perks, donator]
+    name: "<c:flame>Rank perks"
+    summary: ["<c:text>Handy commands that come", "<c:text>with ranks."]
+    take-me-there: "store"
+    commands: [Perks]
+    pages:
+      - title: "<c:value>What you get"
+        lines:
+          - "<c:value>/craft</c:value> <c:text>crafting table anywhere,"
+          - "<c:value>/ec</c:value> <c:text>your ender chest anywhere,"
+          - "<c:value>/hat</c:value> <c:text>wear any block,"
+          - "<c:value>/nick</c:value> <c:text>a nickname,</c:text> <c:value>/trash</c:value> <c:text>a trash can."
+      - title: "<c:value>Nicknames"
+        lines:
+          - "<c:text>Letters, numbers and _ only, 3-16 long."
+          - "<c:text>Higher ranks can add colors."
+          - "<c:value>/nick off</c:value> <c:text>removes it."
+      - title: "<c:value>Getting a rank"
+        lines:
+          - "<c:text>Ranks are available in the store:"
+          - "<c:value>/store</c:value><c:text>. Every purchase supports the server."
+
+  links:
+    icon: bell
+    aliases: [discord, store, vote, website]
+    name: "<c:flame>Discord, store & voting"
+    summary: ["<c:text>Our community outside the game."]
+    take-me-there: "discord"
+    pages:
+      - title: "<c:value>Discord"
+        lines:
+          - "<c:value>/discord</c:value> <c:text>for news, sneak peeks,"
+          - "<c:text>support and giveaways."
+      - title: "<c:value>Voting"
+        lines:
+          - "<c:value>/vote</c:value> <c:text>helps new players find us"
+          - "<c:text>and gives you rewards."
+      - title: "<c:value>Store & website"
+        lines:
+          - "<c:value>/store</c:value> <c:text>for ranks and cosmetics,"
+          - "<c:value>/website</c:value> <c:text>for everything else."
+
+  faq:
+    icon: lectern
+    aliases: [questions]
+    name: "<c:flame>Frequently asked"
+    summary: ["<c:text>Quick answers."]
+    pages:
+      - title: "<c:value>Can I play on Bedrock?"
+        lines:
+          - "<c:text>Yes. Java and Bedrock players play"
+          - "<c:text>together on <c:value>play.skybornmc.net</c:value>."
+      - title: "<c:value>When does Season 1 start?"
+        lines:
+          - "<c:text>Follow <c:value>/discord</c:value> for the date and"
+          - "<c:text>sneak peeks along the way."
+      - title: "<c:value>I lost my menu item"
+        lines:
+          - "<c:text>Check <c:value>/settings</c:value> <c:muted>»</c:muted> <c:text>Display, or type"
+          - "<c:value>/menu</c:value><c:text>. It comes back after respawning."
+      - title: "<c:value>How do I report a player?"
+        lines:
+          - "<c:text>Tell a staff member in game or open a"
+          - "<c:text>ticket on <c:value>/discord</c:value> with proof."

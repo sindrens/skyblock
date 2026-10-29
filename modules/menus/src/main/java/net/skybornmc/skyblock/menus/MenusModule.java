@@ -1,0 +1,257 @@
+package net.skybornmc.skyblock.menus;
+
+import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.command.Arg;
+import net.skybornmc.skyblock.common.command.Args;
+import net.skybornmc.skyblock.common.command.CommandFailure;
+import net.skybornmc.skyblock.common.command.CommandSpec;
+import net.skybornmc.skyblock.common.command.Suggest;
+import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.module.SkyblockModule;
+import net.skybornmc.skyblock.common.settings.PlayerSettings;
+import net.skybornmc.skyblock.common.settings.SettingCategory;
+import net.skybornmc.skyblock.common.settings.SettingToggle;
+import net.skybornmc.skyblock.common.text.Msg;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Navigation: {@code /menu} (hub + menu item in hotbar slot 9), {@code /help} (categories → topics → pages, command
+ * lists from the help index) and {@code /settings} (per-player toggles, {@link PlayerSettings} service for other modules).
+ */
+public final class MenusModule implements SkyblockModule {
+
+    static final String ID = "menus";
+    static final String PERM_MENU = "skyblock.menu";
+    static final String PERM_HELP = "skyblock.help";
+    static final String PERM_SETTINGS = "skyblock.settings";
+
+    private final Core core;
+    private final MenusConfig config = new MenusConfig();
+    private final SettingsRegistry settings;
+    private final Nav nav;
+    private MenuItem menuItem;
+
+    public MenusModule(Core core) {
+        this.core = core;
+        this.settings = new SettingsRegistry(core);
+        this.nav = new Nav(core, settings);
+    }
+
+    @Override
+    public String id() {
+        return ID;
+    }
+
+    @Override
+    public void enable() {
+        core.configs().load(config);
+        loadFiles();
+        core.services().register(ID, PlayerSettings.class, settings);
+        registerBuiltinSettings();
+        menuItem = new MenuItem(nav, config);
+        Bukkit.getPluginManager().registerEvents(menuItem, core.plugin());
+        settings.onChange(MenuItem.SETTING, (player, value) -> menuItem.apply(player));
+        menuItem.applyAll();
+        registerCommands();
+    }
+
+    @Override
+    public void reload() {
+        core.configs().load(config);
+        core.messages().load(Nav.TEXTS);
+        loadFiles();
+        if (menuItem != null) {
+            menuItem.applyAll();
+        }
+    }
+
+    @Override
+    public void disable() {
+        if (menuItem != null) {
+            HandlerList.unregisterAll(menuItem);
+            menuItem.removeAll(); // never leave a dead menu item behind if the module is off
+        }
+        settings.unregisterAll(ID);
+    }
+
+    private void loadFiles() {
+        YamlConfiguration hub = YamlFiles.load(core.plugin(), "menu.yml", this::problem);
+        if (hub != null) {
+            nav.hub = HubLayout.parse(hub, this::problem);
+        }
+        YamlConfiguration help = YamlFiles.load(core.plugin(), "help.yml", this::problem);
+        if (help != null) {
+            nav.help = HelpBook.parse(help, this::problem);
+        }
+    }
+
+    private void problem(String text) {
+        core.plugin().getLogger().warning(text);
+    }
+
+    // ------------------------------------------------------------------ settings
+
+    /**
+     * The settings players expect in the menu. Only the menu item is implemented here; the others are placeholders
+     * shown as "Coming soon" until the module that owns the feature registers the same id (social: private-messages,
+     * mentions-sound, join-messages, chat-colors, afk-broadcast; essentials: tpa-requests; hud: scoreboard, tips …).
+     */
+    private void registerBuiltinSettings() {
+        placeholder("private-messages", SettingCategory.CHAT, Material.WRITABLE_BOOK, true);
+        placeholder("mentions-sound", SettingCategory.CHAT, Material.BELL, true);
+        placeholder("join-messages", SettingCategory.CHAT, Material.OAK_DOOR, true);
+        placeholder("chat-colors", SettingCategory.CHAT, Material.RED_DYE, true);
+        placeholder("chat-timestamps", SettingCategory.CHAT, Material.CLOCK, false);
+        placeholder("tpa-requests", SettingCategory.SOCIAL, Material.ENDER_PEARL, true);
+        placeholder("trade-requests", SettingCategory.SOCIAL, Material.EMERALD, true);
+        placeholder("island-invites", SettingCategory.SOCIAL, Material.GRASS_BLOCK, true);
+        placeholder("afk-broadcast", SettingCategory.SOCIAL, Material.RED_BED, true);
+        placeholder("scoreboard", SettingCategory.DISPLAY, Material.ITEM_FRAME, true);
+        settings.register(new SettingToggle(ID, MenuItem.SETTING, SettingCategory.DISPLAY, Material.NETHER_STAR, true, null,
+                Nav.TEXTS, "settings.toggles." + MenuItem.SETTING, false));
+        placeholder("tips", SettingCategory.DISPLAY, Material.LANTERN, true);
+        placeholder("particles", SettingCategory.DISPLAY, Material.BLAZE_POWDER, true);
+        placeholder("depths-visibility", SettingCategory.DISPLAY, Material.SPYGLASS, true);
+        placeholder("ui-sounds", SettingCategory.SOUNDS, Material.NOTE_BLOCK, true);
+        placeholder("event-sounds", SettingCategory.SOUNDS, Material.GOAT_HORN, true);
+    }
+
+    private void placeholder(String id, SettingCategory category, Material icon, boolean defaultValue) {
+        settings.register(new SettingToggle(ID, id, category, icon, defaultValue, null, Nav.TEXTS, "settings.toggles." + id, true));
+    }
+
+    // ------------------------------------------------------------------ commands
+
+    private void registerCommands() {
+        var commands = core.commands();
+
+        commands.register(CommandSpec.command("menu")
+                .description("Open the main menu with every feature").category("Info")
+                .permission(PERM_MENU).playerOnly().aliases("gui")
+                .executes(ctx -> core.menus().open(ctx.player(), new HubMenu(nav))));
+
+        Arg<String> topic = Args.word("topic", Suggest.bySender(sender -> {
+            List<String> ids = new ArrayList<>(nav.help.ids());
+            ids.add("commands");
+            return ids;
+        }));
+        commands.register(CommandSpec.command("help")
+                .description("Help menu: guides for every feature and all your commands").category("Info")
+                .permission(PERM_HELP).aliases("guide")
+                .optional(topic).example("help settings")
+                .executes(ctx -> help(ctx.sender(), ctx.has(topic) ? ctx.get(topic) : null)));
+
+        Arg<String> setting = Args.word("setting", Suggest.bySender(sender -> sender instanceof Player p
+                ? SettingCategoryOrder.ids(settings, p) : List.of()));
+        Arg<String> value = Args.oneOf("value", () -> List.of("on", "off", "toggle"));
+        commands.register(CommandSpec.command("settings")
+                .description("Change your personal settings").category("Info")
+                .permission(PERM_SETTINGS).playerOnly().aliases("options", "prefs")
+                .optional(setting).optional(value).example("settings menu-item off")
+                .executes(ctx -> settingsCommand(ctx.player(), ctx.has(setting) ? ctx.get(setting) : null,
+                        ctx.has(value) ? ctx.get(value) : "toggle")));
+    }
+
+    private void help(CommandSender sender, String id) {
+        Player player = sender instanceof Player p ? p : null;
+        if (id == null) {
+            if (player != null) {
+                core.menus().open(player, new HelpMenu(nav));
+            } else {
+                HelpChat.categories(nav, sender);
+            }
+            return;
+        }
+        String key = id.toLowerCase(Locale.ROOT);
+        if (key.equals("commands")) {
+            if (player != null) {
+                openUnderHelp(player, new HelpCommandsMenu(nav, List.of(), nav.text(player, "help.all-commands")));
+            } else {
+                HelpChat.commands(nav, sender, List.of());
+            }
+            return;
+        }
+        var topic = nav.help.topic(key);
+        if (topic.isPresent()) {
+            if (player != null) {
+                openUnderHelp(player, new HelpTopicMenu(nav, topic.get()));
+            } else {
+                HelpChat.topic(nav, sender, topic.get());
+            }
+            return;
+        }
+        var category = nav.help.category(key);
+        if (category.isPresent() && category.get().status() == HelpBook.Status.ACTIVE) {
+            if (player == null) {
+                HelpChat.category(nav, sender, category.get());
+            } else if (category.get().allCommands()) {
+                openUnderHelp(player, new HelpCommandsMenu(nav, List.of(), nav.text(player, "help.all-commands")));
+            } else {
+                openUnderHelp(player, new HelpCategoryMenu(nav, category.get()));
+            }
+            return;
+        }
+        if (category.isPresent()) {
+            nav.msg.send(sender, "help.coming-soon", Msg.c("name", nav.crumb(sender, category.get().name())));
+            return;
+        }
+        nav.msg.send(sender, "help.unknown", Msg.p("topic", id));
+        if (player != null) {
+            core.menus().open(player, new HelpMenu(nav));
+        }
+    }
+
+    /** Opens a help screen with the help categories as its parent, so Back leads there. */
+    private void openUnderHelp(Player player, Menu menu) {
+        menu.parent(new HelpMenu(nav));
+        core.menus().open(player, menu);
+    }
+
+    private void settingsCommand(Player player, String id, String value) {
+        if (id == null) {
+            core.menus().open(player, new SettingsMenu(nav));
+            return;
+        }
+        SettingToggle toggle = settings.toggle(id.toLowerCase(Locale.ROOT))
+                .filter(t -> t.permission() == null || player.hasPermission(t.permission()))
+                .orElseThrow(() -> new CommandFailure(Nav.TEXTS, "settings.unknown", Msg.p("setting", id)));
+        if (toggle.comingSoon()) {
+            throw new CommandFailure(Nav.TEXTS, "settings.not-yet", Msg.p("setting", toggle.id()));
+        }
+        boolean current = settings.get(player, toggle.id());
+        boolean target = switch (value) {
+            case "on" -> true;
+            case "off" -> false;
+            default -> !current;
+        };
+        if (!settings.set(player, toggle.id(), target)) {
+            throw new CommandFailure(Nav.TEXTS, "settings.failed");
+        }
+        nav.msg.send(player, target ? "settings.changed-on" : "settings.changed-off",
+                Msg.c("setting", core.menus().text(player, toggle.textModule(), toggle.textKey() + ".name")));
+        core.sounds().play(player, "click");
+    }
+
+    /** Tab completion of setting ids: changeable (not coming soon) ones the player may see. */
+    static final class SettingCategoryOrder {
+        private SettingCategoryOrder() {
+        }
+
+        static List<String> ids(SettingsRegistry settings, Player player) {
+            List<String> ids = new ArrayList<>();
+            for (SettingCategory category : SettingCategory.values()) {
+                settings.visible(player, category).stream().filter(t -> !t.comingSoon()).forEach(t -> ids.add(t.id()));
+            }
+            return ids;
+        }
+    }
+}

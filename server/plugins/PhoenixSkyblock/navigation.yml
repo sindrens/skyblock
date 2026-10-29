@@ -1,0 +1,13 @@
+# Phoenix Skyblock navigation: /menu, /help, /settings and the menu item.
+# The /menu layout is in menu.yml, the help pages in help.yml, all texts in messages/navigation.yml.
+# Reload: /skyblock reload menus
+
+menu-item:
+  # Give everyone the menu item (players can still turn it off in /settings).
+  enabled: true
+  # Hotbar slot of the menu item (1-9).
+  # Allowed: 1 to 9
+  slot: 9
+  # Item used for the menu item.
+  material: nether_star
+config-version: 1

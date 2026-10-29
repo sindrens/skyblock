@@ -152,3 +152,13 @@ No commands. Layout in `messages/hud.yml`, settings in `hud.yml`. Service `HudSe
 | `/sc [message]` (`/staffchat`) | Staff chat; without text toggles staff-chat mode | `skyblock.staff.chat` | ✅ |
 
 Chat permissions: `skyblock.chat.color` (classic `&` colors), `skyblock.chat.format` (`&l &o &n &m`), `skyblock.chat.hex` (`&#RRGGBB`), `skyblock.chat.links` (links/IPs), `skyblock.chat.item` (`[item]`), `skyblock.chat.bypass` (lock, slow mode, rate limit, filters), `skyblock.staff.tab` (TPS/ping in the tab footer). Formats live in `chat.yml → format.*` (staff GUI editor in M1.11).
+## Menus module (`modules/menus`): M1.6 + M1.7
+Layout: `menu.yml` (hub), `help.yml` (help categories, topics, pages), `navigation.yml` (menu item), texts: `messages/navigation.yml`.
+
+| Command | Description | Permission | Status |
+|---|---|---|---|
+| `/menu` (`/gui`) | Main hub: every feature; not-yet-built ones shown locked "Coming soon". Also the **menu item** (Nether Star, hotbar slot 9; right-click/tap) | `skyblock.menu` (everyone) | ✅ |
+| `/help [topic\|category\|commands]` (`/guide`) | Help menu: categories, topics with pages, Take me there, Show in chat; command lists generated from the commands you may use. Console/chat gets the chat version. Every menu's "?" opens `/help <topic>` | `skyblock.help` (everyone) | ✅ |
+| `/settings [setting] [on\|off\|toggle]` (`/options`, `/prefs`) | Personal settings menu (Chat, Social, Display, Sounds); chat form for quick changes, Tab lists them | `skyblock.settings` (everyone) | ✅ |
+
+Settings now: **menu item** (works). Placeholders shown "Coming soon" until their module takes them over through the `PlayerSettings` service: private-messages, mentions-sound, join-messages, chat-colors, chat-timestamps, tpa-requests, trade-requests, island-invites, afk-broadcast, scoreboard, tips, particles, depths-visibility, ui-sounds, event-sounds.

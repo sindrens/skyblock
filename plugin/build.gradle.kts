@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":modules:social"))
     implementation(project(":modules:perks"))
     implementation(project(":modules:chat"))
+    implementation(project(":modules:menus"))
     // implementation(project(":modules:islands"))
 }
 

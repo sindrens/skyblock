@@ -1,0 +1,41 @@
+# /menu hub layout. Texts (names/descriptions) are in messages/navigation.yml → hub.entries.<id>.
+# slot: inner slots of the 6-row menu (rows 2-5, columns 2-8: 10-16, 19-25, 28-34, 37-43). Slot 4 is your profile.
+# icon: item id (docs/UI_STYLE.md §5.5 icon map: the same icon everywhere for the same feature).
+# command: what a click runs (without /).
+# status: auto        = clickable when the command exists on the server, otherwise "Coming soon" (default)
+#         coming-soon = always locked (use when the command name is taken by something else for now)
+#         active      = always clickable
+# permission: optional; players without it see the entry but can't open it.
+# Reload: /skyblock reload menus
+
+entries:
+  # Row 2: island and economy
+  island:       {slot: 10, icon: grass_block,      command: "is",          status: auto}
+  depths:       {slot: 11, icon: iron_pickaxe,     command: "dungeon",     status: auto}
+  shop:         {slot: 12, icon: emerald,          command: "shop",        status: coming-soon}   # /shop is an alias of /store until the builder shop exists
+  sell:         {slot: 13, icon: gold_nugget,      command: "sell",        status: auto}
+  bank:         {slot: 14, icon: barrel,           command: "bank",        status: auto}
+  auction:      {slot: 15, icon: gold_block,       command: "ah",          status: auto}
+  black-market: {slot: 16, icon: wither_rose,      command: "blackmarket", status: auto}
+  # Row 3: progression and rewards
+  skills:       {slot: 19, icon: experience_bottle, command: "skills",     status: auto}
+  sets:         {slot: 20, icon: leather_chestplate, command: "sets",      status: auto}
+  enchanter:    {slot: 21, icon: enchanting_table, command: "enchanter",   status: auto}
+  quests:       {slot: 22, icon: writable_book,    command: "quests",      status: auto}
+  crates:       {slot: 23, icon: tripwire_hook,    command: "crates",      status: auto}
+  events:       {slot: 24, icon: clock,            command: "events",      status: auto}
+  pets:         {slot: 25, icon: bone,             command: "pets",        status: auto}
+  # Row 4: world, collection and community
+  warps:        {slot: 28, icon: ender_pearl,      command: "warps",       status: auto}
+  collection:   {slot: 29, icon: bookshelf,        command: "collection",  status: auto}
+  leaderboards: {slot: 30, icon: golden_helmet,    command: "leaderboards", status: auto}
+  titles:       {slot: 31, icon: name_tag,         command: "tags",        status: auto}
+  store:        {slot: 32, icon: diamond,          command: "store",       status: auto}
+  vote:         {slot: 33, icon: paper,            command: "vote",        status: auto}
+  discord:      {slot: 34, icon: bell,             command: "discord",     status: auto}
+  # Row 5: getting around
+  spawn:        {slot: 38, icon: compass,          command: "spawn",       status: auto}
+  rules:        {slot: 39, icon: lectern,          command: "rules",       status: auto}
+  settings:     {slot: 40, icon: comparator,       command: "settings",    status: active}
+  help:         {slot: 41, icon: knowledge_book,   command: "help",        status: active}
+  website:      {slot: 42, icon: filled_map,       command: "website",     status: auto}
