@@ -17,6 +17,11 @@ public final class DepthsPerms {
     /** {@code /depths tp}: staff teleport to a zone. */
     public static final String TP = "skyblock.depths.tp";
 
+    /** {@code /dungeon}: the tier teleport menu (players). */
+    public static final String DUNGEON = "skyblock.depths.dungeon";
+    /** Ignore tier locks (gates open, enter any zone) and skip the {@code /dungeon} warmup. */
+    public static final String BYPASS = "skyblock.depths.bypass";
+
     private DepthsPerms() {
     }
 }

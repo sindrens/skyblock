@@ -87,6 +87,12 @@
 - Money notes (M3.2): notes can't be crafted with, sold to villagers or used in a cartography table (they are paper). OK? (default: yes)
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
+- Depths (M4.6): a locked tier's gate shows **iron bars** to that player only (`depths.yml → tiers.gate-block`); barriers would be invisible and confusing. Another block? (default: iron bars)
+- Depths (M4.6): a player standing in a zone that becomes locked for them (staff lowered their XP, `required-level` raised) is sent to The Gate with a message. Or only block re-entry? (default: send to The Gate)
+- Depths (M4.6): `/dungeon` uses its own 3 s warmup (`dungeon.warmup-seconds`, cancelled by moving or damage) because the essentials `TeleportService` is not in `common`. Move a teleport interface to `common` so every teleport shares one warmup and guards? (default: yes, as a follow-up)
+- Depths (M4.6): first unlocks are audited for every tier including tier 1 (3 rows per new player when they first log in). Skip tier 1 rows? (default: audit all)
+- Depths (M4.6): the season of remembered unlocks is `depths.yml → tiers.season-id` (must match `skills.yml → season-id` until a central season service exists). OK? (default: yes)
+- Depths (M4.6): staff with `/depths tp` into a locked tier get a pass for that zone only (no XP or drops there); builders and admins have `skyblock.depths.bypass` (all gates open, mining counts, no warmup). OK? (default: yes)
 
 ## Economy
 1. **Shards:** how are they earned? (Proposal: bosses, envoys, KOTH, high-tier dungeon zones.)

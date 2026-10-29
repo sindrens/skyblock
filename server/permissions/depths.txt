@@ -8,3 +8,6 @@ lp group builder permission set skyblock.depths.command true
 lp group builder permission set skyblock.depths.tp true
 lp group admin permission set skyblock.depths.build true
 lp group admin permission set skyblock.depths.generate true
+# M4.6 tiers: /dungeon is for everyone (plugin default: true). Builders and admins walk through every tier gate.
+lp group builder permission set skyblock.depths.bypass true
+lp group admin permission set skyblock.depths.bypass true
