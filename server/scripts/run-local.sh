@@ -22,7 +22,8 @@ if ! grep -qE 'version "(2[5-9]|[3-9][0-9])' <<<"$JAVA_VER"; then
 fi
 
 echo "== Building the PhoenixSkyblock plugin"
-(cd "$ROOT" && ./gradlew build -q)
+(cd "$ROOT" && ./gradlew build -x test -q)
+echo "   Database: H2 file in server/plugins/PhoenixSkyblock/data/ (database.yml type: h2), no MariaDB needed."
 
 cd "$SERVER"
 if [ ! -f paper.jar ]; then

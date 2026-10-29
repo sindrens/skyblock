@@ -1,0 +1,4 @@
+# Player data messages. Shown as the kick screen when your data can't be loaded safely.
+login:
+  slow: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad><newline><newline><c:warning>The server is a bit busy right now.<newline><c:text>Your data is safe. Please <c:value>rejoin in a few seconds</c:value>."
+  failed: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad><newline><newline><c:error>We couldn't load your player data.<newline><c:text>Your data is safe. Please <c:value>rejoin</c:value>; if this keeps happening, tell us on <c:sky_ice>discord.skybornmc.net</c:sky_ice>."

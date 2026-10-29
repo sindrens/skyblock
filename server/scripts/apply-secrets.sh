@@ -24,4 +24,28 @@ open(path, 'w').write(s)
 PY
   echo "LuckPerms -> MariaDB"
 fi
-# CoreProtect and the Skyblock plugin get their DB settings here once they exist.
+SB=plugins/PhoenixSkyblock/database.yml
+mkdir -p plugins/PhoenixSkyblock
+[ -f "$SB" ] || printf 'type: h2\n' > "$SB"
+python3 - "$SB" "$DB_HOST" "$DB_PORT" "$DB_USER" "$DB_PASS" <<'PY'
+import re, sys
+path, host, port, user, pw = sys.argv[1:]
+s = open(path).read()
+def put(key, value):
+    global s
+    line = key + ': ' + value
+    if re.search(r'^' + re.escape(key) + r':.*$', s, flags=re.M):
+        s = re.sub(r'^' + re.escape(key) + r':.*$', lambda m: line, s, count=1, flags=re.M)
+    else:
+        s += ('' if s.endswith('\n') else '\n') + line + '\n'
+put('type', 'mariadb')
+put('host', host)
+put('port', port)
+put('database', 'skyblock')
+put('user', user)
+put('password', "'" + pw.replace("'", "''") + "'")
+open(path, 'w').write(s)
+PY
+chmod 600 "$SB"
+echo "PhoenixSkyblock -> MariaDB"
+# CoreProtect gets its DB settings here once it supports 26.3.

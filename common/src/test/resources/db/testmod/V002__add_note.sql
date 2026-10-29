@@ -1,0 +1,1 @@
+ALTER TABLE test_items ADD COLUMN note VARCHAR(64) NULL;
