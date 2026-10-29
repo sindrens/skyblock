@@ -24,3 +24,4 @@
 - Deploy scripts no longer upload macOS `._` metadata files (they caused a harmless plugin load error).
 - Planning: `docs/CONTEXT.md` (exact stack, plugins, economy meta, hardware, roles) and detailed phase plans `docs/phases/` (0–4) with milestones, UI mockups, staff log system, test checklists. New phase order: Islands → Economy → Depths.
 - UI decisions: detailed scoreboard (name, rank, money, tokens, gems, island level; no fuel/members), tab `[RANK] Name [Title] [Tag]` editable by staff, `/tags`, join messages for ranks only, menu item in slot 9.
+- Decisions: Omnitool replaced by starter kit + Forge + living tools + blueprints + skins (tradeable, no durability); Tags & Titles in one menu (tags as redeemable, AH-sellable items; titles from achievements); audit retention 30 days / forever on our own server with backups + archives; island build Y 0–256.

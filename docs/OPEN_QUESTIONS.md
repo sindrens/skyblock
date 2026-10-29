@@ -15,7 +15,7 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 
 ## Gear
 8. **Sets:** how are pieces obtained (tokens, drops, crafting)? Final set list.
-9. Omnitool prestige: confirm, and what it gives.
+9. Tool prestige at level 50: confirm, and what it gives (default: permanent title + skin unlock + small bonus on that tool).
 
 ## Leaderboards
 10. Team island rewards for 2nd and 3rd place.
@@ -39,8 +39,5 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 26. Hub/lobby: what should it contain?
 
 ## Phase plans (defaults apply unless the owner changes them; details in docs/phases/)
-27. Audit retention: chat/commands 90 d, item pickups 30 d, economy/punishments/staff forever (Phase 0)
-28. Players see their own money history via `/transactions` (Phase 0/3)
-29. Island height full range; starter chest contents; island level hidden until Phase 5 (Phase 2)
-30. AH fee 1% + tax 5%, 5 listings; `/pay` confirm above $1M; gems not tradeable, shards tradeable; start $1,000 (Phase 3)
-31. Log respawn 10 s like ore; broken blocks fully personal; Omnitool on first join until the tutorial exists (Phase 4)
+
+Answered 2026-10-29 (moved into the plans): retention 30 days / forever, `/transactions` yes, AH 1%+5% and 5 listings, `/pay` confirm >$1M, gems not tradeable, start $1,000, island build Y 0–256, Depths logs 10 s + personal blocks, Omnitool replaced by Forge/living tools/blueprints/skins (tradeable, no durability), titles + tags in one menu.

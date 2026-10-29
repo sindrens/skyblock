@@ -48,7 +48,7 @@ NPCs use 1.21.9+ **mannequin** entities (custom built), with name + one-line rol
 - Each island owns one **region-file slot (512 × 512 blocks)**. Island center = center of the region. Deleting/resetting an island = deleting one region file (fast, safe).
 - Start size **3×3 chunks (48×48)**, Island Size upgrade grows by 1 chunk ring per level, max **15×15 chunks (240×240)**.
 - The border is a per-player world border (packet), shown in the island's border color (cosmetic).
-- Height: full vanilla range (-64 to 320).
+- Height: world range -64 to 320, but **building on islands is limited to Y 0–256** (owner decision).
 - Starting schematic: configurable. Default: small medieval islet (grass/dirt, 1 oak tree, a chest with starter items, a sign "Open /menu").
 - Void fall → teleport to island home, no damage.
 - Outposts: same grid in `outposts`. Fixed **5×5 chunks**, upgradable to 9×9.
@@ -156,7 +156,7 @@ Fishing works in any water. Loot tables scale with the Fishing skill (junk → f
 | Natural mob spawning on islands | Off (mobs only from spawners) | Performance and economy control |
 | Villagers / wandering traders | **Trading allowed** (owner decision). Villager AI tuned for performance in paper config; trade prices to be watched in the economy dashboard | Decided 2026-10-29 |
 | Iron golem farms | Natural iron golem spawning off on islands (economy + lag); golems from players only | Proposal |
-| Vanilla enchanting / anvils | Allowed on vanilla gear only | Custom enchants stay on Omnitool + sets |
+| Vanilla enchanting / anvils | Allowed on vanilla gear only | Custom enchants stay on custom tools + sets |
 | Elytra | **Allowed** (owner decision; obtained via crates/Black Market/events since the End is closed). Disabled in the warzone | Decided 2026-10-29 |
 | Redstone | Allowed. Per-chunk limits on pistons/observers (tunable); lag machines detected and disabled | |
 | Hoppers | No count limit (expensive); transfer rate per Paper config | Owner decision |

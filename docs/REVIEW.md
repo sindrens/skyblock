@@ -15,20 +15,20 @@
 **Default:** Upgrade levels give **island level points weighted by tier** (upgrade level 1–3 = 1 point, 4–6 = 2, 7+ = 3), and every upgrade level *also* requires its tasks (which can't be bought). Gems can **never** buy upgrade levels or task progress.
 
 ### A2 🔴 Three overlapping "mining progressions"
-**Problem:** Mining has a skill (player), a pillar (island), Omnitool level (player), and Depths tier unlocks. Players won't understand which one does what, and the code will duplicate logic.
+**Problem:** Mining has a skill (player), a pillar (island), tool level (player), and Depths tier unlocks. Players won't understand which one does what, and the code will duplicate logic.
 **Default (one clear job each):**
 | System | Owner | Job |
 |---|---|---|
 | Skill | Player | Personal perks (speed, fortune), feeds pillar XP |
 | Pillar | Island | Island level + island unlocks (outposts, biomes) |
-| Omnitool level | Player | Tool power, enchant slots |
+| Tool tier + level | Player (per tool) | Tool power (tier from the Forge), perk slots (level) |
 | Depths tier | **Player** | Which zone you may enter. Unlocked by **your skill level** in that aspect (not "blocks broken", which duplicates skill XP) |
 
 So "blocks broken" from the owner's answer becomes skill XP, which comes *from* blocks broken. The behavior is the same, with one system instead of two.
 
-### A3 🔴 Custom enchants "on all tools and armor" vs. one undroppable Omnitool
-**Problem:** If the Omnitool is the only tool, custom enchants on "all tools" means Omnitool modes, plus sets (armor).
-**Default:** Custom enchants go on **Omnitool modes** (pickaxe/axe/sword/hoe/rod each have their own enchant slots) and **set armor pieces**. Vanilla tools/armor can exist for building but take **vanilla enchants only**.
+### A3 ✅ Custom enchants on tools (resolved: Omnitool replaced by Forge tools, 2026-10-29)
+**Resolution:** Tools are separate custom items (Forge + living tools + blueprints).
+**Default:** Custom enchants go into the **perk slots of custom tools** and on **set armor pieces**. Vanilla tools/armor can exist for building but take vanilla enchants only.
 
 ### A4 🟡 Coop/Trust role vs. the solo→team rule
 **Problem:** Does trusting someone (coop) turn a solo island into a team island? If yes, solo players can't let a friend help build. If no, coop is a loophole (a friend grinds without being a member).
@@ -87,7 +87,7 @@ Mining at 1 block/s fills an inventory in ~1 minute. Nothing is defined.
 | Where | Keep inventory | Penalty |
 |---|---|---|
 | Island / spawn / Depths | Yes | None (Depths: 5% satchel loss? No: keep it friendly) |
-| PvP zones / KOTH / envoys | Yes for Omnitool + sets (soulbound) | Lose carried **loot** items from the event; killer gets a % |
+| PvP zones / KOTH / envoys | Yes for custom tools + sets (kept on death) | Lose carried **loot** items from the event; killer gets a % |
 | Void fall on island | Teleport to island home, no damage |
 Combat logging in PvP zones = death.
 
@@ -117,7 +117,7 @@ Undefined: starting balance, tutorial rewards, hopper price, first upgrade costs
 | `/stats [player]` | Player profile GUI: skills, playtime, kills, titles, collection % |
 | `/rules`, `/discord`, `/store`, `/vote` | Clickable links, also in `/help` |
 | **Titles** | Chosen in `/titles`, shown in chat prefix and tab. Earned from season tops, collection log, achievements, prestige |
-| **Cosmetics** (kept across seasons) | Chat colors, tags, particle trails, kill effects, island border colors, Omnitool skins, pet skins, join messages |
+| **Cosmetics** (kept across seasons) | Chat colors, tags, particle trails, kill effects, island border colors, tool skins, pet skins, join messages |
 | `/fly` | On your own island only, rank perk or upgrade |
 | **Trash** `/trash` | Yes |
 | **Island chat** `/is chat` and team notifications | Yes |
@@ -159,7 +159,7 @@ Possible, but only with discipline: high single-core CPU (e.g. Ryzen 9 7950X/995
 - Bedrock players' names have a prefix (`.Name`). Commands and tab completion must handle it.
 
 ### E3 🟡 Item identity
-Every custom item carries a **PersistentDataContainer id + UUID** (for unique items like the Omnitool). Logic never reads display names or lore. Dupe detection: unique items with a duplicate UUID get flagged and removed.
+Every custom item carries a **PersistentDataContainer id + UUID** (for unique items like custom tools). Logic never reads display names or lore. Dupe detection: unique items with a duplicate UUID get flagged and removed.
 
 ### E4 🟡 Data and season archive
 Each season gets a `season_id`. Wipes create a new season id instead of deleting rows, so history stays (Hall of Fame, stats, appeals).

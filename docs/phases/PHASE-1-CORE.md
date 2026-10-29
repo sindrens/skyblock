@@ -93,9 +93,12 @@ The audit log (M0.8) made searchable in-game. **This is how staff check "who pai
 
 ## M1.11 Display formats (staff-editable) and `/tags`
 - **Display format editor** (owner decision): in the staff menu (`/staff` → Display) admins edit how players look in **chat, tab and nametags**: which parts are shown and in which order (rank, name, title, tag, island level), separators and colors, with a live preview line. Saved to `display.yml`, applied instantly, logged.
-- **Tags** (`/tags`): cosmetic tags players **own** (from store, crates, events, staff gifts) and select one to show in chat/tab (e.g. `[Phoenix]`, `[OG]`, `[Builder]`). GUI: owned tags first, locked tags shown grayed with how to get them, preview, select/unequip. Tags are defined by staff in a GUI (id, display text with colors, rarity, how to obtain). Owned tags are kept across seasons.
-- **Titles** are different: they are **earned** (season tops, collection log, achievements; Phase 10+). The display system already has a slot for them, and they're shown as "—" until earned.
-- Staff can give/remove tags: `/tags give|take <player> <tag>` (logged).
+- **Tags & Titles menu** (`/tags`, also `/titles`; owner decision: one menu for both):
+  - **Titles** are *earned*: lots of achievements (cool and secret ones, not only winning), season tops, collection milestones, tool prestige. Kept across seasons. Titles not earned yet show as locked with how to earn them.
+  - **Tags** are *owned* cosmetics (e.g. `[Phoenix]`, `[OG]`), won from crates or bought in the store. They arrive as a **tag item**: right-click to redeem it to your account (confirm screen). Tag items can be traded and **sold on the auction house** (extra copies, duplicates). Owned tags are kept across seasons.
+  - The menu has two tabs (Titles | Tags), preview of your chat/tab line, select/unequip one of each.
+  - Staff define tags and titles in a GUI (id, display text with colors, rarity, how to obtain).
+- Staff can give/remove tags and titles: `/tags give|take <player> <tag>`, `/titles give|take <player> <title>`, `/tags item <tag> [amount]` (creates tag items); all logged.
 
 ## M1.12 `/admin` config editor (base)
 - `/admin` GUI: modules → settings generated from the typed config classes (M0.1). Booleans toggle; numbers use the number picker; text via chat prompt; lists add/remove; every edit is validated, saved to YAML, applied live (or flagged "needs restart"), and logged with old/new values (`config/edit`).

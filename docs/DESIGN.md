@@ -53,7 +53,7 @@ There are also **weekly mini-leaderboards** (island level gained, pillars, skill
 ## 2. First join and tutorial
 
 - The player spawns at a **medieval spawn**. An NPC guide offers the **optional, short tutorial** (never forced, skippable at any time, re-openable with `/tutorial`).
-- Tutorial target: **under 3 minutes.** Steps: get the **Omnitool** → create island → break first blocks in the mine → chop a tree → sell → see `/is upgrade`. Done.
+- Tutorial target: **under 3 minutes.** Steps: claim the **starter kit** from the Quartermaster → create island → break first blocks in the mine → chop a tree → sell → see `/is upgrade`. Done.
 - The tutorial gives a completion reward.
 - The whole start is a "soft tutorial": action bar hints, a clear next-step objective on the scoreboard, and clickable chat links.
 
@@ -176,7 +176,7 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 | Currency | Earned by | Used for |
 |---|---|---|
 | **Money** | Selling, quests, events, interest | Upgrades, shop, auction house, everything general |
-| **Tokens** | Using the Omnitool (breaking, killing, chopping, farming) | Omnitool upgrades, sets, custom enchants (`/enchanter`) |
+| **Tokens** | Using custom tools (breaking, killing, chopping, farming) | Custom enchants (`/enchanter`), sets, Forge extras |
 | **Gems** | Store credits, voting, saying "gg" when someone buys from the store | Premium items in-game |
 | **Shards** | (see open questions) | The **Black Market** (rotating rare shop) |
 
@@ -208,14 +208,20 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 
 ---
 
-## 5. The Omnitool, The Depths and gathering
+## 5. Tools, The Depths and gathering
 
-### 5.1 Omnitool
-- Given in the tutorial. **Not droppable, not sellable**, one per player.
-- It **becomes** the right tool for the context (pickaxe in the mine, axe in the forest, sword vs. mobs, hoe on crops, rod for fishing) and changes when you enter an area.
-- Right-click opens a GUI: stats, level, upgrades, custom enchants.
-- **Max tool level 10**, upgraded with tokens (+ requirements).
-- Gives tokens on use.
+### 5.1 Tools (decided 2026-10-29; replaces the old Omnitool idea)
+Four connected systems. **All custom tools, blueprints and skins are tradeable** (trade, auction house) and **never wear out** (no durability). Every tool is a unique item (PDC id + UUID) for dupe protection.
+
+| System | How it works |
+|---|---|
+| **Starter kit** (Quartermaster NPC at spawn) | Free basic custom pickaxe, axe, hoe, sword and rod. Re-claimable every 30 min if lost. The first step of the tutorial |
+| **The Forge** (blacksmith NPC at spawn) | Forges tier tools (pickaxe, axe, hoe, sword, rod) from **Depths materials + money**. Each Depths tier unlocks the next tool tier (Coal Pickaxe → Copper → Iron → … → Voidstone). Grinding a tier gives the materials for the next tool |
+| **Living tools** | Every custom tool gains XP when used and levels **1–50**. Levels give speed/fortune and unlock **perk slots** where custom enchants go (`/enchanter`, tokens). The tool remembers its stats (blocks mined, kills…) |
+| **Blueprints** | Rare drops in the Depths and from bosses (e.g. *Blueprint: Magma Pickaxe*, Epic). Blueprint + materials at the Forge = a special tool with a unique ability. Valuable trade items |
+| **Skins** | Cosmetic looks for tools (Phoenix Flame, Frostbite, Royal Gold …) from crates, store and events; applied in a skin menu; tradeable; kept across seasons |
+
+Tool tiers, recipes, XP curve, perk slots and abilities live in config (`tools.yml`) and are balanced in the balance sheet.
 
 ### 5.2 The Depths (one big shared area)
 - A single large area containing the **mine, the forest and the combat/dungeon zones**, each split into **tiers**.
@@ -229,7 +235,7 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 
 ### 5.3 Island generators, farms and spawners
 - **Custom cobble generators** with upgradeable ore tiers.
-- **Custom crops** + **harvester hoe** (Omnitool hoe mode).
+- **Custom crops** + **harvester hoe** (custom hoe from the Forge).
 - **Spawners:** the best ones are obtainable, stackable (max stack tunable). Types are **not** tier-gated by Combat pillar.
 - **Mob stacking** for performance.
 - **Minions/collectors:** yes (automation exists).
@@ -263,7 +269,7 @@ Mining, Foraging, Farming, Combat, Fishing. Balanced levels with perks along the
 ### 6.3 Custom enchants (`/enchanter`)
 - A decent, balanced number across all tools and armor, in tiers.
 - **Always guaranteed** (no fail/destroy chance).
-- Bought inside the Omnitool/enchanter GUI with **tokens** earned by using the tools.
+- Applied in the `/enchanter` GUI into a tool's **perk slots** (from tool levels), paid with **tokens** earned by using tools.
 - Can be levelled, removed and moved.
 - Area enchants (explosive, vein miner, treefeller) are included, balanced.
 - Enchants work in PvP.
@@ -291,9 +297,13 @@ Mining, Foraging, Farming, Combat, Fishing. Balanced levels with perks along the
 - **Crates:** Common, Uncommon, Rare, Epic, Legendary (+ Monthly). Physical crates at spawn **and** `/crates`. Animations.
 - **Keys are earned only** (voting, quests, events). Never sold for money or gems (owner decision 2026-10-29). Keys are **virtual** but can be withdrawn as items in the `/crates` GUI. Tradeable.
 - Daily rewards / login streak, voting with vote parties.
-- Daily + weekly quests, battle pass (free + paid track), achievements, **collection log** (titles carry over between seasons).
+- Daily + weekly quests, battle pass (free + paid track), **achievements** (many, including fun/secret ones), **collection log**.
+- **Titles and tags** (decided 2026-10-29), shown together in one **Tags & Titles** menu (`/tags`):
+  - **Titles** are *earned*: achievements (many cool ones, not only winning), season tops, collection milestones, prestige. Kept across seasons.
+  - **Tags** are *owned* cosmetics: won from crates or bought in the store. They come as a **tag item**: right-click to redeem it to your account. Unredeemed or extra tag items can be traded and **sold on the auction house**. Owned tags are kept across seasons.
+  - The player picks one title and one tag to show in chat/tab.
 - **Black Market:** rotating limited-stock shop paid in shards.
-- **Prestige** on the Omnitool (reset level for a permanent title/cosmetic + small seasonal bonus).
+- **Tool prestige**: a level-50 tool can be prestiged (reset to level 1 for a permanent title/cosmetic + a small bonus on that tool).
 - No rank-up system. Island level + skills are the progression.
 
 ## 10. Events (automatic)
@@ -314,7 +324,7 @@ Treasure hunt, money event, farming event, mining rush, double XP and more, all 
 - Guilds/alliances between islands.
 
 ## 13. Endgame (months 2–3)
-Omnitool prestige, collection log, high-tier dungeon zones with leaderboards, weekly leaderboards, Final Week, limited late-season cosmetics.
+Tool prestige, blueprint hunting, collection log, high-tier dungeon zones with leaderboards, weekly leaderboards, Final Week, limited late-season cosmetics.
 
 ---
 

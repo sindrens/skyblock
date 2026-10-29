@@ -56,7 +56,7 @@ On top of Paper's Brigadier API, every command gets:
 - The "?" info item on every screen links to the right `/help` topic.
 
 ## M0.7 Item framework
-- Registry of custom items by id (`omnitool`, `money_note`, `crate_key_rare`, …).
+- Registry of custom items by id (`tool_iron_pickaxe`, `money_note`, `tag_item`, `crate_key_rare`, …).
 - Every custom item carries a PDC id; unique items also get a UUID (dupe detection: two identical UUIDs online → both flagged, staff alerted, logged).
 - **Lore builder** implementing the `UI_STYLE.md` §4 template (name, subtitle, description, stats, enchants, actions, rarity footer; no italics; hidden vanilla tooltips).
 - Resource-pack ready: `item_model` component per item id (empty until the pack exists).
@@ -66,7 +66,11 @@ On top of Paper's Brigadier API, every command gets:
 - Table `audit_log`: id, time, season, **category** (`economy`, `trade`, `island`, `punishment`, `staff`, `command`, `chat`, `item`, `auth`, `config`, `world`), **action** (`pay`, `ah_buy`, `island_invite`, `ban`, …), **actor** (uuid or console/system), **target** (uuid/island id/item uuid), **amount** (nullable), **world + x/y/z** (nullable), **details JSON** (everything else, e.g. item NBT summary, old/new values).
 - Written **async in batches** (every 2 s or 500 rows); never blocks gameplay.
 - Indexes on (actor, time), (target, time), (category, action, time).
-- **Retention** (configurable): economy/trade/punishment/staff/config **forever** (or until owner deletes); chat 90 days; commands 90 days; item pickups/drops 30 days.
+- **Retention** (owner decision): **30 days** for chat, commands and item pickups/drops; **forever** for economy, trades, auction, punishments, staff actions, config changes and island actions.
+- **Stored safely on our own server** (owner decision): in the MariaDB `skyblock` database on the VPS (never a third-party service). The table is partitioned by month so it stays fast with years of data. Protection:
+  - the nightly backup (04:30) dumps the whole database, kept 7 days locally (off-site copy before launch);
+  - before 30-day data is purged, it is archived to compressed monthly files (`/opt/skyblock/backups/audit-archive/2026-10.jsonl.gz`), so nothing is lost without a trace;
+  - log rows are append-only for staff (no edit/delete commands); only the owner can export or purge, and that itself is logged.
 - API: `audit.log(category, action, actor, target, amount, location, details)`.
 - Chat and commands are logged here too (Phase 1 wires them).
 
@@ -91,5 +95,4 @@ On top of Paper's Brigadier API, every command gets:
 | M0.8–M0.9 | Run a few commands → `/skyblock audit recent` (temporary staff command) lists them |
 
 ## Open questions (defaults apply unless the owner changes them)
-1. Audit retention: chat/commands 90 days, item pickups 30 days, economy/punishments forever. OK?
-2. Should players ever be able to see their **own** logs (e.g. `/transactions` for their money history)? Default: **yes**, own economy history only (Phase 3).
+Decided: retention 30 days / forever, stored on our server with backups + archives; players see their own money history in `/transactions` (Phase 3).

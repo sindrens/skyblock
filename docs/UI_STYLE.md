@@ -162,7 +162,8 @@ Rules:
 ### 4.3 Special items
 | Item | Rule |
 |---|---|
-| Omnitool | Name shows the mode: `Omnitool · Pickaxe`. Level bar in lore: `Level 4 ▰▰▰▰▱▱▱▱▱▱`. Soulbound line: `<muted>Soulbound: cannot be dropped or sold` |
+| Custom tool | Name = tier + type in rarity color (`Iron Pickaxe`), subtitle `Tool · Tier 3`. Level line `Lv 23 ▰▰▰▰▰▰▱▱▱▱ 62%`, stats, perk slots (`3/5`), skin name if applied, `Blocks mined: 48,210`. Footer `RARE TOOL` |
+| Tag item | `<rarity>Tag: [Phoenix]` + preview line, "Right-click to redeem", tradeable note |
 | Money note | `<c:money>$50,000 Note`, signed-by line, unique id |
 | Keys | `<rarity>Rare Crate Key`, "Use at /crates or a crate at spawn" |
 | Locked menu entries | Gray dye or the real item with `<c:error>✘ Locked`, followed by the requirement and progress: `Mining 15 ▸ 9/15` |
@@ -287,7 +288,7 @@ All sounds are configurable and can be muted in `/settings`.
 
 ## 8. Help system (`/help`)
 
-- **Main GUI** with categories: Getting Started, Island, The Depths, Economy, Progression (skills, pillars, upgrades), Gear (Omnitool, sets, enchants), Combat & Events, Rewards (crates, quests, vote), Community (Discord, rules, report), Commands.
+- **Main GUI** with categories: Getting Started, Island, The Depths, Economy, Progression (skills, pillars, upgrades), Gear (tools, Forge, blueprints, sets, enchants), Combat & Events, Rewards (crates, quests, vote), Community (Discord, rules, report), Commands.
 - Each topic: 3–6 short pages (written book or GUI pages), with a "Take me there" button and related topics.
 - `/help <topic>` and tab completion for topics.
 - Help texts live in `help.yml`, editable in-game.

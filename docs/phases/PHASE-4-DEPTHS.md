@@ -1,6 +1,6 @@
-# Phase 4: Omnitool and The Depths
+# Phase 4: Tools and The Depths
 
-**Goal:** the main income loop (owner decision: The Depths ~50% of income). Players get the Omnitool, mine/chop/fight in tiered zones where everyone has their own blocks, fill their satchel, level skills, unlock tiers and earn tokens.
+**Goal:** the main income loop (owner decision: The Depths ~50% of income). Players claim a starter kit, forge better tools, level them, hunt blueprints, mine/chop/fight in tiered zones where everyone has their own blocks, fill their satchel, level skills, unlock tiers and earn tokens.
 
 Depends on Phases 0–3 (sell, tokens). Design: `DESIGN.md` §5–6, `WORLD.md` §4, `REVIEW.md` A2, A3, B5, B6.
 
@@ -11,11 +11,30 @@ Depends on Phases 0–3 (sell, tokens). Design: `DESIGN.md` §5–6, `WORLD.md` 
 - Zones are defined in `depths.yml` (name, aspect, tier, region corners, ore/log field regions, spawn point, gate). Real builds later only change coordinates, never code.
 - A **builder brief** (`docs/BUILDER_BRIEF.md`) describes sizes, palettes and what must stay a region (ore fields, gates, spawn pads).
 
-## M4.2 Omnitool
-- Given on first join (until the tutorial exists). **Soulbound:** can't drop, store in containers, put in item frames, trade, auction or lose on death; `/omnitool` re-gives it if lost.
-- **Modes:** pickaxe in the mine/on stone, axe on logs, hoe on crops, sword vs. mobs, rod on water: switches automatically by zone and target block (no hotbar juggling).
-- Right-click opens the **Omnitool menu**: level, stats (break speed, fortune, token bonus), upgrades (tokens), enchant slots (Phase 6), skin (cosmetic, later).
-- **Level 1–10**, upgraded with tokens (+ requirements). Break speed via the player's `block_break_speed` attribute (no hacks, works for Bedrock).
+## M4.2 Tools (replaces the Omnitool, owner decision 2026-10-29)
+All custom tools, blueprints and skins are **tradeable** (trade + auction house) and have **no durability**. Each tool is a unique item (PDC id + UUID; dupe detection from M0.7). Definitions in `tools.yml`.
+
+**a) Starter kit: Quartermaster NPC (spawn)**
+- Free basic custom pickaxe, axe, hoe, sword, rod. Re-claim every 30 min (only the pieces you don't have). First tutorial step later.
+
+**b) The Forge: Blacksmith NPC (spawn) + `/forge`**
+- Menu tabs per tool type; each tool tier shows recipe (Depths materials + money), stats, requirement (skill level / Depths tier), owned ✔ / craftable / locked ✘ with progress.
+- Tool tiers follow the Depths tiers (Mine: Coal → Copper → Iron → Gold → Redstone → Lapis → Diamond → Emerald → Amethyst → Quartz → Netherite → Voidstone; Forest: Oak → … → Warped axes; Combat: swords per combat tier; Farming hoes and rods in Phase 7).
+- **Upgrading keeps progress:** forging the next tier from your current tool carries over its level, perks and stats (no reason to fear upgrading).
+
+**c) Living tools (levels 1–50)**
+- XP per block/log/kill with that tool; level-up sound + action bar; lore shows level bar, stats and history (blocks mined, kills).
+- Levels raise speed/fortune and unlock **perk slots** at set levels (e.g. 5/15/30/45). Custom enchants go into perk slots (Phase 6 `/enchanter`; slots shown as "empty" until then).
+- Break speed via item attribute modifiers (`block_break_speed`/mining efficiency), no client hacks, works on Bedrock.
+
+**d) Blueprints**
+- Rare drops from Depths tiers (and bosses in Phase 8), with rarity and drop source in the lore. Blueprint + materials at the Forge → special tool with a unique ability (e.g. *Magma Pickaxe*: auto-smelt + chance to melt nearby ores). Abilities from a small, balanced list in `tools.yml`.
+
+**e) Skins**
+- Cosmetic only. From crates/store/events (Phase 10/11), redeemed into a skin collection; applied in the tool's **Skins** menu; resource-pack model per skin (Java), name/lore change for Bedrock until mapped. Kept across seasons.
+
+**Tool menu** (shift + right-click a tool): stats, level, perk slots, skin, history, "Open Forge".
+**Death:** custom tools are kept on death (REVIEW B7).
 
 ## M4.3 Per-player blocks engine
 - Ore/log blocks are real blocks in the world (all players see the full field). When a player breaks one: the break is handled by us, the player sees the **depleted block** (tier's depleted material) only for themselves, and after **10 s** it reappears **only for them**. Other players keep seeing their own state.
@@ -25,9 +44,9 @@ Depends on Phases 0–3 (sell, tokens). Design: `DESIGN.md` §5–6, `WORLD.md` 
 - **Visibility setting** (everyone / island / none) hides other players in the zone (`/settings` + quick toggle item).
 
 ## M4.4 Satchel
-- Drops go straight to the **satchel** (virtual storage per player), not the inventory. Capacity grows with tool level/skill.
+- Drops go straight to the **satchel** (virtual storage per player), not the inventory.
 - Satchel menu: contents by item, total value, **Sell all** (uses M3.4 prices), sell per item; full warning on action bar + sound; auto-sell toggle as a later perk.
-- Shown on the Depths scoreboard (`Satchel 412/640`).
+- Shown on the Depths scoreboard (`Satchel 412/640`). Capacity grows with Mining/Foraging skill and satchel upgrades (Forge).
 
 ## M4.5 Skill core (pulled forward from Phase 6)
 Tier unlocks depend on skills (REVIEW A2), so the **XP and level part** of skills is built here: Mining, Foraging, Combat (Farming/Fishing in Phase 7).
@@ -46,7 +65,7 @@ Tier unlocks depend on skills (REVIEW A2), so the **XP and level part** of skill
 - Mine/forest ambient mobs are per-player and harmless (REVIEW B6).
 
 ## M4.9 Drops and tokens
-- Drop tables per tier (`depths.yml`): ore items → satchel; token chance; rare drops (geodes, key fragments) as placeholders for later phases.
+- Drop tables per tier (`depths.yml`): ore items → satchel (also the Forge materials); token chance; **blueprint** chance; rare drops (geodes, key fragments) as placeholders for later phases.
 - Tokens credited via `EconomyService` (ledger reason `depths_drop`), shown in the action bar.
 
 ---
@@ -75,20 +94,23 @@ Row 6  standard navigation
 ```
 
 ## Data (tables)
-`omnitools` (player, level, stats JSON), `satchels` (player, item, amount), `skills` (player, skill, xp, level), `depths_zones` (config), `player_tier_unlocks` (derived/cache).
+`tools` (item uuid, owner history, type, tier, level, xp, perks JSON, skin, stats JSON), `blueprints_found`, `skins_owned`, `starter_claims`, `satchels` (player, item, amount), `skills` (player, skill, xp, level), `depths_zones` (config), `player_tier_unlocks` (derived/cache).
 
 ## Release / test checklists (owner)
 | Milestone | You check |
 |---|---|
 | M4.1 | Walk The Gate and wings; `/dungeon` teleports |
-| M4.2 | Omnitool can't be dropped/stored; modes switch; menu |
+| M4.2 | Claim the starter kit; forge the next tier (progress kept); tool levels up; tool menu; a blueprint (staff-given) crafts a special tool; skin menu shows |
 | M4.3 | Mine with an alt next to you: each sees their own ore; respawn after 10 s |
 | M4.4 | Satchel fills, sell all, full warning |
 | M4.5–M4.6 | Skill XP, level-up, tier unlock + locked gate message |
 | M4.7–M4.8 | Forest logs; combat mobs, drops |
 | M4.9 | Tokens in the action bar and `/bal`; ledger rows |
 
+## Decided (2026-10-29)
+- Ore and logs respawn after 10 s; broken blocks are fully personal.
+- Omnitool removed: starter kit + Forge + living tools + blueprints + skins; all tradeable; no durability.
+
 ## Open questions (defaults apply unless changed)
-1. Respawn time 10 s for ore and logs (owner said 10 s for ore). Same for logs?
-2. Should players be able to **see** other players' broken blocks? Default **no** (fully personal fields).
-3. Omnitool on first join or only after the tutorial (Phase 10)? Default: first join for now.
+1. Perk slot levels: 5 / 15 / 30 / 45 (4 slots), +1 slot from prestige?
+2. Re-claim cooldown for the starter kit: 30 min?

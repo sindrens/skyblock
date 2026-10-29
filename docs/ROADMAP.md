@@ -10,7 +10,7 @@ Target: everything below is in season 1. Launch is in ~3 years. There is time to
 | 1 | **Core player experience** ([plan](phases/PHASE-1-CORE.md)) | Spawn/join flow, teleports, chat + ranks everywhere (chat/tab/nametags), scoreboard, tab, `/menu`, `/help`, `/settings`, custom punishments, staff mode, **`/logs` viewer**, reports, `/admin` | ⬜ |
 | 2 | **Islands** ([plan](phases/PHASE-2-ISLANDS.md)) | Grid, creation (placeholder schematic), protection, roles + permission GUI, solo → team, visiting/warps/ratings, island menu, stats tracking, admin tools | ⬜ |
 | 3 | **Economy** ([plan](phases/PHASE-3-ECONOMY.md)) | Balance sheet first, currencies + ledger, `/pay`, `/transactions`, notes, banks + interest, dynamic `/sell`, builder shop, auction house, secure `/trade`, economy dashboard | ⬜ |
-| 4 | **Omnitool and The Depths** ([plan](phases/PHASE-4-DEPTHS.md)) | Placeholder Depths build, Omnitool, per-player blocks, satchel, skill core (XP/levels), tiers + `/dungeon`, forest, combat zones, tokens | ⬜ |
+| 4 | **Tools and The Depths** ([plan](phases/PHASE-4-DEPTHS.md)) | Placeholder Depths build, starter kit + Forge + living tools + blueprints + skins, per-player blocks, satchel, skill core (XP/levels), tiers + `/dungeon`, forest, combat zones, tokens | ⬜ |
 | 5 | **Progression core** | 5 pillars + island level, `/is upgrade` masteries with tasks, leaderboards (solo/team/weekly) | ⬜ |
 | 6 | **Skills, sets, enchants** | 5 skills, `/sets`, `/enchanter` custom enchants, tokens economy tuning | ⬜ |
 | 7 | **Island production** | Custom generators, custom crops, spawners + stacking, mob stacking, collectors/auto-sell (T1–5 merge), Island Fuel, outposts + biomes + fusion | ⬜ |

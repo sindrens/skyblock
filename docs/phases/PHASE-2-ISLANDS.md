@@ -17,6 +17,7 @@ Depends on Phases 0–1. Design: `DESIGN.md` §3, `WORLD.md` §3, `REVIEW.md` A4
 ## M2.2 Protection
 - Inside an island, actions depend on role permissions (M2.3): break, place, interact (doors/buttons/levers), containers, redstone, animals, villagers (trade), item pickup/drop, armor stands/item frames, vehicles, fire/flint, ender pearls, spawners (later).
 - **Visitors:** default can walk and look only (configurable per island in settings).
+- **Build height: Y 0 to 256** (owner decision): placing/breaking outside that range on islands is blocked with a clear message.
 - Cross-border protection: pistons, liquids, falling blocks, explosions, tree growth and portals can't cross the island border; entities pushed out are returned.
 - PvP: off on islands.
 - Bypass for staff: `skyblock.island.bypass` (+ `/is bypass` toggle, logged).
@@ -75,6 +76,6 @@ Row 6  45 back · 48 info · 49 close · 50 help
 | M2.7 | `/isadmin` tools, disband → slot reused cleanly |
 
 ## Open questions (defaults apply unless changed)
-1. Island height: full world height (−64 to 320). OK?
+Decided: island build limit **Y 0–256**.
 2. Starter chest contents (default: 1 lava bucket, 1 ice, 2 bone meal, 16 bread, saplings ×2, sugar cane ×1, cactus ×1, melon seeds, pumpkin seeds).
 3. Should islands have a public "island level" visible in `/is visit` before Phase 5? Default: hidden until levels exist.

@@ -77,7 +77,4 @@ Row 6  standard navigation
 | M3.8 | Dashboard numbers move after your test trades |
 
 ## Open questions (defaults apply unless changed)
-1. AH: listing fee 1% + sales tax 5%? Max listings 5 (more by rank)?
-2. `/pay` confirmation threshold: amounts above $1M ask for confirmation?
-3. Can gems/shards be paid/traded between players? Default: shards yes, gems **no** (store currency stays bound).
-4. Starting balance $1,000 confirmed?
+Decided (2026-10-29): AH listing fee 1% + sales tax 5%, 5 listings (more by rank); `/pay` asks to confirm above $1M; shards tradeable, gems not; start $1,000; `/transactions` for players. Tag items, tools, blueprints and skins can be sold on the AH.
