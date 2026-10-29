@@ -1,0 +1,9 @@
+# Permissions of the islands module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/islands.txt. Commands: docs/commands/islands.md.
+skyblock.island:
+  description: Use /is (create your island, /is home, /is go, /is sethome)
+  default: true
+skyblock.island.bypass:
+  description: Build on any island and outside island borders (basic protection; the /is bypass toggle comes with M2.2)
+  default: op

@@ -25,6 +25,11 @@
 - M3.0: island production only counts as "online" while a member was active in the last 15 min, otherwise it burns fuel (default: yes)? Also: does time in The Depths earn island fuel? (default: no, as DESIGN §5.4 says "on the island")
 - M3.0: dynamic price recovery as 2% of the gap per 10 min (default) instead of a fixed 2 points; Hot Item +25% for 24 h?
 - M3.0: personal bank tier unlock cost 2% of the tier's capacity (default: yes)?
+- M2.1 `/is go <member island?>`: what should the argument mean once teams exist (M2.3)? (default: `/is go` = `/is home` without an argument until then)
+- M2.1 Who may move the island home with `/is sethome`? (default: leader only until M2.3 makes it a role permission)
+- M2.1 Players still join at spawn (`essentials.yml` `join.teleport-to-spawn: true`). Join at your island instead once islands exist? (default: keep spawn)
+- M2.1 Staff build bypass on islands is permission-only (`skyblock.island.bypass`, admins) until M2.2 adds the logged `/is bypass` toggle. OK? (default: yes)
+- M2.1 Scoreboard shows "Lv -" for island level until Phase 5 and no island position (`island_rank` empty). OK? (default: yes)
 
 Decisions the owner still needs to make. **Developers: never guess. Add new questions here and ask.** Move answered items into `DESIGN.md`.
 

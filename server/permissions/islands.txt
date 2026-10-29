@@ -1,0 +1,6 @@
+# LuckPerms grants for the islands module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/islands/src/main/resources/permissions/islands.yml. One console command per line; # = comment.
+
+# Islands (M2.1). Everyone can use /is (plugin default true).
+# Staff build bypass on islands: admins only until M2.2 adds the logged /is bypass toggle.
+lp group admin permission set skyblock.island.bypass true
