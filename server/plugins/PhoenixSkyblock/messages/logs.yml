@@ -296,6 +296,15 @@ errors:
 # Anything not listed is shown with underscores replaced by spaces.
 actions:
   pay: "paid"
+  ah_list: "listed on the auction house"
+  ah_buy: "bought on the auction house from"
+  ah_sale: "was paid for an auction sale"
+  ah_fee: "paid an auction listing fee"
+  ah_fee_refund: "got an auction fee refund"
+  ah_cancel: "cancelled an auction listing of"
+  ah_expire: "let an auction listing expire for"
+  ah_collect: "took an item from the auction collection bin of"
+  ah_list_failed: "failed to list on the auction house"
   admin_give: "gave money to"
   admin_take: "took money from"
   admin_set: "set the balance of"
