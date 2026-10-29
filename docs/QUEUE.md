@@ -30,7 +30,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 |---|---|---|---|---|
 | M2.1 | Grid, creation (FAWE placeholder schematic), 3×3 chunks, per-player border, home | Phase 1 | modules/islands | ✅ |
 | M2.2 | Protection (role perms, Y 0–256, cross-border) | M2.1 | modules/islands | ✅ |
-| M2.3 | Members & roles, invites (solo→team warning), coop, limits | M2.2 | modules/islands | ⬜ |
+| M2.3 | Members & roles, invites (solo→team warning), coop, limits | M2.2 | modules/islands | 🔄 |
 | M2.4 | Visiting, lock, ban, warps, ratings | M2.3 | modules/islands | ⬜ |
 | M2.5 | Island menu + settings, `/is chat` | M2.3 | modules/islands | ⬜ |
 | M2.6 | Stats tracking (daily/weekly buckets) | M2.3 | modules/islands | ⬜ |
@@ -53,7 +53,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | M4.3 | Per-player blocks engine (depleted state per player, 10 s respawn, timing wheel) | Phase 1 | modules/depths (engine pkg) | ✅ |
-| M4.1 | Depths layout from `depths.yml` (placeholder zones by code, U-shaped wings) | M4.3 | modules/depths (zones pkg) | 🔄 |
+| M4.1 | Depths layout from `depths.yml` (placeholder zones by code, U-shaped wings) | M4.3 | modules/depths (zones pkg) | ✅ |
 | M4.5 | Skill core (XP/levels, `/skills`) | Phase 1 | modules/skills | ✅ |
 | M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | ⬜ |
 | M4.6 | Tiers, unlocks, `/dungeon` | M4.1, M4.5 | modules/depths | ⬜ |

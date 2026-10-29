@@ -11,6 +11,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **M3.1 economy core** merged (EconomyService in common, /bal /baltop /pay /transactions /eco). **M4.5 skills** merged (SkillService in common, /skills).
 - Before each release run `python3 tools/sync_server_configs.py` (tracked server configs follow module resources).
 - **M2.2 island protection** merged. **Phase P** (owner's punishment spec) added as its own phase with priority; spec in `docs/specs/`.
+- **M4.1 Depths layout** merged (`zones.yml` written on first start, not tracked; `/depths generate`, `/depths tp`).
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -30,7 +31,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - P0 punishment/staff bug fixes
 - M3.6 auction house
-- M4.1 Depths layout
+- M2.3 island members & roles
 
 ## Parked / broken
 (none)
