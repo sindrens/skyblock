@@ -76,6 +76,8 @@ There are also **weekly mini-leaderboards** (island level gained, pillars, skill
 ### 3.3 Roles and permissions
 - Preset roles: **Leader, Mod, Member, Coop/Trust**.
 - The Leader edits each role's permissions in a **GUI** (build, break, containers, spawners, bank withdraw/deposit, invite, kick, warps, upgrades, biomes, outposts, settings).
+- M2.3 (built): the GUI is a matrix of roles × the 14 build/use actions (break, place, interact, containers, redstone, animals, villagers, pickup, drop, armor stands, vehicles, fire, ender pearls, spawners); Mods edit Member/Coop/Visitor but never Mod/Leader. People management is fixed per role: Leader + Mod invite, kick (Mod only members), coop and set the home; only the Leader promotes, demotes and transfers. Bank, warps, upgrades, biomes, outposts and settings permissions join the matrix with their features.
+- Coop (REVIEW A4): temporary trust that ends when no Leader/Mod of the island is online; no XP, task progress or bank; no member slot; never converts solo → team.
 
 ### 3.4 Visiting
 - `/is visit <player>` and the warp GUI.
