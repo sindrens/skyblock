@@ -1,4 +1,4 @@
-package dev.slickymatt.skyblock.common.module;
+package net.phoenixmc.skyblock.common.module;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,7 +1,7 @@
-package dev.slickymatt.skyblock;
+package net.phoenixmc.skyblock;
 
 import com.mojang.brigadier.Command;
-import dev.slickymatt.skyblock.common.module.ModuleRegistry;
+import net.phoenixmc.skyblock.common.module.ModuleRegistry;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -24,7 +24,7 @@ public final class SkyblockPlugin extends JavaPlugin {
         registerModules();
         modules.enableAll();
         registerCommands();
-        getLogger().info("Skyblock enabled with " + modules.states().size() + " module(s).");
+        getLogger().info("PhoenixMC Skyblock enabled with " + modules.states().size() + " module(s).");
     }
 
     @Override
@@ -76,7 +76,7 @@ public final class SkyblockPlugin extends JavaPlugin {
             sender.sendMessage(MM.deserialize("<gray>No modules registered yet."));
             return;
         }
-        sender.sendMessage(MM.deserialize("<gold>Modules:"));
+        sender.sendMessage(MM.deserialize("<gradient:#C21F2B:#FF3D2E>Phoenix</gradient> <#FF8A1F>»</#FF8A1F> <white>Modules:"));
         states.forEach((id, state) -> {
             String color = switch (state) {
                 case ENABLED -> "green";

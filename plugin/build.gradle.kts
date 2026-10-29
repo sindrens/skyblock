@@ -15,7 +15,7 @@ tasks {
         filesMatching("plugin.yml") { expand(props) }
     }
     shadowJar {
-        archiveBaseName.set("Skyblock")
+        archiveBaseName.set("PhoenixSkyblock")
         archiveClassifier.set("")
     }
     build { dependsOn(shadowJar) }

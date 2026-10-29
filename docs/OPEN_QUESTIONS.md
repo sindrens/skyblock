@@ -22,7 +22,6 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 11. Weekly leaderboard rewards.
 
 ## Other
-12. Server name and branding (the Java package will be renamed to match).
 13. Hosting specs (decides plugin budget). Owner will handle; single server at start.
 14. Spawner types and the max stack size.
 15. Rank perk table per rank (vault count, cosmetics, convenience).

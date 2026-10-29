@@ -72,7 +72,7 @@ messages:
     connection-throttle: Connection throttled! Please wait before reconnecting.
     flying-player: <lang:multiplayer.disconnect.flying>
     flying-vehicle: <lang:multiplayer.disconnect.flying>
-  no-permission: <red>You don't have permission to do that. <gray>Need help? Use /help
+  no-permission: <gradient:#C21F2B:#FF3D2E>Phoenix</gradient> <#FF8A1F>»</#FF8A1F> <red>✘ You don't have permission to do that. <gray>Need help? Use <#FFD23F>/help
   use-display-name-in-quit-message: false
 misc:
   catchup-ticks: default

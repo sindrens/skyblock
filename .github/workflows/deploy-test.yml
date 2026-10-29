@@ -53,8 +53,8 @@ jobs:
           U=${{ secrets.TEST_USER }}
           # Configs and scripts only (no --delete: worlds, jars and data on the server are untouched).
           rsync -az server/ "$U@$HOST:/opt/skyblock/server/"
-          ssh "$U@$HOST" 'rm -f /opt/skyblock/server/plugins/Skyblock-*.jar'
-          scp plugin/build/libs/Skyblock-*.jar "$U@$HOST:/opt/skyblock/server/plugins/"
+          ssh "$U@$HOST" 'rm -f /opt/skyblock/server/plugins/PhoenixSkyblock-*.jar'
+          scp plugin/build/libs/PhoenixSkyblock-*.jar "$U@$HOST:/opt/skyblock/server/plugins/"
           ssh "$U@$HOST" 'cd /opt/skyblock/server && ./scripts/apply-secrets.sh'
 
       - name: Restart server

@@ -1,8 +1,8 @@
-# Skyblock Server
+# PhoenixMC Skyblock
 
 A fully custom, seasonal Skyblock server for **Minecraft Java 26.3 + Bedrock (Geyser)** on **Paper**, built for 200–300 concurrent players.
 
-> Working name. It will be renamed when the server name is chosen.
+`play.phoenixmc.net` · Logo: the phoenix · Colors: mainly red (see docs/UI_STYLE.md).
 
 ## Documentation
 | Doc | What it is |

@@ -8,20 +8,26 @@ All colors, symbols and templates below live in a shared `style.yml` in `common`
 
 ## 1. Color palette
 
-Theme: **medieval** (warm golds, parchment, deep stone) with clear status colors.
+Brand: **PhoenixMC** (`play.phoenixmc.net`). Logo: a phoenix.
+Theme: **phoenix fire**, mainly **red**, balanced with ember orange, flame gold, deep charcoal and parchment, plus clear status colors. Red carries the identity (headers, borders, scoreboard, details); the other colors keep it readable and never monotone.
+
+**Balance rule:** in any GUI, message or HUD, red is the *frame* (title, borders, accents), not the body. Body text stays neutral (gray/white), values stay white, and actions stay flame gold. Roughly 30% red, 15% ember/gold, 55% neutral.
 
 > **Bedrock:** Geyser only shows the 16 legacy colors and rounds hex values. Every color has a **legacy fallback** that must still read correctly. Test on Bedrock.
 
 ### 1.1 Core
 | Name | Hex | Legacy fallback | Use |
 |---|---|---|---|
-| `brand` | `#F2C14E` | gold `§6` | Server name, titles, headers |
-| `brand_dark` | `#B8862B` | gold `§6` | Gradients with brand |
+| `brand` | `#C21F2B` | dark_red `§4` | **Phoenix Red.** Server name, GUI titles, headers, scoreboard title, borders |
+| `brand_bright` | `#FF3D2E` | red `§c` | Gradient highlight only (never alone, so it can't be confused with errors) |
+| `ember` | `#FF8A1F` | gold `§6` | Secondary accent: section headers, separators `»`, scoreboard labels |
+| `flame` | `#FFD23F` | yellow `§e` | Highlights, "new"/"ready" badges |
+| `charcoal` | `#2B2B2B` | black `§0` | Dark backgrounds (GUI filler, resource-pack panels) |
 | `parchment` | `#E8DCC0` | white `§f` | Highlighted body text |
 | `text` | `#C9C9C9` | gray `§7` | Normal body text, lore descriptions |
 | `muted` | `#7A7A7A` | dark_gray `§8` | Hints, subtitles, separators |
 | `value` | `#FFFFFF` | white `§f` | Numbers, names, the important part of a line |
-| `action` | `#FFE066` | yellow `§e` | "Click to …" lines, clickable chat |
+| `action` | `#FFD23F` | yellow `§e` | "Click to …" lines, clickable chat (same as `flame`) |
 
 ### 1.2 Status
 | Name | Hex | Legacy | Use |
@@ -38,7 +44,7 @@ Theme: **medieval** (warm golds, parchment, deep stone) with clear status colors
 | Tokens | `#C77DFF` | light_purple `§d` | `✦` | `✦ 4,250` |
 | Gems | `#4FD1FF` | aqua `§b` | `◆` | `◆ 120` |
 | Shards | `#FF6B6B` | red `§c` | `✧` | `✧ 35` |
-| Credits (store) | `#F2C14E` | gold `§6` | none | `120 Credits` |
+| Credits (store) | `#FF8A1F` | gold `§6` | none | `120 Credits` |
 
 ### 1.4 Rarity (items, crates, pets, enchants)
 | Rarity | Hex | Legacy | Footer text |
@@ -66,6 +72,13 @@ Crates use the same colors: Common, Uncommon, Rare, Epic and Legendary crates, a
 ### 1.6 Gradients
 Gradients only for: the server name, Legendary/Mythic item names, season titles and big announcements. **Never** on normal text. Bedrock shows the first color only, so the first color must be the right one.
 
+**Phoenix fire gradient** (the signature): `<gradient:#C21F2B:#FF3D2E:#FF8A1F>`, dark red → bright red → ember. Used for `PHOENIX` in the scoreboard title, tab header, join title and announcements.
+
+### 1.7 Brand vs. errors
+Brand red (`§4` on Bedrock) and error red (`§c`) must never be confused:
+- Errors always start with `✘` and are sentences; brand red is only used for names, titles and frames.
+- Brand red is never used for body text.
+
 ---
 
 ## 2. Text rules
@@ -90,7 +103,7 @@ Anything else must be tested on Bedrock first and added here.
 ```
 <prefix> <message>
 ```
-- **Prefix:** server short name in `brand`, followed by `muted` `»`. Example: `<c:brand>Realm</c> <c:muted>»</c>` (name TBD).
+- **Prefix:** `<gradient:#C21F2B:#FF3D2E>Phoenix</gradient> <c:ember>»</c>` → **Phoenix »**. Configurable in `style.yml`.
 - Module-specific prefixes are *not* used. One prefix keeps chat calm.
 - The important part of a sentence is in `value` color, and currency amounts use their currency color.
 
@@ -166,8 +179,9 @@ Rows 2–5: content (28 slots inside a 1-slot border, or full rows for lists)
 Row 6:  45 Back · 46 – · 47 – · 48 Info (?) · 49 Close · 50 Help · 51 – · 52 – · 53 Next page
 ```
 - **Fixed slots everywhere:** Back = 45 (arrow), Info = 48 (book), Close = 49 (barrier), Help = 50 (knowledge book), Previous page = 45 when paging (Back moves into the info item), Next page = 53 (arrow).
-- Border/filler: `gray_stained_glass_pane` with an empty name (` `). Category accent rows may use the pillar's color pane.
-- **Title format:** `Category » Page`, e.g. `Island » Upgrades`. Short enough for Bedrock (max ~24 chars).
+- **Frame:** top row and bottom row (except the button slots) are `red_stained_glass_pane`; the side columns are `black_stained_glass_pane`. All filler panes have an empty name (` `). Pillar menus may swap the top row for the pillar's color pane.
+- **Title format:** dark red is unreadable as a chest title on dark backgrounds, so chest titles use default dark gray text with a red `▸` marker: `<c:brand>▸</c> Island » Upgrades`.
+- Titles stay short enough for Bedrock (max ~24 chars).
 - Smaller GUIs (3-row) for simple choices and confirmations.
 
 ### 5.2 Confirmation dialog (3-row)
@@ -204,7 +218,7 @@ Required for: anything irreversible, anything above a money threshold, solo→te
 | Crates | Tripwire hook |
 | Quests | Writable book |
 | Skills | Experience bottle |
-| Sets | Leather chestplate (dyed brand gold) |
+| Sets | Leather chestplate (dyed Phoenix Red) |
 | Enchanter | Enchanting table |
 | Pets | Bone / spawn egg |
 | Events | Clock |
@@ -221,7 +235,7 @@ Required for: anything irreversible, anything above a money threshold, solo→te
 
 ### 6.1 Scoreboard (right side, max 12 lines)
 ```
- ✦ REALM ✦            ← brand gradient (name TBD)
+ ✦ PHOENIX ✦           ← phoenix fire gradient, bold
                        
  ▸ Next: Mine 50 Coal  ← the current objective (tutorial/quest), always line 3
                        
@@ -232,12 +246,13 @@ Required for: anything irreversible, anything above a money threshold, solo→te
  Island Lv 34 (#12)    ← level + rank
  Fuel ⌛ 6h 20m          
                        
- play.realm.net        ← address, muted
+ play.phoenixmc.net    ← address, ember
 ```
+Labels (`Island Lv`, `Fuel`) in `ember`, values in `value` white, currency symbols in their currency color, blank-line separators. Red appears only in the title and as `▸` markers.
 Contextual: in The Depths, the island lines are replaced by tier + satchel `Satchel 412/640`. During events: the event timer.
 
 ### 6.2 Tab list
-Header: server name + online count + season (e.g. `Season 1 · Day 23`). Footer: `/menu · /help · /discord · /store`. Players sorted by rank, then name. Format: `[title] [rank] name`.
+Header: `PHOENIXMC` in the fire gradient + online count + season (e.g. `Season 1 · Day 23`), with a thin red line of `▬` above and below. Footer: `/menu · /help · /discord · /store`. Players sorted by rank, then name. Format: `[title] [rank] name`.
 
 ### 6.3 Action bar
 Skill XP gains (`+12 Mining XP (68%)`), tool mode changes, satchel full warnings. Max one message per 1.5 s.
@@ -263,6 +278,7 @@ Only big moments: level up (island/skill/tool), unlocks, season winners, event s
 | Money received | `block.amethyst_block.chime` | 1.4 |
 | Warning / confirm | `block.note_block.pling` | 0.8 |
 | Event start | `item.goat_horn.sound.0` (or `event.raid.horn`) | 1.0 |
+| Brand moments (first join, season start, prestige) | `entity.blaze.shoot` + `item.firecharge.use` (the phoenix "rebirth") | 0.8 |
 | Crate roll tick / win | `block.note_block.hat` / `entity.firework_rocket.twinkle` | 1.0 |
 
 All sounds are configurable and can be muted in `/settings`.
@@ -277,3 +293,17 @@ All sounds are configurable and can be muted in `/settings`.
 - Help texts live in `help.yml`, editable in-game.
 - **FAQ** topic with the 15 most common questions. Staff can add answers from `/admin`.
 - `/discord` + `/report` + "Ask staff" (creates a ticket) visible in the Help main GUI.
+
+---
+
+## 9. Brand assets
+
+| Asset | Spec |
+|---|---|
+| Name | **PhoenixMC** (one word, capital P and MC). Short form in chat: **Phoenix** |
+| Domain | `play.phoenixmc.net` (Java + Bedrock), website `phoenixmc.net`, store `store.phoenixmc.net` |
+| Logo | A phoenix (owner's artwork). Needed: original file (PNG/SVG, transparent) |
+| Server icon | `server/server-icon.png`, **64×64 PNG**, phoenix head/silhouette on transparent or charcoal, readable at tiny size |
+| MOTD | Line 1: `PHOENIXMC` in red/gold + `» Skyblock`. Line 2: season/status in gray |
+| Resource pack glyph | The phoenix as a font glyph (for chat prefix, scoreboard title, tab). Needs a Geyser mapping so Bedrock shows it too; until then, fall back to `✦` |
+| Particles | Brand particles: `flame`, `small_flame`, `lava` drips, `dust` in brand red. Used at spawn, crates, level-ups |

@@ -22,11 +22,13 @@ The vanilla Nether and End dimensions are **disabled**. The owner plans a differ
 ## 2. Spawn (medieval)
 
 **Size:** ~200×200, compact. Every key spot within 30 s walk, and everything is also reachable by `/menu`.
-**Palette:** stone bricks, mossy/cracked stone bricks, deepslate tiles, polished andesite paths, spruce + dark oak timber framing, white/light-gray terracotta walls, lanterns + chains, banners in brand gold and dark red, barrels, campfires (smoke), flower boxes.
+**Palette:** stone bricks, mossy/cracked stone bricks, deepslate tiles, polished andesite paths, spruce + dark oak timber framing, white/light-gray terracotta walls, lanterns + chains, barrels, campfires (smoke), flower boxes.
+**PhoenixMC red details** (mainly red, balanced): red nether brick and red terracotta trims, red/black/gold banners (phoenix pattern), red concrete roof accents on key buildings, copper and gold block highlights, magma/lava glow features behind glass, campfires and soul-free (orange) lanterns. Stone and wood stay the base so red reads as accent, not as a wall of red.
+**Centerpiece:** a large **phoenix statue** in the Castle Courtyard (red/orange/gold blocks, wings spread, rising from a lava-and-campfire brazier, with `flame` particles). It's the spawn point landmark and the logo in 3D.
 
 | District | Contents |
 |---|---|
-| **Castle Courtyard** (spawn point) | Spawn point, **Guide NPC** (tutorial), info board (TextDisplay: "Start here → /menu") |
+| **Castle Courtyard** (spawn point) | Phoenix statue, spawn point, **Guide NPC** (tutorial), info board (TextDisplay: "Start here → /menu") |
 | **Market Square** | Shop NPC, Sell NPC, Auction House board, Bank NPC, Black Market alley (dark, hidden-feeling corner, opens on schedule) |
 | **Crate Yard** | 6 physical crates (Common → Legendary + Monthly), each on a pedestal with rarity-colored particles and a hologram showing the key count |
 | **Hall of Heroes** | Leaderboards (island top solo/team, skills, bosses) as TextDisplays + **Hall of Fame** statues of past season winners |

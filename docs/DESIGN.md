@@ -9,7 +9,7 @@
 
 ## 0. Vision and pillars of the design
 
-A brand-new, heavily custom **seasonal Skyblock** server for **Java + Bedrock (Geyser)** on **Paper 26.3**, built to hold **200–300 concurrent players** stably.
+**PhoenixMC** (`play.phoenixmc.net`): a brand-new, heavily custom **seasonal Skyblock** server for **Java + Bedrock (Geyser)** on **Paper 26.3**, built to hold **200–300 concurrent players** stably.
 
 > **Version policy (decided 2026-10-29):** stay on the **latest stable Minecraft version** Paper and Geyser support (currently **26.3**, Java 25). Bedrock clients auto-update, so Geyser must stay current, and Geyser only supports the newest Java version. Update with each Minecraft release during development.
 
@@ -23,7 +23,7 @@ Design rules that apply to *every* feature:
 4. **Always something to do.** Mining, foraging, farming, combat, conquest, quests and events, all within 1–2 clicks.
 5. **User-friendliness first.** Every feature is discoverable from `/menu` and `/help`, and every action is GUI-based. See [`STANDARDS.md`](STANDARDS.md).
 6. **100% configurable in-game.** Every value, message, item, schematic, reward and timer is editable from an in-game admin GUI (permission-gated) and saved to config.
-7. **Gameplay only, no lore.**
+7. **Gameplay only, no lore.** Branding is the phoenix: mainly red, balanced with ember, gold and neutrals (see `UI_STYLE.md`).
 8. **English only.**
 
 ---

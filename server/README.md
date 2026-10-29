@@ -1,18 +1,21 @@
 # Server
 
-Tracked Paper **26.3** server configuration and scripts. Jars, worlds, logs, player data and keys are ignored (see `.gitignore`).
+PhoenixMC tracked Paper **26.3** server configuration and scripts. Jars, worlds, logs, player data and keys are ignored (see `.gitignore`).
 Why each setting is what it is: [`CONFIG_NOTES.md`](CONFIG_NOTES.md).
 
 ## Run locally (your Mac)
-Requires Java 25 (`brew install --cask temurin@25`).
-```bash
-cd server
-./scripts/fetch.sh     # downloads Paper 26.3 + Geyser, Floodgate, LuckPerms, CoreProtect, Grim, FAWE
-cp ../plugin/build/libs/Skyblock-*.jar plugins/   # after ./gradlew build in the repo root
-./start.sh             # asks you to accept the EULA the first time
-```
-Add yourself to the whitelist in the console: `whitelist add <name>` and `op <name>`.
-Java: `localhost:25565`. Bedrock: `localhost`, port `19132`.
+1. Install **Java 25**: "Temurin 25 (JDK)" from https://adoptium.net (or `brew install --cask temurin@25`).
+2. Run:
+   ```bash
+   cd ~/Development/skyblock && ./server/scripts/run-local.sh
+   ```
+   First run downloads Paper + plugins (~150 MB) and asks you to accept the Minecraft EULA.
+3. When the console says `Done`, type: `whitelist add <YourJavaName>` and `op <YourJavaName>`.
+4. Join:
+   - **Java:** Multiplayer → Add Server → `localhost`
+   - **Bedrock on the same Wi-Fi** (phone, tablet, console): Add Server → your Mac's IP (System Settings → Wi-Fi → Details), port `19132`. Whitelist Bedrock players with `fwhitelist add <Gamertag>`.
+   - **Friends elsewhere:** wait for the test VPS (opening ports on a home router is not recommended).
+5. Stop: type `stop` in the console.
 
 ## Test VPS (Ubuntu 24.04)
 1. `sudo bash scripts/setup-vps.sh`: Java 25, MariaDB, firewall, fail2ban, systemd service, daily backups.

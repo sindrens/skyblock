@@ -22,7 +22,7 @@ When Paper updates and adds new options, keep their defaults unless there's a re
 | `player-idle-timeout` | 0 | AFK handled by our plugin (AFK only kicks at spawn) |
 | `broadcast-console/rcon-to-ops` | false | Less chat noise for staff |
 | `management-server-secret` | empty | Never commit secrets; the server generates its own |
-| `motd` | Test server text | Replace with the real server name later |
+| `motd` | `PHOENIXMC » Skyblock` + season line | PhoenixMC brand colors (red/gold); update the second line per season |
 
 ## bukkit.yml
 | Key | Value | Why |
@@ -89,9 +89,9 @@ spark is built into Paper. Use `/spark profiler` and `/spark tps`.
 ## Plugins
 | File | Change |
 |---|---|
-| `Geyser-Spigot/config.yml` | `auth-type: floodgate` (Bedrock players join without a Java account), MOTD + server name "Skyblock". Bedrock port **19132/UDP** must be open |
+| `Geyser-Spigot/config.yml` | `auth-type: floodgate` (Bedrock players join without a Java account), MOTD + server name "PhoenixMC". Bedrock port **19132/UDP** must be open |
 | `floodgate/config.yml` | Defaults. Bedrock names get the `.` prefix. `key.pem` is secret and never committed |
 | `LuckPerms/config.yml` | `server: skyblock`. Storage: H2 locally, **MariaDB on the VPS** (the setup script switches it) |
 | `GrimAC/database.yml` | `server-name: skyblock-test` |
 | `FastAsyncWorldEdit/config.yml` | Update notifications off |
-| CoreProtect | **Not yet released for 26.3.** `fetch.sh` downloads it automatically once a 26.3 build exists. Config will use MariaDB |
+| CoreProtect | **Not yet released for 26.3.** The newest version (24.1) checks the Minecraft version and **refuses to start** above 26.2, so it can't be used yet. `fetch.sh` downloads it automatically once a 26.3 build exists. Config will use MariaDB |
