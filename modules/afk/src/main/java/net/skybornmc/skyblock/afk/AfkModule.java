@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.afk.AfkPool;
 import net.skybornmc.skyblock.common.booster.BoosterService;
 import net.skybornmc.skyblock.common.booster.BoosterType;
 import net.skybornmc.skyblock.common.db.Migrations;
@@ -68,6 +69,8 @@ public final class AfkModule implements SkyblockModule {
             moveLegacyBoosters(b);
         });
         Bukkit.getPluginManager().registerEvents(tracker, core.plugin());
+        // M10.6: playtime rewards count only active time outside the pool.
+        core.services().register(ID, AfkPool.class, holder::holdsBoosters);
         core.placeholders().register(ID, "afk_pool", Placeholder.text(p -> tracker.poolLine(p)));
         core.placeholders().register(ID, "afk_today", Placeholder.text(p -> tracker.todayText(p)));
         core.placeholders().register(ID, "afk_line", p -> {

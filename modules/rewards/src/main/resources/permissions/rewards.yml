@@ -1,0 +1,9 @@
+# Permissions of the rewards module (PHASE-10 M10.6). Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/rewards.txt. Commands: docs/commands/rewards.md.
+skyblock.rewards.daily:
+  description: Open /daily and claim the daily calendar reward (also the Daily Rewards NPC)
+  default: true
+skyblock.rewards.playtime:
+  description: Earn playtime rewards for active play (hourly crystals, 10-hour key, titles)
+  default: true

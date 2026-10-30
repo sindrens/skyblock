@@ -38,6 +38,7 @@ dependencies {
     implementation(project(":modules:crates"))
     implementation(project(":modules:boosters"))
     implementation(project(":modules:progression"))
+    implementation(project(":modules:rewards"))
 }
 
 tasks {

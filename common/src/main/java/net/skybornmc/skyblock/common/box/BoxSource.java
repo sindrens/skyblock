@@ -27,6 +27,8 @@ public final class BoxSource {
     public static final String GIFT = "gift";
     /** A booster item given back after it could not be started (PHASE-10 M10.2). */
     public static final String BOOSTERS = "boosters";
+    /** Daily calendar, playtime and (later) vote rewards (PHASE-10 M10.5/M10.6). */
+    public static final String REWARDS = "rewards";
     /** Starter chest contents, Starter pack and finish rewards of the join tutorial. */
     public static final String TUTORIAL = "tutorial";
     /** R3-22: Depths drops (mining and combat) past a full satchel and a full inventory. */

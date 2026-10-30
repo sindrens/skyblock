@@ -22,7 +22,8 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/bank` | Personal + island bank | `skyblock.bank` | ⬜ |
 | `/sell` (built: [economy](economy.md)), `/shop` (built: [shop](shop.md)), `/ah` (built: [auction](auction.md)) | Selling and trading | see module files | ✅ |
 | `/wardrobe` (replaces `/sets`), `/loadout [name]` (`/skills` built: [skills](skills.md), `/enchanter` built: [enchants](enchants.md)) | Progression (plans: `docs/plans/WARDROBE.md`, `docs/plans/ENCHANTS.md`) | `skyblock.wardrobe`, `skyblock.loadout` … | ⬜ |
-| `/vote`, `/daily`, `/quests`, `/pass`, `/blackmarket`, `/collection` | Rewards | … | ⬜ |
+| `/vote`, `/quests`, `/pass`, `/blackmarket`, `/collection` | Rewards | … | ⬜ |
+| `/daily` | Rewards: built in M10.6, see [rewards.md](rewards.md) | `skyblock.rewards.daily` | ✅ |
 | `/crates` | Rewards: built in M10.1, see [crates.md](crates.md) | `skyblock.crates.use` | ✅ |
 | `/pets`, `/duel`, `/events`, `/report`, `/pv` | Misc | … | ⬜ |
 | `/is chat` (`/is leave`, `/is disband`, `/is transfer` built: [islands](islands.md)) | Island membership (REVIEW B10) | `skyblock.island.*` | ⬜ |

@@ -203,6 +203,7 @@ category-menu:
     tutorial: ["<c:text>Join tutorial: steps, finish, staff skip."]
     crates: ["<c:text>Crate keys given and used, opens, rewards."]
     boosters: ["<c:text>Boosters started, banked, global, thanks."]
+    rewards: ["<c:text>Daily claims, streaks, playtime rewards."]
 
 categories:
   all: "All you can see"
@@ -223,6 +224,7 @@ categories:
   tutorial: "Tutorial"
   crates: "Crates"
   boosters: "Boosters"
+  rewards: "Rewards"
 
 ranges:
   all: "All time"

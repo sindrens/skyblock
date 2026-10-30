@@ -52,6 +52,7 @@ sources:
   crate: "<c:value>Crate"
   gift: "<c:value>Gift"
   boosters: "<c:value>Boosters"
+  rewards: "<c:value>Daily rewards"
   returned: "<c:value>Returned"
   tutorial: "<c:value>Tutorial"
   depths: "<c:value>The Depths (satchel full)"
