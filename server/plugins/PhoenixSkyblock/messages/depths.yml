@@ -178,10 +178,10 @@ satchel:
     upgrade:
       name: "<c:flame>Upgrade <c:value><next></c:value><c:muted>/<levels>"
       lore:
-        - "<bold><c:buy>| Buy Price: </c:buy><cur:money><price></cur:money></bold>"
-        - "<c:text>Space: </c:text><c:value>+<capacity>"
+        - "<c:bar>| </c:bar><c:text>Cost: </c:text><cur:money><price>"
+        - "<c:bar>| </c:bar><c:text>Space: </c:text><c:value>+<capacity>"
         - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to upgrade"
       name-max: "<c:flame>Upgrades <c:success><sym:check>"
       max: ["<c:text>All <c:value><levels></c:value> upgrades bought."]
     # <item> <amount> <price> <worth> <trend>

@@ -105,6 +105,8 @@
 - Monthly punishment report (P10): `/preport [month]` (admins), made automatically on the 1st at 09:00 Oslo time, stored, CSV in plugins/PhoenixSkyblock/reports/, Bedrock-safe menu + chat summary, optional Discord totals (off). Automatic "Honorable" title after 60 clean days with 10h played, hidden by a new punishment. Phase P complete.
 - `/settings` toggles now work and apply instantly (F1): join & leave messages, teleport requests, scoreboard, island invites, particles (other players' set trails), menu sounds, event sounds. Tips and Depths player visibility come later.
 - Balance (TUNE = E4 + W4): built enchants and sets added to the economy model (ECONOMY_BALANCE §9.5–9.10); Depths combat book drops tuned to 1 in 300/350/400/450 kills (pity 2.5×).
+- V2 look (STYLE2): brighter custom palette (red stays the brand), bold rarity names, red "| Header" sections, green Buy / red Sell price lines with "You can afford", bold "» CLICK" action lines on every menu, progress + [+] reward lines, "| Profile / | Island" scoreboards with the phoenix gradient title, #1/#2/#3 colors on /baltop.
+- Resource pack plan (docs/plans/RESOURCE_PACK.md): vanilla UI stays the fallback, per-player pack rendering, Geyser/Bedrock conversion, item model ids, menu background glyphs, font icons, sounds, milestones RP1–RP10.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
