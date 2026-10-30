@@ -23,7 +23,9 @@ public enum AuditCategory {
     /** Join tutorial (TUTORIAL.md §9.5): start, steps, finish, reward, staff skip/reset. */
     TUTORIAL,
     /** Crates and keys (PHASE-10 M10.1): keys given and taken, opens, reward hand-outs and reviews. */
-    CRATES;
+    CRATES,
+    /** Boosters (PHASE-10 M10.2): items started, banked time, global boosters, thanks. */
+    BOOSTERS;
 
     /** Key stored in the database, e.g. {@code "economy"}. */
     public String key() {

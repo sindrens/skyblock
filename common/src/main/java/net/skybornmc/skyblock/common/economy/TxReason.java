@@ -47,6 +47,9 @@ public final class TxReason {
     /** Money, crystals and shards from crate opens (PHASE-10 M10.1); a source on the economy dashboard (M10.13). */
     public static final String CRATE_REWARD = "crate_reward";
 
+    /** The gem a player's thanks gives the starter of a global booster (PHASE-10 M10.2, RW2); new gems. */
+    public static final String BOOSTER_THANKS = "booster_thanks";
+
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 
     private TxReason() {

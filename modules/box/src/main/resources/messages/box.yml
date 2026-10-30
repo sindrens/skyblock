@@ -51,6 +51,7 @@ sources:
   spawner: "<c:value>Spawner"
   crate: "<c:value>Crate"
   gift: "<c:value>Gift"
+  boosters: "<c:value>Boosters"
   returned: "<c:value>Returned"
   tutorial: "<c:value>Tutorial"
   other: "<c:value>Other"
