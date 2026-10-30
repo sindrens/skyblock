@@ -42,9 +42,11 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PLAN5 | Plan Phase 5 (pillars, dynamic island level, masteries with tasks incl. bank fee discount, leaderboards) + questions to the Decisions page | — | docs | ✅ |
 | PLAN10 | Plan Phase 10 (crates/keys, voting, daily rewards per profile, quests, battle pass, collection log, Black Market, tutorial) + questions | — | docs | ✅ docs/phases/PHASE-10-REWARDS.md |
 | PLAN7 | Plan Phase 7 (island production, Island Fuel, collectors, outposts) + questions; unblocks E6 | — | docs | ✅ docs/phases/PHASE-7-PRODUCTION.md (questions go on the page after GUIDE2) |
-| PLAN8 | Plan Phase 8 PvE (custom mobs, world/summon bosses, pets; fishing moved to Phase 7) | — | docs | 🔄 |
+| PLAN8 | Plan Phase 8 PvE (custom mobs, world/summon bosses, pets; fishing moved to Phase 7) | — | docs | ✅ |
 | PLAN9 / PLAN11 / PLAN12 / PLAN13 | Plans for PvE, conquest/events, store/ranks/Discord, seasons, launch prep | — | docs | ⬜ |
-| GUIDE2 | TEST_GUIDE refresh for everything built today + new open questions onto the Decisions page | — | docs + tools/owner_sheet | 🔄 |
+| GUIDE2 | TEST_GUIDE refresh for everything built today + new open questions onto the Decisions page | — | docs + tools/owner_sheet | ✅ |
+| FIXES1 | Tester feedback (fly, /s, /p, menu item, armor, tab ranks, scoreboard line, report book, shop confirm, usage errors) | owner/Maarten 30 Oct | several | ✅ |
+| SECFIX1 | High security findings without owner decision (crash-rollback dupes, kick-restore dupe, frozen spawners, box caps, depletion persisted, shop recovery, sanctions fail closed) | audit | economy, auction, islands, stacking, box | 🔄 |
 | ANS3 | Skipped from ANS2: /ignore blocks tpa/trade/invites + hides chat (shared ignore service), staff powers (creative only builders/admins in spawn/Depths/builder areas, staff item tag unsellable, god/fly/heal only in staff/build mode, staff play normally with transfers flagged), /ec and /craft blocked in warzone/boss/10 s after combat, banned player's island locked for visitors | owner round 2 | several | ✅ |
 | TUT1 | Build the tutorial TU1-TU4 from docs/plans/TUTORIAL.md with the suggested answers (portal hook, steps engine, guides, locks via TutorialGate, starter chest) | PLANTUT, PORTALS | new module tutorial | ✅ TU5+ (cameras, Pip, analytics) left |
 | ANS2 | Owner answers round 2 (teleports instant except combat, visiting, chat filter EN, /trash admin, ban screen, silent -s, collection bin, reset backups) | owner 30 Oct | several | ✅ |
