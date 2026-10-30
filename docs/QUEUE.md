@@ -27,7 +27,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | STACK | Stacking module: mobs (1024, weapon-based kills, no AI for spawner mobs, breeding by food, max 8 stacks/chunk/type, no despawn), items, spawners (8→512, menu, ignore conditions, crops grow without light) | answered (round 2+3) | new modules/stacking | ✅ |
 | NOTES | `/is notes` (N1–N9: shared to-do list, temporary book, pinned holograms) | M2.4 | modules/islands | ⬜ (after PROF: islands lane) |
 | SB | Per-place scoreboards (island, Depths, spawn, warzone) | UX1 | modules/hud | ⬜ |
-| BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ⬜ |
+| BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ✅ |
 | PLAN-ENCH | Plan doc: full custom enchant list (levels, effects, how each is obtained: mob kills, mining, chopping, dungeons, crates, /enchanter, crystals), synergy with tools/sets/stacking kills | — | docs/plans/ENCHANTS.md | ✅ docs/plans/ENCHANTS.md |
 | PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | ✅ docs/plans/WARDROBE.md |
 | STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
