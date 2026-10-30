@@ -61,6 +61,8 @@ final class IslandAdmin {
     static final String PERM_RESET = "skyblock.island.admin.reset";
     static final String PERM_SLOTS = "skyblock.island.admin.slots";
     static final String PERM_TELEPORT_SLOT = "skyblock.island.admin.teleport-slot";
+    static final String PERM_STATS = "skyblock.island.admin.stats";
+    static final String PERM_STATS_RESET = "skyblock.island.admin.stats.reset";
 
     private static final int CONFIRM_SECONDS = 30;
 
@@ -97,9 +99,11 @@ final class IslandAdmin {
         Arg<String> newOwner = Args.word("member", membersOfTypedIsland());
         Arg<String> resetIsland = islandArg();
         Arg<Integer> slot = slotArg();
+        Arg<String> statsIsland = islandArg();
+        Arg<String> statsResetIsland = islandArg();
         Predicate<CmdContext> console = ctx -> !(ctx.sender() instanceof Player);
         core.commands().register(CommandSpec.command("isadmin")
-                .description("Staff: island tools (info, teleport, delete, size, members, owner, reset, slots)").category("Staff")
+                .description("Staff: island tools (info, teleport, delete, size, members, owner, reset, slots, stats)").category("Staff")
                 .permission(PERM_ROOT)
                 .sub(CommandSpec.sub("info").description("Island details: owner, members, slot, size, home").permission(PERM_INFO)
                         .arg(infoIsland).example("isadmin info Steve")
@@ -142,7 +146,17 @@ final class IslandAdmin {
                         .executes(ctx -> openSlots(ctx.player(), null)))
                 .sub(CommandSpec.sub("teleport-slot").description("Teleport to a grid slot by id").permission(PERM_TELEPORT_SLOT)
                         .playerOnly().arg(slot).example("isadmin teleport-slot 0")
-                        .executes(ctx -> teleportSlot(ctx.player(), ctx.get(slot)))));
+                        .executes(ctx -> teleportSlot(ctx.player(), ctx.get(slot))))
+                // M2.6 island stats: look at any island's stats (read only) or reset them (confirm, audited)
+                .sub(CommandSpec.sub("stats").description("Island stats: look at an island's stats or reset them").permission(PERM_STATS)
+                        .sub(CommandSpec.sub("view").description("Open an island's stats menu (read only)").permission(PERM_STATS)
+                                .playerOnly().arg(statsIsland).example("isadmin stats view Steve")
+                                .executes(ctx -> statsView(ctx.player(), resolve(ctx.get(statsIsland)))))
+                        .sub(CommandSpec.sub("reset").description("Delete all stats of an island (confirm, logged)").permission(PERM_STATS_RESET)
+                                .arg(statsResetIsland).example("isadmin stats reset Steve").confirm(CONFIRM_SECONDS)
+                                .confirmMessage(IslandsModule.ID, "stats.admin.reset-confirm",
+                                        ctx -> new TagResolver[]{Msg.p("input", ctx.get(statsResetIsland))})
+                                .executes(ctx -> statsReset(ctx.sender(), resolve(ctx.get(statsResetIsland)))))));
     }
 
     private Arg<String> islandArg() {
@@ -616,6 +630,36 @@ final class IslandAdmin {
                     },
                     viewer -> msg.send(viewer, "admin.cancelled")));
         };
+    }
+
+    // ------------------------------------------------------------------ M2.6 island stats
+
+    private void statsView(Player player, Island island) {
+        IslandStats stats = module.stats();
+        if (stats == null) {
+            fail(player, "stats.failed");
+            return;
+        }
+        stats.open(player, island, null, true);
+        staffLog(player, "stats_view", island, Map.of());
+    }
+
+    /** Deletes every stats row of the island (and its unwritten counters); audited ({@code isadmin_stats_reset}). */
+    private void statsReset(CommandSender sender, Island island) {
+        IslandStats stats = module.stats();
+        if (stats == null) {
+            fail(sender, "stats.failed");
+            return;
+        }
+        String name = islands.displayName(island);
+        stats.tracker().reset(island.id()).whenCompleteAsync((removed, error) -> {
+            if (failed(sender, "stats reset", error)) {
+                return;
+            }
+            msg.send(sender, "stats.admin.reset-done", Msg.p("island", name));
+            success(sender);
+            staffLog(sender, "stats_reset", island, Map.of("rows", removed));
+        }, main);
     }
 
     private boolean failed(CommandSender sender, String what, Throwable error) {

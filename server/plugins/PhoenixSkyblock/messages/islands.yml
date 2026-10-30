@@ -249,9 +249,17 @@ menu:
       - ""
       - "<c:action>Click to open"
   stats:
+    name: "<c:flame><bold>Island stats"
+    lore:
+      - "<c:text>Blocks, crops, mobs, playtime and"
+      - "<c:text>more: today, this week and all time."
+      - "<c:text>See what every member added."
+      - ""
+      - "<c:action>Click to open"
+  stats-off:
     name: "<c:muted>Island stats"
     lore:
-      - "<c:muted>Coming soon"
+      - "<c:muted>Not available right now"
   bank:
     name: "<c:value>Island bank"
     lore:
@@ -1631,3 +1639,81 @@ notes:
   pin-off: "<prefix><c:error><sym:cross></c:error> <c:text>Pinning notes is turned off."
   staff-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only staff can open another island's notes. Use <c:value>/is notes</c:value>."
   not-found: "<prefix><c:error><sym:cross></c:error> <c:text>No island found for <c:value><input></c:value>. Press Tab to see them."
+
+# ---------------------------------------------------------------- M2.6 island stats (/is stats)
+stats:
+  crumb: "Stats"
+  info:
+    - "<c:text>What your island did: all time,"
+    - "<c:text>today, this week and last week."
+    - "<c:text>Days start at midnight, weeks on Monday."
+    - "<c:muted>Coop players and visitors don't count."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't load the stats. Try again in a moment."
+  header:
+    name: "<c:flame><bold><island>"
+    lore:
+      - "<c:text>Stats of your island and its members."
+      - "<c:text>Today: <c:value><today>"
+      - "<c:text>This week: since <c:value><week></c:value> <c:muted>(Monday)"
+      - "<c:muted>Saved every <flush> seconds."
+  category:
+    blocks_mined: "Blocks mined"
+    logs_chopped: "Logs chopped"
+    crops_harvested: "Crops harvested"
+    blocks_placed: "Blocks placed"
+    generator_output: "Generator output"
+    mobs_killed: "Mobs killed"
+    items_sold: "Items sold"
+    money_earned: "Money earned"
+    visitors: "Visitors"
+    playtime: "Time on the island"
+    koth_time: "KOTH time"
+    bosses_killed: "Bosses killed"
+  item:
+    name: "<c:flame><bold><category>"
+    lore:
+      - "<c:text>All time: <c:value><total>"
+      - "<c:text>Today: <c:value><today>"
+      - "<c:text>This week: <c:value><week>"
+      - "<c:text>Last week: <c:value><last-week>"
+    trend:
+      up: "<c:success>+<percent>%</c:success> <c:muted>vs last week so far"
+      down: "<c:error>-<percent>%</c:error> <c:muted>vs last week so far"
+      same: "<c:muted>Same as last week so far"
+      new: "<c:muted>Nothing last week"
+      none: "<c:muted>Nothing yet"
+    island-wide: "<c:muted>Counts for the whole island."
+    click: "<c:action>Click to see each member's part"
+    soon-name: "<c:muted><category>"
+    soon-lore:
+      - "<c:muted>-"
+      - "<c:muted>Coming soon: counts once this"
+      - "<c:muted>part of the game is here."
+  you:
+    name: "<c:flame><bold>Your part"
+    lore:
+      - "<c:text>What you added, all time:"
+    line: " <c:ember><sym:bullet></c:ember> <c:text><category>: <c:value><amount></c:value> <c:muted>(<percent>%)"
+    none:
+      - "<c:muted>Nothing yet. Mine, farm or fight"
+      - "<c:muted>on your island to add to it."
+  members:
+    info:
+      - "<c:text>Each member's part of this stat."
+      - "<c:text>Former members keep what they added."
+    name: "<c:value>#<place> <player>"
+    lore:
+      - "<c:muted><role>"
+      - "<c:text>All time: <c:value><total></c:value> <c:muted>(<percent>%)"
+      - "<c:text>This week: <c:value><week></c:value> <c:muted>(<week-percent>%)"
+      - "<c:text>Today: <c:value><today>"
+    former: "Former member"
+    others-name: "<c:muted>+<count> more"
+    others-lore:
+      - "<c:text>Together: <c:value><total>"
+    empty-name: "<c:muted>Nothing yet"
+    empty-lore:
+      - "<c:muted>Nobody added to this stat yet."
+  admin:
+    reset-confirm: "<prefix><c:text>Delete all stats of <c:value><input></c:value>'s island? <click:run_command:'/<command> confirm'><hover:show_text:'<c:text>Reset the stats (/<command> confirm)'><c:action>[Confirm]</c:action></hover></click> <c:muted>(within <time>)"
+    reset-done: "<prefix><c:success><sym:check></c:success> <c:text>Stats of <c:value><island></c:value> reset."

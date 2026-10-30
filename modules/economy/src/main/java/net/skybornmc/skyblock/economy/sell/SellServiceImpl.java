@@ -57,12 +57,12 @@ public final class SellServiceImpl implements SellService {
     private final LongSupplier clock;
     private final Supplier<ZoneId> zone;
     private final Logger log;
-    /** Called (off the main thread) after every successful sale: player, profile key, items sold. Set by {@link SellFeature}. */
+    /** Called (off the main thread) after every successful sale: player, profile key, items sold, money paid. Set by {@link SellFeature}. */
     private volatile SoldListener soldListener;
 
     /** Hook for features that react to sales (wardrobe set XP); never affects the sale itself. */
     interface SoldListener {
-        void sold(UUID player, UUID profileKey, long items);
+        void sold(UUID player, UUID profileKey, long items, long money);
     }
 
     void onSold(SoldListener listener) {
@@ -246,7 +246,7 @@ public final class SellServiceImpl implements SellService {
                 SoldListener listener = soldListener;
                 if (listener != null) {
                     try {
-                        listener.sold(request.player(), request.profileKey(), q.items());
+                        listener.sold(request.player(), request.profileKey(), q.items(), q.total());
                     } catch (RuntimeException e) {
                         log.log(Level.WARNING, "Sell: sale listener failed for " + request.playerName(), e);
                     }

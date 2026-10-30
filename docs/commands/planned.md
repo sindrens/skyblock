@@ -16,7 +16,7 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/is` | Island GUI / home | `skyblock.island` | ⬜ |
 | `/is visit <player>`, `/is invite`, `/is kick`, `/is lock` | Island management | `skyblock.island.*` | ⬜ |
 | `/is upgrade` (= `/is masteries`) | Upgrades + tasks | `skyblock.island.upgrade` | ⬜ |
-| `/is stats`, `/is top` | Stats, leaderboards | `skyblock.island.stats` | ⬜ |
+| `/is top` | Island leaderboards (stats + `IslandStatsService.top` ready since M2.6; `/is stats` is live, see `islands.md`) | `skyblock.island.stats` | ⬜ |
 | `/is outposts`, `/is biomes` | Outposts and biomes | `skyblock.island.outposts` | ⬜ |
 | `/dungeon` | The Depths tier selector | `skyblock.depths` | ⬜ |
 | `/withdraw` | Money notes (M3.2); `/bal`, `/pay`, `/baltop`, `/transactions`, `/eco` are live: see `economy.md` | `skyblock.economy.*` | ⬜ |

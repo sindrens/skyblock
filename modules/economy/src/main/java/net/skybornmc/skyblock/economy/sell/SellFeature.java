@@ -107,8 +107,18 @@ public final class SellFeature implements Listener {
                 () -> core.services().optional(BonusService.class), System::currentTimeMillis, Format::zone,
                 core.plugin().getLogger());
         core.services().register(EconomyModule.ID, SellService.class, service);
-        // Wardrobe set XP for selling (WARDROBE §3.1): main thread, only if the same profile is still active.
-        service.onSold((playerId, profileKey, items) -> core.scheduler().main("sell-set-xp", () -> {
+        // After a sale (main thread): island stats (items sold, money earned) for the profile that sold, and wardrobe
+        // set XP (WARDROBE §3.1) only if that profile is still the active one.
+        core.scheduler().later("sell-stat-sources", 1, () -> core.services().optional(net.skybornmc.skyblock.common.island.IslandStatsService.class)
+                .ifPresent(stats -> {
+                    stats.source(net.skybornmc.skyblock.common.island.IslandStat.ITEMS_SOLD);
+                    stats.source(net.skybornmc.skyblock.common.island.IslandStat.MONEY_EARNED);
+                }));
+        service.onSold((playerId, profileKey, items, money) -> core.scheduler().main("sell-set-xp", () -> {
+            core.services().optional(net.skybornmc.skyblock.common.island.IslandStatsService.class).ifPresent(stats -> {
+                stats.recordFor(profileKey, net.skybornmc.skyblock.common.island.IslandStat.ITEMS_SOLD, items);
+                stats.recordFor(profileKey, net.skybornmc.skyblock.common.island.IslandStat.MONEY_EARNED, money);
+            });
             org.bukkit.entity.Player p = org.bukkit.Bukkit.getPlayer(playerId);
             if (p == null || !net.skybornmc.skyblock.common.profile.ProfileService.of(core.services()).profileKey(p).equals(profileKey)) {
                 return;

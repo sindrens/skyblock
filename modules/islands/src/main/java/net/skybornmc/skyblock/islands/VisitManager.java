@@ -88,6 +88,7 @@ final class VisitManager implements Listener {
     private WarpManager warps;
     /** ISL2: told whenever a player's island slot changes ({@code null} = no island), e.g. for weather and time. */
     private final List<java.util.function.BiConsumer<Player, Island>> presenceHooks = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final List<java.util.function.Consumer<Island>> visitHooks = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     VisitManager(IslandsModule module, IslandManager islands, IslandProtection protection, VisitStore store) {
         this.module = module;
@@ -110,6 +111,11 @@ final class VisitManager implements Listener {
     /** Runs {@code hook} (main thread) every time a player enters another island's slot or leaves all of them. */
     void onPresence(java.util.function.BiConsumer<Player, Island> hook) {
         presenceHooks.add(hook);
+    }
+
+    /** Runs {@code hook} (main thread) for every first visit of a player to an island today (M2.6 visitor stats). */
+    void onVisit(java.util.function.Consumer<Island> hook) {
+        visitHooks.add(hook);
     }
 
     private IslandsConfig config() {
@@ -909,6 +915,7 @@ final class VisitManager implements Listener {
             }
             if (first) {
                 updateStats(island.id(), Showcase.Stats::withVisit);
+                visitHooks.forEach(hook -> hook.accept(island));
                 core.audit().log(AuditCategory.ISLAND, "island_visit", Actor.player(visitor, visitorName), island.id().toString(),
                         islands.displayName(island), null, null, Map.of("day", day));
             }

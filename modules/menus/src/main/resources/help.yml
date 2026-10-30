@@ -637,7 +637,7 @@ topics:
 
   island:
     icon: grass_block
-    aliases: [islands, is, home, sethome, setmyhome, invites, fly, island-chat, ischat, info]
+    aliases: [islands, is, home, sethome, setmyhome, invites, fly, island-chat, ischat, info, island-stats, isstats]
     name: "<c:flame>Your island"
     summary: ["<c:text>Create your island, open its", "<c:text>menu and talk to your team."]
     take-me-there: "is"
@@ -652,12 +652,17 @@ topics:
         lines:
           - "<c:value>/is</c:value> <c:text>opens your island menu: home,"
           - "<c:text>members, warps, visitors, settings,"
-          - "<c:text>invites, notes and island chat."
+          - "<c:text>invites, notes, island chat and stats."
       - title: "<c:value>Going home"
         lines:
           - "<c:value>/is home</c:value> <c:text>takes you back to your"
           - "<c:text>island. Stand somewhere safe on it and"
           - "<c:text>use <c:value>/is sethome</c:value> to move your home."
+      - title: "<c:value>Island stats"
+        lines:
+          - "<c:value>/is stats</c:value> <c:text>shows what your island did:"
+          - "<c:text>blocks, crops, mobs, playtime and more,"
+          - "<c:text>today, this week and each member's part."
       - title: "<c:value>Island chat"
         lines:
           - "<c:value>/is chat</c:value> <c:text>sends your chat to your island"
