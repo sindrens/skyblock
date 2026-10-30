@@ -43,6 +43,15 @@ public interface SellService {
     /** Every sellable price table key, in file order. Any thread. */
     List<String> itemKeys();
 
+    /**
+     * The most one item of this key could ever pay right now: base x the dynamic price ceiling x the Hot Item factor x
+     * (1 + the sell bonus cap). Empty if the key can't be sold. Shops use it so nothing can be bought for less than it
+     * sells for (an endless money loop). Any thread.
+     */
+    default java.util.OptionalDouble maxUnitPrice(String itemKey) {
+        return java.util.OptionalDouble.empty();
+    }
+
     /** The summed sell bonus of a player (all {@code BonusFamily.SELL} sources, before the cap), in percent. Main thread. */
     double bonusPercent(Player player);
 
