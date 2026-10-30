@@ -149,7 +149,8 @@ final class MemberManager {
             islands.fail(player, "invite.self");
             return;
         }
-        if (!acceptsInvites(target)) {
+        // Owner answer 316: an ignored player gets the same answer as "invites off" (staff can't be ignored).
+        if (!acceptsInvites(target) || net.skybornmc.skyblock.common.social.IgnoreService.ignoring(core.services(), target, player)) {
             islands.fail(player, "invite.disabled", Msg.p("player", target.getName()));
             return;
         }

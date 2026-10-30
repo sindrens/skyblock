@@ -10,6 +10,7 @@ import java.util.Optional;
  * <p>Order of the checks (the first that applies wins):</p>
  * <ol>
  *   <li>flagged as a dupe → never;</li>
+ *   <li>a staff item ({@code /give}, {@code /i}, creative; owner answer 332) → never;</li>
  *   <li>unique items (a unique item id: custom tools, enchant books, money notes, set pieces) → <b>never</b>, whatever the
  *       price table says;</li>
  *   <li>custom ids in {@code sell.blocked-ids} (starter kit, notes ...) and items with a blocked data key → never;</li>
@@ -21,7 +22,7 @@ public final class SellRules {
 
     /** Why an item can't be sold; texts: {@code sell.reason.<key>}. */
     public enum Reason {
-        EMPTY, DUPE, UNIQUE, BLOCKED, CUSTOM_TYPE, NOT_IN_TABLE, DISABLED;
+        EMPTY, DUPE, STAFF_ITEM, UNIQUE, BLOCKED, CUSTOM_TYPE, NOT_IN_TABLE, DISABLED;
 
         public String key() {
             return name().toLowerCase(Locale.ROOT).replace('_', '-');
@@ -37,9 +38,15 @@ public final class SellRules {
      * @param unique       the stack has a unique item id
      * @param dupeFlagged  the dupe detector flagged it
      * @param blockedData  it carries a data key from {@code sell.blocked-data-keys}
+     * @param staffItem    it is (or contains) a staff item (owner answer 332)
      */
     public record ItemFacts(String material, String customId, String customType, boolean unique, boolean dupeFlagged,
-                            boolean blockedData) {
+                            boolean blockedData, boolean staffItem) {
+
+        public ItemFacts(String material, String customId, String customType, boolean unique, boolean dupeFlagged,
+                         boolean blockedData) {
+            this(material, customId, customType, unique, dupeFlagged, blockedData, false);
+        }
 
         public static ItemFacts vanilla(String material) {
             return new ItemFacts(material, null, null, false, false, false);
@@ -65,6 +72,9 @@ public final class SellRules {
         }
         if (facts.dupeFlagged()) {
             return Optional.of(Reason.DUPE);
+        }
+        if (facts.staffItem()) {
+            return Optional.of(Reason.STAFF_ITEM);
         }
         if (facts.unique()) {
             return Optional.of(Reason.UNIQUE);

@@ -27,11 +27,17 @@ ignore:
   unknown: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
   staff: "<prefix><c:error><sym:cross></c:error> <c:text>You can't ignore staff. Use <c:value>/report</c:value> if someone bothers you."
   already: "<prefix><c:error><sym:cross></c:error> <c:text>You already ignore <c:value><player></c:value>."
-  added: "<prefix><c:success><sym:check></c:success> <c:text>Ignoring <c:value><player></c:value>. Their messages won't reach you. <click:run_command:'/unignore <player>'><hover:show_text:'<c:text>Runs /unignore <player>'><c:action>[Undo]</c:action></hover></click>"
+  added: "<prefix><c:success><sym:check></c:success> <c:text>Ignoring <c:value><player></c:value>. No messages, teleport or trade requests or island invites from them. <click:run_command:'/unignore <player>'><hover:show_text:'<c:text>Runs /unignore <player>'><c:action>[Undo]</c:action></hover></click>"
   not-ignored: "<prefix><c:error><sym:cross></c:error> <c:text>You don't ignore <c:value><player></c:value>."
   removed: "<prefix><c:success><sym:check></c:success> <c:text>No longer ignoring <c:value><player></c:value>."
   list-empty: "<prefix><c:text>You don't ignore anyone."
   list: "<prefix><c:text>Ignored (<c:value><count></c:value>): <c:value><players>"
+
+# /settings toggles of this module (owner answer 317).
+settings:
+  hide-ignored-chat:
+    name: "<c:value>Hide ignored chat"
+    lore: ["<c:text>Hide the public chat of players", "<c:text>you ignore (only for you)."]
 
 afk:
   tag: "<c:muted>[AFK]</c:muted>"

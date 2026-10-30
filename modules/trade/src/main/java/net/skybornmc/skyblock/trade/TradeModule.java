@@ -312,7 +312,10 @@ public final class TradeModule implements SkyblockModule, Listener {
         }
         long now = now();
         boolean self = sender.equals(target);
-        Optional<TradeRules.Problem> problem = TradeRules.request(self, state(sender), state(target), acceptsRequests(target),
+        // Owner answer 316: a player the target /ignores gets the same answer as "requests off" (staff can't be ignored).
+        boolean accepts = acceptsRequests(target)
+                && !net.skybornmc.skyblock.common.social.IgnoreService.ignoring(core.services(), target, sender);
+        Optional<TradeRules.Problem> problem = TradeRules.request(self, state(sender), state(target), accepts,
                 requests.has(target.getUniqueId(), sender.getUniqueId(), now) ? 0
                         : requests.cooldownLeft(sender.getUniqueId(), now, config.requestCooldownSeconds * 1000L));
         if (problem.isEmpty() && !self) {

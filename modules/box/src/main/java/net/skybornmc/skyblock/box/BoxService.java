@@ -81,8 +81,27 @@ final class BoxService implements ItemBox, Listener {
 
     @Override
     public CompletableFuture<Delivery> deliver(UUID profileKey, Collection<ItemStack> items, String source, Actor actor) {
+        flagStaffItems(profileKey, items, source, actor);
         List<BoxItem> rows = BoxItems.snapshot(items, source, System.currentTimeMillis());
         return deliverRows(profileKey, rows, actor, true);
+    }
+
+    /**
+     * Owner answer 332 safety net: staff items never go to another player (trade and auction refuse them at the start;
+     * there is no player-to-player box send). Should one still arrive through a player-to-player source, the delivery is
+     * kept (nothing is ever lost) but logged as {@code staff_item_transfer} so staff can take it back.
+     */
+    private void flagStaffItems(UUID profileKey, Collection<ItemStack> items, String source, Actor actor) {
+        String key = BoxSource.clean(source);
+        if (!m.config().staffItemFlagSources.contains(key) || !net.skybornmc.skyblock.common.item.StaffItems.anyMarked(items)) {
+            return;
+        }
+        UUID owner = profiles().ownerOf(profileKey);
+        if (actor != null && owner.equals(actor.uuid())) {
+            return;
+        }
+        core.audit().logPlayer(AuditCategory.ITEM, "staff_item_transfer", actor == null ? Actor.SYSTEM : actor, owner, null, null, null,
+                Map.of("profile", profileKey.toString(), "source", key));
     }
 
     /** Stores serialized rows, audits, updates the cache and tells the owner. Never fails (spool). */

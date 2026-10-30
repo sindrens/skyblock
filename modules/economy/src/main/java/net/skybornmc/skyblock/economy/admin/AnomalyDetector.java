@@ -29,6 +29,8 @@ import java.util.function.Supplier;
  *   <li>{@link Rule#SELL_SPIKE}: server-wide selling in one hour above {@code multiplier} x the hourly average;</li>
  *   <li>{@link Rule#BALANCE_MISMATCH}: an account's balance before a transaction is not what its previous transaction
  *       left: the balance changed without a ledger row.</li>
+ *   <li>{@link Rule#STAFF_TRANSFER}: a transfer between two players at or above the staff minimum where one side is a
+ *       staff account (owner answer 334: staff play normally on the same account, admins see big transfers).</li>
  * </ul>
  * Never punishes; the drafts become staff alerts. Repeated alerts are held back by a cooldown per rule and subject.
  * State lives in memory only (a restart forgets windows and last balances; nothing wrong is reported because of that).
@@ -68,6 +70,7 @@ public final class AnomalyDetector {
     }
 
     private final Supplier<WatchConfig> config;
+    private final java.util.function.Predicate<UUID> staffAccount;
     private final Map<String, Long> lastSent = new HashMap<>();
     private final Map<PairKey, Deque<Hit>> pairs = new HashMap<>();
     private final Map<Aggregation.AccountKey, NoteCount> notes = new HashMap<>();
@@ -75,7 +78,16 @@ public final class AnomalyDetector {
     private long lastId;
 
     public AnomalyDetector(Supplier<WatchConfig> config) {
+        this(config, id -> false);
+    }
+
+    /**
+     * @param staffAccount true for a profile (or player) that belongs to a staff account; called from the background job,
+     *                     so it must be thread-safe
+     */
+    public AnomalyDetector(Supplier<WatchConfig> config, java.util.function.Predicate<UUID> staffAccount) {
         this.config = config;
+        this.staffAccount = staffAccount == null ? id -> false : staffAccount;
     }
 
     /** Forgets every window, count and balance (after a failed batch, so nothing is counted twice). Cooldowns stay. */
@@ -110,6 +122,9 @@ public final class AnomalyDetector {
             }
             if (c.bigTransferEnabled) {
                 big(row, c, base, out);
+            }
+            if (c.staffTransferEnabled) {
+                staffTransfer(row, c, out);
             }
             if (c.repeatEnabled && currencies.contains(row.currency())) {
                 repeat(row, c, out);
@@ -152,6 +167,26 @@ public final class AnomalyDetector {
         AlertDraft.Severity severity = row.amount() / 4 >= threshold ? AlertDraft.Severity.HIGH : AlertDraft.Severity.WATCH;
         out.add(new AlertDraft(Rule.BIG_TRANSFER, severity, row.currency(), subject, other, row.amount(), threshold, 1,
                 row.hour(), List.of(row.id())));
+    }
+
+    /** Owner answer 334: a player-to-player transfer touching a staff account, at or above the staff minimum. */
+    private void staffTransfer(LedgerRow row, WatchConfig c, List<AlertDraft> out) {
+        if (row.flow() != Flow.MOVED || !row.from().isPlayer() || !row.to().isPlayer() || staffReason(row.reason())
+                || c.ignoreReasons.contains(row.reason())) {
+            return;
+        }
+        long min = c.staffMin(row.currency());
+        if (row.amount() < min) {
+            return;
+        }
+        UUID from = row.from().owner();
+        UUID to = row.to().owner();
+        if (!staffAccount.test(from) && !staffAccount.test(to)) {
+            return;
+        }
+        AlertDraft.Severity severity = row.amount() / 4 >= min ? AlertDraft.Severity.HIGH : AlertDraft.Severity.WATCH;
+        out.add(new AlertDraft(Rule.STAFF_TRANSFER, severity, row.currency(), from, to, row.amount(), min, 1, row.hour(),
+                List.of(row.id())));
     }
 
     private static boolean staffReason(String reason) {

@@ -123,6 +123,11 @@ final class SpawnProtection extends CommandGroup implements Listener {
         return player.hasPermission(Perms.BUILD_SPAWN) && building.contains(player.getUniqueId());
     }
 
+    /** True if the player has {@code /build} switched on (anywhere): staff powers work in build mode (owner answer 333). */
+    boolean buildModeOn(Player player) {
+        return player.hasPermission(Perms.BUILD_SPAWN) && building.contains(player.getUniqueId());
+    }
+
     /** True if the player has {@code /build} on and {@code world} is a protected world (region flags bypass hook). */
     boolean buildModeIn(Player player, String world) {
         return config.protectedWorlds.contains(world) && canBuild(player);

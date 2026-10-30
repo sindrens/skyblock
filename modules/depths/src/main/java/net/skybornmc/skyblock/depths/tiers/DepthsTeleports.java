@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.depths.tiers;
 
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.combat.BossArenas;
 import net.skybornmc.skyblock.common.teleport.TeleportService;
 import net.skybornmc.skyblock.depths.DepthsConfig;
 import net.skybornmc.skyblock.depths.zones.Aspect;
@@ -19,6 +20,7 @@ import java.util.Optional;
  *   <li>345: the boss arena and the combat tiers are combat zones, so every player teleport out of them waits
  *       {@code teleport.yml → danger.warmup-seconds} (never blocked).</li>
  *   <li>346: {@code /tpahere} (or any player teleport) into a tier the traveller has not unlocked is refused.</li>
+ *   <li>377: publishes {@link BossArenas} so {@code /ec} and {@code /craft} can refuse to open in the boss arena.</li>
  * </ul>
  * Main thread (zone lookups are main-thread only).
  */
@@ -45,6 +47,17 @@ public final class DepthsTeleports {
             service.addDangerZone(danger);
             service.addGuard(guard);
         }
+        core.services().register("depths", BossArenas.class, this::inBossArena);
+    }
+
+    /** True if the player stands inside the Depths boss arena (main thread). */
+    public boolean inBossArena(Player player) {
+        Location at = player.getLocation();
+        if (!inDepths(at)) {
+            return false;
+        }
+        BossArena arena = zones.bossArena();
+        return arena != null && arena.region().contains(at.getX(), at.getY(), at.getZ());
     }
 
     public void unregister() {

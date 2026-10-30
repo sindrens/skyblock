@@ -6,7 +6,7 @@ Two players trade items and money face to face. Settings: `trade.yml`; texts: `m
 
 | Command | What it does | Permission | Status |
 |---|---|---|---|
-| `/trade [player]` | Ask a player nearby to trade (they get a clickable request). If they already asked you, the trade starts. Without a name: reopens your open trade, or a menu of players nearby to pick from | `skyblock.trade.use` | ✅ |
+| `/trade [player]` | Ask a player nearby to trade (they get a clickable request). If they already asked you, the trade starts. Without a name: reopens your open trade, or a menu of players nearby to pick from. A player who `/ignore`s you gets no request (you see "requests off"; owner answer 316) | `skyblock.trade.use` | ✅ |
 | `/trade accept [player]` | Accept a trade request (the name is only needed when several players asked) | `skyblock.trade.use` | ✅ |
 | `/trade deny [player]` | Deny a trade request | `skyblock.trade.use` | ✅ |
 
@@ -16,7 +16,7 @@ Rules (all in `trade.yml`): request and accept within 16 blocks in the same worl
 
 Money: currencies in `money.currencies` that `economy.yml` also marks tradeable (default money and shards). **Crystals are never tradeable** (CR3), gems only if `economy.yml → tradeable.gems` (decided: no). No new-account limit (owner answer 131). Money goes between **profile** accounts.
 
-What can be offered: anything except locked wardrobe armor (sets are bound to the profile; unredeemed Set Tokens are fine), menu items, dupe-flagged items, admin blocks and filled shulker boxes/bundles (`items.*`). Starter kit pieces are tradeable here (PHASE-4: trade yes, auction house no). Money notes, enchant books, Disenchant Scrolls, Set Tokens, tools, blueprints and tag items are fine (they are unique and tracked; their ids stay the same).
+What can be offered: anything except locked wardrobe armor (sets are bound to the profile; unredeemed Set Tokens are fine), menu items, dupe-flagged items, staff items (`/give`, `/i`, creative; owner answer 332, also inside containers), admin blocks and filled shulker boxes/bundles (`items.*`). Starter kit pieces are tradeable here (PHASE-4: trade yes, auction house no). Money notes, enchant books, Disenchant Scrolls, Set Tokens, tools, blueprints and tag items are fine (they are unique and tracked; their ids stay the same).
 
 Other permissions: none.
 

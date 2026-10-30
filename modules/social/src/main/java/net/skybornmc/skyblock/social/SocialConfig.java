@@ -15,6 +15,10 @@ public final class SocialConfig extends ModuleConfig {
     @Setting(path = "dm.rate-limit.seconds", desc = "Length of the private message rate-limit window (seconds).", min = 1, max = 300)
     public int dmRateSeconds = 5;
 
+    @Setting(path = "ignore.hide-chat-default", desc = "Owner answer 317: /settings 'Hide ignored chat' starts on, so the public "
+            + "chat lines of players you /ignore are hidden for you only. Players can switch it off. Applies after a restart.")
+    public boolean hideIgnoredChatDefault = true;
+
     @Setting(path = "afk.auto-minutes", desc = "Minutes without activity before a player is marked AFK. 0 = never.", min = 0, max = 240)
     public int afkAutoMinutes = 5;
 

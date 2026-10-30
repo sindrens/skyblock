@@ -19,7 +19,9 @@ public enum Rule {
     /** An account's balance changed without a ledger row (money from nowhere). */
     BALANCE_MISMATCH("balance-mismatch"),
     /** The 14-day sink ratio stayed below the act line (ECONOMY_BALANCE §7.2). */
-    SINK_RATIO("sink-ratio");
+    SINK_RATIO("sink-ratio"),
+    /** Owner answer 334: a big transfer to or from a staff account (staff play normally; admins are told). */
+    STAFF_TRANSFER("staff-transfer");
 
     private final String id;
 

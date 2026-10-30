@@ -41,6 +41,9 @@ skyblock.staff.economy.alerts:
 skyblock.staff.economy.dashboard:
   description: Open the economy dashboard and alert evidence (/eco admin [alert]); review or dismiss alerts and file punishment suggestions from them (M3.8)
   default: op
+skyblock.staff.economy.flagged:
+  description: A staff account (owner answer 334). Staff play normally, but their big transfers (pay, trade) are shown to admins as a staff-transfer alert
+  default: false
 skyblock.staff.economy.anomalies:
   description: Get economy anomaly alerts in chat (fast earning, big or repeated transfers, many notes cashed, sell spikes, balance jumps, inflation) with [Open] and [Punish]
   default: op

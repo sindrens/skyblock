@@ -40,6 +40,34 @@ class AnomalyDetectorTest {
         return drafts.stream().filter(d -> d.rule() == rule).toList();
     }
 
+    // ---------------------------------------------------------------- staff transfer (owner answer 334)
+
+    @Test
+    void bigTransfersToOrFromStaffAccountsAlert() {
+        config.staffMinMoney = 1_000;
+        AnomalyDetector staff = new AnomalyDetector(() -> config, B::equals);
+        List<AlertDraft> out = staff.rows(List.of(moved(1, T0, A, B, 999, "pay"), moved(2, T0, A, B, 2_000, "pay"),
+                moved(3, T0, B, C, 5_000, "trade"), moved(4, T0, A, C, 50_000, "pay"), moved(5, T0, B, A, 9_000, "admin_give")),
+                supply(0), T0);
+        List<AlertDraft> hits = of(out, Rule.STAFF_TRANSFER);
+        assertEquals(List.of(2L, 3L), hits.stream().map(d -> d.ledgerIds().getFirst()).toList(),
+                "below the minimum, between two normal players and staff /eco rows never count");
+        assertEquals(A, hits.getFirst().subject());
+        assertEquals(B, hits.getFirst().other());
+        assertEquals(AlertDraft.Severity.WATCH, hits.getFirst().severity());
+        assertEquals(AlertDraft.Severity.HIGH, hits.get(1).severity(), "4x the minimum");
+    }
+
+    @Test
+    void staffTransferRuleCanBeSwitchedOffAndNeedsAStaffAccount() {
+        config.staffMinMoney = 1_000;
+        assertTrue(of(detector.rows(List.of(moved(1, T0, A, B, 5_000, "pay")), supply(0), T0), Rule.STAFF_TRANSFER).isEmpty(),
+                "no staff accounts known");
+        config.staffTransferEnabled = false;
+        AnomalyDetector staff = new AnomalyDetector(() -> config, id -> true);
+        assertTrue(of(staff.rows(List.of(moved(2, T0, A, B, 5_000, "pay")), supply(0), T0), Rule.STAFF_TRANSFER).isEmpty());
+    }
+
     // ---------------------------------------------------------------- big transfer
 
     @Test

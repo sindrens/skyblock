@@ -28,6 +28,16 @@ public final class PerksConfig extends ModuleConfig {
     @Setting(path = "hat.blocked", desc = "Materials that can't be worn with /hat, e.g. [tnt, lava_bucket].")
     public List<String> hatBlocked = List.of();
 
+    @Setting(path = "blocked.worlds", desc = "Owner answer 377: worlds where /ec and /craft don't work (the warzone).")
+    public List<String> blockedWorlds = List.of("warzone");
+
+    @Setting(path = "blocked.boss-arena", desc = "Owner answer 377: /ec and /craft don't work inside a boss arena.")
+    public boolean blockedBossArena = true;
+
+    @Setting(path = "blocked.combat-seconds", desc = "Owner answer 377: /ec and /craft wait this many seconds after combat "
+            + "(hitting or being hit by a player or hostile mob). 0 = no combat block.", min = 0, max = 120)
+    public int blockedCombatSeconds = 10;
+
     @Setting(path = "trash.rows", desc = "Rows of the /trash menu, including the bottom bar.", min = 2, max = 6)
     public int trashRows = 4;
 

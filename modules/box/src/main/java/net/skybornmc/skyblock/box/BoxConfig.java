@@ -9,6 +9,10 @@ public final class BoxConfig extends ModuleConfig {
     @Setting(path = "cap.max-entries", desc = "Stacks a profile's box should hold at most. Above it items are STILL stored (never dropped or deleted); the player is warned (and staff see box_over_cap in the logs). Future voluntary paths can refuse while full (ItemBox#full).", min = 10, max = 100000, level = Setting.Level.OWNER)
     public int maxEntries = 500;
 
+    @Setting(path = "staff-items.flag-sources", desc = "Owner answer 332: a staff item (/give, /i, creative) arriving in another "
+            + "player's box from one of these sources is logged as staff_item_transfer (trade and auction refuse them already).")
+    public java.util.List<String> staffItemFlagSources = java.util.List.of("trade", "auction", "gift");
+
     @Setting(path = "cap.warn-percent", desc = "From this share of the cap the player is warned that the box is almost full (100 = only when full).", min = 1, max = 100)
     public int warnPercent = 90;
 

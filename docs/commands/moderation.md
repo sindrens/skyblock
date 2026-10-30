@@ -107,5 +107,7 @@ Approval: `skyblock.staff.punish.approve` (approve/deny requests, and punish wit
 
 Other: `skyblock.staff.punish.notes` (also shows notes on the `/p` head), `skyblock.staff.punish.undo.others` (undo other staff's punishments), `skyblock.staff.punish.force` (`-force`), `skyblock.staff.punish.silent` (`-s`), `skyblock.staff.punish.exempt` / `.exempt.bypass`, `skyblock.staff.punish.max.<tier>` (length tiers). Alt alerts on join go to the `watchlist` alert type.
 
+Ban status (ANS3, owner answer 522): the module publishes `BanStatus` (common): `isBanned(uuid)` and `bannedAccounts()` (active bans on this server, async). The islands module uses it to close a banned leader's island to visitors; a new ban also fires `PlayerBannedEvent`.
+
 Permission definitions: `modules/moderation/src/main/resources/permissions/moderation.yml`. Rank grants: `server/permissions/moderation.txt`.
 | `/psanction restore <id>` | Give back money removed or an item confiscated by a sanction (money to the profile it came from; an item to the online player on that profile, with a free slot). First click wins. `/psanction` alone explains it. Tab completes the restorable ids | `skyblock.staff.sanction.restore` | ✅ |
