@@ -301,22 +301,38 @@ Owner (2026-10-30): "cleaner, better colors, it looks hard now". Fewer labels, m
   Island  Lv 34 #12        ← level white, position muted
   play.skybornmc.net       ← address, network ice blue
 ```
-**The Depths** (`scoreboard.depths`, used in the `depths` world; HudService picks the layout named after the world):
+**Per place (SB, owner Q6 "a different scoreboard per place, only relevant lines").** `hud.yml → places` picks the layout from where the player is; the layouts (title + lines) are in `messages/hud.yml → scoreboard.<layout>`:
+
+| Place | Layout | Shows |
+|---|---|---|
+| Own island (and the island world outside any island) | `island` | name · rank, Island Lv, **Next: newest open note** (only when there is one and the "Next note on scoreboard" setting is on), money, crystals |
+| Someone else's island (coop counts as visiting) | `island-visit` | name · rank, **Visiting <island name>**, money, crystals |
+| The Depths, Mine wing and causeways | `depths` | zone, tier, Mining Lv (%), money |
+| The Gate (Depths hub) | `depths-gate` | zone, Mining / Foraging / Combat Lv (the skills that unlock the wings) |
+| Forest / Combat wing | `depths-forest` / `depths-combat` | zone, tier, Foraging / Combat Lv (%), money |
+| Spawn | `spawn` | same as default (change freely) |
+| Warzone (placeholder until it exists) | `warzone` | title WARZONE, Combat Lv, money |
+| Anywhere else | world-named layout, else `default` | |
+
 ```
- THE DEPTHS
+ PHOENIX SKYBLOCK                THE DEPTHS
 
-  Pouched · Mod
+  Pouched · Mod                   Pouched · Mod
 
-  Zone  Copper Caves       ← <ph:depths_zone>
-  Tier  Mine · Tier 2      ← <ph:depths_tier>
-  Mining  Lv 12 (48%)      ← <ph:skill_mining_level>, <ph:skill_mining_progress>
-
+  Island  Lv 34 #12               Zone  Copper Caves
+  Next  Build the farm            Tier  Mine · Tier 2
+                                  Mining  Lv 12 (48%)
   Money  $1.2M
-  play.skybornmc.net
+  Crystals  ◆ 4,250               Money  $1.2M
+  play.skybornmc.net              play.skybornmc.net
 ```
+- A missing layout falls back: Depths variant → `depths`, `island-visit` → `island`, any place → world-named layout → `default`.
+- The board switches on the tick after a teleport or respawn and right away on a world change; walking onto another island or into another Depths zone switches on the next refresh (1 s). Only changed lines are sent, so switching never flickers.
+- Conditional lines: `"if:<placeholder>|<line>"` only shows while the placeholder has a value (not empty, not `-`); hidden lines take no space.
+- Built-in `<island_here>`: name of the island you stand on (visit board).
 - Labels `<c:muted>`, values `<c:value>` white or their currency color, two spaces between label and value, one leading space.
 - No separator bars, no online count, no objective line (the objective returns with the tutorial/quests as its own layout).
-- Max 10 lines with the title (`SidebarLinesTest` checks the bundled layouts). Events and later places (SB) add their own layout.
+- Max 10 lines with the title, conditional lines included (`SidebarLinesTest` checks every bundled layout). Events add their own layout through `HudService#addLayout` (wins over places).
 
 ### 6.2 Tab list
 ```

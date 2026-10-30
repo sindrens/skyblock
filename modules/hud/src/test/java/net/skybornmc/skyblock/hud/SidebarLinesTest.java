@@ -51,20 +51,47 @@ class SidebarLinesTest {
         assertEquals("default", SidebarLines.layout("", Set.of("")::contains));
     }
 
-    /** UX1: the bundled layouts stay short (title + max 9 lines) and the Depths one shows zone, tier and mining level. */
+    /**
+     * UX1 + SB: every bundled layout stays short (title + max 9 lines, conditional lines included), every place layout
+     * named in hud.yml's defaults exists, and each layout shows what is relevant for its place.
+     */
     @Test
     void bundledLayoutsAreShort() {
+        HudConfig defaults = new HudConfig();
+        List<String> places = new java.util.ArrayList<>(List.of("default", defaults.islandLayout, defaults.islandVisitLayout,
+                defaults.depthsLayout, defaults.spawnLayout, defaults.warzoneLayout));
+        PlaceRules.parseVariants(defaults.depthsVariants, p -> {
+            throw new AssertionError(p);
+        }).forEach(v -> places.add(v.layout()));
         for (String file : List.of("../../plugin/src/main/resources/messages/hud.yml", "../../server/plugins/PhoenixSkyblock/messages/hud.yml")) {
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(Path.of(file).toFile());
-            for (String layout : List.of("default", "depths")) {
+            var section = yaml.getConfigurationSection("scoreboard");
+            assertTrue(section != null, file);
+            for (String layout : section.getKeys(false)) {
                 List<String> lines = yaml.getStringList("scoreboard." + layout + ".lines");
                 assertTrue(yaml.isString("scoreboard." + layout + ".title"), file + " " + layout + " title");
                 assertTrue(!lines.isEmpty() && lines.size() <= 9, file + " " + layout + ": " + lines.size() + " lines");
+                for (String line : lines) {
+                    assertTrue(!line.startsWith(LayoutLines.IF) || LayoutLines.line(line).condition() != null,
+                            file + " " + layout + ": broken if: line " + line);
+                }
             }
-            String depths = String.join("\n", yaml.getStringList("scoreboard.depths.lines"));
-            for (String ph : List.of("<ph:depths_zone>", "<ph:depths_tier>", "<ph:skill_mining_level>")) {
-                assertTrue(depths.contains(ph), file + " depths layout misses " + ph);
+            for (String layout : places) {
+                assertTrue(section.isConfigurationSection(layout), file + " misses layout " + layout);
             }
+            contains(yaml, file, "depths", "<ph:depths_zone>", "<ph:depths_tier>", "<ph:skill_mining_level>");
+            contains(yaml, file, "depths-forest", "<ph:depths_zone>", "<ph:skill_foraging_level>");
+            contains(yaml, file, "depths-combat", "<ph:depths_zone>", "<ph:skill_combat_level>");
+            contains(yaml, file, "depths-gate", "<ph:skill_mining_level>", "<ph:skill_foraging_level>", "<ph:skill_combat_level>");
+            contains(yaml, file, "island", "<island>", "if:island_next_note|");
+            contains(yaml, file, "island-visit", "<island_here>");
+        }
+    }
+
+    private static void contains(YamlConfiguration yaml, String file, String layout, String... parts) {
+        String text = String.join("\n", yaml.getStringList("scoreboard." + layout + ".lines"));
+        for (String part : parts) {
+            assertTrue(text.contains(part), file + " " + layout + " layout misses " + part);
         }
     }
 }
