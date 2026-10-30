@@ -90,6 +90,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
     private final AuditConfig auditConfig = new AuditConfig();
     private final net.skybornmc.skyblock.common.teleport.TeleportConfig teleportConfig = new net.skybornmc.skyblock.common.teleport.TeleportConfig();
     private net.skybornmc.skyblock.common.teleport.CoreTeleportService teleports;
+    private final net.skybornmc.skyblock.common.visibility.VisibilityConfig visibilityConfig = new net.skybornmc.skyblock.common.visibility.VisibilityConfig();
+    private net.skybornmc.skyblock.common.visibility.CoreVisibilityService visibility;
 
     @Override
     public void onEnable() {
@@ -161,6 +163,11 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         teleports = new net.skybornmc.skyblock.common.teleport.CoreTeleportService(core, teleportConfig);
         services.register("core", net.skybornmc.skyblock.common.teleport.TeleportService.class, teleports);
         getServer().getPluginManager().registerEvents(teleports, this);
+        // REVIEW3 D4: the only owner of hidePlayer/showPlayer (vanish, AFK pool, the Show players choice) (visibility.yml).
+        configs.load(visibilityConfig);
+        visibility = new net.skybornmc.skyblock.common.visibility.CoreVisibilityService(this, () -> visibilityConfig, services, scheduler);
+        services.register("core", net.skybornmc.skyblock.common.visibility.VisibilityService.class, visibility);
+        getServer().getPluginManager().registerEvents(visibility, this);
         players.start();
         menus.enable();
         dupes.start();
@@ -171,12 +178,14 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.beforeEnable(permissions::register);
         modules.afterFailedEnable(permissions::unregister);
         modules.afterDisable(id -> {
+            visibility.removeAll(id);
             core.services().unregisterAll(id);
             core.placeholders().unregisterAll(id);
             permissions.unregister(id);
         });
         registerModules();
         modules.enableAll();
+        visibility.start(); // after the menus module published /settings
         registerCommands();
         getServer().getPluginManager().registerEvents(this, this);
         if (!allProblems().isEmpty()) {
@@ -192,6 +201,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         }
         if (modules != null) {
             modules.disableAll();
+        }
+        if (visibility != null) {
+            visibility.shutdown();
         }
         if (teleports != null) {
             teleports.shutdown();
@@ -496,6 +508,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
             core.configs().load(itemsConfig);
             core.configs().load(auditConfig);
             core.configs().load(teleportConfig);
+            core.configs().load(visibilityConfig);
+            visibility.schedule();
+            visibility.refreshAll();
             loadStyle(core.style(), core.sounds());
             core.messages().load("core");
             core.messages().load("items");

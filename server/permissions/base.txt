@@ -73,6 +73,8 @@ lp group mod permission set minecraft.command.kick true
 lp group mod permission set minecraft.command.ban true
 lp group mod permission set minecraft.command.pardon true
 lp group helper permission set skyblock.staff.notify true
+# VIS: staff stays visible to everyone while not vanished (players' Show players choice, the AFK pool).
+lp group helper permission set skyblock.staff.visible true
 lp group mod permission set minecraft.command.teleport true
 lp group mod permission set minecraft.command.gamemode true
 lp group mod permission set grim.brand true

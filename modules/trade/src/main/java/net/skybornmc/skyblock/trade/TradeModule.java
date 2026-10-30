@@ -208,7 +208,7 @@ public final class TradeModule implements SkyblockModule, Listener {
     private void registerCommands() {
         Arg<Player> target = Arg.word("player", (sender, raw) -> {
             Player p = Bukkit.getPlayerExact(raw);
-            if (p == null || (sender instanceof Player viewer && !viewer.canSee(p))) {
+            if (p == null || !net.skybornmc.skyblock.common.visibility.Visibility.knows(sender, p)) {
                 throw CommandFailure.of("player-offline", Msg.p("input", raw));
             }
             return p;
@@ -252,7 +252,7 @@ public final class TradeModule implements SkyblockModule, Listener {
         List<String> out = new ArrayList<>();
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (sender instanceof Player viewer) {
-                if (p.equals(viewer) || !viewer.canSee(p) || distanceProblem(viewer, p).isPresent()) {
+                if (p.equals(viewer) || !net.skybornmc.skyblock.common.visibility.Visibility.knows(viewer, p) || distanceProblem(viewer, p).isPresent()) {
                     continue;
                 }
             }
@@ -292,7 +292,7 @@ public final class TradeModule implements SkyblockModule, Listener {
             }
         }
         core.menus().open(p, new PlayerPickerMenu(v -> msg.component(v, "picker.title"),
-                other -> !other.equals(p) && p.canSee(other) && distanceProblem(p, other).isEmpty(),
+                other -> !other.equals(p) && net.skybornmc.skyblock.common.visibility.Visibility.knows(p, other) && distanceProblem(p, other).isEmpty(),
                 (viewer, picked) -> {
                     viewer.closeInventory();
                     try {

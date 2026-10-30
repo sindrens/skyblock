@@ -92,7 +92,7 @@ final class BulkMenus {
                 out.add(preselected);
             }
             Bukkit.getOnlinePlayers().stream().map(p -> (Player) p)
-                    .filter(p -> !p.equals(viewer) && viewer.canSee(p) && (preselected == null || !p.getUniqueId().equals(preselected.uuid())))
+                    .filter(p -> !p.equals(viewer) && net.skybornmc.skyblock.common.visibility.Visibility.knows(viewer, p) && (preselected == null || !p.getUniqueId().equals(preselected.uuid())))
                     .sorted(Comparator.comparing(Player::getName, String.CASE_INSENSITIVE_ORDER))
                     .forEach(p -> out.add(new Pick(p.getUniqueId(), p.getName())));
             return out;

@@ -101,6 +101,10 @@ final class SettingsMenu extends Menu {
                     service.lines(viewer, toggle.textModule(), toggle.textKey() + ".lore")));
             return;
         }
+        if (toggle.isChoice()) {
+            setChoice(slot, toggle);
+            return;
+        }
         boolean state = nav.settings.get(viewer, toggle.id());
         set(slot, service.toggle(viewer, toggle.textModule(), toggle.textKey(), state, value -> {
             if (nav.settings.set(viewer, toggle.id(), value)) {
@@ -109,6 +113,29 @@ final class SettingsMenu extends Menu {
                 nav.core.sounds().play(viewer, "error");
             }
         }));
+    }
+
+    /**
+     * VIS: a multiple-choice setting is one button (the setting's icon) listing every choice with the current one marked;
+     * a click moves to the next choice. One click, no typing, so it works the same on Bedrock.
+     */
+    private void setChoice(int slot, SettingToggle toggle) {
+        String current = nav.settings.choice(viewer, toggle.id());
+        List<Component> lore = new java.util.ArrayList<>(service.lines(viewer, toggle.textModule(), toggle.textKey() + ".lore"));
+        lore.add(Component.empty());
+        for (String choice : toggle.choices()) {
+            Component name = service.text(viewer, toggle.textModule(), toggle.textKey() + ".choices." + choice);
+            lore.add(nav.text(viewer, choice.equals(current) ? "settings.choice-selected" : "settings.choice-other", Msg.c("choice", name)));
+        }
+        lore.addAll(nav.lines(viewer, "settings.choice-action"));
+        set(slot, nav.item(toggle.icon(), service.text(viewer, toggle.textModule(), toggle.textKey() + ".name"), lore), click -> {
+            if (nav.settings.setChoice(viewer, toggle.id(), toggle.nextChoice(current))) {
+                nav.core.sounds().play(viewer, "click");
+            } else {
+                nav.core.sounds().play(viewer, "error");
+            }
+            refresh();
+        });
     }
 
     private void turn(int delta) {

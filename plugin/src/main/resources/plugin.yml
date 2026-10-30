@@ -21,6 +21,9 @@ permissions:
   skyblock.staff.notify:
     description: See staff actions (unbans, punishments) in chat
     default: op
+  skyblock.staff.visible:
+    description: Always visible to players while not vanished (ignores their Show players choice and the AFK pool hiding)
+    default: op
   skyblock.cooldown.bypass:
     description: Skip command cooldowns
     default: op

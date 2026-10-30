@@ -134,7 +134,7 @@ public final class MenusModule implements SkyblockModule {
      * "Coming soon" until the module that owns the feature registers the same id (social: private-messages,
      * afk-broadcast; chat: mentions-sound, chat-colors, chat-timestamps; essentials: join-messages, tpa-requests; hud:
      * scoreboard; islands: island-invites; trade: trade-requests; wardrobe: particles). Still placeholders (no feature
-     * yet): tips, depths-visibility.
+     * yet): tips. The old "depths-visibility" placeholder became the core's {@code show-players} choice (VIS).
      */
     private void registerBuiltinSettings() {
         placeholder("private-messages", SettingCategory.CHAT, Material.WRITABLE_BOOK, true);
@@ -151,7 +151,6 @@ public final class MenusModule implements SkyblockModule {
                 Nav.TEXTS, "settings.toggles." + MenuItem.SETTING, false));
         placeholder("tips", SettingCategory.DISPLAY, Material.LANTERN, true);
         placeholder("particles", SettingCategory.DISPLAY, Material.BLAZE_POWDER, true);
-        placeholder("depths-visibility", SettingCategory.DISPLAY, Material.SPYGLASS, true);
         active(SETTING_UI_SOUNDS, SettingCategory.SOUNDS, Material.NOTE_BLOCK, true);
         active(SETTING_EVENT_SOUNDS, SettingCategory.SOUNDS, Material.GOAT_HORN, true);
     }
@@ -200,7 +199,8 @@ public final class MenusModule implements SkyblockModule {
 
         Arg<String> setting = Args.word("setting", Suggest.bySender(sender -> sender instanceof Player p
                 ? SettingCategoryOrder.ids(settings, p) : List.of()));
-        Arg<String> value = Args.oneOf("value", () -> List.of("on", "off", "toggle"));
+        // VIS: multiple-choice settings take one of their choices (e.g. /settings show-players nobody); toggle = next choice.
+        Arg<String> value = Args.oneOf("value", this::settingValues);
         commands.register(CommandSpec.command("settings")
                 .description("Change your personal settings").category("Info")
                 .permission(PERM_SETTINGS).playerOnly().aliases("options", "prefs")
@@ -275,6 +275,13 @@ public final class MenusModule implements SkyblockModule {
         if (toggle.comingSoon()) {
             throw new CommandFailure(Nav.TEXTS, "settings.not-yet", Msg.p("setting", toggle.id()));
         }
+        if (toggle.isChoice()) {
+            choiceCommand(player, toggle, value);
+            return;
+        }
+        if (!List.of("on", "off", "toggle").contains(value)) {
+            throw new CommandFailure(Nav.TEXTS, "settings.on-off", Msg.p("setting", toggle.id()));
+        }
         boolean current = settings.get(player, toggle.id());
         boolean target = switch (value) {
             case "on" -> true;
@@ -287,6 +294,30 @@ public final class MenusModule implements SkyblockModule {
         nav.msg.send(player, target ? "settings.changed-on" : "settings.changed-off",
                 Msg.c("setting", core.menus().text(player, toggle.textModule(), toggle.textKey() + ".name")));
         core.sounds().play(player, "click");
+    }
+
+    private void choiceCommand(Player player, SettingToggle toggle, String value) {
+        String target = value.equals("toggle") ? toggle.nextChoice(settings.choice(player, toggle.id())) : value;
+        if (!toggle.choices().contains(target)) {
+            throw new CommandFailure(Nav.TEXTS, "settings.choice-values", Msg.p("setting", toggle.id()),
+                    Msg.p("choices", String.join(", ", toggle.choices())));
+        }
+        if (!settings.setChoice(player, toggle.id(), target)) {
+            throw new CommandFailure(Nav.TEXTS, "settings.failed");
+        }
+        nav.msg.send(player, "settings.changed-choice",
+                Msg.c("setting", core.menus().text(player, toggle.textModule(), toggle.textKey() + ".name")),
+                Msg.c("choice", core.menus().text(player, toggle.textModule(), toggle.textKey() + ".choices." + target)));
+        core.sounds().play(player, "click");
+    }
+
+    /** Every accepted {@code /settings} value: on, off, toggle and the choices of multiple-choice settings. */
+    private List<String> settingValues() {
+        java.util.LinkedHashSet<String> values = new java.util.LinkedHashSet<>(List.of("on", "off", "toggle"));
+        for (SettingToggle t : settings.toggles()) {
+            values.addAll(t.choices());
+        }
+        return List.copyOf(values);
     }
 
     /** Tab completion of setting ids: changeable (not coming soon) ones the player may see. */

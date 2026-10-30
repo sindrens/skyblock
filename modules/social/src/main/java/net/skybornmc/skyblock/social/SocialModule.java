@@ -348,7 +348,8 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
             if (v.equals(target)) {
                 return false;
             }
-            if (!v.canSee(target)) {
+            // VIS: vanish only; a player hidden by the AFK pool or the Show players choice can still be messaged.
+            if (!net.skybornmc.skyblock.common.visibility.Visibility.knows(v, target)) {
                 return true;
             }
         }

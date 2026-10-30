@@ -4,6 +4,7 @@ import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.visibility.VisibilityService;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -25,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * {@code /vanish}: hidden from everyone without {@code skyblock.staff.vanish.see}, silent join/quit, no item pickup,
  * mobs ignore you. Stays on across rejoins (player setting {@code vanished}). Placeholder {@code <ph:vanished>}.
+ * Hiding itself is done by the core's {@link VisibilityService} (REVIEW3 D4), never here.
  * Sets the common {@code vanished} metadata so other plugins (and our tab/scoreboard later) can respect it.
  */
 final class VanishService extends CommandGroup implements Listener {
@@ -78,11 +80,7 @@ final class VanishService extends CommandGroup implements Listener {
             if (config.vanishNightVision) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, PotionEffect.INFINITE_DURATION, 0, false, false, false));
             }
-            for (Player other : Bukkit.getOnlinePlayers()) {
-                if (!other.equals(player) && !other.hasPermission(Perms.VANISH_SEE)) {
-                    other.hidePlayer(core.plugin(), player);
-                }
-            }
+            visibility().ifPresent(v -> v.setVanished(player, true));
         } else {
             vanished.remove(player.getUniqueId());
             player.removeMetadata(SETTING, core.plugin());
@@ -94,9 +92,7 @@ final class VanishService extends CommandGroup implements Listener {
                     player.removePotionEffect(PotionEffectType.NIGHT_VISION);
                 }
             }
-            for (Player other : Bukkit.getOnlinePlayers()) {
-                other.showPlayer(core.plugin(), player);
-            }
+            visibility().ifPresent(v -> v.setVanished(player, false));
         }
         core.players().get(player.getUniqueId()).ifPresent(d -> d.setSetting(SETTING, enable ? "true" : null));
     }
@@ -104,15 +100,7 @@ final class VanishService extends CommandGroup implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
         Player joined = event.getPlayer();
-        // Hide already-vanished staff from the newcomer.
-        if (!joined.hasPermission(Perms.VANISH_SEE)) {
-            for (UUID id : vanished) {
-                Player v = Bukkit.getPlayer(id);
-                if (v != null) {
-                    joined.hidePlayer(core.plugin(), v);
-                }
-            }
-        }
+        // Already-vanished staff are hidden from the newcomer by the visibility service (its own join handler).
         boolean stay = joined.hasPermission(Perms.VANISH) && core.players().get(joined.getUniqueId())
                 .map(d -> "true".equals(d.setting(SETTING, null))).orElse(false);
         if (stay) {
@@ -142,11 +130,14 @@ final class VanishService extends CommandGroup implements Listener {
             Player p = Bukkit.getPlayer(id);
             if (p != null) {
                 p.removeMetadata(SETTING, core.plugin());
-                for (Player other : Bukkit.getOnlinePlayers()) {
-                    other.showPlayer(core.plugin(), p);
-                }
+                visibility().ifPresent(v -> v.setVanished(p, false));
             }
         }
         vanished.clear();
+    }
+
+    /** REVIEW3 D4: the core's visibility service owns every hide/show (Bukkit tracks them per plugin). */
+    private java.util.Optional<VisibilityService> visibility() {
+        return VisibilityService.of(core.services());
     }
 }
