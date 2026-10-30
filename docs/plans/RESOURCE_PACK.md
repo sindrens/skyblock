@@ -1,6 +1,7 @@
 # Resource Pack Plan (PLAN-RP)
 
-> **Status:** plan, 2026-10-30. Comes **after** the vanilla UI (STYLE2, SELL2 and the crates module first).
+> **Status:** plan, 2026-10-30 (updated the same day with the owner's pack decisions). Comes **after** the vanilla UI (STYLE2, SELL2 and the crates module first).
+> **Owner decisions 2026-10-30:** the Java pack is **forced** (players accept it before they join, behind a professional prompt; RP-D1 decided); custom textures on crates, GUIs, sets/wardrobe and tools; size is not critical but keep it optimised; the owner draws the art himself (RP-D7 decided); the style is not fixed yet. The full art list he works through is `docs/plans/RESOURCE_PACK_ART_BRIEF.md`.
 > **Every choice here is a default** the owner can change. Defaults that matter have an id (`RP-D1` …) so the owner can answer "RP-D4: no" (register in §17).
 > Sources: `DECISIONS_2026-10-30.md` (design round: "vanilla now, resource pack later, same slots, the pack only paints on top"; sketches V2 approved; I5 borders; 7 crates), `UI_STYLE.md` (palette, §4 lore, §5 menus, §6 HUD, §7 sounds, §9 brand glyph), `style.yml`, `plans/ENCHANTS.md` §11, `plans/WARDROBE.md` §10, `DESIGN.md` version policy (Java 1.21.5 → current, Bedrock via Geyser), the modules as built (item ids and menu sizes in §5 and §6).
 
@@ -8,8 +9,8 @@
 
 ## 0. Summary
 
-- **The pack only paints.** Every menu keeps its slots, clicks and items. A player without the pack (declined, Bedrock, broken download) sees today's vanilla UI. Nothing in the game needs the pack to work.
-- **Optional at first** (RP-D1). The server offers the pack on join with a short prompt. Decide "required" before launch (§17).
+- **The pack only paints.** Every menu keeps its slots, clicks and items. A player without the Java pack (Bedrock, a failed download, staff emergency switch-off) sees today's vanilla UI. Nothing in the game needs the pack to work, even though it is forced.
+- **Forced** (RP-D1, decided 30 Oct). The Java pack is sent in the configuration phase, before the player enters the world, with a professional prompt; declining disconnects with a friendly how-to (§2.3). Bedrock is forced by Geyser already.
 - **Fallback-safe item looks:** custom items keep their vanilla material and get a **`custom_model_data` string** (`phoenix:tool/pickaxe/iron`). The pack overrides the vanilla item definition and picks our model for that string. Without the pack the client ignores the string and shows the vanilla item (RP-D3).
 - **Per-viewer rendering:** the plugin knows per player if the Java pack is loaded, if the Bedrock pack is loaded, or neither. Glyph icons, menu backgrounds and pack sounds are only sent to players who can show them. Everyone else gets the Bedrock-safe symbols (`$ ◆ ✦ ✧`) and vanilla sounds.
 - **Bedrock** gets a converted pack through Geyser: item icons (custom item mappings), font icons (glyph sheets), custom sounds. Bedrock does **not** get menu backgrounds, negative-space layouts, 3D models or custom armor looks.
@@ -25,7 +26,7 @@
 | Vanilla stays the fallback | Same slots, same clicks, same items, same messages. The pack adds art on top. A menu must be fully usable with the pack off. |
 | No missing textures, ever | Never send something a client can't draw. No `item_model` pointing at a pack model, no private-use glyphs, no custom sound ids to players without the pack (§3.3). |
 | Java and Bedrock look related | Same icons and colors where Bedrock can show them. Where it can't, the vanilla UI_STYLE look is the Bedrock look. |
-| Small and fast | Java zip ≤ 8 MB, Bedrock pack ≤ 8 MB (§14). The prompt must not feel like a big download. |
+| Small and fast | Size is not critical (owner, 30 Oct) but optimised: Java target ≤ 8 MB, Bedrock target ≤ 5 MB (§14). Every player downloads it before joining, so it must stay quick. |
 | Data-driven | Model ids, glyphs and sounds come from configs (`ids.yml` → `pack.yml` in the plugin). No ids hard-coded in Java. |
 | Brand | Phoenix fire palette for gameplay art (UI_STYLE §1). SkybornMC frost blue only for network art (pack icon, logo glyph on the tab header). |
 
@@ -35,9 +36,11 @@
 
 ### 2.1 How the pack is sent (RP-D2)
 - **Default: the plugin sends it** with Paper's resource pack API on join (`Player#sendResourcePacks`), from `pack.yml` (url, sha1, id, required). Text of the prompt in `messages/core.yml → pack.*`.
+- **Before joining (forced pack, RP-D1):** the pack is sent during the **configuration phase**, so the player accepts and downloads it on the loading screen before entering the world (no join, no chunks, no chat until it is loaded). Paper exposes this phase through its connection-configuration API (`AsyncPlayerConnectionConfigureEvent` and the configuration-phase audience; exact calls checked on Paper 26.3 in RP1, never guessed). `required: true` in `pack.yml`.
+- **Prompt text** (`messages/core.yml → pack.prompt`, professional, short, no shouting), e.g. "Phoenix Skyblock uses a custom resource pack for its menus, items and sounds. It is about N MB and only downloads once per update." The decline message (`pack.declined`) explains how to allow it: Multiplayer → select the server → Edit → Server Resource Packs: Enabled.
 - `server.properties` stays empty (`resource-pack=`, `resource-pack-sha1=`, `resource-pack-id=`, `require-resource-pack=false`, `resource-pack-prompt=`). Using both would send the pack twice.
 - Why the plugin: a version bump reaches online players after `/skyblock reload` (existing command) without a restart; the prompt uses our message style; the plugin sees the status events it needs (§3.3).
-- **Fallback (if the plugin route fails on a client version):** fill the five `server.properties` lines with the same values. Same zip, same hash.
+- **Fallback (if the plugin route fails on a client version):** fill the five `server.properties` lines with the same values (`require-resource-pack=true`, the prompt as JSON text). Vanilla also sends the pack in the configuration phase. Same zip, same hash.
 
 ### 2.2 Hosting (RP-D5)
 - **Default:** a static file on the VPS behind nginx: `https://pack.skybornmc.net/phoenix-java-<version>.zip`. Long cache headers, the version is in the file name.
@@ -45,14 +48,18 @@
 - Bedrock: the `.mcpack` goes into `plugins/Geyser-Spigot/packs/`. Geyser sends it itself (no URL needed).
 - Later, if downloads get slow at 200–300 players: move the same files to a CDN (Cloudflare in front of the VPS). No code change, only the URL.
 
-### 2.3 Required vs optional (RP-D1)
-| Phase | Java | Bedrock |
+### 2.3 Forced pack (RP-D1, decided 2026-10-30)
+| Case | Java | Bedrock |
 |---|---|---|
-| RP1–RP9 (testing, pre-launch) | Optional. Prompt on join. Declining is fine. | Geyser `force-resource-packs: true` is already on (integrated pack). Our pack rides along, so it is effectively required on Bedrock. Keep it small. |
-| Launch | Owner decides (§17). Default: **optional with a strong prompt**, re-offered once per day to decliners. | Unchanged. |
+| Accepts | Downloads on the loading screen, then joins with the pack (`JAVA_LOADED`). | Geyser `force-resource-packs: true` (integrated pack) already forces ours too. |
+| Declines | Disconnected before joining with `pack.declined` (how to enable server packs). No retry loop: the next connect asks again. | n/a |
+| Download fails (host down, bad hash, `FAILED_DOWNLOAD`, `INVALID_URL`, `DISCARDED`) | **Default: let them in on the vanilla fallback** (state `FAILED`), alert online staff once per minute at most, retry on the next join. A broken host must never lock everyone out (open question). `pack.kick-on-fail: false`. | n/a |
+| Emergency | `pack.required: false` + `/skyblock reload` turns the pack back into an optional offer without a release. | unchanged |
 
-- A player can turn it off and on in `/settings` (toggle "Resource pack", no new command, RP-D6). Off = the plugin removes the pack (`Player#removeResourcePacks`) and switches that player to vanilla rendering.
-- If the pack ever becomes required, the vanilla fallback still stays (Bedrock, failed downloads, ViaVersion edge cases).
+- Testing (RP1–RP9): the test server uses the same forced setup as soon as the first real pack exists; until then `pack.required: false`.
+- **`/settings` toggle (RP-D6) is hidden while the pack is required** (a forced pack can't be switched off by players). It only shows when staff set `pack.required: false`.
+- The vanilla fallback stays forever: Bedrock (no backgrounds, worn looks, tooltips, HUD bars), failed downloads, ViaVersion edge cases.
+- Because Java players now always have the pack (or a rare failed download), features that show a missing texture without it become usable on Java: **custom worn armor looks** (§5.5, RP4b) and **rarity tooltip styles** (§11, RP-D15). Failed-download players see those parts wrong until their next join; accepted.
 
 ### 2.4 Version bumps
 - `ids.yml → version: 12` (an integer). The build writes `phoenix-java-12.zip` and its SHA-1.
@@ -88,7 +95,7 @@
 - `ItemDefinition.itemModel` stays for vanilla models. RP1 adds `ItemDefinition.modelData` (a string) that `ItemRegistry` writes into the `custom_model_data` component's string list. Renderers can set it per stack (a tool's tier, a book's rarity, a note's value band).
 - Glyphs (U+E200+) and custom fonts only go to players with `icons`/`backgrounds`.
 - Custom sound events only go to players with `sounds`; others get the vanilla sound of the same key.
-- Worn armor looks (`equippable` asset ids) need the pack, so they are **not** used while the pack is optional (§5.5).
+- Worn armor looks (`equippable` asset ids) and tooltip styles need the pack. With the forced pack (RP-D1) they are allowed on Java (§5.5, §11); Bedrock and failed-download players are the accepted exceptions.
 
 ---
 
@@ -169,8 +176,11 @@ Counts are today's catalogs. New entries in a catalog need a texture or they fal
 - Animated textures (`.mcmeta`) only for legendary/mythic items, ≤ 8 frames.
 - Tool level (Lv 1–50) does **not** change the model (default). Prestige adds a small ember spark overlay (`phoenix:tool/<kind>/<tier>_p`), RP-D12.
 
-### 5.5 Worn armor (later, only if the pack becomes required)
-- Custom worn looks need `equippable` with an `asset_id` from the pack. Without the pack the armor would render invisible or wrong. So: **not while the pack is optional**. WARDROBE keeps vanilla armor + dye + trims. Listed as RP-later in §16.
+### 5.5 Worn armor (RP4b, allowed since the pack is forced)
+- Custom worn looks use `equippable` with an `asset_id` from the pack (`assets/phoenix/equipment/<set>.json` → `textures/entity/equipment/humanoid/<set>.png` + `humanoid_leggings/<set>.png`, 64×32). One look per set (16 sets, art list G65–G80 in the art brief).
+- Vanilla armor trims still render on top, so WARDROBE's trim upgrades at set-level milestones keep working.
+- Bedrock: Geyser ignores the Java asset id and shows the base vanilla material (+ trim, + dye); check in RP5. Failed-download Java players see the piece wrong until they rejoin (accepted, §2.3).
+- Code: `WardrobeRenderer` sets `equippable.asset_id` from `sets.yml → look.asset` (new optional key, empty = vanilla look as today). Ships after RP4.
 
 ---
 
@@ -207,6 +217,7 @@ Counts are today's catalogs. New entries in a catalog need a texture or they fal
 | `/profiles` | ProfilesMenu | 3 | U+E31F | Three profile cards. |
 
 - Bedrock players and pack-less Java players see the vanilla frame of the same menu. The slot map never changes.
+- **Full per-menu list:** the art brief (`RESOURCE_PACK_ART_BRIEF.md` §B) lists 52 backgrounds with sizes and slot notes. It adds codepoints for menus this table doesn't have (U+E303–E30F confirm/generic 4-row/staff/hub/help/settings/island/bank/AH, U+E327–E32F, U+E350–E353) and splits the shop amount screen off E311 (U+E353). `ids.yml` takes those values.
 - A menu without its own glyph uses the generic one for its row count.
 
 ---
@@ -298,7 +309,7 @@ The crates module is not built yet. The roll logic and rewards live in the plugi
 - **Island border (I5):** border colors and particle styles are built in the plugin now (vanilla). The pack adds a custom `textures/misc/forcefield.png` (phoenix ember pattern). This override is **global** (every world border looks like it). Default: yes (RP-D14).
 - **Particles:** the pack can recolor vanilla particle textures (`flame`, `dust`). Global too, so only subtle changes. Default: none in RP9 unless the owner asks.
 - **Menu frames:** part of the background art (§6). Panes stay as the fallback.
-- **Item frames/tooltips:** custom tooltip backgrounds per rarity (`tooltip_style` component) need the pack and show a missing texture without it. Default: not used while the pack is optional (RP-D15).
+- **Item frames/tooltips:** custom tooltip backgrounds per rarity (`tooltip_style` component) need the pack and show a missing texture without it. With the forced pack they are allowed on Java (RP-D15 changed 30 Oct), as a P2 item; the plugin only sets `tooltip_style` for viewers with the pack loaded where it can (items are shared, so failed-download players may see a plain fallback).
 
 ---
 
@@ -348,16 +359,17 @@ build/pack/                     ← output (gitignored)
 ## 14. Performance budget
 | Item | Budget |
 |---|---|
-| Java zip | target ≤ 5 MB, hard limit 8 MB |
-| Bedrock .mcpack | target ≤ 5 MB, hard limit 8 MB (downloaded through Geyser, slower) |
-| Item textures | 16×16; 32×32 only for legendary/mythic tools, skins and crate keys |
+| Java zip | target ≤ 8 MB, hard limit 20 MB (owner: size not critical, still optimise) |
+| Bedrock .mcpack | target ≤ 5 MB, hard limit 10 MB (downloaded through Geyser, slower) |
+| Item textures | 16×16; 32×32 only for legendary/mythic tools, skins, tier IV set icons, crate keys and crate faces |
 | Animated textures | ≤ 8 frames, legendary/mythic only |
-| Menu backgrounds | 176 × (114 + rows × 18), one PNG per menu, ≤ 25 menus |
+| Menu backgrounds | 176 × (114 + rows × 18), one PNG per menu, ≤ 60 menus (52 listed in the art brief) |
 | Font icons | 9 px tall; badges ≤ 32 px wide; HUD bars ≤ 100 px wide |
 | Models | 2D generated by default; 3D only for crate displays, ≤ 40 elements |
 | Sounds | ≤ 100 KB each, ≤ 2 MB total, ≤ 30 events at RP6 |
 | Glyph sheet (Bedrock) | one 256×256 sheet (`glyph_E2.png`) |
-| Download time | < 3 s at 25 Mbit/s for the Java zip |
+| Download time | < 3 s at 25 Mbit/s for the Java zip (every player downloads it before joining) |
+| Worn armor layers | 64×32, 2 per set |
 
 ---
 
@@ -371,30 +383,31 @@ build/pack/                     ← output (gitignored)
 ## 16. Milestones
 | # | Item | Depends on | Lane |
 |---|---|---|---|
-| RP1 | Plumbing: `PackService` (status, capabilities, Floodgate), sending + prompt from `pack.yml`, `/settings` toggle, `ItemDefinition.modelData` → `custom_model_data`, `<icon:…>` tags with fallbacks, per-recipient chat render, PUA chat filter, `pack-sound` in `sounds.yml`; `resourcepack/` skeleton, `ids.yml`, `build_pack.py`, empty pack with pack.png; hosting on the VPS | STYLE2 | common (menu, item, text), modules/menus (settings), tools, resourcepack |
+| RP1 | Plumbing: `PackService` (status, capabilities, Floodgate), **forced sending in the configuration phase** + prompt/decline messages from `pack.yml` (`required`, `kick-on-fail`), `/settings` toggle (hidden while required), `ItemDefinition.modelData` → `custom_model_data`, `<icon:…>` tags with fallbacks, per-recipient chat render, PUA chat filter, `pack-sound` in `sounds.yml`; `resourcepack/` skeleton, `ids.yml`, `build_pack.py`, empty pack with pack.png; hosting on the VPS | STYLE2 | common (menu, item, text), modules/menus (settings), tools, resourcepack |
 | RP2 | Font icons: currencies, logo, rank badges, rarity tags, pillars, roles; Java fonts + Bedrock glyph sheet; scoreboard/tab/chat/lore use them | RP1, ranks (badges for donor ranks can come later) | resourcepack, modules/hud, chat, cosmetics, style.yml |
 | RP3 | Menu backgrounds: space font, generic 3/6-row + number picker, then shop, sell chest, satchel, forge, tool, enchanter, wardrobe, loadout, `/p`, `/profiles`; invisible panes; button icons | RP1, SELL2 (final shop/sell slots) | common/menu, resourcepack |
 | RP4 | Item models: tools per tier + skins, books, scroll, blueprints, notes, tag, spawners, set icons, tokens, tome, rare Depths finds, currency icons | RP1, art (§17) | modules/tools, enchants, economy, stacking, wardrobe, depths renderers, resourcepack |
+| RP4b | Worn set looks: `equippable.asset_id` per set (`sets.yml → look.asset`), equipment JSON in the build, Java + Bedrock check | RP4, W1, art G65–G80 | modules/wardrobe, resourcepack |
 | RP5 | Geyser: Bedrock conversion in the build, custom item mappings v2, glyph sheet, test pass on a Bedrock client | RP2, RP4 | tools/build_pack.py, server/plugins/Geyser-Spigot |
 | RP6 | Sounds: 22 events, `pack-sound` keys, Bedrock sound definitions | RP1 (Bedrock part after RP5) | resourcepack, sounds.yml |
 | RP7 | HUD: action-bar bars (skill XP, satchel fill), boss bar textures | RP2 | modules/hud, skills, depths, resourcepack |
 | RP8 | Crates: key models, crate displays + lid frames, roll background, win sounds | crates module, RP3, RP4, RP6 | crates module, resourcepack |
 | RP9 | World: forcefield border texture, optional particle tweaks | RP1 | resourcepack |
-| RP10 | Launch: required-or-optional decision, CDN, size audit, full Java + Bedrock test pass, docs in `/help` | RP1–RP9 | docs, server config |
-| RP-later | Worn custom armor (`equippable` assets), custom tooltip styles, Depths drop variants: only if the pack becomes required | RP10 decision | wardrobe, resourcepack |
+| RP10 | Launch: forced pack live (decided), CDN, size audit, full Java + Bedrock test pass, docs in `/help` | RP1–RP9 | docs, server config |
+| RP-later | Custom tooltip styles per rarity, Depths drop variants (allowed now that the pack is forced; P2 art) | RP4 | items, resourcepack |
 
 ---
 
 ## 17. Open questions (defaults apply until answered; also in `OPEN_QUESTIONS.md`)
 | Id | Question | Default |
 |---|---|---|
-| RP-D1 | Java pack optional or required at launch? | Optional with a prompt; decliners re-offered once per day. Bedrock is forced by Geyser already. |
+| RP-D1 | Java pack optional or required at launch? | **Decided 2026-10-30: forced.** Accept before joining (configuration phase), professional prompt; decline = friendly disconnect; failed download = vanilla fallback (open question). Bedrock is forced by Geyser already. |
 | RP-D2 | Send the pack from the plugin (Paper API) or from `server.properties`? | Plugin; `server.properties` stays empty (fallback only). |
 | RP-D3 | Item looks through `custom_model_data` strings on vanilla items (fallback-safe) instead of `item_model` with pack models? | Yes, `custom_model_data` strings. |
 | RP-D4 | Pack lives in a `resourcepack/` folder in this repo, or its own GitHub repo? | Folder in this repo (one review, one release). |
 | RP-D5 | Hosting: `pack.skybornmc.net` on the VPS (nginx), later Cloudflare in front? | Yes. Needs a DNS record from the owner. |
-| RP-D6 | Players can switch the pack off/on in `/settings` (no new command)? | Yes. |
-| RP-D7 | Who makes the art (textures, menu backgrounds, badges, sounds)? | The owner or a hired artist. Until then: simple original placeholder art (no copied Mojang or third-party textures). |
+| RP-D6 | Players can switch the pack off/on in `/settings` (no new command)? | Changed by RP-D1: the toggle is hidden while the pack is required; it only shows if staff set `pack.required: false`. |
+| RP-D7 | Who makes the art (textures, menu backgrounds, badges, sounds)? | **Decided 2026-10-30: the owner.** Art list: `RESOURCE_PACK_ART_BRIEF.md`. Until a file exists the vanilla look shows (no copied Mojang or third-party textures). |
 | RP-D8 | Menu background style: dark charcoal panels with ember corners (matches today's frame)? | Yes. |
 | RP-D9 | Bedrock conversion with our own small converter (icons, glyphs, sounds only)? | Yes. |
 | RP-D10 | Depths drops keep the vanilla look (only voidstone, raider scrap and wither ash get own icons)? | Yes. |
@@ -402,6 +415,8 @@ build/pack/                     ← output (gitignored)
 | RP-D12 | Tool model changes with tier only; prestige adds a spark overlay; level never changes the model? | Yes. |
 | RP-D13 | Status marks (✔ ✘ ★ ⌛) stay Unicode, not glyphs? | Yes (they already work on Bedrock). |
 | RP-D14 | Custom world border texture (global, every border)? | Yes, ember pattern. |
-| RP-D15 | Custom tooltip backgrounds per rarity (needs a required pack)? | No while the pack is optional. |
+| RP-D15 | Custom tooltip backgrounds per rarity (needs a required pack)? | Changed by RP-D1: allowed on Java, P2 art (S02–S08 in the art brief). |
 | RP-D16 | Paint the player-inventory half of menus too? | No, top half only. |
 | RP-D17 | Rank badges as glyphs in chat and tab (text prefix stays for non-pack viewers)? | Yes. |
+| RP-D18 | Download failure with the forced pack: let the player in on the vanilla fallback (and retry next join) instead of kicking? | Yes (a broken host must never lock everyone out). |
+| RP-D19 | Worn set looks for Java (RP4b) as part of the first pack release (P1)? | Yes; Bedrock keeps vanilla armor + trims + dye. |
