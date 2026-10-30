@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.islands;
 
+import net.skybornmc.skyblock.common.util.Stagger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -66,6 +67,7 @@ final class BorderProtection implements Listener {
     private final Territory territory;
     private final IslandProtection players;
     private final Set<Island> sweepScratch = new HashSet<>();
+    private long sweepTick;
     private final Location scratch = new Location(null, 0, 0, 0);
 
     BorderProtection(IslandsModule module, IslandManager islands, IslandProtection players) {
@@ -365,7 +367,7 @@ final class BorderProtection implements Listener {
     // ------------------------------------------------------------------ entities pushed out
 
     /**
-     * One sweep (main thread, every {@code protection.return-entities.interval-ticks}): for every island with a player
+     * One sweep slice (main thread, every tick; each island once per {@code protection.return-entities.interval-ticks}): for every island with a player
      * in its slot, the loaded chunks in the ring right outside its border are checked and entities found there are put
      * back inside. Chunks are never loaded by this.
      */
@@ -377,10 +379,14 @@ final class BorderProtection implements Listener {
         if (world == null) {
             return;
         }
+        // PERF2 (P-25): called every tick; each occupied island is swept once per interval in its own tick slot, so the
+        // chunk entity reads are spread over the interval instead of all landing on one tick.
+        long tick = ++sweepTick;
+        int period = Math.max(1, module.config().returnEntitiesIntervalTicks);
         sweepScratch.clear();
         for (Player player : world.getPlayers()) {
             Island island = islands.islandInSlotAt(Location.locToBlock(player.getX()), Location.locToBlock(player.getZ()));
-            if (island != null && sweepScratch.add(island)) {
+            if (island != null && Stagger.due(island.id(), tick, period) && sweepScratch.add(island)) {
                 sweep(world, island);
             }
         }

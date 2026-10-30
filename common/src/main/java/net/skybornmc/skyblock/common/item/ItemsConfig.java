@@ -9,7 +9,7 @@ public final class ItemsConfig extends ModuleConfig {
     @Setting(path = "dupe-check.enabled", desc = "Scan online inventories for duplicated unique items.")
     public boolean dupeCheckEnabled = true;
 
-    @Setting(path = "dupe-check.scan-seconds", desc = "Seconds between full scans of all online players.", min = 10, max = 3600)
+    @Setting(path = "dupe-check.scan-seconds", desc = "Each online player is checked again once per this many seconds (spread over the period, a slice every second).", min = 10, max = 3600)
     public int dupeScanSeconds = 60;
 
     @Setting(path = "dupe-check.event-scan-min-ticks",

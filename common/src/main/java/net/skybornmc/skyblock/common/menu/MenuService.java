@@ -115,6 +115,7 @@ public final class MenuService implements Listener {
         configs.load(config);
         messages.load(MODULE);
         debounce.interval(config.clickDebounceMs);
+        framePanes = null;
         heads.load("back", config.headBack);
         heads.load("previous", config.headPrevious);
         heads.load("next", config.headNext);
@@ -285,6 +286,9 @@ public final class MenuService implements Listener {
         if (item == null || item.getType().isAir()) {
             return item;
         }
+        if (item.getPersistentDataContainer().has(menuItemKey, PersistentDataType.BYTE)) {
+            return item; // already a menu item (cached button): no copy needed, the inventory copies it anyway
+        }
         ItemStack copy = item.clone();
         copy.editMeta(meta -> meta.getPersistentDataContainer().set(menuItemKey, PersistentDataType.BYTE, (byte) 1));
         return copy;
@@ -321,21 +325,37 @@ public final class MenuService implements Listener {
         return m;
     }
 
-    /** See {@link Menu#frame()}. */
+    /** The marked frame panes (border, accent, glow, inner), built once per reload instead of on every redraw. */
+    private volatile ItemStack[] framePanes;
+
+    private ItemStack[] framePanes() {
+        ItemStack[] panes = framePanes;
+        if (panes == null) {
+            panes = new ItemStack[]{
+                    mark(filler(material(config.frameBorder, Material.BLACK_STAINED_GLASS_PANE))),
+                    mark(filler(material(config.frameAccent, Material.RED_STAINED_GLASS_PANE))),
+                    mark(filler(material(config.frameAccentGlow, Material.ORANGE_STAINED_GLASS_PANE))),
+                    mark(innerFiller())};
+            framePanes = panes;
+        }
+        return panes;
+    }
+
+    /**
+     * See {@link Menu#frame()}. PERF2 (P-22, "stacking-menu-refresh"): the panes are cached per reload and the fixed
+     * buttons per menu opening, so a live refresh no longer clones, tags and re-parses ~50 items every time.
+     */
     void applyFrame(Menu menu) {
         int rows = menu.rows();
-        ItemStack border = filler(material(config.frameBorder, Material.BLACK_STAINED_GLASS_PANE));
-        ItemStack accent = filler(material(config.frameAccent, Material.RED_STAINED_GLASS_PANE));
-        ItemStack glow = filler(material(config.frameAccentGlow, Material.ORANGE_STAINED_GLASS_PANE));
-        ItemStack inner = innerFiller();
+        ItemStack[] panes = framePanes();
         for (int slot = 0; slot < rows * 9; slot++) {
             switch (frameRole(slot, rows)) {
-                case ACCENT -> menu.set(slot, accent);
-                case GLOW -> menu.set(slot, glow);
-                case BORDER -> menu.set(slot, border);
+                case ACCENT -> menu.setMarked(slot, panes[1], null);
+                case GLOW -> menu.setMarked(slot, panes[2], null);
+                case BORDER -> menu.setMarked(slot, panes[0], null);
                 case INNER -> {
                     if (rows <= 3) {
-                        menu.set(slot, inner);
+                        menu.setMarked(slot, panes[3], null);
                     }
                 }
             }
@@ -344,17 +364,29 @@ public final class MenuService implements Listener {
             return;
         }
         Player viewer = menu.viewer();
+        ItemStack[] fixed = menu.frameButtons();
         if (menu.parent() != null) {
-            menu.set(Menu.SLOT_BACK, navItem("back", Material.ARROW, viewer, "frame.back"), click -> click.menu().back());
+            if (fixed[0] == null) {
+                fixed[0] = mark(navItem("back", Material.ARROW, viewer, "frame.back"));
+            }
+            menu.setMarked(Menu.SLOT_BACK, fixed[0], click -> click.menu().back());
         }
         if (menu.infoKey() != null) {
-            List<Component> lore = new ArrayList<>(lines(viewer, menu.messageModule(), menu.infoKey()));
-            lore.addAll(lines(viewer, "frame.info.footer"));
-            menu.set(Menu.SLOT_INFO, item(Material.BOOK, text(viewer, "frame.info.name"), lore),
-                    click -> runHelp(click.player(), menu.helpTopic()));
+            if (fixed[1] == null) {
+                List<Component> lore = new ArrayList<>(lines(viewer, menu.messageModule(), menu.infoKey()));
+                lore.addAll(lines(viewer, "frame.info.footer"));
+                fixed[1] = mark(item(Material.BOOK, text(viewer, "frame.info.name"), lore));
+            }
+            menu.setMarked(Menu.SLOT_INFO, fixed[1], click -> runHelp(click.player(), menu.helpTopic()));
         }
-        menu.set(Menu.SLOT_CLOSE, item(Material.BARRIER, viewer, "frame.close"), click -> click.player().closeInventory());
-        menu.set(Menu.SLOT_HELP, item(Material.KNOWLEDGE_BOOK, viewer, "frame.help"), click -> runHelp(click.player(), null));
+        if (fixed[2] == null) {
+            fixed[2] = mark(item(Material.BARRIER, viewer, "frame.close"));
+        }
+        menu.setMarked(Menu.SLOT_CLOSE, fixed[2], click -> click.player().closeInventory());
+        if (fixed[3] == null) {
+            fixed[3] = mark(item(Material.KNOWLEDGE_BOOK, viewer, "frame.help"));
+        }
+        menu.setMarked(Menu.SLOT_HELP, fixed[3], click -> runHelp(click.player(), null));
     }
 
     /** What a slot of the standard frame shows (docs/UI_STYLE.md §5.1). */

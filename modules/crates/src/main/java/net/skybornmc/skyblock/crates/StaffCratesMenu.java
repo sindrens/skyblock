@@ -67,7 +67,9 @@ final class StaffCratesMenu extends Menu {
             view = v;
             failed = error != null;
             if (isOpen()) {
-                refresh();
+                // PERF2 ("crates:admin" 11 ms): only the crate slots are drawn when the data arrives, not the whole menu again.
+                set(SLOT_LOADING, (net.skybornmc.skyblock.common.menu.MenuButton) null);
+                content();
             }
         });
     }
@@ -85,6 +87,11 @@ final class StaffCratesMenu extends Menu {
                         refresh();
                     }
                 });
+        content();
+    }
+
+    /** The crate slots, or the loading / failed item. */
+    private void content() {
         if (failed) {
             set(SLOT_LOADING, service.item(Material.BARRIER, viewer, CratesModule.ID, "admin.menu.failed"));
             return;
