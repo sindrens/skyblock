@@ -97,6 +97,24 @@ public final class DepthsModule implements SkyblockModule {
         loadZones();
         publishFlagRegions();
         core.services().register(ID, ZoneService.class, zones);
+        // TUTORIAL §9.2: read-only zone lookups for other modules (the tutorial's "go to Mine Tier 1" step).
+        core.services().register(ID, net.skybornmc.skyblock.common.depths.DepthsZones.class, new net.skybornmc.skyblock.common.depths.DepthsZones() {
+            @Override
+            public java.util.Optional<String> zoneAt(org.bukkit.Location location) {
+                net.skybornmc.skyblock.depths.zones.Zone zone = location == null ? null : zones.zoneAt(location);
+                return zone == null ? java.util.Optional.empty() : java.util.Optional.of(zone.id());
+            }
+
+            @Override
+            public java.util.Optional<org.bukkit.Location> spawnOf(String zoneId) {
+                return zones.zone(zoneId).map(z -> zones.location(z.spawn()));
+            }
+
+            @Override
+            public boolean inDepths(org.bukkit.Location location) {
+                return location != null && location.getWorld() != null && location.getWorld().getName().equalsIgnoreCase(zones.world());
+            }
+        });
         // BUILDS: /skyblock builds apply merges the builders' layout into zones.yml, then the module reloads.
         core.services().register(ID, net.skybornmc.skyblock.common.builds.DepthsLayoutHook.class,
                 new net.skybornmc.skyblock.depths.zones.ZoneBuildHook(core.plugin().getDataFolder(), this::reload, core.plugin().getLogger()));

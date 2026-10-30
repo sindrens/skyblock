@@ -73,4 +73,20 @@ public interface ToolService {
      * Until one is registered the raw id and level are shown.
      */
     void perkNames(Function<ToolPerk, String> namer);
+
+    /**
+     * TU4 (TUTORIAL.md §6, TQ15): the Forge starter kit (tier 1 of every starter kind) for the starter chest or the
+     * Starter pack of a profile. With {@code markClaimed} the profile's starter kit claim is saved first (atomic, the 24 h
+     * re-claim timer starts); while that timer still runs the result is empty (no second kit on one profile). The tool
+     * rows are saved and an audit row ({@code starter_kit}, source {@code tutorial}) is written. Completes on the main
+     * thread; an empty list when the tools module can't make them.
+     *
+     * @param profileKey the profile the tools belong to (claim key)
+     * @param holder     the player who will own them (tool rows), usually the profile's player
+     * @param holderName their name (item signature, audit)
+     */
+    default java.util.concurrent.CompletableFuture<List<ItemStack>> starterKit(UUID profileKey, UUID holder, String holderName,
+                                                                               boolean markClaimed) {
+        return java.util.concurrent.CompletableFuture.completedFuture(List.of());
+    }
 }

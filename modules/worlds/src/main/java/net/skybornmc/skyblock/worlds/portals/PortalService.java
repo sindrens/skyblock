@@ -211,6 +211,9 @@ public final class PortalService implements Listener {
             refuse(player, refusalKey(refused.reason()), refused.target(), from, to);
             return;
         }
+        if (lockedByTutorial(player, destination, from, to)) {
+            return;
+        }
         int delay = config.portalCombatDelaySeconds;
         CombatTagService combat = core.services().optional(CombatTagService.class).orElse(CombatTagService.NONE);
         boolean inWarzone = player.getWorld().getName().equalsIgnoreCase(config.warzoneWorld); // owner principle 1
@@ -246,7 +249,28 @@ public final class PortalService implements Listener {
             refuse(player, refusalKey(refused.reason()), refused.target(), null, null);
             return;
         }
+        if (lockedByTutorial(player, destination, null, null)) {
+            return;
+        }
         use(player, portal, destination);
+    }
+
+    /**
+     * TUTORIAL §4: the Depths, warzone, outposts and events portals stay locked until the tutorial step that opens them
+     * (the tutorial tells the player which one); the player is pushed back out like a refusal. Open when the tutorial
+     * module is off.
+     */
+    private boolean lockedByTutorial(Player player, PortalResolver.Destination destination, Location from, Location to) {
+        if (!(destination instanceof PortalResolver.Teleport t)) {
+            return false;
+        }
+        java.util.Optional<String> gate = net.skybornmc.skyblock.common.tutorial.Gates.forPortalTarget(t.target());
+        if (gate.isEmpty() || !net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, gate.get())) {
+            return false;
+        }
+        quietUntil.put(player.getUniqueId(), System.currentTimeMillis() + config.portalRefusalMillis);
+        pushBack(player, from, to);
+        return true;
     }
 
     private void use(Player player, Portal portal, PortalResolver.Destination destination) {
@@ -311,6 +335,11 @@ public final class PortalService implements Listener {
         quietUntil.put(player.getUniqueId(), System.currentTimeMillis() + config.portalRefusalMillis);
         core.messages().send(player, MODULE, key, Msg.p("target", target));
         core.sounds().play(player, "error");
+        pushBack(player, from, to);
+    }
+
+    /** Pushes the player back out of the portal (the way they came). */
+    private void pushBack(Player player, Location from, Location to) {
         if (from != null && to != null && config.portalPushBack > 0) {
             Vector back = from.toVector().subtract(to.toVector()).setY(0);
             if (back.lengthSquared() < 1e-6) {

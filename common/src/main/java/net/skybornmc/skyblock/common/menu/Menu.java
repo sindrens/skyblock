@@ -63,6 +63,35 @@ public abstract class Menu implements InventoryHolder {
         return "menus";
     }
 
+    /**
+     * Short id of this menu for {@link MenuOpenedEvent} (tutorial steps, later quests): the class name without the
+     * {@code Menu} suffix in kebab-case ({@code IslandMenu} → {@code island}, {@code HubMenu} → {@code hub}). Override to
+     * keep an id stable when a class is renamed.
+     */
+    public String menuId() {
+        return idOf(getClass().getSimpleName());
+    }
+
+    /** {@code IslandStatsMenu} → {@code island-stats}; {@code Menu} alone → {@code menu}. Pure, unit-tested. */
+    public static String idOf(String simpleName) {
+        String name = simpleName == null ? "" : simpleName;
+        if (name.endsWith("Menu") && name.length() > 4) {
+            name = name.substring(0, name.length() - 4);
+        }
+        if (name.isEmpty()) {
+            return "menu";
+        }
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (Character.isUpperCase(c) && i > 0) {
+                out.append('-');
+            }
+            out.append(Character.toLowerCase(c));
+        }
+        return out.toString();
+    }
+
     /** Ticks between {@link #tick()} calls while open; 0 = no live updates. */
     public int tickInterval() {
         return 0;

@@ -549,6 +549,10 @@ public final class BankFeature implements Listener, BankService {
                 if (bank.isIsland()) {
                     notifyIsland(player, bank, "bank.island.notify-deposit", o.amount());
                 }
+                if (player.isOnline()) { // TUTORIAL §9.2: the tutorial's bank step listens for this
+                    org.bukkit.Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.economy.BankDepositEvent(player,
+                            o.amount(), bank.isIsland()));
+                }
             } else {
                 problem(player, o.status(), bank, amount);
             }

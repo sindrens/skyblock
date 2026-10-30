@@ -145,12 +145,16 @@ public final class SellFeature implements Listener {
                     stats.source(net.skybornmc.skyblock.common.island.IslandStat.ITEMS_SOLD);
                     stats.source(net.skybornmc.skyblock.common.island.IslandStat.MONEY_EARNED);
                 }));
-        service.onSold((playerId, profileKey, items, money) -> core.scheduler().main("sell-set-xp", () -> {
+        service.onSold((playerId, profileKey, items, money, source) -> core.scheduler().main("sell-set-xp", () -> {
             core.services().optional(net.skybornmc.skyblock.common.island.IslandStatsService.class).ifPresent(stats -> {
                 stats.recordFor(profileKey, net.skybornmc.skyblock.common.island.IslandStat.ITEMS_SOLD, items);
                 stats.recordFor(profileKey, net.skybornmc.skyblock.common.island.IslandStat.MONEY_EARNED, money);
             });
             org.bukkit.entity.Player p = org.bukkit.Bukkit.getPlayer(playerId);
+            if (p != null) {
+                // TUTORIAL §9.2: the tutorial's sell step (and later quests) listen for this.
+                org.bukkit.Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.sell.ItemsSoldEvent(p, source, items, money));
+            }
             if (p == null || !net.skybornmc.skyblock.common.profile.ProfileService.of(core.services()).profileKey(p).equals(profileKey)) {
                 return;
             }

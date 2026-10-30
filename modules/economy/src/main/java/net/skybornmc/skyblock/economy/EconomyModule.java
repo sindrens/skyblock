@@ -604,6 +604,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), payer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.PAY)) {
             return; // P7: frozen balance or blocked trading
         }
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), payer, net.skybornmc.skyblock.common.tutorial.Gates.PAY)) {
+            return; // TUTORIAL §4: /pay opens after the bank step
+        }
         Optional<PayRules.Problem> problem = PayRules.check(config, payer.getName(), targetName, amount, currency, frozen(payer));
         if (problem.isPresent()) {
             throw fail("pay." + problem.get().key, Msg.c("currency", currencyName(payer, currency)),

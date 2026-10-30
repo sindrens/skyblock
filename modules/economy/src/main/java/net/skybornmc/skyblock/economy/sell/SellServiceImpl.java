@@ -62,7 +62,7 @@ public final class SellServiceImpl implements SellService {
 
     /** Hook for features that react to sales (wardrobe set XP); never affects the sale itself. */
     interface SoldListener {
-        void sold(UUID player, UUID profileKey, long items, long money);
+        void sold(UUID player, UUID profileKey, long items, long money, String source);
     }
 
     void onSold(SoldListener listener) {
@@ -259,7 +259,7 @@ public final class SellServiceImpl implements SellService {
                 SoldListener listener = soldListener;
                 if (listener != null) {
                     try {
-                        listener.sold(request.player(), request.profileKey(), q.items(), q.total());
+                        listener.sold(request.player(), request.profileKey(), q.items(), q.total(), request.source());
                     } catch (RuntimeException e) {
                         log.log(Level.WARNING, "Sell: sale listener failed for " + request.playerName(), e);
                     }

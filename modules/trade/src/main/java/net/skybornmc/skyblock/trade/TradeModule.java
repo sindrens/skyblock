@@ -307,8 +307,9 @@ public final class TradeModule implements SkyblockModule, Listener {
     void request(Player sender, Player target) {
         // P7 (spec 13.1): blocked trading / frozen balance, on either side
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), sender, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)
-                || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), sender, target, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)) {
-            return;
+                || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), sender, target, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)
+                || net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), sender, net.skybornmc.skyblock.common.tutorial.Gates.TRADE)) {
+            return; // TUTORIAL §4: /trade opens when the tutorial is finished
         }
         long now = now();
         boolean self = sender.equals(target);
@@ -343,8 +344,9 @@ public final class TradeModule implements SkyblockModule, Listener {
 
     void accept(Player p, String name) {
         Player from = pickRequester(p, name, "accept");
-        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), p, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE) || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), p, from, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)) {
-            return; // P7: blocked trading / frozen balance, on either side
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), p, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE) || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), p, from, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)
+                || net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), p, net.skybornmc.skyblock.common.tutorial.Gates.TRADE)) {
+            return; // P7: blocked trading / frozen balance, on either side; TUTORIAL §4: locked until the finish
         }
         long now = now();
         Optional<TradeRules.Problem> problem = TradeRules.request(false, state(p), state(from), true, 0);

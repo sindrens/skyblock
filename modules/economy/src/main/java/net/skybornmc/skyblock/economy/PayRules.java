@@ -31,8 +31,8 @@ final class PayRules {
     /**
      * The first problem with this payment, if any. {@code targetName} is compared ignoring case.
      */
-    // TODO(tutorial): owner answers 131/203 removed the 30-minute new-account limit. The coming join tutorial unlocks
-    // permissions step by step instead; gate this through its command permission then (no playtime check here).
+    // Owner answers 131/203: no playtime limit here; the join tutorial locks /pay until its bank step (TutorialGate,
+    // checked by EconomyModule#pay before these rules).
     static Optional<Problem> check(EconomyConfig config, String payerName, String targetName, long amount, Currency currency,
                                    boolean frozen) {
         if (frozen) {

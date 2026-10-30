@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":modules:afk"))
     implementation(project(":modules:box"))
     implementation(project(":modules:npcs"))
+    implementation(project(":modules:tutorial"))
 }
 
 tasks {

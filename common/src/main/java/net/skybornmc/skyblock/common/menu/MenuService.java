@@ -155,6 +155,14 @@ public final class MenuService implements Listener {
         open.put(player.getUniqueId(), menu);
         player.openInventory(inventory);
         sounds.playUi(player, previous == null ? "menu-open" : "page");
+        if (previous != menu) {
+            try {
+                Bukkit.getPluginManager().callEvent(new MenuOpenedEvent(player, menu.menuId(),
+                        menu.parent() == null ? null : menu.parent().menuId()));
+            } catch (RuntimeException e) {
+                plugin.getLogger().log(Level.WARNING, "A MenuOpenedEvent listener failed for " + menu.menuId(), e);
+            }
+        }
     }
 
     /** The menu {@code player} has open, or {@code null}. */

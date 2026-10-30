@@ -9,7 +9,6 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 |---|---|---|---|
 | `/menu` | Main hub GUI | `skyblock.menu` | ⬜ |
 | `/help [topic]` | Help GUI | `skyblock.help` | ⬜ |
-| `/tutorial` | Start/resume tutorial | `skyblock.tutorial` | ⬜ |
 | `/spawn` | Teleport to spawn | `skyblock.spawn` | ⬜ |
 | `/tpa`, `/tpahere`, `/tpaccept`, `/tpdeny`, `/back` | Teleports | `skyblock.tpa`, `skyblock.back` | ⬜ |
 | `/warp`, `/warps` | Server + island warps | `skyblock.warp` | ⬜ |

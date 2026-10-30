@@ -48,6 +48,60 @@ final class ToolTracker implements ToolService {
 
     // ------------------------------------------------------------------ ToolService
 
+    /** TU4 (TUTORIAL §6, TQ15): the starter kit for the starter chest / Starter pack; see {@link ToolService#starterKit}. */
+    @Override
+    public java.util.concurrent.CompletableFuture<List<ItemStack>> starterKit(UUID profileKey, UUID holder, String holderName,
+                                                                              boolean markClaimed) {
+        List<net.skybornmc.skyblock.common.tools.ToolKind> kinds = module.config().starterKinds().stream()
+                .filter(k -> module.catalog().tier(k, 1).isPresent()).toList();
+        if (kinds.isEmpty() || profileKey == null || holder == null) {
+            return java.util.concurrent.CompletableFuture.completedFuture(List.of());
+        }
+        long now = System.currentTimeMillis();
+        long cooldown = java.time.Duration.ofHours(module.config().starterCooldownHours).toMillis();
+        java.util.concurrent.CompletableFuture<Boolean> claim = markClaimed
+                ? module.core.database().transaction(c -> module.repository().claim(c, profileKey, now, cooldown) == 0)
+                : java.util.concurrent.CompletableFuture.completedFuture(true);
+        java.util.concurrent.CompletableFuture<List<ItemStack>> out = new java.util.concurrent.CompletableFuture<>();
+        claim.whenComplete((claimed, error) -> module.core.scheduler().main("tools-starter-kit", () -> {
+            try {
+                if (error != null) {
+                    module.core.plugin().getLogger().log(Level.WARNING, "Tools: starter kit claim for the tutorial failed", Database.cause(error));
+                    out.complete(List.of());
+                    return;
+                }
+                if (!Boolean.TRUE.equals(claimed)) {
+                    out.complete(List.of()); // this profile claimed a kit within the cooldown: no second kit
+                    return;
+                }
+                String name = holderName == null ? holder.toString().substring(0, 8) : holderName;
+                int season = module.config().seasonId;
+                List<ItemStack> stacks = new ArrayList<>();
+                List<String> given = new ArrayList<>();
+                for (net.skybornmc.skyblock.common.tools.ToolKind kind : kinds) {
+                    ToolData tool = ToolData.fresh(UUID.randomUUID(), kind, 1, true, null);
+                    stacks.add(module.items().create(tool, "starter:" + name, name, null));
+                    given.add(kind.id());
+                    module.core.database().run(c -> module.repository().insert(c, tool, holder, name, null, "starter", season,
+                                    System.currentTimeMillis()))
+                            .exceptionally(e -> {
+                                module.core.plugin().getLogger().log(Level.WARNING, "Tools: starter tool row not saved (saved on first use)",
+                                        Database.cause(e));
+                                return null;
+                            });
+                }
+                module.core.audit().logPlayer(AuditCategory.ITEM, "starter_kit", Actor.system("tutorial"), holder, name,
+                        (long) given.size(), null, Map.of("pieces", given, "source", "tutorial", "profile", profileKey.toString(),
+                                "claimed", markClaimed));
+                out.complete(stacks);
+            } catch (RuntimeException e) {
+                module.core.plugin().getLogger().log(Level.WARNING, "Tools: making the starter kit failed", e);
+                out.complete(List.of());
+            }
+        }));
+        return out;
+    }
+
     @Override
     public Optional<ToolInfo> read(ItemStack stack) {
         return ToolItems.read(stack).map(d -> d.info(module.config().slotLevels()));

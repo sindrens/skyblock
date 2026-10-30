@@ -251,6 +251,9 @@ final class MoneyNotes implements Listener {
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(module.core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.NOTE)) {
             return; // P7: frozen balance or blocked trading
         }
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(module.core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.WITHDRAW)) {
+            return; // TUTORIAL §4: /withdraw opens after the bank step
+        }
         UUID uuid = player.getUniqueId();
         Optional<NoteRules.Problem> problem = NoteRules.withdraw(module.config, amount, currency, module.frozen(player));
         if (problem.isPresent()) {

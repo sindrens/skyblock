@@ -41,8 +41,8 @@ final class NoteRules {
     }
 
     /** The first problem with a {@code /withdraw}, if any (no new-account limit since owner answer 131). */
-    // TODO(tutorial): owner answers 131/203 removed the 30-minute new-account limit. The coming join tutorial unlocks
-    // permissions step by step instead; gate this through its command permission then (no playtime check here).
+    // Owner answers 131/203: no playtime limit here; the join tutorial locks /withdraw until its bank step
+    // (TutorialGate, checked by MoneyNotes#withdraw before these rules).
     static Optional<Problem> withdraw(EconomyConfig config, long amount, Currency currency, boolean frozen) {
         if (frozen) {
             return Optional.of(Problem.FROZEN);

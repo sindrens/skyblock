@@ -1,0 +1,346 @@
+# Join tutorial (docs/plans/TUTORIAL.md). MiniMessage + style tags (style.yml). Bedrock-safe symbols only.
+# Titles max ~20 characters, subtitles max ~36 (Bedrock). Reload: /skyblock reload tutorial
+
+start:
+  title:
+    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    subtitle: "<c:text>Your island is waiting"
+    fade-in: 20
+    stay: 60
+  chat: "<prefix><c:text>Welcome! Follow the flames to the <c:value>Island portal</c:value>. <c:muted>(/tutorial for help)"
+  staff-offer: "<prefix><c:text>Staff have no tutorial locks. Test the tutorial any time: <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click>"
+
+resume:
+  title:
+    title: "<c:brand>Welcome back"
+    subtitle: "<c:text>Taking you to your step"
+    stay: 40
+  sneak-hint: "<c:text>Sneak to stay at spawn"
+  stay: "<prefix><c:text>You stay here. Open <c:value>/tutorial</c:value> and press <c:value>Take me there</c:value> when you're ready."
+
+locked:
+  step: "<prefix><c:error><sym:cross></c:error> <c:text>Unlocks at tutorial step <c:value><number></c:value> (<step>). <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click>"
+  finish: "<prefix><c:error><sym:cross></c:error> <c:text>Unlocks when you finish the tutorial. <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click>"
+  loading: "<prefix><c:error><sym:cross></c:error> <c:text>Your tutorial progress is still loading. Try again in a moment."
+  action-bar-step: "<c:error><sym:cross></c:error> <c:text>Unlocks at tutorial step <c:value><number></c:value> (<step>)"
+  action-bar-finish: "<c:error><sym:cross></c:error> <c:text>Unlocks when you finish the tutorial"
+
+step-done:
+  chat: "<prefix><c:success><sym:check></c:success> <c:text><step> done. <c:muted>(<number>/<total>)"
+  early: "<c:success><sym:check></c:success> <c:text><step> done early"
+
+# One section per step. name: short name (menus, locks). objective: the scoreboard Next line and the boss bar.
+# target: name on the compass. hint: action bar. title: shown when the step starts. done: action bar when done.
+# lore: description in the steps menu.
+steps:
+  portal:
+    name: "Island portal"
+    objective: "Walk into the Island portal"
+    target: "Your Island"
+    hint: "<c:text>Follow the flames to the <c:value>Island portal"
+    title:
+      title: "<c:brand>Find your island"
+      subtitle: "<c:text>Walk into the Island portal"
+    lore: ["<c:text>Walk north through the Gatehouse", "<c:text>into the <c:value>Your Island</c:value> portal."]
+  arrive:
+    name: "Arrival"
+    objective: "Look around your island"
+    hint: "<c:text>This island is yours"
+    title:
+      title: "<c:brand>Welcome home"
+      subtitle: "<c:text>This island is yours"
+      stay: 80
+    lore: ["<c:text>Your own island in the sky."]
+  chest:
+    name: "Starter chest"
+    objective: "Open your starter chest"
+    target: "Starter Chest"
+    hint: "<c:text>Open your starter chest"
+    opened: "<c:text>Take everything. The book explains it all."
+    done: "<c:success><sym:check></c:success> <c:text>Starter items taken"
+    lore: ["<c:text>Tools, seeds, food and the", "<c:text>Phoenix Field Guide."]
+  crop:
+    name: "First crop"
+    objective: "Plant 3 wheat seeds"
+    target: "Farm spot"
+    hint: "<c:text>Plant wheat: <c:value><count></c:value><c:muted> / <needed>"
+    done: "<c:success><sym:check></c:success> <c:text>Team features unlocked: <c:value>/is invite</c:value>, <c:value>/is visit"
+    lore: ["<c:text>Till dirt with your hoe, then", "<c:text>plant the seeds on your island."]
+  menu:
+    name: "The menu"
+    objective: "Open /menu, click Island"
+    hint: "<c:text>Right-click the <c:value>Nether Star</c:value> in your hotbar"
+    title:
+      title: "<c:brand>The menu"
+      subtitle: "<c:text>Right-click the Nether Star"
+    done: "<c:success><sym:check></c:success> <c:text>The Depths unlocked. Open <c:value>/menu</c:value> <sym:arrow> The Depths"
+    lore: ["<c:text>Everything is in <c:value>/menu</c:value>.", "<c:text>Open it and click <c:value>Island</c:value>."]
+  depths:
+    name: "To the Depths"
+    objective: "Go to Mine Tier 1"
+    target: "Mine Tier 1"
+    hint: "<c:value>/menu</c:value> <c:ember><sym:arrow></c:ember> <c:text>The Depths <c:ember><sym:arrow></c:ember> <c:text>Mine Tier 1"
+    title:
+      title: "<c:brand>The Depths"
+      subtitle: "<c:text>Mine, sell, forge, repeat"
+    lore: ["<c:text>Open <c:value>/menu</c:value> <sym:arrow> The Depths and", "<c:text>teleport to <c:value>Mine Tier 1</c:value>."]
+  mine:
+    name: "Mine"
+    objective: "Mine blocks"
+    hint: "<c:text>Drops go to your satchel <c:muted>(<count>/<needed>)"
+    lore: ["<c:text>Break blocks in Mine Tier 1.", "<c:text>They grow back for you only."]
+  sell:
+    name: "Sell"
+    objective: "Sell your loot"
+    hint: "<c:text>Press <c:value>Sell all</c:value> in your satchel"
+    title:
+      title: "<c:brand>Sell your loot"
+      subtitle: "<c:text>/menu » The Depths » Satchel"
+    done: "<c:success><sym:check></c:success> <c:text>Auction house unlocked: <c:value>/ah"
+    lore: ["<c:text>Open the satchel and press", "<c:value>Sell all</c:value><c:text>."]
+  forge:
+    name: "Forge"
+    objective: "Visit the Forge"
+    target: "Forge"
+    hint: "<c:text>Better tools = more money"
+    lore: ["<c:text>Walk to the Forge NPC and open", "<c:text>the Forge. Tier 2 is your first goal."]
+  help:
+    name: "Help"
+    objective: "Talk to the Guide"
+    target: "Depths Guide"
+    hint: "<c:text>Right-click any NPC for help"
+    lore: ["<c:text>Right-click the Depths Guide.", "<c:text>Every NPC helps you."]
+  bank:
+    name: "Bank"
+    objective: "Deposit money in /bank"
+    hint: "<c:text>The bank pays interest every 8 hours"
+    title:
+      title: "<c:brand>Keep it safe"
+      subtitle: "<c:text>Open /bank, deposit some money"
+    done: "<c:success><sym:check></c:success> <c:value>/pay</c:value> <c:text>and <c:value>/withdraw</c:value> <c:text>unlocked"
+    lore: ["<c:text>Open <c:value>/bank</c:value> and put in", "<c:text>any amount."]
+
+# Boss bar compass. <target> name, <distance> metres, <objective>, <number>/<total>. Bedrock-safe arrows only.
+compass:
+  ahead: "<c:ember><sym:arrow></c:ember> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m</c:text> <c:ember>«"
+  left: "<c:ember>« «</c:ember> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m"
+  right: "<c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m</c:text> <c:ember><sym:arrow> <sym:arrow>"
+  behind: "<c:text>Turn around <c:muted><sym:dot></c:muted> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m"
+  here: "<c:ember><sym:arrow></c:ember> <c:value><target></c:value> <c:ember>«"
+
+bar:
+  count: "<c:value><objective></c:value> <c:muted><sym:dot></c:muted> <c:value><count></c:value><c:muted> / <needed>"
+  plain: "<c:text>Tutorial <c:value><number></c:value><c:muted>/<total></c:muted> <c:muted><sym:dot></c:muted> <c:value><objective>"
+  away-island: "<c:text>Go back <c:muted><sym:dot></c:muted> <c:value>/is home"
+  away-depths: "<c:text>Go back <c:muted><sym:dot></c:muted> <c:value>/menu</c:value> <c:ember><sym:arrow></c:ember> <c:text>The Depths"
+
+# Holograms over targets (only you see them).
+hologram:
+  portal: "<c:flame><bold>Your Island</bold></c:flame><newline><c:text><sym:arrow> Walk in «"
+  chest: "<c:flame><bold>Starter Chest</bold></c:flame><newline><c:text><sym:arrow> Open me «"
+  forge: "<c:flame><bold>Forge</bold></c:flame><newline><c:text>Better tools"
+  help: "<c:flame><bold>Depths Guide</bold></c:flame><newline><c:text>Right-click me"
+
+idle:
+  title:
+    title: "<c:brand>Still there?"
+    subtitle: "<c:text>Next: <step>"
+    stay: 60
+
+# The finish title (tutorial.yml reward.title), added to cosmetics when missing.
+reward:
+  title-display: "<c:flame>Firstflight"
+  title-source: "Finish the tutorial"
+
+finish:
+  title:
+    title: "<grad:phoenix><bold>TUTORIAL COMPLETE</bold></grad>"
+    subtitle: "<c:text>Every feature is unlocked"
+    stay: 80
+  chat-reward: "<prefix><c:success><sym:check></c:success> <c:text>Tutorial done. You got <money>, <cur:crystals><sym:crystals> <crystals></cur:crystals> <c:text>and the title <c:value><title></c:value>."
+  chat: "<prefix><c:success><sym:check></c:success> <c:text>Tutorial done. Every feature is open."
+  unlocked: "<c:ember><sym:bullet></c:ember> <c:text>Unlocked: <c:value>/trade</c:value>, <c:value>warzone</c:value>, <c:value>new profiles</c:value>."
+  next: "<c:ember><sym:bullet></c:ember> <c:text>Settings: <c:value>/settings</c:value> <c:muted><sym:dot></c:muted> <c:text>Shop: <c:value>/shop</c:value> <c:muted><sym:dot></c:muted> <c:text>Help: <c:value>/help</c:value> <c:muted><sym:dot></c:muted> <c:text>Again: <c:value>/tutorial"
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>Your tutorial reward couldn't be saved. Nothing is lost; it tries again soon."
+
+stuck:
+  title:
+    title: "<c:brand>Next step"
+    subtitle: "<step>"
+  shown: "<prefix><c:text>Your step: <c:value><step></c:value>. <hint> <c:muted>(Take me there is in /tutorial)"
+  can-skip: "<prefix><c:text>Still stuck? You can skip this step in <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click><c:text>."
+  not-skippable: "<prefix><c:error><sym:cross></c:error> <c:text>This step can't be skipped. Press <c:value>Take me there</c:value> in /tutorial."
+
+take-me-there:
+  destination: "your tutorial step"
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>This step has no place to go. Follow the hint on screen."
+
+chest:
+  fallback: "<prefix><c:text>Some starter items didn't fit the chest; they went to your inventory or <c:value>/box</c:value>."
+
+pack:
+  given: "<prefix><c:success><sym:check></c:success> <c:text>You got the <c:value>Starter pack</c:value>: tools, the Field Guide and bread."
+
+staff:
+  skipped-notice: "<prefix><c:success><sym:check></c:success> <c:text>Staff finished your tutorial. Every feature is open."
+  skip-done: "<prefix><c:success><sym:check></c:success> <c:text>Tutorial finished for <c:value><player></c:value> (no reward). <c:muted>(logged)"
+  reset-done: "<prefix><c:success><sym:check></c:success> <c:text>Tutorial reset for <c:value><player></c:value>. Locks are back. <c:muted>(logged)"
+  step-done: "<prefix><c:success><sym:check></c:success> <c:text><c:value><player></c:value> is now on step <c:value><step></c:value>. <c:muted>(logged)"
+  nothing: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing changed for <c:value><player></c:value>. Check the name, or the tutorial is already in that state."
+  menu:
+    title: "Tutorial <player>"
+    info:
+      - "<c:text>This player's tutorial."
+      - "<c:text>Skip finishes it without a reward;"
+      - "<c:text>reset starts it again (no reward again)."
+    status:
+      name: "<c:ember><bold><player></bold></c:ember>"
+      lore:
+        - "<c:bar>| </c:bar><c:text>State: <c:value><state>"
+        - "<c:bar>| </c:bar><c:text>Step: <c:value><step>"
+        - "<c:bar>| </c:bar><c:text>Done: <c:value><done></c:value><c:muted>/<total>"
+        - "<c:bar>| </c:bar><c:text>Started: <c:value><started>"
+        - "<c:bar>| </c:bar><c:text>Finished: <c:value><finished>"
+        - "<c:bar>| </c:bar><c:text>Reward paid: <c:value><rewarded>"
+        - "<c:bar>| </c:bar><c:text>Watched again: <c:value><replays>"
+    no-data:
+      name: "<c:muted>No tutorial data"
+      lore: ["<c:text><player> has no tutorial row yet."]
+    skip:
+      name: "<c:warning><bold>Skip tutorial</bold>"
+      lore: ["<c:text>Finish <player>'s tutorial now.", "<c:text>Every lock opens. No reward.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to skip"]
+    skip-crumb: "Skip tutorial"
+    skip-confirm: ["<c:text>This will:", "<c:text>finish <c:value><player></c:value>'s tutorial", "<c:text>and open every lock (no reward)."]
+    reset:
+      name: "<c:error><bold>Reset tutorial</bold>"
+      lore: ["<c:text>Start <player>'s tutorial again.", "<c:text>Locks come back. No second reward.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to reset"]
+    reset-crumb: "Reset tutorial"
+    reset-confirm: ["<c:text>This will:", "<c:text>restart <c:value><player></c:value>'s tutorial", "<c:text>and lock money features again."]
+
+admin:
+  status: "<prefix><c:value><player></c:value> <c:muted><sym:dot></c:muted> <c:text>state <c:value><state></c:value> <c:muted><sym:dot></c:muted> <c:text>step <c:value><step></c:value> <c:muted><sym:dot></c:muted> <c:text>done <c:value><done></c:value><c:muted>/<total></c:muted> <c:muted>(<done-list>)</c:muted> <c:muted><sym:dot></c:muted> <c:text>reward paid <c:value><rewarded>"
+
+states:
+  new: "Not started"
+  active: "Running"
+  finished: "Finished"
+  legacy: "Finished (played before the tutorial)"
+  staff_skipped: "Finished by staff"
+
+# Feature names in /tutorial (what unlocks when).
+gates:
+  island_team: "Team, visits, warps"
+  depths: "The Depths"
+  auction: "Auction house"
+  pay: "/pay"
+  withdraw: "/withdraw"
+  trade: "/trade"
+  warzone: "Warzone"
+  profile_create: "New profiles"
+  outposts: "Outposts"
+  events: "Events"
+
+menu:
+  title: "Tutorial"
+  info:
+    - "<c:text>Your tutorial: where you are,"
+    - "<c:text>where to go and what unlocks next."
+  loading:
+    name: "<c:text><sym:time> Loading..."
+    lore: []
+  progress:
+    name: "<c:ember><bold>Step <number>/<total></bold></c:ember> <c:value><step>"
+    lore:
+      - "<c:text><objective>"
+      - "<hint>"
+      - ""
+      - "<c:bar>| </c:bar><c:text>Time so far: <c:value><time>"
+  resume:
+    name: "<c:flame><bold>Take me there</bold>"
+    lore: ["<c:text>Teleport to your step.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
+  stuck:
+    name: "<c:flame><bold>I'm stuck</bold>"
+    lore: ["<c:text>Show the hint again.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>for help"]
+  skip:
+    name: "<c:warning><bold>Skip this step</bold>"
+    lore: ["<c:text>You may skip <c:value><step></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to skip"]
+  not-started:
+    name: "<c:ember><bold>Tutorial</bold>"
+    lore: ["<c:text>Not started yet.", "<c:text>Walk into the Island portal", "<c:text>or press Start."]
+  start:
+    name: "<c:success><bold>Start</bold>"
+    lore: ["<c:text>Start the tutorial now.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to start"]
+  complete:
+    name: "<c:success><sym:check> <bold>Tutorial done</bold>"
+    lore: ["<c:text><state>.", "<c:text>Every feature is open."]
+  where-next:
+    name: "<c:flame><bold>Where next?</bold>"
+    lore: ["<c:text>Your island, the mines or help.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
+  steps:
+    name: "<c:flame><bold>Steps</bold></c:flame> <c:muted>(<done>/<total>)"
+    lore: ["<c:text>Every step and what it teaches.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+  replay:
+    name: "<c:flame><bold>Watch again</bold>"
+    lore: ["<c:text>Every step's hint again.", "<c:text>Nothing changes, no rewards.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to watch"]
+  replay-stop:
+    name: "<c:error><bold>Stop watching</bold>"
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to stop"]
+  unlocks:
+    name: "<c:flame><bold>What unlocks when</bold>"
+    lore: ["<c:text>Features open step by step.", ""]
+  unlock-open: "<c:success><sym:check></c:success> <c:value><feature>"
+  unlock-locked: "<c:error><sym:cross></c:error> <c:text><feature> <c:muted><sym:dot></c:muted> <c:muted><when>"
+  unlock-at-step: "step <number> (<step>)"
+  unlock-at-finish: "at the finish"
+
+steps-menu:
+  title: "Steps"
+  info:
+    - "<c:text>Every tutorial step."
+    - "<c:text>Click your current step to go there."
+  done:
+    name: "<c:success><sym:check> <number>. <step>"
+    lore: ["", "<c:success><sym:check> Done"]
+  now:
+    name: "<c:flame><bold><number>. <step></bold>"
+    lore: ["", "<c:flame><sym:arrow> Your step now", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go there"]
+  later:
+    name: "<c:muted><number>. <step>"
+    lore: ["", "<c:muted>Later"]
+
+where-next:
+  title: "Where next?"
+  island:
+    name: "<c:flame><bold>My island</bold>"
+    lore: ["<c:text>Grow your island.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
+    command: "is home"
+  mine:
+    name: "<c:flame><bold>Keep mining</bold>"
+    lore: ["<c:text>Back to the Depths.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    command: "dungeon"
+  help:
+    name: "<c:flame><bold>Help</bold>"
+    lore: ["<c:text>Every feature explained.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    command: "help"
+
+replay:
+  started: "<prefix><c:text>Watching the tutorial again (<c:value><total></c:value> steps). Nothing changes. Stop it in <c:value>/tutorial</c:value>."
+  shot:
+    title: "<c:brand><step>"
+    subtitle: "<c:text><objective>"
+    stay: 50
+  line: "<c:ember><number>/<total></c:ember> <c:value><step></c:value> <c:muted><sym:dot></c:muted> <hint>"
+  done: "<prefix><c:success><sym:check></c:success> <c:text>That was the whole tutorial."
+  stopped: "<prefix><c:text>Stopped watching."
+
+# The Phoenix Field Guide (starter chest and Starter pack). One list entry per page, <br> = new line.
+book:
+  title: "Phoenix Field Guide"
+  author: "Phoenix Skyblock"
+  pages:
+    - "<bold>Welcome!</bold><br><br>The loop:<br>mine in the Depths,<br>sell your loot,<br>forge better tools,<br>grow your island."
+    - "<bold>Your island</bold><br><br>/is opens the island menu.<br>/is home brings you back.<br>Plant crops, build a cobble generator with the lava bucket."
+    - "<bold>The Depths</bold><br><br>/menu, then The Depths.<br>Blocks grow back for you only.<br>Drops go to your satchel."
+    - "<bold>Money</bold><br><br>Sell from the satchel or /sell.<br>/bank pays interest every 8 hours.<br>/ah is the auction house."
+    - "<bold>Tools</bold><br><br>The Forge turns loot into higher tool tiers.<br>Tools level up while you use them."
+    - "<bold>Help</bold><br><br>Right-click any NPC.<br>/help explains everything.<br>/tutorial shows the tutorial again."

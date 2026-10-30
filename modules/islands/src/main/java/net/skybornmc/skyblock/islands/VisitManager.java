@@ -414,6 +414,9 @@ final class VisitManager implements Listener {
 
     /** {@code /is visit [player]}: the browser without a name, otherwise a teleport to that player's island home. */
     void visit(Player player, String name) {
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.ISLAND_TEAM)) {
+            return; // TUTORIAL §4: visiting opens after the first-crop step
+        }
         if (name == null) {
             openBrowser(player, null);
             return;
@@ -431,6 +434,9 @@ final class VisitManager implements Listener {
         if (island.roleOrNull(islands.key(player)) != null) {
             islands.teleportHome(player);
             return;
+        }
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.ISLAND_TEAM)) {
+            return; // TUTORIAL §4: visiting opens after the first-crop step
         }
         if (!checkEntry(player, island)) {
             return;

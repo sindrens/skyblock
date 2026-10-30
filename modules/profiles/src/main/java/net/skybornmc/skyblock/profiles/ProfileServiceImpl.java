@@ -462,6 +462,10 @@ final class ProfileServiceImpl implements ProfileService, Listener {
     // ================================================================== create / rename / icon / delete
 
     void create(Player player, int slot, Runnable after) {
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player,
+                net.skybornmc.skyblock.common.tutorial.Gates.PROFILE_CREATE)) {
+            return; // TUTORIAL §4: a new profile mid-tutorial would split it; opens at the finish
+        }
         Session s = sessions.get(player.getUniqueId());
         if (s == null) {
             module.fail(player, "error");

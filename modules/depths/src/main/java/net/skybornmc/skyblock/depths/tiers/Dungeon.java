@@ -65,6 +65,10 @@ public final class Dungeon {
     }
 
     void teleport(Player player, Zone zone) {
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player,
+                net.skybornmc.skyblock.common.tutorial.Gates.DEPTHS)) {
+            return; // TUTORIAL §4: the Depths open after the menu step
+        }
         if (gates.locked(player, zone)) {
             msg.send(player, "dungeon.locked", gates.requirement(player, zone));
             core.sounds().play(player, "error");
