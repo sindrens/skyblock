@@ -100,6 +100,9 @@ staff:
   given-tag-noop: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already has the tag <c:value><id></c:value>."
   taken-tag: "<prefix><c:success><sym:check></c:success> <c:text>Took the tag <c:value><id></c:value> from <c:value><player></c:value>."
   taken-tag-noop: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>doesn't have the tag <c:value><id></c:value>."
+  # Titles/tags another module grants and takes by itself (the clean-streak title "honorable", spec 14.11).
+  automatic-title: "<prefix><c:error><sym:cross></c:error> <c:text>The title <c:value><id></c:value> <c:text>is earned automatically. Staff can't give or take it."
+  automatic-tag: "<prefix><c:error><sym:cross></c:error> <c:text>The tag <c:value><id></c:value> <c:text>is earned automatically. Staff can't give or take it."
   items-given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><player></c:value> <c:value><amount></c:value> <c:text>tag item(s): <c:value><tag></c:value>."
   items-received: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><amount></c:value> <c:text>tag item(s): <c:value><tag></c:value>. Right-click to redeem."
   console-needs-player: "<prefix><c:error><sym:cross></c:error> <c:text>Add a player: <c:value>/tags item phoenix 1 Steve</c:value>"

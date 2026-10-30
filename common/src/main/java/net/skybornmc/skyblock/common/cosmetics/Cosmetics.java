@@ -50,6 +50,18 @@ public interface Cosmetics {
         return false;
     }
 
+    /**
+     * Marks a title or tag as automatic: only the module that owns it grants and takes it (e.g. moderation's
+     * {@code honorable} clean-streak title, spec 14.11). Staff {@code /titles give|take} refuse it. Idempotent; main thread.
+     */
+    default void markAutomatic(Kind kind, String id) {
+    }
+
+    /** Whether {@link #markAutomatic} was called for it. */
+    default boolean automatic(Kind kind, String id) {
+        return false;
+    }
+
     default CompletableFuture<Boolean> grantTag(UUID player, String id, String reason) {
         return grant(player, Kind.TAG, id, reason);
     }

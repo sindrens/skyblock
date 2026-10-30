@@ -376,3 +376,47 @@ Release steps for the main session (before each release, in this order):
   `P9StoreTest` (rollback only the right rows + suggestion removal + stats; capped suggestion; purge preview = result,
   ledger, IP, audit untouched, retention; guard store), staff `FalseReportsTest` (only invalid, window count, ordinals,
   report blocks).
+
+## P10 implementation notes
+- **Config:** `PunishConfig.Extras` gained `report` (`MonthlyReport.Settings`: enabled, day 1-28, time `"09:00"`,
+  reoffence-window (max 31d), top-reasons, reoffence-lines, staff-lines, discord (off), csv) and `cleanStreak`
+  (`CleanStreak.Settings`: enabled, days, min-playtime, check (10m-1d), join-delay, title, sound, tell-lost). The P9
+  constructor is kept. New config error keys `config.bad-clock`, `config.bad-title-id`; Discord colour kind `report`.
+- **V011:** `punishments.removed_kind` (UNDO / PARDON / APPEAL / ROLLBACK), written by every reversal path
+  (`PunishmentStore.pardon`, `undo`, `acceptAppeal`, `rollback`) and back-filled for rollbacks and accepted appeals (older
+  pardons/undos count as PARDON). Tables `punish_reports` (`report_month` 'YYYY-MM' PK, `report_json`, `notified`),
+  `punish_clean_streak`, `punish_playtime_days`; month indexes on appeals (created, handled), requests, dry runs, sanctions.
+- **Monthly report (14.8):** `MonthlyReport` (pure: Oslo month boundaries, `due`, aggregation, reoffence, JSON via Gson,
+  CSV with formula defusing), `ReportStore` (one month per query, only the needed columns: never player names, IPs, reason
+  texts, evidence or notes; the staff module's `reports` table is optional), `ReportService` (10-minute async tick: the
+  previous month's report is made/stored once `day`/`time` has passed and announced once via the atomic
+  `claimAnnouncement`; catches up after downtime; one-hour back-off after a failure), `ReportMenu` (6 rows, plain clicks).
+  Guard events come from the audit log (`guard_block`, `guard_alert` of that month). `/preport [month]`: past month =
+  stored or made on demand and stored; running month = live ("so far"), cached for `stats.cache`, never stored; future =
+  refused. Staff section only with `skyblock.staff.punish.report.staff` (menu tile and chat lines); Discord embed has
+  server totals only. CSV in `plugins/PhoenixSkyblock/reports/` (temp file + move). Audit: `report_generated`,
+  `report_ready` (PUNISHMENT), `report_view` (STAFF).
+- **Honorable title (14.11):** `CleanStreak` (pure: `eligible`, `decide` → NONE / GRANT / REGRANT_QUIET / REVOKE, daily
+  playtime samples with a conservative baseline), `CleanStreakStore` (today's sample upsert + prune + state + newest
+  breaking punishment not reversed, in one transaction; `markEarned` / `markLost` change state for exactly one caller),
+  `CleanStreakService` (join check after `join-delay`, round every `check` from a 10-minute async tick, `punished(p)` from
+  the store's single insert hook `onApplied` next to the guard). Grants with `Cosmetics.grant(..., notify=false)` and sends
+  its own single line + sound; never takes a title it did not give. Cosmetics API: `markAutomatic(kind, id)` /
+  `automatic(...)` (staff `/titles give|take` refuse such ids, message `staff.automatic-title`); the title is added to
+  `tags-titles.yml` with `defineTitle` one tick after enable (cosmetics enables after moderation) and is in the bundled
+  file. Audit: `clean_streak_earned`, `clean_streak_lost` (+ the cosmetics module's own title rows).
+- **Tests:** `P10LogicTest` (month boundaries across DST, near-midnight rows, due/catch-up, month argument, report math on
+  known data, no player data in JSON/CSV, reoffence, reversal kinds, JSON/CSV, clean-streak table and playtime samples,
+  config + messages), `P10StoreTest` (V011 re-run, kinds written by pardon/undo, one month read incl. the optional reports
+  table, store/announce once, samples/prune, reversed punishments ignored, one-caller state changes).
+
+## Phase P complete (P0-P10)
+Every approved section of PUNISH_SPEC.md is built: sections 1-11 (single-screen `/p`, warn rules, safe reload, GitHub
+edit flow), 12 (undo, double-punish guard, offence expiry, evidence, notes, acknowledgement, weights, suggestion API, report
+link, `/pstats`, Discord log, `/mypunishments`), 13 (sanctions, island steps, anticheat suggestions, approval, watchlist,
+probation, bulk, raid lockdown, appeals, punish from logs, network-ready storage, "mute ended") and 14 (guard + rollback,
+rule numbers, false reports, training + dry run, monthly report, notification settings, data deletion, Honorable title).
+Everything goes through the one `PunishDecision` pipeline (EXEMPT → GUARD → PROBATION → PERMISSION → TRAINING → APPROVAL →
+LENGTH_LIMIT → DUPLICATE → NEVER_SHORTEN) and the store's single insert. Left for later by design: Discord step 2 of appeals
+(needs the Discord bot), the social module's automatic IP retention, a sanction request queue, and every item listed under
+"Waiting for owner" in docs/OPEN_QUESTIONS.md.

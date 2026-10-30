@@ -162,3 +162,11 @@ skyblock.admin.punish.rollback:
 skyblock.admin.punish.purge:
   description: /ppurge <player> preview|confirm (delete a player's personal data on request)
   default: op
+
+# --- Phase P, P10: monthly report (spec 14.8) ---
+skyblock.staff.punish.report:
+  description: /preport [month] (the monthly punishment report; numbers only) and the "report is ready" line
+  default: op
+skyblock.staff.punish.report.staff:
+  description: The staff section of /preport (staff names with given, reversed %, appeals, requests, guard, dry runs)
+  default: op

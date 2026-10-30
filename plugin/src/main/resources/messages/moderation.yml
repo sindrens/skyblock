@@ -611,6 +611,9 @@ config:
   bad-rule-number: "<file> line <line>: <path>: rule number '<value>' must be a whole number from 1 to <max>"
   unknown-rule: "<file> line <line>: <path>: reason '<id>' points to rule <value>, which is not under rules: (rules: <rules>)"
   bad-rule-ref: "<file> line <line>: <path>: reason '<id>': rule must be a number or a list of numbers, not '<value>'"
+  # P10 (spec 14.8, 14.11)
+  bad-clock: "<file> line <line>: <path>: '<value>' is not a time of day (use 09:00)"
+  bad-title-id: "<file> line <line>: <path>: title id '<value>' may only use a-z, 0-9 and _"
 
 # ---------------------------------------------------------------- [Undo] (P2, spec 12.1)
 # Placeholders as in notify.* (<player>, <type>, <reason>, <id>, <length>), plus <window> = extras.undo-window.
@@ -751,6 +754,26 @@ mine:
 
 # Discord log embeds (12.11). Plain text only (no colour tags). Off until a webhook is set up (docs/LATER.md).
 discord:
+  # P10 (spec 14.8): the monthly report embed (server totals only, never names). Placeholders as in report.chat.*.
+  report:
+    title: "Punishment report: <month>"
+    fields:
+      totals: "Punishments"
+      reversed: "Reversed"
+      appeals: "Appeals"
+      reports: "Reports"
+      requests: "Approval requests"
+      safety: "Guard, false reports, training"
+      reasons: "Most used reasons"
+    values:
+      totals: "Warns <warns> | Mutes <mutes> | Bans <bans> | Kicks <kicks> | Island <island> | Report blocks <report_blocks> | Sanctions <sanctions>"
+      reversed: "<reversed> of <given> (<reversed_percent>%): undo <undo>, pardon <pardon>, appeal <appeal>, rollback <rollback>"
+      appeals: "<received> received, <accepted> accepted (<accepted_percent>%), <reduced> reduced, <denied> denied, avg <appeal_time>"
+      reports: "<reports> received, <reports_closed> closed, <invalid> invalid, avg <report_time>"
+      reports-none: "Not available"
+      requests: "<made> made, <approved> approved, <req_denied> denied, <expired> expired (<trainee> by trainees)"
+      safety: "Guard events <guard> | False report suggestions <false_suggestions> | Dry runs <dry> (<trainee_dry> by trainees)"
+      reason: "<reason>: <count>"
   titles:
     ban: "Ban"
     mute: "Mute"
@@ -778,6 +801,7 @@ discord:
     guard-alert: "Staff guard: limit passed"
     guard-blocked: "Staff guard: staff member blocked"
     rollback: "Rollback"
+    report: "Monthly punishment report"
   fields:
     type: "Type"
     target: "Player"
@@ -1834,3 +1858,164 @@ purge:
   audit-kept: " <c:muted>The audit log is kept (the purge itself is logged without personal data)."
   keep-none: "no time (deleted at once)"
   confirm: " <c:error>This can't be undone.</c:error> <c:text>Type <click:suggest_command:'/ppurge <target> confirm'><c:action>/ppurge <target> confirm</c:action></click> <c:text>within <c:value><window></c:value><c:text>."
+
+# ---------------------------------------------------------------- P10 (spec 14.8 monthly report, 14.11 Honorable title)
+
+# Monthly report (14.8): /preport [month]. Aggregated numbers only: no player names, IPs or evidence; staff names only in
+# the staff section (skyblock.staff.punish.report.staff). Placeholders of every line: <month>, <generated>, <warns>,
+# <mutes>, <bans>, <kicks>, <island>, <report_blocks>, <sanctions>, <given> (punishments), <all> (+ sanctions),
+# <reversed>, <reversed_percent>, <undo>, <pardon>, <appeal>, <rollback>, <received>, <accepted>, <accepted_percent>,
+# <reduced>, <denied>, <open>, <appeal_time>, <reports>, <reports_closed>, <invalid>, <report_time>, <made>, <approved>,
+# <req_denied>, <skipped>, <expired>, <waiting>, <trainee>, <guard>, <false_suggestions>, <dry>, <trainee_dry>,
+# <cohort> (month of the reoffence numbers), <window> (reoffence window).
+report:
+  ready: "<prefix><c:success><sym:check></c:success> <c:text>The punishment report for <c:value><month></c:value> <c:text>is ready: <click:run_command:'/preport <month_id>'><hover:show_text:'<c:text>Open the report'><c:action>[/preport]</c:action></hover></click>"
+  generating: "<prefix><c:text>Making the report for <c:value><month></c:value><c:text>..."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>The report could not be made. Try again in a minute (details in the console)."
+  bad-month: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a month. Use year-month, e.g. <c:value><example></c:value><c:text>."
+  future: "<prefix><c:error><sym:cross></c:error> <c:value><month></c:value> <c:text>hasn't happened yet."
+  custom-reason: "Typed reason"
+  months:
+    1: "January"
+    2: "February"
+    3: "March"
+    4: "April"
+    5: "May"
+    6: "June"
+    7: "July"
+    8: "August"
+    9: "September"
+    10: "October"
+    11: "November"
+    12: "December"
+  chat:
+    header: "<prefix><c:text>Punishment report <c:value><month></c:value> <c:muted>(made <generated>)"
+    header-partial: "<prefix><c:text>Punishment report <c:value><month></c:value> <c:muted>(so far, <generated>)"
+    totals: " <c:text>Warns <c:value><warns></c:value> <c:muted><sym:dot></c:muted> <c:text>Mutes <c:value><mutes></c:value> <c:muted><sym:dot></c:muted> <c:text>Bans <c:value><bans></c:value> <c:muted><sym:dot></c:muted> <c:text>Kicks <c:value><kicks></c:value> <c:muted><sym:dot></c:muted> <c:text>Island <c:value><island></c:value> <c:muted><sym:dot></c:muted> <c:text>Report blocks <c:value><report_blocks></c:value> <c:muted><sym:dot></c:muted> <c:text>Sanctions <c:value><sanctions>"
+    reversed: " <c:text>Reversed: <c:value><reversed></c:value> <c:muted>(<reversed_percent>%)</c:muted> <c:text>undo <undo> <c:muted><sym:dot></c:muted> <c:text>pardon <pardon> <c:muted><sym:dot></c:muted> <c:text>appeal <appeal> <c:muted><sym:dot></c:muted> <c:text>rollback <rollback>"
+    appeals: " <c:text>Appeals: <c:value><received></c:value> received <c:muted><sym:dot></c:muted> <c:text><accepted> accepted (<accepted_percent>%) <c:muted><sym:dot></c:muted> <c:text><reduced> reduced <c:muted><sym:dot></c:muted> <c:text><denied> denied <c:muted><sym:dot></c:muted> <c:text>avg <appeal_time>"
+    reports: " <c:text>Reports: <c:value><reports></c:value> received <c:muted><sym:dot></c:muted> <c:text><reports_closed> closed (<invalid> invalid) <c:muted><sym:dot></c:muted> <c:text>avg <report_time>"
+    reports-none: " <c:text>Reports: <c:muted>not available on this server"
+    requests: " <c:text>Requests: <c:value><made></c:value> made <c:muted><sym:dot></c:muted> <c:text><approved> approved <c:muted><sym:dot></c:muted> <c:text><req_denied> denied <c:muted><sym:dot></c:muted> <c:text><expired> expired <c:muted>(<trainee> by trainees)"
+    safety: " <c:text>Guard events <c:value><guard></c:value> <c:muted><sym:dot></c:muted> <c:text>False report suggestions <c:value><false_suggestions></c:value> <c:muted><sym:dot></c:muted> <c:text>Dry runs <c:value><dry></c:value> <c:muted>(<trainee_dry> by trainees)"
+    reasons-header: " <c:text>Most used reasons:"
+    reason: "  <c:muted><place>.</c:muted> <c:value><reason></c:value> <c:text><count>"
+    reoffence-header: " <c:text>Reoffence <c:muted>(punished in <cohort>, again within <window>):"
+    reoffence: "  <c:value><reason></c:value> <c:text>step <step>: <c:value><percent>%</c:value> <c:muted>(<again> of <players> players)"
+    staff-header: " <c:text>Staff <c:muted>(given, reversed, appeals, requests)"
+    staff: "  <c:muted><place>.</c:muted> <c:value><staff></c:value> <c:text><given> given <c:muted>(<warns>w <mutes>m <bans>b <kicks>k <other>o)</c:muted> <c:muted><sym:dot></c:muted> <c:text><percent>% reversed <c:muted><sym:dot></c:muted> <c:text>appeals <accepted>/<reduced>/<denied> <c:muted><sym:dot></c:muted> <c:text>requests <made> <c:muted><sym:dot></c:muted> <c:text>guard <guard> <c:muted><sym:dot></c:muted> <c:text>dry runs <dry>"
+    staff-trainee: "  <c:muted><place>.</c:muted> <c:value><staff></c:value> <c:warning>trainee</c:warning> <c:text><given> given <c:muted><sym:dot></c:muted> <c:text>requests <made> (<approved> approved, <req_denied> denied) <c:muted><sym:dot></c:muted> <c:text>dry runs <dry>"
+    empty: "  <c:muted>Nothing this month."
+  menu:
+    title: "Report"
+    info:
+      - "<c:text>The monthly punishment report."
+      - "<c:text>Numbers only: no player names."
+      - "<c:muted>Made on the 1st of every month."
+    header:
+      name: "<c:value><month>"
+      lore:
+        - "<c:text>Made <generated>."
+        - "<c:muted>Use the arrows for other months."
+    header-partial:
+      name: "<c:value><month> <c:muted>(so far)"
+      lore:
+        - "<c:text>Live numbers up to <generated>."
+        - "<c:muted>The full report comes on the 1st."
+    totals:
+      name: "<c:value>Punishments: <all>"
+      lore:
+        - "<c:text>Warns: <c:value><warns>"
+        - "<c:text>Mutes: <c:value><mutes>"
+        - "<c:text>Bans: <c:value><bans>"
+        - "<c:text>Kicks: <c:value><kicks>"
+        - "<c:text>Island punishments: <c:value><island>"
+        - "<c:text>Report blocks: <c:value><report_blocks>"
+        - "<c:text>Sanctions: <c:value><sanctions>"
+    reversed:
+      name: "<c:value>Reversed: <reversed_percent>%"
+      lore:
+        - "<c:text><reversed> of <given> punishments."
+        - "<c:text>Undo: <c:value><undo>"
+        - "<c:text>Pardon: <c:value><pardon>"
+        - "<c:text>Appeal: <c:value><appeal>"
+        - "<c:text>Rollback: <c:value><rollback>"
+    appeals:
+      name: "<c:value>Appeals: <received>"
+      lore:
+        - "<c:text>Accepted: <c:value><accepted></c:value> <c:muted>(<accepted_percent>%)"
+        - "<c:text>Reduced: <c:value><reduced>"
+        - "<c:text>Denied: <c:value><denied>"
+        - "<c:text>Still open: <c:value><open>"
+        - "<c:text>Average handling: <c:value><appeal_time>"
+    reports:
+      name: "<c:value>Reports: <reports>"
+      lore:
+        - "<c:text>Closed: <c:value><reports_closed>"
+        - "<c:text>Invalid (false): <c:value><invalid>"
+        - "<c:text>Average handling: <c:value><report_time>"
+    reports-none:
+      name: "<c:muted>Reports"
+      lore:
+        - "<c:muted>Not available on this server."
+    requests:
+      name: "<c:value>Requests: <made>"
+      lore:
+        - "<c:text>Approved: <c:value><approved>"
+        - "<c:text>Denied: <c:value><req_denied>"
+        - "<c:text>Expired: <c:value><expired>"
+        - "<c:text>Still waiting: <c:value><waiting>"
+        - "<c:text>By trainees: <c:value><trainee>"
+    safety:
+      name: "<c:value>Safety and training"
+      lore:
+        - "<c:text>Guard events: <c:value><guard>"
+        - "<c:text>False report suggestions: <c:value><false_suggestions>"
+        - "<c:text>Dry runs: <c:value><dry>"
+        - "<c:text>Dry runs by trainees: <c:value><trainee_dry>"
+    reasons:
+      name: "<c:value>Most used reasons"
+      lore:
+        - "<c:muted>Punishments given this month."
+    reason-line: "<c:muted><place>.</c:muted> <c:text><reason>: <c:value><count>"
+    reoffence:
+      name: "<c:value>Reoffence"
+      lore:
+        - "<c:muted>Punished in <cohort>, punished"
+        - "<c:muted>again for it within <window>."
+    reoffence-line: "<c:text><reason> step <step>: <c:value><percent>%</c:value> <c:muted>(<again>/<players>)"
+    staff:
+      name: "<c:value>Staff"
+      lore:
+        - "<c:muted>Given, reversed %, appeals, requests."
+    staff-line: "<c:muted><place>.</c:muted> <c:value><staff></c:value> <c:text><given> given, <percent>% rev., <made> req."
+    staff-line-trainee: "<c:muted><place>.</c:muted> <c:value><staff></c:value> <c:warning>trainee</c:warning> <c:text><made> req., <dry> dry runs"
+    staff-locked:
+      name: "<c:muted>Staff"
+      lore:
+        - "<c:muted>Staff names need a higher rank."
+    chat:
+      name: "<c:value>Show in chat"
+      lore:
+        - "<c:text>Prints the whole report in chat."
+        - ""
+        - "<c:action><sym:bullet> Click to print"
+    previous:
+      name: "<c:value><month>"
+      lore:
+        - "<c:action><sym:bullet> Click to open"
+    next:
+      name: "<c:value><month>"
+      lore:
+        - "<c:action><sym:bullet> Click to open"
+    empty: "<c:muted>Nothing this month."
+
+# "Honorable" title (14.11): earned after extras.clean-streak.days (60) without a warn, mute, ban or kick, with an account
+# older than that and min-playtime (10h) played in that time. <days>, <title> = the title as it looks.
+clean-streak:
+  unlocked: "<prefix><c:success><sym:check></c:success> <c:text>Title unlocked: <title> <c:muted>(<days> days without a punishment). Wear it with /titles."
+  lost: "<prefix><c:text>You lost the <c:value>Honorable</c:value> <c:text>title. Earn it again with <days> clean days."
+  # Used once to add the title to tags-titles.yml when it is missing (edit it there afterwards).
+  title:
+    display: "<c:success>Honorable"
+    source: "Play 60 days without a warning, mute, ban or kick (10h played in that time)."

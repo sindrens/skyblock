@@ -95,3 +95,9 @@ lp group admin permission set skyblock.admin.punish.guard.exempt false
 lp group admin permission set skyblock.admin.punish.purge false
 lp group owner permission set skyblock.admin.punish.guard.exempt true
 lp group owner permission set skyblock.admin.punish.purge true
+
+# --- Phase P, P10: monthly report (spec 14.8) ---
+# /preport and its staff section: admins (also covered by skyblock.staff.* in base.txt; listed so the intent is visible).
+# Moderators don't get it by default (open question in docs/OPEN_QUESTIONS.md).
+lp group admin permission set skyblock.staff.punish.report true
+lp group admin permission set skyblock.staff.punish.report.staff true

@@ -5,7 +5,7 @@ Titles & tags: `tags-titles.yml` (registry, editable in-game), `cosmetics.yml`, 
 | Command | Description | Permission | Status |
 |---|---|---|---|
 | `/tags` (`/tag`), `/titles` (`/title`) | One menu, two tabs: equip one title + one tag, locked titles show how to earn them, preview of your chat/tab line; staff get an Edit button (create/edit/delete titles and tags) | `skyblock.cosmetics` (everyone); editor `skyblock.admin.cosmetics.edit` | ✅ |
-| `/tags give\|take <player> <tag>`, `/titles give\|take <player> <title>` | Give/remove (online or offline), logged | `skyblock.staff.cosmetics.give` | ✅ |
+| `/tags give\|take <player> <tag>`, `/titles give\|take <player> <title>` | Give/remove (online or offline), logged. Automatic titles (the clean-streak title `honorable`, P10) are refused: they are earned and lost by themselves | `skyblock.staff.cosmetics.give` | ✅ |
 | `/tags item <tag> [amount] [player]` | Create unique tag items (right-click to redeem with confirm; tradeable, AH-sellable) | `skyblock.admin.cosmetics.item` | ✅ |
 | `/display` (`/displayformat`) | Display editor: chat/tab/nametag formats (chat.yml) with live preview and confirm; applied instantly, logged | `skyblock.admin.display` | ✅ |
 

@@ -156,6 +156,15 @@ final class PunishEmbeds {
         return new DiscordSink.Embed(text.apply("titles.rollback"), cfg.color("pardon"), fields, text.apply("footer"), at);
     }
 
+    /**
+     * The monthly report is ready (spec 14.8): server totals only (the fields are built from the stored report by the
+     * caller). Never staff names, player names, IPs or evidence: who reads a Discord channel is decided in Discord.
+     */
+    static DiscordSink.Embed report(String title, List<DiscordSink.Field> fields, PunishConfig.Discord cfg, String footer,
+                                    long at) {
+        return new DiscordSink.Embed(title, cfg.color("report"), fields, footer, at);
+    }
+
     /** "Steve (mute 30m), Alex (mute 6h) +3 more": names and lengths only. */
     static String players(List<Punishment> list, boolean withStep) {
         List<String> parts = new ArrayList<>();

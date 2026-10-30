@@ -140,6 +140,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
     private GuardService guard;
     private RollbackService rollback;
     private PurgeService purge;
+    /** P10: monthly report (14.8) and the "Honorable" clean-streak title (14.11). */
+    private ReportService reports;
+    private CleanStreakService cleanStreak;
     /** False after disable: the dupe detector keeps its handlers, this stops ours. */
     private volatile boolean enabled;
     private boolean dupeHooked;
@@ -243,12 +246,18 @@ public final class ModerationModule implements SkyblockModule, Listener {
         guard.start();
         service.guard(guard);
         sanctions.guard(guard);
+        // P10, spec 14.11: a new warn/mute/ban/kick hides an earned "Honorable" title
+        cleanStreak = new CleanStreakService(core, msg, new CleanStreakStore(core.database()), () -> templates.config().extras());
         service.store().onApplied(p -> {
             UUID who = p.approvedBy() != null ? p.approvedBy() : p.issuer(); // an approved request counts for the approver
             guard.recorded(who, p.approvedBy() != null ? p.approvedByName() : p.issuerName(), Guard.Kind.of(p.type()),
                     System.currentTimeMillis());
+            cleanStreak.punished(p);
         });
         rollback = new RollbackService(core, msg, service, sanctions, () -> templates.config().extras());
+        // P10, spec 14.8: monthly report (scheduled run off the main thread, /preport)
+        reports = new ReportService(core, msg, this, new ReportStore(core.database()), () -> templates.config().extras(),
+                () -> core.services().optional(net.skybornmc.skyblock.common.discord.DiscordSink.class));
         purge = new PurgeService(core, msg, service, () -> templates.config().extras(), this::refreshAfterPurge);
         // P9, spec 14.5: the reports module asks this when a report is closed as invalid
         core.services().register(ID, net.skybornmc.skyblock.common.moderation.FalseReports.class,
@@ -282,8 +291,11 @@ public final class ModerationModule implements SkyblockModule, Listener {
             purgeLedgers(); // spec 14.10: purged ledgers past keep-ledger
         });
         lockdown.start();
+        reports.start();
+        cleanStreak.start();
         for (Player p : Bukkit.getOnlinePlayers()) {
             extras.joined(p);
+            cleanStreak.joined(p);
         }
     }
 
@@ -314,6 +326,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
         core.messages().load(ID);
         loadPunishments(null);
         loadWebhooks();
+        if (cleanStreak != null) {
+            cleanStreak.ensureTitle(); // extras.clean-streak.title may have changed
+        }
     }
 
     @Override
@@ -326,6 +341,12 @@ public final class ModerationModule implements SkyblockModule, Listener {
         }
         if (purgeTask != null) {
             purgeTask.cancel();
+        }
+        if (reports != null) {
+            reports.stop();
+        }
+        if (cleanStreak != null) {
+            cleanStreak.stop();
         }
         enabled = false;
         if (sanctions != null) {
@@ -836,6 +857,13 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .category("Staff").permission(PurgeService.PERM).arg(purgeWho).optional(purgeAction)
                 .example("ppurge Steve preview")
                 .executes(ctx -> purge.run(ctx.sender(), ctx.get(purgeWho), "confirm".equals(ctx.getOr(purgeAction, "preview")))));
+
+        // ---- P10, spec 14.8: /preport [month] (the menu, or the chat summary from the console)
+        Arg<String> reportMonth = Arg.word("month", (sender, raw) -> raw, Suggest.of(() -> reports.monthHints()));
+        commands.register(CommandSpec.command("preport")
+                .description("The monthly punishment report (default: last month); staff names need skyblock.staff.punish.report.staff")
+                .category("Staff").permission(ReportService.PERM).optional(reportMonth).example("preport 2026-10")
+                .executes(ctx -> reports.command(ctx.sender(), ctx.getOr(reportMonth, null))));
 
         Arg<String> altsTarget = player;
         commands.register(CommandSpec.command("alts")
@@ -1793,6 +1821,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         service.requestsOnJoin(player); // spec 13.4: outcomes for requesters, waiting requests for approvers
         extras.joined(player); // spec 12.6: unacknowledged warnings are reminded once
         appeals.joined(player); // spec 13.10: decisions not told yet; staff: appeals waiting longer than appeal.reminder
+        cleanStreak.joined(player); // spec 14.11: the "Honorable" title, checked a few seconds after the join
         // spec 13.9: raid detection counts accounts on their very first join; staff see a running lockdown at once
         if (core.players().get(player.getUniqueId()).map(net.skybornmc.skyblock.common.player.PlayerData::isNew).orElse(false)) {
             lockdown.newAccountJoined(player.getUniqueId());

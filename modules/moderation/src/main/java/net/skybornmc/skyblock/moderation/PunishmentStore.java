@@ -106,8 +106,8 @@ final class PunishmentStore {
                 active = new ArrayList<>(active.subList(0, 1));
             }
             for (Punishment p : active) {
-                Sql.update(c, "UPDATE punishments SET removed_at = ?, removed_by_uuid = ?, removed_by_name = ?, removed_reason = ? "
-                        + "WHERE id = ? AND removed_at IS NULL", now, bytes(by), byName, reason, p.id());
+                Sql.update(c, "UPDATE punishments SET removed_at = ?, removed_by_uuid = ?, removed_by_name = ?, removed_reason = ?, "
+                        + "removed_kind = 'PARDON' WHERE id = ? AND removed_at IS NULL", now, bytes(by), byName, reason, p.id());
             }
             return active;
         });
@@ -651,8 +651,8 @@ final class PunishmentStore {
                 if (check != Undo.Result.OK) {
                     return new UndoResult(check, p, List.of());
                 }
-                Sql.update(conn, "UPDATE punishments SET removed_at = ?, removed_by_uuid = ?, removed_by_name = ?, removed_reason = ? "
-                        + "WHERE id = ? AND removed_at IS NULL", now, bytes(by), clip(byName, 32), clip(reason, 255), id);
+                Sql.update(conn, "UPDATE punishments SET removed_at = ?, removed_by_uuid = ?, removed_by_name = ?, removed_reason = ?, "
+                        + "removed_kind = 'UNDO' WHERE id = ? AND removed_at IS NULL", now, bytes(by), clip(byName, 32), clip(reason, 255), id);
                 List<Long> removed = List.of();
                 if (p.type() == Punishment.Type.WARN) {
                     removed = Sql.query(conn, "SELECT id FROM punishment_suggestions WHERE cause_id = ? AND status = 'PENDING'",
@@ -1376,8 +1376,8 @@ final class PunishmentStore {
             if (p == null || !p.active(now)) {
                 return closeAppeal(conn, a, p, by, byName, now);
             }
-            Sql.update(conn, "UPDATE punishments SET removed_at = ?, removed_by_uuid = ?, removed_by_name = ?, removed_reason = ? "
-                    + "WHERE id = ? AND removed_at IS NULL", now, bytes(by), clip(byName, 32), clip(pardonReason, 255), p.id());
+            Sql.update(conn, "UPDATE punishments SET removed_at = ?, removed_by_uuid = ?, removed_by_name = ?, removed_reason = ?, "
+                    + "removed_kind = 'APPEAL' WHERE id = ? AND removed_at IS NULL", now, bytes(by), clip(byName, 32), clip(pardonReason, 255), p.id());
             if (claimAppeal(conn, a.id(), Appeal.Status.ACCEPTED, by, byName, pardonReason, p.expires(), null, now) != 1) {
                 throw new SQLException("appeal " + a.id() + " changed while locked");
             }
@@ -1540,7 +1540,7 @@ final class PunishmentStore {
                 continue;
             }
             int n = Sql.update(c, "UPDATE punishments SET removed_at = ?, removed_by_uuid = ?, removed_by_name = ?, "
-                            + "removed_reason = ?, rollback_id = ? WHERE id = ? AND removed_at IS NULL AND issuer_uuid = ?",
+                            + "removed_reason = ?, rollback_id = ?, removed_kind = 'ROLLBACK' WHERE id = ? AND removed_at IS NULL AND issuer_uuid = ?",
                     now, bytes(by), clip(byName, 32), clip(reason, 255), group, id, Sql.toBytes(staff));
             if (n != 1) {
                 continue;

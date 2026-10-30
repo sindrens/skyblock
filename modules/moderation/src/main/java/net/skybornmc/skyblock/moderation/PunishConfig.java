@@ -61,6 +61,8 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param rollback         /prollback (14.1)
      * @param falseReports     false report penalty (14.5)
      * @param purge            data deletion, /ppurge (14.10)
+     * @param report           monthly report, /preport (14.8)
+     * @param cleanStreak      the "Honorable" title for a clean streak (14.11)
      */
     record Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
                   java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
@@ -70,7 +72,23 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
                   List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network,
                   SanctionRules.Settings sanctions, Training.Settings training, NotifyRules.Settings notifications,
                   Guard.Settings guard, RollbackRules.Settings rollback, FalseReportRules.Settings falseReports,
-                  PurgeRules.Settings purge) {
+                  PurgeRules.Settings purge, MonthlyReport.Settings report, CleanStreak.Settings cleanStreak) {
+
+        /** The P9 set of keys; the P10 ones get their defaults. */
+        Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
+               java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
+               boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
+               PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
+               WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal,
+               List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network,
+               SanctionRules.Settings sanctions, Training.Settings training, NotifyRules.Settings notifications,
+               Guard.Settings guard, RollbackRules.Settings rollback, FalseReportRules.Settings falseReports,
+               PurgeRules.Settings purge) {
+            this(undoWindow, duplicateWindow, duplicateConfirm, offenceExpire, statsZone, statsCache, statsPeriod, statsTop,
+                    closeReports, evidence, notes, ack, rulesLink, discord, playerView, chatSuggestions, approval, watchlist,
+                    probation, muteEnded, bulk, appeal, neverAuto, lockdown, raid, network, sanctions, training, notifications,
+                    guard, rollback, falseReports, purge, MonthlyReport.Settings.DEFAULT, CleanStreak.Settings.DEFAULT);
+        }
 
         /** The P8 set of keys; the P9 ones get their defaults. */
         Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
@@ -239,10 +257,11 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param colors embed colour per kind (ban, mute, warn, kick, pardon, undo), 0xRRGGBB
      */
     record Discord(boolean enabled, String channel, int queueSize, int maxAttempts, Map<String, Integer> colors) {
-        static final List<String> KINDS = List.of("ban", "mute", "warn", "kick", "pardon", "undo", "bulk", "appeal", "lockdown");
+        static final List<String> KINDS = List.of("ban", "mute", "warn", "kick", "pardon", "undo", "bulk", "appeal", "lockdown",
+                "report");
         static final Discord DEFAULT = new Discord(false, "punishments", 100, 3, Map.of("ban", 0xE74C3C, "mute", 0xE67E22,
                 "warn", 0xF1C40F, "kick", 0x95A5A6, "pardon", 0x2ECC71, "undo", 0x3498DB, "bulk", 0x9B59B6,
-                "appeal", 0x1ABC9C, "lockdown", 0xE91E63));
+                "appeal", 0x1ABC9C, "lockdown", 0xE91E63, "report", 0x5865F2));
 
         int color(String kind) {
             return colors.getOrDefault(kind, 0x95A5A6);

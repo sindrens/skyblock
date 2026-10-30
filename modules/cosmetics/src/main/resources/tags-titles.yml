@@ -77,6 +77,14 @@ titles:
     source: "Finish #1 on the island leaderboard at the end of a season."
     secret: false
     season-persistent: true
+  # Earned and lost automatically (moderation, spec 14.11): 60 days without a warn, mute, ban or kick, an account older
+  # than that and 10h played in that time (punishments.yml extras.clean-streak). Staff can't give or take it.
+  honorable:
+    display: "<c:success>Honorable"
+    rarity: rare
+    source: "Play 60 days without a warning, mute, ban or kick (10h played in that time)."
+    secret: false
+    season-persistent: true
 
 tags:
   phoenix:
