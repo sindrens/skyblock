@@ -1,0 +1,2459 @@
+{
+ "features": [
+  {
+   "feature": "Balances, /pay and /baltop",
+   "summary": "Every player has four kinds of money: money ($), island crystals, gems and shards. Players can check balances, pay each other (money and shards only), see the richest list and read their own history of every change. Money, crystals and shards belong to the active profile. Gems belong to the player. New accounts need 30 minutes of play before they can pay.",
+   "commands": [
+    {
+     "command": "/bal [player]",
+     "who": "player",
+     "what": "Show all four balances of you or another player (online or offline)"
+    },
+    {
+     "command": "/baltop [currency]",
+     "who": "player",
+     "what": "Richest players list (top 10), refreshed every 30 seconds"
+    },
+    {
+     "command": "/pay <player> <amount> [currency]",
+     "who": "player",
+     "what": "Send money or shards. Accepts 1.5k, 2M, 3B. Asks to confirm from $1M"
+    },
+    {
+     "command": "/transactions",
+     "who": "player",
+     "what": "Menu with your own money history, filter by type and time"
+    },
+    {
+     "command": "/eco give|take|set|reset <player> <currency> <amount> <reason>",
+     "who": "admin",
+     "what": "Staff: change a balance. Always logged and shown to staff"
+    }
+   ],
+   "test": [
+    "Type /bal. You should see money $1,000 and 0 crystals, gems, shards on a new account.",
+    "Type /bal <other player>. Check it shows their balances.",
+    "With a second account that has played less than 30 minutes, try /pay. It should be refused with the reason.",
+    "With an old account type /pay <friend> 500. Check both sides get a message and /bal changes.",
+    "Type /pay <friend> 2M. A confirm screen should appear. Click confirm, then repeat and let it time out (30 s).",
+    "Try /pay <friend> 5 (below the $10 minimum), /pay yourself, and /pay with more than you own. Each should give a clear error.",
+    "Open /transactions and filter by Pay, then by 24h. Your payments should be listed.",
+    "Type /baltop and /baltop shards. Then /eco give <you> money 1000 test as admin and wait 30 s for the list to move.",
+    "Do the same on a Bedrock phone: type amounts like 1.5k and use the confirm screen by tapping."
+   ],
+   "questions": [
+    {
+     "question": "Should /pay take a small fee (for example 2%) that disappears from the economy?",
+     "suggested": "No fee, as built",
+     "why": "A fee is a money sink and slows alt-feeding, but players will hate it",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a daily limit on how much one player can send with /pay?",
+     "suggested": "No limit (only alerts for huge or repeated transfers)",
+     "why": "A limit makes it harder to move stolen or duped money fast",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should a player be able to switch off incoming payments (like a /paytoggle)?",
+     "suggested": "No, everyone can be paid",
+     "why": "Stops spam payments and begging, but adds a command",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /bal and /baltop hide the gem balance of other players?",
+     "suggested": "Hide gems from others (you see only your own)",
+     "why": "Gem totals show who spends real money on the store",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /baltop show a gems list at all?",
+     "suggested": "No. Only money, crystals and shards",
+     "why": "A public gem list can look like pay-to-win bragging",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should staff, vanished staff and the owner be hidden from /baltop?",
+     "suggested": "Yes, hide staff accounts",
+     "why": "Staff testing with /eco could otherwise sit at the top",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /baltop show your own place when you are not in the top 10?",
+     "suggested": "Yes, add a line 'You are #137'",
+     "why": "Players like to know where they stand",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /bal show your bank money as well as your purse?",
+     "suggested": "Show a line 'Bank: $X' under the purse",
+     "why": "Players forget what they have saved in the bank",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should big numbers show short (1.2M) or in full (1,234,567) in /bal and menus?",
+     "suggested": "Short in menus, full in /bal",
+     "why": "Full numbers are easier to check, short ones fit in lore",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should money stay in whole dollars with no cents anywhere?",
+     "suggested": "Yes, whole dollars only",
+     "why": "Cents are confusing and cause rounding problems in bank and tax",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a hard maximum balance for one profile?",
+     "suggested": "No cap now, add one if money grows past the number limit (9 quintillion)",
+     "why": "Avoids a rare overflow bug, never reached in normal play",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the player get a message on join when someone paid them while they were offline?",
+     "suggested": "Yes, one line per payer, max 5, then 'and N more'",
+     "why": "People should know who paid them",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a hard daily limit on how much a profile can earn?",
+     "suggested": "No limit. Alerts only for 3x the usual rate",
+     "why": "A limit would punish grinders, alerts catch cheats",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a very large balance lose a little each day as a rich tax?",
+     "suggested": "No tax for now, keep as a possible emergency lever",
+     "why": "A rich tax is a strong money sink if inflation gets bad",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to see why a /pay was refused (new account, frozen, sanction) in the log?",
+     "suggested": "Yes, log refused attempts too",
+     "why": "Helps staff answer 'why can't I pay' tickets",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Money notes (/withdraw)",
+   "summary": "A player can turn money into a paper note item and give it to someone else, or cash it later by right-clicking. Each note is one entry in the database, so copies are caught and taken away. Notes are money only, between $100 and $1T, and not allowed in the auction house.",
+   "commands": [
+    {
+     "command": "/withdraw <amount> [currency]",
+     "who": "player",
+     "what": "Turn money into a note item (needs a free slot and 30 minutes of playtime)"
+    },
+    {
+     "command": "Right-click a note",
+     "who": "player",
+     "what": "Cash the note back into your purse"
+    },
+    {
+     "command": "/eco note <player> <amount> <reason>",
+     "who": "admin",
+     "what": "Staff: give an online player a note without taking money"
+    }
+   ],
+   "test": [
+    "Type /withdraw 5000. Check your money drops by $5,000 and a note item appears with the amount and date.",
+    "Right-click the note. Check the money comes back and the note disappears.",
+    "Try /withdraw 50 (under $100) and /withdraw twice within 10 seconds. Both should be refused clearly.",
+    "Fill your inventory and try /withdraw. It must refuse before taking any money.",
+    "Give a note to a second account and let them cash it.",
+    "As admin, try to get a duplicate note (staff give command / creative copy). The copy should be taken and staff alerted.",
+    "Drop a note in lava or let it burn if you can. See what happens to the money.",
+    "Try to craft with a note, sell it with /sell, and list it in /ah. All should be refused.",
+    "Check /transactions shows 'Note' entries for both withdraw and cash."
+   ],
+   "questions": [
+    {
+     "question": "Should a money note be protected from fire, lava, cactus, explosions and despawn?",
+     "suggested": "Yes, fireproof and never despawns",
+     "why": "Paper items can burn and the money would be gone for good",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should a note show the name of the player who made it?",
+     "suggested": "Yes, 'Issued by <name>'",
+     "why": "Helps staff trace scams and makes notes feel personal",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should notes of the same value be able to stack?",
+     "suggested": "No, each note is its own slot",
+     "why": "Each note is unique for dupe safety, but 64 notes then use 64 slots",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /withdraw and note cashing be blocked in combat and in the warzone?",
+     "suggested": "Yes, blocked while combat-tagged and in the warzone",
+     "why": "Stops moving money into notes just before a PvP death penalty",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the warzone death loss (2% of money) also apply to notes carried in the inventory?",
+     "suggested": "No, only the purse",
+     "why": "Notes are safe storage otherwise; this decides whether PvP risk is real",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /withdraw accept 'all' or 'half' as the amount?",
+     "suggested": "Yes, all and half",
+     "why": "Faster for players, small risk of accidents",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a daily limit on how many notes or how much money one player can turn into notes?",
+     "suggested": "No limit, only the alert at 10 notes cashed per hour",
+     "why": "Notes are a way to move money to alts",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a note have a short name tag players can add (like 'for Steve')?",
+     "suggested": "No",
+     "why": "Prevents scams and spam text on items",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the note look change by value (small, medium, large) with the resource pack?",
+     "suggested": "Yes, 3 looks once the pack exists",
+     "why": "Makes big notes feel special",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should shard notes be allowed as a separate item later?",
+     "suggested": "No, money only",
+     "why": "Shards are rare and already tradeable by /pay",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a note be cashable by anyone who holds it, even if the maker was frozen or banned later?",
+     "suggested": "Yes, bearer item. Staff can freeze the account balance but not the note",
+     "why": "Decides how staff deal with scam notes",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should staff be able to void a single note by id?",
+     "suggested": "Yes, with a logged staff action",
+     "why": "Needed when a note was made from duped money",
+     "priority": "before launch"
+    }
+   ]
+  },
+  {
+   "feature": "Bank (personal and island)",
+   "summary": "Each profile has a personal bank with 10 tiers. Each island has its own bank that the team shares. Banks keep money safe and pay interest every 3 hours. Taking money out costs a 2% fee, except right after a payout. The island leader decides who may deposit, withdraw and see history.",
+   "commands": [
+    {
+     "command": "/bank",
+     "who": "player",
+     "what": "Open both banks: balance, deposit, withdraw, tiers, interest, history"
+    },
+    {
+     "command": "Island menu > Bank",
+     "who": "player",
+     "what": "Same screen from the island menu"
+    }
+   ],
+   "test": [
+    "Type /bank. Check you see a personal bank (tier 1, $100k) and the island bank side by side.",
+    "Deposit $500. Check purse goes down and bank up. Try depositing more than the free room.",
+    "Withdraw $100. The confirm screen should show the 2% fee and what you get.",
+    "Buy tier 2 ($10k). Check the capacity and the payout cap change.",
+    "Wait for the next payout time (every 3 hours from midnight UTC) or ask staff to shorten it. Check the interest line in history and that money arrived.",
+    "Withdraw within 10 minutes after a payout. It should be free.",
+    "As leader, open /is permissions and remove Bank deposit from Member. Test with an alt member.",
+    "Try to deposit into another own profile's bank. It must be refused.",
+    "Check the island bank daily limits: Member can only take 10% of capacity per day.",
+    "Test on Bedrock: the number picker and confirm screens by tapping."
+   ],
+   "questions": [
+    {
+     "question": "Should /bank work anywhere, or only near a Banker NPC at spawn?",
+     "suggested": "Anywhere with the command",
+     "why": "Convenience against immersion; an NPC also makes spawn busier",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /bank be blocked in combat and in the Depths?",
+     "suggested": "Blocked while combat-tagged only",
+     "why": "Stops using the bank as a safe during PvP fights",
+     "priority": "before launch"
+    },
+    {
+     "question": "When you deposit more than the free room, should it refuse or deposit what fits?",
+     "suggested": "Deposit what fits and say so",
+     "why": "Less annoying than a refusal",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the bank menu get one-click Deposit All and Withdraw All buttons?",
+     "suggested": "Yes, both with a confirm",
+     "why": "Faster for players with large balances",
+     "priority": "can wait"
+    },
+    {
+     "question": "Is 0.15% interest per 3 hours (about 1.2% per day) the right personal rate?",
+     "suggested": "0.15% as built",
+     "why": "Biggest knob for how much players save instead of spend",
+     "priority": "before launch"
+    },
+    {
+     "question": "Is 0.25% per 3 hours (about 2% per day) the right island bank rate?",
+     "suggested": "0.25% as built",
+     "why": "Island banks pay more to reward teamwork; too high makes banks a printer",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should payout times follow Oslo time (every 3 h from midnight Oslo) instead of UTC?",
+     "suggested": "Oslo time, so players see 00, 03, 06...",
+     "why": "Easier for Norwegian players to plan around",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the next-payout time also show on the scoreboard or action bar?",
+     "suggested": "No, only in /bank",
+     "why": "Avoids clutter",
+     "priority": "can wait"
+    },
+    {
+     "question": "Who may see the island bank balance, not just the history?",
+     "suggested": "All stored members see the balance, history only Mod and up",
+     "why": "Teams usually want to know the balance",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can a tier ever be sold back or lowered?",
+     "suggested": "No. Tiers are permanent for the season",
+     "why": "Avoids money loops and keeps the sink real",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be bank loans (borrow money and pay it back with interest)?",
+     "suggested": "No loans",
+     "why": "Loans add risk and exploits; can be a late-season feature",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the bank have a tier-up celebration (title, sound, chat line)?",
+     "suggested": "Title and sound for the player only",
+     "why": "Makes saving feel rewarding",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the bank block deposits for players who are frozen or in staff mode?",
+     "suggested": "Yes (frozen balance already blocks)",
+     "why": "Closes a loophole where frozen money could be hidden",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the bank show 'interest you would earn today' as an estimate?",
+     "suggested": "Yes, one line",
+     "why": "Teaches players why to save",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Interest (bank payouts)",
+   "summary": "Every 3 hours the server pays interest on the lowest balance each bank had during that period. Interest is paid even while players are offline, but only if the profile played at least 2 hours in the last 7 days. Each tier caps how much one payout can be. The interest is new money, so it is also watched on the dashboard.",
+   "commands": [
+    {
+     "command": "(no command)",
+     "who": "player",
+     "what": "Interest is automatic. See rate, cap and next payout in /bank"
+    }
+   ],
+   "test": [
+    "Put money in the personal bank and check /bank shows the rate, the cap and the time of the next payout.",
+    "Deposit just before a payout. Check you only get interest on the amount that was there during the whole period.",
+    "Check an account that has played less than 2 hours in 7 days earns nothing (staff can lower playtime in the database or use an alt).",
+    "Stay offline over a payout and log in. The interest should be waiting in the bank history.",
+    "Hit the payout cap: put more than the cap would pay on and check the payout stops at the cap.",
+    "Withdraw with a fee and check that period's interest is forfeited.",
+    "Open /eco admin as staff and check the interest line on the dashboard."
+   ],
+   "questions": [
+    {
+     "question": "Should interest also be paid to players who have been inactive for a long time?",
+     "suggested": "No, only the 2 h in 7 days rule",
+     "why": "Stops parked alts from earning forever",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the 2 h activity rule count time in the AFK pool?",
+     "suggested": "No, only active play",
+     "why": "AFK pool could otherwise make interest free for alts",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should interest be paid as a different number for each rank (small bonus for donors)?",
+     "suggested": "No rank bonus on interest",
+     "why": "Interest bonus for money is pay-to-win in a money game",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the player see a short message when they log in after missing payouts?",
+     "suggested": "Yes, one line 'You earned $X interest while away'",
+     "why": "Players should notice the reward",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should interest stop completely for profiles above a very high bank balance?",
+     "suggested": "No. The payout cap already limits it",
+     "why": "Caps handle whales without a second rule",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a global interest switch for staff to turn it off in an emergency?",
+     "suggested": "Yes, an owner setting in the dashboard",
+     "why": "Emergency lever when inflation runs away",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should interest rates change by season week (higher early, lower late)?",
+     "suggested": "No, fixed",
+     "why": "Simple and predictable",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should interest also count as 'earned' for achievements and set levels?",
+     "suggested": "No",
+     "why": "Interest is passive and should not give progress",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the interest rate fall automatically when the dashboard badge says Watch or ACT?",
+     "suggested": "No, staff decide with the emergency lever",
+     "why": "Automatic changes surprise players; a lever keeps control",
+     "priority": "can wait"
+    },
+    {
+     "question": "Is the 'lowest balance in the period' rule too strict for players who deposit right after a payout?",
+     "suggested": "Keep it. It stops deposit-withdraw tricks",
+     "why": "Players wait up to 3 hours before new money earns",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Sell chest (/sell)",
+   "summary": "A chest menu where players drop items and press Sell. It shows the live total, the player's sell bonus and what they will get. There is also a button to sell everything sellable in the inventory. Selling is also reachable from the satchel and the shop. /sell hand and /sell all are quick versions. Items not on the price list cannot be sold.",
+   "commands": [
+    {
+     "command": "/sell",
+     "who": "player",
+     "what": "Open the sell chest"
+    },
+    {
+     "command": "/sell hand",
+     "who": "player",
+     "what": "Sell the stack in your hand (2 s cooldown)"
+    },
+    {
+     "command": "/sell all",
+     "who": "player",
+     "what": "Sell every sellable stack in hotbar and inventory (2 s cooldown)"
+    },
+    {
+     "command": "Sell inventory (button)",
+     "who": "player",
+     "what": "Moves all sellable stacks into the chest and sells"
+    }
+   ],
+   "test": [
+    "Type /sell. Put cobblestone in the chest. The total should update every second.",
+    "Click the green Sell button. Check money and the sale line in chat or action bar.",
+    "Close the chest with items in it. They must all come back to the inventory.",
+    "Press Sell inventory with a pickaxe and a sword in the hotbar. They must stay.",
+    "Try to sell a tool, an enchant book, a money note and a wardrobe piece. All must be refused.",
+    "Sell a big stack worth over $100,000. A chat line with a hover breakdown should appear.",
+    "Use /sell hand with 64 wheat, then /sell all with mixed items.",
+    "Open /sell and run /profiles switch. Items must come back, never lost.",
+    "Try shift-click, drag, number keys and double-click in the chest on Java. Check nothing duplicates.",
+    "On Bedrock, tap items into the chest and press Sell."
+   ],
+   "questions": [
+    {
+     "question": "Should /sell all and Sell inventory ask for confirmation when the sale includes items the Forge needs (Depths ores, logs, drops)?",
+     "suggested": "Yes, one warning line with a confirm button",
+     "why": "A player can accidentally sell the materials for the next tool tier",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should a single sale above a big amount (say $1M) ask for confirmation?",
+     "suggested": "No. The player already pressed Sell",
+     "why": "Extra clicks vs accidents; big sales are rare",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /sell work in the warzone and while combat-tagged?",
+     "suggested": "Blocked in combat, allowed in the warzone only out of combat",
+     "why": "Stops selling loot mid-fight",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /sell work on other players' islands, in the Depths and at spawn?",
+     "suggested": "Yes, everywhere",
+     "why": "Matches the 'sell from anywhere' decision; avoids dead trips",
+     "priority": "before launch"
+    },
+    {
+     "question": "If a price changes between opening the chest and pressing Sell, which price should apply?",
+     "suggested": "The price at the moment of the click; the total updates each second",
+     "why": "Avoids disputes about 'I saw a higher price'",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can vanilla items with a custom name, enchants or damage be sold at the normal price?",
+     "suggested": "No. Only plain items sell",
+     "why": "Named or enchanted vanilla items could be special trade goods",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the Sell inventory button also include the satchel?",
+     "suggested": "No, satchel has its own Sell all",
+     "why": "Keeps the two flows clear",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to lock favorite items so /sell all never sells them?",
+     "suggested": "Yes, later, via a shift-click lock in the inventory",
+     "why": "Common QoL in skyblock servers",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a weekly 'top sellers' list or a feed of big sales?",
+     "suggested": "A weekly top 10 on a hologram",
+     "why": "Gives sellers bragging rights",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the sell chest keep a short receipt (last 10 sales) players can open?",
+     "suggested": "Yes, last 10 in /sell menu",
+     "why": "Helps when a player thinks a sale was wrong",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should selling give a tiny chance for a bonus (like a crystal or a key) to make it feel rewarding?",
+     "suggested": "No bonus chance",
+     "why": "Keeps the money model predictable",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Dynamic sell prices, Hot Item and the +300% cap",
+   "summary": "Sell prices move between 40% and 150% of the base price. Selling an item lowers its price a little, and the price slowly recovers (2% of the gap every 10 minutes). Items nobody sells drift up. One Hot Item per day pays 25% more. All sell bonuses (rank, upgrades, sets, boosters, enchants) are added and capped at +300%.",
+   "commands": [
+    {
+     "command": "/sell (menu)",
+     "who": "player",
+     "what": "Shows today's price, trend (Rising/Falling/Steady) and Hot Item"
+    },
+    {
+     "command": "/eco admin",
+     "who": "mod",
+     "what": "Staff dashboard: sell price index and sell volume"
+    }
+   ],
+   "test": [
+    "Open /sell and note the price of one item and the Hot Item.",
+    "Sell 1,000 of one item. Reopen the chest and check the price fell slightly and shows Falling.",
+    "Wait 10 minutes and check the price moved back up a little.",
+    "Sell the Hot Item and check you get +25% compared to the same item yesterday.",
+    "Check the sell bonus breakdown shows each source and that the total never goes over +300%.",
+    "Restart the server (ask staff) and check prices are kept.",
+    "Compare the price shown for two different players with different bonuses."
+   ],
+   "questions": [
+    {
+     "question": "Should the market price be shared by the whole server, or separate per island or per player?",
+     "suggested": "Shared by the whole server, as built",
+     "why": "One player dumping a huge stack lowers the price for everyone; per-player prices avoid that but change the market feel",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should one player be able to push a price all the way to the 40% floor?",
+     "suggested": "Limit the drop one player can cause per hour (for example 10%)",
+     "why": "Protects others from price griefing",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should several Hot Items run per day (one per category) instead of one?",
+     "suggested": "One Hot Item per day, shown at login",
+     "why": "More Hot Items spread selling across more products",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to start a special Hot Item for events (weekend, double sell)?",
+     "suggested": "Yes, from the dashboard",
+     "why": "Events need levers",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a global price scale lever for emergencies (all sell prices x0.9)?",
+     "suggested": "Yes, an owner-only setting",
+     "why": "Balance sheet lists it as a lever against inflation",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should prices that drift above base be limited so unsold items never pay 150%?",
+     "suggested": "Keep the 150% ceiling",
+     "why": "Drift above base rewards selling rare items nobody else sells",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to see a price history chart (7 days) for each item?",
+     "suggested": "No, trend words only",
+     "why": "A chart needs a menu and Bedrock handling",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the cap line say how close the player is to +300%?",
+     "suggested": "Yes, 'Bonus +120% of max +300%'",
+     "why": "Players see when more bonuses are wasted",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the sell bonus ever apply to shop prices as a discount?",
+     "suggested": "No. Shop prices stay fixed",
+     "why": "Would break the buy-must-be-higher-than-sell rule",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /sell show a 'best prices right now' list of the 10 best-paying items today?",
+     "suggested": "Yes, a small page in the sell menu",
+     "why": "Helps players choose what to sell and spreads selling",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Shop quick-buy (/shop)",
+   "summary": "A builder shop with 8 categories and 332 items: blocks, wood, glass, decoration, redstone, seeds, utility. Left-click buys 1, right-click buys a stack, shift-click opens an amount screen. Bedrock taps open an amount screen. The shop never buys items back. Every item costs more than it can ever sell for.",
+   "commands": [
+    {
+     "command": "/shop [category]",
+     "who": "player",
+     "what": "Open the shop or one category (building-blocks, wood, stone-bricks, glass-colors, decoration, redstone, farming, utility)"
+    },
+    {
+     "command": "Sell (button)",
+     "who": "player",
+     "what": "Opens the sell chest from inside the shop"
+    }
+   ],
+   "test": [
+    "Type /shop. Check 8 categories and your balance at the top.",
+    "Left-click an item to buy 1. Check the action bar line and the price.",
+    "Right-click to buy 64. Check the amount and cost.",
+    "Shift-click and use the amount screen (+1, +16, +64). Buy 100.",
+    "Try buying with too little money. Check the message.",
+    "Fill your inventory and buy. Nothing should be taken if there is no room.",
+    "Buy an item costing $100,000 or more. A confirm screen should appear.",
+    "Use /shop wood to jump straight to a category.",
+    "On Bedrock, tap an item and use the amount screen.",
+    "Try to sell something to the shop. It must say the shop does not buy."
+   ],
+   "questions": [
+    {
+     "question": "Should the shop get a search button (type an item name) for the 332 items?",
+     "suggested": "Yes, chat prompt search",
+     "why": "332 items across pages is slow to browse",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /shop work from anywhere, not only near an NPC?",
+     "suggested": "Anywhere with the command",
+     "why": "Matches /sell; the shop NPC is only decoration",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should rank holders get a shop discount?",
+     "suggested": "No discount",
+     "why": "Money discounts for donors are pay-to-win",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the owner be able to run shop sales (20% off for a weekend)?",
+     "suggested": "Yes, a staff-set sale",
+     "why": "Event lever without changing base prices",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should expensive or powerful items (anvil, ender chest, enchanting table) have a daily buy limit per player?",
+     "suggested": "No limit",
+     "why": "Limits stop a rich player from flooding the market",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should lava buckets, water buckets and flint and steel be sold at all?",
+     "suggested": "Keep them, island permissions already protect others",
+     "why": "They are useful for generators but can grief visitors if permissions are open",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should spawn eggs, TNT, beacons, elytra and totems stay out of the shop?",
+     "suggested": "Stay out. Only crates/events give them",
+     "why": "Keeps rare items rare and avoids grief",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the shop show 'recently bought' or 'favorites' at the top of the menu?",
+     "suggested": "A favorites row, later",
+     "why": "Faster repeat buying",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should shop prices rise over the season with the money supply (shop inflation)?",
+     "suggested": "Fixed all season",
+     "why": "Simple; the dashboard can change prices if inflation hits",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should some building materials be unlocked by skill level or Depths tier?",
+     "suggested": "No, all open from day 1",
+     "why": "Builders should not be gated; only seeds have a farming hook",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the shop sell a few cosmetic or themed block packs (a decoration shop for crystals)?",
+     "suggested": "No, crystals go to the island shop later",
+     "why": "Keeps currencies separate",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should buying be blocked in combat or in the warzone?",
+     "suggested": "Blocked in combat only",
+     "why": "Stops buying food or blocks mid-fight",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Auction house (/ah)",
+   "summary": "Players list items at a fixed price. Buyers browse by category, search and sort. The seller pays a 1% fee when listing and 5% tax when the item sells. Players get 5 listings (more with ranks). Money goes to the seller even when offline. Expired or cancelled items wait in a collection bin. Staff can remove listings.",
+   "commands": [
+    {
+     "command": "/ah (/auction, /auctionhouse)",
+     "who": "player",
+     "what": "Browse, search, sort, list, cancel, collection bin"
+    },
+    {
+     "command": "/ah sell <price> [12h|24h|48h]",
+     "who": "player",
+     "what": "List the item in your main hand"
+    },
+    {
+     "command": "Remove listing (menu button)",
+     "who": "mod",
+     "what": "Staff: remove a listing with a reason, item goes to the seller's bin"
+    }
+   ],
+   "test": [
+    "Hold an item and type /ah sell 1500. Check the dialog shows fee, tax and what you receive. Pick 24h.",
+    "Open /ah with another account. Search the item name. Buy it. Check both balances.",
+    "Check the seller gets a chat message (online) or on the next join (offline).",
+    "Cancel a listing and check the item goes back to the collection bin and the 1% fee is not refunded.",
+    "Let a short listing expire (ask staff to shorten). Check the item is in the bin.",
+    "List 6 items. The 6th should be refused (5 slots).",
+    "Try to list a money note, a starter tool, a filled shulker box. All should be refused.",
+    "Try to buy your own listing and a listing from your other profile. Both refused.",
+    "As staff remove a listing and check the seller sees the reason.",
+    "Test on Bedrock: search prompt, sort and the buy confirm."
+   ],
+   "questions": [
+    {
+     "question": "Should buyers be able to buy part of a stack (for example 10 of 64) at the per-item price?",
+     "suggested": "No, whole listing only",
+     "why": "Partial buys are friendlier but make accounting more complex",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the listing screen show the price per item for stacks and a 'typical price' (7-day median)?",
+     "suggested": "Yes, both",
+     "why": "Helps sellers price fairly and cuts scams",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the AH warn when a price is far from the typical price (for example 10x higher or lower)?",
+     "suggested": "Yes, a warning with a confirm",
+     "why": "Stops typos like $1 instead of $1M",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should enchant books be searchable by enchant name and level?",
+     "suggested": "Yes, a book filter",
+     "why": "Books will be the busiest AH items",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be real bidding auctions (highest bid wins) next to fixed prices?",
+     "suggested": "No, fixed price only",
+     "why": "Bidding adds timers and sniping rules; can come later",
+     "priority": "can wait"
+    },
+    {
+     "question": "Do items in the collection bin ever expire?",
+     "suggested": "Never expire during the season",
+     "why": "Players would rage if items vanish; cost is database space",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the listing fee be refunded when a listing expires without selling?",
+     "suggested": "No (same as cancel)",
+     "why": "Fee is a sink; refund would remove it",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should big sales (above $1B or a rare item) be announced in chat?",
+     "suggested": "Only for rare items, no money amounts",
+     "why": "Adds excitement but can show who is rich",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the AH be usable in combat, in the warzone and in the Depths?",
+     "suggested": "Blocked in combat only",
+     "why": "Same logic as /sell and /bank",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should sellers be able to relist an expired item in one click from the bin?",
+     "suggested": "Yes, a Relist button",
+     "why": "Saves time; stays inside the fee and slot rules",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a paid 'promoted listing' that shows first for a fee in money?",
+     "suggested": "Yes later as a money sink",
+     "why": "Cheap sink that does not touch fairness",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should buyers see how long the seller has played (alt or scam hint)?",
+     "suggested": "No",
+     "why": "Privacy, and the 30 min limit already blocks new alts",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should one listing be allowed to hold several stacks (a bulk lot)?",
+     "suggested": "No, one stack per listing",
+     "why": "Keeps the browse screen simple",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should sellers get a sound and title when a high-value item sells?",
+     "suggested": "Action bar and sound only",
+     "why": "Less spam",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Trading (/trade)",
+   "summary": "Two players near each other can trade items and money (never crystals) in a safe window. Each side adds items and money, both press ready, a 3 second countdown runs, then the swap happens in one step. Anything that changes cancels the countdown. If a player has no room, the items wait and arrive later.",
+   "commands": [
+    {
+     "command": "/trade [player]",
+     "who": "player",
+     "what": "Ask a nearby player to trade, or open your open trade"
+    },
+    {
+     "command": "/trade accept [player]",
+     "who": "player",
+     "what": "Accept a request"
+    },
+    {
+     "command": "/trade deny [player]",
+     "who": "player",
+     "what": "Deny a request"
+    }
+   ],
+   "test": [
+    "Stand next to a second player and type /trade <name>. They get a clickable request.",
+    "Accept. Each side adds a few items by tapping them in the inventory. Take one back.",
+    "Add money with the gold ingot. Check shards can be added but crystals cannot.",
+    "Press ready on both sides. Change an offer during the countdown and check it resets.",
+    "Complete a trade and check both inventories and balances.",
+    "Fill one inventory and complete. Items should wait and arrive when there is room.",
+    "Walk more than 24 blocks away, take damage, or log out mid-trade. The trade must cancel and return items.",
+    "Try to trade with a new account (under 30 min) with money. Money should be refused, items allowed.",
+    "Try to trade with your own other profile. It must be refused."
+   ],
+   "questions": [
+    {
+     "question": "Should the trade window show the estimated value (sell price or AH median) of each item on hover?",
+     "suggested": "Yes, as a hint line",
+     "why": "Helps people avoid scams on unknown items",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the game warn when one side gives far more value than the other (for example a $1B tool for $1)?",
+     "suggested": "Yes, a red warning before the countdown",
+     "why": "Protects new players from scams",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the trade request show the other player's rank and playtime?",
+     "suggested": "Yes, on the request line",
+     "why": "Scam awareness",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should ignoring a player (/ignore) also block their trade requests?",
+     "suggested": "Yes",
+     "why": "Stops harassment through trade spam",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a limit on the money in one trade?",
+     "suggested": "No limit",
+     "why": "Large deals are normal; alerts exist for huge transfers",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should trading be allowed in the warzone, in the Depths and while combat-tagged?",
+     "suggested": "Blocked in combat and warzone, allowed elsewhere",
+     "why": "Prevents loot passing during fights",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players see a history of their last trades (who, what)?",
+     "suggested": "Yes, a simple list in /transactions",
+     "why": "Helps with disputes",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should more than 12 stacks per side be possible?",
+     "suggested": "No, 12 is enough",
+     "why": "Window size on Bedrock",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to open a trade view to watch a suspicious trade?",
+     "suggested": "Yes, read-only for mods",
+     "why": "Real-time scam help",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a trade need both players to be on the same island or at spawn only?",
+     "suggested": "Anywhere, within 16 blocks",
+     "why": "Most trades happen at islands",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should shards in trades have a daily cap per player?",
+     "suggested": "No cap",
+     "why": "Shards are rare; alerts cover abuse",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Economy dashboard and alerts (/eco admin)",
+   "summary": "Staff (moderators and up) see a dashboard of how much money is created and removed, the sink ratio, an inflation badge (OK, Watch, ACT), top earners and biggest transactions. Alerts fire for strange events: very high earning, big or repeated transfers, many notes cashed, a huge sell spike, or money appearing without a record. Alerts never punish by themselves.",
+   "commands": [
+    {
+     "command": "/eco admin",
+     "who": "mod",
+     "what": "Open the economy dashboard"
+    },
+    {
+     "command": "/eco admin <alert number>",
+     "who": "mod",
+     "what": "Open one alert with evidence and a Suggest punishment button"
+    },
+    {
+     "command": "/eco give|take|set|reset <player> <currency> <amount> <reason>",
+     "who": "admin",
+     "what": "Change balances (logged, staff are told)"
+    },
+    {
+     "command": "/eco note <player> <amount> <reason>",
+     "who": "admin",
+     "what": "Give a staff note"
+    }
+   ],
+   "test": [
+    "As mod type /eco admin. Check the money supply, created vs removed, and the badge.",
+    "Open a section (sources, sinks, top earners) and check the numbers match what you did.",
+    "Use /eco give <alt> money 60000000 test as admin. A big-transfer or earn alert should fire in about a minute.",
+    "Pay yourself back and forth five times with similar amounts to trigger the repeat-transfer alert.",
+    "Cash 10 money notes within an hour to trigger the notes alert.",
+    "Click [Open] on the alert chat line and the [Punish] button (do not apply).",
+    "Check helpers cannot open the dashboard."
+   ],
+   "questions": [
+    {
+     "question": "Should the owner get a daily summary (money created, removed, top alerts) in Discord or e-mail?",
+     "suggested": "Yes, once a day when Discord exists",
+     "why": "You can watch the economy without logging in",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the dashboard get emergency lever buttons (global sell scale, shop scale, interest on/off)?",
+     "suggested": "Yes, owner-only buttons with a log",
+     "why": "Balance sheet lists these levers; fast reaction to inflation",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should a balance-mismatch alert (money with no ledger row) automatically freeze that balance until staff look?",
+     "suggested": "Yes, freeze only (not a punishment)",
+     "why": "Money from nowhere is almost always a bug or a dupe",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should staff see a public-safe 'economy health' number to share with players (money supply, richest)?",
+     "suggested": "No for now",
+     "why": "Players could use it to time the market",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should alerts also be sent when staff themselves create lots of money with /eco?",
+     "suggested": "Yes, to the owner only",
+     "why": "Accountability for staff accounts",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the dashboard show the share of money from each source (Depths, spawners, AFK pool, events) in a chart?",
+     "suggested": "Yes, simple bars",
+     "why": "Shows where inflation comes from",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should alerts have a 'mark as normal' action that teaches the baseline (ignore this pattern)?",
+     "suggested": "Yes, per profile, 7 days",
+     "why": "Reduces repeated noise for legit grinders",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the dashboard keep a weekly snapshot forever for season comparisons?",
+     "suggested": "Yes, one row per week",
+     "why": "Helps balance next season",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should big /eco changes (above $1B) need a second admin to confirm?",
+     "suggested": "Yes, two-person rule above $1B",
+     "why": "Stops one account from creating huge money",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the dashboard compare this season with the last season?",
+     "suggested": "Yes, simple trend lines",
+     "why": "Helps balance next season",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "The Depths: zones and tier locks",
+   "summary": "The Depths is the main money world. It has three wings (Mine with 12 tiers, Forest with 11, Combat with 10) around a hub called The Gate. Each tier needs a skill level (0, 5, 10 ... 66). A locked tier shows iron bars only to you and pushes you back. Unlocked tiers are reached with /dungeon after a short countdown.",
+   "commands": [
+    {
+     "command": "/dungeon",
+     "who": "player",
+     "what": "Tier menu with tabs Mine, Forest, Combat. Click an unlocked tier to teleport (3 s countdown)"
+    },
+    {
+     "command": "/depths tp <zone>",
+     "who": "builder",
+     "what": "Staff: teleport to The Gate, a tier or the boss arena, ignoring locks"
+    },
+    {
+     "command": "/depths generate [zone|all]",
+     "who": "admin",
+     "what": "Staff: build the placeholder layout"
+    },
+    {
+     "command": "/depths debug [player]",
+     "who": "admin",
+     "what": "Staff: show region, timers, flags"
+    }
+   ],
+   "test": [
+    "Type /dungeon. Check the three tabs and that locked tiers show 'Mining 5 needed' with a progress bar.",
+    "Click tier 1 of the Mine. Wait for the 3 s countdown. Move during it and see it cancel.",
+    "Walk to the gate of tier 2 without the level. Bars should appear and you should be pushed back.",
+    "Ask staff to /skills set you mining 5 and see the tier 2 gate open with a title and sound.",
+    "Ask staff to lower your level while you stand in tier 2. You should be sent to The Gate.",
+    "Try to break a normal block or place a block in a zone. It must be refused.",
+    "Try ender pearls into a locked tier. They must not get you in.",
+    "Test on Bedrock: the /dungeon menu and the teleport countdown."
+   ],
+   "questions": [
+    {
+     "question": "Should a player who has unlocked a higher tier be able to bring a lower-level friend into a locked zone?",
+     "suggested": "No guest passes",
+     "why": "Guest passes let high players boost low ones and bypass levels",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should PvP be completely off in the Depths?",
+     "suggested": "Off everywhere in the Depths; the warzone is the only PvP place",
+     "why": "Matches 'warzone' being the PvP area",
+     "priority": "before launch"
+    },
+    {
+     "question": "Where should you respawn after dying in the Depths: The Gate or the arrival pad of your current tier?",
+     "suggested": "The arrival pad of the tier you died in",
+     "why": "Less walking; death has no penalty anyway",
+     "priority": "before launch"
+    },
+    {
+     "question": "How many players may be in one zone before new players are sent to a second copy?",
+     "suggested": "No limit for ore tiers (ore is personal), 40 for combat zones",
+     "why": "300 players could crowd the combat mobs",
+     "priority": "before launch"
+    },
+    {
+     "question": "Is flying (rank fly, island fly, elytra) allowed in the Depths?",
+     "suggested": "No flying in the Depths",
+     "why": "Flying skips gates and the causeways",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can players use /spawn and /is home from inside the Depths at any time?",
+     "suggested": "Yes, with the normal warmups",
+     "why": "Safety against getting stuck",
+     "priority": "can wait"
+    },
+    {
+     "question": "Can a low-tier pickaxe mine high-tier ore (just slower) or is it impossible without the right tool tier?",
+     "suggested": "Slower: 70% speed with the previous tier tool, much slower with lower",
+     "why": "Decides if tool tiers or skill levels gate progress",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should staff be able to open and close a zone for events (lock a tier for maintenance)?",
+     "suggested": "Yes, a staff toggle per zone",
+     "why": "Needed when a zone breaks",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the Depths have day and night, weather, or always bright?",
+     "suggested": "Always bright and clear",
+     "why": "Dark caves hurt visibility on Bedrock and phones",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to set a Depths home point at the last tier they used (a /dungeon recent)?",
+     "suggested": "Yes, 'Last tier' button at the top of /dungeon",
+     "why": "Fewer clicks",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the first visit of each tier give a small one-time reward (crystals, title)?",
+     "suggested": "Yes, small crystals and a title line",
+     "why": "Makes unlocks feel good (pacing ups)",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "The Depths: ore, logs and drops",
+   "summary": "In the Mine and Forest each block gives a custom drop (coal, copper, iron ... voidstone; oak, birch, spruce ... warped logs) that goes straight into your satchel. Ores are personal: only you see them and they come back after about 10 seconds. Blocks also give crystals now and then, and very rarely a book or a blueprint. Higher tiers give more valuable drops.",
+   "commands": [
+    {
+     "command": "(no command)",
+     "who": "player",
+     "what": "Mine and chop in the Depths with a custom tool. Open /dungeon > Satchel to see drops"
+    }
+   ],
+   "test": [
+    "Go to Mine tier 1 with your starter pickaxe and break ore blocks. Check coal drops go to the satchel, with an action bar line.",
+    "Check the block turns to tuff and comes back after about 10 seconds. A second player should not see your broken block.",
+    "Break ore with a plain vanilla pickaxe and see if it gives anything.",
+    "Watch for crystals: the action bar shows '+N crystals' every few seconds.",
+    "Chop logs in the Forest wing. Check logs go to the satchel. Leaves must not be breakable.",
+    "Try a bigger tier with a too-low tool and compare the break time.",
+    "Break blocks quickly with an auto-clicker style (ask staff) and see the fast-break check ignore them silently.",
+    "Check the scoreboard shows the satchel fill."
+   ],
+   "questions": [
+    {
+     "question": "Should each tier drop only one item type, or a mix (coal and copper in tier 1)?",
+     "suggested": "One item type per tier, as built",
+     "why": "Mixed drops add variety but make prices and Forge costs harder",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should plain vanilla pickaxes and axes work in the Depths, or only custom tools?",
+     "suggested": "Only custom tools (starter kit is free)",
+     "why": "Keeps tool levels and enchants central",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should higher tiers take longer to respawn after being broken?",
+     "suggested": "Same 10 seconds everywhere",
+     "why": "Longer respawn would punish high tiers that already break slower",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should ore have rare variants (a glowing ore giving 5x) with a visible effect?",
+     "suggested": "Yes, 1 in 500 blocks, small glow particle",
+     "why": "Adds excitement; needs particle limits",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should crystals appear as 1 per drop chance, or in occasional bigger bundles?",
+     "suggested": "Keep small chances, add rare bundles via the Geode enchant",
+     "why": "Keeps income smooth",
+     "priority": "can wait"
+    },
+    {
+     "question": "What should rare finds (geodes, key fragments) do when they are turned on?",
+     "suggested": "Geode = 5 to 50 crystals, key fragments = 10 fragments make a crate key",
+     "why": "These are placeholders with chance 0 today",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should a player be able to see which tier ore drops are worth the most in a table (/dungeon info)?",
+     "suggested": "Yes, a price per drop in /dungeon",
+     "why": "Players choose where to farm",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a daily 'double drops' zone that changes (one tier gives x2 for 1 hour)?",
+     "suggested": "No for now",
+     "why": "Events later via crates and bosses",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should tools get a streak bonus for breaking blocks fast without pause (a combo)?",
+     "suggested": "No",
+     "why": "Mining speed is already capped at 6 blocks per second",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should Depths drops be tradeable in /trade and the AH, or only sellable?",
+     "suggested": "Tradeable and listable like normal items",
+     "why": "Players can sell to others for more than the sell price",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the Forest have special logs (rare golden tree) as a rare event?",
+     "suggested": "No for now",
+     "why": "Keep scope small",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the ore look reset to the same block, or change by tier (visual hint of tier)?",
+     "suggested": "Same block per tier, as built",
+     "why": "Keeps a clear visual of tiers",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "The Depths: combat zones, mobs and mini-bosses",
+   "summary": "The Combat wing has 10 tiers (Graveyard to Warlord's Citadel). Mobs spawn while players are in the zone: 8 plus 2 per player, max 30 per zone. A mini-boss appears every 10 minutes in each zone with 15 times health and better loot. Kills give combat XP, drops into the satchel, crystals and vanilla XP.",
+   "commands": [
+    {
+     "command": "/dungeon (Combat tab)",
+     "who": "player",
+     "what": "Go to a combat tier"
+    },
+    {
+     "command": "/depths debug",
+     "who": "admin",
+     "what": "Staff: see combat mobs and the mini-boss timer"
+    }
+   ],
+   "test": [
+    "Open /dungeon, Combat, tier 1 (Graveyard). Check mobs spawn and you can kill them with your starter sword.",
+    "Check drops go to the satchel and crystals show on the action bar.",
+    "Wait for the mini-boss (about 10 minutes with players in the zone). Check the boss bar and the chat line.",
+    "Kill the mini-boss with a friend. Both should get rewards if both dealt 10% or more.",
+    "Die to a mob. Check you keep your inventory and respawn where expected.",
+    "Leave the zone and wait 30 s. Mobs should disappear.",
+    "Test with a bow, a trident and a crossbow and see how they compare to a sword.",
+    "On Bedrock check the boss bar and hits."
+   ],
+   "questions": [
+    {
+     "question": "Should mini-bosses get tougher the more players are in the zone?",
+     "suggested": "Yes, +25% health per extra player up to +100%",
+     "why": "Group fights stay a challenge and don't die instantly",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should ranged weapons (bow, crossbow, trident) work in the combat zones at the same strength as swords?",
+     "suggested": "Yes, with their own damage numbers",
+     "why": "Bedrock players often use bows",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should armor (wardrobe sets) be needed to survive higher tiers, and how many hits should a tier-10 mob take to kill an average player?",
+     "suggested": "About 8 hits with a matching set",
+     "why": "Sets must matter for combat or nobody wears them",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should rare elite mobs spawn (1 in 100) with extra drops and a glow?",
+     "suggested": "Yes, an elite variant",
+     "why": "Adds excitement without extra boss logic",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should kill streaks give a small bonus (10 kills in 30 seconds gives extra crystals)?",
+     "suggested": "No for now",
+     "why": "Streaks can cause a grind-heavy feel",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should floating damage numbers and mob health bars be shown?",
+     "suggested": "Mob name shows health, no damage numbers",
+     "why": "Damage numbers cost entities and lag",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should combat zones have a safe area at the entrance where mobs do not follow?",
+     "suggested": "Yes, the arrival pad is safe",
+     "why": "Players need a rest spot and a way to eat",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should mobs drop items only to the killer or to everyone who hit them (10%+)?",
+     "suggested": "Everyone with 10% damage, as built",
+     "why": "Fair for group play; already asked for mini-bosses only",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a hurt mob that you leave keep health when you walk away (regenerate) or reset?",
+     "suggested": "Reset to full after 10 seconds without a hit",
+     "why": "Stops pulling mobs away to a trap spot",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should mobs scale in damage with the player's armor and set level?",
+     "suggested": "No, fixed damage per tier",
+     "why": "Predictable and easy to balance",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a leaderboard for most mini-boss kills this week?",
+     "suggested": "Yes, weekly top 10",
+     "why": "Motivates group play",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should bosses drop a visible item (a trophy) that decorates islands?",
+     "suggested": "No",
+     "why": "Trophies need item models and storage",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Satchel (Depths storage)",
+   "summary": "A virtual bag that holds everything dropped in the Depths. It starts at 256 items and grows with Mining and Foraging levels and 5 money upgrades (up to 100,000). From the satchel you can sell all, sell one item type, take items out to trade, and the Forge uses what is inside. If the satchel is full, mining stops giving drops.",
+   "commands": [
+    {
+     "command": "/dungeon > Satchel (button)",
+     "who": "player",
+     "what": "Open the satchel (also in /menu > The Depths)"
+    },
+    {
+     "command": "Sell all (button)",
+     "who": "player",
+     "what": "Sell everything in the satchel"
+    },
+    {
+     "command": "Take out (click item)",
+     "who": "player",
+     "what": "Move one stack or all that fit into your inventory"
+    },
+    {
+     "command": "Upgrade (button)",
+     "who": "player",
+     "what": "Buy more space with money"
+    }
+   ],
+   "test": [
+    "Mine some blocks in the Depths and open the satchel. Check the amounts, price and value.",
+    "Click Sell all. Check the money and the sound.",
+    "Take a stack of coal out into your inventory. Check it shows as an item and can be traded.",
+    "Buy the first upgrade ($25,000) and check the capacity grows by 256.",
+    "Fill the satchel to full and keep mining. Check the warning and that the block is not broken.",
+    "Check the scoreboard shows 'Satchel N / M'.",
+    "Switch profile and check each profile has its own satchel.",
+    "On Bedrock, tap items and Sell all."
+   ],
+   "questions": [
+    {
+     "question": "Should 'Sell all' keep a reserve of the items your next Forge upgrade needs?",
+     "suggested": "Yes, with a toggle 'Keep Forge materials'",
+     "why": "Prevents selling the ore you need for the next tool",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the satchel hold items from islands too (farm crops, generator ores) with auto-pickup?",
+     "suggested": "Yes, island auto-pickup goes to inventory, Depths to satchel",
+     "why": "O15 said auto-pickup on islands; where it goes is new",
+     "priority": "before launch"
+    },
+    {
+     "question": "Is one shared capacity for all item types fine, or should each item type have its own slots?",
+     "suggested": "One shared total, as built",
+     "why": "Own slots feel like Minecraft but are fiddly",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the player get a warning at 90% full and a sound?",
+     "suggested": "Yes, once, with a small action bar line",
+     "why": "Avoids losing drops without noticing",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should players be able to set an item filter (only keep these ores) so junk does not fill the bag?",
+     "suggested": "No filter",
+     "why": "Each tier has one drop; filters add little",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the satchel show a bar of how full it is in the action bar while mining?",
+     "suggested": "Only on the scoreboard",
+     "why": "Avoids clutter with the XP line",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the satchel be visible to staff in the inspect view?",
+     "suggested": "Yes, read-only, and admins can fix it",
+     "why": "Needed for support tickets",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should satchel contents be kept at season reset?",
+     "suggested": "No, wiped with the profile",
+     "why": "A fresh start each season",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should money-upgrade prices be lower for ranks or rise with the season?",
+     "suggested": "Fixed prices, no rank discount",
+     "why": "No pay-to-win in progression",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the satchel keep lifetime stats per item (total coal mined) for achievements?",
+     "suggested": "Yes, silent counters",
+     "why": "Feeds achievements and a collection log",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Forge and living tools",
+   "summary": "Every player gets a free starter kit (pickaxe, axe, hoe, sword, rod) from the Quartermaster once per 24 hours. At the Forge a tool can be upgraded to the next tier for money and Depths drops. Tools gain levels (1 to 50) from use, open perk slots at levels 5, 15, 30 and 45, can prestige once per season, and are kept on death. Tools have no durability and can be traded.",
+   "commands": [
+    {
+     "command": "/forge [type]",
+     "who": "player",
+     "what": "Open the Forge: tool tabs, tiers, starter kit"
+    },
+    {
+     "command": "/tool",
+     "who": "player",
+     "what": "Open the tool menu of the custom tool in your hand (also shift+right-click)"
+    },
+    {
+     "command": "/tool give <player> <tool> [tier]",
+     "who": "admin",
+     "what": "Staff: give a custom tool"
+    }
+   ],
+   "test": [
+    "Type /forge and open the Starter kit. Claim it. Try again and see the 24 hour cooldown.",
+    "Mine in the Depths and watch the tool XP and level in the lore. Reach level 5 (slot 1 opens).",
+    "Type /tool with the pickaxe in hand and check stats and slots.",
+    "Collect the ore for the next tier and forge it. Check level, perks and XP are kept.",
+    "Try to rename, put in an anvil, grindstone or crafting grid. All must be refused.",
+    "Die with the tool and check it stays in the inventory.",
+    "Trade the tool to a friend and check they can use it.",
+    "Drop the tool and try to throw it into lava.",
+    "On Bedrock, use /tool instead of shift+right-click."
+   ],
+   "questions": [
+    {
+     "question": "Should custom tools be blocked from being dropped, or ask for a confirm before the drop?",
+     "suggested": "Confirm on drop of tools with level 10+",
+     "why": "A dropped tool can be lost to lava, void or a thief",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should players be able to rename a custom tool (with a name tag token or a command)?",
+     "suggested": "Yes, with a cheap Name Token, filtered",
+     "why": "Personalization drives attachment",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should tools be soulbound after prestige so they cannot be traded?",
+     "suggested": "No, still tradeable",
+     "why": "Prestige tools are power; trade market helps casual players",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the Forge cost drop slightly for ranks or events?",
+     "suggested": "No rank discount; events only",
+     "why": "Keeps progression fair",
+     "priority": "can wait"
+    },
+    {
+     "question": "What should prestige give besides a star and slot 5 (a title, skin unlock, small bonus)?",
+     "suggested": "Permanent title + one skin unlock",
+     "why": "Gear decisions list this as unanswered",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a tool leaderboard (highest level, most blocks) shown on holograms?",
+     "suggested": "Yes, weekly",
+     "why": "Motivation for grinders",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should shift+right-click for the tool menu conflict with placing blocks if holding a pickaxe?",
+     "suggested": "Keep, but add /tool for Bedrock and a setting to turn it off",
+     "why": "Players building with an axe could open the menu by mistake",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a player be allowed to hold several custom tools of the same type at once?",
+     "suggested": "Yes, no limit",
+     "why": "Needed for loadouts",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should tool level and prestige reset every season?",
+     "suggested": "Reset each season, tools are re-forged",
+     "why": "A season is a fresh start",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the starter kit be given again when the season restarts?",
+     "suggested": "Yes, one per season, plus the 24 h claim",
+     "why": "Fresh start support",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Blueprints and skins",
+   "summary": "Blueprints are rare drops (about 1 in 15,000 to 20,000 blocks or 1 in 1,500 kills). With money and materials at the Forge a blueprint turns into a special tool with one ability: auto-smelt, swift, scholar (more tool XP) or lifesteal. Skins are looks for tools (Phoenix Flame, Frostbite, Royal Gold) kept across seasons. Staff can give both.",
+   "commands": [
+    {
+     "command": "/blueprint give <player> <blueprint>",
+     "who": "admin",
+     "what": "Staff: give a blueprint item"
+    },
+    {
+     "command": "/skin give <player> <skin>",
+     "who": "admin",
+     "what": "Staff: add a skin to the collection"
+    },
+    {
+     "command": "Tool menu > Skins",
+     "who": "player",
+     "what": "Pick a skin for your tool"
+    }
+   ],
+   "test": [
+    "Ask staff for /blueprint give <you> sage_pickaxe. Open /forge and craft it. Check the new tool at level 1 with the ability.",
+    "Check the blueprint is used up and cannot be used a second time.",
+    "Try to list the blueprint in /ah and /trade it.",
+    "Ask staff for /skin give <you> frostbite. Open /tool > Skins and apply it.",
+    "Forge the tool to the next tier and check the skin stays.",
+    "Trade the tool to a friend and check the skin goes with it.",
+    "Play 2 hours in the Depths and count how many blueprints drop (probably none; that is the point).",
+    "Check Bedrock shows the skin name even without the resource pack."
+   ],
+   "questions": [
+    {
+     "question": "Is 1 in 15,000 to 20,000 blocks the right blueprint rarity (about one per 4 to 8 hours for a regular)?",
+     "suggested": "Yes, as built",
+     "why": "Rarity decides how special these tools feel",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can blueprints be traded and listed in the auction house?",
+     "suggested": "Yes, tradeable",
+     "why": "Rare drops create a market",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can a blueprint tool be forged to higher tiers and keep its ability?",
+     "suggested": "Yes, ability stays",
+     "why": "Otherwise the ability is lost at tier-up",
+     "priority": "before launch"
+    },
+    {
+     "question": "Which new abilities should exist (more than the 4: auto-smelt, swift, scholar, lifesteal)?",
+     "suggested": "Add 4 later: double-xp-streak, treasure-sense, vein-magnet, soul-harvest",
+     "why": "Gives more reasons to hunt blueprints",
+     "priority": "can wait"
+    },
+    {
+     "question": "Can one tool have more than one ability?",
+     "suggested": "One ability per blueprint tool",
+     "why": "Keeps balance simple",
+     "priority": "can wait"
+    },
+    {
+     "question": "Where do skins come from: crates, the store, events, achievements, gems?",
+     "suggested": "Crates, events, achievements; gems for common skins",
+     "why": "Skins are cosmetic so the store is fine",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should skins be tradeable as an item you can sell?",
+     "suggested": "Yes, as a redeemable skin token",
+     "why": "DESIGN says tradeable; right now skins are only in the collection",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should skins be hidden or shown as 'coming with the resource pack' until the pack exists?",
+     "suggested": "Shown, marked 'name only until the pack'",
+     "why": "Without the pack a skin changes nothing visible",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should skins also exist for armor sets and not only tools?",
+     "suggested": "Later, with wardrobe sets",
+     "why": "Armor trims already change the look",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a skin apply to all tool types or one type per skin?",
+     "suggested": "Per tool type group, as in the config",
+     "why": "Matches the model files you will need",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Skills (/skills)",
+   "summary": "Three skills exist now: Mining, Foraging and Combat (Farming and Fishing come later). XP comes from the Depths and from mob kills. Levels go up to 150, and the first 66 unlock Depths tiers. Skills are per profile and reset each season. Anyone can look at another player's skills.",
+   "commands": [
+    {
+     "command": "/skills [player]",
+     "who": "player",
+     "what": "Open the skills menu for you or another player"
+    },
+    {
+     "command": "/skills set <player> <skill> <levels>",
+     "who": "admin",
+     "what": "Staff: set a level"
+    },
+    {
+     "command": "/skills add <player> <skill> <levels>",
+     "who": "admin",
+     "what": "Staff: add levels"
+    }
+   ],
+   "test": [
+    "Type /skills. Check three skills active and two 'coming soon'.",
+    "Mine a few blocks. The action bar should show '+N Mining XP'. Turn it off in /settings and check it stops.",
+    "Level up. Check the title, chat line with the next unlock and sound.",
+    "Open /skills <friend> to see their skills.",
+    "As admin: /skills set <you> mining 20, then /skills add <you> combat 5. Check the tiers unlock.",
+    "Kill a mob from a spawner on your island. It should give no Combat XP.",
+    "Break an island generator block and check you get no Mining XP.",
+    "Switch profile and check the skills are different."
+   ],
+   "questions": [
+    {
+     "question": "What should levels 67 to 150 give (after the last tier unlock at 66)?",
+     "suggested": "Crystals, a title every 10 levels, and a small permanent bonus",
+     "why": "Without rewards, 84 levels feel empty",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should each level-up give a small reward (money or crystals) as well as the next unlock?",
+     "suggested": "Yes, crystals every level, bigger every 5",
+     "why": "Pacing: frequent small ups",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should skills give permanent passive perks (for example +1% sell per 10 mining levels)?",
+     "suggested": "No perks now. Perks go through masteries and enchants",
+     "why": "Must stay under the bonus-family caps",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a skill leaderboard (/skilltop) and a total or average skill level?",
+     "suggested": "Yes, per skill and a total, best profile counts",
+     "why": "Competition between players",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should milestone levels (25, 50, 100, 150) be announced to the whole server?",
+     "suggested": "Only 100 and 150",
+     "why": "Rare moments feel special",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the level show next to the player name in tab or chat?",
+     "suggested": "Show skill average in tab hover only",
+     "why": "Avoids a clutter of numbers",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should skill XP boosters exist for events (double XP weekend)?",
+     "suggested": "Yes, as a global booster",
+     "why": "Needed for events and refunds",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should Farming and Fishing XP counts be backfilled for earlier play when those skills arrive?",
+     "suggested": "No, start from zero",
+     "why": "Avoids guessing",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to see a skill history log for a player (XP per hour)?",
+     "suggested": "Yes, in the inspect view",
+     "why": "Helps catch XP exploits",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should skill milestones give a title (Master Miner at 50, Grandmaster at 100)?",
+     "suggested": "Yes, titles at 25, 50, 100, 150",
+     "why": "Titles are earned cosmetics, kept across seasons",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Enchants and the Enchanter (/enchanter)",
+   "summary": "There are 48 custom enchants (mining, forestry, farming, combat, fishing, armor) with rarities from Common to Mythic. You find books by mining, chopping and killing, or roll them at the Enchanter for crystals. Books unlock an enchant on a tool slot, crystals raise its level. Enchants can be upgraded, combined, removed with a scroll or shattered for 20% back. Books are unique items and tradeable.",
+   "commands": [
+    {
+     "command": "/enchanter",
+     "who": "player",
+     "what": "Apply, upgrade, combine, remove books, Book shop rolls, guide"
+    },
+    {
+     "command": "Book shop rolls",
+     "who": "player",
+     "what": "Buy Apprentice (500), Adept (4,000) or Master (25,000) crystal rolls"
+    },
+    {
+     "command": "Disenchant Scroll",
+     "who": "player",
+     "what": "Buy for 2,500 crystals, removes an enchant and keeps the book"
+    }
+   ],
+   "test": [
+    "Type /enchanter and open the guide. Look at the list and rarities.",
+    "Buy an Apprentice Roll (500 crystals) and check a level I book arrives.",
+    "Apply the book to a tool slot (needs tool level 5 for slot 1).",
+    "Upgrade the enchant with crystals, then try combining two equal books.",
+    "Remove the enchant without a scroll and check the 20% crystal refund.",
+    "Buy a scroll and remove with it. The book must come back.",
+    "Try to put a book on a vanilla tool or an anvil. Both refused.",
+    "Trade a book to a friend and list one in /ah.",
+    "Check a copy of a book (staff test) is taken away when used."
+   ],
+   "questions": [
+    {
+     "question": "Should Mythic books be non-tradeable (bound to the first owner) so they cannot be bought with money?",
+     "suggested": "Mythic books bound to the player",
+     "why": "Mythics are the top power; the plan says only crates and bosses",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the daily roll limits (5, 5, 3) be per account instead of per profile?",
+     "suggested": "Per account",
+     "why": "Three profiles would otherwise triple the rolls",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the Enchanter buy back unwanted books for crystals?",
+     "suggested": "Yes, at 10% of the apply cost",
+     "why": "Gives value to duplicate drops and removes inventory clutter",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players get one free re-spec (remove all enchants of one tool for free) per season?",
+     "suggested": "No free re-spec",
+     "why": "Shatter and scrolls already exist",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the first guaranteed book be given earlier (for example a free starter book on first join)?",
+     "suggested": "Yes, one common starter book",
+     "why": "New players see enchants within minutes",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should enchants show the exact numbers in the tool lore (+12% speed)?",
+     "suggested": "Yes, short value per enchant",
+     "why": "Players can compare builds",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should a maxed pickaxe cost a known total in crystals shown in the guide?",
+     "suggested": "Yes, show total cost per enchant",
+     "why": "Helps planning",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should books drop in a bound form from boss and crate sources and unbound from mining?",
+     "suggested": "Everything unbound except Mythic",
+     "why": "Simplest rule",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should enchant levels above the tool level cap (the level gate) be possible with a rare 'overcharge' item?",
+     "suggested": "No",
+     "why": "Keeps the gate meaningful",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be limited-time seasonal enchants (a new one each month)?",
+     "suggested": "No new enchants during a season",
+     "why": "Balance stays stable",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Wardrobe and armor sets (/wardrobe)",
+   "summary": "There are 16 sets (5 starter sets for $20k, then sets bought with money, crystals or gems, and top sets only from crates). Wearing 2 or 4 pieces gives bonuses like sell price, drops, speed or damage reduction. Sets level from 0 to 50 by doing what they boost, and the bonus grows from 0x to 2x. Two max-level sets can be merged. Set armor is locked to your body and cannot be dropped or copied. A Wardrobe Chest holds tools and books.",
+   "commands": [
+    {
+     "command": "/wardrobe (/sets)",
+     "who": "player",
+     "what": "Open all sets, wear or take off pieces, buy, level, merge, tomes"
+    },
+    {
+     "command": "Set screen > Wear all / Take all off",
+     "who": "player",
+     "what": "Put on or off a full set"
+    },
+    {
+     "command": "Redeem a Set Token (right-click)",
+     "who": "player",
+     "what": "Unlock a set from a crate token"
+    }
+   ],
+   "test": [
+    "Type /wardrobe. Check the filter tabs and that owned sets show first.",
+    "Buy a $20k starter set. Check the confirm screen (always asks).",
+    "Wear all pieces. Try to drop, click, shift-click, swap or put them in a chest. All must fail.",
+    "Wear 2 pieces only and check the 2-piece bonus line; mine until the action bar shows set XP.",
+    "Take off the set and check pieces vanish (not in inventory).",
+    "Swap profile and check sets are per profile.",
+    "Try to wear a set in the warzone (blocked) and check it counts as 1x there.",
+    "Ask staff for a Wardrobe Tome and a Set Token and use both.",
+    "Test merging with staff help at level 50: check the result is level 0 with both bonuses."
+   ],
+   "questions": [
+    {
+     "question": "Can players still wear normal vanilla or other armor in the armor slots when they own no set?",
+     "suggested": "Yes, vanilla armor allowed when no set is worn",
+     "why": "Players need armor before they buy a set",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can pieces of different sets be worn together (mix and match), with bonuses only from a full pair?",
+     "suggested": "Yes, mixing allowed",
+     "why": "Gives builds; bonuses need 2 or 4 pieces of one set",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can a set be sold or traded in for part of its price?",
+     "suggested": "No refunds",
+     "why": "Avoids buy-use-refund loops with crystals and gems",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to dye or change trims of a set for a fee?",
+     "suggested": "Yes, cosmetic recolor for crystals",
+     "why": "Cosmetic sink",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the worn set show in chat hover or tab so others can see it?",
+     "suggested": "Yes, a short set name in the hover card",
+     "why": "Flex value for players",
+     "priority": "can wait"
+    },
+    {
+     "question": "Which sets stay after a season reset: bought ones, crate ones, merged ones?",
+     "suggested": "Only gem Sigils stay; everything else resets",
+     "why": "Merging resets level, but the season rule is open",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should set pieces have their own durability or look damaged?",
+     "suggested": "No durability",
+     "why": "Keeps armor simple and avoids repair costs",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should set XP have a daily cap per set so one activity cannot level it in one weekend?",
+     "suggested": "Hourly caps only (sell 8,000/h, farming 10,000/h)",
+     "why": "Confirm caps instead of a daily cap",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should set bonuses show as a full list in the item lore of each piece?",
+     "suggested": "Short list: 2-piece and 4-piece lines",
+     "why": "Readable on phones",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be set leaderboards (highest set level)?",
+     "suggested": "Yes, weekly, best profile",
+     "why": "Competition",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the Wardrobe Chest accept all unique items like skins and keys?",
+     "suggested": "Only tools, books, scrolls, tokens and tomes",
+     "why": "Keeps the safe-swap logic simple",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Loadouts (/loadout)",
+   "summary": "A loadout is a saved preset of set pieces, a pet and the custom tools in your hotbar. One click swaps the whole kit, for example from Mining to Combat. Pieces and tools that go out wait in the Wardrobe Chest. Everyone has 2 presets; ranks and the store give more (max 8). Swaps are blocked in combat and in the warzone and have a 2 second cooldown.",
+   "commands": [
+    {
+     "command": "/loadout",
+     "who": "player",
+     "what": "Open the loadout menu"
+    },
+    {
+     "command": "/loadout <name>",
+     "who": "player",
+     "what": "Apply a preset by its one-word name"
+    }
+   ],
+   "test": [
+    "Wear a set and hold a pickaxe in the hotbar. Open /loadout and save current into an empty slot, name it Mining.",
+    "Take off the set, move the pickaxe away, then type /loadout Mining. Everything should be back.",
+    "Create a second preset Combat with a sword and a different set and swap between them.",
+    "Rename, change icon and delete a preset (with confirm).",
+    "Get hit by a mob and try to swap within 10 seconds. It must refuse.",
+    "Sell or trade a tool that is in a preset, then apply it. The rest should still swap and list what is missing.",
+    "Try a 3rd preset on a free account (should say locked).",
+    "Check names with spaces turn into dashes."
+   ],
+   "questions": [
+    {
+     "question": "Should presets also store tools in the main inventory and the offhand, not only the hotbar?",
+     "suggested": "Hotbar and offhand",
+     "why": "Players often keep shield or torch in the offhand",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /loadout accept a slot number (/loadout 2) as well as the name?",
+     "suggested": "Yes, number works too",
+     "why": "Names are one word; numbers are faster",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should a loadout switch automatically when entering a wing (Mine, Forest, Combat)?",
+     "suggested": "Optional toggle 'Auto swap by place', off by default",
+     "why": "Saves clicks for grinders",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should loadouts remember the pet and show a fun message when swapping?",
+     "suggested": "Yes, short message",
+     "why": "Pets will come later",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to see and restore a player's presets?",
+     "suggested": "Yes, in inspect view",
+     "why": "Support when presets break",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the menu show a warning when a preset refers to a tool that has moved to the AH or trade?",
+     "suggested": "Yes, mark the slot red",
+     "why": "Fewer failed swaps",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the swap show a progress bar or animation to feel satisfying?",
+     "suggested": "Short sound and action bar only",
+     "why": "Avoids long animations",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should presets be shareable by sending a code or export to a friend?",
+     "suggested": "No",
+     "why": "Items are unique and cannot be shared anyway",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a swap put tools in the same hotbar slots as saved or in any free slots?",
+     "suggested": "Same slots as saved",
+     "why": "Muscle memory for hotbar keys",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should loadouts be usable inside the Depths while mining (outside combat)?",
+     "suggested": "Yes, outside combat",
+     "why": "Switching pickaxe to sword in the Depths is the main use",
+     "priority": "before launch"
+    }
+   ]
+  },
+  {
+   "feature": "Stacking: mobs, items, entity limits and dark crops",
+   "summary": "On islands, mobs of the same kind within 5 blocks join one stack (up to 1,024), shown as 'Zombie x45'. Stacked spawner mobs do not move. Dropped items merge into one with a counter. Islands have limits for armor stands, item frames, minecarts, boats, villagers and display entities. Crops also grow in the dark. A weapon without a custom enchant kills one mob of a stack per hit.",
+   "commands": [
+    {
+     "command": "(no command)",
+     "who": "player",
+     "what": "Everything works automatically on islands. See /help stacking"
+    },
+    {
+     "command": "/spawner give <player> <type> [amount]",
+     "who": "admin",
+     "what": "Staff: give spawner items"
+    }
+   ],
+   "test": [
+    "On your island let several chickens or pigs stand close. Check they merge into one named stack.",
+    "Hit the stack with a normal sword. Check it kills one at a time and drops scale.",
+    "Feed a cow stack wheat and check babies = number of food items.",
+    "Drop many items on the ground and see them merge with a count. Walk over to pick up.",
+    "Put a lot of item frames or armor stands until the limit message appears.",
+    "Plant wheat in a dark room and watch it grow slowly.",
+    "Let a stack fall into lava or the void and check the whole stack dies.",
+    "Try name-tagging, leading and riding a stacked mob. Each should be refused.",
+    "Shear a sheep stack."
+   ],
+   "questions": [
+    {
+     "question": "Do explosions (TNT, creepers) kill the whole stack or only some mobs?",
+     "suggested": "Kill up to 10 mobs per explosion",
+     "why": "TNT grinders are common; limits help lag",
+     "priority": "before launch"
+    },
+    {
+     "question": "When you kill a stack, do the drops go into your inventory, spill as a stacked item, or go to a collector?",
+     "suggested": "Spill as one stacked item that you pick up",
+     "why": "Auto-pickup to inventory could fill it; satchel is Depths only",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should ranged weapons (bows, tridents) work with the stack-kill enchants?",
+     "suggested": "Yes, bows and tridents count",
+     "why": "Many players use bows on mobs",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff have a tool to clear all stacks or split a huge stack on an island that lags?",
+     "suggested": "Yes, a staff action in the island admin",
+     "why": "Fast fix for lag complaints",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the stack name show the mob type in the server color theme with a health bar for big stacks?",
+     "suggested": "Name and count only",
+     "why": "Names are cheap, bars are extra entities",
+     "priority": "can wait"
+    },
+    {
+     "question": "What should happen to mobs above the 8-stacks-per-chunk limit: cancel the spawn or join the biggest stack?",
+     "suggested": "Join the biggest stack, cancel if it's full",
+     "why": "Prevents silent loss of spawner output",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a visual (hologram) of the entity limits remaining for the island?",
+     "suggested": "Show counts in /is info",
+     "why": "Players need to understand why a place failed",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players get a message when a spawn is cancelled by the 8-stacks-per-chunk limit?",
+     "suggested": "Yes, rare action bar line to island members",
+     "why": "Otherwise spawners look broken",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the max stack size (1,024) be lower for large mobs?",
+     "suggested": "Same 1,024 for all",
+     "why": "Simpler; the entity count is what matters",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should stacked mob farms count into island level or be excluded from it?",
+     "suggested": "Excluded",
+     "why": "Avoids level boosts from spawners",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Spawners (stackable)",
+   "summary": "Spawner items come in 5 tiers (pigs and cows up to blaze, iron golem, evoker). They can only be placed on islands. One block holds 8 spawners and can grow to 512 with a mastery. Right-click with another spawner of the same type to add. Break = take one, sneak-break = take all. Mobs spawn straight into stacks, with no light or space needed, only when a player is within 16 blocks.",
+   "commands": [
+    {
+     "command": "Right-click spawner block",
+     "who": "player",
+     "what": "Open the spawner menu (type, tier, stack, mobs per minute, add/take)"
+    },
+    {
+     "command": "Sneak-right-click spawner block",
+     "who": "player",
+     "what": "Open the menu even with a block in hand"
+    },
+    {
+     "command": "/spawner give <player> <type> [amount]",
+     "who": "admin",
+     "what": "Staff: give spawners (1 to 2,304)"
+    }
+   ],
+   "test": [
+    "Ask staff to /spawner give you pig 10. Place one on your island.",
+    "Right-click with another pig spawner to add. Check the stack and the menu numbers.",
+    "Break it to take one back; sneak-break to take all.",
+    "Stand near it for a minute and check mobs appear as a stack.",
+    "Walk more than 16 blocks away and check it stops.",
+    "Try placing a spawner at spawn or in the Depths (must fail).",
+    "Try changing the spawner with a spawn egg (must fail).",
+    "Place a TNT next to it and check the spawners survive.",
+    "Kill the stack, sell the loot, and compare money per minute with your other income."
+   ],
+   "questions": [
+    {
+     "question": "Can spawner items be traded and listed in the auction house?",
+     "suggested": "Yes, tradeable",
+     "why": "Spawners are the strongest money source; trade creates a market and an exploit risk",
+     "priority": "before launch"
+    },
+    {
+     "question": "How many separate spawner blocks may one island place (even if each holds many)?",
+     "suggested": "No limit on blocks, stack caps apply",
+     "why": "O1 said no block limits; confirm for spawners",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the activation range be bigger than 16 blocks, or the whole island while a member is on it?",
+     "suggested": "Whole island while a member is on it",
+     "why": "16 blocks is small on big islands",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should spawner blocks show a floating label with type and stack size?",
+     "suggested": "Yes, one label per block, counted in the display limit",
+     "why": "Visible info vs entity limit of 30",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a spawner stack with different types merge into one block (mixed spawners)?",
+     "suggested": "No, one type per block",
+     "why": "Keeps menu and loot simple",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a spawner fuel/upkeep cost in money or fuel so they are not free forever?",
+     "suggested": "Yes, when Island Fuel exists",
+     "why": "Sink for the strongest source of money",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should staff see a list of the biggest spawner stacks on the server?",
+     "suggested": "Yes, in the economy dashboard",
+     "why": "Spot abusers and balance problems",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a player get a warning before breaking a stack of 100+ spawners?",
+     "suggested": "Yes, confirm for sneak-break of 10+",
+     "why": "Accident protection",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should each spawner tier have a different required Island level or mastery before it can be placed?",
+     "suggested": "Tier 3+ need the Spawner mastery",
+     "why": "Controls power curve",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the spawner menu show an estimate of money per hour for the stack?",
+     "suggested": "Yes, using today's sell prices",
+     "why": "Helps players decide what to place; also shows if it is too strong",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should spawner output stop when the island has hit its mob or item limits?",
+     "suggested": "Yes, with a status line 'Limit reached'",
+     "why": "Prevents lag and lost output",
+     "priority": "before launch"
+    }
+   ]
+  },
+  {
+   "feature": "AFK pool",
+   "summary": "A small area at spawn where standing still pays. Every 15 minutes inside gives money, island fuel, and sometimes a key or a sell booster. The longer you stay, the bigger the reward (up to 180% after 6 hours). Maximum 8 hours per account per day. One account per IP can earn at a time. There is no command. It is closed until builders add the area.",
+   "commands": [
+    {
+     "command": "(no command)",
+     "who": "player",
+     "what": "Stand in the pool. See the action bar and the AFK line on the spawn scoreboard"
+    },
+    {
+     "command": "/help afk",
+     "who": "player",
+     "what": "Help page for the pool"
+    }
+   ],
+   "test": [
+    "Ask staff to open the pool (add the afk_pool region or set the box in the config).",
+    "Stand inside and watch the action bar countdown and the scoreboard AFK line.",
+    "Wait 15 minutes. Check money arrives and the chat line.",
+    "Leave and return. The session bonus should reset; the daily total stays.",
+    "Use a second account on the same IP. It should show 'Paused: another account is earning'.",
+    "Stay 1 hour. Check the first key is saved as pending (crates are not built).",
+    "Check the sell booster starts only after you step out of the pool.",
+    "On Bedrock check the action bar and whether two Bedrock players on one network are paused."
+   ],
+   "questions": [
+    {
+     "question": "Should the pool need a minimum playtime or skill level before it pays?",
+     "suggested": "30 minutes of playtime, like /pay",
+     "why": "Stops fresh alts from farming",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should time in the pool count as playtime for /freerank, the 30 min new-account limit and bank interest eligibility?",
+     "suggested": "No. Pool time is not playtime for those",
+     "why": "Alts could sit in the pool to unlock everything without playing",
+     "priority": "before launch"
+    },
+    {
+     "question": "How many players may be in the pool at once?",
+     "suggested": "Limit of 60, then 'Pool full'",
+     "why": "AFK players use server slots and entities",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should idle players be kicked by the server after a time, and should pool players be exempt?",
+     "suggested": "Idle kick at 20 minutes outside the pool, none inside",
+     "why": "Keeps the 300 slots usable",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should staff on duty or vanished staff earn rewards in the pool?",
+     "suggested": "No",
+     "why": "Staff time is paid in other ways",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the player be asked 'Still here?' by a click every hour to stop bots?",
+     "suggested": "Yes, a simple button every 60 minutes",
+     "why": "Bots and alt farms are the main risk",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should AFK players have a [AFK] tag in tab and chat?",
+     "suggested": "Yes, in tab only",
+     "why": "Other players know why they don't answer",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the reward chat line appear every 15 minutes or only the action bar?",
+     "suggested": "Chat line only for keys and boosters",
+     "why": "Avoids chat spam",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the pool give skill XP or set XP?",
+     "suggested": "No",
+     "why": "Keeps it a pure idle reward",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the pool have different areas per rank (VIP pool with faster steps)?",
+     "suggested": "No rank difference",
+     "why": "Pay-to-win concern",
+     "priority": "before launch"
+    }
+   ]
+  },
+  {
+   "feature": "Resource pack plan",
+   "summary": "The plan adds a resource pack for Java and Bedrock with custom item looks, menu backgrounds, font icons, sounds, HUD bars, crate animations and a custom border. Everything works without the pack (vanilla fallback). It is optional at first. Nothing is built yet. This sheet only adds questions beyond the RP-D1 to RP-D17 list.",
+   "commands": [
+    {
+     "command": "/settings > Resource pack",
+     "who": "player",
+     "what": "Planned toggle to turn the pack on or off"
+    },
+    {
+     "command": "/skyblock reload",
+     "who": "admin",
+     "what": "Planned: push a new pack version to players"
+    }
+   ],
+   "test": [
+    "Nothing to test in game yet (planning only).",
+    "Read docs/plans/RESOURCE_PACK.md section 0 and 17 and answer RP-D1 to RP-D17.",
+    "Look at the UI sketches in the design artifact and decide the art direction.",
+    "Check that the plan says every menu stays usable with the pack off, and tell the developer if you disagree.",
+    "List which art you can make yourself and which you need to buy (RP-D7)."
+   ],
+   "questions": [
+    {
+     "question": "Who pays for pack hosting and a CDN, and what is the monthly budget?",
+     "suggested": "VPS first, CDN when over 200 players",
+     "why": "Decides hosting plan",
+     "priority": "can wait"
+    },
+    {
+     "question": "Is the 8 MB limit for the Bedrock pack OK for players on mobile data?",
+     "suggested": "Yes, target 5 MB",
+     "why": "Large downloads make players leave",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should accepting the pack give a small reward (1 gem or a cosmetic)?",
+     "suggested": "Yes, a one-time cosmetic tag",
+     "why": "Raises acceptance on an optional pack",
+     "priority": "can wait"
+    },
+    {
+     "question": "What art style should the pack use: vanilla-like 16x16 pixel art, or a distinct Phoenix style?",
+     "suggested": "Vanilla-like with ember colors",
+     "why": "Decides how much art and who makes it",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the pack replace vanilla sounds (clicks, level-up) or only add new events?",
+     "suggested": "Only add new events",
+     "why": "Less risk of annoying players",
+     "priority": "can wait"
+    },
+    {
+     "question": "How often may the pack change during a season (weekly, monthly, frozen)?",
+     "suggested": "Monthly updates",
+     "why": "Every update means a re-download",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the pack include cosmetic hats or backpacks sold in the store?",
+     "suggested": "Not in the first version",
+     "why": "New cosmetics need the store and Bedrock mapping",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should art be allowed to be AI-generated if it is checked for licenses?",
+     "suggested": "No, original or licensed only",
+     "why": "Avoids copyright issues in a store",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a lite pack for weak phones and old PCs?",
+     "suggested": "No, one small pack (5 MB)",
+     "why": "Two packs double the work",
+     "priority": "can wait"
+    },
+    {
+     "question": "Who tests each pack release on Bedrock phones before it goes live?",
+     "suggested": "Owner or one trusted tester per release",
+     "why": "Geyser conversions break easily",
+     "priority": "before launch"
+    }
+   ]
+  },
+  {
+   "feature": "Look and feel V2 (colors, lore, menus, scoreboard)",
+   "summary": "The whole server uses one style: brand red, ember, aqua crystals and green gems, short messages with a mark, lore with a red bar and bold yellow action lines, and the same menu layout everywhere. Bedrock gets safe color and symbol fallbacks. The scoreboard changes by place (island, Depths, spawn). The sketches and canvas V2 boards are approved.",
+   "commands": [
+    {
+     "command": "/settings",
+     "who": "player",
+     "what": "Toggles for sounds, particles, action bar XP, tips, scoreboard"
+    },
+    {
+     "command": "/skyblock reload core",
+     "who": "admin",
+     "what": "Reload colors from style.yml"
+    }
+   ],
+   "test": [
+    "Open some menus (shop, sell chest, satchel, forge, wardrobe) and compare layout and colors.",
+    "Read a tool or book lore: red bar headers, yellow action lines, rarity footer.",
+    "Check the scoreboard at spawn, island, Depths and while visiting another island.",
+    "Open /settings and toggle sounds, particles, tips and see the effect.",
+    "Compare Java and Bedrock for colors and symbols (arrows, hearts, crystals).",
+    "Trigger an error message and a success message and check the mark and color.",
+    "Look at chat prefix, tab list and the join/quit lines."
+   ],
+   "questions": [
+    {
+     "question": "Should the server have a Norwegian language option for messages and menus?",
+     "suggested": "English only at launch, Norwegian later",
+     "why": "Your community may include many Norwegian kids; translation is a lot of work",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a high-contrast or color-blind mode setting?",
+     "suggested": "Yes, later, with a setting in /settings",
+     "why": "Accessibility for players",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to hide lines of the scoreboard (for example gems)?",
+     "suggested": "Yes, toggles for each line",
+     "why": "Reduces clutter for small screens",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should big numbers always use the same format everywhere (1.2M in menus, full in chat)?",
+     "suggested": "Short in menus and lore, full in chat and /bal",
+     "why": "One rule to avoid mixed styles",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should Bedrock players get native forms (simple pop-up lists) for long lists like the shop and AH instead of chest menus?",
+     "suggested": "No, chest menus everywhere",
+     "why": "Forms are not as fast for clicking; chest GUIs work on Geyser",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the style have seasonal variants (a holiday palette in December)?",
+     "suggested": "Yes, small color swaps for events",
+     "why": "Fun, low risk",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should menu click sounds be quieter by default for new players?",
+     "suggested": "Default 50% volume",
+     "why": "Sounds can be annoying with many clicks",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the Help page auto-open for new players on the first join?",
+     "suggested": "Yes, the first-join tip only once",
+     "why": "Onboarding",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should long item lore be shortened for Bedrock phone screens?",
+     "suggested": "Yes, a compact lore mode on Bedrock",
+     "why": "Long lore is hard to read on a phone",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should money changes (+$500, -$200) always show on the action bar for every source?",
+     "suggested": "Yes, grouped every 1.5 seconds",
+     "why": "Gives clear feedback without chat spam",
+     "priority": "can wait"
+    }
+   ]
+  }
+ ]
+}

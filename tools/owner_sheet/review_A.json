@@ -1,0 +1,3044 @@
+{
+ "features": [
+  {
+   "feature": "Profiles (up to 3 islands per player)",
+   "summary": "Every player can have up to three profiles. A profile is one island plus its own money, crystals, items, ender chest, skills and progress. Gems, rank, titles and cosmetics are shared between all profiles. You switch with /profiles, and nothing can ever be moved between your own profiles.",
+   "commands": [
+    {
+     "command": "/profiles (/profile)",
+     "who": "player",
+     "what": "Open the profile menu: switch, create, rename, change icon, buy slot 2 or 3, delete a profile."
+    }
+   ],
+   "test": [
+    "Type /profiles. Profile 1 is yours and active. Slots 2 and 3 are locked and show a price (500 and 1,500 gems) or the rank needed.",
+    "Ask staff to give you gems, then buy slot 2. Check the gems go down only once and the slot opens.",
+    "Click the empty slot and create a profile. You land at spawn with an empty inventory, $0 and no island. Gems and rank stay the same.",
+    "Run /is on profile 2 and make an island, then put a stone block in your inventory. Switch back to profile 1: your old items, money and island home are back and you land at your old island.",
+    "Rename the profile (you type the new name in chat) and change its icon. Relog right after a switch: you must come back on the same profile.",
+    "Try to cheat on purpose: drop an item on profile 1, switch to profile 2 and try to pick it up. It must be refused. Also try to cash a money note made on the other profile and to buy your own other profile's /ah listing. All must be refused.",
+    "Try to visit or join the island of your other profile (use an alt to invite it). It must be refused.",
+    "Delete profile 2: you get a confirm screen and must type the profile name. You cannot delete the profile you are playing on.",
+    "Bedrock: do all of the above by tapping. Check that renaming (typing in chat) works on a phone."
+   ],
+   "questions": [
+    {
+     "question": "Should crate keys and key fragments belong to one profile, or be shared by all your profiles?",
+     "suggested": "Per profile (like money). Keys bought in the store go to the profile you are on when you claim them.",
+     "why": "Decides whether keys can be used as a way to move value between your profiles.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the daily login reward and streak be once per account (not once per profile)?",
+     "suggested": "Once per account per day. The reward goes to the profile you are on when you claim it.",
+     "why": "With three profiles a player could claim the reward three times a day.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should vote rewards go to the profile you are on, and count once per vote?",
+     "suggested": "Yes: one vote = one reward, given to the active profile.",
+     "why": "Stops voting once and getting paid on every profile.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the collection log and pets be per profile?",
+     "suggested": "Yes, both per profile (they are progress, like skills).",
+     "why": "Not decided yet in the profile list. Affects data design before pets and collections are built.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the 30-minute new-account limit (no /pay, /withdraw, /ah) apply again to a brand-new second or third profile?",
+     "suggested": "No. It counts account playtime, so a new profile is not limited again.",
+     "why": "A fresh profile with a limit would annoy honest players; a trick account is already covered by the no-transfer rule.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should other players be able to see which profile you are on (name or icon) in the hover card, /seen or the tab list?",
+     "suggested": "No. Only you and staff see profile names.",
+     "why": "Privacy and less confusion. Players could otherwise hunt for your 'rich' profile.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should profile switching also be blocked inside The Depths tiers and the warzone, not only in combat and the boss arena?",
+     "suggested": "Blocked in the warzone and boss arena. Allowed in The Depths outside combat.",
+     "why": "A switch teleports you to another island, which could be used to escape a fight or a trap.",
+     "priority": "before launch"
+    },
+    {
+     "question": "When you accept an island invite, should the invite work only if the profile you are on has no island, with a hint to switch profile first?",
+     "suggested": "Yes. Invites belong to the account, you must be on an island-less profile to accept.",
+     "why": "Explains what players should do when they have an island on profile 1 and get invited while on it.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should staff be able to pick which profile to look at in /inspect, /invsee, /ecsee and /logs?",
+     "suggested": "Yes. A profile picker in /inspect (default: the active profile).",
+     "why": "Staff need to check the profile that was involved in a dupe or a scam.",
+     "priority": "before launch"
+    },
+    {
+     "question": "If a player buys slot 2 with gems and later gets the Knight rank, should the gems be refunded?",
+     "suggested": "No refund. The slot stays theirs forever.",
+     "why": "Avoids gem refund abuse and keeps the rule simple.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Is 3 profiles the hard maximum, or may a 4th and 5th slot be sold later?",
+     "suggested": "Hard maximum of 3.",
+     "why": "More slots mean more alt-like accounts and more database data.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should profile names be checked by the chat word filter?",
+     "suggested": "Yes, same filter as chat. Max 16 characters.",
+     "why": "Staff can see profile names in /inspect, so offensive names should not be possible.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be special profile icons that are unlocked (for example by achievements or ranks)?",
+     "suggested": "Yes, later: a few unlockable icons, the basic ones are free.",
+     "why": "Small cosmetic reason to collect things.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the profile menu show a warning before you create a new profile that it starts with no start money and no island?",
+     "suggested": "Yes, one confirm screen with the three facts (empty inventory, $0, no island).",
+     "why": "Stops players creating a profile by accident and thinking they lost their stuff.",
+     "priority": "before launch"
+    }
+   ]
+  },
+  {
+   "feature": "Island creation, starter island and homes",
+   "summary": "A new player lands at spawn and types /is to create an island. The starter island is built for them with a starter chest, and they are sent there. Once you have an island, /is opens the island menu and /is home takes you back. Leaders can move the island home and every member gets one personal home.",
+   "commands": [
+    {
+     "command": "/is",
+     "who": "player",
+     "what": "No island: open the 'Create your island' screen. With an island: open the island menu."
+    },
+    {
+     "command": "/is home [home name]",
+     "who": "player",
+     "what": "Teleport to the island home, or to one of your personal homes."
+    },
+    {
+     "command": "/is go",
+     "who": "player",
+     "what": "Same as /is home."
+    },
+    {
+     "command": "/is sethome",
+     "who": "player",
+     "what": "Set the island home where you stand (Leader, Admin and Mod)."
+    },
+    {
+     "command": "/is setmyhome [name]",
+     "who": "player",
+     "what": "Set your own personal home on the island (1 per member). Same name again moves it."
+    }
+   ],
+   "test": [
+    "Use a fresh account. Join, then type /is. You should see a 'Create your island' confirm screen. Confirm.",
+    "You get a title and sound, the starter island appears under you and a starter chest is on it. Open the chest and check the contents.",
+    "Type /spawn, then /is home. You should land on the island home.",
+    "Stand somewhere else on the island and type /is sethome, then /is home from spawn. You land at the new spot. Try to set a home outside the island border or in the air: refused.",
+    "Type /is setmyhome base, walk away, then /is home base. You return to your personal home.",
+    "Jump off the island into the void. You should land back on your island home without damage.",
+    "Die (ask staff to /kill you). Check where you respawn and that you keep your inventory.",
+    "Bedrock: do the create screen and the island menu by tapping; check the title and the chest are readable."
+   ],
+   "questions": [
+    {
+     "question": "Should a new island start at 3x3 chunks (48x48 blocks) and be able to grow to at most 15x15 chunks (240x240)?",
+     "suggested": "Yes: start 3x3, maximum 15x15, grown by upgrades.",
+     "why": "Decides how much room players have at the start and how islands are spaced.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Is this the starter chest you want: lava bucket, ice, 2 bone meal, 16 bread, 2 oak saplings, sugar cane, cactus, melon seeds, pumpkin seeds?",
+     "suggested": "Yes, as built (classic skyblock start).",
+     "why": "The first thing every player sees; it sets how fast they can start growing.",
+     "priority": "before launch"
+    },
+    {
+     "question": "When a brand-new player joins, should the 'Create your island' screen open by itself, or should we only show a clickable message and the guide NPC?",
+     "suggested": "Do not force it. Show a clickable 'Create your island' chat line and let the guide NPC point to it.",
+     "why": "First impression. A forced menu can feel pushy, but no hint makes players lost.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Where should a player respawn after dying: at spawn (built now), at their island home, or at their island home only if they have one?",
+     "suggested": "At the island home if they have one, otherwise spawn.",
+     "why": "Respawning at spawn adds a walk every death; the island home is faster for grinders.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should every profile pick its own starter island type (Ember Meadow, Frost Peak, Ash Dunes)?",
+     "suggested": "Yes. Each new profile gets the choice again.",
+     "why": "Gives each profile its own feel; the owner chose 3 starter islands.",
+     "priority": "can wait"
+    },
+    {
+     "question": "After leaving or being kicked from a team island, may the player create a new solo island right away?",
+     "suggested": "Yes, right away (no creation cooldown).",
+     "why": "Players who were kicked should not be locked out; the join limits already stop hopping.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should leaders be able to reset their island to the starter island without disbanding (keeping members, bank and stats)?",
+     "suggested": "No. Only disband and create again.",
+     "why": "A reset button is easy to misuse and hard to undo.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should abandoned islands (nobody online for 60+ days) be freed automatically to save space and data?",
+     "suggested": "No deletion during a season. Everything is wiped at the season reset.",
+     "why": "Players who come back after a break expect their island. Space is not a problem yet.",
+     "priority": "can wait"
+    },
+    {
+     "question": "If the leader of a solo island is permanently banned, should the island be kept (hidden) or deleted?",
+     "suggested": "Keep it, hidden from the visit browser and locked. Staff can delete it.",
+     "why": "Evidence may be needed for the ban and a mistaken ban should be fully reversible.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the starter island be a different build for staff-made 'event' islands (for example a builder showcase island)?",
+     "suggested": "No. One style per starter island type.",
+     "why": "Keeps the number of schematics small.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Island team: invites, roles, coop and permissions",
+   "summary": "Leaders can invite players to form a team island (4 members including the leader, 8 with upgrades). Roles are Leader, Admin, Mod, Member and Coop (temporary trust). A permission screen lets the leader decide what each role may do (break, place, containers, spawners and more). Members can leave and the leader can transfer the island.",
+   "commands": [
+    {
+     "command": "/is invite <player>",
+     "who": "player",
+     "what": "Invite an online player (Leader, Admin, Mod). The first invite makes the island a team island forever."
+    },
+    {
+     "command": "/is accept [player]",
+     "who": "player",
+     "what": "Accept your newest invite, or the one from that island."
+    },
+    {
+     "command": "/is deny [player]",
+     "who": "player",
+     "what": "Decline an invite."
+    },
+    {
+     "command": "/is invites",
+     "who": "player",
+     "what": "Menu of invites you got and invites your island sent (cancel them here)."
+    },
+    {
+     "command": "/is members",
+     "who": "player",
+     "what": "Member list with roles and actions (promote, demote, kick, transfer, permissions)."
+    },
+    {
+     "command": "/is kick <player>",
+     "who": "player",
+     "what": "Kick a lower role (Leader > Admin > Mod > Member)."
+    },
+    {
+     "command": "/is leave",
+     "who": "player",
+     "what": "Leave your island (confirm). The leader must transfer first."
+    },
+    {
+     "command": "/is promote <player> / /is demote <player>",
+     "who": "player",
+     "what": "Move a member up or down one role."
+    },
+    {
+     "command": "/is transfer <player>",
+     "who": "player",
+     "what": "Leader only: give the island to a member. The old leader becomes Admin."
+    },
+    {
+     "command": "/is coop <player> / /is uncoop <player>",
+     "who": "player",
+     "what": "Give or remove temporary trust for an online player (max 4)."
+    },
+    {
+     "command": "/isadmin addmember <island> <player>",
+     "who": "admin",
+     "what": "Staff: add a member without an invite."
+    },
+    {
+     "command": "/isadmin setowner <island> <member>",
+     "who": "admin",
+     "what": "Staff: make a member the leader."
+    }
+   ],
+   "test": [
+    "With two accounts: account A has an island. A types /is invite B. A gets a warning that the island becomes a team island forever. Confirm.",
+    "B types /is (or clicks the invite). B accepts. Both see messages. Check B appears in /is members with role Member.",
+    "Open the permissions screen from /is members. As A, turn off Break for Member. B should no longer be able to break blocks on the island.",
+    "A promotes B to Mod, then to Admin. Check what B can now do (invite, kick a Member, change settings).",
+    "A uses /is transfer B. B becomes Leader and A becomes Admin.",
+    "Coop: A types /is coop on a third account C. C can build; when A and all Mods log out, C is no longer trusted.",
+    "B types /is leave and confirms. Then try to join another island within 24 hours: it must be refused (join cooldown). A fourth join in a season is also refused.",
+    "Try to invite a fifth player on a 4-member island: refused (island full).",
+    "Bedrock: open /is members, tap a head, check the action buttons are readable."
+   ],
+   "questions": [
+    {
+     "question": "Should accounts younger than 30 minutes of playtime be blocked from joining team islands or being coop?",
+     "suggested": "Yes, same 30-minute rule as /pay and /ah.",
+     "why": "Alt accounts are the classic way to farm for one main island.",
+     "priority": "before launch"
+    },
+    {
+     "question": "If the leader is permanently banned, should leadership pass automatically to the oldest Admin (or Mod, or Member)?",
+     "suggested": "Yes: first Admin, then Mod, then oldest Member. Staff are told.",
+     "why": "Team members should not lose their island because the leader was banned.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should an Admin be able to take over a team island if the leader has not logged in for 30 days?",
+     "suggested": "Yes, after 30 days offline, with a confirm and a message to the old leader.",
+     "why": "Stops team islands from being stuck with an inactive leader.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the permission screen have presets like 'Friends only', 'Strict' and 'Open' as a start?",
+     "suggested": "Yes, 3 presets, the leader can still tweak each box.",
+     "why": "The screen has 4 pages of boxes. Presets save time for new leaders.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should coop players keep their access for a short time (for example 5 minutes) after the last Leader or Mod logs out?",
+     "suggested": "Yes, a 5-minute grace period.",
+     "why": "Today a quick disconnect removes all coop players at once.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the coop player list be limited by time (for example coop ends after 24 hours unless renewed)?",
+     "suggested": "No. Coop ends only when removed or when no Leader or Mod is online.",
+     "why": "A time limit adds work for leaders but lowers the risk of forgotten coop players.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should kicking a member require a short reason that is shown to the kicked player?",
+     "suggested": "No reason needed. Optional text only.",
+     "why": "Fewer steps for leaders; staff can still see the kick in the logs.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should members get a message the moment someone is promoted, demoted or kicked (as now), plus a line in a team history screen?",
+     "suggested": "Yes, add a simple history list (who did what, 30 days).",
+     "why": "Helps settle arguments in team islands without staff.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the invite menu also show a 'Report invite spam' button?",
+     "suggested": "No. Use the normal /report.",
+     "why": "Keeps one report path.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should coop players be shown differently (for example a [Coop] marker in the island chat or tab)?",
+     "suggested": "No marker. They are only trusted visitors.",
+     "why": "Keeps things simple. Coop players cannot read island chat.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should island invites work for players who are offline (invite waits up to 24 hours)?",
+     "suggested": "No. Only online players, 5-minute invites.",
+     "why": "Offline invites create spam and stale invites.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Visiting: browser, lock, ban, ratings and likes",
+   "summary": "Players can visit other islands from a browser (most visited, top rated, most liked, newest) or by name. Leaders, Admins and Mods can lock the island, send visitors away and ban players. Visitors can rate an island 1 to 5 stars once per season and like it once a day.",
+   "commands": [
+    {
+     "command": "/is visit [player]",
+     "who": "player",
+     "what": "Open the visit browser, or go to a player's island (3 second warmup)."
+    },
+    {
+     "command": "/is lock / /is unlock",
+     "who": "player",
+     "what": "Leader/Admin/Mod: only members and coop players can enter a locked island."
+    },
+    {
+     "command": "/is expel <player>",
+     "who": "player",
+     "what": "Send a visitor on your island to spawn."
+    },
+    {
+     "command": "/is ban <player> / /is unban <player>",
+     "who": "player",
+     "what": "Ban or unban a visitor from entering your island (max 100)."
+    },
+    {
+     "command": "/is rate <player> <1-5>",
+     "who": "player",
+     "what": "Rate an island you have visited."
+    },
+    {
+     "command": "/is like <player>",
+     "who": "player",
+     "what": "Like an island you have visited (once a day)."
+    },
+    {
+     "command": "/is info [player]",
+     "who": "player",
+     "what": "Show info about your island or another player's island in chat."
+    }
+   ],
+   "test": [
+    "With two accounts: B types /is visit and picks A's island in the browser (or /is visit A). Stand still for 3 seconds. B lands on A's island and A sees a visitor message.",
+    "As B try to break a block. It must be refused (visitors can only look by default).",
+    "A types /is lock. B (on the island) is sent to spawn. B tries /is visit A again: refused. A types /is unlock.",
+    "A bans B (/is ban B). B cannot enter by /is visit, /tpa, ender pearl or by relogging on the island. A unbans B.",
+    "B types /is rate A 5 and /is like A. Try /is like A again the same day: refused. Try to rate your own island: refused.",
+    "Try /is rate on an island you never visited: refused.",
+    "Open the browser and check the four lists. Locked islands should not show up.",
+    "Bedrock: open the browser and tap an island. Check the 3 second warmup message and that moving cancels it."
+   ],
+   "questions": [
+    {
+     "question": "Should new islands be open to visitors by default, or start locked until the leader opens them?",
+     "suggested": "Open by default (more social).",
+     "why": "Sets the feel of the server: open visits vs private by default.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should an island show up in the visit browser by default, or only after the leader chooses 'Show in browser'?",
+     "suggested": "Show only after the island has reached a minimum level or 1 hour of playtime, with a switch to hide it.",
+     "why": "Stops the browser from filling with empty fresh islands.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a maximum number of visitors on one island at the same time?",
+     "suggested": "Yes, 20 visitors at once (members and staff do not count).",
+     "why": "Many visitors on one island can cause lag.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can players visit an island when all of its members are offline?",
+     "suggested": "Yes. The island is a showcase.",
+     "why": "Players like to see builds even when the owner is away; offline islands cost little.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should rating and liking need a minimum total playtime (for example 2 hours) and not work for players on the same IP as a member?",
+     "suggested": "Yes: 1 hour playtime and not on the same IP as any member.",
+     "why": "Alt accounts can otherwise boost an island to the top of the browser.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the browser need more than 3 ratings before an island can appear under 'Top rated'?",
+     "suggested": "5 ratings from different players.",
+     "why": "With 3, a few friends can push an island up.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should ratings and likes reset at each season reset?",
+     "suggested": "Yes, everything about visiting resets with the season.",
+     "why": "A new season is a new start for all islands.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should island bans have an optional expiry time (1 day, 7 days) besides permanent?",
+     "suggested": "No. Permanent until unban (max 100).",
+     "why": "Keeps the ban screen simple.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the leader be able to see a visitor log (name and time of the last 50 visitors)?",
+     "suggested": "Yes, in the island stats screen. Staff can see it too.",
+     "why": "Helps leaders find who griefed or stole, and helps staff.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should members get an alert only for visitors who stay longer than 30 seconds, to reduce spam on busy islands?",
+     "suggested": "Keep the current alert with a 30 second repeat limit.",
+     "why": "Busy islands can get many arrival messages.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should visitors be able to use the island's public warps and shops without staying on the island?",
+     "suggested": "Yes. Public warps are the way to reach shops and parkours.",
+     "why": "Defines what 'public' means for warps.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to hide an island from the visit browser (for example a rule-breaking build or name)?",
+     "suggested": "Yes: staff button 'Hide from browser' and a note.",
+     "why": "Needed before the browser has real players.",
+     "priority": "before launch"
+    }
+   ]
+  },
+  {
+   "feature": "Island warps and warp signs",
+   "summary": "Every island gets 3 warps (up to 10 with a later upgrade) in five categories: shops, farms, parkour, builds, other. Warps can be public or private and have an icon. Players can make a warp by writing [warp] on a sign. Other players find warps in the warp browser.",
+   "commands": [
+    {
+     "command": "/is setwarp <name> [category]",
+     "who": "player",
+     "what": "Leader/Admin/Mod: set a warp where you stand."
+    },
+    {
+     "command": "/is delwarp <name>",
+     "who": "player",
+     "what": "Delete one of your island's warps."
+    },
+    {
+     "command": "/is warp [player] [name]",
+     "who": "player",
+     "what": "Open the warp browser or go to a warp (3 second warmup)."
+    }
+   ],
+   "test": [
+    "On your island type /is setwarp farm farms. Check it appears in /is warp under Your warps.",
+    "Open the warp, change the icon, make it public and private. Check as another player that private warps are hidden.",
+    "As another player: /is warp, pick a category and use the warp. You wait 3 seconds, then arrive.",
+    "Place a sign, write [warp] on line 1 and a name on line 2. The sign turns into a warp sign and uses one slot.",
+    "Try a 4th warp: refused. Break the sign: the warp is removed.",
+    "Set a warp with the same name again: it moves instead of making a second one.",
+    "Bedrock: open the browser and tap warps. Also try the [warp] sign on a phone."
+   ],
+   "questions": [
+    {
+     "question": "Are 5 categories (shops, farms, parkour, builds, other) enough, and are the names right?",
+     "suggested": "Yes, as built.",
+     "why": "Changing categories later means moving existing warps.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should new warps be public or private by default?",
+     "suggested": "Private by default; the leader opts in to public.",
+     "why": "Public warps appear to everyone, so players should choose it.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the number of warps be 3 for everyone at the start, or should the first extra warps come from rank or island level?",
+     "suggested": "3 for all; extra from the island upgrade, not from ranks.",
+     "why": "Warps are free advertising; ranks should not be pay-to-win here.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should public warps be checked or approved by staff before they show in the browser?",
+     "suggested": "No approval, but a report button and staff can hide a warp.",
+     "why": "Approval creates a queue; reports are enough for a small server.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should shop warps be allowed to charge a fee (for example 'visit shop costs money')?",
+     "suggested": "No fees. Shops work through the chest shop block.",
+     "why": "Keeps teleporting free of money tricks.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a warp name or sign text go through the chat word filter?",
+     "suggested": "Yes, same filter as chat.",
+     "why": "Names are shown to everyone in the browser.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the number of times a warp is used be shown to visitors (as 'Visits this week')?",
+     "suggested": "Yes, shown in the warp lore.",
+     "why": "Helps good warps rise.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a warp send the player to a safe spot if the warp is blocked or over void, or refuse?",
+     "suggested": "Safe spot inside the border (as now).",
+     "why": "Prevents players from being killed by a bad warp spot.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should members (not only Leader/Admin/Mod) be able to make warps if the leader allows it in the permission screen?",
+     "suggested": "Yes: add a 'Warps' box in the permission screen, default off for Member.",
+     "why": "Right now warps are fixed to Leader/Admin/Mod.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Island settings, weather, time and island fly",
+   "summary": "Each island has settings the leader (and anyone allowed) can change: mob spawning, animal spawning, fire spread, explosions, leaf decay, crop trampling, visitor item pickup, visitor alerts, visitor fly, weather and time of day. Weather and time are shown only to players on that island. Island fly lets people fly inside the island border when the island or player has the right.",
+   "commands": [
+    {
+     "command": "/is settings [setting] [on|off|value]",
+     "who": "player",
+     "what": "Open the island settings menu, or change one setting right away."
+    }
+   ],
+   "test": [
+    "Type /is settings. Check the defaults: mob spawning off, animal spawning on, fire spread off, explosions off, leaf decay on, crop trampling off, visitor pickup off, alerts on, weather sunny, time day.",
+    "Set weather to rain and time to night. You (and everyone on your island) see it; someone at spawn does not.",
+    "Put TNT on the island and light it with explosions off: blocks stay. Turn explosions on and test again on a spare spot.",
+    "Turn crop trampling on, jump on farmland, then off again.",
+    "As a visitor with another account: try to pick up a dropped item (off by default). Then allow it in the matrix and try again.",
+    "Island fly: ask staff for skyblock.island.fly. Double-tap jump to fly inside the border. At the border you cannot go further. Take the permission away and check you get a soft landing.",
+    "Bedrock: open the settings menu and tap each setting. Check weather/time cycle values on tap."
+   ],
+   "questions": [
+    {
+     "question": "With explosions off, should TNT and creepers still hurt mobs (for mob farms) but never hurt players?",
+     "suggested": "Yes: no block damage, mobs can be hurt, players take no damage.",
+     "why": "Mob farms with TNT are a common design; player safety matters on shared islands.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the time options include 'always night' for everyone, or is night only for players that choose it on the island?",
+     "suggested": "Keep: it is a per-island choice for everyone on that island.",
+     "why": "Night time makes the island dark; decides if this is a feature or a nuisance.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should 'real' time follow the server clock in Oslo (as built), or each player's own clock?",
+     "suggested": "Server clock in Oslo.",
+     "why": "One shared real-time per island keeps everyone on the island in sync.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Who may change island settings: only the Leader and Admin by default (as built)?",
+     "suggested": "Yes, Leader and Admin.",
+     "why": "Settings change gameplay for everyone on the island.",
+     "priority": "before launch"
+    },
+    {
+     "question": "When a player loses fly (permission or leaving the island), how long should they have to land safely?",
+     "suggested": "10 seconds of slow-fall landing (as built).",
+     "why": "Stops fall deaths when fly turns off in mid-air.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should island fly be limited to a maximum height (for example 40 blocks above the build limit) to stop lag and exploits?",
+     "suggested": "No height limit inside Y 0-256.",
+     "why": "Flying high gives view-distance and chunk-loading cost.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should island fly speed be changeable by players (speed slider) or fixed at normal fly speed?",
+     "suggested": "Fixed at normal fly speed.",
+     "why": "Fast flying makes chunk loading heavy and breaks border checks.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should visitors be able to fly on an island only if the island has the Wings upgrade AND the visitor-fly setting is on?",
+     "suggested": "Yes. Both needed, plus the visitor has the fly right (rank or own mastery).",
+     "why": "Defines who really flies on an island.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should island settings changes be announced to everyone on the island (for example 'Weather changed to rain')?",
+     "suggested": "Yes, a short message to everyone on the island.",
+     "why": "Avoids confusion when the sky suddenly changes.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the settings screen show which defaults a new island starts with and a 'Reset to defaults' button?",
+     "suggested": "Yes.",
+     "why": "Easy way to undo experiments.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Island notes (shared to-do list)",
+   "summary": "Each island has one shared notes list (max 50 notes, 200 characters each). Members add notes, tick them done, edit, pin them as floating text in the world and delete them. Staff can read any island's notes. Deleted notes are kept 7 days for staff.",
+   "commands": [
+    {
+     "command": "/is notes [island]",
+     "who": "player",
+     "what": "Open your island's notes. Staff can add an island name to read another island's notes."
+    }
+   ],
+   "test": [
+    "Type /is notes. Click Add note, type a note in chat. It shows in the list with your name and the date.",
+    "Click a note to tick it done. Click it again to reopen. Edit its text.",
+    "Try a 201-character note, a link and a bad word: all refused.",
+    "Pin a note: a floating text appears where you stand. Relog and restart: no ghost copies. Tick it done: the text disappears.",
+    "Open the book view: edit a page and close the book. The note is saved.",
+    "With a second member account: it gets 'added a note'. A Member can tick notes done but only delete their own notes.",
+    "As a staff member: /is notes <island>. Read only; check it is logged in /logs staff.",
+    "Bedrock: add a note (chat typing) and open the book view."
+   ],
+   "questions": [
+    {
+     "question": "Should the last editor or a history of changes to a note be shown?",
+     "suggested": "Show only author and date (as built).",
+     "why": "Less to build and store.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should island notes be allowed to contain coordinates or links to Discord?",
+     "suggested": "Coordinates yes; links no (same filter as chat).",
+     "why": "Links in notes are a scam/ad risk.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to delete a note they find offensive without the island leader's action?",
+     "suggested": "Yes, with a log entry.",
+     "why": "Offensive notes on private islands are hard to find otherwise.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should pinned note holograms count toward the island entity limit (30 display entities)?",
+     "suggested": "Yes, they do (max 5 pinned notes).",
+     "why": "Display entities cost performance.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the 'Next:' note on the scoreboard be on or off for new players?",
+     "suggested": "Off by default; players turn it on in /settings.",
+     "why": "A new player's scoreboard should stay clean.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Pinned notes are floating texts in the world with the author's name. Should visitors see them, or only members?",
+     "suggested": "Only members see pinned notes. A 'Public sign' switch per note lets the leader show one to visitors.",
+     "why": "Notes are private team plans; visitors reading them is a privacy problem.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should done notes move to a 'Done' tab and be removed automatically after 30 days?",
+     "suggested": "Yes: 30 days, then deleted (the 7-day staff copy still applies).",
+     "why": "Keeps the list below 50 notes without work.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a note be assignable to a member ('Steve: build the farm') and notify them?",
+     "suggested": "Yes, later.",
+     "why": "Makes the list useful for teams.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should notes be ordered pinned first, then newest, or let players sort them?",
+     "suggested": "Pinned first, then newest. No sorting.",
+     "why": "Simple and predictable.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Island stats",
+   "summary": "The stats screen shows what your island and each member did: blocks mined, logs chopped, crops harvested, blocks placed, generator output, mobs killed, items sold and money earned, visitors and time on the island. It shows today, this week, last week and all time, with each member's share. Blocks you just placed do not count when broken again.",
+   "commands": [
+    {
+     "command": "/is stats",
+     "who": "player",
+     "what": "Open the island stats menu (also from the island menu)."
+    },
+    {
+     "command": "/isadmin stats view <island>",
+     "who": "helper",
+     "what": "Staff: open any island's stats read only."
+    },
+    {
+     "command": "/isadmin stats reset <island>",
+     "who": "admin",
+     "what": "Staff: delete all stats of an island (confirm)."
+    }
+   ],
+   "test": [
+    "Mine a few blocks of generator stone, chop a tree, kill a mob and sell some items. Reopen /is stats: the numbers go up.",
+    "Place a block and break it again: the mined count should not change.",
+    "Click a category to see each member's share (use a second member account).",
+    "Have a visitor come twice on the same day: the unique visitor count only goes up once.",
+    "As staff: /isadmin stats view <island>. Check it is read only and logged.",
+    "As admin: /isadmin stats reset <island> and confirm. Everything resets.",
+    "Bedrock: tap each category and check the percent bars are readable."
+   ],
+   "questions": [
+    {
+     "question": "Should time spent AFK on the island count as 'time on the island'?",
+     "suggested": "No. Count only active time once AFK detection works.",
+     "why": "Otherwise AFK farms inflate stats and achievements.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should island stats be visible to visitors (for example a public 'Island card') or only to members and staff?",
+     "suggested": "Visible to members; visitors see only level, visitors and rating.",
+     "why": "Controls how much of your play activity is public.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the stats count the money earned by selling from members who left the island?",
+     "suggested": "Keep what they earned (it stays with the island).",
+     "why": "Matches how XP is handled when a member leaves.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should stats be kept after a season reset in a 'last season' archive that the leader can see?",
+     "suggested": "Yes, the final totals are kept and shown as 'last season'.",
+     "why": "Players like to compare seasons; the data is small.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the weekly competition use these same stats, and should island members be blocked from boosting them with a second island?",
+     "suggested": "Yes, same stats. A player counts only for one island.",
+     "why": "Defines the base for island competitions.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should stats be shown on a stats sign or hologram on the island?",
+     "suggested": "Yes, later: an optional hologram of top miner/top builder.",
+     "why": "Fun for team islands.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the top contributor of the week get a small reward or a mention (for example in island chat)?",
+     "suggested": "A line in island chat on Monday: 'Top builder last week: Steve'. No reward.",
+     "why": "Fun for teams but avoids pushing people to grind.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the stats include money earned per item type (for example coal vs wheat)?",
+     "suggested": "Yes in a 'Top items' sub-screen.",
+     "why": "Helps leaders decide what to build.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Island chat",
+   "summary": "Members of an island can talk privately to each other in island chat. Messages are coloured by role and the leader can change the role colours. Staff can turn on a spy toggle. The word filter, mute and rate limit still apply.",
+   "commands": [
+    {
+     "command": "/is chat [message]",
+     "who": "player",
+     "what": "Without text: switch your chat to island chat and back. With text: send one message to your island."
+    }
+   ],
+   "test": [
+    "Type /is chat. All your next messages go only to your island. Type /is chat again to go back to public chat.",
+    "Type /is chat hello. Only members see it, colored by role.",
+    "With a coop player and a visitor: they must not see island chat.",
+    "As leader open Chat colors from /is and change a role color. Members see the new color. Members cannot change it.",
+    "Try a bad word or a link in island chat: blocked. A muted player cannot use it.",
+    "As staff turn on 'Island chat spy' in /settings and check you see island chat. Check /mutechat does not stop island chat."
+   ],
+   "questions": [
+    {
+     "question": "Should island chat be saved for staff (logged) so staff can read it when handling a report, and should /rules say so?",
+     "suggested": "Yes, logged 30 days like normal chat, and /rules says that chat and private messages are logged.",
+     "why": "Privacy vs safety: staff can only investigate what is logged. Players should know.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the staff spy on island chat be allowed for helpers (as now) or only for mods and up?",
+     "suggested": "Mods and up only.",
+     "why": "Island chat is more private than public chat, so fewer people should be able to read it.",
+     "priority": "before launch"
+    },
+    {
+     "question": "When you write in island chat and nobody else is online, should you get a hint ('Nobody else is online')?",
+     "suggested": "Yes.",
+     "why": "Players who forgot island chat is on think they are talking to everyone.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should [item] (show the held item) work in island chat?",
+     "suggested": "Yes, same cooldown as public chat.",
+     "why": "Useful for trading items inside a team.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should island chat show the island name or a [Island] tag on each line?",
+     "suggested": "A short [Island] tag and role color.",
+     "why": "Makes it clear the message is private.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a 'party chat' that works across different islands (friends)?",
+     "suggested": "Later: /pc for parties (decided max 5), not part of island chat.",
+     "why": "Separates team chat from friend chat.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should members be able to mute island chat for themselves?",
+     "suggested": "Yes, a toggle in /settings.",
+     "why": "Busy teams can be noisy.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a shortcut such as /ic for island chat?",
+     "suggested": "Yes: /ic and /ic <message>.",
+     "why": "Typing /is chat all the time is slow.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should island chat lines use the member's nickname or real name?",
+     "suggested": "Nickname with the ~ marker, like public chat.",
+     "why": "Consistent look; staff see real names in logs.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Disband, remove and staff island tools",
+   "summary": "The leader can disband the island (confirm and type the word 'disband'). The island is wiped and its space is reused. Staff have /isadmin tools to look up, teleport, delete, reset, resize, add members and change the owner.",
+   "commands": [
+    {
+     "command": "/is disband",
+     "who": "player",
+     "what": "Leader only: remove the island for good after a confirm screen and typing 'disband'."
+    },
+    {
+     "command": "/is bypass",
+     "who": "admin",
+     "what": "Staff: ignore island protection for this session (logged)."
+    },
+    {
+     "command": "/isadmin info <island>",
+     "who": "helper",
+     "what": "Look up an island: owner, members, size, slot, created."
+    },
+    {
+     "command": "/isadmin tp <island>",
+     "who": "helper",
+     "what": "Teleport to an island."
+    },
+    {
+     "command": "/isadmin delete <island>",
+     "who": "admin",
+     "what": "Remove an island for good."
+    },
+    {
+     "command": "/isadmin reset <island>",
+     "who": "admin",
+     "what": "Remove an island and give its leader a fresh one."
+    },
+    {
+     "command": "/isadmin setsize <island> <size>",
+     "who": "admin",
+     "what": "Set the border width in chunks."
+    },
+    {
+     "command": "/isadmin kick <player>",
+     "who": "admin",
+     "what": "Remove a member or coop player from an island."
+    },
+    {
+     "command": "/isadmin slots",
+     "who": "admin",
+     "what": "Grid overview of all island slots."
+    },
+    {
+     "command": "/isadmin teleport-slot <slot>",
+     "who": "admin",
+     "what": "Teleport to a slot's center."
+    }
+   ],
+   "test": [
+    "On a test island put a chest with an item and some money in the island bank. Type /is disband. Read the confirm screen, type disband. The island is wiped and you can create a new one at once (no cooldown).",
+    "Check the leader gets the island bank money.",
+    "As staff use /isadmin info on your friend's island. Teleport with /isadmin tp.",
+    "As admin run /isadmin setsize <island> 5. The border changes.",
+    "Run /isadmin reset on a test island. The leader gets a new starter island, other members are removed.",
+    "Run /isadmin slots to see the grid. Check cleared slots become free again and are reused.",
+    "Check /logs island for all of these actions."
+   ],
+   "questions": [
+    {
+     "question": "Should disband need a second confirm after 24 hours for islands with a high level or large bank (a 'cooling off')?",
+     "suggested": "No. The typed word is enough.",
+     "why": "More steps annoy players; backups cover mistakes.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the leader be blocked from disbanding for 24 hours after a new member joined, unless that member leaves?",
+     "suggested": "Yes, 24 hours.",
+     "why": "Stops a leader from disbanding right after new members put their items in the island.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should team members be told 5 minutes in advance (with a countdown) that the island is being disbanded?",
+     "suggested": "Yes: 60 seconds warning and time to take belongings.",
+     "why": "Members lose everything instantly otherwise.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Which staff rank may delete or reset islands: admin only (as now), or mods too?",
+     "suggested": "Admin only; mods can look and teleport (as now).",
+     "why": "Deleting islands is destructive.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should every /isadmin action message the island leader (for example 'Staff resized your island')?",
+     "suggested": "Only delete, reset, owner change and kick. Others are silent but logged.",
+     "why": "Players should not be surprised, but info lookups should stay quiet.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the cleaner empty the island at once, or wait a few minutes in case someone asks for a restore?",
+     "suggested": "Wait 24 hours, then clear (keep the backup 7 days).",
+     "why": "Gives time for staff to undo mistakes.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to freeze an island (nobody can build or break) while a case is investigated?",
+     "suggested": "Yes: an island freeze flag, logged, released by an admin.",
+     "why": "Stops evidence from being destroyed while staff look.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Island level, pillars and upgrades (planned, not built yet)",
+   "summary": "Island level, the five pillars (Mining, Foraging, Farming, Combat, Conquest) and the upgrades menu (/is upgrade) are the next big island phase. Buttons for them already show 'Coming soon' in the island menu. This page only collects the decisions that are still open before the build starts.",
+   "commands": [
+    {
+     "command": "/is upgrade (planned, same as /is masteries)",
+     "who": "player",
+     "what": "Planned: island upgrades with tasks and money costs. Not available yet."
+    }
+   ],
+   "test": [
+    "Open /is: check Upgrades, Bank and Level show as coming soon or '-' where they are not built.",
+    "Check the scoreboard island line shows 'Level: -' for now.",
+    "Check /is info shows 'Level (Phase 5)' or a dash instead of a number.",
+    "Check the mastery names (Timber, Swift Hands, Warrior, Deep Pockets, Market Contacts, Crystal Rush, Lucky Strike, Fuel Efficiency, Beast Tamer, Angler, Homestead, Wings) are listed in the plan and read well to you."
+   ],
+   "questions": [
+    {
+     "question": "Does 'Island Size: +1 chunk ring' mean the island grows by 2 chunks in width each level (3, 5, 7, 9, 11, 13, 15), so 6 upgrade levels in total?",
+     "suggested": "Yes: 3 to 15 in steps of 2, six levels.",
+     "why": "Defines how many size upgrades exist and how big the world grid must be.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Block worth counts up to 20% of the island level, but 'level never goes down in a season'. If a player removes valuable blocks, should the level stay at its highest value?",
+     "suggested": "Yes: the level is the highest value reached; block worth only adds new levels.",
+     "why": "Stops players from building and then breaking the same blocks to boost level, and avoids sad level drops.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Who pays for an upgrade: the island bank, the player's own money, or either?",
+     "suggested": "Either. Paying from the bank needs the 'bank withdraw' or an 'upgrades' right in the permission screen.",
+     "why": "Team islands argue about who spends the shared money.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Who may start an upgrade: Leader and Admin only, or can the leader give the right to Mods and Members in the permission screen?",
+     "suggested": "Leader and Admin; the leader can give it to others (new 'Upgrades' box).",
+     "why": "Spending shared money on the wrong upgrade is hard to undo.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Do upgrade tasks (mine 500 coal, chop 300 logs) count the actions of all members together, or only of the player who started the upgrade?",
+     "suggested": "All members together (team effort), coop players do not count.",
+     "why": "Makes team islands feel like a team.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should upgrades be lost if the member who paid for them leaves the island?",
+     "suggested": "No. The island keeps its upgrades and the bank money already spent.",
+     "why": "Keeps things simple.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Can any upgrade level be bought with gems (store money)?",
+     "suggested": "No. Never (REVIEW A1), only cosmetics and slots can use gems.",
+     "why": "Prevents pay-to-win levels and leaderboard unfairness.",
+     "priority": "before launch"
+    },
+    {
+     "question": "How fast should the first upgrades come? Target: Island Size I within the first hour, Member Slots within the first day?",
+     "suggested": "Size I after 30-60 minutes, Member Slots after a few hours, then slower.",
+     "why": "The first hour decides whether new players stay (progress feeling).",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the island level be shown to visitors in the visit browser and on the hover card, or hidden for new islands?",
+     "suggested": "Shown everywhere. Islands below level 5 are not shown in the browser.",
+     "why": "Gives the browser a sense of quality.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Social: private messages, ignore, AFK and info commands",
+   "summary": "Players can send private messages, reply, ignore someone's private messages, go AFK, see who is online by rank and look up playtime, ping and last seen. There are clickable link commands (/discord, /store, /vote, /website) and /rules. Staff can read private messages (social spy), look up a player with /whois and send server announcements.",
+   "commands": [
+    {
+     "command": "/msg <player> <message> (/w /tell /m /pm)",
+     "who": "player",
+     "what": "Send a private message (clickable names, rate limited, logged 30 days)."
+    },
+    {
+     "command": "/r <message> (/reply)",
+     "who": "player",
+     "what": "Reply to the last private message."
+    },
+    {
+     "command": "/ignore <player> / /ignore list / /unignore <player>",
+     "who": "player",
+     "what": "Block (or unblock) private messages from a player. Staff cannot be ignored."
+    },
+    {
+     "command": "/afk",
+     "who": "player",
+     "what": "Toggle AFK. It also turns on by itself after 5 minutes without activity."
+    },
+    {
+     "command": "/list (/online /who)",
+     "who": "player",
+     "what": "Online players grouped by rank."
+    },
+    {
+     "command": "/ping [player]",
+     "who": "player",
+     "what": "Connection delay."
+    },
+    {
+     "command": "/playtime [player] (/pt)",
+     "who": "player",
+     "what": "Total play time."
+    },
+    {
+     "command": "/seen <player>",
+     "who": "player",
+     "what": "When a player was last online and first joined."
+    },
+    {
+     "command": "/discord /store /vote /website /rules",
+     "who": "player",
+     "what": "Clickable links and the server rules."
+    },
+    {
+     "command": "/socialspy",
+     "who": "helper",
+     "what": "See everyone's private messages."
+    },
+    {
+     "command": "/whois <player>",
+     "who": "helper",
+     "what": "UUID, rank, platform, times, location, names. IP and alt accounts for mods."
+    },
+    {
+     "command": "/broadcast <message> (/bc /announce)",
+     "who": "admin",
+     "what": "Server announcement with title and sound."
+    }
+   ],
+   "test": [
+    "With two accounts: A types /msg B hello. B sees a clickable name and answers with /r hi.",
+    "Send 6 messages in a row quickly. The rate limit should slow you down.",
+    "B types /ignore A. A tries /msg B: blocked. Check that a staff member can still message B.",
+    "Stand still 5 minutes (or use /afk). The tab list shows [AFK] and a chat line says you are AFK. Move to come back.",
+    "Type /list, /ping, /playtime, /seen <name>. Check a vanished staff member does not appear in /list.",
+    "Type /rules, /discord, /store, /vote, /website and click the links. Check the web addresses are the right ones.",
+    "As staff turn on /socialspy and send a private message with the other accounts. You should see it.",
+    "As admin: /broadcast <gradient>Hello</gradient>. Everyone sees a chat line, title and sound.",
+    "Bedrock: click a name in chat to reply, and use /rules links. Check clickable text works on a phone."
+   ],
+   "questions": [
+    {
+     "question": "Should /ignore also block that player's /tpa, trade requests and island invites (not only private messages)?",
+     "suggested": "Yes: ignoring hides their private messages, /tpa, /trade requests and island invites. Staff are never blocked.",
+     "why": "Today ignoring only stops private messages, so an ignored player can still bother you by other ways.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /ignore also hide that player's lines in public chat?",
+     "suggested": "Yes, an option: ignored players' public chat lines are hidden for you only.",
+     "why": "Many servers do this; it stops harassment without staff action.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the AFK message be shown to everyone in chat, or only as an [AFK] mark in the tab list?",
+     "suggested": "Tab mark only. The chat line is off by default (players can turn it on).",
+     "why": "AFK chat lines get spammy with 300 players.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should AFK players be kicked after a long time (for example 30 minutes) when the server is nearly full?",
+     "suggested": "Yes, after 30 minutes AFK and only when the server is over 90% full. The AFK pool is excluded.",
+     "why": "Frees slots for people waiting, without punishing quiet servers.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /socialspy be allowed for helpers (as now) or only mods and up?",
+     "suggested": "Mods and up. Helpers see private messages only through a report.",
+     "why": "Private messages are the most private thing staff can read.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should players be told (in /rules and on first join) that private messages and commands are logged for 30 days and can be read by staff?",
+     "suggested": "Yes, one clear sentence in /rules and a link to a privacy policy.",
+     "why": "In Norway and the EU people should know what is stored.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be an offline mail command (/mail) so players can leave messages?",
+     "suggested": "Later. Not at launch.",
+     "why": "More to build and moderate. The lockdown list already has 'mail' reserved.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /seen show the last online time of every player, or let players hide it?",
+     "suggested": "Show for everyone, with a 'Hide my last seen' option in /settings for donors.",
+     "why": "Some players do not want others to know when they were online.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Which web addresses are final for /discord, /store, /vote, /website and the rules page?",
+     "suggested": "Keep: discord.skybornmc.net, store.skybornmc.net, skybornmc.net/vote, skybornmc.net, skybornmc.net/rules. Owner confirms they exist.",
+     "why": "Players click these from day one; broken links look bad.",
+     "priority": "before launch"
+    },
+    {
+     "question": "The rules text says 'Staff decisions are final. Appeal on Discord.' but in-game appeals exist. Which sentence do you want?",
+     "suggested": "'Staff decisions are final unless you appeal with /appeal in game or on Discord (when it opens).'",
+     "why": "The rule text must match the real process.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Are the 6 short rules complete? Should we add rules for language, alt accounts, AFK macros and bug abuse?",
+     "suggested": "Add: language rule (English or Norwegian in public chat), no alt abuse, no macros/AFK farming outside the AFK pool.",
+     "why": "Staff can only punish what the rules say; reasons in /p already mention these.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should mods also be allowed to send /broadcast, or admins only?",
+     "suggested": "Admins only. Mods use /sc or ask an admin.",
+     "why": "Wrong announcements are very visible.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the server send automatic tips/announcements in chat (for example every 10 minutes: 'Did you know /menu...')?",
+     "suggested": "Yes, one tip every 10 minutes, with a 'Tips' switch in /settings.",
+     "why": "Helps new players. The settings screen already has a Tips switch waiting for this feature.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /playtime show the account total, the active profile's time, or both?",
+     "suggested": "Both lines: 'This profile' and 'All profiles'.",
+     "why": "Playtime is per profile, but rewards like /freerank use the account total.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should @everyone or @here style mentions exist for staff in public chat?",
+     "suggested": "No. Staff use /broadcast.",
+     "why": "Prevents accidental mass pings.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Chat: format, filters, mentions and staff chat",
+   "summary": "Public chat shows title, rank, name, tag and message. The chat filter blocks spam, repeats, too many capital letters, links, IP addresses and phone numbers. Players can show their held item with [item] and are highlighted when someone mentions them. Staff have staff chat and chat controls (clear, lock, slow mode).",
+   "commands": [
+    {
+     "command": "/chat clear (/clearchat /cc)",
+     "who": "helper",
+     "what": "Clear the chat for everyone (staff keep theirs)."
+    },
+    {
+     "command": "/chat lock (/mutechat /lockchat)",
+     "who": "helper",
+     "what": "Lock or unlock the chat."
+    },
+    {
+     "command": "/chat slow <seconds>",
+     "who": "helper",
+     "what": "Slow mode (0 = off)."
+    },
+    {
+     "command": "/sc [message] (/staffchat)",
+     "who": "helper",
+     "what": "Staff chat. Without text it switches staff-chat mode."
+    }
+   ],
+   "test": [
+    "Send a message. Check the format: title, rank, name, (tag), arrow, text. Hover your name to see the card (rank, island, playtime, joined date).",
+    "Send 5 messages in 5 seconds: you are slowed. Repeat the same message: blocked.",
+    "Type a message in ALL CAPS (6+ letters): blocked. Post a link to an unknown website, an IP address and a phone number: all blocked. A link to skybornmc.net or youtube.com is allowed.",
+    "Hold an item and type [item]. Everyone sees it with a hover tooltip. Try again within 10 seconds: cooldown.",
+    "Another player types your name or @name: your name lights up and you hear a sound (can be turned off in /settings).",
+    "As a staff member try &c colors in chat. As a normal player they are not used.",
+    "As staff run /chat slow 10, /mutechat, /clearchat. A normal player is blocked; staff are not.",
+    "With a brand-new account: you cannot chat for the first 30 seconds on the first day.",
+    "Bedrock: send chat and check hover and clicks. Check that [item] works from a phone."
+   ],
+   "questions": [
+    {
+     "question": "The word lists are empty today. Who supplies the blocked and replaced words in English and Norwegian?",
+     "suggested": "I prepare a starter list for both languages (mild swearing replaced with ***, slurs block the message and alert staff) and you approve it.",
+     "why": "Without it there is no swear filter at all on day one.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Which websites may players post in chat (today only skybornmc.net, youtube.com, youtu.be, imgur.com and minecraft.wiki)?",
+     "suggested": "Also allow twitch.tv and tiktok.com. Everything else is blocked.",
+     "why": "Streamers and content makers will want to share links.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Who may post any link: mods and up only (as now), or also a donor rank?",
+     "suggested": "Mods and up only.",
+     "why": "Links are the main scam and advertising route.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Which ranks get colored chat (& colors), bold/italic, and hex colors?",
+     "suggested": "Squire+ colors, Knight+ bold/italic, Warlord+ hex. Staff as now.",
+     "why": "A visible, harmless donor perk; must be set in the rank plan.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the first-day chat delay for new accounts stay at 30 seconds or be longer (for example 5 minutes)?",
+     "suggested": "Keep 30 seconds. Raid lockdown handles bot waves.",
+     "why": "A longer delay protects against spam bots but annoys honest new players.",
+     "priority": "can wait"
+    },
+    {
+     "question": "What may other players see on the hover card of a name: rank, island, playtime, join date and Discord?",
+     "suggested": "Show rank, island and playtime. Hide join date and Discord name.",
+     "why": "The card shows personal data to everyone. Fewer details = more privacy.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Is the order 'Title Rank Name (Tag) » message' right, and may titles be hidden in chat for players who turn it off?",
+     "suggested": "Keep the order. Add a /settings switch 'Show titles in chat'.",
+     "why": "Long titles can make chat hard to read.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Bedrock names start with a dot (for example .Steve). Show the dot, hide it, or show a small Bedrock icon?",
+     "suggested": "Hide the dot in chat and tab. Show 'Bedrock' on the hover card for staff only.",
+     "why": "Looks cleaner, but staff still need to type the dot in commands.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the filter also check signs, anvil names, book text, island/warp names and nicknames?",
+     "suggested": "Yes: every text other players can read goes through the same filter.",
+     "why": "Players use signs and names to bypass chat filters.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Which language rule for public chat: English only, English and Norwegian, or any language?",
+     "suggested": "English and Norwegian. Other languages in private messages.",
+     "why": "Staff must understand what is said to punish it.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should repeated filter hits (for example 3 blocked messages in 10 seconds) create a staff suggestion to mute (Apply/Dismiss), never automatic?",
+     "suggested": "Yes, suggestion only.",
+     "why": "The tool for it is built but no detector uses it yet.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be separate chat channels (global, trade, local at spawn) or one public chat plus island/party chat?",
+     "suggested": "One public chat plus island chat and later party chat.",
+     "why": "Fewer channels = less confusion for new players.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should emoji and special symbols be allowed in chat (Bedrock cannot show some of them)?",
+     "suggested": "Allow normal emoji. Block invisible characters and 'zalgo' text.",
+     "why": "Bad characters can break the tab list and scoreboards.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the chat show a short line when someone joins for the first time (as now) for all players, or only staff?",
+     "suggested": "Everyone sees the first-join welcome with the join number (as now).",
+     "why": "Feels like a living server; the number shows growth.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be an extra admin-only chat besides staff chat?",
+     "suggested": "No. One staff chat.",
+     "why": "Keeps staff talking in one place.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Tab list and nametags",
+   "summary": "The tab list shows a SKYBORNMC header, the online count and season, and every player as 'Title Rank Name (Tag) [AFK]', sorted by rank. Nametags above heads show the rank prefix. Staff also see server TPS and their ping at the bottom.",
+   "commands": [
+    {
+     "command": "(no command)",
+     "who": "player",
+     "what": "Press Tab to open the list. Staff see TPS and ping with the staff tab permission."
+    }
+   ],
+   "test": [
+    "Press Tab (Java) or open the player list (Bedrock). Check header, online count, season text and footer address.",
+    "Check the order: owner first, then admin, mod, helper, builder, ranks, default; same rank sorted A to Z.",
+    "Equip a title and a tag with /tags. They appear in the tab list within a second.",
+    "Go AFK with /afk. [AFK] appears next to your name.",
+    "Ask staff to change your rank. The tab entry and the nametag change within about a second.",
+    "As staff check the TPS (green/orange/red) and ping line at the bottom.",
+    "Bedrock: check the symbols (arrows, dots) do not show as boxes."
+   ],
+   "questions": [
+    {
+     "question": "Should the tab list be sorted by rank only (as now), or should donors/high levels be grouped with a divider?",
+     "suggested": "Rank, then name. No dividers.",
+     "why": "Simple and predictable.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should vanished staff be counted in the online number in the tab header?",
+     "suggested": "No, vanished staff are not counted.",
+     "why": "Otherwise players can see that someone is hidden.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the header show the real season name and the time left (for example 'Season 1 - 42 days left')?",
+     "suggested": "Yes, once the season system exists; 'Season 1 - Preseason' until then.",
+     "why": "Gives urgency and context.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the tab list show each player's island level next to the name?",
+     "suggested": "No, keep the tab clean. The hover card shows the island.",
+     "why": "Level can show off, but it clutters the list on Bedrock.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to hide the tab header and footer (small lists look better on phones)?",
+     "suggested": "Yes, a /settings switch.",
+     "why": "Bedrock phones show only a few lines.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the nametag above heads show titles/tags, or only the rank prefix?",
+     "suggested": "Rank prefix only (as now).",
+     "why": "Long nametags are unreadable.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff in staff mode have a different nametag color or be hidden completely?",
+     "suggested": "Hidden completely (vanish), with staff seeing a [V] mark.",
+     "why": "Staff mode already makes them invisible to players.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff see a small marker for Bedrock players in the tab list?",
+     "suggested": "Yes, a tiny 'B' for staff only.",
+     "why": "Staff then know the platform when handling reports, because controls and cheats differ.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Teleports: /spawn and /tpa",
+   "summary": "Players can go to spawn at once and can ask other players to teleport to them (or ask to teleport to someone). Requests expire after 60 seconds and teleports need the player to stand still for 3 seconds. All warmups and cooldowns are set in one file (teleport.yml).",
+   "commands": [
+    {
+     "command": "/spawn",
+     "who": "player",
+     "what": "Teleport to spawn (instant, 5 second cooldown)."
+    },
+    {
+     "command": "/tpa <player>",
+     "who": "player",
+     "what": "Ask to teleport to a player."
+    },
+    {
+     "command": "/tpahere <player>",
+     "who": "player",
+     "what": "Ask a player to teleport to you."
+    },
+    {
+     "command": "/tpaccept [player] (/tpyes)",
+     "who": "player",
+     "what": "Accept a request."
+    },
+    {
+     "command": "/tpdeny [player] (/tpno)",
+     "who": "player",
+     "what": "Decline a request."
+    },
+    {
+     "command": "/tpcancel",
+     "who": "player",
+     "what": "Cancel your own request."
+    }
+   ],
+   "test": [
+    "Type /spawn from your island. You land at spawn at once. Type it again right away: 5 second cooldown.",
+    "With two accounts: A types /tpa B. B sees clickable [Accept] [Deny]. B clicks Accept. A waits 3 seconds without moving and arrives.",
+    "Repeat and move more than 1 block during the 3 seconds: the teleport is cancelled. Do it again but take damage: cancelled.",
+    "Send /tpa and wait 60 seconds: it expires. Send many requests quickly: the 15 second request cooldown stops you.",
+    "Turn off 'TPA requests' in B's /settings. A's request is refused.",
+    "Lock B's island or ban A from it, then /tpa B while B is on it: refused.",
+    "Try /tpa to a player in The Depths and in the warzone (when it exists). Check what happens.",
+    "Bedrock: tap [Accept] in chat, or use /tpaccept if tapping does not work."
+   ],
+   "questions": [
+    {
+     "question": "In which places should /spawn and /tpa be blocked: warzone, boss arena, locked Depths tiers, events?",
+     "suggested": "Blocked in the warzone, the boss arena and during events. Allowed in The Depths for tiers you have unlocked.",
+     "why": "Teleporting out of a fight or into a locked zone breaks the rules of those places.",
+     "priority": "before launch"
+    },
+    {
+     "question": "If someone brings you with /tpahere into a Depths tier you have not unlocked, what happens?",
+     "suggested": "The teleport is refused with a message (tiers need the skill level).",
+     "why": "Stops skipping the skill locks.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should players be able to type /home as a shortcut for /is home, with staff homes moving to /shome?",
+     "suggested": "Yes, /home and /sethome work for players on islands; staff use /shome.",
+     "why": "Players expect /home; right now it is staff only.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /tpa arrive at a safe spot if the target stands in lava, water or the air?",
+     "suggested": "Yes, move to the nearest safe spot within 5 blocks.",
+     "why": "A teleport that kills you is a support ticket.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /tpa be free for everyone, or limited by rank or a small money fee?",
+     "suggested": "Free for everyone.",
+     "why": "Fee and rank limits make teleporting a pay-to-win tool.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /tpa work only with friends or party members once friends exist?",
+     "suggested": "Everyone can ask; players can switch it to 'friends only' in /settings.",
+     "why": "Protects players from unwanted teleport spam.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should donors get a 'back to previous location' command (/back) after a teleport?",
+     "suggested": "Later, as a high-rank perk. Not after death (you keep your items).",
+     "why": "Staff have /back, players do not.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a request show on screen as a title/sound as well as chat, so players do not miss it?",
+     "suggested": "Yes, a short action-bar line and sound.",
+     "why": "Chat is busy; players miss requests.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a /tpall style party teleport for island members to gather the team?",
+     "suggested": "Later, with parties.",
+     "why": "Not needed at launch.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Staff essentials (teleport, game mode, fly, vanish, inventory, items)",
+   "summary": "Staff get tools to move around and help: teleport to players or coordinates, set game mode and speed, fly, heal and feed, vanish, look in (and with admin, edit) inventories and ender chests, give vanilla items, set time and weather, and keep up to 5 staff homes. Every staff action is written to the log.",
+   "commands": [
+    {
+     "command": "/tp <player> [target]",
+     "who": "helper",
+     "what": "Teleport to a player (mods can teleport others)."
+    },
+    {
+     "command": "/tphere <player>",
+     "who": "mod",
+     "what": "Bring a player to you."
+    },
+    {
+     "command": "/tppos <x> <y> <z> [world]",
+     "who": "builder",
+     "what": "Teleport to coordinates."
+    },
+    {
+     "command": "/top",
+     "who": "builder",
+     "what": "Go to the highest block above you."
+    },
+    {
+     "command": "/back",
+     "who": "mod",
+     "what": "Return to the previous location or death point."
+    },
+    {
+     "command": "/home [name] /sethome [name] /delhome <name>",
+     "who": "mod",
+     "what": "Staff homes (max 5)."
+    },
+    {
+     "command": "/gm <c|s|sp|a> [player] (/gmc /gms /gmsp /gma)",
+     "who": "mod",
+     "what": "Game mode (builders: creative and survival only)."
+    },
+    {
+     "command": "/fly [player] /speed <1-10> [fly|walk]",
+     "who": "builder",
+     "what": "Fly and speed."
+    },
+    {
+     "command": "/god [player] /heal [player] /feed [player]",
+     "who": "mod",
+     "what": "No damage and hunger; heal; feed."
+    },
+    {
+     "command": "/clear [player] (/ci)",
+     "who": "mod",
+     "what": "Clear an inventory (confirm for others, contents logged)."
+    },
+    {
+     "command": "/invsee <player> /ecsee <player>",
+     "who": "helper",
+     "what": "View inventory or ender chest. Admins can edit (every change logged)."
+    },
+    {
+     "command": "/vanish [player] (/v)",
+     "who": "helper",
+     "what": "Become invisible, silent join/quit, stays after rejoin."
+    },
+    {
+     "command": "/i <item> [amount] /give <player> <item> [amount]",
+     "who": "builder",
+     "what": "Give vanilla items (max 2,304)."
+    },
+    {
+     "command": "/time <day|noon|night|midnight|ticks> [world] /weather <clear|rain|thunder> [world]",
+     "who": "builder",
+     "what": "Set time and weather."
+    },
+    {
+     "command": "/skull <player> /more",
+     "who": "admin",
+     "what": "Player head; fill the held stack."
+    },
+    {
+     "command": "/build",
+     "who": "builder",
+     "what": "Turn on build mode in protected worlds such as spawn."
+    },
+    {
+     "command": "/setspawn",
+     "who": "admin",
+     "what": "Set the spawn point where you stand."
+    }
+   ],
+   "test": [
+    "As helper: /vanish, then check /list and tab do not show you. Relog: you are still vanished. Check no join/quit message.",
+    "As helper: /tp to a player, /invsee and /ecsee (view only). Try to move an item: refused. As admin: edit and check every change appears in /logs.",
+    "As mod: /gm sp, /fly, /heal, /feed, /god. Check each has its permission (builders only get creative/survival).",
+    "As mod: /clear <player>: you must repeat the command within 10 seconds to confirm.",
+    "As builder: /i diamond 64 and /give. Then check /logs staff shows what you gave.",
+    "As admin: /time noon and /weather clear in the spawn world. Check the result (islands use their own per-island weather and time).",
+    "As staff: /sethome base, /home base, /delhome base. Try to set a 6th: refused.",
+    "As builder: /build in spawn lets you break blocks; without it you cannot."
+   ],
+   "questions": [
+    {
+     "question": "Which ranks may use creative mode, and where (today mods and above can use it anywhere)?",
+     "suggested": "Only builders and admins, only in spawn, Depths and builder areas. Mods use spectator.",
+     "why": "Creative mode in survival worlds is the easiest way to dupe items or damage economies.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should items made with /give, /i or creative mode be marked as 'staff items' so they cannot be sold, traded or put on /ah?",
+     "suggested": "Yes, marked with a hidden tag and refused by /sell, /trade and /ah.",
+     "why": "Stops staff items from reaching the economy by mistake or by a bad staff member.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should god mode, fly and heal be usable only while in staff mode or on builder worlds, not while staff play normally?",
+     "suggested": "Yes: only in staff mode or build mode.",
+     "why": "Prevents staff from using powers by accident while playing.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can staff play normally with the same account (earn money, use /ah) or must they use a second play account?",
+     "suggested": "Same account allowed, but staff mode and powers are off while playing, and big transfers to staff are flagged.",
+     "why": "Fairness and trust: staff must not get an economy advantage.",
+     "priority": "before launch"
+    },
+    {
+     "question": "When a staff member who is not vanished teleports onto a private or locked island, should the island members be told?",
+     "suggested": "Yes, a short line 'Staff member X visited your island'. Not when vanished.",
+     "why": "Players feel safer when staff visits are visible.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should mods be allowed to edit inventories (/invsee edit) to remove stolen items, or only admins?",
+     "suggested": "Admins only. Mods remove items via /p sanctions or ask an admin.",
+     "why": "Editing inventories is powerful and was approved for admins only.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /give and /i be limited to 2,304 items (36 stacks) per command, as now?",
+     "suggested": "Yes.",
+     "why": "Stops accidental inventory floods.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /tp to a vanished staff member's location reveal them?",
+     "suggested": "No: a vanished staff member's location is hidden from /tp for lower ranks.",
+     "why": "Part of what vanish promises.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the time and weather staff commands be blocked on islands (islands set their own)?",
+     "suggested": "Yes: /time and /weather only work in non-island worlds.",
+     "why": "Staff changes would fight the per-island settings.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff homes be limited to 5 and separate per world (spawn, Depths, warzone)?",
+     "suggested": "5 total, any world.",
+     "why": "Staff need quick access, not complex rules.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Main menu (/menu), menu item and /help",
+   "summary": "/menu opens a hub with every feature as a button; features that do not exist yet are shown as 'Coming soon'. Every player has a Nether Star in hotbar slot 9 that opens the menu. /help explains the server with categories, topics and command lists, and can take you to places.",
+   "commands": [
+    {
+     "command": "/menu (/gui)",
+     "who": "player",
+     "what": "Open the main hub with every feature."
+    },
+    {
+     "command": "/help [topic|category|commands] (/guide)",
+     "who": "player",
+     "what": "Open the help menu or a topic."
+    },
+    {
+     "command": "/staff (/staffmenu)",
+     "who": "helper",
+     "what": "Staff hub: display editor, config editor, titles & tags, staff tools."
+    },
+    {
+     "command": "/admin (/config)",
+     "who": "admin",
+     "what": "In-game config editor for every module's settings (logged)."
+    }
+   ],
+   "test": [
+    "Join with a fresh account. Check there is a Nether Star in slot 9. Right-click (Java) or tap (Bedrock) it: the menu opens.",
+    "Open /menu and click every button. Island, Depths, Shop, Sell, Bank, Auction, Wardrobe, Enchanter, Warps, Titles, Store, Vote, Discord, Forge, Profiles, Spawn, Rules, Settings, Help, Website should open. 'Coming soon' ones should be locked.",
+    "Try to drop or move the Nether Star: it should be protected.",
+    "Turn the menu item off in /settings. It disappears; turn it on and it returns.",
+    "Type /help. Open a topic, click 'Take me there' and 'Show in chat'. Check the command lists only show commands you may use.",
+    "As staff open /staff and /admin: change a harmless setting and check it appears in /logs under config.",
+    "Bedrock: open /menu with the item and check all icons and names are readable."
+   ],
+   "questions": [
+    {
+     "question": "Should unfinished features (Black Market, Quests, Crates, Events, Pets, Collection, Leaderboards) show as 'Coming soon' or be hidden from the menu?",
+     "suggested": "Show 'Coming soon' during testing; hide anything unfinished at launch.",
+     "why": "A launch menu full of locked buttons looks unfinished.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the Nether Star be given to everyone on every join, and be impossible to move or drop?",
+     "suggested": "Yes, fixed in slot 9, can be turned off in /settings.",
+     "why": "A reliable way to find the menu, especially on Bedrock.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Will the server text be English only at launch, with Norwegian later, or do you want a language choice (English/Norwegian) in /settings from the start?",
+     "suggested": "English only at launch. Add Norwegian later if the community asks.",
+     "why": "Translating every message (about 30 files) is a big task.",
+     "priority": "before launch"
+    },
+    {
+     "question": "What should the top-center button of /menu show: your name with rank, money, island level, playtime?",
+     "suggested": "Name, rank, money, crystals, island level.",
+     "why": "It is the first thing every player looks at.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /help have a short guided tutorial for new players (3 steps) before the category list?",
+     "suggested": "Yes, a 'Start here' topic with 5 steps: starter kit, island, mine, sell, upgrade.",
+     "why": "The design says the tutorial should take under 3 minutes.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the menu hub remember the last page/tab you used?",
+     "suggested": "No. Always the same layout.",
+     "why": "Predictable layout is easier to learn.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a server-wide 'Featured' button in the menu that staff can point at an event or news?",
+     "suggested": "Yes, one staff-editable button at the top.",
+     "why": "Advertises events without chat spam.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Who may open /admin (config editor): admins, or only the owner for sensitive settings?",
+     "suggested": "Admins for normal settings, owner for settings marked owner-level (as built).",
+     "why": "Wrong settings can break the economy or the server.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should every command also be reachable by menu for Bedrock (no typing)?",
+     "suggested": "Yes: no feature may need typing a long command.",
+     "why": "Bedrock players dislike typing.",
+     "priority": "before launch"
+    }
+   ]
+  },
+  {
+   "feature": "Personal settings (/settings)",
+   "summary": "Players can switch personal options in four groups (Chat, Social, Display, Sounds): private messages, mention sound, join messages, chat colours, timestamps, teleport requests, trade requests, island invites, AFK messages, scoreboard, menu item, particles, menu sounds and event sounds. Changes apply immediately.",
+   "commands": [
+    {
+     "command": "/settings [setting] [on|off|toggle] (/options /prefs)",
+     "who": "player",
+     "what": "Open the settings menu or change one setting by name."
+    }
+   ],
+   "test": [
+    "Open /settings. Turn off 'Scoreboard': it disappears at once. Turn it on again.",
+    "Turn off 'Private messages': another account's /msg to you is blocked. Staff can still reach you.",
+    "Turn off 'TPA requests', 'Trade requests' and 'Island invites' and test each from a second account.",
+    "Turn on 'Chat timestamps': times appear before chat lines.",
+    "Turn off 'Menu sounds' and 'Event sounds' and check menus are silent.",
+    "Switch to profile 2 and check the settings are separate per profile.",
+    "Type /settings scoreboard off (chat form) and use Tab to see all names.",
+    "Bedrock: open the menu and tap toggles."
+   ],
+   "questions": [
+    {
+     "question": "Should Chat and Sound settings follow your account (same on every profile) while Display settings stay per profile?",
+     "suggested": "Yes: chat, social and sound settings are account-wide; scoreboard and menu item per profile.",
+     "why": "Players should not have to turn off private messages three times. This refines the decision that all settings are per profile.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Which settings should new players start with (today everything is on except chat timestamps)?",
+     "suggested": "Same as now. Tips on, particles on.",
+     "why": "Defaults are what 90% of players keep.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a 'Hide other players' option (none / only friends and staff / all) for lag and for crowded spawn?",
+     "suggested": "Yes, with 'all' as default and a quick toggle in the spawn.",
+     "why": "300 players at spawn will lag weaker phones and old PCs.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a 'Do not disturb' setting that mutes sounds, mentions and requests at once?",
+     "suggested": "Yes, one switch.",
+     "why": "Streamers and people playing with family use it.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a setting to hide the Nether Star in slot 9 but keep /menu working (as now)?",
+     "suggested": "Yes (already there).",
+     "why": "Some players use slot 9 for tools.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to turn off the action-bar skill XP line and the set-trail particles of other players?",
+     "suggested": "Yes (skill XP bar is there, trails are under Particles).",
+     "why": "Lets players reduce screen noise.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the settings menu show a 'Reset all settings' button?",
+     "suggested": "Yes, with a confirm.",
+     "why": "Quick way to undo experiments.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to see a player's settings when helping them (read only)?",
+     "suggested": "Yes in /inspect.",
+     "why": "Most support questions are 'why do I not see X'.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Titles and tags",
+   "summary": "A title is earned (achievements, events, first join) and shows before your rank. A tag is owned (crates, store) and shows after your name in small brackets. You wear one title and one tag at a time. Tags can be turned into tradeable items. Staff can edit the whole list in game.",
+   "commands": [
+    {
+     "command": "/tags (/tag) and /titles (/title)",
+     "who": "player",
+     "what": "One menu with two tabs: equip a title and a tag, see how to earn locked ones, preview your chat line. Achievements button."
+    },
+    {
+     "command": "/tags give|take <player> <tag> and /titles give|take <player> <title>",
+     "who": "mod",
+     "what": "Give or remove a tag or title (logged)."
+    },
+    {
+     "command": "/tags item <tag> [amount] [player]",
+     "who": "admin",
+     "what": "Make unique, tradeable tag items (right-click to redeem)."
+    },
+    {
+     "command": "/display (/displayformat)",
+     "who": "admin",
+     "what": "Edit chat, tab and nametag formats with a live preview."
+    }
+   ],
+   "test": [
+    "Join with a new account. You should have the title 'Newcomer'. Open /tags and look at both tabs.",
+    "Equip a title and a tag. Check chat and tab show them. Take them off.",
+    "Open a locked title: it shows how to earn it. A secret title shows as ???.",
+    "As admin: /tags item phoenix 1 <player>. The player right-clicks the item, confirms, and the tag is theirs. Try to sell the item on /ah before redeeming.",
+    "As mod: /titles give <player> founder, then /titles take. Check it is in /logs.",
+    "Try to give the automatic title 'honorable' to someone: refused.",
+    "As admin click Edit in /tags, create a new tag, edit its colors and delete it.",
+    "As admin open /display and change the chat format with the live preview.",
+    "Bedrock: open /tags and tap through both tabs; check gradient names are readable."
+   ],
+   "questions": [
+    {
+     "question": "The names Ember and Inferno are used for a rank, a tag, a crate and an island. Do you want them renamed so nothing is called the same?",
+     "suggested": "Keep rank Ember. Rename the tags (for example 'Ember' tag to 'Cinderling') and keep crate names as decided.",
+     "why": "Players will confuse 'Ember rank', 'Ember crate' and 'Ember tag'.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Tag sources still say 'Legendary crate', 'Monthly crate' and so on, but the crates were renamed (Ember, Cinder, Blaze, Inferno, Phoenix, Eclipse, Conqueror). Which crate should give which tag?",
+     "suggested": "Ember: spark/ash, Cinder: ashes, Blaze: ember, Inferno: skyborn, Phoenix: phoenix, Eclipse: monthly tag, Conqueror: a KOTH-only tag.",
+     "why": "The tag list must match the crates before crates are built.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Can a player wear two tags or two titles at once?",
+     "suggested": "No. One title and one tag.",
+     "why": "Chat gets crowded; one of each is classic.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should mods be allowed to give titles and tags, or admins only?",
+     "suggested": "Admins only. Mods may give event titles from a short approved list.",
+     "why": "Giving away tags and titles can be abused or become unfair.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should players be able to buy a personal custom tag (own text) in the store, approved by staff?",
+     "suggested": "Yes, for the top rank or a store item. Text is checked by the filter and by staff.",
+     "why": "A popular store item on many servers; needs moderation.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Is there a maximum visible length for titles and tags so chat stays readable?",
+     "suggested": "Titles 14 characters, tags 10.",
+     "why": "Long titles push the message off the screen on phones.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Are tag items allowed to be sold for real money by players or only for in-game money?",
+     "suggested": "In-game money only. Selling for real money is already against the rules.",
+     "why": "Keeps the economy clean and avoids Mojang commercial-rule issues.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should titles/tags show a rarity color and number of players who own them in the menu?",
+     "suggested": "Show rarity color. Hide owner counts.",
+     "why": "Owner counts can pressure players to buy.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a title earned on one profile be shown on the profile card of the account (all profiles)?",
+     "suggested": "Yes: titles are account-wide (already decided).",
+     "why": "Confirms how achievements and titles connect.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should deleted titles/tags stay hidden in the database (as built) and come back if you restore them?",
+     "suggested": "Yes, hidden not deleted.",
+     "why": "Players keep what they paid for if a tag is removed by mistake.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the 'Founder' title be given to everyone who played during the pre-season week, or only to those who played at least 1 hour?",
+     "suggested": "At least 1 hour of playtime in the pre-season week.",
+     "why": "A title that proves you were really there.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the secret title 'Night Owl' have a clear condition?",
+     "suggested": "Log in between 03:00 and 05:00 Oslo time on 10 different days.",
+     "why": "The title exists but nothing grants it yet.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Achievements",
+   "summary": "There are 30 achievements in six groups (skills, island, combat, economy, gear, exploring) with tiers; four are secret. Progress is saved per profile. The last tier gives a title that every profile of your account can use. You get a screen title, chat line and sound when you unlock a tier.",
+   "commands": [
+    {
+     "command": "/tags -> Achievements button (or /help achievements)",
+     "who": "player",
+     "what": "Open the achievements menu (there is no separate /achievements command yet)."
+    }
+   ],
+   "test": [
+    "Open /tags and click Achievements. Check six categories with progress bars.",
+    "Play for 10 minutes: 'First Steps' unlocks with a screen title, chat line and sound.",
+    "Sell something with /sell: 'First Sale' unlocks.",
+    "Check a secret achievement shows ??? with a grey icon.",
+    "Switch to profile 2: progress starts at zero. Switch back: it returns.",
+    "Finish the last tier of an achievement with a reward title (ask staff to set your skill level). The title appears in /titles and is usable on profile 2 as well.",
+    "Join for the first time after an update: you should see one toast with up to 3 lines and '+N more'.",
+    "Bedrock: check progress bars and text fit on a phone."
+   ],
+   "questions": [
+    {
+     "question": "Does achievement progress reset every season, while the titles you earned stay?",
+     "suggested": "Yes: progress resets with the season, titles and tags stay.",
+     "why": "Decides if achievements are a season goal or a lifetime collection.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should tiers give small rewards (crystals, keys, a cosmetic) and not only the final title?",
+     "suggested": "Small crystal rewards for each tier, a key for the last tier. Never gems.",
+     "why": "Titles alone are weak motivation for casual players.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should rare achievements (Grandmaster, Mogul, Slayer top tier) be announced to the whole server?",
+     "suggested": "Yes for the top tier of legendary ones; everything else is private.",
+     "why": "Public praise motivates others; too many announcements spam chat.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should other players be able to see your achievements (count and finished ones) from your profile or hover card?",
+     "suggested": "Yes, count and finished titles only; progress numbers stay private.",
+     "why": "Social proof; privacy for details.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should AFK time, macros and automatic farms count toward achievement progress?",
+     "suggested": "Not AFK time. Farm output counts but macro/auto-clicker detections remove progress.",
+     "why": "Otherwise AFK farming wins all long-time achievements.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Are the goal numbers right (for example 1,000,000 blocks mined on the island, 60,000 minutes played)?",
+     "suggested": "Review after the first week of testing; keep as is now.",
+     "why": "They were set before the balance was tested.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a /achievements command and a menu button, since it is only in /tags now?",
+     "suggested": "Yes, add /achievements and a /menu button.",
+     "why": "Hard to find a feature hidden in the tags menu.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the unlock chat line be hidden for tier-1 achievements to reduce spam?",
+     "suggested": "Show tier 1 only as the sound plus action bar; chat and title for higher tiers.",
+     "why": "New players unlock many things in the first hour.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff have a tool to give or reset an achievement for a player (bugs, support)?",
+     "suggested": "Yes: admin tool in /inspect.",
+     "why": "Needed if a tracker bug misses progress.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be achievement points (a total score) shown on the profile and in a leaderboard?",
+     "suggested": "Yes later: points per tier, a top list for the season.",
+     "why": "Gives completionists a goal.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Which achievements should be added before launch (farming, fishing, bosses, KOTH, crates, voting, island level)?",
+     "suggested": "Add them with each feature; 60-80 total at launch.",
+     "why": "Each new system needs its own achievements.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Rank perks: /craft, /ec, /hat, /nick, /trash and staff tools",
+   "summary": "Donor ranks will get small convenience commands: crafting table anywhere, ender chest anywhere, wear an item as a hat, a custom nickname (with ~ marker), and a trash menu. Staff also have /repair and /realname, and the owner has /sudo. Right now only staff and ops have them until the donor ranks exist.",
+   "commands": [
+    {
+     "command": "/craft (/workbench /wb)",
+     "who": "donor",
+     "what": "Open a crafting table anywhere."
+    },
+    {
+     "command": "/ec (/enderchest)",
+     "who": "donor",
+     "what": "Open your ender chest anywhere."
+    },
+    {
+     "command": "/hat",
+     "who": "donor",
+     "what": "Wear the held item as a hat."
+    },
+    {
+     "command": "/nick <nickname|off>",
+     "who": "donor",
+     "what": "Set or remove a nickname (3-16 characters, letters/numbers/_, shown with ~)."
+    },
+    {
+     "command": "/trash (/disposal)",
+     "who": "donor",
+     "what": "Menu where items you leave are destroyed on close."
+    },
+    {
+     "command": "/setnick <player> <nickname|off>",
+     "who": "mod",
+     "what": "Set or remove another player's nickname."
+    },
+    {
+     "command": "/realname <nickname> (/whonick)",
+     "who": "helper",
+     "what": "Find the real account behind a nickname."
+    },
+    {
+     "command": "/repair [hand|all] [player] (/fix)",
+     "who": "mod",
+     "what": "Repair vanilla item durability."
+    },
+    {
+     "command": "/sudo <player> <command|c:message>",
+     "who": "admin",
+     "what": "Owner only: run a command or chat as a player (audited)."
+    }
+   ],
+   "test": [
+    "Give yourself the perk with LuckPerms (for example lp user <you> permission set skyblock.perks.craft true) and test /craft, /ec, /hat, /trash.",
+    "/nick Phoenix2: you get a ~ in front, the tab and chat show it, and /realname Phoenix2 shows your real name to staff.",
+    "Try a reserved nickname (admin, owner, staff), another player's name, and a nickname within 60 seconds of the last change. All refused.",
+    "Remove the nick permission: the nickname is reset when the rank that allowed it is lost.",
+    "Put a custom item (a tool or enchant book) in /trash and close it: check the warning in chat and that the item is gone and logged.",
+    "As mod: /repair hand on a damaged vanilla pickaxe. Custom tools have no durability.",
+    "As owner: /sudo <player> c:hello. Check the audit log.",
+    "Bedrock: open /trash and /ec and check taps work."
+   ],
+   "questions": [
+    {
+     "question": "Which rank gets which perk (suggested ladder in the next column)?",
+     "suggested": "Ladder: Ember (free) nothing; Squire /hat, colored chat, /trash; Knight /craft, profile slot 2; Paladin /ec, /nick; Warlord profile slot 3, hex chat; Monarch all plus more loadouts.",
+     "why": "This is the single biggest perk decision and is still open in the rank table.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /trash refuse valuable custom items (tools, enchant books, set tokens, keys) unless you click a second confirm?",
+     "suggested": "Yes, a second confirm for custom items.",
+     "why": "Today the items are destroyed. A mis-click is expensive.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Where should /ec and /craft be blocked: warzone, boss arena, during combat, events?",
+     "suggested": "Blocked in the warzone, boss arena and for 10 seconds after combat.",
+     "why": "Quick inventory access in fights is an unfair advantage.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the nickname cooldown (60 seconds now) be longer, for example 1 hour?",
+     "suggested": "1 hour.",
+     "why": "Frequent changes confuse other players and make staff work harder.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should nicknames be allowed for the free Ember rank?",
+     "suggested": "No. Nicknames start with the first paid rank.",
+     "why": "Keeps the free rank purely cosmetic.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should nicknames with colors and gradients be a separate higher perk than plain nicknames?",
+     "suggested": "Plain nick: Paladin; colors: Warlord; gradients/hex: Monarch.",
+     "why": "Natural step ladder.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /ec open the ender chest of the profile you are on (yes, as built) or have a shared account chest?",
+     "suggested": "Per profile (decided for money and items).",
+     "why": "Confirms no item can move between profiles.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should donors have /repair on a long cooldown (for example once per hour) for vanilla tools?",
+     "suggested": "No. Mending exists and custom tools have no durability.",
+     "why": "Avoid giving away what XP and anvils already do.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should nicknames be shown in public join/quit lines and kill messages or only in chat?",
+     "suggested": "Everywhere the real name is hidden except staff tools.",
+     "why": "A nickname that sometimes shows the real name is confusing.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /hat be allowed to wear any item (blocks, custom items) or a safe list only?",
+     "suggested": "Any normal item. Custom/unique items refused.",
+     "why": "Hats on custom tools could hide them from checks.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to see all players' nicknames in the tab list in staff mode?",
+     "suggested": "Yes: staff see name and nickname.",
+     "why": "Moderation needs real names fast.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Ranks, the free Ember rank and staff ranks",
+   "summary": "Staff ranks exist now: Builder, Helper, Moderator, Admin, Owner, with colors and prefixes. A free rank called Ember can be claimed with /freerank after 30 minutes of total playtime and gives a colored name and a choice of one of three tags. Five paid donor ranks (Squire, Knight, Paladin, Warlord, Monarch) are planned with the store.",
+   "commands": [
+    {
+     "command": "/freerank",
+     "who": "player",
+     "what": "After 30 minutes of playtime claim the free Ember rank once and pick 1 of 3 tags."
+    },
+    {
+     "command": "lp user <name> parent add <rank> (console / owner)",
+     "who": "admin",
+     "what": "Staff ranks are handed out by the owner in LuckPerms; there is no in-game rank command."
+    }
+   ],
+   "test": [
+    "Use a new account. Type /freerank before 30 minutes: you get a message with the time left.",
+    "After 30 minutes (or ask staff to raise your playtime) type /freerank. You get the Ember rank and a menu with three tags (ember, spark, ash). Pick one.",
+    "Type /freerank again: 'already claimed'. Relog: rank and tag stay.",
+    "Check chat and tab show the [Ember] prefix in its color. Check you do not get a join message (only ranks with that permission do).",
+    "Ask the owner to give a test account the helper rank: check prefix, color, staff chat and tab sorting.",
+    "Check /profiles shows slot 2 locked until you have 500 gems or Knight (when donor ranks exist)."
+   ],
+   "questions": [
+    {
+     "question": "Are the five donor rank names final: Squire, Knight, Paladin, Warlord, Monarch?",
+     "suggested": "Yes, as proposed.",
+     "why": "Names are used in menus, profiles, loadouts and the store.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Are donor ranks permanent (bought once with credits) or temporary (for example 30 days)?",
+     "suggested": "Permanent, kept across seasons.",
+     "why": "The biggest decision for how the store feels and what players will pay.",
+     "priority": "before launch"
+    },
+    {
+     "question": "If a player upgrades from Knight to Warlord, do they pay only the difference?",
+     "suggested": "Yes, pay the difference.",
+     "why": "Standard, fair and simple for players.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Which gameplay advantages may ranks give, if any (profile slots, sell bonus up to +15%, progress boost 2-10%, AH slots)?",
+     "suggested": "Convenience and cosmetics only. Drop the progress boost; keep profile slots (also buyable with gems) and AH slots.",
+     "why": "Pay-to-win can hurt players' trust, and Mojang's commercial rules limit selling gameplay advantages.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should donor prefixes look different from staff prefixes (not bold, softer colors) so nobody mistakes a donor for staff?",
+     "suggested": "Yes: staff bold capitals in strong colors, donors normal capitals in soft colors.",
+     "why": "Prevents impersonation and scams.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Which ranks get a join/quit message in chat (today only staff)?",
+     "suggested": "Knight and above; everyone can hide them in /settings.",
+     "why": "A fun perk, but spammy if every rank has it.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should /freerank count only active (non-AFK) playtime?",
+     "suggested": "Yes. AFK time does not count.",
+     "why": "Stops people from getting it by standing still.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a trainee/junior helper rank exist below Helper, since training mode is already built?",
+     "suggested": "Yes, rank 'Trainee' between Ember and Helper.",
+     "why": "A safe place for new staff.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Who may hand out staff ranks: the owner only?",
+     "suggested": "Owner only, in LuckPerms. Admins can never change permissions.",
+     "why": "A hacked admin account must not be able to make itself owner.",
+     "priority": "before launch"
+    },
+    {
+     "question": "What happens to rank perks if a payment is charged back?",
+     "suggested": "Remove the rank and perks, freeze the gems, staff review the account.",
+     "why": "Needed before the store opens.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to gift a rank to another player through the store (by Minecraft name)?",
+     "suggested": "Yes, rank gifts through the store. Gems cannot be given in game.",
+     "why": "Popular with communities; needs a check so gifts cannot be used to launder chargebacks.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Server list MOTD and join flow",
+   "summary": "The server list shows an animated SKYBORNMC / PHOENIX SKYBLOCK message in two lines, with hover text about the status and versions. The server is whitelisted for testing. When a player joins they land at spawn, new players get a welcome title, a broadcast with their join number and welcome lines.",
+   "commands": [
+    {
+     "command": "(no command)",
+     "who": "admin",
+     "what": "MOTD is edited in motd.yml or with /admin. The whitelist is managed with the normal whitelist command."
+    }
+   ],
+   "test": [
+    "Add the server in Minecraft Java and Bedrock. Check the two MOTD lines, animated gradient and hover text.",
+    "Check the player count and version text. Check the icon.",
+    "Join with a new account (whitelisted): welcome title, broadcast 'Welcome <name> to Phoenix Skyblock (#N)', welcome lines with clickable /menu and /help.",
+    "Leave and join again: 'Welcome back' title.",
+    "Try a non-whitelisted account: you should see a clear message that the server is in testing.",
+    "Join with an old Java version (1.20) and a new one (1.21.5+): old gets a friendly kick message, new joins.",
+    "Check join/quit lines: only ranked players have them."
+   ],
+   "questions": [
+    {
+     "question": "When should the whitelist go off, and should there be a 'beta' mode for friends before launch?",
+     "suggested": "Keep the whitelist until the closed beta; then open it with a launch countdown in the MOTD.",
+     "why": "Controls who sees the unfinished server.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Which text should the final launch MOTD show (name, 'Season 1', date, versions)?",
+     "suggested": "'PHOENIX SKYBLOCK - Season 1 starts DATE - Java and Bedrock'. Countdown is built in.",
+     "why": "The MOTD is the first ad people see.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Is the claim 'Java 1.21.5 - 26.3 + Bedrock' what you want to show, or only 'Java and Bedrock'?",
+     "suggested": "'Java & Bedrock', with version details on the website.",
+     "why": "Versions change; wrong claims create support questions.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a maintenance mode with its own MOTD and kick message, joinable only by staff?",
+     "suggested": "Yes, a one-command maintenance mode.",
+     "why": "Needed for updates and restarts.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the MOTD show the real max player count (350 now), or a lower number to look busy?",
+     "suggested": "Show the real number. Be honest.",
+     "why": "Trust and transparency.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should vanished staff and AFK players count in the MOTD player count?",
+     "suggested": "Do not count vanished staff.",
+     "why": "Avoids revealing hidden staff.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should all players be teleported to spawn on join (as built), or return to where they logged out?",
+     "suggested": "Spawn on join (already decided).",
+     "why": "Confirms the join flow and keeps spawn busy with the shops.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the first-join welcome lines include a short rules reminder and a link to the website?",
+     "suggested": "Yes, one line: 'Be kind. /rules'.",
+     "why": "Players agree to the rules from the first minute.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the join title and sound be off for returning players who joined many times (to reduce noise)?",
+     "suggested": "Yes: only the 'Welcome back' title the first time each day.",
+     "why": "Daily repetition is annoying.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the server show a short 'Season 1 pre-season ends in X days' line on join during the pre-season week?",
+     "suggested": "Yes.",
+     "why": "The pre-season has a wipe at the end; players should be told.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Scoreboards (sidebar)",
+   "summary": "Each player sees a sidebar that changes with where they are: spawn, their own island, someone else's island, The Depths (gate, mine, forest, combat) and the warzone. It shows name and rank, money, crystals, gems, island level and, on the island, the next to-do note. Players can turn the scoreboard off in /settings.",
+   "commands": [
+    {
+     "command": "(no command)",
+     "who": "player",
+     "what": "Turn the scoreboard on/off with /settings scoreboard. Layouts are edited in messages/hud.yml."
+    }
+   ],
+   "test": [
+    "Join and look at the scoreboard at spawn: Profile (name, rank, money, crystals, gems) and Island (level).",
+    "Go to your island: layout changes, and a 'Next:' note line appears when you have an open island note and the setting is on.",
+    "Visit someone else's island: 'Visiting: <island>' is shown.",
+    "Go to The Depths gate, mine, forest and combat zones: each has its own layout.",
+    "Teleport quickly between places: no flicker.",
+    "Switch profile: money, crystals and name change at once.",
+    "Turn the scoreboard off in /settings and on again.",
+    "Bedrock: check all lines fit, symbols are visible and nothing is cut at the edge."
+   ],
+   "questions": [
+    {
+     "question": "Should the island board keep showing Gems and Crystals, or only Money plus the island level?",
+     "suggested": "Money, Crystals and Gems as built (owner UI decision).",
+     "why": "Space is limited to about 10 lines.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should big numbers be written in full ($1,234,567) or short ($1.2M)?",
+     "suggested": "Full below $100k, short above (as built).",
+     "why": "Short numbers fit better, full numbers feel exact.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the scoreboard show playtime, online count, or the season countdown on any board?",
+     "suggested": "Season countdown at spawn only.",
+     "why": "Keeps the board clean.",
+     "priority": "can wait"
+    },
+    {
+     "question": "What should the warzone board show when it exists (kills, bounty, event timer, combat level)?",
+     "suggested": "Kills, bounty, event timer, combat tag status.",
+     "why": "The board is a placeholder now.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the Depths board show the satchel fullness with a warning color when it is 90% full?",
+     "suggested": "Yes: red at 90%.",
+     "why": "Players lose drops if the satchel is full; a warning helps.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should there be a leaderboard line (island rank) when the island top exists?",
+     "suggested": "Yes on the island board: 'Rank #34'.",
+     "why": "Competition is the point of the game.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff in staff mode see a different board (reports, TPS, frozen players)?",
+     "suggested": "Yes, a staff board.",
+     "why": "Staff need numbers while moderating.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to pick between two layouts (short and long)?",
+     "suggested": "No. One layout per place.",
+     "why": "More choices = more testing.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the board hide itself when a menu or book is open (Bedrock has little room)?",
+     "suggested": "No.",
+     "why": "Not needed unless players complain.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Worlds, spawn and builds",
+   "summary": "The server has five empty (void) worlds: spawn, islands, outposts, The Depths and the warzone. Spawn is a floating medieval castle with protection (no building, no damage, no hunger). Admins can paste the builders' finished builds into the right worlds and wire their spawn points and zones. Builders use build mode to work at spawn.",
+   "commands": [
+    {
+     "command": "/spawn",
+     "who": "player",
+     "what": "Go to spawn."
+    },
+    {
+     "command": "/build",
+     "who": "builder",
+     "what": "Turn build mode on or off in protected worlds such as spawn."
+    },
+    {
+     "command": "/setspawn",
+     "who": "admin",
+     "what": "Set the spawn point where you stand."
+    },
+    {
+     "command": "/skyblock worlds",
+     "who": "admin",
+     "what": "List worlds, players and load."
+    },
+    {
+     "command": "/skyblock tp <world>",
+     "who": "admin",
+     "what": "Teleport to a world's spawn."
+    },
+    {
+     "command": "/skyblock builds list|info <id>",
+     "who": "admin",
+     "what": "Show every finished build and its state."
+    },
+    {
+     "command": "/skyblock builds paste <id> / paste-all / apply <id>",
+     "who": "admin",
+     "what": "Paste a build with FastAsyncWorldEdit (preview + confirm) and wire its metadata. Back up the world first."
+    }
+   ],
+   "test": [
+    "Type /spawn. Look around the castle. Try to break and place a block: refused. Check you take no damage and do not get hungry.",
+    "Jump off the edge: you are teleported back to spawn (below Y 0). Check there is no fall damage at spawn.",
+    "Open doors, buttons, levers, signs, an ender chest and a crafting table at spawn: they work. Other chests do not.",
+    "As builder: /build, then place and break blocks. /build again to turn it off.",
+    "As admin: /skyblock worlds and /skyblock tp islands, depths, warzone. Check each world looks right (time of day, border).",
+    "As admin: /skyblock builds list and /skyblock builds info spawn_base_v1. Only paste on the test server after a backup.",
+    "Check the border: walk or fly toward the edge of spawn (1,000 blocks wide) and The Depths (2,000).",
+    "Bedrock: walk through the castle and check doors/buttons work with taps."
+   ],
+   "questions": [
+    {
+     "question": "mob_griefing is off in every world. That also stops villagers from farming, sheep from eating grass, foxes from picking berries and zombies from breaking doors. Keep it off everywhere?",
+     "suggested": "Keep it off on spawn, Depths and warzone. On islands turn it on so villager farms work, and control TNT/creepers with the island 'explosions' setting.",
+     "why": "Villager and animal farms are a big part of skyblock; this gamerule breaks them.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should /shop, /sell, /bank and /ah work from anywhere by command, or only when you stand at the NPC in the spawn market?",
+     "suggested": "Commands work anywhere. NPCs are a nice way in that opens the same menus.",
+     "why": "Defines how much players must travel back to spawn.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Time of day is fixed: spawn always noon, The Depths always night, warzone always dusk. OK?",
+     "suggested": "Yes.",
+     "why": "Sets the look and mood of each world.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Skip the death screen (instant respawn, as now) and do you want death messages in chat anywhere (for example in the warzone only)?",
+     "suggested": "Instant respawn. Death messages only in the warzone.",
+     "why": "Vanilla death messages are off. The warzone feels dead without kill messages.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Backups today are once a day (04:30), kept 7 days, on the same machine. Is that enough for launch?",
+     "suggested": "Every 6 hours, kept 7 days, plus an off-site copy and a backup before every update.",
+     "why": "A single dead disk could lose all player islands and money.",
+     "priority": "before launch"
+    },
+    {
+     "question": "What should the unfinished castle districts be used for: Tavern, Hall of Heroes, Keep, Statue, Crate Yard?",
+     "suggested": "Tavern: quest board and AFK pool; Hall of Heroes: top-3 statues and leaderboards; Keep: rules, news and staff office; Statue: the Phoenix with the server story; Crate Yard: all crates.",
+     "why": "Builders need to know what to build next.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should wandering traders spawn on islands (they do now)?",
+     "suggested": "Off. They bring random items that skip parts of the economy.",
+     "why": "Decide before players find the trader trick.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should Elytra, wind charges and ender pearls work at spawn (it floats in the void)?",
+     "suggested": "Block elytra and wind charges at spawn; allow pearls only to stay on the castle.",
+     "why": "Players flying off or using items to cross protected areas.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Ender chests and crafting tables at spawn work for everyone today. Is that OK even though /ec and /craft are donor perks?",
+     "suggested": "Yes at spawn only: a few ender chests and tables at the market are fine.",
+     "why": "Makes new players feel the perk value without giving it away everywhere.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players be able to fly at spawn (rank perk) or never?",
+     "suggested": "Never at spawn for players; staff only.",
+     "why": "Spawn is full of NPCs and holograms; flyers will clip through it.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should players see a short title when entering a district (Market Square, Forge Quarter)?",
+     "suggested": "Yes, a short subtitle.",
+     "why": "Helps orientation; builders already marked the plots.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the warzone be reachable only by portal/NPC from spawn, not by /spawn or /tpa?",
+     "suggested": "Yes, only through the portal at the castle.",
+     "why": "Keeps PvP opt-in and under the safe-zone rules.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Which worlds are wiped at the season reset: islands and outposts only, or also The Depths drops and the warzone state?",
+     "suggested": "Islands and outposts wiped. Depths, spawn and warzone kept; their player data resets.",
+     "why": "Decides what the season reset script does.",
+     "priority": "before launch"
+    }
+   ]
+  },
+  {
+   "feature": "Staff mode, freeze, inspect and player reports",
+   "summary": "Staff mode swaps a staff member's inventory for moderation tools (inspect, freeze, random player, logs, vanish, punish, reports). Freeze holds a player for a check: they cannot move, build, use commands or take damage, and their chat goes only to staff. Players can report others with /report, and staff claim, handle and close reports.",
+   "commands": [
+    {
+     "command": "/staffmode (/s /sm /mod)",
+     "who": "helper",
+     "what": "Turn staff mode on or off."
+    },
+    {
+     "command": "/freeze <player> (/ss)  /unfreeze <player>",
+     "who": "helper",
+     "what": "Freeze or unfreeze a player."
+    },
+    {
+     "command": "/inspect <player> (/check)",
+     "who": "helper",
+     "what": "Open a player card: rank, playtime, platform, ping, location, inventory, ender chest, punish, logs."
+    },
+    {
+     "command": "/report <player> [reason]",
+     "who": "player",
+     "what": "Report a player with a reason picker or typed text."
+    },
+    {
+     "command": "/reports [open|claimed|closed]  /reports claim|unclaim|close <id> <outcome>",
+     "who": "helper",
+     "what": "Report list, claim and close with an outcome."
+    }
+   ],
+   "test": [
+    "As helper: /staffmode. Your inventory is swapped for the staff hotbar and you are vanished with night vision. Leave and check your items return exactly.",
+    "In staff mode right-click a player with the blaze rod (Inspect) and with the breeze rod (Punish). On Bedrock tap the player.",
+    "Freeze a test account: it cannot move, build, use commands, take damage or chat publicly; staff see its chat. Relog while frozen: still frozen. Unfreeze: 10 seconds without fall damage.",
+    "Ban the frozen account: the freeze is cleared.",
+    "As a normal player: /report <name> hacking. Pick a reason. Report again within 60 seconds: refused. Make 4 open reports: the 4th is refused.",
+    "As staff: /reports, claim, close with 'punished' or 'invalid'. The reporter is told the result (also later on join).",
+    "Close 3 reports from the same player as 'invalid': staff get a suggestion for the report-abuse reason.",
+    "Crash your client while in staff mode (kill the game) and join again: your inventory is restored."
+   ],
+   "questions": [
+    {
+     "question": "Should a freeze end by itself after a time (for example 15 minutes) or alert staff that someone has been frozen for a long time?",
+     "suggested": "Alert staff at 10 minutes; never auto-unfreeze, never auto-ban.",
+     "why": "A forgotten freeze keeps a player stuck forever.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should a player need a minimum playtime (for example 10 minutes) before they can use /report?",
+     "suggested": "10 minutes.",
+     "why": "Report spam from brand new or troll accounts.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should reports about staff members go only to admins instead of the normal report list?",
+     "suggested": "Yes: reports about helper/mod/admin go to admins only.",
+     "why": "Staff should not handle reports about their colleagues.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Which report reasons should be in the picker (today: Hacking, X-ray, Toxicity, Spam, Advertising, Exploiting, Inappropriate build/name, Other)?",
+     "suggested": "Add: Griefing, Scamming, AFK macro/farm, Bug abuse, Real-world threats.",
+     "why": "They match the punishment reasons so staff can click straight through.",
+     "priority": "can wait"
+    },
+    {
+     "question": "What should a frozen player be told to do, since Discord screen-sharing comes later?",
+     "suggested": "Until Discord opens: message 'A staff member will talk to you in chat/voice. Stay here.'",
+     "why": "The freeze message must say something useful.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Can any staff member unfreeze a player, or only the one who froze them?",
+     "suggested": "Any helper or above can unfreeze, logged with the name.",
+     "why": "A staff member who goes offline should not leave a player frozen.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff in staff mode be blocked from using /ah, /pay, /shop, /sell (to keep moderation separate from playing)?",
+     "suggested": "Yes while in staff mode.",
+     "why": "Stops staff from using the economy while using powers.",
+     "priority": "before launch"
+    },
+    {
+     "question": "How long should a closed report remain visible in /reports (100 shown now) and be kept in the database?",
+     "suggested": "Keep closed reports 1 year, show the last 100.",
+     "why": "Reports are evidence for appeals.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the reporter be told the exact outcome (punished / warned / no evidence) or only 'handled'?",
+     "suggested": "Say 'handled' for punished and warned, and 'no evidence found' otherwise, never the punishment.",
+     "why": "Protects the privacy of the reported player.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should staff be able to use Inspect on other staff?",
+     "suggested": "Yes, but it is logged and admins are told.",
+     "why": "Prevents silent snooping between staff.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the number of open reports show on the staff scoreboard and tab?",
+     "suggested": "Yes: 'Reports: 4' on a staff board.",
+     "why": "Staff see work waiting without typing a command.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Punishments (/p menu, ladders and warnings)",
+   "summary": "Staff open one menu with /p <player> and click a reason. Each reason has a ladder (for example warn, mute 1h, mute 1d). The system picks the next step from the player's history, keeps a warning counter, shows a 2-minute [Undo], protects against double punishing, saves chat evidence, and asks an admin to approve big punishments. Players get a clear ban or mute screen with an ID and a link to appeal.",
+   "commands": [
+    {
+     "command": "/p <player> (/punish)",
+     "who": "helper",
+     "what": "Open the single-screen punishment menu."
+    },
+    {
+     "command": "/p <player> <reason-id> [-s] [-ip] [-force]",
+     "who": "helper",
+     "what": "Apply a reason directly (-s silent, -ip IP ban, -force skip the double-click protection)."
+    },
+    {
+     "command": "/ban /tempban /ipban /mute /tempmute /warn /kick",
+     "who": "helper",
+     "what": "Direct commands (helpers: warn, kick, mute; mods: ban; admins: IP ban)."
+    },
+    {
+     "command": "/unban /unmute /unwarn",
+     "who": "mod",
+     "what": "Lift a punishment (reason required)."
+    },
+    {
+     "command": "/warns <player>",
+     "who": "helper",
+     "what": "Warn counter and waiting suggestions with [Apply] / [Dismiss]."
+    },
+    {
+     "command": "/history <player> (/punishments)",
+     "who": "helper",
+     "what": "All punishments with who, why and evidence."
+    },
+    {
+     "command": "/alts <player>",
+     "who": "mod",
+     "what": "Accounts sharing an IP."
+    },
+    {
+     "command": "/pstats [period]  /pstats <staff>  /pstats top",
+     "who": "helper",
+     "what": "Staff punishment numbers."
+    },
+    {
+     "command": "/mypunishments  /ack",
+     "who": "player",
+     "what": "See your own mute and warnings; confirm a warning."
+    }
+   ],
+   "test": [
+    "As helper: /p <test account> and look at the layout: mutes top-left, warn buttons bottom-left, bans top-right, small stuff bottom-right, head and warn counter in the middle.",
+    "Click Toxicity: the player gets a warning, a title and chat line. Click [Undo] within 2 minutes. After 2 minutes the Undo is gone.",
+    "Warn the same player twice: staff get a suggestion 'mute 1h' with [Apply] / [Dismiss]. Apply it.",
+    "Have two staff punish the same player within 15 seconds: the second is blocked unless they click again.",
+    "As mod: /p <player> hacking. A 30-day ban is a request for an admin ([Approve]/[Deny]); a 7-day ban is applied.",
+    "As the punished test account: read the ban screen (ID, appeal link), then /mypunishments and /ack.",
+    "As staff: /history <player> and click an entry to see the evidence lines. IPs must not show.",
+    "Try to punish an admin: refused (exempt).",
+    "Bedrock: open /p with a tap and check slots, icons and Undo on the head."
+   ],
+   "questions": [
+    {
+     "question": "Should the public ban/mute announcement show the reason (for example 'Steve was banned for Hacking') or only that the player was banned?",
+     "suggested": "Show the rule category only (for example 'Rule 2') without staff name.",
+     "why": "Shaming vs transparency; the rule number gives players a clear lesson.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should there be a top 'severe' reason (real-life threats, child safety, doxxing) that bans permanently at once and always needs an admin's approval?",
+     "suggested": "Yes: one reason with an instant permanent ban, approval by an admin, and the evidence kept.",
+     "why": "Some cases must not climb a ladder.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should bans of 7 days or longer require evidence (a log id, screenshot link or a note) before they can be applied?",
+     "suggested": "Yes for 7 days or more; mutes and shorter bans do not need it.",
+     "why": "Protects players and staff when an appeal comes.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Can helpers temp-ban for up to 1 day when no mod is online (today helpers cannot ban at all)?",
+     "suggested": "No. Helpers freeze, mute and kick and call a mod.",
+     "why": "Keeps ban power with fewer people.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should hacking and x-ray bans be permanent on the first offence when staff are sure (instead of 30 days first)?",
+     "suggested": "Keep the ladder, but let admins skip steps with a typed reason.",
+     "why": "Cheaters waiting out a 30-day ban come back.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should shadow mutes (the player thinks chat works but nobody sees it) exist?",
+     "suggested": "No. Always an honest mute with a message.",
+     "why": "Transparent punishments are easier to defend.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a ban also hide the player's island from the visit browser while the ban lasts?",
+     "suggested": "Yes, hidden while banned, restored after unban.",
+     "why": "Banned players' islands should not stay on the showcase list.",
+     "priority": "can wait"
+    },
+    {
+     "question": "What should happen to a banned player's island: stay as it is, or be locked and frozen for visitors?",
+     "suggested": "Locked for visitors. Team members keep playing.",
+     "why": "Teams must not lose their island because of one member.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the player be able to see which rule number a warning belongs to (yes today) and a short explanation on /rules?",
+     "suggested": "Yes: each rule has a 2 line explanation on the website.",
+     "why": "Players accept punishments better when the rule is clear.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the punishment history count toward being allowed to join team islands or use /ah (for example banned for scamming = no /ah for 30 days)?",
+     "suggested": "Yes: scamming and RMT reasons also apply a 30 day trade block (sanctions exist).",
+     "why": "Connects chat/gameplay punishments to the economy.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Punishment safeguards: appeals, lockdown, watchlist, guard and reports",
+   "summary": "Players can appeal bans and mutes in game. Staff can start a chat or join lockdown during a raid (only new accounts are affected), keep a private watchlist, add private notes, punish many players at once, and check each other: a guard limits how many punishments one staff member can give in 5 minutes, and admins can roll back a staff member's recent punishments. A monthly report shows the numbers.",
+   "commands": [
+    {
+     "command": "/appeal [id] <text>",
+     "who": "player",
+     "what": "Appeal your mute or ban (20 to 500 characters)."
+    },
+    {
+     "command": "/appeals",
+     "who": "mod",
+     "what": "Staff queue: read, Accept / Reduce / Deny."
+    },
+    {
+     "command": "/lockdown [chat|join|off|status]",
+     "who": "helper",
+     "what": "Raid lockdown for new accounts only."
+    },
+    {
+     "command": "/watch <player> [reason]  /watch remove <player>  /watchlist",
+     "who": "helper",
+     "what": "Private watchlist; staff get a line when the player joins."
+    },
+    {
+     "command": "/pnote <player> [text]  /pnote remove <id>",
+     "who": "helper",
+     "what": "Private staff notes."
+    },
+    {
+     "command": "/pbulk <reason> <players...>",
+     "who": "mod",
+     "what": "Punish up to 20 players at once with a confirm."
+    },
+    {
+     "command": "/psuggest <player> <reason> [details]",
+     "who": "helper",
+     "what": "Suggest a punishment (console, anticheat, staff); never applied automatically."
+    },
+    {
+     "command": "/pnotify [type] [on|off]",
+     "who": "helper",
+     "what": "Choose which staff alerts you receive."
+    },
+    {
+     "command": "/pguard allow|lock|unlock|status",
+     "who": "admin",
+     "what": "Lift a block, lock or unlock a staff member's punishments."
+    },
+    {
+     "command": "/prollback <staff> <period> [confirm]",
+     "who": "admin",
+     "what": "Undo a staff member's recent punishments (preview first)."
+    },
+    {
+     "command": "/ppurge <player> [preview|confirm]",
+     "who": "admin",
+     "what": "Owner: delete a player's personal data on request."
+    },
+    {
+     "command": "/preport [month]  /psanction restore <id>",
+     "who": "admin",
+     "what": "Monthly punishment report; give back a sanction."
+    }
+   ],
+   "test": [
+    "As a muted test account: /appeal and read what can be appealed. Send an appeal text under 20 characters (refused), then a proper one. Staff see it in /appeals and Accept, Reduce or Deny with a reason.",
+    "Start /lockdown chat 5m. A brand-new account cannot chat or /msg; an older or ranked account can. /lockdown off ends it.",
+    "Start /lockdown join 2m: an account that never joined cannot join (friendly 'server is busy' screen), returning players can.",
+    "/watch <player> reason, then have that player join: staff see one line. The player is never told. /watchlist shows the list.",
+    "/pnote <player> text; /pnote <player> shows notes with [Remove].",
+    "/pbulk spam <player1> <player2>: a confirm screen with each player's step, then [Undo all].",
+    "As helper punish 6 players in 5 minutes: the guard blocks you after the limit. An admin runs /pguard allow <name>.",
+    "As admin: /prollback <staff> 1h shows a preview; confirm to undo.",
+    "Check /preport lists last month with no player names."
+   ],
+   "questions": [
+    {
+     "question": "On launch day many new accounts join at once. Should raid detection (alert at 15 new accounts in 30 seconds) be raised or off for the first week?",
+     "suggested": "Raise to 60 new accounts in 30 seconds during launch week, then back to 15.",
+     "why": "Otherwise staff get false raid alerts and may lock out real players.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should permanent bans be appealable, and after how long?",
+     "suggested": "Yes after 30 days, decided by an admin. Cheating bans after 90 days.",
+     "why": "A fair second chance, but not too soon.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should appeals be decided by mods (as now) or by a small appeal team of admins and senior mods?",
+     "suggested": "Mods for mutes and bans up to 30 days; admins for longer bans.",
+     "why": "Appeals often come from angry players; a second pair of eyes helps.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Are the guard limits right: helper 5 bans / 15 mutes in 5 minutes, mod 10 / 25, admin alert only?",
+     "suggested": "Yes, with /pguard allow before planned cleanups.",
+     "why": "Too low blocks honest staff on a bad night; too high does not protect.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should a staff member who is blocked by the guard be automatically told to contact an admin through a button?",
+     "suggested": "Yes: [Contact admin] sends an alert.",
+     "why": "A blocked helper should not have to find an admin by chat.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the 'Honorable' title (60 days without a punishment, 10 hours played) give a small reward as well?",
+     "suggested": "Yes: 500 crystals and a cosmetic particle.",
+     "why": "Rewards good behaviour, not only punishes bad.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the lockdown also stop new accounts from creating islands or using /pay and /ah?",
+     "suggested": "Yes during a chat lockdown: no /pay, /ah, /trade for new accounts.",
+     "why": "Raiders often try to scam or duplicate quickly.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should watchlist entries expire after 30 days (as now) or stay until removed?",
+     "suggested": "Expire after 30 days; one click to renew.",
+     "why": "Stale entries cause bias.",
+     "priority": "can wait"
+    }
+   ]
+  },
+  {
+   "feature": "Staff logs (/logs)",
+   "summary": "Everything players and staff do is written to a log: chat, commands, money, trades, auctions, island actions, item life, punishments, staff actions and logins. Staff search it with /logs by player, time, category, near me, island or item, and can click a chat line to punish. Admins can export to CSV.",
+   "commands": [
+    {
+     "command": "/logs",
+     "who": "helper",
+     "what": "Open the log viewer: pick who, category and time range."
+    },
+    {
+     "command": "/logs player <name> [category] [time]",
+     "who": "helper",
+     "what": "Everything a player did."
+    },
+    {
+     "command": "/logs pay|economy <name> [other]",
+     "who": "mod",
+     "what": "Money between players."
+    },
+    {
+     "command": "/logs trade|chat|commands <name> [time]",
+     "who": "helper",
+     "what": "Trades, chat or commands of a player."
+    },
+    {
+     "command": "/logs island <name|id> [time]  /logs item <uuid>  /logs near [radius] [time]",
+     "who": "mod",
+     "what": "Island actions, life of a unique item, actions near you."
+    },
+    {
+     "command": "/logs staff <name> [time]",
+     "who": "admin",
+     "what": "Everything a staff member did."
+    },
+    {
+     "command": "/logs export <name|last> [category] [time]",
+     "who": "admin",
+     "what": "CSV file to the exports folder (logged)."
+    },
+    {
+     "command": "/logs page <n>",
+     "who": "helper",
+     "what": "Next pages in chat (console, Bedrock)."
+    }
+   ],
+   "test": [
+    "Do a few things: chat, /pay a friend, use a command. As helper /logs player <you> chat 1h: your lines show. Money lines need mod.",
+    "Click a chat line of a test account: the punish menu opens with that line as evidence.",
+    "/logs near 30 1h while standing where a friend placed and broke blocks. Check results and click to teleport (mods).",
+    "Look up a unique item: /logs item <uuid> shows its whole life (made, traded, sold).",
+    "As admin: /logs export <name> and check the CSV in plugins/PhoenixSkyblock/exports.",
+    "Check that a helper cannot see IPs or economy lines, and a mod cannot see staff logs.",
+    "Bedrock: open the viewer by tap, or use the chat output (/logs page)."
+   ],
+   "questions": [
+    {
+     "question": "IP addresses and login history are kept forever (decided for security). Norwegian/EU law normally wants a limit and a privacy policy. Which limit do you want?",
+     "suggested": "Keep IPs 12 months after the player's last login (and for the length of any ban plus 12 months), then delete. Publish a privacy policy on the website. I am not a lawyer; please check.",
+     "why": "Keeping personal data forever without a reason can be illegal under GDPR.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should every lookup (/logs, /inspect, /whois, /invsee) be recorded so admins can see which staff looked at which player?",
+     "suggested": "Yes, admins can see 'who looked at whom' for 12 months.",
+     "why": "Protects players from staff snooping.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Chat, command and item logs are searchable for 30 days and then archived to files. How long should the archive be kept?",
+     "suggested": "Keep archives 12 months, then delete.",
+     "why": "Disk space and privacy limits.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the life of valuable unique items (tools, enchant books, notes, set tokens) be searchable longer than 30 days?",
+     "suggested": "Yes: 180 days for unique items, since dupes are found late.",
+     "why": "Dupe investigations often start weeks after the dupe.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should players get a notice on first join that chat, commands and actions are logged, with a link to the privacy policy?",
+     "suggested": "Yes, one line and a link.",
+     "why": "People should know before they type.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should a player be able to ask for a copy of the data you hold about them (a 'data request') and how is that handled?",
+     "suggested": "Yes: they open a ticket, an admin exports with /logs export and /history and sends it.",
+     "why": "GDPR gives players this right.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should private messages be searchable by mods in /logs without a report (today: socialspy live and 30 days logged)?",
+     "suggested": "Only with a reason typed in the search that is also logged.",
+     "why": "Private messages deserve extra protection.",
+     "priority": "before launch"
+    },
+    {
+     "question": "Should the CSV export be blocked for players' private messages?",
+     "suggested": "Yes, exports never include private messages.",
+     "why": "Exports leave the server, which raises the privacy risk.",
+     "priority": "can wait"
+    },
+    {
+     "question": "Should the log viewer show a 'staff note' button so staff can attach a comment to a log line for a case?",
+     "suggested": "Yes later: pin a line to a case with a comment.",
+     "why": "Cases that take days need the evidence in one place.",
+     "priority": "can wait"
+    }
+   ]
+  }
+ ]
+}
