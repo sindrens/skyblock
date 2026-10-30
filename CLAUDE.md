@@ -70,6 +70,7 @@ docs/            design, standards, roadmap, commands, open questions
    - Commands: `docs/commands/<name>.md` (table: Command, Description, Permission, Status), then `./gradlew commandsIndex` to refresh the index in `docs/COMMANDS.md`.
 
 ## Agents and state
-- Work queue: `docs/QUEUE.md`; current state: `docs/STATUS.md`. A fresh session reads both and continues.
+- Work queue: `docs/QUEUE.md`; current state: `docs/STATUS.md`; everything unbuilt, ideas and questions: `docs/BACKLOG.md`. A fresh session reads all three and continues.
+- Owner answers come from the Decisions page (link in BACKLOG.md); never delete ideas, questions or later items, mark them done instead.
 - Max 3 agents at once, each in its own git worktree on branch `q/<item>`, one lane each. Merge as soon as one finishes (`./gradlew build` on its branch), release, then start the next item.
 - Open questions never block: safest default + `docs/OPEN_QUESTIONS.md` → "Waiting for owner".
