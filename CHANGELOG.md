@@ -79,6 +79,7 @@
 - **Island menu + island chat (M2.5):** `/is` opens the island menu (home, members, permissions, warps, visitors/lock, settings, invites, notes, island chat, chat colors, visit browser; stats/bank/upgrades coming soon; disband/leave); `/is chat [message]` (toggle or one message, members only, role colors picked by the leader, chat filters + mute, staff spy toggle, audited); `/is info [player]`.
 - **Per-place scoreboards (SB):** own island (with a "Next" note line when you have one), visiting an island, The Depths (Gate / Mine / Forest / Combat), spawn and warzone (placeholder); picked in `hud.yml → places`, switches right after teleports without flicker.
 - **Stacked-mob enchants (E3):** Slaughter (up to 48 mobs per hit), Bloodlust, Plunder, Soul Reaper, Reaper's Sweep and Phoenix Wrath on stacks; island stack books (1 in 25,000, 5 per day per profile); batch kills give skill and sword XP for the whole batch (spawner stacks give no XP unless turned on).
+- **Messages (UX2):** moderation, Depths and island texts use the same short format (✔/✘, gray text, white values, yellow [Click] buttons with hovers) and the island role names Leader, Admin, Mod, Member, Coop.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
