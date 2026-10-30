@@ -1,0 +1,106 @@
+# Stacking: stacked mobs, items and spawners, island entity limits. MiniMessage + style tags (style.yml).
+# <mob> is the translated mob name (shown in each player's language, Bedrock too).
+# Reload: /skyblock reload stacking
+
+# Names above stacks (owner S8, S15: white name + gold count). <name> <count>
+mob-name: "<c:value><name></c:value> <c:ember>x<count>"
+item-name: "<c:value><name></c:value> <c:ember>x<count>"
+
+# Things you can't do with a stack of mobs.
+stack:
+  no-name-tag: "<prefix><c:error><sym:cross></c:error> <c:text>You can't name a stack. Name a single mob."
+  no-leash: "<prefix><c:error><sym:cross></c:error> <c:text>You can't leash a stack."
+  no-tame: "<prefix><c:error><sym:cross></c:error> <c:text>You can't tame a stack."
+  no-saddle: "<prefix><c:error><sym:cross></c:error> <c:text>You can't saddle a stack."
+  no-ride: "<prefix><c:error><sym:cross></c:error> <c:text>You can't ride a stack."
+  no-shear: "<prefix><c:error><sym:cross></c:error> <c:text>You can't shear this stack."
+
+# Breeding a stack (owner S10): one food item breeds one pair. <babies> <count> <time> <max>
+breed:
+  done: "<c:success><sym:check></c:success> <c:text>Bred <c:value><babies></c:value>. Stack: <c:value><count></c:value>"
+  cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>These animals need a rest. Try again in <c:value><time></c:value>."
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>This stack is full (<c:value><max></c:value>)."
+
+# Island entity limits (owner SK2). <limit> <what>
+limit:
+  reached: "<prefix><c:error><sym:cross></c:error> <c:text>Island limit reached: <c:value><limit> <what></c:value>."
+  kind:
+    armor-stands: "armor stands"
+    item-frames: "item frames"
+    minecarts: "minecarts"
+    boats: "boats"
+    villagers: "villagers"
+    displays: "displays"
+
+# Spawner blocks. <mob> <amount> <count> <left> <max>
+spawner:
+  placed: "<prefix><c:success><sym:check></c:success> <c:value><mob></c:value> <c:text>spawner placed. Add more of the same kind (max <c:value><max></c:value>)."
+  added: "<prefix><c:success><sym:check></c:success> <c:text>Added <c:value><amount></c:value>. <c:value><mob></c:value> <c:text>spawners: <c:value><count>/<max></c:value>"
+  removed: "<prefix><c:success><sym:check></c:success> <c:text>Took <c:value><amount></c:value>. <c:value><left></c:value> <c:text>left in the block."
+  removed-all: "<prefix><c:success><sym:check></c:success> <c:text>Took all <c:value><amount></c:value> <c:value><mob></c:value> <c:text>spawners."
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>This spawner is full (<c:value><max></c:value>). Masteries raise the limit."
+  wrong-type: "<prefix><c:error><sym:cross></c:error> <c:text>This spawner holds <c:value><mob></c:value>. Place yours somewhere else."
+  none-in-inventory: "<prefix><c:error><sym:cross></c:error> <c:text>You have no <c:value><mob></c:value> <c:text>spawners."
+  only-islands: "<prefix><c:error><sym:cross></c:error> <c:text>Spawners only work on your island."
+  disabled-type: "<prefix><c:error><sym:cross></c:error> <c:text>This spawner type is turned off. Ask staff."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, this spawner is being saved."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Your spawners are safe; try again."
+  dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full. The rest dropped at your feet."
+  # The spawner item (custom item, lore built by the item framework). {mob} {tier} {rarity}
+  item:
+    name: "<rarity:{rarity}>{mob} Spawner"
+    name-unknown: "<c:text>Spawner"
+    subtitle: "<c:muted>Spawner <sym:dot> Tier {tier}"
+    description: "Place it on your island. Stack more of the same kind in one block."
+    mob: "<c:text>Mob <c:value>{mob}"
+    tier: "<c:text>Tier <c:value>{tier}"
+    action-place-input: "Place"
+    action-place: "on your island"
+    action-menu-input: "Sneak-right-click"
+    action-menu: "the block to manage it"
+
+# /spawner give (staff). <player> <amount> <mob> <tier>
+give:
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><player></c:value> <c:value><amount>x <mob></c:value> <c:text>spawner (tier <tier>)."
+  received: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><amount>x <mob></c:value> <c:text>spawner."
+
+# Spawner menu (owner S28). <mob> <tier> <count> <max> <rate> <multiplier> <next> <carried> <range> <absolute-max> <status>
+menu:
+  title: "Spawner"
+  info: ["<c:text>Manage this stacked spawner:", "<c:text>add or take spawners and see", "<c:text>how fast it spawns."]
+  status:
+    active: "<c:success>Running"
+    paused: "<c:warning>Paused <c:muted>(no player near)"
+    busy: "<c:muted>Saving..."
+  spawner:
+    name: "<c:value><mob></c:value> <c:text>Spawner"
+    lore:
+      - "<c:text>Tier <c:value><tier>"
+      - "<c:text>Stacked <c:value><count>/<max>"
+      - "<c:text>Output <c:value><rate></c:value> <c:text>mobs/min"
+      - "<c:text>Next spawn in <c:value><next>s"
+      - "<c:text>Status <status>"
+      - ""
+      - "<c:muted>Runs while a player is within"
+      - "<c:muted><range> blocks. Light is not needed."
+  add-one:
+    name: "<c:success>Add 1"
+    lore: ["<c:text>Adds one <c:value><mob></c:value> <c:text>spawner", "<c:text>from your inventory.", "<c:text>You carry <c:value><carried>", "", "<c:action><sym:bullet> Click to add"]
+  add-all:
+    name: "<c:success>Add all"
+    lore: ["<c:text>Adds every <c:value><mob></c:value> <c:text>spawner", "<c:text>you carry, up to the limit.", "<c:text>You carry <c:value><carried>", "", "<c:action><sym:bullet> Click to add"]
+  take-one:
+    name: "<c:error>Take 1"
+    lore: ["<c:text>Takes one spawner into", "<c:text>your inventory.", "", "<c:action><sym:bullet> Click to take"]
+  take-all:
+    name: "<c:error>Take all"
+    lore: ["<c:text>Takes all <c:value><count></c:value> <c:text>spawners.", "<c:text>The block disappears.", "", "<c:action><sym:bullet> Click to take"]
+  upgrades:
+    name: "<c:ember>Upgrades"
+    lore:
+      - "<c:text>Limit <c:value><max></c:value> <c:muted>(up to <absolute-max>)"
+      - "<c:text>Speed <c:value>x<multiplier>"
+      - ""
+      - "<c:text>Island masteries raise both:"
+      - "<c:text>Spawner Stack Limit, Spawner Rate."
+  upgrades-soon: "<prefix><c:text>Island masteries are coming soon."

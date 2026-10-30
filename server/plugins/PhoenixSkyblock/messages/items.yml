@@ -37,6 +37,7 @@ type:
   consumable: "CONSUMABLE"
   material: "MATERIAL"
   note: "NOTE"
+  spawner: "SPAWNER"
   cosmetic: "COSMETIC"
   menu: ""
 
