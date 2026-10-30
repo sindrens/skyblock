@@ -26,7 +26,12 @@ final class KickBackupStore {
     /** One backup row. {@code money} is null when the economy was not available at the kick. */
     record Backup(long id, UUID islandId, String islandName, UUID profileId, UUID playerId, String playerName, Role role, Long money,
                   boolean itemsCaptured, byte[] inventory, byte[] enderChest, String removal, String kickedBy, long createdAt,
-                  Long restoredAt, String restoredBy, Long itemsRestoredAt) {
+                  Long restoredAt, String restoredBy, Long itemsRestoredAt, Long bankMoney) {
+
+        /** Owner answer 591: a backup taken when the island was disbanded or reset (the island is gone, no membership). */
+        boolean islandRemoval() {
+            return REMOVAL_DISBAND.equals(removal) || REMOVAL_RESET.equals(removal);
+        }
 
         /** Membership (and money) not restored yet. */
         boolean open() {
@@ -41,8 +46,18 @@ final class KickBackupStore {
 
     /** A backup to save (the id and restore columns are set by the database). */
     record NewBackup(UUID islandId, String islandName, UUID profileId, UUID playerId, String playerName, Role role, Long money,
-                     byte[] inventory, byte[] enderChest, String removal, String kickedBy, long createdAt) {
+                     byte[] inventory, byte[] enderChest, String removal, String kickedBy, long createdAt, Long bankMoney) {
+
+        NewBackup(UUID islandId, String islandName, UUID profileId, UUID playerId, String playerName, Role role, Long money,
+                  byte[] inventory, byte[] enderChest, String removal, String kickedBy, long createdAt) {
+            this(islandId, islandName, profileId, playerId, playerName, role, money, inventory, enderChest, removal, kickedBy, createdAt,
+                    null);
+        }
     }
+
+    /** Owner answer 591: removal value of the backups taken by a disband / a staff reset. */
+    static final String REMOVAL_DISBAND = "island_disband";
+    static final String REMOVAL_RESET = "island_reset";
 
     /** Result of {@link #restoreMembership}. */
     sealed interface RestoreResult {
@@ -60,7 +75,7 @@ final class KickBackupStore {
     }
 
     private static final String COLUMNS = "id, island_id, island_name, profile_id, player_id, player_name, member_role, money, "
-            + "items_captured, inventory, ender_chest, removal, kicked_by, created_at, restored_at, restored_by, items_restored_at";
+            + "items_captured, inventory, ender_chest, removal, kicked_by, created_at, restored_at, restored_by, items_restored_at, bank_money";
 
     private final Database db;
 
@@ -92,6 +107,19 @@ final class KickBackupStore {
         return db.async(c -> claimItems(c, id, now));
     }
 
+    /** Owner answer 591: claims an island-removal backup (no membership to add back); true only for the one caller. */
+    CompletableFuture<Boolean> claimRemoval(long id, String by, long now) {
+        return db.async(c -> claimRemoval(c, id, by, now));
+    }
+
+    /**
+     * The items of a backup can't be restored (they were not taken from the player after all, so giving them back would
+     * duplicate them). Completes with true when the backup no longer offers items.
+     */
+    CompletableFuture<Boolean> dropItems(long id) {
+        return db.async(c -> dropItems(c, id));
+    }
+
     /** Undoes {@link #claimItems} when the items could not be given after all (player left meanwhile). */
     CompletableFuture<Void> releaseItems(long id) {
         return db.run(c -> Sql.update(c, "UPDATE island_kick_backups SET items_restored_at = NULL WHERE id = ?", id));
@@ -101,11 +129,11 @@ final class KickBackupStore {
 
     static long save(Connection c, NewBackup b) throws SQLException {
         return Sql.insertReturningId(c, "INSERT INTO island_kick_backups (island_id, island_name, profile_id, player_id, player_name, "
-                        + "member_role, money, items_captured, inventory, ender_chest, removal, kicked_by, created_at) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        + "member_role, money, items_captured, inventory, ender_chest, removal, kicked_by, created_at, bank_money) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 b.islandId(), truncate(b.islandName(), 64), b.profileId(), b.playerId(), truncate(b.playerName(), 16),
                 MemberStore.key(b.role()), b.money(), b.inventory() != null, b.inventory(), b.enderChest(), truncate(b.removal(), 16),
-                truncate(b.kickedBy(), 32), b.createdAt());
+                truncate(b.kickedBy(), 32), b.createdAt(), b.bankMoney());
     }
 
     static List<Backup> ofPlayer(Connection c, UUID playerId, int limit) throws SQLException {
@@ -151,6 +179,17 @@ final class KickBackupStore {
         }
     }
 
+    static boolean claimRemoval(Connection c, long id, String by, long now) throws SQLException {
+        return Sql.update(c, "UPDATE island_kick_backups SET restored_at = ?, restored_by = ? WHERE id = ? AND restored_at IS NULL "
+                + "AND removal IN (?, ?)", now, truncate(by, 32), id, REMOVAL_DISBAND, REMOVAL_RESET) == 1;
+    }
+
+    static boolean dropItems(Connection c, long id) throws SQLException {
+        Sql.update(c, "UPDATE island_kick_backups SET items_captured = ?, inventory = NULL, ender_chest = NULL WHERE id = ? "
+                + "AND items_restored_at IS NULL", false, id);
+        return Sql.queryOne(c, "SELECT items_captured FROM island_kick_backups WHERE id = ?", rs -> !rs.getBoolean(1), id).orElse(true);
+    }
+
     static boolean claimItems(Connection c, long id, long now) throws SQLException {
         return Sql.update(c, "UPDATE island_kick_backups SET items_restored_at = ? WHERE id = ? AND items_captured = ? "
                 + "AND items_restored_at IS NULL", now, id, true) == 1;
@@ -163,7 +202,7 @@ final class KickBackupStore {
                 Sql.uuid(rs, "player_id"), rs.getString("player_name"), role(rs.getString("member_role")), m,
                 rs.getBoolean("items_captured"), rs.getBytes("inventory"), rs.getBytes("ender_chest"), rs.getString("removal"),
                 rs.getString("kicked_by"), rs.getLong("created_at"), Sql.nullableLong(rs, "restored_at"), rs.getString("restored_by"),
-                Sql.nullableLong(rs, "items_restored_at"));
+                Sql.nullableLong(rs, "items_restored_at"), Sql.nullableLong(rs, "bank_money"));
     }
 
     private static Role role(String key) {

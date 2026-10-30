@@ -13,15 +13,19 @@ final class BankRules {
 
     /** What happens to an island bank's money when the island is removed (owner answer 263). */
     enum Removal {
-        /** Disband: the money belongs to the island and leaves the economy with it. */
+        /** Disband or reset: the money belongs to the island and leaves the economy with it (the islands module backs it up). */
         DELETE_MONEY,
-        /** Staff delete or reset: the money stays in the closed bank for staff to decide (nothing destroyed). */
+        /** Staff delete: the money stays in the closed bank for staff to decide (nothing destroyed). */
         KEEP_CLOSED
     }
 
-    /** Owner answer 263: a disband deletes the island bank money; staff removals keep it closed. Pure. */
+    /**
+     * Owner answers 263/591: a disband or a staff reset deletes the island bank money (the islands module keeps its amount in
+     * the leader's restorable backup); a staff delete keeps it closed. Pure.
+     */
     static Removal onRemoved(String reason) {
-        return net.skybornmc.skyblock.common.island.IslandRemovedEvent.DISBAND.equals(reason) ? Removal.DELETE_MONEY : Removal.KEEP_CLOSED;
+        return net.skybornmc.skyblock.common.island.IslandRemovedEvent.DISBAND.equals(reason)
+                || net.skybornmc.skyblock.common.island.IslandRemovedEvent.RESET.equals(reason) ? Removal.DELETE_MONEY : Removal.KEEP_CLOSED;
     }
 
     /** Why a bank can't be used from a purse. */

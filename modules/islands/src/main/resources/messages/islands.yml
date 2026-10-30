@@ -734,6 +734,10 @@ perms:
     bank-history: "Bank history"
 
 # ---------------------------------------------------------------- M2.7 lifecycle (/is disband) and staff tools (/isadmin)
+# Owner answer 591: told to every member whose profile was reset by a disband or an island reset.
+reset-profile:
+  you: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your profile on <c:value><island></c:value> was reset: money, inventory and ender chest. <c:muted>Staff keep a backup if this was a mistake."
+
 disband:
   leader-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the island Leader can disband. <c:muted>Members can</c:muted> <click:run_command:'/is leave'><hover:show_text:'<c:text>Leave the island'><c:action>[Leave]</c:action></hover></click>"
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your island is being built or removed. Try again soon."
@@ -747,7 +751,8 @@ disband:
   details:
     - "<c:error>Your island and everything on it is"
     - "<c:error>deleted forever, its bank money too."
-    - "<c:error>This can't be undone."
+    - "<c:error>This profile is reset: its money,"
+    - "<c:error>inventory and ender chest are taken."
     - "<c:text>You can create a new island right away."
   cancelled: "<prefix><c:text>Your island stays. Nothing changed."
   done-now: "<prefix><c:success><sym:check></c:success> <c:value><island></c:value> <c:text>was disbanded. <click:run_command:'/is'><hover:show_text:'<c:text>Create a new island'><c:action>[Create one]</c:action></hover></click>"
@@ -822,6 +827,8 @@ admin:
     details:
       - "<c:error>The island is deleted forever and"
       - "<c:error>its members are removed and told."
+      - "<c:error>Every member's profile is reset and"
+      - "<c:error>the bank money deleted (backups kept)."
       - "<c:text>The Leader gets a fresh starter island"
       - "<c:text>right away (in a new slot)."
     done: "<prefix><c:success><sym:check></c:success> <c:value><island></c:value> <c:text>was reset. <c:value><owner></c:value> has a new island in slot <c:value>#<slot></c:value>."
@@ -856,7 +863,8 @@ admin:
     menu-crumb: "Kick backups of <player>"
     info:
       - "<c:text>Backups made when this player"
-      - "<c:text>was kicked from an island."
+      - "<c:text>was kicked, or their island was"
+      - "<c:text>disbanded or reset."
       - "<c:muted>Click one to restore it."
     empty:
       name: "<c:muted>No kick backups"
@@ -870,9 +878,16 @@ admin:
         - "<c:bar>| </c:bar><c:text>Items: <c:value><items>"
         - "<c:bar>| </c:bar><c:text>Kicked by <c:value><by></c:value> <c:muted>on <date>"
         - "<c:bar>| </c:bar><c:text>State: <c:value><state>"
+      # Owner answer 591: extra lines of a backup made by a disband or reset. <removal> <bank>
+      removal:
+        - "<c:bar>| </c:bar><c:text>Made by: <c:value><removal>"
+        - "<c:bar>| </c:bar><c:text>Island bank: <c:value><bank>"
       click:
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to restore"
+    removal:
+      island_disband: "Disband (profile reset)"
+      island_reset: "Island reset (profile reset)"
     state:
       open: "Not restored"
       items: "Items waiting"
@@ -892,6 +907,8 @@ admin:
     done: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>is back on <c:value><island></c:value> as <c:value><role></c:value>. <c:muted>Money added: <money>"
     you: "<prefix><c:success><sym:star></c:success> <c:text>Staff restored your place on <c:value><island></c:value>."
     done-already: "<prefix><c:error><sym:cross></c:error> <c:text>That backup was already restored."
+    # Owner answer 591: restoring a disband/reset backup (the island is gone): money topped up, island bank into the purse.
+    reset-done: "<prefix><c:success><sym:check></c:success> <c:text>Restored <c:value><player></c:value><c:text>'s profile from <c:value><island></c:value>. <c:muted>Money added: <money> · island bank added: <bank>"
     profile-deleted: "<prefix><c:error><sym:cross></c:error> <c:text>That profile of <c:value><player></c:value> was deleted. Nothing to restore."
     island-gone: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>doesn't exist any more. Nothing was restored."
     has-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is on another island now. Remove them there first with <c:value>/isadmin kick</c:value>."

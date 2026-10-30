@@ -140,6 +140,172 @@ final class KickBackups {
                 }, main);
     }
 
+    // ------------------------------------------------------------------ owner answer 591: disband / reset
+
+    /** Ledger reason of the money a profile reset takes (restored with {@link #TX_REASON}). */
+    static final String TX_PROFILE_RESET = "island_profile_reset";
+    /** Ledger reason of island bank money given back from a disband/reset backup (into the leader's purse). */
+    static final String TX_BANK_RESTORE = "island_bank_restore";
+
+    /** The backup removal value for an island removal reason (disband or reset; delete counts as reset). Pure. */
+    static String removalOf(String reason) {
+        return IslandStore.REASON_DISBAND.equals(reason) ? KickBackupStore.REMOVAL_DISBAND : KickBackupStore.REMOVAL_RESET;
+    }
+
+    /** Money a reset may take: what was backed up, never more than the profile has now (never negative). Pure. */
+    static long resetAmount(Long backedUp, long now) {
+        return backedUp == null ? 0 : Math.max(0, Math.min(backedUp, now));
+    }
+
+    /**
+     * Owner answer 591: the island was disbanded or reset. Every member profile gets a backup (role, money, and, when the
+     * profile is online and active, inventory + ender chest; the leader's row also keeps {@code bankMoney}), then the
+     * profile is reset: its money is taken and the captured inventory and ender chest are emptied. Nothing is reset before
+     * its backup is saved. Main thread.
+     */
+    void resetProfiles(Island island, String islandName, Map<UUID, Role> members, UUID leader, String reason, Actor actor, Long bankMoney) {
+        String removal = removalOf(reason);
+        for (Map.Entry<UUID, Role> member : members.entrySet()) {
+            UUID profile = member.getKey();
+            if (member.getValue() == Role.COOP) {
+                continue;
+            }
+            resetProfile(island, islandName, profile, member.getValue(), removal, actor, profile.equals(leader) ? bankMoney : null);
+        }
+    }
+
+    private void resetProfile(Island island, String islandName, UUID profile, Role role, String removal, Actor actor, Long bankMoney) {
+        UUID player = islands.person(profile);
+        String playerName = islands.name(profile);
+        Player online = islands.online(profile);
+        boolean items = module.config().profileResetItems && online != null && !islands.profiles().isSwitching(online.getUniqueId());
+        byte[] inv = items ? ItemStack.serializeItemsAsBytes(nonNull(online.getInventory().getContents())) : null;
+        byte[] end = items ? ItemStack.serializeItemsAsBytes(nonNull(online.getEnderChest().getContents())) : null;
+        long now = System.currentTimeMillis();
+        Optional<EconomyService> economy = core.services().optional(EconomyService.class);
+        CompletableFuture<Long> money = economy.isEmpty() ? CompletableFuture.completedFuture(null)
+                : economy.get().balance(AccountRef.player(profile), Currency.MONEY).handle((v, e) -> e == null ? v : null);
+        money.thenCompose(m -> store.save(new KickBackupStore.NewBackup(island.id(), islandName, profile, player, playerName, role, m,
+                        inv, end, removal, actor.name(), now, bankMoney)).thenApply(id -> new Object[]{id, m}))
+                .whenCompleteAsync((saved, error) -> {
+                    if (error != null) {
+                        // No backup, no reset: the profile keeps everything.
+                        core.plugin().getLogger().log(Level.SEVERE, "Islands: saving the reset backup of " + playerName + " failed; "
+                                + "the profile was not reset", Database.cause(error));
+                        return;
+                    }
+                    long backupId = (Long) saved[0];
+                    Long backedUp = (Long) saved[1];
+                    boolean cleared = inv != null && clearItems(profile, inv, end);
+                    if (inv != null && !cleared) {
+                        store.dropItems(backupId); // the player still has them: a restore must not give them twice
+                    }
+                    Map<String, Object> details = new HashMap<>();
+                    details.put("backup", backupId);
+                    details.put("player", profile.toString());
+                    details.put("player_name", playerName);
+                    details.put("role", MemberStore.key(role));
+                    details.put("money", backedUp == null ? -1 : backedUp);
+                    details.put("bank_money", bankMoney == null ? -1 : bankMoney);
+                    details.put("items_cleared", cleared);
+                    details.put("removal", removal);
+                    core.audit().log(AuditCategory.ISLAND, "island_profile_reset", actor, island.id().toString(), islandName, null, null,
+                            details);
+                    takeMoney(profile, backedUp, backupId, actor);
+                    Player target = islands.online(profile);
+                    if (target != null) {
+                        msg.send(target, "reset-profile.you", Msg.p("island", islandName));
+                    }
+                    refreshNames();
+                }, main);
+    }
+
+    /** Empties the inventory and ender chest only if they still hold exactly what was backed up. Main thread. */
+    private boolean clearItems(UUID profile, byte[] inv, byte[] end) {
+        Player now = islands.online(profile);
+        if (now == null || islands.profiles().isSwitching(now.getUniqueId())) {
+            return false;
+        }
+        byte[] invNow = ItemStack.serializeItemsAsBytes(nonNull(now.getInventory().getContents()));
+        byte[] endNow = ItemStack.serializeItemsAsBytes(nonNull(now.getEnderChest().getContents()));
+        if (!java.util.Arrays.equals(inv, invNow) || !java.util.Arrays.equals(end, endNow)) {
+            return false;
+        }
+        now.getInventory().clear();
+        now.getEnderChest().clear();
+        now.updateInventory();
+        return true;
+    }
+
+    private void takeMoney(UUID profile, Long backedUp, long backupId, Actor actor) {
+        Optional<EconomyService> economy = core.services().optional(EconomyService.class);
+        if (!module.config().profileResetMoney || backedUp == null || backedUp <= 0 || economy.isEmpty()) {
+            return;
+        }
+        AccountRef account = AccountRef.player(profile);
+        economy.get().balance(account, Currency.MONEY).thenCompose(current -> {
+            long amount = resetAmount(backedUp, current);
+            if (amount <= 0) {
+                return CompletableFuture.completedFuture(null);
+            }
+            return economy.get().execute(Transaction.withdraw(account, Currency.MONEY, amount, TX_PROFILE_RESET).actor(actor)
+                    .reference("island reset backup " + backupId).idempotencyKey(TX_PROFILE_RESET + ":" + backupId));
+        }).whenComplete((result, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Islands: taking the money of a reset profile failed (backup "
+                        + backupId + ")", Database.cause(error));
+            }
+        });
+    }
+
+    /** Restore of a disband/reset backup: no island to rejoin; money (and the bank money into the purse) plus items. */
+    private void restoreRemoval(Player staff, KickBackupStore.Backup backup) {
+        Actor actor = Actor.player(staff);
+        store.claimRemoval(backup.id(), actor.name(), System.currentTimeMillis()).whenCompleteAsync((claimed, error) -> {
+            if (error != null) {
+                islands.databaseError(staff, "reset restore", error);
+                return;
+            }
+            if (!claimed) {
+                islands.fail(staff, "admin.restore.done-already");
+                return;
+            }
+            topUpMoney(backup, actor).thenCombine(restoreBank(backup, actor), (added, bank) -> new long[]{added, bank})
+                    .whenCompleteAsync((amounts, failure) -> {
+                        long money = failure == null ? amounts[0] : 0;
+                        long bank = failure == null ? amounts[1] : 0;
+                        Map<String, Object> details = new HashMap<>();
+                        details.put("backup", backup.id());
+                        details.put("player", backup.profileId().toString());
+                        details.put("player_name", backup.playerName());
+                        details.put("money_added", money);
+                        details.put("bank_added", bank);
+                        core.audit().log(AuditCategory.ISLAND, "island_reset_restore", actor, backup.islandId().toString(),
+                                backup.islandName(), null, null, details);
+                        msg.send(staff, "admin.restore.reset-done", Msg.p("player", backup.playerName()),
+                                Msg.p("island", backup.islandName()), Msg.p("money", net.skybornmc.skyblock.common.util.Format.number(money)),
+                                Msg.p("bank", net.skybornmc.skyblock.common.util.Format.number(bank)));
+                        core.sounds().play(staff, "success");
+                        refreshNames();
+                        if (backup.itemsOpen()) {
+                            restoreItems(staff, backup);
+                        }
+                    }, main);
+        }, main);
+    }
+
+    /** The island bank money of a disband/reset backup, into the profile's purse (once per backup). */
+    private CompletableFuture<Long> restoreBank(KickBackupStore.Backup backup, Actor actor) {
+        Optional<EconomyService> economy = core.services().optional(EconomyService.class);
+        if (backup.bankMoney() == null || backup.bankMoney() <= 0 || economy.isEmpty()) {
+            return CompletableFuture.completedFuture(0L);
+        }
+        long amount = backup.bankMoney();
+        return economy.get().execute(Transaction.deposit(AccountRef.player(backup.profileId()), Currency.MONEY, amount, TX_BANK_RESTORE)
+                        .actor(actor).reference("island reset backup " + backup.id()).idempotencyKey(TX_BANK_RESTORE + ":" + backup.id()))
+                .thenApply(r -> r.ok() ? amount : 0L);
+    }
+
     private static ItemStack[] nonNull(ItemStack[] contents) {
         ItemStack[] out = new ItemStack[contents.length];
         for (int i = 0; i < contents.length; i++) {
@@ -198,6 +364,10 @@ final class KickBackups {
         }
         if (!backup.open()) {
             restoreItems(staff, backup);
+            return;
+        }
+        if (backup.islandRemoval()) {
+            restoreRemoval(staff, backup);
             return;
         }
         Island island = islands.byId(backup.islandId());

@@ -29,7 +29,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is stats` | M2.6: your island's **stats menu** (also the Stats button of the island menu): per category all time, today, this week, last week and the change vs last week; click a category for each member's part (heads, share in %, this week, today; former members keep theirs). Categories without their feature yet show `-` (Coming soon). Members only; reloads every 10 s while open | `skyblock.island.stats` (everyone) | ✅ |
 | `/is invites` | ISL2: invites you received (click: Accept / Deny) and invites your island sent (click: cancel, Leader/Admin/Mod; confirm). Refreshes every 2 s | `skyblock.island` | ✅ |
 | `/is settings [setting] [on\|off\|value]` | ISL2: the island settings menu; with a setting name it changes it right away (no value: toggles flip, weather/time go to the next value). Who may change: the `settings` role permission (Leader + Admin by default); every member can look. Tab completes settings and, after one, its values | `skyblock.island` | ✅ |
-| `/is disband` | Leader only, and only while nobody else is a member (owner answer 141: `/is transfer` first, then `/is leave`); one confirm screen with a confirm button (owner answer 261, no typed word). The island is removed for good: coop players are told, everyone on it is sent to spawn, the slot is cleared and reused, and the island bank money is deleted (owner answer 263). A new island right away (no cooldown) | `skyblock.island` | ✅ |
+| `/is disband` | Leader only, and only while nobody else is a member (owner answer 141: `/is transfer` first, then `/is leave`); one confirm screen with a confirm button (owner answer 261, no typed word). The island is removed for good: coop players are told, everyone on it is sent to spawn, the slot is cleared and reused, and the island bank money is deleted (owner answer 263). A new island right away (no cooldown). Owner answer 591: this profile's money, inventory and ender chest are reset (staff keep a restorable backup) | `skyblock.island` | ✅ |
 | `/is visit [player]` | No name: the **visit browser** (Discover (default: every island, random, favouring more playtime), Most visited, Top rated, Most liked, Newest; click an island to visit). With a name (any member of that island, online or offline): teleport to that island's home after a safe-spot check, instantly (owner answer 285; 3 s `teleport.yml → danger.warmup-seconds` while combat-tagged or in a combat zone). No visitor limit (owner answer 291). Your own island = home | `skyblock.island` | ✅ |
 | `/is lock` / `/is unlock` | Leader/Mod: only members and coop players can enter a locked island; locking sends visitors on it to spawn. Locked islands are hidden in the browsers | `skyblock.island` | ✅ |
 | `/is expel <player>` | Leader/Mod: send a visitor on your island to spawn (tab: visitors on your island) | `skyblock.island` | ✅ |
@@ -109,8 +109,18 @@ actor)` and `blockJoining(uuid, until[, reason, actor])` / `joinBlockedUntil` fo
   `deleted_at`, `deleted_reason` (`disband` | `delete` | `reset`) and `deleted_by` and is kept with its `season_id` for
   history; memberships end (`player_island_joins.left_reason = disband`), coop players, invites and permission
   overrides are removed and the slot goes to `clearing`. No creation cooldown after any of them. Island bank: a disband
-  deletes the money (owner answer 263, ledger reason `bank_island_deleted`); staff delete and reset keep it in the
-  closed bank for staff to decide.
+  or a reset deletes the money (owner answers 263/591, ledger reason `bank_island_deleted`); a staff delete keeps it in
+  the closed bank for staff to decide.
+- **Profile reset (owner answer 591):** a disband (`lifecycle.profile-reset.on-disband`) or `/isadmin reset`
+  (`on-reset`) resets every member profile of the island: first a backup row per member in `island_kick_backups`
+  (removal `island_disband` / `island_reset`: role, money, and inventory + ender chest when the member is online on
+  that profile; the leader's row also keeps the island bank money, V014 `bank_money`), then the profile's money is
+  taken (`lifecycle.profile-reset.money`, ledger `island_profile_reset`, never more than was backed up) and the
+  captured inventory and ender chest are emptied (`lifecycle.profile-reset.items`; only when they still hold exactly
+  what was saved, otherwise the backup drops its items so nothing can be doubled). No backup saved = no reset. Members
+  are told; logged `island_profile_reset`. Admins restore with `/isadmin restore <player>`: money topped up, the island
+  bank money paid into that profile's purse (ledger `island_bank_restore`, once), items into an empty inventory; logged
+  `island_reset_restore`. Skills, Depths unlocks and other per-profile progress are not reset yet (open question).
 - **Slot states** (`island_slots.state`): `used` → `clearing` → `free` → `used`. A clearing slot is never handed out;
   free slots are reused (lowest id first) before a new spiral slot is added.
 - **Clearer:** empties the max island size + `lifecycle.clear.extra-ring-chunks` chunk rings around the slot center,
@@ -137,7 +147,7 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
 | `/isadmin addmember <island> <player>` | Add a player as Member without an invite (member slots and one island per player still apply; no join limit/cooldown, doesn't count as a join; makes a solo island a team island) | `skyblock.island.admin.addmember` (admin) | ✅ |
 | `/isadmin kick <player>` | Remove a member or coop player from their island (confirm). Leaders: `setowner` first or `delete` | `skyblock.island.admin.kick` (admin) | ✅ |
 | `/isadmin setowner <island> <member>` | Make a member the leader (confirm); the old leader becomes an Admin | `skyblock.island.admin.setowner` (admin) | ✅ |
-| `/isadmin reset <island>` | Remove the island and give its leader a new starter island right away (built now if online, else on their next `/is`); other members removed (confirm) | `skyblock.island.admin.reset` (admin) | ✅ |
+| `/isadmin reset <island>` | Remove the island and give its leader a new starter island right away (built now if online, else on their next `/is`); other members removed (confirm). Owner answer 591: every member profile is reset and the island bank money deleted, with restorable backups (`/isadmin restore`) | `skyblock.island.admin.reset` (admin) | ✅ |
 | `/isadmin hide <island> [note]` | Owner answer 293: hide an island from the visit browser (it can still be visited by name), with an optional note shown in `/isadmin info`. Logged `island_browser_hide` | `skyblock.island.admin.hide` (mod) | ✅ |
 | `/isadmin unhide <island>` | Show a hidden island in the visit browser again (tab completes hidden islands). Logged `island_browser_unhide` | `skyblock.island.admin.hide` (mod) | ✅ |
 | `/isadmin restore <player>` | Owner answer 251: the player's kick backups (chest menu, newest first: island, role, money, items saved or not, who kicked, state). Click → confirm → the profile joins the island again with its old role (once; slots and one island per profile apply, a refused restore stays open), its money is topped up to the amount at the kick (never taken away; ledger `island_kick_restore`) and the saved inventory + ender chest are given back only into an empty inventory and ender chest of that profile while it is online (else they wait; click again later). Tab completes players with open backups. Logged `isadmin_restore`, `island_kick_restore`, `island_kick_restore_items` | `skyblock.island.admin.restore` (admin) | ✅ |

@@ -233,6 +233,35 @@ public final class IslandsConfig extends ModuleConfig {
     // Owner answer 261 (round 1): /is disband confirms with a button, no typed word (old key lifecycle.disband-prompt-length
     // is ignored).
 
+    @Setting(path = "lifecycle.profile-reset.on-disband", desc = "Owner answer 591: /is disband resets the profiles of everyone on "
+            + "the island (money, inventory and ender chest; staff keep a backup, /isadmin restore).")
+    public boolean profileResetOnDisband = true;
+
+    @Setting(path = "lifecycle.profile-reset.on-reset", desc = "Owner answer 591: /isadmin reset resets the profiles of everyone on "
+            + "the island too (backups kept), and deletes the island bank money (its amount is kept in the leader's backup).")
+    public boolean profileResetOnReset = true;
+
+    @Setting(path = "lifecycle.profile-reset.on-delete", desc = "/isadmin delete also resets the members' profiles (off: a staff "
+            + "delete keeps profiles and the closed bank for staff to decide).")
+    public boolean profileResetOnDelete = false;
+
+    @Setting(path = "lifecycle.profile-reset.money", desc = "A profile reset takes the profile's money (restorable from the backup).")
+    public boolean profileResetMoney = true;
+
+    @Setting(path = "lifecycle.profile-reset.items", desc = "A profile reset empties the inventory and ender chest of members who "
+            + "are online on that profile (restorable from the backup; offline members keep their items, see OPEN_QUESTIONS).")
+    public boolean profileResetItems = true;
+
+    /** Owner answer 591: does removing an island for {@code reason} reset its members' profiles? */
+    public boolean resetsProfiles(String reason) {
+        return switch (reason) {
+            case IslandStore.REASON_DISBAND -> profileResetOnDisband;
+            case IslandStore.REASON_RESET -> profileResetOnReset;
+            case IslandStore.REASON_DELETE -> profileResetOnDelete;
+            default -> false;
+        };
+    }
+
     @Setting(path = "lifecycle.clear.use-fawe", desc = "Empty removed islands with FastAsyncWorldEdit when it is installed "
             + "(off = always the built-in throttled clearer).")
     public boolean clearUseFawe = true;

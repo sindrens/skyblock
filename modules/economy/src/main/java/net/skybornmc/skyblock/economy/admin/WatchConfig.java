@@ -67,7 +67,7 @@ public final class WatchConfig extends ModuleConfig {
             level = Setting.Level.OWNER)
     public List<String> ignoreReasons = List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance",
             "admin_give", "admin_take", "admin_set", "admin_reset", "sanction_remove", "sanction_restore", "profile_delete",
-            "island_kick_restore");
+            "island_kick_restore", "island_profile_reset", "island_bank_restore");
 
     @Setting(path = "baseline-days", desc = "Days the baselines look back (BAL2: the dashboard uses the 14-day average).",
             min = 1, max = 60, level = Setting.Level.OWNER)
@@ -242,6 +242,20 @@ public final class WatchConfig extends ModuleConfig {
     @Override
     public String fileName() {
         return "economy-watch.yml";
+    }
+
+    /** Version 2 (owner answer 591): the profile-reset and bank-restore reasons join the untouched default ignore list. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("earnings.ignore-reasons", ValueChange.of(
+                List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance", "admin_give", "admin_take", "admin_set",
+                        "admin_reset", "sanction_remove", "sanction_restore", "profile_delete", "island_kick_restore"),
+                ignoreReasons)));
     }
 
     @Override

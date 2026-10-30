@@ -379,7 +379,7 @@ class BankOpsTest {
     void onlyADisbandDeletesTheBankMoney() {
         assertEquals(BankRules.Removal.DELETE_MONEY, BankRules.onRemoved("disband"));
         assertEquals(BankRules.Removal.KEEP_CLOSED, BankRules.onRemoved("delete"), "staff delete: staff decide");
-        assertEquals(BankRules.Removal.KEEP_CLOSED, BankRules.onRemoved("reset"));
+        assertEquals(BankRules.Removal.DELETE_MONEY, BankRules.onRemoved("reset"), "owner answer 591: reset deletes it too (backed up)");
     }
 
     // ------------------------------------------------------------------------------------------------ tiers
