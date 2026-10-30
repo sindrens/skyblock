@@ -1,0 +1,11 @@
+# Permissions of the progression module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/progression.txt. Commands: docs/commands/progression.md.
+#
+# M5.1 (pillars) has no command and no permission. Planned nodes (PHASE-5 plan), added with their milestones:
+#   skyblock.progression.level        (everyone)  /is level            M5.2
+#   skyblock.progression.recalculate  (everyone)  Recalculate button   M5.2
+#   skyblock.progression.upgrade      (everyone)  /is upgrade          M5.4
+#   skyblock.progression.top          (everyone)  /is top              M5.7
+#   skyblock.progression.admin.view   (mod)       /isadmin progression M5.10
+#   skyblock.progression.admin.edit   (admin)     /isadmin progression M5.10

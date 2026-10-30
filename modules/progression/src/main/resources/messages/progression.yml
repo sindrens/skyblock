@@ -1,0 +1,51 @@
+# Island progression (Phase 5). M5.1: island pillars. MiniMessage + style tags (style.yml). Placeholders: <name>.
+# Island notices go to every online member (no prefix, like other island lines); each player can hide the pillar
+# lines in /settings. Reload: /skyblock reload progression
+
+# Pillar names in their pillar color (UI_STYLE 1.5).
+pillar:
+  mining:
+    name: "<pillar:mining>Mining"
+  foraging:
+    name: "<pillar:foraging>Foraging"
+  farming:
+    name: "<pillar:farming>Farming"
+  combat:
+    name: "<pillar:combat>Combat"
+  conquest:
+    name: "<pillar:conquest>Conquest"
+
+# A pillar levelled up. <pillar> <level> <by> (empty for staff/events) <summary> (hover: all pillars)
+level-up:
+  chat: "<c:ember><sym:bullet></c:ember> <hover:show_text:'<summary>'><pillar> <c:text>pillar is now level <c:value><level></c:value>!</hover> <by>"
+  by: "<c:muted>(<player>)"
+  # Title every pillars.yml → notify.title-every-levels levels.
+  title:
+    title: "<pillar> <c:value><level>"
+    subtitle: "<c:flame>Island pillar up!"
+    fade-in: 5
+    stay: 40
+    fade-out: 15
+
+# Synergy milestone: every shown pillar reached <level>. <summary> (hover), <crystals>
+milestone:
+  chat: "<c:flame><sym:star></c:flame> <hover:show_text:'<summary>'><c:text>Every island pillar is level <c:value><level></c:value> or higher!</hover>"
+  reward: "<prefix><c:success><sym:check></c:success> <c:text>Milestone reward: <cur:crystals><sym:crystals> <crystals></cur:crystals>"
+  title:
+    title: "<c:flame>Pillars <c:value><level>"
+    subtitle: "<c:text>Island milestone reached!"
+    fade-in: 5
+    stay: 60
+    fade-out: 20
+
+# Hover text of the lines above. <pillar> <level> <percent> <bonus>
+summary:
+  header: "<c:header><bold>Island Pillars"
+  line: "<c:bar>|</c:bar> <pillar> <c:value><level></c:value> <c:muted>(<percent>%)"
+  bonus: "<c:muted>Island XP bonus: <c:value>+<bonus>%"
+
+# /settings toggle
+settings:
+  pillar-notices:
+    name: "<c:value>Island pillar messages"
+    lore: ["<c:text>Show a chat line when one of", "<c:text>your island's pillars levels up."]

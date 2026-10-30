@@ -41,7 +41,7 @@ categories:
     slot: 15
     name: "<c:flame><bold>Progression"
     lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and masteries."]
-    topics: [skills, achievements]
+    topics: [skills, pillars, achievements]
   gear:
     icon: smithing_table
     status: active
@@ -448,6 +448,38 @@ topics:
           - "<c:text>Look at a friend's skills:"
           - "<c:value>/skills <player></c:value>"
           - "<c:text>Hide the XP line in <c:value>/settings</c:value>."
+
+  pillars:
+    icon: iron_pickaxe
+    aliases: [pillar, island-pillars, island-progress]
+    name: "<c:flame>Island pillars"
+    summary: ["<c:text>Your island grows as members", "<c:text>mine, chop, farm and fight."]
+    take-me-there: "is"
+    pages:
+      - title: "<c:value>What pillars are"
+        lines:
+          - "<c:text>Every island has four pillars:"
+          - "<pillar:mining>Mining</pillar:mining><c:text>, <pillar:foraging>Foraging</pillar:foraging><c:text>, <pillar:farming>Farming</pillar:farming> <c:text>and"
+          - "<pillar:combat>Combat</pillar:combat><c:text>. <pillar:conquest>Conquest</pillar:conquest> <c:text>comes with events."
+          - "<c:text>They raise your island level later."
+      - title: "<c:value>Earning pillar XP"
+        lines:
+          - "<c:text>Skill XP members earn also goes"
+          - "<c:text>to the island: Depths ore, logs"
+          - "<c:text>and mobs. On your own island:"
+          - "<c:text>ripe crops, trees, spawner mobs."
+      - title: "<c:value>Fair for everyone"
+        lines:
+          - "<c:text>Rank and personal boosts don't count."
+          - "<c:text>Coop players and visitors give nothing."
+          - "<c:text>Fall, lava and stack kills give 0."
+          - "<c:text>XP you earned stays with the island."
+      - title: "<c:value>Bonuses and milestones"
+        lines:
+          - "<c:text>Keep pillars close for up to <c:value>+10%</c:value> XP."
+          - "<c:text>All pillars at <c:value>10, 25, 40</c:value> <c:text>and <c:value>60</c:value>:"
+          - "<c:text>every member gets crystals."
+          - "<c:text>Hide level-up lines in <c:value>/settings</c:value>."
 
   rules:
     icon: lectern
