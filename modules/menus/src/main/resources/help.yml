@@ -878,16 +878,16 @@ topics:
     pages:
       - title: "<c:value>Buying"
         lines:
-          - "<c:value>/shop</c:value> <c:text>shows the categories. Pick one,"
-          - "<c:text>tap an item, then <c:value>1</c:value><c:text>, <c:value>16</c:value><c:text>, <c:value>64</c:value> <c:text>or"
-          - "<c:value>Custom amount</c:value><c:text>. <c:value>/shop wood</c:value> <c:text>opens a"
-          - "<c:text>category straight away."
+          - "<c:value>/shop</c:value> <c:text>shows the categories. In one:"
+          - "<c:text>left-click buys 1, right-click 64,"
+          - "<c:text>shift-click picks an amount; on"
+          - "<c:text>Bedrock, tap an item to pick one."
       - title: "<c:value>Room and money"
         lines:
-          - "<c:text>Items go into your inventory, so keep"
-          - "<c:text>room free: a full inventory buys"
-          - "<c:text>nothing and costs nothing. Big buys"
-          - "<c:text>ask you to confirm first."
+          - "<c:text>Items go into your inventory. If not"
+          - "<c:text>all fit, you pay only for what fits."
+          - "<c:text>Big buys ask you to confirm first."
+          - "<c:value>/shop wood</c:value> <c:text>opens a category."
       - title: "<c:value>Why some prices are high"
         lines:
           - "<c:text>Crops and redstone also sell with"
@@ -903,12 +903,12 @@ topics:
     take-me-there: "sell"
     commands: [Economy]
     pages:
-      - title: "<c:value>The sell box"
+      - title: "<c:value>The sell chest"
         lines:
-          - "<c:value>/sell</c:value> <c:text>opens the sell box. Tap items"
-          - "<c:text>in your inventory to put them in, tap"
-          - "<c:text>them in the box to take them out, then"
-          - "<c:text>click <c:value>Sell</c:value><c:text>. Items stay yours until then."
+          - "<c:value>/sell</c:value> <c:text>opens the sell chest. Put"
+          - "<c:text>items in (click, shift-click, drag)"
+          - "<c:text>or press <c:value>Sell inventory</c:value><c:text>, then <c:value>Sell</c:value><c:text>."
+          - "<c:text>Closing it gives everything back."
       - title: "<c:value>Quick selling"
         lines:
           - "<c:value>/sell hand</c:value> <c:text>sells the stack you hold."

@@ -1,6 +1,14 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- SELL2 sell chest: big sales (chat line + hover) apply to every /sell sale (chest, `/sell hand`, `/sell all`), not only the chest, so all sale feedback looks the same. OK? (default: all sales)
+- SELL2 sell chest: when the chest is closed by a profile switch, items go straight back to the inventory if the switch has not started yet, otherwise they are kept for that profile and handed back on the next switch back to it (never lost). OK? (default: as built)
+- SELL2 sell chest: "Sell inventory" leaves tools and weapons in the hotbar (anything with durability), armor and offhand; everything else sellable in the hotbar is moved. OK? (default: yes, `sell.chest.keep-hotbar-tools`)
+- SELL2 sell chest: items that do not fit back into the inventory go to the ender chest first, then drop at the feet. OK? (default: yes)
+- SELL2 shop: quick-buy on Java has no confirm for left/right clicks below `buy.confirm-above` ($100k); right-click (64) of an expensive item at or above it asks to confirm. OK? (default: as built)
+- SELL2 shop: partial buys only for room (not for money): if 64 cost more than your balance the purchase is refused with "buy fewer or sell items first" instead of buying what you can afford. Buy as many as you can afford instead? (default: refuse)
+- SELL2 shop: on Bedrock every tap opens the amount screen (no 1-tap buy). Add a "Buy 1" fast path for Bedrock too (e.g. long-press)? (default: amount screen only)
+- SELL2 satchel: the satchel menu got a "Sell chest" button (slot 46) for inventory items; satchel contents keep using Sell all / per item. Also let players drag satchel items into the sell chest? (default: no, satchel items are sold from the satchel)
 - STYLE2 Bedrock: with the V2 palette `brand` falls back to red `§c` (was dark_red `§4`), the same as `error`; errors still differ by the `✘` mark. Keep `brand` on `red`, or move its Bedrock fallback back to `dark_red`? (default: red, as specified)
 - STYLE2 shop: the `| Sell Price` line shows today's /sell price **before** the player's sell bonus (same for everyone). Show the price with the player's own bonus instead? (default: before bonus)
 - STYLE2 scoreboard: the island layout has no room for a blank line between `| Island` and `| Profile` (max 9 lines with the conditional note line), and the Depths layouts show `| Profile` with money only (no name/rank row). OK, or drop gems/crystals there for a name row? (default: as built)
