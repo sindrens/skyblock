@@ -70,8 +70,8 @@ Follow-up questions are at the end of this file (and in chat).
 - **`/loadout`:** saved presets (e.g. "Mining", "Farming", "Combat") that swap armor and pet in one action. Details in open questions below.
 - **Island storage:** (a) yes — mastery delivery tasks can take items straight from island storage; (b) yes — daily take-out limit per role; (c) recall of items a kicked member took = **staff only** (staff tool, not for leaders).
 
-## Open (loadout)
-- L1 What does a loadout contain: armor + pet only, or also the hotbar tools? [armor + pet + tools in hotbar slots 1–4]
-- L2 How many presets? [3 free, more with rank]
-- L3 Where do the swapped-out pieces go: into the wardrobe (virtual storage), so nothing is needed in the inventory? [yes, into the wardrobe]
-- L4 Swap allowed anywhere, or not in combat/warzone? [anywhere except combat/warzone, 5 s cooldown]
+## Loadout (decided)
+- L1 a loadout holds **everything**: armor, pet and tools/hotbar.
+- L2 **2 presets free**, more with a rank or bought with store credits.
+- L3 swapped-out pieces go into the **wardrobe** (no inventory space needed).
+- L4 swap anywhere **except in combat or the warzone**, **2 s cooldown**.
