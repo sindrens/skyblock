@@ -378,7 +378,8 @@ final class TabService implements Listener {
         if (!Objects.equals(team.suffix(), entry.suffix())) {
             team.suffix(entry.suffix());
         }
-        if (team.color() != entry.color()) {
+        // A new team has no color yet: Team#color() throws until one is set, so check hasColor() first.
+        if (entry.color() != null && (!team.hasColor() || team.color() != entry.color())) {
             team.color(entry.color());
         }
         if (!team.hasEntry(name)) {
