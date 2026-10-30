@@ -64,6 +64,7 @@
 - **Economy:** new accounts need 30 min of playtime before `/pay` and `/withdraw`; admins can use `/eco`; global sell-bonus cap +300%.
 - **Round-2 decisions:** AH new-account limit 30 min, no number suggestions for amounts, a ban clears a freeze, Inspect tool = blaze rod (Punish = breeze rod), all times in Europe/Oslo, skills up to level 150 + staff `/skills set|add`, `/freerank` (free Ember rank + 1 of 3 tags after 30 min).
 - **Fix:** `/skills [player]` together with `/skills set|add` failed to register (command framework now allows optional arguments next to sub-commands).
+- **Islands round 2:** island Admin role (old leader becomes Admin on transfer), "Hurt monsters" and "Island settings" role permissions, join cooldown from the last join only, `/is settings` (spawning, fire, explosions, leaf decay, trampling, visitor pickup/alerts/fly, per-island weather and time), island fly, personal homes (`/is setmyhome`, `/is home <name>`), `/is invites`.
 - **Plan:** custom enchant plan `docs/plans/ENCHANTS.md` (48 enchants, books, `/enchanter`, Slaughter for stacked mobs).
 - **M2.7 island lifecycle:** `/is disband` (confirm + type the word), slots cleared (FAWE or throttled fallback) and reused, `/isadmin` (info, tp, delete, setsize, addmember, kick, setowner, reset, bypass, slots overview, teleport-slot).
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
