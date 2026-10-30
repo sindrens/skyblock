@@ -11,7 +11,7 @@ import org.bukkit.Material;
  * <pre>
  *  row 2:  [Apply a book] [Upgrade]   [Combine books] [Remove]
  *  row 3:        [Book shop]      [Enchant guide]
- *  row 4:              [your crystals]
+ *  row 4:      [your crystals]   [next guaranteed book]
  *  row 6:  ←  ?  X  help
  * </pre>
  */
@@ -23,7 +23,8 @@ final class EnchanterMenu extends Menu {
     static final int SLOT_REMOVE = 15;
     static final int SLOT_SHOP = 21;
     static final int SLOT_GUIDE = 23;
-    static final int SLOT_CRYSTALS = 31;
+    static final int SLOT_CRYSTALS = 30;
+    static final int SLOT_NEXT_BOOK = 32;
 
     private final EnchantsModule module;
 
@@ -64,6 +65,7 @@ final class EnchanterMenu extends Menu {
     @Override
     protected void tick() {
         set(SLOT_CRYSTALS, crystals());
+        set(SLOT_NEXT_BOOK, nextBook());
     }
 
     @Override
@@ -84,6 +86,26 @@ final class EnchanterMenu extends Menu {
         set(SLOT_GUIDE, service.item(Material.KNOWLEDGE_BOOK, viewer, EnchantsModule.ID, "menu.main.guide"),
                 click -> module.menus().openGuide(viewer, this));
         set(SLOT_CRYSTALS, crystals());
+        set(SLOT_NEXT_BOOK, nextBook());
+    }
+
+    /** ENCHANTS §3.4 / §4.1: actions until the next guaranteed book per Depths activity (first finds and pity). */
+    private org.bukkit.inventory.ItemStack nextBook() {
+        java.util.Map<Pool, Long> next = module.drops() == null ? java.util.Map.of() : module.drops().nextGuaranteed(viewer);
+        return service.item(Material.CLOCK, viewer, EnchantsModule.ID, "menu.main.next-book",
+                Msg.p("mining", count(next, Pool.MINING)), Msg.p("foraging", count(next, Pool.FORAGING)),
+                Msg.p("combat", count(next, Pool.COMBAT)));
+    }
+
+    private String count(java.util.Map<Pool, Long> next, Pool pool) {
+        if (!next.containsKey(pool)) {
+            return module.text().plain("menu.main.next-book.closed");
+        }
+        Long n = next.get(pool);
+        if (n == null) {
+            return "...";
+        }
+        return n == Long.MAX_VALUE ? module.text().plain("menu.main.next-book.none") : Format.number(n);
     }
 
     private org.bukkit.inventory.ItemStack crystals() {

@@ -28,10 +28,18 @@ public final class DepthsDropEvent extends PlayerEvent {
     private int items;
     private long crystals;
     private final Map<String, Integer> extra;
+    private final double crystalsPerBlock;
 
     public DepthsDropEvent(Player player, Block block, ItemStack tool, String wing, int tier, String item, int items, long crystals,
                            Map<String, Integer> rare) {
+        this(player, block, tool, wing, tier, item, items, crystals, rare, 0);
+    }
+
+    /** @param crystalsPerBlock the tier's average crystals per block before bonuses (E2: Crystal Geode / Amber Resin worth) */
+    public DepthsDropEvent(Player player, Block block, ItemStack tool, String wing, int tier, String item, int items, long crystals,
+                           Map<String, Integer> rare, double crystalsPerBlock) {
         super(player);
+        this.crystalsPerBlock = Double.isFinite(crystalsPerBlock) ? Math.max(0, crystalsPerBlock) : 0;
         this.block = block;
         this.tool = tool;
         this.wing = wing;
@@ -79,6 +87,11 @@ public final class DepthsDropEvent extends PlayerEvent {
 
     public void setCrystals(long crystals) {
         this.crystals = Math.max(0, crystals);
+    }
+
+    /** The tier's average crystals per block before bonuses (0 when unknown). */
+    public double getCrystalsPerBlock() {
+        return crystalsPerBlock;
     }
 
     /** Extra satchel items (rare finds so far), item id → amount. Add drop item ids registered in depths.yml. */

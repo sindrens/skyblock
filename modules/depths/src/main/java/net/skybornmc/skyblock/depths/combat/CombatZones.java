@@ -306,6 +306,7 @@ public final class CombatZones implements Listener {
         tracked.put(e.getUniqueId(), new Tracked(e, def, zone.id(), zone.tier(), boss, boss ? new DamageShares() : null));
         state.mobs.add(e.getUniqueId());
         if (boss) {
+            e.addScoreboardTag(net.skybornmc.skyblock.common.combat.BossMobs.TAG); // E2: Giant Slayer / Executioner see bosses
             state.boss = e.getUniqueId();
             state.clock.spawned();
         }

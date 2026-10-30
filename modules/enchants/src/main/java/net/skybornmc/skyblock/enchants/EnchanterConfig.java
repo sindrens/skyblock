@@ -18,6 +18,10 @@ import java.util.Map;
  */
 final class EnchanterConfig extends ModuleConfig {
 
+    /** Setting names used in perf log lines. */
+    static final String PERF_STACKS = "stacks.perf-warn-ms-per-second";
+    static final String PERF_EFFECTS = "combat.perf-warn-ms-per-second";
+
     @Setting(path = "season-id", desc = "Current season (books and the enchant collection are per season). Stays 0 until the season system exists.",
             min = 0, max = 100_000, level = Setting.Level.OWNER)
     public int seasonId = 0;
@@ -174,6 +178,89 @@ final class EnchanterConfig extends ModuleConfig {
             min = 0.1, max = 1000)
     public double stackPerfWarnMs = 5;
 
+    // ------------------------------------------------------------------ book drops (§3.2–§3.4, E2)
+
+    @Setting(path = "drops.enabled", desc = "Book drops from Depths blocks, logs and combat kills (first finds, pity, chance).")
+    public boolean dropsEnabled = true;
+
+    @Setting(path = "drops.band-tiers", desc = "First tier of each band A, B, C, D (rarity odds, drop chance and pity go by band).")
+    public List<String> dropBandTiers = List.of("1", "4", "7", "10");
+
+    @Setting(path = "drops.mining.one-in", desc = "Depths ore blocks: 1 in this many drops a book, per band A-D.", level = Setting.Level.OWNER)
+    public List<String> dropMiningOneIn = List.of("2000", "3000", "4000", "5000");
+    @Setting(path = "drops.mining.pity", desc = "Depths ore blocks without a book that guarantee the next one, per band A-D (0 = no pity).", level = Setting.Level.OWNER)
+    public List<String> dropMiningPity = List.of("5000", "7500", "10000", "12500");
+    @Setting(path = "drops.foraging.one-in", desc = "Depths logs: 1 in this many drops a book, per band A-D.", level = Setting.Level.OWNER)
+    public List<String> dropForagingOneIn = List.of("2000", "3000", "4000", "5000");
+    @Setting(path = "drops.foraging.pity", desc = "Depths logs without a book that guarantee the next one, per band A-D.", level = Setting.Level.OWNER)
+    public List<String> dropForagingPity = List.of("5000", "7500", "10000", "12500");
+    @Setting(path = "drops.combat.one-in", desc = "Depths combat kills: 1 in this many drops a book, per band A-D.", level = Setting.Level.OWNER)
+    public List<String> dropCombatOneIn = List.of("150", "200", "250", "300");
+    @Setting(path = "drops.combat.pity", desc = "Depths combat kills without a book that guarantee the next one, per band A-D.", level = Setting.Level.OWNER)
+    public List<String> dropCombatPity = List.of("375", "500", "625", "750");
+
+    @Setting(path = "drops.rarity-odds.a", desc = "Book rarity odds in band A (tier 1-3) as rarity:weight.", level = Setting.Level.OWNER)
+    public List<String> dropOddsA = List.of("common:70", "uncommon:26", "rare:4");
+    @Setting(path = "drops.rarity-odds.b", desc = "Book rarity odds in band B (tier 4-6).", level = Setting.Level.OWNER)
+    public List<String> dropOddsB = List.of("common:45", "uncommon:35", "rare:16", "epic:4");
+    @Setting(path = "drops.rarity-odds.c", desc = "Book rarity odds in band C (tier 7-9).", level = Setting.Level.OWNER)
+    public List<String> dropOddsC = List.of("common:25", "uncommon:33", "rare:27", "epic:12", "legendary:3");
+    @Setting(path = "drops.rarity-odds.d", desc = "Book rarity odds in band D (tier 10-12).", level = Setting.Level.OWNER)
+    public List<String> dropOddsD = List.of("common:12", "uncommon:26", "rare:32", "epic:22", "legendary:8");
+
+    @Setting(path = "drops.level-odds.a", desc = "Book level odds in band A as level:weight.", level = Setting.Level.OWNER)
+    public List<String> dropLevelsA = List.of("1:85", "2:12", "3:3");
+    @Setting(path = "drops.level-odds.b", desc = "Book level odds in band B.", level = Setting.Level.OWNER)
+    public List<String> dropLevelsB = List.of("1:85", "2:12", "3:3");
+    @Setting(path = "drops.level-odds.c", desc = "Book level odds in band C.", level = Setting.Level.OWNER)
+    public List<String> dropLevelsC = List.of("1:70", "2:22", "3:8");
+    @Setting(path = "drops.level-odds.d", desc = "Book level odds in band D.", level = Setting.Level.OWNER)
+    public List<String> dropLevelsD = List.of("1:70", "2:22", "3:8");
+
+    @Setting(path = "drops.first-finds", desc = "Guaranteed first books per activity, once per account and season, as action:rarity.", level = Setting.Level.OWNER)
+    public List<String> dropFirstFinds = List.of("100:common", "1000:uncommon");
+
+    @Setting(path = "drops.mini-boss-chance", desc = "Percent chance of a Combat book for every player a mini-boss rewards.", min = 0, max = 100, level = Setting.Level.OWNER)
+    public double dropMiniBossChance = 30;
+    @Setting(path = "drops.mini-boss-band-bonus", desc = "Mini-boss books use the rarity odds this many bands above the tier (band D stays D).", min = 0, max = 5, level = Setting.Level.OWNER)
+    public int dropMiniBossBands = 1;
+
+    @Setting(path = "drops.save-seconds", desc = "Pity and first-find counters are saved this often (and on quit / profile switch).", min = 5, max = 600)
+    public int dropSaveSeconds = 30;
+
+    // ------------------------------------------------------------------ gathering + area effects (§6.1–§6.3, E2)
+
+    @Setting(path = "gathering.max-blocks-per-second", desc = "Hard cap of the speed family: no speed burst (Momentum, Haste) applies while a player breaks this many blocks a second.",
+            min = 1, max = 40, level = Setting.Level.OWNER)
+    public int maxBlocksPerSecond = 6;
+    @Setting(path = "gathering.geode-min-crystals", desc = "Least crystals a Crystal Geode / Amber Resin gives (when the tier gives few crystals).", min = 0, max = 1_000_000, level = Setting.Level.OWNER)
+    public long geodeMinCrystals = 5;
+    @Setting(path = "gathering.proc-message-interval-ms", desc = "Shortest time between two action bar lines for gathering and sword procs.", min = 0, max = 60_000)
+    public int gatherMessageIntervalMs = 1000;
+
+    @Setting(path = "area.max-blocks-per-proc", desc = "Most blocks one area proc (Vein Rend, Dragonfire Blast, Treefeller, Wildfire, Worldbreaker, Ashen Grove) breaks.",
+            min = 1, max = 256, level = Setting.Level.OWNER)
+    public int areaMaxBlocks = 80;
+    @Setting(path = "area.max-blocks-per-second", desc = "Most extra area blocks per player per second (refilling budget, up to max-blocks-per-proc at once).",
+            min = 1, max = 1000, level = Setting.Level.OWNER)
+    public int areaMaxPerSecond = 40;
+    @Setting(path = "area.tree-max-logs", desc = "Most logs that count as one tree (Treefeller, Wildfire, Ashen Grove).", min = 1, max = 256)
+    public int areaTreeMaxLogs = 64;
+    @Setting(path = "area.tree-scan-down", desc = "Wildfire / Ashen Grove look for other trees this many blocks below the cut log.", min = 0, max = 16)
+    public int areaScanDown = 4;
+    @Setting(path = "area.tree-scan-up", desc = "Wildfire / Ashen Grove look for other trees this many blocks above the cut log.", min = 0, max = 32)
+    public int areaScanUp = 12;
+
+    // ------------------------------------------------------------------ Depths sword effects (§6.5, E2)
+
+    @Setting(path = "combat.cleave-max-targets", desc = "Most other mobs one Cleave hit reaches.", min = 0, max = 64, level = Setting.Level.OWNER)
+    public int cleaveMaxTargets = 8;
+    @Setting(path = "combat.nova-max-targets", desc = "Most mobs one Phoenix Wrath fire nova hits (mobs that are not stacks).", min = 0, max = 64, level = Setting.Level.OWNER)
+    public int novaMaxTargets = 16;
+    @Setting(path = "combat.perf-warn-ms-per-second", desc = "Log a warning when the E2 gathering and sword effects use more main-thread time than this (ms per second, checked every minute).",
+            min = 0.1, max = 1000)
+    public double effectsPerfWarnMs = 5;
+
     // ------------------------------------------------------------------ rules and feel
 
     @Setting(path = "rules.two-slot-in-prestige-slot", desc = "May a 2-slot enchant use the prestige slot as its second slot.")
@@ -192,6 +279,14 @@ final class EnchanterConfig extends ModuleConfig {
     public String soundStackBook = "unlock";
     @Setting(path = "sounds.error", desc = "Sound when something is not possible.")
     public String soundError = "error";
+    @Setting(path = "sounds.drop-book", desc = "Sound when a book drops in The Depths.")
+    public String soundDropBook = "unlock";
+    @Setting(path = "sounds.area-proc", desc = "Sound when an area enchant breaks extra blocks.")
+    public String soundAreaProc = "notify";
+    @Setting(path = "sounds.gather-proc", desc = "Sound for a Crystal Geode, Amber Resin, Gilded drop or a speed burst.")
+    public String soundGatherProc = "notify";
+    @Setting(path = "sounds.nova", desc = "Sound when Phoenix Wrath's fire nova goes off.")
+    public String soundNova = "notify";
 
     @Override
     public String fileName() {
@@ -279,6 +374,25 @@ final class EnchanterConfig extends ModuleConfig {
         return out;
     }
 
+    /** The book drop settings (§3.2–§3.4) as typed values; broken entries are skipped (validate() reports them). */
+    DropMath.Rules dropRules() {
+        Map<Pool, List<Integer>> oneIn = new EnumMap<>(Pool.class);
+        oneIn.put(Pool.MINING, DropMath.parseInts(dropMiningOneIn));
+        oneIn.put(Pool.FORAGING, DropMath.parseInts(dropForagingOneIn));
+        oneIn.put(Pool.COMBAT, DropMath.parseInts(dropCombatOneIn));
+        Map<Pool, List<Integer>> pity = new EnumMap<>(Pool.class);
+        pity.put(Pool.MINING, DropMath.parseInts(dropMiningPity));
+        pity.put(Pool.FORAGING, DropMath.parseInts(dropForagingPity));
+        pity.put(Pool.COMBAT, DropMath.parseInts(dropCombatPity));
+        List<Map<Rarity, Double>> odds = List.of(Rolls.parseOdds(dropOddsA), Rolls.parseOdds(dropOddsB), Rolls.parseOdds(dropOddsC),
+                Rolls.parseOdds(dropOddsD));
+        List<List<String>> levels = List.of(dropLevelsA, dropLevelsB, dropLevelsC, dropLevelsD);
+        List<Integer> bands = DropMath.parseInts(dropBandTiers);
+        bands.sort(Integer::compare);
+        return new DropMath.Rules(dropsEnabled, bands, oneIn, pity, odds, levels, DropMath.parseMilestones(dropFirstFinds),
+                dropMiniBossChance, dropMiniBossBands);
+    }
+
     /** Readable problems with list settings (number formats), empty when all is fine. */
     List<String> validate() {
         List<String> problems = new ArrayList<>();
@@ -304,6 +418,48 @@ final class EnchanterConfig extends ModuleConfig {
         for (String entry : stackBookLevelOdds) {
             if (StackKillMath.parseLevelOdd(entry) == null) {
                 problems.add("enchanter.yml → stacks.book-level-odds: '" + entry + "' is not level:weight (e.g. 1:85); skipped");
+            }
+        }
+        Map<String, List<String>> dropOdds = new LinkedHashMap<>();
+        dropOdds.put("drops.rarity-odds.a", dropOddsA);
+        dropOdds.put("drops.rarity-odds.b", dropOddsB);
+        dropOdds.put("drops.rarity-odds.c", dropOddsC);
+        dropOdds.put("drops.rarity-odds.d", dropOddsD);
+        dropOdds.forEach((path, list) -> {
+            for (String entry : list) {
+                if (Rolls.parseOdd(entry) == null) {
+                    problems.add("enchanter.yml → " + path + ": '" + entry + "' is not rarity:weight (e.g. rare:16); skipped");
+                }
+            }
+        });
+        Map<String, List<String>> dropLevels = new LinkedHashMap<>();
+        dropLevels.put("drops.level-odds.a", dropLevelsA);
+        dropLevels.put("drops.level-odds.b", dropLevelsB);
+        dropLevels.put("drops.level-odds.c", dropLevelsC);
+        dropLevels.put("drops.level-odds.d", dropLevelsD);
+        dropLevels.forEach((path, list) -> {
+            for (String entry : list) {
+                if (StackKillMath.parseLevelOdd(entry) == null) {
+                    problems.add("enchanter.yml → " + path + ": '" + entry + "' is not level:weight (e.g. 1:85); skipped");
+                }
+            }
+        });
+        Map<String, List<String>> numbers = new LinkedHashMap<>();
+        numbers.put("drops.band-tiers", dropBandTiers);
+        numbers.put("drops.mining.one-in", dropMiningOneIn);
+        numbers.put("drops.mining.pity", dropMiningPity);
+        numbers.put("drops.foraging.one-in", dropForagingOneIn);
+        numbers.put("drops.foraging.pity", dropForagingPity);
+        numbers.put("drops.combat.one-in", dropCombatOneIn);
+        numbers.put("drops.combat.pity", dropCombatPity);
+        numbers.forEach((path, list) -> {
+            if (DropMath.parseInts(list).size() != list.size()) {
+                problems.add("enchanter.yml → " + path + ": every entry must be a whole number ≥ 0; broken ones skipped");
+            }
+        });
+        for (String entry : dropFirstFinds) {
+            if (DropMath.parseMilestone(entry) == null) {
+                problems.add("enchanter.yml → drops.first-finds: '" + entry + "' is not actions:rarity (e.g. 100:common); skipped");
             }
         }
         for (String raw : rollPools) {

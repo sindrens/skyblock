@@ -103,6 +103,12 @@ final class EnchantsListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         module.ops().forget(event.getPlayer().getUniqueId());
+        if (module.bursts() != null) {
+            module.bursts().forget(event.getPlayer());
+        }
+        if (module.procBar() != null) {
+            module.procBar().forget(event.getPlayer().getUniqueId());
+        }
     }
 
     private static boolean ours(ItemStack stack) {
