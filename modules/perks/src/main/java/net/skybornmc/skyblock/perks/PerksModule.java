@@ -348,6 +348,16 @@ public final class PerksModule implements SkyblockModule {
         if (NickRules.impersonates(nick.plain(), target.getName(), core.players().knownNames())) {
             throw new CommandFailure(ID, "nick.is-player");
         }
+        // Owner answer 304: nicknames go through the chat filter (a changed or blocked nick is refused).
+        if (!sender.hasPermission(PERM_NICK_BYPASS)) {
+            var filter = core.services().optional(net.skybornmc.skyblock.common.text.TextFilter.class);
+            if (filter.isPresent()) {
+                var result = filter.get().check(sender instanceof Player p ? p : null, nick.plain());
+                if (result.isBlocked() || !result.text().equalsIgnoreCase(nick.plain())) {
+                    throw new CommandFailure(ID, "nick.filtered");
+                }
+            }
+        }
         String old = nicks.nick(target.getUniqueId()).map(NickService.StoredNick::formatted).orElse(null);
         String setBy = sender instanceof Player p ? p.getUniqueId().toString() : sender.getName();
         nicks.set(target.getUniqueId(), nick, setBy).whenCompleteAsync((result, error) -> {

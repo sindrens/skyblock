@@ -86,6 +86,7 @@ public final class ChatModule implements SkyblockModule, Listener {
     private final CommandService commands;
     private final ModuleMessages msg;
     private final ChatConfig config = new ChatConfig();
+    private TextSurfaces surfaces;
     private final Display display;
     private final TabService tab;
 
@@ -118,6 +119,9 @@ public final class ChatModule implements SkyblockModule, Listener {
         var pm = core.plugin().getServer().getPluginManager();
         pm.registerEvents(this, core.plugin());
         pm.registerEvents(tab, core.plugin());
+        // Owner answer 304: signs, books and anvil names use the chat filter too.
+        surfaces = new TextSurfaces(core, msg, () -> config);
+        pm.registerEvents(surfaces, core.plugin());
         registerPlaceholders();
         registerCommands();
         // The same content filter for text written outside the chat (island notes, owner N8).
@@ -186,6 +190,9 @@ public final class ChatModule implements SkyblockModule, Listener {
         tab.stop();
         HandlerList.unregisterAll(this);
         HandlerList.unregisterAll(tab);
+        if (surfaces != null) {
+            HandlerList.unregisterAll(surfaces);
+        }
     }
 
     // ================================================================== placeholders (for join messages, menus, scoreboard)

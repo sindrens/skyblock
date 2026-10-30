@@ -1075,6 +1075,8 @@ warp:
   name-hints: "shop,farm,parkour,spawn"
   not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>Only the Leader, Admins and Mods can manage warps."
   name-empty: "<prefix><c:error><sym:cross></c:error> <c:text>Give the warp a name."
+  # Owner answer 304: the chat filter refused the warp name.
+  name-filtered: "<prefix><c:error><sym:cross></c:error> <c:text>That warp name is blocked by the chat filter. Pick another one."
   name-long: "<prefix><c:error><sym:cross></c:error> <c:text>Warp names can be up to <c:value><max></c:value> characters."
   name-chars: "<prefix><c:error><sym:cross></c:error> <c:text>Warp names can only use letters, numbers, <c:value>_</c:value> and <c:value>-</c:value>."
   bad-category: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>isn't a category. Use one of: <c:value><choices></c:value>."

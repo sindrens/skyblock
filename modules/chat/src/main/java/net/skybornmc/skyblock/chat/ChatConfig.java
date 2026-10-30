@@ -69,11 +69,27 @@ public final class ChatConfig extends ModuleConfig {
     @Setting(path = "protection.block-phone-numbers", desc = "Block phone numbers (personal info).")
     public boolean blockPhoneNumbers = true;
 
-    @Setting(path = "protection.words.replace", desc = "Words replaced with *** (whole words, case-insensitive).")
-    public List<String> replaceWords = List.of();
+    /** Owner answer 301: English-only starter list of mild swear words (replaced with ***), for the owner to approve. */
+    static final List<String> STARTER_REPLACE = List.of("fuck", "fucks", "fucked", "fucking", "fucker", "motherfucker", "wtf",
+            "stfu", "shit", "shits", "shitty", "bullshit", "bitch", "bitches", "asshole", "assholes", "bastard", "dickhead",
+            "wanker", "twat", "prick", "cunt", "cunts", "pussy", "slut", "whore");
 
-    @Setting(path = "protection.words.block", desc = "Words that block the whole message and alert staff (also catches 1→i, 3→e, 0→o, a.b.c).")
-    public List<String> blockWords = List.of();
+    /** Owner answer 301: English-only starter list of slurs and threats (message blocked, staff alerted), for approval. */
+    static final List<String> STARTER_BLOCK = List.of("nigger", "niggers", "nigga", "niggas", "faggot", "faggots", "fag", "fags",
+            "retard", "retards", "retarded", "tranny", "trannies", "kike", "kikes", "spic", "spics", "chink", "chinks",
+            "gook", "gooks", "wetback", "wetbacks", "coon", "coons", "paki", "pakis", "dyke", "dykes", "kys", "kms");
+
+    @Setting(path = "protection.words.replace", desc = "Words replaced with *** (whole words, case-insensitive). English only "
+            + "(owner answer 301); the starter list waits for the owner's approval (docs/OPEN_QUESTIONS.md).")
+    public List<String> replaceWords = STARTER_REPLACE;
+
+    @Setting(path = "protection.words.block", desc = "Words that block the whole message and alert staff (also catches 1→i, 3→e, "
+            + "0→o, a.b.c). English only (owner answer 301); starter list of slurs and threats, waiting for the owner's approval.")
+    public List<String> blockWords = STARTER_BLOCK;
+
+    @Setting(path = "protection.filter-signs-books-anvils", desc = "Owner answer 304: signs, book text and anvil names go through "
+            + "the same filter (words replaced, blocked text refused). Warp names and nicknames are checked by their modules.")
+    public boolean filterSurfaces = true;
 
     @Setting(path = "channels.respect-lock", desc = "Locked chat (/mutechat) also stops channel chat such as island chat (/is chat). "
             + "Off: the lock is about public chat only. Rate limit, duplicates and the filter always apply.")
@@ -113,6 +129,19 @@ public final class ChatConfig extends ModuleConfig {
     @Override
     public String fileName() {
         return "chat.yml";
+    }
+
+    /** Version 2 (owner answer 301): the English starter word lists fill the lists that were still empty. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of(
+                "protection.words.replace", ValueChange.of(List.of(), STARTER_REPLACE),
+                "protection.words.block", ValueChange.of(List.of(), STARTER_BLOCK)));
     }
 
     @Override

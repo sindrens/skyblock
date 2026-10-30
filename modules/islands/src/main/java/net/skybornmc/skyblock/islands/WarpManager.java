@@ -618,6 +618,16 @@ final class WarpManager implements Listener {
     private boolean validName(Player player, String name) {
         switch (WarpRules.checkName(name, config().warpNameMaxLength)) {
             case OK -> {
+                // Owner answer 304: warp names go through the chat filter (a changed or blocked name is refused).
+                Optional<net.skybornmc.skyblock.common.text.TextFilter> filter =
+                        core.services().optional(net.skybornmc.skyblock.common.text.TextFilter.class);
+                if (filter.isPresent() && !player.hasPermission("skyblock.chat.bypass")) {
+                    net.skybornmc.skyblock.common.text.TextFilter.Result result = filter.get().check(player, name);
+                    if (result.isBlocked() || !result.text().equalsIgnoreCase(name)) {
+                        islands.fail(player, "warp.name-filtered");
+                        return false;
+                    }
+                }
                 return true;
             }
             case EMPTY -> islands.fail(player, "warp.name-empty");

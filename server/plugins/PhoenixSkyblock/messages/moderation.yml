@@ -1687,7 +1687,10 @@ rules:
     "3": "No duping or bug abuse"
     "4": "No spam, ads or scams"
     "5": "No real-money trading"
-    "6": "Staff decisions are final"
+    "6": "Staff decisions are final unless appealed"
+    "7": "English only in public chat"
+    "8": "No alt abuse"
+    "9": "No macros or AFK farming outside the AFK pool"
 
 # Dry run (spec 14.6): /p <player> <reason> -dry and the Dry run toggle of /p. Nothing is applied, nobody is told.
 # <player>, <reason>, <action> (step), <offence-text> (", offence #2" or empty), <bonus> (probation steps), <why>,
