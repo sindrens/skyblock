@@ -7,6 +7,7 @@ import net.skybornmc.skyblock.common.text.Msg;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.skybornmc.skyblock.common.island.IslandService;
+import net.skybornmc.skyblock.common.settings.PlayerSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -43,14 +44,17 @@ import java.util.function.Supplier;
  * switching never flickers. Lines may be conditional ({@code if:key|...}, {@link LayoutLines}).</p>
  *
  * <p>Published as a service so other modules can: add a layout for their context ({@link #addLayout}, e.g. The
- * Depths), add nametag teams to a player's board ({@link #scoreboard}), toggle it ({@link #setEnabled}, used by
- * {@code /settings}).</p>
+ * Depths), add nametag teams to a player's board ({@link #scoreboard}), toggle it ({@link #setEnabled}; the
+ * {@code scoreboard} toggle of {@code /settings} is registered by {@link HudModule}).</p>
  */
 public final class HudService implements Listener {
 
     static final String MODULE = "hud";
-    /** Player setting: {@code "off"} hides the sidebar. */
+    /** The {@code /settings} toggle (F1): off hides the sidebar, right away. Stored as {@code setting.scoreboard}. */
     public static final String SETTING = "scoreboard";
+    /** Profile key of the value from before F1 ({@code "off"} hid the sidebar); moved to the toggle on join. */
+    static final String LEGACY_KEY = "scoreboard";
+    static final String STORAGE_KEY = "setting." + SETTING;
 
     private record LayoutRule(String owner, String layout, Predicate<Player> applies) {
     }
@@ -64,6 +68,7 @@ public final class HudService implements Listener {
     /** Parsed layout lines by layout name (main thread). */
     private final Map<String, LayoutLines> layouts = new HashMap<>();
     private volatile PlaceRules.Settings settings;
+    private volatile PlayerSettings playerSettings;
     private BukkitTask task;
     private long tick;
 
@@ -100,14 +105,63 @@ public final class HudService implements Listener {
     }
 
     public boolean isEnabled(Player player) {
-        return config.scoreboardEnabled && !config.disabledWorlds.contains(player.getWorld().getName())
-                && core.players().get(player.getUniqueId()).map(d -> !"off".equals(d.setting(SETTING, null))).orElse(true);
+        return visible(config.scoreboardEnabled, config.disabledWorlds.contains(player.getWorld().getName()), wantsSidebar(player));
     }
 
-    /** Turns the sidebar on/off for a player (saved in their profile). */
+    /** Whether the sidebar shows (pure, for tests): on in hud.yml, not in a disabled world, and the player's toggle on. */
+    static boolean visible(boolean enabledInConfig, boolean worldDisabled, boolean playerToggle) {
+        return enabledInConfig && !worldDisabled && playerToggle;
+    }
+
+    /** The player's {@code scoreboard} toggle; read from the profile directly while the settings service is not there. */
+    private boolean wantsSidebar(Player player) {
+        PlayerSettings s = playerSettings;
+        if (s != null) {
+            return s.get(player, SETTING);
+        }
+        return core.players().get(player.getUniqueId()).map(d -> !"false".equals(d.setting(STORAGE_KEY, null))).orElse(true);
+    }
+
+    /** Turns the sidebar on/off for a player (the /settings toggle, saved in their profile and audited by it). */
     public void setEnabled(Player player, boolean enabled) {
-        core.players().get(player.getUniqueId()).ifPresent(d -> d.setSetting(SETTING, enabled ? null : "off"));
+        PlayerSettings s = playerSettings;
+        if (s != null) {
+            s.set(player, SETTING, enabled); // fires the change listener, which refreshes
+            return;
+        }
         refresh(player);
+    }
+
+    /** Hooks the /settings service (one tick after enable: the menus module enables after hud). */
+    void useSettings(PlayerSettings service) {
+        this.playerSettings = service;
+        Bukkit.getOnlinePlayers().forEach(this::refresh);
+    }
+
+    /**
+     * The stored toggle value after moving a pre-F1 value (pure, for tests): legacy {@code "off"} becomes {@code "false"}
+     * unless the toggle already has a value; anything else keeps the current value.
+     */
+    static String migrated(String legacy, String current) {
+        if (current == null && "off".equals(legacy)) {
+            return "false";
+        }
+        return current;
+    }
+
+    private void migrateLegacy(Player player) {
+        core.players().get(player.getUniqueId()).ifPresent(d -> {
+            String legacy = d.setting(LEGACY_KEY, null);
+            if (legacy == null) {
+                return;
+            }
+            String current = d.setting(STORAGE_KEY, null);
+            String next = migrated(legacy, current);
+            if (next != null && !next.equals(current)) {
+                d.setSetting(STORAGE_KEY, next);
+            }
+            d.setSetting(LEGACY_KEY, null);
+        });
     }
 
     /** Re-renders right away (otherwise it refreshes on its next interval). */
@@ -151,6 +205,7 @@ public final class HudService implements Listener {
     }
 
     private void attach(Player player) {
+        migrateLegacy(player);
         Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
         Sidebar sidebar = new Sidebar(board);
         sidebars.put(player.getUniqueId(), sidebar);

@@ -377,7 +377,7 @@ public final class CombatZones implements Listener {
         Component shown = name == null ? Component.text(t.def().id()) : name;
         for (Player p : players) {
             msg.send(p, "combat.mini-boss.spawn", Msg.c("name", shown), Msg.p("zone", zone.name()));
-            sound(p, config.miniBossSpawnSound);
+            eventSound(p, config.miniBossSpawnSound); // F1: a boss announcement, follows "Event sounds" in /settings
         }
         if (config.miniBossBar) {
             state.bar = BossBar.bossBar(msg.component(null, "combat.mini-boss.bar", Msg.c("name", shown)), 1f,
@@ -674,6 +674,13 @@ public final class CombatZones implements Listener {
 
     private boolean inDepths(World world) {
         return world != null && world.getName().equals(zones.world());
+    }
+
+    /** An event/boss announcement sound: muted for players who turned "Event sounds" off in /settings. */
+    private void eventSound(Player player, String sound) {
+        if (sound != null && !sound.isBlank()) {
+            core.sounds().playEvent(player, sound);
+        }
     }
 
     private void sound(Player player, String sound) {

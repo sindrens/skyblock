@@ -41,12 +41,14 @@ final class TeleportCommands extends CommandGroup implements Listener {
 
     private final TeleportService teleports;
     private final TpaRequests requests;
+    private final EssentialsSettings settings;
     private final Cooldowns cooldowns = new Cooldowns();
     private BukkitTask expiryTask;
 
-    TeleportCommands(Core core, EssentialsConfig config, ModuleMessages msg, TeleportService teleports) {
+    TeleportCommands(Core core, EssentialsConfig config, ModuleMessages msg, TeleportService teleports, EssentialsSettings settings) {
         super(core, config, msg);
         this.teleports = teleports;
+        this.settings = settings;
         this.requests = new TpaRequests(System::currentTimeMillis, config.tpaTimeoutSeconds * 1000L, config.tpaMaxPending);
     }
 
@@ -192,6 +194,10 @@ final class TeleportCommands extends CommandGroup implements Listener {
     }
 
     private void request(Player sender, Player target, TpaRequests.Type type) {
+        // F1: the target turned teleport requests off in /settings (self-requests keep their own message).
+        if (!sender.getUniqueId().equals(target.getUniqueId()) && !settings.acceptsTpa(target.getUniqueId())) {
+            throw fail("tpa.disabled", Msg.p("player", target.getName()));
+        }
         if (!sender.hasPermission(Perms.TELEPORT_BYPASS)) {
             Duration left = cooldowns.remaining(sender.getUniqueId(), "tpa");
             if (!left.isZero()) {

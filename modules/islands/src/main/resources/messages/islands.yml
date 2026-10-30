@@ -348,6 +348,8 @@ member:
 invite:
   not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>Only the Leader, Admins and Mods can invite players."
   self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't invite yourself."
+  # F1: the player turned "Island invites" off in /settings.
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>doesn't accept island invites."
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value><c:text>'s other profile is on this island. Profiles can't share one."
   already-member: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is already on your island."
   has-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already has an island. They must leave it first."

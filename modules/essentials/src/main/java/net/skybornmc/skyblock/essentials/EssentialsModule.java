@@ -17,6 +17,8 @@ import java.util.List;
  */
 public final class EssentialsModule implements SkyblockModule {
 
+    static final String ID = "essentials";
+
     private final Core core;
     private final EssentialsConfig config = new EssentialsConfig();
     private ModuleMessages msg;
@@ -26,6 +28,7 @@ public final class EssentialsModule implements SkyblockModule {
     private InventoryViews views;
     private JoinFlow join;
     private SpawnProtection protection;
+    private EssentialsSettings settings;
 
     public EssentialsModule(Core core) {
         this.core = core;
@@ -33,18 +36,19 @@ public final class EssentialsModule implements SkyblockModule {
 
     @Override
     public String id() {
-        return "essentials";
+        return ID;
     }
 
     @Override
     public void enable() {
         core.configs().load(config);
         msg = core.messages(id());
-        teleportCommands = new TeleportCommands(core, config, msg, core.services().get(TeleportService.class));
+        settings = new EssentialsSettings(core);
+        teleportCommands = new TeleportCommands(core, config, msg, core.services().get(TeleportService.class), settings);
         staff = new StaffCommands(core, config, msg);
         vanish = new VanishService(core, config, msg);
         views = new InventoryViews(core, config, msg);
-        join = new JoinFlow(core, config, msg);
+        join = new JoinFlow(core, config, msg, settings);
         protection = new SpawnProtection(core, config, msg, join);
 
         for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection)) {
@@ -54,6 +58,7 @@ public final class EssentialsModule implements SkyblockModule {
             core.plugin().getServer().getPluginManager().registerEvents(listener, core.plugin());
         }
         teleportCommands.start();
+        core.scheduler().later("essentials:settings", 1L, settings::register);
     }
 
     private List<Listener> listeners() {
@@ -73,6 +78,7 @@ public final class EssentialsModule implements SkyblockModule {
             return;
         }
         teleportCommands.stop();
+        settings.unregister();
         views.shutdown();
         vanish.shutdown();
         for (Listener listener : listeners()) {
