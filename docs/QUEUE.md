@@ -8,7 +8,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 |---|---|---|---|---|
 | F1 | Hook remaining `/settings` toggles: join-messages, tpa-requests (essentials), scoreboard (hud), ui-sounds | Phase 1 | modules/essentials, modules/hud | ⬜ |
 | F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` | — | common/command, plugin, server/permissions, scripts | ✅ |
-| F4 | Move a TeleportService interface (warmup, guards) into common so /dungeon, /spawn, /tpa, /is home share one warmup | — | common, essentials, depths | ⬜ |
+| F4 | Move a TeleportService interface (warmup, guards) into common so /dungeon, /spawn, /tpa, /is home share one warmup | — | common, essentials, depths | 🔄 |
 | F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | ✅ |
 
 ## UX polish (owner, 2026-10-30) — top priority, starts at the next free slot
@@ -50,7 +50,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | P6 | §13.9 raid lockdown, 13.3 anticheat suggestions (`/psuggest`, Grim config notes), 13.12 network-ready | P5 | modules/moderation, server/CONFIG_NOTES.md | ✅ |
 | P7 | §13.1 sanctions (economy SanctionProvider), 13.2 island punishments | P6, M2.3 | modules/moderation, modules/economy, modules/islands | ✅ |
 | P8 | §14.2 rule numbers, 14.9 notification settings, 14.6 training mode | P7 | modules/moderation | ✅ |
-| P9 | §14.1 guard + rollback, 14.5 false reports, 14.10 purge | P8 | modules/moderation, modules/staff | ⬜ |
+| P9 | §14.1 guard + rollback, 14.5 false reports, 14.10 purge | P8 | modules/moderation, modules/staff | 🔄 |
 | P10 | §14.8 monthly report, 14.11 "Honorable" title | P9 | modules/moderation, modules/cosmetics | ⬜ |
 
 ## Phase 2: Islands (docs/phases/PHASE-2-ISLANDS.md) — one lane, sequential
@@ -75,7 +75,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M3.6 | Auction house `/ah` | M3.1 | modules/auction | ✅ |
 | M3.7 | Secure trade `/trade` | M3.1 | modules/trade | ✅ |
 | M3.3 | Banks + interest (personal + island) | M3.1, M2.3 | modules/economy (bank pkg) | ✅ |
-| M3.8 | Economy dashboard + anomaly alerts | M3.1–M3.7 | modules/economy (admin pkg) | ⬜ |
+| M3.8 | Economy dashboard + anomaly alerts | M3.1–M3.7 | modules/economy (admin pkg) | 🔄 |
 
 ## Phase 4: Tools + The Depths (docs/phases/PHASE-4-DEPTHS.md)
 | # | Item | Depends on | Lane | Status |
