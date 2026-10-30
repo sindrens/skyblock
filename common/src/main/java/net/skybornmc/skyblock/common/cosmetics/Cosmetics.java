@@ -31,6 +31,25 @@ public interface Cosmetics {
         return grant(player, Kind.TITLE, id, reason);
     }
 
+    /**
+     * {@link #grant} where the caller shows its own message: with {@code notify = false} the online player gets no
+     * "New title" line and no sound (achievements show one unlock toast instead of two). Still idempotent and audited.
+     */
+    default CompletableFuture<Boolean> grant(UUID player, Kind kind, String id, String reason, boolean notify) {
+        return grant(player, kind, id, reason);
+    }
+
+    /**
+     * Adds a title to {@code tags-titles.yml} when no title with this id exists yet (achievements bring their own reward
+     * titles, F3). An existing title is never changed, so staff edits in {@code /tags → Edit} stay. Main thread.
+     *
+     * @return true if it was added
+     */
+    default boolean defineTitle(String id, String display, net.skybornmc.skyblock.common.item.Rarity rarity, String source,
+                                boolean secret) {
+        return false;
+    }
+
     default CompletableFuture<Boolean> grantTag(UUID player, String id, String reason) {
         return grant(player, Kind.TAG, id, reason);
     }
