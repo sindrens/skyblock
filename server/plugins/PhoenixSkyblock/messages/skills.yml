@@ -124,6 +124,12 @@ loading: "<prefix><c:text>Loading <c:value><player></c:value><c:text>'s skills..
 load-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't load <c:value><player></c:value><c:text>'s skills. Try again soon."
 unknown-player: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
 
+# Staff: /skills set|add <player> <skill> <levels> (admin + owner). <player> <skill> <from> <level> <max> <staff>
+admin:
+  done: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value><c:text>: <skill> <c:text>level <c:value><from></c:value> <c:text>to <c:value><level></c:value><c:muted>/<max>"
+  changed: "<prefix><c:text>Staff set your <skill> <c:text>level to <c:value><level></c:value><c:text>."
+  not-loaded: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value><c:text>'s skills are still loading. Try again in a moment."
+
 # Kick messages when skill data can't be loaded at login (protects the data).
 login:
   slow: "<c:text>Your skills took too long to load.<newline><c:value>Rejoin in a moment.</c:value>"

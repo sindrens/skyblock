@@ -42,6 +42,7 @@ public final class SkillsModule implements SkyblockModule {
     static final String ID = "skills";
     static final String PERM_MENU = "skyblock.skills";
     static final String PERM_OTHERS = "skyblock.skills.others";
+    static final String PERM_ADMIN = "skyblock.skills.admin";
 
     private final Core core;
     private final SkillsConfig config = new SkillsConfig();
@@ -172,7 +173,39 @@ public final class SkillsModule implements SkyblockModule {
         core.commands().register(CommandSpec.command("skills")
                 .description("Your skill levels, progress and next unlocks").category("Progression")
                 .permission(PERM_MENU).playerOnly().optional(target).example("skills")
-                .executes(ctx -> open(ctx.player(), ctx.has(target) ? ctx.get(target) : null)));
+                .executes(ctx -> open(ctx.player(), ctx.has(target) ? ctx.get(target) : null))
+                .sub(adminCommand(SkillAdmin.Mode.SET, "set", "Set a player's skill level (staff)", 0, "skills set Steve mining 20"))
+                .sub(adminCommand(SkillAdmin.Mode.ADD, "add", "Add levels to a player's skill (staff)", 1, "skills add Steve combat 5")));
+    }
+
+    /** Owner #68: {@code /skills set|add <player> <skill> <levels>} for admin + owner; online players; audited (staff). */
+    private CommandSpec adminCommand(SkillAdmin.Mode mode, String name, String description, int min, String example) {
+        Arg<Player> player = Args.onlinePlayer("player");
+        Arg<SkillType> skill = Args.choice("skill", SkillType.class);
+        Arg<Integer> levels = Args.integer("levels", min, MAX_LEVEL_INPUT, mode == SkillAdmin.Mode.SET
+                ? new String[]{"0", "10", "66", "150"} : new String[]{"1", "5", "10"});
+        return CommandSpec.sub(name).description(description).category("Staff").permission(PERM_ADMIN)
+                .arg(player).arg(skill).arg(levels).example(example)
+                .executes(ctx -> change(ctx.sender(), mode, ctx.get(player), ctx.get(skill), ctx.get(levels)));
+    }
+
+    /** Highest number the level argument accepts; the curve's max level clamps it (skills.yml can go up to 500). */
+    private static final int MAX_LEVEL_INPUT = 500;
+
+    private void change(org.bukkit.command.CommandSender sender, SkillAdmin.Mode mode, Player target, SkillType skill, int levels) {
+        SkillCurve curve = manager.curve();
+        int before = manager.level(target.getUniqueId(), skill);
+        SkillAdmin.Result result = SkillAdmin.apply(mode, manager.xp(target.getUniqueId(), skill), levels, curve);
+        String reason = "/skills " + mode.name().toLowerCase(java.util.Locale.ROOT) + " " + levels;
+        if (!manager.setXp(target, skill, result.xp(), net.skybornmc.skyblock.common.audit.Actor.of(sender), reason)) {
+            throw new CommandFailure(ID, "admin.not-loaded", Msg.p("player", target.getName()));
+        }
+        msg.send(sender, "admin.done", Msg.p("player", target.getName()), Msg.c("skill", msg.component(sender, "skill." + skill.id() + ".name")),
+                Msg.p("from", before), Msg.p("level", result.level()), Msg.p("max", curve.maxLevel()));
+        if (!target.equals(sender)) {
+            msg.send(target, "admin.changed", Msg.c("skill", msg.component(target, "skill." + skill.id() + ".name")), Msg.p("level", result.level()),
+                    Msg.p("staff", sender.getName()));
+        }
     }
 
     private record Target(UUID uuid, String name, Map<SkillType, Double> xp) {

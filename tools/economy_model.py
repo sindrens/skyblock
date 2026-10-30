@@ -65,18 +65,24 @@ DEPTHS_TIME = 0.70       # share of active time spent breaking in The Depths
 DYN_DEPTHS = 0.85        # average realised dynamic price factor (Depths items)
 DYN_ISLAND = 0.90        # island products are spread over more item types
 SELL_BONUS_PER_TIER = 0.03   # proxy for Sell Multiplier upgrade + Merchant set + boosters
-SELL_BONUS_CAP = 1.00        # max total sell multiplier = x2.00 (OPEN_QUESTIONS #4)
+SELL_BONUS_CAP = 3.00        # max total sell multiplier = x4.00 (+300%, owner #46, only with the best of everything)
 
 # Forest and combat parity: same money per hour as the mine at the same tier.
 LOGS_PER_BLOCK_TIME = 1.0    # a log takes as long as an ore block
 KILLS_PER_HOUR_BASE = 700    # shared mobs, ~4-5 s per kill incl. walking
 
-# Skill XP for level L -> L+1: x(L) = SK_A * SK_G1^min(L, SK_K) * SK_G2^max(0, L - SK_K)
-# (steep early, flatter after level 35 because late tiers are 7-8 levels apart)
+# Skill XP for level L -> L+1:
+#   x(L) = SK_A * SK_G1^min(L, SK_K) * SK_G2^clamp(L - SK_K, 0, SK_K2 - SK_K) * SK_G3^max(0, L - SK_K2)
+# (steep early, flatter after level 35 because late tiers are 7-8 levels apart; after the last tier unlock (66)
+#  each level costs only 2% more, up to the max level 150 (owner #65))
 SK_A = 600
 SK_G1 = 1.20
 SK_K = 35
 SK_G2 = 1.13
+SK_K2 = 66
+SK_G3 = 1.02
+SKILL_MAX = 150
+SKILL_LATE_MARKS = [75, 100, 125, 150]   # levels after the last tier unlock shown in the skill table
 
 # Tool XP to reach level L (1..50): XT(L) = TL_A * (TL_G^(L-1) - 1) / (TL_G - 1)
 TL_A = 400
@@ -192,7 +198,8 @@ def price(t: int) -> float:
 
 
 def skill_xp_step(level: int) -> float:
-    return SK_A * SK_G1 ** min(level, SK_K) * SK_G2 ** max(0, level - SK_K)
+    return (SK_A * SK_G1 ** min(level, SK_K) * SK_G2 ** min(max(0, level - SK_K), SK_K2 - SK_K)
+            * SK_G3 ** max(0, level - SK_K2))
 
 
 _SKILL_CUM: list = []
@@ -200,7 +207,7 @@ _SKILL_CUM: list = []
 
 def skill_xp_to(level: int) -> float:
     """Total skill XP needed to reach `level` (sum of steps 0..level-1)."""
-    key = (SK_A, SK_G1, SK_K, SK_G2)
+    key = (SK_A, SK_G1, SK_K, SK_G2, SK_K2, SK_G3)
     if not _SKILL_CUM or _SKILL_CUM[0] != key:
         _SKILL_CUM.clear()
         cum, acc = [0.0], 0.0
@@ -297,7 +304,7 @@ def tier_for_level(level: float, unlocks=UNLOCK_LEVEL) -> int:
 
 def level_for_xp(xp: float) -> int:
     lvl = 0
-    while skill_xp_to(lvl + 1) <= xp:
+    while lvl < SKILL_MAX and skill_xp_to(lvl + 1) <= xp:
         lvl += 1
     return lvl
 
@@ -436,7 +443,12 @@ class Player:
         xp = blocks * TIER_XP[self.tier - 1]
         self.skill_xp += xp
         self.tool_xp += xp
-        new_tier = tier_for_level(level_for_xp(self.skill_xp))
+        old_level = level_for_xp(self.skill_xp - xp)
+        new_level = level_for_xp(self.skill_xp)
+        for s in SKILL_LATE_MARKS:
+            if old_level < s <= new_level:
+                self.mark(f"skill{s}")
+        new_tier = tier_for_level(new_level)
         if new_tier > self.tier:
             self.tier = new_tier
             self.mark(f"tier{self.tier}")
@@ -608,7 +620,8 @@ def t_params():
         ("Uptime casual / active / top", " / ".join(pct(ARCHETYPES[k]['uptime']) for k in KINDS), "breaking vs walking/menus"),
         ("Dynamic price (Depths / island)", f"{DYN_DEPTHS} / {DYN_ISLAND}", "average realised multiplier"),
         ("Sell multiplier", f"1 + min({SELL_BONUS_CAP}, rank + {SELL_BONUS_PER_TIER} x (tier-1))", "rank 0/4/8% by archetype"),
-        ("Skill XP per level", f"x(L) = {SK_A} x {SK_G1}^min(L,{SK_K}) x {SK_G2}^max(0,L-{SK_K})", "total = sum of steps"),
+        ("Skill XP per level", f"x(L) = {SK_A} x {SK_G1}^min(L,{SK_K}) x {SK_G2}^clamp(L-{SK_K},0,{SK_K2 - SK_K}) x {SK_G3}^max(0,L-{SK_K2})",
+         f"total = sum of steps; max level {SKILL_MAX}"),
         ("Tool XP to level L", f"XT(L) = {TL_A} x ({TL_G}^(L-1) - 1) / ({TL_G} - 1)", "XP per block = tier XP"),
         ("Forge money", f"F(t) = {money(F1)} x {FG}^(t-2), t >= 2", "tier 1 = free starter kit"),
         ("Forge materials", f"M(t) = {MAT1} x {MATG}^(t-2) drops of tier t-1", ""),
@@ -770,6 +783,8 @@ def t_skill():
     for t in range(2, 13):
         L = UNLOCK_LEVEL[t - 1]
         rows.append([t, MINE_TIERS[t - 1], L, num(skill_xp_to(L)), *(when(k, f"tier{t}") for k in KINDS)])
+    for L in SKILL_LATE_MARKS:
+        rows.append(["-", "(after tier 12)", L, num(skill_xp_to(L)), *(when(k, f"skill{L}") for k in KINDS)])
     return table(["Tier", "Ore", "Mining level", "Total skill XP", "Casual reaches it", "Active", "Top"], rows)
 
 

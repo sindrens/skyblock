@@ -190,7 +190,7 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 - **Global dynamic prices.** Each item has a base price. Global sales push the price down, and it recovers toward base over time (e.g. 2% per 10 min). Floor 40% / ceiling 150% of base (tunable). Unsold items climb above base, which rewards selling a mix.
 - The GUI shows price, trend arrow and % from base. A daily **Hot Item** gets a temporary boost.
 - Prices reset at season start.
-- **Max total sell multiplier** (upgrades + rank + boosters + sets) is capped (tunable).
+- **Max total sell multiplier** (upgrades + rank + boosters + sets) is capped at **+300% (×4.00)** (owner #46, tunable; reached only with the best of everything). See `ECONOMY_BALANCE.md` §8.
 
 ### 4.3 Auction house and player shops
 - `/ah` auction house and player shops.
@@ -254,7 +254,7 @@ Tool tiers, recipes, XP curve, perk slots and abilities live in config (`tools.y
 ## 6. Skills, sets and enchants
 
 ### 6.1 Skills (per player, reset each season)
-Mining, Foraging, Farming, Combat, Fishing. Balanced levels with perks along the way. Skill leaderboards. Player skill XP also feeds the matching island pillar.
+Mining, Foraging, Farming, Combat, Fishing. **Max level 150** (owner #65); tiers unlock up to level 66, levels 67–150 cost 2% more each (`ECONOMY_BALANCE.md` §3.4). Staff: `/skills set|add` (admin + owner). Balanced levels with perks along the way. Skill leaderboards. Player skill XP also feeds the matching island pillar.
 
 ### 6.2 Sets (`/sets`)
 `/sets` shows all set types, their pieces and bonuses. Proposed sets (2-piece and 4-piece bonuses, tunable):

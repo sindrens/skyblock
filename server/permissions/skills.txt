@@ -2,4 +2,5 @@
 # Node definitions: modules/skills/src/main/resources/permissions/skills.yml. One console command per line; # = comment.
 
 # /skills and /skills <player> are for everyone (plugin default: true); nothing to grant yet.
-# Staff tools (/skills set|add) are not approved yet (docs/OPEN_QUESTIONS.md).
+# Staff: /skills set|add (owner #68: admin + owner; owner inherits admin).
+lp group admin permission set skyblock.skills.admin true

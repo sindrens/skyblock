@@ -56,8 +56,8 @@ Everything below can be rebuilt in a spreadsheet from this table. `t` = tier (1�
 | Depths time | 70% | share of a played hour spent breaking |
 | Uptime casual / active / top | 60% / 75% / 85% | breaking vs walking/menus |
 | Dynamic price (Depths / island) | 0.85 / 0.9 | average realised multiplier |
-| Sell multiplier | 1 + min(1.0, rank + 0.03 x (tier-1)) | rank 0/4/8% by archetype |
-| Skill XP per level | x(L) = 600 x 1.2^min(L,35) x 1.13^max(0,L-35) | total = sum of steps |
+| Sell multiplier | 1 + min(3.0, rank + 0.03 x (tier-1)) | rank 0/4/8% by archetype |
+| Skill XP per level | x(L) = 600 x 1.2^min(L,35) x 1.13^clamp(L-35,0,31) x 1.02^max(0,L-66) | total = sum of steps; max level 150 |
 | Tool XP to level L | XT(L) = 400 x (1.21^(L-1) - 1) / (1.21 - 1) | XP per block = tier XP |
 | Forge money | F(t) = $15k x 2.35^(t-2), t >= 2 | tier 1 = free starter kit |
 | Forge materials | M(t) = 256 x 1.35^(t-2) drops of tier t-1 |  |
@@ -245,9 +245,15 @@ Mining skill XP per block = the tier XP from `WORLD.md`. Unlock levels are uncha
 | 10 | Quartz | 50 | 16.1M | not this season | 155.3 h (day 39) | 137.1 h (day 15) |
 | 11 | Netherite | 58 | 44.4M | not this season | 264.2 h (day 66) | 233.1 h (day 26) |
 | 12 | Voidstone | 66 | 119.5M | not this season | not this season | 400.5 h (day 45) |
+| - | (after tier 12) | 75 | 272.3M | not this season | not this season | 621.5 h (day 69) |
+| - | (after tier 12) | 100 | 872M | not this season | not this season | not this season |
+| - | (after tier 12) | 125 | 1.9B | not this season | not this season | not this season |
+| - | (after tier 12) | 150 | 3.5B | not this season | not this season | not this season |
 <!-- END table:skill -->
 
 The curve is steep up to level 35 (×1.20 per level) and flatter after (×1.13), because late tiers are 7–8 levels apart instead of 5. The result: tier 12 is a month-2 goal for top players, and casual players see tier 9 by season end.
+
+**Max level 150 (owner #65).** Tiers still unlock at the same levels (the XP up to level 66 is unchanged). After level 66 every level costs only 2% more than the one before (`curve.end-growth: 1.02`, `curve.end-break-level: 66`, `curve.max-level: 150` in `skills.yml`), so levels 67–150 are a long goal for the most active players and leaderboards. With today's XP sources the top archetype ends the season around level 81; level 150 needs ~3.5B XP (about 8.6× a top player's season). XP boosts, later content and events push this up; tune `curve.end-growth` if the owner wants 150 within one season (open question).
 
 ### 3.5 Tool levels and perk slots
 Tool XP per block = tier XP, so a better tool on a better tier levels faster. Phase 4 suggested ×1.12 per level; with tier XP growing ×1.45 that made slot 4 arrive in week 1–2 and level 50 in week 1–3 (checked with the model). **This sheet uses ×1.21** so the slots land where Phase 4 wants them:
@@ -552,6 +558,8 @@ Each item has a multiplier `m` (floor 0.40, ceiling 1.50). Every item sold lower
 | 11 | Netherite | 10,252 | 0.18 ppm | 0.07 ppm | 0.04 ppm |
 | 12 | Voidstone | 11,123 | 0.16 ppm | 0.07 ppm | 0.03 ppm |
 <!-- END table:dynamic -->
+
+**Max total sell multiplier: ×4.00 (+300%, owner #46).** Upgrades, rank, boosters (personal and global, O11), sets and events add up, and the sum is capped at +300%; only a player with the best of everything reaches it. The model's archetypes stay far below the cap (rank + 0.03 per tier ≤ +41%). The cap becomes a typed setting with M3.4 selling (`economy.yml`, after the crystals rename).
 
 (ppm = parts per million of base price per item sold.) Items nobody sells drift up towards the ceiling (×1.10 target after 24 h without sales, then capped at ×1.50), which rewards selling a mix. The daily **Hot Item** gets +25% for 24 h (proposal).
 

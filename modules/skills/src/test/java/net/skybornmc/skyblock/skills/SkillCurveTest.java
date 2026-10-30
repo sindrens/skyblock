@@ -76,4 +76,21 @@ class SkillCurveTest {
         assertThrows(IllegalArgumentException.class, () -> new SkillCurve(600, 1.2, 1.1, 35, 0));
         assertThrows(IllegalArgumentException.class, () -> new SkillCurve(Double.NaN, 1.2, 1.1, 35, 10));
     }
+
+    @Test
+    void ownerCurveTo150KeepsTierLevelsAndGrowsTwoPercentAfter66() {
+        SkillCurve owner = new SkillCurve(600, 1.2, 1.13, 35, 1.02, 66, 150);
+        assertEquals(150, owner.maxLevel());
+        for (int level = 0; level <= 66; level++) {
+            assertEquals(curve.totalFor(level), owner.totalFor(level), 1e-3, "tier unlock XP unchanged at level " + level);
+        }
+        assertEquals(owner.step(65) * 1.13, owner.step(66), 1e-3);
+        assertEquals(owner.step(66) * 1.02, owner.step(67), 1e-3);
+        assertEquals(owner.step(148) * 1.02, owner.step(149), 1e-3);
+        assertEquals(3.47e9, owner.totalFor(150), 0.01e9);
+        assertEquals(150, owner.levelFor(1e15));
+        assertEquals(149, owner.levelFor(owner.totalFor(150) - 1));
+        assertThrows(IllegalArgumentException.class, () -> new SkillCurve(600, 1.2, 1.13, 35, 1.02, 30, 150));
+        assertThrows(IllegalArgumentException.class, () -> new SkillCurve(600, 1.2, 1.13, 35, 0.99, 66, 150));
+    }
 }

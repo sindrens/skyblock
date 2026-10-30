@@ -25,8 +25,14 @@ public final class SkillsConfig extends ModuleConfig {
     @Setting(path = "curve.break-level", desc = "Level where the early growth switches to the late growth.", min = 0, max = 500, level = Setting.Level.OWNER)
     public int curveBreakLevel = 35;
 
-    @Setting(path = "curve.max-level", desc = "Highest skill level (XP keeps counting after it, for leaderboards).", min = 1, max = 500, level = Setting.Level.OWNER)
-    public int maxLevel = 66;
+    @Setting(path = "curve.end-break-level", desc = "Level where the late growth switches to the end growth (66 = the last tier unlock).", min = 0, max = 500, level = Setting.Level.OWNER)
+    public int curveEndBreakLevel = 66;
+
+    @Setting(path = "curve.end-growth", desc = "Cost growth per level after curve.end-break-level (1.02 = each level costs 2% more).", min = 1.0, max = 3.0, level = Setting.Level.OWNER)
+    public double curveEndGrowth = 1.02;
+
+    @Setting(path = "curve.max-level", desc = "Highest skill level (owner: 150). XP keeps counting after it, for leaderboards.", min = 1, max = 500, level = Setting.Level.OWNER)
+    public int maxLevel = 150;
 
     // ------------------------------------------------------------------ skills
 

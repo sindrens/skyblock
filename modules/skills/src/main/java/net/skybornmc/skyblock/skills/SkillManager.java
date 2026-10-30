@@ -91,10 +91,11 @@ final class SkillManager implements SkillService, Listener {
     void applyConfig() {
         SkillCurve next;
         try {
-            next = new SkillCurve(config.curveBase, config.curveEarlyGrowth, config.curveLateGrowth, config.curveBreakLevel, config.maxLevel);
+            next = new SkillCurve(config.curveBase, config.curveEarlyGrowth, config.curveLateGrowth, config.curveBreakLevel,
+                    config.curveEndGrowth, config.curveEndBreakLevel, config.maxLevel);
         } catch (IllegalArgumentException e) {
             core.plugin().getLogger().warning("skills.yml → curve: " + e.getMessage() + " (keeping the previous curve)");
-            next = curve != null ? curve : new SkillCurve(600, 1.2, 1.13, 35, 66);
+            next = curve != null ? curve : new SkillCurve(600, 1.2, 1.13, 35, 1.02, 66, 150);
         }
         curve = next;
         Set<SkillType> set = EnumSet.noneOf(SkillType.class);

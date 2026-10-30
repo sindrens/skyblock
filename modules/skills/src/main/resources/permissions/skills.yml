@@ -7,3 +7,6 @@ skyblock.skills:
 skyblock.skills.others:
   description: View another player's skills (/skills <player>)
   default: true
+skyblock.skills.admin:
+  description: Staff /skills set|add <player> <skill> <levels> (admin + owner)
+  default: op
