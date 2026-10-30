@@ -1,0 +1,470 @@
+{
+"12": {
+"a": "o",
+"note": "Settled by your earlier answers (Principle 7): Red stays the main color everywhere; errors differ by the ✘ mark."
+},
+"18": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS design round (STYLE2)): A shared lore builder is built first (STYLE2)."
+},
+"39": {
+"a": "o",
+"note": "Settled by your earlier answers (Principle 4, R1 #43, #159): First join is the portal and the tutorial, not a Help page."
+},
+"49": {
+"a": "o",
+"note": "Settled by your earlier answers (Principle 8, R2 #391): Admins edit normal settings; owner-level settings and staff ranks stay with the owner."
+},
+"58": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #33, #77): The resource pack is forced on Java too, prompted before joining."
+},
+"60": {
+"a": "o",
+"note": "Settled by your earlier answers (Principle 7): Pick items that can be retextured; the pack paints on top."
+},
+"63": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #33): The pack is forced, so there is no on/off switch."
+},
+"64": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #77): Owner draws the art; simple original placeholders until then."
+},
+"65": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #76, #77): Panel style is the owner's choice while drawing the art."
+},
+"68": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #33): The pack is forced, so everyone gets the custom arrows."
+},
+"80": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #33): The pack is forced, so there is no reward for accepting it."
+},
+"84": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #75): One pack, size not critical, optimized later."
+},
+"92": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS Q6): One scoreboard per place with only relevant lines."
+},
+"97": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #95): Server list says 'Java and Bedrock'; exact versions on the website."
+},
+"100": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #273): Players join at spawn."
+},
+"115": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #303): The Bedrock dot stays visible in names for everyone."
+},
+"122": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #132, principle 1): Switching blocked in warzone and boss arena, allowed in the Depths out of combat; no cooldown."
+},
+"123": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #50, DECISIONS P2): Chat, social and sound settings follow the account; scoreboard and menu item per profile."
+},
+"126": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #414, DECISIONS P8): Season reset wipes islands and player data; gem-bought slots stay, others are lost."
+},
+"138": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS P6): Hard maximum of 3 profiles."
+},
+"139": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #304): Profile names go through the chat filter; 16 characters max."
+},
+"143": {
+"a": "o",
+"note": "Settled by your earlier answers (261): One confirm button is enough; the confirm screen lists what will be lost."
+},
+"144": {
+"a": "o",
+"note": "Settled by your earlier answers (141): Islands with other members cannot be disbanded, so there are no members to warn."
+},
+"163": {
+"a": "o",
+"note": "Settled by your earlier answers (260): No player reset; island reset stays staff-only."
+},
+"165": {
+"a": "o",
+"note": "Settled by your earlier answers (522): A banned player's island is locked for visitors; staff may still delete it."
+},
+"174": {
+"a": "o",
+"note": "Settled by your earlier answers (169, 141): Upgrades are paid from the island bank only and belong to the island."
+},
+"175": {
+"a": "o",
+"note": "Settled by your earlier answers (290): Every island is shown in the browser; island level waits for the ISLAND-LEVEL plan."
+},
+"177": {
+"a": "o",
+"note": "Settled by your earlier answers (N4): Notes show author and date only."
+},
+"178": {
+"a": "o",
+"note": "Settled by your earlier answers (N8): Notes use the chat filter, so coordinates pass and links are blocked like in chat."
+},
+"188": {
+"a": "o",
+"note": "Settled by your earlier answers (R3 /is settings): Time and weather default to day and sunny, changeable per island in /is settings."
+},
+"189": {
+"a": "o",
+"note": "Settled by your earlier answers (#16): Server time is Oslo (CET/CEST), so real time follows the Oslo clock."
+},
+"228": {
+"a": "o",
+"note": "Settled by your earlier answers (265): Helpers and mods view island info; resets are for admins only."
+},
+"229": {
+"a": "o",
+"note": "Settled by your earlier answers (P2): Profiles are islands, so stats are per island and island leaderboards rank islands."
+},
+"244": {
+"a": "o",
+"note": "Settled by your earlier answers (R3 /is settings): Mob spawning and fire spread are off per island by default; how it is wired is technical."
+},
+"274": {
+"a": "o",
+"note": "Settled by your earlier answers (267, 268): Build bypass is admins only and switches off at relog."
+},
+"295": {
+"a": "o",
+"note": "Settled by your earlier answers (282): Top rated needs at least 3 ratings."
+},
+"296": {
+"a": "o",
+"note": "Settled by your earlier answers (414): Islands are wiped at season reset, so ratings and likes reset with them."
+},
+"308": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #375, #386): Chat color perks are set in the new 7-rank plan."
+},
+"311": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #467): Staff always decide; blocked messages only create a suggestion."
+},
+"343": {
+"a": "o",
+"note": "Settled by your earlier answers (P1, 285, 341): Teleports are instant with no cooldowns; 3 seconds only in combat zones."
+},
+"366": {
+"a": "o",
+"note": "Settled by your earlier answers (P2, PR1): Achievement progress per profile; titles are account-wide."
+},
+"373": {
+"a": "o",
+"note": "Settled by your earlier answers (P3): Nothing is lost by accident: deleted titles and tags stay restorable."
+},
+"381": {
+"a": "o",
+"note": "Settled by your earlier answers (P2): Ender chest is per profile; no shared account chest."
+},
+"399": {
+"a": "o",
+"note": "Settled by your earlier answers (390): The free rank's Ember name must change; a theme name comes with the RANKS plan."
+},
+"432": {
+"a": "o",
+"note": "Settled by your earlier answers (390): There is no Trainee staff rank."
+},
+"433": {
+"a": "o",
+"note": "Settled by your earlier answers (390): There is no Trainee staff rank."
+},
+"447": {
+"a": "o",
+"note": "Settled by your earlier answers (#17): Discord comes later; it is kept in LATER.md."
+},
+"481": {
+"a": "o",
+"note": "Settled by your earlier answers (480, 450): Mod bans over their limit become admin requests; staff without approval rights are refused."
+},
+"490": {
+"a": "o",
+"note": "Settled by your earlier answers (#4): A ban clears the freeze."
+},
+"503": {
+"a": "o",
+"note": "Settled by your earlier answers (#17): Discord comes later; it is kept in LATER.md."
+},
+"526": {
+"a": "o",
+"note": "Settled by your earlier answers (522): A banned player's island is locked for visitors, so it is not listed."
+},
+"551": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS #52, R2 #375): Auction slots per rank are set in the rank plan; everyone has 5 until then."
+},
+"583": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #32): Short numbers (1.2M) in menus, full numbers in chat and /bal."
+},
+"592": {
+"a": "o",
+"note": "Settled by your earlier answers (Principle 11): Personal bank tiers give capacity and interest only; extra perks would need a plan."
+},
+"594": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #414, DECISIONS P8): Season reset wipes player data, so personal and island banks are wiped with money."
+},
+"598": {
+"a": "o",
+"note": "Settled by your earlier answers (Principles 1 and 5): /bank works anywhere and from /menu; a Banker NPC only explains it."
+},
+"601": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #169 (BANK2)): Personal interest is now 0.6% per 8 hours, capped per payout."
+},
+"602": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #169 (BANK2)): Island interest is now 1.0% per 8 hours, capped per payout."
+},
+"603": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #590): All members see the balance; history for Admin and Mod only."
+},
+"606": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS #16, R1 #169): Payouts every 8 hours on Oslo time (00:00, 08:00, 16:00)."
+},
+"607": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS Q6): Next payout shows only in /bank; scoreboards show only relevant lines."
+},
+"625": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #458, #467): Staff always decide; alerts only notify, never suggest or apply punishments."
+},
+"626": {
+"a": "o",
+"note": "Settled by your earlier answers (Principle 5): Everything reachable from menus: the dashboard gets a /staff menu button."
+},
+"627": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS #17): Discord comes later; the daily summary goes on the later list."
+},
+"629": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #458): Alert staff only; they freeze the balance themselves, like dupe reports."
+},
+"643": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS #46, R2 #389): +300% total cap stays; rank sell bonuses are set in the rank plan."
+},
+"649": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #131): No new-account limit; receiving is always allowed, sending unlocks in the tutorial."
+},
+"655": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #169 (BANK2)): Interest is paid on the lowest balance of each 8-hour period; activity rule in 597."
+},
+"657": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #195): Production counts while a member is on the island, AFK included."
+},
+"661": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #414, DECISIONS P8): Season reset wipes player data: money, crystals and shards; gem slots stay."
+},
+"671": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #195, principle 1): All time counts toward the interest activity rule, AFK pool included (see 597)."
+},
+"672": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #389, #375): Rank perks, including any interest bonus, are set in the rank plan."
+},
+"679": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #169 (BANK2)): Lowest balance per 8-hour period; new deposits wait up to one period."
+},
+"680": {
+"a": "o",
+"note": "Settled by your earlier answers (Principle 3): Nothing lost by accident: notes are fireproof and never despawn."
+},
+"699": {
+"a": "o",
+"note": "Settled by your earlier answers (Principle 3, R1 #5, #7): Sell chest items are never lost: returned on close or crash, overflow to /box."
+},
+"702": {
+"a": "o",
+"note": "Settled by your earlier answers (Principles 1 and 5): /sell works everywhere, also from the satchel and /shop."
+},
+"705": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #8): No confirmations on quick actions; clicking Sell in the chest is the confirm."
+},
+"713": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS S26): Shop sells low-tier spawners; the price rise per spawner is question 642."
+},
+"715": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #7): Never lost: anything that does not fit goes to /box."
+},
+"716": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #8): No confirmation on shop quick-buys."
+},
+"719": {
+"a": "o",
+"note": "Settled by your earlier answers (Principles 1 and 5): /shop works anywhere and from /menu; an NPC only explains it."
+},
+"720": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #389, #375): Rank perks, including any discount, are set in the rank plan."
+},
+"728": {
+"a": "o",
+"note": "Settled by your earlier answers (Round 3 CR1-CR4): Crystal items go to the island shop, not /shop."
+},
+"732": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #131, #203): No playtime limit; trading money unlocks with the tutorial (see 656)."
+},
+"735": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #7): Trade items that do not fit go to /box automatically."
+},
+"738": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #316): /ignore blocks that player's trade requests."
+},
+"739": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #302): Trade request shows the same info as the name hover card: rank, island, playtime."
+},
+"753": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS O15): Auto-pickup on islands and in the Depths; Depths drops go to the satchel."
+},
+"759": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #414, DECISIONS P8): Season reset wipes player data, satchel included."
+},
+"760": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #389): Rank perks, including any discounts, are set in the rank plan."
+},
+"782": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #50): Settings are saved per profile or account as decided."
+},
+"793": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #285, #341, #345): Teleports instant; 3 seconds in combat, combat zones, warzone, boss arena and events."
+},
+"823": {
+"a": "o",
+"note": "Settled by your earlier answers (R1 #160): Always respawn at spawn."
+},
+"827": {
+"a": "o",
+"note": "Settled by your earlier answers (R2 #285, #345): Teleports from the Depths are instant; 3 seconds in combat zones."
+},
+"844": {
+"a": "o",
+"note": "Settled by your earlier answers (P3): Nothing is lost by accident: books always come back, even past a full chest."
+},
+"866": {
+"a": "o",
+"note": "Settled by your earlier answers (130, P2): The enchant collection is per profile, like the collection log."
+},
+"879": {
+"a": "o",
+"note": "Settled by your earlier answers (118): You can never buy listings made by your own other profiles."
+},
+"882": {
+"a": "o",
+"note": "Settled by your earlier answers (128, P2): Daily Enchanter roll limits are per profile, like crystals and daily rewards."
+},
+"904": {
+"a": "o",
+"note": "Settled by your earlier answers (414): Season reset wipes player data, so tools are forged again each season."
+},
+"916": {
+"a": "o",
+"note": "Settled by your earlier answers (#16): All times use Oslo time (CET/CEST)."
+},
+"917": {
+"a": "o",
+"note": "Settled by your earlier answers (#65): Max skill level is 150."
+},
+"933": {
+"a": "o",
+"note": "Settled by your earlier answers (L1): A loadout holds everything: armor, pet, hotbar and offhand tools."
+},
+"936": {
+"a": "o",
+"note": "Settled by your earlier answers (L4): Loadouts swap anywhere except in combat or the warzone."
+},
+"938": {
+"a": "o",
+"note": "Settled by your earlier answers (L1): Loadouts include the pet."
+},
+"945": {
+"a": "o",
+"note": "Settled by your earlier answers (L4, 377): No swaps in combat; combat lasts 10 seconds after a fight, as for /ec and /craft."
+},
+"947": {
+"a": "o",
+"note": "Settled by your earlier answers (L2): 2 free presets, more from rank or store credits; rank counts go in the RANKS plan."
+},
+"950": {
+"a": "o",
+"note": "Settled by your earlier answers (SE1): Sets start at level 0 (0x) and level up by playing."
+},
+"974": {
+"a": "o",
+"note": "Settled by your earlier answers (118): Deleting a profile deletes everything on it; Sigils stay with the account."
+},
+"981": {
+"a": "o",
+"note": "Settled by your earlier answers (302): The hover card shows only rank, island and playtime."
+},
+"989": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS O1/O2): No block limits; stack caps and lag detection apply."
+},
+"1000": {
+"a": "o",
+"note": "Settled by your earlier answers (Round 3 SK10): Evoker totems and shulker shells stay very rare, tier 5 only."
+},
+"1005": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS S25): Crops grow without light."
+},
+"1009": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS S14-S19, O15): Drops merge into stacked items and auto-pickup collects them."
+},
+"1016": {
+"a": "o",
+"note": "Settled by your earlier answers (DECISIONS S2, S12): Max 1,024 per stack for all mobs."
+},
+"1018": {
+"a": "o",
+"note": "Settled by your earlier answers (131, P4): No 30-minute limit; the pool pays once the tutorial is finished."
+},
+"1022": {
+"a": "o",
+"note": "Settled by your earlier answers (RW3): No 'Still here?' checks: the pool is AFK; use IP and alt checks instead."
+},
+"1027": {
+"a": "o",
+"note": "Settled by your earlier answers (O10): Loot improves the longer you stay; the 100% to 180% curve is balance work."
+}
+}

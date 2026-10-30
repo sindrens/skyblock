@@ -1,0 +1,1272 @@
+[
+{
+"id": "19",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Is it OK that crate, quest and leaderboard holograms come later?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Not a decision: holograms arrive with their features."
+},
+{
+"id": "20",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Keep scoreboard text in the message files, like all other player text?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Developer rule: all player text lives in message files."
+},
+{
+"id": "24",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Keep the Depths scoreboard choosing its zone layout from the zone name text?",
+"s": "Yes, text match",
+"c": "",
+"p": 0,
+"note": "Developer detail: how the Depths board picks its layout."
+},
+{
+"id": "25",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Is a placeholder warzone scoreboard (Combat level and money) fine until warzone exists?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Placeholder only; the real warzone board is question 88."
+},
+{
+"id": "27",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Build the crystal island shop and missions later, with the island upgrades?",
+"s": "Yes",
+"c": "Crystals are only a balance for now.",
+"p": 0,
+"note": "Plan item: crystal island shop comes with island upgrades."
+},
+{
+"id": "55",
+"a": "Look & feel",
+"f": "Personal settings (/settings)",
+"q": "Let players turn off the skill XP action bar and other players' trail particles?",
+"s": "Yes, already built",
+"c": "",
+"p": 0,
+"note": "Already built: skill XP bar and trail particle toggles exist."
+},
+{
+"id": "59",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Send the resource pack from the plugin rather than from the server settings?",
+"s": "Yes, from the plugin",
+"c": "",
+"p": 0,
+"note": "Developer detail: how the pack is sent."
+},
+{
+"id": "61",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Keep the resource pack files in the main project folder?",
+"s": "Yes, one folder, one release",
+"c": "",
+"p": 0,
+"note": "Developer detail: where pack files live."
+},
+{
+"id": "66",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Convert the pack for Bedrock with our own small converter?",
+"s": "Yes",
+"c": "Icons, glyphs and sounds only.",
+"p": 0,
+"note": "Developer detail: Bedrock pack conversion."
+},
+{
+"id": "67",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Keep Depths drops looking vanilla, except voidstone, raider scrap and wither ash?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Plan item: part of the texture brief."
+},
+{
+"id": "69",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Change tool looks by tier only, with a spark overlay for prestige?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Plan item: part of the texture brief."
+},
+{
+"id": "70",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Keep status marks (✔ ✘ ★ ⌛) as plain text symbols?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Plan item: part of the texture brief."
+},
+{
+"id": "71",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Add a custom ember-pattern world border texture?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Plan item: border texture is in the resource-pack plan (I5)."
+},
+{
+"id": "73",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Paint the player-inventory half of menus too?",
+"s": "No, top half only",
+"c": "",
+"p": 0,
+"note": "Plan item: the pack skins all GUIs (#33); details in the texture brief."
+},
+{
+"id": "79",
+"a": "Look & feel",
+"f": "Resource pack plan",
+"q": "Host the pack on the VPS first and add a CDN once over 200 players?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Duplicate of 62."
+},
+{
+"id": "83",
+"a": "Look & feel",
+"f": "Resource pack plan",
+"q": "Leave store-sold hats and backpacks out of the first pack version?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Plan item: part of the texture brief."
+},
+{
+"id": "109",
+"a": "Look & feel",
+"f": "Tab list and nametags",
+"q": "Leave vanished staff out of the online number in the tab header?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Duplicate of 99."
+},
+{
+"id": "166",
+"a": "Islands",
+"f": "Island creation, starter island and homes",
+"q": "Use a different starter build for staff-made event islands?",
+"s": "No, one style per type",
+"c": "",
+"p": 0,
+"note": "Not needed: staff can already edit and paste any starter schematic (O16)."
+},
+{
+"id": "240",
+"a": "Islands",
+"f": "Islands",
+"q": "Add a 'Next: <note>' line to the island scoreboard?",
+"s": "Yes, already added",
+"c": "Shows only if a note is open and the toggle is on.",
+"p": 0,
+"note": "Duplicate of 181; the line already exists (N5)."
+},
+{
+"id": "245",
+"a": "Islands",
+"f": "Islands",
+"q": "Make 'storm' weather rain plus thunder sounds only, since Minecraft cannot show a storm to one player?",
+"s": "Yes",
+"c": "No lightning flashes or darker sky.",
+"p": 0,
+"note": "Pure info: Minecraft cannot show a storm to one player only."
+},
+{
+"id": "248",
+"a": "Islands",
+"f": "Islands",
+"q": "Use one shared switch for 'Visitors pick up items' in settings and the permission screen?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Implementation detail: one switch avoids two settings that disagree."
+},
+{
+"id": "253",
+"a": "Islands",
+"f": "Islands",
+"q": "Show permissions as roles in columns and actions as rows, 4 per page?",
+"s": "Yes",
+"c": "Five role rows no longer fit.",
+"p": 0,
+"note": "GUI layout detail; the resource pack will skin all menus later."
+},
+{
+"id": "264",
+"a": "Islands",
+"f": "Islands",
+"q": "Clear removed islands over the full height plus one extra chunk ring, then reuse the slot?",
+"s": "Yes",
+"c": "Uses FAWE when installed.",
+"p": 0,
+"note": "Technical clearing detail; no owner choice needed."
+},
+{
+"id": "266",
+"a": "Islands",
+"f": "Islands",
+"q": "Keep /is go the same as /is home until teams exist?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Outdated: teams exist now, and /is opens the island menu (230)."
+},
+{
+"id": "277",
+"a": "Islands",
+"f": "Islands",
+"q": "Add a 'warps' column to the island permission screen later?",
+"s": "Yes, later",
+"c": "",
+"p": 0,
+"note": "Duplicate of 222 (Warps permission)."
+},
+{
+"id": "351",
+"a": "Teleports & essentials",
+"f": "Teleports: /spawn and /tpa",
+"q": "Add /back as a high-rank donor perk later, not after death?",
+"s": "Yes, later",
+"c": "",
+"p": 0,
+"note": "Moves into the RANKS plan (/back as a perk)."
+},
+{
+"id": "357",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements",
+"q": "Announce top-tier legendary achievements to the whole server?",
+"s": "Yes, only those",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "358",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements",
+"q": "Let other players see your achievement count and finished titles?",
+"s": "Yes, no progress numbers",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "359",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements",
+"q": "Should AFK time not count toward achievements, and macro detections remove progress?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "360",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements",
+"q": "Keep the achievement goal numbers as they are until after the first test week?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "361",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements",
+"q": "Show tier-1 achievement unlocks only as a sound and action bar, not in chat?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "362",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements",
+"q": "Give admins a tool in /inspect to give or reset a player's achievement?",
+"s": "Yes",
+"c": "Today there is no staff tool.",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "363",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements",
+"q": "Add achievement points and a season top list later?",
+"s": "Yes, later",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "364",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements",
+"q": "Add achievements together with each new feature, aiming for 60-80 at launch?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "368",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements, titles & cosmetics",
+"q": "On first join after release, show existing players what they already earned (first 3 plus 'N more')?",
+"s": "Yes, capped list",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "369",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements, titles & cosmetics",
+"q": "Count island achievements from the active profile's island stats, refreshed every 5 minutes?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "370",
+"a": "Ranks, perks & cosmetics",
+"f": "Achievements, titles & cosmetics",
+"q": "Keep the full achievement unlock history in the log forever?",
+"s": "Yes, keep it",
+"c": "",
+"p": 0,
+"note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+},
+{
+"id": "374",
+"a": "Ranks, perks & cosmetics",
+"f": "Permissions & ranks",
+"q": "Should the server update leave the old permissions file in place and only warn about it?",
+"s": "Yes, ignore it and say so",
+"c": "",
+"p": 0,
+"note": "Technical update detail; no owner choice."
+},
+{
+"id": "379",
+"a": "Ranks, perks & cosmetics",
+"f": "Rank perks: /craft, /ec, /hat, /nick, /trash and staff tools",
+"q": "Keep nicknames for paid ranks only, not the free Ember rank?",
+"s": "Yes, from the first paid rank",
+"c": "",
+"p": 0,
+"note": "Moves into the RANKS plan (who gets nicknames)."
+},
+{
+"id": "380",
+"a": "Ranks, perks & cosmetics",
+"f": "Rank perks: /craft, /ec, /hat, /nick, /trash and staff tools",
+"q": "Plain nicknames from Paladin, colors from Warlord, gradients from Monarch?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the RANKS plan; the rank names are changing (386)."
+},
+{
+"id": "382",
+"a": "Ranks, perks & cosmetics",
+"f": "Rank perks: /craft, /ec, /hat, /nick, /trash and staff tools",
+"q": "Give donors a timed /repair command?",
+"s": "No",
+"c": "Mending exists and custom tools have no durability.",
+"p": 0,
+"note": "Moves into the RANKS plan; custom tools have no durability anyway."
+},
+{
+"id": "393",
+"a": "Ranks, perks & cosmetics",
+"f": "Ranks, the free Ember rank and staff ranks",
+"q": "Show join/quit messages for Knight and above, with everyone able to hide them?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the RANKS plan; the rank names are changing (386)."
+},
+{
+"id": "400",
+"a": "Ranks, perks & cosmetics",
+"f": "Titles and tags",
+"q": "Use the proposed crate-to-tag mapping (Ember crate: spark/ash tags, Phoenix crate: phoenix tag...)?",
+"s": "Yes, as proposed",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (themed titles and tags)."
+},
+{
+"id": "401",
+"a": "Ranks, perks & cosmetics",
+"f": "Titles and tags",
+"q": "Limit players to one title and one tag at a time?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (themed titles and tags)."
+},
+{
+"id": "402",
+"a": "Ranks, perks & cosmetics",
+"f": "Titles and tags",
+"q": "Sell personal custom-text tags in the store, with the text checked by filter and staff?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (themed titles and tags)."
+},
+{
+"id": "403",
+"a": "Ranks, perks & cosmetics",
+"f": "Titles and tags",
+"q": "Limit titles to 14 characters and tags to 10?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (themed titles and tags)."
+},
+{
+"id": "404",
+"a": "Ranks, perks & cosmetics",
+"f": "Titles and tags",
+"q": "Allow tags to be sold for in-game money only, never real money?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (themed titles and tags)."
+},
+{
+"id": "405",
+"a": "Ranks, perks & cosmetics",
+"f": "Titles and tags",
+"q": "Show rarity color on titles and tags but hide how many players own them?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (themed titles and tags)."
+},
+{
+"id": "408",
+"a": "Ranks, perks & cosmetics",
+"f": "Titles and tags",
+"q": "Grant the secret 'Night Owl' title for logging in 03:00-05:00 Oslo time on 10 days?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (themed titles and tags)."
+},
+{
+"id": "427",
+"a": "Staff & punishments",
+"f": "Punishment safeguards: appeals, lockdown, watchlist, guard and reports",
+"q": "Should the Honorable title also give 500 crystals and a particle effect?",
+"s": "Yes, 500 crystals and a particle",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (Honorable title rewards)."
+},
+{
+"id": "436",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Move chat-filter and dupe staff alerts under the same alert settings later?",
+"s": "Yes, later",
+"c": "",
+"p": 0,
+"note": "Settings-menu tidy-up; implementation detail."
+},
+{
+"id": "445",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Should the report measure re-offending on the previous month's players?",
+"s": "Yes, previous month",
+"c": "",
+"p": 0,
+"note": "Report formula detail; no player impact."
+},
+{
+"id": "446",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Are the monthly report numbers fine as defined, with past reports never recalculated?",
+"s": "Yes, as proposed",
+"c": "",
+"p": 0,
+"note": "Report formula detail; no player impact."
+},
+{
+"id": "448",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Should the Honorable title only count playtime from after the update?",
+"s": "Yes, nobody has it on day one",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (Honorable title)."
+},
+{
+"id": "449",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Should staff be unable to give or take the Honorable title by hand?",
+"s": "Yes, automatic only",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (who gives titles; admins per 397)."
+},
+{
+"id": "462",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Should players whose data hasn't loaded yet count as not new during a chat lockdown?",
+"s": "Yes",
+"c": "Avoids locking out normal players by mistake.",
+"p": 0,
+"note": "Technical edge case; the safe default applies."
+},
+{
+"id": "469",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Is it fine that a mute given on another server only reaches the player at their next join?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Pure info: a mute from another server applies at next join."
+},
+{
+"id": "473",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Should players skipped in a bulk preview stay skipped after you confirm?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Implementation detail; obvious behavior."
+},
+{
+"id": "485",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Keep the simple timer for 'mute ended' notices instead of a shared timer system?",
+"s": "Yes, keep it simple",
+"c": "",
+"p": 0,
+"note": "Technical timer detail; no owner choice."
+},
+{
+"id": "492",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Treat offline exempt staff as not exempt, checking only online players?",
+"s": "Yes, online only",
+"c": "",
+"p": 0,
+"note": "Technical edge case; the safe default applies."
+},
+{
+"id": "506",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Should /pstats 7-day and 30-day periods use whole days (Oslo time)?",
+"s": "Yes, whole days",
+"c": "",
+"p": 0,
+"note": "Technical detail; Oslo time is already decided (#16)."
+},
+{
+"id": "507",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Is it OK that the Undo chat button stops working 10 minutes after its window?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Pure info about the Undo button."
+},
+{
+"id": "510",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Is it OK that the undo timer in /p does not tick down live?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Pure info about the menu timer."
+},
+{
+"id": "515",
+"a": "Staff & punishments",
+"f": "Punishments & staff",
+"q": "Use /pnote remove <id> without the player name?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Command syntax detail."
+},
+{
+"id": "584",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should there be no maximum balance for now?",
+"s": "Yes, no cap",
+"c": "Only matters near 9 quintillion.",
+"p": 0,
+"note": "Not a real decision: no balance cap is needed below 9 quintillion."
+},
+{
+"id": "587",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should the log also record refused /pay attempts so staff can see why?",
+"s": "Yes, log refusals",
+"c": "",
+"p": 0,
+"note": "Developer detail: refused /pay attempts are logged by default."
+},
+{
+"id": "599",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should /bank be blocked only while in combat?",
+"s": "Yes, combat only",
+"c": "Stops using the bank as a safe in PvP fights.",
+"p": 1,
+"note": "Duplicate of 567 (one combat/warzone rule for all money commands)."
+},
+{
+"id": "614",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should the owner have an emergency setting to scale all sell prices (for example x0.9)?",
+"s": "Yes, owner only",
+"c": "A lever against inflation.",
+"p": 1,
+"note": "Duplicate of 628 (owner emergency buttons on the dashboard)."
+},
+{
+"id": "620",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should shop prices stay fixed, with no sell bonus discount?",
+"s": "Yes, fixed",
+"c": "",
+"p": 0,
+"note": "Duplicate of 726 and 720 (fixed shop prices, rank perks in the rank plan)."
+},
+{
+"id": "623",
+"a": "Economy",
+"f": "Economy dashboard & alerts",
+"q": "Should economy alerts use their own permission, with no per-staff off switch for now?",
+"s": "Yes, own permission",
+"c": "",
+"p": 0,
+"note": "Developer detail: alerts get their own permission."
+},
+{
+"id": "638",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Leave Depths band D book drops unchanged and watch the dashboard?",
+"s": "Yes, no change",
+"c": "",
+"p": 0,
+"note": "Not a decision: band D stays unchanged and is watched on the dashboard."
+},
+{
+"id": "639",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Leave bank payout caps for tiers 3-5 unchanged?",
+"s": "Yes, no change",
+"c": "Casual interest is only slightly over target, about $6.6M per season.",
+"p": 0,
+"note": "Superseded: bank caps were rebuilt for 8-hour payouts (#169)."
+},
+{
+"id": "645",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should a new Depths tier's ore break at 70% speed until you forge the next tool?",
+"s": "Yes, as a design rule",
+"c": "Nothing is built yet.",
+"p": 0,
+"note": "Duplicate of 826 (lower tool mines higher ore at 70% speed)."
+},
+{
+"id": "646",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Re-check the enchant and wardrobe plans against the new 1h/3h/8h player types later?",
+"s": "Yes, later",
+"c": "Regular players earn about 20% fewer crystals than those plans assumed.",
+"p": 0,
+"note": "Plan item: re-check enchant and wardrobe plans, not an owner decision."
+},
+{
+"id": "673",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should the owner have a dashboard switch to turn interest off in an emergency?",
+"s": "Yes, owner only",
+"c": "",
+"p": 1,
+"note": "Duplicate of 628 (owner emergency buttons include interest on/off)."
+},
+{
+"id": "678",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should interest rates stay unchanged automatically, with staff using the emergency switch instead?",
+"s": "Yes, staff decide",
+"c": "",
+"p": 0,
+"note": "Duplicate of 676."
+},
+{
+"id": "681",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should /withdraw and note cashing be blocked in combat and in the warzone?",
+"s": "Yes",
+"c": "",
+"p": 1,
+"note": "Duplicate of 567 (one combat/warzone rule for /withdraw and note cashing)."
+},
+{
+"id": "696",
+"a": "Economy",
+"f": "Sell",
+"q": "Show 'Rising / Falling / Steady' words instead of ▲▼ arrows in the sell menu?",
+"s": "Yes, words",
+"c": "Arrows are not safe on Bedrock.",
+"p": 0,
+"note": "Duplicate of 618 (trend words, no arrows)."
+},
+{
+"id": "697",
+"a": "Economy",
+"f": "Sell",
+"q": "Show the daily Hot Item only in the /sell menu, with no chat or scoreboard announcement?",
+"s": "Yes, /sell menu only",
+"c": "",
+"p": 0,
+"note": "Duplicate of 615 (Hot Item in /sell plus one login line)."
+},
+{
+"id": "701",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should /sell be blocked in combat, and allowed in the warzone only out of combat?",
+"s": "Yes",
+"c": "",
+"p": 1,
+"note": "Duplicate of 567 (one combat/warzone rule)."
+},
+{
+"id": "729",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should shop buying be blocked only while in combat?",
+"s": "Yes, combat only",
+"c": "",
+"p": 0,
+"note": "Duplicate of 567 (one combat/warzone rule for /shop)."
+},
+{
+"id": "741",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should trading be blocked in combat and in the warzone, but allowed elsewhere?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Duplicate of 567 (one combat/warzone rule)."
+},
+{
+"id": "758",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should satchel fullness show only on the scoreboard, not the action bar?",
+"s": "Yes, scoreboard only",
+"c": "",
+"p": 0,
+"note": "Duplicate of 89 and 755 (board line plus one warning)."
+},
+{
+"id": "762",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Leave Depths build portals as stored only for now, with players using /spawn?",
+"s": "Yes, portals later",
+"c": "They do not teleport yet.",
+"p": 0,
+"note": "Not a decision: Depths portals come later."
+},
+{
+"id": "763",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Leave extra Depths world protection (outside ore fields) for later?",
+"s": "Yes, no change now",
+"c": "Open question: protect the whole world or per area.",
+"p": 0,
+"note": "Duplicate of 783 (Depths block protection)."
+},
+{
+"id": "764",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Spawn Depths NPCs, holograms, leaderboards and crates later when those features exist?",
+"s": "Yes, later",
+"c": "",
+"p": 0,
+"note": "Not a decision: NPCs and holograms come with their features."
+},
+{
+"id": "766",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep world borders centred on 0,0 so moving spawn never moves a border?",
+"s": "Yes",
+"c": "Nothing visible changes.",
+"p": 0,
+"note": "Developer detail: world border centre."
+},
+{
+"id": "767",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep placeholder causeways between Depths zones until builders deliver real ones?",
+"s": "Yes, placeholders for now",
+"c": "",
+"p": 0,
+"note": "Not a decision: placeholders until builders deliver."
+},
+{
+"id": "768",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep placeholder Depths trees with the leaf crown on top of the trunk?",
+"s": "Yes, crown on top",
+"c": "The alternative leaves the top log unreachable.",
+"p": 0,
+"note": "Developer detail: placeholder tree shape."
+},
+{
+"id": "777",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep geodes, key fragments and tier 9+ shards switched off until their features exist?",
+"s": "Yes, off",
+"c": "",
+"p": 0,
+"note": "Not a decision: features stay off until built (geodes in 811)."
+},
+{
+"id": "778",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep blueprint drop chances in the tools settings, not in the Depths drop tables?",
+"s": "Yes, stay there",
+"c": "",
+"p": 0,
+"note": "Developer detail: where blueprint chances are stored."
+},
+{
+"id": "781",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep fast-break log entries under the 'world' category instead of a new anti-cheat category?",
+"s": "Yes, world",
+"c": "",
+"p": 0,
+"note": "Developer detail: log category."
+},
+{
+"id": "784",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep the Depths wing layout with the strip south of The Gate left free for a possible fourth wing?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Builder detail: wing layout."
+},
+{
+"id": "785",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Use the proposed Combat tier unlock levels (0, 6, 12... up to 66)?",
+"s": "Yes",
+"c": "",
+"p": 1,
+"note": "Duplicate of 654 (same combat tier levels)."
+},
+{
+"id": "786",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep the Depths world spawn in the middle of The Gate, not at the arrival pad?",
+"s": "Yes, keep",
+"c": "",
+"p": 0,
+"note": "Developer detail: world spawn point."
+},
+{
+"id": "787",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep Depths tier gates as open frames until per-player doors are built?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Not a decision: open frames until doors are built (see 791)."
+},
+{
+"id": "788",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep Depths zone coordinates out of the deploy so builders' changes are never overwritten?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Developer detail: deploy safety."
+},
+{
+"id": "789",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should only admins be able to generate Depths placeholders, not builders?",
+"s": "Yes, admin only",
+"c": "",
+"p": 0,
+"note": "Developer detail: who generates placeholders."
+},
+{
+"id": "790",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Accept a one-tick flash of the real ore right after a Depths break?",
+"s": "Yes, accept it",
+"c": "Fixing it needs an extra plugin.",
+"p": 0,
+"note": "Developer detail: one-tick visual flash."
+},
+{
+"id": "794",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should every first tier unlock be logged, including tier 1?",
+"s": "Yes, log all",
+"c": "",
+"p": 0,
+"note": "Developer detail: unlock logging."
+},
+{
+"id": "795",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep the Depths unlock season setting matched to the skills season setting?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Developer detail: season setting."
+},
+{
+"id": "820",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Keep one ore block per tier, so tiers look clearly different?",
+"s": "Yes, as built",
+"c": "",
+"p": 0,
+"note": "Duplicate of 809."
+},
+{
+"id": "860",
+"a": "Tools, skills & enchants",
+"f": "Enchants",
+"q": "Keep the enchant name 'Scholar's Insight' even though it is 17 characters?",
+"s": "Yes, keep it",
+"c": "Bedrock rule says 16; it still fits.",
+"p": 0,
+"note": "Covered by 880 (approve all enchant names); the name fits on Bedrock."
+},
+{
+"id": "867",
+"a": "Tools, skills & enchants",
+"f": "Enchants",
+"q": "Round enchant fees half up and shatter refunds down?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Rounding detail; no owner choice needed."
+},
+{
+"id": "894",
+"a": "Tools, skills & enchants",
+"f": "Forge & tools",
+"q": "Give the starter kit only via the /forge button, not automatically on first join?",
+"s": "Yes, button only",
+"c": "",
+"p": 1,
+"note": "Moves into the TUTORIAL plan: the starter kit is handed out as a tutorial step."
+},
+{
+"id": "895",
+"a": "Tools, skills & enchants",
+"f": "Forge & tools",
+"q": "Keep /skin give adding skins straight to the collection, with skin items later?",
+"s": "Yes, collection only for now",
+"c": "Skins stay on a traded tool.",
+"p": 0,
+"note": "Depends on 836 (skin tokens); staff detail, no separate choice."
+},
+{
+"id": "903",
+"a": "Tools, skills & enchants",
+"f": "Forge and living tools",
+"q": "Give prestige a permanent title plus one skin unlock?",
+"s": "Yes",
+"c": "Besides a star and slot 5.",
+"p": 1,
+"note": "Moves into the TITLES plan (prestige title); the skin part follows the skins answers."
+},
+{
+"id": "906",
+"a": "Tools, skills & enchants",
+"f": "Forge and living tools",
+"q": "Give no rank discount on Forge costs, only event discounts?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the RANKS plan (rank discounts)."
+},
+{
+"id": "913",
+"a": "Tools, skills & enchants",
+"f": "Skills",
+"q": "Keep the free rank tags ember, spark and ash as they are?",
+"s": "Yes, as given",
+"c": "Ember and ashes were also crate tags.",
+"p": 0,
+"note": "Moves into the TITLES plan; the free rank is also being renamed (390)."
+},
+{
+"id": "914",
+"a": "Tools, skills & enchants",
+"f": "Skills",
+"q": "Give the free Ember rank no extra perks until decided?",
+"s": "Yes, no perks yet",
+"c": "Currently only name color and prefix.",
+"p": 1,
+"note": "Moves into the RANKS plan; the free rank gets a few small perks (RW4)."
+},
+{
+"id": "921",
+"a": "Tools, skills & enchants",
+"f": "Skills",
+"q": "Log skill level-ups under the existing 'world' audit category?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Logging detail; no owner choice needed."
+},
+{
+"id": "923",
+"a": "Tools, skills & enchants",
+"f": "Skills (/skills)",
+"q": "Give levels 67 to 150 crystals, a title every 10 levels, and a small permanent bonus?",
+"s": "Yes",
+"c": "",
+"p": 1,
+"note": "Crystals are asked in 924; titles move into the TITLES plan."
+},
+{
+"id": "932",
+"a": "Tools, skills & enchants",
+"f": "Skills (/skills)",
+"q": "Give skill titles at levels 25, 50, 100 and 150?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Moves into the TITLES plan (skill titles)."
+},
+{
+"id": "944",
+"a": "Wardrobe & sets",
+"f": "Wardrobe & sets",
+"q": "Limit loadout names to one word, up to 16 characters?",
+"s": "Yes",
+"c": "Spaces become dashes.",
+"p": 0,
+"note": "Naming detail; no owner choice needed."
+},
+{
+"id": "948",
+"a": "Wardrobe & sets",
+"f": "Wardrobe & sets",
+"q": "Skip a location column for tools, since the wardrobe record already shows where a tool is?",
+"s": "Yes, not needed",
+"c": "",
+"p": 0,
+"note": "Database detail; no owner choice needed."
+},
+{
+"id": "973",
+"a": "Wardrobe & sets",
+"f": "Wardrobe & sets",
+"q": "Make Set Tokens look like an armor stand, unplaceable and redeemed by right-click?",
+"s": "Yes",
+"c": "",
+"p": 0,
+"note": "Look detail; the resource pack will skin Set Tokens."
+},
+{
+"id": "975",
+"a": "Wardrobe & sets",
+"f": "Wardrobe & sets",
+"q": "Hold back Wardrobe Chest size upgrades from all ranks until the store plan?",
+"s": "Yes, decide with store plan",
+"c": "",
+"p": 0,
+"note": "Moves into the RANKS plan (rank perks)."
+},
+{
+"id": "976",
+"a": "Wardrobe & sets",
+"f": "Wardrobe & sets",
+"q": "Let helpers view wardrobes, with only admins giving or removing sets and tokens?",
+"s": "Yes",
+"c": "",
+"p": 1,
+"note": "Duplicate of 968."
+},
+{
+"id": "999",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Keep spawner speed as built, 4 mobs per spawner every 10-40 seconds?",
+"s": "Yes",
+"c": "A full 512 stack makes about 4,900 mobs per minute.",
+"p": 1,
+"note": "Duplicate of 641 (mobs per spawner)."
+},
+{
+"id": "1003",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Count entity limits only in the island's loaded chunks?",
+"s": "Yes",
+"c": "Faster; a rare edge case can exceed the limit.",
+"p": 0,
+"note": "Developer detail: how entity limits are counted."
+},
+{
+"id": "1007",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Limit /spawner give to 1-2,304 per command, admins only?",
+"s": "Yes",
+"c": "",
+"p": 1,
+"note": "Developer detail: admin give limits."
+},
+{
+"id": "1017",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Exclude stacked mob farms from island level?",
+"s": "Yes, excluded",
+"c": "",
+"p": 0,
+"note": "Plan item: part of the island level plan (#168)."
+},
+{
+"id": "1019",
+"a": "AFK pool",
+"f": "AFK pool",
+"q": "Should AFK pool time not count as playtime for /freerank and bank interest?",
+"s": "Yes, doesn't count",
+"c": "",
+"p": 1,
+"note": "Duplicate of 671 (interest activity) and 394 (/freerank unlock)."
+},
+{
+"id": "1024",
+"a": "AFK pool",
+"f": "AFK pool",
+"q": "Give every rank the same AFK pool, with no faster VIP pool?",
+"s": "Yes, no rank difference",
+"c": "",
+"p": 1,
+"note": "Moves into the RANKS plan (rank AFK perks)."
+},
+{
+"id": "1025",
+"a": "AFK pool",
+"f": "AFK pool",
+"q": "Keep the AFK pool closed until builders add its area at spawn?",
+"s": "Yes, closed until then",
+"c": "No build has an AFK area yet.",
+"p": 1,
+"note": "Pure info: the pool opens when its area is built."
+},
+{
+"id": "1029",
+"a": "AFK pool",
+"f": "AFK pool",
+"q": "Save AFK keys and fuel as pending until crates and Island Fuel exist?",
+"s": "Yes, delivered automatically later",
+"c": "",
+"p": 0,
+"note": "Technical: nothing is lost (P3), pending rewards arrive later."
+},
+{
+"id": "1032",
+"a": "AFK pool",
+"f": "AFK pool",
+"q": "Keep the one-account-per-IP rule on, after testing that Bedrock players from different homes both earn?",
+"s": "Yes, rule on",
+"c": "",
+"p": 1,
+"note": "Duplicate of 1031; Bedrock IPs are a test step, not a decision."
+}
+]

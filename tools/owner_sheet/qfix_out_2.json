@@ -1,0 +1,3042 @@
+[
+ {
+  "id": "143",
+  "status": "settled",
+  "settled_by": "261",
+  "note": "One confirm button is enough; the confirm screen lists what will be lost."
+ },
+ {
+  "id": "144",
+  "status": "settled",
+  "settled_by": "141",
+  "note": "Islands with other members cannot be disbanded, so there are no members to warn."
+ },
+ {
+  "id": "145",
+  "status": "ask",
+  "q": "Tell every island member when staff delete, reset, kick from or change the owner of their island?",
+  "s": "Yes, tell all affected members",
+  "why": "A reset wipes every member's profile (591), so all of them deserve to know.",
+  "p": 0
+ },
+ {
+  "id": "146",
+  "status": "ask",
+  "q": "Keep a disbanded island in place for 7 days before clearing it, so staff can restore it fast?",
+  "s": "Yes, 7 days, same as backups",
+  "why": "Restores become one click; island slots are cheap, and the player gets a new island instantly.",
+  "p": 0
+ },
+ {
+  "id": "147",
+  "status": "ask",
+  "q": "Let mods freeze an island during an investigation, with only admins releasing it, all logged?",
+  "s": "Yes, mods freeze, admins release",
+  "why": "Mods do most work and admins approve big things, as in your staff rules.",
+  "p": 0
+ },
+ {
+  "id": "150",
+  "status": "ask",
+  "q": "Show a short hint when you write in island chat while no other member is online?",
+  "s": "Yes, one short line",
+  "why": "Stops players thinking their teammates ignore them.",
+  "p": 0
+ },
+ {
+  "id": "151",
+  "status": "ask",
+  "q": "Allow [item] to show your held item in island chat, with the same limit as public chat?",
+  "s": "Yes, same limit as public chat",
+  "why": "Teams love showing drops; one shared limit is simple.",
+  "p": 0
+ },
+ {
+  "id": "152",
+  "status": "ask",
+  "q": "Start island chat lines with a short [Island] tag in the member's role color?",
+  "s": "Yes, role-colored tag",
+  "why": "Makes island chat easy to tell apart from public chat at a glance.",
+  "p": 0
+ },
+ {
+  "id": "153",
+  "status": "ask",
+  "q": "Add a party chat across islands later, for up to 5 friends from different islands?",
+  "s": "Yes, later with parties",
+  "why": "Friends on different islands need a place to talk; not needed for launch.",
+  "p": 0
+ },
+ {
+  "id": "154",
+  "status": "ask",
+  "q": "Let each member mute island chat for themselves in /settings?",
+  "s": "Yes, personal mute switch",
+  "why": "Player choice, no effect on others.",
+  "p": 0
+ },
+ {
+  "id": "155",
+  "status": "ask",
+  "q": "Add /ic as a short command for island chat?",
+  "s": "Yes, add /ic",
+  "why": "Short commands help everyone; also reachable from the island menu for Bedrock.",
+  "p": 0
+ },
+ {
+  "id": "156",
+  "status": "ask",
+  "q": "Show nicknames with the ~ marker in island chat, the same as in public chat?",
+  "s": "Yes, same as public chat",
+  "why": "One rule everywhere; the ~ shows it is a nickname.",
+  "p": 0
+ },
+ {
+  "id": "162",
+  "status": "ask",
+  "q": "Let every new profile pick its own starter island type when its island is created?",
+  "s": "Yes, pick at the spawn portal",
+  "why": "Each profile is a fresh island; choosing again makes new profiles feel new.",
+  "p": 0
+ },
+ {
+  "id": "163",
+  "status": "settled",
+  "settled_by": "260",
+  "note": "No player reset; island reset stays staff-only."
+ },
+ {
+  "id": "164",
+  "status": "ask",
+  "q": "Keep inactive islands until the season reset instead of freeing them after 60 days?",
+  "s": "Yes, keep until season reset",
+  "why": "Players return mid-season; space is cheap and nothing should be lost.",
+  "p": 0
+ },
+ {
+  "id": "165",
+  "status": "settled",
+  "settled_by": "522",
+  "note": "A banned player's island is locked for visitors; staff may still delete it."
+ },
+ {
+  "id": "166",
+  "status": "drop",
+  "note": "Not needed: staff can already edit and paste any starter schematic (O16)."
+ },
+ {
+  "id": "173",
+  "status": "ask",
+  "q": "Count island upgrade task progress from all members together, but not from coop players?",
+  "s": "Yes, members only",
+  "why": "Teamwork counts; coop players from other islands could boost tasks.",
+  "p": 0
+ },
+ {
+  "id": "174",
+  "status": "settled",
+  "settled_by": "169, 141",
+  "note": "Upgrades are paid from the island bank only and belong to the island."
+ },
+ {
+  "id": "175",
+  "status": "settled",
+  "settled_by": "290",
+  "note": "Every island is shown in the browser; island level waits for the ISLAND-LEVEL plan."
+ },
+ {
+  "id": "177",
+  "status": "settled",
+  "settled_by": "N4",
+  "note": "Notes show author and date only."
+ },
+ {
+  "id": "178",
+  "status": "settled",
+  "settled_by": "N8",
+  "note": "Notes use the chat filter, so coordinates pass and links are blocked like in chat."
+ },
+ {
+  "id": "179",
+  "status": "ask",
+  "q": "Let staff delete an offensive island note without waiting for the leader, logged?",
+  "s": "Yes, logged",
+  "why": "Staff must be able to remove abuse at once.",
+  "p": 0
+ },
+ {
+  "id": "180",
+  "status": "ask",
+  "q": "Allow up to 5 pinned note holograms per island, not counted in the decoration entity limit?",
+  "s": "Yes, 5, not counted",
+  "why": "Players never wonder why decorations stopped working because of a note.",
+  "p": 0
+ },
+ {
+  "id": "181",
+  "status": "ask",
+  "q": "Keep the 'Next: <note>' scoreboard line off by default, with a switch in /settings?",
+  "s": "Yes, off by default",
+  "why": "Keeps the scoreboard short and relevant for new players.",
+  "p": 0
+ },
+ {
+  "id": "182",
+  "status": "ask",
+  "q": "Move finished notes to a Done tab and clear them after 7 days?",
+  "s": "Yes, Done tab, cleared after 7 days",
+  "why": "Matches the 7-day staff keep and frees space under the 50-note limit.",
+  "p": 0
+ },
+ {
+  "id": "183",
+  "status": "ask",
+  "q": "Let notes be assigned to one member with a notification, as a later addition?",
+  "s": "Yes, later",
+  "why": "Useful for bigger teams; not needed for launch.",
+  "p": 0
+ },
+ {
+  "id": "184",
+  "status": "ask",
+  "q": "Sort notes with pinned first, then newest, with no extra sort options?",
+  "s": "Yes, pinned then newest",
+  "why": "Simple and clear; 50 notes do not need sorting tools.",
+  "p": 0
+ },
+ {
+  "id": "187",
+  "status": "ask",
+  "q": "With explosions off, still let TNT and creepers hurt mobs, but never blocks or players?",
+  "s": "Yes, mobs only, no blocks",
+  "why": "Keeps mob farms working without any block damage.",
+  "p": 0
+ },
+ {
+  "id": "188",
+  "status": "settled",
+  "settled_by": "R3 /is settings",
+  "note": "Time and weather default to day and sunny, changeable per island in /is settings."
+ },
+ {
+  "id": "189",
+  "status": "settled",
+  "settled_by": "#16",
+  "note": "Server time is Oslo (CET/CEST), so real time follows the Oslo clock."
+ },
+ {
+  "id": "190",
+  "status": "ask",
+  "q": "Give players slow falling for up to 10 seconds when they lose island fly mid-air?",
+  "s": "Yes, until they land, max 10 s",
+  "why": "Nobody should die or fall into the void because fly ended.",
+  "p": 0
+ },
+ {
+  "id": "191",
+  "status": "ask",
+  "q": "Allow island fly at any height inside the world, with no extra height limit?",
+  "s": "Yes, no extra limit",
+  "why": "The island border already limits where players can go.",
+  "p": 0
+ },
+ {
+  "id": "192",
+  "status": "ask",
+  "q": "Keep island fly speed the same normal speed for everyone?",
+  "s": "Yes, normal speed",
+  "why": "Faster fly would feel like pay-to-win and break the 6 blocks/s speed cap.",
+  "p": 0
+ },
+ {
+  "id": "193",
+  "status": "ask",
+  "q": "Show a short message to online members when someone changes an island setting?",
+  "s": "Yes, members only",
+  "why": "Teams know why mobs or weather changed; visitors do not need it.",
+  "p": 0
+ },
+ {
+  "id": "194",
+  "status": "ask",
+  "q": "Show the default value of each setting and a 'Reset to defaults' button in island settings?",
+  "s": "Yes, show defaults and reset button",
+  "why": "Players fix a messed-up island in one click.",
+  "p": 0
+ },
+ {
+  "id": "196",
+  "status": "ask",
+  "q": "Show visitors only level, visitor count and rating, with members seeing all island stats?",
+  "s": "Yes, members see everything",
+  "why": "Income and farm stats stay private to the team.",
+  "p": 0
+ },
+ {
+  "id": "197",
+  "status": "ask",
+  "q": "Keep money earned by members who later left in the island stats?",
+  "s": "Yes, island history stays",
+  "why": "Stats describe the island's history, which should not shrink.",
+  "p": 0
+ },
+ {
+  "id": "198",
+  "status": "ask",
+  "q": "Let the leader see a 'last season' archive of their island stats after the reset?",
+  "s": "Yes, read-only archive",
+  "why": "Matches V2 (value history kept per season) and gives players pride.",
+  "p": 0
+ },
+ {
+  "id": "199",
+  "status": "ask",
+  "q": "Use island stats for the weekly competition, counting each player's best profile only?",
+  "s": "Yes, best profile only",
+  "why": "Same rule as all leaderboards (P7); stops triple entries from profiles.",
+  "p": 0
+ },
+ {
+  "id": "200",
+  "status": "ask",
+  "q": "Add an optional top miner and top builder hologram that leaders can place on islands, later?",
+  "s": "Yes, later",
+  "why": "Fun team pride; not needed for launch.",
+  "p": 0
+ },
+ {
+  "id": "201",
+  "status": "ask",
+  "q": "Post a Monday island chat line naming last week's top member, with no reward?",
+  "s": "Yes, mention only",
+  "why": "Small praise motivates; no reward means nothing to farm.",
+  "p": 0
+ },
+ {
+  "id": "202",
+  "status": "ask",
+  "q": "Add a Top items screen showing island money earned per item type?",
+  "s": "Yes, add Top items screen",
+  "why": "Helps teams plan which farms pay best; good for synergy.",
+  "p": 0
+ },
+ {
+  "id": "205",
+  "status": "ask",
+  "q": "Let an island Admin take over a team island after the leader has been offline 14 days?",
+  "s": "Yes, after 14 days",
+  "why": "30 days is a third of a season; teams should not be stuck that long.",
+  "p": 0
+ },
+ {
+  "id": "206",
+  "status": "ask",
+  "q": "Add three permission presets (Friends only, Strict, Open) that the leader can then adjust?",
+  "s": "Yes, 3 presets",
+  "why": "Fast setup for new leaders; Bedrock players avoid many clicks.",
+  "p": 0
+ },
+ {
+  "id": "207",
+  "status": "ask",
+  "q": "Keep coop players' access for 5 minutes after the last Leader or Mod logs out?",
+  "s": "Yes, 5 minutes",
+  "why": "Avoids kicking helpers mid-task when a leader briefly relogs.",
+  "p": 0
+ },
+ {
+  "id": "208",
+  "status": "ask",
+  "q": "Keep coop access until removed or no Leader/Mod is online, with no 24-hour renewal?",
+  "s": "Yes, no renewal",
+  "why": "No busywork; coop already ends when leaders go offline.",
+  "p": 0
+ },
+ {
+  "id": "209",
+  "status": "ask",
+  "q": "Let leaders kick members with an optional reason, not a required one?",
+  "s": "Yes, optional reason",
+  "why": "Staff can restore kicked members from backup anyway (251).",
+  "p": 0
+ },
+ {
+  "id": "210",
+  "status": "ask",
+  "q": "Keep a 30-day team history of joins, leaves, promotions, demotions and kicks?",
+  "s": "Yes, 30 days",
+  "why": "Settles team disputes fast for leaders and staff.",
+  "p": 0
+ },
+ {
+  "id": "211",
+  "status": "ask",
+  "q": "Skip a 'Report invite spam' button, since /ignore already blocks invites from that player?",
+  "s": "Yes, /ignore and /report",
+  "why": "Avoids duplicate tools; /ignore blocks invites (316).",
+  "p": 0
+ },
+ {
+  "id": "212",
+  "status": "ask",
+  "q": "Show coop players with no special marker in chat or tab?",
+  "s": "Yes, no marker",
+  "why": "Coop is temporary; a marker adds clutter without real use.",
+  "p": 0
+ },
+ {
+  "id": "213",
+  "status": "ask",
+  "q": "Send island invites to online players only, expiring after 5 minutes?",
+  "s": "Yes, online only, 5 minutes",
+  "why": "Simple and safe; players accept from the invites menu right away.",
+  "p": 0
+ },
+ {
+  "id": "216",
+  "status": "ask",
+  "q": "Keep five warp categories: shops, farms, parkour, builds and other?",
+  "s": "Yes, these five",
+  "why": "Covers what island warps are used for; short list browses fast.",
+  "p": 0
+ },
+ {
+  "id": "217",
+  "status": "ask",
+  "q": "Give every island 3 warps, with more from island upgrades?",
+  "s": "Yes, 3 plus upgrades",
+  "why": "A clear base; rank extras are decided in the RANKS plan.",
+  "p": 0
+ },
+ {
+  "id": "218",
+  "status": "ask",
+  "q": "Let public warps go live without staff approval, using reports and staff hiding instead?",
+  "s": "Yes, no approval",
+  "why": "No waiting; the filter and reports catch abuse.",
+  "p": 0
+ },
+ {
+  "id": "219",
+  "status": "ask",
+  "q": "Forbid entry fees on warps, so shops earn only from their chest shops?",
+  "s": "Yes, no fees",
+  "why": "Fees scare visitors away; chest shops are already taxed 5%.",
+  "p": 0
+ },
+ {
+  "id": "220",
+  "status": "ask",
+  "q": "Show 'Visits this week' on each warp in the warp menu?",
+  "s": "Yes, show weekly visits",
+  "why": "Helps players find popular shops and builds.",
+  "p": 0
+ },
+ {
+  "id": "221",
+  "status": "ask",
+  "q": "Send players to the nearest safe spot inside the border when a warp is blocked or over void?",
+  "s": "Yes, nearest safe spot",
+  "why": "Nobody dies or lands in the void by accident.",
+  "p": 0
+ },
+ {
+  "id": "222",
+  "status": "ask",
+  "q": "Add a Warps permission that is on for members by default, with only the leader making warps public?",
+  "s": "Yes, on for members",
+  "why": "Matches default member rights (269); public stays controlled (214).",
+  "p": 0
+ },
+ {
+  "id": "223",
+  "status": "ask",
+  "q": "Count only /sell money as island income in stats, not auction sales or interest?",
+  "s": "Yes, only selling",
+  "why": "Auction money moves between players; only selling brings new money in.",
+  "p": 0
+ },
+ {
+  "id": "224",
+  "status": "ask",
+  "q": "Keep island stats for mined, chopped, harvested, placed, mobs, visitors, sold, money and bosses, adding fish later?",
+  "s": "Yes, add fish with fishing",
+  "why": "Covers every activity; fish come when fishing arrives.",
+  "p": 0
+ },
+ {
+  "id": "227",
+  "status": "ask",
+  "q": "Keep island stats by day for 35 days, by week for 2 years and totals forever?",
+  "s": "Yes, 35 days, 2 years, forever",
+  "why": "Enough for graphs and season archives without big storage.",
+  "p": 0
+ },
+ {
+  "id": "228",
+  "status": "settled",
+  "settled_by": "265",
+  "note": "Helpers and mods view island info; resets are for admins only."
+ },
+ {
+  "id": "229",
+  "status": "settled",
+  "settled_by": "P2",
+  "note": "Profiles are islands, so stats are per island and island leaderboards rank islands."
+ },
+ {
+  "id": "231",
+  "status": "ask",
+  "q": "Keep island chat for members only, without coop players and visitors?",
+  "s": "Yes, members only",
+  "why": "Team talk stays private; coop players use public chat or messages.",
+  "p": 0
+ },
+ {
+  "id": "232",
+  "status": "ask",
+  "q": "Let island chat keep working during /mutechat and slow mode, while mutes and filters still apply?",
+  "s": "Yes, lock and slow mode skipped",
+  "why": "Teams can still plan during a chat lock; muted players stay muted.",
+  "p": 0
+ },
+ {
+  "id": "233",
+  "status": "ask",
+  "q": "Give island chat its own staff spy switch, separate from /socialspy, for mods and up?",
+  "s": "Yes, separate, mods and up",
+  "why": "Matches 149 (no helpers); staff choose what they watch.",
+  "p": 0
+ },
+ {
+  "id": "234",
+  "status": "ask",
+  "q": "Turn the island chat toggle off again after relog and profile switch?",
+  "s": "Yes, off on relog",
+  "why": "Stops players typing private team plans into the wrong chat.",
+  "p": 0
+ },
+ {
+  "id": "235",
+  "status": "ask",
+  "q": "Add a filtered island name and short description, shown in the visit browser?",
+  "s": "Yes, before launch",
+  "why": "Makes the browser useful and gives islands identity.",
+  "p": 0
+ },
+ {
+  "id": "237",
+  "status": "ask",
+  "q": "Let staff read notes of removed islands only through /logs, read-only and logged?",
+  "s": "Yes, through /logs",
+  "why": "One staff tool instead of a new command.",
+  "p": 0
+ },
+ {
+  "id": "238",
+  "status": "ask",
+  "q": "Let muted players still write island notes, which only their team sees?",
+  "s": "Yes, notes allowed while muted",
+  "why": "Notes are private to the team, so a mute need not block them.",
+  "p": 0
+ },
+ {
+  "id": "239",
+  "status": "ask",
+  "q": "Delete notes only from the menu, with the temporary edit book closing after 5 minutes?",
+  "s": "Yes, menu-only deletion",
+  "why": "Prevents notes being deleted by accident in the book.",
+  "p": 0
+ },
+ {
+  "id": "240",
+  "status": "drop",
+  "note": "Duplicate of 181; the line already exists (N5)."
+ },
+ {
+  "id": "244",
+  "status": "settled",
+  "settled_by": "R3 /is settings",
+  "note": "Mob spawning and fire spread are off per island by default; how it is wired is technical."
+ },
+ {
+  "id": "245",
+  "status": "drop",
+  "note": "Pure info: Minecraft cannot show a storm to one player only."
+ },
+ {
+  "id": "248",
+  "status": "drop",
+  "note": "Implementation detail: one switch avoids two settings that disagree."
+ },
+ {
+  "id": "249",
+  "status": "ask",
+  "q": "Limit visitor alerts to arrivals, leaves and knocking, with member changes always announced?",
+  "s": "Yes, arrivals, leaves and knocks",
+  "why": "Enough to know who is around without spam.",
+  "p": 0
+ },
+ {
+  "id": "250",
+  "status": "ask",
+  "q": "Let 'crop trampling off' also protect farmland from members, not just visitors?",
+  "s": "Yes, protect from members too",
+  "why": "Nobody wants their team to break farms by jumping.",
+  "p": 0
+ },
+ {
+  "id": "253",
+  "status": "drop",
+  "note": "GUI layout detail; the resource pack will skin all menus later."
+ },
+ {
+  "id": "256",
+  "status": "ask",
+  "q": "Allow up to 4 coop players per island, who may coop on several islands?",
+  "s": "Yes, 4 per island",
+  "why": "Enough help for building days; coop has no lasting rights.",
+  "p": 0
+ },
+ {
+  "id": "257",
+  "status": "ask",
+  "q": "Keep /is go for your own island home and /is visit for other islands?",
+  "s": "Yes, /is go and /is visit",
+  "why": "Clear words; /is alone opens the menu (230).",
+  "p": 0
+ },
+ {
+  "id": "262",
+  "status": "ask",
+  "q": "Let staff add a member to an island without it counting as one of that player's season joins?",
+  "s": "Yes, staff adds never count",
+  "why": "Staff fixes should never cost the player anything.",
+  "p": 0
+ },
+ {
+  "id": "264",
+  "status": "drop",
+  "note": "Technical clearing detail; no owner choice needed."
+ },
+ {
+  "id": "266",
+  "status": "drop",
+  "note": "Outdated: teams exist now, and /is opens the island menu (230)."
+ },
+ {
+  "id": "270",
+  "status": "ask",
+  "q": "Stop players walking, flying or being pushed out of their island border?",
+  "s": "Yes, keep players inside",
+  "why": "Falling outside the border means void deaths and stuck players.",
+  "p": 0
+ },
+ {
+  "id": "272",
+  "status": "ask",
+  "q": "Let only the leader and island Admins move the island home?",
+  "s": "Yes, leader and Admins",
+  "why": "Home is where everyone lands; keep it in trusted hands.",
+  "p": 0
+ },
+ {
+  "id": "274",
+  "status": "settled",
+  "settled_by": "267, 268",
+  "note": "Build bypass is admins only and switches off at relog."
+ },
+ {
+  "id": "277",
+  "status": "drop",
+  "note": "Duplicate of 222 (Warps permission)."
+ },
+ {
+  "id": "279",
+  "status": "ask",
+  "q": "Let leaders set a separate visitor spawn, instead of visitors landing at the island home?",
+  "s": "Yes, separate visitor spawn",
+  "why": "Leaders choose the first impression and keep farms and storage private.",
+  "p": 0
+ },
+ {
+  "id": "283",
+  "status": "ask",
+  "q": "Turn all visitor alerts on by default, at most one per visitor every 30 seconds?",
+  "s": "Yes, all on",
+  "why": "Leaders see who visits; the limit stops spam.",
+  "p": 0
+ },
+ {
+  "id": "286",
+  "status": "ask",
+  "q": "Block editing warp signs, so a warp is deleted only by breaking its sign?",
+  "s": "Yes, break sign to delete",
+  "why": "Stops warps pointing somewhere their sign does not say.",
+  "p": 0
+ },
+ {
+  "id": "287",
+  "status": "ask",
+  "q": "Make the /menu Warps button open island warps, with server places reached from /spawn?",
+  "s": "Yes, island warps",
+  "why": "Player warps drive visits and shops; server places live at spawn.",
+  "p": 0
+ },
+ {
+  "id": "288",
+  "status": "ask",
+  "q": "Let /is setwarp with an existing name move that warp, keeping its icon and visits?",
+  "s": "Yes, move and keep history",
+  "why": "Players fix a warp without losing its history.",
+  "p": 0
+ },
+ {
+  "id": "294",
+  "status": "ask",
+  "q": "Let players visit an island while all its members are offline?",
+  "s": "Yes, open as a showcase",
+  "why": "More islands to browse; protection still applies.",
+  "p": 0
+ },
+ {
+  "id": "295",
+  "status": "settled",
+  "settled_by": "282",
+  "note": "Top rated needs at least 3 ratings."
+ },
+ {
+  "id": "296",
+  "status": "settled",
+  "settled_by": "414",
+  "note": "Islands are wiped at season reset, so ratings and likes reset with them."
+ },
+ {
+  "id": "297",
+  "status": "ask",
+  "q": "Keep island bans permanent until the island unbans the player, up to 100 bans per island?",
+  "s": "Yes, permanent, max 100",
+  "why": "Simple for leaders; staff can still act on abuse.",
+  "p": 0
+ },
+ {
+  "id": "298",
+  "status": "ask",
+  "q": "Show leaders and staff a log of the last 50 visitors in island stats?",
+  "s": "Yes, last 50 visitors",
+  "why": "Helps find griefers and thieves after the fact.",
+  "p": 0
+ },
+ {
+  "id": "300",
+  "status": "ask",
+  "q": "Let visitors teleport straight to an island's public warps and use its chest shops there?",
+  "s": "Yes, direct warp visits",
+  "why": "Shops and builds need easy visits for a busy economy.",
+  "p": 0
+ },
+ {
+  "id": "832",
+  "status": "ask",
+  "q": "Make blueprint drops rarer, about 1 in 50,000 blocks, instead of 1 in 15,000 to 20,000?",
+  "s": "Yes, about 1 in 50,000",
+  "why": "300 players would flood the auction house within a week at the current rate.",
+  "p": 1
+ },
+ {
+  "id": "833",
+  "status": "ask",
+  "q": "Let blueprints be traded and listed on the auction house?",
+  "s": "Yes, tradeable and auctionable",
+  "why": "Rare tradeable drops give money a purpose and keep the auction house busy.",
+  "p": 1
+ },
+ {
+  "id": "834",
+  "status": "ask",
+  "q": "Let a blueprint tool be forged to higher tiers and keep its ability?",
+  "s": "Yes, ability stays",
+  "why": "Losing the ability on forge would punish progress.",
+  "p": 1
+ },
+ {
+  "id": "835",
+  "status": "ask",
+  "q": "Get skins from crates, events and achievements, plus seasonal skins sold for gems?",
+  "s": "Yes, add seasonal gem skins",
+  "why": "Cosmetics are the fairest donation item; earned skins keep their prestige.",
+  "p": 1
+ },
+ {
+  "id": "836",
+  "status": "ask",
+  "q": "Let skins be turned into a tradeable skin token that another player can redeem?",
+  "s": "Yes, skin tokens",
+  "why": "Cosmetic trading gives the economy more to buy and sell.",
+  "p": 1
+ },
+ {
+  "id": "837",
+  "status": "ask",
+  "q": "Hide tool skins until the resource pack exists, instead of showing name-only skins?",
+  "s": "Yes, hide until the pack",
+  "why": "Skins that look the same feel broken; the forced pack comes before launch.",
+  "p": 1
+ },
+ {
+  "id": "838",
+  "status": "ask",
+  "q": "Add four more blueprint abilities later: double XP streak, treasure sense, vein magnet and soul harvest?",
+  "s": "Yes, later",
+  "why": "New abilities refresh the hunt in later seasons.",
+  "p": 0
+ },
+ {
+  "id": "839",
+  "status": "ask",
+  "q": "Allow only one blueprint ability on each custom tool, never two?",
+  "s": "Yes, one ability",
+  "why": "Keeps tools balanced and every ability meaningful.",
+  "p": 0
+ },
+ {
+  "id": "840",
+  "status": "ask",
+  "q": "Add skins for armor sets later, together with the resource pack?",
+  "s": "Yes, with the resource pack",
+  "why": "Set skins need custom textures, which the pack brings.",
+  "p": 0
+ },
+ {
+  "id": "841",
+  "status": "ask",
+  "q": "Let each skin fit only one tool type group, such as pickaxes?",
+  "s": "Yes, one tool group",
+  "why": "Each skin is drawn for one tool shape.",
+  "p": 0
+ },
+ {
+  "id": "842",
+  "status": "ask",
+  "q": "Turn the Vitality armor enchant fully off in the warzone instead of giving half effect?",
+  "s": "Yes, off in warzone",
+  "why": "Extra hearts decide PvP fights too much; Fortitude still works there.",
+  "p": 0
+ },
+ {
+  "id": "844",
+  "status": "settled",
+  "settled_by": "P3",
+  "note": "Nothing is lost by accident: books always come back, even past a full chest."
+ },
+ {
+  "id": "845",
+  "status": "ask",
+  "q": "Allow an armor merge when an enchant was removed, refunding that enchant as crystals?",
+  "s": "Yes, refund as crystals",
+  "why": "The player is never stuck and nothing is lost.",
+  "p": 0
+ },
+ {
+  "id": "846",
+  "status": "ask",
+  "q": "Let armor enchant books be applied once a set reaches level 1?",
+  "s": "Yes, from set level 1",
+  "why": "Level 0 gives nothing, so level 1 is the natural start.",
+  "p": 0
+ },
+ {
+  "id": "847",
+  "status": "ask",
+  "q": "Let Vitality and Fortitude change max health and mob damage taken, counting with set bonuses?",
+  "s": "Yes, inside the shared caps",
+  "why": "One cap per bonus family keeps them balanced.",
+  "p": 0
+ },
+ {
+  "id": "848",
+  "status": "ask",
+  "q": "Give Phoenix Rebirth a 10-minute cooldown that survives both relogs and restarts?",
+  "s": "Yes, survives restarts too",
+  "why": "One clear rule; no relog or restart tricks.",
+  "p": 0
+ },
+ {
+  "id": "849",
+  "status": "ask",
+  "q": "Give sword tool XP for killing spawner mobs, at 10% of the normal rate?",
+  "s": "Yes, 10% of normal",
+  "why": "Island spawner players can level swords without spawners beating real combat.",
+  "p": 0
+ },
+ {
+  "id": "850",
+  "status": "ask",
+  "q": "Limit Reaper's Sweep and Phoenix Wrath to stacks on the same island and of the same mob group?",
+  "s": "Yes, same island and group",
+  "why": "Never bypasses island protection.",
+  "p": 0
+ },
+ {
+  "id": "851",
+  "status": "ask",
+  "q": "Make stack-kill books 60% Uncommon and 40% Rare, with level I 85%, II 12%, III 3%?",
+  "s": "Yes, as described",
+  "why": "Common enough to feel, rare enough to trade.",
+  "p": 1
+ },
+ {
+  "id": "852",
+  "status": "ask",
+  "q": "Pay Combat XP per mob in Slaughter, Sweep and Wrath batches, but never for spawner mobs?",
+  "s": "Yes, never for spawner mobs",
+  "why": "Matches 919: spawner mobs give no Combat XP.",
+  "p": 0
+ },
+ {
+  "id": "853",
+  "status": "ask",
+  "q": "Make Gilded Touch double the block's drop until real Gilded items exist?",
+  "s": "Yes, double the drop",
+  "why": "Works now without waiting for new items.",
+  "p": 0
+ },
+ {
+  "id": "854",
+  "status": "ask",
+  "q": "Give no skill or tool XP for blocks broken by area enchants?",
+  "s": "Yes, no XP",
+  "why": "The balance sheet counts it this way; drops and books still come.",
+  "p": 0
+ },
+ {
+  "id": "855",
+  "status": "ask",
+  "q": "Keep enchant book drops in The Depths only, not from island ores and trees?",
+  "s": "Yes, Depths only",
+  "why": "Keeps The Depths the main place for books and money.",
+  "p": 0
+ },
+ {
+  "id": "856",
+  "status": "ask",
+  "q": "Keep speed bursts like Ember Momentum and Phoenix Haste off above 6 blocks per second?",
+  "s": "Yes, 6 blocks/s cap",
+  "why": "Stops instant-mining that breaks the economy and the server.",
+  "p": 0
+ },
+ {
+  "id": "857",
+  "status": "ask",
+  "q": "Drop Depths enchant books only when mining with that wing's custom tool?",
+  "s": "Yes, custom tool only",
+  "why": "Gives Forge tools real value and stops cheap vanilla farming.",
+  "p": 1
+ },
+ {
+  "id": "858",
+  "status": "ask",
+  "q": "Let mob damage enchants work on every melee hit on mobs, with only Phoenix Edge at 40% on players?",
+  "s": "Yes, Phoenix Edge 40% on players",
+  "why": "PvE power without breaking PvP.",
+  "p": 0
+ },
+ {
+  "id": "859",
+  "status": "ask",
+  "q": "Allow normal enchants in the prestige slot, but not as the second slot of a 2-slot enchant?",
+  "s": "Yes, not as second slot",
+  "why": "Keeps the prestige slot flexible without loopholes.",
+  "p": 0
+ },
+ {
+  "id": "860",
+  "status": "drop",
+  "note": "Covered by 880 (approve all enchant names); the name fits on Bedrock."
+ },
+ {
+  "id": "861",
+  "status": "ask",
+  "q": "Cap extra mining speed from enchants at +200%?",
+  "s": "Yes, +200%",
+  "why": "The 6 blocks/s hard cap stays; this keeps tool levels meaningful.",
+  "p": 0
+ },
+ {
+  "id": "862",
+  "status": "ask",
+  "q": "Count Prosperity as extra fortune on the tool until proper drop rolls exist?",
+  "s": "Yes, as extra fortune",
+  "why": "Works now; same effect for the player.",
+  "p": 0
+ },
+ {
+  "id": "863",
+  "status": "ask",
+  "q": "Make Enchanter book rolls give level I books from Mining, Foraging and Combat only for now?",
+  "s": "Yes, Farming and Fishing later",
+  "why": "Only those skills exist now.",
+  "p": 0
+ },
+ {
+  "id": "864",
+  "status": "ask",
+  "q": "Unlock better Enchanter roll tiers by skill level, like Forge and Depths tiers?",
+  "s": "Yes, tiers by skill level",
+  "why": "One progression rule players already know.",
+  "p": 0
+ },
+ {
+  "id": "865",
+  "status": "ask",
+  "q": "Mark an enchant as seen in the guide when you get, use or hold its book at the Enchanter?",
+  "s": "Yes, seen on get, use or hold",
+  "why": "Mythics stay a secret until found.",
+  "p": 0
+ },
+ {
+  "id": "866",
+  "status": "settled",
+  "settled_by": "130, P2",
+  "note": "The enchant collection is per profile, like the collection log."
+ },
+ {
+  "id": "867",
+  "status": "drop",
+  "note": "Rounding detail; no owner choice needed."
+ },
+ {
+  "id": "868",
+  "status": "ask",
+  "q": "Let books unlock an enchant and crystals raise its level, each step costing 1.8x the last?",
+  "s": "Yes, x1.8 per level step",
+  "why": "Gives crystals a long-term use; combining books stays cheaper.",
+  "p": 1
+ },
+ {
+  "id": "869",
+  "status": "ask",
+  "q": "Make enchant books and Disenchant Scrolls tradeable and auctionable, but never sold for gems?",
+  "s": "Yes, tradeable, never for gems",
+  "why": "Healthy trading without pay-to-win.",
+  "p": 1
+ },
+ {
+  "id": "870",
+  "status": "ask",
+  "q": "Allow Mythic enchants only in the prestige slot, with Dragonfire Blast and Wildfire using two slots?",
+  "s": "Yes, prestige slot only",
+  "why": "At most one Mythic per tool keeps power in check.",
+  "p": 0
+ },
+ {
+  "id": "871",
+  "status": "ask",
+  "q": "Limit enchant level by tool level, so a level 25 tool reaches half the max enchant level?",
+  "s": "Yes, tool level gates enchants",
+  "why": "Ties enchants and tool levels into one progression.",
+  "p": 1
+ },
+ {
+  "id": "872",
+  "status": "ask",
+  "q": "Give enchants no fail chance, with Disenchant Scrolls returning the book and a 20% crystal refund without one?",
+  "s": "Yes, no fail chance",
+  "why": "No gambling frustration; scrolls give crystals a use.",
+  "p": 1
+ },
+ {
+  "id": "873",
+  "status": "ask",
+  "q": "Sell Enchanter book rolls for 500, 4,000 and 25,000 crystals, 5, 5 and 3 per day, never Mythic?",
+  "s": "Yes, up to 10% Legendary",
+  "why": "Steady crystal sink; drops stay the main book source.",
+  "p": 1
+ },
+ {
+  "id": "874",
+  "status": "ask",
+  "q": "Drop Slaughter, Soul Reaper, Bloodlust and Plunder books from stacked kills at 1 in 25,000, max 5 a day?",
+  "s": "Yes, 1 in 25,000, max 5 daily",
+  "why": "Gives spawner islands their own book source without flooding.",
+  "p": 1
+ },
+ {
+  "id": "875",
+  "status": "ask",
+  "q": "Cap enchant bonuses at crystals +200%, drops +200%, skill XP +300%, tool XP +100%, rare finds +150%?",
+  "s": "Yes, as listed",
+  "why": "One cap per family keeps a 300-player economy stable.",
+  "p": 1
+ },
+ {
+  "id": "876",
+  "status": "ask",
+  "q": "In the warzone and duels, cut damage enchants to 40%, healing to 50%, and turn off area and movement enchants?",
+  "s": "Yes, 40% damage, 50% healing",
+  "why": "PvP stays about skill, not grind.",
+  "p": 1
+ },
+ {
+  "id": "877",
+  "status": "ask",
+  "q": "Give armor pieces 1 enchant slot, a 2nd at set level 25, and a Mythic chest slot at 50?",
+  "s": "Yes, 1 slot, 2nd at 25, Mythic at 50",
+  "why": "Ups along the set level curve keep players motivated.",
+  "p": 0
+ },
+ {
+  "id": "878",
+  "status": "ask",
+  "q": "Add admin-only Enchanter commands to give, apply and clear enchants, all logged?",
+  "s": "Yes, admins only, logged",
+  "why": "Staff need tools to fix broken items and test balance.",
+  "p": 0
+ },
+ {
+  "id": "879",
+  "status": "settled",
+  "settled_by": "118",
+  "note": "You can never buy listings made by your own other profiles."
+ },
+ {
+  "id": "880",
+  "status": "ask",
+  "q": "Approve the 48 enchant names in the enchants plan, like Swiftness, Vein Rend and Dragonfire Blast?",
+  "s": "Yes, approve all 48",
+  "why": "Names fit the theme and Bedrock length.",
+  "p": 0
+ },
+ {
+  "id": "881",
+  "status": "ask",
+  "q": "Keep Mythic enchant books tradeable on the auction house instead of binding them to the first owner?",
+  "s": "Yes, tradeable, logged as unique",
+  "why": "Mythic keys are earned only; top-end trades keep money valuable.",
+  "p": 1
+ },
+ {
+  "id": "882",
+  "status": "settled",
+  "settled_by": "128, P2",
+  "note": "Daily Enchanter roll limits are per profile, like crystals and daily rewards."
+ },
+ {
+  "id": "883",
+  "status": "ask",
+  "q": "Show a short value like +12% speed for each enchant in the tool lore?",
+  "s": "Yes, short value",
+  "why": "Compact lores that still tell the truth (P5).",
+  "p": 1
+ },
+ {
+  "id": "884",
+  "status": "ask",
+  "q": "Let the Enchanter buy back unwanted books for crystals at 10% of their apply cost?",
+  "s": "Yes, 10%",
+  "why": "Junk books get a use without beating the auction house.",
+  "p": 0
+ },
+ {
+  "id": "885",
+  "status": "ask",
+  "q": "Skip a free enchant re-spec each season, using Disenchant Scrolls instead?",
+  "s": "Yes, no free re-spec",
+  "why": "Scrolls already return books; a free reset would cut the crystal sink.",
+  "p": 0
+ },
+ {
+  "id": "886",
+  "status": "ask",
+  "q": "Put one common enchant book in the starter kit for every new profile?",
+  "s": "Yes, in the starter kit",
+  "why": "Teaches enchanting early during the tutorial.",
+  "p": 0
+ },
+ {
+  "id": "887",
+  "status": "ask",
+  "q": "Show the total crystal cost to max each enchant in the enchant guide?",
+  "s": "Yes, per enchant",
+  "why": "Players can plan their crystals.",
+  "p": 0
+ },
+ {
+  "id": "889",
+  "status": "ask",
+  "q": "Skip a rare overcharge item that pushes enchants above the tool's level limit?",
+  "s": "Yes, no overcharge",
+  "why": "Tool levels stay the one way to grow enchants.",
+  "p": 0
+ },
+ {
+  "id": "890",
+  "status": "ask",
+  "q": "Add no new enchants during a season, only between seasons?",
+  "s": "Yes, only between seasons",
+  "why": "Keeps balance stable; seasons stay fair from start to end.",
+  "p": 0
+ },
+ {
+  "id": "891",
+  "status": "ask",
+  "q": "Take Forge materials from the inventory, satchel and island storage together?",
+  "s": "Yes, all three",
+  "why": "From tier 10 the amounts do not fit an inventory; no busywork.",
+  "p": 1
+ },
+ {
+  "id": "892",
+  "status": "ask",
+  "q": "Use vanilla items in Forge recipes until the Depths drops exist?",
+  "s": "Yes, placeholders for now",
+  "why": "Lets Forge be tested now; swap when drops exist.",
+  "p": 1
+ },
+ {
+  "id": "893",
+  "status": "ask",
+  "q": "Keep tier 11 and 12 pickaxes at +60 and +120 mining power, tuning after an in-game test?",
+  "s": "Yes, tune after testing",
+  "why": "Real play shows if low ores become too instant.",
+  "p": 0
+ },
+ {
+  "id": "894",
+  "status": "drop",
+  "note": "Moves into the TUTORIAL plan: the starter kit is handed out as a tutorial step."
+ },
+ {
+  "id": "895",
+  "status": "drop",
+  "note": "Depends on 836 (skin tokens); staff detail, no separate choice."
+ },
+ {
+  "id": "896",
+  "status": "ask",
+  "q": "Restart the +1% per level speed bonus from level 1 after a tool prestiges?",
+  "s": "Yes, restart at level 1",
+  "why": "A down that motivates: the tool levels again stronger.",
+  "p": 0
+ },
+ {
+  "id": "897",
+  "status": "ask",
+  "q": "Give fortune only from the tool tier, +5% per tier, with none per tool level?",
+  "s": "Yes, +5% per tier only",
+  "why": "Keeps fortune easy to balance in the economy.",
+  "p": 0
+ },
+ {
+  "id": "898",
+  "status": "ask",
+  "q": "Give no extra tool XP for higher tool tiers?",
+  "s": "Yes, no tier XP bonus",
+  "why": "Higher tiers already mine faster, which gives more XP.",
+  "p": 0
+ },
+ {
+  "id": "899",
+  "status": "ask",
+  "q": "Start with four blueprints: Sage Pickaxe, Magma Pickaxe, Windcutter Axe and Vampire Blade?",
+  "s": "Yes, these four",
+  "why": "Covers mining, foraging and combat at launch.",
+  "p": 1
+ },
+ {
+  "id": "900",
+  "status": "ask",
+  "q": "Keep hoes and fishing rods at the starter tier until farming and fishing arrive?",
+  "s": "Yes, starter tier for now",
+  "why": "Nothing to upgrade them for yet.",
+  "p": 0
+ },
+ {
+  "id": "901",
+  "status": "ask",
+  "q": "Block dropping custom tools on the ground, so they move only by trade or auction?",
+  "s": "Yes, block dropping",
+  "why": "Nothing lost by accident (P3); no drop-scams.",
+  "p": 1
+ },
+ {
+  "id": "902",
+  "status": "ask",
+  "q": "Keep prestiged custom tools tradeable between players instead of making them soulbound?",
+  "s": "Yes, tradeable",
+  "why": "Valuable tools give the economy its top end.",
+  "p": 1
+ },
+ {
+  "id": "903",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (prestige title); the skin part follows the skins answers."
+ },
+ {
+  "id": "904",
+  "status": "settled",
+  "settled_by": "414",
+  "note": "Season reset wipes player data, so tools are forged again each season."
+ },
+ {
+  "id": "905",
+  "status": "ask",
+  "q": "Let players rename custom tools with a cheap Name Token, run through the filter?",
+  "s": "Yes, filtered Name Token",
+  "why": "Fun personal touch; the filter stops abuse.",
+  "p": 0
+ },
+ {
+  "id": "906",
+  "status": "drop",
+  "note": "Moves into the RANKS plan (rank discounts)."
+ },
+ {
+  "id": "907",
+  "status": "ask",
+  "q": "Show a weekly tool leaderboard on holograms in the Hall of Heroes?",
+  "s": "Yes, weekly",
+  "why": "Fresh weekly races keep players motivated.",
+  "p": 0
+ },
+ {
+  "id": "908",
+  "status": "ask",
+  "q": "Open the tool menu with shift+right-click, plus /tool and a switch to turn the click off?",
+  "s": "Yes, add /tool and off switch",
+  "why": "Fast for Java, reachable for Bedrock.",
+  "p": 0
+ },
+ {
+  "id": "909",
+  "status": "ask",
+  "q": "Allow holding any number of custom tools of the same type?",
+  "s": "Yes, no limit",
+  "why": "Players own a mining and a spawner kit; loadouts swap them.",
+  "p": 0
+ },
+ {
+  "id": "910",
+  "status": "ask",
+  "q": "Give the starter kit once per profile each season?",
+  "s": "Yes, once per profile",
+  "why": "Every profile is a fresh island, like start money (121).",
+  "p": 0
+ },
+ {
+  "id": "911",
+  "status": "ask",
+  "q": "Keep skill level 150 as a far goal, with only 2% extra cost per level after 66?",
+  "s": "Yes, 150 cap, +2% after 66",
+  "why": "Top players stay busy all season without hitting a wall.",
+  "p": 1
+ },
+ {
+  "id": "912",
+  "status": "ask",
+  "q": "Make staff /skills set and add work in levels, for offline players too?",
+  "s": "Yes, offline too",
+  "why": "Staff fix mistakes without waiting for the player.",
+  "p": 0
+ },
+ {
+  "id": "913",
+  "status": "drop",
+  "note": "Moves into the TITLES plan; the free rank is also being renamed (390)."
+ },
+ {
+  "id": "914",
+  "status": "drop",
+  "note": "Moves into the RANKS plan; the free rank gets a few small perks (RW4)."
+ },
+ {
+  "id": "915",
+  "status": "ask",
+  "q": "Use a breeze rod as the staff Punish tool, since Inspect uses the blaze rod?",
+  "s": "Yes, breeze rod",
+  "why": "Easy to tell apart and retexturable later.",
+  "p": 0
+ },
+ {
+  "id": "916",
+  "status": "settled",
+  "settled_by": "#16",
+  "note": "All times use Oslo time (CET/CEST)."
+ },
+ {
+  "id": "917",
+  "status": "settled",
+  "settled_by": "#65",
+  "note": "Max skill level is 150."
+ },
+ {
+  "id": "918",
+  "status": "ask",
+  "q": "Pay Combat XP per kill at the same XP per hour as mining, from zombie 5 to evoker 1,200?",
+  "s": "Yes, as listed",
+  "why": "Fair: no skill is the fast one to grind.",
+  "p": 1
+ },
+ {
+  "id": "919",
+  "status": "ask",
+  "q": "Give Mining and Foraging XP only in The Depths, and Combat XP from any non-spawner mob?",
+  "s": "Yes, Depths only for gathering XP",
+  "why": "Skills reward active play; islands give money and masteries.",
+  "p": 1
+ },
+ {
+  "id": "920",
+  "status": "ask",
+  "q": "Add a /settings switch for skill XP in the action bar, on by default?",
+  "s": "Yes, on by default",
+  "why": "Player choice, no clutter for those who dislike it.",
+  "p": 0
+ },
+ {
+  "id": "921",
+  "status": "drop",
+  "note": "Logging detail; no owner choice needed."
+ },
+ {
+  "id": "922",
+  "status": "ask",
+  "q": "Let anyone view another player's skills with /skills <player>?",
+  "s": "Yes, public",
+  "why": "Players compare and brag; nothing private.",
+  "p": 1
+ },
+ {
+  "id": "923",
+  "status": "drop",
+  "note": "Crystals are asked in 924; titles move into the TITLES plan."
+ },
+ {
+  "id": "924",
+  "status": "ask",
+  "q": "Give crystals on every skill level-up, with bigger rewards every 5 levels?",
+  "s": "Yes, bigger every 5 levels",
+  "why": "Ups along the way keep players motivated (#61).",
+  "p": 1
+ },
+ {
+  "id": "925",
+  "status": "ask",
+  "q": "Give each skill level a small bonus to its own activity, inside the shared caps?",
+  "s": "Yes, tiny per level",
+  "why": "Levels feel rewarding; family caps keep the economy safe.",
+  "p": 1
+ },
+ {
+  "id": "926",
+  "status": "ask",
+  "q": "Add /skilltop per skill and in total, using each player's best profile?",
+  "s": "Yes, per skill and total",
+  "why": "Same rule as every leaderboard (P7).",
+  "p": 0
+ },
+ {
+  "id": "927",
+  "status": "ask",
+  "q": "Announce only skill level 100 and 150 to the whole server?",
+  "s": "Yes, 100 and 150 only",
+  "why": "Big moments stay special without chat spam.",
+  "p": 0
+ },
+ {
+  "id": "928",
+  "status": "ask",
+  "q": "Show skill average only in the tab hover, not next to names?",
+  "s": "Yes, tab hover only",
+  "why": "Keeps names clean.",
+  "p": 0
+ },
+ {
+  "id": "929",
+  "status": "ask",
+  "q": "Add a global double skill XP booster for events?",
+  "s": "Yes, event double XP",
+  "why": "Events bring players online together.",
+  "p": 0
+ },
+ {
+  "id": "930",
+  "status": "ask",
+  "q": "Start Farming and Fishing XP from zero when those skills arrive?",
+  "s": "Yes, no backfill",
+  "why": "Fair for everyone; no guessing old XP.",
+  "p": 0
+ },
+ {
+  "id": "931",
+  "status": "ask",
+  "q": "Let staff see a player's skill XP per hour in the inspect view?",
+  "s": "Yes, hourly XP history",
+  "why": "Spots macros and exploits fast.",
+  "p": 0
+ },
+ {
+  "id": "932",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (skill titles)."
+ },
+ {
+  "id": "424",
+  "status": "ask",
+  "q": "Let mods decide appeals for bans up to 30 days, with admins deciding longer ones?",
+  "s": "Yes, mods to 30 days",
+  "why": "Matches 480: admins approve bans of 30 days or more.",
+  "p": 0
+ },
+ {
+  "id": "425",
+  "status": "ask",
+  "q": "Limit mods to 10 bans per 5 minutes, with admins only getting an alert?",
+  "s": "Yes; helpers cannot ban anyway",
+  "why": "Stops a hacked mod account; helpers have no bans (523).",
+  "p": 0
+ },
+ {
+  "id": "426",
+  "status": "ask",
+  "q": "Give a staff member stopped by the ban limit a button that alerts an admin?",
+  "s": "Yes, add the button",
+  "why": "Real cleanups continue fast once an admin lifts it.",
+  "p": 0
+ },
+ {
+  "id": "427",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (Honorable title rewards)."
+ },
+ {
+  "id": "428",
+  "status": "ask",
+  "q": "During a lockdown, block players who have not finished the tutorial from /pay, /ah and /trade?",
+  "s": "Yes, until tutorial is done",
+  "why": "The tutorial replaces playtime gates (P4) and stops raid alts moving money.",
+  "p": 0
+ },
+ {
+  "id": "429",
+  "status": "ask",
+  "q": "Let watchlist entries expire after 30 days, with a one-click renew?",
+  "s": "Yes, with renew",
+  "why": "Keeps the list short and current.",
+  "p": 0
+ },
+ {
+  "id": "431",
+  "status": "ask",
+  "q": "Use one rules list that feeds both /rules and the punishment rule titles?",
+  "s": "Yes, one list",
+  "why": "Never out of sync; no double work.",
+  "p": 0
+ },
+ {
+  "id": "432",
+  "status": "settled",
+  "settled_by": "390",
+  "note": "There is no Trainee staff rank."
+ },
+ {
+  "id": "433",
+  "status": "settled",
+  "settled_by": "390",
+  "note": "There is no Trainee staff rank."
+ },
+ {
+  "id": "434",
+  "status": "ask",
+  "q": "Give helpers raid alerts too, since they can start a lockdown?",
+  "s": "Yes, add raid alerts",
+  "why": "Helpers can start lockdowns (459), so they must see raids.",
+  "p": 0
+ },
+ {
+  "id": "435",
+  "status": "ask",
+  "q": "Count the 'flagged alt joined' staff alert as a watchlist alert?",
+  "s": "Yes, as watchlist alert",
+  "why": "Same kind of alert, one switch.",
+  "p": 0
+ },
+ {
+  "id": "436",
+  "status": "drop",
+  "note": "Settings-menu tidy-up; implementation detail."
+ },
+ {
+  "id": "439",
+  "status": "ask",
+  "q": "Count an approved request toward the approver's ban limit, not the requester's?",
+  "s": "Yes, the approver's",
+  "why": "The approver made the final call.",
+  "p": 0
+ },
+ {
+  "id": "440",
+  "status": "ask",
+  "q": "Let /prollback undo only punishments the staff member issued, not ones they approved?",
+  "s": "Yes, own only",
+  "why": "Rollback targets a rogue account's own actions.",
+  "p": 0
+ },
+ {
+  "id": "441",
+  "status": "ask",
+  "q": "Give the report-abuse punishment its own rule number like every other reason?",
+  "s": "Yes, add a rule",
+  "why": "Announcements and ban screens always show a rule number (519).",
+  "p": 0
+ },
+ {
+  "id": "445",
+  "status": "drop",
+  "note": "Report formula detail; no player impact."
+ },
+ {
+  "id": "446",
+  "status": "drop",
+  "note": "Report formula detail; no player impact."
+ },
+ {
+  "id": "447",
+  "status": "settled",
+  "settled_by": "#17",
+  "note": "Discord comes later; it is kept in LATER.md."
+ },
+ {
+  "id": "448",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (Honorable title)."
+ },
+ {
+  "id": "449",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (who gives titles; admins per 397)."
+ },
+ {
+  "id": "452",
+  "status": "ask",
+  "q": "Keep item confiscation only in the /p punish menu, not in the Inspect view?",
+  "s": "Yes, only in /p",
+  "why": "One logged place for taking items.",
+  "p": 0
+ },
+ {
+  "id": "453",
+  "status": "ask",
+  "q": "Keep a staff island kick (player can return) separate from removal from the team?",
+  "s": "Yes, keep both",
+  "why": "Different cases need different tools.",
+  "p": 0
+ },
+ {
+  "id": "454",
+  "status": "ask",
+  "q": "Apply island punishments to the island where the offence happened, not the active profile?",
+  "s": "Yes, the offence island",
+  "why": "Switching profile must never dodge a punishment.",
+  "p": 0
+ },
+ {
+  "id": "456",
+  "status": "ask",
+  "q": "Keep the old griefing punishments and add one for griefing your own team's island?",
+  "s": "Yes, keep both",
+  "why": "Team griefing is common in skyblock and needs its own ladder.",
+  "p": 0
+ },
+ {
+  "id": "457",
+  "status": "ask",
+  "q": "Let admins lift a staff island ban at any time, not only through the 2-minute Undo?",
+  "s": "Yes, admins can pardon",
+  "why": "Mistakes found later must be fixable; matches 509.",
+  "p": 0
+ },
+ {
+  "id": "461",
+  "status": "ask",
+  "q": "Let a lockdown also block accounts that never joined before, even if given a rank?",
+  "s": "Yes; lockdown off lets them in",
+  "why": "Raids often use fresh accounts.",
+  "p": 0
+ },
+ {
+  "id": "462",
+  "status": "drop",
+  "note": "Technical edge case; the safe default applies."
+ },
+ {
+  "id": "463",
+  "status": "ask",
+  "q": "During a lockdown, block players who have not finished the tutorial from /msg, /mail and similar?",
+  "s": "Yes, block private messages too",
+  "why": "Raid bots spam private messages when public chat is locked.",
+  "p": 0
+ },
+ {
+  "id": "464",
+  "status": "ask",
+  "q": "Show an active lockdown as one line on the staff scoreboard?",
+  "s": "Yes, one line while active",
+  "why": "Staff cannot miss it; only relevant lines (Q6).",
+  "p": 0
+ },
+ {
+  "id": "465",
+  "status": "ask",
+  "q": "Count a raid only by first-time joins, with one alert per raid?",
+  "s": "Yes, first joins, one alert",
+  "why": "Fewer false alarms and no alert spam.",
+  "p": 0
+ },
+ {
+  "id": "466",
+  "status": "ask",
+  "q": "Keep anti-cheat punishment suggestions off until you pick the thresholds?",
+  "s": "Yes, off until you choose",
+  "why": "Wrong thresholds would mislead staff.",
+  "p": 0
+ },
+ {
+  "id": "468",
+  "status": "ask",
+  "q": "Keep warnings and kicks on each server, sharing only bans and mutes across the network?",
+  "s": "Yes, bans and mutes shared",
+  "why": "Gamemode-local issues stay local.",
+  "p": 0
+ },
+ {
+  "id": "469",
+  "status": "drop",
+  "note": "Pure info: a mute from another server applies at next join."
+ },
+ {
+  "id": "471",
+  "status": "ask",
+  "q": "Keep bulk punishing in-game only, not from the console?",
+  "s": "Yes, in-game only",
+  "why": "Every bulk action has a named staff member.",
+  "p": 0
+ },
+ {
+  "id": "472",
+  "status": "ask",
+  "q": "Let the bulk menu list online players, with offline names typed in?",
+  "s": "Yes, online list plus typing",
+  "why": "Fast for the usual case, still complete.",
+  "p": 0
+ },
+ {
+  "id": "473",
+  "status": "drop",
+  "note": "Implementation detail; obvious behavior."
+ },
+ {
+  "id": "475",
+  "status": "ask",
+  "q": "Start the 7-day appeal cooldown again after a punishment is reduced?",
+  "s": "Yes, cooldown restarts",
+  "why": "Stops appeal spam right after a reduction.",
+  "p": 0
+ },
+ {
+  "id": "476",
+  "status": "ask",
+  "q": "Let staff reduce an appealed punishment to a new total length, ending it if already served?",
+  "s": "Yes, new total length",
+  "why": "Fair outcome without extra steps.",
+  "p": 0
+ },
+ {
+  "id": "477",
+  "status": "ask",
+  "q": "Ask for confirmation when accepting an appeal and require a reason when denying one?",
+  "s": "Yes, confirm accept, reason deny",
+  "why": "Players deserve a reason; accepts are rarely undone.",
+  "p": 0
+ },
+ {
+  "id": "478",
+  "status": "ask",
+  "q": "Allow appeals only for mutes and bans, not warnings?",
+  "s": "Yes, only mutes and bans",
+  "why": "Warnings carry no penalty on their own.",
+  "p": 0
+ },
+ {
+  "id": "479",
+  "status": "ask",
+  "q": "Make clicking a chat line in /logs open the punish menu instead of teleporting?",
+  "s": "Yes, open the punish menu",
+  "why": "Fast action on evidence.",
+  "p": 0
+ },
+ {
+  "id": "481",
+  "status": "settled",
+  "settled_by": "480, 450",
+  "note": "Mod bans over their limit become admin requests; staff without approval rights are refused."
+ },
+ {
+  "id": "482",
+  "status": "ask",
+  "q": "Let automatic warn rules and the console skip approval?",
+  "s": "Yes, skip approval",
+  "why": "They follow fixed rules with no person to approve.",
+  "p": 0
+ },
+ {
+  "id": "483",
+  "status": "ask",
+  "q": "Use four preset reasons to deny a punishment request: evidence, too harsh, wrong reason, talked to player?",
+  "s": "Yes, keep the presets",
+  "why": "One click for admins, clear feedback for staff.",
+  "p": 0
+ },
+ {
+  "id": "484",
+  "status": "ask",
+  "q": "Let small reasons like names, builds, skins and AFK farming skip probation?",
+  "s": "Yes, no probation",
+  "why": "Small things should not follow players for months.",
+  "p": 0
+ },
+ {
+  "id": "485",
+  "status": "drop",
+  "note": "Technical timer detail; no owner choice."
+ },
+ {
+  "id": "486",
+  "status": "ask",
+  "q": "Renew a watchlist entry when staff watch an already-watched player?",
+  "s": "Yes, renew it",
+  "why": "No pointless error message.",
+  "p": 0
+ },
+ {
+  "id": "487",
+  "status": "ask",
+  "q": "Let frozen players use only /discord and /rules?",
+  "s": "Yes, only those two",
+  "why": "They may need Discord voice to talk to staff (543).",
+  "p": 0
+ },
+ {
+  "id": "488",
+  "status": "ask",
+  "q": "Let staff teleports move a frozen player, who then stays frozen?",
+  "s": "Yes, stays frozen",
+  "why": "Staff can bring them somewhere quiet.",
+  "p": 0
+ },
+ {
+  "id": "489",
+  "status": "ask",
+  "q": "Make frozen players hover in place, with 10 seconds of fall protection after unfreeze?",
+  "s": "Yes, hover plus 10 s protection",
+  "why": "No deaths caused by staff action.",
+  "p": 0
+ },
+ {
+  "id": "490",
+  "status": "settled",
+  "settled_by": "#4",
+  "note": "A ban clears the freeze."
+ },
+ {
+  "id": "491",
+  "status": "ask",
+  "q": "Let an ignored warn suggestion expire after 24 hours and then appear again?",
+  "s": "Yes, suggest again",
+  "why": "Repeat offenders are not forgotten.",
+  "p": 0
+ },
+ {
+  "id": "492",
+  "status": "drop",
+  "note": "Technical edge case; the safe default applies."
+ },
+ {
+  "id": "494",
+  "status": "ask",
+  "q": "Make /punish open the new single-screen menu, with the old one under 'More reasons'?",
+  "s": "Yes, single screen first",
+  "why": "Fast for common cases, complete for rare ones.",
+  "p": 0
+ },
+ {
+  "id": "495",
+  "status": "ask",
+  "q": "Give the Kick button a fixed reason, with /kick for custom reasons?",
+  "s": "Yes, fixed reason button",
+  "why": "One click for the common case.",
+  "p": 0
+ },
+ {
+  "id": "496",
+  "status": "ask",
+  "q": "Tell only staff and the player about automatic mutes, with no public announcement?",
+  "s": "Yes, staff and player only",
+  "why": "Automatic mutes are frequent and small; announcing them is spam.",
+  "p": 0
+ },
+ {
+  "id": "497",
+  "status": "ask",
+  "q": "Remind a player muted while offline on every join until the mute ends?",
+  "s": "Yes, every join",
+  "why": "They always know why chat does not work.",
+  "p": 0
+ },
+ {
+  "id": "498",
+  "status": "ask",
+  "q": "Protect your config edits on the server so a release can never overwrite them silently?",
+  "s": "Yes, warn before overwriting",
+  "why": "A manual release step will be forgotten one day.",
+  "p": 0
+ },
+ {
+  "id": "503",
+  "status": "settled",
+  "settled_by": "#17",
+  "note": "Discord comes later; it is kept in LATER.md."
+ },
+ {
+  "id": "504",
+  "status": "ask",
+  "q": "Block a second punishment of the same player within 5 seconds, even your own, unless -force is used?",
+  "s": "Yes, -force overrides",
+  "why": "Stops double bans from double clicks.",
+  "p": 0
+ },
+ {
+  "id": "505",
+  "status": "ask",
+  "q": "Run the same double-punish check on direct commands like /tempmute?",
+  "s": "Yes, same check everywhere",
+  "why": "Double punishments from commands are just as likely.",
+  "p": 0
+ },
+ {
+  "id": "506",
+  "status": "drop",
+  "note": "Technical detail; Oslo time is already decided (#16)."
+ },
+ {
+  "id": "507",
+  "status": "drop",
+  "note": "Pure info about the Undo button."
+ },
+ {
+  "id": "508",
+  "status": "ask",
+  "q": "Remove the mute a warning caused when that warning is undone?",
+  "s": "Yes, undo removes it",
+  "why": "An undone warning should not leave its penalty behind.",
+  "p": 0
+ },
+ {
+  "id": "510",
+  "status": "drop",
+  "note": "Pure info about the menu timer."
+ },
+ {
+  "id": "511",
+  "status": "ask",
+  "q": "Give every warn button the same weight in the warning count?",
+  "s": "Yes, all equal",
+  "why": "Simple ladders staff can predict.",
+  "p": 0
+ },
+ {
+  "id": "512",
+  "status": "ask",
+  "q": "Add the last 5 public chat lines from other players as context in punishment evidence?",
+  "s": "Yes, public chat only",
+  "why": "Context shows who started it; private messages stay out (513).",
+  "p": 0
+ },
+ {
+  "id": "514",
+  "status": "ask",
+  "q": "Let every player use /ack to confirm a warning, with one join reminder per warning?",
+  "s": "Yes, /ack plus one reminder",
+  "why": "Players cannot claim they never saw it.",
+  "p": 0
+ },
+ {
+  "id": "515",
+  "status": "drop",
+  "note": "Command syntax detail."
+ },
+ {
+  "id": "516",
+  "status": "ask",
+  "q": "Close your open reports about a player when you kick them?",
+  "s": "Yes, close their reports",
+  "why": "The report was handled.",
+  "p": 0
+ },
+ {
+  "id": "517",
+  "status": "ask",
+  "q": "Let an applied anti-cheat suggestion count toward that reason's punishment steps?",
+  "s": "Yes, counts toward steps",
+  "why": "Same ladder for every source.",
+  "p": 0
+ },
+ {
+  "id": "523",
+  "status": "ask",
+  "q": "Keep helpers unable to ban, so they freeze, mute, kick and call a mod?",
+  "s": "Yes, no bans for helpers",
+  "why": "Helpers are limited (P8); mods do most.",
+  "p": 0
+ },
+ {
+  "id": "524",
+  "status": "ask",
+  "q": "Let admins skip punishment steps, like an instant permanent hacking ban, with a typed reason?",
+  "s": "Yes, with typed reason",
+  "why": "Clear cases need fast action, and the reason is logged.",
+  "p": 0
+ },
+ {
+  "id": "525",
+  "status": "ask",
+  "q": "Keep shadow mutes out, so every mute shows the player a message?",
+  "s": "Yes, no shadow mutes",
+  "why": "Honest and clear for players.",
+  "p": 0
+ },
+ {
+  "id": "526",
+  "status": "settled",
+  "settled_by": "522",
+  "note": "A banned player's island is locked for visitors, so it is not listed."
+ },
+ {
+  "id": "527",
+  "status": "ask",
+  "q": "Add a short 2-line explanation of each rule on the website and in /rules?",
+  "s": "Yes, two lines per rule",
+  "why": "Fewer 'I didn't know' appeals.",
+  "p": 0
+ },
+ {
+  "id": "528",
+  "status": "ask",
+  "q": "Add a 30-day trade block, covering /ah and trading, to scamming and RMT punishments?",
+  "s": "Yes, 30 days",
+  "why": "Protects the economy from repeat scams.",
+  "p": 0
+ },
+ {
+  "id": "534",
+  "status": "ask",
+  "q": "Keep archived chat, command and item logs for 12 months, then delete them?",
+  "s": "Yes, 12 months",
+  "why": "Matches IP history (529) and privacy rules.",
+  "p": 0
+ },
+ {
+  "id": "535",
+  "status": "ask",
+  "q": "Let players request a copy of their data through a ticket, exported by an admin?",
+  "s": "Yes, ticket and admin export",
+  "why": "Required by privacy law.",
+  "p": 0
+ },
+ {
+  "id": "536",
+  "status": "ask",
+  "q": "Keep private messages out of staff log exports, except in a player's own data request?",
+  "s": "Yes, except own data",
+  "why": "Privacy for others, while players get their own data as the law requires.",
+  "p": 0
+ },
+ {
+  "id": "537",
+  "status": "ask",
+  "q": "Add a staff note button to pin a comment to a log line, later?",
+  "s": "Yes, later",
+  "why": "Helps long cases; not needed for launch.",
+  "p": 0
+ },
+ {
+  "id": "542",
+  "status": "ask",
+  "q": "Add Griefing, Scamming, AFK macro, Bug abuse and Threats as report reasons?",
+  "s": "Yes, add all five",
+  "why": "Matches the common cases on skyblock servers.",
+  "p": 0
+ },
+ {
+  "id": "543",
+  "status": "ask",
+  "q": "Tell frozen players: 'A staff member will talk to you in chat or voice. Stay here.'?",
+  "s": "Yes, plus a Discord link",
+  "why": "They know what to do and where to go.",
+  "p": 0
+ },
+ {
+  "id": "544",
+  "status": "ask",
+  "q": "Let any helper or above unfreeze a player, logged with their name?",
+  "s": "Yes, logged",
+  "why": "No player stays stuck if the first staff member leaves.",
+  "p": 0
+ },
+ {
+  "id": "545",
+  "status": "ask",
+  "q": "Keep closed reports for 1 year and show the last 100?",
+  "s": "Yes, 1 year, last 100",
+  "why": "Enough history for repeat offenders.",
+  "p": 0
+ },
+ {
+  "id": "546",
+  "status": "ask",
+  "q": "Tell reporters only 'handled' or 'no evidence found', never the punishment?",
+  "s": "Yes, handled or no evidence",
+  "why": "Protects privacy and avoids arguments.",
+  "p": 0
+ },
+ {
+  "id": "547",
+  "status": "ask",
+  "q": "Let staff inspect other staff, logged and with admins told?",
+  "s": "Yes, logged, admins told",
+  "why": "Checks rogue staff without hiding it.",
+  "p": 0
+ },
+ {
+  "id": "548",
+  "status": "ask",
+  "q": "Show the number of open reports on the staff scoreboard and tab?",
+  "s": "Yes, e.g. 'Reports: 4'",
+  "why": "Reports get handled faster.",
+  "p": 0
+ },
+ {
+  "id": "933",
+  "status": "settled",
+  "settled_by": "L1",
+  "note": "A loadout holds everything: armor, pet, hotbar and offhand tools."
+ },
+ {
+  "id": "934",
+  "status": "ask",
+  "q": "Let /loadout take a slot number, like /loadout 2?",
+  "s": "Yes, slot numbers work",
+  "why": "Fast for Java players; menu for Bedrock.",
+  "p": 1
+ },
+ {
+  "id": "935",
+  "status": "ask",
+  "q": "Put loadout tools back into the same hotbar slots they were saved in?",
+  "s": "Yes, same slots",
+  "why": "Muscle memory keeps working after a swap.",
+  "p": 1
+ },
+ {
+  "id": "936",
+  "status": "settled",
+  "settled_by": "L4",
+  "note": "Loadouts swap anywhere except in combat or the warzone."
+ },
+ {
+  "id": "937",
+  "status": "ask",
+  "q": "Add an 'Auto swap by place' loadout toggle for mine, forest and combat areas, off by default?",
+  "s": "Yes, off by default",
+  "why": "No busywork for players who want it; no surprises for others.",
+  "p": 0
+ },
+ {
+  "id": "938",
+  "status": "settled",
+  "settled_by": "L1",
+  "note": "Loadouts include the pet."
+ },
+ {
+  "id": "939",
+  "status": "ask",
+  "q": "Let staff see and restore a player's loadouts in the inspect view?",
+  "s": "Yes, view and restore",
+  "why": "Staff can fix lost setups (P3).",
+  "p": 0
+ },
+ {
+  "id": "940",
+  "status": "ask",
+  "q": "Mark a loadout slot red when its tool was sold or traded away?",
+  "s": "Yes, red missing slot",
+  "why": "Players see at once what is missing.",
+  "p": 0
+ },
+ {
+  "id": "941",
+  "status": "ask",
+  "q": "Show only a short sound and action bar line on loadout swap, with no animation?",
+  "s": "Yes, sound and action bar",
+  "why": "Fast and clean.",
+  "p": 0
+ },
+ {
+  "id": "942",
+  "status": "ask",
+  "q": "Skip sharing loadout presets by code or export?",
+  "s": "Yes, no sharing",
+  "why": "Presets hold personal items, so codes add little.",
+  "p": 0
+ },
+ {
+  "id": "943",
+  "status": "ask",
+  "q": "Apply the rest of a loadout swap when one part fails, and list what was skipped?",
+  "s": "Yes, partial swap",
+  "why": "No busywork; players still get most of their kit.",
+  "p": 1
+ },
+ {
+  "id": "944",
+  "status": "drop",
+  "note": "Naming detail; no owner choice needed."
+ },
+ {
+  "id": "945",
+  "status": "settled",
+  "settled_by": "L4, 377",
+  "note": "No swaps in combat; combat lasts 10 seconds after a fight, as for /ec and /craft."
+ },
+ {
+  "id": "946",
+  "status": "ask",
+  "q": "Stop frozen players from swapping loadouts, changing sets or using the Wardrobe Chest?",
+  "s": "Yes, block while frozen",
+  "why": "Frozen means frozen; no hiding items.",
+  "p": 1
+ },
+ {
+  "id": "947",
+  "status": "settled",
+  "settled_by": "L2",
+  "note": "2 free presets, more from rank or store credits; rank counts go in the RANKS plan."
+ },
+ {
+  "id": "948",
+  "status": "drop",
+  "note": "Database detail; no owner choice needed."
+ },
+ {
+  "id": "949",
+  "status": "ask",
+  "q": "Give set XP for /sell sales, capped at 8,000 per hour?",
+  "s": "Yes, max 8,000 per hour",
+  "why": "The Coinmaster set needs a source; the cap stops sell-loop farming.",
+  "p": 1
+ },
+ {
+  "id": "950",
+  "status": "settled",
+  "settled_by": "SE1",
+  "note": "Sets start at level 0 (0x) and level up by playing."
+ },
+ {
+  "id": "951",
+  "status": "ask",
+  "q": "Allow merging sets that share a bonus family, since the family cap still applies?",
+  "s": "Yes, cap still applies",
+  "why": "Lets your Thornward + Cropwarden gatherer merge; caps prevent overpowered stacking.",
+  "p": 0
+ },
+ {
+  "id": "952",
+  "status": "ask",
+  "q": "Give set XP only for generator blocks, grown trees and grown crops, farming capped at 10,000 per hour?",
+  "s": "Yes, as described",
+  "why": "Stops bone-meal farming of set XP.",
+  "p": 1
+ },
+ {
+  "id": "953",
+  "status": "ask",
+  "q": "Add tradeable Wardrobe Tomes (+2,500 or +10,000 set XP, up to level 40) from crates and quests?",
+  "s": "Yes, tradeable tomes up to Lv 40",
+  "why": "A shortcut that still leaves the last levels to play.",
+  "p": 1
+ },
+ {
+  "id": "954",
+  "status": "ask",
+  "q": "Show a level 50 set trail in the set's color, on by default with a /settings switch?",
+  "s": "Yes, with an off switch",
+  "why": "A visible reward that players can hide.",
+  "p": 0
+ },
+ {
+  "id": "955",
+  "status": "ask",
+  "q": "Show set XP in the action bar at most once every 10 seconds?",
+  "s": "Yes, every 10 seconds",
+  "why": "Feedback without spam.",
+  "p": 0
+ },
+ {
+  "id": "956",
+  "status": "ask",
+  "q": "Bind sets to the profile, with only unredeemed Set Tokens tradeable?",
+  "s": "Yes, bound sets, tradeable tokens",
+  "why": "No item moves between your own profiles (P4).",
+  "p": 1
+ },
+ {
+  "id": "957",
+  "status": "ask",
+  "q": "Approve the 16 sets and bonuses, including crop growth +100% and conquest +60%?",
+  "s": "Yes, approve all 16",
+  "why": "Covers every activity, inside the shared caps.",
+  "p": 1
+ },
+ {
+  "id": "958",
+  "status": "ask",
+  "q": "Price sets at tier I $20k, Banneret $2.5M, Coinmaster $40M, crystal sets 25,000, gem sets 400 or 900?",
+  "s": "Yes, tier IV crate-only",
+  "why": "Big money sinks; gem sets also drop from crates.",
+  "p": 1
+ },
+ {
+  "id": "959",
+  "status": "ask",
+  "q": "Make gem sets account-wide Sigils that each profile can claim free once per season?",
+  "s": "Yes, kept across seasons",
+  "why": "Gems are account-wide, so the buyer gets the set on every profile.",
+  "p": 1
+ },
+ {
+  "id": "960",
+  "status": "ask",
+  "q": "Level sets with 200 x 1.10^level XP per level, reaching level 50 in about 65 hours?",
+  "s": "Yes, about 65 hours to 50",
+  "why": "Fast start, harder later (#61).",
+  "p": 1
+ },
+ {
+  "id": "961",
+  "status": "ask",
+  "q": "Allow merging only two level 50 sets, for 5,000 to 25,000 crystals, with no unmerge?",
+  "s": "Yes, level 50 only, no unmerge",
+  "why": "Merging resets to level 0, so it must follow a finished set.",
+  "p": 1
+ },
+ {
+  "id": "963",
+  "status": "ask",
+  "q": "In the warzone and duels, count every set as 1x with 50% damage reduction and only conquest bonuses?",
+  "s": "Yes, 1x and conquest only",
+  "why": "PvP stays fair between grinders and casuals.",
+  "p": 1
+ },
+ {
+  "id": "964",
+  "status": "ask",
+  "q": "Let the Wardrobe Chest hold only unique items, with 27 slots?",
+  "s": "Yes, 27 slots",
+  "why": "Unique items are tracked one by one, so nothing dupes or vanishes.",
+  "p": 1
+ },
+ {
+  "id": "967",
+  "status": "ask",
+  "q": "Let /loadout <name> apply a preset, with /sets as a short alias of /wardrobe?",
+  "s": "Yes, add both",
+  "why": "Old command keeps working for players.",
+  "p": 0
+ },
+ {
+  "id": "968",
+  "status": "ask",
+  "q": "Give staff a Wardrobe button in Inspect, helpers view only and admins give or remove, all logged?",
+  "s": "Yes, helpers view, admins edit",
+  "why": "Helpers stay limited (P8); admins handle big changes.",
+  "p": 1
+ },
+ {
+  "id": "969",
+  "status": "ask",
+  "q": "Lock fishing and conquest sets as 'Arrives with...' until those features exist?",
+  "s": "Yes, locked",
+  "why": "Players see what is coming without buying useless sets.",
+  "p": 1
+ },
+ {
+  "id": "970",
+  "status": "ask",
+  "q": "Keep Cropwarden Robes unbuyable until farming tier 2 exists?",
+  "s": "Yes, wait for farming tier 2",
+  "why": "No set for a feature that does not exist yet.",
+  "p": 0
+ },
+ {
+  "id": "972",
+  "status": "ask",
+  "q": "Always show a confirm screen before buying a set?",
+  "s": "Yes, always confirm",
+  "why": "Sets cost millions or gems; a misclick hurts.",
+  "p": 1
+ },
+ {
+  "id": "973",
+  "status": "drop",
+  "note": "Look detail; the resource pack will skin Set Tokens."
+ },
+ {
+  "id": "974",
+  "status": "settled",
+  "settled_by": "118",
+  "note": "Deleting a profile deletes everything on it; Sigils stay with the account."
+ },
+ {
+  "id": "975",
+  "status": "drop",
+  "note": "Moves into the RANKS plan (rank perks)."
+ },
+ {
+  "id": "976",
+  "status": "drop",
+  "note": "Duplicate of 968."
+ },
+ {
+  "id": "977",
+  "status": "ask",
+  "q": "Allow vanilla armor in the armor slots when no set is worn?",
+  "s": "Yes, vanilla armor allowed",
+  "why": "New players still need protection.",
+  "p": 1
+ },
+ {
+  "id": "978",
+  "status": "ask",
+  "q": "Allow mixing pieces of different sets, with bonuses only from full pairs?",
+  "s": "Yes, mix by pairs",
+  "why": "Two 2-piece bonuses give fun builds.",
+  "p": 1
+ },
+ {
+  "id": "979",
+  "status": "ask",
+  "q": "Give no refunds for sets once they are bought?",
+  "s": "Yes, no refunds",
+  "why": "Purchases are final; confirm screens prevent mistakes.",
+  "p": 0
+ },
+ {
+  "id": "980",
+  "status": "ask",
+  "q": "Let players recolor a set for crystals as a cosmetic?",
+  "s": "Yes, crystal recolor",
+  "why": "Crystal sink and personal style.",
+  "p": 0
+ },
+ {
+  "id": "981",
+  "status": "settled",
+  "settled_by": "302",
+  "note": "The hover card shows only rank, island and playtime."
+ },
+ {
+  "id": "982",
+  "status": "ask",
+  "q": "Keep only gem Sigils after a season reset, wiping all other sets?",
+  "s": "Yes, Sigils only",
+  "why": "Like gem profile slots (P8); seasons start fair.",
+  "p": 0
+ },
+ {
+  "id": "983",
+  "status": "ask",
+  "q": "Give wardrobe set pieces no durability, so they never break or need repair?",
+  "s": "Yes, no durability",
+  "why": "No repair busywork.",
+  "p": 0
+ },
+ {
+  "id": "984",
+  "status": "ask",
+  "q": "Cap set XP per hour only (selling 8,000, farming 10,000), with no daily cap?",
+  "s": "Yes, hourly only",
+  "why": "Long sessions are not punished.",
+  "p": 0
+ },
+ {
+  "id": "985",
+  "status": "ask",
+  "q": "Show a short 2-piece and 4-piece bonus line in each piece's lore?",
+  "s": "Yes, one line each",
+  "why": "Compact lores (P5) that still explain the set.",
+  "p": 0
+ },
+ {
+  "id": "986",
+  "status": "ask",
+  "q": "Add weekly set level leaderboards, using each player's best profile?",
+  "s": "Yes, weekly, best profile",
+  "why": "Weekly races and best profile rule (P7).",
+  "p": 0
+ },
+ {
+  "id": "357",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "358",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "359",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "360",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "361",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "362",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "363",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "364",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "368",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "369",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "370",
+  "status": "drop",
+  "note": "Moves into the ACHIEVEMENTS plan (personal and island achievements)."
+ },
+ {
+  "id": "366",
+  "status": "settled",
+  "settled_by": "P2, PR1",
+  "note": "Achievement progress per profile; titles are account-wide."
+ },
+ {
+  "id": "373",
+  "status": "settled",
+  "settled_by": "P3",
+  "note": "Nothing is lost by accident: deleted titles and tags stay restorable."
+ },
+ {
+  "id": "374",
+  "status": "drop",
+  "note": "Technical update detail; no owner choice."
+ },
+ {
+  "id": "378",
+  "status": "ask",
+  "q": "Keep the nickname change cooldown at 60 seconds instead of raising it to 1 hour?",
+  "s": "Yes, keep 60 seconds",
+  "why": "No new delays without real abuse (P1); nick history is logged.",
+  "p": 0
+ },
+ {
+  "id": "379",
+  "status": "drop",
+  "note": "Moves into the RANKS plan (who gets nicknames)."
+ },
+ {
+  "id": "380",
+  "status": "drop",
+  "note": "Moves into the RANKS plan; the rank names are changing (386)."
+ },
+ {
+  "id": "381",
+  "status": "settled",
+  "settled_by": "P2",
+  "note": "Ender chest is per profile; no shared account chest."
+ },
+ {
+  "id": "382",
+  "status": "drop",
+  "note": "Moves into the RANKS plan; custom tools have no durability anyway."
+ },
+ {
+  "id": "383",
+  "status": "ask",
+  "q": "Show nicknames everywhere with the ~ marker, with real names visible only in staff tools?",
+  "s": "Yes, ~ marker, staff see names",
+  "why": "Nicknames work; staff can always find the real player.",
+  "p": 0
+ },
+ {
+  "id": "384",
+  "status": "ask",
+  "q": "Let /hat take any normal item but refuse custom or unique items?",
+  "s": "Yes, normal items only",
+  "why": "Custom items on the head could break tracking.",
+  "p": 0
+ },
+ {
+  "id": "385",
+  "status": "ask",
+  "q": "Show both name and nickname in the tab list for staff in staff mode?",
+  "s": "Yes, both names",
+  "why": "Staff find players fast.",
+  "p": 0
+ },
+ {
+  "id": "392",
+  "status": "ask",
+  "q": "Make donor prefixes look softer than staff prefixes, so nobody mistakes a donor for staff?",
+  "s": "Yes, softer donor prefixes",
+  "why": "Stops scams by fake staff.",
+  "p": 0
+ },
+ {
+  "id": "393",
+  "status": "drop",
+  "note": "Moves into the RANKS plan; the rank names are changing (386)."
+ },
+ {
+  "id": "394",
+  "status": "ask",
+  "q": "Unlock /freerank when the tutorial is finished, instead of after 30 minutes of playtime?",
+  "s": "Yes, after the tutorial",
+  "why": "The tutorial replaces playtime gates (P4).",
+  "p": 0
+ },
+ {
+  "id": "395",
+  "status": "ask",
+  "q": "After a payment chargeback, remove the rank and perks, freeze gems and review the account?",
+  "s": "Yes, remove, freeze and review",
+  "why": "Protects the store and the economy.",
+  "p": 0
+ },
+ {
+  "id": "396",
+  "status": "ask",
+  "q": "Allow rank gifts through the store, with gems never giftable in game?",
+  "s": "Yes, store gifts only",
+  "why": "Gifting helps sales; gems stay account-bound.",
+  "p": 0
+ },
+ {
+  "id": "399",
+  "status": "settled",
+  "settled_by": "390",
+  "note": "The free rank's Ember name must change; a theme name comes with the RANKS plan."
+ },
+ {
+  "id": "400",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (themed titles and tags)."
+ },
+ {
+  "id": "401",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (themed titles and tags)."
+ },
+ {
+  "id": "402",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (themed titles and tags)."
+ },
+ {
+  "id": "403",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (themed titles and tags)."
+ },
+ {
+  "id": "404",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (themed titles and tags)."
+ },
+ {
+  "id": "405",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (themed titles and tags)."
+ },
+ {
+  "id": "408",
+  "status": "drop",
+  "note": "Moves into the TITLES plan (themed titles and tags)."
+ },
+ {
+  "id": "1018",
+  "status": "settled",
+  "settled_by": "131, P4",
+  "note": "No 30-minute limit; the pool pays once the tutorial is finished."
+ },
+ {
+  "id": "1019",
+  "status": "drop",
+  "note": "Duplicate of 671 (interest activity) and 394 (/freerank unlock)."
+ },
+ {
+  "id": "1020",
+  "status": "ask",
+  "q": "Let the AFK pool hold any number of players, with no 60-player cap?",
+  "s": "Yes, no cap",
+  "why": "A full pool punishes players; the IP rule stops alt farms.",
+  "p": 1
+ },
+ {
+  "id": "1021",
+  "status": "ask",
+  "q": "Kick idle players after 20 minutes outside the AFK pool, but never inside it?",
+  "s": "Yes, 20 minutes",
+  "why": "Frees slots for active players; the pool is the AFK place.",
+  "p": 1
+ },
+ {
+  "id": "1022",
+  "status": "settled",
+  "settled_by": "RW3",
+  "note": "No 'Still here?' checks: the pool is AFK; use IP and alt checks instead."
+ },
+ {
+  "id": "1023",
+  "status": "ask",
+  "q": "Keep skill XP and set XP out of the AFK pool rewards?",
+  "s": "Yes, no XP",
+  "why": "Skills and sets reward active play.",
+  "p": 1
+ },
+ {
+  "id": "1024",
+  "status": "drop",
+  "note": "Moves into the RANKS plan (rank AFK perks)."
+ },
+ {
+  "id": "1025",
+  "status": "drop",
+  "note": "Pure info: the pool opens when its area is built."
+ },
+ {
+  "id": "1026",
+  "status": "ask",
+  "q": "Scale AFK pool money to the player's stage instead of a flat amount?",
+  "s": "Yes, scaled",
+  "why": "Never useless late, never a money printer early.",
+  "p": 1
+ },
+ {
+  "id": "1027",
+  "status": "settled",
+  "settled_by": "O10",
+  "note": "Loot improves the longer you stay; the 100% to 180% curve is balance work."
+ },
+ {
+  "id": "1028",
+  "status": "ask",
+  "q": "Give AFK pool keys at 1 h and 3 h (Ember), 6 h (Cinder) and 8 h (Blaze), once per day?",
+  "s": "Yes, as listed",
+  "why": "Rewards long sessions without beating active play.",
+  "p": 1
+ },
+ {
+  "id": "1029",
+  "status": "drop",
+  "note": "Technical: nothing is lost (P3), pending rewards arrive later."
+ },
+ {
+  "id": "1030",
+  "status": "ask",
+  "q": "Bank the AFK sell booster and start it when the player leaves the pool?",
+  "s": "Yes, banked",
+  "why": "A booster used while AFK would be wasted.",
+  "p": 0
+ },
+ {
+  "id": "1031",
+  "status": "ask",
+  "q": "Let up to 3 accounts per IP earn in the AFK pool, each with its own 8 hours?",
+  "s": "Yes, 3 per IP",
+  "why": "Same as the ratings rule (292); families are not punished.",
+  "p": 1
+ },
+ {
+  "id": "1031b",
+  "status": "ask",
+  "q": "Keep the daily AFK limit per IP saved across server restarts?",
+  "s": "Yes, survives restarts",
+  "why": "Otherwise a daily restart would reset the limit.",
+  "p": 0
+ },
+ {
+  "id": "1032",
+  "status": "drop",
+  "note": "Duplicate of 1031; Bedrock IPs are a test step, not a decision."
+ },
+ {
+  "id": "1033",
+  "status": "ask",
+  "q": "Count the 8-hour daily AFK limit per account, across all profiles?",
+  "s": "Yes, per account",
+  "why": "Otherwise three profiles would allow 24 hours a day.",
+  "p": 1
+ },
+ {
+  "id": "1034",
+  "status": "ask",
+  "q": "Skip an /afkpool command, showing pool status in the action bar, scoreboard and /menu?",
+  "s": "Yes, no command",
+  "why": "The pool is a place; menus cover Bedrock (P5).",
+  "p": 0
+ },
+ {
+  "id": "1035",
+  "status": "ask",
+  "q": "Stop staff on duty and vanished staff from earning in the AFK pool?",
+  "s": "Yes, no staff earnings",
+  "why": "Staff powers must not earn rewards.",
+  "p": 0
+ },
+ {
+  "id": "1036",
+  "status": "ask",
+  "q": "Show an [AFK] tag in the tab list only?",
+  "s": "Yes, tab only",
+  "why": "Chat stays clean.",
+  "p": 0
+ },
+ {
+  "id": "1037",
+  "status": "ask",
+  "q": "Show the AFK reward chat line only for keys and boosters?",
+  "s": "Yes, keys and boosters only",
+  "why": "Small payouts go to the action bar, no spam.",
+  "p": 0
+ },
+ {
+  "id": "335",
+  "status": "ask",
+  "q": "Tell island members when a staff member who is not vanished teleports onto their private island?",
+  "s": "Yes, short line",
+  "why": "Transparency for players; vanished checks stay hidden.",
+  "p": 0
+ },
+ {
+  "id": "336",
+  "status": "ask",
+  "q": "Let only admins edit player inventories with /invsee, with mods viewing only?",
+  "s": "Yes, admins only",
+  "why": "Editing inventories is a big dupe risk.",
+  "p": 0
+ },
+ {
+  "id": "337",
+  "status": "ask",
+  "q": "Limit /give and /i to 36 stacks per command?",
+  "s": "Yes, 36 stacks max",
+  "why": "Stops huge accidental gives.",
+  "p": 0
+ },
+ {
+  "id": "338",
+  "status": "ask",
+  "q": "Hide a vanished staff member's location from /tp for lower staff ranks?",
+  "s": "Yes, hidden from lower ranks",
+  "why": "Vanish stays useful for investigations.",
+  "p": 0
+ },
+ {
+  "id": "339",
+  "status": "ask",
+  "q": "Block staff /time and /weather on islands, since islands set their own?",
+  "s": "Yes, islands decide",
+  "why": "Island settings stay in charge.",
+  "p": 0
+ },
+ {
+  "id": "340",
+  "status": "ask",
+  "q": "Give staff unlimited staff homes in any world?",
+  "s": "Yes, no limit",
+  "why": "Staff homes cost nothing; no busywork.",
+  "p": 0
+ },
+ {
+  "id": "343",
+  "status": "settled",
+  "settled_by": "P1, 285, 341",
+  "note": "Teleports are instant with no cooldowns; 3 seconds only in combat zones."
+ },
+ {
+  "id": "344",
+  "status": "ask",
+  "q": "Let mods and above skip teleport warmups everywhere, including /dungeon?",
+  "s": "Yes, mods and up",
+  "why": "Staff respond fast; one rule for all warmups.",
+  "p": 0
+ },
+ {
+  "id": "348",
+  "status": "ask",
+  "q": "Move /tpa arrivals to the nearest safe spot within 5 blocks?",
+  "s": "Yes, within 5 blocks",
+  "why": "No deaths from tpa into lava or void.",
+  "p": 0
+ },
+ {
+  "id": "349",
+  "status": "ask",
+  "q": "Keep /tpa free for everyone, with no money cost per teleport?",
+  "s": "Yes, free",
+  "why": "No busywork or cost for meeting friends.",
+  "p": 0
+ },
+ {
+  "id": "350",
+  "status": "ask",
+  "q": "Let everyone send /tpa requests, with a 'friends only' switch in /settings?",
+  "s": "Yes, with friends-only switch",
+  "why": "Open by default, private if wanted.",
+  "p": 0
+ },
+ {
+  "id": "351",
+  "status": "drop",
+  "note": "Moves into the RANKS plan (/back as a perk)."
+ },
+ {
+  "id": "352",
+  "status": "ask",
+  "q": "Show /tpa requests as an action bar line with a sound, besides chat?",
+  "s": "Yes, action bar and sound",
+  "why": "Requests are not missed in busy chat.",
+  "p": 0
+ },
+ {
+  "id": "353",
+  "status": "ask",
+  "q": "Add a /tpall party teleport for island members later, with parties?",
+  "s": "Yes, later",
+  "why": "Fun for teams; not needed for launch.",
+  "p": 0
+ },
+ {
+  "id": "415",
+  "status": "ask",
+  "q": "Keep fixed time of day: spawn at noon, The Depths at night, the warzone at dusk?",
+  "s": "Yes, noon, night, dusk",
+  "why": "Each place gets its own mood.",
+  "p": 0
+ },
+ {
+  "id": "416",
+  "status": "ask",
+  "q": "Keep instant respawn, with death messages in chat only in the warzone?",
+  "s": "Yes, warzone messages only",
+  "why": "PvE deaths lose nothing (#76), so no chat spam.",
+  "p": 0
+ },
+ {
+  "id": "417",
+  "status": "ask",
+  "q": "Turn wandering traders off on all player islands?",
+  "s": "Yes, off",
+  "why": "Random items would skip parts of the economy.",
+  "p": 0
+ },
+ {
+  "id": "418",
+  "status": "ask",
+  "q": "Block elytra and wind charges at spawn, and allow ender pearls only onto the castle?",
+  "s": "Yes, block elytra and wind charges",
+  "why": "Stops players skipping or breaking spawn builds.",
+  "p": 0
+ },
+ {
+  "id": "419",
+  "status": "ask",
+  "q": "Keep a few ender chests and crafting tables at the spawn market working for everyone?",
+  "s": "Yes, at spawn only",
+  "why": "Convenience for all; /ec and /craft stay rank perks.",
+  "p": 0
+ },
+ {
+  "id": "420",
+  "status": "ask",
+  "q": "Let only staff fly at spawn, with players walking everywhere there?",
+  "s": "Yes, staff only",
+  "why": "Spawn builds and parkour stay intact.",
+  "p": 0
+ },
+ {
+  "id": "421",
+  "status": "ask",
+  "q": "Show a short subtitle when entering a spawn district, like Market Square?",
+  "s": "Yes, short subtitle",
+  "why": "Helps new players find their way.",
+  "p": 0
+ },
+ {
+  "id": "N2-1",
+  "status": "ask",
+  "q": "Remove the 3 island joins per season limit, since leaving an island already wipes that profile's progress?",
+  "s": "Yes, remove it",
+  "why": "No limits without real abuse (P1); leaving already costs everything (141).",
+  "p": 1
+ },
+ {
+  "id": "N2-2",
+  "status": "ask",
+  "q": "Let island size grow past 9x9 up to 15x15, only through gems or the Black Market?",
+  "s": "Yes, up to 15x15",
+  "why": "Gives gems and shards a big goal without breaking normal upgrades (157).",
+  "p": 1
+ },
+ {
+  "id": "N2-3",
+  "status": "ask",
+  "q": "Keep items in /box until the season reset, never expiring?",
+  "s": "Yes, never expire",
+  "why": "Nothing lost by accident (P3), same as the collection bin (563).",
+  "p": 1
+ },
+ {
+  "id": "N2-4",
+  "status": "ask",
+  "q": "Keep trash bins at spawn for everyone, now that /trash is for owner and admins only?",
+  "s": "Yes, bins at spawn",
+  "why": "Players can still throw away junk without a command (O9, 376).",
+  "p": 0
+ }
+]

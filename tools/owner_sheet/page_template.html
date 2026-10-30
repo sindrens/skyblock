@@ -54,6 +54,7 @@ main .wrap { padding-block: 18px 80px; display: grid; gap: 22px }
 .q .pri { display: inline-block; font: 700 10px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 4px; padding: 2px 6px; margin-right: 6px; vertical-align: 2px }
 .ctx { font-size: 13px; color: var(--muted) }
 .sug { font-size: 13.5px } .sug b { color: var(--ok) }
+.why { font-size: 12.5px; color: var(--muted); margin-top: -4px }
 .btns { display: flex; gap: 8px; flex-wrap: wrap }
 .btns button { flex: 1 1 0; min-width: 84px; font: 700 14px var(--body); padding: 9px 10px; border-radius: 9px; cursor: pointer; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg) }
 .btns .s { border-color: var(--ok); color: var(--ok) } .btns .n { border-color: var(--no); color: var(--no) } .btns .o { border-color: var(--other); color: var(--other) }
@@ -79,7 +80,7 @@ textarea { width: 100%; font: 14px var(--body); color: var(--fg); background: va
 </div></header>
 
 <main><div class="wrap">
-  <p class="intro">Every card is a choice the game uses right now. Tap <b>Suggested</b> to keep it, <b>No</b> to reject it, or <b>Other</b> to write what you want. Answers save as you tap. Tap a lit button again to undo. Start with <b>Before launch</b>, then switch it off for the rest.</p>
+  <p class="intro">Suggestions were reworked from your 194 answers, and questions your answers already settle are filled in for you (marked "Settled by your earlier answers", change them if wrong). Every card is a choice the game uses right now. Tap <b>Suggested</b> to keep it, <b>No</b> to reject it, or <b>Other</b> to write what you want. Answers save as you tap. Tap a lit button again to undo. Start with <b>Before launch</b>, then switch it off for the rest.</p>
   <div id="list"></div>
 </div></main>
 
@@ -117,6 +118,7 @@ textarea { width: 100%; font: 14px var(--body); color: var(--fg); background: va
     qd.appendChild(document.createTextNode(q.q)); c.appendChild(qd);
     if (q.c) { const x = document.createElement('div'); x.className = 'ctx'; x.textContent = q.c; c.appendChild(x); }
     const sg = document.createElement('div'); sg.className = 'sug'; sg.innerHTML = '<b>Suggested:</b> '; sg.appendChild(document.createTextNode(q.s)); c.appendChild(sg);
+    if (q.w) { const w = document.createElement('div'); w.className = 'why'; w.textContent = 'Why: ' + q.w; c.appendChild(w); }
     const b = document.createElement('div'); b.className = 'btns';
     [['s', 'Suggested'], ['n', 'No'], ['o', 'Other']].forEach(([k, label]) => {
       const bt = document.createElement('button'); bt.className = k; bt.type = 'button'; bt.textContent = label;
