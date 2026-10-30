@@ -62,7 +62,7 @@ hub:
       name: "<c:flame><bold>Skills"
       lore: ["<c:text>Level Mining, Foraging, Combat", "<c:text>and more for perks."]
     sets:
-      name: "<c:flame><bold>Sets"
+      name: "<c:flame><bold>Wardrobe"
       lore: ["<c:text>Armor sets with bonuses for", "<c:text>every playstyle."]
     enchanter:
       name: "<c:flame><bold>Enchanter"

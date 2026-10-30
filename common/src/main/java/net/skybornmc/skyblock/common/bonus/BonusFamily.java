@@ -34,7 +34,15 @@ public enum BonusFamily {
     /** Damage reduction from custom sources (percent of damage taken). */
     DAMAGE_REDUCTION(60),
     /** Extra max hearts from custom sources. */
-    HEALTH(10);
+    HEALTH(10),
+    /** Crop growth speed near the player (WARDROBE §2.5, WD9: Cropwarden Robes, growth upgrades, events). */
+    CROP_GROWTH(100),
+    /**
+     * Conquest stats (WARDROBE §2.5, WD9): the context's activity says which one ({@code envoy_luck}, {@code capture_speed},
+     * {@code conquest_xp}, {@code death_loss}); the cap applies per stat. The warzone death-loss reduction is limited to
+     * 50% by the code that applies it.
+     */
+    CONQUEST(60);
 
     private final double defaultCap;
 

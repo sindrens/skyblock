@@ -48,7 +48,7 @@ categories:
     slot: 20
     name: "<c:flame><bold>Gear"
     lore: ["<c:text>Tools, the Forge, sets,", "<c:text>enchants and blueprints."]
-    topics: [tools, enchants]
+    topics: [tools, enchants, wardrobe]
   combat-events:
     icon: clock
     status: coming-soon
@@ -302,6 +302,43 @@ topics:
           - "<c:text>enchant per tool). Mythics only"
           - "<c:text>fit the prestige slot. See the"
           - "<c:text>Enchant guide for every enchant."
+
+  wardrobe:
+    icon: leather_chestplate
+    aliases: [sets, set, armor, wardrobe-chest, set-token, sigil, sigils]
+    name: "<c:flame>Wardrobe"
+    summary: ["<c:text>Armor sets with bonuses, the", "<c:text>Wardrobe Chest and Set Tokens."]
+    take-me-there: "wardrobe"
+    commands: [Wardrobe]
+    pages:
+      - title: "<c:value>Sets"
+        lines:
+          - "<c:text>Open <c:value>/wardrobe</c:value><c:text> to see every set."
+          - "<c:text>Buy a set once with money,"
+          - "<c:text>crystals or gems. It stays in"
+          - "<c:text>your wardrobe on this profile."
+      - title: "<c:value>Wearing"
+        lines:
+          - "<c:text>Open a set and click a piece,"
+          - "<c:text>or Wear all. 2 pieces give a"
+          - "<c:text>bonus, 4 pieces a second one."
+          - "<c:text>Mix 2 + 2 of two sets too."
+      - title: "<c:value>Locked armor"
+        lines:
+          - "<c:text>Worn pieces stay on: take them"
+          - "<c:text>off in /wardrobe. You never lose"
+          - "<c:text>a set, not even when you die."
+      - title: "<c:value>Gem sets and tokens"
+        lines:
+          - "<c:text>A gem set is a Sigil: claim it"
+          - "<c:text>free on each profile once a"
+          - "<c:text>season. Crate sets come as"
+          - "<c:text>tokens: right-click to redeem."
+      - title: "<c:value>Wardrobe Chest"
+        lines:
+          - "<c:text>Keep tools, enchant books and"
+          - "<c:text>tokens safe in the chest. Plain"
+          - "<c:text>items don't fit."
 
   skills:
     icon: experience_bottle

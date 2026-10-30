@@ -227,6 +227,14 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 - Loadout: swaps (and wardrobe equips) refused for 10 s after combat damage with a player or hostile mob, in the warzone and while frozen; 2 s cooldown. OK? (default: yes, LD3/LD6)
 - Loadout: `/loadout <name>` applies a preset by name (argument of the approved command) and `/sets` stays as an alias of `/wardrobe`. OK? (default: yes, LD5/WD24)
 - Wardrobe staff tools: a Wardrobe button in `/inspect <player>` (view; admins give/remove sets, set levels, give tokens, all audited) instead of a new staff command. OK? (default: yes, WD25)
+- W1 wardrobe: the fishing sets (Netcaster's Garb, Stormkeel Scale) and the conquest sets (Banneret Tabard, Conqueror Aegis) show "Arrives with Fishing / the Warzone" and can't be bought or redeemed until `wardrobe.yml → features.available` lists `fishing` / `conquest`. OK? (default: locked until the feature exists)
+- W1 wardrobe: Depths tier gates are read from skill levels (`wardrobe.yml → tiers.*`, same numbers as `enchanter.yml`); farming has only crop tier 1 until Phase 7, so Cropwarden Robes can't be bought yet. OK? (default: yes)
+- W1 wardrobe: there is no combat tag yet, so wearing/taking off sets is only refused in `equip.blocked-worlds` (warzone), during a profile switch and on the 2 s cooldown; the 10 s combat rule comes with W3's `CombatTagService`. Frozen players can't run commands, so they can't open /wardrobe. OK? (default: yes)
+- W1 wardrobe: buying with money/crystals/gems always shows the 3-row confirm (the plan only required it for gems and above $1M). OK? (default: always confirm)
+- W1 wardrobe: Set Tokens look like an armor stand (`tokens.material`), can't be placed, crafted, renamed or dispensed, and redeem with a right-click. OK? (default: yes)
+- W1 wardrobe: deleting a profile deletes its sets and the items in its Wardrobe Chest, like its inventory (Sigils stay with the account). Or refuse the delete while the chest has items? (default: deleted with the profile)
+- W1 wardrobe: who gets Wardrobe Chest size grants (`skyblock.wardrobe.storage.1-3`, +9 each)? Not granted to any rank yet. (default: decided with the store/rank plan)
+- W1 wardrobe: staff can view a player's wardrobe with `skyblock.wardrobe.staff` (helper and up); give/remove sets and give tokens with `skyblock.wardrobe.admin` (admin, owner). Staff test commands like `/wardrobe admin give` are not built. OK? (default: yes)
 
 ## Economy
 1. **Shards:** how are they earned? (Proposal: bosses, envoys, KOTH, high-tier dungeon zones.)
