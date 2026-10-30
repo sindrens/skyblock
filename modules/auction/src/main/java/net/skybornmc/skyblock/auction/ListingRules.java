@@ -3,7 +3,10 @@ package net.skybornmc.skyblock.auction;
 import java.util.Locale;
 import java.util.Optional;
 
-/** Anti-abuse rules (pure, unit-tested): price range, new accounts, listing slots, cooldown and relist spam. */
+/**
+ * Anti-abuse rules (pure, unit-tested): price range, listing slots, cooldown and relist spam. No new-account limit
+ * (owner answers 131/550).
+ */
 final class ListingRules {
 
     static final String SLOT_PERMISSION = "skyblock.auction.slots.";
@@ -19,7 +22,7 @@ final class ListingRules {
 
     /**
      * @param value the limit that was hit: min/max price, slot count, milliseconds left on the cooldown, the relist
-     *              window in minutes, or the playtime still needed in milliseconds
+     *              window in minutes
      */
     record Rejection(Problem problem, long value) {
     }
