@@ -64,3 +64,14 @@ Follow-up questions are at the end of this file (and in chat).
 - **Sets (SE1):** no easter eggs for sets (easter eggs go into other parts of the game). `/sets` shows every set; sets are bought with gems, won from crates, or bought with currencies, priced by strength. Sets have a **set level** (e.g. level 0 = 0× multiplier, level 50 = 2×). **Merging** two sets makes one set with both multipliers, but resets the set level to 0. SE2 secret sets suggested.
 - **Next planning rounds:** SE3 full custom enchant plan, then SE4 resource pack plan.
 - **World:** WR1 warzone death keeps inventory and loses 2% money (max $1M), killer gets nothing; WR2 no piston/observer limits, detect lag machines only; WR3 natural iron golems off; WR4 phantoms off; **WR5 Nether/End become custom worlds for later content.**
+
+# Round 3 follow-ups (2026-10-30)
+- **`/wardrobe` replaces `/sets`** (same system: sets bought with gems/crates/currencies, set levels, merging).
+- **`/loadout`:** saved presets (e.g. "Mining", "Farming", "Combat") that swap armor and pet in one action. Details in open questions below.
+- **Island storage:** (a) yes — mastery delivery tasks can take items straight from island storage; (b) yes — daily take-out limit per role; (c) recall of items a kicked member took = **staff only** (staff tool, not for leaders).
+
+## Open (loadout)
+- L1 What does a loadout contain: armor + pet only, or also the hotbar tools? [armor + pet + tools in hotbar slots 1–4]
+- L2 How many presets? [3 free, more with rank]
+- L3 Where do the swapped-out pieces go: into the wardrobe (virtual storage), so nothing is needed in the inventory? [yes, into the wardrobe]
+- L4 Swap allowed anywhere, or not in combat/warzone? [anywhere except combat/warzone, 5 s cooldown]

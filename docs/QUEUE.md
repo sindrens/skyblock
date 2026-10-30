@@ -26,7 +26,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | NOTES | `/is notes` (N1–N9: shared to-do list, temporary book, pinned holograms) | M2.4 | modules/islands | ⬜ |
 | SB | Per-place scoreboards (island, Depths, spawn, warzone) | UX1 | modules/hud | ⬜ |
 | PLAN-ENCH | Plan doc: full custom enchant list (levels, effects, how each is obtained: mob kills, mining, chopping, dungeons, crates, /enchanter, crystals), synergy with tools/sets/stacking kills | — | docs/plans/ENCHANTS.md | ⬜ next free slot |
-| PLAN-SETS | Plan doc: /sets (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | ⬜ |
+| PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | ⬜ |
+| STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
 | PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
 | FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | R2A | modules/perks or cosmetics | ⬜ |
 | AFK | AFK pool (fuel + money + keys, better loot over time, max 8 h/day) | economy, islands fuel | new module | ⬜ (needs balance numbers) |
