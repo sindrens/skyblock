@@ -141,12 +141,7 @@ public final class ItemRegistry {
 
     /** The label/format text for the lore builder; missing keys show {@code [missing: items:key]} (logged once). */
     String label(String key) {
-        String raw = messages.raw(MESSAGES, key);
-        if (raw == null) {
-            messages.component(Audience.empty(), MESSAGES, key); // logs the missing key once
-            return "<red>[missing: items:" + key + "]</red>";
-        }
-        return raw;
+        return LoreBuilder.labels(messages).apply(key);
     }
 
     // ------------------------------------------------------------------ identification
