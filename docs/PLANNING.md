@@ -1,36 +1,83 @@
-# Planning: every plan and phase in one table
+# Planning: everything that needs a plan, in one list
 
-What is planned, what still needs a plan, and what each one waits for. Built features are in [TEST_GUIDE.md](TEST_GUIDE.md); every unbuilt item by area is in [BACKLOG.md](BACKLOG.md); the work queue is [QUEUE.md](QUEUE.md).
+**How this works (owner, 30 Oct):** every topic below has its own md file. Read it, write in **"Your notes (write here)"** (or answer the numbered questions), and send the updated file back. We build only after that.
 
-Status words: **built** · **being built** · **plan written** (defaults apply until you answer) · **waiting for owner answers** (the next step needs your answers first) · **needs plan** · **waiting for art** · **later** (decided, postponed on purpose).
+Status words: **needs your input** (file ready, waiting for your answers) · **plan written** (answered or defaults approved; next step is building) · **building now** · **waiting for art**.
 
-"Open questions" = questions on the Decisions page (link in [BACKLOG.md](BACKLOG.md)) for that plan that are not answered yet in [OWNER_ANSWERS_ROUND1.md](OWNER_ANSWERS_ROUND1.md) / [OWNER_ANSWERS_ROUND2.md](OWNER_ANSWERS_ROUND2.md) (counted 30 Oct 2026, after GUIDE2). Answers you gave on the page since then lower these numbers.
+## The list
 
-| Plan / phase | Status | Link | Open questions on the Decisions page | Next build step |
+| # | Topic | Status | File | Next step |
 |---|---|---|---|---|
-| Tutorial + starter chest (TUTORIAL) | plan written; TU1-TU4 being built with the suggested answers | [plans/TUTORIAL.md](plans/TUTORIAL.md) | 32 of 32 (ids TUT-1 to TUT-32) | Merge TU1-TU4 (gates, step engine, cameras, starter chest), then TU5 (companion, NPC lines, Guide NPC opens /tutorial) |
-| Ranks, titles, achievements (RANKS_TITLES_ACHIEVEMENTS) | waiting for owner answers (RK1 = your answers to §E) | [plans/RANKS_TITLES_ACHIEVEMENTS.md](plans/RANKS_TITLES_ACHIEVEMENTS.md) | 46 of 46 (ids RTA-1 to RTA-46) | AC1 `/achievements` command + menu tabs (already approved, answer 356); RK2 rename the free rank to Ashborn after your answers |
-| Phase 5 Progression (pillars, island level, upgrades, masteries, leaderboards) | plan written | [phases/PHASE-5-PROGRESSION.md](phases/PHASE-5-PROGRESSION.md) | 37 of 37 (ids P5-1 to P5-37), plus 1 older island level question | M5.1 Pillars (modules/progression) |
-| Phase 7 Island production (fuel, generators, crops, collectors, fishing, outposts) | plan written (merged 30 Oct, this was "being written" when GUIDE2 started) | [phases/PHASE-7-PRODUCTION.md](phases/PHASE-7-PRODUCTION.md) | 0 on the page yet: its 37 questions (PD1-PD37) go on the page next | M7.1 Island Fuel core + Fuel Cells + AFK fuel delivery |
-| Phase 8 PvE (custom mobs, world/summon bosses, pets, sea creatures) | needs plan (PLAN8 is next in the queue) | [ROADMAP.md](ROADMAP.md) | 0 | Write docs/phases/PHASE-8-PVE.md with questions |
-| Phase 9 Conquest and events (KOTH, envoys, PvP zones, duels, event engine) | needs plan | [ROADMAP.md](ROADMAP.md) | 0 | Write docs/phases/PHASE-9-*.md (PLAN9) |
-| Phase 10 Rewards (crates, keys, boosters, voting, daily calendar, quests, battle pass, collection log, Black Market) | plan written | [phases/PHASE-10-REWARDS.md](phases/PHASE-10-REWARDS.md) | 43 of 43 (ids P10-1 to P10-43) | M10.1 crates + keys core (pending AFK pool keys are delivered) |
-| Phase 11 Store, ranks, Discord | needs plan (ranks part already in RANKS_TITLES_ACHIEVEMENTS) | [ROADMAP.md](ROADMAP.md), [LATER.md](LATER.md) | 0 (rank questions are in RTA) | Write the Phase 11 plan (PLAN11): Tebex, gems/credits, Discord linking |
-| Phase 12 Seasons (reset tool, pre-season, carry-over, Final Week) | needs plan | [ROADMAP.md](ROADMAP.md) | 0 | Write the Phase 12 plan (PLAN12) |
-| Phase 13 Balance and launch prep (balance pass, bot load test, closed beta) | needs plan | [ROADMAP.md](ROADMAP.md) | 0 | Write the Phase 13 plan (PLAN13) |
-| Resource pack + art brief (RESOURCE_PACK, ART_BRIEF) | waiting for art (forced pack and "you draw the art" are decided) | [plans/RESOURCE_PACK.md](plans/RESOURCE_PACK.md), [plans/RESOURCE_PACK_ART_BRIEF.md](plans/RESOURCE_PACK_ART_BRIEF.md) | 19 of 31 (feature "Resource pack plan" / "Resource pack (plan)"; RP-D2 to RP-D19 and the art brief questions are Q2-39 to Q2-52) | You draw the 5 pilot pieces; then RP1 (PackService, forced sending in the configuration phase) |
-| Island storage / STORE2 | needs plan (the Island Vault is defined in Phase 5 M5.4, answer O4: `/is storage` = Island Vault) | [phases/PHASE-5-PROGRESSION.md](phases/PHASE-5-PROGRESSION.md), [QUEUE.md](QUEUE.md) | 0 | Build the Island Vault upgrade (M5.4), then STORE2 (mastery deliveries from storage, daily take-out limit per role, staff recall from kicked members) |
-| E6 hoe + rod enchants | plan written (ENCHANTS §6.4, §6.7); waits for Phase 7 | [plans/ENCHANTS.md](plans/ENCHANTS.md), [phases/PHASE-7-PRODUCTION.md](phases/PHASE-7-PRODUCTION.md) | 0 | After M7.3 (crops, `IslandCropHarvestEvent`) and M7.8 (fishing, `FishCatchEvent`) |
-| Enchants E1-E5, wardrobe + loadout W1-W4 (Phase 6 part) | built | [plans/ENCHANTS.md](plans/ENCHANTS.md), [plans/WARDROBE.md](plans/WARDROBE.md) | see TEST_GUIDE features | E6 above |
-| Custom starter chest (STARTER) | plan written (TUTORIAL §6) | [plans/TUTORIAL.md](plans/TUTORIAL.md) | in TUT | Built in TU4 |
-| Dynamic island level (ISLAND-LEVEL) | plan written (Phase 5 M5.2, 8 sources) | [phases/PHASE-5-PROGRESSION.md](phases/PHASE-5-PROGRESSION.md) | in P5 | M5.2 after M5.1 |
-| New decisions from AFK, SELL2, STYLE2, BANK2, BOX, ANS1-3, NPCHOLO, PORTALS, DEPTHSPROT | built with defaults; waiting for owner answers | [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) | 52 of 52 (ids Q2-1 to Q2-52) | Change only what you answer differently |
-| LATER: Discord integration (linking, webhooks, appeals step 2, announcements) | later | [LATER.md](LATER.md) | 0 | With Phase 11 |
-| LATER: SkybornMC hub / lobby for other gamemodes | later | [LATER.md](LATER.md) | 0 | After launch |
-| LATER: resource pack extras (border, models, crate and donor visuals, glyphs, sounds) | later (inside RP1-RP10) | [LATER.md](LATER.md), [plans/RESOURCE_PACK.md](plans/RESOURCE_PACK.md) | in RP | RP milestones |
-| LATER: store (Tebex), rank perks, "gg" after purchases, streak-save | later | [LATER.md](LATER.md) | in RTA | Phase 11 |
-| LATER: website stats / web map | later | [LATER.md](LATER.md) | 0 | After launch |
-| LATER: Discord bot appeals for banned players | later | [LATER.md](LATER.md) | 0 | Phase 11 |
-| LATER: network mode for punishments | later | [LATER.md](LATER.md) | 0 | When a second server exists |
-| LATER: CoreProtect block logs in `/logs near` | later (waits for a 26.3 build) | [LATER.md](LATER.md) | 0 | When CoreProtect supports 26.3 |
-| LATER: Nether and End as custom worlds | later | [LATER.md](LATER.md) | 0 | Needs a plan when that content is scheduled |
+| 1 | Messages and commands (every message configurable, one format, command lists, Bedrock) | needs your input | [planning/MESSAGES_AND_COMMANDS.md](planning/MESSAGES_AND_COMMANDS.md) | Answer 14 questions, then a review page per module |
+| 2 | Tab list (rank on every player, cleaner look) | needs your input | [planning/TAB_LIST.md](planning/TAB_LIST.md) | Answer 12 questions |
+| 3 | `/menu` GUI (new layout) | needs your input | [planning/MENU_GUI.md](planning/MENU_GUI.md) | Pick option A, B or C (12 questions) |
+| 4 | Bank: easier to use | needs your input | [planning/BANK_UX.md](planning/BANK_UX.md) | Answer 13 questions + add anything you "talked about before" |
+| 5 | Currencies, trading and boosting (660, 666) | needs your input | [planning/CURRENCIES_TRADING_BOOSTING.md](planning/CURRENCIES_TRADING_BOOSTING.md) | Pick option A, B or C (13 questions) |
+| 6 | Sell prices (live prices, push limit, Depths values, unsellable, price news) | needs your input | [planning/SELL_PRICES.md](planning/SELL_PRICES.md) | Answer 12 questions |
+| 7 | Chat broadcasts (vote, store, tips, market every X minutes) | needs your input | [planning/CHAT_BROADCASTS.md](planning/CHAT_BROADCASTS.md) | Answer 10 questions |
+| 8 | Combat tag and combat logging (567) | needs your input | [planning/COMBAT_LOGGING.md](planning/COMBAT_LOGGING.md) | Answer 10 questions |
+| 9 | Custom mob drops (693, 695; villagers) | needs your input | [planning/CUSTOM_MOB_DROPS.md](planning/CUSTOM_MOB_DROPS.md) | Answer 9 questions |
+| 10 | Duels (wagers, arenas, rules) | needs your input | [planning/DUELS.md](planning/DUELS.md) | Answer 12 questions; built in Phase 9 |
+| 11 | Island storage / Island Vault (unblocks STORE2) | needs your input | [planning/ISLAND_STORAGE.md](planning/ISLAND_STORAGE.md) | Answer 11 questions, then build with Phase 5 M5.4 |
+| 12 | A better `/shop` (693) | needs your input | [planning/SHOP.md](planning/SHOP.md) | Answer 7 questions |
+| 13 | Player shops and buy orders (ideas 57, 58) | needs your input | [planning/PLAYER_SHOPS_BUY_ORDERS.md](planning/PLAYER_SHOPS_BUY_ORDERS.md) | Answer 9 questions |
+| 14 | Friends, parties, guest book (ideas 63, 64, 66) | needs your input | [planning/FRIENDS_PARTIES.md](planning/FRIENDS_PARTIES.md) | Answer 7 questions |
+| 15 | Sell wands (E3, idea 59) | needs your input | [planning/SELL_WANDS.md](planning/SELL_WANDS.md) | Answer 6 questions |
+| 16 | REVIEW3: second look at your answers (44 items, 14 high) | needs your input | [REVIEW3_SECOND_LOOK.md](REVIEW3_SECOND_LOOK.md) | Answer on the Decisions page; many topic files above link to these items |
+| 17 | Phase 9 Conquest and events | needs your input (outline) | [planning/PHASE-9-EVENTS.md](planning/PHASE-9-EVENTS.md) | Answer 10 questions, then the full plan `phases/PHASE-9-*.md` |
+| 18 | Phase 11 Store, ranks, Discord | needs your input (outline) | [planning/PHASE-11-STORE-DISCORD.md](planning/PHASE-11-STORE-DISCORD.md) | Answer 10 questions (Mojang rules R3-7, R3-8 first) |
+| 19 | Phase 12 Seasons | needs your input (outline) | [planning/PHASE-12-SEASONS.md](planning/PHASE-12-SEASONS.md) | Answer 9 questions |
+| 20 | Phase 13 Balance and launch prep | needs your input (outline) | [planning/PHASE-13-LAUNCH.md](planning/PHASE-13-LAUNCH.md) | Answer 7 questions |
+| 21 | Phase 7 Island production (fuel, generators, crops, collectors, fishing, outposts) | needs your input | [phases/PHASE-7-PRODUCTION.md](phases/PHASE-7-PRODUCTION.md) | Answer PD1-PD37, then M7.1 Island Fuel |
+| 22 | Phase 8 PvE (mobs, bosses, pets) | needs your input | [phases/PHASE-8-PVE.md](phases/PHASE-8-PVE.md) | Answer its QUESTIONS, then M8.1 mob framework v2 |
+| 23 | Security and anti-exploit audit | needs your input | [planning/SECURITY_ANTI_EXPLOIT.md](planning/SECURITY_ANTI_EXPLOIT.md) | Answer §6 questions; high fixes already in SECFIX1 |
+| 24 | Performance and lag audit | needs your input | [planning/PERFORMANCE.md](planning/PERFORMANCE.md) | Answer §6 questions, then the server config changes |
+| 25 | Quality of life (top 30) | needs your input | [planning/QUALITY_OF_LIFE.md](planning/QUALITY_OF_LIFE.md) | Answer §5 questions; quick wins in §4 |
+| 26 | Older open decisions (AFK, SELL2, BANK2, BOX, NPCs, portals ...) | needs your input | [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) | Q2-1 to Q2-52 on the Decisions page |
+| 27 | Ranks, titles, achievements | plan written | [plans/RANKS_TITLES_ACHIEVEMENTS.md](plans/RANKS_TITLES_ACHIEVEMENTS.md) | RK2 rename the free rank to Ashborn, AC1 `/achievements`; R3-7/R3-8 still open |
+| 28 | Phase 5 Progression (pillars, island level, upgrades, masteries, leaderboards) | plan written | [phases/PHASE-5-PROGRESSION.md](phases/PHASE-5-PROGRESSION.md) | M5.1 Pillars |
+| 29 | Phase 10 Rewards (crates, keys, voting, daily, quests, pass, collection log, Black Market) | plan written | [phases/PHASE-10-REWARDS.md](phases/PHASE-10-REWARDS.md) | M10.1 crates + keys core |
+| 30 | Hoe and rod enchants (E6) | plan written | [plans/ENCHANTS.md](plans/ENCHANTS.md) §6.4, §6.7 | After Phase 7 M7.3 and M7.8 |
+| 31 | Tutorial + starter chest | building now | [plans/TUTORIAL.md](plans/TUTORIAL.md) | TU1-TU4 built; TU5 next (Pip, NPC lines, cameras) |
+| 32 | Security fixes without owner decision (SECFIX1) | building now | [planning/SECURITY_ANTI_EXPLOIT.md](planning/SECURITY_ANTI_EXPLOIT.md) | Merge and release |
+| 33 | Resource pack + art brief | waiting for art | [plans/RESOURCE_PACK.md](plans/RESOURCE_PACK.md), [plans/RESOURCE_PACK_ART_BRIEF.md](plans/RESOURCE_PACK_ART_BRIEF.md) | You draw the 5 pilot pieces; then RP1 (forced pack) |
+
+**Suggested order for you:** 16 (REVIEW3, high items first) → 5 → 4 → 6 → 8 → 1 → 3 → 2 → the rest. Items 5, 4 and 6 change how money works, so they come before building more economy.
+
+## Already built (no planning needed)
+Enchants E1-E5 ([plans/ENCHANTS.md](plans/ENCHANTS.md)), wardrobe and loadouts W1-W4 ([plans/WARDROBE.md](plans/WARDROBE.md)), Phases 0-4 core, profiles, AFK pool, `/box`, NPCs and holograms, portals. What each does and how to test it: [TEST_GUIDE.md](TEST_GUIDE.md).
+
+## Later (decided, postponed on purpose; see [LATER.md](LATER.md))
+- Discord integration (linking, webhooks, appeals step 2, announcements, local time): with Phase 11 (item 18).
+- Store (Tebex), rank perks, "gg" after purchases, streak-save: Phase 11 (item 18).
+- Discord bot appeals for banned players: Phase 11.
+- SkybornMC hub / lobby for other gamemodes: after launch.
+- Resource pack extras (border, models, crate and donor visuals, glyphs, sounds): inside RP1-RP10 (item 33).
+- Website stats / web map: after launch.
+- Network mode for punishments: when a second server exists.
+- CoreProtect block logs in `/logs near`: when CoreProtect supports 26.3.
+- Nether and End as custom worlds: needs a plan when that content is scheduled.
+
+## Where your notes from the answers went
+| Your note | Topic file |
+|---|---|
+| 567 combat logging | COMBAT_LOGGING.md |
+| 612 chat messages every X minutes, price news | CHAT_BROADCASTS.md, SELL_PRICES.md |
+| 613 push limit per player | SELL_PRICES.md |
+| 660 trade everything, no boosting | CURRENCIES_TRADING_BOOSTING.md |
+| 666 notes for all currencies, drop / trade / duels | CURRENCIES_TRADING_BOOSTING.md, DUELS.md |
+| 693 custom mob drops, villagers, better `/shop` | CUSTOM_MOB_DROPS.md, SHOP.md |
+| 695 own values for Depths blocks, other currencies | SELL_PRICES.md, CUSTOM_MOB_DROPS.md |
+| 703 live price refresh | SELL_PRICES.md |
+| 704 custom items unsellable | SELL_PRICES.md |
+| 748 satchel full warning | REVIEW3 R3-22 |
+| 169 / 263 / 591 / 588-604 bank | BANK_UX.md |
+| "change menu gui" | MENU_GUI.md |
+| "tab shows each player's rank" | TAB_LIST.md |
+| "every message configurable like EssentialsX" | MESSAGES_AND_COMMANDS.md |
+| 168 island level, 375 rank perks, 386 rank names, 398 titles, 355 achievements | plans/RANKS_TITLES_ACHIEVEMENTS.md, phases/PHASE-5-PROGRESSION.md |
+| 158 starter chest, 43 / 44 / 159 tutorial | plans/TUTORIAL.md |
+| 6 / I7 / I8 / ST1-ST6 island storage | ISLAND_STORAGE.md |
+| Ideas 57, 58, 59, 63, 64, 66, E3 | PLAYER_SHOPS_BUY_ORDERS.md, SELL_WANDS.md, FRIENDS_PARTIES.md |
+
+Every unbuilt item by area is still in [BACKLOG.md](BACKLOG.md); the work queue is [QUEUE.md](QUEUE.md).
