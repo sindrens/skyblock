@@ -153,25 +153,25 @@ menu:
     lore:
       - "<c:text>Show one currency or all."
       - ""
-      - "<c:action><sym:bullet> Click to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
   filter-reason:
     name: "<c:value>Type: <value>"
     lore:
       - "<c:text>Payments, selling, shop, auctions ..."
       - ""
-      - "<c:action><sym:bullet> Click to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
   filter-time:
     name: "<c:value>Time: <value>"
     lore:
       - "<c:text>How far back to look."
       - ""
-      - "<c:action><sym:bullet> Click to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
   refresh:
     name: "<c:value>Refresh"
     lore:
       - "<c:text>Load the newest transactions."
       - ""
-      - "<c:action><sym:bullet> Click to refresh"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to refresh"
   empty:
     name: "<c:muted>Nothing here"
     lore:
@@ -279,7 +279,7 @@ sell:
         - "<c:flame><sym:star> Hot item: <percent>% today"
       footer:
         - ""
-        - "<c:action><sym:bullet> Click to take it out"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take it out"
     more:
       name: "<c:value>+<stacks> more stacks"
       lore:
@@ -296,14 +296,14 @@ sell:
         - "<c:text>Puts every item from your"
         - "<c:text>inventory that can be sold in."
         - ""
-        - "<c:action><sym:bullet> Click to add all"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to add all"
     clear:
       name: "<c:value>Take all out"
       lore:
         - "<c:text>Empties the sell box. Nothing"
         - "<c:text>leaves your inventory."
         - ""
-        - "<c:action><sym:bullet> Click to empty"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to empty"
     bonus:
       name: "<c:value>Sell bonus: <c:success><bonus>%"
       none:
@@ -323,7 +323,7 @@ sell:
         - "<c:text>Sells <c:value><items></c:value> items now."
         - "<c:text>Sell bonus: <c:value><bonus>%"
         - ""
-        - "<c:action><sym:bullet> Click to sell"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell"
     confirm-empty:
       name: "<c:muted>Nothing to sell"
       lore:
@@ -428,7 +428,7 @@ bank:
         - "<c:text>Put money from your balance"
         - "<c:text>into the bank. Up to: <max>"
         - ""
-        - "<c:action><sym:bullet> Click to choose an amount"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
     deposit-none:
       name: "<c:muted>Deposit"
       lore:
@@ -444,7 +444,7 @@ bank:
         - "<c:muted>interest is lost. Free for <free>"
         - "<c:muted>after each payout."
         - ""
-        - "<c:action><sym:bullet> Click to choose an amount"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
     withdraw-free:
       name: "<c:value>Withdraw <c:success>(free now)"
       lore:
@@ -452,7 +452,7 @@ bank:
         - "<c:success>No fee right now: a payout just"
         - "<c:success>happened."
         - ""
-        - "<c:action><sym:bullet> Click to choose an amount"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
     withdraw-none:
       name: "<c:muted>Withdraw"
       lore:
@@ -469,7 +469,7 @@ bank:
         - "<c:text>Higher tiers hold more and"
         - "<c:text>earn more interest per payout."
         - ""
-        - "<c:action><sym:bullet> Click to see the tiers"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see the tiers"
     history-personal:
       crumb: "History"
       name: "<c:value>History"
@@ -477,7 +477,7 @@ bank:
         - "<c:text>Every deposit, withdrawal"
         - "<c:text>and interest payout."
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     history-island:
       crumb: "Island history"
       name: "<c:value>Island bank history"
@@ -487,7 +487,7 @@ bank:
         - "<c:text>Who put in and took out what,"
         - "<c:text>and every interest payout."
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     locked:
       - ""
       - "<c:muted>Your island role can't do this."
@@ -554,7 +554,7 @@ bank:
     owned:
       - "<c:success>Unlocked"
     next:
-      - "<c:action><sym:bullet> Click to unlock for <cost>"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to unlock for <cost>"
     locked:
       - "<c:muted>Unlock the tier before first."
     confirm-crumb: "Bank tier <tier>"
@@ -732,48 +732,48 @@ watch:
       empty: "<c:muted>Nothing created yet."
       footer:
         - ""
-        - "<c:action><sym:bullet> Click for every reason"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for every reason"
     sinks:
       name: "<c:error>Biggest sinks <c:muted>(7 days)"
       line: "<c:muted><sym:bullet></c:muted> <c:text><reason><c:muted>:</c:muted> <amount> <c:muted>(<share>)"
       empty: "<c:muted>Nothing removed yet."
       footer:
         - ""
-        - "<c:action><sym:bullet> Click for every reason"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for every reason"
     reasons:
       name: "<c:value>Every reason"
       lore:
         - "<c:text>Created, removed and moved"
         - "<c:text>money per ledger reason."
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     top:
       name: "<c:value>Top earners"
       lore:
         - "<c:text>Profiles that earned the most,"
         - "<c:text>with player names."
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     biggest:
       name: "<c:value>Biggest transactions"
       lore:
         - "<c:text>The largest single transactions"
         - "<c:text>of the last 24 hours."
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     alerts:
       name: "<c:value>Alerts <c:muted>(<open> open)"
       lore:
         - "<c:text>Unusual earning, transfers,"
         - "<c:text>notes, sell spikes, balance jumps."
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     currency:
       name: "<c:value>Currency: <currency>"
       lore:
         - "<c:text>Show another currency."
         - ""
-        - "<c:action><sym:bullet> Click to change"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
     refresh:
       name: "<c:value>Refresh"
       lore:
@@ -781,7 +781,7 @@ watch:
         - "<c:text>Last update: <c:value><ago></c:value> ago"
         - "<c:text>Read up to transaction <c:value>#<cursor>"
         - ""
-        - "<c:action><sym:bullet> Click to refresh"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to refresh"
 
   # ---------------------------------------------------------------- reasons drill-down
   reasons-menu:
@@ -802,19 +802,19 @@ watch:
     footer:
       - ""
       - "<c:muted>Key: <key>"
-      - "<c:action><sym:bullet> Click for the biggest of 24 hours"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the biggest of 24 hours"
     range:
       name: "<c:value>Period: <range>"
       lore:
         - "<c:text>Today, 7 days or 14 days."
         - ""
-        - "<c:action><sym:bullet> Click to change"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
     sort:
       name: "<c:value>Sort: <sort>"
       lore:
         - "<c:text>By volume, created or removed."
         - ""
-        - "<c:action><sym:bullet> Click to change"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
     sorts:
       volume: "Volume"
       created: "Created"
@@ -839,13 +839,13 @@ watch:
         - "<c:text>Transactions: <c:value><count>"
         - ""
         - "<c:muted>Profile <profile>"
-        - "<c:action><sym:bullet> Click for the full history"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the full history"
     range:
       name: "<c:value>Period: <range>"
       lore:
         - "<c:text>24 hours or 7 days."
         - ""
-        - "<c:action><sym:bullet> Click to change"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
     empty:
       name: "<c:muted>Nothing here"
       lore:
@@ -867,7 +867,7 @@ watch:
         - "<c:muted><ago> ago <sym:dot> <date>"
         - "<c:muted>#<id>"
     click:
-      - "<c:action><sym:bullet> Click for <c:value><player></c:value><c:action>'s history"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for <c:value><player></c:value><c:text>'s history"
     empty:
       name: "<c:muted>Nothing here"
       lore:
@@ -887,13 +887,13 @@ watch:
         - ""
         - "<c:text>State: <c:value><state>"
         - "<c:muted><ago> ago <sym:dot> <date>"
-        - "<c:action><sym:bullet> Click for the evidence"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the evidence"
     filter:
       name: "<c:value>Show: <filter>"
       lore:
         - "<c:text>Open alerts or all alerts."
         - ""
-        - "<c:action><sym:bullet> Click to change"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
     filters:
       open: "Open"
       all: "All"
@@ -922,14 +922,14 @@ watch:
         - "<c:text>Every transaction of"
         - "<c:value><player></c:value><c:text>'s profile."
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     punish:
       name: "<c:value>Open /p"
       lore:
         - "<c:text>The punishment menu for"
         - "<c:value><player></c:value><c:text>. You decide."
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     suggest:
       name: "<c:value>Suggest punishment"
       lore:
@@ -937,27 +937,27 @@ watch:
         - "<c:value><reason></c:value><c:text>). Staff then press"
         - "<c:text>Apply or Dismiss. Never automatic."
         - ""
-        - "<c:action><sym:bullet> Click to suggest"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to suggest"
     review:
       name: "<c:success>Mark reviewed"
       lore:
         - "<c:text>Checked: something was off"
         - "<c:text>and is handled (or is fine)."
         - ""
-        - "<c:action><sym:bullet> Click to mark"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to mark"
     dismiss:
       name: "<c:muted>False alarm"
       lore:
         - "<c:text>Nothing wrong. Helps tune"
         - "<c:text>the thresholds later."
         - ""
-        - "<c:action><sym:bullet> Click to dismiss"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to dismiss"
     reopen:
       name: "<c:warning>Open again"
       lore:
         - "<c:text>Put it back on the open list."
         - ""
-        - "<c:action><sym:bullet> Click to reopen"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to reopen"
     no-evidence:
       name: "<c:muted>No rows"
       lore:

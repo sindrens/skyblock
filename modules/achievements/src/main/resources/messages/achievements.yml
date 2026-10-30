@@ -59,7 +59,7 @@ menu:
       - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
       - "<bar> <c:value><percent>%"
       - ""
-      - "<c:action><sym:bullet> Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   entry:
     name: "<name><c:value><tier>"
     name-done: "<name><c:value><tier></c:value> <c:success><sym:check>"

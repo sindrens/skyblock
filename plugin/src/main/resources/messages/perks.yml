@@ -88,4 +88,4 @@ freerank:
     title: "Pick your tag"
     tag:
       name: "<tag>"
-      lore: ["<c:text>Free with your rank.", "<c:text>Yours forever.", "", "<c:action><sym:bullet> Click to pick"]
+      lore: ["<c:text>Free with your rank.", "<c:text>Yours forever.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]

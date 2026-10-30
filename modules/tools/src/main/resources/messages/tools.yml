@@ -110,7 +110,7 @@ blueprint:
     title: "Blueprints"
     name: "<blueprint>"
     makes: ["<c:text>Makes: <tool> <c:muted>(tier <tier>)", "<c:text>Ability: <c:enchant><ability>"]
-    click: "<c:action>▶ Click <c:text>to craft"
+    click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to craft"
     info: ["<c:text>Blueprints drop rarely in", "<c:text>The Depths. Add money and", "<c:text>materials to craft a special", "<c:text>tool with an ability."]
     empty:
       name: "<c:muted>No blueprints"
@@ -147,10 +147,10 @@ skins:
       lore: ["<c:text>No skin fits this tool."]
     remove:
       name: "<c:error>Remove skin"
-      lore: ["<c:text>Current: <c:value><skin>", "<c:action>▶ Click <c:text>to remove"]
+      lore: ["<c:text>Current: <c:value><skin>", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
     state:
       applied: "<c:success><sym:check> On this tool"
-      owned: "<c:action>▶ Click <c:text>to apply"
+      owned: "<bold><c:action>» CLICK</c:action></bold> <c:text>to apply"
       locked: "<c:error><sym:cross> <c:text>Not owned. From crates, store and events."
 
 # The tool item (lore formats: {placeholders}).
@@ -254,15 +254,15 @@ tool-menu:
     lore: ["<c:text>Blocks mined <c:value><blocks>", "<c:text>Logs chopped <c:value><logs>", "<c:text>Kills <c:value><kills>", "<c:text>Total XP <c:value><xp>", "<c:text>Times forged <c:value><forged>", "<c:text>Prestiges <c:value><prestige>", "<c:muted>Made by <creator>"]
   skin:
     name: "<c:value>Skin"
-    lore: ["<c:text>Now: <c:value><skin>", "<c:action>▶ Click <c:text>to change"]
+    lore: ["<c:text>Now: <c:value><skin>", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   no-skin: "none"
   forge:
     name: "<c:value>Open the Forge"
-    lore: ["<c:text>Upgrade this tool to the next", "<c:text>tier. Level, perks and stats", "<c:text>stay.", "<c:action>▶ Click <c:text>to open"]
+    lore: ["<c:text>Upgrade this tool to the next", "<c:text>tier. Level, perks and stats", "<c:text>stay.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   prestige:
     ok:
       name: "<c:flame><sym:star> Prestige"
-      lore: ["<c:text>Back to Lv 1, keeps perks and", "<c:text>stats, opens the prestige slot", "<c:text>and adds a star.", "<c:action>▶ Click <c:text>to prestige"]
+      lore: ["<c:text>Back to Lv 1, keeps perks and", "<c:text>stats, opens the prestige slot", "<c:text>and adds a star.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to prestige"]
     not-max-level:
       name: "<c:muted><sym:star> Prestige"
       lore: ["<c:error><sym:cross> <c:text>Needs Lv <max> <c:muted>(now <level>)"]
@@ -311,17 +311,17 @@ forge:
     info: ["<c:text>Forge the next tier from the", "<c:text>tool you have. Level, perks", "<c:text>and stats stay. Pay with money", "<c:text>and Depths materials."]
     tab: "<c:text><kind>"
     tab-selected: "<c:flame><sym:bullet> <kind>"
-    tab-lore: ["<c:action>▶ Click <c:text>to show"]
+    tab-lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
     tab-selected-lore: ["<c:muted>Showing now"]
     more-later:
       name: "<c:muted>More tiers later"
       lore: ["<c:text>Farming and fishing tiers", "<c:text>come in a later update."]
     starter:
       name: "<c:value>Starter kit"
-      lore: ["<c:text>A free pickaxe, axe, hoe,", "<c:text>sword and rod. Only the ones", "<c:text>you don't have. Every <hours> h.", "<c:action>▶ Click <c:text>to claim"]
+      lore: ["<c:text>A free pickaxe, axe, hoe,", "<c:text>sword and rod. Only the ones", "<c:text>you don't have. Every <hours> h.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
     blueprints:
       name: "<c:value>Blueprints"
-      lore: ["<c:text>Craft special tools from", "<c:text>blueprints. You have <c:value><count></c:value>.", "<c:action>▶ Click <c:text>to open"]
+      lore: ["<c:text>Craft special tools from", "<c:text>blueprints. You have <c:value><count></c:value>.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   tier:
     name: "<tool> <mark>"
     subtitle: "<c:muted><kind> <sym:dot> Tier <tier>"
@@ -347,12 +347,12 @@ forge:
       starter: "<c:action><sym:arrow>"
     state:
       owned: ["<c:success><sym:check> Owned"]
-      craftable: ["<c:action>▶ Click <c:text>to forge"]
+      craftable: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to forge"]
       needs-tool: ["<c:error><sym:cross> <c:text>Locked: bring the tier before"]
       needs-skill: ["<c:error><sym:cross> <c:text>Locked: skill too low"]
       needs-materials: ["<c:error><sym:cross> <c:text>Locked: materials missing"]
       needs-money: ["<c:error><sym:cross> <c:text>Locked: not enough money"]
-      starter: ["<c:action>▶ Click <c:text>to claim the starter kit"]
+      starter: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to claim the starter kit"]
   confirm:
     crumb: "Forge"
     details: ["<c:text>Upgrades <tool> <c:text>(Lv <level>)", "<c:text>to <to>", "<c:text>Keeps level, perks and stats", "<c:text>Costs <c:value><money></c:value> <c:text>and", "<c:value><materials>"]

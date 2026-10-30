@@ -152,31 +152,31 @@ menu:
       - "<c:text>Go to your island home."
       - "<c:muted>Your own home: /is home my"
       - ""
-      - "<c:action>Click to teleport"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to teleport"
   members:
     name: "<c:flame><bold>Members"
     lore:
       - "<c:text>Members: <c:value><members>/<slots>"
       - "<c:text>Coop: <c:value><coops>"
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   permissions:
     name: "<c:flame><bold>Permissions"
     lore-edit:
       - "<c:text>What each role may do."
       - ""
-      - "<c:action>Click to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
     lore-view:
       - "<c:text>What each role may do."
       - ""
-      - "<c:action>Click to look"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to look"
   warps:
     name: "<c:flame><bold>Warps"
     lore:
       - "<c:text>Your island warps: <c:value><warps>/<slots>"
       - "<c:muted>Set one with /is setwarp shop"
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   visitors:
     name: "<c:flame><bold>Visitors"
     lore-open:
@@ -188,9 +188,9 @@ menu:
       - "<c:text>Visitors here now: <c:value><visitors>"
       - "<c:text>Banned players: <c:value><bans>"
     click-lock:
-      - "<c:action>Click to lock"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to lock"
     click-unlock:
-      - "<c:action>Click to unlock"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to unlock"
     click-view:
       - "<c:muted>The Leader, Admins and Mods can lock it."
   settings:
@@ -199,24 +199,24 @@ menu:
       - "<c:text>Spawning, fire, weather, time"
       - "<c:text>and more for your island."
       - ""
-      - "<c:action>Click to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
     lore-view:
       - "<c:text>Spawning, fire, weather, time"
       - "<c:text>and more for your island."
       - ""
-      - "<c:action>Click to look"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to look"
   invites:
     name: "<c:flame><bold>Invites"
     lore:
       - "<c:text>Open invites: <c:value><count>"
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   notes:
     name: "<c:flame><bold>Island notes"
     lore:
       - "<c:text>Your island's shared to-do list."
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     lore-locked:
       - "<c:text>Your island's shared to-do list."
       - "<c:muted>Your role can't read the notes."
@@ -227,29 +227,29 @@ menu:
       - "<c:text>Your chat goes to everyone."
       - "<c:muted>One message: /is chat hi"
       - ""
-      - "<c:action>Click to talk to your island"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to talk to your island"
     lore-on:
       - "<c:text>Your chat goes to your island."
       - ""
-      - "<c:action>Click to talk to everyone again"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to talk to everyone again"
   chat-colors:
     name: "<c:flame><bold>Chat colors"
     lore-edit:
       - "<c:text>Pick a color for each role"
       - "<c:text>in island chat."
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     lore-view:
       - "<c:text>The color of each role"
       - "<c:text>in island chat. <c:muted>(the Leader picks)"
       - ""
-      - "<c:action>Click to look"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to look"
   visit:
     name: "<c:flame><bold>Visit islands"
     lore:
       - "<c:text>Browse other islands and warps."
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   stats:
     name: "<c:flame><bold>Island stats"
     lore:
@@ -257,7 +257,7 @@ menu:
       - "<c:text>more: today, this week and all time."
       - "<c:text>See what every member added."
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   stats-off:
     name: "<c:muted>Island stats"
     lore:
@@ -268,7 +268,7 @@ menu:
       - "<c:text>Shared money of the island."
       - "<c:text>Earns interest every few hours."
       - ""
-      - "<c:action><sym:bullet> Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   bank-off:
     name: "<c:muted>Island bank"
     lore:
@@ -283,14 +283,14 @@ menu:
       - "<c:text>Delete your island for good."
       - "<c:muted>You confirm twice first."
       - ""
-      - "<c:action>Click to disband"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to disband"
   leave:
     name: "<c:error><bold>Leave island"
     lore:
       - "<c:text>Leave this island."
       - "<c:muted>You confirm first."
       - ""
-      - "<c:action>Click to leave"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to leave"
 
 # ---------------------------------------------------------------- M2.5 island chat (/is chat)
 chat:
@@ -322,7 +322,7 @@ chat:
       lore:
         - "<c:text>Color: <c:value><color>"
       click:
-        - "<c:action>Click for <next>"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for <next>"
       locked:
         - "<c:muted>Only the Leader can change it."
     changed: "<prefix><c:success><sym:check></c:success> <c:text>Chat color changed: <role>"
@@ -520,7 +520,7 @@ members:
     lore:
       - "<c:text>Your island's shared to-do list."
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   info:
     - "<c:text>Everyone on your island and their role."
     - "<c:text>Click a head for actions."
@@ -559,7 +559,7 @@ members:
     offline:
       - "<c:muted>● Offline"
     click:
-      - "<c:action>Click for actions"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for actions"
   invite:
     name: "<c:flame><bold>Invite a player"
     crumb: "Invite"
@@ -567,7 +567,7 @@ members:
       - "<c:text>Pick an online player without"
       - "<c:text>an island. Members: <c:value><members>/<slots>"
       - ""
-      - "<c:action>Click to choose"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
     lore-full:
       - "<c:error>Your island is full (<members>/<slots>)."
   invites:
@@ -576,25 +576,25 @@ members:
       - "<c:text>Invites you got and invites"
       - "<c:text>your island sent. Open: <c:value><count>"
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   settings:
     name: "<c:flame><bold>Island settings"
     lore:
       - "<c:text>Spawning, fire, explosions,"
       - "<c:text>weather, time and more."
       - ""
-      - "<c:action>Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   permissions:
     name: "<c:flame><bold>Permissions"
     lore-edit:
       - "<c:text>What each role may do on your island."
       - ""
-      - "<c:action>Click to edit"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit"
     lore-view:
       - "<c:text>What each role may do on your island."
       - "<c:muted>Only the Leader, Admins and Mods can change it."
       - ""
-      - "<c:action>Click to view"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"
 
 actions:
   crumb: "<player>"
@@ -612,7 +612,7 @@ actions:
       - "<c:text>Mods invite, kick Members, coop"
       - "<c:text>players and move the home."
       - ""
-      - "<c:action>Click to promote"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to promote"
   promote-admin:
     name: "<c:success><bold>Promote to Admin"
     lore:
@@ -620,44 +620,44 @@ actions:
       - "<c:text>change Mod permissions, change the"
       - "<c:text>island settings and promote Members."
       - ""
-      - "<c:action>Click to promote"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to promote"
   demote:
     name: "<c:warning><bold>Demote to Member"
     lore:
       - "<c:text><player> loses the Mod rights."
       - ""
-      - "<c:action>Click to demote"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to demote"
   demote-admin:
     name: "<c:warning><bold>Demote to Mod"
     lore:
       - "<c:text><player> loses the Admin rights."
       - ""
-      - "<c:action>Click to demote"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to demote"
   transfer:
     name: "<c:warning><bold>Make Leader"
     lore:
       - "<c:text>Hand the island to <c:value><player></c:value>."
       - "<c:text>You become an Admin. Two confirmations."
       - ""
-      - "<c:action>Click to continue"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to continue"
   kick:
     name: "<c:error><bold>Kick"
     lore:
       - "<c:text>Remove <c:value><player></c:value> from the island."
       - ""
-      - "<c:action>Click to continue"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to continue"
   uncoop:
     name: "<c:error><bold>End coop"
     lore:
       - "<c:text><player> can't build here anymore."
       - ""
-      - "<c:action>Click to end the coop"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to end the coop"
   leave:
     name: "<c:error><bold>Leave the island"
     lore:
       - "<c:text>Stop being a member."
       - ""
-      - "<c:action>Click to continue"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to continue"
   back:
     name: "<c:text>Back"
     lore:
@@ -699,9 +699,9 @@ perms:
     changed:
       - "<c:muted>Changed by your island (default: <default>)"
     click-deny:
-      - "<c:action>Click to deny"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to deny"
     click-allow:
-      - "<c:action>Click to allow"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to allow"
     locked:
       - "<c:muted>Only the Leader, an Admin or a Mod can change this."
     locked-mod:
@@ -891,11 +891,11 @@ admin:
       lore:
         - "<c:text>All, used, clearing or free."
         - ""
-        - "<c:action>Click to switch"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"
     reload:
       name: "<c:flame><bold>Reload"
       lore:
-        - "<c:action>Click to load the latest state"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to load the latest state"
     entry:
       name: "<c:value>#<slot></c:value> <c:muted>· <state>"
       where:
@@ -915,7 +915,7 @@ admin:
       updated:
         - "<c:muted>Changed: <updated>"
       click:
-        - "<c:action>Click to teleport"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to teleport"
 
 # ---------------------------------------------------------------- M2.4 visiting, warps and showcase
 # /settings toggles (category Social) for island members.
@@ -1067,7 +1067,7 @@ warps:
     lore:
       - "<c:text>Warps: <c:value><count>"
     click:
-      - "<c:action>Click to show only these"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show only these"
     selected:
       - "<c:success>Shown <c:muted>· click again for all"
   islands:
@@ -1076,13 +1076,13 @@ warps:
       - "<c:text>Most visited, top rated,"
       - "<c:text>most liked and newest islands."
       - ""
-      - "<c:action>Click to browse"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to browse"
   own:
     name: "<c:flame><bold>Your warps"
     lore:
       - "<c:text>Warps: <c:value><count>/<slots>"
       - ""
-      - "<c:action>Click to see and edit"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see and edit"
   how:
     name: "<c:flame>Adding warps"
     lore:
@@ -1106,9 +1106,9 @@ warps:
     sign:
       - "<c:muted>Sign warp: break the sign to delete it"
     click:
-      - "<c:action>Click to teleport"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to teleport"
     click-edit:
-      - "<c:action>Click to edit"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit"
   edit:
     crumb: "<warp>"
     info:
@@ -1122,38 +1122,38 @@ warps:
     teleport:
       name: "<c:flame>Teleport"
       lore:
-        - "<c:action>Click to go there"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to go there"
     icon:
       name: "<c:flame>Icon"
       lore:
         - "<c:text>The item shown in the browser."
         - ""
-        - "<c:action>Click to pick another"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick another"
     public:
       name: "<c:success>Public"
       lore:
         - "<c:text>Everyone can use this warp."
         - ""
-        - "<c:action>Click to make it private"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to make it private"
     private:
       name: "<c:warning>Private"
       lore:
         - "<c:text>Only members and coop players"
         - "<c:text>can use this warp."
         - ""
-        - "<c:action>Click to make it public"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to make it public"
     category:
       name: "<c:flame>Category: <category>"
       lore:
         - "<c:text>Where it shows in the browser."
         - ""
-        - "<c:action>Click for <next>"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for <next>"
     delete:
       name: "<c:error>Delete"
       lore:
         - "<c:text>Removes this warp for good."
         - ""
-        - "<c:action>Click to delete"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to delete"
   delete:
     crumb: "Delete warp"
     shown: "<c:error><bold>Delete <warp>"
@@ -1190,7 +1190,7 @@ browser:
   gone:
     name: "<c:muted>Island removed"
   tab-click:
-    - "<c:action>Click to show"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
   tab-selected:
     - "<c:success>Shown"
   warps:
@@ -1199,7 +1199,7 @@ browser:
       - "<c:text>Shops, farms, parkour and"
       - "<c:text>builds of every island."
       - ""
-      - "<c:action>Click to browse"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to browse"
   sort:
     visits:
       crumb: "Most visited"
@@ -1236,7 +1236,7 @@ browser:
     unrated:
       - "<c:text>Rating: <c:muted>none yet"
     click:
-      - "<c:action>Click to visit"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to visit"
     own:
       - "<c:action>Your island · click to go home"
     banned:
@@ -1260,7 +1260,7 @@ invites:
       - "<c:text>Members: <c:value><members>/<slots>"
       - "<c:text>Expires in: <c:value><time>"
       - ""
-      - "<c:action>Click to accept or deny"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to accept or deny"
   sent:
     name: "<c:value><player></c:value> <c:muted>· invited"
     lore:
@@ -1268,7 +1268,7 @@ invites:
       - "<c:text>Expires in: <c:value><time>"
       - ""
     click:
-      - "<c:action>Click to cancel"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to cancel"
     locked:
       - "<c:muted>Only the Leader, Admins and Mods can cancel."
   cancel:
@@ -1290,13 +1290,13 @@ invites:
       lore:
         - "<c:text>Join <c:value><island></c:value>."
         - ""
-        - "<c:action>Click to join"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to join"
     deny:
       name: "<c:error><bold>Deny"
       lore:
         - "<c:text>Decline the invite."
         - ""
-        - "<c:action>Click to deny"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to deny"
     back:
       name: "<c:text>Back"
       lore:
@@ -1336,11 +1336,11 @@ flags:
       - "<c:muted>Changed (default: <default>)"
   click:
     "on":
-      - "<c:action>Click to turn on"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to turn on"
     "off":
-      - "<c:action>Click to turn off"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to turn off"
     next:
-      - "<c:action>Click for <next>"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for <next>"
     locked:
       - "<c:muted>You can't change this."
   value:
@@ -1442,20 +1442,20 @@ notes:
       - "<c:text>then close it to save."
       - "<c:muted>Taken back after saving or <seconds>s."
       - ""
-      - "<c:action>Click to get the book"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to get the book"
     lore-read:
       - "<c:text>Puts a temporary book with every"
       - "<c:text>note in your inventory."
       - "<c:muted>Taken back after <seconds>s."
       - ""
-      - "<c:action>Click to get the book"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to get the book"
   add:
     name: "<c:success><bold>Add a note"
     lore:
       - "<c:text>Type it in chat, up to <c:value><length></c:value> characters."
       - "<c:text>Notes: <c:value><count>/<max>"
       - ""
-      - "<c:action>Click to write"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to write"
     lore-full:
       - "<c:error><sym:cross> The list is full (<count>/<max>)."
       - "<c:text>Delete or clear done notes first."
@@ -1464,14 +1464,14 @@ notes:
     lore:
       - "<c:text>Deletes the <c:value><count></c:value> ticked note(s)."
       - ""
-      - "<c:action>Click to clear"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to clear"
   deleted-button:
     name: "<c:info><bold>Deleted notes"
     lore:
       - "<c:text>Staff: notes deleted in the"
       - "<c:text>last <c:value><days></c:value> days."
       - ""
-      - "<c:action>Click to look"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to look"
   entry:
     name: "<c:value><text>"
     name-done: "<c:success><sym:check></c:success> <c:muted><text>"
@@ -1488,13 +1488,13 @@ notes:
     pinned:
       - "<c:text>Pinned at <c:value><x> <y> <z>"
     click:
-      - "<c:action>Click for options"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for options"
   actions:
     crumb: "Note"
     back:
       name: "<c:text>Back"
       lore:
-        - "<c:action>Click to go back"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to go back"
     gone:
       name: "<c:muted>This note is gone"
       lore:
@@ -1505,20 +1505,20 @@ notes:
         - "<c:text>Marks it done for everyone."
         - "<c:text>A pinned hologram is removed."
         - ""
-        - "<c:action>Click to tick"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to tick"
     reopen:
       name: "<c:warning><bold>Open again"
       lore:
         - "<c:text>Puts it back on the to-do list."
         - ""
-        - "<c:action>Click to open again"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open again"
     edit:
       name: "<c:flame><bold>Change text"
       lore:
         - "<c:text>Type the new text in chat,"
         - "<c:text>up to <c:value><length></c:value> characters."
         - ""
-        - "<c:action>Click to change"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
     pin:
       name: "<c:flame><bold>Pin here"
       lore:
@@ -1526,28 +1526,28 @@ notes:
         - "<c:text>where you stand on the island."
         - "<c:muted>Up to <max> pinned notes."
         - ""
-        - "<c:action>Click to pin"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pin"
     move-pin:
       name: "<c:flame><bold>Move pin here"
       lore:
         - "<c:text>Moves the hologram to where"
         - "<c:text>you stand on the island."
         - ""
-        - "<c:action>Click to move"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to move"
     unpin:
       name: "<c:warning><bold>Unpin"
       lore:
         - "<c:text>Removes the hologram."
         - "<c:text>The note stays on the list."
         - ""
-        - "<c:action>Click to unpin"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to unpin"
     delete:
       name: "<c:error><bold>Delete"
       lore:
         - "<c:text>Removes it from the list."
         - "<c:muted>Staff can still read it for <days> days."
         - ""
-        - "<c:action>Click to delete"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to delete"
   delete:
     crumb: "Delete note"
     shown:
@@ -1685,7 +1685,7 @@ stats:
       new: "<c:muted>Nothing last week"
       none: "<c:muted>Nothing yet"
     island-wide: "<c:muted>Counts for the whole island."
-    click: "<c:action>Click to see each member's part"
+    click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to see each member's part"
     soon-name: "<c:muted><category>"
     soon-lore:
       - "<c:muted>-"

@@ -62,7 +62,7 @@ menu:
     lore:
       - ""
       - "<c:muted><items> items"
-      - "<c:action><sym:bullet> Click to browse"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to browse"
   empty:
     name: "<c:muted>The shop is empty"
     lore: ["<c:text>Staff haven't added items yet."]
@@ -80,7 +80,7 @@ category:
       - "<c:text>Price: <cur:money><price></cur:money> <c:muted>each"
       - "<c:text>A stack of 64: <cur:money><stack></cur:money>"
       - ""
-    open: "<c:action><sym:bullet> Click to choose an amount"
+    open: "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
     locked: "<c:error><sym:cross> Locked"
     requires: "<c:text>Needs <c:value><skill> <level></c:value><c:text>."
     unavailable:
@@ -105,7 +105,7 @@ item:
       - "<c:text>Total: <cur:money><total></cur:money>"
       - "<c:muted><amount> x <price>"
       - ""
-    buy: "<c:action><sym:bullet> Click to buy"
+    buy: "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
     no-room: "<c:error><sym:cross> Not enough room <c:muted>(fits <fits>)"
     too-expensive: "<c:error><sym:cross> You can't afford this"
   custom:
@@ -114,7 +114,7 @@ item:
       - "<c:text>Type or pick any amount"
       - "<c:text>up to <c:value><max></c:value><c:text>."
       - ""
-      - "<c:action><sym:bullet> Click to choose"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
   custom-full:
     name: "<c:muted>Custom amount"
     lore:
@@ -129,7 +129,7 @@ confirm:
     - "<c:text>for <cur:money><total></cur:money><c:text>."
     - "<c:muted>Balance: <balance>"
     - ""
-    - "<c:action><sym:bullet> Click to confirm"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm"
 
 buy:
   bought: "<prefix><c:success><sym:check></c:success> <c:text>Bought <c:value><amount>x <item></c:value> <c:text>for <cur:money><price></cur:money><c:text>. Balance: <cur:money><balance></cur:money>"

@@ -14,7 +14,7 @@ hover:
   - "<c:muted>Discord</c:muted> <discord>"
   - "<c:muted>Ping</c:muted> <c:value><ping> ms"
   - ""
-  - "<c:action><sym:bullet> Click to message"
+  - "<bold><c:action>» CLICK</c:action></bold> <c:text>to message"
 hover-nick: "<c:muted>Real name</c:muted> <c:value><real_name>"
 
 # Shown before chat lines for players who turned on "Chat timestamps" in /settings.

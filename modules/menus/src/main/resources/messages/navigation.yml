@@ -1,6 +1,6 @@
 # Navigation texts: /menu, /help, /settings and the menu item. MiniMessage + style tags (style.yml).
 # Item names: one color + white value, never italic. Lore: description in <c:text>, empty line, then
-# "<c:action><sym:bullet> Click to ...". Placeholders: <name>. Help page contents live in help.yml.
+# "<bold><c:action>» CLICK</c:action></bold> <c:text>to ...". Placeholders: <name>. Help page contents live in help.yml.
 # Reload: /skyblock reload menus
 
 # The locked look of anything that isn't built yet (hub entries, help categories, settings).
@@ -16,14 +16,14 @@ menu-item:
   lore:
     - "<c:text>Every feature in one place."
     - ""
-    - "<c:action><sym:bullet> Right-click to open the menu"
+    - "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>to open the menu"
 
 hub:
   title: "Menu"
   info:
     - "<c:text>Every feature of Phoenix Skyblock."
     - "<c:text>Gray icons are coming soon."
-  action: ["", "<c:action><sym:bullet> Click to open"]
+  action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   locked: ["", "<c:error><sym:cross></c:error> <c:text>Your rank can't open this yet."]
   profile:
     name: "<ph:displayname>"
@@ -32,7 +32,7 @@ hub:
       - "<c:text>Playtime: <c:value><playtime>"
       - "<c:text>Joined: <c:value><joined>"
       - ""
-      - "<c:action><sym:bullet> Click to open your settings"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open your settings"
   entries:
     island:
       name: "<c:flame><bold>Island"
@@ -208,9 +208,9 @@ help:
     - "<c:text>Every command you can use."
     - "<c:text>Click one to put it in your chat."
   category-topics: ["<c:text>Topics: <c:value><count>"]
-  open-action: ["", "<c:action><sym:bullet> Click to open"]
+  open-action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   topic-pages: ["<c:text>Pages: <c:value><count>"]
-  read-action: ["", "<c:action><sym:bullet> Click to read"]
+  read-action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to read"]
   empty:
     name: "<c:text>No topics yet"
     lore: ["<c:muted>Guides are added as features open."]
@@ -221,20 +221,20 @@ help:
     lore: ["<c:muted>This guide is still being written."]
   show-in-chat:
     name: "<c:info>Show in chat"
-    lore: ["<c:text>Prints this guide in chat so you", "<c:text>can read it while you play.", "", "<c:action><sym:bullet> Click to show in chat"]
+    lore: ["<c:text>Prints this guide in chat so you", "<c:text>can read it while you play.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show in chat"]
   take-me-there:
     name: "<c:success>Take me there"
-    lore: ["<c:text>Runs <c:value><command></c:value> for you.", "", "<c:action><sym:bullet> Click to go"]
+    lore: ["<c:text>Runs <c:value><command></c:value> for you.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
   commands-button:
     name: "<c:ember>Commands"
-    lore: ["<c:text>Commands for this topic", "<c:text>you can use: <c:value><count>", "", "<c:action><sym:bullet> Click to see them"]
+    lore: ["<c:text>Commands for this topic", "<c:text>you can use: <c:value><count>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to see them"]
   command:
     name: "<c:value><usage>"
     description: "<c:text><description>"
     category: "<c:muted>Category: <category>"
     aliases: "<c:muted>Also: <aliases>"
     example: "<c:muted>Example: <c:text><example>"
-    action: ["", "<c:action><sym:bullet> Click to put it in your chat"]
+    action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to put it in your chat"]
   no-commands:
     name: "<c:text>No commands here"
     lore: ["<c:muted>You don't have any commands in this list."]
@@ -324,10 +324,10 @@ admin:
     restart: ["<c:warning>Needs a restart to take effect."]
     owner: ["<c:warning>Owner only"]
     locked: ["", "<c:error><sym:cross></c:error> <c:text>Only the owner can change this."]
-    action-toggle: ["", "<c:action><sym:bullet> Click to switch"]
-    action-cycle: ["", "<c:action><sym:bullet> Click for the next choice"]
-    action-list: ["", "<c:action><sym:bullet> Click to edit the list"]
-    action-edit: ["", "<c:action><sym:bullet> Click to change"]
+    action-toggle: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
+    action-cycle: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next choice"]
+    action-list: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit the list"]
+    action-edit: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   prompt: "<prefix><c:text>Type a new value for <c:value><path></c:value> <c:muted>(now <value>)</c:muted><c:text>. <c:value>default</c:value> resets it. <c:muted>(<cancel> to cancel, <seconds>s)"
   saved: "<prefix><c:success><sym:check></c:success> <c:value><file></c:value> <c:text><c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to <c:value><new></c:value><c:text>. Live now."
   saved-restart: "<prefix><c:success><sym:check></c:success> <c:value><file></c:value> <c:text><c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to <c:value><new></c:value><c:text>. Applies after a restart."
@@ -338,12 +338,12 @@ admin:
       - "<c:text>Click an entry to remove it."
       - "<c:text>Use + to add one."
     entry: "<c:value><value>"
-    entry-lore: ["", "<c:action><sym:bullet> Click to remove"]
+    entry-lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
     remove-crumb: "Remove entry"
     remove-details: ["<c:text>Removes <c:value><value></c:value> from the list."]
     add:
       name: "<c:success>+ Add"
-      lore: ["<c:text>Add an entry by typing it.", "", "<c:action><sym:bullet> Click to add"]
+      lore: ["<c:text>Add an entry by typing it.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to add"]
     prompt: "<prefix><c:text>Type the entry to add to <c:value><path></c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
     empty:
       name: "<c:text>The list is empty"
