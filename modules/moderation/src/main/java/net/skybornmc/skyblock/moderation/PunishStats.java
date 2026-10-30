@@ -127,9 +127,14 @@ final class PunishStats {
     }
 
     /** The numbers shown. */
-    record Counts(long warns, long mutes, long bans, long kicks, long reversed, long fromSuggestions) {
+    record Counts(long warns, long mutes, long bans, long kicks, long reversed, long fromSuggestions, long island) {
 
-        static final Counts ZERO = new Counts(0, 0, 0, 0, 0, 0);
+        static final Counts ZERO = new Counts(0, 0, 0, 0, 0, 0, 0);
+
+        /** Without island punishments (before P7). */
+        Counts(long warns, long mutes, long bans, long kicks, long reversed, long fromSuggestions) {
+            this(warns, mutes, bans, kicks, reversed, fromSuggestions, 0);
+        }
 
         static Counts of(List<Row> rows) {
             long w = 0;
@@ -138,21 +143,23 @@ final class PunishStats {
             long k = 0;
             long r = 0;
             long s = 0;
+            long i = 0;
             for (Row row : rows) {
                 switch (row.type()) {
                     case WARN -> w += row.count();
                     case MUTE -> m += row.count();
                     case BAN -> b += row.count();
                     case KICK -> k += row.count();
+                    case ISLAND_KICK, ISLAND_BAN, COOP_REMOVE, COOP_BLOCK -> i += row.count();
                 }
                 r += row.reversed();
                 s += row.fromSuggestions();
             }
-            return new Counts(w, m, b, k, r, s);
+            return new Counts(w, m, b, k, r, s, i);
         }
 
         long given() {
-            return warns + mutes + bans + kicks;
+            return warns + mutes + bans + kicks + island;
         }
 
         long net() {

@@ -114,6 +114,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 currency -> core.style().symbol(currency.key()), () -> 0, core.plugin().getLogger(), this::profiles);
         // P7: one line per player, from their best profile.
         baltop = new Baltop((currency, size) -> store.topBest(currency, size, profiles()), System::currentTimeMillis);
+        // P7 (spec 13.1): every transaction is checked against active sanctions (moderation module), a safety net behind
+        // the entry checks of /pay, /withdraw, the bank, the shop, the auction house and trades
+        service.sanctions(() -> core.services().optional(net.skybornmc.skyblock.common.moderation.SanctionService.class).orElse(null));
         core.services().register(ID, EconomyService.class, service);
         notes = new MoneyNotes(this, new NoteService(core.database(), service, System::currentTimeMillis, core.plugin().getLogger(),
                 (createdBy, redeemer, actor) -> profiles().blockOwnTransfer(AuditCategory.ECONOMY, "note_redeem", createdBy, redeemer, actor)));
@@ -598,6 +601,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
     }
 
     private void pay(Player payer, String targetName, long amount, Currency currency) {
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), payer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.PAY)) {
+            return; // P7: frozen balance or blocked trading
+        }
         long played = playtime(payer);
         Optional<PayRules.Problem> problem = PayRules.check(config, payer.getName(), targetName, amount, currency, frozen(payer),
                 played);
@@ -619,6 +625,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 return;
             }
             UUID from = profiles().profileKey(payer);
+            if (net.skybornmc.skyblock.common.moderation.SanctionService.of(core.services()).flatMap(s -> s.block(target.uuid(), net.skybornmc.skyblock.common.moderation.SanctionService.Use.PAY)).isPresent()) {
+                net.skybornmc.skyblock.common.moderation.SanctionService.of(core.services()).ifPresent(s -> s.tellOther(payer, target.name(), net.skybornmc.skyblock.common.moderation.SanctionService.Use.PAY));
+                return; // P7: the receiver's trading is blocked
+            }
             then(payer, accountKey(target.uuid()), to -> {
                 // P4: never between two profiles of the same player (also checked when the names differ).
                 if (profiles().blockOwnTransfer(AuditCategory.ECONOMY, "pay", from, to, Actor.player(payer))) {

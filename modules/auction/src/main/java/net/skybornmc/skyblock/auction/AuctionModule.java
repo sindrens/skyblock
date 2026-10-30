@@ -113,6 +113,8 @@ public final class AuctionModule implements SkyblockModule, Listener {
         });
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
+        // P7 (spec 13.1 "Block trading"): staff can cancel all listings of a player (items to the collection bin)
+        core.services().register(ID, net.skybornmc.skyblock.common.moderation.ListingSanctions.class, this::cancelAllOf);
 
         // Crash recovery first (everything left in pending/buying), then the browse cache.
         engine.recover(0).exceptionally(e -> {
@@ -141,8 +143,31 @@ public final class AuctionModule implements SkyblockModule, Listener {
         core.messages().load(ID);
     }
 
+    /**
+     * P7: cancels every active listing of every profile of {@code player} as a staff removal (items to the seller's
+     * collection bin, never deleted). Listings being bought right now finish. Never completes exceptionally.
+     */
+    private java.util.concurrent.CompletableFuture<Integer> cancelAllOf(UUID player, String reason, Actor actor) {
+        return engine.refreshCache().thenCompose(v -> {
+            List<java.util.concurrent.CompletableFuture<Boolean>> runs = new ArrayList<>();
+            for (Listing l : engine.activeListings()) {
+                if (player.equals(profiles().ownerOf(l.seller()))) {
+                    runs.add(engine.cancel(l.id(), l.seller(), true, actor, reason)
+                            .thenApply(r -> r.outcome() == AuctionEngine.CancelOutcome.CANCELLED)
+                            .exceptionally(e -> false));
+                }
+            }
+            return java.util.concurrent.CompletableFuture.allOf(runs.toArray(java.util.concurrent.CompletableFuture[]::new))
+                    .thenApply(x -> (int) runs.stream().filter(java.util.concurrent.CompletableFuture::join).count());
+        }).exceptionally(e -> {
+            core.plugin().getLogger().log(Level.WARNING, "Auction: cancelling listings for a sanction failed", Database.cause(e));
+            return 0;
+        });
+    }
+
     @Override
     public void disable() {
+        core.services().unregister(ID, net.skybornmc.skyblock.common.moderation.ListingSanctions.class);
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
         HandlerList.unregisterAll(this);
@@ -181,6 +206,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
     private void sellCommand(Player player, long price, String durationKey) {
         if (!player.hasPermission(PERM_SELL)) {
             throw fail("no-permission-sell");
+        }
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)) {
+            return; // P7: blocked trading or frozen balance
         }
         int slot = player.getInventory().getHeldItemSlot();
         ItemStack hand = player.getInventory().getItem(slot);
@@ -242,6 +270,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
         if (duration == null) {
             send(player, "sell.bad-duration", Msg.p("choices", String.join(", ", Pricing.durations(config))));
             return;
+        }
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)) {
+            return; // P7: blocked trading or frozen balance
         }
         PlayerInventory inv = player.getInventory();
         ItemStack now = inv.getItem(slot);
@@ -370,6 +401,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
 
     /** After the buy confirm dialog. */
     void startBuy(Player player, Listing listing) {
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_BUY)) {
+            return; // P7: blocked trading or frozen balance
+        }
         if (frozen(player)) {
             send(player, "frozen");
             sound(player, "error");

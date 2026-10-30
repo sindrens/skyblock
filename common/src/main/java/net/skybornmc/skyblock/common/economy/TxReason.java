@@ -34,6 +34,10 @@ public final class TxReason {
     public static final String ADMIN_TAKE = "admin_take";
     public static final String ADMIN_SET = "admin_set";
     public static final String ADMIN_RESET = "admin_reset";
+    /** Staff removed money as a sanction (Phase P spec 13.1); leaves the economy, restorable. */
+    public static final String SANCTION_REMOVE = "sanction_remove";
+    /** Money removed by a sanction was given back ({@code /psanction restore}). */
+    public static final String SANCTION_RESTORE = "sanction_restore";
 
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 

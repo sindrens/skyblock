@@ -2,6 +2,8 @@
 
 Two players trade items and money face to face. Settings: `trade.yml`; texts: `messages/trade.yml`. Every trade is logged (audit category `trade`: `trade_start`, `trade_complete` with **both item lists** (incl. the serialized stacks, so staff can restore them) and both money offers, `trade_cancel` with the returned items, `trade_deliver`, `trade_recover`); money moves are in the ledger as `trade` (`/transactions`, `/logs pay <player>`). Staff: `/logs trade <player>`.
 
+**Sanctions (Phase P7, spec 13.1):** `/trade <player>` and `/trade accept` are refused when either side's trading is blocked or balance is frozen (the other side is told without details). Money in a trade is also checked by the economy safety net.
+
 | Command | What it does | Permission | Status |
 |---|---|---|---|
 | `/trade [player]` | Ask a player nearby to trade (they get a clickable request). If they already asked you, the trade starts. Without a name: reopens your open trade, or a menu of players nearby to pick from | `skyblock.trade.use` | ✅ |

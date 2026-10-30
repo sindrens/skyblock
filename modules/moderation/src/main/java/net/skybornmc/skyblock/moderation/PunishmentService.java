@@ -104,6 +104,7 @@ final class PunishmentService {
         this.store = store;
         this.config = config;
         this.main = new MainThread(core.plugin());
+        this.islandPunish = new IslandPunish(core, msg, store);
         // spec 13.13: one timer per online player with a timed mute, at its end (no database polling)
         this.muteTimers = new EndTimers((delay, action) -> {
             net.skybornmc.skyblock.common.util.Scheduler.Task task = core.scheduler().later("moderation:mute-end",
@@ -115,6 +116,13 @@ final class PunishmentService {
 
     PunishmentStore store() {
         return store;
+    }
+
+    /** Island punishments (P7, spec 13.2). */
+    private final IslandPunish islandPunish;
+
+    IslandPunish islandPunish() {
+        return islandPunish;
     }
 
     /** P3 side effects (evidence, acknowledgement, report link, Discord); set by the module. */
@@ -495,7 +503,7 @@ final class PunishmentService {
 
     /** "Mute 1h", "Ban permanent", "Warning" for a step (messages steps.*). */
     String stepText(Player viewer, Templates.Step step) {
-        String kind = step.ipWide() ? "ipban" : step.type().name().toLowerCase(Locale.ROOT);
+        String kind = step.ipWide() ? "ipban" : step.kindId();
         if (step.type() == Punishment.Type.WARN && step.weight() != Weights.ONE) {
             return text(viewer, "steps.warn-weighted", Msg.p("weight", Weights.text(step.weight())));
         }
@@ -514,6 +522,10 @@ final class PunishmentService {
      */
     private void apply(Punishment p, Long evidenceEntry, boolean discord) {
         List<Player> affected = affected(p);
+        if (p.type().island()) {
+            islandPunish.apply(p, this); // P7, spec 13.2: enforced by the islands module (the player is told there)
+            affected = List.of();
+        }
         if (p.type() == Punishment.Type.BAN) {
             // Before the kick, so listeners (staff: a ban clears the freeze) act before quit handlers run.
             Map<UUID, String> online = new LinkedHashMap<>();
@@ -617,6 +629,7 @@ final class PunishmentService {
                         case MUTE -> "unmute";
                         case WARN -> "unwarn";
                         case KICK -> "unkick";
+                        default -> "un" + type.key();
                     };
                     notifyStaff(sender, "notify." + action, Msg.p("player", targetName), Msg.p("reason", reason),
                             Msg.p("staff", sender.getName()), pre("target", targetName));
@@ -687,7 +700,7 @@ final class PunishmentService {
      * Bedrock players use the same action from the head of {@code /p} instead. Kicks and console get no line.
      */
     void offerUndo(CommandSender sender, Punishment p) {
-        if (!(sender instanceof Player staff) || p.type() == Punishment.Type.KICK || p.target() == null) {
+        if (!(sender instanceof Player staff) || p.type().instant() || p.target() == null) {
             return;
         }
         Duration window = extras.get().undoWindow();
@@ -813,8 +826,15 @@ final class PunishmentService {
                     msg.send(online, "undo.player-warn", parts(online, p));
                 }
             }
-            case KICK -> {
-                // never undone
+            case ISLAND_BAN, COOP_BLOCK -> {
+                islandPunish.lift(p, Actor.SYSTEM);
+                Player online = Bukkit.getPlayer(target);
+                if (online != null) {
+                    msg.send(online, "undo.player-island", parts(online, p));
+                }
+            }
+            default -> {
+                // kicks, island kicks and coop removals happen once and are never undone
             }
         }
     }
@@ -950,8 +970,9 @@ final class PunishmentService {
     // ------------------------------------------------------------------ notifications
 
     private void announce(CommandSender sender, Punishment p) {
-        String type = p.type().name().toLowerCase(Locale.ROOT);
-        String key = "notify." + (p.expires() != null && (p.type() == Punishment.Type.BAN || p.type() == Punishment.Type.MUTE)
+        String type = p.type().key();
+        String key = p.type().island() ? "notify." + type
+                : "notify." + (p.expires() != null && (p.type() == Punishment.Type.BAN || p.type() == Punishment.Type.MUTE)
                 ? "temp" + type : (p.ipWide() ? "ip" + type : type));
         for (Player staff : Bukkit.getOnlinePlayers()) {
             if (staff.hasPermission(ModerationModule.PERM_NOTIFY) || staff.equals(sender)) {
@@ -998,6 +1019,10 @@ final class PunishmentService {
             case MUTE -> p.expires() == null ? "mute" : "tempmute";
             case WARN -> "warn";
             case KICK -> "kick";
+            case ISLAND_KICK -> "island_kick";
+            case ISLAND_BAN -> "island_ban";
+            case COOP_REMOVE -> "coop_remove";
+            case COOP_BLOCK -> "coop_block";
         };
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("id", p.id());

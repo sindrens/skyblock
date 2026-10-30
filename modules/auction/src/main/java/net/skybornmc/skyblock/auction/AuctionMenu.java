@@ -285,6 +285,9 @@ final class AuctionMenu extends PagedMenu<Listing> {
                 service.sound(viewer, "error");
                 return;
             }
+            if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(module.core.services(), viewer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)) {
+                return; // P7: blocked trading or frozen balance
+            }
             Optional<String> problem = module.sellProblem(viewer, viewer.getInventory().getItem(slot), price);
             if (problem.isPresent()) {
                 module.send(viewer, problem.get(), module.sellPlaceholders(viewer, price));

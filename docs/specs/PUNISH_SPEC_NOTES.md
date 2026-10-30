@@ -206,3 +206,62 @@ Release steps for the main session (before each release, in this order):
   database is the sync, no cross-server code). IDs stay database AUTO_INCREMENT, unique across servers sharing it.
 - **Audit actions:** lockdown_start, lockdown_end, raid_detected, raid_ignored; /psuggest uses suggestion_api /
   suggestion_api_refresh with the sender as actor.
+
+## P7 implementation notes (for P8+)
+- **Island steps (13.2):** `Punishment.Type` gained `ISLAND_KICK`, `ISLAND_BAN`, `COOP_REMOVE`, `COOP_BLOCK` (`island()`,
+  `instant()` = kick/island kick/coop remove: never active, never undoable; `timed()` = ban/mute/island ban/coop block).
+  V008 widens `punishments.type` and `punishment_requests.type` to VARCHAR(16). Ladder syntax `island-kick`,
+  `island-ban <time|perm>`, `coop-remove`, `coop-block <time|perm>` (`Templates.Step.parse`, `kindId()`); warn-rule actions
+  still accept only mute/ban. Permission `skyblock.staff.punish.island` (`permissionFor`). Approval and the rank length
+  limit stay ban/mute only, so island steps never become requests.
+- **Which step is used:** `IslandSteps` (pure) replaces steps the target can't get with the next possible step of the same
+  ladder (same length, so the offence count picks the same index): no islands module → next possible step; owner → island
+  kick/ban/coop remove skip to the next coop-block (or next normal step); no team island → coop-block or the next normal
+  step; nothing later → nearest earlier step, else a warning. The context (`IslandSteps.Context`: island of the active
+  profile, owner flag) is loaded with the target (`PunishMenus.Target.island`, `IslandPunish.context`, main thread).
+  `Target.adapt(template)` is used by the menu lore, More reasons, bulk and `punishWithTemplate` (which also tells staff
+  "X isn't possible ... Y instead"). Probation raises on the adapted ladder. API suggestions (12.8, /psuggest, dupes) adapt
+  with `Context.UNAVAILABLE`, so a suggestion never carries an island step.
+- **Enforcement:** `IslandPunish.apply` after the punishment is stored (`PunishmentService.apply`; the island is resolved
+  again at that moment): island kick → `IslandService.expelFromIsland`, island ban → `banFromIsland(..., reference
+  "punishment:<id>")`, coop remove → `removeMember`, coop block → `blockJoining` with max(existing, new). Undo lifts island
+  bans (`liftIslandBan(reference)`) and coop blocks (the longest other active coop block stays). Failures tell staff
+  (`island-steps.apply-failed`) and audit `island_punish_failed`; the history row stays.
+- **Islands side:** `island_staff_bans` (islands V011, never deleted, `lifted_at`), cached in `VisitManager.staffBans`;
+  `VisitRules.access(..., staffBanned)` returns BANNED before the member check (only the staff bypass ignores it), so every
+  existing guard (teleport, move, join, visit) enforces it. `IslandService.supportsModeration()` gates the hooks. A coop
+  block also refuses `/is create` (`create.blocked`).
+- **Sanctions (13.1):** table `sanctions` (kind FREEZE/TRADE/MONEY/ITEM, state ACTIVE/PENDING/LIFTED/EXPIRED/RESTORED/FAILED,
+  `profile_key` for money/items) + `confiscated_items` (serialized stack, source, slot). `Sanctions` (service + actions),
+  `SanctionStore` (conditional UPDATEs: first click wins), `SanctionRules` (pure), `SanctionMenus` (Sanctions button slot 45,
+  length/reason choice menus, confiscate view). `common/moderation/SanctionService` (published by moderation):
+  `block(player|profileKey, Use)`, `blocks(Transaction)`, `denied(...)` / `deniedOther(...)` one-line hooks.
+  `common/moderation/ListingSanctions` (published by auction) cancels every listing of every profile on a trade block.
+- **Hooks (value paths):** economy `/pay` (both sides), `/withdraw`, note redeem, bank deposit/withdraw (personal and
+  island), shop buy, auction list (command, sell menu, confirm) and buy, trade request/accept (both sides). Safety net:
+  `EconomyServiceImpl.execute/executeGuarded/executeBatch` refuse (INVALID, audit `sanction_blocked`, guards never run)
+  money of `freeze-currencies` leaving a frozen player's player/bank account (except `freeze-exempt-reasons`), a frozen
+  player receiving a `freeze-receive-reasons` transfer (island bank withdraw), and `trade-reasons` touching a trade-blocked
+  player on either side or as actor. Island accounts belong to nobody here.
+- **Atomicity:** remove money = `executeGuarded(withdraw, guard inserts the MONEY row)` (one transaction; INSUFFICIENT_FUNDS
+  retries once with the new balance; never more than the balance). Restore money = `executeGuarded(deposit with idempotency
+  key sanction_restore:<id>, guard claims ACTIVE → RESTORED)`. Confiscate = PENDING row + item written first, then the slot
+  is checked (`ItemStack.equals`) and emptied on the main thread, then ACTIVE (or FAILED when it moved); PENDING is never
+  restorable, so a crash can't duplicate (an orphaned PENDING row shows as "pending (check by hand)"). Restore item = claim
+  ACTIVE → RESTORED, hand over on the main thread, or back to ACTIVE if the player left/switched profile.
+- **Expiry:** blocks live in memory (`Sanctions.active`, loaded at start); a 1 s main-thread timer marks run-out blocks
+  EXPIRED once (`sanction_expired`) without polling the database; the checks ignore run-out blocks anyway.
+- **Approval:** `Approval.Rule` accepts `sanction freeze|trade|money|confiscate|*`; a matching kind needs
+  `skyblock.staff.punish.approve` and is refused for others (no queue; open question).
+- **Stats/history:** `/pstats` line `stats.sanctions` (island punishments from `PunishStats.Counts.island`, also in
+  "given"; sanctions from `SanctionStore.givenBy`). `/history` (chat) lists sanctions under the punishments.
+- **Dupe link:** `core.dupes()` handler (hooked once, gated by `enabled`) → `ApiSuggestions.suggest(..., dupe-suggestion.reason,
+  "Dupe detector", "<item> found N times (also freeze balance ...)")`, never applied.
+- **Audit actions:** sanction_freeze, sanction_trade, sanction_money, sanction_confiscate, sanction_confiscate_failed,
+  sanction_lift, sanction_expired, sanction_restore, sanction_listings_cancelled; economy: sanction_blocked; island:
+  island_kick, island_ban, coop_remove, coop_block (punishments), island_kick_applied, island_ban_applied,
+  coop_remove_applied, coop_block_applied, island_punish_failed; islands module: island_staff_ban, island_staff_unban,
+  island_staff_kick.
+- **Not built / later:** sanction requests queue, Discord embeds for sanctions, sanctions in the `/history` menu (chat
+  only; the Sanctions menu lists the last 14), a pardon command for island punishments.
+

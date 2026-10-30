@@ -252,6 +252,9 @@ final class MoneyNotes implements Listener {
     // ================================================================== /withdraw
 
     private void withdraw(Player player, long amount, Currency currency) {
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(module.core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.NOTE)) {
+            return; // P7: frozen balance or blocked trading
+        }
         UUID uuid = player.getUniqueId();
         long played = module.core.players().get(uuid).map(PlayerData::playtimeMillis).orElse(0L);
         Optional<NoteRules.Problem> problem = NoteRules.withdraw(module.config, amount, currency, module.frozen(player), played);
@@ -383,6 +386,9 @@ final class MoneyNotes implements Listener {
             return; // notes are redeemed from the main hand only
         }
         Player player = event.getPlayer();
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(module.core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.NOTE)) {
+            return; // P7: blocked trading (a note is money from someone else)
+        }
         if (module.frozen(player)) {
             module.msg.send(player, P + "frozen-redeem");
             module.core.sounds().play(player, "error");

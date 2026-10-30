@@ -22,6 +22,9 @@ create:
       - "<c:text>takes you there. Free."
       - "<c:text>Border: <c:value><size>x<size></c:value> chunks, grows to <c:value><max>x<max></c:value>."
   started: "<prefix><c:muted><sym:time></c:muted> <c:text>Building your island, one moment..."
+  # Phase P7: staff blocked joining/creating islands (coop-block punishment). <time> = time left.
+  blocked: "<prefix><c:error><sym:cross></c:error> <c:text>Staff blocked you from creating or joining islands for <c:value><time></c:value>."
+  blocked-perm: "<prefix><c:error><sym:cross></c:error> <c:text>Staff blocked you from creating or joining islands."
   busy: "<prefix><c:text>Your island is still being built. You'll be teleported when it's ready."
   already: "<prefix><c:error><sym:cross></c:error> <c:text>You already have an island. <click:run_command:'/is home'><hover:show_text:'<c:text>Go to your island'><c:action>[Go home]</c:action></hover></click>"
   cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>You disbanded an island recently. Create a new one in <c:value><time></c:value>."

@@ -47,13 +47,27 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param lockdown         raid lockdown (13.9)
      * @param raid             raid detection (13.9)
      * @param network          network-ready storage and scope filter (13.12)
+     * @param sanctions        economy and item sanctions (13.1)
      */
     record Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
                   java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
                   boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
                   PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
                   WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal,
-                  List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network) {
+                  List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network,
+                  SanctionRules.Settings sanctions) {
+
+        /** The P6 set of keys; the P7 ones get their defaults. */
+        Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
+               java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
+               boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
+               PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
+               WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal,
+               List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network) {
+            this(undoWindow, duplicateWindow, duplicateConfirm, offenceExpire, statsZone, statsCache, statsPeriod, statsTop,
+                    closeReports, evidence, notes, ack, rulesLink, discord, playerView, chatSuggestions, approval, watchlist,
+                    probation, muteEnded, bulk, appeal, neverAuto, lockdown, raid, network, SanctionRules.Settings.DEFAULT);
+        }
 
         /** Shipped default of {@code never-auto} (spec 13.15). */
         static final List<String> NEVER_AUTO = List.of("hacking", "xray", "macro");

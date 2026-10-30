@@ -34,7 +34,7 @@ final class PunishEmbeds {
         fields.add(new DiscordSink.Field(text.apply("fields.target"), name(p.targetName(), text), true));
         fields.add(new DiscordSink.Field(text.apply("fields.staff"), staff(p, text), true));
         fields.add(new DiscordSink.Field(text.apply("fields.reason"), p.reason(), false));
-        if (p.type() == Punishment.Type.BAN || p.type() == Punishment.Type.MUTE) {
+        if (p.type().timed()) {
             fields.add(new DiscordSink.Field(text.apply("fields.length"), p.expires() == null ? text.apply("permanent")
                     : Templates.Step.compact(Duration.ofMillis(Math.max(0, p.expires() - p.created()))), true));
         }
@@ -129,7 +129,7 @@ final class PunishEmbeds {
     static String players(List<Punishment> list, boolean withStep) {
         List<String> parts = new ArrayList<>();
         for (Punishment p : list.subList(0, Math.min(BULK_NAMES, list.size()))) {
-            String step = p.type().name().toLowerCase(Locale.ROOT) + (p.type() == Punishment.Type.BAN || p.type() == Punishment.Type.MUTE
+            String step = p.type().name().toLowerCase(Locale.ROOT) + (p.type().timed()
                     ? " " + (p.expires() == null ? "perm" : Templates.Step.compact(Duration.ofMillis(Math.max(0, p.expires() - p.created()))))
                     : "");
             parts.add(withStep ? p.targetName() + " (" + step + ")" : p.targetName());

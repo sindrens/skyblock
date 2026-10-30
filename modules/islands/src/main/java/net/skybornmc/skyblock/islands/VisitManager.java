@@ -71,6 +71,8 @@ final class VisitManager implements Listener {
     private final Executor main;
     /** Bans per island (main thread writes; read by teleport guards and tab completion). */
     private final Map<UUID, Set<UUID>> bans = new ConcurrentHashMap<>();
+    /** Phase P7 staff island bans: island → player UUID → ban (main thread writes; read by the guards). */
+    private final Map<UUID, Map<UUID, VisitStore.StaffBan>> staffBans = new ConcurrentHashMap<>();
     /** The island slot each online player stands in (for arrival/departure). */
     private final Map<UUID, UUID> presence = new HashMap<>();
     /** "visitor|island|kind" → last notification time (notify cooldowns). */
@@ -130,8 +132,13 @@ final class VisitManager implements Listener {
             copy.addAll(set);
             bans.put(island, copy);
         });
+        staffBans.clear();
+        for (VisitStore.StaffBan b : store.loadStaffBansBlocking(System.currentTimeMillis())) {
+            rememberStaffBan(b);
+        }
         islands.onRemoved(island -> {
             bans.remove(island.id());
+            staffBans.remove(island.id());
             presence.values().removeIf(island.id()::equals);
         });
         startStats();
@@ -226,6 +233,75 @@ final class VisitManager implements Listener {
         return set != null && set.contains(player);
     }
 
+    /** True while a staff island ban (Phase P7) keeps {@code player} (player UUID) off this island. */
+    boolean staffBanned(UUID islandId, UUID player) {
+        Map<UUID, VisitStore.StaffBan> map = staffBans.get(islandId);
+        VisitStore.StaffBan b = map == null ? null : map.get(player);
+        return b != null && b.until() > System.currentTimeMillis();
+    }
+
+    private void rememberStaffBan(VisitStore.StaffBan b) {
+        Map<UUID, VisitStore.StaffBan> map = staffBans.computeIfAbsent(b.islandId(), k -> new ConcurrentHashMap<>());
+        VisitStore.StaffBan old = map.get(b.uuid());
+        if (old == null || old.until() < b.until()) {
+            map.put(b.uuid(), b); // the longer ban wins
+        }
+    }
+
+    /**
+     * Phase P7 hook: saves a staff island ban and enforces it at once (a player on the island is sent off). Main thread
+     * in, completes on the main thread.
+     */
+    java.util.concurrent.CompletableFuture<Boolean> staffBan(Island island, UUID player, long until, String reason, Actor actor, String reference) {
+        return store.staffBan(island.id(), player, until, reason, actor.name(), reference).handleAsync((ban, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(java.util.logging.Level.SEVERE, "Islands: saving a staff island ban failed",
+                        net.skybornmc.skyblock.common.db.Database.cause(error));
+                return false;
+            }
+            rememberStaffBan(ban);
+            core.audit().log(AuditCategory.ISLAND, "island_staff_ban", actor, island.id().toString(), islands.displayName(island),
+                    until == Long.MAX_VALUE ? null : until - System.currentTimeMillis(), null,
+                    Map.of("player", player.toString(), "until", until, "reason", reason == null ? "" : reason,
+                            "reference", reference == null ? "" : reference));
+            Player online = Bukkit.getPlayer(player);
+            if (online != null && !bypass(online) && slotIsland(online.getLocation()) == island) {
+                islands.sendOff(online, island);
+            }
+            return true;
+        }, main);
+    }
+
+    /** Phase P7 hook: lifts the staff island ban(s) saved with {@code reference}. */
+    java.util.concurrent.CompletableFuture<Boolean> liftStaffBan(String reference, Actor actor) {
+        return store.liftStaffBans(reference).handleAsync((lifted, error) -> {
+            if (error != null || lifted.isEmpty()) {
+                return false;
+            }
+            for (VisitStore.StaffBan b : lifted) {
+                Map<UUID, VisitStore.StaffBan> map = staffBans.get(b.islandId());
+                if (map != null && map.get(b.uuid()) != null && map.get(b.uuid()).id() == b.id()) {
+                    map.remove(b.uuid());
+                }
+                core.audit().log(AuditCategory.ISLAND, "island_staff_unban", actor, b.islandId().toString(), null, null, null,
+                        Map.of("player", b.uuid().toString(), "reference", String.valueOf(reference)));
+            }
+            return true;
+        }, main);
+    }
+
+    /** Phase P7 hook: sends {@code player} off the island now if they are on it (main thread). */
+    boolean staffKick(Island island, UUID player, String reason, Actor actor) {
+        Player online = Bukkit.getPlayer(player);
+        boolean there = online != null && slotIsland(online.getLocation()) == island;
+        if (there) {
+            islands.sendOff(online, island);
+        }
+        core.audit().log(AuditCategory.ISLAND, "island_staff_kick", actor, island.id().toString(), islands.displayName(island),
+                null, null, Map.of("player", player.toString(), "reason", reason == null ? "" : reason, "was_there", there));
+        return there;
+    }
+
     Set<UUID> bans(UUID islandId) {
         Set<UUID> set = bans.get(islandId);
         return set == null ? Set.of() : Set.copyOf(set);
@@ -241,7 +317,8 @@ final class VisitManager implements Listener {
         Role role = island.roleOrNull(key);
         // P3/P4: never onto an island where another of your own profiles is a member or coop.
         boolean ownProfile = role == null && islands.ownOtherProfileOn(island, key, null) != null;
-        return VisitRules.access(role, isBanned(island.id(), player.getUniqueId()), island.locked(), bypass(player), ownProfile);
+        return VisitRules.access(role, isBanned(island.id(), player.getUniqueId()), island.locked(), bypass(player), ownProfile,
+                staffBanned(island.id(), player.getUniqueId()));
     }
 
     /** The island whose slot contains {@code at}, or null. */

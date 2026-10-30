@@ -18,7 +18,7 @@ final class Approval {
     }
 
     /** What a rule looks at. {@code BAN} = every ban (also IP-wide), {@code IPBAN} = IP-wide bans only, {@code MUTE} = every mute. */
-    enum Kind { BAN, IPBAN, MUTE }
+    enum Kind { BAN, IPBAN, MUTE, SANCTION }
 
     /** {@code *} any length, {@code =} exactly, {@code >=} at least, {@code >} longer than. {@code perm} is longer than any time. */
     enum Op { ANY, EQUAL, AT_LEAST, LONGER }
@@ -32,13 +32,20 @@ final class Approval {
         /** Error codes of {@link #parse} (exception message). */
         static final String BAD_KIND = "kind";
         static final String BAD_VALUE = "value";
-        static final List<String> KINDS = List.of("ban", "ipban", "mute");
+        static final List<String> KINDS = List.of("ban", "ipban", "mute", "sanction");
 
         static Rule parse(String raw) {
             if (raw == null || raw.isBlank()) {
                 throw new IllegalArgumentException(BAD_KIND);
             }
             String[] parts = raw.strip().toLowerCase(Locale.ROOT).split("\\s+");
+            if (parts[0].equals("sanction")) {
+                // P7 (spec 13.4 example "any sanction of type money or confiscate"): sanction freeze|trade|money|confiscate|*
+                if (parts.length != 2 || (!parts[1].equals("*") && Sanction.Kind.parse(parts[1]).isEmpty())) {
+                    throw new IllegalArgumentException(BAD_VALUE);
+                }
+                return new Rule(Kind.SANCTION, Op.ANY, null, "sanction " + parts[1]);
+            }
             Kind kind = switch (parts[0]) {
                 case "ban" -> Kind.BAN;
                 case "ipban" -> Kind.IPBAN;
@@ -88,6 +95,7 @@ final class Approval {
                 case BAN -> type == Punishment.Type.BAN;
                 case IPBAN -> type == Punishment.Type.BAN && ipWide;
                 case MUTE -> type == Punishment.Type.MUTE;
+                case SANCTION -> false;
             };
             if (!kindOk) {
                 return false;
@@ -113,7 +121,8 @@ final class Approval {
     record Settings(boolean enabled, Duration expire, boolean selfApprove, List<Rule> rules, List<String> denyReasons) {
 
         static final Settings DEFAULT = new Settings(true, Duration.ofHours(24), false, List.of(Rule.parse("ban perm"),
-                Rule.parse("ipban *"), Rule.parse("mute perm"), Rule.parse("ban >= 30d")),
+                Rule.parse("ipban *"), Rule.parse("mute perm"), Rule.parse("ban >= 30d"), Rule.parse("sanction money"),
+                Rule.parse("sanction confiscate")),
                 List.of("evidence", "too-harsh", "wrong-reason", "talked"));
 
         static final Settings DISABLED = new Settings(false, Duration.ofHours(24), false, List.of(), List.of());
@@ -127,6 +136,24 @@ final class Approval {
             }
             return null;
         }
+    }
+
+    /** True if a sanction of this kind needs an approver under {@code settings} (P7; sanctions are never queued). */
+    static boolean sanctionNeedsApproval(Settings settings, Sanction.Kind kind) {
+        return sanctionRule(settings, kind) != null;
+    }
+
+    /** The first {@code sanction <kind>} rule matching {@code kind}, or {@code null} (approval off = never). */
+    static Rule sanctionRule(Settings settings, Sanction.Kind kind) {
+        if (settings == null || !settings.enabled()) {
+            return null;
+        }
+        for (Rule r : settings.rules()) {
+            if (r.kind() == Kind.SANCTION && (r.text().equals("sanction *") || r.text().equals("sanction " + kind.id()))) {
+                return r;
+            }
+        }
+        return null;
     }
 
     /** Why a request may (not) be approved or denied right now. */

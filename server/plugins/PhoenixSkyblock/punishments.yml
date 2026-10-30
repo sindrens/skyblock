@@ -16,6 +16,11 @@
 # History is never deleted: only the counting for the ladder changes.
 # Steps: warn | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>   (times: 30m, 1h, 12h, 1d, 7d, 30d)
 #        warn 0.5 = a warning that counts half toward the warn rules (weight, 0.1 to 10; plain warn = 1)
+# Island steps (P7): island-kick (sent off their team island now) | island-ban <time|perm> (can't enter that island)
+#        | coop-remove (removed from the team) | coop-block <time|perm> (can't join, be cooped on or create islands).
+#        The island = the one of the player's active profile. An island owner is never island-banned from their own
+#        island: for owners the island steps skip to the next coop-block (or next normal step). Without the islands module
+#        (or without a team island) the next possible step is used and staff are told.
 # Reason ids: lowercase a-z, 0-9 and - only, unique. icon = any item id.
 # probation: true|false (category or reason; default true) = after a mute/ban of this reason ends by time the player is
 # on probation (extras.probation), and offences of this reason get the probation step bonus. Off for the small stuff.
@@ -83,6 +88,9 @@ categories:
         ladder: ["ban 30d", "ban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
         appealable: false           # owner spec 13.10: no appeals for real-money trading
+      coop-griefing:                # P7 (spec 13.2 example ladder): griefing your own team's island
+        icon: IRON_DOOR
+        ladder: ["warn", "island-ban 1d", "coop-block 7d", "ban 7d"]
 
   other:
     icon: ARMOR_STAND
@@ -115,7 +123,7 @@ menu:
   warn-counter-icon: YELLOW_CONCRETE
   unavailable-icon: GRAY_DYE        # buttons of later milestones ("Not available yet")
   buttons:                          # bottom row
-    sanctions: { slot: 45, icon: GRAY_DYE }        # P7
+    sanctions: { slot: 45, icon: GOLD_INGOT }      # P7: freeze balance, block trading, remove money, confiscate
     kick: { slot: 46, icon: LEATHER_BOOTS }
     bulk: { slot: 47, icon: CHEST_MINECART }       # P5: punish several players for one reason
     history: { slot: 48, icon: WRITABLE_BOOK }
@@ -151,6 +159,7 @@ menu:
     inappropriate-name: 33
     inappropriate-build: 34
     inappropriate-skin: 35
+    coop-griefing: 41               # P7: island steps (island-ban, coop-block); the bans quarter is full
 
 # ---------- automatic warn system ----------
 # Only active warns count (not removed with /unwarn, younger than warn-expire). The counter is the SUM OF THE WEIGHTS
@@ -220,7 +229,8 @@ extras:
     self-approve: false       # an approver can't approve their own request
     # What needs approval. Kinds: ban (every ban), ipban, mute. Then: perm, * (any), a time (exactly), >= time, > time.
     # Also anything longer than the staff member's rank limit (moderation.yml limits) becomes a request.
-    rules: ["ban perm", "ipban *", "mute perm", "ban >= 30d"]
+    # P7: "sanction freeze|trade|money|confiscate|*" = that sanction needs an approver (it is refused for others, not queued).
+    rules: ["ban perm", "ipban *", "mute perm", "ban >= 30d", "sanction money", "sanction confiscate"]
     deny-reasons: [evidence, too-harsh, wrong-reason, talked]   # buttons in the Deny menu (max 6, texts in messages)
   watchlist:                  # /watch <player> [reason]: staff get one line when they join, the player is never told
     expire: 30d               # perm = until /watch remove
@@ -274,3 +284,20 @@ extras:
     enabled: false            # true = bans/mutes only count where their scope says (network = everywhere, server = there)
     server-id: phoenix        # stored on every new punishment
     default-scope: network    # scope of new bans and mutes (warnings and kicks are always server)
+
+  # ---------- owner spec section 13 (P7) ----------
+  sanctions:                  # /p <player> -> Sanctions (spec 13.1). Account-wide: every profile of the player.
+    enabled: true
+    durations: [1d, 3d, 7d, 30d, perm]   # lengths offered for freeze balance and block trading (max 7; perm = until lifted)
+    reasons: [duping, scamming, rmt, exploit, other]   # preset reasons (max 7, texts in messages sanctions.reasons.<id>)
+    # What each sanction blocks. Uses: pay, note, bank, shop, auction-list, auction-buy, trade
+    freeze-blocks: [pay, note, bank, shop, auction-list, auction-buy, trade]
+    trade-blocks: [pay, note, auction-list, auction-buy, trade]
+    freeze-currencies: [money]           # a frozen balance can't spend these (crystals/gems/shards stay usable)
+    freeze-exempt-reasons: [admin_take, admin_set, admin_reset, sanction_remove]   # staff may still take money
+    freeze-receive-reasons: [bank_withdraw]   # a frozen player can't take money out of an island bank either
+    trade-reasons: [pay, trade, ah_buy, note_withdraw]   # refused when either side is trade-blocked (economy safety net)
+    money-max: 1000000000000             # most money one "remove money" takes (never more than the balance)
+    dupe-suggestion:                     # a detected dupe suggests a punishment to staff (never applied by itself)
+      enabled: true
+      reason: exploiting                 # reason id above whose ladder is suggested (exploiting: ban 7d first)
