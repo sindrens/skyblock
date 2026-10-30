@@ -33,6 +33,12 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 ## Owner answers page
 - Round-2 questions are answered in the artifact https://claude.ai/artifact/QHrsxdXw45E9Tti5jHtVVy (db doc `answers/owner`: map code → {c: d=suggested | n=no | o=other, t: text}, `done: true` when finished). Read it with ArtifactData `get` collection `answers` doc `owner`. Source questions: `docs/QUESTIONS_ROUND2.md` (answered in chat → `docs/DECISIONS_2026-10-30.md`). Round 3: `docs/QUESTIONS_ROUND3.md`, answers in db doc `answers/round3`.
 
+## Overnight mandate (owner, 2026-10-30)
+- Keep implementing everything planned without asking; start the next queue item automatically.
+- New plan docs (enchants, wardrobe/loadout, resource pack): write them, mark every choice as a changeable default, and build them.
+- Restart/release the test server after every milestone, anytime.
+- Build and release profiles (migrate existing data to profile 1), carefully, with unit tests.
+
 ## Owner rules (always)
 - Unit tests allowed: `./gradlew build` (with tests) must pass before every merge. Never a test server without permission.
 - Tab completion on every command/argument. All text in messages files, all numbers in typed configs, everything audited.
