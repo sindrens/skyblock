@@ -33,7 +33,7 @@ class EconomyLogicTest {
         assertEquals("9223.3Q", Amounts.plain(Long.MAX_VALUE)); // Q = quadrillion (NumberFormatter)
         assertEquals("$1,000", Amounts.withSymbol("$", Currency.MONEY, 1_000));
         assertEquals("-$500", Amounts.withSymbol("$", Currency.MONEY, -500));
-        assertEquals("✦ 250k", Amounts.withSymbol("✦", Currency.TOKENS, 250_000));
+        assertEquals("◆ 250k", Amounts.withSymbol("◆", Currency.CRYSTALS, 250_000));
         assertEquals("✧ 7", Amounts.withSymbol("✧", Currency.SHARDS, 7));
     }
 
@@ -76,9 +76,9 @@ class EconomyLogicTest {
         cache.track(steve);
         assertTrue(cache.get(steve, Currency.MONEY).isEmpty());
         cache.apply(steve, Currency.MONEY, 700, 12);
-        cache.load(steve, Map.of(Currency.MONEY, 500L, Currency.TOKENS, 3L)); // older read: money kept
+        cache.load(steve, Map.of(Currency.MONEY, 500L, Currency.CRYSTALS, 3L)); // older read: money kept
         assertEquals(700, cache.get(steve, Currency.MONEY).getAsLong());
-        assertEquals(3, cache.get(steve, Currency.TOKENS).getAsLong());
+        assertEquals(3, cache.get(steve, Currency.CRYSTALS).getAsLong());
 
         cache.apply(steve, Currency.MONEY, 900, 14);
         cache.apply(steve, Currency.MONEY, 800, 13); // finished later on another thread, but older

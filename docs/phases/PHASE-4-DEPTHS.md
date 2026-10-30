@@ -1,8 +1,8 @@
 # Phase 4: Tools and The Depths
 
-**Goal:** the main income loop (owner decision: The Depths ~50% of income). Players claim a starter kit, forge better tools, level them, hunt blueprints, mine/chop/fight in tiered zones where everyone has their own blocks, fill their satchel, level skills, unlock tiers and earn tokens.
+**Goal:** the main income loop (owner decision: The Depths ~50% of income). Players claim a starter kit, forge better tools, level them, hunt blueprints, mine/chop/fight in tiered zones where everyone has their own blocks, fill their satchel, level skills, unlock tiers and earn crystals.
 
-Depends on Phases 0–3 (sell, tokens). Design: `DESIGN.md` §5–6, `WORLD.md` §4, `REVIEW.md` A2, A3, B5, B6.
+Depends on Phases 0–3 (sell, crystals). Design: `DESIGN.md` §5–6, `WORLD.md` §4, `REVIEW.md` A2, A3, B5, B6.
 
 ---
 
@@ -72,12 +72,12 @@ Tier unlocks depend on skills (REVIEW A2), so the **XP and level part** of skill
 - Same engine for logs (per player, 10 s respawn), tree templates per tier, leaves decorative.
 
 ## M4.8 Combat zones
-- **Shared** mobs per tier (visibility forced to everyone in combat zones), custom mob definitions in `mobs.yml` (health, damage, speed, drops, XP, tokens), spawn caps per zone, despawn when no players nearby, mini-boss placeholder timer (real bosses Phase 8).
+- **Shared** mobs per tier (visibility forced to everyone in combat zones), custom mob definitions in `mobs.yml` (health, damage, speed, drops, XP, crystals), spawn caps per zone, despawn when no players nearby, mini-boss placeholder timer (real bosses Phase 8).
 - Mine/forest ambient mobs are per-player and harmless (REVIEW B6).
 
-## M4.9 Drops and tokens
-- Drop tables per tier (`depths.yml`): ore items → satchel (also the Forge materials); token chance; **blueprint** chance; rare drops (geodes, key fragments) as placeholders for later phases.
-- Tokens credited via `EconomyService` (ledger reason `depths_drop`), shown in the action bar.
+## M4.9 Drops and crystals
+- Drop tables per tier (`depths.yml`): ore items → satchel (also the Forge materials); crystal chance; **blueprint** chance; rare drops (geodes, key fragments) as placeholders for later phases.
+- Crystals credited via `EconomyService` (ledger reason `depths_drop`), shown in the action bar.
 
 ---
 
@@ -91,7 +91,7 @@ Tier unlocks depend on skills (REVIEW A2), so the **XP and level part** of skill
 
   Zone      Mine · Tier 3
   Satchel   412 / 640
-  Tokens    ✦ 4,250
+  Crystals  ◆ 4,250
   Mining    Lv 12 (68%)
  ──────────────────
   play.skybornmc.net
@@ -116,7 +116,7 @@ Row 6  standard navigation
 | M4.4 | Satchel fills, sell all, full warning |
 | M4.5–M4.6 | Skill XP, level-up, tier unlock + locked gate message |
 | M4.7–M4.8 | Forest logs; combat mobs, drops |
-| M4.9 | Tokens in the action bar and `/bal`; ledger rows |
+| M4.9 | Crystals in the action bar and `/bal`; ledger rows |
 
 ## Decided (2026-10-29)
 - Ore and logs respawn after 10 s; broken blocks are fully personal.

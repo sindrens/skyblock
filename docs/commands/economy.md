@@ -1,6 +1,6 @@
 # Economy (`modules/economy`)
 
-Currencies: Money, Tokens, Gems, Shards (whole-unit `long`). Every change is one atomic database transaction with a ledger row (`eco_ledger`) and an audit row (category `economy`, action = reason), so `/logs pay <player> [other]` and `/logs player <name> economy` show it. Settings: `economy.yml`; texts: `messages/economy.yml`.
+Currencies: Money, Crystals (island crystals, replaced tokens; not tradeable), Gems, Shards (whole-unit `long`). Every change is one atomic database transaction with a ledger row (`eco_ledger`) and an audit row (category `economy`, action = reason), so `/logs pay <player> [other]` and `/logs player <name> economy` show it. Settings: `economy.yml`; texts: `messages/economy.yml`.
 
 | Command | What it does | Permission | Status |
 |---|---|---|---|
@@ -19,6 +19,6 @@ Other: `skyblock.staff.economy.alerts` (chat alert when staff use `/eco`; helper
 
 **Money notes (M3.2).** Right-click a note (main hand) to cash it; no permission needed. Each note is a row in `money_notes` (id = the item's unique id); the amount comes from that row, never from the item. Cashing locks the row, marks it `redeemed` and deposits in one database transaction (idempotency key per note), so a note can never be cashed twice: a copy is taken from the hand, staff with `skyblock.staff.notify` get an alert, and an audit row `note_dupe` is written (`/logs`). Notes can't be crafted with, sold to villagers or used in a cartography table, and can't be listed on the auction house (`auction.yml → items.allow-money-notes: false`). Audit actions: `note_withdraw`, `note_redeem`, `admin_note`, `note_dupe`, `note_return_failed`.
 
-Placeholders (cached, for the HUD and other plugins via PlaceholderAPI): `balance`, `balance_formatted`, `tokens`, `tokens_formatted`, `gems`, `gems_formatted`, `shards`, `shards_formatted` (`_formatted` = `12,500` / `1.2M`, no symbol).
+Placeholders (cached, for the HUD and other plugins via PlaceholderAPI): `balance`, `balance_formatted`, `crystals`, `crystals_formatted`, `gems`, `gems_formatted`, `shards`, `shards_formatted` (`_formatted` = `12,500` / `1.2M`, no symbol).
 
 For developers: `core.services().optional(EconomyService.class)` (`common/economy`): `execute(Transaction)` with reasons from `TxReason`, a `reference` and an `idempotencyKey` for anything that can be replayed. Never decide with the cached balance; run the transaction and handle `INSUFFICIENT_FUNDS`.

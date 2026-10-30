@@ -38,7 +38,7 @@ style:
   section: " <c:muted><sym:bullet></c:muted> <c:value><name>:</c:value> <colors>"
   symbols: " <c:muted><sym:bullet></c:muted> <c:value>Symbols:</c:value> <c:text><symbols>"
   gradients: " <c:muted><sym:bullet></c:muted> <c:value>Gradients:</c:value> <grad:phoenix>Phoenix fire</grad> <c:muted><sym:dot></c:muted> <grad:flame>Flame</grad> <c:muted><sym:dot></c:muted> <grad:skyborn>SkybornMC</grad> <c:muted><sym:dot></c:muted> <grad:legendary>Legendary</grad> <c:muted><sym:dot></c:muted> <grad:mythic>Mythic</grad>"
-  formats: " <c:muted><sym:bullet></c:muted> <c:value>Formats:</c:value> <cur:money><money></cur:money> <c:muted><sym:dot></c:muted> <cur:money><big-money></cur:money> <c:muted><sym:dot></c:muted> <cur:tokens><sym:tokens> <number></cur:tokens> <c:muted><sym:dot></c:muted> <c:value><duration>"
+  formats: " <c:muted><sym:bullet></c:muted> <c:value>Formats:</c:value> <cur:money><money></cur:money> <c:muted><sym:dot></c:muted> <cur:money><big-money></cur:money> <c:muted><sym:dot></c:muted> <cur:crystals><sym:crystals> <number></cur:crystals> <c:muted><sym:dot></c:muted> <c:value><duration>"
   samples-header: " <c:muted><sym:bullet></c:muted> <c:value>Message types:"
   sample-success: "   <c:success><sym:check></c:success> <c:text>Island created."
   sample-error: "   <c:error><sym:cross></c:error> <c:text>You need <cur:money>$5,000</cur:money> more. Sell items with <c:value>/sell</c:value>."
@@ -51,4 +51,4 @@ style:
     fade-in: 10
     stay: 50
     fade-out: 15
-  action-bar: "<c:ember><sym:tokens></c:ember> <c:text>Action bar preview <c:muted><sym:dot></c:muted> <cur:money>$1.2M</cur:money>"
+  action-bar: "<c:ember><sym:sparkle></c:ember> <c:text>Action bar preview <c:muted><sym:dot></c:muted> <cur:money>$1.2M</cur:money>"

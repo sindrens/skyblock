@@ -10,7 +10,7 @@ Depends on Phases 0–2. Design: `DESIGN.md` §4, `CONTEXT.md` §3 (income meta:
 A spreadsheet/doc `docs/ECONOMY_BALANCE.md` with: target money per hour at each progression stage (first hour, day 1, week 1, month 1, month 3), sell values per item and tier, interest yields, upgrade cost curve (Phase 5 preview), and inflation checks (money created vs. removed per day at 300 players). **The owner approves it** before M3.4 prices go live. Targets (to confirm): first hour ≈ $50k earned; day 3 ≈ $5M; week 2 ≈ $500M; month 2 ≈ $50B for top players.
 
 ## M3.1 Currency core and ledger
-- Currencies: **Money**, **Tokens**, **Gems**, **Shards** (`long`, whole units). Accounts for players and (M3.3) island banks.
+- Currencies: **Money**, **Crystals** (island crystals, replaced tokens), **Gems**, **Shards** (`long`, whole units). Accounts for players and (M3.3) island banks.
 - **Atomic transactions** in the database (`UPDATE … SET balance = balance - ? WHERE balance >= ?`), never read-modify-write in Java. Every change writes a **ledger row**: id, time, season, currency, from-account, to-account, amount, balance-after (both sides), **reason** (`pay`, `sell`, `shop_buy`, `ah_buy`, `ah_sale`, `trade`, `interest`, `bank_deposit`, `admin_give` …), reference id (auction id, trade id …).
 - `EconomyService` for all modules (no Vault).
 - `/bal [player]` (all currencies), `/baltop [currency]` (cached every 5 min, solo/team filter later), `/pay <player> <amount> [currency]` (suffixes 1.5k/2M/3B; confirm above a threshold; can't pay while frozen/muted? no: muted can pay; min amount; offline targets allowed).

@@ -55,10 +55,12 @@ Theme: **phoenix fire**, mainly **red**, balanced with ember orange, flame gold,
 | Currency | Hex | Legacy | Symbol | Format |
 |---|---|---|---|---|
 | Money | `#5BE37D` | green `§a` | `$` | `$1.2M` |
-| Tokens | `#C77DFF` | light_purple `§d` | `✦` | `✦ 4,250` |
-| Gems | `#4FD1FF` | aqua `§b` | `◆` | `◆ 120` |
+| Crystals (island) | `#4FD1FF` | aqua `§b` | `◆` | `◆ 4,250` |
+| Gems | `#3DDC97` | dark_green `§2` | `✦` | `✦ 120` |
 | Shards | `#FF6B6B` | red `§c` | `✧` | `✧ 35` |
 | Credits (store) | `#FF8A1F` | gold `§6` | none | `120 Credits` |
+
+Crystals replaced tokens (owner decision O8): aqua crystal look. Gems got a new emerald color and the `✦` symbol so the two are never confused; the old `<cur:tokens>`/`<sym:tokens>` tags still resolve to crystals. `<sym:sparkle>` (`✦`) is the decorative star for non-currency texts.
 
 ### 1.4 Rarity (items, crates, pets, enchants)
 | Rarity | Hex | Legacy | Footer text |
@@ -167,7 +169,7 @@ Blank line, a centered header with the brand gradient, 1–2 lines, a clickable 
 
 <muted>Stats                               ← section header (only if needed)
  <pillar>▸ <text>Mining Speed <value>+12%
- <pillar>▸ <text>Token Bonus <value>+5%
+ <pillar>▸ <text>Crystal Bonus <value>+5%
 
 <muted>Enchants
  <c:enchant>Fortune III                    ← custom enchant color #C77DFF
@@ -293,8 +295,8 @@ Owner (2026-10-30): "cleaner, better colors, it looks hard now". Fewer labels, m
   Pouched · Mod            ← name + rank, both in the rank color, muted dot
 
   Money  $1.2M             ← labels muted gray, money green
-  Tokens  ✦ 4,250          ← tokens purple
-  Gems  ◆ 120              ← gems aqua
+  Crystals  ◆ 4,250        ← crystals aqua
+  Gems  ✦ 120              ← gems emerald
 
   Island  Lv 34 #12        ← level white, position muted
   play.skybornmc.net       ← address, network ice blue

@@ -174,8 +174,8 @@ SkybornMC is a network. Defaults: Velocity proxy + hub before beta; Phoenix Skyb
 | # | Topic | Question |
 |---|---|---|
 | F1 | Shards | How are shards earned? (Proposal: bosses, envoys, KOTH, high Depths tiers) |
-| F2 | Sets | How are set pieces obtained? (Proposal: crafted from Depths drops + tokens, upgraded with tokens) |
-| F3 | Mine drops | Proposal: ore items to the satchel (sell), tokens, rare key/shard chance, rare "geode" items |
+| F2 | Sets | How are set pieces obtained? (Proposal: crafted from Depths drops + crystals, upgraded with crystals) |
+| F3 | Mine drops | Proposal: ore items to the satchel (sell), crystals, rare key/shard chance, rare "geode" items |
 | F4 | Team top 2/3 rewards | Proposal: 400 / 250 / 150 |
 | F5 | Server name | Needed for branding, prefix, package |
 | F6 | Leaderboard prize split | See A6 |

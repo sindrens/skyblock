@@ -29,7 +29,7 @@ class NoteRulesTest {
     void untradeableCurrenciesStayBlockedEvenWhenListed() {
         EconomyConfig config = new EconomyConfig();
         config.noteCurrencies = List.of("money", "tokens", " Shards ");
-        assertFalse(NoteRules.allowed(config, Currency.TOKENS), "tokens are not tradeable");
+        assertFalse(NoteRules.allowed(config, Currency.CRYSTALS), "old 'tokens' = crystals, which are not tradeable (CR3)");
         assertTrue(NoteRules.allowed(config, Currency.SHARDS));
     }
 

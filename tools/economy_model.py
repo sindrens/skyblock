@@ -169,10 +169,10 @@ TARGETS_TOP = {"First hour": 50_000, "Day 3": 5_000_000, "Week 2": 500_000_000, 
 
 STEP_H = 0.1  # simulation step in active hours
 
-# Tokens: average tokens per block/log/kill-equivalent = TK1 * TKG^(t-1) (rolled as a chance)
+# Island crystals (replaced tokens, O8): average crystals per block/log/kill-equivalent = TK1 * TKG^(t-1) (rolled as a chance)
 TK1 = 0.05
 TKG = 1.30
-# Custom enchant level L (1..EN_MAX) costs EN1 * ENG^(L-1) tokens
+# Custom enchant level L (1..EN_MAX) costs EN1 * ENG^(L-1) crystals
 EN1 = 100
 ENG = 1.80
 EN_MAX = 10
@@ -987,22 +987,22 @@ def t_sensitivity():
                   "Island share (active)", "Top earned by month 2"], rows)
 
 
-def tokens_per_hour(kind: str, snap: dict) -> float:
+def crystals_per_hour(kind: str, snap: dict) -> float:
     return snap["bph"] * DEPTHS_TIME * TK1 * TKG ** (snap["tier"] - 1)
 
 
-@register("tokens")
-def t_tokens():
+@register("crystals")
+def t_crystals():
     rows = []
     full = sum(EN1 * ENG ** (L - 1) for L in range(1, EN_MAX + 1))
     for name, _ in STAGES:
         r = [name]
         for k in KINDS:
             s = sim(k)[1][name]
-            tph = tokens_per_hour(k, s)
+            tph = crystals_per_hour(k, s)
             r.append(f"{num(tph)}/h · {full / tph:.0f} h per maxed enchant")
         rows.append(r)
-    return table(["Stage", "Casual (tokens per played h · hours to max one enchant)", "Active", "Top"], rows)
+    return table(["Stage", "Casual (crystals per played h · hours to max one enchant)", "Active", "Top"], rows)
 
 
 @register("enchant_costs")
@@ -1013,16 +1013,16 @@ def t_enchant_costs():
         c = EN1 * ENG ** (L - 1)
         cum += c
         rows.append([L, num(c), num(cum)])
-    return table(["Enchant level", "Token cost", "Total to this level"], rows)
+    return table(["Enchant level", "Crystal cost", "Total to this level"], rows)
 
 
-@register("token_rates")
-def t_token_rates():
+@register("crystal_rates")
+def t_crystal_rates():
     rows = []
     for t in range(1, 13):
         rate = TK1 * TKG ** (t - 1)
         rows.append([t, MINE_TIERS[t - 1], f"{rate:.3f}", f"1 per {1 / rate:.0f} blocks"])
-    return table(["Tier", "Ore", "Tokens per block (avg)", "Feels like"], rows)
+    return table(["Tier", "Ore", "Crystals per block (avg)", "Feels like"], rows)
 
 
 @register("dynamic")

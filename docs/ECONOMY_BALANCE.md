@@ -557,13 +557,13 @@ Each item has a multiplier `m` (floor 0.40, ceiling 1.50). Every item sold lower
 
 ---
 
-## 9. Tokens, gems and shards
+## 9. Crystals, gems and shards
 
-### 9.1 Tokens (earned by using custom tools, spent on enchants, sets, Forge extras)
-Tokens drop as a chance per block/log/kill; the average grows ×1.30 per tier.
+### 9.1 Crystals (island crystals, replaced tokens: earned by using custom tools and island missions, spent on the island shop, enchants, Forge extras)
+Crystals drop as a chance per block/log/kill; the average grows ×1.30 per tier.
 
-<!-- BEGIN table:token_rates -->
-| Tier | Ore | Tokens per block (avg) | Feels like |
+<!-- BEGIN table:crystal_rates -->
+| Tier | Ore | Crystals per block (avg) | Feels like |
 |---|---|---|---|
 | 1 | Coal | 0.050 | 1 per 20 blocks |
 | 2 | Copper | 0.065 | 1 per 15 blocks |
@@ -577,12 +577,12 @@ Tokens drop as a chance per block/log/kill; the average grows ×1.30 per tier.
 | 10 | Quartz | 0.530 | 1 per 2 blocks |
 | 11 | Netherite | 0.689 | 1 per 1 blocks |
 | 12 | Voidstone | 0.896 | 1 per 1 blocks |
-<!-- END table:token_rates -->
+<!-- END table:crystal_rates -->
 
-Custom enchants have 10 levels; each level costs ×1.8 the previous. The first level (100 tokens) is reachable in the first hour, so slot 1 gets an enchant right away.
+Custom enchants have 10 levels; each level costs ×1.8 the previous. The first level (100 crystals) is reachable in the first hour, so slot 1 gets an enchant right away.
 
 <!-- BEGIN table:enchant_costs -->
-| Enchant level | Token cost | Total to this level |
+| Enchant level | Crystal cost | Total to this level |
 |---|---|---|
 | 1 | 100 | 100 |
 | 2 | 180 | 280 |
@@ -596,8 +596,8 @@ Custom enchants have 10 levels; each level costs ×1.8 the previous. The first l
 | 10 | 19,836 | 44,506 |
 <!-- END table:enchant_costs -->
 
-<!-- BEGIN table:tokens -->
-| Stage | Casual (tokens per played h · hours to max one enchant) | Active | Top |
+<!-- BEGIN table:crystals -->
+| Stage | Casual (crystals per played h · hours to max one enchant) | Active | Top |
 |---|---|---|---|
 | First hour | 79/h · 566 h per maxed enchant | 98/h · 453 h per maxed enchant | 126/h · 353 h per maxed enchant |
 | Day 1 | 90/h · 496 h per maxed enchant | 162/h · 275 h per maxed enchant | 409/h · 109 h per maxed enchant |
@@ -607,11 +607,11 @@ Custom enchants have 10 levels; each level costs ×1.8 the previous. The first l
 | Month 1 | 878/h · 51 h per maxed enchant | 2,461/h · 18 h per maxed enchant | 5,339/h · 8 h per maxed enchant |
 | Month 2 | 1,271/h · 35 h per maxed enchant | 3,451/h · 13 h per maxed enchant | 7,288/h · 6 h per maxed enchant |
 | Month 3 | 1,784/h · 25 h per maxed enchant | 4,711/h · 9 h per maxed enchant | 7,288/h · 6 h per maxed enchant |
-<!-- END table:tokens -->
+<!-- END table:crystals -->
 
-Filling 4 slots with maxed enchants takes an active player until ~day 32 (~126 played hours) and a top player until ~day 12; casual players never max all four. Over a season an active player earns ~1.1M tokens, about 6× what 4 maxed enchants cost, so **sets and Forge extras (Phase 6) must absorb most tokens**. That is safe as long as tokens are not tradeable (surplus tokens can't leak into the money economy).
+Filling 4 slots with maxed enchants takes an active player until ~day 32 (~126 played hours) and a top player until ~day 12; casual players never max all four. Over a season an active player earns ~1.1M crystals, about 6× what 4 maxed enchants cost, so **the island shop and Forge extras must absorb most crystals**. That is safe as long as crystals are not tradeable (surplus crystals can't leak into the money economy).
 
-**Tokens are not tradeable by default** (no `/pay`, not on the AH): otherwise alts farm tier-1 tokens and feed a main, and tokens become a second, uncontrolled money. Enchanted tools stay tradeable, so token value still reaches the market through items. (Open question.)
+**Crystals are not tradeable** (no `/pay`, not on the AH; owner decision CR3): otherwise alts farm tier-1 crystals and feed a main, and crystals become a second, uncontrolled money. Enchanted tools stay tradeable, so crystal value still reaches the market through items. Island missions (CR1) are an extra source not in this model yet.
 
 ### 9.2 Gems (premium, not tradeable, decided)
 <!-- BEGIN table:gems -->
@@ -623,7 +623,7 @@ Filling 4 slots with maxed enchants takes an active player until ~day 32 (~126 p
 | Store credit | set in Tebex | - | paid |
 <!-- END table:gems -->
 
-Gem uses: cosmetics, tool skins, extra `/pv` vaults, nickname colours, personal boosters (count towards the sell multiplier cap). **Gems never buy money, upgrade levels, task progress, tokens or crate keys** (`REVIEW.md` A1, keys are earned only). There is no gem→money exchange, so gems can't cause inflation.
+Gem uses: cosmetics, tool skins, extra `/pv` vaults, nickname colours, personal boosters (count towards the sell multiplier cap). **Gems never buy money, upgrade levels, task progress, crystals or crate keys** (`REVIEW.md` A1, keys are earned only). There is no gem→money exchange, so gems can't cause inflation.
 
 ### 9.3 Shards (tradeable, decided; earning is an open question)
 | Source (proposal, `OPEN_QUESTIONS.md` #1) | Shards |
@@ -646,7 +646,7 @@ Notes (`/withdraw`) are only a transfer, so **no fee** (a fee would push trades 
 |---|---|---|---|
 | R1 | **Runaway inflation** | Late-season income piles up, AH prices explode, new players can't buy anything from players | Endless late sink (Mastery, §5.4); sink ratio ≥ 75% target with dashboard alerts (M3.8); levers table (§7.4); seasonal wipe resets everything; server prices fixed |
 | R2 | **Interest abuse** | Deposit right before the payout; park money on idle alts; compound interest snowballs | Min-balance rule; payout caps (effective rate falls to ~0.003% at tier 10); activity rule (≥ 2 h in 7 days); early-withdrawal forfeit + 2% fee; bank tier unlock costs |
-| R3 | **Alt farming** | Alts mine tier 1, claim starter kits, collect daily rewards/votes and `/pay` the main; alts as coop members add fuel | Depths income needs active breaking (no AFK income in The Depths); starter kits not on the AH (Phase 4); tokens and gems not tradeable; new accounts (< 2 h played) can't `/pay` or sell on the AH; alt detection flags same-IP transfers (staff alert, not ban); fuel is per island, not per member; anomaly alerts for transfers > 10× the receiver's hourly income |
+| R3 | **Alt farming** | Alts mine tier 1, claim starter kits, collect daily rewards/votes and `/pay` the main; alts as coop members add fuel | Depths income needs active breaking (no AFK income in The Depths); starter kits not on the AH (Phase 4); crystals and gems not tradeable; new accounts (< 2 h played) can't `/pay` or sell on the AH; alt detection flags same-IP transfers (staff alert, not ban); fuel is per island, not per member; anomaly alerts for transfers > 10× the receiver's hourly income |
 | R4 | **AH manipulation** | Laundering money via fake listings (dirt for $1B), price fixing by buying out a category, wash trading for baltop | 1% listing fee + 5% tax make laundering cost 6%; staff alert for any sale > 20× the item's 7-day median or between linked accounts; max 5 listings (more by rank) limits buy-out-and-relist; full listing log in `/logs` |
 | R5 | **AFK island production** | Players AFK on the island 24/7 (online production + fuel) and island income overtakes The Depths | Fuel tank cap (12 h start); AFK detection: production online rate only while the player was active in the last 15 min, otherwise it burns fuel like offline; Fuel Tank upgrade is priced as a level upgrade |
 | R6 | **Dupes / exploits** | A dupe creates money from nothing and wrecks the curve | Atomic DB transactions (M3.1); unique ids for notes, tools, AH items; anomaly alert when a player earns > 3× the table's income per hour for their tier (this sheet is the baseline) |
@@ -692,5 +692,5 @@ Approve or change:
 8. Bank capacities, unlock costs, payout caps, min-balance rule and activity rule (§6).
 9. Sink ratio target ≥ 75% and the dashboard thresholds (§7.2).
 10. Share-of-gap recovery and adaptive impact for dynamic prices; Hot Item +25% (§8).
-11. Tokens not tradeable; enchant cost curve (§9.1); shard sources (§9.3); notes without fee (§9.4).
+11. Crystals not tradeable (decided, CR3); enchant cost curve (§9.1); shard sources (§9.3); notes without fee (§9.4).
 12. Risk mitigations R1–R9, especially: new accounts can't `/pay` or use the AH before 2 h played; AFK production rule (§10).

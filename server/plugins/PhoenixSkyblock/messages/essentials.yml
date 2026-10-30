@@ -167,7 +167,7 @@ join:
   # Join/quit lines are only shown for players with the join-message permission (ranks + staff).
   message: "<c:muted>[</c:muted><c:success>+</c:success><c:muted>]</c:muted> <player>"
   quit: "<c:muted>[</c:muted><c:error>-</c:error><c:muted>]</c:muted> <player>"
-  first-broadcast: "<c:ember><sym:tokens></c:ember> <c:text>Welcome <c:value><player></c:value> to Phoenix Skyblock! <c:muted>(#<number>)"
+  first-broadcast: "<c:ember><sym:sparkle></c:ember> <c:text>Welcome <c:value><player></c:value> to Phoenix Skyblock! <c:muted>(#<number>)"
   first-title:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     subtitle: "<c:text>Welcome, <c:value><player></c:value>"

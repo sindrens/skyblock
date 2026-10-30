@@ -169,10 +169,13 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private void registerPlaceholders() {
         core.placeholders().registerText(ID, "balance", p -> raw(p, Currency.MONEY));
         core.placeholders().registerText(ID, "balance_formatted", p -> formatted(p, Currency.MONEY));
-        for (Currency currency : List.of(Currency.TOKENS, Currency.GEMS, Currency.SHARDS)) {
+        for (Currency currency : List.of(Currency.CRYSTALS, Currency.GEMS, Currency.SHARDS)) {
             core.placeholders().registerText(ID, currency.key(), p -> raw(p, currency));
             core.placeholders().registerText(ID, currency.key() + "_formatted", p -> formatted(p, currency));
         }
+        // Deprecated aliases: tokens were replaced by crystals (O8); old formats keep showing the crystals balance.
+        core.placeholders().registerText(ID, Currency.LEGACY_TOKENS_KEY, p -> raw(p, Currency.CRYSTALS));
+        core.placeholders().registerText(ID, Currency.LEGACY_TOKENS_KEY + "_formatted", p -> formatted(p, Currency.CRYSTALS));
     }
 
     private String raw(Player p, Currency currency) {
