@@ -77,6 +77,8 @@ final class AuctionEngine {
         GONE,
         /** The buyer is the seller. */
         OWN,
+        /** Owner P4: the seller is another profile of the buyer's player (audited, nothing changed). */
+        OWN_PROFILE,
         /** The buyer can't afford it; nothing changed, the listing is still active. */
         INSUFFICIENT,
         /** Someone else is paying for it right now. */
@@ -114,6 +116,21 @@ final class AuctionEngine {
     private final Logger log;
     private volatile Events events = new Events() {
     };
+
+    /**
+     * Owner decision P4: true (= refuse, audited by the caller's check) when the seller and the buyer are two profiles of
+     * the same player. Listings store the seller's PROFILE key; purchases use the buyer's profile key.
+     */
+    @FunctionalInterface
+    interface OwnProfileCheck {
+        boolean blocked(UUID seller, UUID buyer, Actor actor);
+    }
+
+    private volatile OwnProfileCheck ownProfile = (seller, buyer, actor) -> false;
+
+    void ownProfileCheck(OwnProfileCheck check) {
+        this.ownProfile = check == null ? (seller, buyer, actor) -> false : check;
+    }
 
     /** Listings with a transition running in this process (recovery skips them). */
     private final Set<Long> inFlight = ConcurrentHashMap.newKeySet();
@@ -258,6 +275,21 @@ final class AuctionEngine {
             return CompletableFuture.completedFuture(new BuyResult(BuyOutcome.BUSY, active.get(id), null, null));
         }
         long now = clock.getAsLong();
+        Listing cached = active.get(id);
+        CompletableFuture<Optional<Listing>> known = cached != null ? CompletableFuture.completedFuture(Optional.of(cached)) : store.get(id);
+        return known.thenCompose(listing -> {
+            // P4: never buy from another of your own profiles (no money or items between own profiles).
+            if (listing.isPresent() && !listing.get().seller().equals(buyer) && ownProfile.blocked(listing.get().seller(), buyer, actor)) {
+                return CompletableFuture.completedFuture(new BuyResult(BuyOutcome.OWN_PROFILE, listing.get(), null, null));
+            }
+            return claimAndSettle(id, buyer, buyerName, now, actor);
+        }).exceptionally(e -> {
+            log.log(Level.WARNING, "Auction: purchase of listing " + id + " by " + buyerName + " failed", Database.cause(e));
+            return new BuyResult(BuyOutcome.PROCESSING, active.get(id), null, null);
+        }).whenComplete((r, e) -> inFlight.remove(id));
+    }
+
+    private CompletableFuture<BuyResult> claimAndSettle(long id, UUID buyer, String buyerName, long now, Actor actor) {
         return store.claimForBuy(id, buyer, buyerName, now).thenCompose(claimed -> {
             if (!claimed) {
                 return store.get(id).thenApply(found -> {
@@ -281,10 +313,7 @@ final class AuctionEngine {
                 }
                 return settle(found.get(), actor);
             });
-        }).exceptionally(e -> {
-            log.log(Level.WARNING, "Auction: purchase of listing " + id + " by " + buyerName + " failed", Database.cause(e));
-            return new BuyResult(BuyOutcome.PROCESSING, active.get(id), null, null);
-        }).whenComplete((r, e) -> inFlight.remove(id));
+        });
     }
 
     /**

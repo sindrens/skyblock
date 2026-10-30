@@ -30,7 +30,9 @@ public final class VisitRules {
         /** A visitor who may enter. */
         VISITOR,
         BANNED,
-        LOCKED;
+        LOCKED,
+        /** Owner P3/P4: another profile of this player is a member or coop of the island. */
+        OWN_PROFILE;
 
         public boolean allowed() {
             return this == MEMBER || this == BYPASS || this == VISITOR;
@@ -42,8 +44,19 @@ public final class VisitRules {
      * Ban beats lock so a banned player always hears they are banned.
      */
     public static Access access(Role role, boolean banned, boolean locked, boolean bypass) {
+        return access(role, banned, locked, bypass, false);
+    }
+
+    /**
+     * {@link #access(Role, boolean, boolean, boolean)} with owner P3/P4: a player whose other profile belongs to the island
+     * never enters it (not even with the staff bypass), so nothing can move between their profiles.
+     */
+    public static Access access(Role role, boolean banned, boolean locked, boolean bypass, boolean ownOtherProfile) {
         if (role != null) {
             return Access.MEMBER;
+        }
+        if (ownOtherProfile) {
+            return Access.OWN_PROFILE;
         }
         if (bypass) {
             return Access.BYPASS;

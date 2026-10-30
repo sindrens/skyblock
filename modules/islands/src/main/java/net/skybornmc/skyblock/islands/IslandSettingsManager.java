@@ -35,8 +35,8 @@ final class IslandSettingsManager {
 
     /** True if {@code player} may change the settings of {@code island}. */
     boolean canChange(Island island, Player player) {
-        return MemberRules.canChangeSettings(island.roleOrNull(player.getUniqueId()),
-                islands.roleAllows(island, player.getUniqueId(), IslandPerm.SETTINGS));
+        return MemberRules.canChangeSettings(island.roleOrNull(islands.key(player)),
+                islands.roleAllows(island, islands.key(player), IslandPerm.SETTINGS));
     }
 
     /** Opens the settings menu of {@code island} (from {@code /is members}: Back returns there). */
@@ -51,7 +51,7 @@ final class IslandSettingsManager {
 
     /** {@code /is settings [setting] [value]}. */
     void command(Player player, String flagKey, String value) {
-        Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
+        Optional<Island> own = islands.islandOfPlayer(islands.key(player));
         if (own.isEmpty()) {
             islands.fail(player, "no-island");
             return;
@@ -116,7 +116,7 @@ final class IslandSettingsManager {
                             module.msg().send(player, "flags.changed", Msg.p("setting", name(flag)), Msg.p("value", valueName(value)));
                             module.core().sounds().play(player, "success");
                         }
-                        islands.memberManager().notifyMembers(island, player.getUniqueId(), "notify.setting",
+                        islands.memberManager().notifyMembers(island, islands.key(player), "notify.setting",
                                 Msg.p("setting", name(flag)), Msg.p("value", valueName(value)), Msg.p("by", player.getName()));
                     }
                     if (done != null) {

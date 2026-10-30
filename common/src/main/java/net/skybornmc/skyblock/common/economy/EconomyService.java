@@ -19,6 +19,10 @@ import java.util.concurrent.CompletableFuture;
  *       reference) and an audit row (category {@code economy}, action = reason).</li>
  *   <li>Use an idempotency key for anything that could be retried or replayed (auction purchase, note redeem, trade).</li>
  *   <li>Futures complete off the main thread; hop back with {@code thenAcceptAsync(…, mainThread)} to touch players.</li>
+ *   <li><b>Profiles (PROF):</b> money, crystals and shards belong to a profile, gems to the player. A player account
+ *       ({@link AccountRef#player}) holds a <b>profile key</b> ({@code ProfileService#profileKey}); gem changes are moved
+ *       to the profile's player automatically, so always pass the profile key. Anything paid out later (auction sales,
+ *       refunds) stores and pays the profile key it belongs to, never the player's currently active profile.</li>
  * </ul>
  */
 public interface EconomyService {
@@ -36,17 +40,17 @@ public interface EconomyService {
         return guard == null ? execute(transaction) : CompletableFuture.completedFuture(TxResult.of(TxResult.Status.ERROR));
     }
 
-    /** Player to player payment helper (reason {@code pay} by default for {@code /pay}). */
+    /** Player to player payment helper (reason {@code pay} by default for {@code /pay}); both ids are profile keys. */
     default CompletableFuture<TxResult> transfer(UUID from, UUID to, Currency currency, long amount, String reason, Actor actor) {
         return execute(Transaction.transfer(AccountRef.player(from), AccountRef.player(to), currency, amount, reason).actor(actor));
     }
 
-    /** Gives a player newly created currency (rewards, selling …). */
+    /** Gives a player newly created currency (rewards, selling …); {@code player} is the profile key. */
     default CompletableFuture<TxResult> deposit(UUID player, Currency currency, long amount, String reason, Actor actor) {
         return execute(Transaction.deposit(AccountRef.player(player), currency, amount, reason).actor(actor));
     }
 
-    /** Takes currency from a player (purchases, fees …); INSUFFICIENT_FUNDS if they have less. */
+    /** Takes currency from a player (purchases, fees …); INSUFFICIENT_FUNDS if they have less. {@code player}: profile key. */
     default CompletableFuture<TxResult> withdraw(UUID player, Currency currency, long amount, String reason, Actor actor) {
         return execute(Transaction.withdraw(AccountRef.player(player), currency, amount, reason).actor(actor));
     }
@@ -58,7 +62,8 @@ public interface EconomyService {
     CompletableFuture<Map<Currency, Long>> balances(AccountRef account);
 
     /**
-     * The cached balance of an online player (for display: scoreboard, menus). Kept consistent with the database results
+     * The cached balance of an online player, by <b>player UUID</b> (gems of the player, the rest of the active profile),
+     * for display: scoreboard, menus. Kept consistent with the database results
      * of every transaction. Empty while not loaded. Never use it to decide whether a purchase is allowed: just run the
      * transaction, it fails safely with INSUFFICIENT_FUNDS.
      */

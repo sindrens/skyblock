@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.command.Arg;
 import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandFailure;
@@ -13,6 +14,8 @@ import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.EconomyService;
+import net.skybornmc.skyblock.common.profile.ProfileDeleteEvent;
+import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
@@ -95,6 +98,8 @@ public final class AuctionModule implements SkyblockModule, Listener {
         engine = new AuctionEngine(new AuctionStore(core.database()),
                 () -> core.services().optional(EconomyService.class).orElseThrow(() -> new IllegalStateException("economy is gone")),
                 core.audit(), () -> config, System::currentTimeMillis, () -> 0, core.plugin().getLogger());
+        // P4: never buy from another of your own profiles (audited as profile_transfer_blocked).
+        engine.ownProfileCheck((seller, buyer, actor) -> profiles().blockOwnTransfer(AuditCategory.AUCTION, "ah_buy", seller, buyer, actor));
         engine.events(new AuctionEngine.Events() {
             @Override
             public void sold(Listing listing) {
@@ -258,11 +263,11 @@ public final class AuctionModule implements SkyblockModule, Listener {
             return;
         }
         inv.setItem(slot, null); // the item now only exists in this snapshot until the database has it
-        UUID uuid = player.getUniqueId();
+        UUID uuid = key(player);
         String name = player.getName();
         engine.create(uuid, name, snapshot, price, duration.toMillis(), slots(player), Actor.player(player))
                 .whenCompleteAsync((result, error) -> {
-                    Player online = Bukkit.getPlayer(uuid);
+                    Player online = online(uuid);
                     if (error != null || result == null) {
                         core.plugin().getLogger().log(Level.SEVERE, "Auction: listing by " + name + " failed unexpectedly", error);
                         giveBack(uuid, snapshot);
@@ -323,7 +328,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
      * (or everything, if offline) into the collection bin. The full item is logged if even that fails.
      */
     private void giveBack(UUID uuid, ItemSnapshot snapshot) {
-        Player player = Bukkit.getPlayer(uuid);
+        Player player = online(uuid);
         if (player != null) {
             ItemStack item = ItemCodec.decode(snapshot.bytes());
             Map<Integer, ItemStack> left = player.getInventory().addItem(item);
@@ -345,7 +350,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
         byte[] bytes = stack.serializeAsBytes();
         engine.putBack(owner, bytes, stack.getType().name(), stack.getAmount(), ItemCodec.plainName(stack)).exceptionally(e -> {
             main.execute(() -> {
-                Player p = Bukkit.getPlayer(owner);
+                Player p = online(owner);
                 if (p != null) {
                     p.getWorld().dropItemNaturally(p.getLocation(), stack); // last resort: never lose it
                 } else {
@@ -376,14 +381,20 @@ public final class AuctionModule implements SkyblockModule, Listener {
             sound(player, "error");
             return;
         }
-        if (listing.seller().equals(player.getUniqueId())) {
+        if (listing.seller().equals(key(player))) {
             send(player, "buy.own");
             sound(player, "error");
             return;
         }
-        UUID uuid = player.getUniqueId();
+        if (profiles().ownOtherProfile(listing.seller(), key(player))) {
+            profiles().blockOwnTransfer(AuditCategory.AUCTION, "ah_buy", listing.seller(), key(player), Actor.player(player));
+            send(player, "buy.own-profile");
+            sound(player, "error");
+            return;
+        }
+        UUID uuid = key(player);
         engine.buy(listing.id(), uuid, player.getName(), Actor.player(player)).whenCompleteAsync((r, error) -> {
-            Player online = Bukkit.getPlayer(uuid);
+            Player online = online(uuid);
             if (online == null) {
                 return; // bought items wait in the collection bin
             }
@@ -414,6 +425,10 @@ public final class AuctionModule implements SkyblockModule, Listener {
                     send(online, "buy.own");
                     sound(online, "error");
                 }
+                case OWN_PROFILE -> {
+                    send(online, "buy.own-profile");
+                    sound(online, "error");
+                }
                 case BUSY -> {
                     send(online, "buy.busy", Msg.p("item", item));
                     sound(online, "error");
@@ -428,9 +443,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
 
     /** The seller cancels their listing (after the confirm dialog), or staff remove it ({@code staff}). */
     void startCancel(Player player, Listing listing, boolean staff, String reason) {
-        UUID uuid = player.getUniqueId();
+        UUID uuid = key(player);
         engine.cancel(listing.id(), uuid, staff, Actor.player(player), reason).whenCompleteAsync((r, error) -> {
-            Player online = Bukkit.getPlayer(uuid);
+            Player online = online(uuid);
             if (online == null) {
                 return;
             }
@@ -443,7 +458,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
                 case CANCELLED -> {
                     if (staff) {
                         send(online, "staff.removed", Msg.p("item", listing.item().name()), Msg.p("seller", listing.sellerName()));
-                        Player seller = Bukkit.getPlayer(listing.seller());
+                        Player seller = online(listing.seller());
                         if (seller != null && !seller.equals(online)) {
                             send(seller, "staff.removed-seller", Msg.p("item", listing.item().name()));
                         }
@@ -488,11 +503,11 @@ public final class AuctionModule implements SkyblockModule, Listener {
 
     /** Takes an entry out of the bin into the inventory; {@code done} gets whether the player received it (main thread). */
     void claim(Player player, long entryId, Consumer<Boolean> done) {
-        UUID uuid = player.getUniqueId();
+        UUID uuid = key(player);
         engine.take(entryId, uuid, Actor.player(player)).whenCompleteAsync((entry, error) -> {
             if (error != null) {
                 core.plugin().getLogger().log(Level.WARNING, "Auction: taking collection entry " + entryId + " failed", Database.cause(error));
-                Player p = Bukkit.getPlayer(uuid);
+                Player p = online(uuid);
                 if (p != null) {
                     send(p, "error");
                 }
@@ -504,7 +519,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
                 return;
             }
             ItemStack item = ItemCodec.decode(entry.get().bytes());
-            Player p = Bukkit.getPlayer(uuid);
+            Player p = online(uuid);
             if (p == null) {
                 putBack(uuid, item);
                 done.accept(false);
@@ -520,7 +535,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
     // ================================================================== notifications
 
     private void notifySold(Listing l) {
-        Player seller = Bukkit.getPlayer(l.seller());
+        Player seller = online(l.seller());
         if (seller == null) {
             return; // told on the next join (seller_notice)
         }
@@ -533,7 +548,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
     }
 
     private void notifyExpired(Listing l) {
-        Player seller = Bukkit.getPlayer(l.seller());
+        Player seller = online(l.seller());
         if (seller != null) {
             send(seller, "notify.expired", Msg.p("item", l.item().name()), Msg.number("amount", l.item().amount()));
             sound(seller, "notify");
@@ -544,9 +559,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
-        UUID uuid = event.getPlayer().getUniqueId();
+        UUID uuid = key(event.getPlayer());
         core.scheduler().later("auction:join", config.joinNoticeDelayTicks, () -> {
-            if (Bukkit.getPlayer(uuid) == null) {
+            if (online(uuid) == null) {
                 return;
             }
             engine.store().takeNotices(uuid).thenCombine(engine.store().collectionCount(uuid), (notices, bin) -> {
@@ -560,7 +575,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
     }
 
     private void joinNotices(UUID uuid, List<Listing> notices, int bin) {
-        Player p = Bukkit.getPlayer(uuid);
+        Player p = online(uuid);
         if (p == null) {
             return;
         }
@@ -591,6 +606,36 @@ public final class AuctionModule implements SkyblockModule, Listener {
         }
         if (bin > 0) {
             send(p, "notify.collection", Msg.number("count", bin));
+        }
+    }
+
+    // ================================================================== island profiles (PROF)
+
+    /** Island profiles: listings, the collection bin and notices belong to a profile (the seller/buyer/owner keys). */
+    ProfileService profiles() {
+        return ProfileService.of(core.services());
+    }
+
+    /** The profile key of an online player (stored as seller, buyer and collection owner). */
+    UUID key(Player player) {
+        return profiles().profileKey(player.getUniqueId());
+    }
+
+    /**
+     * The online player whose ACTIVE profile is {@code key} and who is not switching right now, or null. Items and
+     * notices for another profile wait in that profile's collection bin instead of landing in the wrong inventory.
+     */
+    Player online(UUID key) {
+        return profiles().onlinePlayer(key).filter(p -> !profiles().isSwitching(p.getUniqueId())).orElse(null);
+    }
+
+    /** P9: a profile with active listings can't be deleted (they could still sell): cancel them first. */
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onProfileDelete(ProfileDeleteEvent event) {
+        UUID key = event.profile().id();
+        long count = engine.activeListings().stream().filter(l -> l.seller().equals(key)).count();
+        if (count > 0) {
+            event.refuse(msg.component(event.getPlayer(), "profiles.delete-listings", Msg.number("count", count)));
         }
     }
 

@@ -119,6 +119,12 @@ final class MenuItem implements Listener {
         apply(event.getPlayer());
     }
 
+    /** Island profiles: a new profile's inventory is loaded, so the menu item is put back (its setting is per profile too). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileSwitched(net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent event) {
+        apply(event.getPlayer());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();

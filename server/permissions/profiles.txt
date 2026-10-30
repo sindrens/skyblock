@@ -1,0 +1,8 @@
+# LuckPerms grants for the profiles module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/profiles/src/main/resources/permissions/profiles.yml. One console command per line; # = comment.
+
+# /profiles is for everyone (plugin default: true).
+# Free profile slots come with the donor ranks (owner PR5: slot 2 = Knight+, slot 3 = Warlord+). The donor groups are
+# created with the store (Phase 11); enable these lines then (higher ranks inherit from Knight/Warlord):
+# lp group knight permission set skyblock.profiles.slots.2 true
+# lp group warlord permission set skyblock.profiles.slots.3 true

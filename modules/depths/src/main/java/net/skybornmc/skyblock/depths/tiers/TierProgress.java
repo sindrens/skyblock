@@ -4,6 +4,7 @@ import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.db.Sql;
+import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.depths.DepthsConfig;
 import net.skybornmc.skyblock.depths.zones.Zone;
 import org.bukkit.Bukkit;
@@ -41,6 +42,8 @@ final class TierProgress {
     private final Core core;
     private final DepthsConfig config;
     private final Map<UUID, Map<String, Entry>> cache = new HashMap<>();
+    /** Online player → the profile key their unlocks are stored under (PROF: Depths unlocks are per profile). */
+    private final Map<UUID, UUID> keys = new HashMap<>();
     /** Load generation per player: a quit/rejoin while a load runs drops the stale result. */
     private final Map<UUID, Integer> loading = new HashMap<>();
     private int generation;
@@ -54,10 +57,13 @@ final class TierProgress {
     /** Loads a player's rows (async); {@link #loaded} turns true on the main thread when done. */
     void load(Player player) {
         UUID uuid = player.getUniqueId();
+        UUID key = ProfileService.of(core.services()).profileKey(uuid);
+        cache.remove(uuid);
+        keys.put(uuid, key);
         int gen = ++generation;
         loading.put(uuid, gen);
         int season = config.tierSeasonId;
-        chain.thenCompose(v -> core.database().async(c -> read(c, uuid, season)))
+        chain.thenCompose(v -> core.database().async(c -> read(c, key, season)))
                 .whenComplete((rows, error) -> core.scheduler().main("depths-tiers-load", () -> {
                     Integer current = loading.get(uuid);
                     if (current == null || current != gen || Bukkit.getPlayer(uuid) == null) {
@@ -85,6 +91,16 @@ final class TierProgress {
     void unload(UUID uuid) {
         cache.remove(uuid);
         loading.remove(uuid);
+        keys.remove(uuid);
+    }
+
+    /** Removes the unlocks of a deleted profile (after the queued writes). */
+    void deleteProfile(UUID key) {
+        chain = chain.thenCompose(v -> core.database().run(c -> Sql.update(c, "DELETE FROM depths_tier_unlocks WHERE player = ?", key)))
+                .exceptionally(error -> {
+                    core.plugin().getLogger().log(Level.WARNING, "Depths tiers: could not remove unlocks of deleted profile " + key, error);
+                    return null;
+                });
     }
 
     boolean loaded(UUID uuid) {
@@ -151,7 +167,8 @@ final class TierProgress {
                         "level", level, "season", config.tierSeasonId));
     }
 
-    private void write(UUID uuid, String zone, long unlockedAt, Long visitedAt) {
+    private void write(UUID player, String zone, long unlockedAt, Long visitedAt) {
+        UUID uuid = keys.getOrDefault(player, player);
         int season = config.tierSeasonId;
         chain = chain.thenCompose(v -> core.database().run(c -> upsert(c, uuid, season, zone, unlockedAt, visitedAt)))
                 .exceptionally(error -> {

@@ -19,6 +19,10 @@ import net.skybornmc.skyblock.common.economy.TxReason;
 import net.skybornmc.skyblock.common.economy.TxResult;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.player.PlayerData;
+import net.skybornmc.skyblock.common.audit.AuditCategory;
+import net.skybornmc.skyblock.common.profile.ProfileDeletedEvent;
+import net.skybornmc.skyblock.common.profile.ProfileService;
+import net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
@@ -100,12 +104,15 @@ public final class EconomyModule implements SkyblockModule, Listener {
         main = new MainThread(core.plugin());
         // Season id: 0 until the season service exists (Phase 10); the ledger and start-balance keys already carry it.
         EconomyStore store = new EconomyStore(core.database(), () -> 0, System::currentTimeMillis);
+        store.owners(key -> profiles().ownerOf(key));
         service = new EconomyServiceImpl(store, new BalanceCache(), core.audit(), () -> config,
                 uuid -> core.players().get(uuid).map(PlayerData::name).orElse(null),
-                currency -> core.style().symbol(currency.key()), () -> 0, core.plugin().getLogger());
-        baltop = new Baltop(store::top, System::currentTimeMillis);
+                currency -> core.style().symbol(currency.key()), () -> 0, core.plugin().getLogger(), this::profiles);
+        // P7: one line per player, from their best profile.
+        baltop = new Baltop((currency, size) -> store.topBest(currency, size, profiles()), System::currentTimeMillis);
         core.services().register(ID, EconomyService.class, service);
-        notes = new MoneyNotes(this, new NoteService(core.database(), service, System::currentTimeMillis, core.plugin().getLogger()));
+        notes = new MoneyNotes(this, new NoteService(core.database(), service, System::currentTimeMillis, core.plugin().getLogger(),
+                (createdBy, redeemer, actor) -> profiles().blockOwnTransfer(AuditCategory.ECONOMY, "note_redeem", createdBy, redeemer, actor)));
         notes.enable();
         registerPlaceholders();
         registerCommands();
@@ -160,6 +167,16 @@ public final class EconomyModule implements SkyblockModule, Listener {
         return service;
     }
 
+    /** Island profiles (PROF): money, crystals and shards are per profile; gems per player. */
+    ProfileService profiles() {
+        return ProfileService.of(core.services());
+    }
+
+    /** The account key of a player for money/crystals/shards: the active (offline: last active) profile. */
+    CompletableFuture<UUID> accountKey(UUID player) {
+        return profiles().profileKeyAsync(player);
+    }
+
     Executor mainThread() {
         return main;
     }
@@ -173,7 +190,39 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
-        service.cache().forget(event.getPlayer().getUniqueId());
+        service.forgetPlayer(event.getPlayer().getUniqueId());
+    }
+
+    /** A switch to another profile: show that profile's money, crystals and shards. */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onProfileSwitched(ProfileSwitchedEvent event) {
+        Player player = event.getPlayer();
+        service.switchedProfile(player.getUniqueId(), event.to().id()).exceptionally(e -> {
+            core.plugin().getLogger().warning("Economy: could not load balances of " + player.getName() + " after a profile switch: "
+                    + e.getMessage());
+            return null;
+        });
+    }
+
+    /** A deleted profile's money, crystals and shards are gone with it (owner P9); gems stay on the player. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileDeleted(ProfileDeletedEvent event) {
+        AccountRef account = AccountRef.player(event.profile().id());
+        for (Currency currency : Currency.values()) {
+            if (currency == Currency.GEMS) {
+                continue;
+            }
+            service.balance(account, currency).thenAccept(balance -> {
+                if (balance > 0) {
+                    service.set(account, currency, 0, "profile_delete", Actor.system("profiles"),
+                            Map.of("profile", event.profile().id().toString(), "slot", event.profile().slot()));
+                }
+            }).exceptionally(e -> {
+                core.plugin().getLogger().warning("Economy: could not clear balances of deleted profile " + event.profile().id()
+                        + ": " + e.getMessage());
+                return null;
+            });
+        }
     }
 
     private void load(Player player) {
@@ -333,7 +382,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 .permission(PERM_TRANSACTIONS)
                 .playerOnly()
                 .aliases("txs")
-                .executes(ctx -> core.menus().open(ctx.player(), new TransactionsMenu(this, AccountRef.player(ctx.player().getUniqueId())))));
+                .executes(ctx -> core.menus().open(ctx.player(), new TransactionsMenu(this,
+                        AccountRef.player(profiles().profileKey(ctx.player())), AccountRef.player(ctx.player().getUniqueId())))));
 
         core.commands().register(notes.withdrawCommand());
 
@@ -413,8 +463,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
             if (!(sender instanceof Player p)) {
                 throw CommandFailure.of("players-only");
             }
-            then(sender, service.balances(AccountRef.player(p.getUniqueId())), balances -> {
-                balances.forEach((currency, value) -> service.cache().refresh(p.getUniqueId(), currency, value));
+            then(sender, service.balances(AccountRef.player(profiles().profileKey(p))), balances -> {
+                service.refreshCached(p.getUniqueId(), balances);
                 sendBalances(sender, null, balances);
             });
             return;
@@ -428,7 +478,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 sound(sender, "error");
                 return;
             }
-            then(sender, service.balances(AccountRef.player(found.get().uuid())),
+            then(sender, accountKey(found.get().uuid()).thenCompose(key -> service.balances(AccountRef.player(key))),
                     balances -> sendBalances(sender, found.get().name(), balances));
         });
     }
@@ -474,7 +524,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
         OptionalLong mine = OptionalLong.empty();
         if (sender instanceof Player p) {
             mine = service.cached(p.getUniqueId(), currency);
-            if (mine.isPresent()) {
+            // P7: the list shows each player's best profile; the live balance only replaces it when it is higher.
+            long listed = cached.entries().stream().filter(e -> e.player().equals(p.getUniqueId()))
+                    .mapToLong(EconomyStore.TopEntry::balance).findFirst().orElse(-1L);
+            if (mine.isPresent() && (currency == Currency.GEMS || mine.getAsLong() > listed)) {
                 top = cached.withLive(p.getUniqueId(), p.getName(), mine.getAsLong(), config.baltopSize);
             }
         }
@@ -527,9 +580,18 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 sound(payer, "error");
                 return;
             }
-            Transaction tx = Transaction.transfer(AccountRef.player(payer.getUniqueId()), AccountRef.player(target.uuid()), currency,
-                    amount, TxReason.PAY).actor(Actor.player(payer)).detail("target_name", target.name());
-            then(payer, service.execute(tx), result -> payResult(payer, target, amount, currency, result));
+            UUID from = profiles().profileKey(payer);
+            then(payer, accountKey(target.uuid()), to -> {
+                // P4: never between two profiles of the same player (also checked when the names differ).
+                if (profiles().blockOwnTransfer(AuditCategory.ECONOMY, "pay", from, to, Actor.player(payer))) {
+                    msg.send(payer, "pay.own-profile");
+                    sound(payer, "error");
+                    return;
+                }
+                Transaction tx = Transaction.transfer(AccountRef.player(from), AccountRef.player(to), currency,
+                        amount, TxReason.PAY).actor(Actor.player(payer)).detail("target_name", target.name());
+                then(payer, service.execute(tx), result -> payResult(payer, target, amount, currency, result));
+            });
         });
     }
 
@@ -574,14 +636,18 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 return;
             }
             Found target = found.get();
-            for (Currency currency : currencies) {
-                ecoOne(sender, action, target, currency, amount, note);
-            }
+            then(sender, accountKey(target.uuid()), key -> {
+                for (Currency currency : currencies) {
+                    ecoOne(sender, action, target, key, currency, amount, note);
+                }
+            });
         });
     }
 
-    private void ecoOne(CommandSender sender, EcoAction action, Found target, Currency currency, long amount, String note) {
-        AccountRef account = AccountRef.player(target.uuid());
+    /** {@code key}: the player's active profile (money, crystals, shards); gems go to the player account automatically. */
+    private void ecoOne(CommandSender sender, EcoAction action, Found target, UUID profileKey, Currency currency, long amount,
+                        String note) {
+        AccountRef account = AccountRef.player(profileKey);
         Actor actor = Actor.of(sender);
         String reference = note.length() > 64 ? note.substring(0, 64) : note;
         Map<String, Object> details = Map.of("note", note, "target_name", target.name());

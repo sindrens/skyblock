@@ -39,8 +39,9 @@ final class EnchantMenus {
     /** Book shop: loads today's rolls first. */
     void openShop(Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
         UUID uuid = player.getUniqueId();
+        UUID profile = module.ops().profiles().profileKey(player);
         String day = EnchantOps.today();
-        module.core.database().async(c -> module.store().daily(c, uuid, day)).whenComplete((used, error) ->
+        module.core.database().async(c -> module.store().daily(c, profile, day)).whenComplete((used, error) ->
                 module.core.scheduler().main("enchants-shop", () -> {
                     Player p = org.bukkit.Bukkit.getPlayer(uuid);
                     if (p == null) {

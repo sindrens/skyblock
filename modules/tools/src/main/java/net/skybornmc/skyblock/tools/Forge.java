@@ -9,6 +9,7 @@ import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.economy.Transaction;
 import net.skybornmc.skyblock.common.economy.TxResult;
 import net.skybornmc.skyblock.common.item.ItemRegistry;
+import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.tools.ToolKind;
@@ -55,6 +56,8 @@ final class Forge {
 
     private final ToolsModule module;
     private final Set<UUID> busy = ConcurrentHashMap.newKeySet();
+    /** Profile key that paid, per idempotency key: a refund always goes back to the profile that paid (P4), even after a switch. */
+    private final Map<String, UUID> payers = new ConcurrentHashMap<>();
 
     Forge(ToolsModule module) {
         this.module = module;
@@ -226,6 +229,7 @@ final class Forge {
                 completeForge(p, def, toolId, key);
             } finally {
                 busy.remove(playerId);
+                payers.remove(key);
             }
         }));
     }
@@ -350,6 +354,7 @@ final class Forge {
                         }
                     } finally {
                         busy.remove(playerId);
+                        payers.remove(key);
                     }
                 }));
     }
@@ -413,11 +418,13 @@ final class Forge {
             return;
         }
         UUID playerId = player.getUniqueId();
+        // Per profile: a new profile starts with an empty inventory, so it gets its own starter kit timer.
+        UUID claimKey = ProfileService.of(module.core.services()).profileKey(player);
         long cooldown = Duration.ofHours(module.config().starterCooldownHours).toMillis();
         long now = System.currentTimeMillis();
         module.core.database().transaction(c -> {
-            Long previous = module.repository().lastClaim(c, playerId).orElse(null);
-            long left = module.repository().claim(c, playerId, now, cooldown);
+            Long previous = module.repository().lastClaim(c, claimKey).orElse(null);
+            long left = module.repository().claim(c, claimKey, now, cooldown);
             return new long[]{left, previous == null ? -1 : previous};
         }).whenComplete((res, error) -> module.core.scheduler().main("tools-starter", () -> {
             try {
@@ -437,7 +444,7 @@ final class Forge {
                 }
                 if (p == null) {
                     Long previous = res[1] < 0 ? null : res[1];
-                    module.core.database().run(c -> module.repository().unclaim(c, playerId, previous));
+                    module.core.database().run(c -> module.repository().unclaim(c, claimKey, previous));
                     return;
                 }
                 giveStarter(p, StarterKit.missing(missing, kindsOwned(p)));
@@ -493,7 +500,9 @@ final class Forge {
         if (economy.isEmpty()) {
             return CompletableFuture.completedFuture(TxResult.of(TxResult.Status.ERROR));
         }
-        Transaction tx = Transaction.withdraw(AccountRef.player(player.getUniqueId()), Currency.MONEY, amount, reason)
+        UUID account = ProfileService.of(module.core.services()).profileKey(player);
+        payers.put(key, account);
+        Transaction tx = Transaction.withdraw(AccountRef.player(account), Currency.MONEY, amount, reason)
                 .actor(Actor.player(player)).reference(reference).idempotencyKey(key);
         for (Map.Entry<String, Object> e : details.entrySet()) {
             tx = tx.detail(e.getKey(), e.getValue());
@@ -510,7 +519,8 @@ final class Forge {
             module.core.plugin().getLogger().severe("Tools: could not refund " + amount + " to " + name + " (" + key + "): economy is off");
             return;
         }
-        economy.get().execute(Transaction.deposit(AccountRef.player(player), Currency.MONEY, amount, REASON_REFUND)
+        UUID account = payers.getOrDefault(key, player);
+        economy.get().execute(Transaction.deposit(AccountRef.player(account), Currency.MONEY, amount, REASON_REFUND)
                 .actor(Actor.system("tools")).reference(key.length() > 64 ? key.substring(0, 64) : key)
                 .idempotencyKey("refund:" + key).detail("why", why)).whenComplete((r, e) -> {
             if (e != null || r == null || !(r.ok() || r.status() == TxResult.Status.DUPLICATE)) {

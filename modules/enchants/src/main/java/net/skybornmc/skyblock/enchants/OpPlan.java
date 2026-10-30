@@ -16,6 +16,9 @@ import java.util.UUID;
  *
  * @param id          unique operation id (idempotency key {@code enchant:<id>}, stored as the book rows' reason)
  * @param action      apply, upgrade, combine, combine_tool, remove, shatter, roll, scroll_buy
+ * @param player      the player (account): audit, collection, the online player who gets the items
+ * @param profile     the player's active profile key when the action started: crystals, daily rolls and the book rows'
+ *                    profile belong to it (owner decision P4: nothing moves between own profiles)
  * @param toolId      the tool whose perks change, or null
  * @param perksBefore the tool's perks now (the item must still have exactly these when the result comes back)
  * @param perksAfter  the tool's perks after the action
@@ -27,7 +30,7 @@ import java.util.UUID;
  * @param ledgerReason economy ledger reason ({@code enchant_apply} …)
  * @param details     audit details
  */
-record OpPlan(UUID id, String action, UUID player, String playerName, int season, UUID toolId, List<ToolPerk> perksBefore,
+record OpPlan(UUID id, String action, UUID player, UUID profile, String playerName, int season, UUID toolId, List<ToolPerk> perksBefore,
               List<ToolPerk> perksAfter, List<Book> consume, List<Book> mint, long cost, long refund, Daily daily,
               String ledgerReason, Map<String, Object> details) {
 
@@ -54,6 +57,7 @@ record OpPlan(UUID id, String action, UUID player, String playerName, int season
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(action, "action");
         Objects.requireNonNull(player, "player");
+        profile = profile == null ? player : profile;
         perksBefore = perksBefore == null ? List.of() : List.copyOf(perksBefore);
         perksAfter = perksAfter == null ? List.of() : List.copyOf(perksAfter);
         consume = consume == null ? List.of() : List.copyOf(consume);

@@ -100,6 +100,9 @@ hub:
     discord:
       name: "<c:flame><bold>Discord"
       lore: ["<c:text>News, sneak peeks, support", "<c:text>and giveaways."]
+    profiles:
+      name: "<c:flame><bold>Profiles"
+      lore: ["<c:text>Up to 3 islands, each with", "<c:text>its own items and money."]
     spawn:
       name: "<c:flame><bold>Spawn"
       lore: ["<c:text>Back to spawn."]

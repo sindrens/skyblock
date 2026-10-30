@@ -1,7 +1,27 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- PROF profiles: a profile can only be deleted while you play on another one (switch first), so a player with 1 slot can't delete their only profile. Allow "delete and start fresh" for the active/only profile (it would empty everything and make a new profile 1)? (default: no, switch first)
+- PROF profiles: deleting a profile that leads a team island with other members is refused until leadership is transferred; a solo island is removed with the profile; a member just leaves. OK? (default: as described)
+- PROF profiles: a profile with active auction listings can't be deleted (cancel them first); items still in its auction collection bin are deleted with it. OK? (default: as described)
+- PROF profiles: two own profiles can never share an island, **also not one after the other** (a profile can never join an island another profile of the same player was ever on, this season or before). Too strict? (default: strict, safest against moving items)
+- PROF profiles: when a rank that gave slot 2/3 is lost, the profile in that slot stays but can't be switched to (it can still be deleted). Or should it stay playable? (default: locked)
+- PROF profiles: a new profile gets **no** start balance (one start balance per player and season goes to the profile active at the first join of the season), so creating/deleting profiles can't print money. OK? (default: one per player)
+- PROF profiles: switching has only a 10 s anti-spam cooldown (P5 gave no cooldown). Combat and the boss arena don't exist yet: their modules will refuse the switch through `ProfileSwitchEvent`; until then `profiles.yml → switch.blocked-worlds` can list worlds. Which world(s) is the boss arena? (default: none listed)
+- PROF profiles: `/settings` values, the `/menu` star setting and the scoreboard on/off are per profile; vanish, staff homes and equipped titles/tags are account-wide (`profiles.yml → settings.profile-keys`). OK? (default: as described)
+- PROF profiles: the scoreboard does not show the profile name yet; `messages/hud.yml` has a commented line with `<ph:profile_name>` to turn it on. Show it by default? (default: off)
+- PROF profiles: `/isadmin addmember` on an offline player uses their profile 1 (staff can't pick another profile from the command). OK? (default: online players use their active profile)
+- PROF profiles: profile slots bought with gems are kept forever (also after a season reset). Should a season reset also delete the profiles themselves, or keep the profiles and only reset their islands/data? (default: decided with the season system, Phase 10)
 - STACK spawner speed: each spawner in a stack adds `spawners.mobs-per-spawner: 4` mobs every 10–40 s (vanilla's best case, avg ~9.6 mobs/min per spawner; a full 512 stack ≈ 4,900 mobs/min, merged into stacks of 1,024). Balance against sell prices in BAL2? (default: as given, all in `stacking.yml`)
+- BAL2 spawner output: `stacking.yml → spawners.mobs-per-spawner: 4` makes one spawner earn 4× what the balance sheet assumes; spawners would be ~69% of a regular player's income and money supply doubles (`ECONOMY_BALANCE.md` §4.3, §7.3). Change it to 1? (default: suggest 1; the config stays 4 until you decide, no sell prices exist yet)
+- BAL2 spawner shop price: the next spawner of a tier costs base × 1.10 per spawner of that tier the island already owns (base = 60 production hours of its own output: $117k tier 1, $213k tier 2). A fixed price lets spawners pay for each other and money compounds (×6 money supply). OK? (default: yes, for the M3.5 shop)
+- BAL2 sell bonus values (all summed, then the +300% cap): best rank +15%, Sell Multiplier upgrade +5% per level (+60%), Market Contacts +2% per level (max 20 = +40%), Coinmaster +50% at set level 50, Gilded Touch +15%, personal and global boosters +50% each, sell events +25%. Nobody reaches the cap without boosters (grinder season end ≈ +143%). OK? (default: as in §2.7)
+- BAL2 custom Depths tiers 9–12: price growth ×2.2 per tier instead of ×2.4, because the real sell bonuses now sit on top late in the season (grinder month 2: $39B instead of $53B; target $50B). OK? (default: ×2.2, set when M3.4 prices are written)
+- BAL2 pacing (#61): a new tier's ore breaks at 70% speed with the previous tier's tool, until the next tool is forged (a short "down" before the Forge "up"). Build this into the Depths break speed (M4.9 / E4)? (default: yes as a design rule; no code change now)
+- BAL2 archetypes are now 1 h / 3 h / 8 h per day (casual / regular / grinder). ENCHANTS §12 and WARDROBE §3.2 still use a 4 h/day "active" player; crystal income of the 3 h regular is ~20% lower than those plans assumed. Re-check them in E4/W4 with the new archetypes? (default: yes, no change now)
+- BAL2 sink dashboard (M3.8): use the 14-day average sink ratio (target ≥ 80% per season, act below 60% for 3 days); the 7-day average dips whenever many players save for the same big purchase. OK? (default: yes)
+- BAL2 crates: money rewards from crates stay inside the 30% event income (a crate is never a money printer); crates mainly give boosters, books, tier 3–5 spawners, Tomes and sets. OK? (default: yes, for the crates plan)
+- STACK spawner speed: each spawner in a stack adds `spawners.mobs-per-spawner: 4` mobs every 10–40 s (vanilla's best case, avg ~9.6 mobs/min per spawner; a full 512 stack ≈ 4,900 mobs/min, merged into stacks of 1,024). Balance against sell prices in BAL2? (default: as given, all in `stacking.yml`) → BAL2 checked it: see the BAL2 spawner question below.
 - STACK rare drops (SK10): spawner evokers drop a totem 2% of the time and spawner shulkers a shell 5% (vanilla: 100% / 50%), per mob killed. OK? (default: 2% / 5%, `stacking.yml → spawners.rare-drops`)
 - STACK shearing: shearing a stack of sheep shears them all (wool × stack, merged into one item); other stacks (mooshrooms, snow golems) can't be sheared. OK? (default: yes, `mobs.shear-whole-stack`)
 - STACK spawner mobs: zombies/skeletons from spawners don't burn in daylight and piglins/hoglins never turn into zombified ones (S25: conditions ignored). Slimes/magma cubes from spawners are always the smallest size (they drop loot and never split). OK? (default: yes)
@@ -20,6 +40,7 @@
 - E1 Book shop rolls give level I books and offer the Mining, Foraging and Combat pools (Farming/Fishing come with Phase 7). OK? (default: yes, `enchanter.yml → rolls.book-level`, `rolls.pools`)
 - E1 roll tiers come from the skill level (same unlock levels as the Forge/Depths tiers, `enchanter.yml → tiers.*`) until a shared tier service exists. OK? (default: yes)
 - E1 collection ("found this season", Mythics show ??? until seen): a book counts as seen when you get or use it at the Enchanter, or when it is in your inventory as you open /enchanter. OK? (default: yes)
+- E1 enchant collection (guide "found this season") is per player (account), not per profile; crystals, daily rolls and books are per profile. OK? (default: yes)
 - E1 crystal rounding: apply/combine fees round half up, the shatter refund rounds down (20% of 32,738 = 6,547). OK? (default: yes)
 - M4.2 starter kit: no new command (none approved), so it is the "Starter kit" button in `/forge` (Quartermaster placeholder). Give it automatically on the first join? (default: off, `tools.yml → starter-kit.give-on-first-join`)
 - M4.2 skins: `/skin give` adds the skin straight to the collection (no item). DESIGN says skins are tradeable: add a redeemable skin item (crates/trading) later? A skin stays on a tool when the tool is traded. (default: collection only for now)
@@ -34,7 +55,7 @@
 - R2A `/freerank`: the Ember rank gives the name color and prefix only. Which "few small perks" should it get (e.g. `/hat`, 1 extra AH slot)? (default: none until decided)
 - R2A staff mode: the Inspect tool is now a blaze rod (owner #5), so the Punish tool (also a blaze rod before) is now a breeze rod. OK? (default: breeze rod)
 - R2A time zone: all player/staff-facing times use `core.yml → display-timezone: Europe/Oslo` and `server/start.sh` runs the JVM with `-Duser.timezone=Europe/Oslo`. Staff logs now show CET/CEST instead of UTC (CSV export too). OK? (default: yes)
-- R2B sell cap: `economy.yml → sell.multiplier-cap-percent: 300` (#46), but the balance sheet (`docs/ECONOMY_BALANCE.md` §2 and `tools/economy_model.py`) still models a +100% total cap. R2A set the model's cap to +300% (`SELL_BONUS_CAP = 3.00`); the archetypes stay at ≤ +41%, so no table changed. Model players who stack boosters/sets near the cap before M3.4 prices go live? (default: yes; config stays 300 meanwhile, no sell system uses it yet)
+- ~~R2B sell cap: `economy.yml → sell.multiplier-cap-percent: 300` (#46), but the balance sheet (`docs/ECONOMY_BALANCE.md` §2 and `tools/economy_model.py`) still models a +100% total cap. R2A set the model's cap to +300% (`SELL_BONUS_CAP = 3.00`); the archetypes stay at ≤ +41%, so no table changed. Model players who stack boosters/sets near the cap before M3.4 prices go live? (default: yes; config stays 300 meanwhile, no sell system uses it yet)~~ Done in BAL2: every sell source is modelled and capped once (`ECONOMY_BALANCE.md` §2.7).
 - R2B: the 30-minute new-account limit only stops the payer (and `/withdraw`); new accounts can still receive `/pay` and cash notes. OK? (default: yes)
 - CRY colors: crystals are aqua `#4FD1FF` with `◆` (the old gems look); gems are now emerald `#3DDC97` with `✦` (Bedrock falls back to dark green, money stays light green `$`). Menu icons: crystals = prismarine crystals, gems = emerald (were amethyst shard / diamond). OK? (default: yes, all in `style.yml` and `economy.yml → icons`)
 - CRY: the island shop and island missions that earn/spend crystals (CR1/CR2) don't exist yet; crystals currently only exist as a balance (`/bal`, `/eco`, HUD). Build them with the island upgrades milestone? (default: yes)
@@ -189,10 +210,23 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 - Enchants: stacked-mob kills drop Slaughter/Soul Reaper/Bloodlust/Plunder books at 1 in 25,000 per mob, max 5 per day per profile. OK? (default: yes, EN15)
 - Enchants: bonus family caps besides the +300% sell cap: crystals +200%, extra drops +200% (max 3 per action), skill XP +300%, tool XP +100%, rare finds +150%, mob damage +200%, damage reduction 60%, +10 hearts. OK? (default: yes, EN16)
 - Enchants: PvP values: damage enchants 40%, healing 50%, AoE/stacked/Phoenix Rebirth/movement and vision enchants off in the warzone and duels. OK? (default: yes, EN17)
-- Enchants: armor enchant slots on wardrobe pieces: 1 per piece, a 2nd at set level 25, chestplate mythic slot at 50 (final numbers with the SETS plan). OK? (default: yes, EN12)
+- Enchants: armor enchant slots on wardrobe pieces: 1 per piece, a 2nd at set level 25, chestplate mythic slot at 50 (confirmed in `docs/plans/WARDROBE.md` §3.3). OK? (default: yes, EN12)
 - Enchants: staff test tools as `/enchanter admin give|apply|clear` subcommands (staff only). New subcommands need your approval. Add them? (default: not built until approved, EN20)
 - Enchants: the AH should refuse buying a listing made by the same account (any profile), so items can't hop between own profiles (P4). Build that into the AH with profiles? (default: yes)
 - Enchants: the 48 names in `docs/plans/ENCHANTS.md` §6 (Swiftness, Vein Rend, Dragonfire Blast, Treefeller, Slaughter, Phoenix Wrath …). OK? (default: yes)
+- Wardrobe (PLAN-SETS, `docs/plans/WARDROBE.md`): sets are virtual wardrobe entries; equipping puts real armor on that is locked to the armor slots (a copy is worthless and deleted). Sets are bound to the profile, only unredeemed crate Set Tokens trade/go on the AH. OK? (default: yes, WD7/WD19)
+- Wardrobe: the 16 sets (5 tier I money sets, Banneret Tabard, Lorekeeper Robes, Deepforge Plate, Thornward Mantle, Cropwarden Robes, Dreadguard Mail, Stormkeel Scale, Coinmaster Silks, Voidforged Plate, Conqueror Aegis, Phoenix Regalia), their bonuses and the new bonus families crop growth (+100%) and conquest (+60%). OK? (default: yes, WD2/WD3/WD9)
+- Wardrobe prices: tier I $20k, Banneret $2.5M, Coinmaster $40M, tier III crystal sets ◆ 25,000, gem sets ✦ 400 / ✦ 900 (each also in a crate, so no power is gem-only), tier IV crate-only. OK? (default: yes, WD4)
+- Wardrobe: a gem set is an account-wide "Sigil": every profile can claim the set once per season for free, and Sigils are kept across seasons. OK? (default: yes, WD5)
+- Wardrobe set levels: XP from the activity the set boosts (50% with 2–3 pieces, 100% with 4; stacked island mobs give none), 200 × 1.10^level XP per level, multiplier 2 × level / 50 (Lv 25 = 1×, Lv 50 = 2×); level 50 in ~65 h of that activity for an active player. OK? (default: yes, WD10–WD14)
+- Wardrobe merging: both sets level 50, no shared bonus family, tier I–III only, one merge per set, fee ◆ 5,000–25,000, merged set needs 1.5× XP, no unmerge. OK? (default: yes, WD15/WD22/WD23)
+- Wardrobe Tomes (+2,500 / +10,000 set XP from crates/quests, never gems, not past level 40). OK? (default: yes, WD13)
+- Wardrobe in the warzone and duels: every set counts as 1×, armor normalized to diamond-like, damage reduction at 50%, only conquest bonuses work. OK? (default: yes, WD18)
+- Wardrobe Chest (storage for loadout swaps) holds unique items only (custom tools, enchant books/scrolls, set tokens, tomes), 27 slots + rank grants; plain items are never stored. OK? (default: yes, WD21/LD1)
+- Loadout slots: 2 free, Knight 3, Warlord 4, Monarch 5, +1 per store-credit purchase (max +3, account-wide), max 8. Credit price with the store plan. OK? (default: yes, LD2)
+- Loadout: swaps (and wardrobe equips) refused for 10 s after combat damage with a player or hostile mob, in the warzone and while frozen; 2 s cooldown. OK? (default: yes, LD3/LD6)
+- Loadout: `/loadout <name>` applies a preset by name (argument of the approved command) and `/sets` stays as an alias of `/wardrobe`. OK? (default: yes, LD5/WD24)
+- Wardrobe staff tools: a Wardrobe button in `/inspect <player>` (view; admins give/remove sets, set levels, give tokens, all audited) instead of a new staff command. OK? (default: yes, WD25)
 
 ## Economy
 1. **Shards:** how are they earned? (Proposal: bosses, envoys, KOTH, high-tier dungeon zones.)
@@ -206,7 +240,7 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 7. Tier unlock thresholds (blocks broken / logs / kills) per tier.
 
 ## Gear
-8. **Sets:** how are pieces obtained (crystals, drops, crafting)? Final set list.
+8. ~~**Sets:** how are pieces obtained? Final set list.~~ Planned (SE1 + follow-ups): `docs/plans/WARDROBE.md`.
 9. Tool prestige at level 50: confirm, and what it gives (default: permanent title + skin unlock + small bonus on that tool).
 
 ## Leaderboards

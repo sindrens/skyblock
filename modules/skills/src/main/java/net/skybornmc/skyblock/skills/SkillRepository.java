@@ -51,6 +51,11 @@ final class SkillRepository {
         }
     }
 
+    /** Removes every row of a deleted profile (all seasons). */
+    void delete(Connection c, UUID player) throws SQLException {
+        Sql.update(c, "DELETE FROM skills WHERE player = ?", player);
+    }
+
     private static void upsert(Connection c, UUID player, int season, SkillType skill, double xp, int level, long now) throws SQLException {
         if (Sql.update(c, UPDATE, xp, level, now, player, season, skill.id()) == 0) {
             Sql.update(c, INSERT, player, season, skill.id(), xp, level, now);

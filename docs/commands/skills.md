@@ -19,3 +19,5 @@ Placeholders: `<ph:skill_mining_level>`, `<ph:skill_mining_progress>` (percent, 
 Audit: level-ups (`world`, action `skill_level_up`), staff XP changes through the service (`staff`, action `skill_set`).
 
 Permission definitions: `modules/skills/src/main/resources/permissions/skills.yml`. Rank grants: `server/permissions/skills.txt`.
+
+Profiles (PROF): skill XP belongs to the active profile (table `skills`, column `player` = profile key; profile 1 = the player UUID, so old rows are profile 1). A switch saves the old profile's XP and loads the new one's; `/skills <player>` of an offline player shows their last active profile. A deleted profile's rows are removed.

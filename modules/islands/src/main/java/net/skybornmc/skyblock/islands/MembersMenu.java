@@ -98,8 +98,8 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
 
     @Override
     protected void tick() {
-        if (islands.byId(island.id()) != island || island.roleOrNull(viewer.getUniqueId()) == null
-                || island.roleOrNull(viewer.getUniqueId()) == Role.COOP) {
+        if (islands.byId(island.id()) != island || island.roleOrNull(islands.key(viewer)) == null
+                || island.roleOrNull(islands.key(viewer)) == Role.COOP) {
             viewer.closeInventory();
             return;
         }
@@ -107,7 +107,7 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
     }
 
     private Role viewerRole() {
-        return island.roleOrNull(viewer.getUniqueId());
+        return island.roleOrNull(islands.key(viewer));
     }
 
     @Override
@@ -128,7 +128,7 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
                     return;
                 }
                 openChild(new PlayerPickerMenu(v -> text("members.invite.crumb"),
-                        p -> !p.equals(viewer) && islands.islandOfPlayer(p.getUniqueId()).isEmpty(),
+                        p -> !p.equals(viewer) && islands.islandOfPlayer(islands.key(p)).isEmpty(),
                         (v, picked) -> {
                             v.closeInventory();
                             members.invite(v, picked, null);
@@ -136,7 +136,7 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
             });
         }
         int pending = members.invites().pendingFrom(island.id(), System.currentTimeMillis())
-                + members.invites().of(viewer.getUniqueId(), System.currentTimeMillis()).size();
+                + members.invites().of(islands.key(viewer), System.currentTimeMillis()).size();
         set(SLOT_INVITES, service.item(new ItemStack(Material.PAPER), text("members.invites.name"),
                 lines("members.invites.lore", Msg.p("count", pending))), click -> openChild(new InvitesMenu(module, islands, members)));
         set(SLOT_SETTINGS, service.item(new ItemStack(Material.REPEATER), text("members.settings.name"),
@@ -149,7 +149,7 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
     @Override
     protected MenuButton entry(Entry entry) {
         String name = islands.name(entry.uuid());
-        boolean online = Bukkit.getPlayer(entry.uuid()) != null;
+        boolean online = islands.online(entry.uuid()) != null;
         TagResolver[] p = {Msg.p("player", name), Msg.p("role", module.raw("role." + MemberStore.key(entry.role())))};
         List<Component> lore = new ArrayList<>(lines("members.entry.role", p));
         if (entry.role() != Role.COOP) {
@@ -163,13 +163,13 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
             lore.addAll(lines("members.entry.coop"));
         }
         lore.addAll(lines(online ? "members.entry.online" : "members.entry.offline"));
-        boolean actions = MemberActionsMenu.hasActions(viewerRole(), entry.role(), entry.uuid().equals(viewer.getUniqueId()));
+        boolean actions = MemberActionsMenu.hasActions(viewerRole(), entry.role(), entry.uuid().equals(islands.key(viewer)));
         if (actions) {
             lore.add(Component.empty());
             lore.addAll(lines("members.entry.click"));
         }
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(Bukkit.getOfflinePlayer(entry.uuid())));
+        head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(Bukkit.getOfflinePlayer(islands.person(entry.uuid()))));
         ItemStack item = service.item(head, text(entry.role() == Role.LEADER ? "members.entry.name-leader" : "members.entry.name", p), lore);
         if (!actions) {
             return MenuButton.display(item);

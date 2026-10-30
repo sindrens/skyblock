@@ -74,12 +74,12 @@ final class MemberActionsMenu extends Menu {
     protected void build() {
         frame();
         String name = islands.name(target);
-        Role viewerRole = island.roleOrNull(viewer.getUniqueId());
+        Role viewerRole = island.roleOrNull(islands.key(viewer));
         Role role = island.roleOrNull(target);
-        boolean self = target.equals(viewer.getUniqueId());
+        boolean self = target.equals(islands.key(viewer));
         TagResolver[] p = {Msg.p("player", name), Msg.p("role", role == null ? "-" : module.raw("role." + MemberStore.key(role)))};
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(Bukkit.getOfflinePlayer(target)));
+        head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(Bukkit.getOfflinePlayer(islands.person(target))));
         set(SLOT_HEAD, service.item(head, text("actions.head.name", p), lines("actions.head.lore", p)));
         MemberManager members = islands.memberManager();
         if (role == null) {

@@ -105,8 +105,9 @@ final class EnchantServiceImpl implements EnchantService {
         UUID id = BookItems.id(stack);
         int season = module.config().seasonId;
         long now = System.currentTimeMillis();
+        UUID profile = owner == null ? null : net.skybornmc.skyblock.common.profile.ProfileService.of(module.core.services()).profileKey(owner);
         return module.core.database().transaction(c -> {
-            module.store().insert(c, id, scroll, enchant, level, season, origin == null ? "api" : origin, owner, now, "api");
+            module.store().insert(c, id, scroll, enchant, level, season, origin == null ? "api" : origin, owner, profile, now, "api");
             if (!scroll && owner != null) {
                 module.store().markSeen(c, owner, season, enchant, now);
             }

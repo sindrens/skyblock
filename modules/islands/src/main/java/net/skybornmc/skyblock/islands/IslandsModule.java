@@ -3,18 +3,24 @@ package net.skybornmc.skyblock.islands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.command.Arg;
 import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.command.Suggest;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.island.IslandService;
+import net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent;
+import net.skybornmc.skyblock.common.profile.ProfileDeletedEvent;
+import net.skybornmc.skyblock.common.profile.ProfileDeleteEvent;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -23,6 +29,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Phase 2 islands. M2.1: the 512×512 slot grid in the islands world (spiral allocation), creation via {@code /is} with a
@@ -309,10 +316,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
 
     private void registerPlaceholders() {
         core.placeholders().registerText(ID, "island_name",
-                p -> p == null ? "" : manager.islandOfPlayer(p.getUniqueId()).map(manager::displayName).orElse(""));
+                p -> p == null ? "" : manager.islandOfPlayer(manager.key(p)).map(manager::displayName).orElse(""));
         // Island level arrives in Phase 5; "-" until then (empty without an island so the scoreboard shows its dash).
         core.placeholders().registerText(ID, "island_level",
-                p -> p == null || manager.islandOfPlayer(p.getUniqueId()).isEmpty() ? "" : raw("placeholder.level-none"));
+                p -> p == null || manager.islandOfPlayer(manager.key(p)).isEmpty() ? "" : raw("placeholder.level-none"));
         // Leaderboard position (Phase 5 island top). Empty until levels exist, so the scoreboard shows no "#".
         core.placeholders().registerText(ID, "island_rank", p -> "");
     }
@@ -441,6 +448,49 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("bypass").description("Staff: toggle island protection bypass (logged)").permission(PERM_BYPASS)
                         .playerOnly().example("is bypass")
                         .executes(ctx -> protection.toggleBypass(ctx.player()))));
+    }
+
+    // ------------------------------------------------------------------ island profiles (PROF)
+
+    /**
+     * Deleting a profile that leads a team island with other members is refused: the island must be handed over first
+     * (nothing of the members may be destroyed by someone else's profile delete).
+     */
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onProfileDelete(ProfileDeleteEvent event) {
+        manager.islandOfPlayer(event.profile().id()).ifPresent(island -> {
+            if (island.roleOrNull(event.profile().id()) == IslandService.Role.LEADER && island.memberCount() > 1) {
+                event.refuse(msg.component(event.getPlayer(), "profiles.delete-team-leader", Msg.p("island", manager.displayName(island))));
+            }
+        });
+    }
+
+    /** A deleted profile's solo island is removed; as a member it leaves the island; coop trust ends. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileDeleted(ProfileDeletedEvent event) {
+        UUID key = event.profile().id();
+        Actor actor = Actor.system("profiles");
+        for (Island island : List.copyOf(manager.islands())) {
+            if (island.coops().contains(key)) {
+                manager.removeMember(island.id(), key, "profile deleted", actor);
+            }
+        }
+        manager.islandOfPlayer(key).ifPresent(island -> {
+            if (island.roleOrNull(key) == IslandService.Role.LEADER) {
+                if (island.memberCount() <= 1) {
+                    lifecycle.remove(island, IslandStore.REASON_DISBAND, actor, key);
+                }
+            } else {
+                manager.removeMember(island.id(), key, "profile deleted", actor);
+            }
+        });
+    }
+
+    /** After a switch the old profile is "offline": its island's coop trust ends when no manager is left online. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileSwitched(ProfileSwitchedEvent event) {
+        manager.islandOfPlayer(event.from().id()).ifPresent(island -> core.scheduler().later("islands:profile-coops", 1L,
+                () -> members.checkCoops(island)));
     }
 
     @EventHandler

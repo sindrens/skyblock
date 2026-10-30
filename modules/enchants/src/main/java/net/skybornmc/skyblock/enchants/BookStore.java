@@ -46,12 +46,16 @@ final class BookStore {
 
     private static final String COLUMNS = "id, kind, enchant_id, level, state, origin, created_for, created_at, reason";
 
+    /**
+     * @param createdFor the player (account) it was made for, or null
+     * @param profile    that player's profile key at the time (books are profile items), or null
+     */
     void insert(Connection c, UUID id, boolean scroll, String enchant, int level, int season, String origin, UUID createdFor,
-                long now, String reason) throws SQLException {
+                UUID profile, long now, String reason) throws SQLException {
         Sql.update(c, "INSERT INTO enchant_books (id, kind, enchant_id, level, state, season_id, origin, created_for, profile_id, "
-                        + "created_at, changed_at, changed_by, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, NULL, NULL, ?)",
+                        + "created_at, changed_at, changed_by, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?)",
                 id, scroll ? KIND_SCROLL : KIND_BOOK, scroll ? null : enchant, scroll ? 0 : level, State.ACTIVE.key(), season,
-                clip(origin, 64), createdFor, now, clip(reason, 64));
+                clip(origin, 64), createdFor, profile, now, clip(reason, 64));
     }
 
     Optional<Row> find(Connection c, UUID id) throws SQLException {

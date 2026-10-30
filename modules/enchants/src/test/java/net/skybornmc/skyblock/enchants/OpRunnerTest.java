@@ -106,7 +106,7 @@ class OpRunnerTest {
     private UUID book(String enchant, int level) {
         UUID id = UUID.randomUUID();
         db.blocking(c -> {
-            store.insert(c, id, false, enchant, level, 0, "test", player, 1L, "test");
+            store.insert(c, id, false, enchant, level, 0, "test", player, player, 1L, "test");
             return null;
         });
         return id;
@@ -126,7 +126,7 @@ class OpRunnerTest {
 
     private OpPlan applyPlan(UUID bookId, int level, long cost) {
         List<ToolPerk> after = List.of(new ToolPerk(1, "vein_rend", level, 1, cost));
-        return new OpPlan(UUID.randomUUID(), "apply", player, "Steve", 0, tool, List.of(), after,
+        return new OpPlan(UUID.randomUUID(), "apply", player, player, "Steve", 0, tool, List.of(), after,
                 List.of(OpPlan.Book.book(bookId, "vein_rend", level, null)), List.of(), cost, 0, null, "enchant_apply", Map.of());
     }
 
@@ -140,6 +140,23 @@ class OpRunnerTest {
         assertEquals(291, balance());
         assertTrue(perks().contains("vein_rend"));
         assertEquals(Set.of("vein_rend"), db.blocking(c -> store.seen(c, player, 0)), "the collection learns it");
+    }
+
+    @Test
+    void crystalsAndNewBooksBelongToTheActiveProfile() {
+        UUID profile2 = UUID.randomUUID();
+        db.blocking(c -> Sql.update(c, "INSERT INTO test_balance (player, balance) VALUES (?, ?)", profile2, 600L));
+        UUID made = UUID.randomUUID();
+        OpPlan roll = new OpPlan(UUID.randomUUID(), "roll", player, profile2, "Steve", 0, null, null, null, List.of(),
+                List.of(OpPlan.Book.book(made, "swiftness", 1, "roll")), 500, 0, new OpPlan.Daily("2026-10-30", "apprentice", 1),
+                "enchant_roll", Map.of());
+        assertEquals(OpRunner.Status.OK, runner.run(roll).join().status());
+        assertEquals(1_000, balance(), "profile 1 untouched");
+        assertEquals(100L, db.blocking(c -> Sql.queryOne(c, "SELECT balance FROM test_balance WHERE player = ?", rs -> rs.getLong(1), profile2)).orElseThrow());
+        assertEquals(profile2, db.blocking(c -> Sql.queryOne(c, "SELECT profile_id FROM enchant_books WHERE id = ?", rs -> Sql.uuid(rs, "profile_id"), made)).orElseThrow());
+        assertEquals(player, db.blocking(c -> store.find(c, made)).orElseThrow().createdFor());
+        assertEquals(Map.of("apprentice", 1), db.blocking(c -> store.daily(c, profile2, "2026-10-30")), "daily rolls per profile");
+        assertEquals(Map.of(), db.blocking(c -> store.daily(c, player, "2026-10-30")));
     }
 
     @Test
@@ -175,7 +192,7 @@ class OpRunnerTest {
         UUID a = book("slaughter", 4);
         UUID c = book("slaughter", 4);
         UUID made = UUID.randomUUID();
-        OpPlan plan = new OpPlan(UUID.randomUUID(), "combine", player, "Steve", 0, null, null, null,
+        OpPlan plan = new OpPlan(UUID.randomUUID(), "combine", player, player, "Steve", 0, null, null, null,
                 List.of(OpPlan.Book.book(a, "slaughter", 4, null), OpPlan.Book.book(c, "slaughter", 4, null)),
                 List.of(OpPlan.Book.book(made, "slaughter", 5, "combine")), 263, 0, null, "enchant_combine", Map.of());
         assertEquals(OpRunner.Status.OK, runner.run(plan).join().status());
@@ -190,7 +207,7 @@ class OpRunnerTest {
     @Test
     void sameBookTwiceInOnePlanIsRefused() {
         UUID a = book("slaughter", 4);
-        OpPlan plan = new OpPlan(UUID.randomUUID(), "combine", player, "Steve", 0, null, null, null,
+        OpPlan plan = new OpPlan(UUID.randomUUID(), "combine", player, player, "Steve", 0, null, null, null,
                 List.of(OpPlan.Book.book(a, "slaughter", 4, null), OpPlan.Book.book(a, "slaughter", 4, null)),
                 List.of(OpPlan.Book.book(UUID.randomUUID(), "slaughter", 5, "combine")), 263, 0, null, "enchant_combine", Map.of());
         assertEquals(OpRunner.Status.BOOK_INVALID, runner.run(plan).join().status());
@@ -201,13 +218,13 @@ class OpRunnerTest {
     @Test
     void dailyRollLimit() {
         for (int i = 0; i < 2; i++) {
-            OpPlan roll = new OpPlan(UUID.randomUUID(), "roll", player, "Steve", 0, null, null, null, List.of(),
+            OpPlan roll = new OpPlan(UUID.randomUUID(), "roll", player, player, "Steve", 0, null, null, null, List.of(),
                     List.of(OpPlan.Book.book(UUID.randomUUID(), "swiftness", 1, "roll")), 100, 0, new OpPlan.Daily("2026-10-30", "apprentice", 2),
                     "enchant_roll", Map.of());
             assertEquals(OpRunner.Status.OK, runner.run(roll).join().status());
         }
         UUID third = UUID.randomUUID();
-        OpPlan roll = new OpPlan(UUID.randomUUID(), "roll", player, "Steve", 0, null, null, null, List.of(),
+        OpPlan roll = new OpPlan(UUID.randomUUID(), "roll", player, player, "Steve", 0, null, null, null, List.of(),
                 List.of(OpPlan.Book.book(third, "swiftness", 1, "roll")), 100, 0, new OpPlan.Daily("2026-10-30", "apprentice", 2),
                 "enchant_roll", Map.of());
         assertEquals(OpRunner.Status.LIMIT, runner.run(roll).join().status());
@@ -220,11 +237,11 @@ class OpRunnerTest {
     void removeWithAScrollNeedsNoCrystals() {
         UUID scroll = UUID.randomUUID();
         db.blocking(c -> {
-            store.insert(c, scroll, true, null, 0, 0, "shop", player, 1L, "test");
+            store.insert(c, scroll, true, null, 0, 0, "shop", player, player, 1L, "test");
             return null;
         });
         UUID back = UUID.randomUUID();
-        OpPlan plan = new OpPlan(UUID.randomUUID(), "remove", player, "Steve", 0, tool, List.of(new ToolPerk(1, "vein_rend", 2)), List.of(),
+        OpPlan plan = new OpPlan(UUID.randomUUID(), "remove", player, player, "Steve", 0, tool, List.of(new ToolPerk(1, "vein_rend", 2)), List.of(),
                 List.of(OpPlan.Book.scroll(scroll, null)), List.of(OpPlan.Book.book(back, "vein_rend", 2, "disenchant")), 0, 0, null,
                 "enchant_remove", Map.of());
         assertEquals(OpRunner.Status.OK, runner.run(plan).join().status());
@@ -232,7 +249,7 @@ class OpRunnerTest {
         assertEquals(BookStore.State.ACTIVE, state(back));
         assertEquals("[]", perks());
         assertEquals(1_000, balance());
-        OpPlan again = new OpPlan(UUID.randomUUID(), "remove", player, "Steve", 0, tool, List.of(), List.of(),
+        OpPlan again = new OpPlan(UUID.randomUUID(), "remove", player, player, "Steve", 0, tool, List.of(), List.of(),
                 List.of(OpPlan.Book.scroll(scroll, null)), List.of(OpPlan.Book.book(UUID.randomUUID(), "vein_rend", 2, "disenchant")), 0, 0,
                 null, "enchant_remove", Map.of());
         assertEquals(OpRunner.Status.BOOK_INVALID, runner.run(again).join().status(), "a used scroll can't work twice");
@@ -240,7 +257,7 @@ class OpRunnerTest {
 
     @Test
     void shatterRefundsCrystals() {
-        OpPlan plan = new OpPlan(UUID.randomUUID(), "shatter", player, "Steve", 0, tool, List.of(new ToolPerk(1, "vein_rend", 2, 1, 709)),
+        OpPlan plan = new OpPlan(UUID.randomUUID(), "shatter", player, player, "Steve", 0, tool, List.of(new ToolPerk(1, "vein_rend", 2, 1, 709)),
                 List.of(), List.of(), List.of(), 0, 141, null, "enchant_shatter", Map.of());
         OpRunner.Result r = runner.run(plan).join();
         assertEquals(OpRunner.Status.OK, r.status());
@@ -263,7 +280,7 @@ class OpRunnerTest {
     @Test
     void undoOfARollVoidsTheBookAndGivesTheRollBack() {
         UUID made = UUID.randomUUID();
-        OpPlan roll = new OpPlan(UUID.randomUUID(), "roll", player, "Steve", 0, null, null, null, List.of(),
+        OpPlan roll = new OpPlan(UUID.randomUUID(), "roll", player, player, "Steve", 0, null, null, null, List.of(),
                 List.of(OpPlan.Book.book(made, "swiftness", 1, "roll")), 500, 0, new OpPlan.Daily("2026-10-30", "apprentice", 5),
                 "enchant_roll", Map.of());
         assertEquals(OpRunner.Status.OK, runner.run(roll).join().status());

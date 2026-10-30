@@ -29,9 +29,9 @@ final class MyListingsMenu extends PagedMenu<Listing> {
 
     /** Loads the listings, then opens the menu (as a child of {@code parent}, may be null). */
     static void open(AuctionModule module, Player player, Menu parent) {
-        UUID uuid = player.getUniqueId();
+        UUID uuid = module.key(player);
         module.engine().store().open(uuid).whenComplete((rows, error) -> module.core.scheduler().main("auction:mine", () -> {
-            Player p = Bukkit.getPlayer(uuid);
+            Player p = module.online(uuid);
             if (p == null) {
                 return;
             }

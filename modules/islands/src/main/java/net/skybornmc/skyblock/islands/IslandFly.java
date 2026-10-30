@@ -108,7 +108,7 @@ final class IslandFly implements Listener {
             return;
         }
         Island island = at != null && islands.isIslandWorld(at.getWorld()) ? islands.islandAt(at.getBlockX(), at.getBlockZ()) : null;
-        boolean allowed = island != null && allowed(true, island.roleOrNull(uuid) != null,
+        boolean allowed = island != null && allowed(true, island.roleOrNull(islands.key(player)) != null,
                 islands.flagOn(island, IslandFlag.VISITOR_FLY), player.hasPermission(PERM_FLY), islands.hasWings(island.id()));
         if (allowed) {
             if (!player.getAllowFlight()) {

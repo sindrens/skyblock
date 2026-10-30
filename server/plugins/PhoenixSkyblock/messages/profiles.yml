@@ -1,0 +1,181 @@
+# Island profiles (PROF): /profiles. MiniMessage + style tags (style.yml). Keep texts short and plain.
+# Reload: /skyblock reload profiles
+
+profile:
+  # Name of a profile the player did not name yet. <slot>
+  default-name: "Profile <slot>"
+
+error: "<prefix><c:error><sym:cross> Something went wrong. Nothing was changed, try again."
+
+login:
+  failed: "<c:error>Your profiles could not be loaded.<newline><c:text>Please join again in a moment."
+  switching: "<c:error>Your profile switch is still saving.<newline><c:text>Please join again in a few seconds."
+  switch-timeout: "<c:error>Your profile switch took too long.<newline><c:text>Your items are safe. Please join again in a few seconds."
+
+menu:
+  title: "Profiles"
+  crumb: "Profiles"
+  loading:
+    name: "<c:muted>Loading..."
+    lore: []
+  gone:
+    name: "<c:error>This profile is gone"
+    lore: ["<c:text>Go back and pick another one."]
+  no-island: "No island"
+  rank-2: "<c:value>Knight</c:value>"
+  rank-3: "<c:value>Warlord</c:value>"
+  status-active: "<c:success><sym:check> Playing now"
+  status-switch: "<c:action><sym:bullet> Click to manage"
+  status-locked: "<c:error>Slot locked: you can't switch to it"
+  # A profile in a slot. <profile> <slot> <island> <level> <created> <playtime> <status>
+  profile:
+    name: "<c:flame><profile>"
+    lore:
+      - "<c:muted>Slot <slot>"
+      - "<c:text>Island: <c:value><island>"
+      - "<c:text>Island level: <c:value><level>"
+      - "<c:text>Playtime: <c:value><playtime>"
+      - "<c:text>Created: <c:value><created>"
+      - ""
+      - "<status>"
+  # Empty unlocked slot. <slot>
+  empty:
+    name: "<c:success>+ New profile"
+    lore:
+      - "<c:muted>Slot <slot>"
+      - "<c:text>A fresh start: new island,"
+      - "<c:text>empty inventory, own money."
+      - "<c:text>Gems, rank and titles are shared."
+      - ""
+      - "<c:action><sym:bullet> Click to create"
+  # Locked slot that can be bought. <slot> <price> <rank>
+  locked:
+    name: "<c:muted>Locked slot <slot>"
+    lore:
+      - "<c:text>Unlock with <c:value><price> gems</c:value>"
+      - "<c:text>or rank <rank><c:text>+."
+      - "<c:muted>Bought slots are kept forever."
+      - ""
+      - "<c:action><sym:bullet> Click to buy"
+  locked-rank:
+    name: "<c:muted>Locked slot <slot>"
+    lore:
+      - "<c:text>Unlock with rank <rank><c:text>+."
+
+manage:
+  # The profile on its own screen (same placeholders as menu.profile).
+  shown:
+    name: "<c:flame><profile>"
+    lore:
+      - "<c:muted>Slot <slot>"
+      - "<c:text>Island: <c:value><island>"
+      - "<c:text>Island level: <c:value><level>"
+      - "<c:text>Playtime: <c:value><playtime>"
+      - "<c:text>Created: <c:value><created>"
+      - ""
+      - "<status>"
+  playing:
+    name: "<c:success><sym:check> Playing now"
+    lore: ["<c:text>You are on <c:value><profile></c:value>."]
+  switch:
+    name: "<c:success>Switch to <profile>"
+    lore:
+      - "<c:text>Your inventory, ender chest, XP"
+      - "<c:text>and health are saved, then this"
+      - "<c:text>profile's are loaded."
+      - "<c:text>You go to its island (or spawn)."
+      - ""
+      - "<c:action><sym:bullet> Click to switch"
+  rename:
+    name: "<c:value>Rename"
+    lore: ["<c:text>Give <c:value><profile></c:value> a name.", "", "<c:action><sym:bullet> Click, then type it in chat"]
+  icon:
+    name: "<c:value>Change icon"
+    lore: ["<c:text>Pick the icon of <c:value><profile></c:value>.", "", "<c:action><sym:bullet> Click to pick"]
+  delete:
+    name: "<c:error>Delete profile"
+    lore:
+      - "<c:text>Deletes <c:value><profile></c:value> and everything"
+      - "<c:text>on it, forever."
+      - ""
+      - "<c:action><sym:bullet> Click to delete"
+  delete-active:
+    name: "<c:muted>Delete profile"
+    lore: ["<c:text>You are playing on it.", "<c:text>Switch to another profile first."]
+
+switch:
+  not-loaded: "<prefix><c:error><sym:cross> Your profiles are still loading. Try again in a moment."
+  busy: "<prefix><c:error><sym:cross> A switch is already running."
+  same: "<prefix><c:error><sym:cross> You are already on that profile."
+  gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
+  changed: "<prefix><c:error><sym:cross> Your profiles changed. Open <c:action>/profiles</c:action> again."
+  locked: "<prefix><c:error><sym:cross> That slot is locked, so you can't switch to it. You can still delete it."
+  cooldown: "<prefix><c:error><sym:cross> Wait <c:value><time></c:value> before you switch again."
+  blocked-world: "<prefix><c:error><sym:cross> You can't switch profiles here."
+  dead: "<prefix><c:error><sym:cross> Respawn first."
+  cursor: "<prefix><c:error><sym:cross> Put the item on your cursor away first."
+  refused: "<prefix><c:error><sym:cross> You can't switch profiles right now."
+  started: "<prefix><c:muted>Saving and switching to <profile>..."
+  done: "<prefix><c:success><sym:check> <c:text>You are now on <c:value><profile></c:value>."
+
+create:
+  locked: "<prefix><c:error><sym:cross> That slot is locked."
+  used: "<prefix><c:error><sym:cross> That slot already has a profile."
+  slot-used: "<prefix><c:error><sym:cross> That slot already has a profile."
+  invalid-slot: "<prefix><c:error><sym:cross> That slot doesn't exist."
+  changed: "<prefix><c:error><sym:cross> Your profiles changed. Open <c:action>/profiles</c:action> again."
+  done: "<prefix><c:success><sym:check> <c:text>Created <c:value><profile></c:value>. Open it to switch."
+
+rename:
+  type: "<prefix><c:text>Type the new name in chat <c:muted>(max <max>, letters, numbers, spaces, _ -). Type <cancel> to stop (<seconds>s)."
+  empty: "<prefix><c:error><sym:cross> The name can't be empty."
+  too-long: "<prefix><c:error><sym:cross> The name can be <c:value><max></c:value> letters at most."
+  characters: "<prefix><c:error><sym:cross> Use letters, numbers, spaces, _ and - only."
+  gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
+  done: "<prefix><c:success><sym:check> <c:text>Renamed to <c:value><profile></c:value>."
+
+icon:
+  crumb: "Icon"
+  info: ["<c:text>Pick the icon shown for", "<c:text>this profile in /profiles."]
+  empty:
+    name: "<c:muted>No icons to pick"
+    lore: []
+  current: "<c:success><sym:check> Current icon"
+  pick: "<c:action>Click to pick"
+  gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
+
+delete:
+  crumb: "Delete profile"
+  shown:
+    name: "<c:error><bold>Delete <profile>"
+    lore: ["<c:text>Gone forever."]
+  details:
+    - "<c:error>Everything on <profile> is deleted:"
+    - "<c:error>items, money, crystals, shards, skills."
+    - "<c:error>This can't be undone."
+    - "<c:text>Gems, rank and titles stay."
+    - "<c:muted>Next: type the profile name in chat."
+  type: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Last step: type <c:value><profile></c:value> in chat to delete it forever. <c:muted>Type <cancel> to keep it (<seconds>s)."
+  wrong-name: "<prefix><c:error><sym:cross> That wasn't <c:value><profile></c:value>, so it stays."
+  gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
+  active: "<prefix><c:error><sym:cross> You are playing on it. Switch to another profile first."
+  refused: "<prefix><c:error><sym:cross> This profile can't be deleted right now."
+  changed: "<prefix><c:error><sym:cross> Your profiles changed. Open <c:action>/profiles</c:action> again."
+  done: "<prefix><c:success><sym:check> <c:value><profile></c:value> <c:text>was deleted."
+
+slots:
+  already: "<prefix><c:error><sym:cross> You already have that slot."
+  not-for-sale: "<prefix><c:error><sym:cross> That slot can't be bought. It comes with a rank."
+  invalid: "<prefix><c:error><sym:cross> That slot can't be bought."
+  unavailable: "<prefix><c:error><sym:cross> Slots can't be bought right now. Try again later."
+  not-enough: "<prefix><c:error><sym:cross> You need <c:value><price> gems</c:value>. You have <c:value><have></c:value>."
+  bought: "<prefix><c:success><sym:check> <c:text>Slot <c:value><slot></c:value> unlocked for <c:value><price> gems</c:value>. Create a profile in it!"
+  confirm:
+    crumb: "Buy slot"
+    shown:
+      name: "<c:value>Profile slot <slot>"
+      lore: ["<c:text>Costs <c:value><price> gems</c:value>."]
+    details:
+      - "<c:text>Unlocks profile slot <c:value><slot></c:value> for"
+      - "<c:value><price> gems</c:value><c:text>. Yours forever,"
+      - "<c:text>also after a season reset."

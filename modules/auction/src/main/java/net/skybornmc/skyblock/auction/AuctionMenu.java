@@ -147,7 +147,7 @@ final class AuctionMenu extends PagedMenu<Listing> {
                 Msg.number("used", ownCount()), Msg.number("slots", module.slots(viewer))), click -> openMine());
         set(SLOT_SUMMARY, summary());
         if (binCount == null) {
-            setAsync(SLOT_COLLECTION, module.engine().store().collectionCount(viewer.getUniqueId()).thenApply(count -> {
+            setAsync(SLOT_COLLECTION, module.engine().store().collectionCount(module.key(viewer)).thenApply(count -> {
                 binCount = count;
                 return collectionButton(count);
             }));
@@ -204,7 +204,7 @@ final class AuctionMenu extends PagedMenu<Listing> {
     }
 
     private int ownCount() {
-        UUID me = viewer.getUniqueId();
+        UUID me = module.key(viewer);
         return (int) module.engine().activeListings().stream().filter(l -> l.seller().equals(me)).count();
     }
 
@@ -305,7 +305,7 @@ final class AuctionMenu extends PagedMenu<Listing> {
 
     @Override
     protected MenuButton entry(Listing l) {
-        UUID me = viewer.getUniqueId();
+        UUID me = module.key(viewer);
         boolean own = l.seller().equals(me);
         boolean staff = !own && viewer.hasPermission(AuctionModule.PERM_STAFF_REMOVE);
         String action = own ? "browse.entry.own" : staff ? "browse.entry.staff" : "browse.entry.buy";

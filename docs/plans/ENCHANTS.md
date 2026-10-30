@@ -38,7 +38,7 @@
 
 ### 2.1 Where enchants go (EN1)
 - **Custom tools only** (pickaxe, axe, hoe, sword, rod from the Quartermaster, the Forge or blueprints), in their **perk slots** (M4.2): slot 1 at tool level 5, slot 2 at 15, slot 3 at 30, slot 4 at 45, **slot 5 = prestige slot** (after the tool's prestige).
-- **Armor enchants** go on **wardrobe set pieces** (REVIEW A3; `/wardrobe` replaced `/sets`). Default slots per piece: 1 slot, a 2nd at set level 25, and the **chestplate** gets a mythic slot at set level 50 (EN12; final numbers in `docs/plans/SETS.md`).
+- **Armor enchants** go on **wardrobe set pieces** (REVIEW A3; `/wardrobe` replaced `/sets`). Default slots per piece: 1 slot, a 2nd at set level 25, and the **chestplate** gets a mythic slot at set level 50 (EN12; confirmed in `docs/plans/WARDROBE.md` §3.3).
 - Vanilla tools and armor keep vanilla enchanting only (WORLD §6). Custom tools can't be enchanted at a vanilla table or anvil.
 - Enchants stay on the item: upgrading the tool at the Forge, prestiging, trading it, swapping it with a `/loadout` or moving it to the wardrobe keeps them.
 
@@ -563,7 +563,7 @@ Lanes are distinct from each other except `modules/enchants`, so E2/E3/E5/E6 run
 8. Island stack books 1 in 25,000 per mob, max 5 per day per profile (default). (EN15)
 9. Family caps (crystals +200%, drops +200%, skill XP +300%, rare finds +150%, mob damage +200%) (default). (EN16)
 10. PvP values (damage 40%, healing 50%, AoE and Phoenix Rebirth off) (default). (EN17)
-11. Armor slots: 1 per piece, 2nd at set level 25, chestplate mythic slot at 50 (default; final in SETS plan). (EN12)
+11. Armor slots: 1 per piece, 2nd at set level 25, chestplate mythic slot at 50 (default; confirmed in `docs/plans/WARDROBE.md`). (EN12)
 12. Staff `/enchanter admin give|apply|clear` subcommands for testing (default: add, staff-only, after approval). (EN20)
 13. Names (all 48, §6) OK? (default yes)
 

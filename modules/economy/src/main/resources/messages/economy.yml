@@ -43,6 +43,7 @@ pay:
   insufficient: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have <amount><c:text>. <c:muted>Balance: </c:muted><balance>"
   overflow: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't hold that much. Nothing was sent."
   self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay yourself."
+  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay your own profiles."
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay while frozen. Wait for staff."
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be paid to players."
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest payment is <min><c:text>."
@@ -89,6 +90,7 @@ note:
   new-account: "<prefix><c:error><sym:cross></c:error> <c:text>New players can't make notes yet. <c:value><time></c:value> <c:text>left."
   redeemed: "<prefix><c:success><sym:check></c:success> <c:text>Cashed a note of <amount> <c:muted>(signed by <c:value><signer></c:value>)<c:text>. <c:muted>Balance: </c:muted><balance>"
   overflow: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance can't hold that much. You got the note back."
+  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>This note is from your other profile, so it can't be cashed here. You got it back."
   confiscated: "<prefix><c:error><sym:cross></c:error> <c:text>This note <why> <c:text>It was taken and staff were told. Got it from someone? <c:value>/report</c:value> them."
   # Why a note was taken (used in <why> above and in the staff alert).
   why:

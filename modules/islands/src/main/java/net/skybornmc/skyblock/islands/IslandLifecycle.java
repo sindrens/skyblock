@@ -91,17 +91,17 @@ final class IslandLifecycle {
 
     /** {@code /is disband}: leader only; confirm screen, then the confirm word typed in chat, then the island is removed. */
     void disband(Player player) {
-        Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
+        Optional<Island> own = islands.islandOfPlayer(islands.key(player));
         if (own.isEmpty()) {
             islands.fail(player, "no-island");
             return;
         }
         Island island = own.get();
-        if (island.roleOrNull(player.getUniqueId()) != Role.LEADER) {
+        if (island.roleOrNull(islands.key(player)) != Role.LEADER) {
             islands.fail(player, "disband.leader-only");
             return;
         }
-        if (islands.isBuilding(player.getUniqueId()) || removing.contains(island.id())) {
+        if (islands.isBuilding(islands.key(player)) || removing.contains(island.id())) {
             islands.fail(player, "disband.busy");
             return;
         }
@@ -135,16 +135,16 @@ final class IslandLifecycle {
             islands.fail(player, "error.island-gone");
             return;
         }
-        if (island.roleOrNull(player.getUniqueId()) != Role.LEADER) {
+        if (island.roleOrNull(islands.key(player)) != Role.LEADER) {
             islands.fail(player, "disband.leader-only");
             return;
         }
-        if (islands.isBuilding(player.getUniqueId()) || removing.contains(island.id())) {
+        if (islands.isBuilding(islands.key(player)) || removing.contains(island.id())) {
             islands.fail(player, "disband.busy");
             return;
         }
         String name = islands.displayName(island);
-        remove(island, IslandStore.REASON_DISBAND, Actor.player(player), player.getUniqueId()).whenComplete((result, error) -> {
+        remove(island, IslandStore.REASON_DISBAND, Actor.player(player), islands.key(player)).whenComplete((result, error) -> {
             if (error != null) {
                 islands.databaseError(player, "disband", error);
                 return;
@@ -256,10 +256,10 @@ final class IslandLifecycle {
         Set<UUID> told = new HashSet<>();
         for (Map.Entry<UUID, Role> entry : done.members().entrySet()) {
             UUID uuid = entry.getKey();
-            if (uuid.equals(actor.uuid()) || !told.add(uuid)) {
+            if (islands.person(uuid).equals(actor.uuid()) || !told.add(uuid)) {
                 continue;
             }
-            Player player = Bukkit.getPlayer(uuid);
+            Player player = islands.online(uuid);
             if (player == null) {
                 continue;
             }
@@ -273,8 +273,8 @@ final class IslandLifecycle {
             core.sounds().play(player, "warning");
         }
         for (UUID coop : done.coops()) {
-            Player player = Bukkit.getPlayer(coop);
-            if (player != null && told.add(coop) && !coop.equals(actor.uuid())) {
+            Player player = islands.online(coop);
+            if (player != null && told.add(coop) && !islands.person(coop).equals(actor.uuid())) {
                 msg.send(player, "disband.notify-coop", Msg.p("island", name));
             }
         }

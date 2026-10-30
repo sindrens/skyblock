@@ -9,6 +9,9 @@ import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.db.Sql;
 import net.skybornmc.skyblock.common.settings.PlayerSettings;
 import net.skybornmc.skyblock.common.skills.SkillLevelUpEvent;
+import net.skybornmc.skyblock.common.profile.ProfileDeletedEvent;
+import net.skybornmc.skyblock.common.profile.ProfileService;
+import net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.skills.SkillType;
 import net.skybornmc.skyblock.common.skills.SkillXpGainEvent;
@@ -59,13 +62,16 @@ final class SkillManager implements SkillService, Listener {
     static final String TOGGLE = "skill-xp-bar";
     private static final long LOGIN_TIMEOUT_SECONDS = 10;
 
-    private record Preloaded(Map<SkillType, Double> xp, long stamp, long time) {
+    /** XP read at login for profile {@code key}. */
+    private record Preloaded(UUID key, Map<SkillType, Double> xp, long stamp, long time) {
     }
 
     private final Core core;
     private final SkillsConfig config;
     private final ModuleMessages msg;
     private final SkillRepository repo = new SkillRepository();
+    // Profiles (PROF): skills are per profile. PlayerSkills#uuid() is the PROFILE KEY (the storage key); "online" and
+    // "preloaded" are keyed by the online player's UUID, everything else by the profile key.
     private final Map<UUID, PlayerSkills> online = new ConcurrentHashMap<>();
     private final Map<UUID, PlayerSkills> offline = new ConcurrentHashMap<>();
     private final Map<UUID, Preloaded> preloaded = new ConcurrentHashMap<>();
@@ -128,10 +134,24 @@ final class SkillManager implements SkillService, Listener {
         tasks.add(core.scheduler().repeat("skills-action-bar", 5, 5, this::flushBars));
         // Players already online (module enabled or reloaded while the server runs): load them now.
         for (Player player : Bukkit.getOnlinePlayers()) {
-            PlayerSkills p = new PlayerSkills(player.getUniqueId());
+            PlayerSkills p = new PlayerSkills(profiles().profileKey(player.getUniqueId()));
             online.put(player.getUniqueId(), p);
-            startLoad(p);
+            startLoad(player.getUniqueId(), p);
         }
+    }
+
+    private ProfileService profiles() {
+        return ProfileService.of(core.services());
+    }
+
+    /** The online entry of a profile key (its player is online on that profile), or null. */
+    private PlayerSkills onlineByKey(UUID key) {
+        for (PlayerSkills p : online.values()) {
+            if (p.uuid().equals(key)) {
+                return p;
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------ SkillService
@@ -200,17 +220,20 @@ final class SkillManager implements SkillService, Listener {
         return curve.levelFor(totalXp);
     }
 
+    /** Any player's XP: online from the cache, offline from their last active profile. */
     @Override
     public CompletableFuture<Map<SkillType, Double>> loadXp(UUID player) {
         PlayerSkills p = online.get(player);
         if (p != null && p.isLoaded()) {
             return CompletableFuture.completedFuture(p.totals());
         }
-        PlayerSkills unsaved = offline.get(player);
-        if (unsaved != null) {
-            return CompletableFuture.completedFuture(unsaved.totals());
-        }
-        return afterWrites().thenCompose(v -> core.database().async(c -> repo.load(c, player, season)));
+        return profiles().profileKeyAsync(player).thenCompose(key -> {
+            PlayerSkills unsaved = offline.get(key);
+            if (unsaved != null) {
+                return CompletableFuture.completedFuture(unsaved.totals());
+            }
+            return afterWrites().thenCompose(v -> core.database().async(c -> repo.load(c, key, season)));
+        });
     }
 
     @Override
@@ -380,8 +403,9 @@ final class SkillManager implements SkillService, Listener {
                 // a failed earlier write is logged and retried; it never blocks a login
             }
             long stamp = clock.incrementAndGet();
-            Map<SkillType, Double> xp = core.database().blocking(c -> repo.load(c, uuid, season));
-            preloaded.put(uuid, new Preloaded(xp, stamp, System.currentTimeMillis()));
+            UUID key = profiles().profileKeyAsync(uuid).get(LOGIN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            Map<SkillType, Double> xp = core.database().blocking(c -> repo.load(c, key, season));
+            preloaded.put(uuid, new Preloaded(key, xp, stamp, System.currentTimeMillis()));
         } catch (TimeoutException e) {
             core.plugin().getLogger().warning("Skills of " + event.getName() + " took longer than " + LOGIN_TIMEOUT_SECONDS
                     + " s to load; asked them to rejoin.");
@@ -398,16 +422,23 @@ final class SkillManager implements SkillService, Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onJoin(PlayerJoinEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
-        PlayerSkills p = offline.remove(uuid);
+        // The profiles module's join handler (also LOWEST, registered earlier) has set the active profile already.
+        UUID key = profiles().profileKey(uuid);
         Preloaded pre = preloaded.remove(uuid);
+        attach(uuid, key, pre != null && pre.key().equals(key) ? pre : null);
+    }
+
+    /** Makes profile {@code key} the online player's skills (join, profile switch). */
+    private void attach(UUID uuid, UUID key, Preloaded pre) {
+        PlayerSkills p = offline.remove(key);
         if (p == null) {
-            if (pre != null && pre.stamp() > lastQuit.getOrDefault(uuid, 0L)) {
-                p = PlayerSkills.loaded(uuid, pre.xp(), curve);
+            if (pre != null && pre.stamp() > lastQuit.getOrDefault(key, 0L)) {
+                p = PlayerSkills.loaded(key, pre.xp(), curve);
             } else {
-                p = new PlayerSkills(uuid); // stale or missing preload: load after the queued writes
+                p = new PlayerSkills(key); // stale or missing preload: load after the queued writes
             }
         }
-        Map<SkillType, Double> retry = retryDeltas.remove(uuid);
+        Map<SkillType, Double> retry = retryDeltas.remove(key);
         if (retry != null) {
             for (Map.Entry<SkillType, Double> e : retry.entrySet()) {
                 p.add(e.getKey(), e.getValue(), curve);
@@ -415,7 +446,7 @@ final class SkillManager implements SkillService, Listener {
         }
         online.put(uuid, p);
         if (!p.isLoaded()) {
-            startLoad(p);
+            startLoad(uuid, p);
         }
     }
 
@@ -423,28 +454,55 @@ final class SkillManager implements SkillService, Listener {
     public void onQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         gains.remove(uuid);
+        detach(uuid);
+    }
+
+    /** Stores the online player's current profile skills (quit, profile switch). */
+    private void detach(UUID uuid) {
         PlayerSkills p = online.remove(uuid);
-        lastQuit.put(uuid, clock.incrementAndGet());
         if (p == null) {
             return;
         }
+        UUID key = p.uuid();
+        lastQuit.put(key, clock.incrementAndGet());
         if (p.isLoaded()) {
-            offline.put(uuid, p);
-            saveRecords(List.of(p), () -> offline.remove(uuid, p));
+            offline.put(key, p);
+            saveRecords(List.of(p), () -> offline.remove(key, p));
         } else {
-            saveDeltas(uuid, p.deltas());
+            saveDeltas(key, p.deltas());
         }
+    }
+
+    /** Profiles (PROF): skills follow the profile. The old profile's XP is saved, the new one's loaded. */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onProfileSwitched(ProfileSwitchedEvent event) {
+        UUID uuid = event.getPlayer().getUniqueId();
+        gains.remove(uuid);
+        detach(uuid);
+        attach(uuid, event.to().id(), null);
+    }
+
+    /** A deleted profile's skills are gone with it (its rows are removed after the queued writes). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileDeleted(ProfileDeletedEvent event) {
+        UUID key = event.profile().id();
+        offline.remove(key);
+        retryDeltas.remove(key);
+        write(c -> repo.delete(c, key)).exceptionally(e -> {
+            core.plugin().getLogger().warning("Skills: could not remove the skills of deleted profile " + key + ": " + e.getMessage());
+            return null;
+        });
     }
 
     // ------------------------------------------------------------------ loading and saving
 
-    private void startLoad(PlayerSkills p) {
+    private void startLoad(UUID uuid, PlayerSkills p) {
         if (p.isLoading() || p.isLoaded()) {
             return;
         }
         p.loading(true);
-        UUID uuid = p.uuid();
-        afterWrites().thenCompose(v -> core.database().async(c -> repo.load(c, uuid, season)))
+        UUID key = p.uuid();
+        afterWrites().thenCompose(v -> core.database().async(c -> repo.load(c, key, season)))
                 .whenComplete((stored, error) -> core.scheduler().main("skills-load", () -> {
                     if (online.get(uuid) != p) {
                         return; // left again; quit already handled the deltas
@@ -484,13 +542,14 @@ final class SkillManager implements SkillService, Listener {
         long now = System.currentTimeMillis();
         preloaded.values().removeIf(p -> now - p.time() > TimeUnit.MINUTES.toMillis(1));
         List<PlayerSkills> records = new ArrayList<>();
-        for (PlayerSkills p : online.values()) {
+        for (Map.Entry<UUID, PlayerSkills> e : online.entrySet()) {
+            PlayerSkills p = e.getValue();
             if (p.isLoaded()) {
                 if (p.hasDirty()) {
                     records.add(p);
                 }
             } else {
-                startLoad(p);
+                startLoad(e.getKey(), p);
             }
         }
         for (PlayerSkills p : offline.values()) {
@@ -506,7 +565,7 @@ final class SkillManager implements SkillService, Listener {
             Map<UUID, Map<SkillType, Double>> copy = new HashMap<>(retryDeltas);
             retryDeltas.clear();
             copy.forEach((uuid, d) -> {
-                PlayerSkills p = online.get(uuid);
+                PlayerSkills p = onlineByKey(uuid);
                 if (p != null) {
                     d.forEach((skill, xp) -> p.add(skill, xp, curve));
                 } else {
@@ -559,7 +618,7 @@ final class SkillManager implements SkillService, Listener {
             }
             core.scheduler().main("skills-delta-retry", () -> {
                 core.plugin().getLogger().log(Level.SEVERE, "Saving skill XP of " + uuid + " failed; retrying", Database.cause(error));
-                PlayerSkills p = online.get(uuid);
+                PlayerSkills p = onlineByKey(uuid);
                 if (p != null) {
                     deltas.forEach((skill, xp) -> p.add(skill, xp, curve));
                 } else {

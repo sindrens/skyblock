@@ -168,7 +168,7 @@ final class WarpManager implements Listener {
 
     /** The warps of {@code island} that {@code viewer} may use (private ones only for members and coop players). */
     List<IslandWarp> usable(Island island, Player viewer) {
-        Role role = island.roleOrNull(viewer.getUniqueId());
+        Role role = island.roleOrNull(islands.key(viewer));
         return warps(island.id()).stream().filter(w -> WarpRules.canUse(w.isPublic(), role)).toList();
     }
 
@@ -399,7 +399,7 @@ final class WarpManager implements Listener {
     }
 
     boolean canManage(Player player, Island island) {
-        return WarpRules.canManage(island.roleOrNull(player.getUniqueId()));
+        return WarpRules.canManage(island.roleOrNull(islands.key(player)));
     }
 
     private boolean canEdit(Player player, Island island, IslandWarp warp) {
@@ -458,7 +458,7 @@ final class WarpManager implements Listener {
         if (!visits.checkEntry(player, island)) {
             return;
         }
-        Role role = island.roleOrNull(player.getUniqueId());
+        Role role = island.roleOrNull(islands.key(player));
         if (!WarpRules.canUse(warp.isPublic(), role)) {
             islands.fail(player, "warp.private", Msg.p("warp", warp.name()));
             return;
@@ -532,7 +532,7 @@ final class WarpManager implements Listener {
             return;
         }
         Island island = islands.islandAt(block.getX(), block.getZ());
-        if (island == null || island.roleOrNull(player.getUniqueId()) == null) {
+        if (island == null || island.roleOrNull(islands.key(player)) == null) {
             islands.fail(player, "warp.sign-not-yours");
             return;
         }
@@ -648,12 +648,12 @@ final class WarpManager implements Listener {
     }
 
     private Island managedIsland(Player player) {
-        Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
+        Optional<Island> own = islands.islandOfPlayer(islands.key(player));
         if (own.isEmpty()) {
             islands.fail(player, "no-island");
             return null;
         }
-        if (!WarpRules.canManage(own.get().roleOrNull(player.getUniqueId()))) {
+        if (!WarpRules.canManage(own.get().roleOrNull(islands.key(player)))) {
             islands.fail(player, "warp.not-allowed");
             return null;
         }
@@ -683,7 +683,7 @@ final class WarpManager implements Listener {
         if (!(sender instanceof Player player)) {
             return List.of();
         }
-        return VisitManager.safely(() -> islands.islandOfPlayer(player.getUniqueId())
+        return VisitManager.safely(() -> islands.islandOfPlayer(islands.key(player))
                 .map(island -> warps(island.id()).stream().map(IslandWarp::name).toList()).orElse(List.of()));
     }
 
@@ -719,7 +719,7 @@ final class WarpManager implements Listener {
             return List.of();
         }
         CommandSender sender = ctx.getSource().getSender();
-        Role role = sender instanceof Player p ? island.roleOrNull(p.getUniqueId()) : null;
+        Role role = sender instanceof Player p ? island.roleOrNull(islands.key(p)) : null;
         List<String> names = new ArrayList<>();
         for (IslandWarp warp : warps(island.id())) {
             if (WarpRules.canUse(warp.isPublic(), role)) {

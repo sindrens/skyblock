@@ -55,6 +55,8 @@ final class NoteService {
         VOID,
         /** Redeem: the balance would overflow. Nothing changed. */
         OVERFLOW,
+        /** Redeem: the note was made by another profile of the same player (owner P4). Nothing changed. */
+        OWN_PROFILE,
         /** Database error or invalid input. Nothing changed. */
         ERROR
     }
@@ -73,16 +75,33 @@ final class NoteService {
         }
     }
 
+    /**
+     * Owner decision P4: true (= refuse, already audited) when a withdraw note made by profile {@code createdBy} is
+     * redeemed by another profile {@code redeemer} of the same player.
+     */
+    @FunctionalInterface
+    interface OwnProfileCheck {
+        boolean blocked(UUID createdBy, UUID redeemer, Actor actor);
+
+        OwnProfileCheck NONE = (a, b, c) -> false;
+    }
+
     private final Database db;
     private final EconomyServiceImpl economy;
     private final LongSupplier clock;
     private final Logger log;
+    private final OwnProfileCheck ownProfile;
 
     NoteService(Database db, EconomyServiceImpl economy, LongSupplier clock, Logger log) {
+        this(db, economy, clock, log, OwnProfileCheck.NONE);
+    }
+
+    NoteService(Database db, EconomyServiceImpl economy, LongSupplier clock, Logger log, OwnProfileCheck ownProfile) {
         this.db = db;
         this.economy = economy;
         this.clock = clock;
         this.log = log;
+        this.ownProfile = ownProfile;
     }
 
     // ------------------------------------------------------------------------------------------------ withdraw
@@ -90,15 +109,22 @@ final class NoteService {
     /**
      * Takes {@code amount} from the player and records note {@code id} in one transaction. The caller hands out the item
      * only after {@link Outcome#SUCCESS}.
+     *
+     * @param player the profile key the money is taken from (stored as the note's creator)
      */
     CompletableFuture<Result> withdraw(UUID id, UUID player, String playerName, Currency currency, long amount) {
+        return withdraw(id, player, player, playerName, currency, amount);
+    }
+
+    /** {@link #withdraw(UUID, UUID, String, Currency, long)} with the player (audit actor) apart from the profile key. */
+    CompletableFuture<Result> withdraw(UUID id, UUID player, UUID actor, String playerName, Currency currency, long amount) {
         if (amount <= 0) {
             return CompletableFuture.completedFuture(Result.of(Outcome.ERROR, null));
         }
         MoneyNote note = new MoneyNote(id, amount, currency, MoneyNote.Kind.WITHDRAW, player, clip(playerName, 32), clock.getAsLong(),
                 null, null, null, null, MoneyNote.Status.ACTIVE);
         Transaction tx = Transaction.withdraw(AccountRef.player(player), currency, amount, TxReason.NOTE_WITHDRAW)
-                .actor(Actor.player(player, playerName))
+                .actor(Actor.player(actor, playerName))
                 .reference(id.toString())
                 .idempotencyKey(MoneyNote.withdrawKey(id))
                 .detail("note_id", id.toString())
@@ -133,8 +159,13 @@ final class NoteService {
 
     // ------------------------------------------------------------------------------------------------ redeem
 
-    /** Cashes note {@code id} for {@code player}: marks it redeemed and deposits its amount, atomically. */
+    /** Cashes note {@code id} for {@code player} (a profile key): marks it redeemed and deposits its amount, atomically. */
     CompletableFuture<Result> redeem(UUID id, UUID player, String playerName) {
+        return redeem(id, player, player, playerName);
+    }
+
+    /** {@link #redeem(UUID, UUID, String)} with the player (audit actor) apart from the profile key. */
+    CompletableFuture<Result> redeem(UUID id, UUID player, UUID actor, String playerName) {
         return find(id).thenCompose(found -> {
             if (found.isEmpty()) {
                 return CompletableFuture.completedFuture(Result.of(Outcome.UNKNOWN, null));
@@ -146,9 +177,15 @@ final class NoteService {
             if (note.status() == MoneyNote.Status.VOID) {
                 return CompletableFuture.completedFuture(Result.of(Outcome.VOID, note));
             }
+            // P4: a note withdrawn on one profile can't be cashed on another profile of the same player (the creator
+            // never changes, so checking before the transaction is safe). Staff notes are created money, not a transfer.
+            if (note.kind() == MoneyNote.Kind.WITHDRAW && note.createdBy() != null
+                    && ownProfile.blocked(note.createdBy(), player, Actor.player(actor, playerName))) {
+                return CompletableFuture.completedFuture(Result.of(Outcome.OWN_PROFILE, note));
+            }
             long now = clock.getAsLong();
             Transaction tx = Transaction.deposit(AccountRef.player(player), note.currency(), note.amount(), TxReason.NOTE_REDEEM)
-                    .actor(Actor.player(player, playerName))
+                    .actor(Actor.player(actor, playerName))
                     .reference(id.toString())
                     .idempotencyKey(MoneyNote.redeemKey(id))
                     .detail("note_id", id.toString())

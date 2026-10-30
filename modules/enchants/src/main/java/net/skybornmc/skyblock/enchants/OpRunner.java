@@ -113,10 +113,10 @@ final class OpRunner {
         CompletableFuture<Result> future;
         try {
             if (plan.cost() > 0) {
-                Transaction tx = Transaction.withdraw(AccountRef.player(plan.player()), Currency.CRYSTALS, plan.cost(), plan.ledgerReason());
+                Transaction tx = Transaction.withdraw(AccountRef.player(plan.profile()), Currency.CRYSTALS, plan.cost(), plan.ledgerReason());
                 future = payer.run(decorate(tx, plan, "enchant:" + plan.id()), guard).thenApply(r -> map(r, failure));
             } else if (plan.refund() > 0) {
-                Transaction tx = Transaction.deposit(AccountRef.player(plan.player()), Currency.CRYSTALS, plan.refund(), plan.ledgerReason());
+                Transaction tx = Transaction.deposit(AccountRef.player(plan.profile()), Currency.CRYSTALS, plan.refund(), plan.ledgerReason());
                 future = payer.run(decorate(tx, plan, "enchant:" + plan.id()), guard).thenApply(r -> map(r, failure));
             } else {
                 future = db.transaction(c -> {
@@ -147,6 +147,7 @@ final class OpRunner {
                 .reference(plan.id().toString())
                 .idempotencyKey(key)
                 .detail("action", plan.action())
+                .detail("player", plan.player().toString())
                 .detail("target_name", plan.playerName());
         if (plan.toolId() != null) {
             out = out.detail("tool", plan.toolId().toString());
@@ -179,12 +180,12 @@ final class OpRunner {
                 return false;
             }
         }
-        if (plan.daily() != null && !store.useDaily(c, plan.player(), plan.daily().day(), plan.daily().roll(), plan.daily().limit())) {
+        if (plan.daily() != null && !store.useDaily(c, plan.profile(), plan.daily().day(), plan.daily().roll(), plan.daily().limit())) {
             failure.set(Status.LIMIT, null);
             return false;
         }
         for (OpPlan.Book b : plan.mint()) {
-            store.insert(c, b.id(), b.scroll(), b.enchant(), b.level(), plan.season(), b.origin(), plan.player(), now, plan.reason());
+            store.insert(c, b.id(), b.scroll(), b.enchant(), b.level(), plan.season(), b.origin(), plan.player(), plan.profile(), now, plan.reason());
         }
         if (plan.toolId() != null) {
             perks.save(c, plan.toolId(), plan.perksAfter());
@@ -219,7 +220,7 @@ final class OpRunner {
                 store.move(c, b.id(), BookStore.State.ACTIVE, BookStore.State.VOID, plan.player(), now, "undo:" + plan.reason());
             }
             if (plan.daily() != null) {
-                store.returnDaily(c, plan.player(), plan.daily().day(), plan.daily().roll());
+                store.returnDaily(c, plan.profile(), plan.daily().day(), plan.daily().roll());
             }
             if (plan.toolId() != null) {
                 perks.save(c, plan.toolId(), plan.perksBefore());
@@ -229,10 +230,10 @@ final class OpRunner {
         CompletableFuture<Boolean> future;
         try {
             if (plan.cost() > 0) {
-                Transaction tx = Transaction.deposit(AccountRef.player(plan.player()), Currency.CRYSTALS, plan.cost(), "enchant_undo");
+                Transaction tx = Transaction.deposit(AccountRef.player(plan.profile()), Currency.CRYSTALS, plan.cost(), "enchant_undo");
                 future = payer.run(decorate(tx, plan, "enchant_undo:" + plan.id()), guard).thenApply(TxResult::ok);
             } else if (plan.refund() > 0) {
-                Transaction tx = Transaction.withdraw(AccountRef.player(plan.player()), Currency.CRYSTALS, plan.refund(), "enchant_undo");
+                Transaction tx = Transaction.withdraw(AccountRef.player(plan.profile()), Currency.CRYSTALS, plan.refund(), "enchant_undo");
                 future = payer.run(decorate(tx, plan, "enchant_undo:" + plan.id()), guard).thenCompose(r -> r.ok()
                         ? CompletableFuture.completedFuture(true)
                         // The refund is already spent: undo the items anyway, the crystals stay (logged by the caller).

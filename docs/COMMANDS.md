@@ -33,6 +33,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [moderation](commands/moderation.md) | Punishments (`modules/moderation`, M1.8; replace vanilla `/ban /kick /pardon`) |
 | [motd](commands/motd.md) | MOTD (`modules/motd`) |
 | [perks](commands/perks.md) | Perks module (`modules/perks`) |
+| [profiles](commands/profiles.md) | Profiles module (`modules/profiles`): PROF |
 | [skills](commands/skills.md) | Skills module (`modules/skills`): M4.5 |
 | [social](commands/social.md) | Social (`modules/social`) |
 | [stacking](commands/stacking.md) | Stacking (`modules/stacking`) |

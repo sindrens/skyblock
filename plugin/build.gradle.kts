@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":modules:auction"))
     implementation(project(":modules:stacking"))
     implementation(project(":modules:tools"))
+    implementation(project(":modules:profiles"))
     implementation(project(":modules:enchants"))
 }
 

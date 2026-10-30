@@ -18,25 +18,21 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | UX1b | Tab (owner 2026-10-30): remove the `/menu /help /discord /store` footer line; nicer TPS + `play.skybornmc.net`; the lines beside SKYBORN at the top match the colors (one long gradient, or left line white and right line the last letter's color) | UX1 | modules/chat (tab) | ✅ (done inside UX1) |
 | UX2 | Same message cleanup for moderation, depths, islands messages (after P1, M4.6, M2.7 merge) | UX1, P1, M4.6, M2.7 | their messages files | ⬜ |
 | FI | Owner answered `docs/FEATURE_IDEAS.md` (2026-10-30); follow-up questions in `docs/QUESTIONS_ROUND2.md` → then queue the yes-items | owner | docs | 🔄 waiting for owner |
-| PROF | **Island profiles** per docs/DECISIONS_2026-10-30.md (P1–P12): profile layer in common (ProfileService, active profile per player, `/profiles`), migrate every module's per-player data to (player, profile) keys, inventory/ender chest/armor/XP swap, zero transfer between own profiles | — | common + all modules (one agent, careful, big) | 🔄 |
-| PROF-ADOPT | Modules merged after PROF (tools M4.2, stacking, enchants, notes…) store per-player data per profile via ProfileService | PROF | each new module | ⬜ |
+| PROF | **Island profiles** per docs/DECISIONS_2026-10-30.md (P1–P12): profile layer in common (ProfileService, active profile per player, `/profiles`), migrate every module's per-player data to (player, profile) keys, inventory/ender chest/armor/XP swap, zero transfer between own profiles | — | common + all modules (one agent, careful, big) | ✅ |
+| PROF-ADOPT | Modules merged after PROF (tools M4.2, stacking, enchants, notes…) store per-player data per profile via ProfileService | PROF | each new module | 🔄 tools (Forge money, refunds, starter kit) + stacking (item merges keep profile tags) done at merge; enchants (E1) when it lands |
 | CRY | Replace tokens with **island crystals** everywhere (currency enum, messages, HUD, docs) | — | common/economy, modules/economy, hud, docs | ✅ |
-| R2B | Economy part of round 2: new-account limit 30 min for /pay + /withdraw (economy.yml notes/pay), `/eco` for admins via permission, sell multiplier cap config 300% | PROF-ADOPT | Modules merged after PROF (tools M4.2, stacking, enchants, notes…) store per-player data per profile via ProfileService | PROF | each new module | ⬜ |
-| CRY | modules/economy | ✅ |
+| R2B | Economy part of round 2: new-account limit 30 min for /pay + /withdraw (economy.yml notes/pay), `/eco` for admins via permission, sell multiplier cap config 300% | — | modules/economy | ✅ (in R2A) |
 | R2A | Round-2 quick decisions: account-age 30 min (pay/withdraw/AH), `/eco` for admin permission, remove amount suggestions (10k/10m/10b) in tab completion, sell cap 300% (config), freeze cleared by a ban, Inspect tool = blaze rod, public announcements unless -s, timezone Europe/Oslo, skill cap 150, staff `/skills set|add` (admin+owner), `/freerank` (30 min playtime) | — | economy, auction, common/command, moderation, staff, skills | ✅ |
 | ISL2 | Islands round 2: role Admin (+ old leader → Admin on transfer), hurt-monsters role permission, join cooldown from last join only, `/is settings` flags, island fly for everyone (perm/mastery), likes per player, member homes (1 + masteries), invites menu | M2.4 | modules/islands | ✅ |
 | STACK | Stacking module: mobs (1024, weapon-based kills, no AI for spawner mobs, breeding by food, max 8 stacks/chunk/type, no despawn), items, spawners (8→512, menu, ignore conditions, crops grow without light) | answered (round 2+3) | new modules/stacking | ✅ |
-| NOTES | `/is notes` (N1–N9: shared to-do list, temporary book, pinned holograms) | M2.4 | modules/islands | ⬜ (after PROF: islands lane) |
+| NOTES | `/is notes` (N1–N9: shared to-do list, temporary book, pinned holograms) | M2.4 | modules/islands | 🔄 |
 | SB | Per-place scoreboards (island, Depths, spawn, warzone) | UX1 | modules/hud | ⬜ |
-| BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ⬜ |
+| BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ✅ |
 | PLAN-ENCH | Plan doc: full custom enchant list (levels, effects, how each is obtained: mob kills, mining, chopping, dungeons, crates, /enchanter, crystals), synergy with tools/sets/stacking kills | — | docs/plans/ENCHANTS.md | ✅ docs/plans/ENCHANTS.md |
-| PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | 🔄 |
+| PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | ✅ docs/plans/WARDROBE.md |
 | STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
-| PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ⬜ |
-| PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
-| FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | R2B | Economy part of round 2: new-account limit 30 min for /pay + /withdraw (economy.yml notes/pay), `/eco` for admins via permission, sell multiplier cap config 300% | PROF-ADOPT | Modules merged after PROF (tools M4.2, stacking, enchants, notes…) store per-player data per profile via ProfileService | PROF | each new module | ⬜ |
-| CRY | modules/economy | ✅ (in R2A) |
-| R2A | modules/perks or cosmetics | ⬜ |
+| PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
+| FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | — | modules/perks or cosmetics | ✅ (in R2A) |
 | AFK | AFK pool (fuel + money + keys, better loot over time, max 8 h/day) | economy, islands fuel | new module | ⬜ (needs balance numbers) |
 
 ## Phase P: Punishment system v2 (owner spec `docs/specs/PUNISH_SPEC.md` + `PUNISH_SPEC_NOTES.md`) — one lane (modules/moderation), sequential, priority
@@ -45,7 +41,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | P0 | Bugs: freeze doesn't stop movement (and after relog), frozen player must not break/chat/do anything; staff-mode vanish item placeholder name; spyglass tool zooms; YAML boolean keys (fixed in main) | — | modules/staff, modules/essentials (vanish) | ✅ |
 | P1 | Spec §1–11: `/p` single-screen menu from YAML, warn counter + rules (notify/auto), `/warns`, validation + safe reload + build test of tracked YAML; release script pulls owner's GitHub edits | P0 | modules/moderation, server/scripts | ✅ |
 | P2 | §12.1 undo, §12.2 double-punish, §12.3 offence expiry, §12.10 `/pstats` | P1 | modules/moderation | ✅ |
-| P3 | §12.4 evidence, 12.5 notes, 12.6 ack, 12.7 weights, 12.8 suggestion API, 12.9 report link, 12.11 Discord sink, 12.12 `/mypunishments` | P2 | modules/moderation, modules/staff (report API), common (DiscordSink) | ⬜ |
+| P3 | §12.4 evidence, 12.5 notes, 12.6 ack, 12.7 weights, 12.8 suggestion API, 12.9 report link, 12.11 Discord sink, 12.12 `/mypunishments` | P2 | modules/moderation, modules/staff (report API), common (DiscordSink) | 🔄 |
 | P4 | §13.4 approval, 13.13 mute ended, 13.7 probation, 13.5 watchlist | P3 | modules/moderation | ⬜ |
 | P5 | §13.8 bulk, 13.11 punish from logs, 13.10 appeals (in-game + webhook) | P4 | modules/moderation, modules/logs (API) | ⬜ |
 | P6 | §13.9 raid lockdown, 13.3 anticheat suggestions (`/psuggest`, Grim config notes), 13.12 network-ready | P5 | modules/moderation, server/CONFIG_NOTES.md | ⬜ |
@@ -98,8 +94,16 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | E2 | Book drops from Depths mine/forest/combat, gathering + area effects via the block engine, Depths sword effects | E1, M4.7, M4.8, M4.9 | modules/enchants + depths hooks | ⬜ |
 | E3 | Stacked-mob kill enchants (Slaughter etc.), batch kill API | E1, STACK | modules/enchants + stacking API | ⬜ |
 | E4 | Tuning: enchant factors in economy model, family caps, drop rates | E2, E3, BAL2 | docs, tools, configs | ⬜ |
-| E5 | Armor enchants on wardrobe set pieces | E1, wardrobe | modules/enchants + wardrobe | ⬜ |
+| E5 | Armor enchants on wardrobe set pieces | E1, W2 | modules/enchants + wardrobe | ⬜ |
 | E6 | Hoe + rod effects, farming/fishing pools | E1, Phase 7 | modules/enchants | ⬜ |
+
+## Phase W: Wardrobe + loadout (docs/plans/WARDROBE.md)
+| # | Item | Depends on | Lane | Status |
+|---|---|---|---|---|
+| W1 | Wardrobe core: sets.yml (16 sets), per-profile tables, virtual entries + locked real armor, Wardrobe Chest with escrow, buy with money/crystals/gems (Sigils), Set Tokens, /wardrobe GUI, bonuses via BonusService | PROF, CRY, E1 (common/bonus) | modules/wardrobe, common/wardrobe | ⬜ |
+| W2 | Set levels, merging, warzone normalization | W1, M4.5 | modules/wardrobe | ⬜ |
+| W3 | /loadout presets (2 free, rank/credit slots), atomic apply, guards, 2 s cooldown, pet hook | W1, M4.2 | modules/wardrobe, modules/tools | ⬜ |
+| W4 | Balance: set factors in economy model | W2, W3, BAL2 | docs, tools | ⬜ |
 
 ## Later (not planned in detail yet)
 Crates (`/crate give`), quests, progression (pillars, island level, `/is upgrade`), enchants/sets, production/outposts, PvE/bosses/pets, conquest/events, store/ranks/Discord, seasons.

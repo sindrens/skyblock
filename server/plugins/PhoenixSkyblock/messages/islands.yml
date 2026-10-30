@@ -50,6 +50,7 @@ sethome:
 
 # Protection (action bar, at most one message per protection.message-cooldown-ms). <action> = one of the actions below.
 protection:
+  own-profile: "<c:error><sym:cross> <c:text>This island belongs to your other profile: you can't do anything here."
   visitor: "<c:error><sym:cross> <c:text>You're visiting: you can't <action> here."
   role: "<c:error><sym:cross> <c:text>Your island role can't <action>."
   outside: "<c:error><sym:cross> <c:text>You can only build inside an island's border."
@@ -122,6 +123,7 @@ member:
 invite:
   not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can invite players."
   self: "<prefix><c:error><sym:cross> You can't invite yourself."
+  own-profile: "<prefix><c:error><sym:cross> <c:value><player></c:value>'s other profile is on this island. Their profiles can't share one."
   already-member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already on your island."
   has-island: "<prefix><c:error><sym:cross> <c:value><player></c:value> already has an island. They have to leave it before they can join yours."
   full: "<prefix><c:error><sym:cross> Your island is full (<c:value><slots></c:value> members). Member Slots upgrades come later."
@@ -156,6 +158,7 @@ accept:
   none: "<prefix><c:error><sym:cross> You have no island invites right now."
   none-from: "<prefix><c:error><sym:cross> You have no invite from <c:value><player></c:value>'s island."
   has-island: "<prefix><c:error><sym:cross> You already have an island. Leave it first to join another one."
+  own-profile: "<prefix><c:error><sym:cross> One of your other profiles is (or was) on this island. Your profiles can't share one."
   expired: "<prefix><c:error><sym:cross> That invite expired. Ask for a new one."
   full: "<prefix><c:error><sym:cross> That island is full (<c:value><slots></c:value> members)."
   blocked: "<prefix><c:error><sym:cross> You can't join islands right now."
@@ -246,6 +249,7 @@ transfer:
 coop:
   not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can coop players."
   self: "<prefix><c:error><sym:cross> You can't coop yourself."
+  own-profile: "<prefix><c:error><sym:cross> <c:value><player></c:value>'s other profile is on this island, so they can't be cooped."
   member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already a member of your island."
   already: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already coop on your island."
   full: "<prefix><c:error><sym:cross> Your island already has <c:value><max></c:value> coop players."
@@ -595,6 +599,7 @@ admin:
     done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now a member of <c:value><island></c:value> <c:muted>(<members>/<slots>)."
     has-island: "<prefix><c:error><sym:cross> <c:value><player></c:value> already has an island. <c:muted>Remove them there first (/isadmin kick).</c:muted>"
     full: "<prefix><c:error><sym:cross> <c:value><island></c:value> is full (<slots> slots)."
+    own-profile: "<prefix><c:error><sym:cross> Another profile of <c:value><player></c:value> is or was on this island (profiles never share one)."
     you: "<prefix><c:success><sym:star> <c:text>Staff added you to <c:value><island></c:value>.</c:text> <click:run_command:'/is home'><c:action>[Go there]</c:action></click>"
   kick:
     not-member: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't a member or coop player of any island."
@@ -694,6 +699,8 @@ visit:
   banned: "<prefix><c:error><sym:cross> You're banned from <c:value><island></c:value>."
   locked: "<prefix><c:error><sym:cross> <c:value><island></c:value> is locked. Only its members can enter."
   join-banned: "<prefix><c:error><sym:cross> You're banned from <c:value><island></c:value>, so you were sent to spawn."
+  join-own-profile: "<prefix><c:error><sym:cross> <c:value><island></c:value> belongs to your other profile, so you were sent to spawn."
+  own-profile: "<prefix><c:error><sym:cross> <c:value><island></c:value> belongs to your other profile. You can't visit it from here."
   join-locked: "<prefix><c:error><sym:cross> <c:value><island></c:value> is locked, so you were sent to spawn."
   welcome: "<c:ember><sym:bullet></c:ember> <c:text>Visiting <c:value><island></c:value>"
 
@@ -1155,3 +1162,7 @@ myhome:
 fly:
   "on": "<c:ember><sym:bullet></c:ember> <c:text>Island fly on: double-tap jump"
   "off": "<c:warning><sym:bullet></c:warning> <c:text>Island fly off: you left the island"
+
+# Island profiles (PROF).
+profiles:
+  delete-team-leader: "<prefix><c:error><sym:cross> This profile leads <c:value><island></c:value> with other members. Switch to it and hand the island over (<c:action>/is transfer</c:action>) first."

@@ -79,6 +79,14 @@ public interface IslandService {
     /** The island {@code player} belongs to (any stored role). One island per player. */
     Optional<IslandInfo> islandOf(UUID player);
 
+    /**
+     * The island of one profile, by its profile key exactly as stored (never resolved to the player's active profile).
+     * Use this for a player's inactive profiles (e.g. the {@code /profiles} menu).
+     */
+    default Optional<IslandInfo> islandOfProfile(UUID profileKey) {
+        return islandOf(profileKey);
+    }
+
     Optional<IslandInfo> island(UUID islandId);
 
     /** Stored members and their roles (the owner is the leader). Empty for an unknown island. */

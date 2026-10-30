@@ -7,6 +7,7 @@ import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.island.IslandService.Role;
+import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
@@ -101,7 +102,7 @@ final class MemberManager {
         if (island == null) {
             return;
         }
-        if (!MemberRules.canView(island.roleOrNull(player.getUniqueId()))) {
+        if (!MemberRules.canView(island.roleOrNull(islands.key(player)))) {
             islands.fail(player, "no-island");
             return;
         }
@@ -116,7 +117,7 @@ final class MemberManager {
         if (island == null) {
             return;
         }
-        Role role = island.roleOrNull(player.getUniqueId());
+        Role role = island.roleOrNull(islands.key(player));
         if (!MemberRules.canInvite(role)) {
             islands.fail(player, "invite.not-allowed");
             return;
@@ -125,7 +126,14 @@ final class MemberManager {
             islands.fail(player, "invite.self");
             return;
         }
-        Optional<Island> theirs = islands.islandOfPlayer(target.getUniqueId());
+        // P3: a player's other profile is (or was) on this island: their profiles never share one.
+        UUID other = islands.ownOtherProfileOn(island, islands.key(target), null);
+        if (other != null) {
+            islands.profiles().blockOwnTransfer(AuditCategory.ISLAND, "island_invite", other, islands.key(target), Actor.player(player));
+            islands.fail(player, "invite.own-profile", Msg.p("player", target.getName()));
+            return;
+        }
+        Optional<Island> theirs = islands.islandOfPlayer(islands.key(target));
         if (theirs.isPresent()) {
             islands.fail(player, theirs.get() == island ? "invite.already-member" : "invite.has-island", Msg.p("player", target.getName()));
             return;
@@ -136,16 +144,16 @@ final class MemberManager {
             return;
         }
         long now = System.currentTimeMillis();
-        if (invites.get(island.id(), target.getUniqueId(), now).isEmpty()
+        if (invites.get(island.id(), islands.key(target), now).isEmpty()
                 && invites.pendingFrom(island.id(), now) >= config().maxPendingInvites) {
             islands.fail(player, "invite.too-many", Msg.p("max", config().maxPendingInvites));
             return;
         }
         if (island.team()) {
-            sendInvite(player, island, target.getUniqueId(), target.getName());
+            sendInvite(player, island, islands.key(target), target.getName());
             return;
         }
-        UUID targetId = target.getUniqueId();
+        UUID targetId = islands.key(target);
         String targetName = target.getName();
         open(player, parent, new ConfirmMenu(
                 viewer -> module.text(viewer, "invite.solo.crumb"),
@@ -160,7 +168,7 @@ final class MemberManager {
             return;
         }
         long expiry = Duration.ofSeconds(config().inviteExpirySeconds).toMillis();
-        store.invite(island.id(), player.getUniqueId(), targetId, expiry, config().memberLimits()).whenCompleteAsync((result, error) -> {
+        store.invite(island.id(), islands.key(player), targetId, islands.person(targetId), expiry, config().memberLimits()).whenCompleteAsync((result, error) -> {
             end(player);
             if (error != null) {
                 islands.databaseError(player, "invite", error);
@@ -173,6 +181,7 @@ final class MemberManager {
                 case MemberStore.InviteResult.HasIsland ignored -> islands.fail(player, "invite.has-island", Msg.p("player", targetName));
                 case MemberStore.InviteResult.Full full -> islands.fail(player, "invite.full", Msg.p("slots", full.slots()));
                 case MemberStore.InviteResult.Limited limited -> limitedForInviter(player, targetName, limited.check());
+                case MemberStore.InviteResult.OwnProfile ignored -> islands.fail(player, "invite.own-profile", Msg.p("player", targetName));
             }
         }, main);
     }
@@ -195,8 +204,8 @@ final class MemberManager {
         if (created.converted()) {
             msg.send(player, "invite.now-team");
         }
-        notifyMembers(island, player.getUniqueId(), "notify.invited", Msg.p("player", player.getName()), Msg.p("target", targetName));
-        Player target = Bukkit.getPlayer(targetId);
+        notifyMembers(island, islands.key(player), "notify.invited", Msg.p("player", player.getName()), Msg.p("target", targetName));
+        Player target = islands.online(targetId);
         if (target != null) {
             msg.send(target, "invite.received", Msg.p("player", player.getName()), command("from", player.getName()),
                     Msg.p("island", name), Msg.p("time", time),
@@ -233,12 +242,13 @@ final class MemberManager {
 
     /** Accepts one pending invite (also from {@code /is invites}); the database re-checks everything. */
     void accept(Player player, Invites.Invite pending) {
-        Optional<Invites.Invite> invite = invites.get(pending.islandId(), player.getUniqueId(), System.currentTimeMillis());
+        UUID key = islands.key(player);
+        Optional<Invites.Invite> invite = invites.get(pending.islandId(), key, System.currentTimeMillis());
         if (invite.isEmpty()) {
             islands.fail(player, "accept.expired");
             return;
         }
-        if (islands.islandOfPlayer(player.getUniqueId()).isPresent()) {
+        if (islands.islandOfPlayer(islands.key(player)).isPresent()) {
             islands.fail(player, "accept.has-island");
             return;
         }
@@ -246,7 +256,16 @@ final class MemberManager {
             return;
         }
         UUID islandId = invite.get().islandId();
-        store.accept(islandId, player.getUniqueId(), config().memberLimits()).whenCompleteAsync((result, error) -> {
+        // P3: never two profiles of one player on the same island (also checked in the transaction with the history).
+        Island target = islands.byId(islandId);
+        if (target != null && islands.ownOtherProfileOn(target, key, null) != null) {
+            end(player);
+            islands.profiles().blockOwnTransfer(AuditCategory.ISLAND, "island_join", islands.ownOtherProfileOn(target, key, null), key,
+                    Actor.player(player));
+            islands.fail(player, "accept.own-profile");
+            return;
+        }
+        store.accept(islandId, key, player.getUniqueId(), config().memberLimits()).whenCompleteAsync((result, error) -> {
             end(player);
             if (error != null) {
                 islands.databaseError(player, "accept", error);
@@ -255,7 +274,7 @@ final class MemberManager {
             switch (result) {
                 case MemberStore.AcceptResult.Joined joined -> joined(player, joined);
                 case MemberStore.AcceptResult.NoInvite ignored -> {
-                    invites.remove(islandId, player.getUniqueId());
+                    invites.remove(islandId, key);
                     islands.fail(player, "accept.expired");
                 }
                 case MemberStore.AcceptResult.IslandGone ignored -> {
@@ -265,12 +284,18 @@ final class MemberManager {
                 case MemberStore.AcceptResult.HasIsland ignored -> islands.fail(player, "accept.has-island");
                 case MemberStore.AcceptResult.Full full -> islands.fail(player, "accept.full", Msg.p("slots", full.slots()));
                 case MemberStore.AcceptResult.Limited limited -> limitedForTarget(player, limited.check());
+                case MemberStore.AcceptResult.OwnProfile ignored -> {
+                    core.audit().logPlayer(AuditCategory.ISLAND, ProfileService.AUDIT_BLOCKED, Actor.player(player),
+                            player.getUniqueId(), player.getName(), null, null,
+                            Map.of("path", "island_join", "to_profile", key.toString(), "island", islandId.toString()));
+                    islands.fail(player, "accept.own-profile");
+                }
             }
         }, main);
     }
 
     private void joined(Player player, MemberStore.AcceptResult.Joined joined) {
-        invites.removeTarget(player.getUniqueId());
+        invites.removeTarget(islands.key(player));
         Island island = islands.byId(joined.islandId());
         if (island == null) {
             // Saved, but the island left the cache meanwhile (M2.7 disband): reload fixes it; tell the player.
@@ -280,7 +305,7 @@ final class MemberManager {
         if (joined.converted()) {
             island.markTeam();
         }
-        islands.cacheJoin(island, player.getUniqueId(), Role.MEMBER, joined.joinedAt(), joined.inviter());
+        islands.cacheJoin(island, islands.key(player), Role.MEMBER, joined.joinedAt(), joined.inviter());
         String name = islands.displayName(island);
         core.audit().log(AuditCategory.ISLAND, "island_join", Actor.player(player), island.id().toString(), name, null, null,
                 Map.of("player", player.getUniqueId().toString(), "inviter", joined.inviter().toString(),
@@ -288,11 +313,11 @@ final class MemberManager {
                         "became_team", joined.converted()));
         msg.send(player, "accept.joined", Msg.p("island", name));
         if (joined.converted()) {
-            notifyMembers(island, player.getUniqueId(), "invite.now-team");
+            notifyMembers(island, islands.key(player), "invite.now-team");
         }
         msg.title(player, "accept.title", Msg.p("island", name));
         core.sounds().play(player, "unlock");
-        notifyMembers(island, player.getUniqueId(), "notify.joined", Msg.p("player", player.getName()),
+        notifyMembers(island, islands.key(player), "notify.joined", Msg.p("player", player.getName()),
                 Msg.p("members", island.memberCount()), Msg.p("slots", islands.slots(island)));
     }
 
@@ -315,20 +340,20 @@ final class MemberManager {
 
     /** Declines one pending invite (also from {@code /is invites}). */
     void deny(Player player, Invites.Invite invite) {
-        if (!invites.remove(invite.islandId(), player.getUniqueId())) {
+        if (!invites.remove(invite.islandId(), islands.key(player))) {
             islands.fail(player, "accept.expired");
             return;
         }
         Island island = islands.byId(invite.islandId());
         String islandName = island == null ? "?" : islands.displayName(island);
-        store.deleteInvite(invite.islandId(), player.getUniqueId()).exceptionally(error -> {
+        store.deleteInvite(invite.islandId(), islands.key(player)).exceptionally(error -> {
             core.plugin().getLogger().log(Level.WARNING, "Islands: deleting an invite failed", Database.cause(error));
             return false;
         });
         core.audit().log(AuditCategory.ISLAND, "island_invite", Actor.player(player), invite.islandId().toString(), islandName, null, null,
                 Map.of("target", player.getUniqueId().toString(), "target_name", player.getName(), "result", "denied"));
         msg.send(player, "deny.done", Msg.p("island", islandName));
-        Player inviter = Bukkit.getPlayer(invite.inviter());
+        Player inviter = islands.online(invite.inviter());
         if (inviter != null) {
             msg.send(inviter, "deny.notify", Msg.p("player", player.getName()));
         }
@@ -347,7 +372,7 @@ final class MemberManager {
         if (island == null) {
             return;
         }
-        if (!invite.islandId().equals(island.id()) || !MemberRules.canInvite(island.roleOrNull(player.getUniqueId()))) {
+        if (!invite.islandId().equals(island.id()) || !MemberRules.canInvite(island.roleOrNull(islands.key(player)))) {
             islands.fail(player, "invites.cancel-not-allowed");
             return;
         }
@@ -365,7 +390,7 @@ final class MemberManager {
                 Map.of("target", invite.target().toString(), "target_name", targetName, "result", "cancelled"));
         msg.send(player, "invites.cancelled", Msg.p("player", targetName));
         core.sounds().play(player, "success");
-        Player target = Bukkit.getPlayer(invite.target());
+        Player target = islands.online(invite.target());
         if (target != null) {
             msg.send(target, "invites.cancelled-target", Msg.p("island", name));
         }
@@ -373,7 +398,7 @@ final class MemberManager {
 
     /** The invite {@code /is accept|deny [from]} means; tells the player when there is none. */
     private Optional<Invites.Invite> findInvite(Player player, String from) {
-        List<Invites.Invite> mine = invites.of(player.getUniqueId(), System.currentTimeMillis());
+        List<Invites.Invite> mine = invites.of(islands.key(player), System.currentTimeMillis());
         if (mine.isEmpty()) {
             islands.fail(player, "accept.none");
             return Optional.empty();
@@ -414,7 +439,7 @@ final class MemberManager {
         }
         return safely(() -> {
             List<String> names = new ArrayList<>();
-            for (Invites.Invite invite : invites.of(player.getUniqueId(), System.currentTimeMillis())) {
+            for (Invites.Invite invite : invites.of(islands.key(player), System.currentTimeMillis())) {
                 names.add(islands.name(invite.inviter()));
             }
             return names;
@@ -434,9 +459,9 @@ final class MemberManager {
             islands.fail(player, "member.not-found", Msg.p("player", targetName));
             return;
         }
-        Role actor = island.roleOrNull(player.getUniqueId());
+        Role actor = island.roleOrNull(islands.key(player));
         Role role = island.roleOrNull(target);
-        if (target.equals(player.getUniqueId())) {
+        if (target.equals(islands.key(player))) {
             islands.fail(player, "kick.self");
             return;
         }
@@ -459,7 +484,7 @@ final class MemberManager {
         if (island == null) {
             return;
         }
-        Role role = island.roleOrNull(player.getUniqueId());
+        Role role = island.roleOrNull(islands.key(player));
         if (role == Role.LEADER) {
             islands.fail(player, "leave.leader");
             return;
@@ -474,7 +499,7 @@ final class MemberManager {
                 core.menus().item(Material.OAK_DOOR, player, IslandsModule.ID, "leave.shown", Msg.p("island", name)),
                 viewer -> module.lines(viewer, "leave.details", Msg.p("island", name),
                         Msg.p("time", Format.duration(Duration.ofHours(config().joinCooldownHours)))),
-                viewer -> remove(viewer, island, viewer.getUniqueId(), MemberStore.LEFT_LEAVE, "", Actor.player(viewer)),
+                viewer -> remove(viewer, island, islands.key(viewer), MemberStore.LEFT_LEAVE, "", Actor.player(viewer)),
                 null));
     }
 
@@ -486,7 +511,7 @@ final class MemberManager {
         if (initiator != null && !begin(initiator)) {
             return CompletableFuture.completedFuture(false);
         }
-        return store.removeMember(island.id(), target, reason, config().seasonId).handleAsync((role, error) -> {
+        return store.removeMember(island.id(), target, islands.person(target), reason, config().seasonId).handleAsync((role, error) -> {
             if (initiator != null) {
                 end(initiator);
             }
@@ -525,7 +550,7 @@ final class MemberManager {
             details.put("note", note);
         }
         core.audit().log(AuditCategory.ISLAND, leave ? "island_leave" : "island_kick", actor, island.id().toString(), name, null, null, details);
-        Player player = Bukkit.getPlayer(target);
+        Player player = islands.online(target);
         if (leave) {
             if (player != null) {
                 core.sounds().play(player, "success");
@@ -545,7 +570,7 @@ final class MemberManager {
                 msg.send(initiator, "kick.done", Msg.p("player", targetName));
                 core.sounds().play(initiator, "success");
             }
-            notifyMembers(island, initiator == null ? null : initiator.getUniqueId(), "notify.kicked", Msg.p("player", targetName),
+            notifyMembers(island, initiator == null ? null : islands.key(initiator), "notify.kicked", Msg.p("player", targetName),
                     Msg.p("by", actor.name()));
         }
         if (player != null) {
@@ -554,7 +579,7 @@ final class MemberManager {
         checkCoops(island);
         if (island.memberCount() == 1) {
             // DESIGN §3.2: emptying the island never turns it back into a solo island; say so kindly.
-            Player leader = Bukkit.getPlayer(island.owner());
+            Player leader = islands.online(island.owner());
             if (leader != null) {
                 msg.send(leader, "notify.still-team");
             }
@@ -600,7 +625,7 @@ final class MemberManager {
             islands.fail(player, "member.not-found", Msg.p("player", targetName));
             return;
         }
-        Role actor = island.roleOrNull(player.getUniqueId());
+        Role actor = island.roleOrNull(islands.key(player));
         Role role = island.roleOrNull(target);
         String name = islands.name(target);
         boolean allowed = up ? MemberRules.canPromote(actor, role) : MemberRules.canDemote(actor, role);
@@ -631,12 +656,12 @@ final class MemberManager {
             String roleName = module.raw("role." + MemberStore.key(next));
             msg.send(player, up ? "promote.done" : "demote.done", Msg.p("player", name), Msg.p("role", roleName));
             core.sounds().play(player, "success");
-            Player targetPlayer = Bukkit.getPlayer(target);
+            Player targetPlayer = islands.online(target);
             if (targetPlayer != null) {
                 msg.send(targetPlayer, up ? "promote.you" : "demote.you", Msg.p("role", roleName), Msg.p("player", player.getName()));
                 core.sounds().play(targetPlayer, up ? "level-up" : "warning");
             }
-            notifyMembers(island, Set.of(player.getUniqueId(), target), up ? "notify.promoted" : "notify.demoted",
+            notifyMembers(island, Set.of(islands.key(player), target), up ? "notify.promoted" : "notify.demoted",
                     Msg.p("player", name), Msg.p("role", roleName), Msg.p("by", player.getName()));
             checkCoops(island);
         }, main);
@@ -653,7 +678,7 @@ final class MemberManager {
             islands.fail(player, "member.not-found", Msg.p("player", targetName));
             return;
         }
-        Role actor = island.roleOrNull(player.getUniqueId());
+        Role actor = island.roleOrNull(islands.key(player));
         if (!MemberRules.canTransfer(actor, island.roleOrNull(target))) {
             islands.fail(player, actor != Role.LEADER ? "role.leader-only" : "transfer.not-possible", Msg.p("player", islands.name(target)));
             return;
@@ -674,7 +699,7 @@ final class MemberManager {
     }
 
     private void doTransfer(Player player, Island island, UUID target, String name) {
-        UUID old = player.getUniqueId();
+        UUID old = islands.key(player);
         if (island.roleOrNull(old) != Role.LEADER || !begin(player)) {
             return;
         }
@@ -694,7 +719,7 @@ final class MemberManager {
                     Map.of("old_leader", old.toString(), "new_leader", target.toString(), "new_leader_name", name));
             msg.send(player, "transfer.done", Msg.p("player", name));
             core.sounds().play(player, "success");
-            Player newLeader = Bukkit.getPlayer(target);
+            Player newLeader = islands.online(target);
             if (newLeader != null) {
                 msg.send(newLeader, "transfer.you", Msg.p("island", islandName), Msg.p("player", player.getName()));
                 msg.title(newLeader, "transfer.title");
@@ -712,13 +737,20 @@ final class MemberManager {
         if (island == null) {
             return;
         }
-        if (!MemberRules.canCoop(island.roleOrNull(player.getUniqueId()))) {
+        if (!MemberRules.canCoop(island.roleOrNull(islands.key(player)))) {
             islands.fail(player, "coop.not-allowed");
             return;
         }
-        UUID targetId = target.getUniqueId();
-        if (targetId.equals(player.getUniqueId())) {
+        UUID targetId = islands.key(target);
+        if (target.getUniqueId().equals(player.getUniqueId())) {
             islands.fail(player, "coop.self");
+            return;
+        }
+        // P3/P4: a player's other profile can never be trusted on this island.
+        UUID other = islands.ownOtherProfileOn(island, targetId, null);
+        if (other != null) {
+            islands.profiles().blockOwnTransfer(AuditCategory.ISLAND, "island_coop", other, targetId, Actor.player(player));
+            islands.fail(player, "coop.own-profile", Msg.p("player", target.getName()));
             return;
         }
         if (island.role(targetId).isPresent()) {
@@ -736,11 +768,12 @@ final class MemberManager {
         if (!begin(player)) {
             return;
         }
-        store.blockedUntil(targetId).thenCompose(blocked -> {
+        UUID grantedBy = islands.key(player);
+        store.blockedUntil(target.getUniqueId()).thenCompose(blocked -> {
             if (blocked.isPresent()) {
                 return CompletableFuture.completedFuture(false);
             }
-            return store.addCoop(island.id(), targetId, player.getUniqueId()).thenApply(ignored -> true);
+            return store.addCoop(island.id(), targetId, grantedBy).thenApply(ignored -> true);
         }).whenCompleteAsync((added, error) -> {
             end(player);
             if (error != null) {
@@ -761,11 +794,11 @@ final class MemberManager {
                     Map.of("player", targetId.toString(), "player_name", target.getName(), "action", "add"));
             msg.send(player, "coop.done", Msg.p("player", target.getName()));
             core.sounds().play(player, "success");
-            if (target.isOnline()) {
+            if (target.isOnline() && islands.key(target).equals(targetId)) {
                 msg.send(target, "coop.you", Msg.p("island", name), Msg.p("player", player.getName()));
                 core.sounds().play(target, "notify");
             }
-            notifyMembers(island, player.getUniqueId(), "notify.cooped", Msg.p("player", target.getName()), Msg.p("by", player.getName()));
+            notifyMembers(island, islands.key(player), "notify.cooped", Msg.p("player", target.getName()), Msg.p("by", player.getName()));
         }, main);
     }
 
@@ -775,7 +808,7 @@ final class MemberManager {
         if (island == null) {
             return;
         }
-        if (!MemberRules.canCoop(island.roleOrNull(player.getUniqueId()))) {
+        if (!MemberRules.canCoop(island.roleOrNull(islands.key(player)))) {
             islands.fail(player, "coop.not-allowed");
             return;
         }
@@ -820,12 +853,12 @@ final class MemberManager {
                 msg.send(initiator, "coop.removed", Msg.p("player", targetName));
                 core.sounds().play(initiator, "success");
             }
-            Player player = Bukkit.getPlayer(target);
+            Player player = islands.online(target);
             if (player != null) {
                 msg.send(player, note != null && !note.isBlank() ? "coop.you-removed-reason" : "coop.you-removed",
                         Msg.p("island", name), Msg.p("reason", note == null ? "" : note));
             }
-            notifyMembers(island, initiator == null ? null : initiator.getUniqueId(), "notify.uncooped", Msg.p("player", targetName));
+            notifyMembers(island, initiator == null ? null : islands.key(initiator), "notify.uncooped", Msg.p("player", targetName));
             return true;
         }, main);
     }
@@ -845,7 +878,7 @@ final class MemberManager {
         for (UUID coop : coops) {
             core.audit().log(AuditCategory.ISLAND, "island_coop", actor, island.id().toString(), name, null, null,
                     Map.of("player", coop.toString(), "player_name", islands.name(coop), "action", "remove", "reason", reason));
-            Player player = Bukkit.getPlayer(coop);
+            Player player = islands.online(coop);
             if (player != null) {
                 msg.send(player, "coop.ended", Msg.p("island", name));
             }
@@ -862,7 +895,7 @@ final class MemberManager {
     /** True if a leader, admin or mod of {@code island} (other than {@code except}) is online. */
     boolean managerOnline(Island island, UUID except) {
         for (Map.Entry<UUID, Role> entry : island.members().entrySet()) {
-            if (MemberRules.isManager(entry.getValue()) && !entry.getKey().equals(except) && Bukkit.getPlayer(entry.getKey()) != null) {
+            if (MemberRules.isManager(entry.getValue()) && !entry.getKey().equals(except) && islands.online(entry.getKey()) != null) {
                 return true;
             }
         }
@@ -872,12 +905,12 @@ final class MemberManager {
     /** A leader/mod quit: coop trust ends when nobody who can manage the island is left online. */
     void onQuit(Player player) {
         busy.remove(player.getUniqueId());
-        Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
-        if (own.isEmpty() || own.get().coops().isEmpty() || !MemberRules.isManager(own.get().roleOrNull(player.getUniqueId()))) {
+        Optional<Island> own = islands.islandOfPlayer(islands.key(player));
+        if (own.isEmpty() || own.get().coops().isEmpty() || !MemberRules.isManager(own.get().roleOrNull(islands.key(player)))) {
             return;
         }
         Island island = own.get();
-        UUID quitter = player.getUniqueId();
+        UUID quitter = islands.key(player);
         core.scheduler().later("island-coop-check", 1, () -> {
             if (islands.byId(island.id()) == island && !managerOnline(island, quitter)) {
                 clearCoops(island, "no-manager-online", Actor.system("islands"));
@@ -912,9 +945,12 @@ final class MemberManager {
             core.audit().logPlayer(AuditCategory.ISLAND, "island_join_block", actor, player, islands.name(player), null, null,
                     Map.of("until", until, "reason", reason == null ? "" : reason, "lifted", until <= System.currentTimeMillis()));
             if (until > System.currentTimeMillis()) {
+                // Join blocks are per player (account): every coop trust of any of their profiles ends.
                 for (Island island : List.copyOf(islands.islands())) {
-                    if (island.coops().contains(player)) {
-                        removeCoop(island, player, "blocked", reason, actor, null);
+                    for (UUID coop : List.copyOf(island.coops())) {
+                        if (islands.person(coop).equals(player)) {
+                            removeCoop(island, coop, "blocked", reason, actor, null);
+                        }
                     }
                 }
             }
@@ -929,7 +965,7 @@ final class MemberManager {
      * per player kept). Cached, logged ({@code island_join} with {@code staff}), the player and the members are told.
      */
     CompletableFuture<MemberStore.AddResult> addByStaff(Island island, UUID target, Actor actor) {
-        return store.addMember(island.id(), target, actor.uuid(), config().memberLimits()).thenApplyAsync(result -> {
+        return store.addMember(island.id(), target, islands.person(target), actor.uuid(), config().memberLimits()).thenApplyAsync(result -> {
             if (!(result instanceof MemberStore.AddResult.Added added) || islands.byId(island.id()) != island) {
                 return result;
             }
@@ -943,7 +979,7 @@ final class MemberManager {
             core.audit().log(AuditCategory.ISLAND, "island_join", actor, island.id().toString(), name, null, null,
                     Map.of("player", target.toString(), "player_name", targetName, "staff", true, "season", config().seasonId,
                             "members", island.memberCount(), "slots", islands.slots(island), "became_team", added.converted()));
-            Player player = Bukkit.getPlayer(target);
+            Player player = islands.online(target);
             if (player != null) {
                 msg.send(player, "admin.addmember.you", Msg.p("island", name));
                 core.sounds().play(player, "unlock");
@@ -969,13 +1005,13 @@ final class MemberManager {
             String newName = islands.name(newLeader);
             core.audit().log(AuditCategory.ISLAND, "island_transfer", actor, island.id().toString(), name, null, null,
                     Map.of("old_leader", old.toString(), "new_leader", newLeader.toString(), "new_leader_name", newName, "staff", true));
-            Player leader = Bukkit.getPlayer(newLeader);
+            Player leader = islands.online(newLeader);
             if (leader != null) {
                 msg.send(leader, "admin.setowner.you", Msg.p("island", name));
                 msg.title(leader, "transfer.title");
                 core.sounds().play(leader, "unlock");
             }
-            Player before = Bukkit.getPlayer(old);
+            Player before = islands.online(old);
             if (before != null) {
                 msg.send(before, "admin.setowner.old", Msg.p("player", newName));
                 core.sounds().play(before, "warning");
@@ -1019,11 +1055,11 @@ final class MemberManager {
             return;
         }
         for (Invites.Invite invite : expired) {
-            Player inviter = Bukkit.getPlayer(invite.inviter());
+            Player inviter = islands.online(invite.inviter());
             if (inviter != null) {
                 msg.send(inviter, "invite.expired-inviter", Msg.p("player", islands.name(invite.target())));
             }
-            Player target = Bukkit.getPlayer(invite.target());
+            Player target = islands.online(invite.target());
             if (target != null) {
                 Island island = islands.byId(invite.islandId());
                 msg.send(target, "invite.expired-target", Msg.p("island", island == null ? "?" : islands.displayName(island)));
@@ -1045,7 +1081,7 @@ final class MemberManager {
             if (except.contains(member)) {
                 continue;
             }
-            Player player = Bukkit.getPlayer(member);
+            Player player = islands.online(member);
             if (player != null) {
                 msg.send(player, key, placeholders);
                 core.sounds().play(player, "notify");
@@ -1055,7 +1091,7 @@ final class MemberManager {
 
     /** The sender's island, or tells them they have none. */
     private Island ownIsland(Player player) {
-        Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
+        Optional<Island> own = islands.islandOfPlayer(islands.key(player));
         if (own.isEmpty()) {
             islands.fail(player, "no-island");
             return null;
@@ -1082,14 +1118,14 @@ final class MemberManager {
             return List.of();
         }
         return safely(() -> {
-            Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
+            Optional<Island> own = islands.islandOfPlayer(islands.key(player));
             if (own.isEmpty()) {
                 return List.of();
             }
-            Role actor = own.get().roleOrNull(player.getUniqueId());
+            Role actor = own.get().roleOrNull(islands.key(player));
             List<String> names = new ArrayList<>();
             for (Map.Entry<UUID, Role> entry : Map.copyOf(own.get().members()).entrySet()) {
-                if (!entry.getKey().equals(player.getUniqueId()) && filter.test(actor, entry.getValue())) {
+                if (!entry.getKey().equals(islands.key(player)) && filter.test(actor, entry.getValue())) {
                     names.add(islands.name(entry.getKey()));
                 }
             }
@@ -1102,7 +1138,7 @@ final class MemberManager {
         if (!(sender instanceof Player player)) {
             return List.of();
         }
-        return safely(() -> islands.islandOfPlayer(player.getUniqueId())
+        return safely(() -> islands.islandOfPlayer(islands.key(player))
                 .map(island -> Set.copyOf(island.coops()).stream().map(islands::name).toList()).orElse(List.of()));
     }
 

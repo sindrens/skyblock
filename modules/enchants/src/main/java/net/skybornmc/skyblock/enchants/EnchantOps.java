@@ -115,6 +115,14 @@ final class EnchantOps implements Listener {
         }
     }
 
+    /** No profile switch while an enchant is saving (the inventory would swap under it). */
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onProfileSwitch(net.skybornmc.skyblock.common.profile.ProfileSwitchEvent event) {
+        if (busy(event.getPlayer())) {
+            event.refuse(module.msg().component(event.getPlayer(), "busy"));
+        }
+    }
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onInteractEntity(PlayerInteractEntityEvent event) {
         if (busy(event.getPlayer())) {
@@ -426,7 +434,7 @@ final class EnchantOps implements Listener {
     }
 
     private boolean ready(Player player) {
-        if (busy(player)) {
+        if (busy(player) || profiles().isSwitching(player.getUniqueId())) {
             module.msg().send(player, "busy");
             return false;
         }
@@ -451,7 +459,7 @@ final class EnchantOps implements Listener {
 
     private OpPlan plan(String action, Player player, ToolInfo tool, List<ToolPerk> after, List<OpPlan.Book> consume,
                         List<OpPlan.Book> mint, long cost, long refund, OpPlan.Daily daily, String reason, Map<String, Object> details) {
-        return new OpPlan(UUID.randomUUID(), action, player.getUniqueId(), player.getName(), module.config().seasonId,
+        return new OpPlan(UUID.randomUUID(), action, player.getUniqueId(), profiles().profileKey(player), player.getName(), module.config().seasonId,
                 tool == null ? null : tool.id(), tool == null ? null : tool.perks(), after, consume, mint, cost, refund, daily, reason, details);
     }
 
@@ -629,6 +637,10 @@ final class EnchantOps implements Listener {
     int tier(Player player, Pool pool) {
         int level = module.core.services().optional(SkillService.class).map(s -> s.level(player, pool.skill())).orElse(0);
         return Rolls.tier(module.config().tierLevels(pool), level);
+    }
+
+    net.skybornmc.skyblock.common.profile.ProfileService profiles() {
+        return net.skybornmc.skyblock.common.profile.ProfileService.of(module.core.services());
     }
 
     static String today() {

@@ -20,7 +20,7 @@ categories:
     slot: 12
     name: "<c:flame><bold>Islands"
     lore: ["<c:text>Your own island in the sky:", "<c:text>build, grow and team up."]
-    topics: [island, spawners]
+    topics: [island, profiles, spawners]
   depths:
     icon: iron_pickaxe
     status: active
@@ -485,6 +485,35 @@ topics:
           - "<c:value>/tags</c:value> <c:text>or</c:text> <c:value>/titles</c:value> <c:text>opens one menu with"
           - "<c:text>both tabs. Equip one title and one tag;"
           - "<c:text>the head at the top shows your look."
+
+  profiles:
+    icon: armor_stand
+    aliases: [profile, slots]
+    name: "<c:flame>Profiles"
+    summary: ["<c:text>Up to 3 fresh starts, each", "<c:text>with its own island."]
+    take-me-there: "profiles"
+    pages:
+      - title: "<c:value>What a profile is"
+        lines:
+          - "<c:text>A profile is one island and everything"
+          - "<c:text>on it: money, crystals, shards, items,"
+          - "<c:text>ender chest, XP, skills and settings."
+          - "<c:text>Gems, rank, titles and cosmetics are shared."
+      - title: "<c:value>Switching"
+        lines:
+          - "<c:text>Open <c:value>/profiles</c:value>, pick a profile, click Switch."
+          - "<c:text>Your things are saved and the other"
+          - "<c:text>profile's are loaded. Not in combat or frozen."
+      - title: "<c:value>Slots"
+        lines:
+          - "<c:text>Slot 1 is free. Slot 2: <c:value>500 gems</c:value> or Knight+."
+          - "<c:text>Slot 3: <c:value>1,500 gems</c:value> or Warlord+."
+          - "<c:text>Bought slots stay, also after a season reset."
+      - title: "<c:value>No sharing"
+        lines:
+          - "<c:text>Nothing moves between your own profiles:"
+          - "<c:text>no items, money, auction buys or notes."
+          - "<c:text>Your profiles can't share an island."
 
   island:
     icon: grass_block

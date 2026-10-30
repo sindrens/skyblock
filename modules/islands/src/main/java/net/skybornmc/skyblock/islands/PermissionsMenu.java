@@ -119,7 +119,7 @@ final class PermissionsMenu extends Menu {
     }
 
     private Role viewerRole() {
-        return island.roleOrNull(viewer.getUniqueId());
+        return island.roleOrNull(islands.key(viewer));
     }
 
     @Override
@@ -155,7 +155,7 @@ final class PermissionsMenu extends Menu {
 
     /** True if the viewer may click this cell right now. */
     private boolean editable(Role editor, PermRole role, IslandPerm perm) {
-        return MemberRules.canEditCell(editor, role, perm, islands.roleAllows(island, viewer.getUniqueId(), perm));
+        return MemberRules.canEditCell(editor, role, perm, islands.roleAllows(island, islands.key(viewer), perm));
     }
 
     private net.skybornmc.skyblock.common.menu.MenuButton cell(PermRole role, IslandPerm perm, Role editor) {

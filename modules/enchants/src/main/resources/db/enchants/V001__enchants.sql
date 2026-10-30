@@ -1,7 +1,8 @@
 -- Enchants (Phase E, ENCHANTS §9 and §13.1). One row per enchant book or Disenchant Scroll (id = the item's unique id):
 -- an item whose row is not 'active' any more is a copy (consumed/void) and is confiscated when used.
 -- state: active | consumed | void (minted but never handed out, or rolled back). reason: the operation that changed it.
--- profile_id stays NULL until the profiles module exists (books are profile items: they live in a profile's inventory).
+-- created_for = the player (account), profile_id = their profile key at creation (books are profile items: they live in a
+-- profile's inventory and never move between a player's own profiles, owner decision P4).
 CREATE TABLE IF NOT EXISTS enchant_books (
   id BINARY(16) NOT NULL PRIMARY KEY,
   kind VARCHAR(8) NOT NULL,
@@ -30,7 +31,7 @@ CREATE TABLE IF NOT EXISTS enchant_seen (
   PRIMARY KEY (player, season_id, enchant_id)
 );
 
--- Book shop rolls per player and day (Europe/Oslo date, yyyy-MM-dd).
+-- Book shop rolls per profile key and day (Europe/Oslo date, yyyy-MM-dd); column 'player' holds the profile key.
 CREATE TABLE IF NOT EXISTS enchant_daily (
   player BINARY(16) NOT NULL,
   roll_day VARCHAR(10) NOT NULL,
