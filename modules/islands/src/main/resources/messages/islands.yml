@@ -208,7 +208,7 @@ leave:
   done-free: "<prefix><c:text>You left <c:value><island></c:value>. <c:muted>You can join another island now, or create your own with</c:muted> <click:run_command:'/is'><c:action>/is</c:action></click>."
 
 promote:
-  not-possible: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be promoted by you. <c:muted>The leader promotes Member → Mod → Admin; admins promote members to mod."
+  not-possible: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be promoted by you. <c:muted>The leader promotes members to mod and mods to admin; admins promote members to mod."
   done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now a <c:value><role></c:value>."
   you: "<prefix><c:success><sym:star> <c:text>You are now a <c:value><role></c:value> on your island <c:muted>(by <player>)</c:muted>."
 

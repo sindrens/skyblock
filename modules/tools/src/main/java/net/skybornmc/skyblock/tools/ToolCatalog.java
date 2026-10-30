@@ -25,6 +25,8 @@ import java.util.function.Consumer;
 final class ToolCatalog {
 
     static final List<String> SECTIONS = List.of("tiers", "abilities", "blueprints", "skins", "island-xp", "smelt");
+    /** Plain settings ({@link ToolsConfig}) that live inside catalog sections; they are not catalog entries. */
+    static final java.util.Set<String> SETTING_KEYS = java.util.Set.of("lifesteal-max-heal", "drops-enabled");
 
     /** Forge price: money plus materials (item id → amount). */
     record Recipe(long money, Map<String, Integer> materials) {
@@ -190,6 +192,9 @@ final class ToolCatalog {
         ConfigurationSection ab = root.getConfigurationSection("abilities");
         if (ab != null) {
             for (String id : ab.getKeys(false)) {
+                if (SETTING_KEYS.contains(id)) {
+                    continue;
+                }
                 ConfigurationSection s = ab.getConfigurationSection(id);
                 if (s == null || !validId(id)) {
                     problems.accept("tools.yml abilities." + id + ": not a valid ability");
@@ -202,6 +207,9 @@ final class ToolCatalog {
         ConfigurationSection bp = root.getConfigurationSection("blueprints");
         if (bp != null) {
             for (String id : bp.getKeys(false)) {
+                if (SETTING_KEYS.contains(id)) {
+                    continue;
+                }
                 BlueprintDef def = loadBlueprint(id, bp.getConfigurationSection(id), tiers, abilities, problems);
                 if (def != null) {
                     blueprints.put(id, def);
