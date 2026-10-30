@@ -1,6 +1,8 @@
 # Status (single source of truth for a fresh session)
 
-Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (after Phase 1 merge).
+Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:55 (update104 live, REVIEW3 queued). History lives in CHANGELOG.md.
+
+**Releases:** the owner wants new things released **in batches** (S2), not after every single item. GitHub is not reachable from the cloud (gh 403); bundles go via the Mac.
 
 ## Where we are
 - **Phase 0 (foundation): done.** Config, style/messages, DB (MariaDB/H2 + migrations), player data, commands (enforced tab completion), menus (redesigned look), items (+dupe detection), audit log, services/placeholders (PlaceholderAPI optional), LuckPerms hooks, LegacyColors (`&` codes).
