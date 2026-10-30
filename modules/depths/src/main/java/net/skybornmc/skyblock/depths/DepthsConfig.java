@@ -151,8 +151,11 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "satchel.audit-seconds", desc = "Seconds between the batched audit rows of Depths drops (one row per player with every item and crystal).", min = 10, max = 3600)
     public int satchelAuditSeconds = 60;
 
-    @Setting(path = "satchel.full-warning-ms", desc = "Minimum milliseconds between two 'satchel full' action bar warnings (UI_STYLE: max one per 1.5 s).", min = 0, max = 60000)
-    public int satchelFullWarningMs = 1500;
+    @Setting(path = "satchel.full-warning-ms", desc = "Minimum milliseconds between two 'satchel full' (drops go to the inventory, then /box) or '/box full, mining stopped' warnings (R3-22: 3 s).", min = 0, max = 60000)
+    public int satchelFullWarningMs = 3000;
+
+    @Setting(path = "satchel.box-flush-seconds", desc = "R3-22: drops that fit neither the full satchel nor the inventory wait this long and then go to /box together (one box delivery per player, not one per block). Also sent on quit, profile switch and shutdown.", min = 1, max = 60)
+    public int satchelBoxFlushSeconds = 5;
 
     @Setting(path = "satchel.full-sound", desc = "Sound (sounds.yml) with the 'satchel full' warning (empty = none).")
     public String satchelFullSound = "error";

@@ -281,6 +281,130 @@ final class SpawnerManager implements Listener {
                 + "; it stays in stacking_spawners and is checked again after the next restart", error));
     }
 
+    // ================================================================== R3-13: island removal and staff restore
+
+    /** R3-13a: an island removal clears its spawners only for a disband or a reset on purpose (staff delete keeps them). */
+    static boolean clearsSpawners(String reason) {
+        return net.skybornmc.skyblock.common.island.IslandRemovedEvent.DISBAND.equals(reason)
+                || net.skybornmc.skyblock.common.island.IslandRemovedEvent.RESET.equals(reason);
+    }
+
+    /**
+     * R3-13a: the island was disbanded or reset on purpose. Its spawners are cleared, not frozen for staff: they leave
+     * memory at once (no spawn tick can freeze them any more) and one transaction deletes the rows and marks the
+     * island's waiting frozen rows {@code cleared}. Audited as {@code spawners_cleared}.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onIslandRemoved(net.skybornmc.skyblock.common.island.IslandRemovedEvent event) {
+        if (!clearsSpawners(event.reason()) || event.islandId() == null) {
+            return;
+        }
+        UUID island = event.islandId();
+        int inMemory = 0;
+        for (java.util.Iterator<Spawner> it = spawners.values().iterator(); it.hasNext(); ) {
+            Spawner sp = it.next();
+            if (island.equals(sp.island)) {
+                sp.removed = true; // a running change fails its conditional update (row gone) and hands nothing out
+                it.remove();
+                inMemory++;
+            }
+        }
+        int dropped = inMemory;
+        then(module.core().database().transaction(c -> store.clearIsland(c, island)), cleared -> {
+            if (cleared.rows().isEmpty() && cleared.frozenRows() == 0) {
+                return;
+            }
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("reason", event.reason());
+            details.put("blocks", cleared.rows().size());
+            details.put("frozen_cleared", cleared.frozenRows());
+            details.put("in_memory", dropped);
+            Map<String, Integer> types = new LinkedHashMap<>();
+            cleared.rows().forEach(r -> types.merge(r.type(), r.amount(), Integer::sum));
+            details.put("types", types);
+            module.core().audit().log(AuditCategory.ISLAND, "spawners_cleared", event.actor(), island.toString(), null,
+                    (long) cleared.spawners(), null, details);
+            module.core().plugin().getLogger().info("Stacking: island " + island + " was " + event.reason() + ": cleared "
+                    + cleared.spawners() + " spawner(s) in " + cleared.rows().size() + " block(s) and " + cleared.frozenRows()
+                    + " frozen row(s) (R3-13a).");
+        }, error -> module.core().plugin().getLogger().log(Level.SEVERE, "Stacking: could not clear the spawners of removed island "
+                + island + "; their rows stay and freeze when checked", error));
+    }
+
+    /** R3-13b: the frozen spawners a player placed (staff view). Async, completes on any thread. */
+    CompletableFuture<List<SpawnerStore.Frozen>> frozenPlacedBy(UUID player, int limit) {
+        return module.core().database().async(c -> store.frozenPlacedBy(c, player, limit));
+    }
+
+    /**
+     * R3-13b staff restore: marks the frozen row restored exactly once (conditional), then sends the spawners to the
+     * placer's /box (their active profile; offline-safe, never lost: the box spools). Audited as
+     * {@code spawner_restore}. {@code done} runs on the main thread with true when this click restored it.
+     */
+    void restore(Player staff, SpawnerStore.Frozen frozen, Consumer<Boolean> done) {
+        Optional<net.skybornmc.skyblock.common.box.ItemBox> box = net.skybornmc.skyblock.common.box.ItemBox.of(module.core().services());
+        if (box.isEmpty()) {
+            deny(staff, "frozen.no-box");
+            done.accept(false);
+            return;
+        }
+        if (frozen.row().placedBy() == null) {
+            deny(staff, "frozen.no-owner");
+            done.accept(false);
+            return;
+        }
+        String type = SpawnerTiers.normalize(frozen.row().type());
+        if (module.spawnerItems().create(type, 1, "check").isEmpty()) {
+            deny(staff, "frozen.unknown-type", mob(type));
+            done.accept(false);
+            return;
+        }
+        UUID staffId = staff.getUniqueId();
+        String staffName = staff.getName();
+        then(module.core().database().transaction(c -> store.restore(c, frozen.id())), restored -> {
+            Player online = Bukkit.getPlayer(staffId);
+            if (restored.isEmpty()) {
+                if (online != null) {
+                    deny(online, "frozen.already");
+                }
+                done.accept(false);
+                return;
+            }
+            SpawnerStore.Row r = restored.get().row();
+            List<ItemStack> stacks = new java.util.ArrayList<>();
+            for (int left = r.amount(); left > 0; left -= 64) {
+                module.spawnerItems().create(type, Math.min(64, left), "restore:" + staffName).ifPresent(stacks::add);
+            }
+            UUID placer = r.placedBy();
+            net.skybornmc.skyblock.common.profile.ProfileService.of(module.core().services()).profileKeyAsync(placer)
+                    .thenAccept(profile -> box.get().deliver(profile, stacks, net.skybornmc.skyblock.common.box.BoxSource.SPAWNER_RESTORE,
+                            Actor.player(staffId, staffName)));
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("frozen_id", frozen.id());
+            details.put("type", type);
+            details.put("placed_by", placer.toString());
+            details.put("island", String.valueOf(r.island()));
+            details.put("pos", r.world() + " " + r.x() + "," + r.y() + "," + r.z());
+            module.core().audit().logPlayer(AuditCategory.STAFF, "spawner_restore", Actor.player(staffId, staffName), placer, null,
+                    (long) r.amount(), null, details);
+            if (online != null) {
+                module.msg().send(online, "frozen.restored", Msg.p("amount", r.amount()), mob(type));
+                module.core().sounds().play(online, "success");
+            }
+            Player owner = Bukkit.getPlayer(placer);
+            if (owner != null && !owner.getUniqueId().equals(staffId)) {
+                module.msg().send(owner, "frozen.returned", Msg.p("amount", r.amount()), mob(type));
+            }
+            done.accept(true);
+        }, error -> {
+            Player online = Bukkit.getPlayer(staffId);
+            if (online != null) {
+                deny(online, "spawner.error");
+            }
+            done.accept(false);
+        });
+    }
+
     // ================================================================== vanilla behaviour
 
     /** Only stacked spawners spawn in the stacking worlds; vanilla spawner spawns are cancelled. */

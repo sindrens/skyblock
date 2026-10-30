@@ -63,6 +63,7 @@ public final class ConfigManager {
             }
         }
         boolean changed = migrate(config, yaml);
+        changed |= removeDeadKeys(config, yaml);
 
         for (Field field : settingFields(config)) {
             Setting setting = field.getAnnotation(Setting.class);
@@ -182,6 +183,30 @@ public final class ConfigManager {
             }
         }
         if (fileVersion < config.version()) {
+            changed = true;
+        }
+        return changed;
+    }
+
+    /** Deletes {@link ModuleConfig#removedKeys} from the file (never a current setting). Returns true when one was removed. */
+    boolean removeDeadKeys(ModuleConfig config, YamlConfiguration yaml) {
+        Map<String, String> removed = config.removedKeys();
+        if (removed.isEmpty()) {
+            return false;
+        }
+        java.util.Set<String> current = new java.util.HashSet<>();
+        for (Field field : settingFields(config)) {
+            current.add(pathOf(field, field.getAnnotation(Setting.class)));
+        }
+        boolean changed = false;
+        for (Map.Entry<String, String> dead : new java.util.TreeMap<>(removed).entrySet()) {
+            String path = dead.getKey();
+            boolean holdsSetting = current.stream().anyMatch(p -> p.equals(path) || p.startsWith(path + "."));
+            if (holdsSetting || !yaml.contains(path)) {
+                continue;
+            }
+            yaml.set(path, null);
+            log.info(config.fileName() + ": removed unused key '" + path + "' (" + dead.getValue() + ")");
             changed = true;
         }
         return changed;

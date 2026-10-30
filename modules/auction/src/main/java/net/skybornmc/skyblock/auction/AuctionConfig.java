@@ -132,6 +132,12 @@ public final class AuctionConfig extends ModuleConfig {
         return fallback;
     }
 
+    /** R3-16: the 30-minute / new-account rule is gone (owner answers 131/203); its old keys are deleted on load. */
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        return java.util.Map.of("anti-abuse.new-account", "owner answers 131/203: no new-account limit (R3-16)");
+    }
+
     @Override
     public String fileName() {
         return "auction.yml";

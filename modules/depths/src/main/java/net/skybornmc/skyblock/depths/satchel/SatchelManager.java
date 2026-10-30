@@ -225,10 +225,15 @@ public final class SatchelManager implements SatchelService, Listener {
             return;
         }
         Map<String, Long> gained = state.takeGains();
+        Map<String, Long> overflow = state.takeOverflow();
         long crystals = state.takeGainedCrystals();
         long total = gained.values().stream().mapToLong(Long::longValue).sum();
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("items", gained);
+        if (!overflow.isEmpty()) {
+            details.put("overflow", overflow); // R3-22: past a full satchel, to the inventory or /box
+            total += overflow.values().stream().mapToLong(Long::longValue).sum();
+        }
         details.put("crystals", crystals);
         details.put("profile", state.profile.toString());
         core.audit().logPlayer(AuditCategory.ITEM, "depths_drops", Actor.system("depths"), state.owner == null ? state.profile : state.owner,
@@ -237,33 +242,74 @@ public final class SatchelManager implements SatchelService, Listener {
 
     // ------------------------------------------------------------------ drops (called by the drops listener)
 
-    /**
-     * Whether a break may give drops (main thread, before the break is accepted). Shows the warning and returns false when
-     * the satchel is full or still loading.
-     */
-    public boolean accepts(Player player) {
+    /** Where a drop can go right now (R3-22). */
+    public enum Status {
+        /** The satchel is not loaded yet (a load is started). */
+        LOADING,
+        /** The satchel takes drops. */
+        OK,
+        /** The satchel is full: drops go to the inventory, then /box. */
+        FULL
+    }
+
+    /** The satchel status of a player (main thread, O(1)); starts a load when it is missing. No message. */
+    public Status status(Player player) {
         SatchelState state = state(player);
         if (state == null || !state.loaded()) {
             if (state != null && !state.loading()) {
                 ledger.load(state);
             }
-            msg.actionBar(player, "satchel.loading");
-            return false;
+            return Status.LOADING;
         }
-        long capacity = capacity(player);
-        if (SatchelMath.full(state.used(), capacity)) {
-            long now = System.currentTimeMillis();
-            if (now - state.lastFullWarning >= config.satchelFullWarningMs) {
-                state.lastFullWarning = now;
-                msg.actionBar(player, "satchel.full", Msg.number("used", state.used()), Msg.number("max", capacity));
-                sound(player, config.satchelFullSound);
-            }
-            return false;
-        }
-        return true;
+        return SatchelMath.full(state.used(), capacity(player)) ? Status.FULL : Status.OK;
     }
 
-    /** Puts drops into the player's satchel (O(1)). The capacity was checked by {@link #accepts}. */
+    /** "Your satchel is loading" on the action bar (a break waits for it). */
+    public void warnLoading(Player player) {
+        msg.actionBar(player, "satchel.loading");
+    }
+
+    /**
+     * R3-22: "satchel full, drops go to your inventory, then /box" on the action bar, at most once per
+     * {@code satchel.full-warning-ms} (3 s).
+     */
+    public void warnFull(Player player) {
+        SatchelState state = state(player);
+        if (state == null || !SatchelMath.warnDue(state.lastFullWarning, System.currentTimeMillis(), config.satchelFullWarningMs)) {
+            return;
+        }
+        state.lastFullWarning = System.currentTimeMillis();
+        long capacity = capacity(player);
+        msg.actionBar(player, "satchel.full-overflow", Msg.number("used", state.used()), Msg.number("max", capacity));
+        sound(player, config.satchelFullSound);
+    }
+
+    /**
+     * R3-22: the satchel is full and the /box is at its hard cap, so mining stops: chat line at most once per
+     * {@code satchel.full-warning-ms}.
+     */
+    public void warnBoxFull(Player player, int boxMax) {
+        SatchelState state = state(player);
+        long now = System.currentTimeMillis();
+        if (state != null) {
+            if (!SatchelMath.warnDue(state.lastBoxWarning, now, config.satchelFullWarningMs)) {
+                return;
+            }
+            state.lastBoxWarning = now;
+        }
+        msg.actionBar(player, "satchel.box-full", Msg.number("max", boxMax));
+        sound(player, config.satchelFullSound);
+    }
+
+    /** R3-22: drops that went past the full satchel (inventory or /box), counted for the batched audit row. */
+    public void addOverflow(Player player, String item, long amount) {
+        SatchelState state = state(player);
+        if (state != null) {
+            state.addOverflow(item, amount);
+        }
+    }
+
+    /** Puts drops into the player's satchel (O(1)). The capacity was checked by {@link #status}. */
     public void add(Player player, String item, long amount) {
         SatchelState state = state(player);
         if (state != null && amount > 0) {

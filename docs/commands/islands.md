@@ -94,7 +94,7 @@ read-only. Every change is logged (`island_perm`).
 - **Limits (REVIEW A5/B1, owner answer 242):** `members.start-slots` 5 = 4 members plus the leader (island column
   `member_slots`, raised by the Phase 5 Member Slots upgrade up to `members.max-slots` 9 = 8 plus the leader; old files
   with the untouched defaults 4/8 are moved to 5/9 once, `config-version` 2); a player joins at most
-  `members.max-joins-per-season` (3) islands per season (`season-id`, table `player_island_joins`). No join cooldown.
+  `members.max-joins-per-season` (0 = unlimited, owner N2-1) islands per season (`season-id`, table `player_island_joins`). No join cooldown.
   Founding an island never counts as a join.
 - **Kick backups (owner answer 251, SECFIX1 F-02):** kicking a stored member (`/is kick`, `/isadmin kick`, moderation
   removals) saves a backup in `island_kick_backups` (V012): island and role only. A kick takes only the membership (the
@@ -242,7 +242,7 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
   no damage (also after you stop flying yourself). Flight from creative, staff mode or freeze is never touched.
   Checked on every block move plus every `fly.check-interval-ticks` (20).
 - **Personal homes:** removed (owner answer 247): no `/is setmyhome`, no `/is home <name>`; the table
-  `island_member_homes` is dropped by V012 and the `homes.*` keys are ignored. `IslandService.extraMemberHomes` stays in
+  `island_member_homes` is dropped by V012 and the old `homes.*` keys are removed from islands.yml on load (REV3-FIX). `IslandService.extraMemberHomes` stays in
   the shared API but is unused.
 - **Invites menu** (owner O17): `/is invites`, also from `/is members`. Cancelling is logged (`island_invite`,
   `result: cancelled`).
@@ -297,7 +297,7 @@ Owner answers N1-N9 (`docs/DECISIONS_2026-10-30.md`, `docs/QUESTIONS_ROUND2.md` 
   14 Visitors (open/locked, visitors on it now, bans; Leader/Admin/Mod click = lock/unlock) · 15 Settings (`/is settings`) ·
   16 Invites (`/is invites`) · 19 Notes (`/is notes`, when your role may read them) · 20 Island chat (toggle) ·
   21 Chat colors · 22 Visit islands (the browser) · 23 Stats, 24 Bank, 25 Upgrades: gray "Coming soon" ·
-  40 Disband (leader, same confirm + typed word as `/is disband`) or Leave (everyone else, confirm). Back from every sub-menu
+  40 Disband (leader, same confirm button as `/is disband`, no typed word: owner answer 261) or Leave (everyone else, confirm). Back from every sub-menu
   returns to the island menu. `/is home` and `/is go` still teleport straight home.
 - **Island chat** (`/is chat`): toggle mode is per player and not saved (off after a relog or a profile switch). Routing:
   islands publishes a `ChatChannel` service (common/chat); the chat module checks every chat message after mute, freeze and

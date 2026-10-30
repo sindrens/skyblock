@@ -91,6 +91,19 @@ public interface ItemBox {
         return false;
     }
 
+    /**
+     * R3-22: the same hard-cap test as {@link #refuses(Player)} but silent, for paths that warn the player themselves
+     * (throttled, e.g. Depths mining on a full satchel). Main thread.
+     */
+    default boolean hardFull(Player player) {
+        return false;
+    }
+
+    /** The hard safety cap in stacks ({@code box.yml cap.hard-max-entries}), for messages. */
+    default int hardCap() {
+        return 5000;
+    }
+
     /** Opens the admin view of a player's box (the Box button in {@code /inspect}). */
     void openStaffView(Player staff, UUID player, String name, Menu back);
 
@@ -138,6 +151,11 @@ public interface ItemBox {
     /** {@link #refuses(Player)} through the registry (false when the box module is off). Main thread. */
     static boolean refuses(ServiceRegistry services, Player player) {
         return player != null && of(services).map(b -> b.refuses(player)).orElse(false);
+    }
+
+    /** {@link #hardFull(Player)} through the registry (false when the box module is off). Main thread, no message. */
+    static boolean hardFull(ServiceRegistry services, Player player) {
+        return player != null && of(services).map(b -> b.hardFull(player)).orElse(false);
     }
 
     /** True when the player's active profile box is full (false when the box module is off). */

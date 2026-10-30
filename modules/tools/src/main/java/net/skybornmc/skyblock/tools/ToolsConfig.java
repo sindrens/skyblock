@@ -75,11 +75,6 @@ public final class ToolsConfig extends ModuleConfig {
     @Setting(path = "starter-kit.give-on-first-join", desc = "Give the starter kit automatically on a player's first join (off: the tutorial/Quartermaster does it).")
     public boolean starterOnFirstJoin = false;
 
-    @Setting(path = "npc.quartermaster", desc = "Where the Quartermaster NPC will stand: world,x,y,z,yaw,pitch (NPCs come later; empty = not placed).")
-    public String quartermasterLocation = "";
-
-    @Setting(path = "npc.blacksmith", desc = "Where the Blacksmith NPC (opens /forge) will stand: world,x,y,z,yaw,pitch (NPCs come later).")
-    public String blacksmithLocation = "";
 
     @Setting(path = "menu.shift-right-click", desc = "Shift + right-click with a custom tool opens its tool menu (Bedrock players can also use /tool).")
     public boolean shiftRightClick = true;
@@ -159,6 +154,12 @@ public final class ToolsConfig extends ModuleConfig {
             ToolKind.byId(s).filter(k -> !out.contains(k)).ifPresent(out::add);
         }
         return out;
+    }
+
+    /** Dead-key rule (REVIEW3 §6): NPC places come from the applied builds now (npcs module); the old keys are deleted on load. */
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        return java.util.Map.of("npc", "NPCs stand at the applied builds' points (npcs module), never read here");
     }
 
     @Override

@@ -46,6 +46,8 @@ tasks {
         val props = mapOf("version" to project.version)
         inputs.properties(props)
         filesMatching("plugin.yml") { expand(props) }
+        // REVIEW3 §6 decision ledger: migrated into live configs once at startup (DecisionMigrations).
+        from(rootProject.file("docs/decisions.yml"))
     }
     shadowJar {
         archiveBaseName.set("PhoenixSkyblock")

@@ -78,4 +78,12 @@ public interface StackingService {
     default java.util.Optional<org.bukkit.inventory.ItemStack> createSpawner(String type, int amount, String source) {
         return java.util.Optional.empty();
     }
+
+    /**
+     * R3-13b: opens the staff view of the frozen stacked spawners a player placed (block lost in a crash or world edit),
+     * with a restore button per entry (the "Frozen spawners" button in {@code /inspect}; needs
+     * {@code skyblock.spawner.restore}). Does nothing when the stacking module does not support it.
+     */
+    default void openFrozenSpawners(Player staff, java.util.UUID player, String name, net.skybornmc.skyblock.common.menu.Menu back) {
+    }
 }

@@ -30,8 +30,10 @@ class ConfigManagerTest {
         int version = 1;
         Map<Integer, Map<String, String>> migrations = Map.of();
         Map<Integer, Map<String, ValueChange>> valueChanges = Map.of();
+        Map<String, String> removed = Map.of();
 
         @Override public String fileName() { return "test.yml"; }
+        @Override public Map<String, String> removedKeys() { return removed; }
         @Override public int version() { return version; }
         @Override public Map<Integer, Map<String, String>> migrations() { return migrations; }
         @Override public Map<Integer, Map<String, ValueChange>> valueChanges() { return valueChanges; }
@@ -163,5 +165,21 @@ class ConfigManagerTest {
         assertEquals("slow-operation-ms", ConfigManager.pathOf(CoreConfig.class.getField("slowOperationMs"),
                 CoreConfig.class.getField("slowOperationMs").getAnnotation(Setting.class)));
         assertTrue(new File(".").exists());
+    }
+
+    @Test
+    void removedKeysAreDeletedButSettingsAndUnknownKeysStay(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve("test.yml"), "amount: 42\nold:\n  minutes: 30\n  flag: true\nstale: 3\ncatalog:\n  x: 1\n"
+                + "nested:\n  name: kept\n");
+        TestConfig config = new TestConfig();
+        config.removed = Map.of("old", "gone", "stale", "gone too", "nested", "would hold a setting", "amount", "a setting", "missing", "x");
+        new ConfigManager(dir.toFile(), log).load(config);
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(dir.resolve("test.yml").toFile());
+        assertFalse(yaml.contains("old"), "a dead section is removed");
+        assertFalse(yaml.contains("stale"), "a dead key is removed");
+        assertEquals(42, yaml.getInt("amount"), "a current setting is never removed");
+        assertEquals("kept", yaml.getString("nested.name"), "a section holding a setting is never removed");
+        assertEquals(1, yaml.getInt("catalog.x"), "keys that are not listed stay (catalog sections)");
+        assertEquals(42, config.amount);
     }
 }

@@ -46,6 +46,16 @@ public abstract class ModuleConfig {
         }
     }
 
+    /**
+     * Keys (or whole sections) that no code reads any more, with the reason: they are deleted from the live file on load,
+     * with a log line, so dead settings can't mislead the owner (REVIEW3 R3-16 / dead-key rule). A path that is still a
+     * {@link Setting} is never removed. Unknown keys that are not listed here are left alone (catalog sections parsed
+     * by other loaders live in some files).
+     */
+    public Map<String, String> removedKeys() {
+        return Map.of();
+    }
+
     /** Optional header comment for the file. */
     public String header() {
         return "";

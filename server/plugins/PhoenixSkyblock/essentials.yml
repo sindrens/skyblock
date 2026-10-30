@@ -59,12 +59,4 @@ protection:
   # Falling below this Y in a protected world teleports back to spawn.
   # Allowed: -2048 to 320
   void-y: 0
-menu-item:
-  # Give everyone the menu item (Nether Star) in the hotbar.
-  enabled: true
-  # Hotbar slot of the menu item (0 = first, 8 = ninth).
-  # Allowed: 0 to 8
-  slot: 8
-  # Command the menu item runs (without /).
-  command: menu
 config-version: 1

@@ -4,3 +4,5 @@
 # Stacked mobs, items and spawners need no node (island role permissions decide who may use spawners).
 # Staff: /spawner give (approved item-give pattern, admin; owner inherits admin).
 lp group admin permission set skyblock.spawner.give true
+# R3-13b: restore frozen stacked spawners to the placer's /box from /inspect (same level as /spawner give).
+lp group admin permission set skyblock.spawner.restore true
