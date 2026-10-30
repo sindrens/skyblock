@@ -41,7 +41,7 @@ categories:
     slot: 15
     name: "<c:flame><bold>Progression"
     lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and masteries."]
-    topics: [island-level, skills, pillars, achievements]
+    topics: [island-level, island-upgrades, skills, pillars, achievements]
   gear:
     icon: smithing_table
     status: active
@@ -480,6 +480,32 @@ topics:
           - "<c:text>All pillars at <c:value>10, 25, 40</c:value> <c:text>and <c:value>60</c:value>:"
           - "<c:text>every member gets crystals."
           - "<c:text>Hide level-up lines in <c:value>/settings</c:value>."
+
+  island-upgrades:
+    icon: anvil
+    aliases: [upgrades, upgrade, is-upgrade]
+    name: "<c:flame>Island upgrades"
+    summary: ["<c:text>Bigger island, more members,", "<c:text>bank, sell bonus. See /is upgrade."]
+    take-me-there: "is upgrade"
+    pages:
+      - title: "<c:value>How to buy"
+        lines:
+          - "<c:text>Each level needs its <c:value>tasks</c:value> done"
+          - "<c:text>(challenge book) and money from"
+          - "<c:text>the <c:value>island bank</c:value>. No fee, no waiting."
+          - "<c:text>Click an upgrade, then Buy."
+      - title: "<c:value>Who can buy"
+        lines:
+          - "<c:text>The leader, and roles with the"
+          - "<c:value>Upgrades</c:value> <c:text>box in /is permissions"
+          - "<c:text>(admins by default). Everyone"
+          - "<c:text>can look and help with tasks."
+      - title: "<c:value>What you get"
+        lines:
+          - "<c:text>Island size up to <c:value>9x9</c:value>, up to 8"
+          - "<c:text>members + leader, warps, bank,"
+          - "<c:text>sell bonus, Depths drops, spawners."
+          - "<c:text>Every level adds island level points."
 
   island-level:
     icon: nether_star

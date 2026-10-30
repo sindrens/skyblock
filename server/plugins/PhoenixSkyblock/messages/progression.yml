@@ -132,6 +132,8 @@ level-menu:
         - "<c:muted>and masteries give points."
       how:
         - "<c:muted>Buy upgrades and masteries."
+      click:
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the upgrades"
     achievements:
       name: "<c:flame>Achievements"
       soon:
@@ -460,3 +462,203 @@ tasks:
     not-member: "<prefix><c:error><sym:cross></c:error> <c:text>Only island members can hand in items."
     unknown: "<prefix><c:error><sym:cross></c:error> <c:text>That task doesn't exist anymore."
     failed: "<prefix><c:error><sym:cross></c:error> <c:text>The hand-in couldn't be saved. Your items are back."
+
+# ---------------------------------------------------------------- M5.4 island upgrades (/is upgrade)
+# Paid from the island bank only (owner 169). Lore lines max ~36 characters (Bedrock).
+upgrades:
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open island upgrades."
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Island upgrades aren't available right now. Try again later."
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have an island yet. <click:run_command:'/is'><hover:show_text:'<c:text>Create your island'><c:action>[Create]</c:action></hover></click>"
+  # Upgrade names (missing ids are shown from the id, e.g. "Island Size").
+  name:
+    island_size: "Island Size"
+    member_slots: "Member Slots"
+    warp_slots: "Warp Slots"
+    island_vault: "Island Vault"
+    entity_limits: "Entity Limits"
+    bank_capacity: "Bank Capacity"
+    bank_interest: "Bank Interest"
+    sell_multiplier: "Sell Multiplier"
+    mine_fortune: "Mine Fortune"
+    lumberjack: "Lumberjack"
+    xp_boost: "XP Boost"
+    spawner_stack_limit: "Spawner Stack Limit"
+    spawner_rate: "Spawner Rate"
+    mob_loot: "Mob Loot"
+    crop_growth: "Crop Growth"
+    harvest_yield: "Harvest Yield"
+    generator: "Generator"
+    fuel_tank: "Fuel Tank"
+  # What a level gives. <value> the level's value, <members> member slots without the leader
+  effect:
+    island-size: "<value>x<value> border"
+    member-slots: "<members> members + leader"
+    warp-slots: "<value> warps"
+    island-vault: "<value> storage rows"
+    entity-limits: "+<value>% entity limits"
+    bank-capacity: "Bank capacity level <value>"
+    bank-interest: "Bank interest level <value>"
+    sell-bonus: "+<value>% sell prices"
+    mine-fortune: "+<value>% Depths ore drops"
+    lumberjack: "+<value>% Depths log drops"
+    xp-boost: "+<value>% skill XP"
+    spawner-stack: "<value> spawners per block"
+    spawner-rate: "+<value>% spawner output"
+    mob-loot: "+<value>% spawner drops"
+    crop-growth: "+<value>% crop growth"
+    harvest-yield: "+<value>% double crops"
+    generator: "Generator tier <value>"
+    fuel-tank: "Fuel tank level <value>"
+  effect-none: "Nothing yet"
+  menu:
+    crumb-island: "Island"
+    crumb: "Upgrades"
+    info:
+      - "<c:text>Each level needs its tasks"
+      - "<c:text>and money from the island bank."
+      - "<c:text>No fee, no waiting."
+      - "<c:muted>Buying: leader and the roles"
+      - "<c:muted>with the Upgrades permission."
+    # <bank>
+    bank:
+      name: "<c:value>Island bank <c:success><bank>"
+      lore:
+        - "<c:text>Upgrades are paid from here."
+        - "<c:muted>Put money in with /bank."
+      lore-loading:
+        - "<c:muted>Loading the balance..."
+    # <level> <next> <percent> <points> (points from upgrades)
+    level:
+      name: "<c:flame>Island Level <level>"
+      lore:
+        - "<c:text>Progress: <c:value><percent>%</c:value> <c:text>to <c:value><next>"
+        - "<c:text>Upgrade points: <c:value><points>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open /is level"
+  tab:
+    # <tab> crumb, <count> upgrades in the tab
+    name: "<c:muted><tab>"
+    name-selected: "<c:flame><bold><tab>"
+    lore:
+      - "<c:text>Upgrades: <c:value><count>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
+    lore-selected:
+      - "<c:text>Upgrades: <c:value><count>"
+      - "<c:muted>Shown now."
+    island:
+      crumb: "Island"
+    economy:
+      crumb: "Economy"
+    depths:
+      crumb: "Depths"
+    production:
+      crumb: "Production"
+    masteries:
+      name: "<c:muted>Masteries"
+      lore:
+        - "<c:muted>Coming soon"
+  # The upgrade item. <upgrade> name, <level> next level (roman), <current> <max>, <now> <next> effects,
+  # <cost> next level's price, <tier> its task tier, <island-level> its island level gate
+  item:
+    name-ready: "<c:success><bold><upgrade> <level>"
+    name-open: "<c:warning><upgrade> <level>"
+    name-blocked: "<c:error><upgrade> <level>"
+    name-maxed: "<c:value><upgrade> <c:muted>(max)"
+    name-soon: "<c:muted><upgrade>"
+    level:
+      - "<c:bar>|</c:bar> <c:text>Level <c:value><current></c:value><c:muted>/<max>"
+    now:
+      - "<c:bar>|</c:bar> <c:text>Now: <c:value><now>"
+    next:
+      - "<c:bar>|</c:bar> <c:text>Next: <c:success><next>"
+    tasks-header:
+      - "<c:bar>|</c:bar> <c:header>Tasks"
+    no-tasks:
+      - "  <c:muted>No tasks for this level"
+    island-level:
+      - "<c:bar>|</c:bar> <c:text>Needs island level <c:value><island-level>"
+    cost:
+      - "<c:bar>|</c:bar> <c:text>Cost: <c:success><cost></c:success> <c:muted>(island bank)"
+    soon:
+      - "<c:muted>Coming soon"
+    click:
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see the tasks"
+  # State line under the upgrade (and the reason on a gray Buy button). <cost> <island-level> <bank>
+  state:
+    ready:
+      - "<c:success>Ready to buy!"
+    tasks-open:
+      - "<c:warning>Finish the tasks first."
+    island-level:
+      - "<c:warning>Needs island level <island-level>."
+    no-permission:
+      - "<c:error>Ask your leader to buy it."
+      - "<c:muted>(Upgrades permission)"
+    no-money:
+      - "<c:error>The island bank needs <cost>."
+    maxed:
+      - "<c:success>Fully upgraded."
+    disabled:
+      - "<c:muted>Not available."
+    coming-soon:
+      - "<c:muted>Coming soon"
+  detail:
+    info:
+      - "<c:text>The tasks of the next level"
+      - "<c:text>and every level of this upgrade."
+      - "<c:text>Hand-in tasks: click them."
+    level:
+      # <level> <effect> <cost> <tier> <island-level>
+      name-bought: "<c:success><sym:check> Level <level>"
+      name-next: "<c:warning>Level <level> <c:muted>(next)"
+      name-later: "<c:muted>Level <level>"
+      lore:
+        - "<c:text><effect>"
+        - "<c:bar>|</c:bar> <c:text>Cost: <c:value><cost>"
+        - "<c:bar>|</c:bar> <c:text>Task tier: <c:value><tier>"
+      island-level:
+        - "<c:bar>|</c:bar> <c:text>Island level: <c:value><island-level>"
+      bought:
+        - "<c:success>Bought"
+      next:
+        - "<c:warning>Next to buy"
+      later:
+        - "<c:muted>Buy the levels before first"
+    buy:
+      # <cost> <bank>
+      name: "<c:success><bold>» BUY <cost>"
+      name-locked: "<c:muted>Buy"
+      lore:
+        - "<c:text>Paid from the island bank"
+        - "<c:text>(now: <c:value><bank></c:value><c:text>)."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy (confirm next)"
+  confirm:
+    crumb: "Buy upgrade"
+    # <upgrade> <level> <cost> <next> effect <bank> island bank after
+    details:
+      - "<c:text>Buy <c:value><upgrade> <level></c:value>"
+      - "<c:text>for <c:success><cost></c:success> <c:text>from the island bank."
+      - "<c:text>You get: <c:success><next>"
+      - "<c:text>Bank after: <c:value><bank>"
+  buy:
+    # <upgrade> <level> <cost> <bank> (island bank after)
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Bought <c:value><upgrade> <level></c:value> for <c:success><cost></c:success>. <c:muted>Island bank: <bank>"
+    already: "<prefix><c:error><sym:cross></c:error> <c:text>Your island already has <c:value><upgrade> <level></c:value>."
+    changed: "<prefix><c:error><sym:cross></c:error> <c:text>That upgrade changed a moment ago. Have a look again."
+    busy: "<prefix><c:error><sym:cross></c:error> <c:text>That upgrade is being bought right now."
+    failed: "<prefix><c:error><sym:cross></c:error> <c:text>Buying failed. Nothing was paid. Try again in a moment."
+    no-money: "<prefix><c:error><sym:cross></c:error> <c:text>The island bank needs <c:success><cost></c:success>. <click:run_command:'/bank'><hover:show_text:'<c:text>Open the bank'><c:action>[Bank]</c:action></hover></click>"
+    no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't spend the island bank on upgrades. Ask your leader for the <c:value>Upgrades</c:value> permission."
+    tasks: "<prefix><c:error><sym:cross></c:error> <c:text>Finish the tasks of <c:value><upgrade></c:value> first."
+    island-level: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><upgrade></c:value> needs island level <c:value><level></c:value>."
+    maxed: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><upgrade></c:value> is fully upgraded."
+    coming-soon: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><upgrade></c:value> is coming soon."
+  # To online members. <upgrade> <level> <effect> <player> buyer
+  bought:
+    chat: "<c:flame><sym:star></c:flame> <c:value><player></c:value> <c:text>bought <c:value><upgrade> <level></c:value><c:text>: <c:success><effect></c:success> <click:run_command:'/is upgrade'><hover:show_text:'<c:text>Open the upgrades'><c:action>[Upgrades]</c:action></hover></click>"
+    action-bar: "<c:success><sym:check></c:success> <c:text>Island upgrade: <c:value><upgrade> <level>"
+  # The last task of a level was done. <upgrade> <level> <cost>
+  ready:
+    chat: "<c:flame><sym:star></c:flame> <c:value><upgrade> <level></c:value> <c:text>is ready to buy (<c:success><cost></c:success><c:text>). <click:run_command:'/is upgrade'><hover:show_text:'<c:text>Open the upgrades'><c:action>[Upgrades]</c:action></hover></click>"
