@@ -89,6 +89,7 @@ final class PunishConfigParser {
             return new Result(null, List.copyOf(errors), List.copyOf(warnings));
         }
         PunishConfig.Extras extras = extras(yaml);
+        Map<Integer, RuleBook.Rule> ruleMap = rules(yaml);
         List<Templates.Category> categories = categories(yaml, extras.offenceExpire());
         Map<String, Templates.Template> byId = new LinkedHashMap<>();
         categories.forEach(c -> c.templates().forEach(t -> byId.put(t.id(), t)));
@@ -110,7 +111,119 @@ final class PunishConfigParser {
         if (!errors.isEmpty()) {
             return new Result(null, List.copyOf(errors), List.copyOf(warnings));
         }
-        return new Result(new PunishConfig(List.copyOf(categories), menu, rules, extras), List.of(), List.copyOf(warnings));
+        return new Result(new PunishConfig(List.copyOf(categories), menu, rules, extras, new RuleBook(ruleMap, ruleRefs)),
+                List.of(), List.copyOf(warnings));
+    }
+
+    // ------------------------------------------------------------------ rule numbers (P8, spec 14.2)
+
+    /** Rule numbers that exist (filled by {@link #rules} before the reasons are read). */
+    private Set<Integer> ruleNumbers = Set.of();
+    /** Reason id / warn-button id → rule numbers (only references to existing rules). */
+    private final Map<String, List<Integer>> ruleRefs = new LinkedHashMap<>();
+
+    /**
+     * {@code rules:} (top level, optional): {@code 3: { link: "https://..." }} or {@code 3: "https://..."}. Numbers 1-999.
+     * Titles are texts (messages {@code rules.titles.<n>}); a {@code title:} here is only a fallback.
+     */
+    private Map<Integer, RuleBook.Rule> rules(YamlConfiguration yaml) {
+        Map<Integer, RuleBook.Rule> out = new TreeMap<>();
+        if (!yaml.contains("rules")) {
+            ruleNumbers = Set.of();
+            return out;
+        }
+        ConfigurationSection root = yaml.getConfigurationSection("rules");
+        if (root == null) {
+            error("config.not-a-section", "rules", "value", "rules");
+            ruleNumbers = Set.of();
+            return out;
+        }
+        for (String key : root.getKeys(false)) {
+            String path = "rules." + key;
+            int number;
+            try {
+                number = Integer.parseInt(key.strip());
+            } catch (NumberFormatException e) {
+                number = -1;
+            }
+            if (number < 1 || number > RuleBook.MAX_NUMBER) {
+                error("config.bad-rule-number", path, "value", key, "max", String.valueOf(RuleBook.MAX_NUMBER));
+                continue;
+            }
+            if (out.containsKey(number)) {
+                error("config.duplicate-id", path, "value", key, "other", "rules." + number);
+                continue;
+            }
+            String link = null;
+            String title = null;
+            if (root.isConfigurationSection(key)) {
+                ConfigurationSection r = root.getConfigurationSection(key);
+                for (String k : r.getKeys(false)) {
+                    if (!k.equals("link") && !k.equals("title")) {
+                        error("config.unknown-key", path + "." + k, "value", k, "suggestion",
+                                nullToEmpty(Hints.closest(k, List.of("link", "title"))));
+                    }
+                }
+                link = r.contains("link") ? String.valueOf(r.get("link")).strip() : null;
+                title = r.contains("title") ? String.valueOf(r.get("title")).strip() : null;
+            } else if (root.get(key) != null) {
+                link = String.valueOf(root.get(key)).strip();
+            }
+            if (link != null && (link.isEmpty() || !validLink(link))) {
+                error("config.bad-link", path + ".link", "value", link);
+                link = null;
+            }
+            out.put(number, new RuleBook.Rule(number, link, title == null || title.isEmpty() ? null : title));
+        }
+        ruleNumbers = Set.copyOf(out.keySet());
+        return out;
+    }
+
+    /** A link usable inside a click tag: no quotes, angle brackets or spaces. */
+    private static boolean validLink(String link) {
+        return !(link.contains("'") || link.contains("\"") || link.contains("<") || link.contains(">") || link.contains(" "));
+    }
+
+    /**
+     * {@code rule: 3} or {@code rule: [1, 3]} of a reason / warn button (spec 14.2). Only numbers listed under
+     * {@code rules:} are allowed: an unknown number is an error with the file, line and reason id. Missing = no rule.
+     */
+    private void ruleRef(ConfigurationSection s, String id, String path) {
+        if (s == null || !s.contains("rule")) {
+            return;
+        }
+        String p = path + ".rule";
+        List<Object> raw = s.isList("rule") ? new ArrayList<>(s.getList("rule")) : List.of(s.get("rule"));
+        List<Integer> numbers = new ArrayList<>();
+        for (Object v : raw) {
+            Integer n = v instanceof Integer i ? i : null;
+            if (n == null && v instanceof String str) {
+                try {
+                    n = Integer.parseInt(str.strip());
+                } catch (NumberFormatException ignored) {
+                    n = null;
+                }
+            }
+            if (n == null) {
+                error("config.bad-rule-ref", p, "value", String.valueOf(v), "id", id);
+                continue;
+            }
+            if (!ruleNumbers.contains(n)) {
+                error("config.unknown-rule", p, "value", String.valueOf(n), "id", id, "rules",
+                        ruleNumbers.isEmpty() ? "-" : ruleNumbers.stream().sorted().map(String::valueOf)
+                                .collect(java.util.stream.Collectors.joining(", ")));
+                continue;
+            }
+            if (!numbers.contains(n)) {
+                numbers.add(n);
+            }
+        }
+        if (raw.isEmpty()) {
+            error("config.bad-rule-ref", p, "value", "[]", "id", id);
+        }
+        if (!numbers.isEmpty()) {
+            ruleRefs.put(id.toLowerCase(Locale.ROOT), List.copyOf(numbers));
+        }
     }
 
     /** SnakeYAML says "line 12, column 3"; keep the line for the message. */
@@ -171,6 +284,7 @@ final class PunishConfigParser {
                     boolean probation = bool(t, "probation", path + ".probation", catProbation);
                     // spec 13.10: appealable: false (alt abuse, RMT) = no /appeal for punishments of this reason
                     boolean appealable = bool(t, "appealable", path + ".appealable", true);
+                    ruleRef(t, id, path); // P8, spec 14.2
                     if (!ladder.isEmpty()) {
                         templates.add(new Templates.Template(id, catId, t.getString("name"), icon, List.copyOf(ladder), expire,
                                 probation, appealable));
@@ -329,6 +443,9 @@ final class PunishConfigParser {
                 Material icon = icon(w.isConfigurationSection(id) ? w.getString(id + ".icon") : null, path + ".icon",
                         Material.PAPER);
                 int weight = w.isConfigurationSection(id) ? weight(w.getConfigurationSection(id), path + ".weight") : Weights.ONE;
+                if (w.isConfigurationSection(id)) {
+                    ruleRef(w.getConfigurationSection(id), id, path); // P8, spec 14.2
+                }
                 if (s >= 0) {
                     warns.add(new PunishConfig.WarnButton(id, s, icon, weight));
                 }
@@ -545,7 +662,87 @@ final class PunishConfigParser {
                 probation(x.getConfigurationSection("probation")), muteEnded(x.getConfigurationSection("mute-ended")),
                 bulk(x.getConfigurationSection("bulk")), appeal(x.getConfigurationSection("appeal")),
                 neverAuto(x), lockdown(x.getConfigurationSection("lockdown")), raid(x.getConfigurationSection("raid")),
-                network(x.getConfigurationSection("network")), sanctions(x.getConfigurationSection("sanctions")));
+                network(x.getConfigurationSection("network")), sanctions(x.getConfigurationSection("sanctions")),
+                training(x.getConfigurationSection("training")),
+                notify(x.getConfigurationSection("notify"), x.getConfigurationSection("discord")));
+    }
+
+    // ------------------------------------------------------------------ extras (P8: spec 14.6, 14.9)
+
+    private Training.Settings training(ConfigurationSection s) {
+        Training.Settings d = Training.Settings.DEFAULT;
+        if (s == null || !s.contains("requests-for")) {
+            return d;
+        }
+        String p = "extras.training.requests-for";
+        if (!s.isList("requests-for")) {
+            error("config.bad-list", p);
+            return d;
+        }
+        java.util.Set<Training.Kind> kinds = java.util.EnumSet.noneOf(Training.Kind.class);
+        for (String raw : s.getStringList("requests-for")) {
+            java.util.Optional<Training.Kind> k = Training.Kind.parse(raw);
+            if (k.isEmpty()) {
+                String v = raw == null ? "" : raw.strip();
+                error("config.unknown-key", p, "value", v, "suggestion",
+                        nullToEmpty(Hints.closest(v.toLowerCase(Locale.ROOT), Training.Kind.ids())));
+            } else {
+                kinds.add(k.get());
+            }
+        }
+        return new Training.Settings(kinds);
+    }
+
+    /** {@code extras.notify.always} and {@code extras.discord.channels} (type → webhook name, off by default). */
+    private NotifyRules.Settings notify(ConfigurationSection s, ConfigurationSection discord) {
+        NotifyRules.Settings d = NotifyRules.Settings.DEFAULT;
+        java.util.Set<NotifyRules.Type> always = d.always();
+        if (s != null && s.contains("always")) {
+            String p = "extras.notify.always";
+            if (!s.isList("always")) {
+                error("config.bad-list", p);
+            } else {
+                java.util.Set<NotifyRules.Type> parsed = java.util.EnumSet.noneOf(NotifyRules.Type.class);
+                for (String raw : s.getStringList("always")) {
+                    java.util.Optional<NotifyRules.Type> t = NotifyRules.Type.parse(raw);
+                    if (t.isEmpty()) {
+                        String v = raw == null ? "" : raw.strip();
+                        error("config.unknown-key", p, "value", v, "suggestion",
+                                nullToEmpty(Hints.closest(v.toLowerCase(Locale.ROOT), NotifyRules.Type.ids())));
+                    } else {
+                        parsed.add(t.get());
+                    }
+                }
+                always = parsed;
+            }
+        }
+        Map<NotifyRules.Type, String> channels = new java.util.EnumMap<>(NotifyRules.Type.class);
+        ConfigurationSection c = discord == null ? null : discord.getConfigurationSection("channels");
+        if (discord != null && discord.contains("channels") && c == null) {
+            error("config.not-a-section", "extras.discord.channels", "value", "channels");
+        }
+        if (c != null) {
+            for (String key : c.getKeys(false)) {
+                String path = "extras.discord.channels." + key;
+                java.util.Optional<NotifyRules.Type> t = NotifyRules.Type.parse(key);
+                if (t.isEmpty()) {
+                    error("config.unknown-key", path, "value", key, "suggestion",
+                            nullToEmpty(Hints.closest(key.toLowerCase(Locale.ROOT), NotifyRules.Type.ids())));
+                    continue;
+                }
+                String name = String.valueOf(c.get(key)).strip();
+                if (name.startsWith("http")) {
+                    error("config.webhook-in-config", path); // spec 14.9: webhook URLs are secrets, never here
+                    continue;
+                }
+                if (!name.matches(ID_PATTERN)) {
+                    error("config.bad-id", path, "value", name);
+                    continue;
+                }
+                channels.put(t.get(), name);
+            }
+        }
+        return new NotifyRules.Settings(always, channels);
     }
 
     // ------------------------------------------------------------------ extras (P7: spec 13.1)

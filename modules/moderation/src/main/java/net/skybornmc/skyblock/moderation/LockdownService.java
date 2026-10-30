@@ -137,7 +137,7 @@ final class LockdownService {
             return false;
         }
         for (Lockdown.Active a : ended) {
-            service.notifyStaff(sender, "lockdown.ended", parts(null, a, now), Msg.p("staff_now", sender.getName()));
+            service.notifyStaff(NotifyRules.Type.RAID, sender, "lockdown.ended", parts(null, a, now), Msg.p("staff_now", sender.getName()));
             audit("lockdown_end", Actor.of(sender), a, "manual");
             extras.lockdownPosted(a, "stop", sender.getName());
         }
@@ -147,9 +147,9 @@ final class LockdownService {
         return true;
     }
 
-    /** {@code key} to every staff member with skyblock.staff.notify, the sender and the console. */
+    /** {@code key} to every staff member who gets raid alerts (spec 14.9), the sender and the console. */
     private void announce(CommandSender sender, String key, Lockdown.Active a, long now) {
-        service.notifyStaff(sender, key, parts(null, a, now));
+        service.notifyStaff(NotifyRules.Type.RAID, sender, key, parts(null, a, now));
     }
 
     private void audit(String action, Actor actor, Lockdown.Active a, String how) {
@@ -225,7 +225,7 @@ final class LockdownService {
 
     /** A staff member joined while a lockdown runs: they get the status line at once. */
     void staffJoined(Player player) {
-        if (player.hasPermission(ModerationModule.PERM_NOTIFY) && state.any(System.currentTimeMillis())) {
+        if (service.wants(player, NotifyRules.Type.RAID) && state.any(System.currentTimeMillis())) {
             remind(List.of(player));
         }
     }
@@ -235,7 +235,7 @@ final class LockdownService {
     private void tick() {
         long now = System.currentTimeMillis();
         for (Lockdown.Active a : state.expire(now)) {
-            service.notifyStaff(null, "lockdown.expired", parts(null, a, now));
+            service.notifyStaff(NotifyRules.Type.RAID, null, "lockdown.expired", parts(null, a, now));
             audit("lockdown_end", Actor.system("lockdown"), a, "expired");
             extras.lockdownPosted(a, "expired", null);
         }
@@ -250,7 +250,7 @@ final class LockdownService {
         }
         if (now - lastReminder >= every) {
             lastReminder = now;
-            remind(Bukkit.getOnlinePlayers().stream().filter(p -> p.hasPermission(ModerationModule.PERM_NOTIFY))
+            remind(Bukkit.getOnlinePlayers().stream().filter(p -> service.wants(p, NotifyRules.Type.RAID))
                     .map(p -> (Player) p).toList());
         }
     }
@@ -343,7 +343,7 @@ final class LockdownService {
         };
         Duration length = auto.outcome() == Lockdown.AutoOutcome.START ? auto.duration() : s.chatDefault();
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (staff.hasPermission(ModerationModule.PERM_NOTIFY)) {
+            if (service.wants(staff, NotifyRules.Type.RAID)) {
                 msg.send(staff, key, Msg.number("count", count), Msg.p("window", PunishConfig.text(raid.window())),
                         Msg.p("length", PunishConfig.text(length)), Msg.p("cooldown", PunishConfig.text(raid.autoCooldown())),
                         Msg.c("start", startButton(staff)), Msg.c("ignore", ignoreButton(staff, count)));
@@ -357,7 +357,7 @@ final class LockdownService {
             // spec: chat only, max 5m, once per 30 minutes, staff told at once (the line above + the start line)
             Lockdown.Active a = new Lockdown.Active(Lockdown.Kind.CHAT, now, now + auto.duration().toMillis(), null, null, true);
             state.start(a, now);
-            service.notifyStaff(null, "lockdown.auto-started", parts(null, a, now));
+            service.notifyStaff(NotifyRules.Type.RAID, null, "lockdown.auto-started", parts(null, a, now));
             core.audit().log(AuditCategory.STAFF, "lockdown_start", Actor.system("raid"), details(a));
             extras.lockdownPosted(a, "start", null);
         }

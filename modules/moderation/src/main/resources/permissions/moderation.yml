@@ -111,3 +111,40 @@ skyblock.staff.sanction.confiscate:
 skyblock.staff.sanction.restore:
   description: Give back removed money or a confiscated item (/psanction restore <id>, the Sanctions menu; senior staff)
   default: op
+# --- P8 (spec 14.6 training, 14.9 notification settings) ---
+skyblock.staff.punish.trainee:
+  description: Marks a trainee (LuckPerms group); bans, mutes, kicks, island steps and bulk become requests for a mentor (extras.training)
+  default: false
+skyblock.staff.punish.dry:
+  description: Dry run (/p <player> <reason> -dry and the Dry run button of /p) - shows what would happen, applies nothing
+  default: op
+skyblock.staff.notify.punishments:
+  description: Staff alert type 'punishments' (every punishment, pardon, undo); switch with /pnotify
+  default: op
+skyblock.staff.notify.suggestions:
+  description: Staff alert type 'suggestions' (warn rules, chat filter, anticheat, dupes); switch with /pnotify
+  default: op
+skyblock.staff.notify.approvals:
+  description: Staff alert type 'approvals' (requests of trainees and big punishments, trainee practice); switch with /pnotify
+  default: op
+skyblock.staff.notify.appeals:
+  description: Staff alert type 'appeals' (new appeals, decisions); switch with /pnotify
+  default: op
+skyblock.staff.notify.watchlist:
+  description: Staff alert type 'watchlist' (watched players and flagged alts joining); switch with /pnotify
+  default: op
+skyblock.staff.notify.raid:
+  description: Staff alert type 'raid' (raid alerts, lockdown start/stop/reminders); switch with /pnotify
+  default: op
+skyblock.staff.notify.guard:
+  description: Staff alert type 'guard' (staff punishment limit alerts, P9; always on)
+  default: op
+skyblock.staff.notify.reports:
+  description: Staff alert type 'reports' (open reports on a punished player); switch with /pnotify
+  default: op
+skyblock.staff.notify.auto:
+  description: Staff alert type 'auto' (automatic actions of the system); switch with /pnotify
+  default: op
+skyblock.staff.notify.report:
+  description: Staff alert type 'report' (monthly punishment report ready, P10); switch with /pnotify
+  default: op

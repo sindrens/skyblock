@@ -80,6 +80,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
     static final String PERM_VIEW_OWN = "skyblock.punish.view.own";
     /** P4 (spec 13.4, 13.5). */
     static final String PERM_APPROVE = "skyblock.staff.punish.approve";
+    /** P8, spec 14.6: marks a trainee (given with a LuckPerms group); 14.6 dry run; 14.9 /pnotify. */
+    static final String PERM_TRAINEE = "skyblock.staff.punish.trainee";
+    static final String PERM_DRY = "skyblock.staff.punish.dry";
     static final String PERM_WATCH = "skyblock.staff.watch";
     /** P5 (spec 13.8, 13.10). */
     static final String PERM_BULK = "skyblock.staff.punish.bulk";
@@ -131,6 +134,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
     private ApiSuggestions apiSuggestions;
     /** P7: economy and item sanctions (13.1). */
     private Sanctions sanctions;
+    /** P8: notification settings per staff member (14.9). */
+    private StaffNotify notify;
     /** False after disable: the dupe detector keeps its handlers, this stops ours. */
     private volatile boolean enabled;
     private boolean dupeHooked;
@@ -185,6 +190,11 @@ public final class ModerationModule implements SkyblockModule, Listener {
         service.extras(() -> templates.config().extras());
         service.probationReasons(templates::probation);
         service.denyOpener(this::openDeny);
+        // P8: rule numbers (14.2) and notification settings (14.9)
+        service.rules(() -> templates.config().rules());
+        notify = new StaffNotify(core, new NotifyStore(core.database()), () -> templates.config().extras().notifications());
+        service.notifier(notify);
+        notify.start();
         // spec 13.12: every new row stores server id + scope; the scope filter follows punishments.yml (and reloads)
         service.store().network(() -> templates.config().extras().network());
         loadPunishments(null);
@@ -195,7 +205,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
                         && channel.equals(templates.config().extras().discord().channel()))
                         // spec 13.10 step 1: the appeals channel has its own switch (off by default)
                         || (templates.config().extras().appeal().discordEnabled()
-                        && channel.equals(templates.config().extras().appeal().discordChannel())),
+                        && channel.equals(templates.config().extras().appeal().discordChannel()))
+                        // spec 14.9: a channel mapped to a notification type (extras.discord.channels), with the main switch
+                        || (templates.config().extras().discord().enabled()
+                        && NotifyRules.mapped(channel, templates.config().extras().notifications())),
                 () -> templates.config().extras().discord(), plugin.getLogger());
         try {
             core.services().register(ID, net.skybornmc.skyblock.common.discord.DiscordSink.class, discord);
@@ -217,6 +230,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         // P7, spec 13.1: sanctions (the economy, auction, trade and bank check them through SanctionService)
         sanctions = new Sanctions(core, msg, new SanctionStore(core.database()), () -> templates.config().extras());
         sanctions.start();
+        sanctions.notified(p -> service.wants(p, NotifyRules.Type.PUNISHMENTS));
         core.services().register(ID, net.skybornmc.skyblock.common.moderation.SanctionService.class, sanctions);
         enabled = true;
         if (core.dupes() != null && !dupeHooked) {
@@ -700,11 +714,66 @@ public final class ModerationModule implements SkyblockModule, Listener {
                         .arg(sanctionId).example("psanction restore 12")
                         .executes(ctx -> sanctions.restore(ctx.sender(), ctx.get(sanctionId)))));
 
+        // ---- P8, spec 14.9: /pnotify [type] [on|off] (own alert switches; menu without arguments)
+        Arg<String> notifyType = Arg.word("type", (sender, raw) -> NotifyRules.Type.parse(raw).map(NotifyRules.Type::id)
+                .orElseThrow(() -> CommandFailure.of("invalid-choice", Msg.p("input", raw),
+                        Msg.p("choices", String.join(", ", NotifyRules.Type.ids())))),
+                Suggest.bySender(sender -> java.util.Arrays.stream(NotifyRules.Type.values())
+                        .filter(t -> sender.hasPermission(t.permission())).map(NotifyRules.Type::id).toList()));
+        Arg<String> notifyState = Args.oneOf("state", () -> List.of("on", "off"));
+        commands.register(CommandSpec.command("pnotify")
+                .description("Your own staff alerts: switch types on or off (menu without arguments); only types your rank gets")
+                .category("Staff").permission(PERM_NOTIFY).playerOnly().optional(notifyType).optional(notifyState)
+                .example("pnotify watchlist off")
+                .executes(ctx -> pnotify(ctx.player(), ctx.getOr(notifyType, null), ctx.getOr(notifyState, null))));
+
         Arg<String> altsTarget = player;
         commands.register(CommandSpec.command("alts")
                 .description("Accounts that share an IP address with a player").category("Staff").permission(PERM_ALTS)
                 .arg(altsTarget).example("alts Steve")
                 .executes(ctx -> alts(ctx.sender(), ctx.get(altsTarget))));
+    }
+
+    // ================================================================== /pnotify (P8, spec 14.9)
+
+    private void pnotify(Player staff, String typeId, String state) {
+        if (typeId == null) {
+            core.menus().open(staff, new NotifyMenu(this, notify));
+            return;
+        }
+        NotifyRules.Type type = NotifyRules.Type.parse(typeId).orElseThrow();
+        String name = service.text(staff, "notify-settings.types." + type.id() + ".name");
+        if (!staff.hasPermission(type.permission())) {
+            throw fail("notify-settings.no-permission", Msg.p("type", name));
+        }
+        if (state == null) {
+            msg.send(staff, notify.wants(staff, type) ? "notify-settings.state-on" : "notify-settings.state-off",
+                    Msg.p("type", name), PunishmentService.pre("type_id", type.id()),
+                    Msg.p("always", notify.settings().always().contains(type) ? service.text(staff, "notify-settings.always-tag") : ""));
+            return;
+        }
+        setNotify(staff, type, state.equalsIgnoreCase("on"));
+    }
+
+    /** Switches one alert type for {@code staff} (command and menu). Main thread; replies when stored. */
+    void setNotify(Player staff, NotifyRules.Type type, boolean on) {
+        String name = service.text(staff, "notify-settings.types." + type.id() + ".name");
+        notify.set(staff, type, on).thenAcceptAsync(result -> {
+            switch (result) {
+                case OK -> {
+                    msg.send(staff, on ? "notify-settings.turned-on" : "notify-settings.turned-off", Msg.p("type", name));
+                    core.sounds().play(staff, "success");
+                }
+                case ALWAYS_ON -> {
+                    msg.send(staff, "notify-settings.always-on", Msg.p("type", name));
+                    core.sounds().play(staff, "error");
+                }
+                case NO_PERMISSION -> {
+                    msg.send(staff, "notify-settings.no-permission", Msg.p("type", name));
+                    core.sounds().play(staff, "error");
+                }
+            }
+        }, main).exceptionally(e -> failed(staff, e));
     }
 
     /** A lockdown length: tab completion up to the kind's max (default and max included). */
@@ -758,16 +827,21 @@ public final class ModerationModule implements SkyblockModule, Listener {
      * {@code --evidence <log id>} a {@code /logs} chat line as evidence, spec 13.11). {@code badEvidence}: the flag without a
      * valid id.
      */
-    record Reason(String text, boolean silent, boolean ipWide, boolean force, Long evidence, boolean badEvidence) {
+    record Reason(String text, boolean silent, boolean ipWide, boolean force, Long evidence, boolean badEvidence, boolean dry) {
 
         Reason(String text, boolean silent, boolean ipWide, boolean force) {
-            this(text, silent, ipWide, force, null, false);
+            this(text, silent, ipWide, force, null, false, false);
+        }
+
+        Reason(String text, boolean silent, boolean ipWide, boolean force, Long evidence, boolean badEvidence) {
+            this(text, silent, ipWide, force, evidence, badEvidence, false);
         }
 
         static Reason parse(String raw) {
             boolean silent = false;
             boolean ip = false;
             boolean force = false;
+            boolean dry = false;
             Long evidence = null;
             boolean bad = false;
             List<String> words = new ArrayList<>();
@@ -780,6 +854,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
                     ip = true;
                 } else if (w.equalsIgnoreCase("-force")) {
                     force = true;
+                } else if (w.equalsIgnoreCase(DryRun.FLAG)) {
+                    dry = true; // spec 14.6: only /p <player> <reason> reads it
                 } else if (w.equalsIgnoreCase(LogEvidence.FLAG)) {
                     Long id = i + 1 < parts.length ? LogEvidence.parseId(parts[i + 1]) : null;
                     if (id == null || (evidence != null && !evidence.equals(id))) {
@@ -792,7 +868,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
                     words.add(w);
                 }
             }
-            return new Reason(String.join(" ", words), silent, ip, force, evidence, bad);
+            return new Reason(String.join(" ", words), silent, ip, force, evidence, bad, dry);
         }
     }
 
@@ -969,6 +1045,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
         if (reasonId == null && !(sender instanceof Player)) {
             throw CommandFailure.of("players-only");
         }
+        if (parsed.dry() && !sender.hasPermission(PERM_DRY)) {
+            throw fail("dry-run.no-permission");
+        }
         String id = reasonId;
         target(name).thenComposeAsync(t -> {
             if (t.isEmpty()) {
@@ -982,7 +1061,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
             }
             PunishMenus.Target t = found.get();
             if (id == null) {
-                core.menus().open((Player) sender, new PunishMenus.PunishMenu(this, t));
+                // spec 14.6: /p <player> -dry opens the menu with the Dry run toggle already on
+                core.menus().open((Player) sender, new PunishMenus.PunishMenu(this, t, parsed.dry()));
                 if (t.evidence() != null) {
                     msg.send(sender, "log-evidence.attached", Msg.p("player", t.name()), Msg.p("line", t.evidence().line()),
                             Msg.p("id", t.evidence().id()));
@@ -991,12 +1071,20 @@ public final class ModerationModule implements SkyblockModule, Listener {
             }
             Optional<Templates.Template> template = templates.template(id);
             if (template.isPresent()) {
-                punishWithTemplate(sender, t, template.get(), parsed.silent(), parsed.ipWide(), parsed.force());
+                if (parsed.dry()) {
+                    dryRunTemplate(sender, t, template.get(), parsed.silent(), parsed.ipWide());
+                } else {
+                    punishWithTemplate(sender, t, template.get(), parsed.silent(), parsed.ipWide(), parsed.force());
+                }
                 return;
             }
             Optional<PunishConfig.WarnButton> button = templates.warnButton(id);
             if (button.isPresent()) {
-                punishWithWarnButton(sender, t, button.get(), parsed.silent(), parsed.force());
+                if (parsed.dry()) {
+                    dryRunWarnButton(sender, t, button.get(), parsed.silent());
+                } else {
+                    punishWithWarnButton(sender, t, button.get(), parsed.silent(), parsed.force());
+                }
                 return;
             }
             msg.send(sender, "error.unknown-template", Msg.p("reason", id));
@@ -1092,6 +1180,46 @@ public final class ModerationModule implements SkyblockModule, Listener {
                         template.id(), template.stepIndex(previous), null, force, step.weight(),
                         escalation(target, template, previous, ipFlag)).with(target.evidenceEntry(), group))
                 .exceptionally(e -> failed(sender, e));
+    }
+
+    // ================================================================== dry run (P8, spec 14.6)
+
+    /**
+     * What clicking this reason would do right now, without doing it: the same adapted ladder, offence count, probation
+     * and pipeline (permission, training, approval, length limit, duplicate, never shorten) as
+     * {@link #punishWithTemplate}, on the target as loaded. Nothing is written except the training log.
+     */
+    void dryRunTemplate(CommandSender sender, PunishMenus.Target target, Templates.Template original, boolean silent,
+                        boolean ipFlag) {
+        Templates.Template template = target.adapt(original);
+        int previous = target.previous(template.id(), template.cutoff(System.currentTimeMillis()));
+        int normal = template.stepIndex(previous);
+        Templates.Step step = template.ladder().get(normal);
+        boolean ipWide = step.ipWide() || (ipFlag && (step.type() == Punishment.Type.BAN || step.type() == Punishment.Type.MUTE));
+        Templates.Step asked = new Templates.Step(step.type(), step.duration(), ipWide, step.weight());
+        PunishDecision.Verdict v = service.preview(sender, target.uuid(), target.name(), asked, silent,
+                target.longestActive(Punishment.Type.MUTE), target.longestActive(Punishment.Type.BAN), template.id(),
+                target.recent(template.id()), escalation(target, template, previous, ipFlag));
+        tellReplaced(sender, target, original, template, previous);
+        service.dryRun(sender, target.uuid(), target.name(), template.id(),
+                reasonName(sender instanceof Player p ? p : null, template), DryRun.of(v, asked, normal, previous));
+    }
+
+    /** Dry run of a plain warn button (no ladder). */
+    void dryRunWarnButton(CommandSender sender, PunishMenus.Target target, PunishConfig.WarnButton button, boolean silent) {
+        Templates.Step warn = new Templates.Step(Punishment.Type.WARN, null, false, button.weight());
+        PunishDecision.Verdict v = service.preview(sender, target.uuid(), target.name(), warn, silent, null, null, button.id(),
+                target.recent(button.id()));
+        service.dryRun(sender, target.uuid(), target.name(), button.id(),
+                warnButtonText(sender instanceof Player p ? p : null, button, "name"), DryRun.of(v, warn, -1, -1));
+    }
+
+    /** Dry run of the Kick button. */
+    void dryRunKick(Player sender, PunishMenus.Target target) {
+        Templates.Step kick = new Templates.Step(Punishment.Type.KICK, null, false);
+        PunishDecision.Verdict v = service.preview(sender, target.uuid(), target.name(), kick, false, null, null);
+        service.dryRun(sender, target.uuid(), target.name(), null, service.text(sender, "punish.kick-reason"),
+                DryRun.of(v, kick, -1, -1));
     }
 
     /** Tells staff when an island step of the ladder could not be used for this player and what is used instead (13.2). */
@@ -1339,9 +1467,19 @@ public final class ModerationModule implements SkyblockModule, Listener {
         long now = System.currentTimeMillis();
         CompletableFuture<Long> given = sanctions.store().givenBy(staffId, p.start(now, templates.config().extras().statsZone()), now + 1)
                 .exceptionally(e -> 0L);
-        appealCounts(staffId, p).thenCombine(given, Map::entry).thenAcceptAsync(both -> {
+        // P8, spec 14.6: dry runs (training log); mentors see a trainee's practice next to their requests
+        CompletableFuture<Long> dry = notify.store().dryRunCount(staffId, p.start(now, templates.config().extras().statsZone()))
+                .exceptionally(e -> 0L);
+        appealCounts(staffId, p).thenCombine(given, Map::entry).thenCombine(dry, Map::entry).thenAcceptAsync(all -> {
+            Map.Entry<PunishmentStore.AppealCounts, Long> both = all.getKey();
             PunishmentStore.AppealCounts ac = both.getKey();
             sendStats(sender, staff, period, c, rc);
+            Player online = Bukkit.getPlayer(staffId);
+            boolean isTrainee = online != null && PunishmentService.trainee(online);
+            if (isTrainee || all.getValue() > 0) {
+                msg.send(sender, isTrainee ? "stats.training-trainee" : "stats.training", Msg.number("dry", all.getValue()),
+                        Msg.number("made", rc.made()), Msg.number("approved", rc.approved()), Msg.number("denied", rc.denied()));
+            }
             // P7: island punishments (13.2) and sanctions (13.1)
             msg.send(sender, "stats.sanctions", Msg.number("island", c.island()), Msg.number("sanctions", both.getValue()));
             if (ac.handled() + ac.reversedByAppeal() > 0) {
@@ -1518,6 +1656,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         // spec 13.13: timer for the active mute; "mute ended" / "welcome back" once for what ended while offline
         service.trackMute(player.getUniqueId());
         service.endNotices(player, muted.isEmpty(), true);
+        notify.joined(player); // spec 14.9: this staff member's alert switches
         watchOnJoin(player); // spec 13.5: staff only, never the player
         service.requestsOnJoin(player); // spec 13.4: outcomes for requesters, waiting requests for approvers
         extras.joined(player); // spec 12.6: unacknowledged warnings are reminded once
@@ -1545,7 +1684,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
             return;
         }
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (staff.hasPermission(PERM_NOTIFY)) {
+            if (service.wants(staff, NotifyRules.Type.WATCHLIST)) { // P8: a suspicious join, like a watched player
                 msg.send(staff, "alts.alert", Msg.p("player", player.getName()), PunishmentService.pre("target", player.getName()),
                         Msg.number("count", flagged.size()),
                         Msg.p("alts", String.join(", ", flagged.stream().map(PunishmentStore.Alt::name).toList())));
@@ -1750,14 +1889,16 @@ public final class ModerationModule implements SkyblockModule, Listener {
                     Msg.p("left", mute.expires() == null ? service.text(player, "words.permanent")
                             : Format.duration(Duration.ofMillis(Math.max(1000, mute.expires() - now)))),
                     PunishmentService.pre("appeal", service.appealUrl()),
-                    PunishmentService.pre("appeal_url", PlayerView.link(service.appealUrl())));
+                    PunishmentService.pre("appeal_url", PlayerView.link(service.appealUrl())),
+                    service.ruleParts(player, mute.template()));
         }
         WarnRules.Settings rules = templates.config().warnRules();
         WarnRules.Counter counter = WarnRules.counter(own, suggestions, rules, now);
         List<Punishment> counted = WarnRules.counted(own, suggestions, rules, now);
         msg.send(player, "mine.warnings", Msg.p("count", counter.text()), Msg.p("next", counterLimit(counter, rules)));
         for (Punishment w : counted) {
-            msg.send(player, "mine.warning", Msg.p("reason", w.reason()), Msg.p("date", when(w.created())),
+            msg.send(player, "mine.warning", service.ruleParts(player, w.template()), Msg.p("reason", w.reason()),
+                    Msg.p("date", when(w.created())),
                     Msg.p("expires", rules.warnExpire() == null ? service.text(player, "words.never")
                             : when(w.created() + rules.warnExpire().toMillis())));
         }
@@ -1779,7 +1920,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
                             ? p.type().name() : core.messages().raw(ID, "types." + p.type().name().toLowerCase(Locale.ROOT))),
                     Msg.p("reason", p.reason()), Msg.p("date", when(p.created())), Msg.p("id", p.id()),
                     Msg.p("status", service.text(player, "status." + p.status(now).name().toLowerCase(Locale.ROOT))),
-                    Msg.p("staff", PlayerView.staff(p, x.playerView().showStaff(), hidden, system)));
+                    Msg.p("staff", PlayerView.staff(p, x.playerView().showStaff(), hidden, system)),
+                    service.ruleParts(player, p.template()));
         }
     }
 
@@ -1913,7 +2055,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 return;
             }
             List<Watchlist.Viewer> online = Bukkit.getOnlinePlayers().stream()
-                    .map(p -> new Watchlist.Viewer(p.getUniqueId(), p.hasPermission(PERM_NOTIFY))).toList();
+                    .map(p -> new Watchlist.Viewer(p.getUniqueId(), service.wants(p, NotifyRules.Type.WATCHLIST))).toList();
             for (UUID staffId : Watchlist.recipients(online, id)) {
                 Player staff = Bukkit.getPlayer(staffId);
                 if (staff != null) {

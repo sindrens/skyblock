@@ -262,10 +262,39 @@ final class PunishMenus {
         private Target target;
         /** An apply is running: further clicks wait (the debounce already stops double clicks). */
         private boolean busy;
+        /**
+         * Dry-run mode (P8, spec 14.6): every reason, warn and kick click only shows what would happen; nothing is applied.
+         * Buttons that open real actions (sanctions, bulk, undo/approve on the head) are display-only meanwhile.
+         */
+        private boolean dryRun;
 
         PunishMenu(ModerationModule module, Target target) {
+            this(module, target, false);
+        }
+
+        PunishMenu(ModerationModule module, Target target, boolean dryRun) {
             this.module = module;
             this.target = target;
+            this.dryRun = dryRun;
+        }
+
+        /** Dry run is allowed for this viewer right now (permission re-checked on every click). */
+        private boolean dryAllowed() {
+            return viewer.hasPermission(ModerationModule.PERM_DRY);
+        }
+
+        /** In dry-run mode: shows what the click would do (permission re-checked), never applies anything. */
+        private java.util.function.Consumer<MenuClick> dry(Runnable report) {
+            return click -> {
+                if (!viewer.hasPermission(ModerationModule.PERM_GUI) || !dryAllowed()) {
+                    dryRun = false;
+                    refresh();
+                    module.messages().send(viewer, "dry-run.no-permission");
+                    return;
+                }
+                report.run();
+                module.core().sounds().play(viewer, "click");
+            };
         }
 
         @Override
@@ -275,6 +304,10 @@ final class PunishMenus {
 
         @Override
         public Component title() {
+            if (dryRun) {
+                return service.title(viewer, service.text(viewer, MODULE, "punish.title"), Component.text(target.name()),
+                        service.text(viewer, MODULE, "dry-run.title"));
+            }
             return service.title(viewer, service.text(viewer, MODULE, "punish.title"), Component.text(target.name()));
         }
 
@@ -312,7 +345,9 @@ final class PunishMenus {
             WarnRules.Counter counter = WarnRules.counter(target.history(), target.suggestions(), rules, System.currentTimeMillis());
             Punishment undoable = module.service().undoable(viewer, target.history());
             ItemStack summary = summaryItem(module, service, viewer, target, undoable);
-            if (undoable != null) {
+            if (dryRun) {
+                set(l.summarySlot(), MenuButton.display(summary)); // 14.6: no real undo/approve while dry-running
+            } else if (undoable != null) {
                 // spec 12.1: the head is the Bedrock-safe [Undo] while the window is open (pending stays on the counter)
                 set(l.summarySlot(), MenuButton.of(summary, guarded(() -> module.service().undo(viewer, undoable.id()))));
             } else if (!target.requests().isEmpty()) {
@@ -457,10 +492,21 @@ final class PunishMenus {
             }
             lore.addAll(service.lines(viewer, MODULE, repeats ? "punish.reason.after-repeat" : "punish.reason.after",
                     Msg.p("step", module.service().stepText(viewer, after))));
+            // P8, spec 14.2: the rule(s) this reason belongs to
+            String rules = module.service().ruleBook().numberText(t.id());
+            if (!rules.isEmpty()) {
+                lore.addAll(service.lines(viewer, MODULE, "punish.reason.rule", module.service().ruleParts(viewer, t.id())));
+            }
             lore.add(Component.empty());
             lore.addAll(verdictLines(preview));
+            if (dryRun) {
+                lore.addAll(service.lines(viewer, MODULE, "dry-run.click"));
+            }
             ItemStack item = service.item(t.icon(), service.text(viewer, MODULE, "punish.reason.name",
                     Msg.p("reason", module.reasonName(viewer, t)), Msg.p("quarter", quarter == null ? "" : quarter)), lore);
+            if (dryRun) {
+                return MenuButton.of(item, dry(() -> module.dryRunTemplate(viewer, target, original, false, false)));
+            }
             if (blocked(preview)) {
                 return MenuButton.display(item);
             }
@@ -477,10 +523,19 @@ final class PunishMenus {
             if (w.weight() != Weights.ONE) {
                 lore.addAll(service.lines(viewer, MODULE, "punish.warn-button.weight", Msg.p("weight", Weights.text(w.weight()))));
             }
+            if (!module.service().ruleBook().numberText(w.id()).isEmpty()) {
+                lore.addAll(service.lines(viewer, MODULE, "punish.reason.rule", module.service().ruleParts(viewer, w.id())));
+            }
             lore.add(Component.empty());
             lore.addAll(verdictLines(preview));
+            if (dryRun) {
+                lore.addAll(service.lines(viewer, MODULE, "dry-run.click"));
+            }
             ItemStack item = service.item(w.icon(), service.text(viewer, MODULE, "punish.warn-button.name",
                     Msg.p("name", module.warnButtonText(viewer, w, "name"))), lore);
+            if (dryRun) {
+                return MenuButton.of(item, dry(() -> module.dryRunWarnButton(viewer, target, w, false)));
+            }
             if (blocked(preview)) {
                 return MenuButton.display(item);
             }
@@ -530,7 +585,13 @@ final class PunishMenus {
                     PunishDecision.Verdict v = module.service().preview(viewer, target.uuid(), target.name(), kick, false, null, null);
                     List<Component> lore = new ArrayList<>(service.lines(viewer, MODULE, key + ".lore"));
                     lore.addAll(verdictLines(v));
+                    if (dryRun) {
+                        lore.addAll(service.lines(viewer, MODULE, "dry-run.click"));
+                    }
                     ItemStack item = service.item(icon(b, Material.LEATHER_BOOTS), service.text(viewer, MODULE, key + ".name"), lore);
+                    if (dryRun) {
+                        yield MenuButton.of(item, dry(() -> module.dryRunKick(viewer, target)));
+                    }
                     yield v.outcome() == PunishDecision.Outcome.BLOCKED ? MenuButton.display(item)
                             : MenuButton.of(item, guarded(() -> module.kickFromMenu(viewer, target)));
                 }
@@ -548,9 +609,12 @@ final class PunishMenus {
                         Msg.number("reasons", module.templates().templateIds().size()),
                         Msg.number("unplaced", module.templates().templateIds().stream()
                                 .filter(id -> !l.reasonSlots().containsKey(id)).count())),
-                        click -> openChild(new CategoryMenu(module, target)));
+                        click -> openChild(new CategoryMenu(module, target, dryRun)));
                 case "bulk" -> {
                     // spec 13.8: pick players (this one is selected), then the reason, then a confirm with the count
+                    if (dryRun) {
+                        yield MenuButton.display(service.item(Material.GRAY_DYE, viewer, MODULE, "dry-run.not-here"));
+                    }
                     if (!viewer.hasPermission(ModerationModule.PERM_BULK)) {
                         yield MenuButton.display(service.item(icon(b, Material.CHEST_MINECART), viewer, MODULE, key + "-locked"));
                     }
@@ -571,6 +635,9 @@ final class PunishMenus {
                     if (!s.settings().enabled()) {
                         yield MenuButton.display(service.item(l.unavailableIcon(), viewer, MODULE, key));
                     }
+                    if (dryRun) {
+                        yield MenuButton.display(service.item(Material.GRAY_DYE, viewer, MODULE, "dry-run.not-here"));
+                    }
                     if (!any) {
                         yield MenuButton.display(service.item(Material.GRAY_DYE, viewer, MODULE, key + "-locked"));
                     }
@@ -579,7 +646,23 @@ final class PunishMenus {
                             Msg.number("active", active), Msg.number("total", target.sanctions().size())),
                             click -> openChild(new SanctionMenus.SanctionsMenu(module, target)));
                 }
-                // Dry run (P8): placeholder until its milestone.
+                case "dry-run" -> {
+                    // P8, spec 14.6: turns the whole menu into dry-run mode while it is open
+                    if (!dryAllowed()) {
+                        yield MenuButton.display(service.item(Material.GRAY_DYE, viewer, MODULE, key + "-locked"));
+                    }
+                    Material on = Material.LIME_DYE;
+                    Material off = b.icon() == null ? Material.GRAY_DYE : b.icon();
+                    yield MenuButton.of(service.item(dryRun ? on : off, viewer, MODULE, dryRun ? key + "-on" : key,
+                            Msg.c("trainee", PunishmentService.trainee(viewer) ? service.text(viewer, MODULE, "training.you-are")
+                                    : Component.empty())), click -> {
+                        boolean next = !dryRun && dryAllowed();
+                        module.messages().send(viewer, next ? "dry-run.menu-on" : "dry-run.menu-off",
+                                Msg.p("player", target.name()));
+                        // reopened so the title shows the mode ("Punish > Steve > Dry run")
+                        module.core().menus().open(viewer, new PunishMenu(module, target, next));
+                    });
+                }
                 default -> MenuButton.display(service.item(icon(b, l.unavailableIcon()), viewer, MODULE, key));
             };
         }
@@ -610,6 +693,9 @@ final class PunishMenus {
             return service.lines(viewer, MODULE, "punish.click");
         }
         if (v.outcome() == PunishDecision.Outcome.REQUEST) {
+            if ("training".equals(v.stage())) {
+                return service.lines(viewer, MODULE, "punish.request-trainee"); // spec 14.6
+            }
             String rule = v.args().getOrDefault("rule", "limit");
             return "limit".equals(rule) ? service.lines(viewer, MODULE, "punish.request-limit")
                     : service.lines(viewer, MODULE, "punish.request", Msg.p("rule", rule));
@@ -683,10 +769,17 @@ final class PunishMenus {
 
         private final ModerationModule module;
         private final Target target;
+        /** Opened from a /p menu in dry-run mode (spec 14.6): the reasons only report what would happen. */
+        private final boolean dryRun;
 
         CategoryMenu(ModerationModule module, Target target) {
+            this(module, target, false);
+        }
+
+        CategoryMenu(ModerationModule module, Target target, boolean dryRun) {
             this.module = module;
             this.target = target;
+            this.dryRun = dryRun;
         }
 
         @Override
@@ -726,7 +819,7 @@ final class PunishMenus {
                 long reasons = category.templates().size();
                 set(SLOTS[i++], service.item(category.icon(), viewer, MODULE, "menu.category",
                                 Msg.p("category", module.categoryName(viewer, category)), Msg.number("reasons", reasons)),
-                        click -> openChild(new TemplateMenu(module, target, category)));
+                        click -> openChild(new TemplateMenu(module, target, category, dryRun)));
             }
             set(40, service.item(Material.WRITABLE_BOOK, viewer, MODULE, "menu.punish.history-button",
                     Msg.number("total", target.history().size())), click -> openChild(new HistoryMenu(target, module)));
@@ -740,12 +833,18 @@ final class PunishMenus {
         private final ModerationModule module;
         private final Target target;
         private final Templates.Category category;
+        private final boolean dryRun;
         private boolean used;
 
         TemplateMenu(ModerationModule module, Target target, Templates.Category category) {
+            this(module, target, category, false);
+        }
+
+        TemplateMenu(ModerationModule module, Target target, Templates.Category category, boolean dryRun) {
             this.module = module;
             this.target = target;
             this.category = category;
+            this.dryRun = dryRun;
         }
 
         @Override
@@ -804,11 +903,25 @@ final class PunishMenus {
                 lore.addAll(service.lines(viewer, MODULE, older == 1 ? "punish.reason.older-one" : "punish.reason.older",
                         Msg.number("older", older)));
             }
+            if (!module.service().ruleBook().numberText(template.id()).isEmpty()) {
+                lore.addAll(service.lines(viewer, MODULE, "punish.reason.rule", module.service().ruleParts(viewer, template.id())));
+            }
             lore.add(Component.empty());
             boolean blocked = blocked(preview);
             lore.addAll(verdictLines(service, module, viewer, preview));
+            if (dryRun) {
+                lore.addAll(service.lines(viewer, MODULE, "dry-run.click"));
+            }
             ItemStack item = service.item(template.icon(), service.text(viewer, MODULE, "menu.reason.name",
                     Msg.p("reason", module.reasonName(viewer, template))), lore);
+            if (dryRun) {
+                // 14.6: report only (permission re-checked), never apply
+                return MenuButton.of(item, click -> {
+                    if (viewer.hasPermission(ModerationModule.PERM_GUI) && viewer.hasPermission(ModerationModule.PERM_DRY)) {
+                        module.dryRunTemplate(viewer, target, original, false, false);
+                    }
+                });
+            }
             if (blocked) {
                 return MenuButton.display(item);
             }
@@ -994,6 +1107,10 @@ final class PunishMenus {
                     Msg.p("status", plain("status." + status.name().toLowerCase(Locale.ROOT))),
                     Msg.p("template", p.template() == null ? "-" : p.template() + " #" + (p.ladderStep() == null ? 1 : p.ladderStep() + 1)),
                     Msg.p("scope", p.ipWide() ? plain("words.ip-wide") : plain("words.account"))));
+            if (!module.service().ruleBook().numberText(p.template()).isEmpty()) {
+                // P8, spec 14.2: "Rule 3: No spam or advertising"
+                lore.addAll(service.lines(viewer, MODULE, "menu.history.rule", module.service().ruleParts(viewer, p.template())));
+            }
             if (p.type() == Punishment.Type.WARN) {
                 if (p.weight() != Weights.ONE) {
                     lore.addAll(service.lines(viewer, MODULE, "menu.history.weight", Msg.p("weight", Weights.text(p.weight()))));

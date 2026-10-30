@@ -9,9 +9,10 @@ final class Flags {
 
     /**
      * The flags of {@code /p}: {@code -s} silent, {@code -ip} IP-wide, {@code -force} skip the duplicate check,
-     * {@code --evidence <log id>} a {@code /logs} chat line as evidence (spec 13.11).
+     * {@code --evidence <log id>} a {@code /logs} chat line as evidence (spec 13.11), {@code -dry} show what would happen
+     * without applying anything (spec 14.6).
      */
-    static final List<String> ALL = List.of("-s", "-ip", "-force", LogEvidence.FLAG);
+    static final List<String> ALL = List.of("-s", "-ip", "-force", LogEvidence.FLAG, DryRun.FLAG);
 
     /** The flags {@code sender} may use (tab completion only offers those); permission check per flag. */
     static List<String> allowed(java.util.function.Predicate<String> hasPermission) {
@@ -26,6 +27,9 @@ final class Flags {
             out.add("-force");
         }
         out.add(LogEvidence.FLAG); // everyone who may use /p (the log entry itself is checked against /logs access)
+        if (hasPermission.test(ModerationModule.PERM_DRY)) {
+            out.add(DryRun.FLAG);
+        }
         return out;
     }
 

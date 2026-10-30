@@ -33,7 +33,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
 | PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
 | FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | — | modules/perks or cosmetics | ✅ (in R2A) |
-| BUILDS | Owner 2026-10-30: paste all finished builds (server/builds: spawn base + forge quarter + market square, Depths gate + mine T1/T2 + forest T1 + graveyard T1, starter island) on the test server with FAWE (backup first) and wire their metadata (spawn point, portals, holograms, NPC spots, zones, regions); starter island = /is schematic | — | modules/worlds (+ islands/depths/essentials hooks) | ✅ code; pasting on the VPS by the main session |
+| BUILDS | Owner 2026-10-30: paste all finished builds (server/builds: spawn base + forge quarter + market square, Depths gate + mine T1/T2 + forest T1 + graveyard T1, starter island) on the test server with FAWE (backup first) and wire their metadata (spawn point, portals, holograms, NPC spots, zones, regions); starter island = /is schematic | — | modules/worlds (+ islands/depths/essentials hooks) | ✅ pasted + applied on the test server (backup ~/backups/pre-builds-*.tgz) |
 | SELL2 | `/sell` becomes a chest you put items into + Sell button (items saved while inside, crash-safe), Sell inventory button; quick-buy `/shop` grid with Bedrock amount screen; Sell button in `/shop` | DESIGN approved | modules/economy (sell), modules/shop | ⬜ waits for sketch approval |
 | DESIGN | Owner 2026-10-30: sketches for GUIs, chat, /shop (quick-buy grid), lores, prices, /sell chest GUI (put items in + click sell; sell also in satchel and shop), /forge etc.; vanilla now + resource-pack version later; owner reviews before implementation | — | docs/design + artifact | 🔄 main session |
 | AFK | AFK pool (fuel + money + keys, better loot over time, max 8 h/day) | economy, islands fuel | new module | ⬜ (needs balance numbers) |
@@ -49,7 +49,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | P5 | §13.8 bulk, 13.11 punish from logs, 13.10 appeals (in-game + webhook) | P4 | modules/moderation, modules/logs (API) | ✅ |
 | P6 | §13.9 raid lockdown, 13.3 anticheat suggestions (`/psuggest`, Grim config notes), 13.12 network-ready | P5 | modules/moderation, server/CONFIG_NOTES.md | ✅ |
 | P7 | §13.1 sanctions (economy SanctionProvider), 13.2 island punishments | P6, M2.3 | modules/moderation, modules/economy, modules/islands | ✅ |
-| P8 | §14.2 rule numbers, 14.9 notification settings, 14.6 training mode | P7 | modules/moderation | 🔄 |
+| P8 | §14.2 rule numbers, 14.9 notification settings, 14.6 training mode | P7 | modules/moderation | ✅ |
 | P9 | §14.1 guard + rollback, 14.5 false reports, 14.10 purge | P8 | modules/moderation, modules/staff | ⬜ |
 | P10 | §14.8 monthly report, 14.11 "Honorable" title | P9 | modules/moderation, modules/cosmetics | ⬜ |
 

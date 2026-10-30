@@ -72,10 +72,12 @@ class PunishmentLogicTest {
         assertEquals(List.of(), Flags.suggestions("-s -ip ", p1));
         // P2: -force, offered only to staff who may use it
         // P5 (13.11): --evidence <log id> for everyone who may use /p
-        assertEquals(List.of("-s", "-ip", "-force", "--evidence"), Flags.suggestions(""));
+        // P8 (14.6): -dry for staff with skyblock.staff.punish.dry
+        assertEquals(List.of("-s", "-ip", "-force", "--evidence", "-dry"), Flags.suggestions(""));
         assertEquals(List.of("-s -force"), Flags.suggestions("-s -f"));
         assertEquals(List.of("-force", "--evidence"), Flags.allowed(ModerationModule.PERM_FORCE::equals));
-        assertEquals(List.of("-s", "-ip", "-force", "--evidence"), Flags.allowed(perm -> true));
+        assertEquals(List.of("-s", "-ip", "-force", "--evidence", "-dry"), Flags.allowed(perm -> true));
+        assertEquals(List.of("--evidence", "-dry"), Flags.allowed(ModerationModule.PERM_DRY::equals));
         assertEquals(List.of("--evidence"), Flags.allowed(perm -> false));
     }
 

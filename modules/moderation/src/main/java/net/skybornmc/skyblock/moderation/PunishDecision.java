@@ -34,7 +34,7 @@ import java.util.Set;
 final class PunishDecision {
 
     /** Pipeline positions, in execution order. */
-    enum Slot { EXEMPT, GUARD, PROBATION, PERMISSION, APPROVAL, LENGTH_LIMIT, DUPLICATE, NEVER_SHORTEN }
+    enum Slot { EXEMPT, GUARD, PROBATION, PERMISSION, TRAINING, APPROVAL, LENGTH_LIMIT, DUPLICATE, NEVER_SHORTEN }
 
     enum Outcome {
         /** Apply it. */
@@ -50,9 +50,17 @@ final class PunishDecision {
     /**
      * Who is punishing, resolved on the main thread. {@code maxDuration == null} = no length limit. {@code id} = the
      * staff member's uuid ({@code null} for console and the system), {@code force} = may use {@code -force} (P2, 12.2).
+     * {@code trainee} = has {@code skyblock.staff.punish.trainee} (P8, spec 14.6), {@code bulk} = acting inside a bulk
+     * action (13.8; a trainee's bulk action is one request per player when {@code bulk} is in training.requests-for).
      */
     record Actor(String name, boolean system, Set<Punishment.Type> types, boolean ipBan, boolean silent,
-                 Duration maxDuration, boolean bypassExempt, java.util.UUID id, boolean force, boolean approver) {
+                 Duration maxDuration, boolean bypassExempt, java.util.UUID id, boolean force, boolean approver,
+                 boolean trainee, boolean bulk) {
+
+        Actor(String name, boolean system, Set<Punishment.Type> types, boolean ipBan, boolean silent, Duration maxDuration,
+              boolean bypassExempt, java.util.UUID id, boolean force, boolean approver) {
+            this(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, approver, false, false);
+        }
 
         Actor(String name, boolean system, Set<Punishment.Type> types, boolean ipBan, boolean silent, Duration maxDuration,
               boolean bypassExempt) {
@@ -71,7 +79,17 @@ final class PunishDecision {
 
         /** Same actor with {@code skyblock.staff.punish.approve} (spec 13.4). */
         Actor withApprover(boolean value) {
-            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, value);
+            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, value, trainee, bulk);
+        }
+
+        /** Same actor as a trainee or not (P8, spec 14.6). */
+        Actor withTrainee(boolean value) {
+            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, approver, value, bulk);
+        }
+
+        /** Same actor inside a bulk action or not (13.8). */
+        Actor inBulk(boolean value) {
+            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, approver, trainee, value);
         }
     }
 
@@ -220,6 +238,15 @@ final class PunishDecision {
         return approval == null || !approval.enabled() ? d : d.with(Slot.APPROVAL, approval(approval));
     }
 
+    /**
+     * P8: the P4 pipeline plus training mode (spec 14.6, {@code training == null} = off). The training stage runs even
+     * when approval is switched off: a trainee never applies a listed kind on their own.
+     */
+    static PunishDecision full(Duration duplicateWindow, Approval.Settings approval, Training.Settings training) {
+        PunishDecision d = full(duplicateWindow, approval);
+        return training == null ? d : d.with(Slot.TRAINING, training(training));
+    }
+
     private static PunishDecision p1() {
         Map<Slot, Stage> map = new EnumMap<>(Slot.class);
         map.put(Slot.EXEMPT, PunishDecision::exempt);
@@ -342,6 +369,27 @@ final class PunishDecision {
                 return skip; // nothing would change: say "already punished for longer" instead of asking anyone
             }
             return stop(Outcome.REQUEST, "approval", "approval.requested", in, "rule", rule == null ? "limit" : rule.text());
+        };
+    }
+
+    /**
+     * Training (spec 14.6): a trainee's punishment of a kind in {@code training.requests-for} (or any punishment inside a
+     * bulk action when {@code bulk} is listed) becomes a request for a mentor, even when it is small and even for a
+     * trainee who also holds the approve permission. Nothing is applied and the target is not told. A request that would
+     * change nothing (already punished for longer) returns the never-shorten verdict instead. The system and the console
+     * are never trainees.
+     */
+    static Stage training(Training.Settings settings) {
+        return in -> {
+            Actor a = in.actor();
+            if (a.system() || !a.trainee() || !Training.needsRequest(settings, in.type(), a.bulk())) {
+                return new Next(in);
+            }
+            Result skip = neverShorten(in);
+            if (skip instanceof Stop) {
+                return skip;
+            }
+            return stop(Outcome.REQUEST, "training", "approval.requested", in, "rule", "trainee");
         };
     }
 

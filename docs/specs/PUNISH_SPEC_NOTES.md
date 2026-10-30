@@ -265,3 +265,54 @@ Release steps for the main session (before each release, in this order):
 - **Not built / later:** sanction requests queue, Discord embeds for sanctions, sanctions in the `/history` menu (chat
   only; the Sanctions menu lists the last 14), a pardon command for island punishments.
 
+## P8 implementation notes (for P9+)
+- **Rule numbers (14.2):** top-level `rules:` in `punishments.yml` (`3: { link: ... }` or `3: "https://..."`, numbers
+  1-999, optional legacy `title:`), `rule: 3 | [1, 3]` on reasons and warn buttons. Parsed into `RuleBook` (pure) on
+  `PunishConfig.rules()` (5th record component; the 4-arg constructor keeps `RuleBook.EMPTY`). Unknown numbers are
+  `config.unknown-rule` errors with path, line and reason id; a reason without a rule is allowed. Titles are texts:
+  `messages/moderation.yml → rules.titles.<n>` (correction 2), fallback YAML title, then `rules.untitled`. Placeholders
+  `<rule>`, `<rule-title>`, `<rule-link>` (pre-processed, safe in click tags) and `<rule-text>` come from
+  `PunishmentService.ruleParts(viewer, template)` and are part of `parts(viewer, p)`, so every message using the
+  punishment parts (warning, mute, ban screen, /history) has them; `/mypunishments`, `/appeal` status and the menus add
+  them explicitly. No database change: the rule is resolved from the stored `template` with the current config.
+  `/rules` (social) was not changed (spec does not tie it to the numbers; open question).
+- **Notification settings (14.9):** `NotifyRules` (pure: `Type` with permission `skyblock.staff.notify.<type>`,
+  `receives`, `canChange`, `discordChannel`, `SENSITIVE`), `StaffNotify` (cache of all switches loaded at start + own row
+  on join, `wants`, `recipients`, `set` = async upsert + audit `staff/notify_on|notify_off`), `NotifyStore`
+  (`staff_notify_settings`, V009; no row = on). `PunishmentService.wants(player, type)` and
+  `notifyStaff(type, sender, key, ...)` are the routing points; the old `notifyStaff(sender, ...)` = `punishments`.
+  Mapping: punishment feed/undo/sanctions/bulk = punishments; warn-rule + API + Grim suggestions = suggestions; auto mode
+  and skipped triggers = auto; approval lines + trainee lines = approvals (the join summary for approvers is not gated,
+  so requests are never lost); appeals (new + decided) = appeals; watchlist joins + flagged alts = watchlist; lockdown
+  start/stop/expiry/reminders/raid alerts = raid. `skyblock.staff.notify` itself stays the "is staff" check (lockdown
+  exemption, public announcement, HUD placeholder) and the /pnotify permission. `guard` (P9) and `report` (P10) exist as
+  types already; P9 must send its guard alert with `notifyStaff(NotifyRules.Type.GUARD, ...)` (always on).
+  Discord: `extras.discord.channels` (type → webhook name; URLs refused) in `NotifyRules.Settings.channels`;
+  `PunishExtras.postDiscord(type, embed)` uses the mapped channel, else the main channel for non-sensitive types, never
+  for sensitive ones. Appeals post to `appeal.discord.channel` (if on) and to a mapped `appeals` channel. The webhook
+  sink's switch accepts mapped channels while `extras.discord.enabled` is on. Config record component is
+  `Extras.notifications()` (`notify` clashes with `Object.notify`).
+- **Training (14.6):** `Training` (pure: `Kind` ban/mute/kick/warn/island/sanction/bulk, `Settings.requestsFor`,
+  `needsRequest(type, bulk)`, `sanctionRefused`). New pipeline slot `TRAINING` right before `APPROVAL`
+  (`PunishDecision.full(dup, approval, training)`, the live pipeline); it runs even with approval off, wins over the
+  approve permission, never applies to the system/console, and returns the never-shorten SKIPPED verdict when nothing
+  would change. `Actor` gained `trainee` and `bulk` (`withTrainee`, `inBulk`; 10-arg constructor kept); the service sets
+  `trainee` from `skyblock.staff.punish.trainee` and `bulk` from `Request.bulk()` (and in the bulk preview).
+  Requests store `requester_trainee` (V009, `PunishRequest.requesterTrainee`, placeholder `<trainee>` in
+  approval.notify/join-line). Requests now keep the length of every timed type (`Type.timed()`: island bans and coop
+  blocks too). Trainees never approve/deny (`mayApprove`, `approve`, `deny`). A trainee's directly applied punishment
+  (warn by default) is shown to approvers with [Undo] (`undoTrainee`: any approver, window `approval.expire`).
+  Sanctions: refused for trainees (`sanctions.trainee`) while `sanction` is listed. `/pstats` shows "Trainee · Dry runs ·
+  Requests" for an online trainee, "Dry runs" for anyone with dry runs in the period.
+- **Dry run (14.6):** `DryRun` (pure report from a verdict: outcome, real step incl. probation raise, offence number,
+  bonus, why). `/p <player> <reason> -dry` (flag in `Flags`/`Reason.dry`, `skyblock.staff.punish.dry`), `/p <player>
+  -dry` opens the menu in dry mode, and the Dry run button (slot 52) reopens the menu with the title "Punish > Steve >
+  Dry run". In dry mode reason/warn/kick clicks (also More reasons) only call `ModerationModule.dryRunTemplate /
+  dryRunWarnButton / dryRunKick` (= `service.preview` on the loaded target + `PunishmentService.dryRun`); the head
+  (undo/approve), Sanctions and Bulk are display-only. `dryRun` writes only audit `punishment/dry_run` and a row in
+  `punish_dry_runs` (V009); trainees' dry runs are also shown to approvers (approvals type). Nothing else is written.
+- **Audit actions:** dry_run (punishment), notify_on / notify_off (staff); request rows carry requester_trainee.
+- **Tests:** `P8LogicTest` (rule mapping + validation + message placeholders, routing/always/Discord, training stage
+  table, dry-run report), `P8StoreTest` (switch storage, trainee request + approve as trainee, trainee warn undo by an
+  approver, island request length, dry-run log leaves punishments/requests/suggestions untouched).
+

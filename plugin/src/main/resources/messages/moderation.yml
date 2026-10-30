@@ -1,6 +1,8 @@
 # Moderation (punishments) texts. MiniMessage + style tags. Reload: /skyblock reload moderation
 # Common placeholders: <player> target, <staff> issuer (or "Staff" when announce.show-staff is off), <staff_real> issuer,
 # <reason>, <id>, <type>, <length> (total), <expires> (time left), <date>, <appeal> (link), <target> (for clicks).
+# P8 rule numbers (spec 14.2, punishments.yml → rules): <rule> ("3" or "1, 3"), <rule-title>, <rule-link> (rule link or
+# extras.rules-link) and <rule-text> ("Rule 3: No spam, ads or scams", or rules.none when the reason has no rule).
 # Phase P: every text of punishments.yml lives here (reason names, warn buttons, /p menu, warn rules, config errors);
 # punishments.yml only holds ids, slots, icons, ladders and rules.
 # Format (docs/UI_STYLE.md §3): prefix only on replies, success/error marks + gray text, values in <c:value>, clicks in <c:action>.
@@ -106,6 +108,7 @@ screen:
     - "<c:error><bold>You are permanently banned.</bold>"
     - ""
     - "<c:text>Reason: <c:value><reason>"
+    - "<c:text>Rule: <c:value><rule-text>"
     - "<c:text>Banned by: <c:value><staff>"
     - "<c:text>Ban ID: <c:value>#<id>"
     - ""
@@ -116,6 +119,7 @@ screen:
     - "<c:error><bold>You are banned.</bold>"
     - ""
     - "<c:text>Reason: <c:value><reason>"
+    - "<c:text>Rule: <c:value><rule-text>"
     - "<c:text>Banned by: <c:value><staff>"
     - "<c:text>Ends in: <c:value><expires>"
     - "<c:text>Ban ID: <c:value>#<id>"
@@ -131,7 +135,7 @@ screen:
     - "<c:text>You can rejoin. Read <c:value>/rules</c:value> first."
 
 muted:
-  you: "<prefix><c:error><sym:cross></c:error> <c:text>You're muted for <c:value><length></c:value>. Reason: <c:value><reason>"
+  you: "<prefix><c:error><sym:cross></c:error> <c:text>You're muted for <c:value><length></c:value>. Reason: <c:value><reason></c:value> <c:muted>(<rule-text>)</c:muted> <click:open_url:'<rule-link>'><hover:show_text:'<c:text>Open the rules'><c:action>[Rules]</c:action></hover></click>"
   unmuted: "<prefix><c:success><sym:check></c:success> <c:text>You're no longer muted."
   blocked: "<prefix><c:error><sym:cross></c:error> <c:text>You're muted: <c:value><reason></c:value> <c:muted>(ends <expires>, #<id>)"
   # Extra line for mutes from the automatic warn rules (<count> = warnings of the rule).
@@ -141,7 +145,7 @@ muted:
   join: "<prefix><c:error><sym:cross></c:error> <c:text>You're muted: <c:value><reason></c:value> <c:muted>(ends <expires>, #<id>)"
 
 warned:
-  you: "<prefix><c:warning><sym:cross></c:warning> <c:text>Warning: <c:value><reason></c:value>. More warnings lead to mutes or bans."
+  you: "<prefix><c:warning><sym:cross></c:warning> <c:text>Warning: <c:value><reason></c:value> <c:muted>(<rule-text>)</c:muted><c:text>. More warnings lead to mutes or bans."
   title: "<c:warning><bold>WARNING</bold>"
   subtitle: "<c:text><reason>"
 
@@ -196,7 +200,7 @@ error:
 history:
   header: "<prefix><c:text>History of <c:value><player></c:value> <c:muted>(<total>)</c:muted> <c:text><bans> bans <c:muted><sym:dot></c:muted> <mutes> mutes <c:muted><sym:dot></c:muted> <warns> warnings <c:muted><sym:dot></c:muted> <kicks> kicks"
   empty: " <c:success><sym:check></c:success> <c:text>No punishments."
-  line: " <c:ember><sym:bullet></c:ember> <hover:show_text:'<c:text>By <staff_real> on <date><newline>Length: <length><newline><removed>'><c:muted>#<id></c:muted> <type> <c:text><reason> <c:muted>(<status>)</c:muted></hover>"
+  line: " <c:ember><sym:bullet></c:ember> <hover:show_text:'<c:text>By <staff_real> on <date><newline>Length: <length><newline><rule-text><newline><removed>'><c:muted>#<id></c:muted> <type> <c:text><reason> <c:muted>(<status>)</c:muted></hover>"
   more: " <c:muted>... and <more> more.</c:muted> <click:run_command:'/history <target> menu'><hover:show_text:'<c:text>Open the history menu'><c:action>[Menu]</c:action></hover></click>"
 
 alts:
@@ -284,6 +288,8 @@ menu:
     ack-no: "<c:warning><sym:cross> Not acknowledged"
     # P4 (spec 13.4): a requested punishment that an approver approved. <by> = the approver.
     approved: "<c:text>Approved by: <c:value><by>"
+    # P8 (spec 14.2): only shown when the reason has a rule number.
+    rule: "<c:text>Rule: <c:value><rule-text>"
     click: "<c:action><sym:bullet> Click for details and evidence"
 
 # ---------------------------------------------------------------- /p <player> (single-screen menu, Phase P)
@@ -301,6 +307,10 @@ punish:
     - "<c:action><sym:bullet> Click to send a request"
   request-limit:
     - "<c:warning>Longer than your rank allows: needs approval"
+    - "<c:action><sym:bullet> Click to send a request"
+  # P8 (spec 14.6): you're a trainee, so this goes to a mentor first.
+  request-trainee:
+    - "<c:warning>Training: a mentor approves this"
     - "<c:action><sym:bullet> Click to send a request"
   # Why a button can't be used right now (same checks as the click).
   blocked:
@@ -328,6 +338,8 @@ punish:
     older: "<c:muted>(<older> older offences no longer count)"
     # Probation (P4, spec 13.7): the step above is raised. <bonus> = steps added, <normal> = the step without probation.
     probation: "<c:warning>Probation: +<bonus> step <c:muted>(normally <normal>)"
+    # P8 (spec 14.2): the rule(s) of this reason. Only shown when the reason has a rule number.
+    rule: "<c:muted><rule-text>"
   warn-button:
     name: "<c:flame><name>"
     lore:
@@ -400,7 +412,7 @@ punish:
     pending:
       - "<c:warning>Pending: suggested <action>"
       - "<c:action><sym:bullet> Click to apply or dismiss"
-  # Bottom row. Dry run arrives in a later milestone.
+  # Bottom row.
   buttons:
     # P7 (spec 13.1). sanctions = sanctions are switched off (extras.sanctions.enabled: false).
     sanctions:
@@ -453,10 +465,25 @@ punish:
         - "<c:muted>(<unplaced> not placed on this screen)"
         - ""
         - "<c:action><sym:bullet> Click to open"
+    # P8 (spec 14.6): turns the whole menu into dry-run mode while it is open. <trainee> = training.you-are or empty.
     dry-run:
+      name: "<c:value>Dry run: <c:muted>off"
+      lore:
+        - "<c:text>Practice: clicks only show what"
+        - "<c:text>would happen. Nothing is applied."
+        - "<trainee>"
+        - "<c:action><sym:bullet> Click to turn on"
+    dry-run-on:
+      name: "<c:warning>Dry run: <c:success>on"
+      lore:
+        - "<c:text>Clicks only show what would happen."
+        - "<c:text>Nothing is applied, nobody is told."
+        - "<trainee>"
+        - "<c:action><sym:bullet> Click to turn off"
+    dry-run-locked:
       name: "<c:muted>Dry run"
       lore:
-        - "<c:muted>Not available yet."
+        - "<c:muted>Not for your rank."
 
 # ---------------------------------------------------------------- suggestions from the warn rules
 # Placeholders: <player>, <target> (clicks), <sid> (suggestion id), <count>, <action>, <reason>, <window>, <date>,
@@ -574,6 +601,10 @@ config:
   bad-approval-rules: "<file> line <line>: <path>: must be a list, e.g. [ban perm, ipban *, ban >= 30d]"
   bad-approval-rule: "<file> line <line>: <path>: rule '<value>' is not valid<hint>. Use ban, ipban or mute with perm, *, a time, >= time or > time"
   bad-list: "<file> line <line>: <path>: must be a list"
+  # P8 (spec 14.2): rule numbers
+  bad-rule-number: "<file> line <line>: <path>: rule number '<value>' must be a whole number from 1 to <max>"
+  unknown-rule: "<file> line <line>: <path>: reason '<id>' points to rule <value>, which is not under rules: (rules: <rules>)"
+  bad-rule-ref: "<file> line <line>: <path>: reason '<id>': rule must be a number or a list of numbers, not '<value>'"
 
 # ---------------------------------------------------------------- [Undo] (P2, spec 12.1)
 # Placeholders as in notify.* (<player>, <type>, <reason>, <id>, <length>), plus <window> = extras.undo-window.
@@ -605,6 +636,9 @@ stats:
   # P7: island punishments (spec 13.2, also counted in "given") and sanctions (spec 13.1).
   sanctions: " <c:text>Island punishments: <c:value><island></c:value> <c:muted><sym:dot></c:muted> <c:text>Sanctions: <c:value><sanctions>"
   # P4 (spec 13.4): approval requests this staff member made, and handled as an approver (only shown when > 0).
+  # P8 (spec 14.6): dry runs (practice, never applied). training-trainee = this staff member is a trainee (online check).
+  training: " <c:text>Dry runs: <c:value><dry>"
+  training-trainee: " <c:warning>Trainee</c:warning> <c:muted><sym:dot></c:muted> <c:text>Dry runs: <c:value><dry></c:value> <c:muted><sym:dot></c:muted> <c:text>Requests: <c:value><made></c:value> made, <c:value><approved></c:value> approved, <c:value><denied></c:value> denied"
   requests: " <c:text>Requests: <c:value><made></c:value> made <c:muted><sym:dot></c:muted> <c:text><approved> approved <c:muted><sym:dot></c:muted> <c:text><denied> denied <c:muted><sym:dot></c:muted> <c:text><waiting> waiting <c:muted><sym:dot></c:muted> <c:text><expired> expired"
   approvals: " <c:text>Requests handled: <c:value><approved></c:value> approved <c:muted><sym:dot></c:muted> <c:text><denied> denied"
   # P5 (spec 13.10): appeals this staff member handled, and their own punishments lifted by an accepted appeal (shown when > 0).
@@ -695,14 +729,14 @@ reports:
 mine:
   header: "<prefix><c:text>Your punishments"
   no-mute: " <c:success><sym:check></c:success> <c:text>You're not muted."
-  mute: " <c:error><sym:cross></c:error> <c:text>Muted: <c:value><reason></c:value> <c:muted>(#<id>)</c:muted><c:text>, ends in <c:value><left></c:value>. <click:run_command:'/appeal'><hover:show_text:'<c:text>Appeal this mute in-game (/appeal)'><c:action>[Appeal]</c:action></hover></click>"
+  mute: " <c:error><sym:cross></c:error> <c:text>Muted: <c:value><reason></c:value> <c:muted>(#<id>, <rule-text>)</c:muted><c:text>, ends in <c:value><left></c:value>. <click:run_command:'/appeal'><hover:show_text:'<c:text>Appeal this mute in-game (/appeal)'><c:action>[Appeal]</c:action></hover></click>"
   warnings: " <c:text>Warnings: <c:value><count> / <next>"
-  warning: "   <c:ember><sym:bullet></c:ember> <c:text><reason> <c:muted>(<date>, stops counting <expires>)"
+  warning: "   <c:ember><sym:bullet></c:ember> <c:text><reason> <c:muted>(<rule-text>, <date>, stops counting <expires>)"
   ack: " <c:warning><sym:cross></c:warning> <c:text>You have a warning to confirm: <ack>"
   recent-header: " <c:text>Last <count>:"
   none: "   <c:success><sym:check></c:success> <c:text>Nothing on record."
-  entry: "   <c:ember><sym:bullet></c:ember> <type> <c:text><reason> <c:muted>(<date>, <status>)"
-  entry-staff: "   <c:ember><sym:bullet></c:ember> <type> <c:text><reason> <c:muted>(<date>, <status>, by <staff>)"
+  entry: "   <c:ember><sym:bullet></c:ember> <type> <c:text><reason> <c:muted>(<rule-text>, <date>, <status>)"
+  entry-staff: "   <c:ember><sym:bullet></c:ember> <type> <c:text><reason> <c:muted>(<rule-text>, <date>, <status>, by <staff>)"
 
 # Discord log embeds (12.11). Plain text only (no colour tags). Off until a webhook is set up (docs/LATER.md).
 discord:
@@ -783,7 +817,7 @@ discord:
 approval:
   requested: "<prefix><c:success><sym:check></c:success> <c:text>Sent for approval: <c:value><action></c:value> for <c:value><player></c:value>. <c:muted>(#<rid>, waits <expires>)"
   merged: "<prefix><c:text>Already requested by <c:value><staff></c:value>: <c:value><action></c:value> for <c:value><player></c:value>. <c:muted>(#<rid>, added to it)"
-  notify: "<c:muted>[Punish]</c:muted> <c:value><staff></c:value> <c:text>requests <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(<reason>)</c:muted>  <approve> <deny> <click:run_command:'/p <target>'><hover:show_text:'<c:text>Open the punish menu'><c:action>[Open /p]</c:action></hover></click>"
+  notify: "<c:muted>[Punish]</c:muted> <c:value><staff></c:value><c:muted><trainee></c:muted> <c:text>requests <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(<reason>)</c:muted>  <approve> <deny> <click:run_command:'/p <target>'><hover:show_text:'<c:text>Open the punish menu'><c:action>[Open /p]</c:action></hover></click>"
   approve-button: "<c:action>[Approve]</c:action>"
   approve-hover: "<c:text>Apply <action> now. Given by <staff>, approved by you."
   deny-button: "<c:action>[Deny]</c:action>"
@@ -807,7 +841,7 @@ approval:
     pending: "<prefix><c:text>Your request <c:muted>#<rid></c:muted> <c:text>is still waiting."
   # Approvers on join.
   join-header: "<prefix><c:warning><sym:cross></c:warning> <c:value><count></c:value> <c:text>punishment request(s) wait for approval."
-  join-line: " <c:ember><sym:bullet></c:ember> <c:value><staff></c:value> <c:text>wants <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(<reason>, <ago> ago)</c:muted> <approve> <deny> <click:run_command:'/p <target>'><hover:show_text:'<c:text>Open the punish menu'><c:action>[Open /p]</c:action></hover></click>"
+  join-line: " <c:ember><sym:bullet></c:ember> <c:value><staff></c:value><c:muted><trainee></c:muted> <c:text>wants <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(<reason>, <ago> ago)</c:muted> <approve> <deny> <click:run_command:'/p <target>'><hover:show_text:'<c:text>Open the punish menu'><c:action>[Open /p]</c:action></hover></click>"
   join-more: " <c:muted>... and <more> more. Open /p and the name to see them."
   status:
     pending: "waiting"
@@ -1025,7 +1059,7 @@ appeal:
   ended: "ended"
   status-header: "<prefix><c:text>Your appeals"
   none: " <c:muted>You have nothing to appeal right now.</c:muted>"
-  status-line: " <c:ember><sym:bullet></c:ember> <c:value>#<pid></c:value> <c:text><type>: <c:value><reason></c:value> <c:muted>(<left> left)</c:muted> <state>"
+  status-line: " <c:ember><sym:bullet></c:ember> <c:value>#<pid></c:value> <c:text><type>: <c:value><reason></c:value> <c:muted>(<rule-text>, <left> left)</c:muted> <state>"
   state:
     can: "<c:success>can be appealed"
     open: "<c:warning>appeal waiting for staff"
@@ -1327,6 +1361,8 @@ island-steps:
 # Sanctions (13.1). Placeholders of a sanction: <sid> (id), <kind>, <player>, <staff>, <reason>, <until>, <amount>, <item>,
 # <state>, <date>, <handler>. <use> = what was blocked (uses.*).
 sanctions:
+  # P8 (spec 14.6): sanctions have no request queue, so trainees can't give them ("sanction" in training.requests-for).
+  trainee: "<prefix><c:error><sym:cross></c:error> <c:text>You're in training: ask a mentor to give <c:value><kind></c:value>."
   usage: "<prefix><c:text>Sanctions live in <c:value>/p <player></c:value> <c:text>» Sanctions. <c:value>/psanction restore <id></c:value> <c:text>gives back removed money or a confiscated item."
   bad-id: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a sanction id. Press Tab to see them."
   until-lifted: "until lifted"
@@ -1542,3 +1578,140 @@ sanctions:
     show-inventory:
       name: "<c:value>Show inventory"
       lore: []
+
+# ---------------------------------------------------------------- P8 (spec 14.2 rule numbers, 14.6 training, 14.9 alerts)
+
+# Rule numbers. Numbers and links live in punishments.yml → rules (and rule: on every reason / warn button); the titles
+# live here. <rule> = "3" or "1, 3", <rule-title> = the title(s). A reason without a rule shows rules.none.
+# PLACEHOLDER LIST (same numbers as /rules): the owner confirms the real list (docs/OPEN_QUESTIONS.md).
+rules:
+  text: "Rule <rule>: <rule-title>"
+  text-many: "Rules <rule>: <rule-title>"
+  none: "see /rules"
+  untitled: "Rule <rule>"
+  titles:
+    "1": "Be kind (no harassment, hate or threats)"
+    "2": "No cheats or unfair mods"
+    "3": "No duping or bug abuse"
+    "4": "No spam, ads or scams"
+    "5": "No real-money trading"
+    "6": "Staff decisions are final"
+
+# Dry run (spec 14.6): /p <player> <reason> -dry and the Dry run toggle of /p. Nothing is applied, nobody is told.
+# <player>, <reason>, <action> (step), <offence-text> (", offence #2" or empty), <bonus> (probation steps), <why>,
+# <staff>, <outcome> (mentor line), plus the rule placeholders.
+dry-run:
+  title: "Dry run"
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use dry runs."
+  click: "<c:warning><sym:bullet> Dry run: click to see what would happen"
+  not-here:
+    name: "<c:muted>Not in dry run"
+    lore:
+      - "<c:muted>Turn off Dry run to use this."
+  menu-on: "<prefix><c:success><sym:check></c:success> <c:text>Dry run is <c:value>on</c:value> for <c:value><player></c:value>: clicks only show what would happen."
+  menu-off: "<prefix><c:success><sym:check></c:success> <c:text>Dry run is <c:value>off</c:value>: clicks apply again."
+  offence: ", offence #<offence>"
+  result:
+    apply: "<prefix><c:warning>[Dry run]</c:warning> <c:text>Would apply <c:value><action></c:value> to <c:value><player></c:value> <c:muted>(<reason><offence-text>, <rule-text>)</c:muted>"
+    request: "<prefix><c:warning>[Dry run]</c:warning> <c:text>Would send a request for <c:value><action></c:value> on <c:value><player></c:value> <c:muted>(<reason><offence-text>)</c:muted><c:text>: needs approval, <why>."
+    blocked: "<prefix><c:warning>[Dry run]</c:warning> <c:text>Would not apply <c:value><action></c:value> to <c:value><player></c:value><c:text>: <why>."
+    skipped: "<prefix><c:warning>[Dry run]</c:warning> <c:text>Nothing would change for <c:value><player></c:value><c:text>: <why>."
+  probation: " <c:muted>Probation: +<bonus> step(s) on the ladder."
+  footer: " <c:muted>Nothing was applied and <player> was not told."
+  footer-trainee: " <c:muted>Nothing was applied and <player> was not told. Your mentors see your dry runs."
+  # To approvers (approvals alerts) when a trainee practises.
+  mentor: "<c:muted>[Training]</c:muted> <c:value><staff></c:value> <c:muted>(trainee)</c:muted> <c:text>dry run: <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(<reason>)</c:muted><c:text>, would be <c:value><outcome></c:value><c:text>."
+  outcome:
+    apply: "applied"
+    request: "a request"
+    blocked: "blocked"
+    skipped: "skipped"
+  why:
+    trainee: "you're in training, a mentor approves"
+    approval: "big punishment"
+    limit: "longer than your rank allows"
+    self: "you can't punish yourself"
+    exempt: "this player can't be punished by you"
+    offline: "the player is offline"
+    permission: "your rank can't give this"
+    length-limit: "too long for your rank"
+    duplicate: "just punished for this"
+    never-shorten: "already punished for longer"
+
+# Training mode (spec 14.6). <trainee> in approval lines = training.tag for a trainee's request, else empty.
+training:
+  tag: " (trainee)"
+  you-are: "<c:warning>You're in training: big actions go to a mentor."
+  # To approvers (approvals alerts) when a trainee applied something directly (e.g. a warning). <undo> = undo-button.
+  applied: "<c:muted>[Training]</c:muted> <c:value><staff></c:value> <c:muted>(trainee)</c:muted> <c:text>gave <type> <c:text>to <c:value><player></c:value><c:text>: <c:value><reason></c:value> <c:muted>#<id></c:muted> <undo>"
+  undo-button: "<c:action>[Undo]</c:action>"
+  undo-hover: "<c:text>Undo this <type> <c:text>(any approver, within <window>)"
+
+# Staff alert settings (spec 14.9): /pnotify. <type> = the type's name, <type_id> = its id (for clicks).
+notify-settings:
+  menu:
+    title: "Staff alerts"
+    info:
+      - "<c:text>Pick which staff alerts you get."
+      - "<c:text>Only types your rank gets are shown."
+      - "<c:muted>Saved for your account."
+    none:
+      name: "<c:muted>No alerts"
+      lore:
+        - "<c:muted>Your rank gets no staff alerts."
+    always:
+      name: "<c:value><type>"
+      lore:
+        - "<c:success>Always on"
+        - "<c:muted>This alert can't be switched off."
+  types:
+    punishments:
+      name: "<c:value>Punishments"
+      lore:
+        - "<c:text>Every punishment, pardon and undo."
+    suggestions:
+      name: "<c:value>Suggestions"
+      lore:
+        - "<c:text>Warn rules, chat filter, anticheat"
+        - "<c:text>and dupe suggestions."
+    approvals:
+      name: "<c:value>Approvals"
+      lore:
+        - "<c:text>Requests of trainees and big"
+        - "<c:text>punishments, trainee practice."
+    appeals:
+      name: "<c:value>Appeals"
+      lore:
+        - "<c:text>New appeals and decisions."
+    watchlist:
+      name: "<c:value>Watchlist"
+      lore:
+        - "<c:text>Watched players and flagged"
+        - "<c:text>alt accounts joining."
+    raid:
+      name: "<c:value>Raid"
+      lore:
+        - "<c:text>Raid alerts, lockdown start and stop."
+    guard:
+      name: "<c:value>Guard"
+      lore:
+        - "<c:text>Staff punishment limit alerts."
+    reports:
+      name: "<c:value>Reports"
+      lore:
+        - "<c:text>Open reports on a punished player."
+    auto:
+      name: "<c:value>Automatic actions"
+      lore:
+        - "<c:text>Punishments the system applied."
+    report:
+      name: "<c:value>Monthly report"
+      lore:
+        - "<c:text>The monthly punishment report."
+  state-on: "<prefix><c:value><type></c:value> <c:text>alerts are <c:success>on</c:success><c:muted><always></c:muted><c:text>. <click:run_command:'/pnotify <type_id> off'><hover:show_text:'<c:text>Switch them off'><c:action>[Switch off]</c:action></hover></click>"
+  state-off: "<prefix><c:value><type></c:value> <c:text>alerts are <c:error>off</c:error><c:text>. <click:run_command:'/pnotify <type_id> on'><hover:show_text:'<c:text>Switch them on'><c:action>[Switch on]</c:action></hover></click>"
+  always-tag: " (always on)"
+  turned-on: "<prefix><c:success><sym:check></c:success> <c:value><type></c:value> <c:text>alerts are now on."
+  turned-off: "<prefix><c:success><sym:check></c:success> <c:value><type></c:value> <c:text>alerts are now off."
+  always-on: "<prefix><c:error><sym:cross></c:error> <c:value><type></c:value> <c:text>alerts can't be switched off."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Your rank doesn't get <c:value><type></c:value> <c:text>alerts."

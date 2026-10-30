@@ -132,9 +132,9 @@ final class ApiSuggestions implements SuggestionService {
         if (r.refreshed()) {
             return;
         }
-        service.notifyStaff(null, "suggest.api-notify", service.suggestionParts(null, s));
+        service.notifyStaff(NotifyRules.Type.SUGGESTIONS, null, "suggest.api-notify", service.suggestionParts(null, s));
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (staff.hasPermission(ModerationModule.PERM_NOTIFY)) {
+            if (service.wants(staff, NotifyRules.Type.SUGGESTIONS)) {
                 core.sounds().play(staff, "notify");
             }
         }

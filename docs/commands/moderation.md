@@ -77,14 +77,23 @@ P7 extras (`punishments.yml → extras.sanctions`, island ladder steps, texts `m
 | `/pstats [24h\|7d\|30d\|all]` (`/mystats`) | Your own numbers: warns, mutes, bans, kicks given, reversed (undone/pardoned) with %, net, applied from automatic suggestions. Default period `extras.stats.default-period` (7d); 7d/30d are whole days in Europe/Oslo | `skyblock.staff.punish.stats` | ✅ |
 | `/pstats <staff> [period]` | Another staff member's numbers (tab completes staff who ever punished) | `skyblock.staff.punish.stats.others` | ✅ |
 | `/pstats top [period]` | Ranking of all staff (given, reversed %, net); click a name for details | `skyblock.staff.punish.stats.others` | ✅ |
+| `/p <player> <reason-id> -dry` | Dry run (P8, spec 14.6): shows what the click would do right now ("would apply mute 1d, offence #2, probation +1 step", "would send a request: you're in training") with the same pipeline; applies nothing, the player is not told, a request is not created. Logged as training (audit `dry_run`, `/pstats`); a trainee's dry runs are shown to approvers. `/p <player> -dry` opens the menu with Dry run on. Tab completes `-dry` for staff who may use it | `skyblock.staff.punish.dry` | ✅ |
+| `/pnotify` | Your own staff alerts (P8, spec 14.9): Bedrock-safe menu with one toggle per alert type your rank gets (punishments, suggestions, approvals, appeals, watchlist, raid, guard, reports, auto, report). Saved for your account; `extras.notify.always` types (guard) can't be switched off | `skyblock.staff.notify` (each type: `skyblock.staff.notify.<type>`) | ✅ |
+| `/pnotify <type> [on\|off]` | Switch one type (no on/off: show its state with a clickable switch). Tab completes only the types you have, then on/off | `skyblock.staff.notify` | ✅ |
 
 Warn rules (`punishments.yml → warn-rules`): 2 active warns suggest a 1 h mute; another warn or any mute within 7 days of a trigger suggests 1 d. Staff with `skyblock.staff.notify` get `[Apply] [Dismiss] [Open /p]`; unhandled suggestions show in `/p` and `/warns` for 24 h. Mode `auto` applies at once as "System (auto)". Broken `punishments.yml` edits are rejected (old config kept) and reported to the console and to `skyblock.admin.reload`.
 
 Lockdown bypass: `skyblock.lockdown.bypass` (never limited by a chat lockdown; every rank above default).
 
+Training (P8, spec 14.6): `skyblock.staff.punish.trainee` marks a trainee (no rank has it; give it per player or with a trainee group, remove it to graduate). A trainee's ban, mute, kick, island step or bulk action (`extras.training.requests-for`) becomes an approval request shown as "Alex (trainee) requests ..."; warnings apply directly and approvers get the line with [Undo] (any approver, within `approval.expire`); sanctions are refused for trainees. Trainees never approve or deny.
+
+Rule numbers (P8, spec 14.2): `punishments.yml → rules` + `rule:` on reasons and warn buttons; shown in the warning, mute message, ban screen, `/mypunishments`, `/appeal`, the `/p` lore and `/history`. No command.
+
+Staff alerts (P8, spec 14.9): every staff line has a type and goes to `skyblock.staff.notify.<type>` holders who did not switch it off. Discord per type: `extras.discord.channels` (off by default; watchlist, appeals, guard and approvals only to a channel mapped for them).
+
 Approval: `skyblock.staff.punish.approve` (approve/deny requests, and punish without one; admins). No command: [Approve] / [Deny] are chat buttons and the `/p` head.
 
-Other: `skyblock.staff.punish.notes` (also shows notes on the `/p` head), `skyblock.staff.punish.undo.others` (undo other staff's punishments), `skyblock.staff.punish.force` (`-force`), `skyblock.staff.punish.silent` (`-s`), `skyblock.staff.punish.exempt` / `.exempt.bypass`, `skyblock.staff.punish.max.<tier>` (length tiers). Alt alerts on join go to `skyblock.staff.notify`.
+Other: `skyblock.staff.punish.notes` (also shows notes on the `/p` head), `skyblock.staff.punish.undo.others` (undo other staff's punishments), `skyblock.staff.punish.force` (`-force`), `skyblock.staff.punish.silent` (`-s`), `skyblock.staff.punish.exempt` / `.exempt.bypass`, `skyblock.staff.punish.max.<tier>` (length tiers). Alt alerts on join go to the `watchlist` alert type.
 
 Permission definitions: `modules/moderation/src/main/resources/permissions/moderation.yml`. Rank grants: `server/permissions/moderation.txt`.
 | `/psanction restore <id>` | Give back money removed or an item confiscated by a sanction (money to the profile it came from; an item to the online player on that profile, with a free slot). First click wins. `/psanction` alone explains it. Tab completes the restorable ids | `skyblock.staff.sanction.restore` | ✅ |

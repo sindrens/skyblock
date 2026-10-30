@@ -25,6 +25,21 @@
 # probation: true|false (category or reason; default true) = after a mute/ban of this reason ends by time the player is
 # on probation (extras.probation), and offences of this reason get the probation step bonus. Off for the small stuff.
 # appealable: true|false (reason; default true) = players can /appeal punishments of this reason (extras.appeal).
+# rule: 3 | [1, 3] (reason or warn button; P8, spec 14.2) = the server rule(s) it breaks. Only numbers listed under
+# rules: below are allowed (an unknown number rejects the file). No rule = the general extras.rules-link is shown.
+
+# ---------- rule numbers (P8, spec 14.2) ----------
+# The server rules by number. link = where that rule is explained (optional; default extras.rules-link). The TITLES are
+# texts and live in messages/moderation.yml → rules.titles.<number>. Shown to players in the warning, mute message,
+# ban screen, /mypunishments and /appeal, and to staff in the /p lore and /history ("Rule 4: No spam, ads or scams").
+# PLACEHOLDER: same numbers as /rules today; the owner confirms the real list and the mapping (docs/OPEN_QUESTIONS.md).
+rules:
+  1: { link: "https://skybornmc.net/rules" }    # Be kind (no harassment, hate or threats)
+  2: { link: "https://skybornmc.net/rules" }    # No cheats or unfair mods
+  3: { link: "https://skybornmc.net/rules" }    # No duping or bug abuse
+  4: { link: "https://skybornmc.net/rules" }    # No spam, ads or scams
+  5: { link: "https://skybornmc.net/rules" }    # No real-money trading
+  6: { link: "https://skybornmc.net/rules" }    # Staff decisions are final
 
 categories:
   cheating:
@@ -32,18 +47,22 @@ categories:
     reasons:
       hacking:
         icon: IRON_SWORD
+        rule: 2
         ladder: ["ban 30d", "ban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
       xray:
         icon: DIAMOND_ORE
+        rule: 2
         ladder: ["ban 14d", "ban 60d", "ban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
       macro:
         icon: STONE_BUTTON
+        rule: 2
         ladder: ["warn", "ban 3d", "ban 14d", "ban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
       alt-abuse:
         icon: PLAYER_HEAD
+        rule: 2
         ladder: ["ipban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
         appealable: false           # owner spec 13.10: no appeals for alt abuse
@@ -53,18 +72,23 @@ categories:
     reasons:
       toxicity:
         icon: MAGMA_CREAM
+        rule: 1
         ladder: ["warn", "mute 1h", "mute 1d", "mute 7d", "mute perm"]
       spam:
         icon: PAPER
+        rule: 4
         ladder: ["warn", "mute 30m", "mute 6h", "mute 3d"]
       advertising:
         icon: OAK_SIGN
+        rule: 4
         ladder: ["mute 1d", "ban 7d", "ban perm"]
       hate:
         icon: BARRIER
+        rule: 1
         ladder: ["mute 7d", "ban 30d", "ban perm"]
       personal-info:
         icon: NAME_TAG
+        rule: 1
         ladder: ["mute 1d", "ban 7d", "ban perm"]
 
   gameplay:
@@ -72,9 +96,11 @@ categories:
     reasons:
       exploiting:
         icon: TNT
+        rule: 3
         ladder: ["ban 7d", "ban 30d", "ban perm"]
       scamming:
         icon: EMERALD
+        rule: 4
         ladder: ["warn", "ban 3d", "ban 14d", "ban perm"]
       griefing:
         icon: FLINT_AND_STEEL
@@ -85,6 +111,7 @@ categories:
         probation: false            # small stuff (bottom-right quarter of /p): no probation
       rmt:
         icon: GOLD_INGOT
+        rule: 5
         ladder: ["ban 30d", "ban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
         appealable: false           # owner spec 13.10: no appeals for real-money trading
@@ -98,15 +125,19 @@ categories:
     reasons:
       inappropriate-name:
         icon: NAME_TAG
+        rule: 1
         ladder: ["kick", "ban 1d", "ban perm"]
       inappropriate-build:
         icon: BRICKS
+        rule: 1
         ladder: ["warn", "ban 1d", "ban 7d"]
       inappropriate-skin:
         icon: LEATHER_CHESTPLATE
+        rule: 1
         ladder: ["kick", "ban 1d", "ban 7d"]
       disrespect-staff:
         icon: IRON_HELMET
+        rule: 1
         ladder: ["warn", "mute 1h", "mute 1d", "ban 3d"]
 
 # ---------- /p menu layout (single screen) ----------
@@ -141,8 +172,8 @@ menu:
     disrespect-staff: 19
   warns:                            # BOTTOM-LEFT (slots 27-30, 36-39): plain warn buttons, one warning each, no ladder
     # weight = how much the warning counts toward the warn rules (default 1; e.g. 0.5 for a light reminder, 2 for serious)
-    warn-language: { slot: 27, icon: PAPER }
-    warn-caps-spam: { slot: 28, icon: WRITABLE_BOOK }
+    warn-language: { slot: 27, icon: PAPER, rule: 1 }
+    warn-caps-spam: { slot: 28, icon: WRITABLE_BOOK, rule: 4 }
     warn-rules: { slot: 29, icon: BOOK }
     warn-other: { slot: 30, icon: YELLOW_DYE }
   bans:                             # TOP-RIGHT (slots 14-17, 23-26)
@@ -214,6 +245,12 @@ extras:
                               # plugins/PhoenixSkyblock/secrets/discord.yml (written by server/scripts/apply-secrets.sh)
     channel: punishments      # name of the webhook in secrets/discord.yml
     queue-size: 100           # messages waiting at most (more are dropped, the punishment itself always works)
+    # P8 (spec 14.9): send a notification type to its own webhook: type: <webhook name in secrets/discord.yml>.
+    # Types: punishments, suggestions, approvals, appeals, watchlist, raid, guard, reports, auto, report. Nothing mapped =
+    # punishments and raid go to 'channel' above, everything else is not sent. WARNING: watchlist, appeals (player
+    # text), guard and approvals must only ever go to a PRIVATE staff channel (who can read it is set in Discord).
+    # Example (off): channels: { appeals: appeals, guard: admin-alerts }
+    channels: {}
     max-attempts: 3           # tries per message (rate limits and errors are retried)
     colors: { ban: "#e74c3c", mute: "#e67e22", warn: "#f1c40f", kick: "#95a5a6", pardon: "#2ecc71", undo: "#3498db", lockdown: "#e91e63" }
   player-view:                # /mypunishments
@@ -301,3 +338,13 @@ extras:
     dupe-suggestion:                     # a detected dupe suggests a punishment to staff (never applied by itself)
       enabled: true
       reason: exploiting                 # reason id above whose ladder is suggested (exploiting: ban 7d first)
+
+  # ---------- owner spec section 14 (P8) ----------
+  training:                   # trainees = staff with skyblock.staff.punish.trainee (a LuckPerms group, removed to graduate)
+    # A trainee's action of these kinds becomes an approval request for a mentor (even small ones); nothing is applied
+    # until an approver says yes. Kinds: ban, mute, kick, warn, island, sanction, bulk. Warnings are not listed (spec:
+    # applied directly; approvers get [Undo]). sanction = refused for trainees (sanctions have no request queue).
+    # Dry run (/p <player> <reason> -dry, Dry run button of /p) is for every staff member (skyblock.staff.punish.dry).
+    requests-for: [ban, mute, kick, sanction, island, bulk]
+  notify:                     # /pnotify: every staff member switches their own alert types (skyblock.staff.notify.<type>)
+    always: [guard]           # types that can't be switched off
