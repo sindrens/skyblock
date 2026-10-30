@@ -3,6 +3,7 @@
 Use these to pick the **suggested** answer for any new question and to spot questions that earlier answers already settle. Source: OWNER_ANSWERS_ROUND1.md, OWNER_ANSWERS_ROUND2.md, DECISIONS_2026-10-30.md.
 
 ## Big principles
+0. **Fun first, less is more (owner, 31 Oct).** The server must be fun, engaging and psychologically rewarding, and never hard to understand. If something gets too advanced, say so to the owner and offer the simpler version. Fewer, clearer systems beat many clever ones.
 1. **No waiting, no busywork.** No cooldowns on creating/joining islands, no disband delay, no 30-minute new-account limit, teleports instant (3 s only in combat / combat zones / warzone / boss arena / events). Don't add delays unless they stop real abuse.
 2. **Profiles are islands.** Money, inventory, skills, keys, collection log, pets, achievements, daily login reward: per profile. Deleting/leaving/resetting = that profile's progress is gone (staff can restore from backups). Never a way to move value between your own profiles (no buying your own other profile's AH listings, no transfers).
 3. **Nothing is ever lost by accident.** Items never drop on the ground (overflow → `/box`). Kicks, resets, disbands keep staff-restorable backups. Bank money on disband/reset is deleted but backed up for staff.
