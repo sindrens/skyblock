@@ -1,20 +1,22 @@
 # Morning report: night of 29–30 October 2026
 
-Everything below is live on the test server (latest release: **update57**, 22 modules). GitHub `main` is up to date.
+Everything below is live on the test server (latest release: **update66**, 24 modules). GitHub `main` is up to date.
 Nothing has been tested in game by me: only unit tests ran (`./gradlew build`, all green). The checklists below are what you need to try.
 
 ## 1. Short version
 
-- **19 queue items merged tonight**: island profiles, enchants, wardrobe, `/sell`, island menu + island chat, island notes, visiting/warps, islands round 2, stacking, tools, punishments P2 + P3, crystals, round-2 decisions, `/freerank`, UX cleanup, balance re-run, enchant + wardrobe plans.
+- **28 queue items merged tonight**: island profiles, enchants (+ stacked-mob enchants), wardrobe (+ set levels, merging, `/loadout`), `/sell`, `/shop`, `/trade`, `/bank`, island menu + island chat, island notes, visiting/warps, islands round 2, per-place scoreboards, stacking, tools, punishments P2–P4, crystals, round-2 decisions, `/freerank`, message cleanup (UX1 + UX2), balance re-run, enchant + wardrobe plans.
 - **One outage**: punishments were off for ~9 minutes on the test server (04:36–04:45). Fixed; see section 6.
 - **Nothing sketchy happened.** No suspicious instructions anywhere (see `docs/SECURITY_LOG.md`).
-- Still running when this was written: per-place scoreboards (SB), stacked-mob kill enchants (E3), `/trade` (M3.7). See section 7.
+- Still running: punishments P5, Depths satchel + drops (M4.4 + M4.9), island stats (M2.6). See section 7.
 
 ## 2. Needs your decision (most important first)
 
 1. **Spawners are too strong.** The balance model says `stacking.yml → spawners.mobs-per-spawner: 4` makes spawners ~69% of income and doubles the money supply. Suggested: **1**. I did not change it.
-2. **Approve the `/sell` prices** in `server/plugins/PhoenixSkyblock/sell.yml` (draft from the balance sheet). You can edit them on GitHub.
-3. **Open questions**: each agent added its questions to `docs/OPEN_QUESTIONS.md` → "Waiting for owner", each with the safe default already built. Biggest ones:
+2. **Approve the prices**: `/sell` in `server/plugins/PhoenixSkyblock/sell.yml` (from the balance sheet) and `/shop` in `shop.yml` (made up, the balance sheet had none; some are high on purpose so nothing costs less to buy than it sells for, e.g. carrots $120, redstone $260). You can edit both on GitHub.
+3. **Approvals (P4):** only admins can approve big punishments, so a mod's first 30-day hacked-client ban becomes a request. Give mods the approve permission, or drop the `ban >= 30d` rule?
+4. **`/menu` is full**: `/trade` is only in `/help` for now. Which button should it replace?
+5. **Open questions**: each agent added its questions to `docs/OPEN_QUESTIONS.md` → "Waiting for owner", each with the safe default already built. Biggest ones:
    - Profiles: can you delete your only/active profile? (default: no, switch first) · Is "two profiles never on the same island, ever" OK? (default: yes, strict)
    - `/is` now opens the island menu instead of teleporting home (default: menu; `/is home` still teleports).
    - Island chat is members only (default: coop players can't read it).
@@ -22,6 +24,9 @@ Nothing has been tested in game by me: only unit tests ran (`./gradlew build`, a
    - Wardrobe: every purchase asks to confirm (default: yes).
    - Enchants: staff `/enchanter admin give|apply|clear` was **not** built (not approved). Say yes if you want it.
    - `/sell`: no staff command to see/reset prices. Add `/sell admin`? (default: not built)
+   - Wardrobe: set levels are now on, so sets you already own start at Lv 0 (no bonus until they level).
+   - Loadouts: if part of a preset can't swap, the rest still swaps and the skipped parts are listed (default).
+   - Banks: island bank goes to the leader on disband; bank money doesn't count in `/baltop` (defaults).
 
 ## 3. What's new (in plain words)
 
@@ -32,6 +37,17 @@ Nothing has been tested in game by me: only unit tests ran (`./gradlew build`, a
 - **Visiting**: `/is visit` browser, lock/unlock, expel, island bans, 3 warps per island (+ `[warp]` signs), ratings and likes.
 - **Islands round 2**: Admin role (old leader becomes Admin on transfer), "Hurt monsters" right, `/is settings` (spawning, fire, explosions, leaf decay, trampling, visitor pickup/alerts/fly, weather/time per island), island fly, personal homes, `/is invites`. A solo island only becomes a team island when the invite is **accepted**.
 - **Stacking**: mobs stack (max 1,024, 8 stacks per type per chunk), items merge with a counter, stackable spawners (8 → 512, 5 tiers), island entity limits, crops grow in the dark.
+
+**More features (merged after the first draft)**
+- **Per-place scoreboards**: own island (with a "Next" note line), visiting, Depths (Gate / Mine / Forest / Combat), spawn, warzone.
+- **Stacked-mob enchants (E3)**: Slaughter (up to 48 mobs per hit), Bloodlust, Plunder, Soul Reaper, Reaper's Sweep, Phoenix Wrath; island stack books.
+- **Wardrobe levels + merging (W2)**: sets level 0–50 from the activity they boost (also `/sell`), Tomes, merge two Lv 50 sets into one.
+- **`/loadout` (W3)**: up to 8 presets that swap set pieces and hotbar tools in one click; 10 s combat tag.
+- **`/trade` (M3.7)**: safe two-sided trade window for items + money (never crystals), both confirm, 3 s countdown.
+- **`/shop` (M3.5)**: builder shop, 8 categories, 332 items.
+- **`/bank` (M3.3)**: personal bank per profile (10 tiers) + island bank, interest every 3 h, island bank rights.
+- **Punishments P4**: approval for big punishments, "mute ended" message, probation (+1 step for 14 days), `/watch` + `/watchlist`.
+- **Message cleanup (UX2)**: moderation, Depths and island texts in the same short format.
 
 **Progression**
 - **Enchants** (`/enchanter`): 48 enchants, unique tradeable books and Disenchant Scrolls, apply/upgrade/combine/remove/shatter, Book shop rolls, guide. Swiftness, Prosperity, Tempering and Scholar's Insight already work.
@@ -71,6 +87,11 @@ Nothing has been tested in game by me: only unit tests ran (`./gradlew build`, a
 | `/enchanter` | everyone |
 | `/wardrobe` (`/sets`) | everyone |
 | `/sell`, `/sell hand`, `/sell all` | everyone |
+| `/shop [category]` | everyone |
+| `/trade [player]`, `/trade accept [player]`, `/trade deny [player]` | everyone |
+| `/bank` | everyone |
+| `/loadout [name]` | everyone |
+| `/watch <player> [reason]`, `/watch remove <player>`, `/watchlist` | staff |
 | `/forge [type]`, `/tool` | everyone |
 | `/freerank` | everyone |
 | `/ack`, `/mypunishments` | everyone |
@@ -137,6 +158,16 @@ Tip: an alt account helps for anything with two players.
 33. `/pnote Steve text`, `/pnote Steve`, `/pnote remove <id>`. Punishing closes reports you claimed. `/mypunishments` shows no staff names.
 34. Dates in `/whois`, `/history`, `/logs` are Oslo time. `/skills set|add` works for admin/owner only.
 
+### Added after the first draft
+36. Scoreboard changes by place: spawn, your island (Next note line), visiting someone (`Visiting <name>`), Depths Gate/Mine/Forest/Combat. Fast teleports don't flicker.
+37. Slaughter V on a 200-zombie stack kills 8 per hit, X kills 48; drops come as a few merged stacks + one XP orb.
+38. `/wardrobe`: level bar on owned sets; mining with 4 pieces gives about twice the set XP of 2 pieces. Staff `/inspect` → Wardrobe → set Lv 49, mine a bit: title, glint, trail.
+39. `/loadout`: save two presets, swap with `/loadout <name>` (Bedrock: tap in the menu); old tools go to the Wardrobe Chest; refused right after combat; 2 s cooldown.
+40. `/trade <alt>`: offer items + money, both confirm, change something during the countdown (confirms reset), cancel by walking away (items come back). Crystals can't be offered.
+41. `/shop`: buy 1/16/64/custom; full inventory refused before paying; money comes from the profile you're on.
+42. `/bank`: deposit, withdraw (fee shown), buy tier 2; island menu → Bank; Member withdraw locked by default; other profile can't reach your bank.
+43. P4: as mod, `/p Steve hacking` → "Sent for approval"; admin clicks [Approve]. `/tempmute Steve 1m` → "mute ended" once. `/watch Steve reason` → staff see it when Steve joins.
+
 ### Look and feel
 35. Messages: green ✔ / red ✘ with gray text, yellow [Click] buttons. Scoreboard and tab look clean on Java and Bedrock (no boxes instead of symbols). Rank change shows within ~1 s.
 
@@ -145,11 +176,12 @@ Tip: an alt account helps for anything with two players.
 - **Punishments down ~9 min (update53).** A new database column was named `lines`, which MariaDB doesn't allow, so the moderation module didn't start. Then `/pnote` was built in a way the command framework refuses. Fixed in update54/55. To stop it happening again: a test now fails the build on reserved column names, a broken command no longer disables its whole module, and the agent instructions list these traps.
 - **Profiles: two holes found and fixed before release.** The Forge charged/refunded profile 1's money, and stacked items could lose the "dropped by" tag (so your other profile could pick them up). Both fixed in update50.
 - **Config sync during merges** could overwrite new message texts with the older server copy. Caught by a test, fixed in the sync script; I checked every merge tonight and nothing was lost.
+- **Fixes I made while merging:** the island scoreboard had dropped Gems (put back, your UI decision); stacked-spawner mobs gave sword XP although `tools.yml` says spawner mobs give none (fixed); `/sell` didn't give wardrobe set XP (hooked up).
 - Small: two `tools.yml` settings warned at startup, one islands message used a symbol Bedrock can't show. Fixed.
 
 **Security:** nothing suspicious. No Gmail, Drive, browser or computer control used; no purchases or messages; no files deleted on your Mac. The only Mac actions were copying release files to `~/Development/.skyborn-claude/` and running the release script. Log: `docs/SECURITY_LOG.md`.
 
 ## 7. Still running / next
 
-- Running: SB (per-place scoreboards), E3 (stacked-mob kill enchants), M3.7 (`/trade`).
-- Next in the queue: UX2 (message cleanup for moderation/Depths/islands), W2 (set levels, merging), W3 (`/loadout`), E2 (book drops in the Depths, needs Depths drops first), M3.3 banks, M3.5 shop, P4 (punishment approvals, probation, watchlist).
+- Running: P5 (bulk punishments, punish from logs, appeals), M4.4 + M4.9 (Depths satchel, drops, crystals), M2.6 (island stats).
+- Next in the queue: M4.7 Forest + M4.8 combat zones (then E2 book drops in the Depths), P6+ (rest of the punishment spec), M3.8 economy dashboard, F4 shared teleport warmup, F3 achievements.
