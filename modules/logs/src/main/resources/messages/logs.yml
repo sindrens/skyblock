@@ -195,7 +195,8 @@ category-menu:
     staff: ["<c:text>What staff did: give, teleport, edit ..."]
     config: ["<c:text>Config reloads and setting changes."]
     command: ["<c:text>Every command players ran (30 days)."]
-    chat: ["<c:text>Chat and private messages (30 days)."]
+    chat: ["<c:text>Public chat (30 days)."]
+    dm: ["<c:text>Private messages (/msg, /r), 30 days.", "<c:text>Mods and up only."]
     item: ["<c:text>Item events and dupe alerts (30 days)."]
     auth: ["<c:text>Joins and quits."]
     world: ["<c:text>World events."]
@@ -215,6 +216,7 @@ categories:
   config: "Config"
   command: "Commands"
   chat: "Chat"
+  dm: "Private messages"
   item: "Items"
   auth: "Joins"
   world: "World"

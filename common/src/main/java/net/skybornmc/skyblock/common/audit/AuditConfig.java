@@ -25,8 +25,8 @@ public final class AuditConfig extends ModuleConfig {
     public int maxQueue = 200_000;
 
     @Setting(path = "retention.short-categories", desc = "Categories kept only for retention.short-days (owner decision: "
-            + "chat, command, item). Everything else is kept forever.", level = Setting.Level.OWNER)
-    public List<String> shortCategories = List.of("chat", "command", "item");
+            + "chat, dm, command, item). Everything else is kept forever.", level = Setting.Level.OWNER)
+    public List<String> shortCategories = List.of("chat", "dm", "command", "item");
 
     @Setting(path = "retention.short-days", desc = "Days to keep the short categories before they are archived and removed.",
             min = 1, max = 3650, level = Setting.Level.OWNER)
@@ -46,6 +46,18 @@ public final class AuditConfig extends ModuleConfig {
 
     @Setting(path = "query.max-rows", desc = "Maximum rows one staff query may return per page.", min = 10, max = 5_000)
     public int maxQueryRows = 500;
+
+    /** Version 2 (R3-9b): DMs got their own category (dm), kept as short as chat. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("retention.short-categories",
+                ValueChange.of(List.of("chat", "command", "item"), List.of("chat", "dm", "command", "item"))));
+    }
 
     @Override
     public String fileName() {

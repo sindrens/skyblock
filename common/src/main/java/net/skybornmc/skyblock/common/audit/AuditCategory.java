@@ -17,6 +17,12 @@ public enum AuditCategory {
     CONFIG,
     COMMAND,
     CHAT,
+    /**
+     * Private messages ({@code /msg}, {@code /r}). R3-9b / owner answer 318: split from {@link #CHAT} so helpers can read
+     * chat without reading DMs (mods and up get {@code skyblock.staff.logs.category.dm}). Rows logged before the split
+     * are moved by {@code db/core/V003__audit_dm_category.sql}.
+     */
+    DM,
     ITEM,
     AUTH,
     WORLD,
