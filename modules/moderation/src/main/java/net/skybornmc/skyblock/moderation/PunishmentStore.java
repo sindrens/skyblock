@@ -61,7 +61,24 @@ final class PunishmentStore {
      * Inserts a row (inside the caller's transaction) and returns it with its id. Every row stores this server's id and
      * its scope (spec 13.12): bans and mutes get {@code extras.network.default-scope}, warnings and kicks {@code server}.
      */
+    /** Called with every inserted row (P9, spec 14.1: the guard counts what each staff member applied). */
+    private volatile java.util.function.Consumer<Punishment> applied = p -> { };
+
+    void onApplied(java.util.function.Consumer<Punishment> hook) {
+        this.applied = hook == null ? p -> { } : hook;
+    }
+
     private Punishment insertRow(Connection c, Punishment p) throws SQLException {
+        Punishment row = insertRowOnly(c, p);
+        try {
+            applied.accept(row);
+        } catch (RuntimeException e) {
+            // the guard never breaks the punishment path
+        }
+        return row;
+    }
+
+    private Punishment insertRowOnly(Connection c, Punishment p) throws SQLException {
         // weight only matters for warns (spec 12.7); NULL = 1 for everything else
         java.math.BigDecimal weight = p.type() == Punishment.Type.WARN && p.weight() != Weights.ONE ? Weights.decimal(p.weight()) : null;
         NetworkScope.Settings ns = networkSettings();
@@ -655,12 +672,13 @@ final class PunishmentStore {
 
     private static PunishStats.Row statRow(ResultSet rs) throws SQLException {
         return new PunishStats.Row(Punishment.Type.valueOf(rs.getString("type")), rs.getLong("n"), rs.getLong("rev"),
-                rs.getLong("auto"));
+                rs.getLong("auto"), rs.getLong("rb"));
     }
 
     private static final String STAT_SUMS = "type, COUNT(*) AS n, "
             + "SUM(CASE WHEN removed_at IS NOT NULL THEN 1 ELSE 0 END) AS rev, "
-            + "SUM(CASE WHEN source LIKE 'auto:%' THEN 1 ELSE 0 END) AS auto";
+            + "SUM(CASE WHEN source LIKE 'auto:%' THEN 1 ELSE 0 END) AS auto, "
+            + "SUM(CASE WHEN rollback_id IS NOT NULL THEN 1 ELSE 0 END) AS rb";
 
     /** Grouped counts of what {@code staff} gave since {@code since} (index issuer_uuid, created). */
     CompletableFuture<List<PunishStats.Row>> statRows(UUID staff, long since) {
@@ -874,6 +892,30 @@ final class PunishmentStore {
                 Punishment.AUTO_PREFIX + Suggestion.KIND_API + ":" + reasonId, 0, now, expires, Suggestion.Status.PENDING,
                 null, null, null, null, null, null, reasonId, details);
         return new ApiSuggestion(insertSuggestion(c, row, null), false);
+    }
+
+    /**
+     * P9, spec 14.5: like {@link #suggestApi}, with a cap: a waiting suggestion for this target + reason is refreshed,
+     * otherwise a new one is only created when none (any status) was created at or after {@code capSince}. Empty =
+     * capped. Atomic under the target's lock.
+     */
+    CompletableFuture<Optional<ApiSuggestion>> suggestApiCapped(UUID target, String targetName, String reasonId,
+                                                                Templates.Step step, String reason, String details, long now,
+                                                                Long expires, long capSince) {
+        return db.async(c -> locked(c, target, conn -> {
+            boolean waiting = Sql.queryOne(conn, "SELECT COUNT(*) AS n FROM punishment_suggestions WHERE target_uuid = ? "
+                            + "AND kind = ? AND reason_id = ? AND status = 'PENDING' AND (expires IS NULL OR expires > ?)",
+                    rs -> rs.getLong("n"), Sql.toBytes(target), Suggestion.KIND_API, reasonId, now).orElse(0L) > 0;
+            if (!waiting) {
+                Long last = Sql.queryOne(conn, "SELECT MAX(created) AS last_created FROM punishment_suggestions "
+                                + "WHERE target_uuid = ? AND reason_id = ?", rs -> Sql.nullableLong(rs, "last_created"),
+                        Sql.toBytes(target), reasonId).orElse(null);
+                if (last != null && last >= capSince) {
+                    return Optional.<ApiSuggestion>empty();
+                }
+            }
+            return Optional.of(suggestApiLocked(conn, target, targetName, reasonId, step, reason, details, now, expires, false));
+        }));
     }
 
     /** Pending (not expired) API suggestions of a player, newest first. */
@@ -1425,6 +1467,211 @@ final class PunishmentStore {
             long reversed = Sql.queryOne(c, "SELECT COUNT(*) AS n FROM appeals WHERE issuer_uuid = ? AND status = 'ACCEPTED' "
                     + "AND handled >= ?", rs -> rs.getLong("n"), Sql.toBytes(staff), since).orElse(0L);
             return new AppealCounts(n[0], n[1], n[2], reversed);
+        });
+    }
+
+    // ================================================================== P9: rollback (spec 14.1)
+
+    /**
+     * Punishments a rollback of {@code staff} for {@code [since, until]} touches (index issuer_uuid, created), filtered by
+     * {@link RollbackRules#selects}: issued by that staff member, not pardoned, never kicks / island kicks / coop removals.
+     */
+    CompletableFuture<List<Punishment>> rollbackCandidates(UUID staff, long since, long until) {
+        return db.async(c -> RollbackRules.select(Sql.query(c, "SELECT " + COLUMNS + " FROM punishments WHERE issuer_uuid = ? "
+                        + "AND created >= ? AND created <= ? AND removed_at IS NULL ORDER BY created ASC, id ASC",
+                PunishmentStore::map, Sql.toBytes(staff), since, until), staff, since, until));
+    }
+
+    /** Outcome of {@link #rollback}: the group id, the rows reversed now (as they were before) and removed suggestions. */
+    record RollbackResult(long rollbackId, List<Punishment> reversed, List<Long> removedSuggestions) {
+    }
+
+    /**
+     * Reverses exactly the punishments {@code ids} that still match the rollback (issued by {@code staff} inside
+     * {@code [since, until]}, not pardoned meanwhile): one group row ({@code punish_rollbacks}), then per target one
+     * transaction under the target's lock. Every UPDATE repeats the issuer and "not removed" conditions, so unrelated
+     * rows are never touched and a second confirm changes nothing. A reversed warn also removes the pending suggestion it
+     * fired (spec: "pending suggestions that came from rolled back warns are removed").
+     */
+    CompletableFuture<RollbackResult> rollback(List<Long> ids, UUID staff, String staffName, long since, long until, UUID by,
+                                               String byName, String reason, long now) {
+        return db.async(c -> {
+            long group = Sql.insertReturningId(c, "INSERT INTO punish_rollbacks (staff_uuid, staff_name, since_ms, until_ms, "
+                            + "run_by_uuid, run_by_name, created, punishment_count, sanction_count) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0)",
+                    Sql.toBytes(staff), clip(staffName, 32), since, until, bytes(by), clip(byName, 32), now);
+            java.util.Map<UUID, List<Long>> byTarget = new java.util.LinkedHashMap<>();
+            List<Long> noTarget = new ArrayList<>();
+            for (Long id : ids) {
+                Punishment p = byId(c, id).orElse(null);
+                if (p == null) {
+                    continue;
+                }
+                if (p.target() == null) {
+                    noTarget.add(id);
+                } else {
+                    byTarget.computeIfAbsent(p.target(), k -> new ArrayList<>()).add(id);
+                }
+            }
+            List<Punishment> reversed = new ArrayList<>();
+            List<Long> removed = new ArrayList<>();
+            for (java.util.Map.Entry<UUID, List<Long>> e : byTarget.entrySet()) {
+                locked(c, e.getKey(), conn -> {
+                    rollbackRows(conn, e.getValue(), staff, since, until, by, byName, reason, now, group, reversed, removed);
+                    return null;
+                });
+            }
+            if (!noTarget.isEmpty()) {
+                locked(c, null, conn -> {
+                    rollbackRows(conn, noTarget, staff, since, until, by, byName, reason, now, group, reversed, removed);
+                    return null;
+                });
+            }
+            Sql.update(c, "UPDATE punish_rollbacks SET punishment_count = ? WHERE id = ?", reversed.size(), group);
+            return new RollbackResult(group, List.copyOf(reversed), List.copyOf(removed));
+        });
+    }
+
+    private static void rollbackRows(Connection c, List<Long> ids, UUID staff, long since, long until, UUID by, String byName,
+                                     String reason, long now, long group, List<Punishment> reversed, List<Long> removed)
+            throws SQLException {
+        for (Long id : ids) {
+            Punishment p = byId(c, id).orElse(null);
+            if (!RollbackRules.selects(p, staff, since, until)) {
+                continue;
+            }
+            int n = Sql.update(c, "UPDATE punishments SET removed_at = ?, removed_by_uuid = ?, removed_by_name = ?, "
+                            + "removed_reason = ?, rollback_id = ? WHERE id = ? AND removed_at IS NULL AND issuer_uuid = ?",
+                    now, bytes(by), clip(byName, 32), clip(reason, 255), group, id, Sql.toBytes(staff));
+            if (n != 1) {
+                continue;
+            }
+            reversed.add(p);
+            if (p.type() == Punishment.Type.WARN) {
+                List<Long> sids = Sql.query(c, "SELECT id FROM punishment_suggestions WHERE cause_id = ? AND status = 'PENDING'",
+                        rs -> rs.getLong("id"), id);
+                if (!sids.isEmpty()) {
+                    Sql.update(c, "UPDATE punishment_suggestions SET status = 'REMOVED', handled_at = ?, handled_by_uuid = ?, "
+                                    + "handled_by_name = ?, note = ? WHERE cause_id = ? AND status = 'PENDING'",
+                            now, bytes(by), clip(byName, 32), Suggestion.NOTE_ROLLBACK, id);
+                    removed.addAll(sids);
+                }
+            }
+        }
+    }
+
+    /** Stores how many sanctions a rollback gave back / lifted. */
+    CompletableFuture<Void> rollbackSanctions(long group, int count) {
+        return db.run(c -> Sql.update(c, "UPDATE punish_rollbacks SET sanction_count = ? WHERE id = ?", count, group));
+    }
+
+    // ================================================================== P9: data deletion (spec 14.10)
+
+    /** What a purge would remove and keep (also the result of a purge). */
+    record PurgePlan(UUID target, PurgeRules.Ledger ledger, int evidence, int notes, int appeals, int watch, int suggestions,
+                     int requests, int dryRuns, int sanctions, int ips, boolean ipTable) {
+    }
+
+    private static int count(Connection c, String sql, Object... params) throws SQLException {
+        return Sql.queryOne(c, sql, rs -> rs.getInt("n"), params).orElse(0);
+    }
+
+    /** IP rows of the social module's join history (0 and {@code false} when that table does not exist). */
+    private static int[] ipRows(Connection c, UUID target) {
+        try {
+            return new int[]{count(c, "SELECT COUNT(*) AS n FROM social_player_ips WHERE uuid = ?", Sql.toBytes(target)), 1};
+        } catch (SQLException e) {
+            return new int[]{0, 0};
+        }
+    }
+
+    private PurgePlan purgePlan(Connection c, UUID target, PurgeRules.Settings settings, long now) throws SQLException {
+        byte[] id = Sql.toBytes(target);
+        List<Punishment> history = Sql.query(c, "SELECT " + COLUMNS + " FROM punishments WHERE target_uuid = ?",
+                PunishmentStore::map, id);
+        int[] ips = ipRows(c, target);
+        return new PurgePlan(target, PurgeRules.ledger(history, settings, now),
+                count(c, "SELECT COUNT(*) AS n FROM punishment_evidence WHERE punishment_id IN "
+                        + "(SELECT id FROM punishments WHERE target_uuid = ?)", id),
+                count(c, "SELECT COUNT(*) AS n FROM staff_notes WHERE target_uuid = ?", id),
+                count(c, "SELECT COUNT(*) AS n FROM appeals WHERE player_uuid = ?", id),
+                count(c, "SELECT COUNT(*) AS n FROM watchlist WHERE target_uuid = ?", id),
+                count(c, "SELECT COUNT(*) AS n FROM punishment_suggestions WHERE target_uuid = ?", id),
+                count(c, "SELECT COUNT(*) AS n FROM punishment_requests WHERE target_uuid = ?", id),
+                count(c, "SELECT COUNT(*) AS n FROM punish_dry_runs WHERE target_uuid = ?", id),
+                count(c, "SELECT COUNT(*) AS n FROM sanctions WHERE target_uuid = ?", id), ips[0], ips[1] == 1);
+    }
+
+    /** The preview of {@code /ppurge <player> preview} (nothing changes). */
+    CompletableFuture<PurgePlan> purgePreview(UUID target, PurgeRules.Settings settings, long now) {
+        return db.async(c -> purgePlan(c, target, settings, now));
+    }
+
+    /**
+     * {@code /ppurge <player> confirm}: removes the player's personal data and shrinks the punishment rows to the minimal
+     * ledger ({@link PurgeRules}), in one transaction under the player's lock. Returns what was done (counted inside the
+     * same transaction, so the numbers are exactly what changed). The IP join history of the social module is removed
+     * afterwards (its table is optional). The audit log is never touched.
+     */
+    CompletableFuture<PurgePlan> purge(UUID target, PurgeRules.Settings settings, long now) {
+        return db.async(c -> {
+            PurgePlan plan = locked(c, target, conn -> {
+                PurgePlan before = purgePlan(conn, target, settings, now);
+                byte[] id = Sql.toBytes(target);
+                String anon = PurgeRules.anonymousName(target);
+                List<Punishment> history = Sql.query(conn, "SELECT " + COLUMNS + " FROM punishments WHERE target_uuid = ?",
+                        PunishmentStore::map, id);
+                Sql.update(conn, "DELETE FROM punishment_evidence WHERE punishment_id IN "
+                        + "(SELECT id FROM punishments WHERE target_uuid = ?)", id);
+                Sql.update(conn, "DELETE FROM staff_notes WHERE target_uuid = ?", id);
+                Sql.update(conn, "DELETE FROM watchlist WHERE target_uuid = ?", id);
+                Sql.update(conn, "DELETE FROM punishment_suggestions WHERE target_uuid = ?", id);
+                Sql.update(conn, "DELETE FROM punishment_requests WHERE target_uuid = ? AND status <> 'PENDING'", id);
+                Sql.update(conn, "UPDATE punishment_requests SET target_name = ?, ip = NULL WHERE target_uuid = ?", anon, id);
+                Sql.update(conn, "UPDATE punish_dry_runs SET target_name = ? WHERE target_uuid = ?", anon, id);
+                Sql.update(conn, "UPDATE sanctions SET target_name = ? WHERE target_uuid = ?", anon, id);
+                for (Punishment p : history) {
+                    switch (PurgeRules.fate(p, settings, now)) {
+                        case DELETE -> {
+                            Sql.update(conn, "DELETE FROM appeals WHERE punishment_id = ?", p.id());
+                            Sql.update(conn, "DELETE FROM punishments WHERE id = ?", p.id());
+                        }
+                        case KEEP_ACTIVE, KEEP_LEDGER -> Sql.update(conn, "UPDATE punishments SET target_name = ?, reason = ?, "
+                                        + "removed_reason = NULL, ip = ?, ip_wide = ?, purged_at = ? WHERE id = ?", anon,
+                                clip(PurgeRules.ledgerReason(p), 255), PurgeRules.keepsIp(p, now) ? p.ip() : null,
+                                PurgeRules.keepsIp(p, now), now, p.id());
+                    }
+                }
+                // the appeals of kept punishments stay as a record of the decision, without the player's texts
+                Sql.update(conn, "UPDATE appeals SET appeal_text = '', response = NULL, player_name = ? WHERE player_uuid = ?",
+                        anon, id);
+                return before;
+            });
+            try {
+                Sql.update(c, "DELETE FROM social_player_ips WHERE uuid = ?", Sql.toBytes(target));
+            } catch (SQLException e) {
+                // social module not installed: no IP history to remove
+            }
+            return plan;
+        });
+    }
+
+    /**
+     * Retention of purged ledgers (spec 14.10, run with the evidence purge): deletes purged rows that ended more than
+     * {@code keep-ledger} ago and are not in force, and drops the IP of purged rows no longer in force. Returns the
+     * number of deleted rows.
+     */
+    CompletableFuture<Integer> purgeLedgers(PurgeRules.Settings settings, long now) {
+        long cutoff = now - (settings.keepLedger() == null ? 0 : settings.keepLedger().toMillis());
+        String inForce = "(type IN ('BAN', 'MUTE', 'ISLAND_BAN', 'COOP_BLOCK', 'REPORT_BLOCK') AND removed_at IS NULL "
+                + "AND (expires IS NULL OR expires > ?))";
+        return db.transaction(c -> {
+            Sql.update(c, "DELETE FROM appeals WHERE punishment_id IN (SELECT id FROM punishments WHERE purged_at IS NOT NULL "
+                    + "AND COALESCE(removed_at, expires, created) < ? AND NOT " + inForce + ")", cutoff, now);
+            int n = Sql.update(c, "DELETE FROM punishments WHERE purged_at IS NOT NULL AND COALESCE(removed_at, expires, created) < ? "
+                    + "AND NOT " + inForce, cutoff, now);
+            Sql.update(c, "UPDATE punishments SET ip = NULL, ip_wide = FALSE WHERE purged_at IS NOT NULL AND ip IS NOT NULL "
+                    + "AND NOT " + inForce, now);
+            return n;
         });
     }
 }

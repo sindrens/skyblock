@@ -36,6 +36,8 @@ steps:
   island-ban: "Island ban <length>"
   coop-remove: "Removed from the team"
   coop-block: "Team block <length>"
+  # P9 (spec 14.5): no /report for that time.
+  report-block: "Report block <length>"
 
 # Reason names (ids from punishments.yml → categories). Also the reason text stored with the punishment.
 categories:
@@ -63,6 +65,7 @@ reasons:
   inappropriate-build: "Inappropriate build"
   inappropriate-skin: "Inappropriate skin"
   coop-griefing: "Griefing a team island"
+  report-abuse: "False reports"
 
 # Plain warn buttons of the /p menu (ids from punishments.yml → menu.warns). name = button, reason = stored text.
 warn-buttons:
@@ -93,6 +96,7 @@ types:
   island_ban: "<c:warning>Island ban</c:warning>"
   coop_remove: "<c:text>Team removal</c:text>"
   coop_block: "<c:warning>Team block</c:warning>"
+  report_block: "<c:muted>Report block</c:muted>"
 
 status:
   active: "Active"
@@ -167,6 +171,8 @@ notify:
   island_ban: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>ID #<id><newline>Length: <length><newline><c:muted>Click for history'><c:value><staff></c:value> <c:warning>island-banned</c:warning> <c:value><player></c:value> <c:text>for <c:value><length></c:value>: <c:value><reason></hover></click>"
   coop_remove: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>ID #<id><newline><c:muted>Click for history'><c:value><staff></c:value> <c:text>removed <c:value><player></c:value> <c:text>from their team: <c:value><reason></hover></click>"
   coop_block: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>ID #<id><newline>Length: <length><newline><c:muted>Click for history'><c:value><staff></c:value> <c:warning>team-blocked</c:warning> <c:value><player></c:value> <c:text>for <c:value><length></c:value>: <c:value><reason></hover></click>"
+  # P9 (spec 14.5): report block (no /report for that time).
+  report_block: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>ID #<id><newline>Length: <length><newline><c:muted>Click for history'><c:value><staff></c:value> <c:text>blocked <c:value><player></c:value> <c:text>from /report for <c:value><length></c:value>: <c:value><reason></hover></click>"
 
 # Public announcements (not for -s silent punishments; announce.public in moderation.yml).
 public:
@@ -626,12 +632,17 @@ undo:
   player-warn: "<prefix><c:success><sym:check></c:success> <c:text>Your last warning was removed. <c:muted>(staff mistake)"
   # P7: an island ban or team block was undone.
   player-island: "<prefix><c:success><sym:check></c:success> <c:text>Your <type> <c:text>was removed. <c:muted>(staff mistake)"
+  # P9: a report block was undone.
+  player-report: "<prefix><c:success><sym:check></c:success> <c:text>You can use /report again. <c:muted>(staff mistake)"
 
 # ---------------------------------------------------------------- /pstats (P2, spec 12.10)
 stats:
   header: "<prefix><c:text>Punishments by <c:value><staff></c:value> <c:muted>(<period>)"
   given: " <c:text>Warns <c:value><warns></c:value> <c:muted><sym:dot></c:muted> <c:text>Mutes <c:value><mutes></c:value> <c:muted><sym:dot></c:muted> <c:text>Bans <c:value><bans></c:value> <c:muted><sym:dot></c:muted> <c:text>Kicks <c:value><kicks></c:value>  <c:text>= <c:value><given></c:value> <c:text>given"
   reversed: " <c:text>Reversed: <c:value><reversed></c:value> <c:muted>(<percent>%, undone or pardoned)</c:muted>  <c:text>Net: <c:value><net>"
+  # P9: of the reversed ones, reversed by /prollback (spec 14.1), and report blocks given (spec 14.5). Shown when > 0.
+  rolled-back: " <c:text>Reversed (rollback): <c:value><count></c:value> <c:muted>(account problem, no offences)"
+  report-blocks: " <c:text>Report blocks: <c:value><count>"
   suggestions: " <c:text>From automatic suggestions: <c:value><applied>"
   # P7: island punishments (spec 13.2, also counted in "given") and sanctions (spec 13.1).
   sanctions: " <c:text>Island punishments: <c:value><island></c:value> <c:muted><sym:dot></c:muted> <c:text>Sanctions: <c:value><sanctions>"
@@ -745,6 +756,11 @@ discord:
     mute: "Mute"
     warn: "Warning"
     kick: "Kick"
+    island_kick: "Island kick"
+    island_ban: "Island ban"
+    coop_remove: "Team removal"
+    coop_block: "Team block"
+    report_block: "Report block"
     pardon: "Pardon"
     undo: "Undone"
     bulk: "Bulk punishment"
@@ -759,6 +775,9 @@ discord:
     lockdown-stop: "Lockdown ended"
     lockdown-expired: "Lockdown ended (time is up)"
     lockdown-restart: "Lockdown ended (server restart)"
+    guard-alert: "Staff guard: limit passed"
+    guard-blocked: "Staff guard: staff member blocked"
+    rollback: "Rollback"
   fields:
     type: "Type"
     target: "Player"
@@ -782,10 +801,22 @@ discord:
     response: "Response"
     lockdown: "Lockdown"
     started-by: "Started by"
+    limit: "Limit"
+    applied: "Applied / limit"
+    window: "Window"
+    rolled-back-staff: "Punishments of"
+    period: "Period"
+    punishments: "Punishments reversed"
+    sanctions: "Sanctions reversed"
   lockdown-kinds:
     chat: "Chat (new players)"
     join: "Join (new accounts)"
   lockdown-auto: "raid detection (automatic)"
+  guard-limits:
+    bans: "bans"
+    mutes: "mutes"
+    sanctions: "sanctions"
+    total: "punishments"
   appeal-status:
     open: "open"
     accepted: "accepted"
@@ -803,6 +834,7 @@ discord:
     island_ban: "Island ban"
     coop_remove: "Team removal"
     coop_block: "Team block"
+    report_block: "Report block"
   system: "System"
   permanent: "permanent"
   footer: "Phoenix Skyblock"
@@ -963,6 +995,7 @@ bulk:
     unknown: "never joined"
     exempt: "can't be punished"
     never-shorten: "already punished for longer"
+    guard: "staff guard (limit reached or locked)"
     duplicate: "just punished for this"
     permission: "you can't give this"
     length-limit: "too long for your rank"
@@ -1357,6 +1390,7 @@ island-steps:
     unavailable: "islands are not available"
     owner: "owns the island"
     no_island: "has no team island"
+    no_reports: "report blocks are not available"
 
 # Sanctions (13.1). Placeholders of a sanction: <sid> (id), <kind>, <player>, <staff>, <reason>, <until>, <amount>, <item>,
 # <state>, <date>, <handler>. <use> = what was blocked (uses.*).
@@ -1637,6 +1671,7 @@ dry-run:
     length-limit: "too long for your rank"
     duplicate: "just punished for this"
     never-shorten: "already punished for longer"
+    guard: "the staff guard refuses it (limit or lock)"
 
 # Training mode (spec 14.6). <trainee> in approval lines = training.tag for a trainee's request, else empty.
 training:
@@ -1715,3 +1750,87 @@ notify-settings:
   turned-off: "<prefix><c:success><sym:check></c:success> <c:value><type></c:value> <c:text>alerts are now off."
   always-on: "<prefix><c:error><sym:cross></c:error> <c:value><type></c:value> <c:text>alerts can't be switched off."
   no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Your rank doesn't get <c:value><type></c:value> <c:text>alerts."
+
+# ---------------------------------------------------------------- P9 (spec 14.1 guard + rollback, 14.5, 14.10)
+
+# Staff guard (14.1). <staff> = the staff member, <target> = same (for clicks), <limit> = limits.*, <count>/<max>,
+# <window>, <allow> = extras.guard.allow-default (30m), <rollback> = extras.guard.alert-rollback (1h), <by> = admin.
+# The alert lines go to everyone with skyblock.staff.notify.guard (always on, /pnotify can't switch it off).
+guard:
+  locked: "<prefix><c:error><sym:cross></c:error> <c:text>Your punishing is locked. Ask an admin."
+  blocked: "<prefix><c:error><sym:cross></c:error> <c:text>Punishment limit reached. Ask an admin."
+  limits:
+    bans: "bans"
+    mutes: "mutes"
+    sanctions: "sanctions"
+    total: "punishments"
+  alert-alert: "<c:error>[Guard]</c:error> <c:value><staff></c:value> <c:text>applied <c:value><count></c:value> <c:text><limit> in <window> <c:muted>(limit <max>)</c:muted><c:text>. <click:run_command:'/pguard allow <target> <allow>'><hover:show_text:'<c:text>Limits only alert for <allow>'><c:action>[Allow <allow>]</c:action></hover></click> <click:run_command:'/pguard lock <target>'><hover:show_text:'<c:text>Stop all their punishing now'><c:action>[Lock]</c:action></hover></click> <click:run_command:'/pstats <target>'><hover:show_text:'<c:text>Open /pstats <target>'><c:action>[Stats]</c:action></hover></click> <click:run_command:'/prollback <target> <rollback>'><hover:show_text:'<c:text>Preview a rollback of the last <rollback>'><c:action>[Rollback <rollback>]</c:action></hover></click>"
+  alert-blocked: "<c:error>[Guard]</c:error> <c:value><staff></c:value> <c:text>tried <c:value><limit></c:value> <c:text>#<count> in <window> <c:muted>(limit <max>)</c:muted> <c:text>and is <c:error>blocked</c:error><c:text>. <click:run_command:'/pguard allow <target> <allow>'><hover:show_text:'<c:text>Lift the block for <allow>'><c:action>[Allow <allow>]</c:action></hover></click> <click:run_command:'/pguard lock <target>'><hover:show_text:'<c:text>Lock until unlocked'><c:action>[Lock]</c:action></hover></click> <click:run_command:'/pstats <target>'><hover:show_text:'<c:text>Open /pstats <target>'><c:action>[Stats]</c:action></hover></click> <click:run_command:'/prollback <target> <rollback>'><hover:show_text:'<c:text>Preview a rollback of the last <rollback>'><c:action>[Rollback <rollback>]</c:action></hover></click>"
+  allowed: "<c:error>[Guard]</c:error> <c:value><by></c:value> <c:text>allowed <c:value><staff></c:value> <c:text>for <c:value><length></c:value><c:text>: limits only alert."
+  allow-locked: "<prefix><c:error><sym:cross></c:error> <c:value><staff></c:value> <c:text>is locked. Use <click:suggest_command:'/pguard unlock <target>'><c:action>/pguard unlock <staff></c:action></click> <c:text>first."
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't lock yourself."
+  already-locked: "<prefix><c:error><sym:cross></c:error> <c:value><staff></c:value> <c:text>is already locked."
+  locked-notify: "<c:error>[Guard]</c:error> <c:value><by></c:value> <c:text>locked <c:value><staff></c:value><c:text>: no punishments until unlocked. <click:run_command:'/pstats <target>'><c:action>[Stats]</c:action></click>"
+  you-locked: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your punishing was locked by an admin. Read-only tools (/history, /alts) still work."
+  not-limited: "<prefix><c:error><sym:cross></c:error> <c:value><staff></c:value> <c:text>is not blocked, locked or allowed."
+  unlocked: "<c:error>[Guard]</c:error> <c:value><by></c:value> <c:text>set <c:value><staff></c:value> <c:text>back to normal."
+  you-unlocked: "<prefix><c:success><sym:check></c:success> <c:text>You can punish again."
+  bad-length: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a length from 1m to 1d."
+  status:
+    header: "<prefix><c:text>Staff guard <c:muted>(window <window>)"
+    header-off: "<prefix><c:text>Staff guard <c:muted>(limits off, locks still work)"
+    blocked: " <c:error>Blocked</c:error> <c:value><staff></c:value> <c:muted>(<hit>, <ago> ago)</c:muted> <click:run_command:'/pguard allow <target>'><c:action>[Allow]</c:action></click>"
+    locked: " <c:error>Locked</c:error> <c:value><staff></c:value> <c:muted>(by <by>, <ago> ago)</c:muted> <click:run_command:'/pguard unlock <target>'><c:action>[Unlock]</c:action></click>"
+    allowed: " <c:success>Allowed</c:success> <c:value><staff></c:value> <c:muted>(by <by>, <left> left)"
+    counts: " <c:value><staff></c:value> <c:muted>(<tier>)</c:muted> <c:text>bans <bans> <c:muted><sym:dot></c:muted> <c:text>mutes <mutes> <c:muted><sym:dot></c:muted> <c:text>sanctions <sanctions> <c:muted><sym:dot></c:muted> <c:text>all <total>"
+    empty: " <c:muted>Nobody is blocked, locked or near a limit."
+
+# Rollback (14.1). <staff> = whose punishments, <period>, <total>, <bans>, <mutes>, <warns>, <other> (island steps, report
+# blocks), <sanctions>, <active> (still in force, lifted now), <by> = admin. <target>/<period_id> are for the click.
+rollback:
+  # Stored as the pardon reason of every reversed punishment.
+  reason: "Rollback: <staff> (account problem)"
+  too-short: "<prefix><c:error><sym:cross></c:error> <c:text>The period must be at least <c:value><min></c:value>."
+  too-long: "<prefix><c:error><sym:cross></c:error> <c:text>The period can be at most <c:value><max></c:value>."
+  preview-first: "<prefix><c:warning><sym:cross></c:warning> <c:text>No preview to confirm (or older than <window>). Here it is again:"
+  nothing: "<prefix><c:text>Nothing to roll back: <c:value><staff></c:value> <c:text>has no punishments in force or on record in the last <c:value><period></c:value><c:text>."
+  preview: "<prefix><c:warning>Rollback:</c:warning> <c:text>this will undo <c:value><total></c:value> <c:text>punishments by <c:value><staff></c:value> <c:text>in the last <c:value><period></c:value> <c:muted>(<bans> bans, <mutes> mutes, <warns> warnings, <other> other, <sanctions> sanctions)</c:muted><c:text>. Only punishments still active are lifted <c:muted>(<active> now)</c:muted><c:text>. Kicks and other staff are never touched."
+  confirm: " <click:run_command:'/prollback <target> <period_id> confirm'><hover:show_text:'<c:text>Undo <count> item(s) now'><c:action>[Confirm]</c:action></hover></click> <c:muted>or type /prollback <target> <period_id> confirm (within <window>)"
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Rolled back <c:value><count></c:value> <c:text>punishments by <c:value><staff></c:value> <c:muted>(<lifted> lifted now, <sanctions> sanctions, last <period>)</c:muted><c:text>. There is no undo: re-apply what was valid."
+  notify: "<c:muted>[Staff]</c:muted> <c:value><by></c:value> <c:text>rolled back <c:value><count></c:value> <c:text>punishments and <c:value><sanctions></c:value> <c:text>sanctions by <c:value><staff></c:value> <c:muted>(last <period>, account problem)"
+  # To the player whose punishment was reversed.
+  player-mute: "<prefix><c:success><sym:check></c:success> <c:text>Your mute was lifted. <c:muted>(staff account problem)"
+  player-mute-still: "<prefix><c:text>One mute was lifted, but another one is still active."
+  player-warn: "<prefix><c:success><sym:check></c:success> <c:text>A warning was removed. <c:muted>(staff account problem)"
+  player-island: "<prefix><c:success><sym:check></c:success> <c:text>Your <type> <c:text>was lifted. <c:muted>(staff account problem)"
+  player-report: "<prefix><c:success><sym:check></c:success> <c:text>You can use /report again. <c:muted>(staff account problem)"
+
+# Report blocks (14.5): the step report-block of a ladder. Placeholders of the punishment (<length>, <expires>, <reason>).
+report-block:
+  you: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use /report for <c:value><length></c:value><c:text>: <c:value><reason>"
+  apply-failed: "<c:muted>[Staff]</c:muted> <c:warning>Report block #<id> for <c:value><player></c:value> <c:warning>could not be enforced <c:muted>(reports not available)</c:muted><c:text>. It stays in the history."
+
+# False reports (14.5): the text staff see in the suggestion line ("Reports: 3 invalid reports in 30d").
+false-reports:
+  source: "Reports"
+  details: "<count> invalid reports in <window>"
+
+# Data deletion (14.10): /ppurge <player> preview|confirm. preview.* = what WOULD happen, done.* = what happened.
+purge:
+  preview-first: "<prefix><c:warning><sym:cross></c:warning> <c:text>No preview to confirm (or older than <window>). Here it is again:"
+  preview:
+    header: "<prefix><c:warning>Purge preview</c:warning> <c:text>for <c:value><player></c:value> <c:muted>(<id>)"
+    removed: " <c:text>Removed: <c:value><evidence></c:value> <c:text>evidence snapshots, <c:value><notes></c:value> <c:text>staff notes, <c:value><appeals></c:value> <c:text>appeal texts, <c:value><watch></c:value> <c:text>watchlist entries, <c:value><suggestions></c:value> <c:text>suggestions, handled requests of <c:value><requests></c:value><c:text>."
+    ips: " <c:text>Removed: <c:value><ips></c:value> <c:text>stored IP addresses (alt links)."
+    kept: " <c:text>Kept: <c:value><active></c:value> <c:text>in force until they end, <c:value><ledger></c:value> <c:text>as the minimal record for <c:value><keep></c:value> <c:muted>(id, type, reason id, dates)</c:muted><c:text>. Deleted: <c:value><deleted></c:value> <c:text>older records. <c:muted>Sanctions <sanctions> and dry runs <dry> keep only the account id."
+  done:
+    header: "<prefix><c:success><sym:check></c:success> <c:text>Purged <c:value><player></c:value> <c:muted>(<id>)"
+    removed: " <c:text>Removed: <c:value><evidence></c:value> <c:text>evidence snapshots, <c:value><notes></c:value> <c:text>staff notes, <c:value><appeals></c:value> <c:text>appeal texts, <c:value><watch></c:value> <c:text>watchlist entries, <c:value><suggestions></c:value> <c:text>suggestions, handled requests of <c:value><requests></c:value><c:text>."
+    ips: " <c:text>Removed: <c:value><ips></c:value> <c:text>stored IP addresses (alt links)."
+    kept: " <c:text>Kept: <c:value><active></c:value> <c:text>in force until they end, <c:value><ledger></c:value> <c:text>as the minimal record for <c:value><keep></c:value><c:text>. Deleted: <c:value><deleted></c:value> <c:text>older records."
+  no-ip-table: " <c:muted>No IP history is stored on this server."
+  discord: " <c:muted>Discord link: not stored by this server yet."
+  active-ban: " <c:warning><player> has a ban in force: that record stays until the ban ends (tell them if they ask)."
+  audit-kept: " <c:muted>The audit log is kept (the purge itself is logged without personal data)."
+  keep-none: "no time (deleted at once)"
+  confirm: " <c:error>This can't be undone.</c:error> <c:text>Type <click:suggest_command:'/ppurge <target> confirm'><c:action>/ppurge <target> confirm</c:action></click> <c:text>within <c:value><window></c:value><c:text>."

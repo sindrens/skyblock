@@ -122,14 +122,30 @@ final class PunishStats {
         return others ? new Query(Kind.OTHER, first, period, null) : Query.error("stats.no-permission-others");
     }
 
-    /** One grouped row from the database: punishments of one type by one staff member. */
-    record Row(Punishment.Type type, long count, long reversed, long fromSuggestions) {
+    /**
+     * One grouped row from the database: punishments of one type by one staff member. {@code rolledBack} (P9, spec 14.1)
+     * = of the reversed ones, how many were reversed by {@code /prollback} (shown as "reversed (rollback)").
+     */
+    record Row(Punishment.Type type, long count, long reversed, long fromSuggestions, long rolledBack) {
+
+        Row(Punishment.Type type, long count, long reversed, long fromSuggestions) {
+            this(type, count, reversed, fromSuggestions, 0);
+        }
     }
 
-    /** The numbers shown. */
-    record Counts(long warns, long mutes, long bans, long kicks, long reversed, long fromSuggestions, long island) {
+    /**
+     * The numbers shown. {@code reportBlocks} (P9, spec 14.5) = report blocks given (also in "given"), {@code rolledBack}
+     * = reversed by a rollback (also in "reversed").
+     */
+    record Counts(long warns, long mutes, long bans, long kicks, long reversed, long fromSuggestions, long island,
+                  long reportBlocks, long rolledBack) {
 
-        static final Counts ZERO = new Counts(0, 0, 0, 0, 0, 0, 0);
+        static final Counts ZERO = new Counts(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+        /** Without report blocks and rollbacks (before P9). */
+        Counts(long warns, long mutes, long bans, long kicks, long reversed, long fromSuggestions, long island) {
+            this(warns, mutes, bans, kicks, reversed, fromSuggestions, island, 0, 0);
+        }
 
         /** Without island punishments (before P7). */
         Counts(long warns, long mutes, long bans, long kicks, long reversed, long fromSuggestions) {
@@ -144,6 +160,8 @@ final class PunishStats {
             long r = 0;
             long s = 0;
             long i = 0;
+            long rb = 0;
+            long back = 0;
             for (Row row : rows) {
                 switch (row.type()) {
                     case WARN -> w += row.count();
@@ -151,15 +169,17 @@ final class PunishStats {
                     case BAN -> b += row.count();
                     case KICK -> k += row.count();
                     case ISLAND_KICK, ISLAND_BAN, COOP_REMOVE, COOP_BLOCK -> i += row.count();
+                    case REPORT_BLOCK -> rb += row.count();
                 }
                 r += row.reversed();
                 s += row.fromSuggestions();
+                back += row.rolledBack();
             }
-            return new Counts(w, m, b, k, r, s, i);
+            return new Counts(w, m, b, k, r, s, i, rb, back);
         }
 
         long given() {
-            return warns + mutes + bans + kicks + island;
+            return warns + mutes + bans + kicks + island + reportBlocks;
         }
 
         long net() {

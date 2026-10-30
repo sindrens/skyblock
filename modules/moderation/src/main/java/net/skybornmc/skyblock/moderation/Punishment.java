@@ -36,9 +36,11 @@ public record Punishment(long id, Type type, UUID target, String targetName, Str
     /**
      * {@code ISLAND_*} / {@code COOP_*} (P7, spec 13.2): island punishments, enforced by the islands module. Island kick
      * and coop remove happen once (like a kick); island ban and coop block last until they expire or are pardoned.
+     * {@code REPORT_BLOCK} (P9, spec 14.5): the player can't use {@code /report} until it ends; enforced by the reports
+     * (staff) module through {@code ReportBlocking}.
      */
     public enum Type {
-        BAN, MUTE, WARN, KICK, ISLAND_KICK, ISLAND_BAN, COOP_REMOVE, COOP_BLOCK;
+        BAN, MUTE, WARN, KICK, ISLAND_KICK, ISLAND_BAN, COOP_REMOVE, COOP_BLOCK, REPORT_BLOCK;
 
         /** Island punishment (spec 13.2). */
         public boolean island() {
@@ -52,7 +54,7 @@ public record Punishment(long id, Type type, UUID target, String targetName, Str
 
         /** Has a length (ban, mute, island ban, coop block). */
         public boolean timed() {
-            return this == BAN || this == MUTE || this == ISLAND_BAN || this == COOP_BLOCK;
+            return this == BAN || this == MUTE || this == ISLAND_BAN || this == COOP_BLOCK || this == REPORT_BLOCK;
         }
 
         /** Message key part ({@code island_kick}) of {@code types.*}. */

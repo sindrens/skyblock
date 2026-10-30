@@ -51,6 +51,16 @@ final class IslandPunish {
      * they own it. Completes on the main thread.
      */
     CompletableFuture<IslandSteps.Context> context(UUID player) {
+        boolean reports = reportBlocksAvailable();
+        return islandContext(player).thenApply(ctx -> ctx.withReports(reports));
+    }
+
+    /** P9, spec 14.5: report blocks can be enforced (the staff module provides {@code ReportBlocking}). */
+    boolean reportBlocksAvailable() {
+        return core.services().optional(net.skybornmc.skyblock.common.moderation.ReportBlocking.class).isPresent();
+    }
+
+    private CompletableFuture<IslandSteps.Context> islandContext(UUID player) {
         Optional<IslandService> service = islands();
         if (service.isEmpty() || player == null) {
             return CompletableFuture.completedFuture(IslandSteps.Context.UNAVAILABLE);

@@ -14,4 +14,6 @@ Staff tools dispatch `/punish` (moderation module), `/logs` (M1.10) and `/invsee
 
 Permission definitions: `modules/staff/src/main/resources/permissions/staff.yml`. Rank grants: `server/permissions/staff.txt`.
 
+False reports and report blocks (Phase P 14.5): closing a report as `invalid` (the only outcome that counts; no-evidence and duplicate are honest mistakes) tells the staff member "This is Steve's 3rd invalid report in 30 days." and asks moderation's `FalseReports` service whether to suggest the `report-abuse` reason (threshold 3 in 30d, at most one suggestion per player per week, never automatic; settings in `punishments.yml → extras.false-reports`, fallback window `reports.invalid-window-days` without moderation). A `report-block` punishment stops `/report` until it ends ("You can't use /report for 2d (too many false reports)."); stored in `report_blocks`, lifted by undo/rollback; provided to moderation as the `ReportBlocking` service (`common/moderation`). Audit: `report_block`, `report_block_lift`.
+
 Report link (Phase P 12.9): when a staff member punishes a player, the reports about that player **claimed by that staff member** close automatically with outcome punished (reporters are told as usual); unclaimed reports stay open. Provided to moderation as the `ReportLink` service (`common/moderation`).

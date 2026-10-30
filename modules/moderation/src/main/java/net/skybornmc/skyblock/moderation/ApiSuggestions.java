@@ -47,10 +47,20 @@ final class ApiSuggestions implements SuggestionService {
      */
     static Plan plan(Templates.Template template, List<Punishment> history, String source, String details, long now,
                      Duration pendingExpire) {
+        return plan(template, history, source, details, now, pendingExpire, false);
+    }
+
+    /**
+     * Same, with report blocks available or not (P9, spec 14.5: a {@code report-block} step can be suggested when the
+     * reports module enforces it; it needs no island context).
+     */
+    static Plan plan(Templates.Template template, List<Punishment> history, String source, String details, long now,
+                     Duration pendingExpire, boolean reportBlocks) {
         int previous = Offences.counting(history, template.id(), template.cutoff(now));
         // P7: suggestions never carry island steps (no island context when they are applied later): the non-island
         // step that replaces them is suggested instead
-        Templates.Step step = IslandSteps.adapt(template, IslandSteps.Context.UNAVAILABLE).stepFor(previous);
+        Templates.Step step = IslandSteps.adapt(template, IslandSteps.Context.UNAVAILABLE.withReports(reportBlocks))
+                .stepFor(previous);
         String src = Notes.clean(source == null ? "" : source);
         String det = Notes.clean(details == null ? "" : details);
         String text = src.isEmpty() ? det : det.isEmpty() ? src : src + ": " + det;
@@ -112,7 +122,8 @@ final class ApiSuggestions implements SuggestionService {
             }
             String name = snap.get().name();
             return service.store().history(target).thenCompose(history -> {
-                Plan plan = plan(template.get(), history, source, details, now, expire);
+                Plan plan = plan(template.get(), history, source, details, now, expire,
+                        service.islandPunish().reportBlocksAvailable());
                 return service.store().suggestApi(target, name, template.get().id(), plan.step(),
                         reasonName.apply(template.get()), plan.details(), now, plan.expires(), append).thenApply(r -> {
                             core.scheduler().ensureMain("moderation:suggest", () -> announce(r, actor));

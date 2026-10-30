@@ -1094,6 +1094,7 @@ final class PunishMenus {
                 case KICK -> Material.LEATHER_BOOTS;
                 case ISLAND_KICK, COOP_REMOVE -> Material.OAK_DOOR;
                 case ISLAND_BAN, COOP_BLOCK -> status == Punishment.Status.ACTIVE ? Material.PURPLE_CONCRETE : Material.PURPLE_TERRACOTTA;
+                case REPORT_BLOCK -> status == Punishment.Status.ACTIVE ? Material.LIGHT_GRAY_CONCRETE : Material.LIGHT_GRAY_TERRACOTTA;
             };
             String type = service.messages().raw(MODULE, "types." + p.type().name().toLowerCase(Locale.ROOT));
             String length = !p.type().timed() ? "-"

@@ -90,6 +90,9 @@ report:
   too-many: "<prefix><c:error><sym:cross></c:error> <c:text>You have <c:value><max></c:value> open reports. Staff will check them soon."
   already: "<prefix><c:error><sym:cross></c:error> <c:text>You already reported them. Staff will check it soon."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't save your report. Try again in a moment."
+  # Phase P 14.5: a report block (the report-abuse ladder of punishments.yml). <time> = time left.
+  blocked: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use /report for <c:value><time></c:value> <c:muted>(too many false reports)</c:muted><c:text>."
+  blocked-perm: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use /report anymore <c:muted>(too many false reports)</c:muted><c:text>."
   sent: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value> sent. <c:muted>Thanks! You'll hear the result."
   prompt: "<prefix><c:text>Type what <c:value><player></c:value> did, in one line. <c:muted>(<cancel> to cancel, <seconds>s)"
   staff-alert:
@@ -112,6 +115,17 @@ reports:
   staff-claimed: "<c:muted>[Report #<id>]</c:muted> <c:text>claimed by <c:value><staff></c:value>."
   closed: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> closed: <c:value><outcome></c:value>."
   join-notice: "<prefix><c:value><count></c:value> <c:text>open report(s). <click:run_command:'/reports'><hover:show_text:'<c:text>Open /reports'><c:action>[View]</c:action></hover></click>"
+  # Phase P 14.5: after closing a report as invalid (only that outcome counts). <player> = the reporter, <nth> = "3rd",
+  # <count>, <window>, <sid> = the suggestion id. The suggestion itself is the usual [Apply] [Dismiss] line from moderation.
+  invalid-count: "<prefix><c:text>This is <c:value><player></c:value><c:text>'s <c:value><nth></c:value> <c:text>invalid report in <c:value><window></c:value><c:text>."
+  invalid-suggested: "<prefix><c:warning><sym:cross></c:warning> <c:text>That is too many: staff got a suggestion for <c:value><player></c:value> <c:muted>(#<sid>, false reports)</c:muted><c:text>."
+  invalid-refreshed: "<prefix><c:text>The waiting false-report suggestion for <c:value><player></c:value> <c:text>was updated <c:muted>(#<sid>)</c:muted><c:text>."
+  invalid-capped: "<prefix><c:muted><player> already got a false-report suggestion this week (at most one per week)."
+  ordinal:
+    st: "st"
+    nd: "nd"
+    rd: "rd"
+    th: "th"
 
 outcome:
   punished:

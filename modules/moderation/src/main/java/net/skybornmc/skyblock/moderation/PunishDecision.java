@@ -20,7 +20,7 @@ import java.util.Set;
  * later milestones plug into the empty slots with
  * {@link #with(Slot, Stage)} instead of adding a second code path:</p>
  * <ul>
- *   <li>{@link Slot#GUARD}: P9, spec 14.1 (rate limits per staff member, locks)</li>
+ *   <li>{@link Slot#GUARD}: P9, spec 14.1 (rate limits per staff member, locks; {@link #guard})</li>
  *   <li>{@link Slot#APPROVAL}: P4/P8, spec 13.4 + 14.6 (requests for big punishments and trainees). Runs before the
  *       length limit, which stays the hard maximum even for approvers.</li>
  *   <li>{@link Slot#DUPLICATE}: P2, spec 12.2 (same reason by another staff member within 15 s)</li>
@@ -52,10 +52,17 @@ final class PunishDecision {
      * staff member's uuid ({@code null} for console and the system), {@code force} = may use {@code -force} (P2, 12.2).
      * {@code trainee} = has {@code skyblock.staff.punish.trainee} (P8, spec 14.6), {@code bulk} = acting inside a bulk
      * action (13.8; a trainee's bulk action is one request per player when {@code bulk} is in training.requests-for).
+     * {@code guardTier} (P9, spec 14.1) = the guard tier of the staff member ({@code null} = never limited: owner,
+     * console, system).
      */
     record Actor(String name, boolean system, Set<Punishment.Type> types, boolean ipBan, boolean silent,
                  Duration maxDuration, boolean bypassExempt, java.util.UUID id, boolean force, boolean approver,
-                 boolean trainee, boolean bulk) {
+                 boolean trainee, boolean bulk, String guardTier) {
+
+        Actor(String name, boolean system, Set<Punishment.Type> types, boolean ipBan, boolean silent, Duration maxDuration,
+              boolean bypassExempt, java.util.UUID id, boolean force, boolean approver, boolean trainee, boolean bulk) {
+            this(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, approver, trainee, bulk, null);
+        }
 
         Actor(String name, boolean system, Set<Punishment.Type> types, boolean ipBan, boolean silent, Duration maxDuration,
               boolean bypassExempt, java.util.UUID id, boolean force, boolean approver) {
@@ -79,17 +86,26 @@ final class PunishDecision {
 
         /** Same actor with {@code skyblock.staff.punish.approve} (spec 13.4). */
         Actor withApprover(boolean value) {
-            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, value, trainee, bulk);
+            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, value, trainee, bulk,
+                    guardTier);
         }
 
         /** Same actor as a trainee or not (P8, spec 14.6). */
         Actor withTrainee(boolean value) {
-            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, approver, value, bulk);
+            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, approver, value, bulk,
+                    guardTier);
         }
 
         /** Same actor inside a bulk action or not (13.8). */
         Actor inBulk(boolean value) {
-            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, approver, trainee, value);
+            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, approver, trainee, value,
+                    guardTier);
+        }
+
+        /** Same actor with this guard tier (P9, spec 14.1; {@code null} = never limited). */
+        Actor withGuardTier(String tier) {
+            return new Actor(name, system, types, ipBan, silent, maxDuration, bypassExempt, id, force, approver, trainee, bulk,
+                    tier);
         }
     }
 
@@ -198,6 +214,16 @@ final class PunishDecision {
         }
     }
 
+    /**
+     * What the guard stage asks (P9, spec 14.1): the decision for one more punishment of {@code kind} by {@code staff}.
+     * Implemented by {@code GuardService} from a snapshot (window counts + stored state); it must not change anything,
+     * because menu previews run the same pipeline.
+     */
+    @FunctionalInterface
+    interface GuardView {
+        Guard.Decision check(java.util.UUID staff, String tier, Guard.Kind kind, long now);
+    }
+
     /** Continue (maybe with a changed input) or stop. */
     sealed interface Result permits Next, Stop {
     }
@@ -245,6 +271,13 @@ final class PunishDecision {
     static PunishDecision full(Duration duplicateWindow, Approval.Settings approval, Training.Settings training) {
         PunishDecision d = full(duplicateWindow, approval);
         return training == null ? d : d.with(Slot.TRAINING, training(training));
+    }
+
+    /** P9: the P8 pipeline plus the guard (spec 14.1, {@code guard == null} = off). */
+    static PunishDecision full(Duration duplicateWindow, Approval.Settings approval, Training.Settings training,
+                               GuardView guard) {
+        PunishDecision d = full(duplicateWindow, approval, training);
+        return guard == null ? d : d.with(Slot.GUARD, guard(guard));
     }
 
     private static PunishDecision p1() {
@@ -307,6 +340,33 @@ final class PunishDecision {
             return stop(Outcome.BLOCKED, "offline", "error.kick-offline", in);
         }
         return new Next(in);
+    }
+
+    /**
+     * Guard (spec 14.1): a locked or blocked staff member is refused, and in block mode the punishment that would go over
+     * a limit is refused too ({@code trigger = block}: the service then blocks the staff member, alerts and audits).
+     * Runs right after the target checks, so a locked person can't even create requests. The system, the console and
+     * staff without a tier are never limited. Pure: {@code view} only reads.
+     */
+    static Stage guard(GuardView view) {
+        return in -> {
+            Actor a = in.actor();
+            if (a.system() || a.id() == null) {
+                return new Next(in);
+            }
+            Guard.Decision d = view.check(a.id(), a.guardTier(), Guard.Kind.of(in.type()), in.now());
+            if (d == null) {
+                return new Next(in);
+            }
+            return switch (d.verdict()) {
+                case LOCKED -> stop(Outcome.BLOCKED, "guard", "guard.locked", in);
+                case BLOCKED -> stop(Outcome.BLOCKED, "guard", "guard.blocked", in);
+                case BLOCK_NOW -> stop(Outcome.BLOCKED, "guard", "guard.blocked", in, "trigger", "block",
+                        "limit", d.hit().limit().id(), "count", String.valueOf(d.hit().count()),
+                        "max", String.valueOf(d.hit().max()));
+                case OK, ALERT -> new Next(in);
+            };
+        };
     }
 
     /** The actor may use this kind of punishment and its flags. */

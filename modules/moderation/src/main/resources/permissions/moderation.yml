@@ -148,3 +148,17 @@ skyblock.staff.notify.auto:
 skyblock.staff.notify.report:
   description: Staff alert type 'report' (monthly punishment report ready, P10); switch with /pnotify
   default: op
+
+# --- Phase P, P9: staff guard + rollback (spec 14.1), data deletion (spec 14.10) ---
+skyblock.admin.punish.guard:
+  description: /pguard allow|lock|unlock|status (staff guard controls)
+  default: op
+skyblock.admin.punish.guard.exempt:
+  description: Never limited by the staff guard (the owner). A /pguard lock still applies.
+  default: op
+skyblock.admin.punish.rollback:
+  description: /prollback <staff> <period> (undo a staff member's recent punishments after abuse or a hacked account)
+  default: op
+skyblock.admin.punish.purge:
+  description: /ppurge <player> preview|confirm (delete a player's personal data on request)
+  default: op

@@ -75,6 +75,8 @@ final class Training {
             case KICK -> Kind.KICK;
             case WARN -> Kind.WARN;
             case ISLAND_KICK, ISLAND_BAN, COOP_REMOVE, COOP_BLOCK -> Kind.ISLAND;
+            // P9, spec 14.5: a report block is a communication restriction like a mute (same permission, same kind)
+            case REPORT_BLOCK -> Kind.MUTE;
         };
     }
 

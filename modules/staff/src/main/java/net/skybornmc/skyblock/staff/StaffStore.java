@@ -192,6 +192,32 @@ final class StaffStore {
         return db.run(c -> Sql.update(c, "UPDATE reports SET reporter_notified = TRUE WHERE id = ?", id));
     }
 
+    // ------------------------------------------------------------------ false reports + report blocks (Phase P 14.5)
+
+    /** {@code reporter}'s reports closed as {@code outcome} at or after {@code since} (this one included once closed). */
+    CompletableFuture<Integer> closedCount(UUID reporter, Report.Outcome outcome, long since) {
+        return db.async(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM reports WHERE reporter = ? AND status = 'closed' "
+                + "AND outcome = ? AND closed_at >= ?", rs -> rs.getInt(1), Sql.toBytes(reporter), outcome.name(), since).orElse(0));
+    }
+
+    /** Stores a report block (spec 14.5). {@code until == null} = until lifted. */
+    CompletableFuture<Void> addReportBlock(UUID player, Long until, String reference, long now) {
+        return db.run(c -> Sql.update(c, "INSERT INTO report_blocks (player_uuid, until_ms, reference, created) VALUES (?, ?, ?, ?)",
+                Sql.toBytes(player), until, reference.length() > 48 ? reference.substring(0, 48) : reference, now));
+    }
+
+    /** Lifts the active block(s) set with {@code reference}. Completes with whether one was active. */
+    CompletableFuture<Boolean> liftReportBlock(String reference, long now) {
+        return db.async(c -> Sql.update(c, "UPDATE report_blocks SET lifted_at = ? WHERE reference = ? AND lifted_at IS NULL "
+                + "AND (until_ms IS NULL OR until_ms > ?)", now, reference, now) > 0);
+    }
+
+    /** The ends of {@code player}'s report blocks in force at {@code now} ({@code null} entries = permanent). */
+    CompletableFuture<List<Long>> activeReportBlocks(UUID player, long now) {
+        return db.async(c -> Sql.query(c, "SELECT until_ms FROM report_blocks WHERE player_uuid = ? AND lifted_at IS NULL "
+                + "AND (until_ms IS NULL OR until_ms > ?)", rs -> Sql.nullableLong(rs, "until_ms"), Sql.toBytes(player), now));
+    }
+
     private static Report map(ResultSet rs) throws SQLException {
         return new Report(rs.getLong("id"), rs.getLong("created_at"), Sql.uuid(rs, "reporter"), rs.getString("reporter_name"),
                 Sql.uuid(rs, "target"), rs.getString("target_name"), rs.getString("reason"), rs.getString("details"),

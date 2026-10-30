@@ -57,6 +57,10 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param sanctions        economy and item sanctions (13.1)
      * @param training         training mode for new staff (14.6)
      * @param notifications    notification settings: always-on types, Discord channel per type (14.9)
+     * @param guard            rogue or hacked staff protection (14.1)
+     * @param rollback         /prollback (14.1)
+     * @param falseReports     false report penalty (14.5)
+     * @param purge            data deletion, /ppurge (14.10)
      */
     record Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
                   java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
@@ -64,7 +68,24 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
                   PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
                   WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal,
                   List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network,
-                  SanctionRules.Settings sanctions, Training.Settings training, NotifyRules.Settings notifications) {
+                  SanctionRules.Settings sanctions, Training.Settings training, NotifyRules.Settings notifications,
+                  Guard.Settings guard, RollbackRules.Settings rollback, FalseReportRules.Settings falseReports,
+                  PurgeRules.Settings purge) {
+
+        /** The P8 set of keys; the P9 ones get their defaults. */
+        Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
+               java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
+               boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
+               PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
+               WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal,
+               List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network,
+               SanctionRules.Settings sanctions, Training.Settings training, NotifyRules.Settings notifications) {
+            this(undoWindow, duplicateWindow, duplicateConfirm, offenceExpire, statsZone, statsCache, statsPeriod, statsTop,
+                    closeReports, evidence, notes, ack, rulesLink, discord, playerView, chatSuggestions, approval, watchlist,
+                    probation, muteEnded, bulk, appeal, neverAuto, lockdown, raid, network, sanctions, training, notifications,
+                    Guard.Settings.DEFAULT, RollbackRules.Settings.DEFAULT, FalseReportRules.Settings.DEFAULT,
+                    PurgeRules.Settings.DEFAULT);
+        }
 
         /** The P7 set of keys; the P8 ones get their defaults. */
         Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,

@@ -136,6 +136,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
     private Sanctions sanctions;
     /** P8: notification settings per staff member (14.9). */
     private StaffNotify notify;
+    /** P9: guard + rollback (14.1), false reports (14.5), data deletion (14.10). */
+    private GuardService guard;
+    private RollbackService rollback;
+    private PurgeService purge;
     /** False after disable: the dupe detector keeps its handlers, this stops ours. */
     private volatile boolean enabled;
     private boolean dupeHooked;
@@ -232,6 +236,24 @@ public final class ModerationModule implements SkyblockModule, Listener {
         sanctions.start();
         sanctions.notified(p -> service.wants(p, NotifyRules.Type.PUNISHMENTS));
         core.services().register(ID, net.skybornmc.skyblock.common.moderation.SanctionService.class, sanctions);
+        // P9, spec 14.1: the guard (pipeline slot GUARD + sanctions) counts what each staff member applied
+        guard = new GuardService(core, msg, new GuardStore(core.database()), () -> templates.config().extras().guard(),
+                this::rankTiers);
+        guard.wire(service, extras);
+        guard.start();
+        service.guard(guard);
+        sanctions.guard(guard);
+        service.store().onApplied(p -> {
+            UUID who = p.approvedBy() != null ? p.approvedBy() : p.issuer(); // an approved request counts for the approver
+            guard.recorded(who, p.approvedBy() != null ? p.approvedByName() : p.issuerName(), Guard.Kind.of(p.type()),
+                    System.currentTimeMillis());
+        });
+        rollback = new RollbackService(core, msg, service, sanctions, () -> templates.config().extras());
+        purge = new PurgeService(core, msg, service, () -> templates.config().extras(), this::refreshAfterPurge);
+        // P9, spec 14.5: the reports module asks this when a report is closed as invalid
+        core.services().register(ID, net.skybornmc.skyblock.common.moderation.FalseReports.class,
+                new FalseReportService(core, service, templates, () -> templates.config().extras(),
+                        () -> templates.config().warnRules()));
         enabled = true;
         if (core.dupes() != null && !dupeHooked) {
             dupeHooked = true; // the detector has no removeHandler: hook once, gated by `enabled`
@@ -255,7 +277,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
         bannedNamesTask = core.scheduler().asyncRepeat(20L, 600L, this::refreshBannedNames);
         ackTask = core.scheduler().repeat("moderation:ack", 20L, 20L, extras::tick);
         // spec 12.4: evidence older than the retention is deleted (at start, then every 6 hours)
-        purgeTask = core.scheduler().asyncRepeat(200L, 20L * 60 * 60 * 6, extras::purgeEvidence);
+        purgeTask = core.scheduler().asyncRepeat(200L, 20L * 60 * 60 * 6, () -> {
+            extras.purgeEvidence();
+            purgeLedgers(); // spec 14.10: purged ledgers past keep-ledger
+        });
         lockdown.start();
         for (Player p : Bukkit.getOnlinePlayers()) {
             extras.joined(p);
@@ -448,6 +473,39 @@ public final class ModerationModule implements SkyblockModule, Listener {
         service.store().staffNames().thenAccept(names -> staffNames = List.copyOf(names)).exceptionally(e -> null);
         service.store().recentNoteIds(null).thenAccept(ids -> recentNoteIds = List.copyOf(ids)).exceptionally(e -> null);
         refreshWatched();
+    }
+
+    /** The rank tiers of moderation.yml → limits ({@code helper=1d} → {@code helper}), for the guard tiers (14.1). */
+    private List<String> rankTiers() {
+        List<String> out = new ArrayList<>();
+        for (String entry : config.maxDurations) {
+            String name = entry.split("=", 2)[0].strip();
+            if (!name.isEmpty()) {
+                out.add(name);
+            }
+        }
+        return out;
+    }
+
+    /** Spec 14.10: deletes purged ledger rows older than keep-ledger (async, with the evidence purge). */
+    private void purgeLedgers() {
+        PurgeRules.Settings s = templates.config().extras().purge();
+        service.store().purgeLedgers(s, System.currentTimeMillis()).thenAccept(n -> {
+            if (n > 0) {
+                core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.PUNISHMENT, "purge_ledger_expired",
+                        net.skybornmc.skyblock.common.audit.Actor.system("purge"), Map.of("rows", n,
+                                "keep_ledger", PunishConfig.text(s.keepLedger())));
+            }
+        }).exceptionally(e -> {
+            plugin.getLogger().log(Level.WARNING, "Purged ledger cleanup failed", e);
+            return null;
+        });
+    }
+
+    /** After a purge: names and ids in the tab-completion caches are refreshed. */
+    private void refreshAfterPurge() {
+        noteIds.clear();
+        core.scheduler().async(this::refreshBannedNames);
     }
 
     private void refreshWatched() {
@@ -727,11 +785,77 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .example("pnotify watchlist off")
                 .executes(ctx -> pnotify(ctx.player(), ctx.getOr(notifyType, null), ctx.getOr(notifyState, null))));
 
+        // ---- P9, spec 14.1: /pguard allow|lock|unlock|status, /prollback <staff> <period> [confirm]; 14.10: /ppurge
+        Arg<String> guardAllowWho = staffArg("staff");
+        Arg<String> guardLockWho = staffArg("staff");
+        Arg<String> guardUnlockWho = Arg.word("staff", (sender, raw) -> raw, Suggest.of(() -> guard.entryNames()));
+        Arg<Duration> guardAllowFor = Arg.word("duration", (sender, raw) -> {
+            try {
+                Duration d = net.skybornmc.skyblock.common.command.Durations.parse(raw);
+                if (d.isZero() || d.isNegative() || d.compareTo(Duration.ofDays(1)) > 0) {
+                    throw fail("guard.bad-length", Msg.p("input", raw));
+                }
+                return d;
+            } catch (IllegalArgumentException e) {
+                throw CommandFailure.of("invalid-duration", Msg.p("input", raw));
+            }
+        }, Suggest.of(() -> List.of("30m", "1h", "2h", "6h")));
+        commands.register(CommandSpec.command("pguard")
+                .description("Guard against rogue or hacked staff: allow <staff> [time] (lift a block), lock/unlock <staff>, status")
+                .category("Staff").permission(GuardService.PERM_GUARD).example("pguard status")
+                .executes(ctx -> guard.status(ctx.sender()))
+                .sub(CommandSpec.sub("allow").arg(guardAllowWho).optional(guardAllowFor)
+                        .description("Lift a block; limits only alert for this time (default 30m)")
+                        .executes(ctx -> guard.allow(ctx.sender(), ctx.get(guardAllowWho), ctx.getOr(guardAllowFor, null))))
+                .sub(CommandSpec.sub("lock").arg(guardLockWho)
+                        .description("Refuse every punishment of this staff member at once, until unlock")
+                        .executes(ctx -> guard.lock(ctx.sender(), ctx.get(guardLockWho))))
+                .sub(CommandSpec.sub("unlock").arg(guardUnlockWho)
+                        .description("Back to normal (clears a lock, a block or an allowance)")
+                        .executes(ctx -> guard.unlock(ctx.sender(), ctx.get(guardUnlockWho))))
+                .sub(CommandSpec.sub("status").description("Blocked, locked and allowed staff, and who is near a limit")
+                        .executes(ctx -> guard.status(ctx.sender()))));
+        Arg<String> rollbackWho = staffArg("staff");
+        Arg<Duration> rollbackPeriod = Arg.word("period", (sender, raw) -> {
+            try {
+                return net.skybornmc.skyblock.common.command.Durations.parse(raw);
+            } catch (IllegalArgumentException e) {
+                throw CommandFailure.of("invalid-duration", Msg.p("input", raw));
+            }
+        }, Suggest.of(() -> rollback.periodHints()));
+        Arg<String> rollbackConfirm = Args.oneOf("confirm", () -> List.of("confirm"));
+        commands.register(CommandSpec.command("prollback")
+                .description("Undo a staff member's punishments of the last <period> (15m to 7d) after abuse or a hacked account; shows a preview first")
+                .category("Staff").permission(RollbackService.PERM).arg(rollbackWho).arg(rollbackPeriod).optional(rollbackConfirm)
+                .example("prollback Alex 1h")
+                .executes(ctx -> rollback.run(ctx.sender(), ctx.get(rollbackWho), ctx.get(rollbackPeriod), ctx.has(rollbackConfirm))));
+        Arg<String> purgeWho = player;
+        Arg<String> purgeAction = Args.oneOf("action", () -> List.of("preview", "confirm"));
+        commands.register(CommandSpec.command("ppurge")
+                .description("Delete a player's personal data on request: preview shows what is removed and kept, confirm (typed) does it")
+                .category("Staff").permission(PurgeService.PERM).arg(purgeWho).optional(purgeAction)
+                .example("ppurge Steve preview")
+                .executes(ctx -> purge.run(ctx.sender(), ctx.get(purgeWho), "confirm".equals(ctx.getOr(purgeAction, "preview")))));
+
         Arg<String> altsTarget = player;
         commands.register(CommandSpec.command("alts")
                 .description("Accounts that share an IP address with a player").category("Staff").permission(PERM_ALTS)
                 .arg(altsTarget).example("alts Steve")
                 .executes(ctx -> alts(ctx.sender(), ctx.get(altsTarget))));
+    }
+
+    /** A staff member: online players and everyone who ever punished (also accounts that left). */
+    private Arg<String> staffArg(String name) {
+        return Arg.word(name, (sender, raw) -> raw, Suggest.of(() -> {
+            List<String> out = new ArrayList<>();
+            Bukkit.getOnlinePlayers().forEach(p -> {
+                if (p.hasPermission(PERM_NOTIFY)) {
+                    out.add(p.getName());
+                }
+            });
+            out.addAll(staffNames);
+            return out.stream().distinct().toList();
+        }));
     }
 
     // ================================================================== /pnotify (P8, spec 14.9)
@@ -891,6 +1015,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
             case WARN -> PERM_WARN;
             case KICK -> PERM_KICK;
             case ISLAND_KICK, ISLAND_BAN, COOP_REMOVE, COOP_BLOCK -> PERM_ISLAND;
+            case REPORT_BLOCK -> PERM_MUTE; // P9, spec 14.5: a communication restriction, given by whoever may mute
         };
     }
 
@@ -1007,7 +1132,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         CompletableFuture<Optional<Watchlist.Entry>> watch = service.store().activeWatch(uuid, now);
         // P7: island context (spec 13.2, resolved on the main thread) and sanctions (13.1)
         CompletableFuture<IslandSteps.Context> island = service.islandPunish().context(uuid)
-                .exceptionally(e -> IslandSteps.Context.UNAVAILABLE);
+                .exceptionally(e -> IslandSteps.Context.UNAVAILABLE.withReports(service.islandPunish().reportBlocksAvailable()));
         CompletableFuture<List<Sanction>> sanctionList = sanctions.store().history(uuid);
         return CompletableFuture.allOf(history, suggestions, api, notes, noteCount, requests, watch, island, sanctionList).thenApply(v ->
                 new PunishMenus.Target(uuid, name, history.join(), suggestions.join(), api.join(), notes.join(), noteCount.join(),
@@ -1506,6 +1631,13 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 Msg.number("bans", c.bans()), Msg.number("kicks", c.kicks()), Msg.number("given", c.given()));
         msg.send(sender, "stats.reversed", Msg.number("reversed", c.reversed()), Msg.number("percent", c.reversedPercent()),
                 Msg.number("net", c.net()));
+        if (c.rolledBack() > 0) {
+            // P9, spec 14.1: reversed by /prollback (also counted in "reversed"); never offences afterwards
+            msg.send(sender, "stats.rolled-back", Msg.number("count", c.rolledBack()));
+        }
+        if (c.reportBlocks() > 0) {
+            msg.send(sender, "stats.report-blocks", Msg.number("count", c.reportBlocks())); // P9, spec 14.5
+        }
         msg.send(sender, "stats.suggestions", Msg.number("applied", c.fromSuggestions()));
     }
 

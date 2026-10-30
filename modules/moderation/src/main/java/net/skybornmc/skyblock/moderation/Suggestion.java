@@ -30,6 +30,8 @@ record Suggestion(long id, UUID target, String targetName, String kind, Integer 
     static final String NOTE_ALREADY = "already-punished";
     /** Note on REMOVED rows: the warn that fired it was undone (spec 12.1). */
     static final String NOTE_UNDONE = "undone";
+    /** The warn that fired it was reversed by a rollback (P9, spec 14.1). */
+    static final String NOTE_ROLLBACK = "rollback";
     /** Note prefix on REQUESTED rows: {@code request:<id>} of the approval request it became (spec 13.4). */
     static final String NOTE_REQUEST = "request:";
 

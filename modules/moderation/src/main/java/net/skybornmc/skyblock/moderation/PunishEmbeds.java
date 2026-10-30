@@ -125,6 +125,37 @@ final class PunishEmbeds {
                 text.apply("footer"), at);
     }
 
+    /**
+     * A guard alert (P9, spec 14.1): who, which limit, how many in which window, and whether they are blocked now. Staff
+     * names and numbers only. {@code event}: {@code alert} or {@code blocked}.
+     */
+    static DiscordSink.Embed guard(String staff, String event, Guard.Hit hit, Duration window, long at, PunishConfig.Discord cfg,
+                                   Function<String, String> text) {
+        List<DiscordSink.Field> fields = new ArrayList<>();
+        fields.add(new DiscordSink.Field(text.apply("fields.staff"), name(staff, text), true));
+        if (hit != null) {
+            fields.add(new DiscordSink.Field(text.apply("fields.limit"), text.apply("guard-limits." + hit.limit().id()), true));
+            fields.add(new DiscordSink.Field(text.apply("fields.applied"), hit.count() + " / " + hit.max(), true));
+        }
+        fields.add(new DiscordSink.Field(text.apply("fields.window"), Templates.Step.compact(window), true));
+        return new DiscordSink.Embed(text.apply("titles.guard-" + event), cfg.color("ban"), fields, text.apply("footer"), at);
+    }
+
+    /**
+     * A rollback (P9, spec 14.1): one embed with the counts (whose punishments, who ran it, the period). Never player
+     * names, IPs or reasons.
+     */
+    static DiscordSink.Embed rollback(String staff, String by, Duration period, int punishments, int sanctions, long at,
+                                      PunishConfig.Discord cfg, Function<String, String> text) {
+        List<DiscordSink.Field> fields = new ArrayList<>();
+        fields.add(new DiscordSink.Field(text.apply("fields.rolled-back-staff"), name(staff, text), true));
+        fields.add(new DiscordSink.Field(text.apply("fields.staff"), name(by, text), true));
+        fields.add(new DiscordSink.Field(text.apply("fields.period"), Templates.Step.compact(period), true));
+        fields.add(new DiscordSink.Field(text.apply("fields.punishments"), String.valueOf(punishments), true));
+        fields.add(new DiscordSink.Field(text.apply("fields.sanctions"), String.valueOf(sanctions), true));
+        return new DiscordSink.Embed(text.apply("titles.rollback"), cfg.color("pardon"), fields, text.apply("footer"), at);
+    }
+
     /** "Steve (mute 30m), Alex (mute 6h) +3 more": names and lengths only. */
     static String players(List<Punishment> list, boolean withStep) {
         List<String> parts = new ArrayList<>();

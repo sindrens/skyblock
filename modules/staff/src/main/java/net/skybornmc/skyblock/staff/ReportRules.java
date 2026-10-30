@@ -73,6 +73,43 @@ final class ReportRules {
                 && (staff == null || !staff.equals(r.claimedBy()))).count();
     }
 
+    /**
+     * Report blocks (Phase P 14.5): of the ends of the blocks in force ({@code null} = permanent), when the player can
+     * report again: empty = not blocked, {@code Optional.of(Long.MAX_VALUE)} = permanent, else the latest end.
+     */
+    static Optional<Long> blockedUntil(List<Long> activeEnds) {
+        if (activeEnds == null || activeEnds.isEmpty()) {
+            return Optional.empty();
+        }
+        long latest = 0;
+        for (Long end : activeEnds) {
+            if (end == null) {
+                return Optional.of(Long.MAX_VALUE);
+            }
+            latest = Math.max(latest, end);
+        }
+        return Optional.of(latest);
+    }
+
+    /** Only the outcome {@code invalid} is a false report (no-evidence and duplicate are honest mistakes, spec 14.5). */
+    static boolean falseReport(Report.Outcome outcome) {
+        return outcome == Report.Outcome.INVALID;
+    }
+
+    /** English ordinal suffix key for {@code n}: {@code st} (1, 21), {@code nd} (2, 22), {@code rd} (3, 23), else {@code th}. */
+    static String ordinalSuffix(int n) {
+        int mod100 = Math.abs(n) % 100;
+        if (mod100 >= 11 && mod100 <= 13) {
+            return "th";
+        }
+        return switch (Math.abs(n) % 10) {
+            case 1 -> "st";
+            case 2 -> "nd";
+            case 3 -> "rd";
+            default -> "th";
+        };
+    }
+
     /** Cleans free text for storage/display: one line, trimmed, max length. */
     static String clean(String text, int max) {
         String one = text.replaceAll("[\\r\\n\\t]+", " ").replaceAll("\\s{2,}", " ").strip();

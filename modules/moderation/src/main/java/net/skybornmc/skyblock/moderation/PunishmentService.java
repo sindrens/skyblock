@@ -239,10 +239,21 @@ final class PunishmentService {
         return extras.get();
     }
 
-    /** The one pipeline: duplicate window (P2), probation and approval (P4) from the current config. */
+    /** The guard of spec 14.1 (P9; set by the module, {@code null} = no guard). */
+    private GuardService guard;
+
+    void guard(GuardService value) {
+        this.guard = value;
+    }
+
+    GuardService guard() {
+        return guard;
+    }
+
+    /** The one pipeline: guard (P9), duplicate window (P2), probation and approval (P4), training (P8) from the config. */
     PunishDecision decision() {
         PunishConfig.Extras x = extras.get();
-        return PunishDecision.full(x.duplicateWindow(), x.approval(), x.training());
+        return PunishDecision.full(x.duplicateWindow(), x.approval(), x.training(), guard);
     }
 
     /** True if {@code sender} is a trainee (spec 14.6, {@code skyblock.staff.punish.trainee}). Console never is. */
@@ -262,7 +273,8 @@ final class PunishmentService {
                 sender.hasPermission(ModerationModule.PERM_IPBAN), sender.hasPermission(ModerationModule.PERM_SILENT),
                 maxDuration(sender), sender.hasPermission(ModerationModule.PERM_EXEMPT_BYPASS),
                 sender instanceof Player p ? p.getUniqueId() : null, sender.hasPermission(ModerationModule.PERM_FORCE),
-                sender.hasPermission(ModerationModule.PERM_APPROVE), trainee(sender), false);
+                sender.hasPermission(ModerationModule.PERM_APPROVE), trainee(sender), false,
+                guard == null ? null : guard.tierOf(sender));
     }
 
     /** The pipeline input for {@code sender} punishing {@code target}. Main thread. Active punishments are filled in later. */
@@ -373,6 +385,8 @@ final class PunishmentService {
         if (!v.applied()) {
             if (!r.bulk()) {
                 tell(sender, v, r.targetName());
+            } else if (guard != null && "guard".equals(v.stage())) {
+                guard.triggered(sender, v); // 14.1: a bulk action that goes over a limit blocks too (counted per player)
             }
             return;
         }
@@ -400,6 +414,9 @@ final class PunishmentService {
 
     /** Tells the actor why nothing was applied. */
     void tell(CommandSender sender, PunishDecision.Verdict v, String targetName) {
+        if (guard != null && "guard".equals(v.stage())) {
+            guard.triggered(sender, v); // 14.1: going over a limit in block mode blocks the staff member (once)
+        }
         java.util.List<TagResolver> tags = new java.util.ArrayList<>();
         v.args().forEach((k, val) -> tags.add(Msg.p(k, val)));
         tags.add(Msg.p("player", targetName == null ? "?" : targetName));
@@ -577,6 +594,10 @@ final class PunishmentService {
         List<Player> affected = affected(p);
         if (p.type().island()) {
             islandPunish.apply(p, this); // P7, spec 13.2: enforced by the islands module (the player is told there)
+            affected = List.of();
+        }
+        if (p.type() == Punishment.Type.REPORT_BLOCK) {
+            reportBlock(p); // P9, spec 14.5: enforced by the reports (staff) module
             affected = List.of();
         }
         if (p.type() == Punishment.Type.BAN) {
@@ -857,15 +878,74 @@ final class PunishmentService {
                 }, main);
     }
 
+    // ------------------------------------------------------------------ report blocks (P9, spec 14.5)
+
+    /** The reports module's report blocks, if it runs. */
+    private Optional<net.skybornmc.skyblock.common.moderation.ReportBlocking> reportBlocking() {
+        return core.services().optional(net.skybornmc.skyblock.common.moderation.ReportBlocking.class);
+    }
+
+    /** Reference of the report block a punishment set ({@code punishment:<id>}), used to lift exactly that one. */
+    static String reportReference(Punishment p) {
+        return "punishment:" + p.id();
+    }
+
+    /**
+     * Enforces a stored report block (main thread): the reports module refuses {@code /report} until it ends; the player
+     * is told. If the reports module is gone, staff are told and the history row stays (same rule as island steps).
+     */
+    private void reportBlock(Punishment p) {
+        Optional<net.skybornmc.skyblock.common.moderation.ReportBlocking> blocks = reportBlocking();
+        if (blocks.isEmpty() || p.target() == null) {
+            reportBlockFailed(p);
+            return;
+        }
+        blocks.get().blockReporting(p.target(), p.expires(), reportReference(p)).whenCompleteAsync((v, e) -> {
+            if (e != null) {
+                core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Report block failed", e);
+                reportBlockFailed(p);
+                return;
+            }
+            Player online = Bukkit.getPlayer(p.target());
+            if (online != null) {
+                msg.send(online, "report-block.you", parts(online, p));
+                core.sounds().play(online, "error");
+            }
+        }, main);
+    }
+
+    private void reportBlockFailed(Punishment p) {
+        notifyStaff(NotifyRules.Type.PUNISHMENTS, null, "report-block.apply-failed", Msg.p("id", p.id()),
+                Msg.p("player", p.targetName()));
+        core.audit().log(AuditCategory.PUNISHMENT, "report_block_failed", Actor.SYSTEM,
+                p.target() == null ? null : p.target().toString(), p.targetName(), null, null, Map.of("id", p.id()));
+    }
+
+    /** Lifts the report block of an undone / rolled back punishment (another active one keeps its own block). */
+    private void liftReportBlock(Punishment p) {
+        reportBlocking().ifPresent(b -> b.liftReportBlock(reportReference(p)).exceptionally(e -> {
+            core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Lifting a report block failed", e);
+            return false;
+        }));
+    }
+
     /** Ends the effects of an undone punishment at once: unmute/unban (unless another one is still active), tell the player. */
     void lift(Punishment p) {
+        lift(p, "undo");
+    }
+
+    /**
+     * Same, with the player messages of {@code prefix} ({@code undo} or {@code rollback}: {@code <prefix>.player-mute},
+     * {@code -mute-still}, {@code -warn}, {@code -island}, {@code -report}).
+     */
+    void lift(Punishment p, String prefix) {
         UUID target = p.target();
         switch (p.type()) {
             case MUTE -> store.activeMute(target, null).thenAcceptAsync(other -> {
                 cacheMute(target, other.orElse(null));
                 Player online = Bukkit.getPlayer(target);
                 if (online != null) {
-                    msg.send(online, other.isPresent() ? "undo.player-mute-still" : "undo.player-mute", parts(online, p));
+                    msg.send(online, prefix + (other.isPresent() ? ".player-mute-still" : ".player-mute"), parts(online, p));
                 }
             }, main);
             case BAN -> store.activeBan(target, null).thenAcceptAsync(other -> {
@@ -876,14 +956,21 @@ final class PunishmentService {
             case WARN -> {
                 Player online = Bukkit.getPlayer(target);
                 if (online != null) {
-                    msg.send(online, "undo.player-warn", parts(online, p));
+                    msg.send(online, prefix + ".player-warn", parts(online, p));
                 }
             }
             case ISLAND_BAN, COOP_BLOCK -> {
                 islandPunish.lift(p, Actor.SYSTEM);
                 Player online = Bukkit.getPlayer(target);
                 if (online != null) {
-                    msg.send(online, "undo.player-island", parts(online, p));
+                    msg.send(online, prefix + ".player-island", parts(online, p));
+                }
+            }
+            case REPORT_BLOCK -> {
+                liftReportBlock(p);
+                Player online = Bukkit.getPlayer(target);
+                if (online != null) {
+                    msg.send(online, prefix + ".player-report", parts(online, p));
                 }
             }
             default -> {
@@ -1208,6 +1295,7 @@ final class PunishmentService {
             case ISLAND_BAN -> "island_ban";
             case COOP_REMOVE -> "coop_remove";
             case COOP_BLOCK -> "coop_block";
+            case REPORT_BLOCK -> "report_block";
         };
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("id", p.id());
