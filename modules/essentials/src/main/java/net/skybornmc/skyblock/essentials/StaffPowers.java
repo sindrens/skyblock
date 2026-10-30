@@ -4,6 +4,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
+import net.skybornmc.skyblock.common.flight.FlightGrants;
 import net.skybornmc.skyblock.common.item.ItemKeys;
 import net.skybornmc.skyblock.common.item.StaffItems;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
@@ -33,6 +34,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -68,6 +70,9 @@ final class StaffPowers implements Listener {
     private final Set<UUID> god = ConcurrentHashMap.newKeySet();
     /** Players whose flight was turned on with {@code /fly} (only that flight is ever taken away here). */
     private final Set<UUID> flying = ConcurrentHashMap.newKeySet();
+    /** Leftover flight removed on join while in the air: the next fall is soft until then (epoch millis). */
+    private final Map<UUID, Long> softLanding = new ConcurrentHashMap<>();
+    private static final long SOFT_LANDING_MILLIS = 15_000L;
     /** Staff blocks broken this tick, waiting for their drop event ({@code world/x/y/z}). */
     private final Set<String> brokenStaffBlocks = ConcurrentHashMap.newKeySet();
     private Scheduler.Task task;
@@ -137,11 +142,58 @@ final class StaffPowers implements Listener {
         return false;
     }
 
-    void flyGranted(UUID player, boolean on) {
-        if (on) {
-            flying.add(player);
-        } else {
-            flying.remove(player);
+    /** Is {@code /fly} on for this player (its own grant, not island fly or staff mode)? */
+    boolean flyOn(UUID player) {
+        return flying.contains(player);
+    }
+
+    private static boolean survivalLike(Player player) {
+        return player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE;
+    }
+
+    /** Gives {@code /fly}: recorded in {@link FlightGrants} so island fly and staff mode never take it away. */
+    void grantFly(Player player) {
+        flying.add(player.getUniqueId());
+        FlightGrants.grant(player.getUniqueId(), FlightGrants.FLY);
+        if (survivalLike(player) && !player.getAllowFlight()) {
+            player.setAllowFlight(true);
+        }
+    }
+
+    /** Takes {@code /fly} away; flight stays when another source (island fly, staff mode, freeze) still gives it. */
+    void revokeFly(Player player) {
+        flying.remove(player.getUniqueId());
+        boolean nobodyElse = FlightGrants.revoke(player.getUniqueId(), FlightGrants.FLY);
+        if (nobodyElse && survivalLike(player)) {
+            player.setFlying(false);
+            player.setAllowFlight(false);
+        }
+    }
+
+    /** Name of the other feature that still gives flight ({@code powers.sources.<id>}), for "you can still fly" texts. */
+    String flightSourceName(Player player) {
+        String source = FlightGrants.otherHolder(player.getUniqueId(), FlightGrants.FLY);
+        if (source == null) {
+            return "";
+        }
+        String raw = core.messages().raw(CommandGroup.MODULE, "powers.sources." + source);
+        return raw == null ? source : raw;
+    }
+
+    /**
+     * Vanilla resets {@code allowFlight} on respawn, game mode and some world changes: a {@code /fly} that is still on
+     * (and still allowed) is given back, so the toggle never says "on" while the player can't fly.
+     */
+    private void reapply(Player player) {
+        if (player.isOnline() && flying.contains(player.getUniqueId()) && survivalLike(player) && !player.getAllowFlight()
+                && StaffPowerRules.keep(config.staffPowersEnabled, inMode(player))) {
+            player.setAllowFlight(true);
+        }
+    }
+
+    private void reapplyLater(Player player) {
+        if (flying.contains(player.getUniqueId())) {
+            core.scheduler().later("essentials:fly-reapply", 1L, () -> reapply(player));
         }
     }
 
@@ -155,21 +207,20 @@ final class StaffPowers implements Listener {
             if (player == null) {
                 god.remove(id);
                 flying.remove(id);
+                FlightGrants.revoke(id, FlightGrants.FLY);
                 continue;
             }
             if (StaffPowerRules.keep(config.staffPowersEnabled, inMode(player))) {
+                reapply(player);
                 continue;
             }
             List<String> removed = new ArrayList<>();
             if (god.remove(id)) {
                 removed.add(powerName(StaffPowerRules.Power.GOD));
             }
-            if (flying.remove(id)) {
+            if (flying.contains(id)) {
                 removed.add(powerName(StaffPowerRules.Power.FLY));
-                if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
-                    player.setFlying(false);
-                    player.setAllowFlight(false);
-                }
+                revokeFly(player);
             }
             if (!removed.isEmpty()) {
                 msg.send(player, "powers.removed", Msg.p("powers", String.join(", ", removed)));
@@ -187,8 +238,32 @@ final class StaffPowers implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        god.remove(event.getPlayer().getUniqueId());
-        flying.remove(event.getPlayer().getUniqueId());
+        UUID id = event.getPlayer().getUniqueId();
+        god.remove(id);
+        flying.remove(id);
+        softLanding.remove(id);
+        FlightGrants.revoke(id, FlightGrants.FLY);
+    }
+
+    /** Last listener on quit: nothing about this player's flight sources outlives the session. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onQuitLast(PlayerQuitEvent event) {
+        UUID id = event.getPlayer().getUniqueId();
+        core.scheduler().later("essentials:flight-forget", 1L, () -> {
+            if (Bukkit.getPlayer(id) == null) {
+                FlightGrants.forget(id);
+            }
+        });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onRespawn(PlayerRespawnEvent event) {
+        reapplyLater(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onGameModeChanged(PlayerGameModeChangeEvent event) {
+        reapplyLater(event.getPlayer());
     }
 
     // ------------------------------------------------------------------ creative (owner answer 331)
@@ -228,7 +303,7 @@ final class StaffPowers implements Listener {
         // A refused restore (e.g. leaving staff mode outside the creative worlds) must not leave creative flight behind.
         core.scheduler().later("essentials:creative-refused", 1L, () -> {
             if (player.isOnline() && (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)
-                    && !inMode(player) && !flying.contains(player.getUniqueId())) {
+                    && !inMode(player) && !FlightGrants.any(player.getUniqueId())) {
                 player.setFlying(false);
                 player.setAllowFlight(false);
             }
@@ -238,12 +313,40 @@ final class StaffPowers implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onWorldChange(PlayerChangedWorldEvent event) {
         leaveCreativeIfNotAllowed(event.getPlayer(), "creative.left-area");
+        reapplyLater(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         core.scheduler().later("essentials:creative-join", 2L, () -> leaveCreativeIfNotAllowed(player, "creative.left-area"));
+        // FIXES1: vanilla saves allowFlight with the player. Flight that nothing gives any more (saved while staff mode,
+        // /fly or island fly was on) is taken away once every join handler ran (island fly 2 ticks, freeze, staff
+        // mode recovery), so a survival player never keeps an ownerless flight. The landing is soft.
+        core.scheduler().later("essentials:flight-join", 20L, () -> {
+            if (player.isOnline() && survivalLike(player) && player.getAllowFlight()
+                    && !FlightGrants.any(player.getUniqueId()) && !inMode(player)) {
+                boolean wasFlying = player.isFlying();
+                player.setFlying(false);
+                player.setAllowFlight(false);
+                if (wasFlying) {
+                    softLanding.put(player.getUniqueId(), System.currentTimeMillis() + SOFT_LANDING_MILLIS);
+                }
+            }
+        });
+    }
+
+    /** No fall damage for a player whose leftover flight was just taken away (until the given epoch millis). */
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onFall(org.bukkit.event.entity.EntityDamageEvent event) {
+        if (softLanding.isEmpty() || event.getCause() != org.bukkit.event.entity.EntityDamageEvent.DamageCause.FALL
+                || !(event.getEntity() instanceof Player player)) {
+            return;
+        }
+        Long until = softLanding.remove(player.getUniqueId());
+        if (until != null && until >= System.currentTimeMillis()) {
+            event.setCancelled(true);
+        }
     }
 
     private void leaveCreativeIfNotAllowed(Player player, String key) {

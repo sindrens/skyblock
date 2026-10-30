@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.islands;
 
+import net.skybornmc.skyblock.common.flight.FlightGrants;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -31,8 +32,8 @@ import java.util.UUID;
  * the island's {@code visitor-fly} setting is on. Leaving the border (teleport, being sent off, a setting change) turns
  * fly off at once, and the next fall within {@code fly.landing-protection-seconds} does no damage.
  *
- * <p>Only flight this class granted is ever taken away: players who could already fly (creative, staff mode, freeze)
- * and vanished staff are left alone. Border crossings are checked on block moves (one O(1) lookup); permission, role and setting changes
+ * <p>Only flight this class granted is ever taken away, and only when no other feature still gives flight
+ * ({@link FlightGrants}: {@code /fly}, staff mode, freeze). Creative, spectator and vanished staff are left alone. Border crossings are checked on block moves (one O(1) lookup); permission, role and setting changes
  * by a light periodic check of players in the islands world.</p>
  */
 final class IslandFly implements Listener {
@@ -104,21 +105,27 @@ final class IslandFly implements Listener {
     void update(Player player, Location at) {
         UUID uuid = player.getUniqueId();
         if (ignored(player)) {
-            granted.remove(uuid); // the game mode or staff mode owns flight now
+            if (granted.remove(uuid)) { // the game mode or staff mode owns flight now
+                FlightGrants.revoke(uuid, FlightGrants.ISLAND);
+            }
             return;
         }
         Island island = at != null && islands.isIslandWorld(at.getWorld()) ? islands.islandAt(at.getBlockX(), at.getBlockZ()) : null;
         boolean allowed = island != null && allowed(true, island.roleOrNull(islands.key(player)) != null,
                 islands.flagOn(island, IslandFlag.VISITOR_FLY), player.hasPermission(PERM_FLY), islands.hasWings(island.id()));
         if (allowed) {
-            if (!player.getAllowFlight()) {
-                player.setAllowFlight(true);
+            if (!granted.contains(uuid) || !player.getAllowFlight()) {
+                boolean couldFly = player.getAllowFlight();
                 granted.add(uuid);
+                FlightGrants.grant(uuid, FlightGrants.ISLAND);
                 landing.remove(uuid);
-                if (flyingAtQuit.remove(uuid)) {
-                    player.setFlying(true);
-                } else {
-                    module.msg().actionBar(player, "fly.on");
+                if (!couldFly) {
+                    player.setAllowFlight(true);
+                    if (flyingAtQuit.remove(uuid)) {
+                        player.setFlying(true);
+                    } else {
+                        module.msg().actionBar(player, "fly.on");
+                    }
                 }
             }
         } else if (granted.contains(uuid)) {
@@ -129,6 +136,9 @@ final class IslandFly implements Listener {
     private void revoke(Player player, boolean tell) {
         UUID uuid = player.getUniqueId();
         granted.remove(uuid);
+        if (!FlightGrants.revoke(uuid, FlightGrants.ISLAND) || ignored(player)) {
+            return; // /fly, staff mode or freeze still gives flight (or the game mode owns it): leave it
+        }
         boolean wasFlying = player.isFlying();
         player.setFlying(false);
         player.setAllowFlight(false);
@@ -223,7 +233,9 @@ final class IslandFly implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onGameMode(PlayerGameModeChangeEvent event) {
         Player player = event.getPlayer();
-        granted.remove(player.getUniqueId());
+        if (granted.remove(player.getUniqueId())) {
+            FlightGrants.revoke(player.getUniqueId(), FlightGrants.ISLAND); // re-granted next tick if still allowed
+        }
         module.core().scheduler().later("island-fly-gamemode", 1L, () -> {
             if (player.isOnline()) {
                 update(player, player.getLocation());
@@ -262,8 +274,10 @@ final class IslandFly implements Listener {
             if (player.isFlying()) {
                 flyingAtQuit.add(uuid);
             }
-            player.setFlying(false);
-            player.setAllowFlight(false);
+            if (FlightGrants.revoke(uuid, FlightGrants.ISLAND) && !ignored(player)) {
+                player.setFlying(false);
+                player.setAllowFlight(false);
+            }
         }
     }
 }

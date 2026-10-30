@@ -218,25 +218,41 @@ final class StaffCommands extends CommandGroup implements Listener {
         return Character.toUpperCase(n.charAt(0)) + n.substring(1);
     }
 
+    /**
+     * {@code /fly} (FIXES1): toggles only the flight {@code /fly} itself gave (never island fly, staff mode or freeze),
+     * checks the staff/build mode rule (owner answer 333) before turning it on, and prints the real result once.
+     */
     private void fly(CommandSender sender, Player given) {
         Player target = targetOrSelf(sender, given, Perms.FLY_OTHERS);
-        boolean enable = !target.getAllowFlight();
-        if (enable) {
-            powers.require(StaffPowerRules.Power.FLY, sender, target); // owner answer 333
+        GameMode mode = target.getGameMode();
+        StaffPowerRules.FlyAction action = StaffPowerRules.fly(powers.flyOn(target.getUniqueId()),
+                mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR);
+        boolean self = same(sender, target);
+        if (action == StaffPowerRules.FlyAction.GAME_MODE) {
+            if (self) {
+                msg.send(target, "fly.game-mode", Msg.p("mode", modeName(mode)));
+            } else {
+                msg.send(sender, "fly.game-mode-other", Msg.p("player", target.getName()), Msg.p("mode", modeName(mode)));
+            }
+            return;
         }
-        target.setAllowFlight(enable);
-        powers.flyGranted(target.getUniqueId(), enable);
-        if (!enable) {
-            target.setFlying(false);
-        }
-        String key = enable ? "fly.enabled" : "fly.disabled";
-        if (same(sender, target)) {
-            msg.send(target, key);
+        if (action == StaffPowerRules.FlyAction.TURN_ON) {
+            powers.require(StaffPowerRules.Power.FLY, sender, target); // owner answer 333: staff or build mode only
+            powers.grantFly(target);
         } else {
-            msg.send(sender, key + "-other", Msg.p("player", target.getName()));
-            notifyTarget(sender, target, key + "-notify");
+            powers.revokeFly(target);
         }
-        audit(enable ? "fly_on" : "fly_off", sender, target, Map.of());
+        StaffPowerRules.FlyText text = StaffPowerRules.flyText(powers.flyOn(target.getUniqueId()), target.getAllowFlight());
+        String key = "fly." + text.key();
+        String source = powers.flightSourceName(target);
+        if (self) {
+            msg.send(target, key, Msg.p("source", source));
+        } else {
+            msg.send(sender, key + "-other", Msg.p("player", target.getName()), Msg.p("source", source));
+            notifyTarget(sender, target, (text == StaffPowerRules.FlyText.ENABLED ? "fly.enabled" : "fly.disabled") + "-notify");
+        }
+        audit(action == StaffPowerRules.FlyAction.TURN_ON ? "fly_on" : "fly_off", sender, target,
+                Map.of("still_flying", text == StaffPowerRules.FlyText.DISABLED_STILL_FLYING));
     }
 
     private void speed(Player player, int value, String type) {

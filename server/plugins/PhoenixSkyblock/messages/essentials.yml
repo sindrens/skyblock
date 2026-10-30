@@ -94,21 +94,33 @@ creative:
 
 # Owner answers 333/334: god mode, fly and heal only in staff mode or build mode. <power>, <player>, <powers>.
 powers:
-  need-mode: "<prefix><c:error><sym:cross></c:error> <c:text>Use <c:value><power></c:value> in staff mode (<c:value>/staffmode</c:value>) or build mode (<c:value>/build</c:value>)."
-  target-needs-mode: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>must be in staff mode or build mode for <c:value><power></c:value>."
+  need-mode: "<prefix><c:error><sym:cross></c:error> <c:value><power></c:value> <c:text>only works in staff mode or build mode: <click:run_command:'/s'><hover:show_text:'<c:text>Click to turn on staff mode'><c:action>/s</c:action></hover></click> <c:text>or</c:text> <c:action>/build</c:action><c:text>."
+  target-needs-mode: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>must be in staff mode or build mode for <c:value><power></c:value><c:text>."
   removed: "<prefix><c:warning><sym:dot></c:warning> <c:text>Staff and build mode are off, so <c:value><powers></c:value> <c:text>turned off."
   names:
-    god: "god mode"
-    fly: "fly"
-    heal: "heal"
+    god: "God mode"
+    fly: "Fly"
+    heal: "Heal"
+  # Other features that can give flight at the same time as /fly (FIXES1). <source> in the fly texts.
+  sources:
+    island: "island fly"
+    staff-mode: "staff mode"
+    freeze: "freeze"
+    fly: "/fly"
 
+# /fly only switches its own flight (never island fly or staff mode) and says what you really have afterwards.
+# <source> = the feature that still lets you fly (powers.sources), <mode> = game mode, <player>, <staff>.
 fly:
-  enabled: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>on</c:value>."
-  disabled: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>off</c:value>."
-  enabled-other: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>on</c:value> for <c:value><player></c:value>."
-  disabled-other: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>off</c:value> for <c:value><player></c:value>."
+  enabled: "<prefix><c:success><sym:check></c:success> <c:text>Fly <c:value>on</c:value><c:text>. Double-tap jump to fly."
+  disabled: "<prefix><c:success><sym:check></c:success> <c:text>Fly <c:value>off</c:value><c:text>."
+  disabled-still-flying: "<prefix><c:success><sym:check></c:success> <c:text>/fly <c:value>off</c:value><c:text>. You can still fly here: <c:value><source></c:value><c:text>."
+  enabled-other: "<prefix><c:success><sym:check></c:success> <c:text>Fly <c:value>on</c:value> <c:text>for <c:value><player></c:value><c:text>."
+  disabled-other: "<prefix><c:success><sym:check></c:success> <c:text>Fly <c:value>off</c:value> <c:text>for <c:value><player></c:value><c:text>."
+  disabled-still-flying-other: "<prefix><c:success><sym:check></c:success> <c:text>/fly <c:value>off</c:value> <c:text>for <c:value><player></c:value><c:text>. They can still fly: <c:value><source></c:value><c:text>."
   enabled-notify: "<prefix><c:text>You can fly now <c:muted>(<staff>)</c:muted>."
-  disabled-notify: "<prefix><c:text>You can't fly anymore <c:muted>(<staff>)</c:muted>."
+  disabled-notify: "<prefix><c:text>Your /fly was turned off <c:muted>(<staff>)</c:muted>."
+  game-mode: "<prefix><c:warning><sym:dot></c:warning> <c:text>You always fly in <c:value><mode></c:value><c:text>. /fly is for survival."
+  game-mode-other: "<prefix><c:warning><sym:dot></c:warning> <c:value><player></c:value> <c:text>is in <c:value><mode></c:value> <c:text>and always flies."
 
 speed:
   fly: "<prefix><c:success><sym:check></c:success> <c:text>Fly speed: <c:value><speed></c:value>."

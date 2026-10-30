@@ -54,4 +54,33 @@ class StaffPowerRulesTest {
         assertFalse(StaffPowerRules.keep(true, false));
         assertTrue(StaffPowerRules.keep(false, false));
     }
+
+    /**
+     * FIXES1 regression: the owner on his island (island fly on) ran /fly five times and got "Flying off." every time,
+     * because the toggle read allowFlight (true from island fly). The toggle now reads only its own grant.
+     */
+    @Test
+    void flyToggleReadsOnlyItsOwnGrant() {
+        assertEquals(StaffPowerRules.FlyAction.TURN_ON, StaffPowerRules.fly(false, false),
+                "island fly makes allowFlight true, but /fly was never on: turn /fly on (after the mode check)");
+        assertEquals(StaffPowerRules.FlyAction.TURN_OFF, StaffPowerRules.fly(true, false));
+        assertEquals(StaffPowerRules.FlyAction.GAME_MODE, StaffPowerRules.fly(false, true), "creative/spectator always fly");
+        assertEquals(StaffPowerRules.FlyAction.GAME_MODE, StaffPowerRules.fly(true, true));
+    }
+
+    @Test
+    void flyTextFollowsTheRealResult() {
+        assertEquals(StaffPowerRules.FlyText.ENABLED, StaffPowerRules.flyText(true, true));
+        assertEquals(StaffPowerRules.FlyText.DISABLED, StaffPowerRules.flyText(false, false));
+        assertEquals(StaffPowerRules.FlyText.DISABLED_STILL_FLYING, StaffPowerRules.flyText(false, true),
+                "/fly off on an island: say island fly still works instead of a plain 'off'");
+        assertEquals("disabled-still-flying", StaffPowerRules.FlyText.DISABLED_STILL_FLYING.key());
+    }
+
+    @Test
+    void staffPowerRuleOnlyAppliesToTurningFlyOn() {
+        // Owner answer 333: outside staff/build mode /fly can't be turned on; island fly is not a staff power at all.
+        assertEquals(Check.NEED_MODE, StaffPowerRules.power(Power.FLY, true, false, false, true, false));
+        assertEquals(Check.OK, StaffPowerRules.power(Power.FLY, true, false, true, true, true));
+    }
 }
