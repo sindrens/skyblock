@@ -4,7 +4,11 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.skybornmc.skyblock.common.island.IslandService;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,21 +16,31 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * The sidebar scoreboard (M1.4). Every player gets a personal scoreboard; lines come from {@code messages/hud.yml}
  * ({@code scoreboard.<layout>.title/lines}) with {@code <ph:key>} placeholders and the built-in values below.
+ *
+ * <p>Per-place layouts (SB): {@code hud.yml → places} picks the layout from where the player is ({@link PlaceRules}):
+ * own island, someone else's island, The Depths (variants for The Gate and each wing), spawn, warzone. The board
+ * switches on the tick after a teleport/respawn and right away on a world change; only changed lines are sent, so
+ * switching never flickers. Lines may be conditional ({@code if:key|...}, {@link LayoutLines}).</p>
  *
  * <p>Published as a service so other modules can: add a layout for their context ({@link #addLayout}, e.g. The
  * Depths), add nametag teams to a player's board ({@link #scoreboard}), toggle it ({@link #setEnabled}, used by
@@ -45,19 +59,32 @@ public final class HudService implements Listener {
     private final HudConfig config;
     private final Map<UUID, Sidebar> sidebars = new ConcurrentHashMap<>();
     private final List<LayoutRule> rules = new CopyOnWriteArrayList<>();
+    /** Players whose board switches on the next tick (teleport, respawn). */
+    private final Set<UUID> pending = ConcurrentHashMap.newKeySet();
+    /** Parsed layout lines by layout name (main thread). */
+    private final Map<String, LayoutLines> layouts = new HashMap<>();
+    private volatile PlaceRules.Settings settings;
     private BukkitTask task;
     private long tick;
 
     HudService(Core core, HudConfig config) {
         this.core = core;
         this.config = config;
+        reloaded();
+    }
+
+    /** Re-reads the place settings of hud.yml (call after the config is reloaded). */
+    void reloaded() {
+        settings = PlaceRules.Settings.of(config, problem -> core.plugin().getLogger().warning(problem));
+        layouts.clear();
     }
 
     // ------------------------------------------------------------------ public API
 
     /**
      * Uses {@code layout} ({@code scoreboard.<layout>} in messages/hud.yml) for players matching {@code applies}.
-     * Rules are checked in the order they were added; without a match the world name, then {@code default} is used.
+     * Rules are checked in the order they were added and win over the places of hud.yml; without a match the place
+     * layout, then the world name, then {@code default} is used.
      */
     public void addLayout(String owner, String layout, Predicate<Player> applies) {
         rules.add(new LayoutRule(owner, layout, applies));
@@ -135,63 +162,109 @@ public final class HudService implements Listener {
         tick++;
         int interval = config.updateTicks;
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (SidebarLines.due(player.getUniqueId().hashCode(), tick, interval)) {
+            UUID id = player.getUniqueId();
+            boolean switched = !pending.isEmpty() && pending.remove(id);
+            if (switched || SidebarLines.due(id.hashCode(), tick, interval)) {
                 refresh(player);
             }
+        }
+        if (!pending.isEmpty()) {
+            pending.removeIf(id -> Bukkit.getPlayer(id) == null);
         }
     }
 
     // ------------------------------------------------------------------ rendering
 
-    private String layoutFor(Player player) {
+    /** The chosen layout and, on an island, the name of the island the player stands on (for {@code <island_here>}). */
+    private record Choice(String layout, String islandHere) {
+    }
+
+    private boolean layoutExists(String name) {
+        return core.messages().has(MODULE, "scoreboard." + name + ".lines");
+    }
+
+    private Choice choose(Player player) {
         for (LayoutRule rule : rules) {
             try {
                 if (rule.applies().test(player)) {
-                    return rule.layout();
+                    return new Choice(rule.layout(), null);
                 }
             } catch (RuntimeException e) {
                 core.plugin().getLogger().warning("Scoreboard layout rule of " + rule.owner() + " failed: " + e.getMessage());
             }
         }
-        return SidebarLines.layout(player.getWorld().getName(), name -> core.messages().has(MODULE, "scoreboard." + name + ".lines"));
+        World world = player.getWorld();
+        String worldName = world.getName();
+        PlaceRules.Settings s = settings;
+        IslandService islands = core.services().optional(IslandService.class).orElse(null);
+        boolean islandWorld = islands != null && islands.isIslandWorld(world);
+        PlaceRules.IslandHere here = PlaceRules.IslandHere.NONE;
+        String islandHere = null;
+        if (islands != null && (islandWorld || s.islandWorlds().contains(worldName))) {
+            Optional<IslandService.IslandInfo> slot = islands.islandInSlot(player.getLocation());
+            if (slot.isPresent()) {
+                IslandService.IslandInfo info = slot.get();
+                here = islands.isMember(info.id(), player.getUniqueId()) ? PlaceRules.IslandHere.OWN : PlaceRules.IslandHere.OTHER;
+                islandHere = info.name();
+            }
+        }
+        PlaceRules.Place place = PlaceRules.place(s, worldName, islandWorld, here);
+        String variantText = place == PlaceRules.Place.DEPTHS ? text(player, config.depthsVariantPlaceholder).orElse(null) : null;
+        return new Choice(PlaceRules.layout(s, place, worldName, variantText, this::layoutExists), islandHere);
+    }
+
+    /** Parsed lines of a layout; re-parsed only when the message text changed (reload). */
+    private LayoutLines lines(String layout) {
+        String raw = core.messages().raw(MODULE, "scoreboard." + layout + ".lines");
+        LayoutLines cached = layouts.get(layout);
+        if (cached != null && cached.source() == raw) {
+            return cached;
+        }
+        LayoutLines parsed = LayoutLines.parse(raw);
+        layouts.put(layout, parsed);
+        return parsed;
     }
 
     private void render(Player player, Sidebar sidebar) {
-        String layout = layoutFor(player);
-        TagResolver values = values(player);
+        Choice choice = choose(player);
+        String layout = choice.layout();
+        TagResolver values = values(player, choice);
         String title = core.messages().raw(MODULE, "scoreboard." + layout + ".title");
         sidebar.title(title == null ? Component.empty() : core.messages().parse(player, title, values));
-        String raw = core.messages().raw(MODULE, "scoreboard." + layout + ".lines");
-        List<Component> lines = new ArrayList<>();
-        if (raw != null) {
-            for (String line : raw.split("<newline>", -1)) {
-                if (lines.size() >= config.maxLines) {
-                    break;
-                }
-                lines.add(line.isEmpty() ? Component.empty() : core.messages().parse(player, line, values));
-            }
+        List<LayoutLines.Line> visible = lines(layout).visible(
+                key -> LayoutLines.present(core.placeholders().text(player, key).orElse(null)), config.maxLines);
+        List<Component> lines = new ArrayList<>(visible.size());
+        for (LayoutLines.Line line : visible) {
+            lines.add(line.blank() ? Component.empty() : core.messages().parse(player, line.text(), values));
         }
         sidebar.lines(lines);
     }
 
     /**
-     * Built-in values: name, rank, money, crystals, gems, island, objective, online. "—" when a feature isn't there yet.
-     * {@code <tokens>} is a deprecated alias of {@code <crystals>} (tokens were replaced by crystals) for old layouts.
+     * Built-in values: name, rank, money, crystals, gems, island, island_here, objective, online. "-" when a feature
+     * isn't there yet. Values are computed only when the layout uses them (online counts every player, so it is only
+     * worked out on boards that show it). {@code <tokens>} is a deprecated alias of {@code <crystals>}.
      */
-    private TagResolver values(Player player) {
+    private TagResolver values(Player player, Choice choice) {
         var ranks = core.ranks();
         var color = ranks.rankColor(player);
-        Component crystals = value(player, config.crystalsKey, "values.crystals");
         return TagResolver.resolver(
                 Msg.c("name", Component.text(player.getName(), color)),
                 Msg.c("rank", Component.text(ranks.groupDisplayName(player), color)),
-                Msg.c("money", value(player, config.moneyKey, "values.money")),
-                Msg.c("crystals", crystals),
-                Msg.c("tokens", crystals),
-                Msg.c("gems", value(player, config.gemsKey, "values.gems")),
-                Msg.c("island", island(player)),
-                Msg.c("objective", objective(player)),
-                Msg.p("online", online(player)));
+                lazy("money", () -> value(player, config.moneyKey, "values.money")),
+                lazy("crystals", () -> value(player, config.crystalsKey, "values.crystals")),
+                lazy("tokens", () -> value(player, config.crystalsKey, "values.crystals")),
+                lazy("gems", () -> value(player, config.gemsKey, "values.gems")),
+                lazy("island", () -> island(player)),
+                lazy("island_here", () -> choice.islandHere() == null || choice.islandHere().isBlank() ? dash(player)
+                        : core.messages().component(player, MODULE, "values.island-here", Msg.p("value", choice.islandHere()))),
+                lazy("objective", () -> objective(player)),
+                lazy("online", () -> Component.text(online(player))));
+    }
+
+    /** A tag whose value is only computed if the line uses it. */
+    private static TagResolver lazy(String name, Supplier<? extends ComponentLike> value) {
+        return TagResolver.resolver(name, (args, ctx) -> Tag.selfClosingInserting(value.get()));
     }
 
     private Optional<String> text(Player player, String key) {
@@ -248,10 +321,22 @@ public final class HudService implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         sidebars.remove(event.getPlayer().getUniqueId());
+        pending.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onWorldChange(PlayerChangedWorldEvent event) {
         refresh(event.getPlayer());
+    }
+
+    /** The new location is only set after the event: switch the board on the next tick (once, however many teleports). */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTeleport(PlayerTeleportEvent event) {
+        pending.add(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onRespawn(PlayerRespawnEvent event) {
+        pending.add(event.getPlayer().getUniqueId());
     }
 }

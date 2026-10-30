@@ -2,11 +2,20 @@
 #
 # Sidebar layouts: scoreboard.<layout>.title + lines (max 15 lines; Bedrock shows 15). Keep them short: 10 lines
 #   with the title is the house style (docs/UI_STYLE.md §6.1).
-#   "default" is used everywhere, unless a layout with the world's name exists (scoreboard.depths is used in the
-#   "depths" world) or a module picks one (events later).
-# Built-in values: <name> (rank color), <rank>, <money>, <crystals>, <gems>, <island>, <objective>, <online>.
+# Which layout is used where is set in hud.yml -> places (one layout per place):
+#   island        your own island (and the island world outside any island)
+#   island-visit  someone else's island (falls back to "island")
+#   depths        The Depths; variants: depths-gate (The Gate), depths-forest, depths-combat (fall back to "depths")
+#   spawn         spawn
+#   warzone       the warzone (placeholder until the warzone is built)
+#   default       everywhere else; a layout named after a world is used in that world
+#   A module can still pick a layout itself (events later). A missing layout falls back to the next one.
+# Built-in values: <name> (rank color), <rank>, <money>, <crystals>, <gems>, <island>, <island_here> (name of the
+#   island you stand on), <objective>, <online>.
 #   Any placeholder works too: <ph:playtime>, <ph:ping>, <ph:depths_zone>, <ph:skill_mining_level> ...
 # An empty line "" is a blank separator.
+# A line starting with "if:<placeholder>|" only shows while that placeholder has a value (not empty, not "-"):
+#   "if:island_next_note| <c:muted>Next</c:muted>  ..." hides the whole line when there is no open note.
 # Colors: brand red only in the title, labels muted gray, values white or their currency color.
 
 scoreboard:
@@ -25,7 +34,49 @@ scoreboard:
       # - " <c:muted>Profile</c:muted>  <c:value><ph:profile_name>"
       - " <c:sky_ice>play.skybornmc.net"
 
-  # The Depths world ("depths"): where you are and how far your mining is.
+  # Spawn: the hub. Same as default for now; change it freely.
+  spawn:
+    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    lines:
+      - ""
+      - " <name> <c:muted><sym:dot></c:muted> <rank>"
+      - ""
+      - " <c:muted>Money</c:muted>  <money>"
+      - " <c:muted>Crystals</c:muted>  <crystals>"
+      - " <c:muted>Gems</c:muted>  <gems>"
+      - ""
+      - " <c:muted>Island</c:muted>  <island>"
+      - " <c:sky_ice>play.skybornmc.net"
+
+  # Your own island: island first, the newest open note (only when there is one and the
+  # "Next note on scoreboard" setting is on), then money and crystals.
+  island:
+    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    lines:
+      - ""
+      - " <name> <c:muted><sym:dot></c:muted> <rank>"
+      - ""
+      - " <c:muted>Island</c:muted>  <island>"
+      - "if:island_next_note| <c:muted>Next</c:muted>  <c:value><ph:island_next_note>"
+      - ""
+      - " <c:muted>Money</c:muted>  <money>"
+      - " <c:muted>Crystals</c:muted>  <crystals>"
+      - " <c:sky_ice>play.skybornmc.net"
+
+  # Someone else's island: whose island you are on.
+  island-visit:
+    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    lines:
+      - ""
+      - " <name> <c:muted><sym:dot></c:muted> <rank>"
+      - ""
+      - " <c:muted>Visiting</c:muted>  <island_here>"
+      - ""
+      - " <c:muted>Money</c:muted>  <money>"
+      - " <c:muted>Crystals</c:muted>  <crystals>"
+      - " <c:sky_ice>play.skybornmc.net"
+
+  # The Depths, Mine wing and causeways: where you are and how far your mining is.
   depths:
     title: "<grad:phoenix><bold>THE DEPTHS</bold></grad>"
     lines:
@@ -39,6 +90,60 @@ scoreboard:
       - " <c:muted>Money</c:muted>  <money>"
       - " <c:sky_ice>play.skybornmc.net"
 
+  # The Gate (Depths hub): the three skills that unlock the wings.
+  depths-gate:
+    title: "<grad:phoenix><bold>THE DEPTHS</bold></grad>"
+    lines:
+      - ""
+      - " <name> <c:muted><sym:dot></c:muted> <rank>"
+      - ""
+      - " <c:muted>Zone</c:muted>  <ph:depths_zone>"
+      - ""
+      - " <c:muted>Mining</c:muted>  <c:value>Lv <ph:skill_mining_level>"
+      - " <c:muted>Foraging</c:muted>  <c:value>Lv <ph:skill_foraging_level>"
+      - " <c:muted>Combat</c:muted>  <c:value>Lv <ph:skill_combat_level>"
+      - " <c:sky_ice>play.skybornmc.net"
+
+  # Forest wing: foraging instead of mining.
+  depths-forest:
+    title: "<grad:phoenix><bold>THE DEPTHS</bold></grad>"
+    lines:
+      - ""
+      - " <name> <c:muted><sym:dot></c:muted> <rank>"
+      - ""
+      - " <c:muted>Zone</c:muted>  <ph:depths_zone>"
+      - " <c:muted>Tier</c:muted>  <ph:depths_tier>"
+      - " <c:muted>Foraging</c:muted>  <c:value>Lv <ph:skill_foraging_level></c:value> <c:muted>(<ph:skill_foraging_progress>%)"
+      - ""
+      - " <c:muted>Money</c:muted>  <money>"
+      - " <c:sky_ice>play.skybornmc.net"
+
+  # Combat wing: combat instead of mining.
+  depths-combat:
+    title: "<grad:phoenix><bold>THE DEPTHS</bold></grad>"
+    lines:
+      - ""
+      - " <name> <c:muted><sym:dot></c:muted> <rank>"
+      - ""
+      - " <c:muted>Zone</c:muted>  <ph:depths_zone>"
+      - " <c:muted>Tier</c:muted>  <ph:depths_tier>"
+      - " <c:muted>Combat</c:muted>  <c:value>Lv <ph:skill_combat_level></c:value> <c:muted>(<ph:skill_combat_progress>%)"
+      - ""
+      - " <c:muted>Money</c:muted>  <money>"
+      - " <c:sky_ice>play.skybornmc.net"
+
+  # Warzone: placeholder until the warzone is built (kills, bounty and event timer come with it).
+  warzone:
+    title: "<grad:phoenix><bold>WARZONE</bold></grad>"
+    lines:
+      - ""
+      - " <name> <c:muted><sym:dot></c:muted> <rank>"
+      - ""
+      - " <c:muted>Combat</c:muted>  <c:value>Lv <ph:skill_combat_level></c:value> <c:muted>(<ph:skill_combat_progress>%)"
+      - ""
+      - " <c:muted>Money</c:muted>  <money>"
+      - " <c:sky_ice>play.skybornmc.net"
+
 values:
   dash: "<c:muted>-"   # "—" would need a Bedrock test first (style.yml bedrock-safe-symbols)
   money: "<cur:money><sym:money><value>"
@@ -46,5 +151,6 @@ values:
   gems: "<cur:gems><sym:gems> <value>"
   island: "<c:value>Lv <level></c:value> <c:muted>#<position>"
   island-no-rank: "<c:value>Lv <level>"
+  island-here: "<c:value><value>"
   objective: "<c:text>Next: <c:value><value>"
   objective-default: "<c:text>Next: <c:value>Explore /menu"

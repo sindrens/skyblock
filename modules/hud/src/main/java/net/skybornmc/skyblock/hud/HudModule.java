@@ -37,6 +37,7 @@ public final class HudModule implements SkyblockModule {
     public void reload() {
         core.configs().load(config);
         core.messages().load(id());
+        hud.reloaded();
         core.plugin().getServer().getOnlinePlayers().forEach(hud::refresh);
     }
 

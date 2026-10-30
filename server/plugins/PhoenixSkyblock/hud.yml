@@ -1,4 +1,5 @@
-# HUD: the sidebar scoreboard. Lines and layouts per world are in messages/hud.yml.
+# HUD: the sidebar scoreboard. "places" picks a layout per place (own island, visiting, The Depths
+# and its zones, spawn, warzone); the layouts themselves (title + lines) are in messages/hud.yml.
 # Values come from placeholders, so new features (economy, islands) show up without changing this module.
 # Reload: /skyblock reload hud
 
@@ -26,4 +27,38 @@ values:
   island-rank: island_rank
   # Placeholder key for the current objective (tutorial/quests).
   objective: objective
+places:
+  island:
+    # Island worlds (only used when the islands module is off; otherwise its world counts).
+    worlds:
+    - islands
+    # Layout (messages/hud.yml scoreboard.<name>) on your own island and in the island world outside any island.
+    layout: island
+    # Layout on someone else's island (coop players count as visitors). Falls back to the own-island layout.
+    visit-layout: island-visit
+  depths:
+    # Worlds of The Depths.
+    worlds:
+    - depths
+    # Layout in The Depths when no variant below matches.
+    layout: depths
+    # Placeholder whose plain text picks a Depths variant (depths_tier is 'Mine · Tier 3' in a zone, 'The Gate' at the hub).
+    variant-placeholder: depths_tier
+    # Depths variants as 'text=layout': the first whose text is in the placeholder value wins (ignoring case). Missing layouts fall back to places.depths.layout.
+    variants:
+    - The Gate=depths-gate
+    - Forest=depths-forest
+    - Combat=depths-combat
+  spawn:
+    # Spawn worlds.
+    worlds:
+    - spawn
+    # Layout at spawn.
+    layout: spawn
+  warzone:
+    # Warzone worlds (placeholder layout until the warzone is built).
+    worlds:
+    - warzone
+    # Layout in the warzone.
+    layout: warzone
 config-version: 2
