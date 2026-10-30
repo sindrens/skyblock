@@ -36,7 +36,24 @@ final class PunishMenus {
      */
     record Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions,
                   List<Suggestion> apiSuggestions, List<Notes.Note> notes, int noteCount, List<PunishRequest> requests,
-                  Watchlist.Entry watch) {
+                  Watchlist.Entry watch, LogEvidence.Anchor evidence) {
+
+        /** P4 shape: no {@code /logs} line chosen as evidence (spec 13.11). */
+        Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions,
+               List<Suggestion> apiSuggestions, List<Notes.Note> notes, int noteCount, List<PunishRequest> requests,
+               Watchlist.Entry watch) {
+            this(uuid, name, history, suggestions, apiSuggestions, notes, noteCount, requests, watch, null);
+        }
+
+        /** The same target with a {@code /logs} chat line as evidence for every punishment from this menu (13.11). */
+        Target withEvidence(LogEvidence.Anchor anchor) {
+            return new Target(uuid, name, history, suggestions, apiSuggestions, notes, noteCount, requests, watch, anchor);
+        }
+
+        /** The log entry id of the chosen evidence line, or {@code null}. */
+        Long evidenceEntry() {
+            return evidence == null ? null : evidence.id();
+        }
 
         /** P3 shape: no pending requests, not watched (P4, spec 13.4 / 13.5). */
         Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions,
@@ -174,6 +191,11 @@ final class PunishMenus {
                     Msg.number("count", target.apiSuggestions().size())));
         }
         lore.addAll(noteLines(module, service, viewer, target));
+        if (target.evidence() != null) {
+            // spec 13.11: the /logs chat line every punishment from this menu saves as evidence
+            lore.addAll(service.lines(viewer, MODULE, "punish.summary.evidence", Msg.p("line", target.evidence().line()),
+                    Msg.p("id", target.evidence().id())));
+        }
         return service.item(head(target), service.text(viewer, MODULE, "menu.summary.name", Msg.p("player", target.name())), lore);
     }
 
@@ -336,7 +358,7 @@ final class PunishMenus {
             module.target(target.uuid(), target.name()).whenComplete((t, e) -> Bukkit.getScheduler().runTask(service.plugin(), () -> {
                 busy = false;
                 if (t != null) {
-                    target = t;
+                    target = t.withEvidence(target.evidence()); // spec 13.11: the chosen log line stays for this menu
                 }
                 refresh();
             }));
@@ -472,7 +494,7 @@ final class PunishMenus {
                         p -> {
                             if (p.hasPermission(ModerationModule.PERM_GUI)) {
                                 action.get().whenComplete((r, e) -> Bukkit.getScheduler().runTask(service.plugin(),
-                                        () -> module.openPunishMenu(p, target.name())));
+                                        () -> module.openPunishMenu(p, target.name(), target.evidence())));
                             }
                         },
                         p -> { }));
@@ -506,7 +528,20 @@ final class PunishMenus {
                         Msg.number("unplaced", module.templates().templateIds().stream()
                                 .filter(id -> !l.reasonSlots().containsKey(id)).count())),
                         click -> openChild(new CategoryMenu(module, target)));
-                // Sanctions (P7), bulk (P5) and dry run (P8): placeholders until their milestone.
+                case "bulk" -> {
+                    // spec 13.8: pick players (this one is selected), then the reason, then a confirm with the count
+                    if (!viewer.hasPermission(ModerationModule.PERM_BULK)) {
+                        yield MenuButton.display(service.item(icon(b, Material.CHEST_MINECART), viewer, MODULE, key + "-locked"));
+                    }
+                    yield MenuButton.of(service.item(icon(b, Material.CHEST_MINECART), viewer, MODULE, key,
+                            Msg.number("max", module.templates().config().extras().bulk().max())), click -> {
+                                if (viewer.hasPermission(ModerationModule.PERM_BULK)) {
+                                    openChild(new BulkMenus.PickMenu(module, module.bulk(),
+                                            new BulkMenus.Pick(target.uuid(), target.name())));
+                                }
+                            });
+                }
+                // Sanctions (P7) and dry run (P8): placeholders until their milestone.
                 default -> MenuButton.display(service.item(icon(b, l.unavailableIcon()), viewer, MODULE, key));
             };
         }
@@ -598,7 +633,7 @@ final class PunishMenus {
                     ? module.service().applySuggestion(viewer, suggestion.id())
                     : module.service().dismissSuggestion(viewer, suggestion.id());
             f.whenComplete((r, e) -> Bukkit.getScheduler().runTask(service.plugin(),
-                    () -> module.openPunishMenu(viewer, target.name())));
+                    () -> module.openPunishMenu(viewer, target.name(), target.evidence())));
         }
     }
 
@@ -740,7 +775,7 @@ final class PunishMenus {
             }
             Runnable apply = () -> module.punishWithTemplate(viewer, target, template, false, false)
                     .whenComplete((r, e) -> Bukkit.getScheduler().runTask(service.plugin(),
-                            () -> module.openPunishMenu(viewer, target.name())));
+                            () -> module.openPunishMenu(viewer, target.name(), target.evidence())));
             if (!module.templates().config().menu().confirm()) {
                 return MenuButton.of(item, click -> {
                     if (!used && viewer.hasPermission(ModerationModule.PERM_GUI)) {
@@ -1008,7 +1043,7 @@ final class PunishMenus {
                 }
                 used = true;
                 module.service().approve(viewer, request.id()).whenComplete((r, e) -> Bukkit.getScheduler().runTask(
-                        service.plugin(), () -> module.openPunishMenu(viewer, target.name())));
+                        service.plugin(), () -> module.openPunishMenu(viewer, target.name(), target.evidence())));
             });
             set(15, service.item(Material.RED_CONCRETE, viewer, MODULE, "approval.menu.deny", parts), click -> {
                 if (!viewer.hasPermission(ModerationModule.PERM_APPROVE)) {

@@ -363,6 +363,11 @@ punish:
       - ""
       - "<c:warning>Request: <action> by <staff>"
       - "<c:muted>Waiting for an approver."
+    # P5 (13.11): opened from a /logs chat line; every punishment from this menu saves it as evidence. <line>, <id>.
+    evidence:
+      - ""
+      - "<c:info>Evidence from the logs <c:muted>(#<id>)</c:muted>:"
+      - "<c:value><line>"
   counter:
     name: "<c:flame>Warnings: <c:value><count> / <next>"
     "off":
@@ -380,7 +385,7 @@ punish:
     pending:
       - "<c:warning>Pending: suggested <action>"
       - "<c:action><sym:bullet> Click to apply or dismiss"
-  # Bottom row. Sanctions, bulk and dry run arrive in later milestones.
+  # Bottom row. Sanctions and dry run arrive in later milestones.
   buttons:
     sanctions:
       name: "<c:muted>Sanctions"
@@ -390,10 +395,19 @@ punish:
       name: "<c:value>Kick"
       lore:
         - "<c:text>Kick with the default reason."
+    # P5 (13.8). <max> = extras.bulk.max.
     bulk:
+      name: "<c:value>Bulk punish"
+      lore:
+        - "<c:text>Punish up to <c:value><max></c:value> players for one reason."
+        - "<c:text>Each gets their own next step."
+        - "<c:muted>This player is already selected."
+        - ""
+        - "<c:action><sym:bullet> Click to pick the players"
+    bulk-locked:
       name: "<c:muted>Bulk punish"
       lore:
-        - "<c:muted>Not available yet."
+        - "<c:muted>Senior staff only."
     history:
       name: "<c:value>Punishment history"
       lore:
@@ -558,6 +572,8 @@ stats:
   # P4 (spec 13.4): approval requests this staff member made, and handled as an approver (only shown when > 0).
   requests: " <c:text>Requests: <c:value><made></c:value> made <c:muted><sym:dot></c:muted> <c:text><approved> approved <c:muted><sym:dot></c:muted> <c:text><denied> denied <c:muted><sym:dot></c:muted> <c:text><waiting> waiting <c:muted><sym:dot></c:muted> <c:text><expired> expired"
   approvals: " <c:text>Requests handled: <c:value><approved></c:value> approved <c:muted><sym:dot></c:muted> <c:text><denied> denied"
+  # P5 (spec 13.10): appeals this staff member handled, and their own punishments lifted by an accepted appeal (shown when > 0).
+  appeals: " <c:text>Appeals handled: <c:value><accepted></c:value> accepted <c:muted><sym:dot></c:muted> <c:text><reduced> reduced <c:muted><sym:dot></c:muted> <c:text><denied> denied <c:muted><sym:dot></c:muted> <c:text>Reversed by appeal: <c:value><reversed>"
   top-header: "<prefix><c:text>Top staff <c:muted>(<period>)"
   top-empty: " <c:muted>No punishments in this period."
   top-line: " <c:muted><place>.</c:muted> <click:run_command:'/pstats <target>'><hover:show_text:'<c:text>Show details'><c:value><staff></c:value></hover></click> <c:text><given> given <c:muted><sym:dot></c:muted> <c:text><reversed> reversed (<percent>%) <c:muted><sym:dot></c:muted> <c:text>net <net>"
@@ -644,7 +660,7 @@ reports:
 mine:
   header: "<prefix><c:text>Your punishments"
   no-mute: " <c:success><sym:check></c:success> <c:text>You're not muted."
-  mute: " <c:error><sym:cross></c:error> <c:text>Muted: <c:value><reason></c:value> <c:muted>(#<id>)</c:muted><c:text>, ends in <c:value><left></c:value>. <click:open_url:'<appeal_url>'><hover:show_text:'<c:text>Appeal this mute'><c:action>[Appeal]</c:action></hover></click>"
+  mute: " <c:error><sym:cross></c:error> <c:text>Muted: <c:value><reason></c:value> <c:muted>(#<id>)</c:muted><c:text>, ends in <c:value><left></c:value>. <click:run_command:'/appeal'><hover:show_text:'<c:text>Appeal this mute in-game (/appeal)'><c:action>[Appeal]</c:action></hover></click>"
   warnings: " <c:text>Warnings: <c:value><count> / <next>"
   warning: "   <c:ember><sym:bullet></c:ember> <c:text><reason> <c:muted>(<date>, stops counting <expires>)"
   ack: " <c:warning><sym:cross></c:warning> <c:text>You have a warning to confirm: <ack>"
@@ -662,6 +678,13 @@ discord:
     kick: "Kick"
     pardon: "Pardon"
     undo: "Undone"
+    bulk: "Bulk punishment"
+    bulk-undo: "Bulk punishment undone"
+    appeal: "New appeal"
+    appeal-accepted: "Appeal accepted"
+    appeal-reduced: "Appeal: punishment reduced"
+    appeal-denied: "Appeal denied"
+    appeal-closed: "Appeal closed"
   fields:
     type: "Type"
     target: "Player"
@@ -672,6 +695,23 @@ discord:
     id: "ID"
     rule: "Rule"
     given-by: "Given by"
+    count: "Players"
+    requested: "Sent for approval"
+    skipped: "Skipped"
+    players: "Who"
+    group: "Group"
+    appeal: "Appeal"
+    text: "Player's text"
+    history: "History (bans / mutes / warns / kicks)"
+    decision: "Decision"
+    handler: "Handled by"
+    response: "Response"
+  appeal-status:
+    open: "open"
+    accepted: "accepted"
+    reduced: "reduced"
+    denied: "denied"
+    closed: "closed"
   types:
     ban: "Ban"
     ipban: "IP-ban"
@@ -805,3 +845,310 @@ watch:
         - "<c:text>Until: <c:value><expires>"
       click-punish: "<c:action><sym:bullet> Click to open the punish menu"
       click-history: "<c:action><sym:bullet> Click for the history"
+
+# ---------------------------------------------------------------- P5 (spec 13.8, 13.10, 13.11)
+
+# Punish from logs (13.11): /p <player> --evidence <log id>, or click a chat line in /logs. <id> = log entry, <player>.
+log-evidence:
+  usage: "<prefix><c:error><sym:cross></c:error> <c:text>Use <c:value>--evidence <log id></c:value>, for example <c:value>/p Steve --evidence 1234</c:value>."
+  only-p: "<prefix><c:error><sym:cross></c:error> <c:text><c:value>--evidence</c:value> only works with <c:value>/p</c:value>: <c:value>/p <player> [reason] --evidence <log id></c:value>."
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>The logs module is not running, so log lines can't be used as evidence."
+  not-found: "<prefix><c:error><sym:cross></c:error> <c:text>Log entry <c:value>#<id></c:value> doesn't exist, or you can't see chat logs."
+  not-chat: "<prefix><c:error><sym:cross></c:error> <c:text>Log entry <c:value>#<id></c:value> is not a chat line."
+  other-player: "<prefix><c:error><sym:cross></c:error> <c:text>Log entry <c:value>#<id></c:value> was not written by <c:value><player></c:value>."
+  attached: "<prefix><c:success><sym:check></c:success> <c:text>Evidence for <c:value><player></c:value>: <c:muted><line></c:muted> <c:muted>(#<id>, saved with what you apply)"
+
+# Bulk punish (13.8): /pbulk <reason> <players...> and the Bulk button of /p. <reason>, <count>, <apply>, <request>,
+# <skip>, <player>, <what> (what one player gets), <staff>, <players>, <max>, <window>, <undo> (the [Undo all] button).
+bulk:
+  title: "Bulk punish"
+  no-players: "<prefix><c:error><sym:cross></c:error> <c:text>Add the players: <c:value>/pbulk <reason> <player> <player> ...</c:value>"
+  too-many: "<prefix><c:error><sym:cross></c:error> <c:text>That's <c:value><count></c:value> players; one bulk action takes at most <c:value><max></c:value>."
+  duplicates: "<prefix><c:text>Named twice, counted once: <c:value><names>"
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>At most <c:value><max></c:value> players in one bulk action."
+  nothing: "<prefix><c:warning><sym:cross></c:warning> <c:text>Nothing to do: every player would be skipped."
+  cancelled: "<prefix><c:text>Bulk punish cancelled. Nothing happened."
+  plan-header: "<prefix><c:text>Punish <c:value><count></c:value> player(s) for <c:value><reason></c:value>? <c:muted>(<apply> punished, <request> for approval, <skip> skipped)"
+  plan-line: " <c:ember><sym:bullet></c:ember> <c:value><player></c:value><c:text>: <what>"
+  kind:
+    apply: "<action>"
+    request: "<action> (needs approval)"
+    skip: "skipped, <why>"
+  # Why a player is skipped (the pipeline stage that stopped it).
+  skip:
+    unknown: "never joined"
+    exempt: "can't be punished"
+    never-shorten: "already punished for longer"
+    duplicate: "just punished for this"
+    permission: "you can't give this"
+    length-limit: "too long for your rank"
+    self: "that's you"
+    offline: "not online"
+    failed: "error, see the console"
+    apply: "-"
+  confirm:
+    title: "Punish <count> player(s)?"
+    name: "<c:flame><reason></c:flame> <c:muted>for <count> player(s)"
+    details:
+      - "<c:text>Reason: <c:value><reason>"
+      - "<c:text><apply> punished <c:muted><sym:dot></c:muted> <c:text><request> for approval <c:muted><sym:dot></c:muted> <c:text><skip> skipped"
+      - ""
+    line: "<c:value><player></c:value><c:muted>: <what>"
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Bulk <c:value><reason></c:value>: <c:value><apply></c:value> punished, <c:value><request></c:value> sent for approval, <c:value><skip></c:value> skipped. <undo>"
+  done-line: " <c:ember><sym:bullet></c:ember> <c:value><player></c:value><c:text>: <what>"
+  notify: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>bulk punished <c:value><count></c:value> player(s) for <c:value><reason></c:value><c:muted>: <players>"
+  undo-button: "<c:action>[Undo all]</c:action>"
+  undo-hover: "<c:text>Undo all <count> punishment(s) of this bulk action. Works for <window>."
+  undo-used: "<prefix><c:error><sym:cross></c:error> <c:text>This bulk action was already undone."
+  undone: "<prefix><c:success><sym:check></c:success> <c:text>Undid <c:value><count></c:value> punishment(s) of the bulk action."
+  undone-some: "<prefix><c:warning><sym:cross></c:warning> <c:text>Undid <c:value><count></c:value>; <c:value><failed></c:value> could not be undone <c:muted>(older than <window>, or removed already)</c:muted><c:text>. Use /unmute, /unban or /unwarn for those."
+  undo-notify: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>undid a bulk action <c:muted>(<reason>, <count> punishment(s))"
+  pick:
+    title: "Players"
+    info:
+      - "<c:text>Click players to select them."
+      - "<c:text>Then pick the reason."
+      - "<c:text>You confirm before anything happens."
+    empty:
+      name: "<c:muted>Nobody else is online"
+      lore:
+        - "<c:text>Use /pbulk to name offline players."
+    summary:
+      name: "<c:flame>Selected: <c:value><count> / <max>"
+      lore:
+        - "<c:text>Each player gets their own next step."
+      line: " <c:muted><sym:bullet></c:muted> <c:value><player>"
+    entry:
+      name: "<c:value><player>"
+      selected: "<c:success><sym:check> <player>"
+      lore:
+        - "<c:action><sym:bullet> Click to select"
+      lore-selected:
+        - "<c:success>Selected"
+        - "<c:action><sym:bullet> Click to unselect"
+    clear:
+      name: "<c:value>Clear selection"
+      lore:
+        - "<c:text>Unselect everyone."
+    next:
+      name: "<c:success>Next: pick the reason"
+      lore:
+        - "<c:text><count> player(s) selected."
+        - ""
+        - "<c:action><sym:bullet> Click to continue"
+    next-none:
+      name: "<c:muted>Next: pick the reason"
+      lore:
+        - "<c:muted>Select at least one player."
+  reason:
+    title: "Reason"
+    info:
+      - "<c:text>The reason for every selected player."
+      - "<c:text>Next you see what each one gets."
+    name: "<c:flame><reason>"
+    lore:
+      - "<c:text>Ladder: <c:value><ladder>"
+      - ""
+      - "<c:action><sym:bullet> Click to preview for <count> player(s)"
+  result:
+    title: "Done"
+    info:
+      name: "<c:flame>Bulk <reason>"
+      lore:
+        - "<c:text><apply> punished <c:muted><sym:dot></c:muted> <c:text><request> for approval <c:muted><sym:dot></c:muted> <c:text><skip> skipped"
+        - "<c:muted><players>"
+    undo:
+      name: "<c:error>Undo all"
+      lore:
+        - "<c:text>Undo all <count> punishment(s)."
+        - "<c:muted>Works for <window> after applying."
+    close:
+      name: "<c:success>Close"
+      lore: []
+
+# Appeals (13.10). Players: /appeal. Staff: /appeals. Placeholders: <aid> (appeal id), <pid> (punishment id), <player>,
+# <target> (clicks), <text> (the player's text), <status>, <handler>, <response>, <ago>, <date>, <given_by> (who gave the
+# punishment), <type> / <type_name>, <reason>, <left> (time left), <length>, <staff> (who gave it), <new_end>, <until>.
+appeal:
+  # Extra line after "You're muted" when the mute can be appealed.
+  hint: "<prefix><c:text>Think this is wrong? <click:suggest_command:'/appeal '><hover:show_text:'<c:text>Write /appeal and your reason'><c:action>/appeal <your reason></c:action></hover></click>"
+  ended: "ended"
+  status-header: "<prefix><c:text>Your appeals"
+  none: " <c:muted>You have nothing to appeal right now.</c:muted>"
+  status-line: " <c:ember><sym:bullet></c:ember> <c:value>#<pid></c:value> <c:text><type>: <c:value><reason></c:value> <c:muted>(<left> left)</c:muted> <state>"
+  state:
+    can: "<c:success>can be appealed"
+    open: "<c:warning>appeal waiting for staff"
+    cooldown: "<c:muted>appeal again after <until>"
+    not: "<c:muted>can't be appealed"
+  how-one: " <c:text>Send: <c:value>/appeal <your reason></c:value> <c:muted>(<min> to <max> characters)"
+  how-many: " <c:text>Send: <c:value>/appeal <id> <your reason></c:value> <c:muted>(<min> to <max> characters)"
+  recent-header: " <c:text>Recent appeals:"
+  recent-line: "  <c:muted><sym:dot></c:muted> <c:value>#<aid></c:value> <c:text>(<type_name> #<pid>): <c:value><status></c:value> <c:muted><response>"
+  sent: "<prefix><c:success><sym:check></c:success> <c:text>Appeal <c:value>#<aid></c:value> sent for your <type> <c:muted>(#<pid>)</c:muted><c:text>. Staff will read it; you get the answer here."
+  problem:
+    disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Appeals are switched off right now."
+    nothing: "<prefix><c:error><sym:cross></c:error> <c:text>You have no mute or ban to appeal. <c:muted>(/appeal shows what you can appeal)"
+    not-found: "<prefix><c:error><sym:cross></c:error> <c:text>Punishment <c:value>#<pid></c:value> doesn't exist. <c:muted>(/appeal shows your ids)"
+    not-yours: "<prefix><c:error><sym:cross></c:error> <c:text>Punishment <c:value>#<pid></c:value> is not yours."
+    not-active: "<prefix><c:error><sym:cross></c:error> <c:text>Punishment <c:value>#<pid></c:value> is already over."
+    type: "<prefix><c:error><sym:cross></c:error> <c:text>This kind of punishment can't be appealed."
+    reason: "<prefix><c:error><sym:cross></c:error> <c:text>Punishments for this reason can't be appealed."
+    already-open: "<prefix><c:error><sym:cross></c:error> <c:text>You already have an appeal waiting for <c:value>#<pid></c:value>. Staff will answer it."
+    cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Your last appeal for <c:value>#<pid></c:value> was answered. You can appeal again after <c:value><until></c:value>."
+    too-short: "<prefix><c:error><sym:cross></c:error> <c:text>Please explain a bit more: at least <c:value><min></c:value> characters <c:muted>(you wrote <length>)"
+    too-long: "<prefix><c:error><sym:cross></c:error> <c:text>Too long: at most <c:value><max></c:value> characters <c:muted>(you wrote <length>)"
+  # To the player (now, or on the next join).
+  result:
+    accepted: "<prefix><c:success><sym:check></c:success> <c:text>Your appeal <c:value>#<aid></c:value> was accepted. Your <type_name> is lifted."
+    reduced: "<prefix><c:success><sym:check></c:success> <c:text>Your appeal <c:value>#<aid></c:value> was looked at: your <type_name> now ends <c:value><new_end></c:value>."
+    denied: "<prefix><c:error><sym:cross></c:error> <c:text>Your appeal <c:value>#<aid></c:value> was denied: <c:value><response>"
+    closed: "<prefix><c:text>Your appeal <c:value>#<aid></c:value> was closed: the punishment had already ended."
+    open: "<prefix><c:text>Your appeal <c:value>#<aid></c:value> is still waiting."
+  status:
+    open: "waiting"
+    accepted: "accepted"
+    reduced: "reduced"
+    denied: "denied"
+    closed: "closed"
+  # Stored as the pardon reason of an accepted appeal (shows in /history and /pstats as reversed).
+  pardon-reason: "Appeal accepted"
+  # Stored as the response of a reduce. <length> = the new total length.
+  reduce-response: "Reduced to <length>"
+  units:
+    minutes: "minutes"
+    hours: "hours"
+    days: "days"
+  # Staff.
+  notify: "<c:muted>[Appeal]</c:muted> <c:text>New appeal <c:value>#<aid></c:value> by <c:value><player></c:value> <c:muted>(<type> #<pid>, <reason>)</c:muted> <open>"
+  open-button: "<c:action>[Open]</c:action>"
+  open-hover: "<c:text>Open appeal #<aid> by <player>"
+  notify-done: "<c:muted>[Appeal]</c:muted> <c:value><staff_name></c:value> <c:text><status> appeal <c:value>#<aid></c:value> of <c:value><player></c:value> <c:muted>(<type> #<pid>)</c:muted> <c:muted><response>"
+  notify-done-other: "<c:muted>[Appeal]</c:muted> <c:value><staff_name></c:value> <c:text><status> appeal <c:value>#<aid></c:value> of <c:value><player></c:value> <c:muted>(<type> #<pid>, given by <given_by>)</c:muted> <c:muted><response>"
+  done:
+    accepted: "<prefix><c:success><sym:check></c:success> <c:text>Accepted <c:value>#<aid></c:value>: the <type> of <c:value><player></c:value> is lifted. <c:muted>(given by <given_by>)"
+    reduced: "<prefix><c:success><sym:check></c:success> <c:text>Reduced: the <type> of <c:value><player></c:value> now ends <c:value><new_end></c:value>."
+    denied: "<prefix><c:success><sym:check></c:success> <c:text>Denied <c:value>#<aid></c:value> of <c:value><player></c:value>. They are told why."
+    closed: "<prefix><c:text>Appeal <c:value>#<aid></c:value> closed: the punishment had already ended."
+  already: "<prefix><c:error><sym:cross></c:error> <c:text>Already handled by <c:value><handler></c:value> <c:muted>(<status>)"
+  not-found: "<prefix><c:error><sym:cross></c:error> <c:text>That appeal doesn't exist."
+  not-shorter: "<prefix><c:error><sym:cross></c:error> <c:text>That's not shorter than now. Pick a shorter length."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't handle appeals."
+  deny-empty: "<prefix><c:error><sym:cross></c:error> <c:text>A deny needs a short reason (the player sees it)."
+  deny-prompt: "<prefix><c:text>Type why you deny appeal <c:value>#<aid></c:value> of <c:value><player></c:value> <c:muted>(<cancel> to stop, <seconds>s)"
+  queue-header: "<prefix><c:text>Open appeals <c:muted>(<count>, oldest first)"
+  queue-none: " <c:muted>No open appeals."
+  queue-line: " <c:ember><sym:bullet></c:ember> <c:value>#<aid></c:value> <c:value><player></c:value> <c:text><type_name> #<pid> <c:muted>(<reason>, <ago> ago)</c:muted><c:text>: <text>"
+  reminder-header: "<prefix><c:warning><sym:cross></c:warning> <c:value><count></c:value> <c:text>appeal(s) wait longer than <reminder>. <c:muted>(/appeals)"
+  reminder-line: " <c:ember><sym:bullet></c:ember> <c:value>#<aid></c:value> <c:value><player></c:value> <c:muted>(<type_name>, <ago> ago)</c:muted> <open>"
+  reminder-more: " <c:muted>... and <more> more. Open /appeals."
+  # Preset deny reasons (ids in punishments.yml extras.appeal.deny-reasons, max 6). Shown to the player.
+  deny-reasons:
+    clear-evidence: "The evidence is clear"
+    fair: "The punishment is fair for this"
+    no-reason: "No new information in the appeal"
+  menu:
+    queue-title: "Appeals"
+    queue-info:
+      - "<c:text>Open appeals, oldest first."
+      - "<c:text>Click one to read it and decide."
+    info:
+      - "<c:text>One appeal: the punishment, the chat"
+      - "<c:text>evidence, the history and the text."
+      - "<c:text>Accept lifts it, Reduce shortens it,"
+      - "<c:text>Deny needs a reason. The player is told."
+    queue-empty:
+      name: "<c:success><sym:check> No open appeals"
+      lore:
+        - "<c:text>Nothing waiting."
+    entry:
+      name: "<c:value>#<aid> <player> <c:muted><sym:dot> <type_name>"
+      lore:
+        - "<c:text>Reason: <c:value><reason>"
+        - "<c:text>Given by: <c:value><given_by>"
+        - "<c:text>Sent: <c:value><ago> ago"
+        - ""
+      ended: "<c:warning>The punishment already ended."
+      click: "<c:action><sym:bullet> Click to read and decide"
+    text-line: "<c:value><line>"
+    text-chat: "<prefix><c:text>Appeal <c:value>#<aid></c:value> by <c:value><player></c:value>: <c:value><text>"
+    head:
+      name: "<c:value><player>"
+      lore:
+        - "<c:text>History: <c:value><bans></c:value> bans, <c:value><mutes></c:value> mutes, <c:value><warns></c:value> warns, <c:value><kicks></c:value> kicks"
+        - "<c:text>Appeal sent <c:value><ago></c:value> ago"
+    punishment:
+      name: "<c:flame><type> #<pid>"
+      lore:
+        - "<c:text>Reason: <c:value><reason>"
+        - "<c:text>Length: <c:value><length></c:value> <c:muted>(<left> left)"
+        - "<c:text>Given by: <c:value><staff></c:value> <c:muted>(<date>)"
+      gone:
+        - "<c:muted>The punishment no longer exists."
+      other-staff:
+        - ""
+        - "<c:warning>Given by <given_by>: talk to them first."
+    text:
+      name: "<c:value>Appeal text"
+      click: "<c:action><sym:bullet> Click to read it in chat"
+    evidence-none:
+      name: "<c:muted>No evidence saved"
+      lore:
+        - "<c:muted>Only mutes and warnings save chat lines."
+    history:
+      name: "<c:value>History"
+      lore:
+        - "<c:text><bans> bans, <mutes> mutes, <warns> warns, <kicks> kicks"
+        - ""
+        - "<c:action><sym:bullet> Click to view"
+    accept:
+      name: "<c:success><sym:check> Accept"
+      lore:
+        - "<c:text>Lifts the <type> now."
+        - "<c:muted>Reason: Appeal accepted"
+    accept-other:
+      name: "<c:success><sym:check> Accept"
+      lore:
+        - "<c:text>Lifts the <type> now."
+        - "<c:warning>Given by <given_by>: talk to them first."
+    accept-title: "Accept appeal #<aid>"
+    accept-details:
+      - "<c:text>Lift the <type> of <c:value><player></c:value>."
+      - "<c:muted>Given by <given_by>. The player is told."
+    reduce:
+      name: "<c:warning>Reduce"
+      lore:
+        - "<c:text>Pick a shorter total length (in <unit>)."
+        - "<c:muted>Counted from when it was given."
+    reduce-none:
+      name: "<c:muted>Reduce"
+      lore:
+        - "<c:muted>Too short to reduce."
+    reduce-title: "New length in <unit>"
+    deny:
+      name: "<c:error><sym:cross> Deny"
+      lore:
+        - "<c:text>Pick a reason next."
+        - "<c:muted>The player is told why."
+    deny-title: "Deny"
+    deny-reason:
+      name: "<c:error><deny_reason>"
+      lore:
+        - "<c:text>Deny appeal <c:value>#<aid></c:value> of <c:value><player></c:value>."
+        - ""
+        - "<c:action><sym:bullet> Click to deny with this reason"
+    deny-type:
+      name: "<c:value>Type a reason"
+      lore:
+        - "<c:text>Write your own reason in chat."
+        - ""
+        - "<c:action><sym:bullet> Click to type it"
+    close:
+      name: "<c:muted>Close appeal"
+      lore:
+        - "<c:text>The punishment already ended."
+        - "<c:action><sym:bullet> Click to close it (no decision)"
+    handled:
+      name: "<c:muted>Already handled"
+      lore:
+        - "<c:text><status> by <handler>"

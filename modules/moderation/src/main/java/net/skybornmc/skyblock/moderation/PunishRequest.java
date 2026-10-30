@@ -7,13 +7,25 @@ import java.util.UUID;
  * One row of {@code punishment_requests} (spec 13.4): a punishment a staff member without
  * {@code skyblock.staff.punish.approve} asked for. Nothing is applied and the target is told nothing until an approver
  * clicks [Approve]. {@code durationMs == null} = permanent. {@code merges} = how many later requests for the same player
- * and reason were merged into this one. {@code notified} = the requester was told the outcome.
+ * and reason were merged into this one. {@code notified} = the requester was told the outcome. {@code evidenceEntry} = the
+ * {@code /logs} chat line the request was made from (spec 13.11), used as evidence when it is approved, or {@code null}.
  */
 record PunishRequest(long id, UUID target, String targetName, String reasonKey, Punishment.Type type, Long durationMs,
                      boolean ipWide, String ip, String reason, String template, Integer ladderStep, int weight, boolean silent,
                      String source, UUID requester, String requesterName, long created, long expires, Status status,
                      Long handledAt, UUID handler, String handlerName, String denyReason, Long punishmentId, int merges,
-                     boolean notified) {
+                     boolean notified, Long evidenceEntry) {
+
+    /** A request without log evidence (P4 shape). */
+    PunishRequest(long id, UUID target, String targetName, String reasonKey, Punishment.Type type, Long durationMs,
+                  boolean ipWide, String ip, String reason, String template, Integer ladderStep, int weight, boolean silent,
+                  String source, UUID requester, String requesterName, long created, long expires, Status status,
+                  Long handledAt, UUID handler, String handlerName, String denyReason, Long punishmentId, int merges,
+                  boolean notified) {
+        this(id, target, targetName, reasonKey, type, durationMs, ipWide, ip, reason, template, ladderStep, weight, silent,
+                source, requester, requesterName, created, expires, status, handledAt, handler, handlerName, denyReason,
+                punishmentId, merges, notified, null);
+    }
 
     enum Status {
         /** Waiting for an approver (until {@code expires}). */

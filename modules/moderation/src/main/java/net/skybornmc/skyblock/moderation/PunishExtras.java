@@ -74,12 +74,57 @@ final class PunishExtras {
 
     /** A punishment was applied (main thread): evidence for mutes/warns, Discord log. */
     void applied(Punishment p) {
+        applied(p, null, true);
+    }
+
+    /**
+     * Same, with the {@code /logs} chat line chosen as evidence ({@code null} = the player's last lines; spec 13.11) and
+     * whether to post this punishment's own Discord embed ({@code false} inside a bulk action, spec 13.8).
+     */
+    void applied(Punishment p, Long logEntry, boolean discord) {
         try {
-            captureEvidence(p);
+            if (logEntry != null) {
+                captureFromLog(p, logEntry);
+            } else {
+                captureEvidence(p);
+            }
         } catch (RuntimeException e) {
             core.plugin().getLogger().log(Level.WARNING, "Evidence capture failed for #" + p.id(), e);
         }
-        postDiscord(() -> PunishEmbeds.applied(p, extras.get().discord(), this::discordText));
+        if (discord) {
+            postDiscord(() -> PunishEmbeds.applied(p, extras.get().discord(), this::discordText));
+        }
+    }
+
+    /** A bulk action finished (spec 13.8): one Discord embed with the count. */
+    void bulkApplied(String group, String reason, String staff, List<Punishment> applied, int requested, int skipped) {
+        if (applied.isEmpty() && requested == 0) {
+            return;
+        }
+        postDiscord(() -> PunishEmbeds.bulk(group, reason, staff, applied, requested, skipped, System.currentTimeMillis(),
+                extras.get().discord(), this::discordText));
+    }
+
+    /** [Undo all] of a bulk action (spec 13.8): one Discord embed. */
+    void bulkUndone(String group, String staff, List<Punishment> undone) {
+        if (undone.isEmpty()) {
+            return;
+        }
+        postDiscord(() -> PunishEmbeds.bulkUndone(group, staff, undone, System.currentTimeMillis(), extras.get().discord(),
+                this::discordText));
+    }
+
+    /** A new appeal or a decision (spec 13.10 step 1): to the appeals webhook, only when switched on. */
+    void appealPosted(Supplier<DiscordSink.Embed> embed) {
+        try {
+            PunishConfig.Appeals cfg = extras.get().appeal();
+            Optional<DiscordSink> sink = discord.get();
+            if (cfg.discordEnabled() && sink.isPresent() && sink.get().enabled(cfg.discordChannel())) {
+                sink.get().post(cfg.discordChannel(), embed.get());
+            }
+        } catch (RuntimeException e) {
+            core.plugin().getLogger().log(Level.WARNING, "Discord appeal log failed", e);
+        }
     }
 
     /** Punishments were pardoned with a reason (main thread). */
@@ -129,7 +174,36 @@ final class PunishExtras {
         if (!cfg.enabled() || p.target() == null || (p.type() != Punishment.Type.MUTE && p.type() != Punishment.Type.WARN)) {
             return;
         }
-        long until = p.created() + 1000;
+        capture(p, p.created() + 1000, null);
+    }
+
+    /**
+     * spec 13.11: the evidence is the chosen {@code /logs} chat line and the lines before it (the player's last
+     * {@code chat-lines} up to that line, {@code context-lines} of others), for every type: staff picked it on purpose.
+     * The entry was checked when the menu opened; it is read again here (any category: the check already ran).
+     */
+    void captureFromLog(Punishment p, long entryId) {
+        PunishConfig.Evidence cfg = extras.get().evidence();
+        Optional<net.skybornmc.skyblock.common.audit.LogLookup> lookup =
+                core.services().optional(net.skybornmc.skyblock.common.audit.LogLookup.class);
+        if (!cfg.enabled() || p.target() == null || lookup.isEmpty()) {
+            return;
+        }
+        lookup.get().entry(null, entryId).thenAccept(entry -> {
+            if (entry.isPresent() && LogEvidence.check(entry.get(), p.target()).isEmpty()) {
+                capture(p, entry.get().time() + 1, entryId);
+            } else {
+                core.plugin().getLogger().warning("Log entry #" + entryId + " is gone; no evidence saved for #" + p.id());
+            }
+        }).exceptionally(e -> {
+            core.plugin().getLogger().log(Level.WARNING, "Could not read log entry #" + entryId + " for #" + p.id(), e);
+            return null;
+        });
+    }
+
+    /** Copies the chat lines before {@code until} (exclusive) into {@code punishment_evidence}. Async. */
+    private void capture(Punishment p, long until, Long logEntry) {
+        PunishConfig.Evidence cfg = extras.get().evidence();
         String ipHidden = text(null, "evidence.ip-hidden");
         String blocked = text(null, "evidence.blocked");
         java.time.ZoneId zone = Format.zone();
@@ -161,7 +235,9 @@ final class PunishExtras {
                     .thenAccept(count -> {
                         if (count > 0) {
                             core.audit().log(AuditCategory.PUNISHMENT, "evidence_saved", Actor.system("evidence"),
-                                    p.target().toString(), p.targetName(), null, null, Map.of("id", p.id(), "lines", count));
+                                    p.target().toString(), p.targetName(), null, null, logEntry == null
+                                            ? Map.of("id", p.id(), "lines", count)
+                                            : Map.of("id", p.id(), "lines", count, "log_entry", logEntry));
                         }
                     })
                     .exceptionally(e -> {

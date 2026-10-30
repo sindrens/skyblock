@@ -162,9 +162,11 @@ final class PunishConfigParser {
                     // spec 12.3: per reason, e.g. offence-expire: perm for cheating, 180d for a slow-burning reason
                     Duration expire = duration(t, "offence-expire", path + ".offence-expire", defaultOffenceExpire, true);
                     boolean probation = bool(t, "probation", path + ".probation", catProbation);
+                    // spec 13.10: appealable: false (alt abuse, RMT) = no /appeal for punishments of this reason
+                    boolean appealable = bool(t, "appealable", path + ".appealable", true);
                     if (!ladder.isEmpty()) {
                         templates.add(new Templates.Template(id, catId, t.getString("name"), icon, List.copyOf(ladder), expire,
-                                probation));
+                                probation, appealable));
                     }
                 }
             }
@@ -533,7 +535,98 @@ final class PunishConfigParser {
                 ack(x.getConfigurationSection("ack")), rulesLink, discord(x.getConfigurationSection("discord")),
                 playerView(x.getConfigurationSection("player-view")), chatSuggestions(x.getConfigurationSection("chat-suggestions")),
                 approval(x.getConfigurationSection("approval")), watchlist(x.getConfigurationSection("watchlist")),
-                probation(x.getConfigurationSection("probation")), muteEnded(x.getConfigurationSection("mute-ended")));
+                probation(x.getConfigurationSection("probation")), muteEnded(x.getConfigurationSection("mute-ended")),
+                bulk(x.getConfigurationSection("bulk")), appeal(x.getConfigurationSection("appeal")));
+    }
+
+    // ------------------------------------------------------------------ extras (P5: spec 13.8, 13.10)
+
+    private PunishConfig.Bulk bulk(ConfigurationSection s) {
+        PunishConfig.Bulk d = PunishConfig.Bulk.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        return new PunishConfig.Bulk(number(s, "max", "extras.bulk.max", d.max(), 2, 50));
+    }
+
+    private PunishConfig.Appeals appeal(ConfigurationSection s) {
+        PunishConfig.Appeals d = PunishConfig.Appeals.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.appeal.";
+        java.util.Set<Punishment.Type> types = d.types();
+        if (s.contains("appealable-types")) {
+            if (!s.isList("appealable-types")) {
+                error("config.bad-list", p + "appealable-types");
+            } else {
+                java.util.Set<Punishment.Type> parsed = java.util.EnumSet.noneOf(Punishment.Type.class);
+                for (String raw : s.getStringList("appealable-types")) {
+                    String value = raw == null ? "" : raw.strip().toLowerCase(Locale.ROOT);
+                    if (!APPEAL_TYPES.contains(value)) {
+                        error("config.unknown-key", p + "appealable-types", "value", value, "suggestion",
+                                nullToEmpty(Hints.closest(value, APPEAL_TYPES)));
+                        continue;
+                    }
+                    parsed.add(Punishment.Type.valueOf(value.toUpperCase(Locale.ROOT)));
+                }
+                types = java.util.Set.copyOf(parsed);
+            }
+        }
+        int min = number(s, "min-length", p + "min-length", d.minLength(), 1, 200);
+        int max = number(s, "max-length", p + "max-length", d.maxLength(), 20, 600);
+        if (min > max) {
+            error("config.bad-number", p + "min-length", "value", String.valueOf(min), "min", "1", "max", String.valueOf(max));
+            min = Math.min(d.minLength(), max);
+        }
+        List<String> deny = ids(s, "deny-reasons", p + "deny-reasons", d.denyReasons());
+        boolean discordOn = d.discordEnabled();
+        String channel = d.discordChannel();
+        ConfigurationSection ds = s.getConfigurationSection("discord");
+        if (ds != null) {
+            if (ds.contains("webhook") || ds.contains("url") || ds.contains("webhook-url")) {
+                error("config.webhook-in-config", p + "discord." + (ds.contains("webhook") ? "webhook" : ds.contains("url") ? "url" : "webhook-url"));
+            }
+            discordOn = bool(ds, "enabled", p + "discord.enabled", discordOn);
+            String raw = ds.contains("channel") ? String.valueOf(ds.get("channel")).strip() : channel;
+            if (!raw.matches(ID_PATTERN)) {
+                error("config.bad-id", p + "discord.channel", "value", raw);
+            } else {
+                channel = raw;
+            }
+        }
+        return new PunishConfig.Appeals(bool(s, "enabled", p + "enabled", d.enabled()), types,
+                positive(s, "cooldown", p + "cooldown", d.cooldown()), min, max,
+                positive(s, "reminder", p + "reminder", d.reminder()),
+                number(s, "reduce-max-days", p + "reduce-max-days", d.reduceMaxDays(), 1, 3650), deny, discordOn, channel);
+    }
+
+    /** Types an appeal can be about (kicks are over at once, so never). */
+    private static final List<String> APPEAL_TYPES = List.of("mute", "ban", "warn");
+
+    /** A list of up to 6 ids (deny reason buttons). */
+    private List<String> ids(ConfigurationSection s, String key, String path, List<String> fallback) {
+        if (!s.contains(key)) {
+            return fallback;
+        }
+        if (!s.isList(key)) {
+            error("config.bad-list", path);
+            return fallback;
+        }
+        List<String> ids = new ArrayList<>();
+        for (String id : s.getStringList(key)) {
+            String clean = id == null ? "" : id.strip();
+            if (!clean.matches(ID_PATTERN)) {
+                error("config.bad-id", path, "value", clean);
+            } else if (!ids.contains(clean)) {
+                ids.add(clean);
+            }
+        }
+        if (ids.size() > 6) {
+            error("config.bad-number", path, "value", String.valueOf(ids.size()), "min", "0", "max", "6");
+            ids = ids.subList(0, 6);
+        }
+        return List.copyOf(ids);
     }
 
     // ------------------------------------------------------------------ extras (P4: spec 13.4, 13.5, 13.7, 13.13)

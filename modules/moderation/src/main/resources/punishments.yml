@@ -19,6 +19,7 @@
 # Reason ids: lowercase a-z, 0-9 and - only, unique. icon = any item id.
 # probation: true|false (category or reason; default true) = after a mute/ban of this reason ends by time the player is
 # on probation (extras.probation), and offences of this reason get the probation step bonus. Off for the small stuff.
+# appealable: true|false (reason; default true) = players can /appeal punishments of this reason (extras.appeal).
 
 categories:
   cheating:
@@ -40,6 +41,7 @@ categories:
         icon: PLAYER_HEAD
         ladder: ["ipban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
+        appealable: false           # owner spec 13.10: no appeals for alt abuse
 
   chat:
     icon: WRITABLE_BOOK
@@ -80,6 +82,7 @@ categories:
         icon: GOLD_INGOT
         ladder: ["ban 30d", "ban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
+        appealable: false           # owner spec 13.10: no appeals for real-money trading
 
   other:
     icon: ARMOR_STAND
@@ -114,7 +117,7 @@ menu:
   buttons:                          # bottom row
     sanctions: { slot: 45, icon: GRAY_DYE }        # P7
     kick: { slot: 46, icon: LEATHER_BOOTS }
-    bulk: { slot: 47, icon: GRAY_DYE }             # P5
+    bulk: { slot: 47, icon: CHEST_MINECART }       # P5: punish several players for one reason
     history: { slot: 48, icon: WRITABLE_BOOK }
     close: { slot: 49, icon: BARRIER }
     more-reasons: { slot: 50, icon: BOOKSHELF }
@@ -229,3 +232,20 @@ extras:
   mute-ended:                 # "Your mute has ended. Please follow the rules" / "Welcome back" (once, also after being offline)
     enabled: true
     sound: notify             # a sound name from sounds.yml, "" = none
+
+  # ---------- owner spec section 13 (P5) ----------
+  bulk:                       # /pbulk <reason> <players...> and the Bulk button of /p (skyblock.staff.punish.bulk)
+    max: 20                   # players in one bulk action. Always a confirm with the count; each player gets their own
+                              # next ladder step; approval rules apply per player
+  appeal:                     # /appeal (players), /appeals (staff queue, skyblock.staff.appeals)
+    enabled: true
+    appealable-types: [mute, ban]   # mute | ban | warn. A reason can say appealable: false (alt-abuse, rmt)
+    cooldown: 7d              # after a denied appeal, the same punishment can be appealed again after this
+    min-length: 20            # characters of the appeal text
+    max-length: 500
+    reminder: 48h             # open appeals older than this are listed to staff when they join
+    reduce-max-days: 365      # Reduce on a permanent punishment offers up to this many days
+    deny-reasons: [clear-evidence, fair, no-reason]   # buttons in the Deny menu (max 6, texts in messages)
+    discord:                  # new appeals and decisions on Discord. OFF: Discord is postponed (docs/LATER.md)
+      enabled: false          # also needs the webhook URL (a SECRET: secrets/discord.yml, never here)
+      channel: appeals        # name of the webhook in secrets/discord.yml

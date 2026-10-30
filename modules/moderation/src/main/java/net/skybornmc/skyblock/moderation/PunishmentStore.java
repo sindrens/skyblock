@@ -287,7 +287,13 @@ final class PunishmentStore {
     /** Same, with how long a request waits for an approver (REQUEST verdicts, spec 13.4). */
     CompletableFuture<IssueResult> issue(Punishment draft, PunishDecision.Input input, PunishDecision decision, RuleHook hook,
                                          java.time.Duration requestExpire) {
-        return db.async(c -> issueBlocking(c, draft, input, decision, hook, requestExpire));
+        return issue(draft, input, decision, hook, requestExpire, null);
+    }
+
+    /** Same, with the {@code /logs} line a request keeps as evidence (spec 13.11), or {@code null}. */
+    CompletableFuture<IssueResult> issue(Punishment draft, PunishDecision.Input input, PunishDecision decision, RuleHook hook,
+                                         java.time.Duration requestExpire, Long evidenceEntry) {
+        return db.async(c -> issueBlocking(c, draft, input, decision, hook, requestExpire, evidenceEntry));
     }
 
     IssueResult issueBlocking(Connection c, Punishment draft, PunishDecision.Input input, PunishDecision decision, RuleHook hook)
@@ -297,6 +303,11 @@ final class PunishmentStore {
 
     IssueResult issueBlocking(Connection c, Punishment draft, PunishDecision.Input input, PunishDecision decision, RuleHook hook,
                               java.time.Duration requestExpire) throws SQLException {
+        return issueBlocking(c, draft, input, decision, hook, requestExpire, null);
+    }
+
+    IssueResult issueBlocking(Connection c, Punishment draft, PunishDecision.Input input, PunishDecision decision, RuleHook hook,
+                              java.time.Duration requestExpire, Long evidenceEntry) throws SQLException {
         return locked(c, draft.target(), conn -> {
             long now = input.now();
             Active act = active(conn, draft.target(), draft.ip(), now);
@@ -305,7 +316,7 @@ final class PunishmentStore {
             PunishDecision.Verdict verdict = decision.decide(input.withActive(act.mute(), act.ban()).withRecent(recent));
             if (verdict.outcome() == PunishDecision.Outcome.REQUEST) {
                 RequestSaved saved = requestLocked(conn, shaped(draft, verdict.input()), verdict.input().duration(), now,
-                        requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire);
+                        requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire, evidenceEntry);
                 return new IssueResult(verdict, null, null, saved.request(), saved.merged());
             }
             if (!verdict.applied()) {
@@ -504,7 +515,7 @@ final class PunishmentStore {
                             s.reason(), s.api() ? s.reasonId() : null, null, by, byName, now, null, false, null, null, null, null,
                             s.source()), verdict.input());
                     RequestSaved saved = requestLocked(conn, wanted, verdict.input().duration(), now,
-                            requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire);
+                            requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire, null);
                     if (claim(conn, id, Suggestion.Status.REQUESTED, by, byName, null,
                             Suggestion.NOTE_REQUEST + saved.request().id(), now) != 1) {
                         throw new SQLException("suggestion " + id + " changed while locked");
@@ -846,7 +857,7 @@ final class PunishmentStore {
 
     private static final String REQUEST_COLUMNS = "id, target_uuid, target_name, reason_key, type, duration_ms, ip_wide, ip, "
             + "reason, template, ladder_step, weight_tenths, silent, source, requester_uuid, requester_name, created, expires, "
-            + "status, handled_at, handler_uuid, handler_name, deny_reason, punishment_id, merges, notified";
+            + "status, handled_at, handler_uuid, handler_name, deny_reason, punishment_id, merges, notified, evidence_entry";
 
     private static PunishRequest mapRequest(ResultSet rs) throws SQLException {
         return new PunishRequest(rs.getLong("id"), Sql.uuid(rs, "target_uuid"), rs.getString("target_name"),
@@ -856,7 +867,8 @@ final class PunishmentStore {
                 Sql.uuid(rs, "requester_uuid"), rs.getString("requester_name"), rs.getLong("created"), rs.getLong("expires"),
                 PunishRequest.Status.valueOf(rs.getString("status")), Sql.nullableLong(rs, "handled_at"),
                 Sql.uuid(rs, "handler_uuid"), rs.getString("handler_name"), rs.getString("deny_reason"),
-                Sql.nullableLong(rs, "punishment_id"), rs.getInt("merges"), rs.getBoolean("notified"));
+                Sql.nullableLong(rs, "punishment_id"), rs.getInt("merges"), rs.getBoolean("notified"),
+                Sql.nullableLong(rs, "evidence_entry"));
     }
 
     /** A request after {@link #requestLocked}: the row, and whether it was merged into an existing pending one. */
@@ -873,7 +885,7 @@ final class PunishmentStore {
      * Runs inside the caller's transaction and target lock.
      */
     private static RequestSaved requestLocked(Connection c, Punishment wanted, java.time.Duration duration, long now,
-                                              java.time.Duration expire) throws SQLException {
+                                              java.time.Duration expire, Long evidenceEntry) throws SQLException {
         String key = Approval.mergeKey(wanted.template(), wanted.type(), wanted.reason());
         if (wanted.target() != null) {
             Optional<PunishRequest> waiting = Sql.queryOne(c, "SELECT " + REQUEST_COLUMNS + " FROM punishment_requests "
@@ -881,17 +893,22 @@ final class PunishmentStore {
                     PunishmentStore::mapRequest, Sql.toBytes(wanted.target()), key, now);
             if (waiting.isPresent()) {
                 Sql.update(c, "UPDATE punishment_requests SET merges = merges + 1 WHERE id = ?", waiting.get().id());
+                if (evidenceEntry != null) {
+                    // spec 13.11: the first request's log line stays; a merged request only fills it in when there was none
+                    Sql.update(c, "UPDATE punishment_requests SET evidence_entry = ? WHERE id = ? AND evidence_entry IS NULL",
+                            evidenceEntry, waiting.get().id());
+                }
                 return new RequestSaved(requestById(c, waiting.get().id()).orElseThrow(), true);
             }
         }
         boolean timed = wanted.type() == Punishment.Type.BAN || wanted.type() == Punishment.Type.MUTE;
         long id = Sql.insertReturningId(c, "INSERT INTO punishment_requests (target_uuid, target_name, reason_key, type, duration_ms, "
                         + "ip_wide, ip, reason, template, ladder_step, weight_tenths, silent, source, requester_uuid, requester_name, "
-                        + "created, expires, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')",
+                        + "created, expires, status, evidence_entry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?)",
                 bytes(wanted.target()), clip(wanted.targetName(), 32), key, wanted.type().name(),
                 timed && duration != null ? duration.toMillis() : null, wanted.ipWide(), wanted.ip(), clip(wanted.reason(), 255),
                 wanted.template(), wanted.ladderStep(), wanted.weight(), wanted.silent(), clip(wanted.source(), 48),
-                bytes(wanted.issuer()), clip(wanted.issuerName(), 32), now, now + expire.toMillis());
+                bytes(wanted.issuer()), clip(wanted.issuerName(), 32), now, now + expire.toMillis(), evidenceEntry);
         return new RequestSaved(requestById(c, id).orElseThrow(), false);
     }
 
@@ -1140,5 +1157,232 @@ final class PunishmentStore {
             }
             return claimed;
         }));
+    }
+
+    // ================================================================== P5: appeals (spec 13.10)
+
+    private static final String APPEAL_COLUMNS = "id, punishment_id, punishment_type, player_uuid, player_name, issuer_uuid, "
+            + "issuer_name, appeal_text, status, handler_uuid, handler_name, response, old_expires, new_expires, created, handled, "
+            + "player_notified";
+
+    private static Appeal mapAppeal(ResultSet rs) throws SQLException {
+        return new Appeal(rs.getLong("id"), rs.getLong("punishment_id"), Punishment.Type.valueOf(rs.getString("punishment_type")),
+                Sql.uuid(rs, "player_uuid"), rs.getString("player_name"), Sql.uuid(rs, "issuer_uuid"), rs.getString("issuer_name"),
+                rs.getString("appeal_text"), Appeal.Status.valueOf(rs.getString("status")), Sql.uuid(rs, "handler_uuid"),
+                rs.getString("handler_name"), rs.getString("response"), Sql.nullableLong(rs, "old_expires"),
+                Sql.nullableLong(rs, "new_expires"), rs.getLong("created"), Sql.nullableLong(rs, "handled"),
+                rs.getBoolean("player_notified"));
+    }
+
+    private static Optional<Appeal> appealById(Connection c, long id) throws SQLException {
+        return Sql.queryOne(c, "SELECT " + APPEAL_COLUMNS + " FROM appeals WHERE id = ?", PunishmentStore::mapAppeal, id);
+    }
+
+    private static List<Appeal> appealsOf(Connection c, long punishmentId) throws SQLException {
+        return Sql.query(c, "SELECT " + APPEAL_COLUMNS + " FROM appeals WHERE punishment_id = ? ORDER BY id",
+                PunishmentStore::mapAppeal, punishmentId);
+    }
+
+    /** {@link #submitAppeal} result: the new appeal, or why it was refused (and the punishment, when found). */
+    record Submitted(Appeal appeal, AppealRules.Problem problem, Punishment punishment) {
+    }
+
+    /**
+     * {@code /appeal}: checks {@link AppealRules#canAppeal} (own, active, appealable type and reason, no open appeal, no
+     * cooldown) with the punishment's earlier appeals and inserts an OPEN appeal, under the player's lock so two quick
+     * commands can't create two open appeals for one punishment.
+     */
+    CompletableFuture<Submitted> submitAppeal(long punishmentId, UUID player, String playerName, String text,
+                                              java.util.function.Predicate<String> reasonAppealable, PunishConfig.Appeals cfg,
+                                              long now) {
+        return db.async(c -> locked(c, player, conn -> {
+            Punishment p = byId(conn, punishmentId).orElse(null);
+            List<Appeal> previous = p == null ? List.of() : appealsOf(conn, punishmentId);
+            Optional<AppealRules.Problem> problem = AppealRules.canAppeal(p, player, previous,
+                    p != null && reasonAppealable.test(p.template()), cfg, now);
+            if (problem.isPresent()) {
+                return new Submitted(null, problem.get(), p);
+            }
+            long id = Sql.insertReturningId(conn, "INSERT INTO appeals (punishment_id, punishment_type, player_uuid, player_name, "
+                            + "issuer_uuid, issuer_name, appeal_text, status, created) VALUES (?, ?, ?, ?, ?, ?, ?, 'OPEN', ?)",
+                    p.id(), p.type().name(), Sql.toBytes(player), clip(playerName, 32), bytes(p.issuer()), clip(p.issuerName(), 32),
+                    clip(text, 600), now);
+            return new Submitted(appealById(conn, id).orElseThrow(), null, p);
+        }));
+    }
+
+    CompletableFuture<Optional<Appeal>> appeal(long id) {
+        return db.async(c -> appealById(c, id));
+    }
+
+    /** Every appeal of one punishment, oldest first. */
+    CompletableFuture<List<Appeal>> appealsFor(long punishmentId) {
+        return db.async(c -> appealsOf(c, punishmentId));
+    }
+
+    /** Open appeals, oldest first (the /appeals queue), at most {@code limit}. */
+    CompletableFuture<List<Appeal>> openAppeals(int limit) {
+        return db.async(c -> Sql.query(c, "SELECT " + APPEAL_COLUMNS + " FROM appeals WHERE status = 'OPEN' ORDER BY created, id "
+                + "LIMIT " + Math.max(1, limit), PunishmentStore::mapAppeal));
+    }
+
+    /** Open appeals created before {@code cutoff} (reminder on staff join), oldest first. */
+    CompletableFuture<List<Appeal>> openAppealsBefore(long cutoff, int limit) {
+        return db.async(c -> Sql.query(c, "SELECT " + APPEAL_COLUMNS + " FROM appeals WHERE status = 'OPEN' AND created < ? "
+                + "ORDER BY created, id LIMIT " + Math.max(1, limit), PunishmentStore::mapAppeal, cutoff));
+    }
+
+    /** A player's appeals, newest first (the /appeal status), at most {@code limit}. */
+    CompletableFuture<List<Appeal>> appealsBy(UUID player, int limit) {
+        return db.async(c -> Sql.query(c, "SELECT " + APPEAL_COLUMNS + " FROM appeals WHERE player_uuid = ? ORDER BY created DESC, "
+                + "id DESC LIMIT " + Math.max(1, limit), PunishmentStore::mapAppeal, Sql.toBytes(player)));
+    }
+
+    /** What happened when staff handled an appeal. */
+    enum AppealKind { ACCEPTED, REDUCED, DENIED, CLOSED, ALREADY_HANDLED, NOT_FOUND, NOT_SHORTER }
+
+    record AppealResult(AppealKind kind, Appeal appeal, Punishment punishment) {
+    }
+
+    private static int claimAppeal(Connection c, long id, Appeal.Status status, UUID by, String byName, String response,
+                                   Long oldExpires, Long newExpires, long now) throws SQLException {
+        return Sql.update(c, "UPDATE appeals SET status = ?, handler_uuid = ?, handler_name = ?, response = ?, old_expires = ?, "
+                        + "new_expires = ?, handled = ? WHERE id = ? AND status = 'OPEN'", status.name(), bytes(by), clip(byName, 32),
+                clip(response, 255), oldExpires, newExpires, now, id);
+    }
+
+    /** The shared part of accept/reduce/deny: finds the appeal, locks its player, checks it is still open. */
+    private CompletableFuture<AppealResult> handleAppeal(long id, AppealWork work) {
+        return db.async(c -> {
+            Optional<Appeal> first = appealById(c, id);
+            if (first.isEmpty()) {
+                return new AppealResult(AppealKind.NOT_FOUND, null, null);
+            }
+            return locked(c, first.get().player(), conn -> {
+                Appeal a = appealById(conn, id).orElseThrow();
+                Punishment p = byId(conn, a.punishmentId()).orElse(null);
+                if (!a.open()) {
+                    return new AppealResult(AppealKind.ALREADY_HANDLED, a, p);
+                }
+                return work.apply(conn, a, p);
+            });
+        });
+    }
+
+    @FunctionalInterface
+    private interface AppealWork {
+        AppealResult apply(Connection c, Appeal appeal, Punishment punishment) throws SQLException;
+    }
+
+    /** The punishment ended or was lifted before anyone handled the appeal: close it (no decision). */
+    private static AppealResult closeAppeal(Connection c, Appeal a, Punishment p, UUID by, String byName, long now)
+            throws SQLException {
+        if (claimAppeal(c, a.id(), Appeal.Status.CLOSED, by, byName, null, null, null, now) != 1) {
+            throw new SQLException("appeal " + a.id() + " changed while locked");
+        }
+        return new AppealResult(AppealKind.CLOSED, appealById(c, a.id()).orElseThrow(), p);
+    }
+
+    /**
+     * Accept: lifts the punishment (a pardon with {@code pardonReason}, "Appeal accepted") and marks the appeal ACCEPTED, in
+     * one transaction under the player's lock. First click wins; a punishment that is no longer active closes the appeal.
+     */
+    CompletableFuture<AppealResult> acceptAppeal(long id, UUID by, String byName, String pardonReason, long now) {
+        return handleAppeal(id, (conn, a, p) -> {
+            if (p == null || !p.active(now)) {
+                return closeAppeal(conn, a, p, by, byName, now);
+            }
+            Sql.update(conn, "UPDATE punishments SET removed_at = ?, removed_by_uuid = ?, removed_by_name = ?, removed_reason = ? "
+                    + "WHERE id = ? AND removed_at IS NULL", now, bytes(by), clip(byName, 32), clip(pardonReason, 255), p.id());
+            if (claimAppeal(conn, a.id(), Appeal.Status.ACCEPTED, by, byName, pardonReason, p.expires(), null, now) != 1) {
+                throw new SQLException("appeal " + a.id() + " changed while locked");
+            }
+            return new AppealResult(AppealKind.ACCEPTED, appealById(conn, a.id()).orElseThrow(), byId(conn, p.id()).orElseThrow());
+        });
+    }
+
+    /**
+     * Reduce: the punishment now ends at {@code created + amount unit} (never later than before; an end already passed
+     * means now), and the appeal is REDUCED with the old and new end. Same lock and first-click rules as accept.
+     */
+    CompletableFuture<AppealResult> reduceAppeal(long id, UUID by, String byName, AppealRules.Unit unit, long amount,
+                                                 String response, long now) {
+        return handleAppeal(id, (conn, a, p) -> {
+            if (p == null || !p.active(now)) {
+                return closeAppeal(conn, a, p, by, byName, now);
+            }
+            Long end = AppealRules.reducedEnd(p, unit, amount, now);
+            if (end == null) {
+                return new AppealResult(AppealKind.NOT_SHORTER, a, p);
+            }
+            Sql.update(conn, "UPDATE punishments SET expires = ? WHERE id = ? AND removed_at IS NULL", end, p.id());
+            if (claimAppeal(conn, a.id(), Appeal.Status.REDUCED, by, byName, response, p.expires(), end, now) != 1) {
+                throw new SQLException("appeal " + a.id() + " changed while locked");
+            }
+            return new AppealResult(AppealKind.REDUCED, appealById(conn, a.id()).orElseThrow(), byId(conn, p.id()).orElseThrow());
+        });
+    }
+
+    /** Deny with a reason (required, checked by the caller). First click wins. */
+    CompletableFuture<AppealResult> denyAppeal(long id, UUID by, String byName, String reason, long now) {
+        return handleAppeal(id, (conn, a, p) -> {
+            if (claimAppeal(conn, a.id(), Appeal.Status.DENIED, by, byName, reason, null, null, now) != 1) {
+                throw new SQLException("appeal " + a.id() + " changed while locked");
+            }
+            return new AppealResult(AppealKind.DENIED, appealById(conn, a.id()).orElseThrow(), p);
+        });
+    }
+
+    /** Decisions the player was not told yet; marks them told, atomically (each is told once: now, or on the next join). */
+    CompletableFuture<List<Appeal>> appealUpdates(UUID player) {
+        return db.transaction(c -> {
+            List<Appeal> due = Sql.query(c, "SELECT " + APPEAL_COLUMNS + " FROM appeals WHERE player_uuid = ? AND status <> 'OPEN' "
+                    + "AND player_notified = FALSE ORDER BY handled, id", PunishmentStore::mapAppeal, Sql.toBytes(player));
+            List<Appeal> claimed = new ArrayList<>();
+            for (Appeal a : due) {
+                if (Sql.update(c, "UPDATE appeals SET player_notified = TRUE WHERE id = ? AND player_notified = FALSE", a.id()) == 1) {
+                    claimed.add(a);
+                }
+            }
+            return claimed;
+        });
+    }
+
+    /** Marks one decision told; true if this call did it (the player is online and gets it now). */
+    CompletableFuture<Boolean> markAppealNotified(long id) {
+        return db.async(c -> Sql.update(c, "UPDATE appeals SET player_notified = TRUE WHERE id = ? AND player_notified = FALSE "
+                + "AND status <> 'OPEN'", id) == 1);
+    }
+
+    /**
+     * /pstats (spec 13.10): appeals {@code staff} handled since {@code since} (accepted / reduced / denied) and how many of
+     * their own punishments were reversed by an accepted appeal.
+     */
+    record AppealCounts(long accepted, long reduced, long denied, long reversedByAppeal) {
+        static final AppealCounts NONE = new AppealCounts(0, 0, 0, 0);
+
+        long handled() {
+            return accepted + reduced + denied;
+        }
+    }
+
+    CompletableFuture<AppealCounts> appealCounts(UUID staff, long since) {
+        return db.async(c -> {
+            long[] n = new long[3];
+            Sql.query(c, "SELECT status, COUNT(*) AS n FROM appeals WHERE handler_uuid = ? AND handled >= ? GROUP BY status", rs -> {
+                switch (rs.getString("status")) {
+                    case "ACCEPTED" -> n[0] = rs.getLong("n");
+                    case "REDUCED" -> n[1] = rs.getLong("n");
+                    case "DENIED" -> n[2] = rs.getLong("n");
+                    default -> {
+                        // CLOSED is no decision
+                    }
+                }
+                return 0;
+            }, Sql.toBytes(staff), since);
+            long reversed = Sql.queryOne(c, "SELECT COUNT(*) AS n FROM appeals WHERE issuer_uuid = ? AND status = 'ACCEPTED' "
+                    + "AND handled >= ?", rs -> rs.getLong("n"), Sql.toBytes(staff), since).orElse(0L);
+            return new AppealCounts(n[0], n[1], n[2], reversed);
+        });
     }
 }

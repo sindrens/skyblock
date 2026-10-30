@@ -94,6 +94,9 @@ public final class LogsModule implements SkyblockModule {
     public void enable() {
         core.configs().load(config);
         main = new MainThread(core.plugin());
+        // Phase P 13.11: one entry by id for /p <player> --evidence <id> (moderation), with this module's visibility rules
+        core.services().register(ID, net.skybornmc.skyblock.common.audit.LogLookup.class,
+                new LogPunish.Lookup(core.database(), core.audit(), this::allowed));
         registerCommands();
     }
 
@@ -106,6 +109,21 @@ public final class LogsModule implements SkyblockModule {
     @Override
     public void disable() {
         lastSearch.clear();
+        core.services().unregisterAll(ID);
+    }
+
+    /**
+     * Punish from logs (13.11): runs {@code /punish <player> --evidence <id>} for {@code staff} (the moderation module's
+     * entry point; it checks everything again). Returns false when the entry is not a chat line or it is not allowed.
+     */
+    boolean punishFrom(Player staff, AuditEntry entry) {
+        String command = LogPunish.command(entry);
+        if (command == null || !LogPunish.allowed(staff)) {
+            return false;
+        }
+        core.audit().log(AuditCategory.STAFF, "logs_punish_open", Actor.player(staff), entry.actor().uuid().toString(),
+                entry.actor().name(), null, null, Map.of("entry", entry.id()));
+        return staff.performCommand(command);
     }
 
     // ------------------------------------------------------------------------------------------------ permissions

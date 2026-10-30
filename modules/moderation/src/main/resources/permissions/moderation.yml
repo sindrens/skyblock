@@ -75,3 +75,12 @@ skyblock.staff.punish.approve:
 skyblock.staff.watch:
   description: Watch players (/watch, /watchlist) and see the watch line on the head of /p
   default: op
+skyblock.staff.punish.bulk:
+  description: Punish several players for one reason (/pbulk, the Bulk button of /p); always with a confirm
+  default: op
+skyblock.punish.appeal:
+  description: Appeal your own mute or ban (/appeal)
+  default: true
+skyblock.staff.appeals:
+  description: Handle appeals (/appeals queue, accept / reduce / deny) and get the reminder for old open appeals
+  default: op

@@ -174,9 +174,10 @@ final class LogRender {
         }
         lore.add(Component.empty());
         lore.add(text(viewer, "entry.meta", p));
-        boolean teleport = e.hasLocation() && module.canTeleport(viewer);
-        lore.add(text(viewer, teleport ? "entry.click-teleport" : "entry.click-chat"));
-        if (teleport) {
+        boolean punish = LogPunish.punishable(e) && LogPunish.allowed(viewer);
+        boolean teleport = !punish && e.hasLocation() && module.canTeleport(viewer);
+        lore.add(text(viewer, punish ? "entry.click-punish" : teleport ? "entry.click-teleport" : "entry.click-chat"));
+        if (teleport || punish) {
             lore.add(text(viewer, "entry.right-click-chat"));
         }
         return module.core.menus().item(icon(e.category()), name, lore);
@@ -223,6 +224,12 @@ final class LogRender {
                         .hoverEvent(HoverEvent.showText(text(viewer, "chat.location-hover", p)));
             }
             line = line.append(where);
+        }
+        // spec 13.11: [Punish] opens /p with this chat line as evidence (staff who may punish; clickable chat = Java)
+        String punish = LogPunish.command(e);
+        if (punish != null && LogPunish.allowed(viewer)) {
+            line = line.append(text(viewer, "chat.punish", p).clickEvent(ClickEvent.runCommand("/" + punish))
+                    .hoverEvent(HoverEvent.showText(text(viewer, "chat.punish-hover", p))));
         }
         return line;
     }

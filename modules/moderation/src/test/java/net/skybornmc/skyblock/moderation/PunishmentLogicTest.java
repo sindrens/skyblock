@@ -71,11 +71,12 @@ class PunishmentLogicTest {
         assertEquals(List.of("-ip -s"), Flags.suggestions("-ip ", p1));
         assertEquals(List.of(), Flags.suggestions("-s -ip ", p1));
         // P2: -force, offered only to staff who may use it
-        assertEquals(List.of("-s", "-ip", "-force"), Flags.suggestions(""));
+        // P5 (13.11): --evidence <log id> for everyone who may use /p
+        assertEquals(List.of("-s", "-ip", "-force", "--evidence"), Flags.suggestions(""));
         assertEquals(List.of("-s -force"), Flags.suggestions("-s -f"));
-        assertEquals(List.of("-force"), Flags.allowed(ModerationModule.PERM_FORCE::equals));
-        assertEquals(List.of("-s", "-ip", "-force"), Flags.allowed(perm -> true));
-        assertEquals(List.of(), Flags.allowed(perm -> false));
+        assertEquals(List.of("-force", "--evidence"), Flags.allowed(ModerationModule.PERM_FORCE::equals));
+        assertEquals(List.of("-s", "-ip", "-force", "--evidence"), Flags.allowed(perm -> true));
+        assertEquals(List.of("--evidence"), Flags.allowed(perm -> false));
     }
 
     @Test

@@ -11,4 +11,6 @@
 | `/logs export <name\|last> [category] [time]` | CSV to `plugins/PhoenixSkyblock/exports/` (logged) | `skyblock.staff.logs.export` | ✅ |
 | `/logs page <n>` | Next pages of your last search in chat (console, Bedrock option) | `skyblock.staff.logs` | ✅ |
 
+**Punish from logs (Phase P, P5, spec 13.11):** in the results, a chat line (`chat` / `chat_blocked`) opens the punish menu `/p <player>` with that line (and the lines before it) as evidence: click it in the menu (left click, works on Bedrock; right click still prints it in chat), or click `[Punish]` after the line in the chat view. Shown only to staff with `skyblock.staff.punish.gui` while the moderation module runs; it runs `/punish <player> --evidence <id>` for you, so moderation checks everything again. The logs module provides the small `LogLookup` service (in `common/audit`): one entry by id, only if the viewer may see its category. No new command; every click is logged (`staff/logs_punish_open`).
+
 Permission definitions: `modules/logs/src/main/resources/permissions/logs.yml`. Rank grants: `server/permissions/logs.txt`.
