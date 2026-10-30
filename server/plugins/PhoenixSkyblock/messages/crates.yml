@@ -39,6 +39,8 @@ reward-types:
   tag: "Tag"
   title: "Title"
   fuel: "Island Fuel (<amount>)"
+  booster: "Booster"
+  global-booster: "Global Booster"
   coming-soon: "Coming soon"
 
 # Reward names per crate: rewards.<crate>.<reward id>.
