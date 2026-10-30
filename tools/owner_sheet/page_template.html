@@ -1,0 +1,234 @@
+<title>Phoenix Skyblock Decisions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow column of decision cards under a sticky progress bar; filters wrap on phones. */
+:root {
+  --bg: #F7F4F4; --surface: #FFFFFF; --fg: #1C1416; --muted: #6E6366; --line: #E6DEDF;
+  --accent: #D1202F; --accent-soft: #FBE6E8;
+  --ok: #1E8A4C; --ok-soft: #E2F4EA; --no: #4F5563; --no-soft: #E9EBEF; --other: #A86A12; --other-soft: #FBF0DC;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141011; --surface: #1E1819; --fg: #F3EDED; --muted: #A99EA0; --line: #362D2F;
+  --accent: #FF4757; --accent-soft: #3A1A1E;
+  --ok: #42D483; --ok-soft: #173426; --no: #A8B0C2; --no-soft: #2A2E37; --other: #F2B44E; --other-soft: #3A2C13; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141011; --surface: #1E1819; --fg: #F3EDED; --muted: #A99EA0; --line: #362D2F;
+  --accent: #FF4757; --accent-soft: #3A1A1E;
+  --ok: #42D483; --ok-soft: #173426; --no: #A8B0C2; --no-soft: #2A2E37; --other: #F2B44E; --other-soft: #3A2C13; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font: 15px/1.45 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface) }
+.wrap { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line) }
+header.top .wrap { padding-block: 12px 10px; display: grid; gap: 10px }
+.title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap }
+h1 { margin: 0; font: 800 22px/1.1 var(--display); letter-spacing: -0.01em; text-wrap: balance }
+h1 span { color: var(--accent) }
+.count { font: 500 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums }
+.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+select, input[type=search] { font: 500 14px var(--body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0 }
+input[type=search] { flex: 1 1 160px }
+.chip { font: 600 13px var(--body); border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 999px; padding: 6px 12px; cursor: pointer }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff }
+.status { font-size: 12px; color: var(--muted) }
+main .wrap { padding-block: 18px 80px; display: grid; gap: 22px }
+.intro { color: var(--muted); font-size: 14px; max-width: 62ch }
+.intro b { color: var(--fg) }
+.area h2 { margin: 0 0 4px; font: 800 19px/1.2 var(--display); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap }
+.area h2 small { font: 500 12px var(--mono); color: var(--muted) }
+.bulk { font: 600 12px var(--body); color: var(--ok); background: none; border: 1px dashed var(--ok); border-radius: 999px; padding: 4px 10px; cursor: pointer }
+.bulk.arm { background: var(--ok); color: #fff; border-style: solid }
+.feat { font: 600 12px var(--body); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 6px }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; margin-bottom: 8px; content-visibility: auto; contain-intrinsic-size: auto 130px }
+.card[data-a="s"] { border-color: var(--ok); background: linear-gradient(var(--ok-soft), var(--ok-soft)) }
+.card[data-a="n"] { border-color: var(--no); background: linear-gradient(var(--no-soft), var(--no-soft)) }
+.card[data-a="o"] { border-color: var(--other); background: linear-gradient(var(--other-soft), var(--other-soft)) }
+.q { font-weight: 600; font-size: 15.5px; min-width: 0 }
+.q .pri { display: inline-block; font: 700 10px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 4px; padding: 2px 6px; margin-right: 6px; vertical-align: 2px }
+.ctx { font-size: 13px; color: var(--muted) }
+.sug { font-size: 13.5px } .sug b { color: var(--ok) }
+.btns { display: flex; gap: 8px; flex-wrap: wrap }
+.btns button { flex: 1 1 0; min-width: 84px; font: 700 14px var(--body); padding: 9px 10px; border-radius: 9px; cursor: pointer; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg) }
+.btns .s { border-color: var(--ok); color: var(--ok) } .btns .n { border-color: var(--no); color: var(--no) } .btns .o { border-color: var(--other); color: var(--other) }
+.card[data-a="s"] .btns .s { background: var(--ok); color: #fff } .card[data-a="n"] .btns .n { background: var(--no); color: var(--surface) } .card[data-a="o"] .btns .o { background: var(--other); color: #fff }
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+textarea { width: 100%; font: 14px var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--other); border-radius: 8px; padding: 8px; resize: vertical; min-height: 44px }
+.id { font: 500 11px var(--mono); color: var(--muted); justify-self: end }
+.empty { text-align: center; color: var(--muted); padding: 40px 0 }
+.more { justify-self: center; font: 600 14px var(--body); padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none } }
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="title-row"><h1><span>Phoenix</span> Skyblock decisions</h1><div class="count" id="count">0 / 0 answered</div></div>
+  <div class="bar"><i id="barfill"></i></div>
+  <div class="filters">
+    <select id="area" aria-label="Area"><option value="">All areas</option></select>
+    <button class="chip" id="fPri" aria-pressed="true">Before launch</button>
+    <button class="chip" id="fOpen" aria-pressed="true">Unanswered</button>
+    <input type="search" id="search" placeholder="Search questions" aria-label="Search questions">
+  </div>
+  <div class="status" id="status">Connecting to the answer store…</div>
+</div></header>
+
+<main><div class="wrap">
+  <p class="intro">Every card is a choice the game uses right now. Tap <b>Suggested</b> to keep it, <b>No</b> to reject it, or <b>Other</b> to write what you want. Answers save as you tap. Tap a lit button again to undo. Start with <b>Before launch</b>, then switch it off for the rest.</p>
+  <div id="list"></div>
+</div></main>
+
+<script id="qdata" type="application/json">__DATA__</script>
+<script>
+(function () {
+  const Q = JSON.parse(document.getElementById('qdata').textContent);
+  const AREAS = [...new Set(Q.map(q => q.a))];
+  const slug = a => a.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const ans = {};            // id -> {a, note}
+  const exists = {};         // area slug -> doc exists
+  let db = null, shown = 60;
+  const $ = id => document.getElementById(id);
+  const areaSel = $('area');
+  AREAS.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a + ' (' + Q.filter(q => q.a === a).length + ')'; areaSel.appendChild(o); });
+  const pref = (() => { try { return JSON.parse(localStorage.getItem('pf') || '{}'); } catch (e) { return {}; } })();
+  if (pref.area) areaSel.value = pref.area;
+  if (pref.pri === false) $('fPri').setAttribute('aria-pressed', 'false');
+  if (pref.open === false) $('fOpen').setAttribute('aria-pressed', 'false');
+  const savePref = () => { try { localStorage.setItem('pf', JSON.stringify({ area: areaSel.value, pri: on('fPri'), open: on('fOpen') })); } catch (e) {} };
+  const on = id => $(id).getAttribute('aria-pressed') === 'true';
+
+  function filtered() {
+    const s = $('search').value.trim().toLowerCase();
+    return Q.filter(q => (!areaSel.value || q.a === areaSel.value) && (!on('fPri') || q.p) &&
+      (!on('fOpen') || !(ans[q.id] && ans[q.id].a)) && (!s || (q.q + ' ' + q.s + ' ' + q.f + ' ' + q.c).toLowerCase().includes(s)));
+  }
+
+  function card(q) {
+    const c = document.createElement('div'); c.className = 'card'; c.dataset.id = q.id;
+    const a = ans[q.id] || {};
+    if (a.a) c.dataset.a = a.a;
+    const qd = document.createElement('div'); qd.className = 'q';
+    if (q.p) { const p = document.createElement('span'); p.className = 'pri'; p.textContent = 'Before launch'; qd.appendChild(p); }
+    qd.appendChild(document.createTextNode(q.q)); c.appendChild(qd);
+    if (q.c) { const x = document.createElement('div'); x.className = 'ctx'; x.textContent = q.c; c.appendChild(x); }
+    const sg = document.createElement('div'); sg.className = 'sug'; sg.innerHTML = '<b>Suggested:</b> '; sg.appendChild(document.createTextNode(q.s)); c.appendChild(sg);
+    const b = document.createElement('div'); b.className = 'btns';
+    [['s', 'Suggested'], ['n', 'No'], ['o', 'Other']].forEach(([k, label]) => {
+      const bt = document.createElement('button'); bt.className = k; bt.type = 'button'; bt.textContent = label;
+      bt.setAttribute('aria-pressed', a.a === k ? 'true' : 'false');
+      bt.addEventListener('click', () => choose(q, k)); b.appendChild(bt);
+    });
+    c.appendChild(b);
+    if (a.a === 'o' || a.a === 'n') {
+      const t = document.createElement('textarea'); t.id = 'note-' + q.id; t.value = a.note || '';
+      t.placeholder = a.a === 'o' ? 'What should it be?' : 'Why not? (optional)';
+      t.addEventListener('change', () => write(q, { a: (ans[q.id] || {}).a, note: t.value.trim() }));
+      c.appendChild(t);
+      if (a.a === 'o' && !a.note) setTimeout(() => t.focus({ preventScroll: true }), 0);
+    }
+    const id = document.createElement('div'); id.className = 'id'; id.textContent = q.f + ' · #' + q.id; c.appendChild(id);
+    return c;
+  }
+
+  function render() {
+    const list = $('list'); list.textContent = '';
+    const items = filtered();
+    if (!items.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = on('fOpen') ? 'Nothing left to answer here. Switch off "Unanswered" or "Before launch" to see more.' : 'No questions match.'; list.appendChild(e); }
+    let curA = null, curF = null, sec = null;
+    items.slice(0, shown).forEach(q => {
+      if (q.a !== curA) {
+        curA = q.a; curF = null; sec = document.createElement('section'); sec.className = 'area';
+        const h = document.createElement('h2'); h.textContent = q.a + ' ';
+        const left = items.filter(x => x.a === q.a && !(ans[x.id] && ans[x.id].a));
+        const sm = document.createElement('small'); sm.textContent = items.filter(x => x.a === q.a).length + ' shown';
+        h.appendChild(sm);
+        if (left.length > 1) {
+          const bk = document.createElement('button'); bk.className = 'bulk'; bk.type = 'button'; bk.textContent = 'Suggested for all ' + left.length;
+          bk.addEventListener('click', () => {
+            if (!bk.classList.contains('arm')) { bk.classList.add('arm'); bk.textContent = 'Tap again: keep ' + left.length + ' suggestions'; setTimeout(() => { bk.classList.remove('arm'); bk.textContent = 'Suggested for all ' + left.length; }, 4000); return; }
+            bulk(left);
+          });
+          h.appendChild(bk);
+        }
+        sec.appendChild(h); list.appendChild(sec);
+      }
+      if (q.f !== curF) { curF = q.f; const f = document.createElement('div'); f.className = 'feat'; f.textContent = q.f; sec.appendChild(f); }
+      sec.appendChild(card(q));
+    });
+    if (items.length > shown) { const m = document.createElement('button'); m.className = 'more'; m.type = 'button'; m.textContent = 'Show more (' + (items.length - shown) + ' left)'; m.addEventListener('click', () => { shown += 80; render(); }); list.appendChild(m); }
+    stats();
+  }
+
+  function stats() {
+    const done = Q.filter(q => ans[q.id] && ans[q.id].a).length;
+    const pri = Q.filter(q => q.p), pd = pri.filter(q => ans[q.id] && ans[q.id].a).length;
+    $('count').textContent = done + ' / ' + Q.length + ' answered · before launch ' + pd + ' / ' + pri.length;
+    $('barfill').style.width = (100 * done / Q.length).toFixed(1) + '%';
+  }
+
+  function choose(q, k) {
+    const cur = ans[q.id] || {};
+    const next = cur.a === k ? { a: null, note: '' } : { a: k, note: cur.note || '' };
+    write(q, next);
+    const old = document.querySelector('.card[data-id="' + CSS.escape(q.id) + '"]');
+    if (old) old.replaceWith(card(q));
+    stats();
+  }
+
+  async function write(q, val) {
+    ans[q.id] = val; stats();
+    if (!db) { $('status').textContent = 'Not saved: the answer store is not available in this view.'; return; }
+    const ref = db.doc('answers/' + slug(q.a));
+    const body = { m: { [q.id]: { a: val.a || null, note: val.note || '', t: Date.now() } } };
+    try {
+      if (exists[slug(q.a)]) await ref.update(body); else { const snap = await ref.get(); if (snap.exists) await ref.update(body); else await ref.set(body); exists[slug(q.a)] = true; }
+      $('status').textContent = 'Saved.';
+    } catch (e) { $('status').textContent = 'Could not save (' + (e && e.code || 'error') + '). Your tap is shown but not stored yet; try again.'; }
+  }
+
+  async function bulk(list) {
+    const by = {};
+    list.forEach(q => { ans[q.id] = { a: 's', note: '' }; (by[slug(q.a)] = by[slug(q.a)] || {})[q.id] = { a: 's', note: '', t: Date.now() }; });
+    render();
+    if (!db) return;
+    for (const [s, m] of Object.entries(by)) {
+      const ref = db.doc('answers/' + s);
+      try { const snap = await ref.get(); if (snap.exists) await ref.update({ m }); else await ref.set({ m }); exists[s] = true; $('status').textContent = 'Saved ' + Object.keys(m).length + ' answers.'; }
+      catch (e) { $('status').textContent = 'Could not save the batch (' + (e && e.code || 'error') + ').'; }
+    }
+  }
+
+  ['fPri', 'fOpen'].forEach(id => $(id).addEventListener('click', () => { $(id).setAttribute('aria-pressed', on(id) ? 'false' : 'true'); shown = 60; savePref(); render(); }));
+  areaSel.addEventListener('change', () => { shown = 60; savePref(); render(); });
+  let st; $('search').addEventListener('input', () => { clearTimeout(st); st = setTimeout(() => { shown = 60; render(); }, 200); });
+  render();
+
+  (async () => {
+    db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+    if (!db) { $('status').textContent = 'Answers can only be saved when the page is opened on claude.ai.'; return; }
+    $('status').textContent = 'Connected. Answers save as you tap.';
+    let first = true;
+    db.collection('answers').onSnapshot(snap => {
+      let changedOther = false;
+      snap.docs.forEach(d => {
+        exists[d.id] = true;
+        const m = (d.data() || {}).m || {};
+        for (const [id, v] of Object.entries(m)) {
+          const cur = ans[id];
+          if (!cur || cur.a !== v.a || (cur.note || '') !== (v.note || '')) { ans[id] = { a: v.a, note: v.note || '' }; changedOther = true; }
+        }
+      });
+      if (first || changedOther) {
+        const active = document.activeElement;
+        if (!(active && active.tagName === 'TEXTAREA')) render(); else stats();
+      }
+      first = false;
+    }, e => { $('status').textContent = 'Live sync stopped (' + (e && e.code || 'error') + '). Reload the page.'; });
+  })();
+})();
+</script>

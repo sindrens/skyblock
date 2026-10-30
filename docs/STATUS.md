@@ -63,3 +63,6 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 
 ## Parked / broken
 (none)
+
+## Owner decisions page
+- Clickable page "Phoenix Skyblock Decisions": https://claude.ai/artifact/KvSdKBox2cMSS5h6WDUXfs (1,013 short questions, one tap: Suggested / No / Other). Answers live in its database, collection `answers`, one doc per area (`m.<question id> = {a: s|n|o|null, note, t}`). Read them with ArtifactData list. Question data: tools/owner_sheet/final_q.json (same ids as docs/owner/Phoenix_Skyblock_questions.xlsx).
