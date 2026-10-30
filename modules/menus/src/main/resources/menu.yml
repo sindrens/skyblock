@@ -12,7 +12,7 @@ entries:
   # Row 2: island and economy
   island:       {slot: 10, icon: grass_block,      command: "is",          status: auto}
   depths:       {slot: 11, icon: iron_pickaxe,     command: "dungeon",     status: auto}
-  shop:         {slot: 12, icon: emerald,          command: "shop",        status: coming-soon}   # /shop is an alias of /store until the builder shop exists
+  shop:         {slot: 12, icon: emerald,          command: "shop",        status: auto}          # builder shop (M3.5)
   sell:         {slot: 13, icon: gold_nugget,      command: "sell",        status: auto}
   bank:         {slot: 14, icon: barrel,           command: "bank",        status: auto}
   auction:      {slot: 15, icon: gold_block,       command: "ah",          status: auto}

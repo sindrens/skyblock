@@ -29,6 +29,15 @@ class SaleCalculatorTest {
     }
 
     @Test
+    void maxUnitIsCeilingTimesHotTimesCap() {
+        // Defaults: ceiling 150%, Hot Item +25%, cap +300% -> x7.5.
+        assertEquals(75.0, SaleCalculator.maxUnit(10, S, 300), 1e-9);
+        assertEquals(10 * 1.5 * 1.25, SaleCalculator.maxUnit(10, S, 0), 1e-9);
+        DynamicSettings flat = new DynamicSettings(false, 0.4, 1.5, 0.02, 10, 0.85, 1e-6, 1e-8, 1e-4, 1_000, 60, 10, 0.5, 168, false, 25);
+        assertEquals(40.0, SaleCalculator.maxUnit(10, flat, 300), 1e-9);
+    }
+
+    @Test
     void stacksOfTheSameItemAreAddedTogether() {
         SellQuote q = quote(List.of("coal", "wheat", "coal"), List.of(64L, 10L, 36L), 0);
         assertEquals(2, q.lines().size());

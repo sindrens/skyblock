@@ -136,6 +136,13 @@ public final class SellServiceImpl implements SellService {
         return catalog.get().sellableKeys();
     }
 
+    @Override
+    public java.util.OptionalDouble maxUnitPrice(String itemKey) {
+        return catalog.get().get(itemKey).filter(SellCatalog.Entry::sellable)
+                .map(e -> java.util.OptionalDouble.of(SaleCalculator.maxUnit(e.base(), settings(), bonusCapPercent())))
+                .orElse(java.util.OptionalDouble.empty());
+    }
+
     /** Today's Hot Item key (null if none); recomputed when the day or the price table changes. */
     public String hotKey() {
         LocalDate today = LocalDate.ofInstant(java.time.Instant.ofEpochMilli(clock.getAsLong()), zone.get());
