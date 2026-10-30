@@ -21,6 +21,7 @@ import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import net.skybornmc.skyblock.common.stacking.StackKillEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -230,6 +231,33 @@ final class ToolsListener implements Listener {
         }
         if (combatTier > 0) {
             module.drops().roll(killer, "combat", combatTier, entity.getLocation());
+        }
+    }
+
+    /**
+     * Tool XP for stacked kills that had no death event of their own (E3 batch kills), paid in one call with the same
+     * rules as {@link #onKill} on the stack's entity (islands only: stacks never exist in The Depths).
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onStackKill(StackKillEvent event) {
+        Player killer = event.killer();
+        if (killer == null || event.extraKills() <= 0) {
+            return;
+        }
+        if (event.entity().fromMobSpawner() && !module.config().spawnerMobsXp) {
+            return;
+        }
+        Optional<ToolData> tool = ToolItems.read(killer.getInventory().getItemInMainHand());
+        if (tool.isEmpty() || tool.get().kind() != ToolKind.SWORD) {
+            return;
+        }
+        Depths depths = module.depths();
+        if (depths != null && depths.inDepths(event.location().getWorld())) {
+            return;
+        }
+        double xp = module.config().tierXp(1) * module.config().killMultiplier * module.config().islandFactor * event.extraKills();
+        if (xp > 0) {
+            module.tracker().gain(killer, xp, ToolData.STAT_KILLS, event.extraKills());
         }
     }
 

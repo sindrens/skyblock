@@ -83,6 +83,30 @@ final class StackMath {
         return (int) Math.min(Integer.MAX_VALUE, total);
     }
 
+    /** XP for {@code killed} mobs with a percent bonus (Soul Reaper), rounded down, clamped to an int. */
+    static int xp(int perMob, long killed, double bonusPercent) {
+        double factor = 1 + (Double.isFinite(bonusPercent) ? Math.max(0, bonusPercent) : 0) / 100.0;
+        double total = (double) Math.max(0, perMob) * Math.max(0, killed) * factor;
+        return (int) Math.min(Integer.MAX_VALUE, Math.floor(total));
+    }
+
+    /** Extra loot rolls for {@code killed} mobs with {@code percent} chance each (Plunder; at most one per mob). */
+    static long extraRolls(long killed, double percent, DoubleSupplier random) {
+        if (!Double.isFinite(percent) || percent <= 0) {
+            return 0;
+        }
+        return binomial(killed, Math.min(100, percent) / 100.0, random);
+    }
+
+    /**
+     * Mobs whose loot the stacking module rolls itself for one batch: every killed mob that has no death event of its own
+     * (the dying mob of a lethal hit drops its loot through the event) plus the extra rolls.
+     */
+    static long lootMobs(int killed, boolean deathEvent, long extraRolls) {
+        long own = Math.max(0, killed - (deathEvent ? 1 : 0));
+        return own + Math.max(0, extraRolls);
+    }
+
     // ------------------------------------------------------------------ loot
 
     /**

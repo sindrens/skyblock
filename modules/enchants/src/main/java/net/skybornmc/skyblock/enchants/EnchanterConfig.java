@@ -141,6 +141,39 @@ final class EnchanterConfig extends ModuleConfig {
     @Setting(path = "caps.conquest", desc = "Cap of each conquest stat in percent (envoy luck, capture speed, Conquest XP, warzone death-loss reduction).", min = 0, max = 100_000, level = Setting.Level.OWNER)
     public double capConquest = 60;
 
+    // ------------------------------------------------------------------ stacked mobs (§7, E3)
+
+    @Setting(path = "stacks.max-kills-per-hit", desc = "Most mobs one hit (or one area effect per stack) kills from a stack: Slaughter + Bloodlust are clamped to this.",
+            min = 1, max = 1024, level = Setting.Level.OWNER)
+    public int stackMaxKillsPerHit = 96;
+
+    @Setting(path = "stacks.bloodlust-step-percent", desc = "Bloodlust: each killing stack hit in the window adds this percent to the Slaughter count (up to the level's max).",
+            min = 0, max = 1000, level = Setting.Level.OWNER)
+    public double bloodlustStepPercent = 10;
+
+    @Setting(path = "stacks.wrath-max-stacks", desc = "Phoenix Wrath: most stacks one nova hits.", min = 0, max = 64, level = Setting.Level.OWNER)
+    public int wrathMaxStacks = 16;
+
+    @Setting(path = "stacks.book-chance", desc = "Island stack books: 1 in this many stacked mobs killed with a custom sword drops a book (0 = off).",
+            min = 0, max = 100_000_000, level = Setting.Level.OWNER)
+    public int stackBookChance = 25_000;
+
+    @Setting(path = "stacks.book-daily-cap", desc = "Island stack books: most books per profile per day (Europe/Oslo day).", min = 0, max = 1000, level = Setting.Level.OWNER)
+    public int stackBookDailyCap = 5;
+
+    @Setting(path = "stacks.book-odds", desc = "Island stack books: rarity odds as rarity:weight (the pool has Uncommon and Rare enchants).", level = Setting.Level.OWNER)
+    public List<String> stackBookOdds = List.of("uncommon:60", "rare:40");
+
+    @Setting(path = "stacks.book-level-odds", desc = "Island stack books: book level odds as level:weight.", level = Setting.Level.OWNER)
+    public List<String> stackBookLevelOdds = List.of("1:85", "2:12", "3:3");
+
+    @Setting(path = "stacks.proc-message-interval-ms", desc = "Shortest time between two action bar lines for Reaper's Sweep / Phoenix Wrath.", min = 0, max = 60_000)
+    public int procMessageIntervalMs = 1000;
+
+    @Setting(path = "stacks.perf-warn-ms-per-second", desc = "Log a warning when the stacked-mob enchants use more main-thread time than this (ms per second, checked every minute).",
+            min = 0.1, max = 1000)
+    public double stackPerfWarnMs = 5;
+
     // ------------------------------------------------------------------ rules and feel
 
     @Setting(path = "rules.two-slot-in-prestige-slot", desc = "May a 2-slot enchant use the prestige slot as its second slot.")
@@ -153,6 +186,10 @@ final class EnchanterConfig extends ModuleConfig {
     public String soundApply = "enchant";
     @Setting(path = "sounds.roll", desc = "Sound after a roll gave a book.")
     public String soundRoll = "unlock";
+    @Setting(path = "sounds.stack-proc", desc = "Sound when Reaper's Sweep or Phoenix Wrath kills mobs of other stacks.")
+    public String soundStackProc = "notify";
+    @Setting(path = "sounds.stack-book", desc = "Sound when a book drops from stacked mobs.")
+    public String soundStackBook = "unlock";
     @Setting(path = "sounds.error", desc = "Sound when something is not possible.")
     public String soundError = "error";
 
@@ -259,6 +296,16 @@ final class EnchanterConfig extends ModuleConfig {
                 problems.add("enchanter.yml → " + path + ": no valid odds; this roll is off");
             }
         });
+        for (String entry : stackBookOdds) {
+            if (Rolls.parseOdd(entry) == null) {
+                problems.add("enchanter.yml → stacks.book-odds: '" + entry + "' is not rarity:weight (e.g. rare:40); skipped");
+            }
+        }
+        for (String entry : stackBookLevelOdds) {
+            if (StackKillMath.parseLevelOdd(entry) == null) {
+                problems.add("enchanter.yml → stacks.book-level-odds: '" + entry + "' is not level:weight (e.g. 1:85); skipped");
+            }
+        }
         for (String raw : rollPools) {
             if (Pool.byId(raw).isEmpty()) {
                 problems.add("enchanter.yml → rolls.pools: unknown pool '" + raw + "'");

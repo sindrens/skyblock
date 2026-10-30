@@ -15,6 +15,7 @@ import net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.skills.SkillType;
 import net.skybornmc.skyblock.common.skills.SkillXpGainEvent;
+import net.skybornmc.skyblock.common.stacking.StackKillEvent;
 import net.skybornmc.skyblock.common.stacking.StackingService;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
@@ -284,6 +285,26 @@ final class SkillManager implements SkillService, Listener {
         double xp = tables.xp(SkillType.COMBAT, entity.getType().getKey().getKey());
         if (xp > 0) {
             addXp(killer, SkillType.COMBAT, xp, "mob_kill");
+        }
+    }
+
+    /**
+     * Combat XP for stacked kills that had no death event of their own (E3 batch kills: Slaughter, Reaper's Sweep,
+     * Phoenix Wrath), paid in one call with the same rules as {@link #onKill}.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onStackKill(StackKillEvent event) {
+        Player killer = event.killer();
+        LivingEntity entity = event.entity();
+        if (killer == null || event.extraKills() <= 0 || entity.getScoreboardTags().contains(NO_XP_TAG)) {
+            return;
+        }
+        if (!config.spawnerMobsGiveXp && (event.spawnerMob() || entity.fromMobSpawner())) {
+            return;
+        }
+        double xp = tables.xp(SkillType.COMBAT, event.type().getKey().getKey());
+        if (xp > 0) {
+            addXp(killer, SkillType.COMBAT, xp * event.extraKills(), StackKillEvent.SKILL_XP_SOURCE);
         }
     }
 

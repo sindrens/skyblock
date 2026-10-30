@@ -122,6 +122,21 @@ final class BookStore {
                 player, day, roll, limit) == 1;
     }
 
+    /**
+     * A dropped book with a daily cap (island stack books, EN15), inside one transaction: uses one of today's
+     * {@code roll} entries of the profile, then writes the book row and the collection entry. False (nothing written)
+     * when the cap is reached; the caller must then never hand out the item.
+     */
+    boolean mintCapped(Connection c, UUID id, String enchant, int level, int season, String origin, UUID owner, UUID profile,
+                       long now, String day, String roll, int cap) throws SQLException {
+        if (!useDaily(c, profile, day, roll, cap)) {
+            return false;
+        }
+        insert(c, id, false, enchant, level, season, origin, owner, profile, now, "drop");
+        markSeen(c, owner, season, enchant, now);
+        return true;
+    }
+
     /** Undo of {@link #useDaily}. */
     void returnDaily(Connection c, UUID player, String day, String roll) throws SQLException {
         Sql.update(c, "UPDATE enchant_daily SET used = used - 1 WHERE player = ? AND roll_day = ? AND roll = ? AND used > 0", player, day, roll);

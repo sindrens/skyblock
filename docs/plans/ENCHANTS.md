@@ -350,6 +350,22 @@ Assumption until STACK is built (E3 re-checks): a spawner makes ~0.1 mobs per se
 | IX | 32 | 51.2 | 512 | Max stack (512, S20) |
 | X | 48 | 76.8 | 768 | Max stack + Spawner Rate mastery |
 
+**Re-checked in E3 with the real STACK rates** (`stacking.yml`: one spawn every 10–40 s, avg 25 s, `mobs-per-spawner` 4 → **0.16 mobs/s per spawner**, 60% more than the assumption above; sword ~1.6 killing hits/s):
+
+| Slaughter | Mobs per hit | + Bloodlust V (max) | Keeps up with (spawners) | with Bloodlust V |
+|---|---|---|---|---|
+| none | 1 | 2 | 10 | 20 |
+| I | 2 | 3 | 20 | 30 |
+| III | 4 | 6 | 40 | 60 |
+| V | 8 | 12 | 80 | 120 |
+| VII | 16 | 24 | 160 | 240 |
+| IX | 32 | 48 | 320 | 480 |
+| X | 48 | 72 | 480 | 720 |
+
+Result: one fully stacked spawner block (512, S20) makes ~82 mobs/s; Slaughter X alone nearly keeps up (77/s), with Bloodlust V it does (115/s), and Reaper's Sweep III adds 36 mobs from each of up to 6 neighbouring stacks per hit. The early game is slower than the old table (none: 10 spawners instead of 16), which still covers the start stack of 8 (S20). No number changed; E4 can lower `mobs-per-spawner` or raise the Slaughter counts if the owner finds the early farm too slow. The per-hit safety clamp `enchanter.yml → stacks.max-kills-per-hit` (96) is above the highest real count (72).
+
+**How E3 implements §7.2** (all defaults in `enchanter.yml → stacks.*`): the kill count is Slaughter × Bloodlust, clamped by `max-kills-per-hit` and the stack size; loot of all killed mobs is sampled and scaled in one batch and merged into stacked item drops (no per-mob entities), vanilla XP is one orb, Plunder adds one extra loot roll per mob with its chance (inside the extra drops family cap, max 1 per mob), Soul Reaper adds vanilla XP and its Combat skill XP share (inside the skill XP family cap). Skill XP and tool XP are paid for the whole batch through `StackKillEvent`. Reaper's Sweep and Phoenix Wrath use the batch kill API `StackingService#killFromStack` and only reach stacks on the **same island** and of the **same protection group** (monsters or animals) as the mob that was hit, so the hurt-monsters/animals role permission that allowed the hit also covers them. Phoenix Wrath counts hits on stacked mobs (per profile) until E2 adds its Depths nova. Island stack books use the `enchant_daily` table (roll id `stack_book`) per profile and day, in the same transaction as the book row.
+
 Bloodlust (+50% at V while you keep hitting) and Reaper's Sweep (several stacks at once) are what let one player handle the 8 stacks per chunk (SK1) late in the season. This keeps island combat production (~35% income meta) tied to the sword's progress rather than to "just place more spawners".
 
 ### 7.4 PvP and other places

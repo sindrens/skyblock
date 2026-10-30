@@ -113,6 +113,13 @@ book:
   unknown: "This enchant does not exist any more."
   action-input: "Use at"
   action-text: "/enchanter"
+# Stacked mobs (E3, ENCHANTS §7): action bar when an area enchant kills mobs of other stacks (<enchant> name + level,
+# <count> mobs), chat when a book drops from stacked mobs (<book> colored name).
+stack:
+  sweep: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value>+<count></c:value> <c:text>mobs"
+  wrath: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value>+<count></c:value> <c:text>mobs"
+  book: "<prefix><c:success><sym:check></c:success> <c:text>The stack dropped <book><c:text>!"
+
 scroll:
   name: "<rarity:rare>Disenchant Scroll"
   subtitle: "<c:muted>Scroll"
