@@ -59,7 +59,9 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-(none: queue done except E6 (needs a Phase 7 plan), STORE2 (needs island storage), FI (owner))
+- ANS1 owner answers round 1 (islands/profiles)
+- BOX /box item mailbox
+- BANK2 bank interest every 8 h, 2% fee with mastery discount
 
 ## Parked / broken
 (none)
