@@ -77,10 +77,16 @@ public final class CommandService {
 
     /**
      * Adds a command. Validates the whole tree immediately (missing executors, bad argument order, …) so mistakes
-     * fail at startup with a clear message.
+     * show at startup with a clear message. A broken command is skipped and logged as SEVERE instead of disabling the
+     * whole module (a bad {@code /pnote} once took all punishments down with it).
      */
     public void register(CommandSpec spec) {
-        spec.validate(spec.name());
+        try {
+            spec.validate(spec.name());
+        } catch (IllegalStateException e) {
+            plugin.getLogger().severe("Command not registered: " + e.getMessage());
+            return;
+        }
         if (specs.putIfAbsent(spec.name(), spec) != null) {
             throw new IllegalStateException("Command '/" + spec.name() + "' is registered twice");
         }

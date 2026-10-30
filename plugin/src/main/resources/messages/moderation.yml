@@ -586,6 +586,7 @@ entry:
 
 # Staff notes (12.5): /pnote <player> [text], /pnote remove <id>. Only staff ever see them.
 notes:
+  usage: "<prefix><c:error><sym:cross> <c:muted>Use</c:muted> <c:value>/pnote <player> [text]</c:value> <c:muted>or</c:muted> <c:value>/pnote remove <id></c:value>"
   added: "<prefix><c:success><sym:check> Note <c:value>#<id></c:value> added for <c:value><player></c:value>. <click:run_command:'/pnote <target>'><hover:show_text:'<c:action>Show all notes'><c:action>[Show notes]</c:action></hover></click>"
   header: "<prefix><c:value>Notes on <player></c:value> <c:muted>(<count>)"
   none: " <c:muted>No notes yet. Add one with /pnote, the name and the text."

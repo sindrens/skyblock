@@ -472,8 +472,14 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 noteIds.getOrDefault(senderKey(sender), recentNoteIds)));
         commands.register(CommandSpec.command("pnote")
                 .description("Private staff notes on a player: add one, list them, or remove one by id").category("Staff")
-                .permission(PERM_NOTES).arg(noteTarget).optional(noteText).example("pnote Steve Watch for alt accounts")
-                .executes(ctx -> pnote(ctx.sender(), ctx.get(noteTarget), ctx.getOr(noteText, null)))
+                .permission(PERM_NOTES).optional(noteTarget).optional(noteText).example("pnote Steve Watch for alt accounts")
+                // The player is optional only because a required argument can't sit next to the "remove" sub-command.
+                .executes(ctx -> {
+                    if (!ctx.has(noteTarget)) {
+                        throw fail("notes.usage");
+                    }
+                    pnote(ctx.sender(), ctx.get(noteTarget), ctx.getOr(noteText, null));
+                })
                 .sub(CommandSpec.sub("remove").arg(noteId).executes(ctx -> removeNote(ctx.sender(), ctx.get(noteId)))));
         commands.register(CommandSpec.command("ack")
                 .description("Confirm you read your latest warning (same as clicking [I understand])").category("Community")
