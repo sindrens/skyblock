@@ -357,7 +357,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
             } catch (IllegalArgumentException e) {
                 throw CommandFailure.of("invalid-amount", Msg.p("input", raw));
             }
-        }, Suggest.of("0", "1000", "10k", "1M", "100M"));
+        }, Suggest.hint("amount"));
         Arg<String> resetCurrency = Args.oneOf("currency", () -> {
             List<String> values = new ArrayList<>(Arrays.stream(Currency.values()).map(Currency::key).toList());
             values.add("all");

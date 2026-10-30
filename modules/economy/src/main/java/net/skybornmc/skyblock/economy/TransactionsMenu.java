@@ -14,7 +14,6 @@ import org.bukkit.Material;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,7 @@ final class TransactionsMenu extends Menu {
     static final int SLOT_REFRESH = 52;
 
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
-            .withZone(ZoneOffset.UTC);
+            .withZone(net.skybornmc.skyblock.common.util.Format.zone());
 
     private final EconomyModule module;
     private final AccountRef account;

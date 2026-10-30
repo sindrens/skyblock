@@ -25,6 +25,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **CRY** merged: tokens replaced by crystals (aqua ◆, not tradeable), gems emerald ✦, DB/config migrations.
 - **M2.4** merged: /is visit + browser, lock/expel/ban, warps (categories, signs), ratings, likes.
 - **R2B** merged: 30-min new-account limit for /pay and /withdraw, /eco for admins, sell cap 300% helper.
+- **R2A** merged: AH 30 min, no amount number hints, ban clears freeze, blaze rod Inspect / breeze rod Punish, Europe/Oslo display time, skills to 150 + /skills set|add, /freerank (Ember rank + tag).
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -32,7 +33,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
-- Last released bundle: update44. Next bundle number: 45.
+- Last released bundle: update45. Next bundle number: 46.
 - Owner gets a push notification on every release (PushNotification tool).
 
 ## Owner answers page
@@ -54,7 +55,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- R2A round-2 quick decisions batch (non-economy parts)
+- PROF island profiles
 - PLAN-ENCH custom enchant plan doc
 - ISL2 islands round 2
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).

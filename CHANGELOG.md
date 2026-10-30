@@ -62,6 +62,7 @@
 - **Crystals replace tokens** everywhere (aqua ◆, not tradeable); gems get a new emerald ✦ look; existing balances, history, configs and placeholders migrate automatically.
 - **M2.4 island visiting:** `/is visit` + browser (most visited, top rated, most liked, newest), `/is lock|unlock|expel|ban|unban` with member alerts, 3 warps (`/is setwarp|delwarp|warp`, categories, icons, public/private, `[warp]` signs, warp browser), `/is rate` and `/is like`.
 - **Economy:** new accounts need 30 min of playtime before `/pay` and `/withdraw`; admins can use `/eco`; global sell-bonus cap +300%.
+- **Round-2 decisions:** AH new-account limit 30 min, no number suggestions for amounts, a ban clears a freeze, Inspect tool = blaze rod (Punish = breeze rod), all times in Europe/Oslo, skills up to level 150 + staff `/skills set|add`, `/freerank` (free Ember rank + 1 of 3 tags after 30 min).
 - **M2.7 island lifecycle:** `/is disband` (confirm + type the word), slots cleared (FAWE or throttled fallback) and reused, `/isadmin` (info, tp, delete, setsize, addmember, kick, setowner, reset, bypass, slots overview, teleport-slot).
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).

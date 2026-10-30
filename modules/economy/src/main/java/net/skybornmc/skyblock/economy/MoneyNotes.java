@@ -49,7 +49,6 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -195,10 +194,10 @@ final class MoneyNotes implements Listener {
 
     private String date(long millis) {
         try {
-            return DateTimeFormatter.ofPattern(module.config.noteDateFormat, Locale.ROOT).withZone(ZoneOffset.UTC)
+            return DateTimeFormatter.ofPattern(module.config.noteDateFormat, Locale.ROOT).withZone(net.skybornmc.skyblock.common.util.Format.zone())
                     .format(Instant.ofEpochMilli(millis));
         } catch (IllegalArgumentException e) {
-            return DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneOffset.UTC).format(Instant.ofEpochMilli(millis));
+            return DateTimeFormatter.ISO_LOCAL_DATE.withZone(net.skybornmc.skyblock.common.util.Format.zone()).format(Instant.ofEpochMilli(millis));
         }
     }
 
