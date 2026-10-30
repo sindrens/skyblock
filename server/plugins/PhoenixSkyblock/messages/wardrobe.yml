@@ -68,6 +68,9 @@ merge:
   refused: "<prefix><c:error><sym:cross></c:error> <c:text>Can't merge: <why><c:text>."
   gone: "<prefix><c:error><sym:cross></c:error> <c:text>One of the sets changed. Try again."
   done: "<prefix><c:success><sym:check></c:success> <c:text>Merged into <c:value><set></c:value> <c:muted>(<fee>)</c:muted><c:text>. It starts at Lv 0."
+  books-returned: "<prefix><c:success><sym:check></c:success> <c:value><count></c:value> <c:text>enchant book(s) from the other set are in your Wardrobe Chest."
+  enchants-unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>The other set has enchants and the Enchanter is closed. Try again later."
+  enchant-unknown: "<prefix><c:error><sym:cross></c:error> <c:text>An enchant on the other set (<c:value><enchant></c:value>) does not exist any more. Ask staff."
   free: "free"
   why:
     same-entry: "<c:error>pick another set"
@@ -257,6 +260,17 @@ piece:
   level: "<c:text>Lv <c:value>{level}</c:value> <c:muted>· {multiplier}x"
   action-input: "/wardrobe"
   action-text: "to take it off"
+  # Armor enchants (E5): one line per slot. {name} enchant + level, {rarity} its rarity id, {slot} slot number,
+  # {level} set level that opens the slot. Dormant = slot not open yet or level above the set level gate (no effect).
+  enchants:
+    header: "<c:muted>Enchants"
+    active: " <c:enchant>▸ <rarity:{rarity}>{name}"
+    mythic: " <c:enchant>★ <rarity:{rarity}>{name}"
+    dormant: " <c:muted>▸ {name} (dormant)"
+    empty: " <c:muted>▸ Empty slot"
+    locked: " <c:muted>▸ Slot {slot} at Lv {level}"
+    mythic-empty: " <c:muted>★ Empty mythic slot"
+    mythic-locked: " <c:muted>★ Mythic slot at Lv {level}"
 
 token:
   fallback-name: "<rarity:rare>Set Token"
@@ -358,8 +372,17 @@ menu:
       name: "<c:muted>Trail: off"
       lore: ["<c:text>Particles behind you while", "<c:text>you wear all 4 pieces.", "", "<c:action><sym:bullet> Click to turn on"]
     enchants:
-      name: "<c:muted>Enchants <dark_gray>(Coming soon)"
-      lore: ["<c:text>Armor enchants come soon."]
+      name: "<c:enchant>Enchants"
+      lore: ["<c:text>Armor enchants per piece:", ""]
+      piece: "<c:muted><piece>: <c:text><enchants>"
+      none: "none"
+      click: ["", "<c:action><sym:bullet> Click to open the Enchanter"]
+    enchants-not-owned:
+      name: "<c:muted>Enchants"
+      lore: ["<c:text>Own this set to put armor", "<c:text>enchants on its pieces."]
+    enchants-off:
+      name: "<c:muted>Enchants"
+      lore: ["<c:text>The Enchanter is closed", "<c:text>right now."]
     redeem:
       name: "<c:success>Redeem token"
       lore: ["<c:text>You carry a token for this", "<c:text>set.", "", "<c:action><sym:bullet> Click to redeem"]
@@ -545,6 +568,7 @@ confirm:
   merge:
     crumb: "Merge sets"
     details: ["<c:text>Combine <c:value><a></c:value> <c:muted>Lv <level_a>", "<c:text>and <c:value><b></c:value> <c:muted>Lv <level_b>", "<c:text>into one set at <c:value>Lv 0", "<c:text>Look: <c:value><look>", "<c:text>Cost: <c:value><fee>", "<c:error>Can't be undone."]
+    enchants: ["<c:text>Enchants: the look's stay;", "<c:text>the other set's come back", "<c:text>as <c:value><books></c:value> book(s) in your chest."]
   set-level:
     crumb: "Set level"
     details: ["<c:text>Set <c:value><set>", "<c:text>of <c:value><player>", "<c:text>to <c:value>Lv <level>"]
