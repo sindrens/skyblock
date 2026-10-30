@@ -52,7 +52,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | P7 | §13.1 sanctions (economy SanctionProvider), 13.2 island punishments | P6, M2.3 | modules/moderation, modules/economy, modules/islands | ✅ |
 | P8 | §14.2 rule numbers, 14.9 notification settings, 14.6 training mode | P7 | modules/moderation | ✅ |
 | P9 | §14.1 guard + rollback, 14.5 false reports, 14.10 purge | P8 | modules/moderation, modules/staff | ✅ |
-| P10 | §14.8 monthly report, 14.11 "Honorable" title | P9 | modules/moderation, modules/cosmetics | 🔄 |
+| P10 | §14.8 monthly report, 14.11 "Honorable" title | P9 | modules/moderation, modules/cosmetics | ✅ |
 
 ## Phase 2: Islands (docs/phases/PHASE-2-ISLANDS.md) — one lane, sequential
 | # | Item | Depends on | Lane | Status |
