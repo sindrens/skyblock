@@ -30,7 +30,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | SB | Per-place scoreboards (island, Depths, spawn, warzone) | UX1 | modules/hud | ⬜ |
 | BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ⬜ |
 | PLAN-ENCH | Plan doc: full custom enchant list (levels, effects, how each is obtained: mob kills, mining, chopping, dungeons, crates, /enchanter, crystals), synergy with tools/sets/stacking kills | — | docs/plans/ENCHANTS.md | ✅ docs/plans/ENCHANTS.md |
-| PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | 🔄 |
+| PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | ✅ docs/plans/WARDROBE.md |
 | STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
 | PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ⬜ |
 | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
@@ -98,8 +98,16 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | E2 | Book drops from Depths mine/forest/combat, gathering + area effects via the block engine, Depths sword effects | E1, M4.7, M4.8, M4.9 | modules/enchants + depths hooks | ⬜ |
 | E3 | Stacked-mob kill enchants (Slaughter etc.), batch kill API | E1, STACK | modules/enchants + stacking API | ⬜ |
 | E4 | Tuning: enchant factors in economy model, family caps, drop rates | E2, E3, BAL2 | docs, tools, configs | ⬜ |
-| E5 | Armor enchants on wardrobe set pieces | E1, wardrobe | modules/enchants + wardrobe | ⬜ |
+| E5 | Armor enchants on wardrobe set pieces | E1, W2 | modules/enchants + wardrobe | ⬜ |
 | E6 | Hoe + rod effects, farming/fishing pools | E1, Phase 7 | modules/enchants | ⬜ |
+
+## Phase W: Wardrobe + loadout (docs/plans/WARDROBE.md)
+| # | Item | Depends on | Lane | Status |
+|---|---|---|---|---|
+| W1 | Wardrobe core: sets.yml (16 sets), per-profile tables, virtual entries + locked real armor, Wardrobe Chest with escrow, buy with money/crystals/gems (Sigils), Set Tokens, /wardrobe GUI, bonuses via BonusService | PROF, CRY, E1 (common/bonus) | modules/wardrobe, common/wardrobe | ⬜ |
+| W2 | Set levels, merging, warzone normalization | W1, M4.5 | modules/wardrobe | ⬜ |
+| W3 | /loadout presets (2 free, rank/credit slots), atomic apply, guards, 2 s cooldown, pet hook | W1, M4.2 | modules/wardrobe, modules/tools | ⬜ |
+| W4 | Balance: set factors in economy model | W2, W3, BAL2 | docs, tools | ⬜ |
 
 ## Later (not planned in detail yet)
 Crates (`/crate give`), quests, progression (pillars, island level, `/is upgrade`), enchants/sets, production/outposts, PvE/bosses/pets, conquest/events, store/ranks/Discord, seasons.
