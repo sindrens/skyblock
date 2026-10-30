@@ -6,7 +6,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 ## Phase 1 follow-ups
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
-| F1 | Hook remaining `/settings` toggles: join-messages, tpa-requests (essentials), scoreboard (hud), ui-sounds | Phase 1 | modules/essentials, modules/hud | ⬜ |
+| F1 | Hook remaining `/settings` toggles: join-messages, tpa-requests (essentials), scoreboard (hud), ui-sounds | Phase 1 | modules/essentials, modules/hud | 🔄 |
 | F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` | — | common/command, plugin, server/permissions, scripts | ✅ |
 | F4 | Move a TeleportService interface (warmup, guards) into common so /dungeon, /spawn, /tpa, /is home share one warmup | — | common, essentials, depths | ✅ |
 | F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | ✅ |
@@ -60,7 +60,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M2.1 | Grid, creation (FAWE placeholder schematic), 3×3 chunks, per-player border, home | Phase 1 | modules/islands | ✅ |
 | M2.2 | Protection (role perms, Y 0–256, cross-border) | M2.1 | modules/islands | ✅ |
 | M2.3 | Members & roles, invites (solo→team warning), coop, limits | M2.2 | modules/islands | ✅ |
-| M2.4 | Visiting, lock, ban, warps, ratings | M2.3 | modules/islands | 🔄 |
+| M2.4 | Visiting, lock, ban, warps, ratings | M2.3 | modules/islands | ✅ |
 | M2.5 | Island menu + settings, `/is chat` | M2.3 | modules/islands | ✅ |
 | M2.6 | Stats tracking (daily/weekly buckets) | M2.3 | modules/islands | ✅ |
 | M2.7 | Lifecycle (disband/reset) + `/isadmin` | M2.3 | modules/islands | ✅ |
