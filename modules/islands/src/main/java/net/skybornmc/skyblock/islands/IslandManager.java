@@ -66,6 +66,8 @@ final class IslandManager implements IslandService {
     /** ISL2 mastery hooks (masteries module later). */
     private java.util.function.Predicate<UUID> wingsProvider;
     private java.util.function.ToIntBiFunction<UUID, UUID> extraHomesProvider;
+    /** BANK2: bank-fee mastery level per island (masteries module later; null = level 0). */
+    private java.util.function.ToIntFunction<UUID> bankFeeMasteryProvider;
     /** The islands world once seen (identity check in hot paths), cleared when another world object shows up. */
     private World islandWorld;
     /** Players whose island is being created or rebuilt right now (one at a time per player). */
@@ -714,6 +716,17 @@ final class IslandManager implements IslandService {
     @Override
     public void extraHomesProvider(java.util.function.ToIntBiFunction<UUID, UUID> provider) {
         this.extraHomesProvider = provider;
+    }
+
+    @Override
+    public int bankFeeMasteryLevel(UUID islandId) {
+        java.util.function.ToIntFunction<UUID> provider = bankFeeMasteryProvider;
+        return provider == null || islandId == null || !byId.containsKey(islandId) ? 0 : Math.max(0, provider.applyAsInt(islandId));
+    }
+
+    @Override
+    public void bankFeeMasteryProvider(java.util.function.ToIntFunction<UUID> provider) {
+        this.bankFeeMasteryProvider = provider;
     }
 
     private IslandInfo info(Island island) {

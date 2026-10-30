@@ -256,8 +256,10 @@ final class BankMenu extends Menu {
 
     private MenuButton withdrawButton(BankFeature.Account a, long max, BankOps.Limit limit) {
         long min = bank.config.withdrawMin;
-        boolean free = bank.ops().feeNow(1_000_000L) == 0;
-        TagResolver[] p = {amount("max", max), Msg.p("fee", percent(bank.config.withdrawFeePercent)),
+        boolean free = bank.ops().freeNow();
+        int level = bank.feeMasteryLevel(profileKey, a.ref());
+        WithdrawFee fees = bank.fees();
+        TagResolver[] p = {amount("max", max), Msg.p("fee", percent(fees.percent(level))), Msg.c("discount", discount(fees, level)),
                 Msg.p("free", BankFeature.time(bank.config.withdrawFreeMinutes * 60_000L))};
         if (max < min) {
             return MenuButton.display(item(Material.DROPPER, a.balance() < min ? "bank.menu.withdraw-none" : "bank.menu.withdraw-limit", p));
@@ -272,11 +274,13 @@ final class BankMenu extends Menu {
         });
     }
 
-    /** Shows what the withdrawal costs (fee, forfeited interest) before anything moves. */
+    /** Shows what the withdrawal costs (fee after masteries, forfeited interest) before anything moves. */
     private void confirmWithdraw(Player player, UUID key, BankFeature.Account a, long value, BankOps.Limit limit) {
-        long fee = bank.ops().feeNow(value);
+        int level = bank.feeMasteryLevel(key, a.ref());
+        double feePercent = bank.fees().percent(level);
+        long fee = bank.ops().feeNow(value, feePercent);
         TagResolver[] p = {amount("amount", value), amount("fee", fee), amount("net", value - fee),
-                Msg.p("percent", percent(bank.config.withdrawFeePercent))};
+                Msg.p("percent", percent(feePercent)), Msg.c("discount", discount(bank.fees(), level))};
         BankMenu fresh = new BankMenu(bank);
         if (parent() != null) {
             fresh.parent(parent());
@@ -291,9 +295,11 @@ final class BankMenu extends Menu {
 
     private ItemStack interestItem(BankFeature.Account a) {
         BankConfig cfg = bank.config;
-        long next = InterestMath.untilNextPayout(System.currentTimeMillis(), cfg.periodMillis());
-        TagResolver[] p = {Msg.p("rate", percent(a.terms().ratePercent())), Msg.p("period", BankFeature.time(cfg.periodMillis())),
-                amount("cap", a.terms().payoutCap()), Msg.p("next", BankFeature.time(next)),
+        long now = System.currentTimeMillis();
+        long period = bank.ops().periodMillis();
+        long next = InterestMath.untilNextPayout(now, period);
+        TagResolver[] p = {Msg.p("rate", percent(a.terms().ratePercent())), Msg.p("period", BankFeature.time(period)),
+                amount("cap", a.terms().payoutCap()), Msg.p("next", BankFeature.time(next)), Msg.p("times", payoutTimes(now, period)),
                 Msg.p("need", BankFeature.time(cfg.activityMinutes * 60_000L)), Msg.number("days", cfg.activityDays),
                 Msg.p("have", BankFeature.time(a.activityMinutes() * 60_000L))};
         List<Component> lore = new ArrayList<>(lines("bank.menu.interest.lore", p));
@@ -331,9 +337,28 @@ final class BankMenu extends Menu {
         return new long[]{small, small * 10, small * 100};
     }
 
-    /** 0.15 → "0.15", 2.0 → "2". */
+    /** 0.15 → "0.15", 2.0 → "2", 1.7000000000000002 → "1.7" (at most 3 decimals). */
     static String percent(double value) {
-        return BigDecimal.valueOf(value).stripTrailingZeros().toPlainString();
+        return BigDecimal.valueOf(value).setScale(3, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+    }
+
+    /** The payout clock times of the next 24 h in the server's display zone, e.g. "01:00, 09:00, 17:00". */
+    static String payoutTimes(long now, long periodMillis) {
+        java.time.format.DateTimeFormatter hhmm = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+        return InterestMath.nextPayouts(now, periodMillis, 86_400_000L - 1).stream()
+                .map(t -> java.time.Instant.ofEpochMilli(t).atZone(net.skybornmc.skyblock.common.util.Format.zone()).toLocalTime())
+                .sorted().map(hhmm::format).distinct().collect(java.util.stream.Collectors.joining(", "));
+    }
+
+    /** " (-0.5% mastery)" with a mastery discount, " (masteries lower it)" while one is still possible, else nothing. */
+    private Component discount(WithdrawFee fees, int level) {
+        if (fees.discount(level) > 0) {
+            return text("bank.menu.fee.discount", Msg.p("off", percent(fees.discount(level))), Msg.number("level", level));
+        }
+        if (fees.maxLevel() > 0 && fees.percent(fees.maxLevel()) < fees.percent(level)) {
+            return text("bank.menu.fee.lowerable", Msg.p("best", percent(fees.percent(fees.maxLevel()))));
+        }
+        return Component.empty();
     }
 
     private TagResolver amount(String name, long value) {

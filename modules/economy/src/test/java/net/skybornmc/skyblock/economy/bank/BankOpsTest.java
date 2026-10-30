@@ -36,8 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class BankOpsTest {
 
-    private static final long P = 3 * 3_600_000L;
     private static final long HOUR = 3_600_000L;
+    private static final long P = 8 * HOUR;
 
     @TempDir
     Path dir;
@@ -71,11 +71,21 @@ class BankOpsTest {
         economy = TestEconomy.create(db, dir.toFile(), clock::get, profiles);
         config.activityMinutes = 0;
         BankTiers tiers = BankTiers.parse(config);
-        ops = new BankOps(economy, new BankStore(db, clock::get), () -> config, () -> tiers, () -> profiles, clock::get, day::get,
-                Logger.getLogger("t"));
+        ops = ops(P);
         give(steve, 1_000_000);
         give(steve2, 1_000_000);
         give(alex, 1_000_000);
+    }
+
+    private BankOps ops(long periodMillis) {
+        BankTiers tiers = BankTiers.parse(config);
+        return new BankOps(economy, new BankStore(db, clock::get, periodMillis), () -> config, () -> tiers, () -> profiles, clock::get,
+                day::get, Logger.getLogger("t"));
+    }
+
+    /** The shipped 2% (no island mastery). */
+    private double fee() {
+        return config.withdrawFeePercent;
     }
 
     @AfterEach
@@ -120,7 +130,7 @@ class BankOpsTest {
         assertEquals(1, ledgerRows("bank_deposit"));
 
         at(5, 60); // not in the free minutes: 2% fee
-        BankOps.Outcome out = ops.withdraw(steve, bank, 10_000, personal(), null, actor).join();
+        BankOps.Outcome out = ops.withdraw(steve, bank, 10_000, personal(), null, fee(), actor).join();
         assertEquals(BankOps.Status.OK, out.status());
         assertEquals(200, out.fee());
         assertEquals(40_000, bal(bank));
@@ -136,8 +146,8 @@ class BankOpsTest {
         assertEquals(1_000_000, purse(steve), "nothing moved");
         assertEquals(BankOps.Status.OK, ops.deposit(steve, bank, 100_000, personal(), actor).join().status());
         assertEquals(BankOps.Status.FULL, ops.deposit(steve, bank, 1, personal(), actor).join().status());
-        assertEquals(BankOps.Status.BANK_EMPTY, ops.withdraw(steve, bank, 100_001, personal(), null, actor).join().status());
-        assertEquals(BankOps.Status.BELOW_MIN, ops.withdraw(steve, bank, 99, personal(), null, actor).join().status());
+        assertEquals(BankOps.Status.BANK_EMPTY, ops.withdraw(steve, bank, 100_001, personal(), null, fee(), actor).join().status());
+        assertEquals(BankOps.Status.BELOW_MIN, ops.withdraw(steve, bank, 99, personal(), null, fee(), actor).join().status());
         UUID poor = profiles.add(UUID.randomUUID(), UUID.randomUUID());
         assertEquals(BankOps.Status.NO_MONEY, ops.deposit(poor, AccountRef.bank(poor), 5_000, personal(), actor).join().status());
         assertEquals(0, bal(AccountRef.bank(poor)));
@@ -148,7 +158,7 @@ class BankOpsTest {
         BankOps.Outcome own = ops.deposit(steve2, AccountRef.bank(steve), 1_000, personal(), actor).join();
         assertEquals(BankOps.Status.OWN_PROFILE, own.status());
         assertEquals(List.of("bank_deposit"), profiles.blocked, "the attempt is logged");
-        assertEquals(BankOps.Status.OWN_PROFILE, ops.withdraw(steve, AccountRef.bank(steve2), 1_000, personal(), null, actor).join().status());
+        assertEquals(BankOps.Status.OWN_PROFILE, ops.withdraw(steve, AccountRef.bank(steve2), 1_000, personal(), null, fee(), actor).join().status());
         assertEquals(BankOps.Status.NOT_YOURS, ops.deposit(alex, AccountRef.bank(steve), 1_000, personal(), actor).join().status());
         assertEquals(1_000_000, purse(steve2));
         assertEquals(0, bal(AccountRef.bank(steve)));
@@ -163,7 +173,7 @@ class BankOpsTest {
         ops.deposit(steve, bank, 50_000, personal(), actor).join(); // period 5: lowest balance 0 (it was empty)
         at(7, 30);
         BankOps.Settled first = ops.settle(bank, personal()).join();
-        assertEquals(75, first.paid(), "period 5 pays nothing (lowest 0), period 6 pays 0.15% of 50k");
+        assertEquals(300, first.paid(), "period 5 pays nothing (lowest 0), period 6 pays 0.6% of 50k");
         assertEquals(0, ops.settle(bank, personal()).join().paid(), "a second run pays nothing");
         // A crowd of runs at once for the next period: still paid exactly once.
         at(8, 1);
@@ -175,11 +185,11 @@ class BankOpsTest {
         for (CompletableFuture<BankOps.Settled> run : runs) {
             paid += run.get().paid();
         }
-        assertEquals(75, paid, "period 7: 0.15% of 50,075 = 75 (rounded down), once");
+        assertEquals(301, paid, "period 7: 0.6% of 50,300 = 301.8, rounded down, once");
         assertEquals(2, ledgerRows("interest"));
-        assertEquals(50_150, bal(bank));
+        assertEquals(50_601, bal(bank));
         assertEquals(1L, (long) db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM eco_ledger WHERE idem_key = ?", rs -> rs.getLong(1),
-                BankOps.interestKey(bank, 7)).orElse(0L)));
+                BankOps.interestKey(bank, P, 7)).orElse(0L)));
     }
 
     @Test
@@ -189,9 +199,9 @@ class BankOpsTest {
         at(6, 60);
         ops.deposit(steve, bank, 40_000, personal(), actor).join(); // deposit before payout: period 6 still counts 10k
         at(7, 1);
-        assertEquals(15, ops.settle(bank, personal()).join().paid(), "0.15% of the lowest balance 10k");
+        assertEquals(60, ops.settle(bank, personal()).join().paid(), "0.6% of the lowest balance 10k");
         at(8, 1);
-        assertEquals(75, ops.settle(bank, personal()).join().paid(), "period 7: the whole 50,015");
+        assertEquals(300, ops.settle(bank, personal()).join().paid(), "period 7: the whole 50,060 (300.36)");
     }
 
     @Test
@@ -199,14 +209,14 @@ class BankOpsTest {
         AccountRef bank = AccountRef.bank(steve);
         ops.deposit(steve, bank, 50_000, personal(), actor).join();
         at(6, 60);
-        BankOps.Outcome withFee = ops.withdraw(steve, bank, 1_000, personal(), null, actor).join();
+        BankOps.Outcome withFee = ops.withdraw(steve, bank, 1_000, personal(), null, fee(), actor).join();
         assertEquals(20, withFee.fee());
         at(7, 5); // in the free minutes
         assertEquals(0, ops.settle(bank, personal()).join().paid(), "period 6 forfeited");
-        BankOps.Outcome free = ops.withdraw(steve, bank, 9_000, personal(), null, actor).join();
+        BankOps.Outcome free = ops.withdraw(steve, bank, 9_000, personal(), null, fee(), actor).join();
         assertEquals(0, free.fee(), "free right after a payout");
         at(8, 1);
-        assertEquals(60, ops.settle(bank, personal()).join().paid(), "period 7 pays on the lowest balance 40,000");
+        assertEquals(240, ops.settle(bank, personal()).join().paid(), "period 7 pays on the lowest balance 40,000");
     }
 
     @Test
@@ -215,9 +225,10 @@ class BankOpsTest {
         ops.deposit(steve, bank, 100_000, personal(), actor).join();
         at(7, 1);
         assertEquals(0, ops.settle(bank, personal()).join().paid(), "a full bank has no room for interest");
-        ops.withdraw(steve, bank, 1_000, personal(), null, actor).join(); // free window, room 1,000 now
+        ops.withdraw(steve, bank, 1_000, personal(), null, fee(), actor).join(); // free window, room 1,000 now
         at(9, 1);
-        assertEquals(296, ops.settle(bank, personal()).join().paid(), "period 7 (lowest 99,000): 148; period 8 (99,148): 148");
+        assertEquals(1_000, ops.settle(bank, personal()).join().paid(),
+                "period 7 (lowest 99,000): 594 (cap 600); period 8 (99,594): 597 but only 406 room left");
         at(30, 1);
         ops.settle(bank, personal()).join();
         assertEquals(100_000, bal(bank), "interest stops at the capacity, never above");
@@ -230,7 +241,8 @@ class BankOpsTest {
         at(105, 1);
         BankOps.Settled s = ops.settle(bank, personal()).join();
         assertEquals(config.catchUpPeriods, s.periods());
-        assertEquals(8 * 15, s.paid());
+        assertEquals(3, s.periods(), "one day of 8 h payouts");
+        assertEquals(3 * 60, s.paid());
     }
 
     @Test
@@ -240,7 +252,7 @@ class BankOpsTest {
         at(8, 1);
         assertEquals(0, ops.settle(bank, ops.personalTerms(1, false)).join().paid());
         at(9, 1);
-        assertEquals(15, ops.settle(bank, personal()).join().paid(), "only period 8, the open one");
+        assertEquals(60, ops.settle(bank, personal()).join().paid(), "only period 8, the open one");
     }
 
     @Test
@@ -255,6 +267,81 @@ class BankOpsTest {
         assertTrue(ops.active(List.of(alex, steve)).join(), "island: one member is enough");
     }
 
+    @Test
+    void masteryLowersTheWithdrawalFee() {
+        AccountRef bank = AccountRef.bank(steve);
+        ops.deposit(steve, bank, 100_000, personal(), actor).join();
+        at(6, 60);
+        WithdrawFee fees = WithdrawFee.of(config);
+        long[] expected = {200, 150, 100, 50};
+        for (int level = 0; level <= 3; level++) {
+            BankOps.Outcome out = ops.withdraw(steve, bank, 10_000, personal(), null, fees.percent(level), actor).join();
+            assertEquals(BankOps.Status.OK, out.status());
+            assertEquals(expected[level], out.fee(), "mastery level " + level);
+        }
+        assertEquals(1_000_000 - 100_000 + 4 * 10_000 - 500, purse(steve), "the purse gets the amount minus each fee");
+        assertEquals(4, ledgerRows("bank_fee"));
+        assertEquals(50, ops.feeNow(10_000, 0.5), "outside the free minutes the fee applies");
+        at(7, 2);
+        assertEquals(0, ops.feeNow(10_000, 2.0), "free minutes after the 8 h payout");
+    }
+
+    @Test
+    void threeHourStatesAreConvertedOnceAndNoTimeIsPaidTwice() {
+        // Before BANK2: a 3 h bank. Deposit at 81 h (3 h period 27), interest for period 28 (84-87 h) at 87.5 h.
+        BankOps old = ops(BankOps.LEGACY_PERIOD_MILLIS);
+        AccountRef bank = AccountRef.bank(steve);
+        clock.set(81 * HOUR);
+        assertEquals(BankOps.Status.OK, old.deposit(steve, bank, 50_000, personal(), actor).join().status());
+        db.blocking(c -> Sql.update(c, "UPDATE eco_bank_state SET period_minutes = 180"));
+        clock.set(87 * HOUR + HOUR / 2);
+        assertEquals(300, old.settle(bank, personal()).join().paid(), "period 27 lowest 0, period 28: 0.6% of 50k");
+        assertEquals(1, ledgerRows("interest"));
+
+        // The update: 8 h periods. The state is converted once; 87 h is inside the 8 h period 10 (80-88 h), so period 10
+        // is settled (its 84-87 h part was paid) and period 11 (88-96 h) is the next payout.
+        BankStore store = ops.store();
+        BankStore.Conversion conv = store.convertPeriods(2).join();
+        assertEquals(1, conv.rows());
+        assertEquals(Map.of(180, 1), conv.fromMinutes());
+        assertEquals(0L, store.unconverted().join());
+        assertEquals(0, store.convertPeriods(2).join().rows(), "a second run changes nothing");
+        InterestMath.State s = store.state(bank).join().orElseThrow();
+        assertEquals(10, s.settledCycle());
+
+        clock.set(88 * HOUR + HOUR / 2);
+        assertEquals(0, ops.settle(bank, personal()).join().paid(), "period 10 is never paid again");
+        clock.set(96 * HOUR + HOUR / 2);
+        assertEquals(301, ops.settle(bank, personal()).join().paid(), "period 11: 0.6% of 50,300");
+        assertEquals(1L, (long) db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM eco_ledger WHERE idem_key = ?", rs -> rs.getLong(1),
+                BankOps.interestKey(bank, P, 11)).orElse(0L)));
+        // New banks are written in 8 h periods right away.
+        ops.deposit(alex, AccountRef.bank(alex), 1_000, personal(), actor).join();
+        assertEquals(0L, store.unconverted().join());
+    }
+
+    @Test
+    void conversionHandlesManyRowsInBatches() {
+        BankOps old = ops(BankOps.LEGACY_PERIOD_MILLIS);
+        clock.set(81 * HOUR);
+        List<UUID> keys = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            UUID k = profiles.add(UUID.randomUUID(), UUID.randomUUID());
+            give(k, 10_000);
+            old.deposit(k, AccountRef.bank(k), 1_000, personal(), actor).join();
+            keys.add(k);
+        }
+        db.blocking(c -> Sql.update(c, "UPDATE eco_bank_state SET period_minutes = 180"));
+        BankStore.Conversion conv = ops.store().convertPeriods(3).join();
+        assertEquals(7, conv.rows());
+        assertEquals(0, conv.skipped());
+        for (UUID k : keys) {
+            InterestMath.State s = ops.store().state(AccountRef.bank(k)).join().orElseThrow();
+            assertEquals(10, s.cycle(), "81 h is in the 8 h period 10");
+            assertEquals(10, s.settledCycle(), "settled to 81 h, inside the 8 h period 10 (80-88 h): it counts as settled");
+        }
+    }
+
     // ------------------------------------------------------------------------------------------------ island
 
     @Test
@@ -264,14 +351,14 @@ class BankOpsTest {
         BankOps.Terms terms = ops.islandTerms(0, 0, true);
         assertEquals(BankOps.Status.OK, ops.deposit(steve, island, 500_000, terms, actor).join().status());
         BankOps.Limit limit = new BankOps.Limit(islandId, alex, 100_000);
-        assertEquals(BankOps.Status.OK, ops.withdraw(alex, island, 60_000, terms, limit, actor).join().status());
-        assertEquals(BankOps.Status.LIMIT, ops.withdraw(alex, island, 50_000, terms, limit, actor).join().status());
+        assertEquals(BankOps.Status.OK, ops.withdraw(alex, island, 60_000, terms, limit, fee(), actor).join().status());
+        assertEquals(BankOps.Status.LIMIT, ops.withdraw(alex, island, 50_000, terms, limit, fee(), actor).join().status());
         assertEquals(440_000, bal(island), "the refused one moved nothing");
-        assertEquals(BankOps.Status.OK, ops.withdraw(alex, island, 40_000, terms, limit, actor).join().status(), "exactly the limit");
+        assertEquals(BankOps.Status.OK, ops.withdraw(alex, island, 40_000, terms, limit, fee(), actor).join().status(), "exactly the limit");
         day.incrementAndGet();
-        assertEquals(BankOps.Status.OK, ops.withdraw(alex, island, 60_000, terms, limit, actor).join().status(), "a new day");
+        assertEquals(BankOps.Status.OK, ops.withdraw(alex, island, 60_000, terms, limit, fee(), actor).join().status(), "a new day");
         BankOps.Limit none = new BankOps.Limit(islandId, steve, Long.MAX_VALUE);
-        assertEquals(BankOps.Status.OK, ops.withdraw(steve, island, 300_000, terms, none, actor).join().status(), "no limit");
+        assertEquals(BankOps.Status.OK, ops.withdraw(steve, island, 300_000, terms, none, fee(), actor).join().status(), "no limit");
     }
 
     @Test

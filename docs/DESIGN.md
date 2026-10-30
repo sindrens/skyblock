@@ -206,12 +206,12 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 |---|---|---|
 | Access | Members, by role permission | Owner only |
 | Capacity | Grows with Bank Capacity upgrade | Grows with personal tiers |
-| Interest | 0.25% every 3 h (tunable) | 0.15% every 3 h (tunable) |
+| Interest | 1.0% every 8 h (tunable; BANK2, owner #169) | 0.6% every 8 h (tunable) |
 | Payout cap | Per payout, grows with upgrades | Per payout, grows with tier |
-| Early withdrawal | Forfeits current cycle's interest + ~2% fee | Same |
+| Withdrawal | Forfeits current cycle's interest + 2% fee, lowered by island masteries (1.5 / 1.0 / 0.5%) | Same (uses the profile's island) |
 | Special | Funds upgrades | Safe if you leave/are kicked; **10 balance tiers** unlock useful perks (lower AH tax, extra AH slots, sell bonus, etc.) |
 
-- Interest is paid every 3 hours, **offline too**. The GUI shows the time until the next payout.
+- Interest is paid every 8 hours (BANK2, owner #169; was 3 h), **offline too**. The GUI shows the time until the next payout and the payout clock times.
 - M3.3 (built): `/bank` and the island menu's Bank button show both banks. Personal bank per **profile** (P2/P4), 10 tiers from `bank.yml` (balance sheet §6.1); island bank per island with role permissions Bank deposit/withdraw/history in `/is permissions` and daily withdraw limits per role (% of capacity). Interest on the lowest balance of each 3 h period, capped per payout, only with ≥ 2 h play in 7 days, paid off the main thread with one idempotent ledger transaction per account and period. Withdrawals: 2% fee + the period's interest, free in the first 10 minutes after a payout. Disband/reset pays the island bank to the leader. Details: `docs/commands/economy.md`.
 
 ---

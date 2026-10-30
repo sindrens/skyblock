@@ -24,7 +24,7 @@ A spreadsheet/doc `docs/ECONOMY_BALANCE.md` with: target money per hour at each 
 - `/bank` GUI showing **Personal** and **Island** bank side by side.
 - **Personal bank:** 10 tiers (capacity + perks per tier; perks list to approve: lower AH tax, extra AH listing slots, small sell bonus …). Deposit/withdraw with the number picker.
 - **Island bank:** members deposit; withdraw requires the role permission; capacity grows with the Bank Capacity upgrade (Phase 5); every action logged and visible to the leader in `Island → Bank → History`.
-- **Interest:** every 3 h, **also offline**, computed lazily from timestamps (no mass updates), with a **per-payout cap**; rates island 0.25% / personal 0.15% (tunable). Early-withdrawal rule: withdrawing before the next payout forfeits that cycle's interest + 2% fee (shown clearly before confirming). Next payout countdown in the menu.
+- **Interest:** every 8 h (BANK2, owner #169; M3.3 shipped 3 h), **also offline**, computed lazily from timestamps (no mass updates), with a **per-payout cap**; rates island 1.0% / personal 0.6% per 8 h (BANK2; were 0.25% / 0.15% per 3 h, tunable). Withdrawal fee 2%, lowered by island masteries. Early-withdrawal rule: withdrawing before the next payout forfeits that cycle's interest + 2% fee (shown clearly before confirming). Next payout countdown in the menu.
 
 ## M3.4 Selling and dynamic prices
 - Price table config: base price per item (vanilla + custom items), category, and whether it's sellable.

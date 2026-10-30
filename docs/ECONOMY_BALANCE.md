@@ -28,7 +28,7 @@
 **Results** (numbers from the TUNE re-run):
 - **Fast start:** every archetype reaches tier 2 within 3 played hours and earns ~$40–70k in the first hour.
 - **Progressively harder:** the regular's gap between tiers grows from 2 h (tier 2) to 112 h (tier 11). The longest step is tier 8 → 9 (x2.2 the gap before it), and it is followed by the biggest jump (+120% after the Forge).
-- **Income meta still holds** for the regular player over the season: The Depths ~50%, island ~33% (production 16% + spawners 18%), events ~15%, interest ~2% (§2.3).
+- **Income meta still holds** for the regular player over the season: The Depths ~50%, island ~33% (production 16% + spawners 18%), events ~15%, interest ~3% (§2.3; BANK2 raised interest +50% per day, §6).
 - **Owner targets** (most active player, money earned so far): first hour, week 2 and month 2 land within 0.8–1.3× of the targets; day 3 is still ~2.6× (§2.2).
 - **The +300% cap is never reached by normal play.** A grinder ends the season at about +128% without boosters (average ×2.5 with boosters). Only the best of everything at once (+305%) touches the cap (§2.7).
 - **Biggest risk found: spawner output.** `stacking.yml → spawners.mobs-per-spawner: 4` makes one spawner earn 4× what this sheet assumes. With 4, spawners become ~69% of a regular player's income. **Suggested: 1** (§4.3, §14). Also needed: the shop price of spawners must rise per spawner the island owns, otherwise spawners pay for each other and money compounds (§7.3).
@@ -45,7 +45,8 @@
 - **Combat books were twice too frequent:** a regular kills ~370–500 mobs per played hour, so 1 in 150–300 gave 1.8–2.9 books/h (target 1–1.4). **Changed** the bundled `enchanter.yml → drops.combat.one-in` to 300/350/400/450 and the pity to 750/875/1,000/1,125 (§9.7, §14.1). Mine books are on target except band D (1.35–1.9/h with Vein Rend II–III): watch, suggested only.
 - **No family cap is reached by enchants + sets alone** (at most 60% of a cap, tool XP); the +300% sell cap still needs the best of everything (§9.8). Set levels match WARDROBE §3.2: a mining set reaches 1× after ~4–9 played hours and 2× after ~50–110 h; Coinmaster maxes ~29 h after purchase.
 - **Combat drop prices hold:** value per kill is within ±11% of the regular's enchanted mine at every tier (16–28% above the bare mine at tiers 7–10, from BAL2's stand-in); `/shop` sells no combat drop and `BuySellInvariantTest` passes (§9.9).
-- **Watch:** casual interest share 5.2% (limit 5%, casual income is ~11% below BAL2 because a casual has few enchant levels); one day (day 30) with the 14-day sink ratio at 57% while grinders save between tier 10 and 11 (§7.2).
+- **BANK2 (owner #169):** interest every 8 h with 4× the rate and cap per payout = +50% interest per day; casual interest share 7.7% of season income (new limit ~8%), sink ratio unchanged (§6.0).
+- **Watch:** one day (day 30) with the 14-day sink ratio at 57% while grinders save between tier 10 and 11 (§7.2).
 
 **Decisions for the owner** are in §12, suggested config changes in §14, new questions in `docs/OPEN_QUESTIONS.md`.
 
@@ -110,7 +111,7 @@ They also spend 4% of income in `/shop` and trade 10% of income on the AH. Cryst
 | Events/quests/crates | 0.3 x Depths income per played hour | rewards defined per tier |
 | Shop spend | 4% of earned | blocks, decor, seeds |
 | AH | 10% of earned traded, fee 1% + tax 5% | only fee+tax leave the economy |
-| Interest | personal 0.15% / island 0.25% per 3 h | capped per payout |
+| Interest | personal 0.60% / island 1.00% per 8 h | capped per payout; withdrawal fee 2% -> 1.5% -> 1% -> 0.5% by island mastery |
 | Crystals | 0.05 x 1.3^(t-1) per block, +20% island missions | not tradeable (CR3) |
 | Daily uniques casual / regular / grinder | 540 / 270 / 90 | avg ~112 online, peak ~300 |
 <!-- END table:params -->
@@ -129,13 +130,13 @@ Notes:
 | Stage | Casual (income per played hour · earned so far) | Regular | Grinder |
 |---|---|---|---|
 | First hour | $53.8k/h · $39.6k | $60.4k/h · $53.4k | $75.5k/h · $66.8k |
-| Day 1 | $58.9k/h · $72.6k | $107.9k/h · $316.3k | $360.4k/h · $2M |
-| Day 3 | $82.5k/h · $208.1k | $308.6k/h · $1.5M | $1.1M/h · $12.9M |
-| Week 1 | $142.6k/h · $614k | $610.8k/h · $7M | $3.4M/h · $90M |
-| Week 2 | $290.3k/h · $2.2M | $1.6M/h · $33.5M | $13.9M/h · $547.6M |
-| Month 1 | $822k/h · $10.4M | $3.3M/h · $165.4M | $41.1M/h · $4.5B |
-| Month 2 | $1.7M/h · $50M | $28.6M/h · $1.5B | $281.7M/h · $42.3B |
-| Month 3 | $3.1M/h · $127M | $88.7M/h · $4.6B | $296.2M/h · $112.5B |
+| Day 1 | $58.9k/h · $72.6k | $107.9k/h · $316.7k | $360.4k/h · $2M |
+| Day 3 | $82.5k/h · $208.7k | $308.6k/h · $1.5M | $1.1M/h · $12.9M |
+| Week 1 | $142.6k/h · $617.4k | $610.8k/h · $7M | $3.4M/h · $90.2M |
+| Week 2 | $290.3k/h · $2.2M | $1.6M/h · $33.7M | $13.9M/h · $548.5M |
+| Month 1 | $822k/h · $10.6M | $3.3M/h · $166.7M | $41.1M/h · $4.6B |
+| Month 2 | $1.7M/h · $51.7M | $28.6M/h · $1.5B | $281.7M/h · $42.4B |
+| Month 3 | $3.1M/h · $130.6M | $88.7M/h · $4.7B | $296.2M/h · $112.8B |
 <!-- END table:targets -->
 
 ### 2.2 Owner targets vs. model
@@ -144,8 +145,8 @@ Notes:
 |---|---|---|---|---|---|
 | First hour | $50k | $66.8k | 1.3x | $53.4k | 1.1x |
 | Day 3 | $5M | $12.9M | 2.6x | $1.5M | 0.3x |
-| Week 2 | $500M | $547.6M | 1.1x | $33.5M | 0.1x |
-| Month 2 | $50B | $42.3B | 0.8x | $1.5B | 0.0x |
+| Week 2 | $500M | $548.5M | 1.1x | $33.7M | 0.1x |
+| Month 2 | $50B | $42.4B | 0.8x | $1.5B | 0.0x |
 <!-- END table:targets_check -->
 
 Day 3 is still high for the most active players: a grinder has played ~26 h by day 3 and is at tier 6. Hitting $5M there while still reaching $500M in week 2 needs a 100× jump in 11 days, which feels like a cliff. **Proposal (unchanged):** read the day-3 target as "a regular player" (~$1.6M), keep the smooth curve.
@@ -154,15 +155,15 @@ Day 3 is still high for the most active players: a grinder has played ~26 h by d
 <!-- BEGIN table:shares -->
 | Archetype | Earned up to | Depths | Island production | Spawners | Island total | Events/quests | Interest |
 |---|---|---|---|---|---|---|---|
-| casual | Week 1 | 61% | 20% | 0% | 20% | 18% | 1.1% |
-| casual | Month 1 | 47% | 20% | 15% | 35% | 14% | 3.2% |
-| casual | Month 3 | 38% | 20% | 25% | 45% | 11% | 5.2% |
-| regular | Week 1 | 60% | 14% | 7% | 21% | 18% | 0.8% |
-| regular | Month 1 | 52% | 15% | 16% | 31% | 15% | 1.5% |
-| regular | Month 3 | 50% | 16% | 18% | 33% | 15% | 1.9% |
-| grinder | Week 1 | 51% | 14% | 20% | 34% | 15% | 0.4% |
-| grinder | Month 1 | 53% | 14% | 17% | 31% | 16% | 0.7% |
-| grinder | Month 3 | 48% | 31% | 6% | 36% | 15% | 0.6% |
+| casual | Week 1 | 60% | 20% | 0% | 20% | 18% | 1.6% |
+| casual | Month 1 | 46% | 20% | 15% | 35% | 14% | 4.9% |
+| casual | Month 3 | 37% | 20% | 24% | 44% | 11% | 7.7% |
+| regular | Week 1 | 60% | 14% | 7% | 21% | 18% | 1.1% |
+| regular | Month 1 | 51% | 15% | 16% | 31% | 15% | 2.3% |
+| regular | Month 3 | 49% | 15% | 18% | 33% | 15% | 2.8% |
+| grinder | Week 1 | 51% | 14% | 20% | 34% | 15% | 0.6% |
+| grinder | Month 1 | 52% | 14% | 17% | 31% | 16% | 1.0% |
+| grinder | Month 3 | 48% | 31% | 6% | 36% | 14% | 0.9% |
 | **target** | season | ~50% |  |  | ~35% | ~15% | <= 5% |
 <!-- END table:shares -->
 
@@ -192,11 +193,11 @@ Played hours (and the day it happens) for each archetype.
 |---|---|---|---|
 | Earned $100k | 2.1 h (day 2) | 1.7 h (day 1) | 1.4 h (day 1) |
 | Earned $1M | 10.1 h (day 10) | 8.3 h (day 3) | 7.3 h (day 1) |
-| Earned $10M | 30.2 h (day 30) | 25.6 h (day 9) | 24.1 h (day 3) |
-| Earned $100M | 81.6 h (day 82) | 70.1 h (day 24) | 61.6 h (day 8) |
-| Earned $1B | not this season | 163.0 h (day 54) | 145.6 h (day 18) |
+| Earned $10M | 29.9 h (day 30) | 25.6 h (day 9) | 24.1 h (day 3) |
+| Earned $100M | 80.6 h (day 81) | 70.0 h (day 23) | 61.5 h (day 8) |
+| Earned $1B | not this season | 162.7 h (day 54) | 145.6 h (day 18) |
 | Earned $10B | not this season | not this season | 298.0 h (day 37) |
-| Earned $100B | not this season | not this season | 681.9 h (day 85) |
+| Earned $100B | not this season | not this season | 680.6 h (day 85) |
 | Depths tier 4 (Gold) | 11.5 h (day 12) | 9.2 h (day 3) | 8.1 h (day 1) |
 | Depths tier 8 (Emerald) | 67.6 h (day 68) | 51.5 h (day 17) | 47.0 h (day 6) |
 | Depths tier 10 (Quartz) | not this season | 158.5 h (day 53) | 144.6 h (day 18) |
@@ -606,55 +607,78 @@ When every level upgrade is maxed, upgrades and masteries (MA1–MA12) can be le
 
 ## 6. Banks and interest
 
-Rules (proposals, M3.3): interest every 3 h (also offline, lazily computed); paid on the **lowest balance during the cycle** (no deposit-before-payout trick); early withdrawal forfeits the cycle and costs 2%; only accounts that played ≥ 2 h in the last 7 days earn interest; every payout is capped.
+Rules (M3.3, changed by BANK2 = owner answer 169): interest every **8 h** (00:00, 08:00, 16:00 UTC; also offline, lazily computed); paid on the **lowest balance during the period** (no deposit-before-payout trick); a withdrawal costs a **2% fee** (personal and island bank) and forfeits the period, except in the 10 free minutes after each payout; **island masteries lower the fee** one step per bank-fee mastery level: 2% → 1.5% → 1.0% → 0.5% (`bank.yml → withdraw.mastery-fee-percent`; the `/is masteries` hook `IslandService.bankFeeMasteryLevel` returns 0 until masteries exist); only accounts that played ≥ 2 h in the last 7 days earn interest; every payout is capped.
+
+**BANK2 numbers.** The owner asked for higher interest paid every 8 hours. Fewer payouts alone would have cut interest to 3/8, so the rate and the payout cap per payout are both **×4** (personal 0.15% → 0.6%, island 0.25% → 1.0%; caps ×4): with 3 payouts a day instead of 8 that is **+50% interest per day** at every tier. The model keeps every money check: the casual's season interest share rises from 5.2% to ~7.7% (limit ~8%), the regular's to ~2.8%, the grinder's to ~0.9%; the season sink ratio stays 85% (interest is new money, but a small part of income). Catch-up after downtime stays one day (3 payouts). Existing `bank.yml` files with the untouched M3.3 values get the new ones on the first start (owner-changed values are kept), and bank states are converted from 3 h to 8 h period numbers once (no stretch of time is paid twice; at most a part of one period is skipped at the change).
+
+### 6.0 Before and after (BANK2)
+<!-- BEGIN table:interest_before_after -->
+|  | M3.3 (before) | BANK2 (now) |
+|---|---|---|
+| Payouts | every 3 h (8 a day) | every 8 h (3 a day) |
+| Rate per payout, personal / island | 0.15% / 0.25% | 0.6% / 1% |
+| Max per day, personal tier 1 (full) | $1.2k | $1.8k |
+| Max per day, personal tier 5 (full) | $125.8k | $188.7k |
+| Max per day, island level 0 (full) | $20k | $30k |
+| Max per day, island level 5 (full) | $4.9M | $7.3M |
+| Casual (1 h/day): interest per day at month 1 | $28.2k/day | $45.4k/day |
+| Regular (3 h/day): interest per day at month 1 | $387.4k/day | $600.5k/day |
+| Grinder (8 h/day): interest per day at month 1 | $4.1M/day | $6.2M/day |
+| Casual (1 h/day): interest share of season income | 5.2% | 7.7% |
+| Regular (3 h/day): interest share of season income | 1.9% | 2.8% |
+| Grinder (8 h/day): interest share of season income | 0.6% | 0.9% |
+| Sink ratio over the season | 85% | 85% |
+| Lowest 14-day sink ratio | 57% | 57% |
+| Withdrawal fee | 2% | 2% -> 1.5% -> 1% -> 0.5% (island mastery 0-3) |
+<!-- END table:interest_before_after -->
 
 ### 6.1 Personal bank (10 tiers)
 <!-- BEGIN table:interest_personal -->
-| Tier | Capacity | Unlock cost | Payout cap (per 3 h) | Uncapped payout at full | Effective rate at full | Max interest / day |
+| Tier | Capacity | Unlock cost | Payout cap (per 8 h) | Uncapped payout at full | Effective rate at full | Max interest / day |
 |---|---|---|---|---|---|---|
-| 1 | $100k | $0 | $150 | $150 | 0.150% | $1.2k |
-| 2 | $500k | $10k | $480 | $750 | 0.096% | $3.8k |
-| 3 | $2.5M | $50k | $1.5k | $3.8k | 0.061% | $12.3k |
-| 4 | $12.5M | $250k | $4.9k | $18.8k | 0.039% | $39.3k |
-| 5 | $62.5M | $1.2M | $15.7k | $93.8k | 0.025% | $125.8k |
-| 6 | $312.5M | $6.2M | $50.3k | $468.8k | 0.016% | $402.7k |
-| 7 | $1.6B | $31.2M | $161.1k | $2.3M | 0.010% | $1.3M |
-| 8 | $7.8B | $156.2M | $515.4k | $11.7M | 0.007% | $4.1M |
-| 9 | $39.1B | $781.2M | $1.6M | $58.6M | 0.004% | $13.2M |
-| 10 | $195.3B | $3.9B | $5.3M | $293M | 0.003% | $42.2M |
+| 1 | $100k | $0 | $600 | $600 | 0.600% | $1.8k |
+| 2 | $500k | $10k | $1.9k | $3k | 0.384% | $5.8k |
+| 3 | $2.5M | $50k | $6.1k | $15k | 0.246% | $18.4k |
+| 4 | $12.5M | $250k | $19.7k | $75k | 0.157% | $59k |
+| 5 | $62.5M | $1.2M | $62.9k | $375k | 0.101% | $188.7k |
+| 6 | $312.5M | $6.2M | $201.3k | $1.9M | 0.064% | $604k |
+| 7 | $1.6B | $31.2M | $644.2k | $9.4M | 0.041% | $1.9M |
+| 8 | $7.8B | $156.2M | $2.1M | $46.9M | 0.026% | $6.2M |
+| 9 | $39.1B | $781.2M | $6.6M | $234.4M | 0.017% | $19.8M |
+| 10 | $195.3B | $3.9B | $21.1M | $1.2B | 0.011% | $63.3M |
 <!-- END table:interest_personal -->
 
 ### 6.2 Island bank (Bank Capacity / Bank Interest upgrades)
 <!-- BEGIN table:interest_island -->
-| Bank Capacity / Interest level | Capacity | Payout cap (per 3 h) | Uncapped payout at full | Effective rate at full | Max interest / day |
+| Bank Capacity / Interest level | Capacity | Payout cap (per 8 h) | Uncapped payout at full | Effective rate at full | Max interest / day |
 |---|---|---|---|---|---|
-| 0 | $1M | $2.5k | $2.5k | 0.250% | $20k |
-| 1 | $4M | $7.5k | $10k | 0.188% | $60k |
-| 2 | $16M | $22.5k | $40k | 0.141% | $180k |
-| 3 | $64M | $67.5k | $160k | 0.105% | $540k |
-| 4 | $256M | $202.5k | $640k | 0.079% | $1.6M |
-| 5 | $1B | $607.5k | $2.6M | 0.059% | $4.9M |
-| 6 | $4.1B | $1.8M | $10.2M | 0.044% | $14.6M |
-| 7 | $16.4B | $5.5M | $41M | 0.033% | $43.7M |
-| 8 | $65.5B | $16.4M | $163.8M | 0.025% | $131.2M |
-| 9 | $262.1B | $49.2M | $655.4M | 0.019% | $393.7M |
-| 10 | $1T | $147.6M | $2.6B | 0.014% | $1.2B |
+| 0 | $1M | $10k | $10k | 1.000% | $30k |
+| 1 | $4M | $30k | $40k | 0.750% | $90k |
+| 2 | $16M | $90k | $160k | 0.562% | $270k |
+| 3 | $64M | $270k | $640k | 0.422% | $810k |
+| 4 | $256M | $810k | $2.6M | 0.316% | $2.4M |
+| 5 | $1B | $2.4M | $10.2M | 0.237% | $7.3M |
+| 6 | $4.1B | $7.3M | $41M | 0.178% | $21.9M |
+| 7 | $16.4B | $21.9M | $163.8M | 0.133% | $65.6M |
+| 8 | $65.5B | $65.6M | $655.4M | 0.100% | $196.8M |
+| 9 | $262.1B | $196.8M | $2.6B | 0.075% | $590.5M |
+| 10 | $1T | $590.5M | $10.5B | 0.056% | $1.8B |
 <!-- END table:interest_island -->
 
 ### 6.3 Interest vs. income
 <!-- BEGIN table:interest_vs_income -->
 | Day | Casual interest (share of that day's income) | Regular | Grinder |
 |---|---|---|---|
-| Day 1 | $169/day (0.2%) | $732/day (0.2%) | $2.4k/day (0.1%) |
-| Day 3 | $489/day (0.6%) | $3k/day (0.4%) | $17.4k/day (0.2%) |
-| Week 1 | $1.5k/day (1.1%) | $22.7k/day (1.3%) | $125.8k/day (0.5%) |
-| Week 2 | $6.3k/day (2.2%) | $67.2k/day (1.3%) | $402.7k/day (0.4%) |
-| Month 1 | $28.2k/day (3.3%) | $387.4k/day (3.8%) | $4.1M/day (1.2%) |
-| Month 2 | $125.8k/day (6.8%) | $402.7k/day (0.5%) | $13.2M/day (0.6%) |
-| Month 3 | $125.8k/day (3.9%) | $4.1M/day (2.6%) | $13.2M/day (0.6%) |
+| Day 1 | $254/day (0.3%) | $1.1k/day (0.3%) | $3.6k/day (0.2%) |
+| Day 3 | $739/day (1.0%) | $4.5k/day (0.6%) | $26.2k/day (0.4%) |
+| Week 1 | $2.3k/day (1.7%) | $34.3k/day (1.9%) | $188.7k/day (0.7%) |
+| Week 2 | $9.8k/day (3.3%) | $103.4k/day (2.1%) | $604k/day (0.6%) |
+| Month 1 | $45.4k/day (5.3%) | $600.5k/day (5.8%) | $6.2M/day (1.8%) |
+| Month 2 | $188.7k/day (9.9%) | $604k/day (0.7%) | $19.8M/day (0.9%) |
+| Month 3 | $188.7k/day (5.8%) | $6.2M/day (3.8%) | $19.8M/day (0.8%) |
 <!-- END table:interest_vs_income -->
 
-Interest stays a small bonus (≤ 5% of season income for every archetype). It is relatively highest for casual players because they save more and earn less; in money it is tiny.
+Interest stays a bonus (≤ 8% of season income for every archetype since BANK2). It is relatively highest for casual players because they save more and earn less; in money it is small. If the M3.8 dashboard shows interest above 8% of created money, lower the payout caps first (`bank.yml → personal.tiers` / `island.levels`, third/second number), then the rates.
 
 ---
 
@@ -666,30 +690,30 @@ Every sink is a gameplay cost (tools, sets, spawners, upgrades, outposts, master
 <!-- BEGIN table:sources_sinks -->
 | Day (7-day avg) | Depths | Island | Spawners | Events | Interest | Forge | Production | Spawners bought | Sets | Level upg. | Late proj. | Mastery | Bank tiers | Shop | AH fee+tax |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | $199.1M | $36.7M | $4.7M | $59.7M | $507.5k | $16M | $57.9M | $0 | $7.2M | $153.8M | $0 | $0 | $8.1M | $12M | $1.8M |
-| 3 | $334.8M | $79.7M | $41.2M | $100.4M | $1.5M | $38.2M | $66.8M | $72.9M | $6M | $255.4M | $0 | $0 | $16.5M | $22.2M | $3.3M |
-| 7 | $775.6M | $206.1M | $252.2M | $232.7M | $7.1M | $72.9M | $90.3M | $133M | $2.6M | $406.4M | $69.7M | $0 | $36.6M | $58.7M | $8.8M |
-| 14 | $3.4B | $904.2M | $1.7B | $1B | $32.1M | $141.8M | $178.4M | $414.8M | $514.3M | $2.7B | $2.3B | $0 | $128.6M | $279.7M | $42M |
-| 30 | $16.6B | $4.3B | $4.6B | $5B | $356.9M | $35.3M | $7.9M | $0 | $0 | $434.6M | $6.3B | $0 | $2.2B | $1.2B | $182.8M |
-| 45 | $44.6B | $18.1B | $8.3B | $13.4B | $519.4M | $82.9M | $13.4M | $0 | $0 | $3.1B | $61.2B | $0 | $0 | $3.4B | $506.5M |
-| 60 | $108.4B | $71.1B | $11.5B | $32.5B | $1.4B | $0 | $9.9M | $0 | $0 | $79.4B | $4.1B | $89B | $0 | $8.9B | $1.3B |
-| 75 | $112.5B | $73.6B | $14.9B | $33.8B | $1.6B | $194.9M | $0 | $0 | $0 | $669.8M | $17B | $145.5B | $0 | $9.4B | $1.4B |
-| 90 | $117B | $75.8B | $18.2B | $35.1B | $2.4B | $1.3B | $3.2B | $0 | $0 | $16.6B | $24.6B | $180.4B | $0 | $9.8B | $1.5B |
+| 1 | $199.1M | $36.7M | $4.7M | $59.7M | $761.3k | $16M | $57.9M | $0 | $7.2M | $153.8M | $0 | $0 | $8.1M | $12M | $1.8M |
+| 3 | $334.8M | $79.7M | $41.2M | $100.4M | $2.2M | $38.2M | $66.8M | $72.9M | $6M | $255.4M | $0 | $0 | $16.5M | $22.2M | $3.3M |
+| 7 | $775.6M | $206.1M | $252.2M | $232.7M | $10.6M | $72.9M | $90.3M | $133M | $2.6M | $406.4M | $69.7M | $0 | $36.6M | $58.7M | $8.8M |
+| 14 | $3.4B | $904.2M | $1.7B | $1B | $48.6M | $141.8M | $178.4M | $414.8M | $514.3M | $2.7B | $2.3B | $0 | $128.6M | $279.7M | $42M |
+| 30 | $16.6B | $4.3B | $4.6B | $5B | $537.4M | $35.3M | $7.9M | $0 | $0 | $434.6M | $6.3B | $0 | $2.2B | $1.2B | $182.8M |
+| 45 | $44.6B | $18.1B | $8.3B | $13.4B | $784.1M | $82.9M | $13.4M | $0 | $0 | $3.1B | $61.2B | $0 | $0 | $3.4B | $506.5M |
+| 60 | $108.4B | $71.1B | $11.5B | $32.5B | $2B | $0 | $9.9M | $0 | $0 | $79.4B | $4.1B | $89B | $0 | $8.9B | $1.3B |
+| 75 | $112.5B | $73.6B | $14.9B | $33.8B | $2.4B | $194.9M | $0 | $0 | $0 | $669.8M | $17B | $145.5B | $0 | $9.4B | $1.4B |
+| 90 | $117B | $75.8B | $18.2B | $35.1B | $3.6B | $1.3B | $3.2B | $0 | $0 | $16.6B | $24.6B | $180.4B | $0 | $9.8B | $1.5B |
 <!-- END table:sources_sinks -->
 
 ### 7.2 Inflation check
 <!-- BEGIN table:inflation -->
 | Day (7-day avg) | Created / day | Removed / day | Sink ratio (7 days) | Sink ratio (14 days) | Net / day | Money supply (held) | Held per player | Held per player in days of regular income | Check (14 days) |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | $300.8M | $256.8M | 85% | 85% | $44M | $44.9M | $49.9k | 0.2 | OK |
-| 3 | $557.6M | $481.3M | 86% | 86% | $76.2M | $229.6M | $255.1k | 0.4 | OK |
-| 7 | $1.5B | $879M | 60% | 60% | $594.7M | $4.2B | $4.6M | 2.6 | act |
-| 14 | $7B | $6.6B | 95% | 88% | $384.6M | $6.9B | $7.6M | 1.5 | OK |
-| 30 | $30.8B | $10.4B | 34% | 57% | $20.4B | $170.1B | $189M | 18.5 | act |
-| 45 | $84.9B | $68.2B | 80% | 82% | $16.7B | $279.9B | $311M | 8.4 | OK |
-| 60 | $224.7B | $182.8B | 81% | 87% | $41.9B | $597.1B | $663.4M | 7.7 | OK |
-| 75 | $236.4B | $174.1B | 74% | 76% | $62.3B | $1.3T | $1.4B | 14.2 | OK |
-| 90 | $248.4B | $237.4B | 96% | 81% | $11B | $1.7T | $1.9B | 11.7 | OK |
+| 1 | $301.1M | $256.8M | 85% | 85% | $44.3M | $45.2M | $50.2k | 0.2 | OK |
+| 3 | $558.3M | $481.3M | 86% | 86% | $77M | $231.9M | $257.6k | 0.4 | OK |
+| 7 | $1.5B | $879M | 60% | 60% | $598.3M | $4.2B | $4.7M | 2.6 | act |
+| 14 | $7B | $6.6B | 94% | 88% | $401.1M | $7B | $7.8M | 1.5 | OK |
+| 30 | $31B | $10.4B | 34% | 57% | $20.6B | $172B | $191.1M | 18.3 | act |
+| 45 | $85.2B | $68.2B | 80% | 81% | $17B | $285.6B | $317.3M | 8.6 | OK |
+| 60 | $225.4B | $182.8B | 81% | 87% | $42.6B | $613.1B | $681.2M | 7.9 | OK |
+| 75 | $237.2B | $174.1B | 73% | 76% | $63.1B | $1.3T | $1.5B | 14.4 | OK |
+| 90 | $249.6B | $237.4B | 95% | 81% | $12.2B | $1.7T | $1.9B | 11.9 | OK |
 <!-- END table:inflation -->
 
 - **Target:** ≥ 80% of created money removed over the season. **Watch** at 60–75%, **act** below 60% for 3 days in a row (14-day average). The dashboard (M3.8) should use the **14-day** average: the 7-day average dips whenever many players save for the same big purchase (day 7: grinders saving for Coinmaster; day 28–30: grinders who have bought everything tier 10 allows and wait for tier 11).
@@ -701,19 +725,19 @@ Every sink is a gameplay cost (tools, sets, spawners, upgrades, outposts, master
 <!-- BEGIN table:sensitivity -->
 | Scenario | Sink ratio, season | Lowest 7-day sink ratio, days 60-90 | Money supply day 90 | Interest share (grinder) | Island total share (regular) | Spawner share (regular) | Grinder earned by month 2 |
 |---|---|---|---|---|---|---|---|
-| Baseline (this sheet) | 85% | 74% | $1.7T | 0.6% | 33% | 18% | $42.3B |
-| Spawners at today's config (4 mobs per spawn) | 76% | 66% | $4.2T | 1.5% | 74% | 69% | $59.9B |
-| Shop spawner price does not rise per owned spawner | 66% | 43% | $12.5T | 1.1% | 89% | 87% | $114.5B |
-| No mastery (no endless sink) | 39% | 12% | $6.9T | 1.4% | 33% | 18% | $42.2B |
-| Boosters always on (personal + global) | 82% | 71% | $3T | 1.3% | 42% | 24% | $62.6B |
-| Old cap +100% | 84% | 68% | $1.5T | 0.7% | 32% | 17% | $34.6B |
-| Custom tiers x2.4 (old curve) | 85% | 92% | $2.4T | 0.8% | 33% | 17% | $58B |
-| Players save twice as much | 78% | 73% | $2.5T | 0.6% | 33% | 18% | $41.4B |
-| Interest without payout caps | 82% | 70% | $2.2T | 4.7% | 32% | 17% | $43.1B |
-| Production payback 8 days (players over-invest) | 82% | 75% | $2.7T | 0.7% | 48% | 26% | $52.9B |
-| No enchants (TUNE: pickaxe build off) | 86% | 61% | $725B | 1.0% | 46% | 27% | $15.3B |
-| No sets (TUNE: Delver, Deepforge, Coinmaster off) | 88% | 78% | $1T | 0.6% | 31% | 18% | $30.5B |
-| Money build: Gilded Touch instead of Scholar's Insight | 85% | 13% | $1.5T | 1.7% | 33% | 19% | $27.6B |
+| Baseline (this sheet) | 85% | 73% | $1.7T | 0.9% | 33% | 18% | $42.4B |
+| Spawners at today's config (4 mobs per spawn) | 75% | 65% | $4.4T | 2.3% | 73% | 67% | $60.4B |
+| Shop spawner price does not rise per owned spawner | 65% | 43% | $12.9T | 1.6% | 87% | 86% | $115.3B |
+| No mastery (no endless sink) | 38% | 12% | $7T | 2.1% | 33% | 18% | $42.4B |
+| Boosters always on (personal + global) | 82% | 70% | $3.2T | 1.9% | 41% | 24% | $63.1B |
+| Old cap +100% | 84% | 68% | $1.5T | 1.1% | 32% | 17% | $34.7B |
+| Custom tiers x2.4 (old curve) | 85% | 92% | $2.4T | 1.1% | 33% | 17% | $58.2B |
+| Players save twice as much | 77% | 73% | $2.6T | 0.9% | 32% | 18% | $41.5B |
+| Interest without payout caps | 79% | 68% | $2.6T | 7.8% | 30% | 16% | $43.8B |
+| Production payback 8 days (players over-invest) | 81% | 74% | $2.8T | 1.1% | 47% | 26% | $53.1B |
+| No enchants (TUNE: pickaxe build off) | 86% | 60% | $754.2B | 1.5% | 45% | 27% | $15.4B |
+| No sets (TUNE: Delver, Deepforge, Coinmaster off) | 87% | 78% | $1.1T | 1.0% | 30% | 17% | $30.6B |
+| Money build: Gilded Touch instead of Scholar's Insight | 84% | 13% | $1.6T | 2.5% | 33% | 19% | $27.8B |
 <!-- END table:sensitivity -->
 
 What this says:
@@ -732,7 +756,7 @@ What this says:
 | Income per hour > 2× the table | Check dupes/anomalies first; then lower booster values or global booster uptime | Lower the sell cap |
 | Island share > 45% | Raise production level costs (`CP1`/`CPG`) | Shorter offline fuel tank |
 | Spawner share > 25% | Lower `spawners.mobs-per-spawner` | Raise the shop spawner price growth |
-| Interest > 5% of income | Lower payout caps | Lower rates |
+| Interest > 8% of income | Lower payout caps | Lower rates |
 | AH prices running away | Raise AH tax for listings above X | Add more late sinks |
 | Crystals piling up | More island shop items (fuel, boosters, decor) | Raise roll prices |
 
@@ -1059,7 +1083,7 @@ What the enchant and set prices cost in hours of each archetype's crystal income
 | # | Risk | What could happen | Mitigation |
 |---|---|---|---|
 | R1 | **Runaway inflation** | Late-season income piles up, AH prices explode | Endless late sink (mastery, §5.4); season sink ratio ≥ 80% and 14-day dashboard alerts (M3.8); levers (§7.4); seasonal wipe; server prices fixed |
-| R2 | **Interest abuse** | Deposit before payout; idle alts; snowballing | Min-balance rule; payout caps; activity rule (≥ 2 h in 7 days); early-withdrawal forfeit + 2% fee; bank tier unlock costs |
+| R2 | **Interest abuse** | Deposit before payout; idle alts; snowballing | Min-balance rule; payout caps; activity rule (≥ 2 h in 7 days); withdrawal forfeit + 2% fee (masteries lower it to 0.5%, only by island progress); bank tier unlock costs |
 | R3 | **Alt farming** | Alts mine tier 1, claim kits/votes and `/pay` the main | Depths income needs active breaking; starter kits not on the AH; crystals and gems not tradeable; new accounts (< 30 min, #40) can't `/pay`, `/withdraw` or use the AH; same-IP transfer alerts; AFK pool rewards one account per IP at a time and 8 h per IP per day (RW3, §7.5) |
 | R4 | **AH manipulation** | Laundering via fake listings, price fixing, wash trading | 1% fee + 5% tax; alerts for sales > 20× the 7-day median or between linked accounts; listing limits; full logs |
 | R5 | **AFK island production** | Island income overtakes The Depths | Fuel tank cap; AFK pool max 8 h/day (O10); production online rate only while active in the last 15 min; Fuel Tank priced as a level upgrade |
@@ -1076,19 +1100,21 @@ What the enchant and set prices cost in hours of each archetype's crystal income
 ## 11. Model self-checks
 Generated on every run; all must say PASS (or WATCH with a reason in the text) before this sheet goes to the owner. WATCH = missed by less than 10% of the limit. The script also runs hard asserts (cap math, stack steps 8 → 512, the ENCHANTS §5 cost table, the WARDROBE §3.2 level curve, the level gate, determinism, no player above the cap, family caps, progressively harder tiers) and fails if any breaks.
 
-- **WATCH: interest 5.2% for the casual** (limit 5%). The casual earns ~11% less than in BAL2 because a 1 h/day player has few enchant levels (two slots at level II for most of the first month); interest is capped per payout, so its share rose. No config change: in money it is ~$6.6M over the season. If the owner wants it under 5%, lower the personal bank payout caps of tiers 3–5 by ~10% (`bank.yml → personal.tiers`).
+- **Interest (BANK2):** the limit is ~8% of season income since owner answer 169 asked for higher interest (it was 5%). The casual is highest (~7.7%) because a 1 h/day player saves more than they earn; interest is capped per payout. If it must come down, lower the personal bank payout caps of tiers 3–5 (`bank.yml → personal.tiers`, third number). The model reads the bank rates, period and fee from `BankConfig` and checks the tier lists against its payout-cap formulas.
 
 <!-- BEGIN table:checks -->
 | Check | Result | Value |
 |---|---|---|
-| Depths share 40-60% (regular, season) | PASS | 50% |
+| Depths share 40-60% (regular, season) | PASS | 49% |
 | Island + spawner share 25-45% (regular, season) | PASS | 33% |
 | Spawners 8-25% of income (regular, season) | PASS | 18% |
 | Events share 10-20% (regular, season) | PASS | 15% |
-| Interest <= 5% of income (all, season) | WATCH | 5.2%, 1.9%, 0.6% |
+| Interest <= 8% of income (all, season) | PASS | 7.7%, 2.8%, 0.9% |
+| bank.yml payout caps = the model (BANK2) | PASS | 10 tiers + 11 levels match |
+| Interest every 8 h, fee steps only go down (BANK2) | PASS | 8 h, fee [2.0, 1.5, 1.0, 0.5] |
 | First hour 30k-100k (grinder) | PASS | $66.8k |
-| Week 2 within 0.5x-2x of $500M (grinder) | PASS | $547.6M |
-| Month 2 within 0.5x-2x of $50B (grinder) | PASS | $42.3B |
+| Week 2 within 0.5x-2x of $500M (grinder) | PASS | $548.5M |
+| Month 2 within 0.5x-2x of $50B (grinder) | PASS | $42.4B |
 | Sink ratio over the whole season >= 80% | PASS | 85% |
 | Sink ratio (14-day average) not below 60% for 3 days in a row ('act', §7.2) | PASS | min 57% (day 30), longest run below 60%: 1 day |
 | Slot 1 within ~1-2 h (regular) | PASS | 1.1 h (day 1) |
@@ -1125,7 +1151,7 @@ Approve or change:
 6. **Spawners (§4.3–4.4): 1 mob per spawn (not 4), shop price +10% per spawner of that tier owned, base = 60 production hours, stack steps 8/32/64/128/256/512 at Spawner Stack Limit Lv 0/2/4/6/9/12.**
 7. **Sell bonus values (§2.7):** best rank +15%, Sell Multiplier upgrade +5%/level, Market Contacts +2%/level (max 20), Coinmaster +50% at Lv 50, Gilded Touch +15%, personal and global boosters +50%, sell events +25%; all summed, then +300% cap.
 8. Forge, level upgrade, late project costs as "hours of income" (§5); mastery as the endless sink (§5.4).
-9. Bank rules and caps (§6).
+9. Bank rules and caps (§6); BANK2: interest every 8 h, 0.6% / 1.0% per payout, caps ×4 (+50% per day), fee 2% → 1.5 / 1.0 / 0.5% by island mastery (§6.0).
 10. Sink targets: ≥ 80% per season, 14-day average for the dashboard (§7.2).
 11. Dynamic prices with adaptive impact; Hot Item +25% outside the sell family (§8).
 12. Crystal sinks: the island shop must scale for grinders (§9.1); shard sources (§9.3); crate money rewards stay small (§9.4).
@@ -1225,4 +1251,5 @@ Existing keys first, then keys for systems that are not built yet.
 | `islands` upgrades (Phase 5) | `upgrades.sell-multiplier.percent-per-level` | not built | 5 | 12 levels = +60% |
 | `islands` upgrades (Phase 5) | `upgrades.spawner-stack-limit.steps` | not built | Lv2:32, Lv4:64, Lv6:128, Lv9:256, Lv12:512 | feeds `IslandService#spawnerStackLimit` |
 | `masteries` (Phase 5) | `market-contacts.percent-per-level` / `max-level` | not built | 2 / 20 | MA5 |
+| `masteries` (Phase 5) | bank-fee mastery levels 1-3 | hook only (BANK2) | 1.5% / 1% / 0.5% | lowers the 2% bank withdrawal fee (owner #169); feeds `IslandService#bankFeeMasteryLevel`, steps in `bank.yml → withdraw.mastery-fee-percent` |
 <!-- END table:config_changes -->

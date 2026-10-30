@@ -28,14 +28,28 @@ final class BankStore {
 
     private final Database db;
     private final LongSupplier clock;
+    /** The period length every state row is written in (rows of another length are converted at start). */
+    private final long periodMillis;
 
-    BankStore(Database db, LongSupplier clock) {
+    BankStore(Database db, LongSupplier clock, long periodMillis) {
+        if (periodMillis < 60_000L || periodMillis % 60_000L != 0) {
+            throw new IllegalArgumentException("period must be whole minutes: " + periodMillis);
+        }
         this.db = db;
         this.clock = clock;
+        this.periodMillis = periodMillis;
     }
 
     Database db() {
         return db;
+    }
+
+    long periodMillis() {
+        return periodMillis;
+    }
+
+    int periodMinutes() {
+        return (int) (periodMillis / 60_000L);
     }
 
     // ------------------------------------------------------------------------------------------------ state
@@ -77,8 +91,9 @@ final class BankStore {
         InterestMath.State fresh = InterestMath.State.fresh(1, period, balance(c, account));
         try {
             Sql.update(c, "INSERT INTO eco_bank_state (owner_type, owner_id, bank_tier, cycle_no, min_balance, forfeited, settled_cycle, "
-                            + "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", account.type().key(), account.owner(), fresh.tier(),
-                    fresh.cycle(), fresh.minBalance(), fresh.forfeited(), fresh.settledCycle(), clock.getAsLong());
+                            + "updated_at, period_minutes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", account.type().key(), account.owner(),
+                    fresh.tier(), fresh.cycle(), fresh.minBalance(), fresh.forfeited(), fresh.settledCycle(), clock.getAsLong(),
+                    periodMinutes());
         } catch (SQLException e) {
             if (!(e instanceof java.sql.SQLIntegrityConstraintViolationException)
                     && (e.getSQLState() == null || !e.getSQLState().startsWith("23"))) {
@@ -140,6 +155,61 @@ final class BankStore {
                     return AccountType.byKey(rs.getString(1)).map(t -> new AccountRef(t, owner)).orElse(null);
                 },
                 lastDuePeriod, limit)).thenApply(list -> list.stream().filter(java.util.Objects::nonNull).toList());
+    }
+
+    /** What a period-length conversion did ({@link #convertPeriods}). */
+    record Conversion(int rows, int skipped, Map<Integer, Integer> fromMinutes) {
+    }
+
+    /**
+     * BANK2: converts every state row written with another period length (M3.3 rows: 3 h) to this store's length with
+     * {@link InterestMath#convertPeriod}, in batches; each row is compared-and-set on its old values, so a row changed
+     * at the same moment is simply left for the next run. Runs once at start before the bank opens.
+     */
+    CompletableFuture<Conversion> convertPeriods(int batch) {
+        int minutes = periodMinutes();
+        return db.async(c -> {
+            int rows = 0;
+            int skipped = 0;
+            Map<Integer, Integer> from = new java.util.TreeMap<>();
+            while (true) {
+                record Row(String type, UUID owner, int minutes, InterestMath.State state) {
+                }
+                // Converted rows leave the result; rows left alone (skipped) stay in front, so they are stepped over.
+                List<Row> page = Sql.query(c, "SELECT owner_type, owner_id, period_minutes, " + STATE_COLUMNS
+                                + " FROM eco_bank_state WHERE period_minutes <> ? ORDER BY owner_type, owner_id LIMIT ? OFFSET ?",
+                        rs -> new Row(rs.getString("owner_type"), Sql.uuid(rs, "owner_id"), rs.getInt("period_minutes"), state(rs)),
+                        minutes, Math.max(1, batch), skipped);
+                if (page.isEmpty()) {
+                    break;
+                }
+                for (Row r : page) {
+                    if (r.minutes() <= 0) {
+                        skipped++;
+                        continue;
+                    }
+                    InterestMath.State s = r.state();
+                    InterestMath.State n = InterestMath.convertPeriod(s, r.minutes() * 60_000L, periodMillis);
+                    int done = Sql.update(c, "UPDATE eco_bank_state SET cycle_no = ?, settled_cycle = ?, period_minutes = ?, updated_at = ? "
+                                    + "WHERE owner_type = ? AND owner_id = ? AND period_minutes = ? AND cycle_no = ? AND settled_cycle = ?",
+                            n.cycle(), n.settledCycle(), minutes, clock.getAsLong(), r.type(), r.owner(), r.minutes(), s.cycle(),
+                            s.settledCycle());
+                    if (done == 1) {
+                        rows++;
+                        from.merge(r.minutes(), 1, Integer::sum);
+                    } else {
+                        skipped++;
+                    }
+                }
+            }
+            return new Conversion(rows, skipped, from);
+        });
+    }
+
+    /** Rows still written in another period length (0 after {@link #convertPeriods}). */
+    CompletableFuture<Long> unconverted() {
+        return db.async(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM eco_bank_state WHERE period_minutes <> ?", rs -> rs.getLong(1),
+                periodMinutes()).orElse(0L));
     }
 
     // ------------------------------------------------------------------------------------------------ withdraw limits

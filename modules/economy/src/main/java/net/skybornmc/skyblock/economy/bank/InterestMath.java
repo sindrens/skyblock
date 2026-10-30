@@ -7,9 +7,10 @@ import java.math.RoundingMode;
  * Interest rules (M3.3, balance sheet §6), pure and unit-tested.
  *
  * <ul>
- *   <li>Time is cut into fixed periods of {@code periodMillis} (3 h) counted from the epoch; period {@code p} is paid once
- *       it is over, with the idempotency key {@code bank_interest:<account>:<p>}, so a restart or a double run never pays
- *       twice.</li>
+ *   <li>Time is cut into fixed periods of {@code periodMillis} (8 h since BANK2, 3 h before) counted from the epoch; period
+ *       {@code p} is paid once it is over, with the idempotency key {@code bank_interest:<account>:<minutes>m:<p>}, so a
+ *       restart or a double run never pays twice. When the period length changes, {@link #convertPeriod} moves every state
+ *       to the new numbering without paying any stretch of time twice.</li>
  *   <li>Interest of a period is paid on the <b>lowest balance during that period</b> (deposits during the period don't
  *       count until the next one), capped per payout and never above the bank's free room.</li>
  *   <li>A withdrawal with a fee forfeits the period it happens in; withdrawals in the free minutes right after a payout
@@ -135,6 +136,43 @@ final class InterestMath {
             return lastDuePeriod - maxCatchUp;
         }
         return state.settledCycle();
+    }
+
+    /**
+     * The next payout times within {@code withinMillis} from {@code now} (epoch millis, the first one is the next payout),
+     * for the menu ("Paid at 01:00, 09:00, 17:00").
+     */
+    static java.util.List<Long> nextPayouts(long now, long periodMillis, long withinMillis) {
+        java.util.List<Long> out = new java.util.ArrayList<>();
+        long t = periodStart(period(now, periodMillis) + 1, periodMillis);
+        while (t <= now + withinMillis && out.size() < 24) {
+            out.add(t);
+            t += periodMillis;
+        }
+        return out;
+    }
+
+    /**
+     * Moves a state from periods of {@code oldMillis} to periods of {@code newMillis} (BANK2: 3 h → 8 h) so that no
+     * stretch of time is ever paid twice:
+     * <ul>
+     *   <li>Everything up to the end of the last settled old period was decided. The new period holding that moment is
+     *       settled too unless it starts exactly there (then it is still open and paid in full later). A partly covered
+     *       new period is therefore skipped once: the change can cost a part of one payout, never pay one twice.</li>
+     *   <li>The tracked period (lowest balance, forfeit) moves to the new period it started in. A state is only ever
+     *       open for the period right after the settled one, so the result never has an open period without a lowest
+     *       balance.</li>
+     * </ul>
+     */
+    static State convertPeriod(State state, long oldMillis, long newMillis) {
+        if (oldMillis == newMillis || oldMillis <= 0 || newMillis <= 0) {
+            return state;
+        }
+        long settledEnd = Math.multiplyExact(state.settledCycle() + 1, oldMillis);
+        long q = Math.floorDiv(settledEnd, newMillis);
+        long settled = q * newMillis == settledEnd ? q - 1 : q;
+        long cycle = Math.floorDiv(Math.multiplyExact(state.cycle(), oldMillis), newMillis);
+        return new State(state.tier(), cycle, state.minBalance(), state.forfeited(), settled);
     }
 
     /** {@code percent} % of {@code capacity} (daily withdraw limits); -1 = no limit; never negative otherwise. */

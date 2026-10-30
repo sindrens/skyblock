@@ -9,10 +9,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Interest math (M3.3): rates, caps, room, fee rounding, periods, the lowest-balance rule and the catch-up limit. */
+/**
+ * Interest math (M3.3, BANK2): rates, caps, room, fee rounding, 8 h periods, the lowest-balance rule, the catch-up limit
+ * and the 3 h → 8 h conversion.
+ */
 class InterestMathTest {
 
-    private static final long P = 3 * 3_600_000L;
+    private static final long HOUR = 3_600_000L;
+    private static final long P = 8 * HOUR;
+    private static final long OLD = 3 * HOUR;
+
+    @Test
+    void bank2DefaultsAreEightHoursWithHigherInterestPerDay() {
+        BankConfig c = new BankConfig();
+        assertEquals(8, c.periodHours);
+        assertEquals(P, c.periodMillis());
+        assertEquals(0.6, c.personalRatePercent);
+        assertEquals(1.0, c.islandRatePercent);
+        assertEquals(3, c.catchUpPeriods, "one day of payouts after downtime, as before (8 x 3 h)");
+        BankTiers t = BankTiers.parse(c);
+        // Per day at a full tier 1 bank: M3.3 8 x 150 = 1,200; BANK2 3 x 600 = 1,800 (+50%).
+        long perDay = 24 / c.periodHours * InterestMath.payout(100_000, c.personalRatePercent, t.tier(1).payoutCap(), Long.MAX_VALUE);
+        assertEquals(1_800, perDay);
+        assertEquals(30_000, 24 / c.periodHours * InterestMath.payout(1_000_000, c.islandRatePercent, t.islandCap(0), Long.MAX_VALUE),
+                "island level 0 full: 3 x 10k (M3.3: 8 x 2.5k = 20k)");
+    }
 
     @Test
     void payoutIsRateTimesBasisRoundedDownAndCapped() {
@@ -49,6 +70,10 @@ class InterestMathTest {
         assertEquals(0, InterestMath.period(P - 1, P));
         assertEquals(1, InterestMath.period(P, P));
         assertEquals(P - 1_000, InterestMath.untilNextPayout(1_000, P));
+        assertEquals(8 * HOUR - 1_000, InterestMath.untilNextPayout(1_000, P), "8 hours between payouts");
+        assertEquals(3, InterestMath.period(24 * HOUR, P), "payouts at 00:00, 08:00 and 16:00 UTC: 3 a day");
+        assertEquals(java.util.List.of(8 * HOUR, 16 * HOUR, 24 * HOUR), InterestMath.nextPayouts(HOUR, P, 24 * HOUR - 1));
+        assertEquals(java.util.List.of(8 * HOUR), InterestMath.nextPayouts(0, P, 8 * HOUR), "exactly now is not next");
         assertTrue(InterestMath.inFreeWindow(P + 9 * 60_000L, P, 10));
         assertFalse(InterestMath.inFreeWindow(P + 10 * 60_000L, P, 10));
         assertFalse(InterestMath.inFreeWindow(P, P, 0), "0 = always a fee");
@@ -94,9 +119,59 @@ class InterestMathTest {
     @Test
     void interestKeyIsPerAccountAndPeriod() {
         UUID id = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        assertEquals("bank_interest:bank:" + id + ":42", BankOps.interestKey(AccountRef.bank(id), 42));
-        assertEquals("bank_interest:island:" + id + ":42", BankOps.interestKey(AccountRef.island(id), 42));
-        assertTrue(BankOps.interestKey(AccountRef.island(id), Long.MAX_VALUE).length() <= 96, "fits the ledger key column");
+        assertEquals("bank_interest:bank:" + id + ":480m:42", BankOps.interestKey(AccountRef.bank(id), P, 42));
+        assertEquals("bank_interest:island:" + id + ":480m:42", BankOps.interestKey(AccountRef.island(id), P, 42));
+        assertEquals("bank_interest:bank:" + id + ":42", BankOps.interestKey(AccountRef.bank(id), OLD, 42),
+                "3 h keeps the M3.3 key, so a period paid before the update is still recognised");
+        assertTrue(BankOps.interestKey(AccountRef.island(id), 24 * HOUR, Long.MAX_VALUE).length() <= 96, "fits the ledger key column");
+    }
+
+    @Test
+    void convertingThreeHourStatesNeverPaysTimeTwice() {
+        // Settled up to 87 h (old period 28), open old period 29 = 87-90 h with a deposit in it. 87 h lies inside the
+        // 8 h period 10 (80-88 h): that one was partly paid, so it counts as settled; period 11 (88-96 h) is the next.
+        InterestMath.State open = new InterestMath.State(2, 29, 5_000, true, 28);
+        InterestMath.State c = InterestMath.convertPeriod(open, OLD, P);
+        assertEquals(10, c.settledCycle());
+        assertEquals(10, c.cycle(), "the tracked period moves to the 8 h period it started in");
+        assertEquals(5_000, c.minBalance());
+        assertTrue(c.forfeited());
+        assertEquals(2, c.tier());
+        assertTrue(InterestMath.settledUpTo(c, 11), "deposits and withdrawals work right away in period 11");
+        assertEquals(0, InterestMath.basis(c, 10, 9_000), "period 10 is never paid again");
+
+        // Aligned: settled up to exactly 24 h (old period 7): the 8 h period 3 (24-32 h) is still open and paid in full,
+        // on the lowest balance tracked since 24 h.
+        InterestMath.State aligned = InterestMath.convertPeriod(new InterestMath.State(1, 8, 700, false, 7), OLD, P);
+        assertEquals(2, aligned.settledCycle());
+        assertEquals(3, aligned.cycle());
+        assertEquals(700, InterestMath.basis(aligned, 3, 9_000));
+
+        // An idle account (nothing moved for a while) keeps paying on its balance.
+        InterestMath.State idle = InterestMath.convertPeriod(new InterestMath.State(1, 3, 100, false, 30), OLD, P);
+        assertEquals(11, idle.settledCycle(), "93 h is inside period 11 (88-96 h)");
+        assertTrue(idle.cycle() <= idle.settledCycle());
+        assertEquals(9_000, InterestMath.basis(idle, 12, 9_000));
+
+        // Same length or nonsense: unchanged; and back again (8 h -> 3 h) follows the same rule.
+        assertEquals(open, InterestMath.convertPeriod(open, P, P));
+        InterestMath.State back = InterestMath.convertPeriod(new InterestMath.State(1, 11, 0, false, 10), P, OLD);
+        assertEquals(29, back.settledCycle(), "settled to 88 h: the 3 h period 29 (87-90 h) was partly paid, so it is settled");
+        assertEquals(29, back.cycle());
+    }
+
+    @Test
+    void convertedStatesNeverPayAStretchOfTimeTwice() {
+        // Brute force over many settle points: the paid time before and after the change never overlaps.
+        for (long settled = 0; settled < 200; settled++) {
+            InterestMath.State s = new InterestMath.State(1, settled + 1, 0, false, settled);
+            InterestMath.State c = InterestMath.convertPeriod(s, OLD, P);
+            long paidUntil = (settled + 1) * OLD;
+            long nextPaidFrom = (c.settledCycle() + 1) * P;
+            assertTrue(nextPaidFrom >= paidUntil, "settled " + settled + ": new payouts start at or after " + paidUntil);
+            assertTrue(nextPaidFrom - paidUntil < P, "settled " + settled + ": at most part of one period is skipped");
+            assertTrue(c.cycle() <= c.settledCycle() + 1);
+        }
     }
 
     @Test

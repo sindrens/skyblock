@@ -334,6 +334,7 @@ sell:
 # <left>, <net>, <room> are colored money amounts. <rate>/<fee>/<percent> in lore are plain numbers (add the % yourself).
 bank:
   disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Banks are closed right now."
+  starting: "<prefix><c:error><sym:cross></c:error> <c:text>The bank is still starting up. Try again in a moment."
   busy: "<prefix><c:text>Your last bank action is still going through. One moment."
   try-again: "<prefix><c:error><sym:cross></c:error> <c:text>The bank changed at the same moment. Nothing moved, try again."
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use the bank while frozen. Wait for staff."
@@ -346,11 +347,11 @@ bank:
   below-min: "<prefix><c:error><sym:cross></c:error> <c:text>Too small. The smallest deposit is <deposit><c:text>, the smallest withdrawal <withdraw><c:text>."
   deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in your bank. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
   withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank, no fee. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
-  withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank <c:muted>(fee </c:muted><fee><c:muted>, this period's interest is lost)</c:muted><c:text>. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+  withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank <c:muted>(fee </c:muted><fee> <c:muted>at <percent>%, this period's interest is lost)</c:muted><c:text>. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
   island:
     deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in the island bank. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
     withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank, no fee. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
-    withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank <c:muted>(fee </c:muted><fee><c:muted>, this period's interest is lost)</c:muted><c:text>. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+    withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank <c:muted>(fee </c:muted><fee> <c:muted>at <percent>%, this period's interest is lost)</c:muted><c:text>. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
     notify-deposit: "<prefix><c:value><player></c:value> <c:text>put <amount> <c:text>in the island bank."
     notify-withdraw: "<prefix><c:value><player></c:value> <c:text>took <amount> <c:text>out of the island bank."
     no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Your island role can't do that. The Leader sets it in <c:value>/is permissions</c:value>."
@@ -392,7 +393,8 @@ bank:
     info:
       - "<c:text>Left: your own bank (this profile)."
       - "<c:text>Right: your island's shared bank."
-      - "<c:text>Both earn interest every few hours."
+      - "<c:text>Both earn interest every 8 hours."
+      - "<c:text>Island masteries lower the fee."
     personal:
       name: "<c:flame><sym:star></c:flame> <c:value>Personal bank"
       lore:
@@ -435,24 +437,35 @@ bank:
       about:
         - "<c:text>Take money out of the bank."
       lore:
-        - "<c:text>Take money out. Up to: <max>"
-        - "<c:text>Fee: <c:value><fee>%</c:value> <c:muted>and this period's"
-        - "<c:muted>interest is lost. Free for <free>"
-        - "<c:muted>after each payout."
+        - "<c:text>Take money out of the bank."
+        - ""
+        - "<bold><c:header>| Withdraw</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Up to: </c:text><max>"
+        - "<c:bar>| </c:bar><c:text>Fee: </c:text><c:value><fee>%</c:value><discount>"
+        - "<c:bar>| </c:bar><c:text>Free: </c:text><c:value><free></c:value> <c:muted>after each payout"
+        - ""
+        - "<c:muted>A fee also costs this"
+        - "<c:muted>period's interest."
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
     withdraw-free:
       name: "<c:value>Withdraw <c:success>(free now)"
       lore:
-        - "<c:text>Take money out. Up to: <max>"
-        - "<c:success>No fee right now: a payout just"
-        - "<c:success>happened."
+        - "<c:text>Take money out of the bank."
+        - ""
+        - "<bold><c:header>| Withdraw</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Up to: </c:text><max>"
+        - "<c:bar>| </c:bar><c:text>Fee: </c:text><c:success>none right now"
+        - "<c:bar>| </c:bar><c:muted>A payout just happened."
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
     withdraw-none:
       name: "<c:muted>Withdraw"
       lore:
         - "<c:text>The bank is empty."
+        - ""
+        - "<bold><c:header>| Withdraw</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Fee: </c:text><c:value><fee>%</c:value><discount>"
     withdraw-limit:
       name: "<c:muted>Withdraw"
       lore:
@@ -505,12 +518,20 @@ bank:
           - "<c:text>Limit: <c:value><percent>%</c:value> <c:text>of the bank's"
           - "<c:text>capacity per day."
           - "<c:muted>Resets at midnight."
+    fee:
+      # <off>: percent points the island's masteries take off, <level>: the bank-fee mastery level.
+      discount: " <c:success>(-<off>% mastery)</c:success>"
+      # Shown while island masteries can still lower the fee; <best>: the lowest fee.
+      lowerable: " <c:muted>(masteries: down to <best>%)</c:muted>"
     interest:
       name: "<c:value>Interest"
       lore:
-        - "<c:text>Rate: <c:value><rate>%</c:value> <c:text>every <c:value><period>"
-        - "<c:text>Most per payout: <cap>"
-        - "<c:text>Next payout in: <c:value><next>"
+        - "<bold><c:header>| Interest</c:header></bold> <c:muted>every <period>"
+        - "<c:bar>| </c:bar><c:text>Rate: </c:text><c:value><rate>%</c:value> <c:muted>per payout"
+        - "<c:bar>| </c:bar><c:text>Most per payout: </c:text><cap>"
+        - "<c:bar>| </c:bar><c:text>Next payout in: </c:text><c:value><next>"
+        - "<c:bar>| </c:bar><c:text>Paid at: </c:text><c:value><times>"
+        - ""
         - "<c:muted>Paid on the lowest balance of"
         - "<c:muted>each period, also offline."
         - ""

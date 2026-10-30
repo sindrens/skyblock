@@ -61,7 +61,10 @@ public final class BankFeature implements Listener, BankService {
     private final EconomyService economy;
     final BankConfig config = new BankConfig();
     private volatile BankTiers tiers;
+    private volatile WithdrawFee fees;
     private BankOps ops;
+    /** False until bank states of an older period length are converted (BANK2); the bank stays closed meanwhile. */
+    private final AtomicBoolean ready = new AtomicBoolean();
     private final List<Scheduler.Task> tasks = new ArrayList<>();
     /** Online player → when their online time was last counted for the activity rule. */
     private final Map<UUID, Long> counted = new ConcurrentHashMap<>();
@@ -80,7 +83,7 @@ public final class BankFeature implements Listener, BankService {
 
     public void enable() {
         loadConfig();
-        BankStore store = new BankStore(core.database(), System::currentTimeMillis);
+        BankStore store = new BankStore(core.database(), System::currentTimeMillis, config.periodMillis());
         ops = new BankOps(economy, store, () -> config, () -> tiers, this::profiles, System::currentTimeMillis, BankFeature::today,
                 core.plugin().getLogger());
         core.services().register(EconomyModule.ID, BankService.class, this);
@@ -95,6 +98,7 @@ public final class BankFeature implements Listener, BankService {
         for (Player p : Bukkit.getOnlinePlayers()) {
             counted.put(p.getUniqueId(), now);
         }
+        convertPeriods(store, 1);
         long flush = config.activityFlushMinutes * 1_200L;
         tasks.add(core.scheduler().repeat("bank:activity", flush, flush, this::countActivity));
         long sweep = config.sweepMinutes * 1_200L;
@@ -109,15 +113,82 @@ public final class BankFeature implements Listener, BankService {
 
     public void reload() {
         loadConfig();
+        if (ops != null && config.periodMillis() != ops.periodMillis()) {
+            core.plugin().getLogger().warning("bank.yml: interest.period-hours " + config.periodHours + " takes effect after a "
+                    + "restart (still paying every " + ops.periodMillis() / 3_600_000d + " h)");
+        }
     }
 
     private void loadConfig() {
+        upgradeConfigFile();
         core.configs().load(config);
         BankTiers parsed = BankTiers.parse(config);
         for (String problem : parsed.problems()) {
             core.plugin().getLogger().warning("bank.yml: " + problem + " (the built-in table is used instead)");
         }
         tiers = parsed;
+        WithdrawFee fee = WithdrawFee.of(config);
+        for (String problem : fee.problems()) {
+            core.plugin().getLogger().warning("bank.yml: " + problem);
+        }
+        fees = fee;
+    }
+
+    /** BANK2 value upgrade of an existing bank.yml ({@link BankConfig#upgradeValues}); never touches a broken file. */
+    private void upgradeConfigFile() {
+        java.io.File file = new java.io.File(core.plugin().getDataFolder(), config.fileName());
+        if (!file.isFile()) {
+            return;
+        }
+        org.bukkit.configuration.file.YamlConfiguration yaml = new org.bukkit.configuration.file.YamlConfiguration();
+        try {
+            yaml.load(file);
+            List<String> changed = BankConfig.upgradeValues(yaml);
+            if (!changed.isEmpty()) {
+                yaml.save(file);
+                core.plugin().getLogger().info(config.fileName() + ": owner #169 defaults applied (interest every 8 h, higher "
+                        + "rates and caps): " + String.join(", ", changed));
+                core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.ECONOMY, "bank_config_upgrade",
+                        Actor.system("bank"), Map.of("keys", String.join(",", changed), "version", 2));
+            }
+        } catch (java.io.IOException | org.bukkit.configuration.InvalidConfigurationException e) {
+            // The config manager reports broken files and keeps every value; nothing to do here.
+        }
+    }
+
+    /**
+     * BANK2: converts bank states of another period length (M3.3: 3 h) before the bank opens. The bank stays closed
+     * until every row is converted (one retry), so no payout is ever computed with the wrong period numbers.
+     */
+    private void convertPeriods(BankStore store, int attempt) {
+        store.convertPeriods(500).thenCompose(result -> store.unconverted().thenApply(left -> {
+            if (result.rows() > 0) {
+                core.plugin().getLogger().info("Bank: " + result.rows() + " bank state(s) converted to "
+                        + store.periodMillis() / 3_600_000d + " h interest periods " + result.fromMinutes());
+                core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.ECONOMY, "bank_period_convert",
+                        Actor.system("bank"), Map.of("rows", result.rows(), "to_minutes", store.periodMinutes(),
+                                "from_minutes", result.fromMinutes().toString()));
+            }
+            return left;
+        })).whenComplete((left, error) -> {
+            if (error == null && left == 0) {
+                ready.set(true);
+                return;
+            }
+            if (attempt < 2) {
+                core.plugin().getLogger().warning("Bank: converting interest periods is not finished ("
+                        + (error != null ? error.getMessage() : left + " left") + "), trying again");
+                convertPeriods(store, attempt + 1);
+                return;
+            }
+            core.plugin().getLogger().log(Level.SEVERE, "Bank: interest periods could not be converted (" + left
+                    + " left); banks stay closed until the next restart", error);
+        });
+    }
+
+    /** True once the bank may be used (enabled and period conversion done). */
+    boolean ready() {
+        return ready.get();
     }
 
     public void disable() {
@@ -229,7 +300,7 @@ public final class BankFeature implements Listener, BankService {
 
     /** Async: settles accounts with due periods in one small batch, one after another (never floods the pool). */
     private void sweep() {
-        if (!config.enabled || ops == null || !sweeping.compareAndSet(false, true)) {
+        if (!config.enabled || ops == null || !ready.get() || !sweeping.compareAndSet(false, true)) {
             return;
         }
         ops.store().due(ops.currentPeriod() - 1, config.sweepBatch).thenCompose(accounts -> {
@@ -274,6 +345,9 @@ public final class BankFeature implements Listener, BankService {
 
     /** Main thread: settles the player's personal bank and their island's bank. */
     private void settleFor(Player player) {
+        if (!ready.get()) {
+            return;
+        }
         UUID key = profiles().profileKey(player);
         settleAccount(AccountRef.bank(key));
         islands().flatMap(i -> i.islandOfProfile(key)).ifPresent(info -> settleAccount(AccountRef.island(info.id())));
@@ -326,6 +400,32 @@ public final class BankFeature implements Listener, BankService {
                 config.limitPercent(role));
     }
 
+    // ================================================================== withdrawal fee (BANK2)
+
+    /** The fee steps from bank.yml. */
+    WithdrawFee fees() {
+        return fees;
+    }
+
+    /**
+     * The bank-fee mastery level that applies to a withdrawal from {@code bank} by the profile {@code profileKey} (main
+     * thread): an island bank uses its island, a personal bank the island of the profile (0 without one).
+     */
+    int feeMasteryLevel(UUID profileKey, AccountRef bank) {
+        Optional<IslandService> service = islands();
+        if (service.isEmpty()) {
+            return 0;
+        }
+        IslandService is = service.get();
+        UUID islandId = bank.isIsland() ? bank.owner() : is.islandOfProfile(profileKey).map(IslandService.IslandInfo::id).orElse(null);
+        return islandId == null ? 0 : Math.max(0, is.bankFeeMasteryLevel(islandId));
+    }
+
+    /** The fee percent for a withdrawal from {@code bank} by {@code profileKey} right now, masteries included (main thread). */
+    double feePercent(UUID profileKey, AccountRef bank) {
+        return fees.percent(feeMasteryLevel(profileKey, bank));
+    }
+
     // ================================================================== views (what the menu shows)
 
     /** A bank as the menu shows it, read right after settling it. */
@@ -373,6 +473,11 @@ public final class BankFeature implements Listener, BankService {
             core.sounds().play(player, "error");
             return;
         }
+        if (!ready.get()) {
+            msg.send(player, "bank.starting");
+            core.sounds().play(player, "error");
+            return;
+        }
         BankMenu menu = new BankMenu(this);
         if (parent != null) {
             menu.parent(parent);
@@ -399,6 +504,10 @@ public final class BankFeature implements Listener, BankService {
 
     /** Checks done before every action: still the same profile, not switching, not frozen, not busy. */
     boolean canAct(Player player, UUID profileKey) {
+        if (!ready.get()) {
+            fail(player, "bank.starting");
+            return false;
+        }
         if (!profiles().profileKey(player).equals(profileKey) || profiles().isSwitching(player.getUniqueId())) {
             fail(player, "bank.profile-changed");
             return false;
@@ -448,14 +557,16 @@ public final class BankFeature implements Listener, BankService {
         if (!canAct(player, profileKey) || !stillAllowed(player, profileKey, bank, IslandService.PERM_BANK_WITHDRAW)) {
             return;
         }
+        double feePercent = feePercent(profileKey, bank);
         busy.add(player.getUniqueId());
-        ops.withdraw(profileKey, bank, amount, terms, limit, Actor.player(player)).whenCompleteAsync((out, error) -> {
+        ops.withdraw(profileKey, bank, amount, terms, limit, feePercent, Actor.player(player)).whenCompleteAsync((out, error) -> {
             busy.remove(player.getUniqueId());
             BankOps.Outcome o = error != null ? BankOps.Outcome.of(BankOps.Status.ERROR) : out;
             if (o.ok()) {
                 String key = (bank.isBank() ? "bank." : "bank.island.") + (o.fee() > 0 ? "withdrawn-fee" : "withdrawn");
                 msg.send(player, key, amountTag(player, "amount", o.amount() - o.fee()), amountTag(player, "fee", o.fee()),
-                        amountTag(player, "bank", o.bank()), amountTag(player, "balance", o.purse()));
+                        amountTag(player, "bank", o.bank()), amountTag(player, "balance", o.purse()),
+                        Msg.p("percent", BankMenu.percent(feePercent)));
                 core.sounds().play(player, "money");
                 if (bank.isIsland()) {
                     notifyIsland(player, bank, "bank.island.notify-withdraw", o.amount());
