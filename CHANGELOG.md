@@ -119,6 +119,8 @@
 - Depths protection and region flags (DEPTHSPROT): Depths (outside fields), warzone and spawn protected; arrival/exit safe zones; no ender pearls or wind charges in combat zones; Forge Quarter workstations are decoration; new builds just set a region kind.
 - Plan: Phase 5 progression (docs/phases/PHASE-5-PROGRESSION.md): pillars, dynamic island level from 8 sources, task engine, upgrades + masteries, paid sizes above 9x9, leaderboards; 37 owner questions.
 - Plan: tutorial and starter chest (docs/plans/TUTORIAL.md): island portal first, 11 steps (~2:50), locks per step, Java+Bedrock guides, custom starter chest; 32 owner questions.
+- ANS3: /ignore also blocks tpa, trades and island invites and can hide chat; creative only for builders/admins in spawn and the Depths; /give, /i and creative items are unsellable staff items; god/fly/heal only in staff or build mode; admins alerted to big staff transfers; /ec and /craft blocked in the warzone, boss arena and 10 s after combat; a banned leader's island is closed to visitors.
+- Plan: Phase 10 rewards (docs/phases/PHASE-10-REWARDS.md): 7 crates with pity, boosters, voting + vote party, 30-day calendar, quests, battle pass, collection log, Black Market; 43 owner questions.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.

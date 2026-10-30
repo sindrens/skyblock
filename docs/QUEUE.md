@@ -43,7 +43,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PLAN10 | Plan Phase 10 (crates/keys, voting, daily rewards per profile, quests, battle pass, collection log, Black Market, tutorial) + questions | — | docs | ✅ docs/phases/PHASE-10-REWARDS.md |
 | PLAN7 | Plan Phase 7 (island production, Island Fuel, collectors, outposts) + questions; unblocks E6 | — | docs | 🔄 |
 | PLAN8 / PLAN9 / PLAN11 / PLAN12 / PLAN13 | Plans for PvE, conquest/events, store/ranks/Discord, seasons, launch prep | — | docs | ⬜ |
-| ANS3 | Skipped from ANS2: /ignore blocks tpa/trade/invites + hides chat (shared ignore service), staff powers (creative only builders/admins in spawn/Depths/builder areas, staff item tag unsellable, god/fly/heal only in staff/build mode, staff play normally with transfers flagged), /ec and /craft blocked in warzone/boss/10 s after combat, banned player's island locked for visitors | owner round 2 | several | 🔄 |
+| GUIDE2 | TEST_GUIDE refresh for everything built today + new open questions onto the Decisions page | — | docs + tools/owner_sheet | 🔄 |
+| ANS3 | Skipped from ANS2: /ignore blocks tpa/trade/invites + hides chat (shared ignore service), staff powers (creative only builders/admins in spawn/Depths/builder areas, staff item tag unsellable, god/fly/heal only in staff/build mode, staff play normally with transfers flagged), /ec and /craft blocked in warzone/boss/10 s after combat, banned player's island locked for visitors | owner round 2 | several | ✅ |
 | TUT1 | Build the tutorial TU1-TU4 from docs/plans/TUTORIAL.md with the suggested answers (portal hook, steps engine, guides, locks via TutorialGate, starter chest) | PLANTUT, PORTALS | new module tutorial | 🔄 |
 | ANS2 | Owner answers round 2 (teleports instant except combat, visiting, chat filter EN, /trash admin, ban screen, silent -s, collection bin, reset backups) | owner 30 Oct | several | ✅ |
 | QFIX | Questions reworked from the owner's answers (Decisions page v2) | owner | docs | ✅ |

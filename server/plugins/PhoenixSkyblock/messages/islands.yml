@@ -1021,6 +1021,9 @@ visit:
   join-own-profile: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>belongs to your other profile, so you were sent to spawn."
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>belongs to your other profile. You can't visit it from this one."
   join-locked: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>is locked, so you were sent to spawn."
+  # Owner answer 522: the island's leader is banned; the island is closed to visitors while the team keeps playing.
+  closed: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>is closed to visitors right now."
+  closed-sent-off: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>is closed to visitors right now, so you were sent to spawn."
   welcome: "<c:ember><sym:bullet></c:ember> <c:text>Visiting <c:value><island></c:value>"
 
 lock:

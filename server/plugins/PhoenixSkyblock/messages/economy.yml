@@ -235,6 +235,7 @@ sell:
   reason:
     empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell."
     dupe: "<prefix><c:error><sym:cross></c:error> <item> <c:text>is flagged as a copy and can't be sold. Ask staff."
+    staff-item: "<prefix><c:error><sym:cross></c:error> <item> <c:text>was made by staff and can't be sold."
     unique: "<prefix><c:error><sym:cross></c:error> <item> <c:text>is a unique item and can't be sold. Try the auction house."
     blocked: "<prefix><c:error><sym:cross></c:error> <item> <c:text>can't be sold."
     custom-type: "<prefix><c:error><sym:cross></c:error> <item> <c:text>can't be sold. Try the auction house."
@@ -659,6 +660,9 @@ watch:
     balance-mismatch-account:
       name: "Balance jump"
       text: "<c:text>An island or bank account's <currency> <c:text>changed by <amount> <c:text>without a transaction <c:muted>(was <expected>)"
+    staff-transfer:
+      name: "Staff transfer"
+      text: "<c:value><player></c:value> <c:text>moved <amount> <c:text>to <c:value><other></c:value> <c:muted>(a staff account; alert from <expected>)"
     sink-ratio:
       name: "Inflation"
       text: "<c:text>Only <c:value><ratio>%</c:value> <c:text>of new money was removed over the last 14 days, <c:value><hits></c:value> <c:text>days below <line>% <c:muted>(see /eco admin)"

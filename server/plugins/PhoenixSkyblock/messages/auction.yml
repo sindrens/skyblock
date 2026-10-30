@@ -21,6 +21,7 @@ rules:
 items:
   no-item: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell."
   dupe-flagged: "<prefix><c:error><sym:cross></c:error> <c:text>This item is flagged as a possible dupe. Ask staff."
+  staff-item: "<prefix><c:error><sym:cross></c:error> <c:text>Items made by staff can't be listed."
   starter: "<prefix><c:error><sym:cross></c:error> <c:text>Starter kit items can't be sold here. You can still trade them."
   note: "<prefix><c:error><sym:cross></c:error> <c:text>Money notes can't be sold here."
   blocked: "<prefix><c:error><sym:cross></c:error> <c:text>This item can't be sold here."

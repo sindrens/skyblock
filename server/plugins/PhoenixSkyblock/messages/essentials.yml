@@ -82,6 +82,26 @@ gamemode:
   invalid: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a game mode. Use <c:value>c</c:value>, <c:value>s</c:value>, <c:value>sp</c:value> or <c:value>a</c:value>."
   no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use <c:value><mode></c:value> mode."
 
+# Owner answer 331: creative only for builders and admins, only in the creative worlds (essentials.yml staff-powers.*).
+# <worlds> = staff-powers.creative-worlds, <player> = the target.
+creative:
+  not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>Creative mode is for builders and admins. Use <c:value>/gm sp</c:value> to look around."
+  wrong-place: "<prefix><c:error><sym:cross></c:error> <c:text>Creative mode only works in <c:value><worlds></c:value>."
+  other-not-allowed: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't use creative mode (builders and admins only)."
+  other-wrong-place: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is not in a creative area (<c:value><worlds></c:value>)."
+  left-area: "<prefix><c:warning><sym:dot></c:warning> <c:text>Creative mode only works in <c:value><worlds></c:value>, so you're in survival now."
+  items-warning: "<prefix><c:warning><sym:dot></c:warning> <c:text>Items you take or move in creative become staff items: they can't be sold, traded or auctioned."
+
+# Owner answers 333/334: god mode, fly and heal only in staff mode or build mode. <power>, <player>, <powers>.
+powers:
+  need-mode: "<prefix><c:error><sym:cross></c:error> <c:text>Use <c:value><power></c:value> in staff mode (<c:value>/staffmode</c:value>) or build mode (<c:value>/build</c:value>)."
+  target-needs-mode: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>must be in staff mode or build mode for <c:value><power></c:value>."
+  removed: "<prefix><c:warning><sym:dot></c:warning> <c:text>Staff and build mode are off, so <c:value><powers></c:value> <c:text>turned off."
+  names:
+    god: "god mode"
+    fly: "fly"
+    heal: "heal"
+
 fly:
   enabled: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>on</c:value>."
   disabled: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>off</c:value>."
