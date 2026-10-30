@@ -1,0 +1,18 @@
+# Permissions of the tools module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/tools.txt. Commands: docs/commands/tools.md.
+skyblock.tools.menu:
+  description: Open the tool menu (/tool or shift + right-click a custom tool)
+  default: true
+skyblock.tools.forge:
+  description: Open the Forge (/forge) to upgrade tools, craft blueprints and claim the starter kit
+  default: true
+skyblock.tools.admin.give:
+  description: Staff /tool give <player> <tool> [tier]
+  default: op
+skyblock.tools.admin.blueprint:
+  description: Staff /blueprint give <player> <blueprint>
+  default: op
+skyblock.tools.admin.skin:
+  description: Staff /skin give <player> <skin> (adds to the skin collection)
+  default: op

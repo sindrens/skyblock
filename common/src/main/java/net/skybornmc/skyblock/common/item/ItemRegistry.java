@@ -124,7 +124,7 @@ public final class ItemRegistry {
                 .description(def.description());
         def.renderer().lore(stack, def, lore);
         def.actions().forEach(a -> lore.action(a.input(), a.text()));
-        lore.footer(def.rarity(), def.type());
+        lore.footer(java.util.Objects.requireNonNullElse(def.renderer().rarity(stack, def), def.rarity()), def.type());
 
         Audience viewer = Audience.empty(); // items are shared between viewers: hex colors, Geyser rounds for Bedrock
         Component name = messages.parse(viewer, def.renderer().name(stack, def))

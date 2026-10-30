@@ -113,6 +113,38 @@ public interface IslandService {
      */
     CompletableFuture<Boolean> setSize(UUID islandId, int sizeChunks, Actor actor);
 
+    // ------------------------------------------------------------------ upgrade hooks read by the stacking module
+
+    /**
+     * Upgrade hook ("Spawner Stack Limit" mastery): the most spawners one stacked spawner block may hold on this island.
+     * Empty = the start value from {@code stacking.yml} ({@code spawners.stack-start}, 8); the stacking module clamps any
+     * value to {@code spawners.stack-max} (512). Called on the main thread when a spawner is placed or added to.
+     */
+    default java.util.OptionalInt spawnerStackLimit(UUID islandId) {
+        return java.util.OptionalInt.empty();
+    }
+
+    /** Upgrade hook ("Spawner Rate" mastery): multiplier on every spawner's output on this island (1.0 = no upgrade). */
+    default double spawnerRateMultiplier(UUID islandId) {
+        return 1.0;
+    }
+
+    /**
+     * Island Fuel hook: true while the island has fuel. Spawners then also run while no member is online (otherwise
+     * only with a player within the activation range). False until Island Fuel exists.
+     */
+    default boolean hasIslandFuel(UUID islandId) {
+        return false;
+    }
+
+    /**
+     * Upgrade hook: extra percent on the island entity limits of {@code stacking.yml} (armor stands, item frames,
+     * minecarts, boats, villagers, displays). 0 = no upgrade; the owner's upgrade gives +50.
+     */
+    default int entityLimitBonusPercent(UUID islandId) {
+        return 0;
+    }
+
     // ------------------------------------------------------------------ members (M2.3)
 
     /**

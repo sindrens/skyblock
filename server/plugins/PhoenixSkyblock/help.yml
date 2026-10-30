@@ -20,7 +20,7 @@ categories:
     slot: 12
     name: "<c:flame><bold>Islands"
     lore: ["<c:text>Your own island in the sky:", "<c:text>build, grow and team up."]
-    topics: [island, profiles]
+    topics: [island, profiles, spawners]
   depths:
     icon: iron_pickaxe
     status: active
@@ -44,11 +44,11 @@ categories:
     topics: [skills]
   gear:
     icon: smithing_table
-    status: coming-soon
+    status: active
     slot: 20
     name: "<c:flame><bold>Gear"
     lore: ["<c:text>Tools, the Forge, sets,", "<c:text>enchants and blueprints."]
-    topics: []
+    topics: [tools]
   combat-events:
     icon: clock
     status: coming-soon
@@ -219,6 +219,50 @@ topics:
           - "<c:text>open one to teleport there."
           - "<c:text>Locked ones show your progress."
           - "<c:text>Stand still for the countdown."
+
+  tools:
+    icon: iron_pickaxe
+    aliases: [tool, forge, blueprint, blueprints, skin, skins, starter, prestige]
+    name: "<c:flame>Tools and the Forge"
+    summary: ["<c:text>Custom tools that level up,", "<c:text>the Forge, blueprints and skins."]
+    take-me-there: "forge"
+    commands: [Tools]
+    pages:
+      - title: "<c:value>Starter kit"
+        lines:
+          - "<c:text>Open <c:value>/forge</c:value> <c:text>and click Starter kit"
+          - "<c:text>for a free pickaxe, axe, hoe,"
+          - "<c:text>sword and rod. Lost one? Claim"
+          - "<c:text>the missing ones every 24 h."
+      - title: "<c:value>Living tools"
+        lines:
+          - "<c:text>Custom tools never break and"
+          - "<c:text>level up as you use them (1-50)."
+          - "<c:text>Levels give speed and open perk"
+          - "<c:text>slots at Lv 5, 15, 30 and 45."
+      - title: "<c:value>The Forge"
+        lines:
+          - "<c:text>Forge the next tier with money"
+          - "<c:text>and Depths materials. Your level,"
+          - "<c:text>perks and stats stay. Tiers follow"
+          - "<c:text>the Depths tiers of each wing."
+      - title: "<c:value>Prestige"
+        lines:
+          - "<c:text>At Lv 50 a tool can prestige:"
+          - "<c:text>back to Lv 1, keeps perks and"
+          - "<c:text>stats, opens slot 5 and gets a"
+          - "<c:text>star. Once per tool per season."
+      - title: "<c:value>Blueprints and skins"
+        lines:
+          - "<c:text>Rare blueprints drop in The Depths."
+          - "<c:text>Craft them at the Forge for a"
+          - "<c:text>special tool. Skins change the"
+          - "<c:text>look and stay with you forever."
+      - title: "<c:value>Tips"
+        lines:
+          - "<c:text>Shift + right-click a tool (or"
+          - "<c:value>/tool</c:value><c:text>) for its menu. Custom tools"
+          - "<c:text>stay with you when you die."
 
   skills:
     icon: experience_bottle
@@ -485,6 +529,44 @@ topics:
           - "<c:text>With island fly, double-tap jump on an"
           - "<c:text>island to fly. It stops at the border and"
           - "<c:text>you land without damage.</c:text>"
+  spawners:
+    icon: spawner
+    aliases: [spawner, stacking, stacks, stacked]
+    name: "<c:flame>Spawners and stacking"
+    summary: ["<c:text>Mobs, drops and spawners stack", "<c:text>on islands to keep things fast."]
+    take-me-there: "is"
+    commands: []
+    pages:
+      - title: "<c:value>Stacked mobs"
+        lines:
+          - "<c:text>Mobs of the same kind join one stack,"
+          - "<c:text>shown as <c:value>Zombie</c:value> <c:ember>x45</c:ember><c:text>. A hit kills one;"
+          - "<c:text>falls, lava and the void kill the whole"
+          - "<c:text>stack, with all drops and XP."
+      - title: "<c:value>Breeding"
+        lines:
+          - "<c:text>Feed a stack: each food item breeds"
+          - "<c:text>one pair and the babies join the stack."
+          - "<c:text>Named, tamed or leashed mobs and"
+          - "<c:text>villagers never stack."
+      - title: "<c:value>Dropped items"
+        lines:
+          - "<c:text>Drops merge into one item with a count,"
+          - "<c:text>like <c:value>Diamond</c:value> <c:ember>x1,234</c:ember><c:text>. You pick up what fits;"
+          - "<c:text>hoppers take 64 at a time. Drops vanish"
+          - "<c:text>after about 10 minutes."
+      - title: "<c:value>Spawners"
+        lines:
+          - "<c:text>Place a spawner, then right-click it with"
+          - "<c:text>more of the same kind to stack them."
+          - "<c:text>Sneak-right-click opens its menu. Each"
+          - "<c:text>spawner in the stack adds full speed."
+      - title: "<c:value>Breaking and limits"
+        lines:
+          - "<c:text>Breaking takes one spawner; sneak-break"
+          - "<c:text>takes all. No silk touch needed. A"
+          - "<c:text>spawner runs while you are within 16"
+          - "<c:text>blocks, and light is not needed."
   visiting:
     icon: ender_pearl
     aliases: [visit, warp, warps, lock, unlock, ban, unban, expel, rate, like, setwarp, delwarp]

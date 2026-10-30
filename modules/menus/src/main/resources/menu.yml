@@ -34,7 +34,8 @@ entries:
   vote:         {slot: 33, icon: paper,            command: "vote",        status: auto}
   discord:      {slot: 34, icon: bell,             command: "discord",     status: auto}
   # Row 5: getting around
-  profiles:     {slot: 37, icon: armor_stand,      command: "profiles",    status: auto}
+  forge:        {slot: 37, icon: smithing_table,   command: "forge",       status: auto}
+  profiles:     {slot: 43, icon: armor_stand,      command: "profiles",    status: auto}
   spawn:        {slot: 38, icon: compass,          command: "spawn",       status: auto}
   rules:        {slot: 39, icon: lectern,          command: "rules",       status: auto}
   settings:     {slot: 40, icon: comparator,       command: "settings",    status: active}

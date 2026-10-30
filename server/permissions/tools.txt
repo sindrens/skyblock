@@ -1,0 +1,8 @@
+# LuckPerms grants for the tools module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/tools/src/main/resources/permissions/tools.yml. One console command per line; # = comment.
+
+# /tool and /forge are for everyone (plugin default: true); nothing to grant.
+# Staff item commands (approved list): admin + owner (owner inherits admin).
+lp group admin permission set skyblock.tools.admin.give true
+lp group admin permission set skyblock.tools.admin.blueprint true
+lp group admin permission set skyblock.tools.admin.skin true

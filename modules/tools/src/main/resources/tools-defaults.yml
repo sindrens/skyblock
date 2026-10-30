@@ -1,0 +1,121 @@
+# Default catalog of the tools module (M4.2). Copied into tools.yml when a section is missing; edit tools.yml, not this.
+# Names and descriptions are in messages/tools.yml (tier.<kind>.<id>, blueprint.<id>, ability.<id>, skin.<id>).
+#
+# tiers.<kind>: list in tier order (first = tier 1 = the starter kit piece, free from the Quartermaster).
+#   material:     vanilla item the tool is made of (sets which blocks it can harvest)
+#   model:        item model shown on Java (e.g. minecraft:golden_pickaxe); empty = the material's look
+#   efficiency:   flat mining speed added on top of the material (attribute mining_efficiency)
+#   damage:       attack damage added (swords; player base is 1), attack-speed: attack speed change (swords: -2.4)
+#   rarity:       footer rarity (common, uncommon, rare, epic, legendary, mythic)
+#   skill-level:  level of the tool's skill needed to forge it (= the Depths tier unlock)
+#   money:        Forge price ($), materials: item id -> amount (vanilla ids or custom item ids; from the inventory
+#                 until the satchel exists). Prices follow docs/ECONOMY_BALANCE.md §5.1: $15k x 2.35^(t-2) and
+#                 256 x 1.35^(t-2) drops of the previous tier.
+tiers:
+  pickaxe:
+    - {id: coal,      material: stone_pickaxe,     efficiency: 0,   rarity: common,    skill-level: 0}
+    - {id: copper,    material: copper_pickaxe,    efficiency: 0,   rarity: common,    skill-level: 5,  money: 15000,    materials: {coal: 256}}
+    - {id: iron,      material: iron_pickaxe,      efficiency: 0,   rarity: common,    skill-level: 10, money: 35200,    materials: {raw_copper: 346}}
+    - {id: gold,      material: iron_pickaxe,      efficiency: 1,   rarity: uncommon,  skill-level: 15, money: 82800,    materials: {raw_iron: 467},        model: "minecraft:golden_pickaxe"}
+    - {id: redstone,  material: iron_pickaxe,      efficiency: 2,   rarity: uncommon,  skill-level: 20, money: 194700,   materials: {raw_gold: 630}}
+    - {id: lapis,     material: iron_pickaxe,      efficiency: 3,   rarity: uncommon,  skill-level: 25, money: 457500,   materials: {redstone: 850}}
+    - {id: diamond,   material: diamond_pickaxe,   efficiency: 2,   rarity: rare,      skill-level: 30, money: 1075100,  materials: {lapis_lazuli: 1148}}
+    - {id: emerald,   material: diamond_pickaxe,   efficiency: 3,   rarity: rare,      skill-level: 35, money: 2526400,  materials: {diamond: 1550}}
+    - {id: amethyst,  material: diamond_pickaxe,   efficiency: 4,   rarity: rare,      skill-level: 42, money: 5937000,  materials: {emerald: 2092}}
+    - {id: quartz,    material: diamond_pickaxe,   efficiency: 6,   rarity: epic,      skill-level: 50, money: 13952000, materials: {amethyst_shard: 2824}}
+    - {id: netherite, material: netherite_pickaxe, efficiency: 60,  rarity: epic,      skill-level: 58, money: 32787000, materials: {quartz: 3813}}
+    - {id: voidstone, material: netherite_pickaxe, efficiency: 120, rarity: legendary, skill-level: 66, money: 77049500, materials: {netherite_scrap: 5147}}
+  axe:
+    - {id: oak,      material: wooden_axe,    efficiency: 1, rarity: common,   skill-level: 0}
+    - {id: birch,    material: stone_axe,     efficiency: 0, rarity: common,   skill-level: 5,  money: 15000,    materials: {oak_log: 256}}
+    - {id: spruce,   material: copper_axe,    efficiency: 0, rarity: common,   skill-level: 10, money: 35200,    materials: {birch_log: 346}}
+    - {id: jungle,   material: iron_axe,      efficiency: 0, rarity: uncommon, skill-level: 15, money: 82800,    materials: {spruce_log: 467}}
+    - {id: acacia,   material: iron_axe,      efficiency: 1, rarity: uncommon, skill-level: 20, money: 194700,   materials: {jungle_log: 630}}
+    - {id: dark_oak, material: iron_axe,      efficiency: 2, rarity: uncommon, skill-level: 25, money: 457500,   materials: {acacia_log: 850}}
+    - {id: mangrove, material: diamond_axe,   efficiency: 1, rarity: rare,     skill-level: 30, money: 1075100,  materials: {dark_oak_log: 1148}}
+    - {id: cherry,   material: diamond_axe,   efficiency: 2, rarity: rare,     skill-level: 35, money: 2526400,  materials: {mangrove_log: 1550}}
+    - {id: pale_oak, material: diamond_axe,   efficiency: 3, rarity: rare,     skill-level: 42, money: 5937000,  materials: {cherry_log: 2092}}
+    - {id: crimson,  material: netherite_axe, efficiency: 3, rarity: epic,     skill-level: 50, money: 13952000, materials: {pale_oak_log: 2824}}
+    - {id: warped,   material: netherite_axe, efficiency: 4, rarity: epic,     skill-level: 58, money: 32787000, materials: {crimson_stem: 3813}}
+  sword:
+    - {id: grave,   material: stone_sword,     damage: 4,   attack-speed: -2.4, rarity: common,    skill-level: 0}
+    - {id: bone,    material: copper_sword,    damage: 4.5, attack-speed: -2.4, rarity: common,    skill-level: 6,  money: 15000,    materials: {rotten_flesh: 64}}
+    - {id: venom,   material: iron_sword,      damage: 5,   attack-speed: -2.4, rarity: common,    skill-level: 12, money: 35200,    materials: {bone: 87}}
+    - {id: slime,   material: iron_sword,      damage: 5.5, attack-speed: -2.4, rarity: uncommon,  skill-level: 18, money: 82800,    materials: {string: 117}}
+    - {id: tide,    material: iron_sword,      damage: 6,   attack-speed: -2.4, rarity: uncommon,  skill-level: 24, money: 194700,   materials: {slime_ball: 158}}
+    - {id: hex,     material: diamond_sword,   damage: 6.5, attack-speed: -2.4, rarity: uncommon,  skill-level: 30, money: 457500,   materials: {prismarine_shard: 213}}
+    - {id: raider,  material: diamond_sword,   damage: 7,   attack-speed: -2.4, rarity: rare,      skill-level: 38, money: 1075100,  materials: {glowstone_dust: 287}}
+    - {id: blaze,   material: diamond_sword,   damage: 7.5, attack-speed: -2.4, rarity: rare,      skill-level: 46, money: 2526400,  materials: {arrow: 388}}
+    - {id: wither,  material: netherite_sword, damage: 8,   attack-speed: -2.4, rarity: epic,      skill-level: 55, money: 5937000,  materials: {blaze_rod: 523}}
+    - {id: warlord, material: netherite_sword, damage: 9,   attack-speed: -2.4, rarity: legendary, skill-level: 66, money: 13952000, materials: {wither_rose: 706}}
+  # Farming hoes and fishing rods get their tiers in Phase 7: only the starter piece for now.
+  hoe:
+    - {id: basic, material: stone_hoe,    rarity: common, skill-level: 0}
+  rod:
+    - {id: basic, material: fishing_rod,  rarity: common, skill-level: 0}
+
+# Abilities a blueprint tool can have (one each). value: the ability's number (see the comment per ability).
+abilities:
+  auto_smelt: {kinds: [pickaxe], value: 0}            # ores drop smelted (island blocks now; Depths drops with M4.9)
+  swift:      {kinds: [pickaxe, axe], value: 0.15}    # +15% break speed
+  scholar:    {kinds: [pickaxe, axe, sword], value: 0.25}  # +25% tool XP
+  lifesteal:  {kinds: [sword], value: 0.05}           # heals 5% of the damage you deal (max: tools.yml abilities.lifesteal-max-heal)
+
+# Blueprints: rare drops. Blueprint + money + materials at the Forge = a new special tool (level 1) of that type and
+# tier with the ability. drop: wing (mine, forest, combat), min-tier, chance per block/log/kill (0.00005 = 1 in 20,000).
+blueprints:
+  sage_pickaxe:   {kind: pickaxe, tier: 2, ability: scholar,    rarity: rare, drop: {wing: mine,   min-tier: 1, chance: 0.0000667}, money: 25000,  materials: {coal: 256}}
+  magma_pickaxe:  {kind: pickaxe, tier: 4, ability: auto_smelt, rarity: epic, drop: {wing: mine,   min-tier: 4, chance: 0.00005},   money: 150000, materials: {raw_gold: 320}}
+  windcutter_axe: {kind: axe,     tier: 3, ability: swift,      rarity: rare, drop: {wing: forest, min-tier: 2, chance: 0.0000667}, money: 50000,  materials: {birch_log: 320}}
+  vampire_blade:  {kind: sword,   tier: 5, ability: lifesteal,  rarity: epic, drop: {wing: combat, min-tier: 4, chance: 0.000667},  money: 250000, materials: {slime_ball: 160}}
+
+# Skins: cosmetic looks (collection kept across seasons). kinds: tool types it fits. model: Java item model
+# (resource pack, e.g. phoenix:skin/frostbite_pickaxe; {kind} is replaced with the tool type); empty = name only.
+skins:
+  phoenix_flame: {kinds: [pickaxe, axe, sword, hoe, rod], rarity: legendary, model: ""}
+  frostbite:     {kinds: [pickaxe, axe, sword, hoe, rod], rarity: epic,      model: ""}
+  royal_gold:    {kinds: [pickaxe, axe, sword, hoe, rod], rarity: epic,      model: ""}
+
+# Tool XP for blocks broken outside The Depths (islands), before xp.island-factor. Block id -> XP.
+island-xp:
+  coal_ore: 1
+  deepslate_coal_ore: 1
+  copper_ore: 1.5
+  deepslate_copper_ore: 1.5
+  iron_ore: 2.5
+  deepslate_iron_ore: 2.5
+  gold_ore: 4
+  deepslate_gold_ore: 4
+  redstone_ore: 6
+  deepslate_redstone_ore: 6
+  lapis_ore: 9
+  deepslate_lapis_ore: 9
+  diamond_ore: 13
+  deepslate_diamond_ore: 13
+  emerald_ore: 19
+  deepslate_emerald_ore: 19
+  nether_quartz_ore: 40
+  ancient_debris: 58
+  oak_log: 1
+  birch_log: 1.5
+  spruce_log: 2.5
+  jungle_log: 4
+  acacia_log: 6
+  dark_oak_log: 9
+  mangrove_log: 13
+  cherry_log: 19
+  pale_oak_log: 28
+  crimson_stem: 40
+  warped_stem: 58
+
+# Auto-smelt (ability auto_smelt): dropped item -> smelted item.
+smelt:
+  raw_iron: iron_ingot
+  raw_gold: gold_ingot
+  raw_copper: copper_ingot
+  iron_ore: iron_ingot
+  gold_ore: gold_ingot
+  copper_ore: copper_ingot
+  ancient_debris: netherite_scrap
+  cobblestone: stone
+  sand: glass

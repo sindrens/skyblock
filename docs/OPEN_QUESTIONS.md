@@ -12,6 +12,25 @@
 - PROF profiles: the scoreboard does not show the profile name yet; `messages/hud.yml` has a commented line with `<ph:profile_name>` to turn it on. Show it by default? (default: off)
 - PROF profiles: `/isadmin addmember` on an offline player uses their profile 1 (staff can't pick another profile from the command). OK? (default: online players use their active profile)
 - PROF profiles: profile slots bought with gems are kept forever (also after a season reset). Should a season reset also delete the profiles themselves, or keep the profiles and only reset their islands/data? (default: decided with the season system, Phase 10)
+- STACK spawner speed: each spawner in a stack adds `spawners.mobs-per-spawner: 4` mobs every 10–40 s (vanilla's best case, avg ~9.6 mobs/min per spawner; a full 512 stack ≈ 4,900 mobs/min, merged into stacks of 1,024). Balance against sell prices in BAL2? (default: as given, all in `stacking.yml`)
+- STACK rare drops (SK10): spawner evokers drop a totem 2% of the time and spawner shulkers a shell 5% (vanilla: 100% / 50%), per mob killed. OK? (default: 2% / 5%, `stacking.yml → spawners.rare-drops`)
+- STACK shearing: shearing a stack of sheep shears them all (wool × stack, merged into one item); other stacks (mooshrooms, snow golems) can't be sheared. OK? (default: yes, `mobs.shear-whole-stack`)
+- STACK spawner mobs: zombies/skeletons from spawners don't burn in daylight and piglins/hoglins never turn into zombified ones (S25: conditions ignored). Slimes/magma cubes from spawners are always the smallest size (they drop loot and never split). OK? (default: yes)
+- STACK entity limits count the island's loaded chunks (no full scan of unloaded chunks, for performance). A player could exceed a limit by building in chunks far apart that are never loaded together; islands are small (3×3 chunks at start), so this is rare. OK, or store counts in the database? (default: loaded chunks)
+- STACK plugin holograms: display entities count toward the island limit of 30 (owner SK2), also those spawned by our own modules later (warps, notes). Exempt plugin holograms? (default: everything counts; modules can raise the limit later)
+- STACK crops: crops in the dark grow with a 15% chance every 30 s (about vanilla speed on watered farmland); lit crops grow the vanilla way. Ripe melon/pumpkin stems in the dark also grow fruit. Saplings, sugar cane, cactus and bamboo are not included. Add any? (default: wheat, carrots, potatoes, beetroots, melon/pumpkin stems, sweet berries, torchflowers)
+- STACK spawners in a crash: the database is the truth; a spawner block without a database row (only possible after a crash in a tiny window) is removed rather than trusted, so a crash can lose a spawner but never duplicate one. OK? (default: yes)
+- STACK `/spawner give` amount: 1–2,304 (36 stacks) per command, admin only. OK? (default: yes)
+- M4.2 Forge materials: taken from the inventory until the satchel (M4.4) exists. From tier 10 the amounts (2,824+ items) don't fit an inventory. (default: inventory now, satchel counted once it exists)
+- M4.2 recipe items are vanilla placeholders until Depths drops (M4.9) get their own ids: mine coal → netherite_scrap, forest logs, combat rotten_flesh, bone, string, slime_ball, prismarine_shard, glowstone_dust, arrow, blaze_rod, wither_rose. Sword material amounts are 1/4 of the mine amounts (kills drop more value). OK? (default: yes, all in `tools.yml → tiers`)
+- M4.2 break speed: tier 11/12 pickaxes get mining power +60/+120 because their ores are very hard (ancient_debris 30, crying_obsidian 50); that makes lower ores near-instant with them. Tune after an in-game test, or use softer blocks in those zones? (default: as configured)
+- M4.2 starter kit: no new command (none approved), so it is the "Starter kit" button in `/forge` (Quartermaster placeholder). Give it automatically on the first join? (default: off, `tools.yml → starter-kit.give-on-first-join`)
+- M4.2 skins: `/skin give` adds the skin straight to the collection (no item). DESIGN says skins are tradeable: add a redeemable skin item (crates/trading) later? A skin stays on a tool when the tool is traded. (default: collection only for now)
+- M4.2 prestige: the level speed bonus (+1% per level) starts again at Lv 1, so a tool is slower right after a prestige until it levels again. OK? (default: yes, "it costs the time to level again")
+- M4.2 levels give speed only (+1%/level); fortune comes from the tier (+5%/tier, balance sheet). Phase 4 says "levels raise speed/fortune": add fortune per level? (default: 0, `fortune.per-level-percent`)
+- M4.2 tool XP depends on the block's Depths tier only (balance sheet). Phase 4 also said a higher tool tier gives more XP per block. (default: 0% bonus, `xp.tier-bonus-percent`)
+- M4.2 blueprints: 4 first proposals (Sage Pickaxe/Scholar, Magma Pickaxe/Auto-smelt, Windcutter Axe/Swift, Vampire Blade/Lifesteal), drops 1 in 15,000-20,000 blocks or 1 in 1,500 kills from a minimum tier, crafting makes a new Lv 1 tool. OK? (default: as written in `tools.yml`)
+- M4.2 hoes and rods have only the starter tier until Phase 7. (default: yes)
 - R2A skills: max level 150 with tiers still at 0–66. After level 66 each level costs 2% more (`skills.yml → curve.end-growth: 1.02`). With today's XP sources a top player ends a 90-day season around level 81; level 150 needs ~3.5B XP (~8.6× a top season). Should 150 be reachable in one season (then levels after 66 must get cheaper, or XP boosts bigger)? (default: 2% growth, 150 is a far goal)
 - R2A `/skills set|add <player> <skill> <amount>`: the amount is in **levels** (set = start of that level, add = keeps progress), online players only. Want raw XP or offline players too? (default: levels, online only)
 - R2A `/freerank`: the free tags are ember, spark and ash. `ember` was also a Rare-crate tag and `ashes` an Uncommon-crate tag, so the free pick makes the crate `ember` tag less special. Rename the crate tag, or pick other free tags? (default: as given, configurable in `perks.yml → freerank.tags`)
@@ -173,10 +192,23 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 - Enchants: stacked-mob kills drop Slaughter/Soul Reaper/Bloodlust/Plunder books at 1 in 25,000 per mob, max 5 per day per profile. OK? (default: yes, EN15)
 - Enchants: bonus family caps besides the +300% sell cap: crystals +200%, extra drops +200% (max 3 per action), skill XP +300%, tool XP +100%, rare finds +150%, mob damage +200%, damage reduction 60%, +10 hearts. OK? (default: yes, EN16)
 - Enchants: PvP values: damage enchants 40%, healing 50%, AoE/stacked/Phoenix Rebirth/movement and vision enchants off in the warzone and duels. OK? (default: yes, EN17)
-- Enchants: armor enchant slots on wardrobe pieces: 1 per piece, a 2nd at set level 25, chestplate mythic slot at 50 (final numbers with the SETS plan). OK? (default: yes, EN12)
+- Enchants: armor enchant slots on wardrobe pieces: 1 per piece, a 2nd at set level 25, chestplate mythic slot at 50 (confirmed in `docs/plans/WARDROBE.md` §3.3). OK? (default: yes, EN12)
 - Enchants: staff test tools as `/enchanter admin give|apply|clear` subcommands (staff only). New subcommands need your approval. Add them? (default: not built until approved, EN20)
 - Enchants: the AH should refuse buying a listing made by the same account (any profile), so items can't hop between own profiles (P4). Build that into the AH with profiles? (default: yes)
 - Enchants: the 48 names in `docs/plans/ENCHANTS.md` §6 (Swiftness, Vein Rend, Dragonfire Blast, Treefeller, Slaughter, Phoenix Wrath …). OK? (default: yes)
+- Wardrobe (PLAN-SETS, `docs/plans/WARDROBE.md`): sets are virtual wardrobe entries; equipping puts real armor on that is locked to the armor slots (a copy is worthless and deleted). Sets are bound to the profile, only unredeemed crate Set Tokens trade/go on the AH. OK? (default: yes, WD7/WD19)
+- Wardrobe: the 16 sets (5 tier I money sets, Banneret Tabard, Lorekeeper Robes, Deepforge Plate, Thornward Mantle, Cropwarden Robes, Dreadguard Mail, Stormkeel Scale, Coinmaster Silks, Voidforged Plate, Conqueror Aegis, Phoenix Regalia), their bonuses and the new bonus families crop growth (+100%) and conquest (+60%). OK? (default: yes, WD2/WD3/WD9)
+- Wardrobe prices: tier I $20k, Banneret $2.5M, Coinmaster $40M, tier III crystal sets ◆ 25,000, gem sets ✦ 400 / ✦ 900 (each also in a crate, so no power is gem-only), tier IV crate-only. OK? (default: yes, WD4)
+- Wardrobe: a gem set is an account-wide "Sigil": every profile can claim the set once per season for free, and Sigils are kept across seasons. OK? (default: yes, WD5)
+- Wardrobe set levels: XP from the activity the set boosts (50% with 2–3 pieces, 100% with 4; stacked island mobs give none), 200 × 1.10^level XP per level, multiplier 2 × level / 50 (Lv 25 = 1×, Lv 50 = 2×); level 50 in ~65 h of that activity for an active player. OK? (default: yes, WD10–WD14)
+- Wardrobe merging: both sets level 50, no shared bonus family, tier I–III only, one merge per set, fee ◆ 5,000–25,000, merged set needs 1.5× XP, no unmerge. OK? (default: yes, WD15/WD22/WD23)
+- Wardrobe Tomes (+2,500 / +10,000 set XP from crates/quests, never gems, not past level 40). OK? (default: yes, WD13)
+- Wardrobe in the warzone and duels: every set counts as 1×, armor normalized to diamond-like, damage reduction at 50%, only conquest bonuses work. OK? (default: yes, WD18)
+- Wardrobe Chest (storage for loadout swaps) holds unique items only (custom tools, enchant books/scrolls, set tokens, tomes), 27 slots + rank grants; plain items are never stored. OK? (default: yes, WD21/LD1)
+- Loadout slots: 2 free, Knight 3, Warlord 4, Monarch 5, +1 per store-credit purchase (max +3, account-wide), max 8. Credit price with the store plan. OK? (default: yes, LD2)
+- Loadout: swaps (and wardrobe equips) refused for 10 s after combat damage with a player or hostile mob, in the warzone and while frozen; 2 s cooldown. OK? (default: yes, LD3/LD6)
+- Loadout: `/loadout <name>` applies a preset by name (argument of the approved command) and `/sets` stays as an alias of `/wardrobe`. OK? (default: yes, LD5/WD24)
+- Wardrobe staff tools: a Wardrobe button in `/inspect <player>` (view; admins give/remove sets, set levels, give tokens, all audited) instead of a new staff command. OK? (default: yes, WD25)
 
 ## Economy
 1. **Shards:** how are they earned? (Proposal: bosses, envoys, KOTH, high-tier dungeon zones.)
@@ -190,7 +222,7 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 7. Tier unlock thresholds (blocks broken / logs / kills) per tier.
 
 ## Gear
-8. **Sets:** how are pieces obtained (crystals, drops, crafting)? Final set list.
+8. ~~**Sets:** how are pieces obtained? Final set list.~~ Planned (SE1 + follow-ups): `docs/plans/WARDROBE.md`.
 9. Tool prestige at level 50: confirm, and what it gives (default: permanent title + skin unlock + small bonus on that tool).
 
 ## Leaderboards

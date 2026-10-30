@@ -55,6 +55,9 @@ hub:
     black-market:
       name: "<c:flame><bold>Black Market"
       lore: ["<c:text>Rare offers that change", "<c:text>every few hours."]
+    forge:
+      name: "<c:flame><bold>The Forge"
+      lore: ["<c:text>Upgrade your tools, craft", "<c:text>blueprints, get a starter kit."]
     skills:
       name: "<c:flame><bold>Skills"
       lore: ["<c:text>Level Mining, Foraging, Combat", "<c:text>and more for perks."]

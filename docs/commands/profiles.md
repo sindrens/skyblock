@@ -6,7 +6,7 @@ Island profiles (owner decisions P1–P12 and round 3 PR1–PR5, `docs/DECISIONS
 |---|---|---|---|
 | `/profiles` (`/profile`) | Profile menu: one button per slot with name, icon, island, island level, playtime and created date. A profile opens its own screen: **Switch**, **Rename** (typed in chat), **Change icon**, **Delete** (confirm screen, then type the profile's name; no cooldown, P9). An empty unlocked slot creates a profile; a locked slot can be bought with gems (confirm screen). The only way to switch (P5) | `skyblock.profiles.use` (everyone) | ✅ |
 
-Also in `/menu` (slot 37) and `/help profiles`.
+Also in `/menu` (slot 43) and `/help profiles`.
 
 ## Per profile vs. shared
 - **Per profile** (stored under the profile key): money, crystals, shards, inventory + armor + offhand, ender chest, XP levels, health/food/effects, skills, Depths tier unlocks, island membership/role/personal homes/coop trust, auction listings + collection bin, money notes created, `/settings` values (keys in `settings.profile-keys`), playtime. Future: satchel, personal bank, quests/battle pass, achievements, tools (items follow the inventory).

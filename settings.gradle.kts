@@ -35,5 +35,6 @@ include("modules:skills")
 // include("modules:islands")
 include("modules:islands")
 include("modules:auction")
+include("modules:stacking")
+include("modules:tools")
 include("modules:profiles")
-

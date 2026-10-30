@@ -1,0 +1,379 @@
+# Tools (M4.2): starter kit, the Forge, living tools, blueprints, skins. MiniMessage + style tags (style.yml).
+# Item lore formats use {placeholders} (filled by the plugin); chat and menus use <placeholders>.
+# Reload: /skyblock reload tools
+
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Try again in a moment."
+inventory-full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full. The rest dropped at your feet."
+
+# Tool types (singular / plural) and skills.
+kind:
+  pickaxe: "Pickaxe"
+  axe: "Axe"
+  sword: "Sword"
+  hoe: "Hoe"
+  rod: "Rod"
+kind-plural:
+  pickaxe: "Pickaxes"
+  axe: "Axes"
+  sword: "Swords"
+  hoe: "Hoes"
+  rod: "Rods"
+skill:
+  mining: "<pillar:mining>Mining"
+  foraging: "<pillar:foraging>Foraging"
+  combat: "<pillar:combat>Combat"
+  farming: "<pillar:farming>Farming"
+  fishing: "<pillar:fishing>Fishing"
+wing:
+  mine: "Mine"
+  forest: "Forest"
+  combat: "Combat"
+
+# Tier names per type (ids from tools.yml → tiers). A tier without a name here shows its id.
+tier:
+  pickaxe:
+    coal: "Coal Pickaxe"
+    copper: "Copper Pickaxe"
+    iron: "Iron Pickaxe"
+    gold: "Gold Pickaxe"
+    redstone: "Redstone Pickaxe"
+    lapis: "Lapis Pickaxe"
+    diamond: "Diamond Pickaxe"
+    emerald: "Emerald Pickaxe"
+    amethyst: "Amethyst Pickaxe"
+    quartz: "Quartz Pickaxe"
+    netherite: "Netherite Pickaxe"
+    voidstone: "Voidstone Pickaxe"
+  axe:
+    oak: "Oak Axe"
+    birch: "Birch Axe"
+    spruce: "Spruce Axe"
+    jungle: "Jungle Axe"
+    acacia: "Acacia Axe"
+    dark_oak: "Dark Oak Axe"
+    mangrove: "Mangrove Axe"
+    cherry: "Cherry Axe"
+    pale_oak: "Pale Oak Axe"
+    crimson: "Crimson Axe"
+    warped: "Warped Axe"
+  sword:
+    grave: "Grave Sword"
+    bone: "Bone Sword"
+    venom: "Venom Sword"
+    slime: "Slime Sword"
+    tide: "Tide Sword"
+    hex: "Hex Sword"
+    raider: "Raider Sword"
+    blaze: "Blaze Sword"
+    wither: "Wither Sword"
+    warlord: "Warlord Sword"
+  hoe:
+    basic: "Farmer's Hoe"
+  rod:
+    basic: "Angler's Rod"
+
+# Blueprint abilities (tools.yml → abilities).
+ability:
+  auto_smelt:
+    name: "Auto-smelt"
+    description: ["<c:text>Ores drop already smelted."]
+  swift:
+    name: "Swift"
+    description: ["<c:text>Breaks blocks 15% faster."]
+  scholar:
+    name: "Scholar"
+    description: ["<c:text>Gains 25% more tool XP."]
+  lifesteal:
+    name: "Lifesteal"
+    description: ["<c:text>Heals you for 5% of the", "<c:text>damage you deal."]
+
+# Blueprints: the blueprint's name and the tool it makes (tools.yml → blueprints).
+blueprint:
+  sage_pickaxe:
+    name: "Blueprint: Sage Pickaxe"
+    tool-name: "Sage Pickaxe"
+  magma_pickaxe:
+    name: "Blueprint: Magma Pickaxe"
+    tool-name: "Magma Pickaxe"
+  windcutter_axe:
+    name: "Blueprint: Windcutter Axe"
+    tool-name: "Windcutter Axe"
+  vampire_blade:
+    name: "Blueprint: Vampire Blade"
+    tool-name: "Vampire Blade"
+  # Messages
+  found: "<prefix><c:success><sym:star></c:success> <c:text>You found <blueprint><c:text>! Craft it at the <c:value>/forge</c:value>."
+  crafted: "<prefix><c:success><sym:check></c:success> <c:text>You crafted <tool><c:text>. Ability: <c:value><ability></c:value>."
+  not-found: "<prefix><c:error><sym:cross></c:error> <c:text>That blueprint is not in your inventory."
+  already-used: "<prefix><c:error><sym:cross></c:error> <c:text>This blueprint was already used. It was removed and your money refunded."
+  menu:
+    title: "Blueprints"
+    name: "<blueprint>"
+    makes: ["<c:text>Makes: <tool> <c:muted>(tier <tier>)", "<c:text>Ability: <c:enchant><ability>"]
+    click: "<c:action>▶ Click <c:text>to craft"
+    info: ["<c:text>Blueprints drop rarely in", "<c:text>The Depths. Add money and", "<c:text>materials to craft a special", "<c:text>tool with an ability."]
+    empty:
+      name: "<c:muted>No blueprints"
+      lore: ["<c:text>Find them in The Depths."]
+    unknown:
+      name: "<c:error>Unknown blueprint"
+      lore: ["<c:text>Ask staff to check it."]
+  confirm:
+    crumb: "Craft blueprint"
+    details: ["<c:text>Makes a new <tool> <c:text>(Lv 1)", "<c:text>Uses the blueprint", "<c:text>Costs <c:value><money></c:value> <c:text>and", "<c:value><materials>"]
+
+# Skins (tools.yml → skins).
+skin:
+  phoenix_flame:
+    name: "Phoenix Flame"
+    description: ["<c:text>Burning feathers of the phoenix."]
+  frostbite:
+    name: "Frostbite"
+    description: ["<c:text>Cold as the deepest ice."]
+  royal_gold:
+    name: "Royal Gold"
+    description: ["<c:text>Fit for a king."]
+
+skins:
+  applied: "<prefix><c:success><sym:check></c:success> <c:text>Skin <c:value><skin></c:value> applied."
+  removed: "<prefix><c:success><sym:check></c:success> <c:text>Skin removed."
+  does-not-fit: "<prefix><c:error><sym:cross></c:error> <c:text>That skin doesn't fit this tool."
+  menu:
+    title: "Skins"
+    name: "<skin>"
+    info: ["<c:text>Skins only change the look.", "<c:text>Get them from crates, the", "<c:text>store and events. You keep", "<c:text>them every season."]
+    empty:
+      name: "<c:muted>No skins yet"
+      lore: ["<c:text>No skin fits this tool."]
+    remove:
+      name: "<c:error>Remove skin"
+      lore: ["<c:text>Current: <c:value><skin>", "<c:action>▶ Click <c:text>to remove"]
+    state:
+      applied: "<c:success><sym:check> On this tool"
+      owned: "<c:action>▶ Click <c:text>to apply"
+      locked: "<c:error><sym:cross> <c:text>Not owned. From crates, store and events."
+
+# The tool item (lore formats: {placeholders}).
+item:
+  name: "<rarity:{rarity}>{name}{stars}"
+  name-unknown: "<c:error>Broken tool"
+  skinned-name: "{skin} {tool}"
+  stars: " <c:flame>{stars}"
+  subtitle: "<c:muted>{kind} <sym:dot> Tier {tier}"
+  description:
+    pickaxe: "Mine ore. Levels up as you use it."
+    axe: "Chop logs. Levels up as you use it."
+    sword: "Fight mobs. Levels up as you use it."
+    hoe: "Harvest crops. Farming comes later."
+    rod: "Catch fish. Fishing comes later."
+  max-level: "<c:text>Lv <c:value>{level}</c:value> <c:flame>MAX"
+  prestige: "<c:flame><sym:star> Prestige {count}"
+  ability: "<c:text>Ability: <c:enchant>{ability}"
+  skin: "<c:text>Skin: <c:value>{skin}"
+  starter: "<c:muted>Starter kit (not for the AH)"
+  next-slot: "<c:muted>Next perk slot at Lv {level}"
+  history:
+    blocks: "<c:text>Blocks mined <c:value>{value}"
+    logs: "<c:text>Logs chopped <c:value>{value}"
+    kills: "<c:text>Kills <c:value>{value}"
+  stat:
+    speed: "Speed"
+    fortune: "Fortune"
+    damage: "Damage"
+  action-input: "Shift + Right-click"
+  action-text: "to open the tool menu"
+
+blueprint-item:
+  name: "<rarity:{rarity}>{name}"
+  name-unknown: "<c:error>Unknown blueprint"
+  subtitle: "<c:muted>Blueprint"
+  description: "Bring it to the Forge with money and materials."
+  makes: "<c:text>Makes: <c:value>{tool}</c:value> <c:muted>(tier {tier})"
+  ability: "<c:text>Ability: <c:enchant>{ability}"
+  source: "<c:muted>Drops in the {wing}, tier {tier}+"
+  action-input: "/forge"
+  action-text: "then Blueprints"
+
+# Level-up feedback. <tool> <level> <slot>
+level-up:
+  action-bar: "<c:flame><sym:star></c:flame> <tool> <c:text>is now <c:value>Lv <level>"
+  slot: "<prefix><c:success><sym:star></c:success> <tool> <c:text>opened perk slot <c:value><slot></c:value>! Enchants come with the Enchanter."
+  max: "<prefix><c:flame><sym:star></c:flame> <tool> <c:text>hit the max level. Prestige it in the tool menu."
+
+# /tool
+tool:
+  gone: "<prefix><c:error><sym:cross></c:error> <c:text>That tool is no longer in your inventory."
+  hold-a-tool: "<prefix><c:error><sym:cross></c:error> <c:text>Hold a custom tool first. Get one at <c:value>/forge</c:value>."
+
+tool-menu:
+  title: "Tool"
+  info: ["<c:text>Your tool levels up as you use", "<c:text>it. Levels give speed and open", "<c:text>perk slots at Lv 5, 15, 30, 45.", "<c:text>Prestige at max for slot 5."]
+  gone:
+    name: "<c:error>Tool not found"
+    lore: ["<c:text>Put it back in your inventory", "<c:text>and open the menu again."]
+  bar:
+    filled: "<c:flame>●"
+    empty: "<c:muted>●"
+  level:
+    name: "<c:value>Level <level> <c:muted>/ <max>"
+    progress: "<bar> <c:value><percent>%"
+    xp: "<c:text><into> / <step> XP to Lv <next>"
+    max: ["<c:flame>Max level reached!", "<c:text>Prestige it to open slot 5."]
+    next-slot: "<c:text>Next perk slot at <c:value>Lv <level>"
+    how:
+      pickaxe: ["<c:muted>XP: ore in The Depths (islands 25%)"]
+      axe: ["<c:muted>XP: logs in The Depths (islands 25%)"]
+      sword: ["<c:muted>XP: kills, most in Combat zones"]
+      hoe: ["<c:muted>XP: farming comes later"]
+      rod: ["<c:muted>XP: fishing comes later"]
+  stats:
+    name: "<c:value>Stats"
+    tier: "<c:text>Tier <c:value><tier></c:value> <c:muted>(<tier-name><c:muted>)"
+    speed: "<c:text>Speed <c:value>+<speed>%"
+    fortune: "<c:text>Fortune <c:value>+<fortune>%"
+    damage: "<c:text>Damage <c:value><damage>"
+    ability: "<c:text>Ability: <c:enchant><ability>"
+  perk:
+    filled:
+      name: "<c:enchant><perk>"
+      lore: ["<c:muted>Slot <slot>", "<c:text>Change it at the Enchanter."]
+    empty:
+      name: "<c:value>Perk slot <slot>"
+      lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Enchants come with the Enchanter."]
+    prestige-empty:
+      name: "<c:flame><sym:star> Prestige slot"
+      lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Fits Mythic enchants later."]
+    locked:
+      name: "<c:muted>Perk slot <slot>"
+      lore: ["<c:error><sym:cross> <c:text>Unlocks at Lv <level>", "<c:muted>Now Lv <have>"]
+    prestige-locked:
+      name: "<c:muted><sym:star> Prestige slot"
+      lore: ["<c:error><sym:cross> <c:text>Prestige at Lv <max> to open it"]
+  history:
+    name: "<c:value>History"
+    lore: ["<c:text>Blocks mined <c:value><blocks>", "<c:text>Logs chopped <c:value><logs>", "<c:text>Kills <c:value><kills>", "<c:text>Total XP <c:value><xp>", "<c:text>Times forged <c:value><forged>", "<c:text>Prestiges <c:value><prestige>", "<c:muted>Made by <creator>"]
+  skin:
+    name: "<c:value>Skin"
+    lore: ["<c:text>Now: <c:value><skin>", "<c:action>▶ Click <c:text>to change"]
+  no-skin: "none"
+  forge:
+    name: "<c:value>Open the Forge"
+    lore: ["<c:text>Upgrade this tool to the next", "<c:text>tier. Level, perks and stats", "<c:text>stay.", "<c:action>▶ Click <c:text>to open"]
+  prestige:
+    ok:
+      name: "<c:flame><sym:star> Prestige"
+      lore: ["<c:text>Back to Lv 1, keeps perks and", "<c:text>stats, opens the prestige slot", "<c:text>and adds a star.", "<c:action>▶ Click <c:text>to prestige"]
+    not-max-level:
+      name: "<c:muted><sym:star> Prestige"
+      lore: ["<c:error><sym:cross> <c:text>Needs Lv <max> <c:muted>(now <level>)"]
+    already-this-season:
+      name: "<c:muted><sym:star> Prestige"
+      lore: ["<c:error><sym:cross> <c:text>Once per tool per season"]
+    disabled:
+      name: "<c:muted><sym:star> Prestige"
+      lore: ["<c:error><sym:cross> <c:text>Prestige is off right now"]
+
+prestige:
+  title:
+    title: "<c:flame><sym:star> Prestige <count>"
+    subtitle: "<tool>"
+    fade-in: 5
+    stay: 50
+    fade-out: 15
+  done: "<prefix><c:flame><sym:star></c:flame> <tool> <c:text>prestiged! Lv 1 again, perk slot 5 is open."
+  not-max-level: "<prefix><c:error><sym:cross></c:error> <c:text>The tool needs Lv <max> first."
+  already-this-season: "<prefix><c:error><sym:cross></c:error> <c:text>This tool already prestiged this season."
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Prestige is off right now."
+  confirm:
+    crumb: "Prestige"
+    details: ["<c:text>Level goes back to 1", "<c:text>Keeps perks and stats", "<c:text>Opens perk slot 5, adds a star", "<c:muted>Once per tool per season"]
+
+# The Forge (/forge, Blacksmith). <tool> <to> <level> <money> <materials> <skill> <have>
+forge:
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Forged <tool><c:text>! Still Lv <c:value><level></c:value> with all perks."
+  busy: "<prefix><c:warning><sym:cross></c:warning> <c:text>Wait, your last Forge action is still running."
+  unknown-tier: "<prefix><c:error><sym:cross></c:error> <c:text>That tier can't be forged."
+  needs-tool: "<prefix><c:error><sym:cross></c:error> <c:text>You need a <tool> <c:text>in your inventory."
+  needs-skill: "<prefix><c:error><sym:cross></c:error> <skill> <c:value><level></c:value> <c:text>needed (you have <have>)."
+  needs-materials: "<prefix><c:error><sym:cross></c:error> <c:text>Missing: <c:value><materials>"
+  needs-money: "<prefix><c:error><sym:cross></c:error> <c:text>You need <c:value><money></c:value>."
+  duplicate: "<prefix><c:warning><sym:cross></c:warning> <c:text>That was already done."
+  items-moved: "<prefix><c:error><sym:cross></c:error> <c:text>Your items moved, so nothing was forged. Money refunded."
+  state:
+    owned: "<prefix><c:text>You already have this tier or better."
+    craftable: "<prefix><c:text>Click again to forge it."
+    needs-tool: "<prefix><c:error><sym:cross></c:error> <c:text>Bring the tier before it (in your inventory)."
+    needs-skill: "<prefix><c:error><sym:cross></c:error> <c:text>Your skill level is too low for this tier."
+    needs-materials: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have all materials yet."
+    needs-money: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have enough money yet."
+  menu:
+    title: "Forge"
+    info: ["<c:text>Forge the next tier from the", "<c:text>tool you have. Level, perks", "<c:text>and stats stay. Pay with money", "<c:text>and Depths materials."]
+    tab: "<c:text><kind>"
+    tab-selected: "<c:flame><sym:bullet> <kind>"
+    tab-lore: ["<c:action>▶ Click <c:text>to show"]
+    tab-selected-lore: ["<c:muted>Showing now"]
+    more-later:
+      name: "<c:muted>More tiers later"
+      lore: ["<c:text>Farming and fishing tiers", "<c:text>come in a later update."]
+    starter:
+      name: "<c:value>Starter kit"
+      lore: ["<c:text>A free pickaxe, axe, hoe,", "<c:text>sword and rod. Only the ones", "<c:text>you don't have. Every <hours> h.", "<c:action>▶ Click <c:text>to claim"]
+    blueprints:
+      name: "<c:value>Blueprints"
+      lore: ["<c:text>Craft special tools from", "<c:text>blueprints. You have <c:value><count></c:value>.", "<c:action>▶ Click <c:text>to open"]
+  tier:
+    name: "<tool> <mark>"
+    subtitle: "<c:muted><kind> <sym:dot> Tier <tier>"
+    damage: "<c:text>Damage <c:value><damage>"
+    efficiency: "<c:text>Mining power <c:value>+<efficiency>"
+    starter: ["<c:text>Free from the starter kit."]
+    needs-tool: "<c:error><sym:cross> <c:text>Needs <tool>"
+    needs-tool-ok: "<c:success><sym:check> <c:text>Needs <tool>"
+    skill: "<c:error><sym:cross> <skill> <c:text><level> <c:muted>(<have>/<level>)"
+    skill-ok: "<c:success><sym:check> <skill> <c:text><level>"
+    material: "<c:error><sym:cross> <c:text><amount>x <item> <c:muted>(<have>)"
+    material-ok: "<c:success><sym:check> <c:text><amount>x <item>"
+    money: "<c:error><sym:cross> <c:value><money>"
+    money-ok: "<c:success><sym:check> <c:value><money>"
+    keeps: ["<c:muted>Keeps level, perks and stats."]
+    mark:
+      owned: "<c:success><sym:check>"
+      craftable: "<c:action><sym:arrow>"
+      needs-tool: "<c:error><sym:cross>"
+      needs-skill: "<c:error><sym:cross>"
+      needs-materials: "<c:error><sym:cross>"
+      needs-money: "<c:error><sym:cross>"
+      starter: "<c:action><sym:arrow>"
+    state:
+      owned: ["<c:success><sym:check> Owned"]
+      craftable: ["<c:action>▶ Click <c:text>to forge"]
+      needs-tool: ["<c:error><sym:cross> <c:text>Locked: bring the tier before"]
+      needs-skill: ["<c:error><sym:cross> <c:text>Locked: skill too low"]
+      needs-materials: ["<c:error><sym:cross> <c:text>Locked: materials missing"]
+      needs-money: ["<c:error><sym:cross> <c:text>Locked: not enough money"]
+      starter: ["<c:action>▶ Click <c:text>to claim the starter kit"]
+  confirm:
+    crumb: "Forge"
+    details: ["<c:text>Upgrades <tool> <c:text>(Lv <level>)", "<c:text>to <to>", "<c:text>Keeps level, perks and stats", "<c:text>Costs <c:value><money></c:value> <c:text>and", "<c:value><materials>"]
+
+# Starter kit (Quartermaster). <count> <hours> <time>
+starter:
+  claimed: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><count></c:value> starter tool(s). Claim missing ones again in <hours> h."
+  cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>You can claim the starter kit again in <c:value><time></c:value>."
+  have-all: "<prefix><c:text>You already have all starter tools."
+
+# Staff: /tool give, /blueprint give, /skin give. <tool> <blueprint> <skin> <player> <tier> <tiers>
+admin:
+  tool-given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <tool> <c:text>to <c:value><player></c:value>."
+  tool-received: "<prefix><c:success><sym:check></c:success> <c:text>You got <tool><c:text>."
+  blueprint-given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <blueprint> <c:text>to <c:value><player></c:value>."
+  blueprint-received: "<prefix><c:success><sym:check></c:success> <c:text>You got <blueprint><c:text>."
+  skin-given: "<prefix><c:success><sym:check></c:success> <c:text>Added skin <c:value><skin></c:value> to <c:value><player></c:value>'s collection."
+  skin-received: "<prefix><c:success><sym:check></c:success> <c:text>New tool skin: <c:value><skin></c:value>. Apply it in the tool menu."
+  skin-owned: "<prefix><c:warning><sym:cross></c:warning> <c:value><player></c:value> <c:text>already owns <c:value><skin></c:value>."
+  unknown-tool: "<prefix><c:error><sym:cross></c:error> <c:text>No tool type <c:value><tool></c:value>. Press Tab to see them."
+  unknown-tier: "<prefix><c:error><sym:cross></c:error> <c:text>No tier <c:value><tier></c:value> for that tool. Tiers: <c:value><tiers>"
+  unknown-blueprint: "<prefix><c:error><sym:cross></c:error> <c:text>No blueprint <c:value><blueprint></c:value>. Press Tab to see them."
+  unknown-skin: "<prefix><c:error><sym:cross></c:error> <c:text>No skin <c:value><skin></c:value>. Press Tab to see them."
+  unknown-player: "<prefix><c:error><sym:cross></c:error> <c:text>No player <c:value><player></c:value> has joined before."
