@@ -1,0 +1,68 @@
+# Defaults for the drop sections of depths.yml (M4.4 satchel, M4.9 drops). Copied into depths.yml when a section is
+# missing; edit them there. Numbers follow docs/ECONOMY_BALANCE.md (BAL2): one drop per block/log before fortune,
+# crystals 0.05 x 1.3^(tier-1) per block (§9.1), sell prices in sell.yml (custom-items.depths-mine / depths-forest).
+
+# Depths drop items: custom item id -> look. Names/descriptions: messages/depths.yml -> drop-items.<id>.
+#   material: vanilla item it looks like (Bedrock shows the same item), rarity: lore footer
+#   (common, uncommon, rare, epic, legendary, mythic). The ids are the sell.yml keys (custom:<id>) and Forge materials.
+drop-items:
+  depths_coal:          {material: coal,            rarity: common}
+  depths_copper:        {material: raw_copper,      rarity: common}
+  depths_iron:          {material: raw_iron,        rarity: common}
+  depths_gold:          {material: raw_gold,        rarity: uncommon}
+  depths_redstone:      {material: redstone,        rarity: uncommon}
+  depths_lapis:         {material: lapis_lazuli,    rarity: uncommon}
+  depths_diamond:       {material: diamond,         rarity: rare}
+  depths_emerald:       {material: emerald,         rarity: rare}
+  depths_amethyst:      {material: amethyst_shard,  rarity: rare}
+  depths_quartz:        {material: quartz,          rarity: epic}
+  depths_netherite:     {material: netherite_scrap, rarity: epic}
+  depths_voidstone:     {material: echo_shard,      rarity: legendary}
+  depths_oak_log:       {material: oak_log,         rarity: common}
+  depths_birch_log:     {material: birch_log,       rarity: common}
+  depths_spruce_log:    {material: spruce_log,      rarity: common}
+  depths_jungle_log:    {material: jungle_log,      rarity: uncommon}
+  depths_acacia_log:    {material: acacia_log,      rarity: uncommon}
+  depths_dark_oak_log:  {material: dark_oak_log,    rarity: uncommon}
+  depths_mangrove_log:  {material: mangrove_log,    rarity: rare}
+  depths_cherry_log:    {material: cherry_log,      rarity: rare}
+  depths_pale_oak_log:  {material: pale_oak_log,    rarity: rare}
+  depths_crimson_stem:  {material: crimson_stem,    rarity: epic}
+  depths_warped_stem:   {material: warped_stem,     rarity: epic}
+  # Rare finds: placeholders for later phases (geodes, crate key fragments). Chance 0 in every tier until those
+  # systems exist; they can't be sold (not in sell.yml).
+  depths_geode:         {material: amethyst_cluster, rarity: epic}
+  depths_key_fragment:  {material: tripwire_hook,    rarity: legendary}
+
+# Drop table per wing (mine, forest; combat comes with M4.8) and tier:
+#   item:           drop item id (above), one per block/log, times the tool's fortune (tools.yml fortune.*)
+#   amount:         drops per block before fortune (default 1)
+#   crystal-chance: chance per block of crystals (0.05 = 1 in 20); crystal bonuses (enchants, sets) scale it
+#   crystal-amount: crystals per hit (default 1). Average per block = chance x amount.
+#   rare:           {item id: chance per block}; rare-find bonuses scale it
+drops:
+  mine:
+    1:  {item: depths_coal,      crystal-chance: 0.050}
+    2:  {item: depths_copper,    crystal-chance: 0.065}
+    3:  {item: depths_iron,      crystal-chance: 0.085}
+    4:  {item: depths_gold,      crystal-chance: 0.110}
+    5:  {item: depths_redstone,  crystal-chance: 0.143}
+    6:  {item: depths_lapis,     crystal-chance: 0.186}
+    7:  {item: depths_diamond,   crystal-chance: 0.241}
+    8:  {item: depths_emerald,   crystal-chance: 0.314}
+    9:  {item: depths_amethyst,  crystal-chance: 0.408, rare: {depths_geode: 0.0}}
+    10: {item: depths_quartz,    crystal-chance: 0.530, rare: {depths_geode: 0.0}}
+    11: {item: depths_netherite, crystal-chance: 0.689, rare: {depths_geode: 0.0, depths_key_fragment: 0.0}}
+    12: {item: depths_voidstone, crystal-chance: 0.896, rare: {depths_geode: 0.0, depths_key_fragment: 0.0}}
+  forest:
+    1:  {item: depths_oak_log,      crystal-chance: 0.050}
+    2:  {item: depths_birch_log,    crystal-chance: 0.065}
+    3:  {item: depths_spruce_log,   crystal-chance: 0.085}
+    4:  {item: depths_jungle_log,   crystal-chance: 0.110}
+    5:  {item: depths_acacia_log,   crystal-chance: 0.143}
+    6:  {item: depths_dark_oak_log, crystal-chance: 0.186}
+    7:  {item: depths_mangrove_log, crystal-chance: 0.241}
+    8:  {item: depths_cherry_log,   crystal-chance: 0.314}
+    9:  {item: depths_pale_oak_log, crystal-chance: 0.408}
+    10: {item: depths_crimson_stem, crystal-chance: 0.530}
+    11: {item: depths_warped_stem,  crystal-chance: 0.689, rare: {depths_key_fragment: 0.0}}
