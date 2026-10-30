@@ -18,6 +18,7 @@ import net.skybornmc.skyblock.depths.zones.Hub;
 import net.skybornmc.skyblock.depths.zones.Side;
 import net.skybornmc.skyblock.depths.zones.Zone;
 import net.skybornmc.skyblock.depths.zones.ZoneManager;
+import net.skybornmc.skyblock.common.util.Stagger;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -108,14 +109,14 @@ public final class TierGates implements Listener {
             updatePlace(player, player.getLocation());
         }
         rebuild();
-        task = core.scheduler().repeat("depths-tiers-check", config.tierCheckTicks, config.tierCheckTicks, this::checkAll);
+        task = core.scheduler().repeat("depths-tiers-check", 1L, 1L, this::checkDue); // PERF2 (P-12): one slice per tick
     }
 
     /** Call after zones.yml / depths.yml were (re)loaded: rebuilds the doors and re-sends them. */
     public void reload() {
         task.cancel();
         rebuild();
-        task = core.scheduler().repeat("depths-tiers-check", config.tierCheckTicks, config.tierCheckTicks, this::checkAll);
+        task = core.scheduler().repeat("depths-tiers-check", 1L, 1L, this::checkDue); // PERF2 (P-12): one slice per tick
     }
 
     public void stop() {
@@ -245,9 +246,28 @@ public final class TierGates implements Listener {
 
     // ------------------------------------------------------------------ periodic check
 
+    private long checkTick;
+
+    /** Everybody at once (after the doors were rebuilt). */
     private void checkAll() {
         SkillService skills = skills();
         for (Player player : Bukkit.getOnlinePlayers()) {
+            check(player, skills);
+        }
+    }
+
+    /** Every tick: checks the players whose slot is due, so each player is checked once per tier-check-ticks. */
+    private void checkDue() {
+        long tick = ++checkTick;
+        int period = Math.max(1, config.tierCheckTicks);
+        SkillService skills = null;
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (!Stagger.due(player.getUniqueId(), tick, period)) {
+                continue;
+            }
+            if (skills == null) {
+                skills = skills();
+            }
             check(player, skills);
         }
     }

@@ -126,10 +126,16 @@ final class Placer implements Listener {
 
     // ------------------------------------------------------------------ chunk events
 
+    /** The entity kinds an NPC or hologram is built from (body, label, click box). */
+    static boolean npcKind(Entity e) {
+        return e instanceof Villager || e instanceof Mannequin || e instanceof TextDisplay || e instanceof Interaction;
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntitiesLoad(EntitiesLoadEvent event) {
         for (Entity e : event.getEntities()) {
-            if (e.getScoreboardTags().contains(TAG) && !owned(e)) {
+            // PERF2 (P-24): only the entity kinds NPCs are made of can carry the tag; skip the tag-set copy for the rest.
+            if (npcKind(e) && e.getScoreboardTags().contains(TAG) && !owned(e)) {
                 e.remove(); // never saved, but a crash or a failed reload must not leave doubles behind
             }
         }

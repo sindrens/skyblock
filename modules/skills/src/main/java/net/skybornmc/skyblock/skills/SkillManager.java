@@ -365,7 +365,7 @@ final class SkillManager implements SkillService, Listener {
         boolean first = true;
         for (Map.Entry<SkillType, Double> e : shown.entrySet()) {
             if (!first) {
-                line = line.append(msg.component(player, "action-bar.separator"));
+                line = line.append(msg.fixed(player, "action-bar.separator"));
             }
             first = false;
             line = line.append(msg.component(player, "action-bar.gain", Msg.c("skill", skillName(player, e.getKey())),
@@ -377,7 +377,7 @@ final class SkillManager implements SkillService, Listener {
     }
 
     Component skillName(Audience viewer, SkillType skill) {
-        return msg.component(viewer, "skill." + skill.id() + ".name");
+        return msg.fixed(viewer, "skill." + skill.id() + ".name");
     }
 
     private void levelUp(Player player, PlayerSkills p, PlayerSkills.LevelChange change, String source, Actor actor) {

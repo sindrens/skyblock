@@ -271,17 +271,34 @@ final class Guides {
     }
 
     /** Flames every {@code guide.trail.spacing} blocks along the trail nodes, up to {@code guide.trail.ahead} ahead. */
+    private List<String> trailSource;
+    private List<TargetSpec.Point> trailPoints = List.of();
+
+    /** The trail nodes, parsed once per config list (PERF2, P-21: they were parsed for every node on every particle tick). */
+    private List<TargetSpec.Point> trailPoints() {
+        List<String> raw = module.config().trailNodes;
+        if (raw != trailSource) {
+            List<TargetSpec.Point> points = new ArrayList<>();
+            for (String node : raw) {
+                TargetSpec.parse(node).ifPresent(spec -> {
+                    if (spec instanceof TargetSpec.Point pt) {
+                        points.add(pt);
+                    }
+                });
+            }
+            trailPoints = List.copyOf(points);
+            trailSource = raw;
+        }
+        return trailPoints;
+    }
+
     private void trail(Player player) {
         List<Location> nodes = new ArrayList<>();
-        for (String raw : module.config().trailNodes) {
-            TargetSpec.parse(raw).ifPresent(spec -> {
-                if (spec instanceof TargetSpec.Point pt) {
-                    World w = Bukkit.getWorld(pt.world());
-                    if (w != null && w.equals(player.getWorld())) {
-                        nodes.add(new Location(w, pt.x(), pt.y(), pt.z()));
-                    }
-                }
-            });
+        World here = player.getWorld();
+        for (TargetSpec.Point pt : trailPoints()) {
+            if (pt.world() != null && pt.world().equalsIgnoreCase(here.getName())) {
+                nodes.add(new Location(here, pt.x(), pt.y(), pt.z()));
+            }
         }
         if (nodes.size() < 2) {
             return;

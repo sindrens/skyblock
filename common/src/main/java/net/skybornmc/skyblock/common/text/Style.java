@@ -124,6 +124,7 @@ public final class Style {
         bedrockSafe = Set.copyOf(safe);
         fullJava = null;
         fullBedrock = null;
+        version++;
         return problems;
     }
 
@@ -200,6 +201,13 @@ public final class Style {
     }
 
     private record Cached(MiniMessage mm, TagResolver resolver) {
+    }
+
+    private volatile int version;
+
+    /** Goes up on every {@link #load}, so caches of parsed texts know the palette changed. */
+    public int version() {
+        return version;
     }
 
     private volatile Cached fullJava;
