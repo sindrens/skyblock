@@ -1,6 +1,6 @@
 # Quality of life: what is missing or clunky (research, 30 Oct 2026)
 
-Read-only research. Nothing here is built. Every idea waits for the owner's answer (JSON block at the end, ready for the one-click page).
+Research doc. QUICK1 (30 Oct) built #1 (blocks), #2a and #10a, marked BUILT below; everything else is not built. Every idea waits for the owner's answer (JSON block at the end, ready for the one-click page).
 
 How I worked: I read OWNER_PRINCIPLES, TEST_GUIDE, FEATURE_IDEAS, BACKLOG, PLANNING, DECISIONS_2026-10-30, OWNER_ANSWERS 1-3, QUESTIONS 2-3, STANDARDS, UI_STYLE, the phase and plan docs (5, 7, 8, 10, tutorial, ranks), the performance and security audits, `docs/commands/*.md`, and skimmed the modules (menus, chat, economy/sell, auction, box, essentials, islands, depths, hud). I then compared with Hypixel Skyblock, ManaCube, Complex, CosmicSky, SuperiorSkyblock2/BentoBox, EssentialsX, CMI, QuickShop, ChestSort and InvSee.
 
@@ -34,8 +34,8 @@ Rank = player impact x how often it happens, divided by effort and risk. Cost to
 
 | # | Idea | Area | Effort | New command? | Risk | Status |
 |---|---|---|---|---|---|---|
-| 1 | Island auto-pickup (overflow to /box) | Inventory | M | No | Med (dupe, box rows) | Approved, not built (O15) |
-| 2 | Sell protection: keep list, hotbar skipped | Selling | S-M | No | Low | New |
+| 1 | Island auto-pickup (overflow to /box) | Inventory | M | No | Med (dupe, box rows) | **Built for blocks (QUICK1)**, overflow stays on the ground until Box 2.0; mobs open |
+| 2 | Sell protection: keep list, hotbar skipped | Selling | S-M | No | Low | **Hotbar skip built (QUICK1)**; keep list open |
 | 3 | Inbox: "While you were away" + bell | Notifications | M-L | No (alias optional) | Low | New |
 | 4 | Sell undo and "Recently sold" | Selling | M | No (sub-command optional) | Med (economy) | New |
 | 5 | Places menu and "Guide me" arrow | Navigation | M | `/warp` (planned) | Low | Planned |
@@ -43,7 +43,7 @@ Rank = player impact x how often it happens, divided by effort and risk. Cost to
 | 7 | `/back` and "Last place" for everyone | Navigation | S-M | `/back` (planned) | Low-Med | Planned |
 | 8 | Search button in long menus (shop first) | Menus | M | No | Low | Approved for shop (718), rest new |
 | 9 | Help that finds things (did-you-mean, `/help` search) | Help | S then M | No | Low | New |
-| 10 | Drop protection and item safety net | Anti-frustration | S then M | No | Low-Med | New |
+| 10 | Drop protection and item safety net | Anti-frustration | S then M | No | Low-Med | **Drop guard (a) built (QUICK1)**; (b) open |
 | 11 | Player card (click a name) | Social | M | `/stats` (planned) | Low | New |
 | 12 | Auto-refill blocks | Inventory | S | No | Low | New |
 | 13 | Smart AH listing (price hint, relist, history) | Buying, selling | M | No | Low-Med | New |
@@ -272,9 +272,9 @@ Rank = player impact x how often it happens, divided by effort and risk. Cost to
 
 # 4. Quick wins: buildable now, no new command, small, low risk
 
-1. **Sell all skips hotbar** (#2a): one filter and one setting.
+1. **Sell all skips hotbar** (#2a): one filter and one setting. **BUILT (QUICK1):** setting `sell-skip-hotbar` (Gameplay, default on) for `/sell all` and "Sell inventory"; `/sell hand` and the chest by hand still sell.
 2. **Did-you-mean on unknown commands** (#9a).
-3. **Drop protection for custom items** (#10a).
+3. **Drop protection for custom items** (#10a). **BUILT (QUICK1):** setting `drop-guard` (default on); second drop within 3 s or sneak + drop throws it. (#10b, void/lava rescue to /box: not built.)
 4. **Auto-refill blocks** (#12).
 5. **Do Not Disturb and AFK auto-reply** (#22).
 6. **Staff red `x` on chat lines to open `/p` with evidence** (#16 step 1).
