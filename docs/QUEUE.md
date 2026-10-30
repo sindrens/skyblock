@@ -25,7 +25,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | R2A | Round-2 quick decisions: account-age 30 min (pay/withdraw/AH), `/eco` for admin permission, remove amount suggestions (10k/10m/10b) in tab completion, sell cap 300% (config), freeze cleared by a ban, Inspect tool = blaze rod, public announcements unless -s, timezone Europe/Oslo, skill cap 150, staff `/skills set|add` (admin+owner), `/freerank` (30 min playtime) | — | economy, auction, common/command, moderation, staff, skills | ✅ |
 | ISL2 | Islands round 2: role Admin (+ old leader → Admin on transfer), hurt-monsters role permission, join cooldown from last join only, `/is settings` flags, island fly for everyone (perm/mastery), likes per player, member homes (1 + masteries), invites menu | M2.4 | modules/islands | ✅ |
 | STACK | Stacking module: mobs (1024, weapon-based kills, no AI for spawner mobs, breeding by food, max 8 stacks/chunk/type, no despawn), items, spawners (8→512, menu, ignore conditions, crops grow without light) | answered (round 2+3) | new modules/stacking | ✅ |
-| NOTES | `/is notes` (N1–N9: shared to-do list, temporary book, pinned holograms) | M2.4 | modules/islands | ⬜ (after PROF: islands lane) |
+| NOTES | `/is notes` (N1–N9: shared to-do list, temporary book, pinned holograms) | M2.4 | modules/islands | 🔄 |
 | SB | Per-place scoreboards (island, Depths, spawn, warzone) | UX1 | modules/hud | ⬜ |
 | BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ✅ |
 | PLAN-ENCH | Plan doc: full custom enchant list (levels, effects, how each is obtained: mob kills, mining, chopping, dungeons, crates, /enchanter, crystals), synergy with tools/sets/stacking kills | — | docs/plans/ENCHANTS.md | ✅ docs/plans/ENCHANTS.md |
@@ -41,7 +41,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | P0 | Bugs: freeze doesn't stop movement (and after relog), frozen player must not break/chat/do anything; staff-mode vanish item placeholder name; spyglass tool zooms; YAML boolean keys (fixed in main) | — | modules/staff, modules/essentials (vanish) | ✅ |
 | P1 | Spec §1–11: `/p` single-screen menu from YAML, warn counter + rules (notify/auto), `/warns`, validation + safe reload + build test of tracked YAML; release script pulls owner's GitHub edits | P0 | modules/moderation, server/scripts | ✅ |
 | P2 | §12.1 undo, §12.2 double-punish, §12.3 offence expiry, §12.10 `/pstats` | P1 | modules/moderation | ✅ |
-| P3 | §12.4 evidence, 12.5 notes, 12.6 ack, 12.7 weights, 12.8 suggestion API, 12.9 report link, 12.11 Discord sink, 12.12 `/mypunishments` | P2 | modules/moderation, modules/staff (report API), common (DiscordSink) | ⬜ |
+| P3 | §12.4 evidence, 12.5 notes, 12.6 ack, 12.7 weights, 12.8 suggestion API, 12.9 report link, 12.11 Discord sink, 12.12 `/mypunishments` | P2 | modules/moderation, modules/staff (report API), common (DiscordSink) | 🔄 |
 | P4 | §13.4 approval, 13.13 mute ended, 13.7 probation, 13.5 watchlist | P3 | modules/moderation | ⬜ |
 | P5 | §13.8 bulk, 13.11 punish from logs, 13.10 appeals (in-game + webhook) | P4 | modules/moderation, modules/logs (API) | ⬜ |
 | P6 | §13.9 raid lockdown, 13.3 anticheat suggestions (`/psuggest`, Grim config notes), 13.12 network-ready | P5 | modules/moderation, server/CONFIG_NOTES.md | ⬜ |
