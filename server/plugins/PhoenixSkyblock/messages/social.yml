@@ -1,47 +1,48 @@
 # Social messages: private messages, ignore, socialspy, AFK, /list, /ping, /playtime, /seen, /whois, /broadcast, links.
 # MiniMessage + style tags (style.yml). Player text (<message>) is never parsed, so players can't inject tags.
+# Format (docs/UI_STYLE.md §3): <prefix> on command replies only; success/error marks + gray text; values in <c:value>.
 # Reload: /skyblock reload social
 
-unknown-player: "<prefix><c:error><sym:cross> No player named <c:value><player></c:value> has joined before."
+unknown-player: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
 
 dm:
   sent: "<hover:show_text:'<c:text>Sent <time>'><c:muted>[</c:muted><c:ember>me</c:ember> <c:muted><sym:arrow></c:muted> <click:suggest_command:'/msg <target> '><hover:show_text:'<c:action>Click to message <target>'><c:value><target></c:value></hover></click><c:muted>]</c:muted></hover> <c:parchment><message>"
   received: "<hover:show_text:'<c:text>Received <time>'><c:muted>[</c:muted><click:suggest_command:'/msg <sender> '><hover:show_text:'<c:action>Click to reply to <sender>'><c:value><sender></c:value></hover></click> <c:muted><sym:arrow></c:muted> <c:ember>me</c:ember><c:muted>]</c:muted></hover> <c:parchment><message>"
-  self: "<prefix><c:error><sym:cross> You can't message yourself."
-  disabled: "<prefix><c:error><sym:cross> <c:value><player></c:value> has private messages turned off."
-  muted: "<prefix><c:error><sym:cross> You are muted, so you can't send private messages."
-  too-long: "<prefix><c:error><sym:cross> That message is too long (max <c:value><max></c:value> characters)."
-  slow-down: "<prefix><c:error><sym:cross> You're sending messages too fast. Try again in <c:value><time></c:value>."
-  no-reply: "<prefix><c:error><sym:cross> Nobody to reply to yet. Use <c:value>/msg <player> <message></c:value>."
-  reply-offline: "<prefix><c:error><sym:cross> The player you were talking to is offline."
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't message yourself."
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has private messages off."
+  muted: "<prefix><c:error><sym:cross></c:error> <c:text>You're muted, so you can't send private messages."
+  too-long: "<prefix><c:error><sym:cross></c:error> <c:text>Too long. Max <c:value><max></c:value> characters."
+  slow-down: "<prefix><c:error><sym:cross></c:error> <c:text>Too fast. Try again in <c:value><time></c:value>."
+  no-reply: "<prefix><c:error><sym:cross></c:error> <c:text>Nobody to reply to. Use <c:value>/msg <player> <message></c:value>."
+  reply-offline: "<prefix><c:error><sym:cross></c:error> <c:text>That player is offline now."
 
 spy:
   line: "<c:muted>[Spy]</c:muted> <c:text><sender> <c:muted><sym:arrow></c:muted> <target>:</c:text> <c:parchment><message>"
-  line-blocked: "<c:muted>[Spy]</c:muted> <c:text><sender> <c:muted><sym:arrow></c:muted> <target> <c:error>(ignored)</c:error>:</c:text> <c:parchment><message>"
-  enabled: "<prefix><c:success><sym:check> Social spy <c:value>enabled</c:value>. <c:text>You now see all private messages."
-  disabled: "<prefix><c:text>Social spy <c:value>disabled</c:value>."
+  line-blocked: "<c:muted>[Spy]</c:muted> <c:text><sender> <c:muted><sym:arrow></c:muted> <target> <c:muted>(ignored)</c:muted>:</c:text> <c:parchment><message>"
+  enabled: "<prefix><c:success><sym:check></c:success> <c:text>Social spy <c:value>on</c:value>. You see all private messages."
+  disabled: "<prefix><c:success><sym:check></c:success> <c:text>Social spy <c:value>off</c:value>."
 
 ignore:
-  self: "<prefix><c:error><sym:cross> You can't ignore yourself."
-  unknown: "<prefix><c:error><sym:cross> No player named <c:value><player></c:value> has joined before."
-  staff: "<prefix><c:error><sym:cross> You can't ignore staff. <c:text>Use <c:value>/report</c:value> if someone is bothering you."
-  already: "<prefix><c:text>You are already ignoring <c:value><player></c:value>."
-  added: "<prefix><c:success><sym:check> You now ignore <c:value><player></c:value>. <c:text>Their private messages won't reach you. <click:run_command:'/unignore <player>'><c:action>[Undo]</c:action></click>"
-  not-ignored: "<prefix><c:error><sym:cross> You are not ignoring <c:value><player></c:value>."
-  removed: "<prefix><c:success><sym:check> You no longer ignore <c:value><player></c:value>."
-  list-empty: "<prefix><c:text>You are not ignoring anyone."
-  list: "<prefix><c:text>Ignored players (<c:value><count></c:value>): <c:value><players>"
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't ignore yourself."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
+  staff: "<prefix><c:error><sym:cross></c:error> <c:text>You can't ignore staff. Use <c:value>/report</c:value> if someone bothers you."
+  already: "<prefix><c:error><sym:cross></c:error> <c:text>You already ignore <c:value><player></c:value>."
+  added: "<prefix><c:success><sym:check></c:success> <c:text>Ignoring <c:value><player></c:value>. Their messages won't reach you. <click:run_command:'/unignore <player>'><hover:show_text:'<c:text>Runs /unignore <player>'><c:action>[Undo]</c:action></hover></click>"
+  not-ignored: "<prefix><c:error><sym:cross></c:error> <c:text>You don't ignore <c:value><player></c:value>."
+  removed: "<prefix><c:success><sym:check></c:success> <c:text>No longer ignoring <c:value><player></c:value>."
+  list-empty: "<prefix><c:text>You don't ignore anyone."
+  list: "<prefix><c:text>Ignored (<c:value><count></c:value>): <c:value><players>"
 
 afk:
   tag: "<c:muted>[AFK]</c:muted>"
-  now-afk: "<c:muted><sym:dot></c:muted> <c:value><player></c:value> <c:text>is now AFK."
-  back: "<c:muted><sym:dot></c:muted> <c:value><player></c:value> <c:text>is no longer AFK."
-  you-afk: "<prefix><c:text>You are now <c:value>AFK</c:value>."
-  you-back: "<prefix><c:text>Welcome back! You are no longer AFK."
+  now-afk: "<c:muted><sym:dot></c:muted> <c:value><player></c:value> <c:text>is AFK."
+  back: "<c:muted><sym:dot></c:muted> <c:value><player></c:value> <c:text>is back."
+  you-afk: "<prefix><c:text>You're now <c:value>AFK</c:value>."
+  you-back: "<prefix><c:text>Welcome back. You're no longer AFK."
 
 list:
-  header: "<prefix><c:value><online></c:value><c:text>/<max> players online:"
-  group: " <c:ember><sym:bullet></c:ember> <rank> <c:muted>(<count>)</c:muted><c:muted>:</c:muted> <players>"
+  header: "<prefix><c:value><online></c:value><c:muted>/<max></c:muted> <c:text>online:"
+  group: " <c:muted><sym:bullet></c:muted> <rank> <c:muted>(<count>):</c:muted> <players>"
   afk-suffix: " <c:muted>[AFK]</c:muted>"
 
 ping:
@@ -53,49 +54,49 @@ ping:
   bad-other: "<prefix><c:value><player></c:value><c:text>'s ping: <c:error><ping> ms"
 
 playtime:
-  self: "<prefix><c:text>You have played for <c:value><time></c:value>."
-  other: "<prefix><c:value><player></c:value> <c:text>has played for <c:value><time></c:value>."
+  self: "<prefix><c:text>You've played <c:value><time></c:value>."
+  other: "<prefix><c:value><player></c:value> <c:text>has played <c:value><time></c:value>."
 
 seen:
-  online: "<prefix><c:value><player></c:value> <c:success>is online now</c:success><c:text>. First joined <c:value><first></c:value>."
-  offline: "<prefix><c:value><player></c:value> <c:text>was last online <c:value><ago></c:value> ago <c:muted>(<last>)</c:muted>. First joined <c:value><first></c:value>."
+  online: "<prefix><c:value><player></c:value> <c:text>is <c:success>online</c:success>. First joined <c:value><first></c:value>."
+  offline: "<prefix><c:value><player></c:value> <c:text>was online <c:value><ago></c:value> ago <c:muted>(<last>)</c:muted>. First joined <c:value><first></c:value>."
   details: " <c:muted><sym:bullet></c:muted> <c:text>UUID <click:copy_to_clipboard:'<uuid>'><hover:show_text:'<c:action>Click to copy'><c:value><uuid></c:value></hover></click> <c:muted><sym:dot></c:muted> <c:value><platform>"
 
 whois:
-  header: "<prefix><c:value>Who is <player>?"
-  uuid: " <c:ember><sym:bullet></c:ember> <c:text>UUID: <click:copy_to_clipboard:'<uuid>'><hover:show_text:'<c:action>Click to copy'><c:value><uuid></c:value></hover></click>"
-  status: " <c:ember><sym:bullet></c:ember> <c:text>Status: <c:value><status></c:value> <c:muted>(last seen <ago> ago)"
-  rank: " <c:ember><sym:bullet></c:ember> <c:text>Rank: <c:value><rank></c:value> <c:muted><sym:dot></c:muted> <c:text>Platform: <c:value><platform>"
-  times: " <c:ember><sym:bullet></c:ember> <c:text>First joined <c:value><first></c:value> <c:muted><sym:dot></c:muted> <c:text>Last <c:value><last></c:value> <c:muted><sym:dot></c:muted> <c:text>Played <c:value><playtime>"
-  location: " <c:ember><sym:bullet></c:ember> <c:text>At <c:value><world> <x>, <y>, <z></c:value> <c:muted><sym:dot></c:muted> <c:text><gamemode> <c:muted><sym:dot></c:muted> <c:text><ping> ms"
-  names: " <c:ember><sym:bullet></c:ember> <c:text>Names: <c:value><names>"
-  ips: " <c:ember><sym:bullet></c:ember> <c:text>Addresses: <c:value><ips>"
-  alts: " <c:ember><sym:bullet></c:ember> <c:warning>Same address (<count>): <c:value><alts>"
-  no-alts: " <c:ember><sym:bullet></c:ember> <c:text>No other accounts on the same address."
-  error: "<prefix><c:error><sym:cross> Could not load the player info. Check the console."
+  header: "<prefix><c:text>Who is <c:value><player></c:value>?"
+  uuid: " <c:muted><sym:bullet></c:muted> <c:text>UUID <click:copy_to_clipboard:'<uuid>'><hover:show_text:'<c:action>Click to copy'><c:value><uuid></c:value></hover></click>"
+  status: " <c:muted><sym:bullet></c:muted> <c:text>Status <c:value><status></c:value> <c:muted>(seen <ago> ago)"
+  rank: " <c:muted><sym:bullet></c:muted> <c:text>Rank <c:value><rank></c:value> <c:muted><sym:dot></c:muted> <c:text>Platform <c:value><platform>"
+  times: " <c:muted><sym:bullet></c:muted> <c:text>First <c:value><first></c:value> <c:muted><sym:dot></c:muted> <c:text>Last <c:value><last></c:value> <c:muted><sym:dot></c:muted> <c:text>Played <c:value><playtime>"
+  location: " <c:muted><sym:bullet></c:muted> <c:text>At <c:value><world> <x>, <y>, <z></c:value> <c:muted><sym:dot></c:muted> <c:text><gamemode> <c:muted><sym:dot></c:muted> <c:text><ping> ms"
+  names: " <c:muted><sym:bullet></c:muted> <c:text>Names <c:value><names>"
+  ips: " <c:muted><sym:bullet></c:muted> <c:text>Addresses <c:value><ips>"
+  alts: " <c:muted><sym:bullet></c:muted> <c:warning>Same address (<count>): <c:value><alts>"
+  no-alts: " <c:muted><sym:bullet></c:muted> <c:text>No other accounts on this address."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't load that player. Check the console."
 
 broadcast:
   chat:
     - ""
-    - " <grad:phoenix><bold>ANNOUNCEMENT</bold></grad> <c:muted><sym:dot></c:muted> <c:text>SkybornMC"
+    - " <grad:phoenix><bold>ANNOUNCEMENT</bold></grad>"
     - " <c:parchment><message>"
     - ""
   title: "<grad:phoenix><bold>ANNOUNCEMENT</bold></grad>"
 
 links:
-  discord: "<prefix><c:text>Join our Discord: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
-  store: "<prefix><c:text>Support the server and get ranks, keys and more: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
-  vote: "<prefix><c:text>Vote every day for rewards: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
+  discord: "<prefix><c:text>Our Discord: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
+  store: "<prefix><c:text>Ranks, keys and more: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
+  vote: "<prefix><c:text>Vote daily for rewards: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
   website: "<prefix><c:text>Our website: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
 
 rules:
   - ""
-  - " <grad:phoenix><bold>SERVER RULES</bold></grad>"
-  - " <c:ember>1.</c:ember> <c:text>Be respectful. No harassment, hate speech or threats."
-  - " <c:ember>2.</c:ember> <c:text>No cheats, hacked clients, x-ray or unfair mods."
-  - " <c:ember>3.</c:ember> <c:text>No duping or abusing bugs. Report them to staff instead."
-  - " <c:ember>4.</c:ember> <c:text>No spam, advertising or scamming."
-  - " <c:ember>5.</c:ember> <c:text>No real-money trading outside the official store."
-  - " <c:ember>6.</c:ember> <c:text>Staff decisions are final. Appeal on Discord."
-  - " <c:text>Full rules: <click:open_url:'<url>'><c:sky_ice><u><url></u></c:sky_ice></click>"
+  - " <grad:phoenix><bold>RULES</bold></grad>"
+  - " <c:muted>1.</c:muted> <c:text>Be kind. No harassment, hate or threats."
+  - " <c:muted>2.</c:muted> <c:text>No cheats, hacked clients, x-ray or unfair mods."
+  - " <c:muted>3.</c:muted> <c:text>No duping or bug abuse. Report bugs to staff."
+  - " <c:muted>4.</c:muted> <c:text>No spam, ads or scams."
+  - " <c:muted>5.</c:muted> <c:text>No real-money trading outside the store."
+  - " <c:muted>6.</c:muted> <c:text>Staff decisions are final. Appeal on Discord."
+  - " <c:text>Full rules: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
   - ""

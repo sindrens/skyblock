@@ -5,7 +5,7 @@
 #  - Titles are dark gray on the light chest background with a red marker; keep crumbs short (whole title max ~32).
 # Reload: /skyblock reload core
 
-error: "<prefix><c:error><sym:cross> Something went wrong. <c:text>Please try again; staff can see the details in the console."
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Try again; staff can see why in the console."
 
 # Chest titles. <crumbs> = "Island » Upgrades", <suffix> = page indicator or nothing.
 title:
@@ -16,16 +16,16 @@ title:
 frame:
   back:
     name: "<c:ember><sym:arrow></c:ember> <c:value>Back"
-    lore: ["<c:text>Return to the previous menu.", "", "<c:action><sym:bullet> Click to go back"]
+    lore: ["<c:text>Back to the last menu.", "", "<c:action><sym:bullet> Click to go back"]
   close:
     name: "<c:error><sym:cross></c:error> <c:value>Close"
     lore: ["", "<c:action><sym:bullet> Click to close"]
   help:
     name: "<c:info>Help & guides"
     lore:
-      - "<c:text>Every feature explained step by step."
+      - "<c:text>Every feature, step by step."
       - ""
-      - "<c:action><sym:bullet> Click to open the help menu"
+      - "<c:action><sym:bullet> Click to open help"
   info:
     name: "<c:info>About this menu"
     footer:
@@ -43,21 +43,21 @@ loading:
   lore: ["<c:text>Fetching the latest data."]
 error-item:
   name: "<c:error><sym:cross> Couldn't load this"
-  lore: ["<c:text>Close the menu and open it again.", "<c:text>Still broken? Tell a staff member."]
+  lore: ["<c:text>Close the menu and open it again.", "<c:text>Still broken? Tell staff."]
 empty:
   name: "<c:text>Nothing here yet"
   lore: ["<c:muted>This list fills up as you play."]
 
 toggle:
-  "on": ["", "<c:text>Status: <c:success><sym:check> Enabled"]
-  "off": ["", "<c:text>Status: <c:error><sym:cross> Disabled"]
+  "on": ["", "<c:text>Status: <c:success><sym:check> On"]
+  "off": ["", "<c:text>Status: <c:error><sym:cross> Off"]
   action: ["", "<c:action><sym:bullet> Click to switch"]
 
 confirm:
   crumb: "Are you sure?"
   shown:
     name: "<c:warning>Please confirm"
-    lore: ["<c:text>Check the details on the green button."]
+    lore: ["<c:text>See the details on the green button."]
   "yes":
     name: "<c:success><sym:check> Confirm"
     lore-top: ["<c:text>This will:"]
@@ -69,8 +69,8 @@ confirm:
 number:
   crumb: "Choose an amount"
   info:
-    - "<c:text>Use <c:error>-</c:error> and <c:success>+</c:success> to change the amount,"
-    - "<c:text>or type an exact value in chat."
+    - "<c:text>Use <c:error>-</c:error> and <c:success>+</c:success> to change it,"
+    - "<c:text>or type an exact amount in chat."
   minus:
     name: "<c:error>- <step>"
     lore: ["", "<c:action><sym:bullet> Click to remove <step>"]
@@ -90,23 +90,23 @@ number:
     name: "<c:value>Type an amount"
     lore: ["<c:text>Write the exact amount in chat.", "<c:text>Examples: <c:value>1500</c:value>, <c:value>1.5k</c:value>, <c:value>2M", "", "<c:action><sym:bullet> Click to type"]
   confirm:
-    name: "<c:success><sym:check> Confirm <c:value><value>"
+    name: "<c:success><sym:check> Confirm</c:success> <c:value><value>"
     lore: ["", "<c:action><sym:bullet> Click to confirm"]
-  ask: "<prefix><c:text>Type an amount between <c:value><min></c:value> and <c:value><max></c:value> in chat. <c:muted>(type <c:value><cancel></c:value> to cancel, <seconds>s)"
-  invalid: "<prefix><c:error><sym:cross> That's not a valid amount. <c:text>Use a number between <c:value><min></c:value> and <c:value><max></c:value> (like 1500 or 1.5k)."
+  ask: "<prefix><c:text>Type an amount from <c:value><min></c:value> to <c:value><max></c:value> in chat. <c:muted>(<cancel> to cancel, <seconds>s)"
+  invalid: "<prefix><c:error><sym:cross></c:error> <c:text>Not an amount. Use <c:value><min></c:value> to <c:value><max></c:value>, like 1500 or 1.5k."
 
 players:
   crumb: "Choose a player"
-  info: ["<c:text>Everyone who is online right now.", "<c:text>Click a head to choose that player."]
+  info: ["<c:text>Everyone online right now.", "<c:text>Click a head to choose them."]
   entry:
     name: "<c:value><player>"
     lore: ["", "<c:action><sym:bullet> Click to choose"]
   empty:
     name: "<c:text>No other players online"
     lore: ["<c:muted>Try again when your friends are on."]
-  offline: "<prefix><c:error><sym:cross> <c:value><player></c:value> just went offline."
+  offline: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>just left."
 
 prompt:
-  cancelled: "<prefix><c:text>Cancelled. Nothing was changed."
-  timeout: "<prefix><c:error><sym:cross> You took too long. <c:text>Nothing was changed."
-  too-long: "<prefix><c:error><sym:cross> That's too long. <c:text>Use at most <c:value><max></c:value> characters, or type it again."
+  cancelled: "<prefix><c:text>Cancelled. Nothing changed."
+  timeout: "<prefix><c:error><sym:cross></c:error> <c:text>Time's up. Nothing changed."
+  too-long: "<prefix><c:error><sym:cross></c:error> <c:text>Too long. Max <c:value><max></c:value> characters, try again."

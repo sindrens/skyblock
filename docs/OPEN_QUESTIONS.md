@@ -1,6 +1,9 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- UX1 tab: the lines beside SKYBORN are now left frost white (first letter) and right blue (the "MC"), instead of one long gradient over the whole line. OK, or try the long gradient? (default: left white, right blue)
+- UX1 scoreboard: the objective line ("Next: ...") and the online count were removed to keep it at 10 lines. Bring one of them back? (default: no; the objective returns with the tutorial/quests)
+- UX1 join/quit lines are now just `[+] Name` / `[-] Name` (no "joined the server"). OK? (default: yes)
 - P0 freeze: frozen players get **no commands at all** by default (`staff.yml → freeze.allowed-commands: []`, the old default allowed /msg /r /tell /w /discord /rules /help). Chat still goes to staff only. Allow `/discord` and `/rules`? (default: none)
 - P0 freeze: staff and plugin teleports (`/tp`, `/tphere`, a `/spawn` warmup that was already running) still move a frozen player and they stay frozen at the new spot (`freeze.allowed-teleport-causes: [command, plugin]`). OK, or staff-only? (default: command + plugin)
 - P0 freeze: a frozen player hovers (flight on, no gravity) so they can't fall away; on unfreeze their own flight comes back and fall damage is ignored for `freeze.fall-grace-seconds` (10). OK? (default: yes)

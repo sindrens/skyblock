@@ -1,19 +1,21 @@
 # Command framework messages: usage, errors, cooldowns, confirmations (used by every command).
 # MiniMessage + style tags (style.yml). /skyblock reload core applies changes.
+# Format (docs/UI_STYLE.md §3): <prefix> + success "<c:success><sym:check></c:success> <c:text>..." or
+# error "<c:error><sym:cross></c:error> <c:text>problem. Fix." Values in <c:value>, clicks in <c:action>.
 
-usage: "<prefix><c:error><sym:cross> Usage: <click:suggest_command:'<example>'><hover:show_text:'<c:text><description><newline><c:action>Click to fill in'><c:value><usage></c:value></hover></click>"
-players-only: "<prefix><c:error><sym:cross> Only players can use this command."
-console-only: "<prefix><c:error><sym:cross> This command can only be used from the console."
-cooldown: "<prefix><c:error><sym:cross> Slow down! You can use this again in <c:value><time></c:value>."
-confirm: "<prefix><c:warning>Are you sure? This can't be undone. <click:run_command:'/<command> confirm'><hover:show_text:'<c:text>Runs /<command> confirm'><c:action><bold>[CONFIRM]</bold></c:action></hover></click> <c:text>or type <c:value>/<command> confirm</c:value> within <time>."
-confirm-expired: "<prefix><c:error><sym:cross> Nothing to confirm (it expired after a few seconds). Run <c:value>/<command></c:value> again."
-error: "<prefix><c:error><sym:cross> Something went wrong. Staff can see the details in the console."
+usage: "<prefix><c:error><sym:cross></c:error> <c:text>Usage: <click:suggest_command:'<example>'><hover:show_text:'<c:text><description><newline><c:action>Click to fill in'><c:value><usage></c:value></hover></click>"
+players-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only players can use this."
+console-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the console can use this."
+cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Slow down. Try again in <c:value><time></c:value>."
+confirm: "<prefix><c:text>This can't be undone. <click:run_command:'/<command> confirm'><hover:show_text:'<c:text>Runs /<command> confirm'><c:action>[Confirm]</c:action></hover></click> <c:muted>or type /<command> confirm within <time>."
+confirm-expired: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing to confirm. Run <c:value>/<command></c:value> again."
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Staff can see why in the console."
 
 # Argument errors. <input> = what was typed.
-player-offline: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not online."
-player-unknown: "<prefix><c:error><sym:cross> No player named <c:value><input></c:value> has joined before. <c:text>Check the spelling (Bedrock players start with a dot)."
-world-unknown: "<prefix><c:error><sym:cross> No loaded world named <c:value><input></c:value>."
-invalid-duration: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a time. <c:text>Examples: <c:value>30m</c:value>, <c:value>2h30m</c:value>, <c:value>7d</c:value>, <c:value>1w</c:value>"
-invalid-amount: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a valid amount. <c:text>Examples: <c:value>1500</c:value>, <c:value>1.5k</c:value>, <c:value>2M</c:value>, <c:value>3B</c:value>"
-invalid-number: "<prefix><c:error><sym:cross> <c:value><input></c:value> must be a whole number from <c:value><min></c:value> to <c:value><max></c:value>."
-invalid-choice: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not an option. <c:text>Choose one of: <c:value><choices>"
+player-offline: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not online."
+player-unknown: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>has never joined. Check the spelling (Bedrock names start with a dot)."
+world-unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No loaded world named <c:value><input></c:value>."
+invalid-duration: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a time. Try <c:value>30m</c:value>, <c:value>2h30m</c:value>, <c:value>7d</c:value> or <c:value>1w</c:value>."
+invalid-amount: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not an amount. Try <c:value>1500</c:value>, <c:value>1.5k</c:value>, <c:value>2M</c:value> or <c:value>3B</c:value>."
+invalid-number: "<prefix><c:error><sym:cross></c:error> <c:text>Use a whole number from <c:value><min></c:value> to <c:value><max></c:value> <c:muted>(not <input>)</c:muted>."
+invalid-choice: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not an option. Pick one of: <c:value><choices>"

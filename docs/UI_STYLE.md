@@ -116,21 +116,34 @@ Anything else must be tested on Bedrock first and added here.
 
 ## 3. Chat messages
 
+**Owner (2026-10-30): "clean, short, direct messages with normal words".** Every message file follows the same format
+(UX1 rewrote all of them; moderation, depths and islands follow in UX2).
+
 ### 3.1 Format
 ```
-<prefix> <message>
+<prefix><mark> <c:text>Short sentence with <c:value>values</c:value>. Fix in a few words.
 ```
-- **Prefix:** `<gradient:#C21F2B:#FF3D2E>Phoenix</gradient> <c:ember>»</c>` → **Phoenix »**. Configurable in `style.yml`.
-- Module-specific prefixes are *not* used. One prefix keeps chat calm.
-- The important part of a sentence is in `value` color, and currency amounts use their currency color.
+- **Prefix:** `<grad:phoenix><bold>PHOENIX</bold></grad> <c:ember>»</c:ember>` → **PHOENIX »** (`style.yml → prefix`). One prefix, no module prefixes.
+- **Where the prefix goes:** only on replies to something the player did (a command, a menu click, a request they got) and on direct notices to one player. **Never** on broadcasts (join/quit, AFK, announcements), staff alert lines (`[Staff]`, `[Economy]`, `[Report #]`), list/detail lines under a header, lore, the scoreboard, titles or the action bar.
+- **Success:** `<c:success><sym:check></c:success> <c:text>...` → green ✔ and gray text.
+- **Error:** `<c:error><sym:cross></c:error> <c:text>...` → red ✘ and gray text, and the fix in a few words ("Try again soon.", "Press Tab to see them all.", "Use /tpcancel.").
+- **Warning** (it worked, but look out): `<c:warning><sym:cross></c:warning> <c:text>...`.
+- **Info / neutral** (prompts, status, "teleporting in 3s"): just `<c:text>...`, no mark.
+- **Values and names** (players, amounts, items, times, commands to type): `<c:value>` white. Currency amounts keep their currency color (`<cur:money>`).
+- **Clickable parts:** `<c:action>[Word]</c:action>` (yellow, square brackets, Title case: `[Confirm]`, `[Accept]`, `[Undo]`), always with a hover text.
+- **Asides** (cancel hints, timers, logged notes): `<c:muted>(...)`, e.g. `<c:muted>(cancel to stop, 30s)`.
+- **Brand red** only in the prefix, titles and frames. Status colors (`success`/`error`) only on the mark, never on whole sentences. On/off states read `<c:value>on</c:value>` / `<c:value>off</c:value>` inside a success line.
+- **Words:** plain English, short sentences, no filler ("Please", "Heads up", "right now", "successfully"). Contractions are fine. Say what happened, then what to do.
+- **GUI lore** keeps §4/§5 (status lines like `<c:success>✔ Equipped` and `<c:error>✘ Locked` are fully colored there).
 
-### 3.2 Templates
-| Type | Example |
+### 3.2 Before / after (UX1)
+| Before | After |
 |---|---|
-| Success | `» Upgraded **Island Size** to **III**.` (`success` verb, `value` names) |
-| Error with fix | `» You need **$12.5k** more. Sell items with /sell.` (`/sell` clickable, `action` color) |
-| Info | `» KOTH starts in **5m** at the Warzone. [Teleport]` |
-| Warning/confirm | `» Inviting a player makes your island a **Team Island** forever. [Confirm] [Cancel]` |
+| `✘ No player named Steve has joined before. Check the spelling (Bedrock players start with a dot).` (all red) | `✘ Steve has never joined. Check the spelling (Bedrock names start with a dot).` (red ✘, gray text, white name) |
+| `✘ You already have 5 open reports. Staff will look at them soon.` (all red) | `✘ You have 5 open reports. Staff will check them soon.` |
+| `Flying disabled.` (red word "disabled", no mark) | `✔ Flying off.` |
+| `Are you sure? This can't be undone. [CONFIRM] or type /x confirm within 10s.` (orange) | `This can't be undone. [Confirm] (or type /x confirm within 10s)` |
+| `✔ You paid $5,000 to Steve. Your balance: $12k` (green text) | `✔ Paid $5,000 to Steve. Balance: $12k` (green ✔, gray text, money green) |
 
 Rules:
 - **Every error says how to fix it** and links to the fix when possible.
@@ -272,26 +285,52 @@ Required for: anything irreversible, anything above a money threshold, solo→te
 
 ## 6. HUD
 
-### 6.1 Scoreboard (right side, max 12 lines)
+### 6.1 Scoreboard (right side, 10 lines with the title)
+Owner (2026-10-30): "cleaner, better colors, it looks hard now". Fewer labels, more space, soft colors:
 ```
- ✦ PHOENIX ✦           ← phoenix fire gradient, bold
-                       
- ▸ Next: Mine 50 Coal  ← the current objective (tutorial/quest), always line 3
-                       
- $ 1.2M                ← money
- ✦ 4,250               ← tokens
- ◆ 120                 ← gems
-                       
- Island Lv 34 (#12)    ← level + rank
- Fuel ⌛ 6h 20m          
-                       
- play.skybornmc.net    ← address, ember
+ PHOENIX SKYBLOCK          ← phoenix fire gradient, bold (the only red)
+
+  Pouched · Mod            ← name + rank, both in the rank color, muted dot
+
+  Money  $1.2M             ← labels muted gray, money green
+  Tokens  ✦ 4,250          ← tokens purple
+  Gems  ◆ 120              ← gems aqua
+
+  Island  Lv 34 #12        ← level white, position muted
+  play.skybornmc.net       ← address, network ice blue
 ```
-Labels (`Island Lv`, `Fuel`) in `ember`, values in `value` white, currency symbols in their currency color, blank-line separators. Red appears only in the title and as `▸` markers.
-Contextual: in The Depths, the island lines are replaced by tier + satchel `Satchel 412/640`. During events: the event timer.
+**The Depths** (`scoreboard.depths`, used in the `depths` world; HudService picks the layout named after the world):
+```
+ THE DEPTHS
+
+  Pouched · Mod
+
+  Zone  Copper Caves       ← <ph:depths_zone>
+  Tier  Mine · Tier 2      ← <ph:depths_tier>
+  Mining  Lv 12 (48%)      ← <ph:skill_mining_level>, <ph:skill_mining_progress>
+
+  Money  $1.2M
+  play.skybornmc.net
+```
+- Labels `<c:muted>`, values `<c:value>` white or their currency color, two spaces between label and value, one leading space.
+- No separator bars, no online count, no objective line (the objective returns with the tutorial/quests as its own layout).
+- Max 10 lines with the title (`SidebarLinesTest` checks the bundled layouts). Events and later places (SB) add their own layout.
 
 ### 6.2 Tab list
-Header: `SKYBORNMC` (network) above `Phoenix Skyblock` in the fire gradient + online count + season (e.g. `Season 1 · Day 23`), with a thin red line of `▬` above and below. Footer: `/menu · /help · /discord · /store`. Players sorted by rank, then name. Format: `[title] [rank] name`.
+```
+ ────────────  SKYBORNMC  ────────────     ← left line frost white (first letter), right line blue (MC)
+            Phoenix Skyblock               ← phoenix fire gradient, bold
+
+          12 online · Season 1 · Preseason ← count white, rest muted
+
+        » play.skybornmc.net «             ← SkybornMC gradient, blue arrows
+
+     TPS 20.0  ·  Ping 34 ms               ← staff only: TPS green ≥ 19, orange ≥ 15, red below
+```
+- **Header lines:** the left line takes the color of the first letter (frost white `sky_frost`) and the right line the color of the last letter (`sky_blue`, the "MC"), so the lines read as the SKYBORN gradient continuing outwards. Chosen over one long gradient across the whole line because it stays clean with strikethrough spaces, and on Bedrock (first color only) both sides still look intentional.
+- **Footer:** only the address. The `/menu · /help · /discord · /store` line was removed (owner 2026-10-30).
+- **Staff line** (`skyblock.staff.tab`): `TPS` + value colored by `chat.yml → tab.tps-good / tab.tps-ok` (texts `messages/chat.yml → tab.tps.*`), then ping.
+- Players sorted by rank, then name. Format: `[title] [rank] name (tag)`.
 
 ### 6.3 Action bar
 Skill XP gains (`+12 Mining XP (68%)`), tool mode changes, satchel full warnings. Max one message per 1.5 s.

@@ -24,7 +24,7 @@ hub:
     - "<c:text>Every feature of Phoenix Skyblock."
     - "<c:text>Gray icons are coming soon."
   action: ["", "<c:action><sym:bullet> Click to open"]
-  locked: ["", "<c:error><sym:cross> Your rank can't open this yet."]
+  locked: ["", "<c:error><sym:cross></c:error> <c:text>Your rank can't open this yet."]
   profile:
     name: "<ph:displayname>"
     lore:
@@ -183,11 +183,11 @@ settings:
     event-sounds:
       name: "<c:value>Event sounds"
       lore: ["<c:text>Sounds for events, bosses", "<c:text>and announcements."]
-  changed-on: "<prefix><c:success><sym:check> <setting> <c:text>is now <c:success>on</c:success>."
-  changed-off: "<prefix><c:success><sym:check> <setting> <c:text>is now <c:error>off</c:error>."
-  unknown: "<prefix><c:error><sym:cross> There's no setting called <c:value><setting></c:value>. <c:text>Press Tab to see them all."
-  not-yet: "<prefix><c:error><sym:cross> <c:value><setting></c:value> is coming soon. <c:text>It unlocks when its feature arrives."
-  failed: "<prefix><c:error><sym:cross> That setting couldn't be changed right now. Try again in a moment."
+  changed-on: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is <c:value>on</c:value>."
+  changed-off: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is <c:value>off</c:value>."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No setting <c:value><setting></c:value>. Press Tab to see them all."
+  not-yet: "<prefix><c:error><sym:cross></c:error> <c:value><setting></c:value> <c:text>comes with its feature, soon."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't change that setting. Try again soon."
 
 help:
   title: "Help"
@@ -232,21 +232,21 @@ help:
   no-commands:
     name: "<c:text>No commands here"
     lore: ["<c:muted>You don't have any commands in this list."]
-  coming-soon: "<prefix><c:muted><name> <c:text>help is coming soon, together with the feature."
-  unknown: "<prefix><c:error><sym:cross> No help topic called <c:value><topic></c:value>. <c:text>Here are all categories."
+  coming-soon: "<prefix><c:value><name></c:value> <c:text>help comes with the feature, soon."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No help topic <c:value><topic></c:value>. Here are all categories."
   chat:
-    header: "<prefix><c:value>Help <c:text>(click a category):"
-    category: " <c:ember><sym:bullet></c:ember> <click:run_command:'/help <id>'><hover:show_text:'<lore>'><name></hover></click>"
+    header: "<prefix><c:text>Help <c:muted>(click a category):"
+    category: " <c:muted><sym:bullet></c:muted> <click:run_command:'/help <id>'><hover:show_text:'<lore>'><name></hover></click>"
     category-locked: " <c:muted><sym:bullet> <name> (Coming soon)"
     footer: " <c:muted>Tip: <c:text>/help commands <c:muted>lists every command you can use."
-    category-header: "<prefix><name> <c:text>(click a topic):"
-    topic-line: " <c:ember><sym:bullet></c:ember> <click:run_command:'/help <id>'><hover:show_text:'<summary>'><name></hover></click>"
+    category-header: "<prefix><name> <c:muted>(click a topic):"
+    topic-line: " <c:muted><sym:bullet></c:muted> <click:run_command:'/help <id>'><hover:show_text:'<summary>'><name></hover></click>"
     topic-header: "<prefix><name>"
-    page-title: " <c:ember><sym:bullet></c:ember> <title>"
+    page-title: " <c:muted><sym:bullet></c:muted> <title>"
     page-line: "   <line>"
     take-me-there: " <click:run_command:'/<command>'><hover:show_text:'<c:text>Runs /<command>'><c:success>[Take me there]</c:success></hover></click>"
-    commands-header: " <c:ember><sym:bullet></c:ember> <c:value>Commands <c:muted>(click to put in chat)"
-    all-commands-header: "<prefix><c:value>Your commands <c:text>(<count>, click to put in chat):"
+    commands-header: " <c:muted><sym:bullet></c:muted> <c:value>Commands <c:muted>(click to put in chat)"
+    all-commands-header: "<prefix><c:text>Your commands <c:muted>(<count>, click one to put it in chat):"
     commands-category: " <c:ember><category>"
     command-line: "   <click:suggest_command:'<command>'><hover:show_text:'<c:text><description>'><c:value><usage></c:value></hover></click> <c:muted><description>"
     suggest: "<prefix><click:suggest_command:'<command>'><hover:show_text:'<c:text>Click to put it in your chat'><c:action>[Click]</c:action> <c:value><usage></c:value></hover></click> <c:muted><description>"
@@ -259,7 +259,7 @@ staff:
   header:
     name: "<c:brand><bold>Staff hub"
     lore: ["<c:text>Thanks for keeping SkybornMC", "<c:text>fair and friendly."]
-  locked: ["", "<c:error><sym:cross> Your rank can't use this."]
+  locked: ["", "<c:error><sym:cross></c:error> <c:text>Your rank can't use this."]
   entries:
     display:
       name: "<c:flame><bold>Display"
@@ -306,7 +306,7 @@ admin:
   file:
     name: "<c:value><file>"
     lore: ["<c:text>Settings: <c:value><settings>", "<c:text>You can edit: <c:value><editable>", "<c:text>Changed: <c:value><changed>"]
-    problems: ["<c:warning><sym:cross> <count> problem(s), see /skyblock config"]
+    problems: ["<c:warning><sym:cross></c:warning> <c:text><count> problem(s), see /skyblock config"]
   setting:
     name: "<c:value><path>"
     name-changed: "<c:flame><path>"
@@ -316,17 +316,17 @@ admin:
     range: "<c:text>Allowed: <c:value><min></c:value> <c:muted>to</c:muted> <c:value><max>"
     choices: "<c:text>Choices: <c:muted><choices>"
     restart: ["<c:warning>Needs a restart to take effect."]
-    owner: ["<c:brand>Owner only"]
-    locked: ["", "<c:error><sym:cross> Only the owner can change this."]
+    owner: ["<c:warning>Owner only"]
+    locked: ["", "<c:error><sym:cross></c:error> <c:text>Only the owner can change this."]
     action-toggle: ["", "<c:action><sym:bullet> Click to switch"]
     action-cycle: ["", "<c:action><sym:bullet> Click for the next choice"]
     action-list: ["", "<c:action><sym:bullet> Click to edit the list"]
     action-edit: ["", "<c:action><sym:bullet> Click to change"]
-  prompt: "<prefix><c:text>Type a new value for <c:value><path></c:value> (now: <c:muted><value></c:muted>). <c:value>default</c:value> resets it, <c:value><cancel></c:value> cancels (<seconds>s)."
-  saved: "<prefix><c:success><sym:check> <c:value><file></c:value> <c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to</c:text> <c:value><new></c:value><c:text>. Applied."
-  saved-restart: "<prefix><c:success><sym:check> <c:value><file></c:value> <c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to</c:text> <c:value><new></c:value><c:text>. <c:warning>Applies after a restart."
-  failed: "<prefix><c:error><sym:cross> <c:value><path></c:value> wasn't changed: <c:text><reason>"
-  no-permission: "<prefix><c:error><sym:cross> Only the owner can change this setting."
+  prompt: "<prefix><c:text>Type a new value for <c:value><path></c:value> <c:muted>(now <value>)</c:muted><c:text>. <c:value>default</c:value> resets it. <c:muted>(<cancel> to cancel, <seconds>s)"
+  saved: "<prefix><c:success><sym:check></c:success> <c:value><file></c:value> <c:text><c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to <c:value><new></c:value><c:text>. Live now."
+  saved-restart: "<prefix><c:success><sym:check></c:success> <c:value><file></c:value> <c:text><c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to <c:value><new></c:value><c:text>. Applies after a restart."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:value><path></c:value> <c:text>wasn't changed: <reason>"
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Only the owner can change this."
   list:
     info:
       - "<c:text>Click an entry to remove it."
@@ -338,7 +338,7 @@ admin:
     add:
       name: "<c:success>+ Add"
       lore: ["<c:text>Add an entry by typing it.", "", "<c:action><sym:bullet> Click to add"]
-    prompt: "<prefix><c:text>Type the entry to add to <c:value><path></c:value>. <c:value><cancel></c:value> cancels (<seconds>s)."
+    prompt: "<prefix><c:text>Type the entry to add to <c:value><path></c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
     empty:
       name: "<c:text>The list is empty"
       lore: ["<c:muted>Use + to add the first entry."]
