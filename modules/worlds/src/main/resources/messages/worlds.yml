@@ -73,7 +73,8 @@ builds:
     spawn-failed: " <c:error><sym:cross></c:error> <c:text>Couldn't set the spawn of <c:value><world></c:value> <c:muted>(not in worlds.yml or not saved)"
     regions-covered: " <c:success><sym:check></c:success> <c:text><c:value><count></c:value> <c:text>protected region(s): the whole <c:value><world></c:value> <c:text>world is already protected"
     regions-stored: " <c:warning><sym:cross></c:warning> <c:text><c:value><count></c:value> <c:text>protected region(s) in <c:value><world></c:value> <c:text>stored for later (no region protection there yet)"
-    portals-stored: " <c:warning><sym:cross></c:warning> <c:text><c:value><count></c:value> <c:text>portal(s) stored for later (portals don't teleport yet)"
+    portals-stored: " <c:warning><sym:cross></c:warning> <c:text><c:value><count></c:value> <c:text>portal(s) stored (portals are off: worlds.yml portals.enabled)"
+    portals: " <c:success><sym:check></c:success> <c:text><c:value><count></c:value> <c:text>portal(s) active: <c:muted><list>"
     stored: " <c:ember><sym:bullet></c:ember> <c:text>Stored for later modules: <c:muted><list>"
     depths: " <c:success><sym:check></c:success> <c:text>Depths zones.yml updated: <c:value><changes></c:value> <c:text>change(s) <c:muted>(backup <backup>, module reloaded)"
     depths-change: "   <c:muted><sym:dot> <change>"
@@ -85,3 +86,42 @@ builds:
     island-copied: " <c:warning><sym:cross></c:warning> <c:text>Copied to <c:value><folder></c:value><c:text>, but the islands module isn't running: set islands.yml creation.schematic to <c:value><name>"
     island-failed: " <c:error><sym:cross></c:error> <c:text>Island schematic not changed: <c:muted><reason>"
     done: "<prefix><c:success><sym:check></c:success> <c:text>Applied <c:value><id></c:value><c:text>."
+
+# Build portals (PORTALS): step into a portal of an applied build to travel. <target> = the portal's target name.
+portals:
+  destination: "<target>"
+  # Title on arrival: portals.title.<target> if it exists, else portals.title.default.
+  title:
+    default:
+      title: "<c:value><bold><target></bold>"
+      subtitle: ""
+      fade-in: 5
+      stay: 30
+      fade-out: 10
+    spawn:
+      title: "<grad:phoenix><bold>Phoenix Citadel</bold></grad>"
+      subtitle: "<c:text>Spawn"
+      fade-in: 5
+      stay: 30
+      fade-out: 10
+    depths:
+      title: "<c:ember><bold>The Depths</bold>"
+      subtitle: "<c:text>Mine, chop and fight"
+      fade-in: 5
+      stay: 30
+      fade-out: 10
+    warzone:
+      title: "<c:error><bold>Warzone</bold>"
+      subtitle: "<c:text>PvP is on here"
+      fade-in: 5
+      stay: 30
+      fade-out: 10
+  closed: "<prefix><c:error><sym:cross></c:error> <c:text>This portal isn't open yet. Soon!"
+  no-world: "<prefix><c:error><sym:cross></c:error> <c:text>This portal can't open right now. Try again soon, or tell staff."
+  not-built: "<prefix><c:error><sym:cross></c:error> <c:text>The <c:value><target></c:value> isn't built yet. Soon!"
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>This portal doesn't lead anywhere yet."
+  frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You're frozen by staff and can't use portals."
+  combat-wait: "<c:warning>In combat:</c:warning> <c:text>the portal takes you in <c:value><seconds> s</c:value>. Stay inside."
+  combat-left: "<prefix><c:error><sym:cross></c:error> <c:text>You left the portal. Step in again to travel."
+  no-islands: "<prefix><c:error><sym:cross></c:error> <c:text>Islands aren't available right now. Try again soon."
+  warzone-only: "<prefix><c:error><sym:cross></c:error> <c:text>The warzone can only be entered through its portal in the castle gatehouse."

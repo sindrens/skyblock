@@ -25,6 +25,8 @@ public enum TeleportReason {
     DUNGEON("dungeon", "skyblock.depths.bypass"),
     /** The teleport after a profile switch (always instant: the switch already happened). */
     PROFILE("profile", TeleportReason.STAFF_BYPASS),
+    /** Build portals (step in, land at the target): always instant; the 3 s combat delay is the portal's own rule. */
+    PORTAL("portal", TeleportReason.STAFF_BYPASS),
     /** Instant staff teleports ({@code /tp}, {@code /tphere}, {@code /tppos}, {@code /top}, {@code /back}, staff homes). */
     STAFF("staff", TeleportReason.STAFF_BYPASS);
 

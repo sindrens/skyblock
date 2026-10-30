@@ -134,3 +134,43 @@ builds:
   paste-order: [spawn_base, spawn_, depths_gate, depths_mine_, depths_forest_, depths_combat_, depths_, warzone_]
   # Folder (plugin folder) the islands module reads its starter schematic from.
   islands-schematics-folder: schematics
+
+# Build portals (PORTALS): players who step into a portal of an applied build travel to its target (instant; a
+# combat-tagged player waits combat-delay-seconds inside). Targets: island (create the island on first use, then always
+# home), spawn, depths, warzone, world:<name>, point:<category>:<id>. Portals and their targets come from the build
+# metadata (build-points.yml); the lists below override them. See docs/commands/worlds.md.
+portals:
+  # Build portals teleport players who step into them (portals of the applied builds).
+  enabled: true
+  # Portal id (or build:id) that creates/teleports to the player's island. Empty = from the build metadata (target island, or an id containing island/start).
+  island-portal: ""
+  # Portal ids that teleport although the build marks them closed (open the gate first).
+  force-open: []
+  # Portal ids that never teleport.
+  disabled: []
+  # portal=target entries replacing the metadata target (targets: island, spawn, depths, warzone, world:<name>, point:<category>:<id>).
+  target-overrides: []
+  # target=world entries: which world a target name leads to.
+  world-targets: [spawn=spawn, depths=depths, warzone=warzone]
+  # Worlds whose portals open only once a build of that world is applied.
+  need-build: [warzone]
+  # After a portal teleport, portals ignore the player this long (no bouncing back).
+  grace-millis: 1000
+  # After a refused portal (closed, frozen...), the next message comes at most this often.
+  refusal-cooldown-millis: 2000
+  # While the island portal creates/loads the island, portals ignore the player up to this long.
+  island-wait-millis: 15000
+  # Seconds a combat-tagged player (or anyone in the warzone) waits in the portal (owner rule: instant except in combat).
+  combat-delay-seconds: 3
+  # Speed a refused player is pushed out of the portal (0 = no push).
+  push-back: 0.6
+  # Sound key (sounds.yml) played on arrival through a portal.
+  sound: teleport
+  # Ticks between portal particle puffs (0 = no particles).
+  particle-ticks: 10
+  # Particles per puff, spread over the portal opening.
+  particle-count: 6
+  # The warzone world (reachable only through its portal).
+  warzone-world: warzone
+  # Teleports into the warzone from other worlds are refused except through its portal (staff teleports with the teleport bypass still work).
+  warzone-portal-only: true

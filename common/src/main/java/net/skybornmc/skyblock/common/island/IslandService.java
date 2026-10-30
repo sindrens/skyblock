@@ -105,6 +105,29 @@ public interface IslandService {
     /** Teleports {@code player} to their own island home (warmup, safe-spot check). False if they have no island. */
     boolean teleportHome(Player player);
 
+    /** What {@link #enterFromPortal} did. */
+    enum PortalEntry {
+        /** The player has an island: the (instant) home teleport started. */
+        HOME,
+        /** The player had no island: it is being created (no menu) and they are brought there when it is built. */
+        CREATING,
+        /** Their island is still being built from an earlier request; nothing new started (the player was told). */
+        BUSY,
+        /** Nothing started (islands world missing, staff join block...); the player was told why. */
+        REFUSED
+    }
+
+    /**
+     * The island portal at spawn (owner answer 159): with an island on the active profile it teleports the player home
+     * (instant, safe-spot check); without one it creates the island right away (the normal {@code /is create} flow with
+     * the applied starter schematic, no confirm menu, a short "Creating your island" title) and brings them there.
+     * {@code onArrive} runs on the main thread once the player is on the island, with {@code true} for a new island; it
+     * never runs if the teleport or creation fails. Main thread.
+     */
+    default PortalEntry enterFromPortal(Player player, java.util.function.Consumer<Boolean> onArrive) {
+        return PortalEntry.REFUSED;
+    }
+
     /**
      * Admin/upgrade hook (Phase 5 Island Size, M2.7 /isadmin setsize): sets the border width in chunks (odd, between the
      * start size and the max). Saved, logged (category island) and shown to players on the island right away.
