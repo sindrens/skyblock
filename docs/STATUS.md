@@ -27,7 +27,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
-- Last released bundle: update40 (main at release). Next bundle number: 41.
+- Last released bundle: update41. Next bundle number: 42.
 - Owner gets a push notification on every release (PushNotification tool).
 
 ## Owner answers page
@@ -47,7 +47,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - UX1 messages/scoreboard/tab (resumed; 3 parts committed) — wnl7nutxi
-- P2 undo, double-punish, offence expiry, /pstats — wei9mauo2
+- P2 undo, double-punish, offence expiry, /pstats — wl7qqysat
 - M2.4 island visiting, warps, ratings, likes — w8z4uyvta
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
 
