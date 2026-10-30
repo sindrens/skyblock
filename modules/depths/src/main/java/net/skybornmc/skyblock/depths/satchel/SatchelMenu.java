@@ -18,12 +18,14 @@ import java.util.Optional;
 
 /**
  * The satchel menu (M4.4, UI_STYLE §5): the header shows used/capacity and the total value, the content lists every item
- * with its amount and value (click → sell it or take it out), Sell all and Upgrade sit in the bottom row. Single left
- * clicks only (Bedrock). Refreshes live while open.
+ * with its amount and value (click → sell it or take it out), Sell all and Upgrade sit in the bottom row, and (SELL2)
+ * a Sell chest button (46) opens the {@code /sell} chest for inventory items (all selling goes through SellService).
+ * Single left clicks only (Bedrock). Refreshes live while open.
  */
 final class SatchelMenu extends PagedMenu<String> {
 
     static final int SLOT_SUMMARY = 4;
+    static final int SLOT_SELL_CHEST = 46;
     static final int SLOT_SELL_ALL = 47;
     static final int SLOT_UPGRADE = 51;
     static final String MODULE = "depths";
@@ -105,6 +107,12 @@ final class SatchelMenu extends PagedMenu<String> {
                 service.sound(click.player(), "error");
             }
         });
+
+        if (satchel.sellService().isPresent()) {
+            set(SLOT_SELL_CHEST, service.item(new ItemStack(Material.CHEST), text("satchel.menu.sell-chest.name"),
+                    lines("satchel.menu.sell-chest.lore")),
+                    click -> satchel.sellService().ifPresent(s -> s.openSellChest(click.player(), this)));
+        }
 
         SatchelMath.Upgrade next = satchel.nextUpgrade(viewer);
         int level = satchel.upgradeLevel(viewer);

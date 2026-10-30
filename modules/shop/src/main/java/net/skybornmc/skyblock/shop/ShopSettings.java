@@ -8,9 +8,24 @@ import java.util.List;
 /** Typed settings of the builder shop ({@code shop-settings.yml}). The items and prices live in {@code shop.yml}. */
 public final class ShopSettings extends ModuleConfig {
 
-    @Setting(path = "buy.amounts", desc = "Quick-buy amounts on an item page (PHASE-3 M3.5: 1, 16, 64). Up to 3; "
-            + "\"Custom amount\" opens the number picker.")
-    public List<String> amounts = List.of("1", "16", "64");
+    @Setting(path = "quick-buy.left-amount", desc = "Items a left-click buys in the quick-buy grid (Java). SELL2 default: 1.",
+            min = 1, max = 2_304)
+    public int leftAmount = 1;
+
+    @Setting(path = "quick-buy.right-amount", desc = "Items a right-click buys in the quick-buy grid (Java). SELL2 default: "
+            + "64 (a stack).", min = 1, max = 2_304)
+    public int rightAmount = 64;
+
+    @Setting(path = "quick-buy.start-amount", desc = "The amount the amount screen starts at (shift-click on Java, tap on "
+            + "Bedrock).", min = 1, max = 2_304)
+    public int startAmount = 1;
+
+    @Setting(path = "feedback.chat-from", desc = "Purchases costing at least this much also post a chat line; cheaper ones "
+            + "only show the action bar line (SELL2 default: 100,000).", min = 0)
+    public long chatFrom = 100_000;
+
+    @Setting(path = "feedback.sound", desc = "Sound (sounds.yml key) played after a purchase. A soft click by default.")
+    public String buySound = "click";
 
     @Setting(path = "buy.max-amount", desc = "Most items one purchase can buy (also limited by free inventory space). "
             + "2304 = 36 full stacks.", min = 1, max = 100_000)
@@ -20,7 +35,8 @@ public final class ShopSettings extends ModuleConfig {
             + "0 = always ask.", min = 0, level = Setting.Level.OWNER)
     public long confirmAbove = 100_000;
 
-    @Setting(path = "buy.picker-steps", desc = "Step buttons of the custom amount picker (smallest first, up to 3).")
+    @Setting(path = "buy.picker-steps", desc = "Step buttons of the amount screen (smallest first, up to 3): -64 -16 -1 / "
+            + "+1 +16 +64 by default.")
     public List<String> pickerSteps = List.of("1", "16", "64");
 
     @Setting(path = "buy.save-player-data", desc = "Save the player's data right after the items are handed over, so a "
@@ -45,11 +61,6 @@ public final class ShopSettings extends ModuleConfig {
     public String header() {
         return "Builder shop settings (M3.5). Items and prices: shop.yml. Texts: messages/shop.yml.\n"
                 + "Reload: /skyblock reload shop";
-    }
-
-    /** The quick-buy amounts that make sense (1 .. max-amount), at most 3, in order. */
-    public List<Integer> quickAmounts() {
-        return numbers(amounts).stream().filter(a -> a >= 1 && a <= maxAmount).distinct().limit(3).toList();
     }
 
     /** The picker steps as the number picker wants them (at least one; positive). */

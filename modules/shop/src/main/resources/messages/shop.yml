@@ -48,8 +48,9 @@ menu:
   title: "Shop"
   info:
     - "<c:text>Buy blocks and items for your island."
-    - "<c:text>Pick a category, then an item and"
-    - "<c:text>how many. Selling is <c:value>/sell</c:value><c:text>."
+    - "<c:text>Pick a category, then click an"
+    - "<c:text>item to buy it. Sell with the gold"
+    - "<c:text>ingot or <c:value>/sell</c:value><c:text>."
   summary:
     name: "<c:flame><sym:star></c:flame> <c:value>Builder shop"
     lore:
@@ -66,69 +67,105 @@ menu:
   empty:
     name: "<c:muted>The shop is empty"
     lore: ["<c:text>Staff haven't added items yet."]
+  # The Sell button (slot 51 of /shop and every category): opens the sell chest.
+  sell:
+    name: "<c:value><bold>Sell items"
+    lore:
+      - "<c:text>Opens the sell chest: put your"
+      - "<c:text>loot in and sell it at live prices."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
 
 category:
   info:
-    - "<c:text>Everything in this category."
-    - "<c:text>Click an item to choose how many."
+    - "<c:text>Left-click buys 1, right-click buys"
+    - "<c:text>a stack, shift-click picks an amount."
+    - "<c:text>Only what fits is bought and paid."
+  info-bedrock:
+    - "<c:text>Tap an item to choose how many."
+    - "<c:text>Only what fits is bought and paid."
   empty:
     name: "<c:muted>Nothing here right now"
     lore: ["<c:text>Try another category."]
   entry:
     name: "<c:value><bold><item>"
-    # The | Sell Price and You can afford lines (price.*) follow these lines, then a blank line and the action.
-    lore:
-      - "<bold><c:buy>| Buy Price: </c:buy><cur:money><price></cur:money></bold> <c:muted>each"
-      - "<c:text>A stack of 64: </c:text><cur:money><stack></cur:money>"
-    open: "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
     locked: "<c:error><sym:cross> Locked"
     requires: "<c:text>Needs <c:value><skill> <level></c:value><c:text>."
     unavailable:
       - "<c:error><sym:cross> Not for sale right now"
       - "<c:muted>Staff are fixing its price."
 
-# V2 price block (STYLE2) under the buy price: <sell> today's /sell price (only shown when /sell buys the item),
-# <afford> how many your balance pays for.
-price:
-  sell: ["<bold><c:sell>| Sell Price: </c:sell><cur:money><sell></cur:money></bold> <c:muted>each"]
-  afford: ["<c:text>You can afford: </c:text><c:value><afford>"]
+# Quick-buy lore (SELL2). These are LoreBuilder labels: plain text, no tags ({amount} is filled in). The formats
+# (| Buy Price, | Sell Price, | Information, » ACTION) are in messages/items.yml (lore.*).
+quick:
+  info-title: "Information"
+  stack: "Stack of {amount}"
+  afford: "You can afford"
+  action:
+    left-input: "LEFT-CLICK"
+    left: "buy {amount}"
+    right-input: "RIGHT-CLICK"
+    right: "buy {amount}"
+    shift-input: "SHIFT-CLICK"
+    shift: "pick amount"
+    tap-input: "TAP"
+    tap: "to choose"
 
-item:
+# The amount screen (shift-click on Java, tap on Bedrock).
+amount:
+  title: "Buy <item>"
   info:
-    - "<c:text>Pick how many to buy. The money is"
-    - "<c:text>taken first, then the items go into"
-    - "<c:text>your inventory. Full inventory: no buy."
-  picker-title: "Buy <item>"
-  shown:
+    - "<c:text>Pick how many with - and +, or type"
+    - "<c:text>an amount. If not all of it fits, you"
+    - "<c:text>get (and pay for) what fits."
+  minus:
+    name: "<c:error>-<step>"
+    lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to remove <step>"]
+  plus:
+    name: "<c:success>+<step>"
+    lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to add <step>"]
+  item:
     name: "<c:value><bold><item>"
     lore:
       - "<bold><c:buy>| Buy Price: </c:buy><cur:money><price></cur:money></bold> <c:muted>each"
-      - "<c:text>Room in your inventory: </c:text><c:value><fits>"
-      - "<c:text>Your balance: </c:text><cur:money><balance></cur:money>"
-  amount:
-    name: "<c:success>Buy <amount>x <c:value><item>"
+      - ""
+      - "<bold><c:header>| Information</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Buying: </c:text><c:value><amount>"
+      - "<c:bar>| </c:bar><c:text>Total: </c:text><cur:money><total></cur:money>"
+      - "<c:bar>| </c:bar><c:text>Room for: </c:text><c:value><fits>"
+      - "<c:bar>| </c:bar><c:text>You can afford: </c:text><c:value><afford>"
+  type:
+    name: "<c:value>Type an amount"
     lore:
-      - "<c:text>Total: <cur:money><total></cur:money>"
+      - "<c:text>Type any amount in chat"
+      - "<c:text>(1 to <c:value><max></c:value><c:text>, 1.5k works)."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type"
+  cancel:
+    name: "<c:error><bold>Cancel"
+    lore: ["<c:text>Back to the items."]
+  buy:
+    name: "<c:success><bold>Buy <amount> for <cur:money><total></cur:money>"
+    lore:
       - "<c:muted><amount> x <price>"
       - ""
-    buy: "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
-    no-room: "<c:error><sym:cross> Not enough room <c:muted>(fits <fits>)"
-    too-expensive: "<c:error><sym:cross> You can't afford this"
-  custom:
-    name: "<c:value>Custom amount"
-    lore:
-      - "<c:text>Type or pick any amount"
-      - "<c:text>up to <c:value><max></c:value><c:text>."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
-  custom-full:
-    name: "<c:muted>Custom amount"
-    lore:
+    ok: "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+    partial:
+      - "<c:warning>Only <fits> fit: you get and pay for <fits>."
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+    no-room:
       - "<c:error><sym:cross> Your inventory is full."
       - "<c:text>Make some room first."
+    too-expensive:
+      - "<c:error><sym:cross> You can't afford this."
+      - "<c:muted>Balance: <balance>"
+  ask: "<prefix><c:text>Type how many to buy (1 to <c:value><max></c:value><c:text>) or <c:value><cancel></c:value><c:text>. <c:muted>(<seconds>s)"
+  invalid: "<prefix><c:error><sym:cross></c:error> <c:text>That's not an amount from 1 to <c:value><max></c:value><c:text>."
 
 confirm:
   crumb: "Confirm purchase"
+  shown: "<c:success>Buy <amount>x <c:value><item>"
+  shown-lore: ["<c:text>Total: <cur:money><total></cur:money>"]
   lines:
     - "<c:text>This will:"
     - "<c:text>Buy <c:value><amount>x <item></c:value>"
@@ -138,13 +175,16 @@ confirm:
     - "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm"
 
 buy:
+  # Action bar after every purchase (SELL2); the chat lines below only from feedback.chat-from (shop-settings.yml).
+  bought-bar: "<c:success><sym:check></c:success> <c:value>+<amount> <item></c:value> <c:error>-<price>"
+  partial-bar: "<c:warning><sym:check></c:warning> <c:text>Bought <c:value><amount></c:value> of <c:value><requested></c:value>: no more room <c:error>-<price>"
   bought: "<prefix><c:success><sym:check></c:success> <c:text>Bought <c:value><amount>x <item></c:value> <c:text>for <cur:money><price></cur:money><c:text>. Balance: <cur:money><balance></cur:money>"
+  partial: "<prefix><c:warning><sym:check></c:warning> <c:text>Bought <c:value><amount></c:value> of <c:value><requested>x <item></c:value><c:text>: no more room. Paid only <cur:money><price></cur:money><c:text>."
   delivered-late: "<prefix><c:success><sym:check></c:success> <c:text>Here is your shop purchase: <c:value><amount>x <item></c:value><c:text>."
   dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your inventory filled up: <c:value><amount></c:value> <c:text>items dropped at your feet."
   waiting-no-room: "<prefix><c:warning><sym:cross></c:warning> <c:text>A shop purchase (<c:value><amount>x <item></c:value><c:text>) is waiting. Make room, then rejoin or switch profile."
-  not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>That costs <cur:money><price></cur:money><c:text>, you have <cur:money><balance></cur:money><c:text>."
+  not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>That costs <cur:money><price></cur:money><c:text>, you have <cur:money><balance></cur:money><c:text>. Buy fewer or sell items first."
   no-room: "<prefix><c:error><sym:cross></c:error> <c:text>Your inventory is full. Make some room first."
-  no-room-some: "<prefix><c:error><sym:cross></c:error> <c:text>Only <c:value><fits></c:value> <c:text>fit in your inventory. Buy fewer or make room."
   bad-amount: "<prefix><c:error><sym:cross></c:error> <c:text>Pick an amount from 1 to <c:value><max></c:value><c:text>."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your last purchase is still going through."
   gone: "<prefix><c:error><sym:cross></c:error> <c:text>That item isn't for sale any more."

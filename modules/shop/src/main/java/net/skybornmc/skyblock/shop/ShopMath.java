@@ -91,4 +91,30 @@ public final class ShopMath {
         }
         return out;
     }
+
+    /**
+     * What one purchase really buys (SELL2 partial buys).
+     *
+     * @param amount  items to buy and charge for (0 = nothing: no room or a bad request)
+     * @param partial true when fewer than requested fit ("Bought 40 of 64: no more room")
+     */
+    public record BuyPlan(int amount, boolean partial) {
+    }
+
+    /**
+     * Plans a purchase of {@code requested} items when {@code fits} fit in the inventory and one purchase may buy at most
+     * {@code configMax}: buys as many as fit (only those are charged), never more than asked, never more than the max.
+     */
+    public static BuyPlan plan(long requested, long fits, long configMax) {
+        if (requested < 1 || configMax < 1) {
+            return new BuyPlan(0, false);
+        }
+        long want = Math.min(requested, configMax);
+        long room = Math.max(0, fits);
+        long amount = Math.min(want, room);
+        if (amount > Integer.MAX_VALUE) {
+            amount = Integer.MAX_VALUE;
+        }
+        return new BuyPlan((int) amount, amount > 0 && amount < want);
+    }
 }

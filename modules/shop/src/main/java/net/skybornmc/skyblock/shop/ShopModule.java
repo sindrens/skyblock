@@ -59,10 +59,12 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 
 /**
- * The builder shop (M3.5): {@code /shop [category]} opens categories → item pages → buy ×1/×16/×64 or a custom amount
- * (number picker). Prices come from {@code shop.yml}; a real money sink (no selling back here, selling is {@code /sell}).
+ * The builder shop (M3.5, quick-buy grid SELL2): {@code /shop [category]} opens categories → a quick-buy grid (Java:
+ * left-click 1, right-click 64, shift-click the amount screen; Bedrock: a tap opens the amount screen). Prices come from
+ * {@code shop.yml}; a real money sink (no selling back here: the Sell button opens the {@code /sell} chest).
  *
- * <p><b>Purchase safety.</b> Free inventory space is counted before paying (no room = refused, nothing paid). The payment
+ * <p><b>Purchase safety.</b> Free inventory space is counted before paying: when not all of it fits, only what fits is
+ * bought and charged ("Bought 40 of 64: no more room"); no room at all = refused, nothing paid. The payment
  * is one ledger transaction from the player's <b>profile</b> account that writes the purchase row in the same database
  * transaction. Items are handed out only after it succeeded, then the row is marked delivered. If the player left or
  * switched profile meanwhile, the purchase waits ({@code pending}) and is handed over on the next join / switch back;
@@ -281,20 +283,6 @@ public final class ShopModule implements SkyblockModule, Listener {
                 .map(p -> java.util.OptionalLong.of(Math.max(0, Math.round(p.unit())))).orElse(java.util.OptionalLong.empty());
     }
 
-    /**
-     * The V2 price block under the buy price (STYLE2): the red {@code | Sell Price} line when /sell buys the item and
-     * {@code You can afford: N}.
-     */
-    List<net.kyori.adventure.text.Component> priceLines(Player viewer, ShopCatalog.Item item, long balance) {
-        List<net.kyori.adventure.text.Component> out = new java.util.ArrayList<>();
-        java.util.OptionalLong sell = sellPrice(item);
-        if (sell.isPresent() && sell.getAsLong() > 0) {
-            out.addAll(core.menus().lines(viewer, ID, "price.sell", money("sell", sell.getAsLong())));
-        }
-        out.addAll(core.menus().lines(viewer, ID, "price.afford", Msg.number("afford", ShopMath.affordable(item.price(), balance))));
-        return out;
-    }
-
     /** True if this item may be sold now: its price is above anything /sell could pay for it (or the check is off). */
     boolean priceSafe(ShopCatalog.Item item) {
         return !settings.checkSellPrices || !ShopMath.undercutsSell(item, this::maxSell);
@@ -428,12 +416,15 @@ public final class ShopModule implements SkyblockModule, Listener {
         }
         Material material = material(item);
         long fits = InventorySpace.fits(player.getInventory(), new ItemStack(material));
-        if (fits < quantity) {
-            fail(player, fits <= 0 ? "buy.no-room" : "buy.no-room-some", Msg.number("fits", fits), Msg.number("amount", quantity));
+        ShopMath.BuyPlan plan = ShopMath.plan(quantity, fits, settings.maxAmount);
+        if (plan.amount() < 1) {
+            fail(player, "buy.no-room", Msg.number("fits", 0), Msg.number("amount", quantity));
             done(after);
             return;
         }
-        OptionalLong total = ShopMath.total(item.price(), quantity);
+        int requested = quantity;
+        int count = plan.amount(); // a partial buy charges only what fits
+        OptionalLong total = ShopMath.total(item.price(), count);
         if (total.isEmpty()) {
             fail(player, "buy.bad-amount", Msg.number("max", settings.maxAmount));
             done(after);
@@ -446,13 +437,13 @@ public final class ShopModule implements SkyblockModule, Listener {
             return;
         }
         UUID profile = profiles().profileKey(player);
-        ShopEngine.Request request = new ShopEngine.Request(uuid, profile, player.getName(), item, quantity, Actor.player(player));
+        ShopEngine.Request request = new ShopEngine.Request(uuid, profile, player.getName(), item, count, Actor.player(player));
         engine.buy(request).whenCompleteAsync((result, error) -> {
             buying.remove(uuid);
             ShopEngine.Result r = error != null || result == null ? new ShopEngine.Result(ShopEngine.Status.ERROR, null, null) : result;
             Player online = Bukkit.getPlayer(uuid);
             switch (r.status()) {
-                case OK -> hand(r.purchase(), false, r.balance());
+                case OK -> hand(r.purchase(), false, r.balance(), requested);
                 case NOT_ENOUGH -> {
                     if (online != null) {
                         fail(online, "buy.not-enough", money("price", total.getAsLong()),
@@ -484,7 +475,7 @@ public final class ShopModule implements SkyblockModule, Listener {
      * Hands a paid purchase (state {@code delivering}) to its profile's player, or parks it as {@code pending} if they
      * are not there (left, switched profile, staff mode). Main thread.
      */
-    private void hand(ShopStore.Purchase p, boolean late, Long balance) {
+    private void hand(ShopStore.Purchase p, boolean late, Long balance, int requested) {
         Player player = receiver(p.profile());
         if (player == null) {
             store.move(p.id(), ShopStore.DELIVERING, ShopStore.PENDING, System.currentTimeMillis()).whenComplete((moved, e) -> {
@@ -531,13 +522,20 @@ public final class ShopModule implements SkyblockModule, Listener {
                     p.totalPrice(), player.getLocation(), details(p));
             msg.send(player, "buy.delivered-late", Msg.number("amount", p.quantity()), Msg.c("item", name));
         } else {
-            msg.send(player, "buy.bought", Msg.number("amount", p.quantity()), Msg.c("item", name), money("price", p.totalPrice()),
-                    money("balance", balance == null ? economy().cached(player.getUniqueId(), Currency.MONEY).orElse(0) : balance));
+            // SELL2 feedback: the action bar always ("✔ +64 Oak Log -$512"), a chat line only for big purchases.
+            boolean partial = requested > p.quantity();
+            TagResolver[] tags = {Msg.number("amount", p.quantity()), Msg.number("requested", requested), Msg.c("item", name),
+                    money("price", p.totalPrice()),
+                    money("balance", balance == null ? economy().cached(player.getUniqueId(), Currency.MONEY).orElse(0) : balance)};
+            msg.actionBar(player, partial ? "buy.partial-bar" : "buy.bought-bar", tags);
+            if (p.totalPrice() >= settings.chatFrom) {
+                msg.send(player, partial ? "buy.partial" : "buy.bought", tags);
+            }
         }
         if (dropped > 0) {
             msg.send(player, "buy.dropped", Msg.number("amount", dropped));
         }
-        core.sounds().play(player, "money");
+        core.sounds().play(player, late ? "money" : settings.buySound);
     }
 
     private static Map<String, Object> details(ShopStore.Purchase p) {
@@ -596,7 +594,7 @@ public final class ShopModule implements SkyblockModule, Listener {
                     store.move(p.id(), ShopStore.DELIVERING, ShopStore.PENDING, System.currentTimeMillis());
                     msg.send(player, "buy.waiting-no-room", Msg.number("amount", p.quantity()), Msg.c("item", itemName(material)));
                 } else {
-                    hand(p, true, null);
+                    hand(p, true, null, p.quantity());
                 }
             }
             claimNext(profile, left);
@@ -625,7 +623,7 @@ public final class ShopModule implements SkyblockModule, Listener {
     }
 
     static boolean isShopMenu(Menu menu) {
-        if (menu instanceof ShopMenu || menu instanceof CategoryMenu || menu instanceof ItemMenu) {
+        if (menu instanceof ShopMenu || menu instanceof CategoryMenu || menu instanceof BuyAmountMenu) {
             return true;
         }
         return menu != null && menu.parent() != null && isShopMenu(menu.parent());
@@ -647,7 +645,59 @@ public final class ShopModule implements SkyblockModule, Listener {
     }
 
     TagResolver money(String name, long amount) {
-        return Msg.p(name, economy().format(Currency.MONEY, amount));
+        return Msg.p(name, moneyText(amount));
+    }
+
+    /** A plain money amount ({@code $512}) for lore built with the LoreBuilder. */
+    String moneyText(long amount) {
+        return economy().format(Currency.MONEY, amount);
+    }
+
+    /** A raw (unparsed) text of messages/shop.yml, for LoreBuilder labels; the key itself if it is missing. */
+    String raw(String key) {
+        String raw = core.messages().raw(ID, key);
+        return raw == null ? key : raw;
+    }
+
+    /** Bedrock player (Floodgate): taps only, so the quick-buy grid opens the amount screen. */
+    boolean bedrock(Player player) {
+        return player != null && core.bedrock().isBedrock(player.getUniqueId());
+    }
+
+    // ================================================================== quick buy (SELL2)
+
+    /** Buys now, or asks to confirm first when the total reaches {@code buy.confirm-above}. {@code after}: refresh. */
+    void attempt(Menu from, Player player, ShopCatalog.Item item, int amount, Runnable after) {
+        long total = ShopMath.total(item.price(), amount).orElse(Long.MAX_VALUE);
+        if (total >= settings.confirmAbove) {
+            Material m = material(item);
+            Material shownMaterial = m == null ? Material.BARRIER : m;
+            Component name = itemName(shownMaterial);
+            ItemStack shown = core.menus().item(new ItemStack(shownMaterial, Math.max(1, Math.min(shownMaterial.getMaxStackSize(), amount))),
+                    core.menus().text(player, ID, "confirm.shown", Msg.number("amount", amount), Msg.c("item", name)),
+                    core.menus().lines(player, ID, "confirm.shown-lore", money("total", total)));
+            net.skybornmc.skyblock.common.menu.ConfirmMenu confirm = new net.skybornmc.skyblock.common.menu.ConfirmMenu(
+                    v -> core.menus().text(v, ID, "confirm.crumb"), shown,
+                    v -> core.menus().lines(v, ID, "confirm.lines", Msg.number("amount", amount), Msg.c("item", name),
+                            money("total", total), money("balance", balance(v))),
+                    p -> buy(p, item, amount, after), null);
+            confirm.parent(from);
+            core.menus().open(player, confirm);
+            return;
+        }
+        buy(player, item, amount, after);
+    }
+
+    /** The Sell button of the shop menus (opens the sell chest), if selling exists. */
+    Optional<ItemStack> sellButton(Player viewer) {
+        if (core.services().optional(SellService.class).isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(core.menus().item(Material.GOLD_INGOT, viewer, ID, "menu.sell"));
+    }
+
+    void openSell(Player player, Menu from) {
+        core.services().optional(SellService.class).ifPresent(s -> s.openSellChest(player, from));
     }
 
     long balance(Player player) {

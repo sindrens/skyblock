@@ -1,9 +1,11 @@
 package net.skybornmc.skyblock.shop;
 
 import net.kyori.adventure.text.Component;
+import net.skybornmc.skyblock.common.item.LoreBuilder;
 import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -12,9 +14,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 
-/** One category's items with their price; a tap opens the item page (amounts). Locked/unavailable items say why. */
+/**
+ * One category as a <b>quick-buy grid</b> (SELL2, design board 4). Java: left-click buys 1, right-click buys 64,
+ * shift-click opens the amount screen; Bedrock: a tap opens the amount screen ({@link QuickBuy}). Each item shows
+ * {@code | Buy Price}, {@code | Sell Price} (when /sell buys it), an {@code | Information} section (stack price, how many
+ * you can afford) and the bold action lines. Locked/unavailable items say why. The Sell button (51) opens the sell chest.
+ */
 final class CategoryMenu extends PagedMenu<ShopCatalog.Item> {
+
+    static final int SLOT_SELL = ShopMenu.SLOT_SELL;
 
     private final ShopModule module;
     private final String categoryId;
@@ -36,7 +46,7 @@ final class CategoryMenu extends PagedMenu<ShopCatalog.Item> {
 
     @Override
     public String infoKey() {
-        return "category.info";
+        return module.bedrock(viewer) ? "category.info-bedrock" : "category.info";
     }
 
     @Override
@@ -66,6 +76,7 @@ final class CategoryMenu extends PagedMenu<ShopCatalog.Item> {
     protected void decorate() {
         set(ShopMenu.SLOT_SUMMARY, service.item(Material.EMERALD, viewer, ShopModule.ID, "menu.summary",
                 module.money("balance", module.balance(viewer))));
+        module.sellButton(viewer).ifPresent(button -> set(SLOT_SELL, button, click -> module.openSell(click.player(), this)));
     }
 
     @Override
@@ -73,21 +84,71 @@ final class CategoryMenu extends PagedMenu<ShopCatalog.Item> {
         Material material = ShopModule.material(item);
         ItemStack icon = new ItemStack(material == null ? Material.BARRIER : material);
         Component itemName = material == null ? Component.text(item.id()) : ShopModule.itemName(material);
-        List<Component> lore = new ArrayList<>(service.lines(viewer, ShopModule.ID, "category.entry.lore",
-                module.money("price", item.price()), module.money("stack", ShopMath.total(item.price(), 64).orElse(Long.MAX_VALUE))));
-        lore.addAll(module.priceLines(viewer, item, module.balance(viewer)));
-        lore.add(Component.empty());
-        String state = state(module, viewer, item, lore);
-        lore.addAll(service.lines(viewer, ShopModule.ID, "category.entry." + state));
+        List<Component> extra = new ArrayList<>();
+        String state = state(module, viewer, item, extra);
+        List<Component> lore = new ArrayList<>(lore(item, "open".equals(state)));
+        if (!"open".equals(state)) {
+            lore.add(Component.empty());
+            lore.addAll(extra);
+            lore.addAll(service.lines(viewer, ShopModule.ID, "category.entry." + state));
+        }
         ItemStack shown = service.item(icon, service.text(viewer, ShopModule.ID, "category.entry.name", Msg.c("item", itemName)), lore);
         return MenuButton.of(shown, click -> {
-            String now = state(module, viewer, item, new ArrayList<>());
+            Player player = click.player();
+            String now = state(module, player, item, new ArrayList<>());
             if (!"open".equals(now)) {
-                module.fail(viewer, "unavailable".equals(now) ? "buy.unavailable" : "buy.locked-click");
+                module.fail(player, "unavailable".equals(now) ? "buy.unavailable" : "buy.locked-click");
                 return;
             }
-            openChild(new ItemMenu(module, item));
+            QuickBuy.Action action = QuickBuy.action(click.type(), module.bedrock(player));
+            switch (action) {
+                case PICK_AMOUNT -> openChild(new BuyAmountMenu(module, item, module.settings.startAmount));
+                case BUY_ONE, BUY_STACK -> module.attempt(this, player, item,
+                        QuickBuy.amount(action, module.settings.leftAmount, module.settings.rightAmount), () -> afterBuy(player));
+                default -> {
+                }
+            }
         });
+    }
+
+    /** V2 lore (STYLE2 LoreBuilder): prices, | Information, then the action lines (only when the item can be bought). */
+    private List<Component> lore(ShopCatalog.Item item, boolean actions) {
+        long balance = module.balance(viewer);
+        LoreBuilder lore = LoreBuilder.forMessages(module.core.messages());
+        lore.buyPrice(module.moneyText(item.price()), true);
+        OptionalLong sell = module.sellPrice(item);
+        if (sell.isPresent() && sell.getAsLong() > 0) {
+            lore.sellPrice(module.moneyText(sell.getAsLong()), true);
+        }
+        int stack = module.settings.rightAmount;
+        long stackPrice = ShopMath.total(item.price(), stack).orElse(Long.MAX_VALUE);
+        lore.section(module.raw("quick.info-title"))
+                .row(LoreBuilder.fill(module.raw("quick.stack"), Map.of("amount", Format.number(stack))), module.moneyText(stackPrice))
+                .row(module.raw("quick.afford"), Format.number(ShopMath.affordable(item.price(), balance)));
+        if (actions) {
+            if (module.bedrock(viewer)) {
+                lore.action(module.raw("quick.action.tap-input"), module.raw("quick.action.tap"));
+            } else {
+                lore.action(module.raw("quick.action.left-input"), LoreBuilder.fill(module.raw("quick.action.left"),
+                        Map.of("amount", Format.number(module.settings.leftAmount))));
+                lore.action(module.raw("quick.action.right-input"), LoreBuilder.fill(module.raw("quick.action.right"),
+                        Map.of("amount", Format.number(module.settings.rightAmount))));
+                lore.action(module.raw("quick.action.shift-input"), module.raw("quick.action.shift"));
+            }
+        }
+        return lore.components(module.core.messages(), viewer);
+    }
+
+    /** Fresh "You can afford" numbers after a purchase (or back here after a confirm screen). */
+    private void afterBuy(Player player) {
+        if (!player.isOnline()) {
+            return;
+        }
+        if (isOpen()) {
+            refresh();
+        } else if (module.core.menus().openMenu(player) == null && module.problem(player).isEmpty()) {
+            service.open(player, this);
+        }
     }
 
     /**
