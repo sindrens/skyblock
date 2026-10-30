@@ -17,6 +17,7 @@ One place that points to every list of unbuilt work, ideas and questions. Nothin
 | [REVIEW.md](REVIEW.md) | Known problems with their default decisions |
 | [plans/](plans/) | Feature plans (enchants, wardrobe, resource pack, art brief) |
 | [TEST_GUIDE.md](TEST_GUIDE.md) | What every built feature does and how to test it |
+| [PLANNING.md](PLANNING.md) | Every plan and phase in one table: status, open questions, next build step |
 | [SECURITY_LOG.md](SECURITY_LOG.md) | Anything suspicious and reliability incidents |
 
 ## Not built yet (by area)
