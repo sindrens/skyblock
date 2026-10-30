@@ -108,7 +108,7 @@ final class IslandMenu extends Menu {
         if (role == null) {
             return;
         }
-        set(SLOT_ISLAND, MenuButton.display(islandItem(role)));
+        set(SLOT_ISLAND, islandButton(role));
         set(SLOT_HOME, button(Material.RED_BED, "menu.home", click -> {
             viewer.closeInventory();
             islands.teleportHome(viewer);
@@ -160,7 +160,18 @@ final class IslandMenu extends Menu {
         }
     }
 
-    private ItemStack islandItem(Role role) {
+    /** The island info item; with the progression module it opens /is level (PHASE-5 M5.2). */
+    private MenuButton islandButton(Role role) {
+        var progression = module.progression();
+        boolean canOpen = progression.isPresent() && viewer.hasPermission(IslandsModule.PERM_LEVEL);
+        ItemStack item = islandItem(role, canOpen);
+        if (!canOpen) {
+            return MenuButton.display(item);
+        }
+        return MenuButton.of(item, click -> progression.get().openLevelMenu(viewer, this));
+    }
+
+    private ItemStack islandItem(Role role, boolean clickForLevel) {
         String created = module.config().dateFormatter().format(Instant.ofEpochMilli(island.createdAt()));
         int blocks = island.sizeChunks() * IslandGrid.CHUNK;
         TagResolver[] p = {
@@ -170,11 +181,15 @@ final class IslandMenu extends Menu {
                 Msg.p("members", island.memberCount()), Msg.p("slots", islands.slots(island)),
                 Msg.p("size", blocks),
                 Msg.p("warps", module.warps().warps(island.id()).size()), Msg.p("warp-slots", module.warps().slots(island)),
-                Msg.p("level", module.raw("placeholder.level-none")),
+                Msg.p("level", module.levelText(island.id())),
                 Msg.p("created", created),
                 Msg.p("type", module.raw(island.team() ? "menu.island.team" : "menu.island.solo"))};
         List<Component> lore = new java.util.ArrayList<>(lines("menu.island.lore", p));
         lore.addAll(lines(island.locked() ? "menu.island.locked" : "menu.island.open"));
+        if (clickForLevel) {
+            lore.add(Component.empty());
+            lore.addAll(lines("menu.island.click-level"));
+        }
         return service.item(new ItemStack(Material.GRASS_BLOCK), text("menu.island.name", p), lore);
     }
 

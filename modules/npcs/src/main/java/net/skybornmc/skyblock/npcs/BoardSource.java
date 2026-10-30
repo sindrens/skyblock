@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.npcs;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.island.IslandStat;
 import net.skybornmc.skyblock.common.island.IslandStatsService;
+import net.skybornmc.skyblock.common.progression.IslandTop;
 import net.skybornmc.skyblock.common.skills.SkillType;
 
 import java.util.ArrayList;
@@ -14,7 +15,8 @@ import java.util.Optional;
 
 /**
  * Where a leaderboard's rows come from (pure, unit-tested): {@code money} (or another currency), {@code skill <type>},
- * {@code island <stat> [period] [board]}, or {@code none} (shown as "Coming soon", e.g. island value until Phase 5).
+ * {@code island <stat> [period] [board]}, {@code island_level [all|solo|team]}, {@code island_value [all|solo|team]}
+ * (PHASE-5 M5.2, progression module) or {@code none} (shown as "Coming soon").
  * Parsed from {@code npcs.yml → leaderboards.sources}.
  */
 sealed interface BoardSource {
@@ -50,6 +52,14 @@ sealed interface BoardSource {
         }
     }
 
+    /** Island level or block worth board of the progression module (PHASE-5 M5.2). */
+    record IslandLevel(IslandTop.Kind kind, IslandTop.Board board) implements BoardSource {
+        @Override
+        public String key() {
+            return "island_" + kind.id() + ":" + board.id();
+        }
+    }
+
     /** One source text; empty = invalid. */
     static Optional<BoardSource> parse(String text) {
         if (text == null || text.isBlank()) {
@@ -59,6 +69,14 @@ sealed interface BoardSource {
         switch (p[0]) {
             case "none":
                 return p.length == 1 ? Optional.of(new None()) : Optional.empty();
+            case "island_level", "island_value": {
+                if (p.length > 2) {
+                    return Optional.empty();
+                }
+                IslandTop.Kind kind = p[0].equals("island_level") ? IslandTop.Kind.LEVEL : IslandTop.Kind.VALUE;
+                Optional<IslandTop.Board> board = p.length == 2 ? IslandTop.Board.byId(p[1]) : Optional.of(IslandTop.Board.ALL);
+                return board.map(b -> new IslandLevel(kind, b));
+            }
             case "skill":
                 return p.length == 2 ? SkillType.byId(p[1]).map(Skill::new) : Optional.empty();
             case "island": {

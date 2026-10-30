@@ -17,8 +17,9 @@
 # A line starting with "if:<placeholder>|" only shows while that placeholder has a value (not empty, not "-"):
 #   "if:island_next_note| <c:muted>Next</c:muted>  ..." hides the whole line when there is no open note.
 #   "if:a,b|" shows the line while any of them has a value (used for section headers over conditional lines).
-# Owner answer 275: the island Level line (and its "| Island" header when nothing else is under it) stays hidden until
-#   island levels exist (island_level is "-" until then).
+# Owner answer 275: the island Level line (and its "| Island" header when nothing else is under it) is hidden while
+#   the island has no calculated level (island_level is "-" then). Since PHASE-5 M5.2 it shows "Lv 38 #14" (level and
+#   the place on the island's solo/team board; <ph:island_level_progress> is the percent to the next level).
 # V2 look (STYLE2): phoenix gradient title, bold red "| Section" headers, rows start with a dark red "|" bar,
 # labels gray with a colon, values white or their currency color, footer play.skybornmc.net. Max 10 lines + title
 # (FIXES1, owner: one blank line under the title, before the first "| Section" header).

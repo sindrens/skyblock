@@ -558,6 +558,15 @@ final class IslandManager implements IslandService {
     }
 
     @Override
+    public java.util.OptionalLong memberSince(UUID islandId, UUID member) {
+        Island island = byId.get(islandId);
+        if (island == null || member == null || !island.members().containsKey(member)) {
+            return java.util.OptionalLong.empty();
+        }
+        return java.util.OptionalLong.of(island.joinedAt(member));
+    }
+
+    @Override
     public Optional<Role> role(UUID islandId, UUID player) {
         Island island = byId.get(islandId);
         return island == null ? Optional.empty() : island.role(resolve(player));

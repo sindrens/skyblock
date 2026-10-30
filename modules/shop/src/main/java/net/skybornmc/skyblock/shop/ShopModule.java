@@ -121,6 +121,17 @@ public final class ShopModule implements SkyblockModule, Listener {
         engine = new ShopEngine(this::economy, System::currentTimeMillis, () -> 0);
         catalog = loadCatalog();
         warnUndercuts();
+        // PHASE-5 M5.2: block worth of the island level reads shop prices (any thread; the catalog is volatile).
+        core.services().register(ID, net.skybornmc.skyblock.common.shop.ShopPrices.class, itemId -> {
+            if (itemId == null) {
+                return java.util.OptionalLong.empty();
+            }
+            String id = itemId.trim().toLowerCase(java.util.Locale.ROOT);
+            if (id.startsWith("minecraft:")) {
+                id = id.substring("minecraft:".length());
+            }
+            return catalog.item(id).map(i -> java.util.OptionalLong.of(i.price())).orElse(java.util.OptionalLong.empty());
+        });
         registerCommand();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         store.recover(System.currentTimeMillis()).whenComplete((stuck, e) -> {

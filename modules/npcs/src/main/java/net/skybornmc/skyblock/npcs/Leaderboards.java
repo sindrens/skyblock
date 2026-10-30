@@ -117,6 +117,11 @@ final class Leaderboards {
                     .map(sk -> sk.top(s.skill(), size).thenApply(list -> players(list, xp -> module.text("leaderboard.value.skill",
                             Msg.number("level", sk.levelFor(xp)), Msg.number("xp", xp)))))
                     .orElse(CompletableFuture.completedFuture(List.of()));
+            // PHASE-5 M5.2: the progression module keeps its boards ranked in memory (names resolved there), so this only
+            // formats the cached rows.
+            case BoardSource.IslandLevel l -> CompletableFuture.completedFuture(services
+                    .optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
+                    .map(pr -> levels(pr.islandTop(l.kind(), l.board(), size), l.kind())).orElse(List.of()));
             case BoardSource.Island i -> services.optional(IslandStatsService.class)
                     .map(st -> st.top(i.stat(), i.period(), i.board(), size)
                             .thenCompose(list -> scheduler.supplyMain("npcs:board-island", () -> islands(list, i.stat()))))
@@ -132,6 +137,18 @@ final class Leaderboards {
         List<Row> out = new ArrayList<>(list.size());
         for (TopLine line : list) {
             out.add(new Row(displayName(line.name(), module.plain("leaderboard.unknown-player")), value.apply(line.value())));
+        }
+        return out;
+    }
+
+    private List<Row> levels(List<net.skybornmc.skyblock.common.progression.IslandTop.Entry> list,
+                             net.skybornmc.skyblock.common.progression.IslandTop.Kind kind) {
+        List<Row> out = new ArrayList<>(list.size());
+        for (var e : list) {
+            Component value = kind == net.skybornmc.skyblock.common.progression.IslandTop.Kind.LEVEL
+                    ? module.text("leaderboard.value.island-level", Msg.number("level", e.level()))
+                    : module.text("leaderboard.value.island-value", Msg.p("amount", Format.money(Math.round(e.blockWorth()))));
+            out.add(new Row(displayName(e.name(), module.plain("leaderboard.unknown-island")), value));
         }
         return out;
     }

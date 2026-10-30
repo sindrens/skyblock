@@ -111,6 +111,10 @@ starter:
 placeholder:
   level-none: "-"
 
+# PHASE-5 M5.2: /is level and /is top belong to the progression module.
+level:
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Island levels aren't available right now. Try again later."
+
 error:
   island-gone: "<prefix><c:error><sym:cross></c:error> <c:text>That island doesn't exist anymore."
   database: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't load or save the island data. Try again soon."
@@ -150,6 +154,9 @@ menu:
       - "<c:error><sym:cross> Locked"
     open:
       - "<c:success><sym:check> Open to visitors"
+    # PHASE-5 M5.2: shown when the island level menu can be opened from here.
+    click-level:
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see the island level"
     solo: "Solo island"
     team: "Team island"
   home:

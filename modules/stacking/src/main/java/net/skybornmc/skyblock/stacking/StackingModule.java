@@ -279,6 +279,15 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     }
 
     @Override
+    public java.util.OptionalInt spawnerTier(String type) {
+        SpawnerTiers t = tiers;
+        if (t == null || type == null) {
+            return java.util.OptionalInt.empty();
+        }
+        return t.tier(type).map(java.util.OptionalInt::of).orElse(java.util.OptionalInt.empty());
+    }
+
+    @Override
     public boolean fromStackedSpawner(Entity entity) {
         return MobStacker.isSpawnerMob(entity);
     }

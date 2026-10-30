@@ -237,6 +237,25 @@ final class SkillManager implements SkillService, Listener {
         });
     }
 
+    /** Exactly one profile's XP (island level, PHASE-5 M5.2): cache when that profile is the online active one, else stored. */
+    @Override
+    public CompletableFuture<Map<SkillType, Double>> loadProfileXp(UUID profileKey) {
+        if (profileKey == null) {
+            return CompletableFuture.completedFuture(Map.of());
+        }
+        ProfileService profiles = profiles();
+        UUID owner = profiles.ownerOf(profileKey);
+        PlayerSkills p = owner == null ? null : online.get(owner);
+        if (p != null && p.isLoaded() && profileKey.equals(profiles.profileKey(owner))) {
+            return CompletableFuture.completedFuture(p.totals());
+        }
+        PlayerSkills unsaved = offline.get(profileKey);
+        if (unsaved != null) {
+            return CompletableFuture.completedFuture(unsaved.totals());
+        }
+        return afterWrites().thenCompose(v -> core.database().async(c -> repo.load(c, profileKey, season)));
+    }
+
     /** Leaderboard holograms (npcs module): best live profile per player, saved XP only. */
     @Override
     public CompletableFuture<List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(SkillType skill, int limit) {

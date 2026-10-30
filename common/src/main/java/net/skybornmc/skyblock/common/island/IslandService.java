@@ -227,6 +227,15 @@ public interface IslandService {
         return isMember(islandId, player);
     }
 
+    /**
+     * When {@code member} (a stored member key) joined the island, epoch millis (the leader: when the island was made).
+     * Empty for coop players, visitors and unknown islands. The island level counts members' skills and Depths tiers only
+     * after 3 days (owner P5-4). Main thread.
+     */
+    default java.util.OptionalLong memberSince(UUID islandId, UUID member) {
+        return java.util.OptionalLong.empty();
+    }
+
     /** Member slots of the island (leader included; start value until the Member Slots upgrade). 0 for an unknown island. */
     int memberSlots(UUID islandId);
 
