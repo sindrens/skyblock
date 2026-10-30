@@ -2,6 +2,8 @@
 
 Players sell items to each other for money. Every listing, sale, cancel and expiry is logged (audit category `auction`, actions `ah_list`, `ah_buy`, `ah_cancel`, `ah_expire`, `ah_collect`, `ah_list_failed`) with the full item (incl. the serialized stack, so staff can restore it); payments are in the ledger as `ah_fee`, `ah_buy`, `ah_sale` (`/transactions`, `/logs pay <player>`). Settings: `auction.yml`; texts: `messages/auction.yml`.
 
+**Sanctions (Phase P7, spec 13.1):** listing (`/ah sell` and the sell menu) and buying check the moderation module's sanctions (block trading, freeze balance). When staff block a player's trading, all their active listings (every profile) are cancelled as staff removals: the items go to their collection bin, nothing is deleted (`ah_cancel` with `by_staff`).
+
 | Command | What it does | Permission | Status |
 |---|---|---|---|
 | `/ah` (`/auction`, `/auctionhouse`) | Browse menu: categories (automatic by item type), search (chat prompt: item name or a seller's exact name), sort (newest, ending soon, lowest/highest price), Sell held item, My listings (cancel), Collection bin (take items back), buy confirm dialog. Staff with `skyblock.staff.auction.remove` can remove any listing from it (pick a reason) | `skyblock.auction.use` | ✅ |

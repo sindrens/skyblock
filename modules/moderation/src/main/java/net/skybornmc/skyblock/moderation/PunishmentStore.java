@@ -367,7 +367,7 @@ final class PunishmentStore {
      * without one stays an account ban).
      */
     private static Punishment shaped(Punishment d, PunishDecision.Input in) {
-        boolean timed = in.type() == Punishment.Type.BAN || in.type() == Punishment.Type.MUTE;
+        boolean timed = in.type().timed();
         PunishDecision.Escalation e = in.escalation();
         boolean raised = e != null && e.raised();
         Integer step = raised ? Integer.valueOf(e.index()) : d.ladderStep();

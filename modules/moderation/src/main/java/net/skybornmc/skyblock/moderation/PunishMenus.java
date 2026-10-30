@@ -36,7 +36,26 @@ final class PunishMenus {
      */
     record Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions,
                   List<Suggestion> apiSuggestions, List<Notes.Note> notes, int noteCount, List<PunishRequest> requests,
-                  Watchlist.Entry watch, LogEvidence.Anchor evidence) {
+                  Watchlist.Entry watch, LogEvidence.Anchor evidence, IslandSteps.Context island, List<Sanction> sanctions) {
+
+        /** P5/P6 shape: no island context (every island step falls back), no sanctions loaded (P7). */
+        Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions,
+               List<Suggestion> apiSuggestions, List<Notes.Note> notes, int noteCount, List<PunishRequest> requests,
+               Watchlist.Entry watch, LogEvidence.Anchor evidence) {
+            this(uuid, name, history, suggestions, apiSuggestions, notes, noteCount, requests, watch, evidence,
+                    IslandSteps.Context.UNAVAILABLE, List.of());
+        }
+
+        /** The same target with its island context and sanctions (P7). */
+        Target withP7(IslandSteps.Context ctx, List<Sanction> list) {
+            return new Target(uuid, name, history, suggestions, apiSuggestions, notes, noteCount, requests, watch, evidence,
+                    ctx == null ? IslandSteps.Context.UNAVAILABLE : ctx, list == null ? List.of() : List.copyOf(list));
+        }
+
+        /** {@code template} with the island steps this target can't get replaced (spec 13.2). */
+        Templates.Template adapt(Templates.Template template) {
+            return IslandSteps.adapt(template, island);
+        }
 
         /** P4 shape: no {@code /logs} line chosen as evidence (spec 13.11). */
         Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions,
@@ -47,7 +66,8 @@ final class PunishMenus {
 
         /** The same target with a {@code /logs} chat line as evidence for every punishment from this menu (13.11). */
         Target withEvidence(LogEvidence.Anchor anchor) {
-            return new Target(uuid, name, history, suggestions, apiSuggestions, notes, noteCount, requests, watch, anchor);
+            return new Target(uuid, name, history, suggestions, apiSuggestions, notes, noteCount, requests, watch, anchor,
+                    island, sanctions);
         }
 
         /** The log entry id of the chosen evidence line, or {@code null}. */
@@ -409,7 +429,8 @@ final class PunishMenus {
             return pending == null ? MenuButton.display(item) : MenuButton.of(item, click -> openSuggestion(pending));
         }
 
-        private MenuButton reasonButton(Templates.Template t, String quarter) {
+        private MenuButton reasonButton(Templates.Template original, String quarter) {
+            Templates.Template t = target.adapt(original); // P7: island steps this player can't get are replaced
             long cutoff = t.cutoff(System.currentTimeMillis());
             int previous = target.previous(t.id(), cutoff);
             int older = target.expiredOffences(t.id(), cutoff);
@@ -541,7 +562,24 @@ final class PunishMenus {
                                 }
                             });
                 }
-                // Sanctions (P7) and dry run (P8): placeholders until their milestone.
+                case "sanctions" -> {
+                    // P7, spec 13.1: freeze balance, block trading, remove money, confiscate item
+                    Sanctions s = module.sanctions();
+                    boolean any = viewer.hasPermission(Sanctions.PERM_FREEZE) || viewer.hasPermission(Sanctions.PERM_TRADE)
+                            || viewer.hasPermission(Sanctions.PERM_MONEY) || viewer.hasPermission(Sanctions.PERM_CONFISCATE)
+                            || viewer.hasPermission(Sanctions.PERM_RESTORE);
+                    if (!s.settings().enabled()) {
+                        yield MenuButton.display(service.item(l.unavailableIcon(), viewer, MODULE, key));
+                    }
+                    if (!any) {
+                        yield MenuButton.display(service.item(Material.GRAY_DYE, viewer, MODULE, key + "-locked"));
+                    }
+                    long active = target.sanctions().stream().filter(x -> x.blocksAt(System.currentTimeMillis())).count();
+                    yield MenuButton.of(service.item(icon(b, Material.GOLD_INGOT), viewer, MODULE, key + "-ready",
+                            Msg.number("active", active), Msg.number("total", target.sanctions().size())),
+                            click -> openChild(new SanctionMenus.SanctionsMenu(module, target)));
+                }
+                // Dry run (P8): placeholder until its milestone.
                 default -> MenuButton.display(service.item(icon(b, l.unavailableIcon()), viewer, MODULE, key));
             };
         }
@@ -742,7 +780,8 @@ final class PunishMenus {
         }
 
         @Override
-        protected MenuButton entry(Templates.Template template) {
+        protected MenuButton entry(Templates.Template original) {
+            Templates.Template template = target.adapt(original); // P7: island steps this player can't get are replaced
             long cutoff = template.cutoff(System.currentTimeMillis());
             int previous = target.previous(template.id(), cutoff);
             int older = target.expiredOffences(template.id(), cutoff);
@@ -940,9 +979,11 @@ final class PunishMenus {
                 case MUTE -> status == Punishment.Status.ACTIVE ? Material.ORANGE_CONCRETE : Material.ORANGE_TERRACOTTA;
                 case WARN -> status == Punishment.Status.ACTIVE ? Material.YELLOW_CONCRETE : Material.YELLOW_TERRACOTTA;
                 case KICK -> Material.LEATHER_BOOTS;
+                case ISLAND_KICK, COOP_REMOVE -> Material.OAK_DOOR;
+                case ISLAND_BAN, COOP_BLOCK -> status == Punishment.Status.ACTIVE ? Material.PURPLE_CONCRETE : Material.PURPLE_TERRACOTTA;
             };
             String type = service.messages().raw(MODULE, "types." + p.type().name().toLowerCase(Locale.ROOT));
-            String length = p.type() == Punishment.Type.WARN || p.type() == Punishment.Type.KICK ? "-"
+            String length = !p.type().timed() ? "-"
                     : p.expires() == null ? plain("words.permanent") : Format.duration(Duration.ofMillis(p.expires() - p.created()));
             String left = p.expires() == null || status != Punishment.Status.ACTIVE ? "-"
                     : Format.duration(Duration.ofMillis(Math.max(1000, p.expires() - now)));

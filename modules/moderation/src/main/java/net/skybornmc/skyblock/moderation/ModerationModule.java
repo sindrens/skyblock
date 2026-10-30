@@ -83,6 +83,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
     static final String PERM_WATCH = "skyblock.staff.watch";
     /** P5 (spec 13.8, 13.10). */
     static final String PERM_BULK = "skyblock.staff.punish.bulk";
+    /** P7, spec 13.2: island ladder steps (island kick/ban, coop remove/block). */
+    static final String PERM_ISLAND = "skyblock.staff.punish.island";
     static final String PERM_APPEAL = "skyblock.punish.appeal";
     static final String PERM_APPEALS = "skyblock.staff.appeals";
     /** P6 (spec 13.3; lockdown permissions live in {@link LockdownService}). */
@@ -127,6 +129,11 @@ public final class ModerationModule implements SkyblockModule, Listener {
     /** P6: raid lockdown (13.9) and the suggestion API for /psuggest (13.3). */
     private LockdownService lockdown;
     private ApiSuggestions apiSuggestions;
+    /** P7: economy and item sanctions (13.1). */
+    private Sanctions sanctions;
+    /** False after disable: the dupe detector keeps its handlers, this stops ours. */
+    private volatile boolean enabled;
+    private boolean dupeHooked;
 
     public ModerationModule(Core core) {
         this.core = core;
@@ -162,6 +169,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
 
     AppealService appeals() {
         return appeals;
+    }
+
+    Sanctions sanctions() {
+        return sanctions;
     }
 
     @Override
@@ -203,6 +214,19 @@ public final class ModerationModule implements SkyblockModule, Listener {
         apiSuggestions = new ApiSuggestions(core, service, templates, () -> templates.config().warnRules(), t -> reasonName(null, t));
         core.services().register(ID, net.skybornmc.skyblock.common.moderation.SuggestionService.class, apiSuggestions);
         lockdown = new LockdownService(core, msg, service, extras, () -> templates.config().extras());
+        // P7, spec 13.1: sanctions (the economy, auction, trade and bank check them through SanctionService)
+        sanctions = new Sanctions(core, msg, new SanctionStore(core.database()), () -> templates.config().extras());
+        sanctions.start();
+        core.services().register(ID, net.skybornmc.skyblock.common.moderation.SanctionService.class, sanctions);
+        enabled = true;
+        if (core.dupes() != null && !dupeHooked) {
+            dupeHooked = true; // the detector has no removeHandler: hook once, gated by `enabled`
+            core.dupes().addHandler(report -> {
+                if (enabled) {
+                    sanctions.onDupe(report, apiSuggestions);
+                }
+            });
+        }
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         core.placeholders().registerText(ID, "muted", p -> p != null && service.mute(p.getUniqueId()).isPresent() ? "true" : "false");
         // spec 13.9: lockdown status for the staff HUD (empty for non-staff and when nothing is active)
@@ -263,6 +287,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
         }
         if (purgeTask != null) {
             purgeTask.cancel();
+        }
+        enabled = false;
+        if (sanctions != null) {
+            sanctions.stop();
         }
         if (lockdown != null) {
             lockdown.shutdown(); // spec 13.9: a lockdown never survives a restart (audited + Discord before the sink closes)
@@ -650,6 +678,28 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .example("psuggest Steve hacking Grim: Reach vl 12")
                 .executes(ctx -> psuggest(ctx.sender(), ctx.get(suggestTarget), ctx.get(suggestReason), ctx.getOr(suggestDetails, ""))));
 
+        // P7, spec 13.1/13.14: /psanction restore <id> (money removed or an item confiscated by a sanction)
+        Arg<Long> sanctionId = Arg.word("id", (sender, raw) -> {
+            try {
+                long id = Long.parseLong(raw.startsWith("#") ? raw.substring(1) : raw);
+                if (id <= 0) {
+                    throw new NumberFormatException(raw);
+                }
+                return id;
+            } catch (NumberFormatException e) {
+                throw fail("sanctions.bad-id", Msg.p("input", raw));
+            }
+        }, Suggest.of(() -> sanctions.restorableIds()));
+        commands.register(CommandSpec.command("psanction")
+                .description("Sanctions: restore money or an item taken by a sanction (the rest is in /p → Sanctions)")
+                .category("Staff").permission(Sanctions.PERM_RESTORE)
+                .example("psanction restore 12")
+                .executes(ctx -> msg.send(ctx.sender(), "sanctions.usage"))
+                .sub(CommandSpec.sub("restore")
+                        .description("Give back removed money or a confiscated item").permission(Sanctions.PERM_RESTORE)
+                        .arg(sanctionId).example("psanction restore 12")
+                        .executes(ctx -> sanctions.restore(ctx.sender(), ctx.get(sanctionId)))));
+
         Arg<String> altsTarget = player;
         commands.register(CommandSpec.command("alts")
                 .description("Accounts that share an IP address with a player").category("Staff").permission(PERM_ALTS)
@@ -764,6 +814,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
             case MUTE -> PERM_MUTE;
             case WARN -> PERM_WARN;
             case KICK -> PERM_KICK;
+            case ISLAND_KICK, ISLAND_BAN, COOP_REMOVE, COOP_BLOCK -> PERM_ISLAND;
         };
     }
 
@@ -878,9 +929,13 @@ public final class ModerationModule implements SkyblockModule, Listener {
         long now = System.currentTimeMillis();
         CompletableFuture<List<PunishRequest>> requests = service.store().pendingRequests(uuid, now);
         CompletableFuture<Optional<Watchlist.Entry>> watch = service.store().activeWatch(uuid, now);
-        return CompletableFuture.allOf(history, suggestions, api, notes, noteCount, requests, watch).thenApply(v ->
+        // P7: island context (spec 13.2, resolved on the main thread) and sanctions (13.1)
+        CompletableFuture<IslandSteps.Context> island = service.islandPunish().context(uuid)
+                .exceptionally(e -> IslandSteps.Context.UNAVAILABLE);
+        CompletableFuture<List<Sanction>> sanctionList = sanctions.store().history(uuid);
+        return CompletableFuture.allOf(history, suggestions, api, notes, noteCount, requests, watch, island, sanctionList).thenApply(v ->
                 new PunishMenus.Target(uuid, name, history.join(), suggestions.join(), api.join(), notes.join(), noteCount.join(),
-                        requests.join(), watch.join().orElse(null)));
+                        requests.join(), watch.join().orElse(null)).withP7(island.join(), sanctionList.join()));
     }
 
     /** Opens the single-screen /p menu for {@code viewer} (loads the target first). */
@@ -1021,9 +1076,13 @@ public final class ModerationModule implements SkyblockModule, Listener {
     CompletableFuture<PunishmentStore.IssueResult> punishWithTemplate(CommandSender sender, PunishMenus.Target target,
                                                                      Templates.Template template, boolean silent, boolean ipFlag,
                                                                      boolean force, String group) {
+        // P7, spec 13.2: island steps this player can't get are replaced by the next possible step (staff are told)
+        Templates.Template original = template;
+        template = target.adapt(template);
         // spec 12.3: only offences younger than the reason's offence-expire count for the ladder
         int previous = target.previous(template.id(), template.cutoff(System.currentTimeMillis()));
         Templates.Step step = template.stepFor(previous);
+        tellReplaced(sender, target, original, template, previous);
         boolean ipWide = step.ipWide() || (ipFlag && (step.type() == Punishment.Type.BAN || step.type() == Punishment.Type.MUTE));
         Player online = Bukkit.getPlayer(target.uuid());
         // spec 13.7: the pipeline's probation stage may raise the step (it sees the ladder and the probation end)
@@ -1033,6 +1092,24 @@ public final class ModerationModule implements SkyblockModule, Listener {
                         template.id(), template.stepIndex(previous), null, force, step.weight(),
                         escalation(target, template, previous, ipFlag)).with(target.evidenceEntry(), group))
                 .exceptionally(e -> failed(sender, e));
+    }
+
+    /** Tells staff when an island step of the ladder could not be used for this player and what is used instead (13.2). */
+    private void tellReplaced(CommandSender sender, PunishMenus.Target target, Templates.Template original,
+                              Templates.Template used, int previous) {
+        if (original == used) {
+            return;
+        }
+        int index = original.stepIndex(previous);
+        IslandSteps.Why why = IslandSteps.replaced(original.ladder(), index, target.island());
+        if (why == null) {
+            return;
+        }
+        Player viewer = sender instanceof Player p ? p : null;
+        msg.send(sender, "island-steps.replaced", Msg.p("player", target.name()),
+                Msg.p("step", service.stepText(viewer, original.ladder().get(index))),
+                Msg.p("used", service.stepText(viewer, used.ladder().get(index))),
+                Msg.p("why", service.text(viewer, "island-steps.why." + why.name().toLowerCase(Locale.ROOT))));
     }
 
     /** The ladder + probation information of a reason for this target (spec 13.7), used by the click and the menu lore. */
@@ -1259,8 +1336,14 @@ public final class ModerationModule implements SkyblockModule, Listener {
     /** /pstats for one staff member, with request (13.4) and appeal (13.10) lines. Main thread. */
     private void sendStatsFull(CommandSender sender, UUID staffId, String staff, String period, PunishStats.Counts c,
                                PunishmentStore.RequestCounts rc, PunishStats.Period p) {
-        appealCounts(staffId, p).thenAcceptAsync(ac -> {
+        long now = System.currentTimeMillis();
+        CompletableFuture<Long> given = sanctions.store().givenBy(staffId, p.start(now, templates.config().extras().statsZone()), now + 1)
+                .exceptionally(e -> 0L);
+        appealCounts(staffId, p).thenCombine(given, Map::entry).thenAcceptAsync(both -> {
+            PunishmentStore.AppealCounts ac = both.getKey();
             sendStats(sender, staff, period, c, rc);
+            // P7: island punishments (13.2) and sanctions (13.1)
+            msg.send(sender, "stats.sanctions", Msg.number("island", c.island()), Msg.number("sanctions", both.getValue()));
             if (ac.handled() + ac.reversedByAppeal() > 0) {
                 msg.send(sender, "stats.appeals", Msg.number("accepted", ac.accepted()), Msg.number("reduced", ac.reduced()),
                         Msg.number("denied", ac.denied()), Msg.number("reversed", ac.reversedByAppeal()));
@@ -1305,7 +1388,24 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 net.skybornmc.skyblock.common.audit.Actor.of(sender), null, name, null, null, Map.of());
     }
 
+    /** P7, spec 13.1: the player's sanctions under their punishments in /history (chat). */
+    private void sendSanctionHistory(CommandSender sender, PunishMenus.Target t) {
+        if (t.sanctions().isEmpty()) {
+            return;
+        }
+        Player viewer = sender instanceof Player p ? p : null;
+        msg.send(sender, "sanctions.history.header", Msg.p("player", t.name()), Msg.number("total", t.sanctions().size()));
+        for (Sanction s : t.sanctions().stream().limit(config.historyPageSize).toList()) {
+            msg.send(sender, "sanctions.history.line", sanctions.parts(viewer, s));
+        }
+    }
+
     private void sendHistory(CommandSender sender, PunishMenus.Target t) {
+        sendHistoryPunishments(sender, t);
+        sendSanctionHistory(sender, t);
+    }
+
+    private void sendHistoryPunishments(CommandSender sender, PunishMenus.Target t) {
         Player viewer = sender instanceof Player p ? p : null;
         msg.send(sender, "history.header", Msg.p("player", t.name()), Msg.number("total", t.history().size()),
                 Msg.number("bans", t.count(Punishment.Type.BAN)), Msg.number("mutes", t.count(Punishment.Type.MUTE)),

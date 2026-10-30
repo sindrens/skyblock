@@ -390,7 +390,8 @@ class P4LogicTest {
             assertTrue(x.approval().enabled());
             assertEquals(Duration.ofHours(24), x.approval().expire());
             assertFalse(x.approval().selfApprove());
-            assertEquals(List.of("ban perm", "ipban *", "mute perm", "ban >= 30d"),
+            // P7 added the sanction rules (spec 13.4 example: any sanction of type money or confiscate)
+            assertEquals(List.of("ban perm", "ipban *", "mute perm", "ban >= 30d", "sanction money", "sanction confiscate"),
                     x.approval().rules().stream().map(Approval.Rule::text).toList());
             assertEquals(Duration.ofDays(30), x.watchlist().expire());
             assertEquals(new Probation.Settings(true, Duration.ofDays(14), 1), x.probation());
@@ -408,7 +409,7 @@ class P4LogicTest {
     @Test
     void badP4KeysAreRejected() throws Exception {
         String base = Files.readString(BUNDLED);
-        PunishConfigParser.Result r = PunishConfigParser.parse(base.replace("\"ban >= 30d\"]", "\"bann >= 30d\"]"), TestData.ICONS);
+        PunishConfigParser.Result r = PunishConfigParser.parse(base.replace("\"ban >= 30d\",", "\"bann >= 30d\","), TestData.ICONS);
         assertFalse(r.ok());
         ConfigProblem p = r.errors().getFirst();
         assertEquals("config.bad-approval-rule", p.key());

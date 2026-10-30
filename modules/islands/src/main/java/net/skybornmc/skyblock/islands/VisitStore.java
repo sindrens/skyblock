@@ -322,6 +322,41 @@ final class VisitStore {
         return out;
     }
 
+    // ------------------------------------------------------------------ staff island bans (Phase P7, spec 13.2)
+
+    /** One staff island ban still in force. */
+    record StaffBan(long id, UUID islandId, UUID uuid, long until, String reference) {
+    }
+
+    /** Staff bans not lifted and not run out (enable only). */
+    List<StaffBan> loadStaffBansBlocking(long now) {
+        return db.blocking(c -> Sql.query(c, "SELECT id, island_id, uuid, until_at, reference FROM island_staff_bans "
+                + "WHERE lifted_at IS NULL AND until_at > ?", rs -> new StaffBan(rs.getLong("id"), Sql.uuid(rs, "island_id"),
+                Sql.uuid(rs, "uuid"), rs.getLong("until_at"), rs.getString("reference")), now));
+    }
+
+    CompletableFuture<StaffBan> staffBan(UUID islandId, UUID uuid, long until, String reason, String actor, String reference) {
+        long now = System.currentTimeMillis();
+        String why = reason == null ? "" : reason.length() > 255 ? reason.substring(0, 255) : reason;
+        String who = actor == null ? "SYSTEM" : actor.length() > 32 ? actor.substring(0, 32) : actor;
+        String ref = reference == null ? null : reference.length() > 64 ? reference.substring(0, 64) : reference;
+        return db.async(c -> new StaffBan(Sql.insertReturningId(c, "INSERT INTO island_staff_bans (island_id, uuid, until_at, "
+                + "reason, actor, reference, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", islandId, uuid, until, why, who, ref, now),
+                islandId, uuid, until, ref));
+    }
+
+    /** Lifts every not yet lifted staff ban with this reference; returns the ones lifted. */
+    CompletableFuture<List<StaffBan>> liftStaffBans(String reference) {
+        long now = System.currentTimeMillis();
+        return db.transaction(c -> {
+            List<StaffBan> found = Sql.query(c, "SELECT id, island_id, uuid, until_at, reference FROM island_staff_bans "
+                    + "WHERE reference = ? AND lifted_at IS NULL", rs -> new StaffBan(rs.getLong("id"), Sql.uuid(rs, "island_id"),
+                    Sql.uuid(rs, "uuid"), rs.getLong("until_at"), rs.getString("reference")), reference);
+            Sql.update(c, "UPDATE island_staff_bans SET lifted_at = ? WHERE reference = ? AND lifted_at IS NULL", now, reference);
+            return found;
+        });
+    }
+
     /** Removes the bans and warps of an island (inside the M2.7 removal transaction). Visits, ratings and likes stay as history. */
     static void deleteIsland(Connection c, UUID islandId) throws SQLException {
         Sql.update(c, "DELETE FROM island_warp_visits WHERE warp_id IN (SELECT id FROM island_warps WHERE island_id = ?)", islandId);

@@ -33,7 +33,33 @@ public record Punishment(long id, Type type, UUID target, String targetName, Str
     /** Source prefix of punishments created by an automatic rule ({@code auto:warn-rule:2}). */
     public static final String AUTO_PREFIX = "auto:";
 
-    public enum Type { BAN, MUTE, WARN, KICK }
+    /**
+     * {@code ISLAND_*} / {@code COOP_*} (P7, spec 13.2): island punishments, enforced by the islands module. Island kick
+     * and coop remove happen once (like a kick); island ban and coop block last until they expire or are pardoned.
+     */
+    public enum Type {
+        BAN, MUTE, WARN, KICK, ISLAND_KICK, ISLAND_BAN, COOP_REMOVE, COOP_BLOCK;
+
+        /** Island punishment (spec 13.2). */
+        public boolean island() {
+            return this == ISLAND_KICK || this == ISLAND_BAN || this == COOP_REMOVE || this == COOP_BLOCK;
+        }
+
+        /** Happens once and is never "active" afterwards (kick, island kick, coop remove). */
+        public boolean instant() {
+            return this == KICK || this == ISLAND_KICK || this == COOP_REMOVE;
+        }
+
+        /** Has a length (ban, mute, island ban, coop block). */
+        public boolean timed() {
+            return this == BAN || this == MUTE || this == ISLAND_BAN || this == COOP_BLOCK;
+        }
+
+        /** Message key part ({@code island_kick}) of {@code types.*}. */
+        public String key() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+    }
 
     /** Display status in history. */
     public enum Status { ACTIVE, EXPIRED, REMOVED, DONE }
@@ -79,14 +105,14 @@ public record Punishment(long id, Type type, UUID target, String targetName, Str
 
     /** In force right now (bans/mutes/warnings that were not pardoned and have not expired). Kicks are never active. */
     public boolean active(long now) {
-        return type != Type.KICK && !removed() && (expires == null || expires > now);
+        return !type.instant() && !removed() && (expires == null || expires > now);
     }
 
     public Status status(long now) {
         if (removed()) {
             return Status.REMOVED;
         }
-        if (type == Type.KICK) {
+        if (type.instant()) {
             return Status.DONE;
         }
         return active(now) ? Status.ACTIVE : Status.EXPIRED;

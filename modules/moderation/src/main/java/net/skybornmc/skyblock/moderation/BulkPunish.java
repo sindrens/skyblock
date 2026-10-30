@@ -99,6 +99,7 @@ final class BulkPunish {
         PunishDecision.Verdict v;
         Templates.Step planned;
         if (template != null) {
+            template = t.adapt(template); // P7: island steps this player can't get are replaced
             int previous = t.previous(template.id(), template.cutoff(System.currentTimeMillis()));
             planned = template.stepFor(previous);
             v = module.service().preview(staff, t.uuid(), t.name(), planned, false, t.longestActive(Punishment.Type.MUTE),
@@ -220,7 +221,7 @@ final class BulkPunish {
         BulkSelection.Summary s = BulkSelection.summary(lines);
         List<Punishment> applied = outcomes.stream().map(Outcome::punishment).filter(java.util.Objects::nonNull).toList();
         Duration window = module.service().extras().undoWindow();
-        Component undo = applied.isEmpty() || applied.stream().allMatch(p -> p.type() == Punishment.Type.KICK)
+        Component undo = applied.isEmpty() || applied.stream().allMatch(p -> p.type().instant())
                 ? Component.empty() : undoButton(staff, plan, applied, window);
         if (staff.isOnline()) {
             module.messages().send(staff, "bulk.done", Msg.p("reason", plan.reasonName()), Msg.number("apply", s.apply()),
@@ -287,7 +288,7 @@ final class BulkPunish {
         }
         List<CompletableFuture<PunishmentStore.UndoResult>> runs = new ArrayList<>();
         for (Punishment p : applied) {
-            if (p.type() == Punishment.Type.KICK) {
+            if (p.type().instant()) {
                 continue;
             }
             runs.add(module.service().undoQuiet(staff, p.id(), plan.group()).exceptionally(e -> null));

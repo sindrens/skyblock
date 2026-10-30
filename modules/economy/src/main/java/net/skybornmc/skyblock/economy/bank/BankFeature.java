@@ -415,6 +415,9 @@ public final class BankFeature implements Listener, BankService {
     }
 
     void deposit(Player player, UUID profileKey, AccountRef bank, long amount, BankOps.Terms terms, Runnable after) {
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.BANK)) {
+            return; // P7: frozen balance
+        }
         if (!canAct(player, profileKey) || !stillAllowed(player, profileKey, bank, IslandService.PERM_BANK_DEPOSIT)) {
             return;
         }
@@ -439,6 +442,9 @@ public final class BankFeature implements Listener, BankService {
     }
 
     void withdraw(Player player, UUID profileKey, AccountRef bank, long amount, BankOps.Terms terms, BankOps.Limit limit, Runnable after) {
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.BANK)) {
+            return; // P7: frozen balance
+        }
         if (!canAct(player, profileKey) || !stillAllowed(player, profileKey, bank, IslandService.PERM_BANK_WITHDRAW)) {
             return;
         }

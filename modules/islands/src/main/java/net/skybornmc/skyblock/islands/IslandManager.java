@@ -663,6 +663,33 @@ final class IslandManager implements IslandService {
         return members.joinBlockedUntil(player);
     }
 
+    // ------------------------------------------------------------------ moderation hooks (Phase P7, spec 13.2)
+
+    @Override
+    public boolean supportsModeration() {
+        return module.visits() != null;
+    }
+
+    @Override
+    public CompletableFuture<Boolean> banFromIsland(UUID islandId, UUID player, long untilEpochMillis, String reason,
+                                                    Actor actor, String reference) {
+        return core.scheduler().supplyMain("island-staff-ban", () -> byId.get(islandId)).thenCompose(island ->
+                island == null || module.visits() == null ? CompletableFuture.completedFuture(false)
+                        : module.visits().staffBan(island, player, untilEpochMillis, reason, actor, reference));
+    }
+
+    @Override
+    public CompletableFuture<Boolean> liftIslandBan(String reference, Actor actor) {
+        return module.visits() == null || reference == null ? CompletableFuture.completedFuture(false)
+                : module.visits().liftStaffBan(reference, actor);
+    }
+
+    @Override
+    public boolean expelFromIsland(UUID islandId, UUID player, String reason, Actor actor) {
+        Island island = byId.get(islandId);
+        return island != null && module.visits() != null && module.visits().staffKick(island, player, reason, actor);
+    }
+
     // ------------------------------------------------------------------ mastery hooks (ISL2)
 
     @Override
@@ -777,6 +804,24 @@ final class IslandManager implements IslandService {
             msg.send(player, "create.busy");
             return;
         }
+        // Phase P7 (spec 13.2 coop-block): a staff join block also stops creating islands (account-wide)
+        members.joinBlockedUntil(player.getUniqueId()).whenCompleteAsync((blocked, blockError) -> {
+            if (blockError == null && blocked.isPresent() && blocked.get() > System.currentTimeMillis()) {
+                building.remove(id);
+                if (blocked.get() == Long.MAX_VALUE) {
+                    msg.send(player, "create.blocked-perm");
+                } else {
+                    msg.send(player, "create.blocked", Msg.p("time", Format.duration(java.time.Duration.ofMillis(
+                            blocked.get() - System.currentTimeMillis()))));
+                }
+                core.sounds().play(player, "error");
+                return;
+            }
+            createNow(player, id);
+        }, main);
+    }
+
+    private void createNow(Player player, UUID id) {
         msg.send(player, "create.started");
         store.create(id, config.seasonId, config.startSize(), cooldownMillis(), config.world).whenCompleteAsync((result, error) -> {
             if (error != null) {

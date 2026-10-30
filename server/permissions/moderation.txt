@@ -54,3 +54,14 @@ lp group helper permission set skyblock.lockdown.bypass true
 lp group helper permission set skyblock.staff.lockdown true
 # /psuggest for staff; GrimAC runs it from the console (which has every permission).
 lp group helper permission set skyblock.staff.punish.suggest true
+
+# --- Phase P, P7: island punishments (spec 13.2), economy and item sanctions (spec 13.1) ---
+# Island steps (island kick/ban, coop remove/block) for every staff member who can punish. Freeze balance and block
+# trading from mod; removing money, confiscating and restoring only for admins (spec: "senior staff"). The approval rules
+# "sanction money" / "sanction confiscate" also need skyblock.staff.punish.approve (admins have it).
+lp group helper permission set skyblock.staff.punish.island true
+lp group mod permission set skyblock.staff.sanction.freeze true
+lp group mod permission set skyblock.staff.sanction.trade true
+lp group admin permission set skyblock.staff.sanction.money true
+lp group admin permission set skyblock.staff.sanction.confiscate true
+lp group admin permission set skyblock.staff.sanction.restore true

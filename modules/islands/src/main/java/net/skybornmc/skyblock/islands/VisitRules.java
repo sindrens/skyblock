@@ -52,6 +52,18 @@ public final class VisitRules {
      * never enters it (not even with the staff bypass), so nothing can move between their profiles.
      */
     public static Access access(Role role, boolean banned, boolean locked, boolean bypass, boolean ownOtherProfile) {
+        return access(role, banned, locked, bypass, ownOtherProfile, false);
+    }
+
+    /**
+     * Same, with a staff island ban (Phase P7, spec 13.2 {@code island-ban}): it keeps even members off the island; only
+     * the staff bypass ignores it.
+     */
+    public static Access access(Role role, boolean banned, boolean locked, boolean bypass, boolean ownOtherProfile,
+                                boolean staffBanned) {
+        if (staffBanned && !bypass) {
+            return Access.BANNED;
+        }
         if (role != null) {
             return Access.MEMBER;
         }

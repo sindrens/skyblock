@@ -48,7 +48,9 @@ final class ApiSuggestions implements SuggestionService {
     static Plan plan(Templates.Template template, List<Punishment> history, String source, String details, long now,
                      Duration pendingExpire) {
         int previous = Offences.counting(history, template.id(), template.cutoff(now));
-        Templates.Step step = template.stepFor(previous);
+        // P7: suggestions never carry island steps (no island context when they are applied later): the non-island
+        // step that replaces them is suggested instead
+        Templates.Step step = IslandSteps.adapt(template, IslandSteps.Context.UNAVAILABLE).stepFor(previous);
         String src = Notes.clean(source == null ? "" : source);
         String det = Notes.clean(details == null ? "" : details);
         String text = src.isEmpty() ? det : det.isEmpty() ? src : src + ": " + det;

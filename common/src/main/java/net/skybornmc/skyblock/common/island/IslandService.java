@@ -228,6 +228,39 @@ public interface IslandService {
     /** End of the player's join block (epoch millis), if one is active. */
     CompletableFuture<Optional<Long>> joinBlockedUntil(UUID player);
 
+    /**
+     * Moderation hook (Phase P7, spec 13.2 {@code island-ban}): {@code player} (player UUID, every profile) can't enter
+     * this one island until {@code untilEpochMillis} ({@link Long#MAX_VALUE} = until lifted), even as a member. Staff with
+     * the visit bypass still can. A player on the island right now is sent off it. Saved with {@code reference} (e.g.
+     * {@code punishment:12}) so {@link #liftIslandBan} can end exactly this ban; logged ({@code island_staff_ban}).
+     *
+     * @return false if the island is unknown or saving failed
+     */
+    default CompletableFuture<Boolean> banFromIsland(UUID islandId, UUID player, long untilEpochMillis, String reason,
+                                                     Actor actor, String reference) {
+        return CompletableFuture.completedFuture(false);
+    }
+
+    /** Ends the island ban saved with {@code reference} (undo/pardon). Logged ({@code island_staff_unban}). */
+    default CompletableFuture<Boolean> liftIslandBan(String reference, Actor actor) {
+        return CompletableFuture.completedFuture(false);
+    }
+
+    /**
+     * Moderation hook (Phase P7, spec 13.2 {@code island-kick}): sends {@code player} (player UUID) off this island now if
+     * they are on it (they may come back). Logged ({@code island_staff_kick}). Main thread.
+     *
+     * @return true if the player was on the island and was sent off
+     */
+    default boolean expelFromIsland(UUID islandId, UUID player, String reason, Actor actor) {
+        return false;
+    }
+
+    /** True if the islands module supports the P7 moderation hooks above (island ban and island kick). */
+    default boolean supportsModeration() {
+        return false;
+    }
+
     // ------------------------------------------------------------------ mastery hooks (ISL2; filled by the masteries later)
 
     /**

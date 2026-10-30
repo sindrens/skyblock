@@ -545,7 +545,167 @@ final class PunishConfigParser {
                 probation(x.getConfigurationSection("probation")), muteEnded(x.getConfigurationSection("mute-ended")),
                 bulk(x.getConfigurationSection("bulk")), appeal(x.getConfigurationSection("appeal")),
                 neverAuto(x), lockdown(x.getConfigurationSection("lockdown")), raid(x.getConfigurationSection("raid")),
-                network(x.getConfigurationSection("network")));
+                network(x.getConfigurationSection("network")), sanctions(x.getConfigurationSection("sanctions")));
+    }
+
+    // ------------------------------------------------------------------ extras (P7: spec 13.1)
+
+    private SanctionRules.Settings sanctions(ConfigurationSection s) {
+        SanctionRules.Settings d = SanctionRules.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.sanctions.";
+        List<Duration> durations = d.durations();
+        if (s.contains("durations")) {
+            if (!s.isList("durations")) {
+                error("config.bad-list", p + "durations");
+            } else {
+                List<Duration> out = new ArrayList<>();
+                for (String raw : s.getStringList("durations")) {
+                    String v = raw == null ? "" : raw.strip().toLowerCase(Locale.ROOT);
+                    if (OFF.contains(v)) {
+                        out.add(null);
+                        continue;
+                    }
+                    try {
+                        Duration len = net.skybornmc.skyblock.common.command.Durations.parse(v);
+                        if (len.isZero() || len.isNegative()) {
+                            throw new IllegalArgumentException(v);
+                        }
+                        out.add(len);
+                    } catch (IllegalArgumentException e) {
+                        error("config.bad-step-time", p + "durations", "value", v);
+                    }
+                }
+                if (out.isEmpty() || out.size() > 7) {
+                    error("config.bad-number", p + "durations", "value", String.valueOf(out.size()), "min", "1", "max", "7");
+                } else {
+                    durations = java.util.Collections.unmodifiableList(out);
+                }
+            }
+        }
+        List<String> reasons = idList(s, "reasons", p, d.reasons(), 7);
+        java.util.Set<net.skybornmc.skyblock.common.moderation.SanctionService.Use> freezeBlocks = uses(s, "freeze-blocks", p, d.freezeBlocks());
+        java.util.Set<net.skybornmc.skyblock.common.moderation.SanctionService.Use> tradeBlocks = uses(s, "trade-blocks", p, d.tradeBlocks());
+        java.util.Set<net.skybornmc.skyblock.common.economy.Currency> currencies = d.freezeCurrencies();
+        if (s.contains("freeze-currencies")) {
+            if (!s.isList("freeze-currencies")) {
+                error("config.bad-list", p + "freeze-currencies");
+            } else {
+                java.util.Set<net.skybornmc.skyblock.common.economy.Currency> out =
+                        java.util.EnumSet.noneOf(net.skybornmc.skyblock.common.economy.Currency.class);
+                for (String raw : s.getStringList("freeze-currencies")) {
+                    java.util.Optional<net.skybornmc.skyblock.common.economy.Currency> c =
+                            net.skybornmc.skyblock.common.economy.Currency.byKey(raw == null ? "" : raw.strip().toLowerCase(Locale.ROOT));
+                    if (c.isEmpty()) {
+                        error("config.unknown-key", p + "freeze-currencies", "value", String.valueOf(raw), "suggestion", "money");
+                    } else {
+                        out.add(c.get());
+                    }
+                }
+                currencies = java.util.Set.copyOf(out);
+            }
+        }
+        java.util.Set<String> exempt = reasonSet(s, "freeze-exempt-reasons", p, d.freezeExempt());
+        java.util.Set<String> receive = reasonSet(s, "freeze-receive-reasons", p, d.freezeReceive());
+        java.util.Set<String> trade = reasonSet(s, "trade-reasons", p, d.tradeReasons());
+        long moneyMax = d.moneyMax();
+        if (s.contains("money-max")) {
+            Object raw = s.get("money-max");
+            if (!(raw instanceof Number n) || n.longValue() < 1) {
+                error("config.bad-number", p + "money-max", "value", String.valueOf(raw), "min", "1", "max", String.valueOf(Long.MAX_VALUE));
+            } else {
+                moneyMax = n.longValue();
+            }
+        }
+        boolean dupe = d.dupeSuggest();
+        String dupeReason = d.dupeReason();
+        ConfigurationSection ds = s.getConfigurationSection("dupe-suggestion");
+        if (ds != null) {
+            dupe = bool(ds, "enabled", p + "dupe-suggestion.enabled", dupe);
+            if (ds.contains("reason")) {
+                String raw = String.valueOf(ds.get("reason")).strip();
+                if (!raw.matches(ID_PATTERN)) {
+                    error("config.bad-id", p + "dupe-suggestion.reason", "value", raw);
+                } else {
+                    dupeReason = raw;
+                }
+            }
+        }
+        return new SanctionRules.Settings(bool(s, "enabled", p + "enabled", d.enabled()), durations, reasons, freezeBlocks,
+                currencies, exempt, receive, tradeBlocks, trade, moneyMax, dupe, dupeReason);
+    }
+
+    private List<String> idList(ConfigurationSection s, String key, String p, List<String> fallback, int max) {
+        if (!s.contains(key)) {
+            return fallback;
+        }
+        if (!s.isList(key)) {
+            error("config.bad-list", p + key);
+            return fallback;
+        }
+        List<String> ids = new ArrayList<>();
+        for (String raw : s.getStringList(key)) {
+            String clean = raw == null ? "" : raw.strip();
+            if (!clean.matches(ID_PATTERN)) {
+                error("config.bad-id", p + key, "value", clean);
+            } else if (!ids.contains(clean)) {
+                ids.add(clean);
+            }
+        }
+        if (ids.isEmpty() || ids.size() > max) {
+            error("config.bad-number", p + key, "value", String.valueOf(ids.size()), "min", "1", "max", String.valueOf(max));
+            return fallback;
+        }
+        return List.copyOf(ids);
+    }
+
+    private java.util.Set<net.skybornmc.skyblock.common.moderation.SanctionService.Use> uses(ConfigurationSection s, String key,
+            String p, java.util.Set<net.skybornmc.skyblock.common.moderation.SanctionService.Use> fallback) {
+        if (!s.contains(key)) {
+            return fallback;
+        }
+        if (!s.isList(key)) {
+            error("config.bad-list", p + key);
+            return fallback;
+        }
+        java.util.Set<net.skybornmc.skyblock.common.moderation.SanctionService.Use> out =
+                java.util.EnumSet.noneOf(net.skybornmc.skyblock.common.moderation.SanctionService.Use.class);
+        List<String> names = java.util.Arrays.stream(net.skybornmc.skyblock.common.moderation.SanctionService.Use.values())
+                .map(net.skybornmc.skyblock.common.moderation.SanctionService.Use::id).toList();
+        for (String raw : s.getStringList(key)) {
+            java.util.Optional<net.skybornmc.skyblock.common.moderation.SanctionService.Use> u =
+                    net.skybornmc.skyblock.common.moderation.SanctionService.Use.parse(raw);
+            if (u.isEmpty()) {
+                String v = raw == null ? "" : raw.strip();
+                error("config.unknown-key", p + key, "value", v, "suggestion",
+                        nullToEmpty(Hints.closest(v.toLowerCase(Locale.ROOT), names)));
+            } else {
+                out.add(u.get());
+            }
+        }
+        return java.util.Set.copyOf(out);
+    }
+
+    private java.util.Set<String> reasonSet(ConfigurationSection s, String key, String p, java.util.Set<String> fallback) {
+        if (!s.contains(key)) {
+            return fallback;
+        }
+        if (!s.isList(key)) {
+            error("config.bad-list", p + key);
+            return fallback;
+        }
+        java.util.Set<String> out = new java.util.LinkedHashSet<>();
+        for (String raw : s.getStringList(key)) {
+            String v = raw == null ? "" : raw.strip();
+            if (!net.skybornmc.skyblock.common.economy.TxReason.isValid(v)) {
+                error("config.bad-id", p + key, "value", v);
+            } else {
+                out.add(v);
+            }
+        }
+        return java.util.Set.copyOf(out);
     }
 
     // ------------------------------------------------------------------ extras (P6: spec 13.3, 13.9, 13.12)

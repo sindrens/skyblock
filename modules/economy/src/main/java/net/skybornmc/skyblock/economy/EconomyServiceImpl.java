@@ -47,6 +47,39 @@ final class EconomyServiceImpl implements EconomyService {
     private final IntSupplier season;
     private final Logger log;
     private final Supplier<ProfileService> profiles;
+    /** Phase P7 (spec 13.1): the moderation module's sanction check ({@code null} = none). */
+    private volatile Supplier<net.skybornmc.skyblock.common.moderation.SanctionService> sanctions = () -> null;
+
+    /** Sets where the sanction check comes from (the module passes the service registry lookup). */
+    void sanctions(Supplier<net.skybornmc.skyblock.common.moderation.SanctionService> source) {
+        this.sanctions = source == null ? () -> null : source;
+    }
+
+    /**
+     * Safety net (P7): true if an active sanction forbids {@code tx} (money leaving a frozen player, or a trade-like
+     * transfer touching a trade-blocked player). Refused and audited ({@code sanction_blocked}); nothing changes.
+     */
+    private boolean sanctioned(Transaction tx) {
+        net.skybornmc.skyblock.common.moderation.SanctionService s;
+        try {
+            s = sanctions.get();
+        } catch (RuntimeException e) {
+            return false;
+        }
+        if (s == null || !s.blocks(tx)) {
+            return false;
+        }
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("reason", tx.reason());
+        details.put("currency", tx.currency().key());
+        details.put("amount", tx.amount());
+        details.put("from", String.valueOf(tx.from()));
+        details.put("to", String.valueOf(tx.to()));
+        audit.log(AuditCategory.ECONOMY, "sanction_blocked", tx.actor(), tx.from() != null ? tx.from().owner().toString()
+                : tx.to() != null ? tx.to().owner().toString() : null, null, null, null, details);
+        return true;
+    }
+
     /** Online player → the profile key whose balances are cached for them. */
     private final Map<UUID, UUID> loadedKeys = new ConcurrentHashMap<>();
 
@@ -127,6 +160,9 @@ final class EconomyServiceImpl implements EconomyService {
             log.warning("Economy: refused invalid transaction (" + problem + "): " + tx);
             return CompletableFuture.completedFuture(TxResult.of(TxResult.Status.INVALID));
         }
+        if (sanctioned(tx)) {
+            return CompletableFuture.completedFuture(TxResult.of(TxResult.Status.INVALID));
+        }
         CompletableFuture<TxResult> future;
         try {
             future = store.execute(tx, guard);
@@ -157,6 +193,9 @@ final class EconomyServiceImpl implements EconomyService {
             String problem = tx.problem();
             if (problem != null) {
                 log.warning("Economy: refused invalid batch transaction (" + problem + "): " + tx);
+                return CompletableFuture.completedFuture(net.skybornmc.skyblock.common.economy.BatchResult.failed(TxResult.Status.INVALID, i));
+            }
+            if (sanctioned(tx)) {
                 return CompletableFuture.completedFuture(net.skybornmc.skyblock.common.economy.BatchResult.failed(TxResult.Status.INVALID, i));
             }
             txs.add(tx);

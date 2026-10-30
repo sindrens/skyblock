@@ -40,7 +40,7 @@ final class Undo {
         if (p == null) {
             return Result.NOT_FOUND;
         }
-        if (p.type() == Punishment.Type.KICK) {
+        if (p.type().instant()) {
             return Result.NOT_UNDOABLE;
         }
         if (p.removed()) {

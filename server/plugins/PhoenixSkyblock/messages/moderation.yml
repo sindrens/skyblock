@@ -29,6 +29,11 @@ steps:
   mute: "Mute <length>"
   ban: "Ban <length>"
   ipban: "IP-ban <length>"
+  # P7 (spec 13.2): island steps.
+  island-kick: "Island kick"
+  island-ban: "Island ban <length>"
+  coop-remove: "Removed from the team"
+  coop-block: "Team block <length>"
 
 # Reason names (ids from punishments.yml → categories). Also the reason text stored with the punishment.
 categories:
@@ -55,6 +60,7 @@ reasons:
   inappropriate-name: "Inappropriate name or nickname"
   inappropriate-build: "Inappropriate build"
   inappropriate-skin: "Inappropriate skin"
+  coop-griefing: "Griefing a team island"
 
 # Plain warn buttons of the /p menu (ids from punishments.yml → menu.warns). name = button, reason = stored text.
 warn-buttons:
@@ -81,6 +87,10 @@ types:
   mute: "<c:warning>Mute</c:warning>"
   warn: "<c:flame>Warning</c:flame>"
   kick: "<c:text>Kick</c:text>"
+  island_kick: "<c:text>Island kick</c:text>"
+  island_ban: "<c:warning>Island ban</c:warning>"
+  coop_remove: "<c:text>Team removal</c:text>"
+  coop_block: "<c:warning>Team block</c:warning>"
 
 status:
   active: "Active"
@@ -148,6 +158,11 @@ notify:
   unban: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>Click for history'><c:value><staff></c:value> <c:success>unbanned</c:success> <c:value><player></c:value><c:text>: <c:value><reason></hover></click>"
   unmute: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>Click for history'><c:value><staff></c:value> <c:success>unmuted</c:success> <c:value><player></c:value><c:text>: <c:value><reason></hover></click>"
   unwarn: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>Click for history'><c:value><staff></c:value> <c:success>removed a warning of</c:success> <c:value><player></c:value><c:text>: <c:value><reason></hover></click>"
+  # P7 (spec 13.2): island punishments.
+  island_kick: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>ID #<id><newline><c:muted>Click for history'><c:value><staff></c:value> <c:text>kicked <c:value><player></c:value> <c:text>off their team island: <c:value><reason></hover></click>"
+  island_ban: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>ID #<id><newline>Length: <length><newline><c:muted>Click for history'><c:value><staff></c:value> <c:warning>island-banned</c:warning> <c:value><player></c:value> <c:text>for <c:value><length></c:value>: <c:value><reason></hover></click>"
+  coop_remove: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>ID #<id><newline><c:muted>Click for history'><c:value><staff></c:value> <c:text>removed <c:value><player></c:value> <c:text>from their team: <c:value><reason></hover></click>"
+  coop_block: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:text>ID #<id><newline>Length: <length><newline><c:muted>Click for history'><c:value><staff></c:value> <c:warning>team-blocked</c:warning> <c:value><player></c:value> <c:text>for <c:value><length></c:value>: <c:value><reason></hover></click>"
 
 # Public announcements (not for -s silent punishments; announce.public in moderation.yml).
 public:
@@ -385,12 +400,26 @@ punish:
     pending:
       - "<c:warning>Pending: suggested <action>"
       - "<c:action><sym:bullet> Click to apply or dismiss"
-  # Bottom row. Sanctions and dry run arrive in later milestones.
+  # Bottom row. Dry run arrives in a later milestone.
   buttons:
+    # P7 (spec 13.1). sanctions = sanctions are switched off (extras.sanctions.enabled: false).
     sanctions:
       name: "<c:muted>Sanctions"
       lore:
-        - "<c:muted>Not available yet."
+        - "<c:muted>Switched off."
+    # <active> = freeze/trade blocks in force, <total> = sanctions on record.
+    sanctions-ready:
+      name: "<c:value>Sanctions"
+      lore:
+        - "<c:text>Freeze balance, block trading,"
+        - "<c:text>remove money, confiscate an item."
+        - "<c:text>Active: <c:value><active></c:value> <c:muted>(<total> on record)"
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    sanctions-locked:
+      name: "<c:muted>Sanctions"
+      lore:
+        - "<c:muted>Senior staff only."
     kick:
       name: "<c:value>Kick"
       lore:
@@ -558,12 +587,14 @@ undo:
   expired: "<prefix><c:error><sym:cross></c:error> <c:text>Too late to undo <c:muted>(<window>)</c:muted><c:text>. Use <c:value>/unmute</c:value>, <c:value>/unban</c:value> or <c:value>/unwarn</c:value>."
   not-yours: "<prefix><c:error><sym:cross></c:error> <c:text>You can only undo your own punishments."
   already: "<prefix><c:error><sym:cross></c:error> <c:text>Already removed by <c:value><by></c:value>."
-  not-undoable: "<prefix><c:error><sym:cross></c:error> <c:text>A kick can't be undone."
+  not-undoable: "<prefix><c:error><sym:cross></c:error> <c:text>A kick, island kick or team removal can't be undone."
   not-found: "<prefix><c:error><sym:cross></c:error> <c:text>That punishment doesn't exist."
   # To the player.
   player-mute: "<prefix><c:success><sym:check></c:success> <c:text>Your mute was removed. <c:muted>(staff mistake)"
   player-mute-still: "<prefix><c:text>One mute was removed, but another one is still active."
   player-warn: "<prefix><c:success><sym:check></c:success> <c:text>Your last warning was removed. <c:muted>(staff mistake)"
+  # P7: an island ban or team block was undone.
+  player-island: "<prefix><c:success><sym:check></c:success> <c:text>Your <type> <c:text>was removed. <c:muted>(staff mistake)"
 
 # ---------------------------------------------------------------- /pstats (P2, spec 12.10)
 stats:
@@ -571,6 +602,8 @@ stats:
   given: " <c:text>Warns <c:value><warns></c:value> <c:muted><sym:dot></c:muted> <c:text>Mutes <c:value><mutes></c:value> <c:muted><sym:dot></c:muted> <c:text>Bans <c:value><bans></c:value> <c:muted><sym:dot></c:muted> <c:text>Kicks <c:value><kicks></c:value>  <c:text>= <c:value><given></c:value> <c:text>given"
   reversed: " <c:text>Reversed: <c:value><reversed></c:value> <c:muted>(<percent>%, undone or pardoned)</c:muted>  <c:text>Net: <c:value><net>"
   suggestions: " <c:text>From automatic suggestions: <c:value><applied>"
+  # P7: island punishments (spec 13.2, also counted in "given") and sanctions (spec 13.1).
+  sanctions: " <c:text>Island punishments: <c:value><island></c:value> <c:muted><sym:dot></c:muted> <c:text>Sanctions: <c:value><sanctions>"
   # P4 (spec 13.4): approval requests this staff member made, and handled as an approver (only shown when > 0).
   requests: " <c:text>Requests: <c:value><made></c:value> made <c:muted><sym:dot></c:muted> <c:text><approved> approved <c:muted><sym:dot></c:muted> <c:text><denied> denied <c:muted><sym:dot></c:muted> <c:text><waiting> waiting <c:muted><sym:dot></c:muted> <c:text><expired> expired"
   approvals: " <c:text>Requests handled: <c:value><approved></c:value> approved <c:muted><sym:dot></c:muted> <c:text><denied> denied"
@@ -732,6 +765,10 @@ discord:
     ipmute: "IP-mute"
     warn: "Warning"
     kick: "Kick"
+    island_kick: "Island kick"
+    island_ban: "Island ban"
+    coop_remove: "Team removal"
+    coop_block: "Team block"
   system: "System"
   permanent: "permanent"
   footer: "Phoenix Skyblock"
@@ -1268,3 +1305,240 @@ lockdown:
 psuggest:
   created: "<prefix><c:success><sym:check></c:success> <c:text>Suggested <c:value><reason></c:value> for <c:value><player></c:value> <c:muted>(#<sid>)</c:muted><c:text>. Staff decide."
   refreshed: "<prefix><c:text>Added to the waiting suggestion for <c:value><player></c:value> <c:muted>(#<sid>, <reason>)</c:muted><c:text>."
+
+# ---------------------------------------------------------------- P7 (spec 13.1 sanctions, 13.2 island punishments)
+
+# Island punishments (13.2). <island> = island name, <length>/<expires> = time, <reason>.
+island-punish:
+  kicked: "<prefix><c:error><sym:cross></c:error> <c:text>Staff sent you off <c:value><island></c:value><c:text>: <c:value><reason>"
+  banned: "<prefix><c:error><sym:cross></c:error> <c:text>You can't enter <c:value><island></c:value> <c:text>for <c:value><length></c:value><c:text>: <c:value><reason>"
+  coop-blocked: "<prefix><c:error><sym:cross></c:error> <c:text>You can't join, create or be cooped on islands for <c:value><length></c:value><c:text>: <c:value><reason>"
+
+# When an island step can't be used for a player, the next possible step of the ladder is used. <step> = the step in the
+# ladder, <used> = what was used instead, <why> = one of why.*.
+island-steps:
+  replaced: "<prefix><c:warning><sym:cross></c:warning> <c:value><step></c:value> <c:text>isn't possible for <c:value><player></c:value> <c:muted>(<why>)</c:muted><c:text>: <c:value><used></c:value> <c:text>instead."
+  apply-failed: "<c:muted>[Staff]</c:muted> <c:warning>Island punishment #<id> for <c:value><player></c:value> <c:warning>could not be enforced <c:muted>(<why>)</c:muted><c:text>. It stays in the history."
+  why:
+    unavailable: "islands are not available"
+    owner: "owns the island"
+    no_island: "has no team island"
+
+# Sanctions (13.1). Placeholders of a sanction: <sid> (id), <kind>, <player>, <staff>, <reason>, <until>, <amount>, <item>,
+# <state>, <date>, <handler>. <use> = what was blocked (uses.*).
+sanctions:
+  usage: "<prefix><c:text>Sanctions live in <c:value>/p <player></c:value> <c:text>→ Sanctions. <c:value>/psanction restore <id></c:value> <c:text>gives back removed money or a confiscated item."
+  bad-id: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a sanction id. Press Tab to see them."
+  until-lifted: "until lifted"
+  lift-reason: "Lifted by staff"
+  restore-reason: "Restored by staff"
+  restore-word: "restore"
+  kinds:
+    freeze: "Freeze balance"
+    trade: "Block trading"
+    money: "Remove money"
+    confiscate: "Confiscate item"
+  states:
+    active: "active"
+    pending: "pending (check by hand)"
+    lifted: "lifted"
+    expired: "ended"
+    restored: "restored"
+    failed: "not taken"
+  uses:
+    pay: "pay"
+    note: "use money notes"
+    bank: "use the bank"
+    shop: "buy in the shop"
+    auction-list: "sell on the auction house"
+    auction-buy: "buy on the auction house"
+    trade: "trade"
+  # Preset reasons (ids from punishments.yml extras.sanctions.reasons). Stored with the sanction.
+  reasons:
+    duping: "Duping"
+    scamming: "Scamming"
+    rmt: "Real-money trading"
+    exploit: "Exploiting bugs"
+    other: "Other (see notes)"
+  # To the player when something is blocked.
+  blocked:
+    freeze: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance is frozen by staff, so you can't <use> <c:muted>(until <until>, <reason>)"
+    trade: "<prefix><c:error><sym:cross></c:error> <c:text>Your trading is blocked by staff, so you can't <use> <c:muted>(until <until>, <reason>)"
+    other: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't <use> right now."
+  # To the player when staff act.
+  you:
+    freeze: "<prefix><c:error><sym:cross></c:error> <c:text>Staff froze your balance until <c:value><until></c:value><c:text>: <c:value><reason>"
+    trade: "<prefix><c:error><sym:cross></c:error> <c:text>Staff blocked your trading until <c:value><until></c:value><c:text>: <c:value><reason>"
+    money: "<prefix><c:error><sym:cross></c:error> <c:text>Staff removed <c:value><amount></c:value> <c:text>from your balance: <c:value><reason>"
+    confiscated: "<prefix><c:error><sym:cross></c:error> <c:text>Staff took <c:value><item></c:value> <c:text>from you: <c:value><reason>"
+    lifted: "<prefix><c:success><sym:check></c:success> <c:text>Staff lifted your sanction: <c:value><kind></c:value><c:text>."
+    ended: "<prefix><c:success><sym:check></c:success> <c:text>Your sanction ended: <c:value><kind></c:value><c:text>."
+    money-restored: "<prefix><c:success><sym:check></c:success> <c:text>Staff gave back <c:value><amount></c:value><c:text>."
+    item-restored: "<prefix><c:success><sym:check></c:success> <c:text>Staff gave back <c:value><item></c:value><c:text>."
+  # To staff with skyblock.staff.notify (and the staff member who did it).
+  notify:
+    started: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>gave <c:value><player></c:value> <c:value><kind></c:value> <c:text>until <c:value><until></c:value><c:text>: <c:value><reason></c:value> <c:muted>(#<sid>)"
+    lifted: "<c:muted>[Staff]</c:muted> <c:value><by></c:value> <c:text>lifted <c:value><kind></c:value> <c:text>of <c:value><player></c:value> <c:muted>(#<sid>)"
+    money: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>removed <c:value><amount></c:value> <c:text>from <c:value><player></c:value><c:text>: <c:value><reason></c:value> <c:muted>(#<sid>, /psanction restore <sid>)"
+    confiscated: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>took <c:value><item></c:value> <c:text>from <c:value><player></c:value><c:text>: <c:value><reason></c:value> <c:muted>(#<sid>, /psanction restore <sid>)"
+    restored: "<c:muted>[Staff]</c:muted> <c:value><by></c:value> <c:text>gave back <c:value><kind></c:value> <c:text>#<sid> to <c:value><player></c:value><c:text>."
+  listings-cancelled: "<prefix><c:text>Cancelled <c:value><count></c:value> <c:text>auction listing(s) of <c:value><player></c:value><c:text>. The items are in their collection bin."
+  # Errors for staff.
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:value><kind></c:value> <c:text>is not available yet (the economy is off)."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use <c:value><kind></c:value><c:text>. Ask senior staff."
+  needs-approval: "<prefix><c:error><sym:cross></c:error> <c:value><kind></c:value> <c:text>needs an approver (admin). Ask one to do it."
+  already: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already has <c:value><kind></c:value> <c:text>until <c:value><until></c:value><c:text>. Lift it first to change it."
+  lift-not-found: "<prefix><c:error><sym:cross></c:error> <c:text>That sanction doesn't exist."
+  lift-not-liftable: "<prefix><c:error><sym:cross></c:error> <c:text>Only freeze balance and block trading can be lifted."
+  lift-not-active: "<prefix><c:error><sym:cross></c:error> <c:text>That sanction is not active anymore."
+  money-nothing: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has no money to take."
+  money-failed: "<prefix><c:error><sym:cross></c:error> <c:text>The money could not be moved. Nothing changed. Try again."
+  confiscate-offline: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>must be online (and not switching profiles) to confiscate."
+  confiscate-moved: "<prefix><c:error><sym:cross></c:error> <c:text>The item moved before it was taken. Nothing changed. Pick it again."
+  restore-not-found: "<prefix><c:error><sym:cross></c:error> <c:text>Sanction <c:value>#<sid></c:value> <c:text>doesn't exist."
+  restore-not-restorable: "<prefix><c:error><sym:cross></c:error> <c:text>Only removed money and confiscated items can be restored. Lift the rest in <c:value>/p</c:value><c:text>."
+  restore-already: "<prefix><c:error><sym:cross></c:error> <c:text>Sanction <c:value>#<sid></c:value> <c:text>was already given back."
+  restore-not-held: "<prefix><c:error><sym:cross></c:error> <c:text>Sanction <c:value>#<sid></c:value> <c:text>holds nothing <c:muted>(<state>)</c:muted><c:text>."
+  restore-offline: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>must be online to get the item back."
+  restore-profile: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>must be on the profile the item was taken from."
+  restore-full: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>needs a free inventory slot."
+  # Dupe detector link: a suggestion (never applied by itself). <item> = item id, <copies> = copies found.
+  dupe-source: "Dupe detector"
+  dupe-details: "<item> found <copies> times (also freeze balance: /p, Sanctions)"
+  # /history (chat).
+  history:
+    header: "<prefix><c:text>Sanctions of <c:value><player></c:value> <c:muted>(<total>)"
+    line: " <c:ember><sym:bullet></c:ember> <hover:show_text:'<c:text>By <staff> on <date><newline>Until: <until><newline>Amount: <amount><newline>Item: <item><newline>Handled by: <handler>'><c:muted>#<sid></c:muted> <c:value><kind></c:value> <c:text><reason> <c:muted>(<state>)</c:muted></hover>"
+  # Menus (Bedrock-safe: plain clicks).
+  menu:
+    title: "Sanctions"
+    info:
+      - "<c:text>Freeze balance and block trading"
+      - "<c:text>last until lifted or their time ends."
+      - "<c:text>Removed money and confiscated items"
+      - "<c:text>can be given back (Restore)."
+    head:
+      name: "<c:value><player>"
+      lore:
+        - "<c:text>Sanctions on record: <c:value><count>"
+    freeze:
+      name: "<c:value>Freeze balance"
+      lore:
+        - "<c:text>No paying, money notes, bank, shop,"
+        - "<c:text>auction house or trades."
+        - ""
+        - "<c:action><sym:bullet> Click: pick a length, then a reason"
+    freeze-on:
+      name: "<c:error>Balance frozen"
+      lore:
+        - "<c:text>Until <c:value><until></c:value> <c:muted>(#<sid>)"
+        - "<c:text>By <c:value><staff></c:value><c:text>: <reason>"
+        - ""
+        - "<c:action><sym:bullet> Click to lift"
+    freeze-locked:
+      name: "<c:muted>Freeze balance"
+      lore:
+        - "<c:muted>You can't use this."
+    freeze-unavailable:
+      name: "<c:muted>Freeze balance"
+      lore:
+        - "<c:muted>Not available yet."
+    trade:
+      name: "<c:value>Block trading"
+      lore:
+        - "<c:text>No auction house, /pay or trades."
+        - "<c:text>Their listings go back to their collection bin."
+        - ""
+        - "<c:action><sym:bullet> Click: pick a length, then a reason"
+    trade-on:
+      name: "<c:error>Trading blocked"
+      lore:
+        - "<c:text>Until <c:value><until></c:value> <c:muted>(#<sid>)"
+        - "<c:text>By <c:value><staff></c:value><c:text>: <reason>"
+        - ""
+        - "<c:action><sym:bullet> Click to lift"
+    trade-locked:
+      name: "<c:muted>Block trading"
+      lore:
+        - "<c:muted>You can't use this."
+    trade-unavailable:
+      name: "<c:muted>Block trading"
+      lore:
+        - "<c:muted>Not available yet."
+    money:
+      name: "<c:value>Remove money"
+      lore:
+        - "<c:text>Takes at most their balance (max <c:value><max></c:value><c:text>)."
+        - "<c:text>Can be restored later."
+        - ""
+        - "<c:action><sym:bullet> Click: pick the amount, then a reason"
+    money-locked:
+      name: "<c:muted>Remove money"
+      lore:
+        - "<c:muted>Senior staff only."
+    money-unavailable:
+      name: "<c:muted>Remove money"
+      lore:
+        - "<c:muted>Not available yet."
+    confiscate:
+      name: "<c:value>Confiscate item"
+      lore:
+        - "<c:text>Take an item from their inventory"
+        - "<c:text>or ender chest. Can be restored later."
+        - "<c:muted>Only while they are online."
+        - ""
+        - "<c:action><sym:bullet> Click to pick the item"
+    confiscate-locked:
+      name: "<c:muted>Confiscate item"
+      lore:
+        - "<c:muted>Senior staff only."
+    confiscate-unavailable:
+      name: "<c:muted>Confiscate item"
+      lore:
+        - "<c:muted>Not available yet."
+    entry:
+      name: "<c:muted>#<sid></c:muted> <c:value><kind>"
+      lore:
+        - "<c:text><reason> <c:muted>(<state>)"
+        - "<c:text>By <staff> on <date>"
+        - "<c:text>Until: <until> <c:muted><sym:dot></c:muted> <c:text>Amount: <amount> <c:muted><sym:dot></c:muted> <c:text>Item: <item>"
+    entry-lift:
+      name: "<c:muted>#<sid></c:muted> <c:error><kind>"
+      lore:
+        - "<c:text><reason> <c:muted>(<state>)"
+        - "<c:text>By <staff> on <date>, until <until>"
+        - ""
+        - "<c:action><sym:bullet> Click to lift"
+    entry-restore:
+      name: "<c:muted>#<sid></c:muted> <c:warning><kind>"
+      lore:
+        - "<c:text><reason> <c:muted>(<state>)"
+        - "<c:text>By <staff> on <date>"
+        - "<c:text>Amount: <amount> <c:muted><sym:dot></c:muted> <c:text>Item: <item>"
+        - ""
+        - "<c:action><sym:bullet> Click to restore"
+    length:
+      name: "<c:value><length>"
+      lore:
+        - "<c:text><kind> for <player>"
+        - ""
+        - "<c:action><sym:bullet> Click to choose"
+    reason:
+      name: "<c:value><reason>"
+      lore:
+        - "<c:text><kind> for <player>"
+        - ""
+        - "<c:action><sym:bullet> Click to apply"
+  money:
+    picker: "Remove money: <player>"
+  confiscate-menu:
+    title-inventory: "Confiscate: inventory"
+    title-ender: "Confiscate: ender chest"
+    click:
+      - "<c:action><sym:bullet> Click to confiscate <item>"
+    show-ender:
+      name: "<c:value>Show ender chest"
+      lore: []
+    show-inventory:
+      name: "<c:value>Show inventory"
+      lore: []

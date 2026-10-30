@@ -377,6 +377,9 @@ public final class ShopModule implements SkyblockModule, Listener {
      * is paid unless it all holds. {@code after} runs on the main thread when it is done (refresh the menu).
      */
     void buy(Player player, ShopCatalog.Item shown, int quantity, Runnable after) {
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.SHOP)) {
+            return; // P7: frozen balance
+        }
         Optional<String> problem = problem(player);
         ShopCatalog.Item item = catalog.item(shown.id()).orElse(null);
         if (problem.isEmpty() && (item == null || !item.enabled())) {

@@ -93,3 +93,21 @@ skyblock.lockdown.bypass:
 skyblock.staff.punish.suggest:
   description: Suggest a punishment for staff to decide (/psuggest, also used by GrimAC from the console); never applies anything
   default: op
+skyblock.staff.punish.island:
+  description: Island ladder steps (island-kick, island-ban, coop-remove, coop-block) from /p and /p <player> <reason>
+  default: op
+skyblock.staff.sanction.freeze:
+  description: Freeze a player's balance and lift it again (/p -> Sanctions)
+  default: op
+skyblock.staff.sanction.trade:
+  description: Block a player's trading and lift it again; cancels their auction listings (/p -> Sanctions)
+  default: op
+skyblock.staff.sanction.money:
+  description: Remove money from a player as a sanction (/p -> Sanctions; senior staff)
+  default: op
+skyblock.staff.sanction.confiscate:
+  description: Confiscate an item from an online player's inventory or ender chest (/p -> Sanctions; senior staff)
+  default: op
+skyblock.staff.sanction.restore:
+  description: Give back removed money or a confiscated item (/psanction restore <id>, the Sanctions menu; senior staff)
+  default: op

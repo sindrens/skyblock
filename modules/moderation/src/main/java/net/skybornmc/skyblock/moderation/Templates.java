@@ -32,10 +32,13 @@ final class Templates {
         static final String BAD_TIME = "time";
 
         /** The step kinds the parser accepts (also used for "did you mean"). */
-        static final List<String> KINDS = List.of("warn", "kick", "mute", "ban", "ipban");
+        static final List<String> KINDS = List.of("warn", "kick", "mute", "ban", "ipban", "island-kick", "island-ban",
+                "coop-remove", "coop-block");
 
         /**
-         * Parses {@code warn [weight] | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>} ({@code warn 0.5}).
+         * Parses {@code warn [weight] | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>} ({@code warn 0.5}),
+         * plus the island steps (P7, spec 13.2): {@code island-kick | island-ban <time|perm> | coop-remove |
+         * coop-block <time|perm>}.
          *
          * @throws IllegalArgumentException with message {@link #BAD_KIND} or {@link #BAD_TIME}
          */
@@ -55,6 +58,10 @@ final class Templates {
                 case "mute" -> new Step(Punishment.Type.MUTE, duration(time), false);
                 case "ban" -> new Step(Punishment.Type.BAN, duration(time), false);
                 case "ipban" -> new Step(Punishment.Type.BAN, duration(time), true);
+                case "island-kick" -> noTime(Punishment.Type.ISLAND_KICK, time);
+                case "island-ban" -> new Step(Punishment.Type.ISLAND_BAN, duration(time), false);
+                case "coop-remove" -> noTime(Punishment.Type.COOP_REMOVE, time);
+                case "coop-block" -> new Step(Punishment.Type.COOP_BLOCK, duration(time), false);
                 default -> throw new IllegalArgumentException(BAD_KIND);
             };
         }
@@ -87,17 +94,22 @@ final class Templates {
 
         /** The canonical config syntax ({@code mute 1h}, {@code ban perm}); for audit details and config round trips. */
         String describe() {
-            String base = type.name().toLowerCase(Locale.ROOT);
+            String base = kindId();
             if (ipWide) {
                 base = "ip" + base;
             }
             if (type == Punishment.Type.WARN) {
                 return weight == Weights.ONE ? base : base + " " + Weights.text(weight);
             }
-            if (type == Punishment.Type.KICK) {
+            if (type.instant()) {
                 return base;
             }
             return base + " " + (duration == null ? "perm" : compact(duration));
+        }
+
+        /** The step kind as written in the config ({@code mute}, {@code island-ban}; without the {@code ip} prefix). */
+        String kindId() {
+            return type.name().toLowerCase(Locale.ROOT).replace('_', '-');
         }
 
         /** {@code 1h}, {@code 7d}, {@code 1h30m}: the shortest form {@link Durations#parse} reads back. */
@@ -125,6 +137,11 @@ final class Templates {
      */
     record Template(String id, String category, String yamlName, Material icon, List<Step> ladder, Duration offenceExpire,
                     boolean probation, boolean appealable) {
+
+        /** The same reason with another ladder (island steps replaced for one target, P7 {@link IslandSteps}). */
+        Template withLadder(List<Step> newLadder) {
+            return new Template(id, category, yamlName, icon, List.copyOf(newLadder), offenceExpire, probation, appealable);
+        }
 
         /** A reason that can be appealed (spec 13.10; {@code appealable: false} e.g. for alt abuse and RMT). */
         Template(String id, String category, String yamlName, Material icon, List<Step> ladder, Duration offenceExpire,

@@ -2,6 +2,8 @@
 
 Currencies: Money, Crystals (island crystals, replaced tokens; not tradeable), Gems, Shards (whole-unit `long`). Every change is one atomic database transaction with a ledger row (`eco_ledger`) and an audit row (category `economy`, action = reason), so `/logs pay <player> [other]` and `/logs player <name> economy` show it. Settings: `economy.yml`; texts: `messages/economy.yml`.
 
+**Sanctions (Phase P7, spec 13.1):** `/pay`, `/withdraw`, redeeming money notes and banking (personal and island) check the moderation module's sanctions first (freeze balance, block trading; given in `/p` → Sanctions, see `docs/commands/moderation.md`); the player is told why. Every transaction is also checked as a safety net: one that would break an active sanction is refused without any change and audited (`economy / sanction_blocked`). Staff actions (`/eco take|set|reset`, removing money as a sanction) still work. Ledger reasons `sanction_remove` / `sanction_restore`.
+
 | Command | What it does | Permission | Status |
 |---|---|---|---|
 | `/bal [player]` (`/balance`, `/money`) | All four balances (yours, or another player's, online or offline) | `skyblock.economy.balance` (+ `skyblock.economy.balance.others`) | ✅ |

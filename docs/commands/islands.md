@@ -4,6 +4,8 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 `plugins/PhoenixSkyblock/schematics/` (`<creation.schematic>.schem` + optional `<name>.yml` metadata with `home`, `chest`,
 `sign` offsets and `home.yaw`; missing file or no FastAsyncWorldEdit = the built-in "Ember Meadow" placeholder islet).
 
+
+**Moderation hooks (Phase P7, spec 13.2):** island punishments from the `/p` ladders. Island ban: the player can't enter that one island (members too; staff with the visit bypass still can), enforced by the same guards as visitor bans (teleports, pearls, walking/flying in, logging in there) and saved in `island_staff_bans` (never deleted; lifted rows keep `lifted_at`). Island kick: sent off the island now. Coop remove: removed from the team (`IslandService.removeMember`). Coop block (`IslandService.blockJoining`): can't accept invites, be cooped or create an island (`create.blocked`). Audit: `island_staff_ban`, `island_staff_unban`, `island_staff_kick`, `island_join_block`.
 | Command | Description | Permission | Status |
 |---|---|---|---|
 | `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: the **island menu** (M2.5, see below; `/is home` teleports) | `skyblock.island` (everyone) | ✅ |
