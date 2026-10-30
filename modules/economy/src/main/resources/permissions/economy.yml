@@ -22,6 +22,9 @@ skyblock.economy.withdraw:
 skyblock.economy.sell:
   description: Sell items to the server at live prices (/sell, /sell hand, /sell all)
   default: true
+skyblock.economy.bank:
+  description: Use your personal bank and your island's bank (/bank, the island menu's Bank button); island bank rights come from the island role (bank-deposit, bank-withdraw, bank-history)
+  default: true
 skyblock.admin.economy:
   description: Change balances (/eco give|take|set|reset) and make money notes (/eco note); admins and owner, always logged and staff-alerted
   default: op

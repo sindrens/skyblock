@@ -234,6 +234,9 @@ final class IslandLifecycle {
                 new Location(Bukkit.getWorld(island.world()), island.centerX(), config().surfaceY, island.centerZ()), details);
 
         clearer.enqueue(new IslandClearer.Job(done.slotId(), done.gridX(), done.gridZ(), island.id(), done.sizeChunks(), reason));
+        // M3.3: other modules clean up what belongs to the island (the island bank pays out to the leader).
+        Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.island.IslandRemovedEvent(island.id(), done.owner(),
+                reason, actor));
     }
 
     private List<String> memberList(Map<UUID, Role> members) {

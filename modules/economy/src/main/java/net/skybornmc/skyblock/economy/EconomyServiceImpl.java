@@ -237,8 +237,9 @@ final class EconomyServiceImpl implements EconomyService {
         d.put("season", season.getAsInt());
         details.forEach(d::putIfAbsent);
         Object givenName = details.get("target_name");
-        UUID targetPlayer = target != null && target.isPlayer() ? profiles().ownerOf(target.owner()) : null;
-        if (targetPlayer != null && !targetPlayer.equals(target.owner())) {
+        // Personal banks (M3.3) belong to a profile too: logged on the player, so /logs <player> finds bank moves.
+        UUID targetPlayer = target != null && (target.isPlayer() || target.isBank()) ? profiles().ownerOf(target.owner()) : null;
+        if (targetPlayer != null && (!targetPlayer.equals(target.owner()) || target.isBank())) {
             d.putIfAbsent("profile", target.owner().toString());
         }
         String targetName = givenName != null ? String.valueOf(givenName)

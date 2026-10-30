@@ -140,6 +140,18 @@ public final class IslandsConfig extends ModuleConfig {
             + "done ones by default (roles: admin, mod, member).")
     public List<String> notesManageRoles = List.of("admin", "mod");
 
+    @Setting(path = "permissions.role-defaults.bank-deposit", desc = "Roles that may put money into the island bank by default "
+            + "(M3.3; roles: admin, mod, member; coop players and visitors never). The leader always can.")
+    public List<String> bankDepositRoles = List.of("admin", "mod", "member");
+
+    @Setting(path = "permissions.role-defaults.bank-withdraw", desc = "Roles that may take money out of the island bank by "
+            + "default (M3.3; roles: admin, mod, member). The leader always can. Daily limits per role: bank.yml.")
+    public List<String> bankWithdrawRoles = List.of("admin");
+
+    @Setting(path = "permissions.role-defaults.bank-history", desc = "Roles that may see the island bank history by default "
+            + "(M3.3; roles: admin, mod, member). The leader always can.")
+    public List<String> bankHistoryRoles = List.of("admin", "mod");
+
     // ------------------------------------------------------------------ NOTES (/is notes, owner N1-N9)
 
     @Setting(path = "notes.max-notes", desc = "Most notes an island can have, open and done together (owner N6: 50). Deleted notes "
@@ -482,6 +494,9 @@ public final class IslandsConfig extends ModuleConfig {
         perPermission.put(IslandPerm.NOTES_READ, notesReadRoles);
         perPermission.put(IslandPerm.NOTES_WRITE, notesWriteRoles);
         perPermission.put(IslandPerm.NOTES_MANAGE, notesManageRoles);
+        perPermission.put(IslandPerm.BANK_DEPOSIT, bankDepositRoles);
+        perPermission.put(IslandPerm.BANK_WITHDRAW, bankWithdrawRoles);
+        perPermission.put(IslandPerm.BANK_HISTORY, bankHistoryRoles);
         return RolePermissions.parse(defaultsAdmin, defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor, perPermission);
     }
 

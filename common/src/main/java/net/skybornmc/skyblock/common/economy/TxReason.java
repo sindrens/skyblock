@@ -19,6 +19,12 @@ public final class TxReason {
     public static final String INTEREST = "interest";
     public static final String BANK_DEPOSIT = "bank_deposit";
     public static final String BANK_WITHDRAW = "bank_withdraw";
+    /** The early-withdrawal fee of a bank withdrawal (M3.3); leaves the economy. */
+    public static final String BANK_FEE = "bank_fee";
+    /** A personal bank tier bought with money (M3.3). */
+    public static final String BANK_TIER = "bank_tier";
+    /** What was left in an island bank paid out when the island was removed (M3.3). */
+    public static final String BANK_PAYOUT = "bank_payout";
     public static final String NOTE_WITHDRAW = "note_withdraw";
     public static final String NOTE_REDEEM = "note_redeem";
     /** Staff made a money note out of nothing ({@code /eco note}); audit action only, the money moves on redeem. */

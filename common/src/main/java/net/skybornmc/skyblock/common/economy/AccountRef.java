@@ -5,7 +5,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * One account owner: a player (their UUID) or an island (the island's UUID; numeric island ids use {@link #island(long)}).
+ * One account owner: a player (their UUID), an island (the island's UUID; numeric island ids use {@link #island(long)})
+ * or a profile's personal bank ({@link #bank(UUID)}).
  * An owner has one balance per {@link Currency}.
  */
 public record AccountRef(AccountType type, UUID owner) implements Comparable<AccountRef> {
@@ -34,6 +35,19 @@ public record AccountRef(AccountType type, UUID owner) implements Comparable<Acc
     /** An island with a numeric id: stored as the UUID {@code 00000000-0000-0000-<id>}. */
     public static AccountRef island(long islandId) {
         return new AccountRef(AccountType.ISLAND, new UUID(0L, islandId));
+    }
+
+    /** The personal bank (M3.3) of a profile; {@code profileKey} as in {@link #player(UUID)}. */
+    public static AccountRef bank(UUID profileKey) {
+        return new AccountRef(AccountType.BANK, profileKey);
+    }
+
+    public boolean isBank() {
+        return type == AccountType.BANK;
+    }
+
+    public boolean isIsland() {
+        return type == AccountType.ISLAND;
     }
 
     public boolean isPlayer() {

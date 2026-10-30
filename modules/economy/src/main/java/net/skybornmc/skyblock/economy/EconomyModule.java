@@ -54,6 +54,7 @@ import java.util.concurrent.Executor;
  * modules, placeholders for the HUD, and {@code /bal}, {@code /baltop}, {@code /pay}, {@code /transactions}, {@code /eco}.
  * Money notes (M3.2): {@code /withdraw}, {@code /eco note} and the redeemable note item ({@link MoneyNotes}).
  * Selling (M3.4): {@code /sell}, dynamic prices and {@code SellService} (package {@code sell}).
+ * Banks (M3.3): {@code /bank}, personal and island banks with interest and {@code BankService} (package {@code bank}).
  * Settings: {@code economy.yml}; texts: {@code messages/economy.yml}; data: {@code db/economy}.
  */
 public final class EconomyModule implements SkyblockModule, Listener {
@@ -84,6 +85,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private EconomyServiceImpl service;
     private MoneyNotes notes;
     private net.skybornmc.skyblock.economy.sell.SellFeature sell;
+    private net.skybornmc.skyblock.economy.bank.BankFeature bank;
     private Baltop baltop;
     private Executor main;
     private Scheduler.Task baltopTask;
@@ -119,6 +121,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         // M3.4 selling: price table, dynamic prices, SellService, /sell.
         sell = new net.skybornmc.skyblock.economy.sell.SellFeature(this, core, msg, config, service);
         sell.enable();
+        // M3.3 banks: /bank, personal (per profile) and island banks, interest, BankService.
+        bank = new net.skybornmc.skyblock.economy.bank.BankFeature(this, core, msg, service);
+        bank.enable();
         registerPlaceholders();
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
@@ -138,6 +143,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         core.messages().load(ID);
         if (sell != null) {
             sell.reload();
+        }
+        if (bank != null) {
+            bank.reload();
         }
     }
 
@@ -170,6 +178,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         }
         if (sell != null) {
             sell.disable();
+        }
+        if (bank != null) {
+            bank.disable();
         }
         HandlerList.unregisterAll(this);
     }
@@ -215,9 +226,20 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
     }
 
-    /** A deleted profile's money, crystals and shards are gone with it (owner P9); gems stay on the player. */
+    /** A deleted profile's money, crystals, shards and personal bank are gone with it (owner P9); gems stay on the player. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfileDeleted(ProfileDeletedEvent event) {
+        AccountRef bankAccount = AccountRef.bank(event.profile().id());
+        service.balance(bankAccount, Currency.MONEY).thenAccept(balance -> {
+            if (balance > 0) {
+                service.set(bankAccount, Currency.MONEY, 0, "profile_delete", Actor.system("profiles"),
+                        Map.of("profile", event.profile().id().toString(), "slot", event.profile().slot(), "bank", true));
+            }
+        }).exceptionally(e -> {
+            core.plugin().getLogger().warning("Economy: could not clear the bank of deleted profile " + event.profile().id() + ": "
+                    + e.getMessage());
+            return null;
+        });
         AccountRef account = AccountRef.player(event.profile().id());
         for (Currency currency : Currency.values()) {
             if (currency == Currency.GEMS) {
@@ -318,6 +340,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
             return CompletableFuture.completedFuture(Optional.of(new Found(online.getUniqueId(), online.getName())));
         }
         return core.players().offline(name).thenApply(s -> s.map(snap -> new Found(snap.uuid(), snap.name())));
+    }
+
+    /** The cached money of an online player's active profile (display only), 0 while loading. */
+    public long cachedMoney(Player player) {
+        return service.cached(player.getUniqueId(), Currency.MONEY).orElse(0);
     }
 
     public boolean frozen(Player player) {

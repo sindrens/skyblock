@@ -26,7 +26,8 @@ class RolePermissionsTest {
         for (IslandPerm perm : IslandPerm.values()) {
             assertTrue(perms.allows(null, PermRole.LEADER, perm), "leader: " + perm);
             assertTrue(perms.allows(null, PermRole.ADMIN, perm), "admin: " + perm);
-            assertEquals(perm != IslandPerm.SETTINGS, perms.allows(null, PermRole.MOD, perm), "mod: " + perm);
+            assertEquals(perm != IslandPerm.SETTINGS && perm != IslandPerm.BANK_WITHDRAW, perms.allows(null, PermRole.MOD, perm),
+                    "mod: " + perm);
             assertEquals(perm == IslandPerm.HURT_MONSTERS, perms.allows(null, PermRole.VISITOR, perm),
                     "visitors walk, look and fight monsters: " + perm);
         }
@@ -164,8 +165,11 @@ class RolePermissionsTest {
         assertFalse(IslandPerm.BREAK.ownDefaults());
         assertEquals(0, IslandPerm.wildcard() & IslandPerm.SETTINGS.bit());
         assertEquals(0, IslandPerm.notApplicable(PermRole.MEMBER));
-        assertEquals(IslandPerm.SETTINGS.bit() | IslandPerm.NOTES_WRITE.bit() | IslandPerm.NOTES_MANAGE.bit(),
-                IslandPerm.notApplicable(PermRole.VISITOR), "management rights (NOTES: write, manage) never reach visitors");
+        assertEquals(IslandPerm.SETTINGS.bit() | IslandPerm.NOTES_WRITE.bit() | IslandPerm.NOTES_MANAGE.bit()
+                        | IslandPerm.BANK_DEPOSIT.bit() | IslandPerm.BANK_WITHDRAW.bit() | IslandPerm.BANK_HISTORY.bit(),
+                IslandPerm.notApplicable(PermRole.VISITOR), "management rights (NOTES: write, manage; bank) never reach visitors");
+        assertEquals(IslandPerm.notApplicable(PermRole.VISITOR), IslandPerm.notApplicable(PermRole.COOP),
+                "coop players never get bank rights either (REVIEW A4)");
     }
 
     @Test
@@ -183,6 +187,30 @@ class RolePermissionsTest {
         return type.cast(java.lang.reflect.Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, (proxy, method, args) -> {
             throw new UnsupportedOperationException(method.getName());
         }));
+    }
+
+    // ------------------------------------------------------------------ M3.3 island bank
+
+    @Test
+    void bankDefaults() {
+        RolePermissions perms = defaults();
+        for (PermRole role : List.of(PermRole.LEADER, PermRole.ADMIN, PermRole.MOD, PermRole.MEMBER)) {
+            assertTrue(perms.allows(null, role, IslandPerm.BANK_DEPOSIT), "deposit: " + role);
+        }
+        assertTrue(perms.allows(null, PermRole.LEADER, IslandPerm.BANK_WITHDRAW));
+        assertTrue(perms.allows(null, PermRole.ADMIN, IslandPerm.BANK_WITHDRAW));
+        assertFalse(perms.allows(null, PermRole.MOD, IslandPerm.BANK_WITHDRAW));
+        assertFalse(perms.allows(null, PermRole.MEMBER, IslandPerm.BANK_WITHDRAW));
+        assertTrue(perms.allows(null, PermRole.MOD, IslandPerm.BANK_HISTORY));
+        assertFalse(perms.allows(null, PermRole.MEMBER, IslandPerm.BANK_HISTORY));
+        for (IslandPerm perm : List.of(IslandPerm.BANK_DEPOSIT, IslandPerm.BANK_WITHDRAW, IslandPerm.BANK_HISTORY)) {
+            assertFalse(perms.allows(null, PermRole.COOP, perm), "coop: " + perm);
+            assertFalse(perms.allows(null, PermRole.VISITOR, perm), "visitor: " + perm);
+            assertEquals(perm, IslandPerm.byKey(perm.key()).orElseThrow());
+        }
+        assertEquals("bank-withdraw", net.skybornmc.skyblock.common.island.IslandService.PERM_BANK_WITHDRAW);
+        assertEquals(IslandPerm.BANK_DEPOSIT.key(), net.skybornmc.skyblock.common.island.IslandService.PERM_BANK_DEPOSIT);
+        assertEquals(IslandPerm.BANK_HISTORY.key(), net.skybornmc.skyblock.common.island.IslandService.PERM_BANK_HISTORY);
     }
 
     // ------------------------------------------------------------------ NOTES

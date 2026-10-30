@@ -274,3 +274,11 @@ Owner answers N1-N9 (`docs/DECISIONS_2026-10-30.md`, `docs/QUESTIONS_ROUND2.md` 
 
 ## Profiles (PROF)
 Island membership, ownership, roles, coop trust, invites and personal homes belong to the active **profile** (stored under the profile key; profile 1 = the player UUID, so all existing islands are profile 1's). Join limits and the join cooldown stay **per player** (owner P11): `player_island_joins` is per player and remembers the profile (`profile_id`, migration V007; old rows = profile 1). Two profiles of one player are never on the same island, also not one after the other (P3): invite, accept, coop and `/isadmin addmember` are refused (`*.own-profile`, audited `profile_transfer_blocked`). An island of your other profile can't be visited or entered (not even with the staff bypass) and nothing can be done on it (`protection.own-profile`), so no item can move between your profiles. Bans, likes and ratings are per player; an island any of your profiles belongs to counts as your own for ratings/likes. Deleting a profile: refused while it leads a team island with other members; otherwise its solo island is removed and its memberships/coops end. `IslandService#islandOf/role/isCoop` take an online player's UUID (active profile) or a profile key; `islandOfProfile(key)` never resolves.
+
+## Island bank rights (M3.3)
+Three rows in the permission matrix (own defaults, never part of `*`, management rights: stored members only, never coop
+players or visitors): **Bank deposit** (`bank-deposit`: Admin, Mod, Member), **Bank withdraw** (`bank-withdraw`: Admin;
+daily limit per role in `bank.yml`) and **Bank history** (`bank-history`: Admin, Mod). The Leader has all three. Config:
+`permissions.role-defaults.bank-deposit|bank-withdraw|bank-history`. The island menu's **Bank** button opens `/bank`
+(economy module, `docs/commands/economy.md`). When an island is disbanded or reset, what is left in its bank goes to the
+leader's balance.

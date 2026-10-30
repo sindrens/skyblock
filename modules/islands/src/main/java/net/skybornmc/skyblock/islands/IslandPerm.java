@@ -46,7 +46,13 @@ public enum IslandPerm {
     /** NOTES: add notes, tick them done/open, change, pin and delete your own. Stored members only, default Admin/Mod/Member. */
     NOTES_WRITE("notes-write", true, true),
     /** NOTES: change, pin, unpin and delete anyone's notes, clear done ones. Stored members only, default Admin + Mod. */
-    NOTES_MANAGE("notes-manage", true, true);
+    NOTES_MANAGE("notes-manage", true, true),
+    /** M3.3: put money into the island bank. Stored members only (coop never, REVIEW A4), default Admin/Mod/Member. */
+    BANK_DEPOSIT("bank-deposit", true, true),
+    /** M3.3: take money out of the island bank (daily limit per role in bank.yml). Stored members only, default Admin. */
+    BANK_WITHDRAW("bank-withdraw", true, true),
+    /** M3.3: see the island bank history (Island, Bank, History). Stored members only, default Admin + Mod. */
+    BANK_HISTORY("bank-history", true, true);
 
     private static final IslandPerm[] VALUES = values();
 

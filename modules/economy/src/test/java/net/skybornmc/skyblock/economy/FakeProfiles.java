@@ -17,22 +17,22 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /** In-memory profiles for tests: profile keys, owners, the active profile and recorded P4 blocks. */
-final class FakeProfiles implements ProfileService {
+public final class FakeProfiles implements ProfileService {
 
     final Map<UUID, UUID> owners = new HashMap<>();
     final Map<UUID, UUID> active = new HashMap<>();
     final Set<UUID> deleted = new HashSet<>();
-    final List<String> blocked = new ArrayList<>();
+    public final List<String> blocked = new ArrayList<>();
 
     /** Adds a profile of {@code owner}; returns its key. */
-    UUID add(UUID owner, UUID key) {
+    public UUID add(UUID owner, UUID key) {
         owners.put(key, owner);
         owners.putIfAbsent(owner, owner);
         active.putIfAbsent(owner, owner);
         return key;
     }
 
-    void switchTo(UUID owner, UUID key) {
+    public void switchTo(UUID owner, UUID key) {
         active.put(owner, key);
     }
 

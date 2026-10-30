@@ -34,7 +34,7 @@ categories:
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, the shop, selling, the", "<c:text>auction house and trading."]
-    topics: [money, shop, sell, notes, auction, trade]
+    topics: [money, bank, shop, sell, notes, auction, trade]
   progression:
     icon: experience_bottle
     status: active
@@ -755,6 +755,39 @@ topics:
           - "<c:text>balances: who paid you, what you sold"
           - "<c:text>and bought. Filter by currency, type"
           - "<c:text>and time. <c:value>/baltop</c:value> <c:text>shows the richest."
+
+  bank:
+    icon: barrel
+    aliases: [banks, interest, island-bank, personal-bank]
+    name: "<c:flame>Banks & interest"
+    summary: ["<c:text>Save money in your own bank and", "<c:text>your island's bank, earn interest."]
+    take-me-there: "bank"
+    commands: [Economy]
+    pages:
+      - title: "<c:value>Two banks"
+        lines:
+          - "<c:value>/bank</c:value> <c:text>shows your own bank (left)"
+          - "<c:text>and your island's shared bank"
+          - "<c:text>(right). Your own bank belongs to"
+          - "<c:text>this profile and stays if you leave."
+      - title: "<c:value>Interest"
+        lines:
+          - "<c:text>Both banks earn interest every 3 hours,"
+          - "<c:text>also offline, on the lowest balance of"
+          - "<c:text>that period. Play 2 hours in 7 days"
+          - "<c:text>to earn it. Each payout has a cap."
+      - title: "<c:value>Taking money out"
+        lines:
+          - "<c:text>A withdrawal costs a 2% fee and that"
+          - "<c:text>period's interest, except in the first"
+          - "<c:text>minutes after a payout. You always see"
+          - "<c:text>the fee before you confirm."
+      - title: "<c:value>Tiers and roles"
+        lines:
+          - "<c:text>Buy bank tiers to hold more. On the"
+          - "<c:text>island bank, the Leader decides who"
+          - "<c:text>may put in, take out and see the"
+          - "<c:text>history in <c:value>/is permissions</c:value><c:text>."
 
   shop:
     icon: emerald

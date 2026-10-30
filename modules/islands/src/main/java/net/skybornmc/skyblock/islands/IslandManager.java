@@ -595,6 +595,16 @@ final class IslandManager implements IslandService {
         }, main);
     }
 
+    /** M3.3 bank rights and any other role permission by key; {@code player}: member key or online player's UUID. */
+    @Override
+    public boolean hasIslandPermission(UUID islandId, UUID player, String permissionKey) {
+        Island island = islandId == null ? null : byId.get(islandId);
+        if (island == null || player == null) {
+            return false;
+        }
+        return IslandPerm.byKey(permissionKey).map(perm -> roleAllows(island, resolve(player), perm)).orElse(false);
+    }
+
     @Override
     public java.util.Set<UUID> coops(UUID islandId) {
         Island island = byId.get(islandId);
