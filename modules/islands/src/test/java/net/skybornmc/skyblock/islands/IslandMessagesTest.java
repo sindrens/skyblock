@@ -29,7 +29,9 @@ class IslandMessagesTest {
             "PersonalHomes.java", "IslandSettingsManager.java", "SettingsMenu.java", "InvitesMenu.java", "InviteActionsMenu.java",
             "IslandFly.java", "PermissionsMenu.java", "MemberActionsMenu.java", "MembersMenu.java", "MemberManager.java",
             // NOTES
-            "IslandNotes.java", "NotesMenu.java", "NoteActionsMenu.java", "DeletedNotesMenu.java", "NoteBook.java", "NoteHolograms.java");
+            "IslandNotes.java", "NotesMenu.java", "NoteActionsMenu.java", "DeletedNotesMenu.java", "NoteBook.java", "NoteHolograms.java",
+            // M2.5
+            "IslandMenu.java", "ChatColorsMenu.java", "IslandChat.java", "IslandHub.java");
     /** Keys of other files (commands.yml) and strings that are not message keys. */
     private static final Set<String> FOREIGN = Set.of("invalid-number", "player-unknown", "frame.next", "frame.previous", "title.page");
 
@@ -124,6 +126,16 @@ class IslandMessagesTest {
         for (String toggle : List.of(VisitManager.SETTING_ATTEMPTS, VisitManager.SETTING_ARRIVALS, VisitManager.SETTING_DEPARTURES)) {
             keys.add("settings." + toggle + ".name");
             keys.add("settings." + toggle + ".lore");
+        }
+        // M2.5: island chat spy toggle, role names in chat lines/colors, menu buttons built from a prefix
+        keys.add("settings." + IslandChat.SETTING_SPY + ".name");
+        keys.add("settings." + IslandChat.SETTING_SPY + ".lore");
+        for (var role : IslandChatRules.COLOR_ROLES) {
+            keys.add("role." + MemberStore.key(role));
+        }
+        for (String button : List.of("home", "visit", "stats", "bank", "upgrades", "disband", "leave")) {
+            keys.add("menu." + button + ".name");
+            keys.add("menu." + button + ".lore");
         }
         Set<String> missing = new TreeSet<>();
         for (String key : keys) {

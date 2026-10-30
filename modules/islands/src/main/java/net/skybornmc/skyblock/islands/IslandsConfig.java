@@ -393,6 +393,40 @@ public final class IslandsConfig extends ModuleConfig {
     @Setting(path = "homes.name-max-length", desc = "Longest personal home name (letters, digits, _ and -).", min = 2, max = 16)
     public int homesNameMaxLength = 16;
 
+    // ---------------------------------------------------------------- M2.5 island chat (/is chat)
+
+    @Setting(path = "chat.palette", desc = "Colors the leader can pick for each role in island chat (owner I11: 8 colors). "
+            + "Named colors (gold, red, aqua, green, yellow, light_purple, blue, white, ...) or #RRGGBB. Named colors look the same on Bedrock.")
+    public List<String> chatPalette = List.of("gold", "red", "aqua", "green", "yellow", "light_purple", "blue", "white");
+
+    @Setting(path = "chat.role-colors.leader", desc = "Default island chat color of the leader (until the leader picks another).")
+    public String chatColorLeader = "gold";
+
+    @Setting(path = "chat.role-colors.admin", desc = "Default island chat color of admins.")
+    public String chatColorAdmin = "red";
+
+    @Setting(path = "chat.role-colors.mod", desc = "Default island chat color of mods.")
+    public String chatColorMod = "aqua";
+
+    @Setting(path = "chat.role-colors.member", desc = "Default island chat color of members.")
+    public String chatColorMember = "green";
+
+    @Setting(path = "chat.console", desc = "Also write island chat to the server console (it is always in the audit log).")
+    public boolean chatConsole = true;
+
+    @Setting(path = "chat.max-length", desc = "Longest island chat message in characters (vanilla chat allows 256).", min = 16, max = 256)
+    public int chatMaxLength = 256;
+
+    /** The default chat color of a role ({@code chat.role-colors.*}). */
+    String chatColor(net.skybornmc.skyblock.common.island.IslandService.Role role) {
+        return switch (role) {
+            case LEADER -> chatColorLeader;
+            case ADMIN -> chatColorAdmin;
+            case MOD -> chatColorMod;
+            default -> chatColorMember;
+        };
+    }
+
     /** The {@code /is settings} defaults parsed from {@code flags.defaults.*} (problems = invalid values). */
     public FlagDefaults.Result flagDefaults() {
         java.util.Map<IslandFlag, String> map = new java.util.EnumMap<>(IslandFlag.class);

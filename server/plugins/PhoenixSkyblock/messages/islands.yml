@@ -117,6 +117,206 @@ role:
 
 menu:
   crumb: "Island"
+  # M2.5 island menu (/is with an island)
+  info:
+    - "<c:text>Everything about your island."
+    - "<c:text>Click a button to open it."
+    - "<c:muted>Gray buttons come later."
+  island:
+    name: "<c:flame><bold><island>"
+    lore:
+      - "<c:text>Your role: <c:value><role>"
+      - "<c:text>Leader: <c:value><leader>"
+      - "<c:text>Type: <c:value><type>"
+      - "<c:text>Members: <c:value><members>/<slots>"
+      - "<c:text>Size: <c:value><size>x<size></c:value> <c:muted>blocks"
+      - "<c:text>Warps: <c:value><warps>/<warp-slots>"
+      - "<c:text>Level: <c:value><level>"
+      - "<c:text>Created: <c:value><created>"
+    locked:
+      - "<c:error><sym:cross> Locked"
+    open:
+      - "<c:success><sym:check> Open to visitors"
+    solo: "Solo island"
+    team: "Team island"
+  home:
+    name: "<c:flame><bold>Home"
+    lore:
+      - "<c:text>Go to your island home."
+      - "<c:muted>Your own home: /is home my"
+      - ""
+      - "<c:action>Click to teleport"
+  members:
+    name: "<c:flame><bold>Members"
+    lore:
+      - "<c:text>Members: <c:value><members>/<slots>"
+      - "<c:text>Coop: <c:value><coops>"
+      - ""
+      - "<c:action>Click to open"
+  permissions:
+    name: "<c:flame><bold>Permissions"
+    lore-edit:
+      - "<c:text>What each role may do."
+      - ""
+      - "<c:action>Click to change"
+    lore-view:
+      - "<c:text>What each role may do."
+      - ""
+      - "<c:action>Click to look"
+  warps:
+    name: "<c:flame><bold>Warps"
+    lore:
+      - "<c:text>Your island warps: <c:value><warps>/<slots>"
+      - "<c:muted>Set one with /is setwarp shop"
+      - ""
+      - "<c:action>Click to open"
+  visitors:
+    name: "<c:flame><bold>Visitors"
+    lore-open:
+      - "<c:success><sym:check> Open to visitors"
+      - "<c:text>Visitors here now: <c:value><visitors>"
+      - "<c:text>Banned players: <c:value><bans>"
+    lore-locked:
+      - "<c:error><sym:cross> Locked: members only"
+      - "<c:text>Visitors here now: <c:value><visitors>"
+      - "<c:text>Banned players: <c:value><bans>"
+    click-lock:
+      - "<c:action>Click to lock"
+    click-unlock:
+      - "<c:action>Click to unlock"
+    click-view:
+      - "<c:muted>Leader, admins and mods can lock it."
+  settings:
+    name: "<c:flame><bold>Settings"
+    lore-edit:
+      - "<c:text>Spawning, fire, weather, time"
+      - "<c:text>and more for your island."
+      - ""
+      - "<c:action>Click to change"
+    lore-view:
+      - "<c:text>Spawning, fire, weather, time"
+      - "<c:text>and more for your island."
+      - ""
+      - "<c:action>Click to look"
+  invites:
+    name: "<c:flame><bold>Invites"
+    lore:
+      - "<c:text>Open invites: <c:value><count>"
+      - ""
+      - "<c:action>Click to open"
+  notes:
+    name: "<c:flame><bold>Island notes"
+    lore:
+      - "<c:text>Your island's shared to-do list."
+      - ""
+      - "<c:action>Click to open"
+    lore-locked:
+      - "<c:text>Your island's shared to-do list."
+      - "<c:muted>Your role can't read the notes."
+  chat:
+    name-off: "<c:flame><bold>Island chat</bold></c:flame> <c:muted>· off"
+    name-on: "<c:success><bold>Island chat</bold></c:success> <c:muted>· on"
+    lore-off:
+      - "<c:text>Your chat goes to everyone."
+      - "<c:muted>One message: /is chat hi"
+      - ""
+      - "<c:action>Click to talk to your island"
+    lore-on:
+      - "<c:text>Your chat goes to your island."
+      - ""
+      - "<c:action>Click to talk to everyone again"
+  chat-colors:
+    name: "<c:flame><bold>Chat colors"
+    lore-edit:
+      - "<c:text>Pick a color for each role"
+      - "<c:text>in island chat."
+      - ""
+      - "<c:action>Click to open"
+    lore-view:
+      - "<c:text>The color of each role"
+      - "<c:text>in island chat. <c:muted>(leader picks)"
+      - ""
+      - "<c:action>Click to look"
+  visit:
+    name: "<c:flame><bold>Visit islands"
+    lore:
+      - "<c:text>Browse other islands and warps."
+      - ""
+      - "<c:action>Click to open"
+  stats:
+    name: "<c:muted>Island stats"
+    lore:
+      - "<c:muted>Coming soon"
+  bank:
+    name: "<c:muted>Island bank"
+    lore:
+      - "<c:muted>Coming soon"
+  upgrades:
+    name: "<c:muted>Upgrades"
+    lore:
+      - "<c:muted>Coming soon"
+  disband:
+    name: "<c:error><bold>Disband island"
+    lore:
+      - "<c:text>Delete your island for good."
+      - "<c:muted>You confirm twice first."
+      - ""
+      - "<c:action>Click to disband"
+  leave:
+    name: "<c:error><bold>Leave island"
+    lore:
+      - "<c:text>Leave this island."
+      - "<c:muted>You confirm first."
+      - ""
+      - "<c:action>Click to leave"
+
+# ---------------------------------------------------------------- M2.5 island chat (/is chat)
+chat:
+  toggle-on: "<prefix><c:success><sym:check></c:success> <c:text>Island chat <c:value>on</c:value>. Your chat goes to your island. <click:run_command:'/is chat'><hover:show_text:'<c:text>Talk to everyone again'><c:action>[Off]</c:action></hover></click>"
+  toggle-off: "<prefix><c:success><sym:check></c:success> <c:text>Island chat <c:value>off</c:value>. Your chat goes to everyone."
+  toggle-off-profile: "<prefix><c:text>Island chat is off: you switched profile."
+  off-no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You're not on an island anymore. Island chat is off."
+  muted: "<prefix><c:error><sym:cross></c:error> <c:text>You're muted. See <c:value>/mypunishments</c:value>."
+  filtered: "<prefix><c:error><sym:cross></c:error> <c:text>Blocked by the chat filter."
+  # One island chat line for members. Parts: <role> <name> (in the role color), <message>, <island>.
+  line: "<c:ember>[Island]</c:ember> <role> <name> <c:muted>»</c:muted> <c:text><message>"
+  # The copy staff spies (and the console) see.
+  spy-line: "<c:muted>[Spy] [<island>]</c:muted> <role> <name> <c:muted>»</c:muted> <c:text><message>"
+  colors:
+    crumb: "Chat colors"
+    info:
+      - "<c:text>The color of each role in island chat."
+      - "<c:text>The leader clicks a role to change it."
+    summary:
+      name: "<c:flame><bold>Island chat colors"
+      lore-edit:
+        - "<c:text>Click a role for the next color."
+        - "<c:muted><count> colors to pick from."
+      lore-view:
+        - "<c:text>You can look, not change."
+        - "<c:muted>The leader picks the colors."
+    role:
+      name: "<role>"
+      lore:
+        - "<c:text>Color: <c:value><color>"
+      click:
+        - "<c:action>Click for <next>"
+      locked:
+        - "<c:muted>Only the leader can change it."
+    changed: "<prefix><c:success><sym:check></c:success> <c:text>Chat color changed: <role>"
+    leader-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the island leader can change chat colors."
+    no-palette: "<prefix><c:error><sym:cross></c:error> <c:text>No chat colors are set up. Tell a staff member."
+
+# ---------------------------------------------------------------- M2.5 /is info [player]
+info:
+  body:
+    - "<c:ember>» <c:value><island></c:value> <c:muted>(<type>, <state>)"
+    - "<c:text>Leader: <c:value><leader>"
+    - "<c:text>Members (<count>): <c:value><members>"
+    - "<c:text>Size: <c:value><size>x<size></c:value> <c:text>· Level: <c:value><level></c:value> <c:text>· Warps: <c:value><warps>"
+    - "<c:text>Created: <c:value><created></c:value> <c:text>· You: <c:value><role>"
+  open: "open"
+  locked: "locked"
 
 member:
   busy: "<prefix><c:text>One moment, your last island action is still being saved."
@@ -602,7 +802,7 @@ admin:
       - "<c:text>right away (in a new slot)."
     done: "<prefix><c:success><sym:check> <c:value><island></c:value> <c:text>was reset: <c:value><owner></c:value> has a new island in slot <c:value>#<slot></c:value>."
     create-failed: "<prefix><c:error><sym:cross> <c:value><island></c:value> was deleted, but the new island for <c:value><owner></c:value> couldn't be created. They can use <c:value>/is</c:value>."
-    you: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Staff reset your island <c:value><island></c:value>. Your fresh island is ready:</c:text> <click:run_command:'/is'><c:action>/is</c:action></click>"
+    you: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Staff reset your island <c:value><island></c:value>. Your fresh island is ready:</c:text> <click:run_command:'/is home'><hover:show_text:'<c:text>Go to your island'><c:action>[Go there]</c:action></hover></click>"
     member: "<prefix><c:error><sym:cross> <c:text>Staff reset <c:value><island></c:value>; its members were removed. You can join another island or create your own with</c:text> <click:run_command:'/is'><c:action>/is</c:action></click>."
   setsize:
     done: "<prefix><c:success><sym:check> <c:value><island></c:value> <c:text>is now <c:value><size>x<size></c:value> chunks <c:muted>(was <old>x<old>)."
@@ -709,6 +909,9 @@ settings:
   island-notes-scoreboard:
     name: "<c:flame>Next note on scoreboard"
     lore: ["<c:text>Show the newest open island", "<c:text>note on my scoreboard."]
+  island-chat-spy:
+    name: "<c:flame>Island chat spy"
+    lore: ["<c:text>Staff: see every island's", "<c:text>chat messages."]
 
 visit:
   no-island: "<prefix><c:error><sym:cross> <c:value><player></c:value> doesn't have an island."

@@ -11,6 +11,8 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
+import net.skybornmc.skyblock.common.chat.ChatChannel;
+import net.skybornmc.skyblock.common.chat.ChatChannels;
 import net.skybornmc.skyblock.common.command.Arg;
 import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandService;
@@ -54,7 +56,8 @@ import java.util.regex.Pattern;
 /**
  * Chat (M1.3) + tab list and nametags (M1.5). Chat line {@code [Title] [RANK] Name » message} with a hover card,
  * {@code &} colors by permission tier, mentions, {@code [item]}, chat protection, slow mode / lock / clear and
- * staff chat. Everything is audited (category chat).
+ * staff chat. Everything is audited (category chat). M2.5: channel chat ({@link ChatChannel}, island chat) goes through
+ * the same checks and is published as {@link ChatChannels} for one-shot messages.
  */
 public final class ChatModule implements SkyblockModule, Listener {
 
@@ -122,6 +125,8 @@ public final class ChatModule implements SkyblockModule, Listener {
             ChatFilter.Result result = ChatFilter.check(text, config.rules(), author != null && author.hasPermission(PERM_LINKS));
             return new net.skybornmc.skyblock.common.text.TextFilter.Result(result.text(), result.blocked());
         });
+        // M2.5: one-shot messages to a channel (island chat) with the same checks as chat.
+        core.services().register(ID, ChatChannels.class, this::sendToChannel);
         tab.start();
         // The menus module (which publishes PlayerSettings) enables after us; register our toggles one tick later.
         core.scheduler().later("chat:settings", 1L, this::registerSettings);
@@ -302,7 +307,7 @@ public final class ChatModule implements SkyblockModule, Listener {
 
     // ================================================================== chat pipeline
 
-    /** Step 1 (LOW): staff chat mode, lock, slow mode, rate limit, duplicates, filters, colors, [item]. */
+    /** Step 1 (LOW): staff chat mode, channel chat (island chat), lock, slow mode, rate limit, duplicates, filters, colors, [item]. */
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onChatCheck(AsyncChatEvent event) {
         Player player = event.getPlayer();
@@ -314,44 +319,115 @@ public final class ChatModule implements SkyblockModule, Listener {
             core.scheduler().ensureMain("chat:staff", () -> staffChat(player, raw));
             return;
         }
+        // M2.5: a channel (island chat toggle mode) takes the message; mute, freeze and prompts (LOWEST) already ran.
+        ChatChannel channel = capturingChannel(player);
+        Checked checked = check(player, raw, channel != null);
+        if (checked.blocked() != null) {
+            event.setCancelled(true);
+            refuse(player, raw, checked.blocked());
+            return;
+        }
+        if (channel != null) {
+            event.setCancelled(true);
+            core.scheduler().ensureMain("chat:channel", () -> deliver(player, channel, checked, raw));
+            return;
+        }
+        event.message(checked.message());
+        core.audit().log(AuditCategory.CHAT, "chat", Actor.player(player), null, null, null, player.getLocation(),
+                details(raw, checked.changes()));
+    }
+
+    /** Outcome of the chat checks: a block reason, or the message to show. */
+    private record Checked(String blocked, Component message, String text, List<String> changes) {
+        static Checked refused(String reason) {
+            return new Checked(reason, null, null, List.of());
+        }
+    }
+
+    /** Gate (lock, slow, new players, rate, duplicates), filter, colors and [item] for public or channel chat. */
+    private Checked check(Player player, String raw, boolean channel) {
+        UUID id = player.getUniqueId();
         boolean bypass = player.hasPermission(PERM_BYPASS);
         long now = System.currentTimeMillis();
         if (!bypass) {
-            String reason = gate(player, raw, now);
+            String reason = gate(player, raw, now, channel);
             if (reason != null) {
-                block(event, player, raw, reason);
-                return;
+                return Checked.refused(reason);
             }
         }
         ChatFilter.Result result = bypass ? new ChatFilter.Result(raw, null, List.of())
                 : ChatFilter.check(raw, config.rules(), player.hasPermission(PERM_LINKS));
         if (result.isBlocked()) {
-            block(event, player, raw, result.blocked());
-            if (result.blocked().equals("word")) {
-                core.scheduler().ensureMain("chat:alert", () -> alertStaff(player, raw));
-            }
-            return;
+            return Checked.refused(result.blocked());
         }
-        lastMessageAt.put(id, now);
+        if (!channel) {
+            lastMessageAt.put(id, now); // slow mode is about public chat
+        }
         lastKey.put(id, ChatFilter.duplicateKey(result.text()));
         lastKeyAt.put(id, now);
+        Component message = showItem(player, colorize(player, result.text()));
+        return new Checked(null, message, result.text(), result.changes());
+    }
 
-        Component message = colorize(player, result.text());
-        message = showItem(player, message);
-        event.message(message);
-
+    private static Map<String, Object> details(String raw, List<String> changes) {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("message", raw);
-        if (!result.changes().isEmpty()) {
-            details.put("changed", result.changes());
+        if (!changes.isEmpty()) {
+            details.put("changed", changes);
         }
+        return details;
+    }
+
+    /** The channel that takes this player's chat right now (island chat toggle), or null. */
+    private ChatChannel capturingChannel(Player player) {
+        ChatChannel channel = core.services().optional(ChatChannel.class).orElse(null);
+        try {
+            return channel != null && channel.captures(player) ? channel : null;
+        } catch (RuntimeException e) {
+            core.plugin().getLogger().warning("Chat channel " + channel.id() + " failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /** Hands a checked message to its channel (main thread) and audits it like public chat, with the channel id. */
+    private boolean deliver(Player player, ChatChannel channel, Checked checked, String raw) {
+        if (!player.isOnline()) {
+            return false;
+        }
+        Map<String, Object> extra = channel.deliver(player, checked.message(), checked.text());
+        if (extra == null) {
+            return false;
+        }
+        Map<String, Object> details = details(raw, checked.changes());
+        details.put("channel", channel.id());
+        details.putAll(extra);
         core.audit().log(AuditCategory.CHAT, "chat", Actor.player(player), null, null, null, player.getLocation(), details);
+        return true;
+    }
+
+    /** {@link ChatChannels}: a one-shot channel message (e.g. {@code /is chat <text>}), main thread. */
+    private boolean sendToChannel(Player player, ChatChannel channel, String text) {
+        String raw = text == null ? "" : text.strip();
+        if (raw.isEmpty()) {
+            return false;
+        }
+        // Mute lives in the moderation module (placeholder "muted"); chat events are blocked there, commands here.
+        if (core.placeholders().has("muted") && core.placeholders().text(player, "muted").map("true"::equalsIgnoreCase).orElse(false)) {
+            refuse(player, raw, "muted");
+            return false;
+        }
+        Checked checked = check(player, raw, true);
+        if (checked.blocked() != null) {
+            refuse(player, raw, checked.blocked());
+            return false;
+        }
+        return deliver(player, channel, checked, raw);
     }
 
     /** Lock, slow mode, new-player delay, rate limit and duplicates; returns a reason key or null. */
-    private String gate(Player player, String raw, long now) {
+    private String gate(Player player, String raw, long now, boolean channel) {
         UUID id = player.getUniqueId();
-        if (locked) {
+        if (locked && gateApplies("locked", channel, config.channelsRespectLock, config.channelsRespectSlow)) {
             return "locked";
         }
         if (config.newPlayerSeconds > 0) {
@@ -361,7 +437,7 @@ public final class ChatModule implements SkyblockModule, Listener {
                 return "new-player";
             }
         }
-        if (slowSeconds > 0) {
+        if (slowSeconds > 0 && gateApplies("slow", channel, config.channelsRespectLock, config.channelsRespectSlow)) {
             Long last = lastMessageAt.get(id);
             if (last != null && now - last < slowSeconds * 1000L) {
                 return "slow";
@@ -390,8 +466,24 @@ public final class ChatModule implements SkyblockModule, Listener {
         return null;
     }
 
-    private void block(AsyncChatEvent event, Player player, String raw, String reason) {
-        event.setCancelled(true);
+    /**
+     * Whether a gate applies to a message (pure): public chat gets every gate; channel chat (island chat) skips the
+     * staff chat lock and slow mode unless {@code channels.respect-lock} / {@code channels.respect-slow-mode} say so (both
+     * are about public chat). Rate limit, duplicates, new-player delay and the filter always apply.
+     */
+    static boolean gateApplies(String reason, boolean channel, boolean respectLock, boolean respectSlow) {
+        if (!channel) {
+            return true;
+        }
+        return switch (reason) {
+            case "locked" -> respectLock;
+            case "slow" -> respectSlow;
+            default -> true;
+        };
+    }
+
+    /** Tells the player why the message was refused and audits it ({@code chat_blocked}); word hits alert staff. */
+    private void refuse(Player player, String raw, String reason) {
         long wait = 0;
         if (reason.equals("slow")) {
             wait = slowSeconds * 1000L - (System.currentTimeMillis() - lastMessageAt.getOrDefault(player.getUniqueId(), 0L));
@@ -402,6 +494,9 @@ public final class ChatModule implements SkyblockModule, Listener {
         msg.send(player, "blocked." + reason, Msg.p("time", Format.duration(Duration.ofMillis(Math.max(1000, wait)))));
         core.audit().log(AuditCategory.CHAT, "chat_blocked", Actor.player(player), null, null, null, player.getLocation(),
                 Map.of("message", raw, "reason", reason));
+        if (reason.equals("word")) {
+            core.scheduler().ensureMain("chat:alert", () -> alertStaff(player, raw));
+        }
     }
 
     private void alertStaff(Player player, String raw) {

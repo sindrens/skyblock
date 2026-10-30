@@ -2,11 +2,11 @@
 """Keep bundled YAML resources (modules/*/src/main/resources, plugin/src/main/resources) and the tracked server copies
 (server/plugins/PhoenixSkyblock/) in sync. The copy whose last git commit is NEWER wins and is copied over the other,
 so owner edits made on GitHub (tracked copy) are never overwritten by an older bundled default, and new defaults from
-code changes still reach the server. Uncommitted working-tree changes count as newest. Missing messages/*.yml are added."""
+code changes still reach the server. Uncommitted changes (working tree or staged, e.g. during a merge) count as newest. Missing messages/*.yml are added."""
 import glob, os, shutil, filecmp, subprocess, time
 
 def last_change(path):
-    if subprocess.run(['git', 'diff', '--quiet', '--', path]).returncode != 0:
+    if subprocess.run(['git', 'diff', '--quiet', 'HEAD', '--', path]).returncode != 0:
         return time.time()  # uncommitted edit: newest
     out = subprocess.run(['git', 'log', '-1', '--format=%ct', '--', path], capture_output=True, text=True).stdout.strip()
     return int(out) if out else 0

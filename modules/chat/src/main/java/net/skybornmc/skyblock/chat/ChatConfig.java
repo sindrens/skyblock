@@ -75,6 +75,13 @@ public final class ChatConfig extends ModuleConfig {
     @Setting(path = "protection.words.block", desc = "Words that block the whole message and alert staff (also catches 1→i, 3→e, 0→o, a.b.c).")
     public List<String> blockWords = List.of();
 
+    @Setting(path = "channels.respect-lock", desc = "Locked chat (/mutechat) also stops channel chat such as island chat (/is chat). "
+            + "Off: the lock is about public chat only. Rate limit, duplicates and the filter always apply.")
+    public boolean channelsRespectLock = false;
+
+    @Setting(path = "channels.respect-slow-mode", desc = "Slow mode (/chat slow) also applies to channel chat such as island chat.")
+    public boolean channelsRespectSlow = false;
+
     @Setting(path = "protection.new-player-seconds", desc = "New players can chat after this many seconds on their first day. 0 = off.", min = 0, max = 3600)
     public int newPlayerSeconds = 30;
 

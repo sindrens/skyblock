@@ -36,6 +36,7 @@ blocked:
   ip: "<prefix><c:error><sym:cross></c:error> <c:text>Server addresses aren't allowed."
   phone: "<prefix><c:error><sym:cross></c:error> <c:text>Phone numbers aren't allowed, for your safety."
   word: "<prefix><c:error><sym:cross></c:error> <c:text>Blocked by the chat filter."
+  muted: "<prefix><c:error><sym:cross></c:error> <c:text>You're muted. See <c:value>/mypunishments</c:value>."
 
 staff-alert: "<c:muted>[Staff]</c:muted> <c:warning>Filter</c:warning> <c:value><player></c:value> <c:text>tried: <c:parchment><message>"
 

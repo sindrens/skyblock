@@ -57,7 +57,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M2.2 | Protection (role perms, Y 0–256, cross-border) | M2.1 | modules/islands | ✅ |
 | M2.3 | Members & roles, invites (solo→team warning), coop, limits | M2.2 | modules/islands | ✅ |
 | M2.4 | Visiting, lock, ban, warps, ratings | M2.3 | modules/islands | 🔄 |
-| M2.5 | Island menu + settings, `/is chat` | M2.3 | modules/islands | 🔄 |
+| M2.5 | Island menu + settings, `/is chat` | M2.3 | modules/islands | ✅ |
 | M2.6 | Stats tracking (daily/weekly buckets) | M2.3 | modules/islands | ⬜ |
 | M2.7 | Lifecycle (disband/reset) + `/isadmin` | M2.3 | modules/islands | ✅ |
 

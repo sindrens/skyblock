@@ -119,4 +119,21 @@ class ChatLogicTest {
         assertEquals("ok", TabService.tpsTier(15.0, 19.0, 15.0));
         assertEquals("bad", TabService.tpsTier(14.9, 19.0, 15.0));
     }
+
+    @Test
+    void channelGates() {
+        // public chat: every gate applies
+        for (String reason : List.of("locked", "slow", "rate", "duplicate", "new-player")) {
+            assertTrue(ChatModule.gateApplies(reason, false, false, false), reason);
+        }
+        // island chat: lock and slow mode only when configured, the anti-spam gates always
+        assertFalse(ChatModule.gateApplies("locked", true, false, false));
+        assertFalse(ChatModule.gateApplies("slow", true, false, false));
+        assertTrue(ChatModule.gateApplies("locked", true, true, false));
+        assertFalse(ChatModule.gateApplies("slow", true, true, false));
+        assertTrue(ChatModule.gateApplies("slow", true, false, true));
+        assertTrue(ChatModule.gateApplies("rate", true, false, false));
+        assertTrue(ChatModule.gateApplies("duplicate", true, false, false));
+        assertTrue(ChatModule.gateApplies("new-player", true, false, false));
+    }
 }

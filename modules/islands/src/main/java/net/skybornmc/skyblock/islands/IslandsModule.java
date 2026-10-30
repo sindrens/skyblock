@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.chat.ChatChannel;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.command.Arg;
 import net.skybornmc.skyblock.common.command.Args;
@@ -43,7 +44,8 @@ import java.util.UUID;
  * browser ({@link VisitManager}), island warps with categories, sign warps and the warp browser ({@link WarpManager}).
  * ISL2: the Admin role, the hurt-monsters and settings permissions, join cooldown from the last join, {@code /is settings}
  * ({@link IslandSettingsManager}, {@link IslandFlagListener}, {@link IslandEnvironment}), island fly ({@link IslandFly}),
- * personal homes ({@link PersonalHomes}) and {@code /is invites}. Publishes {@link IslandService} and the placeholders {@code island_name},
+ * personal homes ({@link PersonalHomes}) and {@code /is invites}. M2.5: the island menu ({@link IslandMenu}, {@code /is} with
+ * an island), {@code /is info} ({@link IslandHub}) and island chat ({@link IslandChat}, {@code /is chat}). Publishes {@link IslandService} and the placeholders {@code island_name},
  * {@code island_level} and {@code island_rank}.
  */
 public final class IslandsModule implements SkyblockModule, Listener {
@@ -73,6 +75,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandFly fly;
     private IslandAdmin admin;
     private IslandNotes notes;
+    private IslandChat chat;
+    private IslandHub hub;
     private net.skybornmc.skyblock.common.util.Scheduler.Task sweepTask;
 
     public IslandsModule(Core core) {
@@ -119,6 +123,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
         environment = new IslandEnvironment(this, manager);
         fly = new IslandFly(this, manager);
         notes = new IslandNotes(this, manager, new IslandNoteStore(core.database()), name -> admin == null ? null : admin.find(name));
+        chat = new IslandChat(this, manager, new IslandChatStore(core.database()));
+        chat.loadConfig();
+        chat.load();
+        hub = new IslandHub(this, manager);
         visits.onPresence(environment::apply);
         manager.onFlagChange((island, flag) -> {
             if (flag == IslandFlag.WEATHER || flag == IslandFlag.TIME) {
@@ -143,10 +151,15 @@ public final class IslandsModule implements SkyblockModule, Listener {
             if (notes != null) {
                 notes.hookSettings();
             }
+            if (chat != null) {
+                chat.hookSettings();
+            }
         });
         startSweep();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         core.services().register(ID, IslandService.class, manager);
+        // M2.5: island chat as a chat channel (the chat module routes toggled chat here and checks one-shots)
+        core.services().register(ID, ChatChannel.class, chat);
         registerPlaceholders();
         registerCommands();
         admin = new IslandAdmin(this, manager, lifecycle, protection);
@@ -183,6 +196,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
         }
         if (notes != null) {
             notes.restartSweep();
+        }
+        if (chat != null) {
+            chat.loadConfig();
         }
         core.messages().load(ID);
         Bukkit.getOnlinePlayers().forEach(borders::update);
@@ -306,6 +322,24 @@ public final class IslandsModule implements SkyblockModule, Listener {
         return islandSettings;
     }
 
+    VisitManager visits() {
+        return visits;
+    }
+
+    WarpManager warps() {
+        return warps;
+    }
+
+    /** Island chat (M2.5). */
+    IslandChat chat() {
+        return chat;
+    }
+
+    /** The island menu and /is info (M2.5). */
+    IslandHub hub() {
+        return hub;
+    }
+
     List<StarterItems.Entry> starterItems() {
         return starterItems;
     }
@@ -376,8 +410,11 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Arg<String> settingValue = Args.word("value", islandSettings.values("setting"));
         // NOTES: the optional island is for staff only (players see no suggestions and get a clear message)
         Arg<String> notesIsland = Args.word("island", Suggest.bySender(s -> notes == null ? List.of() : notes.staffNames(s, visits::islandNames)));
+        // M2.5
+        Arg<String> chatText = Args.text("message", "on my way", "need help at the farm");
+        Arg<String> infoIsland = Args.word("player", Suggest.bySender(visits::islandNames));
         core.commands().register(CommandSpec.command("is")
-                .description("Your island: create it, or go home").category("Island")
+                .description("Your island: create it, or open the island menu").category("Island")
                 .permission(PERM_USE).playerOnly().aliases("island")
                 .executes(ctx -> manager.openOrCreate(ctx.player()))
                 .sub(CommandSpec.sub("home").description("Teleport to your island home, or to one of your own homes").permission(PERM_USE)
@@ -393,6 +430,12 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("notes").description("Your island's shared notes and to-do list (book view, pinned holograms)")
                         .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(notesIsland).example("is notes")
                         .executes(ctx -> notes.command(ctx.player(), ctx.getOr(notesIsland, null))))
+                .sub(CommandSpec.sub("chat").description("Island chat: without text, switch your chat to the island and back")
+                        .permission(PERM_USE).playerOnly().optional(chatText).example("is chat on my way")
+                        .executes(ctx -> chat.command(ctx.player(), ctx.getOr(chatText, null))))
+                .sub(CommandSpec.sub("info").description("Info about your island or a player's island: leader, members, size, warps")
+                        .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(infoIsland).example("is info Steve")
+                        .executes(ctx -> hub.info(ctx.player(), ctx.getOr(infoIsland, null))))
                 .sub(CommandSpec.sub("invites").description("Invites you received and invites your island sent").permission(PERM_USE)
                         .playerOnly().example("is invites")
                         .executes(ctx -> members.openInvites(ctx.player())))
@@ -516,6 +559,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
     /** After a switch the old profile is "offline": its island's coop trust ends when no manager is left online. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfileSwitched(ProfileSwitchedEvent event) {
+        if (chat != null && chat.forget(event.getPlayer().getUniqueId())) {
+            msg.send(event.getPlayer(), "chat.toggle-off-profile"); // the island changes with the profile
+        }
         manager.islandOfPlayer(event.from().id()).ifPresent(island -> core.scheduler().later("islands:profile-coops", 1L,
                 () -> members.checkCoops(island)));
     }
@@ -527,5 +573,6 @@ public final class IslandsModule implements SkyblockModule, Listener {
         warps.forget(event.getPlayer().getUniqueId());
         homes.forget(event.getPlayer().getUniqueId());
         islandSettings.forget(event.getPlayer().getUniqueId());
+        chat.forget(event.getPlayer().getUniqueId());
     }
 }
