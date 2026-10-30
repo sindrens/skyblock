@@ -61,7 +61,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - ANS2 owner answers round 2
 - PORTALS build portals + island portal
-- PLANRANKS ranks/titles/achievements plan
+- PLANTUT tutorial + starter chest plan
 
 ## Parked / broken
 (none)
