@@ -10,6 +10,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 |---|---|---|---|
 | `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: the **island menu** (M2.5, see below; `/is home` teleports) | `skyblock.island` (everyone) | ✅ |
 | `/is home` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `teleport.yml → island-home.warmup-seconds`). Personal member homes and `/is setmyhome` were removed (owner answer 247) | `skyblock.island` | ✅ |
+| `/home` · `/sethome` | Owner answer 347: same as `/is home` and `/is sethome` (staff homes are `/shome`) | `skyblock.island` | ✅ |
 | `/is go` | Same as `/is home` (your island is the one you're a member of; visiting others is `/is visit`) | `skyblock.island` | ✅ |
 | `/is sethome` | Set the island home where you stand: Leader, Admin, Mod; inside your border, safe spot, Y 0-256 | `skyblock.island` | ✅ |
 | `/is invite <player>` | Leader/Admin/Mod: invite an online player without an island. On a **solo** island the leader first sees "Inviting makes your island a Team Island forever. Solo and team islands are on separate leaderboards." (confirm screen; cancel keeps it solo). The target gets a clickable `[Accept] [Deny]`; expires after `members.invite-expiry-seconds` (5 min) | `skyblock.island` | ✅ |

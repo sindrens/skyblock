@@ -12,7 +12,7 @@ Settings in `essentials.yml`, texts in `messages/essentials.yml`. Every staff ac
 | `/tppos <x> <y> <z> [world]` | Teleport to coordinates (`~` = current) | `skyblock.staff.tppos` | ✅ |
 | `/top` | Highest block above you | `skyblock.staff.top` | ✅ |
 | `/back` | Previous location or death point | `skyblock.staff.back` | ✅ |
-| `/home [name]` · `/sethome [name]` · `/delhome <name>` | Staff homes (max 5) | `skyblock.staff.home` | ✅ |
+| `/shome [name]` · `/setshome [name]` · `/delshome <name>` | Staff homes (max 5). Owner answer 347: `/home` and `/sethome` are the island's (islands module) | `skyblock.staff.home` | ✅ |
 | `/gm <c/s/sp/a> [player]` · `/gmc` `/gms` `/gmsp` `/gma` | Game mode (each mode has its own permission) | `skyblock.staff.gamemode` + `.creative/.survival/.spectator/.adventure` (+ `.others`) | ✅ |
 | `/fly [player]` | Toggle flying | `skyblock.staff.fly` (+ `.others`) | ✅ |
 | `/speed <1-10> [fly/walk]` | Fly/walk speed (1 = normal) | `skyblock.staff.speed` | ✅ |

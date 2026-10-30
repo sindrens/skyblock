@@ -2,7 +2,8 @@
 # Node definitions: modules/social/src/main/resources/permissions/social.yml. One console command per line; # = comment.
 
 # --- Social module (staff) ---
-lp group helper permission set skyblock.staff.socialspy true
+# Owner answer 318: /socialspy is for mods and up (helpers see private messages only through a report).
+lp group mod permission set skyblock.staff.socialspy true
 lp group helper permission set skyblock.staff.whois true
 lp group helper permission set skyblock.staff.seen.details true
 lp group helper permission set skyblock.staff.unignorable true
