@@ -60,7 +60,6 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - P3 punishments: evidence, notes, ack, weights, report link, Discord sink (off), /mypunishments
-- NOTES /is notes (islands lane)
 - W1 wardrobe core (new modules/wardrobe)
 
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
