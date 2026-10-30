@@ -1,0 +1,175 @@
+# Crates and reward tables (PHASE-10-REWARDS.md M10.1, owner decisions CA1-CA7). Every number is a default.
+# Written to plugins/PhoenixSkyblock/crates.yml on first start; crates that are new in the jar are added to an existing
+# file, rewards of an existing crate never (your tables and odds stay as you edited them). Reload: /skyblock reload crates
+#
+# Per crate (plain keys): rarity (color), icon (vanilla block now; the pack retextures it later), order in /crates,
+#   pity (opens without a top-band reward before the next one is forced into it; 0 = off; ~2.5x the average gap),
+#   hidden (not shown in /crates, e.g. Conqueror until KOTH), fallback-crystals (crystal value of rewards that are not
+#   live yet, x crystal-growth^(tier-1)).
+# rewards: a catalog LIST, one map per reward. Never put plain settings inside it.
+#   id      unique per crate (names in messages/crates.yml -> rewards.<crate>.<id>)
+#   type    money | crystals | shards | key | enchant-book | scroll | set-token | spawner | item | tag | title | fuel | coming-soon
+#   chance  percent (used as a weight; the preview shows the real share)
+#   top     true = top band (counts for pity, marked with a star)
+#   money: minutes (of reference income at your tier) · crystals: base · shards/key/scroll/set-token/spawner/item: amount
+#   key: crate · enchant-book: pool (rarity), level · set-token: sets (one picked at random) · spawner: tier (random type)
+#   item: material · tag/title: ids (one you don't own; all owned = its crystal value) · fuel: minutes
+#   coming-soon: a reward whose system is not built yet (boosters M10.2, tomes, skins, sell wands, collectors, pet eggs);
+#                it keeps its chance and pays its crystal value until then. icon: optional item shown in the preview.
+#   fallback: crystal base of this reward instead of the crate's fallback-crystals; rarity: color of this reward.
+
+crates:
+  ember:
+    rarity: common
+    icon: barrel
+    order: 1
+    pity: 30
+    fallback-crystals: 15
+    rewards:
+      - {id: money, type: money, chance: 25, minutes: 3}
+      - {id: crystals, type: crystals, chance: 20, base: 15}
+      - {id: fuel, type: fuel, chance: 15, minutes: 60}
+      - {id: book, type: enchant-book, chance: 12, pool: common, level: 1}
+      - {id: sell_booster, type: coming-soon, chance: 8, icon: gold_ingot}
+      - {id: xp_booster, type: coming-soon, chance: 7, icon: experience_bottle}
+      - {id: tag, type: tag, chance: 5, ids: [spark, ash]}
+      - {id: cinder_key, type: key, chance: 3, crate: cinder, amount: 1, top: true, rarity: uncommon}
+      - {id: uncommon_book, type: enchant-book, chance: 3, pool: uncommon, level: 1, top: true, rarity: uncommon}
+      - {id: tool_skin, type: coming-soon, chance: 1.5, top: true, icon: netherite_upgrade_smithing_template, fallback: 60}
+      - {id: tome, type: coming-soon, chance: 0.5, top: true, icon: book, rarity: rare, fallback: 120}
+  cinder:
+    rarity: uncommon
+    icon: chest
+    order: 2
+    pity: 28
+    fallback-crystals: 40
+    rewards:
+      - {id: money, type: money, chance: 20, minutes: 8}
+      - {id: crystals, type: crystals, chance: 18, base: 40}
+      - {id: book, type: enchant-book, chance: 14, pool: uncommon, level: 1}
+      - {id: fuel, type: fuel, chance: 10, minutes: 180}
+      - {id: sell_booster, type: coming-soon, chance: 8, icon: gold_ingot}
+      - {id: scroll, type: scroll, chance: 6, amount: 1}
+      - {id: xp_booster, type: coming-soon, chance: 6, icon: experience_bottle}
+      - {id: tag, type: tag, chance: 5, ids: [ashes]}
+      - {id: sell_wand, type: coming-soon, chance: 4, icon: blaze_rod}
+      - {id: blaze_key, type: key, chance: 3, crate: blaze, amount: 1, top: true, rarity: rare}
+      - {id: spawner_t3, type: spawner, chance: 3, tier: 3, amount: 1, top: true, rarity: rare}
+      - {id: tool_skin, type: coming-soon, chance: 2, top: true, icon: netherite_upgrade_smithing_template, fallback: 120}
+      - {id: tome, type: coming-soon, chance: 1, top: true, icon: book, rarity: rare, fallback: 160}
+  blaze:
+    rarity: rare
+    icon: copper_chest
+    order: 3
+    pity: 23
+    fallback-crystals: 100
+    rewards:
+      - {id: money, type: money, chance: 18, minutes: 15}
+      - {id: crystals, type: crystals, chance: 16, base: 100}
+      - {id: book, type: enchant-book, chance: 15, pool: rare, level: 1}
+      - {id: sell_booster, type: coming-soon, chance: 8, icon: gold_ingot}
+      - {id: xp_booster, type: coming-soon, chance: 6, icon: experience_bottle}
+      - {id: scroll, type: scroll, chance: 6, amount: 1}
+      - {id: sell_wand, type: coming-soon, chance: 5, icon: blaze_rod}
+      - {id: autosell_chest, type: coming-soon, chance: 5, icon: chest}
+      - {id: tag, type: tag, chance: 5, ids: [ember]}
+      - {id: spawner_t3, type: spawner, chance: 5, tier: 3, amount: 2}
+      - {id: spawner_t4, type: spawner, chance: 3, tier: 4, amount: 1, top: true, rarity: epic}
+      - {id: tool_skin, type: coming-soon, chance: 3, top: true, icon: netherite_upgrade_smithing_template, fallback: 250}
+      - {id: inferno_key, type: key, chance: 2, crate: inferno, amount: 1, top: true, rarity: epic}
+      - {id: tome, type: coming-soon, chance: 1.5, top: true, icon: book, fallback: 250}
+      - {id: lorekeeper_token, type: set-token, chance: 1, sets: [lorekeeper], amount: 1, top: true, rarity: epic}
+      - {id: blueprint, type: coming-soon, chance: 0.5, top: true, icon: paper, rarity: epic, fallback: 400}
+  inferno:
+    rarity: epic
+    icon: ender_chest
+    order: 4
+    pity: 18
+    fallback-crystals: 250
+    rewards:
+      - {id: money, type: money, chance: 15, minutes: 30}
+      - {id: crystals, type: crystals, chance: 14, base: 250}
+      - {id: book, type: enchant-book, chance: 14, pool: epic, level: 1}
+      - {id: sell_booster, type: coming-soon, chance: 7, icon: gold_ingot}
+      - {id: spawner_t4, type: spawner, chance: 6, tier: 4, amount: 2}
+      - {id: tag, type: tag, chance: 6, ids: [skyborn]}
+      - {id: xp_booster, type: coming-soon, chance: 5, icon: experience_bottle}
+      - {id: collector, type: coming-soon, chance: 5, icon: hopper}
+      - {id: autosell_chest, type: coming-soon, chance: 4, icon: chest}
+      - {id: sell_wand, type: coming-soon, chance: 4, icon: blaze_rod}
+      - {id: tool_skin, type: coming-soon, chance: 4, icon: netherite_upgrade_smithing_template}
+      - {id: hologram, type: coming-soon, chance: 2, icon: glow_item_frame}
+      - {id: greater_tome, type: coming-soon, chance: 3, top: true, icon: enchanted_book, rarity: legendary, fallback: 600}
+      - {id: set_token_a, type: set-token, chance: 3, sets: [deepforge, cropwarden, dreadguard], amount: 1, top: true, rarity: legendary}
+      - {id: set_token_b, type: set-token, chance: 3, sets: [thornward, stormkeel], amount: 1, top: true, rarity: legendary}
+      - {id: spawner_t5, type: spawner, chance: 2, tier: 5, amount: 1, top: true, rarity: legendary}
+      - {id: phoenix_key, type: key, chance: 1.5, crate: phoenix, amount: 1, top: true, rarity: legendary}
+      - {id: blueprint, type: coming-soon, chance: 1.5, top: true, icon: paper, rarity: legendary, fallback: 600}
+  phoenix:
+    rarity: legendary
+    icon: vault
+    order: 5
+    pity: 18
+    fallback-crystals: 600
+    rewards:
+      - {id: book, type: enchant-book, chance: 14, pool: legendary, level: 1}
+      - {id: money, type: money, chance: 12, minutes: 60}
+      - {id: crystals, type: crystals, chance: 12, base: 600}
+      - {id: sell_booster, type: coming-soon, chance: 6, icon: gold_ingot}
+      - {id: spawner_t4, type: spawner, chance: 6, tier: 4, amount: 4}
+      - {id: tag, type: tag, chance: 6, ids: [phoenix]}
+      - {id: tool_skin, type: coming-soon, chance: 6, icon: netherite_upgrade_smithing_template}
+      - {id: collector, type: coming-soon, chance: 5, icon: hopper}
+      - {id: greater_tome, type: coming-soon, chance: 5, icon: enchanted_book}
+      - {id: global_booster, type: coming-soon, chance: 4, icon: beacon}
+      - {id: autosell_chest, type: coming-soon, chance: 4, icon: chest}
+      - {id: blueprint, type: coming-soon, chance: 4, icon: paper}
+      - {id: phoenix_key, type: key, chance: 2, crate: phoenix, amount: 1}
+      - {id: spawner_t5, type: spawner, chance: 6, tier: 5, amount: 1, top: true}
+      - {id: elytra, type: item, chance: 3, material: elytra, amount: 1, top: true}
+      - {id: voidforged_token, type: set-token, chance: 2, sets: [voidforged], amount: 1, top: true}
+      - {id: title, type: title, chance: 2, ids: [], top: true, fallback: 1500}
+      - {id: eclipse_key, type: key, chance: 1, crate: eclipse, amount: 1, top: true, rarity: mythic}
+  eclipse:
+    rarity: mythic
+    icon: vault
+    order: 6
+    pity: 10
+    fallback-crystals: 1000
+    rewards:
+      - {id: book, type: enchant-book, chance: 14, pool: legendary, level: 1}
+      - {id: money, type: money, chance: 10, minutes: 90}
+      - {id: crystals, type: crystals, chance: 10, base: 1000}
+      - {id: month_skin, type: coming-soon, chance: 10, icon: netherite_upgrade_smithing_template}
+      - {id: month_tag, type: tag, chance: 10, ids: [inferno]}
+      - {id: month_theme, type: coming-soon, chance: 8, icon: firework_star}
+      - {id: pet_egg, type: coming-soon, chance: 8, icon: sniffer_egg}
+      - {id: spawner_t5, type: spawner, chance: 6, tier: 5, amount: 2}
+      - {id: greater_tome, type: coming-soon, chance: 5, icon: enchanted_book}
+      - {id: collector, type: coming-soon, chance: 4, icon: hopper}
+      - {id: global_booster, type: coming-soon, chance: 4, icon: beacon}
+      - {id: autosell_chest, type: coming-soon, chance: 3, icon: chest}
+      - {id: phoenix_key, type: key, chance: 3, crate: phoenix, amount: 1, top: true, rarity: legendary}
+      - {id: mythic_book, type: enchant-book, chance: 2, pool: mythic, level: 1, top: true}
+      - {id: regalia_token, type: set-token, chance: 2, sets: [phoenix], amount: 1, top: true}
+      - {id: month_title, type: title, chance: 1, ids: [], top: true, fallback: 3000}
+  conqueror:
+    rarity: special
+    icon: trial_spawner
+    order: 7
+    pity: 20
+    hidden: true
+    fallback-crystals: 250
+    rewards:
+      - {id: money, type: money, chance: 15, minutes: 30}
+      - {id: shards, type: shards, chance: 15, amount: 5}
+      - {id: combat_rare_book, type: enchant-book, chance: 15, pool: rare, level: 1}
+      - {id: scroll, type: scroll, chance: 10, amount: 1}
+      - {id: banneret_token, type: set-token, chance: 10, sets: [banneret], amount: 1}
+      - {id: kill_effect, type: coming-soon, chance: 8, icon: wither_rose}
+      - {id: tag, type: tag, chance: 6, ids: []}
+      - {id: spawner_t4, type: spawner, chance: 5, tier: 4, amount: 1}
+      - {id: pillar_xp, type: coming-soon, chance: 4, icon: experience_bottle}
+      - {id: combat_epic_book, type: enchant-book, chance: 6, pool: epic, level: 1, top: true, rarity: epic}
+      - {id: aegis_token, type: set-token, chance: 4, sets: [conqueror], amount: 1, top: true, rarity: legendary}
+      - {id: combat_legendary_book, type: enchant-book, chance: 2, pool: legendary, level: 1, top: true, rarity: legendary}

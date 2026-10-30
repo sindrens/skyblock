@@ -1,0 +1,272 @@
+# Crates (PHASE-10 M10.1): /crates [crate]. MiniMessage + style tags (style.yml). Reload: /skyblock reload crates
+# Amount placeholders (<amount>, <keys>, <count>) are plain text like $2,480 or 12; they are colored here.
+# Reward names may contain <amount> (pouch value at your tier, fuel time, crystal value) and <key> (the key name).
+
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was taken; try again soon."
+loading: "<prefix><c:error><sym:cross></c:error> <c:text>Crates are still loading. Try again in a moment."
+frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open crates while frozen."
+staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open crates in staff mode."
+switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
+unknown-crate: "<prefix><c:error><sym:cross></c:error> <c:text>No crate <c:value><input></c:value><c:text>. Try: <c:value><crates>"
+coming-soon: "<prefix><c:error><sym:cross></c:error> <c:text>This crate is coming soon."
+busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your last crate is still opening. One moment."
+changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your keys just changed. Nothing was taken; click again."
+no-keys: "<prefix><c:error><sym:cross></c:error> <c:text>You have no <key><c:text>. Get keys from voting, quests, the AFK pool and daily rewards."
+# Internal: shows a MiniMessage name from this file (do not change).
+text: "<text>"
+
+# Crate and key names (crate ids from crates.yml).
+crates:
+  ember: {name: "Ember Crate", key: "Ember Key"}
+  cinder: {name: "Cinder Crate", key: "Cinder Key"}
+  blaze: {name: "Blaze Crate", key: "Blaze Key"}
+  inferno: {name: "Inferno Crate", key: "Inferno Key"}
+  phoenix: {name: "Phoenix Crate", key: "Phoenix Key"}
+  eclipse: {name: "Eclipse Crate", key: "Eclipse Key"}
+  conqueror: {name: "Conqueror Crate", key: "Conqueror Key"}
+
+# Generic reward names by type (used when a reward has no own name below).
+reward-types:
+  money: "Money Pouch (<amount>)"
+  crystals: "Crystal Pouch (<amount>)"
+  shards: "Shards (<amount>)"
+  key: "<key>"
+  enchant-book: "Enchant Book"
+  scroll: "Disenchant Scroll"
+  set-token: "Set Token"
+  spawner: "Spawner"
+  item: "Item"
+  tag: "Tag"
+  title: "Title"
+  fuel: "Island Fuel (<amount>)"
+  coming-soon: "Coming soon"
+
+# Reward names per crate: rewards.<crate>.<reward id>.
+rewards:
+  ember:
+    money: "Money Pouch (<amount>)"
+    crystals: "Crystal Pouch (<amount>)"
+    fuel: "Island Fuel (<amount>)"
+    book: "Common Enchant Book"
+    sell_booster: "Sell Booster +25%, 10 min"
+    xp_booster: "Skill XP Booster +25%, 15 min"
+    tag: "Common Tag"
+    cinder_key: "<key>"
+    uncommon_book: "Uncommon Enchant Book"
+    tool_skin: "Tool Skin (common)"
+    tome: "Wardrobe Tome"
+  cinder:
+    money: "Money Pouch (<amount>)"
+    crystals: "Crystal Pouch (<amount>)"
+    book: "Uncommon Enchant Book"
+    fuel: "Island Fuel (<amount>)"
+    sell_booster: "Sell Booster +50%, 10 min"
+    scroll: "Disenchant Scroll"
+    xp_booster: "Skill XP Booster +50%, 15 min"
+    tag: "Uncommon Tag"
+    sell_wand: "Sell Wand (100 uses)"
+    blaze_key: "<key>"
+    spawner_t3: "Tier 3 Spawner"
+    tool_skin: "Tool Skin (uncommon)"
+    tome: "Wardrobe Tome"
+  blaze:
+    money: "Money Pouch (<amount>)"
+    crystals: "Crystal Pouch (<amount>)"
+    book: "Rare Enchant Book"
+    sell_booster: "Sell Booster +50%, 30 min"
+    xp_booster: "Skill XP Booster +50%, 30 min"
+    scroll: "Disenchant Scroll"
+    sell_wand: "Sell Wand (500 uses)"
+    autosell_chest: "Auto-sell Chest, tier 1"
+    tag: "Rare Tag"
+    spawner_t3: "Tier 3 Spawner"
+    spawner_t4: "Tier 4 Spawner"
+    tool_skin: "Tool Skin (rare)"
+    inferno_key: "<key>"
+    tome: "Wardrobe Tome"
+    lorekeeper_token: "Lorekeeper Robes Set Token"
+    blueprint: "Blueprint"
+  inferno:
+    money: "Money Pouch (<amount>)"
+    crystals: "Crystal Pouch (<amount>)"
+    book: "Epic Enchant Book"
+    sell_booster: "Sell Booster +100%, 30 min"
+    spawner_t4: "Tier 4 Spawner"
+    tag: "Epic Tag"
+    xp_booster: "Skill XP Booster +100%, 30 min"
+    collector: "Chunk Collector, tier 1"
+    autosell_chest: "Auto-sell Chest, tier 2"
+    sell_wand: "Sell Wand (2,000 uses)"
+    tool_skin: "Tool Skin (epic)"
+    hologram: "Island Hologram"
+    greater_tome: "Greater Wardrobe Tome"
+    set_token_a: "Deepforge, Cropwarden or Dreadguard Token"
+    set_token_b: "Thornward or Stormkeel Token"
+    spawner_t5: "Tier 5 Spawner"
+    phoenix_key: "<key>"
+    blueprint: "Blueprint"
+  phoenix:
+    book: "Legendary Enchant Book"
+    money: "Money Pouch (<amount>)"
+    crystals: "Crystal Pouch (<amount>)"
+    sell_booster: "Sell Booster +100%, 60 min"
+    spawner_t4: "Tier 4 Spawner"
+    tag: "Legendary Tag"
+    tool_skin: "Tool Skin (legendary)"
+    collector: "Chunk Collector, tier 2"
+    greater_tome: "Greater Wardrobe Tome"
+    global_booster: "Global Sell Booster +50%, 30 min"
+    autosell_chest: "Auto-sell Chest, tier 3"
+    blueprint: "Blueprint (rare ability)"
+    phoenix_key: "<key> (open again)"
+    spawner_t5: "Tier 5 Spawner"
+    elytra: "Elytra"
+    voidforged_token: "Voidforged Plate Set Token"
+    title: "Legendary Title"
+    eclipse_key: "<key>"
+  eclipse:
+    book: "Legendary Enchant Book"
+    money: "Money Pouch (<amount>)"
+    crystals: "Crystal Pouch (<amount>)"
+    month_skin: "The Month's Tool Skin"
+    month_tag: "The Month's Tag"
+    month_theme: "The Month's Border Theme"
+    pet_egg: "Pet Egg"
+    spawner_t5: "Tier 5 Spawner"
+    greater_tome: "Greater Wardrobe Tome"
+    collector: "Chunk Collector, tier 3"
+    global_booster: "Global Sell Booster +50%, 60 min"
+    autosell_chest: "Auto-sell Chest, tier 4"
+    phoenix_key: "<key>"
+    mythic_book: "Mythic Enchant Book"
+    regalia_token: "Phoenix Regalia Set Token"
+    month_title: "The Month's Mythic Title"
+  conqueror:
+    money: "Money Pouch (<amount>)"
+    shards: "Shards (<amount>)"
+    combat_rare_book: "Rare Enchant Book"
+    scroll: "Disenchant Scroll"
+    banneret_token: "Banneret Tabard Set Token"
+    kill_effect: "Warzone Kill Effect"
+    tag: "Conquest Tag"
+    spawner_t4: "Tier 4 Spawner"
+    pillar_xp: "Conquest XP Pouch"
+    combat_epic_book: "Epic Enchant Book"
+    aegis_token: "Conqueror Aegis Set Token"
+    combat_legendary_book: "Legendary Enchant Book"
+
+open:
+  single: "<prefix><c:success><sym:check></c:success> <crate><c:text>: <reward>"
+  single-top: "<prefix><c:flame><sym:star></c:flame> <crate><c:text>: you won <reward><c:text>!"
+  fallback-note: "<c:muted>Not live yet, so you got its crystal value: <cur:crystals><amount></cur:crystals><c:muted>."
+  pity-fired: "<c:muted>Your pity counter guaranteed a top reward."
+  summary-header: "<prefix><c:success><sym:check></c:success> <c:text>You opened <c:value><count></c:value> <crate><c:text>s:"
+  summary-line: " <c:muted><sym:bullet></c:muted> <reward> <c:muted>x<times>"
+  summary-line-top: " <c:flame><sym:star></c:flame> <reward> <c:muted>x<times>"
+  summary-more: " <c:muted>... and <more> more (see the summary screen)."
+  grant-failed: "<prefix><c:error><sym:cross></c:error> <c:text>A reward could not be handed out. Staff were told and will fix it."
+  fallback-name: "<reward> <c:muted>(</c:muted><cur:crystals><amount></cur:crystals><c:muted>)"
+  won-tag: "<c:text>Tag <name>"
+  won-title: "<c:text>Title <name>"
+  with-count: "<reward> <c:muted>(x<count>)"
+
+menu:
+  title: "Crates"
+  info:
+    - "<c:text>Open crates with your keys."
+    - "<c:text>Left-click a crate to see every"
+    - "<c:text>reward and its chance. Opening uses"
+    - "<c:text>bound keys first."
+  loading:
+    name: "<c:muted>Loading your keys..."
+    lore: []
+  empty:
+    name: "<c:muted>No crates yet"
+    lore: ["<c:text>Crates open soon."]
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>Your keys"
+    lore:
+      - "<c:muted>Keys belong to this profile."
+      - ""
+    line: "<key><c:text>: <c:value><keys>"
+    line-tradeable: "<key><c:text>: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
+  crate:
+    lore:
+      - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
+      - "<c:text>Pity: <c:value><pity>/<max></c:value> <c:muted><sym:dot> top rewards <top>%"
+      - ""
+    lore-no-pity:
+      - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
+      - ""
+    actions:
+      - "<bold><c:action>» LEFT-CLICK</c:action></bold> <c:text>see rewards"
+      - "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>open 1"
+      - "<bold><c:action>» SHIFT-CLICK</c:action></bold> <c:text>open <bulk>"
+    actions-bedrock:
+      - "<bold><c:action>» TAP</c:action></bold> <c:text>see rewards and open"
+    coming-soon:
+      - "<c:locked>Coming soon"
+      - "<c:muted>Keys come from KOTH captures."
+
+preview:
+  info:
+    - "<c:text>Every reward with its chance."
+    - "<c:flame><sym:star></c:flame> <c:text>marks the top rewards: the pity"
+    - "<c:text>counter guarantees one after a"
+    - "<c:text>streak of bad luck."
+  gone:
+    name: "<c:muted>This crate is not available"
+    lore: []
+  status:
+    - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
+    - "<c:text>Pity: <c:value><pity>/<max></c:value> <c:muted><sym:dot> top rewards <top>%"
+    - ""
+    - "<c:muted>Bound keys are used first. Loot"
+    - "<c:muted>from a bound key is bound too."
+  status-no-pity:
+    - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
+    - ""
+    - "<c:muted>Bound keys are used first. Loot"
+    - "<c:muted>from a bound key is bound too."
+  open-one:
+    name: "<c:success>Open 1"
+    lore: ["<c:text>Uses 1 <key><c:text>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+  open-bulk:
+    name: "<c:success>Open <bulk>"
+    lore: ["<c:text>Opens up to <c:value><bulk></c:value> <c:text>at once and", "<c:text>shows one summary.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+  open-all:
+    name: "<c:success>Open all (<all>)"
+    lore: ["<c:text>Opens all your keys, up to", "<c:value><max></c:value> <c:text>per click.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+  no-keys:
+    name: "<c:locked>No keys"
+    lore: ["<c:text>You have no <key><c:text>.", "<c:muted>Vote, do quests, AFK in the pool", "<c:muted>or claim daily rewards."]
+  line: "<reward> <c:muted>(x<count>)</c:muted> <c:muted>|</c:muted> <c:value><chance>%"
+  line-top: "<c:flame><sym:star></c:flame> <reward> <c:muted>(x<count>)</c:muted> <c:muted>|</c:muted> <c:value><chance>%"
+  coming-soon:
+    - ""
+    - "<c:locked>Coming soon."
+    - "<c:muted>Until then it pays <cur:crystals><amount></cur:crystals><c:muted>."
+  cosmetic:
+    - ""
+    - "<c:muted>Always one you don't own yet."
+    - "<c:muted>Own them all: its crystal value."
+  pouch:
+    - ""
+    - "<c:muted>Grows with your Depths tier."
+
+result:
+  title: "Opened <count>"
+  info:
+    - "<c:text>Everything you just won."
+    - "<c:text>Items are in your inventory or"
+    - "<c:text>your <c:value>/box</c:value><c:text>; money and crystals"
+    - "<c:text>are on your balance."
+  summary:
+    - "<c:text>Opened: <c:value><count></c:value>"
+    - "<c:text>Top rewards: <c:value><top>"
+    - "<c:text>Pity now: <c:value><pity>/<max>"
+  line: ["<c:text>Won <c:value><times></c:value><c:text>x"]
+  line-top: ["<c:flame><sym:star></c:flame> <c:text>Top reward, won <c:value><times></c:value><c:text>x"]
+  more:
+    name: "<c:muted>And <more> more"
+    lore: ["<c:text>See the chat summary."]

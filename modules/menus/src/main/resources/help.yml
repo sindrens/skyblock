@@ -58,11 +58,11 @@ categories:
     topics: []
   rewards:
     icon: tripwire_hook
-    status: coming-soon
+    status: active
     slot: 22
     name: "<c:flame><bold>Rewards"
     lore: ["<c:text>Crates, quests, voting", "<c:text>and daily rewards."]
-    topics: []
+    topics: [crates]
   community:
     icon: bell
     status: active
@@ -1080,6 +1080,39 @@ topics:
           - "<c:text>you there and repeats the hint."
           - "<c:text>Your progress is saved, even if you"
           - "<c:text>leave. Watch it again any time."
+
+  crates:
+    icon: tripwire_hook
+    aliases: [crate, keys, crate-keys, pity]
+    name: "<c:flame>Crates"
+    summary: ["<c:text>Open crates with keys you", "<c:text>earn by playing."]
+    take-me-there: "crates"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>Keys"
+        lines:
+          - "<c:text>Keys come from voting, quests, the"
+          - "<c:text>AFK pool and daily rewards. They"
+          - "<c:text>belong to your profile. Bound keys"
+          - "<c:text>(and their loot) never trade."
+      - title: "<c:value>Opening"
+        lines:
+          - "<c:value>/crates</c:value> <c:text>opens anywhere. Left-click"
+          - "<c:text>a crate to see every reward and its"
+          - "<c:text>chance, right-click to open 1, or"
+          - "<c:text>use Open 10 and Open all."
+      - title: "<c:value>Pity"
+        lines:
+          - "<c:text>Top rewards are marked with a star."
+          - "<c:text>After a streak without one, the"
+          - "<c:text>next open is guaranteed to give"
+          - "<c:text>one. The preview shows your count."
+      - title: "<c:value>Good to know"
+        lines:
+          - "<c:text>Money and crystal pouches grow with"
+          - "<c:text>your Depths tier. Items that don't"
+          - "<c:text>fit go to your</c:text> <c:value>/box</c:value><c:text>. Rewards"
+          - "<c:text>not live yet pay crystals for now."
 
   box:
     icon: chest_minecart
