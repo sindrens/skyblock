@@ -1,0 +1,6 @@
+# Permissions of the shop module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/shop.txt. Commands: docs/commands/shop.md.
+skyblock.shop.use:
+  description: Buy from the builder shop (/shop [category])
+  default: true

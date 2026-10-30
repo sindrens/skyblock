@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":modules:enchants"))
     implementation(project(":modules:wardrobe"))
     implementation(project(":modules:trade"))
+    implementation(project(":modules:shop"))
 }
 
 tasks {

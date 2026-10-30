@@ -33,8 +33,8 @@ categories:
     status: active
     slot: 14
     name: "<c:flame><bold>Economy"
-    lore: ["<c:text>Money, selling, banks, the", "<c:text>auction house and trading."]
-    topics: [money, sell, notes, auction, trade]
+    lore: ["<c:text>Money, the shop, selling, the", "<c:text>auction house and trading."]
+    topics: [money, shop, sell, notes, auction, trade]
   progression:
     icon: experience_bottle
     status: active
@@ -716,6 +716,33 @@ topics:
           - "<c:text>balances: who paid you, what you sold"
           - "<c:text>and bought. Filter by currency, type"
           - "<c:text>and time. <c:value>/baltop</c:value> <c:text>shows the richest."
+
+  shop:
+    icon: emerald
+    aliases: [builder-shop, buy, blocks, store-blocks]
+    name: "<c:flame>Builder shop"
+    summary: ["<c:text>Buy blocks, decoration and", "<c:text>seeds for your island."]
+    take-me-there: "shop"
+    commands: [Economy]
+    pages:
+      - title: "<c:value>Buying"
+        lines:
+          - "<c:value>/shop</c:value> <c:text>shows the categories. Pick one,"
+          - "<c:text>tap an item, then <c:value>1</c:value><c:text>, <c:value>16</c:value><c:text>, <c:value>64</c:value> <c:text>or"
+          - "<c:value>Custom amount</c:value><c:text>. <c:value>/shop wood</c:value> <c:text>opens a"
+          - "<c:text>category straight away."
+      - title: "<c:value>Room and money"
+        lines:
+          - "<c:text>Items go into your inventory, so keep"
+          - "<c:text>room free: a full inventory buys"
+          - "<c:text>nothing and costs nothing. Big buys"
+          - "<c:text>ask you to confirm first."
+      - title: "<c:value>Why some prices are high"
+        lines:
+          - "<c:text>Crops and redstone also sell with"
+          - "<c:value>/sell</c:value><c:text>, so the shop asks more for"
+          - "<c:text>them. Buy one, grow the rest. The shop"
+          - "<c:text>never buys items back: use /sell."
 
   sell:
     icon: gold_nugget
