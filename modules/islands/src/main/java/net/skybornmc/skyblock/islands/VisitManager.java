@@ -84,6 +84,8 @@ final class VisitManager implements Listener {
     private int recordedDay = Integer.MIN_VALUE;
     /** Visit/rating/like totals per island for the browser. */
     private volatile Map<UUID, Showcase.Stats> stats = Map.of();
+    /** Island playtime in seconds (all members), for the Discover tab (owner answer 290); refreshed with the stats. */
+    private volatile Map<UUID, Long> playtimes = Map.of();
     private final Set<UUID> busy = new HashSet<>();
     private Scheduler.Task statsTask;
     private PlayerSettings settings;
@@ -204,6 +206,18 @@ final class VisitManager implements Listener {
             }
             stats = Map.copyOf(loaded);
         }, main);
+        store.playtimes().whenCompleteAsync((loaded, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Islands: loading island playtimes failed", Database.cause(error));
+                return;
+            }
+            playtimes = Map.copyOf(loaded);
+        }, main);
+    }
+
+    /** All-time island playtime in seconds (0 when unknown). */
+    long playtimeSeconds(UUID islandId) {
+        return playtimes.getOrDefault(islandId, 0L);
     }
 
     // ------------------------------------------------------------------ lookups
@@ -382,11 +396,14 @@ final class VisitManager implements Listener {
         return cached == null ? null : cached.getUniqueId();
     }
 
-    /** Islands shown in the visit browser: built and not locked. */
+    /**
+     * Islands shown in the visit browser: every built, unlocked island (owner answer 290: no level or playtime gate), except
+     * the ones staff hid (owner answer 293).
+     */
     List<Island> listed() {
         List<Island> list = new ArrayList<>();
         for (Island island : islands.islands()) {
-            if (!island.locked() && island.home().isPresent()) {
+            if (!island.locked() && !island.browserHidden() && island.home().isPresent()) {
                 list.add(island);
             }
         }
@@ -735,19 +752,23 @@ final class VisitManager implements Listener {
             islands.fail(player, "rate.own");
             return;
         }
+        if (tooNewToVote(player)) {
+            return;
+        }
         if (!begin(player)) {
             return;
         }
         int season = config().seasonId;
-        store.voteContext(island.id(), player.getUniqueId(), season, today()).thenComposeAsync(context -> {
+        String ipHash = ipHash(player);
+        store.voteContext(island.id(), player.getUniqueId(), season, today(), ipHash, true).thenComposeAsync(context -> {
             VisitRules.VoteCheck check = VisitRules.canRate(stars, MAX_STARS, island.roleOrNull(islands.key(player)), context.visited(),
-                    config().requireVisit, context.rating());
+                    config().requireVisit, context.rating(), context.otherAccounts(), config().voteMaxAccountsPerIp);
             if (check != VisitRules.VoteCheck.OK) {
                 end(player);
                 voteDenied(player, island, check, "rate", stars);
                 return java.util.concurrent.CompletableFuture.completedFuture(null);
             }
-            return store.rate(island.id(), player.getUniqueId(), season, stars).thenAcceptAsync(old -> {
+            return store.rate(island.id(), player.getUniqueId(), season, stars, ipHash).thenAcceptAsync(old -> {
                 end(player);
                 Integer before = old.orElse(null);
                 updateStats(island.id(), s -> s.withRating(before, stars));
@@ -779,20 +800,24 @@ final class VisitManager implements Listener {
             islands.fail(player, "like.own");
             return;
         }
+        if (tooNewToVote(player)) {
+            return;
+        }
         if (!begin(player)) {
             return;
         }
         int season = config().seasonId;
         int day = today();
-        store.voteContext(island.id(), player.getUniqueId(), season, day).thenComposeAsync(context -> {
+        String ipHash = ipHash(player);
+        store.voteContext(island.id(), player.getUniqueId(), season, day, ipHash, false).thenComposeAsync(context -> {
             VisitRules.VoteCheck check = VisitRules.canLike(island.roleOrNull(islands.key(player)), context.visited(),
-                    config().requireVisit, context.likedToday());
+                    config().requireVisit, context.likedToday(), context.otherAccounts(), config().voteMaxAccountsPerIp);
             if (check != VisitRules.VoteCheck.OK) {
                 end(player);
                 voteDenied(player, island, check, "like", 0);
                 return java.util.concurrent.CompletableFuture.completedFuture(null);
             }
-            return store.like(island.id(), player.getUniqueId(), day, season).thenAcceptAsync(added -> {
+            return store.like(island.id(), player.getUniqueId(), day, season, ipHash).thenAcceptAsync(added -> {
                 end(player);
                 if (!added) {
                     voteDenied(player, island, VisitRules.VoteCheck.ALREADY, "like", 0);
@@ -811,6 +836,64 @@ final class VisitManager implements Listener {
         });
     }
 
+    /** Owner answer 292: 1 hour of playtime before rating or liking (told right away, no database call). */
+    private boolean tooNewToVote(Player player) {
+        long playtime = core.players().get(player.getUniqueId()).map(d -> d.playtimeMillis()).orElse(0L);
+        if (VisitRules.tooNew(playtime, config().voteMinPlaytimeMinutes)) {
+            islands.fail(player, "vote.new-player", Msg.p("minutes", config().voteMinPlaytimeMinutes));
+            return true;
+        }
+        return false;
+    }
+
+    /** Hash of the player's current address (owner answer 292), or null when unknown. */
+    private static String ipHash(Player player) {
+        java.net.InetSocketAddress address = player.getAddress();
+        return address == null || address.getAddress() == null ? null : VisitRules.ipHash(address.getAddress().getHostAddress());
+    }
+
+    // ------------------------------------------------------------------ staff: hide from the browser (owner answer 293)
+
+    /** Hides or shows {@code island} in the visit browser; audited with the note. Main thread. */
+    void setBrowserHidden(org.bukkit.command.CommandSender staff, Island island, boolean hidden, String note) {
+        String cleanNote = note == null || note.isBlank() ? null : note.strip();
+        if (cleanNote != null && cleanNote.length() > 200) {
+            cleanNote = cleanNote.substring(0, 200);
+        }
+        if (island.browserHidden() == hidden) {
+            msg.send(staff, hidden ? "admin.hide.already" : "admin.unhide.already", Msg.p("island", islands.displayName(island)));
+            sound(staff, "error");
+            return;
+        }
+        String finalNote = cleanNote;
+        String by = staff.getName();
+        store.setBrowserHidden(island.id(), hidden, finalNote, by).whenCompleteAsync((saved, error) -> {
+            if (error != null || !Boolean.TRUE.equals(saved)) {
+                if (error != null) {
+                    core.plugin().getLogger().log(Level.WARNING, "Islands: hiding an island failed", Database.cause(error));
+                }
+                msg.send(staff, "admin.hide.failed");
+                sound(staff, "error");
+                return;
+            }
+            island.browserHidden(hidden, finalNote);
+            Map<String, Object> details = new HashMap<>();
+            details.put("note", finalNote == null ? "-" : finalNote);
+            core.audit().log(AuditCategory.ISLAND, hidden ? "island_browser_hide" : "island_browser_unhide",
+                    Actor.of(staff), island.id().toString(), islands.displayName(island),
+                    null, null, details);
+            msg.send(staff, hidden ? "admin.hide.done" : "admin.unhide.done", Msg.p("island", islands.displayName(island)),
+                    Msg.p("note", finalNote == null ? "-" : finalNote));
+            sound(staff, "success");
+        }, main);
+    }
+
+    private void sound(org.bukkit.command.CommandSender sender, String key) {
+        if (sender instanceof Player player) {
+            core.sounds().play(player, key);
+        }
+    }
+
     private void voteDenied(Player player, Island island, VisitRules.VoteCheck check, String what, int stars) {
         String name = islands.displayName(island);
         switch (check) {
@@ -818,6 +901,8 @@ final class VisitManager implements Listener {
             case OWN_ISLAND -> islands.fail(player, what + ".own");
             case NOT_VISITED -> islands.fail(player, what + ".not-visited", Msg.p("island", name));
             case ALREADY -> islands.fail(player, what + ".already", Msg.p("island", name), Msg.p("stars", stars));
+            case NEW_PLAYER -> islands.fail(player, "vote.new-player", Msg.p("minutes", config().voteMinPlaytimeMinutes));
+            case IP_LIMIT -> islands.fail(player, "vote.ip-limit", Msg.p("island", name), Msg.p("max", config().voteMaxAccountsPerIp));
             case OK -> {
             }
         }
@@ -826,7 +911,7 @@ final class VisitManager implements Listener {
     // ------------------------------------------------------------------ browser
 
     void openBrowser(Player player, Showcase.Sort sort) {
-        core.menus().open(player, new VisitMenu(module, islands, this, warps, sort == null ? Showcase.Sort.VISITS : sort));
+        core.menus().open(player, new VisitMenu(module, islands, this, warps, sort == null ? Showcase.Sort.DISCOVER : sort));
     }
 
     // ------------------------------------------------------------------ enforcement and presence (events)

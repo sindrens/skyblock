@@ -110,7 +110,7 @@ final class WarpBrowserMenu extends PagedMenu<IslandWarp> {
                 });
             }
             set(SLOT_ISLANDS, service.item(Material.GRASS_BLOCK, viewer, IslandsModule.ID, "warps.islands"),
-                    click -> openChild(new VisitMenu(module, islands, visits, warps, Showcase.Sort.VISITS)));
+                    click -> openChild(new VisitMenu(module, islands, visits, warps, Showcase.Sort.DISCOVER)));
         }
         if (own.isPresent() && own.get() != island) {
             Island mine = own.get();

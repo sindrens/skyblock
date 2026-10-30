@@ -144,7 +144,7 @@ public final class IslandStore {
         Map<UUID, Island> islands = new HashMap<>();
         List<Island> ordered = new ArrayList<>();
         for (Island island : Sql.query(c, "SELECT i.id, i.season_id, i.owner_uuid, i.type, i.slot_id, i.size_chunks, i.home_x, i.home_y, "
-                + "i.home_z, i.home_yaw, i.home_pitch, i.name, i.created_at, i.member_slots, i.locked, i.warp_slots, s.grid_x, s.grid_z FROM islands i "
+                + "i.home_z, i.home_yaw, i.home_pitch, i.name, i.created_at, i.member_slots, i.locked, i.warp_slots, i.browser_hidden, i.browser_hidden_note, s.grid_x, s.grid_z FROM islands i "
                 + "JOIN island_slots s ON s.id = i.slot_id WHERE i.deleted_at IS NULL ORDER BY i.created_at", rs -> island(rs, world))) {
             islands.put(island.id(), island);
             ordered.add(island);
@@ -224,6 +224,7 @@ public final class IslandStore {
         int slots = rs.getInt("member_slots");
         island.memberSlots(rs.wasNull() ? null : slots);
         island.locked(rs.getBoolean("locked"));
+        island.browserHidden(rs.getBoolean("browser_hidden"), rs.getString("browser_hidden_note"));
         int warps = rs.getInt("warp_slots");
         island.warpSlots(rs.wasNull() ? null : warps);
         return island;

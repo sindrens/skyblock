@@ -38,9 +38,9 @@ final class Showcase {
         }
     }
 
-    /** Browser tabs. */
+    /** Browser tabs. DISCOVER (owner answer 290) is the default: every island, random, favouring more playtime. */
     enum Sort {
-        VISITS, RATING, LIKES, NEWEST;
+        DISCOVER, VISITS, RATING, LIKES, NEWEST;
 
         String key() {
             return name().toLowerCase(java.util.Locale.ROOT);
@@ -63,6 +63,8 @@ final class Showcase {
             case VISITS -> list.sort(Comparator.comparingInt((Entry e) -> e.stats().visits()).reversed().thenComparing(newest));
             case LIKES -> list.sort(Comparator.comparingInt((Entry e) -> e.stats().likes()).reversed().thenComparing(newest));
             case NEWEST -> list.sort(newest);
+            // Random per open: callers use discover(); without playtimes it is a plain newest-first list.
+            case DISCOVER -> list.sort(newest);
             case RATING -> {
                 list.removeIf(e -> e.stats().ratingCount() < Math.max(1, minRatings));
                 list.sort(Comparator.comparingDouble((Entry e) -> e.stats().average()).reversed()
@@ -70,6 +72,26 @@ final class Showcase {
                         .thenComparing(newest));
             }
         }
+        return list;
+    }
+
+    /**
+     * Owner answer 290: every island in random order, islands with more playtime more likely near the top (weighted random
+     * order, Efraimidis-Spirakis: key = u^(1/w)). Weight = 1 + {@code factor} x ln(1 + playtime hours), so a new island
+     * still shows up and a 100-hour island is about 5.6x as likely to be ahead of it (factor 1). {@code factor} 0 = plain
+     * random.
+     */
+    static List<Entry> discover(List<Entry> entries, java.util.function.ToLongFunction<UUID> playtimeSeconds, double factor,
+                                java.util.random.RandomGenerator random) {
+        List<Entry> list = new ArrayList<>(entries);
+        Map<UUID, Double> keys = new java.util.HashMap<>();
+        for (Entry entry : list) {
+            double hours = Math.max(0, playtimeSeconds.applyAsLong(entry.islandId())) / 3600.0;
+            double weight = 1 + Math.max(0, factor) * Math.log1p(hours);
+            double u = Math.max(Double.MIN_VALUE, random.nextDouble());
+            keys.put(entry.islandId(), Math.pow(u, 1.0 / weight));
+        }
+        list.sort(Comparator.comparingDouble((Entry e) -> keys.get(e.islandId())).reversed());
         return list;
     }
 

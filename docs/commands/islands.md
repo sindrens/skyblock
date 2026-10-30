@@ -30,15 +30,15 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is invites` | ISL2: invites you received (click: Accept / Deny) and invites your island sent (click: cancel, Leader/Admin/Mod; confirm). Refreshes every 2 s | `skyblock.island` | ✅ |
 | `/is settings [setting] [on\|off\|value]` | ISL2: the island settings menu; with a setting name it changes it right away (no value: toggles flip, weather/time go to the next value). Who may change: the `settings` role permission (Leader + Admin by default); every member can look. Tab completes settings and, after one, its values | `skyblock.island` | ✅ |
 | `/is disband` | Leader only, and only while nobody else is a member (owner answer 141: `/is transfer` first, then `/is leave`); one confirm screen with a confirm button (owner answer 261, no typed word). The island is removed for good: coop players are told, everyone on it is sent to spawn, the slot is cleared and reused, and the island bank money is deleted (owner answer 263). A new island right away (no cooldown) | `skyblock.island` | ✅ |
-| `/is visit [player]` | No name: the **visit browser** (Most visited, Top rated, Most liked, Newest; click an island to visit). With a name (any member of that island, online or offline): teleport to that island's home after a safe-spot check and `teleport.yml → island-visit.warmup-seconds` (3 s; `/is warp`: `island-warp.*`). Your own island = home | `skyblock.island` | ✅ |
+| `/is visit [player]` | No name: the **visit browser** (Discover (default: every island, random, favouring more playtime), Most visited, Top rated, Most liked, Newest; click an island to visit). With a name (any member of that island, online or offline): teleport to that island's home after a safe-spot check, instantly (owner answer 285; 3 s `teleport.yml → danger.warmup-seconds` while combat-tagged or in a combat zone). No visitor limit (owner answer 291). Your own island = home | `skyblock.island` | ✅ |
 | `/is lock` / `/is unlock` | Leader/Mod: only members and coop players can enter a locked island; locking sends visitors on it to spawn. Locked islands are hidden in the browsers | `skyblock.island` | ✅ |
 | `/is expel <player>` | Leader/Mod: send a visitor on your island to spawn (tab: visitors on your island) | `skyblock.island` | ✅ |
 | `/is ban <player>` / `/is unban <player>` | Leader/Mod: banned players can't enter, teleport or pearl in (any teleport into the slot is refused); banned while inside = sent to spawn. Members must be kicked and coop players uncooped first. Max `visiting.max-bans` (100) | `skyblock.island` | ✅ |
 | `/is setwarp <name> [category]` | Leader/Mod: set a warp where you stand (inside the border, safe spot). Categories: `shops`, `farms`, `parkour`, `builds`, `other` (default). The same name again moves the warp. Max `warps.start-slots` (3) per island, sign warps included | `skyblock.island` | ✅ |
 | `/is delwarp <name>` | Leader/Mod: delete one of your warps | `skyblock.island` | ✅ |
 | `/is warp [player] [name]` | No name: the **warp browser** (public warps of every unlocked island, most visited first, one button per category). Player only: their warp, or their warp list when there are several. Player + name: that warp (private warps only for members) | `skyblock.island` | ✅ |
-| `/is rate <player> <1-5>` | Rate an island you visited: one rating per player per island per season, change it any time; never your own island | `skyblock.island` | ✅ |
-| `/is like <player>` | Like an island you visited: once per day per island (separate from ratings); never your own island | `skyblock.island` | ✅ |
+| `/is rate <player> <1-5>` | Rate an island you visited: one rating per player per island per season, change it any time; never your own island; needs 1 h playtime and at most 3 accounts from one address per island (owner answer 292) | `skyblock.island` | ✅ |
+| `/is like <player>` | Like an island you visited: once per day per island (separate from ratings); never your own island; same playtime and address rules as rating | `skyblock.island` | ✅ |
 | `/is bypass` | Staff: toggle ignoring island protection (build, containers, everything; also walk out of borders). Off by default and again on quit; every toggle is logged (`staff`: `island_bypass_on` / `island_bypass_off`) | `skyblock.island.bypass` (admin) | ✅ |
 
 Rules: one island per player (database-enforced), no creation or join cooldown after a leave, kick, disband, staff
@@ -138,6 +138,8 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
 | `/isadmin kick <player>` | Remove a member or coop player from their island (confirm). Leaders: `setowner` first or `delete` | `skyblock.island.admin.kick` (admin) | ✅ |
 | `/isadmin setowner <island> <member>` | Make a member the leader (confirm); the old leader becomes an Admin | `skyblock.island.admin.setowner` (admin) | ✅ |
 | `/isadmin reset <island>` | Remove the island and give its leader a new starter island right away (built now if online, else on their next `/is`); other members removed (confirm) | `skyblock.island.admin.reset` (admin) | ✅ |
+| `/isadmin hide <island> [note]` | Owner answer 293: hide an island from the visit browser (it can still be visited by name), with an optional note shown in `/isadmin info`. Logged `island_browser_hide` | `skyblock.island.admin.hide` (mod) | ✅ |
+| `/isadmin unhide <island>` | Show a hidden island in the visit browser again (tab completes hidden islands). Logged `island_browser_unhide` | `skyblock.island.admin.hide` (mod) | ✅ |
 | `/isadmin restore <player>` | Owner answer 251: the player's kick backups (chest menu, newest first: island, role, money, items saved or not, who kicked, state). Click → confirm → the profile joins the island again with its old role (once; slots and one island per profile apply, a refused restore stays open), its money is topped up to the amount at the kick (never taken away; ledger `island_kick_restore`) and the saved inventory + ender chest are given back only into an empty inventory and ender chest of that profile while it is online (else they wait; click again later). Tab completes players with open backups. Logged `isadmin_restore`, `island_kick_restore`, `island_kick_restore_items` | `skyblock.island.admin.restore` (admin) | ✅ |
 | `/isadmin bypass` | Same as `/is bypass` | `skyblock.island.bypass` (admin) | ✅ |
 | `/isadmin slots` | Grid overview GUI (spiral order): used (owner, members, size), clearing (progress), free; filter and reload buttons; click = teleport | `skyblock.island.admin.slots` (admin) | ✅ |
@@ -167,8 +169,13 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
   destroyed another way removes its warp the next time someone uses it).
 - **Ratings and likes:** `/is rate` 1-5 stars (one per player per island per season, changeable), `/is like` once per
   player per island per day (owner O7, per account). Both need a visit first (`visiting.require-visit`) and never work on
-  your own island; members are told about likes.
-- **Browsers** (6-row redesigned menus, paged, one plain click everywhere for Bedrock): visit browser tabs Most visited
+  your own island; members are told about likes. Owner answer 292: both need `visiting.vote-min-playtime-minutes` (60)
+  of playtime, and at most `visiting.vote-max-accounts-per-ip` (3) accounts from one address may rate (and, separately,
+  like) the same island per season; only a SHA-256 hash of the address is stored (V013 `ip_hash`). Changing your own
+  rating is always allowed.
+- **Browsers** (6-row redesigned menus, paged, one plain click everywhere for Bedrock): visit browser tabs Discover
+  (default, owner answer 290: every built, unlocked island that staff did not hide, in random order per open; weight
+  1 + `browser.discover-playtime-weight` x ln(1 + island playtime hours), so active islands show up more), Most visited
   (unique visitors per day over `browser.visits-days` = 7 days), Top rated (season average, at least
   `browser.min-ratings` = 3 ratings), Most liked (season), Newest. Totals are reloaded every `browser.refresh-seconds`
   (120 s) and updated at once for your own rating/like/visit. `/menu` → Warps opens the warp browser.

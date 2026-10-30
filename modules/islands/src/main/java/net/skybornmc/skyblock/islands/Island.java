@@ -54,6 +54,9 @@ public final class Island {
     private String ownerName;
     /** M2.4: locked = only members and coop players can enter. */
     private boolean locked;
+    /** Owner answer 293: hidden from the visit browser by staff (still visitable by name), with the staff note. */
+    private volatile boolean browserHidden;
+    private volatile String browserHiddenNote;
     /** M2.4: warp slots of this island ({@code null} = warps.start-slots). */
     private Integer warpSlots;
 
@@ -125,6 +128,20 @@ public final class Island {
 
     void locked(boolean locked) {
         this.locked = locked;
+    }
+
+    public boolean browserHidden() {
+        return browserHidden;
+    }
+
+    /** The staff note of a hidden island ({@code null} = none). */
+    public String browserHiddenNote() {
+        return browserHiddenNote;
+    }
+
+    void browserHidden(boolean hidden, String note) {
+        this.browserHidden = hidden;
+        this.browserHiddenNote = hidden ? note : null;
     }
 
     /** Warp slots stored on the island ({@code null} = warps.start-slots from islands.yml). */

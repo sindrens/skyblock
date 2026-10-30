@@ -146,7 +146,7 @@ final class IslandMenu extends Menu {
                 lines(IslandChatRules.canPickColors(role) ? "menu.chat-colors.lore-edit" : "menu.chat-colors.lore-view")),
                 click -> openChild(new ChatColorsMenu(module, islands, chat, island))));
         set(SLOT_VISIT, button(Material.FILLED_MAP, "menu.visit",
-                click -> openChild(new VisitMenu(module, islands, module.visits(), warps, Showcase.Sort.VISITS))));
+                click -> openChild(new VisitMenu(module, islands, module.visits(), warps, Showcase.Sort.DISCOVER))));
         set(SLOT_STATS, stats());
         set(SLOT_BANK, bank());
         set(SLOT_UPGRADES, comingSoon(Material.ANVIL, "menu.upgrades"));

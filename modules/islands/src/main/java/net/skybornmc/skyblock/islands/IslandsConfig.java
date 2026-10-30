@@ -269,6 +269,15 @@ public final class IslandsConfig extends ModuleConfig {
     @Setting(path = "visiting.require-visit", desc = "Players must have visited an island before they can rate or like it.")
     public boolean requireVisit = true;
 
+    @Setting(path = "visiting.vote-min-playtime-minutes", desc = "Owner answer 292: minutes of playtime before a player can rate or "
+            + "like islands (0 = off).", min = 0, max = 10_080)
+    public int voteMinPlaytimeMinutes = 60;
+
+    @Setting(path = "visiting.vote-max-accounts-per-ip", desc = "Owner answer 292: most accounts from the same address that may "
+            + "rate (and, separately, like) the same island this season (0 = no limit). Only a hash of the address is stored.",
+            min = 0, max = 100)
+    public int voteMaxAccountsPerIp = 3;
+
     @Setting(path = "visiting.timezone", desc = "Time zone of \"once per day\" (likes, unique visitors per day). Resets at local midnight.")
     public String timezone = "Europe/Oslo";
 
@@ -322,6 +331,11 @@ public final class IslandsConfig extends ModuleConfig {
     @Setting(path = "browser.min-ratings", desc = "Islands need at least this many ratings to show under \"Top rated\".", min = 1,
             max = 100)
     public int browserMinRatings = 3;
+
+    @Setting(path = "browser.discover-playtime-weight", desc = "Owner answer 290: the Discover tab lists every island in random "
+            + "order; islands with more playtime are more likely near the top (weight 1 + this x ln(1 + hours); 0 = plain random).",
+            min = 0, max = 10)
+    public double browserDiscoverPlaytimeWeight = 1.0;
 
     @Setting(path = "browser.refresh-seconds", desc = "How often visit, rating and like totals are reloaded from the database.",
             min = 10, max = 3600)

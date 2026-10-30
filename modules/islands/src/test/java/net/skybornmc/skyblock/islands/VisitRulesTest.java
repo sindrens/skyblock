@@ -8,6 +8,7 @@ import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Entry, ban, expel, rating and like rules of M2.4. */
@@ -107,5 +108,26 @@ class VisitRulesTest {
         assertEquals(0.0, VisitRules.average(0, 0));
         assertEquals(4.5, VisitRules.average(9, 2));
         assertEquals(3.3, VisitRules.average(10, 3));
+    }
+
+    @Test
+    void ownerAnswer292PlaytimeAndAddressLimit() {
+        assertTrue(VisitRules.tooNew(59 * 60_000L, 60));
+        assertFalse(VisitRules.tooNew(60 * 60_000L, 60), "exactly one hour is enough");
+        assertFalse(VisitRules.tooNew(0, 0), "0 = off");
+        assertFalse(VisitRules.ipLimitReached(1, 3), "the 2nd and 3rd account may vote");
+        assertTrue(VisitRules.ipLimitReached(2, 3), "a 4th account from the same address may not");
+        assertFalse(VisitRules.ipLimitReached(50, 0), "0 = no limit");
+        assertEquals(VisitRules.VoteCheck.IP_LIMIT, VisitRules.canRate(4, 5, null, true, true, null, 2, 3));
+        assertEquals(VisitRules.VoteCheck.OK, VisitRules.canRate(4, 5, null, true, true, 3, 2, 3), "changing your own rating is fine");
+        assertEquals(VisitRules.VoteCheck.NOT_VISITED, VisitRules.canRate(4, 5, null, false, true, null, 2, 3), "other checks first");
+        assertEquals(VisitRules.VoteCheck.IP_LIMIT, VisitRules.canLike(null, true, true, false, 2, 3));
+        assertEquals(VisitRules.VoteCheck.ALREADY, VisitRules.canLike(null, true, true, true, 2, 3));
+        assertEquals(VisitRules.VoteCheck.OK, VisitRules.canLike(null, true, true, false, 1, 3));
+        String hash = VisitRules.ipHash("1.2.3.4");
+        assertEquals(64, hash.length());
+        assertEquals(hash, VisitRules.ipHash(" 1.2.3.4 "));
+        assertFalse(hash.contains("1.2.3.4"), "never the address itself");
+        assertNull(VisitRules.ipHash(null));
     }
 }
