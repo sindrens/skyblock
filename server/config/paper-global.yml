@@ -30,10 +30,10 @@ anticheat:
           - minecraft:damage
           sanitize-count: true
 block-updates:
-  disable-chorus-plant-updates: false
-  disable-mushroom-block-updates: false
+  disable-chorus-plant-updates: true
+  disable-mushroom-block-updates: true
   disable-noteblock-updates: false
-  disable-tripwire-updates: false
+  disable-tripwire-updates: true
 chunk-loading-advanced:
   auto-config-send-distance: true
   player-max-concurrent-chunk-generates: 0
@@ -83,10 +83,10 @@ misc:
   compression-level: default
   enable-nether: false
   load-permissions-yml-before-plugins: true
-  max-joins-per-tick: 3
+  max-joins-per-tick: 2
   max-tracking-combat-entries: 10240
   prevent-negative-villager-demand: false
-  region-file-cache-size: 256
+  region-file-cache-size: 512
   strict-advancement-dimension-check: false
   use-alternative-luck-formula: false
   use-dimension-type-for-custom-spawners: false
@@ -103,8 +103,8 @@ packet-limiter:
       interval: 4.0
       max-packet-rate: 5.0
 player-auto-save:
-  max-per-tick: -1
-  rate: -1
+  max-per-tick: 10
+  rate: 600
 proxies:
   bungee-cord:
     online-mode: true
@@ -121,7 +121,7 @@ spam-limiter:
   recipe-spam-increment: 1
   recipe-spam-limit: 20
   tab-spam-increment: 1
-  tab-spam-limit: 500
+  tab-spam-limit: 200
 spark:
   enable-immediately: false
   enabled: true

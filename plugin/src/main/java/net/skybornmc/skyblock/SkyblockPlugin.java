@@ -235,6 +235,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.wardrobe.WardrobeModule(core));
         modules.register(new net.skybornmc.skyblock.trade.TradeModule(core));
         modules.register(new net.skybornmc.skyblock.shop.ShopModule(core));
+        // Island progression (Phase 5, M5.1 pillars): reads islands, skills, economy, stacking and profiles services (all
+        // optional); publishes ProgressionService. Before achievements, which will read it for island achievements.
+        modules.register(new net.skybornmc.skyblock.progression.ProgressionModule(core));
         // Last: reads skills, islands, wardrobe, tools, economy and cosmetics services (all optional).
         modules.register(new net.skybornmc.skyblock.achievements.AchievementsModule(core));
         // AFK pool (O10, RW3): reads economy, islands, skills, profiles and builds services (all optional).

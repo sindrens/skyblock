@@ -291,6 +291,12 @@ final class ProfileServiceImpl implements ProfileService, Listener {
         if (s != null) {
             return CompletableFuture.completedFuture(s.active);
         }
+        // QUICK1 (PERFORMANCE P-03): during pre-login the account was just loaded by this module (NORMAL priority), so
+        // later pre-login handlers (skills) get the active profile without a second database round trip.
+        ProfileStore.Account loading = loginLoads.get(player);
+        if (loading != null) {
+            return CompletableFuture.completedFuture(loading.active());
+        }
         return core.database().async(c -> store.activeProfile(c, player).orElse(player));
     }
 

@@ -1,0 +1,88 @@
+package net.skybornmc.skyblock.common.progression;
+
+import net.skybornmc.skyblock.common.audit.Actor;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.ToDoubleFunction;
+
+/**
+ * Island progression (Phase 5), published by the progression module: {@code core.services().optional(ProgressionService.class)}.
+ * M5.1 covers the pillars; the island level (M5.2), tasks, upgrades and masteries build on the same service later.
+ *
+ * <p><b>Pillar XP</b> comes from the <b>base</b> skill XP members earn (before rank, booster and personal boosts, RK20),
+ * plus island crops, island trees and spawner mobs killed by a player. Coop players and visitors give nothing (REVIEW A4);
+ * XP a member earned stays with the island (A5). Island boosts (the balance bonus and sources registered with
+ * {@link #islandXpBoost}) add up in one family, {@code ISLAND_XP}, capped at {@code pillars.yml → island-xp.cap-percent}.</p>
+ *
+ * <p>Curve: XP for the next level = {@code base × growth^level} (no cap), so five members earning five times the XP gain
+ * only {@code ln 5 / ln growth} levels more (team-size damping). Levels never go down within a season.</p>
+ *
+ * <p>Every method is for the main thread. Values come from memory (all islands of the season are loaded at start); an
+ * unknown island reads as level 0. Events: {@link PillarLevelUpEvent}, {@link PillarMilestoneEvent}.</p>
+ */
+public interface ProgressionService {
+
+    /** Pillars players see and that count for "all pillars" (Conquest only once {@code conquest.enabled} is on). */
+    List<Pillar> shownPillars();
+
+    default boolean shown(Pillar pillar) {
+        return shownPillars().contains(pillar);
+    }
+
+    /** True once the stored pillars were loaded (before that, levels read 0 and gains are kept until the load ends). */
+    boolean ready();
+
+    /** The pillar's level on the island (0 for unknown islands). */
+    int pillarLevel(UUID islandId, Pillar pillar);
+
+    /** Total pillar XP on the island this season. */
+    double pillarXp(UUID islandId, Pillar pillar);
+
+    /** Progress to the next pillar level, 0.0 to 1.0. */
+    double pillarProgress(UUID islandId, Pillar pillar);
+
+    /** Every pillar's level on the island (all five, hidden Conquest included). */
+    Map<Pillar, Integer> pillarLevels(UUID islandId);
+
+    /** The lowest level among the shown pillars (synergy milestones look at this). */
+    int lowestPillarLevel(UUID islandId);
+
+    /** Sum of the shown pillars' levels: island level source 1 (M5.2, 1 point per pillar level). */
+    int totalPillarLevels(UUID islandId);
+
+    /** Total XP needed to reach {@code level} from 0 on the pillar curve. */
+    double xpForPillarLevel(int level);
+
+    /** The level a total pillar XP amount gives. */
+    int pillarLevelFor(double totalXp);
+
+    /** Balance bonus of the island in percent (+2% per shown pillar within 10 levels of the highest, max +10%). */
+    double balanceBonusPercent(UUID islandId);
+
+    /** The whole ISLAND_XP family of the island after its cap, in percent (balance bonus + registered boosts). */
+    double islandXpBonusPercent(UUID islandId);
+
+    /** Synergy milestones (all shown pillars at that level) the island has reached this season. */
+    Set<Integer> milestonesReached(UUID islandId);
+
+    /** The configured synergy milestone levels, lowest first (default 10, 25, 40, 60). */
+    List<Integer> milestones();
+
+    /**
+     * Adds pillar XP for a source outside the skills (Conquest events, staff tools): the island's ISLAND_XP boosts are
+     * applied on top of {@code baseXp}. Level-ups fire {@link PillarLevelUpEvent}; staff actors are audited. Main thread.
+     *
+     * @param source short reason for logs, e.g. {@code "koth"}, {@code "staff"}
+     * @return the XP actually added (0 for unknown islands, non-positive amounts or a disabled module)
+     */
+    double addPillarXp(UUID islandId, Pillar pillar, double baseXp, String source, Actor actor);
+
+    /**
+     * Registers (or with {@code null} removes) a source of the island ISLAND_XP family, e.g. island achievements
+     * ("Island XP +5%"): percent per island id. Values add up with the balance bonus, then the family cap applies.
+     */
+    void islandXpBoost(String id, ToDoubleFunction<UUID> percentByIsland);
+}

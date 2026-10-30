@@ -276,6 +276,11 @@ public final class EconomyConfig extends ModuleConfig {
             + "(armor and the offhand are never touched).")
     public boolean sellChestKeepHotbarTools = true;
 
+    @Setting(path = "sell.skip-hotbar-default", desc = "QUICK1 sell protection: the default of the /settings switch "
+            + "\"Sell all skips hotbar\" (/sell all and \"Sell inventory\" leave hotbar slots 1-9 alone; /sell hand and "
+            + "putting items into the sell chest by hand still sell them).")
+    public boolean sellSkipHotbarDefault = true;
+
     @Setting(desc = "Icon per currency in menus: currency:MATERIAL.")
     public List<String> icons = List.of("money:GOLD_INGOT", "crystals:PRISMARINE_CRYSTALS", "gems:EMERALD", "shards:PRISMARINE_SHARD");
 

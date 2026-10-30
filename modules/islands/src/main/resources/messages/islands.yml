@@ -1809,3 +1809,7 @@ stats:
   admin:
     reset-confirm: "<prefix><c:text>Delete all stats of <c:value><input></c:value>'s island? <click:run_command:'/<command> confirm'><hover:show_text:'<c:text>Reset the stats (/<command> confirm)'><c:action>[Confirm]</c:action></hover></click> <c:muted>(within <time>)"
     reset-done: "<prefix><c:success><sym:check></c:success> <c:text>Stats of <c:value><island></c:value> reset."
+
+# QUICK1 island auto-pickup: shown (rate-limited) when the inventory is full and drops stay on the ground.
+auto-pickup:
+  full: "<c:warning><sym:dot></c:warning> <c:text>Inventory full: drops stay on the ground. <c:muted>/sell</c:muted>"

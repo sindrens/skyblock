@@ -65,7 +65,7 @@ chunks:
   max-auto-save-chunks-per-tick: 24
   min-chunk-unload-count: 50
   min-chunk-unload-fraction: 0.05
-  prevent-moving-into-unloaded-chunks: false
+  prevent-moving-into-unloaded-chunks: true
 collisions:
   allow-player-cramming-damage: false
   allow-vehicle-collisions: true
@@ -268,11 +268,11 @@ fishing-time-range:
   minimum: 100
 fixes:
   disable-unloaded-chunk-enderpearl-exploit: true
-  falling-block-height-nerf: disabled
+  falling-block-height-nerf: 320
   fix-items-merging-through-walls: true
-  prevent-tnt-from-moving-in-water: false
+  prevent-tnt-from-moving-in-water: true
   split-overstacked-loot: true
-  tnt-entity-height-nerf: disabled
+  tnt-entity-height-nerf: 320
 hopper:
   cooldown-when-full: true
   disable-move-event: false
@@ -305,7 +305,7 @@ misc:
   max-leash-distance: default
   redstone-implementation: ALTERNATE_CURRENT
   show-sign-click-command-failure-msgs-to-player: false
-  update-pathfinding-on-block-update: true
+  update-pathfinding-on-block-update: false
 scoreboards:
   allow-non-player-entities-on-scoreboards: true
   use-vanilla-world-scoreboard-name-coloring: false
@@ -314,6 +314,7 @@ spawn:
 tick-rates:
   behavior:
     villager:
+      acquirepoi: 60
       validatenearbypoi: 60
   container-update: 1
   dry-farmland: 1
@@ -321,7 +322,9 @@ tick-rates:
   mob-spawner: 2
   sensor:
     villager:
+      nearestbedsensor: 80
       secondarypoisensor: 80
+      villagerbabiessensor: 40
   wet-farmland: 1
 unsupported-settings:
   disable-world-ticking-when-empty: false

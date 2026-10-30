@@ -61,7 +61,16 @@ Removed the `icanhasbukkit` alias.
 | `collisions.enable-player-collisions` | false | No pushing at spawn/KOTH crowds, less CPU |
 | `messages.no-permission` | friendly MiniMessage text | Consistent with UI_STYLE.md |
 | `misc.enable-nether` | false | Vanilla Nether disabled (owner plans a custom use later) |
-| `misc.max-joins-per-tick` | 3 | Smooths join spikes after restarts |
+| `misc.max-joins-per-tick` | 2 | Smooths join spikes after restarts (QUICK1: 3 -> 2, PERFORMANCE P-03) |
+| `misc.region-file-cache-size` | 512 | About 300 island region files stay open (QUICK1, P-27) |
+| `player-auto-save.rate` / `max-per-tick` | 600 ticks / 10 | Player data saved every 30 s, spread over ticks: shrinks the crash-rollback window (QUICK1, SECURITY F-01) |
+| `block-updates.disable-tripwire-updates` | true | Stops string/tripwire-hook dupers (QUICK1). `skip-tripwire-hook-placement-validation` stays false |
+| `block-updates.disable-chorus-plant-updates` / `disable-mushroom-block-updates` | true | End is off, mushroom block updates are a lag source (QUICK1) |
+| `spam-limiter.tab-spam-limit` | 200 | Tab-complete spam limit (was 500); normal tab use never gets near it (QUICK1) |
+
+Kept on purpose (QUICK1): `item-validation` book/lore limits stay at the defaults (island notes use books; our own gradient lores
+can exceed 1,024 bytes per line); `chunk-system` threads stay automatic and JVM flags in `start.sh` are unchanged until the
+production hardware is known (PERFORMANCE P-04).
 
 spark is built into Paper. Use `/spark profiler` and `/spark tps`.
 
@@ -79,6 +88,12 @@ spark is built into Paper. Use `/spark profiler` and `/spark tps`.
 | `environment.optimize-explosions` | true | Performance |
 | `fixes.disable-unloaded-chunk-enderpearl-exploit` | true | Exploit fix |
 | `fixes.fix-items-merging-through-walls` | true | Exploit fix |
+| `fixes.falling-block-height-nerf` / `tnt-entity-height-nerf` | 320 | Removes sand/gravel/TNT entities launched above the build limit (duper and cannon tricks). Normal falling blocks are never higher (QUICK1) |
+| `fixes.prevent-tnt-from-moving-in-water` | true | Stops water-carried TNT dupers and cannons (QUICK1) |
+| `chunks.prevent-moving-into-unloaded-chunks` | true | Players (boats, minecarts) can't ride into unloaded chunks (QUICK1) |
+| `misc.update-pathfinding-on-block-update` | false | Mobs don't re-path on every block change: lag-machine defence, cheaper farms (QUICK1) |
+| `tick-rates.behavior.villager.acquirepoi` | 60 | Villagers look for job sites/beds every 3 s instead of every tick (QUICK1; trading unaffected) |
+| `tick-rates.sensor.villager.nearestbedsensor` / `villagerbabiessensor` | 80 / 40 | Fewer villager brain scans (QUICK1) |
 | `hopper.ignore-occluding-blocks` | true | Performance |
 | `misc.redstone-implementation` | ALTERNATE_CURRENT | Much faster redstone, same behavior for normal builds |
 | `tick-rates.behavior.villager.validatenearbypoi` | 60 | Villager performance |

@@ -85,6 +85,15 @@ public final class EssentialsConfig extends ModuleConfig {
             level = Setting.Level.OWNER)
     public boolean trackStaffBlocks = true;
 
+    // ------------------------------------------------------------------ QUICK1 drop guard (QoL #10a)
+
+    @Setting(path = "drop-guard.enabled", desc = "Custom and unique items (tools, books, notes, keys, spawners) need a second "
+            + "drop (or sneak + drop) before they leave your inventory. Players can turn it off in /settings.")
+    public boolean dropGuardEnabled = true;
+
+    @Setting(path = "drop-guard.confirm-seconds", desc = "Seconds in which dropping the same item again throws it.", min = 1, max = 30)
+    public int dropGuardConfirmSeconds = 3;
+
     // ------------------------------------------------------------------ M1.1 menu item
 
 

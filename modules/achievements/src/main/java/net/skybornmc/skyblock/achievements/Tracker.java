@@ -76,6 +76,10 @@ final class Tracker implements Listener {
     private final Map<UUID, ProfileProgress> online = new HashMap<>();
     private final List<Scheduler.Task> tasks = new ArrayList<>();
     private CompletableFuture<?> chain = CompletableFuture.completedFuture(null);
+    /** Seconds counted by the gauge slice timer (main thread). */
+    private long gaugeTick;
+    /** Join gauge polls are spread over this many ticks. */
+    private static final int JOIN_SPREAD_TICKS = 20;
     private Runnable stopAudit;
 
     Tracker(AchievementsModule module) {
@@ -110,8 +114,10 @@ final class Tracker implements Listener {
         Scheduler s = core.scheduler();
         long save = 20L * config().saveIntervalSeconds;
         tasks.add(s.repeat("achievements-save", save, save, this::saveAll));
-        long gauges = 20L * config().gaugePollSeconds;
-        tasks.add(s.repeat("achievements-gauges", 40L, gauges, this::pollGauges));
+        // QUICK1 (P-12/P-20): every second one slice of the players, so each player is still polled every
+        // gauge-poll-seconds but never all of them on the same tick.
+        gaugeTick = 0;
+        tasks.add(s.repeat("achievements-gauges", 40L, 20L, this::pollGaugeSlice));
         long islands = 20L * config().islandPollSeconds;
         tasks.add(s.repeat("achievements-islands", 200L, islands, this::pollIslands));
         tasks.add(s.repeat("achievements-playtime", 1200L, 1200L, this::playtimeTick));
@@ -212,9 +218,14 @@ final class Tracker implements Listener {
             p.load(loaded.values(), loaded.unlocks());
             Player online = Bukkit.getPlayer(uuid);
             handle(online, Progression.evaluateAll(p, registry()));
-            if (online != null) {
-                pollGauges(online, p);
-            }
+            // QUICK1 (PERFORMANCE "achievements-load"): the gauge poll (skills, wardrobe, balance, hotbar tools) runs a
+            // little later, spread by player, so a join storm does not stack it on the load tick.
+            core.scheduler().later("achievements-join-gauges", 1L + GaugeBuckets.bucket(uuid, JOIN_SPREAD_TICKS), () -> {
+                Player now = Bukkit.getPlayer(uuid);
+                if (now != null && this.online.get(uuid) == p && p.loaded()) {
+                    pollGauges(now, p);
+                }
+            });
         }));
     }
 
@@ -363,8 +374,14 @@ final class Tracker implements Listener {
 
     // ------------------------------------------------------------------ gauges
 
-    private void pollGauges() {
+    /** One slice per second: the players whose bucket matches this second. */
+    private void pollGaugeSlice() {
+        int slices = Math.max(1, config().gaugePollSeconds);
+        int slice = (int) (gaugeTick++ % slices);
         for (Player player : Bukkit.getOnlinePlayers()) {
+            if (GaugeBuckets.bucket(player.getUniqueId(), slices) != slice) {
+                continue;
+            }
             ProfileProgress p = online.get(player.getUniqueId());
             if (p != null && p.loaded()) {
                 pollGauges(player, p);
@@ -494,29 +511,31 @@ final class Tracker implements Listener {
         }
         long now = System.currentTimeMillis();
         for (Progression.Unlock u : unlocks) {
-            queue(c -> store.unlock(c, u.profileKey(), u.def().id(), u.tier(), u.owner(), now)).whenComplete((added, error) ->
-                    core.scheduler().main("achievements-unlock", () -> {
-                        if (error != null) {
-                            core.plugin().getLogger().warning("Achievements: could not store " + u.def().id() + " tier " + u.tier()
-                                    + " for " + u.profileKey() + ": " + Database.cause(error).getMessage());
-                            return;
-                        }
-                        Map<String, Object> details = new LinkedHashMap<>();
-                        details.put("achievement", u.def().id());
-                        details.put("tier", u.tier());
-                        details.put("tiers", u.def().tiers());
-                        details.put("profile", u.profileKey().toString());
-                        details.put("value", progressValue(u));
-                        details.put("new", added);
-                        if (u.title() != null) {
-                            details.put("title", u.title());
-                        }
-                        core.audit().logPlayer(AuditCategory.ITEM, "achievement_unlock", Actor.system(AchievementsModule.ID), u.owner(),
-                                null, null, null, details);
-                        if (u.title() != null) {
-                            grantTitle(u);
-                        }
-                    }));
+            long value = progressValue(u); // main thread (the online map); the rest runs where the write finished
+            queue(c -> store.unlock(c, u.profileKey(), u.def().id(), u.tier(), u.owner(), now)).whenComplete((added, error) -> {
+                // QUICK1 (PERFORMANCE "achievements-unlock"): the audit log is thread-safe and never blocks, so the row
+                // is written from the database thread; only a reward title hops to the main thread.
+                if (error != null) {
+                    core.plugin().getLogger().warning("Achievements: could not store " + u.def().id() + " tier " + u.tier()
+                            + " for " + u.profileKey() + ": " + Database.cause(error).getMessage());
+                    return;
+                }
+                Map<String, Object> details = new LinkedHashMap<>();
+                details.put("achievement", u.def().id());
+                details.put("tier", u.tier());
+                details.put("tiers", u.def().tiers());
+                details.put("profile", u.profileKey().toString());
+                details.put("value", value);
+                details.put("new", added);
+                if (u.title() != null) {
+                    details.put("title", u.title());
+                }
+                core.audit().logPlayer(AuditCategory.ITEM, "achievement_unlock", Actor.system(AchievementsModule.ID), u.owner(),
+                        null, null, null, details);
+                if (u.title() != null) {
+                    core.scheduler().main("achievements-unlock", () -> grantTitle(u));
+                }
+            });
         }
         if (player != null && player.isOnline()) {
             module.toasts().show(player, unlocks);

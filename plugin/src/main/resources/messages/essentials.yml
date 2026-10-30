@@ -245,3 +245,7 @@ setspawn:
 protection:
   no-drop: "<c:muted>You can't drop items here.</c:muted>"
   void: "<c:text>Caught you! Back to spawn.</c:text>"
+
+# QUICK1 drop guard: the first drop of a custom/unique item is refused (second drop or sneak + drop throws it).
+drop-guard:
+  ask: "<prefix><c:warning><sym:cross></c:warning> <c:text>Drop <item> <c:text>again within <c:value><seconds>s</c:value> to throw it away (or sneak + drop). <c:muted>/settings</c:muted>"

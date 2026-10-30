@@ -556,10 +556,14 @@ public final class ChatModule implements SkyblockModule, Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onChatRender(AsyncChatEvent event) {
         Player source = event.getPlayer();
+        // QUICK1 (PERFORMANCE P-05): the name with its hover card is built once per viewer kind (Java / Bedrock) per
+        // message, not once per viewer. The renderer runs once per viewer, possibly from several threads.
+        Map<Boolean, Component> names = new java.util.concurrent.ConcurrentHashMap<>(2);
         event.renderer((player, sourceDisplayName, message, viewer) -> {
-            Component name = display.name(player)
+            boolean bedrockViewer = viewer instanceof Player v && core.bedrock().isBedrock(v.getUniqueId());
+            Component name = names.computeIfAbsent(bedrockViewer, b -> display.name(player)
                     .hoverEvent(HoverEvent.showText(hover(viewer, player)))
-                    .clickEvent(ClickEvent.suggestCommand("/msg " + player.getName() + " "));
+                    .clickEvent(ClickEvent.suggestCommand("/msg " + player.getName() + " ")));
             Component body = message;
             Player target = viewer instanceof Player t ? t : null;
             if (target != null && !setting(target.getUniqueId(), SETTING_COLORS, true)) {
@@ -604,11 +608,32 @@ public final class ChatModule implements SkyblockModule, Listener {
     }
 
     static boolean mentions(String text, String name) {
-        return Pattern.compile("(?i)(?<![\\w])@?" + Pattern.quote(name) + "(?![\\w])").matcher(text).find();
+        return mentionPattern(name).matcher(text).find();
+    }
+
+    /** QUICK1 (P-05): mention patterns are compiled once per name (dropped on quit), not per message and viewer. */
+    private static final Map<String, Pattern> MENTION_PATTERNS = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Bounded: names of players who never quit cleanly can't grow the map forever. */
+    static final int MENTION_PATTERN_LIMIT = 4096;
+
+    static Pattern mentionPattern(String name) {
+        Pattern cached = MENTION_PATTERNS.get(name);
+        if (cached != null) {
+            return cached;
+        }
+        if (MENTION_PATTERNS.size() >= MENTION_PATTERN_LIMIT) {
+            MENTION_PATTERNS.clear();
+        }
+        return MENTION_PATTERNS.computeIfAbsent(name,
+                n -> Pattern.compile("(?i)(?<![\\w])@?" + Pattern.quote(n) + "(?![\\w])"));
+    }
+
+    static void forgetMentionPattern(String name) {
+        MENTION_PATTERNS.remove(name);
     }
 
     private Component highlight(Player target, Component body) {
-        Pattern pattern = Pattern.compile("(?i)(?<![\\w])@?" + Pattern.quote(target.getName()) + "(?![\\w])");
+        Pattern pattern = mentionPattern(target.getName());
         Component styled = msg.component(target, "mention", Msg.p("name", target.getName()));
         return body.replaceText(TextReplacementConfig.builder().match(pattern).replacement(styled).build());
     }
@@ -638,6 +663,7 @@ public final class ChatModule implements SkyblockModule, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         UUID id = event.getPlayer().getUniqueId();
+        forgetMentionPattern(event.getPlayer().getName());
         recent.remove(id);
         lastKey.remove(id);
         lastKeyAt.remove(id);

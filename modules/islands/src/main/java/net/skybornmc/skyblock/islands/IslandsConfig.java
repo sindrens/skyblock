@@ -441,6 +441,18 @@ public final class IslandsConfig extends ModuleConfig {
     @Setting(path = "flags.weather.thunder-volume", desc = "Volume of the storm thunder (0.1-2).", min = 0.1, max = 2)
     public double stormThunderVolume = 0.6;
 
+    @Setting(path = "auto-pickup.enabled", desc = "QUICK1 (owner answer O15): blocks a member breaks on their own island go "
+            + "straight into their inventory. What does not fit drops on the ground as usual (never to /box, so a full "
+            + "inventory can't flood the box). Players switch it in /settings.")
+    public boolean autoPickupEnabled = true;
+
+    @Setting(path = "auto-pickup.default", desc = "Default of the /settings switch \"Island auto-pickup\" for players who never changed it.")
+    public boolean autoPickupDefault = true;
+
+    @Setting(path = "auto-pickup.full-hint-seconds", desc = "At most one \"inventory full\" action bar per this many seconds "
+            + "while auto-pickup drops items on the ground. 0 = never.", min = 0, max = 600)
+    public int autoPickupFullHintSeconds = 10;
+
     @Setting(path = "fly.check-interval-ticks", desc = "How often island fly is re-checked for players in the islands world "
             + "(permission, role, settings changes). Crossing the border is checked right away.", min = 5, max = 200)
     public int flyCheckTicks = 20;

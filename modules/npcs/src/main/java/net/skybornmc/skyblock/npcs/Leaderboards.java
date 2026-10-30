@@ -99,8 +99,8 @@ final class Leaderboards {
     }
 
     /**
-     * Reads one source off the main thread (the services' database futures), then formats it on the main thread
-     * (message parsing, island names).
+     * Reads one source off the main thread (the services' database futures). Player boards are formatted right there;
+     * island boards on the main thread (island names come from the islands service).
      */
     private CompletableFuture<List<Row>> read(BoardSource source) {
         int size = module.config().size;
@@ -108,14 +108,14 @@ final class Leaderboards {
         Scheduler scheduler = module.core().scheduler();
         return switch (source) {
             case BoardSource.None none -> CompletableFuture.completedFuture(List.of());
+            // QUICK1 (PERFORMANCE "npcs:board-skill"): player boards only parse messages (thread-safe, no world access),
+            // so they are formatted on the database thread; nothing of them runs on the main thread any more.
             case BoardSource.Money m -> services.optional(EconomyService.class)
-                    .map(eco -> eco.top(m.currency(), size).thenCompose(list -> scheduler.supplyMain("npcs:board-money",
-                            () -> players(list, v -> money(eco, m.currency(), v)))))
+                    .map(eco -> eco.top(m.currency(), size).thenApply(list -> players(list, v -> money(eco, m.currency(), v))))
                     .orElse(CompletableFuture.completedFuture(List.of()));
             case BoardSource.Skill s -> services.optional(SkillService.class)
-                    .map(sk -> sk.top(s.skill(), size).thenCompose(list -> scheduler.supplyMain("npcs:board-skill",
-                            () -> players(list, xp -> module.text("leaderboard.value.skill",
-                                    Msg.number("level", sk.levelFor(xp)), Msg.number("xp", xp))))))
+                    .map(sk -> sk.top(s.skill(), size).thenApply(list -> players(list, xp -> module.text("leaderboard.value.skill",
+                            Msg.number("level", sk.levelFor(xp)), Msg.number("xp", xp)))))
                     .orElse(CompletableFuture.completedFuture(List.of()));
             case BoardSource.Island i -> services.optional(IslandStatsService.class)
                     .map(st -> st.top(i.stat(), i.period(), i.board(), size)

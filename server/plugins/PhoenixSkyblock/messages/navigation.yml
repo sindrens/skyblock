@@ -137,6 +137,9 @@ settings:
     sounds:
       name: "<c:ember><bold>Sounds"
       lore: ["<c:text>Menu and event sounds."]
+    gameplay:
+      name: "<c:ember><bold>Gameplay"
+      lore: ["<c:text>Pickup, dropping and selling."]
   empty:
     name: "<c:muted>Nothing here yet"
     lore: ["<c:muted>New settings appear here as", "<c:muted>features arrive."]
@@ -189,6 +192,15 @@ settings:
     event-sounds:
       name: "<c:value>Event sounds"
       lore: ["<c:text>Sounds for events, bosses", "<c:text>and announcements."]
+    auto-pickup:
+      name: "<c:value>Island auto-pickup"
+      lore: ["<c:text>Blocks you break on your own", "<c:text>island go into your inventory."]
+    drop-guard:
+      name: "<c:value>Drop guard"
+      lore: ["<c:text>Ask again before you drop a", "<c:text>tool, book, note or spawner."]
+    sell-skip-hotbar:
+      name: "<c:value>Sell all skips hotbar"
+      lore: ["<c:text>/sell all and Sell inventory", "<c:text>leave your hotbar alone."]
   changed-on: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is <c:value>on</c:value>."
   changed-off: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is <c:value>off</c:value>."
   unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No setting <c:value><setting></c:value>. Press Tab to see them all."

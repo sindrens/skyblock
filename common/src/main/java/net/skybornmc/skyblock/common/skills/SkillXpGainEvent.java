@@ -9,6 +9,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * A player is about to get skill XP (main thread). Change {@link #setAmount} for boosters, perks and the island XP
  * Boost upgrade; cancel to refuse. Listen at MONITOR (not cancelled) to feed other systems, e.g. island pillars (Phase 5).
+ *
+ * <p>{@link #getBaseAmount()} keeps the amount the XP source asked for, before any listener changed it: island pillars
+ * (M5.1, RK20) count only this base XP, so rank, booster and personal enchant/set boosts never push the island.</p>
  */
 public final class SkillXpGainEvent extends PlayerEvent implements Cancellable {
 
@@ -16,6 +19,7 @@ public final class SkillXpGainEvent extends PlayerEvent implements Cancellable {
 
     private final SkillType skill;
     private final String source;
+    private final double baseAmount;
     private double amount;
     private boolean cancelled;
 
@@ -23,7 +27,13 @@ public final class SkillXpGainEvent extends PlayerEvent implements Cancellable {
         super(player);
         this.skill = skill;
         this.amount = amount;
+        this.baseAmount = Double.isNaN(amount) ? 0 : Math.max(0, amount);
         this.source = source;
+    }
+
+    /** The XP the source asked for, before listeners changed {@link #getAmount()} (never negative). */
+    public double getBaseAmount() {
+        return baseAmount;
     }
 
     public SkillType getSkill() {
