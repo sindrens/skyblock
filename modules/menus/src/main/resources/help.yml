@@ -142,6 +142,12 @@ topics:
           - "<c:text>previous screen. <c:error>✘</c:error> <c:text>closes the menu."
           - "<c:info>?</c:info> <c:text>explains the screen, the book opens help."
           - "<c:text>Items can never be taken out of a menu."
+      - title: "<c:value>Warps"
+        lines:
+          - "<c:text>The <c:flame>Warps</c:flame> <c:text>button takes you to spawn,"
+          - "<c:text>the market, the crates, the Depths and"
+          - "<c:text>more in one click. Player warps are"
+          - "<c:text>in there too."
 
   help:
     icon: knowledge_book

@@ -28,6 +28,7 @@ public final class Nav {
     final SettingsRegistry settings;
     volatile HubLayout hub = new HubLayout(List.of());
     volatile HubLayout staff = new HubLayout(List.of());
+    volatile WarpLayout warps = new WarpLayout(List.of());
     volatile HelpBook help = HelpBook.empty();
 
     Nav(Core core, SettingsRegistry settings) {

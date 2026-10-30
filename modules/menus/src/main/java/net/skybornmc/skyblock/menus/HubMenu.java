@@ -82,6 +82,7 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
         switch (entry.command().strip().toLowerCase(Locale.ROOT)) {
             case "settings" -> openChild(new SettingsMenu(nav));
             case "help" -> openChild(new HelpMenu(nav));
+            case HubWarpsMigration.WARPS -> openChild(new WarpsMenu(nav));
             default -> {
                 player.closeInventory();
                 player.performCommand(entry.command().strip());

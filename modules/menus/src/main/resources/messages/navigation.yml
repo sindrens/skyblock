@@ -81,7 +81,7 @@ hub:
       lore: ["<c:text>Companions that level up", "<c:text>and help you grind."]
     warps:
       name: "<c:flame><bold>Warps"
-      lore: ["<c:text>Visit the best islands and", "<c:text>shops of other players."]
+      lore: ["<c:text>Spawn, crates, the Depths", "<c:text>and player warps."]
     collection:
       name: "<c:flame><bold>Collection"
       lore: ["<c:text>Everything you've found,", "<c:text>with rewards for milestones."]
@@ -118,6 +118,45 @@ hub:
     website:
       name: "<c:flame><bold>Website"
       lore: ["<c:text>skybornmc.net"]
+
+# /menu → Warps (UX3). Places: menu.yml → warps. <name> in fallback-name = the entry id when it has no texts here.
+warps:
+  title: "Warps"
+  info:
+    - "<c:text>Places at spawn and beyond."
+    - "<c:text>Click one to go there."
+  action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go there"]
+  fallback-name: "<c:flame><bold><name>"
+  gone: "<prefix><c:error><sym:cross></c:error> <c:text>That place is not there right now. Try again later."
+  empty:
+    name: "<c:muted>No warps yet"
+    lore: ["<c:text>Places appear here once", "<c:text>they are built."]
+  entries:
+    spawn:
+      name: "<c:flame><bold>Spawn"
+      lore: ["<c:text>The courtyard at spawn."]
+    market:
+      name: "<c:flame><bold>Market Square"
+      lore: ["<c:text>Shop, Sell, Auction House", "<c:text>and the Bank."]
+    crate-yard:
+      name: "<c:flame><bold>Crate Yard"
+      lore: ["<c:text>Open your crates."]
+    forge:
+      name: "<c:flame><bold>Forge Quarter"
+      lore: ["<c:text>Blacksmith and Enchanter."]
+    tavern:
+      name: "<c:flame><bold>Tavern"
+      lore: ["<c:text>Quests, rewards and votes."]
+    hall-of-heroes:
+      name: "<c:flame><bold>Hall of Heroes"
+      lore: ["<c:text>The leaderboards."]
+    depths:
+      name: "<c:flame><bold>The Depths"
+      lore: ["<c:text>The Gate: mine, chop", "<c:text>and fight from here."]
+    island-warps:
+      name: "<c:flame><bold>Player Warps"
+      lore: ["<c:text>Visit the best islands and", "<c:text>shops of other players."]
+      action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to browse"]
 
 settings:
   title: "Settings"

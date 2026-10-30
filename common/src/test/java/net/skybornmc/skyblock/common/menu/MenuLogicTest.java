@@ -91,6 +91,14 @@ class MenuLogicTest {
         assertEquals("Short", MenuTitles.shorten("Short", 10));
     }
 
+    /** UX3: an empty title is never sent (Bedrock shows "Large Chest"); the fallback title is used instead. */
+    @Test
+    void blankTitlesAreDetected() {
+        assertTrue(MenuTitles.blank(java.util.List.of()));
+        assertTrue(MenuTitles.blank(java.util.List.of("", "  ")));
+        assertFalse(MenuTitles.blank(java.util.List.of("", "Menu")));
+    }
+
     @Test
     void headSourcesAreRecognised() {
         assertTrue(MenuHeads.isPlayerName("MHF_ArrowLeft"));

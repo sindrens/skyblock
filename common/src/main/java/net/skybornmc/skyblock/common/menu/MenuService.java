@@ -260,6 +260,11 @@ public final class MenuService implements Listener {
         Component end = suffix == null ? Component.empty() : suffix;
         int fixed = plain.serialize(text(viewer, "title.format", Msg.c("crumbs", Component.empty()), Msg.c("suffix", end))).length();
         List<String> plainCrumbs = crumbs.stream().map(plain::serialize).toList();
+        if (MenuTitles.blank(plainCrumbs)) {
+            // A missing or empty title key: never send an empty chest title (Bedrock then shows "Large Chest", UX3).
+            crumbs = List.of(text(viewer, "title.fallback"));
+            plainCrumbs = crumbs.stream().map(plain::serialize).toList();
+        }
         int max = config.titleMaxLength;
         int first = MenuTitles.firstKept(plainCrumbs, fixed, plain.serialize(separator).length(), max);
         Component joined = Component.empty();

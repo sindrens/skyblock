@@ -22,6 +22,11 @@ public final class MenusConfig extends ModuleConfig {
             min = 0, max = 300)
     public int menuItemCheckSeconds = 5;
 
+    @Setting(path = "menu-item.inventory-open-delay-ticks", desc = "Clicking the menu item inside your own inventory first "
+            + "closes the inventory, then opens /menu this many ticks later (UX3: Bedrock showed 'Large Chest' instead of the "
+            + "title when the menu opened over the open inventory).", min = 1, max = 20)
+    public int menuItemInventoryDelayTicks = 3;
+
     @Setting(path = "settings.ui-sound-keys", desc = "Sounds (sounds.yml keys) that count as menu sounds wherever they play; "
             + "players who turn 'Menu sounds' off in /settings don't hear them. Every sound a menu plays is muted too.")
     public List<String> uiSoundKeys = List.of("click", "menu-open", "menu-close", "page");

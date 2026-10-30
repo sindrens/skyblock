@@ -12,6 +12,8 @@ title:
   format: "<c:brand><sym:bullet></c:brand> <#3F3F3F><crumbs></#3F3F3F><suffix>"
   separator: " <#8B8B8B>»</#8B8B8B> "
   page: " <#8B8B8B>(<page>/<pages>)</#8B8B8B>"
+  # Used when a menu's own title text is missing or empty (an empty chest title shows "Large Chest" on Bedrock).
+  fallback: "Phoenix Skyblock"
 
 frame:
   back:

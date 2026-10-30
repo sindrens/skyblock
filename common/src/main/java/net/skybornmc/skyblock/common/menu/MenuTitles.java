@@ -35,6 +35,11 @@ final class MenuTitles {
         return total;
     }
 
+    /** True if there is no visible crumb text at all (no crumbs, or only empty/blank ones). */
+    static boolean blank(List<String> crumbs) {
+        return crumbs.stream().allMatch(c -> c == null || c.isBlank());
+    }
+
     /** Shortens {@code text} to {@code max} characters, ending with ".." when cut. */
     static String shorten(String text, int max) {
         if (text.length() <= max) {

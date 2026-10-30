@@ -327,8 +327,15 @@ final class MenuItem implements Listener {
                     });
                 }
                 if (is(event.getCurrentItem()) && event.getView().getTopInventory().getHolder() == player) {
-                    // Clicking it in your own inventory opens the menu too.
-                    Bukkit.getScheduler().runTask(nav.core.plugin(), () -> player.performCommand("menu"));
+                    // Clicking it in your own inventory opens the menu too. Close the inventory first and open a few
+                    // ticks later: opened straight over the player's own inventory, Geyser showed the chest's default
+                    // name ("Large Chest") instead of the menu title on Bedrock (UX3).
+                    Bukkit.getScheduler().runTask(nav.core.plugin(), () -> player.closeInventory());
+                    Bukkit.getScheduler().runTaskLater(nav.core.plugin(), () -> {
+                        if (player.isOnline()) {
+                            player.performCommand("menu");
+                        }
+                    }, Math.max(1, config.menuItemInventoryDelayTicks));
                 }
             }
         }

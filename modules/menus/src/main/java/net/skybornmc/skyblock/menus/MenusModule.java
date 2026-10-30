@@ -104,8 +104,17 @@ public final class MenusModule implements SkyblockModule {
     private void loadFiles() {
         YamlConfiguration hub = YamlFiles.load(core.plugin(), "menu.yml", this::problem);
         if (hub != null) {
+            if (HubWarpsMigration.apply(hub)) {
+                try {
+                    hub.save(new java.io.File(core.plugin().getDataFolder(), "menu.yml"));
+                    core.plugin().getLogger().info("menu.yml: the Warps button now opens the warps menu (UX3; player warps are inside it)");
+                } catch (java.io.IOException e) {
+                    problem("menu.yml: could not save the Warps button change: " + e.getMessage());
+                }
+            }
             nav.hub = HubLayout.parse(hub, this::problem);
             nav.staff = HubLayout.parse(hub, "staff-entries", this::problem);
+            nav.warps = WarpLayout.parse(hub, this::problem);
         }
         YamlConfiguration help = YamlFiles.load(core.plugin(), "help.yml", this::problem);
         if (help != null) {
