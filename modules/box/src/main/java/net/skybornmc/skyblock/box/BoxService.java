@@ -198,6 +198,20 @@ final class BoxService implements ItemBox, Listener {
     }
 
     @Override
+    public boolean hardFull(Player player) {
+        if (player == null) {
+            return false;
+        }
+        Integer c = counts.get(key(player));
+        return c != null && BoxCap.isHardFull(c, m.config().maxEntries, m.config().hardMaxEntries);
+    }
+
+    @Override
+    public int hardCap() {
+        return Math.max(m.config().hardMaxEntries, m.config().maxEntries);
+    }
+
+    @Override
     public void openStaffView(Player staff, UUID player, String name, Menu back) {
         if (!staff.hasPermission(BoxModule.PERM_ADMIN)) {
             m.msg().send(staff, "staff.no-permission");

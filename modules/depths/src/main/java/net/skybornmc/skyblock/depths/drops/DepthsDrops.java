@@ -5,6 +5,8 @@ import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.bonus.BonusContext;
 import net.skybornmc.skyblock.common.bonus.BonusFamily;
 import net.skybornmc.skyblock.common.bonus.BonusService;
+import net.skybornmc.skyblock.common.box.BoxSource;
+import net.skybornmc.skyblock.common.box.ItemBox;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.economy.Transaction;
@@ -39,9 +41,10 @@ import java.util.logging.Level;
 /**
  * Depths drops (M4.9): on every accepted break in a mine/forest zone the tier's table is rolled (fortune, crystal and
  * rare-find bonuses), the items go into the satchel and the crystals into a per-profile batch paid every few seconds
- * (ledger reason {@code depths_drop}, shown on the action bar). A full or still-loading satchel refuses the break
- * before anything else happens (no XP, no drops, the block stays). Per break: one zone lookup, a few random numbers and
- * map updates; no database work.
+ * (ledger reason {@code depths_drop}, shown on the action bar). R3-22: a full satchel no longer stops mining; the drops
+ * go to the inventory, then to /box ({@link DropOverflow}, batched). Only a still-loading satchel, or a full satchel
+ * together with a /box at its hard cap (5,000 stacks), refuses the break before anything else happens (no XP, no
+ * drops, the block stays). Per break: one zone lookup, a few random numbers and map updates; no database work.
  */
 public final class DepthsDrops implements Listener {
 
@@ -57,8 +60,10 @@ public final class DepthsDrops implements Listener {
     private final SatchelManager satchel;
     private final DropItems items;
     private final CrystalBatcher crystals;
+    private final DropOverflow overflow = new DropOverflow();
     private volatile DropTable table = DropTable.EMPTY;
     private Scheduler.Task task;
+    private Scheduler.Task overflowTask;
     /** The event of the last HIGH check and its table entry, so MONITOR does not look the zone up again. */
     private ResourceBreakEvent lastEvent;
     private Zone lastZone;
@@ -92,6 +97,11 @@ public final class DepthsDrops implements Listener {
         }
         long ticks = Math.max(1, config.crystalsBatchSeconds) * 20L;
         task = core.scheduler().repeat("depths-crystals", ticks, ticks, this::payCrystals);
+        if (overflowTask != null) {
+            overflowTask.cancel();
+        }
+        long boxTicks = Math.max(1, config.satchelBoxFlushSeconds) * 20L;
+        overflowTask = core.scheduler().repeat("depths-overflow", boxTicks, boxTicks, this::flushOverflow);
     }
 
     /** Shutdown: pays the open crystals and waits up to 3 s for the payments. */
@@ -100,7 +110,12 @@ public final class DepthsDrops implements Listener {
             task.cancel();
             task = null;
         }
-        List<CompletableFuture<?>> started = payCrystals();
+        if (overflowTask != null) {
+            overflowTask.cancel();
+            overflowTask = null;
+        }
+        List<CompletableFuture<?>> started = new java.util.ArrayList<>(payCrystals());
+        started.addAll(flushOverflow());
         try {
             CompletableFuture.allOf(started.toArray(CompletableFuture[]::new)).get(3, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -123,14 +138,31 @@ public final class DepthsDrops implements Listener {
     private record Lookup(Zone zone, DropTable.TierDrops drops) {
     }
 
-    /** Before XP and tool listeners (MONITOR): a full satchel refuses the break. Tier locks cancel earlier (LOW). */
+    /**
+     * Before XP and tool listeners (MONITOR). R3-22: only a loading satchel, or a full satchel with the /box at its hard
+     * cap, refuses the break (throttled warning). Tier locks cancel earlier (LOW).
+     */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onCheck(ResourceBreakEvent event) {
         if (!config.satchelEnabled || lookup(event) == null) {
             return;
         }
-        if (!satchel.accepts(event.getPlayer())) {
-            event.setCancelled(true);
+        Player player = event.getPlayer();
+        SatchelManager.Status status = satchel.status(player);
+        DropOverflow.Route route = DropOverflow.forBreak(status != SatchelManager.Status.LOADING, status == SatchelManager.Status.FULL,
+                status == SatchelManager.Status.FULL && ItemBox.hardFull(core.services(), player));
+        switch (route) {
+            case REFUSE_LOADING -> {
+                event.setCancelled(true);
+                satchel.warnLoading(player);
+            }
+            case REFUSE_BOX_FULL -> {
+                event.setCancelled(true);
+                satchel.warnBoxFull(player, ItemBox.of(core.services()).map(ItemBox::hardCap).orElse(0));
+            }
+            default -> {
+                // satchel, or inventory → /box: decided again per item on MONITOR
+            }
         }
     }
 
@@ -167,7 +199,7 @@ public final class DepthsDrops implements Listener {
             crystalsFound = hook.getCrystals();
             extra = hook.getExtra();
         }
-        satchel.add(player, found.drops().item(), amount);
+        deliver(player, found.drops().item(), amount, false);
         if (crystalsFound > 0 && core.services().optional(EconomyService.class).isPresent()) {
             crystals.add(satchel.profileKey(player), crystalsFound);
             satchel.addCrystals(player, crystalsFound);
@@ -175,13 +207,131 @@ public final class DepthsDrops implements Listener {
         if (!extra.isEmpty()) {
             extra.forEach((id, n) -> {
                 if (n != null && n > 0 && items.def(id) != null) {
-                    satchel.add(player, id, n);
+                    deliver(player, id, n, false);
                     msg.send(player, "drops.rare", Msg.mm("item", items.name(items.def(id))), Msg.number("amount", n));
                 }
             });
             if (config.dropsRareSound != null && !config.dropsRareSound.isBlank()) {
                 core.sounds().play(player, config.dropsRareSound);
             }
+        }
+    }
+
+    // ------------------------------------------------------------------ R3-22 drop chain: satchel → inventory → /box
+
+    /**
+     * Hands Depths drops to a player (main thread): satchel while it has room; otherwise (full, or for a kill also off or
+     * loading) the inventory, and what does not fit waits in a per-profile batch for the /box. A full satchel shows the
+     * throttled "drops go to your inventory, then /box" warning.
+     *
+     * @param kill true for combat drops (always delivered), false for mining (the break was checked on HIGH)
+     */
+    public void deliver(Player player, String item, long amount, boolean kill) {
+        if (amount <= 0 || item == null) {
+            return;
+        }
+        SatchelManager.Status status = satchel.status(player);
+        DropOverflow.Route route = kill
+                ? DropOverflow.forKill(config.satchelEnabled, status != SatchelManager.Status.LOADING, status == SatchelManager.Status.FULL)
+                : DropOverflow.forBreak(status != SatchelManager.Status.LOADING, status == SatchelManager.Status.FULL, false);
+        if (route == DropOverflow.Route.SATCHEL) {
+            satchel.add(player, item, amount);
+            return;
+        }
+        // OVERFLOW, or REFUSE_LOADING when the satchel was unloaded between the check and the break (profile switch):
+        // never lose the drop, it goes to the inventory / box like an overflow.
+        if (status == SatchelManager.Status.FULL) {
+            satchel.warnFull(player);
+        }
+        long left = toInventory(player, item, amount);
+        satchel.addOverflow(player, item, amount);
+        if (left > 0) {
+            overflow.add(satchel.profileKey(player), item, left);
+        }
+    }
+
+    /** Puts as much as fits into the inventory (staff mode and a profile switch go straight to /box). Returns the rest. */
+    private long toInventory(Player player, String item, long amount) {
+        if (core.items().get(item).isEmpty()) {
+            core.plugin().getLogger().warning("Depths: drop item '" + item + "' is not registered; " + amount + " lost for " + player.getName());
+            return 0;
+        }
+        ItemStack proto = core.items().create(item, 1, BoxSource.DEPTHS, null);
+        int maxStack = Math.max(1, proto.getMaxStackSize());
+        long given = 0;
+        for (int size : net.skybornmc.skyblock.depths.satchel.SatchelMath.stacks(amount, maxStack)) {
+            ItemStack stack = core.items().create(item, size, BoxSource.DEPTHS, null);
+            Map<Integer, ItemStack> rest = player.getInventory().addItem(stack);
+            int notGiven = rest.values().stream().mapToInt(ItemStack::getAmount).sum();
+            given += size - notGiven;
+            if (notGiven > 0) {
+                break; // inventory full: the rest goes to the box batch
+            }
+        }
+        return amount - given;
+    }
+
+    /** Hands every waiting batch to the /box (one delivery per profile). Returns the started deliveries. */
+    private List<CompletableFuture<?>> flushOverflow() {
+        if (overflow.isEmpty()) {
+            return List.of();
+        }
+        List<CompletableFuture<?>> started = new java.util.ArrayList<>();
+        overflow.drainAll().forEach((profile, waiting) -> {
+            CompletableFuture<?> f = toBox(profile, waiting);
+            if (f != null) {
+                started.add(f);
+            }
+        });
+        return started;
+    }
+
+    /** Flushes one profile's batch right away (quit, profile switch). */
+    public void flushOverflow(UUID profile) {
+        Map<String, Long> waiting = overflow.drain(profile);
+        if (!waiting.isEmpty()) {
+            toBox(profile, waiting);
+        }
+    }
+
+    private CompletableFuture<?> toBox(UUID profile, Map<String, Long> waiting) {
+        List<ItemStack> stacks = new java.util.ArrayList<>();
+        waiting.forEach((item, n) -> {
+            if (core.items().get(item).isEmpty()) {
+                core.plugin().getLogger().warning("Depths: drop item '" + item + "' is not registered; " + n + " not sent to /box");
+                return;
+            }
+            int maxStack = Math.max(1, core.items().create(item, 1, BoxSource.DEPTHS, null).getMaxStackSize());
+            for (int size : net.skybornmc.skyblock.depths.satchel.SatchelMath.stacks(n, maxStack)) {
+                stacks.add(core.items().create(item, size, BoxSource.DEPTHS, null));
+            }
+        });
+        if (stacks.isEmpty()) {
+            return null;
+        }
+        Optional<ItemBox> box = ItemBox.of(core.services());
+        if (box.isPresent()) {
+            return box.get().deliver(profile, stacks, BoxSource.DEPTHS, Actor.system("depths"));
+        }
+        Optional<Player> online = ProfileService.of(core.services()).onlinePlayer(profile);
+        if (online.isPresent()) {
+            ItemBox.overflow(core.services(), online.get(), BoxSource.DEPTHS, stacks); // box module off: dropped at the feet
+        } else {
+            core.plugin().getLogger().warning("Depths: the box module is off and profile " + profile + " is offline; "
+                    + stacks.size() + " overflow stack(s) could not be stored");
+        }
+        return null;
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        flushOverflow(satchel.profileKey(event.getPlayer()));
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onProfileSwitch(net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent event) {
+        if (!overflow.isEmpty()) {
+            flushOverflow(); // keyed by profile, so each batch still goes to the profile it was found on
         }
     }
 
