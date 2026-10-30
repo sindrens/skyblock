@@ -9,7 +9,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | F1 | Hook remaining `/settings` toggles: join-messages, tpa-requests (essentials), scoreboard (hud), ui-sounds | Phase 1 | modules/essentials, modules/hud | ⬜ |
 | F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` | — | common/command, plugin, server/permissions, scripts | ✅ |
 | F4 | Move a TeleportService interface (warmup, guards) into common so /dungeon, /spawn, /tpa, /is home share one warmup | — | common, essentials, depths | ⬜ |
-| F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | 🔄 |
+| F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | ✅ |
 
 ## UX polish (owner, 2026-10-30) — top priority, starts at the next free slot
 | # | Item | Depends on | Lane | Status |

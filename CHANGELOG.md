@@ -91,6 +91,7 @@
 - **Island stats (M2.6):** `/is stats` (island menu → Stats): blocks mined, logs, crops, blocks placed, generator output, mobs killed (stacked kills too), items sold + money earned, visitors, time on the island; today / this week / last week / all time with each member's share; staff `/isadmin stats view|reset`.
 - **Fixes:** tool blueprints and abilities were missing on servers where `tools.yml` already existed; tool tiers and blueprints update once to the Depths drop recipes (backup kept as `tools-catalog-v1-backup.yml`); `depths.yml` drop settings no longer warn at startup.
 - **Punishments P6:** raid lockdown (`/lockdown chat|join|off|status` + menu; only new accounts are affected; raid alert; optional capped auto-lock, off by default), anticheat suggestions (`/psuggest` for the console/GrimAC, never applied automatically), network-ready punishments (server id + scope, filter off by default).
+- **Achievements (F3):** 30 achievements in 6 categories with tiers (4 secret); progress per profile, reward titles for the whole account; unlock toast; menu from `/tags` → Achievements and `/help achievements`.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.

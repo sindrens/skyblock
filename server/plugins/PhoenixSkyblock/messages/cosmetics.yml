@@ -60,6 +60,9 @@ menu:
   unequip-tags:
     name: "<c:error><sym:cross></c:error> <c:value>Remove tag"
     lore: ["<c:text>Wearing: <display>", "", "<c:action><sym:bullet> Click to remove"]
+  achievements:
+    name: "<c:flame>Achievements"
+    lore: ["<c:text>Most titles come from these.", "<c:text>Done: <c:value><done></c:value><c:muted>/<total>", "", "<c:action><sym:bullet> Click to open"]
   edit:
     name: "<c:warning>Edit titles & tags"
     lore: ["<c:text>Staff: create and change titles", "<c:text>and tags.", "", "<c:action><sym:bullet> Click to edit"]
