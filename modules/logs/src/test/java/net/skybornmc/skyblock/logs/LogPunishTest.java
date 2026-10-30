@@ -27,9 +27,9 @@ class LogPunishTest {
     void chatLinesOfPlayersOpenThePunishMenuWithEvidence() {
         AuditEntry chat = entry(1234, AuditCategory.CHAT, "chat", new Actor(STEVE, "Steve"));
         assertTrue(LogPunish.punishable(chat));
-        assertEquals("punish Steve --evidence 1234", LogPunish.command(chat));
+        assertEquals("p Steve --evidence 1234", LogPunish.command(chat));
         AuditEntry blocked = entry(55, AuditCategory.CHAT, "chat_blocked", new Actor(STEVE, ".BedrockSteve"));
-        assertEquals("punish .BedrockSteve --evidence 55", LogPunish.command(blocked), "Bedrock names work");
+        assertEquals("p .BedrockSteve --evidence 55", LogPunish.command(blocked), "Bedrock names work");
     }
 
     @Test

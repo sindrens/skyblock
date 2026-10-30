@@ -638,9 +638,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
                     .forEach(builder::suggest);
             return builder.buildFuture();
         });
-        commands.register(CommandSpec.command("punish")
+        // FIXES1 (owner): /p is the main command, /punish the alias.
+        commands.register(CommandSpec.command("p")
                 .description("Punishment menu for a player, or apply a reason directly (-s silent, -ip IP-wide, -force, --evidence <log id>)")
-                .category("Staff").permission(PERM_GUI).aliases("p").arg(punishTarget).optional(template).optional(flags)
+                .category("Staff").permission(PERM_GUI).aliases("punish").arg(punishTarget).optional(template).optional(flags)
                 .example("p Steve toxicity")
                 .executes(ctx -> punishCommand(ctx.sender(), ctx.get(punishTarget), ctx.getOr(template, null), ctx.getOr(flags, ""))));
 

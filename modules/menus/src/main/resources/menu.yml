@@ -47,7 +47,7 @@ staff-entries:
   display:      {slot: 20, icon: painting,         command: "display",     status: auto, permission: "skyblock.admin.display"}
   admin:        {slot: 21, icon: comparator,       command: "admin",       status: auto, permission: "skyblock.admin.config"}
   cosmetics:    {slot: 22, icon: name_tag,         command: "tags",        status: auto, permission: "skyblock.admin.cosmetics.edit"}
-  staff-mode:   {slot: 23, icon: ender_eye,        command: "staffmode",   status: auto, permission: "skyblock.staff.mode"}
+  staff-mode:   {slot: 23, icon: ender_eye,        command: "s",           status: auto, permission: "skyblock.staff.mode"}
   logs:         {slot: 24, icon: bookshelf,        command: "logs",        status: auto, permission: "skyblock.staff.logs"}
   reports:      {slot: 29, icon: bell,             command: "reports",     status: auto, permission: "skyblock.staff.reports"}
   vanish:       {slot: 30, icon: glass,            command: "vanish",      status: auto}

@@ -3,16 +3,16 @@
 
 command-missing: "<prefix><c:error><sym:cross></c:error> <c:value>/<command></c:value> <c:text>isn't available yet."
 
-# --- Staff mode (/staffmode) ---
+# --- Staff mode (/s, alias /staffmode) ---
 mode:
-  "on": "<prefix><c:success><sym:check></c:success> <c:text>Staff mode <c:value>on</c:value>. <c:muted>Inventory saved. /staffmode to leave."
+  "on": "<prefix><c:success><sym:check></c:success> <c:text>Staff mode <c:value>on</c:value>. <c:muted>Inventory saved. /s to leave."
   "off": "<prefix><c:success><sym:check></c:success> <c:text>Staff mode <c:value>off</c:value>. <c:muted>Inventory is back."
   staff-on: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>entered staff mode."
   staff-off: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>left staff mode."
   save-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Staff mode cancelled: couldn't save your inventory. Nothing was lost."
   recovered: "<prefix><c:success><sym:check></c:success> <c:text>Your inventory is back (the server stopped while you were in staff mode)."
   wait: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, still checking your saved inventory."
-  check-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't check your saved inventory. Rejoin to use /staffmode; tell an admin if it repeats."
+  check-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't check your saved inventory. Rejoin to use /s; tell an admin if it repeats."
 
 tool:
   need-target: "<c:error><sym:cross></c:error> <c:text>Look at a player (or right-click one)."
@@ -298,4 +298,4 @@ menu:
 # Profile switch refused by staff rules (round 3 PR4).
 profiles:
   frozen: "<prefix><c:error><sym:cross> You can't switch profiles while frozen."
-  staff-mode: "<prefix><c:error><sym:cross> Leave staff mode first (<c:action>/staffmode</c:action>)."
+  staff-mode: "<prefix><c:error><sym:cross> Leave staff mode first (<c:action>/s</c:action>)."

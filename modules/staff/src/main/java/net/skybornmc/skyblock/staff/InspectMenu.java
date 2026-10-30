@@ -136,7 +136,7 @@ final class InspectMenu extends Menu {
                 .filter(t -> viewer.hasPermission("skyblock.tutorial.admin.status"))
                 .ifPresent(t -> set(41, service.item(Material.WRITTEN_BOOK, viewer, StaffFeature.MODULE, "menu.inspect.tutorial",
                         Msg.p("player", name)), click -> t.openStaffView(click.player(), id, name, this)));
-        button(33, Material.BREEZE_ROD, "menu.inspect.punish", "punish " + name, name);
+        button(33, Material.BREEZE_ROD, "menu.inspect.punish", "p " + name, name);
         button(34, Material.CLOCK, "menu.inspect.logs", "logs player " + name, name);
     }
 
