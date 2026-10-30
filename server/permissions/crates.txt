@@ -1,0 +1,9 @@
+# LuckPerms grants for the crates module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/crates/src/main/resources/permissions/crates.yml. One console command per line; # = comment.
+# skyblock.crates.use (/crates) defaults to true, so players need no grant. Staff can see every open and key grant in
+# /logs (category crates: skyblock.staff.logs.category.crates, granted to mod in logs.txt).
+
+# --- Crate keys (staff) ---
+# /crates admin give|take|view (owner approved P10-41): admin only, every change audited (key_give / key_take).
+# The owner group inherits admin.
+lp group admin permission set skyblock.crates.admin true

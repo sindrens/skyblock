@@ -55,6 +55,9 @@ final class BoxService implements ItemBox, Listener {
     private final BoxEngine engine;
     /** Profile key → waiting stacks, for the profiles of online players (absent = not loaded). */
     private final Map<UUID, Integer> counts = new ConcurrentHashMap<>();
+    /** Online player → session id (join to quit); a count load only fills the cache for the session that asked. */
+    private final Map<UUID, Long> sessions = new ConcurrentHashMap<>();
+    private final java.util.concurrent.atomic.AtomicLong sessionIds = new java.util.concurrent.atomic.AtomicLong();
     /** Profiles with a take running (one at a time per profile). */
     private final Set<UUID> taking = ConcurrentHashMap.newKeySet();
     private final Debounce clicks;
@@ -284,33 +287,58 @@ final class BoxService implements ItemBox, Listener {
         return new TagResolver[]{Msg.number("count", count), Msg.number("max", m.config().maxEntries)};
     }
 
-    /** Loads the counts of all profiles of a player; then shows the join line for the active one. */
-    private void loadAndGreet(Player player, boolean greet) {
-        UUID uuid = player.getUniqueId();
+    /**
+     * Loads the counts of all profiles of a player, entirely off the main thread (SMALL2: the join task 'box:join' was
+     * logged as slow; it ran the profile lookup, the query hand-off and the notice on the main thread for every join).
+     * The counts land in the cache only while the player's session is still the one that asked (a quit in between
+     * removes the session, so a late result can't leave stale counts behind for the delete guard). The main thread is
+     * only used to show the join line, and only when the active profile has something waiting.
+     */
+    private void loadAndGreet(UUID uuid, long session, boolean greet) {
         profiles().loadProfiles(uuid).thenCompose(list -> {
             Set<UUID> keys = new LinkedHashSet<>();
             keys.add(uuid);
             list.forEach(p -> keys.add(p.id()));
             return engine.counts(keys);
-        }).whenComplete((loaded, error) -> core.scheduler().main("box:join", () -> {
+        }).whenComplete((loaded, error) -> {
             if (error != null) {
-                core.plugin().getLogger().log(Level.WARNING, "Box: loading box counts of " + player.getName() + " failed", Database.cause(error));
+                core.plugin().getLogger().log(Level.WARNING, "Box: loading box counts of " + uuid + " failed", Database.cause(error));
                 return;
             }
-            Player now = Bukkit.getPlayer(uuid);
-            if (now == null) {
-                return;
+            boolean[] current = {false};
+            sessions.computeIfPresent(uuid, (k, v) -> {
+                if (v == session) {
+                    counts.putAll(loaded);
+                    current[0] = true;
+                }
+                return v;
+            });
+            if (current[0] && greet && needsNotice(loaded, profiles().profileKey(uuid))) {
+                core.scheduler().main("box:join-notice", () -> {
+                    Player now = Bukkit.getPlayer(uuid);
+                    if (now != null) {
+                        greet(now);
+                    }
+                });
             }
-            counts.putAll(loaded);
-            if (greet) {
-                greet(now);
-            }
-        }));
+        });
     }
 
-    /** Loads the counts of an online player without a chat line (module start / reload). */
+    /** The join line is only worth a main-thread hop when the active profile has stacks waiting. Pure. */
+    static boolean needsNotice(Map<UUID, Integer> loaded, UUID active) {
+        Integer count = active == null ? null : loaded.get(active);
+        return count != null && count > 0;
+    }
+
+    /** The current session id of an online player (created at join, removed at quit). */
+    private long session(UUID uuid) {
+        return sessions.computeIfAbsent(uuid, k -> sessionIds.incrementAndGet());
+    }
+
+    /** Loads the counts of an online player without a chat line (module start / reload / spool import). Main thread. */
     void loadQuietly(Player p) {
-        loadAndGreet(p, false);
+        UUID uuid = p.getUniqueId();
+        loadAndGreet(uuid, session(uuid), false);
     }
 
     private void greet(Player p) {
@@ -326,28 +354,21 @@ final class BoxService implements ItemBox, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
-        core.scheduler().later("box:join", m.config().joinDelayTicks, () -> {
-            Player p = Bukkit.getPlayer(uuid);
-            if (p != null) {
-                loadAndGreet(p, true);
-            }
-        });
+        long session = session(uuid);
+        core.scheduler().asyncLater(m.config().joinDelayTicks, () -> loadAndGreet(uuid, session, true));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSwitched(ProfileSwitchedEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
-        core.scheduler().later("box:switch", m.config().joinDelayTicks, () -> {
-            Player p = Bukkit.getPlayer(uuid);
-            if (p != null) {
-                loadAndGreet(p, true);
-            }
-        });
+        long session = session(uuid);
+        core.scheduler().asyncLater(m.config().joinDelayTicks, () -> loadAndGreet(uuid, session, true));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
+        sessions.remove(uuid); // first: a count load still running for this session is dropped
         counts.keySet().removeIf(k -> k.equals(uuid) || profiles().ownerOf(k).equals(uuid));
         clicks.forget(uuid);
     }
@@ -536,7 +557,7 @@ final class BoxService implements ItemBox, Listener {
             } else if (n > 0) {
                 core.plugin().getLogger().info("Box: imported " + n + " spooled stack(s) into the database");
                 core.audit().log(AuditCategory.ITEM, "box_spool_import", Actor.system("box"), Map.of("stacks", n));
-                core.scheduler().main("box:spool-refresh", () -> Bukkit.getOnlinePlayers().forEach(p -> loadAndGreet(p, false)));
+                core.scheduler().main("box:spool-refresh", () -> Bukkit.getOnlinePlayers().forEach(this::loadQuietly));
             }
         });
     }

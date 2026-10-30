@@ -97,44 +97,61 @@ final class CleanStreakService {
                 ensureTitle(); // the title id changed with a reload
             }
             for (Player p : Bukkit.getOnlinePlayers()) {
-                check(p);
+                check(p.getUniqueId(), p.getName());
             }
         });
     }
 
-    /** Join: one check after {@code join-delay}, so the unlock line never lands in the burst of join messages. */
+    /**
+     * Join: one check after {@code join-delay}, so the unlock line never lands in the burst of join messages. SMALL2: the
+     * delay and the whole check run off the main thread ('moderation:clean-streak-join' was logged at 46.7 ms); only an
+     * actual grant / take hops back to the main thread.
+     */
     void joined(Player player) {
         CleanStreak.Settings s = settings();
         if (!s.enabled()) {
             return;
         }
-        core.scheduler().later("moderation:clean-streak-join", Math.max(1L, s.joinDelay().toMillis() / 50L), () -> {
-            if (player.isOnline()) {
-                check(player);
-            }
-        });
+        UUID uuid = player.getUniqueId();
+        String name = player.getName();
+        core.scheduler().asyncLater(Math.max(1L, s.joinDelay().toMillis() / 50L), () -> check(uuid, name));
     }
 
-    /** One check of an online player. Main thread (reads the cached player data), the rest runs async. */
-    void check(Player player) {
+    /**
+     * One check of an online player, safe from any thread: reads the cached player data (thread-safe map), writes
+     * today's playtime sample and reads the streak state in one database transaction, decides off the main thread and
+     * only hops to the main thread to grant or take the title (decided again there with the current owned titles).
+     */
+    void check(UUID uuid, String name) {
         CleanStreak.Settings s = settings();
         Optional<Cosmetics> cosmetics = cosmetics();
-        Optional<PlayerData> data = core.players().get(player.getUniqueId());
+        Optional<PlayerData> data = core.players().get(uuid);
         if (!s.enabled() || cosmetics.isEmpty() || data.isEmpty()) {
-            return;
+            return; // disabled, cosmetics off, or the player left / is not loaded
         }
-        UUID uuid = player.getUniqueId();
-        cosmetics.get().markAutomatic(Cosmetics.Kind.TITLE, s.title()); // idempotent; survives a cosmetics reload
+        cosmetics.get().markAutomatic(Cosmetics.Kind.TITLE, s.title()); // idempotent (concurrent set); survives a cosmetics reload
         long now = System.currentTimeMillis();
         long firstSeen = data.get().firstSeen();
         long total = data.get().playtimeMillis();
-        boolean owns = cosmetics.get().owns(uuid, Cosmetics.Kind.TITLE, s.title());
         ZoneId zone = zone();
         store.snapshot(uuid, CleanStreak.day(now, zone), CleanStreak.startDay(now, zone, s), total).thenAccept(snap -> {
-            CleanStreak.Facts facts = new CleanStreak.Facts(now, firstSeen, snap.lastBreaking(), snap.played(), owns, snap.state());
-            act(uuid, CleanStreak.decide(s, facts), s, snap.played());
+            // The owned-titles cache uses concurrent sets, so the decision is made right here on the database thread.
+            CleanStreak.Facts facts = new CleanStreak.Facts(now, firstSeen, snap.lastBreaking(), snap.played(),
+                    cosmetics.get().owns(uuid, Cosmetics.Kind.TITLE, s.title()), snap.state());
+            if (CleanStreak.decide(s, facts) == CleanStreak.Action.NONE) {
+                return; // the usual case: no main-thread work at all
+            }
+            core.scheduler().main("moderation:clean-streak-apply", () -> {
+                Optional<Cosmetics> c = cosmetics();
+                if (c.isEmpty()) {
+                    return;
+                }
+                // Decided again with the owned titles as they are now (a grant may have landed meanwhile).
+                boolean owns = c.get().owns(uuid, Cosmetics.Kind.TITLE, s.title());
+                act(uuid, CleanStreak.decide(s, facts.withOwns(owns)), s, snap.played());
+            });
         }).exceptionally(e -> {
-            core.plugin().getLogger().log(Level.WARNING, "Clean streak check failed for " + player.getName(), e);
+            core.plugin().getLogger().log(Level.WARNING, "Clean streak check failed for " + name, e);
             return null;
         });
     }

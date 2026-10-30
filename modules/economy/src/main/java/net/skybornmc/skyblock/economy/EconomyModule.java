@@ -139,8 +139,16 @@ public final class EconomyModule implements SkyblockModule, Listener {
         }
         baltop.refreshIfOlder(0, config.baltopSize);
         // Checks every 5 s (a timestamp compare); a list is only read again once it is older than refresh-seconds.
-        baltopTask = core.scheduler().repeat("economy:baltop", BALTOP_CHECK_TICKS, BALTOP_CHECK_TICKS,
-                () -> baltop.refreshIfOlder(baltopMaxAge(), config.baltopSize));
+        // SMALL2: off the main thread ('economy:baltop' was logged at 5.3 ms): it only compares times and hands queries to
+        // the database executor (one per currency), Baltop is thread-safe and nothing here touches the world.
+        baltopTask = core.scheduler().asyncRepeat(BALTOP_CHECK_TICKS, BALTOP_CHECK_TICKS,
+                () -> {
+                    try {
+                        baltop.refreshIfOlder(baltopMaxAge(), config.baltopSize);
+                    } catch (RuntimeException e) {
+                        core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Baltop refresh could not start; trying again in 5 s", e);
+                    }
+                });
     }
 
     @Override

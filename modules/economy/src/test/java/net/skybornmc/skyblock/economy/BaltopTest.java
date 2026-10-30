@@ -46,6 +46,39 @@ class BaltopTest {
         assertEquals(3, baltop.get(Currency.MONEY).entries().size());
     }
 
+    /** SMALL2: the background check now runs on the async scheduler while /baltop runs on the main thread. */
+    @Test
+    void refreshFromManyThreadsAtOnceStillStartsOneQuery() throws Exception {
+        java.util.concurrent.atomic.AtomicInteger started = new java.util.concurrent.atomic.AtomicInteger();
+        CompletableFuture<List<EconomyStore.TopEntry>> pending = new CompletableFuture<>();
+        Baltop shared = new Baltop((currency, size) -> {
+            started.incrementAndGet();
+            return pending;
+        }, clock::get);
+        java.util.concurrent.CountDownLatch go = new java.util.concurrent.CountDownLatch(1);
+        List<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < 16; i++) {
+            Thread t = new Thread(() -> {
+                try {
+                    go.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                shared.refreshIfOlder(Currency.MONEY, 30_000, 10);
+            });
+            t.start();
+            threads.add(t);
+        }
+        go.countDown();
+        for (Thread t : threads) {
+            t.join(5_000);
+        }
+        assertEquals(1, started.get());
+        pending.complete(list());
+        assertFalse(shared.refreshing(Currency.MONEY));
+        assertEquals(3, shared.get(Currency.MONEY).entries().size());
+    }
+
     @Test
     void refreshesOnlyWhenOlderThanTheInterval() {
         baltop.refreshIfOlder(Currency.MONEY, 30_000, 10);

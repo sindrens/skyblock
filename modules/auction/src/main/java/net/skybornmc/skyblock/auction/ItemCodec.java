@@ -46,6 +46,10 @@ final class ItemCodec {
         if (net.skybornmc.skyblock.common.item.StaffItems.containsMarked(stack)) {
             return Optional.of("staff-item");
         }
+        // REVIEW3 R3-2: loot from bound keys (votes, AFK pool, calendar ...) stays on the profile that earned it.
+        if (net.skybornmc.skyblock.common.item.BoundItems.containsBound(stack)) {
+            return Optional.of("bound-item");
+        }
         Optional<String> id = ItemRegistry.idOf(stack);
         if (id.isPresent() && ListingRules.idBlocked(id.get(), config.blockedIds)) {
             return Optional.of("starter");

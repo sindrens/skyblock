@@ -62,6 +62,10 @@ final class CleanStreak {
      * @param owns         the cosmetics module says the player owns the title
      */
     record Facts(long now, long firstSeen, Long lastBreaking, long played, boolean owns, State state) {
+
+        Facts withOwns(boolean value) {
+            return new Facts(now, firstSeen, lastBreaking, played, value, state);
+        }
     }
 
     enum Action {

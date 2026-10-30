@@ -248,6 +248,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // Join tutorial (TUTORIAL.md TU1-TU4): reads islands, depths, tools, economy, npcs, cosmetics services (all optional);
         // publishes TutorialGate (feature locks), TutorialService and StarterContents (the islands module asks it at paste time).
         modules.register(new net.skybornmc.skyblock.tutorial.TutorialModule(core));
+        // Crates core (PHASE-10 M10.1): needs economy; reads box, enchants, wardrobe, stacking, cosmetics, islands, skills and
+        // builds services (optional). Publishes CrateKeys once ready (the AFK pool then hands over its pending keys).
+        modules.register(new net.skybornmc.skyblock.crates.CratesModule(core));
     }
 
     public ModuleRegistry modules() {

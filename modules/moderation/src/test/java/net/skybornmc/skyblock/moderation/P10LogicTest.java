@@ -372,6 +372,19 @@ class P10LogicTest {
         assertFalse(CleanStreak.breaks(Punishment.Type.REPORT_BLOCK));
     }
 
+    /** SMALL2: the check decides off the main thread and decides again on it with the owned titles of that moment. */
+    @Test
+    void decidingAgainWithFreshOwnership() {
+        CleanStreak.State earned = new CleanStreak.State(true, NOW - 10 * DAY, null, 1);
+        CleanStreak.Facts missing = facts(400, 80L, 0, false, earned);
+        assertEquals(CleanStreak.Action.REGRANT_QUIET, CleanStreak.decide(CS, missing));
+        assertEquals(CleanStreak.Action.NONE, CleanStreak.decide(CS, missing.withOwns(true)), "granted meanwhile: nothing to do");
+        assertEquals(missing.state(), missing.withOwns(true).state());
+        assertEquals(missing.played(), missing.withOwns(true).played());
+        assertEquals(CleanStreak.Action.NONE, CleanStreak.decide(CS, facts(30, null, 1, false, CleanStreak.State.NONE)),
+                "the usual join: nothing to do, so no main-thread hop");
+    }
+
     @Test
     void playtimeWithinThePeriodFromDailySamples() {
         long now = oslo(2026, 12, 31, 20, 0);

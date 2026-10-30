@@ -58,11 +58,11 @@ categories:
     topics: []
   rewards:
     icon: tripwire_hook
-    status: coming-soon
+    status: active
     slot: 22
     name: "<c:flame><bold>Rewards"
     lore: ["<c:text>Crates, quests, voting", "<c:text>and daily rewards."]
-    topics: []
+    topics: [crates]
   community:
     icon: bell
     status: active
@@ -1119,6 +1119,39 @@ topics:
           - "<c:text>camera. Later, optional steps in"
           - "<c:text>/tutorial pay a few crystals each."
 
+  crates:
+    icon: tripwire_hook
+    aliases: [crate, keys, crate-keys, pity]
+    name: "<c:flame>Crates"
+    summary: ["<c:text>Open crates with keys you", "<c:text>earn by playing."]
+    take-me-there: "crates"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>Keys"
+        lines:
+          - "<c:text>Keys come from voting, quests, the"
+          - "<c:text>AFK pool and daily rewards. They"
+          - "<c:text>belong to your profile. Bound keys"
+          - "<c:text>(and their loot) never trade."
+      - title: "<c:value>Opening"
+        lines:
+          - "<c:value>/crates</c:value> <c:text>opens anywhere. Left-click"
+          - "<c:text>a crate to see every reward and its"
+          - "<c:text>chance, right-click to open 1, or"
+          - "<c:text>use Open 10 and Open all."
+      - title: "<c:value>Pity"
+        lines:
+          - "<c:text>Top rewards are marked with a star."
+          - "<c:text>After a streak without one, the"
+          - "<c:text>next open is guaranteed to give"
+          - "<c:text>one. The preview shows your count."
+      - title: "<c:value>Good to know"
+        lines:
+          - "<c:text>Money and crystal pouches grow with"
+          - "<c:text>your Depths tier. Items that don't"
+          - "<c:text>fit go to your</c:text> <c:value>/box</c:value><c:text>. Rewards"
+          - "<c:text>not live yet pay crystals for now."
+
   box:
     icon: chest_minecart
     aliases: [mailbox, item-box, full-inventory, overflow]
@@ -1162,6 +1195,12 @@ topics:
         lines:
           - "<c:text>Every staff action is stored in the"
           - "<c:text>audit log with who, what and when."
+      - title: "<c:value>Crate keys"
+        lines:
+          - "<c:text>Admins fix keys with</c:text> <c:value>/crates admin</c:value><c:text>:"
+          - "<c:value>give</c:value><c:text>, </c:text><c:value>take</c:value> <c:text>(bound first) and</c:text> <c:value>view</c:value>"
+          - "<c:text>(keys and pity per profile). Big"
+          - "<c:text>amounts ask to confirm; all logged."
       - title: "<c:value>Chat language"
         lines:
           - "<c:text>Public chat is English only (rule 7)."

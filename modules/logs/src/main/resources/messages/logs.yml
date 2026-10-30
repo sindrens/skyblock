@@ -200,6 +200,7 @@ category-menu:
     auth: ["<c:text>Joins and quits."]
     world: ["<c:text>World events."]
     tutorial: ["<c:text>Join tutorial: steps, finish, staff skip."]
+    crates: ["<c:text>Crate keys given and used, opens, rewards."]
 
 categories:
   all: "All you can see"
@@ -217,6 +218,7 @@ categories:
   auth: "Joins"
   world: "World"
   tutorial: "Tutorial"
+  crates: "Crates"
 
 ranges:
   all: "All time"

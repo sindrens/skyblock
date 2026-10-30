@@ -44,6 +44,9 @@ public final class TxReason {
     /** The one-time reward for finishing the join tutorial (TUTORIAL.md §5 Finish, TQ7); new money and crystals. */
     public static final String TUTORIAL_REWARD = "tutorial_reward";
 
+    /** Money, crystals and shards from crate opens (PHASE-10 M10.1); a source on the economy dashboard (M10.13). */
+    public static final String CRATE_REWARD = "crate_reward";
+
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 
     private TxReason() {

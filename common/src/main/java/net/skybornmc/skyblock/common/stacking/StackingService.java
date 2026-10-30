@@ -54,4 +54,20 @@ public interface StackingService {
      * @return mobs killed (0 when refused)
      */
     int killFromStack(LivingEntity stack, int count, Player killer);
+
+    /**
+     * Spawner types of one tier (1-5) as {@code stacking.yml} lists them (crate and Black Market rewards pick one at
+     * random, PHASE-10 M10.1). Empty when the tier has none or the stacking module does not support it.
+     */
+    default List<String> spawnerTypes(int tier) {
+        return List.of();
+    }
+
+    /**
+     * New spawner items of {@code type} (1-64 per stack; callers split bigger amounts), registered with {@code source}
+     * for dupe detection (e.g. {@code crate:blaze}). Empty if the type is not allowed. Main thread.
+     */
+    default java.util.Optional<org.bukkit.inventory.ItemStack> createSpawner(String type, int amount, String source) {
+        return java.util.Optional.empty();
+    }
 }
