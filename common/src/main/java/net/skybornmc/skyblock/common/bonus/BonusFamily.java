@@ -31,9 +31,9 @@ public enum BonusFamily {
     AREA(100),
     /** Damage to mobs. */
     MOB_DAMAGE(200),
-    /** Damage reduction from custom sources (percent of damage taken). */
+    /** Damage reduction from custom sources (percent of damage taken). Applied to mob damage by the enchants module (E5). */
     DAMAGE_REDUCTION(60),
-    /** Extra max hearts from custom sources. */
+    /** Extra max hearts from custom sources. Applied as max health by the enchants module (E5). */
     HEALTH(10),
     /** Crop growth speed near the player (WARDROBE §2.5, WD9: Cropwarden Robes, growth upgrades, events). */
     CROP_GROWTH(100),

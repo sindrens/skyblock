@@ -18,6 +18,14 @@ confiscated: "<prefix><c:error><sym:cross></c:error> <c:text>That item was a cop
 staff-confiscated: "<c:error><bold>DUPE</bold></c:error> <c:value><player></c:value> <c:text>used a copied <c:value><book></c:value> <c:muted>(<id>)</c:muted><c:text>. Taken."
 undone: "<prefix><c:warning><sym:cross></c:warning> <c:text>Something moved, so nothing changed. Your crystals are back."
 
+# Armor enchants on wardrobe set pieces (E5). <enchant> name, <minutes> cooldown.
+armor:
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Armor enchants need the wardrobe. Try again later."
+  entry-gone: "<prefix><c:error><sym:cross></c:error> <c:text>That set is not in your wardrobe any more."
+  enchant-gone: "<prefix><c:error><sym:cross></c:error> <c:text>That enchant is not on the piece any more."
+  piece-changed: "<prefix><c:error><sym:cross></c:error> <c:text>That set changed meanwhile, so nothing happened. Open it again."
+  rebirth: "<prefix><c:success><sym:check></c:success> <c:enchant><enchant></c:enchant> <c:text>saved you! Ready again in <c:value><minutes> min</c:value>."
+
 applied: "<prefix><c:success><sym:check></c:success> <c:enchant><enchant></c:enchant> <c:text>is on your <c:value><tool></c:value><c:text>. Paid <c:value><sym:crystals> <cost></c:value>."
 upgraded: "<prefix><c:success><sym:check></c:success> <c:text>Now <c:enchant><enchant></c:enchant><c:text>. Paid <c:value><sym:crystals> <cost></c:value>."
 combined: "<prefix><c:success><sym:check></c:success> <c:text>You made <c:enchant><enchant></c:enchant><c:text>. Paid <c:value><sym:crystals> <cost></c:value>."
@@ -46,6 +54,13 @@ rule:
   level-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Needs tool <c:value>Lv <level></c:value> for that level."
   max-level: "<prefix><c:error><sym:cross></c:error> <c:text>Already max level (<max>)."
   not-a-pair: "<prefix><c:error><sym:cross></c:error> <c:text>Needs the same enchant at the same level."
+  mythic-only-slot: "<prefix><c:error><sym:cross></c:error> <c:text>The mythic slot takes Mythic enchants only."
+  # Armor (E5): <level> is a set level.
+  armor-level-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Needs set <c:value>Lv <level></c:value> for that level."
+  armor-slot-locked: "<prefix><c:error><sym:cross></c:error> <c:text>That slot opens at set <c:value>Lv <level></c:value>."
+  wrong-piece: "<prefix><c:error><sym:cross></c:error> <c:text>Only for: <c:value><tools></c:value>."
+  already-on-piece: "<prefix><c:error><sym:cross></c:error> <c:text>The piece already has it. Upgrade it instead."
+  mythic-slot-only: "<prefix><c:error><sym:cross></c:error> <c:text>Mythics go in the chestplate's mythic slot only."
 
 # The same as one red lore line in menus.
 why:
@@ -62,6 +77,13 @@ why:
   level-gate: "<c:error><sym:cross> Needs tool Lv <level>"
   max-level: "<c:error><sym:cross> Max level (<max>)"
   not-a-pair: "<c:error><sym:cross> Not the same enchant and level"
+  mythic-only-slot: "<c:error><sym:cross> Mythic enchants only"
+  armor-level-gate: "<c:error><sym:cross> Needs set Lv <level>"
+  armor-slot-locked: "<c:error><sym:cross> Slot opens at set Lv <level>"
+  wrong-piece: "<c:error><sym:cross> Only for: <tools>"
+  already-on-piece: "<c:error><sym:cross> Already on this piece"
+  mythic-slot-only: "<c:error><sym:cross> Mythic slot only"
+  set-gone: "<c:error><sym:cross> Set not found"
   needs-pair: "<c:error><sym:cross> Needs a second <book>"
   tool-gone: "<c:error><sym:cross> Tool not found"
   unknown: "<c:error><sym:cross> Unknown enchant"
@@ -108,7 +130,7 @@ book:
   slot-cost: " <c:enchant>▸ <c:text>Slot cost <c:value>{value}"
   prestige-slot: " <c:enchant>▸ <c:text>Prestige slot only"
   conflicts: " <c:enchant>▸ <c:text>Conflicts <c:value>{value}"
-  armor: "<c:muted>For wardrobe set pieces (soon)"
+  armor: "<c:muted>For wardrobe set pieces"
   disabled: "<c:error>Turned off for now"
   unknown: "This enchant does not exist any more."
   action-input: "Use at"
@@ -152,6 +174,7 @@ menu:
     upgrade: "Upgrade"
     remove: "Remove"
     combine: "Combine books"
+    armor: "Armor"
   main:
     info: ["<c:text>Put enchant books on custom", "<c:text>tools, then level them up with", "<c:text>crystals. Never a fail chance."]
     apply:
@@ -166,6 +189,12 @@ menu:
     remove:
       name: "<c:value>Remove"
       lore: ["<c:text>With a scroll you keep the", "<c:text>book. Without, it shatters.", "", "<c:action>▶ Click <c:text>to choose a tool"]
+    armor:
+      name: "<c:value>Armor"
+      lore: ["<c:text>Enchant the pieces of the sets", "<c:text>in your wardrobe.", "<c:muted>Sets you own: <sets>", "", "<c:action>▶ Click <c:text>to choose a set"]
+    armor-off:
+      name: "<c:muted>Armor"
+      lore: ["<c:text>Armor enchants need the", "<c:text>wardrobe. Closed right now."]
     shop:
       name: "<c:value>Book shop"
       lore: ["<c:text>Random books and Disenchant", "<c:text>Scrolls for crystals.", "", "<c:action>▶ Click <c:text>to open"]
@@ -227,6 +256,48 @@ menu:
     locked:
       name: "<c:muted>Slot <slot>"
       lore: ["<c:error><sym:cross> <c:text>Opens at Lv <level>", "<c:muted>Now Lv <have>"]
+  # Armor tab (E5): enchants go on the sets in your wardrobe, not on vanilla armor.
+  armor:
+    info: ["<c:text>Your wardrobe sets. Armor", "<c:text>enchants go on their pieces,", "<c:text>never on vanilla armor."]
+    empty:
+      name: "<c:muted>No sets yet"
+      lore: ["<c:text>Get a set in <c:value>/wardrobe</c:value><c:text>,", "<c:text>then enchant its pieces here."]
+    name: "<set>"
+    entry: ["<c:muted>Set Lv <level> · <enchants> enchant(s)"]
+    worn: ["<c:muted>Wearing <count>/4 pieces"]
+    click: ["", "<c:action>▶ Click <c:text>to see the pieces"]
+  armor-entry:
+    info: ["<c:text>Each row is a piece and its", "<c:text>slots. Slot 2 and the mythic", "<c:text>slot open with the set level.", "<c:text>Gray = dormant: works again", "<c:text>when the set level is high", "<c:text>enough."]
+    gone:
+      name: "<c:error>Set not found"
+      lore: ["<c:text>It is not in your wardrobe", "<c:text>any more. Go back."]
+    set:
+      name: "<set>"
+      lore: ["<c:text>Set Lv <c:value><level>", "<c:muted>Slot 2 at Lv <second>", "<c:muted>Mythic slot at Lv <mythic>", "<c:muted>Higher levels allow higher", "<c:muted>enchant levels."]
+    filled:
+      lore: ["<c:muted>Slot <slot> · put in <sym:crystals> <invested>"]
+      click: ["", "<c:action>▶ Click <c:text>to upgrade or remove"]
+    dormant: ["<c:warning>Dormant: no effect until", "<c:warning>set Lv <level>"]
+    empty:
+      name: "<c:value>Slot <slot>"
+      lore: ["<c:muted><sym:bullet> Empty slot", "", "<c:action>▶ Click <c:text>to pick a book"]
+    mythic-empty:
+      name: "<c:flame><sym:star> Mythic slot"
+      lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Fits Mythic armor enchants.", "", "<c:action>▶ Click <c:text>to pick a book"]
+    locked:
+      name: "<c:muted>Slot <slot>"
+      lore: ["<c:error><sym:cross> <c:text>Opens at set Lv <level>", "<c:muted>Now Lv <have>"]
+    mythic-locked:
+      name: "<c:muted><sym:star> Mythic slot"
+      lore: ["<c:error><sym:cross> <c:text>Opens at set Lv <level>", "<c:muted>Now Lv <have>"]
+  armor-books:
+    info: ["<c:text>Books that fit this slot are", "<c:text>at the top. The others say", "<c:text>why not."]
+    empty:
+      name: "<c:muted>No enchant books"
+      lore: ["<c:text>Armor books drop in The", "<c:text>Depths combat zones."]
+  armor-enchant:
+    info: ["<c:text>Upgrade with crystals or a", "<c:text>book. A scroll gives the book", "<c:text>back; shatter destroys it."]
+    now: ["<c:muted><piece>", "<c:muted>Max <max> · set allows <gate>", "<c:muted>Put in: <sym:crystals> <invested>"]
   books:
     info: ["<c:text>Books that fit are at the top.", "<c:text>The others say why not."]
     crumb: "Slot <slot>"
@@ -319,7 +390,7 @@ menu:
     conflicts: "<c:enchant>▸ <c:text>Conflicts <c:value><names>"
     drops: "<c:enchant>▸ <c:text><pools> <c:muted>from tier <tier>"
     drops-special: "<c:enchant>▸ <c:text>Bosses and special crates"
-    armor: "<c:muted>For wardrobe set pieces (soon)"
+    armor: "<c:muted>For wardrobe set pieces"
     disabled: "<c:error>Turned off for now"
     found: "<c:success><sym:check> Found this season"
     not-found: "<c:muted><sym:cross> Not found yet"

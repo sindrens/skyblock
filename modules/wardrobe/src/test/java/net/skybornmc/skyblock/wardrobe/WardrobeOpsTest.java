@@ -516,4 +516,126 @@ class WardrobeOpsTest {
         assertTrue(ops.useTome(who1, tome, e.entryId(), 100, levels, 40).join().ok());
         assertEquals(2_600, entry(e.entryId()).xp(), 1e-9, "unsaved XP + the tome");
     }
+
+    // ------------------------------------------------------------------ armor enchants (E5)
+
+    private static List<net.skybornmc.skyblock.common.tools.ToolPerk> perks(Object... idLevel) {
+        List<net.skybornmc.skyblock.common.tools.ToolPerk> out = new ArrayList<>();
+        for (int i = 0; i < idLevel.length; i += 2) {
+            out.add(new net.skybornmc.skyblock.common.tools.ToolPerk(out.size() + 1, (String) idLevel[i], (Integer) idLevel[i + 1]));
+        }
+        return out;
+    }
+
+    private void enchant(WardrobeStore.Entry e, ArmorPiece piece, List<net.skybornmc.skyblock.common.tools.ToolPerk> list) {
+        db.blocking(c -> {
+            store.savePiece(c, e.entryId(), piece, list);
+            return null;
+        });
+    }
+
+    @Test
+    void pieceEnchantsAreLockedPerProfile() {
+        WardrobeStore.Entry e = give(profile1, "deepforge", 30);
+        enchant(e, ArmorPiece.HEAD, perks("vitality", 2));
+        assertEquals(perks("vitality", 2), db.blocking(c -> store.lockPiece(c, profile1, e.entryId(), ArmorPiece.HEAD)).orElseThrow());
+        assertTrue(db.blocking(c -> store.lockPiece(c, profile2, e.entryId(), ArmorPiece.HEAD)).isEmpty(), "P4: not another profile's");
+        assertEquals(List.of(), db.blocking(c -> store.lockPiece(c, profile1, e.entryId(), ArmorPiece.FEET)).orElseThrow());
+        assertEquals(Map.of(e.entryId(), Map.of(ArmorPiece.HEAD, perks("vitality", 2))), db.blocking(c -> store.pieceEnchants(c, profile1)));
+        enchant(e, ArmorPiece.HEAD, List.of());
+        assertTrue(db.blocking(c -> store.pieceEnchants(c, profile1)).isEmpty(), "no row for a piece without enchants");
+    }
+
+    @Test
+    void mergeKeepsTheLooksEnchantsAndReturnsTheOthersAsBooks() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile1, "coinmaster", 50);
+        enchant(a, ArmorPiece.HEAD, perks("vitality", 5, "fortitude", 4));
+        enchant(a, ArmorPiece.CHEST, perks("second_wind", 3));
+        enchant(b, ArmorPiece.FEET, perks("featherfall", 4));
+        // Look = coinmaster (b): b's enchants stay, a's three come back as books.
+        Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>> expected = db.blocking(c -> store.entryEnchants(c, a.entryId()));
+        List<MergeRules.Returned> returned = MergeRules.returnedBooks(expected, id -> 5);
+        assertEquals(3, returned.size());
+        List<WardrobeOps.ReturnedBook> books = new ArrayList<>();
+        for (MergeRules.Returned r : returned) {
+            books.add(new WardrobeOps.ReturnedBook(UUID.randomUUID(), r.enchant(), r.level(), r.piece(), "enchant_book", "enchant_book",
+                    r.enchant(), new byte[]{1, 2, 3}));
+        }
+        List<UUID> minted = new ArrayList<>();
+        WardrobeOps.MergeEnchants enchants = new WardrobeOps.MergeEnchants(expected, books, (c, book, who, profile, reason) -> {
+            assertEquals(profile1, profile);
+            assertTrue(reason.startsWith(WardrobeOps.REASON_MERGE + ":"));
+            minted.add(book.id());
+        });
+        WardrobeOps.MergeRequest req = new WardrobeOps.MergeRequest(who1, a.entryId(), Fixtures.def("deepforge"), b.entryId(),
+                Fixtures.def("coinmaster"), "coinmaster", 25_000, 0, 0, levels, 0, enchants);
+        WardrobeOps.MergeResult r = ops.merge(req).join();
+        assertEquals(WardrobeOps.Status.OK, r.status());
+        assertEquals(Map.of(ArmorPiece.FEET, perks("featherfall", 4)), r.enchants(), "the look's enchants");
+        assertEquals(Map.of(ArmorPiece.FEET, perks("featherfall", 4)), db.blocking(c -> store.entryEnchants(c, r.entry().entryId())));
+        assertTrue(db.blocking(c -> store.entryEnchants(c, a.entryId())).isEmpty(), "moved off the inputs");
+        assertTrue(db.blocking(c -> store.entryEnchants(c, b.entryId())).isEmpty());
+        assertEquals(books.stream().map(WardrobeOps.ReturnedBook::id).toList(), minted, "one book row per returned enchant");
+        assertEquals(3, db.blocking(c -> store.stored(c, profile1)).size(), "the books are in the Wardrobe Chest");
+        assertEquals(0, r.entry().level(), "level 0: the kept enchants are dormant until the level catches up");
+    }
+
+    @Test
+    void returnedBooksGoInEvenWhenTheChestIsFull() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile1, "coinmaster", 50);
+        enchant(a, ArmorPiece.LEGS, perks("phoenix_thorns", 3));
+        db.blocking(c -> {
+            for (int i = 0; i < 30; i++) {
+                store.put(c, new WardrobeStore.Stored(UUID.randomUUID(), profile1, "tool", "tool", "Tool", new byte[]{1},
+                        WardrobeStore.StorageState.STORED, null, 1L), 30, 1L);
+            }
+            return null;
+        });
+        Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>> expected = Map.of(ArmorPiece.LEGS, perks("phoenix_thorns", 3));
+        WardrobeOps.ReturnedBook book = new WardrobeOps.ReturnedBook(UUID.randomUUID(), "phoenix_thorns", 3, ArmorPiece.LEGS, "enchant_book",
+                "enchant_book", "Phoenix Thorns III", new byte[]{9});
+        WardrobeOps.MergeRequest req = new WardrobeOps.MergeRequest(who1, a.entryId(), Fixtures.def("deepforge"), b.entryId(),
+                Fixtures.def("coinmaster"), "coinmaster", 0, 0, 0, levels, 0,
+                new WardrobeOps.MergeEnchants(expected, List.of(book), (c, x, w, p, why) -> { }));
+        assertEquals(WardrobeOps.Status.OK, ops.merge(req).join().status());
+        assertEquals(31, db.blocking(c -> store.stored(c, profile1)).size(), "nothing is lost, even past the chest size");
+    }
+
+    @Test
+    void mergeRefusesWhenTheOtherSetsEnchantsChangedOrNoSinkIsThere() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile1, "coinmaster", 50);
+        enchant(a, ArmorPiece.HEAD, perks("vitality", 5));
+        // The menu saw no enchants on the other set: refused, nothing changes.
+        WardrobeOps.MergeRequest blind = new WardrobeOps.MergeRequest(who1, a.entryId(), Fixtures.def("deepforge"), b.entryId(),
+                Fixtures.def("coinmaster"), "coinmaster", 25_000, 0, 0, levels, 0);
+        assertEquals(WardrobeOps.Status.GONE, ops.merge(blind).join().status());
+        assertEquals(30_000, balance(profile1, "crystals"));
+        assertEquals(2, entries(profile1).size());
+        assertEquals(Map.of(ArmorPiece.HEAD, perks("vitality", 5)), db.blocking(c -> store.entryEnchants(c, a.entryId())));
+        // Books but no way to write their rows: refused too.
+        WardrobeOps.ReturnedBook book = new WardrobeOps.ReturnedBook(UUID.randomUUID(), "vitality", 5, ArmorPiece.HEAD, "enchant_book",
+                "enchant_book", "Vitality V", new byte[]{1});
+        WardrobeOps.MergeRequest noSink = new WardrobeOps.MergeRequest(who1, a.entryId(), Fixtures.def("deepforge"), b.entryId(),
+                Fixtures.def("coinmaster"), "coinmaster", 25_000, 0, 0, levels, 0,
+                new WardrobeOps.MergeEnchants(Map.of(ArmorPiece.HEAD, perks("vitality", 5)), List.of(book), null));
+        assertEquals(WardrobeOps.Status.ERROR, ops.merge(noSink).join().status());
+        assertEquals(30_000, balance(profile1, "crystals"));
+        assertTrue(db.blocking(c -> store.stored(c, profile1)).isEmpty());
+    }
+
+    @Test
+    void returnedBooksRules() {
+        Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>> other = Map.of(
+                ArmorPiece.FEET, perks("featherfall", 4), ArmorPiece.HEAD, perks("vitality", 5, "night_eye", 1));
+        List<MergeRules.Returned> books = MergeRules.returnedBooks(other, id -> id.equals("vitality") ? 3 : 4);
+        assertEquals(List.of(new MergeRules.Returned(ArmorPiece.HEAD, "vitality", 3), new MergeRules.Returned(ArmorPiece.HEAD, "night_eye", 1),
+                new MergeRules.Returned(ArmorPiece.FEET, "featherfall", 4)), books, "armor order, level clamped to a lowered max");
+        assertEquals(List.of(new MergeRules.Returned(ArmorPiece.HEAD, "gone", 2)),
+                MergeRules.returnedBooks(Map.of(ArmorPiece.HEAD, perks("gone", 2)), id -> 0), "unknown enchants are listed (the merge is refused)");
+        assertTrue(MergeRules.sameEnchants(Map.of(ArmorPiece.HEAD, List.of()), Map.of()));
+        assertFalse(MergeRules.sameEnchants(Map.of(ArmorPiece.HEAD, perks("vitality", 1)), Map.of()));
+    }
 }

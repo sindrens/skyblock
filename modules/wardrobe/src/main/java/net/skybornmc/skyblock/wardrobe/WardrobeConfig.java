@@ -65,6 +65,10 @@ final class WardrobeConfig extends ModuleConfig {
             min = 0, max = 1000, level = Setting.Level.OWNER)
     public int secondSlotLevel = 25;
 
+    @Setting(path = "enchants.mythic-slot-level", desc = "Set level that opens the chestplate's mythic enchant slot (EN12; Mythic armor enchants fit only there).",
+            min = 0, max = 1000, level = Setting.Level.OWNER)
+    public int mythicSlotLevel = 50;
+
     // ------------------------------------------------------------------ set XP (W2, WARDROBE §3.1)
 
     @Setting(path = "xp.min-pieces", desc = "Pieces of a set that must be worn before it earns set XP.", min = 1, max = 4, level = Setting.Level.OWNER)
@@ -498,6 +502,11 @@ final class WardrobeConfig extends ModuleConfig {
     /** Hourly cap per XP activity (0 = none). */
     java.util.Map<String, Double> hourlyCapMap() {
         return pairs(hourlyCaps, null);
+    }
+
+    /** Armor enchant slot rules (E5, EN12). */
+    net.skybornmc.skyblock.common.wardrobe.ArmorSlots armorSlots() {
+        return new net.skybornmc.skyblock.common.wardrobe.ArmorSlots(secondSlotLevel, mythicSlotLevel, maxLevel);
     }
 
     /** The warzone rules. */

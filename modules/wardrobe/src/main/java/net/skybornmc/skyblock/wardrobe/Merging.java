@@ -1,12 +1,21 @@
 package net.skybornmc.skyblock.wardrobe;
 
 import net.skybornmc.skyblock.common.audit.AuditCategory;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.economy.Currency;
+import net.skybornmc.skyblock.common.enchant.EnchantService;
+import net.skybornmc.skyblock.common.enchant.PreparedBook;
+import net.skybornmc.skyblock.common.item.ItemDefinition;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.tools.ToolPerk;
+import net.skybornmc.skyblock.common.wardrobe.ArmorPiece;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -65,6 +74,52 @@ final class Merging {
         return module.config().mergeEnabled && module.config().levelsEnabled;
     }
 
+    /**
+     * Prepares one book per armor enchant of the entry that does not give the look (E5). Null (and the player told why)
+     * when that is not possible: the enchants module is off or an enchant does not exist any more. Nothing is lost then:
+     * the merge does not start.
+     */
+    private WardrobeOps.MergeEnchants returnedBooks(Player player, Map<ArmorPiece, List<ToolPerk>> other) {
+        boolean any = other.values().stream().anyMatch(l -> !l.isEmpty());
+        if (!any) {
+            return WardrobeOps.MergeEnchants.NONE;
+        }
+        EnchantService service = module.core.services().optional(EnchantService.class).orElse(null);
+        if (service == null) {
+            module.fail(player, "merge.enchants-unavailable");
+            return null;
+        }
+        List<WardrobeOps.ReturnedBook> books = new ArrayList<>();
+        Map<java.util.UUID, PreparedBook> prepared = new java.util.HashMap<>();
+        for (MergeRules.Returned ret : MergeRules.returnedBooks(other, service::maxLevel)) {
+            PreparedBook book;
+            try {
+                book = service.prepareBook(ret.enchant(), ret.level(), "merge:" + player.getName());
+            } catch (IllegalArgumentException e) {
+                module.fail(player, "merge.enchant-unknown", Msg.p("enchant", ret.enchant()));
+                return null;
+            }
+            prepared.put(book.id(), book);
+            ItemStack item = book.item();
+            Optional<ItemDefinition> def = module.core.items().definitionOf(item);
+            if (def.isEmpty()) {
+                module.fail(player, "error");
+                return null;
+            }
+            books.add(new WardrobeOps.ReturnedBook(book.id(), ret.enchant(), ret.level(), ret.piece(), def.get().type().id(), def.get().id(),
+                    PlainTextComponentSerializer.plainText().serialize(item.effectiveName()), item.serializeAsBytes()));
+        }
+        EnchantService sink = service;
+        Map<java.util.UUID, PreparedBook> byId = Map.copyOf(prepared);
+        return new WardrobeOps.MergeEnchants(other, books, (c, b, playerId, profile, reason) -> {
+            PreparedBook book = byId.get(b.id());
+            if (book == null) {
+                throw new java.sql.SQLException("Unknown returned book " + b.id());
+            }
+            sink.insertBook(c, book, "merge", playerId, profile, reason);
+        });
+    }
+
     /** Merges {@code a} (its set comes first) with {@code b}, pieces in the look of {@code lookSetId} (after the confirm). */
     void merge(Player player, UUID entryA, UUID entryB, String lookSetId) {
         Session s = module.equipment().sessionOrNull(player.getUniqueId());
@@ -105,6 +160,13 @@ final class Merging {
         }
         SetDef defA = module.registry().get(a.get().setId()).orElseThrow();
         SetDef defB = module.registry().get(b.get().setId()).orElseThrow();
+        // E5: the other set's armor enchants come back as books (built now, written in the merge transaction).
+        WardrobeStore.Entry other = lookSetId.equals(a.get().setId()) ? b.get() : a.get();
+        Map<ArmorPiece, List<ToolPerk>> otherEnchants = s.enchants(other.entryId());
+        WardrobeOps.MergeEnchants enchants = returnedBooks(player, otherEnchants);
+        if (enchants == null) {
+            return; // told why
+        }
         s.busy = true;
         UUID profile = s.profile;
         double pendingA = Optional.ofNullable(s.pendingXp.remove(entryA)).orElse(0.0);
@@ -112,7 +174,7 @@ final class Merging {
         WardrobeOps.Who who = new WardrobeOps.Who(player.getUniqueId(), player.getName(), profile);
         String look = lookSetId;
         WardrobeOps.MergeRequest request = new WardrobeOps.MergeRequest(who, entryA, defA, entryB, defB, look, fee, pendingA, pendingB,
-                module.config().levels(), module.config().seasonId);
+                module.config().levels(), module.config().seasonId, enchants);
         module.ops().merge(request).thenAccept(r -> module.core.scheduler().main("wardrobe-merge", () -> {
             s.busy = false;
             if (!r.ok()) {
@@ -134,7 +196,14 @@ final class Merging {
                 details.put("look", look);
                 details.put("fee", fee);
                 details.put("profile", profile.toString());
+                details.put("kept_enchants", String.valueOf(r.enchants()));
+                details.put("returned_books", enchants.books().stream().map(x -> x.id() + "=" + x.enchant() + ":" + x.level() + "@" + x.piece().key()).toList());
                 module.core.audit().logPlayer(AuditCategory.ITEM, "wardrobe_merge", who.actor(), who.player(), who.name(), fee, null, details);
+                for (WardrobeOps.ReturnedBook book : enchants.books()) {
+                    module.core.audit().logPlayer(AuditCategory.ITEM, "book_created", who.actor(), who.player(), who.name(), null, null,
+                            Map.of("book", book.id().toString(), "kind", "book", "enchant", book.enchant(), "level", book.level(),
+                                    "origin", "merge", "piece", book.piece().key(), "entry", r.entry().entryId().toString(), "to", "wardrobe_chest"));
+                }
             }
             Player p = Bukkit.getPlayer(who.player());
             if (p == null) {
@@ -149,12 +218,18 @@ final class Merging {
                         s.remove(entryA);
                         s.remove(entryB);
                         s.add(r.entry());
+                        for (Map.Entry<ArmorPiece, List<ToolPerk>> e : r.enchants().entrySet()) {
+                            s.putEnchants(r.entry().entryId(), e.getKey(), e.getValue());
+                        }
                         s.loadouts = Loadouts.repointed(s.loadouts, entryA, entryB, r.entry().entryId());
                         module.equipment().refreshBonuses(s);
                         module.equipment().reconcile(p);
                     }
                     module.msg().send(p, "merge.done", Msg.p("set", module.text().entryName(module.registry(), r.entry())),
                             Msg.p("fee", feeText(fee)));
+                    if (!enchants.books().isEmpty()) {
+                        module.msg().send(p, "merge.books-returned", Msg.p("count", enchants.books().size()));
+                    }
                     module.core.sounds().play(p, "unlock");
                     if (same) {
                         module.menus().openSet(p, r.entry());

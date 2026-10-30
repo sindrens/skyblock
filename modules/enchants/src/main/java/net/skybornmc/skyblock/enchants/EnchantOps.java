@@ -12,6 +12,10 @@ import net.skybornmc.skyblock.common.tools.ToolInfo;
 import net.skybornmc.skyblock.common.tools.ToolPerk;
 import net.skybornmc.skyblock.common.tools.ToolService;
 import net.skybornmc.skyblock.common.util.Format;
+import net.skybornmc.skyblock.common.wardrobe.ArmorPiece;
+import net.skybornmc.skyblock.common.wardrobe.PieceEnchants;
+import net.skybornmc.skyblock.common.wardrobe.SetEntryView;
+import net.skybornmc.skyblock.common.wardrobe.WardrobeService;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -428,6 +432,230 @@ final class EnchantOps implements Listener {
         });
     }
 
+    // ------------------------------------------------------------------ armor enchants on wardrobe set pieces (E5)
+
+    /** An owned wardrobe entry's piece as the action found it (the database row is re-checked in the transaction). */
+    private record ArmorCtx(SetEntryView entry, ArmorPiece piece, List<ToolPerk> enchants) {
+    }
+
+    private ArmorCtx armorContext(Player player, UUID entryId, ArmorPiece piece) {
+        if (!ready(player)) {
+            return null;
+        }
+        WardrobeService wardrobe = module.wardrobe();
+        if (wardrobe == null) {
+            fail(player, "armor.unavailable");
+            return null;
+        }
+        if (wardrobe.busy(player)) {
+            module.msg().send(player, "busy");
+            return null;
+        }
+        Optional<SetEntryView> entry = wardrobe.entry(player, entryId);
+        if (entry.isEmpty()) {
+            fail(player, "armor.entry-gone");
+            return null;
+        }
+        return new ArmorCtx(entry.get(), piece, entry.get().enchants(piece));
+    }
+
+    private OpPlan armorPlan(String action, Player player, ArmorCtx ctx, List<ToolPerk> after, List<OpPlan.Book> consume,
+                             List<OpPlan.Book> mint, long cost, long refund, String reason, Map<String, Object> details) {
+        return new OpPlan(UUID.randomUUID(), action, player.getUniqueId(), profiles().profileKey(player), player.getName(),
+                module.config().seasonId, null, ctx.enchants(), after, consume, mint, cost, refund, null, reason, details,
+                new OpPlan.Piece(ctx.entry().entryId(), ctx.piece()));
+    }
+
+    private static Map<String, Object> armorDetails(ArmorCtx ctx, String enchant, int level, long crystals) {
+        Map<String, Object> d = new LinkedHashMap<>();
+        d.put("set_entry", ctx.entry().entryId().toString());
+        d.put("set", ctx.entry().setId());
+        if (ctx.entry().mergedSetId() != null) {
+            d.put("merged_set", ctx.entry().mergedSetId());
+        }
+        d.put("piece", ctx.piece().key());
+        d.put("set_level", ctx.entry().level());
+        d.put("enchant", enchant);
+        d.put("level", level);
+        d.put("crystals", crystals);
+        return d;
+    }
+
+    /** {@code Deepforge Plate Chestplate} for chat. */
+    String pieceLabel(SetEntryView entry, ArmorPiece piece) {
+        return entry.name() + " " + module.text().plain("target." + ArmorRules.target(piece).id());
+    }
+
+    /** E5 §4.2 on a set piece: a book into an empty slot of a piece. */
+    void applyArmor(Player player, UUID entryId, ArmorPiece piece, int slot, UUID bookId) {
+        ArmorCtx ctx = armorContext(player, entryId, piece);
+        if (ctx == null) {
+            return;
+        }
+        Optional<HeldBook> held = book(player, bookId);
+        if (held.isEmpty() || held.get().book().scroll()) {
+            fail(player, "book-gone");
+            return;
+        }
+        EnchantBook book = held.get().book();
+        Optional<EnchantDef> def = module.registry().get(book.enchant());
+        if (def.isEmpty()) {
+            fail(player, "unknown-enchant");
+            return;
+        }
+        EnchantRules.Verdict verdict = module.armorRules().canApply(piece, ctx.enchants(), ctx.entry().level(), slot, def.get(), book.level(),
+                module.registry()::get);
+        if (!verdict.ok()) {
+            failArmor(player, verdict, def.get());
+            return;
+        }
+        long fee = module.costs().applyFee(def.get(), book.level());
+        List<ToolPerk> after = ArmorRules.withApplied(ctx.enchants(), slot, def.get(), book.level(), fee);
+        Map<String, Object> details = armorDetails(ctx, def.get().id(), book.level(), fee);
+        details.put("slot", slot);
+        details.put("book", book.id().toString());
+        OpPlan plan = armorPlan("armor_apply", player, ctx, after, List.of(OpPlan.Book.book(book.id(), book.enchant(), book.level(), null)),
+                List.of(), fee, 0, "enchant_apply", details);
+        String name = module.text().displayName(def.get().id(), book.level());
+        String label = pieceLabel(ctx.entry(), piece);
+        start(player, plan, List.of(), p -> {
+            module.msg().send(p, "applied", Msg.p("enchant", name), Msg.p("tool", label), cost(fee));
+            sound(p, module.config().soundApply);
+        });
+    }
+
+    /** E5 §4.3 on a set piece: one level up with crystals. */
+    void upgradeArmor(Player player, UUID entryId, ArmorPiece piece, String enchant) {
+        ArmorCtx ctx = armorContext(player, entryId, piece);
+        if (ctx == null) {
+            return;
+        }
+        Optional<ToolPerk> perk = PieceEnchants.find(ctx.enchants(), enchant);
+        Optional<EnchantDef> def = module.registry().get(enchant);
+        if (perk.isEmpty() || def.isEmpty()) {
+            fail(player, "armor.enchant-gone");
+            return;
+        }
+        EnchantRules.Verdict verdict = module.armorRules().canUpgrade(piece, perk.get(), ctx.entry().level(), def.get());
+        if (!verdict.ok()) {
+            failArmor(player, verdict, def.get());
+            return;
+        }
+        int next = perk.get().level() + 1;
+        long cost = module.costs().upgradeCost(def.get(), perk.get().level());
+        List<ToolPerk> after = EnchantRules.replaced(ctx.enchants(), enchant, perk.get().upgraded(next, cost));
+        OpPlan plan = armorPlan("armor_upgrade", player, ctx, after, List.of(), List.of(), cost, 0, "enchant_upgrade",
+                armorDetails(ctx, enchant, next, cost));
+        String name = module.text().displayName(enchant, next);
+        start(player, plan, List.of(), p -> {
+            module.msg().send(p, "upgraded", Msg.p("enchant", name), cost(cost));
+            sound(p, module.config().soundApply);
+        });
+    }
+
+    /** E5 §4.4 on a set piece: a book of the same enchant and level onto the applied enchant. */
+    void combineOnArmor(Player player, UUID entryId, ArmorPiece piece, String enchant, UUID bookId) {
+        ArmorCtx ctx = armorContext(player, entryId, piece);
+        if (ctx == null) {
+            return;
+        }
+        Optional<ToolPerk> perk = PieceEnchants.find(ctx.enchants(), enchant);
+        Optional<EnchantDef> def = module.registry().get(enchant);
+        Optional<HeldBook> held = book(player, bookId);
+        if (perk.isEmpty() || def.isEmpty()) {
+            fail(player, "armor.enchant-gone");
+            return;
+        }
+        if (held.isEmpty() || held.get().book().scroll()) {
+            fail(player, "book-gone");
+            return;
+        }
+        EnchantBook book = held.get().book();
+        EnchantRules.Verdict verdict = module.armorRules().canCombineOn(piece, perk.get(), ctx.entry().level(), def.get(), book.enchant(), book.level());
+        if (!verdict.ok()) {
+            failArmor(player, verdict, def.get());
+            return;
+        }
+        int next = perk.get().level() + 1;
+        long fee = module.costs().combineFee(def.get(), next);
+        List<ToolPerk> after = EnchantRules.replaced(ctx.enchants(), enchant, perk.get().upgraded(next, fee));
+        Map<String, Object> details = armorDetails(ctx, enchant, next, fee);
+        details.put("book", book.id().toString());
+        OpPlan plan = armorPlan("armor_combine", player, ctx, after, List.of(OpPlan.Book.book(book.id(), book.enchant(), book.level(), null)),
+                List.of(), fee, 0, "enchant_combine", details);
+        String name = module.text().displayName(enchant, next);
+        start(player, plan, List.of(), p -> {
+            module.msg().send(p, "upgraded", Msg.p("enchant", name), cost(fee));
+            sound(p, module.config().soundApply);
+        });
+    }
+
+    /** E5 §4.5 on a set piece: with a Disenchant Scroll the enchant comes off as a book at its level. */
+    void removeArmor(Player player, UUID entryId, ArmorPiece piece, String enchant, UUID scrollId) {
+        ArmorCtx ctx = armorContext(player, entryId, piece);
+        if (ctx == null) {
+            return;
+        }
+        Optional<ToolPerk> perk = PieceEnchants.find(ctx.enchants(), enchant);
+        if (perk.isEmpty()) {
+            fail(player, "armor.enchant-gone");
+            return;
+        }
+        Optional<EnchantDef> def = module.registry().get(enchant);
+        if (def.isEmpty()) {
+            fail(player, "unknown-enchant");
+            return;
+        }
+        Optional<HeldBook> scroll = book(player, scrollId);
+        if (scroll.isEmpty() || !scroll.get().book().scroll()) {
+            fail(player, "no-scroll");
+            return;
+        }
+        int level = Math.min(perk.get().level(), def.get().maxLevel());
+        ItemStack result = module.books().createBook(enchant, level, "disenchant:" + player.getName());
+        UUID newId = BookItems.id(result);
+        List<ToolPerk> after = EnchantRules.replaced(ctx.enchants(), enchant, null);
+        Map<String, Object> details = armorDetails(ctx, enchant, level, 0);
+        details.put("scroll", scrollId.toString());
+        details.put("new_book", newId.toString());
+        details.put("invested", perk.get().invested());
+        OpPlan plan = armorPlan("armor_remove", player, ctx, after, List.of(OpPlan.Book.scroll(scrollId, null)),
+                List.of(OpPlan.Book.book(newId, enchant, level, "disenchant")), 0, 0, "enchant_remove", details);
+        String name = module.text().displayName(enchant, level);
+        start(player, plan, List.of(result), p -> {
+            module.msg().send(p, "removed", Msg.p("enchant", name));
+            sound(p, module.config().soundApply);
+        });
+    }
+
+    /** E5 §4.5 on a set piece: without a scroll the enchant is destroyed for a share of the crystals put into it. */
+    void shatterArmor(Player player, UUID entryId, ArmorPiece piece, String enchant) {
+        ArmorCtx ctx = armorContext(player, entryId, piece);
+        if (ctx == null) {
+            return;
+        }
+        Optional<ToolPerk> perk = PieceEnchants.find(ctx.enchants(), enchant);
+        if (perk.isEmpty()) {
+            fail(player, "armor.enchant-gone");
+            return;
+        }
+        long refund = module.costs().shatterRefund(perk.get().invested());
+        List<ToolPerk> after = EnchantRules.replaced(ctx.enchants(), enchant, null);
+        Map<String, Object> details = armorDetails(ctx, enchant, perk.get().level(), 0);
+        details.put("invested", perk.get().invested());
+        details.put("refund", refund);
+        OpPlan plan = armorPlan("armor_shatter", player, ctx, after, List.of(), List.of(), 0, refund, "enchant_shatter", details);
+        String name = module.text().displayName(enchant, perk.get().level());
+        start(player, plan, List.of(), p -> {
+            module.msg().send(p, "shattered", Msg.p("enchant", name), Msg.p("refund", Format.number(refund)));
+            sound(p, module.config().soundApply);
+        });
+    }
+
+    private void failArmor(Player player, EnchantRules.Verdict verdict, EnchantDef def) {
+        fail(player, "rule." + EnchantMenus.armorProblemKey(verdict.problem()), module.menus().problemPlaceholders(verdict, def, null));
+    }
+
     // ------------------------------------------------------------------ running
 
     private record Context(HeldTool tool) {
@@ -516,6 +744,11 @@ final class EnchantOps implements Listener {
                 return;
             }
         }
+        WardrobeService wardrobe = plan.piece() == null ? null : module.wardrobe();
+        if (plan.piece() != null && wardrobe == null) {
+            undo(plan, "wardrobe_off");
+            return;
+        }
         List<Integer> bookSlots = new ArrayList<>();
         for (OpPlan.Book b : plan.consume()) {
             Optional<HeldBook> held = book(player, b.id());
@@ -531,6 +764,10 @@ final class EnchantOps implements Listener {
         }
         for (int slot : bookSlots) {
             inv.setItem(slot, null);
+        }
+        if (wardrobe != null) {
+            // The row is the truth (committed); the cache and the worn piece follow.
+            wardrobe.pieceEnchantsChanged(player, plan.piece().entryId(), plan.piece().piece(), plan.perksAfter());
         }
         boolean dropped = false;
         for (ItemStack stack : minted) {
@@ -564,6 +801,7 @@ final class EnchantOps implements Listener {
                 fail(player, "not-enough", cost(plan.cost()), Msg.p("have", Format.number(have)));
             }
             case LIMIT -> fail(player, "roll.limit");
+            case PIECE_CHANGED -> fail(player, "armor.piece-changed");
             case BOOK_INVALID -> confiscate(player, result.badBook(), plan);
             default -> fail(player, "error");
         }

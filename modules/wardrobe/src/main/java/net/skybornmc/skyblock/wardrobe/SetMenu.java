@@ -169,7 +169,7 @@ final class SetMenu extends Menu {
         }
         set(20, service.item(Material.NETHER_STAR, m.text(viewer, "menu.set.bonuses.name"), bonus));
         set(22, m.levelItem(viewer, entry.orElse(null), def));
-        set(24, service.item(Material.ENCHANTED_BOOK, viewer, WardrobeModule.ID, "menu.set.enchants"));
+        enchantsButton(s, entry.orElse(null));
 
         // Actions
         if (!merged) {
@@ -293,5 +293,34 @@ final class SetMenu extends Menu {
             case CRATE_ONLY -> Material.TRIPWIRE_HOOK;
             default -> Material.GRAY_DYE;
         };
+    }
+
+    /**
+     * Slot 24 (E5): the armor enchants per piece of this entry; a click opens the Enchanter's Armor screen for it. Not owned:
+     * explains that enchants go on owned sets. Enchants module off: shown as closed.
+     */
+    private void enchantsButton(Session s, WardrobeStore.Entry entry) {
+        WardrobeMenus m = module.menus();
+        var enchants = module.core.services().optional(net.skybornmc.skyblock.common.enchant.EnchantService.class).orElse(null);
+        if (enchants == null) {
+            set(24, service.item(Material.BOOK, viewer, WardrobeModule.ID, "menu.set.enchants-off"));
+            return;
+        }
+        if (entry == null || s == null) {
+            set(24, service.item(Material.BOOK, viewer, WardrobeModule.ID, "menu.set.enchants-not-owned"));
+            return;
+        }
+        List<Component> lore = new ArrayList<>(m.lines(viewer, "menu.set.enchants.lore"));
+        for (ArmorPiece piece : ArmorPiece.values()) {
+            var list = s.enchants(entry.entryId(), piece);
+            String names = list.isEmpty() ? module.text().plain("menu.set.enchants.none")
+                    : String.join(", ", list.stream().map(p -> enchants.displayName(p.id(), p.level())).toList());
+            lore.add(m.text(viewer, "menu.set.enchants.piece", Msg.p("piece", module.text().plain("piece-name." + piece.key())),
+                    Msg.p("enchants", names)));
+        }
+        lore.addAll(m.lines(viewer, "menu.set.enchants.click"));
+        UUID id = entry.entryId();
+        set(24, service.item(Material.ENCHANTED_BOOK, m.text(viewer, "menu.set.enchants.name"), lore),
+                click -> enchants.openArmor(viewer, id, this));
     }
 }

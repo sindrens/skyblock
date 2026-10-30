@@ -1,7 +1,12 @@
 package net.skybornmc.skyblock.common.enchant;
 
 import net.skybornmc.skyblock.common.item.Rarity;
+import net.skybornmc.skyblock.common.menu.Menu;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import java.util.Map;
 import java.util.Optional;
@@ -71,4 +76,28 @@ public interface EnchantService {
 
     /** Mints a new Disenchant Scroll (crates, Black Market), like {@link #createBook}. */
     CompletableFuture<ItemStack> createScroll(String origin, UUID owner);
+
+    /**
+     * Builds a book item now (main thread) whose row the caller writes in its own transaction with {@link #insertBook}
+     * (E5: armor enchants that a wardrobe merge returns as books). Throws {@link IllegalArgumentException} for an unknown
+     * enchant or a level outside 1..max.
+     */
+    PreparedBook prepareBook(String enchantId, int level, String origin);
+
+    /**
+     * SQL for the caller's transaction (any thread, inside a database task): writes the {@code enchant_books} row of a
+     * {@link #prepareBook prepared} book (active) and marks the enchant as found this season. The caller audits.
+     *
+     * @param owner   the player (account) it is made for
+     * @param profile the owner's profile key (books are profile items, P4)
+     * @param reason  short tag stored on the row, e.g. {@code merge:<entry id>}
+     */
+    void insertBook(Connection connection, PreparedBook book, String origin, UUID owner, UUID profile, String reason) throws SQLException;
+
+    /**
+     * Opens the Enchanter's Armor screen of one wardrobe entry (E5; the set screen's Enchants button). Main thread.
+     *
+     * @param parent the menu Back returns to, or null
+     */
+    void openArmor(Player player, UUID entryId, Menu parent);
 }

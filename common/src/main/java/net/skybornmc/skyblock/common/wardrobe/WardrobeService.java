@@ -1,11 +1,17 @@
 package net.skybornmc.skyblock.common.wardrobe;
 
 import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.bonus.BonusFamily;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.tools.ToolPerk;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -77,6 +83,56 @@ public interface WardrobeService {
 
     /** True for a worn wardrobe piece (a view item; other systems must never trade, list or store it). */
     boolean isSetPiece(ItemStack stack);
+
+    // ------------------------------------------------------------------ armor enchants (E5)
+
+    /** The armor enchant slot rules with the live config (EN12). */
+    ArmorSlots armorSlots();
+
+    /**
+     * Every owned entry of the player's active profile with its piece enchants (the Enchanter's Armor tab), in wardrobe
+     * order. Empty while the wardrobe is loading, during a profile switch or for an unknown player.
+     */
+    List<SetEntryView> entries(Player player);
+
+    /** One owned entry of the player's active profile, or empty. */
+    Optional<SetEntryView> entry(Player player, UUID entryId);
+
+    /** A menu copy of a piece of an owned entry (look and lore with its enchants), never a real piece; null if not owned. */
+    ItemStack pieceIcon(Player player, UUID entryId, ArmorPiece piece);
+
+    /**
+     * The pieces the player wears right now with their enchants (effects; cheap, from the cache). Empty while loading or
+     * stripped for a profile switch.
+     */
+    List<WornPiece> wornEnchants(Player player);
+
+    /** True while the player is in a warzone/duel world (WD18 normalization). */
+    boolean inWarzone(Player player);
+
+    /**
+     * W2 warzone factor of a bonus family ({@code wardrobe.yml → warzone.families}): 0 when the family does nothing in the
+     * warzone. Armor enchants of a family obey it there (E5: the warzone keeps only what W2 allows).
+     */
+    double warzoneFactor(BonusFamily family);
+
+    /** True while a wardrobe action (equip, merge, loadout, chest move) is saving for this player. */
+    boolean busy(Player player);
+
+    /**
+     * SQL for the caller's transaction: locks the entry row and reads a piece's enchants. Empty when the entry is not
+     * active or not this profile's (merged, removed, another profile: P4). Any thread, inside a database task.
+     */
+    Optional<List<ToolPerk>> lockPieceEnchants(Connection connection, UUID profileKey, UUID entryId, ArmorPiece piece) throws SQLException;
+
+    /** SQL for the caller's transaction: stores a piece's enchants (after {@link #lockPieceEnchants}). */
+    void savePieceEnchants(Connection connection, UUID entryId, ArmorPiece piece, List<ToolPerk> enchants) throws SQLException;
+
+    /**
+     * After the caller's transaction committed (main thread): updates the cached enchants and re-renders the piece in
+     * place if it is worn. Reloads the wardrobe if the cache does not hold the entry (another profile is active now).
+     */
+    void pieceEnchantsChanged(Player player, UUID entryId, ArmorPiece piece, List<ToolPerk> enchants);
 
     /**
      * Makes a new Set Token for a set (crates, quests, staff): writes its database row, then completes on the main thread

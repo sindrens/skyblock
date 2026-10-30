@@ -13,7 +13,8 @@ import java.util.Optional;
  * Reports the passive enchants of the tool in the context to the bonus families (ENCHANTS §8.1): Swiftness (speed),
  * Scholar's Insight (skill XP of the tool's own skill only), Prosperity (extra drops, expected value), Crystal Seeker
  * (crystals), Tempering (tool XP), Treasure Hunter (rare finds), Phoenix Edge (mob damage). Chance/proc enchants are
- * implemented by E2/E3 hooks and report nothing here. Disabled enchants add nothing.
+ * implemented by E2/E3 hooks and report nothing here. Disabled enchants add nothing. E5: Vitality and Fortitude of the
+ * worn wardrobe set pieces (from the player in the context, see {@link ArmorEffects#familyValue}).
  */
 final class EnchantBonusSource implements BonusSource {
 
@@ -27,6 +28,15 @@ final class EnchantBonusSource implements BonusSource {
 
     @Override
     public double value(BonusFamily family, BonusContext context) {
+        // E5: Vitality (health) and Fortitude (damage reduction) of the worn set pieces; no tool enchant feeds these families.
+        double armor = 0;
+        if ((family == BonusFamily.HEALTH || family == BonusFamily.DAMAGE_REDUCTION) && context.player() != null && module.armor() != null) {
+            armor = module.armor().familyValue(context.player(), family);
+        }
+        return armor + toolValue(family, context);
+    }
+
+    private double toolValue(BonusFamily family, BonusContext context) {
         ToolInfo tool = context.tool();
         if (tool == null && context.item() != null) {
             ToolService tools = module.tools();

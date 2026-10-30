@@ -40,7 +40,9 @@ final class EnchantRules {
         /** Already at the highest level. */
         MAX_LEVEL,
         /** Combine: not the same enchant and level. */
-        NOT_A_PAIR
+        NOT_A_PAIR,
+        /** E5: the chestplate's mythic slot takes Mythic enchants only. */
+        MYTHIC_ONLY_SLOT
     }
 
     /**

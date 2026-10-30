@@ -104,7 +104,7 @@ final class Equipment implements Listener {
         WardrobeStore store = module.store();
         LoadoutStore loadouts = module.loadoutStore();
         module.core.database().async(c -> new Object[]{store.activeEntries(c, profile), store.equipped(c, profile),
-                store.sigils(c, uuid), store.claims(c, profile, season), loadouts.loadouts(c, profile), loadouts.bought(c, uuid)})
+                store.sigils(c, uuid), store.claims(c, profile, season), loadouts.loadouts(c, profile), loadouts.bought(c, uuid), store.pieceEnchants(c, profile)})
                 .whenComplete((data, error) -> module.core.scheduler().main("wardrobe-load", () -> {
             Player p = Bukkit.getPlayer(uuid);
             Session current = sessions.get(uuid);
@@ -141,6 +141,10 @@ final class Equipment implements Listener {
             List<Loadout> presets = (List<Loadout>) data[4];
             s.loadouts = List.copyOf(presets);
             s.boughtSlots = (Integer) data[5];
+            @SuppressWarnings("unchecked")
+            Map<UUID, Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>>> enchants =
+                    (Map<UUID, Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>>>) data[6];
+            s.enchants = new java.util.HashMap<>(enchants);
             s.loaded = true;
             s.stripped = false;
             module.leveling().applyPending(s);
@@ -406,7 +410,8 @@ final class Equipment implements Listener {
         if (entry.isEmpty() || def.isEmpty()) {
             return false;
         }
-        player.getInventory().setItem(row.piece().slot(), module.items().piece(def.get(), entry.get(), row.piece(), s.profile, row.nonce(), s.warzone));
+        player.getInventory().setItem(row.piece().slot(), module.items().piece(def.get(), entry.get(), row.piece(), s.profile, row.nonce(), s.warzone,
+                s.enchants(entry.get().entryId(), row.piece())));
         return true;
     }
 

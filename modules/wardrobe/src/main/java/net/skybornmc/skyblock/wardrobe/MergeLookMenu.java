@@ -62,9 +62,19 @@ final class MergeLookMenu extends Menu {
             String a = module.text().entryName(module.registry(), first);
             String b = module.text().entryName(module.registry(), second);
             String fee = module.merging().feeText(module.merging().fee(first, second));
+            Session session = module.equipment().sessionOrNull(viewer.getUniqueId());
+            WardrobeStore.Entry other = def.get().id().equals(first.setId()) ? second : first;
+            int books = session == null ? 0 : session.enchants(other.entryId()).values().stream().mapToInt(java.util.List::size).sum();
             openChild(new ConfirmMenu(v -> m.text(v, "confirm.merge.crumb"), module.items().icon(def.get(), ArmorPiece.CHEST),
-                    v -> m.lines(v, "confirm.merge.details", Msg.p("a", a), Msg.p("b", b), Msg.p("level_a", first.level()),
-                            Msg.p("level_b", second.level()), Msg.p("fee", fee), Msg.p("look", def.get().shortName())),
+                    v -> {
+                        java.util.List<net.kyori.adventure.text.Component> lines = new java.util.ArrayList<>(m.lines(v, "confirm.merge.details",
+                                Msg.p("a", a), Msg.p("b", b), Msg.p("level_a", first.level()), Msg.p("level_b", second.level()),
+                                Msg.p("fee", fee), Msg.p("look", def.get().shortName())));
+                        if (books > 0) {
+                            lines.addAll(m.lines(v, "confirm.merge.enchants", Msg.p("books", books)));
+                        }
+                        return lines;
+                    },
                     p -> module.merging().merge(p, first.entryId(), second.entryId(), def.get().id()), p -> {
             }));
         });

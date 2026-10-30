@@ -9,7 +9,7 @@ import org.bukkit.Material;
 /**
  * {@code /enchanter} main menu (ENCHANTS §4.1):
  * <pre>
- *  row 2:  [Apply a book] [Upgrade]   [Combine books] [Remove]
+ *  row 2:  [Apply a book] [Upgrade] [Armor (E5)] [Combine books] [Remove]
  *  row 3:        [Book shop]      [Enchant guide]
  *  row 4:      [your crystals]   [next guaranteed book]
  *  row 6:  ←  ?  X  help
@@ -19,6 +19,7 @@ final class EnchanterMenu extends Menu {
 
     static final int SLOT_APPLY = 11;
     static final int SLOT_UPGRADE = 12;
+    static final int SLOT_ARMOR = 13;
     static final int SLOT_COMBINE = 14;
     static final int SLOT_REMOVE = 15;
     static final int SLOT_SHOP = 21;
@@ -77,6 +78,16 @@ final class EnchanterMenu extends Menu {
                 click -> openChild(new ToolPickMenu(module, SlotMenu.Mode.APPLY)));
         set(SLOT_UPGRADE, service.item(Material.EXPERIENCE_BOTTLE, viewer, EnchantsModule.ID, "menu.main.upgrade", Msg.p("tools", tools)),
                 click -> openChild(new ToolPickMenu(module, SlotMenu.Mode.UPGRADE)));
+        int sets = module.wardrobe() == null ? 0 : module.wardrobe().entries(viewer).size();
+        set(SLOT_ARMOR, service.item(Material.DIAMOND_CHESTPLATE, viewer, EnchantsModule.ID,
+                module.wardrobe() == null ? "menu.main.armor-off" : "menu.main.armor", Msg.p("sets", sets)),
+                click -> {
+                    if (module.wardrobe() == null) {
+                        service.sound(viewer, "error");
+                        return;
+                    }
+                    module.menus().openArmor(viewer, this);
+                });
         set(SLOT_COMBINE, service.item(Material.ANVIL, viewer, EnchantsModule.ID, "menu.main.combine", Msg.p("books", books)),
                 click -> openChild(new CombineMenu(module)));
         set(SLOT_REMOVE, service.item(Material.GRINDSTONE, viewer, EnchantsModule.ID, "menu.main.remove"),
