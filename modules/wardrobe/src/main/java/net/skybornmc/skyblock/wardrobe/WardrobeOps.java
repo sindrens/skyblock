@@ -108,6 +108,8 @@ final class WardrobeOps {
     static final String REASON_BUY = "wardrobe_buy";
     static final String REASON_MERGE = "wardrobe_merge";
 
+    private static final LoadoutStore LOADOUTS = new LoadoutStore();
+
     private final Database db;
     private final WardrobeStore store;
     private final Payer payer;
@@ -396,6 +398,9 @@ final class WardrobeOps {
             }
             store.insertMerged(c, fresh, r.season(), r.who().player());
             store.insertMergeRecord(c, fresh.entryId(), r.who().profile(), a, b, r.lookSetId(), r.fee(), r.who().player(), now);
+            // W3 (WD22): loadouts that wore either input now wear the merged set.
+            LOADOUTS.repoint(c, r.who().profile(), a.entryId(), fresh.entryId(), now);
+            LOADOUTS.repoint(c, r.who().profile(), b.entryId(), fresh.entryId(), now);
             return true;
         };
         if (r.fee() <= 0) {

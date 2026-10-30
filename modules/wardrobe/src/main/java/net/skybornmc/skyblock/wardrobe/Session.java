@@ -43,6 +43,39 @@ final class Session {
     boolean warzone;
     /** Where the last trail puff was (moving players only). */
     org.bukkit.Location lastTrail;
+    /** The profile's loadout presets (W3), by menu place. */
+    List<Loadout> loadouts = List.of();
+    /** Loadout slots bought with store credits (account-wide). */
+    int boughtSlots;
+
+    Optional<Loadout> loadout(UUID id) {
+        return loadouts.stream().filter(l -> l.id().equals(id)).findFirst();
+    }
+
+    Optional<Loadout> loadoutNamed(String name) {
+        String key = Loadout.key(name);
+        return loadouts.stream().filter(l -> l.nameKey().equals(key)).findFirst();
+    }
+
+    Optional<Loadout> loadoutAt(int index) {
+        return loadouts.stream().filter(l -> l.index() == index).findFirst();
+    }
+
+    void putLoadout(Loadout l) {
+        List<Loadout> next = new ArrayList<>();
+        for (Loadout old : loadouts) {
+            if (!old.id().equals(l.id())) {
+                next.add(old);
+            }
+        }
+        next.add(l);
+        next.sort(java.util.Comparator.comparingInt(Loadout::index));
+        loadouts = List.copyOf(next);
+    }
+
+    void removeLoadout(UUID id) {
+        loadouts = loadouts.stream().filter(l -> !l.id().equals(id)).toList();
+    }
 
     Session(UUID player, UUID profile) {
         this.player = player;

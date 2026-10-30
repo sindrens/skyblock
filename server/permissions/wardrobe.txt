@@ -7,3 +7,10 @@
 # Staff: the Wardrobe button in /inspect (WD25). Helpers and mods see; admins (and the owner, who inherits admin) manage.
 lp group helper permission set skyblock.wardrobe.staff true
 lp group admin permission set skyblock.wardrobe.admin true
+
+# /loadout is for everyone (plugin default: true). Loadout presets: 2 free (wardrobe.yml loadout.free-slots); donor ranks
+# get more (LD2: Knight 3, Warlord 4, Monarch 5). The donor groups are created with the store (Phase 11); enable these
+# lines then (higher ranks inherit from Knight/Warlord). Slots bought with store credits are in the loadout_slots_bought table.
+# lp group knight permission set skyblock.loadout.slots.3 true
+# lp group warlord permission set skyblock.loadout.slots.4 true
+# lp group monarch permission set skyblock.loadout.slots.5 true

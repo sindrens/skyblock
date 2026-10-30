@@ -220,7 +220,7 @@ final class WardrobeConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ equipping
 
-    @Setting(path = "equip.cooldown-seconds", desc = "Seconds between two wear/take-off actions (shared with loadouts later).", min = 0, max = 60)
+    @Setting(path = "equip.cooldown-seconds", desc = "Seconds between two wear/take-off actions (a loadout swap counts as one too).", min = 0, max = 60)
     public int equipCooldownSeconds = 2;
 
     @Setting(path = "equip.blocked-worlds", desc = "Worlds where sets can't be put on or taken off (the warzone).")
@@ -228,6 +228,52 @@ final class WardrobeConfig extends ModuleConfig {
 
     @Setting(path = "equip.hint-cooldown-seconds", desc = "Seconds between two \"Use /wardrobe to take this off\" hints.", min = 0, max = 300)
     public int hintCooldownSeconds = 3;
+
+    @Setting(path = "equip.combat-seconds", desc = "No wearing, taking off or Wardrobe Chest moves for this many seconds after combat (PvP or a hostile mob; LD6). 0 = off.",
+            min = 0, max = 600)
+    public int equipCombatSeconds = 10;
+
+    // ------------------------------------------------------------------ loadouts (W3, WARDROBE §7)
+
+    @Setting(path = "loadout.enabled", desc = "Loadouts (/loadout): saved presets that swap set pieces, the pet and hotbar tools in one click.",
+            level = Setting.Level.OWNER)
+    public boolean loadoutEnabled = true;
+
+    @Setting(path = "loadout.free-slots", desc = "Presets every player has (L2: 2). Ranks give more with skyblock.loadout.slots.<n> (the highest counts).",
+            min = 0, max = 8, level = Setting.Level.OWNER)
+    public int loadoutFreeSlots = 2;
+
+    @Setting(path = "loadout.max-slots", desc = "Most presets anyone can have (free or rank slots + bought slots).", min = 1, max = 8,
+            level = Setting.Level.OWNER)
+    public int loadoutMaxSlots = 8;
+
+    @Setting(path = "loadout.bought-max", desc = "Most extra presets that can be bought with store credits (account-wide, kept across seasons).",
+            min = 0, max = 8, level = Setting.Level.OWNER)
+    public int loadoutBoughtMax = 3;
+
+    @Setting(path = "loadout.cooldown-seconds", desc = "Seconds between two swaps (shared with wearing and taking off sets).", min = 0, max = 60)
+    public int loadoutCooldownSeconds = 2;
+
+    @Setting(path = "loadout.combat-seconds", desc = "No swaps for this many seconds after combat (PvP or a hostile mob; L4). 0 = off.", min = 0, max = 600)
+    public int loadoutCombatSeconds = 10;
+
+    @Setting(path = "loadout.blocked-worlds", desc = "Worlds where loadouts can't be swapped (L4: the warzone). Saving and editing presets works everywhere.")
+    public List<String> loadoutBlockedWorlds = List.of("warzone");
+
+    @Setting(path = "loadout.partial", desc = "A swap still happens when a part can't (tool gone, set gone, no room): that part is skipped and listed. "
+            + "Off = refuse the whole swap instead.", level = Setting.Level.OWNER)
+    public boolean loadoutPartial = true;
+
+    @Setting(path = "loadout.name-max-length", desc = "Longest preset name (letters, digits, _ and -; one word, so /loadout <name> works).",
+            min = 1, max = 16)
+    public int loadoutNameMax = 16;
+
+    @Setting(path = "loadout.default-icon", desc = "Menu icon of a new preset without tools (item id).")
+    public String loadoutDefaultIcon = "armor_stand";
+
+    @Setting(path = "loadout.icons", desc = "Icons every player can pick for a preset (item ids), besides the preset's own tools and sets.")
+    public List<String> loadoutIcons = List.of("iron_pickaxe", "iron_axe", "iron_sword", "iron_hoe", "fishing_rod", "bow", "shield",
+            "emerald", "wheat", "oak_log", "diamond", "armor_stand");
 
     @Setting(path = "features.available", desc = "Features that exist on this server; sets with enabled-from a feature not listed show \"Arrives with ...\" (conquest, fishing).",
             level = Setting.Level.OWNER)
@@ -320,7 +366,7 @@ final class WardrobeConfig extends ModuleConfig {
     public String header() {
         return """
                 The wardrobe (/wardrobe): set levels and set XP, Wardrobe Tomes, merging, warzone normalization, equip
-                rules, armor points per tier, the Wardrobe Chest, Set Tokens and tier gates. The sets themselves are in sets.yml, texts in messages/wardrobe.yml.
+                rules, loadouts (/loadout), armor points per tier, the Wardrobe Chest, Set Tokens and tier gates. The sets themselves are in sets.yml, texts in messages/wardrobe.yml.
                 Reload: /skyblock reload wardrobe""";
     }
 
@@ -382,6 +428,10 @@ final class WardrobeConfig extends ModuleConfig {
 
     boolean blockedWorld(String world) {
         return blockedWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(world));
+    }
+
+    boolean loadoutBlockedWorld(String world) {
+        return loadoutBlockedWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(world));
     }
 
     boolean storable(String itemType, String itemId) {

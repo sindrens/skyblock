@@ -1,6 +1,12 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- W3 LOADOUT PARTIAL: when part of a preset can't be applied (a tool was sold, a set was merged away, no free inventory slot for a plain item), the rest of the swap still happens and the skipped parts are listed in chat (plan LD4). Or refuse the whole swap instead? (default: partial, `wardrobe.yml → loadout.partial: true`)
+- W3 LOADOUT NAMES: preset names are one word (letters, digits, `-` and `_`, max 16; typed spaces become `-`) so `/loadout <name>` and tab completion always work, and they need no chat filter. OK? (default: yes)
+- W3 COMBAT TAG: new core combat tag (`core.yml → combat.tag-seconds: 10`, `combat.mobs: true`): hitting or being hit by a player or a hostile mob (also arrows) tags you. Loadout swaps (`loadout.combat-seconds: 10`) and now also single wardrobe equips and Wardrobe Chest moves (`equip.combat-seconds: 10`, LD6) are refused while tagged. Hitting animals does not count. OK? (default: as written)
+- W3 LOADOUT FROZEN: frozen players can't swap loadouts, wear/take off sets or use the Wardrobe Chest (LD3). OK? (default: yes)
+- W3 LOADOUT SLOTS: 2 free, `skyblock.loadout.slots.3`..`.8` for ranks (the Knight 3 / Warlord 4 / Monarch 5 grants are written but commented out in `server/permissions/wardrobe.txt` until the donor groups exist), bought slots in table `loadout_slots_bought` (+1 each, max +3, account-wide; no store yet). A preset above your current slots (rank lost) is kept but locked (can still be deleted). OK? (default: as written)
+- W3 TOOLS LOCATION: the plan mentions a `tools` row location `WARDROBE`; the tools table has no location column, and the `wardrobe_storage` row already is the truth for where a tool is. Add a location column to tools for staff lookups later? (default: no, not needed)
 - W2 SELL XP: done by the main session: every `/sell` sale gives set XP (`sell_item` per item, hourly cap 8,000) to the worn set of the profile that sold. OK?
 - W2 LEVELS ON: set levels are now on by default (`levels.enabled: true`, the W1 placeholder `false` was moved to `legacy.w1-levels-enabled`), so every owned set starts at Lv 0 = 0x and levels up by playing (plan WD14). OK? (default: on)
 - W2 MERGE FAMILIES: the plan's example "Thornward · Cropwarden" shares the extra-drops family, so the "no shared bonus family" rule refuses it. Keep the strict rule (default), or allow merges that share a family?

@@ -1,4 +1,4 @@
-# Wardrobe (Phase W, docs/plans/WARDROBE.md): /wardrobe, set pieces, Set Tokens, set levels, tomes, merging, the Wardrobe Chest, staff view.
+# Wardrobe (Phase W, docs/plans/WARDROBE.md): /wardrobe, set pieces, Set Tokens, set levels, tomes, merging, the Wardrobe Chest, loadouts, staff view.
 # MiniMessage + style tags (style.yml). Item lore uses {placeholders} (filled by the plugin); chat and menus use <placeholders>.
 # Menu and lore lines: max 36 visible characters (Bedrock). Set names live in sets.yml.
 # Reload: /skyblock reload wardrobe
@@ -18,6 +18,8 @@ make-room: "<prefix><c:error><sym:cross></c:error> <c:text>Make room for your <c
 worn: "<prefix><c:success><sym:check></c:success> <c:text>Wearing <c:value><set></c:value> <c:muted>(<count>/4)</c:muted><c:text>."
 taken-off: "<prefix><c:success><sym:check></c:success> <c:text>Took off <c:value><count></c:value> piece(s). They stay in your wardrobe."
 locked-hint: "<c:text>Use <c:value>/wardrobe</c:value> to take this off."
+frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't do that while frozen."
+in-combat: "<prefix><c:error><sym:cross></c:error> <c:text>You're in combat. Wait a few seconds."
 
 cant-buy: "<prefix><c:error><sym:cross></c:error> <c:text>You can't buy that set right now."
 cant-claim: "<prefix><c:error><sym:cross></c:error> <c:text>You can't claim that set right now."
@@ -76,6 +78,38 @@ merge:
     disabled: "<c:error>set is turned off"
     not-max: "<c:error>needs max level"
     shared-family: "<c:error>same bonus type"
+
+# Loadouts (W3). <parts> lists skipped parts like "Helm (set gone), Slot 3 (no room)".
+loadout:
+  turned-off: "<prefix><c:error><sym:cross></c:error> <c:text>Loadouts are turned off for now."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No loadout called <c:value><name></c:value><c:text>. Open /loadout to see yours."
+  locked: "<prefix><c:error><sym:cross></c:error> <c:text>That loadout is locked. Ranks and the store add more."
+  gone: "<prefix><c:error><sym:cross></c:error> <c:text>That loadout is gone. Open /loadout again."
+  blocked-world: "<prefix><c:error><sym:cross></c:error> <c:text>You can't swap loadouts here."
+  refused: "<prefix><c:error><sym:cross></c:error> <c:text>Swap stopped, nothing changed: <c:value><parts></c:value><c:text>."
+  nothing: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing to swap: <c:value><parts></c:value><c:text>."
+  already: "<prefix><c:success><sym:check></c:success> <c:text>You already use <c:value><name></c:value><c:text>."
+  changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your chest or sets changed. Try again."
+  applied: "<prefix><c:success><sym:check></c:success> <c:text>Loadout <c:value><name></c:value><c:text>: <pieces> piece(s), <tools> tool(s). Old tools went to your Wardrobe Chest."
+  applied-bar: "<c:text>Loadout <c:value><name></c:value> <c:muted>· <pieces> pieces, <tools> tools"
+  skipped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Skipped: <c:value><parts></c:value><c:text>."
+  saved: "<prefix><c:success><sym:check></c:success> <c:text>Saved <c:value><name></c:value> <c:muted>(<pieces> piece(s), <tools> tool(s))</c:muted><c:text>."
+  renamed: "<prefix><c:success><sym:check></c:success> <c:text>Renamed to <c:value><name></c:value><c:text>."
+  deleted: "<prefix><c:success><sym:check></c:success> <c:text>Deleted <c:value><name></c:value><c:text>. Your sets and tools stay yours."
+  no-slot: "<prefix><c:error><sym:cross></c:error> <c:text>No free loadout place. Ranks and the store add more."
+  rename-prompt: "<prefix><c:text>Type a new name for <c:value><name></c:value> <c:text>(max <max>, letters, digits, - and _). Type <c:value><cancel></c:value> <c:text>to stop."
+  name:
+    empty: "<prefix><c:error><sym:cross></c:error> <c:text>Type a name."
+    too-long: "<prefix><c:error><sym:cross></c:error> <c:text>Names are at most <c:value><max></c:value> <c:text>characters."
+    characters: "<prefix><c:error><sym:cross></c:error> <c:text>Use letters, digits, - and _ only."
+    taken: "<prefix><c:error><sym:cross></c:error> <c:text>You already have a loadout with that name."
+  # Plain texts ({n} = place number, {slot} = hotbar slot 1-9).
+  default-name: "Loadout-{n}"
+  slot-name: "Slot {slot}"
+  skip:
+    set-gone: "set gone"
+    item-missing: "item missing"
+    no-room: "no room"
 
 chest:
   not-storable: "<prefix><c:error><sym:cross></c:error> <c:text>Only tools, enchant books, scrolls and tokens fit."
@@ -267,8 +301,8 @@ menu:
       name: "<c:value>Wardrobe Chest"
       lore: ["<c:text>Keep tools, books and tokens", "<c:text>safe. Space: <c:value><size></c:value>", "", "<c:action><sym:bullet> Click to open"]
     loadouts:
-      name: "<c:muted>Loadouts <dark_gray>(Coming soon)"
-      lore: ["<c:text>Swap armor and tools in", "<c:text>one click. Coming soon."]
+      name: "<c:value>Loadouts"
+      lore: ["<c:text>Swap sets and tools in one", "<c:text>click. Saved: <c:value><count>/<slots>", "", "<c:action><sym:bullet> Click to open"]
   set:
     subtitle: "<c:muted><activity> · Tier <tier>"
     info: ["<c:text>Wear pieces one by one or all", "<c:text>at once. 2 and 4 pieces give", "<c:text>bonuses. Sets stay yours."]
@@ -352,6 +386,77 @@ menu:
       name: "<c:value>Pick a look"
       lore: ["<c:text>The merged pieces use the", "<c:text>look of the set you click."]
     look-pick: ["<c:text>Use the <c:value><set></c:value> <c:text>look.", "", "<c:action><sym:bullet> Click to pick"]
+  loadout:
+    title: "Loadouts"
+    info: ["<c:text>Click a loadout to swap your", "<c:text>sets and hotbar tools. Old", "<c:text>tools go to the chest."]
+    edit:
+      name: "<c:value>Edit <name>"
+      lore: ["<c:text>Save, rename, icon, delete.", "", "<c:action><sym:bullet> Click to edit"]
+    empty:
+      name: "<c:muted>Empty loadout <n>"
+      lore: ["<c:text>Saves the sets you wear and", "<c:text>the tools in your hotbar.", "", "<c:action><sym:bullet> Click to save your gear"]
+    locked-slot:
+      name: "<c:muted>Loadout <n>"
+      lore: ["<c:error><sym:cross> Locked", "<c:text>Ranks and the store add", "<c:text>more loadouts."]
+    slots:
+      name: "<c:value>Loadouts <used>/<slots>"
+      lore: ["<c:text>Ranks and the store add", "<c:text>more, up to <c:value><max></c:value><c:text>."]
+    pet:
+      name: "<c:value>Pet"
+      lore: ["<c:text>Loadouts save your active", "<c:text>pet and call it back."]
+    pet-soon:
+      name: "<c:muted>Pet <dark_gray>(Coming soon)"
+      lore: ["<c:text>Pets are coming. Loadouts", "<c:text>will save your pet too."]
+    wardrobe:
+      name: "<c:value>Wardrobe"
+      lore: ["<c:text>All sets and the chest.", "", "<c:action><sym:bullet> Click to open"]
+    preset:
+      name: "<c:value><name>"
+      lore: ["<c:text>Set pieces: <c:value><pieces>", "<c:text>Tools: <c:value><tools>"]
+      missing: ["<c:error><sym:cross> <count> missing"]
+      click: ["<c:action><sym:bullet> Click to use"]
+      locked: ["<c:error><sym:cross> Locked: rank or store"]
+    edit-title: "<name>"
+    edit-info: ["<c:text>Use it, save what you wear", "<c:text>now, rename it, pick an", "<c:text>icon or delete it."]
+    gone:
+      name: "<c:error>Loadout gone"
+      lore: ["<c:text>Open /loadout again."]
+    apply:
+      name: "<c:success>Use now"
+      lore: ["<c:text>Swap to this loadout.", "", "<c:action><sym:bullet> Click to use"]
+    apply-locked:
+      name: "<c:muted>Use now"
+      lore: ["<c:error><sym:cross> Locked: rank or store"]
+    save:
+      name: "<c:value>Save current"
+      lore: ["<c:text>Replace it with the sets you", "<c:text>wear and your hotbar tools.", "", "<c:action><sym:bullet> Click to save"]
+    rename:
+      name: "<c:value>Rename"
+      lore: ["<c:text>Type a new name in chat.", "<c:muted>Max <max>, one word.", "", "<c:action><sym:bullet> Click to rename"]
+    icon:
+      name: "<c:value>Icon"
+      lore: ["<c:text>Pick the item shown for", "<c:text>this loadout.", "", "<c:action><sym:bullet> Click to pick"]
+    delete:
+      name: "<c:error>Delete"
+      lore: ["<c:text>Sets and tools stay yours.", "", "<c:action><sym:bullet> Click to delete"]
+    icon-title: "Icon"
+    icon-info: ["<c:text>Click an item to use it as", "<c:text>this loadout's icon."]
+    icon-empty:
+      name: "<c:muted>No icons"
+      lore: ["<c:text>Ask staff to add icons."]
+    icon-pick:
+      name: "<c:value>Use this icon"
+      lore: ["<c:action><sym:bullet> Click to pick"]
+    line:
+      keep: "<c:text><part>: <c:muted>keep"
+      empty: "<c:text><part>: <c:muted>empty"
+      set: "<c:text><part>: <c:value><set>"
+      gone: "<c:text><part>: <c:error>set gone"
+      pet: "<c:text>Pet: <c:value><pet>"
+      pet-keep: "<c:text>Pet: <c:muted>keep"
+      no-tools: "<c:muted>No tools saved"
+      tool: "<c:text><slot>: <c:value><item>"
+      tool-missing: "<c:text><slot>: <c:error><item> (missing)"
   chest:
     title: "Chest"
     info: ["<c:text>Unique items only: tools,", "<c:text>enchant books, scrolls and", "<c:text>tokens. Safe per profile."]
@@ -424,6 +529,12 @@ status:
   also-from: ["<c:muted>Also from: <crates>"]
 
 confirm:
+  loadout-save:
+    crumb: "Save loadout"
+    details: ["<c:text>Replace <c:value><name></c:value>", "<c:text>with what you wear and", "<c:text>hold now."]
+  loadout-delete:
+    crumb: "Delete loadout"
+    details: ["<c:text>Delete <c:value><name></c:value>", "<c:muted>Your sets and tools stay."]
   buy:
     crumb: "Buy set"
     details: ["<c:text>Add <c:value><set></c:value>", "<c:text>Cost: <c:value><price>", "<c:text>No refunds."]

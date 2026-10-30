@@ -48,7 +48,7 @@ categories:
     slot: 20
     name: "<c:flame><bold>Gear"
     lore: ["<c:text>Tools, the Forge, sets,", "<c:text>enchants and blueprints."]
-    topics: [tools, enchants, wardrobe]
+    topics: [tools, enchants, wardrobe, loadout]
   combat-events:
     icon: clock
     status: coming-soon
@@ -351,6 +351,33 @@ topics:
           - "<c:text>bonuses can merge into one set"
           - "<c:text>with both bonuses. It starts at"
           - "<c:text>Lv 0 again. Costs crystals."
+
+  loadout:
+    icon: armor_stand
+    aliases: [loadouts, preset, presets, swap]
+    name: "<c:flame>Loadouts"
+    summary: ["<c:text>Swap sets and hotbar tools", "<c:text>in one click."]
+    take-me-there: "loadout"
+    commands: [Wardrobe]
+    pages:
+      - title: "<c:value>Saving"
+        lines:
+          - "<c:text>Open <c:value>/loadout</c:value><c:text> and click an empty"
+          - "<c:text>place. It saves the sets you wear"
+          - "<c:text>and the tools in your hotbar."
+          - "<c:text>You get 2; ranks add more."
+      - title: "<c:value>Swapping"
+        lines:
+          - "<c:text>Click a loadout, or type"
+          - "<c:value>/loadout Mining</c:value><c:text>. Sets change and"
+          - "<c:text>tools jump into their slots. Old"
+          - "<c:text>tools go to the Wardrobe Chest."
+      - title: "<c:value>Rules"
+        lines:
+          - "<c:text>Not in combat, not in the"
+          - "<c:text>warzone, 2 s between swaps."
+          - "<c:text>Nothing is ever dropped: a slot"
+          - "<c:text>without room is skipped."
 
   skills:
     icon: experience_bottle
