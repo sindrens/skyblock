@@ -115,6 +115,8 @@ Targets: casual end of season ~40, regular end ~70, grinder solo end ~105, activ
 **Config:** `progression.yml` (divisor 10, points per source, caps, 3-day member rule, bank formula, rescan times), `block-values.yml` (catalog list: keep plain `@Setting` keys out of the list section).
 **Permissions:** `skyblock.progression.level` (everyone: `/is level`), `skyblock.progression.recalculate` (everyone, members only in game).
 
+**Built (M5-2, 30 Oct):** `LevelManager` (8 sources, debounced recalculation, notices, boards), `BlockWorth` (live tracking + throttled chunk-snapshot rescans), `/is level` and `/is top` (sub-commands in the islands module, menus in progression), NPCHOLO board sources `island_level` / `island_value`. Differences from the text above: caps are solved together so every cap holds against the final total (same result for the example, 384 points / level 38 / "cap 86"); `island_level` keeps per-source columns (`pts_*`) instead of a JSON breakdown; the bank needs 24 h of samples before it counts. Defaults and open points: `docs/OPEN_QUESTIONS.md` (M5-2). Details: `docs/commands/progression.md`.
+
 ## M5.3 Task engine (the challenge book, O6)
 - Every upgrade level and mastery rank has **1–3 tasks**. Tasks are in `tasks.yml` per level, never in code.
 - **Task types:** break X of a block (Depths ore/log, island crops), kill X of a mob, catch X fish (later), harvest X crops on the island, reach skill level X (any member), reach pillar level X, own X spawners of a tier, earn $X from selling, **deliver** X items, island level X.

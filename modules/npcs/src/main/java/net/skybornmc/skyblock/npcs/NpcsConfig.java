@@ -140,8 +140,23 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "leaderboards.size", desc = "Players listed per board.", min = 3, max = 15)
     public int size = 10;
 
-    @Setting(path = "leaderboards.sources", desc = "Leaderboard id -> data, as 'id: money' (or crystals, shards, gems), 'id: skill <mining|foraging|combat|farming|fishing>', 'id: island <stat> [all_time|this_week|last_week|today] [all|solo|team]' or 'id: none' (shows Coming soon).")
+    @Setting(path = "leaderboards.sources", desc = "Leaderboard id -> data, as 'id: money' (or crystals, shards, gems), 'id: skill <mining|foraging|combat|farming|fishing>', 'id: island <stat> [all_time|this_week|last_week|today] [all|solo|team]', 'id: island_level [all|solo|team]', 'id: island_value [all|solo|team]' or 'id: none' (shows Coming soon).")
     public List<String> sources = List.of(
+            "island_top_solo: island_level solo",
+            "island_top_team: island_level team",
+            "weekly_island_gain: none",
+            "weekly_pillar_gain: none",
+            "boss_damage: none",
+            "mining: skill mining",
+            "foraging: skill foraging",
+            "combat: skill combat",
+            "farming: skill farming",
+            "fishing: skill fishing",
+            "baltop: money",
+            "money: money");
+
+    /** The four boards that showed "Coming soon" before PHASE-5 M5.2 (version 1 default). */
+    static final List<String> SOURCES_V1 = List.of(
             "island_top_solo: none",
             "island_top_team: none",
             "weekly_island_gain: none",
@@ -154,6 +169,21 @@ public final class NpcsConfig extends ModuleConfig {
             "fishing: skill fishing",
             "baltop: money",
             "money: money");
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** v2 (PHASE-5 M5.2): the island top boards show island levels; an owner-edited list is kept. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V1, sources())));
+    }
+
+    private static List<String> sources() {
+        return new NpcsConfig().sources;
+    }
 
     @Override
     public String fileName() {

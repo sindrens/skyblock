@@ -114,6 +114,29 @@ public final class DepthsModule implements SkyblockModule {
             public boolean inDepths(org.bukkit.Location location) {
                 return location != null && location.getWorld() != null && location.getWorld().getName().equalsIgnoreCase(zones.world());
             }
+
+            // PHASE-5 M5.2: island level source "Depths progress" (tiers of a wing open at a skill level).
+            @Override
+            public int unlockedTiers(net.skybornmc.skyblock.common.skills.SkillType skill, int level) {
+                int open = 0;
+                for (net.skybornmc.skyblock.depths.zones.Zone z : zones.zones()) {
+                    if (z.aspect().skill() == skill && net.skybornmc.skyblock.depths.tiers.TierRules.unlocked(level, z.requiredLevel())) {
+                        open++;
+                    }
+                }
+                return open;
+            }
+
+            @Override
+            public int tierCount(net.skybornmc.skyblock.common.skills.SkillType skill) {
+                int count = 0;
+                for (net.skybornmc.skyblock.depths.zones.Zone z : zones.zones()) {
+                    if (z.aspect().skill() == skill) {
+                        count++;
+                    }
+                }
+                return count;
+            }
         });
         // BUILDS: /skyblock builds apply merges the builders' layout into zones.yml, then the module reloads.
         core.services().register(ID, net.skybornmc.skyblock.common.builds.DepthsLayoutHook.class,
