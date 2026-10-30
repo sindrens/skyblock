@@ -14,3 +14,6 @@ Money goes to the seller even when they are offline; they get a chat message on 
 Other permissions: `skyblock.staff.auction.remove` (mods and up), `skyblock.auction.bypass-playtime` (admins).
 
 For developers: the listing state machine is `AuctionEngine` (pending → active → buying → sold; active → cancelled/expired; pending → failed). Each change is a conditional `UPDATE … WHERE status = …`; payments use `EconomyService` with idempotency keys `ah_fee:<id>`, `ah_buy:<id>`, `ah_sale:<id>`; listings left in pending/buying by a crash are resolved on startup and every `tasks.cache-resync-seconds`.
+
+## Profiles (PROF)
+Listings, the collection bin and seller notices belong to a **profile**: `ah_listings.seller`/`buyer` and `ah_collection.owner` hold profile keys (profile 1 = the player UUID, so old rows are profile 1's). A sale always pays the profile that listed, never the player's active profile. Items for a profile that isn't active (or while its player switches) wait in that profile's collection bin. Buying a listing of your own other profile is refused (`buy.own-profile`, engine outcome `OWN_PROFILE`, audited `profile_transfer_blocked`). A profile with active listings can't be deleted (`profiles.delete-listings`); its collection bin is deleted with it.

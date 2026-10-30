@@ -64,6 +64,7 @@ buy:
   insufficient: "<prefix><c:error><sym:cross></c:error> <c:text>You need <price><c:text>, you have <balance><c:text>."
   gone: "<prefix><c:error><sym:cross></c:error> <c:value><item></c:value> <c:text>was already sold, cancelled or expired."
   own: "<prefix><c:error><sym:cross></c:error> <c:text>That's your own listing. Cancel it in <c:value>My listings</c:value>."
+  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>That listing is from your other profile. Your profiles can't trade with each other."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>Someone is buying <c:value><item></c:value> <c:text>right now. Try again soon."
   processing: "<prefix><c:text>Buying <c:value><item></c:value><c:text>... You get the item or keep your money; check your collection bin in a minute."
 
@@ -312,3 +313,7 @@ mine:
     pending:
       - ""
       - "<c:muted>Being listed..."
+
+# Island profiles (PROF).
+profiles:
+  delete-listings: "<prefix><c:error><sym:cross></c:error> <c:text>This profile still has <c:value><count></c:value> auction listing(s). Switch to it and cancel them first."

@@ -128,6 +128,34 @@ class AuctionEngineTest {
     }
 
     @Test
+    void anotherProfileOfTheSellerCantBuyAndNothingMoves() {
+        // PROF/P4: the seller lists on profile 1, then switches to profile 2 (another key of the same player)
+        UUID sellerProfile2 = UUID.randomUUID();
+        economy.set(sellerProfile2, 1_000_000);
+        java.util.List<String> audited = new java.util.ArrayList<>();
+        engine.ownProfileCheck((s1, b, actor) -> {
+            boolean own = s1.equals(seller) && b.equals(sellerProfile2);
+            if (own) {
+                audited.add("ah_buy");
+            }
+            return own;
+        });
+        Listing l = list(10_000);
+        long sellerBefore = economy.get(seller);
+        assertEquals(AuctionEngine.BuyOutcome.OWN_PROFILE, engine.buy(l.id(), sellerProfile2, "Seller", Actor.SYSTEM).join().outcome());
+        assertEquals(java.util.List.of("ah_buy"), audited);
+        assertEquals(ListingStatus.ACTIVE, status(l.id()), "the listing is untouched");
+        assertEquals(1_000_000, economy.get(sellerProfile2), "no money left profile 2");
+        assertEquals(sellerBefore, economy.get(seller), "no money reached profile 1");
+        assertEquals(0, collectionRows(sellerProfile2), "no item reached profile 2");
+        // still refused after the browse cache was reloaded from the database
+        engine.refreshCache().join();
+        assertEquals(AuctionEngine.BuyOutcome.OWN_PROFILE, engine.buy(l.id(), sellerProfile2, "Seller", Actor.SYSTEM).join().outcome());
+        // another player still can
+        assertEquals(AuctionEngine.BuyOutcome.SOLD, engine.buy(l.id(), buyer, "Buyer", Actor.SYSTEM).join().outcome());
+    }
+
+    @Test
     void sellerNoticesAreTakenOnce() {
         Listing l = list(500);
         engine.buy(l.id(), buyer, "Buyer", Actor.SYSTEM).join();

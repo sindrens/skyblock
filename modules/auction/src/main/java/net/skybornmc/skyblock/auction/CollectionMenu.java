@@ -37,9 +37,9 @@ final class CollectionMenu extends PagedMenu<CollectionEntry> {
     }
 
     static void open(AuctionModule module, Player player, Menu parent) {
-        UUID uuid = player.getUniqueId();
+        UUID uuid = module.key(player);
         load(module, uuid, rows -> {
-            Player p = Bukkit.getPlayer(uuid);
+            Player p = module.online(uuid);
             if (p == null) {
                 return;
             }
@@ -53,7 +53,7 @@ final class CollectionMenu extends PagedMenu<CollectionEntry> {
         module.engine().store().collection(uuid).whenComplete((rows, error) -> module.core.scheduler().main("auction:collection", () -> {
             if (error != null) {
                 module.core.plugin().getLogger().log(Level.WARNING, "Auction: loading the collection bin failed", Database.cause(error));
-                Player p = Bukkit.getPlayer(uuid);
+                Player p = module.online(uuid);
                 if (p != null) {
                     module.send(p, "error");
                 }
@@ -161,7 +161,7 @@ final class CollectionMenu extends PagedMenu<CollectionEntry> {
     }
 
     private void reload() {
-        load(module, viewer.getUniqueId(), fresh -> {
+        load(module, module.key(viewer), fresh -> {
             busy = false;
             rows = fresh;
             if (isOpen()) {
