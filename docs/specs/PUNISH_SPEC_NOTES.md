@@ -316,3 +316,63 @@ Release steps for the main session (before each release, in this order):
   table, dry-run report), `P8StoreTest` (switch storage, trainee request + approve as trainee, trainee warn undo by an
   approver, island request length, dry-run log leaves punishments/requests/suggestions untouched).
 
+
+## P9 implementation notes (for P10+)
+- **Config:** `PunishConfig.Extras` gained `guard` (`Guard.Settings`: enabled, window 1m-1h, tiers by the moderation.yml
+  limit tier names `helper`/`mod`/`admin` with mode block|alert and max-bans/-mutes/-sanctions/-total (0 = none, -1 = no
+  limit), default-tier, allow-default, alert-rollback), `rollback` (`RollbackRules.Settings`: min-period 15m, max-period
+  7d (never more than 30d), confirm-window), `falseReports` (`FalseReportRules.Settings`: enabled, threshold, window, cap,
+  reason) and `purge` (`PurgeRules.Settings`: keep-ledger 365d, `0` = nothing ended is kept, confirm-window). The P8
+  constructor is kept. `extras.false-reports.reason` is only validated when the section is written (an older file
+  without `report-abuse` keeps loading).
+- **V010:** tables `punish_guard` (one row per staff member: BLOCKED / LOCKED / ALLOWED + `allowed_until`) and
+  `punish_rollbacks` (one row per rollback = the audit group), columns `punishments.rollback_id`, `sanctions.rollback_id`,
+  `punishments.purged_at`, index on `punishment_suggestions (target_uuid, reason_id, created)`. Staff V003:
+  `report_blocks` (player, until, reference `punishment:<id>`, lifted_at; never deleted).
+- **Guard (14.1):** `Guard` (pure: tiers, `decide`, `exceeded`, sliding `Window`), pipeline slot `GUARD` filled by
+  `PunishDecision.guard(GuardView)` (`full(dup, approval, training, guard)` is the live pipeline). `Actor.guardTier`
+  (13th component, 12-arg constructor kept; `null` = never limited: console, system, `skyblock.admin.punish.guard.exempt`).
+  The stage only reads (menu previews run it); a refused real attempt with `trigger=block` reaches
+  `PunishmentService.tell` (and the bulk branch of `handle`), which calls `GuardService.triggered`: stored BLOCKED row,
+  alert (type `guard`, always on) + Discord + audit `guard_block`. Counting: `PunishmentStore.onApplied` (called from
+  `insertRow`, the single insert) → `GuardService.recorded` (approved requests count for the approver); an applied
+  punishment over a limit (alert mode or an allowance) alerts once per window (`guard_alert`). Sanctions:
+  `Sanctions.guardRefuses` before applying, `guardCount` after, `rightsProblem` shows locked/blocked read-only.
+  `/pguard allow|lock|unlock|status` (audit `guard_allow`, `guard_lock`, `guard_unlock`). A lock holds even with
+  `guard.enabled: false` and for staff without a tier; it blocks requests too (slot runs before TRAINING/APPROVAL).
+- **Rollback (14.1):** `RollbackRules` (pure selection: issuer = that staff member, created in `[since, until]`, not
+  removed, never instant types; sanctions: active blocks or held money/items). `/prollback` previews and keeps the id
+  list per sender; a confirm (click or typed) within `confirm-window` for the same staff + period runs
+  `PunishmentStore.rollback`: one `punish_rollbacks` row, then per target one transaction under the target lock; each
+  UPDATE repeats `issuer_uuid = ? AND removed_at IS NULL`, so unrelated rows and a second confirm change nothing.
+  Reversed warns set their pending suggestions to REMOVED (note `rollback`). Effects: `PunishmentService.lift(p,
+  "rollback")` for rows still in force (player messages `rollback.player-*`), `Sanctions.rollback` (lift / restore money /
+  restore item, marked with the group). One audit entry `rollback` (ids, sanctions, removed suggestions), audit
+  `rollback_preview`, one staff line, one Discord embed (`PunishEmbeds.rollback`). `/pstats` line "Reversed (rollback)"
+  from `rollback_id` (`PunishStats.Row.rolledBack`); rolled back rows are removed, so `Offences` never counts them.
+- **False reports (14.5):** `common/moderation/FalseReports` (moderation provides `FalseReportService`) and
+  `common/moderation/ReportBlocking` (staff provides it in `ReportService`). On an INVALID close the staff module counts
+  the reporter's INVALID closes in `FalseReports.window()` (fallback `staff.yml reports.invalid-window-days`), tells the
+  staff member "This is Steve's 3rd invalid report in 30 days." and calls `invalidReport`; moderation checks the threshold
+  and creates the `report-abuse` suggestion through `PunishmentStore.suggestApiCapped` (waiting one refreshed, else none
+  created in the last `cap`, any status; under the target lock). New type `Punishment.Type.REPORT_BLOCK` (timed; ladder
+  `report-block <time|perm>`; permission = mute; training kind = mute; audit `report_block`); enforced after apply with
+  `ReportBlocking.blockReporting(uuid, until, "punishment:<id>")`, lifted on undo/rollback. Without the service the step
+  is replaced like an island step (`IslandSteps.Context.reports`, `Why.NO_REPORTS`); API suggestions use the live
+  availability. `/report` (command and the menu path) refuses a blocked player.
+- **Purge (14.10):** `PurgeRules` (pure fates: in force = kept, ended within keep-ledger = minimal ledger, else deleted;
+  anonymous name = account id without dashes (32 chars); ledger reason = reason id or `purged`; IP only on an IP ban in
+  force). `PunishmentStore.purgePreview/purge` (one transaction under the target lock; the counts come from the same
+  transaction, so preview = result; then `social_player_ips` rows, optional table). `purgeLedgers` runs with the evidence
+  purge every 6h (deletes purged rows past keep-ledger that are not in force, drops IPs of purged rows no longer in
+  force; audit `purge_ledger_expired`). `/ppurge` needs a typed `confirm` within `confirm-window` after a preview of the
+  same player by the same sender; audit `purge` / `purge_preview` with the account id and counts only. The audit log is
+  never touched.
+- **Audit actions:** guard_block, guard_alert, guard_allow, guard_lock, guard_unlock, rollback_preview, rollback,
+  false_report_suggestion, false_report_refresh, false_report_capped, report_block (staff), report_block_lift (staff),
+  report_block_failed, purge_preview, purge, purge_ledger_expired; sanction_lift/sanction_restore with the rollback.
+- **Tests:** `P9LogicTest` (guard table incl. window, bulk, lock/allow/alert, the stage; rollback selection, counts,
+  period, confirm; false-report threshold/cap and the report-block step; purge fates; config + messages),
+  `P9StoreTest` (rollback only the right rows + suggestion removal + stats; capped suggestion; purge preview = result,
+  ledger, IP, audit untouched, retention; guard store), staff `FalseReportsTest` (only invalid, window count, ordinals,
+  report blocks).

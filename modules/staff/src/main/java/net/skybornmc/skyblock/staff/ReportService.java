@@ -31,9 +31,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * {@code /report} for players and {@code /reports} for staff (GUI + claim/close commands), all persisted and audited.
  * Also the {@link ReportLink} service for moderation (Phase P 12.9): a punishment closes the punishing staff member's
- * claimed reports about that player.
+ * claimed reports about that player; the {@code ReportBlocking} service (Phase P 14.5): the {@code report-block} ladder
+ * step stops a player from using {@code /report}; and the false report penalty (14.5): closing a report as invalid
+ * tells staff how many invalid reports the reporter has and asks moderation's {@code FalseReports} for a suggestion.
  */
-final class ReportService extends StaffFeature implements Listener, net.skybornmc.skyblock.common.moderation.ReportLink {
+final class ReportService extends StaffFeature implements Listener, net.skybornmc.skyblock.common.moderation.ReportLink,
+        net.skybornmc.skyblock.common.moderation.ReportBlocking {
 
     private final Cooldowns cooldowns = new Cooldowns();
     private final MainThread main;
@@ -105,6 +108,31 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
     // ------------------------------------------------------------------ /report
 
     private void report(Player reporter, String targetName, String text) {
+        // Phase P 14.5: a report block refuses /report before anything else (also before the reason picker)
+        store.activeReportBlocks(reporter.getUniqueId(), System.currentTimeMillis()).thenAcceptAsync(ends -> {
+            Optional<Long> until = ReportRules.blockedUntil(ends);
+            if (until.isPresent()) {
+                refuseBlocked(reporter, until.get());
+                return;
+            }
+            reportChecked(reporter, targetName, text);
+        }, main).exceptionally(e -> {
+            core.plugin().getLogger().warning("Could not check report blocks: " + e.getMessage());
+            return null;
+        });
+    }
+
+    private void refuseBlocked(Player reporter, long until) {
+        if (until == Long.MAX_VALUE) {
+            msg.send(reporter, "report.blocked-perm");
+        } else {
+            msg.send(reporter, "report.blocked", Msg.p("time", Format.duration(Duration.ofMillis(Math.max(1000,
+                    until - System.currentTimeMillis())))));
+        }
+        core.sounds().play(reporter, "error");
+    }
+
+    private void reportChecked(Player reporter, String targetName, String text) {
         Player online = Bukkit.getPlayerExact(targetName);
         CompletableFuture<Optional<UUID>> lookup = online != null
                 ? CompletableFuture.completedFuture(Optional.of(online.getUniqueId()))
@@ -165,7 +193,15 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
     /** Files the report after the full checks (open counts come from the database). */
     void submit(Player reporter, UUID target, String targetName, String reason, String details) {
         String cleanDetails = ReportRules.clean(details == null ? "" : details, config.reportDetailsMaxLength);
-        store.reporterState(reporter.getUniqueId(), target).thenAcceptAsync(state -> {
+        store.activeReportBlocks(reporter.getUniqueId(), System.currentTimeMillis())
+                .thenCombine(store.reporterState(reporter.getUniqueId(), target), (ends, state) -> Map.entry(ends, state))
+                .thenAcceptAsync(both -> {
+            Optional<Long> blocked = ReportRules.blockedUntil(both.getKey());
+            if (blocked.isPresent()) {
+                refuseBlocked(reporter, blocked.get()); // Phase P 14.5 (the reason picker may have been open)
+                return;
+            }
+            int[] state = both.getValue();
             Optional<ReportRules.Refusal> refusal = ReportRules.check(reporter.getUniqueId().equals(target), cooldownLeft(reporter),
                     playtime(reporter), config.reportMinPlaytimeMinutes, state[0], config.reportMaxOpen, state[1] > 0);
             if (refusal.isPresent()) {
@@ -256,6 +292,9 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
                     msg.send(staff, "reports.closed", Msg.p("id", id), Msg.p("outcome", outcomeName(staff, outcome)));
                     audit("report_close", staff, report.target(), report.targetName(),
                             Map.of("report_id", id, "outcome", outcome.name(), "reporter", report.reporterName()));
+                    if (ReportRules.falseReport(outcome)) {
+                        falseReport(staff, report);
+                    }
                     Player reporter = Bukkit.getPlayer(report.reporter());
                     if (reporter != null) {
                         tellReporter(reporter, report);
@@ -278,6 +317,72 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
         Report.Outcome outcome = Arrays.stream(Report.Outcome.values()).filter(o -> o.name().equals(report.outcome()))
                 .findFirst().orElse(Report.Outcome.NO_EVIDENCE);
         msg.send(reporter, "report.closed-" + outcome.key(), Msg.p("id", report.id()), Msg.p("player", report.targetName()));
+    }
+
+    // ------------------------------------------------------------------ false reports (Phase P 14.5)
+
+    private Optional<net.skybornmc.skyblock.common.moderation.FalseReports> falseReports() {
+        return core.services().optional(net.skybornmc.skyblock.common.moderation.FalseReports.class);
+    }
+
+    /**
+     * A report was closed as invalid (the only outcome that counts): "This is Steve's 3rd invalid report in 30 days." to
+     * the staff member, then moderation decides about a report-abuse suggestion (threshold, weekly cap; never automatic).
+     */
+    private void falseReport(Player staff, Report report) {
+        Optional<net.skybornmc.skyblock.common.moderation.FalseReports> service = falseReports();
+        Duration window = service.map(net.skybornmc.skyblock.common.moderation.FalseReports::window)
+                .orElse(Duration.ofDays(config.invalidWindowDays));
+        long since = System.currentTimeMillis() - window.toMillis();
+        store.closedCount(report.reporter(), Report.Outcome.INVALID, since).thenComposeAsync(count -> {
+            String nth = count + core.messages().raw(MODULE, "reports.ordinal." + ReportRules.ordinalSuffix(count));
+            msg.send(staff, "reports.invalid-count", Msg.p("player", report.reporterName()), Msg.p("nth", nth),
+                    Msg.number("count", count), Msg.p("window", Format.duration(window)));
+            if (service.isEmpty()) {
+                return CompletableFuture.completedFuture(null);
+            }
+            return service.get().invalidReport(report.reporter(), report.reporterName(), count, staff.getUniqueId(),
+                    staff.getName());
+        }, main).thenAcceptAsync(result -> {
+            if (result == null) {
+                return;
+            }
+            switch (result.outcome()) {
+                case SUGGESTED -> msg.send(staff, "reports.invalid-suggested", Msg.p("player", report.reporterName()),
+                        Msg.p("sid", result.suggestionId()));
+                case REFRESHED -> msg.send(staff, "reports.invalid-refreshed", Msg.p("player", report.reporterName()),
+                        Msg.p("sid", result.suggestionId()));
+                case CAPPED -> msg.send(staff, "reports.invalid-capped", Msg.p("player", report.reporterName()));
+                case BELOW_THRESHOLD, DISABLED -> {
+                    // the count line above is enough
+                }
+            }
+        }, main).exceptionally(e -> {
+            core.plugin().getLogger().warning("False report check failed: " + e.getMessage());
+            return null;
+        });
+    }
+
+    // ------------------------------------------------------------------ report blocks (Phase P 14.5)
+
+    @Override
+    public CompletableFuture<Void> blockReporting(UUID player, Long until, String reference) {
+        long now = System.currentTimeMillis();
+        return store.addReportBlock(player, until, reference, now).thenRun(() -> core.audit().logPlayer(
+                net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "report_block",
+                net.skybornmc.skyblock.common.audit.Actor.system("moderation"), player, null,
+                until == null ? null : until - now, null, Map.of("reference", reference, "until", until == null ? "perm" : until)));
+    }
+
+    @Override
+    public CompletableFuture<Boolean> liftReportBlock(String reference) {
+        return store.liftReportBlock(reference, System.currentTimeMillis()).thenApply(lifted -> {
+            if (lifted) {
+                core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "report_block_lift",
+                        net.skybornmc.skyblock.common.audit.Actor.system("moderation"), Map.of("reference", reference));
+            }
+            return lifted;
+        });
     }
 
     // ------------------------------------------------------------------ report link (Phase P 12.9)

@@ -84,3 +84,14 @@ lp group mod permission set skyblock.staff.notify.appeals true
 lp group admin permission set skyblock.staff.notify.approvals true
 lp group admin permission set skyblock.staff.notify.guard true
 lp group admin permission set skyblock.staff.notify.report true
+
+# --- Phase P, P9: staff guard + rollback (spec 14.1), data deletion (spec 14.10) ---
+# /pguard and /prollback: admins (also covered by skyblock.admin.* in base.txt; listed so the intent is visible).
+lp group admin permission set skyblock.admin.punish.guard true
+lp group admin permission set skyblock.admin.punish.rollback true
+# Owner only: never limited by the guard, and /ppurge. Admins get skyblock.admin.* in base.txt, so these two are set to
+# false for admins and back to true for the owner (an own node beats the inherited one).
+lp group admin permission set skyblock.admin.punish.guard.exempt false
+lp group admin permission set skyblock.admin.punish.purge false
+lp group owner permission set skyblock.admin.punish.guard.exempt true
+lp group owner permission set skyblock.admin.punish.purge true

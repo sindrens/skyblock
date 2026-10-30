@@ -86,6 +86,18 @@ final class SanctionStore {
                 + "AND state <> 'FAILED' AND state <> 'PENDING'", rs -> rs.getLong(1), issuer, from, to).orElse(0L));
     }
 
+    /** Sanctions {@code issuer} gave inside {@code [since, until]} still active or held (rollback, spec 14.1). */
+    CompletableFuture<List<Sanction>> rollbackCandidates(UUID issuer, long since, long until, long now) {
+        return db.async(c -> RollbackRules.selectSanctions(Sql.query(c, "SELECT " + COLUMNS + " FROM sanctions "
+                        + "WHERE issuer_uuid = ? AND created >= ? AND created <= ? AND state = 'ACTIVE' ORDER BY id ASC",
+                SanctionStore::map, issuer, since, until), issuer, since, until, now));
+    }
+
+    /** Marks a sanction as reversed by rollback {@code group} (P9; only after it was lifted or given back). */
+    CompletableFuture<Void> markRollback(long id, long group) {
+        return db.run(c -> Sql.update(c, "UPDATE sanctions SET rollback_id = ? WHERE id = ?", group, id));
+    }
+
     // ------------------------------------------------------------------ freeze / block trading
 
     /** Outcome of starting a freeze/trade block. */

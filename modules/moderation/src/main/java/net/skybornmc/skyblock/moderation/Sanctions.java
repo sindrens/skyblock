@@ -244,10 +244,39 @@ final class Sanctions implements SanctionService {
         return kind == Sanction.Kind.ITEM || core.services().optional(EconomyService.class).isPresent();
     }
 
+    /** The guard of spec 14.1 (P9; set by the module). */
+    private GuardService guard;
+
+    void guard(GuardService value) {
+        this.guard = value;
+    }
+
+    /**
+     * The guard at the moment of applying (spec 14.1: max-sanctions per window): refuses a locked or blocked staff
+     * member, and blocks one whose sanction would go over the limit. Main thread. Returns true if refused (and told).
+     */
+    private boolean guardRefuses(Player staff) {
+        String problem = guard == null ? null : guard.sanctionProblem(staff);
+        return problem != null && refuse(staff, problem);
+    }
+
+    /** A sanction was applied: the guard counts it (spec 14.1). */
+    private void guardCount(Player staff) {
+        if (guard != null) {
+            guard.recorded(staff.getUniqueId(), staff.getName(), Guard.Kind.SANCTION, System.currentTimeMillis());
+        }
+    }
+
     /** Why {@code staff} can't give this kind right now (message key), or {@code null}. Main thread. */
     String rightsProblem(CommandSender staff, Sanction.Kind kind) {
         if (!available(kind)) {
             return "sanctions.unavailable";
+        }
+        if (guard != null && staff instanceof Player p) {
+            String g = guard.stateProblem(p.getUniqueId()); // 14.1: locked or blocked (read only)
+            if (g != null) {
+                return g;
+            }
         }
         if (!staff.hasPermission(permission(kind))) {
             return "sanctions.no-permission";
@@ -342,6 +371,9 @@ final class Sanctions implements SanctionService {
             refuse(staff, "error.self");
             return CompletableFuture.completedFuture(Optional.empty());
         }
+        if (guardRefuses(staff)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
         long now = System.currentTimeMillis();
         Sanction draft = new Sanction(0, kind, target, targetName, null, staff.getUniqueId(), staff.getName(),
                 reasonText(null, reasonId), now, SanctionRules.expires(length, now), null, null, null, Sanction.State.ACTIVE,
@@ -353,6 +385,7 @@ final class Sanctions implements SanctionService {
             }
             Sanction s = r.created();
             remember(s);
+            guardCount(staff);
             notifyStaff(staff, "sanctions.notify.started", parts(staff, s));
             Player online = Bukkit.getPlayer(target);
             if (online != null) {
@@ -472,6 +505,9 @@ final class Sanctions implements SanctionService {
             refuse(staff, "error.self");
             return CompletableFuture.completedFuture(Optional.empty());
         }
+        if (guardRefuses(staff)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
         EconomyService eco = core.services().optional(EconomyService.class).orElseThrow();
         ProfileService profiles = ProfileService.of(core.services());
         String reason = reasonText(null, reasonId);
@@ -487,6 +523,7 @@ final class Sanctions implements SanctionService {
                         return Optional.<Sanction>empty();
                     }
                     Sanction s = result.sanction();
+                    guardCount(staff);
                     notifyStaff(staff, "sanctions.notify.money", parts(staff, s));
                     Player online = Bukkit.getPlayer(target);
                     if (online != null) {
@@ -554,9 +591,9 @@ final class Sanctions implements SanctionService {
                 return;
             }
             if (s.kind() == Sanction.Kind.MONEY) {
-                restoreMoney(sender, s);
+                restoreMoney(sender, s, text(null, "sanctions.restore-reason"), null);
             } else {
-                restoreItem(sender, s);
+                restoreItem(sender, s, text(null, "sanctions.restore-reason"), null);
             }
         }, main).exceptionally(e -> {
             failed(sender, e, "restore");
@@ -564,7 +601,47 @@ final class Sanctions implements SanctionService {
         });
     }
 
-    private void restoreMoney(CommandSender sender, Sanction s) {
+    /**
+     * Rollback (P9, spec 14.1): lifts the active freeze/trade blocks and gives back the held money and items of
+     * {@code list} with the reason {@code why}. Each success is marked with the rollback group and audited as usual;
+     * {@code done} is called once per sanction that was reversed (main thread). An item of an offline player stays held
+     * (staff are told to restore it later with /psanction restore).
+     */
+    void rollback(CommandSender sender, List<Sanction> list, long group, String why, java.util.function.Consumer<Sanction> done) {
+        java.util.function.Consumer<Sanction> mark = s -> {
+            store.markRollback(s.id(), group);
+            done.accept(s);
+        };
+        for (Sanction s : list) {
+            switch (s.kind()) {
+                case FREEZE, TRADE -> liftQuietly(sender, s, why, mark);
+                case MONEY -> restoreMoney(sender, s, why, mark);
+                case ITEM -> restoreItem(sender, s, why, mark);
+            }
+        }
+    }
+
+    private void liftQuietly(CommandSender sender, Sanction s, String why, java.util.function.Consumer<Sanction> done) {
+        UUID by = sender instanceof Player p ? p.getUniqueId() : null;
+        store.lift(s.id(), by, sender.getName(), why, System.currentTimeMillis()).thenAcceptAsync(r -> {
+            if (r.isEmpty()) {
+                return; // ended meanwhile
+            }
+            Sanction lifted = r.get();
+            forget(lifted);
+            Player online = Bukkit.getPlayer(lifted.target());
+            if (online != null) {
+                msg.send(online, "sanctions.you.lifted", parts(online, lifted));
+            }
+            audit(sender, "sanction_lift", lifted, Map.of("rollback", true));
+            done.accept(lifted);
+        }, main).exceptionally(e -> {
+            failed(sender, e, "rollback lift");
+            return null;
+        });
+    }
+
+    private void restoreMoney(CommandSender sender, Sanction s, String why, java.util.function.Consumer<Sanction> done) {
         Optional<EconomyService> eco = core.services().optional(EconomyService.class);
         if (eco.isEmpty()) {
             msg.send(sender, "sanctions.unavailable", Msg.p("kind", kindText(null, s.kind())));
@@ -577,7 +654,6 @@ final class Sanctions implements SanctionService {
                 : profiles.profileKeyAsync(s.target());
         UUID by = sender instanceof Player p ? p.getUniqueId() : null;
         String byName = sender.getName();
-        String why = text(null, "sanctions.restore-reason");
         Currency currency = Currency.byKey(s.currency()).orElse(Currency.MONEY);
         key.thenCompose(k -> eco.get().executeGuarded(Transaction.deposit(AccountRef.player(k), currency, s.amount(),
                         TxReason.SANCTION_RESTORE).actor(actor(sender)).reference("sanction:" + s.id())
@@ -592,22 +668,25 @@ final class Sanctions implements SanctionService {
                         msg.send(sender, "sanctions.money-failed", Msg.p("player", s.targetName()));
                         return;
                     }
-                    Sanction done = s.handled(Sanction.State.RESTORED, by, byName, System.currentTimeMillis(), why);
-                    notifyStaff(sender, "sanctions.notify.restored", parts(null, done), Msg.p("by", byName));
+                    Sanction restored = s.handled(Sanction.State.RESTORED, by, byName, System.currentTimeMillis(), why);
+                    notifyStaff(sender, "sanctions.notify.restored", parts(null, restored), Msg.p("by", byName));
                     Player online = Bukkit.getPlayer(s.target());
                     if (online != null) {
-                        msg.send(online, "sanctions.you.money-restored", parts(online, done));
+                        msg.send(online, "sanctions.you.money-restored", parts(online, restored));
                         core.sounds().play(online, "notify");
                     }
-                    audit(sender, "sanction_restore", done, Map.of());
+                    audit(sender, "sanction_restore", restored, Map.of());
                     refreshIds();
+                    if (done != null) {
+                        done.accept(restored);
+                    }
                 }, main).exceptionally(e -> {
                     failed(sender, e, "restore money");
                     return null;
                 });
     }
 
-    private void restoreItem(CommandSender sender, Sanction s) {
+    private void restoreItem(CommandSender sender, Sanction s, String why, java.util.function.Consumer<Sanction> done) {
         Player online = Bukkit.getPlayer(s.target());
         if (online == null) {
             msg.send(sender, "sanctions.restore-offline", parts(null, s));
@@ -625,7 +704,6 @@ final class Sanctions implements SanctionService {
         }
         UUID by = sender instanceof Player p ? p.getUniqueId() : null;
         String byName = sender.getName();
-        String why = text(null, "sanctions.restore-reason");
         store.claimItemRestore(s.id(), by, byName, why, System.currentTimeMillis()).thenAcceptAsync(bytes -> {
             if (bytes.isEmpty()) {
                 msg.send(sender, "sanctions.restore-already", parts(null, s));
@@ -644,12 +722,15 @@ final class Sanctions implements SanctionService {
             for (ItemStack rest : now.getInventory().addItem(item).values()) {
                 now.getWorld().dropItemNaturally(now.getLocation(), rest);
             }
-            Sanction done = s.handled(Sanction.State.RESTORED, by, byName, System.currentTimeMillis(), why);
-            notifyStaff(sender, "sanctions.notify.restored", parts(null, done), Msg.p("by", byName));
-            msg.send(now, "sanctions.you.item-restored", parts(now, done));
+            Sanction restored = s.handled(Sanction.State.RESTORED, by, byName, System.currentTimeMillis(), why);
+            notifyStaff(sender, "sanctions.notify.restored", parts(null, restored), Msg.p("by", byName));
+            msg.send(now, "sanctions.you.item-restored", parts(now, restored));
             core.sounds().play(now, "notify");
-            audit(sender, "sanction_restore", done, Map.of());
+            audit(sender, "sanction_restore", restored, Map.of());
             refreshIds();
+            if (done != null) {
+                done.accept(restored);
+            }
         }, main).exceptionally(e -> {
             failed(sender, e, "restore item");
             return null;
@@ -691,6 +772,9 @@ final class Sanctions implements SanctionService {
             refuse(staff, "error.self");
             return CompletableFuture.completedFuture(Optional.empty());
         }
+        if (guardRefuses(staff)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
         ProfileService profiles = ProfileService.of(core.services());
         if (!target.isOnline() || profiles.isSwitching(target.getUniqueId())) {
             refuse(staff, "sanctions.confiscate-offline", Msg.p("player", target.getName()));
@@ -729,6 +813,7 @@ final class Sanctions implements SanctionService {
                 Sanction s = new Sanction(id, Sanction.Kind.ITEM, draft.target(), draft.targetName(), profileKey,
                         draft.issuer(), draft.issuerName(), draft.reason(), created, null, null, null, draft.itemText(),
                         Sanction.State.ACTIVE, null, null, null, null);
+                guardCount(staff);
                 notifyStaff(staff, "sanctions.notify.confiscated", parts(staff, s));
                 if (target.isOnline()) {
                     msg.send(target, "sanctions.you.confiscated", parts(target, s));

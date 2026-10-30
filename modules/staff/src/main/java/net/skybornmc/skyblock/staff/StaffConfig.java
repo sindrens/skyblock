@@ -88,6 +88,10 @@ public final class StaffConfig extends ModuleConfig {
     @Setting(path = "reports.closed-shown", desc = "How many recently closed reports /reports shows.", min = 10, max = 500)
     public int closedShown = 100;
 
+    @Setting(path = "reports.invalid-window-days", desc = "Days of invalid reports counted in the staff message when the "
+            + "moderation module is not running (with it, punishments.yml extras.false-reports.window is used).", min = 1, max = 365)
+    public int invalidWindowDays = 30;
+
     @Override
     public String fileName() {
         return "staff.yml";

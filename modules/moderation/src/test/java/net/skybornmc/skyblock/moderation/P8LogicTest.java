@@ -53,7 +53,7 @@ class P8LogicTest {
             // reasons without a rule fall back to extras.rules-link (allowed, listed in OPEN_QUESTIONS)
             Templates t = new Templates();
             t.use(r.config());
-            assertEquals(List.of("griefing", "afk-farming", "coop-griefing", "warn-rules", "warn-other"),
+            assertEquals(List.of("report-abuse", "griefing", "afk-farming", "coop-griefing", "warn-rules", "warn-other"),
                     book.withoutRule(t.reasonIds()));
             assertEquals("https://skybornmc.net/rules", book.link("griefing", r.config().extras().rulesLink()));
         }

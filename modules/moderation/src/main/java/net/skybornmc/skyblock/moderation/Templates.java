@@ -33,12 +33,12 @@ final class Templates {
 
         /** The step kinds the parser accepts (also used for "did you mean"). */
         static final List<String> KINDS = List.of("warn", "kick", "mute", "ban", "ipban", "island-kick", "island-ban",
-                "coop-remove", "coop-block");
+                "coop-remove", "coop-block", "report-block");
 
         /**
          * Parses {@code warn [weight] | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>} ({@code warn 0.5}),
          * plus the island steps (P7, spec 13.2): {@code island-kick | island-ban <time|perm> | coop-remove |
-         * coop-block <time|perm>}.
+         * coop-block <time|perm>}, and {@code report-block <time|perm>} (P9, spec 14.5: no {@code /report} for that time).
          *
          * @throws IllegalArgumentException with message {@link #BAD_KIND} or {@link #BAD_TIME}
          */
@@ -62,6 +62,7 @@ final class Templates {
                 case "island-ban" -> new Step(Punishment.Type.ISLAND_BAN, duration(time), false);
                 case "coop-remove" -> noTime(Punishment.Type.COOP_REMOVE, time);
                 case "coop-block" -> new Step(Punishment.Type.COOP_BLOCK, duration(time), false);
+                case "report-block" -> new Step(Punishment.Type.REPORT_BLOCK, duration(time), false);
                 default -> throw new IllegalArgumentException(BAD_KIND);
             };
         }

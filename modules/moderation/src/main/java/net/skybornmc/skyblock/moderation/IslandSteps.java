@@ -17,14 +17,18 @@ import java.util.UUID;
  *   <li>No possible step later in the ladder: the nearest possible step before it; none at all: a warning.</li>
  * </ul>
  * The ladder keeps its length, so the offence count still picks the same index; only unusable steps are replaced.
+ *
+ * <p>P9 (spec 14.5): {@code report-block} steps follow the same rule. They need the reports (staff) module's
+ * {@code ReportBlocking} service ({@link Context#reports}); without it the step says "not available" and the next possible
+ * step is used.</p>
  */
 final class IslandSteps {
 
     private IslandSteps() {
     }
 
-    /** Why an island step can't be used for this target. */
-    enum Why { UNAVAILABLE, OWNER, NO_ISLAND }
+    /** Why an island step (or a report block, {@code NO_REPORTS}) can't be used for this target. */
+    enum Why { UNAVAILABLE, OWNER, NO_ISLAND, NO_REPORTS }
 
     /**
      * What the islands module says about the target (resolved on the main thread before punishing).
@@ -33,14 +37,25 @@ final class IslandSteps {
      * @param islandId   the island of the target's active (offline: last active) profile, or {@code null}
      * @param islandName its shown name ({@code null} without an island)
      * @param owner      the target owns (leads) that island
+     * @param reports    report blocks can be enforced (the staff module provides {@code ReportBlocking}, P9)
      */
-    record Context(boolean available, UUID islandId, String islandName, boolean owner) {
+    record Context(boolean available, UUID islandId, String islandName, boolean owner, boolean reports) {
 
-        /** No islands module: every island step is replaced. */
+        /** Without report blocks (before P9, and wherever nothing enforces them). */
+        Context(boolean available, UUID islandId, String islandName, boolean owner) {
+            this(available, islandId, islandName, owner, false);
+        }
+
+        /** No islands module: every island step is replaced (and report blocks too). */
         static final Context UNAVAILABLE = new Context(false, null, null, false);
 
         /** Islands module running, target without an island. */
         static final Context NO_ISLAND = new Context(true, null, null, false);
+
+        /** Same context with report blocks available or not. */
+        Context withReports(boolean value) {
+            return new Context(available, islandId, islandName, owner, value);
+        }
 
         boolean hasIsland() {
             return islandId != null;
@@ -49,6 +64,9 @@ final class IslandSteps {
 
     /** Why {@code step} can't be used, or {@code null} if it can. Non-island steps can always be used. */
     static Why problem(Templates.Step step, Context ctx) {
+        if (step.type() == Punishment.Type.REPORT_BLOCK) {
+            return ctx != null && ctx.reports() ? null : Why.NO_REPORTS;
+        }
         if (!step.type().island()) {
             return null;
         }
@@ -75,7 +93,8 @@ final class IslandSteps {
 
     /** {@code template} with its effective ladder for this target (the same object when nothing changes). */
     static Templates.Template adapt(Templates.Template template, Context ctx) {
-        if (template == null || template.ladder().stream().noneMatch(s -> s.type().island())) {
+        if (template == null || template.ladder().stream().noneMatch(s -> s.type().island()
+                || s.type() == Punishment.Type.REPORT_BLOCK)) {
             return template;
         }
         List<Templates.Step> ladder = effective(template.ladder(), ctx);

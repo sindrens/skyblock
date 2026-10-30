@@ -101,6 +101,13 @@ final class PunishConfigParser {
                         "suggestion", nullToEmpty(Hints.closest(cs.reason(), byId.keySet())));
             }
         });
+        // P9, spec 14.5: the false-report reason must exist while the penalty is on (else nothing could be suggested).
+        // Only checked when the section is written (an older file without it keeps loading; the penalty then says off).
+        if (yaml.contains("extras.false-reports") && extras.falseReports().enabled()
+                && !byId.containsKey(extras.falseReports().reason())) {
+            error("config.unknown-reason", "extras.false-reports.reason", "value", extras.falseReports().reason(),
+                    "suggestion", nullToEmpty(Hints.closest(extras.falseReports().reason(), byId.keySet())));
+        }
         // only a never-auto list written in the file is checked (the built-in default may name reasons a file removed)
         for (String id : yaml.contains("extras.never-auto") ? extras.neverAuto() : List.<String>of()) {
             if (!byId.containsKey(id)) {
@@ -664,7 +671,130 @@ final class PunishConfigParser {
                 neverAuto(x), lockdown(x.getConfigurationSection("lockdown")), raid(x.getConfigurationSection("raid")),
                 network(x.getConfigurationSection("network")), sanctions(x.getConfigurationSection("sanctions")),
                 training(x.getConfigurationSection("training")),
-                notify(x.getConfigurationSection("notify"), x.getConfigurationSection("discord")));
+                notify(x.getConfigurationSection("notify"), x.getConfigurationSection("discord")),
+                guard(x.getConfigurationSection("guard")), rollback(x.getConfigurationSection("rollback")),
+                falseReports(x.getConfigurationSection("false-reports")), purge(x.getConfigurationSection("purge")));
+    }
+
+    // ------------------------------------------------------------------ extras (P9: spec 14.1, 14.5, 14.10)
+
+    /** Hard bounds of the guard window (a typo like 5h would make the guard useless or block everyone). */
+    static final Duration GUARD_WINDOW_MIN = Duration.ofMinutes(1);
+    static final Duration GUARD_WINDOW_MAX = Duration.ofHours(1);
+    /** The longest period /prollback may ever cover (spec: max-period 7d by default; never more than 30d). */
+    static final Duration ROLLBACK_MAX = Duration.ofDays(30);
+
+    private Guard.Settings guard(ConfigurationSection s) {
+        Guard.Settings d = Guard.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.guard.";
+        Duration window = capped(s, "window", p + "window", d.window(), GUARD_WINDOW_MAX);
+        if (window.compareTo(GUARD_WINDOW_MIN) < 0) {
+            error("config.duration-too-short", p + "window", "value", String.valueOf(s.get("window")),
+                    "min", PunishConfig.text(GUARD_WINDOW_MIN));
+            window = GUARD_WINDOW_MIN;
+        }
+        Map<String, Guard.Tier> tiers = d.tiers();
+        if (s.contains("tiers")) {
+            ConfigurationSection t = s.getConfigurationSection("tiers");
+            if (t == null) {
+                error("config.not-a-section", p + "tiers", "value", "tiers");
+            } else {
+                Map<String, Guard.Tier> parsed = new LinkedHashMap<>();
+                for (String name : t.getKeys(false)) {
+                    String tp = p + "tiers." + name;
+                    ConfigurationSection one = t.getConfigurationSection(name);
+                    if (one == null) {
+                        error("config.not-a-section", tp, "value", name);
+                        continue;
+                    }
+                    if (!name.matches(ID_PATTERN)) {
+                        error("config.bad-id", tp, "value", name);
+                        continue;
+                    }
+                    Guard.Mode mode = Guard.Mode.BLOCK;
+                    if (one.contains("mode")) {
+                        String raw = String.valueOf(one.get("mode")).strip();
+                        java.util.Optional<Guard.Mode> m = Guard.Mode.parse(raw);
+                        if (m.isEmpty()) {
+                            error("config.unknown-key", tp + ".mode", "value", raw, "suggestion",
+                                    nullToEmpty(Hints.closest(raw.toLowerCase(Locale.ROOT), List.of("block", "alert"))));
+                        } else {
+                            mode = m.get();
+                        }
+                    }
+                    parsed.put(name, new Guard.Tier(mode, number(one, "max-bans", tp + ".max-bans", 10, -1, 10_000),
+                            number(one, "max-mutes", tp + ".max-mutes", 25, -1, 10_000),
+                            number(one, "max-sanctions", tp + ".max-sanctions", 3, -1, 10_000),
+                            number(one, "max-total", tp + ".max-total", 40, -1, 10_000)));
+                }
+                tiers = parsed;
+            }
+        }
+        String defaultTier = s.contains("default-tier") ? String.valueOf(s.get("default-tier")).strip() : d.defaultTier();
+        if (!tiers.containsKey(defaultTier)) {
+            error("config.unknown-key", p + "default-tier", "value", defaultTier, "suggestion",
+                    nullToEmpty(Hints.closest(defaultTier, tiers.keySet())));
+            defaultTier = tiers.isEmpty() ? d.defaultTier() : tiers.keySet().iterator().next();
+        }
+        return new Guard.Settings(bool(s, "enabled", p + "enabled", d.enabled()), window, tiers, defaultTier,
+                capped(s, "allow-default", p + "allow-default", d.allowDefault(), Duration.ofDays(1)),
+                capped(s, "alert-rollback", p + "alert-rollback", d.alertRollback(), ROLLBACK_MAX));
+    }
+
+    private RollbackRules.Settings rollback(ConfigurationSection s) {
+        RollbackRules.Settings d = RollbackRules.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.rollback.";
+        Duration max = capped(s, "max-period", p + "max-period", d.maxPeriod(), ROLLBACK_MAX);
+        Duration min = positive(s, "min-period", p + "min-period", d.minPeriod());
+        if (min.compareTo(max) > 0) {
+            error("config.duration-too-long", p + "min-period", "value", String.valueOf(s.get("min-period")),
+                    "max", PunishConfig.text(max));
+            min = d.minPeriod().compareTo(max) > 0 ? max : d.minPeriod();
+        }
+        return new RollbackRules.Settings(min, max,
+                capped(s, "confirm-window", p + "confirm-window", d.confirmWindow(), Duration.ofMinutes(10)));
+    }
+
+    private FalseReportRules.Settings falseReports(ConfigurationSection s) {
+        FalseReportRules.Settings d = FalseReportRules.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.false-reports.";
+        String reason = s.contains("reason") ? String.valueOf(s.get("reason")).strip() : d.reason();
+        if (!reason.matches(ID_PATTERN)) {
+            error("config.bad-id", p + "reason", "value", reason);
+            reason = d.reason();
+        }
+        return new FalseReportRules.Settings(bool(s, "enabled", p + "enabled", d.enabled()),
+                number(s, "threshold", p + "threshold", d.threshold(), 1, 100),
+                capped(s, "window", p + "window", d.window(), Duration.ofDays(365)),
+                capped(s, "cap", p + "cap", d.cap(), Duration.ofDays(90)), reason);
+    }
+
+    private PurgeRules.Settings purge(ConfigurationSection s) {
+        PurgeRules.Settings d = PurgeRules.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.purge.";
+        Duration keep = d.keepLedger();
+        if (s.contains("keep-ledger")) {
+            String raw = String.valueOf(s.get("keep-ledger")).strip();
+            if (raw.equals("0")) {
+                keep = Duration.ZERO; // spec: 0 = keep nothing that is not in force
+            } else {
+                keep = capped(s, "keep-ledger", p + "keep-ledger", d.keepLedger(), Duration.ofDays(3650));
+            }
+        }
+        return new PurgeRules.Settings(keep, capped(s, "confirm-window", p + "confirm-window", d.confirmWindow(),
+                Duration.ofMinutes(10)));
     }
 
     // ------------------------------------------------------------------ extras (P8: spec 14.6, 14.9)

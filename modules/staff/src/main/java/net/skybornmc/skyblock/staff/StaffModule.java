@@ -59,6 +59,8 @@ public final class StaffModule implements SkyblockModule {
         reports.register();
         // Phase P 12.9: moderation closes the punishing staff member's claimed reports through this service
         core.services().register(id(), net.skybornmc.skyblock.common.moderation.ReportLink.class, reports);
+        // Phase P 14.5: moderation's report-block ladder step is enforced here
+        core.services().register(id(), net.skybornmc.skyblock.common.moderation.ReportBlocking.class, reports);
         mode.register();
         Arg<String> inspectTarget = Args.offlinePlayer("player");
         core.commands().register(CommandSpec.command("inspect")

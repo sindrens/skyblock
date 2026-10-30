@@ -152,6 +152,18 @@ final class PunishExtras {
         }
     }
 
+    /** A guard alert or block (P9, spec 14.1): type {@code guard}, only to a channel mapped for it (sensitive). */
+    void guardPosted(String staff, String event, Guard.Hit hit, java.time.Duration window) {
+        postDiscord(NotifyRules.Type.GUARD, () -> PunishEmbeds.guard(staff, event, hit, window, System.currentTimeMillis(),
+                extras.get().discord(), this::discordText));
+    }
+
+    /** A rollback (P9, spec 14.1): one embed with the counts, to the punishment log. */
+    void rollbackPosted(String staff, String by, java.time.Duration period, int punishments, int sanctions) {
+        postDiscord(() -> PunishEmbeds.rollback(staff, by, period, punishments, sanctions, System.currentTimeMillis(),
+                extras.get().discord(), this::discordText));
+    }
+
     /** Punishments were pardoned with a reason (main thread). */
     void pardoned(List<Punishment> list, String targetName, String by, String reason) {
         if (list.isEmpty()) {

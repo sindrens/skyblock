@@ -21,6 +21,8 @@
 #        The island = the one of the player's active profile. An island owner is never island-banned from their own
 #        island: for owners the island steps skip to the next coop-block (or next normal step). Without the islands module
 #        (or without a team island) the next possible step is used and staff are told.
+# report-block <time|perm> (P9): the player can't use /report for that time (enforced by the reports module; without
+#        it the next step is used).
 # Reason ids: lowercase a-z, 0-9 and - only, unique. icon = any item id.
 # probation: true|false (category or reason; default true) = after a mute/ban of this reason ends by time the player is
 # on probation (extras.probation), and offences of this reason get the probation step bonus. Off for the small stuff.
@@ -90,6 +92,10 @@ categories:
         icon: NAME_TAG
         rule: 1
         ladder: ["mute 1d", "ban 7d", "ban perm"]
+      report-abuse:                 # P9 (spec 14.5): false reports. Only ever SUGGESTED (3 invalid reports in 30d), never
+        icon: BELL                  # automatic. report-block = can't use /report for that time. No rule number yet (owner).
+        ladder: ["warn", "report-block 3d", "report-block 14d", "mute 1d"]
+        probation: false
 
   gameplay:
     icon: GRASS_BLOCK
@@ -191,6 +197,7 @@ menu:
     inappropriate-build: 34
     inappropriate-skin: 35
     coop-griefing: 41               # P7: island steps (island-ban, coop-block); the bans quarter is full
+    report-abuse: 42                # P9: false reports (normally applied from the suggestion after 3 invalid reports)
 
 # ---------- automatic warn system ----------
 # Only active warns count (not removed with /unwarn, younger than warn-expire). The counter is the SUM OF THE WEIGHTS
@@ -348,3 +355,34 @@ extras:
     requests-for: [ban, mute, kick, sanction, island, bulk]
   notify:                     # /pnotify: every staff member switches their own alert types (skyblock.staff.notify.<type>)
     always: [guard]           # types that can't be switched off
+
+  # ---------- owner spec section 14 (P9) ----------
+  guard:                      # safety net against rogue or hacked staff accounts (not a punishment)
+    enabled: true
+    window: 5m                # what each staff member APPLIED in this sliding window counts (requests and dry runs never)
+    # One tier per rank tier of moderation.yml limits (skyblock.staff.punish.max.<tier>; helper = staff, mod = moderator).
+    # mode: block = the punishment that goes over a limit is refused and the staff member is blocked until an admin runs
+    # /pguard allow; alert = applied anyway, admins only get the alert. Limits per window; 0 = none allowed, -1 = no limit.
+    # Bulk punishments count per player. The owner (skyblock.admin.punish.guard.exempt) is never limited.
+    tiers:
+      helper: { mode: block, max-bans: 5,  max-mutes: 15, max-sanctions: 0,  max-total: 25 }
+      mod:    { mode: block, max-bans: 10, max-mutes: 25, max-sanctions: 3,  max-total: 40 }
+      admin:  { mode: alert, max-bans: 30, max-mutes: 60, max-sanctions: 10, max-total: 100 }
+    default-tier: helper      # staff without any max tier permission
+    allow-default: 30m        # /pguard allow <staff> without a time: lifts the block, limits only alert for this long
+    alert-rollback: 1h        # the [Rollback] button in the alert previews this period
+  rollback:                   # /prollback <staff> <period> (admins): always a preview first, then a confirm
+    min-period: 15m
+    max-period: 7d
+    confirm-window: 60s       # the preview can be confirmed this long ([Confirm] click or typing ... confirm)
+  false-reports:              # a report closed as INVALID counts (no-evidence and duplicate never count)
+    enabled: true
+    threshold: 3              # this many invalid reports ...
+    window: 30d               # ... within this time suggest the reason below (staff click [Apply] or [Dismiss])
+    cap: 7d                   # at most one suggestion per player per this time
+    reason: report-abuse      # reason id above
+  purge:                      # /ppurge <player> preview|confirm (owner): removes a player's personal data on request
+    keep-ledger: 365d         # 12 months: the minimal record (account id, type, reason id, start/end, id) of an ENDED
+                              # punishment is kept this long, then deleted. 0 = keep nothing that has ended. A punishment
+                              # still in force (e.g. a ban) is always kept until it ends. Check this with the privacy policy.
+    confirm-window: 60s       # the typed confirm must follow the preview within this time
