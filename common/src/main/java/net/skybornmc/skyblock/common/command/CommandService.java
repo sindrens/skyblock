@@ -62,6 +62,7 @@ public final class CommandService {
         this.sounds = sounds;
         this.file = new CommandsFile(new File(plugin.getDataFolder(), "commands.yml"));
         messages.load(MESSAGES);
+        plugin.getServer().getPluginManager().registerEvents(new InputListener(), plugin);
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             List<CommandSpec> all;
             synchronized (specs) {
@@ -191,23 +192,84 @@ public final class CommandService {
         return lit;
     }
 
+    // ---------------------------------------------------------------- wrong input (FIXES1)
+
+    /**
+     * Before Brigadier parses a player's line: input our tree can't take (unknown sub-command, words after the last
+     * argument) gets our own usage line instead of Brigadier's grey "Incorrect argument for command ... <--[HERE]".
+     */
+    private final class InputListener implements org.bukkit.event.Listener {
+        @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.LOW, ignoreCancelled = true)
+        public void onCommand(org.bukkit.event.player.PlayerCommandPreprocessEvent event) {
+            List<String> words = InputCheck.words(event.getMessage());
+            if (words.isEmpty()) {
+                return;
+            }
+            CommandSpec top = find(words.getFirst());
+            Player player = event.getPlayer();
+            if (top == null || (top.permission() != null && !top.permission().isBlank() && !player.hasPermission(top.permission()))) {
+                return;
+            }
+            InputCheck.Problem problem = InputCheck.check(top, words.subList(1, words.size()), player::hasPermission);
+            if (problem == null) {
+                return;
+            }
+            event.setCancelled(true);
+            Node node = new Node(problem.spec(), problem.path(), top, permissions(List.of(), problem.spec()));
+            messages.send(player, MESSAGES, "unknown-input", Msg.p("input", problem.input()), Msg.p("usage", usageText(player, node)),
+                    Msg.p("example", example(node)), Msg.p("description", problem.spec().description()));
+            playError(player);
+        }
+    }
+
+    /** Our top-level command for a typed label (name or alias, with or without the plugin namespace), or null. */
+    private CommandSpec find(String label) {
+        String name = label.toLowerCase(java.util.Locale.ROOT);
+        int colon = name.indexOf(':');
+        if (colon >= 0) {
+            if (!name.substring(0, colon).equals(plugin.getName().toLowerCase(java.util.Locale.ROOT))) {
+                return null;
+            }
+            name = name.substring(colon + 1);
+        }
+        synchronized (specs) {
+            CommandSpec direct = specs.get(name);
+            if (direct != null) {
+                return direct;
+            }
+            for (CommandSpec spec : specs.values()) {
+                if (file.get(spec).aliases().contains(name)) {
+                    return spec;
+                }
+            }
+        }
+        return null;
+    }
+
     // ---------------------------------------------------------------- execution
 
     private int usage(CommandSender sender, Node node) {
         CommandSpec spec = node.spec();
-        String usage;
-        if (spec.executor() == null && !spec.children().isEmpty()) {
-            List<String> visible = spec.children().stream()
-                    .filter(c -> c.permission() == null || sender.hasPermission(c.permission()))
-                    .map(CommandSpec::name).toList();
-            usage = "/" + node.path() + " <" + String.join("|", visible) + ">";
-        } else {
-            usage = spec.usage(node.path());
-        }
-        messages.send(sender, MESSAGES, "usage", Msg.p("usage", usage), Msg.p("example", example(node)),
+        messages.send(sender, MESSAGES, "usage", Msg.p("usage", usageText(sender, node)), Msg.p("example", example(node)),
                 Msg.p("description", spec.description()));
         playError(sender);
         return 0;
+    }
+
+    /** {@code /is <create|home|…>} (only sub-commands the sender may use) or {@code /pay <player> <amount>}. */
+    private static String usageText(CommandSender sender, Node node) {
+        CommandSpec spec = node.spec();
+        if (!spec.children().isEmpty()) {
+            List<String> visible = spec.children().stream()
+                    .filter(c -> c.permission() == null || c.permission().isBlank() || sender.hasPermission(c.permission()))
+                    .map(CommandSpec::name).toList();
+            if (spec.executor() == null) {
+                return "/" + node.path() + " <" + String.join("|", visible) + ">";
+            }
+            StringBuilder sb = new StringBuilder(spec.usage(node.path()).replaceFirst(" \\[[^\\]]*\\]$", ""));
+            return visible.isEmpty() ? sb.toString() : sb.append(" [").append(String.join("|", visible)).append(']').toString();
+        }
+        return spec.usage(node.path());
     }
 
     private int execute(CommandContext<CommandSourceStack> bctx, Node node, boolean viaConfirm) {

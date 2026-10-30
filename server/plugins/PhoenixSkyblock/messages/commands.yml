@@ -4,6 +4,9 @@
 # error "<c:error><sym:cross></c:error> <c:text>problem. Fix." Values in <c:value>, clicks in <c:action>.
 
 usage: "<prefix><c:error><sym:cross></c:error> <c:text>Usage: <click:suggest_command:'<example>'><hover:show_text:'<c:text><description><newline><c:action>Click to fill in'><c:value><usage></c:value></hover></click>"
+# FIXES1: a word our command can't take (unknown option, or too many words), instead of Minecraft's grey
+# "Incorrect argument for command ... <--[HERE]". <input> = the first word that doesn't fit.
+unknown-input: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>doesn't fit here. Usage: <click:suggest_command:'<example>'><hover:show_text:'<c:text><description><newline><c:action>Click to fill in'><c:value><usage></c:value></hover></click>"
 players-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only players can use this."
 console-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the console can use this."
 cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Slow down. Try again in <c:value><time></c:value>."
