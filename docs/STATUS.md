@@ -59,7 +59,10 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-(none: waiting for the owner to fill in docs/planning/*.md and the Decisions page)
+- M10-1 crates core
+- M5-1 pillars
+- QUICK1 QoL quick wins + config + perf fixes
+- NOTE: a separate owner-started agent works on docs/planning/*.md; do not overwrite those files, merge carefully.
 
 ## Parked / broken
 (none)
