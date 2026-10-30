@@ -171,10 +171,23 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 - Enchants: stacked-mob kills drop Slaughter/Soul Reaper/Bloodlust/Plunder books at 1 in 25,000 per mob, max 5 per day per profile. OK? (default: yes, EN15)
 - Enchants: bonus family caps besides the +300% sell cap: crystals +200%, extra drops +200% (max 3 per action), skill XP +300%, tool XP +100%, rare finds +150%, mob damage +200%, damage reduction 60%, +10 hearts. OK? (default: yes, EN16)
 - Enchants: PvP values: damage enchants 40%, healing 50%, AoE/stacked/Phoenix Rebirth/movement and vision enchants off in the warzone and duels. OK? (default: yes, EN17)
-- Enchants: armor enchant slots on wardrobe pieces: 1 per piece, a 2nd at set level 25, chestplate mythic slot at 50 (final numbers with the SETS plan). OK? (default: yes, EN12)
+- Enchants: armor enchant slots on wardrobe pieces: 1 per piece, a 2nd at set level 25, chestplate mythic slot at 50 (confirmed in `docs/plans/WARDROBE.md` §3.3). OK? (default: yes, EN12)
 - Enchants: staff test tools as `/enchanter admin give|apply|clear` subcommands (staff only). New subcommands need your approval. Add them? (default: not built until approved, EN20)
 - Enchants: the AH should refuse buying a listing made by the same account (any profile), so items can't hop between own profiles (P4). Build that into the AH with profiles? (default: yes)
 - Enchants: the 48 names in `docs/plans/ENCHANTS.md` §6 (Swiftness, Vein Rend, Dragonfire Blast, Treefeller, Slaughter, Phoenix Wrath …). OK? (default: yes)
+- Wardrobe (PLAN-SETS, `docs/plans/WARDROBE.md`): sets are virtual wardrobe entries; equipping puts real armor on that is locked to the armor slots (a copy is worthless and deleted). Sets are bound to the profile, only unredeemed crate Set Tokens trade/go on the AH. OK? (default: yes, WD7/WD19)
+- Wardrobe: the 16 sets (5 tier I money sets, Banneret Tabard, Lorekeeper Robes, Deepforge Plate, Thornward Mantle, Cropwarden Robes, Dreadguard Mail, Stormkeel Scale, Coinmaster Silks, Voidforged Plate, Conqueror Aegis, Phoenix Regalia), their bonuses and the new bonus families crop growth (+100%) and conquest (+60%). OK? (default: yes, WD2/WD3/WD9)
+- Wardrobe prices: tier I $20k, Banneret $2.5M, Coinmaster $40M, tier III crystal sets ◆ 25,000, gem sets ✦ 400 / ✦ 900 (each also in a crate, so no power is gem-only), tier IV crate-only. OK? (default: yes, WD4)
+- Wardrobe: a gem set is an account-wide "Sigil": every profile can claim the set once per season for free, and Sigils are kept across seasons. OK? (default: yes, WD5)
+- Wardrobe set levels: XP from the activity the set boosts (50% with 2–3 pieces, 100% with 4; stacked island mobs give none), 200 × 1.10^level XP per level, multiplier 2 × level / 50 (Lv 25 = 1×, Lv 50 = 2×); level 50 in ~65 h of that activity for an active player. OK? (default: yes, WD10–WD14)
+- Wardrobe merging: both sets level 50, no shared bonus family, tier I–III only, one merge per set, fee ◆ 5,000–25,000, merged set needs 1.5× XP, no unmerge. OK? (default: yes, WD15/WD22/WD23)
+- Wardrobe Tomes (+2,500 / +10,000 set XP from crates/quests, never gems, not past level 40). OK? (default: yes, WD13)
+- Wardrobe in the warzone and duels: every set counts as 1×, armor normalized to diamond-like, damage reduction at 50%, only conquest bonuses work. OK? (default: yes, WD18)
+- Wardrobe Chest (storage for loadout swaps) holds unique items only (custom tools, enchant books/scrolls, set tokens, tomes), 27 slots + rank grants; plain items are never stored. OK? (default: yes, WD21/LD1)
+- Loadout slots: 2 free, Knight 3, Warlord 4, Monarch 5, +1 per store-credit purchase (max +3, account-wide), max 8. Credit price with the store plan. OK? (default: yes, LD2)
+- Loadout: swaps (and wardrobe equips) refused for 10 s after combat damage with a player or hostile mob, in the warzone and while frozen; 2 s cooldown. OK? (default: yes, LD3/LD6)
+- Loadout: `/loadout <name>` applies a preset by name (argument of the approved command) and `/sets` stays as an alias of `/wardrobe`. OK? (default: yes, LD5/WD24)
+- Wardrobe staff tools: a Wardrobe button in `/inspect <player>` (view; admins give/remove sets, set levels, give tokens, all audited) instead of a new staff command. OK? (default: yes, WD25)
 
 ## Economy
 1. **Shards:** how are they earned? (Proposal: bosses, envoys, KOTH, high-tier dungeon zones.)
@@ -188,7 +201,7 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 7. Tier unlock thresholds (blocks broken / logs / kills) per tier.
 
 ## Gear
-8. **Sets:** how are pieces obtained (crystals, drops, crafting)? Final set list.
+8. ~~**Sets:** how are pieces obtained? Final set list.~~ Planned (SE1 + follow-ups): `docs/plans/WARDROBE.md`.
 9. Tool prestige at level 50: confirm, and what it gives (default: permanent title + skin unlock + small bonus on that tool).
 
 ## Leaderboards
