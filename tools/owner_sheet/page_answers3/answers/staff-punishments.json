@@ -1,0 +1,224 @@
+{
+  "m": {
+    "422": {
+      "a": "s",
+      "note": "",
+      "t": 1793381430565
+    },
+    "423": {
+      "a": "o",
+      "note": "yes and say on ban menu showing time remaining",
+      "t": 1793381490264
+    },
+    "430": {
+      "a": "s",
+      "note": "",
+      "t": 1793381490279
+    },
+    "432": {
+      "a": "o",
+      "note": "Settled by your earlier answers (390): There is no Trainee staff rank.",
+      "t": 1793383290107
+    },
+    "433": {
+      "a": "o",
+      "note": "Settled by your earlier answers (390): There is no Trainee staff rank.",
+      "t": 1793383290107
+    },
+    "437": {
+      "a": "s",
+      "note": "",
+      "t": 1793381495629
+    },
+    "442": {
+      "a": "s",
+      "note": "",
+      "t": 1793381511512
+    },
+    "443": {
+      "a": "s",
+      "note": "",
+      "t": 1793381518349
+    },
+    "444": {
+      "a": "s",
+      "note": "",
+      "t": 1793381530362
+    },
+    "447": {
+      "a": "o",
+      "note": "Settled by your earlier answers (#17): Discord comes later; it is kept in LATER.md.",
+      "t": 1793383290107
+    },
+    "450": {
+      "a": "s",
+      "note": "",
+      "t": 1793381541230
+    },
+    "451": {
+      "a": "s",
+      "note": "",
+      "t": 1793381553730
+    },
+    "455": {
+      "a": "s",
+      "note": "",
+      "t": 1793381563628
+    },
+    "458": {
+      "a": "s",
+      "note": "",
+      "t": 1793381571028
+    },
+    "459": {
+      "a": "s",
+      "note": "",
+      "t": 1793381578012
+    },
+    "460": {
+      "a": "o",
+      "note": "yes and donor ranks",
+      "t": 1793381608514
+    },
+    "467": {
+      "a": "s",
+      "note": "",
+      "t": 1793381608529
+    },
+    "470": {
+      "a": "s",
+      "note": "",
+      "t": 1793381657612
+    },
+    "474": {
+      "a": "s",
+      "note": "",
+      "t": 1793381667012
+    },
+    "480": {
+      "a": "s",
+      "note": "",
+      "t": 1793381668678
+    },
+    "481": {
+      "a": "o",
+      "note": "Settled by your earlier answers (480, 450): Mod bans over their limit become admin requests; staff without approval rights are refused.",
+      "t": 1793383290107
+    },
+    "490": {
+      "a": "o",
+      "note": "Settled by your earlier answers (#4): A ban clears the freeze.",
+      "t": 1793383290107
+    },
+    "493": {
+      "a": "s",
+      "note": "",
+      "t": 1793381669578
+    },
+    "499": {
+      "a": "s",
+      "note": "",
+      "t": 1793381671578
+    },
+    "500": {
+      "a": "o",
+      "note": "unless its command is with -s (silent)",
+      "t": 1793381700448
+    },
+    "501": {
+      "a": "s",
+      "note": "",
+      "t": 1793381700462
+    },
+    "502": {
+      "a": "s",
+      "note": "",
+      "t": 1793381701578
+    },
+    "503": {
+      "a": "o",
+      "note": "Settled by your earlier answers (#17): Discord comes later; it is kept in LATER.md.",
+      "t": 1793383290107
+    },
+    "509": {
+      "a": "s",
+      "note": "",
+      "t": 1793381703145
+    },
+    "513": {
+      "a": "s",
+      "note": "",
+      "t": 1793381706029
+    },
+    "519": {
+      "a": "s",
+      "note": "",
+      "t": 1793381709813
+    },
+    "520": {
+      "a": "s",
+      "note": "",
+      "t": 1793381713262
+    },
+    "521": {
+      "a": "s",
+      "note": "",
+      "t": 1793381717595
+    },
+    "522": {
+      "a": "s",
+      "note": "",
+      "t": 1793381718479
+    },
+    "526": {
+      "a": "o",
+      "note": "Settled by your earlier answers (522): A banned player's island is locked for visitors, so it is not listed.",
+      "t": 1793383290107
+    },
+    "529": {
+      "a": "s",
+      "note": "",
+      "t": 1793381720162
+    },
+    "530": {
+      "a": "s",
+      "note": "",
+      "t": 1793381720795
+    },
+    "531": {
+      "a": "s",
+      "note": "",
+      "t": 1793381721729
+    },
+    "532": {
+      "a": "s",
+      "note": "",
+      "t": 1793381722945
+    },
+    "533": {
+      "a": "s",
+      "note": "",
+      "t": 1793381723878
+    },
+    "538": {
+      "a": "s",
+      "note": "",
+      "t": 1793381725262
+    },
+    "539": {
+      "a": "s",
+      "note": "",
+      "t": 1793381726112
+    },
+    "540": {
+      "a": "s",
+      "note": "",
+      "t": 1793381727028
+    },
+    "541": {
+      "a": "s",
+      "note": "",
+      "t": 1793381729262
+    }
+  }
+}

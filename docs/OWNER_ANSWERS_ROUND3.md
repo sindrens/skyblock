@@ -1,0 +1,226 @@
+# Owner answers, round 3 (30 Oct 2026 evening, Decisions page)
+
+Many SUGGESTED answers were clicked quickly in bulk (owner: "it was too much, I clicked suggested"); REVIEW3 takes a critical second look.
+
+- **1006** [Stacking & spawners] After a crash, remove a spawner block that is missing from the database? — suggested: Yes, remove it → **SUGGESTED** 
+- **1008** [Stacking & spawners] Should one explosion kill at most 10 mobs from a stack? — suggested: Yes, up to 10 → **SUGGESTED** 
+- **1010** [Stacking & spawners] Give staff a tool to clear or split huge stacks on a laggy island? — suggested: Yes, clear and split tool → **SUGGESTED** 
+- **1011** [Stacking & spawners] Tell island members with a rare action bar line when the stack limit cancels a spawn? — suggested: Yes, rare action bar line → **SUGGESTED** 
+- **1020** [AFK pool] Let the AFK pool hold any number of players, with no 60-player cap? — suggested: Yes, no cap → **SUGGESTED** 
+- **1021** [AFK pool] Kick idle players after 20 minutes outside the AFK pool, but never inside it? — suggested: Yes, 20 minutes → **SUGGESTED** 
+- **1023** [AFK pool] Keep skill XP and set XP out of the AFK pool rewards? — suggested: Yes, no XP → **SUGGESTED** 
+- **1026** [AFK pool] Scale AFK pool money to the player's stage instead of a flat amount? — suggested: Yes, scaled → **SUGGESTED** 
+- **1028** [AFK pool] Give AFK pool keys at 1 h and 3 h (Ember), 6 h (Cinder) and 8 h (Blaze), once per day? — suggested: Yes, as listed → **SUGGESTED** 
+- **1031** [AFK pool] Let up to 3 accounts per IP earn in the AFK pool, each with its own 8 hours? — suggested: Yes, 3 per IP → **SUGGESTED** 
+- **1033** [AFK pool] Count the 8-hour daily AFK limit per account, across all profiles? — suggested: Yes, per account → **SUGGESTED** 
+- **567** [Economy] Block /ah, /sell, /shop, /bank, /trade and /withdraw while combat-tagged and in the warzone, like /ec? — suggested: Yes, combat tag and warzone → **OTHER** yes cimbvat tag and warzone and also combat logging when in combat ( by players )
+- **593** [Economy] Should /baltop count the personal bank too, not only the purse? — suggested: No, count purse plus personal bank → **SUGGESTED** 
+- **597** [Economy] Pause bank interest for a profile with under 2 hours played in 7 days, AFK time counted? — suggested: Yes, 2 hours, AFK counts → **SUGGESTED** 
+- **600** [Economy] When a deposit is bigger than the free room, should the bank deposit what fits and say so? — suggested: Yes, deposit what fits → **SUGGESTED** 
+- **604** [Economy] Should frozen players and staff in staff mode be blocked from bank deposits and withdrawals? — suggested: Yes, block both → **SUGGESTED** 
+- **612** [Economy] Should sell prices be shared by the whole server rather than per island or player? — suggested: Yes, whole server → **OTHER** and in the chat the will be a new "message" in chat every x amount of minutes/horus about donate to the store, remember to vote, and some messages are for example "sugarcane prices has gone up 22% the past 24 hours"
+- **613** [Economy] Should one player be limited to pushing a sell price down about 10% per hour? — suggested: Yes, about 10% per hour → **OTHER** good questions, this has to be plannen write in the needs to be planned
+- **622** [Economy] Should moderators and up see the economy dashboard and alerts? — suggested: Yes, moderators and up → **SUGGESTED** 
+- **624** [Economy] Keep the drafted economy alert thresholds and tune them after the first real week? — suggested: Yes, tune after week one → **SUGGESTED** 
+- **628** [Economy] Should the owner get dashboard emergency buttons for sell prices, shop prices and interest, all logged? — suggested: Yes, owner only, logged → **SUGGESTED** 
+- **630** [Economy] Should the owner get an alert when staff create large amounts of money with /eco? — suggested: Yes, owner only → **SUGGESTED** 
+- **631** [Economy] Should big /eco changes rely on the owner alert, with no second-admin confirm? — suggested: Yes, owner alert is enough → **SUGGESTED** 
+- **637** [Economy] Make combat book drops in the Depths rarer on the live server at the next release? — suggested: Yes, at next release → **SUGGESTED** 
+- **641** [Economy] Should each spawner spawn 1 mob per cycle instead of 4? — suggested: Yes, 1 mob → **SUGGESTED** 
+- **642** [Economy] Should each extra spawner of the same tier cost 10% more than the last in the shop? — suggested: Yes, +10% each → **SUGGESTED** 
+- **644** [Economy] Grow late-game Depths tier prices by 2.2 times per tier instead of 2.4 times? — suggested: Yes, 2.2x → **SUGGESTED** 
+- **650** [Economy] Approve the economy balance sheet for the test server, tuning it after testing? — suggested: Yes, test server first → **SUGGESTED** 
+- **651** [Economy] Accept the smooth price curve that reaches about $15M on day 3 instead of $5M? — suggested: Yes, smooth curve → **SUGGESTED** 
+- **652** [Economy] Add an endless money sink after island upgrade level 12, under a name other than Mastery? — suggested: Yes, new name, not Mastery → **SUGGESTED** 
+- **656** [Economy] Should players who have not finished the tutorial be unable to send /pay or list on the auction house? — suggested: Yes, unlocks at tutorial end → **SUGGESTED** 
+- **658** [Economy] Let sell prices recover by 2% of the gap to base every 10 minutes? — suggested: Yes, 2% of the gap → **SUGGESTED** 
+- **659** [Economy] Should unlocking a personal bank tier cost 2% of that tier's capacity? — suggested: Yes, 2% → **SUGGESTED** 
+- **660** [Economy] Keep /pay for money and shards only, with a confirm from $1M or 1,000 shards? — suggested: Yes, money and shards only → **OTHER** yes but needs planned since i kinda want everything, so people cant trade currencies but we need it so people wont be boosting, we need a solution write down
+- **662** [Economy] Should every player be able to see others' money with /bal <player>, gems hidden? — suggested: Yes, money visible, gems hidden → **SUGGESTED** 
+- **663** [Economy] Should players see the staff reason for /eco changes to their money in /transactions? — suggested: Yes, show the reason → **SUGGESTED** 
+- **665** [Economy] Keep money notes at $100 to $1T each, no fee and no 10-second wait between notes? — suggested: Yes, no wait, no fee → **SUGGESTED** 
+- **666** [Economy] Should money notes be for money only, with no shard notes? — suggested: Yes, money only → **OTHER** all types, and can be traded by dropping to players or /trade or wagered in /duels etc and more
+- **667** [Economy] Should a money note missing from the database be confiscated with a staff alert? — suggested: Yes, confiscate and alert staff → **SUGGESTED** 
+- **669** [Economy] Should money notes be unusable in crafting, villager trades and cartography tables? — suggested: Yes, block all three → **SUGGESTED** 
+- **682** [Economy] Should the 2% warzone death loss take only from the purse, not from notes or the bank? — suggested: Yes, purse only → **SUGGESTED** 
+- **683** [Economy] Should anyone holding a note be able to cash it, even if its maker is frozen or banned? — suggested: Yes, bearer item → **SUGGESTED** 
+- **684** [Economy] Should staff be able to void a single note by its id, with a logged action? — suggested: Yes, void by id, logged → **SUGGESTED** 
+- **692** [Economy] Approve the draft sell prices and put them live on the test server first? — suggested: Yes, test server first → **SUGGESTED** 
+- **693** [Economy] Keep emeralds unsellable in /sell, since villagers make them from free items? — suggested: Yes, unsellable → **OTHER** this feels like an og question since i dont think villagers are gonna be a thing used, we will have custom drops for some mobs and for all so every mob killed drops 1 at normal and more if killed by looting etc, but yes it will be sellable, it wont be worht trading with it to get emerald and we are gonna have to plan out a beter /shop write it down in document
+- **694** [Economy] Keep items that give craft or smelt profit unsellable (arrows, most ingots, storage blocks, wool)? — suggested: Yes, as described → **SUGGESTED** 
+- **695** [Economy] Should vanilla mob drops sell from any farm, while only Depths logs (not vanilla logs) sell? — suggested: Yes, as described → **OTHER** yes different prices, the custom blocks such as logs, mine materials from mine will have its own sell value and value on doing more such as using the materials to do things, for example, EXAMPLE: sell for different types of currency
+- **700** [Economy] Should /sell all skip Forge materials via a 'Keep Forge materials' toggle, with no warning popup? — suggested: Yes, toggle, no popup → **SUGGESTED** 
+- **703** [Economy] Should a sale use the price at the moment the Sell button is clicked? — suggested: Yes, price at the click → **OTHER** have to have th eprices refresh more often so they see live and not click then wait 16 hours then buy and get it for a lot cheaper
+- **704** [Economy] Should vanilla items with a custom name, enchants or damage be unsellable? — suggested: Yes, only plain items sell → **OTHER** yes and custom items such as some loot u get from the depth
+- **711** [Economy] Approve the draft shop prices and put them live on the test server first? — suggested: Yes, test server first → **SUGGESTED** 
+- **712** [Economy] Should shop items that can also be sold always cost more than they sell for? — suggested: Yes, always above sell price → **SUGGESTED** 
+- **718** [Economy] Should the shop have a search button to find items by name? — suggested: Yes, search button → **SUGGESTED** 
+- **721** [Economy] Should lava buckets, water buckets and flint and steel be sold in the shop? — suggested: Yes, sell all three → **SUGGESTED** 
+- **722** [Economy] Should spawn eggs, TNT, beacons, elytra and totems stay out of the shop? — suggested: Yes, crates and events only → **SUGGESTED** 
+- **731** [Economy] Keep trades within 16 blocks to start, ending past 24 blocks or 10 minutes, with a 3-second countdown? — suggested: Yes, as written → **SUGGESTED** 
+- **733** [Economy] Should any damage end an open trade, with no trade requests within 10 seconds of combat? — suggested: Yes, damage ends the trade → **SUGGESTED** 
+- **734** [Economy] Should locked wardrobe armor, menu items, dupe-flagged items and filled shulker boxes be untradeable? — suggested: Yes, as written → **SUGGESTED** 
+- **736** [Economy] Should the trade window show each item's estimated value as a hover line? — suggested: Yes, hint line → **SUGGESTED** 
+- **737** [Economy] Should the trade show a red warning before the countdown when one side gives far more value? — suggested: Yes, before the countdown → **SUGGESTED** 
+- **748** [The Depths] When the satchel is full, should mining be refused so the block stays and nothing is lost? — suggested: Yes, refuse the break → **OTHER** allow the break but send message to player warning each time it breaks someething minimum delay between messages 3 sec, so if broken first with full it says warning then after 2 seconds and 59 seconds it will not say mesage but message after 3 seond it will say
+- **749** [The Depths] Keep satchel size at 256, plus 16 per Mining and Foraging level, plus 5 money upgrades? — suggested: Yes, as written → **SUGGESTED** 
+- **750** [The Depths] Allow taking items out of the satchel to trade or sell, with no deposit button? — suggested: Yes, take-out only → **SUGGESTED** 
+- **752** [The Depths] Should satchel Sell all keep the items your next Forge upgrade needs, with a toggle? — suggested: Yes, 'Keep Forge materials' toggle → **SUGGESTED** 
+- **754** [The Depths] Should the satchel have one shared capacity for all item types? — suggested: Yes, one shared total → **SUGGESTED** 
+- **755** [The Depths] Should players get one warning with a sound and action bar line at 90% satchel full? — suggested: Yes, once → **SUGGESTED** 
+- **756** [The Depths] Should staff see a player's satchel read-only in /inspect, with admins able to fix it? — suggested: Yes, read-only, admins fix → **SUGGESTED** 
+- **769** [The Depths] When the satchel is full, should combat drops go to the inventory, then /box, instead of being lost? — suggested: Yes, inventory then /box → **SUGGESTED** 
+- **770** [The Depths] Should every player who did at least 10% of a mini-boss's damage get the full rewards? — suggested: Yes, full rewards each → **SUGGESTED** 
+- **772** [The Depths] Should combat kills drop new custom items used for Forge sword recipes? — suggested: Yes, as written → **SUGGESTED** 
+- **774** [The Depths] Keep combat mobs at 8 per zone plus 2 per player, max 30, dealing 2 to 10 per hit? — suggested: Yes, as written → **SUGGESTED** 
+- **776** [The Depths] Make mine and forest Forge recipes use Depths drops instead of vanilla items? — suggested: Yes, Depths drops only → **SUGGESTED** 
+- **780** [The Depths] Should impossibly fast Depths breaks be ignored silently, alerting staff after 3 flags in 10 seconds? — suggested: Yes, silent → **SUGGESTED** 
+- **783** [The Depths] Should players in the Depths be unable to place blocks or break anything except resources? — suggested: Yes, resources only → **SUGGESTED** 
+- **797** [The Depths] Should mini-bosses get +25% health per extra player, up to +100%? — suggested: Yes, +25% each, max +100% → **SUGGESTED** 
+- **798** [The Depths] Should bows, crossbows and tridents work in combat zones with their own damage numbers? — suggested: Yes, with own damage numbers → **SUGGESTED** 
+- **799** [The Depths] Should a tier-10 mob take about 8 hits to kill an average player in a matching armor set? — suggested: Yes, about 8 hits → **SUGGESTED** 
+- **800** [The Depths] Should combat zones have a safe arrival pad where mobs do not follow? — suggested: Yes, safe pad → **SUGGESTED** 
+- **809** [The Depths] Should each Depths tier drop only one item type? — suggested: Yes, one per tier → **SUGGESTED** 
+- **810** [The Depths] Should only custom tools work in the Depths, with the starter kit free? — suggested: Yes, custom tools only → **SUGGESTED** 
+- **811** [The Depths] Should a geode give 5 to 50 crystals, and 10 key fragments make a crate key? — suggested: Yes, 5-50 crystals, 10 fragments → **SUGGESTED** 
+- **812** [The Depths] Should Depths drops be tradeable and listable on the auction house? — suggested: Yes, like normal items → **SUGGESTED** 
+- **821** [The Depths] Should higher players be unable to bring lower friends into locked zones? — suggested: Yes, no guest passes → **SUGGESTED** 
+- **822** [The Depths] Should PvP be off everywhere in the Depths, with the warzone the only PvP area? — suggested: Yes, warzone only → **SUGGESTED** 
+- **824** [The Depths] Should combat zones cap at 40 players, with no cap on ore tiers? — suggested: Yes, 40 with a 'zone full' message → **SUGGESTED** 
+- **825** [The Depths] Should flying be disabled everywhere in the Depths, ranks included? — suggested: Yes, no flying → **SUGGESTED** 
+- **826** [The Depths] Should a lower tool still mine higher ore, but slower (70% speed with the previous tier)? — suggested: Yes, slower → **SUGGESTED** 
+- **832** [Tools, skills & enchants] Make blueprint drops rarer, about 1 in 50,000 blocks, instead of 1 in 15,000 to 20,000? — suggested: Yes, about 1 in 50,000 → **SUGGESTED** 
+- **833** [Tools, skills & enchants] Let blueprints be traded and listed on the auction house? — suggested: Yes, tradeable and auctionable → **SUGGESTED** 
+- **834** [Tools, skills & enchants] Let a blueprint tool be forged to higher tiers and keep its ability? — suggested: Yes, ability stays → **SUGGESTED** 
+- **835** [Tools, skills & enchants] Get skins from crates, events and achievements, plus seasonal skins sold for gems? — suggested: Yes, add seasonal gem skins → **SUGGESTED** 
+- **836** [Tools, skills & enchants] Let skins be turned into a tradeable skin token that another player can redeem? — suggested: Yes, skin tokens → **SUGGESTED** 
+- **837** [Tools, skills & enchants] Hide tool skins until the resource pack exists, instead of showing name-only skins? — suggested: Yes, hide until the pack → **SUGGESTED** 
+- **851** [Tools, skills & enchants] Make stack-kill books 60% Uncommon and 40% Rare, with level I 85%, II 12%, III 3%? — suggested: Yes, as described → **SUGGESTED** 
+- **857** [Tools, skills & enchants] Drop Depths enchant books only when mining with that wing's custom tool? — suggested: Yes, custom tool only → **SUGGESTED** 
+- **868** [Tools, skills & enchants] Let books unlock an enchant and crystals raise its level, each step costing 1.8x the last? — suggested: Yes, x1.8 per level step → **SUGGESTED** 
+- **869** [Tools, skills & enchants] Make enchant books and Disenchant Scrolls tradeable and auctionable, but never sold for gems? — suggested: Yes, tradeable, never for gems → **SUGGESTED** 
+- **871** [Tools, skills & enchants] Limit enchant level by tool level, so a level 25 tool reaches half the max enchant level? — suggested: Yes, tool level gates enchants → **SUGGESTED** 
+- **872** [Tools, skills & enchants] Give enchants no fail chance, with Disenchant Scrolls returning the book and a 20% crystal refund without one? — suggested: Yes, no fail chance → **SUGGESTED** 
+- **873** [Tools, skills & enchants] Sell Enchanter book rolls for 500, 4,000 and 25,000 crystals, 5, 5 and 3 per day, never Mythic? — suggested: Yes, up to 10% Legendary → **SUGGESTED** 
+- **874** [Tools, skills & enchants] Drop Slaughter, Soul Reaper, Bloodlust and Plunder books from stacked kills at 1 in 25,000, max 5 a day? — suggested: Yes, 1 in 25,000, max 5 daily → **SUGGESTED** 
+- **875** [Tools, skills & enchants] Cap enchant bonuses at crystals +200%, drops +200%, skill XP +300%, tool XP +100%, rare finds +150%? — suggested: Yes, as listed → **SUGGESTED** 
+- **876** [Tools, skills & enchants] In the warzone and duels, cut damage enchants to 40%, healing to 50%, and turn off area and movement enchants? — suggested: Yes, 40% damage, 50% healing → **SUGGESTED** 
+- **881** [Tools, skills & enchants] Keep Mythic enchant books tradeable on the auction house instead of binding them to the first owner? — suggested: Yes, tradeable, logged as unique → **SUGGESTED** 
+- **883** [Tools, skills & enchants] Show a short value like +12% speed for each enchant in the tool lore? — suggested: Yes, short value → **SUGGESTED** 
+- **891** [Tools, skills & enchants] Take Forge materials from the inventory, satchel and island storage together? — suggested: Yes, all three → **SUGGESTED** 
+- **892** [Tools, skills & enchants] Use vanilla items in Forge recipes until the Depths drops exist? — suggested: Yes, placeholders for now → **SUGGESTED** 
+- **899** [Tools, skills & enchants] Start with four blueprints: Sage Pickaxe, Magma Pickaxe, Windcutter Axe and Vampire Blade? — suggested: Yes, these four → **SUGGESTED** 
+- **901** [Tools, skills & enchants] Block dropping custom tools on the ground, so they move only by trade or auction? — suggested: Yes, block dropping → **SUGGESTED** 
+- **902** [Tools, skills & enchants] Keep prestiged custom tools tradeable between players instead of making them soulbound? — suggested: Yes, tradeable → **SUGGESTED** 
+- **911** [Tools, skills & enchants] Keep skill level 150 as a far goal, with only 2% extra cost per level after 66? — suggested: Yes, 150 cap, +2% after 66 → **SUGGESTED** 
+- **918** [Tools, skills & enchants] Pay Combat XP per kill at the same XP per hour as mining, from zombie 5 to evoker 1,200? — suggested: Yes, as listed → **SUGGESTED** 
+- **919** [Tools, skills & enchants] Give Mining and Foraging XP only in The Depths, and Combat XP from any non-spawner mob? — suggested: Yes, Depths only for gathering XP → **SUGGESTED** 
+- **922** [Tools, skills & enchants] Let anyone view another player's skills with /skills <player>? — suggested: Yes, public → **SUGGESTED** 
+- **924** [Tools, skills & enchants] Give crystals on every skill level-up, with bigger rewards every 5 levels? — suggested: Yes, bigger every 5 levels → **SUGGESTED** 
+- **925** [Tools, skills & enchants] Give each skill level a small bonus to its own activity, inside the shared caps? — suggested: Yes, tiny per level → **SUGGESTED** 
+- **934** [Wardrobe & sets] Let /loadout take a slot number, like /loadout 2? — suggested: Yes, slot numbers work → **SUGGESTED** 
+- **935** [Wardrobe & sets] Put loadout tools back into the same hotbar slots they were saved in? — suggested: Yes, same slots → **SUGGESTED** 
+- **943** [Wardrobe & sets] Apply the rest of a loadout swap when one part fails, and list what was skipped? — suggested: Yes, partial swap → **SUGGESTED** 
+- **946** [Wardrobe & sets] Stop frozen players from swapping loadouts, changing sets or using the Wardrobe Chest? — suggested: Yes, block while frozen → **SUGGESTED** 
+- **949** [Wardrobe & sets] Give set XP for /sell sales, capped at 8,000 per hour? — suggested: Yes, max 8,000 per hour → **SUGGESTED** 
+- **952** [Wardrobe & sets] Give set XP only for generator blocks, grown trees and grown crops, farming capped at 10,000 per hour? — suggested: Yes, as described → **SUGGESTED** 
+- **953** [Wardrobe & sets] Add tradeable Wardrobe Tomes (+2,500 or +10,000 set XP, up to level 40) from crates and quests? — suggested: Yes, tradeable tomes up to Lv 40 → **SUGGESTED** 
+- **956** [Wardrobe & sets] Bind sets to the profile, with only unredeemed Set Tokens tradeable? — suggested: Yes, bound sets, tradeable tokens → **SUGGESTED** 
+- **957** [Wardrobe & sets] Approve the 16 sets and bonuses, including crop growth +100% and conquest +60%? — suggested: Yes, approve all 16 → **SUGGESTED** 
+- **958** [Wardrobe & sets] Price sets at tier I $20k, Banneret $2.5M, Coinmaster $40M, crystal sets 25,000, gem sets 400 or 900? — suggested: Yes, tier IV crate-only → **SUGGESTED** 
+- **959** [Wardrobe & sets] Make gem sets account-wide Sigils that each profile can claim free once per season? — suggested: Yes, kept across seasons → **SUGGESTED** 
+- **960** [Wardrobe & sets] Level sets with 200 x 1.10^level XP per level, reaching level 50 in about 65 hours? — suggested: Yes, about 65 hours to 50 → **SUGGESTED** 
+- **961** [Wardrobe & sets] Allow merging only two level 50 sets, for 5,000 to 25,000 crystals, with no unmerge? — suggested: Yes, level 50 only, no unmerge → **SUGGESTED** 
+- **963** [Wardrobe & sets] In the warzone and duels, count every set as 1x with 50% damage reduction and only conquest bonuses? — suggested: Yes, 1x and conquest only → **SUGGESTED** 
+- **964** [Wardrobe & sets] Let the Wardrobe Chest hold only unique items, with 27 slots? — suggested: Yes, 27 slots → **SUGGESTED** 
+- **968** [Wardrobe & sets] Give staff a Wardrobe button in Inspect, helpers view only and admins give or remove, all logged? — suggested: Yes, helpers view, admins edit → **SUGGESTED** 
+- **969** [Wardrobe & sets] Lock fishing and conquest sets as 'Arrives with...' until those features exist? — suggested: Yes, locked → **SUGGESTED** 
+- **972** [Wardrobe & sets] Always show a confirm screen before buying a set? — suggested: Yes, always confirm → **SUGGESTED** 
+- **977** [Wardrobe & sets] Allow vanilla armor in the armor slots when no set is worn? — suggested: Yes, vanilla armor allowed → **SUGGESTED** 
+- **978** [Wardrobe & sets] Allow mixing pieces of different sets, with bonuses only from full pairs? — suggested: Yes, mix by pairs → **SUGGESTED** 
+- **988** [Stacking & spawners] Should spawner items be tradeable and listable on the auction house? — suggested: Yes, tradeable → **SUGGESTED** 
+- **990** [Stacking & spawners] Should spawners work across the whole island while a member is on it? — suggested: Yes, whole island → **SUGGESTED** 
+- **991** [Stacking & spawners] Should spawners use island fuel once Island Fuel exists? — suggested: Yes, spawners burn fuel → **SUGGESTED** 
+- **992** [Stacking & spawners] Should spawner output stop when the island hits its mob or item limits, with a 'Limit reached' line? — suggested: Yes, with a line → **SUGGESTED** 
+- **N1-1** [Look & feel] Should finishing the tutorial once unlock everything on the player's later profiles too? — suggested: Yes, once per account → **SUGGESTED** 
+- **N1-2** [Look & feel] Should a new player who gets an island invite skip the portal and do the tutorial there? — suggested: Yes, invite skips island creation → **SUGGESTED** 
+- **N1-3** [Look & feel] Should the tutorial have no skip button, staying under 3 minutes? — suggested: Yes, no skip → **SUGGESTED** 
+- **N2-1** [Islands] Remove the 3 island joins per season limit, since leaving an island already wipes that profile's progress? — suggested: Yes, remove it → **SUGGESTED** 
+- **N2-2** [Islands] Let island size grow past 9x9 up to 15x15, only through gems or the Black Market? — suggested: Yes, up to 15x15 → **SUGGESTED** 
+- **N2-3** [Economy] Keep items in /box until the season reset, never expiring? — suggested: Yes, never expire → **SUGGESTED** 
+- **P10-1** [Economy] Use the 7 crate reward tables in PHASE-10-REWARDS.md, with money pouches scaled to your Depths tier (Ember 3 min of income up to Eclipse 90 min)? — suggested: Yes → **SUGGESTED** 
+- **P10-10** [Economy] Eclipse keys are not tied to a month: a key opens whatever month's Eclipse crate is live when you use it? — suggested: Yes → **SUGGESTED** 
+- **P10-13** [Economy] Each vote gives 1 bound Ember key + 3 gems + 25 pass XP, on 5 sites (PlanetMinecraft, Minecraft-MP, MinecraftServers.org, TopG, Minecraft-Server-List)? — suggested: Yes → **SUGGESTED** 
+- **P10-15** [Economy] Vote party: 100 votes would fill ~15 times a day at our size (15 Rare keys per player daily). Change it to 500 votes, Blaze key, only for players online who voted today and aren't AFK? — suggested: Yes → **SUGGESTED** 
+- **P10-17** [Economy] Daily calendar contents as listed (keys on days 3, 7, 10, 14, 17, 21, 24, 28 Inferno, 30 Eclipse; money, crystals, fuel and boosters on the other days)? — suggested: Yes → **SUGGESTED** 
+- **P10-2** [Economy] Pity per profile and crate: a top-band reward is guaranteed after about 2.5x the average gap (Ember 30 opens ... Eclipse 10), shown in the preview, reset each season? — suggested: Yes → **SUGGESTED** 
+- **P10-21** [Economy] Daily quests: 3 per day scaled to your tier, 1 free reroll, each 3 min of income + crystals + 100 pass XP, all 3 done = Cinder key? — suggested: Yes → **SUGGESTED** 
+- **P10-22** [Economy] Weekly quests: 5 per week, each 8 min of income + crystals + 400 pass XP, all 5 done = Blaze key? — suggested: Yes → **SUGGESTED** 
+- **P10-24** [Economy] Battle pass: flat 800 XP per level for all 100 levels (a regular player reaches ~95-100 in 90 days, a casual ~55)? — suggested: Yes → **SUGGESTED** 
+- **P10-25** [Economy] Free track: a small reward every level, keys every 5 levels (Blaze 25/75, Inferno 50, Phoenix 100), titles at 50 and 100? — suggested: Yes → **SUGGESTED** 
+- **P10-26** [Economy] Premium track: cosmetics every 5 levels, a premium skin and animated title at 100, plus 1 extra daily reroll; no keys, boosters or currencies? — suggested: Yes → **SUGGESTED** 
+- **P10-27** [Economy] Premium battle pass price: 1,000 store credits (about EUR 10) per season? — suggested: Yes → **SUGGESTED** 
+- **P10-28** [Economy] Premium is bought once per account per season; premium cosmetics are given once per account; the free track is per profile? — suggested: Yes → **SUGGESTED** 
+- **P10-32** [Economy] The collection log counts only items you got yourself (drops, crates, quests, calendar, Black Market), never trades, AH buys or /pay? — suggested: Yes → **SUGGESTED** 
+- **P10-33** [Economy] Collection rewards: page milestones give island level points, a full page gives a title + Blaze key, the whole log gives Keeper of Ashes + Phoenix key + the secret set? — suggested: Yes → **SUGGESTED** 
+- **P10-34** [Economy] Black Market takes only shards (no gems, no money); gem items stay in the gem shop and money items in /shop? — suggested: Yes → **SUGGESTED** 
+- **P10-35** [Economy] Black Market always open; 8 rotating slots (1 headline, 3 rare, 4 common) every 12 h at 00:00 and 12:00, plus a fixed row with the Island Charter and Disenchant Scroll? — suggested: Yes → **SUGGESTED** 
+- **P10-36** [Economy] Black Market prices as listed (Phoenix Regalia 400, Voidforged 250, Mythic book 200, Coinmaster 120, Eclipse key 75, tier 5 spawner 40, Elytra 30 shards ...)? — suggested: Yes → **SUGGESTED** 
+- **P10-38** [Economy] Island Charter prices 150 / 300 / 450 shards for 11x11 / 13x13 / 15x15 (gem price 250 / 500 / 750), one season only? — suggested: Yes → **SUGGESTED** 
+- **P10-4** [Economy] Open crates from /crates anywhere; physical crates at spawn are for the show; Open 10 and Open all skip the animation? — suggested: Yes → **SUGGESTED** 
+- **P10-41** [Economy] Add staff sub-commands /crates admin, /vote admin test, /quests admin, /pass admin and /blackmarket admin (give, take, reset, test roll; admins edit, mods view; all logged)? — suggested: Yes → **SUGGESTED** 
+- **P10-43** [Economy] Unused keys are wiped with the profile at the season reset, with a warning during the Final Week? — suggested: Yes → **SUGGESTED** 
+- **P10-6** [Economy] Keys from votes, AFK pool, daily calendar, playtime and rank claims are bound (no withdraw, no trade); keys from quests, battle pass, events, weekly top and fragments can be withdrawn, traded and sold on the AH? — suggested: Yes → **SUGGESTED** 
+- **P5-1** [Islands] Island level = all level points divided by 10, from 8 sources: pillars, upgrades/masteries, island achievements, collections, members' skills, Depths tiers, island bank, block worth? — suggested: Yes → **SUGGESTED** 
+- **P5-10** [Islands] Upgrades permission defaults: Leader always, Admin on, Mod and Member off (leader can change it)? — suggested: Yes → **SUGGESTED** 
+- **P5-11** [Islands] Paying an upgrade from the island bank has no 2% fee and does not cost that period's interest? — suggested: Yes → **SUGGESTED** 
+- **P5-12** [Islands] Island Size in 3 steps: 5x5 (~45 min), 7x7 (~day 1), 9x9 (day 2 to 5 for active players)? — suggested: Yes → **SUGGESTED** 
+- **P5-13** [Islands] Member Slots in 4 steps of +1 member (first after ~3 hours), up to 8 members plus the leader? — suggested: Yes → **SUGGESTED** 
+- **P5-14** [Islands] Sizes 11x11, 13x13 and 15x15 bought with gems or the Black Market last one season (islands are wiped), with a clear warning before buying? — suggested: Yes → **SUGGESTED** 
+- **P5-16** [Islands] Bought sizes above 9x9 give no island level points? — suggested: Yes → **SUGGESTED** 
+- **P5-19** [Islands] Treasury mastery: 3 ranks at island level 15 / 35 / 60 lower the bank fee to 1.5% / 1.0% / 0.5%? — suggested: Yes → **SUGGESTED** 
+- **P5-2** [Islands] Block worth counts with a square root (twice the blocks is not twice the points) and never more than 20% of the level? — suggested: Yes → **SUGGESTED** 
+- **P5-20** [Islands] Wings (island fly) at island level 20 for $60k? — suggested: Yes → **SUGGESTED** 
+- **P5-24** [Islands] After everything is maxed, endless Ascension levels (tasks + money, each a bit more) give level points? — suggested: Yes → **SUGGESTED** 
+- **P5-25** [Islands] New sub-commands /is top (leaderboards menu) and /is level (level breakdown menu)? — suggested: Yes → **SUGGESTED** 
+- **P5-26** [Islands] Weekly boards count only earned points (pillars, upgrades, masteries, achievements), not block worth or bank? — suggested: Yes → **SUGGESTED** 
+- **P5-29** [Islands] Each board shows only one island per leader account (the best one)? — suggested: Yes → **SUGGESTED** 
+- **P5-3** [Islands] Block worth, bank, members' skills and Depths tiers can go down; pillars, upgrades, masteries and achievements never go down in a season? — suggested: Yes → **SUGGESTED** 
+- **P5-31** [Islands] Staff command /isadmin progression (mods view; admins set levels, add pillar XP, recalculate, refund, export the season CSV), all logged? — suggested: Yes → **SUGGESTED** 
+- **P5-4** [Islands] Members' skills and Depths tiers count only members who have been on the island for 3 days or more? — suggested: Yes → **SUGGESTED** 
+- **P5-6** [Islands] Pillar XP comes from the base skill XP members earn, before rank and personal boosts? — suggested: Yes → **SUGGESTED** 
+- **P5-8** [Islands] Hide the Conquest pillar until KOTH or events exist, and count only the 4 other pillars until then? — suggested: Yes → **SUGGESTED** 
+- **P5-9** [Islands] Task progress counts from the island's creation, so play before the upgrade appears is never wasted? — suggested: Yes → **SUGGESTED** 
+- **RTA-1** [Ranks, perks & cosmetics] Check Mojang's usage guidelines before the store opens, and set rank progress perks to 0 if they forbid them? — suggested: Yes → **SUGGESTED** 
+- **RTA-12** [Ranks, perks & cosmetics] Three won ranks: Torchbearer (top 4-10), Flameheart (top 2-3 and board #1s), Firecrown (#1 islands)? — suggested: Yes → **SUGGESTED** 
+- **RTA-14** [Ranks, perks & cosmetics] Top rank sell bonus +15% (steps 2, 4, 6, 8, 10, 12, 15)? — suggested: Yes → **SUGGESTED** 
+- **RTA-16** [Ranks, perks & cosmetics] Top rank skill XP bonus +10% (steps 1, 2, 3, 4, 6, 8, 10)? — suggested: Yes → **SUGGESTED** 
+- **RTA-17** [Ranks, perks & cosmetics] Monthly low keys (Ember, Cinder, Blaze only) for ranks, claimable after 5 h played that month? — suggested: Yes → **SUGGESTED** 
+- **RTA-18** [Ranks, perks & cosmetics] Island fly from the 4th rank (Flamecrest) up? — suggested: Yes → **SUGGESTED** 
+- **RTA-2** [Ranks, perks & cosmetics] Name the 7 donor ranks Hatchling, Fledgling, Firewing, Flamecrest, Sunfeather, Pyrelord, Immortal? — suggested: Yes → **SUGGESTED** 
+- **RTA-20** [Ranks, perks & cosmetics] Ranks give no island or pillar XP boost? — suggested: Yes → **SUGGESTED** 
+- **RTA-29** [Ranks, perks & cosmetics] Give the existing achievement titles themed names like Magma Delver and Gold Phoenix (ids stay)? — suggested: Yes → **SUGGESTED** 
+- **RTA-3** [Ranks, perks & cosmetics] Rename the free rank from Ember to Ashborn? — suggested: Yes → **SUGGESTED** 
+- **RTA-32** [Ranks, perks & cosmetics] The First Flame title for anyone with 1 h played in Season 1's first week? — suggested: Yes → **SUGGESTED** 
+- **RTA-37** [Ranks, perks & cosmetics] Personal and island achievements in one /achievements menu with Personal, Island and History tabs? — suggested: Yes → **SUGGESTED** 
+- **RTA-39** [Ranks, perks & cosmetics] Personal achievements never boost sell or money directly? — suggested: Yes → **SUGGESTED** 
+- **RTA-40** [Ranks, perks & cosmetics] Achievement tiers give boosts and titles only, no crystals, money or keys? — suggested: Yes → **SUGGESTED** 
+- **RTA-41** [Ranks, perks & cosmetics] Personal boost caps: skill XP 10%, tool XP 10%, PvE damage 8%, rare finds 8%, crystals 6%, AH +2 slots? — suggested: Yes → **SUGGESTED** 
+- **RTA-42** [Ranks, perks & cosmetics] Island boost caps: production 8%, island crystals 6%, island XP 5%, fuel 10%? — suggested: Yes → **SUGGESTED** 
+- **RTA-44** [Ranks, perks & cosmetics] All achievement progress and boosts reset each season, titles stay? — suggested: Yes → **SUGGESTED** 
+- **RTA-6** [Ranks, perks & cosmetics] Bought ranks are account-wide, work on every profile and never expire? — suggested: Yes → **SUGGESTED** 
+- **RTA-7** [Ranks, perks & cosmetics] Prices 5, 10, 20, 30, 45, 65, 100 EUR? — suggested: Yes → **SUGGESTED** 
+- **RTA-8** [Ranks, perks & cosmetics] Won ranks give all perks of the donor tier they copy, sell and XP bonus included? — suggested: Yes → **SUGGESTED** 
+- **RTA-9** [Ranks, perks & cosmetics] To get a won rank: 10 h played that season and 7 days on the winning island? — suggested: Yes → **SUGGESTED** 
+- **TUT-1** [Look & feel] Core tutorial = 11 steps (portal, arrival, starter chest, first crop, menu, to the Depths, mine, sell, Forge, help NPC, bank), about 2 min 50 s? — suggested: Yes → **SUGGESTED** 
+- **TUT-10** [Look & feel] Three short camera flyovers (spawn 6 s, island 6 s, Depths 5 s), skippable by sneaking? — suggested: Yes → **SUGGESTED** 
+- **TUT-12** [Look & feel] New players walk the ~95 blocks from the spawn point to the Island portal (about 22 s) with a flame trail? — suggested: Yes → **SUGGESTED** 
+- **TUT-14** [Look & feel] Starter chest = 5 starter tools, 8 wheat seeds, 8 bone meal, 2 oak saplings, 1 lava bucket, 16 bread, crafting table, chest, Field Guide book? — suggested: Yes → **SUGGESTED** 
+- **TUT-19** [Look & feel] With a pending invite, the Island portal asks: create my own island or join that island? — suggested: Yes → **SUGGESTED** 
+- **TUT-2** [Look & feel] The core tutorial can't be skipped as a whole on the first run (staff can skip it for a player)? — suggested: Yes → **SUGGESTED** 
+- **TUT-22** [Look & feel] Add the staff command /tutorial admin (status, skip, reset, step, stats)? — suggested: Yes → **SUGGESTED** 
+- **TUT-3** [Look & feel] Tutorial once per account: finishing on one profile unlocks every profile? — suggested: Yes → **SUGGESTED** 
+- **TUT-4** [Look & feel] Locks open like this: team features after step 4, the Depths after step 5, auction house after step 8, /pay and /withdraw after step 11, /trade, warzone and new profiles at the finish? — suggested: Yes → **SUGGESTED** 
+- **TUT-5** [Look & feel] Public chat and /msg are open from the start of the tutorial? — suggested: Yes → **SUGGESTED** 
+- **TUT-7** [Look & feel] Finish reward: $2,500 + 25 crystals + the title Firstflight, once per account, paid to the profile you finish on? — suggested: Yes → **SUGGESTED** 
+- **TUT-9** [Look & feel] The guide is a small red parrot companion called Pip that only you can see? — suggested: Yes → **SUGGESTED** 

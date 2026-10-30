@@ -1,0 +1,69 @@
+{
+  "m": {
+    "988": {
+      "a": "s",
+      "note": "",
+      "t": 1793388303447
+    },
+    "989": {
+      "a": "o",
+      "note": "Settled by your earlier answers (DECISIONS O1/O2): No block limits; stack caps and lag detection apply.",
+      "t": 1793383290107
+    },
+    "990": {
+      "a": "s",
+      "note": "",
+      "t": 1793388303447
+    },
+    "991": {
+      "a": "s",
+      "note": "",
+      "t": 1793388303447
+    },
+    "992": {
+      "a": "s",
+      "note": "",
+      "t": 1793388303447
+    },
+    "1000": {
+      "a": "o",
+      "note": "Settled by your earlier answers (Round 3 SK10): Evoker totems and shulker shells stay very rare, tier 5 only.",
+      "t": 1793383290107
+    },
+    "1005": {
+      "a": "o",
+      "note": "Settled by your earlier answers (DECISIONS S25): Crops grow without light.",
+      "t": 1793383290107
+    },
+    "1006": {
+      "a": "s",
+      "note": "",
+      "t": 1793388303447
+    },
+    "1008": {
+      "a": "s",
+      "note": "",
+      "t": 1793388303447
+    },
+    "1009": {
+      "a": "o",
+      "note": "Settled by your earlier answers (DECISIONS S14-S19, O15): Drops merge into stacked items and auto-pickup collects them.",
+      "t": 1793383290107
+    },
+    "1010": {
+      "a": "s",
+      "note": "",
+      "t": 1793388303447
+    },
+    "1011": {
+      "a": "s",
+      "note": "",
+      "t": 1793388303447
+    },
+    "1016": {
+      "a": "o",
+      "note": "Settled by your earlier answers (DECISIONS S2, S12): Max 1,024 per stack for all mobs.",
+      "t": 1793383290107
+    }
+  }
+}

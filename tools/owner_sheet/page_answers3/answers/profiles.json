@@ -1,0 +1,99 @@
+{
+  "m": {
+    "117": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "118": {
+      "a": "o",
+      "note": "Deleting a profile deletes everything on it, auction listings and skills included (keep only the account-wide list). Auctions must never be a way to move things to another profile: you can't buy listings made by your own other profiles.",
+      "t": 1793379913382
+    },
+    "119": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "120": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "121": {
+      "a": "o",
+      "note": "Every profile gets start money. No disband/cooldown delay when creating a new island or joining someone else's.",
+      "t": 1793379913382
+    },
+    "122": {
+      "a": "o",
+      "note": "Settled by your earlier answers (R1 #132, principle 1): Switching blocked in warzone and boss arena, allowed in the Depths out of combat; no cooldown.",
+      "t": 1793383290107
+    },
+    "123": {
+      "a": "o",
+      "note": "Settled by your earlier answers (R1 #50, DECISIONS P2): Chat, social and sound settings follow the account; scoreboard and menu item per profile.",
+      "t": 1793383290107
+    },
+    "126": {
+      "a": "o",
+      "note": "Settled by your earlier answers (R2 #414, DECISIONS P8): Season reset wipes islands and player data; gem-bought slots stay, others are lost.",
+      "t": 1793383290107
+    },
+    "127": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "128": {
+      "a": "n",
+      "note": "Daily login reward and streak per profile, not per account",
+      "t": 1793379913382
+    },
+    "129": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "130": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "131": {
+      "a": "o",
+      "note": "Remove the 30-minute new-account limit entirely. Instead: permissions unlock step by step while doing the tutorial; full perms when the tutorial is finished.",
+      "t": 1793379913382
+    },
+    "132": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "133": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "134": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "135": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "138": {
+      "a": "o",
+      "note": "Settled by your earlier answers (DECISIONS P6): Hard maximum of 3 profiles.",
+      "t": 1793383290107
+    },
+    "139": {
+      "a": "o",
+      "note": "Settled by your earlier answers (R2 #304): Profile names go through the chat filter; 16 characters max.",
+      "t": 1793383290107
+    }
+  }
+}
