@@ -155,6 +155,8 @@ final class TransactionsMenu extends Menu {
         Component counterparty;
         if (other != null) {
             counterparty = Component.text(other);
+        } else if (otherRef != null && otherRef.isBank()) {
+            counterparty = service.text(viewer, EconomyModule.ID, "menu.entry.bank");
         } else if (otherRef != null) {
             counterparty = service.text(viewer, EconomyModule.ID, "menu.entry.island");
         } else {

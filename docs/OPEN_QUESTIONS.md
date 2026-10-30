@@ -300,6 +300,16 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 - M3.5 shop: a full inventory refuses the purchase before anything is paid (no drops, no storage). If the inventory fills up while the payment runs (milliseconds), the rest drops at the player's feet. Purchases made just before leaving or switching profile wait and are handed over on the next join/switch. OK? (default: yes)
 - M3.5 shop: purchases from $100,000 ask to confirm (`shop-settings.yml → buy.confirm-above`), up to 2,304 items (36 stacks) per purchase. OK? (default: yes)
 - M3.5 shop: `/shop [category]` opens a category directly (the optional category argument is not in the phase doc; it is part of the one planned command). OK? (default: yes)
+- M3.3 bank: the 2% early-withdrawal fee (owner E4: keep) applies to every withdrawal except in the first 10 minutes after each payout (`bank.yml → withdraw.free-minutes`); a withdrawal with a fee also forfeits the current period's interest. The fee is rounded up and leaves the economy. OK, or a fee on every withdrawal / no free minutes? (default: 10 free minutes)
+- M3.3 bank: island bank daily withdraw limits per role in % of the bank capacity: Leader and Admin no limit, Mod 25%, Member 10% (`island.withdraw-limit-percent.*`; only roles with the Bank withdraw permission can withdraw, default Admin). OK? (default: as listed)
+- M3.3 bank: island permission defaults: Bank deposit = Admin, Mod, Member; Bank withdraw = Admin; Bank history = Admin, Mod (the Leader always all; coop and visitors never). OK? (default: as listed)
+- M3.3 bank: island bank on disband/reset is paid to the leader's balance (question #33 "decide with M3.3"); a staff delete keeps the money in the closed bank for staff to decide (no tool yet; `/eco` can't reach island banks). OK? Should a staff delete also pay the leader? (default: disband/reset pay the leader, delete keeps it)
+- M3.3 bank: personal tier perks (owner #45: "owner list") are shown from `messages/economy.yml → bank.perks.tier-N` and are empty; `BankService.personalTier()` is ready for AH slots/tax and sell bonus once you send the list. (default: no perks until the list arrives)
+- M3.3 bank: bank money doesn't count in `/baltop` (purse only). Count it? (default: no)
+- M3.3 bank: season reset: personal and island banks should wipe with money (#50) once the season service exists (Phase 10). (default: wipe with money)
+- M3.3 bank: no staff command for banks (only the planned `/bank`); staff see every bank move in `/logs` (reasons `bank_deposit`, `bank_withdraw`, `bank_fee`, `bank_tier`, `interest`, `bank_payout`). Add `/eco bank <player|island> ...` to view/fix banks? (default: not built until approved)
+- M3.3 bank: no chat message for interest payouts (they happen every 3 h); the menu shows rate, cap and the next payout, the history every payout. Add an optional `/settings` toggle "interest messages"? (default: no message)
+- M3.3 bank: interest paused when the profile (island: at least one member) played < 2 h in the last 7 days (owner #38). Played time is counted per profile in whole minutes while online (AFK counts too, no AFK detection yet). OK? (default: yes)
 
 ## Economy
 1. **Shards:** how are they earned? (Proposal: bosses, envoys, KOTH, high-tier dungeon zones.)

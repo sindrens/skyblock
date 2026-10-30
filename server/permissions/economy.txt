@@ -1,6 +1,7 @@
 # LuckPerms grants for the economy module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
 # Node definitions: modules/economy/src/main/resources/permissions/economy.yml. One console command per line; # = comment.
-# Player nodes (/bal, /baltop, /pay, /transactions, /withdraw, /sell) default to true, so they need no grants.
+# Player nodes (/bal, /baltop, /pay, /transactions, /withdraw, /sell, /bank) default to true, so they need no grants.
+# Island bank rights are island role permissions (/is permissions: bank-deposit, bank-withdraw, bank-history), not nodes.
 # Dupe alerts for copied money notes use skyblock.staff.notify (granted in base.txt with the other staff alerts).
 
 # --- Economy (staff) ---

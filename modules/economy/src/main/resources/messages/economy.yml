@@ -119,6 +119,9 @@ reasons:
   bank: "Bank"
   bank_deposit: "Bank deposit"
   bank_withdraw: "Bank withdrawal"
+  bank_fee: "Bank fee"
+  bank_tier: "Bank tier"
+  bank_payout: "Island bank paid out"
   note: "Money notes"
   note_withdraw: "Money note made"
   note_redeem: "Money note cashed"
@@ -175,6 +178,7 @@ menu:
       - "<c:text>No transactions match these filters."
   entry:
     island: "Island bank"
+    bank: "Personal bank"
     server: "Server"
     in:
       name: "<c:success>+</c:success><amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
@@ -328,3 +332,260 @@ sell:
       lore:
         - "<c:text>One moment."
     nothing-picked: "<c:error><sym:cross></c:error> <c:text>Tap items in your inventory first."
+
+# Banks (M3.3): /bank, the island menu's Bank button. <amount>, <bank>, <balance>, <fee>, <max>, <capacity>, <cap>, <cost>,
+# <left>, <net>, <room> are colored money amounts. <rate>/<fee>/<percent> in lore are plain numbers (add the % yourself).
+bank:
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Banks are closed right now."
+  busy: "<prefix><c:text>Your last bank action is still going through. One moment."
+  try-again: "<prefix><c:error><sym:cross></c:error> <c:text>The bank changed at the same moment. Nothing moved, try again."
+  frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use the bank while frozen. Wait for staff."
+  profile-changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your profile changed. Open <c:value>/bank</c:value> again."
+  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>That bank belongs to your other profile. Nothing moves between your profiles."
+  not-yours: "<prefix><c:error><sym:cross></c:error> <c:text>That's not your bank."
+  no-money: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have <amount><c:text>. Nothing moved."
+  bank-empty: "<prefix><c:error><sym:cross></c:error> <c:text>The bank doesn't have that much. Nothing moved."
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>The bank can't hold that much. A higher tier or the Bank Capacity upgrade gives room."
+  below-min: "<prefix><c:error><sym:cross></c:error> <c:text>Too small. The smallest deposit is <deposit><c:text>, the smallest withdrawal <withdraw><c:text>."
+  deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in your bank. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+  withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank, no fee. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+  withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank <c:muted>(fee </c:muted><fee><c:muted>, this period's interest is lost)</c:muted><c:text>. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+  island:
+    deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in the island bank. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+    withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank, no fee. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+    withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank <c:muted>(fee </c:muted><fee><c:muted>, this period's interest is lost)</c:muted><c:text>. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+    notify-deposit: "<prefix><c:value><player></c:value> <c:text>put <amount> <c:text>in the island bank."
+    notify-withdraw: "<prefix><c:value><player></c:value> <c:text>took <amount> <c:text>out of the island bank."
+    no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Your island role can't do that. The Leader sets it in <c:value>/is permissions</c:value>."
+    not-member: "<prefix><c:error><sym:cross></c:error> <c:text>You're not a member of that island anymore."
+    limit: "<prefix><c:error><sym:cross></c:error> <c:text>That's over your daily island bank limit. Try a smaller amount or wait until tomorrow."
+    paid-out: "<prefix><c:text>Your island is gone. What was left in its bank, <amount><c:text>, went to your balance."
+  tier:
+    bought: "<prefix><c:success><sym:check></c:success> <c:text>Bank tier <c:value><tier></c:value> unlocked: it holds <capacity> <c:text>now. <c:muted>Paid </c:muted><amount> <c:muted><sym:dot> balance: </c:muted><balance>"
+    no-money: "<prefix><c:error><sym:cross></c:error> <c:text>The next tier costs <amount><c:text>. Nothing was taken."
+    max: "<prefix><c:error><sym:cross></c:error> <c:text>Your bank has the highest tier already."
+  roles:
+    leader: "Leader"
+    admin: "Admin"
+    mod: "Mod"
+    member: "Member"
+    coop: "Coop"
+  picker:
+    deposit: "Deposit"
+    withdraw: "Withdraw"
+  confirm:
+    crumb: "Withdraw"
+    shown:
+      name: "<c:value>Withdraw <amount>"
+      lore:
+        - "<c:text>You get: <net>"
+    fee:
+      - "<c:text>Take out: <amount>"
+      - "<c:text>Fee (<percent>%): <fee>"
+      - "<c:text>You get: <net>"
+      - "<c:warning>This period's interest is lost."
+      - "<c:muted>Free in the first minutes after"
+      - "<c:muted>each payout."
+    free:
+      - "<c:text>Take out: <amount>"
+      - "<c:success>No fee right now"
+      - "<c:text>You get: <net>"
+  menu:
+    title: "Bank"
+    info:
+      - "<c:text>Left: your own bank (this profile)."
+      - "<c:text>Right: your island's shared bank."
+      - "<c:text>Both earn interest every few hours."
+    personal:
+      name: "<c:flame><sym:star></c:flame> <c:value>Personal bank"
+      lore:
+        - "<c:text>Balance: <balance> <c:muted>/ </c:muted><capacity>"
+        - "<c:text>Tier: <c:value><tier></c:value><c:muted>/<max>"
+        - "<c:text>Room left: <room>"
+        - ""
+        - "<c:muted>Only this profile can use it."
+        - "<c:muted>Safe if you leave your island."
+    island:
+      name: "<c:flame><sym:star></c:flame> <c:value><island></c:value> <c:muted>bank"
+      lore:
+        - "<c:text>Balance: <balance> <c:muted>/ </c:muted><capacity>"
+        - "<c:text>Room left: <room>"
+        - "<c:text>Your role: <c:value><role>"
+        - ""
+        - "<c:muted>Shared by the island members."
+    no-island:
+      name: "<c:muted>No island bank"
+      lore:
+        - "<c:text>Island members share a bank."
+        - "<c:text>Create or join an island: <c:value>/is"
+    deposit:
+      name: "<c:value>Deposit"
+      about:
+        - "<c:text>Put money from your balance"
+        - "<c:text>into the bank."
+      lore:
+        - "<c:text>Put money from your balance"
+        - "<c:text>into the bank. Up to: <max>"
+        - ""
+        - "<c:action><sym:bullet> Click to choose an amount"
+    deposit-none:
+      name: "<c:muted>Deposit"
+      lore:
+        - "<c:text>Nothing to put in: your balance"
+        - "<c:text>is empty or the bank is full."
+    withdraw:
+      name: "<c:value>Withdraw"
+      about:
+        - "<c:text>Take money out of the bank."
+      lore:
+        - "<c:text>Take money out. Up to: <max>"
+        - "<c:text>Fee: <c:value><fee>%</c:value> <c:muted>and this period's"
+        - "<c:muted>interest is lost. Free for <free>"
+        - "<c:muted>after each payout."
+        - ""
+        - "<c:action><sym:bullet> Click to choose an amount"
+    withdraw-free:
+      name: "<c:value>Withdraw <c:success>(free now)"
+      lore:
+        - "<c:text>Take money out. Up to: <max>"
+        - "<c:success>No fee right now: a payout just"
+        - "<c:success>happened."
+        - ""
+        - "<c:action><sym:bullet> Click to choose an amount"
+    withdraw-none:
+      name: "<c:muted>Withdraw"
+      lore:
+        - "<c:text>The bank is empty."
+    withdraw-limit:
+      name: "<c:muted>Withdraw"
+      lore:
+        - "<c:text>You reached your daily limit."
+        - "<c:text>It resets at midnight."
+    tiers:
+      name: "<c:value>Bank tiers"
+      lore:
+        - "<c:text>Tier <c:value><tier></c:value><c:muted>/<max></c:muted><c:text>: holds <capacity>"
+        - "<c:text>Higher tiers hold more and"
+        - "<c:text>earn more interest per payout."
+        - ""
+        - "<c:action><sym:bullet> Click to see the tiers"
+    history-personal:
+      crumb: "History"
+      name: "<c:value>History"
+      lore:
+        - "<c:text>Every deposit, withdrawal"
+        - "<c:text>and interest payout."
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    history-island:
+      crumb: "Island history"
+      name: "<c:value>Island bank history"
+      about:
+        - "<c:text>Who put in and took out what."
+      lore:
+        - "<c:text>Who put in and took out what,"
+        - "<c:text>and every interest payout."
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    locked:
+      - ""
+      - "<c:muted>Your island role can't do this."
+      - "<c:muted>The Leader sets it in /is permissions."
+    limit:
+      none:
+        name: "<c:value>Your daily limit"
+        lore:
+          - "<c:muted>Your role can't withdraw."
+      unlimited:
+        name: "<c:value>Your daily limit"
+        lore:
+          - "<c:text>No limit: you can take out"
+          - "<c:text>any amount the bank has."
+      limited:
+        name: "<c:value>Your daily limit"
+        lore:
+          - "<c:text>Left today: <left>"
+          - "<c:text>Limit: <c:value><percent>%</c:value> <c:text>of the bank's"
+          - "<c:text>capacity per day."
+          - "<c:muted>Resets at midnight."
+    interest:
+      name: "<c:value>Interest"
+      lore:
+        - "<c:text>Rate: <c:value><rate>%</c:value> <c:text>every <c:value><period>"
+        - "<c:text>Most per payout: <cap>"
+        - "<c:text>Next payout in: <c:value><next>"
+        - "<c:muted>Paid on the lowest balance of"
+        - "<c:muted>each period, also offline."
+        - ""
+      earning:
+        - "<c:success><sym:check> Earning interest"
+      empty:
+        - "<c:muted>Put money in to earn interest."
+      full:
+        - "<c:warning>The bank is full: interest"
+        - "<c:warning>needs room."
+      forfeited:
+        - "<c:warning>No interest this period:"
+        - "<c:warning>you withdrew with a fee."
+      paused:
+        - "<c:warning>Paused: play <need> in <days> days"
+        - "<c:muted>to earn interest (<have> so far)."
+      paused-island:
+        - "<c:warning>Paused: one member must play"
+        - "<c:warning><need> in <days> days <c:muted>(best: <have>)"
+  tiers:
+    crumb: "Tiers"
+    info:
+      - "<c:text>Each tier holds more money and"
+      - "<c:text>pays more interest per payout."
+      - "<c:text>Buy them one after another."
+    name-owned: "<c:success><sym:check></c:success> <c:value>Tier <tier>"
+    name-next: "<c:flame><sym:star></c:flame> <c:value>Tier <tier>"
+    name-locked: "<c:muted>Tier <tier>"
+    lore:
+      - "<c:text>Holds: <capacity>"
+      - "<c:text>Most interest per payout: <cap>"
+      - "<c:text>Price: <cost>"
+    perks-title:
+      - "<c:text>Perks:"
+    no-perks:
+      - "<c:muted>None yet"
+    owned:
+      - "<c:success>Unlocked"
+    next:
+      - "<c:action><sym:bullet> Click to unlock for <cost>"
+    locked:
+      - "<c:muted>Unlock the tier before first."
+    confirm-crumb: "Bank tier <tier>"
+    confirm:
+      - "<c:text>Unlock tier <tier> for <cost>."
+      - "<c:text>Your bank then holds <capacity>."
+  # Perks per personal tier, shown in the tier menu (owner #45: the owner's list; empty until decided).
+  # Example: tier-3: ["<c:muted><sym:bullet></c:muted> <c:text>+1 auction slot"]
+  perks:
+    tier-1: []
+  history:
+    info:
+      - "<c:text>Every change to this bank,"
+      - "<c:text>newest first, with who did it."
+    empty:
+      name: "<c:muted>Nothing here yet"
+      lore:
+        - "<c:text>Deposits, withdrawals and"
+        - "<c:text>interest show up here."
+    in:
+      name: "<c:success>+</c:success><amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
+      lore:
+        - "<c:text>By: <c:value><who>"
+        - "<c:text>Bank after: <balance>"
+        - ""
+        - "<c:muted><ago> ago <sym:dot> <date>"
+        - "<c:muted>#<id>"
+    out:
+      name: "<c:error>-</c:error><amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
+      lore:
+        - "<c:text>By: <c:value><who>"
+        - "<c:text>Bank after: <balance>"
+        - ""
+        - "<c:muted><ago> ago <sym:dot> <date>"
+        - "<c:muted>#<id>"
