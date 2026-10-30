@@ -140,6 +140,42 @@ final class StaffStore {
                 outcome.name(), id) == 1);
     }
 
+    /** Report link result: reports closed now, open unclaimed ones, ones claimed by other staff. */
+    record LinkResult(List<Report> closed, int openUnclaimed, int claimedByOthers) {
+    }
+
+    /**
+     * Report link (Phase P 12.9): closes the reports about {@code target} claimed by {@code staff} with {@code outcome}
+     * in one transaction (a report claimed meanwhile by someone else is not touched), and counts the rest.
+     */
+    CompletableFuture<LinkResult> closeClaimedBy(UUID target, UUID staff, String staffName, Report.Outcome outcome) {
+        return db.transaction(c -> {
+            List<Report> about = Sql.query(c, "SELECT " + REPORT_COLUMNS + " FROM reports WHERE target = ? AND status <> 'closed'",
+                    StaffStore::map, Sql.toBytes(target));
+            List<Report> closed = new java.util.ArrayList<>();
+            long now = System.currentTimeMillis();
+            for (Report r : ReportRules.toClose(about, staff)) {
+                int n = Sql.update(c, "UPDATE reports SET status = 'closed', closed_by = ?, closed_by_name = ?, closed_at = ?, "
+                                + "outcome = ? WHERE id = ? AND status = 'claimed' AND claimed_by = ?", Sql.toBytes(staff), staffName,
+                        now, outcome.name(), r.id(), Sql.toBytes(staff));
+                if (n == 1) {
+                    closed.add(Sql.queryOne(c, "SELECT " + REPORT_COLUMNS + " FROM reports WHERE id = ?", StaffStore::map, r.id())
+                            .orElse(r));
+                }
+            }
+            return new LinkResult(List.copyOf(closed), ReportRules.openUnclaimed(about), ReportRules.claimedByOthers(about, staff));
+        });
+    }
+
+    /** Counts only (no change). */
+    CompletableFuture<LinkResult> linkCounts(UUID target, UUID staff) {
+        return db.async(c -> {
+            List<Report> about = Sql.query(c, "SELECT " + REPORT_COLUMNS + " FROM reports WHERE target = ? AND status <> 'closed'",
+                    StaffStore::map, Sql.toBytes(target));
+            return new LinkResult(List.of(), ReportRules.openUnclaimed(about), ReportRules.claimedByOthers(about, staff));
+        });
+    }
+
     /** Closed reports of {@code reporter} they haven't been told about yet; marks them as told. */
     CompletableFuture<List<Report>> takeUnnotified(UUID reporter) {
         return db.transaction(c -> {
