@@ -131,12 +131,12 @@ final class VisitMenu extends PagedMenu<Showcase.Entry> {
         } else {
             lore.addAll(lines("browser.entry.unrated", p));
         }
-        boolean own = island.roleOrNull(viewer.getUniqueId()) != null;
+        boolean own = island.roleOrNull(islands.key(viewer)) != null;
         boolean banned = visits.isBanned(island.id(), viewer.getUniqueId()) && !visits.bypass(viewer);
         lore.add(Component.empty());
         lore.addAll(lines(own ? "browser.entry.own" : banned ? "browser.entry.banned" : "browser.entry.click", p));
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(Bukkit.getOfflinePlayer(island.owner())));
+        head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(Bukkit.getOfflinePlayer(islands.person(island.owner()))));
         ItemStack item = service.item(head, text("browser.entry.name", p), lore);
         return MenuButton.of(item, click -> {
             viewer.closeInventory();

@@ -6,6 +6,7 @@ import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.island.IslandService;
+import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
@@ -380,14 +381,89 @@ final class IslandManager implements IslandService {
         island.owner(newLeader);
     }
 
-    /** A player's last known name (online name, server user cache), or "?" (main thread, no network). */
+    /**
+     * A member's last known name (online name, server user cache), or "?" (main thread, no network). Accepts a profile
+     * key (members, owners) or a player UUID.
+     */
     String name(UUID player) {
-        Player online = Bukkit.getPlayer(player);
+        UUID person = person(player);
+        Player online = Bukkit.getPlayer(person);
         if (online != null) {
             return online.getName();
         }
-        String name = Bukkit.getOfflinePlayer(player).getName();
+        String name = Bukkit.getOfflinePlayer(person).getName();
         return name == null ? "?" : name;
+    }
+
+    // ------------------------------------------------------------------ profiles (PROF)
+
+    /** Island profiles: membership, ownership, coop trust and personal homes are stored per profile key. */
+    ProfileService profiles() {
+        return ProfileService.of(core.services());
+    }
+
+    /** The member key (active profile key) of an online player. */
+    UUID key(Player player) {
+        return profiles().profileKey(player.getUniqueId());
+    }
+
+    /** The online player whose active profile is {@code memberKey}, or null (they are offline or on another profile). */
+    Player online(UUID memberKey) {
+        return memberKey == null ? null : profiles().onlinePlayer(memberKey).orElse(null);
+    }
+
+    /** The player (account) of a member key. */
+    UUID person(UUID memberKey) {
+        return profiles().ownerOf(memberKey);
+    }
+
+    /**
+     * The key a service caller means: an online player's UUID becomes their active profile key; a stored member key or
+     * an offline UUID is used as given.
+     */
+    UUID resolve(UUID playerOrKey) {
+        return profiles().profileKey(playerOrKey);
+    }
+
+    /** The role on {@code island} of any profile of the player {@code person} (bans are per player), or null. */
+    Role roleOfPlayer(Island island, UUID person) {
+        for (Map.Entry<UUID, Role> e : island.members().entrySet()) {
+            if (person(e.getKey()).equals(person)) {
+                return e.getValue();
+            }
+        }
+        for (UUID coop : island.coops()) {
+            if (person(coop).equals(person)) {
+                return Role.COOP;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Owner decision P3: the member key of another profile of the same player as {@code memberKey} that is a member or
+     * coop of {@code island}, or was one ({@code history}: profile keys from the join history), or null.
+     */
+    UUID ownOtherProfileOn(Island island, UUID memberKey, java.util.Collection<UUID> history) {
+        ProfileService ps = profiles();
+        for (UUID member : island.members().keySet()) {
+            if (ps.ownOtherProfile(member, memberKey)) {
+                return member;
+            }
+        }
+        for (UUID coop : island.coops()) {
+            if (ps.ownOtherProfile(coop, memberKey)) {
+                return coop;
+            }
+        }
+        if (history != null) {
+            for (UUID past : history) {
+                if (ps.ownOtherProfile(past, memberKey)) {
+                    return past;
+                }
+            }
+        }
+        return null;
     }
 
     /** Sends a player who no longer belongs on {@code island} (kick, leave) to the fallback spawn if they stand in its slot. */
@@ -424,7 +500,7 @@ final class IslandManager implements IslandService {
             return island.customName();
         }
         if (island.ownerName() == null) {
-            OfflinePlayer owner = Bukkit.getOfflinePlayer(island.owner());
+            OfflinePlayer owner = Bukkit.getOfflinePlayer(person(island.owner()));
             island.ownerName(owner.getName() == null ? "?" : owner.getName());
         }
         return module.raw("default-name").replace("<owner>", island.ownerName());
@@ -453,9 +529,15 @@ final class IslandManager implements IslandService {
         return Optional.ofNullable(islandInSlotAt(location.getBlockX(), location.getBlockZ())).map(this::info);
     }
 
+    /** {@code player}: an online player's UUID (their active profile's island) or a profile key. */
     @Override
     public Optional<IslandInfo> islandOf(UUID player) {
-        return islandOfPlayer(player).map(this::info);
+        return islandOfPlayer(resolve(player)).map(this::info);
+    }
+
+    @Override
+    public Optional<IslandInfo> islandOfProfile(UUID profileKey) {
+        return islandOfPlayer(profileKey).map(this::info);
     }
 
     @Override
@@ -472,7 +554,7 @@ final class IslandManager implements IslandService {
     @Override
     public Optional<Role> role(UUID islandId, UUID player) {
         Island island = byId.get(islandId);
-        return island == null ? Optional.empty() : island.role(player);
+        return island == null ? Optional.empty() : island.role(resolve(player));
     }
 
     @Override
@@ -483,7 +565,7 @@ final class IslandManager implements IslandService {
 
     @Override
     public boolean teleportHome(Player player) {
-        Optional<Island> island = islandOfPlayer(player.getUniqueId());
+        Optional<Island> island = islandOfPlayer(key(player));
         if (island.isEmpty()) {
             msg.send(player, "no-island");
             core.sounds().play(player, "error");
@@ -522,7 +604,7 @@ final class IslandManager implements IslandService {
     @Override
     public boolean isCoop(UUID islandId, UUID player) {
         Island island = byId.get(islandId);
-        return island != null && island.coops().contains(player);
+        return island != null && island.coops().contains(resolve(player));
     }
 
     @Override
@@ -541,9 +623,24 @@ final class IslandManager implements IslandService {
         return members.setMemberSlots(islandId, slots, actor);
     }
 
+    /** {@code player}: a member key, or a player UUID (then their profile that is on this island). */
     @Override
     public CompletableFuture<Boolean> removeMember(UUID islandId, UUID player, String reason, Actor actor) {
-        return members.removeByService(islandId, player, reason, actor);
+        Island island = byId.get(islandId);
+        UUID key = player;
+        if (island != null && island.roleOrNull(player) == null && !island.coops().contains(player)) {
+            for (UUID member : island.members().keySet()) {
+                if (person(member).equals(player)) {
+                    key = member;
+                }
+            }
+            for (UUID coop : island.coops()) {
+                if (person(coop).equals(player)) {
+                    key = coop;
+                }
+            }
+        }
+        return members.removeByService(islandId, key, reason, actor);
     }
 
     @Override
@@ -592,19 +689,19 @@ final class IslandManager implements IslandService {
 
     /** {@code /is}: home if the player has an island, otherwise the "Create your island" confirm menu. */
     void openOrCreate(Player player) {
-        Optional<Island> own = islandOfPlayer(player.getUniqueId());
+        Optional<Island> own = islandOfPlayer(key(player));
         if (own.isPresent()) {
             goHome(player, own.get(), false);
             return;
         }
-        if (building.contains(player.getUniqueId())) {
+        if (building.contains(key(player))) {
             msg.send(player, "create.busy");
             return;
         }
         if (!worldLoaded(player)) {
             return;
         }
-        UUID id = player.getUniqueId();
+        UUID id = key(player);
         store.lastDisband(id).thenAcceptAsync(last -> {
             if (!player.isOnline()) {
                 return;
@@ -658,7 +755,7 @@ final class IslandManager implements IslandService {
 
     /** Confirmed: saves the island (one transaction), builds the islet, teleports. */
     void create(Player player) {
-        UUID id = player.getUniqueId();
+        UUID id = key(player);
         if (islandOfPlayer(id).isPresent()) {
             goHome(player, islandOfPlayer(id).get(), false);
             return;
@@ -715,7 +812,7 @@ final class IslandManager implements IslandService {
                         new Location(Bukkit.getWorld(island.world()), island.centerX(), config.surfaceY, island.centerZ()),
                         Map.of("slot", island.slotId(), "grid_x", island.gridX(), "grid_z", island.gridZ(),
                                 "size", island.sizeChunks(), "season", island.seasonId(), "reset", true));
-                if (Bukkit.getPlayer(owner) != null && !building.contains(owner)) {
+                if (online(owner) != null && !building.contains(owner)) {
                     buildAndArrive(owner, island, true);
                 }
             }
@@ -728,7 +825,7 @@ final class IslandManager implements IslandService {
         building.add(playerId);
         builder.build(island).whenCompleteAsync((build, error) -> {
             building.remove(playerId);
-            Player player = Bukkit.getPlayer(playerId);
+            Player player = online(playerId);
             if (error != null) {
                 core.plugin().getLogger().log(Level.SEVERE, "Islands: building island " + island.id() + " failed", error);
                 core.audit().log(AuditCategory.ISLAND, "island_build_failed", Actor.system("islands"), island.id().toString(),
@@ -772,12 +869,12 @@ final class IslandManager implements IslandService {
     /** Teleports to the island home after a safe-spot check (rebuilds a never-finished island first). */
     void goHome(Player player, Island island, boolean instant) {
         if (island.home().isEmpty()) {
-            if (building.contains(player.getUniqueId())) {
+            if (building.contains(key(player))) {
                 msg.send(player, "create.busy");
                 return;
             }
             msg.send(player, "home.rebuilding");
-            buildAndArrive(player.getUniqueId(), island, true);
+            buildAndArrive(key(player), island, true);
             return;
         }
         Location home = location(island, island.home().get());
@@ -825,7 +922,7 @@ final class IslandManager implements IslandService {
 
     /** {@code /is sethome}: only inside the own island's border, on a safe spot, within the build height. */
     void setHome(Player player) {
-        Optional<Island> own = islandOfPlayer(player.getUniqueId());
+        Optional<Island> own = islandOfPlayer(key(player));
         if (own.isEmpty()) {
             msg.send(player, "no-island");
             core.sounds().play(player, "error");
@@ -833,7 +930,7 @@ final class IslandManager implements IslandService {
         }
         Island island = own.get();
         // M2.3: Leader + Mod move the home.
-        if (!MemberRules.canSetHome(island.roleOrNull(player.getUniqueId()))) {
+        if (!MemberRules.canSetHome(island.roleOrNull(key(player)))) {
             fail(player, "sethome.not-allowed");
             return;
         }
@@ -879,7 +976,7 @@ final class IslandManager implements IslandService {
         player.setFallDistance(0);
         Location at = player.getLocation();
         Island here = islandInSlotAt(at.getBlockX(), at.getBlockZ());
-        Island target = here != null && here.home().isPresent() ? here : islandOfPlayer(player.getUniqueId())
+        Island target = here != null && here.home().isPresent() ? here : islandOfPlayer(key(player))
                 .filter(i -> i.home().isPresent()).orElse(null);
         Runnable done = () -> {
             rescuing.remove(player.getUniqueId());

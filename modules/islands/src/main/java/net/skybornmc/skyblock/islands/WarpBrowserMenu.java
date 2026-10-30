@@ -89,7 +89,7 @@ final class WarpBrowserMenu extends PagedMenu<IslandWarp> {
 
     @Override
     protected void decorate() {
-        Optional<Island> own = islands.islandOfPlayer(viewer.getUniqueId());
+        Optional<Island> own = islands.islandOfPlayer(islands.key(viewer));
         if (island == null) {
             WarpCategory[] categories = WarpCategory.values();
             for (int i = 0; i < categories.length && i < CATEGORY_SLOTS.length; i++) {

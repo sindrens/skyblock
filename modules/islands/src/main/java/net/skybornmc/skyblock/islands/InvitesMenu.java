@@ -51,14 +51,14 @@ final class InvitesMenu extends PagedMenu<InvitesMenu.Entry> {
     }
 
     private Optional<Island> own() {
-        return islands.islandOfPlayer(viewer.getUniqueId());
+        return islands.islandOfPlayer(islands.key(viewer));
     }
 
     @Override
     protected List<Entry> entries() {
         long now = System.currentTimeMillis();
         List<Invites.Invite> sent = own().map(island -> members.invites().from(island.id(), now)).orElse(List.of());
-        return order(members.invites().of(viewer.getUniqueId(), now), sent);
+        return order(members.invites().of(islands.key(viewer), now), sent);
     }
 
     @Override
@@ -108,12 +108,12 @@ final class InvitesMenu extends PagedMenu<InvitesMenu.Entry> {
                 Msg.p("inviter", islands.name(invite.inviter())),
                 Msg.p("members", island == null ? 0 : island.memberCount()), Msg.p("slots", island == null ? 0 : islands.slots(island))};
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(Bukkit.getOfflinePlayer(shown)));
+        head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(Bukkit.getOfflinePlayer(islands.person(shown))));
         if (!entry.sent()) {
             ItemStack item = service.item(head, text("invites.received.name", p), lines("invites.received.lore", p));
             return MenuButton.of(item, click -> openChild(new InviteActionsMenu(module, islands, members, invite)));
         }
-        boolean canCancel = own().map(own -> MemberRules.canInvite(own.roleOrNull(viewer.getUniqueId()))).orElse(false);
+        boolean canCancel = own().map(own -> MemberRules.canInvite(own.roleOrNull(islands.key(viewer)))).orElse(false);
         List<Component> lore = new ArrayList<>(lines("invites.sent.lore", p));
         lore.addAll(lines(canCancel ? "invites.sent.click" : "invites.sent.locked"));
         ItemStack item = service.item(head, text("invites.sent.name", p), lore);

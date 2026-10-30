@@ -61,13 +61,13 @@ final class PersonalHomes {
 
     /** {@code /is setmyhome [name]}. */
     void setHome(Player player, String typed) {
-        Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
+        Optional<Island> own = islands.islandOfPlayer(islands.key(player));
         if (own.isEmpty()) {
             islands.fail(player, "no-island");
             return;
         }
         Island island = own.get();
-        UUID uuid = player.getUniqueId();
+        UUID uuid = islands.key(player);
         if (!MemberRules.canSetPersonalHome(island.roleOrNull(uuid))) {
             islands.fail(player, "no-island");
             return;
@@ -147,13 +147,13 @@ final class PersonalHomes {
             islands.teleportHome(player);
             return;
         }
-        Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
+        Optional<Island> own = islands.islandOfPlayer(islands.key(player));
         if (own.isEmpty()) {
             islands.fail(player, "no-island");
             return;
         }
         Island island = own.get();
-        Map<String, Island.Home> homes = island.personalHomes(player.getUniqueId());
+        Map<String, Island.Home> homes = island.personalHomes(islands.key(player));
         Island.Home home = homes.get(WarpRules.key(name.trim()));
         if (home == null) {
             if (homes.isEmpty()) {
@@ -183,8 +183,8 @@ final class PersonalHomes {
             return List.of();
         }
         return VisitManager.safely(() -> {
-            List<String> names = new ArrayList<>(islands.islandOfPlayer(player.getUniqueId())
-                    .map(island -> List.copyOf(island.personalHomes(player.getUniqueId()).keySet())).orElse(List.of()));
+            List<String> names = new ArrayList<>(islands.islandOfPlayer(islands.key(player))
+                    .map(island -> List.copyOf(island.personalHomes(islands.key(player)).keySet())).orElse(List.of()));
             if (names.isEmpty()) {
                 names.add(defaultName());
             }

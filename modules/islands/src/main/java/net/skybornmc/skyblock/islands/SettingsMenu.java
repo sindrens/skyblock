@@ -101,7 +101,7 @@ final class SettingsMenu extends Menu {
 
     @Override
     protected void tick() {
-        if (islands.byId(island.id()) != island || island.role(viewer.getUniqueId()).isEmpty()) {
+        if (islands.byId(island.id()) != island || island.role(islands.key(viewer)).isEmpty()) {
             viewer.closeInventory();
             return;
         }

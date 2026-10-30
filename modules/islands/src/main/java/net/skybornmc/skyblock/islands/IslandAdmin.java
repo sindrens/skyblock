@@ -266,7 +266,7 @@ final class IslandAdmin {
         }
         Player online = Bukkit.getPlayerExact(name);
         if (online != null) {
-            Optional<Island> own = islands.islandOfPlayer(online.getUniqueId());
+            Optional<Island> own = islands.islandOfPlayer(islands.key(online));
             if (own.isPresent()) {
                 return own.get();
             }
@@ -474,7 +474,8 @@ final class IslandAdmin {
         if (target == null) {
             throw CommandFailure.of("player-unknown", Msg.p("input", playerName));
         }
-        UUID uuid = target.getUniqueId();
+        // PROF: an online player joins with their active profile; an offline one with the key of their UUID (profile 1).
+        UUID uuid = islands.resolve(target.getUniqueId());
         String shown = target.getName() == null ? playerName : target.getName();
         if (islands.islandOfPlayer(uuid).isPresent()) {
             throw new CommandFailure(IslandsModule.ID, "admin.addmember.has-island", Msg.p("player", shown));
@@ -495,6 +496,7 @@ final class IslandAdmin {
                 case MemberStore.AddResult.HasIsland ignored -> fail(sender, "admin.addmember.has-island", Msg.p("player", shown));
                 case MemberStore.AddResult.Full full -> fail(sender, "admin.addmember.full", Msg.p("island", name), Msg.p("slots", full.slots()));
                 case MemberStore.AddResult.IslandGone ignored -> fail(sender, "error.island-gone");
+                case MemberStore.AddResult.OwnProfile ignored -> fail(sender, "admin.addmember.own-profile", Msg.p("player", shown));
             }
         });
     }

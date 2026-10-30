@@ -45,6 +45,10 @@ final class MemberStore {
 
         record Limited(JoinRules.Check check) implements InviteResult {
         }
+
+        /** Owner P3: another profile of this player is or was on the island. */
+        record OwnProfile() implements InviteResult {
+        }
     }
 
     /** Result of accepting an invite. */
@@ -66,6 +70,10 @@ final class MemberStore {
 
         record Limited(JoinRules.Check check) implements AcceptResult {
         }
+
+        /** Owner P3: another profile of this player is or was on the island. */
+        record OwnProfile() implements AcceptResult {
+        }
     }
 
     /** Result of a staff {@code /isadmin addmember}. */
@@ -80,6 +88,10 @@ final class MemberStore {
         }
 
         record Full(int slots) implements AddResult {
+        }
+
+        /** Owner P3: another profile of this player is or was on the island. */
+        record OwnProfile() implements AddResult {
         }
     }
 
@@ -97,16 +109,20 @@ final class MemberStore {
 
     // ------------------------------------------------------------------ async API
 
-    CompletableFuture<InviteResult> invite(UUID islandId, UUID inviter, UUID target, long expiryMillis, Limits limits) {
+    /**
+     * @param target       the invited profile key
+     * @param targetPlayer the invited player (join limits are per player, owner P11)
+     */
+    CompletableFuture<InviteResult> invite(UUID islandId, UUID inviter, UUID target, UUID targetPlayer, long expiryMillis, Limits limits) {
         long now = System.currentTimeMillis();
-        return db.transaction(c -> invite(c, islandId, inviter, target, now, now + expiryMillis, limits));
+        return db.transaction(c -> invite(c, islandId, inviter, target, targetPlayer, now, now + expiryMillis, limits));
     }
 
-    CompletableFuture<AcceptResult> accept(UUID islandId, UUID target, Limits limits) {
+    CompletableFuture<AcceptResult> accept(UUID islandId, UUID target, UUID targetPlayer, Limits limits) {
         long now = System.currentTimeMillis();
         return db.async(c -> {
             try {
-                return inTransaction(c, () -> accept(c, islandId, target, now, limits));
+                return inTransaction(c, () -> accept(c, islandId, target, targetPlayer, now, limits));
             } catch (SQLException e) {
                 if (IslandStore.isConstraintViolation(e)) {
                     return new AcceptResult.HasIsland(); // joined another island at the same moment
@@ -125,20 +141,20 @@ final class MemberStore {
     }
 
     /** Removes a stored member (never the leader); returns their old role, or empty if they weren't a member. */
-    CompletableFuture<Optional<Role>> removeMember(UUID islandId, UUID uuid, String reason, int seasonId) {
+    CompletableFuture<Optional<Role>> removeMember(UUID islandId, UUID uuid, UUID player, String reason, int seasonId) {
         long now = System.currentTimeMillis();
-        return db.transaction(c -> removeMember(c, islandId, uuid, reason, seasonId, now));
+        return db.transaction(c -> removeMember(c, islandId, uuid, player, reason, seasonId, now));
     }
 
     /**
      * Staff: adds {@code uuid} as a member without an invite (M2.7 {@code /isadmin addmember}). Skips the season join
      * limit and the join cooldown (the row is not counted) but keeps one island per player and the member slots.
      */
-    CompletableFuture<AddResult> addMember(UUID islandId, UUID uuid, UUID addedBy, Limits limits) {
+    CompletableFuture<AddResult> addMember(UUID islandId, UUID uuid, UUID player, UUID addedBy, Limits limits) {
         long now = System.currentTimeMillis();
         return db.async(c -> {
             try {
-                return inTransaction(c, () -> addMember(c, islandId, uuid, addedBy, now, limits));
+                return inTransaction(c, () -> addMember(c, islandId, uuid, player, addedBy, now, limits));
             } catch (SQLException e) {
                 if (IslandStore.isConstraintViolation(e)) {
                     return new AddResult.HasIsland(); // joined another island at the same moment
@@ -263,6 +279,27 @@ final class MemberStore {
 
     static InviteResult invite(Connection c, UUID islandId, UUID inviter, UUID target, long now, long expiresAt, Limits limits)
             throws SQLException {
+        return invite(c, islandId, inviter, target, target, now, expiresAt, limits);
+    }
+
+    /**
+     * Owner P3 in the database: true if {@code player} has join history on the island with ANOTHER profile than
+     * {@code key}, or their profile-1 key (= the player UUID) is a member or coop of it. (Other current members are
+     * checked from the cache before; their joins are in the history anyway.) Rows from before profiles have no
+     * profile id and belong to profile 1.
+     */
+    static boolean otherOwnProfileOn(Connection c, UUID islandId, UUID key, UUID player) throws SQLException {
+        if (Sql.queryOne(c, "SELECT 1 FROM player_island_joins WHERE uuid = ? AND island_id = ? AND COALESCE(profile_id, uuid) <> ?",
+                rs -> 1, player, islandId, key).isPresent()) {
+            return true;
+        }
+        return !player.equals(key)
+                && (Sql.queryOne(c, "SELECT 1 FROM island_members WHERE island_id = ? AND uuid = ?", rs -> 1, islandId, player).isPresent()
+                || Sql.queryOne(c, "SELECT 1 FROM island_coops WHERE island_id = ? AND uuid = ?", rs -> 1, islandId, player).isPresent());
+    }
+
+    static InviteResult invite(Connection c, UUID islandId, UUID inviter, UUID target, UUID targetPlayer, long now, long expiresAt,
+                               Limits limits) throws SQLException {
         Optional<IslandRow> island = lockIsland(c, islandId);
         if (island.isEmpty()) {
             return new InviteResult.IslandGone();
@@ -271,11 +308,14 @@ final class MemberStore {
         if (current.isPresent()) {
             return current.get().equals(islandId) ? new InviteResult.AlreadyMember() : new InviteResult.HasIsland();
         }
+        if (otherOwnProfileOn(c, islandId, target, targetPlayer)) {
+            return new InviteResult.OwnProfile();
+        }
         int slots = MemberRules.slots(island.get().memberSlots(), limits.startSlots(), limits.maxSlots());
         if (memberCount(c, islandId) >= slots) {
             return new InviteResult.Full(slots);
         }
-        JoinRules.Check check = joinCheck(c, target, now, limits);
+        JoinRules.Check check = joinCheck(c, targetPlayer, now, limits);
         if (!(check instanceof JoinRules.Check.Ok)) {
             return new InviteResult.Limited(check);
         }
@@ -288,6 +328,11 @@ final class MemberStore {
     }
 
     static AcceptResult accept(Connection c, UUID islandId, UUID target, long now, Limits limits) throws SQLException {
+        return accept(c, islandId, target, target, now, limits);
+    }
+
+    /** @param target the joining profile key; {@code targetPlayer} its player (join history and limits, owner P11) */
+    static AcceptResult accept(Connection c, UUID islandId, UUID target, UUID targetPlayer, long now, Limits limits) throws SQLException {
         Optional<UUID> inviter = Sql.queryOne(c, "SELECT inviter_uuid FROM island_invites WHERE island_id = ? AND target_uuid = ? AND expires_at > ?",
                 rs -> Sql.uuid(rs, "inviter_uuid"), islandId, target, now);
         if (inviter.isEmpty()) {
@@ -301,11 +346,14 @@ final class MemberStore {
         if (islandOf(c, target).isPresent()) {
             return new AcceptResult.HasIsland();
         }
+        if (otherOwnProfileOn(c, islandId, target, targetPlayer)) {
+            return new AcceptResult.OwnProfile();
+        }
         int slots = MemberRules.slots(island.get().memberSlots(), limits.startSlots(), limits.maxSlots());
         if (memberCount(c, islandId) >= slots) {
             return new AcceptResult.Full(slots);
         }
-        JoinRules.Check check = joinCheck(c, target, now, limits);
+        JoinRules.Check check = joinCheck(c, targetPlayer, now, limits);
         if (!(check instanceof JoinRules.Check.Ok)) {
             return new AcceptResult.Limited(check);
         }
@@ -314,20 +362,28 @@ final class MemberStore {
                 && Sql.update(c, "UPDATE islands SET type = ? WHERE id = ? AND type = ?", "team", islandId, "solo") == 1;
         Sql.update(c, "INSERT INTO island_members (island_id, uuid, role, joined_at, invited_by) VALUES (?, ?, ?, ?, ?)",
                 islandId, target, "member", now, inviter.get());
-        Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, counted) VALUES (?, ?, ?, ?, ?)",
-                target, islandId, limits.seasonId(), now, true);
+        Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, counted, profile_id) VALUES (?, ?, ?, ?, ?, ?)",
+                targetPlayer, islandId, limits.seasonId(), now, true, target);
         Sql.update(c, "DELETE FROM island_invites WHERE target_uuid = ?", target);
         Sql.update(c, "DELETE FROM island_coops WHERE island_id = ? AND uuid = ?", islandId, target);
         return new AcceptResult.Joined(islandId, now, inviter.get(), converted);
     }
 
     static AddResult addMember(Connection c, UUID islandId, UUID uuid, UUID addedBy, long now, Limits limits) throws SQLException {
+        return addMember(c, islandId, uuid, uuid, addedBy, now, limits);
+    }
+
+    static AddResult addMember(Connection c, UUID islandId, UUID uuid, UUID player, UUID addedBy, long now, Limits limits)
+            throws SQLException {
         Optional<IslandRow> island = lockIsland(c, islandId);
         if (island.isEmpty()) {
             return new AddResult.IslandGone();
         }
         if (islandOf(c, uuid).isPresent()) {
             return new AddResult.HasIsland();
+        }
+        if (otherOwnProfileOn(c, islandId, uuid, player)) {
+            return new AddResult.OwnProfile();
         }
         int slots = MemberRules.slots(island.get().memberSlots(), limits.startSlots(), limits.maxSlots());
         if (memberCount(c, islandId) >= slots) {
@@ -338,14 +394,20 @@ final class MemberStore {
                 && Sql.update(c, "UPDATE islands SET type = ? WHERE id = ? AND type = ?", "team", islandId, "solo") == 1;
         Sql.update(c, "INSERT INTO island_members (island_id, uuid, role, joined_at, invited_by) VALUES (?, ?, ?, ?, ?)",
                 islandId, uuid, "member", now, addedBy);
-        Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, counted) VALUES (?, ?, ?, ?, ?)",
-                uuid, islandId, limits.seasonId(), now, false);
+        Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, counted, profile_id) VALUES (?, ?, ?, ?, ?, ?)",
+                player, islandId, limits.seasonId(), now, false, uuid);
         Sql.update(c, "DELETE FROM island_invites WHERE target_uuid = ?", uuid);
         Sql.update(c, "DELETE FROM island_coops WHERE island_id = ? AND uuid = ?", islandId, uuid);
         return new AddResult.Added(now, converted);
     }
 
     static Optional<Role> removeMember(Connection c, UUID islandId, UUID uuid, String reason, int seasonId, long now) throws SQLException {
+        return removeMember(c, islandId, uuid, uuid, reason, seasonId, now);
+    }
+
+    /** @param uuid the member's profile key; {@code player} their player (join history rows are per player) */
+    static Optional<Role> removeMember(Connection c, UUID islandId, UUID uuid, UUID player, String reason, int seasonId, long now)
+            throws SQLException {
         Optional<Role> role = Sql.queryOne(c, "SELECT role FROM island_members WHERE island_id = ? AND uuid = ?",
                 rs -> IslandStore.role(rs.getString("role")), islandId, uuid);
         if (role.isEmpty() || role.get() == Role.LEADER) {
@@ -353,13 +415,13 @@ final class MemberStore {
         }
         Sql.update(c, "DELETE FROM island_members WHERE island_id = ? AND uuid = ? AND role <> ?", islandId, uuid, "leader");
         MemberHomeStore.deleteMember(c, islandId, uuid); // ISL2: personal homes end with the membership
-        int closed = Sql.update(c, "UPDATE player_island_joins SET left_at = ?, left_reason = ? WHERE uuid = ? AND island_id = ? AND left_at IS NULL",
-                now, reason, uuid, islandId);
+        int closed = Sql.update(c, "UPDATE player_island_joins SET left_at = ?, left_reason = ? WHERE uuid = ? AND island_id = ? "
+                        + "AND COALESCE(profile_id, uuid) = ? AND left_at IS NULL", now, reason, player, islandId, uuid);
         if (closed == 0) {
             // A member without a join row (e.g. the founder after a transfer): record the leave for history only
             // (counted = false: never a join, and since ISL2 a leave never starts the join cooldown).
-            Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, left_at, left_reason, counted) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?)", uuid, islandId, seasonId, now, now, reason, false);
+            Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, left_at, left_reason, counted, profile_id) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", player, islandId, seasonId, now, now, reason, false, uuid);
         }
         return role;
     }

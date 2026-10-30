@@ -231,8 +231,11 @@ final class VisitManager implements Listener {
     }
 
     VisitRules.Access access(Player player, Island island) {
-        return VisitRules.access(island.roleOrNull(player.getUniqueId()), isBanned(island.id(), player.getUniqueId()), island.locked(),
-                bypass(player));
+        UUID key = islands.key(player);
+        Role role = island.roleOrNull(key);
+        // P3/P4: never onto an island where another of your own profiles is a member or coop.
+        boolean ownProfile = role == null && islands.ownOtherProfileOn(island, key, null) != null;
+        return VisitRules.access(role, isBanned(island.id(), player.getUniqueId()), island.locked(), bypass(player), ownProfile);
     }
 
     /** The island whose slot contains {@code at}, or null. */
@@ -267,7 +270,7 @@ final class VisitManager implements Listener {
         }
         Player online = Bukkit.getPlayerExact(name);
         if (online != null) {
-            return islands.islandOfPlayer(online.getUniqueId()).orElse(null);
+            return islands.islandOfPlayer(islands.key(online)).orElse(null);
         }
         OfflinePlayer cached = Bukkit.getOfflinePlayerIfCached(name);
         if (cached != null) {
@@ -323,7 +326,7 @@ final class VisitManager implements Listener {
 
     /** Teleports to {@code island}'s home as a visitor (members simply go home). */
     void visit(Player player, Island island) {
-        if (island.roleOrNull(player.getUniqueId()) != null) {
+        if (island.roleOrNull(islands.key(player)) != null) {
             islands.teleportHome(player);
             return;
         }
@@ -361,6 +364,8 @@ final class VisitManager implements Listener {
         String name = islands.displayName(island);
         if (access == VisitRules.Access.BANNED) {
             islands.fail(player, "visit.banned", Msg.p("island", name));
+        } else if (access == VisitRules.Access.OWN_PROFILE) {
+            islands.fail(player, "visit.own-profile", Msg.p("island", name));
         } else {
             islands.fail(player, "visit.locked", Msg.p("island", name));
             notifyAttempt(island, player);
@@ -412,7 +417,8 @@ final class VisitManager implements Listener {
         if (access == VisitRules.Access.LOCKED) {
             notifyAttempt(target, player);
         }
-        String key = access == VisitRules.Access.BANNED ? "visit.banned" : "visit.locked";
+        String key = access == VisitRules.Access.BANNED ? "visit.banned"
+                : access == VisitRules.Access.OWN_PROFILE ? "visit.own-profile" : "visit.locked";
         return Optional.of(module.raw(key).replace("<island>", escape(islands.displayName(target))));
     }
 
@@ -449,7 +455,7 @@ final class VisitManager implements Listener {
                     islands.displayName(island), null, null, Map.of("locked", locked));
             msg.send(player, locked ? "lock.done" : "unlock.done");
             core.sounds().play(player, "success");
-            islands.memberManager().notifyMembers(island, player.getUniqueId(), locked ? "notify.locked" : "notify.unlocked",
+            islands.memberManager().notifyMembers(island, islands.key(player), locked ? "notify.locked" : "notify.unlocked",
                     Msg.p("by", player.getName()));
             if (locked) {
                 int sent = 0;
@@ -471,7 +477,7 @@ final class VisitManager implements Listener {
     List<Player> visitorsOn(Island island) {
         List<Player> list = new ArrayList<>();
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (island.roleOrNull(online.getUniqueId()) == null && slotIsland(online.getLocation()) == island) {
+            if (island.roleOrNull(islands.key(online)) == null && slotIsland(online.getLocation()) == island) {
                 list.add(online);
             }
         }
@@ -490,8 +496,8 @@ final class VisitManager implements Listener {
             target = null;
         }
         boolean present = target != null && slotIsland(target.getLocation()) == island;
-        VisitRules.ExpelCheck check = VisitRules.canExpel(island.roleOrNull(player.getUniqueId()),
-                target == null ? null : island.roleOrNull(target.getUniqueId()), target != null && target.equals(player), present,
+        VisitRules.ExpelCheck check = VisitRules.canExpel(island.roleOrNull(islands.key(player)),
+                target == null ? null : island.roleOrNull(islands.key(target)), target != null && target.equals(player), present,
                 target != null && bypass(target));
         String name = target == null ? targetName : target.getName();
         switch (check) {
@@ -509,7 +515,7 @@ final class VisitManager implements Listener {
                 islands.sendOff(target, island);
                 msg.send(player, "expel.done", Msg.p("player", target.getName()));
                 core.sounds().play(player, "success");
-                islands.memberManager().notifyMembers(island, player.getUniqueId(), "notify.expelled", Msg.p("player", target.getName()),
+                islands.memberManager().notifyMembers(island, islands.key(player), "notify.expelled", Msg.p("player", target.getName()),
                         Msg.p("by", player.getName()));
             }
         }
@@ -528,7 +534,7 @@ final class VisitManager implements Listener {
             return;
         }
         String name = islands.name(target);
-        VisitRules.BanCheck check = VisitRules.canBan(island.roleOrNull(player.getUniqueId()), island.roleOrNull(target),
+        VisitRules.BanCheck check = VisitRules.canBan(island.roleOrNull(islands.key(player)), islands.roleOfPlayer(island, target),
                 target.equals(player.getUniqueId()), isBanned(island.id(), target), bans(island.id()).size(), config().maxBans);
         switch (check) {
             case NOT_ALLOWED -> islands.fail(player, "ban.not-allowed");
@@ -568,7 +574,7 @@ final class VisitManager implements Listener {
                 null, null, Map.of("player", target.toString(), "player_name", name));
         msg.send(player, "ban.done", Msg.p("player", name));
         core.sounds().play(player, "success");
-        islands.memberManager().notifyMembers(island, player.getUniqueId(), "notify.banned", Msg.p("player", name),
+        islands.memberManager().notifyMembers(island, islands.key(player), "notify.banned", Msg.p("player", name),
                 Msg.p("by", player.getName()));
         Player online = Bukkit.getPlayer(target);
         if (online != null) {
@@ -585,7 +591,7 @@ final class VisitManager implements Listener {
         if (island == null) {
             return;
         }
-        if (!VisitRules.canManageVisitors(island.roleOrNull(player.getUniqueId()))) {
+        if (!VisitRules.canManageVisitors(island.roleOrNull(islands.key(player)))) {
             islands.fail(player, "ban.not-allowed");
             return;
         }
@@ -616,7 +622,7 @@ final class VisitManager implements Listener {
                     islands.displayName(island), null, null, Map.of("player", target.toString(), "player_name", name));
             msg.send(player, "unban.done", Msg.p("player", name));
             core.sounds().play(player, "success");
-            islands.memberManager().notifyMembers(island, player.getUniqueId(), "notify.unbanned", Msg.p("player", name),
+            islands.memberManager().notifyMembers(island, islands.key(player), "notify.unbanned", Msg.p("player", name),
                     Msg.p("by", player.getName()));
             Player online = Bukkit.getPlayer(target);
             if (online != null) {
@@ -645,7 +651,8 @@ final class VisitManager implements Listener {
             islands.fail(player, "visit.no-island", Msg.p("player", name));
             return;
         }
-        Role role = island.roleOrNull(player.getUniqueId());
+        // Ratings and likes are per player (owner O7): an island any of your profiles belongs to is your own.
+        Role role = islands.roleOfPlayer(island, player.getUniqueId());
         if (role != null && role != Role.COOP) {
             islands.fail(player, "rate.own");
             return;
@@ -655,7 +662,7 @@ final class VisitManager implements Listener {
         }
         int season = config().seasonId;
         store.voteContext(island.id(), player.getUniqueId(), season, today()).thenComposeAsync(context -> {
-            VisitRules.VoteCheck check = VisitRules.canRate(stars, MAX_STARS, island.roleOrNull(player.getUniqueId()), context.visited(),
+            VisitRules.VoteCheck check = VisitRules.canRate(stars, MAX_STARS, island.roleOrNull(islands.key(player)), context.visited(),
                     config().requireVisit, context.rating());
             if (check != VisitRules.VoteCheck.OK) {
                 end(player);
@@ -688,7 +695,8 @@ final class VisitManager implements Listener {
             islands.fail(player, "visit.no-island", Msg.p("player", name));
             return;
         }
-        Role role = island.roleOrNull(player.getUniqueId());
+        // Ratings and likes are per player (owner O7): an island any of your profiles belongs to is your own.
+        Role role = islands.roleOfPlayer(island, player.getUniqueId());
         if (role != null && role != Role.COOP) {
             islands.fail(player, "like.own");
             return;
@@ -699,7 +707,7 @@ final class VisitManager implements Listener {
         int season = config().seasonId;
         int day = today();
         store.voteContext(island.id(), player.getUniqueId(), season, day).thenComposeAsync(context -> {
-            VisitRules.VoteCheck check = VisitRules.canLike(island.roleOrNull(player.getUniqueId()), context.visited(),
+            VisitRules.VoteCheck check = VisitRules.canLike(island.roleOrNull(islands.key(player)), context.visited(),
                     config().requireVisit, context.likedToday());
             if (check != VisitRules.VoteCheck.OK) {
                 end(player);
@@ -816,7 +824,8 @@ final class VisitManager implements Listener {
             if (here != null) {
                 VisitRules.Access access = access(player, here);
                 if (!access.allowed()) {
-                    msg.send(player, access == VisitRules.Access.BANNED ? "visit.join-banned" : "visit.join-locked",
+                    msg.send(player, access == VisitRules.Access.BANNED ? "visit.join-banned"
+                                    : access == VisitRules.Access.OWN_PROFILE ? "visit.join-own-profile" : "visit.join-locked",
                             Msg.p("island", islands.displayName(here)));
                     islands.sendOff(player, here);
                     return;
@@ -861,7 +870,7 @@ final class VisitManager implements Listener {
     }
 
     private void arrived(Player player, Island island) {
-        if (island.roleOrNull(player.getUniqueId()) != null || hidden(player)) {
+        if (island.roleOrNull(islands.key(player)) != null || hidden(player)) {
             return;
         }
         msg.actionBar(player, "visit.welcome", Msg.p("island", islands.displayName(island)));
@@ -872,7 +881,7 @@ final class VisitManager implements Listener {
     }
 
     private void departed(Player player, Island island) {
-        if (island.roleOrNull(player.getUniqueId()) != null || hidden(player)) {
+        if (island.roleOrNull(islands.key(player)) != null || hidden(player)) {
             return;
         }
         if (cooldownPassed(player.getUniqueId(), island.id() + "|leave", config().notifyCooldownSeconds)) {
@@ -920,7 +929,7 @@ final class VisitManager implements Listener {
         }
         TagResolver who = Msg.p("player", visitor.getName());
         for (UUID member : List.copyOf(island.members().keySet())) {
-            Player online = Bukkit.getPlayer(member);
+            Player online = islands.online(member);
             if (online == null || !online.canSee(visitor) || (settings != null && !settings.get(online, setting))) {
                 continue;
             }
@@ -949,7 +958,7 @@ final class VisitManager implements Listener {
 
     /** The sender's island, or tells them they have none. */
     private Island ownIsland(Player player) {
-        Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
+        Optional<Island> own = islands.islandOfPlayer(islands.key(player));
         if (own.isEmpty()) {
             islands.fail(player, "no-island");
             return null;
@@ -963,7 +972,7 @@ final class VisitManager implements Listener {
         if (island == null) {
             return null;
         }
-        if (!VisitRules.canManageVisitors(island.roleOrNull(player.getUniqueId()))) {
+        if (!VisitRules.canManageVisitors(island.roleOrNull(islands.key(player)))) {
             islands.fail(player, "lock.not-allowed");
             return null;
         }
@@ -987,7 +996,7 @@ final class VisitManager implements Listener {
         return safely(() -> {
             List<String> names = new ArrayList<>();
             for (Player online : Bukkit.getOnlinePlayers()) {
-                if ((!(sender instanceof Player viewer) || viewer.canSee(online)) && islands.islandOfPlayer(online.getUniqueId()).isPresent()) {
+                if ((!(sender instanceof Player viewer) || viewer.canSee(online)) && islands.islandOfPlayer(islands.key(online)).isPresent()) {
                     names.add(online.getName());
                 }
             }
@@ -1008,7 +1017,7 @@ final class VisitManager implements Listener {
         if (!(sender instanceof Player player)) {
             return List.of();
         }
-        return safely(() -> islands.islandOfPlayer(player.getUniqueId())
+        return safely(() -> islands.islandOfPlayer(islands.key(player))
                 .map(island -> visitorsOn(island).stream().filter(player::canSee).map(Player::getName).toList()).orElse(List.of()));
     }
 
@@ -1018,14 +1027,14 @@ final class VisitManager implements Listener {
             return List.of();
         }
         return safely(() -> {
-            Optional<Island> own = islands.islandOfPlayer(player.getUniqueId());
+            Optional<Island> own = islands.islandOfPlayer(islands.key(player));
             if (own.isEmpty()) {
                 return List.of();
             }
             Island island = own.get();
             List<String> names = new ArrayList<>();
             for (Player online : Bukkit.getOnlinePlayers()) {
-                if (!online.equals(player) && player.canSee(online) && island.roleOrNull(online.getUniqueId()) == null
+                if (!online.equals(player) && player.canSee(online) && island.roleOrNull(islands.key(online)) == null
                         && !isBanned(island.id(), online.getUniqueId())) {
                     names.add(online.getName());
                 }
@@ -1039,7 +1048,7 @@ final class VisitManager implements Listener {
         if (!(sender instanceof Player player)) {
             return List.of();
         }
-        return safely(() -> islands.islandOfPlayer(player.getUniqueId())
+        return safely(() -> islands.islandOfPlayer(islands.key(player))
                 .map(island -> bans(island.id()).stream().map(islands::name).toList()).orElse(List.of()));
     }
 

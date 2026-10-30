@@ -96,8 +96,11 @@ import java.util.UUID;
  */
 final class IslandProtection implements Listener {
 
-    /** Why an action was refused ({@link #NONE} = allowed). */
-    enum Denial { NONE, OUTSIDE, HEIGHT, VISITOR, ROLE }
+    /**
+     * Why an action was refused ({@link #NONE} = allowed). OWN_PROFILE: owner P3/P4, another profile of this player
+     * belongs to the island, so nothing at all is allowed there.
+     */
+    enum Denial { NONE, OUTSIDE, HEIGHT, VISITOR, ROLE, OWN_PROFILE }
 
     private final IslandsModule module;
     private final IslandManager islands;
@@ -146,7 +149,12 @@ final class IslandProtection implements Listener {
         if (island == null) {
             return Denial.OUTSIDE;
         }
-        PermRole role = islands.permRole(island, player.getUniqueId());
+        UUID key = islands.key(player);
+        PermRole role = islands.permRole(island, key);
+        if (role == PermRole.VISITOR && islands.ownOtherProfileOn(island, key, null) != null) {
+            // Visiting your own other profile's island must never move anything between your profiles.
+            return Denial.OWN_PROFILE;
+        }
         if (islands.rolePermissions().allows(island.perms(), role, perm)) {
             return Denial.NONE;
         }
@@ -193,6 +201,7 @@ final class IslandProtection implements Listener {
                     Msg.p("max", module.config().maxBuildY));
             case VISITOR -> module.msg().actionBar(player, "protection.visitor", Msg.mm("action", action(perm)));
             case ROLE -> module.msg().actionBar(player, "protection.role", Msg.mm("action", action(perm)));
+            case OWN_PROFILE -> module.msg().actionBar(player, "protection.own-profile");
             case NONE -> {
                 return;
             }
