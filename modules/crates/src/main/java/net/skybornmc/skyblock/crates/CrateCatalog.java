@@ -26,21 +26,41 @@ final class CrateCatalog {
     static final String ROOT = "crates";
     private static final Pattern ID = Pattern.compile("[a-z0-9_]{1,32}");
     private static final List<String> RARITIES = List.of("common", "uncommon", "rare", "epic", "legendary", "mythic", "special");
+    /** Booster types of booster rewards (common BoosterType ids). */
+    static final List<String> BOOSTER_TYPES = java.util.Arrays.stream(net.skybornmc.skyblock.common.booster.BoosterType.values())
+            .map(net.skybornmc.skyblock.common.booster.BoosterType::id).toList();
 
-    /** One reward of a crate. Unused parameters of a type are 0 / empty. */
+    /**
+     * One reward of a crate. Unused parameters of a type are 0 / empty. {@code booster} and {@code percent} are the booster
+     * type ({@code sell}, {@code skill_xp}, {@code tool_xp}, {@code crystals}) and strength of booster rewards (M10.2).
+     */
     record Reward(String id, RewardType type, double chance, boolean top, String rarity, String icon, int minutes, long base,
                   int amount, String crate, String pool, int level, List<String> sets, int tier, String material,
-                  List<String> ids, long fallback) {
+                  List<String> ids, long fallback, String booster, int percent) {
 
         Reward {
             sets = List.copyOf(sets);
             ids = List.copyOf(ids);
+            booster = booster == null ? "" : booster;
+        }
+
+        /** A reward without booster fields. */
+        Reward(String id, RewardType type, double chance, boolean top, String rarity, String icon, int minutes, long base,
+               int amount, String crate, String pool, int level, List<String> sets, int tier, String material,
+               List<String> ids, long fallback) {
+            this(id, type, chance, top, rarity, icon, minutes, base, amount, crate, pool, level, sets, tier, material, ids,
+                    fallback, "", 0);
         }
 
         /** The same reward with another type (a key to an unknown crate becomes coming soon). */
         Reward withType(RewardType t) {
             return new Reward(id, t, chance, top, rarity, icon, minutes, base, amount, crate, pool, level, sets, tier, material,
-                    ids, fallback);
+                    ids, fallback, booster, percent);
+        }
+
+        /** {@code type:percent:minutes} of a booster reward (the grant's reference). */
+        String boosterRef() {
+            return booster + ":" + percent + ":" + minutes;
         }
     }
 
@@ -204,6 +224,8 @@ final class CrateCatalog {
         String material = text(map, "material", "");
         List<String> sets = list(map, "sets");
         List<String> ids = list(map, "ids");
+        String booster = text(map, "booster", "").toLowerCase(Locale.ROOT).replace('-', '_');
+        int percent = (int) Math.max(0, number(map, "percent", 0));
         String problem = switch (t) {
             case MONEY -> minutes < 1 ? "'minutes' must be at least 1" : null;
             case CRYSTALS -> base < 1 ? "'base' must be at least 1" : null;
@@ -214,6 +236,8 @@ final class CrateCatalog {
             case SPAWNER -> tier < 1 || tier > 5 ? "'tier' must be 1-5" : null;
             case ITEM -> material.isBlank() ? "'material' is missing" : null;
             case FUEL -> minutes < 1 ? "'minutes' must be at least 1" : null;
+            case BOOSTER, GLOBAL_BOOSTER -> !BOOSTER_TYPES.contains(booster) ? "'booster' must be one of " + BOOSTER_TYPES
+                    : percent < 1 ? "'percent' must be at least 1" : minutes < 1 ? "'minutes' must be at least 1" : null;
             default -> null;
         };
         if (problem != null) {
@@ -224,7 +248,7 @@ final class CrateCatalog {
         long fallback = map.containsKey("fallback") ? (long) Math.max(0, number(map, "fallback", 0)) : crateFallback;
         String icon = map.containsKey("icon") ? text(map, "icon", "") : null;
         return Optional.of(new Reward(id, t, chance, bool(map, "top"), rarity, icon, minutes, base, amount, crate, pool, level,
-                sets, tier, material, ids, fallback));
+                sets, tier, material, ids, fallback, booster, percent));
     }
 
     private static String rarity(String raw, String where, Consumer<String> warn) {

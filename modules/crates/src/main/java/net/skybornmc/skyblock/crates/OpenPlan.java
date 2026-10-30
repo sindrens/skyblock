@@ -99,7 +99,7 @@ final class OpenPlan {
             return out;
         }
 
-        /** Grants handed out after the commit (items, cosmetics, fuel). */
+        /** Grants handed out after the commit (items, boosters, cosmetics, fuel). */
         List<Grant> handouts() {
             return grants.stream().filter(g -> !g.inTransaction()).toList();
         }
@@ -157,6 +157,7 @@ final class OpenPlan {
             case TAG, TITLE -> roll.cosmeticId() == null ? fallback(roll, bound, ctx, openId)
                     : new Grant(openId, r, r.type().key(), roll.cosmeticId(), 1, bound, top, forced);
             case FUEL -> new Grant(openId, r, r.type().key(), "fuel", r.minutes(), bound, top, forced);
+            case BOOSTER, GLOBAL_BOOSTER -> new Grant(openId, r, r.type().key(), r.boosterRef(), r.amount(), bound, top, forced);
             case COMING_SOON -> fallback(roll, bound, ctx, openId);
         };
     }
