@@ -24,7 +24,7 @@ create:
   started: "<prefix><c:muted><sym:time></c:muted> <c:text>Building your island, one moment..."
   # PORTALS (owner answer 159): the island portal at spawn creates the island without the confirm menu.
   portal-title:
-    title: "<grad:phoenix><bold>Creating your island…</bold></grad>"
+    title: "<grad:phoenix><bold>Creating your island...</bold></grad>"
     subtitle: "<c:text>One moment"
     fade-in: 5
     stay: 40
