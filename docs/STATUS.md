@@ -59,6 +59,9 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
+- M4.7 Forest + M4.8 combat zones (depths lane)
+- P7 punishments: sanctions + island punishments
+- F3 achievements (new modules/achievements)
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
 
 ## Parked / broken

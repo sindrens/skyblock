@@ -9,7 +9,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | F1 | Hook remaining `/settings` toggles: join-messages, tpa-requests (essentials), scoreboard (hud), ui-sounds | Phase 1 | modules/essentials, modules/hud | ⬜ |
 | F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` | — | common/command, plugin, server/permissions, scripts | ✅ |
 | F4 | Move a TeleportService interface (warmup, guards) into common so /dungeon, /spawn, /tpa, /is home share one warmup | — | common, essentials, depths | ⬜ |
-| F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | ⬜ |
+| F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | 🔄 |
 
 ## UX polish (owner, 2026-10-30) — top priority, starts at the next free slot
 | # | Item | Depends on | Lane | Status |
@@ -45,7 +45,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | P4 | §13.4 approval, 13.13 mute ended, 13.7 probation, 13.5 watchlist | P3 | modules/moderation | ✅ |
 | P5 | §13.8 bulk, 13.11 punish from logs, 13.10 appeals (in-game + webhook) | P4 | modules/moderation, modules/logs (API) | ✅ |
 | P6 | §13.9 raid lockdown, 13.3 anticheat suggestions (`/psuggest`, Grim config notes), 13.12 network-ready | P5 | modules/moderation, server/CONFIG_NOTES.md | ✅ |
-| P7 | §13.1 sanctions (economy SanctionProvider), 13.2 island punishments | P6, M2.3 | modules/moderation, modules/economy, modules/islands | ⬜ |
+| P7 | §13.1 sanctions (economy SanctionProvider), 13.2 island punishments | P6, M2.3 | modules/moderation, modules/economy, modules/islands | 🔄 |
 | P8 | §14.2 rule numbers, 14.9 notification settings, 14.6 training mode | P7 | modules/moderation | ⬜ |
 | P9 | §14.1 guard + rollback, 14.5 false reports, 14.10 purge | P8 | modules/moderation, modules/staff | ⬜ |
 | P10 | §14.8 monthly report, 14.11 "Honorable" title | P9 | modules/moderation, modules/cosmetics | ⬜ |
@@ -83,8 +83,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | ✅ (with M4.9) |
 | M4.6 | Tiers, unlocks, `/dungeon` | M4.1, M4.5 | modules/depths | ✅ |
 | M4.2 | Tools: starter kit (24 h), Forge, living tools (perk slots 5/15/30/45 + prestige), blueprints, skins; `/tool give`, `/blueprint give`, `/skin give` | M3.1, M4.5 | modules/tools | ✅ |
-| M4.7 | Forest | M4.3, M4.1 | modules/depths | ⬜ |
-| M4.8 | Combat zones (shared mobs) | M4.1 | modules/depths (combat pkg) | ⬜ |
+| M4.7 | Forest | M4.3, M4.1 | modules/depths | 🔄 (with M4.8) |
+| M4.8 | Combat zones (shared mobs) | M4.1 | modules/depths (combat pkg) | 🔄 (with M4.7) |
 | M4.9 | Drops + tokens | M4.4, M3.1 | modules/depths | ✅ (with M4.4) |
 
 ## Phase E: Enchants (docs/plans/ENCHANTS.md)
