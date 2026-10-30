@@ -45,6 +45,7 @@ Crops on islands grow without light: planted crops (`crops.types`) are remembere
 - `StackKillProvider` (`common/stacking`): register one to kill more mobs per hit.
 - `IslandService` hooks (defaults until masteries/fuel exist): `spawnerStackLimit`, `spawnerRateMultiplier`, `hasIslandFuel`, `entityLimitBonusPercent`.
 - Skills: mobs from stacked spawners count as spawner mobs (`skills.yml → combat.spawner-mobs-give-xp`).
+- Stacked spawners spawn their mobs themselves with spawn reason `CUSTOM` (no vanilla `SPAWNER` event). Island flags such as "mob spawning off" must only block `NATURAL` spawns, never these (check with `StackingService#fromStackedSpawner` if needed).
 
 ## Performance
 No per-tick entity scans: mobs merge on spawn using a chunk-indexed cache (entity add/remove events), walking mobs are re-checked by a budgeted task (`mobs.natural-merge-*`), items merge on spawn and through vanilla's own merge event, spawners sit in a priority queue by next spawn tick (`spawners.due-per-tick`), crops are spread over ticks (`crops.per-tick`). Main-thread time is measured; a warning is logged when it averages above `perf.warn-ms-per-second` (5 ms/s) over a minute.
