@@ -78,3 +78,25 @@ Release steps for the main session (before each release, in this order):
 - **Stats:** `PunishStats` (periods, argument + permission rules, aggregation, ranking, 60 s cache); queries in
   `PunishmentStore.statRows/topRows` use the V003 index `(issuer_uuid, created)`. Rows without an issuer uuid (system,
   console) never count.
+
+## P3 implementation notes (for P4+)
+- **Config:** `PunishConfig.Extras` gained `closeReports`, `evidence`, `notes`, `ack`, `rulesLink`, `discord`, `playerView`,
+  `chatSuggestions` (nested records, parsed in `PunishConfigParser.extras`). A `webhook`/`url` key under `extras.discord` is a
+  config error: the URL is a secret (`plugins/PhoenixSkyblock/secrets/discord.yml`, written by `apply-secrets.sh` from
+  `DISCORD_WEBHOOK_PUNISHMENTS`).
+- **Side effects** live in `PunishExtras` and are called by `PunishmentService` after apply (`applied`, evidence + Discord),
+  after a staff apply (`linkReports`), after pardon/undo (Discord) and from `apply()` for warns (`warned`, acknowledgement).
+  They never throw into the punishment path.
+- **Weights:** tenths everywhere (`Weights`): `Punishment.weight`, `Templates.Step.weight` (`warn 0.5`),
+  `WarnButton.weight`, `WarnRules.Counter.tenths()/text()`, `Trigger.tenths()`, `Suggestion.warnTenths`. Column
+  `punishments.weight DECIMAL(5,1)`, NULL = 1. Rule check: `Weights.reaches(tenths, at)`.
+- **V004:** `punishments.weight/acknowledged_at/ack_join_sent`, `punishment_suggestions.warn_tenths/reason_id/details`,
+  tables `punishment_evidence` and `staff_notes`.
+- **Suggestion API:** `common/moderation/SuggestionService` (moderation provides `ApiSuggestions`). Rows have kind `api`,
+  `source = auto:api:<reason>`, `reason_id`; one PENDING per target + reason (`PunishmentStore.suggestApi`, under the
+  target lock). `/warns <p> apply|dismiss <id>` and the existing claim logic handle them; the warn rules ignore them.
+  13.3 (`/psuggest`, Grim) should reuse `suggestApi`.
+- **Report link:** `common/moderation/ReportLink`, provided by the staff module (`ReportService`), atomic
+  `StaffStore.closeClaimedBy`.
+- **Discord:** `common/discord/DiscordSink` (named channels); moderation registers `WebhookDiscordSink` as the service.
+  13.10 and 14.9 add their channel names and switches.

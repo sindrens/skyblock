@@ -218,6 +218,14 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 - Loadout: swaps (and wardrobe equips) refused for 10 s after combat damage with a player or hostile mob, in the warzone and while frozen; 2 s cooldown. OK? (default: yes, LD3/LD6)
 - Loadout: `/loadout <name>` applies a preset by name (argument of the approved command) and `/sets` stays as an alias of `/wardrobe`. OK? (default: yes, LD5/WD24)
 - Wardrobe staff tools: a Wardrobe button in `/inspect <player>` (view; admins give/remove sets, set levels, give tokens, all audited) instead of a new staff command. OK? (default: yes, WD25)
+- P3 warn weights: every warn button ships with weight 1 (no change to today's counter). The spec's examples were "Rule reminder 0.5" and "serious warn 2": set `weight: 0.5` on `warn-rules` (Rule reminder) in `punishments.yml`? (default: all 1)
+- P3 evidence: "context lines" = the last 5 chat lines of other players up to the punished player's newest line (the conversation they answered), merged in time order. OK? (default: as described; `extras.evidence.context-lines`)
+- P3 evidence: private messages are not part of the evidence (only public chat, incl. lines the chat filter blocked, marked "(blocked)"). Add /msg lines too? (default: public chat only, privacy)
+- P3 acknowledgement: `/ack` uses the permission `skyblock.punish.view.own` (everyone) instead of its own node, and the join reminder is shown once per warning (`ack_join_sent`). OK? (default: yes)
+- P3 `/pnote remove <id>` (spec form, no player name): tab completion offers the note ids of the player you listed last with `/pnote <player>` (else the newest notes). OK, or `/pnote <player> remove <id>`? (default: spec form)
+- P3 report link: kicks also close your claimed reports about that player (every punishment type counts). OK? (default: yes)
+- P3 suggestion API: an applied API suggestion is stored with the reason id, so it counts as an offence for that reason's ladder (like `/p <player> <reason>`), and shows as "applied from automatic suggestions" in /pstats. OK? (default: yes)
+- P3 Discord: moderation registers the shared `DiscordSink` (webhook names in `secrets/discord.yml`, e.g. `punishments`); appeals (13.10) and notifications (14.9) will add their own channel names. Set the real webhook when Discord is set up (docs/LATER.md). (default: off)
 
 ## Economy
 1. **Shards:** how are they earned? (Proposal: bosses, envoys, KOTH, high-tier dungeon zones.)
