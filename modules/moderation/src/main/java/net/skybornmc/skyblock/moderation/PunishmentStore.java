@@ -342,7 +342,8 @@ final class PunishmentStore {
             PunishDecision.Verdict verdict = decision.decide(input.withActive(act.mute(), act.ban()).withRecent(recent));
             if (verdict.outcome() == PunishDecision.Outcome.REQUEST) {
                 RequestSaved saved = requestLocked(conn, shaped(draft, verdict.input()), verdict.input().duration(), now,
-                        requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire, evidenceEntry);
+                        requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire, evidenceEntry,
+                        verdict.input().actor().trainee());
                 return new IssueResult(verdict, null, null, saved.request(), saved.merged());
             }
             if (!verdict.applied()) {
@@ -541,7 +542,8 @@ final class PunishmentStore {
                             s.reason(), s.api() ? s.reasonId() : null, null, by, byName, now, null, false, null, null, null, null,
                             s.source()), verdict.input());
                     RequestSaved saved = requestLocked(conn, wanted, verdict.input().duration(), now,
-                            requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire, null);
+                            requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire, null,
+                            verdict.input().actor().trainee());
                     if (claim(conn, id, Suggestion.Status.REQUESTED, by, byName, null,
                             Suggestion.NOTE_REQUEST + saved.request().id(), now) != 1) {
                         throw new SQLException("suggestion " + id + " changed while locked");
@@ -894,7 +896,8 @@ final class PunishmentStore {
 
     private static final String REQUEST_COLUMNS = "id, target_uuid, target_name, reason_key, type, duration_ms, ip_wide, ip, "
             + "reason, template, ladder_step, weight_tenths, silent, source, requester_uuid, requester_name, created, expires, "
-            + "status, handled_at, handler_uuid, handler_name, deny_reason, punishment_id, merges, notified, evidence_entry";
+            + "status, handled_at, handler_uuid, handler_name, deny_reason, punishment_id, merges, notified, evidence_entry, "
+            + "requester_trainee";
 
     private static PunishRequest mapRequest(ResultSet rs) throws SQLException {
         return new PunishRequest(rs.getLong("id"), Sql.uuid(rs, "target_uuid"), rs.getString("target_name"),
@@ -905,7 +908,7 @@ final class PunishmentStore {
                 PunishRequest.Status.valueOf(rs.getString("status")), Sql.nullableLong(rs, "handled_at"),
                 Sql.uuid(rs, "handler_uuid"), rs.getString("handler_name"), rs.getString("deny_reason"),
                 Sql.nullableLong(rs, "punishment_id"), rs.getInt("merges"), rs.getBoolean("notified"),
-                Sql.nullableLong(rs, "evidence_entry"));
+                Sql.nullableLong(rs, "evidence_entry"), rs.getBoolean("requester_trainee"));
     }
 
     /** A request after {@link #requestLocked}: the row, and whether it was merged into an existing pending one. */
@@ -922,7 +925,7 @@ final class PunishmentStore {
      * Runs inside the caller's transaction and target lock.
      */
     private static RequestSaved requestLocked(Connection c, Punishment wanted, java.time.Duration duration, long now,
-                                              java.time.Duration expire, Long evidenceEntry) throws SQLException {
+                                              java.time.Duration expire, Long evidenceEntry, boolean trainee) throws SQLException {
         String key = Approval.mergeKey(wanted.template(), wanted.type(), wanted.reason());
         if (wanted.target() != null) {
             Optional<PunishRequest> waiting = Sql.queryOne(c, "SELECT " + REQUEST_COLUMNS + " FROM punishment_requests "
@@ -938,14 +941,16 @@ final class PunishmentStore {
                 return new RequestSaved(requestById(c, waiting.get().id()).orElseThrow(), true);
             }
         }
-        boolean timed = wanted.type() == Punishment.Type.BAN || wanted.type() == Punishment.Type.MUTE;
+        // timed(): bans, mutes, island bans and coop blocks keep their length (P8: trainees request island steps too)
+        boolean timed = wanted.type().timed();
         long id = Sql.insertReturningId(c, "INSERT INTO punishment_requests (target_uuid, target_name, reason_key, type, duration_ms, "
                         + "ip_wide, ip, reason, template, ladder_step, weight_tenths, silent, source, requester_uuid, requester_name, "
-                        + "created, expires, status, evidence_entry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?)",
+                        + "created, expires, status, evidence_entry, requester_trainee) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?)",
                 bytes(wanted.target()), clip(wanted.targetName(), 32), key, wanted.type().name(),
                 timed && duration != null ? duration.toMillis() : null, wanted.ipWide(), wanted.ip(), clip(wanted.reason(), 255),
                 wanted.template(), wanted.ladderStep(), wanted.weight(), wanted.silent(), clip(wanted.source(), 48),
-                bytes(wanted.issuer()), clip(wanted.issuerName(), 32), now, now + expire.toMillis(), evidenceEntry);
+                bytes(wanted.issuer()), clip(wanted.issuerName(), 32), now, now + expire.toMillis(), evidenceEntry, trainee);
         return new RequestSaved(requestById(c, id).orElseThrow(), false);
     }
 

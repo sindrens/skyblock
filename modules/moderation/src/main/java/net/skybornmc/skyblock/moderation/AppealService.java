@@ -79,7 +79,8 @@ final class AppealService {
         String length = p.expires() == null ? permanent : Format.duration(Duration.ofMillis(Math.max(1000, p.expires() - p.created())));
         return TagResolver.resolver(Msg.p("pid", p.id()), Msg.p("type", type), Msg.p("reason", p.reason()),
                 Msg.p("left", p.active(now) ? (left(p, now) == null ? permanent : left(p, now)) : service().text(viewer, "appeal.ended")),
-                Msg.p("length", length), Msg.p("staff", p.issuerName()), Msg.p("date", ModerationModule.when(p.created())));
+                Msg.p("length", length), Msg.p("staff", p.issuerName()), Msg.p("date", ModerationModule.when(p.created())),
+                service().ruleParts(viewer, p.template())); // P8, spec 14.2
     }
 
     /** Placeholders of an appeal: <aid>, <player>, <target>, <text>, <status>, <handler>, <response>, <ago>, <given_by>, ... */
@@ -225,10 +226,10 @@ final class AppealService {
         }
     }
 
-    /** "New appeal #14 by Steve (mute 1d). [Open]" to staff with skyblock.staff.notify (and the console). */
+    /** "New appeal #14 by Steve (mute 1d). [Open]" to staff who get appeals alerts (spec 14.9) and the console. */
     private void notifyNew(Appeal a, Punishment p) {
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (staff.hasPermission(ModerationModule.PERM_NOTIFY)) {
+            if (service().wants(staff, NotifyRules.Type.APPEALS)) {
                 send(staff, "appeal.notify", parts(staff, a), punishmentParts(staff, p), Msg.c("open", openButton(staff, a)));
                 module.core().sounds().play(staff, "notify");
             }
@@ -403,7 +404,7 @@ final class AppealService {
         sound(staff, "success");
         if (a.status() != Appeal.Status.CLOSED) {
             // spec: accepting another staff member's punishment shows their name, so staff can talk
-            service().notifyStaff(staff, a.otherStaff(staff.getUniqueId()) ? "appeal.notify-done-other" : "appeal.notify-done",
+            service().notifyStaff(NotifyRules.Type.APPEALS, staff, a.otherStaff(staff.getUniqueId()) ? "appeal.notify-done-other" : "appeal.notify-done",
                     parts(null, a), pp, Msg.p("staff_name", staff.getName()));
         }
         Map<String, Object> details = new LinkedHashMap<>();

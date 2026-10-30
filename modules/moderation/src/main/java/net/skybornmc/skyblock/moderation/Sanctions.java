@@ -252,6 +252,10 @@ final class Sanctions implements SanctionService {
         if (!staff.hasPermission(permission(kind))) {
             return "sanctions.no-permission";
         }
+        // spec 14.6: sanctions have no request queue, so a trainee can't give them while "sanction" is in requests-for
+        if (Training.sanctionRefused(extras.get().training(), PunishmentService.trainee(staff))) {
+            return "sanctions.trainee";
+        }
         // spec 13.4: a sanction kind listed in approval.rules needs an approver; sanctions are not queued (P7 default)
         if (!staff.hasPermission(ModerationModule.PERM_APPROVE) && Approval.sanctionNeedsApproval(extras.get().approval(), kind)) {
             return "sanctions.needs-approval";
@@ -293,9 +297,16 @@ final class Sanctions implements SanctionService {
                 sender instanceof Player p ? p.getLocation() : null, details);
     }
 
+    /** Who gets the sanction lines (P8, spec 14.9: the punishments feed; set by the module). */
+    private java.util.function.Predicate<Player> notified = p -> p.hasPermission(NotifyRules.Type.PUNISHMENTS.permission());
+
+    void notified(java.util.function.Predicate<Player> value) {
+        this.notified = value;
+    }
+
     private void notifyStaff(CommandSender sender, String key, TagResolver... tags) {
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (staff.hasPermission(ModerationModule.PERM_NOTIFY) || staff.equals(sender)) {
+            if (notified.test(staff) || staff.equals(sender)) {
                 msg.send(staff, key, tags);
             }
         }

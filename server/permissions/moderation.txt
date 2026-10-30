@@ -65,3 +65,22 @@ lp group mod permission set skyblock.staff.sanction.trade true
 lp group admin permission set skyblock.staff.sanction.money true
 lp group admin permission set skyblock.staff.sanction.confiscate true
 lp group admin permission set skyblock.staff.sanction.restore true
+
+# --- Phase P, P8: training mode (spec 14.6), notification settings (spec 14.9) ---
+# skyblock.staff.punish.trainee is NOT granted to any rank: add it to a trainee (e.g. a "trainee" group or a single
+# player: lp user <name> permission set skyblock.staff.punish.trainee true) and remove it when they graduate.
+# Dry run for every staff member.
+lp group helper permission set skyblock.staff.punish.dry true
+# Alert types (spec 14.9 table "Default for"). /pnotify (skyblock.staff.notify, base.txt) switches the ones a rank has.
+# All staff: punishments, watchlist, reports. Moderators and up: suggestions, raid, auto, appeals (appeal handlers).
+# Approvers (admins): approvals. Admins: guard (always on), report.
+lp group helper permission set skyblock.staff.notify.punishments true
+lp group helper permission set skyblock.staff.notify.watchlist true
+lp group helper permission set skyblock.staff.notify.reports true
+lp group mod permission set skyblock.staff.notify.suggestions true
+lp group mod permission set skyblock.staff.notify.raid true
+lp group mod permission set skyblock.staff.notify.auto true
+lp group mod permission set skyblock.staff.notify.appeals true
+lp group admin permission set skyblock.staff.notify.approvals true
+lp group admin permission set skyblock.staff.notify.guard true
+lp group admin permission set skyblock.staff.notify.report true

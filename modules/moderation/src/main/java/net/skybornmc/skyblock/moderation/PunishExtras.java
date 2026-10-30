@@ -116,17 +116,36 @@ final class PunishExtras {
 
     /** A raid lockdown started or ended (spec 13.9): one embed to the punishment log (off unless Discord is enabled). */
     void lockdownPosted(Lockdown.Active a, String event, String by) {
-        postDiscord(() -> PunishEmbeds.lockdown(a, event, by, System.currentTimeMillis(), extras.get().discord(),
+        postDiscord(NotifyRules.Type.RAID, () -> PunishEmbeds.lockdown(a, event, by, System.currentTimeMillis(), extras.get().discord(),
                 this::discordText));
     }
 
-    /** A new appeal or a decision (spec 13.10 step 1): to the appeals webhook, only when switched on. */
+    /**
+     * A new appeal or a decision (spec 13.10 step 1): to the appeals webhook, only when switched on. A channel mapped for
+     * {@code appeals} in {@code extras.discord.channels} (spec 14.9) is used as well; appeals are sensitive, so they are
+     * never sent to the main punishment log.
+     */
     void appealPosted(Supplier<DiscordSink.Embed> embed) {
         try {
             PunishConfig.Appeals cfg = extras.get().appeal();
             Optional<DiscordSink> sink = discord.get();
-            if (cfg.discordEnabled() && sink.isPresent() && sink.get().enabled(cfg.discordChannel())) {
-                sink.get().post(cfg.discordChannel(), embed.get());
+            if (sink.isEmpty()) {
+                return;
+            }
+            java.util.Set<String> channels = new java.util.LinkedHashSet<>();
+            if (cfg.discordEnabled()) {
+                channels.add(cfg.discordChannel());
+            }
+            String mapped = extras.get().notifications().channels().get(NotifyRules.Type.APPEALS);
+            if (mapped != null) {
+                channels.add(mapped);
+            }
+            DiscordSink.Embed built = null;
+            for (String channel : channels) {
+                if (sink.get().enabled(channel)) {
+                    built = built == null ? embed.get() : built;
+                    sink.get().post(channel, built);
+                }
             }
         } catch (RuntimeException e) {
             core.plugin().getLogger().log(Level.WARNING, "Discord appeal log failed", e);
@@ -149,11 +168,21 @@ final class PunishExtras {
 
     // ================================================================== 12.11 Discord
 
+    /** A punishment-feed embed (type {@code punishments}, spec 14.9). */
     private void postDiscord(Supplier<DiscordSink.Embed> embed) {
+        postDiscord(NotifyRules.Type.PUNISHMENTS, embed);
+    }
+
+    /**
+     * An embed of notification type {@code type} (spec 14.9): to the channel mapped for it in
+     * {@code extras.discord.channels}, else (non-sensitive types only) to the main punishment log; never sent while
+     * Discord is off or the channel has no webhook secret.
+     */
+    private void postDiscord(NotifyRules.Type type, Supplier<DiscordSink.Embed> embed) {
         try {
-            String channel = extras.get().discord().channel();
+            String channel = NotifyRules.discordChannel(type, extras.get().notifications(), extras.get().discord().channel());
             Optional<DiscordSink> sink = discord.get();
-            if (sink.isPresent() && sink.get().enabled(channel)) {
+            if (channel != null && sink.isPresent() && sink.get().enabled(channel)) {
                 sink.get().post(channel, embed.get());
             }
         } catch (RuntimeException e) {

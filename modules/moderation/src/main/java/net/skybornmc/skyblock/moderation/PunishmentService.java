@@ -136,6 +136,37 @@ final class PunishmentService {
         return hooks;
     }
 
+    /** Who gets which staff alert (P8, spec 14.9); {@code null} until the module sets it (then: permission only). */
+    private StaffNotify notifier;
+
+    void notifier(StaffNotify value) {
+        this.notifier = value;
+    }
+
+    StaffNotify notifier() {
+        return notifier;
+    }
+
+    /** Whether {@code staff} gets alerts of {@code type} (permission + their /pnotify switch + always-on types). */
+    boolean wants(Player staff, NotifyRules.Type type) {
+        if (notifier != null) {
+            return notifier.wants(staff, type);
+        }
+        return staff.hasPermission(type.permission());
+    }
+
+    /** Rule numbers of the active punishments.yml (P8, spec 14.2; set by the module). */
+    private java.util.function.Supplier<RuleBook> rules = () -> RuleBook.EMPTY;
+
+    void rules(java.util.function.Supplier<RuleBook> source) {
+        this.rules = source;
+    }
+
+    RuleBook ruleBook() {
+        RuleBook b = rules.get();
+        return b == null ? RuleBook.EMPTY : b;
+    }
+
     // ------------------------------------------------------------------ limits
 
     /** Longest duration {@code sender} may give; {@code null} = permanent allowed. Console = unlimited. */
@@ -211,7 +242,12 @@ final class PunishmentService {
     /** The one pipeline: duplicate window (P2), probation and approval (P4) from the current config. */
     PunishDecision decision() {
         PunishConfig.Extras x = extras.get();
-        return PunishDecision.full(x.duplicateWindow(), x.approval());
+        return PunishDecision.full(x.duplicateWindow(), x.approval(), x.training());
+    }
+
+    /** True if {@code sender} is a trainee (spec 14.6, {@code skyblock.staff.punish.trainee}). Console never is. */
+    static boolean trainee(CommandSender sender) {
+        return sender instanceof Player p && p.hasPermission(ModerationModule.PERM_TRAINEE);
     }
 
     /** Permissions of {@code sender} as a pipeline actor. Main thread (reads permissions). */
@@ -226,7 +262,7 @@ final class PunishmentService {
                 sender.hasPermission(ModerationModule.PERM_IPBAN), sender.hasPermission(ModerationModule.PERM_SILENT),
                 maxDuration(sender), sender.hasPermission(ModerationModule.PERM_EXEMPT_BYPASS),
                 sender instanceof Player p ? p.getUniqueId() : null, sender.hasPermission(ModerationModule.PERM_FORCE),
-                sender.hasPermission(ModerationModule.PERM_APPROVE));
+                sender.hasPermission(ModerationModule.PERM_APPROVE), trainee(sender), false);
     }
 
     /** The pipeline input for {@code sender} punishing {@code target}. Main thread. Active punishments are filled in later. */
@@ -255,9 +291,17 @@ final class PunishmentService {
     PunishDecision.Verdict preview(CommandSender viewer, UUID target, String targetName, Templates.Step step, boolean silent,
                                    Punishment activeMute, Punishment activeBan, String reasonKey, Punishment recent,
                                    PunishDecision.Escalation escalation) {
-        return decision().decide(input(viewer, target, targetName, step.type(), step.duration(), step.ipWide(), silent,
-                System.currentTimeMillis()).withActive(activeMute, activeBan).withReason(reasonKey, false, false)
-                .withRecent(recent).withEscalation(escalation));
+        return preview(viewer, target, targetName, step, silent, activeMute, activeBan, reasonKey, recent, escalation, false);
+    }
+
+    /** Same, as part of a bulk action or not (spec 14.6: a trainee's bulk action is one request per player). */
+    PunishDecision.Verdict preview(CommandSender viewer, UUID target, String targetName, Templates.Step step, boolean silent,
+                                   Punishment activeMute, Punishment activeBan, String reasonKey, Punishment recent,
+                                   PunishDecision.Escalation escalation, boolean bulk) {
+        PunishDecision.Input in = input(viewer, target, targetName, step.type(), step.duration(), step.ipWide(), silent,
+                System.currentTimeMillis());
+        return decision().decide(in.withActor(in.actor().inBulk(bulk)).withActive(activeMute, activeBan)
+                .withReason(reasonKey, false, false).withRecent(recent).withEscalation(escalation));
     }
 
     private PunishmentStore.RuleHook ruleHook(UUID target, long now) {
@@ -287,7 +331,9 @@ final class PunishmentService {
         String guardKey = r.template() == null || r.target() == null ? null
                 : DuplicateGuard.key(issuer == null ? sender.getName() : issuer.toString(), r.target(), r.template());
         boolean confirmed = guardKey != null && duplicates.consume(guardKey, now, x.duplicateConfirm());
-        PunishDecision.Input in = input(sender, r.target(), r.targetName(), r.type(), r.duration(), r.ipWide(), r.silent(), now)
+        PunishDecision.Input base = input(sender, r.target(), r.targetName(), r.type(), r.duration(), r.ipWide(), r.silent(), now);
+        // 14.6: a trainee's bulk action is one request per player when "bulk" is in training.requests-for
+        PunishDecision.Input in = base.withActor(base.actor().inBulk(r.bulk()))
                 .withReason(r.template(), r.force(), confirmed).withEscalation(r.escalation());
         PunishDecision decision = decision();
         PunishmentStore.RuleHook hook = ruleHook(r.target(), now);
@@ -341,6 +387,9 @@ final class PunishmentService {
         if (!r.bulk()) {
             offerUndo(sender, p);
         }
+        if (trainee(sender)) {
+            traineeApplied(sender, p); // 14.6: mentors see what a trainee applied directly, with [Undo]
+        }
         if (hooks != null) {
             hooks.linkReports(sender, p);
         }
@@ -380,9 +429,10 @@ final class PunishmentService {
         }
         switch (s.status()) {
             case PENDING -> {
-                notifyStaff(null, s.repeat() ? "suggest.notify-repeat" : "suggest.notify", suggestionParts(null, s));
+                notifyStaff(NotifyRules.Type.SUGGESTIONS, null, s.repeat() ? "suggest.notify-repeat" : "suggest.notify",
+                        suggestionParts(null, s));
                 for (Player staff : Bukkit.getOnlinePlayers()) {
-                    if (staff.hasPermission(ModerationModule.PERM_NOTIFY)) {
+                    if (wants(staff, NotifyRules.Type.SUGGESTIONS)) {
                         core.sounds().play(staff, "notify");
                     }
                 }
@@ -393,8 +443,8 @@ final class PunishmentService {
                 Punishment auto = t.autoPunishment();
                 details.put("id", auto.id());
                 apply(auto);
-                notifyStaff(null, s.repeat() ? "suggest.auto-repeat" : "suggest.auto", suggestionParts(null, s),
-                        Msg.p("id", auto.id()));
+                notifyStaff(NotifyRules.Type.AUTO, null, s.repeat() ? "suggest.auto-repeat" : "suggest.auto",
+                        suggestionParts(null, s), Msg.p("id", auto.id()));
                 core.audit().log(AuditCategory.PUNISHMENT, "warn_rule_auto", Actor.system("warn-rule"), s.target().toString(),
                         s.targetName(), auto.expires() == null ? null : auto.expires() - auto.created(), null, details);
                 auditPunishment(Actor.system("warn-rule"), null, auto);
@@ -402,7 +452,8 @@ final class PunishmentService {
             case SKIPPED -> {
                 PunishDecision.Verdict v = t.verdict();
                 String key = Suggestion.NOTE_EXEMPT.equals(s.note()) ? "suggest.skipped-exempt" : "suggest.skipped-already";
-                notifyStaff(null, key, suggestionParts(null, s), Msg.p("left", v == null ? "?" : v.args().getOrDefault("left", "?")));
+                notifyStaff(NotifyRules.Type.AUTO, null, key, suggestionParts(null, s),
+                        Msg.p("left", v == null ? "?" : v.args().getOrDefault("left", "?")));
                 core.audit().log(AuditCategory.PUNISHMENT, "warn_rule_skipped", Actor.system("warn-rule"), s.target().toString(),
                         s.targetName(), null, null, details);
             }
@@ -476,7 +527,8 @@ final class PunishmentService {
                         s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(), "note", Suggestion.NOTE_ALREADY));
             }
             case DISMISSED -> {
-                notifyStaff(sender, "suggest.dismissed", suggestionParts(viewer, s), Msg.p("staff", sender.getName()));
+                notifyStaff(NotifyRules.Type.SUGGESTIONS, sender, "suggest.dismissed", suggestionParts(viewer, s),
+                        Msg.p("staff", sender.getName()));
                 core.audit().log(AuditCategory.PUNISHMENT, "suggestion_dismiss", Actor.of(sender), s.target().toString(),
                         s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(),
                                 "rule", s.repeat() ? "repeat" : String.valueOf(s.ruleAt())));
@@ -490,7 +542,8 @@ final class PunishmentService {
                 if (hooks != null) {
                     hooks.linkReports(sender, p);
                 }
-                notifyStaff(sender, "suggest.applied", suggestionParts(viewer, s), Msg.p("staff", sender.getName()));
+                notifyStaff(NotifyRules.Type.SUGGESTIONS, sender, "suggest.applied", suggestionParts(viewer, s),
+                        Msg.p("staff", sender.getName()));
                 core.audit().log(AuditCategory.PUNISHMENT, "suggestion_apply", Actor.of(sender), s.target().toString(),
                         s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(), "id", p.id()));
             }
@@ -927,7 +980,131 @@ final class PunishmentService {
                 Msg.p("expires", expires), Msg.p("length", length),
                 Msg.p("date", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(p.created()))),
                 Msg.p("type", text(viewer, "types." + p.type().name().toLowerCase(Locale.ROOT))),
-                pre("target", p.targetName()), pre("appeal", appealUrl()));
+                pre("target", p.targetName()), pre("appeal", appealUrl()), ruleParts(viewer, p.template()));
+    }
+
+    // ------------------------------------------------------------------ training (P8, spec 14.6)
+
+    /**
+     * A trainee applied something directly (a warning, or any kind not in training.requests-for): approvers who get
+     * {@code approvals} alerts see it with an [Undo] that works for any approver for {@code approval.expire} (spec: "can be
+     * undone by any approver"). Kicks can't be undone, so they get the line without the button.
+     */
+    private void traineeApplied(CommandSender sender, Punishment p) {
+        Duration window = extras.get().approval().expire();
+        for (Player staff : Bukkit.getOnlinePlayers()) {
+            if (staff.equals(sender) || !staff.hasPermission(ModerationModule.PERM_APPROVE) || trainee(staff)
+                    || !wants(staff, NotifyRules.Type.APPROVALS)) {
+                continue;
+            }
+            Component button = p.type().instant() ? Component.empty() : msg.component(staff, "training.undo-button")
+                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(msg.component(staff, "training.undo-hover",
+                            parts(staff, p), Msg.p("window", PunishConfig.text(window)))))
+                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.callback(audience -> {
+                        if (audience instanceof Player clicker) {
+                            undoTrainee(clicker, p.id());
+                        }
+                    }, options -> options.uses(net.kyori.adventure.text.event.ClickCallback.UNLIMITED_USES)
+                            .lifetime(window.plus(Duration.ofMinutes(10)))));
+            msg.send(staff, "training.applied", parts(staff, p), Msg.p("staff", p.issuerName()), Msg.c("undo", button));
+        }
+    }
+
+    /** [Undo] on a trainee's punishment: any approver (not a trainee), within {@code approval.expire}. */
+    CompletableFuture<PunishmentStore.UndoResult> undoTrainee(Player staff, long id) {
+        if (!staff.hasPermission(ModerationModule.PERM_APPROVE) || trainee(staff)) {
+            msg.send(staff, "approval.no-permission");
+            core.sounds().play(staff, "error");
+            return CompletableFuture.completedFuture(null);
+        }
+        long now = System.currentTimeMillis();
+        Duration window = extras.get().approval().expire();
+        String reason = text(null, "undo.reason", Msg.p("staff", staff.getName()));
+        return store.undo(id, staff.getUniqueId(), staff.getName(), true, window, reason, now).thenApplyAsync(r -> {
+            handleUndo(staff, r, reason, window);
+            return r;
+        }, main).exceptionally(e -> {
+            core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Undo failed", e);
+            core.scheduler().ensureMain("moderation:undo", () -> msg.send(staff, "error.failed"));
+            return null;
+        });
+    }
+
+    /**
+     * A dry run (spec 14.6): tells {@code sender} what the pipeline would do, logs it as training (audit
+     * {@code dry_run} + {@code punish_dry_runs}) and shows trainees' dry runs to approvers. Applies nothing: no
+     * punishment, request or suggestion is written and the target is never told. Main thread.
+     */
+    void dryRun(CommandSender sender, UUID target, String targetName, String reasonKey, String reasonName, DryRun.Report report) {
+        Player viewer = sender instanceof Player p ? p : null;
+        boolean isTrainee = trainee(sender);
+        TagResolver tags = TagResolver.resolver(Msg.p("player", targetName), pre("target", targetName),
+                Msg.p("reason", reasonName), Msg.p("action", stepText(viewer, report.step())),
+                Msg.number("offence", report.offence()), Msg.number("bonus", report.probationBonus()),
+                Msg.p("offence-text", report.offence() <= 0 ? "" : text(viewer, "dry-run.offence",
+                        Msg.number("offence", report.offence()))),
+                Msg.p("why", report.why() == null ? "" : text(viewer, "dry-run.why." + report.why())),
+                Msg.p("staff", sender.getName()), ruleParts(viewer, reasonKey));
+        msg.send(sender, "dry-run.result." + report.outcomeId(), tags);
+        if (report.probationBonus() > 0) {
+            msg.send(sender, "dry-run.probation", tags);
+        }
+        msg.send(sender, isTrainee ? "dry-run.footer-trainee" : "dry-run.footer", tags);
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("outcome", report.outcomeId());
+        details.put("action", report.step().describe());
+        details.put("offence", report.offence());
+        if (reasonKey != null) {
+            details.put("template", reasonKey);
+        }
+        if (report.why() != null) {
+            details.put("why", report.why());
+        }
+        details.put("trainee", isTrainee);
+        core.audit().log(AuditCategory.PUNISHMENT, "dry_run", Actor.of(sender), target == null ? null : target.toString(),
+                targetName, null, viewer == null ? null : viewer.getLocation(), details);
+        if (notifier != null) {
+            notifier.store().logDryRun(new NotifyStore.DryRunRow(viewer == null ? null : viewer.getUniqueId(), sender.getName(),
+                    isTrainee, target, targetName, reasonKey, report.outcomeId().toUpperCase(Locale.ROOT),
+                    report.step().describe(), System.currentTimeMillis())).exceptionally(e -> null);
+        }
+        if (isTrainee) {
+            // "visible to seniors": mentors who get approvals alerts see a trainee's practice too
+            for (Player staff : Bukkit.getOnlinePlayers()) {
+                if (!staff.equals(sender) && staff.hasPermission(ModerationModule.PERM_APPROVE) && !trainee(staff)
+                        && wants(staff, NotifyRules.Type.APPROVALS)) {
+                    msg.send(staff, "dry-run.mentor", tags, Msg.p("outcome", text(staff, "dry-run.outcome." + report.outcomeId())));
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ rule numbers (P8, spec 14.2)
+
+    /**
+     * {@code <rule>} ("3" or "1, 3", empty without a rule), {@code <rule-title>} (titles joined with " / "),
+     * {@code <rule-link>} (the rule's link, else extras.rules-link; safe inside click tags) and {@code <rule-text>}
+     * ("Rule 3: No spam or advertising", or the rules.none text) for a stored reason id / warn-button id.
+     */
+    TagResolver ruleParts(Player viewer, String reasonId) {
+        RuleBook book = ruleBook();
+        String number = book.numberText(reasonId);
+        String title = book.titleText(reasonId, r -> ruleTitle(viewer, r));
+        String link = book.link(reasonId, extras.get().rulesLink());
+        String ruleText = number.isEmpty() ? text(viewer, "rules.none")
+                : text(viewer, book.numbers(reasonId).size() == 1 ? "rules.text" : "rules.text-many",
+                Msg.p("rule", number), Msg.p("rule-title", title));
+        return TagResolver.resolver(Msg.p("rule", number), Msg.p("rule-title", title), pre("rule-link", link),
+                Msg.p("rule-text", ruleText));
+    }
+
+    /** One rule's title: messages rules.titles.<n>, else the legacy YAML title, else "Rule n". */
+    String ruleTitle(Player viewer, RuleBook.Rule r) {
+        String key = "rules.titles." + r.number();
+        if (msg.has(key)) {
+            return text(viewer, key);
+        }
+        return r.yamlTitle() != null ? r.yamlTitle() : text(viewer, "rules.untitled", Msg.p("rule", r.number()));
     }
 
     Component banScreen(Player viewer, Punishment p) {
@@ -975,7 +1152,7 @@ final class PunishmentService {
                 : "notify." + (p.expires() != null && (p.type() == Punishment.Type.BAN || p.type() == Punishment.Type.MUTE)
                 ? "temp" + type : (p.ipWide() ? "ip" + type : type));
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (staff.hasPermission(ModerationModule.PERM_NOTIFY) || staff.equals(sender)) {
+            if (wants(staff, NotifyRules.Type.PUNISHMENTS) || staff.equals(sender)) {
                 msg.send(staff, key, parts(staff, p), Msg.p("staff", p.issuerName()), Msg.p("silent", p.silent() ? text(staff, "words.silent") : ""));
             }
         }
@@ -997,10 +1174,18 @@ final class PunishmentService {
         }
     }
 
-    /** To staff with skyblock.staff.notify, plus the sender (console included). {@code sender == null}: console log. */
+    /** A punishment-feed line (type {@code punishments}, spec 14.9), plus the sender (console included). */
     void notifyStaff(CommandSender sender, String key, TagResolver... placeholders) {
+        notifyStaff(NotifyRules.Type.PUNISHMENTS, sender, key, placeholders);
+    }
+
+    /**
+     * To staff who get alerts of {@code type} (permission {@code skyblock.staff.notify.<type>} and their /pnotify switch,
+     * spec 14.9), plus the sender (console included). {@code sender == null}: console log.
+     */
+    void notifyStaff(NotifyRules.Type type, CommandSender sender, String key, TagResolver... placeholders) {
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (staff.hasPermission(ModerationModule.PERM_NOTIFY) || staff.equals(sender)) {
+            if (wants(staff, type) || staff.equals(sender)) {
                 msg.send(staff, key, placeholders);
             }
         }
@@ -1074,6 +1259,7 @@ final class PunishmentService {
                 Msg.p("ago", Format.duration(Duration.ofMillis(Math.max(1000, now - r.created())))),
                 Msg.p("expires", Format.duration(Duration.ofMillis(Math.max(1000, r.expires() - now)))),
                 Msg.number("merges", r.merges()),
+                Msg.p("trainee", r.requesterTrainee() ? text(viewer, "training.tag") : ""),
                 Msg.p("status", text(viewer, "approval.status." + (r.expired(now) ? "expired"
                         : r.status().name().toLowerCase(Locale.ROOT)))),
                 Msg.p("date", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(r.created()))));
@@ -1112,14 +1298,14 @@ final class PunishmentService {
 
     /** Who may approve {@code r}: approvers, not the requester (unless {@code approval.self-approve}). */
     boolean mayApprove(Player staff, PunishRequest r) {
-        return staff.hasPermission(ModerationModule.PERM_APPROVE)
+        return staff.hasPermission(ModerationModule.PERM_APPROVE) && !trainee(staff) // 14.6: trainees never approve
                 && (extras.get().approval().selfApprove() || !staff.getUniqueId().equals(r.requester()));
     }
 
     /** "Alex requests: ban perm for Steve (Hacked client). [Approve] [Deny] [Open /p]" to every approver online. */
     void notifyApprovers(PunishRequest r) {
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (mayApprove(staff, r)) {
+            if (mayApprove(staff, r) && wants(staff, NotifyRules.Type.APPROVALS)) {
                 msg.send(staff, "approval.notify", requestParts(staff, r), Msg.c("approve", approveButton(staff, r)),
                         Msg.c("deny", denyButton(staff, r)));
                 core.sounds().play(staff, "notify");
@@ -1164,7 +1350,7 @@ final class PunishmentService {
      * the approver's own limits as the hard maximum. Main thread in and out.
      */
     CompletableFuture<PunishmentStore.RequestResult> approve(Player approver, long id) {
-        if (!approver.hasPermission(ModerationModule.PERM_APPROVE)) {
+        if (!approver.hasPermission(ModerationModule.PERM_APPROVE) || trainee(approver)) {
             msg.send(approver, "approval.no-permission");
             core.sounds().play(approver, "error");
             return CompletableFuture.completedFuture(null);
@@ -1191,7 +1377,7 @@ final class PunishmentService {
 
     /** [Deny] with a reason (preset or typed). The requester is told. Main thread in and out. */
     CompletableFuture<PunishmentStore.RequestResult> deny(Player staff, long id, String reason) {
-        if (!staff.hasPermission(ModerationModule.PERM_APPROVE)) {
+        if (!staff.hasPermission(ModerationModule.PERM_APPROVE) || trainee(staff)) {
             msg.send(staff, "approval.no-permission");
             core.sounds().play(staff, "error");
             return CompletableFuture.completedFuture(null);
@@ -1238,7 +1424,7 @@ final class PunishmentService {
                 if (hooks != null) {
                     hooks.linkReports(staff, p);
                 }
-                notifyStaff(staff, "approval.approved", requestParts(staff, r), Msg.p("id", p.id()));
+                notifyStaff(NotifyRules.Type.APPROVALS, staff, "approval.approved", requestParts(staff, r), Msg.p("id", p.id()));
                 auditRequest(staff, "approval_approve", r, p.id());
                 tellRequester(r);
                 core.sounds().play(staff, "success");
@@ -1246,7 +1432,8 @@ final class PunishmentService {
             }
             case DENIED -> {
                 for (Player other : Bukkit.getOnlinePlayers()) {
-                    if (other.hasPermission(ModerationModule.PERM_APPROVE) || other.equals(staff)) {
+                    if ((other.hasPermission(ModerationModule.PERM_APPROVE) && wants(other, NotifyRules.Type.APPROVALS))
+                            || other.equals(staff)) {
                         msg.send(other, "approval.denied", requestParts(other, r));
                     }
                 }

@@ -104,10 +104,11 @@ final class BulkPunish {
             planned = template.stepFor(previous);
             v = module.service().preview(staff, t.uuid(), t.name(), planned, false, t.longestActive(Punishment.Type.MUTE),
                     t.longestActive(Punishment.Type.BAN), template.id(), t.recent(template.id()),
-                    module.escalation(t, template, previous, false));
+                    module.escalation(t, template, previous, false), true);
         } else {
             planned = new Templates.Step(Punishment.Type.WARN, null, false, button.weight());
-            v = module.service().preview(staff, t.uuid(), t.name(), planned, false, null, null, button.id(), t.recent(button.id()));
+            v = module.service().preview(staff, t.uuid(), t.name(), planned, false, null, null, button.id(), t.recent(button.id()),
+                    null, true);
         }
         return BulkSelection.line(t.name(), v, planned);
     }

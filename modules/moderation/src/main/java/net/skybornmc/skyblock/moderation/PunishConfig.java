@@ -10,9 +10,16 @@ import java.util.Map;
  * One validated, immutable {@code punishments.yml}. Texts are never here (they live in {@code messages/moderation.yml});
  * this only holds ids, slots, icons, ladders and rules.
  */
-record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRules.Settings warnRules, Extras extras) {
+record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRules.Settings warnRules, Extras extras,
+                    RuleBook rules) {
 
-    static final PunishConfig EMPTY = new PunishConfig(List.of(), MenuLayout.EMPTY, WarnRules.Settings.DISABLED, Extras.DEFAULT);
+    static final PunishConfig EMPTY = new PunishConfig(List.of(), MenuLayout.EMPTY, WarnRules.Settings.DISABLED, Extras.DEFAULT,
+            RuleBook.EMPTY);
+
+    /** Without rule numbers (spec 14.2: every reason falls back to {@code extras.rules-link}). */
+    PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRules.Settings warnRules, Extras extras) {
+        this(categories, menu, warnRules, extras, RuleBook.EMPTY);
+    }
 
     PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRules.Settings warnRules) {
         this(categories, menu, warnRules, Extras.DEFAULT);
@@ -48,6 +55,8 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param raid             raid detection (13.9)
      * @param network          network-ready storage and scope filter (13.12)
      * @param sanctions        economy and item sanctions (13.1)
+     * @param training         training mode for new staff (14.6)
+     * @param notifications    notification settings: always-on types, Discord channel per type (14.9)
      */
     record Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
                   java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
@@ -55,7 +64,21 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
                   PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
                   WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal,
                   List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network,
-                  SanctionRules.Settings sanctions) {
+                  SanctionRules.Settings sanctions, Training.Settings training, NotifyRules.Settings notifications) {
+
+        /** The P7 set of keys; the P8 ones get their defaults. */
+        Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
+               java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
+               boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
+               PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
+               WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal,
+               List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network,
+               SanctionRules.Settings sanctions) {
+            this(undoWindow, duplicateWindow, duplicateConfirm, offenceExpire, statsZone, statsCache, statsPeriod, statsTop,
+                    closeReports, evidence, notes, ack, rulesLink, discord, playerView, chatSuggestions, approval, watchlist,
+                    probation, muteEnded, bulk, appeal, neverAuto, lockdown, raid, network, sanctions,
+                    Training.Settings.DEFAULT, NotifyRules.Settings.DEFAULT);
+        }
 
         /** The P6 set of keys; the P7 ones get their defaults. */
         Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
@@ -229,7 +252,7 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
         }
     }
 
-    /** Fixed button ids, in config order. Sanctions and dry run show "Not available yet" until P7/P8. */
+    /** Fixed button ids, in config order. Dry run (P8, spec 14.6) toggles the whole menu into dry-run mode. */
     static final List<String> BUTTONS = List.of("sanctions", "kick", "bulk", "history", "close", "more-reasons", "dry-run");
 
     /** Quarters of the menu, in config order. */

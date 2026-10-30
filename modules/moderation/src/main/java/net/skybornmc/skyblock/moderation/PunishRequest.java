@@ -14,7 +14,18 @@ record PunishRequest(long id, UUID target, String targetName, String reasonKey, 
                      boolean ipWide, String ip, String reason, String template, Integer ladderStep, int weight, boolean silent,
                      String source, UUID requester, String requesterName, long created, long expires, Status status,
                      Long handledAt, UUID handler, String handlerName, String denyReason, Long punishmentId, int merges,
-                     boolean notified, Long evidenceEntry) {
+                     boolean notified, Long evidenceEntry, boolean requesterTrainee) {
+
+    /** P5 shape: the requester is no trainee (P8, spec 14.6: {@code requesterTrainee} shows "Alex (trainee)"). */
+    PunishRequest(long id, UUID target, String targetName, String reasonKey, Punishment.Type type, Long durationMs,
+                  boolean ipWide, String ip, String reason, String template, Integer ladderStep, int weight, boolean silent,
+                  String source, UUID requester, String requesterName, long created, long expires, Status status,
+                  Long handledAt, UUID handler, String handlerName, String denyReason, Long punishmentId, int merges,
+                  boolean notified, Long evidenceEntry) {
+        this(id, target, targetName, reasonKey, type, durationMs, ipWide, ip, reason, template, ladderStep, weight, silent,
+                source, requester, requesterName, created, expires, status, handledAt, handler, handlerName, denyReason,
+                punishmentId, merges, notified, evidenceEntry, false);
+    }
 
     /** A request without log evidence (P4 shape). */
     PunishRequest(long id, UUID target, String targetName, String reasonKey, Punishment.Type type, Long durationMs,
