@@ -60,6 +60,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - E5 armor enchants on wardrobe set pieces
+- P10 punishments: monthly report + Honorable title (last Phase P item)
 - TUNE (E4 + W4): enchant + set factors in the economy model
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
 
