@@ -80,6 +80,9 @@ protection:
     notes-read: "read the island notes"
     notes-write: "add notes, tick them and change their own"
     notes-manage: "change, pin and delete anyone's notes"
+    bank-deposit: "put money in the island bank"
+    bank-withdraw: "take money out of the island bank"
+    bank-history: "see the island bank history"
 
 bypass:
   "on": "<prefix><c:warning><sym:cross></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>(logged, /is bypass to stop)"
@@ -250,9 +253,16 @@ menu:
     lore:
       - "<c:muted>Coming soon"
   bank:
+    name: "<c:value>Island bank"
+    lore:
+      - "<c:text>Shared money of the island."
+      - "<c:text>Earns interest every few hours."
+      - ""
+      - "<c:action><sym:bullet> Click to open"
+  bank-off:
     name: "<c:muted>Island bank"
     lore:
-      - "<c:muted>Coming soon"
+      - "<c:muted>Not available right now"
   upgrades:
     name: "<c:muted>Upgrades"
     lore:
@@ -712,6 +722,9 @@ perms:
     notes-read: "Read notes"
     notes-write: "Write notes"
     notes-manage: "Manage notes"
+    bank-deposit: "Bank deposit"
+    bank-withdraw: "Bank withdraw"
+    bank-history: "Bank history"
 
 # ---------------------------------------------------------------- M2.7 lifecycle (/is disband) and staff tools (/isadmin)
 disband:

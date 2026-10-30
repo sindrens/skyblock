@@ -145,6 +145,34 @@ public interface IslandService {
         return 0;
     }
 
+    // ------------------------------------------------------------------ island bank (M3.3)
+
+    /** Island permission key: put money into the island bank. */
+    String PERM_BANK_DEPOSIT = "bank-deposit";
+    /** Island permission key: take money out of the island bank. */
+    String PERM_BANK_WITHDRAW = "bank-withdraw";
+    /** Island permission key: see the island bank history (who put in and took out what). */
+    String PERM_BANK_HISTORY = "bank-history";
+
+    /**
+     * True if {@code player} (a member key or an online player's UUID) has the island permission {@code permissionKey}
+     * (e.g. {@link #PERM_BANK_WITHDRAW}) on the island through their role. The leader has every permission; coop players and
+     * visitors never have management rights such as the bank ones. False for unknown islands/keys. Main thread.
+     */
+    default boolean hasIslandPermission(UUID islandId, UUID player, String permissionKey) {
+        return false;
+    }
+
+    /** Upgrade hook (Phase 5 "Bank Capacity"): the island's level, 0 until upgrades exist. Main thread. */
+    default int bankCapacityLevel(UUID islandId) {
+        return 0;
+    }
+
+    /** Upgrade hook (Phase 5 "Bank Interest"): the island's level, 0 until upgrades exist. Main thread. */
+    default int bankInterestLevel(UUID islandId) {
+        return 0;
+    }
+
     // ------------------------------------------------------------------ members (M2.3)
 
     /**
