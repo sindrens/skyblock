@@ -31,10 +31,6 @@ public final class ShopSettings extends ModuleConfig {
             + "2304 = 36 full stacks.", min = 1, max = 100_000)
     public int maxAmount = 2_304;
 
-    @Setting(path = "buy.confirm-above", desc = "Purchases costing at least this much money ask to confirm first. "
-            + "0 = always ask.", min = 0, level = Setting.Level.OWNER)
-    public long confirmAbove = 100_000;
-
     @Setting(path = "buy.picker-steps", desc = "Step buttons of the amount screen (smallest first, up to 3): -64 -16 -1 / "
             + "+1 +16 +64 by default.")
     public List<String> pickerSteps = List.of("1", "16", "64");
