@@ -1,0 +1,102 @@
+[
+ {
+  "id": "DV-1",
+  "a": "Depths v2",
+  "f": "Zones",
+  "q": "Combat zones hold 2 tiers each (C1 Graveyard + Crypt, C2 Spider Den + Slime Bog ... C5 Wither Keep + Citadel)?",
+  "s": "Yes",
+  "c": "",
+  "w": "Halves the builds and fills each zone with people. The two built arenas join into C1.",
+  "p": 0
+ },
+ {
+  "id": "DV-2",
+  "a": "Depths v2",
+  "f": "Zones",
+  "q": "Mine zones hold 3/3/2/2/2 tiers and Forest zones 3/3/2/2/1 tiers?",
+  "s": "Yes",
+  "c": "",
+  "w": "Early tiers go fast, so they share zones; late tiers are long, so fewer per zone.",
+  "p": 0
+ },
+ {
+  "id": "DV-3",
+  "a": "Depths v2",
+  "f": "Boss areas",
+  "q": "One dungeon boss hall after combat zone 5, plus one world boss arena for the big bosses?",
+  "s": "Yes",
+  "c": "",
+  "w": "That is how I read \"+1 on dungeon for boss\" and \"main boss area\".",
+  "p": 0
+ },
+ {
+  "id": "DV-4",
+  "a": "Depths v2",
+  "f": "Gates",
+  "q": "One gate per zone (15 instead of 33), opening at the zone's first tier level. Higher tiers inside unlock by skill level with no gate?",
+  "s": "Yes",
+  "c": "",
+  "w": "Fewer walls, less walking. The upgrade happens around you.",
+  "p": 0
+ },
+ {
+  "id": "DV-5",
+  "a": "Depths v2",
+  "f": "The unlock moment",
+  "q": "When you unlock a tier, your blocks change in place with a big moment (particle wave, sound, title \"Iron unlocked!\"). In combat it waits until you are 5 s out of a fight. No extra \"Switch now\" button?",
+  "s": "Yes",
+  "c": "",
+  "w": "This is the most fun moment of the Depths, so make it feel great and keep it automatic. Lower tiers are picked in /dungeon when you need old materials.",
+  "p": 0
+ },
+ {
+  "id": "DV-6",
+  "a": "Depths v2",
+  "f": "Combat: simpler version",
+  "q": "Layered mobs (each player only sees their own tier's mobs) is the most advanced part: other players swing at nothing, friends must pick the same tier to fight together, and every mob ability (arrows, potions, roars) needs a filter. Use the simpler version instead: each combat zone has one area per tier (graveyard above, crypt below) and everyone sees the same mobs?",
+  "s": "Yes, simpler version",
+  "c": "You picked (D3): layered mobs from the start",
+  "w": "Same fun, easy to understand, far fewer bugs, and fights look alive because you see other people fight real mobs. The block trick (coal turns to iron) stays for mine and forest, where it is simple. No = keep layered mobs.",
+  "p": 0
+ },
+ {
+  "id": "DV-7",
+  "a": "Depths v2",
+  "f": "Visibility",
+  "q": "One setting in /settings: see Everyone / Friends + island / Nobody. No \"pin a player\" feature?",
+  "s": "Yes",
+  "c": "",
+  "w": "Less is more: three choices cover it. Pins add a button and rules nobody needs at launch.",
+  "p": 0
+ },
+ {
+  "id": "DV-8",
+  "a": "Depths v2",
+  "f": "Visibility",
+  "q": "You see other players (by your setting), but always your own blocks: a friend on iron looks like he mines your coal?",
+  "s": "Yes",
+  "c": "",
+  "w": "Normal phasing. A help hologram at each gate explains \"everyone sees their own tier\".",
+  "p": 0
+ },
+ {
+  "id": "DV-9",
+  "a": "Depths v2",
+  "f": "Order",
+  "q": "A short test first (2-3 days: the coal field and one combat zone, you test with Java + Bedrock) before the full build?",
+  "s": "Yes",
+  "c": "",
+  "w": "If Bedrock can't show it right, we find out in days, not weeks.",
+  "p": 0
+ },
+ {
+  "id": "DV-10",
+  "a": "Depths v2",
+  "f": "Boss hall",
+  "q": "The boss hall opens after you have killed the zone 5 mini-boss once (no key needed)?",
+  "s": "Yes",
+  "c": "",
+  "w": "One clear goal, nothing to farm or trade.",
+  "p": 0
+ }
+]
