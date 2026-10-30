@@ -21,6 +21,15 @@ while IFS= read -r f; do
   [ "$f" = "$BASE" ] || [ "$f" = "$LEGACY" ] || FILES+=("$f")
 done < <(find permissions -maxdepth 1 -type f -name '*.txt' | LC_ALL=C sort)
 
+# Skip when nothing changed since the last apply: LuckPerms keeps its data, and re-sending ~260 commands on every
+# restart floods online staff with "[LP] LOG" lines. FORCE=1 re-applies anyway.
+STAMP=permissions/.applied.sha
+HASH="$(cat "${FILES[@]}" | sha256sum | cut -d' ' -f1)"
+if [ "${FORCE:-0}" != "1" ] && [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$HASH" ]; then
+  echo "Permissions unchanged since the last apply; skipped (FORCE=1 to re-apply)."
+  exit 0
+fi
+
 echo "Waiting for the server to finish starting..."
 for _ in $(seq 1 180); do
   if tmux has-session -t skyblock 2>/dev/null && [ -f "$LOG" ] \
@@ -44,4 +53,5 @@ for FILE in "${FILES[@]}"; do
     sleep 0.2
   done < "$FILE"
 done
+echo "$HASH" > "$STAMP"
 echo "Applied $COUNT permission commands from ${#FILES[@]} file(s)."
