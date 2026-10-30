@@ -41,7 +41,10 @@ rules:
   3: { link: "https://skybornmc.net/rules" }    # No duping or bug abuse
   4: { link: "https://skybornmc.net/rules" }    # No spam, ads or scams
   5: { link: "https://skybornmc.net/rules" }    # No real-money trading
-  6: { link: "https://skybornmc.net/rules" }    # Staff decisions are final
+  6: { link: "https://skybornmc.net/rules" }    # Staff decisions are final unless appealed (owner answer 321)
+  7: { link: "https://skybornmc.net/rules" }    # English only in public chat (owner answers 305/322)
+  8: { link: "https://skybornmc.net/rules" }    # No alt abuse (owner answer 322)
+  9: { link: "https://skybornmc.net/rules" }    # No macros or AFK farming outside the AFK pool (owner answer 322)
 
 categories:
   cheating:
@@ -59,12 +62,12 @@ categories:
         offence-expire: perm        # cheating never expires (owner spec 12.3)
       macro:
         icon: STONE_BUTTON
-        rule: 2
+        rule: 9
         ladder: ["warn", "ban 3d", "ban 14d", "ban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
       alt-abuse:
         icon: PLAYER_HEAD
-        rule: 2
+        rule: 8
         ladder: ["ipban perm"]
         offence-expire: perm        # cheating never expires (owner spec 12.3)
         appealable: false           # owner spec 13.10: no appeals for alt abuse
@@ -113,6 +116,7 @@ categories:
         ladder: ["warn", "ban 1d", "ban 7d", "ban 30d"]
       afk-farming:
         icon: CLOCK
+        rule: 9
         ladder: ["warn", "kick", "ban 1d", "ban 7d"]
         probation: false            # small stuff (bottom-right quarter of /p): no probation
       rmt:
@@ -166,6 +170,7 @@ menu:
     history: { slot: 48, icon: WRITABLE_BOOK }
     close: { slot: 49, icon: BARRIER }
     more-reasons: { slot: 50, icon: BOOKSHELF }
+    silent: { slot: 51, icon: GRAY_DYE }           # owner answer 500: no public ban/mute line (the menu's -s)
     dry-run: { slot: 52, icon: GRAY_DYE }          # P8
 
   # Four quarters (owner decision). Reason ids come from categories above.

@@ -60,6 +60,10 @@ style:
 # <retry> = the [Try again] click when the feature offers one (else empty).
 teleport:
   warmup: "<prefix><c:text>Teleporting to <c:value><destination></c:value> in <c:value><seconds>s</c:value>. Don't move."
+  # Owner answers 285/345: instant teleports wait (teleport.yml danger.warmup-seconds) while in combat or a combat zone.
+  warmup-danger: "<prefix><c:text>You're in combat. Teleporting to <c:value><destination></c:value> in <c:value><seconds>s</c:value>. Don't move."
+  # Owner answer 413: the warzone (teleport.yml portal-only-worlds) is entered through its portal only. <world>
+  portal-only: "<prefix><c:error><sym:cross></c:error> <c:text>You can only enter the <c:value><world></c:value> through its portal at spawn."
   countdown: "<c:ember><sym:time></c:ember> <c:text>Teleporting to <c:value><destination></c:value> in <c:value><seconds></c:value>..."
   cancelled:
     moved: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you moved.<retry>"

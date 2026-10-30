@@ -46,7 +46,8 @@ lp group mod permission set skyblock.staff.punish.bulk true
 lp group mod permission set skyblock.staff.appeals true
 
 # --- Phase P, P6: raid lockdown, anticheat suggestions ---
-# Every rank above default is never affected by a chat lockdown (spec 13.9); mod/admin/owner inherit it from helper.
+# Every rank above default is never affected by a chat lockdown (spec 13.9, owner answer 460: donor ranks too); mod/admin/owner
+# inherit it from helper. The code also exempts any LuckPerms group with weight > 0, so new donor groups are covered at once.
 lp group ember permission set skyblock.lockdown.bypass true
 lp group builder permission set skyblock.lockdown.bypass true
 lp group helper permission set skyblock.lockdown.bypass true

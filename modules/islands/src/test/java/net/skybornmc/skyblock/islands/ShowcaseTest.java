@@ -51,4 +51,27 @@ class ShowcaseTest {
         assertEquals(1, stats.withLike().likes());
         assertEquals(1, stats.withVisit().visits());
     }
+
+    @Test
+    void discoverListsEveryIslandFavouringPlaytime() {
+        java.util.Map<UUID, Long> playtime = java.util.Map.of(A, 0L, B, 500L * 3600, C, 0L);
+        java.util.Random random = new java.util.Random(42);
+        int bFirst = 0;
+        for (int i = 0; i < 2000; i++) {
+            List<Showcase.Entry> list = Showcase.discover(entries, id -> playtime.getOrDefault(id, 0L), 1.0, random);
+            assertEquals(3, list.size(), "every island is listed (owner answer 290)");
+            if (list.get(0).islandId().equals(B)) {
+                bFirst++;
+            }
+        }
+        // weight of B = 1 + ln(501) = 7.2 against 1 + 1: B leads about 7.2 / 9.2 = 78% of the time
+        org.junit.jupiter.api.Assertions.assertTrue(bFirst > 1400 && bFirst < 1700, "B first " + bFirst + " of 2000");
+        int aFirst = 0;
+        for (int i = 0; i < 3000; i++) {
+            if (Showcase.discover(entries, id -> 0L, 1.0, random).get(0).islandId().equals(A)) {
+                aFirst++;
+            }
+        }
+        org.junit.jupiter.api.Assertions.assertTrue(aFirst > 850 && aFirst < 1150, "no playtime: plain random, " + aFirst);
+    }
 }

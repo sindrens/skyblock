@@ -72,6 +72,11 @@ final class KickBackupsMenu extends PagedMenu<KickBackupStore.Backup> {
                 Msg.p("by", b.kickedBy()), Msg.p("date", formatter.format(Instant.ofEpochMilli(b.createdAt()))),
                 Msg.p("state", module.raw("admin.restore.state." + state)), Msg.p("id", b.id())};
         List<Component> lore = new ArrayList<>(lines("admin.restore.entry.lore", p));
+        if (b.islandRemoval()) {
+            // Owner answer 591: a backup from a disband or reset (no island to rejoin), maybe with the island bank money.
+            lore.addAll(lines("admin.restore.entry.removal", Msg.p("removal", module.raw("admin.restore.removal." + b.removal())),
+                    Msg.p("bank", b.bankMoney() == null ? "-" : Format.number(b.bankMoney()))));
+        }
         if (!"restored".equals(state)) {
             lore.addAll(lines("admin.restore.entry.click"));
         }

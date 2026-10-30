@@ -29,7 +29,7 @@ skyblock.staff.back:
   description: Return to the previous location or death point (/back)
   default: op
 skyblock.staff.home:
-  description: Staff homes (/home, /sethome, /delhome)
+  description: Staff homes (/shome, /setshome, /delshome)
   default: op
 skyblock.staff.gamemode:
   description: Use /gm (each mode needs its own permission below)

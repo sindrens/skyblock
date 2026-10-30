@@ -579,7 +579,7 @@ topics:
           - "<c:value>/craft</c:value> <c:text>crafting table anywhere,"
           - "<c:value>/ec</c:value> <c:text>your ender chest anywhere,"
           - "<c:value>/hat</c:value> <c:text>wear any block,"
-          - "<c:value>/nick</c:value> <c:text>a nickname,</c:text> <c:value>/trash</c:value> <c:text>a trash can."
+          - "<c:value>/nick</c:value> <c:text>a nickname."
       - title: "<c:value>Nicknames"
         lines:
           - "<c:text>Letters, numbers and _ only, 3-16 long."
@@ -1097,6 +1097,11 @@ topics:
         lines:
           - "<c:text>Every staff action is stored in the"
           - "<c:text>audit log with who, what and when."
+      - title: "<c:value>Chat language"
+        lines:
+          - "<c:text>Public chat is English only (rule 7)."
+          - "<c:text>Ask nicely first; warn if it goes on."
+          - "<c:text>Private messages may be any language."
 
   display:
     icon: painting

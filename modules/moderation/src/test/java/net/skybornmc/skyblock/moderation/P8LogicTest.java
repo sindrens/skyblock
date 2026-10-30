@@ -42,7 +42,10 @@ class P8LogicTest {
             PunishConfigParser.Result r = parse(Files.readString(file));
             assertTrue(r.ok(), file + ": " + r.errors());
             RuleBook book = r.config().rules();
-            assertEquals(Set.of(1, 2, 3, 4, 5, 6), book.rules().keySet());
+            assertEquals(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9), book.rules().keySet(), "owner answers 321/322");
+            assertEquals(List.of(8), book.numbers("alt-abuse"));
+            assertEquals(List.of(9), book.numbers("macro"));
+            assertEquals(List.of(9), book.numbers("afk-farming"));
             assertEquals(List.of(4), book.numbers("spam"));
             assertEquals(List.of(2), book.numbers("hacking"));
             assertEquals(List.of(5), book.numbers("rmt"));
@@ -53,7 +56,7 @@ class P8LogicTest {
             // reasons without a rule fall back to extras.rules-link (allowed, listed in OPEN_QUESTIONS)
             Templates t = new Templates();
             t.use(r.config());
-            assertEquals(List.of("report-abuse", "griefing", "afk-farming", "coop-griefing", "warn-rules", "warn-other"),
+            assertEquals(List.of("report-abuse", "griefing", "coop-griefing", "warn-rules", "warn-other"),
                     book.withoutRule(t.reasonIds()));
             assertEquals("https://skybornmc.net/rules", book.link("griefing", r.config().extras().rulesLink()));
         }
@@ -77,18 +80,18 @@ class P8LogicTest {
     @Test
     void unknownRuleNumberIsAConfigErrorWithFileLineAndReason() throws Exception {
         String base = Files.readString(BUNDLED);
-        PunishConfigParser.Result r = parse(base.replaceFirst("(?m)^        rule: 4$", "        rule: 9"));
+        PunishConfigParser.Result r = parse(base.replaceFirst("(?m)^        rule: 4$", "        rule: 12"));
         assertFalse(r.ok(), "a reason may only point to a rule that exists");
         ConfigProblem p = r.errors().getFirst();
         assertEquals("config.unknown-rule", p.key());
-        assertEquals("9", p.arg("value"));
+        assertEquals("12", p.arg("value"));
         assertEquals("spam", p.arg("id"));
         assertTrue(p.path().endsWith("spam.rule"), p.path());
         assertTrue(p.line() > 0, "with a line number");
-        assertEquals("1, 2, 3, 4, 5, 6", p.arg("rules"));
+        assertEquals("1, 2, 3, 4, 5, 6, 7, 8, 9", p.arg("rules"), "owner answers 321/322: rules 7-9 were added");
 
         PunishConfigParser.Result list = parse(base.replace("warn-caps-spam: { slot: 28, icon: WRITABLE_BOOK, rule: 4 }",
-                "warn-caps-spam: { slot: 28, icon: WRITABLE_BOOK, rule: [4, 7] }"));
+                "warn-caps-spam: { slot: 28, icon: WRITABLE_BOOK, rule: [4, 17] }"));
         assertFalse(list.ok(), "every number of a list is checked, warn buttons too");
         assertEquals("warn-caps-spam", list.errors().getFirst().arg("id"));
 

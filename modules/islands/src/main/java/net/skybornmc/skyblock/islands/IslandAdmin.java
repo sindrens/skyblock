@@ -65,6 +65,8 @@ final class IslandAdmin {
     static final String PERM_STATS_RESET = "skyblock.island.admin.stats.reset";
     /** Owner answer 251: restore a kicked member from their kick backup (admins only). */
     static final String PERM_RESTORE = "skyblock.island.admin.restore";
+    /** Owner answer 293: hide an island from the visit browser with a note (mods and up). */
+    static final String PERM_HIDE = "skyblock.island.admin.hide";
 
     private static final int CONFIRM_SECONDS = 30;
 
@@ -105,9 +107,12 @@ final class IslandAdmin {
         Arg<String> statsResetIsland = islandArg();
         Arg<String> restorePlayer = Args.word("player", Suggest.bySender(sender -> module.kickBackups() == null ? List.of()
                 : module.kickBackups().names()));
+        Arg<String> hideIsland = islandArg();
+        Arg<String> hideNote = Args.text("note", "build", "offensive", "report");
+        Arg<String> unhideIsland = Args.word("island", Suggest.bySender(sender -> hiddenOwnerNames()));
         Predicate<CmdContext> console = ctx -> !(ctx.sender() instanceof Player);
         core.commands().register(CommandSpec.command("isadmin")
-                .description("Staff: island tools (info, teleport, delete, size, members, owner, reset, restore, slots, stats)").category("Staff")
+                .description("Staff: island tools (info, teleport, delete, size, members, owner, reset, restore, hide, slots, stats)").category("Staff")
                 .permission(PERM_ROOT)
                 .sub(CommandSpec.sub("info").description("Island details: owner, members, slot, size, home").permission(PERM_INFO)
                         .arg(infoIsland).example("isadmin info Steve")
@@ -148,6 +153,14 @@ final class IslandAdmin {
                 .sub(CommandSpec.sub("restore").description("Kick backups of a player: restore role, money and items (confirm)")
                         .permission(PERM_RESTORE).playerOnly().arg(restorePlayer).example("isadmin restore Alex")
                         .executes(ctx -> restore(ctx.player(), ctx.get(restorePlayer))))
+                // Owner answer 293: hide an island from the visit browser (still visitable by name), with a note
+                .sub(CommandSpec.sub("hide").description("Hide an island from the visit browser, with a note (logged)").permission(PERM_HIDE)
+                        .arg(hideIsland).optional(hideNote).example("isadmin hide Steve offensive build")
+                        .executes(ctx -> module.visits().setBrowserHidden(ctx.sender(), resolve(ctx.get(hideIsland)), true,
+                                ctx.getOr(hideNote, null))))
+                .sub(CommandSpec.sub("unhide").description("Show a hidden island in the visit browser again (logged)").permission(PERM_HIDE)
+                        .arg(unhideIsland).example("isadmin unhide Steve")
+                        .executes(ctx -> module.visits().setBrowserHidden(ctx.sender(), resolve(ctx.get(unhideIsland)), false, null)))
                 .sub(CommandSpec.sub("slots").description("Grid overview: every slot, used, clearing or free").permission(PERM_SLOTS)
                         .playerOnly().example("isadmin slots")
                         .executes(ctx -> openSlots(ctx.player(), null)))
@@ -236,6 +249,20 @@ final class IslandAdmin {
             List<String> names = new ArrayList<>();
             for (Island island : List.copyOf(islands.islands())) {
                 names.add(islands.ownerName(island));
+            }
+            names.sort(String.CASE_INSENSITIVE_ORDER);
+            return names;
+        });
+    }
+
+    /** Leaders of islands staff hid from the visit browser (unhide suggestions). */
+    private List<String> hiddenOwnerNames() {
+        return safely(() -> {
+            List<String> names = new ArrayList<>();
+            for (Island island : List.copyOf(islands.islands())) {
+                if (island.browserHidden()) {
+                    names.add(islands.ownerName(island));
+                }
             }
             names.sort(String.CASE_INSENSITIVE_ORDER);
             return names;
@@ -338,6 +365,9 @@ final class IslandAdmin {
                 msg.send(sender, "admin.info.member", Msg.p("player", islands.name(entry.uuid())), Msg.p("role", role),
                         Msg.p("date", module.config().dateFormatter().format(Instant.ofEpochMilli(island.joinedAt(entry.uuid())))));
             }
+        }
+        if (island.browserHidden()) {
+            msg.send(sender, "admin.info.hidden", Msg.p("note", island.browserHiddenNote() == null ? "-" : island.browserHiddenNote()));
         }
         msg.send(sender, "admin.info.actions", MemberManager.command("owner", owner));
         staffLog(sender, "info", island, Map.of());

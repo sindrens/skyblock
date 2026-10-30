@@ -140,19 +140,19 @@ final class TeleportCommands extends CommandGroup implements Listener {
                 .permission(Perms.BACK).playerOnly()
                 .executes(ctx -> back(ctx.player())));
 
-        // Staff homes
+        // Staff homes (owner answer 347: /home and /sethome are the island's now, staff use /shome)
         Arg<String> homeName = homeArg("name");
-        core.commands().register(CommandSpec.command("home")
+        core.commands().register(CommandSpec.command("shome")
                 .description("Teleport to one of your staff homes").category("Staff")
-                .permission(Perms.HOME).playerOnly().optional(homeName).aliases("homes")
+                .permission(Perms.HOME).playerOnly().optional(homeName).aliases("shomes")
                 .executes(ctx -> home(ctx.player(), ctx.getOr(homeName, null))));
         Arg<String> newHome = Args.word("name", Suggest.of("home", "spawn-build", "depths", "warzone"));
-        core.commands().register(CommandSpec.command("sethome")
+        core.commands().register(CommandSpec.command("setshome")
                 .description("Save your location as a staff home").category("Staff")
                 .permission(Perms.HOME).playerOnly().optional(newHome)
                 .executes(ctx -> setHome(ctx.player(), ctx.getOr(newHome, "home"))));
         Arg<String> delName = homeArg("name");
-        core.commands().register(CommandSpec.command("delhome")
+        core.commands().register(CommandSpec.command("delshome")
                 .description("Delete a staff home").category("Staff")
                 .permission(Perms.HOME).playerOnly().arg(delName)
                 .executes(ctx -> delHome(ctx.player(), ctx.get(delName))));

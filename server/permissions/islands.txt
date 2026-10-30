@@ -28,6 +28,8 @@ lp group admin permission set skyblock.island.admin.slots true
 lp group admin permission set skyblock.island.admin.teleport-slot true
 # Owner answers 142/251: only admins restore a kicked member from their kick backup (/isadmin restore, logged).
 lp group admin permission set skyblock.island.admin.restore true
+# Owner answer 293: staff hide an island from the visit browser with a note (/isadmin hide|unhide, logged). Mods and up.
+lp group mod permission set skyblock.island.admin.hide true
 
 # Islands round 2 (ISL2): /is settings, /is invites use skyblock.island (everyone); the island role and the
 # "settings" role permission decide who may change settings. Island fly (skyblock.island.fly) is a perk: no rank gets it

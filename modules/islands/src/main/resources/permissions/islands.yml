@@ -53,6 +53,9 @@ skyblock.island.admin.reset:
 skyblock.island.admin.restore:
   description: Staff - /isadmin restore <player> restores a kicked member from their kick backup (role, money, items; confirm)
   default: op
+skyblock.island.admin.hide:
+  description: Staff - /isadmin hide <island> [note] and /isadmin unhide <island> hide an island from the visit browser (logged)
+  default: op
 skyblock.island.admin.slots:
   description: Staff - /isadmin slots opens the grid overview (used, clearing, free slots)
   default: op

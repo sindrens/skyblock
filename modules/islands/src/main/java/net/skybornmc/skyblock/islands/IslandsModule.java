@@ -563,6 +563,15 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("bypass").description("Staff: toggle island protection bypass (logged)").permission(PERM_BYPASS)
                         .playerOnly().example("is bypass")
                         .executes(ctx -> protection.toggleBypass(ctx.player()))));
+        // Owner answer 347: players type /home and /sethome for their island (staff homes moved to /shome).
+        core.commands().register(CommandSpec.command("home")
+                .description("Teleport to your island home (same as /is home)").category("Island").permission(PERM_USE)
+                .playerOnly().cooldown(Duration.ofSeconds(3))
+                .executes(ctx -> manager.teleportHome(ctx.player())));
+        core.commands().register(CommandSpec.command("sethome")
+                .description("Set your island home where you stand (same as /is sethome; leader/mod)").category("Island")
+                .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(3))
+                .executes(ctx -> manager.setHome(ctx.player())));
     }
 
     // ------------------------------------------------------------------ island profiles (PROF)

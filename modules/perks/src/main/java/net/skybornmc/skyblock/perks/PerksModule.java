@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Rank perks ({@code /craft}, {@code /ec}, {@code /hat}, {@code /nick}, {@code /trash}), {@code /freerank} and restricted staff tools
+ * Rank perks ({@code /craft}, {@code /ec}, {@code /hat}, {@code /nick}), the admin {@code /trash} (owner answer 376), {@code /freerank} and restricted staff tools
  * ({@code /setnick}, {@code /realname}, {@code /repair}, {@code /sudo}).
  *
  * <p>Rank perks are permission-gated; donor ranks arrive with the store (Phase 11), so for now only staff/ops have them.</p>
@@ -227,7 +227,7 @@ public final class PerksModule implements SkyblockModule {
                 .executes(ctx -> realName(ctx.sender(), ctx.get(realArg))));
 
         commands.register(CommandSpec.command("trash")
-                .description("Open a trash can to destroy items").category("Perks")
+                .description("Open a trash can to destroy items (admins)").category("Staff")
                 .permission(PERM_TRASH).playerOnly().aliases("disposal")
                 .executes(ctx -> trash.open(ctx.player())));
 
@@ -347,6 +347,16 @@ public final class PerksModule implements SkyblockModule {
         }
         if (NickRules.impersonates(nick.plain(), target.getName(), core.players().knownNames())) {
             throw new CommandFailure(ID, "nick.is-player");
+        }
+        // Owner answer 304: nicknames go through the chat filter (a changed or blocked nick is refused).
+        if (!sender.hasPermission(PERM_NICK_BYPASS)) {
+            var filter = core.services().optional(net.skybornmc.skyblock.common.text.TextFilter.class);
+            if (filter.isPresent()) {
+                var result = filter.get().check(sender instanceof Player p ? p : null, nick.plain());
+                if (result.isBlocked() || !result.text().equalsIgnoreCase(nick.plain())) {
+                    throw new CommandFailure(ID, "nick.filtered");
+                }
+            }
         }
         String old = nicks.nick(target.getUniqueId()).map(NickService.StoredNick::formatted).orElse(null);
         String setBy = sender instanceof Player p ? p.getUniqueId().toString() : sender.getName();

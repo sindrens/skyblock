@@ -18,7 +18,9 @@ final class AppealRules {
 
     /** Why an appeal is refused (message keys {@code appeal.problem.<kebab>}). */
     enum Problem {
-        DISABLED, NOTHING, NOT_FOUND, NOT_YOURS, NOT_ACTIVE, TYPE, REASON, ALREADY_OPEN, COOLDOWN, TOO_SHORT, TOO_LONG;
+        DISABLED, NOTHING, NOT_FOUND, NOT_YOURS, NOT_ACTIVE, TYPE, REASON, ALREADY_OPEN, COOLDOWN, TOO_SHORT, TOO_LONG,
+        /** Owner answer 423: a permanent ban can only be appealed after a wait (30 days, cheating 90). */
+        TOO_EARLY;
 
         String key() {
             return "appeal.problem." + name().toLowerCase(Locale.ROOT).replace('_', '-');
@@ -33,6 +35,12 @@ final class AppealRules {
      */
     static Optional<Problem> canAppeal(Punishment p, UUID player, List<Appeal> previous, boolean reasonAppealable,
                                        PunishConfig.Appeals cfg, long now) {
+        return canAppeal(p, player, previous, reasonAppealable, cfg, now, null);
+    }
+
+    /** Same, with owner answer 423: {@code earliest} = first moment an appeal is possible ({@code null} = any time). */
+    static Optional<Problem> canAppeal(Punishment p, UUID player, List<Appeal> previous, boolean reasonAppealable,
+                                       PunishConfig.Appeals cfg, long now, Long earliest) {
         if (!cfg.enabled()) {
             return Optional.of(Problem.DISABLED);
         }
@@ -51,6 +59,9 @@ final class AppealRules {
         if (!reasonAppealable) {
             return Optional.of(Problem.REASON);
         }
+        if (earliest != null && now < earliest) {
+            return Optional.of(Problem.TOO_EARLY);
+        }
         if (previous.stream().anyMatch(Appeal::open)) {
             return Optional.of(Problem.ALREADY_OPEN);
         }
@@ -59,6 +70,21 @@ final class AppealRules {
             return Optional.of(Problem.COOLDOWN);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Owner answer 423: when a permanent ban can first be appealed: {@code permBanWaitDays} after it was given, or
+     * {@code cheatingWaitDays} when its reason belongs to a cheating category. {@code null} = no wait (temporary bans,
+     * mutes, or a wait of 0 days).
+     */
+    static Long earliestAppeal(Punishment p, String category, int permBanWaitDays, int cheatingWaitDays,
+                               java.util.Collection<String> cheatingCategories) {
+        if (p == null || p.type() != Punishment.Type.BAN || p.expires() != null) {
+            return null;
+        }
+        boolean cheating = category != null && cheatingCategories.stream().anyMatch(category::equalsIgnoreCase);
+        int days = cheating ? cheatingWaitDays : permBanWaitDays;
+        return days <= 0 ? null : p.created() + Duration.ofDays(days).toMillis();
     }
 
     /**

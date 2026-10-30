@@ -26,6 +26,22 @@ public interface TeleportService {
 
     void addGuard(Guard guard);
 
+    /**
+     * A combat zone owned by a module (the Depths boss arena and combat tiers, events). Inside one, and while
+     * combat-tagged, every player teleport waits {@code teleport.yml → danger.warmup-seconds} (owner answers 285/345).
+     */
+    @FunctionalInterface
+    interface DangerZone {
+        boolean contains(Player player);
+    }
+
+    void addDangerZone(DangerZone zone);
+
+    void removeDangerZone(DangerZone zone);
+
+    /** True while the player is combat-tagged or inside a combat zone (danger worlds or a module's {@link DangerZone}). */
+    boolean inDanger(Player player);
+
     void removeGuard(Guard guard);
 
     /** The first guard's denial reason, if any guard forbids this destination. */

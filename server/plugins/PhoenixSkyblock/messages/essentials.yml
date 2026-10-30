@@ -66,13 +66,13 @@ back:
   none: "<prefix><c:error><sym:cross></c:error> <c:text>No last spot to go back to."
 
 home:
-  none: "<prefix><c:error><sym:cross></c:error> <c:text>No staff homes yet. Set one with <c:value>/sethome [name]</c:value>."
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>No staff homes yet. Set one with <c:value>/setshome [name]</c:value>."
   list: "<prefix><c:text>Your homes: <c:value><homes></c:value>. <c:muted>Use /home <name>."
   unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No home <c:value><name></c:value>. Yours: <c:value><homes>"
   done: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to home <c:value><name></c:value>."
   set: "<prefix><c:success><sym:check></c:success> <c:text>Home <c:value><name></c:value> set here."
   deleted: "<prefix><c:success><sym:check></c:success> <c:text>Home <c:value><name></c:value> deleted."
-  limit: "<prefix><c:error><sym:cross></c:error> <c:text>Max <c:value><max></c:value> homes. Delete one with <c:value>/delhome</c:value>."
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>Max <c:value><max></c:value> homes. Delete one with <c:value>/delshome</c:value>."
   invalid-name: "<prefix><c:error><sym:cross></c:error> <c:text>Use letters, numbers, - and _ (up to 24)."
 
 gamemode:
@@ -187,6 +187,9 @@ join:
     - "  <c:muted><sym:bullet></c:muted> <click:run_command:'/menu'><hover:show_text:'<c:text>Open the main menu'><c:action>/menu</c:action></hover></click> <c:text>everything in one place <c:muted>(or the Nether Star)"
     - "  <c:muted><sym:bullet></c:muted> <click:run_command:'/help'><hover:show_text:'<c:text>Open the help'><c:action>/help</c:action></hover></click> <c:text>how it all works"
     - "  <c:muted><sym:bullet></c:muted> <click:run_command:'/discord'><hover:show_text:'<c:text>Join our Discord'><c:action>/discord</c:action></hover></click> <c:text>news and support"
+    - ""
+    # Owner answers 319/532: one line that chat, private messages and commands are logged, with the privacy link.
+    - "  <c:muted>Chat, private messages and commands are logged for 30 days and staff can read them.</c:muted> <click:open_url:'https://skybornmc.net/privacy'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u>Privacy</u></c:sky_ice></hover></click>"
     - ""
 
 menu-item:

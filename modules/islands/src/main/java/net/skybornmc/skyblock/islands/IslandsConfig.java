@@ -233,6 +233,35 @@ public final class IslandsConfig extends ModuleConfig {
     // Owner answer 261 (round 1): /is disband confirms with a button, no typed word (old key lifecycle.disband-prompt-length
     // is ignored).
 
+    @Setting(path = "lifecycle.profile-reset.on-disband", desc = "Owner answer 591: /is disband resets the profiles of everyone on "
+            + "the island (money, inventory and ender chest; staff keep a backup, /isadmin restore).")
+    public boolean profileResetOnDisband = true;
+
+    @Setting(path = "lifecycle.profile-reset.on-reset", desc = "Owner answer 591: /isadmin reset resets the profiles of everyone on "
+            + "the island too (backups kept), and deletes the island bank money (its amount is kept in the leader's backup).")
+    public boolean profileResetOnReset = true;
+
+    @Setting(path = "lifecycle.profile-reset.on-delete", desc = "/isadmin delete also resets the members' profiles (off: a staff "
+            + "delete keeps profiles and the closed bank for staff to decide).")
+    public boolean profileResetOnDelete = false;
+
+    @Setting(path = "lifecycle.profile-reset.money", desc = "A profile reset takes the profile's money (restorable from the backup).")
+    public boolean profileResetMoney = true;
+
+    @Setting(path = "lifecycle.profile-reset.items", desc = "A profile reset empties the inventory and ender chest of members who "
+            + "are online on that profile (restorable from the backup; offline members keep their items, see OPEN_QUESTIONS).")
+    public boolean profileResetItems = true;
+
+    /** Owner answer 591: does removing an island for {@code reason} reset its members' profiles? */
+    public boolean resetsProfiles(String reason) {
+        return switch (reason) {
+            case IslandStore.REASON_DISBAND -> profileResetOnDisband;
+            case IslandStore.REASON_RESET -> profileResetOnReset;
+            case IslandStore.REASON_DELETE -> profileResetOnDelete;
+            default -> false;
+        };
+    }
+
     @Setting(path = "lifecycle.clear.use-fawe", desc = "Empty removed islands with FastAsyncWorldEdit when it is installed "
             + "(off = always the built-in throttled clearer).")
     public boolean clearUseFawe = true;
@@ -268,6 +297,15 @@ public final class IslandsConfig extends ModuleConfig {
 
     @Setting(path = "visiting.require-visit", desc = "Players must have visited an island before they can rate or like it.")
     public boolean requireVisit = true;
+
+    @Setting(path = "visiting.vote-min-playtime-minutes", desc = "Owner answer 292: minutes of playtime before a player can rate or "
+            + "like islands (0 = off).", min = 0, max = 10_080)
+    public int voteMinPlaytimeMinutes = 60;
+
+    @Setting(path = "visiting.vote-max-accounts-per-ip", desc = "Owner answer 292: most accounts from the same address that may "
+            + "rate (and, separately, like) the same island this season (0 = no limit). Only a hash of the address is stored.",
+            min = 0, max = 100)
+    public int voteMaxAccountsPerIp = 3;
 
     @Setting(path = "visiting.timezone", desc = "Time zone of \"once per day\" (likes, unique visitors per day). Resets at local midnight.")
     public String timezone = "Europe/Oslo";
@@ -322,6 +360,11 @@ public final class IslandsConfig extends ModuleConfig {
     @Setting(path = "browser.min-ratings", desc = "Islands need at least this many ratings to show under \"Top rated\".", min = 1,
             max = 100)
     public int browserMinRatings = 3;
+
+    @Setting(path = "browser.discover-playtime-weight", desc = "Owner answer 290: the Discover tab lists every island in random "
+            + "order; islands with more playtime are more likely near the top (weight 1 + this x ln(1 + hours); 0 = plain random).",
+            min = 0, max = 10)
+    public double browserDiscoverPlaytimeWeight = 1.0;
 
     @Setting(path = "browser.refresh-seconds", desc = "How often visit, rating and like totals are reloaded from the database.",
             min = 10, max = 3600)

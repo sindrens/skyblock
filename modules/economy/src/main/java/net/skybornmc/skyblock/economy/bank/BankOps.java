@@ -412,7 +412,7 @@ final class BankOps {
                 return CompletableFuture.completedFuture(0L);
             }
             return economy.execute(Transaction.withdraw(bank, Currency.MONEY, balance, REASON_DELETED)
-                    .actor(actor).reference("island disbanded").idempotencyKey("bank_deleted:" + bank.owner()))
+                    .actor(actor).reference("island removed").idempotencyKey("bank_deleted:" + bank.owner()))
                     .thenApply(r -> r.ok() ? balance : 0L);
         });
     }

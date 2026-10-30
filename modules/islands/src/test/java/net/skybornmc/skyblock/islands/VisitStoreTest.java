@@ -233,6 +233,54 @@ class VisitStoreTest {
     }
 
     @Test
+    void ownerAnswer292CountsOtherAccountsFromTheSameAddress() {
+        UUID id = island(UUID.randomUUID());
+        UUID a = UUID.randomUUID();
+        UUID b = UUID.randomUUID();
+        UUID c = UUID.randomUUID();
+        String ip = VisitRules.ipHash("10.0.0.1");
+        db.blockingTransaction(x -> VisitStore.rate(x, id, a, 1, 5, now, ip));
+        db.blockingTransaction(x -> VisitStore.rate(x, id, b, 1, 4, now, ip));
+        db.blockingTransaction(x -> VisitStore.rate(x, id, UUID.randomUUID(), 1, 4, now, VisitRules.ipHash("10.0.0.2")));
+        assertEquals((Integer) 2, db.<Integer>blocking(x -> VisitStore.otherAccounts(x, id, c, 1, ip, true)), "a and b from the same address");
+        assertEquals((Integer) 1, db.<Integer>blocking(x -> VisitStore.otherAccounts(x, id, a, 1, ip, true)), "the voter is not counted");
+        assertEquals((Integer) 0, db.<Integer>blocking(x -> VisitStore.otherAccounts(x, id, c, 2, ip, true)), "another season");
+        assertEquals((Integer) 0, db.<Integer>blocking(x -> VisitStore.otherAccounts(x, id, c, 1, null, true)), "no address known");
+        assertEquals((Integer) 0, db.<Integer>blocking(x -> VisitStore.otherAccounts(x, id, c, 1, ip, false)), "likes are counted separately");
+        assertTrue(bool(x -> VisitStore.like(x, id, a, 20, 1, now, ip)));
+        assertEquals((Integer) 1, db.<Integer>blocking(x -> VisitStore.otherAccounts(x, id, c, 1, ip, false)));
+        VisitStore.VoteContext context = new VisitStore(db).voteContext(id, c, 1, 20, ip, true).join();
+        assertEquals(2, context.otherAccounts());
+        assertEquals(VisitRules.VoteCheck.IP_LIMIT, VisitRules.canRate(5, 5, null, true, true, null, context.otherAccounts(), 3));
+    }
+
+    @Test
+    void ownerAnswer293StaffHideAnIslandFromTheBrowser() {
+        UUID id = island(UUID.randomUUID());
+        assertTrue(bool(c -> VisitStore.setBrowserHidden(c, id, true, "offensive build", "Mod")));
+        Island loaded = db.blocking(c -> IslandStore.loadAll(c, "islands")).stream().filter(i -> i.id().equals(id)).findFirst().orElseThrow();
+        assertTrue(loaded.browserHidden());
+        assertEquals("offensive build", loaded.browserHiddenNote());
+        assertTrue(bool(c -> VisitStore.setBrowserHidden(c, id, false, "ignored", "Mod")));
+        Island shown = db.blocking(c -> IslandStore.loadAll(c, "islands")).stream().filter(i -> i.id().equals(id)).findFirst().orElseThrow();
+        assertFalse(shown.browserHidden());
+        assertNull(shown.browserHiddenNote(), "the note goes with the hide");
+        assertFalse(bool(c -> VisitStore.setBrowserHidden(c, UUID.randomUUID(), true, null, "Mod")), "unknown island");
+    }
+
+    @Test
+    void ownerAnswer290PlaytimePerIslandForDiscover() {
+        UUID id = island(UUID.randomUUID());
+        db.blocking(c -> Sql.update(c, "INSERT INTO island_stats_total (island_id, member_key, stat_key, amount, updated_at) VALUES (?, ?, ?, ?, ?)",
+                id, UUID.randomUUID(), "playtime", 3600L, now));
+        db.blocking(c -> Sql.update(c, "INSERT INTO island_stats_total (island_id, member_key, stat_key, amount, updated_at) VALUES (?, ?, ?, ?, ?)",
+                id, UUID.randomUUID(), "playtime", 1800L, now));
+        db.blocking(c -> Sql.update(c, "INSERT INTO island_stats_total (island_id, member_key, stat_key, amount, updated_at) VALUES (?, ?, ?, ?, ?)",
+                id, UUID.randomUUID(), "blocks_mined", 99L, now));
+        assertEquals(Long.valueOf(5400L), db.blocking(VisitStore::playtimes).get(id));
+    }
+
+    @Test
     void removingAnIslandDeletesItsWarpsAndBansButKeepsHistory() {
         UUID leader = UUID.randomUUID();
         UUID id = island(leader);

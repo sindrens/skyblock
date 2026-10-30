@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.common.config;
 
 import org.bukkit.configuration.file.YamlConfiguration;
+import net.skybornmc.skyblock.common.config.ModuleConfig.ValueChange;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -28,10 +29,12 @@ class ConfigManagerTest {
         @Setting(desc = "Some lines") List<String> lines = List.of("a");
         int version = 1;
         Map<Integer, Map<String, String>> migrations = Map.of();
+        Map<Integer, Map<String, ValueChange>> valueChanges = Map.of();
 
         @Override public String fileName() { return "test.yml"; }
         @Override public int version() { return version; }
         @Override public Map<Integer, Map<String, String>> migrations() { return migrations; }
+        @Override public Map<Integer, Map<String, ValueChange>> valueChanges() { return valueChanges; }
     }
 
     private final Logger log = Logger.getLogger("test");
@@ -113,6 +116,32 @@ class ConfigManagerTest {
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(dir.resolve("test.yml").toFile());
         assertFalse(yaml.contains("old-amount"));
         assertEquals(2, yaml.getInt(ConfigManager.VERSION_KEY));
+    }
+
+    @Test
+    void changedDefaultsOnlyReplaceUntouchedOldDefaults(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve("test.yml"), "config-version: 1\namount: 3\nenabled: true\n");
+        TestConfig config = new TestConfig();
+        config.version = 2;
+        config.valueChanges = Map.of(2, Map.of("amount", ValueChange.of(3, 0), "enabled", ValueChange.of(false, true)));
+        new ConfigManager(dir.toFile(), log).load(config);
+        assertEquals(0, config.amount, "the untouched old default 3 becomes the new default 0");
+        assertEquals(2, YamlConfiguration.loadConfiguration(dir.resolve("test.yml").toFile()).getInt(ConfigManager.VERSION_KEY));
+
+        Files.writeString(dir.resolve("test.yml"), "config-version: 1\namount: 5\n");
+        TestConfig chosen = new TestConfig();
+        chosen.version = 2;
+        chosen.valueChanges = config.valueChanges;
+        new ConfigManager(dir.toFile(), log).load(chosen);
+        assertEquals(5, chosen.amount, "a value the owner chose is kept");
+
+        Files.writeString(dir.resolve("test.yml"), "config-version: 2\namount: 3\n");
+        TestConfig upToDate = new TestConfig();
+        upToDate.version = 2;
+        upToDate.valueChanges = config.valueChanges;
+        new ConfigManager(dir.toFile(), log).load(upToDate);
+        assertEquals(3, upToDate.amount, "an up-to-date file is never changed again");
+        assertTrue(ValueChange.of(3, 0).matches(3.0));
     }
 
     @Test

@@ -24,7 +24,8 @@ import java.util.logging.Logger;
  *   <li><b>Merge:</b> missing keys are added with their default and description; existing values are never overwritten.</li>
  *   <li><b>Validation:</b> a wrong type or out-of-range value is reported with file, key, value and the allowed range;
  *       the previous value (or the default on first load) stays active.</li>
- *   <li><b>Migrations:</b> renamed keys are moved when the file's {@code config-version} is older.</li>
+ *   <li><b>Migrations:</b> renamed keys are moved when the file's {@code config-version} is older, and changed defaults
+ *       ({@link ModuleConfig#valueChanges}) replace values that still equal the old default.</li>
  * </ul>
  */
 public final class ConfigManager {
@@ -167,6 +168,15 @@ public final class ConfigManager {
                     yaml.set(rename.getValue(), yaml.get(rename.getKey()));
                     yaml.set(rename.getKey(), null);
                     log.info(config.fileName() + ": migrated '" + rename.getKey() + "' → '" + rename.getValue() + "'");
+                    changed = true;
+                }
+            }
+            for (Map.Entry<String, ModuleConfig.ValueChange> change : config.valueChanges().getOrDefault(v, Map.of()).entrySet()) {
+                String path = change.getKey();
+                if (yaml.contains(path) && change.getValue().matches(yaml.get(path))) {
+                    yaml.set(path, change.getValue().to());
+                    log.info(config.fileName() + ": default of '" + path + "' changed " + change.getValue().from() + " → "
+                            + change.getValue().to());
                     changed = true;
                 }
             }

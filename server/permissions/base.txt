@@ -1,7 +1,8 @@
 # Staff ranks for SkybornMC: groups, weights, colors, prefixes, inheritance, third-party plugins, wildcards, people.
 # Applied first by scripts/apply-permissions.sh after every update/deploy, then every other *.txt here (one per
 # module, alphabetical). One console command per line. Lines starting with # are ignored. Every command is safe to run repeatedly.
-# Donor ranks (Squire -> Monarch) are added when the store/ranks phase is built.
+# Donor ranks (7, names to be planned, owner answer 386) are added when the store/ranks phase is built. Give them a
+# weight above 0: lockdowns exempt every rank above default (owner answer 460).
 
 # --- Groups and weights (higher = more important) ---
 lp creategroup builder

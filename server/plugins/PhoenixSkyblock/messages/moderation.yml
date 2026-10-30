@@ -105,6 +105,8 @@ status:
   done: "Done"
 
 # Disconnect screens.
+# Owner answer 423: both ban screens show the time left and when an appeal is possible (<appeal-when>, from screen.appeal.*;
+# permanent bans: after moderation.yml appeal-wait.perm-ban-days, cheating reasons appeal-wait.cheating-days).
 screen:
   ban:
     - "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
@@ -114,8 +116,10 @@ screen:
     - "<c:text>Reason: <c:value><reason>"
     - "<c:text>Rule: <c:value><rule-text>"
     - "<c:text>Banned by: <c:value><staff>"
+    - "<c:text>Time left: <c:value><expires>"
     - "<c:text>Ban ID: <c:value>#<id>"
     - ""
+    - "<c:text>Appeal: <c:value><appeal-when>"
     - "<c:text>Appeal on Discord: <c:sky_ice><appeal>"
   tempban:
     - "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
@@ -125,10 +129,16 @@ screen:
     - "<c:text>Reason: <c:value><reason>"
     - "<c:text>Rule: <c:value><rule-text>"
     - "<c:text>Banned by: <c:value><staff>"
-    - "<c:text>Ends in: <c:value><expires>"
+    - "<c:text>Time left: <c:value><expires>"
     - "<c:text>Ban ID: <c:value>#<id>"
     - ""
+    - "<c:text>Appeal: <c:value><appeal-when>"
     - "<c:text>Appeal on Discord: <c:sky_ice><appeal>"
+  appeal:
+    now: "possible now"
+    never: "not possible for this reason"
+    # <date> = first day an appeal is possible, <time> = time left until then
+    from: "from <date> (in <time>)"
   kick:
     - "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     - ""
@@ -306,6 +316,9 @@ punish:
     - "<c:text>Right: bans (top) and small things (bottom)."
     - "<c:text>One click applies the next ladder step."
   kick-reason: "Kicked by staff. Follow the rules."
+  # Owner answer 500: the Silent button of /p. <player>
+  silent-on: "<prefix><c:success><sym:check></c:success> <c:text>Silent is <c:value>on</c:value> for <c:value><player></c:value>: no public announcement."
+  silent-off: "<prefix><c:success><sym:check></c:success> <c:text>Silent is <c:value>off</c:value>: bans and mutes are announced again."
   click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to apply"
   # Needs an approver (P4, spec 13.4): the click sends a request instead. <rule> = the approval rule ("ban perm").
   request:
@@ -471,6 +484,25 @@ punish:
         - "<c:muted>(<unplaced> not placed on this screen)"
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+    # Owner answer 500: bans and mutes are announced to everyone unless Silent is on (the menu's -s). Off on every open.
+    silent:
+      name: "<c:value>Silent: <c:muted>off"
+      lore:
+        - "<c:text>Bans and mutes are announced"
+        - "<c:text>to all players (rule number only)."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to punish silently"
+    silent-on:
+      name: "<c:warning>Silent: <c:success>on"
+      lore:
+        - "<c:text>No public announcement for"
+        - "<c:text>what you apply from this menu."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to announce again"
+    silent-locked:
+      name: "<c:muted>Silent"
+      lore:
+        - "<c:muted>Not for your rank."
     # P8 (spec 14.6): turns the whole menu into dry-run mode while it is open. <trainee> = training.you-are or empty.
     dry-run:
       name: "<c:value>Dry run: <c:muted>off"
@@ -1139,6 +1171,8 @@ appeal:
     cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Your last appeal for <c:value>#<pid></c:value> was answered. You can appeal again after <c:value><until></c:value>."
     too-short: "<prefix><c:error><sym:cross></c:error> <c:text>Please explain a bit more: at least <c:value><min></c:value> characters <c:muted>(you wrote <length>)"
     too-long: "<prefix><c:error><sym:cross></c:error> <c:text>Too long: at most <c:value><max></c:value> characters <c:muted>(you wrote <length>)"
+    # Owner answer 423: permanent bans can be appealed only after a wait.
+    too-early: "<prefix><c:error><sym:cross></c:error> <c:text>Punishment <c:value>#<pid></c:value> can't be appealed yet. Check the date on your ban screen."
   # To the player (now, or on the next join).
   result:
     accepted: "<prefix><c:success><sym:check></c:success> <c:text>Your appeal <c:value>#<aid></c:value> was accepted. Your <type_name> is lifted."
@@ -1653,7 +1687,10 @@ rules:
     "3": "No duping or bug abuse"
     "4": "No spam, ads or scams"
     "5": "No real-money trading"
-    "6": "Staff decisions are final"
+    "6": "Staff decisions are final unless appealed"
+    "7": "English only in public chat"
+    "8": "No alt abuse"
+    "9": "No macros or AFK farming outside the AFK pool"
 
 # Dry run (spec 14.6): /p <player> <reason> -dry and the Dry run toggle of /p. Nothing is applied, nobody is told.
 # <player>, <reason>, <action> (step), <offence-text> (", offence #2" or empty), <bonus> (probation steps), <why>,

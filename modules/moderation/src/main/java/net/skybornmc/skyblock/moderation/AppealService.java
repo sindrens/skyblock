@@ -123,7 +123,7 @@ final class AppealService {
             for (Punishment p : active) {
                 List<Appeal> previous = byPunishment.getOrDefault(p.id(), List.of());
                 Optional<AppealRules.Problem> problem = AppealRules.canAppeal(p, self, previous,
-                        module.templates().appealable(p.template()), cfg, now);
+                        module.templates().appealable(p.template()), cfg, now, module.earliestAppeal(p));
                 String state;
                 if (problem.isEmpty()) {
                     state = "appeal.state.can";
@@ -181,7 +181,7 @@ final class AppealService {
                         AppealRules.Problem.NOTHING, null), history));
             }
             long pid = target != null ? target.id() : args.id();
-            return store().submitAppeal(pid, self, name, text, module.templates()::appealable, cfg, now)
+            return store().submitAppeal(pid, self, name, text, module.templates()::appealable, cfg, now, module::earliestAppeal)
                     .thenApply(r -> new Submitted(r, history));
         }).thenAcceptAsync(result -> submitted(player, result.result(), result.history()), main)
                 .exceptionally(e -> failed(player, e));

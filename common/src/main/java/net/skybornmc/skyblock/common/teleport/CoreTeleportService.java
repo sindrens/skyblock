@@ -50,6 +50,7 @@ public final class CoreTeleportService implements TeleportService, Listener {
     private final Core core;
     private final TeleportConfig config;
     private final List<Guard> guards = new CopyOnWriteArrayList<>();
+    private final List<DangerZone> dangerZones = new CopyOnWriteArrayList<>();
     /** Main thread writes; {@link #hasWarmup} may read from anywhere. */
     private final Map<UUID, Active> warmups = new ConcurrentHashMap<>();
     private final Map<UUID, Location> back = new ConcurrentHashMap<>();
@@ -83,16 +84,62 @@ public final class CoreTeleportService implements TeleportService, Listener {
         return Optional.empty();
     }
 
+    // ------------------------------------------------------------------ danger (combat tag, combat zones)
+
+    @Override
+    public void addDangerZone(DangerZone zone) {
+        dangerZones.add(zone);
+    }
+
+    @Override
+    public void removeDangerZone(DangerZone zone) {
+        dangerZones.remove(zone);
+    }
+
+    @Override
+    public boolean inDanger(Player player) {
+        if (config.dangerWhenTagged && combat().remainingMillis(player.getUniqueId()) > 0) {
+            return true;
+        }
+        if (config.dangerWorlds.contains(player.getWorld().getName())) {
+            return true;
+        }
+        for (DangerZone zone : dangerZones) {
+            try {
+                if (zone.contains(player)) {
+                    return true;
+                }
+            } catch (RuntimeException e) {
+                core.plugin().getLogger().log(Level.WARNING, "Teleport: a combat zone check failed", e);
+            }
+        }
+        return false;
+    }
+
+    /** Owner answer 413: worlds like the warzone are entered through their portal only (staff bypass skips it). */
+    private boolean refusedPortalOnly(Player player, Location destination, TeleportReason reason) {
+        World target = destination.getWorld();
+        if (target == null || reason.bypass(player) || !config.portalOnlyWorlds.contains(target.getName())
+                || target.equals(player.getWorld())) {
+            return false;
+        }
+        refuse(player, "teleport.portal-only", Msg.p("world", target.getName()));
+        return true;
+    }
+
     // ------------------------------------------------------------------ requests
 
     @Override
     public boolean request(Player player, Location destination, TeleportReason reason, TeleportOptions options) {
-        if (refusedByGuardOrCheck(player, destination, options)) {
+        if ((options.guards() && refusedPortalOnly(player, destination, reason)) || refusedByGuardOrCheck(player, destination, options)) {
             return false;
         }
         UUID id = player.getUniqueId();
         boolean bypass = reason.bypass(player);
-        int seconds = config.warmupSeconds(reason);
+        int base = config.warmupSeconds(reason);
+        // Owner answers 285/341/345: instant, but 3 s while combat-tagged or in a combat zone (never blocked there).
+        boolean danger = reason != TeleportReason.PROFILE && reason != TeleportReason.STAFF && inDanger(player);
+        int seconds = TeleportRules.warmup(base, config.dangerWarmupSeconds, danger);
         long cooldown = cooldowns.left(id, reason);
         CombatTagService combat = combat();
         long combatLeft = combat.remainingMillis(id);
@@ -118,7 +165,7 @@ public final class CoreTeleportService implements TeleportService, Listener {
             case WARMUP -> {
                 cancel(id);
                 cooldowns.start(id, reason, config.cooldownSeconds(reason));
-                startWarmup(player, destination, reason, options, seconds);
+                startWarmup(player, destination, reason, options, seconds, danger && seconds > base);
                 return true;
             }
         }
@@ -128,6 +175,9 @@ public final class CoreTeleportService implements TeleportService, Listener {
     @Override
     public void now(Player player, Location destination, TeleportReason reason, TeleportOptions options) {
         cancel(player.getUniqueId());
+        if (options.guards() && refusedPortalOnly(player, destination, reason)) {
+            return;
+        }
         if (options.guards() && !reason.bypass(player)) {
             Optional<String> denial = denied(player, destination);
             if (denial.isPresent()) {
@@ -165,10 +215,11 @@ public final class CoreTeleportService implements TeleportService, Listener {
 
     // ------------------------------------------------------------------ warmup
 
-    private void startWarmup(Player player, Location destination, TeleportReason reason, TeleportOptions options, int seconds) {
+    private void startWarmup(Player player, Location destination, TeleportReason reason, TeleportOptions options, int seconds,
+                             boolean becauseOfDanger) {
         UUID id = player.getUniqueId();
         WarmupState state = new WarmupState(pos(player.getLocation()), System.currentTimeMillis(), seconds);
-        core.messages().send(player, MODULE, "teleport.warmup", Msg.p("seconds", seconds), Msg.c("destination", options.destination()));
+        core.messages().send(player, MODULE, becauseOfDanger ? "teleport.warmup-danger" : "teleport.warmup", Msg.p("seconds", seconds), Msg.c("destination", options.destination()));
         Scheduler.Task task = core.scheduler().repeat("teleport-warmup", 0L, 20L, () -> tick(id));
         warmups.put(id, new Active(state, destination.clone(), reason, options, task));
     }

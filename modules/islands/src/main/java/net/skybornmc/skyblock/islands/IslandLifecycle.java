@@ -1,5 +1,8 @@
 package net.skybornmc.skyblock.islands;
 
+import net.skybornmc.skyblock.common.economy.EconomyService;
+import net.skybornmc.skyblock.common.economy.Currency;
+import net.skybornmc.skyblock.common.economy.AccountRef;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
@@ -231,7 +234,24 @@ final class IslandLifecycle {
                 new Location(Bukkit.getWorld(island.world()), island.centerX(), config().surfaceY, island.centerZ()), details);
 
         clearer.enqueue(new IslandClearer.Job(done.slotId(), done.gridX(), done.gridZ(), island.id(), done.sizeChunks(), reason));
-        // M3.3: other modules clean up what belongs to the island (owner answer 263: a disband deletes the bank money).
+        KickBackups backups = module.kickBackups();
+        if (backups == null || !config().resetsProfiles(reason)) {
+            fireRemoved(island, done, reason, actor);
+            return;
+        }
+        // Owner answer 591: read the island bank first (its amount goes into the leader's backup), then let the economy
+        // delete it (IslandRemovedEvent) and reset every member profile after its backup is saved.
+        Optional<EconomyService> economy = core.services().optional(EconomyService.class);
+        CompletableFuture<Long> bank = economy.isEmpty() ? CompletableFuture.completedFuture(null)
+                : economy.get().balance(AccountRef.island(island.id()), Currency.MONEY).handle((v, e) -> e == null ? v : null);
+        bank.whenCompleteAsync((amount, ignored) -> {
+            fireRemoved(island, done, reason, actor);
+            backups.resetProfiles(island, name, done.members(), done.owner(), reason, actor, amount);
+        }, main);
+    }
+
+    /** M3.3: other modules clean up what belongs to the island (owner answers 263/591: disband and reset delete the bank money). */
+    private void fireRemoved(Island island, IslandStore.DisbandResult.Disbanded done, String reason, Actor actor) {
         Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.island.IslandRemovedEvent(island.id(), done.owner(),
                 reason, actor));
     }

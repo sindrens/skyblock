@@ -15,13 +15,14 @@ import java.util.List;
 
 /**
  * The visit browser ({@code /is visit} without a name, M2.4): every built, unlocked island as its owner's head with
- * visits, rating, likes and warps. Tabs in the top row (one plain click each, Bedrock-safe): Most visited (2), Top rated
- * (3), Most liked (4), Newest (5); slot 6 opens the warp browser. Click an island to visit it.
+ * visits, rating, likes and warps. Tabs in the top row (one plain click each, Bedrock-safe): Discover (2, the default,
+ * owner answer 290: every island in random order favouring more playtime), Most visited (3), Top rated (4), Most liked
+ * (5), Newest (6); slot 7 opens the warp browser. Click an island to visit it.
  */
 final class VisitMenu extends PagedMenu<Showcase.Entry> {
 
-    static final int[] TAB_SLOTS = {2, 3, 4, 5};
-    static final int SLOT_WARPS = 6;
+    static final int[] TAB_SLOTS = {2, 3, 4, 5, 6};
+    static final int SLOT_WARPS = 7;
 
     private final IslandsModule module;
     private final IslandManager islands;
@@ -42,7 +43,11 @@ final class VisitMenu extends PagedMenu<Showcase.Entry> {
     @Override
     protected List<Showcase.Entry> entries() {
         if (cached == null) {
-            cached = Showcase.sort(Showcase.entries(visits.listed(), visits.allStats()), sort, module.config().browserMinRatings);
+            List<Showcase.Entry> all = Showcase.entries(visits.listed(), visits.allStats());
+            cached = sort == Showcase.Sort.DISCOVER
+                    ? Showcase.discover(all, visits::playtimeSeconds, module.config().browserDiscoverPlaytimeWeight,
+                    java.util.concurrent.ThreadLocalRandom.current())
+                    : Showcase.sort(all, sort, module.config().browserMinRatings);
         }
         return cached;
     }
@@ -101,6 +106,7 @@ final class VisitMenu extends PagedMenu<Showcase.Entry> {
 
     private static Material tabIcon(Showcase.Sort sort) {
         return switch (sort) {
+            case DISCOVER -> Material.COMPASS;
             case VISITS -> Material.OAK_BOAT;
             case RATING -> Material.NETHER_STAR;
             case LIKES -> Material.POPPY;

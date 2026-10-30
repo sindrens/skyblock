@@ -2,7 +2,8 @@
 # MiniMessage + style tags. Player text is never parsed. Reload: /skyblock reload chat
 # Format (docs/UI_STYLE.md §3): success/error marks + gray text, values in <c:value>, clicks in <c:action>.
 
-# Hover card on a name in chat.
+# Hover card on a name in chat. Owner answer 302: only rank, island and playtime (join date, Discord and ping are hidden;
+# <first>, <discord> and <ping> still work if you want them back).
 hover:
   - "<name>"
   - ""
@@ -10,9 +11,6 @@ hover:
   - "<nick_line>"
   - "<c:muted>Island</c:muted> <c:value><island>"
   - "<c:muted>Played</c:muted> <c:value><playtime>"
-  - "<c:muted>Joined</c:muted> <c:value><first>"
-  - "<c:muted>Discord</c:muted> <discord>"
-  - "<c:muted>Ping</c:muted> <c:value><ping> ms"
   - ""
   - "<bold><c:action>» CLICK</c:action></bold> <c:text>to message"
 hover-nick: "<c:muted>Real name</c:muted> <c:value><real_name>"
@@ -36,6 +34,8 @@ blocked:
   ip: "<prefix><c:error><sym:cross></c:error> <c:text>Server addresses aren't allowed."
   phone: "<prefix><c:error><sym:cross></c:error> <c:text>Phone numbers aren't allowed, for your safety."
   word: "<prefix><c:error><sym:cross></c:error> <c:text>Blocked by the chat filter."
+  # Owner answer 304: a sign or book text the chat filter refuses (the edit is undone).
+  surface: "<prefix><c:error><sym:cross></c:error> <c:text>That text is blocked by the chat filter. Nothing was written."
   muted: "<prefix><c:error><sym:cross></c:error> <c:text>You're muted. See <c:value>/mypunishments</c:value>."
 
 staff-alert: "<c:muted>[Staff]</c:muted> <c:warning>Filter</c:warning> <c:value><player></c:value> <c:text>tried: <c:parchment><message>"

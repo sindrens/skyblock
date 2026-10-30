@@ -50,7 +50,11 @@ final class VisitStore {
     }
 
     /** What a rating/like check needs from the database. */
-    record VoteContext(boolean visited, Integer rating, boolean likedToday) {
+    record VoteContext(boolean visited, Integer rating, boolean likedToday, int otherAccounts) {
+
+        VoteContext(boolean visited, Integer rating, boolean likedToday) {
+            this(visited, rating, likedToday, 0);
+        }
     }
 
     /** Warp slot settings (islands.yml warps.start-slots / warps.max-slots). */
@@ -123,16 +127,43 @@ final class VisitStore {
         return db.async(c -> voteContext(c, islandId, player, seasonId, day));
     }
 
+    /** With owner answer 292: also counts other accounts from {@code ipHash} that rated ({@code rating}) or liked it. */
+    CompletableFuture<VoteContext> voteContext(UUID islandId, UUID player, int seasonId, int day, String ipHash, boolean rating) {
+        return db.async(c -> {
+            VoteContext base = voteContext(c, islandId, player, seasonId, day);
+            return new VoteContext(base.visited(), base.rating(), base.likedToday(),
+                    otherAccounts(c, islandId, player, seasonId, ipHash, rating));
+        });
+    }
+
     /** Sets a rating; returns the old stars (empty = first rating this season). */
     CompletableFuture<Optional<Integer>> rate(UUID islandId, UUID player, int seasonId, int stars) {
+        return rate(islandId, player, seasonId, stars, null);
+    }
+
+    CompletableFuture<Optional<Integer>> rate(UUID islandId, UUID player, int seasonId, int stars, String ipHash) {
         long now = System.currentTimeMillis();
-        return db.transaction(c -> rate(c, islandId, player, seasonId, stars, now));
+        return db.transaction(c -> rate(c, islandId, player, seasonId, stars, now, ipHash));
     }
 
     /** Adds today's like; false if the player already liked this island today. */
     CompletableFuture<Boolean> like(UUID islandId, UUID player, int day, int seasonId) {
+        return like(islandId, player, day, seasonId, null);
+    }
+
+    CompletableFuture<Boolean> like(UUID islandId, UUID player, int day, int seasonId, String ipHash) {
         long now = System.currentTimeMillis();
-        return duplicateAs(db.async(c -> like(c, islandId, player, day, seasonId, now)), false);
+        return duplicateAs(db.async(c -> like(c, islandId, player, day, seasonId, now, ipHash)), false);
+    }
+
+    /** Owner answer 293: hides or shows an island in the visit browser; false if the island is gone. */
+    CompletableFuture<Boolean> setBrowserHidden(UUID islandId, boolean hidden, String note, String by) {
+        return db.async(c -> setBrowserHidden(c, islandId, hidden, note, by));
+    }
+
+    /** Island playtime (seconds, all members, all time) per island, for the Discover tab (owner answer 290). */
+    CompletableFuture<Map<UUID, Long>> playtimes() {
+        return db.async(VisitStore::playtimes);
     }
 
     CompletableFuture<Map<UUID, Showcase.Stats>> stats(int fromDay, int seasonId) {
@@ -274,22 +305,59 @@ final class VisitStore {
     }
 
     static Optional<Integer> rate(Connection c, UUID islandId, UUID player, int seasonId, int stars, long now) throws SQLException {
+        return rate(c, islandId, player, seasonId, stars, now, null);
+    }
+
+    static Optional<Integer> rate(Connection c, UUID islandId, UUID player, int seasonId, int stars, long now, String ipHash)
+            throws SQLException {
         Optional<Integer> old = Sql.queryOne(c, "SELECT stars FROM island_ratings WHERE island_id = ? AND uuid = ? AND season_id = ? FOR UPDATE",
                 rs -> rs.getInt(1), islandId, player, seasonId);
         if (old.isPresent()) {
             Sql.update(c, "UPDATE island_ratings SET stars = ?, updated_at = ? WHERE island_id = ? AND uuid = ? AND season_id = ?",
                     stars, now, islandId, player, seasonId);
         } else {
-            Sql.update(c, "INSERT INTO island_ratings (island_id, uuid, season_id, stars, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-                    islandId, player, seasonId, stars, now, now);
+            Sql.update(c, "INSERT INTO island_ratings (island_id, uuid, season_id, stars, created_at, updated_at, ip_hash) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?)", islandId, player, seasonId, stars, now, now, ipHash);
         }
         return old;
     }
 
     static boolean like(Connection c, UUID islandId, UUID player, int day, int seasonId, long now) throws SQLException {
-        return Sql.update(c, "INSERT INTO island_likes (island_id, uuid, visit_day, season_id, created_at) SELECT ?, ?, ?, ?, ? FROM DUAL "
+        return like(c, islandId, player, day, seasonId, now, null);
+    }
+
+    static boolean like(Connection c, UUID islandId, UUID player, int day, int seasonId, long now, String ipHash) throws SQLException {
+        return Sql.update(c, "INSERT INTO island_likes (island_id, uuid, visit_day, season_id, created_at, ip_hash) "
+                + "SELECT ?, ?, ?, ?, ?, ? FROM DUAL "
                 + "WHERE NOT EXISTS (SELECT 1 FROM island_likes WHERE island_id = ? AND uuid = ? AND visit_day = ?)",
-                islandId, player, day, seasonId, now, islandId, player, day) == 1;
+                islandId, player, day, seasonId, now, ipHash, islandId, player, day) == 1;
+    }
+
+    /**
+     * Owner answer 292: other accounts (not {@code player}) from the same address hash that rated ({@code rating}) or liked
+     * the island this season. 0 without an address.
+     */
+    static int otherAccounts(Connection c, UUID islandId, UUID player, int seasonId, String ipHash, boolean rating) throws SQLException {
+        if (ipHash == null) {
+            return 0;
+        }
+        String table = rating ? "island_ratings" : "island_likes";
+        return Sql.queryOne(c, "SELECT COUNT(DISTINCT uuid) FROM " + table + " WHERE island_id = ? AND season_id = ? AND ip_hash = ? "
+                + "AND uuid <> ?", rs -> rs.getInt(1), islandId, seasonId, ipHash, player).orElse(0);
+    }
+
+    static boolean setBrowserHidden(Connection c, UUID islandId, boolean hidden, String note, String by) throws SQLException {
+        return Sql.update(c, "UPDATE islands SET browser_hidden = ?, browser_hidden_note = ?, browser_hidden_by = ? "
+                + "WHERE id = ? AND deleted_at IS NULL", hidden, hidden ? note : null, hidden ? by : null, islandId) == 1;
+    }
+
+    static Map<UUID, Long> playtimes(Connection c) throws SQLException {
+        Map<UUID, Long> out = new HashMap<>();
+        Sql.query(c, "SELECT island_id, SUM(amount) FROM island_stats_total WHERE stat_key = ? GROUP BY island_id", rs -> {
+            out.put(Sql.uuid(rs, "island_id"), rs.getLong(2));
+            return null;
+        }, net.skybornmc.skyblock.common.island.IslandStat.PLAYTIME.key());
+        return out;
     }
 
     /** Unique visits since {@code fromDay} (inclusive), ratings and likes of {@code seasonId}, per island. */

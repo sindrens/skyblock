@@ -1195,12 +1195,31 @@ final class PunishmentService {
     }
 
     Component banScreen(Player viewer, Punishment p) {
-        return msg.component(viewer, p.expires() == null ? "screen.ban" : "screen.tempban", parts(viewer, p));
+        return msg.component(viewer, p.expires() == null ? "screen.ban" : "screen.tempban", parts(viewer, p), appealWhen(viewer, p));
     }
 
     /** Ban screen for the pre-login check (no Player object yet). */
     Component banScreen(Punishment p) {
-        return msg.component(Bukkit.getConsoleSender(), p.expires() == null ? "screen.ban" : "screen.tempban", parts(null, p));
+        return msg.component(Bukkit.getConsoleSender(), p.expires() == null ? "screen.ban" : "screen.tempban", parts(null, p),
+                appealWhen(null, p));
+    }
+
+    /**
+     * Owner answer 423: {@code <appeal-when>} on the ban screen: not appealable, appealable now, or from a date (with the
+     * time left until then).
+     */
+    TagResolver appealWhen(Player viewer, Punishment p) {
+        long now = System.currentTimeMillis();
+        String text;
+        if (!appealHint.test(p)) {
+            text = text(viewer, "screen.appeal.never");
+        } else {
+            Long from = appealWait.apply(p);
+            text = from == null || from <= now ? text(viewer, "screen.appeal.now")
+                    : text(viewer, "screen.appeal.from", Msg.p("date", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(from))),
+                    Msg.p("time", Format.duration(Duration.ofMillis(from - now))));
+        }
+        return Msg.p("appeal-when", text);
     }
 
     String text(Player viewer, String key, TagResolver... placeholders) {
@@ -1608,6 +1627,13 @@ final class PunishmentService {
 
     void appealHint(java.util.function.Predicate<Punishment> source) {
         this.appealHint = source;
+    }
+
+    /** Owner answer 423: first moment a punishment can be appealed ({@code null} = any time), set by the module. */
+    private java.util.function.Function<Punishment, Long> appealWait = p -> null;
+
+    void appealWait(java.util.function.Function<Punishment, Long> source) {
+        this.appealWait = source;
     }
 
     /** Whether a stored reason id starts probation (set by the module from punishments.yml). */

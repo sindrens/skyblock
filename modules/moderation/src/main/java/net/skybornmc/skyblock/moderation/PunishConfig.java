@@ -293,7 +293,7 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
     }
 
     /** Fixed button ids, in config order. Dry run (P8, spec 14.6) toggles the whole menu into dry-run mode. */
-    static final List<String> BUTTONS = List.of("sanctions", "kick", "bulk", "history", "close", "more-reasons", "dry-run");
+    static final List<String> BUTTONS = List.of("sanctions", "kick", "bulk", "history", "close", "more-reasons", "silent", "dry-run");
 
     /** Quarters of the menu, in config order. */
     static final List<String> QUARTERS = List.of("mutes", "bans", "small");

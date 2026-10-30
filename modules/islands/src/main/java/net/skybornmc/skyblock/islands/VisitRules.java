@@ -14,6 +14,8 @@ import java.time.ZoneId;
  *   <li>Ratings: 1-5 stars, one per player per island per season (changeable), never on your own island.</li>
  *   <li>Likes: one per player per island per day (owner O7), never on your own island.</li>
  *   <li>Rating and liking need a visit first ({@code visiting.require-visit}) so nobody rates islands they never saw.</li>
+ *   <li>Owner answer 292: rating and liking need 1 hour of playtime, and at most 3 accounts from the same address may
+ *       rate (or like) the same island.</li>
  * </ul>
  */
 public final class VisitRules {
@@ -143,7 +145,48 @@ public final class VisitRules {
 
     /** Why a rating or like can't be given, or OK. */
     public enum VoteCheck {
-        OK, INVALID_STARS, OWN_ISLAND, NOT_VISITED, ALREADY
+        OK, INVALID_STARS, OWN_ISLAND, NOT_VISITED, ALREADY,
+        /** Owner answer 292: not enough playtime yet. */
+        NEW_PLAYER,
+        /** Owner answer 292: enough other accounts from the same address already voted for this island. */
+        IP_LIMIT
+    }
+
+    /**
+     * Owner answer 292, checked before the database: {@code playtimeMillis} below {@code minMinutes} is too new
+     * (0 minutes = off).
+     */
+    public static boolean tooNew(long playtimeMillis, int minMinutes) {
+        return minMinutes > 0 && playtimeMillis < minMinutes * 60_000L;
+    }
+
+    /**
+     * Owner answer 292: {@code otherAccounts} = other accounts from the voter's address that already voted for this island
+     * (the voter not counted). The voter may vote while fewer than {@code maxAccounts} - 1 others did (0 = no limit).
+     */
+    public static boolean ipLimitReached(int otherAccounts, int maxAccounts) {
+        return maxAccounts > 0 && otherAccounts >= maxAccounts - 1;
+    }
+
+    /** Rating with the owner answer 292 checks: {@code otherAccounts} from the same address, {@code maxAccounts} allowed. */
+    public static VoteCheck canRate(int stars, int maxStars, Role raterRole, boolean visited, boolean requireVisit, Integer current,
+                                    int otherAccounts, int maxAccounts) {
+        VoteCheck check = canRate(stars, maxStars, raterRole, visited, requireVisit, current);
+        // Changing your own rating is always fine: the address limit only stops new accounts from adding ratings.
+        if (check == VoteCheck.OK && current == null && ipLimitReached(otherAccounts, maxAccounts)) {
+            return VoteCheck.IP_LIMIT;
+        }
+        return check;
+    }
+
+    /** Liking with the owner answer 292 address limit. */
+    public static VoteCheck canLike(Role likerRole, boolean visited, boolean requireVisit, boolean likedToday, int otherAccounts,
+                                    int maxAccounts) {
+        VoteCheck check = canLike(likerRole, visited, requireVisit, likedToday);
+        if (check == VoteCheck.OK && ipLimitReached(otherAccounts, maxAccounts)) {
+            return VoteCheck.IP_LIMIT;
+        }
+        return check;
     }
 
     /**
@@ -175,6 +218,20 @@ public final class VisitRules {
             return VoteCheck.NOT_VISITED;
         }
         return likedToday ? VoteCheck.ALREADY : VoteCheck.OK;
+    }
+
+    /** SHA-256 hex of an address (owner answer 292 stores this, never the address); {@code null} for no address. */
+    public static String ipHash(String address) {
+        if (address == null || address.isBlank()) {
+            return null;
+        }
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(("phoenix-island-vote:" + address.strip()).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(digest);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 missing", e);
+        }
     }
 
     /** The day number used for "once per day" (epoch day in {@code zone}). */
