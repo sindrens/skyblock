@@ -19,7 +19,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | UX2 | Same message cleanup for moderation, depths, islands messages (after P1, M4.6, M2.7 merge) | UX1, P1, M4.6, M2.7 | their messages files | ⬜ |
 | FI | Owner answered `docs/FEATURE_IDEAS.md` (2026-10-30); follow-up questions in `docs/QUESTIONS_ROUND2.md` → then queue the yes-items | owner | docs | 🔄 waiting for owner |
 | PROF | **Island profiles** per docs/DECISIONS_2026-10-30.md (P1–P12): profile layer in common (ProfileService, active profile per player, `/profiles`), migrate every module's per-player data to (player, profile) keys, inventory/ender chest/armor/XP swap, zero transfer between own profiles | — | common + all modules (one agent, careful, big) | ✅ |
-| PROF-ADOPT | Modules merged after PROF (tools M4.2, stacking, enchants, notes…) store per-player data per profile via ProfileService | PROF | each new module | 🔄 tools (Forge money, refunds, starter kit) + stacking (item merges keep profile tags) done at merge; enchants (E1) when it lands |
+| PROF-ADOPT | Modules merged after PROF (tools M4.2, stacking, enchants, notes…) store per-player data per profile via ProfileService | PROF | each new module | ✅ tools (Forge money, refunds, starter kit) + stacking (item merges keep profile tags) done at merge; enchants (E1 built with profile keys) |
 | CRY | Replace tokens with **island crystals** everywhere (currency enum, messages, HUD, docs) | — | common/economy, modules/economy, hud, docs | ✅ |
 | R2B | Economy part of round 2: new-account limit 30 min for /pay + /withdraw (economy.yml notes/pay), `/eco` for admins via permission, sell multiplier cap config 300% | — | modules/economy | ✅ (in R2A) |
 | R2A | Round-2 quick decisions: account-age 30 min (pay/withdraw/AH), `/eco` for admin permission, remove amount suggestions (10k/10m/10b) in tab completion, sell cap 300% (config), freeze cleared by a ban, Inspect tool = blaze rod, public announcements unless -s, timezone Europe/Oslo, skill cap 150, staff `/skills set|add` (admin+owner), `/freerank` (30 min playtime) | — | economy, auction, common/command, moderation, staff, skills | ✅ |
@@ -90,7 +90,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 ## Phase E: Enchants (docs/plans/ENCHANTS.md)
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
-| E1 | Registry (enchants.yml, 48 defs + validation test), unique DB books + Disenchant Scrolls, `/enchanter` GUI (apply/upgrade/combine/remove/rolls/guide), slot/conflict/level rules, crystal costs, lore, EnchantService + BonusService in common | M4.2, CRY | modules/enchants, common/enchant, common/bonus | 🔄 |
+| E1 | Registry (enchants.yml, 48 defs + validation test), unique DB books + Disenchant Scrolls, `/enchanter` GUI (apply/upgrade/combine/remove/rolls/guide), slot/conflict/level rules, crystal costs, lore, EnchantService + BonusService in common | M4.2, CRY | modules/enchants, common/enchant, common/bonus | ✅ |
 | E2 | Book drops from Depths mine/forest/combat, gathering + area effects via the block engine, Depths sword effects | E1, M4.7, M4.8, M4.9 | modules/enchants + depths hooks | ⬜ |
 | E3 | Stacked-mob kill enchants (Slaughter etc.), batch kill API | E1, STACK | modules/enchants + stacking API | ⬜ |
 | E4 | Tuning: enchant factors in economy model, family caps, drop rates | E2, E3, BAL2 | docs, tools, configs | ⬜ |
