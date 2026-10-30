@@ -218,9 +218,25 @@ public final class ToolsModule implements SkyblockModule {
         }
         YamlConfiguration defaults = defaults();
         boolean changed = false;
+        int catalogVersion = yaml.getInt(CATALOG_VERSION_KEY, 1);
+        if (file.exists() && catalogVersion < CATALOG_VERSION) {
+            // v2 (M4.9): Forge and blueprint recipes use the Depths drop items instead of vanilla items.
+            backup(file, "tools-catalog-v" + catalogVersion + "-backup.yml");
+            for (String section : List.of("tiers", "blueprints")) {
+                replaceEntries(yaml, defaults, section);
+            }
+            core.plugin().getLogger().info("tools.yml: tool tiers and blueprints updated to catalog v" + CATALOG_VERSION
+                    + " (Depths drop recipes); the old file is kept as tools-catalog-v" + catalogVersion + "-backup.yml");
+            changed = true;
+        }
+        if (yaml.getInt(CATALOG_VERSION_KEY, 1) != CATALOG_VERSION) {
+            yaml.set(CATALOG_VERSION_KEY, CATALOG_VERSION);
+            changed = true;
+        }
         for (String section : ToolCatalog.SECTIONS) {
-            if (!yaml.contains(section) && defaults.contains(section)) {
-                yaml.set(section, defaults.get(section));
+            // A section can hold plain settings too (blueprints.drops-enabled): copy the defaults when it has no entries.
+            if (!hasEntries(yaml, section) && defaults.contains(section)) {
+                replaceEntries(yaml, defaults, section);
                 changed = true;
             }
         }
@@ -238,6 +254,57 @@ public final class ToolsModule implements SkyblockModule {
             }
         }
         return loaded;
+    }
+
+    /** Version of the catalog sections; a lower version in tools.yml replaces tiers and blueprints once (backup kept). */
+    static final int CATALOG_VERSION = 2;
+    static final String CATALOG_VERSION_KEY = "catalog-version";
+
+    /** True if the section has at least one catalog entry (plain setting keys don't count). */
+    static boolean hasEntries(org.bukkit.configuration.ConfigurationSection yaml, String section) {
+        org.bukkit.configuration.ConfigurationSection s = yaml.getConfigurationSection(section);
+        if (s == null) {
+            return yaml.contains(section) && !yaml.isConfigurationSection(section);
+        }
+        for (String key : s.getKeys(false)) {
+            if (!ToolCatalog.SETTING_KEYS.contains(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Replaces the catalog entries of a section with the defaults, keeping plain setting keys. */
+    static void replaceEntries(org.bukkit.configuration.ConfigurationSection yaml, org.bukkit.configuration.ConfigurationSection defaults,
+                               String section) {
+        java.util.Map<String, Object> keep = new java.util.LinkedHashMap<>();
+        org.bukkit.configuration.ConfigurationSection current = yaml.getConfigurationSection(section);
+        if (current != null) {
+            for (String key : ToolCatalog.SETTING_KEYS) {
+                if (current.contains(key)) {
+                    keep.put(key, current.get(key));
+                }
+            }
+        }
+        yaml.set(section, null);
+        org.bukkit.configuration.ConfigurationSection def = defaults.getConfigurationSection(section);
+        if (def != null) {
+            for (String key : def.getKeys(false)) {
+                yaml.set(section + "." + key, def.get(key));
+            }
+        } else if (defaults.contains(section)) {
+            yaml.set(section, defaults.get(section));
+        }
+        keep.forEach((key, value) -> yaml.set(section + "." + key, value));
+    }
+
+    private void backup(File file, String name) {
+        try {
+            java.nio.file.Files.copy(file.toPath(), new File(file.getParentFile(), name).toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            core.plugin().getLogger().log(Level.WARNING, "Could not back up tools.yml before the catalog update", e);
+        }
     }
 
     private YamlConfiguration defaults() {
