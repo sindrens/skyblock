@@ -54,6 +54,8 @@ public final class StaffModule implements SkyblockModule {
         freeze.load();
         // Other modules read this (e.g. /pay refuses frozen players).
         core.placeholders().registerText(id(), "frozen", p -> p != null && freeze.isFrozen(p) ? "true" : "false");
+        // M3.7 trade (and others) refuse players in staff mode.
+        core.placeholders().registerText(id(), "staff_mode", p -> p != null && mode != null && mode.inStaffMode(p) ? "true" : "false");
         reports.register();
         // Phase P 12.9: moderation closes the punishing staff member's claimed reports through this service
         core.services().register(id(), net.skybornmc.skyblock.common.moderation.ReportLink.class, reports);
