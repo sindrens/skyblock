@@ -1,0 +1,72 @@
+# Decision ledger (REVIEW3 §6): owner answers that are a config value, so "answered but never applied" (641, N2-1) turns
+# into a red build instead of a surprise on the live server.
+#
+# One entry per answer id:
+#   id            answer id (quoted), as on the answers pages / docs/OWNER_ANSWERS_REVIEW3.md
+#   answer        what the owner decided, in one line
+#   module        the module that owns the setting
+#   file / path   the typed config file and setting path (plugins/PhoenixSkyblock/<file>)
+#   value         the decided value (scalar settings), or
+#   item          a value that must be IN a list setting (list settings such as afk keys.milestones)
+#   migrate-from  the old code default. At startup a one-time migration (common DecisionMigrations, applied ids are kept in
+#                 plugins/PhoenixSkyblock/decisions-applied.yml) sets the decided value in an existing live file ONLY while
+#                 the live value still equals this old default; a value the owner set himself is never touched. For a list
+#                 setting the old item is replaced by the new one.
+#   check         false = documentation only (no typed setting yet, or a file that is not ours). Default true: the unit test
+#                 DecisionLedgerTest checks the code default against value/item.
+#
+# This file is bundled into the plugin jar as decisions.yml (plugin/build.gradle.kts). Add new answers at the end; never
+# reuse or edit an applied entry's migrate-from (the migration of an id runs once per server).
+decisions:
+  - id: "641"
+    answer: "Stacked spawners add 1 mob per spawner per spawn (was 4; spawners made 4x the money the balance sheet expects)"
+    module: stacking
+    file: stacking.yml
+    path: spawners.mobs-per-spawner
+    value: 1.0
+    migrate-from: 4.0
+
+  - id: "R3-15"
+    answer: "The AFK pool never gives Blaze keys; the 8 h milestone is a Cinder key"
+    module: afk
+    file: afk.yml
+    path: keys.milestones
+    item: "480:cinder:1"
+    migrate-from: "480:blaze:1"
+
+  - id: "N2-1"
+    answer: "Unlimited island joins per season (0 = unlimited). join-cooldown-hours (24 live) is read by no code: open question"
+    module: islands
+    file: islands.yml
+    path: members.max-joins-per-season
+    value: 0
+    migrate-from: 3
+
+  - id: "R3-22"
+    answer: "Full satchel: drops go to the inventory, then /box; the warning shows at most every 3 s"
+    module: depths
+    file: depths.yml
+    path: satchel.full-warning-ms
+    value: 3000
+    migrate-from: 1500
+
+  - id: "R3-9b"
+    answer: "Helpers can't read DMs in /logs; DMs are their own audit category, kept as short as chat"
+    module: core
+    file: audit.yml
+    path: retention.short-categories
+    item: "dm"
+    # migrated by AuditConfig version 2 (ValueChange), not here
+
+  - id: "R3-40"
+    answer: "Money notes: soft limit 20 notes a minute instead of a 10 s cooldown; purge cashed notes after 90 days"
+    module: economy
+    check: false
+    note: "Not config-backed yet: built by queue item ECON-R3; add file/path/value here when it lands"
+
+  - id: "F12"
+    answer: "Hoppers move 64 items every 8 ticks"
+    module: server
+    file: spigot.yml
+    check: false
+    note: "Documentation only, spigot.yml/paper configs are not plugin configs: world-settings.default.hopper-amount 64, ticks-per.hopper-transfer 8, ticks-per.hopper-check 8; Paper hopper.cooldown-when-full true"

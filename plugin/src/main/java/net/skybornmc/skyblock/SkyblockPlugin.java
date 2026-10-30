@@ -93,6 +93,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        applyDecisions();
         ConfigManager configs = new ConfigManager(getDataFolder(), getLogger());
         CoreConfig coreConfig = new CoreConfig();
         configs.load(coreConfig);
@@ -268,6 +269,28 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
     @Override
     public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
         return new VoidChunkGenerator(id == null || id.isBlank() ? "the_void" : id, 0.5, 100, 0.5);
+    }
+
+    /**
+     * REVIEW3 §6 decision ledger: owner answers (docs/decisions.yml, bundled as decisions.yml) are migrated once into the
+     * existing live configs before any config loads; only values that still equal the old default change (logged).
+     */
+    private void applyDecisions() {
+        java.io.InputStream in = getResource("decisions.yml");
+        if (in == null) {
+            getLogger().warning("decisions.yml is missing from the jar; no decision migrations ran");
+            return;
+        }
+        try (java.io.Reader reader = new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)) {
+            net.skybornmc.skyblock.common.config.DecisionMigrations migrations =
+                    new net.skybornmc.skyblock.common.config.DecisionMigrations(getDataFolder(), getLogger());
+            List<String> ran = migrations.apply(migrations.parse(reader));
+            if (!ran.isEmpty()) {
+                getLogger().info("Decision ledger: migrations " + ran + " applied (see the lines above for what changed).");
+            }
+        } catch (java.io.IOException | RuntimeException e) {
+            getLogger().log(java.util.logging.Level.WARNING, "Decision migrations failed; configs keep their values", e);
+        }
     }
 
     /** core.yml → display-timezone (owner #16: Europe/Oslo); a wrong zone keeps the current one and is logged. */
