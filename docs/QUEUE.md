@@ -33,6 +33,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
 | PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
 | FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | — | modules/perks or cosmetics | ✅ (in R2A) |
+| BUILDS | Owner 2026-10-30: paste all finished builds (server/builds: spawn base + forge quarter + market square, Depths gate + mine T1/T2 + forest T1 + graveyard T1, starter island) on the test server with FAWE (backup first) and wire their metadata (spawn point, portals, holograms, NPC spots, zones, regions); starter island = /is schematic | — | modules/worlds (+ islands/depths/essentials hooks) | ⬜ next free slot |
+| DESIGN | Owner 2026-10-30: sketches for GUIs, chat, /shop (quick-buy grid), lores, prices, /sell chest GUI (put items in + click sell; sell also in satchel and shop), /forge etc.; vanilla now + resource-pack version later; owner reviews before implementation | — | docs/design + artifact | 🔄 main session |
 | AFK | AFK pool (fuel + money + keys, better loot over time, max 8 h/day) | economy, islands fuel | new module | ⬜ (needs balance numbers) |
 
 ## Phase P: Punishment system v2 (owner spec `docs/specs/PUNISH_SPEC.md` + `PUNISH_SPEC_NOTES.md`) — one lane (modules/moderation), sequential, priority
