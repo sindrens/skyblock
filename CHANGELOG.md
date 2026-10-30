@@ -110,6 +110,7 @@
 - AFK pool (new module afk): stand in the pool at spawn for stage-scaled money, island fuel, crate keys at 1/3/6/8 h and a rare banked +50% sell booster every 15 min; max 8 h/day per account, one earning account per IP. Closed until an `afk_pool` region exists.
 - `/sell` is now a sell chest (put items in, Sell inventory, live total + bonus, crash-safe, items always given back, big sales as one chat line with hover); `/shop` is a quick-buy grid (left 1 / right 64 / shift amount screen, Bedrock tap → amount screen, partial buys charge only what fits) with a Sell button; satchel gets a Sell chest button (SELL2).
 - Banks (BANK2): interest every 8 h (00/08/16 UTC) at 0.6% personal / 1.0% island per payout (+50% a day); withdrawal fee 2%, lowered by island masteries to 1.5 / 1.0 / 0.5% (ready for /is masteries); bank menu shows the next payout countdown and the fee.
+- `/box` item mailbox: items that don't fit are never dropped; they wait per profile in /box (take one or "Take all that fit"), with join notices, a 500-stack soft cap and admin view/remove/clear in /inspect. Sell chest, shop, Forge, Enchanter, wardrobe, trade, auction and staff gives use it.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.

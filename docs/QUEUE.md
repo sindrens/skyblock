@@ -44,7 +44,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PLAN7 | Plan Phase 7 (island production, Island Fuel, collectors, outposts) + questions; unblocks E6 | — | docs | ⬜ |
 | PLAN8 / PLAN9 / PLAN11 / PLAN12 / PLAN13 | Plans for PvE, conquest/events, store/ranks/Discord, seasons, launch prep | — | docs | ⬜ |
 | ANS1 | Owner answers round 1: islands/profiles rules (no cooldowns, start money per profile, no 30-min limit, team 4+leader, no setmyhome, kick backup + staff restore, no disband with members, bank deleted on disband, respawn at spawn, hide level line, size cap 9x9, profile delete removes listings, no buying own-profile listings) | owner 30 Oct | islands, profiles, hud | 🔄 |
-| BOX | `/box` item mailbox: nothing is ever dropped; every overflow (sell chest, shop, crates, gifts, staff gives) goes to the box | owner answer 7 | common + economy | 🔄 |
+| BOX | `/box` item mailbox: nothing is ever dropped; every overflow (sell chest, shop, crates, gifts, staff gives) goes to the box | owner answer 7 | common + economy | ✅ |
 | BANK2 | Bank interest higher, every 8 h; 2% withdrawal fee lowered by island masteries | owner answer 169 | economy | ✅ |
 | TUTORIAL | Join flow: portal at spawn creates the island and always teleports to it; guided tutorial on the island (camera/animation, arrow guide, step-by-step), permissions unlock per step, full perms when done; help NPCs/holograms everywhere | owner answers 43, 44, 131, 159 | needs a plan + sketches first | ⬜ plan |
 | STARTER | Custom starter chest designed for this server (proposal to owner) | owner answer 158 | islands | ⬜ |
