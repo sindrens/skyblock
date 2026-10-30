@@ -1,14 +1,14 @@
 # Morning report: night of 29–30 October 2026
 
-Everything below is live on the test server (latest release: **update66**, 24 modules). GitHub `main` is up to date.
+Everything below is live on the test server (latest release: **update70**, 24 modules). GitHub `main` is up to date.
 Nothing has been tested in game by me: only unit tests ran (`./gradlew build`, all green). The checklists below are what you need to try.
 
 ## 1. Short version
 
-- **28 queue items merged tonight**: island profiles, enchants (+ stacked-mob enchants), wardrobe (+ set levels, merging, `/loadout`), `/sell`, `/shop`, `/trade`, `/bank`, island menu + island chat, island notes, visiting/warps, islands round 2, per-place scoreboards, stacking, tools, punishments P2–P4, crystals, round-2 decisions, `/freerank`, message cleanup (UX1 + UX2), balance re-run, enchant + wardrobe plans.
+- **33 queue items merged tonight**: island profiles, enchants (+ stacked-mob enchants), wardrobe (+ set levels, merging, `/loadout`), `/sell`, `/shop`, `/trade`, `/bank`, Depths satchel + drops, island stats, punishments P5 + P6, island menu + island chat, island notes, visiting/warps, islands round 2, per-place scoreboards, stacking, tools, punishments P2–P4, crystals, round-2 decisions, `/freerank`, message cleanup (UX1 + UX2), balance re-run, enchant + wardrobe plans.
 - **One outage**: punishments were off for ~9 minutes on the test server (04:36–04:45). Fixed; see section 6.
 - **Nothing sketchy happened.** No suspicious instructions anywhere (see `docs/SECURITY_LOG.md`).
-- Still running: punishments P5, Depths satchel + drops (M4.4 + M4.9), island stats (M2.6). See section 7.
+- Nothing running right now; next items in section 7.
 
 ## 2. Needs your decision (most important first)
 
@@ -48,6 +48,10 @@ Nothing has been tested in game by me: only unit tests ran (`./gradlew build`, a
 - **`/bank` (M3.3)**: personal bank per profile (10 tiers) + island bank, interest every 3 h, island bank rights.
 - **Punishments P4**: approval for big punishments, "mute ended" message, probation (+1 step for 14 days), `/watch` + `/watchlist`.
 - **Message cleanup (UX2)**: moderation, Depths and island texts in the same short format.
+- **Punishments P5**: `/pbulk` + Bulk button in `/p` (each player their own step, [Undo all]), punish from a `/logs` chat line, appeals (`/appeal`, staff `/appeals` with Accept/Reduce/Deny).
+- **Punishments P6**: raid lockdown (`/lockdown chat|join|off|status` + menu, only new accounts), raid alert, `/psuggest` for anticheat suggestions (never applied automatically), network-ready storage.
+- **Depths satchel + drops (M4.4 + M4.9)**: drops go to a per-profile satchel (Sell all, take out, upgrades), `Satchel N / M` on the scoreboard, drop tables per tier, crystals every 3 s, the Forge uses satchel materials.
+- **Island stats (M2.6)**: `/is stats` (island menu → Stats): mined, chopped, crops, placed, generator, kills, sold + money earned, visitors, time on island; today / week / last week / all time with each member's share.
 
 **Progression**
 - **Enchants** (`/enchanter`): 48 enchants, unique tradeable books and Disenchant Scrolls, apply/upgrade/combine/remove/shatter, Book shop rolls, guide. Swiftness, Prosperity, Tempering and Scholar's Insight already work.
@@ -90,6 +94,11 @@ Nothing has been tested in game by me: only unit tests ran (`./gradlew build`, a
 | `/shop [category]` | everyone |
 | `/trade [player]`, `/trade accept [player]`, `/trade deny [player]` | everyone |
 | `/bank` | everyone |
+| `/appeal [id] <text>` | everyone |
+| `/is stats` | everyone |
+| `/pbulk <reason> <players...>`, `/appeals` | staff (mod+) |
+| `/lockdown [chat\|join\|off\|status]`, `/psuggest <player> <reason> [details]` | staff (helper+) |
+| `/isadmin stats view\|reset <island>` (not in the plan, added by the agent: approve or remove) | staff |
 | `/loadout [name]` | everyone |
 | `/watch <player> [reason]`, `/watch remove <player>`, `/watchlist` | staff |
 | `/forge [type]`, `/tool` | everyone |
@@ -168,6 +177,11 @@ Tip: an alt account helps for anything with two players.
 42. `/bank`: deposit, withdraw (fee shown), buy tier 2; island menu → Bank; Member withdraw locked by default; other profile can't reach your bank.
 43. P4: as mod, `/p Steve hacking` → "Sent for approval"; admin clicks [Approve]. `/tempmute Steve 1m` → "mute ended" once. `/watch Steve reason` → staff see it when Steve joins.
 
+44. P5: `/p Steve` → Bulk → pick 2 more players → Spam → confirm → [Undo all]. `/logs chat Steve` → click a line → `/p` opens with evidence. Muted alt: `/appeal <text>`; staff `/appeals` → Accept / Reduce / Deny.
+45. P6: `/lockdown` menu → Chat lockdown: a brand-new account can't chat or `/msg`, ranked/older players can. `/lockdown join 5m`: a never-seen account gets "server is busy". Console: `psuggest <name> hacking Grim: Reach` → suggestion line, nothing applied.
+46. Depths: mine/chop → drops go to the satchel (`/dungeon` → Satchel), scoreboard shows Satchel N / M, Sell all pays once (double click), "+N crystals" every few seconds, full satchel = block isn't broken. Forge a copper pickaxe with 256 Coal from the satchel.
+47. `/is stats`: mine generator stone, kill mobs, sell items, then reopen: numbers go up; place + break the same block gives nothing; click a category for each member's share.
+
 ### Look and feel
 35. Messages: green ✔ / red ✘ with gray text, yellow [Click] buttons. Scoreboard and tab look clean on Java and Bedrock (no boxes instead of symbols). Rank change shows within ~1 s.
 
@@ -176,12 +190,13 @@ Tip: an alt account helps for anything with two players.
 - **Punishments down ~9 min (update53).** A new database column was named `lines`, which MariaDB doesn't allow, so the moderation module didn't start. Then `/pnote` was built in a way the command framework refuses. Fixed in update54/55. To stop it happening again: a test now fails the build on reserved column names, a broken command no longer disables its whole module, and the agent instructions list these traps.
 - **Profiles: two holes found and fixed before release.** The Forge charged/refunded profile 1's money, and stacked items could lose the "dropped by" tag (so your other profile could pick them up). Both fixed in update50.
 - **Config sync during merges** could overwrite new message texts with the older server copy. Caught by a test, fixed in the sync script; I checked every merge tonight and nothing was lost.
-- **Fixes I made while merging:** the island scoreboard had dropped Gems (put back, your UI decision); stacked-spawner mobs gave sword XP although `tools.yml` says spawner mobs give none (fixed); `/sell` didn't give wardrobe set XP (hooked up).
+- **Tools catalog bug (found tonight, fixed in update69):** on servers where `tools.yml` already existed, blueprints and abilities were never loaded. Fixed, and tool tiers/blueprints were updated once to the Depths drop recipes (backup: `tools-catalog-v1-backup.yml` on the server).
+- **Fixes I made while merging:** the island scoreboard had dropped Gems (put back, your UI decision); stacked-spawner mobs gave sword XP although `tools.yml` says spawner mobs give none (fixed); `/sell` didn't give wardrobe set XP or island stats (both hooked up).
 - Small: two `tools.yml` settings warned at startup, one islands message used a symbol Bedrock can't show. Fixed.
 
 **Security:** nothing suspicious. No Gmail, Drive, browser or computer control used; no purchases or messages; no files deleted on your Mac. The only Mac actions were copying release files to `~/Development/.skyborn-claude/` and running the release script. Log: `docs/SECURITY_LOG.md`.
 
 ## 7. Still running / next
 
-- Running: P5 (bulk punishments, punish from logs, appeals), M4.4 + M4.9 (Depths satchel, drops, crystals), M2.6 (island stats).
-- Next in the queue: M4.7 Forest + M4.8 combat zones (then E2 book drops in the Depths), P6+ (rest of the punishment spec), M3.8 economy dashboard, F4 shared teleport warmup, F3 achievements.
+- Running: nothing right now.
+- Next in the queue: M4.7 Forest + M4.8 combat zones (then E2 book drops in the Depths), P7–P10 (rest of the punishment spec: sanctions, island punishments, rule numbers, training mode, guard/rollback, monthly report), M3.8 economy dashboard, F4 shared teleport warmup, F3 achievements.
