@@ -39,7 +39,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
-- Last released bundle: update106. Next bundle number: 107. Release with `release2.sh N` (bundle base: always 3516796, the Mac checkout HEAD that never moves now) (bundle + deploy<N>.tgz built in the cloud; no Mac checkout, works without delete permission).
+- Last released bundle: update106 (UX3 + PERF5 merged, waiting for the next batch). Next bundle number: 107. Release with `release2.sh N` (bundle base: always 3516796, the Mac checkout HEAD that never moves now) (bundle + deploy<N>.tgz built in the cloud; no Mac checkout, works without delete permission).
 - Owner gets a push notification on every release (PushNotification tool).
 
 ## Owner answers page
