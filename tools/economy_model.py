@@ -62,6 +62,7 @@ JAVA = {
     "enchanter.yml": "modules/enchants/src/main/java/net/skybornmc/skyblock/enchants/EnchanterConfig.java",
     "wardrobe.yml": "modules/wardrobe/src/main/java/net/skybornmc/skyblock/wardrobe/WardrobeConfig.java",
     "afk.yml": "modules/afk/src/main/java/net/skybornmc/skyblock/afk/AfkConfig.java",
+    "bank.yml": "modules/economy/src/main/java/net/skybornmc/skyblock/economy/bank/BankConfig.java",
 }
 CAP_JAVA = "common/src/main/java/net/skybornmc/skyblock/common/economy/MultiplierCap.java"
 TOOLS_YML = "modules/tools/src/main/resources/tools-defaults.yml"
@@ -251,7 +252,9 @@ def round_half_up(x: float) -> float:
 
 START_MONEY = 1_000
 SEASON_DAYS = 90
-PAYOUTS_PER_DAY = 8  # interest every 3 h
+# BANK2 (owner #169): interest every 8 h (3 payouts a day; M3.3 was every 3 h = 8 a day). Read from BankConfig.
+PERIOD_HOURS = cfg("bank.yml", "interest.period-hours", 8.0)
+PAYOUTS_PER_DAY = 24 / PERIOD_HOURS
 
 # The Depths: 12 mine tiers (reference wing), forest 11, combat 10.
 MINE_TIERS = ["Coal", "Copper", "Iron", "Gold", "Redstone", "Lapis", "Diamond",
@@ -430,15 +433,19 @@ AH_VOLUME = 0.10         # share of earned money that changes hands on the AH
 AH_FEE = 0.01            # auction.yml fee.percent
 AH_TAX = 0.05            # auction.yml tax.percent
 
-# Banks
-PERSONAL_RATE = 0.0015
-ISLAND_RATE = 0.0025
-EARLY_FEE = 0.02
+# Banks (BANK2: rates and payout caps are 4x the M3.3 values per payout; 3 payouts a day instead of 8 = +50% a day).
+# Rates and the fee are read from BankConfig; the payout caps are checked against bank.yml's tier lists (§11).
+PERSONAL_RATE = cfg("bank.yml", "interest.personal-rate-percent", 0.6) / 100
+ISLAND_RATE = cfg("bank.yml", "interest.island-rate-percent", 1.0) / 100
+EARLY_FEE = cfg("bank.yml", "withdraw.fee-percent", 2.0) / 100
+MASTERY_FEES = [EARLY_FEE * 100] + list(cfg("bank.yml", "withdraw.mastery-fee-percent", [1.5, 1.0, 0.5]))
 PB_CAP1, PB_CAPG = 100_000, 5.0
 PB_COST_SHARE = 0.02
-PB_PAYOUT1, PB_PAYOUTG = 150, 3.2
+PB_PAYOUT1, PB_PAYOUTG = 600, 3.2
 IB_CAP0, IB_CAPG = 1_000_000, 4.0
-IB_PAYOUT0, IB_PAYOUTG = 2_500, 3.0
+IB_PAYOUT0, IB_PAYOUTG = 10_000, 3.0
+# M3.3 (before BANK2), for the before/after table (§6.4).
+M33_BANK = {"PAYOUTS_PER_DAY": 8, "PERSONAL_RATE": 0.0015, "ISLAND_RATE": 0.0025, "PB_PAYOUT1": 150, "IB_PAYOUT0": 2_500}
 
 # Player archetypes (BAL2: 1 h / 3 h / 8 h per day). save = share of income banked and never spent;
 # bank_share = share of spare cash also parked in the bank; boost = share of time a personal sell booster runs.
@@ -1590,7 +1597,8 @@ def t_params():
         ("Events/quests/crates", f"{EVENT_SHARE} x Depths income per played hour", "rewards defined per tier"),
         ("Shop spend", pct(SHOP_SHARE) + " of earned", "blocks, decor, seeds"),
         ("AH", f"{pct(AH_VOLUME)} of earned traded, fee {pct(AH_FEE)} + tax {pct(AH_TAX)}", "only fee+tax leave the economy"),
-        ("Interest", f"personal {PERSONAL_RATE * 100:.2f}% / island {ISLAND_RATE * 100:.2f}% per 3 h", "capped per payout"),
+        ("Interest", f"personal {PERSONAL_RATE * 100:.2f}% / island {ISLAND_RATE * 100:.2f}% per {PERIOD_HOURS:g} h",
+         f"capped per payout; withdrawal fee {' -> '.join(f'{f:g}%' for f in MASTERY_FEES)} by island mastery"),
         ("Crystals", f"{TK1} x {TKG}^(t-1) per block, +{pct(CRY_MISSIONS)} island missions", "not tradeable (CR3)"),
         ("Daily uniques casual / regular / grinder", " / ".join(str(POPULATION[k]) for k in KINDS), "avg ~112 online, peak ~300"),
     ]
@@ -2009,7 +2017,7 @@ def t_interest_personal():
         pay = min(unc, pb_payout_cap(k))
         rows.append([k, money(cap), money(pb_cost(k)), money(pb_payout_cap(k)), money(unc),
                      f"{pay / cap * 100:.3f}%", money(pay * PAYOUTS_PER_DAY)])
-    return table(["Tier", "Capacity", "Unlock cost", "Payout cap (per 3 h)", "Uncapped payout at full",
+    return table(["Tier", "Capacity", "Unlock cost", f"Payout cap (per {PERIOD_HOURS:g} h)", "Uncapped payout at full",
                   "Effective rate at full", "Max interest / day"], rows)
 
 
@@ -2022,8 +2030,79 @@ def t_interest_island():
         pay = min(unc, ib_payout_cap(lv))
         rows.append([lv, money(cap), money(ib_payout_cap(lv)), money(unc), f"{pay / cap * 100:.3f}%",
                      money(pay * PAYOUTS_PER_DAY)])
-    return table(["Bank Capacity / Interest level", "Capacity", "Payout cap (per 3 h)", "Uncapped payout at full",
+    return table(["Bank Capacity / Interest level", "Capacity", f"Payout cap (per {PERIOD_HOURS:g} h)", "Uncapped payout at full",
                   "Effective rate at full", "Max interest / day"], rows)
+
+
+def _interest_summary():
+    """Season interest share per archetype and interest per day at month 1 (the current parameters)."""
+    out = {}
+    for k in KINDS:
+        s = sim(k)[1]["Month 3"]
+        out[k] = (s["earned"]["interest"] / s["total_earned"], sim(k)[2][29]["earned"]["interest"])
+    out["sink"] = season_sink_ratio()
+    out["min14"] = min_sink_ratio(14)[0]
+    return out
+
+
+def _with(changes: dict, fn):
+    g = globals()
+    old = {k: g[k] for k in changes}
+    g.update(changes)
+    _CACHE.clear()
+    try:
+        return fn()
+    finally:
+        g.update(old)
+        _CACHE.clear()
+
+
+@register("interest_before_after")
+def t_interest_before_after():
+    """BANK2 before/after: M3.3 (every 3 h) vs. now (every 8 h, 4x rate and cap per payout)."""
+    before = _with(M33_BANK, _interest_summary)
+    after = _interest_summary()
+    rows = [
+        ["Payouts", "every 3 h (8 a day)", f"every {PERIOD_HOURS:g} h ({PAYOUTS_PER_DAY:g} a day)"],
+        ["Rate per payout, personal / island", "0.15% / 0.25%", f"{PERSONAL_RATE * 100:g}% / {ISLAND_RATE * 100:g}%"],
+        ["Max per day, personal tier 1 (full)", money(8 * 150), money(PAYOUTS_PER_DAY * pb_payout_cap(1))],
+        ["Max per day, personal tier 5 (full)", money(8 * 150 * 3.2 ** 4), money(PAYOUTS_PER_DAY * pb_payout_cap(5))],
+        ["Max per day, island level 0 (full)", money(8 * 2_500), money(PAYOUTS_PER_DAY * ib_payout_cap(0))],
+        ["Max per day, island level 5 (full)", money(8 * 2_500 * 3 ** 5), money(PAYOUTS_PER_DAY * ib_payout_cap(5))],
+    ]
+    for k in KINDS:
+        rows.append([f"{LABEL[k]}: interest per day at month 1", f"{money(before[k][1])}/day", f"{money(after[k][1])}/day"])
+    for k in KINDS:
+        rows.append([f"{LABEL[k]}: interest share of season income", pct(before[k][0], 1), pct(after[k][0], 1)])
+    rows.append(["Sink ratio over the season", pct(before["sink"]), pct(after["sink"])])
+    rows.append(["Lowest 14-day sink ratio", pct(before["min14"]), pct(after["min14"])])
+    rows.append(["Withdrawal fee", "2%", " -> ".join(f"{f:g}%" for f in MASTERY_FEES) + " (island mastery 0-"
+                 + str(len(MASTERY_FEES) - 1) + ")"])
+    return table(["", "M3.3 (before)", "BANK2 (now)"], rows)
+
+
+def _amount(text: str) -> float:
+    m = re.fullmatch(r"([0-9.]+)([kMBT]?)", text.strip())
+    if not m:
+        return float("nan")
+    return float(m.group(1)) * {"": 1, "k": 1e3, "M": 1e6, "B": 1e9, "T": 1e12}[m.group(2)]
+
+
+def bank_tables_match() -> tuple:
+    """bank.yml tier lists (BankConfig defaults) vs. the model's payout caps: (ok, detail)."""
+    personal = config_strings("bank.yml", "personal.tiers") or []
+    island = config_strings("bank.yml", "island.levels") or []
+    bad = []
+    for i, line in enumerate(personal):
+        parts = line.split()
+        if len(parts) != 3 or abs(_amount(parts[2]) - pb_payout_cap(i + 1)) > 1 or abs(_amount(parts[0]) - pb_cap(i + 1)) > 1:
+            bad.append(f"personal tier {i + 1}")
+    for i, line in enumerate(island):
+        parts = line.split()
+        if len(parts) != 2 or abs(_amount(parts[1]) - ib_payout_cap(i)) > 1 or abs(_amount(parts[0]) - ib_cap(i)) > 1:
+            bad.append(f"island level {i}")
+    ok = len(personal) == 10 and len(island) == 11 and not bad
+    return ok, ("10 tiers + 11 levels match" if ok else ", ".join(bad) or f"{len(personal)} tiers / {len(island)} levels")
 
 
 @register("interest_vs_income")
@@ -2714,6 +2793,10 @@ def t_config_changes():
          ", ".join(f"Lv{a}:{b}" for a, b in STACK_STEPS[1:]), "feeds `IslandService#spawnerStackLimit`"),
         ("`masteries` (Phase 5)", "`market-contacts.percent-per-level` / `max-level`", "not built",
          f"{SELL_MASTERY_PER_LEVEL * 100:g} / {SELL_MASTERY_MAX}", "MA5"),
+        ("`masteries` (Phase 5)", "bank-fee mastery levels 1-" + str(len(MASTERY_FEES) - 1), "hook only (BANK2)",
+         " / ".join(f"{f:g}%" for f in MASTERY_FEES[1:]),
+         "lowers the 2% bank withdrawal fee (owner #169); feeds `IslandService#bankFeeMasteryLevel`, steps in "
+         "`bank.yml → withdraw.mastery-fee-percent`"),
     ]
     rows.extend([list(p) for p in planned])
     return table(["File", "Key", "Today", "Suggested", "Why"], rows)
@@ -2800,8 +2883,13 @@ def t_checks():
     chk("Spawners 8-25% of income (regular, season)", 0.08 <= e["spawners"] / te <= 0.25, pct(e["spawners"] / te))
     chk("Events share 10-20% (regular, season)", 0.10 <= e["events"] / te <= 0.20, pct(e["events"] / te))
     shares = [sim(k)[1]["Month 3"]["earned"]["interest"] / sim(k)[1]["Month 3"]["total_earned"] for k in KINDS]
-    chk("Interest <= 5% of income (all, season)", all(x <= 0.05 for x in shares),
-        ", ".join(pct(x, 1) for x in shares), near=all(x <= 0.055 for x in shares))
+    # BANK2 (owner #169): higher interest; the casual share may rise but stays under ~8% of season income.
+    chk("Interest <= 8% of income (all, season)", all(x <= 0.08 for x in shares),
+        ", ".join(pct(x, 1) for x in shares), near=all(x <= 0.088 for x in shares))
+    ok, detail = bank_tables_match()
+    chk("bank.yml payout caps = the model (BANK2)", ok, detail)
+    chk("Interest every 8 h, fee steps only go down (BANK2)", PERIOD_HOURS == 8 and all(
+        a >= b for a, b in zip(MASTERY_FEES, MASTERY_FEES[1:])), f"{PERIOD_HOURS:g} h, fee {MASTERY_FEES}")
     top1 = sim("grinder")[1]["First hour"]["total_earned"]
     chk("First hour 30k-100k (grinder)", 30_000 <= top1 <= 100_000, money(top1))
     w2 = sim("grinder")[1]["Week 2"]["total_earned"]

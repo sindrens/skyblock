@@ -879,7 +879,7 @@ _Questions for this feature: 12 in the sheet (Feature = "Money notes (/withdraw)
 
 ### Bank (personal and island)
 
-Each profile has a personal bank with 10 tiers. Each island has its own bank that the team shares. Banks keep money safe and pay interest every 3 hours. Taking money out costs a 2% fee, except right after a payout. The island leader decides who may deposit, withdraw and see history.
+Each profile has a personal bank with 10 tiers. Each island has its own bank that the team shares. Banks keep money safe and pay interest every 8 hours. Taking money out costs a 2% fee (island masteries will lower it), except right after a payout. The island leader decides who may deposit, withdraw and see history.
 
 | Command | Who | What |
 |---|---|---|
@@ -892,7 +892,7 @@ Each profile has a personal bank with 10 tiers. Each island has its own bank tha
 2. Deposit $500. Check purse goes down and bank up. Try depositing more than the free room.
 3. Withdraw $100. The confirm screen should show the 2% fee and what you get.
 4. Buy tier 2 ($10k). Check the capacity and the payout cap change.
-5. Wait for the next payout time (every 3 hours from midnight UTC) or ask staff to shorten it. Check the interest line in history and that money arrived.
+5. Wait for the next payout time (every 8 hours from midnight UTC: 01:00, 09:00, 17:00 Oslo winter time) or ask staff to shorten it. Check the interest line in history and that money arrived.
 6. Withdraw within 10 minutes after a payout. It should be free.
 7. As leader, open /is permissions and remove Bank deposit from Member. Test with an alt member.
 8. Try to deposit into another own profile's bank. It must be refused.
@@ -903,7 +903,7 @@ _Questions for this feature: 14 in the sheet (Feature = "Bank (personal and isla
 
 ### Interest (bank payouts)
 
-Every 3 hours the server pays interest on the lowest balance each bank had during that period. Interest is paid even while players are offline, but only if the profile played at least 2 hours in the last 7 days. Each tier caps how much one payout can be. The interest is new money, so it is also watched on the dashboard.
+Every 8 hours the server pays interest on the lowest balance each bank had during that period. Interest is paid even while players are offline, but only if the profile played at least 2 hours in the last 7 days. Each tier caps how much one payout can be. The interest is new money, so it is also watched on the dashboard.
 
 | Command | Who | What |
 |---|---|---|

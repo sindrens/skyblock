@@ -1,6 +1,11 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- BANK2 interest (#169): every 8 h at fixed times (00:00, 08:00, 16:00 UTC = 01:00, 09:00, 17:00 Oslo in winter). Rate and payout cap per payout ×4 (personal 0.6%, island 1.0%) = +50% interest per day; casual interest ~7.7% of season income (ECONOMY_BALANCE §6.0). Higher still, or other payout times? (default: as built)
+- BANK2 fee steps (#169): 2% base, island bank-fee mastery level 1 / 2 / 3 = 1.5% / 1.0% / 0.5% (`bank.yml → withdraw.mastery-fee-percent`). `/is masteries` is not built yet, so everyone pays 2% until it is (hook `IslandService.bankFeeMasteryLevel`). Which mastery/levels unlock the steps, and should it ever reach 0%? (default: 3 levels, lowest 0.5%)
+- BANK2 personal bank fee: the personal bank uses the mastery of the **profile's island** (no island = 2%), so leaving an island brings the fee back to 2%. OK, or island bank only? (default: both, as the task said "every withdrawal")
+- BANK2 forfeit: a withdrawal with a fee still loses the whole current period's interest; with 8 h periods that is up to 8 h of interest (was 3 h). Keep, or only charge the fee? (default: keep; free 10 min after each payout)
+- BANK2 change-over: banks that were mid-period when the server switches from 3 h to 8 h skip the rest of that 8 h period once (the part already paid under 3 h is never paid again). OK? (default: yes, safest)
 - SELL2 sell chest: big sales (chat line + hover) apply to every /sell sale (chest, `/sell hand`, `/sell all`), not only the chest, so all sale feedback looks the same. OK? (default: all sales)
 - SELL2 sell chest: when the chest is closed by a profile switch, items go straight back to the inventory if the switch has not started yet, otherwise they are kept for that profile and handed back on the next switch back to it (never lost). OK? (default: as built)
 - SELL2 sell chest: "Sell inventory" leaves tools and weapons in the hotbar (anything with durability), armor and offhand; everything else sellable in the hotbar is moved. OK? (default: yes, `sell.chest.keep-hotbar-tools`)
@@ -461,7 +466,7 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 - M3.3 bank: bank money doesn't count in `/baltop` (purse only). Count it? (default: no)
 - M3.3 bank: season reset: personal and island banks should wipe with money (#50) once the season service exists (Phase 10). (default: wipe with money)
 - M3.3 bank: no staff command for banks (only the planned `/bank`); staff see every bank move in `/logs` (reasons `bank_deposit`, `bank_withdraw`, `bank_fee`, `bank_tier`, `interest`, `bank_payout`). Add `/eco bank <player|island> ...` to view/fix banks? (default: not built until approved)
-- M3.3 bank: no chat message for interest payouts (they happen every 3 h); the menu shows rate, cap and the next payout, the history every payout. Add an optional `/settings` toggle "interest messages"? (default: no message)
+- M3.3 bank: no chat message for interest payouts (they happen every 8 h since BANK2); the menu shows rate, cap and the next payout, the history every payout. Add an optional `/settings` toggle "interest messages"? (default: no message)
 - M3.3 bank: interest paused when the profile (island: at least one member) played < 2 h in the last 7 days (owner #38). Played time is counted per profile in whole minutes while online (AFK counts too, no AFK detection yet). OK? (default: yes)
 
 ## Economy
