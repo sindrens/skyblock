@@ -1,0 +1,57 @@
+# AFK pool (O10, RW3): chat lines, action bar and scoreboard values. MiniMessage + style tags (style.yml).
+# Bedrock-safe symbols only. Reload: /skyblock reload afk
+
+# Entering / leaving the pool (chat).
+# <minutes> = time.reward-minutes
+entered: "<prefix><c:text>You're in the <c:value>AFK pool</c:value>. Stay here to earn rewards every <minutes> minutes, no need to move."
+# <today> credited today, <cap> daily limit
+left: "<prefix><c:text>You left the AFK pool. Today: <c:value><today></c:value><c:muted>/<cap></c:muted>. Your progress is kept."
+
+# Once when the daily limit is reached. <cap> limit, <reset> time until midnight
+capped: "<prefix><c:warning><sym:time></c:warning> <c:text>You reached today's AFK limit of <c:value><cap></c:value>. It resets in <c:value><reset></c:value>."
+# Once when another account on the same connection is already earning.
+ip-blocked: "<prefix><c:warning><sym:cross></c:warning> <c:text>Another account on your connection is already earning in the AFK pool. Only one account per connection can earn at a time."
+
+# Rewards. <money>, <fuel> minutes of island fuel, <percent> reward size of the session
+reward:
+  with-fuel: "<prefix><c:success><sym:check></c:success> <c:text>AFK reward: <c:money>+<money></c:money> <c:text>and <c:value><fuel> min</c:value> <c:text>of island fuel <c:muted>(<percent>%)"
+  no-island: "<prefix><c:success><sym:check></c:success> <c:text>AFK reward: <c:money>+<money></c:money> <c:muted>(<percent>%)</c:muted><c:text>. Create an island with <c:value>/is</c:value> to get island fuel too."
+  money: "<prefix><c:success><sym:check></c:success> <c:text>AFK reward: <c:money>+<money></c:money> <c:muted>(<percent>%)"
+
+# Crate keys at daily milestones. <amount>, <crate> crate name, <time> today's milestone
+key:
+  earned: "<prefix><c:success><sym:star></c:success> <c:text><c:value><time></c:value> in the AFK pool today: <c:value><amount>x</c:value> <crate><c:text>!"
+  kept: "<prefix><c:success><sym:star></c:success> <c:text><c:value><time></c:value> in the AFK pool today: <c:value><amount>x</c:value> <crate><c:text>! Crates open soon; your keys are saved until then."
+  delivered: "<prefix><c:success><sym:check></c:success> <c:text><c:value><amount></c:value> saved AFK pool key(s) were added to your keys."
+
+# Personal sell booster. <percent>, <minutes> won, <banked> total banked, <time> running time
+booster:
+  won: "<prefix><c:success><sym:sparkle></c:success> <c:text>Lucky! You won a <c:value>+<percent>% sell booster</c:value> <c:text>(<minutes> min). It starts when you leave the AFK pool. Banked: <c:value><banked></c:value>."
+  started: "<prefix><c:success><sym:sparkle></c:success> <c:text>Your AFK <c:value>+<percent>% sell booster</c:value> <c:text>is running for <c:value><time></c:value>."
+
+# Action bar inside the pool (every few seconds). <next> countdown, <today>, <cap>, <percent>, <reset>
+action-bar:
+  earning: "<c:flame>AFK Pool</c:flame> <c:muted>│</c:muted> <c:text>Next reward</c:text> <c:value><next></c:value> <c:muted>│</c:muted> <c:text>Today</c:text> <c:value><today></c:value><c:muted>/<cap></c:muted> <c:muted>│</c:muted> <c:value><percent>%"
+  capped: "<c:flame>AFK Pool</c:flame> <c:muted>│</c:muted> <c:warning>Daily limit reached</c:warning> <c:muted>│</c:muted> <c:text>Resets in</c:text> <c:value><reset>"
+  ip-capped: "<c:flame>AFK Pool</c:flame> <c:muted>│</c:muted> <c:warning>Your connection reached today's limit</c:warning> <c:muted>│</c:muted> <c:text>Resets in</c:text> <c:value><reset>"
+  ip-blocked: "<c:flame>AFK Pool</c:flame> <c:muted>│</c:muted> <c:warning>Paused:</c:warning> <c:text>another account on your connection is earning"
+  no-permission: "<c:flame>AFK Pool</c:flame> <c:muted>│</c:muted> <c:error>You can't earn AFK rewards"
+  loading: "<c:flame>AFK Pool</c:flame> <c:muted>│</c:muted> <c:text>Loading..."
+
+# Scoreboard. "line" = placeholder afk_line: the whole line on the spawn board while inside the pool (empty outside,
+# so it doesn't take a line). <status> = countdown or one of the words below, <today> credited today.
+# The other values are placeholder afk_pool while inside and not earning; while earning it is the countdown.
+scoreboard:
+  line: " <c:muted>AFK</c:muted>  <c:value><status></c:value> <c:muted><sym:dot> <today>"
+  capped: "Limit reached"
+  paused: "Paused"
+  no-permission: "Off"
+  loading: "..."
+
+# Crate names for key messages (until the crates module has its own names). Missing = the id + " Key".
+crate-names:
+  ember: "<c:common>Ember Key"
+  cinder: "<c:uncommon>Cinder Key"
+  blaze: "<c:rare>Blaze Key"
+  inferno: "<c:epic>Inferno Key"
+  phoenix: "<c:legendary>Phoenix Key"

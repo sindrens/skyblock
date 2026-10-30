@@ -532,6 +532,14 @@ topics:
         lines:
           - "<c:text>If you don't move for a while you're"
           - "<c:text>marked as away by yourself."
+      - title: "<c:value>AFK pool"
+        lines:
+          - "<c:text>Stand in the <c:value>AFK pool</c:value> <c:text>at spawn,"
+          - "<c:text>no need to move. Every 15 minutes:"
+          - "<c:text>a little money and island fuel. Keys"
+          - "<c:text>at 1 h, 3 h, 6 h and 8 h a day; the"
+          - "<c:text>longer you stay, the bigger the reward."
+          - "<c:text>Max 8 h a day, one account per connection."
 
   perks:
     icon: diamond

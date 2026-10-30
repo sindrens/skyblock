@@ -44,7 +44,8 @@ scoreboard:
       - " <c:muted>Money</c:muted>  <money>"
       - " <c:muted>Crystals</c:muted>  <crystals>"
       - " <c:muted>Gems</c:muted>  <gems>"
-      - ""
+      # Blank separator, except while standing in the AFK pool: then the AFK line (messages/afk.yml -> scoreboard.line).
+      - "<ph:afk_line>"
       - " <c:muted>Island</c:muted>  <island>"
       - " <c:sky_ice>play.skybornmc.net"
 

@@ -61,6 +61,7 @@ JAVA = {
     "stacking.yml": "modules/stacking/src/main/java/net/skybornmc/skyblock/stacking/StackingConfig.java",
     "enchanter.yml": "modules/enchants/src/main/java/net/skybornmc/skyblock/enchants/EnchanterConfig.java",
     "wardrobe.yml": "modules/wardrobe/src/main/java/net/skybornmc/skyblock/wardrobe/WardrobeConfig.java",
+    "afk.yml": "modules/afk/src/main/java/net/skybornmc/skyblock/afk/AfkConfig.java",
 }
 CAP_JAVA = "common/src/main/java/net/skybornmc/skyblock/common/economy/MultiplierCap.java"
 TOOLS_YML = "modules/tools/src/main/resources/tools-defaults.yml"
@@ -2733,6 +2734,55 @@ def tier_gaps(kind: str):
     return out
 
 
+# ---- AFK pool (O10, RW3; modules/afk, doc §7.5) ----
+# Money per 15-min reward by stage tier (afk.yml money.per-reward-by-tier) x the session step (money.session-steps).
+# Not added to the simulated income: it is at most AFK_LIMIT of an active player's hourly income by design and the
+# island production hours (online + AFK + fuel) already include the pool time.
+AFK_LIMIT = 0.05
+
+
+def afk_money_by_tier() -> list:
+    raw = config_strings("afk.yml", "money.per-reward-by-tier") or []
+    return [float(x) for x in raw]
+
+
+def afk_rewards_per_hour() -> float:
+    return 60.0 / cfg("afk.yml", "time.reward-minutes", 15)
+
+
+def afk_top_step() -> float:
+    steps = config_strings("afk.yml", "money.session-steps") or ["0:100"]
+    return max(int(x.split(":")[1]) for x in steps) / 100.0
+
+
+def afk_per_hour(tier: int, top: bool) -> float:
+    table_ = afk_money_by_tier()
+    if not table_:
+        return 0.0
+    base = table_[max(0, min(len(table_) - 1, tier - 1))]
+    return base * afk_rewards_per_hour() * (afk_top_step() if top else 1.0)
+
+
+def afk_rows():
+    rows = []
+    for name, _ in STAGES:
+        r = sim("regular")[1][name]
+        t = r["tier"]
+        rows.append((name, t, r["hourly"], afk_per_hour(t, False), afk_per_hour(t, True),
+                     {k: afk_per_hour(sim(k)[1][name]["tier"], True) / sim(k)[1][name]["hourly"] for k in KINDS}))
+    return rows
+
+
+@register("afk")
+def t_afk():
+    rows = []
+    for name, t, hourly, base, top, share in afk_rows():
+        rows.append([name, f"T{t}", f"{money(hourly)}/h", f"{money(base)}/h", f"{money(top)}/h", pct(share["regular"], 1),
+                     pct(share["casual"], 1), pct(share["grinder"], 1)])
+    return table(["Stage", "Regular tier", "Regular income (active)", "AFK money at 100%", "AFK money at the top step",
+                  "Top step / regular income", "Casual", "Grinder"], rows)
+
+
 @register("checks")
 def t_checks():
     """Automatic sanity checks; each row must say PASS."""
@@ -2811,6 +2861,10 @@ def t_checks():
         f"{sum(combat_ok(r) for r in cr)}/{len(cr)} tiers ok")
     loops = shop_sells_combat_items()
     chk("/shop sells no Depths combat drop (buy > sell)", not loops, ", ".join(loops) or "none")
+    afk = afk_rows()
+    worst = max(r[5]["regular"] for r in afk)
+    chk("AFK pool money at the top step <= 5% of a regular player's active income (every stage, O10)",
+        bool(afk_money_by_tier()) and worst <= AFK_LIMIT, f"max {pct(worst, 1)}")
     return table(["Check", "Result", "Value"], rows)
 
 

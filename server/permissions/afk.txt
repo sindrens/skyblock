@@ -1,0 +1,5 @@
+# LuckPerms grants for the AFK pool module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/afk/src/main/resources/permissions/afk.yml. One console command per line; # = comment.
+# skyblock.afk (earn in the pool) defaults to true, so players need no grant. Take it away from a player or group with
+#   lp user <name> permission set skyblock.afk false
+# The module has no commands and no staff nodes (settings: /admin -> afk.yml).

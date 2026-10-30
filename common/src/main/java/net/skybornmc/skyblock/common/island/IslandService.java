@@ -138,6 +138,15 @@ public interface IslandService {
     }
 
     /**
+     * Island Fuel hook (AFK pool rewards, later the island shop): adds {@code minutes} of fuel to the island's tank
+     * (saved, logged, clamped to the tank size by the implementation). Completes with false while Island Fuel does not
+     * exist yet or the island is unknown; callers that must not lose the fuel keep it and try again later.
+     */
+    default CompletableFuture<Boolean> addIslandFuel(UUID islandId, long minutes, String reason, Actor actor) {
+        return CompletableFuture.completedFuture(false);
+    }
+
+    /**
      * Upgrade hook: extra percent on the island entity limits of {@code stacking.yml} (armor stands, item frames,
      * minecarts, boats, villagers, displays). 0 = no upgrade; the owner's upgrade gives +50.
      */

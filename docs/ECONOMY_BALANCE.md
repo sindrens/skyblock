@@ -736,6 +736,28 @@ What this says:
 | AH prices running away | Raise AH tax for listings above X | Add more late sinks |
 | Crystals piling up | More island shop items (fuel, boosters, decor) | Raise roll prices |
 
+### 7.5 AFK pool (O10, RW3; modules/afk)
+Standing in the pool at spawn pays every 15 min: a little money, island fuel (1:1 with the AFK time, so it feeds the production hours of §1.1 instead of adding new ones), keys at 1 h / 3 h / 6 h / 8 h (Ember, Ember, Cinder, Blaze) and a 2% chance per reward (after 1 h in the session) of a banked +50% / 10 min personal sell booster (counts toward the +300% cap, §2.7). Max 8 h per account per day, one earning account per IP and 8 h per IP per day (R3, R5).
+
+**Money is scaled to the stage**, otherwise it is either useless late or a printer early: `afk.yml → money.per-reward-by-tier` = 2.5% of `REF(t)` per hour (÷ 4 rewards), tier from the player's best mining/foraging/combat level (the Depths unlock levels). The session step grows 100% → 180% (6 h), so the **top step pays 4.5% of REF**. Against what players really earn per active hour:
+
+<!-- BEGIN table:afk -->
+| Stage | Regular tier | Regular income (active) | AFK money at 100% | AFK money at the top step | Top step / regular income | Casual | Grinder |
+|---|---|---|---|---|---|---|---|
+| First hour | T1 | $60.4k/h | $1.2k/h | $2.2k/h | 3.7% | 4.1% | 3.0% |
+| Day 1 | T2 | $107.9k/h | $2.2k/h | $4k/h | 3.7% | 3.8% | 3.4% |
+| Day 3 | T4 | $308.6k/h | $6.8k/h | $12.2k/h | 3.9% | 4.8% | 3.4% |
+| Week 1 | T5 | $610.8k/h | $11.9k/h | $21.4k/h | 3.5% | 4.8% | 3.4% |
+| Week 2 | T7 | $1.6M/h | $36.5k/h | $65.7k/h | 4.0% | 4.2% | 2.4% |
+| Month 1 | T8 | $3.3M/h | $64k/h | $115.2k/h | 3.5% | 4.6% | 2.3% |
+| Month 2 | T10 | $28.6M/h | $524k/h | $943.2k/h | 3.3% | 3.8% | 2.7% |
+| Month 3 | T11 | $88.7M/h | $1.5M/h | $2.7M/h | 3.0% | 3.7% | 2.6% |
+<!-- END table:afk -->
+
+- Never above 5% of an active hour for any archetype (check in §11). A full 8 h AFK day at the top step is worth about 1–1.5 active hours of a regular player, less than one Forge step; it never replaces playing.
+- The AFK money is **not** added to the simulated income above (≤ 5% per AFK hour, and only for the hours actually spent in the pool); the pool's real effect on the economy is the island fuel, which §1.1 already counts in the production hours. The dashboard shows it as its own source (`afk_pool`).
+- Levers: `money.per-reward-by-tier` (all tiers at once: scale the list), `money.session-steps`, `keys.milestones`, `booster.chance-percent`, `time.daily-cap-minutes`.
+
 ---
 
 ## 8. Dynamic sell prices (M3.4)
@@ -1038,7 +1060,7 @@ What the enchant and set prices cost in hours of each archetype's crystal income
 |---|---|---|---|
 | R1 | **Runaway inflation** | Late-season income piles up, AH prices explode | Endless late sink (mastery, §5.4); season sink ratio ≥ 80% and 14-day dashboard alerts (M3.8); levers (§7.4); seasonal wipe; server prices fixed |
 | R2 | **Interest abuse** | Deposit before payout; idle alts; snowballing | Min-balance rule; payout caps; activity rule (≥ 2 h in 7 days); early-withdrawal forfeit + 2% fee; bank tier unlock costs |
-| R3 | **Alt farming** | Alts mine tier 1, claim kits/votes and `/pay` the main | Depths income needs active breaking; starter kits not on the AH; crystals and gems not tradeable; new accounts (< 30 min, #40) can't `/pay`, `/withdraw` or use the AH; same-IP transfer alerts; AFK pool rewards one per IP (RW3) |
+| R3 | **Alt farming** | Alts mine tier 1, claim kits/votes and `/pay` the main | Depths income needs active breaking; starter kits not on the AH; crystals and gems not tradeable; new accounts (< 30 min, #40) can't `/pay`, `/withdraw` or use the AH; same-IP transfer alerts; AFK pool rewards one account per IP at a time and 8 h per IP per day (RW3, §7.5) |
 | R4 | **AH manipulation** | Laundering via fake listings, price fixing, wash trading | 1% fee + 5% tax; alerts for sales > 20× the 7-day median or between linked accounts; listing limits; full logs |
 | R5 | **AFK island production** | Island income overtakes The Depths | Fuel tank cap; AFK pool max 8 h/day (O10); production online rate only while active in the last 15 min; Fuel Tank priced as a level upgrade |
 | R6 | **Dupes / exploits** | A dupe creates money from nothing | Atomic DB transactions; unique ids for notes, tools, books, sets; anomaly alert above 3× the table's income per hour |
@@ -1087,6 +1109,7 @@ Generated on every run; all must say PASS (or WATCH with a reason in the text) b
 | Deepforge (◆25,000) bought in week 2-3 (regular, WARDROBE §2.4) | PASS | 44.8 h (day 15) |
 | Combat drop value per kill (sell.yml x mobs.yml) matches the mine (§9.9) | PASS | 10/10 tiers ok |
 | /shop sells no Depths combat drop (buy > sell) | PASS | none |
+| AFK pool money at the top step <= 5% of a regular player's active income (every stage, O10) | PASS | max 4.0% |
 <!-- END table:checks -->
 
 ---
