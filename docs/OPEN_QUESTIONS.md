@@ -1,6 +1,16 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- M4.2 Forge materials: taken from the inventory until the satchel (M4.4) exists. From tier 10 the amounts (2,824+ items) don't fit an inventory. (default: inventory now, satchel counted once it exists)
+- M4.2 recipe items are vanilla placeholders until Depths drops (M4.9) get their own ids: mine coal → netherite_scrap, forest logs, combat rotten_flesh, bone, string, slime_ball, prismarine_shard, glowstone_dust, arrow, blaze_rod, wither_rose. Sword material amounts are 1/4 of the mine amounts (kills drop more value). OK? (default: yes, all in `tools.yml → tiers`)
+- M4.2 break speed: tier 11/12 pickaxes get mining power +60/+120 because their ores are very hard (ancient_debris 30, crying_obsidian 50); that makes lower ores near-instant with them. Tune after an in-game test, or use softer blocks in those zones? (default: as configured)
+- M4.2 starter kit: no new command (none approved), so it is the "Starter kit" button in `/forge` (Quartermaster placeholder). Give it automatically on the first join? (default: off, `tools.yml → starter-kit.give-on-first-join`)
+- M4.2 skins: `/skin give` adds the skin straight to the collection (no item). DESIGN says skins are tradeable: add a redeemable skin item (crates/trading) later? A skin stays on a tool when the tool is traded. (default: collection only for now)
+- M4.2 prestige: the level speed bonus (+1% per level) starts again at Lv 1, so a tool is slower right after a prestige until it levels again. OK? (default: yes, "it costs the time to level again")
+- M4.2 levels give speed only (+1%/level); fortune comes from the tier (+5%/tier, balance sheet). Phase 4 says "levels raise speed/fortune": add fortune per level? (default: 0, `fortune.per-level-percent`)
+- M4.2 tool XP depends on the block's Depths tier only (balance sheet). Phase 4 also said a higher tool tier gives more XP per block. (default: 0% bonus, `xp.tier-bonus-percent`)
+- M4.2 blueprints: 4 first proposals (Sage Pickaxe/Scholar, Magma Pickaxe/Auto-smelt, Windcutter Axe/Swift, Vampire Blade/Lifesteal), drops 1 in 15,000-20,000 blocks or 1 in 1,500 kills from a minimum tier, crafting makes a new Lv 1 tool. OK? (default: as written in `tools.yml`)
+- M4.2 hoes and rods have only the starter tier until Phase 7. (default: yes)
 - R2A skills: max level 150 with tiers still at 0–66. After level 66 each level costs 2% more (`skills.yml → curve.end-growth: 1.02`). With today's XP sources a top player ends a 90-day season around level 81; level 150 needs ~3.5B XP (~8.6× a top season). Should 150 be reachable in one season (then levels after 66 must get cheaper, or XP boosts bigger)? (default: 2% growth, 150 is a far goal)
 - R2A `/skills set|add <player> <skill> <amount>`: the amount is in **levels** (set = start of that level, add = keeps progress), online players only. Want raw XP or offline players too? (default: levels, online only)
 - R2A `/freerank`: the free tags are ember, spark and ash. `ember` was also a Rare-crate tag and `ashes` an Uncommon-crate tag, so the free pick makes the crate `ember` tag less special. Rename the crate tag, or pick other free tags? (default: as given, configurable in `perks.yml → freerank.tags`)

@@ -92,6 +92,11 @@ final class ToolRepository {
         return true;
     }
 
+    /** Removes a tool row (a blueprint craft that could not be finished). */
+    void delete(Connection c, UUID toolId) throws SQLException {
+        Sql.update(c, "DELETE FROM tools WHERE tool_id = ?", toolId);
+    }
+
     void savePerks(Connection c, UUID toolId, List<ToolPerk> perks, long now) throws SQLException {
         Sql.update(c, "UPDATE tools SET perks = ?, updated_at = ? WHERE tool_id = ?", ToolCodec.perks(perks), now, toolId);
     }
