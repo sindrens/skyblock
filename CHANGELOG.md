@@ -107,6 +107,8 @@
 - Balance (TUNE = E4 + W4): built enchants and sets added to the economy model (ECONOMY_BALANCE §9.5–9.10); Depths combat book drops tuned to 1 in 300/350/400/450 kills (pity 2.5×).
 - V2 look (STYLE2): brighter custom palette (red stays the brand), bold rarity names, red "| Header" sections, green Buy / red Sell price lines with "You can afford", bold "» CLICK" action lines on every menu, progress + [+] reward lines, "| Profile / | Island" scoreboards with the phoenix gradient title, #1/#2/#3 colors on /baltop.
 - Resource pack plan (docs/plans/RESOURCE_PACK.md): vanilla UI stays the fallback, per-player pack rendering, Geyser/Bedrock conversion, item model ids, menu background glyphs, font icons, sounds, milestones RP1–RP10.
+- AFK pool (new module afk): stand in the pool at spawn for stage-scaled money, island fuel, crate keys at 1/3/6/8 h and a rare banked +50% sell booster every 15 min; max 8 h/day per account, one earning account per IP. Closed until an `afk_pool` region exists.
+- `/sell` is now a sell chest (put items in, Sell inventory, live total + bonus, crash-safe, items always given back, big sales as one chat line with hover); `/shop` is a quick-buy grid (left 1 / right 64 / shift amount screen, Bedrock tap → amount screen, partial buys charge only what fits) with a Sell button; satchel gets a Sell chest button (SELL2).
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
