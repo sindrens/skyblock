@@ -353,6 +353,14 @@ Owner (2026-10-30): "cleaner, better colors, it looks hard now". Fewer labels, m
 ### 6.3 Action bar
 Skill XP gains (`+12 Mining XP (68%)`), tool mode changes, satchel full warnings. Max one message per 1.5 s.
 
+**Teleport warmups (F4)** look the same everywhere (`/spawn`, `/tpa`, `/is home`, `/is visit`, `/is warp`, `/dungeon`), because one core service shows them (`messages/core.yml → teleport.*`, settings `teleport.yml`):
+- Start (chat, with prefix): `Teleporting to <destination> in 3s. Don't move.`
+- Countdown (action bar, once per second + `click` sound): `⌛ Teleporting to <destination> in 3...` (ember hourglass, value-colored name and seconds).
+- Arrival: `teleport` sound + the feature's own arrival text (e.g. `Welcome to spawn`, the Depths tier on the action bar).
+- Cancel (chat, error format + `error` sound), one text per reason: `Teleport cancelled: you moved.` / `you got hit.` / `you're in combat.` / `you were frozen by staff.` / `you changed worlds.`, plus `[Try again]` when the feature offers a command (`/dungeon`).
+- Refusals use the error format with the fix: cooldown (`Slow down. Try again in 4s.`), combat, frozen, no safe spot, failed teleport.
+- Modules only pass a destination name (plain, or a styled one from their messages file such as `dungeon.destination`); they never write their own warmup texts.
+
 ### 6.4 Boss bar
 Event and timer countdowns (KOTH, envoys, world boss HP, boosters). Color = event color.
 

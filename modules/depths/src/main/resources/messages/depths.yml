@@ -106,11 +106,9 @@ dungeon:
   empty:
     name: "<c:muted>No tiers yet"
     lore: ["<c:text>This wing has no zones in", "<c:text>zones.yml yet."]
-  warmup: "<prefix><c:text>Teleporting to <wing> <c:value>Tier <tier></c:value> <c:text>in <c:value><seconds> s</c:value>. Don't move."
-  countdown: "<c:ember><sym:time></c:ember> <c:text>Teleporting to <c:value><name></c:value> in <c:value><seconds></c:value>..."
-  cancelled: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you moved or got hit. <click:run_command:'/dungeon'><hover:show_text:'<c:text>Open /dungeon'><c:action>[Try again]</c:action></hover></click>"
+  # Where /dungeon teleports to, shown in the shared warmup/countdown/cancel texts (messages/core.yml → teleport.*).
+  destination: "<wing> <c:value>Tier <tier></c:value> <c:muted><sym:dot></c:muted> <c:value><name>"
   arrived: "<c:ember><sym:pickaxe></c:ember> <wing> <c:value>Tier <tier></c:value> <c:muted><sym:dot></c:muted> <c:text><name>"
-  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't teleport to <c:value><name></c:value>. Try again soon."
   locked: "<prefix><c:error><sym:cross></c:error> <wing> <c:text>Tier <tier> needs <skill> <c:value><required></c:value> <c:muted>(you: <level>)</c:muted><c:text>. Level up in <click:run_command:'/skills'><hover:show_text:'<c:text>Open /skills'><c:action>[Skills]</c:action></hover></click>"
   # Satchel button (M4.4). <used> <max>
   satchel:

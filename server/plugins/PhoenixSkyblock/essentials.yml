@@ -1,36 +1,19 @@
-# Essentials: teleports (/spawn, /tpa, staff /tp) and staff tools (/gm, /fly, /vanish, /invsee, ...).
+# Essentials: teleports (/spawn, /tpa, staff /tp; warmups and cooldowns are in teleport.yml) and staff tools (/gm, /fly, /vanish, /invsee, ...).
 # Texts are in messages/essentials.yml. Reload: /skyblock reload essentials
 
 spawn:
   # World that /spawn teleports to (its spawn point is set by worlds.yml).
   world: spawn
-  # Seconds to stand still before /spawn teleports (0 = instant, owner decision).
-  # Allowed: 0 to 30
-  warmup-seconds: 0
-  # Seconds between two /spawn uses.
-  # Allowed: 0 to 3600
-  cooldown-seconds: 5
 tpa:
   # Seconds before a /tpa request expires.
   # Allowed: 10 to 600
   request-timeout-seconds: 60
-  # Seconds to stand still after a request is accepted (0 = instant).
-  # Allowed: 0 to 30
-  warmup-seconds: 3
   # Seconds between two /tpa or /tpahere requests.
   # Allowed: 0 to 3600
   cooldown-seconds: 15
   # How many open requests one player can receive at once.
   # Allowed: 1 to 20
   max-pending: 5
-warmup:
-  # Cancel a teleport warmup when the player moves a block.
-  cancel-on-move: true
-  # Cancel a teleport warmup when the player takes damage.
-  cancel-on-damage: true
-back:
-  # Staff /back also returns to the last death location.
-  remember-death: true
 homes:
   # Maximum staff homes per staff member (/sethome).
   # Allowed: 1 to 50

@@ -87,6 +87,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
     private final DatabaseConfig dbConfig = new DatabaseConfig();
     private final ItemsConfig itemsConfig = new ItemsConfig();
     private final AuditConfig auditConfig = new AuditConfig();
+    private final net.skybornmc.skyblock.common.teleport.TeleportConfig teleportConfig = new net.skybornmc.skyblock.common.teleport.TeleportConfig();
+    private net.skybornmc.skyblock.common.teleport.CoreTeleportService teleports;
 
     @Override
     public void onEnable() {
@@ -153,6 +155,11 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                 r.itemId(), null, null, Map.of("source", r.source(), "holders", r.holders(),
                         "players", r.playerIds().stream().map(java.util.UUID::toString).toList())));
         msg = core.messages("core");
+        // F4: one teleport warmup (guards, cooldowns, cancel rules, /back) for every module (teleport.yml).
+        configs.load(teleportConfig);
+        teleports = new net.skybornmc.skyblock.common.teleport.CoreTeleportService(core, teleportConfig);
+        services.register("core", net.skybornmc.skyblock.common.teleport.TeleportService.class, teleports);
+        getServer().getPluginManager().registerEvents(teleports, this);
         players.start();
         menus.enable();
         dupes.start();
@@ -184,6 +191,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         }
         if (modules != null) {
             modules.disableAll();
+        }
+        if (teleports != null) {
+            teleports.shutdown();
         }
         if (core != null) {
             core.dupes().stop();
@@ -432,6 +442,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
             applyZone(core.config());
             core.configs().load(itemsConfig);
             core.configs().load(auditConfig);
+            core.configs().load(teleportConfig);
             loadStyle(core.style(), core.sounds());
             core.messages().load("core");
             core.messages().load("items");

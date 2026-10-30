@@ -779,7 +779,12 @@ final class ProfileServiceImpl implements ProfileService, Listener {
             return world == null ? null : world.getSpawnLocation().toCenterLocation();
         });
         if (to != null) {
-            player.teleportAsync(to);
+            // F4: the core TeleportService (async chunk preload, /back); a system teleport, so no guard can refuse it
+            // and the switch messages/sound stay with the profile code.
+            core.services().get(net.skybornmc.skyblock.common.teleport.TeleportService.class).now(player, to,
+                    net.skybornmc.skyblock.common.teleport.TeleportReason.PROFILE,
+                    net.skybornmc.skyblock.common.teleport.TeleportOptions.builder().ignoreGuards().quiet()
+                            .cause(org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.PLUGIN).build());
         }
     }
 }

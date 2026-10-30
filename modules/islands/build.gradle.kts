@@ -8,8 +8,6 @@ repositories {
 
 dependencies {
     implementation(project(":common"))
-    // TeleportService (warmup, guards, /back) is published by the essentials module.
-    implementation(project(":modules:essentials"))
 
     // Schematic pasting: provided by the FastAsyncWorldEdit plugin at runtime (softdepend), never shaded.
     // Only FaweSchematics touches these classes, and only when the plugin is enabled.

@@ -109,7 +109,6 @@ error:
   island-gone: "<prefix><c:error><sym:cross></c:error> <c:text>That island doesn't exist anymore."
   database: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't load or save the island data. Try again soon."
   world: "<prefix><c:error><sym:cross></c:error> <c:text>The island world <c:value><world></c:value> isn't loaded. Tell staff."
-  teleport: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't teleport you to your island. Try again."
 
 # ---------------------------------------------------------------- M2.3 members and roles
 # Role names (also used in the permission matrix rows).

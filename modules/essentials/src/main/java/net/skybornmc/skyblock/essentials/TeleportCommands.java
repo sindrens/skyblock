@@ -7,6 +7,9 @@ import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.command.Suggest;
 import net.skybornmc.skyblock.common.player.PlayerData;
+import net.skybornmc.skyblock.common.teleport.TeleportOptions;
+import net.skybornmc.skyblock.common.teleport.TeleportReason;
+import net.skybornmc.skyblock.common.teleport.TeleportService;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Cooldowns;
@@ -160,15 +163,9 @@ final class TeleportCommands extends CommandGroup implements Listener {
         if (world == null) {
             throw fail("spawn.missing", Msg.p("world", config.spawnWorld));
         }
-        if (!player.hasPermission(Perms.TELEPORT_BYPASS)) {
-            Duration left = cooldowns.remaining(player.getUniqueId(), "spawn");
-            if (!left.isZero()) {
-                throw fail("cooldown", Msg.p("time", Format.duration(left)));
-            }
-            cooldowns.set(player.getUniqueId(), "spawn", Duration.ofSeconds(config.spawnCooldownSeconds));
-        }
-        teleports.teleport(player, world.getSpawnLocation().toCenterLocation(), config.spawnWarmupSeconds, "spawn",
-                () -> msg.send(player, "spawn.arrived"));
+        // Warmup and cooldown: teleport.yml → spawn.* (the core TeleportService explains refusals itself).
+        teleports.request(player, world.getSpawnLocation().toCenterLocation(), TeleportReason.SPAWN,
+                TeleportOptions.to("spawn", () -> msg.send(player, "spawn.arrived")));
     }
 
     // ------------------------------------------------------------------ tpa
@@ -230,8 +227,8 @@ final class TeleportCommands extends CommandGroup implements Listener {
         Player destination = request.type() == TpaRequests.Type.HERE ? requester : target;
         msg.send(target, "tpa.accepted-target", Msg.p("player", requester.getName()));
         msg.send(requester, "tpa.accepted-sender", Msg.p("player", target.getName()));
-        teleports.teleport(traveller, destination.getLocation(), config.tpaWarmupSeconds, destination.getName(),
-                () -> msg.send(traveller, "tpa.arrived", Msg.p("player", destination.getName())));
+        teleports.request(traveller, destination.getLocation(), TeleportReason.TPA, TeleportOptions.to(destination.getName(),
+                () -> msg.send(traveller, "tpa.arrived", Msg.p("player", destination.getName()))));
     }
 
     private void deny(Player target, Player from) {
@@ -283,7 +280,8 @@ final class TeleportCommands extends CommandGroup implements Listener {
             if (self.equals(first)) {
                 throw fail("tp.self");
             }
-            teleports.now(self, first.getLocation(), first.getName(), () -> msg.send(self, "tp.done", Msg.p("player", first.getName())));
+            teleports.now(self, first.getLocation(), TeleportReason.STAFF,
+                    TeleportOptions.to(first.getName(), () -> msg.send(self, "tp.done", Msg.p("player", first.getName()))));
             audit("tp", sender, first, Map.of());
             return;
         }
@@ -293,10 +291,10 @@ final class TeleportCommands extends CommandGroup implements Listener {
         if (first.equals(second)) {
             throw fail("tp.same");
         }
-        teleports.now(first, second.getLocation(), second.getName(), () -> {
+        teleports.now(first, second.getLocation(), TeleportReason.STAFF, TeleportOptions.to(second.getName(), () -> {
             msg.send(sender, "tp.other", Msg.p("player", first.getName()), Msg.p("target", second.getName()));
             notifyTarget(sender, first, "tp.notify", Msg.p("target", second.getName()));
-        });
+        }));
         audit("tp_other", sender, first, Map.of("to", second.getName()));
     }
 
@@ -304,10 +302,10 @@ final class TeleportCommands extends CommandGroup implements Listener {
         if (staff.equals(target)) {
             throw fail("tp.self");
         }
-        teleports.now(target, staff.getLocation(), staff.getName(), () -> {
+        teleports.now(target, staff.getLocation(), TeleportReason.STAFF, TeleportOptions.to(staff.getName(), () -> {
             msg.send(staff, "tphere.done", Msg.p("player", target.getName()));
             notifyTarget(staff, target, "tphere.notify");
-        });
+        }));
         audit("tphere", staff, target, Map.of());
     }
 
@@ -343,7 +341,8 @@ final class TeleportCommands extends CommandGroup implements Listener {
         World w = world == null ? player.getWorld() : world;
         Location loc = new Location(w, x, y, z, player.getLocation().getYaw(), player.getLocation().getPitch());
         String label = String.format(Locale.ROOT, "%.1f %.1f %.1f", x, y, z);
-        teleports.now(player, loc, label, () -> msg.send(player, "tppos.done", Msg.p("position", label), Msg.p("world", w.getName())));
+        teleports.now(player, loc, TeleportReason.STAFF, TeleportOptions.to(label,
+                () -> msg.send(player, "tppos.done", Msg.p("position", label), Msg.p("world", w.getName()))));
         audit("tppos", player, null, Map.of("world", w.getName(), "x", x, "y", y, "z", z));
     }
 
@@ -356,12 +355,12 @@ final class TeleportCommands extends CommandGroup implements Listener {
         Location dest = highest.getLocation().add(0.5, 1, 0.5);
         dest.setYaw(loc.getYaw());
         dest.setPitch(loc.getPitch());
-        teleports.now(player, dest, "top", () -> msg.send(player, "top.done"));
+        teleports.now(player, dest, TeleportReason.STAFF, TeleportOptions.to("top", () -> msg.send(player, "top.done")));
     }
 
     private void back(Player player) {
         Location loc = teleports.back(player.getUniqueId()).orElseThrow(() -> fail("back.none"));
-        teleports.now(player, loc, "back", () -> msg.send(player, "back.done"));
+        teleports.now(player, loc, TeleportReason.STAFF, TeleportOptions.to("back", () -> msg.send(player, "back.done")));
     }
 
     // ------------------------------------------------------------------ staff homes
@@ -429,7 +428,7 @@ final class TeleportCommands extends CommandGroup implements Listener {
             throw fail("home.unknown", Msg.p("name", name), Msg.p("homes", String.join(", ", homes.keySet())));
         }
         String home = name;
-        teleports.now(player, loc, home, () -> msg.send(player, "home.done", Msg.p("name", home)));
+        teleports.now(player, loc, TeleportReason.STAFF, TeleportOptions.to(home, () -> msg.send(player, "home.done", Msg.p("name", home))));
     }
 
     private void setHome(Player player, String name) {
