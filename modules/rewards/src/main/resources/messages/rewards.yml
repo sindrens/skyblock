@@ -1,0 +1,204 @@
+# Rewards (PHASE-10 M10.6): /daily calendar, streak and playtime rewards. MiniMessage + style tags (style.yml).
+# Reload: /skyblock reload rewards
+# Placeholders are plain text unless noted: <day>, <streak>, <amount> (already formatted, like $1,200 or ◆ 40), <time> (like 5h 12m).
+
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was taken or paid, so just try again."
+busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your last claim is still running. One moment."
+frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't claim rewards while frozen."
+staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't claim rewards in staff mode."
+switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
+no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't claim daily rewards."
+box-full: "<prefix><c:error><sym:cross></c:error> <c:text>Your <c:action>/box</c:action> <c:text>is full. Empty it first, then claim."
+
+daily:
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Daily rewards are turned off right now."
+  reminder: "<prefix><c:flame><sym:star></c:flame> <c:text>Your daily reward (day <c:value><day></c:value><c:text>) is ready! Streak: <c:value><streak></c:value><c:text>. Type <c:action>/daily</c:action><c:text>."
+  already: "<prefix><c:muted><sym:time></c:muted> <c:text>You already claimed today. Next reward in <c:value><time></c:value><c:text>."
+  changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your calendar just changed. Open <c:action>/daily</c:action> <c:text>and try again."
+  claimed: "<prefix><c:success><sym:check></c:success> <c:text>Day <c:value><day></c:value> <c:text>claimed! Streak: <c:value><streak></c:value> <c:text>days."
+  streak-lost: "<prefix><c:muted><sym:time></c:muted> <c:text>You missed a day, so your <c:value><lost></c:value><c:text>-day streak started over. Your calendar day stays."
+  streak-gems: "<prefix><c:flame><sym:star></c:flame> <c:text>Streak of <c:value><streak></c:value> <c:text>days: <cur:gems>+<gems></cur:gems><c:text>!"
+
+playtime:
+  reward: "<prefix><c:success><sym:time></c:success> <c:text>Playtime reward: <c:value><hours></c:value> <c:text>active hours on this profile."
+
+# One reward. <reward> is a full component.
+reward:
+  line: "  <c:muted>+</c:muted> <reward>"
+  fallback-line: "  <c:muted>+</c:muted> <cur:crystals><amount></cur:crystals> <c:muted>(instead of <reward><c:muted>, not live yet)"
+  for-now: "<reward> <c:muted>(pays <amount> for now)"
+  money: "<cur:money><amount>"
+  crystals: "<cur:crystals><amount>"
+  gems: "<cur:gems><amount>"
+  key: "<c:value><amount>x <crate> Key"
+  fuel: "<c:value>Island Fuel <time>"
+  booster: "<c:value><type> Booster +<percent>%</c:value> <c:muted>(<time>)"
+  book: "<c:enchant><rarity> Enchant Book"
+  book-named: "<c:enchant><name></c:enchant> <c:text>Enchant Book"
+  scroll: "<c:enchant><amount>x Disenchant Scroll"
+  tome: "<c:value>Wardrobe Tome"
+  title: "<c:text>Title</c:text> <title>"
+  pass-xp: "<c:value><amount> pass XP"
+
+reward-names:
+  money: "<cur:money>Money"
+  crystals: "<cur:crystals>Crystals"
+  gems: "<cur:gems>Gems"
+
+rarities:
+  common: "Common"
+  uncommon: "Uncommon"
+  rare: "Rare"
+  epic: "Epic"
+  legendary: "Legendary"
+  mythic: "Mythic"
+
+crates:
+  ember: "Ember"
+  cinder: "Cinder"
+  blaze: "Blaze"
+  inferno: "Inferno"
+  phoenix: "Phoenix"
+  eclipse: "Eclipse"
+
+booster-types:
+  sell: "Sell"
+  skill_xp: "Skill XP"
+  tool_xp: "Tool XP"
+  crystals: "Crystals"
+
+# Title display names (added to tags-titles.yml once; edit them there afterwards with /tags).
+titles:
+  devoted: "<c:ember>Devoted"
+  unbroken: "<gradient:flame>Unbroken</gradient>"
+  regular: "<c:success>Regular"
+  veteran: "<c:info>Veteran"
+  dedicated: "<c:enchant>Dedicated"
+  timeless: "<gradient:legendary>Timeless</gradient>"
+
+settings:
+  daily-reminder:
+    name: "Daily reward reminder"
+    lore:
+      - "<c:text>Tell me when I join and my"
+      - "<c:text>daily reward is not claimed yet."
+
+menu:
+  loading:
+    name: "<c:muted>Loading..."
+    lore: []
+  tabs:
+    calendar: "<c:text>Calendar"
+    calendar-open: "<c:flame><bold>Calendar"
+    calendar-lore: ["<c:text>One reward every day."]
+    playtime: "<c:text>Playtime"
+    playtime-open: "<c:flame><bold>Playtime"
+    playtime-lore: ["<c:text>Rewards for active play."]
+  daily:
+    title: "Daily Rewards"
+    info:
+      - "<c:text>Claim one reward every day. The"
+      - "<c:text>calendar only moves when you"
+      - "<c:text>claim, so a missed day never"
+      - "<c:text>sends you back. Each profile has"
+      - "<c:text>its own calendar."
+    summary:
+      name: "<c:flame><sym:star></c:flame> <c:value>Daily Rewards"
+      open:
+        - "<c:text>Today: <c:success>day <day> is ready"
+        - "<c:text>Streak: <c:value><streak></c:value> <c:text>days"
+        - "<c:text>Profile: <c:value><profile>"
+        - ""
+        - "<c:muted>New day at 00:00 (Oslo time)."
+      claimed:
+        - "<c:text>Today: <c:success><sym:check> claimed"
+        - "<c:text>Next reward in <c:value><time>"
+        - "<c:text>Streak: <c:value><streak></c:value> <c:text>days"
+        - "<c:text>Profile: <c:value><profile>"
+  day:
+    claimed:
+      name: "<c:success><sym:check></c:success> <c:muted>Day <day>"
+      lore:
+        - "<reward>"
+        - "<c:muted>Claimed."
+    today:
+      name: "<c:flame><bold>Day <day></bold></c:flame> <c:muted><sym:dot></c:muted> <c:success>Today"
+      lore:
+        - "<reward>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"
+    tomorrow:
+      name: "<c:value>Day <day></c:value> <c:muted><sym:dot> Tomorrow"
+      lore:
+        - "<reward>"
+        - ""
+        - "<c:muted>Ready in <time>."
+    later:
+      name: "<c:muted>Day <day>"
+      lore:
+        - "<reward>"
+  streak:
+    name: "<c:ember><sym:star></c:ember> <c:value>Streak: <streak> days"
+    lore:
+      - "<c:text>Claim every day to keep it."
+      - "<c:text>Best: <c:value><best></c:value> <c:muted><sym:dot></c:muted> <c:text>Claims: <c:value><total>"
+    gems:
+      - ""
+      - "<c:text>Every <every> days: <cur:gems><gems>"
+      - "<c:text>Next gems in <c:value><left></c:value> <c:text>claims"
+    title: "<c:locked><sym:bullet></c:locked> <c:text><days> days:</c:text> <title>"
+    title-owned: "<c:success><sym:check></c:success> <c:text><days> days:</c:text> <title>"
+    footer:
+      - ""
+      - "<c:muted>A missed day starts the streak"
+      - "<c:muted>over. Your calendar day stays."
+  playtime:
+    title: "Playtime"
+    info:
+      - "<c:text>Only active time counts: not"
+      - "<c:text>AFK and not in the AFK pool."
+      - "<c:text>Each profile counts its own"
+      - "<c:text>playtime."
+    summary:
+      name: "<c:flame><sym:time></c:flame> <c:value>Playtime Rewards"
+      lore:
+        - "<c:text>Time counts while you play."
+        - "<c:text>After <c:value><idle></c:value> <c:text>minutes without doing"
+        - "<c:text>anything it pauses."
+        - "<c:text>Profile: <c:value><profile>"
+    disabled:
+      name: "<c:muted>Playtime rewards are off"
+      lore: []
+    time:
+      name: "<c:value>Active playtime"
+      lore:
+        - "<c:text>Total: <c:value><time>"
+        - "<c:text>Next hour reward in <c:value><next>"
+    status:
+      counting: "<c:success><sym:check></c:success> <c:text>Counting right now"
+      idle: "<c:warning><sym:time></c:warning> <c:text>Paused: do something to count again"
+      afk: "<c:warning><sym:time></c:warning> <c:text>Paused: you are AFK"
+      pool: "<c:warning><sym:time></c:warning> <c:text>Paused: AFK pool time doesn't count"
+      paused: "<c:warning><sym:time></c:warning> <c:text>Paused right now"
+      disabled: "<c:locked><sym:cross></c:locked> <c:text>Not counting for you"
+    hourly:
+      name: "<c:value>Every hour"
+      lore:
+        - "<c:text>Crystal Pouch: <cur:crystals><crystals>"
+      pass: ["<c:text>Pass XP: <c:value><xp>"]
+      pass-soon: ["<c:muted>+<xp> pass XP once the pass is live"]
+    key:
+      name: "<c:value><crate> Key"
+      lore:
+        - "<c:text>A <crate> Key every <c:value><every></c:value> <c:text>hours."
+        - "<c:text>Next one in <c:value><left></c:value> <c:text>hours"
+        - "<c:muted>Keys so far: <keys>"
+    title-reached:
+      name: "<title>"
+      lore:
+        - "<c:success><sym:check></c:success> <c:text>Reached at <hours> hours"
+    title-locked:
+      name: "<title>"
+      lore:
+        - "<c:locked><sym:cross></c:locked> <c:text>Unlocks at <c:value><hours></c:value> <c:text>hours"
+        - "<c:muted><left> hours to go"
