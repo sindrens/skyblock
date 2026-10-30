@@ -60,6 +60,11 @@ final class Placer implements Listener {
     private net.skybornmc.skyblock.common.util.Scheduler.Task lookTask;
     /** PERF3: sets waiting to be spawned, a few per tick ({@code spawning.per-tick} / {@code spawning.budget-ms}). */
     private final SpawnQueue<Placed> queue = new SpawnQueue<>();
+    /**
+     * PERF5: sets of the previous placement (reload) waiting to be removed, a few per tick before any new set spawns
+     * (removing every NPC, hologram and leaderboard in the reload tick was most of {@code npcs:apply}).
+     */
+    private final SpawnQueue<Placed> retiring = new SpawnQueue<>();
     private net.skybornmc.skyblock.common.util.Scheduler.Task spawnTask;
 
     Placer(NpcsModule module) {
@@ -75,10 +80,15 @@ final class Placer implements Listener {
      * next ticks (PERF3: spawning them all in this tick took over a second on update101). Never loads a chunk.
      */
     void start(Spots spots) {
-        stop();
-        long purgeStart = System.nanoTime();
-        purgeLeftovers();
-        module.core().scheduler().timer().record("npcs:purge", System.nanoTime() - purgeStart);
+        boolean reload = !byKey.isEmpty() || !retiring.isEmpty();
+        retire();
+        if (!reload) {
+            // First placement of this enable: left-overs of a crash or an earlier enable. On a reload every entity of
+            // ours is tracked (byKey, then retiring), so the walk over every world's entities is skipped.
+            long purgeStart = System.nanoTime();
+            purgeLeftovers();
+            module.core().scheduler().timer().record("npcs:purge", System.nanoTime() - purgeStart);
+        }
         NpcsConfig c = module.config();
         if (c.npcsEnabled) {
             spots.npcs().forEach(n -> track(new Placed(Placed.Kind.NPC, n, null)));
@@ -100,8 +110,18 @@ final class Placer implements Listener {
         }
     }
 
-    /** Removes every entity of this module and forgets the points. */
+    /** Removes every entity of this module at once (disable) and forgets the points. */
     void stop() {
+        retire();
+        retiring.drain(Integer.MAX_VALUE, Long.MAX_VALUE, System::nanoTime, Placer::removeSet);
+        retiring.clear();
+    }
+
+    /**
+     * PERF5: forgets the points and moves their sets to {@link #retiring}; the spawn task removes them over the next
+     * ticks (before it spawns anything new, so a reload never shows a set twice for longer than the removal takes).
+     */
+    private void retire() {
         if (lookTask != null) {
             lookTask.cancel();
             lookTask = null;
@@ -111,9 +131,19 @@ final class Placer implements Listener {
             spawnTask = null;
         }
         queue.clear();
-        byKey.values().forEach(Placed::remove);
+        for (Placed p : byKey.values()) {
+            if (p.body != null || p.label != null || p.click != null) {
+                retiring.add(p);
+            }
+        }
         byKey.clear();
         byChunk.clear();
+    }
+
+    /** Removes one retired set (always counts as work, so the removal budget applies). */
+    private static boolean removeSet(Placed p) {
+        p.remove();
+        return true;
     }
 
     private void track(Placed p) {
@@ -180,7 +210,7 @@ final class Placer implements Listener {
 
     /** Starts the per-tick spawn task (from the next tick) unless it runs or nothing waits. */
     private void drainLater() {
-        if (spawnTask == null && !queue.isEmpty()) {
+        if (spawnTask == null && (!queue.isEmpty() || !retiring.isEmpty())) {
             spawnTask = module.core().scheduler().repeat("npcs:spawn", 1, 1, this::drain);
         }
     }
@@ -188,8 +218,13 @@ final class Placer implements Listener {
     /** One tick of spawning; stops the task when the queue is empty. */
     private void drain() {
         NpcsConfig c = module.config();
-        queue.drain(c.spawnsPerTick, c.spawnBudgetMs * 1_000_000L, System::nanoTime, this::spawnIfWanted);
-        if (queue.isEmpty() && spawnTask != null) {
+        if (!retiring.isEmpty()) {
+            // PERF5: the previous placement goes first; new sets spawn once it is gone.
+            retiring.drain(c.removalsPerTick, c.spawnBudgetMs * 1_000_000L, System::nanoTime, Placer::removeSet);
+        } else {
+            queue.drain(c.spawnsPerTick, c.spawnBudgetMs * 1_000_000L, System::nanoTime, this::spawnIfWanted);
+        }
+        if (queue.isEmpty() && retiring.isEmpty() && spawnTask != null) {
             spawnTask.cancel();
             spawnTask = null;
         }
