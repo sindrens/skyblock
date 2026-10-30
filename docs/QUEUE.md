@@ -18,7 +18,14 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | UX1b | Tab (owner 2026-10-30): remove the `/menu /help /discord /store` footer line; nicer TPS + `play.skybornmc.net`; the lines beside SKYBORN at the top match the colors (one long gradient, or left line white and right line the last letter's color) | UX1 | modules/chat (tab) | ⬜ |
 | UX2 | Same message cleanup for moderation, depths, islands messages (after P1, M4.6, M2.7 merge) | UX1, P1, M4.6, M2.7 | their messages files | ⬜ |
 | FI | Owner answered `docs/FEATURE_IDEAS.md` (2026-10-30); follow-up questions in `docs/QUESTIONS_ROUND2.md` → then queue the yes-items | owner | docs | 🔄 waiting for owner |
-| PROF | Island profiles (up to 3 per player, separate currency/inventory/…): profile layer in common, migrate every module's player keys | QUESTIONS_ROUND2 Part 1 | common + all modules | ⬜ blocked on owner answers; pause new money/progression items until then |
+| PROF | **Island profiles** per docs/DECISIONS_2026-10-30.md (P1–P12): profile layer in common (ProfileService, active profile per player, `/profiles`), migrate every module's per-player data to (player, profile) keys, inventory/ender chest/armor/XP swap, zero transfer between own profiles | — | common + all modules (one agent, careful, big) | ⬜ next free slot |
+| CRY | Replace tokens with **island crystals** everywhere (currency enum, messages, HUD, docs) | — | common/economy, modules/economy, hud, docs | ⬜ |
+| R2A | Round-2 quick decisions: account-age 30 min (pay/withdraw/AH), `/eco` for admin permission, remove amount suggestions (10k/10m/10b) in tab completion, sell cap 300% (config), freeze cleared by a ban, Inspect tool = blaze rod, public announcements unless -s, timezone Europe/Oslo, skill cap 150, staff `/skills set|add` (admin+owner), `/freerank` (30 min playtime) | — | economy, auction, common/command, moderation, staff, skills | ⬜ |
+| ISL2 | Islands round 2: role Admin (+ old leader → Admin on transfer), hurt-monsters role permission, join cooldown from last join only, `/is settings` flags, island fly for everyone (perm/mastery), likes per player, member homes (1 + masteries), invites menu | M2.4 | modules/islands | ⬜ |
+| STACK | Stacking module: mobs (1024, weapon-based kills, no AI for spawner mobs, breeding by food, max 8 stacks/chunk/type, no despawn), items, spawners (8→512, menu, ignore conditions, crops grow without light) | owner answers F-S12/F-S13/S27 | new modules/stacking | ⬜ |
+| NOTES | `/is notes` (N1–N9: shared to-do list, temporary book, pinned holograms) | M2.4 | modules/islands | ⬜ |
+| SB | Per-place scoreboards (island, Depths, spawn, warzone) | UX1 | modules/hud | ⬜ |
+| AFK | AFK pool (fuel + money + keys, better loot over time, max 8 h/day) | economy, islands fuel | new module | ⬜ (needs balance numbers) |
 
 ## Phase P: Punishment system v2 (owner spec `docs/specs/PUNISH_SPEC.md` + `PUNISH_SPEC_NOTES.md`) — one lane (modules/moderation), sequential, priority
 | # | Item | Depends on | Lane | Status |
