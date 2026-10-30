@@ -267,6 +267,23 @@ public final class EconomyConfig extends ModuleConfig {
             + "menu is open (milliseconds).", min = 0, max = 2_000)
     public int sellMenuClickMs = 150;
 
+    @Setting(path = "sell.big-sale-chat-from", desc = "Sales paying at least this much post one chat line with a hover "
+            + "breakdown (SELL2); smaller sales only show an action bar line.", min = 0)
+    public long sellBigSaleChatFrom = 100_000;
+
+    @Setting(path = "sell.big-sale-hover-lines", desc = "Most item lines in the hover breakdown of a big sale (the rest is "
+            + "summed up as \"+N more\").", min = 1, max = 30)
+    public int sellBigSaleHoverLines = 10;
+
+    @Setting(path = "sell.chest.save-player-data-ticks", desc = "While the sell chest is open and its contents change, the "
+            + "player's data (inventory + the chest's crash copy) is saved at most this often (ticks). 0 = only vanilla "
+            + "autosave. Both are always saved together, so a crash can never dupe or lose chest items.", min = 0, max = 6_000)
+    public int sellChestSaveTicks = 100;
+
+    @Setting(path = "sell.chest.keep-hotbar-tools", desc = "\"Sell inventory\" leaves tools and weapons in the hotbar alone "
+            + "(armor and the offhand are never touched).")
+    public boolean sellChestKeepHotbarTools = true;
+
     @Setting(desc = "Icon per currency in menus: currency:MATERIAL.")
     public List<String> icons = List.of("money:GOLD_INGOT", "crystals:PRISMARINE_CRYSTALS", "gems:EMERALD", "shards:PRISMARINE_SHARD");
 

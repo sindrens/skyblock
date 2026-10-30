@@ -212,15 +212,27 @@ sell:
   hand-empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell, or type <c:value>/sell</c:value>."
   all-nothing: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing in your inventory can be sold. <c:muted>/help sell</c:muted>"
   changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Some items moved before the sale and were left in your inventory."
-  sold: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount><c:text>. <c:muted>Balance: </c:muted><balance>"
-  sold-bonus: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)</c:muted><c:text>. <c:muted>Balance: </c:muted><balance>"
+  # A sale (SELL2): below sell.big-sale-chat-from (economy.yml, default $100k) only the action bar line, from there one
+  # chat line whose hover shows the breakdown (sell.breakdown.*).
+  sold-bar: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount>"
+  sold-bar-bonus: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)"
+  sold-big: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(hover for details)"
+  sold-big-bonus: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)</c:muted><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(hover for details)"
+  breakdown:
+    header: "<bold><c:header>| Sale</c:header></bold>"
+    line: "<c:bar>| </c:bar><c:text><item> <c:muted>x<amount></c:muted> <c:bar>|</c:bar> <value>"
+    more: "<c:bar>| </c:bar><c:muted>+<count> more items"
+    subtotal: "<c:text>Before bonus: <value>"
+    bonus: "<c:text>Sell bonus: <c:value><bonus>%"
+    total: "<bold><c:sell>You get: </c:sell></bold><value>"
   some-unsold: "<prefix><c:text><stacks> stack(s) couldn't be sold and are back in your inventory."
   too-cheap: "<prefix><c:error><sym:cross></c:error> <c:text>Those items are worth less than $1 right now. Nothing was sold."
   overflow: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance can't hold that much. Your items are back."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>The sale didn't go through, your items are back. Try again."
-  returned-dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full: <stacks> returned stack(s) dropped at your feet. Pick them up!"
+  returned-dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory and ender chest full: <stacks> returned stack(s) dropped at your feet. Pick them up!"
+  returned-ender: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full: <stacks> returned stack(s) went into your ender chest."
   refund-delivered: "<prefix><c:success><sym:check></c:success> <c:text>You got back <c:value><amount>x</c:value> <item> <c:text>from a sale that didn't go through."
-  # Why an item can't be sold (/sell hand, and the action bar when you tap it in the sell menu).
+  # Why an item can't be sold (/sell hand, and the action bar when you put it into the sell chest).
   reason:
     empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell."
     dupe: "<prefix><c:error><sym:cross></c:error> <item> <c:text>is flagged as a copy and can't be sold. Ask staff."
@@ -254,91 +266,69 @@ sell:
     wardrobe: "Set"
     boosters: "Boosters"
     events: "Event"
-  menu:
+  # The sell chest (SELL2): /sell, the Sell button in /shop and in the satchel.
+  chest:
     title: "Sell"
     info:
-      - "<c:text>Tap items in your inventory"
-      - "<c:text>to put them in. Tap them here"
-      - "<c:text>to take them out, then sell."
-    summary:
+      - "<c:text>Put items into the top 4 rows"
+      - "<c:text>(click, shift-click or drag), then"
+      - "<c:text>press Sell. Closing gives them back."
+    sell-inventory:
+      name: "<c:value><bold>Sell inventory"
+      lore:
+        - "<c:text>Moves every sellable item from"
+        - "<c:text>your inventory into the chest."
+        - "<c:muted>Armor, offhand and hotbar tools stay."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to fill the chest"
+    total:
       name: "<c:flame><sym:star></c:flame> <c:value>Total: <total>"
       lore:
-        - "<c:text>Items: <c:value><items></c:value> <c:muted>(<stacks> stacks)"
-        - "<c:text>Before bonus: <subtotal>"
-        - "<c:text>Sell bonus: <c:value><bonus>%"
-        - "<c:text>You get: <total>"
+        - "<bold><c:header>| Total</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Items: </c:text><c:value><items>"
+        - "<c:bar>| </c:bar><c:text>Value: </c:text><value>"
+        - "<c:bar>| </c:bar><c:text>Bonus: </c:text><c:value><bonus>%"
+        - "<c:bar>| </c:bar><c:text>You get: </c:text><total>"
         - ""
-        - "<c:muted>Prices change live. Items stay in"
-        - "<c:muted>your inventory until you sell."
+        - "<c:muted>Prices change live."
       hot:
         - ""
         - "<c:flame><sym:star> Hot item today:</c:flame> <c:value><item></c:value> <c:success><percent>%"
-    item:
-      lore:
-        - "<bold><c:sell>| Sell Price: </c:sell><price></bold> <c:muted>each (<percent><c:muted>)"
-        - ""
-        - "<bold><c:header>| Information</c:header></bold>"
-        - "<c:bar>| </c:bar><c:text>Trend: </c:text><trend>"
-        - "<c:bar>| </c:bar><c:text>Worth: </c:text><worth> <c:muted>for <amount>"
-        - "<c:bar>| </c:bar><c:text>Category: </c:text><c:value><category>"
-      hot:
-        - "<c:flame><sym:star> Hot item: <percent>% today"
-      footer:
-        - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take it out"
-    more:
-      name: "<c:value>+<stacks> more stacks"
-      lore:
-        - "<c:text>They are in the box and will"
-        - "<c:text>be sold too."
-    empty:
-      name: "<c:muted>The sell box is empty"
-      lore:
-        - "<c:text>Tap items in your inventory"
-        - "<c:text>to put them in."
-    add-all:
-      name: "<c:value>Add all sellable"
-      lore:
-        - "<c:text>Puts every item from your"
-        - "<c:text>inventory that can be sold in."
-        - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to add all"
-    clear:
-      name: "<c:value>Take all out"
-      lore:
-        - "<c:text>Empties the sell box. Nothing"
-        - "<c:text>leaves your inventory."
-        - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to empty"
     bonus:
-      name: "<c:value>Sell bonus: <c:success><bonus>%"
+      name: "<c:value>Your sell bonus: <c:success><bonus>%"
       none:
         - "<c:text>No sell bonus yet. Ranks, island"
         - "<c:text>upgrades, sets, enchants and"
         - "<c:text>boosters add to it."
-      line: "<c:muted><sym:bullet></c:muted> <c:text><source><c:muted>:</c:muted> <c:success><value>%"
+      line: "<c:bar>| </c:bar><c:text><source><c:muted>:</c:muted> <c:success><value>%"
       footer:
         - ""
         - "<c:muted>All bonuses add up, max <cap>%."
       capped:
         - ""
         - "<c:warning>Capped: <total>% counts as <cap>%."
-    confirm:
-      name: "<c:success><sym:check> Sell for <total>"
+    sell:
+      name: "<c:success><bold>Sell <items> items for <total>"
       lore:
-        - "<c:text>Sells <c:value><items></c:value> items now."
         - "<c:text>Sell bonus: <c:value><bonus>%"
+        - "<c:muted>Unsellable items go back to you."
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell"
-    confirm-empty:
+    sell-empty:
       name: "<c:muted>Nothing to sell"
       lore:
-        - "<c:text>Tap items in your inventory first."
+        - "<c:text>Put items into the chest first,"
+        - "<c:text>or press <c:value>Sell inventory</c:value><c:text>."
     busy:
       name: "<c:value><sym:time> Selling..."
       lore:
         - "<c:text>One moment."
-    nothing-picked: "<c:error><sym:cross></c:error> <c:text>Tap items in your inventory first."
+    full: "<c:error><sym:cross></c:error> <c:text>The sell chest is full. Sell first, then add more."
+    nothing-to-add: "<c:error><sym:cross></c:error> <c:text>Nothing in your inventory can be sold."
+    added: "<c:success><sym:check></c:success> <c:text>Moved <c:value><items></c:value> items into the chest."
+    added-full: "<c:warning><sym:check></c:warning> <c:text>Moved <c:value><items></c:value> items. The chest is full: sell, then add the rest."
+    nothing: "<c:error><sym:cross></c:error> <c:text>The chest is empty. Put items in first."
+    recovered: "<prefix><c:success><sym:check></c:success> <c:text>The server stopped while your sell chest was open: <c:value><items></c:value> items are back in your inventory."
 
 # Banks (M3.3): /bank, the island menu's Bank button. <amount>, <bank>, <balance>, <fee>, <max>, <capacity>, <cap>, <cost>,
 # <left>, <net>, <room> are colored money amounts. <rate>/<fee>/<percent> in lore are plain numbers (add the % yourself).
