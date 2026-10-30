@@ -206,7 +206,7 @@ extras:
     channel: punishments      # name of the webhook in secrets/discord.yml
     queue-size: 100           # messages waiting at most (more are dropped, the punishment itself always works)
     max-attempts: 3           # tries per message (rate limits and errors are retried)
-    colors: { ban: "#e74c3c", mute: "#e67e22", warn: "#f1c40f", kick: "#95a5a6", pardon: "#2ecc71", undo: "#3498db" }
+    colors: { ban: "#e74c3c", mute: "#e67e22", warn: "#f1c40f", kick: "#95a5a6", pardon: "#2ecc71", undo: "#3498db", lockdown: "#e91e63" }
   player-view:                # /mypunishments
     show-staff: false         # owner spec: staff names hidden from players
     last-entries: 5
@@ -249,3 +249,28 @@ extras:
     discord:                  # new appeals and decisions on Discord. OFF: Discord is postponed (docs/LATER.md)
       enabled: false          # also needs the webhook URL (a SECRET: secrets/discord.yml, never here)
       channel: appeals        # name of the webhook in secrets/discord.yml
+
+  # ---------- owner spec section 13 (P6) ----------
+  never-auto: [hacking, xray, macro]   # reason ids never applied without a staff click (suggestions from /psuggest and
+                                       # GrimAC are never automatic anyway; this also holds in warn-rules mode: auto)
+  lockdown:                   # /lockdown chat|join|off|status (skyblock.staff.lockdown). Only NEW accounts are affected;
+                              # staff and every rank above default (skyblock.lockdown.bypass) never. Never punishes anyone.
+    new-player-playtime: 30m  # new = total playtime below this ...
+    new-player-age: 24h       # ... or first join less than this ago
+    chat-default: 10m         # /lockdown chat without a time
+    chat-max: 60m             # (never more than 6h)
+    join-default: 5m          # /lockdown join: accounts that NEVER joined before can't join; returning players always can
+    join-max: 15m             # (never more than 1h)
+    staff-reminder: 60s       # staff (skyblock.staff.notify) get the status line this often while a lockdown is active
+    blocked-commands: [msg, tell, w, whisper, m, pm, r, reply, mail]   # also blocked for new players in a chat lockdown
+  raid:                       # raid detection: only ALERTS staff, with [Start chat lockdown] [Ignore]
+    detect: true
+    accounts: 15              # more than this many accounts joining for the very first time ...
+    window: 30s               # ... within this time = possible raid (restarts and vote parties are existing players)
+    auto-lock: false          # true = also start a chat lockdown by itself: chat only, never join, ...
+    auto-duration: 5m         # ... this long (never more than 5m) ...
+    auto-cooldown: 30m        # ... at most once per this time (never less than 30m)
+  network:                    # network-ready (several servers sharing one database later). One server: keep enabled false
+    enabled: false            # true = bans/mutes only count where their scope says (network = everywhere, server = there)
+    server-id: phoenix        # stored on every new punishment
+    default-scope: network    # scope of new bans and mutes (warnings and kicks are always server)

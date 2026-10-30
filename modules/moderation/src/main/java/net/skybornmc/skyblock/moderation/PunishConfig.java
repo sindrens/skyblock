@@ -43,12 +43,20 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param muteEnded        "mute ended" / "welcome back" message (13.13)
      * @param bulk             bulk punish (13.8)
      * @param appeal           appeals (13.10)
+     * @param neverAuto        reason ids never applied without a staff click, also in warn-rules auto mode (13.3)
+     * @param lockdown         raid lockdown (13.9)
+     * @param raid             raid detection (13.9)
+     * @param network          network-ready storage and scope filter (13.12)
      */
     record Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
                   java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
                   boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
                   PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
-                  WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal) {
+                  WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal,
+                  List<String> neverAuto, Lockdown.Settings lockdown, Lockdown.Raid raid, NetworkScope.Settings network) {
+
+        /** Shipped default of {@code never-auto} (spec 13.15). */
+        static final List<String> NEVER_AUTO = List.of("hacking", "xray", "macro");
 
         static final Extras DEFAULT = new Extras(Duration.ofMinutes(2), Duration.ofSeconds(15), Duration.ofSeconds(5),
                 Duration.ofDays(90), java.time.ZoneId.of("Europe/Oslo"), Duration.ofSeconds(60), PunishStats.Period.D7, 10,
@@ -74,6 +82,18 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
             this(undoWindow, duplicateWindow, duplicateConfirm, offenceExpire, statsZone, statsCache, statsPeriod, statsTop,
                     closeReports, evidence, notes, ack, rulesLink, discord, playerView, chatSuggestions, approval, watchlist,
                     probation, muteEnded, Bulk.DEFAULT, Appeals.DEFAULT);
+        }
+
+        /** The P5 set of keys; the P6 ones get their defaults. */
+        Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
+               java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
+               boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
+               PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
+               WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal) {
+            this(undoWindow, duplicateWindow, duplicateConfirm, offenceExpire, statsZone, statsCache, statsPeriod, statsTop,
+                    closeReports, evidence, notes, ack, rulesLink, discord, playerView, chatSuggestions, approval, watchlist,
+                    probation, muteEnded, bulk, appeal, NEVER_AUTO, Lockdown.Settings.DEFAULT, Lockdown.Raid.DEFAULT,
+                    NetworkScope.Settings.DEFAULT);
         }
     }
 
@@ -161,10 +181,10 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param colors embed colour per kind (ban, mute, warn, kick, pardon, undo), 0xRRGGBB
      */
     record Discord(boolean enabled, String channel, int queueSize, int maxAttempts, Map<String, Integer> colors) {
-        static final List<String> KINDS = List.of("ban", "mute", "warn", "kick", "pardon", "undo", "bulk", "appeal");
+        static final List<String> KINDS = List.of("ban", "mute", "warn", "kick", "pardon", "undo", "bulk", "appeal", "lockdown");
         static final Discord DEFAULT = new Discord(false, "punishments", 100, 3, Map.of("ban", 0xE74C3C, "mute", 0xE67E22,
                 "warn", 0xF1C40F, "kick", 0x95A5A6, "pardon", 0x2ECC71, "undo", 0x3498DB, "bulk", 0x9B59B6,
-                "appeal", 0x1ABC9C));
+                "appeal", 0x1ABC9C, "lockdown", 0xE91E63));
 
         int color(String kind) {
             return colors.getOrDefault(kind, 0x95A5A6);

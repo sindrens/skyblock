@@ -524,6 +524,8 @@ config:
   bad-boolean: "<file> line <line>: <path>: '<value>' must be true or false"
   bad-mode: "<file> line <line>: <path>: mode '<value>' must be notify or auto<hint>"
   bad-duration: "<file> line <line>: <path>: '<value>' is not a time (use 30m, 1h, 7d)"
+  duration-too-long: "<file> line <line>: <path>: '<value>' is too long (at most <max>)"
+  duration-too-short: "<file> line <line>: <path>: '<value>' is too short (at least <min>)"
   bad-rules: "<file> line <line>: <path>: must be a list of rules (- at: 2 / action: \"mute 1h\")"
   bad-rule-at: "<file> line <line>: <path>: 'at' must be a whole number of 1 or more, not '<value>'"
   duplicate-rule-at: "<file> line <line>: <path>: there is already a rule at <value> warnings"
@@ -685,6 +687,11 @@ discord:
     appeal-reduced: "Appeal: punishment reduced"
     appeal-denied: "Appeal denied"
     appeal-closed: "Appeal closed"
+    lockdown: "Raid lockdown"
+    lockdown-start: "Lockdown started"
+    lockdown-stop: "Lockdown ended"
+    lockdown-expired: "Lockdown ended (time is up)"
+    lockdown-restart: "Lockdown ended (server restart)"
   fields:
     type: "Type"
     target: "Player"
@@ -706,6 +713,12 @@ discord:
     decision: "Decision"
     handler: "Handled by"
     response: "Response"
+    lockdown: "Lockdown"
+    started-by: "Started by"
+  lockdown-kinds:
+    chat: "Chat (new players)"
+    join: "Join (new accounts)"
+  lockdown-auto: "raid detection (automatic)"
   appeal-status:
     open: "open"
     accepted: "accepted"
@@ -1152,3 +1165,106 @@ appeal:
       name: "<c:muted>Already handled"
       lore:
         - "<c:text><status> by <handler>"
+
+# ---------------------------------------------------------------- P6 (spec 13.9, 13.3)
+
+# Raid lockdown (13.9): /lockdown chat [time], /lockdown join [time], /lockdown off, /lockdown status, /lockdown (menu).
+# Only "new" accounts are affected (playtime below new-player-playtime or first join younger than new-player-age); staff
+# and every rank above default (skyblock.lockdown.bypass) never. <kind>, <what>, <length> (total), <left>, <staff>, <ago>,
+# <max>, <count>, <window>, <accounts>, <cooldown>, <playtime>, <age>, <list>. <start> / <ignore> = the alert buttons.
+lockdown:
+  kinds:
+    chat: "chat lockdown"
+    join: "join lockdown"
+  what:
+    chat: "new players can't chat"
+    join: "new accounts can't join"
+  system: "Raid detection"
+  chat-blocked: "<prefix><c:error><sym:cross></c:error> <c:text>Chat is temporarily limited for new players <c:muted>(<left> left)</c:muted><c:text>."
+  join-screen: "<c:text>The server is busy. Try again in a few minutes."
+  started: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>started a <c:value><kind></c:value> for <c:value><length></c:value>: <what>. <click:run_command:'/lockdown off'><hover:show_text:'<c:text>End every lockdown now'><c:action>[End now]</c:action></hover></click>"
+  changed: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>changed the <c:value><kind></c:value>: <c:value><length></c:value> from now. <click:run_command:'/lockdown off'><hover:show_text:'<c:text>End every lockdown now'><c:action>[End now]</c:action></hover></click>"
+  auto-started: "<c:muted>[Staff]</c:muted> <c:warning>Automatic <kind> for <length></c:warning><c:text>: <what>. <click:run_command:'/lockdown off'><hover:show_text:'<c:text>End every lockdown now'><c:action>[End now]</c:action></hover></click>"
+  ended: "<c:muted>[Staff]</c:muted> <c:value><staff_now></c:value><c:text> ended the <c:value><kind></c:value>."
+  expired: "<c:muted>[Staff]</c:muted> <c:text>The <c:value><kind></c:value> ended <c:muted>(time is up)</c:muted><c:text>."
+  none-active: "<prefix><c:error><sym:cross></c:error> <c:text>No lockdown is active."
+  too-long: "<prefix><c:error><sym:cross></c:error> <c:text>A <kind> lasts at most <c:value><max></c:value>."
+  bad-length: "<prefix><c:error><sym:cross></c:error> <c:text>Use a time like <c:value>5m</c:value> (at most <c:value><max></c:value>)."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't start a lockdown."
+  reminder: "<c:muted>[Staff]</c:muted> <c:warning>Lockdown active:</c:warning> <c:text><list>. <click:run_command:'/lockdown status'><hover:show_text:'<c:text>Show the status'><c:action>[Status]</c:action></hover></click> <click:run_command:'/lockdown off'><hover:show_text:'<c:text>End every lockdown now'><c:action>[End now]</c:action></hover></click>"
+  reminder-part: "<kind> (<left> left)"
+  status-header: "<prefix><c:text>Raid lockdown"
+  status-on: " <c:ember><sym:bullet></c:ember> <c:value><kind></c:value>: <c:warning>active</c:warning> <c:muted>(<left> left, started by <staff> <ago> ago)"
+  status-auto: " <c:ember><sym:bullet></c:ember> <c:value><kind></c:value>: <c:warning>active</c:warning> <c:muted>(<left> left, started automatically <ago> ago)"
+  status-off: " <c:ember><sym:bullet></c:ember> <c:value><kind></c:value>: <c:muted>off (default <length>, max <max>)"
+  status-raid: " <c:muted>Raid alert: <count> new account(s) in the last <window>, alert above <accounts>. Automatic lockdown: off."
+  status-raid-auto: " <c:muted>Raid alert: <count> new account(s) in the last <window>, alert above <accounts>. Automatic chat lockdown: <length>."
+  status-raid-off: " <c:muted>Raid alert: off."
+  status-new: " <c:muted>New = less than <playtime> played, or first join less than <age> ago."
+  placeholder:
+    chat: "Chat lockdown <left>"
+    join: "Join lockdown <left>"
+    separator: " · "
+  raid:
+    alert: "<c:muted>[Staff]</c:muted> <c:warning>Possible raid:</c:warning> <c:value><count></c:value> <c:text>new accounts in <c:value><window></c:value>. <start> <ignore>"
+    alert-auto: "<c:muted>[Staff]</c:muted> <c:warning>Possible raid:</c:warning> <c:value><count></c:value> <c:text>new accounts in <c:value><window></c:value>. A chat lockdown for <c:value><length></c:value> starts automatically."
+    alert-running: "<c:muted>[Staff]</c:muted> <c:warning>Possible raid:</c:warning> <c:value><count></c:value> <c:text>new accounts in <c:value><window></c:value>. A chat lockdown is already active."
+    alert-cooldown: "<c:muted>[Staff]</c:muted> <c:warning>Possible raid:</c:warning> <c:value><count></c:value> <c:text>new accounts in <c:value><window></c:value> <c:muted>(no automatic lockdown: one per <cooldown>)</c:muted><c:text>. <start> <ignore>"
+    start-button: "<c:action>[Start chat lockdown <length>]"
+    start-hover: "<c:text>New players can't chat for <length>. Everyone else is unaffected."
+    ignore-button: "<c:action>[Ignore]"
+    ignore-hover: "<c:text>Do nothing"
+    ignored: "<prefix><c:text>Ignored. Nothing was changed."
+    already: "<prefix><c:error><sym:cross></c:error> <c:text>A chat lockdown is already active."
+  menu:
+    title: "Raid lockdown"
+    chat-off:
+      name: "<c:value>Chat lockdown"
+      lore:
+        - "<c:text>New players can't chat, use /msg,"
+        - "<c:text>write signs or books."
+        - "<c:muted>Everyone else is unaffected."
+        - ""
+        - "<c:action><sym:bullet> Click to start (<length>)"
+        - "<c:muted>Other time: /lockdown chat <time> (max <max>)"
+    chat-on:
+      name: "<c:warning>Chat lockdown: active"
+      lore:
+        - "<c:text>Time left: <c:value><left>"
+        - "<c:text>Started by: <c:value><staff></c:value> <c:muted>(<ago> ago)"
+        - ""
+        - "<c:action><sym:bullet> Click to end it now"
+    join-off:
+      name: "<c:value>Join lockdown"
+      lore:
+        - "<c:text>Accounts that never joined before"
+        - "<c:text>can't join. Returning players can."
+        - ""
+        - "<c:action><sym:bullet> Click to start (<length>)"
+        - "<c:muted>Other time: /lockdown join <time> (max <max>)"
+    join-on:
+      name: "<c:warning>Join lockdown: active"
+      lore:
+        - "<c:text>Time left: <c:value><left>"
+        - "<c:text>Started by: <c:value><staff></c:value> <c:muted>(<ago> ago)"
+        - ""
+        - "<c:action><sym:bullet> Click to end it now"
+    status-off:
+      name: "<c:success><sym:check> No lockdown active"
+      lore:
+        - "<c:text>Only new accounts are ever affected:"
+        - "<c:muted>less than <playtime> played, or first"
+        - "<c:muted>join less than <age> ago."
+        - "<c:muted>Staff and ranked players never."
+    status-on:
+      name: "<c:warning>Lockdown active"
+      lore:
+        - "<c:text>It ends by itself, and on a restart."
+        - "<c:muted>New = less than <playtime> played, or first"
+        - "<c:muted>join less than <age> ago."
+
+# Anticheat and other suggestions (13.3): /psuggest <player> <reason> [details] (console, GrimAC, staff). Never applies
+# anything; staff get the usual [Apply] [Dismiss] line. <player>, <target> (clicks), <reason> (id), <sid> (suggestion id).
+psuggest:
+  created: "<prefix><c:success><sym:check></c:success> <c:text>Suggested <c:value><reason></c:value> for <c:value><player></c:value> <c:muted>(#<sid>)</c:muted><c:text>. Staff decide."
+  refreshed: "<prefix><c:text>Added to the waiting suggestion for <c:value><player></c:value> <c:muted>(#<sid>, <reason>)</c:muted><c:text>."

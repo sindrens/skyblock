@@ -85,6 +85,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
     static final String PERM_BULK = "skyblock.staff.punish.bulk";
     static final String PERM_APPEAL = "skyblock.punish.appeal";
     static final String PERM_APPEALS = "skyblock.staff.appeals";
+    /** P6 (spec 13.3; lockdown permissions live in {@link LockdownService}). */
+    static final String PERM_SUGGEST = "skyblock.staff.punish.suggest";
     /** Staff told about broken punishments.yml edits (whoever may reload configs). */
     static final String PERM_CONFIG_ALERT = "skyblock.admin.reload";
 
@@ -122,6 +124,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
     /** P5: bulk punish (13.8) and appeals (13.10). */
     private BulkPunish bulk;
     private AppealService appeals;
+    /** P6: raid lockdown (13.9) and the suggestion API for /psuggest (13.3). */
+    private LockdownService lockdown;
+    private ApiSuggestions apiSuggestions;
 
     public ModerationModule(Core core) {
         this.core = core;
@@ -169,6 +174,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
         service.extras(() -> templates.config().extras());
         service.probationReasons(templates::probation);
         service.denyOpener(this::openDeny);
+        // spec 13.12: every new row stores server id + scope; the scope filter follows punishments.yml (and reloads)
+        service.store().network(() -> templates.config().extras().network());
         loadPunishments(null);
         // P3: Discord sink (off without a webhook secret), side effects, suggestion API
         loadWebhooks();
@@ -193,10 +200,13 @@ public final class ModerationModule implements SkyblockModule, Listener {
             PunishConfig.Appeals a = templates.config().extras().appeal();
             return a.enabled() && a.types().contains(p.type()) && templates.appealable(p.template());
         });
-        core.services().register(ID, net.skybornmc.skyblock.common.moderation.SuggestionService.class,
-                new ApiSuggestions(core, service, templates, () -> templates.config().warnRules(), t -> reasonName(null, t)));
+        apiSuggestions = new ApiSuggestions(core, service, templates, () -> templates.config().warnRules(), t -> reasonName(null, t));
+        core.services().register(ID, net.skybornmc.skyblock.common.moderation.SuggestionService.class, apiSuggestions);
+        lockdown = new LockdownService(core, msg, service, extras, () -> templates.config().extras());
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         core.placeholders().registerText(ID, "muted", p -> p != null && service.mute(p.getUniqueId()).isPresent() ? "true" : "false");
+        // spec 13.9: lockdown status for the staff HUD (empty for non-staff and when nothing is active)
+        core.placeholders().registerText(ID, "lockdown", p -> lockdown.placeholder(p));
         registerCommands();
         // Mutes of players already online (reload) + banned-name cache for /unban tab completion.
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -208,6 +218,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         ackTask = core.scheduler().repeat("moderation:ack", 20L, 20L, extras::tick);
         // spec 12.4: evidence older than the retention is deleted (at start, then every 6 hours)
         purgeTask = core.scheduler().asyncRepeat(200L, 20L * 60 * 60 * 6, extras::purgeEvidence);
+        lockdown.start();
         for (Player p : Bukkit.getOnlinePlayers()) {
             extras.joined(p);
         }
@@ -252,6 +263,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
         }
         if (purgeTask != null) {
             purgeTask.cancel();
+        }
+        if (lockdown != null) {
+            lockdown.shutdown(); // spec 13.9: a lockdown never survives a restart (audited + Discord before the sink closes)
         }
         if (discord != null) {
             discord.close();
@@ -608,11 +622,85 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .category("Staff").permission(PERM_APPEALS).example("appeals")
                 .executes(ctx -> appeals.queue(ctx.sender())));
 
+        // ---- P6: /lockdown (13.9), /psuggest (13.3)
+        Arg<Duration> chatLength = lockdownLength(Lockdown.Kind.CHAT);
+        Arg<Duration> joinLength = lockdownLength(Lockdown.Kind.JOIN);
+        commands.register(CommandSpec.command("lockdown")
+                .description("Raid lockdown for new players only: chat [time] (no chat, /msg, signs, books), join [time] (accounts that never joined can't join), off, status")
+                .category("Staff").permission(LockdownService.PERM_LOCKDOWN).example("lockdown chat 10m")
+                .executes(ctx -> {
+                    if (ctx.sender() instanceof Player p) {
+                        core.menus().open(p, new LockdownMenu(lockdown));
+                    } else {
+                        lockdown.status(ctx.sender());
+                    }
+                })
+                .sub(CommandSpec.sub("chat").optional(chatLength)
+                        .executes(ctx -> lockdownStart(ctx.sender(), Lockdown.Kind.CHAT, ctx.getOr(chatLength, null))))
+                .sub(CommandSpec.sub("join").optional(joinLength)
+                        .executes(ctx -> lockdownStart(ctx.sender(), Lockdown.Kind.JOIN, ctx.getOr(joinLength, null))))
+                .sub(CommandSpec.sub("off").executes(ctx -> lockdown.end(ctx.sender(), null)))
+                .sub(CommandSpec.sub("status").executes(ctx -> lockdown.status(ctx.sender()))));
+        Arg<String> suggestTarget = player;
+        Arg<String> suggestReason = Args.oneOf("reason", templates::reasonIds);
+        Arg<String> suggestDetails = Args.text("details", "Grim: Reach vl 12", "Flying at spawn", "Autoclicker in the Depths");
+        commands.register(CommandSpec.command("psuggest")
+                .description("Suggest a punishment: staff get [Apply] [Dismiss] [Open /p]; never applies anything (console, GrimAC)")
+                .category("Staff").permission(PERM_SUGGEST).arg(suggestTarget).arg(suggestReason).optional(suggestDetails)
+                .example("psuggest Steve hacking Grim: Reach vl 12")
+                .executes(ctx -> psuggest(ctx.sender(), ctx.get(suggestTarget), ctx.get(suggestReason), ctx.getOr(suggestDetails, ""))));
+
         Arg<String> altsTarget = player;
         commands.register(CommandSpec.command("alts")
                 .description("Accounts that share an IP address with a player").category("Staff").permission(PERM_ALTS)
                 .arg(altsTarget).example("alts Steve")
                 .executes(ctx -> alts(ctx.sender(), ctx.get(altsTarget))));
+    }
+
+    /** A lockdown length: tab completion up to the kind's max (default and max included). */
+    private Arg<Duration> lockdownLength(Lockdown.Kind kind) {
+        return Arg.word("duration", (sender, raw) -> {
+            try {
+                return net.skybornmc.skyblock.common.command.Durations.parse(raw);
+            } catch (IllegalArgumentException e) {
+                throw CommandFailure.of("invalid-duration", Msg.p("input", raw));
+            }
+        }, Suggest.of(() -> lockdown.lengthHints(kind)));
+    }
+
+    private void lockdownStart(CommandSender sender, Lockdown.Kind kind, Duration length) {
+        String problem = lockdown.begin(sender, kind, length);
+        if (problem != null) {
+            lockdown.tellProblem(sender, kind, problem);
+        }
+    }
+
+    /**
+     * {@code /psuggest <player> <reason> [details]} (spec 13.3): a pending suggestion through the suggestion API (one per
+     * player + reason; a repeat appends its details, max 5 lines). Never applies anything. Console (GrimAC) and staff.
+     */
+    private void psuggest(CommandSender sender, String name, String reasonId, String rawDetails) {
+        String details = Notes.clean(rawDetails == null ? "" : rawDetails);
+        String source = sender instanceof Player p ? p.getName() : "";
+        resolve(name).thenCompose(found -> found.isEmpty()
+                        ? CompletableFuture.completedFuture((Map.Entry<Found, net.skybornmc.skyblock.common.moderation.SuggestionService.Result>) null)
+                        : apiSuggestions.suggest(found.get().uuid(), reasonId, source, details, true,
+                                net.skybornmc.skyblock.common.audit.Actor.of(sender)).thenApply(r -> Map.entry(found.get(), r)))
+                .thenAcceptAsync(res -> {
+                    if (res == null) {
+                        msg.send(sender, "error.unknown", Msg.p("player", name));
+                        return;
+                    }
+                    Found who = res.getKey();
+                    switch (res.getValue().status()) {
+                        case CREATED -> msg.send(sender, "psuggest.created", Msg.p("player", who.name()),
+                                Msg.p("reason", reasonId), Msg.p("sid", res.getValue().id()), PunishmentService.pre("target", who.name()));
+                        case REFRESHED -> msg.send(sender, "psuggest.refreshed", Msg.p("player", who.name()),
+                                Msg.p("reason", reasonId), Msg.p("sid", res.getValue().id()), PunishmentService.pre("target", who.name()));
+                        case UNKNOWN_REASON -> msg.send(sender, "error.unknown-template", Msg.p("reason", reasonId));
+                        case UNKNOWN_PLAYER -> msg.send(sender, "error.unknown", Msg.p("player", name));
+                    }
+                }, main).exceptionally(e -> failed(sender, e));
     }
 
     /**
@@ -1269,6 +1357,31 @@ public final class ModerationModule implements SkyblockModule, Listener {
 
     // ================================================================== enforcement
 
+    /**
+     * spec 13.9 join lockdown: runs before the player data is created (LOWEST), so "never joined before" is still true for
+     * a brand-new account. Only looks the account up while a join lockdown is live. Fails open on a database error.
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPreLoginLockdown(AsyncPlayerPreLoginEvent event) {
+        if (event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED || !lockdown.joinLockActive()) {
+            return;
+        }
+        boolean known;
+        try {
+            known = core.players().offline(event.getUniqueId()).get(5, java.util.concurrent.TimeUnit.SECONDS).isPresent();
+        } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            plugin.getLogger().log(Level.WARNING, "Join lockdown check failed for " + event.getName() + " (allowed in)", e);
+            return;
+        }
+        if (lockdown.joinBlocked(known)) {
+            // counted, and audited once in lockdown_end ("refused"), so a bot flood can't flood the audit log
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, lockdown.joinScreen());
+        }
+    }
+
     @EventHandler(priority = EventPriority.LOW)
     public void onPreLogin(AsyncPlayerPreLoginEvent event) {
         if (event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) {
@@ -1309,6 +1422,11 @@ public final class ModerationModule implements SkyblockModule, Listener {
         service.requestsOnJoin(player); // spec 13.4: outcomes for requesters, waiting requests for approvers
         extras.joined(player); // spec 12.6: unacknowledged warnings are reminded once
         appeals.joined(player); // spec 13.10: decisions not told yet; staff: appeals waiting longer than appeal.reminder
+        // spec 13.9: raid detection counts accounts on their very first join; staff see a running lockdown at once
+        if (core.players().get(player.getUniqueId()).map(net.skybornmc.skyblock.common.player.PlayerData::isNew).orElse(false)) {
+            lockdown.newAccountJoined(player.getUniqueId());
+        }
+        lockdown.staffJoined(player);
         if (lastLoadRejected && player.hasPermission(PERM_CONFIG_ALERT) && !lastProblems.isEmpty()) {
             sendProblems(player, lastProblems, "config.rejected");
         }
@@ -1359,6 +1477,12 @@ public final class ModerationModule implements SkyblockModule, Listener {
             event.setCancelled(true);
             return;
         }
+        if (lockdown.chatBlocked(event.getPlayer())) {
+            // spec 13.9: new players during a chat lockdown (staff and ranked players never)
+            event.setCancelled(true);
+            lockdown.tellChatBlocked(event.getPlayer());
+            return;
+        }
         if (extras.blocks(event.getPlayer())) {
             // spec 12.6 ack.block-until-ack (off by default): chat waits for [I understand] / /ack
             event.setCancelled(true);
@@ -1369,10 +1493,17 @@ public final class ModerationModule implements SkyblockModule, Listener {
     /** {@code ack.block-until-ack} (off by default): only /ack, /rules and /mypunishments work until acknowledged. */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCommand(org.bukkit.event.player.PlayerCommandPreprocessEvent event) {
+        String raw = event.getMessage().length() > 1 ? event.getMessage().substring(1).split(" ", 2)[0] : "";
+        if (lockdown.commandBlocked(event.getPlayer(), raw)) {
+            // spec 13.9: private messages and mail are chat too
+            event.setCancelled(true);
+            lockdown.tellChatBlocked(event.getPlayer());
+            return;
+        }
         if (!extras.blocks(event.getPlayer())) {
             return;
         }
-        String label = event.getMessage().substring(1).split(" ", 2)[0].toLowerCase(Locale.ROOT);
+        String label = raw.toLowerCase(Locale.ROOT);
         if (label.contains(":")) {
             label = label.substring(label.indexOf(':') + 1);
         }
@@ -1388,6 +1519,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
     public void onSign(SignChangeEvent event) {
         if (blockIfMuted(event.getPlayer())) {
             event.setCancelled(true);
+        } else if (lockdown.chatBlocked(event.getPlayer())) {
+            event.setCancelled(true);
+            lockdown.tellChatBlocked(event.getPlayer());
         }
     }
 
@@ -1395,6 +1529,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
     public void onBook(PlayerEditBookEvent event) {
         if (blockIfMuted(event.getPlayer())) {
             event.setCancelled(true);
+        } else if (lockdown.chatBlocked(event.getPlayer())) {
+            event.setCancelled(true);
+            lockdown.tellChatBlocked(event.getPlayer());
         }
     }
 

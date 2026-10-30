@@ -100,6 +100,13 @@ final class PunishConfigParser {
                         "suggestion", nullToEmpty(Hints.closest(cs.reason(), byId.keySet())));
             }
         });
+        // only a never-auto list written in the file is checked (the built-in default may name reasons a file removed)
+        for (String id : yaml.contains("extras.never-auto") ? extras.neverAuto() : List.<String>of()) {
+            if (!byId.containsKey(id)) {
+                error("config.unknown-reason", "extras.never-auto", "value", id, "suggestion",
+                        nullToEmpty(Hints.closest(id, byId.keySet())));
+            }
+        }
         if (!errors.isEmpty()) {
             return new Result(null, List.copyOf(errors), List.copyOf(warnings));
         }
@@ -536,7 +543,128 @@ final class PunishConfigParser {
                 playerView(x.getConfigurationSection("player-view")), chatSuggestions(x.getConfigurationSection("chat-suggestions")),
                 approval(x.getConfigurationSection("approval")), watchlist(x.getConfigurationSection("watchlist")),
                 probation(x.getConfigurationSection("probation")), muteEnded(x.getConfigurationSection("mute-ended")),
-                bulk(x.getConfigurationSection("bulk")), appeal(x.getConfigurationSection("appeal")));
+                bulk(x.getConfigurationSection("bulk")), appeal(x.getConfigurationSection("appeal")),
+                neverAuto(x), lockdown(x.getConfigurationSection("lockdown")), raid(x.getConfigurationSection("raid")),
+                network(x.getConfigurationSection("network")));
+    }
+
+    // ------------------------------------------------------------------ extras (P6: spec 13.3, 13.9, 13.12)
+
+    /** {@code never-auto: [hacking, xray, macro]}: reason ids (checked against the reasons in {@link #run}). */
+    private List<String> neverAuto(ConfigurationSection x) {
+        if (!x.contains("never-auto")) {
+            return PunishConfig.Extras.NEVER_AUTO;
+        }
+        if (!x.isList("never-auto")) {
+            error("config.bad-list", "extras.never-auto");
+            return PunishConfig.Extras.NEVER_AUTO;
+        }
+        List<String> out = new ArrayList<>();
+        for (String raw : x.getStringList("never-auto")) {
+            String id = raw == null ? "" : raw.strip();
+            if (!id.matches(ID_PATTERN)) {
+                error("config.bad-id", "extras.never-auto", "value", id);
+            } else if (!out.contains(id)) {
+                out.add(id);
+            }
+        }
+        return List.copyOf(out);
+    }
+
+    private Lockdown.Settings lockdown(ConfigurationSection s) {
+        Lockdown.Settings d = Lockdown.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.lockdown.";
+        Duration playtime = positive(s, "new-player-playtime", p + "new-player-playtime", d.newPlayerPlaytime());
+        Duration age = positive(s, "new-player-age", p + "new-player-age", d.newPlayerAge());
+        // Safety caps: a chat lockdown never longer than 6h, a join lockdown never longer than 1h (spec: 60m / 15m).
+        Duration chatMax = capped(s, "chat-max", p + "chat-max", d.chatMax(), Duration.ofHours(6));
+        Duration joinMax = capped(s, "join-max", p + "join-max", d.joinMax(), Duration.ofHours(1));
+        Duration chatDefault = capped(s, "chat-default", p + "chat-default", d.chatDefault(), chatMax);
+        Duration joinDefault = capped(s, "join-default", p + "join-default", d.joinDefault(), joinMax);
+        Duration reminder = positive(s, "staff-reminder", p + "staff-reminder", d.staffReminder());
+        if (reminder.compareTo(Duration.ofSeconds(10)) < 0) {
+            error("config.bad-duration", p + "staff-reminder", "value", String.valueOf(s.get("staff-reminder")));
+            reminder = d.staffReminder();
+        }
+        List<String> blocked = d.blockedCommands();
+        if (s.contains("blocked-commands")) {
+            if (!s.isList("blocked-commands")) {
+                error("config.bad-list", p + "blocked-commands");
+            } else {
+                List<String> out = new ArrayList<>();
+                for (String raw : s.getStringList("blocked-commands")) {
+                    String label = raw == null ? "" : raw.strip().toLowerCase(Locale.ROOT);
+                    if (label.startsWith("/")) {
+                        label = label.substring(1);
+                    }
+                    if (!label.matches("[a-z0-9_-]+")) {
+                        error("config.bad-id", p + "blocked-commands", "value", label);
+                    } else if (!out.contains(label)) {
+                        out.add(label);
+                    }
+                }
+                blocked = List.copyOf(out);
+            }
+        }
+        return new Lockdown.Settings(playtime, age, chatDefault, chatMax, joinDefault, joinMax, reminder, blocked);
+    }
+
+    /** A positive duration that may not be longer than {@code max}. */
+    private Duration capped(ConfigurationSection s, String key, String path, Duration fallback, Duration max) {
+        Duration d = positive(s, key, path, fallback);
+        if (d.compareTo(max) > 0) {
+            error("config.duration-too-long", path, "value", String.valueOf(s.get(key)), "max", PunishConfig.text(max));
+            return fallback.compareTo(max) > 0 ? max : fallback;
+        }
+        return d;
+    }
+
+    private Lockdown.Raid raid(ConfigurationSection s) {
+        Lockdown.Raid d = Lockdown.Raid.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.raid.";
+        Duration window = capped(s, "window", p + "window", d.window(), Duration.ofMinutes(10));
+        // spec: an automatic lockdown is at most 5 minutes, at most once per 30 minutes
+        Duration autoDuration = capped(s, "auto-duration", p + "auto-duration", d.autoDuration(), Lockdown.AUTO_MAX);
+        Duration autoCooldown = positive(s, "auto-cooldown", p + "auto-cooldown", d.autoCooldown());
+        if (autoCooldown.compareTo(Lockdown.AUTO_COOLDOWN_MIN) < 0) {
+            error("config.duration-too-short", p + "auto-cooldown", "value", String.valueOf(s.get("auto-cooldown")),
+                    "min", PunishConfig.text(Lockdown.AUTO_COOLDOWN_MIN));
+            autoCooldown = Lockdown.AUTO_COOLDOWN_MIN;
+        }
+        return new Lockdown.Raid(bool(s, "detect", p + "detect", d.detect()),
+                number(s, "accounts", p + "accounts", d.accounts(), 2, 1000), window,
+                bool(s, "auto-lock", p + "auto-lock", d.autoLock()), autoDuration, autoCooldown);
+    }
+
+    private NetworkScope.Settings network(ConfigurationSection s) {
+        NetworkScope.Settings d = NetworkScope.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.network.";
+        String serverId = s.contains("server-id") ? String.valueOf(s.get("server-id")).strip() : d.serverId();
+        if (!serverId.matches(ID_PATTERN) || serverId.length() > 32) {
+            error("config.bad-id", p + "server-id", "value", serverId);
+            serverId = d.serverId();
+        }
+        String scope = d.defaultScope();
+        if (s.contains("default-scope")) {
+            String raw = String.valueOf(s.get("default-scope")).strip();
+            java.util.Optional<String> parsed = NetworkScope.parseScope(raw);
+            if (parsed.isEmpty()) {
+                error("config.unknown-key", p + "default-scope", "value", raw, "suggestion",
+                        nullToEmpty(Hints.closest(raw.toLowerCase(Locale.ROOT), NetworkScope.SCOPES)));
+            } else {
+                scope = parsed.get();
+            }
+        }
+        return new NetworkScope.Settings(bool(s, "enabled", p + "enabled", d.enabled()), serverId, scope);
     }
 
     // ------------------------------------------------------------------ extras (P5: spec 13.8, 13.10)

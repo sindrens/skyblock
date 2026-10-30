@@ -84,3 +84,12 @@ skyblock.punish.appeal:
 skyblock.staff.appeals:
   description: Handle appeals (/appeals queue, accept / reduce / deny) and get the reminder for old open appeals
   default: op
+skyblock.staff.lockdown:
+  description: Raid lockdown for new players (/lockdown chat|join|off|status and its menu) and the [Start chat lockdown] alert button
+  default: op
+skyblock.lockdown.bypass:
+  description: Never affected by a chat lockdown (given to every rank above default; staff with skyblock.staff.notify never are either)
+  default: op
+skyblock.staff.punish.suggest:
+  description: Suggest a punishment for staff to decide (/psuggest, also used by GrimAC from the console); never applies anything
+  default: op

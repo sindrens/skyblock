@@ -114,6 +114,12 @@ final class PunishExtras {
                 this::discordText));
     }
 
+    /** A raid lockdown started or ended (spec 13.9): one embed to the punishment log (off unless Discord is enabled). */
+    void lockdownPosted(Lockdown.Active a, String event, String by) {
+        postDiscord(() -> PunishEmbeds.lockdown(a, event, by, System.currentTimeMillis(), extras.get().discord(),
+                this::discordText));
+    }
+
     /** A new appeal or a decision (spec 13.10 step 1): to the appeals webhook, only when switched on. */
     void appealPosted(Supplier<DiscordSink.Embed> embed) {
         try {

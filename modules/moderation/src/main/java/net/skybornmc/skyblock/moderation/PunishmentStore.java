@@ -24,9 +24,21 @@ final class PunishmentStore {
             + "warn_tenths, reason_id, details";
 
     private final Database db;
+    /** spec 13.12: this server's id and scope rules (filter off by default: one server, nothing changes). */
+    private volatile java.util.function.Supplier<NetworkScope.Settings> network = () -> NetworkScope.Settings.DEFAULT;
 
     PunishmentStore(Database db) {
         this.db = db;
+    }
+
+    /** Where the network settings come from (the module passes the live punishments.yml value, so reloads apply). */
+    void network(java.util.function.Supplier<NetworkScope.Settings> settings) {
+        this.network = settings == null ? () -> NetworkScope.Settings.DEFAULT : settings;
+    }
+
+    private NetworkScope.Settings networkSettings() {
+        NetworkScope.Settings s = network.get();
+        return s == null ? NetworkScope.Settings.DEFAULT : s;
     }
 
     private static Punishment map(ResultSet rs) throws SQLException {
@@ -45,16 +57,21 @@ final class PunishmentStore {
         return uuid == null ? null : Sql.toBytes(uuid);
     }
 
-    /** Inserts a row (inside the caller's transaction) and returns it with its id. */
-    private static Punishment insertRow(Connection c, Punishment p) throws SQLException {
+    /**
+     * Inserts a row (inside the caller's transaction) and returns it with its id. Every row stores this server's id and
+     * its scope (spec 13.12): bans and mutes get {@code extras.network.default-scope}, warnings and kicks {@code server}.
+     */
+    private Punishment insertRow(Connection c, Punishment p) throws SQLException {
         // weight only matters for warns (spec 12.7); NULL = 1 for everything else
         java.math.BigDecimal weight = p.type() == Punishment.Type.WARN && p.weight() != Weights.ONE ? Weights.decimal(p.weight()) : null;
+        NetworkScope.Settings ns = networkSettings();
         long id = Sql.insertReturningId(c, "INSERT INTO punishments (type, target_uuid, target_name, ip, ip_wide, reason, "
                         + "template, ladder_step, issuer_uuid, issuer_name, created, expires, silent, source, weight, "
-                        + "approved_by_uuid, approved_by_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        + "approved_by_uuid, approved_by_name, server_id, scope) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 p.type().name(), bytes(p.target()), p.targetName(), p.ip(), p.ipWide(), clip(p.reason(), 255), p.template(),
                 p.ladderStep(), bytes(p.issuer()), clip(p.issuerName(), 32), p.created(), p.expires(), p.silent(), p.source(), weight,
-                bytes(p.approvedBy()), clip(p.approvedByName(), 32));
+                bytes(p.approvedBy()), clip(p.approvedByName(), 32), clip(ns.serverId(), 32), NetworkScope.scopeFor(p.type(), ns));
         return p.withId(id);
     }
 
@@ -79,18 +96,27 @@ final class PunishmentStore {
         });
     }
 
-    private static List<Punishment> activeOf(Connection c, Punishment.Type type, UUID target, String ip, long now)
+    /**
+     * Active punishments of {@code type} for the account and/or IP-wide on the address. With {@code extras.network.enabled}
+     * only rows that count on this server (spec 13.12: scope network, or given here); otherwise all of them.
+     */
+    private List<Punishment> activeOf(Connection c, Punishment.Type type, UUID target, String ip, long now)
             throws SQLException {
+        NetworkScope.Settings ns = networkSettings();
+        String scope = NetworkScope.sql(ns);
+        String server = NetworkScope.parameter(ns);
         List<Punishment> out = new ArrayList<>();
         if (target != null) {
-            out.addAll(Sql.query(c, "SELECT " + COLUMNS + " FROM punishments WHERE target_uuid = ? AND type = ? "
-                            + "AND removed_at IS NULL AND (expires IS NULL OR expires > ?) ORDER BY created DESC",
-                    PunishmentStore::map, Sql.toBytes(target), type.name(), now));
+            String sql = "SELECT " + COLUMNS + " FROM punishments WHERE target_uuid = ? AND type = ? "
+                    + "AND removed_at IS NULL AND (expires IS NULL OR expires > ?)" + scope + " ORDER BY created DESC";
+            out.addAll(server == null ? Sql.query(c, sql, PunishmentStore::map, Sql.toBytes(target), type.name(), now)
+                    : Sql.query(c, sql, PunishmentStore::map, Sql.toBytes(target), type.name(), now, server));
         }
         if (ip != null) {
-            for (Punishment p : Sql.query(c, "SELECT " + COLUMNS + " FROM punishments WHERE ip = ? AND ip_wide = TRUE AND type = ? "
-                            + "AND removed_at IS NULL AND (expires IS NULL OR expires > ?) ORDER BY created DESC",
-                    PunishmentStore::map, ip, type.name(), now)) {
+            String sql = "SELECT " + COLUMNS + " FROM punishments WHERE ip = ? AND ip_wide = TRUE AND type = ? "
+                    + "AND removed_at IS NULL AND (expires IS NULL OR expires > ?)" + scope + " ORDER BY created DESC";
+            for (Punishment p : server == null ? Sql.query(c, sql, PunishmentStore::map, ip, type.name(), now)
+                    : Sql.query(c, sql, PunishmentStore::map, ip, type.name(), now, server)) {
                 if (out.stream().noneMatch(o -> o.id() == p.id())) {
                     out.add(p);
                 }
@@ -150,7 +176,7 @@ final class PunishmentStore {
         return db.blocking(c -> altsBlocking(c, uuid, ip));
     }
 
-    private static List<Alt> altsBlocking(Connection c, UUID uuid, String ip) throws SQLException {
+    private List<Alt> altsBlocking(Connection c, UUID uuid, String ip) throws SQLException {
         record Row(UUID uuid, String name, String ip, long lastSeen) {
         }
         List<Row> rows;
@@ -235,7 +261,7 @@ final class PunishmentStore {
     record Active(Punishment mute, Punishment ban) {
     }
 
-    private static Active active(Connection c, UUID target, String ip, long now) throws SQLException {
+    private Active active(Connection c, UUID target, String ip, long now) throws SQLException {
         return new Active(longest(activeOf(c, Punishment.Type.MUTE, target, ip, now)),
                 longest(activeOf(c, Punishment.Type.BAN, target, ip, now)));
     }
@@ -815,20 +841,31 @@ final class PunishmentStore {
      */
     CompletableFuture<ApiSuggestion> suggestApi(UUID target, String targetName, String reasonId, Templates.Step step,
                                                 String reason, String details, long now, Long expires) {
+        return suggestApi(target, targetName, reasonId, step, reason, details, now, expires, false);
+    }
+
+    /**
+     * Same; {@code append} = on a refresh, {@code details} is appended to the waiting row's details as a new line (newest 5
+     * lines kept, spec 13.3) instead of replacing them.
+     */
+    CompletableFuture<ApiSuggestion> suggestApi(UUID target, String targetName, String reasonId, Templates.Step step,
+                                                String reason, String details, long now, Long expires, boolean append) {
         return db.async(c -> locked(c, target, conn -> suggestApiLocked(conn, target, targetName, reasonId, step, reason,
-                details, now, expires)));
+                details, now, expires, append)));
     }
 
     private static ApiSuggestion suggestApiLocked(Connection c, UUID target, String targetName, String reasonId,
-                                                  Templates.Step step, String reason, String details, long now, Long expires)
-            throws SQLException {
+                                                  Templates.Step step, String reason, String details, long now, Long expires,
+                                                  boolean append) throws SQLException {
         Optional<Suggestion> waiting = Sql.queryOne(c, "SELECT " + SUGGESTION_COLUMNS + " FROM punishment_suggestions "
                         + "WHERE target_uuid = ? AND kind = ? AND reason_id = ? AND status = 'PENDING' AND (expires IS NULL OR expires > ?) "
                         + "ORDER BY id DESC LIMIT 1", PunishmentStore::mapSuggestion, Sql.toBytes(target), Suggestion.KIND_API,
                 reasonId, now);
         if (waiting.isPresent()) {
+            String merged = append ? ApiSuggestions.appendDetails(waiting.get().details(), details,
+                    ApiSuggestions.MAX_DETAIL_LINES, ApiSuggestions.MAX_DETAIL_CHARS) : clip(details, 255);
             Sql.update(c, "UPDATE punishment_suggestions SET details = ?, expires = ?, action = ?, target_name = ? WHERE id = ?",
-                    clip(details, 255), expires, step.describe(), clip(targetName, 32), waiting.get().id());
+                    merged, expires, step.describe(), clip(targetName, 32), waiting.get().id());
             return new ApiSuggestion(suggestionById(c, waiting.get().id()).orElseThrow(), true);
         }
         Suggestion row = new Suggestion(0, target, targetName, Suggestion.KIND_API, null, false, step.describe(), clip(reason, 255),

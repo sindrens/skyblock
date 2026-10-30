@@ -44,3 +44,13 @@ lp group helper permission set skyblock.staff.watch true
 # (extras.appeal.reminder) are listed on join to skyblock.staff.appeals.
 lp group mod permission set skyblock.staff.punish.bulk true
 lp group mod permission set skyblock.staff.appeals true
+
+# --- Phase P, P6: raid lockdown, anticheat suggestions ---
+# Every rank above default is never affected by a chat lockdown (spec 13.9); mod/admin/owner inherit it from helper.
+lp group ember permission set skyblock.lockdown.bypass true
+lp group builder permission set skyblock.lockdown.bypass true
+lp group helper permission set skyblock.lockdown.bypass true
+# Every staff member can start/end a lockdown (it only limits new accounts and ends by itself; open question for the owner).
+lp group helper permission set skyblock.staff.lockdown true
+# /psuggest for staff; GrimAC runs it from the console (which has every permission).
+lp group helper permission set skyblock.staff.punish.suggest true
