@@ -1,6 +1,14 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- STYLE2 Bedrock: with the V2 palette `brand` falls back to red `§c` (was dark_red `§4`), the same as `error`; errors still differ by the `✘` mark. Keep `brand` on `red`, or move its Bedrock fallback back to `dark_red`? (default: red, as specified)
+- STYLE2 shop: the `| Sell Price` line shows today's /sell price **before** the player's sell bonus (same for everyone). Show the price with the player's own bonus instead? (default: before bonus)
+- STYLE2 scoreboard: the island layout has no room for a blank line between `| Island` and `| Profile` (max 9 lines with the conditional note line), and the Depths layouts show `| Profile` with money only (no name/rank row). OK, or drop gems/crystals there for a name row? (default: as built)
+- STYLE2 scoreboard footer: kept in network ice blue (`sky_ice`) like before. Muted gray or brand red instead? (default: ice blue)
+- STYLE2 progress dots: filled dots use `flame` (#FFD21A yellow-gold, Bedrock yellow) for "gold". Use `ember` (#FF8C1A, Bedrock gold) instead? (default: flame)
+- STYLE2 descriptions: item descriptions now wrap at 32 characters over up to 3 lines (was 2). OK? (default: 3)
+- STYLE2 menus: lore that comes straight from messages files (most menus) writes the V2 formats by hand; items and tool/book/set/note lores go through the shared `LoreBuilder`. Move every menu lore to the builder in code later (more work, same look)? (default: no, the formats match)
+- STYLE2 crates/quests/leaderboard holograms don't exist yet: the builder has crate reward (`★ Name (xN) | 12%`), quest reward (`[+]`) and progress lines and `messages/items.yml → hologram.*` formats ready for them. Achievements use the progress + `[+]` look today. OK? (default: yes)
 - V2 colors (design canvas, V2 boards): (1) Sell price red like the examples (default) or gold? (2) Action lines bold yellow `» RIGHT-CLICK` (default) or green `CLICK HERE`? (3) Thin red `|` bar on every section line (default) or only on headers? Boards approved 30 Oct; defaults apply until answered.
 - E5 armor enchants, warzone: the task rule "the warzone keeps only what W2 allows" means an armor enchant whose bonus family is not in `wardrobe.yml → warzone.families` does nothing there, so **Vitality is off in the warzone** (ENCHANTS §6.8 said "half"); Fortitude works at its PvP value (−1% per level, not also ×0.5). Keep, or give Vitality half in the warzone (add `health:1` to `warzone.families`)? (default: off)
 - E5 armor enchants: the chestplate's mythic slot (set Lv 50) takes **Mythic enchants only** (`enchanter.yml → armor.mythic-slot-mythic-only: true`); tools let any enchant use the prestige slot. Allow any enchant in the mythic slot? (default: Mythics only)

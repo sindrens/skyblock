@@ -272,9 +272,11 @@ browse:
   entry:
     lore:
       - ""
-      - "<c:muted><sym:line></c:muted> <c:text>Seller: <c:value><seller>"
-      - "<c:muted><sym:line></c:muted> <c:text>Price: </c:text><price>"
-      - "<c:muted><sym:line></c:muted> <c:text>Ends in: <c:value><time>"
+      - "<bold><c:buy>| Buy Price: </c:buy><price></bold>"
+      - ""
+      - "<bold><c:header>| Auction</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Seller: </c:text><c:value><seller>"
+      - "<c:bar>| </c:bar><c:text>Ends in: </c:text><c:value><time>"
     buy:
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
