@@ -76,6 +76,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandFlagListener flagListener;
     private IslandEnvironment environment;
     private IslandFly fly;
+    private IslandAutoPickup autoPickup;
     private IslandAdmin admin;
     private IslandNotes notes;
     private IslandChat chat;
@@ -127,6 +128,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         flagListener = new IslandFlagListener(manager);
         environment = new IslandEnvironment(this, manager);
         fly = new IslandFly(this, manager);
+        autoPickup = new IslandAutoPickup(this, manager);
         notes = new IslandNotes(this, manager, new IslandNoteStore(core.database()), name -> admin == null ? null : admin.find(name));
         chat = new IslandChat(this, manager, new IslandChatStore(core.database()));
         chat.loadConfig();
@@ -148,6 +150,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Bukkit.getPluginManager().registerEvents(flagListener, core.plugin());
         Bukkit.getPluginManager().registerEvents(environment, core.plugin());
         Bukkit.getPluginManager().registerEvents(fly, core.plugin());
+        Bukkit.getPluginManager().registerEvents(autoPickup, core.plugin());
         environment.start();
         fly.start();
         // /settings (menus) and the TeleportService (essentials) may enable after us: hook them one tick later.
@@ -155,6 +158,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
             visits.hookServices();
             visits.startBanRefresh();
             members.hookSettings();
+            autoPickup.hookSettings();
             if (notes != null) {
                 notes.hookSettings();
             }
@@ -270,6 +274,11 @@ public final class IslandsModule implements SkyblockModule, Listener {
         }
         if (flagListener != null) {
             HandlerList.unregisterAll(flagListener);
+        }
+        if (autoPickup != null) {
+            autoPickup.stop();
+            HandlerList.unregisterAll(autoPickup);
+            autoPickup = null;
         }
         if (environment != null) {
             environment.stop();

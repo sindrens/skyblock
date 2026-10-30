@@ -449,7 +449,10 @@ final class SellMenu extends Menu {
 
     // ------------------------------------------------------------------ buttons
 
-    /** "Sell inventory": every sellable stack of the inventory into the chest (armor, offhand, hotbar tools stay). */
+    /**
+     * "Sell inventory": every sellable stack of the inventory into the chest (armor, offhand, hotbar tools stay; the whole
+     * hotbar stays while "Sell all skips hotbar" is on).
+     */
     private void sellInventory() {
         if (busy) {
             return;
@@ -457,7 +460,11 @@ final class SellMenu extends Menu {
         PlayerInventory inv = viewer.getInventory();
         int moved = 0;
         boolean full = false;
+        boolean skipHotbar = feature.skipsHotbar(viewer); // QUICK1: "Sell all skips hotbar" in /settings
         for (int slot = 0; slot < SellFeature.STORAGE_SLOTS; slot++) {
+            if (SellFeature.bulkSkips(slot, skipHotbar)) {
+                continue;
+            }
             ItemStack item = inv.getItem(slot);
             if (item == null || item.isEmpty() || !feature.service().sellable(item)) {
                 continue;

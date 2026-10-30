@@ -29,6 +29,7 @@ public final class EssentialsModule implements SkyblockModule {
     private JoinFlow join;
     private SpawnProtection protection;
     private EssentialsSettings settings;
+    private DropGuard dropGuard;
     private StaffPowers powers;
 
     public EssentialsModule(Core core) {
@@ -53,6 +54,7 @@ public final class EssentialsModule implements SkyblockModule {
         // Owner answers 331-334: creative only in the creative worlds, god/fly/heal only in staff or build mode, staff items.
         powers = new StaffPowers(core, config, msg, protection::buildModeOn);
         staff = new StaffCommands(core, config, msg, powers);
+        dropGuard = new DropGuard(core, config, msg, settings);
 
         for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection)) {
             group.register();
@@ -69,7 +71,7 @@ public final class EssentialsModule implements SkyblockModule {
     }
 
     private List<Listener> listeners() {
-        return List.of(teleportCommands, staff, vanish, views, join, protection, powers);
+        return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard);
     }
 
     @Override

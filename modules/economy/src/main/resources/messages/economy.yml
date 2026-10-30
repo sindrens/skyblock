@@ -212,6 +212,7 @@ sell:
   busy: "<prefix><c:text>Your last sale is still going through. One moment."
   hand-empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell, or type <c:value>/sell</c:value>."
   all-nothing: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing in your inventory can be sold. <c:muted>/help sell</c:muted>"
+  all-hotbar-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only your hotbar has sellable items, and it is protected. Use <c:value>/sell hand</c:value> or turn off <c:value>Sell all skips hotbar</c:value> in <c:value>/settings</c:value>."
   changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Some items moved before the sale and were left in your inventory."
   # A sale (SELL2): below sell.big-sale-chat-from (economy.yml, default $100k) only the action bar line, from there one
   # chat line whose hover shows the breakdown (sell.breakdown.*).

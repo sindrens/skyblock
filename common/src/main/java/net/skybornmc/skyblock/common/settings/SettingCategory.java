@@ -5,5 +5,7 @@ public enum SettingCategory {
     CHAT,
     SOCIAL,
     DISPLAY,
-    SOUNDS
+    SOUNDS,
+    /** QUICK1: how the game behaves for you (auto-pickup, drop guard, selling). */
+    GAMEPLAY
 }

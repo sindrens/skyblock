@@ -186,6 +186,7 @@ public final class SellFeature implements Listener {
         tasks.add(core.scheduler().asyncRepeat(save, save, this::save));
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         registerCommand();
+        core.scheduler().later("sell-settings", 1L, this::registerSettings);
         for (Player p : Bukkit.getOnlinePlayers()) {
             recoverChest(p);
             deliverRefunds(p);
@@ -202,6 +203,11 @@ public final class SellFeature implements Listener {
     public void disable() {
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
+        var s = settings;
+        settings = null;
+        if (s != null) {
+            s.unregisterAll(EconomyModule.ID);
+        }
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (core.menus().openMenu(p) instanceof SellMenu) {
                 p.closeInventory();
@@ -414,24 +420,67 @@ public final class SellFeature implements Listener {
 
     private void sellAll(Player player) {
         checkCanSell(player);
-        Map<Integer, ItemStack> pick = sellableSlots(player);
+        boolean skipHotbar = skipsHotbar(player);
+        Map<Integer, ItemStack> pick = sellableSlots(player, skipHotbar);
         if (pick.isEmpty()) {
+            if (skipHotbar && !sellableSlots(player, false).isEmpty()) {
+                throw new CommandFailure(EconomyModule.ID, "sell.all-hotbar-only"); // QUICK1: explain the protection
+            }
             throw new CommandFailure(EconomyModule.ID, "sell.all-nothing");
         }
         sell(player, pick, "all", null);
     }
 
-    /** Every sellable stack in the storage slots (hotbar + main inventory; armor and offhand are left alone). */
-    Map<Integer, ItemStack> sellableSlots(Player player) {
+    /**
+     * Every sellable stack in the storage slots (main inventory, and the hotbar unless {@code skipHotbar}; armor and
+     * offhand are left alone).
+     */
+    Map<Integer, ItemStack> sellableSlots(Player player, boolean skipHotbar) {
         Map<Integer, ItemStack> pick = new LinkedHashMap<>();
         PlayerInventory inv = player.getInventory();
         for (int slot = 0; slot < STORAGE_SLOTS; slot++) {
+            if (bulkSkips(slot, skipHotbar)) {
+                continue;
+            }
             ItemStack item = inv.getItem(slot);
             if (item != null && !item.isEmpty() && service.sellable(item)) {
                 pick.put(slot, item.clone());
             }
         }
         return pick;
+    }
+
+    // ================================================================== QUICK1 sell protection (QoL #2a)
+
+    /** {@code /settings} switch: bulk selling ({@code /sell all}, "Sell inventory") leaves the hotbar alone. */
+    public static final String SETTING_SKIP_HOTBAR = "sell-skip-hotbar";
+    private volatile net.skybornmc.skyblock.common.settings.PlayerSettings settings;
+
+    /** Called one tick after enable (the settings service is published by the menus module). */
+    private void registerSettings() {
+        settings = core.services().optional(net.skybornmc.skyblock.common.settings.PlayerSettings.class).orElse(null);
+        if (settings == null) {
+            return;
+        }
+        try {
+            settings.register(new net.skybornmc.skyblock.common.settings.SettingToggle(EconomyModule.ID, SETTING_SKIP_HOTBAR,
+                    net.skybornmc.skyblock.common.settings.SettingCategory.GAMEPLAY, Material.WHEAT_SEEDS,
+                    config.sellSkipHotbarDefault, null, "navigation", "settings.toggles." + SETTING_SKIP_HOTBAR, false));
+        } catch (RuntimeException e) {
+            core.plugin().getLogger().warning("Sell: could not register the /settings toggle: " + e.getMessage());
+            settings = null;
+        }
+    }
+
+    /** True when bulk selling skips this player's hotbar (the default while the settings service is missing). */
+    boolean skipsHotbar(Player player) {
+        var s = settings;
+        return s == null ? config.sellSkipHotbarDefault : s.get(player, SETTING_SKIP_HOTBAR);
+    }
+
+    /** Pure: does bulk selling leave this storage slot alone? Hotbar = slots 0-8. Selling by hand is never filtered. */
+    static boolean bulkSkips(int slot, boolean skipHotbar) {
+        return skipHotbar && slot >= 0 && slot < 9;
     }
 
     ProfileService profiles() {
