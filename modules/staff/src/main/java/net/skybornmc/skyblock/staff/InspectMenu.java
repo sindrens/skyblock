@@ -131,6 +131,11 @@ final class InspectMenu extends Menu {
                 .filter(b -> viewer.hasPermission("skyblock.box.admin"))
                 .ifPresent(b -> set(40, service.item(Material.CHEST_MINECART, viewer, StaffFeature.MODULE, "menu.inspect.box",
                         Msg.p("player", name)), click -> b.openStaffView(click.player(), id, name, this)));
+        // Join tutorial (TUTORIAL §9.2): step, times, skip and reset. Shown when the tutorial module runs.
+        s.core().services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
+                .filter(t -> viewer.hasPermission("skyblock.tutorial.admin.status"))
+                .ifPresent(t -> set(41, service.item(Material.WRITTEN_BOOK, viewer, StaffFeature.MODULE, "menu.inspect.tutorial",
+                        Msg.p("player", name)), click -> t.openStaffView(click.player(), id, name, this)));
         button(33, Material.BREEZE_ROD, "menu.inspect.punish", "punish " + name, name);
         button(34, Material.CLOCK, "menu.inspect.logs", "logs player " + name, name);
     }

@@ -1,0 +1,15 @@
+# Permissions of the join tutorial module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/tutorial.txt. Commands: docs/commands/tutorial.md.
+skyblock.tutorial:
+  description: Open /tutorial (progress, take me there, I'm stuck, watch again).
+  default: true
+skyblock.tutorial.bypass:
+  description: No tutorial locks (staff, TQ28). The tutorial is offered but never started by force.
+  default: op
+skyblock.tutorial.admin.status:
+  description: See a player's tutorial status (/tutorial admin status, /inspect → Tutorial).
+  default: op
+skyblock.tutorial.admin:
+  description: Skip, reset or move a player's tutorial (/tutorial admin skip|reset|step, /inspect → Tutorial; logged).
+  default: op

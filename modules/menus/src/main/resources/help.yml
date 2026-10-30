@@ -13,7 +13,7 @@ categories:
     slot: 11
     name: "<c:flame><bold>Getting started"
     lore: ["<c:text>New here? Start with these."]
-    topics: [welcome, menu, help, settings, rules, npcs]
+    topics: [welcome, tutorial, menu, help, settings, rules, npcs]
   islands:
     icon: grass_block
     status: active
@@ -1053,6 +1053,33 @@ topics:
           - "<c:text>the trade ends. Closing, leaving or"
           - "<c:text>moving away cancels it and gives"
           - "<c:text>everything back. Crystals can't be traded."
+
+  tutorial:
+    icon: written_book
+    aliases: [guide, start, locks, starter-chest]
+    name: "<c:flame>Tutorial"
+    summary: ["<c:text>A short guided start: your island,", "<c:text>the Depths, selling, Forge and bank."]
+    take-me-there: "tutorial"
+    commands: [Info]
+    pages:
+      - title: "<c:value>How it works"
+        lines:
+          - "<c:text>Walk into the Island portal at"
+          - "<c:text>spawn. A boss bar, flames and"
+          - "<c:text>holograms show you the way, one"
+          - "<c:text>short step at a time (about 3 min)."
+      - title: "<c:value>Features unlock"
+        lines:
+          - "<c:text>Some features open as you go: team"
+          - "<c:text>features, the Depths, the auction"
+          - "<c:text>house, /pay and /withdraw, then"
+          - "<c:text>/trade, warzone and new profiles."
+      - title: "<c:value>Lost?"
+        lines:
+          - "<c:value>/tutorial</c:value> <c:text>shows your step, takes"
+          - "<c:text>you there and repeats the hint."
+          - "<c:text>Your progress is saved, even if you"
+          - "<c:text>leave. Watch it again any time."
 
   box:
     icon: chest_minecart

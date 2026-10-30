@@ -50,6 +50,8 @@ final class MemberManager {
     private final ModuleMessages msg;
     private final MemberStore store;
     private final Invites invites = new Invites();
+    /** Players who chose "join" in the portal choice menu (TQ19): they are brought to the island after the join. */
+    private final java.util.Set<UUID> portalJoins = new java.util.HashSet<>();
     private final Executor main;
     /** Players with a member action waiting for the database (one at a time, against double clicks). */
     private final Set<UUID> busy = new HashSet<>();
@@ -136,6 +138,9 @@ final class MemberManager {
 
     /** {@code /is invite <player>}: checks, then (solo island) the Team Island warning, then the invite. */
     void invite(Player player, Player target, Menu parent) {
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.ISLAND_TEAM)) {
+            return; // TUTORIAL §4: sending invites opens after the first-crop step (accepting is always open)
+        }
         Island island = ownIsland(player);
         if (island == null) {
             return;
@@ -262,10 +267,17 @@ final class MemberManager {
     // ------------------------------------------------------------------ accept / deny
 
     /** {@code /is accept [player]}: the newest invite, or the one from {@code from}'s island. */
-    // TODO(tutorial): owner answers 131/203 (round 1): no new-account limit for joining a team or coop; the coming join
-    // tutorial will unlock these step by step through permissions instead (not built yet).
+    // Owner answers 131/203 (round 1): no new-account limit for joining a team or coop. Accepting stays open during the
+    // join tutorial (TUTORIAL §7); only sending invites and coop wait for its first-crop step.
     void accept(Player player, String from) {
         findInvite(player, from).ifPresent(invite -> accept(player, invite));
+    }
+
+    /** TQ19: accept from the island portal choice; the player is teleported to the island once the join is saved. */
+    void acceptFromPortal(Player player, Invites.Invite pending) {
+        portalJoins.add(player.getUniqueId());
+        accept(player, pending);
+        core.scheduler().later("island-portal-join", 20L * 30, () -> portalJoins.remove(player.getUniqueId()));
     }
 
     /** Accepts one pending invite (also from {@code /is invites}); the database re-checks everything. */
@@ -345,6 +357,11 @@ final class MemberManager {
         }
         msg.title(player, "accept.title", Msg.p("island", name));
         core.sounds().play(player, "unlock");
+        if (portalJoins.remove(player.getUniqueId())) {
+            islands.teleportHome(player); // TQ19: joined from the island portal choice
+        }
+        // TUTORIAL §6.1: a new player who joins a team gets the Starter pack instead of an island chest.
+        org.bukkit.Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.island.IslandJoinedEvent(player, island.id()));
         notifyMembers(island, islands.key(player), "notify.joined", Msg.p("player", player.getName()),
                 Msg.p("members", island.memberCount()), Msg.p("slots", islands.slots(island)));
     }
@@ -743,6 +760,9 @@ final class MemberManager {
 
     /** {@code /is coop <player>}: temporary trust while a leader or mod is online (REVIEW A4). */
     void coop(Player player, Player target) {
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.ISLAND_TEAM)) {
+            return; // TUTORIAL §4: coop opens after the first-crop step
+        }
         Island island = ownIsland(player);
         if (island == null) {
             return;

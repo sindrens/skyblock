@@ -242,6 +242,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // NPCs + holograms + leaderboards at the applied builds' points (NPCHOLO); needs the worlds module's BuildPoints.
         npcs = new net.skybornmc.skyblock.npcs.NpcsModule(core);
         modules.register(npcs);
+        // Join tutorial (TUTORIAL.md TU1-TU4): reads islands, depths, tools, economy, npcs, cosmetics services (all optional);
+        // publishes TutorialGate (feature locks), TutorialService and StarterContents (the islands module asks it at paste time).
+        modules.register(new net.skybornmc.skyblock.tutorial.TutorialModule(core));
     }
 
     public ModuleRegistry modules() {

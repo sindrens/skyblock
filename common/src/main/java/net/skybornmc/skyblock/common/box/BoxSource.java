@@ -25,6 +25,8 @@ public final class BoxSource {
     public static final String SPAWNER = "spawner";
     public static final String CRATE = "crate";
     public static final String GIFT = "gift";
+    /** Starter chest contents, Starter pack and finish rewards of the join tutorial. */
+    public static final String TUTORIAL = "tutorial";
     /** An item given back into the box after a take failed (keeps its original source when known). */
     public static final String RETURNED = "returned";
 

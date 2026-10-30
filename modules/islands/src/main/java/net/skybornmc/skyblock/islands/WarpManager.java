@@ -418,6 +418,9 @@ final class WarpManager implements Listener {
 
     /** {@code /is warp [player] [name]}: the browser, that island's warp list, or a teleport to the named warp. */
     void warp(Player player, String owner, String name) {
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.ISLAND_TEAM)) {
+            return; // TUTORIAL §4: island warps open after the first-crop step
+        }
         if (owner == null) {
             core.menus().open(player, new WarpBrowserMenu(module, islands, visits, this, null));
             return;

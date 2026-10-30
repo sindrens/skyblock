@@ -385,6 +385,16 @@ invite:
       - "<c:muted>Want help without that? Use /is coop."
     cancelled: "<prefix><c:text>No invite sent. Your island stays <c:value>solo</c:value>. <c:muted>Tip:</c:muted> <click:suggest_command:'/is coop '><hover:show_text:'<c:text>Let a friend help without a team'><c:action>[Coop]</c:action></hover></click> <c:muted>lets a friend help without that."
 
+# TUTORIAL TQ19: the island portal with pending invites (members.portal-invite-choice).
+portal-choice:
+  title: "Your island"
+  create:
+    name: "<c:flame><bold>Create my own island</bold>"
+    lore: ["<c:text>A new solo island, just for you.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to create"]
+  join:
+    name: "<c:flame><bold>Join <island></bold>"
+    lore: ["<c:text>You were invited to this island.", "<c:text>Members: <c:value><members>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to join"]
+
 accept:
   none: "<prefix><c:error><sym:cross></c:error> <c:text>You have no island invites."
   none-from: "<prefix><c:error><sym:cross></c:error> <c:text>No invite from <c:value><player></c:value><c:text>'s island."

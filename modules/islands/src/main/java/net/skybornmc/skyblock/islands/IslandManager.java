@@ -592,6 +592,17 @@ final class IslandManager implements IslandService {
                 goHome(player, own.get(), true); // owner principle 1: teleports are instant (combat delay is the portal's)
             }
             case CREATING -> {
+                // TUTORIAL TQ19: with pending invites the player chooses first (own island or join), newest first, max 3.
+                java.util.List<Invites.Invite> pending = members == null || !config.portalInviteChoice ? java.util.List.of()
+                        : members.invites().of(id, System.currentTimeMillis());
+                if (!pending.isEmpty()) {
+                    core.menus().open(player, new PortalChoiceMenu(module, this, members, pending, () -> {
+                        portalArrivals.put(player.getUniqueId(), onArrive);
+                        msg.title(player, "create.portal-title");
+                        create(player);
+                    }));
+                    return entry;
+                }
                 portalArrivals.put(player.getUniqueId(), onArrive);
                 msg.title(player, "create.portal-title");
                 create(player); // the normal /is create flow (join block check, starter schematic), no confirm menu

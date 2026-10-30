@@ -199,6 +199,7 @@ category-menu:
     item: ["<c:text>Item events and dupe alerts (30 days)."]
     auth: ["<c:text>Joins and quits."]
     world: ["<c:text>World events."]
+    tutorial: ["<c:text>Join tutorial: steps, finish, staff skip."]
 
 categories:
   all: "All you can see"
@@ -215,6 +216,7 @@ categories:
   item: "Items"
   auth: "Joins"
   world: "World"
+  tutorial: "Tutorial"
 
 ranges:
   all: "All time"

@@ -291,6 +291,9 @@ menu:
     box:
       name: "<c:ember><bold>Item box</bold></c:ember>"
       lore: ["<c:text>Items waiting in <player>'s /box.", "<c:text>View, remove or clear (admin, logged).", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    tutorial:
+      name: "<c:ember><bold>Tutorial</bold></c:ember>"
+      lore: ["<c:text><player>'s tutorial step and times.", "<c:text>Skip or reset it (mod+, logged).", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
 
 # Profile switch refused by staff rules (round 3 PR4).
 profiles:

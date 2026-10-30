@@ -215,6 +215,9 @@ public final class IslandsConfig extends ModuleConfig {
     // Owner answers 121/161/258/259 (round 1): no join cooldown at all (old key members.join-cooldown-hours is ignored);
     // the per-season join count above stays.
 
+    @Setting(path = "members.portal-invite-choice", desc = "TUTORIAL TQ19: a player without an island who has pending invites gets a choice at the island portal (create my own / join that island) instead of an island right away.")
+    public boolean portalInviteChoice = true;
+
     @Setting(path = "members.invite-expiry-seconds", desc = "Seconds an island invite stays valid (5 min).", min = 30, max = 3600)
     public int inviteExpirySeconds = 300;
 

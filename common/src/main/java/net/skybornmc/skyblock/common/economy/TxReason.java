@@ -41,6 +41,9 @@ public final class TxReason {
     /** A 15-minute reward of the AFK pool (modules/afk, O10/RW3); new money, a source on the economy dashboard. */
     public static final String AFK_POOL = "afk_pool";
 
+    /** The one-time reward for finishing the join tutorial (TUTORIAL.md §5 Finish, TQ7); new money and crystals. */
+    public static final String TUTORIAL_REWARD = "tutorial_reward";
+
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 
     private TxReason() {

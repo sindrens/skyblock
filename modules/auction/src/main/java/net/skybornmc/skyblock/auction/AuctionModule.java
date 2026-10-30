@@ -198,6 +198,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
     }
 
     void openBrowse(Player player) {
+        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.AUCTION)) {
+            return; // TUTORIAL §4: the auction house opens after the sell step
+        }
         core.menus().open(player, new AuctionMenu(this));
     }
 
@@ -205,8 +208,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
         if (!player.hasPermission(PERM_SELL)) {
             throw fail("no-permission-sell");
         }
-        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)) {
-            return; // P7: blocked trading or frozen balance
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)
+                || net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.AUCTION)) {
+            return; // P7: blocked trading or frozen balance; TUTORIAL §4: locked until the sell step
         }
         int slot = player.getInventory().getHeldItemSlot();
         ItemStack hand = player.getInventory().getItem(slot);
@@ -226,8 +230,8 @@ public final class AuctionModule implements SkyblockModule, Listener {
         if (frozen(player)) {
             return Optional.of("frozen");
         }
-        // TODO(tutorial): owner answers 131/203 removed the 30-minute new-account limit; the coming join tutorial unlocks
-        // the auction permissions (skyblock.auction.*) step by step instead.
+        // Owner answers 131/203: no playtime limit; the join tutorial locks the auction house (TutorialGate, checked at
+        // every entry point) until its sell step.
         Optional<String> item = codec.problem(hand, config);
         if (item.isPresent()) {
             return Optional.of("items." + item.get());
@@ -264,8 +268,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
             send(player, "sell.bad-duration", Msg.p("choices", String.join(", ", Pricing.durations(config))));
             return;
         }
-        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)) {
-            return; // P7: blocked trading or frozen balance
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)
+                || net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.AUCTION)) {
+            return; // P7: blocked trading or frozen balance; TUTORIAL §4: locked until the sell step
         }
         PlayerInventory inv = player.getInventory();
         ItemStack now = inv.getItem(slot);
@@ -408,8 +413,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
 
     /** After the buy confirm dialog. */
     void startBuy(Player player, Listing listing) {
-        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_BUY)) {
-            return; // P7: blocked trading or frozen balance
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_BUY)
+                || net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.AUCTION)) {
+            return; // P7: blocked trading or frozen balance; TUTORIAL §4: locked until the sell step
         }
         if (frozen(player)) {
             send(player, "frozen");

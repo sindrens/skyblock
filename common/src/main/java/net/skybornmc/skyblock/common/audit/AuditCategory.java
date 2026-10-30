@@ -19,7 +19,9 @@ public enum AuditCategory {
     CHAT,
     ITEM,
     AUTH,
-    WORLD;
+    WORLD,
+    /** Join tutorial (TUTORIAL.md §9.5): start, steps, finish, reward, staff skip/reset. */
+    TUTORIAL;
 
     /** Key stored in the database, e.g. {@code "economy"}. */
     public String key() {

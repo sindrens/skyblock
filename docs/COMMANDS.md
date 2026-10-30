@@ -45,6 +45,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [staff](commands/staff.md) | Staff tools (M1.9, module `staff`) |
 | [tools](commands/tools.md) | Tools module (`modules/tools`): M4.2 |
 | [trade](commands/trade.md) | Secure trade (`modules/trade`) |
+| [tutorial](commands/tutorial.md) | Join tutorial (`modules/tutorial`) |
 | [wardrobe](commands/wardrobe.md) | Wardrobe module (`modules/wardrobe`): W1 + W2 + W3 |
 | [worlds](commands/worlds.md) | Worlds (`modules/worlds`): worlds and finished builds |
 | [planned](commands/planned.md) | Planned commands |
