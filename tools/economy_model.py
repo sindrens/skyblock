@@ -439,13 +439,21 @@ PERSONAL_RATE = cfg("bank.yml", "interest.personal-rate-percent", 0.6) / 100
 ISLAND_RATE = cfg("bank.yml", "interest.island-rate-percent", 1.0) / 100
 EARLY_FEE = cfg("bank.yml", "withdraw.fee-percent", 2.0) / 100
 MASTERY_FEES = [EARLY_FEE * 100] + list(cfg("bank.yml", "withdraw.mastery-fee-percent", [1.5, 1.0, 0.5]))
-PB_CAP1, PB_CAPG = 100_000, 5.0
-PB_COST_SHARE = 0.02
-PB_PAYOUT1, PB_PAYOUTG = 600, 3.2
-IB_CAP0, IB_CAPG = 1_000_000, 4.0
-IB_PAYOUT0, IB_PAYOUTG = 10_000, 3.0
-# M3.3 (before BANK2), for the before/after table (§6.4).
-M33_BANK = {"PAYOUTS_PER_DAY": 8, "PERSONAL_RATE": 0.0015, "ISLAND_RATE": 0.0025, "PB_PAYOUT1": 150, "IB_PAYOUT0": 2_500}
+# UX3: the tier tables themselves (capacity, unlock cost, payout cap per tier; capacity and payout cap per island level)
+# are read from bank.yml (BankConfig defaults), the single source of truth; the model no longer has its own formula.
+BANK_TABLES = None          # None = bank.yml; (personal [(cap, cost, payout)], island [(cap, payout)]) overrides it
+PB_BUY_FILL = 0.0           # share of the current personal tier that must be full before the next is bought (0 = any time)
+PB_COST_SHARE = 0.02        # owner #42: a personal tier costs 2% of its capacity (checked in §11)
+PAYOUT_SCALE = 1.0          # sensitivity only ("interest without payout caps")
+# Tables before UX3 (M3.3/BANK2: personal capacity x5 per tier up to $195.3B, island x4 per level up to $1T).
+_OLD_PB = [(100_000 * 5.0 ** k, 0.0 if k == 0 else 0.02 * 100_000 * 5.0 ** k) for k in range(10)]
+_OLD_IB = [1_000_000 * 4.0 ** lv for lv in range(11)]
+BANK2_TABLES = ([(c, cost, 600 * 3.2 ** k) for k, (c, cost) in enumerate(_OLD_PB)],
+                [(c, 10_000 * 3.0 ** lv) for lv, c in enumerate(_OLD_IB)])
+M33_TABLES = ([(c, cost, 150 * 3.2 ** k) for k, (c, cost) in enumerate(_OLD_PB)],
+              [(c, 2_500 * 3.0 ** lv) for lv, c in enumerate(_OLD_IB)])
+# M3.3 (before BANK2), for the before/after table (§6.0).
+M33_BANK = {"PAYOUTS_PER_DAY": 8, "PERSONAL_RATE": 0.0015, "ISLAND_RATE": 0.0025, "BANK_TABLES": M33_TABLES}
 
 # Player archetypes (BAL2: 1 h / 3 h / 8 h per day). save = share of income banked and never spent;
 # bank_share = share of spare cash also parked in the bank; boost = share of time a personal sell booster runs.
@@ -847,24 +855,53 @@ def sp_price(s: int, owned: int) -> float:
     return SP_PRICE[s - 1] * SP_G ** owned
 
 
+_BANK_YML = None
+
+
+def bank_tables():
+    """(personal [(capacity, cost, payout cap)] for tiers 1.., island [(capacity, payout cap)] for levels 0..)."""
+    global _BANK_YML
+    if BANK_TABLES is not None:
+        return BANK_TABLES
+    if _BANK_YML is None:
+        personal = [tuple(_amount(p) for p in line.split()) for line in config_strings("bank.yml", "personal.tiers") or []]
+        island = [tuple(_amount(p) for p in line.split()) for line in config_strings("bank.yml", "island.levels") or []]
+        _BANK_YML = (personal, island)
+    return _BANK_YML
+
+
+def pb_max() -> int:
+    return len(bank_tables()[0])
+
+
+def _pb(k: int):
+    rows = bank_tables()[0]
+    return rows[max(1, min(len(rows), k)) - 1]
+
+
+def _ib(level: int):
+    rows = bank_tables()[1]
+    return rows[max(0, min(len(rows) - 1, level))]
+
+
 def pb_cap(k: int) -> float:
-    return PB_CAP1 * PB_CAPG ** (k - 1)
+    return _pb(k)[0]
 
 
 def pb_cost(k: int) -> float:
-    return 0 if k <= 1 else PB_COST_SHARE * pb_cap(k)
+    return 0 if k <= 1 else _pb(k)[1]
 
 
 def pb_payout_cap(k: int) -> float:
-    return PB_PAYOUT1 * PB_PAYOUTG ** (k - 1)
+    return _pb(k)[2] * PAYOUT_SCALE
 
 
 def ib_cap(level: int) -> float:
-    return IB_CAP0 * IB_CAPG ** level
+    return _ib(level)[0]
 
 
 def ib_payout_cap(level: int) -> float:
-    return IB_PAYOUT0 * IB_PAYOUTG ** level
+    return _ib(level)[1] * PAYOUT_SCALE
 
 
 def tier_for_level(level: float, unlocks=UNLOCK_LEVEL) -> int:
@@ -1236,8 +1273,10 @@ class Player:
                 else:
                     self.late[best[2]] += 1
                 continue
-            # 6. Personal bank tier (keeps 2x the price as a buffer)
-            if self.pbt < 10 and self.cash >= 2 * pb_cost(self.pbt + 1):
+            # 6. Personal bank tier (keeps 2x the price as a buffer; UX3: only once the money banked fills 80% of the
+            #    current tier, nobody buys room they can't use)
+            if (self.pbt < pb_max() and self.cash >= 2 * pb_cost(self.pbt + 1)
+                    and self.savings + self.cash * self.a["bank_share"] >= PB_BUY_FILL * pb_cap(self.pbt)):
                 self.pay("bank_tiers", pb_cost(self.pbt + 1))
                 self.pbt += 1
                 continue
@@ -1376,7 +1415,7 @@ class Player:
         self.spend_crystals(True)
         banked = self.savings + self.cash * self.a["bank_share"]
         pb = min(banked, pb_cap(self.pbt))
-        ib_level = min(10, self.ul_levels[UP_BANK_INTEREST])
+        ib_level = min(len(bank_tables()[1]) - 1, self.ul_levels[UP_BANK_INTEREST])
         ib = min(banked - pb, ib_cap(ib_level))
         per_payout = (min(pb * PERSONAL_RATE, pb_payout_cap(self.pbt))
                       + min(ib * ISLAND_RATE, ib_payout_cap(ib_level)))
@@ -2011,7 +2050,7 @@ def t_mastery():
 @register("interest_personal")
 def t_interest_personal():
     rows = []
-    for k in range(1, 11):
+    for k in range(1, pb_max() + 1):
         cap = pb_cap(k)
         unc = cap * PERSONAL_RATE
         pay = min(unc, pb_payout_cap(k))
@@ -2024,7 +2063,7 @@ def t_interest_personal():
 @register("interest_island")
 def t_interest_island():
     rows = []
-    for lv in range(0, 11):
+    for lv in range(0, len(bank_tables()[1])):
         cap = ib_cap(lv)
         unc = cap * ISLAND_RATE
         pay = min(unc, ib_payout_cap(lv))
@@ -2089,20 +2128,55 @@ def _amount(text: str) -> float:
 
 
 def bank_tables_match() -> tuple:
-    """bank.yml tier lists (BankConfig defaults) vs. the model's payout caps: (ok, detail)."""
-    personal = config_strings("bank.yml", "personal.tiers") or []
-    island = config_strings("bank.yml", "island.levels") or []
+    """UX3 rules for the bank.yml tier tables (the model reads them, so this checks they are sensible steps): (ok, detail)."""
+    personal, island = bank_tables()
     bad = []
-    for i, line in enumerate(personal):
-        parts = line.split()
-        if len(parts) != 3 or abs(_amount(parts[2]) - pb_payout_cap(i + 1)) > 1 or abs(_amount(parts[0]) - pb_cap(i + 1)) > 1:
-            bad.append(f"personal tier {i + 1}")
-    for i, line in enumerate(island):
-        parts = line.split()
-        if len(parts) != 2 or abs(_amount(parts[1]) - ib_payout_cap(i)) > 1 or abs(_amount(parts[0]) - ib_cap(i)) > 1:
-            bad.append(f"island level {i}")
+    for i, row in enumerate(personal):
+        if len(row) != 3:
+            bad.append(f"personal tier {i + 1}: 3 amounts")
+            continue
+        cap, cost, pay = row
+        if abs(cost - (0 if i == 0 else PB_COST_SHARE * cap)) > 1:
+            bad.append(f"personal tier {i + 1}: cost != 2% of capacity (owner #42)")
+        if i > 0 and not 3.0 <= cap / personal[i - 1][0] <= 5.0:
+            bad.append(f"personal tier {i + 1}: capacity step x{cap / personal[i - 1][0]:.1f}")
+        if i > 0 and pay / cap >= personal[i - 1][2] / personal[i - 1][0]:
+            bad.append(f"personal tier {i + 1}: effective rate does not fall")
+    for lv, row in enumerate(island):
+        if len(row) != 2:
+            bad.append(f"island level {lv}: 2 amounts")
+            continue
+        if lv > 0 and not 2.0 <= row[0] / island[lv - 1][0] <= 4.0:
+            bad.append(f"island level {lv}: capacity step x{row[0] / island[lv - 1][0]:.1f}")
+        if lv > 0 and row[1] / row[0] >= island[lv - 1][1] / island[lv - 1][0]:
+            bad.append(f"island level {lv}: effective rate does not fall")
     ok = len(personal) == 10 and len(island) == 11 and not bad
-    return ok, ("10 tiers + 11 levels match" if ok else ", ".join(bad) or f"{len(personal)} tiers / {len(island)} levels")
+    return ok, ("10 tiers + 11 levels, x3-5 / x2-4 steps, rates fall" if ok else ", ".join(bad)
+                or f"{len(personal)} tiers / {len(island)} levels")
+
+
+@register("bank_rebalance")
+def t_bank_rebalance():
+    """UX3: personal tiers and island levels before (BANK2, x5 / x4 per step) and after (bank.yml now)."""
+    old_p, old_i = BANK2_TABLES
+    rows = []
+    for k in range(1, max(len(old_p), pb_max()) + 1):
+        o = old_p[k - 1] if k <= len(old_p) else None
+        rows.append([f"Personal tier {k}", f"{money(o[0])} / {money(o[1])} / {money(o[2])}" if o else "-",
+                     f"{money(pb_cap(k))} / {money(pb_cost(k))} / {money(pb_payout_cap(k))}"])
+    for lv in range(0, max(len(old_i), len(bank_tables()[1]))):
+        o = old_i[lv] if lv < len(old_i) else None
+        rows.append([f"Island level {lv}", f"{money(o[0])} / - / {money(o[1])}" if o else "-",
+                     f"{money(ib_cap(lv))} / - / {money(ib_payout_cap(lv))}"])
+    before = _with({"BANK_TABLES": BANK2_TABLES}, _interest_summary)
+    now = _interest_summary()
+    for k in KINDS:
+        rows.append([f"{LABEL[k]}: interest share of season income", pct(before[k][0], 1), pct(now[k][0], 1)])
+    for k in KINDS:
+        rows.append([f"{LABEL[k]}: personal tier at month 3", f"tier {_with({'BANK_TABLES': BANK2_TABLES}, lambda: sim(k)[1]['Month 3']['pbt'])}",
+                     f"tier {sim(k)[1]['Month 3']['pbt']}"])
+    rows.append(["Sink ratio over the season", pct(before["sink"]), pct(now["sink"])])
+    return table(["Step", "Before UX3 (capacity / cost / payout cap per 8 h)", "Now (bank.yml)"], rows)
 
 
 @register("interest_vs_income")
@@ -2235,7 +2309,7 @@ def sensitivity_cases():
         ("Old cap +100%", {"SELL_CAP": 1.0}),
         ("Custom tiers x2.4 (old curve)", {"PMB": 2.4}),
         ("Players save twice as much", {"ARCHETYPES": {k: dict(v, save=min(0.6, v["save"] * 2)) for k, v in ARCHETYPES.items()}}),
-        ("Interest without payout caps", {"PB_PAYOUTG": 1e9, "IB_PAYOUTG": 1e9, "PB_PAYOUT1": 1e18, "IB_PAYOUT0": 1e18}),
+        ("Interest without payout caps", {"PAYOUT_SCALE": 1e18}),
         ("Production payback 8 days (players over-invest)", {"PAYBACK_DAYS": 8.0}),
         ("No enchants (TUNE: pickaxe build off)", {"USE_ENCHANTS": False}),
         ("No sets (TUNE: Delver, Deepforge, Coinmaster off)", {"USE_SETS": False}),
@@ -2887,7 +2961,7 @@ def t_checks():
     chk("Interest <= 8% of income (all, season)", all(x <= 0.08 for x in shares),
         ", ".join(pct(x, 1) for x in shares), near=all(x <= 0.088 for x in shares))
     ok, detail = bank_tables_match()
-    chk("bank.yml payout caps = the model (BANK2)", ok, detail)
+    chk("bank.yml tiers are sensible steps (UX3)", ok, detail)
     chk("Interest every 8 h, fee steps only go down (BANK2)", PERIOD_HOURS == 8 and all(
         a >= b for a, b in zip(MASTERY_FEES, MASTERY_FEES[1:])), f"{PERIOD_HOURS:g} h, fee {MASTERY_FEES}")
     top1 = sim("grinder")[1]["First hour"]["total_earned"]

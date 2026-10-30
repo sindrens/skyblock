@@ -86,34 +86,36 @@ public final class BankConfig extends ModuleConfig {
     // ------------------------------------------------------------------ tiers and levels
 
     @Setting(path = "personal.tiers", desc = "Personal bank tiers 1-10, one line each: capacity, unlock cost, payout cap per "
-            + "interest payout (amounts like 100k, 2.5M). Tier 1 is free (balance sheet 6.1; cost = 2% of capacity, owner #42).",
+            + "interest payout (amounts like 100k, 2.5M). Tier 1 is free (balance sheet 6.1; cost = 2% of capacity, owner #42; "
+            + "UX3: x3-5 per tier up to $10B).",
             level = Setting.Level.OWNER)
     public List<String> personalTiers = List.of(
             "100k 0 600",
-            "500k 10k 1920",
-            "2.5M 50k 6144",
-            "12.5M 250k 19661",
-            "62.5M 1.25M 62915",
-            "312.5M 6.25M 201327",
-            "1.5625B 31.25M 644245",
-            "7.8125B 156.25M 2061584",
-            "39.0625B 781.25M 6597070",
-            "195.3125B 3.90625B 21110623");
+            "500k 10k 1.6k",
+            "2M 40k 4.4k",
+            "7.5M 150k 11.6k",
+            "25M 500k 27.5k",
+            "75M 1.5M 61k",
+            "250M 5M 145k",
+            "750M 15M 320k",
+            "2.5B 50M 770k",
+            "10B 200M 2.1M");
 
     @Setting(path = "island.levels", desc = "Island bank by level 0-10, one line each: capacity (Bank Capacity upgrade level) "
-            + "and payout cap per interest payout (Bank Interest upgrade level). Balance sheet 6.2.", level = Setting.Level.OWNER)
+            + "and payout cap per interest payout (Bank Interest upgrade level). Balance sheet 6.2 (UX3: about x3 per level up to "
+            + "$50B). /is upgrade shows these amounts.", level = Setting.Level.OWNER)
     public List<String> islandLevels = List.of(
             "1M 10k",
-            "4M 30k",
-            "16M 90k",
-            "64M 270k",
-            "256M 810k",
-            "1.024B 2.43M",
-            "4.096B 7.29M",
-            "16.384B 21.87M",
-            "65.536B 65.61M",
-            "262.144B 196.83M",
-            "1.048576T 590.49M");
+            "3M 24k",
+            "10M 62k",
+            "30M 150k",
+            "100M 380k",
+            "300M 900k",
+            "1B 2.4M",
+            "3B 5.7M",
+            "8B 12M",
+            "20B 26M",
+            "50B 53M");
 
     @Setting(path = "island.withdraw-limit-percent.leader", desc = "Most the Leader may take out of the island bank per day, "
             + "in percent of the bank's capacity. -1 = no limit.", min = -1, max = 100, level = Setting.Level.OWNER)
@@ -145,11 +147,22 @@ public final class BankConfig extends ModuleConfig {
         return "bank.yml";
     }
 
-    /** Version 2 (BANK2, owner #169): interest every 8 h with higher rates and caps; see {@link #upgradeValues}. */
+    /**
+     * Version 2 (BANK2, owner #169): interest every 8 h with higher rates and caps. Version 3 (UX3): rebalanced tier
+     * tables (personal tier 10 $195.3B → $10B, island level 10 $1T → $50B). See {@link #upgradeValues}.
+     */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
+
+    /** The BANK2 tier tables that UX3 replaces in an existing bank.yml (only when still untouched). */
+    static final Map<String, Object> BANK2_TIERS = Map.of(
+            "personal.tiers", List.of("100k 0 600", "500k 10k 1920", "2.5M 50k 6144", "12.5M 250k 19661", "62.5M 1.25M 62915",
+                    "312.5M 6.25M 201327", "1.5625B 31.25M 644245", "7.8125B 156.25M 2061584", "39.0625B 781.25M 6597070",
+                    "195.3125B 3.90625B 21110623"),
+            "island.levels", List.of("1M 10k", "4M 30k", "16M 90k", "64M 270k", "256M 810k", "1.024B 2.43M", "4.096B 7.29M",
+                    "16.384B 21.87M", "65.536B 65.61M", "262.144B 196.83M", "1.048576T 590.49M"));
 
     /** M3.3 defaults that BANK2 replaces in an existing bank.yml (only when still untouched). */
     static final Map<String, Object> OLD_DEFAULTS = oldDefaults();
@@ -169,12 +182,13 @@ public final class BankConfig extends ModuleConfig {
     }
 
     /**
-     * Value changes the key renames can't do (version 1 → 2), applied to the raw file before it is loaded: every key
-     * that still holds its untouched M3.3 default gets the BANK2 default; owner-chosen values are kept. Returns the
-     * paths that were changed (empty = nothing to do).
+     * Value changes the key renames can't do, applied to the raw file before it is loaded: every key that still holds
+     * an untouched old default (M3.3 for version 1, the BANK2 tier tables for versions 1-2) gets today's default;
+     * owner-chosen values are kept. Returns the paths that were changed (empty = nothing to do).
      */
     static List<String> upgradeValues(org.bukkit.configuration.file.YamlConfiguration yaml) {
-        if (yaml.getKeys(false).isEmpty() || yaml.getInt("config-version", 1) >= 2) {
+        int from = yaml.getInt("config-version", 1);
+        if (yaml.getKeys(false).isEmpty() || from >= 3) {
             return List.of();
         }
         BankConfig fresh = new BankConfig();
@@ -186,10 +200,18 @@ public final class BankConfig extends ModuleConfig {
                 "personal.tiers", fresh.personalTiers,
                 "island.levels", fresh.islandLevels);
         List<String> changed = new java.util.ArrayList<>();
-        for (Map.Entry<String, Object> e : OLD_DEFAULTS.entrySet()) {
-            if (sameValue(yaml.get(e.getKey()), e.getValue())) {
-                yaml.set(e.getKey(), now.get(e.getKey()));
-                changed.add(e.getKey());
+        if (from < 2) {
+            for (Map.Entry<String, Object> e : OLD_DEFAULTS.entrySet()) {
+                if (sameValue(yaml.get(e.getKey()), e.getValue())) {
+                    yaml.set(e.getKey(), now.get(e.getKey()));
+                    changed.add(e.getKey());
+                }
+            }
+        }
+        for (String key : List.of("personal.tiers", "island.levels")) {
+            if (!changed.contains(key) && sameValue(yaml.get(key), BANK2_TIERS.get(key))) {
+                yaml.set(key, now.get(key));
+                changed.add(key);
             }
         }
         return changed;

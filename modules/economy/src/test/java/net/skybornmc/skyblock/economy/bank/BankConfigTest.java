@@ -55,6 +55,62 @@ class BankConfigTest {
         BankConfig fresh = new BankConfig();
         assertEquals(3, BankConfig.OLD_DEFAULTS.get("interest.period-hours"));
         assertTrue(fresh.periodHours != 3 && fresh.catchUpPeriods != 8);
-        assertEquals(2, fresh.version());
+        assertEquals(3, fresh.version());
+    }
+
+    @Test
+    void bank2TierTablesBecomeTheUx3Ones() {
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("config-version", 2);
+        yaml.set("interest.period-hours", 8);
+        BankConfig.BANK2_TIERS.forEach(yaml::set);
+        assertEquals(List.of("personal.tiers", "island.levels"), BankConfig.upgradeValues(yaml));
+        BankConfig fresh = new BankConfig();
+        assertEquals(fresh.personalTiers, yaml.getStringList("personal.tiers"));
+        assertEquals(fresh.islandLevels, yaml.getStringList("island.levels"));
+
+        YamlConfiguration owner = new YamlConfiguration();
+        owner.set("config-version", 2);
+        owner.set("personal.tiers", List.of("100k 0 600", "1M 20k 5k"));
+        owner.set("island.levels", BankConfig.BANK2_TIERS.get("island.levels"));
+        assertEquals(List.of("island.levels"), BankConfig.upgradeValues(owner), "owner-chosen tiers stay");
+        assertEquals(List.of("100k 0 600", "1M 20k 5k"), owner.getStringList("personal.tiers"));
+
+        YamlConfiguration done = new YamlConfiguration();
+        done.set("config-version", 3);
+        BankConfig.BANK2_TIERS.forEach(done::set);
+        assertTrue(BankConfig.upgradeValues(done).isEmpty(), "version 3: chosen on purpose");
+    }
+
+    /** UX3 balance rules of the default tables (ECONOMY_BALANCE.md 6.1/6.2). */
+    @Test
+    void ux3TablesAreSensibleSteps() {
+        BankConfig fresh = new BankConfig();
+        BankTiers t = BankTiers.parse(fresh);
+        assertTrue(t.problems().isEmpty(), t.problems().toString());
+        assertEquals(10, t.maxTier());
+        assertEquals(11, t.island().size());
+        double lastRate = Double.MAX_VALUE;
+        for (int i = 0; i < t.personal().size(); i++) {
+            BankTiers.PersonalTier tier = t.personal().get(i);
+            assertEquals(i == 0 ? 0 : tier.capacity() / 50, tier.cost(), "tier " + tier.tier() + " costs 2% of its capacity (owner #42)");
+            if (i > 0) {
+                double step = (double) tier.capacity() / t.personal().get(i - 1).capacity();
+                assertTrue(step >= 3 && step <= 5, "tier " + tier.tier() + " is a x3-5 step, was x" + step);
+                assertTrue(tier.payoutCap() > t.personal().get(i - 1).payoutCap());
+            }
+            double rate = (double) tier.payoutCap() / tier.capacity();
+            assertTrue(rate < lastRate, "the effective rate at full falls with every tier");
+            assertTrue(rate <= fresh.personalRatePercent / 100 + 1e-12, "the cap is never above the plain rate");
+            lastRate = rate;
+        }
+        assertEquals(10_000_000_000L, t.tier(10).capacity(), "tier 10 holds $10B, not $195.3B");
+        lastRate = Double.MAX_VALUE;
+        for (BankTiers.IslandLevel level : t.island()) {
+            double rate = (double) level.payoutCap() / level.capacity();
+            assertTrue(rate < lastRate && rate <= fresh.islandRatePercent / 100 + 1e-12, "island level " + level.level());
+            lastRate = rate;
+        }
+        assertEquals(50_000_000_000L, t.islandCapacity(10));
     }
 }

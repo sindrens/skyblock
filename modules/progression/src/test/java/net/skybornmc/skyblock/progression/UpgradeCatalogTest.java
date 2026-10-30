@@ -68,6 +68,25 @@ class UpgradeCatalogTest {
         }
     }
 
+    /** UX3: Bank Capacity / Interest level N reads line N of bank.yml island.levels (0 = base); "level N" text only as fallback. */
+    @Test
+    void bankUpgradesMapToBankLevels() throws Exception {
+        UpgradeCatalog c = UpgradeStoreTest.bundled();
+        YamlConfiguration yml = resource("messages/progression.yml");
+        for (String id : List.of("bank_capacity", "bank_interest")) {
+            UpgradeCatalog.Def def = c.get(id).orElseThrow();
+            assertEquals(10, def.maxLevel(), id + ": bank.yml island.levels has levels 0-10");
+            assertEquals(0, UpgradeRules.bankLevel(def, 0), "nothing bought = the base amounts");
+            for (int level = 1; level <= def.maxLevel(); level++) {
+                assertEquals(level, UpgradeRules.bankLevel(def, level), id + " level " + level);
+            }
+            assertEquals(10, UpgradeRules.bankLevel(def, 99), "clamped to the last level");
+            String key = "upgrades.effect." + def.effect().id();
+            assertTrue(yml.getString(key, "").contains("<amount>"), key + " shows the real amount");
+            assertTrue(yml.contains(key + "-level"), key + "-level fallback");
+        }
+    }
+
     @Test
     void everyBuyableLevelHasTasks() throws Exception {
         UpgradeCatalog c = UpgradeStoreTest.bundled();

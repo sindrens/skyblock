@@ -75,22 +75,16 @@ class BankRulesTest {
         assertTrue(tiers.problems().isEmpty(), tiers.problems().toString());
         assertEquals(10, tiers.maxTier());
         assertEquals(new BankTiers.PersonalTier(1, 100_000, 0, 600), tiers.tier(1), "BANK2: 4x the M3.3 cap per 8 h payout");
-        assertEquals(new BankTiers.PersonalTier(4, 12_500_000, 250_000, 19_661), tiers.tier(4));
-        for (BankTiers.PersonalTier t : tiers.personal()) {
-            assertEquals(Math.round(600 * Math.pow(3.2, t.tier() - 1)), t.payoutCap(), "payout cap = 600 x 3.2^(tier-1): tier " + t.tier());
-        }
-        assertEquals(195_312_500_000L, tiers.tier(10).capacity());
+        assertEquals(new BankTiers.PersonalTier(4, 7_500_000, 150_000, 11_600), tiers.tier(4), "UX3 table");
+        assertEquals(new BankTiers.PersonalTier(10, 10_000_000_000L, 200_000_000, 2_100_000), tiers.tier(10), "UX3: $10B, not $195.3B");
         for (BankTiers.PersonalTier t : tiers.personal().subList(1, tiers.maxTier())) {
             assertEquals(t.capacity() / 50, t.cost(), "unlock cost = 2% of capacity (owner #42): tier " + t.tier());
         }
         assertEquals(11, tiers.island().size());
         assertEquals(1_000_000, tiers.islandCapacity(0));
         assertEquals(10_000, tiers.islandCap(0));
-        assertEquals(1_048_576_000_000L, tiers.islandCapacity(10));
-        assertEquals(590_490_000, tiers.islandCap(10));
-        for (BankTiers.IslandLevel l : tiers.island()) {
-            assertEquals(Math.round(10_000 * Math.pow(3, l.level())), l.payoutCap(), "island cap = 10k x 3^level: level " + l.level());
-        }
+        assertEquals(50_000_000_000L, tiers.islandCapacity(10));
+        assertEquals(53_000_000, tiers.islandCap(10));
         assertEquals(tiers.islandCapacity(10), tiers.islandCapacity(99), "levels above the table are clamped");
         assertEquals(tiers.tier(1), tiers.tier(0));
     }

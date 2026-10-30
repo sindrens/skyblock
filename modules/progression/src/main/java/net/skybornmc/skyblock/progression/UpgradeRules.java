@@ -171,6 +171,17 @@ final class UpgradeRules {
         return "upgrade:" + upgradeId + ":" + level;
     }
 
+    /**
+     * The bank level (index into bank.yml's island.levels) a Bank Capacity / Bank Interest upgrade level stands for:
+     * the level's value, 0 when nothing is bought (the island bank's base amounts).
+     */
+    static int bankLevel(UpgradeCatalog.Def def, int level) {
+        if (level <= 0) {
+            return 0;
+        }
+        return Math.max(0, (int) Math.round(def.valueAt(Math.min(level, def.maxLevel()))));
+    }
+
     /** Roman numeral of a level (I-XXX) for names like "Island Size II"; plain digits above 39. */
     static String roman(int n) {
         if (n <= 0 || n >= 40) {

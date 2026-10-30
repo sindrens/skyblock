@@ -32,7 +32,7 @@
 - **Owner targets** (most active player, money earned so far): first hour, week 2 and month 2 land within 0.8–1.3× of the targets; day 3 is still ~2.6× (§2.2).
 - **The +300% cap is never reached by normal play.** A grinder ends the season at about +128% without boosters (average ×2.5 with boosters). Only the best of everything at once (+305%) touches the cap (§2.7).
 - **Biggest risk found: spawner output.** `stacking.yml → spawners.mobs-per-spawner: 4` makes one spawner earn 4× what this sheet assumes. With 4, spawners become ~69% of a regular player's income. **Suggested: 1** (§4.3, §14). Also needed: the shop price of spawners must rise per spawner the island owns, otherwise spawners pay for each other and money compounds (§7.3).
-- **Sinks:** the economy removes **85% of the money it creates over the season**. The 14-day average never stays in the "act" zone (one day at 57% on day 30, when grinders have bought everything tier 10 allows). Mastery is still load-bearing: without it the season sink ratio falls to ~39% (§7.3).
+- **Sinks:** the economy removes **82% of the money it creates over the season** (85% before the UX3 bank tier rebalance, because bank tiers 9–10 now cost $50M/$200M instead of $781M/$3.9B). The 14-day average never stays in the "act" zone (lowest 60% on day 30 since UX3, 57% before, when grinders have bought everything tier 10 allows). Mastery is still load-bearing: without it the season sink ratio falls to ~39% (§7.3).
 
 **What TUNE changed** (E4 + W4, 2026-10-30): the enchants and sets as built in E1–E3 and W1–W2 are now in the model.
 - **Perk slots hold real enchants.** BAL2 used a stand-in of +12% break speed per perk slot. TUNE replaced it with a pickaxe build read from `enchants.yml`: **Swiftness, Scholar's Insight, Prosperity, Vein Rend** (Gilded Touch takes a slot only while a book is missing). Levels come from the crystals the player has and the tool-level gate; a slot is filled once the median player has found that book (§9.5).
@@ -46,7 +46,8 @@
 - **No family cap is reached by enchants + sets alone** (at most 60% of a cap, tool XP); the +300% sell cap still needs the best of everything (§9.8). Set levels match WARDROBE §3.2: a mining set reaches 1× after ~4–9 played hours and 2× after ~50–110 h; Coinmaster maxes ~29 h after purchase.
 - **Combat drop prices hold:** value per kill is within ±11% of the regular's enchanted mine at every tier (16–28% above the bare mine at tiers 7–10, from BAL2's stand-in); `/shop` sells no combat drop and `BuySellInvariantTest` passes (§9.9).
 - **BANK2 (owner #169):** interest every 8 h with 4× the rate and cap per payout = +50% interest per day; casual interest share 7.7% of season income (new limit ~8%), sink ratio unchanged (§6.0).
-- **Watch:** one day (day 30) with the 14-day sink ratio at 57% while grinders save between tier 10 and 11 (§7.2).
+- **UX3 bank tiers (owner feedback 31 Oct):** personal tier 10 holds $10B (was $195.3B), island bank level 10 $50B (was $1T); interest shares unchanged within ±0.5 points (§6.2a).
+- **Watch:** one day (day 30) with the 14-day sink ratio at 60% (UX3; 57% before) while grinders save between tier 10 and 11 (§7.2).
 
 **Decisions for the owner** are in §12, suggested config changes in §14, new questions in `docs/OPEN_QUESTIONS.md`.
 
@@ -131,12 +132,12 @@ Notes:
 |---|---|---|---|
 | First hour | $53.8k/h · $39.6k | $60.4k/h · $53.4k | $75.5k/h · $66.8k |
 | Day 1 | $58.9k/h · $72.6k | $107.9k/h · $316.7k | $360.4k/h · $2M |
-| Day 3 | $82.5k/h · $208.7k | $308.6k/h · $1.5M | $1.1M/h · $12.9M |
-| Week 1 | $142.6k/h · $617.4k | $610.8k/h · $7M | $3.4M/h · $90.2M |
-| Week 2 | $290.3k/h · $2.2M | $1.6M/h · $33.7M | $13.9M/h · $548.5M |
-| Month 1 | $822k/h · $10.6M | $3.3M/h · $166.7M | $41.1M/h · $4.6B |
-| Month 2 | $1.7M/h · $51.7M | $28.6M/h · $1.5B | $281.7M/h · $42.4B |
-| Month 3 | $3.1M/h · $130.6M | $88.7M/h · $4.7B | $296.2M/h · $112.8B |
+| Day 3 | $82.5k/h · $208.7k | $308.6k/h · $1.5M | $1.1M/h · $12M |
+| Week 1 | $142.6k/h · $617.2k | $610.8k/h · $7M | $3.4M/h · $86.5M |
+| Week 2 | $290.3k/h · $2.2M | $1.6M/h · $33.5M | $13.8M/h · $530.9M |
+| Month 1 | $822k/h · $10.6M | $3.3M/h · $164.2M | $41M/h · $4.5B |
+| Month 2 | $1.7M/h · $51.5M | $28.5M/h · $1.5B | $283.9M/h · $41.6B |
+| Month 3 | $3.1M/h · $132.4M | $37.3M/h · $4.6B | $296.1M/h · $112.7B |
 <!-- END table:targets -->
 
 ### 2.2 Owner targets vs. model
@@ -144,9 +145,9 @@ Notes:
 | Stage | Owner target (most active, earned so far) | Model grinder | Grinder / target | Model regular | Regular / target |
 |---|---|---|---|---|---|
 | First hour | $50k | $66.8k | 1.3x | $53.4k | 1.1x |
-| Day 3 | $5M | $12.9M | 2.6x | $1.5M | 0.3x |
-| Week 2 | $500M | $548.5M | 1.1x | $33.7M | 0.1x |
-| Month 2 | $50B | $42.4B | 0.8x | $1.5B | 0.0x |
+| Day 3 | $5M | $12M | 2.4x | $1.5M | 0.3x |
+| Week 2 | $500M | $530.9M | 1.1x | $33.5M | 0.1x |
+| Month 2 | $50B | $41.6B | 0.8x | $1.5B | 0.0x |
 <!-- END table:targets_check -->
 
 Day 3 is still high for the most active players: a grinder has played ~26 h by day 3 and is at tier 6. Hitting $5M there while still reaching $500M in week 2 needs a 100× jump in 11 days, which feels like a cliff. **Proposal (unchanged):** read the day-3 target as "a regular player" (~$1.6M), keep the smooth curve.
@@ -156,14 +157,14 @@ Day 3 is still high for the most active players: a grinder has played ~26 h by d
 | Archetype | Earned up to | Depths | Island production | Spawners | Island total | Events/quests | Interest |
 |---|---|---|---|---|---|---|---|
 | casual | Week 1 | 60% | 20% | 0% | 20% | 18% | 1.6% |
-| casual | Month 1 | 46% | 20% | 15% | 35% | 14% | 4.9% |
-| casual | Month 3 | 37% | 20% | 24% | 44% | 11% | 7.7% |
+| casual | Month 1 | 46% | 20% | 15% | 35% | 14% | 4.7% |
+| casual | Month 3 | 38% | 20% | 24% | 43% | 11% | 7.5% |
 | regular | Week 1 | 60% | 14% | 7% | 21% | 18% | 1.1% |
 | regular | Month 1 | 51% | 15% | 16% | 31% | 15% | 2.3% |
-| regular | Month 3 | 49% | 15% | 18% | 33% | 15% | 2.8% |
-| grinder | Week 1 | 51% | 14% | 20% | 34% | 15% | 0.6% |
-| grinder | Month 1 | 52% | 14% | 17% | 31% | 16% | 1.0% |
-| grinder | Month 3 | 48% | 31% | 6% | 36% | 14% | 0.9% |
+| regular | Month 3 | 50% | 15% | 18% | 33% | 15% | 2.7% |
+| grinder | Week 1 | 50% | 14% | 20% | 34% | 15% | 0.6% |
+| grinder | Month 1 | 53% | 14% | 17% | 31% | 16% | 1.0% |
+| grinder | Month 3 | 48% | 30% | 6% | 36% | 14% | 1.4% |
 | **target** | season | ~50% |  |  | ~35% | ~15% | <= 5% |
 <!-- END table:shares -->
 
@@ -177,12 +178,12 @@ Day 3 is still high for the most active players: a grinder has played ~26 h by d
 |---|---|---|---|
 | First hour | 1 h · T1 · Lv4 (0) · PL 4 · SP 0 (8/block) · UL 6 · late 0 · M 0 · set - | 1 h · T1 · Lv4 (0) · PL 4 · SP 0 (8/block) · UL 9 · late 0 · M 0 · set - | 1 h · T1 · Lv5 (1) · PL 5 · SP 0 (8/block) · UL 11 · late 0 · M 0 · set - |
 | Day 1 | 2 h · T1 · Lv5 (1) · PL 4 · SP 0 (8/block) · UL 12 · late 0 · M 0 · set - | 4 h · T2 · Lv10 (1) · PL 7 · SP 0 (32/block) · UL 24 · late 0 · M 0 · Delver 12 | 10 h · T4 · Lv19 (2) · PL 15 · SP 1 (64/block) · UL 47 · late 0 · M 0 · Delver 27 |
-| Day 3 | 4 h · T2 · Lv8 (1) · PL 4 · SP 0 (32/block) · UL 20 · late 0 · M 0 · Delver 8 | 10 h · T4 · Lv18 (2) · PL 12 · SP 1 (64/block) · UL 43 · late 0 · M 0 · Delver 25 | 26 h · T6 · Lv29 (2) · PL 20 · SP 8 (128/block) · UL 68 · late 0 · M 0 · Delver 39 |
-| Week 1 | 7 h · T3 · Lv13 (1) · PL 6 · SP 0 (32/block) · UL 32 · late 0 · M 0 · Delver 19 | 22 h · T5 · Lv26 (2) · PL 14 · SP 3 (64/block) · UL 60 · late 0 · M 0 · Delver 35 | 58 h · T8 · Lv38 (3) · PL 25 · SP 19 (128/block) · UL 84 · late 3 · M 0 · Deepforge 38 |
-| Week 2 | 14 h · T4 · Lv20 (2) · PL 9 · SP 1 (64/block) · UL 48 · late 0 · M 0 · Delver 27 | 43 h · T7 · Lv34 (3) · PL 19 · SP 6 (128/block) · UL 83 · late 1 · M 0 · Delver 44 | 114 h · T9 · Lv45 (4) · PL 29 · SP 35 (256/block) · UL 107 · late 20 · M 0 · Coinmaster 50 |
-| Month 1 | 31 h · T6 · Lv27 (2) · PL 13 · SP 3 (128/block) · UL 69 · late 0 · M 0 · Delver 37 | 91 h · T8 · Lv41 (3) · PL 21 · SP 11 (128/block) · UL 96 · late 11 · M 0 · Deepforge 47 | 242 h · T10 · Lv50 (4) · PL 34 · SP 48 (256/block) · UL 120 · late 36 · M 0 · Coinmaster 50 |
-| Month 2 | 61 h · T7 · Lv35 (3) · PL 16 · SP 6 (128/block) · UL 84 · late 4 · M 0 · Deepforge 16 | 181 h · T10 · Lv49 (4) · PL 30 · SP 23 (256/block) · UL 117 · late 29 · M 0 · Coinmaster 50 | 482 h · T12 · Lv50 (4) · PL 45 · SP 72 (512/block) · UL 144 · late 54 · M 7 · Coinmaster 50 |
-| Month 3 | 90 h · T8 · Lv39 (3) · PL 18 · SP 9 (128/block) · UL 96 · late 8 · M 0 · Deepforge 41 | 271 h · T11 · Lv50 (4) · PL 36 · SP 32 (256/block) · UL 123 · late 42 · M 0 · Coinmaster 50 | 722 h · T12 · Lv50 (4) · PL 45 · SP 96 (512/block) · UL 144 · late 54 · M 22 · Coinmaster 50 |
+| Day 3 | 4 h · T2 · Lv8 (1) · PL 4 · SP 0 (32/block) · UL 20 · late 0 · M 0 · Delver 8 | 10 h · T4 · Lv18 (2) · PL 12 · SP 1 (64/block) · UL 44 · late 0 · M 0 · Delver 25 | 26 h · T6 · Lv28 (2) · PL 20 · SP 8 (128/block) · UL 67 · late 0 · M 0 · Delver 39 |
+| Week 1 | 7 h · T3 · Lv13 (1) · PL 6 · SP 0 (32/block) · UL 32 · late 0 · M 0 · Delver 19 | 22 h · T5 · Lv26 (2) · PL 14 · SP 3 (64/block) · UL 60 · late 0 · M 0 · Delver 35 | 58 h · T8 · Lv38 (3) · PL 25 · SP 18 (128/block) · UL 84 · late 4 · M 0 · Deepforge 37 |
+| Week 2 | 14 h · T4 · Lv20 (2) · PL 9 · SP 1 (64/block) · UL 48 · late 0 · M 0 · Delver 27 | 43 h · T7 · Lv34 (3) · PL 19 · SP 6 (128/block) · UL 83 · late 1 · M 0 · Delver 44 | 114 h · T9 · Lv45 (4) · PL 29 · SP 33 (256/block) · UL 107 · late 19 · M 0 · Coinmaster 50 |
+| Month 1 | 31 h · T6 · Lv27 (2) · PL 13 · SP 3 (128/block) · UL 68 · late 0 · M 0 · Delver 37 | 91 h · T8 · Lv41 (3) · PL 21 · SP 11 (128/block) · UL 96 · late 11 · M 0 · Deepforge 47 | 242 h · T10 · Lv50 (4) · PL 34 · SP 46 (256/block) · UL 120 · late 36 · M 0 · Coinmaster 50 |
+| Month 2 | 61 h · T7 · Lv35 (3) · PL 16 · SP 6 (128/block) · UL 84 · late 4 · M 0 · Deepforge 16 | 181 h · T10 · Lv48 (4) · PL 30 · SP 23 (256/block) · UL 117 · late 29 · M 0 · Coinmaster 50 | 482 h · T12 · Lv50 (4) · PL 45 · SP 70 (512/block) · UL 144 · late 54 · M 8 · Coinmaster 50 |
+| Month 3 | 90 h · T8 · Lv39 (3) · PL 18 · SP 9 (128/block) · UL 96 · late 8 · M 0 · Deepforge 41 | 271 h · T10 · Lv50 (4) · PL 30 · SP 32 (256/block) · UL 120 · late 36 · M 0 · Coinmaster 50 | 722 h · T12 · Lv50 (4) · PL 45 · SP 94 (512/block) · UL 144 · late 54 · M 22 · Coinmaster 50 |
 <!-- END table:progress -->
 
 ### 2.5 Time to milestone
@@ -193,34 +194,34 @@ Played hours (and the day it happens) for each archetype.
 |---|---|---|---|
 | Earned $100k | 2.1 h (day 2) | 1.7 h (day 1) | 1.4 h (day 1) |
 | Earned $1M | 10.1 h (day 10) | 8.3 h (day 3) | 7.3 h (day 1) |
-| Earned $10M | 29.9 h (day 30) | 25.6 h (day 9) | 24.1 h (day 3) |
-| Earned $100M | 80.6 h (day 81) | 70.0 h (day 23) | 61.5 h (day 8) |
-| Earned $1B | not this season | 162.7 h (day 54) | 145.6 h (day 18) |
-| Earned $10B | not this season | not this season | 298.0 h (day 37) |
-| Earned $100B | not this season | not this season | 680.6 h (day 85) |
+| Earned $10M | 29.9 h (day 30) | 25.6 h (day 9) | 24.9 h (day 3) |
+| Earned $100M | 80.3 h (day 80) | 70.8 h (day 24) | 62.8 h (day 8) |
+| Earned $1B | not this season | 163.1 h (day 55) | 146.0 h (day 18) |
+| Earned $10B | not this season | not this season | 298.7 h (day 38) |
+| Earned $100B | not this season | not this season | 682.0 h (day 85) |
 | Depths tier 4 (Gold) | 11.5 h (day 12) | 9.2 h (day 3) | 8.1 h (day 1) |
-| Depths tier 8 (Emerald) | 67.6 h (day 68) | 51.5 h (day 17) | 47.0 h (day 6) |
-| Depths tier 10 (Quartz) | not this season | 158.5 h (day 53) | 144.6 h (day 18) |
-| Depths tier 12 (Voidstone) | not this season | not this season | 409.0 h (day 51) |
-| Tool Lv 30 (3 perk slots) | 36.7 h (day 37) | 29.0 h (day 10) | 27.2 h (day 4) |
-| Spawner stack 64 | 12.0 h (day 12) | 10.0 h (day 3) | 9.2 h (day 1) |
-| Spawner stack 512 | not this season | not this season | 422.8 h (day 53) |
+| Depths tier 8 (Emerald) | 67.6 h (day 68) | 51.5 h (day 17) | 48.6 h (day 6) |
+| Depths tier 10 (Quartz) | not this season | 159.7 h (day 53) | 145.5 h (day 18) |
+| Depths tier 12 (Voidstone) | not this season | not this season | 410.0 h (day 52) |
+| Tool Lv 30 (3 perk slots) | 36.7 h (day 37) | 29.0 h (day 10) | 28.7 h (day 4) |
+| Spawner stack 64 | 12.5 h (day 12) | 10.0 h (day 3) | 9.2 h (day 1) |
+| Spawner stack 512 | not this season | not this season | 421.7 h (day 53) |
 | Delver's Garb bought | 2.1 h (day 2) | 2.0 h (day 1) | 1.6 h (day 1) |
 | Delver's Garb Lv 25 (1x) | 11.7 h (day 12) | 9.6 h (day 3) | 8.4 h (day 1) |
-| Crystal set (Deepforge) bought | 57.8 h (day 58) | 44.8 h (day 15) | 40.8 h (day 5) |
-| Deepforge Lv 25 | 64.5 h (day 65) | 49.9 h (day 17) | 45.3 h (day 6) |
+| Crystal set (Deepforge) bought | 57.8 h (day 58) | 44.8 h (day 15) | 42.0 h (day 6) |
+| Deepforge Lv 25 | 64.5 h (day 65) | 49.9 h (day 17) | 46.5 h (day 6) |
 | Deepforge Lv 50 | not this season | not this season | not this season |
-| Coinmaster set bought | not this season | 98.9 h (day 33) | 62.4 h (day 8) |
-| Coinmaster Lv 25 (1x) | not this season | 101.3 h (day 34) | 64.8 h (day 8) |
-| Coinmaster Lv 50 (2x) | not this season | 127.9 h (day 43) | 91.4 h (day 12) |
-| Sell bonus +100% (no boosters) | not this season | 196.4 h (day 66) | 116.3 h (day 15) |
+| Coinmaster set bought | not this season | 99.9 h (day 33) | 64.2 h (day 8) |
+| Coinmaster Lv 25 (1x) | not this season | 102.3 h (day 34) | 66.6 h (day 9) |
+| Coinmaster Lv 50 (2x) | not this season | 128.9 h (day 43) | 93.2 h (day 12) |
+| Sell bonus +100% (no boosters) | not this season | 196.8 h (day 66) | 117.7 h (day 15) |
 | Sell bonus +200% (no boosters) | not this season | not this season | not this season |
 | Median player owns a Rare book | 13.0 h (day 13) | 10.4 h (day 4) | 9.2 h (day 1) |
 | ... an Epic book | 30.3 h (day 30) | 24.1 h (day 8) | 21.6 h (day 3) |
-| ... a Legendary book | 71.2 h (day 71) | 55.0 h (day 19) | 50.2 h (day 7) |
-| Vein Rend on the pickaxe | not this season | 119.1 h (day 40) | 109.8 h (day 14) |
+| ... a Legendary book | 71.0 h (day 71) | 55.2 h (day 19) | 51.7 h (day 7) |
+| Vein Rend on the pickaxe | not this season | 120.3 h (day 40) | 110.7 h (day 14) |
 | Gilded Touch on the pickaxe | not this season | not this season | not this season |
-| First pickaxe enchant at its max level | not this season | 224.5 h (day 75) | 205.6 h (day 26) |
+| First pickaxe enchant at its max level | not this season | 225.6 h (day 75) | 206.5 h (day 26) |
 <!-- END table:milestones -->
 
 Read: a casual player (1 h/day) reaches tier 8 around day 68 and earns ~$130M over the season; a regular (3 h/day) reaches tier 11 at the very end; a grinder (8 h/day) reaches tier 12 around day 51. Nobody reaches +200% sell bonus without boosters. Book milestones are for the **median** player (expected books found ≥ ln 2); Gilded Touch never gets a slot in the model's 4-slot build, Deepforge Lv 50 is not reached because players switch to Coinmaster at tier 8 (§9.6).
@@ -247,10 +248,10 @@ The owner wants every system to be fast at first, then progressively harder, wit
 | 5 | Redstone | 5.3 h (day 5) | x1.4 | 0% (keeps old ore) | 0.1 h | +35% |
 | 6 | Lapis | 7.9 h (day 8) | x1.5 | 0% (keeps old ore) | 0.1 h | +35% |
 | 7 | Diamond | 11.2 h (day 11) | x1.4 | 0% (keeps old ore) | 0.1 h | +35% |
-| 8 | Emerald | 17.9 h (day 17) | x1.6 | 0% (keeps old ore) | 0.1 h | +35% |
-| 9 | Amethyst | 39.8 h (day 31) | x2.2 | +54% | 0.1 h | +120% |
-| 10 | Quartz | 67.2 h (day 53) | x1.7 | +54% | 0.1 h | +120% |
-| 11 | Netherite | 112.3 h (day 90) | x1.7 | +54% | 0.1 h | +120% |
+| 8 | Emerald | 17.9 h (day 17) | x1.6 | 0% (keeps old ore) | 3.5 h | +35% |
+| 9 | Amethyst | 41.0 h (day 31) | x2.3 | +54% | 0.1 h | +120% |
+| 10 | Quartz | 67.2 h (day 53) | x1.6 | +54% | 0.1 h | +120% |
+| 11 | Netherite | not this season | - | - | - | not this season |
 | 12 | Voidstone | not this season | - | - | - | not this season |
 <!-- END table:pacing -->
 
@@ -259,18 +260,18 @@ The owner wants every system to be fast at first, then progressively harder, wit
 | Day | Casual (income per played h · tier · trend per day) | Regular | Grinder |
 |---|---|---|---|
 | 1 | $58.9k/h · T1 · start | $107.9k/h · T2 · start | $360.4k/h · T4 · start |
-| 2 | $59.5k/h · T1 · plateau | $180.2k/h · T3 · UP | $610.1k/h · T5 · UP |
+| 2 | $59.5k/h · T1 · plateau | $180.2k/h · T3 · UP | $638.1k/h · T5 · UP |
 | 3 | $82.5k/h · T2 · UP | $308.6k/h · T4 · UP | $1.1M/h · T6 · UP |
 | 5 | $92k/h · T2 · climb | $490k/h · T5 · UP | $2.2M/h · T7 · UP |
 | 7 | $142.6k/h · T3 · UP | $610.8k/h · T5 · UP | $3.4M/h · T8 · UP |
-| 10 | $191.1k/h · T3 · UP | $1M/h · T6 · UP | $4.7M/h · T8 · UP |
-| 14 | $290.3k/h · T4 · UP | $1.6M/h · T7 · UP | $13.9M/h · T9 · UP |
-| 21 | $501.9k/h · T5 · climb | $2.8M/h · T8 · climb | $32.7M/h · T10 · UP |
-| 30 | $822k/h · T6 · climb | $3.3M/h · T8 · plateau | $41.1M/h · T10 · climb |
-| 45 | $1.4M/h · T7 · climb | $12.2M/h · T9 · climb | $104.3M/h · T11 · climb |
-| 60 | $1.7M/h · T7 · plateau | $28.6M/h · T10 · climb | $281.7M/h · T12 · climb |
-| 75 | $2.7M/h · T8 · climb | $35.8M/h · T10 · plateau | $291.3M/h · T12 · plateau |
-| 90 | $3.1M/h · T8 · plateau | $88.7M/h · T11 · climb | $296.2M/h · T12 · plateau |
+| 10 | $191.1k/h · T3 · UP | $1M/h · T6 · UP | $4.6M/h · T8 · UP |
+| 14 | $290.3k/h · T4 · UP | $1.6M/h · T7 · UP | $13.8M/h · T9 · UP |
+| 21 | $501.9k/h · T5 · climb | $2.8M/h · T8 · climb | $32.6M/h · T10 · UP |
+| 30 | $822k/h · T6 · climb | $3.3M/h · T8 · plateau | $41M/h · T10 · climb |
+| 45 | $1.4M/h · T7 · climb | $12.2M/h · T9 · climb | $104.2M/h · T11 · climb |
+| 60 | $1.7M/h · T7 · plateau | $28.5M/h · T10 · climb | $283.9M/h · T12 · climb |
+| 75 | $2.7M/h · T8 · climb | $35.8M/h · T10 · plateau | $291.2M/h · T12 · plateau |
+| 90 | $3.1M/h · T8 · plateau | $37.3M/h · T10 · plateau | $296.1M/h · T12 · plateau |
 <!-- END table:curve -->
 
 The curve has the right shape: steep ups in the first week, then each archetype alternates between ups (new tier, Coinmaster) and plateaus (grinding the next tier). Late in the season the grinder plateaus at tier 12; mastery and leaderboards are the goal there, not more income.
@@ -301,7 +302,7 @@ All sell bonuses belong to **one family**: they add up, then the cap applies **o
 | Week 1 | +10% (U10) · avg x1.21 | +29% (R4 U25) · avg x1.45 | +43% (R8 U35) · avg x1.67 |
 | Week 2 | +20% (U20) · avg x1.31 | +34% (R4 U30) · avg x1.50 | +98% (R8 U40 S50) · avg x2.22 |
 | Month 1 | +25% (U25) · avg x1.36 | +44% (R4 U40) · avg x1.60 | +108% (R8 U50 S50) · avg x2.32 |
-| Month 2 | +35% (U35) · avg x1.46 | +99% (R4 U45 S50) · avg x2.15 | +120% (R8 U60 M2 S50) · avg x2.44 |
+| Month 2 | +35% (U35) · avg x1.46 | +99% (R4 U45 S50) · avg x2.15 | +122% (R8 U60 M4 S50) · avg x2.46 |
 | Month 3 | +40% (U40) · avg x1.51 | +104% (R4 U50 S50) · avg x2.20 | +128% (R8 U60 M10 S50) · avg x2.52 |
 <!-- END table:sell_stack -->
 
@@ -407,14 +408,14 @@ Mining skill XP per block = the tier XP from `WORLD.md`. Unlock levels are uncha
 | 3 | Iron | 10 | 15,575 | 6.6 h (day 7) | 5.3 h (day 2) | 4.7 h (day 1) |
 | 4 | Gold | 15 | 43,221 | 11.5 h (day 12) | 9.2 h (day 3) | 8.1 h (day 1) |
 | 5 | Redstone | 20 | 112,013 | 18.1 h (day 18) | 14.5 h (day 5) | 12.8 h (day 2) |
-| 6 | Lapis | 25 | 283,189 | 28.1 h (day 28) | 22.4 h (day 8) | 21.3 h (day 3) |
-| 7 | Diamond | 30 | 709,129 | 43.2 h (day 43) | 33.6 h (day 11) | 31.2 h (day 4) |
-| 8 | Emerald | 35 | 1.8M | 67.6 h (day 68) | 51.5 h (day 17) | 47.0 h (day 6) |
-| 9 | Amethyst | 42 | 5.5M | not this season | 91.3 h (day 31) | 83.1 h (day 11) |
-| 10 | Quartz | 50 | 16.1M | not this season | 158.5 h (day 53) | 144.6 h (day 18) |
-| 11 | Netherite | 58 | 44.4M | not this season | 270.8 h (day 90) | 243.9 h (day 31) |
-| 12 | Voidstone | 66 | 119.5M | not this season | not this season | 409.0 h (day 51) |
-| - | (after tier 12) | 75 | 272.3M | not this season | not this season | 627.1 h (day 79) |
+| 6 | Lapis | 25 | 283,189 | 28.1 h (day 28) | 22.4 h (day 8) | 21.1 h (day 3) |
+| 7 | Diamond | 30 | 709,129 | 43.2 h (day 43) | 33.6 h (day 11) | 32.7 h (day 4) |
+| 8 | Emerald | 35 | 1.8M | 67.6 h (day 68) | 51.5 h (day 17) | 48.6 h (day 6) |
+| 9 | Amethyst | 42 | 5.5M | not this season | 92.5 h (day 31) | 84.3 h (day 11) |
+| 10 | Quartz | 50 | 16.1M | not this season | 159.7 h (day 53) | 145.5 h (day 18) |
+| 11 | Netherite | 58 | 44.4M | not this season | not this season | 244.9 h (day 31) |
+| 12 | Voidstone | 66 | 119.5M | not this season | not this season | 410.0 h (day 52) |
+| - | (after tier 12) | 75 | 272.3M | not this season | not this season | 628.1 h (day 79) |
 | - | (after tier 12) | 100 | 872M | not this season | not this season | not this season |
 | - | (after tier 12) | 125 | 1.9B | not this season | not this season | not this season |
 | - | (after tier 12) | 150 | 3.5B | not this season | not this season | not this season |
@@ -430,9 +431,9 @@ Tool XP per block = tier XP. `tools.yml → curve.growth: 1.21` places the slots
 |---|---|---|---|---|---|---|
 | 1 | 5 | 2,178 | ~1 h | 1.4 h (day 1) | 1.1 h (day 1) | 54 min (day 1) |
 | 2 | 15 | 25,564 | ~day 2 | 8.5 h (day 9) | 6.8 h (day 2) | 6.0 h (day 1) |
-| 3 | 30 | 477,405 | ~week 1 | 36.7 h (day 37) | 29.0 h (day 10) | 27.2 h (day 4) |
-| 4 | 45 | 8.4M | ~week 3-4 | not this season | 119.1 h (day 40) | 109.8 h (day 14) |
-| 5 (prestige) | 50 | 21.7M | ~week 6+ | not this season | 198.6 h (day 66) | 180.0 h (day 23) |
+| 3 | 30 | 477,405 | ~week 1 | 36.7 h (day 37) | 29.0 h (day 10) | 28.7 h (day 4) |
+| 4 | 45 | 8.4M | ~week 3-4 | not this season | 120.3 h (day 40) | 110.7 h (day 14) |
+| 5 (prestige) | 50 | 21.7M | ~week 6+ | not this season | 199.8 h (day 67) | 180.9 h (day 23) |
 <!-- END table:tool_levels -->
 
 The model does not prestige tools (slot 5 adds ~3% speed, not money). Prestige stays a time achievement.
@@ -476,7 +477,7 @@ The five production upgrades are pooled into one **production level PL**: each l
 | 8 | 21 | $475.1k | $2.1M | 1,296 | $113.2k/h | $1.4M/day |
 | 9 | 25 | $1.4M | $5.9M | 2,040 | $323k/h | $3.9M/day |
 | 10 | 30 | $5M | $21.8M | 3,595 | $1.3M/h | $15M/day |
-| 11 | 36 | $24.3M | $105.4M | 7,096 | $5.6M/h | $66.8M/day |
+| 11 | 32 | $8.5M | $36.9M | 4,510 | $1.9M/h | $23.2M/day |
 | 12 | 37 | $31.6M | $137M | 7,948 | $7.5M/h | $89.8M/day |
 <!-- END table:upgrades_prod -->
 
@@ -511,9 +512,9 @@ The Spawner Stack Limit upgrade raises how many spawners one block holds (owner 
 | start | - | 8 | 32 | $0 | start | start |
 | step 1 | Lv 2 | 32 | 128 | $12.1k | 3.1 h (day 1) | 2.8 h (day 1) |
 | step 2 | Lv 4 | 64 | 256 | $94.9k | 10.0 h (day 3) | 9.2 h (day 1) |
-| step 3 | Lv 6 | 128 | 512 | $661.2k | 25.0 h (day 8) | 25.2 h (day 3) |
-| step 4 | Lv 9 | 256 | 1024 | $16.5M | 112.7 h (day 38) | 99.3 h (day 13) |
-| step 5 | Lv 12 | 512 | 2048 | $1.2B | not this season | 422.8 h (day 53) |
+| step 3 | Lv 6 | 128 | 512 | $661.2k | 25.1 h (day 9) | 26.0 h (day 3) |
+| step 4 | Lv 9 | 256 | 1024 | $16.5M | 114.1 h (day 38) | 101.4 h (day 13) |
+| step 5 | Lv 12 | 512 | 2048 | $1.2B | not this season | 421.7 h (day 53) |
 <!-- END table:stack_steps -->
 
 ---
@@ -529,14 +530,14 @@ Forging costs money plus materials from the previous tier (now checked in the mo
 | 2 | Copper | $15k | 256 Coal | $5.1k | 0.3 h | 2.3 h (day 1) | 2.0 h (day 1) |
 | 3 | Iron | $35.2k | 346 Copper | $9.3k | 0.4 h | 5.4 h (day 2) | 4.8 h (day 1) |
 | 4 | Gold | $82.8k | 467 Iron | $17k | 0.5 h | 9.3 h (day 3) | 8.2 h (day 1) |
-| 5 | Redstone | $194.7k | 630 Gold | $31k | 0.7 h | 14.6 h (day 5) | 17.3 h (day 2) |
-| 6 | Lapis | $457.5k | 850 Redstone | $56.5k | 1.0 h | 22.5 h (day 8) | 21.4 h (day 3) |
-| 7 | Diamond | $1.1M | 1,148 Lapis | $102.9k | 1.3 h | 33.7 h (day 11) | 31.3 h (day 4) |
-| 8 | Emerald | $2.5M | 1,550 Diamond | $187.6k | 1.7 h | 51.6 h (day 17) | 49.2 h (day 6) |
-| 9 | Amethyst | $5.9M | 2,092 Emerald | $341.9k | 2.3 h | 91.4 h (day 31) | 90.0 h (day 11) |
-| 10 | Quartz | $14M | 2,824 Amethyst | $1M | 1.9 h | 158.6 h (day 53) | 144.7 h (day 18) |
-| 11 | Netherite | $32.8M | 3,813 Quartz | $3M | 1.6 h | 270.9 h (day 90) | 244.0 h (day 31) |
-| 12 | Voidstone | $77M | 5,147 Netherite | $9M | 1.3 h | not this season | 409.1 h (day 51) |
+| 5 | Redstone | $194.7k | 630 Gold | $31k | 0.7 h | 14.6 h (day 5) | 16.7 h (day 2) |
+| 6 | Lapis | $457.5k | 850 Redstone | $56.5k | 1.0 h | 22.5 h (day 8) | 26.0 h (day 3) |
+| 7 | Diamond | $1.1M | 1,148 Lapis | $102.9k | 1.3 h | 33.7 h (day 11) | 32.8 h (day 4) |
+| 8 | Emerald | $2.5M | 1,550 Diamond | $187.6k | 1.7 h | 55.0 h (day 18) | 50.0 h (day 6) |
+| 9 | Amethyst | $5.9M | 2,092 Emerald | $341.9k | 2.3 h | 92.6 h (day 31) | 90.0 h (day 11) |
+| 10 | Quartz | $14M | 2,824 Amethyst | $1M | 1.9 h | 159.8 h (day 53) | 146.0 h (day 18) |
+| 11 | Netherite | $32.8M | 3,813 Quartz | $3M | 1.6 h | not this season | 245.0 h (day 31) |
+| 12 | Voidstone | $77M | 5,147 Netherite | $9M | 1.3 h | not this season | 410.1 h (day 52) |
 <!-- END table:forge -->
 
 ### 5.2 Island level upgrades (Phase 5 preview)
@@ -584,9 +585,9 @@ Each outpost = unlock + 3 biomes × 5 tiers + Fusion I/II = 18 steps, gated by p
 <!-- BEGIN table:late -->
 | Outpost | Gate (Depths tier, proxy for pillars) | Unlock | Fusion II (step 18) | All 18 steps | = hours of REF(gate) | Regular reaches gate | Grinder reaches gate |
 |---|---|---|---|---|---|---|---|
-| Greenhold (farming) | 7 | $1.5M | $42.9M | $231.4M | 158 h | 33.6 h (day 11) | 31.2 h (day 4) |
-| Wildwood (combat/spawners) | 9 | $7.3M | $215.5M | $1.2B | 158 h | 91.3 h (day 31) | 83.1 h (day 11) |
-| Emberdeep (late game) | 11 | $60M | $1.8B | $9.5B | 158 h | 270.8 h (day 90) | 243.9 h (day 31) |
+| Greenhold (farming) | 7 | $1.5M | $42.9M | $231.4M | 158 h | 33.6 h (day 11) | 32.7 h (day 4) |
+| Wildwood (combat/spawners) | 9 | $7.3M | $215.5M | $1.2B | 158 h | 92.5 h (day 31) | 84.3 h (day 11) |
+| Emberdeep (late game) | 11 | $60M | $1.8B | $9.5B | 158 h | not this season | 244.9 h (day 31) |
 <!-- END table:late -->
 
 ### 5.4 Mastery (the endless late sink)
@@ -622,17 +623,17 @@ Rules (M3.3, changed by BANK2 = owner answer 169): interest every **8 h** (00:00
 | Payouts | every 3 h (8 a day) | every 8 h (3 a day) |
 | Rate per payout, personal / island | 0.15% / 0.25% | 0.6% / 1% |
 | Max per day, personal tier 1 (full) | $1.2k | $1.8k |
-| Max per day, personal tier 5 (full) | $125.8k | $188.7k |
+| Max per day, personal tier 5 (full) | $125.8k | $82.5k |
 | Max per day, island level 0 (full) | $20k | $30k |
-| Max per day, island level 5 (full) | $4.9M | $7.3M |
-| Casual (1 h/day): interest per day at month 1 | $28.2k/day | $45.4k/day |
-| Regular (3 h/day): interest per day at month 1 | $387.4k/day | $600.5k/day |
-| Grinder (8 h/day): interest per day at month 1 | $4.1M/day | $6.2M/day |
-| Casual (1 h/day): interest share of season income | 5.2% | 7.7% |
-| Regular (3 h/day): interest share of season income | 1.9% | 2.8% |
-| Grinder (8 h/day): interest share of season income | 0.6% | 0.9% |
-| Sink ratio over the season | 85% | 85% |
-| Lowest 14-day sink ratio | 57% | 57% |
+| Max per day, island level 5 (full) | $4.9M | $2.7M |
+| Casual (1 h/day): interest per day at month 1 | $28.2k/day | $45.6k/day |
+| Regular (3 h/day): interest per day at month 1 | $387.4k/day | $435k/day |
+| Grinder (8 h/day): interest per day at month 1 | $4.1M/day | $6.3M/day |
+| Casual (1 h/day): interest share of season income | 5.2% | 7.5% |
+| Regular (3 h/day): interest share of season income | 1.9% | 2.7% |
+| Grinder (8 h/day): interest share of season income | 0.6% | 1.4% |
+| Sink ratio over the season | 85% | 82% |
+| Lowest 14-day sink ratio | 57% | 60% |
 | Withdrawal fee | 2% | 2% -> 1.5% -> 1% -> 0.5% (island mastery 0-3) |
 <!-- END table:interest_before_after -->
 
@@ -641,15 +642,15 @@ Rules (M3.3, changed by BANK2 = owner answer 169): interest every **8 h** (00:00
 | Tier | Capacity | Unlock cost | Payout cap (per 8 h) | Uncapped payout at full | Effective rate at full | Max interest / day |
 |---|---|---|---|---|---|---|
 | 1 | $100k | $0 | $600 | $600 | 0.600% | $1.8k |
-| 2 | $500k | $10k | $1.9k | $3k | 0.384% | $5.8k |
-| 3 | $2.5M | $50k | $6.1k | $15k | 0.246% | $18.4k |
-| 4 | $12.5M | $250k | $19.7k | $75k | 0.157% | $59k |
-| 5 | $62.5M | $1.2M | $62.9k | $375k | 0.101% | $188.7k |
-| 6 | $312.5M | $6.2M | $201.3k | $1.9M | 0.064% | $604k |
-| 7 | $1.6B | $31.2M | $644.2k | $9.4M | 0.041% | $1.9M |
-| 8 | $7.8B | $156.2M | $2.1M | $46.9M | 0.026% | $6.2M |
-| 9 | $39.1B | $781.2M | $6.6M | $234.4M | 0.017% | $19.8M |
-| 10 | $195.3B | $3.9B | $21.1M | $1.2B | 0.011% | $63.3M |
+| 2 | $500k | $10k | $1.6k | $3k | 0.320% | $4.8k |
+| 3 | $2M | $40k | $4.4k | $12k | 0.220% | $13.2k |
+| 4 | $7.5M | $150k | $11.6k | $45k | 0.155% | $34.8k |
+| 5 | $25M | $500k | $27.5k | $150k | 0.110% | $82.5k |
+| 6 | $75M | $1.5M | $61k | $450k | 0.081% | $183k |
+| 7 | $250M | $5M | $145k | $1.5M | 0.058% | $435k |
+| 8 | $750M | $15M | $320k | $4.5M | 0.043% | $960k |
+| 9 | $2.5B | $50M | $770k | $15M | 0.031% | $2.3M |
+| 10 | $10B | $200M | $2.1M | $60M | 0.021% | $6.3M |
 <!-- END table:interest_personal -->
 
 ### 6.2 Island bank (Bank Capacity / Bank Interest upgrades)
@@ -657,29 +658,76 @@ Rules (M3.3, changed by BANK2 = owner answer 169): interest every **8 h** (00:00
 | Bank Capacity / Interest level | Capacity | Payout cap (per 8 h) | Uncapped payout at full | Effective rate at full | Max interest / day |
 |---|---|---|---|---|---|
 | 0 | $1M | $10k | $10k | 1.000% | $30k |
-| 1 | $4M | $30k | $40k | 0.750% | $90k |
-| 2 | $16M | $90k | $160k | 0.562% | $270k |
-| 3 | $64M | $270k | $640k | 0.422% | $810k |
-| 4 | $256M | $810k | $2.6M | 0.316% | $2.4M |
-| 5 | $1B | $2.4M | $10.2M | 0.237% | $7.3M |
-| 6 | $4.1B | $7.3M | $41M | 0.178% | $21.9M |
-| 7 | $16.4B | $21.9M | $163.8M | 0.133% | $65.6M |
-| 8 | $65.5B | $65.6M | $655.4M | 0.100% | $196.8M |
-| 9 | $262.1B | $196.8M | $2.6B | 0.075% | $590.5M |
-| 10 | $1T | $590.5M | $10.5B | 0.056% | $1.8B |
+| 1 | $3M | $24k | $30k | 0.800% | $72k |
+| 2 | $10M | $62k | $100k | 0.620% | $186k |
+| 3 | $30M | $150k | $300k | 0.500% | $450k |
+| 4 | $100M | $380k | $1M | 0.380% | $1.1M |
+| 5 | $300M | $900k | $3M | 0.300% | $2.7M |
+| 6 | $1B | $2.4M | $10M | 0.240% | $7.2M |
+| 7 | $3B | $5.7M | $30M | 0.190% | $17.1M |
+| 8 | $8B | $12M | $80M | 0.150% | $36M |
+| 9 | $20B | $26M | $200M | 0.130% | $78M |
+| 10 | $50B | $53M | $500M | 0.106% | $159M |
 <!-- END table:interest_island -->
+
+### 6.2a Bank tier rebalance (UX3, owner feedback 31 Oct)
+The owner saw "tier 10 = $195.3B" in game. The BANK2 tables grew ×5 per personal tier and ×4 per island level, so the
+top steps held far more money than anyone has: a grinder has ~$17B at the end of the season, a regular ~$1–2B, a casual
+~$40M. UX3 keeps the shape and the first two tiers (tier 1 = $100k free, tier 2 = $500k for $10k; cost = 2% of capacity,
+owner #42; island level 0 = $1M) but then steps ×3–4 per personal tier up to **$10B** and ×3 per island level up to
+**$50B**. The payout caps follow the old cap-per-capacity curve (a little lower, so the interest share stays where BANK2
+put it: ≤ 8% of season income). Pacing: tier 2–3 cost what they did, so the first days are unchanged; the regular buys
+tier 9–10 in month 2–3 (cheaper than before), which moves their Depths tier 11 from day 90 to just after the season
+(+~3% played hours). Every other milestone moves by less than 6%. The tables live only in `bank.yml` (`BankConfig` defaults); this
+model reads them from there, and `/is upgrade` shows the island amounts (capacity, interest cap, cost) from the same
+file. Existing `bank.yml` files that still hold the BANK2 tables get the new ones on the first start (config version 3);
+owner-changed tables stay. A bank above its new capacity keeps its money: deposits and interest pause until it is
+below the capacity again.
+
+<!-- BEGIN table:bank_rebalance -->
+| Step | Before UX3 (capacity / cost / payout cap per 8 h) | Now (bank.yml) |
+|---|---|---|
+| Personal tier 1 | $100k / $0 / $600 | $100k / $0 / $600 |
+| Personal tier 2 | $500k / $10k / $1.9k | $500k / $10k / $1.6k |
+| Personal tier 3 | $2.5M / $50k / $6.1k | $2M / $40k / $4.4k |
+| Personal tier 4 | $12.5M / $250k / $19.7k | $7.5M / $150k / $11.6k |
+| Personal tier 5 | $62.5M / $1.2M / $62.9k | $25M / $500k / $27.5k |
+| Personal tier 6 | $312.5M / $6.2M / $201.3k | $75M / $1.5M / $61k |
+| Personal tier 7 | $1.6B / $31.2M / $644.2k | $250M / $5M / $145k |
+| Personal tier 8 | $7.8B / $156.2M / $2.1M | $750M / $15M / $320k |
+| Personal tier 9 | $39.1B / $781.2M / $6.6M | $2.5B / $50M / $770k |
+| Personal tier 10 | $195.3B / $3.9B / $21.1M | $10B / $200M / $2.1M |
+| Island level 0 | $1M / - / $10k | $1M / - / $10k |
+| Island level 1 | $4M / - / $30k | $3M / - / $24k |
+| Island level 2 | $16M / - / $90k | $10M / - / $62k |
+| Island level 3 | $64M / - / $270k | $30M / - / $150k |
+| Island level 4 | $256M / - / $810k | $100M / - / $380k |
+| Island level 5 | $1B / - / $2.4M | $300M / - / $900k |
+| Island level 6 | $4.1B / - / $7.3M | $1B / - / $2.4M |
+| Island level 7 | $16.4B / - / $21.9M | $3B / - / $5.7M |
+| Island level 8 | $65.5B / - / $65.6M | $8B / - / $12M |
+| Island level 9 | $262.1B / - / $196.8M | $20B / - / $26M |
+| Island level 10 | $1T / - / $590.5M | $50B / - / $53M |
+| Casual (1 h/day): interest share of season income | 7.7% | 7.5% |
+| Regular (3 h/day): interest share of season income | 2.8% | 2.7% |
+| Grinder (8 h/day): interest share of season income | 0.9% | 1.4% |
+| Casual (1 h/day): personal tier at month 3 | tier 5 | tier 6 |
+| Regular (3 h/day): personal tier at month 3 | tier 8 | tier 10 |
+| Grinder (8 h/day): personal tier at month 3 | tier 9 | tier 10 |
+| Sink ratio over the season | 85% | 82% |
+<!-- END table:bank_rebalance -->
 
 ### 6.3 Interest vs. income
 <!-- BEGIN table:interest_vs_income -->
 | Day | Casual interest (share of that day's income) | Regular | Grinder |
 |---|---|---|---|
-| Day 1 | $254/day (0.3%) | $1.1k/day (0.3%) | $3.6k/day (0.2%) |
-| Day 3 | $739/day (1.0%) | $4.5k/day (0.6%) | $26.2k/day (0.4%) |
-| Week 1 | $2.3k/day (1.7%) | $34.3k/day (1.9%) | $188.7k/day (0.7%) |
-| Week 2 | $9.8k/day (3.3%) | $103.4k/day (2.1%) | $604k/day (0.6%) |
-| Month 1 | $45.4k/day (5.3%) | $600.5k/day (5.8%) | $6.2M/day (1.8%) |
-| Month 2 | $188.7k/day (9.9%) | $604k/day (0.7%) | $19.8M/day (0.9%) |
-| Month 3 | $188.7k/day (5.8%) | $6.2M/day (3.8%) | $19.8M/day (0.8%) |
+| Day 1 | $254/day (0.3%) | $1.1k/day (0.3%) | $3.8k/day (0.2%) |
+| Day 3 | $739/day (1.0%) | $3.9k/day (0.5%) | $21k/day (0.3%) |
+| Week 1 | $2.4k/day (1.7%) | $29.5k/day (1.6%) | $275.3k/day (1.0%) |
+| Week 2 | $8.4k/day (2.9%) | $92.8k/day (1.8%) | $435k/day (0.4%) |
+| Month 1 | $45.6k/day (5.3%) | $435k/day (4.2%) | $6.3M/day (1.9%) |
+| Month 2 | $183k/day (9.6%) | $960k/day (1.1%) | $6.3M/day (0.3%) |
+| Month 3 | $183k/day (5.6%) | $6.3M/day (5.3%) | $165.3M/day (6.5%) |
 <!-- END table:interest_vs_income -->
 
 Interest stays a bonus (≤ 8% of season income for every archetype since BANK2). It is relatively highest for casual players because they save more and earn less; in money it is small. If the M3.8 dashboard shows interest above 8% of created money, lower the payout caps first (`bank.yml → personal.tiers` / `island.levels`, third/second number), then the rates.
@@ -694,30 +742,30 @@ Every sink is a gameplay cost (tools, sets, spawners, upgrades, outposts, master
 <!-- BEGIN table:sources_sinks -->
 | Day (7-day avg) | Depths | Island | Spawners | Events | Interest | Forge | Production | Spawners bought | Sets | Level upg. | Late proj. | Mastery | Bank tiers | Shop | AH fee+tax |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | $199.1M | $36.7M | $4.7M | $59.7M | $761.3k | $16M | $57.9M | $0 | $7.2M | $153.8M | $0 | $0 | $8.1M | $12M | $1.8M |
-| 3 | $334.8M | $79.7M | $41.2M | $100.4M | $2.2M | $38.2M | $66.8M | $72.9M | $6M | $255.4M | $0 | $0 | $16.5M | $22.2M | $3.3M |
-| 7 | $775.6M | $206.1M | $252.2M | $232.7M | $10.6M | $72.9M | $90.3M | $133M | $2.6M | $406.4M | $69.7M | $0 | $36.6M | $58.7M | $8.8M |
-| 14 | $3.4B | $904.2M | $1.7B | $1B | $48.6M | $141.8M | $178.4M | $414.8M | $514.3M | $2.7B | $2.3B | $0 | $128.6M | $279.7M | $42M |
-| 30 | $16.6B | $4.3B | $4.6B | $5B | $537.4M | $35.3M | $7.9M | $0 | $0 | $434.6M | $6.3B | $0 | $2.2B | $1.2B | $182.8M |
-| 45 | $44.6B | $18.1B | $8.3B | $13.4B | $784.1M | $82.9M | $13.4M | $0 | $0 | $3.1B | $61.2B | $0 | $0 | $3.4B | $506.5M |
-| 60 | $108.4B | $71.1B | $11.5B | $32.5B | $2B | $0 | $9.9M | $0 | $0 | $79.4B | $4.1B | $89B | $0 | $8.9B | $1.3B |
-| 75 | $112.5B | $73.6B | $14.9B | $33.8B | $2.4B | $194.9M | $0 | $0 | $0 | $669.8M | $17B | $145.5B | $0 | $9.4B | $1.4B |
-| 90 | $117B | $75.8B | $18.2B | $35.1B | $3.6B | $1.3B | $3.2B | $0 | $0 | $16.6B | $24.6B | $180.4B | $0 | $9.8B | $1.5B |
+| 1 | $199.1M | $36.7M | $4.7M | $59.7M | $775.8k | $16M | $57.9M | $0 | $7.2M | $153.8M | $0 | $0 | $7.2M | $12M | $1.8M |
+| 3 | $309.4M | $81.1M | $46.6M | $92.8M | $2M | $38.2M | $66.8M | $72.9M | $6M | $248.5M | $0 | $0 | $12.3M | $21.2M | $3.2M |
+| 7 | $748.8M | $204.2M | $243.1M | $224.6M | $10.2M | $72.9M | $90.3M | $124.2M | $2.6M | $406.4M | $103.8M | $0 | $39.9M | $56.8M | $8.5M |
+| 14 | $3.3B | $892.3M | $1.6B | $994M | $44.7M | $141.8M | $178.4M | $404.4M | $514.3M | $2.7B | $2B | $0 | $153M | $272.3M | $40.8M |
+| 30 | $16.6B | $4.3B | $4.5B | $5B | $504M | $35.3M | $7.9M | $0 | $0 | $399.8M | $8.3B | $0 | $2.8B | $1.2B | $181.9M |
+| 45 | $44.6B | $18.1B | $8.2B | $13.4B | $747.8M | $82.9M | $13.4M | $0 | $0 | $3.4B | $61.2B | $0 | $0 | $3.4B | $505.5M |
+| 60 | $108.4B | $71.1B | $11.4B | $32.5B | $925M | $0 | $9.9M | $0 | $0 | $80.4B | $4.1B | $108.5B | $0 | $8.9B | $1.3B |
+| 75 | $112.5B | $73.6B | $14.9B | $33.7B | $2B | $0 | $0 | $0 | $0 | $950.7M | $17B | $145.5B | $0 | $9.4B | $1.4B |
+| 90 | $116.8B | $74.3B | $18.1B | $35B | $11.6B | $0 | $0 | $0 | $0 | $388.9M | $453.4M | $180.4B | $0 | $9.8B | $1.5B |
 <!-- END table:sources_sinks -->
 
 ### 7.2 Inflation check
 <!-- BEGIN table:inflation -->
 | Day (7-day avg) | Created / day | Removed / day | Sink ratio (7 days) | Sink ratio (14 days) | Net / day | Money supply (held) | Held per player | Held per player in days of regular income | Check (14 days) |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | $301.1M | $256.8M | 85% | 85% | $44.3M | $45.2M | $50.2k | 0.2 | OK |
-| 3 | $558.3M | $481.3M | 86% | 86% | $77M | $231.9M | $257.6k | 0.4 | OK |
-| 7 | $1.5B | $879M | 60% | 60% | $598.3M | $4.2B | $4.7M | 2.6 | act |
-| 14 | $7B | $6.6B | 94% | 88% | $401.1M | $7B | $7.8M | 1.5 | OK |
-| 30 | $31B | $10.4B | 34% | 57% | $20.6B | $172B | $191.1M | 18.3 | act |
-| 45 | $85.2B | $68.2B | 80% | 81% | $17B | $285.6B | $317.3M | 8.6 | OK |
-| 60 | $225.4B | $182.8B | 81% | 87% | $42.6B | $613.1B | $681.2M | 7.9 | OK |
-| 75 | $237.2B | $174.1B | 73% | 76% | $63.1B | $1.3T | $1.5B | 14.4 | OK |
-| 90 | $249.6B | $237.4B | 95% | 81% | $12.2B | $1.7T | $1.9B | 11.9 | OK |
+| 1 | $301.1M | $255.9M | 85% | 85% | $45.2M | $46.1M | $51.2k | 0.2 | OK |
+| 3 | $531.9M | $469M | 88% | 88% | $62.9M | $189.5M | $210.6k | 0.3 | OK |
+| 7 | $1.4B | $905.4M | 63% | 63% | $525.6M | $3.7B | $4.1M | 2.3 | watch |
+| 14 | $6.9B | $6.4B | 93% | 88% | $495.8M | $7.2B | $7.9M | 1.6 | OK |
+| 30 | $30.8B | $13B | 42% | 60% | $17.8B | $159.4B | $177.2M | 17.3 | watch |
+| 45 | $85B | $68.6B | 81% | 83% | $16.4B | $264.6B | $294M | 8.0 | OK |
+| 60 | $224.3B | $203.3B | 91% | 95% | $21B | $460.7B | $511.8M | 5.9 | OK |
+| 75 | $236.6B | $174.2B | 74% | 77% | $62.4B | $1.3T | $1.4B | 14.7 | OK |
+| 90 | $255.9B | $192.5B | 75% | 71% | $63.4B | $2.1T | $2.3B | 19.3 | watch |
 <!-- END table:inflation -->
 
 - **Target:** ≥ 80% of created money removed over the season. **Watch** at 60–75%, **act** below 60% for 3 days in a row (14-day average). The dashboard (M3.8) should use the **14-day** average: the 7-day average dips whenever many players save for the same big purchase (day 7: grinders saving for Coinmaster; day 28–30: grinders who have bought everything tier 10 allows and wait for tier 11).
@@ -729,19 +777,19 @@ Every sink is a gameplay cost (tools, sets, spawners, upgrades, outposts, master
 <!-- BEGIN table:sensitivity -->
 | Scenario | Sink ratio, season | Lowest 7-day sink ratio, days 60-90 | Money supply day 90 | Interest share (grinder) | Island total share (regular) | Spawner share (regular) | Grinder earned by month 2 |
 |---|---|---|---|---|---|---|---|
-| Baseline (this sheet) | 85% | 73% | $1.7T | 0.9% | 33% | 18% | $42.4B |
-| Spawners at today's config (4 mobs per spawn) | 75% | 65% | $4.4T | 2.3% | 73% | 67% | $60.4B |
-| Shop spawner price does not rise per owned spawner | 65% | 43% | $12.9T | 1.6% | 87% | 86% | $115.3B |
-| No mastery (no endless sink) | 38% | 12% | $7T | 2.1% | 33% | 18% | $42.4B |
-| Boosters always on (personal + global) | 82% | 70% | $3.2T | 1.9% | 41% | 24% | $63.1B |
-| Old cap +100% | 84% | 68% | $1.5T | 1.1% | 32% | 17% | $34.7B |
-| Custom tiers x2.4 (old curve) | 85% | 92% | $2.4T | 1.1% | 33% | 17% | $58.2B |
-| Players save twice as much | 77% | 73% | $2.6T | 0.9% | 32% | 18% | $41.5B |
-| Interest without payout caps | 79% | 68% | $2.6T | 7.8% | 30% | 16% | $43.8B |
-| Production payback 8 days (players over-invest) | 81% | 74% | $2.8T | 1.1% | 47% | 26% | $53.1B |
-| No enchants (TUNE: pickaxe build off) | 86% | 60% | $754.2B | 1.5% | 45% | 27% | $15.4B |
-| No sets (TUNE: Delver, Deepforge, Coinmaster off) | 87% | 78% | $1.1T | 1.0% | 30% | 17% | $30.6B |
-| Money build: Gilded Touch instead of Scholar's Insight | 84% | 13% | $1.6T | 2.5% | 33% | 19% | $27.8B |
+| Baseline (this sheet) | 82% | 74% | $2.1T | 1.4% | 33% | 18% | $41.6B |
+| Spawners at today's config (4 mobs per spawn) | 71% | 70% | $5T | 2.6% | 75% | 69% | $59.9B |
+| Shop spawner price does not rise per owned spawner | 59% | 40% | $15.6T | 3.5% | 83% | 81% | $117.8B |
+| No mastery (no endless sink) | 32% | 5% | $7.9T | 4.6% | 33% | 18% | $41.6B |
+| Boosters always on (personal + global) | 78% | 78% | $3.7T | 2.2% | 42% | 25% | $61.7B |
+| Old cap +100% | 81% | 74% | $1.7T | 0.9% | 32% | 17% | $34.6B |
+| Custom tiers x2.4 (old curve) | 80% | 42% | $3.3T | 2.0% | 33% | 18% | $57.5B |
+| Players save twice as much | 75% | 73% | $2.9T | 3.6% | 32% | 17% | $41.8B |
+| Interest without payout caps | 75% | 64% | $3.1T | 9.4% | 30% | 16% | $43.2B |
+| Production payback 8 days (players over-invest) | 83% | 74% | $2.5T | 2.0% | 48% | 26% | $52B |
+| No enchants (TUNE: pickaxe build off) | 84% | 62% | $832.2B | 0.8% | 45% | 27% | $15.5B |
+| No sets (TUNE: Delver, Deepforge, Coinmaster off) | 86% | 77% | $1.2T | 0.6% | 31% | 18% | $31.1B |
+| Money build: Gilded Touch instead of Scholar's Insight | 87% | 14% | $1.3T | 0.9% | 33% | 19% | $27.6B |
 <!-- END table:sensitivity -->
 
 What this says:
@@ -778,8 +826,8 @@ Standing in the pool at spawn pays every 15 min: a little money, island fuel (1:
 | Week 1 | T5 | $610.8k/h | $11.9k/h | $21.4k/h | 3.5% | 4.8% | 3.4% |
 | Week 2 | T7 | $1.6M/h | $36.5k/h | $65.7k/h | 4.0% | 4.2% | 2.4% |
 | Month 1 | T8 | $3.3M/h | $64k/h | $115.2k/h | 3.5% | 4.6% | 2.3% |
-| Month 2 | T10 | $28.6M/h | $524k/h | $943.2k/h | 3.3% | 3.8% | 2.7% |
-| Month 3 | T11 | $88.7M/h | $1.5M/h | $2.7M/h | 3.0% | 3.7% | 2.6% |
+| Month 2 | T10 | $28.5M/h | $524k/h | $943.2k/h | 3.3% | 3.8% | 2.7% |
+| Month 3 | T10 | $37.3M/h | $524k/h | $943.2k/h | 2.5% | 3.7% | 2.6% |
 <!-- END table:afk -->
 
 - Never above 5% of an active hour for any archetype (check in §11). A full 8 h AFK day at the top step is worth about 1–1.5 active hours of a regular player, less than one Forge step; it never replaces playing.
@@ -857,12 +905,12 @@ Enchant level costs follow 10 steps × a rarity factor (ENCHANTS §5):
 |---|---|---|---|
 | First hour | 94/h · 300 h per Rare V enchant | 118/h · 240 h per Rare V enchant | 143/h · 198 h per Rare V enchant |
 | Day 1 | 101/h · 281 h per Rare V enchant | 188/h · 150 h per Rare V enchant | 474/h · 60 h per Rare V enchant |
-| Day 3 | 146/h · 194 h per Rare V enchant | 412/h · 69 h per Rare V enchant | 1,030/h · 27 h per Rare V enchant |
-| Week 1 | 227/h · 124 h per Rare V enchant | 644/h · 44 h per Rare V enchant | 2,129/h · 13 h per Rare V enchant |
+| Day 3 | 146/h · 194 h per Rare V enchant | 412/h · 69 h per Rare V enchant | 1,024/h · 28 h per Rare V enchant |
+| Week 1 | 227/h · 124 h per Rare V enchant | 644/h · 44 h per Rare V enchant | 2,120/h · 13 h per Rare V enchant |
 | Week 2 | 337/h · 84 h per Rare V enchant | 1,303/h · 22 h per Rare V enchant | 3,141/h · 9 h per Rare V enchant |
 | Month 1 | 684/h · 41 h per Rare V enchant | 2,066/h · 14 h per Rare V enchant | 5,328/h · 5 h per Rare V enchant |
-| Month 2 | 936/h · 30 h per Rare V enchant | 3,873/h · 7 h per Rare V enchant | 9,927/h · 3 h per Rare V enchant |
-| Month 3 | 1,533/h · 18 h per Rare V enchant | 6,417/h · 4 h per Rare V enchant | 9,927/h · 3 h per Rare V enchant |
+| Month 2 | 936/h · 30 h per Rare V enchant | 3,850/h · 7 h per Rare V enchant | 9,927/h · 3 h per Rare V enchant |
+| Month 3 | 1,533/h · 18 h per Rare V enchant | 4,701/h · 6 h per Rare V enchant | 9,927/h · 3 h per Rare V enchant |
 <!-- END table:crystals -->
 
 **Where crystals go** (the model spends on enchants first, up to what the tool level and gear allow, saves for the crystal set at tier 6, then rolls and the island shop):
@@ -871,12 +919,12 @@ Enchant level costs follow 10 steps × a rarity factor (ENCHANTS §5):
 |---|---|---|---|---|---|---|---|---|
 | casual | Week 1 | 1,051 | 44% | 0% | 0% | 44% | 122 | 12% |
 | casual | Month 1 | 10,655 | 69% | 0% | 0% | 16% | 1,618 | 15% |
-| casual | Month 3 | 75,313 | 65% | 33% | 0% | 2% | 0 | 0% |
+| casual | Month 3 | 77,225 | 65% | 32% | 0% | 2% | 0 | 0% |
 | regular | Week 1 | 8,721 | 90% | 0% | 0% | 8% | 146 | 2% |
-| regular | Month 1 | 117,776 | 78% | 21% | 0% | 1% | 0 | 0% |
-| regular | Month 3 | 770,469 | 70% | 3% | 15% | 11% | 4,275 | 1% |
-| grinder | Week 1 | 63,740 | 60% | 39% | 0% | 1% | 0 | 0% |
-| grinder | Month 1 | 745,338 | 71% | 3% | 12% | 10% | 30,705 | 4% |
+| regular | Month 1 | 115,990 | 78% | 22% | 0% | 1% | 0 | 0% |
+| regular | Month 3 | 765,191 | 69% | 3% | 15% | 12% | 9,153 | 1% |
+| grinder | Week 1 | 61,383 | 58% | 41% | 0% | 1% | 0 | 0% |
+| grinder | Month 1 | 740,669 | 71% | 3% | 12% | 10% | 30,342 | 4% |
 | grinder | Month 3 | 5.1M | 11% | 0% | 51% | 37% | 51,627 | 1% |
 <!-- END table:crystal_balance -->
 
@@ -939,7 +987,7 @@ The model's players buy **Delver's Garb** ($20k) in their first 2 hours, **Deepf
 | First hour | - | - | - |
 | Day 1 | - | Delver Lv 12 (speed +2%, crystals +4%) | Delver Lv 27 (speed +4%, crystals +9%) |
 | Day 3 | Delver Lv 8 (speed +1%, crystals +3%) | Delver Lv 25 (speed +4%, crystals +8%) | Delver Lv 39 (speed +6%, crystals +12%) |
-| Week 1 | Delver Lv 19 (speed +3%, crystals +6%) | Delver Lv 35 (speed +6%, crystals +11%) | Deepforge Lv 38 (drops +15%, crystals +24%) |
+| Week 1 | Delver Lv 19 (speed +3%, crystals +6%) | Delver Lv 35 (speed +6%, crystals +11%) | Deepforge Lv 37 (drops +15%, crystals +24%) |
 | Week 2 | Delver Lv 27 (speed +4%, crystals +9%) | Delver Lv 44 (speed +7%, crystals +14%) | Coinmaster Lv 50 (sell +50%) |
 | Month 1 | Delver Lv 37 (speed +6%, crystals +12%) | Deepforge Lv 47 (drops +19%, crystals +30%) | Coinmaster Lv 50 (sell +50%) |
 | Month 2 | Deepforge Lv 16 (drops +6%, crystals +10%) | Coinmaster Lv 50 (sell +50%) | Coinmaster Lv 50 (sell +50%) |
@@ -966,10 +1014,10 @@ The model's players buy **Delver's Garb** ($20k) in their first 2 hours, **Deepf
 | Day 1 | $58.9k/h · enchants +4% · set +0% · crystals +6% / +0% | $107.9k/h · enchants +5% · set +1% · crystals +5% / +5% | $360.4k/h · enchants +8% · set +3% · crystals +10% / +11% |
 | Day 3 | $82.5k/h · enchants +4% · set +1% · crystals +5% / +3% | $308.6k/h · enchants +8% · set +2% · crystals +10% / +10% | $1.1M/h · enchants +9% · set +3% · crystals +13% / +15% |
 | Week 1 | $142.6k/h · enchants +8% · set +2% · crystals +10% / +8% | $610.8k/h · enchants +9% · set +3% · crystals +14% / +14% | $3.4M/h · enchants +14% · set +7% · crystals +13% / +20% |
-| Week 2 | $290.3k/h · enchants +6% · set +2% · crystals +10% / +11% | $1.6M/h · enchants +13% · set +3% · crystals +13% / +17% | $13.9M/h · enchants +33% · set +29% · crystals +40% / +0% |
-| Month 1 | $822k/h · enchants +5% · set +2% · crystals +9% / +15% | $3.3M/h · enchants +17% · set +8% · crystals +17% / +25% | $41.1M/h · enchants +57% · set +28% · crystals +68% / +0% |
-| Month 2 | $1.7M/h · enchants +7% · set +2% · crystals +9% / +9% | $28.6M/h · enchants +33% · set +30% · crystals +39% / +0% | $281.7M/h · enchants +46% · set +26% · crystals +68% / +0% |
-| Month 3 | $3.1M/h · enchants +9% · set +5% · crystals +13% / +22% | $88.7M/h · enchants +50% · set +29% · crystals +68% / +0% | $296.2M/h · enchants +44% · set +25% · crystals +68% / +0% |
+| Week 2 | $290.3k/h · enchants +6% · set +2% · crystals +10% / +11% | $1.6M/h · enchants +13% · set +3% · crystals +13% / +17% | $13.8M/h · enchants +33% · set +29% · crystals +40% / +0% |
+| Month 1 | $822k/h · enchants +5% · set +2% · crystals +9% / +15% | $3.3M/h · enchants +17% · set +8% · crystals +17% / +25% | $41M/h · enchants +57% · set +28% · crystals +68% / +0% |
+| Month 2 | $1.7M/h · enchants +7% · set +2% · crystals +9% / +9% | $28.5M/h · enchants +33% · set +30% · crystals +39% / +0% | $283.9M/h · enchants +46% · set +26% · crystals +68% / +0% |
+| Month 3 | $3.1M/h · enchants +9% · set +5% · crystals +13% / +22% | $37.3M/h · enchants +51% · set +29% · crystals +68% / +0% | $296.1M/h · enchants +44% · set +25% · crystals +68% / +0% |
 <!-- END table:enchant_set_impact -->
 
 - **Early (week 1):** enchants +4–14%, set +1–7%. The first week is about tiers and the Forge, as intended (#61 fast start comes from tiers, not gear).
@@ -1007,12 +1055,12 @@ Books per played hour for the regular at the first and last tier of each band. A
 |---|---|---|---|
 | First hour | 0.86/h · 3 books (C 2 U 1 R 0.0 E 0.0 L 0.0) · rolls 0 | 1.07/h · 3 books (C 2 U 1 R 0.0 E 0.0 L 0.0) · rolls 0 | 1.30/h · 3 books (C 2 U 1 R 0.0 E 0.0 L 0.0) · rolls 0 |
 | Day 1 | 0.91/h · 3 books (C 2 U 1 R 0.1 E 0.0 L 0.0) · rolls 0 | 1.27/h · 7 books (C 4 U 2 R 0.2 E 0.0 L 0.0) · rolls 0 | 1.22/h · 16 books (C 11 U 5 R 0.8 E 0.1 L 0.0) · rolls 0 |
-| Day 3 | 1.00/h · 5 books (C 3 U 2 R 0.1 E 0.0 L 0.0) · rolls 0 | 1.06/h · 15 books (C 10 U 4 R 0.6 E 0.0 L 0.0) · rolls 0 | 1.52/h · 38 books (C 20 U 13 R 4.3 E 1.0 L 0.0) · rolls 0 |
-| Week 1 | 1.16/h · 9 books (C 6 U 3 R 0.3 E 0.0 L 0.0) · rolls 0 | 1.25/h · 29 books (C 16 U 9 R 2.8 E 0.6 L 0.0) · rolls 0 | 1.28/h · 79 books (C 32 U 26 R 14.5 E 5.2 L 1.0) · rolls 0 |
-| Week 2 | 0.87/h · 17 books (C 11 U 5 R 0.9 E 0.1 L 0.0) · rolls 0 | 1.10/h · 55 books (C 26 U 18 R 8.0 E 2.4 L 0.3) · rolls 0 | 1.81/h · 155 books (C 51 U 51 R 34.9 E 14.3 L 3.3) · rolls 0 |
-| Month 1 | 1.02/h · 32 books (C 17 U 10 R 3.3 E 0.7 L 0.0) · rolls 0 | 1.20/h · 109 books (C 39 U 36 R 22.7 E 8.9 L 1.9) · rolls 0 | 1.93/h · 397 books (C 85 U 121 R 113.7 E 59.4 L 18.1) · rolls 22 |
-| Month 2 | 0.81/h · 59 books (C 27 U 20 R 9.3 E 2.9 L 0.4) · rolls 0 | 1.37/h · 238 books (C 68 U 77 R 59.2 E 27.5 L 7.3) · rolls 0 | 2.13/h · 1062 books (C 144 U 309 R 354.9 E 193.4 L 59.7) · rolls 193 |
-| Month 3 | 0.91/h · 85 books (C 34 U 28 R 16.3 E 6.1 L 1.2) · rolls 0 | 1.79/h · 405 books (C 84 U 124 R 117.6 E 60.9 L 18.5) · rolls 28 | 2.13/h · 1752 books (C 205 U 502 R 605.2 E 335.7 L 103.5) · rolls 373 |
+| Day 3 | 1.00/h · 5 books (C 3 U 2 R 0.1 E 0.0 L 0.0) · rolls 0 | 1.06/h · 15 books (C 10 U 4 R 0.6 E 0.0 L 0.0) · rolls 0 | 1.51/h · 38 books (C 20 U 12 R 4.3 E 0.9 L 0.0) · rolls 0 |
+| Week 1 | 1.16/h · 9 books (C 6 U 3 R 0.3 E 0.0 L 0.0) · rolls 0 | 1.25/h · 29 books (C 16 U 9 R 2.8 E 0.6 L 0.0) · rolls 0 | 1.28/h · 79 books (C 33 U 26 R 14.3 E 5.1 L 0.9) · rolls 0 |
+| Week 2 | 0.87/h · 17 books (C 11 U 5 R 0.9 E 0.1 L 0.0) · rolls 0 | 1.10/h · 55 books (C 26 U 18 R 8.0 E 2.4 L 0.3) · rolls 0 | 1.81/h · 155 books (C 52 U 51 R 34.7 E 14.2 L 3.2) · rolls 0 |
+| Month 1 | 1.02/h · 32 books (C 17 U 10 R 3.3 E 0.7 L 0.0) · rolls 0 | 1.20/h · 109 books (C 39 U 36 R 22.6 E 8.9 L 1.9) · rolls 0 | 1.93/h · 397 books (C 85 U 121 R 113.3 E 59.1 L 17.9) · rolls 22 |
+| Month 2 | 0.81/h · 59 books (C 27 U 20 R 9.3 E 2.9 L 0.4) · rolls 0 | 1.36/h · 238 books (C 68 U 77 R 59.0 E 27.3 L 7.2) · rolls 0 | 2.13/h · 1061 books (C 145 U 310 R 354.5 E 193.0 L 59.5) · rolls 193 |
+| Month 3 | 0.91/h · 86 books (C 34 U 28 R 16.4 E 6.1 L 1.2) · rolls 0 | 1.70/h · 405 books (C 84 U 124 R 117.8 E 60.7 L 18.3) · rolls 29 | 2.13/h · 1752 books (C 206 U 502 R 604.8 E 335.3 L 103.3) · rolls 373 |
 <!-- END table:book_finds -->
 
 ### 9.8 Bonus family caps and the +300% sell cap
@@ -1109,25 +1157,25 @@ Generated on every run; all must say PASS (or WATCH with a reason in the text) b
 <!-- BEGIN table:checks -->
 | Check | Result | Value |
 |---|---|---|
-| Depths share 40-60% (regular, season) | PASS | 49% |
+| Depths share 40-60% (regular, season) | PASS | 50% |
 | Island + spawner share 25-45% (regular, season) | PASS | 33% |
 | Spawners 8-25% of income (regular, season) | PASS | 18% |
 | Events share 10-20% (regular, season) | PASS | 15% |
-| Interest <= 8% of income (all, season) | PASS | 7.7%, 2.8%, 0.9% |
-| bank.yml payout caps = the model (BANK2) | PASS | 10 tiers + 11 levels match |
+| Interest <= 8% of income (all, season) | PASS | 7.5%, 2.7%, 1.4% |
+| bank.yml tiers are sensible steps (UX3) | PASS | 10 tiers + 11 levels, x3-5 / x2-4 steps, rates fall |
 | Interest every 8 h, fee steps only go down (BANK2) | PASS | 8 h, fee [2.0, 1.5, 1.0, 0.5] |
 | First hour 30k-100k (grinder) | PASS | $66.8k |
-| Week 2 within 0.5x-2x of $500M (grinder) | PASS | $548.5M |
-| Month 2 within 0.5x-2x of $50B (grinder) | PASS | $42.4B |
-| Sink ratio over the whole season >= 80% | PASS | 85% |
-| Sink ratio (14-day average) not below 60% for 3 days in a row ('act', §7.2) | PASS | min 57% (day 30), longest run below 60%: 1 day |
+| Week 2 within 0.5x-2x of $500M (grinder) | PASS | $530.9M |
+| Month 2 within 0.5x-2x of $50B (grinder) | PASS | $41.6B |
+| Sink ratio over the whole season >= 80% | PASS | 82% |
+| Sink ratio (14-day average) not below 60% for 3 days in a row ('act', §7.2) | PASS | min 60% (day 30), longest run below 60%: 0 days |
 | Slot 1 within ~1-2 h (regular) | PASS | 1.1 h (day 1) |
-| Slot 4 in week 3-8 (regular) | PASS | 119.1 h (day 40) |
+| Slot 4 in week 3-8 (regular) | PASS | 120.3 h (day 40) |
 | Max blocks/s under reach cap | PASS | 3.90 <= 6.0 |
 | Money fits in a long | PASS | season total, all grinders |
-| Tier 12 not before week 4 (grinder) | PASS | 409.0 h (day 51) |
+| Tier 12 not before week 4 (grinder) | PASS | 410.0 h (day 52) |
 | Fast start: tier 2 within 3 h (all) | PASS | 2.7 h (day 3), 2.2 h (day 1), 1.9 h (day 1) |
-| Progressively harder: each tier gap >= previous (regular) | PASS | 2 → 3 → 4 → 5 → 8 → 11 → 18 → 40 → 67 → 112 h |
+| Progressively harder: each tier gap >= previous (regular) | PASS | 2 → 3 → 4 → 5 → 8 → 11 → 18 → 41 → 67 h |
 | Sell multiplier never above the cap | PASS | peak x3.53 <= x4.00 |
 | Cap only reached with the best of everything | PASS | all sources 305%; drop any one → under cap |
 | Crystals: sinks take >= 70% (regular, season) | PASS | 99% |

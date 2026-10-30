@@ -33,4 +33,22 @@ public interface BankService {
 
     /** The money in an island's bank. */
     CompletableFuture<Long> islandBalance(UUID islandId);
+
+    /**
+     * What an island bank holds at a Bank Capacity upgrade level (0 = not bought), from {@code bank.yml → island.levels}
+     * (the only place the amounts live; /is upgrade shows them). -1 if unknown. Any thread.
+     */
+    default long islandCapacity(int capacityLevel) {
+        return -1;
+    }
+
+    /** The most interest an island bank earns per payout at a Bank Interest upgrade level (0 = not bought); -1 if unknown. */
+    default long islandPayoutCap(int interestLevel) {
+        return -1;
+    }
+
+    /** Hours between interest payouts ({@code bank.yml → interest.period-hours}); 0 if unknown. */
+    default int interestPeriodHours() {
+        return 0;
+    }
 }

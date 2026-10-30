@@ -134,7 +134,7 @@ public final class BankFeature implements Listener, BankService {
         fees = fee;
     }
 
-    /** BANK2 value upgrade of an existing bank.yml ({@link BankConfig#upgradeValues}); never touches a broken file. */
+    /** BANK2/UX3 value upgrade of an existing bank.yml ({@link BankConfig#upgradeValues}); never touches a broken file. */
     private void upgradeConfigFile() {
         java.io.File file = new java.io.File(core.plugin().getDataFolder(), config.fileName());
         if (!file.isFile()) {
@@ -146,10 +146,10 @@ public final class BankFeature implements Listener, BankService {
             List<String> changed = BankConfig.upgradeValues(yaml);
             if (!changed.isEmpty()) {
                 yaml.save(file);
-                core.plugin().getLogger().info(config.fileName() + ": owner #169 defaults applied (interest every 8 h, higher "
-                        + "rates and caps): " + String.join(", ", changed));
+                core.plugin().getLogger().info(config.fileName() + ": new bank defaults applied (BANK2 interest, UX3 tier "
+                        + "tables): " + String.join(", ", changed));
                 core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.ECONOMY, "bank_config_upgrade",
-                        Actor.system("bank"), Map.of("keys", String.join(",", changed), "version", 2));
+                        Actor.system("bank"), Map.of("keys", String.join(",", changed), "version", config.version()));
             }
         } catch (java.io.IOException | org.bukkit.configuration.InvalidConfigurationException e) {
             // The config manager reports broken files and keeps every value; nothing to do here.
@@ -506,6 +506,23 @@ public final class BankFeature implements Listener, BankService {
     @Override
     public CompletableFuture<Long> islandBalance(UUID islandId) {
         return economy.balance(AccountRef.island(islandId), Currency.MONEY);
+    }
+
+    @Override
+    public long islandCapacity(int capacityLevel) {
+        BankTiers t = tiers;
+        return t == null ? -1 : t.islandCapacity(capacityLevel);
+    }
+
+    @Override
+    public long islandPayoutCap(int interestLevel) {
+        BankTiers t = tiers;
+        return t == null ? -1 : t.islandCap(interestLevel);
+    }
+
+    @Override
+    public int interestPeriodHours() {
+        return config.periodHours;
     }
 
     // ================================================================== actions (main thread)

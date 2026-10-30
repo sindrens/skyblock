@@ -496,8 +496,11 @@ upgrades:
     warp-slots: "<value> warps"
     island-vault: "<value> storage rows"
     entity-limits: "+<value>% entity limits"
-    bank-capacity: "Bank capacity level <value>"
-    bank-interest: "Bank interest level <value>"
+    # <amount> from bank.yml (island.levels), <hours> between payouts, <value> the bank level
+    bank-capacity: "Island bank holds <amount>"
+    bank-interest: "Interest up to <amount> / <hours> h"
+    bank-capacity-level: "Bank capacity level <value>"
+    bank-interest-level: "Bank interest level <value>"
     sell-bonus: "+<value>% sell prices"
     mine-fortune: "+<value>% Depths ore drops"
     lumberjack: "+<value>% Depths log drops"

@@ -9,6 +9,7 @@ import net.skybornmc.skyblock.common.bonus.BonusFamily;
 import net.skybornmc.skyblock.common.bonus.BonusService;
 import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.economy.AccountRef;
+import net.skybornmc.skyblock.common.economy.BankService;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.economy.Transaction;
@@ -351,6 +352,9 @@ final class UpgradeManager implements Listener {
     /** The effect at {@code level} as text, e.g. "7x7 border"; level 0 shows the island's value now where it has one. */
     Component effectText(Player viewer, UpgradeCatalog.Def def, int level, UUID islandId) {
         UpgradeEffect effect = def.effect();
+        if (effect == UpgradeEffect.BANK_CAPACITY || effect == UpgradeEffect.BANK_INTEREST) {
+            return bankEffectText(viewer, def, level);
+        }
         double value;
         if (level <= 0) {
             OptionalInt now = storedNow(effect, islandId);
@@ -363,6 +367,24 @@ final class UpgradeManager implements Listener {
         }
         return msg.component(viewer, "upgrades.effect." + effect.id(), Msg.p("value", UpgradeCatalog.trim(value)),
                 Msg.p("members", UpgradeCatalog.trim(Math.max(0, value - 1))));
+    }
+
+    /**
+     * Bank Capacity / Bank Interest: the real amounts of bank.yml (capacity, interest cap per payout) through
+     * {@link BankService}, the single source of the numbers (UX3). Level 0 shows the island bank's base amounts.
+     * Falls back to "level N" while the bank is off.
+     */
+    private Component bankEffectText(Player viewer, UpgradeCatalog.Def def, int level) {
+        int bankLevel = UpgradeRules.bankLevel(def, level);
+        BankService bank = core.services().optional(BankService.class).orElse(null);
+        boolean capacity = def.effect() == UpgradeEffect.BANK_CAPACITY;
+        long amount = bank == null ? -1 : capacity ? bank.islandCapacity(bankLevel) : bank.islandPayoutCap(bankLevel);
+        String key = "upgrades.effect." + def.effect().id();
+        if (amount < 0) {
+            return msg.component(viewer, key + "-level", Msg.p("value", bankLevel));
+        }
+        return msg.component(viewer, key, Msg.p("amount", Format.money(amount)), Msg.p("hours", Math.max(1, bank.interestPeriodHours())),
+                Msg.p("value", bankLevel));
     }
 
     /** The islands module's value now of a stored effect (size, member slots, warp slots). */
