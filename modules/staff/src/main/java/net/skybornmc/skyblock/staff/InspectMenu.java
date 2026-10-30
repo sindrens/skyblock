@@ -126,6 +126,11 @@ final class InspectMenu extends Menu {
                 .filter(w -> viewer.hasPermission("skyblock.wardrobe.staff"))
                 .ifPresent(w -> set(31, service.item(Material.LEATHER_CHESTPLATE, viewer, StaffFeature.MODULE, "menu.inspect.wardrobe",
                         Msg.p("player", name)), click -> w.openStaffView(click.player(), id, name, this)));
+        // Item box (owner answer 7): admins view, remove and clear what waits in the player's /box (audited).
+        s.core().services().optional(net.skybornmc.skyblock.common.box.ItemBox.class)
+                .filter(b -> viewer.hasPermission("skyblock.box.admin"))
+                .ifPresent(b -> set(40, service.item(Material.CHEST_MINECART, viewer, StaffFeature.MODULE, "menu.inspect.box",
+                        Msg.p("player", name)), click -> b.openStaffView(click.player(), id, name, this)));
         button(33, Material.BREEZE_ROD, "menu.inspect.punish", "punish " + name, name);
         button(34, Material.CLOCK, "menu.inspect.logs", "logs player " + name, name);
     }

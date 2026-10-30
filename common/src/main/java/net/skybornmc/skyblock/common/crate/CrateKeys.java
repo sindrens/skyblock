@@ -11,6 +11,10 @@ import java.util.concurrent.CompletableFuture;
  *
  * <p>Until the crates module is there, modules that hand out keys keep them as pending grants and deliver them through
  * this service as soon as it is published (the AFK pool does this), so no key is ever lost.</p>
+ *
+ * <p>Owner answer 7: if keys or rewards are physical items, the crates module hands them out with
+ * {@link net.skybornmc.skyblock.common.box.ItemBox} ({@code BoxSource.CRATE}, or {@code BoxSource.AFK} for AFK pool keys)
+ * so a full inventory never drops them; for an offline profile it delivers straight into that profile's box.</p>
  */
 public interface CrateKeys {
 

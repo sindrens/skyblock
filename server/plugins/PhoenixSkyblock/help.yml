@@ -34,7 +34,7 @@ categories:
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, the shop, selling, the", "<c:text>auction house and trading."]
-    topics: [money, bank, shop, sell, notes, auction, trade]
+    topics: [money, bank, shop, sell, notes, auction, trade, box]
   progression:
     icon: experience_bottle
     status: active
@@ -1033,6 +1033,33 @@ topics:
           - "<c:text>the trade ends. Closing, leaving or"
           - "<c:text>moving away cancels it and gives"
           - "<c:text>everything back. Crystals can't be traded."
+
+  box:
+    icon: chest_minecart
+    aliases: [mailbox, item-box, full-inventory, overflow]
+    name: "<c:flame>Item box"
+    summary: ["<c:text>Items that did not fit your", "<c:text>inventory wait here, safe."]
+    take-me-there: "box"
+    commands: [Economy]
+    pages:
+      - title: "<c:value>Never dropped"
+        lines:
+          - "<c:text>When your inventory is full, items"
+          - "<c:text>from selling, the shop, the Forge,"
+          - "<c:text>trades and more go to your box"
+          - "<c:text>instead of falling on the ground."
+      - title: "<c:value>Taking items"
+        lines:
+          - "<c:value>/box</c:value> <c:text>opens it, oldest first."
+          - "<c:text>Tap a stack to take it, or tap"
+          - "<c:value>Take all that fit</c:value><c:text>. Each item says"
+          - "<c:text>where it came from and when."
+      - title: "<c:value>Good to know"
+        lines:
+          - "<c:text>Each profile has its own box. We"
+          - "<c:text>remind you when you join. Nothing"
+          - "<c:text>is ever lost; we warn you when it"
+          - "<c:text>gets close to 500 stacks."
 
   staff:
     icon: shield

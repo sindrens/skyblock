@@ -1,0 +1,144 @@
+# Item mailbox /box (owner answer 7): items that did not fit your inventory wait here; nothing is ever dropped.
+# MiniMessage + style tags (style.yml). Bedrock-safe symbols only. Reload: /skyblock reload box
+
+# Shown a few seconds after joining or switching profile when the box is not empty. <count> waiting stacks
+join: "<prefix><c:text>You have <c:value><count></c:value> item(s) in <click:run_command:'/box'><c:value>/box</c:value></click><c:text>. Your inventory was full, so we kept them safe."
+# Action bar line (join and deliveries).
+action-bar: "<c:text>You have <c:value><count></c:value> item(s) in <c:value>/box"
+# Items went to the box while online. <stacks> new stacks, <count> waiting in total
+delivered: "<prefix><c:warning><sym:arrow></c:warning> <c:text>Inventory full: <c:value><stacks></c:value> stack(s) went to <click:run_command:'/box'><c:value>/box</c:value></click> <c:muted>(<count> waiting)"
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was lost, try again in a moment."
+
+# Cap (box.yml cap.*). Items are still kept above the cap. <count>, <max>
+cap:
+  warn: "<prefix><c:warning><sym:time></c:warning> <c:text>Your /box is almost full (<c:value><count></c:value><c:muted>/<max></c:muted>). Take items out soon; the oldest are shown first."
+  full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your /box is full (<c:value><count></c:value><c:muted>/<max></c:muted>). Nothing is lost and new items are still kept, but please take some out; the oldest are shown first."
+
+take:
+  # <count> stacks taken, <left> still waiting
+  took: "<prefix><c:success><sym:check></c:success> <c:text>Took <c:value><count></c:value> stack(s) from your box. <c:muted>(<left> left)"
+  no-space: "<prefix><c:error><sym:cross></c:error> <c:text>No room in your inventory. Make space and click again."
+  # <count> stacks that did not fit and stayed in the box
+  rest-no-space: "<prefix><c:text><c:value><count></c:value> stack(s) did not fit and stay in your box."
+  some-back: "<prefix><c:text>Your inventory changed: <c:value><count></c:value> stack(s) went back into your box."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
+  staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>Leave staff mode first: items can't go into the staff inventory."
+  unreadable: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><count></c:value> stack(s) can't be read. Ask staff for help; they stay safe in your box."
+
+profiles:
+  delete-items: "<c:text>This profile has <c:value><count></c:value> item(s) in its /box. Switch to it and take them out first."
+  delete-loading: "<c:text>Your /box is still loading. Try again in a moment."
+
+# Where items came from (item lore in /box). Unknown sources are shown capitalized.
+sources:
+  sell: "<c:value>Sell chest"
+  shop: "<c:value>Shop"
+  forge: "<c:value>The Forge"
+  tools: "<c:value>Tools"
+  enchanter: "<c:value>Enchanter"
+  wardrobe: "<c:value>Wardrobe"
+  loadout: "<c:value>Loadout"
+  afk: "<c:value>AFK pool"
+  trade: "<c:value>Trade"
+  auction: "<c:value>Auction house"
+  staff: "<c:value>Staff"
+  sanction: "<c:value>Staff (returned item)"
+  cosmetics: "<c:value>Cosmetics"
+  perks: "<c:value>Perks"
+  notes: "<c:value>Money note"
+  spawner: "<c:value>Spawner"
+  crate: "<c:value>Crate"
+  gift: "<c:value>Gift"
+  returned: "<c:value>Returned"
+  other: "<c:value>Other"
+
+menu:
+  title: "Item box"
+  info:
+    - "<c:text>Items that did not fit your"
+    - "<c:text>inventory wait here, safe."
+    - "<c:text>Oldest first. Click one to take it."
+  empty:
+    name: "<c:muted>Your box is empty"
+    lore:
+      - "<c:text>When your inventory is full,"
+      - "<c:text>items come here instead of"
+      - "<c:text>dropping on the ground."
+  take-all:
+    name: "<c:value>Take all that fit <c:muted>(<count>/<max>)"
+    lore:
+      - "<c:text>Moves every stack that fits"
+      - "<c:text>into your inventory."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take all"
+  unreadable:
+    name: "<c:error>Unreadable item"
+    lore:
+      - "<c:text>Ask staff for help. It stays"
+      - "<c:text>safe in your box."
+  # Lines under each item. <source>, <date>, <ago>, <id>
+  entry:
+    - ""
+    - "<bold><c:header>| Item box</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>From: </c:text><source>"
+    - "<c:bar>| </c:bar><c:text>Arrived: </c:text><c:value><date></c:value> <c:muted>(<ago> ago)"
+    - ""
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take"
+
+staff:
+  title: "Box of <player>"
+  info:
+    - "<c:text>Items waiting for this player."
+    - "<c:text>Removed items move to the"
+    - "<c:text>box_cleared table (restorable)."
+  empty:
+    name: "<c:muted>This box is empty"
+    lore:
+      - "<c:text>Nothing is waiting for this"
+      - "<c:text>profile."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Only admins can view and clear item boxes."
+  # <count>, <player>
+  cleared: "<prefix><c:success><sym:check></c:success> <c:text>Cleared <c:value><count></c:value> stack(s) from <c:value><player></c:value>'s box. Logged."
+  removed: "<prefix><c:success><sym:check></c:success> <c:text>Removed <c:value><count></c:value> stack(s) from <c:value><player></c:value>'s box. Logged."
+  clear:
+    name: "<c:error>Clear box <c:muted>(<count>)"
+    lore:
+      - "<c:text>Removes every stack of this"
+      - "<c:text>profile. Admin only, logged."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to clear"
+  clear-crumb: "Clear box"
+  clear-details:
+    - "<c:text>Removes <c:value><count></c:value> stack(s) from"
+    - "<c:value><player></c:value><c:text>'s box (<profile>)."
+    - "<c:text>They are kept in box_cleared."
+  remove-crumb: "Remove item"
+  remove-details:
+    - "<c:text>Removes entry <c:value>#<id></c:value> from"
+    - "<c:value><player></c:value><c:text>'s box."
+    - "<c:text>It is kept in box_cleared."
+  profile:
+    name: "<c:value><profile>"
+    lore:
+      - "<c:text>The profile shown."
+  profile-switch:
+    name: "<c:value><profile> <c:muted>(<profiles> profiles)"
+    lore:
+      - "<c:text>The profile shown."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next profile"
+  unreadable:
+    name: "<c:error>Unreadable entry #<id>"
+    lore:
+      - "<c:text>The stored data can't be read."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove it"
+  # <source>, <date>, <ago>, <id>
+  entry:
+    - ""
+    - "<bold><c:header>| Item box</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>From: </c:text><source>"
+    - "<c:bar>| </c:bar><c:text>Arrived: </c:text><c:value><date></c:value> <c:muted>(<ago> ago)"
+    - "<c:bar>| </c:bar><c:muted>Entry #<id>"
+    - ""
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove (admin)"
