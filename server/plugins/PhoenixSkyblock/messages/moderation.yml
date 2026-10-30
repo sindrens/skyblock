@@ -1327,7 +1327,7 @@ island-steps:
 # Sanctions (13.1). Placeholders of a sanction: <sid> (id), <kind>, <player>, <staff>, <reason>, <until>, <amount>, <item>,
 # <state>, <date>, <handler>. <use> = what was blocked (uses.*).
 sanctions:
-  usage: "<prefix><c:text>Sanctions live in <c:value>/p <player></c:value> <c:text>→ Sanctions. <c:value>/psanction restore <id></c:value> <c:text>gives back removed money or a confiscated item."
+  usage: "<prefix><c:text>Sanctions live in <c:value>/p <player></c:value> <c:text>» Sanctions. <c:value>/psanction restore <id></c:value> <c:text>gives back removed money or a confiscated item."
   bad-id: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a sanction id. Press Tab to see them."
   until-lifted: "until lifted"
   lift-reason: "Lifted by staff"
