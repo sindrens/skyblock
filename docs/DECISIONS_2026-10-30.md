@@ -75,3 +75,10 @@ Follow-up questions are at the end of this file (and in chat).
 - L2 **2 presets free**, more with a rank or bought with store credits.
 - L3 swapped-out pieces go into the **wardrobe** (no inventory space needed).
 - L4 swap anywhere **except in combat or the warzone**, **2 s cooldown**.
+
+## Design round (owner, 2026-10-30 morning)
+- GUI look: **vanilla now, resource pack later** (same slots, the pack only paints on top).
+- `/shop`: **quick-buy grid** (left-click 1, right-click a stack, shift-click custom amount; Bedrock tap opens a small amount screen).
+- `/sell`: **a chest GUI where players put items in and click Sell** (replaces the current "tap items in your inventory" box). Selling is also reachable from the satchel and from `/shop`. No price lines on inventory items, no `/price`.
+- Builds in builds/out: **paste all on the test server** (backup first) and use their metadata.
+- Sketches for review: artifact "Phoenix Skyblock UI Sketches" (shop, sell chest, satchel, forge, lores, chat). Nothing is implemented until the owner approves them.
