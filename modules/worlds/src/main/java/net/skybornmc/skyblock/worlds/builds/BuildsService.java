@@ -109,6 +109,11 @@ public final class BuildsService {
         return points;
     }
 
+    /** The store behind {@link #points()} (portals watch it for applies). */
+    public BuildPointsStore pointsStore() {
+        return points;
+    }
+
     // ------------------------------------------------------------------ files
 
     /** {@code builds.folder}: relative to the server folder (two levels above the plugin folder) or absolute. */
@@ -664,7 +669,13 @@ public final class BuildsService {
                     Msg.number("count", protectedRegions.size()), Msg.p("world", meta.world()));
         }
         if (!meta.regions("portals").isEmpty()) {
-            msg.send(sender, "builds.apply.portals-stored", Msg.number("count", meta.regions("portals").size()));
+            net.skybornmc.skyblock.worlds.portals.PortalService portals = worlds.portals();
+            if (portals != null && config.portalsEnabled) {
+                msg.send(sender, "builds.apply.portals", Msg.number("count", meta.regions("portals").size()),
+                        Msg.p("list", portals.describe(meta.regions("portals"))));
+            } else {
+                msg.send(sender, "builds.apply.portals-stored", Msg.number("count", meta.regions("portals").size()));
+            }
         }
         Map<String, Integer> stored = new LinkedHashMap<>();
         meta.points().forEach(p -> stored.merge(p.category(), 1, Integer::sum));

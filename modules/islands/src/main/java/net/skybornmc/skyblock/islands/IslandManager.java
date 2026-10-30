@@ -73,6 +73,8 @@ final class IslandManager implements IslandService {
     /** Players whose island is being created or rebuilt right now (one at a time per player). */
     private final Set<UUID> building = new HashSet<>();
     private final Set<UUID> rescuing = new HashSet<>();
+    /** Island portal callbacks by player (account) UUID: run once in {@link #arrived}, dropped on failure or quit. */
+    private final Map<UUID, java.util.function.Consumer<Boolean>> portalArrivals = new java.util.HashMap<>();
     private IslandBorders borders;
     private MemberManager members;
     /** Called after an island left every cache (M2.4: visiting and warp caches drop it too). */
@@ -580,6 +582,27 @@ final class IslandManager implements IslandService {
     }
 
     @Override
+    public PortalEntry enterFromPortal(Player player, java.util.function.Consumer<Boolean> onArrive) {
+        UUID id = key(player);
+        Optional<Island> own = islandOfPlayer(id);
+        PortalEntry entry = IslandPortalFlow.decide(own.isPresent(), building.contains(id), Bukkit.getWorld(config.world) != null);
+        switch (entry) {
+            case HOME -> {
+                portalArrivals.put(player.getUniqueId(), onArrive);
+                goHome(player, own.get(), true); // owner principle 1: teleports are instant (combat delay is the portal's)
+            }
+            case CREATING -> {
+                portalArrivals.put(player.getUniqueId(), onArrive);
+                msg.title(player, "create.portal-title");
+                create(player); // the normal /is create flow (join block check, starter schematic), no confirm menu
+            }
+            case BUSY -> msg.send(player, "create.busy");
+            case REFUSED -> worldLoaded(player); // tells the player the islands world is missing
+        }
+        return entry;
+    }
+
+    @Override
     public CompletableFuture<Boolean> setSize(UUID islandId, int sizeChunks, Actor actor) {
         Island island = byId.get(islandId);
         if (island == null || !IslandGrid.validSize(sizeChunks) || sizeChunks > config.maxSize()) {
@@ -797,6 +820,7 @@ final class IslandManager implements IslandService {
         members.joinBlockedUntil(player.getUniqueId()).whenCompleteAsync((blocked, blockError) -> {
             if (blockError == null && blocked.isPresent() && blocked.get() > System.currentTimeMillis()) {
                 building.remove(id);
+                portalArrivals.remove(player.getUniqueId());
                 if (blocked.get() == Long.MAX_VALUE) {
                     msg.send(player, "create.blocked-perm");
                 } else {
@@ -815,12 +839,14 @@ final class IslandManager implements IslandService {
         store.create(id, config.seasonId, config.startSize(), config.world).whenCompleteAsync((result, error) -> {
             if (error != null) {
                 building.remove(id);
+                portalArrivals.remove(player.getUniqueId());
                 databaseError(player, "create", error);
                 return;
             }
             switch (result) {
                 case IslandStore.CreateResult.AlreadyHasIsland ignored -> {
                     building.remove(id);
+                    portalArrivals.remove(player.getUniqueId());
                     msg.send(player, "create.already");
                 }
                 case IslandStore.CreateResult.Created created -> {
@@ -871,6 +897,7 @@ final class IslandManager implements IslandService {
                 core.audit().log(AuditCategory.ISLAND, "island_build_failed", Actor.system("islands"), island.id().toString(),
                         displayName(island), null, null, Map.of("error", String.valueOf(Database.cause(error).getMessage())));
                 if (player != null) {
+                    portalArrivals.remove(player.getUniqueId());
                     msg.send(player, "create.build-failed");
                     core.sounds().play(player, "error");
                 }
@@ -894,6 +921,10 @@ final class IslandManager implements IslandService {
     }
 
     private void arrived(Player player, boolean created) {
+        java.util.function.Consumer<Boolean> portal = portalArrivals.remove(player.getUniqueId());
+        if (portal != null) {
+            portal.accept(created);
+        }
         if (created) {
             msg.title(player, "create.title");
             core.sounds().play(player, "unlock");
@@ -1050,6 +1081,7 @@ final class IslandManager implements IslandService {
 
     void forget(UUID player) {
         rescuing.remove(player);
+        portalArrivals.remove(player);
     }
 
     // ------------------------------------------------------------------ helpers

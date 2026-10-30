@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.worlds;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.worlds.builds.BuildsService;
+import net.skybornmc.skyblock.worlds.portals.PortalService;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
@@ -43,6 +44,7 @@ public final class WorldsModule implements SkyblockModule {
     private final Map<String, WorldSettings> settings = new LinkedHashMap<>();
     private final WorldsConfig config = new WorldsConfig();
     private BuildsService builds;
+    private PortalService portals;
 
     public WorldsModule(Core core) {
         this.core = core;
@@ -61,6 +63,8 @@ public final class WorldsModule implements SkyblockModule {
         settings.values().forEach(this::setUp);
         builds = new BuildsService(core, this, config);
         builds.enable();
+        portals = new PortalService(core, this, config, builds.pointsStore());
+        portals.enable();
     }
 
     @Override
@@ -71,6 +75,14 @@ public final class WorldsModule implements SkyblockModule {
         if (builds != null) {
             builds.reload();
         }
+        if (portals != null) {
+            portals.reload();
+        }
+    }
+
+    /** Build portals (step in → target); {@code null} before the module is enabled. */
+    public PortalService portals() {
+        return portals;
     }
 
     /** {@code /skyblock builds} (catalog, paste, apply); {@code null} before the module is enabled. */
@@ -112,6 +124,10 @@ public final class WorldsModule implements SkyblockModule {
     @Override
     public void disable() {
         // Worlds are saved by the server on shutdown.
+        if (portals != null) {
+            portals.disable();
+            portals = null;
+        }
     }
 
     /** Configured worlds in config order. */

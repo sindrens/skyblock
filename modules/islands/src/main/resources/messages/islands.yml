@@ -22,6 +22,13 @@ create:
       - "<c:text>takes you there. Free."
       - "<c:text>Border: <c:value><size>x<size></c:value> chunks, grows to <c:value><max>x<max></c:value>."
   started: "<prefix><c:muted><sym:time></c:muted> <c:text>Building your island, one moment..."
+  # PORTALS (owner answer 159): the island portal at spawn creates the island without the confirm menu.
+  portal-title:
+    title: "<grad:phoenix><bold>Creating your island…</bold></grad>"
+    subtitle: "<c:text>One moment"
+    fade-in: 5
+    stay: 40
+    fade-out: 10
   # Phase P7: staff blocked joining/creating islands (coop-block punishment). <time> = time left.
   blocked: "<prefix><c:error><sym:cross></c:error> <c:text>Staff blocked you from creating or joining islands for <c:value><time></c:value>."
   blocked-perm: "<prefix><c:error><sym:cross></c:error> <c:text>Staff blocked you from creating or joining islands."

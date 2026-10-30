@@ -187,6 +187,7 @@ class TeleportWarmupTest {
         assertEquals(3, config.warmupSeconds(TeleportReason.DUNGEON));
         assertEquals(0, config.warmupSeconds(TeleportReason.PROFILE), "profile switch teleports are instant");
         assertEquals(0, config.warmupSeconds(TeleportReason.STAFF));
+        assertEquals(0, config.warmupSeconds(TeleportReason.PORTAL), "portals are instant (combat delay is the portal's rule)");
         assertEquals(TeleportRules.DEFAULTS, config.rules());
     }
 
@@ -208,7 +209,7 @@ class TeleportWarmupTest {
         assertTrue(manager.load(config).isEmpty(), "no problems with the defaults");
         String yaml = Files.readString(dir.resolve("teleport.yml"));
         for (TeleportReason reason : TeleportReason.values()) {
-            if (reason == TeleportReason.PROFILE || reason == TeleportReason.STAFF) {
+            if (reason == TeleportReason.PROFILE || reason == TeleportReason.PORTAL || reason == TeleportReason.STAFF) {
                 assertFalse(yaml.contains("\n" + reason.id() + ":"), "always instant, no section: " + reason.id());
                 continue;
             }

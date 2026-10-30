@@ -82,7 +82,7 @@ public final class TeleportConfig extends ModuleConfig {
             case ISLAND_VISIT -> islandVisitWarmupSeconds;
             case ISLAND_WARP -> islandWarpWarmupSeconds;
             case DUNGEON -> dungeonWarmupSeconds;
-            case PROFILE, STAFF -> 0;
+            case PROFILE, PORTAL, STAFF -> 0;
         };
     }
 
@@ -94,7 +94,7 @@ public final class TeleportConfig extends ModuleConfig {
             case ISLAND_VISIT -> islandVisitCooldownSeconds;
             case ISLAND_WARP -> islandWarpCooldownSeconds;
             case DUNGEON -> dungeonCooldownSeconds;
-            case PROFILE, STAFF -> 0;
+            case PROFILE, PORTAL, STAFF -> 0;
         };
     }
 
