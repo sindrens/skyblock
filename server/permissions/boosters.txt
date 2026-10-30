@@ -1,0 +1,5 @@
+# LuckPerms grants for the boosters module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/boosters/src/main/resources/permissions/boosters.yml. One console command per line; # = comment.
+# skyblock.boosters.use (/boosters, starting booster items) and skyblock.boosters.thanks (/thanks) default to true, so
+# players need no grant. Staff see every booster start, bank, global booster and thanks in /logs (category boosters:
+# skyblock.staff.logs.category.boosters, granted to mod in logs.txt). No staff commands (not in the approved list yet).

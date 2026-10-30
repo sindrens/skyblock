@@ -62,7 +62,7 @@ categories:
     slot: 22
     name: "<c:flame><bold>Rewards"
     lore: ["<c:text>Crates, quests, voting", "<c:text>and daily rewards."]
-    topics: [crates]
+    topics: [crates, boosters]
   community:
     icon: bell
     status: active
@@ -1189,6 +1189,39 @@ topics:
           - "<c:text>your Depths tier. Items that don't"
           - "<c:text>fit go to your</c:text> <c:value>/box</c:value><c:text>. Rewards"
           - "<c:text>not live yet pay crystals for now."
+
+  boosters:
+    icon: nether_star
+    aliases: [booster, thanks, global-booster, sell-booster]
+    name: "<c:flame>Boosters"
+    summary: ["<c:text>Short bonuses to selling,", "<c:text>XP and crystals."]
+    take-me-there: "boosters"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>Personal boosters"
+        lines:
+          - "<c:text>Boosters come from crates, the"
+          - "<c:text>daily calendar and quests. Right-"
+          - "<c:text>click one to start it. They belong"
+          - "<c:text>to the profile that earned them."
+      - title: "<c:value>Adding time"
+        lines:
+          - "<c:text>The same type never stacks: a new"
+          - "<c:text>one adds time (up to 3 hours). Time"
+          - "<c:text>only counts down while you play"
+          - "<c:text>that profile, never while offline."
+      - title: "<c:value>Global boosters"
+        lines:
+          - "<c:text>A global booster helps everyone"
+          - "<c:text>online. Say thanks or type"
+          - "<c:value>/thanks</c:value><c:text>: the starter gets a gem"
+          - "<c:text>(once per booster from each player)."
+      - title: "<c:value>Good to know"
+        lines:
+          - "<c:value>/boosters</c:value> <c:text>shows what runs, how long"
+          - "<c:text>is left and what waits. AFK pool"
+          - "<c:text>boosters start when you leave it."
+          - "<c:text>All bonuses stay inside the caps."
 
   box:
     icon: chest_minecart

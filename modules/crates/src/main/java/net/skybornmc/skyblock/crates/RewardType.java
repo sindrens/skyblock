@@ -5,8 +5,8 @@ import java.util.Optional;
 
 /**
  * What a crate reward gives ({@code type:} of an entry in {@code crates.yml}). Rewards whose system does not exist yet
- * (boosters, tomes, skins, sell wands, collectors, pet eggs ...) are {@link #COMING_SOON}: they keep their chance in the
- * table and pay their crystal value ({@code fallback}) until the system is built, so the odds never change.
+ * (tomes, skins, sell wands, collectors, pet eggs ...) are {@link #COMING_SOON}: they keep their chance in the table and
+ * pay their crystal value ({@code fallback}) until the system is built, so the odds never change.
  */
 enum RewardType {
     /** Money pouch: {@code minutes} of reference income at the opener's tier (ECONOMY_BALANCE §1.2). In the transaction. */
@@ -33,6 +33,13 @@ enum RewardType {
     TITLE("title", false),
     /** Island Fuel for the opener's island ({@code minutes}). After the commit. */
     FUEL("fuel", false),
+    /**
+     * A personal booster item (M10.2: {@code booster} type, {@code percent}, {@code minutes}, {@code amount}); always bound
+     * to the opener's profile (RX39). Item, handed out after the commit.
+     */
+    BOOSTER("booster", false),
+    /** A global booster item (M10.2), like {@link #BOOSTER}; bound when opened with a bound key. Item. */
+    GLOBAL_BOOSTER("global-booster", false),
     /** Not built yet: pays the fallback crystals. In the transaction. */
     COMING_SOON("coming-soon", true);
 

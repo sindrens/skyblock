@@ -24,10 +24,10 @@ key:
   kept: "<prefix><c:success><sym:star></c:success> <c:text><c:value><time></c:value> in the AFK pool today: <c:value><amount>x</c:value> <crate><c:text>! Crates open soon; your keys are saved until then."
   delivered: "<prefix><c:success><sym:check></c:success> <c:text><c:value><amount></c:value> saved AFK pool key(s) were added to your keys."
 
-# Personal sell booster. <percent>, <minutes> won, <banked> total banked, <time> running time
+# Personal sell booster won in the pool. <percent>, <minutes> won, <banked> total banked. The boosters module keeps it
+# (M10.2) and says when it starts (messages/boosters.yml -> personal.bank-started).
 booster:
   won: "<prefix><c:success><sym:sparkle></c:success> <c:text>Lucky! You won a <c:value>+<percent>% sell booster</c:value> <c:text>(<minutes> min). It starts when you leave the AFK pool. Banked: <c:value><banked></c:value>."
-  started: "<prefix><c:success><sym:sparkle></c:success> <c:text>Your AFK <c:value>+<percent>% sell booster</c:value> <c:text>is running for <c:value><time></c:value>."
 
 # Action bar inside the pool (every few seconds). <next> countdown, <today>, <cap>, <percent>, <reset>
 action-bar:

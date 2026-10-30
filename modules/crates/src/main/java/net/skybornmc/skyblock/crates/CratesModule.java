@@ -201,8 +201,16 @@ public final class CratesModule implements SkyblockModule, Listener {
                     }
                 }
                 yaml = bundled;
-            } else if (CatalogMerge.addMissing(yaml, bundled)) {
-                yaml.save(file);
+            } else {
+                boolean added = CatalogMerge.addMissing(yaml, bundled);
+                boolean upgraded = CatalogMerge.upgradeLive(yaml, bundled);
+                if (upgraded) {
+                    core.plugin().getLogger().info("crates.yml: coming-soon rewards that are live now (boosters) were switched on; "
+                            + "your chances stay as they were.");
+                }
+                if (added || upgraded) {
+                    yaml.save(file);
+                }
             }
         } catch (IOException e) {
             core.plugin().getLogger().log(Level.WARNING, "Could not write crates.yml", e);
@@ -453,6 +461,8 @@ public final class CratesModule implements SkyblockModule, Listener {
             }
             case TAG, TITLE -> Material.NAME_TAG;
             case FUEL -> Material.BLAZE_POWDER;
+            case BOOSTER -> Material.GOLD_INGOT;
+            case GLOBAL_BOOSTER -> Material.NETHER_STAR;
             case COMING_SOON -> Material.BARRIER;
         };
     }

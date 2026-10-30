@@ -8,13 +8,17 @@
 #   live yet, x crystal-growth^(tier-1)).
 # rewards: a catalog LIST, one map per reward. Never put plain settings inside it.
 #   id      unique per crate (names in messages/crates.yml -> rewards.<crate>.<id>)
-#   type    money | crystals | shards | key | enchant-book | scroll | set-token | spawner | item | tag | title | fuel | coming-soon
+#   type    money | crystals | shards | key | enchant-book | scroll | set-token | spawner | item | tag | title | fuel | booster |
+#           global-booster | coming-soon
 #   chance  percent (used as a weight; the preview shows the real share)
 #   top     true = top band (counts for pity, marked with a star)
 #   money: minutes (of reference income at your tier) · crystals: base · shards/key/scroll/set-token/spawner/item: amount
 #   key: crate · enchant-book: pool (rarity), level · set-token: sets (one picked at random) · spawner: tier (random type)
 #   item: material · tag/title: ids (one you don't own; all owned = its crystal value) · fuel: minutes
-#   coming-soon: a reward whose system is not built yet (boosters M10.2, tomes, skins, sell wands, collectors, pet eggs);
+#   booster / global-booster (M10.2): booster (sell | skill_xp | tool_xp | crystals), percent, minutes, amount. Personal
+#           boosters are always bound to the opener; global ones are bound when opened with a bound key (and by default
+#           always: boosters.yml -> global.always-bound). Without the boosters module they pay their crystal value.
+#   coming-soon: a reward whose system is not built yet (tomes, skins, sell wands, collectors, pet eggs);
 #                it keeps its chance and pays its crystal value until then. icon: optional item shown in the preview.
 #   fallback: crystal base of this reward instead of the crate's fallback-crystals; rarity: color of this reward.
 
@@ -30,8 +34,8 @@ crates:
       - {id: crystals, type: crystals, chance: 20, base: 15}
       - {id: fuel, type: fuel, chance: 15, minutes: 60}
       - {id: book, type: enchant-book, chance: 12, pool: common, level: 1}
-      - {id: sell_booster, type: coming-soon, chance: 8, icon: gold_ingot}
-      - {id: xp_booster, type: coming-soon, chance: 7, icon: experience_bottle}
+      - {id: sell_booster, type: booster, chance: 8, booster: sell, percent: 25, minutes: 10, icon: gold_ingot}
+      - {id: xp_booster, type: booster, chance: 7, booster: skill_xp, percent: 25, minutes: 15, icon: experience_bottle}
       - {id: tag, type: tag, chance: 5, ids: [spark, ash]}
       - {id: cinder_key, type: key, chance: 3, crate: cinder, amount: 1, top: true, rarity: uncommon}
       - {id: uncommon_book, type: enchant-book, chance: 3, pool: uncommon, level: 1, top: true, rarity: uncommon}
@@ -48,9 +52,9 @@ crates:
       - {id: crystals, type: crystals, chance: 18, base: 40}
       - {id: book, type: enchant-book, chance: 14, pool: uncommon, level: 1}
       - {id: fuel, type: fuel, chance: 10, minutes: 180}
-      - {id: sell_booster, type: coming-soon, chance: 8, icon: gold_ingot}
+      - {id: sell_booster, type: booster, chance: 8, booster: sell, percent: 50, minutes: 10, icon: gold_ingot}
       - {id: scroll, type: scroll, chance: 6, amount: 1}
-      - {id: xp_booster, type: coming-soon, chance: 6, icon: experience_bottle}
+      - {id: xp_booster, type: booster, chance: 6, booster: skill_xp, percent: 50, minutes: 15, icon: experience_bottle}
       - {id: tag, type: tag, chance: 5, ids: [ashes]}
       - {id: sell_wand, type: coming-soon, chance: 4, icon: blaze_rod}
       - {id: blaze_key, type: key, chance: 3, crate: blaze, amount: 1, top: true, rarity: rare}
@@ -67,8 +71,8 @@ crates:
       - {id: money, type: money, chance: 18, minutes: 15}
       - {id: crystals, type: crystals, chance: 16, base: 100}
       - {id: book, type: enchant-book, chance: 15, pool: rare, level: 1}
-      - {id: sell_booster, type: coming-soon, chance: 8, icon: gold_ingot}
-      - {id: xp_booster, type: coming-soon, chance: 6, icon: experience_bottle}
+      - {id: sell_booster, type: booster, chance: 8, booster: sell, percent: 50, minutes: 30, icon: gold_ingot}
+      - {id: xp_booster, type: booster, chance: 6, booster: skill_xp, percent: 50, minutes: 30, icon: experience_bottle}
       - {id: scroll, type: scroll, chance: 6, amount: 1}
       - {id: sell_wand, type: coming-soon, chance: 5, icon: blaze_rod}
       - {id: autosell_chest, type: coming-soon, chance: 5, icon: chest}
@@ -90,10 +94,10 @@ crates:
       - {id: money, type: money, chance: 15, minutes: 30}
       - {id: crystals, type: crystals, chance: 14, base: 250}
       - {id: book, type: enchant-book, chance: 14, pool: epic, level: 1}
-      - {id: sell_booster, type: coming-soon, chance: 7, icon: gold_ingot}
+      - {id: sell_booster, type: booster, chance: 7, booster: sell, percent: 100, minutes: 30, icon: gold_ingot}
       - {id: spawner_t4, type: spawner, chance: 6, tier: 4, amount: 2}
       - {id: tag, type: tag, chance: 6, ids: [skyborn]}
-      - {id: xp_booster, type: coming-soon, chance: 5, icon: experience_bottle}
+      - {id: xp_booster, type: booster, chance: 5, booster: skill_xp, percent: 100, minutes: 30, icon: experience_bottle}
       - {id: collector, type: coming-soon, chance: 5, icon: hopper}
       - {id: autosell_chest, type: coming-soon, chance: 4, icon: chest}
       - {id: sell_wand, type: coming-soon, chance: 4, icon: blaze_rod}
@@ -115,13 +119,13 @@ crates:
       - {id: book, type: enchant-book, chance: 14, pool: legendary, level: 1}
       - {id: money, type: money, chance: 12, minutes: 60}
       - {id: crystals, type: crystals, chance: 12, base: 600}
-      - {id: sell_booster, type: coming-soon, chance: 6, icon: gold_ingot}
+      - {id: sell_booster, type: booster, chance: 6, booster: sell, percent: 100, minutes: 60, icon: gold_ingot}
       - {id: spawner_t4, type: spawner, chance: 6, tier: 4, amount: 4}
       - {id: tag, type: tag, chance: 6, ids: [phoenix]}
       - {id: tool_skin, type: coming-soon, chance: 6, icon: netherite_upgrade_smithing_template}
       - {id: collector, type: coming-soon, chance: 5, icon: hopper}
       - {id: greater_tome, type: coming-soon, chance: 5, icon: enchanted_book}
-      - {id: global_booster, type: coming-soon, chance: 4, icon: beacon}
+      - {id: global_booster, type: global-booster, chance: 4, booster: sell, percent: 50, minutes: 30, icon: beacon}
       - {id: autosell_chest, type: coming-soon, chance: 4, icon: chest}
       - {id: blueprint, type: coming-soon, chance: 4, icon: paper}
       - {id: phoenix_key, type: key, chance: 2, crate: phoenix, amount: 1}
@@ -147,7 +151,7 @@ crates:
       - {id: spawner_t5, type: spawner, chance: 6, tier: 5, amount: 2}
       - {id: greater_tome, type: coming-soon, chance: 5, icon: enchanted_book}
       - {id: collector, type: coming-soon, chance: 4, icon: hopper}
-      - {id: global_booster, type: coming-soon, chance: 4, icon: beacon}
+      - {id: global_booster, type: global-booster, chance: 4, booster: sell, percent: 50, minutes: 60, icon: beacon}
       - {id: autosell_chest, type: coming-soon, chance: 3, icon: chest}
       - {id: phoenix_key, type: key, chance: 3, crate: phoenix, amount: 1, top: true, rarity: legendary}
       - {id: mythic_book, type: enchant-book, chance: 2, pool: mythic, level: 1, top: true}

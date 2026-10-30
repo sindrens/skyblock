@@ -1,0 +1,170 @@
+# Boosters (PHASE-10 M10.2): /boosters, /thanks, booster items. MiniMessage + style tags (style.yml).
+# Reload: /skyblock reload boosters
+# Placeholders are plain text: <type> (Sell, Skill XP ...), <percent> (a number), <time>/<total>/<left>/<wait> (like 12m 30s).
+
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Your booster item is back in your inventory or /box."
+loading: "<prefix><c:error><sym:cross></c:error> <c:text>Boosters are still loading. Try again in a moment."
+busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your last booster is still starting. One moment."
+frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't start boosters while frozen."
+staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't start boosters in staff mode."
+switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
+no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use boosters."
+invalid: "<prefix><c:error><sym:cross></c:error> <c:text>This booster item is broken. Ask staff to look at it."
+moved: "<prefix><c:error><sym:cross></c:error> <c:text>That booster item is not in your inventory anymore."
+not-yours: "<prefix><c:error><sym:cross></c:error> <c:text>This booster is bound to another profile. Only that profile can start it."
+already-used: "<prefix><c:error><sym:cross></c:error> <c:text>This booster item was already used, so it was removed. Staff can see it in the logs."
+
+# Booster type names.
+types:
+  sell: "Sell"
+  skill_xp: "Skill XP"
+  tool_xp: "Tool XP"
+  crystals: "Crystals"
+
+# Booster items. Name and lore use {type}, {percent} and {time} (filled in by the item, plain text).
+item:
+  personal:
+    name: "{type} Booster +{percent}%"
+    description: "Right-click to start. The same type adds time."
+    lore:
+      - "<c:text>Bonus: <c:value>+{percent}% {type}"
+      - "<c:text>Time: <c:value>{time}"
+      - "<c:muted>Counts only while you play."
+  global:
+    name: "Global {type} Booster +{percent}%"
+    description: "Right-click to start it for everyone online."
+    lore:
+      - "<c:text>Bonus: <c:value>+{percent}% {type}</c:value> <c:text>for everyone"
+      - "<c:text>Time: <c:value>{time}"
+      - "<c:muted>Players can thank you for gems."
+  bound: "<c:muted>Bound to the profile that earned it."
+  action-input: "Right-click"
+  action-text: "to start"
+
+personal:
+  started: "<prefix><c:success><sym:sparkle></c:success> <c:text>Your <c:value>+<percent>% <type> booster</c:value> <c:text>is running for <c:value><time></c:value><c:text>."
+  extended: "<prefix><c:success><sym:sparkle></c:success> <c:text>Added <c:value><time></c:value> <c:text>to your +<percent>% <type> booster. Time left: <c:value><total></c:value><c:text>."
+  bank-started: "<prefix><c:success><sym:sparkle></c:success> <c:text>Your banked <c:value>+<percent>% <type> booster</c:value> <c:text>started (<c:value><time></c:value><c:text>). Time left: <c:value><total></c:value><c:text>."
+  ended: "<prefix><c:muted><sym:time></c:muted> <c:text>Your +<percent>% <type> booster ended. <c:muted>/boosters"
+  resumed: "<prefix><c:success><sym:sparkle></c:success> <c:text>Your boosters are running again (<c:value><count></c:value><c:text>). See <c:value>/boosters</c:value><c:text>."
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>A <type> booster can hold at most <c:value><max></c:value><c:text>. Time left now: <c:value><left></c:value><c:text>. Keep this one for later."
+  other-strength: "<prefix><c:error><sym:cross></c:error> <c:text>Your +<running>% <type> booster runs for <c:value><left></c:value><c:text>. Start this +<percent>% one after it ends."
+
+global:
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Global boosters are turned off right now. Keep the item."
+  queue-full: "<prefix><c:error><sym:cross></c:error> <c:text>There are already <c:value><max></c:value> <c:text>global <type> boosters waiting. Try again later."
+  started-own: "<prefix><c:success><sym:sparkle></c:success> <c:text>Your <c:value>global +<percent>% <type> booster</c:value> <c:text>runs for everyone for <c:value><time></c:value><c:text>. Thanks give you gems!"
+  started: "<prefix><c:flame><sym:star></c:flame> <c:value><name></c:value> <c:text>started a <c:value>global +<percent>% <type> booster</c:value> <c:text>for <time>! Say <c:action>thanks</c:action> <c:text>or type <c:action>/thanks</c:action><c:text>."
+  started-queued: "<prefix><c:flame><sym:star></c:flame> <c:text>The next <c:value>global +<percent>% <type> booster</c:value> <c:text>from <c:value><name></c:value> <c:text>runs now for <time>! Say <c:action>thanks</c:action><c:text>."
+  queued: "<prefix><c:success><sym:check></c:success> <c:text>Your global +<percent>% <type> booster is in line (number <c:value><position></c:value><c:text>). It starts in about <c:value><wait></c:value><c:text>."
+  queued-all: "<prefix><c:muted><sym:time></c:muted> <c:value><name></c:value> <c:text>queued a global +<percent>% <type> booster. It starts in about <wait>."
+  ended: "<prefix><c:muted><sym:time></c:muted> <c:text>The global +<percent>% <type> booster from <c:value><name></c:value> <c:text>ended (<thanks> thanks)."
+  # Boss bar: <queued> = boosters of this type waiting.
+  bar: "<c:flame><sym:star></c:flame> <c:value>Global +<percent>% <type></c:value> <c:muted><sym:dot></c:muted> <c:text><time> <c:muted><sym:dot></c:muted> <c:text>from <name> <c:muted><sym:dot></c:muted> <c:action>/thanks"
+
+thanks:
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Thanks are turned off right now."
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>No global booster is running right now."
+  own: "<prefix><c:error><sym:cross></c:error> <c:text>That is your own booster. Others thank you for it."
+  already: "<prefix><c:muted><sym:check></c:muted> <c:text>You already thanked every running global booster."
+  sent: "<prefix><c:success><sym:check></c:success> <c:text>You thanked <c:value><name></c:value> <c:text>for the global <type> booster. They got <cur:gems><gems> gem</cur:gems><c:text>."
+  sent-no-gem: "<prefix><c:success><sym:check></c:success> <c:text>You thanked <c:value><name></c:value> <c:text>for the global <type> booster."
+  received: "<c:value><name></c:value> <c:text>thanked you! <cur:gems>+<gems> gem"
+  received-no-gem: "<c:value><name></c:value> <c:text>thanked you!"
+
+settings:
+  booster-bar:
+    name: "Global booster bar"
+    lore:
+      - "<c:text>Show a boss bar while a global"
+      - "<c:text>booster runs for everyone."
+
+menu:
+  title: "Boosters"
+  info:
+    - "<c:text>Top row: your boosters. Bottom"
+    - "<c:text>rows: global boosters and the"
+    - "<c:text>booster items you carry. Click"
+    - "<c:text>an item to start it."
+  loading:
+    name: "<c:muted>Loading your boosters..."
+    lore: []
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>Your boosters"
+    lore:
+      - "<c:text>The same type never stacks: a"
+      - "<c:text>new booster adds time instead."
+      - "<c:text>Personal boosters only count"
+      - "<c:text>down while you play this profile."
+      - ""
+      - "<c:muted>All bonuses together stay inside"
+      - "<c:muted>the caps (sell: +300% in total)."
+  personal:
+    running:
+      name: "<c:success><type> booster"
+      lore:
+        - "<c:text>Running: <c:value>+<percent>%"
+        - "<c:text>Time left: <c:value><time>"
+    idle:
+      name: "<c:muted><type> booster"
+      lore:
+        - "<c:locked>Not running"
+    banked:
+      - "<c:text>Banked: <c:value>+<percent>%</c:value> <c:muted>for <time>"
+      - "<c:muted>Starts by itself when this type"
+      - "<c:muted>is free."
+    banked-held:
+      - "<c:text>Banked: <c:value>+<percent>%</c:value> <c:muted>for <time>"
+      - "<c:muted>Starts when you leave the AFK pool."
+    global: ["<c:text>Global booster: <c:value>+<percent>%"]
+    footer:
+      - ""
+      - "<c:muted>Most time per type: <max>"
+  global:
+    running:
+      name: "<c:flame>Global <type> +<percent>%"
+      lore:
+        - "<c:text>Everyone online gets <c:value>+<percent>%"
+        - "<c:text>Time left: <c:value><time>"
+        - "<c:text>Started by <c:value><name>"
+        - "<c:text>Thanks so far: <c:value><thanks>"
+    idle:
+      name: "<c:muted>Global <type> booster"
+      lore:
+        - "<c:locked>Not running"
+        - "<c:muted>Global boosters come from the"
+        - "<c:muted>Phoenix and Eclipse crates."
+    queue-line: "<c:muted><sym:bullet></c:muted> <c:text>Next: <c:value><name></c:value> <c:muted>+<percent>% for <time>, in <wait>"
+    queue-more: "<c:muted>... and <more> more waiting"
+    thank:
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to thank <name>"
+      - "<c:muted>(they get <gems> gem)"
+    thanked:
+      - ""
+      - "<c:success><sym:check></c:success> <c:text>You thanked <name>."
+    own:
+      - ""
+      - "<c:muted>This is your booster."
+  owned:
+    personal:
+      name: "<c:value><type> Booster +<percent>%"
+      lore:
+        - "<c:text>Bonus: <c:value>+<percent>% <type>"
+        - "<c:text>Time: <c:value><time>"
+    global:
+      name: "<c:flame>Global <type> Booster +<percent>%"
+      lore:
+        - "<c:text>Everyone online gets <c:value>+<percent>%"
+        - "<c:text>Time: <c:value><time>"
+    action:
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to start it"
+    more:
+      name: "<c:muted>And <more> more"
+      lore: ["<c:text>Start these from your inventory."]
+    none:
+      name: "<c:muted>No booster items"
+      lore:
+        - "<c:text>Boosters come from crates, the"
+        - "<c:text>daily calendar and quests."

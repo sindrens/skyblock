@@ -4,7 +4,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
-import net.skybornmc.skyblock.common.bonus.BonusService;
+import net.skybornmc.skyblock.common.booster.BoosterService;
+import net.skybornmc.skyblock.common.booster.BoosterType;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
@@ -14,14 +15,18 @@ import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * The AFK pool (O10, RW3): a small box at spawn where standing still pays. Every {@code time.reward-minutes} of
  * credited time: a little money (grows with the session, scaled to the player's stage so it stays at most ~5% of an
  * active player's income, ECONOMY_BALANCE §7.5) and island fuel; crate keys at daily milestones; a small chance of a
- * banked personal sell booster. Max {@code time.daily-cap-minutes} per account per day (reset at midnight Oslo time),
+ * banked personal sell booster (kept by the boosters module since M10.2; it starts when the player leaves the pool).
+ * Max {@code time.daily-cap-minutes} per account per day (reset at midnight Oslo time),
  * one earning account per IP address. No command: status is on the action bar and the scoreboard
  * ({@code afk_line}, {@code afk_pool}, {@code afk_today} placeholders).
  *
@@ -38,7 +43,6 @@ public final class AfkModule implements SkyblockModule {
     private volatile AfkRules rules;
     private ModuleMessages msg;
     private AfkTracker tracker;
-    private AfkBoosters boosters;
     private volatile boolean fuelSupported;
 
     public AfkModule(Core core) {
@@ -56,9 +60,13 @@ public final class AfkModule implements SkyblockModule {
         msg = core.messages(ID);
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         loadRules();
-        boosters = new AfkBoosters(this);
-        core.services().optional(BonusService.class).ifPresent(b -> b.register(ID, boosters));
         tracker = new AfkTracker(this);
+        AfkTracker holder = tracker;
+        // M10.2: banked sell boosters wait while the player is inside the pool (never wasted while AFK).
+        BoosterService.of(core.services()).ifPresent(b -> {
+            b.hold(ID, holder::holdsBoosters);
+            moveLegacyBoosters(b);
+        });
         Bukkit.getPluginManager().registerEvents(tracker, core.plugin());
         core.placeholders().register(ID, "afk_pool", Placeholder.text(p -> tracker.poolLine(p)));
         core.placeholders().register(ID, "afk_today", Placeholder.text(p -> tracker.todayText(p)));
@@ -88,10 +96,45 @@ public final class AfkModule implements SkyblockModule {
         }
         HandlerList.unregisterAll(tracker);
         tracker.shutdown();
-        core.services().optional(BonusService.class).ifPresent(b -> b.unregister(ID));
-        boosters.clear();
+        BoosterService.of(core.services()).ifPresent(b -> b.release(ID));
         core.placeholders().unregisterAll(ID);
         tracker = null;
+    }
+
+    /**
+     * Moves sell boosters from the old {@code afk_boosters} table into the boosters module's bank, once (banked time plus
+     * what was left of a running one; each row is moved and deleted in one transaction). They start when the player is
+     * outside the pool, as before.
+     */
+    private void moveLegacyBoosters(BoosterService boosters) {
+        long now = System.currentTimeMillis();
+        core.database().transaction(c -> {
+            List<long[]> moved = new ArrayList<>();
+            List<UUID> profiles = new ArrayList<>();
+            for (AfkStore.LegacyBooster b : store.legacyBoosters(c)) {
+                long left = b.left(now);
+                if (left > 0) {
+                    long after = boosters.bank(c, b.profileKey(), BoosterType.SELL, b.percent(), left, 0, "afk_pool_migrated");
+                    moved.add(new long[]{b.percent(), left, after});
+                    profiles.add(b.profileKey());
+                }
+                store.deleteLegacyBooster(c, b.profileKey());
+            }
+            return java.util.Map.entry(profiles, moved);
+        }).whenComplete((r, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "AFK pool: could not move old sell boosters to the boosters module "
+                        + "(tried again at the next start)", error);
+                return;
+            }
+            for (int i = 0; i < r.getKey().size(); i++) {
+                long[] v = r.getValue().get(i);
+                boosters.banked(r.getKey().get(i), BoosterType.SELL, (int) v[0], v[1], v[2], "afk_pool_migrated", Actor.SYSTEM);
+            }
+            if (!r.getKey().isEmpty()) {
+                core.plugin().getLogger().info("AFK pool: moved " + r.getKey().size() + " sell booster(s) to the boosters module.");
+            }
+        });
     }
 
     private void loadRules() {
@@ -133,10 +176,6 @@ public final class AfkModule implements SkyblockModule {
 
     ModuleMessages msg() {
         return msg;
-    }
-
-    AfkBoosters boosters() {
-        return boosters;
     }
 
     boolean fuelSupported() {

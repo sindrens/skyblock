@@ -2,6 +2,8 @@ package net.skybornmc.skyblock.crates;
 
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.booster.BoosterService;
+import net.skybornmc.skyblock.common.booster.BoosterType;
 import net.skybornmc.skyblock.common.box.BoxSource;
 import net.skybornmc.skyblock.common.box.ItemBox;
 import net.skybornmc.skyblock.common.cosmetics.Cosmetics;
@@ -217,6 +219,7 @@ final class CrateOpener {
         });
         boolean wardrobe = m.core.services().has(WardrobeService.class);
         boolean fuel = fuelSupported() && islands().flatMap(i -> i.islandOfProfile(profile)).isPresent();
+        Optional<BoosterService> boosters = BoosterService.of(m.core.services());
         return new OpenPlan.Context(tier, m.refPerMinute(), m.settings.crystalGrowth, owned::contains,
                 r -> switch (r.type()) {
                     case ENCHANT_BOOK, SCROLL -> enchants.isPresent();
@@ -225,6 +228,10 @@ final class CrateOpener {
                     case ITEM -> validItem(r.material());
                     case TAG, TITLE -> cosmetics.isPresent();
                     case FUEL -> fuel;
+                    // M10.2: booster items when the boosters module runs and the numbers are inside its limits.
+                    case BOOSTER, GLOBAL_BOOSTER -> boosters.isPresent() && BoosterType.byId(r.booster())
+                            .map(t -> boosters.get().valid(t, r.percent(), r.minutes(), r.type() == RewardType.GLOBAL_BOOSTER))
+                            .orElse(false);
                     default -> true;
                 },
                 pool -> books.getOrDefault(pool, List.of()), t -> spawners.getOrDefault(t, List.of()));
@@ -297,7 +304,7 @@ final class CrateOpener {
             switch (type) {
                 case TAG, TITLE -> grantCosmetic(g.openId(), plan.crate().id(), type, g.ref(), player, name, origin);
                 case FUEL -> grantFuel(g, profile, player, name, actor);
-                default -> createItems(g, type, origin, player, actor).whenCompleteAsync((items, error) -> {
+                default -> createItems(g, type, origin, player, profile, actor).whenCompleteAsync((items, error) -> {
                     if (error != null || items == null || items.isEmpty()) {
                         failed(g.openId(), plan.crate().id(), g.kind(), g.ref(), player, name, error);
                         return;
@@ -311,7 +318,8 @@ final class CrateOpener {
         }
     }
 
-    private CompletableFuture<List<ItemStack>> createItems(OpenPlan.Grant g, RewardType type, String origin, UUID player, Actor actor) {
+    private CompletableFuture<List<ItemStack>> createItems(OpenPlan.Grant g, RewardType type, String origin, UUID player, UUID profile,
+                                                           Actor actor) {
         int amount = (int) Math.max(1, Math.min(64, g.amount()));
         try {
             return switch (type) {
@@ -358,6 +366,19 @@ final class CrateOpener {
                         stacks.add(new ItemStack(mat, Math.min(max, left)));
                     }
                     yield CompletableFuture.completedFuture(stacks);
+                }
+                case BOOSTER, GLOBAL_BOOSTER -> {
+                    BoosterService b = BoosterService.of(m.core.services()).orElseThrow();
+                    String[] ref = g.ref().split(":");
+                    BoosterType bt = BoosterType.byId(ref[0]).orElseThrow();
+                    int percent = Integer.parseInt(ref[1]);
+                    int minutes = Integer.parseInt(ref[2]);
+                    List<ItemStack> boosterItems = new ArrayList<>();
+                    for (int i = 0; i < amount; i++) {
+                        (type == RewardType.GLOBAL_BOOSTER ? b.createGlobal(bt, percent, minutes, profile, g.bound(), origin)
+                                : b.createPersonal(bt, percent, minutes, profile, origin)).ifPresent(boosterItems::add);
+                    }
+                    yield CompletableFuture.completedFuture(boosterItems);
                 }
                 default -> CompletableFuture.completedFuture(List.of());
             };
@@ -561,7 +582,8 @@ final class CrateOpener {
         };
         Component name = m.mini(viewer, m.rewardMini(crate, g.reward(), amount));
         if (type == RewardType.KEY || type == RewardType.ENCHANT_BOOK || type == RewardType.SCROLL || type == RewardType.SET_TOKEN
-                || type == RewardType.SPAWNER || type == RewardType.ITEM) {
+                || type == RewardType.SPAWNER || type == RewardType.ITEM || type == RewardType.BOOSTER
+                || type == RewardType.GLOBAL_BOOSTER) {
             return m.msg.component(viewer, "open.with-count", Msg.c("reward", name), Msg.number("count", g.amount()));
         }
         return name;
