@@ -108,6 +108,23 @@ final class PunishEmbeds {
         return new DiscordSink.Embed(text.apply("titles.bulk-undo"), cfg.color("undo"), fields, text.apply("footer"), at);
     }
 
+    /**
+     * A raid lockdown started or ended (spec 13.9). {@code event}: {@code start}, {@code stop}, {@code expired} or
+     * {@code restart}; {@code by} = who did it (null = system). No player names: a lockdown is never about one player.
+     */
+    static DiscordSink.Embed lockdown(Lockdown.Active a, String event, String by, long at, PunishConfig.Discord cfg,
+                                      Function<String, String> text) {
+        List<DiscordSink.Field> fields = new ArrayList<>();
+        fields.add(new DiscordSink.Field(text.apply("fields.lockdown"), text.apply("lockdown-kinds." + a.kind().id()), true));
+        fields.add(new DiscordSink.Field(text.apply("fields.staff"), name(by, text), true));
+        fields.add(new DiscordSink.Field(text.apply("fields.length"), Templates.Step.compact(a.length()), true));
+        if (a.auto()) {
+            fields.add(new DiscordSink.Field(text.apply("fields.started-by"), text.apply("lockdown-auto"), true));
+        }
+        return new DiscordSink.Embed(text.apply("titles.lockdown-" + event), cfg.color("lockdown"), fields,
+                text.apply("footer"), at);
+    }
+
     /** "Steve (mute 30m), Alex (mute 6h) +3 more": names and lengths only. */
     static String players(List<Punishment> list, boolean withStep) {
         List<String> parts = new ArrayList<>();

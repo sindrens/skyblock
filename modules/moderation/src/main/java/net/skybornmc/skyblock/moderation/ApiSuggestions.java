@@ -55,8 +55,49 @@ final class ApiSuggestions implements SuggestionService {
         return new Plan(template, step, Evidence.cut(text, 255), pendingExpire == null ? null : now + pendingExpire.toMillis());
     }
 
+    /** Separator between appended detail lines (spec 13.3: details of repeated alerts are appended). */
+    static final String DETAIL_SEPARATOR = " | ";
+    /** At most this many detail lines are kept (spec 13.3: max 5 lines). */
+    static final int MAX_DETAIL_LINES = 5;
+    /** The details column holds this many characters. */
+    static final int MAX_DETAIL_CHARS = 255;
+
+    /**
+     * {@code existing} with {@code added} appended as a new line, keeping the newest {@code maxLines} lines and dropping the
+     * oldest ones until everything fits in {@code maxChars} (the newest line alone is cut if it is still too long).
+     */
+    static String appendDetails(String existing, String added, int maxLines, int maxChars) {
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        if (existing != null && !existing.isBlank()) {
+            for (String l : existing.split(java.util.regex.Pattern.quote(DETAIL_SEPARATOR))) {
+                if (!l.isBlank()) {
+                    lines.add(l.strip());
+                }
+            }
+        }
+        if (added != null && !added.isBlank()) {
+            lines.add(added.strip());
+        }
+        while (lines.size() > Math.max(1, maxLines)) {
+            lines.removeFirst();
+        }
+        while (lines.size() > 1 && String.join(DETAIL_SEPARATOR, lines).length() > maxChars) {
+            lines.removeFirst();
+        }
+        return Evidence.cut(String.join(DETAIL_SEPARATOR, lines), maxChars);
+    }
+
     @Override
     public CompletableFuture<Result> suggest(UUID target, String reasonId, String source, String details) {
+        return suggest(target, reasonId, source, details, false, Actor.system("suggest"));
+    }
+
+    /**
+     * Same, from {@code /psuggest} (spec 13.3): {@code append} = a second call for the same target + reason appends its
+     * details to the waiting suggestion (max 5 lines) instead of replacing them; {@code actor} is who is audited. Never
+     * applies anything, also in warn-rules auto mode and for {@code extras.never-auto} reasons.
+     */
+    CompletableFuture<Result> suggest(UUID target, String reasonId, String source, String details, boolean append, Actor actor) {
         Optional<Templates.Template> template = reasonId == null ? Optional.empty() : templates.template(reasonId);
         if (template.isEmpty() || target == null) {
             return CompletableFuture.completedFuture(new Result(Status.UNKNOWN_REASON, 0));
@@ -71,8 +112,8 @@ final class ApiSuggestions implements SuggestionService {
             return service.store().history(target).thenCompose(history -> {
                 Plan plan = plan(template.get(), history, source, details, now, expire);
                 return service.store().suggestApi(target, name, template.get().id(), plan.step(),
-                        reasonName.apply(template.get()), plan.details(), now, plan.expires()).thenApply(r -> {
-                            core.scheduler().ensureMain("moderation:suggest", () -> announce(r));
+                        reasonName.apply(template.get()), plan.details(), now, plan.expires(), append).thenApply(r -> {
+                            core.scheduler().ensureMain("moderation:suggest", () -> announce(r, actor));
                             return new Result(r.refreshed() ? Status.REFRESHED : Status.CREATED, r.suggestion().id());
                         });
             });
@@ -80,10 +121,10 @@ final class ApiSuggestions implements SuggestionService {
     }
 
     /** Staff line for a new suggestion (a refresh stays quiet); audit for both. Main thread. */
-    private void announce(PunishmentStore.ApiSuggestion r) {
+    private void announce(PunishmentStore.ApiSuggestion r, Actor actor) {
         Suggestion s = r.suggestion();
         core.audit().log(AuditCategory.PUNISHMENT, r.refreshed() ? "suggestion_api_refresh" : "suggestion_api",
-                Actor.system("suggest"), s.target().toString(), s.targetName(), null, null,
+                actor, s.target().toString(), s.targetName(), null, null,
                 Map.of("suggestion", s.id(), "reason", String.valueOf(s.reasonId()), "action", s.action(),
                         "details", s.details() == null ? "" : s.details()));
         if (r.refreshed()) {

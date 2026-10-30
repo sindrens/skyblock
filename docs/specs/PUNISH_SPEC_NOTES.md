@@ -173,3 +173,36 @@ Release steps for the main session (before each release, in this order):
   Step 2 (Discord `/appeal <ban-id>`, verified/unverified, DM) waits for the Discord bot.
 - **Audit actions:** bulk_punish, bulk_undo, undo (with `bulk` group), appeal_create, appeal_accepted, appeal_reduced,
   appeal_denied, appeal_closed, appeal_view, appeals_view, evidence_saved (with `log_entry`), logs: logs_punish_open.
+
+## P6 implementation notes (for P7+)
+- **Config:** `PunishConfig.Extras` gained `neverAuto` (list of reason ids; only a list written in the file is checked
+  against the reasons), `lockdown` (`Lockdown.Settings`: new-player-playtime/age, chat/join default + max (caps 6h / 1h),
+  staff-reminder, blocked-commands), `raid` (`Lockdown.Raid`: detect, accounts, window, auto-lock, auto-duration (max 5m),
+  auto-cooldown (min 30m)) and `network` (`NetworkScope.Settings`: enabled, server-id, default-scope). The P5 constructor
+  is kept (P6 keys get their defaults). New config error keys `config.duration-too-long/-short`. Discord kind `lockdown`.
+- **Raid lockdown (13.9):** pure rules in `Lockdown` (isNew, chatBlocked, joinBlocked, blockedCommand, length, auto,
+  `State` (volatile, in memory only), `RaidDetector` (sliding window, each account once, one alert per wave)), server side in
+  `LockdownService` + `LockdownMenu` (3 rows, plain clicks; `/lockdown` without a sub-command). Gates in
+  `ModerationModule`: chat (after the mute check), commands (`blocked-commands`), signs, books; login at **LOWEST**
+  (`onPreLoginLockdown`), i.e. before `PlayerService` creates the player row, so "never joined" = no row yet
+  (`core.players().offline(uuid)`, only while a join lockdown is live, fails open). Exempt = `skyblock.lockdown.bypass`
+  or `skyblock.staff.notify`; a player without loaded data counts as not new. Raid detection counts
+  `PlayerData.isNew()` joins (MONITOR). Every start/stop: staff line, audit (`lockdown_start`, `lockdown_end` with
+  `how` = manual/expired/restart and `refused` for join lockdowns), Discord embed (`PunishExtras.lockdownPosted`,
+  `PunishEmbeds.lockdown`, no player data). `shutdown()` in `disable()` ends everything before the Discord sink closes.
+  Placeholder `lockdown` (`<ph:lockdown>`, staff only) for a later HUD line.
+- **Anticheat suggestions (13.3):** `/psuggest` calls `ApiSuggestions.suggest(..., append=true, actor)`; the store's
+  `suggestApi(..., append)` appends the new details line to the waiting row (`ApiSuggestions.appendDetails`, " | ",
+  newest 5 lines, 255 chars). The `SuggestionService` interface (chat filter, 12.8) keeps replacing. Source = staff name,
+  empty from the console, so Grim's line reads "Steve (Grim: Reach vl 12)". Nothing applies a suggestion automatically;
+  `never-auto` is validated and documented for any future automatic path. Grim: plain Grim config, no API dependency
+  (`server/CONFIG_NOTES.md` → GrimAC); thresholds are the owner's call.
+- **Network-ready (13.12):** V007 adds `punishments.server_id` + `scope` (no backfill; NULL = network). `PunishmentStore`
+  takes a `Supplier<NetworkScope.Settings>` (the module passes the live punishments.yml value); `insertRow` writes server id
+  + scope (bans/mutes `default-scope`, warns/kicks `server`), `activeOf` (every "active ban/mute" query: login, chat cache,
+  issue pipeline, pardon, alts) adds `NetworkScope.sql` when enabled. Not filtered: history, ladders, warn counter,
+  appeals (open question). The per-target lock in `PunishmentStore.locked` is JVM-local: with several servers writing
+  to one database a row lock (`SELECT ... FOR UPDATE` on a per-player row) would be needed there; not built (spec: the
+  database is the sync, no cross-server code). IDs stay database AUTO_INCREMENT, unique across servers sharing it.
+- **Audit actions:** lockdown_start, lockdown_end, raid_detected, raid_ignored; /psuggest uses suggestion_api /
+  suggestion_api_refresh with the sender as actor.

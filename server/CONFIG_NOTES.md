@@ -99,3 +99,37 @@ spark is built into Paper. Use `/spark profiler` and `/spark tps`.
 | `PhoenixSkyblock/worlds.yml` | Our worlds: spawn (peaceful, fixed day, no fall damage, no random ticks), islands + outposts (normal difficulty for spawner mobs, time moves, no weather, natural spawning off), depths (fixed night, mobs from the plugin), warzone (PvP on, dusk). Shared defaults: keep inventory, no advancement/death messages, no phantoms/patrols/raids/wardens, no mob griefing, no fire spread, command blocks off |
 | `PhoenixSkyblock/motd.yml` | Animated hex-color MOTDs (4 designs), rotation, centering, hover info. Replaces the `server.properties` MOTD for Java clients |
 | CoreProtect | **Not yet released for 26.3.** The newest version (24.1) checks the Minecraft version and **refuses to start** above 26.2, so it can't be used yet. `fetch.sh` downloads it automatically once a 26.3 build exists. Config will use MariaDB |
+
+## GrimAC → punishment suggestions (Phase P, spec 13.3)
+Grim never punishes by itself on this server. When a check flags often enough, Grim runs our console command
+`/psuggest <player> <reason-id> [details]`, which only **suggests**: staff with `skyblock.staff.notify` get
+`Steve (Grim: Reach vl 12). Suggested: Hacked client, ban 30d [Apply] [Dismiss] [Punish menu]` and decide (lag and ping
+spikes cause false flags, which is why it stays suggestion-only; `extras.never-auto` in `punishments.yml` lists the
+reasons that may never be applied without a click). One waiting suggestion per player + reason: further flags are quiet
+and only add their details to it (newest 5 lines), so Grim can call it as often as it likes.
+
+No Grim code is used (no API dependency); it is plain Grim config. In `server/plugins/GrimAC/punishments.yml`, add one line
+to the `commands:` list of each group you want suggestions from. Format `"<threshold>:<interval> <command>"`; Grim's
+placeholders are `%player%`, `%check_name%`, `%vl%`:
+
+```yaml
+  Reach:
+    commands:
+      - "1:1 [alert]"
+      - "1:1 [log]"
+      - "10:10 psuggest %player% hacking Grim: %check_name% vl %vl%"
+  Autoclicker:
+    commands:
+      - "20:40 [alert]"
+      - "1:1 [log]"
+      - "40:40 psuggest %player% macro Grim: %check_name% vl %vl%"
+```
+
+- The reason id (`hacking`, `macro`, ...) must exist in `punishments.yml` (Tab after `/psuggest <player>` lists them); its
+  ladder decides the suggested punishment (next step for that player).
+- **The thresholds are the owner's choice** (not set yet, so nothing calls `/psuggest` today). A safe start: only the
+  groups with few false flags (Reach, Hitboxes, Knockback, Timer in Simulation) at a high threshold, e.g. `10:10`.
+  `remove-violations-after: 300` means the count is per 5 minutes.
+- Grim runs the command as the console, which has `skyblock.staff.punish.suggest`. Each call is audited
+  (`suggestion_api` / `suggestion_api_refresh`, actor CONSOLE).
+- `[proxy]` lines can stay: they do nothing without BungeeCord/Velocity.
