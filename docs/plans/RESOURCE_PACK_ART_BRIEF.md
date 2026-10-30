@@ -523,24 +523,29 @@ Item models `phoenix:spawner/<tier>` (tiers 1–5, `stacking.yml`). Placed spawn
 
 ## N. Rank badges and logo glyphs
 
-Font `phoenix:icons`, shared with Bedrock. Donor rank names are still proposals (DESIGN §ranks); draw them once the names are final.
+Font `phoenix:icons`, shared with Bedrock. Rank names and colours come from the ranks plan (`docs/plans/RANKS_TITLES_ACHIEVEMENTS.md` §A, owner answers RK1/RK2 and 390: free rank **Ashborn**, donor ranks **Hatchling → Fledgling → Firewing → Flamecrest → Sunfeather → Pyrelord → Immortal**, won ranks Torchbearer, Flameheart, Firecrown). The old proposal names (Squire, Knight, Paladin, Warlord, Monarch) and the Ember badge are gone. Ids N01–N11 match the ranks plan's colour table; codepoints run U+E220–U+E22A.
 
 | # | Id / file | What it is | Size | Where it shows | P | Style note |
 |---|---|---|---|---|---|---|
-| N01 | `font/icons/rank_ember.png` · U+E220 | Rank badge: Ember (free rank) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #FF8C1A orange, the rank word baked in with a 1 px dark outline. |
-| N02 | `font/icons/rank_squire.png` · U+E221 | Rank badge: Squire | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in donor colour TBD, the rank word baked in with a 1 px dark outline. |
-| N03 | `font/icons/rank_knight.png` · U+E222 | Rank badge: Knight | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in donor colour TBD, the rank word baked in with a 1 px dark outline. |
-| N04 | `font/icons/rank_paladin.png` · U+E223 | Rank badge: Paladin | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in donor colour TBD, the rank word baked in with a 1 px dark outline. |
-| N05 | `font/icons/rank_warlord.png` · U+E224 | Rank badge: Warlord | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in donor colour TBD, the rank word baked in with a 1 px dark outline. |
-| N06 | `font/icons/rank_monarch.png` · U+E225 | Rank badge: Monarch | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in donor colour TBD, the rank word baked in with a 1 px dark outline. |
-| N07 | `font/icons/rank_helper.png` · U+E230 | Rank badge: Helper (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in aqua, the rank word baked in with a 1 px dark outline. |
-| N08 | `font/icons/rank_mod.png` · U+E231 | Rank badge: Mod (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in gold, the rank word baked in with a 1 px dark outline. |
-| N09 | `font/icons/rank_admin.png` · U+E232 | Rank badge: Admin (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in red, the rank word baked in with a 1 px dark outline. |
-| N10 | `font/icons/rank_owner.png` · U+E233 | Rank badge: Owner (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in dark red, the rank word baked in with a 1 px dark outline. |
-| N11 | `font/icons/rank_builder.png` · U+E234 | Rank badge: Builder (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in yellow, the rank word baked in with a 1 px dark outline. |
-| N12 | `font/icons/logo_small.png` · U+E205 | Phoenix logo, small | 9×9 | Chat prefix | P2 | Phoenix head/flame in brand red→gold. |
-| N13 | `font/icons/logo_wide.png` · U+E206 | Phoenix logo, wide | 9 px tall, ≤ 48 wide | Scoreboard title, tab header | P2 | Phoenix with spread wings. |
-| N14 | `font/icons/logo_skyborn.png` · U+E207 | SkybornMC S logo | 9×9 | Tab header/footer (network) | P2 | Frost-blue S: network art, not phoenix red. |
+| N01 | `font/icons/rank_ashborn.png` · U+E220 | Rank badge: Ashborn (free rank, was Ember) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #BFB3A8 ash, the rank word baked in with a 1 px dark outline. |
+| N02 | `font/icons/rank_hatchling.png` · U+E221 | Rank badge: Hatchling (donor rank 1) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #F2C46B, the rank word baked in with a 1 px dark outline. |
+| N03 | `font/icons/rank_fledgling.png` · U+E222 | Rank badge: Fledgling (donor rank 2) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #FFA43A, the rank word baked in with a 1 px dark outline. |
+| N04 | `font/icons/rank_firewing.png` · U+E223 | Rank badge: Firewing (donor rank 3) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #FF7A1F, the rank word baked in with a 1 px dark outline. |
+| N05 | `font/icons/rank_flamecrest.png` · U+E224 | Rank badge: Flamecrest (donor rank 4) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #FF4E2E, the rank word baked in with a 1 px dark outline. |
+| N06 | `font/icons/rank_sunfeather.png` · U+E225 | Rank badge: Sunfeather (donor rank 5) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #FFD84D, the rank word baked in with a 1 px dark outline. |
+| N07 | `font/icons/rank_pyrelord.png` · U+E226 | Rank badge: Pyrelord (donor rank 6) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #D81E3A, the rank word baked in with a 1 px dark outline. |
+| N08 | `font/icons/rank_immortal.png` · U+E227 | Rank badge: Immortal (donor rank 7) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in gradient #FF3D2E → #FFB000 → #FFF2A8, the rank word baked in with a 1 px dark outline. |
+| N09 | `font/icons/rank_torchbearer.png` · U+E228 | Rank badge: Torchbearer (won season rank) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #FFE27A, the rank word baked in with a 1 px dark outline. |
+| N10 | `font/icons/rank_flameheart.png` · U+E229 | Rank badge: Flameheart (won season rank) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in #FF5A3C, the rank word baked in with a 1 px dark outline. |
+| N11 | `font/icons/rank_firecrown.png` · U+E22A | Rank badge: Firecrown (won season rank) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in gradient #FFB000 → #FF3D2E, the rank word baked in with a 1 px dark outline. |
+| N12 | `font/icons/rank_helper.png` · U+E230 | Rank badge: Helper (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in aqua, the rank word baked in with a 1 px dark outline (staff: bold caps). |
+| N13 | `font/icons/rank_mod.png` · U+E231 | Rank badge: Mod (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in gold, the rank word baked in with a 1 px dark outline (staff: bold caps). |
+| N14 | `font/icons/rank_admin.png` · U+E232 | Rank badge: Admin (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in red, the rank word baked in with a 1 px dark outline (staff: bold caps). |
+| N15 | `font/icons/rank_owner.png` · U+E233 | Rank badge: Owner (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in dark red, the rank word baked in with a 1 px dark outline (staff: bold caps). |
+| N16 | `font/icons/rank_builder.png` · U+E234 | Rank badge: Builder (staff) | 9 px tall, ≤ 32 wide | Chat name prefix, tab list, nametags (pack users) | P2 | Pill shape in yellow, the rank word baked in with a 1 px dark outline (staff: bold caps). |
+| N17 | `font/icons/logo_small.png` · U+E205 | Phoenix logo, small | 9×9 | Chat prefix | P2 | Phoenix head/flame in brand red→gold. |
+| N18 | `font/icons/logo_wide.png` · U+E206 | Phoenix logo, wide | 9 px tall, ≤ 48 wide | Scoreboard title, tab header | P2 | Phoenix with spread wings. |
+| N19 | `font/icons/logo_skyborn.png` · U+E207 | SkybornMC S logo | 9×9 | Tab header/footer (network) | P2 | Frost-blue S: network art, not phoenix red. |
 
 ## O. Rarity tags
 
@@ -659,7 +664,7 @@ OGG Vorbis, **mono**, 44.1 kHz, ≤ 100 KB each, ≤ 2 MB total. You can record,
 - The player-inventory half of menus stays vanilla (RP-D16).
 
 ## Open questions for this brief (also in `OPEN_QUESTIONS.md`)
-- Donor rank names (Squire … Monarch) and colours are proposals: N02–N06 wait for the final names.
+- ~~Donor rank names (Squire … Monarch) are proposals~~: settled by the ranks plan (Ashborn, Hatchling … Immortal, won ranks); N01–N11 can be drawn.
 - Set Tokens: one token per **tier** (4 files, the item name says which set) or one per **set** (16 files)? Default: per tier.
 - Blueprints: one roll per **rarity** (2) or one per **blueprint** with the tool sketch (4)? Default: per rarity.
 - Worn set looks (G65–G80) are P1 because the pack is forced, but need code (RP4b) and a Bedrock check (Bedrock shows the vanilla base armor). Keep P1? Default: yes (RP-D19).
