@@ -1112,6 +1112,12 @@ topics:
           - "<c:text>you there and repeats the hint."
           - "<c:text>Your progress is saved, even if you"
           - "<c:text>leave. Watch it again any time."
+      - title: "<c:value>Pip and extras"
+        lines:
+          - "<c:text>Pip, a small parrot only you see,"
+          - "<c:text>flies with you. Sneak to skip a"
+          - "<c:text>camera. Later, optional steps in"
+          - "<c:text>/tutorial pay a few crystals each."
 
   box:
     icon: chest_minecart

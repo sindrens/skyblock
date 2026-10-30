@@ -28,8 +28,10 @@ import java.util.UUID;
  * owner answer 131) and the custom starter chest fills new islands (owner answer 158). Progress is per account, once.
  *
  * <p>Publishes {@link TutorialGate}, {@link TutorialService} and {@link StarterContents}. Settings {@code tutorial.yml},
- * texts {@code messages/tutorial.yml}, data {@code db/tutorial}. Cameras (TU3), Pip (TU5), optional steps (TU6) and the
- * stats menu (TU7) come later; hooks: {@link Replays} (Watch again), the arrive step timer, {@code tutorial_events}.</p>
+ * texts {@code messages/tutorial.yml}, data {@code db/tutorial}. TU5+: {@link Cameras} (spawn, island, Depths, market;
+ * Java spectator path, Bedrock cut-and-fade, crash-safe restore), {@link Pip} (the companion only you see), the Guide NPC
+ * opening {@code /tutorial}, {@link OptionalSteps} (O1-O9, tips, small rewards), {@link StatsMenu} (funnel, drop-off,
+ * Java vs Bedrock) and the event purge.</p>
  */
 public final class TutorialModule implements SkyblockModule {
 
@@ -46,6 +48,10 @@ public final class TutorialModule implements SkyblockModule {
     private StarterKitContents starter;
     private TutorialListener listener;
     private Replays replays;
+    private Cameras cameras;
+    private Pip pip;
+    private OptionalSteps optional;
+    private TutorialStats stats;
     private boolean starterPublished;
 
     public TutorialModule(Core core) {
@@ -68,19 +74,37 @@ public final class TutorialModule implements SkyblockModule {
         starter = new StarterKitContents(this);
         listener = new TutorialListener(this);
         replays = new Replays(this);
+        cameras = new Cameras(this);
+        pip = new Pip(this);
+        optional = new OptionalSteps(this);
+        stats = new TutorialStats(this);
         core.services().register(ID, TutorialGate.class, engine);
         core.services().register(ID, TutorialService.class, engine);
         publishStarter();
         Bukkit.getPluginManager().registerEvents(listener, core.plugin());
         registerCommands();
         registerPlaceholders();
+        registerSettings();
         guides.cleanStray();
+        cameras.cleanStray();
+        pip.cleanStray();
         guides.start();
+        optional.start();
+        stats.startPurge();
         // Players already online (reload): load them quietly. The reward title is added to cosmetics when missing.
         core.scheduler().later("tutorial:start", 1, () -> {
             ensureTitle();
+            Bukkit.getOnlinePlayers().forEach(cameras::restoreOnJoin);
             Bukkit.getOnlinePlayers().forEach(engine::load);
         });
+    }
+
+    /** TQ26: the "Tips" switch in /settings (takes over the menus module's "coming soon" placeholder). */
+    private void registerSettings() {
+        core.services().optional(net.skybornmc.skyblock.common.settings.PlayerSettings.class).ifPresent(s -> s.register(
+                new net.skybornmc.skyblock.common.settings.SettingToggle(ID, OptionalSteps.SETTING_TIPS,
+                        net.skybornmc.skyblock.common.settings.SettingCategory.DISPLAY, org.bukkit.Material.LANTERN, true, null, ID,
+                        "settings.tips", false)));
     }
 
     @Override
@@ -89,6 +113,10 @@ public final class TutorialModule implements SkyblockModule {
         core.messages().load(ID);
         if (engine != null) {
             engine.rules();
+            cameras.rules();
+            optional.rules();
+            optional.start();
+            stats.clear();
             publishStarter();
             guides.start();
             if (!config.enabled) {
@@ -106,6 +134,15 @@ public final class TutorialModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        if (cameras != null) {
+            cameras.stopAll(); // first: everyone in a camera gets game mode and position back
+        }
+        if (optional != null) {
+            optional.stop();
+        }
+        if (stats != null) {
+            stats.stopPurge();
+        }
         if (guides != null) {
             guides.stop();
         }
@@ -118,10 +155,14 @@ public final class TutorialModule implements SkyblockModule {
         if (guides != null) {
             guides.hideAll();
         }
+        if (pip != null) {
+            pip.hideAll();
+        }
         if (listener != null) {
             HandlerList.unregisterAll(listener);
         }
         core.placeholders().unregisterAll(ID);
+        core.services().optional(net.skybornmc.skyblock.common.settings.PlayerSettings.class).ifPresent(s -> s.unregisterAll(ID));
         engine = null;
     }
 
@@ -213,7 +254,13 @@ public final class TutorialModule implements SkyblockModule {
                                 .permission(StaffTutorialMenu.PERM_ADMIN)
                                 .arg(target).arg(step)
                                 .example("tutorial admin step Steve mine")
-                                .executes(ctx -> staff(ctx.sender(), ctx.get(target), "step", ctx.get(step))))));
+                                .executes(ctx -> staff(ctx.sender(), ctx.get(target), "step", ctx.get(step))))
+                        .sub(CommandSpec.sub("stats")
+                                .description("Tutorial funnel: where players stop, time per step, Java vs Bedrock")
+                                .permission(StatsMenu.PERM_STATS)
+                                .playerOnly()
+                                .example("tutorial admin stats")
+                                .executes(ctx -> core.menus().open(ctx.player(), new StatsMenu(this))))));
     }
 
     private void status(CommandSender sender, String name) {
@@ -305,5 +352,21 @@ public final class TutorialModule implements SkyblockModule {
 
     Replays replays() {
         return replays;
+    }
+
+    Cameras cameras() {
+        return cameras;
+    }
+
+    Pip pip() {
+        return pip;
+    }
+
+    OptionalSteps optional() {
+        return optional;
+    }
+
+    TutorialStats stats() {
+        return stats;
     }
 }

@@ -17,7 +17,7 @@ import java.util.UUID;
  * <pre>
  *  . . . . P . . . .     13 progress
  *  . R S L W K . . .     20 resume, 21 stuck, 22 steps, 23 watch again, 24 skip/start
- *  . . . . U . . . .     31 what unlocks when
+ *  . . . O U . . . .     30 optional steps, 31 what unlocks when
  * </pre>
  */
 final class TutorialMenu extends Menu {
@@ -121,6 +121,11 @@ final class TutorialMenu extends Menu {
                 module.replays().start(click.player());
             }
         });
+        if (module.config().optionalEnabled && !module.optional().visible().isEmpty()) {
+            set(30, service.item(Material.KNOWLEDGE_BOOK, viewer, TutorialModule.ID, "menu.optional",
+                    Msg.number("done", module.optional().doneCount(p)), Msg.number("total", module.optional().visible().size())),
+                    click -> click.menu().openChild(new OptionalMenu(module, player)));
+        }
         java.util.List<Component> lore = new java.util.ArrayList<>(service.lines(viewer, TutorialModule.ID, "menu.unlocks.lore"));
         lore.addAll(unlocks(p));
         set(31, service.item(Material.IRON_DOOR, service.text(viewer, TutorialModule.ID, "menu.unlocks.name"), lore));

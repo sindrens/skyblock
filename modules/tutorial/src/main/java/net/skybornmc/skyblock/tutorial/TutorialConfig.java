@@ -36,7 +36,7 @@ public final class TutorialConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ steps
 
-    @Setting(path = "steps.arrive.seconds", desc = "Length of the arrival step (title on the island; the camera comes in TU3).", min = 1, max = 30)
+    @Setting(path = "steps.arrive.seconds", desc = "Length of the arrival step when the island camera can't play (cameras off, no island home): a title on the island.", min = 1, max = 30)
     public int arriveSeconds = 6;
 
     @Setting(path = "steps.chest.need-tool", desc = "The chest step is done when the starter chest was opened and this tool kind is in the inventory (pickaxe, axe, hoe, sword, rod; empty = opening is enough).")
@@ -202,6 +202,147 @@ public final class TutorialConfig extends ModuleConfig {
 
     @Setting(path = "starter-pack.items", desc = "Plain items in the pack as 'item: amount'.", level = Setting.Level.OWNER)
     public List<String> packItems = List.of("bread: 16");
+
+    // ------------------------------------------------------------------ cameras (TU3, TQ10, TQ11)
+
+    @Setting(path = "cameras.enabled", desc = "Play the camera flyovers (spawn on the first join, island at arrival, Depths at Mine Tier 1). Off = titles only.")
+    public boolean camerasEnabled = true;
+
+    @Setting(path = "cameras.max-seconds", desc = "Longest camera (seconds); longer camera lines are cut (TUTORIAL §9.4: max 8 s each).", min = 1, max = 20)
+    public int cameraMaxSeconds = 8;
+
+    @Setting(path = "cameras.java-smooth", desc = "Java: smooth spectator flight along the shots. Off = Java uses the cut-and-fade shots like Bedrock.")
+    public boolean cameraJavaSmooth = true;
+
+    @Setting(path = "cameras.segment-ticks", desc = "Java: ticks per smooth camera move (a display entity smooths at most 59).", min = 5, max = 59)
+    public int cameraSegmentTicks = 40;
+
+    @Setting(path = "cameras.fade-ticks", desc = "Cut-and-fade (Bedrock): blindness fade at every cut (ticks).", min = 0, max = 40)
+    public int cameraFadeTicks = 10;
+
+    @Setting(path = "cameras.start-delay-ticks", desc = "Wait between moving the player to the first shot and following the camera (ticks; lets the client load the camera).", min = 1, max = 20)
+    public int cameraStartDelayTicks = 3;
+
+    @Setting(path = "cameras.island-wait-seconds", desc = "The arrival step waits this long for the player to stand on their island before it plays the island camera; then it finishes with a title.", min = 1, max = 60)
+    public int cameraIslandWaitSeconds = 10;
+
+    @Setting(path = "cameras.welcome-new-profile", desc = "A new island on a 2nd or 3rd profile gets the island camera too (no tutorial, TQ31).")
+    public boolean cameraWelcomeNewProfile = true;
+
+    @Setting(path = "cameras.spawn", desc = "Spawn flyover before step 1 (first join). Lines: '<from> [to] look=<point> ticks=<n> [text=<key>]'; points 'world:x,y,z', '@home:dx,dy,dz', '@zone:dx,dy,dz', '@self:dx,dy,dz'. Texts: messages cameras.spawn.<key>.")
+    public List<String> cameraSpawn = List.of(
+            "spawn:0.5,107,8 spawn:0.5,111,-22 look=spawn:0.5,103,-50 ticks=40 text=one",
+            "spawn:0.5,111,-22 spawn:0.5,113,-62 look=spawn:0.5,104,-97 ticks=40 text=two",
+            "spawn:0.5,113,-62 spawn:5.5,108,-84 look=spawn:0.5,104,-97 ticks=40 text=three");
+
+    @Setting(path = "cameras.island", desc = "Island camera at the arrival step (orbit around your island home, same line format).")
+    public List<String> cameraIsland = List.of(
+            "@home:12,7,0 @home:0,7,12 look=@home:0,1,0 ticks=30 text=one",
+            "@home:0,7,12 @home:-12,7,0 look=@home:0,1,0 ticks=30",
+            "@home:-12,7,0 @home:0,7,-12 look=@home:0,1,0 ticks=30 text=two",
+            "@home:0,7,-12 @home:6,4,-4 look=@home:0,1,0 ticks=30");
+
+    @Setting(path = "cameras.depths", desc = "Depths camera when you reach Mine Tier 1 (around the zone spawn of steps.depths.zone, same line format).")
+    public List<String> cameraDepths = List.of(
+            "@zone:0,14,-14 @zone:10,10,4 look=@zone:0,0,0 ticks=50 text=one",
+            "@zone:10,10,4 @zone:2,4,2 look=@zone:0,0,0 ticks=50 text=two");
+
+    @Setting(path = "cameras.market", desc = "Market Square camera for the optional spawn tour (Show me, same line format).")
+    public List<String> cameraMarket = List.of(
+            "spawn:0.5,112,38 spawn:0.5,110,72 look=spawn:0.5,100,60 ticks=60 text=one",
+            "spawn:0.5,110,72 spawn:12.5,106,56 look=spawn:20.5,100,56 ticks=40 text=two");
+
+    // ------------------------------------------------------------------ Pip the companion (TU5, TQ9)
+
+    @Setting(path = "pip.enabled", desc = "Pip, the small red parrot only you can see, flies with you during the tutorial and says one short line per step.")
+    public boolean pipEnabled = true;
+
+    @Setting(path = "pip.chat", desc = "Pip's lines also go to chat (the name tag always shows them).")
+    public boolean pipChat = true;
+
+    @Setting(path = "pip.line-seconds", desc = "How long Pip's name tag shows a line (seconds), then just 'Pip'.", min = 1, max = 20)
+    public int pipLineSeconds = 4;
+
+    @Setting(path = "pip.variant", desc = "Parrot color: red, blue, green, cyan, gray.")
+    public String pipVariant = "red";
+
+    @Setting(path = "pip.side", desc = "How far from you Pip flies (blocks).", min = 0.5, max = 5)
+    public double pipSide = 1.6;
+
+    @Setting(path = "pip.height", desc = "How high above your feet Pip flies (blocks).", min = 0.5, max = 4)
+    public double pipHeight = 2.0;
+
+    @Setting(path = "pip.perch-range", desc = "Within this distance of the step's target Pip lands on it (blocks).", min = 1, max = 16)
+    public double pipPerchRange = 6;
+
+    @Setting(path = "pip.step", desc = "How far Pip flies per guide update (blocks); farther than pip.snap it jumps.", min = 0.2, max = 5)
+    public double pipStep = 1.2;
+
+    @Setting(path = "pip.snap", desc = "Pip jumps straight to you from this distance (blocks).", min = 4, max = 64)
+    public double pipSnap = 16;
+
+    // ------------------------------------------------------------------ NPCs (TU5, TQ27)
+
+    @Setting(path = "guide-npc.enabled", desc = "Clicking the spawn Guide NPC opens /tutorial instead of its help (TQ27; sneak-click still shows the help).")
+    public boolean guideNpc = true;
+
+    @Setting(path = "guide-npc.roles", desc = "NPC roles that open /tutorial.")
+    public List<String> guideRoles = List.of("guide");
+
+    @Setting(path = "npc-lines.enabled", desc = "During the tutorial, NPCs say a short line for your step when clicked (messages npc-lines.<step>.<role>).")
+    public boolean npcLines = true;
+
+    // ------------------------------------------------------------------ optional steps (TU6, TQ8, TQ26)
+
+    @Setting(path = "optional.enabled", desc = "Optional steps O1-O9: count them, show their tips and list them in /tutorial.")
+    public boolean optionalEnabled = true;
+
+    @Setting(path = "optional.reward-crystals", desc = "Crystals for each optional step, once per account (TQ8; a line can set reward=<n>).", min = 0, max = 100_000, level = Setting.Level.OWNER)
+    public long optionalReward = 5;
+
+    @Setting(path = "optional.during-core", desc = "Optional steps also count while the core tutorial runs (off = only after it is finished).")
+    public boolean optionalDuringCore = false;
+
+    @Setting(path = "optional.steps", desc = "Optional steps as '<id>: <kind> <args> [key=value]'. Kinds: menu <ids>, npc <roles>, break <block> count=<n> [where=island], visit <targets> [radius=<r>], near <target> [radius=<r>]. Keys: reward, tip (none, any, island, spawn, depths, near), goto (Show me teleport), camera (Show me camera), if-command, enabled. Texts: messages optional.<id>.", level = Setting.Level.OWNER)
+    public List<String> optionalSteps = List.of(
+            "generator: break cobblestone count=5 where=island tip=island",
+            "spawn_tour: visit npc:shop npc:sell npc:bank npc:ah radius=5 tip=spawn goto=spawn:0.5,99,50 camera=market",
+            "settings: menu settings tip=any",
+            "skills: menu skills tip=any if-command=skills",
+            "team: menu members tip=island",
+            "upgrades: menu upgrades tip=island enabled=false",
+            "enchanter: npc enchanter tip=near goto=npc:enchanter if-command=enchanter",
+            "wardrobe: menu wardrobe tip=any if-command=wardrobe",
+            "warzone: near spawn:-21.5,102,-93.5 radius=4 tip=near goto=spawn:-21.5,102.5,-90.5");
+
+    @Setting(path = "optional.tips", desc = "Offer an optional step with a chat tip the first time you reach its place (TQ26; players turn tips off in /settings).")
+    public boolean optionalTips = true;
+
+    @Setting(path = "optional.tip-cooldown-minutes", desc = "At most one tip per this many minutes (also the wait after finishing or joining).", min = 0, max = 240)
+    public int tipCooldownMinutes = 10;
+
+    @Setting(path = "optional.tip-radius", desc = "'tip=near' shows within this distance of the step's place (blocks).", min = 2, max = 64)
+    public int tipRadius = 12;
+
+    @Setting(path = "optional.check-ticks", desc = "How often places (visit, near, tips) are checked (ticks).", min = 10, max = 200)
+    public int optionalCheckTicks = 20;
+
+    @Setting(path = "optional.spawn-world", desc = "World where 'tip=spawn' tips show.")
+    public String spawnWorld = "spawn";
+
+    // ------------------------------------------------------------------ analytics (TU7, TQ24)
+
+    @Setting(path = "analytics.keep-days", desc = "Tutorial events (funnel, drop-off) are kept this many days, then deleted (checked at start and daily).", min = 7, max = 3650)
+    public int keepDays = 180;
+
+    @Setting(path = "analytics.drop-after-hours", desc = "A player still on a step with no tutorial event for this long counts as stopped there (drop-off).", min = 1, max = 720)
+    public int dropAfterHours = 24;
+
+    @Setting(path = "analytics.cache-seconds", desc = "The stats menu reuses a result this long.", min = 5, max = 3600)
+    public int statsCacheSeconds = 60;
+
+    @Setting(path = "analytics.max-rows", desc = "Most events read for one stats view (protects the database).", min = 1000, max = 2_000_000)
+    public int statsMaxRows = 250_000;
 
     @Override
     public String fileName() {

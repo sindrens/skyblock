@@ -125,11 +125,21 @@ final class Targets {
     /** True if the player is where the step happens (on their island for island steps, in the Depths for Depths steps). */
     boolean atPlace(Player player, String step) {
         return switch (place(step)) {
-            case ISLAND -> core.services().optional(IslandService.class).map(i -> i.islandAt(player.getLocation())
-                    .map(info -> i.isMember(info.id(), ProfileService.of(core.services()).profileKey(player))).orElse(false)).orElse(true);
-            case DEPTHS -> core.services().optional(DepthsZones.class).map(d -> d.inDepths(player.getLocation())).orElse(true);
+            case ISLAND -> onOwnIsland(player, true);
+            case DEPTHS -> inDepths(player, true);
             default -> true;
         };
+    }
+
+    /** True on an island the player is a member of ({@code orElse} when the islands module is missing). */
+    boolean onOwnIsland(Player player, boolean orElse) {
+        return core.services().optional(IslandService.class).map(i -> i.islandAt(player.getLocation())
+                .map(info -> i.isMember(info.id(), ProfileService.of(core.services()).profileKey(player))).orElse(false)).orElse(orElse);
+    }
+
+    /** True in the Depths ({@code orElse} when the depths module is missing). */
+    boolean inDepths(Player player, boolean orElse) {
+        return core.services().optional(DepthsZones.class).map(d -> d.inDepths(player.getLocation())).orElse(orElse);
     }
 
     /**

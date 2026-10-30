@@ -23,7 +23,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent;
+import org.bukkit.entity.Entity;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -61,14 +70,82 @@ final class TutorialListener implements Listener {
 
     // ------------------------------------------------------------------ join / quit
 
+    /** A camera that never ended (crash, restart) gives game mode, position and flight back before anything else. */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onJoinRestore(PlayerJoinEvent event) {
+        module.cameras().restoreOnJoin(event.getPlayer());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         engine().load(event.getPlayer());
     }
 
+    /** Quit or kick during a camera: everything is given back before the player data is saved. */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onQuitRestore(PlayerQuitEvent event) {
+        module.cameras().stop(event.getPlayer());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         engine().quit(event.getPlayer());
+    }
+
+    // ------------------------------------------------------------------ cameras (TU3)
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onDeath(PlayerDeathEvent event) {
+        module.cameras().stop(event.getPlayer());
+    }
+
+    /** Sneak = skip (Bedrock cut-and-fade; Java spectators also send it). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onSneak(PlayerToggleSneakEvent event) {
+        if (event.isSneaking() && module.cameras().running(event.getPlayer().getUniqueId())) {
+            module.cameras().skip(event.getPlayer());
+        }
+    }
+
+    /** Java: sneaking leaves the camera entity = skip. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onStopSpectating(PlayerStopSpectatingEntityEvent event) {
+        module.cameras().stoppedSpectating(event.getPlayer(), event.getSpectatorTarget());
+    }
+
+    /** A command during a camera ends it first (the player is put back, then the command runs normally). */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onCommand(PlayerCommandPreprocessEvent event) {
+        if (module.cameras().running(event.getPlayer().getUniqueId())) {
+            module.cameras().skip(event.getPlayer());
+        }
+    }
+
+    /** Cut-and-fade players hover frozen (looking around is fine). */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onMove(PlayerMoveEvent event) {
+        if (event.hasChangedPosition() && module.cameras().frozen(event.getPlayer())) {
+            event.setCancelled(true);
+        }
+    }
+
+    /** Pip and the camera entity can't be clicked, fed, leashed or hurt. */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onInteractEntity(PlayerInteractEntityEvent event) {
+        if (ours(event.getRightClicked())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onDamageEntity(EntityDamageEvent event) {
+        if (ours(event.getEntity())) {
+            event.setCancelled(true);
+        }
+    }
+
+    private boolean ours(Entity e) {
+        return module.pip().isPip(e) || module.cameras().isCameraEntity(e);
     }
 
     // ------------------------------------------------------------------ 1 portal
@@ -79,6 +156,17 @@ final class TutorialListener implements Listener {
         Player player = event.getPlayer();
         Progress p = engine().progress(player.getUniqueId());
         if (p == null || !module.config().enabled) {
+            return;
+        }
+        if (p.state.complete()) {
+            // TQ31: a new island on a 2nd or 3rd profile gets the island camera, but no tutorial.
+            if (event.firstTime() && module.config().cameraWelcomeNewProfile) {
+                core.scheduler().later("tutorial-welcome-camera", 40, () -> {
+                    if (player.isOnline() && module.targets().onOwnIsland(player, false)) {
+                        module.cameras().play(player, Cameras.ISLAND, null);
+                    }
+                });
+            }
             return;
         }
         if (p.state == State.NEW) {
@@ -225,6 +313,7 @@ final class TutorialListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onMenu(MenuOpenedEvent event) {
         Player player = event.getPlayer();
+        module.optional().menuOpened(player, event.menuId());
         if (running(player) == null) {
             return;
         }
@@ -288,16 +377,44 @@ final class TutorialListener implements Listener {
 
     // ------------------------------------------------------------------ 10 help
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    /** TQ27: the spawn Guide NPC opens {@code /tutorial} (sneak-click keeps its help text). */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onGuideNpc(NpcClickEvent event) {
+        if (!module.config().enabled || !module.config().guideNpc || event.help() || event.role() == null) {
+            return;
+        }
+        if (module.config().guideRoles.stream().anyMatch(r -> r.strip().equalsIgnoreCase(event.role()))) {
+            event.setCancelled(true);
+            core.sounds().play(event.getPlayer(), "click");
+            engine().openMenu(event.getPlayer());
+        }
+    }
+
+    /** Help step, NPC lines for the current step, optional steps (also counts the Guide click, which is cancelled). */
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onNpc(NpcClickEvent event) {
         Player player = event.getPlayer();
-        if (running(player) == null) {
+        module.optional().npcClicked(player, event.npcId(), event.role());
+        Progress p = running(player);
+        if (p == null) {
             return;
+        }
+        String step = p.step;
+        String line = "npc-lines." + step + "." + event.role();
+        if (module.config().npcLines && step != null && event.role() != null && module.msg().has(line)) {
+            module.msg().send(player, "npc-lines.format", net.skybornmc.skyblock.common.text.Msg.c("line", module.msg().component(player, line)));
         }
         var roles = module.config().helpRoles;
         if (roles.isEmpty() || roles.stream().anyMatch(r -> r.strip().equalsIgnoreCase(event.role()))) {
             engine().signal(player, Steps.HELP);
         }
+    }
+
+    // ------------------------------------------------------------------ optional: break (O1 generator)
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBreak(BlockBreakEvent event) {
+        module.optional().blockBroken(event.getPlayer(), event.getBlock());
     }
 
     // ------------------------------------------------------------------ 11 bank

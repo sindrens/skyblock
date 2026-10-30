@@ -145,6 +145,9 @@ final class TutorialEngine implements TutorialService, TutorialGate {
                     msg().send(player, "resume.stay");
                     return;
                 }
+                if (module.cameras().running(player.getUniqueId())) {
+                    return; // a camera runs (it gives the position back itself)
+                }
                 module.targets().takeMeThere(player, p, false);
             });
         }
@@ -156,6 +159,7 @@ final class TutorialEngine implements TutorialService, TutorialGate {
         cancelArrive(player.getUniqueId());
         lockedChat.remove(player.getUniqueId());
         module.guides().hide(player);
+        module.pip().hide(player);
         if (p != null && p.state == State.ACTIVE) {
             event(player, p, "quit");
         }
@@ -166,6 +170,7 @@ final class TutorialEngine implements TutorialService, TutorialGate {
         for (Player p : Bukkit.getOnlinePlayers()) {
             module.guides().hide(p);
         }
+        module.pip().hideAll();
         arriveTasks.values().forEach(net.skybornmc.skyblock.common.util.Scheduler.Task::cancel);
         arriveTasks.clear();
         online.clear();
@@ -237,6 +242,22 @@ final class TutorialEngine implements TutorialService, TutorialGate {
         msg().send(player, "start.chat");
         module.guides().show(player, p);
         enterStep(player, p, true);
+        // Join flyover (TUTORIAL §5 "Join"): spawn → statue → keep → Gatehouse portals, only before step 1 is done.
+        if (Steps.PORTAL.equals(p.step)) {
+            core.scheduler().later("tutorial-spawn-camera", 20, () -> {
+                if (player.isOnline() && online.get(player.getUniqueId()) == p && p.state == State.ACTIVE && Steps.PORTAL.equals(p.step)) {
+                    module.cameras().play(player, Cameras.SPAWN, () -> afterCamera(player, p));
+                }
+            });
+        }
+    }
+
+    /** After a tutorial camera: the guides pick up again right away (Pip comes back with the next guide tick). */
+    private void afterCamera(Player player, Progress p) {
+        if (!player.isOnline() || online.get(player.getUniqueId()) != p || p.state != State.ACTIVE) {
+            return;
+        }
+        module.guides().refresh(player, p);
     }
 
     @Override
@@ -319,6 +340,15 @@ final class TutorialEngine implements TutorialService, TutorialGate {
             return;
         }
         enterStep(player, p, true);
+        if (step.equals(Steps.DEPTHS)) {
+            // Arrived in Mine Tier 1: the Depths camera (5 s) over the Gate, the Forge and the mine (§5 step 6).
+            core.scheduler().later("tutorial-depths-camera", 10, () -> {
+                if (player.isOnline() && online.get(player.getUniqueId()) == p && p.state == State.ACTIVE
+                        && module.targets().inDepths(player, false)) {
+                    module.cameras().play(player, Cameras.DEPTHS, () -> afterCamera(player, p));
+                }
+            });
+        }
     }
 
     /** Shows a step's start (title, hint) and runs what the step needs at its start. */
@@ -331,6 +361,9 @@ final class TutorialEngine implements TutorialService, TutorialGate {
             msg().title(player, "steps." + step + ".title");
         }
         module.guides().refresh(player, p);
+        if (announce && !module.cameras().running(player.getUniqueId())) {
+            module.pip().say(player, step);
+        }
         switch (step) {
             case Steps.ARRIVE -> scheduleArrive(player);
             case Steps.CHEST -> module.starter().enterChestStep(player, p);
@@ -348,12 +381,45 @@ final class TutorialEngine implements TutorialService, TutorialGate {
         }
     }
 
-    /** The arrival step: a title on the island, done after {@code steps.arrive.seconds} (TU3 replaces it with the camera). */
+    /**
+     * The arrival step (§5 step 2): waits until the player stands on their island (up to
+     * {@code cameras.island-wait-seconds}), then plays the island camera; done when it ends or is skipped. Without a
+     * camera (off, no island home, still not on the island) it is a title, done after {@code steps.arrive.seconds}.
+     */
     private void scheduleArrive(Player player) {
         UUID id = player.getUniqueId();
         cancelArrive(id);
-        msg().title(player, "steps.arrive.title");
         core.sounds().play(player, "unlock");
+        if (!module.cameras().available(Cameras.ISLAND)) {
+            arriveByTitle(player);
+            return;
+        }
+        waitForIsland(player, module.config().cameraIslandWaitSeconds);
+    }
+
+    private void waitForIsland(Player player, int triesLeft) {
+        UUID id = player.getUniqueId();
+        arriveTasks.put(id, core.scheduler().later("tutorial-arrive", 20, () -> {
+            arriveTasks.remove(id);
+            Progress p = online.get(id);
+            if (!player.isOnline() || p == null || p.state != State.ACTIVE || !Steps.ARRIVE.equals(p.step)) {
+                return;
+            }
+            boolean ready = module.targets().onOwnIsland(player, false) && !module.cameras().running(id);
+            if (ready && module.cameras().play(player, Cameras.ISLAND, () -> signal(player, Steps.ARRIVE))) {
+                return;
+            }
+            if (ready || triesLeft <= 1) {
+                arriveByTitle(player); // the camera can't play here: the plain arrival
+                return;
+            }
+            waitForIsland(player, triesLeft - 1);
+        }));
+    }
+
+    private void arriveByTitle(Player player) {
+        UUID id = player.getUniqueId();
+        msg().title(player, "steps.arrive.title");
         arriveTasks.put(id, core.scheduler().later("tutorial-arrive", module.config().arriveSeconds * 20L, () -> {
             arriveTasks.remove(id);
             if (player.isOnline()) {
@@ -448,7 +514,10 @@ final class TutorialEngine implements TutorialService, TutorialGate {
             if (!player.isOnline()) {
                 return;
             }
+            module.pip().say(player, "finish");
             module.guides().hide(player);
+            module.pip().hide(player);
+            p.lastTip = System.currentTimeMillis(); // optional-step tips wait one cooldown after the finish
             msg().title(player, "finish.title");
             core.sounds().play(player, "levelup");
             msg().send(player, paid ? "finish.chat-reward" : "finish.chat", Msg.money("money", c.rewardMoney),
@@ -638,6 +707,23 @@ final class TutorialEngine implements TutorialService, TutorialGate {
         long inStep = p.stepStartedAt > 0 ? now - p.stepStartedAt : 0;
         boolean be = bedrock(player);
         core.database().run(c -> module.store().event(c, id, step, kind, now, be, inStep)).exceptionally(e -> logFailure("event", e));
+    }
+
+    /** A camera played or was skipped ({@code camera_play}, {@code camera_skip}; step = camera id) for the stats. */
+    void cameraEvent(Player player, String camera, String kind) {
+        rawEvent(player, camera, kind);
+    }
+
+    /** An optional step's tip or completion ({@code opt_tip}, {@code opt_done}; step = optional id) for the stats. */
+    void optionalEvent(Player player, String step, String kind) {
+        rawEvent(player, step, kind);
+    }
+
+    private void rawEvent(Player player, String step, String kind) {
+        UUID id = player.getUniqueId();
+        long now = System.currentTimeMillis();
+        boolean be = bedrock(player);
+        core.database().run(c -> module.store().event(c, id, step, kind, now, be, 0)).exceptionally(e -> logFailure("event", e));
     }
 
     private Void logFailure(String what, Throwable e) {

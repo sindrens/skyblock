@@ -315,6 +315,9 @@ staff:
     npcs:
       name: "<c:flame><bold>NPCs & Holograms"
       lore: ["<c:text>Every NPC, hologram and", "<c:text>leaderboard; click to go there."]
+    tutorial:
+      name: "<c:flame><bold>Tutorial stats"
+      lore: ["<c:text>Where new players stop,", "<c:text>time per step, Java vs Bedrock."]
 
 admin:
   title: "Config"
