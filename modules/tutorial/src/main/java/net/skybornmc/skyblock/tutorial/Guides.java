@@ -15,7 +15,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
@@ -363,26 +362,29 @@ final class Guides {
         int r = module.config().cropRadius;
         Optional<IslandService> islands = core.services().optional(IslandService.class);
         UUID key = ProfileService.of(core.services()).profileKey(player);
-        List<Block> found = new ArrayList<>();
+        World world = h.getWorld();
+        List<MarkerScan.Hit> found = new ArrayList<>();
         for (int dx = -r; dx <= r; dx++) {
             for (int dz = -r; dz <= r; dz++) {
                 for (int dy = -3; dy <= 2; dy++) {
-                    Block b = h.getWorld().getBlockAt(h.getBlockX() + dx, h.getBlockY() + dy, h.getBlockZ() + dz);
-                    Material m = b.getType();
+                    int x = h.getBlockX() + dx;
+                    int y = h.getBlockY() + dy;
+                    int z = h.getBlockZ() + dz;
+                    Material m = world.getType(x, y, z);
                     if ((m == Material.GRASS_BLOCK || m == Material.DIRT || m == Material.FARMLAND)
-                            && b.getRelative(0, 1, 0).getType().isAir()) {
-                        found.add(b);
+                            && world.getType(x, y + 1, z).isAir()) {
+                        found.add(MarkerScan.Hit.of(x, y, z, h.getX(), h.getY(), h.getZ()));
                     }
                 }
             }
         }
-        found.sort(java.util.Comparator.comparingDouble(b -> b.getLocation().distanceSquared(h)));
-        for (Block b : found) {
-            if (islands.isPresent() && islands.get().islandAt(b.getLocation()).map(i -> !i.owner().equals(key)
+        for (MarkerScan.Hit hit : MarkerScan.nearestFirst(found)) {
+            Location loc = new Location(world, hit.x(), hit.y(), hit.z());
+            if (islands.isPresent() && islands.get().islandAt(loc).map(i -> !i.owner().equals(key)
                     && !islands.get().isMember(i.id(), key)).orElse(true)) {
                 continue;
             }
-            out.add(b.getLocation());
+            out.add(loc);
             if (out.size() >= module.config().cropCount) {
                 break;
             }
@@ -395,20 +397,25 @@ final class Guides {
         List<Location> out = new ArrayList<>();
         Location at = player.getLocation();
         int r = module.config().mineRadius;
-        List<Block> found = new ArrayList<>();
+        World world = at.getWorld();
+        MarkerScan.Matcher matcher = mineMatcher();
+        Map<Material, Boolean> seen = new java.util.EnumMap<>(Material.class);
+        List<MarkerScan.Hit> found = new ArrayList<>();
         for (int dx = -r; dx <= r; dx++) {
             for (int dy = -r; dy <= r; dy++) {
                 for (int dz = -r; dz <= r; dz++) {
-                    Block b = at.getWorld().getBlockAt(at.getBlockX() + dx, at.getBlockY() + dy, at.getBlockZ() + dz);
-                    if (mineable(b.getType())) {
-                        found.add(b);
+                    int x = at.getBlockX() + dx;
+                    int y = at.getBlockY() + dy;
+                    int z = at.getBlockZ() + dz;
+                    Material m = world.getType(x, y, z);
+                    if (seen.computeIfAbsent(m, k -> matcher.matches(k.getKey().getKey()))) {
+                        found.add(MarkerScan.Hit.of(x, y, z, at.getX(), at.getY(), at.getZ()));
                     }
                 }
             }
         }
-        found.sort(java.util.Comparator.comparingDouble(b -> b.getLocation().distanceSquared(at)));
-        for (Block b : found) {
-            out.add(b.getLocation().add(0, -1, 0));
+        for (MarkerScan.Hit hit : MarkerScan.nearestFirst(found)) {
+            out.add(new Location(world, hit.x(), hit.y() - 1, hit.z()));
             if (out.size() >= module.config().mineMarkers) {
                 break;
             }
@@ -416,15 +423,17 @@ final class Guides {
         return out;
     }
 
-    private boolean mineable(Material m) {
-        String key = m.getKey().getKey();
-        for (String rule : module.config().mineBlocks) {
-            String r = rule.strip().toLowerCase(Locale.ROOT);
-            if (r.startsWith("*") ? key.endsWith(r.substring(1)) : key.equals(r)) {
-                return true;
-            }
+    private List<String> mineSource;
+    private MarkerScan.Matcher mineMatcher = MarkerScan.Matcher.compile(List.of());
+
+    /** {@code guide.markers.mine-blocks}, compiled once per config list (PERF4). */
+    private MarkerScan.Matcher mineMatcher() {
+        List<String> raw = module.config().mineBlocks;
+        if (raw != mineSource) {
+            mineMatcher = MarkerScan.Matcher.compile(raw);
+            mineSource = raw;
         }
-        return false;
+        return mineMatcher;
     }
 
     // ------------------------------------------------------------------ hologram (only this player sees it)

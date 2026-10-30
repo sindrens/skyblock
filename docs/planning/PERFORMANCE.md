@@ -439,3 +439,26 @@ Measured by reading the code paths (no test server). What each warning was and w
 | `afk-start` 7.2 ms | Same as above: area lookup in memory and two timers. The banked booster (boosters module, M10-2) does its database work async; boosters has no start task. | `AfkTracker.start()` runs in `enable()`; no separate first-tick task. |
 
 What to look for in the next startup log: no `npcs:start`, `tutorial:start`, `sell-stat-sources` or `afk-start` warnings; the `[npcs] … from the builds; spawning N in loaded chunks over the next ticks` line; at most one `npcs:spawn` warning (the very first spawn pays the cold-start cost) and `npcs:purge` / `npcs:apply` warnings only if those steps are still slow (they now time themselves).
+
+---
+
+## PERF4 (slow operations after update102, one player online)
+
+Measured by reading the code paths (no test server). Warn limit 5 ms. "Warm-up" = a one-off first run (class loading, lambda bootstrap, first MiniMessage parse, first entity of a type, time-zone rules loading, GC pause); it should not repeat once the server has run for a minute.
+
+| Task | Verdict | Root cause / fix |
+|---|---|---|
+| `chat:tab` 46×/min, worst 32.5 ms | **Real** | The tab list was already diff-based, but the round-robin slice was `max(1, ceil(online / update-ticks))`: with fewer players than `tab.update-ticks` (40) every player was re-checked **every tick**, i.e. 20×/s instead of once per 2 s. Each check ran 5+ LuckPerms node scans (`prefix`, `rankColor` (twice through `primaryGroup`), `weight`), the title/tag placeholders (MiniMessage) and rebuilt the staff TPS footer. Fix: `TabPacing` (fractional carry; every player once per `update-ticks`, 300 players = 7–8 per tick; a joined player is still checked on the next tick). Rank parts are read **off the main thread** into a `Display.RankView` snapshot (each check and each rank-change event); the tick only compares snapshots; a rank change forces a rebuild when its snapshot arrives. |
+| `tutorial-guides` 57.3 ms | Mostly warm-up, plus real repeated work | First run spawns the hologram and Pip (first text display / parrot) and parses every guide message. Real: the farm-spot (~1,000 blocks) and ore (~1,300 blocks) scans every 2 s re-stripped and lowercased every `mine-blocks` rule per block and sorted with a comparator that built two `Location`s per comparison. Fix: `MarkerScan` (rules compiled once per config list, one rule check per material per scan, distances computed once, stable sort = same order); block types read with `World#getType`. |
+| `tutorial-rejoin` 28 ms | Warm-up | One teleport request on join (guard chain, async chunk load scheduling, first use of the teleport path). Nothing repeats; the NPC lookup it uses (`npcByRole`) no longer builds every NPC's info. |
+| `bank:join` 13.7 ms | Warm-up | `settleFor` only reads in-memory island data and starts async DB futures (virtual-thread executor); the first run pays class loading / lambda bootstrap of the settle chain. |
+| `npcs:spawn` 13.8 ms | Warm-up, budget tightened | A single spawn (first mannequin with skin profile, first label MiniMessage); one spawn per tick is always allowed. The budget was honoured; now a tick also stops when the previous spawn shows the next would end past `spawning.budget-ms`. |
+| `npcs:look` 5.2 ms | Real (small) | One nearby-players entity query plus two eye `Location`s per NPC every 10 ticks. Fix: `NearestGrid`, one pass over each world's players per run, each NPC checks the 3×3 cells around it. |
+| `wardrobe-trail` 11.8 ms | Warm-up / GC | Re-checked after PERF2: with one player a pass is a handful of map lookups and one particle packet. |
+| `enchants-armor` 7.4 ms | Warm-up | Staggered since PERF2; one refresh is in-memory wardrobe cache + attribute check. |
+| `teleport-arrived` 5.7 ms | Warm-up | Runs the caller's arrival callback once. |
+| `island-stats-playtime` 7.2 ms | Warm-up | First run builds the `StatsClock` day cache (time-zone rules); later runs are map lookups. |
+| `island-environment` 8.1 ms | Warm-up, small fix | First "real" clock refresh loads the time-zone rules. The `ZoneId` is now parsed once per config value instead of per player per refresh. |
+| `portal-particles` 6.2 ms | Warm-up, small fix | Each world is now looked up (and its player list copied) once per run instead of once per puff. |
+
+What to look for in the next log (one player online): `chat:tab` should be gone (a check runs once per 2 s per player and only builds components when something changed; a new `chat:tab-rank` task applies the async rank snapshots and should never warn). `npcs:look` and `tutorial-guides` should not repeat; at most one warning each for the warm-up tasks above in the first minute after a start or join. Any of them repeating after that is real and worth a new item.

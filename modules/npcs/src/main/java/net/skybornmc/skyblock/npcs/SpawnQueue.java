@@ -45,20 +45,28 @@ final class SpawnQueue<T> {
      * Takes items in queue order and hands them to {@code handle}, which returns true when it did real work (spawned)
      * and false when the item was skipped (no longer wanted, chunk gone). Stops after {@code max} items with work or
      * once {@code budgetNanos} have passed; at least one item with work is always handled, so the queue always moves.
+     * PERF4: it also stops when the last spawn of this tick says the next one would end past the budget
+     * ({@code elapsed + last cost > budget}), so a tick overshoots by at most one spawn's cost over the budget.
      *
      * @return the number of items with work
      */
     int drain(int max, long budgetNanos, LongSupplier clock, Predicate<T> handle) {
         long start = clock.getAsLong();
+        long before = start;
         int done = 0;
         while (!queue.isEmpty()) {
             T item = queue.poll();
             queued.remove(item);
             if (!handle.test(item)) {
+                before = clock.getAsLong();
                 continue;
             }
             done++;
-            if (done >= Math.max(1, max) || clock.getAsLong() - start >= budgetNanos) {
+            long now = clock.getAsLong();
+            long cost = now - before;
+            before = now;
+            long elapsed = now - start;
+            if (done >= Math.max(1, max) || elapsed >= budgetNanos || elapsed + cost > budgetNanos) {
                 break;
             }
         }

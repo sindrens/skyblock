@@ -22,6 +22,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -41,8 +42,12 @@ import java.util.function.Supplier;
  * <ul>
  *   <li><b>Diff only:</b> each player has a cheap fingerprint ({@link Display#key}: prefix, color, weight, nick, AFK,
  *       title, tag). Components are only rebuilt and teams/list names only touched when it changes.</li>
- *   <li><b>Spread over ticks:</b> one tick task checks {@code ceil(online / tab.update-ticks)} players per tick
- *       (round-robin) and works through a job queue with a time budget ({@link #BUDGET_NANOS} per tick).</li>
+ *   <li><b>Spread over ticks:</b> one tick task checks each player once per {@code tab.update-ticks} (round-robin,
+ *       {@link TabPacing}; a new player is checked on the next tick) and works through a job queue with a time budget
+ *       ({@link #BUDGET_NANOS} per tick).</li>
+ *   <li><b>No LuckPerms on the main thread (PERF4):</b> the rank parts (prefix, color, weight) are read asynchronously
+ *       into a {@link Display.RankView} snapshot each time a player is checked and on every rank change; the tick only
+ *       compares and uses snapshots. A player without a snapshot yet is rebuilt as soon as it arrives.</li>
  *   <li><b>Teams:</b> one team per player ({@code pxs<999-weight><name>}, so the client sorts by rank weight, then A–Z).
  *       The HUD gives every player their own sidebar scoreboard, so teams are mirrored onto every board. A new board
  *       gets all teams once (queued); a changed player is applied to each board once (queued). Unchanged teams are
@@ -85,6 +90,17 @@ final class TabService implements Listener {
     private volatile boolean running;
     private List<Player> vanishedCache = List.of();
     private int ticks;
+    private final TabPacing pacing = new TabPacing();
+    /** Joined players checked on the next tick, before the paced round-robin. */
+    private final ArrayDeque<UUID> urgent = new ArrayDeque<>();
+    /** Rank snapshots read off the main thread (written on the main thread only). */
+    private final Map<UUID, Display.RankView> rankViews = new HashMap<>();
+    /** Players whose async rank read is in flight. */
+    private final Set<UUID> rankPending = new HashSet<>();
+    /** Players whose next rank read must force a rebuild (a rank change event). */
+    private final Set<UUID> rankForced = new HashSet<>();
+    /** Players to read asynchronously at the end of this tick. */
+    private final List<Player> rankBatch = new ArrayList<>();
 
     TabService(Core core, Display display, Supplier<ChatConfig> config, ModuleMessages msg) {
         this.core = core;
@@ -97,7 +113,7 @@ final class TabService implements Listener {
         running = true;
         // Forced rebuild (not just a fingerprint check): the rank provider notifies right after the change and again
         // once it settled, so the tab name, sort order and nametag follow within a second.
-        core.ranks().onRankChange(this::markDirty);
+        core.ranks().onRankChange(this::rankChanged);
         boards.add(Bukkit.getScoreboardManager().getMainScoreboard());
         for (Player p : Bukkit.getOnlinePlayers()) {
             track(p);
@@ -142,6 +158,11 @@ final class TabService implements Listener {
         checkOrder.clear();
         sentHeaderFooter.clear();
         headerCache.clear();
+        urgent.clear();
+        rankViews.clear();
+        rankPending.clear();
+        rankForced.clear();
+        rankBatch.clear();
     }
 
     // ------------------------------------------------------------------ tick
@@ -152,13 +173,18 @@ final class TabService implements Listener {
         if (online == 0) {
             return;
         }
-        // 1. Round-robin: a slice of players per tick gets its fingerprint and header/footer checked.
-        int slice = Math.max(1, (online + config.get().tabUpdateTicks - 1) / config.get().tabUpdateTicks);
-        int visibleBase = online;
+        // 1. Round-robin: each player gets its fingerprint and header/footer checked once per update-ticks (PERF4:
+        //    the old slice was at least one player per tick, so a lone player was re-checked 20 times a second).
+        int slice = pacing.next(online, config.get().tabUpdateTicks);
         if (ticks++ % 20 == 0) {
             vanishedCache = vanishedPlayers(); // a full scan once per second, not every tick
         }
-        List<Player> vanished = vanishedCache;
+        while (!urgent.isEmpty()) {
+            Player p = Bukkit.getPlayer(urgent.pollFirst());
+            if (p != null) {
+                check(p, online);
+            }
+        }
         for (int i = 0; i < slice && !checkOrder.isEmpty(); i++) {
             UUID id = checkOrder.pollFirst();
             Player p = Bukkit.getPlayer(id);
@@ -166,16 +192,9 @@ final class TabService implements Listener {
                 continue;
             }
             checkOrder.addLast(id);
-            Scoreboard board = p.getScoreboard();
-            if (boardOf.put(id, board) != board) {
-                adoptBoard(board);
-            }
-            Entry entry = entries.get(id);
-            if (entry == null || !entry.key().equals(display.key(p))) {
-                dirty.add(id);
-            }
-            sendHeaderFooter(p, visibleBase, vanished);
+            check(p, online);
         }
+        flushRankBatch();
         // 2. Dirty players: rebuild their entry and queue one job per board.
         Iterator<UUID> it = dirty.iterator();
         while (it.hasNext() && System.nanoTime() < deadline) {
@@ -186,6 +205,7 @@ final class TabService implements Listener {
                 rebuild(p);
             }
         }
+        flushRankBatch();
         // 3. Team jobs with the remaining budget.
         Iterator<Map.Entry<JobKey, Runnable>> jobIt = jobs.entrySet().iterator();
         while (jobIt.hasNext() && System.nanoTime() < deadline) {
@@ -195,11 +215,93 @@ final class TabService implements Listener {
         }
     }
 
+    /** One player's turn: board, fingerprint (from the rank snapshot), header/footer, and an async rank re-read. */
+    private void check(Player p, int online) {
+        UUID id = p.getUniqueId();
+        Scoreboard board = p.getScoreboard();
+        if (boardOf.put(id, board) != board) {
+            adoptBoard(board);
+        }
+        Display.RankView rank = rankViews.get(id);
+        Entry entry = entries.get(id);
+        if (rank != null && (entry == null || !entry.key().equals(display.key(p, rank)))) {
+            dirty.add(id);
+        }
+        sendHeaderFooter(p, online, vanishedCache);
+        requestRank(p);
+    }
+
+    // ------------------------------------------------------------------ rank snapshots (off the main thread)
+
+    /** LuckPerms says the rank changed: re-read it and force a rebuild when the snapshot arrives. */
+    private void rankChanged(UUID player) {
+        if (!running) {
+            return;
+        }
+        Player p = Bukkit.getPlayer(player);
+        if (p == null) {
+            return;
+        }
+        rankForced.add(player);
+        requestRank(p);
+        flushRankBatch();
+    }
+
+    private void requestRank(Player p) {
+        if (rankPending.add(p.getUniqueId())) {
+            rankBatch.add(p);
+        }
+    }
+
+    /** Reads this tick's rank snapshots in one async task and hands them back to the main thread. */
+    private void flushRankBatch() {
+        if (rankBatch.isEmpty()) {
+            return;
+        }
+        List<Player> batch = List.copyOf(rankBatch);
+        rankBatch.clear();
+        core.scheduler().async(() -> {
+            Map<UUID, Display.RankView> read = new HashMap<>();
+            for (Player p : batch) {
+                try {
+                    read.put(p.getUniqueId(), display.rankView(p));
+                } catch (RuntimeException e) {
+                    // left out: retried on the player's next check
+                }
+            }
+            core.scheduler().main("chat:tab-rank", () -> applyRanks(batch, read));
+        });
+    }
+
+    private void applyRanks(List<Player> batch, Map<UUID, Display.RankView> read) {
+        for (Player p : batch) {
+            rankPending.remove(p.getUniqueId());
+        }
+        if (!running) {
+            return;
+        }
+        for (Map.Entry<UUID, Display.RankView> e : read.entrySet()) {
+            UUID id = e.getKey();
+            if (!playerNames.containsKey(id)) {
+                continue; // quit meanwhile
+            }
+            Display.RankView old = rankViews.put(id, e.getValue());
+            if (rankForced.remove(id)) {
+                markDirty(id);
+            } else if (!e.getValue().equals(old)) {
+                dirty.add(id);
+            }
+        }
+    }
+
     private void track(Player p) {
         UUID id = p.getUniqueId();
         playerNames.put(id, p.getName());
         if (!checkOrder.contains(id)) {
-            checkOrder.addFirst(id); // checked on the next tick
+            checkOrder.addLast(id);
+        }
+        if (!urgent.contains(id)) {
+            urgent.addLast(id); // checked on the next tick
         }
         dirty.add(id);
         Scoreboard board = p.getScoreboard();
@@ -219,17 +321,23 @@ final class TabService implements Listener {
 
     private void rebuild(Player p) {
         UUID id = p.getUniqueId();
-        String key = display.key(p);
+        Display.RankView rank = rankViews.get(id);
+        if (rank == null) {
+            requestRank(p); // rebuilt when the snapshot arrives (applyRanks marks it dirty)
+            return;
+        }
+        String key = display.key(p, rank);
         Entry old = entries.get(id);
         if (old != null && old.key().equals(key)) {
             return;
         }
         ChatConfig c = config.get();
         Audience none = Audience.empty();
-        Entry entry = new Entry(key, teamName(core.ranks().weight(p), p.getName()),
-                c.nametagPrefix ? display.rank(none, p) : Component.empty(), display.afkSuffix(p), display.teamColor(p));
+        Entry entry = new Entry(key, teamName(rank.weight(), p.getName()),
+                c.nametagPrefix ? display.rankPrefix(none, rank.prefix()) : Component.empty(), display.afkSuffix(p),
+                Display.teamColor(rank));
         entries.put(id, entry);
-        p.playerListName(display.tabEntry(p));
+        p.playerListName(display.tabEntry(p, rank));
         String staleTeam = old != null && !old.team().equals(entry.team()) ? old.team() : null;
         for (Scoreboard board : boards) {
             queueApply(id, board, staleTeam);
@@ -365,6 +473,9 @@ final class TabService implements Listener {
         Entry entry = entries.remove(id);
         dirty.remove(id);
         checkOrder.remove(id);
+        urgent.remove(id);
+        rankViews.remove(id);
+        rankForced.remove(id);
         sentHeaderFooter.remove(id);
         Scoreboard own = boardOf.remove(id);
         if (own != null && own != Bukkit.getScoreboardManager().getMainScoreboard() && !boardOf.containsValue(own)) {
