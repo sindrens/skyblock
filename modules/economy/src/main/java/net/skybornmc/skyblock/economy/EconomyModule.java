@@ -53,11 +53,12 @@ import java.util.concurrent.Executor;
  * Economy core (M3.1): currencies and accounts, the atomic transaction ledger, {@link EconomyService} for other
  * modules, placeholders for the HUD, and {@code /bal}, {@code /baltop}, {@code /pay}, {@code /transactions}, {@code /eco}.
  * Money notes (M3.2): {@code /withdraw}, {@code /eco note} and the redeemable note item ({@link MoneyNotes}).
+ * Selling (M3.4): {@code /sell}, dynamic prices and {@code SellService} (package {@code sell}).
  * Settings: {@code economy.yml}; texts: {@code messages/economy.yml}; data: {@code db/economy}.
  */
 public final class EconomyModule implements SkyblockModule, Listener {
 
-    static final String ID = "economy";
+    public static final String ID = "economy";
 
     static final String PERM_BALANCE = "skyblock.economy.balance";
     static final String PERM_BALANCE_OTHERS = "skyblock.economy.balance.others";
@@ -82,6 +83,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     final EconomyConfig config = new EconomyConfig();
     private EconomyServiceImpl service;
     private MoneyNotes notes;
+    private net.skybornmc.skyblock.economy.sell.SellFeature sell;
     private Baltop baltop;
     private Executor main;
     private Scheduler.Task baltopTask;
@@ -114,6 +116,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         notes = new MoneyNotes(this, new NoteService(core.database(), service, System::currentTimeMillis, core.plugin().getLogger(),
                 (createdBy, redeemer, actor) -> profiles().blockOwnTransfer(AuditCategory.ECONOMY, "note_redeem", createdBy, redeemer, actor)));
         notes.enable();
+        // M3.4 selling: price table, dynamic prices, SellService, /sell.
+        sell = new net.skybornmc.skyblock.economy.sell.SellFeature(this, core, msg, config, service);
+        sell.enable();
         registerPlaceholders();
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
@@ -131,6 +136,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         upgradeConfigFile();
         core.configs().load(config);
         core.messages().load(ID);
+        if (sell != null) {
+            sell.reload();
+        }
     }
 
     /** Value changes between config versions ({@link EconomyConfig#upgradeValues}); never touches a broken file. */
@@ -160,6 +168,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         if (notes != null) {
             notes.disable();
         }
+        if (sell != null) {
+            sell.disable();
+        }
         HandlerList.unregisterAll(this);
     }
 
@@ -168,7 +179,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     }
 
     /** Island profiles (PROF): money, crystals and shards are per profile; gems per player. */
-    ProfileService profiles() {
+    public ProfileService profiles() {
         return ProfileService.of(core.services());
     }
 
@@ -177,7 +188,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
         return profiles().profileKeyAsync(player);
     }
 
-    Executor mainThread() {
+    public Executor mainThread() {
         return main;
     }
 
@@ -268,7 +279,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     // ================================================================== text helpers
 
     /** An amount in its currency's color and symbol ({@code format.<currency>}). */
-    Component amount(CommandSender viewer, Currency currency, long value) {
+    public Component amount(CommandSender viewer, Currency currency, long value) {
         return msg.component(viewer, "format." + currency.key(), Msg.p("value", Amounts.plain(value)),
                 Msg.p("exact", Format.number(value)));
     }
@@ -279,7 +290,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 Msg.p("exact", Format.number(value))));
     }
 
-    TagResolver amountTag(String name, CommandSender viewer, Currency currency, long value) {
+    public TagResolver amountTag(String name, CommandSender viewer, Currency currency, long value) {
         return Msg.c(name, amount(viewer, currency, value));
     }
 
@@ -309,7 +320,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
         return core.players().offline(name).thenApply(s -> s.map(snap -> new Found(snap.uuid(), snap.name())));
     }
 
-    boolean frozen(Player player) {
+    public boolean frozen(Player player) {
         return core.placeholders().has("frozen")
                 && core.placeholders().text(player, "frozen").map("true"::equalsIgnoreCase).orElse(false);
     }
