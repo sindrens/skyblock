@@ -67,6 +67,7 @@ public final class MenusModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(menuItem, core.plugin());
         settings.onChange(MenuItem.SETTING, (player, value) -> menuItem.apply(player));
         menuItem.applyAll();
+        menuItem.start();
         registerCommands();
     }
 
@@ -78,12 +79,14 @@ public final class MenusModule implements SkyblockModule {
         installSoundFilters();
         if (menuItem != null) {
             menuItem.applyAll();
+            menuItem.start();
         }
     }
 
     @Override
     public void disable() {
         if (menuItem != null) {
+            menuItem.stop();
             HandlerList.unregisterAll(menuItem);
             menuItem.removeAll(); // never leave a dead menu item behind if the module is off
         }

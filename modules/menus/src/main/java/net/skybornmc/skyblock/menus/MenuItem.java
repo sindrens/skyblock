@@ -1,7 +1,11 @@
 package net.skybornmc.skyblock.menus;
 
 import net.kyori.adventure.text.format.TextDecoration;
+import net.skybornmc.skyblock.common.menu.MenuService;
+import net.skybornmc.skyblock.common.profile.ProfileService;
+import net.skybornmc.skyblock.common.util.Scheduler;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -11,9 +15,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -27,25 +34,54 @@ import org.bukkit.persistence.PersistentDataType;
 
 /**
  * The menu item (owner decision): a Nether Star with a red glint in hotbar slot 9, "Menu · Right-click".
- * Right- or left-click (also a tap on Bedrock) opens {@code /menu}. It can't be dropped, moved, put in containers,
- * crafted with or lost on death. Players can turn it off in {@code /settings} ({@code menu-item}).
+ * Right- or left-click (also a tap on Bedrock) opens {@code /menu}. It always stays in the inventory (FIXES1): it can't
+ * be dropped, moved, put in containers, crafted with or lost on death, and it is put back on join, respawn, world
+ * change, game mode change, after closing any inventory and by a light check every {@code menu-item.check-seconds}.
+ * Players can still turn it off in {@code /settings} ({@code menu-item}). Staff mode owns the hotbar while it is on.
+ *
+ * <p>FIXES1 root cause of "Removed 1 menu item(s) from X's inventory" and the item vanishing: this item used the PDC
+ * key {@code phoenixskyblock:menu_item}, the same key the menu framework puts on GUI buttons
+ * ({@link MenuService#BUTTON_KEY}). The framework deletes every item with that key from a player's own inventory on join
+ * and after every menu close (defence against buttons leaking out of a GUI), so it deleted this item each time the
+ * player joined or closed /menu. The item now has its own key ({@link #KEY}); old copies are swapped silently.</p>
  */
 final class MenuItem implements Listener {
 
     static final String SETTING = "menu-item";
+    /** PDC key of the hotbar menu item; must never equal {@link MenuService#BUTTON_KEY}. */
+    static final String KEY = "hotbar_menu_item";
 
     private final Nav nav;
     private final MenusConfig config;
     private final NamespacedKey key;
+    /** The old key (shared with GUI buttons): only used to recognise and replace old copies of this item. */
+    private final NamespacedKey legacyKey;
+    private Scheduler.Task task;
 
     MenuItem(Nav nav, MenusConfig config) {
         this.nav = nav;
         this.config = config;
-        this.key = new NamespacedKey(nav.core.plugin(), "menu_item");
+        this.key = new NamespacedKey(nav.core.plugin(), KEY);
+        this.legacyKey = new NamespacedKey(nav.core.plugin(), MenuService.BUTTON_KEY);
     }
 
     private int slot() {
         return Math.max(0, Math.min(8, config.menuItemSlot - 1));
+    }
+
+    void start() {
+        stop();
+        if (config.menuItemCheckSeconds > 0) {
+            long period = config.menuItemCheckSeconds * 20L;
+            task = nav.core.scheduler().repeat("menus:menu-item", period, period, () -> Bukkit.getOnlinePlayers().forEach(this::ensure));
+        }
+    }
+
+    void stop() {
+        if (task != null) {
+            task.cancel();
+            task = null;
+        }
     }
 
     ItemStack create(Player player) {
@@ -65,15 +101,58 @@ final class MenuItem implements Listener {
         return item != null && item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(key);
     }
 
+    /**
+     * An old copy of this item (before FIXES1): the shared button key on the menu item material. Only checked on join,
+     * before the menu framework's leak check runs, so the framework never logs it as a leaked GUI button.
+     */
+    private boolean isLegacy(ItemStack item) {
+        if (item == null || !item.hasItemMeta() || !item.getItemMeta().getPersistentDataContainer().has(legacyKey)) {
+            return false;
+        }
+        Material material = Material.matchMaterial(config.menuItemMaterial);
+        return item.getType() == (material == null ? Material.NETHER_STAR : material) || item.getType() == Material.NETHER_STAR;
+    }
+
+    private boolean wanted(Player player) {
+        return config.menuItemEnabled && nav.settings.get(player, SETTING);
+    }
+
+    /** Staff mode owns the hotbar (its kit uses slot 9), and a profile switch is swapping the inventory. */
+    private boolean paused(Player player) {
+        if (nav.core.placeholders().has("staff_mode")
+                && nav.core.placeholders().text(player, "staff_mode").map("true"::equalsIgnoreCase).orElse(false)) {
+            return true;
+        }
+        return nav.core.services().optional(ProfileService.class).map(p -> p.isSwitching(player.getUniqueId())).orElse(false);
+    }
+
+    /**
+     * Cheap check (one slot): puts the item back when it is wanted but not in its slot. Turning it off and extra copies
+     * are handled by {@link #apply} (setting change, join, respawn, profile switch); the item can't be moved, so no
+     * copies appear in between.
+     */
+    void ensure(Player player) {
+        if (!player.isOnline() || !wanted(player) || is(player.getInventory().getItem(slot())) || paused(player)) {
+            return;
+        }
+        apply(player);
+    }
+
     /** Puts the item in its slot if the player wants it, or removes every copy if not. */
     void apply(Player player) {
+        if (paused(player)) {
+            return;
+        }
         PlayerInventory inv = player.getInventory();
-        boolean wanted = config.menuItemEnabled && nav.settings.get(player, SETTING);
+        boolean wanted = wanted(player);
         // Remove copies outside the slot (old slot setting, plugin reload) so there is never more than one.
         for (int i = 0; i < inv.getSize(); i++) {
             if (i != slot() && is(inv.getItem(i))) {
                 inv.setItem(i, null);
             }
+        }
+        if (is(player.getItemOnCursor())) {
+            player.setItemOnCursor(null);
         }
         ItemStack current = inv.getItem(slot());
         if (!wanted) {
@@ -112,7 +191,22 @@ final class MenuItem implements Listener {
         Bukkit.getOnlinePlayers().forEach(this::apply);
     }
 
+    private void ensureLater(Player player) {
+        Bukkit.getScheduler().runTask(nav.core.plugin(), () -> ensure(player));
+    }
+
     // ------------------------------------------------------------------ events
+
+    /** Before the menu framework's leak check (NORMAL): old copies with the shared key are taken out silently. */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onJoinEarly(PlayerJoinEvent event) {
+        PlayerInventory inv = event.getPlayer().getInventory();
+        for (int i = 0; i < inv.getSize(); i++) {
+            if (isLegacy(inv.getItem(i))) {
+                inv.setItem(i, null);
+            }
+        }
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
@@ -133,6 +227,24 @@ final class MenuItem implements Listener {
                 apply(player);
             }
         });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onWorldChange(PlayerChangedWorldEvent event) {
+        ensureLater(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onGameMode(PlayerGameModeChangeEvent event) {
+        ensureLater(event.getPlayer());
+    }
+
+    /** Any inventory closed (staff mode left, a chest, /invsee edits, /clear in between): put it back if it is gone. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onClose(InventoryCloseEvent event) {
+        if (event.getPlayer() instanceof Player player) {
+            ensureLater(player);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -164,12 +276,22 @@ final class MenuItem implements Listener {
     public void onClick(InventoryClickEvent event) {
         boolean hotbarSwap = event.getHotbarButton() >= 0
                 && is(event.getWhoClicked().getInventory().getItem(event.getHotbarButton()));
-        if (is(event.getCurrentItem()) || is(event.getCursor()) || hotbarSwap) {
+        boolean offhandSwap = event.getClick() == org.bukkit.event.inventory.ClickType.SWAP_OFFHAND
+                && is(event.getWhoClicked().getInventory().getItemInOffHand());
+        if (is(event.getCurrentItem()) || is(event.getCursor()) || hotbarSwap || offhandSwap) {
             event.setCancelled(true);
-            if (is(event.getCurrentItem()) && event.getWhoClicked() instanceof Player player
-                    && event.getView().getTopInventory().getHolder() == player) {
-                // Clicking it in your own inventory opens the menu too.
-                Bukkit.getScheduler().runTask(nav.core.plugin(), () -> player.performCommand("menu"));
+            if (event.getWhoClicked() instanceof Player player) {
+                if (player.getGameMode() == GameMode.CREATIVE) {
+                    // The creative inventory trusts the client: resync so the item is never lost client-side.
+                    Bukkit.getScheduler().runTask(nav.core.plugin(), () -> {
+                        player.updateInventory();
+                        ensure(player);
+                    });
+                }
+                if (is(event.getCurrentItem()) && event.getView().getTopInventory().getHolder() == player) {
+                    // Clicking it in your own inventory opens the menu too.
+                    Bukkit.getScheduler().runTask(nav.core.plugin(), () -> player.performCommand("menu"));
+                }
             }
         }
     }
