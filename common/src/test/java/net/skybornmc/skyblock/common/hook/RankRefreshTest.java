@@ -23,6 +23,11 @@ class RankRefreshTest {
             jobs.add(new Job(now + Math.max(1, delayTicks), task));
         }
 
+        @Override
+        public long now() {
+            return now;
+        }
+
         void advance(long ticks) {
             for (long t = 0; t < ticks; t++) {
                 now++;
@@ -60,11 +65,27 @@ class RankRefreshTest {
         ticks.advance(5);
         debouncer.changed(player); // the last step of the command arrives later
         ticks.advance(30);
-        // fast(1), fast after the late event (6), settle of the first burst (10)
-        assertEquals(List.of(1L, 6L, 10L), refreshedAt);
+        // fast(1), fast after the late event (6), settle 10 ticks after the LAST event (15), not after the first (FIXES1)
+        assertEquals(List.of(1L, 6L, 15L), refreshedAt);
         long lastEvent = 5;
         assertEquals(true, refreshedAt.stream().anyMatch(t -> t > lastEvent), "a refresh must follow the last event");
         assertEquals(true, refreshedAt.getLast() <= 20, "everything settles within one second");
+    }
+
+    @Test
+    void slowCommandAlwaysGetsASettleAfterItsLastStep() {
+        FakeTicks ticks = new FakeTicks();
+        List<Long> refreshedAt = new ArrayList<>();
+        RankChangeDebouncer debouncer = new RankChangeDebouncer(ticks, id -> refreshedAt.add(ticks.now));
+        UUID player = UUID.randomUUID();
+        debouncer.changed(player);  // parent removed
+        ticks.advance(8);
+        debouncer.changed(player);  // database save in between
+        ticks.advance(8);
+        debouncer.changed(player);  // new parent added at tick 16, after the first settle window
+        ticks.advance(40);
+        assertEquals(26L, refreshedAt.getLast(), "settle comes SETTLE_TICKS after the last change");
+        assertEquals(1, refreshedAt.stream().filter(t -> t >= 20).count(), "only one settle refresh");
     }
 
     @Test
@@ -94,5 +115,17 @@ class RankRefreshTest {
         assertEquals("vip", RankProvider.pickPrimary(List.of(), "vip"));
         assertEquals("default", RankProvider.pickPrimary(List.of(), null));
         assertEquals("default", RankProvider.pickPrimary(List.of(), " "));
+    }
+
+    /** FIXES1: the prefix comes fresh from the nodes (own prefix vs primary group's), never only from a stale snapshot. */
+    @Test
+    void prefixIsTheHighestPriorityOfOwnAndPrimaryGroup() {
+        var group = new RankProvider.WeightedPrefix(20, "&6&lMOD &6");
+        assertEquals("&6&lMOD &6", RankProvider.pickPrefix(null, group, "&7old "), "a stale cached prefix never wins");
+        assertEquals("&dVIP ", RankProvider.pickPrefix(new RankProvider.WeightedPrefix(100, "&dVIP "), group, null));
+        assertEquals("&6&lMOD &6", RankProvider.pickPrefix(new RankProvider.WeightedPrefix(5, "&dVIP "), group, null));
+        assertEquals("&dVIP ", RankProvider.pickPrefix(new RankProvider.WeightedPrefix(20, "&dVIP "), group, null), "tie: own wins");
+        assertEquals("&7cached", RankProvider.pickPrefix(null, null, "&7cached"));
+        assertEquals("", RankProvider.pickPrefix(null, null, null));
     }
 }

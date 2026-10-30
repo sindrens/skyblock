@@ -104,7 +104,10 @@ class ChatLogicTest {
         ChatConfig.CHANGED_DEFAULTS.forEach((path, values) -> old.put(path, values[0]));
         java.util.Map<String, String> up = ChatConfig.upgrades(old);
         assertEquals(ChatConfig.CHANGED_DEFAULTS.size(), up.size());
-        assertEquals("<title><rank><name><tag><afk>", up.get("format.tab"));
+        assertEquals("<rank><name><tag><afk>", up.get("format.tab"));
+        // FIXES1: the UX1 default is an old default now too, so a server that still has it gets the clean tab.
+        assertEquals("<rank><name><tag><afk>",
+                ChatConfig.upgrades(java.util.Map.of("format.tab", "<title><rank><name><tag><afk>")).get("format.tab"));
 
         old.put("format.chat", "<rank><name>: <message>"); // the owner's own format
         assertFalse(ChatConfig.upgrades(old).containsKey("format.chat"));

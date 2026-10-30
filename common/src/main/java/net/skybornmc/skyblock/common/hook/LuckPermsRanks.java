@@ -6,11 +6,14 @@ import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.cacheddata.CachedMetaData;
 import net.luckperms.api.event.EventSubscription;
+import net.luckperms.api.event.node.NodeMutateEvent;
 import net.luckperms.api.event.user.UserDataRecalculateEvent;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.NodeType;
 import net.luckperms.api.node.types.InheritanceNode;
+import net.luckperms.api.node.types.MetaNode;
+import net.luckperms.api.node.types.PrefixNode;
 import net.luckperms.api.platform.PlayerAdapter;
 import net.luckperms.api.query.QueryOptions;
 import org.bukkit.entity.Player;
@@ -36,6 +39,9 @@ import java.util.function.Consumer;
  *   <li>Listeners are told twice per burst of recalculation events, coalesced per player
  *       ({@link RankChangeDebouncer}): on the next tick and again {@value RankChangeDebouncer#SETTLE_TICKS} ticks later,
  *       so the final state is always picked up.</li>
+ *   <li>FIXES1: the prefix and rank color are read fresh the same way (the player's own prefix/color nodes, else the
+ *       primary group's), and {@code NodeMutateEvent} is watched too: a user node change refreshes that player, a
+ *       group change (e.g. {@code lp group mod meta setprefix}) refreshes everyone online.</li>
  * </ul>
  */
 final class LuckPermsRanks implements RankProvider {
@@ -46,14 +52,23 @@ final class LuckPermsRanks implements RankProvider {
     private final List<Consumer<UUID>> listeners = new CopyOnWriteArrayList<>();
     private final RankChangeDebouncer debouncer;
     private EventSubscription<UserDataRecalculateEvent> subscription;
+    private EventSubscription<NodeMutateEvent> mutateSubscription;
 
     private LuckPermsRanks(Plugin plugin, LuckPerms lp) {
         this.plugin = plugin;
         this.lp = lp;
         this.adapter = lp.getPlayerAdapter(Player.class);
-        this.debouncer = new RankChangeDebouncer((delay, task) -> {
-            if (plugin.isEnabled()) {
-                plugin.getServer().getScheduler().runTaskLater(plugin, task, Math.max(1L, delay));
+        this.debouncer = new RankChangeDebouncer(new RankChangeDebouncer.TickScheduler() {
+            @Override
+            public void later(long delayTicks, Runnable task) {
+                if (plugin.isEnabled()) {
+                    plugin.getServer().getScheduler().runTaskLater(plugin, task, Math.max(1L, delayTicks));
+                }
+            }
+
+            @Override
+            public long now() {
+                return org.bukkit.Bukkit.getCurrentTick();
             }
         }, this::notifyListeners);
     }
@@ -61,7 +76,24 @@ final class LuckPermsRanks implements RankProvider {
     static LuckPermsRanks create(Plugin plugin) {
         LuckPermsRanks ranks = new LuckPermsRanks(plugin, LuckPermsProvider.get());
         ranks.subscription = ranks.lp.getEventBus().subscribe(plugin, UserDataRecalculateEvent.class, ranks::onRecalculate);
+        ranks.mutateSubscription = ranks.lp.getEventBus().subscribe(plugin, NodeMutateEvent.class, ranks::onMutate);
         return ranks;
+    }
+
+    /** A node changed: on a user, refresh that player; on a group (prefix, weight, color), refresh everyone online. */
+    private void onMutate(NodeMutateEvent event) {
+        if (!plugin.isEnabled()) {
+            return;
+        }
+        if (event.getTarget() instanceof User user) {
+            debouncer.changed(user.getUniqueId());
+        } else if (event.isGroup()) {
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                for (Player p : plugin.getServer().getOnlinePlayers()) {
+                    debouncer.changed(p.getUniqueId());
+                }
+            });
+        }
     }
 
     private void onRecalculate(UserDataRecalculateEvent event) {
@@ -131,8 +163,46 @@ final class LuckPermsRanks implements RankProvider {
 
     @Override
     public String prefix(Player player) {
-        String prefix = metaData(player).getPrefix();
-        return prefix == null ? "" : prefix;
+        String cached = metaData(player).getPrefix();
+        User user = lp.getUserManager().getUser(player.getUniqueId());
+        if (user == null) {
+            return cached == null ? "" : cached;
+        }
+        QueryOptions query = adapter.getQueryOptions(player);
+        WeightedPrefix own = null;
+        for (PrefixNode node : user.getNodes(NodeType.PREFIX)) {
+            if (node.getValue() && !node.hasExpired() && query.satisfies(node.getContexts())
+                    && (own == null || node.getPriority() > own.priority())) {
+                own = new WeightedPrefix(node.getPriority(), node.getMetaValue());
+            }
+        }
+        WeightedPrefix fromGroup = null;
+        Group group = lp.getGroupManager().getGroup(primaryGroup(player));
+        if (group != null) {
+            CachedMetaData groupMeta = group.getCachedData().getMetaData();
+            String value = groupMeta.getPrefix();
+            if (value != null) {
+                int priority = groupMeta.getPrefixes().keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
+                fromGroup = new WeightedPrefix(priority, value);
+            }
+        }
+        return RankProvider.pickPrefix(own, fromGroup, own == null && fromGroup == null ? cached : null);
+    }
+
+    /** The rank's {@code color} meta, fresh: the player's own meta node, else the primary group's (FIXES1). */
+    private String colorMeta(Player player) {
+        User user = lp.getUserManager().getUser(player.getUniqueId());
+        if (user == null) {
+            return metaData(player).getMetaValue("color");
+        }
+        QueryOptions query = adapter.getQueryOptions(player);
+        for (MetaNode node : user.getNodes(NodeType.META)) {
+            if ("color".equals(node.getMetaKey()) && node.getValue() && !node.hasExpired() && query.satisfies(node.getContexts())) {
+                return node.getMetaValue();
+            }
+        }
+        Group group = lp.getGroupManager().getGroup(primaryGroup(player));
+        return group == null ? metaData(player).getMetaValue("color") : group.getCachedData().getMetaData().getMetaValue("color");
     }
 
     @Override
@@ -149,7 +219,7 @@ final class LuckPermsRanks implements RankProvider {
 
     @Override
     public TextColor rankColor(Player player) {
-        TextColor color = RankProvider.parseColor(metaData(player).getMetaValue("color"));
+        TextColor color = RankProvider.parseColor(colorMeta(player));
         if (color == null) {
             color = RankProvider.firstLegacyColor(prefix(player));
         }
@@ -175,6 +245,9 @@ final class LuckPermsRanks implements RankProvider {
     public void close() {
         if (subscription != null) {
             subscription.close();
+        }
+        if (mutateSubscription != null) {
+            mutateSubscription.close();
         }
         listeners.clear();
     }

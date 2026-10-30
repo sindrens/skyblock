@@ -141,6 +141,27 @@ public interface RankProvider {
         return fallback == null || fallback.isBlank() ? "default" : fallback;
     }
 
+    /** A prefix with its LuckPerms priority. */
+    record WeightedPrefix(int priority, String value) {
+    }
+
+    /**
+     * The prefix to show (FIXES1): the highest-priority prefix among the player's own prefix nodes and the primary
+     * group's prefix (read fresh from the nodes, never from the player's cached meta snapshot, which can be built from a
+     * half-finished {@code parent set} and then keeps the old rank's prefix). On a tie the player's own prefix wins.
+     * Falls back to {@code cached} when neither exists.
+     */
+    static String pickPrefix(WeightedPrefix own, WeightedPrefix group, String cached) {
+        WeightedPrefix best = own;
+        if (group != null && group.value() != null && (best == null || best.value() == null || group.priority() > best.priority())) {
+            best = group;
+        }
+        if (best != null && best.value() != null) {
+            return best.value();
+        }
+        return cached == null ? "" : cached;
+    }
+
     /**
      * Parses a rank color: {@code #RRGGBB}, a legacy name ({@code gold}) or a legacy code ({@code &6}).
      * Returns null when it can't be parsed.
