@@ -22,6 +22,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **M2.7** merged: `/is disband`, slot clearing + reuse, `/isadmin`.
 - **UX1** merged: short plain messages in one format, cleaner scoreboard (+ Depths layout) and tab, instant rank refresh, /baltop 30 s async, tags after the name.
 - **P2** merged: [Undo], double-punish guard, offence expiry, /pstats.
+- **CRY** merged: tokens replaced by crystals (aqua ◆, not tradeable), gems emerald ✦, DB/config migrations.
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -51,7 +52,6 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- CRY tokens → crystals
 - R2A round-2 quick decisions batch (non-economy parts)
 - M2.4 island visiting, warps, ratings, likes — w8z4uyvta
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
