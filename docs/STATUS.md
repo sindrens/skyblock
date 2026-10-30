@@ -61,6 +61,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - W2 wardrobe set levels + merging
 - P4 punishments: approval, mute-ended, probation, watchlist
+- M3.5 /shop builder shop (new modules/shop)
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
 
 ## Parked / broken
