@@ -603,6 +603,10 @@ When every level upgrade is maxed, upgrades and masteries (MA1–MA12) can be le
 | 25 | $3.6B | $10.4B | 60.7 h |
 <!-- END table:mastery -->
 
+### 5.5 Phase 5 catalog note (PLAN5, no model change yet)
+`docs/phases/PHASE-5-PROGRESSION.md` turns the 12 × 12 level grid into the real catalog. Some upgrades have fewer natural steps: Island Size 3 (9x9 cap, owner 157), Member Slots 4 (8 + leader, owner 242), Warp Slots 6, Island Vault 5, Entity Limits 1, Bank Capacity/Interest 10. Those levels cost **$8.9B** together instead of the grid's **$14.5B**. The missing **$5.6B** moves to the mastery ranks (MA1–MA12 + Treasury), priced on the same curve `W × 0.067 × 1.49^(n−1) × REF(n)` with their last rank at tier 12, so upgrades + masteries cost **$14.5B** again (ratio 1.00) and the sink ratio stays as modelled. The endless "mastery" of §5.4 is called **Ascension** in the plan and is unchanged (Market Contacts stays on that curve). Production upgrades stay on `C_p` with 10 levels each (PL 50; the grinder reaches PL 45).
+**Not modelled yet (BAL3, M5.9):** the effects of Mine Fortune, Lumberjack and XP Boost (+2% per level each), the income masteries (Timber, Swift Hands, Crystal Rush, Lucky Strike, Deep Pockets), the earlier Treasury fee drop, and pillar/island level pacing. They sit inside the existing bonus family caps, but the next model run must add them before Phase 5 prices go live.
+
 ---
 
 ## 6. Banks and interest
