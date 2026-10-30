@@ -81,6 +81,9 @@ public final class DropTable {
      *
      * @param known drop item ids that exist (entries with other items are skipped)
      */
+    /** Plain settings ({@code DepthsConfig}) that live inside the {@code drops} section; they are not wings. */
+    static final Set<String> SETTING_KEYS = Set.of("max-per-block", "rare-sound");
+
     public static DropTable parse(ConfigurationSection section, Set<String> known, Consumer<String> problem) {
         if (section == null) {
             return EMPTY;
@@ -88,6 +91,9 @@ public final class DropTable {
         Map<String, Map<Integer, TierDrops>> out = new LinkedHashMap<>();
         for (String wingKey : section.getKeys(false)) {
             String wing = wingKey.toLowerCase(Locale.ROOT);
+            if (SETTING_KEYS.contains(wing)) {
+                continue; // plain settings (DepthsConfig) that share the drops section
+            }
             ConfigurationSection w = section.getConfigurationSection(wingKey);
             if (w == null) {
                 problem.accept("drops." + wingKey + ": must be a section of tiers, skipped");
