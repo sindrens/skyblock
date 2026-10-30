@@ -228,8 +228,14 @@ final class MemberManager {
 
     /** {@code /is accept [player]}: the newest invite, or the one from {@code from}'s island. */
     void accept(Player player, String from) {
-        Optional<Invites.Invite> invite = findInvite(player, from);
+        findInvite(player, from).ifPresent(invite -> accept(player, invite));
+    }
+
+    /** Accepts one pending invite (also from {@code /is invites}); the database re-checks everything. */
+    void accept(Player player, Invites.Invite pending) {
+        Optional<Invites.Invite> invite = invites.get(pending.islandId(), player.getUniqueId(), System.currentTimeMillis());
         if (invite.isEmpty()) {
+            islands.fail(player, "accept.expired");
             return;
         }
         if (islands.islandOfPlayer(player.getUniqueId()).isPresent()) {
@@ -304,12 +310,15 @@ final class MemberManager {
 
     /** {@code /is deny [player]}. */
     void deny(Player player, String from) {
-        Optional<Invites.Invite> found = findInvite(player, from);
-        if (found.isEmpty()) {
+        findInvite(player, from).ifPresent(invite -> deny(player, invite));
+    }
+
+    /** Declines one pending invite (also from {@code /is invites}). */
+    void deny(Player player, Invites.Invite invite) {
+        if (!invites.remove(invite.islandId(), player.getUniqueId())) {
+            islands.fail(player, "accept.expired");
             return;
         }
-        Invites.Invite invite = found.get();
-        invites.remove(invite.islandId(), player.getUniqueId());
         Island island = islands.byId(invite.islandId());
         String islandName = island == null ? "?" : islands.displayName(island);
         store.deleteInvite(invite.islandId(), player.getUniqueId()).exceptionally(error -> {
@@ -322,6 +331,43 @@ final class MemberManager {
         Player inviter = Bukkit.getPlayer(invite.inviter());
         if (inviter != null) {
             msg.send(inviter, "deny.notify", Msg.p("player", player.getName()));
+        }
+    }
+
+    // ------------------------------------------------------------------ invites menu (ISL2)
+
+    /** {@code /is invites}: invites your island sent (cancel) and invites you received (accept, deny). */
+    void openInvites(Player player) {
+        core.menus().open(player, new InvitesMenu(module, islands, this));
+    }
+
+    /** Cancels an invite the player's island sent (leader, admin or mod). Saved, logged and both sides told. */
+    void cancelInvite(Player player, Invites.Invite invite) {
+        Island island = ownIsland(player);
+        if (island == null) {
+            return;
+        }
+        if (!invite.islandId().equals(island.id()) || !MemberRules.canInvite(island.roleOrNull(player.getUniqueId()))) {
+            islands.fail(player, "invites.cancel-not-allowed");
+            return;
+        }
+        if (!invites.remove(island.id(), invite.target())) {
+            islands.fail(player, "invites.gone");
+            return;
+        }
+        String targetName = islands.name(invite.target());
+        store.deleteInvite(island.id(), invite.target()).exceptionally(error -> {
+            core.plugin().getLogger().log(Level.WARNING, "Islands: deleting an invite failed", Database.cause(error));
+            return false;
+        });
+        String name = islands.displayName(island);
+        core.audit().log(AuditCategory.ISLAND, "island_invite", Actor.player(player), island.id().toString(), name, null, null,
+                Map.of("target", invite.target().toString(), "target_name", targetName, "result", "cancelled"));
+        msg.send(player, "invites.cancelled", Msg.p("player", targetName));
+        core.sounds().play(player, "success");
+        Player target = Bukkit.getPlayer(invite.target());
+        if (target != null) {
+            msg.send(target, "invites.cancelled-target", Msg.p("island", name));
         }
     }
 
@@ -427,7 +473,7 @@ final class MemberManager {
                 viewer -> module.text(viewer, "leave.crumb"),
                 core.menus().item(Material.OAK_DOOR, player, IslandsModule.ID, "leave.shown", Msg.p("island", name)),
                 viewer -> module.lines(viewer, "leave.details", Msg.p("island", name),
-                        Msg.p("hours", config().joinCooldownHours)),
+                        Msg.p("time", Format.duration(Duration.ofHours(config().joinCooldownHours)))),
                 viewer -> remove(viewer, island, viewer.getUniqueId(), MemberStore.LEFT_LEAVE, "", Actor.player(viewer)),
                 null));
     }
@@ -482,8 +528,8 @@ final class MemberManager {
         Player player = Bukkit.getPlayer(target);
         if (leave) {
             if (player != null) {
-                msg.send(player, "leave.done", Msg.p("island", name), Msg.p("hours", config().joinCooldownHours));
                 core.sounds().play(player, "success");
+                tellJoinCooldown(player, name);
             }
             notifyMembers(island, target, "notify.left", Msg.p("player", targetName));
         } else {
@@ -515,6 +561,25 @@ final class MemberManager {
         }
     }
 
+    /**
+     * After a leave: "You left X" with the time left of the join cooldown (ISL2, owner #20: it counts from the last
+     * join only, so it may already be over).
+     */
+    private void tellJoinCooldown(Player player, String islandName) {
+        long cooldown = config().memberLimits().cooldownMillis();
+        store.history(player.getUniqueId(), config().seasonId).whenCompleteAsync((history, error) -> {
+            if (!player.isOnline()) {
+                return;
+            }
+            long remaining = error != null ? 0 : JoinRules.cooldownRemaining(history.lastJoin(), System.currentTimeMillis(), cooldown);
+            if (remaining > 0) {
+                msg.send(player, "leave.done", Msg.p("island", islandName), Msg.p("time", Format.duration(Duration.ofMillis(remaining))));
+            } else {
+                msg.send(player, "leave.done-free", Msg.p("island", islandName));
+            }
+        }, main);
+    }
+
     // ------------------------------------------------------------------ promote / demote / transfer
 
     void promote(Player player, String targetName) {
@@ -540,7 +605,8 @@ final class MemberManager {
         String name = islands.name(target);
         boolean allowed = up ? MemberRules.canPromote(actor, role) : MemberRules.canDemote(actor, role);
         if (!allowed) {
-            String key = actor != Role.LEADER ? "role.leader-only" : up ? "promote.not-possible" : "demote.not-possible";
+            String key = actor != Role.LEADER && actor != Role.ADMIN ? "role.admin-only"
+                    : up ? "promote.not-possible" : "demote.not-possible";
             islands.fail(player, key, Msg.p("player", name));
             return;
         }
@@ -576,7 +642,7 @@ final class MemberManager {
         }, main);
     }
 
-    /** {@code /is transfer <player>}: two confirm screens, then the new leader takes over and the old one becomes a mod. */
+    /** {@code /is transfer <player>}: two confirm screens, then the new leader takes over and the old one becomes an admin. */
     void transfer(Player player, String targetName, Menu parent) {
         Island island = ownIsland(player);
         if (island == null) {
@@ -793,7 +859,7 @@ final class MemberManager {
         }
     }
 
-    /** True if a leader or mod of {@code island} (other than {@code except}) is online. */
+    /** True if a leader, admin or mod of {@code island} (other than {@code except}) is online. */
     boolean managerOnline(Island island, UUID except) {
         for (Map.Entry<UUID, Role> entry : island.members().entrySet()) {
             if (MemberRules.isManager(entry.getValue()) && !entry.getKey().equals(except) && Bukkit.getPlayer(entry.getKey()) != null) {
@@ -889,7 +955,7 @@ final class MemberManager {
     }
 
     /**
-     * Staff makes the member {@code newLeader} the leader (the old leader becomes a mod, like {@code /is transfer}).
+     * Staff makes the member {@code newLeader} the leader (the old leader becomes an admin, like {@code /is transfer}).
      * Cached, logged ({@code island_transfer} with {@code staff}), both players and the members are told.
      */
     CompletableFuture<Boolean> setOwnerByStaff(Island island, UUID newLeader, Actor actor) {

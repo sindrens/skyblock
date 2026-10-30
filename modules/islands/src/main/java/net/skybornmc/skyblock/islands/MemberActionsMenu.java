@@ -98,13 +98,15 @@ final class MemberActionsMenu extends Menu {
             }
         } else {
             if (MemberRules.canPromote(viewerRole, role)) {
-                set(SLOT_PROMOTE, service.item(Material.LIME_DYE, viewer, IslandsModule.ID, "actions.promote", p), click -> {
+                set(SLOT_PROMOTE, service.item(Material.LIME_DYE, viewer, IslandsModule.ID,
+                        role == Role.MOD ? "actions.promote-admin" : "actions.promote", p), click -> {
                     members.promote(viewer, name);
                     back();
                 });
             }
             if (MemberRules.canDemote(viewerRole, role)) {
-                set(SLOT_DEMOTE, service.item(Material.ORANGE_DYE, viewer, IslandsModule.ID, "actions.demote", p), click -> {
+                set(SLOT_DEMOTE, service.item(Material.ORANGE_DYE, viewer, IslandsModule.ID,
+                        role == Role.ADMIN ? "actions.demote-admin" : "actions.demote", p), click -> {
                     members.demote(viewer, name);
                     back();
                 });

@@ -43,7 +43,7 @@ home:
 
 sethome:
   done: "<prefix><c:success><sym:check> <c:text>Island home set where you stand."
-  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can move the home."
+  not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can move the home."
   outside: "<prefix><c:error><sym:cross> Stand inside your island's border to set the home."
   height: "<prefix><c:error><sym:cross> The home must be between <c:value>Y <min></c:value> and <c:value>Y <max></c:value>."
   unsafe: "<prefix><c:error><sym:cross> This spot isn't safe. Stand on solid ground with room above you, away from water and lava."
@@ -72,6 +72,8 @@ protection:
     fire: "light fires"
     ender-pearls: "teleport here"
     spawners: "change spawners"
+    hurt-monsters: "hurt monsters"
+    settings: "change the island settings"
 
 bypass:
   "on": "<prefix><c:warning><sym:bullet></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>Logged. /is bypass to turn it off."
@@ -101,11 +103,13 @@ error:
 # Role names (also used in the permission matrix rows).
 role:
   leader: "Leader"
+  admin: "Admin"
   mod: "Mod"
   member: "Member"
   coop: "Coop"
   visitor: "Visitor"
   leader-only: "<prefix><c:error><sym:cross> Only the island leader can do that."
+  admin-only: "<prefix><c:error><sym:cross> Only the leader and admins can change roles."
 
 menu:
   crumb: "Island"
@@ -116,7 +120,7 @@ member:
   changed: "<prefix><c:error><sym:cross> That member changed meanwhile. Check <click:run_command:'/is members'><c:action>/is members</c:action></click> and try again."
 
 invite:
-  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can invite players."
+  not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can invite players."
   self: "<prefix><c:error><sym:cross> You can't invite yourself."
   already-member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already on your island."
   has-island: "<prefix><c:error><sym:cross> <c:value><player></c:value> already has an island. They have to leave it before they can join yours."
@@ -171,7 +175,7 @@ deny:
 
 kick:
   self: "<prefix><c:error><sym:cross> You can't kick yourself. Use <c:value>/is leave</c:value>."
-  not-allowed: "<prefix><c:error><sym:cross> You can't kick <c:value><player></c:value>. <c:muted>The leader kicks mods and members, mods kick members."
+  not-allowed: "<prefix><c:error><sym:cross> You can't kick <c:value><player></c:value>. <c:muted>You can only kick players with a lower role."
   crumb: "Kick member"
   shown:
     name: "<c:error><bold>Kick <player>"
@@ -195,17 +199,18 @@ leave:
   details:
     - "<c:text>You leave <c:value><island></c:value>."
     - "<c:text>XP you earned stays with the island."
-    - "<c:warning>You can join another island"
-    - "<c:warning>after <hours> hours.</c:warning>"
-  done: "<prefix><c:text>You left <c:value><island></c:value>. <c:muted>You can join another island in <hours> hours, or create your own with</c:muted> <click:run_command:'/is'><c:action>/is</c:action></click>."
+    - "<c:warning>You can join another island <c:value><time></c:value>"
+    - "<c:warning>after you joined this one.</c:warning>"
+  done: "<prefix><c:text>You left <c:value><island></c:value>. <c:muted>You can join another island in <time>, or create your own with</c:muted> <click:run_command:'/is'><c:action>/is</c:action></click>."
+  done-free: "<prefix><c:text>You left <c:value><island></c:value>. <c:muted>You can join another island now, or create your own with</c:muted> <click:run_command:'/is'><c:action>/is</c:action></click>."
 
 promote:
-  not-possible: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be promoted. <c:muted>Members can become mods; mods are the highest role below the leader."
+  not-possible: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be promoted by you. <c:muted>The leader promotes Member → Mod → Admin; admins promote members to mod."
   done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now a <c:value><role></c:value>."
   you: "<prefix><c:success><sym:star> <c:text>You are now a <c:value><role></c:value> on your island <c:muted>(by <player>)</c:muted>."
 
 demote:
-  not-possible: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't a mod."
+  not-possible: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be demoted by you. <c:muted>The leader demotes admins and mods; admins demote mods."
   done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now a <c:value><role></c:value>."
   you: "<prefix><c:warning><sym:bullet></c:warning> <c:text>You are now a <c:value><role></c:value> on your island <c:muted>(by <player>)</c:muted>."
 
@@ -218,7 +223,7 @@ transfer:
       - "<c:text>Step 1 of 2"
   details:
     - "<c:value><player></c:value> <c:text>becomes the island leader."
-    - "<c:text>You become a <c:value>Mod</c:value>."
+    - "<c:text>You become an <c:value>Admin</c:value>."
     - "<c:muted>One more confirmation follows."
   final:
     crumb: "Are you really sure?"
@@ -229,7 +234,7 @@ transfer:
     details:
       - "<c:error>This can't be undone by you."
       - "<c:text>Only <c:value><player></c:value> <c:text>can give it back."
-  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now the island leader. You are a <c:value>Mod</c:value>."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now the island leader. You are an <c:value>Admin</c:value>."
   you: "<prefix><c:success><sym:star> <c:text>You are now the leader of <c:value><island></c:value> <c:muted>(from <player>)</c:muted>."
   title:
     title: "<grad:phoenix><bold>ISLAND LEADER</bold></grad>"
@@ -239,19 +244,19 @@ transfer:
     fade-out: 20
 
 coop:
-  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can coop players."
+  not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can coop players."
   self: "<prefix><c:error><sym:cross> You can't coop yourself."
   member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already a member of your island."
   already: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already coop on your island."
   full: "<prefix><c:error><sym:cross> Your island already has <c:value><max></c:value> coop players."
   blocked: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be cooped right now."
   not-coop: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't coop on your island."
-  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is coop on your island while you or a mod is online. <c:muted>No XP, no bank, your island stays as it is."
-  you: "<prefix><c:ember><sym:star></c:ember> <c:value><player></c:value> <c:text>made you coop on <c:value><island></c:value>: you can help build there while its leader or a mod is online."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is coop on your island while you or another manager is online. <c:muted>No XP, no bank, your island stays as it is."
+  you: "<prefix><c:ember><sym:star></c:ember> <c:value><player></c:value> <c:text>made you coop on <c:value><island></c:value>: you can help build there while its leader, an admin or a mod is online."
   removed: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is no longer coop on your island."
   you-removed: "<prefix><c:muted>You are no longer coop on <c:value><island></c:value>."
   you-removed-reason: "<prefix><c:muted>You are no longer coop on <c:value><island></c:value>. Reason: <c:value><reason></c:value>"
-  ended: "<prefix><c:muted>Your coop on <c:value><island></c:value> ended: its leader and mods went offline."
+  ended: "<prefix><c:muted>Your coop on <c:value><island></c:value> ended: its leader, admins and mods went offline."
 
 # Sent to the island's online members on every member change.
 notify:
@@ -275,6 +280,8 @@ notify:
   banned: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>was banned from the island <c:muted>(by <by>)</c:muted>."
   unbanned: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>can visit the island again <c:muted>(by <by>)</c:muted>."
   liked: "<c:ember><sym:heart></c:ember> <c:value><player></c:value> <c:text>liked your island!"
+  # ISL2
+  setting: "<c:ember><sym:bullet></c:ember> <c:value><setting></c:value> <c:text>is now <c:value><value></c:value> <c:muted>(by <by>)</c:muted>."
   warp-gone: "<c:ember><sym:bullet></c:ember> <c:text>Warp <c:value><warp></c:value> was removed: its sign is gone."
 
 members:
@@ -282,7 +289,7 @@ members:
   info:
     - "<c:text>Everyone on your island and their role."
     - "<c:text>Click a head for actions."
-    - "<c:muted>Leader > Mod > Member. Coop players are"
+    - "<c:muted>Leader > Admin > Mod > Member. Coop players are"
     - "<c:muted>temporary and only help while you're online."
   empty:
     name: "<c:muted>Nobody here"
@@ -327,6 +334,20 @@ members:
       - "<c:action>Click to choose"
     lore-full:
       - "<c:error>Your island is full (<members>/<slots>)."
+  invites:
+    name: "<c:flame><bold>Invites"
+    lore:
+      - "<c:text>Invites you got and invites"
+      - "<c:text>your island sent. Open: <c:value><count>"
+      - ""
+      - "<c:action>Click to open"
+  settings:
+    name: "<c:flame><bold>Island settings"
+    lore:
+      - "<c:text>Spawning, fire, explosions,"
+      - "<c:text>weather, time and more."
+      - ""
+      - "<c:action>Click to open"
   permissions:
     name: "<c:flame><bold>Permissions"
     lore-edit:
@@ -335,7 +356,7 @@ members:
       - "<c:action>Click to edit"
     lore-view:
       - "<c:text>What each role may do on your island."
-      - "<c:muted>Only the leader and mods can change it."
+      - "<c:muted>Only the leader, admins and mods can change it."
       - ""
       - "<c:action>Click to view"
 
@@ -356,17 +377,31 @@ actions:
       - "<c:text>players and move the home."
       - ""
       - "<c:action>Click to promote"
+  promote-admin:
+    name: "<c:success><bold>Promote to Admin"
+    lore:
+      - "<c:text>Admins can do everything mods can,"
+      - "<c:text>change Mod permissions and promote"
+      - "<c:text>members to mod."
+      - ""
+      - "<c:action>Click to promote"
   demote:
     name: "<c:warning><bold>Demote to Member"
     lore:
       - "<c:text><player> loses the mod powers."
       - ""
       - "<c:action>Click to demote"
+  demote-admin:
+    name: "<c:warning><bold>Demote to Mod"
+    lore:
+      - "<c:text><player> loses the admin powers."
+      - ""
+      - "<c:action>Click to demote"
   transfer:
     name: "<c:warning><bold>Make leader"
     lore:
       - "<c:text>Hand the island to <c:value><player></c:value>."
-      - "<c:text>You become a mod. Two confirmations."
+      - "<c:text>You become an admin. Two confirmations."
       - ""
       - "<c:action>Click to continue"
   kick:
@@ -392,14 +427,14 @@ actions:
     lore:
       - "<c:muted>To the member list"
 
-# Permission matrix (rows = roles, columns = actions; 7 actions per page).
+# Permission matrix (columns = roles, rows = actions; 4 actions per page).
 perms:
   crumb: "Permissions"
   info:
-    - "<c:text>Rows are roles, columns are actions."
+    - "<c:text>Columns are roles, rows are actions."
     - "<c:success>Lime</c:success> <c:text>= allowed, <c:error>red</c:error> <c:text>= denied. Click to switch."
     - "<c:text>The <c:value>Leader</c:value> can always do everything."
-    - "<c:muted>Mods can't change Mod permissions."
+    - "<c:muted>Admins change Mod and lower, mods Member and lower."
   no-longer: "<prefix><c:error><sym:cross> You can't change that permission anymore."
   word:
     allowed: "allowed"
@@ -432,9 +467,15 @@ perms:
     click-allow:
       - "<c:action>Click to allow"
     locked:
-      - "<c:muted>Only the leader or a mod can change this."
+      - "<c:muted>Only the leader, an admin or a mod can change this."
     locked-mod:
-      - "<c:muted>Only the leader can change Mod permissions."
+      - "<c:muted>Only the leader and admins can change Mod permissions."
+    locked-admin:
+      - "<c:muted>Only the leader can change Admin permissions."
+    locked-management:
+      - "<c:muted>You can only give this right if you have it."
+    not-applicable:
+      - "<c:muted>This role can never have this."
   names:
     break: "Break"
     place: "Place"
@@ -450,6 +491,8 @@ perms:
     fire: "Fire"
     ender-pearls: "Ender pearls"
     spawners: "Spawners"
+    hurt-monsters: "Hurt monsters"
+    settings: "Island settings"
 
 # ---------------------------------------------------------------- M2.7 lifecycle (/is disband) and staff tools (/isadmin)
 disband:
@@ -577,10 +620,10 @@ admin:
         - "<c:text>Leader now: <c:value><owner>"
     details:
       - "<c:value><player></c:value> <c:text>becomes the leader."
-      - "<c:text><c:value><owner></c:value> becomes a Mod."
+      - "<c:text><c:value><owner></c:value> becomes an Admin."
     done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>now leads <c:value><island></c:value>."
     you: "<prefix><c:success><sym:star> <c:text>Staff made you the leader of <c:value><island></c:value>."
-    old: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Staff made <c:value><player></c:value> the leader of your island. You are a <c:value>Mod</c:value> now."
+    old: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Staff made <c:value><player></c:value> the leader of your island. You are an <c:value>Admin</c:value> now."
   slots:
     crumb: "Slots"
     info:
@@ -655,7 +698,7 @@ visit:
   welcome: "<c:ember><sym:bullet></c:ember> <c:text>Visiting <c:value><island></c:value>"
 
 lock:
-  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can do that."
+  not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can do that."
   already: "<prefix><c:text>Your island is already locked. <click:run_command:'/is unlock'><c:action>[Unlock]</c:action></click>"
   done: "<prefix><c:success><sym:check> <c:text>Island locked. Only members can enter now."
   visitors-sent: "<prefix><c:text><c:value><count></c:value> visitor(s) were sent to spawn."
@@ -665,7 +708,7 @@ unlock:
   done: "<prefix><c:success><sym:check> <c:text>Island unlocked. Visitors can come again."
 
 expel:
-  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can send visitors off."
+  not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can send visitors off."
   self: "<prefix><c:error><sym:cross> You can't expel yourself."
   member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is on your island team. Use <c:value>/is kick</c:value> or <c:value>/is uncoop</c:value>."
   not-here: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't on your island."
@@ -673,7 +716,7 @@ expel:
   you: "<prefix><c:error><sym:cross> You were sent off <c:value><island></c:value>."
 
 ban:
-  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can ban players."
+  not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can ban players."
   unknown: "<prefix><c:error><sym:cross> No player called <c:value><player></c:value> has played here."
   self: "<prefix><c:error><sym:cross> You can't ban yourself."
   member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is a member. Kick them first with <c:value>/is kick</c:value>."
@@ -706,7 +749,7 @@ warp:
   destination: "<warp> on <island>"
   # Examples suggested by tab completion of /is setwarp when the island has no warps yet (comma-separated).
   name-hints: "shop,farm,parkour,spawn"
-  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can manage warps."
+  not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can manage warps."
   name-empty: "<prefix><c:error><sym:cross> Give the warp a name."
   name-long: "<prefix><c:error><sym:cross> Warp names can be up to <c:value><max></c:value> characters."
   name-chars: "<prefix><c:error><sym:cross> Warp names can only use letters, numbers, <c:value>_</c:value> and <c:value>-</c:value>."
@@ -754,7 +797,7 @@ warps:
     - "<c:muted>Most visited warps come first."
   info-island:
     - "<c:text>The warps of this island."
-    - "<c:muted>Leader and mods click a warp to edit it."
+    - "<c:muted>Leader, admins and mods click a warp to edit it."
   empty:
     name: "<c:muted>No warps yet"
     lore:
@@ -763,7 +806,7 @@ warps:
   empty-island:
     name: "<c:muted>No warps here"
     lore:
-      - "<c:text>Leader and mods add warps with"
+      - "<c:text>Leader, admins and mods add warps with"
       - "<c:value>/is setwarp <name>"
   filter:
     name: "<c:flame><category>"
@@ -944,3 +987,171 @@ browser:
       - "<c:action>Your island · click to go home"
     banned:
       - "<c:error>You're banned from this island."
+
+# ---------------------------------------------------------------- ISL2: invites menu, /is settings, personal homes, fly
+invites:
+  crumb: "Invites"
+  info:
+    - "<c:text>Top: invites you got. Click to"
+    - "<c:text>accept or deny. Below: invites your"
+    - "<c:text>island sent. Click to cancel."
+  empty:
+    name: "<c:muted>No invites"
+    lore:
+      - "<c:text>Nothing open right now."
+  received:
+    name: "<c:success><island>"
+    lore:
+      - "<c:text>From: <c:value><inviter>"
+      - "<c:text>Members: <c:value><members>/<slots>"
+      - "<c:text>Expires in: <c:value><time>"
+      - ""
+      - "<c:action>Click to accept or deny"
+  sent:
+    name: "<c:value><player></c:value> <c:muted>· invited"
+    lore:
+      - "<c:text>Sent by: <c:value><inviter>"
+      - "<c:text>Expires in: <c:value><time>"
+      - ""
+    click:
+      - "<c:action>Click to cancel"
+    locked:
+      - "<c:muted>Only the leader, admins and mods can cancel."
+  cancel:
+    crumb: "Cancel invite"
+    shown:
+      name: "<c:error><bold>Cancel invite to <player>"
+      lore:
+        - "<c:text>They can't accept it anymore."
+    details:
+      - "<c:text>The invite to <c:value><player></c:value> is removed."
+  actions:
+    crumb: "<island>"
+    info:
+      name: "<c:flame><bold><island>"
+      lore:
+        - "<c:text>Invited by <c:value><player>"
+    accept:
+      name: "<c:success><bold>Accept"
+      lore:
+        - "<c:text>Join <c:value><island></c:value>."
+        - ""
+        - "<c:action>Click to join"
+    deny:
+      name: "<c:error><bold>Deny"
+      lore:
+        - "<c:text>Decline the invite."
+        - ""
+        - "<c:action>Click to deny"
+    back:
+      name: "<c:text>Back"
+      lore:
+        - "<c:muted>To your invites"
+  cancelled: "<prefix><c:success><sym:check> <c:text>Invite to <c:value><player></c:value> cancelled."
+  cancelled-target: "<prefix><c:muted>Your invite to <c:value><island></c:value> was cancelled."
+  cancel-not-allowed: "<prefix><c:error><sym:cross> Only the leader, admins and mods can cancel invites."
+  gone: "<prefix><c:error><sym:cross> That invite is gone already."
+
+# /is settings. <setting> = a label below, <value> = a value name below.
+flags:
+  crumb: "Settings"
+  info:
+    - "<c:text>Rules for your whole island."
+    - "<c:text>Click a setting to change it."
+    - "<c:muted>Leader and admins can change them;"
+    - "<c:muted>the leader can allow other roles."
+  summary:
+    name: "<c:flame><bold><island>"
+    lore-edit:
+      - "<c:text>Click a setting to change it."
+    lore-view:
+      - "<c:text>You can look, not change."
+      - "<c:muted>Ask your leader or an admin."
+  name: "<c:value><setting>"
+  name-on: "<c:success><setting>"
+  state:
+    "on":
+      - "<c:success><sym:check> On"
+    "off":
+      - "<c:error><sym:cross> Off"
+    choice:
+      - "<c:text>Now: <c:value><value>"
+    default:
+      - "<c:muted>Server default"
+    changed:
+      - "<c:muted>Changed (default: <default>)"
+  click:
+    "on":
+      - "<c:action>Click to turn on"
+    "off":
+      - "<c:action>Click to turn off"
+    next:
+      - "<c:action>Click for <next>"
+    locked:
+      - "<c:muted>You can't change this."
+  value:
+    "on": "on"
+    "off": "off"
+    sunny: "sunny"
+    rain: "rain"
+    storm: "storm"
+    day: "day"
+    noon: "noon"
+    sunset: "sunset"
+    night: "night"
+    real: "real time"
+  mob-spawning:
+    label: "Mob spawning"
+    lore: ["<c:text>Hostile mobs spawn on their own.", "<c:muted>Spawners always work."]
+  animal-spawning:
+    label: "Animal spawning"
+    lore: ["<c:text>Animals spawn on their own."]
+  fire-spread:
+    label: "Fire spread"
+    lore: ["<c:text>Fire spreads and burns blocks."]
+  explosions:
+    label: "Explosions"
+    lore: ["<c:text>TNT, creepers and others", "<c:text>break blocks."]
+  leaf-decay:
+    label: "Leaf decay"
+    lore: ["<c:text>Leaves fall apart without", "<c:text>a log nearby."]
+  crop-trampling:
+    label: "Crop trampling"
+    lore: ["<c:text>Players and mobs trample farmland."]
+  visitor-pickup:
+    label: "Visitors pick up items"
+    lore: ["<c:text>Visitors can pick up items.", "<c:muted>Same as the Visitor pickup permission."]
+  notifications:
+    label: "Visitor alerts"
+    lore: ["<c:text>Members hear when visitors", "<c:text>come, go or knock.", "<c:muted>Each member can mute them in /settings."]
+  visitor-fly:
+    label: "Visitor fly"
+    lore: ["<c:text>Visitors who have island fly", "<c:text>can fly here."]
+  weather:
+    label: "Weather"
+    lore: ["<c:text>Weather everyone here sees."]
+  time:
+    label: "Time"
+    lore: ["<c:text>Time of day everyone here sees.", "<c:muted>Real time = the server clock."]
+  unknown: "<prefix><c:error><sym:cross> There's no setting <c:value><setting></c:value>. <c:muted>Settings: <settings>"
+  bad-value: "<prefix><c:error><sym:cross> <c:value><setting></c:value> can't be <c:value><value></c:value>. <c:muted>Use: <values>"
+  not-allowed: "<prefix><c:error><sym:cross> You can't change the island settings. <c:muted>Ask your leader or an admin."
+  already: "<prefix><c:text><c:value><setting></c:value> is already <c:value><value></c:value>."
+  changed: "<prefix><c:success><sym:check> <c:value><setting></c:value> <c:text>is now <c:value><value></c:value>."
+
+# Personal homes (/is setmyhome, /is home <name>). Island home = /is home without a name.
+myhome:
+  set: "<prefix><c:success><sym:check> <c:text>Your home <c:value><name></c:value> is set. Go there with <click:run_command:'/is home <name>'><c:action>/is home <name></c:action></click>."
+  moved: "<prefix><c:success><sym:check> <c:text>Your home <c:value><name></c:value> moved here."
+  bad-name: "<prefix><c:error><sym:cross> Use letters, numbers, _ or - for the home name."
+  too-long: "<prefix><c:error><sym:cross> Home names can be <c:value><max></c:value> characters at most."
+  none: "<prefix><c:error><sym:cross> You can't have your own home on this island."
+  limit: "<prefix><c:error><sym:cross> You have <c:value><max></c:value> home(s): <c:value><homes></c:value>. <c:muted>Use the same name to move one."
+  unknown: "<prefix><c:error><sym:cross> You have no home called <c:value><name></c:value>. <c:muted>Your homes: <homes>"
+  unknown-none: "<prefix><c:error><sym:cross> You have no home called <c:value><name></c:value>. <c:muted>Set one with</c:muted> <click:run_command:'/is setmyhome'><c:action>/is setmyhome</c:action></click>."
+  arrived: "<c:ember><sym:bullet></c:ember> <c:text>Home <c:value><name>"
+
+# Island fly (action bar)
+fly:
+  "on": "<c:ember><sym:bullet></c:ember> <c:text>Island fly on: double-tap jump"
+  "off": "<c:warning><sym:bullet></c:warning> <c:text>Island fly off: you left the island"

@@ -2,8 +2,11 @@
 # Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
 # LuckPerms grants for these nodes: server/permissions/islands.txt. Commands: docs/commands/islands.md.
 skyblock.island:
-  description: Use /is (create your island, home, go, sethome, invite, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, disband, visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like)
+  description: Use /is (create your island, home, go, sethome, setmyhome, invite, invites, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, settings, disband, visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like)
   default: true
+skyblock.island.fly:
+  description: Island fly - fly inside any island's border (members always; visitors when that island's visitor-fly setting is on). Off when leaving the border, no fall damage on landing. The Wings mastery gives the same on its island later.
+  default: false
 skyblock.island.bypass:
   description: Staff - /is bypass and /isadmin bypass toggle ignoring island protection (build, containers, borders); every toggle is logged
   default: op

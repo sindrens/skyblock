@@ -21,8 +21,11 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface IslandService {
 
-    /** Island roles (owner decision: Leader, Mod, Member, Coop). Coop is temporary and never a stored member (see {@link #coops}). */
-    enum Role { LEADER, MOD, MEMBER, COOP }
+    /**
+     * Island roles, highest first (owner decisions: Leader, Admin (ISL2, between Leader and Mod), Mod, Member, Coop).
+     * Coop is temporary and never a stored member (see {@link #coops}). After a transfer the old leader becomes Admin.
+     */
+    enum Role { LEADER, ADMIN, MOD, MEMBER, COOP }
 
     /** A rectangle of blocks in one world; both corners inclusive. */
     record Bounds(String world, int minX, int minZ, int maxX, int maxZ) {
@@ -156,4 +159,25 @@ public interface IslandService {
 
     /** End of the player's join block (epoch millis), if one is active. */
     CompletableFuture<Optional<Long>> joinBlockedUntil(UUID player);
+
+    // ------------------------------------------------------------------ mastery hooks (ISL2; filled by the masteries later)
+
+    /**
+     * True if the island has the "Wings" mastery: everyone on it may fly inside its border (visitors only when the
+     * island's {@code visitor-fly} setting is on), like players with {@code skyblock.island.fly}. False until a provider
+     * is set ({@link #wingsProvider}).
+     */
+    boolean hasWings(UUID islandId);
+
+    /** Masteries module hook: decides {@link #hasWings} per island id ({@code null} = nobody has Wings). Main thread. */
+    void wingsProvider(java.util.function.Predicate<UUID> provider);
+
+    /**
+     * Extra personal homes ({@code /is setmyhome}) a member has on the island on top of {@code homes.per-member} (1),
+     * e.g. from a mastery. 0 until a provider is set ({@link #extraHomesProvider}).
+     */
+    int extraMemberHomes(UUID islandId, UUID player);
+
+    /** Masteries module hook for {@link #extraMemberHomes} ({@code null} = none). Main thread. */
+    void extraHomesProvider(java.util.function.ToIntBiFunction<UUID, UUID> provider);
 }

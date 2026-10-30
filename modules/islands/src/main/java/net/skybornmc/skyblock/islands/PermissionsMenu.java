@@ -18,24 +18,27 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The island permission matrix (M2.3, UI_STYLE §5). Rows = roles, columns = the 14 {@link IslandPerm} actions,
- * 7 per page (2 pages):
+ * The island permission matrix (M2.3, ISL2 layout, UI_STYLE §5). Columns = roles (Admin, Mod, Member, Coop, Visitor),
+ * rows = actions, 4 per page:
  * <pre>
- *  R [p1][p2][p3][p4][p5][p6][p7] R     row 0: the actions of this page (headers)
- *  Mod   ■  ■  ■  ■  ■  ■  ■  B         rows 1-4: Mod, Member, Coop, Visitor; lime = allowed, red = denied
- *  Member■  ■  ■  ■  ■  ■  ■  B         concrete = you can click it, glass = locked for you
- *  Coop  ■  ■  ■  ■  ■  ■  ■  B
- *  Visit ■  ■  ■  ■  ■  ■  ■  B
- *  ← . . ? X ⓘ . . →                    45 back/previous, 48 info, 49 close, 50 help, 53 next
+ *  R . [Ad][Mo][Me][Co][Vi] . R     row 0: the roles (headers)
+ *  B p1  ■   ■   ■   ■   ■  . B     rows 1-4: one action each; lime = allowed, red = denied
+ *  B p2  ■   ■   ■   ■   ■  . B     concrete = you can click it, glass = locked for you,
+ *  B p3  ■   ■   ■   ■   ■  . B     gray glass = this role can't have it (settings for coop/visitors)
+ *  B p4  ■   ■   ■   ■   ■  . B
+ *  ← . . ? X ⓘ . . →                45 back/previous, 48 info, 49 close, 50 help, 53 next
  * </pre>
  * One plain click toggles a cell (Bedrock-safe, no right/shift clicks); a value equal to the server default is stored
  * as "follow the default" ({@link MemberRules#toggledOverride}). The leader always has everything (shown in the info
- * item). Who may click: the leader every row, a mod Member/Coop/Visitor; members see the matrix read-only.
+ * item). Who may click: the leader every column, an admin Mod/Member/Coop/Visitor, a mod Member/Coop/Visitor; the
+ * settings right only by someone who has it ({@link MemberRules#canEditCell}); members see the matrix read-only.
  */
 final class PermissionsMenu extends Menu {
 
-    static final int PER_PAGE = 7;
-    static final PermRole[] ROWS = {PermRole.MOD, PermRole.MEMBER, PermRole.COOP, PermRole.VISITOR};
+    static final int PER_PAGE = 4;
+    static final PermRole[] COLUMNS = {PermRole.ADMIN, PermRole.MOD, PermRole.MEMBER, PermRole.COOP, PermRole.VISITOR};
+    /** Inventory column of the action icons; the role columns follow it. */
+    static final int ICON_COLUMN = 1;
     static final Map<IslandPerm, Material> ICONS = new EnumMap<>(IslandPerm.class);
     static final Map<PermRole, Material> ROLE_ICONS = new EnumMap<>(PermRole.class);
 
@@ -54,6 +57,9 @@ final class PermissionsMenu extends Menu {
         ICONS.put(IslandPerm.FIRE, Material.FLINT_AND_STEEL);
         ICONS.put(IslandPerm.ENDER_PEARLS, Material.ENDER_PEARL);
         ICONS.put(IslandPerm.SPAWNERS, Material.SPAWNER);
+        ICONS.put(IslandPerm.HURT_MONSTERS, Material.IRON_SWORD);
+        ICONS.put(IslandPerm.SETTINGS, Material.REPEATER);
+        ROLE_ICONS.put(PermRole.ADMIN, Material.DIAMOND_HELMET);
         ROLE_ICONS.put(PermRole.MOD, Material.GOLDEN_HELMET);
         ROLE_ICONS.put(PermRole.MEMBER, Material.IRON_HELMET);
         ROLE_ICONS.put(PermRole.COOP, Material.LEATHER_HELMET);
@@ -76,9 +82,14 @@ final class PermissionsMenu extends Menu {
         return (IslandPerm.cached().length + PER_PAGE - 1) / PER_PAGE;
     }
 
-    /** Slot of a matrix cell: row 0-3 (roles), column 0-6 (actions of the page). */
+    /** Slot of a matrix cell: row 0-3 (actions of the page), column 0-4 (roles). */
     static int cellSlot(int row, int column) {
-        return (row + 1) * 9 + 1 + column;
+        return (row + 1) * 9 + ICON_COLUMN + 1 + column;
+    }
+
+    /** Slot of a role header (row 0). */
+    static int headerSlot(int column) {
+        return ICON_COLUMN + 1 + column;
     }
 
     @Override
@@ -116,20 +127,20 @@ final class PermissionsMenu extends Menu {
         frame();
         IslandPerm[] perms = IslandPerm.cached();
         int from = page * PER_PAGE;
-        for (int column = 0; column < PER_PAGE && from + column < perms.length; column++) {
-            IslandPerm perm = perms[from + column];
-            set(1 + column, service.item(new ItemStack(ICONS.getOrDefault(perm, Material.PAPER)),
+        Role editor = viewerRole();
+        for (int column = 0; column < COLUMNS.length; column++) {
+            PermRole role = COLUMNS[column];
+            boolean editable = MemberRules.canEditPerms(editor, role);
+            set(headerSlot(column), service.item(new ItemStack(ROLE_ICONS.get(role)), text("perms.role.name", Msg.p("role", roleName(role))),
+                    lines(editable ? "perms.role.lore-edit" : "perms.role.lore-locked", Msg.p("role", roleName(role)))));
+        }
+        for (int row = 0; row < PER_PAGE && from + row < perms.length; row++) {
+            IslandPerm perm = perms[from + row];
+            set((row + 1) * 9 + ICON_COLUMN, service.item(new ItemStack(ICONS.getOrDefault(perm, Material.PAPER)),
                     text("perms.header.name", Msg.p("perm", permName(perm))),
                     lines("perms.header.lore", Msg.p("perm", permName(perm)), Msg.p("action", module.raw("protection.actions." + perm.key())))));
-        }
-        Role editor = viewerRole();
-        for (int row = 0; row < ROWS.length; row++) {
-            PermRole role = ROWS[row];
-            boolean editable = MemberRules.canEditPerms(editor, role);
-            set((row + 1) * 9, service.item(new ItemStack(ROLE_ICONS.get(role)), text("perms.role.name", Msg.p("role", roleName(role))),
-                    lines(editable ? "perms.role.lore-edit" : "perms.role.lore-locked", Msg.p("role", roleName(role)))));
-            for (int column = 0; column < PER_PAGE && from + column < perms.length; column++) {
-                set(cellSlot(row, column), cell(role, perms[from + column], editable));
+            for (int column = 0; column < COLUMNS.length; column++) {
+                set(cellSlot(row, column), cell(COLUMNS[column], perm, editor));
             }
         }
         if (page > 0) {
@@ -142,7 +153,18 @@ final class PermissionsMenu extends Menu {
         }
     }
 
-    private net.skybornmc.skyblock.common.menu.MenuButton cell(PermRole role, IslandPerm perm, boolean editable) {
+    /** True if the viewer may click this cell right now. */
+    private boolean editable(Role editor, PermRole role, IslandPerm perm) {
+        return MemberRules.canEditCell(editor, role, perm, islands.roleAllows(island, viewer.getUniqueId(), perm));
+    }
+
+    private net.skybornmc.skyblock.common.menu.MenuButton cell(PermRole role, IslandPerm perm, Role editor) {
+        TagResolver[] names = {Msg.p("role", roleName(role)), Msg.p("perm", permName(perm))};
+        if (!perm.appliesTo(role)) {
+            return net.skybornmc.skyblock.common.menu.MenuButton.display(service.item(new ItemStack(Material.GRAY_STAINED_GLASS_PANE),
+                    text("perms.cell.name", names), lines("perms.cell.not-applicable", names)));
+        }
+        boolean editable = editable(editor, role, perm);
         RolePermissions defaults = islands.rolePermissions();
         boolean allowed = defaults.allows(island.perms(), role, perm);
         boolean byDefault = defaults.defaultAllows(role, perm);
@@ -159,7 +181,7 @@ final class PermissionsMenu extends Menu {
         lore.add(Component.empty());
         long key = ((long) role.ordinal() << 32) | perm.ordinal();
         if (!editable) {
-            lore.addAll(lines(role == PermRole.MOD && viewerRole() == Role.MOD ? "perms.cell.locked-mod" : "perms.cell.locked", p));
+            lore.addAll(lines(lockedKey(role, perm), p));
             return net.skybornmc.skyblock.common.menu.MenuButton.display(service.item(new ItemStack(material),
                     text("perms.cell.name", p), lore));
         }
@@ -170,7 +192,7 @@ final class PermissionsMenu extends Menu {
                 return;
             }
             // Re-check on click: the viewer's role or the island may have changed since the menu was built.
-            if (islands.byId(island.id()) != island || !MemberRules.canEditPerms(viewerRole(), role)) {
+            if (islands.byId(island.id()) != island || !editable(viewerRole(), role, perm)) {
                 islands.fail(viewer, "perms.no-longer");
                 refresh();
                 return;
@@ -189,6 +211,21 @@ final class PermissionsMenu extends Menu {
                         refresh();
                     }));
         });
+    }
+
+    /** Why a cell is locked for the viewer. */
+    private String lockedKey(PermRole role, IslandPerm perm) {
+        Role viewer = viewerRole();
+        if (MemberRules.canEditPerms(viewer, role) && perm.management()) {
+            return "perms.cell.locked-management";
+        }
+        if (role == PermRole.ADMIN && (viewer == Role.ADMIN || viewer == Role.MOD)) {
+            return "perms.cell.locked-admin";
+        }
+        if (role == PermRole.MOD && viewer == Role.MOD) {
+            return "perms.cell.locked-mod";
+        }
+        return "perms.cell.locked";
     }
 
     private void turn(int delta) {

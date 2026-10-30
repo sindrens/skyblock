@@ -25,8 +25,10 @@ class RolePermissionsTest {
         RolePermissions perms = defaults();
         for (IslandPerm perm : IslandPerm.values()) {
             assertTrue(perms.allows(null, PermRole.LEADER, perm), "leader: " + perm);
-            assertTrue(perms.allows(null, PermRole.MOD, perm), "mod: " + perm);
-            assertFalse(perms.allows(null, PermRole.VISITOR, perm), "visitors walk and look only: " + perm);
+            assertTrue(perms.allows(null, PermRole.ADMIN, perm), "admin: " + perm);
+            assertEquals(perm != IslandPerm.SETTINGS, perms.allows(null, PermRole.MOD, perm), "mod: " + perm);
+            assertEquals(perm == IslandPerm.HURT_MONSTERS, perms.allows(null, PermRole.VISITOR, perm),
+                    "visitors walk, look and fight monsters: " + perm);
         }
         assertTrue(perms.allows(null, PermRole.MEMBER, IslandPerm.BREAK));
         assertTrue(perms.allows(null, PermRole.MEMBER, IslandPerm.CONTAINERS));
@@ -74,12 +76,13 @@ class RolePermissionsTest {
 
     @Test
     void parsingSkipsUnknownKeysAndAcceptsWildcardAndCase() {
-        RolePermissions.Result result = RolePermissions.parse(List.of("*"), List.of("BREAK", "armor_stands", "fly"),
-                List.of(" place "), List.of("ender-pearls", ""));
+        RolePermissions.Result result = RolePermissions.parse(List.of("*"), List.of("*"), List.of("BREAK", "armor_stands", "fly"),
+                List.of(" place "), List.of("ender-pearls", ""), java.util.Map.of());
         assertEquals(1, result.problems().size());
         assertTrue(result.problems().getFirst().contains("fly"));
         RolePermissions perms = result.permissions();
-        assertEquals(IslandPerm.all(), perms.defaultMask(PermRole.MOD));
+        assertEquals(IslandPerm.wildcard(), perms.defaultMask(PermRole.MOD));
+        assertFalse(perms.defaultAllows(PermRole.MOD, IslandPerm.SETTINGS), "* never includes permissions with own defaults");
         assertTrue(perms.defaultAllows(PermRole.MEMBER, IslandPerm.BREAK));
         assertTrue(perms.defaultAllows(PermRole.MEMBER, IslandPerm.ARMOR_STANDS));
         assertFalse(perms.defaultAllows(PermRole.MEMBER, IslandPerm.PLACE));
@@ -93,6 +96,8 @@ class RolePermissionsTest {
         assertEquals(PermRole.VISITOR, PermRole.of(null));
         assertEquals(PermRole.LEADER, PermRole.of(Role.LEADER));
         assertEquals(PermRole.MOD, PermRole.of(Role.MOD));
+        assertEquals(PermRole.ADMIN, PermRole.of(Role.ADMIN));
+        assertEquals(PermRole.ADMIN, PermRole.byKey("admin").orElseThrow());
         assertEquals(PermRole.MEMBER, PermRole.of(Role.MEMBER));
         assertEquals(PermRole.COOP, PermRole.of(Role.COOP));
         assertEquals(PermRole.VISITOR, PermRole.byKey("Visitor").orElseThrow());
@@ -109,5 +114,73 @@ class RolePermissionsTest {
         }
         assertEquals("armor-stands", IslandPerm.ARMOR_STANDS.key());
         assertEquals("ender-pearls", IslandPerm.ENDER_PEARLS.key());
+    }
+
+    // ------------------------------------------------------------------ ISL2
+
+    @Test
+    void hurtMonstersDefaultsToEveryRoleIncludingVisitors() {
+        RolePermissions perms = defaults();
+        for (PermRole role : PermRole.values()) {
+            assertTrue(perms.allows(null, role, IslandPerm.HURT_MONSTERS), "hurt monsters: " + role);
+        }
+        IslandPerms island = new IslandPerms();
+        island.set(PermRole.VISITOR, IslandPerm.HURT_MONSTERS, false);
+        assertFalse(perms.allows(island, PermRole.VISITOR, IslandPerm.HURT_MONSTERS), "islands can take it away");
+    }
+
+    @Test
+    void settingsDefaultsToLeaderAndAdmin() {
+        RolePermissions perms = defaults();
+        assertTrue(perms.allows(null, PermRole.LEADER, IslandPerm.SETTINGS));
+        assertTrue(perms.allows(null, PermRole.ADMIN, IslandPerm.SETTINGS));
+        assertFalse(perms.allows(null, PermRole.MOD, IslandPerm.SETTINGS));
+        assertFalse(perms.allows(null, PermRole.MEMBER, IslandPerm.SETTINGS));
+    }
+
+    @Test
+    void managementRightsNeverReachCoopOrVisitors() {
+        RolePermissions perms = defaults();
+        IslandPerms island = new IslandPerms();
+        island.set(PermRole.VISITOR, IslandPerm.SETTINGS, true);
+        island.set(PermRole.COOP, IslandPerm.SETTINGS, true);
+        assertTrue(island.isEmpty(), "not even stored");
+        assertFalse(perms.allows(island, PermRole.VISITOR, IslandPerm.SETTINGS));
+        RolePermissions.Result bad = RolePermissions.parse(List.of(), List.of(), List.of(), List.of("settings"), List.of("*"),
+                java.util.Map.of(IslandPerm.SETTINGS, List.of("visitor", "member", "boss")));
+        assertEquals(3, bad.problems().size(), bad.problems().toString());
+        assertFalse(bad.permissions().defaultAllows(PermRole.VISITOR, IslandPerm.SETTINGS));
+        assertFalse(bad.permissions().defaultAllows(PermRole.COOP, IslandPerm.SETTINGS));
+        assertTrue(bad.permissions().defaultAllows(PermRole.MEMBER, IslandPerm.SETTINGS));
+        assertFalse(bad.permissions().defaultAllows(PermRole.VISITOR, IslandPerm.HURT_MONSTERS), "own list only");
+    }
+
+    @Test
+    void newPermissionsHaveOwnDefaultsAndStableKeys() {
+        assertEquals("hurt-monsters", IslandPerm.HURT_MONSTERS.key());
+        assertEquals("settings", IslandPerm.SETTINGS.key());
+        assertTrue(IslandPerm.HURT_MONSTERS.ownDefaults());
+        assertTrue(IslandPerm.SETTINGS.management());
+        assertFalse(IslandPerm.BREAK.ownDefaults());
+        assertEquals(0, IslandPerm.wildcard() & IslandPerm.SETTINGS.bit());
+        assertEquals(0, IslandPerm.notApplicable(PermRole.MEMBER));
+        assertEquals(IslandPerm.SETTINGS.bit(), IslandPerm.notApplicable(PermRole.VISITOR));
+    }
+
+    @Test
+    void hostileMobsNeedTheHurtMonstersPermission() {
+        assertEquals(IslandPerm.HURT_MONSTERS, IslandProtection.damagePerm(fake(org.bukkit.entity.Zombie.class)));
+        assertEquals(IslandPerm.HURT_MONSTERS, IslandProtection.damagePerm(fake(org.bukkit.entity.Creeper.class)));
+        assertEquals(IslandPerm.ANIMALS, IslandProtection.damagePerm(fake(org.bukkit.entity.Cow.class)));
+        assertEquals(IslandPerm.VILLAGERS, IslandProtection.damagePerm(fake(org.bukkit.entity.Villager.class)));
+        assertNull(IslandProtection.damagePerm(fake(org.bukkit.entity.Player.class)));
+        assertNull(IslandProtection.entityPerm(fake(org.bukkit.entity.Zombie.class), false), "right-clicking monsters stays free");
+    }
+
+    /** An entity of the given type for instanceof checks only (no method may be called). */
+    private static <T extends org.bukkit.entity.Entity> T fake(Class<T> type) {
+        return type.cast(java.lang.reflect.Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, (proxy, method, args) -> {
+            throw new UnsupportedOperationException(method.getName());
+        }));
     }
 }

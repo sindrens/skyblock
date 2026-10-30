@@ -56,6 +56,13 @@ final class IslandManager implements IslandService {
     /** O(1) allocation-free "island at block" for protection (main thread only). */
     private final Territory territory = new Territory();
     private RolePermissions rolePermissions = RolePermissions.none();
+    /** ISL2: server defaults of {@code /is settings}. */
+    private FlagDefaults flagDefaults = FlagDefaults.owner();
+    /** ISL2: called (main thread) after an island setting changed, e.g. to re-send weather/time or re-check fly. */
+    private final List<java.util.function.BiConsumer<Island, IslandFlag>> flagHooks = new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** ISL2 mastery hooks (masteries module later). */
+    private java.util.function.Predicate<UUID> wingsProvider;
+    private java.util.function.ToIntBiFunction<UUID, UUID> extraHomesProvider;
     /** The islands world once seen (identity check in hot paths), cleared when another world object shows up. */
     private World islandWorld;
     /** Players whose island is being created or rebuilt right now (one at a time per player). */
@@ -261,6 +268,78 @@ final class IslandManager implements IslandService {
         });
     }
 
+    // ------------------------------------------------------------------ island settings (ISL2)
+
+    FlagDefaults flagDefaults() {
+        return flagDefaults;
+    }
+
+    void flagDefaults(FlagDefaults flagDefaults) {
+        this.flagDefaults = flagDefaults;
+    }
+
+    /** The effective value of a setting ({@link IslandFlag#VISITOR_PICKUP} = the visitor row's pickup permission). */
+    String flag(Island island, IslandFlag flag) {
+        if (flag.virtual()) {
+            return rolePermissions.allows(island.perms(), PermRole.VISITOR, IslandPerm.PICKUP) ? IslandFlag.ON : IslandFlag.OFF;
+        }
+        return island.settings().value(flag, flagDefaults);
+    }
+
+    /** True if a toggle setting is on for {@code island} (allocation-free; used in protection listeners). */
+    boolean flagOn(Island island, IslandFlag flag) {
+        if (flag.virtual()) {
+            return rolePermissions.allows(island.perms(), PermRole.VISITOR, IslandPerm.PICKUP);
+        }
+        return island.settings().on(flag, flagDefaults);
+    }
+
+    /** Runs {@code hook} after every saved setting change. */
+    void onFlagChange(java.util.function.BiConsumer<Island, IslandFlag> hook) {
+        flagHooks.add(hook);
+    }
+
+    /**
+     * Sets one setting of an island to {@code value} (a value equal to the server default is stored as "default", so a
+     * later default change reaches it): saved first (atomic), then cached, logged ({@code island_setting}) and the hooks
+     * run. {@link IslandFlag#VISITOR_PICKUP} goes through {@link #setRolePermission} (logged as {@code island_perm}).
+     *
+     * @return false if the island is unknown, the value invalid, or saving failed
+     */
+    CompletableFuture<Boolean> setFlag(UUID islandId, IslandFlag flag, String value, Actor actor) {
+        Island island = byId.get(islandId);
+        String parsed = value == null ? null : flag.parse(value).orElse(null);
+        if (island == null || parsed == null) {
+            return CompletableFuture.completedFuture(false);
+        }
+        String before = flag(island, flag);
+        if (flag.virtual()) {
+            boolean allow = IslandFlag.ON.equals(parsed);
+            Boolean override = allow == rolePermissions.defaultAllows(PermRole.VISITOR, IslandPerm.PICKUP) ? null : allow;
+            return setRolePermission(islandId, PermRole.VISITOR, IslandPerm.PICKUP, override, actor).thenApply(ok -> {
+                if (ok) {
+                    flagHooks.forEach(hook -> hook.accept(island, flag));
+                }
+                return ok;
+            });
+        }
+        String stored = parsed.equals(flagDefaults.value(flag)) ? null : parsed;
+        return store.saveSetting(islandId, flag, stored).thenApplyAsync(ignored -> {
+            if (byId.get(islandId) != island) {
+                return false;
+            }
+            island.settings().set(flag, stored);
+            core.audit().log(AuditCategory.ISLAND, "island_setting", actor, island.id().toString(), displayName(island), null, null,
+                    Map.of("flag", flag.key(), "old", before, "new", parsed, "stored", stored == null ? "default" : stored));
+            flagHooks.forEach(hook -> hook.accept(island, flag));
+            return true;
+        }, main).exceptionally(error -> {
+            core.plugin().getLogger().log(Level.SEVERE, "Islands: saving setting " + flag.key() + " of " + islandId + " failed",
+                    Database.cause(error));
+            return false;
+        });
+    }
+
     private static String overrideText(Boolean value) {
         return value == null ? "default" : value ? "allow" : "deny";
     }
@@ -296,7 +375,7 @@ final class IslandManager implements IslandService {
     }
 
     void cacheTransfer(Island island, UUID oldLeader, UUID newLeader) {
-        island.putMember(oldLeader, Role.MOD);
+        island.putMember(oldLeader, MemberRules.AFTER_TRANSFER);
         island.putMember(newLeader, Role.LEADER);
         island.owner(newLeader);
     }
@@ -477,11 +556,35 @@ final class IslandManager implements IslandService {
         return members.joinBlockedUntil(player);
     }
 
+    // ------------------------------------------------------------------ mastery hooks (ISL2)
+
+    @Override
+    public boolean hasWings(UUID islandId) {
+        java.util.function.Predicate<UUID> provider = wingsProvider;
+        return provider != null && islandId != null && provider.test(islandId);
+    }
+
+    @Override
+    public void wingsProvider(java.util.function.Predicate<UUID> provider) {
+        this.wingsProvider = provider;
+    }
+
+    @Override
+    public int extraMemberHomes(UUID islandId, UUID player) {
+        java.util.function.ToIntBiFunction<UUID, UUID> provider = extraHomesProvider;
+        return provider == null ? 0 : Math.max(0, provider.applyAsInt(islandId, player));
+    }
+
+    @Override
+    public void extraHomesProvider(java.util.function.ToIntBiFunction<UUID, UUID> provider) {
+        this.extraHomesProvider = provider;
+    }
+
     private IslandInfo info(Island island) {
         return island.info(displayName(island), config.maxSize());
     }
 
-    private static Location location(Island island, Island.Home home) {
+    static Location location(Island island, Island.Home home) {
         return new Location(Bukkit.getWorld(island.world()), home.x(), home.y(), home.z(), home.yaw(), home.pitch());
     }
 
@@ -692,7 +795,7 @@ final class IslandManager implements IslandService {
     }
 
     /** {@code home} if it is safe; otherwise the nearest safe spot, the top of the center column, or a rescue block. */
-    private Location safeHome(Player player, Island island, Location home) {
+    Location safeHome(Player player, Island island, Location home) {
         if (SafeSpots.isSafe(home)) {
             return home;
         }
@@ -815,7 +918,7 @@ final class IslandManager implements IslandService {
     // ------------------------------------------------------------------ helpers
 
     /** Teleport through the essentials TeleportService (guards, warmup, /back) when present. */
-    private void teleport(Player player, Location target, boolean instant, Runnable onArrive) {
+    void teleport(Player player, Location target, boolean instant, Runnable onArrive) {
         String destination = module.raw("home.destination");
         player.setFallDistance(0);
         Optional<TeleportService> teleports = core.services().optional(TeleportService.class);

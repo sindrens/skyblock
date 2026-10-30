@@ -33,7 +33,10 @@ import java.util.Set;
  * accept/deny, kick, leave, promote/demote, transfer, coop/uncoop, {@code /is members} and the permission matrix,
  * join limits). M2.7: lifecycle ({@link IslandLifecycle}: {@code /is disband}, slot clearing by {@link IslandClearer}) and
  * the staff tools {@code /isadmin} ({@link IslandAdmin}). M2.4: visiting, lock, expel, bans, rating, likes and the visit
- * browser ({@link VisitManager}), island warps with categories, sign warps and the warp browser ({@link WarpManager}). Publishes {@link IslandService} and the placeholders {@code island_name},
+ * browser ({@link VisitManager}), island warps with categories, sign warps and the warp browser ({@link WarpManager}).
+ * ISL2: the Admin role, the hurt-monsters and settings permissions, join cooldown from the last join, {@code /is settings}
+ * ({@link IslandSettingsManager}, {@link IslandFlagListener}, {@link IslandEnvironment}), island fly ({@link IslandFly}),
+ * personal homes ({@link PersonalHomes}) and {@code /is invites}. Publishes {@link IslandService} and the placeholders {@code island_name},
  * {@code island_level} and {@code island_rank}.
  */
 public final class IslandsModule implements SkyblockModule, Listener {
@@ -55,6 +58,12 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private VisitManager visits;
     private WarpManager warps;
     private RolePermissions rolePermissions = RolePermissions.none();
+    private FlagDefaults flagDefaults = FlagDefaults.owner();
+    private PersonalHomes homes;
+    private IslandSettingsManager islandSettings;
+    private IslandFlagListener flagListener;
+    private IslandEnvironment environment;
+    private IslandFly fly;
     private net.skybornmc.skyblock.common.util.Scheduler.Task sweepTask;
 
     public IslandsModule(Core core) {
@@ -78,6 +87,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         manager = new IslandManager(this, new IslandStore(core.database()));
         manager.rolePermissions(rolePermissions);
+        manager.flagDefaults(flagDefaults);
         manager.load();
         members = new MemberManager(this, manager, new MemberStore(core.database()));
         manager.members(members);
@@ -94,11 +104,29 @@ public final class IslandsModule implements SkyblockModule, Listener {
         visits.warps(warps);
         visits.load();
         warps.load();
+        homes = new PersonalHomes(this, manager, new MemberHomeStore(core.database()));
+        islandSettings = new IslandSettingsManager(this, manager);
+        flagListener = new IslandFlagListener(manager);
+        environment = new IslandEnvironment(this, manager);
+        fly = new IslandFly(this, manager);
+        visits.onPresence(environment::apply);
+        manager.onFlagChange((island, flag) -> {
+            if (flag == IslandFlag.WEATHER || flag == IslandFlag.TIME) {
+                environment.refresh(island);
+            } else if (flag == IslandFlag.VISITOR_FLY) {
+                fly.refresh(island);
+            }
+        });
         Bukkit.getPluginManager().registerEvents(borders, core.plugin());
         Bukkit.getPluginManager().registerEvents(protection, core.plugin());
         Bukkit.getPluginManager().registerEvents(borderProtection, core.plugin());
         Bukkit.getPluginManager().registerEvents(visits, core.plugin());
         Bukkit.getPluginManager().registerEvents(warps, core.plugin());
+        Bukkit.getPluginManager().registerEvents(flagListener, core.plugin());
+        Bukkit.getPluginManager().registerEvents(environment, core.plugin());
+        Bukkit.getPluginManager().registerEvents(fly, core.plugin());
+        environment.start();
+        fly.start();
         // /settings (menus) and the TeleportService (essentials) may enable after us: hook them one tick later.
         core.scheduler().later("islands:services", 1L, visits::hookServices);
         startSweep();
@@ -108,6 +136,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         registerCommands();
         new IslandAdmin(this, manager, lifecycle, protection).register();
         Bukkit.getOnlinePlayers().forEach(borders::update);
+        refreshPlayers();
         if (Bukkit.getWorld(config.world) == null) {
             core.plugin().getLogger().warning("Islands: world '" + config.world + "' is not loaded; /is can't create islands.");
         }
@@ -120,8 +149,15 @@ public final class IslandsModule implements SkyblockModule, Listener {
         loadConfig();
         if (manager != null) {
             manager.rolePermissions(rolePermissions);
+            manager.flagDefaults(flagDefaults);
         }
         startSweep();
+        if (environment != null) {
+            environment.start();
+        }
+        if (fly != null) {
+            fly.start();
+        }
         if (members != null) {
             members.startSweep();
         }
@@ -130,6 +166,18 @@ public final class IslandsModule implements SkyblockModule, Listener {
         }
         core.messages().load(ID);
         Bukkit.getOnlinePlayers().forEach(borders::update);
+        refreshPlayers();
+    }
+
+    /** Re-applies island weather/time and fly for everyone online (enable, reload). */
+    private void refreshPlayers() {
+        if (environment == null || fly == null || visits == null) {
+            return;
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            environment.apply(player, visits.slotIsland(player.getLocation()));
+            fly.update(player, player.getLocation());
+        }
     }
 
     @Override
@@ -162,6 +210,19 @@ public final class IslandsModule implements SkyblockModule, Listener {
         if (warps != null) {
             HandlerList.unregisterAll(warps);
         }
+        if (flagListener != null) {
+            HandlerList.unregisterAll(flagListener);
+        }
+        if (environment != null) {
+            environment.stop();
+            environment.resetAll();
+            HandlerList.unregisterAll(environment);
+        }
+        if (fly != null) {
+            fly.stop();
+            fly.revokeAll();
+            HandlerList.unregisterAll(fly);
+        }
         HandlerList.unregisterAll(this);
     }
 
@@ -177,6 +238,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
         RolePermissions.Result perms = config.rolePermissions();
         perms.problems().forEach(problem -> core.plugin().getLogger().warning("islands.yml: " + problem));
         rolePermissions = perms.permissions();
+        FlagDefaults.Result flags = config.flagDefaults();
+        flags.problems().forEach(problem -> core.plugin().getLogger().warning("islands.yml: " + problem));
+        flagDefaults = flags.defaults();
     }
 
     /** (Re)starts the sweep that returns entities pushed out of island borders. */
@@ -207,6 +271,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
 
     IslandLifecycle lifecycle() {
         return lifecycle;
+    }
+
+    IslandSettingsManager islandSettings() {
+        return islandSettings;
     }
 
     List<StarterItems.Entry> starterItems() {
@@ -272,13 +340,28 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Arg<String> oldWarp = Args.word("name", Suggest.bySender(warps::ownWarpNames));
         Arg<String> warpIsland = Args.word("player", Suggest.bySender(visits::islandNames));
         Arg<String> warpName = Args.word("name", warps.warpNamesOfTypedIsland("player"));
+        // ISL2
+        Arg<String> homeName = Args.word("home", Suggest.bySender(homes::names));
+        Arg<String> myHomeName = Args.word("name", Suggest.bySender(homes::names));
+        Arg<String> setting = Args.word("setting", Suggest.of(IslandSettingsManager::keys));
+        Arg<String> settingValue = Args.word("value", islandSettings.values("setting"));
         core.commands().register(CommandSpec.command("is")
                 .description("Your island: create it, or go home").category("Island")
                 .permission(PERM_USE).playerOnly().aliases("island")
                 .executes(ctx -> manager.openOrCreate(ctx.player()))
-                .sub(CommandSpec.sub("home").description("Teleport to your island home").permission(PERM_USE).playerOnly()
-                        .cooldown(Duration.ofSeconds(3)).example("is home")
-                        .executes(ctx -> manager.teleportHome(ctx.player())))
+                .sub(CommandSpec.sub("home").description("Teleport to your island home, or to one of your own homes").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(3)).optional(homeName).example("is home")
+                        .executes(ctx -> homes.home(ctx.player(), ctx.getOr(homeName, null))))
+                .sub(CommandSpec.sub("setmyhome").description("Set your own home on your island where you stand").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(3)).optional(myHomeName).example("is setmyhome")
+                        .executes(ctx -> homes.setHome(ctx.player(), ctx.getOr(myHomeName, null))))
+                .sub(CommandSpec.sub("settings").description("Island settings: spawning, fire, explosions, weather, time and more")
+                        .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(setting).optional(settingValue)
+                        .example("is settings weather rain")
+                        .executes(ctx -> islandSettings.command(ctx.player(), ctx.getOr(setting, null), ctx.getOr(settingValue, null))))
+                .sub(CommandSpec.sub("invites").description("Invites you received and invites your island sent").permission(PERM_USE)
+                        .playerOnly().example("is invites")
+                        .executes(ctx -> members.openInvites(ctx.player())))
                 .sub(CommandSpec.sub("go").description("Teleport to your island (same as /is home)").permission(PERM_USE).playerOnly()
                         .cooldown(Duration.ofSeconds(3)).example("is go")
                         .executes(ctx -> manager.teleportHome(ctx.player())))
@@ -297,10 +380,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("leave").description("Leave your island (confirm)").permission(PERM_USE).playerOnly()
                         .example("is leave")
                         .executes(ctx -> members.leave(ctx.player(), null)))
-                .sub(CommandSpec.sub("promote").description("Make a member a mod (leader)").permission(PERM_USE).playerOnly()
+                .sub(CommandSpec.sub("promote").description("Promote a member to mod, or a mod to admin (leader/admin)").permission(PERM_USE).playerOnly()
                         .arg(promotable).example("is promote Steve")
                         .executes(ctx -> members.promote(ctx.player(), ctx.get(promotable))))
-                .sub(CommandSpec.sub("demote").description("Make a mod a member again (leader)").permission(PERM_USE).playerOnly()
+                .sub(CommandSpec.sub("demote").description("Demote an admin to mod, or a mod to member (leader/admin)").permission(PERM_USE).playerOnly()
                         .arg(demotable).example("is demote Steve")
                         .executes(ctx -> members.demote(ctx.player(), ctx.get(demotable))))
                 .sub(CommandSpec.sub("transfer").description("Hand your island to a member (leader, double confirm)").permission(PERM_USE)
@@ -365,5 +448,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         manager.forget(event.getPlayer().getUniqueId());
         members.onQuit(event.getPlayer());
         warps.forget(event.getPlayer().getUniqueId());
+        homes.forget(event.getPlayer().getUniqueId());
+        islandSettings.forget(event.getPlayer().getUniqueId());
     }
 }

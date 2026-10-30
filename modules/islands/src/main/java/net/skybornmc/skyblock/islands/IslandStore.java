@@ -165,7 +165,9 @@ public final class IslandStore {
             return null;
         });
         loadPerms(c, islands);
+        loadSettings(c, islands);
         MemberStore.loadCoops(c, islands);
+        MemberHomeStore.load(c, islands);
         return ordered;
     }
 
@@ -177,6 +179,34 @@ public final class IslandStore {
             Optional<IslandPerm> perm = IslandPerm.byKey(rs.getString("perm"));
             if (island != null && role.isPresent() && perm.isPresent()) {
                 island.perms().set(role.get(), perm.get(), rs.getBoolean("allowed"));
+            }
+            return null;
+        });
+    }
+
+    /** {@code /is settings} values (ISL2; rows with an unknown flag or value, e.g. from a newer version, are skipped). */
+    static void loadSettings(Connection c, Map<UUID, Island> islands) throws SQLException {
+        Sql.query(c, "SELECT island_id, flag, flag_value FROM island_settings", rs -> {
+            Island island = islands.get(Sql.uuid(rs, "island_id"));
+            Optional<IslandFlag> flag = IslandFlag.byKey(rs.getString("flag"));
+            if (island != null && flag.isPresent()) {
+                island.settings().set(flag.get(), rs.getString("flag_value"));
+            }
+            return null;
+        });
+    }
+
+    /** Saves one {@code /is settings} value ({@code null} = back to the default: the row is removed), atomically. */
+    public CompletableFuture<Void> saveSetting(UUID islandId, IslandFlag flag, String value) {
+        return db.run(c -> saveSetting(c, islandId, flag, value, System.currentTimeMillis()));
+    }
+
+    static void saveSetting(Connection c, UUID islandId, IslandFlag flag, String value, long now) throws SQLException {
+        inTransaction(c, () -> {
+            Sql.update(c, "DELETE FROM island_settings WHERE island_id = ? AND flag = ?", islandId, flag.key());
+            if (value != null) {
+                Sql.update(c, "INSERT INTO island_settings (island_id, flag, flag_value, updated_at) VALUES (?, ?, ?, ?)",
+                        islandId, flag.key(), value, now);
             }
             return null;
         });
@@ -252,6 +282,8 @@ public final class IslandStore {
         Sql.update(c, "DELETE FROM island_invites WHERE island_id = ?", islandId);
         Sql.update(c, "DELETE FROM island_role_perms WHERE island_id = ?", islandId);
         VisitStore.deleteIsland(c, islandId); // M2.4: warps and bans end with the island
+        Sql.update(c, "DELETE FROM island_settings WHERE island_id = ?", islandId); // ISL2
+        MemberHomeStore.deleteIsland(c, islandId); // ISL2
         // used -> clearing (SlotState); the island id stays until the clearer frees the slot.
         Sql.update(c, "UPDATE island_slots SET state = ?, island_id = ?, updated_at = ? WHERE id = ?", STATE_CLEARING, islandId, now, slotId);
         return new DisbandResult.Disbanded(owner, slotId, grid[0], grid[1], size, members, coops, now);

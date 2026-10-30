@@ -3,10 +3,12 @@ package net.skybornmc.skyblock.islands;
 import net.skybornmc.skyblock.common.island.IslandService.Role;
 
 /**
- * Who may do what with island members (M2.3, pure, no Bukkit). Ranks: Leader &gt; Mod &gt; Member &gt; Coop. Fixed rules
- * (the 14 build/use actions are the configurable part, see {@link RolePermissions}):
+ * Who may do what with island members (M2.3, ISL2; pure, no Bukkit). Ranks: Leader &gt; Admin &gt; Mod &gt; Member &gt; Coop.
+ * Fixed rules (the build/use actions are the configurable part, see {@link RolePermissions}):
  * <ul>
- *   <li>Leader: everything; the only one who promotes, demotes and transfers.</li>
+ *   <li>Leader: everything; the only one who transfers and disbands; promotes Member → Mod → Admin.</li>
+ *   <li>Admin (ISL2, owner #23): every Mod right, plus edits the Mod row of the permission matrix and promotes/demotes
+ *       Member ↔ Mod; kicks mods and members. The old leader becomes Admin after a transfer.</li>
  *   <li>Mod: invites, kicks members (not mods), coops/uncoops, sets the home, edits the Member/Coop/Visitor permissions.</li>
  *   <li>Member: can see the member list and the permission matrix, can leave.</li>
  *   <li>Coop: temporary trust, never a stored member; nothing to manage.</li>
@@ -15,92 +17,140 @@ import net.skybornmc.skyblock.common.island.IslandService.Role;
  */
 public final class MemberRules {
 
+    /** The old leader's role after {@code /is transfer} (owner #23). */
+    public static final Role AFTER_TRANSFER = Role.ADMIN;
+
     private MemberRules() {
     }
 
-    /** Higher = more power (leader 3, mod 2, member 1, coop 0, none -1). */
+    /** Higher = more power (leader 4, admin 3, mod 2, member 1, coop 0, none -1). */
     static int rank(Role role) {
         if (role == null) {
             return -1;
         }
         return switch (role) {
-            case LEADER -> 3;
+            case LEADER -> 4;
+            case ADMIN -> 3;
             case MOD -> 2;
             case MEMBER -> 1;
             case COOP -> 0;
         };
     }
 
-    /** Leader and mods manage the island's people (invite, kick, coop) and its home. */
+    /** Leader, admins and mods manage the island's people (invite, kick, coop) and its home. */
     public static boolean isManager(Role role) {
-        return role == Role.LEADER || role == Role.MOD;
+        return role == Role.LEADER || role == Role.ADMIN || role == Role.MOD;
     }
 
     public static boolean canInvite(Role actor) {
         return isManager(actor);
     }
 
-    /** Leader kicks mods and members; a mod kicks members. Nobody kicks the leader or themselves (same rank). */
+    /** Only a higher rank kicks: leader kicks admins/mods/members, admin kicks mods/members, mod kicks members. */
     public static boolean canKick(Role actor, Role target) {
         return isManager(actor) && target != null && target != Role.LEADER && target != Role.COOP && rank(actor) > rank(target);
     }
 
-    /** Only the leader promotes, and only Member → Mod. */
+    /** Leader: Member → Mod and Mod → Admin. Admin: Member → Mod. */
     public static boolean canPromote(Role actor, Role target) {
-        return actor == Role.LEADER && target == Role.MEMBER;
+        if (actor == Role.LEADER) {
+            return target == Role.MEMBER || target == Role.MOD;
+        }
+        return actor == Role.ADMIN && target == Role.MEMBER;
     }
 
-    /** Only the leader demotes, and only Mod → Member. */
+    /** Leader: Admin → Mod and Mod → Member. Admin: Mod → Member. */
     public static boolean canDemote(Role actor, Role target) {
-        return actor == Role.LEADER && target == Role.MOD;
+        if (actor == Role.LEADER) {
+            return target == Role.ADMIN || target == Role.MOD;
+        }
+        return actor == Role.ADMIN && target == Role.MOD;
     }
 
-    /** The leader hands the island to a stored mod or member. */
+    /** The leader hands the island to a stored admin, mod or member. */
     public static boolean canTransfer(Role actor, Role target) {
-        return actor == Role.LEADER && (target == Role.MOD || target == Role.MEMBER);
+        return actor == Role.LEADER && (target == Role.ADMIN || target == Role.MOD || target == Role.MEMBER);
     }
 
     public static boolean canCoop(Role actor) {
         return isManager(actor);
     }
 
-    /** {@code /is sethome}: Leader + Mod (M2.1 was leader-only). */
+    /** {@code /is sethome}: Leader, Admin and Mod. */
     public static boolean canSetHome(Role actor) {
         return isManager(actor);
     }
 
+    /** {@code /is setmyhome} (ISL2): every stored member (coop players are not members). */
+    public static boolean canSetPersonalHome(Role actor) {
+        return actor == Role.LEADER || actor == Role.ADMIN || actor == Role.MOD || actor == Role.MEMBER;
+    }
+
     /** The leader can't leave (transfer first, or disband in M2.7); coop is not a stored membership. */
     public static boolean canLeave(Role actor) {
-        return actor == Role.MOD || actor == Role.MEMBER;
+        return actor == Role.ADMIN || actor == Role.MOD || actor == Role.MEMBER;
     }
 
     /** Every stored member can look at the member list and the permission matrix. */
     public static boolean canView(Role actor) {
-        return actor == Role.LEADER || actor == Role.MOD || actor == Role.MEMBER;
+        return actor == Role.LEADER || actor == Role.ADMIN || actor == Role.MOD || actor == Role.MEMBER;
     }
 
     /**
-     * Permission matrix: the leader edits every editable row (Mod, Member, Coop, Visitor); a mod edits Member, Coop and
-     * Visitor but never the Mod or Leader rows; nobody edits the leader (always everything).
+     * Permission matrix rows: the leader edits every editable row (Admin, Mod, Member, Coop, Visitor); an admin edits
+     * Mod, Member, Coop and Visitor; a mod edits Member, Coop and Visitor; nobody edits the leader (always everything).
      */
     public static boolean canEditPerms(Role editor, PermRole row) {
         if (row == null || !row.editable()) {
             return false;
         }
-        if (editor == Role.LEADER) {
+        return switch (editor) {
+            case LEADER -> true;
+            case ADMIN -> row != PermRole.ADMIN;
+            case MOD -> row != PermRole.ADMIN && row != PermRole.MOD;
+            case null, default -> false;
+        };
+    }
+
+    /**
+     * One matrix cell: the row must be editable for the editor, the permission must exist for that row (management
+     * rights only for stored members), and a management right (settings) can only be handed out by someone who has it
+     * ({@code editorHasPerm}; the leader always has it).
+     */
+    public static boolean canEditCell(Role editor, PermRole row, IslandPerm perm, boolean editorHasPerm) {
+        if (!canEditPerms(editor, row) || !perm.appliesTo(row)) {
+            return false;
+        }
+        return !perm.management() || editor == Role.LEADER || editorHasPerm;
+    }
+
+    /**
+     * {@code /is settings} (ISL2): stored members whose role has the {@code settings} permission (default Leader +
+     * Admin; the leader always). Coop players and visitors never.
+     */
+    public static boolean canChangeSettings(Role actor, boolean hasSettingsPerm) {
+        if (actor == Role.LEADER) {
             return true;
         }
-        return editor == Role.MOD && row != PermRole.MOD;
+        return canLeave(actor) && hasSettingsPerm;
     }
 
-    /** The role after a promotion (Member → Mod), or the same role when it can't go higher. */
+    /** The role after a promotion (Member → Mod → Admin), or the same role when it can't go higher. */
     public static Role promoted(Role role) {
-        return role == Role.MEMBER ? Role.MOD : role;
+        return switch (role) {
+            case MEMBER -> Role.MOD;
+            case MOD -> Role.ADMIN;
+            case null, default -> role;
+        };
     }
 
-    /** The role after a demotion (Mod → Member), or the same role. */
+    /** The role after a demotion (Admin → Mod → Member), or the same role. */
     public static Role demoted(Role role) {
-        return role == Role.MOD ? Role.MEMBER : role;
+        return switch (role) {
+            case ADMIN -> Role.MOD;
+            case MOD -> Role.MEMBER;
+            case null, default -> role;
+        };
     }
 
     /**
