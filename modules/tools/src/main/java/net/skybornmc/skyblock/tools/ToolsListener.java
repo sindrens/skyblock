@@ -210,7 +210,7 @@ final class ToolsListener implements Listener {
         if (killer == null || entity instanceof Player) {
             return;
         }
-        if (entity.fromMobSpawner() && !module.config().spawnerMobsXp) {
+        if (!module.config().spawnerMobsXp && (entity.fromMobSpawner() || fromStackedSpawner(entity))) {
             return;
         }
         Optional<ToolData> tool = ToolItems.read(killer.getInventory().getItemInMainHand());
@@ -244,7 +244,8 @@ final class ToolsListener implements Listener {
         if (killer == null || event.extraKills() <= 0) {
             return;
         }
-        if (event.entity().fromMobSpawner() && !module.config().spawnerMobsXp) {
+        // Stacked spawners spawn mobs themselves (fromMobSpawner() is false), so the event's flag counts too.
+        if (!module.config().spawnerMobsXp && (event.entity().fromMobSpawner() || event.spawnerMob())) {
             return;
         }
         Optional<ToolData> tool = ToolItems.read(killer.getInventory().getItemInMainHand());
@@ -291,5 +292,11 @@ final class ToolsListener implements Listener {
             return stack != null && !stack.isEmpty() && net.skybornmc.skyblock.common.item.ItemRegistry.idOf(stack).isEmpty()
                     && !(stack.hasItemMeta() && stack.getItemMeta().hasDisplayName());
         }
+    }
+
+    /** True for mobs from a stacked spawner (they never count as vanilla spawner mobs). */
+    private boolean fromStackedSpawner(LivingEntity entity) {
+        return module.core.services().optional(net.skybornmc.skyblock.common.stacking.StackingService.class)
+                .map(stacking -> stacking.fromStackedSpawner(entity)).orElse(false);
     }
 }
