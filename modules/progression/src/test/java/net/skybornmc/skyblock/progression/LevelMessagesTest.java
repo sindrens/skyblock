@@ -99,6 +99,8 @@ class LevelMessagesTest {
         Set<Integer> used = new HashSet<>();
         used.add(LevelMenu.SLOT_HEADER);
         used.add(LevelMenu.SLOT_RECALCULATE);
+        assertTrue(inner(LevelMenu.SLOT_TASKS));
+        assertTrue(used.add(LevelMenu.SLOT_TASKS), "challenge book slot used twice");
         for (int slot : LevelMenu.SOURCE_SLOTS) {
             assertTrue(inner(slot), "source slot " + slot);
             assertTrue(used.add(slot), "slot used twice: " + slot);

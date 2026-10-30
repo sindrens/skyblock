@@ -3,6 +3,7 @@
 # LuckPerms grants for these nodes: server/permissions/progression.txt. Commands: docs/commands/progression.md.
 #
 # M5.1 (pillars) has no command. M5.2: /is level and /is top (sub-commands of the islands module's /is, menus here).
+# M5.3: the challenge book is a button in /is level (no new command).
 # Planned nodes (PHASE-5 plan), added with their milestones:
 #   skyblock.progression.upgrade      (everyone)  /is upgrade          M5.4
 #   skyblock.progression.admin.view   (mod)       /isadmin progression M5.10
@@ -15,4 +16,7 @@ skyblock.progression.recalculate:
   default: true
 skyblock.progression.top:
   description: Use /is top (M5.2) - island leaderboards by level and value, solo and team
+  default: true
+skyblock.progression.tasks:
+  description: Open the challenge book from /is level (M5.3) - island tasks, shared progress, hand in items (members only)
   default: true

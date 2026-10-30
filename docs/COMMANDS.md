@@ -39,7 +39,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [npcs](commands/npcs.md) | NPCs and holograms (`modules/npcs`) |
 | [perks](commands/perks.md) | Perks module (`modules/perks`) |
 | [profiles](commands/profiles.md) | Profiles module (`modules/profiles`): PROF |
-| [progression](commands/progression.md) | Progression module (`modules/progression`): M5.1 pillars, M5.2 island level |
+| [progression](commands/progression.md) | Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine |
 | [shop](commands/shop.md) | Builder shop (`modules/shop`) |
 | [skills](commands/skills.md) | Skills module (`modules/skills`): M4.5 |
 | [social](commands/social.md) | Social (`modules/social`) |
