@@ -77,7 +77,7 @@ public final class ChatConfig extends ModuleConfig {
     /** Owner answer 301: English-only starter list of slurs and threats (message blocked, staff alerted), for approval. */
     static final List<String> STARTER_BLOCK = List.of("nigger", "niggers", "nigga", "niggas", "faggot", "faggots", "fag", "fags",
             "retard", "retards", "retarded", "tranny", "trannies", "kike", "kikes", "spic", "spics", "chink", "chinks",
-            "gook", "gooks", "wetback", "wetbacks", "coon", "coons", "paki", "pakis", "dyke", "dykes", "kys", "kms");
+            "gook", "gooks", "wetback", "wetbacks", "coon", "coons", "paki", "pakis", "dyke", "dykes", "kys");
 
     @Setting(path = "protection.words.replace", desc = "Words replaced with *** (whole words, case-insensitive). English only "
             + "(owner answer 301); the starter list waits for the owner's approval (docs/OPEN_QUESTIONS.md).")
