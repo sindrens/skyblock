@@ -33,12 +33,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,19 +62,45 @@ import java.util.logging.Level;
 
 /**
  * Selling (M3.4) inside the economy module: the price table ({@code sell.yml}), dynamic prices (steps, hourly impact,
- * saving, all off the main thread), {@link SellService}, {@code /sell} ({@code hand}, {@code all}) and the sell menu.
+ * saving, all off the main thread), {@link SellService}, {@code /sell} ({@code hand}, {@code all}) and the sell chest
+ * ({@link SellMenu}, SELL2).
  *
- * <p><b>Item safety.</b> Items stay in the player's inventory while they are in the sell box (the menu only remembers
- * which slots were picked and blocks every inventory click), so closing the menu, logging out or a server crash can never
- * lose them. On confirm they are checked again, taken out on the main thread, the player's data is saved, and one
- * guarded ledger transaction pays them; if it fails every stack is handed back (inventory, else the feet, else stored
- * and handed back on the next join).</p>
+ * <p><b>Item safety.</b> Items in the sell chest are copied into the player's own data while it is open (saved together
+ * with the inventory, see {@link SellChestStore}) and handed back when it closes; a crash hands them back on the next
+ * join. A sale takes the items out on the main thread (escrow), the player's data is saved, and one guarded ledger
+ * transaction pays them; if it fails every stack is handed back (inventory, then ender chest, then the feet, or stored
+ * and handed back on the next join if the player left or switched profile).</p>
  */
 public final class SellFeature implements Listener {
 
     public static final String PERM_SELL = "skyblock.economy.sell";
     static final String CATALOG_FILE = "sell.yml";
-    private static final int STORAGE_SLOTS = 36;
+    static final int STORAGE_SLOTS = 36;
+
+    /** Stack reading for {@link ChestFill}. */
+    static final ChestFill.Ops<ItemStack> STACK_OPS = new ChestFill.Ops<>() {
+        @Override
+        public boolean similar(ItemStack a, ItemStack b) {
+            return a.isSimilar(b);
+        }
+
+        @Override
+        public int amount(ItemStack stack) {
+            return stack.getAmount();
+        }
+
+        @Override
+        public int maxStack(ItemStack stack) {
+            return stack.getMaxStackSize();
+        }
+
+        @Override
+        public ItemStack withAmount(ItemStack stack, int amount) {
+            ItemStack copy = stack.clone();
+            copy.setAmount(amount);
+            return copy;
+        }
+    };
 
     final EconomyModule module;
     final Core core;
@@ -85,7 +113,8 @@ public final class SellFeature implements Listener {
     private SellServiceImpl service;
     private volatile boolean ready;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
-    private final Map<UUID, Long> lastClick = new ConcurrentHashMap<>();
+    /** Key of the sell chest's crash copy in the player's persistent data. */
+    private NamespacedKey chestKey;
     /** Players with a sale on its way (a second one waits; no double clicks, no switching items mid-sale). */
     private final java.util.Set<UUID> selling = ConcurrentHashMap.newKeySet();
 
@@ -107,6 +136,8 @@ public final class SellFeature implements Listener {
                 () -> core.services().optional(BonusService.class), System::currentTimeMillis, Format::zone,
                 core.plugin().getLogger());
         core.services().register(EconomyModule.ID, SellService.class, service);
+        chestKey = new NamespacedKey(core.plugin(), "sell_chest");
+        service.chestOpener(this::openChest);
         // After a sale (main thread): island stats (items sold, money earned) for the profile that sold, and wardrobe
         // set XP (WARDROBE §3.1) only if that profile is still the active one.
         core.scheduler().later("sell-stat-sources", 1, () -> core.services().optional(net.skybornmc.skyblock.common.island.IslandStatsService.class)
@@ -152,6 +183,7 @@ public final class SellFeature implements Listener {
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         registerCommand();
         for (Player p : Bukkit.getOnlinePlayers()) {
+            recoverChest(p);
             deliverRefunds(p);
         }
     }
@@ -321,7 +353,30 @@ public final class SellFeature implements Listener {
 
     void open(Player player) {
         checkCanSell(player);
+        if (core.menus().openMenu(player) instanceof SellMenu) {
+            return; // never re-open the same chest (a new inventory would drop the items in the old one)
+        }
         core.menus().open(player, new SellMenu(this));
+    }
+
+    /** {@link SellService#openSellChest}: opens the chest with a parent (shop, satchel); false + the reason if not possible. */
+    private boolean openChest(Player player, Menu parent) {
+        try {
+            checkCanSell(player);
+        } catch (CommandFailure e) {
+            msg.send(player, e.key(), e.placeholders());
+            sound(player, "error");
+            return false;
+        }
+        if (core.menus().openMenu(player) instanceof SellMenu) {
+            return true;
+        }
+        SellMenu menu = new SellMenu(this);
+        if (parent != null) {
+            menu.parent(parent);
+        }
+        core.menus().open(player, menu);
+        return true;
     }
 
     private void checkCanSell(Player player) {
@@ -423,13 +478,36 @@ public final class SellFeature implements Listener {
             finish(done, null);
             return;
         }
-        if (config.sellSavePlayerData) {
-            try {
-                player.saveData();
-            } catch (RuntimeException e) {
-                core.plugin().getLogger().log(Level.WARNING, "Sell: could not save " + player.getName() + "'s data before a sale", e);
-            }
+        pay(player, taken, source, done);
+    }
+
+    /**
+     * Sells stacks the caller already took out of the world (escrow, e.g. the sell chest). If selling is not possible
+     * right now every stack is handed back at once. {@code done} runs on the main thread afterwards.
+     */
+    void sellTaken(Player player, List<ItemStack> taken, String source, Consumer<SellResult> done) {
+        UUID uuid = player.getUniqueId();
+        UUID profile = profiles().profileKey(player);
+        if (!ready || module.frozen(player) || profiles().isSwitching(uuid)) {
+            giveBack(uuid, profile, taken);
+            msg.send(player, !ready ? "sell.loading" : module.frozen(player) ? "sell.frozen" : "sell.switching");
+            sound(player, "error");
+            finish(done, null);
+            return;
         }
+        if (!selling.add(uuid)) {
+            giveBack(uuid, profile, taken);
+            msg.send(player, "sell.busy");
+            finish(done, null);
+            return;
+        }
+        pay(player, taken, source, done);
+    }
+
+    /** The paying half of a sale; {@link #selling} already holds the player and {@code taken} is in escrow. */
+    private void pay(Player player, List<ItemStack> taken, String source, Consumer<SellResult> done) {
+        UUID uuid = player.getUniqueId();
+        savePlayerDataIf(player, config.sellSavePlayerData, "before a sale");
         UUID profile = profiles().profileKey(player);
         String name = player.getName();
         SellRequest request = new SellRequest(uuid, name, profile, taken, service.bonusPercent(player), source, Actor.player(player));
@@ -459,7 +537,15 @@ public final class SellFeature implements Listener {
                 TagResolver[] p = {Msg.number("items", q.items()), module.amountTag("amount", player, Currency.MONEY, q.total()),
                         module.amountTag("balance", player, Currency.MONEY, r.balance() == null ? 0 : r.balance()),
                         Msg.p("bonus", percentText(q.cappedBonusPercent()))};
-                msg.send(player, q.cappedBonusPercent() > 0 ? "sell.sold-bonus" : "sell.sold", p);
+                boolean bonus = q.cappedBonusPercent() > 0;
+                if (q.total() >= config.sellBigSaleChatFrom) {
+                    // Big sale: one chat line, the breakdown on hover (Bedrock shows the line without the hover).
+                    Component line = msg.component(player, bonus ? "sell.sold-big-bonus" : "sell.sold-big", p)
+                            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(breakdown(player, q)));
+                    player.sendMessage(line);
+                } else {
+                    msg.actionBar(player, bonus ? "sell.sold-bar-bonus" : "sell.sold-bar", p);
+                }
                 core.sounds().play(player, "money");
                 if (!r.giveBack().isEmpty()) {
                     msg.send(player, "sell.some-unsold", Msg.number("stacks", r.giveBack().size()));
@@ -484,6 +570,129 @@ public final class SellFeature implements Listener {
         }
     }
 
+    /** Hover text of a big sale: one line per item (most valuable first), the bonus and the total. */
+    Component breakdown(Player player, net.skybornmc.skyblock.common.sell.SellQuote q) {
+        List<net.skybornmc.skyblock.common.sell.SellQuote.Line> lines = new ArrayList<>(q.lines());
+        lines.sort((a, b) -> Double.compare(b.value(), a.value()));
+        List<Component> out = new ArrayList<>();
+        out.add(msg.component(player, "sell.breakdown.header"));
+        int max = Math.max(1, config.sellBigSaleHoverLines);
+        for (int i = 0; i < lines.size() && i < max; i++) {
+            var line = lines.get(i);
+            out.add(msg.component(player, "sell.breakdown.line", Msg.c("item", keyName(line.price().itemKey())),
+                    Msg.number("amount", line.amount()), Msg.c("value", money(player, (long) Math.floor(line.value())))));
+        }
+        if (lines.size() > max) {
+            out.add(msg.component(player, "sell.breakdown.more", Msg.number("count", lines.size() - max)));
+        }
+        out.add(msg.component(player, "sell.breakdown.subtotal", Msg.c("value", money(player, q.subtotal()))));
+        if (q.cappedBonusPercent() != 0) {
+            out.add(msg.component(player, "sell.breakdown.bonus", Msg.p("bonus", percentText(q.cappedBonusPercent()))));
+        }
+        out.add(msg.component(player, "sell.breakdown.total", Msg.c("value", money(player, q.total()))));
+        return Component.join(net.kyori.adventure.text.JoinConfiguration.newlines(), out);
+    }
+
+    // ================================================================== the sell chest's crash copy
+
+    /** The crash copy of {@code player}'s sell chest, kept in their own data (saved with the inventory). */
+    SellChestStore<ItemStack> chestStore(Player player) {
+        PersistentDataContainer pdc = player.getPersistentDataContainer();
+        return new SellChestStore<>(new SellChestStore.Holder() {
+            @Override
+            public byte[] read() {
+                return pdc.get(chestKey, PersistentDataType.BYTE_ARRAY);
+            }
+
+            @Override
+            public void write(byte[] data) {
+                pdc.set(chestKey, PersistentDataType.BYTE_ARRAY, data);
+            }
+
+            @Override
+            public void clear() {
+                pdc.remove(chestKey);
+            }
+        }, ItemStack::serializeAsBytes, ItemStack::deserializeBytes);
+    }
+
+    void saveChestCopy(Player player, Map<Integer, ItemStack> items) {
+        chestStore(player).save(profiles().profileKey(player), items, System.currentTimeMillis());
+    }
+
+    void clearChestCopy(Player player) {
+        chestStore(player).clear();
+    }
+
+    /**
+     * Items a crash left in the sell chest's copy: handed back now (to the profile they came from; a different active
+     * profile gets them on its next switch back) and the copy is cleared. Audited.
+     */
+    void recoverChest(Player player) {
+        if (core.menus().openMenu(player) instanceof SellMenu) {
+            return; // the copy belongs to the open chest
+        }
+        SellChestStore<ItemStack> store = chestStore(player);
+        if (!store.present()) {
+            return;
+        }
+        SellChestStore.Restored<ItemStack> restored;
+        try {
+            restored = store.read().orElse(null);
+        } catch (IllegalArgumentException e) {
+            core.plugin().getLogger().severe("Sell: " + player.getName() + " has a broken sell chest copy (" + e.getMessage()
+                    + "); removed. Raw data: " + Base64.getEncoder().encodeToString(store.raw()));
+            store.clear();
+            return;
+        }
+        store.clear();
+        if (restored == null) {
+            return;
+        }
+        for (byte[] broken : restored.broken()) {
+            core.plugin().getLogger().severe("Sell: a stack in " + player.getName() + "'s sell chest copy could not be read. "
+                    + "Restore it from this data: " + Base64.getEncoder().encodeToString(broken));
+        }
+        List<ItemStack> items = new ArrayList<>(restored.items().values());
+        if (items.isEmpty()) {
+            return;
+        }
+        long count = items.stream().mapToLong(ItemStack::getAmount).sum();
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("profile", restored.profile().toString());
+        details.put("stacks", items.size());
+        details.put("items", items.stream().map(i -> i.getType().name().toLowerCase(Locale.ROOT) + "x" + i.getAmount()).toList());
+        core.audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.ITEM, "sell_chest_recovered",
+                Actor.system("economy"), player.getUniqueId(), player.getName(), count, player.getLocation(), details);
+        giveBack(player.getUniqueId(), restored.profile(), items);
+        msg.send(player, "sell.chest.recovered", Msg.number("items", count));
+    }
+
+    /** Hands stacks back to an online player (inventory, ender chest, feet); used by the sell chest. */
+    void returnItems(Player player, List<ItemStack> stacks) {
+        giveBack(player.getUniqueId(), profiles().profileKey(player), stacks);
+    }
+
+    void savePlayerData(Player player) {
+        savePlayerDataIf(player, true, "for the sell chest");
+    }
+
+    private void savePlayerDataIf(Player player, boolean enabled, String why) {
+        if (!enabled || !player.isOnline()) {
+            return;
+        }
+        try {
+            player.saveData();
+        } catch (RuntimeException e) {
+            core.plugin().getLogger().log(Level.WARNING, "Sell: could not save " + player.getName() + "'s data " + why, e);
+        }
+    }
+
+    /** Tools and weapons (anything with durability): "Sell inventory" leaves them in the hotbar. */
+    static boolean isToolOrWeapon(ItemStack item) {
+        return item.getType().getMaxDurability() > 0;
+    }
+
     // ================================================================== giving items back
 
     /** Hands stacks back to their owner: inventory, else at their feet; stored for later if they left or switched profile. */
@@ -493,15 +702,24 @@ public final class SellFeature implements Listener {
         }
         Player player = Bukkit.getPlayer(owner);
         if (player != null && player.isOnline() && !profiles().isSwitching(owner) && profiles().profileKey(player).equals(profile)) {
-            int dropped = 0;
-            for (ItemStack stack : stacks) {
-                for (ItemStack rest : player.getInventory().addItem(stack.clone()).values()) {
-                    player.getWorld().dropItemNaturally(player.getLocation(), rest);
-                    dropped++;
-                }
+            List<ItemStack> copies = stacks.stream().filter(java.util.Objects::nonNull).filter(s -> !s.isEmpty()).map(ItemStack::clone).toList();
+            ChestFill.Returned<ItemStack> returned = ChestFill.giveBack(copies,
+                    stack -> new ArrayList<>(player.getInventory().addItem(stack).values()),
+                    stack -> new ArrayList<>(player.getEnderChest().addItem(stack).values()), STACK_OPS);
+            for (ItemStack rest : returned.dropped()) {
+                player.getWorld().dropItemNaturally(player.getLocation(), rest);
             }
-            if (dropped > 0) {
-                msg.send(player, "sell.returned-dropped", Msg.number("stacks", dropped));
+            if (returned.overflowed()) {
+                Map<String, Object> details = new LinkedHashMap<>();
+                details.put("to_ender_chest", returned.toEnder());
+                details.put("dropped", returned.dropped().stream().map(i -> i.getType().name().toLowerCase(Locale.ROOT) + "x" + i.getAmount()).toList());
+                core.audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.ITEM, "sell_return_overflow",
+                        Actor.system("economy"), owner, player.getName(), null, player.getLocation(), details);
+            }
+            if (!returned.dropped().isEmpty()) {
+                msg.send(player, "sell.returned-dropped", Msg.number("stacks", returned.dropped().size()));
+            } else if (returned.toEnder() > 0) {
+                msg.send(player, "sell.returned-ender", Msg.number("stacks", returned.toEnder()));
             }
             return;
         }
@@ -548,49 +766,40 @@ public final class SellFeature implements Listener {
 
     // ================================================================== events
 
-    /** Clicks on the player's own inventory while the sell menu is open: put a stack in / take it out (Bedrock: a tap). */
+    /** Clicks while the sell chest is open (after the menu framework cancelled them): the chest decides what may move. */
     @EventHandler(priority = EventPriority.NORMAL)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getView().getTopInventory().getHolder(false) instanceof SellMenu menu)) {
             return;
         }
-        event.setCancelled(true); // the menu framework already did; nothing may move here
-        if (!(event.getWhoClicked() instanceof Player player) || menu.viewer() != player
-                || event.getClickedInventory() == null || event.getClickedInventory() != event.getView().getBottomInventory()) {
+        event.setCancelled(true);
+        if (event.getWhoClicked() instanceof Player player && menu.viewer() == player && menu.isOpen()) {
+            menu.handleClick(event);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getView().getTopInventory().getHolder(false) instanceof SellMenu menu)) {
             return;
         }
-        ClickType type = event.getClick();
-        if (type != ClickType.LEFT && type != ClickType.RIGHT && type != ClickType.SHIFT_LEFT && type != ClickType.SHIFT_RIGHT) {
-            return;
+        event.setCancelled(true);
+        if (event.getWhoClicked() instanceof Player player && menu.viewer() == player && menu.isOpen()) {
+            menu.handleDrag(event);
         }
-        int slot = event.getSlot();
-        if (slot < 0 || slot >= STORAGE_SLOTS) {
-            return;
-        }
-        long now = System.currentTimeMillis();
-        Long last = lastClick.get(player.getUniqueId());
-        if (last != null && now - last < config.sellMenuClickMs) {
-            return;
-        }
-        lastClick.put(player.getUniqueId(), now);
-        menu.toggle(slot);
-        Bukkit.getScheduler().runTask(core.plugin(), player::updateInventory);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        // The profile module attached the active profile at LOWEST: items a crash left in the sell chest come back now.
+        recoverChest(player);
         // A little later: the profile module loads the active profile on join.
         Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
             if (player.isOnline() && ready) {
                 deliverRefunds(player);
             }
         }, 40L);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onQuit(PlayerQuitEvent event) {
-        lastClick.remove(event.getPlayer().getUniqueId());
     }
 
     /** The inventory is about to be swapped: close the sell box first. */

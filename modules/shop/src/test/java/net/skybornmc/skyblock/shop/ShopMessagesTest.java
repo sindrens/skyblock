@@ -65,11 +65,11 @@ class ShopMessagesTest {
             keys.add("categories." + c.id() + ".name");
             keys.add("categories." + c.id() + ".lore");
         }
-        for (String state : List.of("open", "locked", "unavailable", "requires")) {
+        for (String state : List.of("locked", "unavailable", "requires")) {
             keys.add("category.entry." + state);
         }
-        for (String state : List.of("buy", "no-room", "too-expensive")) {
-            keys.add("item.amount." + state);
+        for (String state : List.of("ok", "partial", "no-room", "too-expensive")) {
+            keys.add("amount.buy." + state);
         }
         for (String skill : List.of("mining", "foraging", "combat", "farming", "fishing")) {
             keys.add("skills." + skill);

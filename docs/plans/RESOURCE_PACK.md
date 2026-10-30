@@ -192,8 +192,8 @@ Counts are today's catalogs. New entries in a catalog need a texture or they fal
 | Generic 3-row (confirm, small choices) | `ConfirmMenu`, 3-row menus | 3 | U+E301 | Same style; confirm/cancel zones tinted green/red behind slots 10–12 / 14–16. |
 | Number picker | `NumberPickerMenu` | 6 | U+E302 | Value plate behind slot 22. |
 | Shop (category grid) | `modules/shop` ShopMenu | 6 | U+E310 | Market stall awning in the top band; category tabs. |
-| Shop item / quick-buy | `modules/shop` ItemMenu (SELL2 quick-buy grid) | 6 | U+E311 | Price plate under the grid; amount strip. |
-| Sell chest | `modules/economy` SellMenu (SELL2: 4 input rows + button bar) | 6 | U+E312 | Wooden crate interior for the 4 input rows; gold "Sell" plate behind 52/53; live total plate behind slot 4. |
+| Shop item / quick-buy | `modules/shop` CategoryMenu (quick-buy grid) + BuyAmountMenu (amount screen) | 6 | U+E311 | Price plate under the grid; amount strip (19-25), Buy plate 39-41. |
+| Sell chest | `modules/economy` SellMenu (SELL2: 4 input rows + button bar) | 6 | U+E312 | Wooden crate interior for the 4 input rows; gold "Sell" plate behind 52/53; live total plate behind slot 47; divider row 36-44. |
 | Satchel | `modules/depths` SatchelMenu (paged) | 6 | U+E313 | Leather bag interior, fill gauge in the top band. |
 | Satchel item | SatchelItemMenu | 3 | U+E314 | Small leather panel. |
 | Forge | `modules/tools` ForgeMenu | 6 | U+E315 | Anvil and hot coals; "stat change" arrow between old and new tool slots. |

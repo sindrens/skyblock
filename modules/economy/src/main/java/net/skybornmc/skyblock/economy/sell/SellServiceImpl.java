@@ -68,6 +68,19 @@ public final class SellServiceImpl implements SellService {
     void onSold(SoldListener listener) {
         this.soldListener = listener;
     }
+
+    /** Opens the sell chest (set by {@link SellFeature}); returns false when selling is not possible right now. */
+    private volatile java.util.function.BiPredicate<org.bukkit.entity.Player, net.skybornmc.skyblock.common.menu.Menu> chestOpener;
+
+    void chestOpener(java.util.function.BiPredicate<org.bukkit.entity.Player, net.skybornmc.skyblock.common.menu.Menu> opener) {
+        this.chestOpener = opener;
+    }
+
+    @Override
+    public boolean openSellChest(org.bukkit.entity.Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
+        var opener = chestOpener;
+        return opener != null && opener.test(player, parent);
+    }
     private volatile LocalDate hotDay;
     private volatile String hotKey;
     private volatile SellCatalog hotCatalog;

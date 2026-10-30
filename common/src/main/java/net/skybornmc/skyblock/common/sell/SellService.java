@@ -81,4 +81,13 @@ public interface SellService {
         }
         return CompletableFuture.completedFuture(new SellResult(SellResult.Status.ERROR, null, request.items(), null, null));
     }
+
+    /**
+     * Opens the sell chest ({@code /sell}, SELL2) for this player, e.g. from the shop or the satchel. {@code parent} is the
+     * menu its Back button returns to ({@code null} = none). When selling is not possible right now the player gets the
+     * reason and false is returned. Main thread.
+     */
+    default boolean openSellChest(Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
+        return false;
+    }
 }

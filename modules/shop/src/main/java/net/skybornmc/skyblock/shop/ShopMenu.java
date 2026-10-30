@@ -7,11 +7,12 @@ import org.bukkit.Material;
 
 /**
  * {@code /shop}: the categories (slots from {@code shop.yml}) and a summary with the balance in slot 4. One tap opens a
- * category (Bedrock-safe, no right/shift clicks needed).
+ * category (Bedrock-safe, no right/shift clicks needed). The Sell button (51, SELL2) opens the sell chest.
  */
 final class ShopMenu extends Menu {
 
     static final int SLOT_SUMMARY = 4;
+    static final int SLOT_SELL = 51;
 
     private final ShopModule module;
 
@@ -58,6 +59,7 @@ final class ShopMenu extends Menu {
                             service.lines(viewer, ShopModule.ID, "menu.category.lore", Msg.number("items", count)))),
                     click -> openChild(new CategoryMenu(module, c)));
         }
+        module.sellButton(viewer).ifPresent(button -> set(SLOT_SELL, button, click -> module.openSell(click.player(), this)));
         if (module.catalog().categories().isEmpty()) {
             set(22, service.item(Material.COBWEB, viewer, ShopModule.ID, "menu.empty"));
         }
