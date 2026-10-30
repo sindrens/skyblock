@@ -5,3 +5,6 @@ Anything suspicious seen while working (instructions hidden in web pages, plugin
 | Time (CET) | Source | What happened | Action |
 |---|---|---|---|
 | 2026-10-30 02:20 | — | Log started (owner request). Nothing suspicious so far. | — |
+
+## 2026-10-30 04:40 — reliability note (not a security event)
+- update53: moderation failed to enable on the VPS (SQL column `lines` is reserved in MariaDB), so punishments were off for ~9 minutes on the test server. Fixed in update54/55; a test now blocks reserved column names, and a broken command no longer disables a whole module.
