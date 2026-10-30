@@ -617,7 +617,14 @@ final class Tracker implements Listener {
             islands.get().islandOfProfile(e.getValue().key())
                     .ifPresent(info -> playersByIsland.computeIfAbsent(info.id(), id -> new ArrayList<>()).add(e.getKey()));
         }
-        playersByIsland.forEach((islandId, players) -> stats.get().snapshot(islandId).whenComplete((snap, error) -> {
+        if (playersByIsland.isEmpty()) {
+            return;
+        }
+        // PERF5: starting a snapshot copies the island's unwritten counters out of the stats buffer under its lock
+        // (shared with every block/kill counter and the stats flush); that part now runs off the main thread too. The
+        // values still land on the main thread, one task per island.
+        IslandStatsService service = stats.get();
+        core.scheduler().async(() -> playersByIsland.forEach((islandId, players) -> snapshotOf(service, islandId).whenComplete((snap, error) -> {
             if (error != null || snap == null) {
                 return;
             }
@@ -632,7 +639,15 @@ final class Tracker implements Listener {
                     add(uuid, Metric.ISLAND_VISITORS, snap.totals(IslandStat.VISITORS).allTime());
                 }
             });
-        }));
+        })));
+    }
+
+    private static CompletableFuture<IslandStatsService.Snapshot> snapshotOf(IslandStatsService stats, UUID islandId) {
+        try {
+            return stats.snapshot(islandId);
+        } catch (RuntimeException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     // ------------------------------------------------------------------ unlocks

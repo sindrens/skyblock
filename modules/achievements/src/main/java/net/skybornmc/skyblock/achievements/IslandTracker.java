@@ -421,28 +421,51 @@ final class IslandTracker implements Listener {
             return;
         }
         long now = System.currentTimeMillis();
+        // PERF5: clean islands drain in O(1); every changed island is written in ONE queued transaction instead of one
+        // database task (and future chain link) per island.
+        Map<IslandProgress, List<IslandProgress.Row>> batch = new LinkedHashMap<>();
         for (IslandProgress p : islands.values()) {
             if (!p.loaded()) {
                 continue;
             }
             List<IslandProgress.Row> rows = p.drain();
-            if (rows.isEmpty()) {
-                continue;
+            if (!rows.isEmpty()) {
+                batch.put(p, rows);
             }
-            tracker.queue(c -> {
-                store.saveIsland(c, p.islandId(), rows, now);
-                return null;
-            }).whenComplete((v, error) -> {
-                if (error != null) {
-                    core.scheduler().main("achievements-island-retry", () -> {
-                        if (islands.get(p.islandId()) == p) {
-                            p.restore(rows);
-                        }
-                    });
-                    core.plugin().getLogger().warning("Achievements: saving island " + p.islandId() + " failed, retrying with the next save: "
-                            + Database.cause(error).getMessage());
-                }
-            });
+        }
+        if (batch.isEmpty()) {
+            return;
+        }
+        tracker.queue(c -> {
+            saveBatch(c, batch, now);
+            return null;
+        }).whenComplete((v, error) -> {
+            if (error != null) {
+                core.scheduler().main("achievements-island-retry", () -> batch.forEach((p, rows) -> {
+                    if (islands.get(p.islandId()) == p) {
+                        p.restore(rows);
+                    }
+                }));
+                core.plugin().getLogger().warning("Achievements: saving " + batch.size() + " island(s) failed, retrying with the next save: "
+                        + Database.cause(error).getMessage());
+            }
+        });
+    }
+
+    /** All changed islands in one transaction (all or nothing, so a failed save gives every island its rows back). */
+    private void saveBatch(java.sql.Connection c, Map<IslandProgress, List<IslandProgress.Row>> batch, long now) throws java.sql.SQLException {
+        boolean auto = c.getAutoCommit();
+        c.setAutoCommit(false);
+        try {
+            for (Map.Entry<IslandProgress, List<IslandProgress.Row>> e : batch.entrySet()) {
+                store.saveIsland(c, e.getKey().islandId(), e.getValue(), now);
+            }
+            c.commit();
+        } catch (java.sql.SQLException | RuntimeException e) {
+            c.rollback();
+            throw e;
+        } finally {
+            c.setAutoCommit(auto);
         }
     }
 
