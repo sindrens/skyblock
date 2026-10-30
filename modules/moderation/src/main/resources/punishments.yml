@@ -17,6 +17,8 @@
 # Steps: warn | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>   (times: 30m, 1h, 12h, 1d, 7d, 30d)
 #        warn 0.5 = a warning that counts half toward the warn rules (weight, 0.1 to 10; plain warn = 1)
 # Reason ids: lowercase a-z, 0-9 and - only, unique. icon = any item id.
+# probation: true|false (category or reason; default true) = after a mute/ban of this reason ends by time the player is
+# on probation (extras.probation), and offences of this reason get the probation step bonus. Off for the small stuff.
 
 categories:
   cheating:
@@ -73,6 +75,7 @@ categories:
       afk-farming:
         icon: CLOCK
         ladder: ["warn", "kick", "ban 1d", "ban 7d"]
+        probation: false            # small stuff (bottom-right quarter of /p): no probation
       rmt:
         icon: GOLD_INGOT
         ladder: ["ban 30d", "ban perm"]
@@ -80,6 +83,7 @@ categories:
 
   other:
     icon: ARMOR_STAND
+    probation: false                # small stuff (name / build / skin): no probation (owner spec 13.7)
     reasons:
       inappropriate-name:
         icon: NAME_TAG
@@ -205,3 +209,23 @@ extras:
     last-entries: 5
   chat-suggestions:           # for a chat filter that suggests punishments (never applied automatically). The API is
     spam: { hits: 3, within: 10s, reason: spam }   # ready; the detector that uses this is a separate task
+
+  # ---------- owner spec section 13 (P4) ----------
+  approval:                   # big punishments need an approver (skyblock.staff.punish.approve, admins)
+    enabled: true             # staff without it create a request; nothing happens to the player until approved
+    expire: 24h               # an unhandled request disappears after this
+    self-approve: false       # an approver can't approve their own request
+    # What needs approval. Kinds: ban (every ban), ipban, mute. Then: perm, * (any), a time (exactly), >= time, > time.
+    # Also anything longer than the staff member's rank limit (moderation.yml limits) becomes a request.
+    rules: ["ban perm", "ipban *", "mute perm", "ban >= 30d"]
+    deny-reasons: [evidence, too-harsh, wrong-reason, talked]   # buttons in the Deny menu (max 6, texts in messages)
+  watchlist:                  # /watch <player> [reason]: staff get one line when they join, the player is never told
+    expire: 30d               # perm = until /watch remove
+    reason-max-length: 100
+  probation:                  # after a mute or ban ENDS BY TIME (not pardoned, not undone, not perm) ...
+    enabled: true
+    duration: 14d             # ... the player is on probation this long ...
+    step-bonus: 1             # ... and a new offence uses the ladder step + this (never past the last step)
+  mute-ended:                 # "Your mute has ended. Please follow the rules" / "Welcome back" (once, also after being offline)
+    enabled: true
+    sound: notify             # a sound name from sounds.yml, "" = none

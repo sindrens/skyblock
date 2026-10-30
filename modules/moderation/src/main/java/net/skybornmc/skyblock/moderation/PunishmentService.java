@@ -47,7 +47,13 @@ final class PunishmentService {
      * warn-button id) also turns on the duplicate check (spec 12.2); {@code force} = the {@code -force} flag.
      */
     record Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
-                   boolean ipWide, String ip, String template, Integer ladderStep, String source, boolean force, int weight) {
+                   boolean ipWide, String ip, String template, Integer ladderStep, String source, boolean force, int weight,
+                   PunishDecision.Escalation escalation) {
+
+        Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
+                boolean ipWide, String ip, String template, Integer ladderStep, String source, boolean force, int weight) {
+            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, source, force, weight, null);
+        }
 
         Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
                 boolean ipWide, String ip, String template, Integer ladderStep) {
@@ -80,6 +86,13 @@ final class PunishmentService {
         this.store = store;
         this.config = config;
         this.main = new MainThread(core.plugin());
+        // spec 13.13: one timer per online player with a timed mute, at its end (no database polling)
+        this.muteTimers = new EndTimers((delay, action) -> {
+            net.skybornmc.skyblock.common.util.Scheduler.Task task = core.scheduler().later("moderation:mute-end",
+                    Math.max(1L, (delay + 49) / 50), action);
+            return task::cancel;
+        }, System::currentTimeMillis, (player, id) -> core.scheduler().ensureMain("moderation:mute-end",
+                () -> muteEnded(player, id)));
     }
 
     PunishmentStore store() {
@@ -169,9 +182,10 @@ final class PunishmentService {
         return extras.get();
     }
 
-    /** The one pipeline, with the current duplicate window (P2 fills the DUPLICATE slot). */
+    /** The one pipeline: duplicate window (P2), probation and approval (P4) from the current config. */
     PunishDecision decision() {
-        return PunishDecision.withDuplicates(extras.get().duplicateWindow());
+        PunishConfig.Extras x = extras.get();
+        return PunishDecision.full(x.duplicateWindow(), x.approval());
     }
 
     /** Permissions of {@code sender} as a pipeline actor. Main thread (reads permissions). */
@@ -185,7 +199,8 @@ final class PunishmentService {
         return new PunishDecision.Actor(sender.getName(), false, java.util.Set.copyOf(types),
                 sender.hasPermission(ModerationModule.PERM_IPBAN), sender.hasPermission(ModerationModule.PERM_SILENT),
                 maxDuration(sender), sender.hasPermission(ModerationModule.PERM_EXEMPT_BYPASS),
-                sender instanceof Player p ? p.getUniqueId() : null, sender.hasPermission(ModerationModule.PERM_FORCE));
+                sender instanceof Player p ? p.getUniqueId() : null, sender.hasPermission(ModerationModule.PERM_FORCE),
+                sender.hasPermission(ModerationModule.PERM_APPROVE));
     }
 
     /** The pipeline input for {@code sender} punishing {@code target}. Main thread. Active punishments are filled in later. */
@@ -207,9 +222,16 @@ final class PunishmentService {
     /** Same, with the duplicate check ({@code recent} = newest punishment for {@code reasonKey} from the loaded history). */
     PunishDecision.Verdict preview(CommandSender viewer, UUID target, String targetName, Templates.Step step, boolean silent,
                                    Punishment activeMute, Punishment activeBan, String reasonKey, Punishment recent) {
+        return preview(viewer, target, targetName, step, silent, activeMute, activeBan, reasonKey, recent, null);
+    }
+
+    /** Same, with the ladder and probation (spec 13.7): the verdict's input shows the step that will really be applied. */
+    PunishDecision.Verdict preview(CommandSender viewer, UUID target, String targetName, Templates.Step step, boolean silent,
+                                   Punishment activeMute, Punishment activeBan, String reasonKey, Punishment recent,
+                                   PunishDecision.Escalation escalation) {
         return decision().decide(input(viewer, target, targetName, step.type(), step.duration(), step.ipWide(), silent,
                 System.currentTimeMillis()).withActive(activeMute, activeBan).withReason(reasonKey, false, false)
-                .withRecent(recent));
+                .withRecent(recent).withEscalation(escalation));
     }
 
     private PunishmentStore.RuleHook ruleHook(UUID target, long now) {
@@ -240,10 +262,13 @@ final class PunishmentService {
                 : DuplicateGuard.key(issuer == null ? sender.getName() : issuer.toString(), r.target(), r.template());
         boolean confirmed = guardKey != null && duplicates.consume(guardKey, now, x.duplicateConfirm());
         PunishDecision.Input in = input(sender, r.target(), r.targetName(), r.type(), r.duration(), r.ipWide(), r.silent(), now)
-                .withReason(r.template(), r.force(), confirmed);
+                .withReason(r.template(), r.force(), confirmed).withEscalation(r.escalation());
         PunishDecision decision = decision();
         PunishmentStore.RuleHook hook = ruleHook(r.target(), now);
-        CompletableFuture<String> ipFuture = r.ipWide() && r.ip() == null && r.target() != null
+        // probation (13.7) may raise the step to an IP-wide one: know the address in case
+        boolean mayNeedIp = r.ipWide() || (r.escalation() != null && r.escalation().ladder().stream()
+                .anyMatch(Templates.Step::ipWide));
+        CompletableFuture<String> ipFuture = mayNeedIp && r.ip() == null && r.target() != null
                 ? store.lastIp(r.target()).thenApply(o -> o.orElse(null))
                 : CompletableFuture.completedFuture(r.ip());
         return ipFuture.thenCompose(ip -> {
@@ -253,7 +278,7 @@ final class PunishmentService {
             Punishment draft = new Punishment(0, r.type(), r.target(), r.targetName(), ip, r.ipWide(), r.reason(), r.template(),
                     r.ladderStep(), issuer, sender.getName(), now, null, r.silent(), null, null, null, null, r.source(),
                     r.weight(), null);
-            return store.issue(draft, in, decision, hook);
+            return store.issue(draft, in, decision, hook, x.approval().expire());
         }).thenApplyAsync(result -> {
             if (guardKey != null && "duplicate".equals(result.verdict().stage())) {
                 duplicates.arm(guardKey, now, x.duplicateConfirm());
@@ -268,6 +293,10 @@ final class PunishmentService {
 
     private void handle(CommandSender sender, String targetName, PunishmentStore.IssueResult result) {
         PunishDecision.Verdict v = result.verdict();
+        if (v.outcome() == PunishDecision.Outcome.REQUEST && result.request() != null) {
+            requested(sender, result.request(), result.merged());
+            return;
+        }
         if (!v.applied()) {
             tell(sender, v, targetName);
             return;
@@ -376,7 +405,7 @@ final class PunishmentService {
             long now = System.currentTimeMillis();
             PunishDecision.Input in = input(sender, s.target(), s.targetName(), step.type(), step.duration(), step.ipWide(),
                     false, now);
-            return store.apply(id, x -> in, decision(), by, sender.getName(), now);
+            return store.apply(id, x -> in, decision(), by, sender.getName(), now, extras.get().approval().expire());
         }, main).thenApplyAsync(r -> {
             handleClick(sender, r);
             return r;
@@ -400,6 +429,11 @@ final class PunishmentService {
             case EXPIRED -> msg.send(sender, "suggest.expired", suggestionParts(viewer, s));
             case ALREADY_HANDLED -> msg.send(sender, "suggest.already-handled", suggestionParts(viewer, s));
             case BLOCKED -> tell(sender, r.verdict(), s.targetName());
+            case REQUESTED -> {
+                requested(sender, r.request(), r.merged());
+                core.audit().log(AuditCategory.PUNISHMENT, "suggestion_request", Actor.of(sender), s.target().toString(),
+                        s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(), "request", r.request().id()));
+            }
             case SKIPPED -> {
                 msg.send(sender, "suggest.skipped-already", suggestionParts(viewer, s),
                         Msg.p("left", r.verdict().args().getOrDefault("left", "?")));
@@ -426,7 +460,8 @@ final class PunishmentService {
                         s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(), "id", p.id()));
             }
         }
-        if (viewer != null && r.kind() != PunishmentStore.HandleKind.APPLIED && r.kind() != PunishmentStore.HandleKind.DISMISSED) {
+        if (viewer != null && r.kind() != PunishmentStore.HandleKind.APPLIED && r.kind() != PunishmentStore.HandleKind.DISMISSED
+                && r.kind() != PunishmentStore.HandleKind.REQUESTED) {
             core.sounds().play(viewer, "error");
         }
     }
@@ -530,7 +565,7 @@ final class PunishmentService {
                         return list;
                     }
                     if (type == Punishment.Type.MUTE && target != null) {
-                        mutes.remove(target);
+                        cacheMute(target, null); // also stops the "mute ended" timer (13.13: a pardon is no natural end)
                         Player online = Bukkit.getPlayer(target);
                         if (online != null) {
                             msg.send(online, "muted.unmuted");
@@ -748,6 +783,10 @@ final class PunishmentService {
         } else {
             mutes.put(player, p);
         }
+        // spec 13.13: (re)schedule the "mute ended" timer for online players (the pre-login check runs before they are)
+        if (Bukkit.isPrimaryThread() && Bukkit.getPlayer(player) != null) {
+            trackMute(player);
+        }
     }
 
     /** The one that lasts longer (an inactive one never wins). */
@@ -761,6 +800,7 @@ final class PunishmentService {
 
     void forget(UUID player) {
         mutes.remove(player);
+        muteTimers.cancel(player);
     }
 
     // ------------------------------------------------------------------ texts
@@ -888,8 +928,381 @@ final class PunishmentService {
         if (p.source() != null) {
             details.put("source", p.source());
         }
+        if (p.approvedByName() != null) {
+            details.put("issuer", p.issuerName());
+            details.put("approved_by", p.approvedByName());
+        }
         core.audit().log(AuditCategory.PUNISHMENT, action, actor,
                 p.target() == null ? p.ip() : p.target().toString(), p.targetName(),
                 p.expires() == null ? null : p.expires() - p.created(), where, details);
+    }
+
+    // ================================================================== P4: approval (spec 13.4)
+
+    /** Opens the deny-reason menu for an approver (set by the module: menus live there). */
+    private java.util.function.BiConsumer<Player, Long> denyOpener = (p, id) -> { };
+
+    void denyOpener(java.util.function.BiConsumer<Player, Long> opener) {
+        this.denyOpener = opener;
+    }
+
+    /** Placeholders of a request for chat lines and menus. */
+    TagResolver requestParts(Player viewer, PunishRequest r) {
+        long now = System.currentTimeMillis();
+        return TagResolver.resolver(Msg.p("player", r.targetName()), pre("target", r.targetName()), Msg.p("rid", r.id()),
+                Msg.p("action", stepText(viewer, r.step())), Msg.p("reason", r.reason()), Msg.p("staff", r.requesterName()),
+                Msg.p("handler", r.handlerName() == null ? text(viewer, "words.system") : r.handlerName()),
+                Msg.p("deny_reason", r.denyReason() == null ? "-" : r.denyReason()),
+                Msg.p("ago", Format.duration(Duration.ofMillis(Math.max(1000, now - r.created())))),
+                Msg.p("expires", Format.duration(Duration.ofMillis(Math.max(1000, r.expires() - now)))),
+                Msg.number("merges", r.merges()),
+                Msg.p("status", text(viewer, "approval.status." + (r.expired(now) ? "expired"
+                        : r.status().name().toLowerCase(Locale.ROOT)))),
+                Msg.p("date", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(r.created()))));
+    }
+
+    /** A request was created (or merged): tell the requester, audit, and tell the approvers about a new one. */
+    private void requested(CommandSender sender, PunishRequest r, boolean merged) {
+        Player viewer = sender instanceof Player p ? p : null;
+        msg.send(sender, merged ? "approval.merged" : "approval.requested", requestParts(viewer, r));
+        if (viewer != null) {
+            core.sounds().play(viewer, "success");
+        }
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("request", r.id());
+        details.put("action", r.step().describe());
+        details.put("reason", r.reason());
+        if (r.template() != null) {
+            details.put("template", r.template());
+        }
+        if (merged) {
+            details.put("merges", r.merges());
+        }
+        core.audit().log(AuditCategory.PUNISHMENT, merged ? "approval_merge" : "approval_request", Actor.of(sender),
+                r.target() == null ? r.ip() : r.target().toString(), r.targetName(), r.durationMs(),
+                viewer == null ? null : viewer.getLocation(), details);
+        if (!merged) {
+            notifyApprovers(r);
+        }
+    }
+
+    /** Who may approve {@code r}: approvers, not the requester (unless {@code approval.self-approve}). */
+    boolean mayApprove(Player staff, PunishRequest r) {
+        return staff.hasPermission(ModerationModule.PERM_APPROVE)
+                && (extras.get().approval().selfApprove() || !staff.getUniqueId().equals(r.requester()));
+    }
+
+    /** "Alex requests: ban perm for Steve (Hacked client). [Approve] [Deny] [Open /p]" to every approver online. */
+    void notifyApprovers(PunishRequest r) {
+        for (Player staff : Bukkit.getOnlinePlayers()) {
+            if (mayApprove(staff, r)) {
+                msg.send(staff, "approval.notify", requestParts(staff, r), Msg.c("approve", approveButton(staff, r)),
+                        Msg.c("deny", denyButton(staff, r)));
+                core.sounds().play(staff, "notify");
+            }
+        }
+        msg.send(Bukkit.getConsoleSender(), "approval.notify", requestParts(null, r), Msg.p("approve", ""), Msg.p("deny", ""));
+    }
+
+    private net.kyori.adventure.text.event.ClickEvent<?> callback(java.util.function.Consumer<Player> action) {
+        return net.kyori.adventure.text.event.ClickEvent.callback(audience -> {
+            if (audience instanceof Player clicker) {
+                action.accept(clicker);
+            }
+        }, options -> options.uses(net.kyori.adventure.text.event.ClickCallback.UNLIMITED_USES)
+                .lifetime(extras.get().approval().expire().plus(Duration.ofMinutes(10))));
+    }
+
+    /** Clickable [Approve] (a server-side callback, no command; the /p head is the Bedrock path). */
+    Component approveButton(Player staff, PunishRequest r) {
+        return msg.component(staff, "approval.approve-button")
+                .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(msg.component(staff, "approval.approve-hover",
+                        requestParts(staff, r))))
+                .clickEvent(callback(p -> approve(p, r.id())));
+    }
+
+    /** Clickable [Deny]: opens the deny-reason menu. */
+    Component denyButton(Player staff, PunishRequest r) {
+        return msg.component(staff, "approval.deny-button")
+                .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(msg.component(staff, "approval.deny-hover",
+                        requestParts(staff, r))))
+                .clickEvent(callback(p -> {
+                    if (p.hasPermission(ModerationModule.PERM_APPROVE)) {
+                        denyOpener.accept(p, r.id());
+                    } else {
+                        msg.send(p, "approval.no-permission");
+                    }
+                }));
+    }
+
+    /**
+     * [Approve] (chat click or the request menu): applies the request as the requester, approved by {@code approver}, with
+     * the approver's own limits as the hard maximum. Main thread in and out.
+     */
+    CompletableFuture<PunishmentStore.RequestResult> approve(Player approver, long id) {
+        if (!approver.hasPermission(ModerationModule.PERM_APPROVE)) {
+            msg.send(approver, "approval.no-permission");
+            core.sounds().play(approver, "error");
+            return CompletableFuture.completedFuture(null);
+        }
+        long now = System.currentTimeMillis();
+        PunishConfig.Extras x = extras.get();
+        return store.request(id).thenComposeAsync(found -> {
+            if (found.isEmpty()) {
+                return CompletableFuture.completedFuture(new PunishmentStore.RequestResult(PunishmentStore.RequestKind.NOT_FOUND,
+                        null, null, null));
+            }
+            PunishRequest r = found.get();
+            PunishDecision.Input in = input(approver, r.target(), r.targetName(), r.type(), r.duration(), r.ipWide(), r.silent(), now);
+            return store.approve(id, q -> in, decision(), approver.getUniqueId(), approver.getName(), x.approval().selfApprove(), now);
+        }, main).thenApplyAsync(res -> {
+            handleRequest(approver, res);
+            return res;
+        }, main).exceptionally(e -> {
+            core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Approve failed", e);
+            core.scheduler().ensureMain("moderation:approve", () -> msg.send(approver, "error.failed"));
+            return null;
+        });
+    }
+
+    /** [Deny] with a reason (preset or typed). The requester is told. Main thread in and out. */
+    CompletableFuture<PunishmentStore.RequestResult> deny(Player staff, long id, String reason) {
+        if (!staff.hasPermission(ModerationModule.PERM_APPROVE)) {
+            msg.send(staff, "approval.no-permission");
+            core.sounds().play(staff, "error");
+            return CompletableFuture.completedFuture(null);
+        }
+        String clean = reason == null ? "" : Notes.clean(reason);
+        if (clean.isEmpty()) {
+            msg.send(staff, "approval.deny-empty");
+            core.sounds().play(staff, "error");
+            return CompletableFuture.completedFuture(null);
+        }
+        return store.deny(id, staff.getUniqueId(), staff.getName(), clean.length() <= 200 ? clean : clean.substring(0, 200),
+                System.currentTimeMillis()).thenApplyAsync(res -> {
+                    handleRequest(staff, res);
+                    return res;
+                }, main).exceptionally(e -> {
+                    core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Deny failed", e);
+                    core.scheduler().ensureMain("moderation:deny", () -> msg.send(staff, "error.failed"));
+                    return null;
+                });
+    }
+
+    private void handleRequest(Player staff, PunishmentStore.RequestResult res) {
+        PunishRequest r = res.request();
+        switch (res.kind()) {
+            case NOT_FOUND -> msg.send(staff, "approval.not-found");
+            case EXPIRED -> msg.send(staff, "approval.expired", requestParts(staff, r));
+            case ALREADY_HANDLED -> msg.send(staff, "approval.already", requestParts(staff, r));
+            case OWN_REQUEST -> msg.send(staff, "approval.own", requestParts(staff, r));
+            case BLOCKED -> tell(staff, res.verdict(), r.targetName());
+            case SKIPPED -> {
+                msg.send(staff, "approval.skipped", requestParts(staff, r),
+                        Msg.p("left", res.verdict() == null ? "?" : res.verdict().args().getOrDefault("left", "?")));
+                auditRequest(staff, "approval_skip", r, null);
+                tellRequester(r);
+                core.sounds().play(staff, "success");
+                return;
+            }
+            case APPROVED -> {
+                Punishment p = res.punishment();
+                apply(p);
+                announce(staff, p);
+                audit(staff, p);
+                offerUndo(staff, p);
+                if (hooks != null) {
+                    hooks.linkReports(staff, p);
+                }
+                notifyStaff(staff, "approval.approved", requestParts(staff, r), Msg.p("id", p.id()));
+                auditRequest(staff, "approval_approve", r, p.id());
+                tellRequester(r);
+                core.sounds().play(staff, "success");
+                return;
+            }
+            case DENIED -> {
+                for (Player other : Bukkit.getOnlinePlayers()) {
+                    if (other.hasPermission(ModerationModule.PERM_APPROVE) || other.equals(staff)) {
+                        msg.send(other, "approval.denied", requestParts(other, r));
+                    }
+                }
+                auditRequest(staff, "approval_deny", r, null);
+                tellRequester(r);
+                core.sounds().play(staff, "success");
+                return;
+            }
+        }
+        core.sounds().play(staff, "error");
+    }
+
+    private void auditRequest(Player staff, String action, PunishRequest r, Long punishmentId) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("request", r.id());
+        details.put("action", r.step().describe());
+        details.put("reason", r.reason());
+        details.put("requester", r.requesterName());
+        if (r.denyReason() != null) {
+            details.put("deny_reason", r.denyReason());
+        }
+        if (punishmentId != null) {
+            details.put("id", punishmentId);
+        }
+        core.audit().log(AuditCategory.PUNISHMENT, action, Actor.of(staff), r.target() == null ? r.ip() : r.target().toString(),
+                r.targetName(), r.durationMs(), staff.getLocation(), details);
+    }
+
+    /** Message key of a handled (or expired) request for the requester. */
+    static String resultKey(PunishRequest r, long now) {
+        if (r.expired(now)) {
+            return "approval.result.expired";
+        }
+        return "approval.result." + r.status().name().toLowerCase(Locale.ROOT);
+    }
+
+    /** Tells the requester the outcome now if online (marked told), else they get it on their next join. */
+    private void tellRequester(PunishRequest r) {
+        Player requester = r.requester() == null ? null : Bukkit.getPlayer(r.requester());
+        if (requester == null) {
+            return;
+        }
+        store.markNotified(r.id()).thenAcceptAsync(first -> {
+            if (Boolean.TRUE.equals(first) && requester.isOnline()) {
+                msg.send(requester, resultKey(r, System.currentTimeMillis()), requestParts(requester, r));
+            }
+        }, main);
+    }
+
+    /** On join: outcomes of your requests you were not told yet; for approvers, the requests waiting. */
+    void requestsOnJoin(Player player) {
+        long now = System.currentTimeMillis();
+        store.requesterUpdates(player.getUniqueId(), now).thenAcceptAsync(list -> {
+            for (PunishRequest r : list) {
+                if (player.isOnline()) {
+                    msg.send(player, resultKey(r, now), requestParts(player, r));
+                }
+            }
+        }, main).exceptionally(e -> null);
+        if (!player.hasPermission(ModerationModule.PERM_APPROVE)) {
+            return;
+        }
+        int shown = 5;
+        store.pendingRequests(now, 50).thenAcceptAsync(all -> {
+            List<PunishRequest> mine = all.stream().filter(r -> mayApprove(player, r)).toList();
+            if (mine.isEmpty() || !player.isOnline()) {
+                return;
+            }
+            msg.send(player, "approval.join-header", Msg.number("count", mine.size()));
+            for (PunishRequest r : mine.stream().limit(shown).toList()) {
+                msg.send(player, "approval.join-line", requestParts(player, r), Msg.c("approve", approveButton(player, r)),
+                        Msg.c("deny", denyButton(player, r)));
+            }
+            if (mine.size() > shown) {
+                msg.send(player, "approval.join-more", Msg.number("more", mine.size() - shown));
+            }
+        }, main).exceptionally(e -> null);
+    }
+
+    // ================================================================== P4: "mute ended" (13.13) + probation notice (13.7)
+
+    /** Whether a stored reason id starts probation (set by the module from punishments.yml). */
+    private java.util.function.Predicate<String> probationReasons = t -> true;
+
+    void probationReasons(java.util.function.Predicate<String> source) {
+        this.probationReasons = source;
+    }
+
+    /** Until when the player is on probation ({@code null} = not), from their loaded history. */
+    Long probationUntil(List<Punishment> history) {
+        return Probation.until(history, probationReasons, extras.get().probation(), System.currentTimeMillis());
+    }
+
+    /** One timer per online player with a timed mute, at its end (no database polling). */
+    private final EndTimers muteTimers;
+
+    EndTimers muteTimers() {
+        return muteTimers;
+    }
+
+    /** (Re)schedules the player's "mute ended" timer from the cached mute. Main thread. */
+    void trackMute(UUID player) {
+        Punishment p = mutes.get(player);
+        if (p == null || p.expires() == null) {
+            muteTimers.cancel(player);
+            return;
+        }
+        muteTimers.track(player, p.id(), p.expires());
+    }
+
+    /** Stops every timer (module disabled). */
+    void close() {
+        muteTimers.clear();
+    }
+
+    /** A timed mute of an online player reached its end. Main thread. */
+    private void muteEnded(UUID player, long muteId) {
+        long now = System.currentTimeMillis();
+        Punishment cached = mutes.get(player);
+        if (cached != null && cached.id() != muteId && cached.active(now)) {
+            trackMute(player); // another, longer mute is in the cache: it has its own timer
+            return;
+        }
+        mutes.remove(player);
+        Player online = Bukkit.getPlayer(player);
+        if (online == null) {
+            return;
+        }
+        String ip = online.getAddress() == null ? null : online.getAddress().getAddress().getHostAddress();
+        store.activeMute(player, ip).thenAcceptAsync(other -> {
+            if (other.isPresent()) {
+                cacheMute(player, other.get()); // still muted by another one (e.g. IP-wide): no message yet
+                return;
+            }
+            if (online.isOnline()) {
+                endNotices(online, true, false);
+            }
+        }, main).exceptionally(e -> null);
+    }
+
+    /**
+     * Sends the "Your mute has ended" / "Welcome back" line once (claimed in the database, so it never repeats), combined
+     * with the probation notice when probation is running (spec 13.13: one message). {@code mutes}: claim ended mutes
+     * (only when no mute is active), {@code bans}: claim ended bans (on join).
+     */
+    void endNotices(Player player, boolean mutes, boolean bans) {
+        PunishConfig.Extras x = extras.get();
+        if (!x.muteEnded().enabled()) {
+            return;
+        }
+        UUID id = player.getUniqueId();
+        long now = System.currentTimeMillis();
+        store.claimEndNotices(id, now, mutes, bans).thenCompose(claimed -> claimed.isEmpty()
+                        ? CompletableFuture.completedFuture(Map.entry(claimed, List.<Punishment>of()))
+                        : store.history(id).thenApply(h -> Map.entry(claimed, h)))
+                .thenAcceptAsync(data -> {
+                    List<Punishment> claimed = data.getKey();
+                    if (claimed.isEmpty()) {
+                        return;
+                    }
+                    boolean ban = claimed.stream().anyMatch(p -> p.type() == Punishment.Type.BAN);
+                    Long until = Probation.until(data.getValue(), probationReasons, x.probation(), now);
+                    boolean probation = until != null && x.probation().stepBonus() > 0;
+                    if (player.isOnline()) {
+                        msg.send(player, "ended." + (ban ? "ban" : "mute") + (probation ? "-probation" : ""),
+                                Msg.p("until", probation ? ModerationModule.day(until) : "-"), pre("rules", x.rulesLink()));
+                        if (!x.muteEnded().sound().isEmpty()) {
+                            core.sounds().play(player, x.muteEnded().sound());
+                        }
+                    }
+                    Map<String, Object> details = new LinkedHashMap<>();
+                    details.put("ids", claimed.stream().map(Punishment::id).toList());
+                    if (probation) {
+                        details.put("probation_until", until);
+                    }
+                    core.audit().log(AuditCategory.PUNISHMENT, ban ? "ban_end_notice" : "mute_end_notice", Actor.SYSTEM,
+                            id.toString(), player.getName(), null, null, details);
+                }, main).exceptionally(e -> {
+                    core.plugin().getLogger().log(java.util.logging.Level.WARNING, "End notice failed", e);
+                    return null;
+                });
     }
 }

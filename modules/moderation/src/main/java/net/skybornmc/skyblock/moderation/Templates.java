@@ -119,13 +119,21 @@ final class Templates {
     /**
      * A reason with its ladder. {@code yamlName} is an optional legacy name from the YAML; the display name normally comes
      * from {@code messages/moderation.yml → reasons.<id>}. {@code offenceExpire}: earlier punishments older than this no
-     * longer count as offences ({@code null} = never expire, spec 12.3).
+     * longer count as offences ({@code null} = never expire, spec 12.3). {@code probation} (spec 13.7, from the category's
+     * {@code probation:} or the reason's own): its offences get the probation step bonus, and its mutes/bans start
+     * probation when they end.
      */
-    record Template(String id, String category, String yamlName, Material icon, List<Step> ladder, Duration offenceExpire) {
+    record Template(String id, String category, String yamlName, Material icon, List<Step> ladder, Duration offenceExpire,
+                    boolean probation) {
 
         /** A reason whose offences never expire. */
         Template(String id, String category, String yamlName, Material icon, List<Step> ladder) {
-            this(id, category, yamlName, icon, ladder, null);
+            this(id, category, yamlName, icon, ladder, null, true);
+        }
+
+        /** A reason with probation on. */
+        Template(String id, String category, String yamlName, Material icon, List<Step> ladder, Duration offenceExpire) {
+            this(id, category, yamlName, icon, ladder, offenceExpire, true);
         }
 
         /** Punishments created after this moment count as offences. */
@@ -195,6 +203,11 @@ final class Templates {
         List<String> ids = templateIds();
         config.menu().warns().forEach(w -> ids.add(w.id()));
         return ids;
+    }
+
+    /** Whether a stored template (reason id) starts probation; unknown ids and direct commands ({@code null}) do. */
+    boolean probation(String templateId) {
+        return templateId == null || template(templateId).map(Template::probation).orElse(true);
     }
 
     Optional<PunishConfig.WarnButton> warnButton(String id) {

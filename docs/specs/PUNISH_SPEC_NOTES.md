@@ -100,3 +100,41 @@ Release steps for the main session (before each release, in this order):
   `StaffStore.closeClaimedBy`.
 - **Discord:** `common/discord/DiscordSink` (named channels); moderation registers `WebhookDiscordSink` as the service.
   13.10 and 14.9 add their channel names and switches.
+
+## P4 implementation notes (for P5+)
+- **Pipeline (slot order changed):** EXEMPT → GUARD → PROBATION → PERMISSION → APPROVAL → LENGTH_LIMIT → DUPLICATE →
+  NEVER_SHORTEN. Probation moved up so every later stage (permission, approval, length limit, never shorten) sees the
+  step that will really be applied. `PunishDecision.full(duplicateWindow, approval)` is the live pipeline
+  (`PunishmentService.decision()`).
+- **Approval (13.4):** new `Outcome.REQUEST`. `Approval.Rule` parses `ban|ipban|mute` + `perm | * | <time> | >= <time> |
+  > <time>`; `ban` covers IP-wide bans too. A non-approver (`Actor.approver`, `skyblock.staff.punish.approve`) gets a
+  request when a rule matches **or** the length is over their rank limit (the "too long" error only remains with
+  approval off, and for approvers: their limit stays the hard maximum, also when approving). The system and the console
+  never need approval. A request that would change nothing returns the never-shorten SKIPPED verdict instead.
+  `PunishmentStore.issueBlocking` stores the request in the same transaction/lock (`punishment_requests`, V005); merge key
+  = reason id, else `type:reason text` (`Approval.mergeKey`), only into a PENDING, unexpired request. `approve` decides
+  again with the approver's actor and inserts with `issuer` = requester, `approved_by_*` = approver (first click wins;
+  BLOCKED stays pending; already longer = SKIPPED). `deny` needs a reason (preset ids `extras.approval.deny-reasons`,
+  texts `approval.deny-reasons.<id>`, or typed via the menu chat prompt). Requester told now (`markNotified`) or on join
+  (`requesterUpdates`, also "expired without an answer"). [Apply] on a suggestion by a non-approver → request + suggestion
+  status `REQUESTED` (note `request:<id>`, counts as handled). [Approve]/[Deny] are Adventure click callbacks (no new
+  command); the Bedrock path is the `/p` head → `RequestMenu` → `DenyMenu`. **P5 bulk** must call the same pipeline per
+  player: a REQUEST verdict there is simply one request per player (spec: bans perm in bulk need approval per player).
+- **Probation (13.7):** derived, never stored: `Probation.until(history, templates::probation, settings, now)` = newest
+  natural end (MUTE/BAN, not removed, `expires <= now`) + duration. `probation:` per category (default true) with a
+  per-reason override (`Templates.Template.probation`); a reason with it off neither starts probation nor gets the bonus.
+  Requests from a ladder carry `PunishDecision.Escalation(ladder, index, ipFlag, probationUntil, bonus)`; the stage raises
+  the index (`Probation.raise`, capped) and the store writes the raised `ladder_step`/weight. Menu lore uses the same
+  `preview(..., escalation)` and `PunishMenus.raisedIndex`.
+- **Mute ended (13.13):** `EndTimers` (one Bukkit task per online player with a timed mute, rescheduled from
+  `cacheMute` on the main thread, cancelled on quit/pardon; early fire under lag reschedules). The depths `TimingWheel`
+  is a depths-module class (main-thread tick slots), so it was not moved into common for this. `end_notice_sent` (V005)
+  is claimed atomically by `claimEndNotices` (MUTE when no mute is active; BAN on join); V005 marks everything that
+  ended before the update as told. The message is combined with the probation notice (`ended.mute-probation`,
+  `ended.ban-probation`). Audit: `mute_end_notice` / `ban_end_notice`.
+- **Watchlist (13.5):** table `watchlist` (V005), one active row per player (renewing updates it), removed rows kept.
+  Join line to `skyblock.staff.notify` holders except the watched player (`Watchlist.recipients`). `/watch` keeps the
+  player optional because of the `remove` sub-command (framework trap).
+- **Audit actions:** approval_request, approval_merge, approval_approve, approval_deny, approval_skip, suggestion_request,
+  watch_add, watch_update, watch_remove, watchlist_view, mute_end_notice, ban_end_notice. Approved punishments carry
+  `issuer` + `approved_by` in their own audit details.

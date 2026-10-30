@@ -69,3 +69,9 @@ skyblock.staff.punish.notes:
 skyblock.punish.view.own:
   description: See your own punishments (/mypunishments) and confirm warnings (/ack)
   default: true
+skyblock.staff.punish.approve:
+  description: Approve or deny requested big punishments (approval.rules in punishments.yml); without it they become requests
+  default: op
+skyblock.staff.watch:
+  description: Watch players (/watch, /watchlist) and see the watch line on the head of /p
+  default: op

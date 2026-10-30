@@ -31,3 +31,9 @@ lp group admin permission set skyblock.staff.punish.undo.others true
 
 # --- Phase P, P3: staff notes. /mypunishments and /ack (skyblock.punish.view.own) are default: true for everyone ---
 lp group helper permission set skyblock.staff.punish.notes true
+
+# --- Phase P, P4: approval for big punishments, watchlist ---
+# Admins approve requests (ban perm, ipban, mute perm, ban >= 30d, or longer than the rank limit); helpers and mods
+# create requests. Every staff member can watch players; the join line goes to skyblock.staff.notify.
+lp group admin permission set skyblock.staff.punish.approve true
+lp group helper permission set skyblock.staff.watch true

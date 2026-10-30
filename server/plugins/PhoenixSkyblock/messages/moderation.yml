@@ -267,6 +267,8 @@ menu:
     weight: "<c:text>Counts: <c:value><weight>"
     ack-yes: "<c:success><sym:check> Acknowledged <date>"
     ack-no: "<c:warning><sym:cross> Not acknowledged"
+    # P4 (spec 13.4): a requested punishment that an approver approved. <by> = the approver.
+    approved: "<c:text>Approved by: <c:value><by>"
     click: "<c:action><sym:bullet> Click for details and evidence"
 
 # ---------------------------------------------------------------- /p <player> (single-screen menu, Phase P)
@@ -278,6 +280,13 @@ punish:
     - "<c:text>One click applies the next ladder step."
   kick-reason: "Kicked by staff. Follow the rules."
   click: "<c:action><sym:bullet> Click to apply"
+  # Needs an approver (P4, spec 13.4): the click sends a request instead. <rule> = the approval rule ("ban perm").
+  request:
+    - "<c:warning>Needs approval <c:muted>(<rule>)"
+    - "<c:action><sym:bullet> Click to send a request"
+  request-limit:
+    - "<c:warning>Longer than your rank allows: needs approval"
+    - "<c:action><sym:bullet> Click to send a request"
   # Why a button can't be used right now (same checks as the click).
   blocked:
     self: "<c:error><sym:cross> You can't punish yourself"
@@ -302,6 +311,8 @@ punish:
     # Offences older than offence-expire (P2). <older> = how many.
     older-one: "<c:muted>(1 older offence no longer counts)"
     older: "<c:muted>(<older> older offences no longer count)"
+    # Probation (P4, spec 13.7): the step above is raised. <bonus> = steps added, <normal> = the step without probation.
+    probation: "<c:warning>Probation: +<bonus> step <c:muted>(normally <normal>)"
   warn-button:
     name: "<c:flame><name>"
     lore:
@@ -335,6 +346,23 @@ punish:
     notes-none:
       - ""
       - "<c:muted>No staff notes."
+    # P4. Probation (13.7): <until> = date (Europe/Oslo), <bonus> = extra ladder steps.
+    probation: "<c:warning>On probation until <until> (+<bonus> step)"
+    # Watchlist (13.5), only for staff with skyblock.staff.watch. <reason>, <staff>, <ago>, <expires>.
+    watch:
+      - ""
+      - "<c:warning>Watched: <c:value><reason>"
+      - "<c:muted>By <staff>, <ago> ago (until <expires>)"
+    # Approval request waiting (13.4). <action>, <staff> (who asked), <reason>, <ago>, <count> = requests waiting.
+    request:
+      - ""
+      - "<c:warning>Request: <action> by <staff>"
+      - "<c:muted>(<reason>, <ago> ago)"
+      - "<c:action><sym:bullet> Click to approve or deny"
+    request-wait:
+      - ""
+      - "<c:warning>Request: <action> by <staff>"
+      - "<c:muted>Waiting for an approver."
   counter:
     name: "<c:flame>Warnings: <c:value><count> / <next>"
     "off":
@@ -411,6 +439,7 @@ suggest:
     auto: "applied automatically"
     skipped: "skipped"
     removed: "removed (warning undone)"
+    requested: "sent for approval"
   menu:
     title: "Suggestion"
     info:
@@ -496,6 +525,10 @@ config:
   unknown-key: "<file> line <line>: <path>: unknown key '<value>'<hint>"
   bad-color: "<file> line <line>: <path>: '<value>' is not a colour (use \"#e74c3c\")"
   missing-key: "<file> line <line>: <path>: '<key>' is required"
+  # P4 (spec 13.4)
+  bad-approval-rules: "<file> line <line>: <path>: must be a list, e.g. [ban perm, ipban *, ban >= 30d]"
+  bad-approval-rule: "<file> line <line>: <path>: rule '<value>' is not valid<hint>. Use ban, ipban or mute with perm, *, a time, >= time or > time"
+  bad-list: "<file> line <line>: <path>: must be a list"
 
 # ---------------------------------------------------------------- [Undo] (P2, spec 12.1)
 # Placeholders as in notify.* (<player>, <type>, <reason>, <id>, <length>), plus <window> = extras.undo-window.
@@ -522,6 +555,9 @@ stats:
   given: " <c:text>Warns <c:value><warns></c:value> <c:muted><sym:dot></c:muted> <c:text>Mutes <c:value><mutes></c:value> <c:muted><sym:dot></c:muted> <c:text>Bans <c:value><bans></c:value> <c:muted><sym:dot></c:muted> <c:text>Kicks <c:value><kicks></c:value>  <c:text>= <c:value><given></c:value> <c:text>given"
   reversed: " <c:text>Reversed: <c:value><reversed></c:value> <c:muted>(<percent>%, undone or pardoned)</c:muted>  <c:text>Net: <c:value><net>"
   suggestions: " <c:text>From automatic suggestions: <c:value><applied>"
+  # P4 (spec 13.4): approval requests this staff member made, and handled as an approver (only shown when > 0).
+  requests: " <c:text>Requests: <c:value><made></c:value> made <c:muted><sym:dot></c:muted> <c:text><approved> approved <c:muted><sym:dot></c:muted> <c:text><denied> denied <c:muted><sym:dot></c:muted> <c:text><waiting> waiting <c:muted><sym:dot></c:muted> <c:text><expired> expired"
+  approvals: " <c:text>Requests handled: <c:value><approved></c:value> approved <c:muted><sym:dot></c:muted> <c:text><denied> denied"
   top-header: "<prefix><c:text>Top staff <c:muted>(<period>)"
   top-empty: " <c:muted>No punishments in this period."
   top-line: " <c:muted><place>.</c:muted> <click:run_command:'/pstats <target>'><hover:show_text:'<c:text>Show details'><c:value><staff></c:value></hover></click> <c:text><given> given <c:muted><sym:dot></c:muted> <c:text><reversed> reversed (<percent>%) <c:muted><sym:dot></c:muted> <c:text>net <net>"
@@ -648,3 +684,124 @@ discord:
   footer: "Phoenix Skyblock"
   rule-repeat: "repeat"
   rule-count: "<count> warnings"
+
+# ---------------------------------------------------------------- P4 (spec 13.4, 13.5, 13.7, 13.13)
+
+# Approval for big punishments (13.4). Placeholders: <player>, <target> (clicks), <rid> (request id), <action>, <reason>,
+# <staff> (who asked), <handler> (who approved/denied), <deny_reason>, <ago>, <expires> (time left), <status>, <date>.
+# <approve> / <deny> = the clickable buttons (approve-button / deny-button). The player is told nothing until approved.
+approval:
+  requested: "<prefix><c:success><sym:check></c:success> <c:text>Sent for approval: <c:value><action></c:value> for <c:value><player></c:value>. <c:muted>(#<rid>, waits <expires>)"
+  merged: "<prefix><c:text>Already requested by <c:value><staff></c:value>: <c:value><action></c:value> for <c:value><player></c:value>. <c:muted>(#<rid>, added to it)"
+  notify: "<c:muted>[Punish]</c:muted> <c:value><staff></c:value> <c:text>requests <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(<reason>)</c:muted>  <approve> <deny> <click:run_command:'/p <target>'><hover:show_text:'<c:text>Open the punish menu'><c:action>[Open /p]</c:action></hover></click>"
+  approve-button: "<c:action>[Approve]</c:action>"
+  approve-hover: "<c:text>Apply <action> now. Given by <staff>, approved by you."
+  deny-button: "<c:action>[Deny]</c:action>"
+  deny-hover: "<c:text>Pick a reason. <staff> is told."
+  approved: "<c:muted>[Punish]</c:muted> <c:value><handler></c:value> <c:text>approved <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(asked by <staff>, #<id>)"
+  denied: "<c:muted>[Punish]</c:muted> <c:value><handler></c:value> <c:text>denied <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(asked by <staff>)</c:muted><c:text>: <c:value><deny_reason>"
+  skipped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Nothing applied: <c:value><player></c:value> is punished for longer <c:muted>(<left> left)</c:muted><c:text>. Request closed."
+  own: "<prefix><c:error><sym:cross></c:error> <c:text>You can't approve your own request."
+  already: "<prefix><c:error><sym:cross></c:error> <c:text>Already handled by <c:value><handler></c:value>. <c:muted>(<status>)"
+  expired: "<prefix><c:error><sym:cross></c:error> <c:text>This request expired. Nobody handled it in time."
+  not-found: "<prefix><c:error><sym:cross></c:error> <c:text>That request doesn't exist anymore."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't approve or deny punishments."
+  deny-empty: "<prefix><c:error><sym:cross></c:error> <c:text>A deny needs a short reason."
+  deny-prompt: "<prefix><c:text>Type why you deny <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(<cancel> to stop, <seconds>s)"
+  # To the staff member who asked (now, or on their next join).
+  result:
+    approved: "<prefix><c:success><sym:check></c:success> <c:text>Approved by <c:value><handler></c:value>: <c:value><action></c:value> for <c:value><player></c:value>. <c:muted>(#<rid>)"
+    denied: "<prefix><c:error><sym:cross></c:error> <c:text>Denied by <c:value><handler></c:value>: <c:value><action></c:value> for <c:value><player></c:value>. Why: <c:value><deny_reason>"
+    skipped: "<prefix><c:text>Request <c:muted>#<rid></c:muted> <c:text>closed: <c:value><player></c:value> was already punished for longer."
+    expired: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your request <c:muted>#<rid></c:muted> <c:text>(<c:value><action></c:value> for <c:value><player></c:value>) expired without an answer."
+    pending: "<prefix><c:text>Your request <c:muted>#<rid></c:muted> <c:text>is still waiting."
+  # Approvers on join.
+  join-header: "<prefix><c:warning><sym:cross></c:warning> <c:value><count></c:value> <c:text>punishment request(s) wait for approval."
+  join-line: " <c:ember><sym:bullet></c:ember> <c:value><staff></c:value> <c:text>wants <c:value><action></c:value> for <c:value><player></c:value> <c:muted>(<reason>, <ago> ago)</c:muted> <approve> <deny> <click:run_command:'/p <target>'><hover:show_text:'<c:text>Open the punish menu'><c:action>[Open /p]</c:action></hover></click>"
+  join-more: " <c:muted>... and <more> more. Open /p and the name to see them."
+  status:
+    pending: "waiting"
+    approved: "approved"
+    denied: "denied"
+    skipped: "closed, nothing applied"
+    expired: "expired"
+  # Preset deny reasons (ids in punishments.yml extras.approval.deny-reasons, max 6). Stored and shown to the requester.
+  deny-reasons:
+    evidence: "Not enough evidence"
+    too-harsh: "Too harsh for this"
+    wrong-reason: "Wrong reason picked"
+    talked: "Talked to the player instead"
+  menu:
+    title: "Request"
+    info:
+      name: "<c:flame>Requested: <action>"
+      lore:
+        - "<c:text>Player: <c:value><player>"
+        - "<c:text>Reason: <c:value><reason>"
+        - "<c:text>Asked by: <c:value><staff></c:value> <c:muted>(<ago> ago)"
+        - "<c:text>Disappears in: <c:value><expires>"
+    approve:
+      name: "<c:success><sym:check> Approve"
+      lore:
+        - "<c:text>Applies <c:flame><action></c:flame> now."
+        - "<c:muted>Given by <staff>, approved by you."
+    deny:
+      name: "<c:error><sym:cross> Deny"
+      lore:
+        - "<c:text>Pick a reason next."
+        - "<c:muted><staff> is told why."
+  deny-menu:
+    title: "Deny"
+    reason:
+      name: "<c:error><deny_reason>"
+      lore:
+        - "<c:text>Deny <c:value><action></c:value> for <c:value><player></c:value>."
+        - ""
+        - "<c:action><sym:bullet> Click to deny with this reason"
+    type:
+      name: "<c:value>Type a reason"
+      lore:
+        - "<c:text>Write your own reason in chat."
+        - ""
+        - "<c:action><sym:bullet> Click to type it"
+
+# Mute ended / welcome back (13.13), once per ended punishment, combined with the probation notice (13.7) when it runs.
+# <rules> = extras.rules-link, <until> = end of probation (date). Only for punishments that ended by time (not pardoned).
+ended:
+  mute: "<prefix><c:success><sym:check></c:success> <c:text>Your mute has ended. Please follow the <click:open_url:'<rules>'><hover:show_text:'<c:text>Open the rules'><c:action>[Rules]</c:action></hover></click><c:text>."
+  mute-probation: "<prefix><c:success><sym:check></c:success> <c:text>Your mute has ended. Please follow the <click:open_url:'<rules>'><hover:show_text:'<c:text>Open the rules'><c:action>[Rules]</c:action></hover></click><c:text>. A new offence is punished more strictly until <c:value><until></c:value>."
+  ban: "<prefix><c:success><sym:check></c:success> <c:text>Welcome back. Please follow the <click:open_url:'<rules>'><hover:show_text:'<c:text>Open the rules'><c:action>[Rules]</c:action></hover></click><c:text>."
+  ban-probation: "<prefix><c:success><sym:check></c:success> <c:text>Welcome back. Please follow the <click:open_url:'<rules>'><hover:show_text:'<c:text>Open the rules'><c:action>[Rules]</c:action></hover></click><c:text>. A new offence is punished more strictly until <c:value><until></c:value>."
+
+# Watchlist (13.5): /watch <player> [reason], /watch remove <player>, /watchlist. Staff only; the player is never told.
+# <player>, <target> (clicks), <reason>, <staff> (who added), <date>, <ago>, <expires> (date or never).
+watch:
+  usage: "<prefix><c:error><sym:cross></c:error> <c:text>Use <c:value>/watch <player> [reason]</c:value> or <c:value>/watch remove <player></c:value>."
+  too-long: "<prefix><c:error><sym:cross></c:error> <c:text>Reason too long <c:muted>(<length>/<max>)</c:muted><c:text>. Make it shorter."
+  added: "<prefix><c:success><sym:check></c:success> <c:text>Watching <c:value><player></c:value> until <c:value><expires></c:value>. <c:muted>(<reason>)"
+  updated: "<prefix><c:success><sym:check></c:success> <c:text>Updated: watching <c:value><player></c:value> until <c:value><expires></c:value>. <c:muted>(<reason>)"
+  removed: "<prefix><c:success><sym:check></c:success> <c:text>Stopped watching <c:value><player></c:value>."
+  not-watched: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is not on the watchlist."
+  no-reason: "no reason given"
+  notify: "<c:muted>[Staff]</c:muted> <c:warning>Watching:</c:warning> <c:value><player></c:value> <c:muted>(<reason>, added by <staff> <ago> ago)</c:muted> <click:run_command:'/p <target>'><hover:show_text:'<c:text>Open the punish menu'><c:action>[Open /p]</c:action></hover></click>"
+  list-header: "<prefix><c:text>Watchlist <c:muted>(<count>)"
+  list-none: " <c:muted>Nobody is watched."
+  list-line: " <c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text><reason> <c:muted>(by <staff> on <date>, until <expires>)"
+  menu:
+    title: "Watchlist"
+    info:
+      - "<c:text>Players staff keep an eye on."
+      - "<c:text>Staff get a line when they join."
+      - "<c:text>The players are never told."
+    empty:
+      name: "<c:success><sym:check> Nobody is watched"
+      lore:
+        - "<c:text>Add someone with /watch and the name."
+    entry:
+      name: "<c:value><player>"
+      lore:
+        - "<c:text>Reason: <c:value><reason>"
+        - "<c:text>Added by: <c:value><staff></c:value> <c:muted>(<date>)"
+        - "<c:text>Until: <c:value><expires>"
+      click-punish: "<c:action><sym:bullet> Click to open the punish menu"
+      click-history: "<c:action><sym:bullet> Click for the history"
