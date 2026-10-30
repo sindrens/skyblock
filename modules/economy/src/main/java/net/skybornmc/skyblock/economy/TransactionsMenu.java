@@ -37,6 +37,8 @@ final class TransactionsMenu extends Menu {
 
     private final EconomyModule module;
     private final AccountRef account;
+    /** The player account (gems live there, owner PR2); equal to {@link #account} for profile 1. */
+    private final AccountRef gemsAccount;
     private LedgerFilter filter = LedgerFilter.ALL;
     private int rangeIndex;
     private int page;
@@ -46,9 +48,15 @@ final class TransactionsMenu extends Menu {
     private int loading = -1;
     private int generation;
 
-    TransactionsMenu(EconomyModule module, AccountRef account) {
+    TransactionsMenu(EconomyModule module, AccountRef account, AccountRef gemsAccount) {
         this.module = module;
         this.account = account;
+        this.gemsAccount = gemsAccount == null ? account : gemsAccount;
+    }
+
+    /** The account a row is seen from: the player for gem rows, the profile for everything else. */
+    private AccountRef view(LedgerEntry e) {
+        return e.currency() == net.skybornmc.skyblock.common.economy.Currency.GEMS ? gemsAccount : account;
     }
 
     @Override
@@ -140,9 +148,10 @@ final class TransactionsMenu extends Menu {
     }
 
     private org.bukkit.inventory.ItemStack entry(LedgerEntry e, long now) {
-        boolean in = e.incoming(account);
-        String other = e.counterpartyName(account);
-        AccountRef otherRef = e.counterparty(account);
+        AccountRef seen = view(e);
+        boolean in = e.incoming(seen);
+        String other = e.counterpartyName(seen);
+        AccountRef otherRef = e.counterparty(seen);
         Component counterparty;
         if (other != null) {
             counterparty = Component.text(other);
@@ -151,7 +160,7 @@ final class TransactionsMenu extends Menu {
         } else {
             counterparty = service.text(viewer, EconomyModule.ID, "menu.entry.server");
         }
-        Long after = e.balanceAfter(account);
+        Long after = e.balanceAfter(seen);
         TagResolver[] p = {
                 module.exactAmountTag("amount", viewer, e.currency(), e.amount()),
                 Msg.p("exact", Format.number(e.amount())),
@@ -263,7 +272,7 @@ final class TransactionsMenu extends Menu {
         }
         loading = requested;
         int size = pageSize();
-        module.service().store().history(account, filter, page * size, size).whenComplete((result, error) ->
+        module.service().store().history(account, gemsAccount, filter, page * size, size).whenComplete((result, error) ->
                 Bukkit.getScheduler().runTask(module.core.plugin(), () -> {
                     if (loading == requested) {
                         loading = -1;

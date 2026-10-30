@@ -21,6 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.UnaryOperator;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import net.skybornmc.skyblock.common.profile.BestProfile;
+import net.skybornmc.skyblock.common.profile.ProfileService;
+import net.skybornmc.skyblock.common.profile.SlotRules;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 
@@ -313,36 +321,108 @@ final class EconomyStore {
         return out;
     }
 
-    /** One {@code /baltop} line. */
+    /** One {@code /baltop} line. {@code player} is the player (account) UUID. */
     record TopEntry(UUID player, String name, long balance) {
     }
 
-    /** Richest players in a currency (balance above 0), richest first. */
+    /** Richest accounts in a currency (balance above 0), richest first; ids are account ids (profile keys). */
     CompletableFuture<List<TopEntry>> top(Currency currency, int limit) {
-        return db.async(c -> Sql.query(c, "SELECT a.owner_id, a.balance, p.name FROM eco_accounts a "
+        return db.async(c -> topNow(c, currency, limit));
+    }
+
+    static List<TopEntry> topNow(Connection c, Currency currency, int limit) throws SQLException {
+        return Sql.query(c, "SELECT a.owner_id, a.balance, p.name FROM eco_accounts a "
                         + "LEFT JOIN players p ON p.uuid = a.owner_id "
                         + "WHERE a.currency = ? AND a.owner_type = ? AND a.balance > 0 ORDER BY a.balance DESC LIMIT ?",
                 rs -> new TopEntry(Sql.uuid(rs, "owner_id"), rs.getString("name"), rs.getLong("balance")),
-                currency.key(), AccountType.PLAYER.key(), limit));
+                currency.key(), AccountType.PLAYER.key(), limit);
+    }
+
+    /**
+     * {@code /baltop} with owner decision P7: one line per player from their best live profile. Gems are already per
+     * player. Reads a few times more rows than shown, because one player can have up to 3 profiles in the list.
+     */
+    CompletableFuture<List<TopEntry>> topBest(Currency currency, int size, ProfileService profiles) {
+        return db.async(c -> topBestNow(c, currency, size, profiles));
+    }
+
+    static List<TopEntry> topBestNow(Connection c, Currency currency, int size, ProfileService profiles) throws SQLException {
+        if (currency == Currency.GEMS) {
+            return topNow(c, currency, size);
+        }
+        List<TopEntry> raw = topNow(c, currency, size * SlotRules.MAX_SLOTS + 10);
+        Map<UUID, Long> values = new LinkedHashMap<>();
+        for (TopEntry e : raw) {
+            values.put(e.player(), e.balance());
+        }
+        List<BestProfile.Entry> best = profiles.bestPerOwner(values);
+        if (best.size() > size) {
+            best = best.subList(0, size);
+        }
+        Map<UUID, String> names = names(c, best.stream().map(BestProfile.Entry::owner).toList());
+        List<TopEntry> out = new ArrayList<>(best.size());
+        for (BestProfile.Entry e : best) {
+            out.add(new TopEntry(e.owner(), names.get(e.owner()), e.value()));
+        }
+        return out;
+    }
+
+    /** Current names of players (missing ones are left out). */
+    static Map<UUID, String> names(Connection c, Collection<UUID> players) throws SQLException {
+        Map<UUID, String> out = new HashMap<>();
+        for (UUID id : new LinkedHashSet<>(players)) {
+            Sql.queryOne(c, "SELECT name FROM players WHERE uuid = ?", rs -> rs.getString(1), id).ifPresent(n -> out.put(id, n));
+        }
+        return out;
     }
 
     /** One page of an account's ledger. */
     record LedgerPage(List<LedgerEntry> rows, long total) {
     }
 
+    /** Profile key → player UUID, for ledger names (set by the module; identity in tests). */
+    private volatile UnaryOperator<UUID> owners = UnaryOperator.identity();
+
+    void owners(UnaryOperator<UUID> owners) {
+        this.owners = owners == null ? UnaryOperator.identity() : owners;
+    }
+
     /** An account's ledger rows matching {@code filter}, newest first. */
     CompletableFuture<LedgerPage> history(AccountRef account, LedgerFilter filter, int offset, int limit) {
-        return db.async(c -> historyNow(c, account, filter, offset, limit, clock.getAsLong()));
+        return history(account, null, filter, offset, limit);
+    }
+
+    /**
+     * A profile's ledger: rows of {@code account} plus the gem rows of {@code gemsAccount} (its player; {@code null} or
+     * equal = none extra), newest first.
+     */
+    CompletableFuture<LedgerPage> history(AccountRef account, AccountRef gemsAccount, LedgerFilter filter, int offset, int limit) {
+        UnaryOperator<UUID> map = owners;
+        return db.async(c -> withNames(c, historyNow(c, account, gemsAccount, filter, offset, limit, clock.getAsLong()), map));
     }
 
     static LedgerPage historyNow(Connection c, AccountRef account, LedgerFilter filter, int offset, int limit, long now)
             throws SQLException {
+        return historyNow(c, account, null, filter, offset, limit, now);
+    }
+
+    static LedgerPage historyNow(Connection c, AccountRef account, AccountRef gemsAccount, LedgerFilter filter, int offset, int limit,
+                                 long now) throws SQLException {
         List<Object> params = new ArrayList<>();
-        StringBuilder where = new StringBuilder("WHERE ((l.from_type = ? AND l.from_id = ?) OR (l.to_type = ? AND l.to_id = ?))");
+        StringBuilder where = new StringBuilder("WHERE (((l.from_type = ? AND l.from_id = ?) OR (l.to_type = ? AND l.to_id = ?))");
         params.add(account.type().key());
         params.add(account.owner());
         params.add(account.type().key());
         params.add(account.owner());
+        if (gemsAccount != null && !gemsAccount.equals(account)) {
+            where.append(" OR (l.currency = ? AND ((l.from_type = ? AND l.from_id = ?) OR (l.to_type = ? AND l.to_id = ?)))");
+            params.add(Currency.GEMS.key());
+            params.add(gemsAccount.type().key());
+            params.add(gemsAccount.owner());
+            params.add(gemsAccount.type().key());
+            params.add(gemsAccount.owner());
+        }
+        where.append(")");
         if (filter.currency() != null) {
             where.append(" AND l.currency = ?");
             params.add(filter.currency().key());
@@ -364,6 +444,32 @@ final class EconomyStore {
         List<LedgerEntry> rows = Sql.query(c, "SELECT " + LEDGER_COLUMNS + LEDGER_FROM + where + " ORDER BY l.id DESC LIMIT ? OFFSET ?",
                 EconomyStore::entry, pageParams.toArray());
         return new LedgerPage(rows, total);
+    }
+
+    /** Fills the names of profile accounts (their key is not a player UUID) with their player's name. */
+    static LedgerPage withNames(Connection c, LedgerPage page, UnaryOperator<UUID> owners) throws SQLException {
+        Map<UUID, UUID> wanted = new HashMap<>();
+        for (LedgerEntry e : page.rows()) {
+            if (e.fromName() == null && e.from() != null && e.from().isPlayer()) {
+                wanted.put(e.from().owner(), owners.apply(e.from().owner()));
+            }
+            if (e.toName() == null && e.to() != null && e.to().isPlayer()) {
+                wanted.put(e.to().owner(), owners.apply(e.to().owner()));
+            }
+        }
+        wanted.values().removeIf(java.util.Objects::isNull);
+        if (wanted.isEmpty()) {
+            return page;
+        }
+        Map<UUID, String> names = names(c, wanted.values());
+        List<LedgerEntry> rows = new ArrayList<>(page.rows().size());
+        for (LedgerEntry e : page.rows()) {
+            String from = e.fromName() != null || e.from() == null ? e.fromName() : names.get(wanted.get(e.from().owner()));
+            String to = e.toName() != null || e.to() == null ? e.toName() : names.get(wanted.get(e.to().owner()));
+            rows.add(new LedgerEntry(e.id(), e.time(), e.season(), e.currency(), e.from(), e.to(), e.amount(), e.fromBalance(),
+                    e.toBalance(), e.reason(), e.reference(), e.actorName(), from, to));
+        }
+        return new LedgerPage(rows, page.total());
     }
 
     /** One ledger row by id (tests, staff tools). */

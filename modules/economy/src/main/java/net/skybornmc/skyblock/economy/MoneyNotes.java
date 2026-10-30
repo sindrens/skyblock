@@ -274,13 +274,16 @@ final class MoneyNotes implements Listener {
         cooldowns.set(uuid, COOLDOWN, Duration.ofSeconds(module.config.noteWithdrawCooldownSeconds));
         UUID id = UUID.randomUUID();
         String name = player.getName();
-        module.then(player, notes.withdraw(id, uuid, name, currency, amount).whenComplete((r, e) -> busy.remove(uuid)), result -> {
+        // The note belongs to the profile the money comes from (PROF): created_by = the active profile key.
+        UUID key = module.profiles().profileKey(uuid);
+        module.then(player, notes.withdraw(id, key, uuid, name, currency, amount).whenComplete((r, e) -> busy.remove(uuid)), result -> {
             switch (result.outcome()) {
                 case SUCCESS -> {
                     Player online = Bukkit.getPlayer(uuid);
-                    if (online == null) {
-                        // Left before the note could be handed out: cash it straight back (same atomic redeem path).
-                        refundOffline(result.note(), uuid, name);
+                    if (online == null || module.profiles().isSwitching(uuid) || !module.profiles().profileKey(uuid).equals(key)) {
+                        // Left (or switched profile) before the note could be handed out: cash it straight back to the
+                        // same profile (same atomic redeem path), so it never lands in another profile's inventory.
+                        refundOffline(result.note(), key, uuid, name);
                         return;
                     }
                     give(online, create(result.note(), "withdraw:" + name));
@@ -305,8 +308,8 @@ final class MoneyNotes implements Listener {
         });
     }
 
-    private void refundOffline(MoneyNote note, UUID player, String name) {
-        notes.redeem(note.id(), player, name).thenAccept(r -> module.core.plugin().getLogger().info("Money notes: " + name
+    private void refundOffline(MoneyNote note, UUID key, UUID player, String name) {
+        notes.redeem(note.id(), key, player, name).thenAccept(r -> module.core.plugin().getLogger().info("Money notes: " + name
                 + " left before note " + note.id() + " was handed out; refunded: " + r.outcome()));
     }
 
@@ -407,7 +410,8 @@ final class MoneyNotes implements Listener {
             confiscate(player, uuid, name, where, null, NoteService.Result.of(NoteService.Outcome.UNKNOWN, null), taken);
             return;
         }
-        notes.redeem(id.get(), uuid, name).whenComplete((r, e) -> busy.remove(uuid)).whenCompleteAsync((result, error) -> {
+        UUID key = module.profiles().profileKey(uuid);
+        notes.redeem(id.get(), key, uuid, name).whenComplete((r, e) -> busy.remove(uuid)).whenCompleteAsync((result, error) -> {
             if (error != null || result == null) {
                 giveBack(uuid, name, taken, id.get(), "error");
                 return;
@@ -416,6 +420,7 @@ final class MoneyNotes implements Listener {
                 case SUCCESS -> redeemed(uuid, result);
                 case ALREADY_REDEEMED, UNKNOWN, VOID -> confiscate(Bukkit.getPlayer(uuid), uuid, name, where, id.get(), result, taken);
                 case OVERFLOW -> giveBack(uuid, name, taken, id.get(), "overflow");
+                case OWN_PROFILE -> giveBack(uuid, name, taken, id.get(), "own-profile");
                 default -> giveBack(uuid, name, taken, id.get(), "error");
             }
         }, module.mainThread());
@@ -445,7 +450,11 @@ final class MoneyNotes implements Listener {
             return;
         }
         give(online, taken);
-        module.msg.send(online, why.equals("overflow") ? P + "overflow" : "error");
+        module.msg.send(online, switch (why) {
+            case "overflow" -> P + "overflow";
+            case "own-profile" -> P + "own-profile";
+            default -> "error";
+        });
         module.core.sounds().play(online, "error");
     }
 
