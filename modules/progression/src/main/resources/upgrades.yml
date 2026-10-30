@@ -1,0 +1,638 @@
+# Island upgrades (Phase 5, M5.4): /is upgrade, the Upgrades button in the island menu and in /is level.
+# Edit here, then: /skyblock reload progression. Settings: upgrades-settings.yml. Texts: messages/progression.yml.
+#
+# A level needs every task that lists its key upgrade.<id>.<level> (tasks.yml) and money from the ISLAND BANK only
+# (owner 169; no 2% fee, the period's interest is kept). Level and payment are saved in one database transaction.
+# Only members with the island permission "Upgrades" buy (leader always; admin on by default).
+# Every key inside 'upgrades' is one upgrade (no other settings belong in this file). New upgrades from an update are
+# added automatically: turn one off with "enabled: false" instead of deleting it.
+#
+# upgrades.<id>:
+#   tab:      island | economy | depths | production
+#   icon:     item id; order: position in its tab (lower first)
+#   effect:   what the value does (fixed per upgrade, see below); effects whose feature does not exist yet show
+#             "Coming soon" and can't be bought: island-vault, fuel-tank, mob-loot, crop-growth, harvest-yield,
+#             generator, and mine-fortune / lumberjack / xp-boost until the Depths roll and skill XP read them
+#   enabled:  false = not shown, not bought (bought levels keep working)
+#   levels:   one entry per level, in order:
+#     tier:            task tier of the level (island level points: upgrades-settings.yml -> level-points)
+#     cost:            money from the island bank
+#     value:           the effect at this level (not added up): island-size border width in chunks (odd),
+#                      member-slots slots WITH the leader, warp-slots warps, island-vault storage rows,
+#                      entity-limits +%, bank-capacity / bank-interest bank level, sell-bonus / mine-fortune /
+#                      lumberjack / xp-boost / spawner-rate / mob-loot / crop-growth / harvest-yield +%,
+#                      spawner-stack spawners per block, generator / fuel-tank tier
+#     min-island-level: island level needed as well (optional, 0 = none)
+#
+# Prices: tools/gen_upgrades_catalog.py from the balance model (ECONOMY_BALANCE.md 4.2 and 5.2); tuned in M5.9.
+
+upgrades:
+  island_size:
+    tab: island
+    icon: "grass_block"
+    order: 1
+    effect: island-size
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 3350
+        value: 5
+      - tier: 3
+        cost: 22900
+        value: 7
+      - tier: 5
+        cost: 157000
+        value: 9
+  member_slots:
+    tab: island
+    icon: "player_head"
+    order: 2
+    effect: member-slots
+    enabled: true
+    levels:
+      - tier: 2
+        cost: 7010
+        value: 6
+      - tier: 4
+        cost: 47900
+        value: 7
+      - tier: 6
+        cost: 328000
+        value: 8
+      - tier: 8
+        cost: 2240000
+        value: 9
+  warp_slots:
+    tab: island
+    icon: "oak_sign"
+    order: 3
+    effect: warp-slots
+    enabled: true
+    levels:
+      - tier: 2
+        cost: 4380
+        value: 4
+      - tier: 4
+        cost: 30000
+        value: 5
+      - tier: 6
+        cost: 205000
+        value: 6
+      - tier: 8
+        cost: 1400000
+        value: 7
+      - tier: 10
+        cost: 25400000
+        value: 8
+      - tier: 12
+        cost: 462000000
+        value: 9
+  island_vault:
+    tab: island
+    icon: "ender_chest"
+    order: 4
+    effect: island-vault
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 2010
+        value: 2
+      - tier: 3
+        cost: 13700
+        value: 3
+      - tier: 5
+        cost: 94000
+        value: 4
+      - tier: 7
+        cost: 643000
+        value: 5
+      - tier: 9
+        cost: 7160000
+        value: 6
+  entity_limits:
+    tab: island
+    icon: "armor_stand"
+    order: 5
+    effect: entity-limits
+    enabled: true
+    levels:
+      - tier: 5
+        cost: 157000
+        value: 50
+  bank_capacity:
+    tab: economy
+    icon: "chest"
+    order: 1
+    effect: bank-capacity
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 3690
+        value: 1
+      - tier: 2
+        cost: 9640
+        value: 2
+      - tier: 3
+        cost: 25200
+        value: 3
+      - tier: 4
+        cost: 65900
+        value: 4
+      - tier: 5
+        cost: 172000
+        value: 5
+      - tier: 6
+        cost: 451000
+        value: 6
+      - tier: 7
+        cost: 1180000
+        value: 7
+      - tier: 8
+        cost: 3080000
+        value: 8
+      - tier: 9
+        cost: 13100000
+        value: 9
+      - tier: 10
+        cost: 55900000
+        value: 10
+  bank_interest:
+    tab: economy
+    icon: "gold_ingot"
+    order: 2
+    effect: bank-interest
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 4020
+        value: 1
+      - tier: 2
+        cost: 10500
+        value: 2
+      - tier: 3
+        cost: 27500
+        value: 3
+      - tier: 4
+        cost: 71900
+        value: 4
+      - tier: 5
+        cost: 188000
+        value: 5
+      - tier: 6
+        cost: 492000
+        value: 6
+      - tier: 7
+        cost: 1290000
+        value: 7
+      - tier: 8
+        cost: 3360000
+        value: 8
+      - tier: 9
+        cost: 14300000
+        value: 9
+      - tier: 10
+        cost: 61000000
+        value: 10
+  sell_multiplier:
+    tab: economy
+    icon: "emerald"
+    order: 3
+    effect: sell-bonus
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 6030
+        value: 5
+      - tier: 2
+        cost: 15800
+        value: 10
+      - tier: 3
+        cost: 41200
+        value: 15
+      - tier: 4
+        cost: 108000
+        value: 20
+      - tier: 5
+        cost: 282000
+        value: 25
+      - tier: 6
+        cost: 737000
+        value: 30
+      - tier: 7
+        cost: 1930000
+        value: 35
+      - tier: 8
+        cost: 5040000
+        value: 40
+      - tier: 9
+        cost: 21500000
+        value: 45
+      - tier: 10
+        cost: 91600000
+        value: 50
+      - tier: 11
+        cost: 390000000
+        value: 55
+      - tier: 12
+        cost: 1660000000
+        value: 60
+  mine_fortune:
+    tab: depths
+    icon: "iron_pickaxe"
+    order: 1
+    effect: mine-fortune
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 4690
+        value: 2
+      - tier: 2
+        cost: 12300
+        value: 4
+      - tier: 3
+        cost: 32100
+        value: 6
+      - tier: 4
+        cost: 83900
+        value: 8
+      - tier: 5
+        cost: 219000
+        value: 10
+      - tier: 6
+        cost: 573000
+        value: 12
+      - tier: 7
+        cost: 1500000
+        value: 14
+      - tier: 8
+        cost: 3920000
+        value: 16
+      - tier: 9
+        cost: 16700000
+        value: 18
+      - tier: 10
+        cost: 71200000
+        value: 20
+      - tier: 11
+        cost: 303000000
+        value: 22
+      - tier: 12
+        cost: 1290000000
+        value: 24
+  lumberjack:
+    tab: depths
+    icon: "iron_axe"
+    order: 2
+    effect: lumberjack
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 3020
+        value: 2
+      - tier: 2
+        cost: 7880
+        value: 4
+      - tier: 3
+        cost: 20600
+        value: 6
+      - tier: 4
+        cost: 53900
+        value: 8
+      - tier: 5
+        cost: 141000
+        value: 10
+      - tier: 6
+        cost: 369000
+        value: 12
+      - tier: 7
+        cost: 964000
+        value: 14
+      - tier: 8
+        cost: 2520000
+        value: 16
+      - tier: 9
+        cost: 10700000
+        value: 18
+      - tier: 10
+        cost: 45800000
+        value: 20
+      - tier: 11
+        cost: 195000000
+        value: 22
+      - tier: 12
+        cost: 831000000
+        value: 24
+  xp_boost:
+    tab: depths
+    icon: "experience_bottle"
+    order: 3
+    effect: xp-boost
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 3020
+        value: 2
+      - tier: 2
+        cost: 7880
+        value: 4
+      - tier: 3
+        cost: 20600
+        value: 6
+      - tier: 4
+        cost: 53900
+        value: 8
+      - tier: 5
+        cost: 141000
+        value: 10
+      - tier: 6
+        cost: 369000
+        value: 12
+      - tier: 7
+        cost: 964000
+        value: 14
+      - tier: 8
+        cost: 2520000
+        value: 16
+      - tier: 9
+        cost: 10700000
+        value: 18
+      - tier: 10
+        cost: 45800000
+        value: 20
+      - tier: 11
+        cost: 195000000
+        value: 22
+      - tier: 12
+        cost: 831000000
+        value: 24
+  spawner_stack_limit:
+    tab: production
+    icon: "spawner"
+    order: 1
+    effect: spawner-stack
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 3350
+        value: 16
+      - tier: 2
+        cost: 8760
+        value: 32
+      - tier: 3
+        cost: 22900
+        value: 48
+      - tier: 4
+        cost: 59900
+        value: 64
+      - tier: 5
+        cost: 157000
+        value: 96
+      - tier: 6
+        cost: 410000
+        value: 128
+      - tier: 7
+        cost: 1070000
+        value: 160
+      - tier: 8
+        cost: 2800000
+        value: 208
+      - tier: 9
+        cost: 11900000
+        value: 256
+      - tier: 10
+        cost: 50900000
+        value: 352
+      - tier: 11
+        cost: 217000000
+        value: 432
+      - tier: 12
+        cost: 924000000
+        value: 512
+  spawner_rate:
+    tab: production
+    icon: "clock"
+    order: 2
+    effect: spawner-rate
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 2500
+        value: 12
+      - tier: 1
+        cost: 9280
+        value: 24
+      - tier: 2
+        cost: 34500
+        value: 36
+      - tier: 3
+        cost: 128000
+        value: 48
+      - tier: 4
+        cost: 475000
+        value: 60
+      - tier: 5
+        cost: 1760000
+        value: 72
+      - tier: 6
+        cost: 6550000
+        value: 84
+      - tier: 6
+        cost: 24300000
+        value: 96
+      - tier: 7
+        cost: 90300000
+        value: 108
+      - tier: 8
+        cost: 335000000
+        value: 120
+  mob_loot:
+    tab: production
+    icon: "rotten_flesh"
+    order: 3
+    effect: mob-loot
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 3250
+        value: 12
+      - tier: 2
+        cost: 12100
+        value: 24
+      - tier: 2
+        cost: 44800
+        value: 36
+      - tier: 3
+        cost: 166000
+        value: 48
+      - tier: 4
+        cost: 618000
+        value: 60
+      - tier: 5
+        cost: 2290000
+        value: 72
+      - tier: 6
+        cost: 8510000
+        value: 84
+      - tier: 7
+        cost: 31600000
+        value: 96
+      - tier: 7
+        cost: 117000000
+        value: 108
+      - tier: 8
+        cost: 436000000
+        value: 120
+  crop_growth:
+    tab: production
+    icon: "wheat"
+    order: 4
+    effect: crop-growth
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 4220
+        value: 12
+      - tier: 2
+        cost: 15700
+        value: 24
+      - tier: 3
+        cost: 58200
+        value: 36
+      - tier: 3
+        cost: 216000
+        value: 48
+      - tier: 4
+        cost: 803000
+        value: 60
+      - tier: 5
+        cost: 2980000
+        value: 72
+      - tier: 6
+        cost: 11100000
+        value: 84
+      - tier: 7
+        cost: 41100000
+        value: 96
+      - tier: 8
+        cost: 153000000
+        value: 108
+      - tier: 8
+        cost: 567000000
+        value: 120
+  harvest_yield:
+    tab: production
+    icon: "hay_block"
+    order: 5
+    effect: harvest-yield
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 5490
+        value: 12
+      - tier: 2
+        cost: 20400
+        value: 24
+      - tier: 3
+        cost: 75700
+        value: 36
+      - tier: 4
+        cost: 281000
+        value: 48
+      - tier: 4
+        cost: 1040000
+        value: 60
+      - tier: 5
+        cost: 3880000
+        value: 72
+      - tier: 6
+        cost: 14400000
+        value: 84
+      - tier: 7
+        cost: 53400000
+        value: 96
+      - tier: 8
+        cost: 198000000
+        value: 108
+      - tier: 9
+        cost: 737000000
+        value: 120
+  generator:
+    tab: production
+    icon: "cobblestone"
+    order: 6
+    effect: generator
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 7140
+        value: 1
+      - tier: 2
+        cost: 26500
+        value: 2
+      - tier: 3
+        cost: 98400
+        value: 3
+      - tier: 4
+        cost: 365000
+        value: 4
+      - tier: 5
+        cost: 1360000
+        value: 5
+      - tier: 5
+        cost: 5040000
+        value: 6
+      - tier: 6
+        cost: 18700000
+        value: 7
+      - tier: 7
+        cost: 69500000
+        value: 8
+      - tier: 8
+        cost: 258000000
+        value: 9
+      - tier: 9
+        cost: 958000000
+        value: 10
+  fuel_tank:
+    tab: production
+    icon: "blast_furnace"
+    order: 7
+    effect: fuel-tank
+    enabled: true
+    levels:
+      - tier: 1
+        cost: 2680
+        value: 1
+      - tier: 2
+        cost: 7010
+        value: 2
+      - tier: 3
+        cost: 18300
+        value: 3
+      - tier: 4
+        cost: 47900
+        value: 4
+      - tier: 5
+        cost: 125000
+        value: 5
+      - tier: 6
+        cost: 328000
+        value: 6
+      - tier: 7
+        cost: 857000
+        value: 7
+      - tier: 8
+        cost: 2240000
+        value: 8
+      - tier: 9
+        cost: 9550000
+        value: 9
+      - tier: 10
+        cost: 40700000
+        value: 10
+      - tier: 11
+        cost: 173000000
+        value: 11
+      - tier: 12
+        cost: 739000000
+        value: 12

@@ -1,4 +1,4 @@
-# Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine
+# Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades
 
 Island pillars (PHASE-5 M5.1): Mining, Foraging, Farming, Combat, and Conquest (hidden until KOTH/events feed it,
 `pillars.yml → conquest.enabled`). Dynamic island level (M5.2). Settings: `pillars.yml`, `progression.yml`,
@@ -12,7 +12,8 @@ of this module and need its permission nodes.
 |---|---|---|---|
 | `/is level` | Island level menu: level, progress, board place, points per source (cap, how to raise it), Recalculate button (members, 10 min per island), the pillar row (M5.2). Also from the island menu's island item. | `skyblock.progression.level` (everyone); button: `skyblock.progression.recalculate` (everyone, members only) | ✅ built (owner P5-25) |
 | Challenge Book (button in `/is level`) | The island task list (M5.3, O6): chapters per task tier, every task with its shared progress and rewards, hand-in screen for deliver tasks (from the inventory; from the island storage once STORE2 exists). No new command. | `skyblock.progression.tasks` (everyone; hand-ins members only) | ✅ built |
-| `/is upgrade`, `/is masteries` | Upgrades and masteries (M5.4, M5.5) | `skyblock.progression.upgrade` (everyone) | ⬜ planned |
+| `/is upgrade` | Island upgrades menu (M5.4): tabs Island, Economy, Depths, Production (Masteries tab: M5.5); every upgrade with its level, now/next effect, the next level's tasks and price; click for the detail menu (tasks, hand-ins, all levels, Buy → confirm). Paid from the island bank only. Also the island menu's Upgrades button and the Upgrades source in `/is level`. | `skyblock.progression.upgrade` (everyone); buying: island permission `upgrades` (leader always, admin by default) | ✅ built |
+| `/is masteries` | Masteries (M5.5), same menu on its own tab | `skyblock.progression.upgrade` (everyone) | ⬜ planned |
 | `/is top` | Island leaderboards: Level and Value tabs, Solo/Team toggle, places 1-28, your island; Weekly gain and Pillars tabs come with M5.7 | `skyblock.progression.top` (everyone) | ✅ built (owner P5-25) |
 | `/isadmin progression <player>` | Staff view/edit (M5.10) | `skyblock.progression.admin.view` (mod), `.admin.edit` (admin) | ⬜ planned (owner P5-31) |
 
@@ -144,3 +145,35 @@ Removed islands keep their rows (restores bring them back).
 
 Permission definitions: `modules/progression/src/main/resources/permissions/progression.yml`. Rank grants:
 `server/permissions/progression.txt`.
+
+## How island upgrades work (M5.4)
+- **Catalog:** `upgrades.yml` (one section `upgrades`, every key an upgrade: `tab`, `icon`, `order`, `effect`, `enabled`,
+  `levels` with `tier`, `cost`, `value`, optional `min-island-level`). Defaults from `tools/gen_upgrades_catalog.py`
+  (balance model: level upgrades `W × 0.067 × 1.49^(n−1) × REF(n)`, production `C_p`). Settings: `upgrades-settings.yml`.
+- **Gating:** a level needs every challenge book task that lists `upgrade.<id>.<level>` (`TaskService#unlocked`; locked
+  while the task engine is still loading) and its `min-island-level` (0 by default). Levels are bought in order.
+- **Who buys:** the island permission `upgrades` (owner 170 / P5-10: leader always, admin on, mod and member off; the
+  leader changes it in `/is permissions`). Everyone can view and hand in task items.
+- **Payment:** island bank only (owner 169), one economy transaction (`Transaction.withdraw(island bank)`, ledger reason
+  `island_upgrade`, no 2% fee, the bank's interest state untouched, P5-11) with the `island_upgrades` row as its guard
+  (`EconomyService#executeGuarded`): level and money commit together or not at all. Idempotency key
+  `upgrade:<season>:<island>:<id>:<level>`; the guard refuses a level that is not exactly the next one; a second click
+  while one runs is refused in memory. Audit `island/upgrade_buy` (island, upgrade, level, cost, buyer, bank after) next
+  to the economy's own ledger and audit row.
+- **Effects:** Island Size (5x5/7x7/9x9 → `IslandService#setSize`), Member Slots (6-9 with the leader →
+  `#setMemberSlots`), Warp Slots (4-9 → `#setWarpSlots`) are raised right after the purchase and again on load and when a
+  member joins (never lowered; a staff or paid size above stays). Live hooks (`IslandService#upgradeEffects`): Entity
+  Limits (+50%), Bank Capacity / Bank Interest levels (bank.yml tables), Spawner Stack Limit (16 … 512 per block),
+  Spawner Rate (+12% per level). BonusService source `upgrades` for members (never coop/visitors): Sell Multiplier
+  (+5%/level, SELL family under the +300% cap); the same source already answers Mine Fortune (EXTRA_DROPS `mining`),
+  Lumberjack (EXTRA_DROPS `foraging`) and XP Boost (SKILL_XP). **Coming soon** (shown gray, not buyable until their
+  feature reads them): Island Vault, Mob Loot, Crop Growth, Harvest Yield, Generator, Fuel Tank, and Mine Fortune /
+  Lumberjack / XP Boost (the Depths roll and skill gains don't ask the player's bonus families yet, OPEN_QUESTIONS M5-4).
+- **Island level:** `LevelSource.UPGRADES` = 0.5 / 1 / 1.5 points per bought level by task tier 1-3 / 4-6 / 7+ (P5-17,
+  `upgrades-settings.yml → level-points`).
+- **Notices:** buyer gets a chat line; online members get a chat line (with an [Upgrades] button), an action bar line and
+  the `notify.sound`; when the last task of an upgrade's next level is done, members get "… is ready to buy".
+- **Placeholders:** `island_upgrades_bought` (levels bought), `island_upgrades_ready` (upgrades whose next level's tasks
+  are done), `island_upgrade_<id>` (level of one upgrade).
+- **Data:** `island_upgrades` (island_id, season_id, upgrade_id, upgrade_level, bought_by, bought_at). Size, member slots
+  and warp slots also stay in the islands table.

@@ -29,8 +29,10 @@ import java.util.UUID;
  * {@code /is level} and {@code /is top} (sub-commands registered by the islands module, menus here), the placeholders
  * {@code island_level_progress}, {@code island_level_points} and the NPCHOLO island boards. M5.3: the task engine and
  * challenge book ({@link TaskManager}, {@code tasks.yml}, {@code tasks-settings.yml}), published as {@link TaskService}, the
- * placeholders {@code island_tasks_done}/{@code island_tasks_total} and the {@code /settings} toggle {@code task-notices}. Texts in
- * {@code messages/progression.yml}.
+ * placeholders {@code island_tasks_done}/{@code island_tasks_total} and the {@code /settings} toggle {@code task-notices}. M5.4:
+ * island upgrades ({@link UpgradeManager}, {@code upgrades.yml}, {@code upgrades-settings.yml}), {@code /is upgrade} (sub-command
+ * of the islands module, menus here), placeholders {@code island_upgrades_bought}, {@code island_upgrades_ready},
+ * {@code island_upgrade_<id>}. Texts in {@code messages/progression.yml}.
  */
 public final class ProgressionModule implements SkyblockModule {
 
@@ -41,6 +43,7 @@ public final class ProgressionModule implements SkyblockModule {
     private final LevelConfig levelConfig = new LevelConfig();
     private final BlockValuesConfig blockValues = new BlockValuesConfig();
     private final TasksConfig tasksConfig = new TasksConfig();
+    private final UpgradesConfig upgradesConfig = new UpgradesConfig();
     private PillarManager pillars;
     private IslandSourcesListener sources;
     private BlockWorth blocks;
@@ -48,6 +51,7 @@ public final class ProgressionModule implements SkyblockModule {
     private TaskManager tasks;
     private TaskSources taskSources;
     private DepthsTaskListener depthsTasks;
+    private UpgradeManager upgrades;
 
     public ProgressionModule(Core core) {
         this.core = core;
@@ -64,6 +68,7 @@ public final class ProgressionModule implements SkyblockModule {
         core.configs().load(levelConfig);
         core.configs().load(blockValues);
         core.configs().load(tasksConfig);
+        core.configs().load(upgradesConfig);
         ModuleMessages msg = core.messages(ID);
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         pillars = new PillarManager(core, config, msg);
@@ -83,7 +88,8 @@ public final class ProgressionModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(blocks, core.plugin());
         Bukkit.getPluginManager().registerEvents(levels, core.plugin());
         LevelMenus menus = new LevelMenus(core, msg, levels, pillars);
-        core.services().register(ID, ProgressionService.class, new ProgressionFacade(pillars, levels, menus));
+        ProgressionFacade facade = new ProgressionFacade(pillars, levels, menus);
+        core.services().register(ID, ProgressionService.class, facade);
         // M5.3 task engine: the challenge book (opened from /is level), shared island counters, deliveries.
         tasks = new TaskManager(core, tasksConfig, msg, pillars, levels, config.seasonId);
         TaskMenus taskMenus = new TaskMenus(tasks);
@@ -94,12 +100,21 @@ public final class ProgressionModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(taskSources, core.plugin());
         registerDepthsTasks();
         core.services().register(ID, TaskService.class, tasks);
+        // M5.4 island upgrades: /is upgrade (sub-command of the islands module), paid from the island bank.
+        upgrades = new UpgradeManager(core, upgradesConfig, msg, levels, tasks, config.seasonId);
+        UpgradeMenus upgradeMenus = new UpgradeMenus(upgrades, taskMenus);
+        upgrades.menus(upgradeMenus);
+        menus.upgrades(upgradeMenus);
+        facade.upgrades(upgrades, upgradeMenus);
+        Bukkit.getPluginManager().registerEvents(upgrades, core.plugin());
         registerPlaceholders();
         registerSetting();
         pillars.start();
         blocks.start();
         levels.start();
         tasks.start();
+        upgrades.start();
+        upgrades.registerPlaceholders(ID, this::islandOf);
         // Shop and sell prices may be published by modules enabled after this one: values again once everything is up.
         core.scheduler().later("progression-block-values", 1L, blocks::rebuildValues);
     }
@@ -110,6 +125,7 @@ public final class ProgressionModule implements SkyblockModule {
         core.configs().load(levelConfig);
         core.configs().load(blockValues);
         core.configs().load(tasksConfig);
+        core.configs().load(upgradesConfig);
         core.messages().load(ID);
         pillars.applyConfig();
         sources.configure();
@@ -117,6 +133,7 @@ public final class ProgressionModule implements SkyblockModule {
         levels.applyConfig();
         tasks.applyConfig();
         taskSources.configure();
+        upgrades.applyConfig();
     }
 
     @Override
@@ -125,6 +142,10 @@ public final class ProgressionModule implements SkyblockModule {
             return;
         }
         HandlerList.unregisterAll(pillars);
+        if (upgrades != null) {
+            HandlerList.unregisterAll(upgrades);
+            upgrades.shutdown();
+        }
         if (tasks != null) {
             HandlerList.unregisterAll(tasks);
             if (taskSources != null) {

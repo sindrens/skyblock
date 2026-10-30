@@ -30,7 +30,7 @@ public final class IslandsConfig extends ModuleConfig {
     public int normalMaxChunks = 9;
 
     @Setting(path = "upgrades.island-bank-only", desc = "Island upgrades are paid from the island bank only, never from a "
-            + "player's own money (owner answer 169). Hook for the Phase 5 upgrades (/is upgrade is not built yet).",
+            + "player's own money (owner answer 169). Phase 5 /is upgrade always pays from the island bank.",
             level = Setting.Level.OWNER)
     public boolean upgradesIslandBankOnly = true;
 
@@ -157,6 +157,10 @@ public final class IslandsConfig extends ModuleConfig {
     @Setting(path = "permissions.role-defaults.bank-history", desc = "Roles that may see the island bank history by default "
             + "(M3.3; roles: admin, mod, member). The leader always can.")
     public List<String> bankHistoryRoles = List.of("admin", "mod");
+
+    @Setting(path = "permissions.role-defaults.upgrades", desc = "Roles that may buy island upgrades with the island bank by default "
+            + "(PHASE-5 M5.4, owner 170 / P5-10; roles: admin, mod, member). The leader always can; everyone can view and hand in.")
+    public List<String> upgradesRoles = List.of("admin");
 
     // ------------------------------------------------------------------ NOTES (/is notes, owner N1-N9)
 
@@ -555,6 +559,7 @@ public final class IslandsConfig extends ModuleConfig {
         perPermission.put(IslandPerm.BANK_DEPOSIT, bankDepositRoles);
         perPermission.put(IslandPerm.BANK_WITHDRAW, bankWithdrawRoles);
         perPermission.put(IslandPerm.BANK_HISTORY, bankHistoryRoles);
+        perPermission.put(IslandPerm.UPGRADES, upgradesRoles);
         return RolePermissions.parse(defaultsAdmin, defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor, perPermission);
     }
 

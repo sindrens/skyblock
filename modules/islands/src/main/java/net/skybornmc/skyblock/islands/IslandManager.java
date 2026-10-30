@@ -68,6 +68,8 @@ final class IslandManager implements IslandService {
     private java.util.function.ToIntBiFunction<UUID, UUID> extraHomesProvider;
     /** BANK2: bank-fee mastery level per island (masteries module later; null = level 0). */
     private java.util.function.ToIntFunction<UUID> bankFeeMasteryProvider;
+    /** PHASE-5 M5.4: live upgrade effects (progression module; null = no upgrades). */
+    private volatile net.skybornmc.skyblock.common.island.IslandUpgradeEffects upgradeEffects;
     /** The islands world once seen (identity check in hot paths), cleared when another world object shows up. */
     private World islandWorld;
     /** Players whose island is being created or rebuilt right now (one at a time per player). */
@@ -771,6 +773,82 @@ final class IslandManager implements IslandService {
     @Override
     public void bankFeeMasteryProvider(java.util.function.ToIntFunction<UUID> provider) {
         this.bankFeeMasteryProvider = provider;
+    }
+
+    // ------------------------------------------------------------------ upgrade hooks (PHASE-5 M5.4, progression module)
+
+    @Override
+    public void upgradeEffects(net.skybornmc.skyblock.common.island.IslandUpgradeEffects effects) {
+        this.upgradeEffects = effects;
+    }
+
+    /** The live upgrade effects of a known island, or null (no provider, unknown island). */
+    private net.skybornmc.skyblock.common.island.IslandUpgradeEffects effects(UUID islandId) {
+        net.skybornmc.skyblock.common.island.IslandUpgradeEffects e = upgradeEffects;
+        return e == null || islandId == null || !byId.containsKey(islandId) ? null : e;
+    }
+
+    @Override
+    public java.util.OptionalInt spawnerStackLimit(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? java.util.OptionalInt.empty() : e.spawnerStackLimit(islandId);
+    }
+
+    @Override
+    public double spawnerRateMultiplier(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 1.0 : Math.max(0, e.spawnerRateMultiplier(islandId));
+    }
+
+    @Override
+    public int entityLimitBonusPercent(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 0 : Math.max(0, e.entityLimitBonusPercent(islandId));
+    }
+
+    @Override
+    public int bankCapacityLevel(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 0 : Math.max(0, e.bankCapacityLevel(islandId));
+    }
+
+    @Override
+    public int bankInterestLevel(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 0 : Math.max(0, e.bankInterestLevel(islandId));
+    }
+
+    @Override
+    public int warpSlots(UUID islandId) {
+        Island island = islandId == null ? null : byId.get(islandId);
+        if (island == null) {
+            return 0;
+        }
+        VisitStore.WarpLimits limits = config.warpLimits();
+        return WarpRules.slots(island.warpSlots(), limits.startSlots(), limits.maxSlots());
+    }
+
+    @Override
+    public CompletableFuture<Boolean> setWarpSlots(UUID islandId, int slots, Actor actor) {
+        Island island = islandId == null ? null : byId.get(islandId);
+        if (island == null || slots < 0 || slots > config.warpLimits().maxSlots()) {
+            return CompletableFuture.completedFuture(false);
+        }
+        int before = warpSlots(islandId);
+        return store.saveWarpSlots(islandId, slots).handleAsync((saved, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(java.util.logging.Level.SEVERE, "Islands: saving warp slots failed",
+                        net.skybornmc.skyblock.common.db.Database.cause(error));
+                return false;
+            }
+            if (!Boolean.TRUE.equals(saved)) {
+                return false;
+            }
+            island.warpSlots(slots);
+            core.audit().log(AuditCategory.ISLAND, "island_warp_slots", actor, island.id().toString(), displayName(island),
+                    null, null, Map.of("old", before, "new", slots));
+            return true;
+        }, main);
     }
 
     private IslandInfo info(Island island) {

@@ -99,7 +99,22 @@ final class LevelMenu extends Menu {
         LevelManager.State s = levels.view(islandId);
         set(SLOT_HEADER, MenuButton.display(header(s)));
         for (int i = 0; i < SOURCES.size(); i++) {
-            set(SOURCE_SLOTS.get(i), MenuButton.display(source(SOURCES.get(i), s)));
+            LevelSource source = SOURCES.get(i);
+            ItemStack item = source(source, s);
+            UpgradeMenus upgrades = menus.upgrades();
+            if (source == LevelSource.UPGRADES && upgrades != null && upgrades.upgrades().available()
+                    && viewer.hasPermission(UpgradeManager.PERM_UPGRADE)) {
+                // M5.4: the Upgrades source opens /is upgrade.
+                item.editMeta(meta -> {
+                    List<Component> lore = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
+                    lines("level-menu.source.upgrades.click").forEach(l ->
+                            lore.add(l.decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false)));
+                    meta.lore(lore);
+                });
+                set(SOURCE_SLOTS.get(i), MenuButton.of(item, click -> upgrades.open(viewer, this)));
+            } else {
+                set(SOURCE_SLOTS.get(i), MenuButton.display(item));
+            }
         }
         set(SLOT_RECALCULATE, recalculate());
         set(SLOT_TASKS, tasks());

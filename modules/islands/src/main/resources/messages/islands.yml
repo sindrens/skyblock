@@ -92,6 +92,7 @@ protection:
     bank-deposit: "put money in the island bank"
     bank-withdraw: "take money out of the island bank"
     bank-history: "see the island bank history"
+    upgrades: "buy island upgrades with the island bank"
 
 bypass:
   "on": "<prefix><c:warning><sym:cross></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>(logged, /is bypass to stop)"
@@ -114,6 +115,9 @@ placeholder:
 # PHASE-5 M5.2: /is level and /is top belong to the progression module.
 level:
   unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Island levels aren't available right now. Try again later."
+# /is upgrade without the progression module (PHASE-5 M5.4)
+upgrade:
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Island upgrades aren't available right now. Try again later."
 
 error:
   island-gone: "<prefix><c:error><sym:cross></c:error> <c:text>That island doesn't exist anymore."
@@ -289,6 +293,15 @@ menu:
     name: "<c:muted>Upgrades"
     lore:
       - "<c:muted>Coming soon"
+  # PHASE-5 M5.4: opens /is upgrade (progression module).
+  upgrades-open:
+    name: "<c:value>Upgrades"
+    lore:
+      - "<c:text>Island size, members, bank,"
+      - "<c:text>sell bonus and more. Paid from"
+      - "<c:text>the island bank."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   disband:
     name: "<c:error><bold>Disband island"
     lore:
@@ -365,7 +378,7 @@ invite:
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value><c:text>'s other profile is on this island. Profiles can't share one."
   already-member: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is already on your island."
   has-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already has an island. They must leave it first."
-  full: "<prefix><c:error><sym:cross></c:error> <c:text>Your island is full (<c:value><slots></c:value> members). Member Slots upgrades come later."
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>Your island is full (<c:value><slots></c:value> members). Buy more slots: <click:run_command:'/is upgrade'><c:action>[Upgrades]</c:action></click>"
   too-many: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has <c:value><max></c:value> open invites. Wait until some are answered or expire."
   target-blocked: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't join islands at the moment."
   target-season-limit: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already joined <c:value><max></c:value> islands this season, the max."
@@ -756,6 +769,7 @@ perms:
     bank-deposit: "Bank deposit"
     bank-withdraw: "Bank withdraw"
     bank-history: "Bank history"
+    upgrades: "Upgrades"
 
 # ---------------------------------------------------------------- M2.7 lifecycle (/is disband) and staff tools (/isadmin)
 # Owner answer 591: told to every member whose profile was reset by a disband or an island reset.

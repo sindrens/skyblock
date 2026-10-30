@@ -22,6 +22,7 @@ final class LevelMenus {
     private final LevelManager levels;
     private final PillarManager pillars;
     private TaskMenus tasks;
+    private UpgradeMenus upgrades;
 
     LevelMenus(Core core, ModuleMessages msg, LevelManager levels, PillarManager pillars) {
         this.core = core;
@@ -53,6 +54,15 @@ final class LevelMenus {
 
     TaskMenus tasks() {
         return tasks;
+    }
+
+    /** The upgrades (M5.4), opened from the Upgrades source button. */
+    void upgrades(UpgradeMenus upgrades) {
+        this.upgrades = upgrades;
+    }
+
+    UpgradeMenus upgrades() {
+        return upgrades;
     }
 
     Optional<IslandService.IslandInfo> islandOf(Player player) {

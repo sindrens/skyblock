@@ -177,6 +177,32 @@ public interface IslandService {
         return 0;
     }
 
+    /**
+     * Progression hook (PHASE-5 M5.4): the live upgrade effects behind {@link #spawnerStackLimit},
+     * {@link #spawnerRateMultiplier}, {@link #entityLimitBonusPercent}, {@link #bankCapacityLevel} and
+     * {@link #bankInterestLevel} ({@code null} = no upgrades). Main thread.
+     */
+    default void upgradeEffects(IslandUpgradeEffects effects) {
+    }
+
+    /** Island permission key (owner 170): buy island upgrades with the island bank. Leader always; default Admin. */
+    String PERM_UPGRADES = "upgrades";
+
+    /** Warp slots of the island (start value until the Warp Slots upgrade). 0 for an unknown island. Main thread. */
+    default int warpSlots(UUID islandId) {
+        return 0;
+    }
+
+    /**
+     * Upgrade/admin hook (PHASE-5 Warp Slots): sets the island's warp slots (0 to {@code warps.max-slots}). Saved and
+     * logged ({@code island_warp_slots}); existing warps are never removed when lowered.
+     *
+     * @return false if the island is unknown, the value invalid or saving failed
+     */
+    default CompletableFuture<Boolean> setWarpSlots(UUID islandId, int slots, Actor actor) {
+        return CompletableFuture.completedFuture(false);
+    }
+
     // ------------------------------------------------------------------ island bank (M3.3)
 
     /** Island permission key: put money into the island bank. */
