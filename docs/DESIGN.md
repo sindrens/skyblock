@@ -258,8 +258,8 @@ Tool tiers, recipes, XP curve, perk slots and abilities live in config (`tools.y
 ### 6.1 Skills (per player, reset each season)
 Mining, Foraging, Farming, Combat, Fishing. **Max level 150** (owner #65); tiers unlock up to level 66, levels 67–150 cost 2% more each (`ECONOMY_BALANCE.md` §3.4). Staff: `/skills set|add` (admin + owner). Balanced levels with perks along the way. Skill leaderboards. Player skill XP also feeds the matching island pillar.
 
-### 6.2 Sets (`/sets`)
-`/sets` shows all set types, their pieces and bonuses. Proposed sets (2-piece and 4-piece bonuses, tunable):
+### 6.2 Sets (`/wardrobe`, replaces `/sets`) and `/loadout`
+**Full plan: [`docs/plans/WARDROBE.md`](plans/WARDROBE.md)** (owner SE1 + L1–L4): 16 sets from money, crystals, gems and crates, set levels 0–50 (0× → 2×), merging two level-50 sets into one with both bonuses (level back to 0), a virtual wardrobe with locked real armor, and `/loadout` presets (armor, pet, hotbar tools). The table below is the original theme list the plan grew from:
 
 | Set | Theme |
 |---|---|
