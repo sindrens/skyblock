@@ -46,9 +46,10 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- P2 undo, double-punish, offence expiry, /pstats (Phase P)
-- UX1 messages/scoreboard/tab polish + rank refresh + fast /baltop
-- M2.4 island visiting, lock, ban, warps, ratings
+- UX1 messages/scoreboard/tab (resumed; 3 parts committed) — wnl7nutxi
+- P2 undo, double-punish, offence expiry, /pstats — wei9mauo2
+- M2.4 island visiting, warps, ratings, likes — w8z4uyvta
+- NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
 
 ## Parked / broken
 (none)
