@@ -63,6 +63,33 @@ give:
   done: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><player></c:value> <c:value><amount>x <mob></c:value> <c:text>spawner (tier <tier>)."
   received: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><amount>x <mob></c:value> <c:text>spawner."
 
+# R3-13b: staff restore of frozen spawners (/inspect → Frozen spawners). <player> <amount> <mob> <id> <reason> <world> <x> <y> <z> <date>
+frozen:
+  title: "Frozen spawners of <player>"
+  info: ["<c:text>Stacked spawners this player placed", "<c:text>whose block was lost (crash, world", "<c:text>edit). Restore sends them to the", "<c:text>player's /box. Logged."]
+  empty:
+    name: "<c:muted>No frozen spawners"
+    lore: ["<c:text>Nothing waits for this player."]
+  entry:
+    name: "<c:value><amount>x <mob></c:value> <c:text>spawner"
+    lore:
+      - "<c:text>Frozen <c:value>#<id></c:value> <c:muted>(<reason>)"
+      - "<c:text>At <c:value><world> <x> <y> <z></c:value>"
+      - "<c:text>Since <c:value><date></c:value>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to restore"
+  confirm-crumb: "Restore spawners"
+  confirm-details:
+    - "<c:text>Sends <c:value><amount>x <mob></c:value> <c:text>spawner"
+    - "<c:text>to <c:value><player></c:value><c:text>'s /box. Logged."
+  restored: "<prefix><c:success><sym:check></c:success> <c:text>Restored <c:value><amount>x <mob></c:value> <c:text>spawner to their /box. Logged."
+  returned: "<prefix><c:success><sym:check></c:success> <c:text>Staff gave back <c:value><amount>x <mob></c:value> <c:text>spawner. Take it from /box."
+  already: "<prefix><c:error><sym:cross></c:error> <c:text>That spawner was already restored or cleared."
+  no-box: "<prefix><c:error><sym:cross></c:error> <c:text>The item box is off, so nothing can be restored right now."
+  no-owner: "<prefix><c:error><sym:cross></c:error> <c:text>Nobody is known as the placer. Use /spawner give after checking the logs."
+  unknown-type: "<prefix><c:error><sym:cross></c:error> <c:value><mob></c:value> <c:text>spawners are no longer in stacking.yml. Use /spawner give."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Only admins can restore frozen spawners."
+
 # Spawner menu (owner S28). <mob> <tier> <count> <max> <rate> <multiplier> <next> <carried> <range> <absolute-max> <status>
 menu:
   title: "Spawner"

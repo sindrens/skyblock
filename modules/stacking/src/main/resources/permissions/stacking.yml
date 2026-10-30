@@ -5,3 +5,6 @@
 skyblock.spawner.give:
   description: Staff /spawner give <player> <type> [amount] (spawner items, audited)
   default: op
+skyblock.spawner.restore:
+  description: R3-13b restore frozen stacked spawners to the placer's /box (/inspect → Frozen spawners, audited)
+  default: op
