@@ -59,7 +59,6 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- P3 punishments: evidence, notes, ack, weights, report link, Discord sink (off), /mypunishments
 - W1 wardrobe core (new modules/wardrobe)
 - M3.4 /sell + dynamic prices (economy lane)
 
