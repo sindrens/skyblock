@@ -61,9 +61,9 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- PERF5 progression/achievements slow ops
 - REV3-FIX review fixes
-- UX3 owner in-game feedback
+- PERF6 slow ops after update105
+- VIS visibility service + AFK pool rules
 - NOTE: a separate owner-started agent works on docs/planning/*.md; do not overwrite those files, merge carefully.
 
 ## Parked / broken
