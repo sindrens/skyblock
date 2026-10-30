@@ -1,6 +1,6 @@
 # Join Flow, Tutorial and Starter Chest Plan (PLANTUT)
 
-> **Status:** plan, 2026-10-30. Nothing here is built yet. **Every name, number and rule is a default** the owner can change. All numbers go into typed configs (`tutorial.yml`), all text into `messages/tutorial.yml`.
+> **Status:** built (TU1-TU4 in TUT1, TU5-TU8 in TUT2, 2026-10-30); see `docs/commands/tutorial.md` for what exists. Originally: plan, 2026-10-30. **Every name, number and rule is a default** the owner can change. All numbers go into typed configs (`tutorial.yml`), all text into `messages/tutorial.yml`.
 > Decisions that matter have an id `TQ<n>`. The owner answers them on the one-click page (§12, JSON at the end).
 > Sources: `OWNER_ANSWERS_ROUND1.md` (**43, 44, 131, 133, 158, 159, 160, 203, 254, 273**), `OWNER_PRINCIPLES.md` (**4, 5**, also 1, 2, 3, 6), `DESIGN.md` §2, `STANDARDS.md` (tutorial under 3 min, re-openable), `BUILDER_BRIEF.md` §5.11, `server/builds/spawn_plan.json` (`first_view`, `tutorial_route`, walking distances), `server/builds/spawn_gatehouse_v1.yml` (portal `to_island`), `server/builds/islands_starter_meadow_v1.yml` (starter chest, pond, generator pad), `ECONOMY_BALANCE.md` §2, §4.1, `docs/commands/{tools,depths,economy,islands,npcs,menus}.md`, PORTALS branch (`IslandPortalEnteredEvent`), `common/npc/NpcDirectory`, `common/hook/BedrockInfo`.
 
