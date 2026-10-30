@@ -43,7 +43,8 @@ class DeadConfigKeysTest {
      * Settings that are declared but read by nothing yet, with the reason. Keep this list short: a dead key misleads the
      * owner, so either use it, remove it (and add it to removedKeys), or explain here why it waits.
      */
-    private static final Map<String, String> UNREAD_ALLOWED = Map.of();
+    private static final Map<String, String> UNREAD_ALLOWED = Map.of(
+            "RewardsSettings.saveEnabled", "M10-6 'Save streak' button waits for the store (Phase 11); the rewards lane reads it then");
 
     /**
      * Keys in tracked/bundled copies of typed configs that are not settings, per file (prefix match), with the reason.

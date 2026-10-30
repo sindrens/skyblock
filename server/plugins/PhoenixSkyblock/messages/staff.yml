@@ -291,6 +291,9 @@ menu:
     box:
       name: "<c:ember><bold>Item box</bold></c:ember>"
       lore: ["<c:text>Items waiting in <player>'s /box.", "<c:text>View, remove or clear (admin, logged).", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    frozen-spawners:
+      name: "<c:ember><bold>Frozen spawners</bold></c:ember>"
+      lore: ["<c:text>Stacked spawners of <player> whose", "<c:text>block was lost. Restore them to", "<c:text>their /box (admin, logged).", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     tutorial:
       name: "<c:ember><bold>Tutorial</bold></c:ember>"
       lore: ["<c:text><player>'s tutorial step and times.", "<c:text>Skip or reset it (mod+, logged).", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
