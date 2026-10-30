@@ -282,8 +282,10 @@ public final class CommandSpec {
         if (playerOnly && consoleOnly) {
             throw new IllegalStateException("Command '/" + path + "' can't be both player-only and console-only");
         }
-        if (!args.isEmpty() && !children.isEmpty()) {
-            throw new IllegalStateException("Command '/" + path + "' mixes arguments and sub-commands; put arguments on a sub-command");
+        // Sub-commands next to arguments are allowed only when every argument is optional (e.g. /skills [player] plus
+        // /skills set|add): Brigadier tries the literal sub-commands first, then the argument.
+        if (!args.isEmpty() && !children.isEmpty() && requiredArgs() > 0) {
+            throw new IllegalStateException("Command '/" + path + "' mixes required arguments and sub-commands; make the arguments optional or put them on a sub-command");
         }
         for (CommandSpec child : children) {
             if (child.category.equals("General")) {
