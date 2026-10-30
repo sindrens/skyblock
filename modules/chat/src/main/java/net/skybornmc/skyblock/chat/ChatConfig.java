@@ -4,6 +4,7 @@ import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Typed settings of {@code chat.yml}: display formats (data, editable later in /staff → Display), chat protection,
@@ -13,22 +14,24 @@ public final class ChatConfig extends ModuleConfig {
 
     // ---------------------------------------------------------------- formats (MiniMessage + parts)
 
-    @Setting(path = "format.chat", desc = "Chat line. Parts: <title> <tag> <rank> <name> <message> (empty parts disappear). Style tags allowed.")
-    public String chatFormat = "<title><rank><name> <c:muted>»</c:muted> <c:text><message>";
+    @Setting(path = "format.chat", desc = "Chat line. Parts: <title> <tag> <rank> <name> <message> (empty parts disappear). "
+            + "Titles go before the name, tags after it: [MOD] Pouched (Phoenix) » hi")
+    public String chatFormat = "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>";
 
-    @Setting(path = "format.tab", desc = "Tab list entry. Parts: <rank> <name> <title> <tag> <afk>.")
-    public String tabFormat = "<rank><name><title><tag><afk>";
+    @Setting(path = "format.tab", desc = "Tab list entry. Parts: <rank> <name> <title> <tag> <afk>. Default: [MOD] Pouched (Phoenix)")
+    public String tabFormat = "<title><rank><name><tag><afk>";
 
     @Setting(path = "format.title-part", desc = "How a title looks when a player has one. <value> = the title. Empty = never shown.")
     public String titlePart = "<value> ";
 
-    @Setting(path = "format.tab-title-part", desc = "Title in the tab list (after the name). <value> = the title.")
-    public String tabTitlePart = " <value>";
+    @Setting(path = "format.tab-title-part", desc = "Title in the tab list (before the rank). <value> = the title.")
+    public String tabTitlePart = "<value> ";
 
-    @Setting(path = "format.tag-part", desc = "Tag (from /tags) in chat. <value> = the tag. Default: tags only in the tab list.")
-    public String tagPart = "";
+    @Setting(path = "format.tag-part", desc = "Tag (from /tags) in chat, after the name. <value> = the tag, already in "
+            + "( ) from cosmetics.yml -> tag.format. Empty = no tags in chat.")
+    public String tagPart = " <value>";
 
-    @Setting(path = "format.tab-tag-part", desc = "Tag in the tab list. <value> = the tag.")
+    @Setting(path = "format.tab-tag-part", desc = "Tag in the tab list, after the name. <value> = the tag.")
     public String tabTagPart = " <value>";
 
     @Setting(path = "format.afk-part", desc = "AFK marker in the tab list and nametag.")
@@ -94,6 +97,12 @@ public final class ChatConfig extends ModuleConfig {
     @Setting(path = "tab.season", desc = "Season text in the tab header until the seasons feature provides it.")
     public String season = "Season 1 · Preseason";
 
+    @Setting(path = "tab.tps-good", desc = "Staff TPS line: at or above this TPS it shows green (messages tab.tps.good).", min = 0, max = 20)
+    public double tpsGood = 19.0;
+
+    @Setting(path = "tab.tps-ok", desc = "Staff TPS line: at or above this TPS (and below tps-good) it shows orange; below it red.", min = 0, max = 20)
+    public double tpsOk = 15.0;
+
     @Override
     public String fileName() {
         return "chat.yml";
@@ -106,6 +115,34 @@ public final class ChatConfig extends ModuleConfig {
                 Formats are MiniMessage with style tags (<c:brand>, <grad:phoenix> ...). Rank prefixes come from LuckPerms
                 (& codes like Essentials), name colors from the rank's 'color' meta. Texts: messages/chat.yml.
                 Reload: /skyblock reload chat""";
+    }
+
+    /**
+     * Formats whose default changed (UX1: titles before, tags after the name). A file that still has the old default
+     * gets the new one; a value the owner edited is kept. path → {old default, new default}.
+     */
+    static final Map<String, String[]> CHANGED_DEFAULTS = Map.of(
+            "format.chat", new String[]{"<title><rank><name> <c:muted>»</c:muted> <c:text><message>",
+                    "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>"},
+            "format.tab", new String[]{"<rank><name><title><tag><afk>", "<title><rank><name><tag><afk>"},
+            "format.tab-title-part", new String[]{" <value>", "<value> "},
+            "format.tag-part", new String[]{"", " <value>"});
+
+    /** The settings to move to their new default: those whose current value is still an old default. */
+    static Map<String, String> upgrades(Map<String, String> current) {
+        Map<String, String> out = new java.util.TreeMap<>();
+        CHANGED_DEFAULTS.forEach((path, values) -> {
+            if (values[0].equals(current.get(path))) {
+                out.put(path, values[1]);
+            }
+        });
+        return out;
+    }
+
+    /** Current values of the settings in {@link #CHANGED_DEFAULTS}. */
+    Map<String, String> changedDefaultValues() {
+        return Map.of("format.chat", chatFormat, "format.tab", tabFormat, "format.tab-title-part", tabTitlePart,
+                "format.tag-part", tagPart);
     }
 
     ChatFilter.Rules rules() {

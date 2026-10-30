@@ -85,4 +85,38 @@ class ChatLogicTest {
         assertTrue(TabService.teamName(0, "Amy").compareTo(member) < 0);
         assertTrue(owner.startsWith(TabService.TEAM_PREFIX));
     }
+
+    @Test
+    void titleBeforeTagAfterTheName() {
+        ChatConfig c = new ChatConfig();
+        assertTrue(c.chatFormat.indexOf("<title>") < c.chatFormat.indexOf("<name>"));
+        assertTrue(c.chatFormat.indexOf("<tag>") > c.chatFormat.indexOf("<name>"));
+        assertTrue(c.chatFormat.indexOf("<tag>") < c.chatFormat.indexOf("»"));
+        assertTrue(c.tabFormat.indexOf("<title>") < c.tabFormat.indexOf("<rank>"));
+        assertTrue(c.tabFormat.indexOf("<tag>") > c.tabFormat.indexOf("<name>"));
+        assertEquals(" <value>", c.tagPart);
+        assertEquals("<value> ", c.tabTitlePart);
+    }
+
+    @Test
+    void oldDefaultFormatsAreUpgradedButEditsAreKept() {
+        java.util.Map<String, String> old = new java.util.HashMap<>();
+        ChatConfig.CHANGED_DEFAULTS.forEach((path, values) -> old.put(path, values[0]));
+        java.util.Map<String, String> up = ChatConfig.upgrades(old);
+        assertEquals(ChatConfig.CHANGED_DEFAULTS.size(), up.size());
+        assertEquals("<title><rank><name><tag><afk>", up.get("format.tab"));
+
+        old.put("format.chat", "<rank><name>: <message>"); // the owner's own format
+        assertFalse(ChatConfig.upgrades(old).containsKey("format.chat"));
+        assertTrue(ChatConfig.upgrades(new ChatConfig().changedDefaultValues()).isEmpty(), "new defaults are final");
+    }
+
+    @Test
+    void tpsTiers() {
+        assertEquals("good", TabService.tpsTier(20.0, 19.0, 15.0));
+        assertEquals("good", TabService.tpsTier(19.0, 19.0, 15.0));
+        assertEquals("ok", TabService.tpsTier(18.9, 19.0, 15.0));
+        assertEquals("ok", TabService.tpsTier(15.0, 19.0, 15.0));
+        assertEquals("bad", TabService.tpsTier(14.9, 19.0, 15.0));
+    }
 }

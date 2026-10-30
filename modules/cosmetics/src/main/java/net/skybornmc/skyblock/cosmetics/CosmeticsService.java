@@ -53,6 +53,8 @@ public final class CosmeticsService implements Cosmetics, Listener {
     private final ModuleMessages msg;
     private final Map<UUID, Owned> owned = new ConcurrentHashMap<>();
     private volatile String autoTitle = "";
+    private volatile String tagFormat = "";
+    private volatile boolean tagStripBrackets = true;
 
     CosmeticsService(Core core, CosmeticRegistry registry, ModuleMessages msg) {
         this.core = core;
@@ -63,6 +65,23 @@ public final class CosmeticsService implements Cosmetics, Listener {
     /** Title granted automatically to every player on join (e.g. {@code newcomer}); empty = none. */
     void autoTitle(String id) {
         this.autoTitle = id == null ? "" : id;
+    }
+
+    /** How tags are shown ({@code cosmetics.yml → tag.*}): {@code format} wraps the tag, e.g. muted ( ). */
+    void tagStyle(String format, boolean stripBrackets) {
+        this.tagFormat = format == null ? "" : format;
+        this.tagStripBrackets = stripBrackets;
+    }
+
+    /** The cosmetic's display as raw MiniMessage, tags wrapped in the tag format (for item lore built from text). */
+    String displayRaw(Cosmetic cosmetic, java.util.function.UnaryOperator<String> toMini) {
+        String inner = toMini.apply(innerRaw(cosmetic));
+        return cosmetic.kind() == Kind.TAG ? TagStyle.wrapRaw(tagFormat, inner) : inner;
+    }
+
+    private String innerRaw(Cosmetic cosmetic) {
+        String raw = cosmetic.display();
+        return cosmetic.kind() == Kind.TAG && tagStripBrackets ? TagStyle.unbracket(raw) : raw;
     }
 
     // ------------------------------------------------------------------ loading
@@ -227,11 +246,15 @@ public final class CosmeticsService implements Cosmetics, Listener {
 
     /** How a title/tag looks: {@code &} codes or MiniMessage with style tags. */
     Component display(Audience viewer, Cosmetic cosmetic) {
-        String raw = cosmetic.display();
-        if (LegacyColors.hasCodes(raw) && raw.indexOf('<') < 0) {
-            return LegacyColors.toComponent(raw);
+        String raw = innerRaw(cosmetic);
+        Component inner = LegacyColors.hasCodes(raw) && raw.indexOf('<') < 0
+                ? LegacyColors.toComponent(raw)
+                : core.messages().parse(viewer, raw);
+        String format = tagFormat;
+        if (cosmetic.kind() != Kind.TAG || format.isBlank() || !format.contains(TagStyle.PLACEHOLDER)) {
+            return inner;
         }
-        return core.messages().parse(viewer, raw);
+        return core.messages().parse(viewer, format, net.skybornmc.skyblock.common.text.Msg.c("tag", inner));
     }
 
     /** Placeholder value: the equipped one's display, or empty. */

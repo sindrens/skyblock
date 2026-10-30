@@ -95,11 +95,9 @@ final class TabService implements Listener {
 
     void start() {
         running = true;
-        core.ranks().onRankChange(uuid -> {
-            if (running) {
-                dirty.add(uuid);
-            }
-        });
+        // Forced rebuild (not just a fingerprint check): the rank provider notifies right after the change and again
+        // once it settled, so the tab name, sort order and nametag follow within a second.
+        core.ranks().onRankChange(this::markDirty);
         boards.add(Bukkit.getScoreboardManager().getMainScoreboard());
         for (Player p : Bukkit.getOnlinePlayers()) {
             track(p);
@@ -317,8 +315,10 @@ final class TabService implements Listener {
                         Msg.number("max", Bukkit.getMaxPlayers()), Msg.p("season", seasonText)));
         Component footer = headerCache.computeIfAbsent("f" + bedrock, k -> msg.component(viewer, "tab.footer"));
         if (viewer.hasPermission(ChatModule.PERM_TAB_STAFF)) {
-            TagResolver[] staff = {Msg.number("ping", viewer.getPing()),
-                    Msg.p("tps", String.format(Locale.ROOT, "%.1f", Math.min(20.0, Bukkit.getTPS()[0])))};
+            double tps = Math.min(20.0, Bukkit.getTPS()[0]);
+            Component tpsText = msg.component(viewer, "tab.tps." + tpsTier(tps, config.get().tpsGood, config.get().tpsOk),
+                    Msg.p("value", String.format(Locale.ROOT, "%.1f", tps)));
+            TagResolver[] staff = {Msg.number("ping", viewer.getPing()), Msg.c("tps", tpsText)};
             footer = footer.append(Component.newline()).append(msg.component(viewer, "tab.footer-staff", staff));
         }
         Component[] last = sentHeaderFooter.get(viewer.getUniqueId());
@@ -329,6 +329,14 @@ final class TabService implements Listener {
     }
 
     // ------------------------------------------------------------------ events (mark only, no work)
+
+    /** Color tier of the staff TPS line: {@code good} at or above {@code good}, {@code ok} at or above {@code ok}, else {@code bad}. */
+    static String tpsTier(double tps, double good, double ok) {
+        if (tps >= good) {
+            return "good";
+        }
+        return tps >= ok ? "ok" : "bad";
+    }
 
     /** {@code pxs} + (999 − weight, 3 digits) + lowercase name: sorts owner → default, then A → Z. */
     static String teamName(int weight, String playerName) {

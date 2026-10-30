@@ -69,8 +69,9 @@ public final class EconomyConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ /baltop
 
-    @Setting(path = "baltop.refresh-minutes", desc = "How often /baltop is recalculated (minutes).", min = 1, max = 60)
-    public int baltopRefreshMinutes = 5;
+    @Setting(path = "baltop.refresh-seconds", desc = "How old a /baltop list may get before it is read again (seconds). "
+            + "Refreshed in the background, and when someone runs /baltop on an older list.", min = 5, max = 3600)
+    public int baltopRefreshSeconds = 30;
 
     @Setting(path = "baltop.size", desc = "Players listed in /baltop.", min = 3, max = 50)
     public int baltopSize = 10;

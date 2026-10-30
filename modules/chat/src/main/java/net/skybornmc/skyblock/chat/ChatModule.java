@@ -114,7 +114,7 @@ public final class ChatModule implements SkyblockModule, Listener {
 
     @Override
     public void enable() {
-        core.configs().load(config);
+        loadConfig();
         var pm = core.plugin().getServer().getPluginManager();
         pm.registerEvents(this, core.plugin());
         pm.registerEvents(tab, core.plugin());
@@ -147,9 +147,26 @@ public final class ChatModule implements SkyblockModule, Listener {
 
     @Override
     public void reload() {
-        core.configs().load(config);
+        loadConfig();
         core.messages().load(ID);
         tab.reloaded();
+    }
+
+    /** Loads chat.yml and moves formats that still have an old default to the new one (owner edits are kept). */
+    private void loadConfig() {
+        core.configs().load(config);
+        Map<String, String> upgrades = ChatConfig.upgrades(config.changedDefaultValues());
+        if (upgrades.isEmpty()) {
+            return;
+        }
+        try {
+            upgrades.forEach((path, value) -> core.configs().set(config, path, value));
+            core.configs().save(config);
+            core.plugin().getLogger().info("chat.yml: new default formats (titles before, tags after the name): "
+                    + String.join(", ", upgrades.keySet()));
+        } catch (java.io.IOException | IllegalArgumentException e) {
+            core.plugin().getLogger().warning("chat.yml: could not save the new default formats: " + e.getMessage());
+        }
     }
 
     @Override

@@ -1,20 +1,21 @@
 # Staff tools: staff mode, freeze, inspect, reports. MiniMessage + style tags (style.yml).
+# Format (docs/UI_STYLE.md §3): success/error marks + gray text, values in <c:value>, clicks in <c:action>.
 
-command-missing: "<prefix><c:error><sym:cross> <c:value>/<command></c:value> isn't available yet."
+command-missing: "<prefix><c:error><sym:cross></c:error> <c:value>/<command></c:value> <c:text>isn't available yet."
 
 # --- Staff mode (/staffmode) ---
 mode:
-  "on": "<prefix><c:success><sym:check> <c:text>Staff mode <c:success>on</c:success>. <c:muted>Your inventory is saved; /staffmode to leave."
-  "off": "<prefix><c:text>Staff mode <c:error>off</c:error>. <c:muted>Your inventory is back."
+  "on": "<prefix><c:success><sym:check></c:success> <c:text>Staff mode <c:value>on</c:value>. <c:muted>Inventory saved. /staffmode to leave."
+  "off": "<prefix><c:success><sym:check></c:success> <c:text>Staff mode <c:value>off</c:value>. <c:muted>Inventory is back."
   staff-on: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>entered staff mode."
   staff-off: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>left staff mode."
-  save-failed: "<prefix><c:error><sym:cross> Staff mode was cancelled: your inventory couldn't be saved to the database. Nothing was lost."
-  recovered: "<prefix><c:warning>Your inventory from staff mode was restored (the server stopped while you were in staff mode)."
-  wait: "<prefix><c:error><sym:cross> One moment, your saved staff-mode inventory is still being checked."
-  check-failed: "<prefix><c:error><sym:cross> Couldn't check your saved staff-mode inventory, so /staffmode is blocked until you rejoin. Tell an admin if this repeats."
+  save-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Staff mode cancelled: couldn't save your inventory. Nothing was lost."
+  recovered: "<prefix><c:success><sym:check></c:success> <c:text>Your inventory is back (the server stopped while you were in staff mode)."
+  wait: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, still checking your saved inventory."
+  check-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't check your saved inventory. Rejoin to use /staffmode; tell an admin if it repeats."
 
 tool:
-  need-target: "<c:error><sym:cross> Look at a player (or right-click one).</c:error>"
+  need-target: "<c:error><sym:cross></c:error> <c:text>Look at a player (or right-click one)."
   inspect:
     name: "<c:info><bold>Inspect</bold></c:info> <c:muted><sym:dot> Right-click a player"
     lore: ["<c:text>Profile, inventory, reports and logs.", "", "<c:action><sym:bullet> Right-click a player"]
@@ -48,16 +49,16 @@ tool:
 
 # --- Freeze ---
 freeze:
-  done: "<prefix><c:text>Froze <c:value><player></c:value>."
-  undone: "<prefix><c:text>Unfroze <c:value><player></c:value>."
-  released: "<prefix><c:success><sym:check> <c:text>You were unfrozen by <c:value><staff></c:value>. Thanks for waiting!"
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Froze <c:value><player></c:value>."
+  undone: "<prefix><c:success><sym:check></c:success> <c:text>Unfroze <c:value><player></c:value>."
+  released: "<prefix><c:success><sym:check></c:success> <c:text>You're unfrozen <c:muted>(<staff>)</c:muted>. Thanks for waiting!"
   staff-on: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>froze <c:value><player></c:value>."
   staff-off: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>unfroze <c:value><player></c:value>."
-  self: "<prefix><c:error><sym:cross> You can't freeze yourself."
-  exempt: "<prefix><c:error><sym:cross> <c:value><player></c:value> can't be frozen."
-  not-frozen: "<prefix><c:error><sym:cross> <c:value><player></c:value> is not frozen."
-  no-commands: "<prefix><c:error><sym:cross> You can't use commands while frozen. Type in chat to talk to staff."
-  save-failed: "<prefix><c:warning>The freeze change works now, but couldn't be saved to the database, so it may not last through a restart. Tell an admin if this repeats."
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't freeze yourself."
+  exempt: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't be frozen."
+  not-frozen: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is not frozen."
+  no-commands: "<prefix><c:error><sym:cross></c:error> <c:text>No commands while frozen. Type in chat to talk to staff."
+  save-failed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Done, but not saved: it may not last a restart. Tell an admin if it repeats."
   title:
     title: "<c:sky_ice><bold>FROZEN</bold></c:sky_ice>"
     subtitle: "<c:text>Don't log out <sym:dot> read the chat"
@@ -66,50 +67,50 @@ freeze:
     fade-out: 10
   instructions:
     - ""
-    - "  <c:sky_ice><bold>You have been frozen by staff.</bold></c:sky_ice>"
+    - "  <c:sky_ice><bold>Staff froze you.</bold></c:sky_ice>"
     - "  <c:text>Don't log out: that counts as refusing the check."
-    - "  <c:text>Type in chat to talk to staff, or join our Discord:"
+    - "  <c:text>Type in chat to talk to staff, or use Discord:"
     - "  <click:open_url:'https://discord.skybornmc.net'><hover:show_text:'<c:text>Open discord.skybornmc.net'><c:action><u>discord.skybornmc.net</u></c:action></hover></click>"
     - ""
   chat: "<c:sky_ice>[Frozen]</c:sky_ice> <c:value><player></c:value><c:muted>:</c:muted> <c:text><message>"
-  logout: "<c:muted>[Staff]</c:muted> <c:error><sym:cross></c:error> <c:value><player></c:value> <c:warning>logged out while frozen <c:muted>(action: <action>)"
+  logout: "<c:muted>[Staff]</c:muted> <c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>logged out while frozen <c:muted>(action: <action>)"
   rejoined: "<c:muted>[Staff]</c:muted> <c:value><player></c:value> <c:text>came back and is frozen again."
 
 # --- Inspect ---
 inspect:
-  unknown: "<prefix><c:error><sym:cross> No player named <c:value><player></c:value> has joined before."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
 
 # --- Reports (players) ---
 report:
-  unknown: "<prefix><c:error><sym:cross> No player named <c:value><player></c:value> has joined before."
-  self: "<prefix><c:error><sym:cross> You can't report yourself."
-  cooldown: "<prefix><c:error><sym:cross> You can report again in <c:value><time></c:value>."
-  playtime: "<prefix><c:error><sym:cross> You need <c:value><minutes> minutes</c:value> of playtime before you can report players."
-  too-many: "<prefix><c:error><sym:cross> You already have <c:value><max></c:value> open reports. Staff will look at them soon."
-  already: "<prefix><c:error><sym:cross> You already reported this player. Staff will look at it soon."
-  failed: "<prefix><c:error><sym:cross> Your report couldn't be saved. Please try again in a moment."
-  sent: "<prefix><c:success><sym:check> <c:text>Report <c:value>#<id></c:value> about <c:value><player></c:value> sent. <c:muted>Thanks! You'll hear the result."
-  prompt: "<prefix><c:text>Type what <c:value><player></c:value> did in chat <c:muted>(one line). Type <c:value><cancel></c:value><c:muted> to cancel (<seconds>s)."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't report yourself."
+  cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Report again in <c:value><time></c:value>."
+  playtime: "<prefix><c:error><sym:cross></c:error> <c:text>Play <c:value><minutes> minutes</c:value> before you can report."
+  too-many: "<prefix><c:error><sym:cross></c:error> <c:text>You have <c:value><max></c:value> open reports. Staff will check them soon."
+  already: "<prefix><c:error><sym:cross></c:error> <c:text>You already reported them. Staff will check it soon."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't save your report. Try again in a moment."
+  sent: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value> sent. <c:muted>Thanks! You'll hear the result."
+  prompt: "<prefix><c:text>Type what <c:value><player></c:value> did, in one line. <c:muted>(<cancel> to cancel, <seconds>s)"
   staff-alert:
     - "<c:muted>[Report #<id>]</c:muted> <c:value><reporter></c:value> <c:text>reported <c:value><player></c:value> <c:text>for <c:warning><reason></c:warning> <c:muted>(<open> open, <total> total)"
     - "  <c:muted><details></c:muted>"
-    - "  <click:run_command:'/tp <player>'><hover:show_text:'<c:text>Teleport to <player>'><c:action>[Teleport]</c:action></hover></click> <click:run_command:'/inspect <player>'><hover:show_text:'<c:text>Inspect <player>'><c:info>[Inspect]</c:info></hover></click> <click:run_command:'/reports claim <id>'><hover:show_text:'<c:text>Claim this report'><c:success>[Claim]</c:success></hover></click>"
-  closed-punished: "<prefix><c:success><sym:check> <c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was handled: <c:success>action was taken</c:success>. Thank you!"
-  closed-warned: "<prefix><c:success><sym:check> <c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was handled: <c:success>the player was warned</c:success>. Thank you!"
-  closed-no-evidence: "<prefix><c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was checked, but staff found <c:warning>no evidence</c:warning>. Thanks anyway!"
-  closed-invalid: "<prefix><c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was closed: <c:muted>no rule was broken</c:muted>."
-  closed-duplicate: "<prefix><c:text>Your report <c:value>#<id></c:value> about <c:value><player></c:value> was already being handled in another report. Thanks!"
+    - "  <click:run_command:'/tp <player>'><hover:show_text:'<c:text>Teleport to <player>'><c:action>[Teleport]</c:action></hover></click> <click:run_command:'/inspect <player>'><hover:show_text:'<c:text>Inspect <player>'><c:action>[Inspect]</c:action></hover></click> <click:run_command:'/reports claim <id>'><hover:show_text:'<c:text>Claim this report'><c:action>[Claim]</c:action></hover></click>"
+  closed-punished: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: <c:value>action taken</c:value>. Thank you!"
+  closed-warned: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: <c:value>player warned</c:value>. Thank you!"
+  closed-no-evidence: "<prefix><c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: checked, <c:value>no evidence</c:value> found. Thanks anyway!"
+  closed-invalid: "<prefix><c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: closed, <c:value>no rule broken</c:value>."
+  closed-duplicate: "<prefix><c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: already handled in another report. Thanks!"
 
 # --- Reports (staff) ---
 reports:
-  invalid-id: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a report number."
-  not-found: "<prefix><c:error><sym:cross> Report <c:value>#<id></c:value> doesn't exist."
-  not-changed: "<prefix><c:error><sym:cross> Report <c:value>#<id></c:value> couldn't be changed (already closed or claimed by someone else?)."
-  claimed: "<prefix><c:success><sym:check> <c:text>You claimed report <c:value>#<id></c:value>."
-  unclaimed: "<prefix><c:text>Report <c:value>#<id></c:value> is open again."
+  invalid-id: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a report number."
+  not-found: "<prefix><c:error><sym:cross></c:error> <c:text>Report <c:value>#<id></c:value> doesn't exist."
+  not-changed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't change report <c:value>#<id></c:value>. Closed or claimed by someone else?"
+  claimed: "<prefix><c:success><sym:check></c:success> <c:text>Claimed report <c:value>#<id></c:value>."
+  unclaimed: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> is open again."
   staff-claimed: "<c:muted>[Report #<id>]</c:muted> <c:text>claimed by <c:value><staff></c:value>."
-  closed: "<prefix><c:success><sym:check> <c:text>Report <c:value>#<id></c:value> closed: <c:value><outcome></c:value>."
-  join-notice: "<prefix><c:warning>There are <c:value><count></c:value> open report(s). <click:run_command:'/reports'><hover:show_text:'<c:text>Open /reports'><c:action>[View]</c:action></hover></click>"
+  closed: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> closed: <c:value><outcome></c:value>."
+  join-notice: "<prefix><c:value><count></c:value> <c:text>open report(s). <click:run_command:'/reports'><hover:show_text:'<c:text>Open /reports'><c:action>[View]</c:action></hover></click>"
 
 outcome:
   punished:
@@ -117,7 +118,7 @@ outcome:
     lore: ["<c:text>The report was right and <c:value><player></c:value>", "<c:text>was punished.", "", "<c:muted>Tells <reporter>: action was taken.", "<c:action><sym:bullet> Click to close"]
   warned:
     name: "<c:flame><bold>Warned</bold></c:flame>"
-    lore: ["<c:text><c:value><player></c:value> was warned.", "", "<c:muted>Tells <reporter>: the player was warned.", "<c:action><sym:bullet> Click to close"]
+    lore: ["<c:value><player></c:value> <c:text>was warned.", "", "<c:muted>Tells <reporter>: the player was warned.", "<c:action><sym:bullet> Click to close"]
   no-evidence:
     name: "<c:warning><bold>No evidence</bold></c:warning>"
     lore: ["<c:text>Checked, but nothing was found.", "", "<c:muted>Tells <reporter>: no evidence.", "<c:action><sym:bullet> Click to close"]

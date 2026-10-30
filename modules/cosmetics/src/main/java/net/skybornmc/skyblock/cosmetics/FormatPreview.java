@@ -47,19 +47,19 @@ final class FormatPreview {
     }
 
     Component chatLine(Player player, Component message, Map<String, String> overrides) {
-        return core.messages().parse(player, value("format.chat", overrides, "<title><rank><name> <c:muted>»</c:muted> <c:text><message>"),
+        return core.messages().parse(player, value("format.chat", overrides, "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>"),
                 Msg.c("title", part(player, value("format.title-part", overrides, "<value> "), cosmetics.placeholder(player, Cosmetics.Kind.TITLE))),
-                Msg.c("tag", part(player, value("format.tag-part", overrides, ""), cosmetics.placeholder(player, Cosmetics.Kind.TAG))),
+                Msg.c("tag", part(player, value("format.tag-part", overrides, " <value>"), cosmetics.placeholder(player, Cosmetics.Kind.TAG))),
                 Msg.c("rank", rank(player)),
                 Msg.c("name", name(player)),
                 Msg.c("message", message));
     }
 
     Component tabLine(Player player, Map<String, String> overrides) {
-        return core.messages().parse(player, value("format.tab", overrides, "<rank><name><title><tag><afk>"),
+        return core.messages().parse(player, value("format.tab", overrides, "<title><rank><name><tag><afk>"),
                 Msg.c("rank", rank(player)),
                 Msg.c("name", name(player)),
-                Msg.c("title", part(player, value("format.tab-title-part", overrides, " <value>"), cosmetics.placeholder(player, Cosmetics.Kind.TITLE))),
+                Msg.c("title", part(player, value("format.tab-title-part", overrides, "<value> "), cosmetics.placeholder(player, Cosmetics.Kind.TITLE))),
                 Msg.c("tag", part(player, value("format.tab-tag-part", overrides, " <value>"), cosmetics.placeholder(player, Cosmetics.Kind.TAG))),
                 Msg.c("afk", Component.empty()));
     }

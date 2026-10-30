@@ -5,7 +5,7 @@ Currencies: Money, Tokens, Gems, Shards (whole-unit `long`). Every change is one
 | Command | What it does | Permission | Status |
 |---|---|---|---|
 | `/bal [player]` (`/balance`, `/money`) | All four balances (yours, or another player's, online or offline) | `skyblock.economy.balance` (+ `skyblock.economy.balance.others`) | ✅ |
-| `/baltop [currency]` (`/balancetop`, `/moneytop`) | Richest players per currency; recalculated every `baltop.refresh-minutes` (5) | `skyblock.economy.baltop` | ✅ |
+| `/baltop [currency]` (`/balancetop`, `/moneytop`) | Richest players per currency; shown from a cache at once, read again in the background when older than `baltop.refresh-seconds` (30) | `skyblock.economy.baltop` | ✅ |
 | `/pay <player> <amount> [currency]` | Pay a player (offline too). Amounts like `1500`, `1.5k`, `2M`, `3B`. Asks to confirm at or above `pay.confirm-above` ($1M). Minimum `pay.min`; only tradeable currencies (money, shards); frozen players can't pay, muted players can; 3 s cooldown (`commands.yml`) | `skyblock.economy.pay` | ✅ |
 | `/transactions` (`/txs`) | Your own ledger in a paged menu; filter by currency, type and time | `skyblock.economy.transactions` | ✅ |
 | `/withdraw <amount> [currency]` | Turn money into a **Money Note** item (tradeable; right-click to cash it). Money only by default (`notes.currencies`). Min/max `notes.min`/`notes.max` ($100 / $1T), cooldown `notes.withdraw-cooldown-seconds` (10 s), needs a free inventory slot (checked before any money is taken), frozen players can't, new accounts (< `notes.new-account-minutes`, 120) can't | `skyblock.economy.withdraw` | ✅ |

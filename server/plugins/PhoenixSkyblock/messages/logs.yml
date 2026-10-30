@@ -3,12 +3,12 @@
 
 usage:
   - "<prefix><c:value>Log viewer</c:value> <c:muted><sym:dot></c:muted> <c:text>search the audit log"
-  - " <c:ember><sym:bullet></c:ember> <c:value>/logs player <name> [category] [time]</c:value> <c:text>everything about a player"
-  - " <c:ember><sym:bullet></c:ember> <c:value>/logs pay <name> [other]</c:value> <c:text>money between players"
-  - " <c:ember><sym:bullet></c:ember> <c:value>/logs trade|chat|commands <name> [time]</c:value>"
-  - " <c:ember><sym:bullet></c:ember> <c:value>/logs island <name|id></c:value> <c:muted><sym:dot></c:muted> <c:value>/logs item <uuid></c:value>"
-  - " <c:ember><sym:bullet></c:ember> <c:value>/logs staff <name> [time]</c:value> <c:muted><sym:dot></c:muted> <c:value>/logs export <name|last></c:value>"
-  - " <c:ember><sym:bullet></c:ember> <c:value>/logs page <n></c:value> <c:text>next pages of your last search"
+  - " <c:muted><sym:bullet></c:muted> <c:value>/logs player <name> [category] [time]</c:value> <c:text>everything about a player"
+  - " <c:muted><sym:bullet></c:muted> <c:value>/logs pay <name> [other]</c:value> <c:text>money between players"
+  - " <c:muted><sym:bullet></c:muted> <c:value>/logs trade|chat|commands <name> [time]</c:value>"
+  - " <c:muted><sym:bullet></c:muted> <c:value>/logs island <name|id></c:value> <c:muted><sym:dot></c:muted> <c:value>/logs item <uuid></c:value>"
+  - " <c:muted><sym:bullet></c:muted> <c:value>/logs staff <name> [time]</c:value> <c:muted><sym:dot></c:muted> <c:value>/logs export <name|last></c:value>"
+  - " <c:muted><sym:bullet></c:muted> <c:value>/logs page <n></c:value> <c:text>next pages of your last search"
 
 title:
   staff: "Staff"
@@ -275,22 +275,22 @@ prompt:
   island: "<prefix><c:text>Type the <c:value>owner's name</c:value> or the <c:value>island id</c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
 
 # ------------------------------------------------------------------ results of actions
-teleported: "<prefix><c:success><sym:check> Teleported to <c:value><world> <x>, <y>, <z></c:value>."
+teleported: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to <c:value><world> <x>, <y>, <z></c:value>."
 export:
-  started: "<prefix><c:text>Exporting... <c:muted>you get a message when the file is ready."
-  done: "<prefix><c:success><sym:check> Exported <c:value><rows></c:value> rows to <c:value><file></c:value>. <c:muted>(max <max> per export)"
-  failed: "<prefix><c:error><sym:cross> The export failed: <c:value><reason></c:value>. Check the console."
+  started: "<prefix><c:text>Exporting... <c:muted>You get a message when it's ready."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Exported <c:value><rows></c:value> <c:text>rows to <c:value><file></c:value>. <c:muted>(max <max> per export)"
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Export failed: <c:value><reason></c:value>. Check the console."
 
 errors:
-  unknown-category: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a category. Choose one of: <c:value><choices>"
-  not-uuid: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not an item id. It looks like 2f1c0b6e-...-000000000000 (shift-hover the item or use the one in your hand)."
-  no-search: "<prefix><c:error><sym:cross> You have no search yet. Start one with <c:value>/logs</c:value>."
-  unknown-player: "<prefix><c:error><sym:cross> <c:value><input></c:value> has never played here. Check the spelling (Bedrock names start with a dot)."
-  no-access: "<prefix><c:error><sym:cross> Your rank can't see these logs. Pick another category."
-  search-failed: "<prefix><c:error><sym:cross> The search failed. Try again or check the console."
-  no-teleport: "<prefix><c:error><sym:cross> You can't teleport from logs."
-  no-export: "<prefix><c:error><sym:cross> Only admins can export logs."
-  world-unloaded: "<prefix><c:error><sym:cross> The world <c:value><world></c:value> is not loaded."
+  unknown-category: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a category. Pick one of: <c:value><choices>"
+  not-uuid: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not an item id. It looks like 2f1c0b6e-...-000000000000."
+  no-search: "<prefix><c:error><sym:cross></c:error> <c:text>No search yet. Start one with <c:value>/logs</c:value>."
+  unknown-player: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>has never joined. Check the spelling (Bedrock names start with a dot)."
+  no-access: "<prefix><c:error><sym:cross></c:error> <c:text>Your rank can't see these logs. Pick another category."
+  search-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Search failed. Try again or check the console."
+  no-teleport: "<prefix><c:error><sym:cross></c:error> <c:text>You can't teleport from logs."
+  no-export: "<prefix><c:error><sym:cross></c:error> <c:text>Only admins can export logs."
+  world-unloaded: "<prefix><c:error><sym:cross></c:error> <c:text>The world <c:value><world></c:value> isn't loaded."
 
 # ------------------------------------------------------------------ readable actions ("Steve paid Alex $500")
 # Anything not listed is shown with underscores replaced by spaces.

@@ -153,8 +153,7 @@ public final class HudService implements Listener {
                 core.plugin().getLogger().warning("Scoreboard layout rule of " + rule.owner() + " failed: " + e.getMessage());
             }
         }
-        String world = player.getWorld().getName();
-        return core.messages().has(MODULE, "scoreboard." + world + ".lines") ? world : "default";
+        return SidebarLines.layout(player.getWorld().getName(), name -> core.messages().has(MODULE, "scoreboard." + name + ".lines"));
     }
 
     private void render(Player player, Sidebar sidebar) {

@@ -7,4 +7,9 @@ tag-item:
   # Most tag items one /tags item command can create.
   # Allowed: 1 to 64
   max-amount: 16
+tag:
+  # How an equipped tag looks in chat, tab and menus. <tag> = the tag's own display (its colors). Default: the tag in muted parentheses, e.g. Pouched (Phoenix).
+  format: "<c:muted>(</c:muted><tag><c:muted>)</c:muted>"
+  # Remove [ ] around a tag's own display, so older tags written as [Name] don't show as ([Name]).
+  strip-brackets: true
 config-version: 1

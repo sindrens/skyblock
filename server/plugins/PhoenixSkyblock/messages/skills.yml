@@ -37,8 +37,8 @@ level-up:
     fade-in: 5
     stay: 50
     fade-out: 15
-  chat: "<prefix><c:success><sym:star> <skill> <c:text>is now level <c:value><level></c:value>! <click:run_command:'/skills'><hover:show_text:'<c:text>Open your skills'><c:action>[View skills]</c:action></hover></click>"
-  next-unlock: "<prefix><c:text>Next unlock at level <c:value><level></c:value>: <unlock>"
+  chat: "<prefix><c:success><sym:star></c:success> <skill> <c:text>level <c:value><level></c:value>! <click:run_command:'/skills'><hover:show_text:'<c:text>Open your skills'><c:action>[View]</c:action></hover></click>"
+  next-unlock: "<prefix><c:text>Next at level <c:value><level></c:value>: <unlock>"
 
 # Unlock texts per skill and level (levels: skills.yml → unlocks). Missing levels use 'generic'.
 unlock:
@@ -82,9 +82,9 @@ menu:
   title: "Skills"
   title-other: "<player>"
   info:
-    - "<c:text>Your skill levels. Skills grow"
-    - "<c:text>by mining, chopping and fighting"
-    - "<c:text>and unlock new Depths tiers."
+    - "<c:text>Your skill levels. Mine, chop"
+    - "<c:text>and fight to level up and"
+    - "<c:text>unlock new Depths tiers."
   head:
     name: "<c:value><player>"
     lore:
@@ -104,9 +104,9 @@ menu:
     maxed: "<c:success><sym:check> Maxed"
     next-unlock:
       - "<c:muted>Next unlock"
-      - " <c:ember><sym:bullet></c:ember> <unlock>"
+      - " <c:muted><sym:bullet></c:muted> <unlock>"
       - " <c:text>at level <c:value><level></c:value> <c:muted>(<missing> to go)"
-    all-unlocked: "<c:success><sym:check> <c:text>Everything unlocked"
+    all-unlocked: "<c:success><sym:check> Everything unlocked"
     how-header: "<c:muted>How to earn XP"
     coming-soon:
       - "<c:error><sym:cross> Locked"
@@ -119,12 +119,12 @@ settings:
     lore: ["<c:text>Show '+12 Mining XP' above", "<c:text>your hotbar when you earn XP."]
 
 # /skills <player>
-others-no-permission: "<prefix><c:error><sym:cross> You can only view your own skills. Use <click:run_command:'/skills'><c:action>/skills</c:action></click>."
-loading: "<prefix><c:text>Loading the skills of <c:value><player></c:value>..."
-load-failed: "<prefix><c:error><sym:cross> Couldn't load the skills of <c:value><player></c:value>. Try again in a moment."
-unknown-player: "<prefix><c:error><sym:cross> <c:value><player></c:value> has never played here. Check the name."
+others-no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can only see your own. Use <click:run_command:'/skills'><hover:show_text:'<c:text>Open your skills'><c:action>/skills</c:action></hover></click>."
+loading: "<prefix><c:text>Loading <c:value><player></c:value><c:text>'s skills..."
+load-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't load <c:value><player></c:value><c:text>'s skills. Try again soon."
+unknown-player: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
 
 # Kick messages when skill data can't be loaded at login (protects the data).
 login:
-  slow: "<c:error>Your skills took too long to load.<newline><c:text>Please rejoin in a moment."
-  failed: "<c:error>Your skills couldn't be loaded.<newline><c:text>Please rejoin. If this keeps happening, tell staff on Discord."
+  slow: "<c:text>Your skills took too long to load.<newline><c:value>Rejoin in a moment.</c:value>"
+  failed: "<c:error><sym:cross></c:error> <c:text>Couldn't load your skills.<newline><c:value>Rejoin</c:value><c:text>, and tell staff on Discord if it repeats."

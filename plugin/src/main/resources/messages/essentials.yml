@@ -1,171 +1,173 @@
 # Essentials messages (teleports + staff tools). MiniMessage + style tags (style.yml).
 # <staff> = the staff member (in "-notify" messages), <player> = the other player.
+# Format (docs/UI_STYLE.md §3): success = <c:success><sym:check></c:success> + gray text, error = <c:error><sym:cross></c:error>
+# + gray text with the fix, values in <c:value>, clicks in <c:action>.
 
-no-permission-others: "<prefix><c:error><sym:cross> You can't use this on other players."
-needs-player: "<prefix><c:error><sym:cross> Name a player when using this from the console."
-cooldown: "<prefix><c:error><sym:cross> Slow down! You can do this again in <c:value><time></c:value>."
+no-permission-others: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use this on other players."
+needs-player: "<prefix><c:error><sym:cross></c:error> <c:text>Name a player when using this from the console."
+cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Slow down. Try again in <c:value><time></c:value>."
 
 teleport:
-  warmup: "<prefix><c:text>Teleporting to <c:value><destination></c:value> in <c:value><seconds>s</c:value>. <c:muted>Don't move."
-  countdown: "<c:ember><sym:time></c:ember> <c:text>Teleporting in <c:value><seconds></c:value><c:text>...</c:text>"
-  cancelled: "<prefix><c:error><sym:cross> Teleport cancelled because you moved or took damage."
-  failed: "<prefix><c:error><sym:cross> Couldn't teleport you to <destination>. Try again."
+  warmup: "<prefix><c:text>Teleporting to <c:value><destination></c:value> in <c:value><seconds>s</c:value>. Don't move."
+  countdown: "<c:muted><sym:time></c:muted> <c:text>Teleporting in <c:value><seconds></c:value>..."
+  cancelled: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you moved or got hit."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't teleport you to <c:value><destination></c:value>. Try again."
 
 spawn:
-  arrived: "<prefix><c:text>Welcome to <grad:phoenix><bold>spawn</bold></grad><c:text>!"
-  missing: "<prefix><c:error><sym:cross> The spawn world <c:value><world></c:value> isn't loaded. Tell a staff member."
+  arrived: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to <c:value>spawn</c:value>."
+  missing: "<prefix><c:error><sym:cross></c:error> <c:text>The spawn world <c:value><world></c:value> isn't loaded. Tell staff."
 
 tpa:
-  sent: "<prefix><c:text>Request sent to <c:value><player></c:value>. <c:muted>It expires in <seconds>s. <click:run_command:'/tpcancel'><hover:show_text:'<c:text>Cancel your requests'><c:error>[Cancel]</c:error></hover></click>"
-  sent-here: "<prefix><c:text>Asked <c:value><player></c:value> to teleport to you. <c:muted>It expires in <seconds>s. <click:run_command:'/tpcancel'><hover:show_text:'<c:text>Cancel your requests'><c:error>[Cancel]</c:error></hover></click>"
+  sent: "<prefix><c:success><sym:check></c:success> <c:text>Request sent to <c:value><player></c:value>. <c:muted>Expires in <seconds>s.</c:muted> <click:run_command:'/tpcancel'><hover:show_text:'<c:text>Cancel your requests'><c:action>[Cancel]</c:action></hover></click>"
+  sent-here: "<prefix><c:success><sym:check></c:success> <c:text>Asked <c:value><player></c:value> to come to you. <c:muted>Expires in <seconds>s.</c:muted> <click:run_command:'/tpcancel'><hover:show_text:'<c:text>Cancel your requests'><c:action>[Cancel]</c:action></hover></click>"
   received:
     - "<prefix><c:value><player></c:value> <c:text>wants to teleport <c:value>to you</c:value>."
-    - "  <click:run_command:'/tpaccept <player>'><hover:show_text:'<c:text>Accept: <player> teleports to you'><c:success><bold>[ACCEPT]</bold></c:success></hover></click>  <click:run_command:'/tpdeny <player>'><hover:show_text:'<c:text>Deny the request'><c:error><bold>[DENY]</bold></c:error></hover></click>  <c:muted>Expires in <seconds>s"
+    - "  <click:run_command:'/tpaccept <player>'><hover:show_text:'<c:text>Accept: <player> teleports to you'><c:action>[Accept]</c:action></hover></click>  <click:run_command:'/tpdeny <player>'><hover:show_text:'<c:text>Deny the request'><c:action>[Deny]</c:action></hover></click>  <c:muted>Expires in <seconds>s"
   received-here:
     - "<prefix><c:value><player></c:value> <c:text>wants <c:value>you</c:value> to teleport to them."
-    - "  <click:run_command:'/tpaccept <player>'><hover:show_text:'<c:text>Accept: you teleport to <player>'><c:success><bold>[ACCEPT]</bold></c:success></hover></click>  <click:run_command:'/tpdeny <player>'><hover:show_text:'<c:text>Deny the request'><c:error><bold>[DENY]</bold></c:error></hover></click>  <c:muted>Expires in <seconds>s"
-  self: "<prefix><c:error><sym:cross> You can't send a teleport request to yourself."
-  already-sent: "<prefix><c:error><sym:cross> You already sent <c:value><player></c:value> a request. Wait for an answer or use <c:value>/tpcancel</c:value>."
-  target-full: "<prefix><c:error><sym:cross> <c:value><player></c:value> has too many open requests. Try again in a moment."
-  none: "<prefix><c:error><sym:cross> You have no open teleport requests."
-  none-from: "<prefix><c:error><sym:cross> You have no open request from <c:value><player></c:value>."
-  requester-offline: "<prefix><c:error><sym:cross> That player is no longer online."
-  accepted-target: "<prefix><c:success><sym:check> <c:text>Accepted <c:value><player></c:value>'s request."
-  accepted-sender: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>accepted your request."
-  arrived: "<prefix><c:text>Teleported to <c:value><player></c:value>."
-  denied-target: "<prefix><c:text>Denied <c:value><player></c:value>'s request."
-  denied-sender: "<prefix><c:error><sym:cross> <c:value><player></c:value> denied your request."
-  nothing-to-cancel: "<prefix><c:error><sym:cross> You have no open requests to cancel."
-  cancelled-sender: "<prefix><c:text>Cancelled <c:value><count></c:value> request(s)."
-  cancelled-target: "<prefix><c:value><player></c:value> <c:text>cancelled their teleport request."
-  expired-sender: "<prefix><c:muted>Your teleport request to <player> expired."
-  expired-target: "<prefix><c:muted>The teleport request from <player> expired."
-  left: "<prefix><c:muted>The teleport request with <player> was cancelled because they left."
+    - "  <click:run_command:'/tpaccept <player>'><hover:show_text:'<c:text>Accept: you teleport to <player>'><c:action>[Accept]</c:action></hover></click>  <click:run_command:'/tpdeny <player>'><hover:show_text:'<c:text>Deny the request'><c:action>[Deny]</c:action></hover></click>  <c:muted>Expires in <seconds>s"
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't send a request to yourself."
+  already-sent: "<prefix><c:error><sym:cross></c:error> <c:text>You already asked <c:value><player></c:value>. Wait, or use <c:value>/tpcancel</c:value>."
+  target-full: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has too many requests. Try again soon."
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>You have no teleport requests."
+  none-from: "<prefix><c:error><sym:cross></c:error> <c:text>No request from <c:value><player></c:value>."
+  requester-offline: "<prefix><c:error><sym:cross></c:error> <c:text>That player is offline now."
+  accepted-target: "<prefix><c:success><sym:check></c:success> <c:text>Accepted <c:value><player></c:value>'s request."
+  accepted-sender: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>accepted your request."
+  arrived: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to <c:value><player></c:value>."
+  denied-target: "<prefix><c:success><sym:check></c:success> <c:text>Denied <c:value><player></c:value>'s request."
+  denied-sender: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>denied your request."
+  nothing-to-cancel: "<prefix><c:error><sym:cross></c:error> <c:text>You have no requests to cancel."
+  cancelled-sender: "<prefix><c:success><sym:check></c:success> <c:text>Cancelled <c:value><count></c:value> request(s)."
+  cancelled-target: "<prefix><c:value><player></c:value> <c:text>cancelled their request."
+  expired-sender: "<prefix><c:muted>Your request to <player> expired."
+  expired-target: "<prefix><c:muted>The request from <player> expired."
+  left: "<prefix><c:muted>The request with <player> ended: they left."
 
 tp:
-  done: "<prefix><c:text>Teleported to <c:value><player></c:value>."
-  other: "<prefix><c:text>Teleported <c:value><player></c:value> to <c:value><target></c:value>."
-  notify: "<prefix><c:text>You were teleported to <c:value><target></c:value> by <c:value><staff></c:value>."
-  self: "<prefix><c:error><sym:cross> You can't teleport to yourself."
-  same: "<prefix><c:error><sym:cross> Pick two different players."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to <c:value><player></c:value>."
+  other: "<prefix><c:success><sym:check></c:success> <c:text>Teleported <c:value><player></c:value> to <c:value><target></c:value>."
+  notify: "<prefix><c:value><staff></c:value> <c:text>teleported you to <c:value><target></c:value>."
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't teleport to yourself."
+  same: "<prefix><c:error><sym:cross></c:error> <c:text>Pick two different players."
 
 tphere:
-  done: "<prefix><c:text>Teleported <c:value><player></c:value> to you."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Teleported <c:value><player></c:value> to you."
   notify: "<prefix><c:text>You were teleported to <c:value><staff></c:value>."
 
 tppos:
-  done: "<prefix><c:text>Teleported to <c:value><position></c:value> <c:muted>in <world>."
-  invalid: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a coordinate. <c:text>Use a number or <c:value>~</c:value> for your current position."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to <c:value><position></c:value> <c:muted>in <world>."
+  invalid: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a coordinate. Use a number, or <c:value>~</c:value> for where you are."
 
 top:
-  done: "<prefix><c:text>Teleported to the highest block."
-  none: "<prefix><c:error><sym:cross> There is no block above you."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to the highest block."
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>There is no block above you."
 
 back:
-  done: "<prefix><c:text>Returned to your previous location."
-  none: "<prefix><c:error><sym:cross> There is no previous location to return to."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Back at your last spot."
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>No last spot to go back to."
 
 home:
-  none: "<prefix><c:error><sym:cross> You have no staff homes yet. Use <c:value>/sethome [name]</c:value>."
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>No staff homes yet. Set one with <c:value>/sethome [name]</c:value>."
   list: "<prefix><c:text>Your homes: <c:value><homes></c:value>. <c:muted>Use /home <name>."
-  unknown: "<prefix><c:error><sym:cross> No home named <c:value><name></c:value>. <c:text>Your homes: <c:value><homes>"
-  done: "<prefix><c:text>Teleported to home <c:value><name></c:value>."
-  set: "<prefix><c:success><sym:check> <c:text>Home <c:value><name></c:value> saved here."
-  deleted: "<prefix><c:text>Home <c:value><name></c:value> deleted."
-  limit: "<prefix><c:error><sym:cross> You can have at most <c:value><max></c:value> homes. Delete one with <c:value>/delhome</c:value>."
-  invalid-name: "<prefix><c:error><sym:cross> Home names can use letters, numbers, - and _ (up to 24)."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No home <c:value><name></c:value>. Yours: <c:value><homes>"
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to home <c:value><name></c:value>."
+  set: "<prefix><c:success><sym:check></c:success> <c:text>Home <c:value><name></c:value> set here."
+  deleted: "<prefix><c:success><sym:check></c:success> <c:text>Home <c:value><name></c:value> deleted."
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>Max <c:value><max></c:value> homes. Delete one with <c:value>/delhome</c:value>."
+  invalid-name: "<prefix><c:error><sym:cross></c:error> <c:text>Use letters, numbers, - and _ (up to 24)."
 
 gamemode:
-  self: "<prefix><c:text>Game mode set to <c:value><mode></c:value>."
-  other: "<prefix><c:text>Set <c:value><player></c:value>'s game mode to <c:value><mode></c:value>."
-  notify: "<prefix><c:text>Your game mode was set to <c:value><mode></c:value> by <c:value><staff></c:value>."
-  invalid: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a game mode. <c:text>Use <c:value>c</c:value>, <c:value>s</c:value>, <c:value>sp</c:value> or <c:value>a</c:value>."
-  no-permission: "<prefix><c:error><sym:cross> You can't use <c:value><mode></c:value> mode."
+  self: "<prefix><c:success><sym:check></c:success> <c:text>Game mode: <c:value><mode></c:value>."
+  other: "<prefix><c:success><sym:check></c:success> <c:text>Set <c:value><player></c:value> to <c:value><mode></c:value>."
+  notify: "<prefix><c:value><staff></c:value> <c:text>set your game mode to <c:value><mode></c:value>."
+  invalid: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a game mode. Use <c:value>c</c:value>, <c:value>s</c:value>, <c:value>sp</c:value> or <c:value>a</c:value>."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use <c:value><mode></c:value> mode."
 
 fly:
-  enabled: "<prefix><c:success><sym:check> <c:text>Flying <c:success>enabled</c:success>."
-  disabled: "<prefix><c:text>Flying <c:error>disabled</c:error>."
-  enabled-other: "<prefix><c:text>Flying <c:success>enabled</c:success> for <c:value><player></c:value>."
-  disabled-other: "<prefix><c:text>Flying <c:error>disabled</c:error> for <c:value><player></c:value>."
-  enabled-notify: "<prefix><c:text>You can now fly <c:muted>(<staff>)</c:muted>."
-  disabled-notify: "<prefix><c:text>You can no longer fly <c:muted>(<staff>)</c:muted>."
+  enabled: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>on</c:value>."
+  disabled: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>off</c:value>."
+  enabled-other: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>on</c:value> for <c:value><player></c:value>."
+  disabled-other: "<prefix><c:success><sym:check></c:success> <c:text>Flying <c:value>off</c:value> for <c:value><player></c:value>."
+  enabled-notify: "<prefix><c:text>You can fly now <c:muted>(<staff>)</c:muted>."
+  disabled-notify: "<prefix><c:text>You can't fly anymore <c:muted>(<staff>)</c:muted>."
 
 speed:
-  fly: "<prefix><c:text>Fly speed set to <c:value><speed></c:value>."
-  walk: "<prefix><c:text>Walk speed set to <c:value><speed></c:value>."
+  fly: "<prefix><c:success><sym:check></c:success> <c:text>Fly speed: <c:value><speed></c:value>."
+  walk: "<prefix><c:success><sym:check></c:success> <c:text>Walk speed: <c:value><speed></c:value>."
 
 god:
-  enabled: "<prefix><c:success><sym:check> <c:text>God mode <c:success>enabled</c:success>."
-  disabled: "<prefix><c:text>God mode <c:error>disabled</c:error>."
-  enabled-other: "<prefix><c:text>God mode <c:success>enabled</c:success> for <c:value><player></c:value>."
-  disabled-other: "<prefix><c:text>God mode <c:error>disabled</c:error> for <c:value><player></c:value>."
-  enabled-notify: "<prefix><c:text>God mode enabled <c:muted>(<staff>)</c:muted>."
-  disabled-notify: "<prefix><c:text>God mode disabled <c:muted>(<staff>)</c:muted>."
+  enabled: "<prefix><c:success><sym:check></c:success> <c:text>God mode <c:value>on</c:value>."
+  disabled: "<prefix><c:success><sym:check></c:success> <c:text>God mode <c:value>off</c:value>."
+  enabled-other: "<prefix><c:success><sym:check></c:success> <c:text>God mode <c:value>on</c:value> for <c:value><player></c:value>."
+  disabled-other: "<prefix><c:success><sym:check></c:success> <c:text>God mode <c:value>off</c:value> for <c:value><player></c:value>."
+  enabled-notify: "<prefix><c:text>God mode on <c:muted>(<staff>)</c:muted>."
+  disabled-notify: "<prefix><c:text>God mode off <c:muted>(<staff>)</c:muted>."
 
 heal:
-  self: "<prefix><c:success><sym:heart> <c:text>You have been healed."
-  other: "<prefix><c:text>Healed <c:value><player></c:value>."
-  notify: "<prefix><c:success><sym:heart> <c:text>You were healed by <c:value><staff></c:value>."
+  self: "<prefix><c:success><sym:heart></c:success> <c:text>Healed."
+  other: "<prefix><c:success><sym:check></c:success> <c:text>Healed <c:value><player></c:value>."
+  notify: "<prefix><c:success><sym:heart></c:success> <c:value><staff></c:value> <c:text>healed you."
 
 feed:
-  self: "<prefix><c:text>Your hunger is full."
-  other: "<prefix><c:text>Fed <c:value><player></c:value>."
-  notify: "<prefix><c:text>You were fed by <c:value><staff></c:value>."
+  self: "<prefix><c:success><sym:check></c:success> <c:text>Hunger full."
+  other: "<prefix><c:success><sym:check></c:success> <c:text>Fed <c:value><player></c:value>."
+  notify: "<prefix><c:value><staff></c:value> <c:text>fed you."
 
 clear:
-  self: "<prefix><c:text>Cleared your inventory <c:muted>(<count> items)."
-  other: "<prefix><c:text>Cleared <c:value><player></c:value>'s inventory <c:muted>(<count> items, logged)."
-  notify: "<prefix><c:warning>Your inventory was cleared by <c:value><staff></c:value>."
-  confirm: "<prefix><c:warning>Clear <c:value><player></c:value>'s whole inventory? <click:run_command:'/clear <player>'><hover:show_text:'<c:text>Runs /clear <player> again'><c:action><bold>[CONFIRM]</bold></c:action></hover></click> <c:text>or repeat the command within <seconds>s."
+  self: "<prefix><c:success><sym:check></c:success> <c:text>Inventory cleared <c:muted>(<count> items)."
+  other: "<prefix><c:success><sym:check></c:success> <c:text>Cleared <c:value><player></c:value>'s inventory <c:muted>(<count> items, logged)."
+  notify: "<prefix><c:value><staff></c:value> <c:text>cleared your inventory."
+  confirm: "<prefix><c:text>Clear all of <c:value><player></c:value>'s inventory? <click:run_command:'/clear <player>'><hover:show_text:'<c:text>Runs /clear <player> again'><c:action>[Confirm]</c:action></hover></click> <c:muted>or repeat it within <seconds>s."
 
 time:
-  set: "<prefix><c:text>Time in <c:value><world></c:value> set to <c:value><ticks></c:value>."
-  invalid: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a time. <c:text>Use <c:value>day</c:value>, <c:value>noon</c:value>, <c:value>night</c:value>, <c:value>midnight</c:value> or 0-23999."
+  set: "<prefix><c:success><sym:check></c:success> <c:text>Time in <c:value><world></c:value>: <c:value><ticks></c:value>."
+  invalid: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a time. Use <c:value>day</c:value>, <c:value>noon</c:value>, <c:value>night</c:value>, <c:value>midnight</c:value> or 0-23999."
 
 weather:
-  set: "<prefix><c:text>Weather in <c:value><world></c:value> set to <c:value><weather></c:value>."
+  set: "<prefix><c:success><sym:check></c:success> <c:text>Weather in <c:value><world></c:value>: <c:value><weather></c:value>."
 
 give:
-  self: "<prefix><c:text>Gave you <c:value><amount>x <item></c:value>."
-  other: "<prefix><c:text>Gave <c:value><amount>x <item></c:value> to <c:value><player></c:value>."
-  notify: "<prefix><c:text>You received <c:value><amount>x <item></c:value> from <c:value><staff></c:value>."
-  dropped: "<prefix><c:warning>Inventory full: <amount> item(s) were dropped on the ground."
-  unknown-item: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not an item. <c:text>Press Tab to see all items."
-  too-many: "<prefix><c:error><sym:cross> You can give at most <c:value><max></c:value> at once."
+  self: "<prefix><c:success><sym:check></c:success> <c:text>Gave you <c:value><amount>x <item></c:value>."
+  other: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><amount>x <item></c:value> to <c:value><player></c:value>."
+  notify: "<prefix><c:text>You got <c:value><amount>x <item></c:value> from <c:value><staff></c:value>."
+  dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full. <c:value><amount></c:value> item(s) dropped on the ground."
+  unknown-item: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not an item. Press Tab to see them all."
+  too-many: "<prefix><c:error><sym:cross></c:error> <c:text>Max <c:value><max></c:value> at once."
 
 skull:
-  given: "<prefix><c:text>Gave you the head of <c:value><player></c:value>."
-  invalid: "<prefix><c:error><sym:cross> <c:value><input></c:value> is not a valid player name."
+  given: "<prefix><c:success><sym:check></c:success> <c:text>Gave you <c:value><player></c:value>'s head."
+  invalid: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not a player name."
 
 more:
-  done: "<prefix><c:text>Filled your stack to <c:value><amount></c:value>."
-  empty: "<prefix><c:error><sym:cross> Hold an item first."
-  custom: "<prefix><c:error><sym:cross> Custom items can't be copied with /more."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Stack filled to <c:value><amount></c:value>."
+  empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold an item first."
+  custom: "<prefix><c:error><sym:cross></c:error> <c:text>Custom items can't be copied."
 
 vanish:
-  enabled: "<prefix><c:success><sym:check> <c:text>You are now <c:value>vanished</c:value>. <c:muted>Only staff can see you."
-  disabled: "<prefix><c:text>You are <c:value>visible</c:value> again."
-  enabled-other: "<prefix><c:text>Vanished <c:value><player></c:value>."
-  disabled-other: "<prefix><c:text>Made <c:value><player></c:value> visible."
-  enabled-notify: "<prefix><c:text>You were vanished by <c:value><staff></c:value>."
-  disabled-notify: "<prefix><c:text>You were made visible by <c:value><staff></c:value>."
-  still: "<prefix><c:muted>You are still vanished. Use /vanish to show yourself."
+  enabled: "<prefix><c:success><sym:check></c:success> <c:text>You're <c:value>vanished</c:value>. Only staff can see you."
+  disabled: "<prefix><c:success><sym:check></c:success> <c:text>You're <c:value>visible</c:value> again."
+  enabled-other: "<prefix><c:success><sym:check></c:success> <c:text>Vanished <c:value><player></c:value>."
+  disabled-other: "<prefix><c:success><sym:check></c:success> <c:text>Made <c:value><player></c:value> visible."
+  enabled-notify: "<prefix><c:value><staff></c:value> <c:text>vanished you."
+  disabled-notify: "<prefix><c:value><staff></c:value> <c:text>made you visible."
+  still: "<prefix><c:muted>You're still vanished. /vanish to show yourself."
   staff-on: "<c:muted>[Staff]</c:muted> <c:value><player></c:value> <c:text>vanished."
   staff-off: "<c:muted>[Staff]</c:muted> <c:value><player></c:value> <c:text>is visible again."
 
 invsee:
   opened-view: "<prefix><c:text>Viewing <c:value><player></c:value>'s <kind> <c:muted>(view only)."
-  opened-edit: "<prefix><c:text>Editing <c:value><player></c:value>'s <kind>. <c:warning>Every change is logged."
+  opened-edit: "<prefix><c:text>Editing <c:value><player></c:value>'s <kind>. <c:muted>Every change is logged."
   logged: "<prefix><c:muted>Logged <count> change(s) to <player>'s items."
-  target-left: "<prefix><c:muted><player> left, the view was closed."
-  self: "<prefix><c:error><sym:cross> That's your own inventory."
+  target-left: "<prefix><c:muted><player> left. View closed."
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>That's your own inventory."
 
 # --- M1.1 join flow ---
 join:
   # Join/quit lines are only shown for players with the join-message permission (ranks + staff).
-  message: "<c:muted>[</c:muted><c:success>+</c:success><c:muted>]</c:muted> <player> <c:text>joined the server."
-  quit: "<c:muted>[</c:muted><c:error>-</c:error><c:muted>]</c:muted> <player> <c:text>left the server."
-  first-broadcast: "<c:ember><sym:tokens></c:ember> <c:text>Welcome <c:value><player></c:value> to <grad:phoenix><bold>Phoenix Skyblock</bold></grad><c:text>! <c:muted>(#<number>)"
+  message: "<c:muted>[</c:muted><c:success>+</c:success><c:muted>]</c:muted> <player>"
+  quit: "<c:muted>[</c:muted><c:error>-</c:error><c:muted>]</c:muted> <player>"
+  first-broadcast: "<c:ember><sym:tokens></c:ember> <c:text>Welcome <c:value><player></c:value> to Phoenix Skyblock! <c:muted>(#<number>)"
   first-title:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     subtitle: "<c:text>Welcome, <c:value><player></c:value>"
@@ -181,30 +183,30 @@ join:
   first-welcome:
     - ""
     - "  <grad:phoenix><bold>Welcome to Phoenix Skyblock!</bold></grad>"
-    - "  <c:text>Rise from the ashes and build your island in the sky."
+    - "  <c:text>Build your island in the sky."
     - ""
-    - "  <c:ember><sym:bullet></c:ember> <click:run_command:'/menu'><hover:show_text:'<c:text>Open the main menu'><c:action>/menu</c:action></hover></click> <c:text>everything in one place <c:muted>(or the Nether Star)"
-    - "  <c:ember><sym:bullet></c:ember> <click:run_command:'/help'><hover:show_text:'<c:text>Open the help'><c:action>/help</c:action></hover></click> <c:text>how everything works"
-    - "  <c:ember><sym:bullet></c:ember> <click:run_command:'/discord'><hover:show_text:'<c:text>Join our Discord'><c:action>/discord</c:action></hover></click> <c:text>news and support"
+    - "  <c:muted><sym:bullet></c:muted> <click:run_command:'/menu'><hover:show_text:'<c:text>Open the main menu'><c:action>/menu</c:action></hover></click> <c:text>everything in one place <c:muted>(or the Nether Star)"
+    - "  <c:muted><sym:bullet></c:muted> <click:run_command:'/help'><hover:show_text:'<c:text>Open the help'><c:action>/help</c:action></hover></click> <c:text>how it all works"
+    - "  <c:muted><sym:bullet></c:muted> <click:run_command:'/discord'><hover:show_text:'<c:text>Join our Discord'><c:action>/discord</c:action></hover></click> <c:text>news and support"
     - ""
 
 menu-item:
   name: "<grad:phoenix><bold>Menu</bold></grad> <c:muted><sym:dot> Right-click"
   lore:
     - "<c:text>Everything on the server:"
-    - "<c:text>island, Depths, shop, settings and more."
+    - "<c:text>island, Depths, shop, settings."
     - ""
     - "<c:action><sym:bullet> Right-click to open"
   coming-soon: "<prefix><c:text>The main menu is coming soon."
 
 build:
-  "on": "<prefix><c:warning>Build mode <c:success>on</c:success><c:warning>: you can change protected worlds. <c:muted>/build to turn it off."
-  "off": "<prefix><c:text>Build mode <c:error>off</c:error>."
+  "on": "<prefix><c:success><sym:check></c:success> <c:text>Build mode <c:value>on</c:value>. You can edit protected worlds. <c:muted>/build to stop."
+  "off": "<prefix><c:success><sym:check></c:success> <c:text>Build mode <c:value>off</c:value>."
   hint: "<c:muted>Protected area <sym:dot> use </c:muted><c:value>/build</c:value><c:muted> to edit</c:muted>"
 
 setspawn:
-  done: "<prefix><c:success><sym:check> <c:text>Spawn of <c:value><world></c:value> set to <c:value><position></c:value> and saved to worlds.yml."
-  live-only: "<prefix><c:warning>Spawn of <c:value><world></c:value> set to <c:value><position></c:value>, but this world isn't in worlds.yml, so it resets on restart."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Spawn of <c:value><world></c:value> set to <c:value><position></c:value> (saved)."
+  live-only: "<prefix><c:warning><sym:cross></c:warning> <c:text>Spawn of <c:value><world></c:value> set to <c:value><position></c:value>, but it resets on restart (world not in worlds.yml)."
 
 protection:
   no-drop: "<c:muted>You can't drop items here.</c:muted>"

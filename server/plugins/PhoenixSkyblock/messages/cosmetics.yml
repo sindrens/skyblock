@@ -1,5 +1,6 @@
 # Titles & tags (/tags, /titles), tag items, the registry editor and the display editor (/display).
 # MiniMessage + style tags (style.yml). Placeholders: <name>. Item texts use {token}. Reload: /skyblock reload cosmetics
+# Format (docs/UI_STYLE.md §3): success/error marks + gray text, values in <c:value>, clicks in <c:action>.
 
 rarity:
   common: "<rarity:common>Common"
@@ -11,20 +12,20 @@ rarity:
   special: "<rarity:special>Special"
 
 unlocked:
-  title: "<prefix><c:success><sym:star> New title unlocked: <display><c:text>! <click:run_command:'/titles'><c:action>[Equip it]</c:action></click>"
-  tag: "<prefix><c:success><sym:star> New tag unlocked: <display><c:text>! <click:run_command:'/tags'><c:action>[Equip it]</c:action></click>"
+  title: "<prefix><c:success><sym:star></c:success> <c:text>New title: <display><c:text>! <click:run_command:'/titles'><hover:show_text:'<c:text>Open /titles'><c:action>[Equip]</c:action></hover></click>"
+  tag: "<prefix><c:success><sym:star></c:success> <c:text>New tag: <display><c:text>! <click:run_command:'/tags'><hover:show_text:'<c:text>Open /tags'><c:action>[Equip]</c:action></hover></click>"
 
 equip:
-  set-titles: "<prefix><c:success><sym:check> <c:text>Title equipped: <display>"
-  set-tags: "<prefix><c:success><sym:check> <c:text>Tag equipped: <display>"
-  removed-titles: "<prefix><c:text>Title removed."
-  removed-tags: "<prefix><c:text>Tag removed."
+  set-titles: "<prefix><c:success><sym:check></c:success> <c:text>Title equipped: <display>"
+  set-tags: "<prefix><c:success><sym:check></c:success> <c:text>Tag equipped: <display>"
+  removed-titles: "<prefix><c:success><sym:check></c:success> <c:text>Title removed."
+  removed-tags: "<prefix><c:success><sym:check></c:success> <c:text>Tag removed."
 
 menu:
   title: "Titles & Tags"
   info:
     - "<c:text>Equip one title and one tag."
-    - "<c:text>The head at the top shows how you look."
+    - "<c:text>The head on top shows your look."
   tab-titles:
     crumb: "Titles"
     name: "<c:flame><bold>Titles"
@@ -49,10 +50,10 @@ menu:
   locked-name: "<c:muted><name>"
   locked-title: ["<c:error><sym:cross> Not earned yet", "<c:text>How to earn it:", "<c:value><source>"]
   locked-tag: ["<c:error><sym:cross> Not owned", "<c:text>How to get it:", "<c:value><source>"]
-  default-title-source: "Keep playing, it comes with an achievement."
+  default-title-source: "Keep playing: it comes with an achievement."
   default-tag-source: "Crates or the store."
   secret-name: "???"
-  secret-lore: ["<c:muted><sym:time> A secret title.", "<c:muted>Find out how to earn it yourself."]
+  secret-lore: ["<c:muted><sym:time> A secret title.", "<c:muted>Find out how to earn it."]
   unequip-titles:
     name: "<c:error><sym:cross></c:error> <c:value>Remove title"
     lore: ["<c:text>Wearing: <display>", "", "<c:action><sym:bullet> Click to remove"]
@@ -80,27 +81,27 @@ redeem:
   details:
     - "<c:text>Adds <display> <c:text>to your tags"
     - "<c:text>and uses up this item."
-  owned: "<prefix><c:error><sym:cross> You already own <display><c:text>. Trade it or sell it on the auction house."
-  unknown: "<prefix><c:error><sym:cross> This tag doesn't exist anymore. <c:text>Show it to a staff member."
-  moved: "<prefix><c:error><sym:cross> Keep the tag item in your hand while you confirm."
-  error: "<prefix><c:error><sym:cross> Something went wrong. <c:text>Your item was given back."
+  owned: "<prefix><c:error><sym:cross></c:error> <c:text>You already own <display><c:text>. Trade it or sell it with <c:value>/ah</c:value>."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>This tag doesn't exist anymore. Show it to staff."
+  moved: "<prefix><c:error><sym:cross></c:error> <c:text>Keep the tag item in your hand to confirm."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. You got your item back."
 
-unknown-tag: "<prefix><c:error><sym:cross> There's no tag called <c:value><id></c:value>."
+unknown-tag: "<prefix><c:error><sym:cross></c:error> <c:text>No tag <c:value><id></c:value>. Press Tab to see them."
 
 staff:
-  given-title: "<prefix><c:success><sym:check> <c:text>Gave the title <c:value><id></c:value> to <c:value><player></c:value>."
-  given-title-noop: "<prefix><c:text><c:value><player></c:value> already has the title <c:value><id></c:value>."
-  taken-title: "<prefix><c:success><sym:check> <c:text>Took the title <c:value><id></c:value> from <c:value><player></c:value>."
-  taken-title-noop: "<prefix><c:text><c:value><player></c:value> doesn't have the title <c:value><id></c:value>."
-  given-tag: "<prefix><c:success><sym:check> <c:text>Gave the tag <c:value><id></c:value> to <c:value><player></c:value>."
-  given-tag-noop: "<prefix><c:text><c:value><player></c:value> already has the tag <c:value><id></c:value>."
-  taken-tag: "<prefix><c:success><sym:check> <c:text>Took the tag <c:value><id></c:value> from <c:value><player></c:value>."
-  taken-tag-noop: "<prefix><c:text><c:value><player></c:value> doesn't have the tag <c:value><id></c:value>."
-  items-given: "<prefix><c:success><sym:check> <c:text>Created <c:value><amount></c:value> tag item(s) <c:value><tag></c:value> for <c:value><player></c:value>."
-  items-received: "<prefix><c:text>You received <c:value><amount></c:value> tag item(s): <c:value><tag></c:value>. Right-click to redeem."
-  console-needs-player: "<prefix><c:error><sym:cross> From the console, add a player: <c:value>/tags item phoenix 1 Steve</c:value>"
-  unknown-player: "<prefix><c:error><sym:cross> <c:value><player></c:value> has never joined."
-  error: "<prefix><c:error><sym:cross> That didn't work: <c:text><reason>"
+  given-title: "<prefix><c:success><sym:check></c:success> <c:text>Gave the title <c:value><id></c:value> to <c:value><player></c:value>."
+  given-title-noop: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already has the title <c:value><id></c:value>."
+  taken-title: "<prefix><c:success><sym:check></c:success> <c:text>Took the title <c:value><id></c:value> from <c:value><player></c:value>."
+  taken-title-noop: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>doesn't have the title <c:value><id></c:value>."
+  given-tag: "<prefix><c:success><sym:check></c:success> <c:text>Gave the tag <c:value><id></c:value> to <c:value><player></c:value>."
+  given-tag-noop: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already has the tag <c:value><id></c:value>."
+  taken-tag: "<prefix><c:success><sym:check></c:success> <c:text>Took the tag <c:value><id></c:value> from <c:value><player></c:value>."
+  taken-tag-noop: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>doesn't have the tag <c:value><id></c:value>."
+  items-given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><player></c:value> <c:value><amount></c:value> <c:text>tag item(s): <c:value><tag></c:value>."
+  items-received: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><amount></c:value> <c:text>tag item(s): <c:value><tag></c:value>. Right-click to redeem."
+  console-needs-player: "<prefix><c:error><sym:cross></c:error> <c:text>Add a player: <c:value>/tags item phoenix 1 Steve</c:value>"
+  unknown-player: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work: <reason>"
 
 editor:
   crumb-titles: "Edit titles"
@@ -120,11 +121,11 @@ editor:
   create-tags:
     name: "<c:success>+ New tag"
     lore: ["<c:text>Create a new tag.", "", "<c:action><sym:bullet> Click to create"]
-  prompt-id: "<prefix><c:text>Type an id (a-z, 0-9, _), e.g. <c:value>night_owl</c:value>. Type <c:value><cancel></c:value> to cancel (<seconds>s)."
-  prompt-display: "<prefix><c:text>Type how it looks (MiniMessage or & codes), e.g. <c:value>&c[Fire]</c:value>. Type <c:value><cancel></c:value> to cancel (<seconds>s)."
-  prompt-source: "<prefix><c:text>Type how players get it (or <c:value>none</c:value>). Type <c:value><cancel></c:value> to cancel (<seconds>s)."
-  invalid-id: "<prefix><c:error><sym:cross> Ids use only a-z, 0-9 and _ (max 64)."
-  exists: "<prefix><c:error><sym:cross> <c:value><id></c:value> already exists."
+  prompt-id: "<prefix><c:text>Type an id (a-z, 0-9, _), like <c:value>night_owl</c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
+  prompt-display: "<prefix><c:text>Type how it looks (MiniMessage or & codes), like <c:value>&c[Fire]</c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
+  prompt-source: "<prefix><c:text>Type how players get it (or <c:value>none</c:value>). <c:muted>(<cancel> to cancel, <seconds>s)"
+  invalid-id: "<prefix><c:error><sym:cross></c:error> <c:text>Ids use only a-z, 0-9 and _ (max 64)."
+  exists: "<prefix><c:error><sym:cross></c:error> <c:value><id></c:value> <c:text>already exists."
   empty:
     name: "<c:text>Nothing yet"
     lore: ["<c:muted>Click + to create the first one."]
@@ -156,9 +157,9 @@ editor:
     lore: ["<c:text>Removes it from the menu.", "<c:text>Players who own it lose it from view.", "", "<c:action><sym:bullet> Click to delete"]
     crumb: "Delete"
     details: ["<c:text>This removes it for everyone."]
-  saved: "<prefix><c:success><sym:check> <c:text>Saved: <display>"
-  deleted: "<prefix><c:success><sym:check> <c:text>Deleted <c:value><id></c:value>."
-  save-failed: "<prefix><c:error><sym:cross> Couldn't save: <c:text><reason>"
+  saved: "<prefix><c:success><sym:check></c:success> <c:text>Saved: <display>"
+  deleted: "<prefix><c:success><sym:check></c:success> <c:text>Deleted <c:value><id></c:value>."
+  save-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't save: <reason>"
 
 display:
   crumb-staff: "Staff"
@@ -211,8 +212,8 @@ display:
   preview:
     name: "<c:value>Preview (you)"
     afk-label: "<c:muted>AFK marker:"
-  prompt: "<prefix><c:text>Type the new value for <c:value><field></c:value>. <c:value>default</c:value> resets it, <c:value>empty</c:value> clears it, <c:value><cancel></c:value> cancels (<seconds>s)."
+  prompt: "<prefix><c:text>Type the new <c:value><field></c:value>. <c:value>default</c:value> resets, <c:value>empty</c:value> clears. <c:muted>(<cancel> to cancel, <seconds>s)"
   confirm-crumb: "Save display"
   confirm-details: ["<c:text>Old: <c:muted><old>", "<c:text>New: <c:value><new>", "<c:text>The head shows the preview."]
-  saved: "<prefix><c:success><sym:check> <c:text>Saved <c:value><field></c:value>. Everyone sees it now."
-  failed: "<prefix><c:error><sym:cross> Not saved: <c:text><reason>"
+  saved: "<prefix><c:success><sym:check></c:success> <c:text>Saved <c:value><field></c:value>. Live for everyone."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Not saved: <reason>"

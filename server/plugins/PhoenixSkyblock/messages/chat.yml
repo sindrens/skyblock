@@ -1,20 +1,21 @@
 # Chat, tab list and nametag texts. The chat/tab line formats themselves are data in chat.yml (format.*).
 # MiniMessage + style tags. Player text is never parsed. Reload: /skyblock reload chat
+# Format (docs/UI_STYLE.md §3): success/error marks + gray text, values in <c:value>, clicks in <c:action>.
 
 # Hover card on a name in chat.
 hover:
   - "<name>"
-  - "<c:muted><st>                              </st></c:muted>"
-  - "<c:text>Rank: <c:value><rank_name>"
+  - ""
+  - "<c:muted>Rank</c:muted> <c:value><rank_name>"
   - "<nick_line>"
-  - "<c:text>Island: <c:value><island>"
-  - "<c:text>Playtime: <c:value><playtime>"
-  - "<c:text>Joined: <c:value><first>"
-  - "<c:text>Discord: <discord>"
-  - "<c:text>Ping: <c:value><ping> ms"
+  - "<c:muted>Island</c:muted> <c:value><island>"
+  - "<c:muted>Played</c:muted> <c:value><playtime>"
+  - "<c:muted>Joined</c:muted> <c:value><first>"
+  - "<c:muted>Discord</c:muted> <discord>"
+  - "<c:muted>Ping</c:muted> <c:value><ping> ms"
   - ""
   - "<c:action><sym:bullet> Click to message"
-hover-nick: "<c:text>Real name: <c:value><real_name>"
+hover-nick: "<c:muted>Real name</c:muted> <c:value><real_name>"
 
 # Shown before chat lines for players who turned on "Chat timestamps" in /settings.
 timestamp: "<c:muted>[<time>]</c:muted> "
@@ -26,39 +27,47 @@ mention: "<c:flame><bold>@<name></bold></c:flame>"
 item-show: "<c:muted>[</c:muted><item><c:muted> x<amount>]</c:muted>"
 
 blocked:
-  locked: "<prefix><c:error><sym:cross> The chat is locked by staff right now."
-  slow: "<prefix><c:error><sym:cross> Slow mode is on. You can chat again in <c:value><time></c:value>."
-  new-player: "<prefix><c:error><sym:cross> Welcome! You can chat in <c:value><time></c:value>. <c:text>Meanwhile, open <c:value>/menu</c:value> to look around."
-  rate: "<prefix><c:error><sym:cross> You're chatting too fast. Wait a moment."
-  duplicate: "<prefix><c:error><sym:cross> Please don't repeat the same message."
-  link: "<prefix><c:error><sym:cross> Links to other websites are not allowed in chat."
-  ip: "<prefix><c:error><sym:cross> Server addresses are not allowed in chat."
-  phone: "<prefix><c:error><sym:cross> For your safety, phone numbers are not allowed in chat."
-  word: "<prefix><c:error><sym:cross> Your message was blocked by the chat filter."
+  locked: "<prefix><c:error><sym:cross></c:error> <c:text>Chat is locked by staff right now."
+  slow: "<prefix><c:error><sym:cross></c:error> <c:text>Slow mode is on. Chat again in <c:value><time></c:value>."
+  new-player: "<prefix><c:error><sym:cross></c:error> <c:text>Welcome! You can chat in <c:value><time></c:value>. Look around with <c:value>/menu</c:value>."
+  rate: "<prefix><c:error><sym:cross></c:error> <c:text>Too fast. Wait a moment."
+  duplicate: "<prefix><c:error><sym:cross></c:error> <c:text>Don't repeat the same message."
+  link: "<prefix><c:error><sym:cross></c:error> <c:text>Links to other sites aren't allowed."
+  ip: "<prefix><c:error><sym:cross></c:error> <c:text>Server addresses aren't allowed."
+  phone: "<prefix><c:error><sym:cross></c:error> <c:text>Phone numbers aren't allowed, for your safety."
+  word: "<prefix><c:error><sym:cross></c:error> <c:text>Blocked by the chat filter."
 
-staff-alert: "<c:muted>[Staff]</c:muted> <c:warning>Filter:</c:warning> <c:value><player></c:value> <c:text>tried to say: <c:parchment><message>"
+staff-alert: "<c:muted>[Staff]</c:muted> <c:warning>Filter</c:warning> <c:value><player></c:value> <c:text>tried: <c:parchment><message>"
 
 moderation:
-  cleared: "<prefix><c:text>The chat was cleared by <c:value><staff></c:value>."
-  locked: "<prefix><c:warning>The chat was locked by <c:value><staff></c:value>."
-  unlocked: "<prefix><c:success><sym:check> The chat was unlocked by <c:value><staff></c:value>."
-  slow-on: "<prefix><c:warning>Slow mode: one message every <c:value><seconds>s</c:value> <c:muted>(by <staff>)"
-  slow-off: "<prefix><c:success><sym:check> Slow mode is off <c:muted>(by <staff>)"
+  cleared: "<prefix><c:text>Chat cleared by <c:value><staff></c:value>."
+  locked: "<prefix><c:text>Chat <c:warning>locked</c:warning> by <c:value><staff></c:value>."
+  unlocked: "<prefix><c:success><sym:check></c:success> <c:text>Chat unlocked by <c:value><staff></c:value>."
+  slow-on: "<prefix><c:text>Slow mode: one message per <c:value><seconds>s</c:value> <c:muted>(<staff>)"
+  slow-off: "<prefix><c:success><sym:check></c:success> <c:text>Slow mode off <c:muted>(<staff>)"
 
 staffchat:
   line: "<c:brand><bold>STAFF</bold></c:brand> <name> <c:muted>»</c:muted> <c:info><message>"
-  toggle-on: "<prefix><c:success><sym:check> Staff chat mode <c:value>on</c:value>. <c:text>Your chat messages now go to staff only. Type <c:value>/sc</c:value> again to leave."
-  toggle-off: "<prefix><c:text>Staff chat mode <c:value>off</c:value>."
+  toggle-on: "<prefix><c:success><sym:check></c:success> <c:text>Staff chat <c:value>on</c:value>. Your messages go to staff only. <c:value>/sc</c:value> to leave."
+  toggle-off: "<prefix><c:success><sym:check></c:success> <c:text>Staff chat <c:value>off</c:value>."
 
+# Tab list. Left line in the first letter's color (frost white), right line in the last letter's color (blue "MC"),
+# so the lines continue the SKYBORN gradient. Lines are strikethrough spaces (Bedrock shows blank space).
 tab:
   header:
     - ""
-    - "<c:brand><st>            </st></c:brand>  <bold><grad:skyborn>SKYBORN</grad><c:sky_blue>MC</c:sky_blue></bold>  <c:brand><st>            </st></c:brand>"
+    - "<c:sky_frost><st>            </st></c:sky_frost>  <bold><grad:skyborn>SKYBORN</grad><c:sky_blue>MC</c:sky_blue></bold>  <c:sky_blue><st>            </st></c:sky_blue>"
     - "<bold><grad:phoenix>Phoenix Skyblock</grad></bold>"
-    - "<c:value><online></c:value> <c:text>online <c:muted><sym:dot></c:muted> <c:text><season>"
+    - ""
+    - "<c:value><online></c:value> <c:muted>online <sym:dot> <season>"
     - ""
   footer:
     - ""
-    - "<c:value>/menu</c:value> <c:muted><sym:dot></c:muted> <c:value>/help</c:value> <c:muted><sym:dot></c:muted> <c:value>/discord</c:value> <c:muted><sym:dot></c:muted> <c:value>/store</c:value>"
-    - "<c:sky_ice>play.skybornmc.net</c:sky_ice>"
-  footer-staff: "<c:muted>TPS <c:value><tps></c:value> <sym:dot> <c:value><ping> ms</c:value></c:muted>"
+    - "<c:sky_blue>»</c:sky_blue> <grad:skyborn>play.skybornmc.net</grad> <c:sky_blue>«</c:sky_blue>"
+    - ""
+  # Staff only (skyblock.staff.tab), under the footer. <tps> is one of tab.tps.* below.
+  footer-staff: "<c:muted>TPS</c:muted> <tps>  <c:muted><sym:dot></c:muted>  <c:muted>Ping</c:muted> <c:value><ping> ms</c:value>"
+  tps:
+    good: "<c:success><value>"
+    ok: "<c:warning><value>"
+    bad: "<c:error><value>"

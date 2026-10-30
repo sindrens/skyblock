@@ -41,11 +41,11 @@ type:
   menu: ""
 
 dupe:
-  alert: "<c:error><bold>DUPE</bold></c:error> <c:text>Item <c:value><item></c:value> <c:muted>(<uuid>)</c:muted> found <c:value><count>x</c:value>, source <c:value><source></c:value>. Both copies are flagged."
+  alert: "<c:error><bold>DUPE</bold></c:error> <c:value><item></c:value> <c:muted>(<uuid>)</c:muted> <c:text>found <c:value><count>x</c:value> from <c:value><source></c:value>. All copies are flagged."
   holder: " <c:muted><sym:bullet></c:muted> <c:text><where>"
 
 give:
-  given: "<prefix><c:success><sym:check> Gave <c:value><amount>x <item></c:value> to <c:value><player></c:value>."
-  received: "<prefix><c:text>You received <c:value><amount>x <item></c:value>."
-  unknown: "<prefix><c:error><sym:cross> Unknown item <c:value><id></c:value>. Press Tab to see all items."
-  inventory-full: "<prefix><c:warning>Inventory full: the rest was dropped at <c:value><player></c:value>'s feet."
+  given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><amount>x <item></c:value> to <c:value><player></c:value>."
+  received: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><amount>x <item></c:value>."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No item <c:value><id></c:value>. Press Tab to see them all."
+  inventory-full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full. The rest was dropped at <c:value><player></c:value>'s feet."
