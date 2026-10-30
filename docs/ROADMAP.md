@@ -13,7 +13,7 @@ Target: everything below is in season 1. Launch is in ~3 years. There is time to
 | 4 | **Tools and The Depths** ([plan](phases/PHASE-4-DEPTHS.md)) | Placeholder Depths build, starter kit + Forge + living tools + blueprints + skins, per-player blocks, satchel, skill core (XP/levels), tiers + `/dungeon`, forest, combat zones, crystals | ⬜ |
 | 5 | **Progression core** | 5 pillars + island level, `/is upgrade` masteries with tasks, leaderboards (solo/team/weekly) | ⬜ |
 | 6 | **Skills, sets, enchants** | 5 skills, `/sets`, `/enchanter` custom enchants, crystals economy tuning | ⬜ |
-| 7 | **Island production** | Custom generators, custom crops, spawners + stacking, mob stacking, collectors/auto-sell (T1–5 merge), Island Fuel, outposts + biomes + fusion | ⬜ |
+| 7 | **Island production** ([plan](phases/PHASE-7-PRODUCTION.md)) | Custom generators, custom crops, spawners + stacking, mob stacking, collectors/auto-sell (T1–5 merge), Island Fuel, outposts + biomes + fusion | ⬜ |
 | 8 | **PvE** | Custom mobs, world/summon bosses + damage leaderboard, pets, fishing | ⬜ |
 | 9 | **Conquest and events** | KOTH, envoys, PvP zones, duels, automatic event engine | ⬜ |
 | 10 | **Rewards and retention** | Crates + keys, voting, daily rewards, quests, battle pass, achievements, collection log, Black Market, tutorial | ⬜ |
