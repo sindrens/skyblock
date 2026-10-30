@@ -120,14 +120,23 @@ class ShopEngineTest {
         assertTrue(store.pending(profile).join().isEmpty());
     }
 
+    /**
+     * SECFIX1 F-12: a purchase left 'delivering' by a crash may already be in the player's saved inventory, so recovery
+     * never hands it over again: it goes to 'review' for staff. Waiting (pending) and delivered ones are untouched.
+     */
     @Test
-    void startupRecoveryHandsOverHalfDoneOnes() {
+    void startupRecoveryNeverDeliversTwiceButMarksForReview() {
         UUID first = buy(logs, 1).purchase().id();
         UUID second = buy(logs, 2).purchase().id();
+        UUID third = buy(logs, 3).purchase().id();
         store.move(second, ShopStore.DELIVERING, ShopStore.DELIVERED, clock.get()).join();
-        assertEquals(1, store.recover(clock.get()).join());
-        List<ShopStore.Purchase> waiting = store.pending(profile).join();
-        assertEquals(List.of(first), waiting.stream().map(ShopStore.Purchase::id).toList());
+        store.move(third, ShopStore.DELIVERING, ShopStore.PENDING, clock.get()).join();
+        List<ShopStore.Purchase> review = store.recover(clock.get()).join();
+        assertEquals(List.of(first), review.stream().map(ShopStore.Purchase::id).toList());
+        assertEquals(List.of(third), store.pending(profile).join().stream().map(ShopStore.Purchase::id).toList(),
+                "only the purchase that surely was not handed over still waits");
+        assertFalse(store.move(first, ShopStore.PENDING, ShopStore.DELIVERING, clock.get()).join(), "a review row can't be claimed");
+        assertTrue(store.recover(clock.get()).join().isEmpty(), "a second start changes nothing");
     }
 
     private static int count(java.sql.Connection c) throws java.sql.SQLException {

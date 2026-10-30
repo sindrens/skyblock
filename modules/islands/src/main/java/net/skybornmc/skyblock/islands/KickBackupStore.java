@@ -14,7 +14,8 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Kick backups ({@code island_kick_backups}, owner answer 251): what a kicked member had on their island profile, so an
- * admin can restore it with {@code /isadmin restore}. Bukkit-free (item data are plain bytes), so it runs against H2 in
+ * admin can restore it with {@code /isadmin restore}. SECFIX1 F-02: a backup restores only what was really taken, once
+ * (kick: the membership; disband/reset: {@code money_taken} and the confirmed items). Bukkit-free (item data are plain bytes), so it runs against H2 in
  * unit tests.
  *
  * <p>Restoring is one transaction: the backup is claimed ({@code restored_at IS NULL → now}) and the member is added back
@@ -23,10 +24,14 @@ import java.util.concurrent.CompletableFuture;
  */
 final class KickBackupStore {
 
-    /** One backup row. {@code money} is null when the economy was not available at the kick. */
+    /**
+     * One backup row. {@code money} = the balance when the backup was made (shown to staff; NULL for kicks and when the
+     * economy was not available). {@code moneyTaken} = what a disband/reset really withdrew (SECFIX1 F-02: the only
+     * money a restore gives back).
+     */
     record Backup(long id, UUID islandId, String islandName, UUID profileId, UUID playerId, String playerName, Role role, Long money,
                   boolean itemsCaptured, byte[] inventory, byte[] enderChest, String removal, String kickedBy, long createdAt,
-                  Long restoredAt, String restoredBy, Long itemsRestoredAt, Long bankMoney) {
+                  Long restoredAt, String restoredBy, Long itemsRestoredAt, Long bankMoney, Long moneyTaken) {
 
         /** Owner answer 591: a backup taken when the island was disbanded or reset (the island is gone, no membership). */
         boolean islandRemoval() {
@@ -38,9 +43,25 @@ final class KickBackupStore {
             return restoredAt == null;
         }
 
-        /** Items captured and not given back yet. */
+        /**
+         * Items that were really taken (disband/reset, confirmed after the player file was saved) and not given back yet.
+         * SECFIX1 F-02: a kick never takes items, so a kick backup never gives any (also old rows from before the fix).
+         */
         boolean itemsOpen() {
-            return itemsCaptured && itemsRestoredAt == null;
+            return islandRemoval() && itemsCaptured && itemsRestoredAt == null;
+        }
+
+        /**
+         * A reset saved the items but the server stopped before it confirmed they left the player (inventory emptied and
+         * player file saved). Never restored automatically (that could double them): staff check by hand.
+         */
+        boolean itemsPending() {
+            return islandRemoval() && !itemsCaptured && inventory != null && itemsRestoredAt == null;
+        }
+
+        /** SECFIX1 F-02: the money a restore gives back: exactly what the disband/reset withdrew, 0 for kicks. Pure. */
+        long restoreMoney() {
+            return islandRemoval() && moneyTaken != null ? Math.max(0, moneyTaken) : 0;
         }
     }
 
@@ -75,7 +96,8 @@ final class KickBackupStore {
     }
 
     private static final String COLUMNS = "id, island_id, island_name, profile_id, player_id, player_name, member_role, money, "
-            + "items_captured, inventory, ender_chest, removal, kicked_by, created_at, restored_at, restored_by, items_restored_at, bank_money";
+            + "items_captured, inventory, ender_chest, removal, kicked_by, created_at, restored_at, restored_by, items_restored_at, bank_money, "
+            + "money_taken";
 
     private final Database db;
 
@@ -120,6 +142,19 @@ final class KickBackupStore {
         return db.async(c -> dropItems(c, id));
     }
 
+    /**
+     * SECFIX1 F-02: the reset emptied the inventory and the player file was saved; only now may the items be restored.
+     * Completes with true when the backup offers them.
+     */
+    CompletableFuture<Boolean> confirmItems(long id) {
+        return db.async(c -> confirmItems(c, id));
+    }
+
+    /** SECFIX1 F-02: records what the reset really withdrew (once); a restore gives back exactly this. */
+    CompletableFuture<Boolean> recordMoneyTaken(long id, long amount) {
+        return db.async(c -> recordMoneyTaken(c, id, amount));
+    }
+
     /** Undoes {@link #claimItems} when the items could not be given after all (player left meanwhile). */
     CompletableFuture<Void> releaseItems(long id) {
         return db.run(c -> Sql.update(c, "UPDATE island_kick_backups SET items_restored_at = NULL WHERE id = ?", id));
@@ -132,7 +167,8 @@ final class KickBackupStore {
                         + "member_role, money, items_captured, inventory, ender_chest, removal, kicked_by, created_at, bank_money) "
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 b.islandId(), truncate(b.islandName(), 64), b.profileId(), b.playerId(), truncate(b.playerName(), 16),
-                MemberStore.key(b.role()), b.money(), b.inventory() != null, b.inventory(), b.enderChest(), truncate(b.removal(), 16),
+                // SECFIX1 F-02: items start PENDING (not restorable) until confirmItems() after the inventory was emptied
+                MemberStore.key(b.role()), b.money(), false, b.inventory(), b.enderChest(), truncate(b.removal(), 16),
                 truncate(b.kickedBy(), 32), b.createdAt(), b.bankMoney());
     }
 
@@ -192,7 +228,21 @@ final class KickBackupStore {
 
     static boolean claimItems(Connection c, long id, long now) throws SQLException {
         return Sql.update(c, "UPDATE island_kick_backups SET items_restored_at = ? WHERE id = ? AND items_captured = ? "
-                + "AND items_restored_at IS NULL", now, id, true) == 1;
+                + "AND items_restored_at IS NULL AND removal IN (?, ?)", now, id, true, REMOVAL_DISBAND, REMOVAL_RESET) == 1;
+    }
+
+    static boolean confirmItems(Connection c, long id) throws SQLException {
+        return Sql.update(c, "UPDATE island_kick_backups SET items_captured = ? WHERE id = ? AND items_captured = ? "
+                + "AND inventory IS NOT NULL AND items_restored_at IS NULL AND removal IN (?, ?)", true, id, false,
+                REMOVAL_DISBAND, REMOVAL_RESET) == 1;
+    }
+
+    static boolean recordMoneyTaken(Connection c, long id, long amount) throws SQLException {
+        if (amount <= 0) {
+            return false;
+        }
+        return Sql.update(c, "UPDATE island_kick_backups SET money_taken = ? WHERE id = ? AND money_taken IS NULL AND removal IN (?, ?)",
+                amount, id, REMOVAL_DISBAND, REMOVAL_RESET) == 1;
     }
 
     static Backup backup(ResultSet rs) throws SQLException {
@@ -202,7 +252,7 @@ final class KickBackupStore {
                 Sql.uuid(rs, "player_id"), rs.getString("player_name"), role(rs.getString("member_role")), m,
                 rs.getBoolean("items_captured"), rs.getBytes("inventory"), rs.getBytes("ender_chest"), rs.getString("removal"),
                 rs.getString("kicked_by"), rs.getLong("created_at"), Sql.nullableLong(rs, "restored_at"), rs.getString("restored_by"),
-                Sql.nullableLong(rs, "items_restored_at"), Sql.nullableLong(rs, "bank_money"));
+                Sql.nullableLong(rs, "items_restored_at"), Sql.nullableLong(rs, "bank_money"), Sql.nullableLong(rs, "money_taken"));
     }
 
     private static Role role(String key) {

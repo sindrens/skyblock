@@ -60,13 +60,26 @@ final class EconomyServiceImpl implements EconomyService {
      * transfer touching a trade-blocked player). Refused and audited ({@code sanction_blocked}); nothing changes.
      */
     private boolean sanctioned(Transaction tx) {
-        net.skybornmc.skyblock.common.moderation.SanctionService s;
+        boolean blocked;
         try {
-            s = sanctions.get();
+            net.skybornmc.skyblock.common.moderation.SanctionService s = sanctions.get();
+            blocked = s != null && s.blocks(tx);
         } catch (RuntimeException e) {
-            return false;
+            // SECFIX1 F-15: the check itself failed. Money leaving an account is refused (fail closed); earning and staff
+            // actions go through (a frozen player may still sell, staff must be able to fix things).
+            boolean refuse = refuseWhenCheckFails(tx);
+            log.log(Level.SEVERE, "Economy: the sanction check failed; " + (refuse ? "refused" : "allowed") + " " + tx, e);
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("reason", tx.reason());
+            details.put("currency", tx.currency().key());
+            details.put("amount", tx.amount());
+            details.put("refused", refuse);
+            details.put("error", String.valueOf(e));
+            audit.log(AuditCategory.ECONOMY, "sanction_check_failed", tx.actor(), tx.from() != null ? tx.from().owner().toString()
+                    : tx.to() != null ? tx.to().owner().toString() : null, null, null, null, details);
+            return refuse;
         }
-        if (s == null || !s.blocks(tx)) {
+        if (!blocked) {
             return false;
         }
         Map<String, Object> details = new LinkedHashMap<>();
@@ -78,6 +91,15 @@ final class EconomyServiceImpl implements EconomyService {
         audit.log(AuditCategory.ECONOMY, "sanction_blocked", tx.actor(), tx.from() != null ? tx.from().owner().toString()
                 : tx.to() != null ? tx.to().owner().toString() : null, null, null, null, details);
         return true;
+    }
+
+    /**
+     * SECFIX1 F-15: whether a transaction is refused when the sanction check throws: every transaction that takes money out
+     * of an account (pay, trade, auction, notes, shop, bank), except staff actions ({@code admin_*}). Deposits only
+     * (selling, rewards) go through. Pure.
+     */
+    static boolean refuseWhenCheckFails(Transaction tx) {
+        return tx.from() != null && (tx.reason() == null || !tx.reason().startsWith("admin_"));
     }
 
     /** Online player → the profile key whose balances are cached for them. */

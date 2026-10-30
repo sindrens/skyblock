@@ -62,6 +62,8 @@ class ResetBackupsTest {
         assertTrue(db.<Boolean>blocking(c -> KickBackupStore.claimRemoval(c, id, "Admin", now + 1)));
         assertFalse(db.<Boolean>blocking(c -> KickBackupStore.claimRemoval(c, id, "Admin", now + 2)), "at most once");
         assertFalse(get(id).open());
+        assertTrue(get(id).itemsPending(), "items stay pending until the reset confirmed they left the player");
+        assertTrue(db.<Boolean>blocking(c -> KickBackupStore.confirmItems(c, id)));
         assertTrue(get(id).itemsOpen(), "items are given back separately");
     }
 
@@ -76,7 +78,8 @@ class ResetBackupsTest {
     @Test
     void itemsTheResetCouldNotTakeAreNeverRestored() {
         long id = save(KickBackupStore.REMOVAL_RESET, null, new byte[]{1});
-        assertTrue(get(id).itemsOpen());
+        assertTrue(get(id).itemsPending());
+        assertFalse(get(id).itemsOpen());
         assertTrue(db.<Boolean>blocking(c -> KickBackupStore.dropItems(c, id)));
         KickBackupStore.Backup dropped = get(id);
         assertFalse(dropped.itemsOpen(), "the player kept them, so a restore must not give them twice");
@@ -92,9 +95,60 @@ class ResetBackupsTest {
         assertEquals(300, KickBackups.resetAmount(500L, 300), "never more than the profile has");
         assertEquals(0, KickBackups.resetAmount(null, 300));
         assertEquals(0, KickBackups.resetAmount(500L, -5));
+        KickBackupStore.NewBackup kick = KickBackups.kickBackup(UUID.randomUUID(), "Island", UUID.randomUUID(), UUID.randomUUID(), "Alex",
+                Role.MOD, MemberStore.LEFT_KICK, "Steve", now);
+        assertNull(kick.money(), "a kick backup holds no money");
+        assertNull(kick.inventory(), "and no items");
+        assertNull(kick.enderChest());
         IslandsConfig config = new IslandsConfig();
         assertTrue(config.resetsProfiles(IslandStore.REASON_DISBAND));
         assertTrue(config.resetsProfiles(IslandStore.REASON_RESET));
         assertFalse(config.resetsProfiles(IslandStore.REASON_DELETE), "a staff delete keeps profiles by default");
+    }
+
+    // ------------------------------------------------------------------ SECFIX1 F-02: restore only what was taken, once
+
+    @Test
+    void aResetRestoresExactlyTheMoneyItTookNeverATopUp() {
+        long id = save(KickBackupStore.REMOVAL_RESET, null, null); // balance 500 when the backup was made
+        assertEquals(0, get(id).restoreMoney(), "nothing taken yet: nothing to give back");
+        // The player paid 400 away before the reset ran: it could only take 100.
+        assertTrue(db.<Boolean>blocking(c -> KickBackupStore.recordMoneyTaken(c, id, 100)));
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.recordMoneyTaken(c, id, 500)), "recorded once");
+        assertEquals(100, get(id).restoreMoney(), "only the 100 taken comes back, not the 500 balance");
+        assertTrue(db.<Boolean>blocking(c -> KickBackupStore.claimRemoval(c, id, "Admin", now + 1)));
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.claimRemoval(c, id, "Admin", now + 2)), "given back once");
+    }
+
+    @Test
+    void kicksNeverRecordMoneyOrItems() {
+        long id = save(MemberStore.LEFT_KICK, null, new byte[]{1});
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.recordMoneyTaken(c, id, 100)));
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.confirmItems(c, id)));
+        KickBackupStore.Backup kick = get(id);
+        assertEquals(0, kick.restoreMoney());
+        assertFalse(kick.itemsOpen());
+        assertFalse(kick.itemsPending(), "kicks have no pending items either");
+    }
+
+    @Test
+    void pendingItemsAreRestoredOnlyAfterConfirmAndOnlyOnce() {
+        long id = save(KickBackupStore.REMOVAL_DISBAND, null, new byte[]{1, 2});
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.claimItems(c, id, now)), "a crash before the confirm: never restorable");
+        assertTrue(db.<Boolean>blocking(c -> KickBackupStore.confirmItems(c, id)));
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.confirmItems(c, id)), "confirmed once");
+        assertTrue(db.<Boolean>blocking(c -> KickBackupStore.claimItems(c, id, now)));
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.claimItems(c, id, now)), "given back once");
+        assertFalse(get(id).itemsOpen());
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.dropItems(c, id)), "given items can't be dropped afterwards");
+    }
+
+    @Test
+    void droppedItemsCanNotBeConfirmed() {
+        long id = save(KickBackupStore.REMOVAL_RESET, null, new byte[]{1});
+        assertTrue(db.<Boolean>blocking(c -> KickBackupStore.dropItems(c, id)));
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.confirmItems(c, id)), "the player kept them");
+        assertFalse(get(id).itemsOpen());
+        assertFalse(get(id).itemsPending());
     }
 }

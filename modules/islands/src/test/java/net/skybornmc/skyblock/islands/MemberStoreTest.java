@@ -330,7 +330,9 @@ class MemberStoreTest {
         assertEquals(backupId, saved.id());
         assertEquals(12_345L, saved.money());
         assertTrue(saved.open());
-        assertTrue(saved.itemsOpen());
+        // SECFIX1 F-02: a kick takes no items and no money, so even an old row holding them never gives them back.
+        assertFalse(saved.itemsOpen());
+        assertEquals(0, saved.restoreMoney());
         assertEquals(Role.MOD, saved.role());
 
         now += HOUR;
@@ -340,8 +342,8 @@ class MemberStoreTest {
         assertEquals(Role.MOD, island.role(member).orElseThrow(), "back with the role they had");
         assertInstanceOf(KickBackupStore.RestoreResult.AlreadyRestored.class,
                 db.blocking(c -> KickBackupStore.restoreMembership(c, backupId, "Admin", now, LIMITS)), "only once");
-        assertTrue(db.<Boolean>blocking(c -> KickBackupStore.claimItems(c, backupId, now)));
-        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.claimItems(c, backupId, now)), "items only once too");
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.confirmItems(c, backupId)), "kick items can never become restorable");
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.claimItems(c, backupId, now)), "a kick gives back no items");
         KickBackupStore.Backup after = db.blocking(c -> KickBackupStore.ofPlayer(c, member, 10)).getFirst();
         assertFalse(after.open());
         assertFalse(after.itemsOpen());
@@ -373,8 +375,6 @@ class MemberStoreTest {
         assertFalse(KickBackups.wanted(MemberStore.LEFT_REMOVED, Role.MEMBER, KickBackups.NOTE_PROFILE_DELETED), "profile gone");
         assertFalse(KickBackups.wanted(MemberStore.LEFT_KICK, Role.LEADER, ""));
         assertFalse(KickBackups.wanted(MemberStore.LEFT_KICK, null, ""));
-        assertEquals(500, KickBackups.missingMoney(1_500, 1_000));
-        assertEquals(0, KickBackups.missingMoney(1_000, 4_000), "money is never taken away");
-        assertEquals(1_000, KickBackups.missingMoney(1_000, -5));
+        // SECFIX1 F-02: the old money top-up (missingMoney) is gone: a kick restores no money at all.
     }
 }

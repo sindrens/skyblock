@@ -294,7 +294,10 @@ public final class AuctionModule implements SkyblockModule, Listener {
         inv.setItem(slot, null); // the item now only exists in this snapshot until the database has it
         UUID uuid = key(player);
         String name = player.getName();
-        engine.create(uuid, name, snapshot, price, duration.toMillis(), slots(player), Actor.player(player))
+        // SECFIX1 F-01: the player file is saved without the item BEFORE the listing row is written, so a crash can lose
+        // the item at worst, never keep it in both places. A failed save skips the database and gives the item back.
+        net.skybornmc.skyblock.common.player.PlayerSaves.commitAfterSave(player, "an auction listing",
+                        () -> engine.create(uuid, name, snapshot, price, duration.toMillis(), slots(player), Actor.player(player)))
                 .whenCompleteAsync((result, error) -> {
                     Player online = online(uuid);
                     if (error != null || result == null) {
@@ -360,6 +363,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
         if (player != null) {
             ItemStack item = ItemCodec.decode(snapshot.bytes());
             Map<Integer, ItemStack> left = player.getInventory().addItem(item);
+            net.skybornmc.skyblock.common.player.PlayerSaves.save(player, "an auction give-back"); // SECFIX1 F-01
             if (left.isEmpty()) {
                 return;
             }
@@ -567,6 +571,8 @@ public final class AuctionModule implements SkyblockModule, Listener {
                 return;
             }
             Map<Integer, ItemStack> left = p.getInventory().addItem(item);
+            // SECFIX1 F-01c: the row is already gone; saving now keeps a crash from losing the item.
+            net.skybornmc.skyblock.common.player.PlayerSaves.save(p, "an auction collection take");
             overflow(uuid, left.values());
             sound(p, "success");
             done.accept(true);

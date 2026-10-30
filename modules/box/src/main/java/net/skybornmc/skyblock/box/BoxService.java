@@ -45,6 +45,7 @@ final class BoxService implements ItemBox, Listener {
     static final String AUDIT_TAKE = "box_take";
     static final String AUDIT_RETURNED = "box_take_returned";
     static final String AUDIT_OVER_CAP = "box_over_cap";
+    static final String AUDIT_OVER_HARD_CAP = "box_over_hard_cap";
     static final String AUDIT_CLEAR = "box_clear";
     static final String AUDIT_REMOVE = "box_remove";
     static final String AUDIT_VIEW = "box_view";
@@ -115,6 +116,7 @@ final class BoxService implements ItemBox, Listener {
                     : counts.getOrDefault(profileKey, 0) + rows.size();
             counts.computeIfPresent(profileKey, (k, v) -> count);
             boolean over = BoxCap.isFull(count, m.config().maxEntries);
+            boolean overHard = BoxCap.isHardFull(count, m.config().maxEntries, m.config().hardMaxEntries);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("profile", profileKey.toString());
             details.put("source", rows.getFirst().source());
@@ -126,6 +128,13 @@ final class BoxService implements ItemBox, Listener {
             if (over) {
                 core.audit().logPlayer(AuditCategory.ITEM, AUDIT_OVER_CAP, Actor.system("box"), owner, null, (long) count, null,
                         Map.of("profile", profileKey.toString(), "cap", m.config().maxEntries));
+            }
+            if (overHard) {
+                // SECFIX1 F-09: still stored (never lost), but staff must look: sources should have stopped before this.
+                core.audit().logPlayer(AuditCategory.ITEM, AUDIT_OVER_HARD_CAP, Actor.system("box"), owner, null, (long) count, null,
+                        Map.of("profile", profileKey.toString(), "hard_cap", m.config().hardMaxEntries, "source", rows.getFirst().source()));
+                core.plugin().getLogger().warning("Box: profile " + profileKey + " holds " + count + " stacks, over the hard cap of "
+                        + m.config().hardMaxEntries + " (source " + rows.getFirst().source() + "). Nothing was lost; check box_over_hard_cap.");
             }
             if (notify) {
                 core.scheduler().main("box:notify", () -> delivered(profileKey, rows.size(), count));
@@ -169,6 +178,20 @@ final class BoxService implements ItemBox, Listener {
     public boolean full(UUID profileKey) {
         Integer c = counts.get(profileKey);
         return c != null && BoxCap.isFull(c, m.config().maxEntries);
+    }
+
+    @Override
+    public boolean refuses(Player player) {
+        if (player == null) {
+            return false;
+        }
+        Integer c = counts.get(key(player));
+        if (c == null || !BoxCap.isHardFull(c, m.config().maxEntries, m.config().hardMaxEntries)) {
+            return false;
+        }
+        m.msg().send(player, "cap.hard", Msg.number("count", c), Msg.number("max", Math.max(m.config().hardMaxEntries, m.config().maxEntries)));
+        core.sounds().play(player, "error");
+        return true;
     }
 
     @Override
@@ -447,6 +470,8 @@ final class BoxService implements ItemBox, Listener {
                 }
             }
         }
+        // SECFIX1 F-01c: the rows are already gone; saving now keeps a crash from losing what was just given.
+        net.skybornmc.skyblock.common.player.PlayerSaves.save(now, "taking items from /box");
         counts.put(profile, taken.count() + back.size());
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("profile", profile.toString());

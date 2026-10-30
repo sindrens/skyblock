@@ -33,6 +33,9 @@ import java.util.logging.Logger;
  *       not fit or a player who left gets it back into the box. No duplication.</li>
  *   <li>The per-profile cap ({@code box.yml}) only warns: nothing is ever deleted or refused silently. Voluntary paths
  *       (a reward the player claims on purpose) may check {@link #full} and refuse before taking money.</li>
+ *   <li>SECFIX1 F-09: a hard safety cap far above it ({@code cap.hard-max-entries}, 5,000): actions that can stop call
+ *       {@link #refuses(Player)} first and are refused with a message, so no box grows forever. Items that already left
+ *       somewhere are still stored.</li>
  * </ul>
  */
 public interface ItemBox {
@@ -78,6 +81,16 @@ public interface ItemBox {
     /** True when the box of this profile is at or over its cap (voluntary paths may refuse then). */
     boolean full(UUID profileKey);
 
+    /**
+     * SECFIX1 F-09: true (and the player told why) when the box of the player's active profile is at its hard safety cap
+     * ({@code box.yml cap.hard-max-entries}). Call it before an action that may send items to the box and can simply not
+     * happen (breaking a stacked spawner, claiming, buying): refuse the action instead of growing the box forever. Main
+     * thread.
+     */
+    default boolean refuses(Player player) {
+        return false;
+    }
+
     /** Opens the admin view of a player's box (the Box button in {@code /inspect}). */
     void openStaffView(Player staff, UUID player, String name, Menu back);
 
@@ -120,6 +133,11 @@ public interface ItemBox {
         } else {
             dropFallback(player, new ArrayList<>(leftovers), source);
         }
+    }
+
+    /** {@link #refuses(Player)} through the registry (false when the box module is off). Main thread. */
+    static boolean refuses(ServiceRegistry services, Player player) {
+        return player != null && of(services).map(b -> b.refuses(player)).orElse(false);
     }
 
     /** True when the player's active profile box is full (false when the box module is off). */

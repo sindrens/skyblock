@@ -6,12 +6,16 @@ import org.bukkit.entity.Player;
 
 /**
  * Everything the engine keeps for one online player: their depleted blocks (one world at a time), the block they
- * started breaking (anti fast-break) and their flag counters. Created on first contact, dropped on quit.
+ * started breaking (anti fast-break) and their flag counters. Created on first contact, dropped on quit (running timers
+ * are parked in {@link DepletionMemory} first).
  */
 final class PlayerDepletion {
 
-    /** One block depleted for this player. {@code token} matches its timer in the wheel. */
-    record Depleted(int token, BlockData shown, String regionId) {
+    /**
+     * One block depleted for this player. {@code token} matches its timer in the wheel; {@code endsAt} (epoch millis) is
+     * when it comes back, kept so the timer survives a quit or world change (SECFIX1 F-11).
+     */
+    record Depleted(int token, BlockData shown, String regionId, long endsAt) {
     }
 
     static final long NO_BLOCK = Long.MIN_VALUE;

@@ -9,6 +9,9 @@ public final class BoxConfig extends ModuleConfig {
     @Setting(path = "cap.max-entries", desc = "Stacks a profile's box should hold at most. Above it items are STILL stored (never dropped or deleted); the player is warned (and staff see box_over_cap in the logs). Future voluntary paths can refuse while full (ItemBox#full).", min = 10, max = 100000, level = Setting.Level.OWNER)
     public int maxEntries = 500;
 
+    @Setting(path = "cap.hard-max-entries", desc = "SECFIX1 F-09 safety cap, far above max-entries: from here actions that would add to the box and can be stopped (breaking a stacked spawner, claims, purchases that check ItemBox#refuses) are refused with a message, so a box can't grow forever. Items that already left somewhere are still stored, never lost (staff see box_over_hard_cap).", min = 100, max = 1000000, level = Setting.Level.OWNER)
+    public int hardMaxEntries = 5000;
+
     @Setting(path = "staff-items.flag-sources", desc = "Owner answer 332: a staff item (/give, /i, creative) arriving in another "
             + "player's box from one of these sources is logged as staff_item_transfer (trade and auction refuse them already).")
     public java.util.List<String> staffItemFlagSources = java.util.List.of("trade", "auction", "gift");

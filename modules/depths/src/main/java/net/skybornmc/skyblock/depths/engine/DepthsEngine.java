@@ -32,6 +32,7 @@ import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -51,8 +52,9 @@ import java.util.function.BiPredicate;
  * {@link ResourceBreakEvent} is fired (drops/XP live in other modules), and only that player is sent the depleted
  * block. A {@link TimingWheel} brings the real block back for them after the respawn time. Depleted blocks are re-sent
  * whenever the server re-sends a chunk to the player ({@link PlayerChunkLoadEvent} fires right after the chunk packet)
- * and whenever a cancelled interaction makes the server re-send the real block. State is dropped on quit and on world
- * change.</p>
+ * and whenever a cancelled interaction makes the server re-send the real block. On quit and on world change the
+ * running timers are parked in {@link DepletionMemory} and handed back when the player is in that world again (SECFIX1
+ * F-11: relogging or hopping worlds no longer resets ores).</p>
  *
  * <p>Cost: a break outside regions is one map miss; inside, a few map operations plus the event. The per-tick task
  * only increments a counter while nothing is pending (no allocation when idle).</p>
@@ -68,6 +70,8 @@ public final class DepthsEngine implements Depths, Listener {
     private final Map<String, DepthsRegion> codeRegions = new LinkedHashMap<>();
 
     private final Map<UUID, PlayerDepletion> players = new HashMap<>();
+    /** SECFIX1 F-11: running timers of players who left or changed world. */
+    private DepletionMemory<BlockData> memory;
     private final Int2ObjectOpenHashMap<PlayerDepletion> byHandle = new Int2ObjectOpenHashMap<>();
     private int nextHandle;
 
@@ -95,6 +99,7 @@ public final class DepthsEngine implements Depths, Listener {
 
     public void start() {
         wheel = new TimingWheel(config.timerSlots, 1024);
+        memory = new DepletionMemory<>(config.rememberedPerPlayer);
         tickTask = core.scheduler().repeat("depths-tick", 1L, 1L, this::tick);
     }
 
@@ -105,11 +110,17 @@ public final class DepthsEngine implements Depths, Listener {
         restoreAll();
         players.clear();
         byHandle.clear();
+        if (memory != null) {
+            memory.clear();
+        }
     }
 
     /** Replaces the regions from depths.yml (restores all depleted blocks first, definitions may have changed). */
     public void configRegions(List<DepthsRegion> regions) {
         restoreAll();
+        if (memory != null) {
+            memory.clear(); // definitions may have changed: remembered blocks may no longer be resources
+        }
         configRegions = List.copyOf(regions);
         codeRegions.values().removeIf(r -> {
             boolean clash = configRegions.stream().anyMatch(c -> c.id().equals(r.id()));
@@ -211,9 +222,59 @@ public final class DepthsEngine implements Depths, Listener {
             state.depleted.clear();
             state.world = world;
         }
+        depleteRaw(state, key, resource.depleted(), regionId, respawnTicks);
+    }
+
+    private void depleteRaw(PlayerDepletion state, long key, BlockData shown, String regionId, int respawnTicks) {
         int token = state.nextToken();
-        state.depleted.put(key, new PlayerDepletion.Depleted(token, resource.depleted(), regionId));
+        long endsAt = System.currentTimeMillis() + respawnTicks * 50L;
+        state.depleted.put(key, new PlayerDepletion.Depleted(token, shown, regionId, endsAt));
         wheel.schedule(respawnTicks, state.handle, key, token);
+    }
+
+    /** SECFIX1 F-11: parks the running timers of {@code state}'s current depleted world. */
+    private void park(UUID player, PlayerDepletion state) {
+        if (memory == null || state.world == null || state.depleted.isEmpty()) {
+            return;
+        }
+        List<DepletionMemory.Entry<BlockData>> entries = new ArrayList<>(state.depleted.size());
+        ObjectIterator<Long2ObjectMap.Entry<PlayerDepletion.Depleted>> it = state.depleted.long2ObjectEntrySet().fastIterator();
+        while (it.hasNext()) {
+            Long2ObjectMap.Entry<PlayerDepletion.Depleted> e = it.next();
+            PlayerDepletion.Depleted d = e.getValue();
+            entries.add(new DepletionMemory.Entry<>(e.getLongKey(), d.shown(), d.regionId(), d.endsAt()));
+        }
+        memory.park(player, state.world, entries, System.currentTimeMillis());
+    }
+
+    /**
+     * SECFIX1 F-11: hands back the parked timers of {@code player} in {@code world} (only blocks that are still resources
+     * of a known region). The client gets the depleted blocks with the next chunk send.
+     */
+    private void unpark(Player player, String world) {
+        if (memory == null) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        List<DepletionMemory.Entry<BlockData>> back = memory.take(player.getUniqueId(), world, now);
+        if (back.isEmpty()) {
+            return;
+        }
+        PlayerDepletion state = state(player);
+        if (!world.equals(state.world)) {
+            state.depleted.clear();
+            state.world = world;
+        }
+        RegionIndex<DepthsRegion> idx = index;
+        for (DepletionMemory.Entry<BlockData> e : back) {
+            long key = e.key();
+            DepthsRegion region = idx.at(world, BlockKeys.x(key), BlockKeys.y(key), BlockKeys.z(key));
+            if (region == null || !region.id().equals(e.regionId()) || state.depleted.containsKey(key)) {
+                continue;
+            }
+            depleteRaw(state, key, e.shown(), e.regionId(), DepletionMemory.ticksLeft(e.endsAt(), now));
+            queueResend(state, key); // chunks already sent get it next tick; later ones on their chunk send
+        }
     }
 
     private void restoreAll() {
@@ -491,20 +552,32 @@ public final class DepthsEngine implements Depths, Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
-        PlayerDepletion state = players.remove(event.getPlayer().getUniqueId());
+        UUID uuid = event.getPlayer().getUniqueId();
+        PlayerDepletion state = players.remove(uuid);
         if (state != null) {
+            park(uuid, state); // SECFIX1 F-11: running timers come back on the next join
             byHandle.remove(state.handle);
         }
     }
 
+    /** SECFIX1 F-11: a returning player gets their running timers back. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        unpark(player, player.getWorld().getName());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onWorldChange(PlayerChangedWorldEvent event) {
-        PlayerDepletion state = players.get(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        PlayerDepletion state = players.get(player.getUniqueId());
         if (state != null) {
+            park(player.getUniqueId(), state); // SECFIX1 F-11: kept until they are back in that world
             state.depleted.clear(); // the client dropped those chunks; timers find nothing and do nothing
             state.world = null;
             state.clearDamage();
         }
+        unpark(player, player.getWorld().getName());
     }
 
     // ------------------------------------------------------------------ Depths API

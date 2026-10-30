@@ -194,6 +194,10 @@ final class SpawnerManager implements Listener {
         }
         Block block = world.getBlockAt(sp.pos.x(), sp.pos.y(), sp.pos.z());
         if (block.getType() != Material.SPAWNER) {
+            if (sp.busy) {
+                schedule(sp, now + interval()); // a change (or the first save) is still running: decide after it
+                return;
+            }
             orphan(sp, "block_gone");
             return;
         }
@@ -250,16 +254,31 @@ final class SpawnerManager implements Listener {
         sp.configured = true;
     }
 
-    /** The block is gone (island reset, world edit): the row is removed and logged; nothing is given back. */
+    /**
+     * SECFIX1 F-07 / R3-13: the block is gone (crash before the chunk was saved, island reset, world edit). The row is
+     * frozen, not deleted: it moves to {@code stacking_spawners_frozen} in one transaction, never spawns and can't be
+     * taken (no dupe), and staff can give the spawners back from that table and the {@code spawner_frozen} audit row.
+     */
     private void orphan(Spawner sp, String reason) {
         sp.removed = true;
-        spawners.remove(sp.pos);
+        spawners.remove(sp.pos, sp);
         Pos p = sp.pos;
-        module.core().database().async(c -> store.deleteAny(c, p.world(), p.x(), p.y(), p.z())).exceptionally(e -> {
-            module.core().plugin().getLogger().log(Level.WARNING, "Stacking: could not delete the spawner row at " + p, e);
-            return false;
-        });
-        audit("spawner_orphan", Actor.SYSTEM, sp, sp.amount, 0, null, Map.of("reason", reason));
+        long now = System.currentTimeMillis();
+        then(module.core().database().transaction(c -> store.freeze(c, p.world(), p.x(), p.y(), p.z(), reason, now)), frozen -> {
+            if (frozen.isEmpty()) {
+                return; // no row any more (a take emptied it meanwhile): nothing to keep
+            }
+            SpawnerStore.Frozen f = frozen.get();
+            module.core().plugin().getLogger().warning("Stacking: the block of a stacked spawner is gone (" + reason + "); "
+                    + f.row().amount() + " x " + f.row().type() + " at " + p + " were frozen for staff (stacking_spawners_frozen id "
+                    + f.id() + "). Nothing was deleted.");
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("reason", reason);
+            details.put("frozen_id", f.id());
+            details.put("placed_by", String.valueOf(f.row().placedBy()));
+            audit("spawner_frozen", Actor.SYSTEM, sp, f.row().amount(), 0, null, details);
+        }, error -> module.core().plugin().getLogger().log(Level.SEVERE, "Stacking: could not freeze the spawner row at " + p
+                + "; it stays in stacking_spawners and is checked again after the next restart", error));
     }
 
     // ================================================================== vanilla behaviour
@@ -331,19 +350,33 @@ final class SpawnerManager implements Listener {
         // Creative placing uses no item, so nothing is handed back if saving fails.
         ItemStack refund = player.getGameMode() == GameMode.CREATIVE ? null : item.asOne();
         UUID playerId = player.getUniqueId();
+        String placerName = player.getName();
         SpawnerStore.Row row = new SpawnerStore.Row(pos.world(), pos.x(), pos.y(), pos.z(), sp.type, 1, island, playerId, now);
-        // The item is used up by the placement right away; it is handed back if the row can't be written.
-        module.core().scheduler().later("stacking-spawner-configure", 1L, () -> {
+        // SECFIX1 F-01b: the server takes the item out of the hand AFTER this event. One tick later the placement is final:
+        // the player file is saved without the item, and only then the row is written (a crash loses the spawner at
+        // worst, never keeps the item next to a row). A placement cancelled by a later plugin leaves no block: no row.
+        module.core().scheduler().later("stacking-spawner-place", 1L, () -> {
             Block b = block.getWorld().getBlockAt(pos.x(), pos.y(), pos.z());
-            if (b.getType() == Material.SPAWNER && !sp.removed) {
-                configure(b, sp);
+            if (b.getType() != Material.SPAWNER || sp.removed) {
+                sp.removed = true;
+                spawners.remove(pos, sp);
+                return; // cancelled after us: the item was never used
             }
+            configure(b, sp);
+            Player placer = Bukkit.getPlayer(playerId);
+            insertPlaced(sp, block, row, now, refund, playerId, placerName, placer);
         });
-        then(module.core().database().async(c -> store.insert(c, row, now)), ok -> {
+    }
+
+    /** Second half of a placement (next tick): save the player file, then write the row. */
+    private void insertPlaced(Spawner sp, Block block, SpawnerStore.Row row, long now, ItemStack refund, UUID playerId, String name,
+                              Player player) {
+        then(net.skybornmc.skyblock.common.player.PlayerSaves.commitAfterSave(player, "placing a spawner",
+                () -> module.core().database().async(c -> store.insert(c, row, now))), ok -> {
             sp.busy = false;
             if (Boolean.TRUE.equals(ok)) {
                 schedule(sp, Bukkit.getCurrentTick() + interval());
-                audit("spawner_place", Actor.player(playerId, player.getName()), sp, 0, 1, block.getLocation(), Map.of());
+                audit("spawner_place", Actor.player(playerId, name), sp, 0, 1, block.getLocation(), Map.of());
                 Player online = Bukkit.getPlayer(playerId);
                 if (online != null) {
                     module.msg().send(online, "spawner.placed", mob(sp.type), Msg.p("max", limit(sp)));
@@ -399,6 +432,9 @@ final class SpawnerManager implements Listener {
         int take = Math.min(amount, sp.amount);
         if (take <= 0) {
             return;
+        }
+        if (net.skybornmc.skyblock.common.box.ItemBox.refuses(module.core().services(), player)) {
+            return; // SECFIX1 F-09: the /box is at its hard cap (player told); the spawners stay in the block
         }
         int before = sp.amount;
         int after = before - take;
@@ -519,7 +555,11 @@ final class SpawnerManager implements Listener {
                 deny(online, "spawner.error");
             }
         };
-        then(module.core().database().async(c -> store.change(c, p.world(), p.x(), p.y(), p.z(), sp.type, before, after, System.currentTimeMillis())),
+        // SECFIX1 F-01b: the spawner items left the inventory; the player file is saved before the stack grows in the
+        // database, so a crash can't give the items back while the stack keeps them. A failed save refunds.
+        then(net.skybornmc.skyblock.common.player.PlayerSaves.commitAfterSave(player, "adding spawners",
+                        () -> module.core().database().async(c -> store.change(c, p.world(), p.x(), p.y(), p.z(), sp.type, before, after,
+                                System.currentTimeMillis()))),
                 ok -> {
                     if (!Boolean.TRUE.equals(ok)) {
                         refund.accept(null);

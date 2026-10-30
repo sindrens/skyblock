@@ -874,7 +874,8 @@ admin:
       - "<c:text><c:value><player></c:value> is removed from <c:value><island></c:value>"
       - "<c:text>and sent to spawn if they're on it."
     done: "<prefix><c:success><sym:check></c:success> <c:text>Removed <c:value><player></c:value> from <c:value><island></c:value>."
-  # Owner answer 251: kick backups (/isadmin restore <player>). <role> = the island role they had, <money> = money at the kick.
+  # Owner answer 251: kick backups (/isadmin restore <player>). <role> = the island role they had. SECFIX1 F-02: a backup
+  # gives back only what was taken: a kick takes only the membership; a disband/reset gives back <money> = what it withdrew.
   restore:
     unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No player called <c:value><player></c:value> has played here."
     menu-crumb: "Kick backups of <player>"
@@ -891,7 +892,7 @@ admin:
       name: "<c:value><island></c:value> <c:muted>#<id>"
       lore:
         - "<c:bar>| </c:bar><c:text>Role: <c:value><role>"
-        - "<c:bar>| </c:bar><c:text>Money: <c:value><money>"
+        - "<c:bar>| </c:bar><c:text>Money back: <c:value><money>"
         - "<c:bar>| </c:bar><c:text>Items: <c:value><items>"
         - "<c:bar>| </c:bar><c:text>Kicked by <c:value><by></c:value> <c:muted>on <date>"
         - "<c:bar>| </c:bar><c:text>State: <c:value><state>"
@@ -910,22 +911,25 @@ admin:
       items: "Items waiting"
       restored: "Restored"
     items-yes: "Saved"
-    items-no: "Not saved (offline)"
+    items-no: "None taken"
+    # SECFIX1 F-02: a reset saved the items, but the server stopped before it confirmed they left the player.
+    items-pending: "Pending: check by hand"
     crumb: "Restore <player>"
     shown:
       name: "<c:success><bold>Restore <player>"
       lore:
         - "<c:text>To: <c:value><island>"
     details:
-      - "<c:text><c:value><player></c:value> joins <c:value><island></c:value> again"
-      - "<c:text>as <c:value><role></c:value>. Money is topped up to"
-      - "<c:text>what they had. Items only go into an"
-      - "<c:text>empty inventory, so nothing is doubled."
-    done: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>is back on <c:value><island></c:value> as <c:value><role></c:value>. <c:muted>Money added: <money>"
+      - "<c:text>Gives back only what was taken, once."
+      - "<c:text>Kick: <c:value><player></c:value> joins <c:value><island></c:value> again"
+      - "<c:text>as <c:value><role></c:value>. No money or items (a kick takes none)."
+      - "<c:text>Reset: the money it took, and items into"
+      - "<c:text>an empty inventory only."
+    done: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>is back on <c:value><island></c:value> as <c:value><role></c:value>."
     you: "<prefix><c:success><sym:star></c:success> <c:text>Staff restored your place on <c:value><island></c:value>."
     done-already: "<prefix><c:error><sym:cross></c:error> <c:text>That backup was already restored."
-    # Owner answer 591: restoring a disband/reset backup (the island is gone): money topped up, island bank into the purse.
-    reset-done: "<prefix><c:success><sym:check></c:success> <c:text>Restored <c:value><player></c:value><c:text>'s profile from <c:value><island></c:value>. <c:muted>Money added: <money> · island bank added: <bank>"
+    # Owner answer 591: restoring a disband/reset backup (the island is gone): the money it took back, island bank into the purse.
+    reset-done: "<prefix><c:success><sym:check></c:success> <c:text>Restored <c:value><player></c:value><c:text>'s profile from <c:value><island></c:value>. <c:muted>Money back: <money> · island bank back: <bank>"
     profile-deleted: "<prefix><c:error><sym:cross></c:error> <c:text>That profile of <c:value><player></c:value> was deleted. Nothing to restore."
     island-gone: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>doesn't exist any more. Nothing was restored."
     has-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is on another island now. Remove them there first with <c:value>/isadmin kick</c:value>."

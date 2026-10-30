@@ -306,6 +306,12 @@ final class Forge {
         String holderName = player.getName();
         module.core.database().transaction(c -> module.repository().upgrade(c, upgraded, tool.tier(), holder, holderName, season,
                 System.currentTimeMillis())).whenComplete((ok, error) -> {
+            if (error == null && Boolean.TRUE.equals(ok)) {
+                // SECFIX1 F-01c: money (paid first) and the tool row are in the database now; the player file follows
+                // right away (materials gone, new tier) instead of at the next autosave, so a crash loses at worst.
+                module.core.scheduler().main("tools-forge-save", () -> net.skybornmc.skyblock.common.player.PlayerSaves.save(
+                        Bukkit.getPlayer(holder), "a forge upgrade"));
+            }
             if (error != null) {
                 module.core.plugin().getLogger().log(Level.WARNING, "Tools: forge of " + toolId + " not saved yet (will retry)", Database.cause(error));
             } else if (!ok) {
@@ -415,6 +421,8 @@ final class Forge {
         inv.setItem(slot, null);
         ItemStack stack = module.items().create(tool, "blueprint:" + def.id(), player.getName(), def.id());
         give(player, stack);
+        // SECFIX1 F-01c: the blueprint is used up in the database; save the file without it (and with the new tool) now.
+        net.skybornmc.skyblock.common.player.PlayerSaves.save(player, "a blueprint craft");
         module.msg().send(player, "blueprint.crafted", Msg.mm("tool", module.items().displayName(tool, stack)),
                 Msg.mm("ability", module.items().abilityName(def.ability())));
         sound(player, module.config().soundForge);

@@ -20,6 +20,12 @@ final class ShopStore {
     static final String DELIVERING = "delivering";
     static final String PENDING = "pending";
     static final String DELIVERED = "delivered";
+    /**
+     * SECFIX1 F-12: left {@code delivering} by a crash or stop. The items may already be in the player's saved inventory,
+     * so the purchase is never handed over again automatically: staff check it ({@code shop_review} in the audit log) and
+     * refund or deliver by hand.
+     */
+    static final String REVIEW = "review";
 
     /** One purchase. */
     record Purchase(UUID id, int seasonId, UUID player, UUID profile, String playerName, String itemId, String category,
@@ -60,13 +66,24 @@ final class ShopStore {
                 ShopStore::map, profile, PENDING);
     }
 
-    /** Startup: rows left {@code delivering} by a crash or stop become {@code pending} (handed over again). */
-    CompletableFuture<Integer> recover(long now) {
+    /**
+     * Startup: rows left {@code delivering} by a crash or stop. SECFIX1 F-12: the hand-over may have happened (items given
+     * and the player file saved just before the crash), so they are NEVER moved back to {@code pending} (that delivered
+     * twice). They become {@code review} for staff instead. Completes with the purchases moved.
+     */
+    CompletableFuture<List<Purchase>> recover(long now) {
         return db.async(c -> recover(c, now));
     }
 
-    static int recover(Connection c, long now) throws SQLException {
-        return Sql.update(c, "UPDATE shop_purchases SET state = ?, updated_at = ? WHERE state = ?", PENDING, now, DELIVERING);
+    static List<Purchase> recover(Connection c, long now) throws SQLException {
+        List<Purchase> stuck = Sql.query(c, "SELECT * FROM shop_purchases WHERE state = ? ORDER BY created_at, id", ShopStore::map, DELIVERING);
+        List<Purchase> moved = new java.util.ArrayList<>(stuck.size());
+        for (Purchase p : stuck) {
+            if (move(c, p.id(), DELIVERING, REVIEW, now)) {
+                moved.add(p);
+            }
+        }
+        return moved;
     }
 
     static Purchase get(Connection c, UUID id) throws SQLException {

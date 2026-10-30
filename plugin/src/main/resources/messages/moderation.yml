@@ -1493,6 +1493,8 @@ sanctions:
     freeze: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance is frozen by staff, so you can't <use> <c:muted>(until <until>, <reason>)"
     trade: "<prefix><c:error><sym:cross></c:error> <c:text>Your trading is blocked by staff, so you can't <use> <c:muted>(until <until>, <reason>)"
     other: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't <use> right now."
+  # SECFIX1 F-15: the sanction check failed, so the action is refused to be safe (fail closed). <use>
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>You can't <use> right now: we couldn't check your account. Nothing was taken. Try again in a moment."
   # To the player when staff act.
   you:
     freeze: "<prefix><c:error><sym:cross></c:error> <c:text>Staff froze your balance until <c:value><until></c:value><c:text>: <c:value><reason>"

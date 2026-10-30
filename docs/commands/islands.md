@@ -91,9 +91,11 @@ read-only. Every change is logged (`island_perm`).
   with the untouched defaults 4/8 are moved to 5/9 once, `config-version` 2); a player joins at most
   `members.max-joins-per-season` (3) islands per season (`season-id`, table `player_island_joins`). No join cooldown.
   Founding an island never counts as a join.
-- **Kick backups (owner answer 251):** kicking a stored member (`/is kick`, `/isadmin kick`, moderation removals) saves a
-  backup in `island_kick_backups` (V012): island, role, the profile's money and, if the profile was online and active,
-  its inventory and ender chest (logged `island_kick_backup`). Admins restore it with `/isadmin restore <player>`.
+- **Kick backups (owner answer 251, SECFIX1 F-02):** kicking a stored member (`/is kick`, `/isadmin kick`, moderation
+  removals) saves a backup in `island_kick_backups` (V012): island and role only. A kick takes only the membership (the
+  player keeps their money and items), so a restore gives back only the membership (logged `island_kick_backup`). Admins
+  restore it with `/isadmin restore <player>`. Old kick backups that still hold money or items never give them back
+  (that was a dupe: spend everything, ask for a restore).
 - XP a member earned stays with the island when they leave (A5; implemented with stats in M2.6).
 - Online members are told about every member change (invites, joins, leaves, kicks, promotions, transfers, coop).
 - Tables (V003): `island_invites`, `island_coops`, `player_island_joins`, `island_join_blocks`, columns
@@ -116,11 +118,15 @@ actor)` and `blockJoining(uuid, until[, reason, actor])` / `joinBlockedUntil` fo
   (`on-reset`) resets every member profile of the island: first a backup row per member in `island_kick_backups`
   (removal `island_disband` / `island_reset`: role, money, and inventory + ender chest when the member is online on
   that profile; the leader's row also keeps the island bank money, V014 `bank_money`), then the profile's money is
-  taken (`lifecycle.profile-reset.money`, ledger `island_profile_reset`, never more than was backed up) and the
-  captured inventory and ender chest are emptied (`lifecycle.profile-reset.items`; only when they still hold exactly
-  what was saved, otherwise the backup drops its items so nothing can be doubled). No backup saved = no reset. Members
-  are told; logged `island_profile_reset`. Admins restore with `/isadmin restore <player>`: money topped up, the island
-  bank money paid into that profile's purse (ledger `island_bank_restore`, once), items into an empty inventory; logged
+  taken (`lifecycle.profile-reset.money`, ledger `island_profile_reset`, never more than was backed up; SECFIX1 F-02: the
+  amount really withdrawn is recorded in `money_taken`, V015) and the captured inventory and ender chest are emptied
+  (`lifecycle.profile-reset.items`; only when they still hold exactly what was saved, otherwise the backup drops its
+  items so nothing can be doubled). Items are saved as pending first and become restorable only after the inventory was
+  emptied and the player file saved (a crash in between leaves "Pending: check by hand" in the menu, never a restorable
+  copy next to the player's items). No backup saved = no reset. Members are told; logged `island_profile_reset`. Admins
+  restore with `/isadmin restore <player>`: exactly the money that was taken (`money_taken`, ledger
+  `island_kick_restore`, once; never a top-up to the old balance), the island bank money paid into that profile's purse
+  (ledger `island_bank_restore`, once), items into an empty inventory (player file saved right after); logged
   `island_reset_restore`. Skills, Depths unlocks and other per-profile progress are not reset yet (open question).
 - **Slot states** (`island_slots.state`): `used` → `clearing` → `free` → `used`. A clearing slot is never handed out;
   free slots are reused (lowest id first) before a new spiral slot is added.
@@ -151,7 +157,7 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
 | `/isadmin reset <island>` | Remove the island and give its leader a new starter island right away (built now if online, else on their next `/is`); other members removed (confirm). Owner answer 591: every member profile is reset and the island bank money deleted, with restorable backups (`/isadmin restore`) | `skyblock.island.admin.reset` (admin) | ✅ |
 | `/isadmin hide <island> [note]` | Owner answer 293: hide an island from the visit browser (it can still be visited by name), with an optional note shown in `/isadmin info`. Logged `island_browser_hide` | `skyblock.island.admin.hide` (mod) | ✅ |
 | `/isadmin unhide <island>` | Show a hidden island in the visit browser again (tab completes hidden islands). Logged `island_browser_unhide` | `skyblock.island.admin.hide` (mod) | ✅ |
-| `/isadmin restore <player>` | Owner answer 251: the player's kick backups (chest menu, newest first: island, role, money, items saved or not, who kicked, state). Click → confirm → the profile joins the island again with its old role (once; slots and one island per profile apply, a refused restore stays open), its money is topped up to the amount at the kick (never taken away; ledger `island_kick_restore`) and the saved inventory + ender chest are given back only into an empty inventory and ender chest of that profile while it is online (else they wait; click again later). Tab completes players with open backups. Logged `isadmin_restore`, `island_kick_restore`, `island_kick_restore_items` | `skyblock.island.admin.restore` (admin) | ✅ |
+| `/isadmin restore <player>` | Owner answer 251: the player's backups (chest menu, newest first: island, role, money back, items, who kicked, state). SECFIX1 F-02: a backup gives back only what was taken, once. Kick: click → confirm → the profile joins the island again with its old role (once; slots and one island per profile apply, a refused restore stays open); no money, no items (a kick takes none). Disband/reset: the money the reset withdrew (once, ledger `island_kick_restore`), the island bank money, and the saved inventory + ender chest only into an empty inventory and ender chest of that profile while it is online (else they wait; click again later). Tab completes players with open backups. Logged `isadmin_restore`, `island_kick_restore`, `island_reset_restore`, `island_kick_restore_items` | `skyblock.island.admin.restore` (admin) | ✅ |
 | `/isadmin bypass` | Same as `/is bypass` | `skyblock.island.bypass` (admin) | ✅ |
 | `/isadmin slots` | Grid overview GUI (spiral order): used (owner, members, size), clearing (progress), free; filter and reload buttons; click = teleport | `skyblock.island.admin.slots` (admin) | ✅ |
 | `/isadmin teleport-slot <slot>` | Teleport to the top of a slot's center column (tab completes slot ids) | `skyblock.island.admin.teleport-slot` (admin) | ✅ |

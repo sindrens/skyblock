@@ -183,6 +183,12 @@ final class Sanctions implements SanctionService {
     }
 
     @Override
+    public void tellUnavailable(Player player, Use use) {
+        msg.send(player, "sanctions.unavailable", Msg.p("use", text(player, "sanctions.uses." + use.id())));
+        core.sounds().play(player, "error");
+    }
+
+    @Override
     public void tellOther(Player viewer, String otherName, Use use) {
         msg.send(viewer, "sanctions.blocked.other", Msg.p("player", otherName), Msg.p("use", text(viewer, "sanctions.uses." + use.id())));
         core.sounds().play(viewer, "error");

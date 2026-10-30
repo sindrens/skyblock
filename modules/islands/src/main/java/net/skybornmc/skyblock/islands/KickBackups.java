@@ -31,18 +31,25 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 
 /**
- * Owner answer 251 (round 1): kicking can never take everything from a member for good. When a stored member is kicked
- * (by the island or by staff/moderation), a backup of their island profile is saved: island role, the profile's money
- * and, when the profile is online and active at that moment, its inventory and ender chest. Admins restore it with
- * {@code /isadmin restore <player>} (a list of that player's backups; a click restores after a confirm screen):
- * <ol>
- *   <li>membership with the old role (one transaction, at most once; slots and one island per profile still apply),</li>
- *   <li>money topped up to the amount at the kick (never taken away; one ledger deposit, idempotent per backup),</li>
- *   <li>items, only into an <b>empty</b> inventory and ender chest of that profile while it is online and active, so a
- *       restore can never duplicate items the player still has (else they wait in the backup; click again later).</li>
- * </ol>
- * Everything is audited (category island: {@code island_kick_backup}, {@code island_kick_restore},
- * {@code island_kick_restore_items}).
+ * Owner answer 251 (round 1): kicking can never take everything from a member for good. Admins restore a backup with
+ * {@code /isadmin restore <player>} (a list of that player's backups; a click restores after a confirm screen).
+ *
+ * <p><b>SECFIX1 F-02: a backup gives back only what was really taken, once.</b></p>
+ * <ul>
+ *   <li><b>Kick</b> (by the island or by staff/moderation): a kick takes only the membership; the player keeps their
+ *       money and items. The backup stores the island and the old role, and a restore gives back the membership (one
+ *       transaction, at most once; slots and one island per profile still apply). It never adds money or items (that was
+ *       a dupe: spend everything, get it all back). Old kick backups that still hold items or money are ignored the same
+ *       way.</li>
+ *   <li><b>Disband / reset</b> (owner answer 591): the backup is saved first, then the profile is reset. Money: the
+ *       withdrawal really made is recorded ({@code money_taken}) and a restore deposits exactly that (idempotent per
+ *       backup), never a top-up to an old balance. Items: saved as pending, then the inventory and ender chest are
+ *       emptied, the player file is saved, and only then the items are marked restorable. A crash in between can only
+ *       leave a pending capture for staff, never a restorable copy next to the items the player still has.</li>
+ * </ul>
+ * Items go only into an <b>empty</b> inventory and ender chest of that profile while it is online and active, and the
+ * player file is saved right after. Everything is audited (category island: {@code island_kick_backup},
+ * {@code island_kick_restore}, {@code island_profile_reset}, {@code island_reset_restore}, {@code island_kick_restore_items}).
  */
 final class KickBackups {
 
@@ -102,25 +109,17 @@ final class KickBackups {
 
     // ------------------------------------------------------------------ capture (after the kick was saved, main thread)
 
+    /**
+     * SECFIX1 F-02: a kick takes only the membership (the player keeps money and items), so the backup holds only the
+     * island and the old role; a restore gives back exactly that.
+     */
     void capture(Island island, UUID profile, Role oldRole, String reason, Actor actor) {
         UUID player = islands.person(profile);
         String playerName = islands.name(profile);
-        Player online = islands.online(profile);
-        byte[] inventory = null;
-        byte[] ender = null;
-        if (online != null && !islands.profiles().isSwitching(online.getUniqueId())) {
-            inventory = ItemStack.serializeItemsAsBytes(nonNull(online.getInventory().getContents()));
-            ender = ItemStack.serializeItemsAsBytes(nonNull(online.getEnderChest().getContents()));
-        }
-        byte[] inv = inventory;
-        byte[] end = ender;
         String islandName = islands.displayName(island);
         long now = System.currentTimeMillis();
-        Optional<EconomyService> economy = core.services().optional(EconomyService.class);
-        CompletableFuture<Long> money = economy.isEmpty() ? CompletableFuture.completedFuture(null)
-                : economy.get().balance(AccountRef.player(profile), Currency.MONEY).handle((v, e) -> e == null ? v : null);
-        money.thenCompose(m -> store.save(new KickBackupStore.NewBackup(island.id(), islandName, profile, player, playerName, oldRole, m,
-                inv, end, reason, actor.name(), now)).thenApply(id -> new long[]{id, m == null ? -1 : m}))
+        store.save(KickBackups.kickBackup(island.id(), islandName, profile, player, playerName, oldRole, reason, actor.name(), now))
+                .thenApply(id -> new long[]{id})
                 .whenCompleteAsync((saved, error) -> {
                     if (error != null) {
                         core.plugin().getLogger().log(Level.SEVERE, "Islands: saving the kick backup of " + playerName + " failed",
@@ -132,12 +131,17 @@ final class KickBackups {
                     details.put("player", profile.toString());
                     details.put("player_name", playerName);
                     details.put("role", MemberStore.key(oldRole));
-                    details.put("money", saved[1]);
-                    details.put("items_captured", inv != null);
+                    details.put("takes", "membership"); // SECFIX1 F-02: no money, no items
                     details.put("reason", reason);
                     core.audit().log(AuditCategory.ISLAND, "island_kick_backup", actor, island.id().toString(), islandName, null, null, details);
                     refreshNames();
                 }, main);
+    }
+
+    /** SECFIX1 F-02: the backup row of a kick: island and role only (a kick takes no money and no items). Pure. */
+    static KickBackupStore.NewBackup kickBackup(UUID islandId, String islandName, UUID profile, UUID player, String playerName, Role role,
+                                                String reason, String by, long now) {
+        return new KickBackupStore.NewBackup(islandId, islandName, profile, player, playerName, role, null, null, null, reason, by, now);
     }
 
     // ------------------------------------------------------------------ owner answer 591: disband / reset
@@ -199,6 +203,8 @@ final class KickBackups {
                     boolean cleared = inv != null && clearItems(profile, inv, end);
                     if (inv != null && !cleared) {
                         store.dropItems(backupId); // the player still has them: a restore must not give them twice
+                    } else if (cleared) {
+                        confirmItemsAfterSave(profile, playerName, backupId);
                     }
                     Map<String, Object> details = new HashMap<>();
                     details.put("backup", backupId);
@@ -218,6 +224,25 @@ final class KickBackups {
                     }
                     refreshNames();
                 }, main);
+    }
+
+    /**
+     * SECFIX1 F-02: the items left the player; the player file is saved now and only then the backup offers them. If the
+     * save fails they stay pending (staff check by hand): a restorable copy next to an unsaved file would be a dupe.
+     */
+    private void confirmItemsAfterSave(UUID profile, String playerName, long backupId) {
+        if (!net.skybornmc.skyblock.common.player.PlayerSaves.save(islands.online(profile), "an island profile reset")) {
+            core.plugin().getLogger().severe("Islands: reset backup " + backupId + " of " + playerName + " keeps its items PENDING: "
+                    + "the player file could not be saved. Check by hand before giving them back.");
+            return;
+        }
+        store.confirmItems(backupId).whenComplete((ok, error) -> {
+            if (error != null || !Boolean.TRUE.equals(ok)) {
+                core.plugin().getLogger().log(Level.SEVERE, "Islands: reset backup " + backupId + " of " + playerName + " keeps its "
+                        + "items PENDING (could not confirm them). Check by hand before giving them back.", error == null ? null
+                        : Database.cause(error));
+            }
+        });
     }
 
     /** Empties the inventory and ender chest only if they still hold exactly what was backed up. Main thread. */
@@ -249,7 +274,15 @@ final class KickBackups {
                 return CompletableFuture.completedFuture(null);
             }
             return economy.get().execute(Transaction.withdraw(account, Currency.MONEY, amount, TX_PROFILE_RESET).actor(actor)
-                    .reference("island reset backup " + backupId).idempotencyKey(TX_PROFILE_RESET + ":" + backupId));
+                    .reference("island reset backup " + backupId).idempotencyKey(TX_PROFILE_RESET + ":" + backupId))
+                    .thenCompose(result -> {
+                        // SECFIX1 F-02: record what was really taken; a restore gives back exactly this. A crash between
+                        // the withdrawal and this write loses the refund (staff see the ledger row), never doubles it.
+                        if (result == null || !result.ok()) {
+                            return CompletableFuture.completedFuture(null);
+                        }
+                        return store.recordMoneyTaken(backupId, amount).thenApply(ok -> result);
+                    });
         }).whenComplete((result, error) -> {
             if (error != null) {
                 core.plugin().getLogger().log(Level.WARNING, "Islands: taking the money of a reset profile failed (backup "
@@ -270,7 +303,7 @@ final class KickBackups {
                 islands.fail(staff, "admin.restore.done-already");
                 return;
             }
-            topUpMoney(backup, actor).thenCombine(restoreBank(backup, actor), (added, bank) -> new long[]{added, bank})
+            giveBackMoney(backup, actor).thenCombine(restoreBank(backup, actor), (added, bank) -> new long[]{added, bank})
                     .whenCompleteAsync((amounts, failure) -> {
                         long money = failure == null ? amounts[0] : 0;
                         long bank = failure == null ? amounts[1] : 0;
@@ -412,49 +445,35 @@ final class KickBackups {
             }
             islands.refreshBorders(island);
         }
-        topUpMoney(backup, actor).whenCompleteAsync((added, error) -> {
-            long money = error == null && added != null ? added : 0;
-            Map<String, Object> details = new HashMap<>();
-            details.put("backup", backup.id());
-            details.put("player", backup.profileId().toString());
-            details.put("player_name", backup.playerName());
-            details.put("role", MemberStore.key(role));
-            details.put("money_added", money);
-            core.audit().log(AuditCategory.ISLAND, "island_kick_restore", actor, island.id().toString(), backup.islandName(), null, null, details);
-            msg.send(staff, "admin.restore.done", Msg.p("player", backup.playerName()), Msg.p("island", backup.islandName()),
-                    Msg.p("role", module.raw("role." + MemberStore.key(role))), Msg.p("money", net.skybornmc.skyblock.common.util.Format.number(money)));
-            core.sounds().play(staff, "success");
-            Player target = islands.online(backup.profileId());
-            if (target != null) {
-                msg.send(target, "admin.restore.you", Msg.p("island", backup.islandName()));
-            }
-            if (backup.itemsOpen()) {
-                restoreItems(staff, backup);
-            }
-        }, main);
+        // SECFIX1 F-02: a kick took only the membership, so only the membership comes back (no money, no items).
+        Map<String, Object> details = new HashMap<>();
+        details.put("backup", backup.id());
+        details.put("player", backup.profileId().toString());
+        details.put("player_name", backup.playerName());
+        details.put("role", MemberStore.key(role));
+        core.audit().log(AuditCategory.ISLAND, "island_kick_restore", actor, island.id().toString(), backup.islandName(), null, null, details);
+        msg.send(staff, "admin.restore.done", Msg.p("player", backup.playerName()), Msg.p("island", backup.islandName()),
+                Msg.p("role", module.raw("role." + MemberStore.key(role))));
+        core.sounds().play(staff, "success");
+        Player target = islands.online(backup.profileId());
+        if (target != null) {
+            msg.send(target, "admin.restore.you", Msg.p("island", backup.islandName()));
+        }
     }
 
-    /** Deposits what is missing to reach the money at the kick (never removes money). Completes with the amount added. */
-    private CompletableFuture<Long> topUpMoney(KickBackupStore.Backup backup, Actor actor) {
+    /**
+     * SECFIX1 F-02: deposits exactly what the disband/reset withdrew ({@link KickBackupStore.Backup#restoreMoney()}), once
+     * per backup (idempotency key). Never a top-up to an old balance. Completes with the amount given back.
+     */
+    private CompletableFuture<Long> giveBackMoney(KickBackupStore.Backup backup, Actor actor) {
         Optional<EconomyService> economy = core.services().optional(EconomyService.class);
-        if (backup.money() == null || backup.money() <= 0 || economy.isEmpty()) {
+        long amount = backup.restoreMoney();
+        if (amount <= 0 || economy.isEmpty()) {
             return CompletableFuture.completedFuture(0L);
         }
-        AccountRef account = AccountRef.player(backup.profileId());
-        return economy.get().balance(account, Currency.MONEY).thenCompose(current -> {
-            long missing = missingMoney(backup.money(), current);
-            if (missing <= 0) {
-                return CompletableFuture.completedFuture(0L);
-            }
-            return economy.get().execute(Transaction.deposit(account, Currency.MONEY, missing, TX_REASON).actor(actor)
-                    .reference("island kick backup " + backup.id()).idempotencyKey(TX_REASON + ":" + backup.id()))
-                    .thenApply(r -> r.ok() ? missing : 0L);
-        });
-    }
-
-    /** Money to add so the profile has at least what it had at the kick (0 when it has that much or more). Pure. */
-    static long missingMoney(long atKick, long now) {
-        return Math.max(0, atKick - Math.max(0, now));
+        return economy.get().execute(Transaction.deposit(AccountRef.player(backup.profileId()), Currency.MONEY, amount, TX_REASON).actor(actor)
+                        .reference("island reset backup " + backup.id()).idempotencyKey(TX_REASON + ":" + backup.id()))
+                .thenApply(r -> r.ok() ? amount : 0L);
     }
 
     /** Items only into an empty inventory and ender chest of the online, active profile (no duplicates possible). */
@@ -488,6 +507,7 @@ final class KickBackups {
             }
             now.getInventory().setContents(fit(ItemStack.deserializeItemsFromBytes(backup.inventory()), now.getInventory().getSize()));
             now.getEnderChest().setContents(fit(ItemStack.deserializeItemsFromBytes(backup.enderChest()), now.getEnderChest().getSize()));
+            net.skybornmc.skyblock.common.player.PlayerSaves.save(now, "an island backup restore"); // SECFIX1 F-01c
             core.audit().log(AuditCategory.ISLAND, "island_kick_restore_items", Actor.player(staff), backup.islandId().toString(),
                     backup.islandName(), null, null, Map.of("backup", backup.id(), "player", backup.profileId().toString(),
                             "player_name", backup.playerName()));
