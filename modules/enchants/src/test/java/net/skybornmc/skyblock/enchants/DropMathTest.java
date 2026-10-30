@@ -34,8 +34,9 @@ class DropMathTest {
         assertEquals(List.of(2000, 3000, 4000, 5000), List.of(rules.oneIn(Pool.MINING, 0), rules.oneIn(Pool.MINING, 1),
                 rules.oneIn(Pool.MINING, 2), rules.oneIn(Pool.MINING, 3)));
         assertEquals(5000, rules.oneIn(Pool.FORAGING, 3));
-        assertEquals(150, rules.oneIn(Pool.COMBAT, 0));
-        assertEquals(300, rules.oneIn(Pool.COMBAT, 3));
+        // E4 (TUNE): combat 1 in 300/350/400/450 (~1.2-1.4 books per played hour, ECONOMY_BALANCE §9.7)
+        assertEquals(List.of(300, 350, 400, 450), List.of(rules.oneIn(Pool.COMBAT, 0), rules.oneIn(Pool.COMBAT, 1),
+                rules.oneIn(Pool.COMBAT, 2), rules.oneIn(Pool.COMBAT, 3)));
         // pity = 2.5x the expected gap
         for (Pool pool : List.of(Pool.MINING, Pool.FORAGING, Pool.COMBAT)) {
             for (int band = 0; band < 4; band++) {

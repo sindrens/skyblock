@@ -194,10 +194,10 @@ final class EnchanterConfig extends ModuleConfig {
     public List<String> dropForagingOneIn = List.of("2000", "3000", "4000", "5000");
     @Setting(path = "drops.foraging.pity", desc = "Depths logs without a book that guarantee the next one, per band A-D.", level = Setting.Level.OWNER)
     public List<String> dropForagingPity = List.of("5000", "7500", "10000", "12500");
-    @Setting(path = "drops.combat.one-in", desc = "Depths combat kills: 1 in this many drops a book, per band A-D.", level = Setting.Level.OWNER)
-    public List<String> dropCombatOneIn = List.of("150", "200", "250", "300");
-    @Setting(path = "drops.combat.pity", desc = "Depths combat kills without a book that guarantee the next one, per band A-D.", level = Setting.Level.OWNER)
-    public List<String> dropCombatPity = List.of("375", "500", "625", "750");
+    @Setting(path = "drops.combat.one-in", desc = "Depths combat kills: 1 in this many drops a book, per band A-D (TUNE: ~400-500 kills per played hour -> ~1.2-1.4 books/h like the mine).", level = Setting.Level.OWNER)
+    public List<String> dropCombatOneIn = List.of("300", "350", "400", "450");
+    @Setting(path = "drops.combat.pity", desc = "Depths combat kills without a book that guarantee the next one, per band A-D (2.5x the 1-in-N gap).", level = Setting.Level.OWNER)
+    public List<String> dropCombatPity = List.of("750", "875", "1000", "1125");
 
     @Setting(path = "drops.rarity-odds.a", desc = "Book rarity odds in band A (tier 1-3) as rarity:weight.", level = Setting.Level.OWNER)
     public List<String> dropOddsA = List.of("common:70", "uncommon:26", "rare:4");
