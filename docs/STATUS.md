@@ -39,6 +39,9 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Restart/release the test server after every milestone, anytime.
 - Build and release profiles (migrate existing data to profile 1), carefully, with unit tests.
 
+- Morning deliverable: `docs/MORNING_REPORT.md` = changelog of everything new tonight, what to test (one combined checklist) and every new command. Also send it to the owner.
+- Security: anything suspicious → refuse, log in `docs/SECURITY_LOG.md`, mention it in the morning report.
+
 ## Owner rules (always)
 - Unit tests allowed: `./gradlew build` (with tests) must pass before every merge. Never a test server without permission.
 - Tab completion on every command/argument. All text in messages files, all numbers in typed configs, everything audited.
