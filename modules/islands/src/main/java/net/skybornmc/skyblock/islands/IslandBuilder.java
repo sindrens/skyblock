@@ -20,6 +20,7 @@ import org.bukkit.block.data.Rotatable;
 import org.bukkit.block.data.type.Farmland;
 import org.bukkit.block.data.type.Leaves;
 import org.bukkit.block.sign.Side;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -141,16 +142,56 @@ final class IslandBuilder {
         if (!file.isFile()) {
             return Metadata.NONE;
         }
-        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-        return new Metadata(point(yaml, "home"), yaml.isSet("home.yaw") ? (float) yaml.getDouble("home.yaw") : null,
-                point(yaml, "chest"), point(yaml, "sign"));
+        return readMetadata(YamlConfiguration.loadConfiguration(file));
     }
 
-    private static int[] point(YamlConfiguration yaml, String key) {
+    /**
+     * Two formats: the builders' file (BUILDER_BRIEF §3.6, has {@code origin}: world coordinates, {@code home},
+     * {@code containers} with the starter chest, {@code signs} with the menu sign) is turned into offsets from the
+     * paste origin; the old format already holds offsets ({@code home/chest/sign: {x, y, z}}).
+     */
+    static Metadata readMetadata(ConfigurationSection yaml) {
+        int[] origin = point(yaml, "origin");
+        if (origin == null) {
+            return new Metadata(point(yaml, "home"), yaml.isSet("home.yaw") ? (float) yaml.getDouble("home.yaw") : null,
+                    point(yaml, "chest"), point(yaml, "sign"));
+        }
+        int[] home = relative(point(yaml, "home"), origin);
+        Float yaw = yaml.isSet("home.yaw") ? (float) yaml.getDouble("home.yaw") : null;
+        int[] chest = relative(listPoint(yaml, "containers", "starter_chest"), origin);
+        int[] sign = relative(listPoint(yaml, "signs", "menu_sign"), origin);
+        return new Metadata(home, yaw, chest, sign);
+    }
+
+    /** Block position {x, y, z} of a section (decimals rounded down: 0.5 is block 0). */
+    private static int[] point(ConfigurationSection yaml, String key) {
         if (!yaml.isSet(key + ".x") || !yaml.isSet(key + ".y") || !yaml.isSet(key + ".z")) {
             return null;
         }
-        return new int[]{yaml.getInt(key + ".x"), yaml.getInt(key + ".y"), yaml.getInt(key + ".z")};
+        return new int[]{(int) Math.floor(yaml.getDouble(key + ".x")), (int) Math.floor(yaml.getDouble(key + ".y")),
+                (int) Math.floor(yaml.getDouble(key + ".z"))};
+    }
+
+    /** The entry with {@code id} in a list of {x, y, z} entries (else the first one), or {@code null}. */
+    private static int[] listPoint(ConfigurationSection yaml, String list, String id) {
+        int[] first = null;
+        for (Map<?, ?> entry : yaml.getMapList(list)) {
+            if (!(entry.get("x") instanceof Number x) || !(entry.get("y") instanceof Number y) || !(entry.get("z") instanceof Number z)) {
+                continue;
+            }
+            int[] p = {(int) Math.floor(x.doubleValue()), (int) Math.floor(y.doubleValue()), (int) Math.floor(z.doubleValue())};
+            if (id.equals(String.valueOf(entry.get("id")))) {
+                return p;
+            }
+            if (first == null) {
+                first = p;
+            }
+        }
+        return first;
+    }
+
+    private static int[] relative(int[] point, int[] origin) {
+        return point == null ? null : new int[]{point[0] - origin[0], point[1] - origin[1], point[2] - origin[2]};
     }
 
     private Build finish(Island island, World world, int x, int y, int z, Pasted pasted) {
