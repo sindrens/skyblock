@@ -554,6 +554,20 @@ public final class TierGates implements Listener {
         updatePlace(player, player.getLocation());
     }
 
+    /** PROF: Depths unlocks are per profile. Reload them for the new profile. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileSwitched(net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent event) {
+        Player player = event.getPlayer();
+        progress.unload(player.getUniqueId());
+        progress.load(player);
+        state(player).locked.clear();
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileDeleted(net.skybornmc.skyblock.common.profile.ProfileDeletedEvent event) {
+        progress.deleteProfile(event.profile().id());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
