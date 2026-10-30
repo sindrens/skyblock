@@ -55,3 +55,4 @@ staff-entries:
   modules:      {slot: 32, icon: command_block,    command: "skyblock modules", status: auto, permission: "skyblock.admin.modules"}
   worlds:       {slot: 33, icon: grass_block,      command: "skyblock worlds",  status: auto, permission: "skyblock.admin.worlds"}
   islands:      {slot: 34, icon: filled_map,       command: "isadmin slots",    status: auto, permission: "skyblock.island.admin.slots"}
+  npcs:         {slot: 25, icon: armor_stand,      command: "skyblock npcs",    status: auto, permission: "skyblock.admin.npcs"}

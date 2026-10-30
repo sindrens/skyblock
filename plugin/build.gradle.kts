@@ -33,6 +33,7 @@ dependencies {
     implementation(project(":modules:achievements"))
     implementation(project(":modules:afk"))
     implementation(project(":modules:box"))
+    implementation(project(":modules:npcs"))
 }
 
 tasks {

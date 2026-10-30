@@ -1,14 +1,20 @@
 package net.skybornmc.skyblock.skills;
 
 import net.skybornmc.skyblock.common.db.Sql;
+import net.skybornmc.skyblock.common.leaderboard.TopLine;
+import net.skybornmc.skyblock.common.profile.BestProfile;
+import net.skybornmc.skyblock.common.profile.SlotRules;
 import net.skybornmc.skyblock.common.skills.SkillType;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 /** SQL of the {@code skills} table ({@code db/skills/V001__skills.sql}). Pass a connection from {@code Database}. */
 final class SkillRepository {
@@ -49,6 +55,33 @@ final class SkillRepository {
             double total = stored.getOrDefault(e.getKey(), 0.0) + e.getValue();
             upsert(c, player, season, e.getKey(), total, curve.levelFor(total), now);
         }
+    }
+
+    /**
+     * Highest XP in a skill this season, one line per player from their best live profile (P7, {@code bestPerOwner} is
+     * {@code ProfileService#bestPerOwner}): reads a few times more
+     * rows than shown, because one player can have up to {@link SlotRules#MAX_SLOTS} profiles in the list.
+     */
+    List<TopLine> top(Connection c, int season, SkillType skill, int limit,
+                      Function<Map<UUID, Long>, List<BestProfile.Entry>> bestPerOwner) throws SQLException {
+        if (limit <= 0) {
+            return List.of();
+        }
+        Map<UUID, Long> values = new LinkedHashMap<>();
+        for (Object[] row : Sql.query(c, "SELECT player, xp FROM skills WHERE season_id = ? AND skill = ? AND xp > 0 ORDER BY xp DESC LIMIT ?",
+                rs -> new Object[]{Sql.uuid(rs, "player"), rs.getDouble("xp")}, season, skill.id(), limit * SlotRules.MAX_SLOTS + 10)) {
+            values.put((UUID) row[0], (long) Math.floor((Double) row[1]));
+        }
+        List<BestProfile.Entry> best = bestPerOwner.apply(values);
+        if (best.size() > limit) {
+            best = best.subList(0, limit);
+        }
+        List<TopLine> out = new ArrayList<>(best.size());
+        for (BestProfile.Entry e : best) {
+            String name = Sql.queryOne(c, "SELECT name FROM players WHERE uuid = ?", rs -> rs.getString(1), e.owner()).orElse(null);
+            out.add(new TopLine(e.owner(), name, e.value()));
+        }
+        return out;
     }
 
     /** Removes every row of a deleted profile (all seasons). */

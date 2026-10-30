@@ -83,6 +83,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
     private Core core;
     private ModuleMessages msg;
     private WorldsModule worlds;
+    private net.skybornmc.skyblock.npcs.NpcsModule npcs;
     private final List<String> styleProblems = new ArrayList<>();
     private final DatabaseConfig dbConfig = new DatabaseConfig();
     private final ItemsConfig itemsConfig = new ItemsConfig();
@@ -238,6 +239,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.achievements.AchievementsModule(core));
         // AFK pool (O10, RW3): reads economy, islands, skills, profiles and builds services (all optional).
         modules.register(new net.skybornmc.skyblock.afk.AfkModule(core));
+        // NPCs + holograms + leaderboards at the applied builds' points (NPCHOLO); needs the worlds module's BuildPoints.
+        npcs = new net.skybornmc.skyblock.npcs.NpcsModule(core);
+        modules.register(npcs);
     }
 
     public ModuleRegistry modules() {
@@ -346,7 +350,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                         .requires(src -> src.getSender().hasPermission("skyblock.admin.modules")
                                 || src.getSender().hasPermission("skyblock.admin.reload")
                                 || src.getSender().hasPermission("skyblock.admin.worlds")
-                                || src.getSender().hasPermission(BUILDS_PERMISSION))
+                                || src.getSender().hasPermission(BUILDS_PERMISSION)
+                                || src.getSender().hasPermission(net.skybornmc.skyblock.npcs.NpcsModule.PERM_ADMIN))
                         .then(Commands.literal("modules")
                                 .requires(src -> src.getSender().hasPermission("skyblock.admin.modules"))
                                 .executes(ctx -> run(() -> sendModuleStatus(ctx.getSource().getSender()))))
@@ -378,6 +383,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                                         .executes(ctx -> run(() -> teleport((Player) ctx.getSource().getSender(),
                                                 ctx.getArgument("world", World.class))))))
                         .then(buildsCommand())
+                        .then(npcsCommand())
                         .build(),
                 "Phoenix Skyblock admin commands",
                 List.of("sb")));
@@ -411,6 +417,34 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                         .executes(ctx -> run(() -> withBuilds(ctx, b -> b.pasteAll(ctx.getSource().getSender(), false))))
                         .then(Commands.literal("confirm")
                                 .executes(ctx -> run(() -> withBuilds(ctx, b -> b.pasteAll(ctx.getSource().getSender(), true))))));
+    }
+
+    /**
+     * Staff: {@code /skyblock npcs [list|tp <id>|respawn]} (npcs module, NPCHOLO). Console-safe except {@code tp};
+     * {@code /skyblock reload npcs} also respawns everything.
+     */
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> npcsCommand() {
+        return Commands.literal("npcs")
+                .requires(src -> src.getSender().hasPermission(net.skybornmc.skyblock.npcs.NpcsModule.PERM_ADMIN))
+                .executes(ctx -> run(() -> withNpcs(ctx, n -> n.list(ctx.getSource().getSender()))))
+                .then(Commands.literal("list")
+                        .executes(ctx -> run(() -> withNpcs(ctx, n -> n.list(ctx.getSource().getSender())))))
+                .then(Commands.literal("tp")
+                        .requires(src -> src.getSender() instanceof Player)
+                        .then(Commands.argument("id", StringArgumentType.word())
+                                .suggests(suggest(() -> npcs == null ? List.of() : npcs.ids()))
+                                .executes(ctx -> run(() -> withNpcs(ctx, n -> n.teleport(ctx.getSource().getSender(),
+                                        StringArgumentType.getString(ctx, "id")))))))
+                .then(Commands.literal("respawn")
+                        .executes(ctx -> run(() -> withNpcs(ctx, n -> n.respawn(ctx.getSource().getSender())))));
+    }
+
+    private void withNpcs(CommandContext<CommandSourceStack> ctx, java.util.function.Consumer<net.skybornmc.skyblock.npcs.NpcsModule> action) {
+        if (npcs == null || modules.state("npcs") != ModuleRegistry.State.ENABLED) {
+            msg.send(ctx.getSource().getSender(), "worlds.npcs-unavailable");
+            return;
+        }
+        action.accept(npcs);
     }
 
     private static String buildId(CommandContext<CommandSourceStack> ctx) {

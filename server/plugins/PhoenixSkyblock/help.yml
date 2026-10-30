@@ -13,7 +13,7 @@ categories:
     slot: 11
     name: "<c:flame><bold>Getting started"
     lore: ["<c:text>New here? Start with these."]
-    topics: [welcome, menu, help, settings, rules]
+    topics: [welcome, menu, help, settings, rules, npcs]
   islands:
     icon: grass_block
     status: active
@@ -540,6 +540,31 @@ topics:
           - "<c:text>at 1 h, 3 h, 6 h and 8 h a day; the"
           - "<c:text>longer you stay, the bigger the reward."
           - "<c:text>Max 8 h a day, one account per connection."
+
+  npcs:
+    icon: armor_stand
+    aliases: [npc, holograms, hologram, leaderboards, leaderboard]
+    name: "<c:flame>NPCs and boards"
+    summary: ["<c:text>The people and signs at spawn", "<c:text>and in the Depths."]
+    take-me-there: "spawn"
+    pages:
+      - title: "<c:value>NPCs"
+        lines:
+          - "<c:text>Right-click an NPC to open what it"
+          - "<c:text>does: the Banker opens the bank, the"
+          - "<c:text>Blacksmith the Forge."
+          - "<c:text>Sneak + right-click: a short help."
+      - title: "<c:value>Help NPCs"
+        lines:
+          - "<c:text>NPCs that say <c:muted>Right-click for help</c:muted>"
+          - "<c:text>explain a place or a feature."
+          - "<c:text>On Java, click <c:action>[Open]</c:action> <c:text>in chat."
+      - title: "<c:value>Boards"
+        lines:
+          - "<c:text>Some boards explain more when you"
+          - "<c:text>right-click them."
+          - "<c:text>Leaderboards in the Hall of Heroes"
+          - "<c:text>update every few minutes."
 
   perks:
     icon: diamond

@@ -300,6 +300,9 @@ staff:
     islands:
       name: "<c:flame><bold>Island grid"
       lore: ["<c:text>Every island slot: used,", "<c:text>clearing or free. /isadmin"]
+    npcs:
+      name: "<c:flame><bold>NPCs & Holograms"
+      lore: ["<c:text>Every NPC, hologram and", "<c:text>leaderboard; click to go there."]
 
 admin:
   title: "Config"

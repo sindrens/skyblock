@@ -65,4 +65,14 @@ public interface SkillService {
      * @return false if the player has no loaded data yet or the value is negative
      */
     boolean setXp(Player player, SkillType skill, double totalXp, Actor by, String reason);
+
+    /**
+     * Highest total XP in a skill this season, one line per player from their best live profile (owner decision P7);
+     * {@link net.skybornmc.skyblock.common.leaderboard.TopLine#value()} is the whole XP (the level follows from
+     * {@link #levelFor}). Reads the database off the main thread (XP not saved yet is missing until the next save).
+     * Implementations without it return an empty list.
+     */
+    default CompletableFuture<java.util.List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(SkillType skill, int limit) {
+        return CompletableFuture.completedFuture(java.util.List.of());
+    }
 }
