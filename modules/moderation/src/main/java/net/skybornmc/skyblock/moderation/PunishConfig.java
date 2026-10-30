@@ -19,7 +19,7 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
     }
 
     /**
-     * {@code extras:} (spec 12.13). P2 keys only; later milestones add theirs.
+     * {@code extras:} (spec 12.13). P2 + P3 keys; later milestones add theirs.
      *
      * @param undoWindow       how long [Undo] works after a punishment (12.1)
      * @param duplicateWindow  same target + reason within this time is blocked (12.2)
@@ -29,20 +29,92 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param statsCache       how long /pstats results are reused
      * @param statsPeriod      period when none is typed
      * @param statsTop         lines in /pstats top
+     * @param closeReports     close the punishing staff member's claimed reports about the target (12.9)
+     * @param evidence         chat evidence saved with mutes/warns (12.4)
+     * @param notes            staff notes (12.5)
+     * @param ack              warning acknowledgement (12.6)
+     * @param rulesLink        link in the warning message (12.6)
+     * @param discord          Discord log (12.11; the webhook URL itself is a secret, never here)
+     * @param playerView       /mypunishments (12.12)
+     * @param chatSuggestions  detector settings for the suggestion API (12.8), name → settings
      */
     record Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
-                  java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop) {
+                  java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
+                  boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
+                  PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions) {
 
         static final Extras DEFAULT = new Extras(Duration.ofMinutes(2), Duration.ofSeconds(15), Duration.ofSeconds(5),
-                Duration.ofDays(90), java.time.ZoneId.of("Europe/Oslo"), Duration.ofSeconds(60), PunishStats.Period.D7, 10);
+                Duration.ofDays(90), java.time.ZoneId.of("Europe/Oslo"), Duration.ofSeconds(60), PunishStats.Period.D7, 10,
+                true, Evidence.DEFAULT, Notes.DEFAULT, Ack.DEFAULT, "https://skybornmc.net/rules", Discord.DEFAULT,
+                PlayerView.DEFAULT, Map.of());
+    }
+
+    /**
+     * Evidence snapshot (12.4).
+     *
+     * @param chatLines     the target's last chat lines saved
+     * @param contextLines  other players' lines before them
+     * @param retention     evidence is deleted after this
+     * @param maxLineLength one line is cut to this many characters
+     * @param maxChars      all lines together never exceed this (oldest lines are dropped first)
+     */
+    record Evidence(boolean enabled, int chatLines, int contextLines, Duration retention, int maxLineLength, int maxChars) {
+        static final Evidence DEFAULT = new Evidence(true, 10, 5, Duration.ofDays(180), 200, 6000);
+    }
+
+    /**
+     * Staff notes (12.5).
+     *
+     * @param maxLength longest note
+     * @param shown     notes shown on the head of /p
+     * @param cut       a note on the head is cut to this many characters
+     */
+    record Notes(int maxLength, int shown, int cut) {
+        static final Notes DEFAULT = new Notes(200, 3, 40);
+    }
+
+    /** Warning acknowledgement (12.6): repeat interval and count, block until acknowledged, Bedrock menu. */
+    record Ack(Duration repeat, int maxRepeats, boolean blockUntilAck, boolean bedrockMenu) {
+        static final Ack DEFAULT = new Ack(Duration.ofSeconds(30), 3, false, true);
+    }
+
+    /**
+     * Discord log (12.11). Posts only when {@code enabled} and a webhook URL for {@code channel} is set on the server.
+     *
+     * @param colors embed colour per kind (ban, mute, warn, kick, pardon, undo), 0xRRGGBB
+     */
+    record Discord(boolean enabled, String channel, int queueSize, int maxAttempts, Map<String, Integer> colors) {
+        static final List<String> KINDS = List.of("ban", "mute", "warn", "kick", "pardon", "undo");
+        static final Discord DEFAULT = new Discord(false, "punishments", 100, 3, Map.of("ban", 0xE74C3C, "mute", 0xE67E22,
+                "warn", 0xF1C40F, "kick", 0x95A5A6, "pardon", 0x2ECC71, "undo", 0x3498DB));
+
+        int color(String kind) {
+            return colors.getOrDefault(kind, 0x95A5A6);
+        }
+    }
+
+    /** /mypunishments (12.12): show staff names, how many recent entries. */
+    record PlayerView(boolean showStaff, int lastEntries) {
+        static final PlayerView DEFAULT = new PlayerView(false, 5);
+    }
+
+    /** One detector of the suggestion API (12.8): {@code hits} within {@code within} suggest {@code reason}. */
+    record ChatSuggestion(int hits, Duration within, String reason) {
     }
 
     /** A fixed bottom-row button ({@code kick}, {@code history}, ...). */
     record Button(String id, int slot, Material icon) {
     }
 
-    /** A plain warn button (bottom-left quarter): one warn with a preset reason text ({@code warn-buttons.<id>.reason}). */
-    record WarnButton(String id, int slot, Material icon) {
+    /**
+     * A plain warn button (bottom-left quarter): one warn with a preset reason text ({@code warn-buttons.<id>.reason}).
+     * {@code weight} in tenths (spec 12.7: {@code weight: 0.5} = 5).
+     */
+    record WarnButton(String id, int slot, Material icon, int weight) {
+
+        WarnButton(String id, int slot, Material icon) {
+            this(id, slot, icon, Weights.ONE);
+        }
     }
 
     /** Fixed button ids, in config order. Sanctions, bulk and dry run show "Not available yet" until P7/P5/P8. */

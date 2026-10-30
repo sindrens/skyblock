@@ -53,6 +53,26 @@ final class ReportRules {
         return new String[]{reasons.isEmpty() ? "Other" : reasons.getLast(), trimmed};
     }
 
+    /**
+     * Report link (Phase P 12.9): of the reports about one player, the ones a punishment by {@code staff} closes: only
+     * reports claimed by that same staff member. Open (unclaimed) reports and reports claimed by others stay.
+     */
+    static List<Report> toClose(List<Report> aboutTarget, java.util.UUID staff) {
+        return aboutTarget.stream().filter(r -> r.status() == Report.Status.CLAIMED && staff != null
+                && staff.equals(r.claimedBy())).toList();
+    }
+
+    /** Open reports nobody claimed. */
+    static int openUnclaimed(List<Report> aboutTarget) {
+        return (int) aboutTarget.stream().filter(r -> r.status() == Report.Status.OPEN).count();
+    }
+
+    /** Reports claimed by someone other than {@code staff} (left alone, only counted). */
+    static int claimedByOthers(List<Report> aboutTarget, java.util.UUID staff) {
+        return (int) aboutTarget.stream().filter(r -> r.status() == Report.Status.CLAIMED
+                && (staff == null || !staff.equals(r.claimedBy()))).count();
+    }
+
     /** Cleans free text for storage/display: one line, trimmed, max length. */
     static String clean(String text, int max) {
         String one = text.replaceAll("[\\r\\n\\t]+", " ").replaceAll("\\s{2,}", " ").strip();

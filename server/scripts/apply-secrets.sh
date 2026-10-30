@@ -48,6 +48,20 @@ open(path, 'w').write(s)
 PY
 chmod 600 "$SB"
 echo "PhoenixSkyblock -> MariaDB"
+# Discord webhooks (Phase P 12.11; Discord is postponed, docs/LATER.md). Secrets: never in a tracked file.
+# Set DISCORD_WEBHOOK_PUNISHMENTS=https://discord.com/api/webhooks/... in the .env to fill the "punishments" channel;
+# the log also needs punishments.yml -> extras.discord.enabled: true. No variable = the file is not written = off.
+if [ -n "${DISCORD_WEBHOOK_PUNISHMENTS:-}" ]; then
+  mkdir -p plugins/PhoenixSkyblock/secrets
+  python3 - plugins/PhoenixSkyblock/secrets/discord.yml "$DISCORD_WEBHOOK_PUNISHMENTS" <<'PY2'
+import sys
+path, url = sys.argv[1:]
+open(path, 'w').write("# Written by server/scripts/apply-secrets.sh from /opt/skyblock/.env. Do not commit.\n"
+                      "webhooks:\n  punishments: '" + url.replace("'", "''") + "'\n")
+PY2
+  chmod 600 plugins/PhoenixSkyblock/secrets/discord.yml
+  echo "Discord webhook (punishments) -> secrets/discord.yml"
+fi
 # CoreProtect gets its DB settings here once it supports 26.3.
 
 # Audit log archive folder (M0.8): chat/command/item logs older than 30 days are archived here before purge.

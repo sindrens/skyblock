@@ -28,8 +28,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** {@code /report} for players and {@code /reports} for staff (GUI + claim/close commands), all persisted and audited. */
-final class ReportService extends StaffFeature implements Listener {
+/**
+ * {@code /report} for players and {@code /reports} for staff (GUI + claim/close commands), all persisted and audited.
+ * Also the {@link ReportLink} service for moderation (Phase P 12.9): a punishment closes the punishing staff member's
+ * claimed reports about that player.
+ */
+final class ReportService extends StaffFeature implements Listener, net.skybornmc.skyblock.common.moderation.ReportLink {
 
     private final Cooldowns cooldowns = new Cooldowns();
     private final MainThread main;
@@ -274,6 +278,41 @@ final class ReportService extends StaffFeature implements Listener {
         Report.Outcome outcome = Arrays.stream(Report.Outcome.values()).filter(o -> o.name().equals(report.outcome()))
                 .findFirst().orElse(Report.Outcome.NO_EVIDENCE);
         msg.send(reporter, "report.closed-" + outcome.key(), Msg.p("id", report.id()), Msg.p("player", report.targetName()));
+    }
+
+    // ------------------------------------------------------------------ report link (Phase P 12.9)
+
+    @Override
+    public CompletableFuture<Result> punished(UUID target, String targetName, UUID staff, String staffName, long punishmentId) {
+        return store.closeClaimedBy(target, staff, staffName, Report.Outcome.PUNISHED).thenApplyAsync(r -> {
+            Player staffOnline = Bukkit.getPlayer(staff);
+            for (Report report : r.closed()) {
+                java.util.Map<String, Object> details = new java.util.LinkedHashMap<>();
+                details.put("report_id", report.id());
+                details.put("outcome", Report.Outcome.PUNISHED.name());
+                details.put("reporter", report.reporterName());
+                details.put("punishment", punishmentId);
+                details.put("auto", true);
+                core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "report_close",
+                        staffOnline != null ? net.skybornmc.skyblock.common.audit.Actor.player(staffOnline)
+                                : net.skybornmc.skyblock.common.audit.Actor.player(staff, staffName),
+                        report.target() == null ? null : report.target().toString(), report.targetName(), null, null, details);
+                Player reporter = Bukkit.getPlayer(report.reporter());
+                if (reporter != null) {
+                    tellReporter(reporter, report);
+                    store.markNotified(report.id());
+                }
+            }
+            if (!r.closed().isEmpty()) {
+                loadActive();
+            }
+            return new Result(r.closed().stream().map(Report::id).toList(), r.openUnclaimed(), r.claimedByOthers());
+        }, main);
+    }
+
+    @Override
+    public CompletableFuture<Result> count(UUID target, UUID staff) {
+        return store.linkCounts(target, staff).thenApplyAsync(r -> new Result(List.of(), r.openUnclaimed(), r.claimedByOthers()), main);
     }
 
     // ------------------------------------------------------------------ join notices

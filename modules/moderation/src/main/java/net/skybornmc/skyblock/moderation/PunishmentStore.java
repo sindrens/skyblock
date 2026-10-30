@@ -17,9 +17,11 @@ import java.util.concurrent.locks.ReentrantLock;
 final class PunishmentStore {
 
     private static final String COLUMNS = "id, type, target_uuid, target_name, ip, ip_wide, reason, template, ladder_step, "
-            + "issuer_uuid, issuer_name, created, expires, silent, removed_at, removed_by_uuid, removed_by_name, removed_reason, source";
+            + "issuer_uuid, issuer_name, created, expires, silent, removed_at, removed_by_uuid, removed_by_name, removed_reason, source, "
+            + "weight, acknowledged_at";
     private static final String SUGGESTION_COLUMNS = "id, target_uuid, target_name, kind, rule_at, repeat_trigger, action, reason, "
-            + "source, warn_count, created, expires, status, handled_at, handled_by_uuid, handled_by_name, punishment_id, note";
+            + "source, warn_count, created, expires, status, handled_at, handled_by_uuid, handled_by_name, punishment_id, note, "
+            + "warn_tenths, reason_id, details";
 
     private final Database db;
 
@@ -35,7 +37,8 @@ final class PunishmentStore {
                 rs.getString("template"), ladderStep, Sql.uuid(rs, "issuer_uuid"), rs.getString("issuer_name"),
                 rs.getLong("created"), Sql.nullableLong(rs, "expires"), rs.getBoolean("silent"),
                 Sql.nullableLong(rs, "removed_at"), Sql.uuid(rs, "removed_by_uuid"), rs.getString("removed_by_name"),
-                rs.getString("removed_reason"), rs.getString("source"));
+                rs.getString("removed_reason"), rs.getString("source"), Weights.fromDb(rs.getBigDecimal("weight")),
+                Sql.nullableLong(rs, "acknowledged_at"));
     }
 
     private static byte[] bytes(UUID uuid) {
@@ -44,11 +47,13 @@ final class PunishmentStore {
 
     /** Inserts a row (inside the caller's transaction) and returns it with its id. */
     private static Punishment insertRow(Connection c, Punishment p) throws SQLException {
+        // weight only matters for warns (spec 12.7); NULL = 1 for everything else
+        java.math.BigDecimal weight = p.type() == Punishment.Type.WARN && p.weight() != Weights.ONE ? Weights.decimal(p.weight()) : null;
         long id = Sql.insertReturningId(c, "INSERT INTO punishments (type, target_uuid, target_name, ip, ip_wide, reason, "
-                        + "template, ladder_step, issuer_uuid, issuer_name, created, expires, silent, source) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        + "template, ladder_step, issuer_uuid, issuer_name, created, expires, silent, source, weight) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 p.type().name(), bytes(p.target()), p.targetName(), p.ip(), p.ipWide(), clip(p.reason(), 255), p.template(),
-                p.ladderStep(), bytes(p.issuer()), clip(p.issuerName(), 32), p.created(), p.expires(), p.silent(), p.source());
+                p.ladderStep(), bytes(p.issuer()), clip(p.issuerName(), 32), p.created(), p.expires(), p.silent(), p.source(), weight);
         return p.withId(id);
     }
 
@@ -296,7 +301,7 @@ final class PunishmentStore {
         boolean timed = in.type() == Punishment.Type.BAN || in.type() == Punishment.Type.MUTE;
         return new Punishment(0, in.type(), d.target(), d.targetName(), d.ip(), in.ipWide(), d.reason(), d.template(),
                 d.ladderStep(), d.issuer(), d.issuerName(), d.created(), timed ? in.endsAt() : null, d.silent(),
-                null, null, null, null, d.source());
+                null, null, null, null, d.source(), in.type() == Punishment.Type.WARN ? d.weight() : Weights.ONE, null);
     }
 
     private TriggerResult runRules(Connection c, Punishment event, RuleHook hook, long now) throws SQLException {
@@ -320,7 +325,7 @@ final class PunishmentStore {
         String reason = hook.reason().apply(trigger);
         Suggestion row = new Suggestion(0, event.target(), event.targetName(), Suggestion.KIND_WARN_RULE, trigger.ruleAt(),
                 trigger.repeat(), step.describe(), clip(reason, 255), trigger.source(), trigger.count(), now, null,
-                Suggestion.Status.PENDING, null, null, null, null, null);
+                Suggestion.Status.PENDING, null, null, null, null, null, trigger.tenths(), null, null);
         if (!verdict.applied()) {
             String note = "exempt".equals(verdict.stage()) ? Suggestion.NOTE_EXEMPT
                     : "never-shorten".equals(verdict.stage()) ? Suggestion.NOTE_ALREADY : clip(verdict.stage(), 32);
@@ -344,20 +349,23 @@ final class PunishmentStore {
     private static Suggestion with(Suggestion s, Suggestion.Status status, Long expires, Long handledAt, UUID by,
                                    String byName, Long punishmentId, String note) {
         return new Suggestion(s.id(), s.target(), s.targetName(), s.kind(), s.ruleAt(), s.repeat(), s.action(), s.reason(),
-                s.source(), s.warnCount(), s.created(), expires, status, handledAt, by, byName, punishmentId, note);
+                s.source(), s.warnCount(), s.created(), expires, status, handledAt, by, byName, punishmentId, note,
+                s.warnTenths(), s.reasonId(), s.details());
     }
 
     /** Inserts a suggestion; {@code causeId} = the punishment that fired it (undoing that warn removes it, 12.1). */
     private static Suggestion insertSuggestion(Connection c, Suggestion s, Long causeId) throws SQLException {
         long id = Sql.insertReturningId(c, "INSERT INTO punishment_suggestions (target_uuid, target_name, kind, rule_at, "
                         + "repeat_trigger, action, reason, source, warn_count, created, expires, status, handled_at, handled_by_uuid, "
-                        + "handled_by_name, punishment_id, note, cause_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                bytes(s.target()), s.targetName(), s.kind(), s.ruleAt(), s.repeat(), s.action(), s.reason(), s.source(),
+                        + "handled_by_name, punishment_id, note, cause_id, warn_tenths, reason_id, details) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                bytes(s.target()), s.targetName(), s.kind(), s.ruleAt(), s.repeat(), s.action(), s.reason(), clip(s.source(), 48),
                 s.warnCount(), s.created(), s.expires(), s.status().name(), s.handledAt(), bytes(s.handledBy()),
-                clip(s.handledByName(), 32), s.punishmentId(), s.note(), causeId);
+                clip(s.handledByName(), 32), s.punishmentId(), s.note(), causeId, s.warnTenths(), s.reasonId(),
+                clip(s.details(), 255));
         return new Suggestion(id, s.target(), s.targetName(), s.kind(), s.ruleAt(), s.repeat(), s.action(), s.reason(),
                 s.source(), s.warnCount(), s.created(), s.expires(), s.status(), s.handledAt(), s.handledBy(), s.handledByName(),
-                s.punishmentId(), s.note());
+                s.punishmentId(), s.note(), s.warnTenths(), s.reasonId(), s.details());
     }
 
     private static Suggestion mapSuggestion(ResultSet rs) throws SQLException {
@@ -368,7 +376,12 @@ final class PunishmentStore {
                 rs.getInt("warn_count"), rs.getLong("created"), Sql.nullableLong(rs, "expires"),
                 Suggestion.Status.valueOf(rs.getString("status")), Sql.nullableLong(rs, "handled_at"),
                 Sql.uuid(rs, "handled_by_uuid"), rs.getString("handled_by_name"), Sql.nullableLong(rs, "punishment_id"),
-                rs.getString("note"));
+                rs.getString("note"), nullableInt(rs, "warn_tenths"), rs.getString("reason_id"), rs.getString("details"));
+    }
+
+    private static Integer nullableInt(ResultSet rs, String column) throws SQLException {
+        int v = rs.getInt(column);
+        return rs.wasNull() ? null : v;
     }
 
     private static List<Suggestion> suggestions(Connection c, UUID target) throws SQLException {
@@ -436,8 +449,10 @@ final class PunishmentStore {
                 String ip = verdict.input().ipWide() ? lastIpBlocking(conn, s.target()) : null;
                 PunishDecision.Input eff = verdict.input().withStep(verdict.input().type(), verdict.input().duration(),
                         verdict.input().ipWide() && ip != null);
+                // API suggestions (12.8) carry their reason id, so the applied punishment counts as an offence of that reason
                 Punishment p = insertRow(conn, shaped(new Punishment(0, step.type(), s.target(), s.targetName(), ip, false,
-                        s.reason(), null, null, by, byName, now, null, false, null, null, null, null, s.source()), eff));
+                        s.reason(), s.api() ? s.reasonId() : null, null, by, byName, now, null, false, null, null, null, null,
+                        s.source()), eff));
                 if (claim(conn, id, Suggestion.Status.APPLIED, by, byName, p.id(), null, now) != 1) {
                     throw new SQLException("suggestion " + id + " changed while locked");
                 }
@@ -578,6 +593,178 @@ final class PunishmentStore {
         return db.async(c -> Sql.queryOne(c, "SELECT issuer_uuid, issuer_name FROM punishments WHERE issuer_uuid IS NOT NULL "
                         + "AND LOWER(issuer_name) = LOWER(?) ORDER BY created DESC LIMIT 1",
                 rs -> java.util.Map.entry(Sql.uuid(rs, "issuer_uuid"), rs.getString("issuer_name")), name));
+    }
+
+    // ================================================================== P3: evidence (spec 12.4)
+
+    /** Saves the evidence lines of a punishment (already sanitized by {@link Evidence#build}). */
+    CompletableFuture<Void> saveEvidence(long punishmentId, long created, List<String> lines) {
+        return db.run(c -> Sql.update(c, "INSERT INTO punishment_evidence (punishment_id, created, line_count, lines) "
+                + "VALUES (?, ?, ?, ?)", punishmentId, created, lines.size(), Evidence.join(lines)));
+    }
+
+    /** Evidence lines of a punishment (empty = none saved, or deleted after the retention). */
+    CompletableFuture<List<String>> evidence(long punishmentId) {
+        return db.async(c -> Sql.queryOne(c, "SELECT lines FROM punishment_evidence WHERE punishment_id = ? ORDER BY id DESC LIMIT 1",
+                rs -> Evidence.split(rs.getString("lines")), punishmentId).orElse(List.of()));
+    }
+
+    /** Ids of the given punishments that have evidence (history menu marks them). */
+    CompletableFuture<java.util.Set<Long>> withEvidence(UUID target) {
+        return db.async(c -> new java.util.HashSet<>(Sql.query(c, "SELECT e.punishment_id FROM punishment_evidence e "
+                + "JOIN punishments p ON p.id = e.punishment_id WHERE p.target_uuid = ?", rs -> rs.getLong(1), Sql.toBytes(target))));
+    }
+
+    /** Deletes evidence older than {@code before} (retention); returns how many rows went. */
+    CompletableFuture<Integer> purgeEvidence(long before) {
+        return db.async(c -> Sql.update(c, "DELETE FROM punishment_evidence WHERE created < ?", before));
+    }
+
+    // ================================================================== P3: staff notes (spec 12.5)
+
+    private static final String NOTE_COLUMNS = "id, target_uuid, target_name, author_uuid, author_name, note, created, removed, "
+            + "removed_at, removed_by_uuid, removed_by_name";
+
+    private static Notes.Note mapNote(ResultSet rs) throws SQLException {
+        return new Notes.Note(rs.getLong("id"), Sql.uuid(rs, "target_uuid"), rs.getString("target_name"), Sql.uuid(rs, "author_uuid"),
+                rs.getString("author_name"), rs.getString("note"), rs.getLong("created"), rs.getBoolean("removed"),
+                Sql.nullableLong(rs, "removed_at"), Sql.uuid(rs, "removed_by_uuid"), rs.getString("removed_by_name"));
+    }
+
+    CompletableFuture<Notes.Note> addNote(UUID target, String targetName, UUID author, String authorName, String text, long now) {
+        return db.async(c -> {
+            long id = Sql.insertReturningId(c, "INSERT INTO staff_notes (target_uuid, target_name, author_uuid, author_name, note, "
+                            + "created) VALUES (?, ?, ?, ?, ?, ?)", Sql.toBytes(target), clip(targetName, 32), bytes(author),
+                    clip(authorName, 32), clip(text, 255), now);
+            return new Notes.Note(id, target, targetName, author, authorName, clip(text, 255), now, false, null, null, null);
+        });
+    }
+
+    /** Active notes of a player, newest first ({@code limit} rows at most). */
+    CompletableFuture<List<Notes.Note>> notes(UUID target, int limit) {
+        return db.async(c -> Sql.query(c, "SELECT " + NOTE_COLUMNS + " FROM staff_notes WHERE target_uuid = ? AND removed = FALSE "
+                + "ORDER BY created DESC, id DESC LIMIT " + Math.max(1, limit), PunishmentStore::mapNote, Sql.toBytes(target)));
+    }
+
+    /** Number of active notes of a player. */
+    CompletableFuture<Integer> noteCount(UUID target) {
+        return db.async(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM staff_notes WHERE target_uuid = ? AND removed = FALSE",
+                rs -> rs.getInt(1), Sql.toBytes(target)).orElse(0));
+    }
+
+    CompletableFuture<Optional<Notes.Note>> note(long id) {
+        return db.async(c -> Sql.queryOne(c, "SELECT " + NOTE_COLUMNS + " FROM staff_notes WHERE id = ?", PunishmentStore::mapNote, id));
+    }
+
+    /**
+     * Marks a note as removed (the row stays). Returns the note as it was before, or empty if it does not exist;
+     * {@code changed} is false when it was already removed.
+     */
+    record NoteRemoval(Notes.Note note, boolean changed) {
+    }
+
+    CompletableFuture<Optional<NoteRemoval>> removeNote(long id, UUID by, String byName, long now) {
+        return db.transaction(c -> {
+            Optional<Notes.Note> before = Sql.queryOne(c, "SELECT " + NOTE_COLUMNS + " FROM staff_notes WHERE id = ?",
+                    PunishmentStore::mapNote, id);
+            if (before.isEmpty()) {
+                return Optional.<NoteRemoval>empty();
+            }
+            int n = Sql.update(c, "UPDATE staff_notes SET removed = TRUE, removed_at = ?, removed_by_uuid = ?, removed_by_name = ? "
+                    + "WHERE id = ? AND removed = FALSE", now, bytes(by), clip(byName, 32), id);
+            return Optional.of(new NoteRemoval(before.get(), n == 1));
+        });
+    }
+
+    /** Ids of recent active notes (tab completion of /pnote remove), newest first, max 100. */
+    CompletableFuture<List<String>> recentNoteIds(UUID target) {
+        return db.async(c -> target == null
+                ? Sql.query(c, "SELECT id FROM staff_notes WHERE removed = FALSE ORDER BY id DESC LIMIT 100",
+                rs -> String.valueOf(rs.getLong("id")))
+                : Sql.query(c, "SELECT id FROM staff_notes WHERE removed = FALSE AND target_uuid = ? ORDER BY id DESC LIMIT 100",
+                rs -> String.valueOf(rs.getLong("id")), Sql.toBytes(target)));
+    }
+
+    // ================================================================== P3: acknowledgement (spec 12.6)
+
+    /** Marks every unacknowledged active warning of the player as acknowledged; returns their ids. */
+    CompletableFuture<List<Long>> acknowledge(UUID target, long now) {
+        return db.transaction(c -> {
+            List<Long> ids = Sql.query(c, "SELECT id FROM punishments WHERE target_uuid = ? AND type = 'WARN' "
+                    + "AND removed_at IS NULL AND acknowledged_at IS NULL", rs -> rs.getLong("id"), Sql.toBytes(target));
+            if (!ids.isEmpty()) {
+                Sql.update(c, "UPDATE punishments SET acknowledged_at = ? WHERE target_uuid = ? AND type = 'WARN' "
+                        + "AND removed_at IS NULL AND acknowledged_at IS NULL", now, Sql.toBytes(target));
+            }
+            return ids;
+        });
+    }
+
+    /**
+     * Unacknowledged warnings (not removed, created after {@code since}) for the join reminder: returns them and marks the
+     * one join reminder as sent ({@code ack_join_sent}), atomically, so the reminder is shown once.
+     *
+     * @return {@code [owing, remindNow]}: all unacknowledged warnings, and those whose join reminder is due now
+     */
+    record JoinAck(List<Punishment> owing, List<Punishment> remindNow) {
+    }
+
+    CompletableFuture<JoinAck> joinAck(UUID target, long since) {
+        return db.transaction(c -> {
+            List<Punishment> owing = Sql.query(c, "SELECT " + COLUMNS + " FROM punishments WHERE target_uuid = ? AND type = 'WARN' "
+                    + "AND removed_at IS NULL AND acknowledged_at IS NULL AND created > ? ORDER BY created DESC",
+                    PunishmentStore::map, Sql.toBytes(target), since);
+            List<Long> due = Sql.query(c, "SELECT id FROM punishments WHERE target_uuid = ? AND type = 'WARN' AND removed_at IS NULL "
+                    + "AND acknowledged_at IS NULL AND ack_join_sent = FALSE AND created > ?", rs -> rs.getLong("id"),
+                    Sql.toBytes(target), since);
+            if (!due.isEmpty()) {
+                Sql.update(c, "UPDATE punishments SET ack_join_sent = TRUE WHERE target_uuid = ? AND type = 'WARN' "
+                        + "AND removed_at IS NULL AND acknowledged_at IS NULL AND ack_join_sent = FALSE AND created > ?",
+                        Sql.toBytes(target), since);
+            }
+            return new JoinAck(owing, owing.stream().filter(p -> due.contains(p.id())).toList());
+        });
+    }
+
+    // ================================================================== P3: suggestion API (spec 12.8)
+
+    /** Outcome of {@link #suggestApi}: the row, and whether it refreshed an existing pending one. */
+    record ApiSuggestion(Suggestion suggestion, boolean refreshed) {
+    }
+
+    /**
+     * Creates a pending {@code api} suggestion, or refreshes the pending one for the same target + reason (one per target
+     * + reason; never a duplicate), atomically under the target's lock. Never applies anything.
+     */
+    CompletableFuture<ApiSuggestion> suggestApi(UUID target, String targetName, String reasonId, Templates.Step step,
+                                                String reason, String details, long now, Long expires) {
+        return db.async(c -> locked(c, target, conn -> suggestApiLocked(conn, target, targetName, reasonId, step, reason,
+                details, now, expires)));
+    }
+
+    private static ApiSuggestion suggestApiLocked(Connection c, UUID target, String targetName, String reasonId,
+                                                  Templates.Step step, String reason, String details, long now, Long expires)
+            throws SQLException {
+        Optional<Suggestion> waiting = Sql.queryOne(c, "SELECT " + SUGGESTION_COLUMNS + " FROM punishment_suggestions "
+                        + "WHERE target_uuid = ? AND kind = ? AND reason_id = ? AND status = 'PENDING' AND (expires IS NULL OR expires > ?) "
+                        + "ORDER BY id DESC LIMIT 1", PunishmentStore::mapSuggestion, Sql.toBytes(target), Suggestion.KIND_API,
+                reasonId, now);
+        if (waiting.isPresent()) {
+            Sql.update(c, "UPDATE punishment_suggestions SET details = ?, expires = ?, action = ?, target_name = ? WHERE id = ?",
+                    clip(details, 255), expires, step.describe(), clip(targetName, 32), waiting.get().id());
+            return new ApiSuggestion(suggestionById(c, waiting.get().id()).orElseThrow(), true);
+        }
+        Suggestion row = new Suggestion(0, target, targetName, Suggestion.KIND_API, null, false, step.describe(), clip(reason, 255),
+                Punishment.AUTO_PREFIX + Suggestion.KIND_API + ":" + reasonId, 0, now, expires, Suggestion.Status.PENDING,
+                null, null, null, null, null, null, reasonId, details);
+        return new ApiSuggestion(insertSuggestion(c, row, null), false);
+    }
+
+    /** Pending (not expired) API suggestions of a player, newest first. */
+    CompletableFuture<List<Suggestion>> apiSuggestions(UUID target) {
+        return db.async(c -> Sql.query(c, "SELECT " + SUGGESTION_COLUMNS + " FROM punishment_suggestions WHERE target_uuid = ? "
+                        + "AND kind = ? AND status = 'PENDING' AND (expires IS NULL OR expires > ?) ORDER BY created DESC, id DESC",
+                PunishmentStore::mapSuggestion, Sql.toBytes(target), Suggestion.KIND_API, System.currentTimeMillis()));
     }
 
     private static String lastIpBlocking(Connection c, UUID target) {

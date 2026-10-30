@@ -28,3 +28,6 @@ lp group helper permission set skyblock.staff.punish.stats true
 lp group admin permission set skyblock.staff.punish.stats.others true
 lp group admin permission set skyblock.staff.punish.force true
 lp group admin permission set skyblock.staff.punish.undo.others true
+
+# --- Phase P, P3: staff notes. /mypunishments and /ack (skyblock.punish.view.own) are default: true for everyone ---
+lp group helper permission set skyblock.staff.punish.notes true

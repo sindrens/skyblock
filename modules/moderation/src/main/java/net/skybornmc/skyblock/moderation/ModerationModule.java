@@ -75,6 +75,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
     static final String PERM_FORCE = "skyblock.staff.punish.force";
     static final String PERM_STATS = "skyblock.staff.punish.stats";
     static final String PERM_STATS_OTHERS = "skyblock.staff.punish.stats.others";
+    /** P3 (spec 12.5, 12.12, 12.6). */
+    static final String PERM_NOTES = "skyblock.staff.punish.notes";
+    static final String PERM_VIEW_OWN = "skyblock.punish.view.own";
     /** Staff told about broken punishments.yml edits (whoever may reload configs). */
     static final String PERM_CONFIG_ALERT = "skyblock.admin.reload";
 
@@ -98,6 +101,15 @@ public final class ModerationModule implements SkyblockModule, Listener {
     /** Problems of the last punishments.yml load (shown to staff who can reload when they join). */
     private volatile List<ConfigProblem> lastProblems = List.of();
     private volatile boolean lastLoadRejected;
+    /** P3: evidence/ack/report link/Discord, the Discord sink, the suggestion API and their timers. */
+    private PunishExtras extras;
+    private WebhookDiscordSink discord;
+    private volatile Map<String, String> webhooks = Map.of();
+    private net.skybornmc.skyblock.common.util.Scheduler.Task ackTask;
+    private net.skybornmc.skyblock.common.util.Scheduler.Task purgeTask;
+    /** Note ids for tab completion of /pnote remove: per sender, the notes of the player they listed last. */
+    private final Map<String, List<String>> noteIds = new ConcurrentHashMap<>();
+    private volatile List<String> recentNoteIds = List.of();
 
     public ModerationModule(Core core) {
         this.core = core;
@@ -123,6 +135,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
         return msg;
     }
 
+    Core core() {
+        return core;
+    }
+
     @Override
     public void enable() throws Exception {
         new Migrations(core.database(), plugin.getLogger()).migrate(ID, getClass().getClassLoader());
@@ -132,6 +148,22 @@ public final class ModerationModule implements SkyblockModule, Listener {
         service.warnRules(() -> templates.config().warnRules());
         service.extras(() -> templates.config().extras());
         loadPunishments(null);
+        // P3: Discord sink (off without a webhook secret), side effects, suggestion API
+        loadWebhooks();
+        discord = WebhookDiscordSink.create(() -> webhooks,
+                channel -> templates.config().extras().discord().enabled()
+                        && channel.equals(templates.config().extras().discord().channel()),
+                () -> templates.config().extras().discord(), plugin.getLogger());
+        try {
+            core.services().register(ID, net.skybornmc.skyblock.common.discord.DiscordSink.class, discord);
+        } catch (IllegalStateException e) {
+            plugin.getLogger().info("A Discord sink is already provided by another module; moderation uses that one.");
+        }
+        extras = new PunishExtras(core, msg, service.store(), () -> templates.config().extras(),
+                () -> templates.config().warnRules(), () -> core.services().optional(net.skybornmc.skyblock.common.discord.DiscordSink.class));
+        service.hooks(extras);
+        core.services().register(ID, net.skybornmc.skyblock.common.moderation.SuggestionService.class,
+                new ApiSuggestions(core, service, templates, () -> templates.config().warnRules(), t -> reasonName(null, t)));
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         core.placeholders().registerText(ID, "muted", p -> p != null && service.mute(p.getUniqueId()).isPresent() ? "true" : "false");
         registerCommands();
@@ -140,6 +172,33 @@ public final class ModerationModule implements SkyblockModule, Listener {
             service.store().activeMute(p.getUniqueId(), ip(p)).thenAccept(m -> service.cacheMute(p.getUniqueId(), m.orElse(null)));
         }
         bannedNamesTask = core.scheduler().asyncRepeat(20L, 600L, this::refreshBannedNames);
+        ackTask = core.scheduler().repeat("moderation:ack", 20L, 20L, extras::tick);
+        // spec 12.4: evidence older than the retention is deleted (at start, then every 6 hours)
+        purgeTask = core.scheduler().asyncRepeat(200L, 20L * 60 * 60 * 6, extras::purgeEvidence);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            extras.joined(p);
+        }
+    }
+
+    /** Webhook URLs from {@code secrets/discord.yml} (written on the server by apply-secrets.sh, never tracked). */
+    private void loadWebhooks() {
+        File file = new File(plugin.getDataFolder(), "secrets/discord.yml");
+        if (!file.isFile()) {
+            webhooks = Map.of();
+            return;
+        }
+        org.bukkit.configuration.file.YamlConfiguration yaml = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file);
+        org.bukkit.configuration.ConfigurationSection section = yaml.getConfigurationSection("webhooks");
+        Map<String, String> out = new java.util.HashMap<>();
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                String url = section.getString(key, "");
+                if (url != null && !url.isBlank()) {
+                    out.put(key, url.strip());
+                }
+            }
+        }
+        webhooks = Map.copyOf(out);
     }
 
     @Override
@@ -147,6 +206,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         core.configs().load(config);
         core.messages().load(ID);
         loadPunishments(null);
+        loadWebhooks();
     }
 
     @Override
@@ -154,6 +214,16 @@ public final class ModerationModule implements SkyblockModule, Listener {
         if (bannedNamesTask != null) {
             bannedNamesTask.cancel();
         }
+        if (ackTask != null) {
+            ackTask.cancel();
+        }
+        if (purgeTask != null) {
+            purgeTask.cancel();
+        }
+        if (discord != null) {
+            discord.close();
+        }
+        core.services().unregisterAll(ID);
         HandlerList.unregisterAll(this);
     }
 
@@ -284,6 +354,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .exceptionally(e -> null);
         service.store().pendingIds().thenAccept(ids -> pendingIds = List.copyOf(ids)).exceptionally(e -> null);
         service.store().staffNames().thenAccept(names -> staffNames = List.copyOf(names)).exceptionally(e -> null);
+        service.store().recentNoteIds(null).thenAccept(ids -> recentNoteIds = List.copyOf(ids)).exceptionally(e -> null);
     }
 
     private static String ip(Player p) {
@@ -393,6 +464,25 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .category("Staff").permission(PERM_STATS).aliases("mystats").optional(statsWho).optional(statsPeriod)
                 .example("pstats 30d")
                 .executes(ctx -> pstats(ctx.sender(), ctx.getOr(statsWho, null), ctx.getOr(statsPeriod, null))));
+
+        // ---- P3: /pnote (12.5), /ack (12.6), /mypunishments (12.12)
+        Arg<String> noteTarget = player;
+        Arg<String> noteText = Args.text("text", "Watch for alt accounts", "Warned in private messages", "Asked about rules");
+        Arg<String> noteId = Arg.word("id", (sender, raw) -> raw, Suggest.bySender(sender ->
+                noteIds.getOrDefault(senderKey(sender), recentNoteIds)));
+        commands.register(CommandSpec.command("pnote")
+                .description("Private staff notes on a player: add one, list them, or remove one by id").category("Staff")
+                .permission(PERM_NOTES).arg(noteTarget).optional(noteText).example("pnote Steve Watch for alt accounts")
+                .executes(ctx -> pnote(ctx.sender(), ctx.get(noteTarget), ctx.getOr(noteText, null)))
+                .sub(CommandSpec.sub("remove").arg(noteId).executes(ctx -> removeNote(ctx.sender(), ctx.get(noteId)))));
+        commands.register(CommandSpec.command("ack")
+                .description("Confirm you read your latest warning (same as clicking [I understand])").category("Community")
+                .permission(PERM_VIEW_OWN).playerOnly().example("ack")
+                .executes(ctx -> extras.acknowledge(ctx.player())));
+        commands.register(CommandSpec.command("mypunishments")
+                .description("Your own active mute, warnings and recent punishments").category("Community")
+                .permission(PERM_VIEW_OWN).playerOnly().example("mypunishments")
+                .executes(ctx -> myPunishments(ctx.player())));
 
         Arg<String> altsTarget = player;
         commands.register(CommandSpec.command("alts")
@@ -542,7 +632,12 @@ public final class ModerationModule implements SkyblockModule, Listener {
     CompletableFuture<PunishMenus.Target> target(UUID uuid, String name) {
         CompletableFuture<List<Punishment>> history = service.store().history(uuid);
         CompletableFuture<List<Suggestion>> suggestions = service.store().suggestions(uuid);
-        return history.thenCombine(suggestions, (h, s) -> new PunishMenus.Target(uuid, name, h, s));
+        CompletableFuture<List<Suggestion>> api = service.store().apiSuggestions(uuid);
+        int shown = Math.max(1, templates.config().extras().notes().shown());
+        CompletableFuture<List<Notes.Note>> notes = service.store().notes(uuid, shown);
+        CompletableFuture<Integer> noteCount = service.store().noteCount(uuid);
+        return CompletableFuture.allOf(history, suggestions, api, notes, noteCount).thenApply(v -> new PunishMenus.Target(uuid,
+                name, history.join(), suggestions.join(), api.join(), notes.join(), noteCount.join()));
     }
 
     /** Opens the single-screen /p menu for {@code viewer} (loads the target first). */
@@ -625,7 +720,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         Player online = Bukkit.getPlayer(target.uuid());
         return service.issue(sender, new PunishmentService.Request(step.type(), target.uuid(), target.name(), step.duration(),
                         reasonName(null, template), silent, ipWide, ipWide && online != null ? ip(online) : null,
-                        template.id(), template.stepIndex(previous), force))
+                        template.id(), template.stepIndex(previous), force, step.weight()))
                 .exceptionally(e -> failed(sender, e));
     }
 
@@ -639,7 +734,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
                                                                        PunishConfig.WarnButton button, boolean silent,
                                                                        boolean force) {
         return service.issue(sender, new PunishmentService.Request(Punishment.Type.WARN, target.uuid(), target.name(), null,
-                        warnButtonText(null, button, "reason"), silent, false, null, button.id(), null, force))
+                        warnButtonText(null, button, "reason"), silent, false, null, button.id(), null, force, button.weight()))
                 .exceptionally(e -> failed(sender, e));
     }
 
@@ -685,7 +780,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         long now = System.currentTimeMillis();
         WarnRules.Counter counter = WarnRules.counter(t.history(), t.suggestions(), rules, now);
         msg.send(sender, "warns.header", Msg.p("player", t.name()), PunishmentService.pre("target", t.name()),
-                Msg.p("count", counter.count()), Msg.p("next", counterLimit(counter, rules)));
+                Msg.p("count", counter.text()), Msg.p("next", counterLimit(counter, rules)));
         if (!rules.enabled()) {
             msg.send(sender, "warns.rules-off");
         } else {
@@ -706,7 +801,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
         for (Punishment w : counted) {
             msg.send(sender, "warns.line", Msg.p("id", w.id()), Msg.p("reason", w.reason()), Msg.p("staff", w.issuerName()),
                     Msg.p("date", when(w.created())), Msg.p("expires", rules.warnExpire() == null
-                            ? service.text(viewer, "words.never") : when(w.created() + rules.warnExpire().toMillis())));
+                            ? service.text(viewer, "words.never") : when(w.created() + rules.warnExpire().toMillis())),
+                    Msg.p("weight", Weights.text(w.weight())),
+                    Msg.p("ack", service.text(viewer, w.acknowledged() ? "warns.ack-yes" : "warns.ack-no")));
         }
         if (counter.repeatUntil() != null) {
             msg.send(sender, "warns.repeat-open", Msg.p("until", when(counter.repeatUntil())),
@@ -714,6 +811,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
         }
         if (counter.pending() != null) {
             msg.send(sender, "warns.pending", service.suggestionParts(viewer, counter.pending()));
+        }
+        for (Suggestion api : t.apiSuggestions()) {
+            msg.send(sender, "warns.api-pending", service.suggestionParts(viewer, api));
         }
         msg.send(sender, "warns.footer", PunishmentService.pre("target", t.name()));
     }
@@ -888,6 +988,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         Player player = event.getPlayer();
         // A mute given while offline (e.g. an automatic rule) is explained on join (spec 5.5 "offline player warned").
         service.mute(player.getUniqueId()).ifPresent(m -> msg.send(player, "muted.join", service.parts(player, m)));
+        extras.joined(player); // spec 12.6: unacknowledged warnings are reminded once
         if (lastLoadRejected && player.hasPermission(PERM_CONFIG_ALERT) && !lastProblems.isEmpty()) {
             sendProblems(player, lastProblems, "config.rejected");
         }
@@ -917,6 +1018,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         service.forget(event.getPlayer().getUniqueId());
+        extras.forget(event.getPlayer().getUniqueId());
+        noteIds.remove(event.getPlayer().getUniqueId().toString());
         pendingAltAlerts.remove(event.getPlayer().getUniqueId());
     }
 
@@ -934,8 +1037,32 @@ public final class ModerationModule implements SkyblockModule, Listener {
     public void onChat(AsyncChatEvent event) {
         if (blockIfMuted(event.getPlayer())) {
             event.setCancelled(true);
+            return;
+        }
+        if (extras.blocks(event.getPlayer())) {
+            // spec 12.6 ack.block-until-ack (off by default): chat waits for [I understand] / /ack
+            event.setCancelled(true);
+            msg.send(event.getPlayer(), "ack.blocked");
         }
     }
+
+    /** {@code ack.block-until-ack} (off by default): only /ack, /rules and /mypunishments work until acknowledged. */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onCommand(org.bukkit.event.player.PlayerCommandPreprocessEvent event) {
+        if (!extras.blocks(event.getPlayer())) {
+            return;
+        }
+        String label = event.getMessage().substring(1).split(" ", 2)[0].toLowerCase(Locale.ROOT);
+        if (label.contains(":")) {
+            label = label.substring(label.indexOf(':') + 1);
+        }
+        if (!ACK_ALLOWED.contains(label)) {
+            event.setCancelled(true);
+            msg.send(event.getPlayer(), "ack.blocked");
+        }
+    }
+
+    private static final java.util.Set<String> ACK_ALLOWED = java.util.Set.of("ack", "rules", "mypunishments");
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onSign(SignChangeEvent event) {
@@ -948,6 +1075,154 @@ public final class ModerationModule implements SkyblockModule, Listener {
     public void onBook(PlayerEditBookEvent event) {
         if (blockIfMuted(event.getPlayer())) {
             event.setCancelled(true);
+        }
+    }
+
+    /** "30 Oct" in Europe/Oslo (notes on the /p head). */
+    static String day(long millis) {
+        return DAY.withZone(Format.zone()).format(Instant.ofEpochMilli(millis));
+    }
+
+    private static final java.time.format.DateTimeFormatter DAY = java.time.format.DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH);
+
+    private static String senderKey(CommandSender sender) {
+        return sender instanceof Player p ? p.getUniqueId().toString() : "console";
+    }
+
+    // ================================================================== /pnote (spec 12.5)
+
+    private void pnote(CommandSender sender, String name, String text) {
+        if (text != null) {
+            String clean = Notes.clean(text);
+            int max = templates.config().extras().notes().maxLength();
+            Optional<Notes.Problem> problem = Notes.check(clean, max);
+            if (problem.isPresent()) {
+                throw fail(problem.get() == Notes.Problem.EMPTY ? "notes.empty" : "notes.too-long",
+                        Msg.number("max", max), Msg.number("length", clean.length()));
+            }
+        }
+        resolve(name).thenComposeAsync(found -> {
+            if (found.isEmpty()) {
+                msg.send(sender, "error.unknown", Msg.p("player", name));
+                return CompletableFuture.completedFuture(null);
+            }
+            UUID target = found.get().uuid();
+            String targetName = found.get().name();
+            if (text == null) {
+                return service.store().notes(target, 50).thenAcceptAsync(list -> listNotes(sender, targetName, list), main);
+            }
+            UUID author = sender instanceof Player p ? p.getUniqueId() : null;
+            return service.store().addNote(target, targetName, author, sender.getName(), Notes.clean(text), System.currentTimeMillis())
+                    .thenAcceptAsync(note -> {
+                        msg.send(sender, "notes.added", Msg.p("id", note.id()), Msg.p("player", targetName),
+                                PunishmentService.pre("target", targetName));
+                        if (sender instanceof Player p) {
+                            core.sounds().play(p, "success");
+                        }
+                        core.audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "note_add",
+                                net.skybornmc.skyblock.common.audit.Actor.of(sender), target, targetName, null, null,
+                                Map.of("id", note.id(), "text", note.text()));
+                        refreshBannedNames();
+                    }, main);
+        }, main).exceptionally(e -> failed(sender, e));
+    }
+
+    private void listNotes(CommandSender sender, String targetName, List<Notes.Note> list) {
+        noteIds.put(senderKey(sender), list.stream().map(n -> String.valueOf(n.id())).toList());
+        msg.send(sender, "notes.header", Msg.p("player", targetName), Msg.number("count", list.size()),
+                PunishmentService.pre("target", targetName));
+        if (list.isEmpty()) {
+            msg.send(sender, "notes.none");
+        }
+        for (Notes.Note n : list) {
+            msg.send(sender, "notes.line", Msg.p("id", n.id()), Msg.p("author", n.authorName()), Msg.p("date", when(n.created())),
+                    Msg.p("text", n.text()), PunishmentService.pre("nid", n.id()));
+        }
+        core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "notes_view",
+                net.skybornmc.skyblock.common.audit.Actor.of(sender), null, targetName, null, null, Map.of("count", list.size()));
+    }
+
+    private void removeNote(CommandSender sender, String rawId) {
+        long id;
+        try {
+            id = Long.parseLong(rawId.startsWith("#") ? rawId.substring(1) : rawId);
+        } catch (NumberFormatException e) {
+            throw fail("notes.bad-id", Msg.p("input", rawId));
+        }
+        UUID by = sender instanceof Player p ? p.getUniqueId() : null;
+        service.store().removeNote(id, by, sender.getName(), System.currentTimeMillis()).thenAcceptAsync(r -> {
+            if (r.isEmpty()) {
+                msg.send(sender, "notes.not-found", Msg.p("id", id));
+                return;
+            }
+            Notes.Note n = r.get().note();
+            if (!r.get().changed()) {
+                msg.send(sender, "notes.already-removed", Msg.p("id", id), Msg.p("by", n.removedByName() == null ? "?" : n.removedByName()));
+                return;
+            }
+            msg.send(sender, "notes.removed", Msg.p("id", id), Msg.p("player", n.targetName()));
+            if (sender instanceof Player p) {
+                core.sounds().play(p, "success");
+            }
+            core.audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "note_remove",
+                    net.skybornmc.skyblock.common.audit.Actor.of(sender), n.target(), n.targetName(), null, null,
+                    Map.of("id", id, "text", n.text(), "author", n.authorName()));
+            noteIds.computeIfPresent(senderKey(sender), (k, ids) -> ids.stream().filter(x -> !x.equals(String.valueOf(id))).toList());
+            refreshBannedNames();
+        }, main).exceptionally(e -> failed(sender, e));
+    }
+
+    // ================================================================== /mypunishments (spec 12.12)
+
+    private void myPunishments(Player player) {
+        UUID self = player.getUniqueId();
+        service.store().history(self).thenCombine(service.store().suggestions(self), (h, s) -> Map.entry(h, s))
+                .thenAcceptAsync(data -> sendMyPunishments(player, PlayerView.own(data.getKey(), self), data.getValue()), main)
+                .exceptionally(e -> failed(player, e));
+    }
+
+    private void sendMyPunishments(Player player, List<Punishment> own, List<Suggestion> suggestions) {
+        PunishConfig.Extras x = templates.config().extras();
+        long now = System.currentTimeMillis();
+        msg.send(player, "mine.header");
+        Punishment mute = PlayerView.activeMute(own, now);
+        if (mute == null) {
+            msg.send(player, "mine.no-mute");
+        } else {
+            msg.send(player, "mine.mute", Msg.p("reason", mute.reason()), Msg.p("id", mute.id()),
+                    Msg.p("left", mute.expires() == null ? service.text(player, "words.permanent")
+                            : Format.duration(Duration.ofMillis(Math.max(1000, mute.expires() - now)))),
+                    PunishmentService.pre("appeal", service.appealUrl()),
+                    PunishmentService.pre("appeal_url", PlayerView.link(service.appealUrl())));
+        }
+        WarnRules.Settings rules = templates.config().warnRules();
+        WarnRules.Counter counter = WarnRules.counter(own, suggestions, rules, now);
+        List<Punishment> counted = WarnRules.counted(own, suggestions, rules, now);
+        msg.send(player, "mine.warnings", Msg.p("count", counter.text()), Msg.p("next", counterLimit(counter, rules)));
+        for (Punishment w : counted) {
+            msg.send(player, "mine.warning", Msg.p("reason", w.reason()), Msg.p("date", when(w.created())),
+                    Msg.p("expires", rules.warnExpire() == null ? service.text(player, "words.never")
+                            : when(w.created() + rules.warnExpire().toMillis())));
+        }
+        boolean owes = own.stream().anyMatch(p -> p.type() == Punishment.Type.WARN && !p.removed() && !p.acknowledged()
+                && p.active(now));
+        if (owes) {
+            msg.send(player, "mine.ack", Msg.c("ack", extras.ackButton(player)));
+        }
+        List<Punishment> last = PlayerView.last(own, x.playerView().lastEntries());
+        msg.send(player, "mine.recent-header", Msg.number("count", last.size()));
+        if (last.isEmpty()) {
+            msg.send(player, "mine.none");
+        }
+        String hidden = service.text(player, "words.staff");
+        String system = service.text(player, "words.system");
+        for (Punishment p : last) {
+            msg.send(player, x.playerView().showStaff() ? "mine.entry-staff" : "mine.entry",
+                    Msg.mm("type", core.messages().raw(ID, "types." + p.type().name().toLowerCase(Locale.ROOT)) == null
+                            ? p.type().name() : core.messages().raw(ID, "types." + p.type().name().toLowerCase(Locale.ROOT))),
+                    Msg.p("reason", p.reason()), Msg.p("date", when(p.created())), Msg.p("id", p.id()),
+                    Msg.p("status", service.text(player, "status." + p.status(now).name().toLowerCase(Locale.ROOT))),
+                    Msg.p("staff", PlayerView.staff(p, x.playerView().showStaff(), hidden, system)));
         }
     }
 

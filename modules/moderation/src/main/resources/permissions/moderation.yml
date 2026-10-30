@@ -63,3 +63,9 @@ skyblock.staff.punish.stats:
 skyblock.staff.punish.stats.others:
   description: See other staff members' numbers and the ranking (/pstats <staff>, /pstats top)
   default: op
+skyblock.staff.punish.notes:
+  description: Private staff notes on players (/pnote) and the newest notes on the head of /p
+  default: op
+skyblock.punish.view.own:
+  description: See your own punishments (/mypunishments) and confirm warnings (/ack)
+  default: true

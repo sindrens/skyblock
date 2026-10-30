@@ -55,6 +55,8 @@ public final class StaffModule implements SkyblockModule {
         // Other modules read this (e.g. /pay refuses frozen players).
         core.placeholders().registerText(id(), "frozen", p -> p != null && freeze.isFrozen(p) ? "true" : "false");
         reports.register();
+        // Phase P 12.9: moderation closes the punishing staff member's claimed reports through this service
+        core.services().register(id(), net.skybornmc.skyblock.common.moderation.ReportLink.class, reports);
         mode.register();
         Arg<String> inspectTarget = Args.offlinePlayer("player");
         core.commands().register(CommandSpec.command("inspect")

@@ -13,3 +13,5 @@ Settings in `staff.yml`, texts in `messages/staff.yml`, data in `db/staff` (`sta
 Staff tools dispatch `/punish` (moderation module), `/logs` (M1.10) and `/invsee`/`/ecsee` (essentials); missing ones say "isn't available yet".
 
 Permission definitions: `modules/staff/src/main/resources/permissions/staff.yml`. Rank grants: `server/permissions/staff.txt`.
+
+Report link (Phase P 12.9): when a staff member punishes a player, the reports about that player **claimed by that staff member** close automatically with outcome punished (reporters are told as usual); unclaimed reports stay open. Provided to moderation as the `ReportLink` service (`common/moderation`).
