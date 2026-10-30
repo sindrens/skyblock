@@ -545,6 +545,13 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 - M3.3 bank: no chat message for interest payouts (they happen every 8 h since BANK2); the menu shows rate, cap and the next payout, the history every payout. Add an optional `/settings` toggle "interest messages"? (default: no message)
 - M3.3 bank: interest paused when the profile (island: at least one member) played < 2 h in the last 7 days (owner #38). Played time is counted per profile in whole minutes while online (AFK counts too, no AFK detection yet). OK? (default: yes)
 
+
+### REVIEW3 follow-ups (30 Oct; answers in OWNER_ANSWERS_REVIEW3.md)
+- (a) **Join cooldown:** unlimited joins per season is applied (N2-1). The 24 h cooldown between joining islands is kept for now (anti island-hopping); F10's 48 h slot lock covers the island side. Default: keep 24 h. Remove it?
+- (b) **F8 "No":** read as "keep the bank withdraw as built" (role permission the leader gives, daily % limit per role, no extra 3-day rule). Default: that.
+- (c) **R3-6 /eco:** read as: changes up to $1T apply at once and are flagged to staff (Discord later); above $1T they wait until an owner/admin clicks Allow in the alert. Default: that.
+- (d) **R3-18 fragment drop chance:** how many tier 11+ hours should one Phoenix key (3 fragments) take? Default: 10 h of active tier 11+ play.
+
 ## Economy
 1. **Shards:** how are they earned? (Proposal: bosses, envoys, KOTH, high-tier dungeon zones.)
 2. **Gems at season reset:** are store-bought gems kept or wiped? (Recommendation: keep unspent gems/credits to avoid support issues.)
