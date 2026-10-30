@@ -31,7 +31,7 @@ worlds:
     create: false
     biome: the_void
     difficulty: peaceful
-    spawn: { x: 0.5, y: 100, z: 0.5, yaw: 0 }
+    spawn: { x: 0.5, y: 100, z: 0.5, yaw: 180 }   # spawn_base build: on the dais, facing north
     platform: polished_deepslate
     border: 1000
     time: 6000
@@ -84,7 +84,7 @@ worlds:
     create: true
     biome: the_void
     difficulty: normal
-    spawn: { x: 0.5, y: 100, z: 0.5, yaw: 0 }
+    spawn: { x: 7.5, y: 100, z: 14.5, yaw: 165 }  # depths_gate build: arrival pad
     platform: tuff_bricks
     border: 2000
     time: 18000                  # night sky over the Depths
