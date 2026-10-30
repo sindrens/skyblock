@@ -3,6 +3,17 @@
 Rules: max 3 agents at once; an item starts when its dependencies are merged and its lane does not overlap a running agent. Merge each finished agent immediately (build `-x test` + `compileTestJava` on its branch first), update STATUS.md + this file, release, start the next item.
 Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 
+## GUI round 1 (design session 31 Oct; files in docs/design/, decisions page https://claude.ai/artifact/Jk4hUDpho4iWzH9kzHFsHp db answers/gui1)
+| # | Item | Depends on | Lane | Status |
+|---|---|---|---|---|
+| GUI-BUGS | Safe fixes from docs/design/UX_REVIEW.md §5 + §3 that need no decision: /trade Info/Help/Close must not cancel the trade (Back instead of Cancel at 45, same in money picker); /trash confirm + Close button; /p: permanent ban (and any ban) needs a confirm screen, add frame; /freerank pick + booster use + satchel upgrade/sell-all + spawner Take all get a confirm with the details on the middle item; daily screen stops overwriting its border; wardrobe staff-entry duplicate "Set to Lv 40"; staff outcome lore says Invalid counts as a false report; hide placeholder tiles that do nothing (Masteries, Weekly gain, Pillars); stale NPC texts ("opens soon" for crates/daily); tutorial Help step wording + Menu step completes on /menu; one welcome on first join | ECON-R3, PERF6 | trade, perks, moderation, rewards, boosters, depths, stacking, wardrobe, staff, progression, npcs, tutorial, essentials | ⬜ |
+| GUI-1 | Menu framework in common/menu (GUI_DESIGN §9.1): bottom bar 45 Back / 48 ? / 49 Close / 50 Main menu / 52-53 pages, 3- and 4-row standards, title rule `Feature » Screen`, locked/empty/loading/error items, confirm details on 13, tabs refresh in place | owner answers gui1 | common/menu | ⬜ |
+| GUI-2 | /menu hub 15 buttons in 4 groups + You menu + Travel menu (replaces UX3 Warps), Back-to-hub from every screen opened from the hub | GUI-1 | menus | ⬜ |
+| GUI-3 | Shop v2 (docs/design/SHOP_DESIGN.md): 9 tabs, buy page (1/16/64/fill/type), catalog migration ~253 items, undo + big-buy rule (F14, toggle) | GUI-1 | shop | ⬜ |
+| GUI-4 | Per-menu fixes from docs/design/MENU_FIXES.md, module by module (staff/moderation last) | GUI-1 | many | ⬜ |
+| GUI-5 | Bedrock popups instead of clickable chat (TPA, island invites, store/vote/Discord links, [Tutorial]) | GUI-1 | essentials, islands, social, tutorial | ⬜ |
+| GUI-6 | Pack art on the final slots (RP1–RP3) | GUI-4, art | resource pack | ⬜ |
+
 ## REVIEW3 + owner feedback 30 Oct (top priority; answers in docs/OWNER_ANSWERS_REVIEW3.md, details in docs/review/REVIEW3_DEVELOPER_BRIEF.md)
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
