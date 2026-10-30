@@ -10,6 +10,7 @@ Each phase has its own detailed plan. A phase is split into **milestones**; ever
 | 3 | [PHASE-3-ECONOMY.md](PHASE-3-ECONOMY.md) | Currencies + ledger, `/pay`, notes, banks + interest, selling + dynamic prices, builder shop, auction house, secure trade, economy dashboard |
 | 4 | [PHASE-4-DEPTHS.md](PHASE-4-DEPTHS.md) | Tools (starter kit, Forge, living tools, blueprints, skins), per-player ore/log blocks, satchel, mine/forest/combat tiers, skill core (XP/levels), crystals, `/dungeon` |
 | 5 | [PHASE-5-PROGRESSION.md](PHASE-5-PROGRESSION.md) | Pillars, dynamic island level (8 sources), task engine, `/is upgrade` upgrades + masteries + Ascension, paid sizes above 9x9, leaderboards (solo/team/weekly, Hall of Heroes), staff tools |
+| 10 | [PHASE-10-REWARDS.md](PHASE-10-REWARDS.md) | Crates + keys (7 crates, tables, pity), boosters, voting + vote party, 30-day daily calendar, playtime rewards, quests (daily/weekly/island), battle pass, achievements (link), collection log, Black Market (shards), tutorial (link) |
 
 Later phases (6+): skills perks/sets/enchants, island production + outposts, PvE/bosses/pets, conquest/events, rewards/crates/quests, store/ranks/Discord, seasons, balance + launch. They get the same level of detail before they start.
 
