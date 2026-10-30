@@ -23,6 +23,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **UX1** merged: short plain messages in one format, cleaner scoreboard (+ Depths layout) and tab, instant rank refresh, /baltop 30 s async, tags after the name.
 - **P2** merged: [Undo], double-punish guard, offence expiry, /pstats.
 - **CRY** merged: tokens replaced by crystals (aqua ◆, not tradeable), gems emerald ✦, DB/config migrations.
+- **M2.4** merged: /is visit + browser, lock/expel/ban, warps (categories, signs), ratings, likes.
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -30,7 +31,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
-- Last released bundle: update43. Next bundle number: 44.
+- Last released bundle: update44. Next bundle number: 45.
 - Owner gets a push notification on every release (PushNotification tool).
 
 ## Owner answers page
@@ -53,7 +54,8 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - R2A round-2 quick decisions batch (non-economy parts)
-- M2.4 island visiting, warps, ratings, likes — w8z4uyvta
+- R2B economy round-2 items
+- ISL2 islands round 2
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
 
 ## Parked / broken

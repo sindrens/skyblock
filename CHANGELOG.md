@@ -60,6 +60,7 @@
 - **Islands:** a solo island only becomes a team island when the invite is accepted.
 - **P2 punishments:** [Undo] for 2 minutes (chat + /p head for Bedrock), double-punish protection (15 s, click again or -force), offences expire (90 d, cheating never), `/pstats` (`/mystats`, top, per staff).
 - **Crystals replace tokens** everywhere (aqua ◆, not tradeable); gems get a new emerald ✦ look; existing balances, history, configs and placeholders migrate automatically.
+- **M2.4 island visiting:** `/is visit` + browser (most visited, top rated, most liked, newest), `/is lock|unlock|expel|ban|unban` with member alerts, 3 warps (`/is setwarp|delwarp|warp`, categories, icons, public/private, `[warp]` signs, warp browser), `/is rate` and `/is like`.
 - **M2.7 island lifecycle:** `/is disband` (confirm + type the word), slots cleared (FAWE or throttled fallback) and reused, `/isadmin` (info, tp, delete, setsize, addmember, kick, setowner, reset, bypass, slots overview, teleport-slot).
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
