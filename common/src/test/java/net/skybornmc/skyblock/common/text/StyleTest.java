@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StyleTest {
@@ -120,5 +122,24 @@ class StyleTest {
         Files.writeString(file, "colors: [unclosed");
         assertEquals(1, style.load(file.toFile()).size());
         assertEquals("$", style.symbol("money"));
+    }
+
+    @Test
+    void fullResolverIsCachedUntilReload(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("style.yml");
+        Files.writeString(file, YAML);
+        Style style = new Style();
+        style.load(file.toFile());
+        net.kyori.adventure.text.minimessage.MiniMessage mm = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage();
+        var java = style.fullResolver(false, mm);
+        assertSame(java, style.fullResolver(false, mm), "same resolver until the style changes");
+        assertNotSame(java, style.fullResolver(true, mm), "Bedrock has its own resolver");
+        var plain = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText();
+        assertEquals("P hi", plain.serialize(mm.deserialize("<prefix>hi", java)));
+        Files.writeString(file, YAML.replace("prefix: \"<c:brand>P</c:brand> \"", "prefix: \"Q \""));
+        style.load(file.toFile());
+        var reloaded = style.fullResolver(false, mm);
+        assertNotSame(java, reloaded, "a reload drops the cache");
+        assertEquals("Q hi", plain.serialize(mm.deserialize("<prefix>hi", reloaded)));
     }
 }

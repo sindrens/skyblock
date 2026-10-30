@@ -18,7 +18,7 @@ import java.util.UUID;
 
 /**
  * Staff view from {@code /inspect} (TUTORIAL.md §9.2, TQ23): the player's state, step, times and done steps (helper+),
- * and Skip / Reset with a confirm screen (mod+, audited). Works for offline players.
+ * and Skip / Reset with a confirm screen (mod+, audited), and the tutorial stats (TU7, mod+). Works for offline players.
  */
 final class StaffTutorialMenu extends Menu {
 
@@ -65,6 +65,10 @@ final class StaffTutorialMenu extends Menu {
     protected void build() {
         frame();
         setAsync(13, module.engine().lookup(player).thenApply(found -> MenuButton.display(status(found))));
+        if (viewer.hasPermission(StatsMenu.PERM_STATS)) {
+            set(31, service.item(Material.SPYGLASS, viewer, TutorialModule.ID, "staff.menu.stats"),
+                    click -> click.menu().openChild(new StatsMenu(module)));
+        }
         if (!viewer.hasPermission(PERM_ADMIN)) {
             return;
         }

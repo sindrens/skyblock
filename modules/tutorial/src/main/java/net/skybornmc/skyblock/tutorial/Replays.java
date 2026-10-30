@@ -10,8 +10,9 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Watch again (TUTORIAL.md §9.7, TQ25): shows every step's title and hint in order, a few seconds each. Replay mode
- * changes nothing (no locks, no rewards); stop it any time from {@code /tutorial}. The TU3 cameras plug in here later.
+ * Watch again (TUTORIAL.md §9.7, TQ25): shows every step's title and hint in order, a few seconds each, and plays the
+ * step's camera (portal: spawn, arrive: island, depths: Depths) where it can. Replay mode changes nothing (no locks, no
+ * rewards); stop it any time from {@code /tutorial}, skip a camera by sneaking.
  */
 final class Replays {
 
@@ -57,8 +58,43 @@ final class Replays {
                 Msg.c("objective", module.msg().component(player, "steps." + step + ".objective")));
         module.msg().send(player, "replay.line", Msg.number("number", index + 1), Msg.number("total", steps.size()),
                 Msg.c("step", module.engine().stepName(player, step)), Msg.c("hint", module.engine().hint(player, step)));
+        String camera = camera(step);
+        if (camera != null) {
+            Scheduler.Task marker = new Scheduler.Task() {
+                private boolean cancelled;
+
+                @Override
+                public void cancel() {
+                    cancelled = true;
+                    module.cameras().stop(player);
+                }
+
+                @Override
+                public boolean cancelled() {
+                    return cancelled;
+                }
+            };
+            running.put(player.getUniqueId(), marker);
+            if (module.cameras().play(player, camera, () -> {
+                if (running.get(player.getUniqueId()) == marker) {
+                    show(player, steps, index + 1);
+                }
+            })) {
+                return;
+            }
+        }
         running.put(player.getUniqueId(), module.core().scheduler().later("tutorial-replay", SHOT_TICKS,
                 () -> show(player, steps, index + 1)));
+    }
+
+    /** The camera of a step in Watch again. */
+    static String camera(String step) {
+        return switch (step) {
+            case Steps.PORTAL -> Cameras.SPAWN;
+            case Steps.ARRIVE -> Cameras.ISLAND;
+            case Steps.DEPTHS -> Cameras.DEPTHS;
+            default -> null;
+        };
     }
 
     void stop(Player player) {

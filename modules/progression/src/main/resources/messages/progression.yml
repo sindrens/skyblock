@@ -49,3 +49,235 @@ settings:
   pillar-notices:
     name: "<c:value>Island pillar messages"
     lore: ["<c:text>Show a chat line when one of", "<c:text>your island's pillars levels up."]
+
+# ---------------------------------------------------------------- M5.2 island level
+# Level-ups: only a new highest level this season is announced (never the first calculation).
+# <level> new level; global: <island> name, <level> the multiple of progression.yml → notify.global-every-levels
+level:
+  up:
+    chat: "<c:flame><sym:star></c:flame> <c:text>Your island reached <c:value>level <level></c:value>! <click:run_command:'/is level'><hover:show_text:'<c:text>Open the island level'><c:action>[Level]</c:action></hover></click>"
+    title:
+      title: "<c:flame>Island Level <c:value><level>"
+      subtitle: "<c:text>Your island grew!"
+      fade-in: 5
+      stay: 50
+      fade-out: 15
+  global: "<c:flame><sym:star></c:flame> <c:text>The island <c:value><island></c:value> reached <c:value>level <level></c:value>!"
+
+# /is level (6 rows). Lore lines max ~36 characters (Bedrock).
+level-menu:
+  crumb-island: "Island"
+  crumb: "Level"
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have an island yet. <click:run_command:'/is'><hover:show_text:'<c:text>Create your island'><c:action>[Create]</c:action></hover></click>"
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't see island levels."
+  info:
+    - "<c:text>Your island level comes from"
+    - "<c:text>8 sources. Earned ones never go"
+    - "<c:text>down; live ones follow your island."
+    - "<c:muted>Coop players never count."
+  board:
+    solo: "solo"
+    team: "team"
+  # <level> <next> <percent> <points> <place> <board>
+  header:
+    name: "<c:flame><bold>Island Level <level>"
+    lore:
+      - "<c:text>Progress: <c:value><percent>%</c:value> <c:text>to <c:value><next>"
+      - "<c:text>Points: <c:value><points>"
+      - "<c:muted>Updates a few seconds after a change."
+    lore-new:
+      - "<c:text>Calculating your island level..."
+      - "<c:muted>Open this again in a moment."
+    ranked:
+      - "<c:text>Board: <c:value>#<place></c:value> <c:muted>(<board>)"
+    unranked:
+      - "<c:muted>Not on the <board> board yet."
+  # Source buttons. <source> name, <points>
+  source-name: "<source> <c:value><points>"
+  soon-name: "<c:muted><source>"
+  points:
+    - "<c:text>Points: <c:value><points>"
+  # <limit> points the source may give now, <percent> its cap
+  cap:
+    - "<c:text>Cap: <c:value><limit></c:value> <c:muted>(<percent>% of the level)"
+  capped:
+    - "<c:warning>Capped at <limit></c:warning> <c:muted>(<percent>% of the level)"
+  detail-pending:
+    - "<c:muted>Details after the next update."
+  source:
+    pillars:
+      name: "<c:flame>Pillars"
+      detail:
+        - "<c:text>Pillar levels: <c:value><levels>"
+      how:
+        - "<c:muted>Mine, chop, farm and fight as a"
+        - "<c:muted>member: 1 point per pillar level."
+    upgrades:
+      name: "<c:flame>Upgrades"
+      soon:
+        - "<c:muted>Coming soon: island upgrades"
+        - "<c:muted>and masteries give points."
+      how:
+        - "<c:muted>Buy upgrades and masteries."
+    achievements:
+      name: "<c:flame>Achievements"
+      soon:
+        - "<c:muted>Coming soon: island"
+        - "<c:muted>achievements give points."
+      how:
+        - "<c:muted>Complete island achievements."
+    collections:
+      name: "<c:flame>Collections"
+      soon:
+        - "<c:muted>Coming soon: collection"
+        - "<c:muted>milestones give points."
+      how:
+        - "<c:muted>Reach collection milestones."
+    skills:
+      name: "<c:flame>Members' skills"
+      # <counted> <members> <average> <days>
+      detail:
+        - "<c:text>Members counted: <c:value><counted>/<members>"
+        - "<c:text>Average skill total: <c:value><average>"
+      how:
+        - "<c:muted>Level skills. Members count after"
+        - "<c:muted>3 days; the average counts."
+    depths:
+      name: "<c:flame>Depths progress"
+      # best member per wing: <mine> <forest> <combat>, <days>
+      detail:
+        - "<c:text>Mine <c:value><mine></c:value> <c:muted>·</c:muted> <c:text>Forest <c:value><forest></c:value> <c:muted>·</c:muted> <c:text>Combat <c:value><combat>"
+      how:
+        - "<c:muted>Unlock Depths tiers. The best"
+        - "<c:muted>member of each wing counts."
+    bank:
+      name: "<c:flame>Island bank"
+      # <lowest> money, <hours>
+      detail:
+        - "<c:text>Lowest (<hours> h): <c:value><lowest>"
+      detail-new:
+        - "<c:muted>Counts after <hours> h of saving."
+      how:
+        - "<c:muted>Keep money in the island bank."
+        - "<c:muted>Slow scale: 10x money = +4."
+    blocks:
+      name: "<c:flame>Block worth"
+      # <worth> money
+      detail:
+        - "<c:text>Worth: <c:value><worth>"
+      detail-scanning:
+        - "<c:text>Worth: <c:value><worth></c:value> <c:muted>(counting...)"
+      how:
+        - "<c:muted>Place valuable blocks and spawners"
+        - "<c:muted>inside your border. Chests don't count."
+  recalculate:
+    name: "<c:value>Recalculate block worth"
+    # <cooldown> minutes between rescans
+    lore:
+      - "<c:text>Counts every block on your"
+      - "<c:text>island again. Once per <cooldown> min."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to recalculate"
+    lore-running:
+      - "<c:text>Counting your blocks right now."
+      - "<c:muted>The level updates when it's done."
+    # <minutes> left
+    lore-cooldown:
+      - "<c:text>Ready again in <c:value><minutes> min"
+    lore-locked:
+      - "<c:muted>Only island members can"
+      - "<c:muted>recalculate the block worth."
+    started: "<prefix><c:success><sym:check></c:success> <c:text>Counting your island's blocks. Your level updates when it's done."
+    running: "<prefix><c:text>Your island's blocks are being counted right now."
+    cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>You can recalculate again in <c:value><minutes> min</c:value>."
+    not-member: "<prefix><c:error><sym:cross></c:error> <c:text>Only island members can recalculate the block worth."
+    no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't recalculate the block worth."
+    # <worth> money
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Block worth counted: <c:value><worth></c:value>."
+  # Pillar row. <pillar> name, <level>, <percent>
+  pillar:
+    name: "<pillar> <c:value><level>"
+    lore:
+      - "<c:text>Next level: <c:value><percent>%"
+      - "<c:muted>1 island level point per level."
+    soon-name: "<c:muted>Conquest"
+    soon:
+      - "<c:muted>Comes with events and KOTH."
+
+# /is top (6 rows)
+top-menu:
+  crumb: "Top"
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't see the island leaderboards."
+  info:
+    - "<c:text>The best islands. Solo and team"
+    - "<c:text>islands have their own boards."
+    - "<c:text>One island per player."
+    - "<c:muted>Updated every few minutes."
+  tab:
+    level:
+      name: "<c:flame><bold>Level"
+      lore:
+        - "<c:text>Ranked by island level."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
+      lore-active:
+        - "<c:text>Ranked by island level."
+        - "<c:success><sym:check> Showing"
+    value:
+      name: "<c:flame><bold>Value"
+      lore:
+        - "<c:text>Ranked by block worth."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
+      lore-active:
+        - "<c:text>Ranked by block worth."
+        - "<c:success><sym:check> Showing"
+    weekly:
+      name: "<c:muted>Weekly gain"
+      lore:
+        - "<c:muted>Coming soon"
+    pillars:
+      name: "<c:muted>Pillars"
+      lore:
+        - "<c:muted>Coming soon"
+  board:
+    solo-name: "<c:value>Solo islands"
+    solo-lore:
+      - "<c:text>Islands with one player."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for team islands"
+    team-name: "<c:value>Team islands"
+    team-lore:
+      - "<c:text>Islands with members."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for solo islands"
+  # <place> <island> <level> <points> <worth> <leader>
+  entry:
+    name-1: "<bold><c:top1>#1</c:top1></bold> <c:value><island>"
+    name-2: "<bold><c:top2>#2</c:top2></bold> <c:value><island>"
+    name-3: "<bold><c:top3>#3</c:top3></bold> <c:value><island>"
+    name: "<c:muted>#<place></c:muted> <c:value><island>"
+    lore-level:
+      - "<c:text>Level: <c:value><level></c:value> <c:muted>(<points> points)"
+      - "<c:text>Leader: <c:value><leader>"
+    lore-value:
+      - "<c:text>Worth: <c:value><worth>"
+      - "<c:text>Level: <c:value><level>"
+      - "<c:text>Leader: <c:value><leader>"
+    yours:
+      - "<c:success><sym:check> Your island"
+  empty:
+    name: "<c:locked>#<place> -"
+    lore:
+      - "<c:muted>Nobody here yet."
+  you:
+    name: "<c:flame><bold>Your island"
+    # <place> <level> <worth>
+    ranked:
+      - "<c:text>Place: <c:value>#<place>"
+      - "<c:text>Level: <c:value><level>"
+    unranked:
+      - "<c:text>Level: <c:value><level>"
+      - "<c:muted>Not on this board yet."
+    no-island:
+      - "<c:muted>You don't have an island yet."

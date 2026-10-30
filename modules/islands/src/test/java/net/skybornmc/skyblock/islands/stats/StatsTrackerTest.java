@@ -237,4 +237,24 @@ class StatsTrackerTest {
         int today = (int) LocalDate.parse("2026-10-30").toEpochDay();
         assertTrue(storage.calls.contains("purge " + (today - 34) + " " + (StatsClock.weekStart(today) - 7 * 103)));
     }
+
+    /** PERF2: the flush runs on an async timer while the main thread keeps recording; nothing is lost or counted twice. */
+    @Test
+    void flushOnAnotherThreadWhileRecordingLosesNothing() throws Exception {
+        java.util.concurrent.atomic.AtomicBoolean running = new java.util.concurrent.atomic.AtomicBoolean(true);
+        Thread flusher = new Thread(() -> {
+            while (running.get()) {
+                tracker.flush().join();
+            }
+        });
+        flusher.start();
+        for (int i = 0; i < 20_000; i++) {
+            tracker.record(ISLAND, ALEX, IslandStat.BLOCKS_PLACED, 1);
+        }
+        running.set(false);
+        flusher.join();
+        tracker.flush().join();
+        assertEquals(20_000, storage.total(IslandStat.BLOCKS_PLACED));
+        assertEquals(0, tracker.pendingCounters());
+    }
 }

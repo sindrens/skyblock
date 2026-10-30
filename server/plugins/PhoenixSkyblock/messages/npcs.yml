@@ -237,6 +237,10 @@ leaderboard:
     skill: "<c:value>Lv <level>"
     # <amount>
     island: "<c:value><amount>"
+    # PHASE-5 M5.2 island_level boards. <level>
+    island-level: "<c:value>Lv <level>"
+    # island_value boards (block worth). <amount> with the money symbol
+    island-value: "<c:money><amount>"
   titles:
     island_top_solo: "Top Islands <c:muted>· Solo"
     island_top_team: "Top Islands <c:muted>· Team"

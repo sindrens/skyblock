@@ -95,6 +95,7 @@ final class Guides {
             player.hideBossBar(v.bar);
         }
         removeHologram(v);
+        module.pip().hide(player);
     }
 
     /** Redraws bar and hologram right away (step changed, counter moved). */
@@ -126,10 +127,16 @@ final class Guides {
                 }
                 continue;
             }
-            draw(player, p, e.getValue(), particles);
+            if (module.cameras().running(player.getUniqueId())) {
+                p.lastActivity = now; // watching a camera is not idle
+                continue;
+            }
+            Optional<Location> target = draw(player, p, e.getValue(), particles);
+            module.pip().update(player, target);
             module.listener().tick(player, p);
             idle(player, p, now);
         }
+        module.pip().prune();
     }
 
     private void idle(Player player, Progress p, long now) {
@@ -140,12 +147,14 @@ final class Guides {
         p.idleReminded = true;
         module.msg().title(player, "idle.title", Msg.c("step", module.engine().stepName(player, p.step)));
         core.sounds().play(player, "notify");
+        module.pip().say(player, "idle");
+        module.engine().event(player, p, "idle");
     }
 
-    private void draw(Player player, Progress p, View v, boolean particles) {
+    private Optional<Location> draw(Player player, Progress p, View v, boolean particles) {
         String step = p.step;
         if (step == null) {
-            return;
+            return Optional.empty();
         }
         Optional<Location> target = module.targets().target(player, p);
         if (module.config().bossbar) {
@@ -160,6 +169,7 @@ final class Guides {
         if (particles) {
             particles(player, p, v, target);
         }
+        return target;
     }
 
     // ------------------------------------------------------------------ boss bar compass
@@ -261,17 +271,34 @@ final class Guides {
     }
 
     /** Flames every {@code guide.trail.spacing} blocks along the trail nodes, up to {@code guide.trail.ahead} ahead. */
+    private List<String> trailSource;
+    private List<TargetSpec.Point> trailPoints = List.of();
+
+    /** The trail nodes, parsed once per config list (PERF2, P-21: they were parsed for every node on every particle tick). */
+    private List<TargetSpec.Point> trailPoints() {
+        List<String> raw = module.config().trailNodes;
+        if (raw != trailSource) {
+            List<TargetSpec.Point> points = new ArrayList<>();
+            for (String node : raw) {
+                TargetSpec.parse(node).ifPresent(spec -> {
+                    if (spec instanceof TargetSpec.Point pt) {
+                        points.add(pt);
+                    }
+                });
+            }
+            trailPoints = List.copyOf(points);
+            trailSource = raw;
+        }
+        return trailPoints;
+    }
+
     private void trail(Player player) {
         List<Location> nodes = new ArrayList<>();
-        for (String raw : module.config().trailNodes) {
-            TargetSpec.parse(raw).ifPresent(spec -> {
-                if (spec instanceof TargetSpec.Point pt) {
-                    World w = Bukkit.getWorld(pt.world());
-                    if (w != null && w.equals(player.getWorld())) {
-                        nodes.add(new Location(w, pt.x(), pt.y(), pt.z()));
-                    }
-                }
-            });
+        World here = player.getWorld();
+        for (TargetSpec.Point pt : trailPoints()) {
+            if (pt.world() != null && pt.world().equalsIgnoreCase(here.getName())) {
+                nodes.add(new Location(here, pt.x(), pt.y(), pt.z()));
+            }
         }
         if (nodes.size() < 2) {
             return;
@@ -471,6 +498,7 @@ final class Guides {
     }
 
     void hideAll() {
+        module.pip().hideAll();
         for (UUID id : new ArrayList<>(views.keySet())) {
             Player p = Bukkit.getPlayer(id);
             if (p != null) {

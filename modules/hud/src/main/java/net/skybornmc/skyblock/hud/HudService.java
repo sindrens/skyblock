@@ -330,7 +330,7 @@ public final class HudService implements Listener {
     }
 
     private Component dash(Player player) {
-        return core.messages().component(player, MODULE, "values.dash");
+        return core.messages().fixed(player, MODULE, "values.dash");
     }
 
     private Component value(Player player, String key, String template) {
@@ -353,7 +353,7 @@ public final class HudService implements Listener {
     private Component objective(Player player) {
         return text(player, config.objectiveKey)
                 .map(v -> core.messages().component(player, MODULE, "values.objective", Msg.p("value", v)))
-                .orElseGet(() -> core.messages().component(player, MODULE, "values.objective-default"));
+                .orElseGet(() -> core.messages().fixed(player, MODULE, "values.objective-default"));
     }
 
     private static int online(Player viewer) {

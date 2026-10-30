@@ -46,10 +46,13 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PLAN9 / PLAN11 / PLAN12 / PLAN13 | Plans for PvE, conquest/events, store/ranks/Discord, seasons, launch prep | — | docs | ⬜ |
 | GUIDE2 | TEST_GUIDE refresh for everything built today + new open questions onto the Decisions page | — | docs + tools/owner_sheet | ✅ |
 | FIXES1 | Tester feedback (fly, /s, /p, menu item, armor, tab ranks, scoreboard line, report book, shop confirm, usage errors) | owner/Maarten 30 Oct | several | ✅ |
+| AC1-2 | Achievements AC1+AC2 from docs/plans/RANKS_TITLES_ACHIEVEMENTS.md (/achievements tabs, personal boosts with caps, island achievements) | RTA plan | achievements | 🔄 |
+| PERF2 | Slow main-thread tasks seen on the server (stacking-menu-refresh 15 ms, island-stats-flush 7 ms, wardrobe-trail 6 ms, crates:admin 11 ms) + safe PERFORMANCE.md findings without owner decisions | audits | stacking, islands, wardrobe, crates, chat, hud | ✅ |
 | M10-2 | Phase 10 M10.2 boosters (personal items + global, /boosters, /thanks, BonusService wiring, AFK booster moved here) | M10-1 | modules/boosters, afk | 🔄 |
 | SMALL2 | /crates admin give|take|view (owner approved P10-41) + join-time slow tasks (box:join, menus:menu-item, clean-streak-join) off the main thread | M10-1 | crates, box, menus, moderation | ✅ |
-| M5-2 | Phase 5 M5.2 dynamic island level + /is level and /is top (owner approved P5-25 Suggested) | M5-1 | progression, islands | 🔄 |
-| TUT2 | Tutorial TU5+ (Pip companion, NPC lines, cameras, optional steps, stats) | TUT1 | tutorial | 🔄 |
+| M5-3 | Phase 5 M5.3 task engine (challenge book, shared island progress, deliver tasks) | M5-1 | progression | 🔄 |
+| M5-2 | Phase 5 M5.2 dynamic island level + /is level and /is top (owner approved P5-25 Suggested) | M5-1 | progression, islands | ✅ |
+| TUT2 | Tutorial TU5+ (Pip companion, NPC lines, cameras, optional steps, stats) | TUT1 | tutorial | ✅ |
 | M10-1 | Phase 10 M10.1 crates core (+ bound items from bound keys, R3-2) | PLAN10 | modules/crates | ✅ |
 | M5-1 | Phase 5 M5.1 pillars | PLAN5 | modules/progression | ✅ |
 | QUICK1 | QoL quick wins (sell protection, drop protection, island auto-pickup), server config hardening, safe performance fixes | audits | several | ✅ |

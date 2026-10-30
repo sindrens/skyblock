@@ -122,7 +122,17 @@ final class IslandStats {
     private void startTasks() {
         cancelTasks();
         long flushTicks = config.flushSeconds * 20L;
-        flushTask = core.scheduler().repeat("island-stats-flush", flushTicks, flushTicks, tracker::flush);
+        // PERF2 ("island-stats-flush" 7 ms): the flush drained the buffer and built the three batch maps (one record per
+        // counter, per table) on the main thread. The tracker is thread-safe (recording only touches the synchronized
+        // buffer), so the whole flush now runs off the main thread; the database write was already async.
+        StatsTracker flushing = tracker;
+        flushTask = core.scheduler().asyncRepeat(flushTicks, flushTicks, () -> {
+            try {
+                flushing.flush();
+            } catch (RuntimeException e) {
+                core.plugin().getLogger().log(Level.WARNING, "Island stats: flush failed", e);
+            }
+        });
         long sampleTicks = config.playtimeSampleSeconds * 20L;
         int seconds = config.playtimeSampleSeconds;
         playtimeTask = core.scheduler().repeat("island-stats-playtime", sampleTicks, sampleTicks, () -> listener.samplePlaytime(seconds));

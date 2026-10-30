@@ -464,16 +464,46 @@ final class Leveling implements Listener {
 
     private final Map<String, Color> colors = new LinkedHashMap<>();
 
+    private String particleRaw;
+    private Particle particleParsed;
+
+    /** The configured particle, parsed once per config value (null when it is not a particle). */
+    private Particle trailParticle() {
+        String raw = module.config().trailParticle;
+        if (!java.util.Objects.equals(raw, particleRaw)) {
+            particleRaw = raw;
+            try {
+                particleParsed = Particle.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException | NullPointerException e) {
+                particleParsed = null;
+            }
+        }
+        return particleParsed;
+    }
+
+    /**
+     * One trail pass. PERF2 ("wardrobe-trail" 6 ms): it parsed the particle name, built the worn-pieces map twice per
+     * owner and then checked every player in the world (settings lookup before the distance check) for every owner.
+     * Now the cheap "is moving" check comes first, the worn map is built once, viewers come from the nearby-entity
+     * lookup within the view distance, the settings lookup comes last, and at most {@code trail.max-viewers} get a puff.
+     */
     private void trails() {
-        Particle particle;
-        try {
-            particle = Particle.valueOf(module.config().trailParticle.trim().toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
+        Particle particle = trailParticle();
+        if (particle == null || !module.config().levelsEnabled) {
             return;
         }
+        boolean dustParticle = particle == Particle.DUST;
+        if (!dustParticle && particle.getDataType() != Void.class) {
+            return;
+        }
+        double range = module.config().trailViewDistance;
+        int maxViewers = Math.max(1, module.config().trailMaxViewers);
         for (Session s : module.equipment().sessions()) {
+            if (s == null || !s.loaded || s.warzone) {
+                continue;
+            }
             Player p = Bukkit.getPlayer(s.player);
-            if (p == null || !trailActive(p, s) || hidden(p)) {
+            if (p == null) {
                 continue;
             }
             Location at = p.getLocation();
@@ -482,32 +512,42 @@ final class Leveling implements Listener {
             if (last == null || !last.getWorld().equals(at.getWorld()) || last.distanceSquared(at) < 0.04) {
                 continue; // only while moving
             }
-            Optional<WardrobeStore.Entry> entry = trailEntry(s);
-            Particle.DustOptions dust = null;
-            if (particle == Particle.DUST) {
-                dust = new Particle.DustOptions(color(entry.map(WardrobeStore.Entry::look).orElse(null)), 1.0f);
-            } else if (particle.getDataType() != Void.class) {
+            if (hidden(p) || !trailOn(p)) {
                 continue;
             }
+            Optional<WardrobeStore.Entry> entry = trailEntry(s);
+            if (entry.isEmpty()) {
+                continue;
+            }
+            Particle.DustOptions dust = dustParticle
+                    ? new Particle.DustOptions(color(entry.get().look()), 1.0f) : null;
             Location puff = at.clone().add(0, 0.1, 0);
-            double range = module.config().trailViewDistance;
+            puff(p, p, particle, puff, dust);
+            int sent = 1;
             // F1: sent per viewer, so players who turned "Particles" off never get other players' trails.
-            for (Player viewer : p.getWorld().getPlayers()) {
-                boolean self = viewer.equals(p);
-                if (!showsTrail(self, self || particlesOn(viewer), self || viewer.canSee(p),
-                        viewer.getLocation().distanceSquared(at), range)) {
+            for (Player viewer : at.getNearbyPlayers(range)) {
+                if (sent >= maxViewers) {
+                    break;
+                }
+                if (viewer.equals(p) || !showsTrail(false, true, viewer.canSee(p), viewer.getLocation().distanceSquared(at), range)
+                        || !particlesOn(viewer)) {
                     continue;
                 }
-                try {
-                    if (dust != null) {
-                        viewer.spawnParticle(particle, puff, module.config().trailCount, 0.2, 0.05, 0.2, 0, dust);
-                    } else {
-                        viewer.spawnParticle(particle, puff, module.config().trailCount, 0.2, 0.05, 0.2, 0);
-                    }
-                } catch (RuntimeException e) {
-                    module.core.plugin().getLogger().log(Level.FINE, "Wardrobe: trail particle failed", e);
-                }
+                puff(viewer, p, particle, puff, dust);
+                sent++;
             }
+        }
+    }
+
+    private void puff(Player viewer, Player owner, Particle particle, Location puff, Particle.DustOptions dust) {
+        try {
+            if (dust != null) {
+                viewer.spawnParticle(particle, puff, module.config().trailCount, 0.2, 0.05, 0.2, 0, dust);
+            } else {
+                viewer.spawnParticle(particle, puff, module.config().trailCount, 0.2, 0.05, 0.2, 0);
+            }
+        } catch (RuntimeException e) {
+            module.core.plugin().getLogger().log(Level.FINE, "Wardrobe: trail particle for " + owner.getName() + " failed", e);
         }
     }
 

@@ -61,34 +61,69 @@ final class SpawnerMenu extends Menu {
 
     @Override
     protected void tick() {
+        update();
+    }
+
+    /**
+     * What the buttons show. PERF2 ("stacking-menu-refresh" 15 ms): the menu used to clear and rebuild all 54 slots (frame,
+     * fixed buttons and six items with 11 placeholders each) every second and after every click. Now only the info item
+     * (next spawn, status) is redrawn each second; the buttons only when one of these values changed.
+     */
+    record Shown(int amount, int limit, int carried, int tier, String rate, String multiplier) {
+    }
+
+    private Shown shown;
+
+    private Shown current() {
+        SpawnerManager manager = module.spawners();
+        return new Shown(spawner.amount, manager.limit(spawner), SpawnerManager.countInInventory(viewer.getInventory(), spawner.type),
+                module.tiers().tier(spawner.type).orElse(0), SpawnerManager.number(manager.mobsPerMinute(spawner)),
+                SpawnerManager.number(manager.rateMultiplier(spawner)));
+    }
+
+    /** Redraws what changed: everything when the buttons changed, else only the info item. */
+    private void update() {
         if (spawner.removed) {
             viewer.closeInventory();
             return;
         }
-        refresh();
+        Shown now = current();
+        if (!now.equals(shown)) {
+            refresh();
+            return;
+        }
+        set(SLOT_INFO_ITEM, info(placeholders(now)));
+    }
+
+    private TagResolver[] placeholders(Shown s) {
+        SpawnerManager manager = module.spawners();
+        return new TagResolver[]{
+                SpawnerManager.mob(spawner.type),
+                Msg.p("tier", s.tier()),
+                Msg.p("count", Format.number(s.amount())),
+                Msg.p("max", Format.number(s.limit())),
+                Msg.p("rate", s.rate()),
+                Msg.p("multiplier", s.multiplier()),
+                Msg.p("next", Format.number(manager.secondsToNext(spawner))),
+                Msg.p("carried", Format.number(s.carried())),
+                Msg.p("range", module.config().activationRange),
+                Msg.p("absolute-max", Format.number(module.config().spawnerStackMax)),
+                Msg.c("status", service.text(viewer, StackingModule.ID, spawner.busy ? "menu.status.busy"
+                        : manager.isActive(spawner) ? "menu.status.active" : "menu.status.paused"))
+        };
+    }
+
+    private org.bukkit.inventory.ItemStack info(TagResolver[] p) {
+        return service.item(Material.SPAWNER, viewer, StackingModule.ID, "menu.spawner", p);
     }
 
     @Override
     protected void build() {
         frame();
         SpawnerManager manager = module.spawners();
-        int limit = manager.limit(spawner);
-        int carried = SpawnerManager.countInInventory(viewer.getInventory(), spawner.type);
-        TagResolver[] p = {
-                SpawnerManager.mob(spawner.type),
-                Msg.p("tier", module.tiers().tier(spawner.type).orElse(0)),
-                Msg.p("count", Format.number(spawner.amount)),
-                Msg.p("max", Format.number(limit)),
-                Msg.p("rate", SpawnerManager.number(manager.mobsPerMinute(spawner))),
-                Msg.p("multiplier", SpawnerManager.number(manager.rateMultiplier(spawner))),
-                Msg.p("next", Format.number(manager.secondsToNext(spawner))),
-                Msg.p("carried", Format.number(carried)),
-                Msg.p("range", module.config().activationRange),
-                Msg.p("absolute-max", Format.number(module.config().spawnerStackMax)),
-                Msg.c("status", service.text(viewer, StackingModule.ID, spawner.busy ? "menu.status.busy"
-                        : manager.isActive(spawner) ? "menu.status.active" : "menu.status.paused"))
-        };
-        set(SLOT_INFO_ITEM, service.item(Material.SPAWNER, viewer, StackingModule.ID, "menu.spawner", p));
+        shown = current();
+        TagResolver[] p = placeholders(shown);
+        set(SLOT_INFO_ITEM, info(p));
         set(SLOT_ADD_ONE, service.item(Material.LIME_DYE, viewer, StackingModule.ID, "menu.add-one", p),
                 click -> act(() -> manager.add(viewer, spawner, 1)));
         set(SLOT_ADD_ALL, service.item(Material.EMERALD, viewer, StackingModule.ID, "menu.add-all", p),
@@ -101,16 +136,12 @@ final class SpawnerMenu extends Menu {
                 click -> act(() -> manager.remove(viewer, spawner, spawner.amount, "menu")));
     }
 
-    /** Runs a change and refreshes a moment later (the database answers within a few ticks). */
+    /** Runs a change and updates a moment later (the database answers within a few ticks); only what changed is redrawn. */
     private void act(Runnable action) {
         action.run();
         module.core().scheduler().later("stacking-menu-refresh", 5L, () -> {
             if (isOpen()) {
-                if (spawner.removed) {
-                    viewer.closeInventory();
-                } else {
-                    refresh();
-                }
+                update();
             }
         });
     }

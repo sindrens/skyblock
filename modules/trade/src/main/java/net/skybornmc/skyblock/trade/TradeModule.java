@@ -1030,6 +1030,9 @@ public final class TradeModule implements SkyblockModule, Listener {
                 }
             }
         }, main);
+        if (pendingProfiles.isEmpty()) {
+            return; // PERF2 (P-35): nothing waits, no profile lookup per online player
+        }
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (pendingProfiles.contains(key(p))) {
                 deliverPending(p.getUniqueId());

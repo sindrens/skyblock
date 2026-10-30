@@ -122,6 +122,9 @@ public final class Style {
         gradients = java.util.Collections.unmodifiableMap(newGradients);
         prefix = yaml.getString("prefix", "");
         bedrockSafe = Set.copyOf(safe);
+        fullJava = null;
+        fullBedrock = null;
+        version++;
         return problems;
     }
 
@@ -175,12 +178,40 @@ public final class Style {
         return builder.build();
     }
 
-    /** Resolver including {@code <prefix>}; the prefix itself is parsed with the same palette. */
+    /**
+     * Resolver including {@code <prefix>}; the prefix itself is parsed with the same palette. Cached per viewer type
+     * until the next {@link #load} (PERF2, P-17): it used to be rebuilt, and the prefix parsed again, for every single
+     * message parse in the plugin (scoreboards, menus, chat).
+     */
     public TagResolver fullResolver(boolean bedrock, MiniMessage mm) {
+        Cached cached = bedrock ? fullBedrock : fullJava;
+        if (cached != null && cached.mm() == mm) {
+            return cached.resolver();
+        }
         TagResolver base = resolver(bedrock);
         Component parsedPrefix = mm.deserialize(preprocess(prefix, bedrock), base);
-        return TagResolver.resolver(base, TagResolver.resolver("prefix", Tag.selfClosingInserting(parsedPrefix)));
+        TagResolver full = TagResolver.resolver(base, TagResolver.resolver("prefix", Tag.selfClosingInserting(parsedPrefix)));
+        Cached fresh = new Cached(mm, full);
+        if (bedrock) {
+            fullBedrock = fresh;
+        } else {
+            fullJava = fresh;
+        }
+        return full;
     }
+
+    private record Cached(MiniMessage mm, TagResolver resolver) {
+    }
+
+    private volatile int version;
+
+    /** Goes up on every {@link #load}, so caches of parsed texts know the palette changed. */
+    public int version() {
+        return version;
+    }
+
+    private volatile Cached fullJava;
+    private volatile Cached fullBedrock;
 
     /** Expands {@code <grad:name>…</grad>} into a MiniMessage gradient (or the first color's fallback on Bedrock). */
     public String preprocess(String text, boolean bedrock) {

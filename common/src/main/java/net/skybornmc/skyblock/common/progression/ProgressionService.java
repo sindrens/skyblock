@@ -85,4 +85,65 @@ public interface ProgressionService {
      * ("Island XP +5%"): percent per island id. Values add up with the balance bonus, then the family cap applies.
      */
     void islandXpBoost(String id, ToDoubleFunction<UUID> percentByIsland);
+
+    // ------------------------------------------------------------------ island level (M5.2)
+
+    /**
+     * The dynamic island level ({@code floor(total points ÷ divisor)}, owner P5-1): 0 for unknown islands or before the
+     * first calculation. From memory; recalculated off the main thread after changes (debounced).
+     */
+    default int islandLevel(UUID islandId) {
+        return 0;
+    }
+
+    /** True once the island has a calculated level (the scoreboard Level line shows only then). */
+    default boolean hasIslandLevel(UUID islandId) {
+        return false;
+    }
+
+    /** Progress to the next island level, 0.0 to 1.0. */
+    default double islandLevelProgress(UUID islandId) {
+        return 0;
+    }
+
+    /** Total level points of the island (all eight sources after their caps). */
+    default double islandLevelPoints(UUID islandId) {
+        return 0;
+    }
+
+    /** Points per source after the caps (every source present, 0 when it gives nothing). */
+    default Map<LevelSource, Double> islandLevelBreakdown(UUID islandId) {
+        return Map.of();
+    }
+
+    /** Position of the island on its own board (solo or team), 0 when it is not ranked (yet). */
+    default int islandRank(UUID islandId) {
+        return 0;
+    }
+
+    /**
+     * Registers (or with {@code null} removes) the points of an earned source that lives in another module: upgrades and
+     * masteries ({@link LevelSource#UPGRADES}), island achievement points ({@link LevelSource#ACHIEVEMENTS}), collection
+     * milestones ({@link LevelSource#COLLECTIONS}). Raw points per island id, before the caps; called on the main thread
+     * when the level is recalculated. Call {@link #requestLevelUpdate} when the value changes.
+     */
+    default void levelPointsProvider(LevelSource source, ToDoubleFunction<UUID> pointsByIsland) {
+    }
+
+    /** Asks for a (debounced) recalculation of the island's level, e.g. after an upgrade was bought. Main thread. */
+    default void requestLevelUpdate(UUID islandId) {
+    }
+
+    /** Ranked islands, best first (from the cached boards, refreshed every few minutes). Any thread. */
+    default java.util.List<IslandTop.Entry> islandTop(IslandTop.Kind kind, IslandTop.Board board, int limit) {
+        return java.util.List.of();
+    }
+
+    /** Opens {@code /is level} for {@code player} (their own island); {@code parent} = Back target or null. Main thread. */
+    default void openLevelMenu(org.bukkit.entity.Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
+    }
+
+    /** Opens {@code /is top}; {@code parent} = Back target or null. Main thread. */
+    default void openTopMenu(org.bukkit.entity.Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
+    }
 }

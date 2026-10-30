@@ -9,6 +9,7 @@ import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import net.skybornmc.skyblock.common.wardrobe.WardrobeService;
 import net.skybornmc.skyblock.common.wardrobe.WornPiece;
+import net.skybornmc.skyblock.common.util.Stagger;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
@@ -70,8 +71,9 @@ final class ArmorEffects implements Listener {
     }
 
     void start() {
-        long period = Math.max(5, module.config().armorRefreshTicks);
-        task = module.core.scheduler().repeat("enchants-armor", period, period, this::refreshAll);
+        // PERF2 (P-12 / P-19): runs every tick and refreshes each player once per armor-refresh-ticks in their own tick
+        // slot, instead of every online player on the same tick.
+        task = module.core.scheduler().repeat("enchants-armor", 1L, 1L, this::refreshDue);
     }
 
     void stop() {
@@ -132,8 +134,15 @@ final class ArmorEffects implements Listener {
 
     // ------------------------------------------------------------------ refresh (attributes, effects, regen)
 
-    private void refreshAll() {
+    private long refreshTick;
+
+    private void refreshDue() {
+        long tick = ++refreshTick;
+        int period = Math.max(5, module.config().armorRefreshTicks);
         for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!Stagger.due(p.getUniqueId(), tick, period)) {
+                continue;
+            }
             try {
                 refresh(p);
             } catch (RuntimeException e) {

@@ -39,6 +39,10 @@ final class Progress {
     /** Last time the player did anything that counts (idle reminder). */
     long lastActivity;
     boolean idleReminded;
+    /** Optional steps of this account (TU6), by id. */
+    final Map<String, OptionalRules.Entry> optional = new HashMap<>();
+    /** When the last first-visit tip was shown (this session, TQ26). */
+    long lastTip;
 
     Progress(UUID player, State state) {
         this.player = player;

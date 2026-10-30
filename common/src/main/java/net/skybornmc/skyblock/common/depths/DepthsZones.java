@@ -19,4 +19,17 @@ public interface DepthsZones {
 
     /** True if {@code location} is in the Depths world. */
     boolean inDepths(Location location);
+
+    /**
+     * How many tiers of the wing that {@code skill} unlocks are open at {@code level} (island level source "Depths
+     * progress", PHASE-5 M5.2). 0 for a skill without a wing. Main thread.
+     */
+    default int unlockedTiers(net.skybornmc.skyblock.common.skills.SkillType skill, int level) {
+        return 0;
+    }
+
+    /** Number of tiers in the wing of {@code skill} (0 for a skill without a wing). Main thread. */
+    default int tierCount(net.skybornmc.skyblock.common.skills.SkillType skill) {
+        return 0;
+    }
 }

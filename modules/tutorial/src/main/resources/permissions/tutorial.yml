@@ -13,3 +13,6 @@ skyblock.tutorial.admin.status:
 skyblock.tutorial.admin:
   description: Skip, reset or move a player's tutorial (/tutorial admin skip|reset|step, /inspect → Tutorial; logged).
   default: op
+skyblock.tutorial.stats:
+  description: Tutorial stats menu (funnel, drop-off, time per step, Java vs Bedrock; /tutorial admin stats, /staff, /inspect → Tutorial).
+  default: op

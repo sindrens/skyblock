@@ -56,7 +56,7 @@ final class IslandHub {
                 Msg.p("count", island.memberCount()),
                 Msg.p("type", module.raw(island.team() ? "menu.island.team" : "menu.island.solo")),
                 Msg.p("size", blocks),
-                Msg.p("level", module.raw("placeholder.level-none")),
+                Msg.p("level", module.levelText(island.id())),
                 Msg.p("warps", module.warps().warps(island.id()).size()),
                 Msg.p("created", module.config().dateFormatter().format(Instant.ofEpochMilli(island.createdAt()))),
                 Msg.p("state", module.raw(island.locked() ? "info.locked" : "info.open")),

@@ -46,7 +46,86 @@ final class TutorialStore {
                 rs -> new Object[]{rs.getString("step_id"), rs.getInt("amount")}, player)) {
             p.counts.put((String) row[0], (Integer) row[1]);
         }
+        p.optional.putAll(loadOptional(c, player));
         return found;
+    }
+
+    // ------------------------------------------------------------------ optional steps (V003)
+
+    /** The account's optional steps (tipped, done, rewarded, progress). */
+    java.util.Map<String, OptionalRules.Entry> loadOptional(Connection c, UUID player) throws SQLException {
+        java.util.Map<String, OptionalRules.Entry> out = new java.util.HashMap<>();
+        for (Object[] row : Sql.query(c, "SELECT step_id, tipped_at, done_at, rewarded, progress_value FROM tutorial_optional WHERE player_uuid = ?",
+                rs -> new Object[]{rs.getString("step_id"), rs.getLong("tipped_at"), rs.getLong("done_at"), rs.getBoolean("rewarded"),
+                        rs.getInt("progress_value")}, player)) {
+            OptionalRules.Entry e = new OptionalRules.Entry();
+            e.tippedAt = (Long) row[1];
+            e.doneAt = (Long) row[2];
+            e.rewarded = (Boolean) row[3];
+            e.value = (Integer) row[4];
+            out.put((String) row[0], e);
+        }
+        return out;
+    }
+
+    private void ensureOptional(Connection c, UUID player, String step) throws SQLException {
+        if (Sql.queryOne(c, "SELECT 1 AS hit FROM tutorial_optional WHERE player_uuid = ? AND step_id = ?", rs -> 1, player, step).isPresent()) {
+            return;
+        }
+        try {
+            Sql.update(c, "INSERT INTO tutorial_optional (player_uuid, step_id) VALUES (?, ?)", player, step);
+        } catch (SQLException e) {
+            if (!duplicate(e)) {
+                throw e;
+            }
+        }
+    }
+
+    /** Remembers that the first-visit tip of an optional step was shown (never shown again). */
+    void markTipped(Connection c, UUID player, String step, long at) throws SQLException {
+        ensureOptional(c, player, step);
+        Sql.update(c, "UPDATE tutorial_optional SET tipped_at = ? WHERE player_uuid = ? AND step_id = ? AND tipped_at = 0", at, player, step);
+    }
+
+    /** Saves an optional step's progress (blocks broken or visited mask) while it is not done. */
+    void setOptionalValue(Connection c, UUID player, String step, int value) throws SQLException {
+        ensureOptional(c, player, step);
+        Sql.update(c, "UPDATE tutorial_optional SET progress_value = ? WHERE player_uuid = ? AND step_id = ? AND done_at = 0", value, player, step);
+    }
+
+    /**
+     * The "done once" guard of an optional step, run inside the reward's transaction: {@code done_at 0 → now} must hit
+     * exactly one row, so the crystals can never be paid twice (two events in one tick, two servers).
+     */
+    boolean completeOptional(Connection c, UUID player, String step, long at, boolean rewarded) throws SQLException {
+        ensureOptional(c, player, step);
+        return Sql.update(c, "UPDATE tutorial_optional SET done_at = ?, rewarded = ? WHERE player_uuid = ? AND step_id = ? AND done_at = 0",
+                at, rewarded, player, step) == 1;
+    }
+
+    // ------------------------------------------------------------------ analytics (TU7)
+
+    /** Events of the stats period (newest last), for {@link FunnelStats}. */
+    java.util.List<FunnelStats.Event> events(Connection c, long since, int limit) throws SQLException {
+        return Sql.query(c, "SELECT player_uuid, step_id, event_kind, created_at, bedrock, millis_in_step FROM tutorial_events "
+                        + "WHERE created_at >= ? ORDER BY created_at LIMIT ?",
+                rs -> new FunnelStats.Event(Sql.uuid(rs, "player_uuid"), rs.getString("step_id"), rs.getString("event_kind"),
+                        rs.getLong("created_at"), rs.getBoolean("bedrock"), rs.getLong("millis_in_step")), since, limit);
+    }
+
+    /** Players whose tutorial is running → their current step (drop-off). */
+    java.util.Map<UUID, String> activeSteps(Connection c) throws SQLException {
+        java.util.Map<UUID, String> out = new java.util.HashMap<>();
+        for (Object[] row : Sql.query(c, "SELECT player_uuid, step_id FROM tutorial_progress WHERE progress_state = ?",
+                rs -> new Object[]{Sql.uuid(rs, "player_uuid"), rs.getString("step_id")}, key(State.ACTIVE))) {
+            out.put((UUID) row[0], (String) row[1]);
+        }
+        return out;
+    }
+
+    /** Deletes events older than {@code before} ({@code analytics.keep-days}); returns how many. */
+    int purgeEvents(Connection c, long before) throws SQLException {
+        return Sql.update(c, "DELETE FROM tutorial_events WHERE created_at < ?", before);
     }
 
     /** Loads the account, creating a {@code new} row for a player seen for the first time. */

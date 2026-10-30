@@ -15,6 +15,11 @@ public record ModuleMessages(Messages messages, String module) {
         return messages.component(viewer, module, key, placeholders);
     }
 
+    /** {@link Messages#fixed}: a message without placeholders, parsed once per viewer type. */
+    public Component fixed(Audience viewer, String key) {
+        return messages.fixed(viewer, module, key);
+    }
+
     public void actionBar(Audience viewer, String key, TagResolver... placeholders) {
         messages.actionBar(viewer, module, key, placeholders);
     }

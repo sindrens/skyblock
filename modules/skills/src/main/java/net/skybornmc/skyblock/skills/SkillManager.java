@@ -237,6 +237,25 @@ final class SkillManager implements SkillService, Listener {
         });
     }
 
+    /** Exactly one profile's XP (island level, PHASE-5 M5.2): cache when that profile is the online active one, else stored. */
+    @Override
+    public CompletableFuture<Map<SkillType, Double>> loadProfileXp(UUID profileKey) {
+        if (profileKey == null) {
+            return CompletableFuture.completedFuture(Map.of());
+        }
+        ProfileService profiles = profiles();
+        UUID owner = profiles.ownerOf(profileKey);
+        PlayerSkills p = owner == null ? null : online.get(owner);
+        if (p != null && p.isLoaded() && profileKey.equals(profiles.profileKey(owner))) {
+            return CompletableFuture.completedFuture(p.totals());
+        }
+        PlayerSkills unsaved = offline.get(profileKey);
+        if (unsaved != null) {
+            return CompletableFuture.completedFuture(unsaved.totals());
+        }
+        return afterWrites().thenCompose(v -> core.database().async(c -> repo.load(c, profileKey, season)));
+    }
+
     /** Leaderboard holograms (npcs module): best live profile per player, saved XP only. */
     @Override
     public CompletableFuture<List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(SkillType skill, int limit) {
@@ -365,7 +384,7 @@ final class SkillManager implements SkillService, Listener {
         boolean first = true;
         for (Map.Entry<SkillType, Double> e : shown.entrySet()) {
             if (!first) {
-                line = line.append(msg.component(player, "action-bar.separator"));
+                line = line.append(msg.fixed(player, "action-bar.separator"));
             }
             first = false;
             line = line.append(msg.component(player, "action-bar.gain", Msg.c("skill", skillName(player, e.getKey())),
@@ -377,7 +396,7 @@ final class SkillManager implements SkillService, Listener {
     }
 
     Component skillName(Audience viewer, SkillType skill) {
-        return msg.component(viewer, "skill." + skill.id() + ".name");
+        return msg.fixed(viewer, "skill." + skill.id() + ".name");
     }
 
     private void levelUp(Player player, PlayerSkills p, PlayerSkills.LevelChange change, String source, Actor actor) {

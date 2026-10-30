@@ -56,6 +56,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
     static final String PERM_USE = "skyblock.island";
     static final String PERM_BYPASS = "skyblock.island.bypass";
     static final String PERM_STATS = "skyblock.island.stats";
+    /** Owned by the progression module (permissions/progression.yml): /is level and /is top (PHASE-5 M5.2). */
+    static final String PERM_LEVEL = "skyblock.progression.level";
+    static final String PERM_TOP = "skyblock.progression.top";
 
     private final Core core;
     private final ModuleMessages msg;
@@ -337,8 +340,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
             sweepTask = null;
         }
         if (borderProtection != null && config.returnEntities) {
-            long period = config.returnEntitiesIntervalTicks;
-            sweepTask = core.scheduler().repeat("island-return-entities", period, period, borderProtection::sweep);
+            // Every tick: the sweep handles each island once per interval in its own slot (PERF2, P-25).
+            sweepTask = core.scheduler().repeat("island-return-entities", 1L, 1L, borderProtection::sweep);
         }
     }
 
@@ -409,6 +412,30 @@ public final class IslandsModule implements SkyblockModule, Listener {
         return core.menus().lines(viewer, ID, key, placeholders);
     }
 
+    /** The island level as shown in menus and /is info (PHASE-5 M5.2), "-" until the progression module calculated it. */
+    String levelText(UUID islandId) {
+        return progression().filter(p -> p.hasIslandLevel(islandId)).map(p -> String.valueOf(p.islandLevel(islandId)))
+                .orElseGet(() -> raw("placeholder.level-none"));
+    }
+
+    java.util.Optional<net.skybornmc.skyblock.common.progression.ProgressionService> progression() {
+        return core.services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class);
+    }
+
+    /** /is level and /is top live in the progression module; without it the player is told. */
+    private void openProgression(Player player, boolean top) {
+        var progression = progression();
+        if (progression.isEmpty()) {
+            msg().send(player, "level.unavailable");
+            return;
+        }
+        if (top) {
+            progression.get().openTopMenu(player, null);
+        } else {
+            progression.get().openLevelMenu(player, null);
+        }
+    }
+
     /** Raw (unparsed) message text, or a visible "[missing]" marker. */
     String raw(String key) {
         String raw = core.messages().raw(ID, key);
@@ -430,11 +457,13 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private void registerPlaceholders() {
         core.placeholders().registerText(ID, "island_name",
                 p -> p == null ? "" : manager.islandOfPlayer(manager.key(p)).map(manager::displayName).orElse(""));
-        // Island level arrives in Phase 5; "-" until then (empty without an island so the scoreboard shows its dash).
+        // Island level (PHASE-5 M5.2, progression module): "-" until it is calculated (the scoreboard hides its Level line
+        // then, owner 275), empty without an island.
         core.placeholders().registerText(ID, "island_level",
-                p -> p == null || manager.islandOfPlayer(manager.key(p)).isEmpty() ? "" : raw("placeholder.level-none"));
-        // Leaderboard position (Phase 5 island top). Empty until levels exist, so the scoreboard shows no "#".
-        core.placeholders().registerText(ID, "island_rank", p -> "");
+                p -> p == null ? "" : manager.islandOfPlayer(manager.key(p)).map(i -> levelText(i.id())).orElse(""));
+        // Position on the island's own board (solo or team); empty while unranked, so the scoreboard shows no "#".
+        core.placeholders().registerText(ID, "island_rank", p -> p == null ? "" : manager.islandOfPlayer(manager.key(p))
+                .flatMap(i -> progression().map(pr -> pr.islandRank(i.id()))).filter(r -> r > 0).map(String::valueOf).orElse(""));
     }
 
     private void registerCommands() {
@@ -491,6 +520,13 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("stats").description("Your island's stats: totals, today, this week and each member's part")
                         .permission(PERM_STATS).playerOnly().cooldown(Duration.ofSeconds(2)).example("is stats")
                         .executes(ctx -> stats.command(ctx.player())))
+                // PHASE-5 M5.2 (owner P5-25): menus of the progression module, which owns these permission nodes.
+                .sub(CommandSpec.sub("level").description("Your island level: points from every source and the pillars")
+                        .permission(PERM_LEVEL).playerOnly().cooldown(Duration.ofSeconds(1)).example("is level")
+                        .executes(ctx -> openProgression(ctx.player(), false)))
+                .sub(CommandSpec.sub("top").description("Island leaderboards: level and value, solo and team")
+                        .permission(PERM_TOP).playerOnly().cooldown(Duration.ofSeconds(1)).example("is top")
+                        .executes(ctx -> openProgression(ctx.player(), true)))
                 .sub(CommandSpec.sub("invites").description("Invites you received and invites your island sent").permission(PERM_USE)
                         .playerOnly().example("is invites")
                         .executes(ctx -> members.openInvites(ctx.player())))

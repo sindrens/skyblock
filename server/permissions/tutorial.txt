@@ -9,3 +9,6 @@ lp group helper permission set skyblock.tutorial.bypass true
 # --- Staff tools (TQ23: helpers see the status, mods and up skip/reset) ---
 lp group helper permission set skyblock.tutorial.admin.status true
 lp group mod permission set skyblock.tutorial.admin true
+
+# --- Tutorial stats (TQ24: mods and up see the funnel) ---
+lp group mod permission set skyblock.tutorial.stats true

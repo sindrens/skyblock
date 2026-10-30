@@ -41,7 +41,7 @@ categories:
     slot: 15
     name: "<c:flame><bold>Progression"
     lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and masteries."]
-    topics: [skills, pillars, achievements]
+    topics: [island-level, skills, pillars, achievements]
   gear:
     icon: smithing_table
     status: active
@@ -461,7 +461,7 @@ topics:
           - "<c:text>Every island has four pillars:"
           - "<pillar:mining>Mining</pillar:mining><c:text>, <pillar:foraging>Foraging</pillar:foraging><c:text>, <pillar:farming>Farming</pillar:farming> <c:text>and"
           - "<pillar:combat>Combat</pillar:combat><c:text>. <pillar:conquest>Conquest</pillar:conquest> <c:text>comes with events."
-          - "<c:text>They raise your island level later."
+          - "<c:text>Each pillar level = 1 island level point."
       - title: "<c:value>Earning pillar XP"
         lines:
           - "<c:text>Skill XP members earn also goes"
@@ -480,6 +480,44 @@ topics:
           - "<c:text>All pillars at <c:value>10, 25, 40</c:value> <c:text>and <c:value>60</c:value>:"
           - "<c:text>every member gets crystals."
           - "<c:text>Hide level-up lines in <c:value>/settings</c:value>."
+
+  island-level:
+    icon: nether_star
+    aliases: [level, island-top, top, is-level, is-top, block-worth]
+    name: "<c:flame>Island level"
+    summary: ["<c:text>One number for your island,", "<c:text>from 8 sources. See /is level."]
+    take-me-there: "is level"
+    pages:
+      - title: "<c:value>Where it comes from"
+        lines:
+          - "<c:text>Pillars, upgrades, achievements,"
+          - "<c:text>collections, members' skills,"
+          - "<c:text>Depths tiers, island bank and"
+          - "<c:text>block worth. 10 points = 1 level."
+      - title: "<c:value>Earned and live"
+        lines:
+          - "<c:text>Earned points never go down."
+          - "<c:text>Skills, Depths, bank and blocks"
+          - "<c:text>follow your island as it is now."
+          - "<c:text>A member who leaves takes theirs."
+      - title: "<c:value>Fair for everyone"
+        lines:
+          - "<c:text>Money can't buy the level: block"
+          - "<c:text>worth is max <c:value>20%</c:value>, the bank max <c:value>5%</c:value>"
+          - "<c:text>(its lowest balance of 24 h)."
+          - "<c:text>Members count after 3 days; coop never."
+      - title: "<c:value>Block worth"
+        lines:
+          - "<c:text>Placed blocks and spawners inside"
+          - "<c:text>your border count; chests don't."
+          - "<c:text>It updates live and every night."
+          - "<c:value>Recalculate</c:value> <c:text>in /is level: every 10 min."
+      - title: "<c:value>Leaderboards"
+        lines:
+          - "<c:value>/is top</c:value><c:text>: best islands by level"
+          - "<c:text>and by value. Solo and team islands"
+          - "<c:text>have their own boards, also in the"
+          - "<c:text>Hall of Heroes. One island per player."
 
   rules:
     icon: lectern
@@ -1112,6 +1150,12 @@ topics:
           - "<c:text>you there and repeats the hint."
           - "<c:text>Your progress is saved, even if you"
           - "<c:text>leave. Watch it again any time."
+      - title: "<c:value>Pip and extras"
+        lines:
+          - "<c:text>Pip, a small parrot only you see,"
+          - "<c:text>flies with you. Sneak to skip a"
+          - "<c:text>camera. Later, optional steps in"
+          - "<c:text>/tutorial pay a few crystals each."
 
   crates:
     icon: tripwire_hook

@@ -215,6 +215,9 @@ staff:
       name: "<c:error><bold>Reset tutorial</bold>"
       lore: ["<c:text>Start <player>'s tutorial again.", "<c:text>Locks come back. No second reward.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to reset"]
     reset-crumb: "Reset tutorial"
+    stats:
+      name: "<c:flame><bold>Tutorial stats</bold>"
+      lore: ["<c:text>Where new players stop,", "<c:text>time per step, Java vs Bedrock.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     reset-confirm: ["<c:text>This will:", "<c:text>restart <c:value><player></c:value>'s tutorial", "<c:text>and lock money features again."]
 
 admin:
@@ -281,10 +284,13 @@ menu:
     lore: ["<c:text>Every step and what it teaches.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   replay:
     name: "<c:flame><bold>Watch again</bold>"
-    lore: ["<c:text>Every step's hint again.", "<c:text>Nothing changes, no rewards.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to watch"]
+    lore: ["<c:text>Every step's hint and camera", "<c:text>again. Nothing changes.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to watch"]
   replay-stop:
     name: "<c:error><bold>Stop watching</bold>"
     lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to stop"]
+  optional:
+    name: "<c:flame><bold>Optional steps</bold></c:flame> <c:muted>(<done>/<total>)"
+    lore: ["<c:text>Short extra steps, a few", "<c:text>crystals each, once.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   unlocks:
     name: "<c:flame><bold>What unlocks when</bold>"
     lore: ["<c:text>Features open step by step.", ""]
@@ -344,3 +350,212 @@ book:
     - "<bold>Money</bold><br><br>Sell from the satchel or /sell.<br>/bank pays interest every 8 hours.<br>/ah is the auction house."
     - "<bold>Tools</bold><br><br>The Forge turns loot into higher tool tiers.<br>Tools level up while you use them."
     - "<bold>Help</bold><br><br>Right-click any NPC.<br>/help explains everything.<br>/tutorial shows the tutorial again."
+
+# ---------------------------------------------------------------- TU3 cameras (Sneak = skip). One title per shot text.
+cameras:
+  skip-hint: "<c:muted>Sneak to skip"
+  spawn:
+    one:
+      title: "<grad:phoenix><bold>PHOENIX</bold></grad>"
+      subtitle: "<c:text>Welcome to the spawn"
+      fade-in: 10
+      stay: 30
+    two:
+      title: "<c:brand>The Gatehouse"
+      subtitle: "<c:text>Every portal starts here"
+      fade-in: 5
+      stay: 30
+    three:
+      title: "<c:brand>Your Island"
+      subtitle: "<c:text>Walk into this portal"
+      fade-in: 5
+      stay: 30
+  island:
+    one:
+      title: "<c:brand>Welcome home"
+      subtitle: "<c:text>This island is yours"
+      fade-in: 10
+      stay: 40
+    two:
+      title: "<c:brand>Grow it"
+      subtitle: "<c:text>Crops, trees and a generator"
+      fade-in: 5
+      stay: 30
+  depths:
+    one:
+      title: "<c:brand>The Depths"
+      subtitle: "<c:text>Mine, sell, forge, repeat"
+      fade-in: 10
+      stay: 40
+    two:
+      title: "<c:brand>Mine Tier 1"
+      subtitle: "<c:text>Blocks grow back for you"
+      fade-in: 5
+      stay: 30
+  market:
+    one:
+      title: "<c:brand>Market Square"
+      subtitle: "<c:text>Shop, sell, bank, auction"
+      fade-in: 10
+      stay: 40
+    two:
+      title: "<c:brand>Sell and trade"
+      subtitle: "<c:text>Talk to every NPC here"
+      fade-in: 5
+      stay: 30
+
+# ---------------------------------------------------------------- TU5 Pip, the companion only you see
+pip:
+  name: "<c:flame>Pip"
+  tag: "<c:flame>Pip</c:flame> <c:muted><sym:dot></c:muted> <c:text><line>"
+  chat: "<c:flame><bold>Pip</bold></c:flame> <c:muted>»</c:muted> <c:text><line>"
+  lines:
+    portal: "Your island is past the gate. Follow me!"
+    arrive: "Look! This island is all yours."
+    chest: "Everything you need to start is in here."
+    crop: "Right-click dirt with your hoe, then plant."
+    menu: "The star in your hotbar opens everything."
+    depths: "Open the menu, then The Depths."
+    mine: "Break the ore. It grows back for you only."
+    sell: "Open your satchel and press Sell all."
+    forge: "The Forge turns loot into better tools."
+    help: "Right-click the Guide. Every NPC helps."
+    bank: "Keep your money safe in the bank."
+    finish: "You did it! Fly high, friend."
+    idle: "Still there? Your next step is waiting."
+
+# NPCs say a short line for your tutorial step when you click them: npc-lines.<step>.<npc role>.
+npc-lines:
+  format: "<c:ember><sym:bullet></c:ember> <c:text><line>"
+  portal:
+    guide: "Your island portal is north, through the Gatehouse."
+  forge:
+    forge: "Tier 2 is your first goal. Bring loot and money."
+  help:
+    dungeon: "Right-click any NPC when you need help. That is all!"
+  sell:
+    sell: "Open your satchel and press Sell all, or sell to me."
+  bank:
+    bank: "Open /bank and put some money in. It earns interest."
+
+# The Tips switch in /settings (TQ26).
+settings:
+  tips:
+    name: "Tips"
+    lore: ["<c:text>Short tips the first time you", "<c:text>reach a place (optional steps)."]
+
+# ---------------------------------------------------------------- TU6 optional steps (O1-O9). name, lore, tip, hint per step.
+optional:
+  tip: "<prefix><c:ember>Tip</c:ember> <c:muted><sym:dot></c:muted> <tip> <c:muted>(+<crystals> crystals, /tutorial » Optional steps)</c:muted> <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Show me]</c:action></hover></click>"
+  progress: "<c:value><step></c:value> <c:muted><sym:dot></c:muted> <c:value><count></c:value><c:muted> / <needed>"
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Optional step done: <c:value><step></c:value> <c:muted>(<done>/<total>)"
+  done-reward: "<prefix><c:success><sym:check></c:success> <c:text>Optional step done: <c:value><step></c:value>. <cur:crystals><sym:crystals> +<crystals></cur:crystals> <c:muted>(<done>/<total>)"
+  show: "<prefix><c:value><step></c:value> <c:muted><sym:dot></c:muted> <hint>"
+  generator:
+    name: "Cobble generator"
+    lore: ["<c:text>Pour your lava bucket at the pad", "<c:text>by the pond, then mine 5 cobblestone."]
+    tip: "<c:text>Build a cobble generator: pour the lava bucket by the pond."
+    hint: "<c:text>Pour the lava bucket next to the pond water, then mine <c:value>5 cobblestone</c:value>."
+  spawn_tour:
+    name: "Spawn tour"
+    lore: ["<c:text>Walk the Market Square: Shop,", "<c:text>Sell, Bank and Auction house."]
+    tip: "<c:text>Take the spawn tour: visit the Market Square NPCs."
+    hint: "<c:text>Walk up to the <c:value>Shop</c:value>, <c:value>Sell</c:value>, <c:value>Bank</c:value> and <c:value>Auction</c:value> NPCs."
+  settings:
+    name: "Settings"
+    lore: ["<c:text>Open /settings: hide players,", "<c:text>sounds, chat and more."]
+    tip: "<c:text>Make the game yours in <c:value>/settings</c:value>."
+    hint: "<c:text>Open <c:value>/settings</c:value> (or /menu » Settings)."
+  skills:
+    name: "Skills"
+    lore: ["<c:text>Open /skills: Mining and", "<c:text>what each level unlocks."]
+    tip: "<c:text>See your Mining level and unlocks in <c:value>/skills</c:value>."
+    hint: "<c:text>Open <c:value>/skills</c:value> (or /menu » Skills)."
+  team:
+    name: "Your team"
+    lore: ["<c:text>Open /is members: invite", "<c:text>friends and coop players."]
+    tip: "<c:text>Play with friends: open <c:value>/is members</c:value>."
+    hint: "<c:text>Open <c:value>/is members</c:value> to see invite and coop."
+  upgrades:
+    name: "Island upgrades"
+    lore: ["<c:text>Open the island upgrades."]
+    tip: "<c:text>Grow your island with upgrades."
+    hint: "<c:text>Open the island upgrades from <c:value>/is</c:value>."
+  enchanter:
+    name: "The Enchanter"
+    lore: ["<c:text>Visit the Enchanter in the", "<c:text>Forge Quarter at spawn."]
+    tip: "<c:text>The Enchanter is right here. Click to see a book."
+    hint: "<c:text>Right-click the <c:value>Enchanter</c:value> in the Forge Quarter."
+  wardrobe:
+    name: "Wardrobe"
+    lore: ["<c:text>Open /wardrobe and see", "<c:text>the Delver's Garb set."]
+    tip: "<c:text>Armor sets live in <c:value>/wardrobe</c:value>."
+    hint: "<c:text>Open <c:value>/wardrobe</c:value> (or /menu » Wardrobe)."
+  warzone:
+    name: "Warzone rules"
+    lore: ["<c:text>Read the warzone rules at", "<c:text>the Gatehouse portal."]
+    tip: "<c:text>This is the warzone portal. Read the rules first."
+    hint: "<c:text>Walk up to the <c:value>Warzone</c:value> portal in the Gatehouse."
+    done: "<prefix><c:error><bold>Warzone</bold></c:error> <c:muted><sym:dot></c:muted> <c:text>PvP is on past this portal: other players can attack you. Read <c:value>/rules</c:value> before you go."
+
+optional-menu:
+  title: "Optional"
+  info:
+    - "<c:text>Short extra steps."
+    - "<c:text>Each one pays a few crystals, once."
+  header:
+    name: "<c:flame><bold>Optional steps</bold></c:flame> <c:muted>(<done>/<total>)"
+    lore: ["<c:text>Learn the rest of the server.", "<c:text>Click a step to see how."]
+  header-later:
+    name: "<c:flame><bold>Optional steps</bold></c:flame> <c:muted>(<done>/<total>)"
+    lore: ["<c:text>They count after the tutorial.", "<c:text>Click a step to see how."]
+  done:
+    name: "<c:success><sym:check> <step>"
+    lore: ["", "<c:success><sym:check> Done"]
+  open:
+    name: "<c:flame><bold><step>"
+    lore: ["", "<c:bar>| </c:bar><c:text>Progress: <c:value><count></c:value><c:muted>/<needed>", "<c:bar>| </c:bar><c:text>Reward: <cur:crystals><sym:crystals> <crystals></cur:crystals>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show me"]
+
+# ---------------------------------------------------------------- TU7 stats (staff)
+stats:
+  title: "Tutorial stats"
+  info:
+    - "<c:text>Where new players stop."
+    - "<c:text>Red = more than 10% stop there."
+  none: "<c:muted>-"
+  summary:
+    name: "<c:ember><bold>Last <days> days</bold></c:ember> <c:muted>(<client>)"
+    lore:
+      - "<c:bar>| </c:bar><c:text>Started: <c:value><started>"
+      - "<c:bar>| </c:bar><c:text>Finished: <c:value><finished></c:value> <c:muted>(<percent>%)"
+      - "<c:bar>| </c:bar><c:text>Players: <c:value><players>"
+      - "<c:bar>| </c:bar><c:text>Idle reminders: <c:value><idle>"
+      - "<c:bar>| </c:bar><c:text>Most stops: <c:value><worst>"
+  step:
+    name: "<c:flame><bold><number>. <step>"
+    lore:
+      - "<c:text>reached <c:value><reached></c:value> <c:muted><sym:dot></c:muted> <c:text>done <c:value><done></c:value> <c:muted><sym:dot></c:muted> <c:value><percent>%"
+      - "<c:bar>| </c:bar><c:text>Stopped here: <c:value><dropped>"
+      - "<c:bar>| </c:bar><c:text>Time: <c:value><median></c:value> <c:muted>(90%: <p90>)"
+      - "<c:bar>| </c:bar><c:text>I'm stuck: <c:value><stuck>"
+  cameras:
+    name: "<c:flame><bold>Cameras"
+    lore: ["<c:text>Played and skipped (sneak).", ""]
+    line: "<c:value><camera></c:value> <c:muted><sym:dot></c:muted> <c:text>played <c:value><played></c:value> <c:muted><sym:dot></c:muted> <c:text>skipped <c:value><skipped>"
+  optional:
+    name: "<c:flame><bold>Optional steps"
+    lore: ["<c:text>Players who did each one.", ""]
+    line: "<c:value><step></c:value> <c:muted><sym:dot></c:muted> <c:value><done>"
+  period:
+    name: "<c:flame><bold>Period: <days> days"
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch 7 / 30"]
+  client:
+    name: "<c:flame><bold>Players: <client>"
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>for All / Java / Bedrock"]
+  clients:
+    all: "All"
+    java: "Java"
+    bedrock: "Bedrock"
+  refresh:
+    name: "<c:flame><bold>Refresh"
+    lore: ["<c:text>Load the numbers again.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to refresh"]

@@ -29,6 +29,14 @@ public interface StackingService {
     /** Spawners stacked in this block, 0 if it is not a stacked spawner. */
     int spawnerCount(Block block);
 
+    /**
+     * Spawner tier (1-5, {@code stacking.yml → spawners.tier-N}) of a mob type id ({@code zombie}); empty for types that
+     * can't be spawners. The island level values spawners by tier (PHASE-5 M5.2). Any thread.
+     */
+    default java.util.OptionalInt spawnerTier(String type) {
+        return java.util.OptionalInt.empty();
+    }
+
     /** True if the entity came from a stacked spawner (no AI, vanilla loot only). */
     boolean fromStackedSpawner(Entity entity);
 

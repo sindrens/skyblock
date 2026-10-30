@@ -75,4 +75,13 @@ public interface SkillService {
     default CompletableFuture<java.util.List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(SkillType skill, int limit) {
         return CompletableFuture.completedFuture(java.util.List.of());
     }
+
+    /**
+     * Total XP per skill of exactly one profile ({@code profileKey} as stored, never resolved to the player's active
+     * profile): from the cache when that profile is online and active, else from the database. The island level uses it
+     * for members' skills (PHASE-5 M5.2). Implementations without profiles fall back to {@link #loadXp}.
+     */
+    default CompletableFuture<Map<SkillType, Double>> loadProfileXp(UUID profileKey) {
+        return loadXp(profileKey);
+    }
 }
