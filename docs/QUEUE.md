@@ -49,7 +49,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PERF2 | Slow main-thread tasks seen on the server (stacking-menu-refresh 15 ms, island-stats-flush 7 ms, wardrobe-trail 6 ms, crates:admin 11 ms) + safe PERFORMANCE.md findings without owner decisions | audits | stacking, islands, wardrobe, crates, chat, hud | 🔄 |
 | M10-2 | Phase 10 M10.2 boosters (personal items + global, /boosters, /thanks, BonusService wiring, AFK booster moved here) | M10-1 | modules/boosters, afk | 🔄 |
 | SMALL2 | /crates admin give|take|view (owner approved P10-41) + join-time slow tasks (box:join, menus:menu-item, clean-streak-join) off the main thread | M10-1 | crates, box, menus, moderation | ✅ |
-| M5-2 | Phase 5 M5.2 dynamic island level + /is level and /is top (owner approved P5-25 Suggested) | M5-1 | progression, islands | 🔄 |
+| M5-3 | Phase 5 M5.3 task engine (challenge book, shared island progress, deliver tasks) | M5-1 | progression | 🔄 |
+| M5-2 | Phase 5 M5.2 dynamic island level + /is level and /is top (owner approved P5-25 Suggested) | M5-1 | progression, islands | ✅ |
 | TUT2 | Tutorial TU5+ (Pip companion, NPC lines, cameras, optional steps, stats) | TUT1 | tutorial | ✅ |
 | M10-1 | Phase 10 M10.1 crates core (+ bound items from bound keys, R3-2) | PLAN10 | modules/crates | ✅ |
 | M5-1 | Phase 5 M5.1 pillars | PLAN5 | modules/progression | ✅ |
