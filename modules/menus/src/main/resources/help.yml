@@ -41,7 +41,7 @@ categories:
     slot: 15
     name: "<c:flame><bold>Progression"
     lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and masteries."]
-    topics: [skills]
+    topics: [skills, achievements]
   gear:
     icon: smithing_table
     status: active
@@ -577,6 +577,36 @@ topics:
         lines:
           - "<c:value>/store</c:value> <c:text>for ranks and cosmetics,"
           - "<c:value>/website</c:value> <c:text>for everything else."
+
+  achievements:
+    icon: knowledge_book
+    aliases: [achievement, secrets]
+    name: "<c:flame>Achievements"
+    summary: ["<c:text>Goals for everything you do,", "<c:text>with titles as rewards."]
+    take-me-there: "tags"
+    pages:
+      - title: "<c:value>What they are"
+        lines:
+          - "<c:text>Achievements count what you do:"
+          - "<c:text>skills, island work, selling, trades,"
+          - "<c:text>tools, sets, visits and playtime."
+          - "<c:text>Most have tiers (I, II, III ...)."
+      - title: "<c:value>Where to see them"
+        lines:
+          - "<c:text>Open <c:value>/tags</c:value> and click <c:flame>Achievements</c:flame>."
+          - "<c:text>Each category shows your progress"
+          - "<c:text>to the next goal. Secret ones show"
+          - "<c:text>as <c:value>???</c:value> until you find them."
+      - title: "<c:value>Titles"
+        lines:
+          - "<c:text>The last tier often gives a title."
+          - "<c:text>Titles are shared by all your"
+          - "<c:text>profiles. Equip it in <c:value>/titles</c:value>."
+      - title: "<c:value>Profiles"
+        lines:
+          - "<c:text>Progress is per profile: a new"
+          - "<c:text>profile starts its achievements"
+          - "<c:text>from zero. Titles you have stay."
 
   tags:
     icon: name_tag

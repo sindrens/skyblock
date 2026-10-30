@@ -306,6 +306,7 @@ Mining, Foraging, Farming, Combat, Fishing. **Max level 150** (owner #65); tiers
 - **Keys are earned only** (voting, quests, events). Never sold for money or gems (owner decision 2026-10-29). Keys are **virtual** but can be withdrawn as items in the `/crates` GUI. Tradeable.
 - Daily rewards / login streak, voting with vote parties.
 - Daily + weekly quests, battle pass (free + paid track), **achievements** (many, including fun/secret ones), **collection log**.
+  - Achievements (F3, built): `achievements.yml` with tiers per achievement; progress per profile, reward titles account-wide (PR1); menu from `/tags` → Achievements (see docs/commands/achievements.md).
 - **Titles and tags** (decided 2026-10-29), shown together in one **Tags & Titles** menu (`/tags`):
   - **Titles** are *earned*: achievements (many cool ones, not only winning), season tops, collection milestones, prestige. Kept across seasons.
   - **Tags** are *owned* cosmetics: won from crates or bought in the store. They come as a **tag item**: right-click to redeem it to your account. Unredeemed or extra tag items can be traded and **sold on the auction house**. Owned tags are kept across seasons.

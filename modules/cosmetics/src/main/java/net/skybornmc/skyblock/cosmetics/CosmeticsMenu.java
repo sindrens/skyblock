@@ -28,6 +28,8 @@ final class CosmeticsMenu extends PagedMenu<Cosmetic> {
     static final int SLOT_TAGS_TAB = 6;
     static final int SLOT_UNEQUIP = 47;
     static final int SLOT_EDIT = 51;
+    /** F3: link to the achievements menu (titles are earned there); only when the achievements module runs. */
+    static final int SLOT_ACHIEVEMENTS = 52;
 
     private final CosmeticsModule module;
     private Cosmetics.Kind kind;
@@ -120,6 +122,11 @@ final class CosmeticsMenu extends PagedMenu<Cosmetic> {
                     module.core().sounds().play(viewer, "click");
                     refresh();
                 }));
+
+        module.core().services().optional(net.skybornmc.skyblock.common.achievements.AchievementService.class).ifPresent(achievements ->
+                set(SLOT_ACHIEVEMENTS, service().item(Material.KNOWLEDGE_BOOK, module.text(viewer, "menu.achievements.name"),
+                        module.lines(viewer, "menu.achievements.lore", Msg.p("done", achievements.completed(viewer.getUniqueId())),
+                                Msg.p("total", achievements.total()))), click -> achievements.open(viewer, this)));
 
         if (viewer.hasPermission(CosmeticsModule.PERM_EDIT)) {
             set(SLOT_EDIT, service().item(Material.WRITABLE_BOOK, module.text(viewer, "menu.edit.name"),

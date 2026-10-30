@@ -30,6 +30,7 @@ dependencies {
     implementation(project(":modules:wardrobe"))
     implementation(project(":modules:trade"))
     implementation(project(":modules:shop"))
+    implementation(project(":modules:achievements"))
 }
 
 tasks {
