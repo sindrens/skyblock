@@ -48,6 +48,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | FIXES1 | Tester feedback (fly, /s, /p, menu item, armor, tab ranks, scoreboard line, report book, shop confirm, usage errors) | owner/Maarten 30 Oct | several | ✅ |
 | PERF3 | Startup slow ops on update101 (npcs:start 1065 ms, tutorial:start 14 ms, sell-stat-sources 7 ms, afk-start 7 ms) | PERF2 | npcs, tutorial, economy, afk | 🔄 |
 | M5-4 | Phase 5 M5.4 island upgrades (/is upgrade, gated by TaskService, paid from island bank) | M5-3 | progression, islands | 🔄 |
+| PERF4 | Slow ops after update102 with a player online: chat:tab (46 slow runs/min, worst 32 ms), progression-task-check 28 ms (every 30 s), progression-level 42 ms + level-apply 20 ms, progression-scan 11 ms, tutorial-guides 57 ms, tutorial-rejoin 28 ms, bank:join 14 ms, npcs:spawn 14 ms, wardrobe-trail 12 ms, enchants-armor 7 ms | PERF3, M5-4 | chat, progression, tutorial, bank | ⏳ |
 | AC1-2 | Achievements AC1+AC2 from docs/plans/RANKS_TITLES_ACHIEVEMENTS.md (/achievements tabs, personal boosts with caps, island achievements) | RTA plan | achievements | 🔄 |
 | PERF2 | Slow main-thread tasks seen on the server (stacking-menu-refresh 15 ms, island-stats-flush 7 ms, wardrobe-trail 6 ms, crates:admin 11 ms) + safe PERFORMANCE.md findings without owner decisions | audits | stacking, islands, wardrobe, crates, chat, hud | ✅ |
 | M10-2 | Phase 10 M10.2 boosters (personal items + global, /boosters, /thanks, BonusService wiring, AFK booster moved here) | M10-1 | modules/boosters, afk | ✅ |
