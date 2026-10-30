@@ -2,8 +2,42 @@
 # Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
 # LuckPerms grants for these nodes: server/permissions/islands.txt. Commands: docs/commands/islands.md.
 skyblock.island:
-  description: Use /is (create your island, home, go, sethome, invite, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members)
+  description: Use /is (create your island, home, go, sethome, invite, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, disband)
   default: true
 skyblock.island.bypass:
-  description: Staff - /is bypass toggles ignoring island protection (build, containers, borders); every toggle is logged
+  description: Staff - /is bypass and /isadmin bypass toggle ignoring island protection (build, containers, borders); every toggle is logged
+  default: op
+# M2.7 /isadmin: one node per sub-command (the root node only shows the command). Every use is logged (category staff).
+skyblock.island.admin:
+  description: Staff - see /isadmin (each sub-command needs its own node below)
+  default: op
+skyblock.island.admin.info:
+  description: Staff - /isadmin info <island> shows owner, members, slot, size and home
+  default: op
+skyblock.island.admin.tp:
+  description: Staff - /isadmin tp <island> teleports to an island home
+  default: op
+skyblock.island.admin.delete:
+  description: Staff - /isadmin delete <island> removes an island for good (confirm); the slot is cleared and reused
+  default: op
+skyblock.island.admin.setsize:
+  description: Staff - /isadmin setsize <island> <size> sets the border width in chunks
+  default: op
+skyblock.island.admin.addmember:
+  description: Staff - /isadmin addmember <island> <player> adds a member without an invite (slots still apply)
+  default: op
+skyblock.island.admin.kick:
+  description: Staff - /isadmin kick <player> removes a member or coop player from their island (confirm)
+  default: op
+skyblock.island.admin.setowner:
+  description: Staff - /isadmin setowner <island> <member> makes a member the leader (confirm)
+  default: op
+skyblock.island.admin.reset:
+  description: Staff - /isadmin reset <island> deletes an island and gives its leader a new one (confirm)
+  default: op
+skyblock.island.admin.slots:
+  description: Staff - /isadmin slots opens the grid overview (used, clearing, free slots)
+  default: op
+skyblock.island.admin.teleport-slot:
+  description: Staff - /isadmin teleport-slot <id> teleports to a grid slot (also by clicking in /isadmin slots)
   default: op

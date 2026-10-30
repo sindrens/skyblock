@@ -7,3 +7,17 @@
 # Staff protection bypass (M2.2): /is bypass toggles it, every toggle is logged (audit category staff).
 # Admins only for now (open question: also moderators?).
 lp group admin permission set skyblock.island.bypass true
+
+# Island staff tools (M2.7, /isadmin; every use is logged in category staff). Helpers look (info, tp); admins change.
+# helper < mod < admin, so mods and admins inherit the helper nodes.
+lp group helper permission set skyblock.island.admin true
+lp group helper permission set skyblock.island.admin.info true
+lp group helper permission set skyblock.island.admin.tp true
+lp group admin permission set skyblock.island.admin.delete true
+lp group admin permission set skyblock.island.admin.setsize true
+lp group admin permission set skyblock.island.admin.addmember true
+lp group admin permission set skyblock.island.admin.kick true
+lp group admin permission set skyblock.island.admin.setowner true
+lp group admin permission set skyblock.island.admin.reset true
+lp group admin permission set skyblock.island.admin.slots true
+lp group admin permission set skyblock.island.admin.teleport-slot true

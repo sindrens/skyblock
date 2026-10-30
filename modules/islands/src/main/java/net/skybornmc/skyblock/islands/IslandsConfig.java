@@ -28,7 +28,7 @@ public final class IslandsConfig extends ModuleConfig {
 
     @Setting(path = "creation.cooldown-hours", desc = "Hours after disbanding before the same player can create a new island.",
             min = 0, max = 720)
-    public int creationCooldownHours = 24;
+    public int creationCooldownHours = 0;   // owner 2026-10-30: no cooldown after disband
 
     @Setting(path = "creation.schematic", desc = "Starter schematic in plugins/PhoenixSkyblock/schematics/ (without .schem). "
             + "Missing file or no FastAsyncWorldEdit = the built-in placeholder islet.")
@@ -146,6 +146,38 @@ public final class IslandsConfig extends ModuleConfig {
 
     @Setting(path = "members.date-format", desc = "How join dates are shown in /is members (Java DateTimeFormatter pattern).")
     public String dateFormat = "yyyy-MM-dd";
+
+    @Setting(path = "lifecycle.disband-prompt-length", desc = "Longest text accepted when /is disband asks the leader to type the "
+            + "confirm word in chat (the word itself is in messages/islands.yml: disband.confirm-word).", min = 8, max = 64)
+    public int disbandPromptLength = 32;
+
+    @Setting(path = "lifecycle.clear.use-fawe", desc = "Empty removed islands with FastAsyncWorldEdit when it is installed "
+            + "(off = always the built-in throttled clearer).")
+    public boolean clearUseFawe = true;
+
+    @Setting(path = "lifecycle.clear.extra-ring-chunks", desc = "Chunk rings emptied outside the max island size when an island is "
+            + "removed (catches anything that ended up just outside a border).", min = 0, max = 8)
+    public int clearExtraRings = 1;
+
+    @Setting(path = "lifecycle.clear.chunks-per-slice", desc = "Chunks emptied per step (one strip of a chunk row). Smaller = "
+            + "less work per step, slower clearing.", min = 1, max = 32)
+    public int clearChunksPerSlice = 4;
+
+    @Setting(path = "lifecycle.clear.ticks-between-slices", desc = "Ticks to wait between two steps of the clearer (throttle).",
+            min = 1, max = 200)
+    public int clearTicksBetweenSlices = 2;
+
+    @Setting(path = "lifecycle.clear.fallback-blocks-per-tick", desc = "Without FAWE: most non-air block positions checked "
+            + "and emptied per tick (empty 16x16x16 sections are skipped for free).", min = 1024, max = 262_144)
+    public int clearFallbackBlocksPerTick = 16_384;
+
+    @Setting(path = "lifecycle.clear.fawe-timeout-seconds", desc = "A FAWE step that takes longer than this is redone by the "
+            + "built-in clearer.", min = 5, max = 300)
+    public int clearFaweTimeoutSeconds = 30;
+
+    @Setting(path = "lifecycle.clear.start-delay-seconds", desc = "Seconds after startup before unfinished clearings are resumed.",
+            min = 0, max = 600)
+    public int clearStartDelaySeconds = 10;
 
     /** The role defaults parsed from {@code permissions.defaults.*} (problems = unknown keys). */
     public RolePermissions.Result rolePermissions() {

@@ -39,9 +39,36 @@ public final class IslandStore {
     public record SlotRow(int id, int gridX, int gridZ, String state, UUID islandId, long updatedAt) {
     }
 
-    static final String STATE_USED = "used";
-    static final String STATE_FREE = "free";
-    static final String STATE_CLEARING = "clearing";
+    /** Result of removing an island (M2.7 disband, staff delete, reset). */
+    public sealed interface DisbandResult {
+        /** Removed: the stored members and coop players it had (from the database), and where it was. */
+        record Disbanded(UUID owner, int slotId, int gridX, int gridZ, int sizeChunks, Map<UUID, Role> members, List<UUID> coops,
+                         long at) implements DisbandResult {
+        }
+
+        /** Already removed (or never existed). */
+        record Gone() implements DisbandResult {
+        }
+
+        /** The island has another leader now (e.g. transferred while the confirm screen was open). */
+        record NotLeader() implements DisbandResult {
+        }
+    }
+
+    /** A slot whose region still has to be emptied (resumed after a restart). {@code sizeChunks} 0 = unknown. */
+    public record ClearingSlot(int slotId, int gridX, int gridZ, UUID islandId, int sizeChunks) {
+    }
+
+    static final String STATE_USED = SlotState.USED.key();
+    static final String STATE_FREE = SlotState.FREE.key();
+    static final String STATE_CLEARING = SlotState.CLEARING.key();
+
+    /** {@code islands.deleted_reason}: the leader disbanded it (starts the creation cooldown). */
+    static final String REASON_DISBAND = "disband";
+    /** Staff removed it ({@code /isadmin delete}); no creation cooldown. */
+    static final String REASON_DELETE = "delete";
+    /** Staff reset it ({@code /isadmin reset}): the leader got a new island right away. */
+    static final String REASON_RESET = "reset";
     private static final int MAX_ATTEMPTS = 5;
 
     private final Database db;
@@ -86,6 +113,32 @@ public final class IslandStore {
      */
     public CompletableFuture<Void> savePerm(UUID islandId, PermRole role, IslandPerm perm, Boolean allowed) {
         return db.run(c -> savePerm(c, islandId, role, perm, allowed, System.currentTimeMillis()));
+    }
+
+    /**
+     * Removes an island in one transaction (M2.7): marks it deleted (the row stays with its season for history), ends
+     * every membership (join history: left_reason {@code disband}), removes coop players, invites and permission
+     * overrides, and puts the slot in state {@code clearing}. {@code expectedOwner} (nullable) must still be the leader.
+     */
+    public CompletableFuture<DisbandResult> disband(UUID islandId, UUID expectedOwner, String reason, UUID by) {
+        long now = System.currentTimeMillis();
+        return db.async(c -> inTransaction(c, () -> disband(c, islandId, expectedOwner, reason, by, now)));
+    }
+
+    /** The clearer emptied the slot: {@code clearing} → {@code free} (island id removed). False if it was not clearing. */
+    public CompletableFuture<Boolean> freeSlot(int slotId) {
+        long now = System.currentTimeMillis();
+        return db.async(c -> freeSlot(c, slotId, now));
+    }
+
+    /** Slots still in state {@code clearing} (with the removed island's size). Blocking: enable only. */
+    public List<ClearingSlot> clearingSlotsBlocking() {
+        return db.blocking(IslandStore::clearingSlots);
+    }
+
+    /** Every slot ever handed out (blocking: enable only). */
+    public List<SlotRow> slotsBlocking() {
+        return db.blocking(IslandStore::slots);
     }
 
     /** Every slot ever handed out, in spiral order (admin overview). */
@@ -160,9 +213,58 @@ public final class IslandStore {
         }
     }
 
+    /** Last time {@code owner} disbanded an island themselves (staff deletes and resets don't count). */
     static Optional<Long> lastDisband(Connection c, UUID owner) throws SQLException {
-        return Sql.queryOne(c, "SELECT MAX(deleted_at) FROM islands WHERE owner_uuid = ? AND deleted_at IS NOT NULL",
-                IslandStore::nullableFirst, owner);
+        return Sql.queryOne(c, "SELECT MAX(deleted_at) FROM islands WHERE owner_uuid = ? AND deleted_at IS NOT NULL "
+                + "AND (deleted_reason IS NULL OR deleted_reason = ?)", IslandStore::nullableFirst, owner, REASON_DISBAND);
+    }
+
+    static DisbandResult disband(Connection c, UUID islandId, UUID expectedOwner, String reason, UUID by, long now) throws SQLException {
+        Optional<Object[]> row = Sql.queryOne(c, "SELECT owner_uuid, slot_id, size_chunks FROM islands WHERE id = ? AND deleted_at IS NULL "
+                + "FOR UPDATE", rs -> new Object[]{Sql.uuid(rs, "owner_uuid"), rs.getInt("slot_id"), rs.getInt("size_chunks")}, islandId);
+        if (row.isEmpty()) {
+            return new DisbandResult.Gone();
+        }
+        UUID owner = (UUID) row.get()[0];
+        int slotId = (Integer) row.get()[1];
+        int size = (Integer) row.get()[2];
+        if (expectedOwner != null && !expectedOwner.equals(owner)) {
+            return new DisbandResult.NotLeader();
+        }
+        int[] grid = Sql.queryOne(c, "SELECT grid_x, grid_z FROM island_slots WHERE id = ?",
+                rs -> new int[]{rs.getInt("grid_x"), rs.getInt("grid_z")}, slotId).orElseGet(() -> IslandGrid.spiral(slotId));
+        Map<UUID, Role> members = new java.util.LinkedHashMap<>();
+        Sql.query(c, "SELECT uuid, role FROM island_members WHERE island_id = ? ORDER BY joined_at", rs -> {
+            members.put(Sql.uuid(rs, "uuid"), role(rs.getString("role")));
+            return null;
+        }, islandId);
+        List<UUID> coops = Sql.query(c, "SELECT uuid FROM island_coops WHERE island_id = ?", rs -> Sql.uuid(rs, "uuid"), islandId);
+        Sql.update(c, "UPDATE islands SET deleted_at = ?, deleted_reason = ?, deleted_by = ? WHERE id = ? AND deleted_at IS NULL",
+                now, reason, by, islandId);
+        // History only: a leave because the island is gone never starts the join cooldown (MemberStore.history).
+        Sql.update(c, "UPDATE player_island_joins SET left_at = ?, left_reason = ? WHERE island_id = ? AND left_at IS NULL",
+                now, MemberStore.LEFT_DISBAND, islandId);
+        Sql.update(c, "DELETE FROM island_members WHERE island_id = ?", islandId);
+        Sql.update(c, "DELETE FROM island_coops WHERE island_id = ?", islandId);
+        Sql.update(c, "DELETE FROM island_invites WHERE island_id = ?", islandId);
+        Sql.update(c, "DELETE FROM island_role_perms WHERE island_id = ?", islandId);
+        // used -> clearing (SlotState); the island id stays until the clearer frees the slot.
+        Sql.update(c, "UPDATE island_slots SET state = ?, island_id = ?, updated_at = ? WHERE id = ?", STATE_CLEARING, islandId, now, slotId);
+        return new DisbandResult.Disbanded(owner, slotId, grid[0], grid[1], size, members, coops, now);
+    }
+
+    static boolean freeSlot(Connection c, int slotId, long now) throws SQLException {
+        return Sql.update(c, "UPDATE island_slots SET state = ?, island_id = NULL, updated_at = ? WHERE id = ? AND state = ?",
+                STATE_FREE, now, slotId, STATE_CLEARING) == 1;
+    }
+
+    static List<ClearingSlot> clearingSlots(Connection c) throws SQLException {
+        return Sql.query(c, "SELECT s.id, s.grid_x, s.grid_z, s.island_id, i.size_chunks FROM island_slots s "
+                + "LEFT JOIN islands i ON i.id = s.island_id WHERE s.state = ? ORDER BY s.updated_at, s.id", rs -> {
+            int size = rs.getInt("size_chunks");
+            return new ClearingSlot(rs.getInt("id"), rs.getInt("grid_x"), rs.getInt("grid_z"), Sql.uuid(rs, "island_id"),
+                    rs.wasNull() ? 0 : size);
+        }, STATE_CLEARING);
     }
 
     private static Long nullableFirst(ResultSet rs) throws SQLException {

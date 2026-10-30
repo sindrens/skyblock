@@ -30,6 +30,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -68,6 +70,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
     static final String PERM_ALTS = "skyblock.staff.punish.alts";
     static final String PERM_EXEMPT = "skyblock.staff.punish.exempt";
     static final String PERM_EXEMPT_BYPASS = "skyblock.staff.punish.exempt.bypass";
+    /** Staff told about broken punishments.yml edits (whoever may reload configs). */
+    static final String PERM_CONFIG_ALERT = "skyblock.admin.reload";
 
     private static final String[] REASON_HINTS = {"Hacking", "Toxicity", "Spam", "Advertising", "Exploiting", "-s"};
 
@@ -82,6 +86,11 @@ public final class ModerationModule implements SkyblockModule, Listener {
     private volatile List<String> bannedNames = List.of();
     private net.skybornmc.skyblock.common.util.Scheduler.Task bannedNamesTask;
     private final Map<UUID, List<PunishmentStore.Alt>> pendingAltAlerts = new ConcurrentHashMap<>();
+    /** Pending suggestion ids for tab completion of /warns <player> apply|dismiss <id>. */
+    private volatile List<String> pendingIds = List.of();
+    /** Problems of the last punishments.yml load (shown to staff who can reload when they join). */
+    private volatile List<ConfigProblem> lastProblems = List.of();
+    private volatile boolean lastLoadRejected;
 
     public ModerationModule(Core core) {
         this.core = core;
@@ -103,13 +112,18 @@ public final class ModerationModule implements SkyblockModule, Listener {
         return service;
     }
 
+    ModuleMessages messages() {
+        return msg;
+    }
+
     @Override
     public void enable() throws Exception {
         new Migrations(core.database(), plugin.getLogger()).migrate(ID, getClass().getClassLoader());
         core.configs().load(config);
-        loadTemplates();
         main = new MainThread(plugin);
         service = new PunishmentService(core, msg, new PunishmentStore(core.database()), () -> config);
+        service.warnRules(() -> templates.config().warnRules());
+        loadPunishments(null);
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         core.placeholders().registerText(ID, "muted", p -> p != null && service.mute(p.getUniqueId()).isPresent() ? "true" : "false");
         registerCommands();
@@ -124,7 +138,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
     public void reload() {
         core.configs().load(config);
         core.messages().load(ID);
-        loadTemplates();
+        loadPunishments(null);
     }
 
     @Override
@@ -135,17 +149,132 @@ public final class ModerationModule implements SkyblockModule, Listener {
         HandlerList.unregisterAll(this);
     }
 
-    private void loadTemplates() {
+    /** Icons for the config parser: real item ids only. */
+    static final PunishConfigParser.Icons ICONS = new PunishConfigParser.Icons() {
+        private volatile List<String> names;
+
+        @Override
+        public org.bukkit.Material resolve(String id) {
+            org.bukkit.Material m = org.bukkit.Material.matchMaterial(id);
+            return m == null || m.isLegacy() || !m.isItem() || m.isAir() ? null : m;
+        }
+
+        @Override
+        public java.util.Collection<String> names() {
+            if (names == null) {
+                List<String> out = new ArrayList<>();
+                for (org.bukkit.Material m : org.bukkit.Material.values()) {
+                    if (!m.isLegacy() && m.isItem() && !m.isAir()) {
+                        out.add(m.name());
+                    }
+                }
+                names = List.copyOf(out);
+            }
+            return names;
+        }
+    };
+
+    /**
+     * Loads {@code punishments.yml} safely (spec §6.2): any error rejects the whole file, keeps the previous working
+     * config (or, on first start, the bundled default), prints every problem with file and line to the console and tells
+     * online staff who can reload. Never throws, never disables the module.
+     *
+     * @param extra also told (e.g. whoever ran the reload), may be {@code null}
+     */
+    void loadPunishments(CommandSender extra) {
         File file = new File(plugin.getDataFolder(), "punishments.yml");
         if (!file.exists()) {
             plugin.saveResource("punishments.yml", false);
         }
-        templates.load(file).forEach(plugin.getLogger()::warning);
+        PunishConfigParser.Result result;
+        try {
+            result = PunishConfigParser.parse(Files.readString(file.toPath(), StandardCharsets.UTF_8), ICONS);
+        } catch (Exception e) {
+            result = new PunishConfigParser.Result(null, List.of(new ConfigProblem("config.yaml-invalid", "", 0,
+                    Map.of("detail", String.valueOf(e.getMessage())))), List.of());
+        }
+        boolean hadConfig = templates.config() != PunishConfig.EMPTY;
+        for (ConfigProblem w : result.warnings()) {
+            plugin.getLogger().warning(problemText(null, w));
+        }
+        if (templates.offer(result)) {
+            lastProblems = result.warnings();
+            lastLoadRejected = false;
+            plugin.getLogger().info(service.text(null, "config.loaded", Msg.number("reasons", templates.templateIds().size()),
+                    Msg.number("rules", result.config().warnRules().rules().size()),
+                    Msg.p("mode", result.config().warnRules().mode().name().toLowerCase(Locale.ROOT))));
+            return;
+        }
+        for (ConfigProblem e : result.errors()) {
+            plugin.getLogger().warning(problemText(null, e));
+        }
+        String keptKey = hadConfig ? "config.rejected" : "config.rejected-default";
+        if (!hadConfig) {
+            templates.use(bundledDefault());
+        }
+        plugin.getLogger().warning(service.text(null, keptKey, Msg.number("count", result.errors().size())));
+        lastProblems = result.errors();
+        lastLoadRejected = true;
+        alertStaff(extra, result.errors(), keptKey);
+        core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.CONFIG, "punishments_config_rejected",
+                extra == null ? net.skybornmc.skyblock.common.audit.Actor.SYSTEM : net.skybornmc.skyblock.common.audit.Actor.of(extra),
+                Map.of("errors", result.errors().size(), "first", problemText(null, result.errors().getFirst())));
+    }
+
+    /** The punishments.yml inside the jar (the build test guarantees it parses). */
+    private PunishConfig bundledDefault() {
+        try (java.io.InputStream in = plugin.getResource("punishments.yml")) {
+            if (in != null) {
+                PunishConfigParser.Result r = PunishConfigParser.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8), ICONS);
+                if (r.ok()) {
+                    return r.config();
+                }
+            }
+        } catch (java.io.IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Could not read the bundled punishments.yml", e);
+        }
+        return PunishConfig.EMPTY;
+    }
+
+    private void alertStaff(CommandSender extra, List<ConfigProblem> problems, String keptKey) {
+        for (Player staff : Bukkit.getOnlinePlayers()) {
+            if (staff.hasPermission(PERM_CONFIG_ALERT) || staff.equals(extra)) {
+                sendProblems(staff, problems, keptKey);
+            }
+        }
+        if (extra != null && !(extra instanceof Player)) {
+            sendProblems(extra, problems, keptKey);
+        }
+    }
+
+    private void sendProblems(CommandSender to, List<ConfigProblem> problems, String keptKey) {
+        msg.send(to, keptKey, Msg.number("count", problems.size()));
+        int shown = 0;
+        for (ConfigProblem p : problems) {
+            if (shown++ >= 8) {
+                msg.send(to, "config.more", Msg.number("more", problems.size() - 8));
+                break;
+            }
+            msg.send(to, "config.line", Msg.p("problem", problemText(to instanceof Player pl ? pl : null, p)));
+        }
+    }
+
+    /** One problem as plain text: {@code punishments.yml line 42: ...}. */
+    String problemText(Player viewer, ConfigProblem p) {
+        List<TagResolver> tags = new ArrayList<>();
+        p.args().forEach((k, v) -> tags.add(Msg.p(k, v)));
+        tags.add(Msg.p("file", "punishments.yml"));
+        tags.add(Msg.p("line", p.line() > 0 ? String.valueOf(p.line()) : "?"));
+        tags.add(Msg.p("path", p.path()));
+        String suggestion = p.arg("suggestion");
+        tags.add(Msg.p("hint", suggestion.isEmpty() ? "" : service.text(viewer, "config.hint", Msg.p("suggestion", suggestion))));
+        return service.text(viewer, p.key(), tags.toArray(TagResolver[]::new));
     }
 
     private void refreshBannedNames() {
         service.store().bannedNames().thenAccept(names -> bannedNames = List.copyOf(names))
                 .exceptionally(e -> null);
+        service.store().pendingIds().thenAccept(ids -> pendingIds = List.copyOf(ids)).exceptionally(e -> null);
     }
 
     private static String ip(Player p) {
@@ -215,12 +344,24 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .executes(ctx -> pardonPlayer(ctx.sender(), Punishment.Type.WARN, ctx.get(player), ctx.get(pardonReason))));
 
         Arg<String> punishTarget = player;
-        Arg<String> template = Args.oneOf("reason", templates::templateIds);
-        Arg<String> flags = Args.text("flags", "-s");
+        Arg<String> template = Args.oneOf("reason", templates::reasonIds);
+        Arg<String> flags = Arg.greedy("flags", (sender, raw) -> raw.strip(), (ctx, builder) -> {
+            Flags.suggestions(builder.getRemaining()).forEach(builder::suggest);
+            return builder.buildFuture();
+        });
         commands.register(CommandSpec.command("punish")
-                .description("Punish with a template: opens the reason menu, or applies a reason directly").category("Staff")
-                .permission(PERM_GUI).arg(punishTarget).optional(template).optional(flags).example("punish Steve toxicity")
+                .description("Punishment menu for a player, or apply a reason directly (-s silent, -ip IP-wide)")
+                .category("Staff").permission(PERM_GUI).aliases("p").arg(punishTarget).optional(template).optional(flags)
+                .example("p Steve toxicity")
                 .executes(ctx -> punishCommand(ctx.sender(), ctx.get(punishTarget), ctx.getOr(template, null), ctx.getOr(flags, ""))));
+
+        Arg<String> warnsTarget = player;
+        Arg<String> warnsAction = Args.oneOf("action", () -> List.of("apply", "dismiss"));
+        Arg<String> suggestionId = Arg.word("id", (sender, raw) -> raw, Suggest.of(() -> pendingIds));
+        commands.register(CommandSpec.command("warns")
+                .description("A player's warning counter, the automatic rules and waiting suggestions").category("Staff")
+                .permission(PERM_HISTORY).arg(warnsTarget).optional(warnsAction).optional(suggestionId).example("warns Steve")
+                .executes(ctx -> warns(ctx.sender(), ctx.get(warnsTarget), ctx.getOr(warnsAction, null), ctx.getOr(suggestionId, null))));
 
         Arg<String> historyTarget = player;
         Arg<String> mode = Args.oneOf("view", () -> List.of("chat", "menu"));
@@ -266,7 +407,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
     }
 
     /** Permission for the kind of punishment (ip-wide bans need the ipban permission). */
-    private static String permissionFor(Punishment.Type type, boolean ipWide) {
+    static String permissionFor(Punishment.Type type, boolean ipWide) {
         return switch (type) {
             case BAN -> ipWide ? PERM_IPBAN : PERM_BAN;
             case MUTE -> PERM_MUTE;
@@ -275,50 +416,25 @@ public final class ModerationModule implements SkyblockModule, Listener {
         };
     }
 
-    boolean canApply(CommandSender sender, Templates.Step step) {
-        if (!sender.hasPermission(permissionFor(step.type(), step.ipWide()))) {
-            return false;
-        }
-        if (step.type() == Punishment.Type.BAN || step.type() == Punishment.Type.MUTE) {
-            return service.allowed(sender, step.duration());
-        }
-        return true;
-    }
-
-    /** Shared checks for every way of punishing. */
-    private void check(CommandSender sender, Punishment.Type type, Duration duration, Reason reason, String targetName) {
-        if (reason.silent() && !sender.hasPermission(PERM_SILENT)) {
-            throw fail("error.no-silent");
-        }
-        if (reason.ipWide() && !sender.hasPermission(PERM_IPBAN)) {
-            throw fail("error.no-ip");
-        }
-        if ((type == Punishment.Type.BAN || type == Punishment.Type.MUTE) && !service.allowed(sender, duration)) {
-            throw fail("error.too-long", Msg.p("max", service.describeMax(sender)));
-        }
-        if (sender instanceof Player self && self.getName().equalsIgnoreCase(targetName)) {
-            throw fail("error.self");
-        }
-        Player online = Bukkit.getPlayerExact(targetName);
-        if (online != null && online.hasPermission(PERM_EXEMPT) && !sender.hasPermission(PERM_EXEMPT_BYPASS)) {
-            throw fail("error.exempt", Msg.p("player", online.getName()));
-        }
-    }
-
+    /**
+     * Direct commands (/ban, /tempmute, /warn, /kick ...). Everything (permission, -s/-ip flags, length limit, exempt,
+     * never shorten) is decided by the shared pipeline in {@link PunishmentService#issue}.
+     */
     private void direct(CommandSender sender, Punishment.Type type, String targetName, Duration duration, String rawReason) {
         Reason reason = Reason.parse(rawReason);
-        check(sender, type, duration, reason, targetName);
         if (type == Punishment.Type.KICK && Bukkit.getPlayerExact(targetName) == null) {
             throw CommandFailure.of("player-offline", Msg.p("input", targetName));
         }
         String text = reason.text().isEmpty() ? service.text(sender instanceof Player p ? p : null, "words.no-reason") : reason.text();
+        boolean ipWide = reason.ipWide() && (type == Punishment.Type.BAN || type == Punishment.Type.MUTE);
         resolve(targetName).thenComposeAsync(found -> {
             if (found.isEmpty()) {
                 msg.send(sender, "error.unknown", Msg.p("player", targetName));
                 return CompletableFuture.completedFuture(null);
             }
+            Player online = Bukkit.getPlayer(found.get().uuid());
             return service.issue(sender, new PunishmentService.Request(type, found.get().uuid(), found.get().name(), duration,
-                    text, reason.silent(), reason.ipWide(), null, null, null));
+                    text, reason.silent(), ipWide, ipWide && online != null ? ip(online) : null, null, null));
         }, main).exceptionally(e -> failed(sender, e));
     }
 
@@ -337,18 +453,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
         Reason reason = Reason.parse(rawReason);
         String text = reason.text().isEmpty() ? service.text(sender instanceof Player p ? p : null, "words.no-reason") : reason.text();
         if (BanTargets.looksLikeIp(target)) {
-            if (reason.silent() && !sender.hasPermission(PERM_SILENT)) {
-                throw fail("error.no-silent");
-            }
-            if (!service.allowed(sender, null)) {
-                throw fail("error.too-long", Msg.p("max", service.describeMax(sender)));
-            }
             service.issue(sender, new PunishmentService.Request(Punishment.Type.BAN, null, target, null, text, reason.silent(),
                     true, target, null, null)).exceptionally(e -> failed(sender, e));
             return;
         }
-        Reason withIp = new Reason(reason.text(), reason.silent(), true);
-        check(sender, Punishment.Type.BAN, null, withIp, target);
         resolve(target).thenComposeAsync(found -> {
             if (found.isEmpty()) {
                 msg.send(sender, "error.unknown", Msg.p("player", target));
@@ -396,56 +504,184 @@ public final class ModerationModule implements SkyblockModule, Listener {
 
     // ================================================================== /punish, /history, /alts
 
-    private CompletableFuture<Optional<PunishMenus.Target>> target(String name) {
+    /** Loads a target with history and warn-rule suggestions (off the main thread) for menus and /warns. */
+    CompletableFuture<Optional<PunishMenus.Target>> target(String name) {
         return resolve(name).thenCompose(found -> found.isEmpty()
                 ? CompletableFuture.completedFuture(Optional.<PunishMenus.Target>empty())
-                : service.store().history(found.get().uuid())
-                .thenApply(h -> Optional.of(new PunishMenus.Target(found.get().uuid(), found.get().name(), h))));
+                : target(found.get().uuid(), found.get().name()).thenApply(Optional::of));
     }
 
-    private void punishCommand(CommandSender sender, String name, String templateId, String flags) {
-        if (templateId == null && !(sender instanceof Player)) {
+    CompletableFuture<PunishMenus.Target> target(UUID uuid, String name) {
+        CompletableFuture<List<Punishment>> history = service.store().history(uuid);
+        CompletableFuture<List<Suggestion>> suggestions = service.store().suggestions(uuid);
+        return history.thenCombine(suggestions, (h, s) -> new PunishMenus.Target(uuid, name, h, s));
+    }
+
+    /** Opens the single-screen /p menu for {@code viewer} (loads the target first). */
+    void openPunishMenu(Player viewer, String name) {
+        target(name).thenAcceptAsync(t -> {
+            if (t.isEmpty()) {
+                msg.send(viewer, "error.unknown", Msg.p("player", name));
+                return;
+            }
+            core.menus().open(viewer, new PunishMenus.PunishMenu(this, t.get()));
+        }, main).exceptionally(e -> failed(viewer, e));
+    }
+
+    private void punishCommand(CommandSender sender, String name, String reasonId, String flags) {
+        if (reasonId == null && !(sender instanceof Player)) {
             throw CommandFailure.of("players-only");
+        }
+        if (reasonId == null) {
+            openPunishMenu((Player) sender, name);
+            return;
+        }
+        Reason parsed = Reason.parse(flags);
+        target(name).thenAcceptAsync(t -> {
+            if (t.isEmpty()) {
+                msg.send(sender, "error.unknown", Msg.p("player", name));
+                return;
+            }
+            Optional<Templates.Template> template = templates.template(reasonId);
+            if (template.isPresent()) {
+                punishWithTemplate(sender, t.get(), template.get(), parsed.silent(), parsed.ipWide());
+                return;
+            }
+            Optional<PunishConfig.WarnButton> button = templates.warnButton(reasonId);
+            if (button.isPresent()) {
+                punishWithWarnButton(sender, t.get(), button.get(), parsed.silent());
+                return;
+            }
+            msg.send(sender, "error.unknown-template", Msg.p("reason", reasonId));
+        }, main).exceptionally(e -> failed(sender, e));
+    }
+
+    /** Display name of a reason: messages reasons.<id>, else the legacy YAML name, else the id. */
+    String reasonName(Player viewer, Templates.Template t) {
+        if (msg.has("reasons." + t.id())) {
+            return service.text(viewer, "reasons." + t.id());
+        }
+        return t.yamlName() != null ? t.yamlName() : t.id();
+    }
+
+    String categoryName(Player viewer, Templates.Category c) {
+        if (msg.has("categories." + c.id())) {
+            return service.text(viewer, "categories." + c.id());
+        }
+        return c.yamlName() != null ? c.yamlName() : c.id();
+    }
+
+    /** Name and stored reason text of a warn button (messages warn-buttons.<id>.name / .reason). */
+    String warnButtonText(Player viewer, PunishConfig.WarnButton b, String part) {
+        String key = "warn-buttons." + b.id() + "." + part;
+        return msg.has(key) ? service.text(viewer, key) : b.id();
+    }
+
+    /**
+     * Applies the ladder step for this offence (menu, More reasons, /p <player> <reason>). Completes on the main thread
+     * with the result ({@code null} if it failed before the pipeline).
+     */
+    CompletableFuture<PunishmentStore.IssueResult> punishWithTemplate(CommandSender sender, PunishMenus.Target target,
+                                                                     Templates.Template template, boolean silent, boolean ipFlag) {
+        int previous = target.previous(template.id());
+        Templates.Step step = template.stepFor(previous);
+        boolean ipWide = step.ipWide() || (ipFlag && (step.type() == Punishment.Type.BAN || step.type() == Punishment.Type.MUTE));
+        Player online = Bukkit.getPlayer(target.uuid());
+        return service.issue(sender, new PunishmentService.Request(step.type(), target.uuid(), target.name(), step.duration(),
+                        reasonName(null, template), silent, ipWide, ipWide && online != null ? ip(online) : null,
+                        template.id(), template.stepIndex(previous)))
+                .exceptionally(e -> failed(sender, e));
+    }
+
+    /** One plain warn with the button's preset reason. */
+    CompletableFuture<PunishmentStore.IssueResult> punishWithWarnButton(CommandSender sender, PunishMenus.Target target,
+                                                                       PunishConfig.WarnButton button, boolean silent) {
+        return service.issue(sender, new PunishmentService.Request(Punishment.Type.WARN, target.uuid(), target.name(), null,
+                        warnButtonText(null, button, "reason"), silent, false, null, button.id(), null))
+                .exceptionally(e -> failed(sender, e));
+    }
+
+    /** Kick from the /p menu with the default kick reason. */
+    CompletableFuture<PunishmentStore.IssueResult> kickFromMenu(Player sender, PunishMenus.Target target) {
+        return service.issue(sender, new PunishmentService.Request(Punishment.Type.KICK, target.uuid(), target.name(), null,
+                service.text(null, "punish.kick-reason"), false, false, null, null, null))
+                .exceptionally(e -> failed(sender, e));
+    }
+
+    // ================================================================== /warns
+
+    private void warns(CommandSender sender, String name, String action, String id) {
+        if (action != null) {
+            if (!sender.hasPermission(PERM_GUI)) {
+                throw fail("error.no-permission-suggestion");
+            }
+            long sid;
+            try {
+                sid = Long.parseLong(id == null ? "" : id.strip());
+            } catch (NumberFormatException e) {
+                throw fail("suggest.not-found");
+            }
+            if (action.equals("apply")) {
+                service.applySuggestion(sender, sid).exceptionally(e -> failed(sender, e));
+            } else {
+                service.dismissSuggestion(sender, sid).exceptionally(e -> failed(sender, e));
+            }
+            return;
         }
         target(name).thenAcceptAsync(t -> {
             if (t.isEmpty()) {
                 msg.send(sender, "error.unknown", Msg.p("player", name));
                 return;
             }
-            if (templateId == null) {
-                core.menus().open((Player) sender, new PunishMenus.CategoryMenu(this, t.get()));
-                return;
-            }
-            Templates.Template template = templates.template(templateId).orElse(null);
-            if (template == null) {
-                msg.send(sender, "error.unknown-template", Msg.p("reason", templateId));
-                return;
-            }
-            punishWithTemplate(sender, t.get(), template, t.get().previous(template.id()), Reason.parse(flags).silent());
+            sendWarns(sender, t.get());
         }, main).exceptionally(e -> failed(sender, e));
     }
 
-    /** Applies the ladder step for this offence (called from the confirm menu and from /punish <player> <reason>). */
-    void punishWithTemplate(CommandSender sender, PunishMenus.Target target, Templates.Template template, int previous, boolean silent) {
-        Templates.Step step = template.stepFor(previous);
-        try {
-            check(sender, step.type(), step.duration(), new Reason(template.name(), silent, step.ipWide()), target.name());
-            if (!canApply(sender, step)) {
-                throw fail("error.too-long", Msg.p("max", service.describeMax(sender)));
+    private void sendWarns(CommandSender sender, PunishMenus.Target t) {
+        Player viewer = sender instanceof Player p ? p : null;
+        WarnRules.Settings rules = templates.config().warnRules();
+        long now = System.currentTimeMillis();
+        WarnRules.Counter counter = WarnRules.counter(t.history(), t.suggestions(), rules, now);
+        msg.send(sender, "warns.header", Msg.p("player", t.name()), PunishmentService.pre("target", t.name()),
+                Msg.p("count", counter.count()), Msg.p("next", counterLimit(counter, rules)));
+        if (!rules.enabled()) {
+            msg.send(sender, "warns.rules-off");
+        } else {
+            msg.send(sender, "warns.mode", Msg.p("mode", service.text(viewer, "warns.modes." + rules.mode().name().toLowerCase(Locale.ROOT))),
+                    Msg.p("expire", rules.warnExpire() == null ? service.text(viewer, "words.never") : PunishConfig.text(rules.warnExpire())));
+            for (WarnRules.Rule rule : rules.rules()) {
+                msg.send(sender, "warns.rule", Msg.p("at", rule.at()), Msg.p("action", service.stepText(viewer, rule.action())));
             }
-        } catch (CommandFailure f) {
-            core.messages().send(sender, f.module(), f.key(), f.placeholders());
-            return;
+            if (rules.repeatEnabled()) {
+                msg.send(sender, "warns.repeat-rule", Msg.p("window", PunishConfig.text(rules.repeatWindow())),
+                        Msg.p("action", service.stepText(viewer, rules.repeatAction())));
+            }
         }
-        if (step.type() == Punishment.Type.KICK && Bukkit.getPlayer(target.uuid()) == null) {
-            msg.send(sender, "error.kick-offline", Msg.p("player", target.name()));
-            return;
+        List<Punishment> counted = WarnRules.counted(t.history(), t.suggestions(), rules, now);
+        if (counted.isEmpty()) {
+            msg.send(sender, "warns.none");
         }
-        Player online = Bukkit.getPlayer(target.uuid());
-        service.issue(sender, new PunishmentService.Request(step.type(), target.uuid(), target.name(), step.duration(),
-                        template.name(), silent, step.ipWide(), step.ipWide() && online != null ? ip(online) : null,
-                        template.id(), Math.min(previous, template.ladder().size() - 1)))
-                .exceptionally(e -> failed(sender, e));
+        for (Punishment w : counted) {
+            msg.send(sender, "warns.line", Msg.p("id", w.id()), Msg.p("reason", w.reason()), Msg.p("staff", w.issuerName()),
+                    Msg.p("date", when(w.created())), Msg.p("expires", rules.warnExpire() == null
+                            ? service.text(viewer, "words.never") : when(w.created() + rules.warnExpire().toMillis())));
+        }
+        if (counter.repeatUntil() != null) {
+            msg.send(sender, "warns.repeat-open", Msg.p("until", when(counter.repeatUntil())),
+                    Msg.p("action", service.stepText(viewer, rules.repeatAction())));
+        }
+        if (counter.pending() != null) {
+            msg.send(sender, "warns.pending", service.suggestionParts(viewer, counter.pending()));
+        }
+        msg.send(sender, "warns.footer", PunishmentService.pre("target", t.name()));
+    }
+
+    /** "2" (the next rule) or "-" when no rule is left. */
+    static String counterLimit(WarnRules.Counter counter, WarnRules.Settings rules) {
+        if (counter.next() != null) {
+            return String.valueOf(counter.next().at());
+        }
+        return rules.rules().isEmpty() ? "-" : String.valueOf(rules.rules().getFirst().at());
     }
 
     private void history(CommandSender sender, String name, String mode) {
@@ -456,7 +692,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 return;
             }
             if (!chat) {
-                core.menus().open((Player) sender, new PunishMenus.HistoryMenu(t.get()));
+                core.menus().open((Player) sender, new PunishMenus.HistoryMenu(t.get(), this));
                 return;
             }
             sendHistory(sender, t.get());
@@ -547,6 +783,11 @@ public final class ModerationModule implements SkyblockModule, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        // A mute given while offline (e.g. an automatic rule) is explained on join (spec 5.5 "offline player warned").
+        service.mute(player.getUniqueId()).ifPresent(m -> msg.send(player, "muted.join", service.parts(player, m)));
+        if (lastLoadRejected && player.hasPermission(PERM_CONFIG_ALERT) && !lastProblems.isEmpty()) {
+            sendProblems(player, lastProblems, "config.rejected");
+        }
         List<PunishmentStore.Alt> flagged = pendingAltAlerts.remove(player.getUniqueId());
         if (flagged == null) {
             return;

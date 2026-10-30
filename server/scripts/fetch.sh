@@ -44,7 +44,6 @@ modrinth grimac             GrimAC.jar
 modrinth fastasyncworldedit FastAsyncWorldEdit.jar
 modrinth viaversion         ViaVersion.jar       # lets other client versions join (min version: plugins/ViaVersion/config.yml)
 modrinth viabackwards       ViaBackwards.jar     # needed for clients OLDER than the server
-modrinth axiom-paper-plugin AxiomPaper.jar       # Axiom building tool (builders need the Axiom client mod, Java/Fabric only)
 modrinth placeholderapi     PlaceholderAPI.jar   # %placeholders% for other plugins; our expansion %phoenix_<key>% registers automatically
 
 # spark is built into Paper (use /spark). No separate plugin needed.

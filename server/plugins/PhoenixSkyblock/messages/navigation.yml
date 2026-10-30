@@ -291,6 +291,9 @@ staff:
     worlds:
       name: "<c:flame><bold>Worlds"
       lore: ["<c:text>Loaded worlds, click to", "<c:text>teleport."]
+    islands:
+      name: "<c:flame><bold>Island grid"
+      lore: ["<c:text>Every island slot: used,", "<c:text>clearing or free. /isadmin"]
 
 admin:
   title: "Config"

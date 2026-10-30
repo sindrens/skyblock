@@ -439,3 +439,183 @@ perms:
     fire: "Fire"
     ender-pearls: "Ender pearls"
     spawners: "Spawners"
+
+# ---------------------------------------------------------------- M2.7 lifecycle (/is disband) and staff tools (/isadmin)
+disband:
+  leader-only: "<prefix><c:error><sym:cross> Only the island leader can disband the island. <c:muted>Members can</c:muted> <click:run_command:'/is leave'><c:action>/is leave</c:action></click>."
+  busy: "<prefix><c:error><sym:cross> Your island is being built or removed right now. Try again in a moment."
+  crumb: "Disband island"
+  shown:
+    name: "<c:error><bold>Disband <island>"
+    lore:
+      - "<c:text>Deletes your island for good."
+  details:
+    - "<c:error>Your island and everything on it is"
+    - "<c:error>deleted forever. This can't be undone."
+    - "<c:text>You can create a new island after <c:value><time></c:value>."
+    - "<c:muted>Next: type the confirm word in chat."
+  details-team:
+    - "<c:error>Your island and everything on it is"
+    - "<c:error>deleted forever. This can't be undone."
+    - "<c:text><c:value><members></c:value> member(s) are removed and told."
+    - "<c:text>You can create a new island after <c:value><time></c:value>."
+    - "<c:muted>Next: type the confirm word in chat."
+  cancelled: "<prefix><c:text>Your island stays. Nothing was changed."
+  # The word the leader must type in chat to disband (case doesn't matter).
+  confirm-word: "disband"
+  type: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Last step: type <c:value><word></c:value> in chat to delete <c:value><island></c:value> forever. <c:muted>Type <cancel> to keep it (<seconds>s)."
+  wrong-word: "<prefix><c:error><sym:cross> That wasn't <c:value><word></c:value>, so your island stays. <click:run_command:'/is disband'><c:action>[Try again]</c:action></click>"
+  done: "<prefix><c:success><sym:check> <c:value><island></c:value> <c:text>was disbanded. You can create a new island in <c:value><time></c:value>, or join a friend's island."
+  done-now: "<prefix><c:success><sym:check> <c:value><island></c:value> <c:text>was disbanded. Create a new one any time with</c:text> <click:run_command:'/is'><c:action>/is</c:action></click>."
+  notify: "<prefix><c:error><sym:cross> <c:value><player></c:value> <c:text>disbanded <c:value><island></c:value>. You can join another island or create your own with</c:text> <click:run_command:'/is'><c:action>/is</c:action></click>."
+  notify-coop: "<prefix><c:muted>Your coop on <c:value><island></c:value> ended: the island was removed."
+
+admin:
+  crumb: "Island admin"
+  not-found: "<prefix><c:error><sym:cross> <c:value><input></c:value> isn't on any island. <c:muted>Use an island owner's or member's name.</c:muted>"
+  busy: "<prefix><c:error><sym:cross> That island is being built or removed right now. Try again in a moment."
+  changed: "<prefix><c:error><sym:cross> The island changed meanwhile, nothing was done. Check it with <c:value>/isadmin info</c:value>."
+  cancelled: "<prefix><c:text>Cancelled. Nothing was changed."
+  state:
+    used: "Used"
+    clearing: "Clearing"
+    free: "Free"
+  info:
+    header: "<c:brand><st>        </st></c:brand> <c:flame><bold><island></bold></c:flame> <c:brand><st>        </st>"
+    lines:
+      - "<c:text>Owner: <c:value><owner></c:value> <c:muted>(<owner-uuid>)"
+      - "<c:text>Type: <c:value><type></c:value> <c:muted>· season <season>"
+      - "<c:text>Slot: <c:value>#<slot></c:value> <c:muted>· grid <grid-x>, <grid-z> · center <center-x>, <center-z>"
+      - "<c:text>Size: <c:value><size>x<size></c:value> chunks <c:muted>(max <max>)"
+      - "<c:text>Members: <c:value><members>/<slots></c:value> <c:muted>· coop <coops>"
+      - "<c:text>Created: <c:value><created></c:value> <c:muted>· home <home>"
+      - "<c:muted>Id: <id>"
+    member: " <c:brand><sym:bullet></c:brand> <c:value><player></c:value> <c:muted>· <role> · joined <date>"
+    coop: " <c:brand><sym:bullet></c:brand> <c:value><player></c:value> <c:muted>· <role>"
+    actions: "<click:run_command:'/isadmin tp <owner>'><c:action>[Teleport]</c:action></click> <click:run_command:'/isadmin slots'><c:action>[Slots]</c:action></click> <click:suggest_command:'/isadmin setsize <owner> '><c:action>[Size]</c:action></click>"
+    home-none: "not built yet"
+    type-solo: "Solo"
+    type-team: "Team"
+  tp:
+    done: "<prefix><c:success><sym:check> <c:text>Teleported to <c:value><island></c:value>."
+    failed: "<prefix><c:error><sym:cross> Couldn't teleport you there."
+  teleport-slot:
+    done: "<prefix><c:success><sym:check> <c:text>Teleported to slot <c:value>#<slot></c:value> <c:muted>(<state>)."
+    done-empty: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Slot <c:value>#<slot></c:value> <c:muted>(<state>)</c:muted> <c:text>is empty: you're at its center in the air."
+  delete:
+    confirm: "<prefix><c:warning>Delete the island of <c:value><input></c:value> forever? Run <click:run_command:'/<command> confirm'><c:action>/<command> confirm</c:action></click> within <time>."
+    crumb: "Delete island"
+    shown:
+      name: "<c:error><bold>Delete <island>"
+      lore:
+        - "<c:text>Owner: <c:value><owner>"
+        - "<c:text>Members: <c:value><members>"
+    details:
+      - "<c:error>The island and everything on it is"
+      - "<c:error>deleted forever. Members are removed"
+      - "<c:error>and told. The slot is cleared and reused."
+      - "<c:muted>No creation cooldown for the owner."
+    done: "<prefix><c:success><sym:check> <c:value><island></c:value> <c:text>was deleted (<members> member(s) removed). Slot <c:value>#<slot></c:value> is being cleared."
+    you: "<prefix><c:error><sym:cross> <c:text>Your island <c:value><island></c:value> was deleted by staff. You can create a new one with</c:text> <click:run_command:'/is'><c:action>/is</c:action></click>."
+  reset:
+    confirm: "<prefix><c:warning>Reset the island of <c:value><input></c:value>? It is deleted and its leader gets a new one. Run <click:run_command:'/<command> confirm'><c:action>/<command> confirm</c:action></click> within <time>."
+    crumb: "Reset island"
+    shown:
+      name: "<c:warning><bold>Reset <island>"
+      lore:
+        - "<c:text>Owner: <c:value><owner>"
+        - "<c:text>Members: <c:value><members>"
+    details:
+      - "<c:error>The island is deleted forever and"
+      - "<c:error>its members are removed and told."
+      - "<c:text>The leader gets a fresh starter island"
+      - "<c:text>right away (in a new slot)."
+    done: "<prefix><c:success><sym:check> <c:value><island></c:value> <c:text>was reset: <c:value><owner></c:value> has a new island in slot <c:value>#<slot></c:value>."
+    create-failed: "<prefix><c:error><sym:cross> <c:value><island></c:value> was deleted, but the new island for <c:value><owner></c:value> couldn't be created. They can use <c:value>/is</c:value>."
+    you: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Staff reset your island <c:value><island></c:value>. Your fresh island is ready:</c:text> <click:run_command:'/is'><c:action>/is</c:action></click>"
+    member: "<prefix><c:error><sym:cross> <c:text>Staff reset <c:value><island></c:value>; its members were removed. You can join another island or create your own with</c:text> <click:run_command:'/is'><c:action>/is</c:action></click>."
+  setsize:
+    done: "<prefix><c:success><sym:check> <c:value><island></c:value> <c:text>is now <c:value><size>x<size></c:value> chunks <c:muted>(was <old>x<old>)."
+    failed: "<prefix><c:error><sym:cross> The size couldn't be saved (island removed meanwhile?)."
+  addmember:
+    done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is now a member of <c:value><island></c:value> <c:muted>(<members>/<slots>)."
+    has-island: "<prefix><c:error><sym:cross> <c:value><player></c:value> already has an island. <c:muted>Remove them there first (/isadmin kick).</c:muted>"
+    full: "<prefix><c:error><sym:cross> <c:value><island></c:value> is full (<slots> slots)."
+    you: "<prefix><c:success><sym:star> <c:text>Staff added you to <c:value><island></c:value>.</c:text> <click:run_command:'/is home'><c:action>[Go there]</c:action></click>"
+  kick:
+    not-member: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't a member or coop player of any island."
+    leader: "<prefix><c:error><sym:cross> <c:value><player></c:value> leads <c:value><island></c:value>. <c:muted>Make someone else leader first</c:muted> <click:suggest_command:'/isadmin setowner <owner> '><c:action>/isadmin setowner</c:action></click> <c:muted>or delete the island.</c:muted>"
+    confirm: "<prefix><c:warning>Remove <c:value><player></c:value> from their island? Run <click:run_command:'/<command> confirm'><c:action>/<command> confirm</c:action></click> within <time>."
+    crumb: "Remove <player>"
+    shown:
+      name: "<c:error><bold>Remove <player>"
+      lore:
+        - "<c:text>From: <c:value><island>"
+    details:
+      - "<c:text><c:value><player></c:value> is removed from <c:value><island></c:value>"
+      - "<c:text>and sent to spawn if they're on it."
+    done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>was removed from <c:value><island></c:value>."
+  setowner:
+    not-member: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't a member of <c:value><island></c:value>. <c:muted>Add them first with /isadmin addmember.</c:muted>"
+    already: "<prefix><c:error><sym:cross> <c:value><player></c:value> already leads <c:value><island></c:value>."
+    confirm: "<prefix><c:warning>Make <c:value><player></c:value> the leader of <c:value><input></c:value>'s island? Run <click:run_command:'/<command> confirm'><c:action>/<command> confirm</c:action></click> within <time>."
+    crumb: "New leader"
+    shown:
+      name: "<c:warning><bold><player> leads <island>"
+      lore:
+        - "<c:text>Leader now: <c:value><owner>"
+    details:
+      - "<c:value><player></c:value> <c:text>becomes the leader."
+      - "<c:text><c:value><owner></c:value> becomes a Mod."
+    done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>now leads <c:value><island></c:value>."
+    you: "<prefix><c:success><sym:star> <c:text>Staff made you the leader of <c:value><island></c:value>."
+    old: "<prefix><c:warning><sym:bullet></c:warning> <c:text>Staff made <c:value><player></c:value> the leader of your island. You are a <c:value>Mod</c:value> now."
+  slots:
+    crumb: "Slots"
+    info:
+      - "<c:text>Every 512x512 grid slot ever used,"
+      - "<c:text>from the middle outward (spiral)."
+      - "<c:success>Grass</c:success> <c:text>used, <c:warning>magma</c:warning> clearing, glass free."
+      - "<c:muted>Free slots are reused first."
+    empty:
+      name: "<c:muted>No slots"
+      lore:
+        - "<c:text>Nothing matches this filter."
+    summary:
+      name: "<c:flame><bold>Island grid"
+      lore:
+        - "<c:text>Slots: <c:value><total>"
+        - "<c:success>Used: <c:value><used>"
+        - "<c:warning>Clearing: <c:value><clearing></c:value> <c:muted>(queue <queue>)"
+        - "<c:text>Free: <c:value><free>"
+    filter:
+      all: "All"
+      name: "<c:flame><bold>Show: <filter>"
+      lore:
+        - "<c:text>All, used, clearing or free."
+        - ""
+        - "<c:action>Click to switch"
+    reload:
+      name: "<c:flame><bold>Reload"
+      lore:
+        - "<c:action>Click to load the latest state"
+    entry:
+      name: "<c:value>#<slot></c:value> <c:muted>· <state>"
+      where:
+        - "<c:text>Grid: <c:value><grid-x>, <grid-z></c:value> <c:muted>· center <x>, <z>"
+      used:
+        - "<c:text>Island: <c:value><island>"
+        - "<c:text>Owner: <c:value><owner>"
+        - "<c:text>Members: <c:value><members></c:value> <c:muted>· size <size>x<size>"
+      clearing:
+        - "<c:warning>Clearing: <c:value><percent>%</c:value> <c:muted>(<done>/<total> steps)"
+      clearing-queued:
+        - "<c:warning>Waiting to be cleared"
+      clearing-waiting:
+        - "<c:warning>Clearing resumes after a restart"
+      free:
+        - "<c:text>Empty, reused by the next new island."
+      updated:
+        - "<c:muted>Changed: <updated>"
+      click:
+        - "<c:action>Click to teleport"

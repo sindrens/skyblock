@@ -75,15 +75,20 @@ class MemberStoreTest {
     }
 
     @Test
-    void firstInviteTurnsTheIslandIntoATeamIslandForever() {
+    void islandBecomesATeamIslandOnlyWhenTheInviteIsAccepted() {
         UUID leader = UUID.randomUUID();
         UUID id = island(leader);
+        UUID target = UUID.randomUUID();
+        MemberStore.InviteResult.Created sent = assertInstanceOf(MemberStore.InviteResult.Created.class, invite(id, leader, target));
+        assertFalse(sent.converted(), "an invite alone never converts (owner 2026-10-30)");
         assertEquals("solo", type(id));
-        MemberStore.InviteResult.Created first = assertInstanceOf(MemberStore.InviteResult.Created.class, invite(id, leader, UUID.randomUUID()));
-        assertTrue(first.converted());
+        MemberStore.AcceptResult.Joined joined = assertInstanceOf(MemberStore.AcceptResult.Joined.class, accept(id, target));
+        assertTrue(joined.converted());
         assertEquals("team", type(id));
-        MemberStore.InviteResult.Created second = assertInstanceOf(MemberStore.InviteResult.Created.class, invite(id, leader, UUID.randomUUID()));
-        assertFalse(second.converted(), "only the first invite converts");
+        UUID second = UUID.randomUUID();
+        invite(id, leader, second);
+        MemberStore.AcceptResult.Joined again = assertInstanceOf(MemberStore.AcceptResult.Joined.class, accept(id, second));
+        assertFalse(again.converted(), "only the first accepted invite converts");
     }
 
     @Test

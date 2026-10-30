@@ -5,12 +5,27 @@ import java.util.UUID;
 /** One row of the {@code punishments} table. {@code expires == null} = permanent. */
 public record Punishment(long id, Type type, UUID target, String targetName, String ip, boolean ipWide, String reason,
                          String template, Integer ladderStep, UUID issuer, String issuerName, long created, Long expires,
-                         boolean silent, Long removedAt, UUID removedBy, String removedByName, String removedReason) {
+                         boolean silent, Long removedAt, UUID removedBy, String removedByName, String removedReason,
+                         String source) {
+
+    /** Source prefix of punishments created by an automatic rule ({@code auto:warn-rule:2}). */
+    public static final String AUTO_PREFIX = "auto:";
 
     public enum Type { BAN, MUTE, WARN, KICK }
 
     /** Display status in history. */
     public enum Status { ACTIVE, EXPIRED, REMOVED, DONE }
+
+    /** Created by an automatic rule (applied by a staff click or by the system), never by a plain staff action. */
+    public boolean automatic() {
+        return source != null && source.startsWith(AUTO_PREFIX);
+    }
+
+    /** Same row with a database id (after insert). */
+    public Punishment withId(long newId) {
+        return new Punishment(newId, type, target, targetName, ip, ipWide, reason, template, ladderStep, issuer, issuerName,
+                created, expires, silent, removedAt, removedBy, removedByName, removedReason, source);
+    }
 
     public boolean permanent() {
         return expires == null;

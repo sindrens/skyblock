@@ -1,4 +1,4 @@
-# Islands module (`modules/islands`): M2.1, M2.2, M2.3
+# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.7
 
 Grid, creation, home and per-player borders. Config `islands.yml`, texts `messages/islands.yml`, schematics in
 `plugins/PhoenixSkyblock/schematics/` (`<creation.schematic>.schem` + optional `<name>.yml` metadata with `home`, `chest`,
@@ -14,17 +14,18 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is accept [player]` | Accept your newest invite, or the one from that player's island (inviter or any member). Checks join limits, member slots and the target having no island, all in one transaction | `skyblock.island` | ✅ |
 | `/is deny [player]` | Decline your newest invite, or the one from that player's island; the inviter is told | `skyblock.island` | ✅ |
 | `/is kick <player>` | Leader kicks mods/members, Mod kicks members (confirm screen). Kicked players are sent to spawn if they stand on the island | `skyblock.island` | ✅ |
-| `/is leave` | Leave your island (confirm screen). The leader must `/is transfer` first (disband is M2.7) | `skyblock.island` | ✅ |
+| `/is leave` | Leave your island (confirm screen). The leader must `/is transfer` first, or `/is disband` | `skyblock.island` | ✅ |
 | `/is promote <player>` | Leader: Member → Mod | `skyblock.island` | ✅ |
 | `/is demote <player>` | Leader: Mod → Member | `skyblock.island` | ✅ |
 | `/is transfer <player>` | Leader: hand the island to a member (two confirm screens); the old leader becomes a Mod | `skyblock.island` | ✅ |
 | `/is coop <player>` | Leader/Mod: temporary trust for an online player (coop role permissions). Ends automatically when no leader or mod of the island is online; never turns solo into team; no XP, task progress or bank access; takes no member slot (max `members.max-coops`) | `skyblock.island` | ✅ |
 | `/is uncoop <player>` | Leader/Mod: end a player's coop trust | `skyblock.island` | ✅ |
 | `/is members` | Member list GUI: heads with role, join date, inviter, online state; click a head for the actions you may use (promote, demote, transfer, kick, uncoop, leave). Buttons: Invite (player picker) and Permissions (the matrix) | `skyblock.island` | ✅ |
+| `/is disband` | Leader only: confirm screen (what is lost, members removed, creation cooldown), then type `disband` in chat (`disband.confirm-word`, `cancel` keeps it). The island is removed for good: members and coop players are removed and told, everyone on it is sent to spawn, the slot is cleared and reused. New island after `creation.cooldown-hours` (24 h) | `skyblock.island` | ✅ |
 | `/is bypass` | Staff: toggle ignoring island protection (build, containers, everything; also walk out of borders). Off by default and again on quit; every toggle is logged (`staff`: `island_bypass_on` / `island_bypass_off`) | `skyblock.island.bypass` (admin) | ✅ |
 
 Rules: one island per player (database-enforced), creation cooldown after a disband `creation.cooldown-hours` (24 h),
-start size 3x3 chunks (48x48), grows by chunk rings up to 15x15 (`IslandService.setSize`, Phase 5 / M2.7). Only players
+start size 3x3 chunks (48x48), grows by chunk rings up to 15x15 (`IslandService.setSize`, Phase 5 / `/isadmin setsize`). Only players
 on an island see its border. Void falls return you to the island home without damage.
 Everything that changes data is logged (category `island`: `island_create`, `island_build`, `island_build_failed`,
 `island_sethome`, `island_size`, `island_rescue_block`, `island_perm`, and from M2.3 `island_invite` (sent/denied,
@@ -77,5 +78,42 @@ members/roles, size, home, slot bounds, `teleportHome`, `setSize`; M2.3: `coops`
 coop players: no XP/bank), `memberSlots`, `setMemberSlots`, and the moderation hooks `removeMember(island, uuid, reason,
 actor)` and `blockJoining(uuid, until[, reason, actor])` / `joinBlockedUntil` for Phase P7). Placeholders: `<ph:island_name>`, `<ph:island_level>`
 (`-` until Phase 5), `<ph:island_rank>` (empty until the island top exists).
+
+## Lifecycle (M2.7)
+- **Removing an island** (`/is disband`, `/isadmin delete`, `/isadmin reset`) is one transaction: the `islands` row gets
+  `deleted_at`, `deleted_reason` (`disband` | `delete` | `reset`) and `deleted_by` and is kept with its `season_id` for
+  history; memberships end (`player_island_joins.left_reason = disband`, never starts the join cooldown), coop players,
+  invites and permission overrides are removed and the slot goes to `clearing`. Only `disband` starts the creation
+  cooldown. Island money/bank: decided with the island bank (M3.3).
+- **Slot states** (`island_slots.state`): `used` → `clearing` → `free` → `used`. A clearing slot is never handed out;
+  free slots are reused (lowest id first) before a new spiral slot is added.
+- **Clearer:** empties the max island size + `lifecycle.clear.extra-ring-chunks` chunk rings around the slot center,
+  full world height, in slices of `lifecycle.clear.chunks-per-slice` chunks every `lifecycle.clear.ticks-between-slices`
+  ticks. With FastAsyncWorldEdit (`lifecycle.clear.use-fawe`) off the main thread; otherwise (or when a FAWE step fails or
+  takes longer than `lifecycle.clear.fawe-timeout-seconds`) a built-in clearer that skips empty sections and checks at
+  most `lifecycle.clear.fallback-blocks-per-tick` positions per tick. Then every non-player entity in those chunks is
+  removed. Never-generated chunks are skipped, only one slice of chunks is loaded at a time (offline islands are never
+  kept loaded), and unfinished slots resume after a restart (`lifecycle.clear.start-delay-seconds`).
+- Logged (category `island`): `island_disband`, `island_delete`, `island_reset` (members, coops, slot, owner),
+  `island_clear_start`, `island_clear_error`, `island_slot_freed` (blocks, entities, time, mode).
+
+## Staff tools: `/isadmin` (M2.7)
+`<island>` = the owner's or any member's name (tab completes island owners). Destructive sub-commands open a confirm
+screen for players and need `/isadmin … confirm` (30 s) from the console. Every use is logged in category `staff`
+(`isadmin_<sub>`); data changes are also logged in category `island` with the staff member as actor.
+
+| Command | Description | Permission | Status |
+|---|---|---|---|
+| `/isadmin info <island>` | Owner, type, season, slot + grid + center, size, members with roles and join dates, coop players, created, home, id; clickable Teleport / Slots / Size | `skyblock.island.admin.info` (helper) | ✅ |
+| `/isadmin tp <island>` | Teleport to the island home (center if not built yet) | `skyblock.island.admin.tp` (helper) | ✅ |
+| `/isadmin delete <island>` | Remove the island for good (confirm); members told, slot cleared and reused; no creation cooldown for the owner | `skyblock.island.admin.delete` (admin) | ✅ |
+| `/isadmin setsize <island> <size>` | Border width in chunks (odd, 1 to `size.max-chunks`); shown at once | `skyblock.island.admin.setsize` (admin) | ✅ |
+| `/isadmin addmember <island> <player>` | Add a player as Member without an invite (member slots and one island per player still apply; no join limit/cooldown, doesn't count as a join; makes a solo island a team island) | `skyblock.island.admin.addmember` (admin) | ✅ |
+| `/isadmin kick <player>` | Remove a member or coop player from their island (confirm). Leaders: `setowner` first or `delete` | `skyblock.island.admin.kick` (admin) | ✅ |
+| `/isadmin setowner <island> <member>` | Make a member the leader (confirm); the old leader becomes a Mod | `skyblock.island.admin.setowner` (admin) | ✅ |
+| `/isadmin reset <island>` | Remove the island and give its leader a new starter island right away (built now if online, else on their next `/is`); other members removed (confirm) | `skyblock.island.admin.reset` (admin) | ✅ |
+| `/isadmin bypass` | Same as `/is bypass` | `skyblock.island.bypass` (admin) | ✅ |
+| `/isadmin slots` | Grid overview GUI (spiral order): used (owner, members, size), clearing (progress), free; filter and reload buttons; click = teleport | `skyblock.island.admin.slots` (admin) | ✅ |
+| `/isadmin teleport-slot <slot>` | Teleport to the top of a slot's center column (tab completes slot ids) | `skyblock.island.admin.teleport-slot` (admin) | ✅ |
 
 Permission definitions: `modules/islands/src/main/resources/permissions/islands.yml`. Rank grants: `server/permissions/islands.txt`.

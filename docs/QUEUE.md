@@ -15,15 +15,29 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | UX1 | Rank change shows on scoreboard/tab instantly; `/baltop` fast + async (short cache, refresh after big changes); all messages short, direct, normal words, one consistent color scheme and format (UI_STYLE 3-role palette); tag after the name in parentheses-style; cleaner scoreboard + tab with better colors | — | modules/hud, chat, cosmetics, economy (baltop), social, essentials, perks, staff, logs, menus, auction + their messages; style.yml; UI_STYLE §3/§6 | 🔄 |
+| UX1b | Tab (owner 2026-10-30): remove the `/menu /help /discord /store` footer line; nicer TPS + `play.skybornmc.net`; the lines beside SKYBORN at the top match the colors (one long gradient, or left line white and right line the last letter's color) | UX1 | modules/chat (tab) | ⬜ |
 | UX2 | Same message cleanup for moderation, depths, islands messages (after P1, M4.6, M2.7 merge) | UX1, P1, M4.6, M2.7 | their messages files | ⬜ |
-| FI | Owner answers `docs/FEATURE_IDEAS.md` (yes/no) → yes-items get queued | owner | docs | ⬜ |
+| FI | Owner answered `docs/FEATURE_IDEAS.md` (2026-10-30); follow-up questions in `docs/QUESTIONS_ROUND2.md` → then queue the yes-items | owner | docs | 🔄 waiting for owner |
+| PROF | **Island profiles** per docs/DECISIONS_2026-10-30.md (P1–P12): profile layer in common (ProfileService, active profile per player, `/profiles`), migrate every module's per-player data to (player, profile) keys, inventory/ender chest/armor/XP swap, zero transfer between own profiles | — | common + all modules (one agent, careful, big) | ⬜ next free slot |
+| CRY | Replace tokens with **island crystals** everywhere (currency enum, messages, HUD, docs) | — | common/economy, modules/economy, hud, docs | ⬜ |
+| R2A | Round-2 quick decisions: account-age 30 min (pay/withdraw/AH), `/eco` for admin permission, remove amount suggestions (10k/10m/10b) in tab completion, sell cap 300% (config), freeze cleared by a ban, Inspect tool = blaze rod, public announcements unless -s, timezone Europe/Oslo, skill cap 150, staff `/skills set|add` (admin+owner), `/freerank` (30 min playtime) | — | economy, auction, common/command, moderation, staff, skills | ⬜ |
+| ISL2 | Islands round 2: role Admin (+ old leader → Admin on transfer), hurt-monsters role permission, join cooldown from last join only, `/is settings` flags, island fly for everyone (perm/mastery), likes per player, member homes (1 + masteries), invites menu | M2.4 | modules/islands | ⬜ |
+| STACK | Stacking module: mobs (1024, weapon-based kills, no AI for spawner mobs, breeding by food, max 8 stacks/chunk/type, no despawn), items, spawners (8→512, menu, ignore conditions, crops grow without light) | owner answers F-S12/F-S13/S27 | new modules/stacking | ⬜ |
+| NOTES | `/is notes` (N1–N9: shared to-do list, temporary book, pinned holograms) | M2.4 | modules/islands | ⬜ |
+| SB | Per-place scoreboards (island, Depths, spawn, warzone) | UX1 | modules/hud | ⬜ |
+| PLAN-ENCH | Plan doc: full custom enchant list (levels, effects, how each is obtained: mob kills, mining, chopping, dungeons, crates, /enchanter, crystals), synergy with tools/sets/stacking kills | — | docs/plans/ENCHANTS.md | ⬜ next free slot |
+| PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | ⬜ |
+| STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
+| PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
+| FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | R2A | modules/perks or cosmetics | ⬜ |
+| AFK | AFK pool (fuel + money + keys, better loot over time, max 8 h/day) | economy, islands fuel | new module | ⬜ (needs balance numbers) |
 
 ## Phase P: Punishment system v2 (owner spec `docs/specs/PUNISH_SPEC.md` + `PUNISH_SPEC_NOTES.md`) — one lane (modules/moderation), sequential, priority
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | P0 | Bugs: freeze doesn't stop movement (and after relog), frozen player must not break/chat/do anything; staff-mode vanish item placeholder name; spyglass tool zooms; YAML boolean keys (fixed in main) | — | modules/staff, modules/essentials (vanish) | ✅ |
-| P1 | Spec §1–11: `/p` single-screen menu from YAML, warn counter + rules (notify/auto), `/warns`, validation + safe reload + build test of tracked YAML; release script pulls owner's GitHub edits | P0 | modules/moderation, server/scripts | 🔄 |
-| P2 | §12.1 undo, §12.2 double-punish, §12.3 offence expiry, §12.10 `/pstats` | P1 | modules/moderation | ⬜ |
+| P1 | Spec §1–11: `/p` single-screen menu from YAML, warn counter + rules (notify/auto), `/warns`, validation + safe reload + build test of tracked YAML; release script pulls owner's GitHub edits | P0 | modules/moderation, server/scripts | ✅ |
+| P2 | §12.1 undo, §12.2 double-punish, §12.3 offence expiry, §12.10 `/pstats` | P1 | modules/moderation | 🔄 |
 | P3 | §12.4 evidence, 12.5 notes, 12.6 ack, 12.7 weights, 12.8 suggestion API, 12.9 report link, 12.11 Discord sink, 12.12 `/mypunishments` | P2 | modules/moderation, modules/staff (report API), common (DiscordSink) | ⬜ |
 | P4 | §13.4 approval, 13.13 mute ended, 13.7 probation, 13.5 watchlist | P3 | modules/moderation | ⬜ |
 | P5 | §13.8 bulk, 13.11 punish from logs, 13.10 appeals (in-game + webhook) | P4 | modules/moderation, modules/logs (API) | ⬜ |
@@ -39,10 +53,10 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M2.1 | Grid, creation (FAWE placeholder schematic), 3×3 chunks, per-player border, home | Phase 1 | modules/islands | ✅ |
 | M2.2 | Protection (role perms, Y 0–256, cross-border) | M2.1 | modules/islands | ✅ |
 | M2.3 | Members & roles, invites (solo→team warning), coop, limits | M2.2 | modules/islands | ✅ |
-| M2.4 | Visiting, lock, ban, warps, ratings | M2.3 | modules/islands | ⬜ |
+| M2.4 | Visiting, lock, ban, warps, ratings | M2.3 | modules/islands | 🔄 |
 | M2.5 | Island menu + settings, `/is chat` | M2.3 | modules/islands | ⬜ |
 | M2.6 | Stats tracking (daily/weekly buckets) | M2.3 | modules/islands | ⬜ |
-| M2.7 | Lifecycle (disband/reset) + `/isadmin` | M2.3 | modules/islands | 🔄 |
+| M2.7 | Lifecycle (disband/reset) + `/isadmin` | M2.3 | modules/islands | ✅ |
 
 ## Phase 3: Economy (docs/phases/PHASE-3-ECONOMY.md)
 | # | Item | Depends on | Lane | Status |
