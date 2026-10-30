@@ -121,6 +121,8 @@
 - Plan: tutorial and starter chest (docs/plans/TUTORIAL.md): island portal first, 11 steps (~2:50), locks per step, Java+Bedrock guides, custom starter chest; 32 owner questions.
 - ANS3: /ignore also blocks tpa, trades and island invites and can hide chat; creative only for builders/admins in spawn and the Depths; /give, /i and creative items are unsellable staff items; god/fly/heal only in staff or build mode; admins alerted to big staff transfers; /ec and /craft blocked in the warzone, boss arena and 10 s after combat; a banned leader's island is closed to visitors.
 - Plan: Phase 10 rewards (docs/phases/PHASE-10-REWARDS.md): 7 crates with pity, boosters, voting + vote party, 30-day calendar, quests, battle pass, collection log, Black Market; 43 owner questions.
+- Tutorial TU1-TU4 (new module tutorial): 11 guided steps from the island portal (boss bar compass, flames, holograms, Java + Bedrock), features unlock step by step (team, Depths, /ah, /pay, /withdraw, /trade, warzone, new profiles), custom starter chest with Field Guide and Forge kit, invite choice at the portal, $2,500 + 25 crystals + Firstflight once per account, /tutorial menu, staff tools in /inspect and /tutorial admin.
+- Plan: Phase 7 island production (docs/phases/PHASE-7-PRODUCTION.md): Island Fuel, generators, 11 crop tiers, hoe/rod tiers, collectors + auto-sell, offline simulation, basic fishing, outposts; unblocks E6.
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
