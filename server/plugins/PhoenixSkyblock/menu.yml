@@ -1,7 +1,7 @@
 # /menu hub layout. Texts (names/descriptions) are in messages/navigation.yml → hub.entries.<id>.
 # slot: inner slots of the 6-row menu (rows 2-5, columns 2-8: 10-16, 19-25, 28-34, 37-43). Slot 4 is your profile.
 # icon: item id (docs/UI_STYLE.md §5.5 icon map: the same icon everywhere for the same feature).
-# command: what a click runs (without /).
+# command: what a click runs (without /). Built-in screens: settings, help, warps (the warps menu below).
 # status: auto        = clickable when the command exists on the server, otherwise "Coming soon" (default)
 #         coming-soon = always locked (use when the command name is taken by something else for now)
 #         active      = always clickable
@@ -26,7 +26,7 @@ entries:
   events:       {slot: 24, icon: clock,            command: "events",      status: auto}
   pets:         {slot: 25, icon: bone,             command: "pets",        status: auto}
   # Row 4: world, collection and community
-  warps:        {slot: 28, icon: ender_pearl,      command: "is warp",     status: auto}   # island warp browser (M2.4)
+  warps:        {slot: 28, icon: ender_pearl,      command: "warps",       status: active} # warps menu below (UX3; player warps inside)
   collection:   {slot: 29, icon: bookshelf,        command: "collection",  status: auto}
   leaderboards: {slot: 30, icon: golden_helmet,    command: "leaderboards", status: auto}
   titles:       {slot: 31, icon: name_tag,         command: "tags",        status: auto}
@@ -57,3 +57,22 @@ staff-entries:
   islands:      {slot: 34, icon: filled_map,       command: "isadmin slots",    status: auto, permission: "skyblock.island.admin.slots"}
   npcs:         {slot: 25, icon: armor_stand,      command: "skyblock npcs",    status: auto, permission: "skyblock.admin.npcs"}
   tutorial:     {slot: 40, icon: spyglass,         command: "tutorial admin stats", status: auto, permission: "skyblock.tutorial.stats"}
+
+# /menu → Warps (UX3): server places. One click teleports with the /spawn warmup (reason: dungeon = the /dungeon warmup);
+# locked places explain why (e.g. Depths tiers). Texts: messages/navigation.yml → warps.entries.<id> (name, lore, optional
+# action). An entry whose place does not exist on this server is hidden (build not applied, world not loaded, command
+# missing). permission: optional, like the hub.
+# target: "command <cmd>"                              runs a command as the player (e.g. spawn, is warp)
+#         "point <category> <id>"                      a spot of the applied builds (build-points.yml), e.g. road entries
+#         "location <world> <x> <y> <z> [yaw] [pitch]" a fixed position (feet)
+# Slots: inner slots of the 6-row menu (10-16, 19-25, 28-34, 37-43). Reload: /skyblock reload menus
+# More places later, e.g. the AFK pool once its build region exists: {slot: 34, icon: clock, target: "location ..."}
+warps:
+  spawn:          {slot: 20, icon: compass,        target: "command spawn"}
+  market:         {slot: 21, icon: emerald,        target: "location spawn 0.5 99 33.5 0 0"}
+  crate-yard:     {slot: 22, icon: tripwire_hook,  target: "location spawn 46.5 100 -35.5 -90 0"}
+  forge:          {slot: 23, icon: smithing_table, target: "point entries forge_road"}
+  tavern:         {slot: 24, icon: honey_bottle,   target: "point entries tavern_road"}
+  hall-of-heroes: {slot: 30, icon: golden_helmet,  target: "point entries hall_road"}
+  depths:         {slot: 31, icon: iron_pickaxe,   target: "location depths 7.5 100 14.5 165 0", reason: dungeon}
+  island-warps:   {slot: 32, icon: grass_block,    target: "command is warp"}

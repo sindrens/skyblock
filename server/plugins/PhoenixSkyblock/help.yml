@@ -142,6 +142,12 @@ topics:
           - "<c:text>previous screen. <c:error>✘</c:error> <c:text>closes the menu."
           - "<c:info>?</c:info> <c:text>explains the screen, the book opens help."
           - "<c:text>Items can never be taken out of a menu."
+      - title: "<c:value>Warps"
+        lines:
+          - "<c:text>The <c:flame>Warps</c:flame> <c:text>button takes you to spawn,"
+          - "<c:text>the market, the crates, the Depths and"
+          - "<c:text>more in one click. Player warps are"
+          - "<c:text>in there too."
 
   help:
     icon: knowledge_book
@@ -646,19 +652,19 @@ topics:
     pages:
       - title: "<c:value>NPCs"
         lines:
-          - "<c:text>Right-click an NPC to open what it"
+          - "<c:text>Click an NPC to open what it"
           - "<c:text>does: the Banker opens the bank, the"
           - "<c:text>Blacksmith the Forge."
-          - "<c:text>Sneak + right-click: a short help."
+          - "<c:text>Sneak + click: a short help."
       - title: "<c:value>Help NPCs"
         lines:
-          - "<c:text>NPCs that say <c:muted>Right-click for help</c:muted>"
+          - "<c:text>NPCs that say <c:muted>Click for help</c:muted>"
           - "<c:text>explain a place or a feature."
           - "<c:text>On Java, click <c:action>[Open]</c:action> <c:text>in chat."
       - title: "<c:value>Boards"
         lines:
           - "<c:text>Some boards explain more when you"
-          - "<c:text>right-click them."
+          - "<c:text>click them."
           - "<c:text>Leaderboards in the Hall of Heroes"
           - "<c:text>update every few minutes."
 

@@ -69,10 +69,10 @@ steps:
   menu:
     name: "The menu"
     objective: "Open /menu, click Island"
-    hint: "<c:text>Right-click the <c:value>Nether Star</c:value> in your hotbar"
+    hint: "<c:text>Click the <c:value>Nether Star</c:value> in your hotbar"
     title:
       title: "<c:brand>The menu"
-      subtitle: "<c:text>Right-click the Nether Star"
+      subtitle: "<c:text>Click the Nether Star"
     done: "<c:success><sym:check></c:success> <c:text>The Depths unlocked. Open <c:value>/menu</c:value> <sym:arrow> The Depths"
     lore: ["<c:text>Everything is in <c:value>/menu</c:value>.", "<c:text>Open it and click <c:value>Island</c:value>."]
   depths:
@@ -108,8 +108,8 @@ steps:
     name: "Help"
     objective: "Talk to the Guide"
     target: "Depths Guide"
-    hint: "<c:text>Right-click any NPC for help"
-    lore: ["<c:text>Right-click the Depths Guide.", "<c:text>Every NPC helps you."]
+    hint: "<c:text>Click any NPC for help"
+    lore: ["<c:text>Click the Depths Guide.", "<c:text>Every NPC helps you."]
   bank:
     name: "Bank"
     objective: "Deposit money in /bank"
@@ -139,7 +139,7 @@ hologram:
   portal: "<c:flame><bold>Your Island</bold></c:flame><newline><c:text><sym:arrow> Walk in «"
   chest: "<c:flame><bold>Starter Chest</bold></c:flame><newline><c:text><sym:arrow> Open me «"
   forge: "<c:flame><bold>Forge</bold></c:flame><newline><c:text>Better tools"
-  help: "<c:flame><bold>Depths Guide</bold></c:flame><newline><c:text>Right-click me"
+  help: "<c:flame><bold>Depths Guide</bold></c:flame><newline><c:text>Click me"
 
 idle:
   title:
@@ -349,7 +349,7 @@ book:
     - "<bold>The Depths</bold><br><br>/menu, then The Depths.<br>Blocks grow back for you only.<br>Drops go to your satchel."
     - "<bold>Money</bold><br><br>Sell from the satchel or /sell.<br>/bank pays interest every 8 hours.<br>/ah is the auction house."
     - "<bold>Tools</bold><br><br>The Forge turns loot into higher tool tiers.<br>Tools level up while you use them."
-    - "<bold>Help</bold><br><br>Right-click any NPC.<br>/help explains everything.<br>/tutorial shows the tutorial again."
+    - "<bold>Help</bold><br><br>Click any NPC.<br>/help explains everything.<br>/tutorial shows the tutorial again."
 
 # ---------------------------------------------------------------- TU3 cameras (Sneak = skip). One title per shot text.
 cameras:
@@ -419,7 +419,7 @@ pip:
     mine: "Break the ore. It grows back for you only."
     sell: "Open your satchel and press Sell all."
     forge: "The Forge turns loot into better tools."
-    help: "Right-click the Guide. Every NPC helps."
+    help: "Click the Guide. Every NPC helps."
     bank: "Keep your money safe in the bank."
     finish: "You did it! Fly high, friend."
     idle: "Still there? Your next step is waiting."
@@ -432,7 +432,7 @@ npc-lines:
   forge:
     forge: "Tier 2 is your first goal. Bring loot and money."
   help:
-    dungeon: "Right-click any NPC when you need help. That is all!"
+    dungeon: "Click any NPC when you need help. That is all!"
   sell:
     sell: "Open your satchel and press Sell all, or sell to me."
   bank:
@@ -485,7 +485,7 @@ optional:
     name: "The Enchanter"
     lore: ["<c:text>Visit the Enchanter in the", "<c:text>Forge Quarter at spawn."]
     tip: "<c:text>The Enchanter is right here. Click to see a book."
-    hint: "<c:text>Right-click the <c:value>Enchanter</c:value> in the Forge Quarter."
+    hint: "<c:text>Click the <c:value>Enchanter</c:value> in the Forge Quarter."
   wardrobe:
     name: "Wardrobe"
     lore: ["<c:text>Open /wardrobe and see", "<c:text>the Delver's Garb set."]
