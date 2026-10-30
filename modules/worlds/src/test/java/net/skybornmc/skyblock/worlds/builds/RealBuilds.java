@@ -17,9 +17,7 @@ final class RealBuilds {
     static final BuildValidator.Context CONTEXT = new BuildValidator.Context(BORDERS::containsKey, 5023,
             w -> BORDERS.getOrDefault(w, 0.0) > 0, w -> BORDERS.getOrDefault(w, 0.0));
 
-    static final Set<String> IDS = Set.of("depths_combat_t01_graveyard_v1", "depths_forest_t01_oak_v1", "depths_gate_v1",
-            "depths_mine_t01_coal_v1", "depths_mine_t02_copper_v1", "islands_starter_meadow_v1", "spawn_base_v1",
-            "spawn_forge_quarter_v1", "spawn_market_square_v1");
+    static final Set<String> IDS = Set.of("depths_combat_t01_graveyard_v1", "depths_combat_t02_crypt_v1", "depths_forest_t01_oak_v1", "depths_forest_t02_birch_v1", "depths_gate_v1", "depths_mine_t01_coal_v1", "depths_mine_t02_copper_v1", "depths_mine_t03_iron_v1", "islands_starter_meadow_v1", "spawn_base_v1", "spawn_crate_yard_v1", "spawn_forge_quarter_v1", "spawn_gatehouse_v1", "spawn_hall_of_heroes_v1", "spawn_info_office_v1", "spawn_keep_v1", "spawn_market_square_v1", "spawn_statue_v1", "spawn_tavern_v1");
 
     private RealBuilds() {
     }

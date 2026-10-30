@@ -29,7 +29,7 @@ class BuildMetaParserTest {
         assertEquals(new BuildBox(-111, 42, -111, 112, 124, 110), m.bounds());
         assertEquals(0.5, m.playerSpawn().feetX());
         assertEquals(180f, m.playerSpawn().yaw());
-        assertEquals(726904, m.statsNonAir());
+        assertEquals(726892, m.statsNonAir());
         assertEquals(1, m.points("npcs").size());
         BuildPoint guide = m.points("npcs").getFirst();
         assertEquals("guide", guide.id());

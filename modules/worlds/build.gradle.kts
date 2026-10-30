@@ -15,3 +15,6 @@ dependencies {
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.16.1") { isTransitive = false }
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.16.1") { isTransitive = false }
 }
+
+// The build tests read the tracked builds in server/builds: rerun them when a build changes.
+tasks.test { inputs.dir(rootProject.file("server/builds")).withPropertyName("trackedBuilds") }

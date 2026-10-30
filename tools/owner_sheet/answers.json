@@ -1,0 +1,98 @@
+{
+"1": {
+"a": "s",
+"note": ""
+},
+"2": {
+"a": "s",
+"note": ""
+},
+"3": {
+"a": "s",
+"note": ""
+},
+"5": {
+"a": "s",
+"note": ""
+},
+"6": {
+"a": "o",
+"note": "Only sells sellable items (tools/armor are not sellable anyway)"
+},
+"7": {
+"a": "o",
+"note": "Never drop. Overflow goes to a new /box (item mailbox) for full inventories, also used for crate rewards, gifts etc."
+},
+"8": {
+"a": "n",
+"note": "No confirmation on quick-buys"
+},
+"9": {
+"a": "s",
+"note": ""
+},
+"31": {
+"a": "o",
+"note": "English only, always. Never Norwegian."
+},
+"32": {
+"a": "s",
+"note": ""
+},
+"33": {
+"a": "o",
+"note": "Yes chest menus. A forced resource pack will skin ALL GUIs later, so GUIs need little vanilla design; pick items that can be retextured. Pack will be forced (required)."
+},
+"34": {
+"a": "o",
+"note": "Everything compact for all players; Bedrock-specific changes later if needed."
+},
+"41": {
+"a": "s",
+"note": ""
+},
+"43": {
+"a": "o",
+"note": "Yes, and much more: a guided join tutorial with an animation/camera showing where to go, an arrow/guide pointing the way, professionally made, walking the player through every step."
+},
+"44": {
+"a": "o",
+"note": "Yes. Also right-click NPCs and holograms that explain things: help everywhere, but lores must stay clean and simple."
+},
+"50": {
+"a": "s",
+"note": ""
+},
+"51": {
+"a": "s",
+"note": ""
+},
+"75": {
+"a": "o",
+"note": "Size not critical; custom textures on crates, GUIs, sets/wardrobe, tools; optimize later."
+},
+"76": {
+"a": "o",
+"note": "Style not decided; custom textures on crates, GUIs, sets/wardrobe, tools etc."
+},
+"77": {
+"a": "o",
+"note": "Owner makes the art himself. Needs a brief description of absolutely every texture needed (agent can write it). Then build + optimize the pack, FORCED, asked before joining, professional."
+},
+"78": {
+"a": "s",
+"note": ""
+},
+"94": {
+"a": "s",
+"note": ""
+},
+"95": {
+"a": "s",
+"note": ""
+},
+"96": {
+"a": "s",
+"note": ""
+}
+}
