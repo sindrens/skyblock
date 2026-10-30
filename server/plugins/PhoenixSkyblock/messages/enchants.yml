@@ -115,6 +115,20 @@ book:
   action-text: "/enchanter"
 # Stacked mobs (E3, ENCHANTS §7): action bar when an area enchant kills mobs of other stacks (<enchant> name + level,
 # <count> mobs), chat when a book drops from stacked mobs (<book> colored name).
+drop:
+  book: "<prefix><c:success><sym:check></c:success> <c:text>You found <book><c:text>!"
+  first: "<prefix><c:success><sym:check></c:success> <c:text>First find! You got <book><c:text>."
+  pity: "<prefix><c:success><sym:check></c:success> <c:text>Your luck turned! You got <book><c:text>."
+  mini-boss: "<prefix><c:success><sym:check></c:success> <c:text>The mini-boss dropped <book><c:text>!"
+
+proc:
+  area: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value>+<count></c:value> <c:text>blocks"
+  geode: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value>+<sym:crystals> <count></c:value>"
+  gilded: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value>x2</c:value> <c:text>drop"
+  haste: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value>+<percent>%</c:value> <c:text>speed"
+  momentum: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value><stacks>/<max></c:value> <c:text>stacks"
+  nova: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value><count></c:value> <c:text>mobs hit"
+
 stack:
   sweep: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value>+<count></c:value> <c:text>mobs"
   wrath: "<c:enchant><enchant></c:enchant> <c:muted>·</c:muted> <c:value>+<count></c:value> <c:text>mobs"
@@ -161,6 +175,11 @@ menu:
     crystals:
       name: "<cur:crystals><sym:crystals> <crystals></cur:crystals> <c:text>crystals"
       lore: ["<c:muted>Earn crystals on your island", "<c:muted>and in The Depths."]
+    next-book:
+      name: "<c:value>Next guaranteed book"
+      lore: ["<c:text>Mine <c:value><mining></c:value> <c:muted>blocks", "<c:text>Forest <c:value><foraging></c:value> <c:muted>logs", "<c:text>Combat <c:value><combat></c:value> <c:muted>kills", "", "<c:muted>Books also drop by luck.", "<c:muted>Use the right custom tool."]
+      closed: "off"
+      none: "-"
   tools:
     info: ["<c:text>Pick one of the custom tools", "<c:text>in your inventory."]
     empty:
