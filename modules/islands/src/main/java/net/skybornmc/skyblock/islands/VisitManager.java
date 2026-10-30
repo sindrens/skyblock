@@ -181,7 +181,9 @@ final class VisitManager implements Listener {
             statsTask.cancel();
         }
         long period = config().browserRefreshSeconds * 20L;
-        statsTask = core.scheduler().repeat("island-showcase-stats", 20L, period, this::refreshStats);
+        // QUICK1 (PERFORMANCE "island-showcase-stats"): the reads start off the main thread; only the finished maps are
+        // swapped in on the main thread, so this timer never costs main-thread time.
+        statsTask = core.scheduler().asyncRepeat(20L, period, this::refreshStats);
     }
 
     void stop() {
@@ -204,6 +206,7 @@ final class VisitManager implements Listener {
         presence.clear();
     }
 
+    /** Any thread: starts both reads; results land on the main thread. */
     private void refreshStats() {
         int today = today();
         store.stats(today - config().browserVisitsDays + 1, config().seasonId).whenCompleteAsync((loaded, error) -> {

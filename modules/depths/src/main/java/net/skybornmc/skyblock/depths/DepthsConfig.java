@@ -208,6 +208,9 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "combat.spawn-attempts", desc = "Random spots tried per mob before giving up for this cycle.", min = 1, max = 64)
     public int combatSpawnAttempts = 8;
 
+    @Setting(path = "combat.spawn-column-cache-seconds", desc = "Seconds a found standing height per arena column is remembered (the arena is protected, so it rarely changes). 0 = scan every time.", min = 0, max = 3600)
+    public int combatSpawnColumnCacheSeconds = 300;
+
     @Setting(path = "combat.min-player-distance", desc = "Mobs never spawn closer than this many blocks to a player.", min = 0, max = 64)
     public int combatMinPlayerDistance = 6;
 

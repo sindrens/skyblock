@@ -54,6 +54,8 @@ import java.util.logging.Level;
 public final class ModerationModule implements SkyblockModule, Listener {
 
     static final String ID = "moderation";
+    /** Most seconds a login waits for the punishment lookups (then it is let in, fail open). */
+    static final int PRE_LOGIN_TIMEOUT_SECONDS = 10;
 
     static final String PERM_UNBAN = "skyblock.staff.unban";
     static final String PERM_NOTIFY = "skyblock.staff.notify";
@@ -1812,20 +1814,28 @@ public final class ModerationModule implements SkyblockModule, Listener {
         UUID id = event.getUniqueId();
         String ip = event.getAddress() == null ? null : event.getAddress().getHostAddress();
         try {
-            Optional<Punishment> ban = service.store().activeBlocking(Punishment.Type.BAN, id, ip);
+            // QUICK1 (PERFORMANCE P-03): ban, mute and alt lookups run at the same time (three short reads in parallel
+            // instead of one after another), which shortens every login during a join storm.
+            PunishmentStore store = service.store();
+            CompletableFuture<Optional<Punishment>> banRead = store.activeBan(id, ip);
+            CompletableFuture<Optional<Punishment>> muteRead = store.activeMute(id, ip);
+            CompletableFuture<List<PunishmentStore.Alt>> altRead = config.altAlert || config.altAutoBan
+                    ? store.alts(id, ip) : CompletableFuture.completedFuture(List.of());
+            Optional<Punishment> ban = banRead.get(PRE_LOGIN_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
             if (ban.isPresent()) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, service.banScreen(ban.get()));
                 return;
             }
-            service.cacheMute(id, service.store().activeBlocking(Punishment.Type.MUTE, id, ip).orElse(null));
-            if (config.altAlert || config.altAutoBan) {
-                List<PunishmentStore.Alt> flagged = service.store().altsBlocking(id, ip).stream()
-                        .filter(a -> a.ban() != null || a.mute() != null).toList();
-                if (!flagged.isEmpty()) {
-                    pendingAltAlerts.put(id, flagged);
-                }
+            service.cacheMute(id, muteRead.get(PRE_LOGIN_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS).orElse(null));
+            List<PunishmentStore.Alt> flagged = altRead.get(PRE_LOGIN_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS).stream()
+                    .filter(a -> a.ban() != null || a.mute() != null).toList();
+            if (!flagged.isEmpty()) {
+                pendingAltAlerts.put(id, flagged);
             }
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             // Fail open: a database hiccup must not lock everyone out. Logged for staff.
             plugin.getLogger().log(Level.WARNING, "Punishment check failed for " + event.getName() + " (allowed in)", e);
         }

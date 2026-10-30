@@ -206,7 +206,9 @@ class P3LogicTest {
     void ackRemindsEveryRepeatUpToTheLimitAndStopsWhenAcknowledged() {
         AckTracker acks = new AckTracker();
         Duration repeat = Duration.ofSeconds(30);
+        assertTrue(acks.idle(), "QUICK1: nothing waiting, the timer does no work");
         acks.warned(STEVE, T0, repeat);
+        assertFalse(acks.idle());
         assertTrue(acks.pending(STEVE));
         assertEquals(List.of(), acks.due(T0 + 29_000, repeat, 3), "not before 30 s");
         assertEquals(List.of(STEVE), acks.due(T0 + 30_000, repeat, 3));

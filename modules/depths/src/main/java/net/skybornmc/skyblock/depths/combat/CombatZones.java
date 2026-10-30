@@ -120,6 +120,10 @@ public final class CombatZones implements Listener {
     private volatile MobCatalog catalog = MobCatalog.EMPTY;
     private Predicate<UUID> otherOwned = id -> false;
     private Scheduler.Task task;
+    /** QUICK1 (P-10): standing heights per arena column, so spawn spots don't rescan columns every cycle. */
+    private final SpawnColumns columns = new SpawnColumns();
+    /** QUICK1: parsed mob names (message parsing once per mob kind, not per spawn); cleared on start/reload. */
+    private final Map<String, Component> names = new HashMap<>();
 
     public CombatZones(Core core, DepthsConfig config, ModuleMessages msg, ZoneService zones, SatchelManager satchel,
                        DepthsDrops drops, MobFactory factory) {
@@ -145,6 +149,8 @@ public final class CombatZones implements Listener {
         if (task != null) {
             task.cancel();
         }
+        columns.clear();
+        names.clear();
         long ticks = Math.max(10, config.combatCycleTicks);
         task = core.scheduler().repeat("depths-combat", ticks, ticks, this::cycle);
         World world = Bukkit.getWorld(zones.world());
@@ -330,21 +336,26 @@ public final class CombatZones implements Listener {
         if (!msg.has(key)) {
             return null;
         }
-        Component name = msg.component(null, key);
-        return boss ? msg.component(null, "combat.mini-boss.name", Msg.c("name", name)) : name;
+        return names.computeIfAbsent((boss ? "boss:" : "mob:") + def.id(), k -> {
+            Component name = msg.component(null, key);
+            return boss ? msg.component(null, "combat.mini-boss.name", Msg.c("name", name)) : name;
+        });
     }
 
     /** A free spot in the zone's arena (or the whole zone): solid floor, two free blocks, loaded chunk, away from players. */
     Location spot(World world, Zone zone, List<Player> players, RandomGenerator rng) {
         Box area = zone.arena() != null ? zone.arena() : zone.region();
         double minDistSq = (double) config.combatMinPlayerDistance * config.combatMinPlayerDistance;
+        int zoneKey = java.util.Objects.hash(zone.id(), area);
+        long now = System.currentTimeMillis();
+        long life = config.combatSpawnColumnCacheSeconds * 1000L;
         for (int attempt = 0; attempt < config.combatSpawnAttempts; attempt++) {
             int x = area.minX() + 1 + rng.nextInt(Math.max(1, area.sizeX() - 2));
             int z = area.minZ() + 1 + rng.nextInt(Math.max(1, area.sizeZ() - 2));
             if (!world.isChunkLoaded(x >> 4, z >> 4)) {
                 continue;
             }
-            int y = standY(world, x, z, area.maxY(), area.minY());
+            int y = columns.height(zoneKey, x, z, now, life, () -> standY(world, x, z, area.maxY(), area.minY()));
             if (y == Integer.MIN_VALUE) {
                 continue;
             }

@@ -342,6 +342,9 @@ final class PunishExtras {
 
     /** Every second: reminders that are due (main thread). */
     void tick() {
+        if (acks.idle()) {
+            return; // QUICK1 (PERFORMANCE "moderation:ack"): nothing waiting, no work on the main thread
+        }
         PunishConfig.Ack cfg = extras.get().ack();
         for (UUID id : acks.due(System.currentTimeMillis(), cfg.repeat(), cfg.maxRepeats())) {
             Player player = Bukkit.getPlayer(id);

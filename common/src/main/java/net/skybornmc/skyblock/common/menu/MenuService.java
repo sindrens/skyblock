@@ -21,7 +21,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -526,12 +525,8 @@ public final class MenuService implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onMove(InventoryMoveItemEvent event) {
-        if (event.getSource().getHolder(false) instanceof Menu || event.getDestination().getHolder(false) instanceof Menu) {
-            event.setCancelled(true);
-        }
-    }
+    // QUICK1 (PERFORMANCE P-13): no InventoryMoveItemEvent listener. Menus are virtual inventories that no hopper can
+    // reach, and with no listener registered Paper skips building that event for every hopper transfer.
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onClose(InventoryCloseEvent event) {

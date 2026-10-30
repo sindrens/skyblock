@@ -38,6 +38,11 @@ final class AckTracker {
         owing.add(player);
     }
 
+    /** True when no reminder is waiting (the 1 s timer then does nothing). */
+    boolean idle() {
+        return reminders.isEmpty();
+    }
+
     /**
      * Players whose next reminder is due at {@code now}; each counts as sent. A player is dropped after
      * {@code maxRepeats} reminders (they still owe it: the join reminder and /mypunishments remain).

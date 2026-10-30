@@ -139,4 +139,14 @@ class ChatLogicTest {
         assertTrue(ChatModule.gateApplies("duplicate", true, false, false));
         assertTrue(ChatModule.gateApplies("new-player", true, false, false));
     }
+
+    @Test
+    void mentionPatternsAreCompiledOnceAndForgottenOnQuit() {
+        assertTrue(ChatModule.mentionPattern("Alex") == ChatModule.mentionPattern("Alex"), "QUICK1: cached per name");
+        assertTrue(ChatModule.mentions("hi .Alex_BE", ".Alex_BE"), "Bedrock names with the dot prefix");
+        assertFalse(ChatModule.mentions("Alexander", "Alex"));
+        java.util.regex.Pattern before = ChatModule.mentionPattern("Alex");
+        ChatModule.forgetMentionPattern("Alex");
+        assertFalse(before == ChatModule.mentionPattern("Alex"), "a fresh pattern after quit");
+    }
 }
