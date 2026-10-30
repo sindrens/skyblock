@@ -6,6 +6,7 @@ import net.skybornmc.skyblock.common.item.ItemKeys;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
@@ -44,8 +45,17 @@ final class ItemStacker implements Listener {
     /** True while this class spawns an item itself (its own spawn event must not merge it again). */
     private boolean internal;
 
+    /** Profile that dropped an item (written by the profiles module); items of different droppers never merge (P4). */
+    private final NamespacedKey dropKey;
+
     ItemStacker(StackingModule module) {
         this.module = module;
+        this.dropKey = new NamespacedKey(module.core().plugin(), "profile_drop");
+    }
+
+    /** The profile tag of an item entity, or null for items nobody dropped (mob drops, blocks). */
+    private String dropper(Item item) {
+        return item.getPersistentDataContainer().get(dropKey, PersistentDataType.STRING);
     }
 
     // ------------------------------------------------------------------ data
@@ -108,11 +118,13 @@ final class ItemStacker implements Listener {
 
     /** The nearest item within the merge radius that can take {@code stack}, or null. */
     private Item neighbour(Location at, ItemStack stack, Item self) {
+        String dropper = self == null ? null : dropper(self);
         double radius = module.config().itemMergeRadius;
         Item best = null;
         double bestDistance = Double.MAX_VALUE;
         for (Item other : at.getWorld().getNearbyEntitiesByType(Item.class, at, radius)) {
-            if (other == self || !mergeable(other) || !other.getItemStack().isSimilar(stack)) {
+            if (other == self || !mergeable(other) || !other.getItemStack().isSimilar(stack)
+                    || !java.util.Objects.equals(dropper, dropper(other))) {
                 continue;
             }
             double d = other.getLocation().distanceSquared(at);
@@ -201,7 +213,8 @@ final class ItemStacker implements Listener {
             return;
         }
         event.setCancelled(true);
-        if (!mergeable(source) || !mergeable(target) || !source.getItemStack().isSimilar(target.getItemStack())) {
+        if (!mergeable(source) || !mergeable(target) || !source.getItemStack().isSimilar(target.getItemStack())
+                || !java.util.Objects.equals(dropper(source), dropper(target))) {
             return;
         }
         long start = module.perf().start();

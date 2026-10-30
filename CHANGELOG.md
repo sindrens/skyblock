@@ -69,6 +69,7 @@
 - **Tools (M4.2):** starter kit every 24 h (in `/forge`), the Forge (12 pickaxe, 11 axe, 10 sword tiers; upgrades keep progress), living tools Lv 1–50 with perk slots at 5/15/30/45 + prestige, blueprints (Auto-smelt, Swift, Scholar, Lifesteal), skins, tool menu (`/tool`), staff `/tool give`, `/blueprint give`, `/skin give`.
 - **Plan:** custom enchant plan `docs/plans/ENCHANTS.md` (48 enchants, books, `/enchanter`, Slaughter for stacked mobs).
 - **M2.7 island lifecycle:** `/is disband` (confirm + type the word), slots cleared (FAWE or throttled fallback) and reused, `/isadmin` (info, tp, delete, setsize, addmember, kick, setowner, reset, bypass, slots overview, teleport-slot).
+- **Island profiles (PROF):** up to 3 profiles per player (`/profiles`: switch, create, rename, icon, delete; slot 2 = 500 gems or Knight+, slot 3 = 1,500 gems or Warlord+). Money, crystals, shards, inventory, ender chest, XP, skills, Depths unlocks, island, auction, settings and starter-kit timer are per profile; gems, rank, titles and cosmetics are shared. Existing data is profile 1. Nothing can move between your own profiles (pay, notes, auction, islands, dropped items, item stacks, Forge refunds).
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
