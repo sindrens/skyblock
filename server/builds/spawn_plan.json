@@ -1,0 +1,1685 @@
+{
+ "version": 1,
+ "generated_by": "builds/spawn_base.py",
+ "world": "spawn",
+ "origin": {
+  "x": 0,
+  "y": 100,
+  "z": 0
+ },
+ "conventions": {
+  "coords": "world coordinates; x east, z south (north = -z)",
+  "surface_y": "y of the top block you stand on",
+  "walk_y": "feet y on that surface",
+  "yaw": "0 south, 90 west, 180 north, -90 east",
+  "bbox": "inclusive x1..x2, z1..z2; columns inside the 2-thick edge wall band are wall, not pad"
+ },
+ "island": {
+  "footprint": "chamfered square |x|,|z| <= 95, |x|+|z| <= 150 (+ gatehouse bastion to z -102, crate semicircle to x 103, 4 balconies)",
+  "chunks": "x -96..103 / z -102..95 = 13 x 13 chunks",
+  "underside_bottom_y": 42,
+  "clouds_y": [
+   60,
+   79
+  ],
+  "wall": "curtain 4 high + merlons; parapet only at the crate semicircle and the 4 balconies"
+ },
+ "player_spawn": {
+  "x": 0.5,
+  "y": 100,
+  "z": 0.5,
+  "yaw": 180,
+  "pitch": 0,
+  "dais": "r 5.7 at (0,0), flush (top 100.0), half-step channel r 5.7-6.7"
+ },
+ "courtyard_centre": {
+  "x": 0,
+  "z": -13,
+  "plaza_radius": 23.5,
+  "arcade_outer_radius": 28.5
+ },
+ "first_view": {
+  "faces": "north (yaw 180)",
+  "statue_pad_distance": 16,
+  "guide": {
+   "x": 2,
+   "y": 100,
+   "z": -5,
+   "distance": 5.4,
+   "bearing_right_deg": 22
+  },
+  "info_board": {
+   "x1": 8,
+   "x2": 12,
+   "y1": 102,
+   "y2": 105,
+   "z": -12,
+   "bearing_right_deg": "30-44"
+  },
+  "forge_road": "walking north, the first road branching right; mouth due east of the dais"
+ },
+ "plots": [
+  {
+   "id": "courtyard",
+   "bbox": {
+    "x1": -29,
+    "z1": -42,
+    "x2": 29,
+    "z2": 16
+   },
+   "surface_y": 99,
+   "walk_y": 100,
+   "max_build_height_y": 112,
+   "entries": [
+    {
+     "x": 0,
+     "y": 100,
+     "z": -36,
+     "facing": "south",
+     "road": "gatehouse",
+     "note": "road mouth (arcade gap); you face into the courtyard"
+    },
+    {
+     "x": 21,
+     "y": 100,
+     "z": -24,
+     "facing": "west",
+     "road": "crate_yard",
+     "note": "road mouth (arcade gap); you face into the courtyard"
+    },
+    {
+     "x": 21,
+     "y": 100,
+     "z": -2,
+     "facing": "west",
+     "road": "forge_quarter",
+     "note": "road mouth (arcade gap); you face into the courtyard"
+    },
+    {
+     "x": 0,
+     "y": 100,
+     "z": 10,
+     "facing": "north",
+     "road": "market_square",
+     "note": "road mouth (arcade gap); you face into the courtyard"
+    },
+    {
+     "x": -21,
+     "y": 100,
+     "z": -2,
+     "facing": "east",
+     "road": "tavern",
+     "note": "road mouth (arcade gap); you face into the courtyard"
+    },
+    {
+     "x": -21,
+     "y": 100,
+     "z": -24,
+     "facing": "east",
+     "road": "hall_of_heroes",
+     "note": "road mouth (arcade gap); you face into the courtyard"
+    }
+   ],
+   "summary": "Castle Courtyard (BUILT in this base): plaza r 23.5 around (0,-13), open sky; spawn dais (0,0); Guide pad, brazier, 5x4 info board; low cloister arcade with 6 road mouths under placeholder wing arches; 8 benches. Keep it calm: no stalls.",
+   "npcs": [
+    {
+     "id": "guide",
+     "x": 2,
+     "y": 100,
+     "z": -5,
+     "yaw": 22,
+     "note": "PLACED in the base: dais rim, 5.4 from spawn at 22 deg right, faces the spawn",
+     "placed": true
+    }
+   ],
+   "npc_ids": [
+    "guide"
+   ],
+   "key_spots": [],
+   "te_budget": 17,
+   "built_in_base": true
+  },
+  {
+   "id": "statue",
+   "bbox": {
+    "x1": -6,
+    "z1": -28,
+    "x2": 6,
+    "z2": -16
+   },
+   "surface_y": 99,
+   "walk_y": 100,
+   "max_build_height_y": 145,
+   "entries": [
+    {
+     "x": 0,
+     "y": 100,
+     "z": -16,
+     "facing": "north",
+     "note": "processional axis from the spawn dais arrives at the pad's south edge"
+    }
+   ],
+   "summary": "Phoenix Statue plot: flat paved 13x13 pad (polished blackstone frame, tuff cross = axis, centre x 0 z -22). Brazier base 11-15 across + ~40-block phoenix (wings up and back) to <= Y 145. Its base edge is 16 blocks north of the spawn. Deliver 4-8 particle points.",
+   "npcs": [],
+   "npc_ids": [],
+   "key_spots": [],
+   "te_budget": 12,
+   "built_in_base": false
+  },
+  {
+   "id": "keep",
+   "bbox": {
+    "x1": -30,
+    "z1": -68,
+    "x2": 30,
+    "z2": -33
+   },
+   "surface_y": 103,
+   "walk_y": 104,
+   "max_build_height_y": 175,
+   "entries": [
+    {
+     "x": 0,
+     "y": 100,
+     "z": -43,
+     "facing": "north",
+     "yaw": 180,
+     "road": "gatehouse (N road passage through the podium cut)",
+     "road_bearing_deg": 0.0,
+     "note": "podium surface 103 is reached by the keep builder's own stairs from the passage/ring"
+    }
+   ],
+   "summary": "Castle keep (landmark, mostly exterior) to ~Y 175 on a raised podium (surface 103). The N road (x -3..3) crosses the plot in a 7-wide cut at Y 99-101: keep the region 'keep_passage' (x -4..4, feet Y 100..106) clear and lit; vault over it or bridge the two halves. Main tower on the x=0 axis so it is framed between the statue's raised wings from the spawn.",
+   "npcs": [],
+   "npc_ids": [],
+   "key_spots": [
+    {
+     "id": "keep_main_tower_axis",
+     "x": 0,
+     "y": 104,
+     "z": -52,
+     "note": "main tower on the spawn axis behind the statue"
+    }
+   ],
+   "te_budget": 30,
+   "built_in_base": false
+  },
+  {
+   "id": "gatehouse",
+   "bbox": {
+    "x1": -36,
+    "z1": -102,
+    "x2": 36,
+    "z2": -74
+   },
+   "surface_y": 101,
+   "walk_y": 102,
+   "max_build_height_y": 140,
+   "entries": [
+    {
+     "x": 0,
+     "y": 102,
+     "z": -74,
+     "facing": "north",
+     "yaw": 180,
+     "road": "gatehouse",
+     "road_bearing_deg": 0.0
+    }
+   ],
+   "summary": "Gatehouse (travel) in the north wall: massive wing arch + 2 round towers with red cone roofs, portcullis; inside a wide hall with 5 portal arches (5x6 frames, 3x4x1 air triggers, 3x3 landings), stepped up a slab and set back 2 from the walking line; 9x5 event board facing the N road. N road arrives at (0,-74).",
+   "npcs": [],
+   "npc_ids": [],
+   "key_spots": [
+    {
+     "id": "portal_to_depths",
+     "x": -22,
+     "y": 103,
+     "z": -90,
+     "note": "suggested landing (3x3) in front of the portal frame"
+    },
+    {
+     "id": "portal_to_warzone",
+     "x": -11,
+     "y": 103,
+     "z": -90,
+     "note": "suggested landing (3x3) in front of the portal frame"
+    },
+    {
+     "id": "portal_to_island",
+     "x": 0,
+     "y": 103,
+     "z": -90,
+     "note": "suggested landing (3x3) in front of the portal frame"
+    },
+    {
+     "id": "portal_to_outposts",
+     "x": 11,
+     "y": 103,
+     "z": -90,
+     "note": "suggested landing (3x3) in front of the portal frame"
+    },
+    {
+     "id": "portal_to_events",
+     "x": 22,
+     "y": 103,
+     "z": -90,
+     "note": "suggested landing (3x3) in front of the portal frame"
+    },
+    {
+     "id": "event_board",
+     "x": 0,
+     "y": 105,
+     "z": -80,
+     "note": "9x5 dark panel facing the N road"
+    }
+   ],
+   "te_budget": 30,
+   "built_in_base": false
+  },
+  {
+   "id": "hall_of_heroes",
+   "bbox": {
+    "x1": -95,
+    "z1": -66,
+    "x2": -46,
+    "z2": -12
+   },
+   "surface_y": 102,
+   "walk_y": 103,
+   "max_build_height_y": 130,
+   "entries": [
+    {
+     "x": -46,
+     "y": 103,
+     "z": -36,
+     "facing": "west",
+     "yaw": 90,
+     "road": "hall_of_heroes",
+     "road_bearing_deg": 296.6
+    }
+   ],
+   "summary": "Hall of Heroes (prestige) on the highest district terrace (102): long calcite/smooth-sandstone colonnade, 10 leaderboard panels 5x7 (dark backing, gold line, small crest), Hall of Fame apse with 8 plinths at the far (west) end, season banner wall. Road arrives from the east at (-46,-36).",
+   "npcs": [],
+   "npc_ids": [],
+   "key_spots": [
+    {
+     "id": "leaderboards_first",
+     "x": -54,
+     "y": 106,
+     "z": -47,
+     "note": "10 panels 5x7 along the inner walls (5 per side)"
+    },
+    {
+     "id": "leaderboards_last",
+     "x": -82,
+     "y": 106,
+     "z": -31
+    },
+    {
+     "id": "hall_of_fame_apse",
+     "x": -88,
+     "y": 104,
+     "z": -39,
+     "note": "8 plinths 3x3, 6 apart, +4 per year"
+    }
+   ],
+   "te_budget": 45,
+   "built_in_base": false
+  },
+  {
+   "id": "crate_yard",
+   "bbox": {
+    "x1": 46,
+    "z1": -66,
+    "x2": 103,
+    "z2": -12
+   },
+   "surface_y": 99,
+   "walk_y": 100,
+   "max_build_height_y": 118,
+   "entries": [
+    {
+     "x": 46,
+     "y": 100,
+     "z": -36,
+     "facing": "east",
+     "yaw": -90,
+     "road": "crate_yard",
+     "road_bearing_deg": 63.4
+    }
+   ],
+   "summary": "Crate Yard: semicircular stone terrace on the EAST island edge (bulge to x 103, parapet already built along the semicircle, open to the clouds); 6 pedestals in a gentle arc 6-8 apart, rarity order left->right (north->south) as you arrive facing east; key board 7x5 behind the arc; terrace >= 30x20. Road arrives from the west at (46,-36).",
+   "npcs": [],
+   "npc_ids": [],
+   "key_spots": [
+    {
+     "id": "common",
+     "x": 81,
+     "y": 101,
+     "z": -52
+    },
+    {
+     "id": "uncommon",
+     "x": 85,
+     "y": 101,
+     "z": -48
+    },
+    {
+     "id": "rare",
+     "x": 87,
+     "y": 101,
+     "z": -42
+    },
+    {
+     "id": "epic",
+     "x": 87,
+     "y": 101,
+     "z": -36
+    },
+    {
+     "id": "legendary",
+     "x": 85,
+     "y": 101,
+     "z": -30
+    },
+    {
+     "id": "monthly",
+     "x": 81,
+     "y": 101,
+     "z": -26
+    },
+    {
+     "id": "key_board",
+     "x": 93,
+     "y": 103,
+     "z": -39,
+     "note": "7x5 wall behind the arc, faces west"
+    }
+   ],
+   "te_budget": 25,
+   "built_in_base": false
+  },
+  {
+   "id": "tavern",
+   "bbox": {
+    "x1": -95,
+    "z1": -8,
+    "x2": -46,
+    "z2": 40
+   },
+   "surface_y": 97,
+   "walk_y": 98,
+   "max_build_height_y": 125,
+   "entries": [
+    {
+     "x": -46,
+     "y": 98,
+     "z": 10,
+     "facing": "west",
+     "yaw": 90,
+     "road": "tavern",
+     "road_bearing_deg": 243.4
+    }
+   ],
+   "summary": "Tavern (quests/rewards) on the lowest, cosiest terrace (97): two-storey timber tavern with hearth and porch NPCs (quests, daily, vote), 7x5 quest board, plus the SkybornMC frost showcase pavilion (5 rank plinths + 5x3 hologram, no NPC). Road arrives from the east at (-46,10).",
+   "npcs": [
+    {
+     "id": "quests",
+     "x": -60,
+     "y": 98,
+     "z": 2,
+     "yaw": -90,
+     "note": "tavern porch, next to the 7x5 quest board",
+     "placed": false
+    },
+    {
+     "id": "daily",
+     "x": -60,
+     "y": 98,
+     "z": 9,
+     "yaw": -90,
+     "note": "tavern porch, beside the treasure chest prop",
+     "placed": false
+    },
+    {
+     "id": "vote",
+     "x": -60,
+     "y": 98,
+     "z": 16,
+     "yaw": -90,
+     "note": "tavern porch, beside the 5x3 vote-party hologram",
+     "placed": false
+    }
+   ],
+   "npc_ids": [
+    "quests",
+    "daily",
+    "vote"
+   ],
+   "key_spots": [
+    {
+     "id": "showcase",
+     "plot": "tavern",
+     "x": -80,
+     "y": 98,
+     "z": 30,
+     "note": "frost pavilion: 5 rank plinths + 5x3 store/Discord hologram (no NPC)"
+    }
+   ],
+   "te_budget": 50,
+   "built_in_base": false
+  },
+  {
+   "id": "forge_quarter",
+   "bbox": {
+    "x1": 46,
+    "z1": -8,
+    "x2": 95,
+    "z2": 40
+   },
+   "surface_y": 98,
+   "walk_y": 99,
+   "max_build_height_y": 135,
+   "entries": [
+    {
+     "x": 46,
+     "y": 99,
+     "z": 10,
+     "facing": "east",
+     "yaw": -90,
+     "road": "forge_quarter",
+     "road_bearing_deg": 116.6
+    }
+   ],
+   "summary": "Forge Quarter (tools): cobbled yard, open forge hall (blackstone/deepslate, big chimney with campfires), Quartermaster armory LEFT of the arrival (first NPC; tutorial target), Enchanter round tower RIGHT, 9x5 blueprint wall. Lava <= 6 sources, behind glass, >= 2 from paths. Copper tutorial line arrives at (46,10) and continues to the Quartermaster.",
+   "npcs": [
+    {
+     "id": "quartermaster",
+     "x": 54,
+     "y": 99,
+     "z": 3,
+     "yaw": 90,
+     "note": "front of the armory LEFT (north) of the arrival: first NPC met from the courtyard, visible down the forge road",
+     "placed": false
+    },
+    {
+     "id": "blacksmith",
+     "x": 68,
+     "y": 99,
+     "z": 10,
+     "yaw": 90,
+     "note": "main anvil in the open forge hall, facing the yard/road",
+     "placed": false
+    },
+    {
+     "id": "enchanter",
+     "x": 60,
+     "y": 99,
+     "z": 28,
+     "yaw": 180,
+     "note": "round tower entrance RIGHT (south) of the hall, facing the yard",
+     "placed": false
+    }
+   ],
+   "npc_ids": [
+    "quartermaster",
+    "blacksmith",
+    "enchanter"
+   ],
+   "key_spots": [
+    {
+     "id": "blueprint_wall",
+     "x": 75,
+     "y": 101,
+     "z": -4,
+     "note": "9x5 wall facing the yard"
+    }
+   ],
+   "te_budget": 50,
+   "built_in_base": false
+  },
+  {
+   "id": "market_square",
+   "bbox": {
+    "x1": -38,
+    "z1": 33,
+    "x2": 38,
+    "z2": 95
+   },
+   "surface_y": 98,
+   "walk_y": 99,
+   "max_build_height_y": 125,
+   "entries": [
+    {
+     "x": 0,
+     "y": 99,
+     "z": 33,
+     "facing": "south",
+     "yaw": 0,
+     "road": "market_square",
+     "road_bearing_deg": 180.0
+    }
+   ],
+   "summary": "Market Square (money): ~50x40 square with buildings on 3 sides, fountain (<= 4 sources), stalls Shop/Sell/AH, Bank of the Phoenix (biggest building, south), Black Market alley (3 wide, SW corner, lit >= 8). Road arrives from the north at (0,33).",
+   "npcs": [
+    {
+     "id": "shop",
+     "x": -18,
+     "y": 99,
+     "z": 52,
+     "yaw": -90,
+     "note": "west shopfront stall, faces the square",
+     "placed": false
+    },
+    {
+     "id": "sell",
+     "x": 18,
+     "y": 99,
+     "z": 52,
+     "yaw": 90,
+     "note": "east shopfront stall (same height/distance from the path as shop)",
+     "placed": false
+    },
+    {
+     "id": "ah",
+     "x": 20,
+     "y": 99,
+     "z": 70,
+     "yaw": 90,
+     "note": "auction arcade on the east side, in front of the 7x5 AH board",
+     "placed": false
+    },
+    {
+     "id": "bank",
+     "x": 0,
+     "y": 99,
+     "z": 84,
+     "yaw": 180,
+     "note": "bank counter just inside the open entrance of the biggest building (south side), visible from the square",
+     "placed": false
+    },
+    {
+     "id": "black_market",
+     "x": -30,
+     "y": 99,
+     "z": 88,
+     "yaw": 0,
+     "note": "end of the 3-wide alley in the SW corner",
+     "placed": false
+    }
+   ],
+   "npc_ids": [
+    "shop",
+    "sell",
+    "ah",
+    "bank",
+    "black_market"
+   ],
+   "key_spots": [
+    {
+     "id": "fountain",
+     "x": 0,
+     "y": 99,
+     "z": 62,
+     "note": "contained, <= 4 water sources"
+    }
+   ],
+   "te_budget": 75,
+   "built_in_base": false
+  },
+  {
+   "id": "info_office",
+   "bbox": {
+    "x1": -30,
+    "z1": 16,
+    "x2": -6,
+    "z2": 26
+   },
+   "surface_y": 99,
+   "walk_y": 100,
+   "max_build_height_y": 114,
+   "entries": [
+    {
+     "x": -6,
+     "y": 100,
+     "z": 21,
+     "facing": "west",
+     "yaw": 90,
+     "road": "market_square",
+     "road_bearing_deg": 180.0
+    },
+    {
+     "x": -13,
+     "y": 100,
+     "z": 16,
+     "facing": "south",
+     "yaw": 0,
+     "road": "courtyard arcade doorway",
+     "road_bearing_deg": 0.0
+    }
+   ],
+   "summary": "Info office: rules board (5x7 hologram), report mailbox prop, Help NPC. Two entries: from the S road side (-6,21) and through the doorway in the SW arcade (-13,16).",
+   "npcs": [
+    {
+     "id": "help",
+     "x": -14,
+     "y": 100,
+     "z": 21,
+     "yaw": -90,
+     "note": "info office counter, faces the S-road entrance",
+     "placed": false
+    }
+   ],
+   "npc_ids": [
+    "help"
+   ],
+   "key_spots": [],
+   "te_budget": 10,
+   "built_in_base": false
+  }
+ ],
+ "roads": [
+  {
+   "id": "gatehouse",
+   "to_plot": "gatehouse",
+   "width": 7,
+   "cross_section": "stone brick border 1 + polished andesite 5 (centre line 1)",
+   "centre_line_material": "tuff_bricks",
+   "direction_step": [
+    0,
+    -1
+   ],
+   "bearing_deg": 0.0,
+   "to": {
+    "x": 0.0,
+    "z": -73.5,
+    "walk_y": 102.0
+   },
+   "ring_crossing": {
+    "x": 0.0,
+    "z": -70.7
+   },
+   "slab_ramp": {
+    "from_t": 31.5,
+    "to_t": 53.2,
+    "from_walk_y": 100.0,
+    "to_walk_y": 102.0,
+    "steps": 4,
+    "t_origin": {
+     "x": 0,
+     "z": -13
+    }
+   },
+   "length_blocks": 37.0,
+   "from": {
+    "x": 0.0,
+    "z": -36.5,
+    "walk_y": 100.0
+   }
+  },
+  {
+   "id": "crate_yard",
+   "to_plot": "crate_yard",
+   "width": 7,
+   "cross_section": "stone brick border 1 + polished andesite 5 (centre line 1)",
+   "centre_line_material": "tuff_bricks",
+   "direction_step": [
+    2,
+    -1
+   ],
+   "bearing_deg": 63.4,
+   "to": {
+    "x": 45.6,
+    "z": -35.8,
+    "walk_y": 100.0
+   },
+   "ring_crossing": {
+    "x": 42.7,
+    "z": -34.4
+   },
+   "slab_ramp": {
+    "from_t": 31.5,
+    "to_t": 43.2,
+    "from_walk_y": 100.0,
+    "to_walk_y": 100.0,
+    "steps": 0,
+    "t_origin": {
+     "x": 0,
+     "z": -13
+    }
+   },
+   "length_blocks": 27.5,
+   "from": {
+    "x": 21.0,
+    "z": -23.5,
+    "walk_y": 100.0
+   }
+  },
+  {
+   "id": "forge_quarter",
+   "to_plot": "forge_quarter",
+   "width": 7,
+   "cross_section": "stone brick border 1 + polished andesite 5 (centre line 1)",
+   "centre_line_material": "waxed_cut_copper",
+   "direction_step": [
+    2,
+    1
+   ],
+   "bearing_deg": 116.6,
+   "to": {
+    "x": 45.6,
+    "z": 9.8,
+    "walk_y": 99.0
+   },
+   "ring_crossing": {
+    "x": 42.7,
+    "z": 8.4
+   },
+   "slab_ramp": {
+    "from_t": 31.5,
+    "to_t": 43.2,
+    "from_walk_y": 100.0,
+    "to_walk_y": 99.0,
+    "steps": 2,
+    "t_origin": {
+     "x": 0,
+     "z": -13
+    }
+   },
+   "length_blocks": 27.5,
+   "from": {
+    "x": 21.0,
+    "z": -2.5,
+    "walk_y": 100.0
+   }
+  },
+  {
+   "id": "market_square",
+   "to_plot": "market_square",
+   "width": 7,
+   "cross_section": "stone brick border 1 + polished andesite 5 (centre line 1)",
+   "centre_line_material": "tuff_bricks",
+   "direction_step": [
+    0,
+    1
+   ],
+   "bearing_deg": 180.0,
+   "to": {
+    "x": 0.0,
+    "z": 32.8,
+    "walk_y": 99.0
+   },
+   "ring_crossing": {
+    "x": 0.0,
+    "z": 29.7
+   },
+   "slab_ramp": {
+    "from_t": 31.5,
+    "to_t": 38.2,
+    "from_walk_y": 100.0,
+    "to_walk_y": 99.0,
+    "steps": 2,
+    "t_origin": {
+     "x": 0,
+     "z": -13
+    }
+   },
+   "length_blocks": 22.2,
+   "from": {
+    "x": 0.0,
+    "z": 10.5,
+    "walk_y": 100.0
+   }
+  },
+  {
+   "id": "tavern",
+   "to_plot": "tavern",
+   "width": 7,
+   "cross_section": "stone brick border 1 + polished andesite 5 (centre line 1)",
+   "centre_line_material": "tuff_bricks",
+   "direction_step": [
+    -2,
+    1
+   ],
+   "bearing_deg": 243.4,
+   "to": {
+    "x": -45.6,
+    "z": 9.8,
+    "walk_y": 98.0
+   },
+   "ring_crossing": {
+    "x": -42.7,
+    "z": 8.4
+   },
+   "slab_ramp": {
+    "from_t": 31.5,
+    "to_t": 43.2,
+    "from_walk_y": 100.0,
+    "to_walk_y": 98.0,
+    "steps": 4,
+    "t_origin": {
+     "x": 0,
+     "z": -13
+    }
+   },
+   "length_blocks": 27.5,
+   "from": {
+    "x": -21.0,
+    "z": -2.5,
+    "walk_y": 100.0
+   }
+  },
+  {
+   "id": "hall_of_heroes",
+   "to_plot": "hall_of_heroes",
+   "width": 7,
+   "cross_section": "stone brick border 1 + polished andesite 5 (centre line 1)",
+   "centre_line_material": "tuff_bricks",
+   "direction_step": [
+    -2,
+    -1
+   ],
+   "bearing_deg": 296.6,
+   "to": {
+    "x": -45.6,
+    "z": -35.8,
+    "walk_y": 103.0
+   },
+   "ring_crossing": {
+    "x": -42.7,
+    "z": -34.4
+   },
+   "slab_ramp": {
+    "from_t": 31.5,
+    "to_t": 43.2,
+    "from_walk_y": 100.0,
+    "to_walk_y": 103.0,
+    "steps": 6,
+    "t_origin": {
+     "x": 0,
+     "z": -13
+    }
+   },
+   "length_blocks": 27.5,
+   "from": {
+    "x": -21.0,
+    "z": -23.5,
+    "walk_y": 100.0
+   }
+  }
+ ],
+ "ring_road": {
+  "width": 5,
+  "cross_section": "stone brick borders + 3 of polished andesite/andesite/stone (lighter, no centre line)",
+  "centre_polyline": [
+   {
+    "x": -35,
+    "z": -71
+   },
+   {
+    "x": 35,
+    "z": -71
+   },
+   {
+    "x": 43,
+    "z": -63
+   },
+   {
+    "x": 43,
+    "z": 22
+   },
+   {
+    "x": 35,
+    "z": 30
+   },
+   {
+    "x": -35,
+    "z": 30
+   },
+   {
+    "x": -43,
+    "z": 22
+   },
+   {
+    "x": -43,
+    "z": -63
+   },
+   {
+    "x": -35,
+    "z": -71
+   }
+  ],
+  "walk_y_at_crossings": {
+   "gatehouse": 102,
+   "crate_yard": 100,
+   "forge_quarter": 99,
+   "market_square": 99,
+   "tavern": 98,
+   "hall_of_heroes": 103
+  },
+  "ramps": "0.5 slab steps, flat 6 blocks either side of each crossing"
+ },
+ "balcony_paths": {
+  "ne": {
+   "polyline": [
+    {
+     "x": 39.5,
+     "z": -66.5
+    },
+    {
+     "x": 61,
+     "z": -88
+    }
+   ],
+   "width": 3,
+   "balcony_walk_y": 101
+  },
+  "nw": {
+   "polyline": [
+    {
+     "x": -39.5,
+     "z": -66.5
+    },
+    {
+     "x": -61,
+     "z": -88
+    }
+   ],
+   "width": 3,
+   "balcony_walk_y": 102
+  },
+  "se": {
+   "polyline": [
+    {
+     "x": 42,
+     "z": 34
+    },
+    {
+     "x": 42,
+     "z": 46
+    },
+    {
+     "x": 71,
+     "z": 71
+    }
+   ],
+   "width": 3,
+   "balcony_walk_y": 99
+  },
+  "sw": {
+   "polyline": [
+    {
+     "x": -42,
+     "z": 34
+    },
+    {
+     "x": -42,
+     "z": 46
+    },
+    {
+     "x": -71,
+     "z": 71
+    }
+   ],
+   "width": 3,
+   "balcony_walk_y": 98
+  }
+ },
+ "tutorial_route": {
+  "start": {
+   "x": 3,
+   "y": 100,
+   "z": -4
+  },
+  "built": "waxed cut copper line: tutorial start -> forge spoke node -> forge road centre line -> forge entry (46,10)",
+  "continue": [
+   "forge entry -> quartermaster (forge builder, copper inlay)",
+   "quartermaster -> back along the forge road -> courtyard -> N road -> gatehouse to_island portal (shortest, ~100 blocks)",
+   "gatehouse -> N road -> courtyard -> S road -> market sell"
+  ]
+ },
+ "regions": {
+  "keep_passage": {
+   "from": {
+    "x": -4,
+    "y": 100,
+    "z": -68
+   },
+   "to": {
+    "x": 4,
+    "y": 108,
+    "z": -33
+   },
+   "note": "N road (walk y 100 -> 102) crosses the keep plot; keep it clear >= 6 above the road and lit"
+  },
+  "spawn_protected": {
+   "from": {
+    "x": -112,
+    "y": 35,
+    "z": -112
+   },
+   "to": {
+    "x": 112,
+    "y": 180,
+    "z": 112
+   }
+  }
+ },
+ "te_budget": {
+  "total_max": 400,
+  "per_chunk_max": 40,
+  "per_plot": {
+   "base": 17,
+   "statue": 12,
+   "keep": 30,
+   "gatehouse": 30,
+   "hall_of_heroes": 45,
+   "crate_yard": 25,
+   "tavern": 50,
+   "forge_quarter": 50,
+   "market_square": 75,
+   "info_office": 10
+  },
+  "reserve": 56,
+  "note": "banners, signs, barrels, chests, campfires, bells, lecterns, furnaces count. Spread them: <= 40 per 16x16 chunk."
+ },
+ "free_areas": {
+  "ne": {
+   "balcony": {
+    "x": 61,
+    "z": -89,
+    "walk_y": 101
+   },
+   "path": [
+    [
+     39.5,
+     -66.5
+    ],
+    [
+     61,
+     -88
+    ]
+   ],
+   "note": "garden terrace between two districts with a viewpoint balcony (parapet, brazier); free for later decor/secrets"
+  },
+  "se": {
+   "balcony": {
+    "x": 75,
+    "z": 75,
+    "walk_y": 99
+   },
+   "path": [
+    [
+     42,
+     34
+    ],
+    [
+     42,
+     46
+    ],
+    [
+     71,
+     71
+    ]
+   ],
+   "note": "garden terrace between two districts with a viewpoint balcony (parapet, brazier); free for later decor/secrets"
+  },
+  "sw": {
+   "balcony": {
+    "x": -75,
+    "z": 75,
+    "walk_y": 98
+   },
+   "path": [
+    [
+     -42,
+     34
+    ],
+    [
+     -42,
+     46
+    ],
+    [
+     -71,
+     71
+    ]
+   ],
+   "note": "garden terrace between two districts with a viewpoint balcony (parapet, brazier); free for later decor/secrets"
+  },
+  "nw": {
+   "balcony": {
+    "x": -61,
+    "z": -89,
+    "walk_y": 102
+   },
+   "path": [
+    [
+     -39.5,
+     -66.5
+    ],
+    [
+     -61,
+     -88
+    ]
+   ],
+   "note": "garden terrace between two districts with a viewpoint balcony (parapet, brazier); free for later decor/secrets"
+  }
+ },
+ "plot_shapes": {
+  "keep": "bbox minus the courtyard disc r <= 28.5 around (0,-13): the podium wraps the north arcade",
+  "courtyard": "disc r <= 28.5 around (0,-13) (plaza r <= 23.5 + arcade ring); bbox corners belong to keep/gardens",
+  "crate_yard": "bbox clipped by the island: rectangle x 46..~78 + semicircle r 25.5 around (78,-39) to x 103",
+  "all_districts": "the outer 2 columns along the island edge are the citadel wall (curtain or parapet); build inside it or replace it with your own wall section"
+ },
+ "chunk_footprint": {
+  "island_x": [
+   -95,
+   103
+  ],
+  "island_z": [
+   -102,
+   95
+  ],
+  "chunks_x": 13,
+  "chunks_z": 13
+ },
+ "reachable_fall_edges": 0,
+ "walking_distances": [
+  {
+   "target": "entry gatehouse",
+   "kind": "plot entry",
+   "x": 0,
+   "y": 102,
+   "z": -74,
+   "walk_blocks": 74.0,
+   "bfs4_blocks": 74,
+   "seconds": 17.2,
+   "ok": true
+  },
+  {
+   "target": "entry crate_yard",
+   "kind": "plot entry",
+   "x": 46,
+   "y": 100,
+   "z": -36,
+   "walk_blocks": 61.5,
+   "bfs4_blocks": 82,
+   "seconds": 14.3,
+   "ok": true
+  },
+  {
+   "target": "entry forge_quarter",
+   "kind": "plot entry",
+   "x": 46,
+   "y": 99,
+   "z": 10,
+   "walk_blocks": 50.1,
+   "bfs4_blocks": 56,
+   "seconds": 11.7,
+   "ok": true
+  },
+  {
+   "target": "entry market_square",
+   "kind": "plot entry",
+   "x": 0,
+   "y": 99,
+   "z": 33,
+   "walk_blocks": 33.0,
+   "bfs4_blocks": 33,
+   "seconds": 7.7,
+   "ok": true
+  },
+  {
+   "target": "entry tavern",
+   "kind": "plot entry",
+   "x": -46,
+   "y": 98,
+   "z": 10,
+   "walk_blocks": 50.1,
+   "bfs4_blocks": 56,
+   "seconds": 11.7,
+   "ok": true
+  },
+  {
+   "target": "entry hall_of_heroes",
+   "kind": "plot entry",
+   "x": -46,
+   "y": 103,
+   "z": -36,
+   "walk_blocks": 60.9,
+   "bfs4_blocks": 82,
+   "seconds": 14.2,
+   "ok": true
+  },
+  {
+   "target": "entry keep",
+   "kind": "plot entry",
+   "x": 0,
+   "y": 100,
+   "z": -43,
+   "walk_blocks": 43.0,
+   "bfs4_blocks": 43,
+   "seconds": 10.0,
+   "ok": true
+  },
+  {
+   "target": "entry info_office_road",
+   "kind": "plot entry",
+   "x": -6,
+   "y": 100,
+   "z": 21,
+   "walk_blocks": 23.5,
+   "bfs4_blocks": 27,
+   "seconds": 5.5,
+   "ok": true
+  },
+  {
+   "target": "entry info_office_arcade",
+   "kind": "plot entry",
+   "x": -13,
+   "y": 100,
+   "z": 16,
+   "walk_blocks": 25.5,
+   "bfs4_blocks": 29,
+   "seconds": 5.9,
+   "ok": true
+  },
+  {
+   "target": "npc guide",
+   "kind": "NPC (courtyard)",
+   "x": 2,
+   "y": 100,
+   "z": -5,
+   "walk_blocks": 5.8,
+   "bfs4_blocks": 7,
+   "seconds": 1.4,
+   "ok": true
+  },
+  {
+   "target": "npc quartermaster",
+   "kind": "NPC (forge_quarter)",
+   "x": 54,
+   "y": 99,
+   "z": 3,
+   "walk_blocks": 55.2,
+   "bfs4_blocks": 57,
+   "seconds": 12.8,
+   "ok": true
+  },
+  {
+   "target": "npc blacksmith",
+   "kind": "NPC (forge_quarter)",
+   "x": 68,
+   "y": 99,
+   "z": 10,
+   "walk_blocks": 72.1,
+   "bfs4_blocks": 78,
+   "seconds": 16.8,
+   "ok": true
+  },
+  {
+   "target": "npc enchanter",
+   "kind": "NPC (forge_quarter)",
+   "x": 60,
+   "y": 99,
+   "z": 28,
+   "walk_blocks": 71.6,
+   "bfs4_blocks": 88,
+   "seconds": 16.7,
+   "ok": true
+  },
+  {
+   "target": "npc shop",
+   "kind": "NPC (market_square)",
+   "x": -18,
+   "y": 99,
+   "z": 52,
+   "walk_blocks": 59.5,
+   "bfs4_blocks": 70,
+   "seconds": 13.8,
+   "ok": true
+  },
+  {
+   "target": "npc sell",
+   "kind": "NPC (market_square)",
+   "x": 18,
+   "y": 99,
+   "z": 52,
+   "walk_blocks": 59.5,
+   "bfs4_blocks": 70,
+   "seconds": 13.8,
+   "ok": true
+  },
+  {
+   "target": "npc ah",
+   "kind": "NPC (market_square)",
+   "x": 20,
+   "y": 99,
+   "z": 70,
+   "walk_blocks": 78.3,
+   "bfs4_blocks": 90,
+   "seconds": 18.2,
+   "ok": true
+  },
+  {
+   "target": "npc bank",
+   "kind": "NPC (market_square)",
+   "x": 0,
+   "y": 99,
+   "z": 84,
+   "walk_blocks": 84.0,
+   "bfs4_blocks": 84,
+   "seconds": 19.5,
+   "ok": true
+  },
+  {
+   "target": "npc black_market",
+   "kind": "NPC (market_square)",
+   "x": -30,
+   "y": 99,
+   "z": 88,
+   "walk_blocks": 100.4,
+   "bfs4_blocks": 118,
+   "seconds": 23.4,
+   "ok": true
+  },
+  {
+   "target": "npc quests",
+   "kind": "NPC (tavern)",
+   "x": -60,
+   "y": 98,
+   "z": 2,
+   "walk_blocks": 61.7,
+   "bfs4_blocks": 64,
+   "seconds": 14.3,
+   "ok": true
+  },
+  {
+   "target": "npc daily",
+   "kind": "NPC (tavern)",
+   "x": -60,
+   "y": 98,
+   "z": 9,
+   "walk_blocks": 63.7,
+   "bfs4_blocks": 69,
+   "seconds": 14.8,
+   "ok": true
+  },
+  {
+   "target": "npc vote",
+   "kind": "NPC (tavern)",
+   "x": -60,
+   "y": 98,
+   "z": 16,
+   "walk_blocks": 66.6,
+   "bfs4_blocks": 76,
+   "seconds": 15.5,
+   "ok": true
+  },
+  {
+   "target": "npc help",
+   "kind": "NPC (info_office)",
+   "x": -14,
+   "y": 100,
+   "z": 21,
+   "walk_blocks": 28.6,
+   "bfs4_blocks": 35,
+   "seconds": 6.6,
+   "ok": true
+  },
+  {
+   "target": "gatehouse: portal_to_depths",
+   "kind": "key spot (feet level)",
+   "x": -22,
+   "y": 102,
+   "z": -90,
+   "walk_blocks": 99.1,
+   "bfs4_blocks": 112,
+   "seconds": 23.0,
+   "ok": true
+  },
+  {
+   "target": "gatehouse: portal_to_warzone",
+   "kind": "key spot (feet level)",
+   "x": -11,
+   "y": 102,
+   "z": -90,
+   "walk_blocks": 94.6,
+   "bfs4_blocks": 101,
+   "seconds": 22.0,
+   "ok": true
+  },
+  {
+   "target": "gatehouse: portal_to_island",
+   "kind": "key spot (feet level)",
+   "x": 0,
+   "y": 102,
+   "z": -90,
+   "walk_blocks": 90.0,
+   "bfs4_blocks": 90,
+   "seconds": 20.9,
+   "ok": true
+  },
+  {
+   "target": "gatehouse: portal_to_outposts",
+   "kind": "key spot (feet level)",
+   "x": 11,
+   "y": 102,
+   "z": -90,
+   "walk_blocks": 94.6,
+   "bfs4_blocks": 101,
+   "seconds": 22.0,
+   "ok": true
+  },
+  {
+   "target": "gatehouse: portal_to_events",
+   "kind": "key spot (feet level)",
+   "x": 22,
+   "y": 102,
+   "z": -90,
+   "walk_blocks": 99.1,
+   "bfs4_blocks": 112,
+   "seconds": 23.0,
+   "ok": true
+  },
+  {
+   "target": "gatehouse: event_board",
+   "kind": "key spot (feet level)",
+   "x": 0,
+   "y": 102,
+   "z": -80,
+   "walk_blocks": 80.0,
+   "bfs4_blocks": 80,
+   "seconds": 18.6,
+   "ok": true
+  },
+  {
+   "target": "crate_yard: common",
+   "kind": "key spot (feet level)",
+   "x": 81,
+   "y": 100,
+   "z": -52,
+   "walk_blocks": 103.1,
+   "bfs4_blocks": 133,
+   "seconds": 24.0,
+   "ok": true
+  },
+  {
+   "target": "crate_yard: uncommon",
+   "kind": "key spot (feet level)",
+   "x": 85,
+   "y": 100,
+   "z": -48,
+   "walk_blocks": 104.9,
+   "bfs4_blocks": 133,
+   "seconds": 24.4,
+   "ok": true
+  },
+  {
+   "target": "crate_yard: rare",
+   "kind": "key spot (feet level)",
+   "x": 87,
+   "y": 100,
+   "z": -42,
+   "walk_blocks": 104.4,
+   "bfs4_blocks": 129,
+   "seconds": 24.3,
+   "ok": true
+  },
+  {
+   "target": "crate_yard: epic",
+   "kind": "key spot (feet level)",
+   "x": 87,
+   "y": 100,
+   "z": -36,
+   "walk_blocks": 101.9,
+   "bfs4_blocks": 123,
+   "seconds": 23.7,
+   "ok": true
+  },
+  {
+   "target": "crate_yard: legendary",
+   "kind": "key spot (feet level)",
+   "x": 85,
+   "y": 100,
+   "z": -30,
+   "walk_blocks": 97.4,
+   "bfs4_blocks": 115,
+   "seconds": 22.7,
+   "ok": true
+  },
+  {
+   "target": "crate_yard: monthly",
+   "kind": "key spot (feet level)",
+   "x": 81,
+   "y": 100,
+   "z": -26,
+   "walk_blocks": 91.8,
+   "bfs4_blocks": 107,
+   "seconds": 21.3,
+   "ok": true
+  },
+  {
+   "target": "crate_yard: key_board",
+   "kind": "key spot (feet level)",
+   "x": 93,
+   "y": 100,
+   "z": -39,
+   "walk_blocks": 109.2,
+   "bfs4_blocks": 132,
+   "seconds": 25.4,
+   "ok": true
+  },
+  {
+   "target": "hall_of_heroes: leaderboards_first",
+   "kind": "key spot (feet level)",
+   "x": -54,
+   "y": 103,
+   "z": -47,
+   "walk_blocks": 73.5,
+   "bfs4_blocks": 101,
+   "seconds": 17.1,
+   "ok": true
+  },
+  {
+   "target": "hall_of_heroes: leaderboards_last",
+   "kind": "key spot (feet level)",
+   "x": -82,
+   "y": 103,
+   "z": -31,
+   "walk_blocks": 94.8,
+   "bfs4_blocks": 113,
+   "seconds": 22.1,
+   "ok": true
+  },
+  {
+   "target": "hall_of_heroes: hall_of_fame_apse",
+   "kind": "key spot (feet level)",
+   "x": -88,
+   "y": 103,
+   "z": -39,
+   "walk_blocks": 104.2,
+   "bfs4_blocks": 127,
+   "seconds": 24.2,
+   "ok": true
+  },
+  {
+   "target": "market_square: fountain",
+   "kind": "key spot (feet level)",
+   "x": 0,
+   "y": 99,
+   "z": 62,
+   "walk_blocks": 62.0,
+   "bfs4_blocks": 62,
+   "seconds": 14.4,
+   "ok": true
+  },
+  {
+   "target": "forge_quarter: blueprint_wall",
+   "kind": "key spot (feet level)",
+   "x": 75,
+   "y": 99,
+   "z": -4,
+   "walk_blocks": 76.7,
+   "bfs4_blocks": 79,
+   "seconds": 17.8,
+   "ok": true
+  },
+  {
+   "target": "tavern: showcase",
+   "kind": "key spot (feet level)",
+   "x": -80,
+   "y": 98,
+   "z": 30,
+   "walk_blocks": 92.4,
+   "bfs4_blocks": 110,
+   "seconds": 21.5,
+   "ok": true
+  },
+  {
+   "target": "balcony ne",
+   "kind": "viewpoint",
+   "x": 61,
+   "y": 101,
+   "z": -89,
+   "walk_blocks": 116.0,
+   "bfs4_blocks": 148,
+   "seconds": 27.0,
+   "ok": true
+  },
+  {
+   "target": "balcony se",
+   "kind": "viewpoint",
+   "x": 75,
+   "y": 99,
+   "z": 75,
+   "walk_blocks": 116.6,
+   "bfs4_blocks": 148,
+   "seconds": 27.1,
+   "ok": true
+  },
+  {
+   "target": "balcony sw",
+   "kind": "viewpoint",
+   "x": -75,
+   "y": 98,
+   "z": 75,
+   "walk_blocks": 119.5,
+   "bfs4_blocks": 148,
+   "seconds": 27.8,
+   "ok": true
+  },
+  {
+   "target": "balcony nw",
+   "kind": "viewpoint",
+   "x": -61,
+   "y": 102,
+   "z": -89,
+   "walk_blocks": 117.8,
+   "bfs4_blocks": 149,
+   "seconds": 27.4,
+   "ok": true
+  }
+ ],
+ "walking_limit_blocks": 130
+}

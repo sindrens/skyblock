@@ -19,8 +19,10 @@ server/*/
 !server/plugins/
 !server/scripts/
 !server/permissions/
+!server/builds/
 server/*.jar
 server/*.json
+!server/builds/*.json
 server/eula.txt
 server/wepif.yml
 server/.console_history
