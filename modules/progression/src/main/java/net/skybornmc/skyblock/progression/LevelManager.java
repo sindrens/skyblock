@@ -259,11 +259,28 @@ final class LevelManager implements Listener {
         }
     }
 
+    /**
+     * Starts the due recalculations: at most {@code recalc.per-tick}, and (PERF5) only while this tick is within
+     * {@code recalc.budget-ms} (a calculation whose inputs are all cached applies at once, inside this tick); the rest
+     * stay due and start in the next ticks.
+     */
     private void tick() {
         if (!ready || closed) {
             return;
         }
-        for (UUID island : debounce.drainDue(System.currentTimeMillis(), Math.max(1, config.perTick))) {
+        long now = System.currentTimeMillis();
+        long start = System.nanoTime();
+        long budget = Math.max(1, config.budgetMs) * 1_000_000L;
+        int limit = Math.max(1, config.perTick);
+        for (int started = 0; started < limit; started++) {
+            if (started > 0 && System.nanoTime() - start >= budget) {
+                break;
+            }
+            List<UUID> due = debounce.drainDue(now, 1);
+            if (due.isEmpty()) {
+                break;
+            }
+            UUID island = due.getFirst();
             if (computing.contains(island)) {
                 again.add(island);
             } else {
@@ -322,10 +339,14 @@ final class LevelManager implements Listener {
         double worth = blocks.ledger().worth(islandId);
 
         List<CompletableFuture<Map<SkillType, Double>>> xp = new ArrayList<>(counted.size());
+        // PERF5: offline members' XP and the bank balance read from the database are cached in the apply step (already
+        // on the main thread) instead of one extra main-thread task per read.
+        List<UUID> fetched = new ArrayList<>();
         for (UUID member : counted) {
-            xp.add(memberXp(member, now));
+            xp.add(memberXp(member, now, fetched));
         }
-        CompletableFuture<OptionalLong> bank = bankBalance(islandId, now);
+        boolean[] bankFetched = new boolean[1];
+        CompletableFuture<OptionalLong> bank = bankBalance(islandId, now, bankFetched);
         computing.add(islandId);
         List<CompletableFuture<?>> all = new ArrayList<>(xp);
         all.add(bank);
@@ -342,10 +363,19 @@ final class LevelManager implements Listener {
                         return;
                     }
                     List<Map<SkillType, Double>> memberXp = new ArrayList<>(xp.size());
-                    for (CompletableFuture<Map<SkillType, Double>> f : xp) {
-                        memberXp.add(f.join());
+                    for (int i = 0; i < xp.size(); i++) {
+                        Map<SkillType, Double> value = xp.get(i).join();
+                        memberXp.add(value);
+                        UUID member = counted.get(i);
+                        if (fetched.contains(member)) {
+                            skillCache.put(member, new CachedXp(now, value));
+                        }
                     }
-                    finish(islandId, members.size(), pillarLevels, upgrades, achievements, collections, memberXp, bank.join(), worth, now);
+                    OptionalLong balance = bank.join();
+                    if (bankFetched[0] && balance.isPresent()) {
+                        bankCache.put(islandId, new CachedBalance(now, balance.getAsLong()));
+                    }
+                    finish(islandId, members.size(), pillarLevels, upgrades, achievements, collections, memberXp, balance, worth, now);
                     if (again.remove(islandId)) {
                         request(islandId);
                     }
@@ -367,7 +397,7 @@ final class LevelManager implements Listener {
     }
 
     /** XP of exactly that profile: online = cache (cheap), offline = database at most every skills-cache-minutes. */
-    private CompletableFuture<Map<SkillType, Double>> memberXp(UUID profileKey, long now) {
+    private CompletableFuture<Map<SkillType, Double>> memberXp(UUID profileKey, long now, List<UUID> fetched) {
         SkillService skills = core.services().optional(SkillService.class).orElse(null);
         if (skills == null) {
             return CompletableFuture.completedFuture(Map.of());
@@ -379,15 +409,12 @@ final class LevelManager implements Listener {
         if (cached != null && now - cached.at() < config.skillsCacheMinutes * 60_000L) {
             return CompletableFuture.completedFuture(cached.xp());
         }
-        return skills.loadProfileXp(profileKey).thenApply(xp -> {
-            Map<SkillType, Double> copy = Map.copyOf(xp);
-            core.scheduler().ensureMain("progression-skill-cache", () -> skillCache.put(profileKey, new CachedXp(now, copy)));
-            return copy;
-        });
+        fetched.add(profileKey); // cached by the apply step (main thread)
+        return skills.loadProfileXp(profileKey).thenApply(Map::copyOf);
     }
 
     /** The island bank balance (cached for bank.sample-minutes; deposits clear the cache). Empty without a bank service. */
-    private CompletableFuture<OptionalLong> bankBalance(UUID islandId, long now) {
+    private CompletableFuture<OptionalLong> bankBalance(UUID islandId, long now, boolean[] fetched) {
         BankService bank = core.services().optional(BankService.class).orElse(null);
         if (bank == null) {
             return CompletableFuture.completedFuture(OptionalLong.empty());
@@ -396,11 +423,8 @@ final class LevelManager implements Listener {
         if (cached != null && now - cached.at() < config.bankSampleMinutes * 60_000L) {
             return CompletableFuture.completedFuture(OptionalLong.of(cached.balance()));
         }
-        return bank.islandBalance(islandId).thenApply(balance -> {
-            long b = balance == null ? 0 : balance;
-            core.scheduler().ensureMain("progression-bank-cache", () -> bankCache.put(islandId, new CachedBalance(now, b)));
-            return OptionalLong.of(b);
-        });
+        fetched[0] = true; // cached by the apply step (main thread)
+        return bank.islandBalance(islandId).thenApply(balance -> OptionalLong.of(balance == null ? 0 : balance));
     }
 
     private void finish(UUID islandId, int memberCount, int pillarLevels, double upgrades, double achievements, double collections,

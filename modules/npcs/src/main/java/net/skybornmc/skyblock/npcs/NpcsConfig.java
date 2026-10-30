@@ -96,6 +96,9 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "spawning.budget-ms", desc = "Stop spawning for the current tick after this many milliseconds (at least one is always spawned per tick).", min = 1, max = 50)
     public int spawnBudgetMs = 2;
 
+    @Setting(path = "spawning.removals-per-tick", desc = "Reload: most old NPCs, holograms and leaderboards removed per tick (within spawning.budget-ms) before the new ones spawn.", min = 1, max = 500)
+    public int removalsPerTick = 24;
+
     @Setting(path = "holograms.enabled", desc = "Spawn the text holograms at the builds' hologram points (text: messages/npcs.yml -> holograms.<id>).")
     public boolean hologramsEnabled = true;
 

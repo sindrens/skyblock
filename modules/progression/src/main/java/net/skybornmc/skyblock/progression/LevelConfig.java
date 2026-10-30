@@ -96,6 +96,9 @@ public final class LevelConfig extends ModuleConfig {
     @Setting(path = "recalc.per-tick", desc = "Most island levels started per tick (the database reads run off the main thread).", min = 1, max = 100)
     public int perTick = 4;
 
+    @Setting(path = "recalc.budget-ms", desc = "Stop starting island levels for the current tick after this many milliseconds (at least one per tick; the rest wait for the next ticks).", min = 1, max = 50)
+    public int budgetMs = 2;
+
     @Setting(path = "recalc.refresh-minutes", desc = "Islands with an online member are recalculated this often (members leaving, bank withdrawals, 3-day rule).", min = 1, max = 1440)
     public int refreshMinutes = 10;
 
@@ -115,6 +118,9 @@ public final class LevelConfig extends ModuleConfig {
 
     @Setting(path = "blocks.chunks-per-tick", desc = "Rescan speed: chunks loaded and copied per tick (the block count runs off the main thread).", min = 1, max = 64)
     public int chunksPerTick = 2;
+
+    @Setting(path = "blocks.copy-budget-ms", desc = "Rescan: stop copying loaded chunks for the current tick after this many milliseconds (at least one per tick; the rest are copied in the next ticks).", min = 1, max = 50)
+    public int copyBudgetMs = 2;
 
     @Setting(path = "blocks.recalculate-cooldown-minutes", desc = "The Recalculate button: one full rescan per island this often (owner P5-34: 10 min).", min = 0, max = 1440)
     public int recalculateCooldownMinutes = 10;

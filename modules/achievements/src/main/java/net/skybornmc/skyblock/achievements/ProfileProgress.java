@@ -21,7 +21,8 @@ final class ProfileProgress {
     record Row(Metric metric, long value) {
     }
 
-    private static final int SIZE = Metric.values().length;
+    private static final Metric[] METRICS = Metric.values();
+    private static final int SIZE = METRICS.length;
 
     private final UUID key;
     private final UUID owner;
@@ -155,7 +156,7 @@ final class ProfileProgress {
     /** Takes everything not saved yet (and clears it). Give it back with {@link #restore} when the write fails. */
     List<Row> drain() {
         List<Row> rows = new ArrayList<>();
-        Metric[] metrics = Metric.values();
+        Metric[] metrics = METRICS;
         for (int i = 0; i < SIZE; i++) {
             if (metrics[i].counter()) {
                 if (unsaved[i] != 0) {

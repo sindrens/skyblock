@@ -20,7 +20,8 @@ final class IslandProgress {
     record Row(IslandMetric metric, long value) {
     }
 
-    private static final int SIZE = IslandMetric.values().length;
+    private static final IslandMetric[] METRICS = IslandMetric.values();
+    private static final int SIZE = METRICS.length;
 
     private final UUID islandId;
     private final long[] values = new long[SIZE];
@@ -29,6 +30,8 @@ final class IslandProgress {
     private final Map<String, Integer> unlocked = new HashMap<>();
     private boolean loaded;
     private int points;
+    /** PERF5: something waits to be saved (every island is kept in memory; the save skips clean ones in O(1)). */
+    private boolean pending;
 
     IslandProgress(UUID islandId) {
         this.islandId = islandId;
@@ -76,6 +79,7 @@ final class IslandProgress {
             }
             values[i] = ProgressMath.add(values[i], amount);
             unsaved[i] = ProgressMath.add(unsaved[i], amount);
+            pending = true;
             return true;
         }
         if (amount <= values[i]) {
@@ -83,6 +87,7 @@ final class IslandProgress {
         }
         values[i] = amount;
         gaugeDirty[i] = true;
+        pending = true;
         return true;
     }
 
@@ -104,8 +109,12 @@ final class IslandProgress {
 
     /** Takes everything not saved yet (and clears it). Give it back with {@link #restore} when the write fails. */
     List<Row> drain() {
+        if (!pending) {
+            return List.of();
+        }
+        pending = false;
         List<Row> rows = new ArrayList<>();
-        IslandMetric[] metrics = IslandMetric.values();
+        IslandMetric[] metrics = METRICS;
         for (int i = 0; i < SIZE; i++) {
             if (metrics[i].counter()) {
                 if (unsaved[i] != 0) {
@@ -121,6 +130,9 @@ final class IslandProgress {
     }
 
     void restore(List<Row> rows) {
+        if (!rows.isEmpty()) {
+            pending = true;
+        }
         for (Row row : rows) {
             int i = row.metric().ordinal();
             if (row.metric().counter()) {

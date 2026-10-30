@@ -67,6 +67,8 @@ final class BlockWorth implements Listener {
         final UUID island;
         final World world;
         final Deque<long[]> todo = new ArrayDeque<>();
+        /** PERF5: loaded chunks waiting for their copy (this tick's copy budget was used up); counted in inFlight. */
+        final Deque<int[]> ready = new ArrayDeque<>();
         final Set<Long> chunks = new HashSet<>();
         final double before;
         final Consumer<Double> done;
@@ -96,6 +98,7 @@ final class BlockWorth implements Listener {
     private volatile double[] worthByOrdinal = new double[0];
     private BlockValues values;
     private Job job;
+    private final TickBudget copyBudget = new TickBudget();
     private Scheduler.Task tickTask;
     private Scheduler.Task flushTask;
     private CompletableFuture<?> writing = CompletableFuture.completedFuture(null);
@@ -355,13 +358,17 @@ final class BlockWorth implements Listener {
     /** Spawner stacks of a loaded chunk: spawners per stack x the tier's worth (main thread). */
     private double spawnerWorth(Chunk chunk) {
         StackingService stacking = core.services().optional(StackingService.class).orElse(null);
+        if (stacking == null) {
+            return 0;
+        }
         double sum = 0;
-        for (BlockState state : chunk.getTileEntities()) {
+        // PERF5: only spawner blocks, and no snapshot copies (chests, hoppers and shulkers with items were all copied).
+        for (BlockState state : chunk.getTileEntities(b -> b.getType() == Material.SPAWNER, false)) {
             if (!(state instanceof CreatureSpawner spawner)) {
                 continue;
             }
             EntityType type = spawner.getSpawnedType();
-            if (type == null || stacking == null) {
+            if (type == null) {
                 continue;
             }
             OptionalInt tier = stacking.spawnerTier(type.getKey().getKey());
@@ -412,6 +419,7 @@ final class BlockWorth implements Listener {
         if (job == null) {
             return;
         }
+        copyReady(job);
         int limit = Math.max(1, config.chunksPerTick);
         int started = 0;
         while (started < limit && job.inFlight < limit * 4 && !job.todo.isEmpty()) {
@@ -449,6 +457,16 @@ final class BlockWorth implements Listener {
     }
 
     private void loadChunk(Job j, int cx, int cz) {
+        loadChunk(j, cx, cz, false);
+    }
+
+    /**
+     * Loads one chunk of a rescan. PERF5: a chunk that is already loaded completes inside this tick, so the copy only
+     * runs at once while the tick's copy budget ({@code blocks.copy-budget-ms}) allows; otherwise it waits in
+     * {@code ready} for the next tick. {@code force} (a chunk that unloaded while waiting) copies at once, so a chunk
+     * can never wait forever.
+     */
+    private void loadChunk(Job j, int cx, int cz, boolean force) {
         j.inFlight++;
         j.world.getChunkAtAsync(cx, cz, false).whenComplete((chunk, error) -> core.scheduler().ensureMain("progression-scan", () -> {
             if (j.aborted || closed) {
@@ -461,31 +479,72 @@ final class BlockWorth implements Listener {
                 j.inFlight--;
                 return;
             }
-            ledger.beginScan(j.island, cx, cz);
-            ChunkSnapshot snapshot = chunk.getChunkSnapshot(false, false, false);
-            double spawners = spawnerWorth(chunk);
-            int minY = j.world.getMinHeight();
-            int maxY = j.world.getMaxHeight();
-            double[] table = worthByOrdinal;
-            core.scheduler().async(() -> {
-                double blocks;
-                try {
-                    blocks = count(snapshot, table, minY, maxY);
-                } catch (RuntimeException e) {
-                    core.plugin().getLogger().log(Level.WARNING, "Progression: counting chunk " + cx + "," + cz + " failed", e);
-                    blocks = Double.NaN;
-                }
-                double result = blocks;
-                core.scheduler().main("progression-scan-done", () -> {
-                    j.inFlight--;
-                    if (j.aborted || Double.isNaN(result)) {
-                        ledger.abortScan(j.island, cx, cz);
-                    } else {
-                        ledger.finishScan(j.island, cx, cz, result, spawners);
-                    }
-                });
-            });
+            long tick = Bukkit.getCurrentTick();
+            if (!force && !copyBudget.allow(tick, copyBudgetNanos())) {
+                j.ready.add(new int[]{cx, cz});
+                return;
+            }
+            timedCopy(j, chunk, cx, cz, tick);
         }));
+    }
+
+    private long copyBudgetNanos() {
+        return Math.max(1, config.copyBudgetMs) * 1_000_000L;
+    }
+
+    /** PERF5: copies the waiting chunks while this tick's budget allows (at least one per tick). */
+    private void copyReady(Job j) {
+        long tick = Bukkit.getCurrentTick();
+        while (!j.ready.isEmpty() && copyBudget.allow(tick, copyBudgetNanos())) {
+            int[] xz = j.ready.poll();
+            if (j.aborted) {
+                j.inFlight--;
+                continue;
+            }
+            if (!j.world.isChunkLoaded(xz[0], xz[1])) {
+                j.inFlight--;
+                loadChunk(j, xz[0], xz[1], true); // unloaded while waiting: load again, copied as soon as it is there
+                continue;
+            }
+            timedCopy(j, j.world.getChunkAt(xz[0], xz[1]), xz[0], xz[1], tick);
+        }
+    }
+
+    private void timedCopy(Job j, Chunk chunk, int cx, int cz, long tick) {
+        long start = System.nanoTime();
+        try {
+            copy(j, chunk, cx, cz);
+        } finally {
+            copyBudget.spent(tick, System.nanoTime() - start);
+        }
+    }
+
+    /** Main thread: copies one loaded chunk of a rescan (snapshot + spawner stacks); the block count runs off it. */
+    private void copy(Job j, Chunk chunk, int cx, int cz) {
+        ledger.beginScan(j.island, cx, cz);
+        ChunkSnapshot snapshot = chunk.getChunkSnapshot(false, false, false);
+        double spawners = spawnerWorth(chunk);
+        int minY = j.world.getMinHeight();
+        int maxY = j.world.getMaxHeight();
+        double[] table = worthByOrdinal;
+        core.scheduler().async(() -> {
+            double blocks;
+            try {
+                blocks = count(snapshot, table, minY, maxY);
+            } catch (RuntimeException e) {
+                core.plugin().getLogger().log(Level.WARNING, "Progression: counting chunk " + cx + "," + cz + " failed", e);
+                blocks = Double.NaN;
+            }
+            double result = blocks;
+            core.scheduler().main("progression-scan-done", () -> {
+                j.inFlight--;
+                if (j.aborted || Double.isNaN(result)) {
+                    ledger.abortScan(j.island, cx, cz);
+                } else {
+                    ledger.finishScan(j.island, cx, cz, result, spawners);
+                }
+            });
+        });
     }
 
     /** Worth of every block in a chunk copy (off the main thread); empty 16x16x16 sections are skipped. */
