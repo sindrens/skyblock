@@ -61,7 +61,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - GUIDE2 test guide refresh + new questions to the page
 - TUT1 tutorial build TU1-TU4
-- PLAN7 island production plan
+- PLAN8 PvE plan
 
 ## Parked / broken
 (none)
