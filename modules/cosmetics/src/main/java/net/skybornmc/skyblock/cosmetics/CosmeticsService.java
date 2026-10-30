@@ -209,6 +209,11 @@ public final class CosmeticsService implements Cosmetics, Listener {
         return registry.ids(kind);
     }
 
+    @Override
+    public Component display(Audience viewer, Kind kind, String id) {
+        return registry.get(kind, id).map(c -> display(viewer, c)).orElseGet(() -> Component.text(String.valueOf(id)));
+    }
+
     /** Owned ids of an online player (empty while loading). */
     Set<String> owned(UUID player, Kind kind) {
         Owned o = owned.get(player);

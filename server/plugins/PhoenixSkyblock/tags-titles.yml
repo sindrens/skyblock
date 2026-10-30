@@ -92,7 +92,17 @@ tags:
   ember:
     display: "<c:ember>Ember"
     rarity: rare
-    source: "Rare crate."
+    source: "Rare crate, or pick it with /freerank."
+    season-persistent: true
+  spark:
+    display: "<c:flame>Spark"
+    rarity: common
+    source: "Pick it with /freerank."
+    season-persistent: true
+  ash:
+    display: "<c:parchment>Ash"
+    rarity: common
+    source: "Pick it with /freerank."
     season-persistent: true
   skyborn:
     display: "<grad:skyborn>Skyborn</grad>"

@@ -1,5 +1,8 @@
 package net.skybornmc.skyblock.common.cosmetics;
 
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -40,4 +43,9 @@ public interface Cosmetics {
 
     /** Registered ids of a kind. */
     Set<String> ids(Kind kind);
+
+    /** How a title or tag looks for {@code viewer} (its configured colors); the plain id when unknown. */
+    default Component display(Audience viewer, Kind kind, String id) {
+        return Component.text(String.valueOf(id));
+    }
 }

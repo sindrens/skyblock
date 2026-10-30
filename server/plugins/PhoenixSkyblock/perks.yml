@@ -1,4 +1,4 @@
-# Phoenix Skyblock perks: /craft, /ec, /hat, /nick, /trash (rank perks) and /repair, /sudo, /realname (staff).
+# Phoenix Skyblock perks: /craft, /ec, /hat, /nick, /trash (rank perks), /freerank and /repair, /sudo, /realname (staff).
 # Edit, then run /skyblock reload perks. Wrong values are reported in the console and the old value stays active.
 
 nick:
@@ -28,4 +28,14 @@ sudo:
   # Commands /sudo may never run (first word, without /).
   blocked-commands: [sudo, op, deop, lp, luckperms, perm, perms, permissions, stop, restart, reload, rl, pl, plugins,
     skyblock, sb, eco, pay, trade, ah, withdraw]
+freerank:
+  # /freerank: claim the free lowest rank once after enough playtime (owner RW4).
+  enabled: true
+  # Total playtime needed before /freerank works.
+  # Allowed: 0 to 10000
+  min-playtime-minutes: 30
+  # LuckPerms group /freerank gives (server/permissions/base.txt creates 'ember'). Kept forever.
+  group: ember
+  # The 3 tags the player picks 1 from (ids from tags-titles.yml). Kept forever.
+  tags: [ember, spark, ash]
 config-version: 1

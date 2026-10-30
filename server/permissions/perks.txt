@@ -9,3 +9,4 @@ lp group mod permission set skyblock.staff.repair.others true
 lp group mod permission set skyblock.staff.nick.others true
 lp group admin permission set skyblock.admin.sudo false
 lp group owner permission set skyblock.admin.sudo true
+# /freerank is for everyone (plugin default: true). The 'ember' group it gives is created in base.txt.

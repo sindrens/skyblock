@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Rank perks ({@code /craft}, {@code /ec}, {@code /hat}, {@code /nick}, {@code /trash}) and restricted staff tools
+ * Rank perks ({@code /craft}, {@code /ec}, {@code /hat}, {@code /nick}, {@code /trash}), {@code /freerank} and restricted staff tools
  * ({@code /setnick}, {@code /realname}, {@code /repair}, {@code /sudo}).
  *
  * <p>Rank perks are permission-gated; donor ranks arrive with the store (Phase 11), so for now only staff/ops have them.</p>
@@ -66,6 +66,7 @@ public final class PerksModule implements SkyblockModule {
     private final PerksConfig config = new PerksConfig();
     private NickService nicks;
     private TrashMenu trash;
+    private FreeRankService freeRank;
     private volatile boolean active;
     private boolean rankHookRegistered;
     private final Map<UUID, Long> lastNickChange = new java.util.concurrent.ConcurrentHashMap<>();
@@ -107,6 +108,8 @@ public final class PerksModule implements SkyblockModule {
                         .orElse(Component.text(p.getName())));
         core.placeholders().registerText(ID, "has_nick", p -> p != null && nicks.nick(p.getUniqueId()).isPresent() ? "true" : "false");
         registerCommands();
+        freeRank = new FreeRankService(core, config, msg);
+        freeRank.register();
     }
 
     @Override

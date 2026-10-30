@@ -316,6 +316,7 @@ Treasure hunt, money event, farming event, mining rush, double XP and more, all 
 ## 11. Ranks and store
 
 - Players buy **credits** on the store (Tebex). Credits buy things in-game.
+- **Free rank `Ember`** (owner RW4, `/freerank`, built in R2A): after 30 min playtime every player claims it once, with a cosmetic name color (`#E0A070`) and a choice of 1 of 3 tags (ember, spark, ash). Kept forever. Its small perks are not decided yet (OPEN_QUESTIONS).
 - **5 donor ranks:** proposed names **Squire → Knight → Paladin → Warlord → Monarch**.
 - Perks: worth it but not overpowered: more `/pv` vaults, cosmetics, convenience, and a **Progress Boost** of 2/4/6/8/10%.
 - Progress Boost math: pillar level cost grows 12% per level, so +10% XP ≈ `ln(1.10)/ln(1.12)` ≈ **0.84 pillar levels ahead** at equal playtime, i.e. ~4 island levels across 5 pillars. Noticeable, not decisive. The boost counts toward the global multiplier cap.

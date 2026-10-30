@@ -1,6 +1,12 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- R2A skills: max level 150 with tiers still at 0–66. After level 66 each level costs 2% more (`skills.yml → curve.end-growth: 1.02`). With today's XP sources a top player ends a 90-day season around level 81; level 150 needs ~3.5B XP (~8.6× a top season). Should 150 be reachable in one season (then levels after 66 must get cheaper, or XP boosts bigger)? (default: 2% growth, 150 is a far goal)
+- R2A `/skills set|add <player> <skill> <amount>`: the amount is in **levels** (set = start of that level, add = keeps progress), online players only. Want raw XP or offline players too? (default: levels, online only)
+- R2A `/freerank`: the free tags are ember, spark and ash. `ember` was also a Rare-crate tag and `ashes` an Uncommon-crate tag, so the free pick makes the crate `ember` tag less special. Rename the crate tag, or pick other free tags? (default: as given, configurable in `perks.yml → freerank.tags`)
+- R2A `/freerank`: the Ember rank gives the name color and prefix only. Which "few small perks" should it get (e.g. `/hat`, 1 extra AH slot)? (default: none until decided)
+- R2A staff mode: the Inspect tool is now a blaze rod (owner #5), so the Punish tool (also a blaze rod before) is now a breeze rod. OK? (default: breeze rod)
+- R2A time zone: all player/staff-facing times use `core.yml → display-timezone: Europe/Oslo` and `server/start.sh` runs the JVM with `-Duser.timezone=Europe/Oslo`. Staff logs now show CET/CEST instead of UTC (CSV export too). OK? (default: yes)
 - UX1 tab: the lines beside SKYBORN are now left frost white (first letter) and right blue (the "MC"), instead of one long gradient over the whole line. OK, or try the long gradient? (default: left white, right blue)
 - UX1 scoreboard: the objective line ("Next: ...") and the online count were removed to keep it at 10 lines. Bring one of them back? (default: no; the objective returns with the tutorial/quests)
 - UX1 join/quit lines are now just `[+] Name` / `[-] Name` (no "joined the server"). OK? (default: yes)
@@ -8,7 +14,7 @@
 - P0 freeze: staff and plugin teleports (`/tp`, `/tphere`, a `/spawn` warmup that was already running) still move a frozen player and they stay frozen at the new spot (`freeze.allowed-teleport-causes: [command, plugin]`). OK, or staff-only? (default: command + plugin)
 - P0 freeze: a frozen player hovers (flight on, no gravity) so they can't fall away; on unfreeze their own flight comes back and fall damage is ignored for `freeze.fall-grace-seconds` (10). OK? (default: yes)
 - P0 freeze: with `freeze.logout-action: ban` the freeze is still stored, so after an unban they come back frozen. Clear the freeze on a ban instead? (default: keep it)
-- P0 staff mode: the Inspect tool is now an ender eye (`mode.inspect-tool-material`), because a spyglass always zooms on the player's screen. Another item? (default: ender eye)
+- ~~P0 staff mode: the Inspect tool is now an ender eye~~ Answered (owner #5): blaze rod (R2A).
 - Islands (M2.3): the member cap (4, upgradable to 8) counts the leader, so a starting team is 4 players in total. OK? (default: yes, leader included)
 - Islands (M2.3): join cooldown counts 24 h from the later of the last join and the last leave/kick (stricter than "between joins"). OK? (default: yes)
 - Islands (M2.3): a player who already owns an island (even a fresh solo one) can't accept invites until they leave it; a solo leader can only leave by disbanding (M2.7). Allow accepting an invite to auto-disband an untouched starter island? (default: no, they must disband first)
@@ -87,7 +93,7 @@
 - Skills (M4.5): level-up audit rows use category `world` (no progression category). Add a `progression` audit category? (default: `world`)
 - Skills (M4.5): anyone may view another player's skills with `/skills <player>` (`skyblock.skills.others`, default true). Keep public? (default: yes)
 - Auction (M3.6): the 1% listing fee is not refunded when the seller cancels (`auction.yml → fee.refund-on-cancel: false`); expired listings never get it back. Refund on cancel? (default: no)
-- Auction (M3.6): new accounts (< 2 h played) can neither list nor buy (`anti-abuse.new-account.block-listing/block-buying`). The balance sheet only says "can't sell"; allow buying? (default: both blocked)
+- Auction (M3.6): new accounts (< 30 min played, owner #40) can neither list nor buy (`anti-abuse.new-account.block-listing/block-buying`). The balance sheet only says "can't sell"; allow buying? (default: both blocked)
 - Auction (M3.6): extra listing slots per rank (`skyblock.auction.slots.<n>`, default 5, cap 54). Which store/bank ranks get how many? (default: nobody has extra slots until the store ranks exist)
 - Auction (M3.6): money notes are not listable (`items.allow-money-notes: false`) until the notes module (M3.2) decides. OK? (default: not listable)
 - Auction (M3.6): filled shulker boxes and bundles can't be listed (their contents could hide starter kit tools or dupes; `items.allow-filled-containers: false`). OK? (default: must be empty)

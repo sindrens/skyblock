@@ -72,3 +72,20 @@ sudo:
   higher-rank: "<prefix><c:error><sym:cross></c:error> <c:text>You can't sudo <c:value><player></c:value>: same or higher rank."
   blocked: "<prefix><c:error><sym:cross></c:error> <c:value>/<command></c:value> <c:text>can't be used with sudo."
   empty: "<prefix><c:error><sym:cross></c:error> <c:text>Add a command, or <c:value>c:</c:value> and a chat message."
+
+# /freerank: free lowest rank after 30 min playtime, then pick 1 of 3 tags. Kept forever.
+freerank:
+  too-early: "<prefix><c:error><sym:cross></c:error> <c:text>Play <c:value><minutes> min</c:value> <c:text>first. <c:value><time></c:value> <c:text>left."
+  claimed: "<prefix><c:success><sym:check></c:success> <c:text>You're now <c:ember>Ember</c:ember><c:text>! Pick your tag."
+  tag-picked: "<prefix><c:success><sym:check></c:success> <c:text>Tag <tag> <c:text>is yours. Wear it with <click:run_command:'/tags'><hover:show_text:'<c:text>Open your tags'><c:action>/tags</c:action></hover></click>."
+  done: "<prefix><c:error><sym:cross></c:error> <c:text>You already claimed your free rank."
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The free rank is off right now."
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>The free rank can't be given right now. Try again later."
+  no-tags: "<prefix><c:error><sym:cross></c:error> <c:text>No tags to pick right now. Use <c:value>/freerank</c:value> <c:text>again later."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was used up, try again."
+  busy: "<prefix><c:muted>One moment..."
+  menu:
+    title: "Pick your tag"
+    tag:
+      name: "<tag>"
+      lore: ["<c:text>Free with your rank.", "<c:text>Yours forever.", "", "<c:action><sym:bullet> Click to pick"]

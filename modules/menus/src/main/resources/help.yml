@@ -353,6 +353,7 @@ topics:
         lines:
           - "<c:text>Ranks are available in the store:"
           - "<c:value>/store</c:value><c:text>. Every purchase supports the server."
+          - "<c:text>Free: play 30 min, then</c:text> <c:value>/freerank</c:value><c:text>."
 
   links:
     icon: bell

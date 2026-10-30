@@ -15,6 +15,14 @@ lp group helper setweight 10
 lp group mod setweight 20
 lp group admin setweight 30
 lp group owner setweight 100
+# Free lowest rank from /freerank (owner RW4): weight 1, below every staff rank.
+lp creategroup ember
+lp group ember setweight 1
+lp group ember parent add default
+lp group ember setdisplayname Ember
+lp group ember meta set color "#E0A070"
+lp group ember meta removeprefix 1
+lp group ember meta addprefix 1 "&7[&6Ember&7] "
 
 # --- Rank colors (hex) for our chat/tab/nametags; prefixes below stay classic colors for Bedrock and other plugins ---
 lp group default meta set color "#C9C9C9"

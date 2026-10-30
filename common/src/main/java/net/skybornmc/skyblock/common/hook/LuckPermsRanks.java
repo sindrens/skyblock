@@ -19,6 +19,7 @@ import org.bukkit.plugin.Plugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
@@ -105,6 +106,19 @@ final class LuckPermsRanks implements RankProvider {
             }
         }
         return RankProvider.pickPrimary(parents, cached);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> addGroup(UUID player, String group) {
+        return lp.getGroupManager().loadGroup(group).thenCompose(found -> {
+            if (found.isEmpty()) {
+                return CompletableFuture.failedFuture(new IllegalArgumentException("LuckPerms group '" + group + "' does not exist"));
+            }
+            boolean[] added = {false};
+            return lp.getUserManager().modifyUser(player,
+                            user -> added[0] = user.data().add(InheritanceNode.builder(found.get()).build()).wasSuccessful())
+                    .thenApply(done -> added[0]);
+        });
     }
 
     @Override

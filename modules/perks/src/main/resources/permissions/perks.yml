@@ -43,3 +43,6 @@ skyblock.admin.sudo:
 skyblock.sudo.exempt:
   description: Can't be targeted by /sudo
   default: op
+skyblock.perks.freerank:
+  description: Claim the free rank and a tag once after 30 minutes of playtime (/freerank)
+  default: true

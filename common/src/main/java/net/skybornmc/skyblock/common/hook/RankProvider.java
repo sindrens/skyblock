@@ -7,6 +7,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -45,6 +46,15 @@ public interface RankProvider {
 
     /** True when backed by LuckPerms. */
     boolean available();
+
+    /**
+     * Adds a permanent parent group to a player (online or offline), e.g. {@code /freerank} gives {@code ember}.
+     * Completes with {@code true} when added, {@code false} when the player already had it; fails when there is no rank
+     * plugin or the group does not exist. Callers audit the change.
+     */
+    default CompletableFuture<Boolean> addGroup(UUID player, String group) {
+        return CompletableFuture.failedFuture(new IllegalStateException("No rank plugin (LuckPerms) installed"));
+    }
 
     /** Unsubscribes event listeners (plugin disable). */
     default void close() {
