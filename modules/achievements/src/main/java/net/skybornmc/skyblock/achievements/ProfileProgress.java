@@ -31,6 +31,9 @@ final class ProfileProgress {
     private final Map<String, Integer> unlocked = new HashMap<>();
     private boolean loaded;
     private boolean loading;
+    /** Boost points per boost and per category (AC2), recomputed after load, unlocks and reloads ({@link #points}). */
+    private Map<PersonalBoost, Integer> boostPoints = Map.of();
+    private Map<String, Integer> categoryPoints = Map.of();
 
     ProfileProgress(UUID key, UUID owner) {
         this.key = key;
@@ -70,6 +73,30 @@ final class ProfileProgress {
 
     Map<String, Integer> unlockedView() {
         return Collections.unmodifiableMap(unlocked);
+    }
+
+    /** Points of one boost (0 before the first {@link #points} call). */
+    int boostPoints(PersonalBoost boost) {
+        return boostPoints.getOrDefault(boost, 0);
+    }
+
+    int categoryPoints(String category) {
+        return categoryPoints.getOrDefault(category, 0);
+    }
+
+    /** Recomputes the cached boost points from the unlocks (cheap: one pass over the registry). */
+    void points(AchievementRegistry registry, int[] perTier) {
+        boostPoints = Map.copyOf(BoostMath.personalPoints(registry, unlocked, perTier));
+        categoryPoints = Map.copyOf(BoostMath.categoryPoints(registry, unlocked, perTier));
+    }
+
+    /** Total boost points of every category. */
+    int totalPoints() {
+        int total = 0;
+        for (int v : boostPoints.values()) {
+            total += v;
+        }
+        return total;
     }
 
     void markUnlocked(String achievement, int tier) {

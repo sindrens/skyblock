@@ -10,7 +10,7 @@ final class ProgressMath {
     }
 
     /** Tiers whose goal {@code value} has reached (0 to {@link AchievementDef#tiers()}). */
-    static int tiersDone(AchievementDef def, long value) {
+    static int tiersDone(Tiered def, long value) {
         int done = 0;
         for (long goal : def.goals()) {
             if (value >= goal) {
@@ -22,18 +22,18 @@ final class ProgressMath {
         return done;
     }
 
-    static boolean complete(AchievementDef def, long value) {
+    static boolean complete(Tiered def, long value) {
         return value >= def.finalGoal();
     }
 
     /** The goal of the next tier, or the final goal when everything is done. */
-    static long nextGoal(AchievementDef def, long value) {
+    static long nextGoal(Tiered def, long value) {
         int done = tiersDone(def, value);
         return done >= def.tiers() ? def.finalGoal() : def.goal(done + 1);
     }
 
     /** Progress towards the next goal, 0.0 to 1.0 (1.0 when complete). */
-    static double fraction(AchievementDef def, long value) {
+    static double fraction(Tiered def, long value) {
         long next = nextGoal(def, value);
         if (value >= next) {
             return 1.0;
@@ -58,7 +58,7 @@ final class ProgressMath {
     }
 
     /** Tiers newly reached: every tier above {@code unlocked} up to what {@code value} reaches, lowest first. */
-    static List<Integer> newTiers(AchievementDef def, long value, int unlocked) {
+    static List<Integer> newTiers(Tiered def, long value, int unlocked) {
         int done = tiersDone(def, value);
         List<Integer> out = new ArrayList<>();
         for (int tier = Math.max(0, unlocked) + 1; tier <= done; tier++) {

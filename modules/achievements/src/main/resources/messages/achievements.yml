@@ -2,7 +2,8 @@
 # Achievement names and descriptions are in achievements.yml. Reload: /skyblock reload achievements
 
 # Unlock toast: screen title for the best unlock, a chat line per unlock, one sound (achievements-settings.yml → toast.*).
-# <name> = the achievement's name, <tier> = " II" for achievements with tiers (empty for one-step ones).
+# <name> = the achievement's name, <tier> = " II" for achievements with tiers (empty for one-step ones),
+# <points> = boost points of that tier (achievements-settings.yml -> points.*).
 unlock:
   screen:
     title: "<c:flame>Achievement!"
@@ -16,14 +17,35 @@ unlock:
     fade-in: 5
     stay: 60
     fade-out: 15
-  chat: "<prefix><c:success><sym:star></c:success> <c:text>Achievement: <name><c:value><tier></c:value>"
-  chat-done: "<prefix><c:success><sym:star></c:success> <c:text>Achievement done: <name><c:value><tier></c:value><c:text>!"
-  more: "<prefix><c:text>And <c:value><count></c:value> more. See them in <click:run_command:'/tags'><hover:show_text:'<c:text>Open /tags, then Achievements'><c:action>[Achievements]</c:action></hover></click>"
+  chat: "<prefix><c:success><sym:star></c:success> <c:text>Achievement: <name><c:value><tier></c:value> <c:muted>(+<points> pts)"
+  chat-done: "<prefix><c:success><sym:star></c:success> <c:text>Achievement done: <name><c:value><tier></c:value><c:text>! <c:muted>(+<points> pts)"
+  more: "<prefix><c:text>And <c:value><count></c:value> more. See them in <click:run_command:'/achievements'><hover:show_text:'<c:text>Open /achievements'><c:action>[Achievements]</c:action></hover></click>"
+  # Island achievements (AC3): shown to every online member of the island.
+  island-screen:
+    title: "<c:flame>Island achievement!"
+    subtitle: "<name><c:value><tier>"
+    fade-in: 5
+    stay: 50
+    fade-out: 15
+  island-screen-done:
+    title: "<grad:phoenix>Island achievement done!</grad>"
+    subtitle: "<name><c:value><tier>"
+    fade-in: 5
+    stay: 60
+    fade-out: 15
+  island-chat: "<prefix><c:success><sym:star></c:success> <c:text>Island achievement: <name><c:value><tier></c:value> <c:muted>(+<points> island pts)"
+  island-chat-done: "<prefix><c:success><sym:star></c:success> <c:text>Island achievement done: <name><c:value><tier></c:value><c:text>! <c:muted>(+<points> island pts)"
   # A reward title the account did not have yet. <display>
   title: "<prefix><c:success><sym:star></c:success> <c:text>New title: <display><c:text>! <click:run_command:'/titles'><hover:show_text:'<c:text>Open /titles'><c:action>[Equip]</c:action></hover></click>"
 
 # 'How to earn it' text of reward titles added to tags-titles.yml (shown on locked titles in /tags). <name>
 title-source: "Finish the achievement <name>."
+# Same for island achievement titles (every member with 3+ days on the island gets them).
+title-source-island: "Finish the island achievement <name>."
+
+# Season reset (AC4): sent to online players right after their achievements were reset. <season> = the season that ended.
+season:
+  reset: "<prefix><c:text>Season <c:value><season></c:value> is over: achievements start fresh. Your titles stay. See <click:run_command:'/achievements'><hover:show_text:'<c:text>Open /achievements'><c:action>[History]</c:action></hover></click>"
 
 no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open achievements. Ask staff if this is wrong."
 
@@ -31,9 +53,34 @@ no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open ac
 menu:
   title: "Achievements"
   info:
-    - "<c:text>Achievements of this profile."
-    - "<c:text>Last tiers give titles for"
-    - "<c:text>every profile."
+    - "<c:text>Personal: this profile's goals."
+    - "<c:text>Island: shared by your members."
+    - "<c:text>Every tier gives boost points."
+    - "<c:text>Last tiers give titles."
+  island-info:
+    - "<c:text>Shared by all island members."
+    - "<c:text>Tiers give island points."
+  # Tabs in the top row. <tab> = the tab's name, <hint> = what it shows.
+  tab:
+    personal: "Personal"
+    island: "Island"
+    history: "History"
+  tab-hint:
+    personal: "Goals and boosts of this profile."
+    island: "Shared goals of your island."
+    history: "What you did in past seasons."
+  tab-selected:
+    name: "<c:flame><tab> <c:success><sym:check>"
+    lore:
+      - "<c:text><hint>"
+      - ""
+      - "<c:muted>You are here."
+  tab-other:
+    name: "<c:value><tab>"
+    lore:
+      - "<c:text><hint>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   category-info:
     - "<c:text>Progress to the next goal."
     - "<c:text>Secret ones show as ???."
@@ -54,6 +101,28 @@ menu:
       - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
       - "<c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
       - "<bar> <c:value><percent>%"
+      - ""
+      - "<bold><c:header>| Boost points</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Total: </c:text><c:value><points>"
+      - "<c:bar>| </c:bar><c:muted>Every tier adds points."
+  # The "| Boost" section of a personal category. <boost> = name below, <value>/<cap> = now/most, <step> = per point.
+  boost:
+    header: "<bold><c:header>| Boost</c:header></bold>"
+    points: "<c:bar>| </c:bar><c:text>Points: </c:text><c:value><points>"
+    value: "<c:bar>| </c:bar><c:text><boost>: </c:text><c:value>+<value>%<c:muted> / <cap>%"
+    value-max: "<c:bar>| </c:bar><c:text><boost>: </c:text><c:success>+<value>% <sym:check> Maxed"
+    step: "<c:bar>| </c:bar><c:muted>+<step>% per point"
+    slots: "<c:bar>| </c:bar><c:text><boost>: </c:text><c:value>+<value><c:muted> / <cap>"
+    next: "<c:bar>| </c:bar><c:muted>Next slot at <points> points"
+    disabled: "<c:bar>| </c:bar><c:error>Boosts are off right now"
+    name:
+      skill_xp: "Skill XP"
+      tool_xp: "Tool XP"
+      mob_damage: "Mob damage"
+      rare_finds: "Rare finds"
+      crystals: "Crystals"
+      ah_slots: "AH slots"
+      none: "Nothing"
   category:
     lore:
       - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
@@ -73,8 +142,15 @@ menu:
       - "<c:success><sym:check> Done"
       - "<c:text>Reached: <c:value><value>"
     goals: "<c:text>Goals: <goals>"
+    rewards: "<bold><c:header>| Rewards</c:header></bold>"
+    reward-points: "<c:success><bold>[+]</bold></c:success> <c:text><c:value><points></c:value> boost points"
+    reward-points-boost: "<c:success><bold>[+]</bold></c:success> <c:value><points></c:value> <c:text>pts <c:muted>(<boost>)"
     reward: "<c:success><bold>[+]</bold></c:success> <title> <c:muted>title"
     reward-owned: "<c:success><bold>[+]</bold></c:success> <title> <c:success><sym:check>"
+  island-entry:
+    subtitle: "<c:muted>Island achievement"
+    subtitle-tiers: "<c:muted>Island <sym:dot> Tier <tier>/<tiers>"
+    reward: "<c:success><bold>[+]</bold></c:success> <title> <c:muted>(<days>+ days)"
   goal-done: "<c:success><goal></c:success>"
   goal-open: "<c:muted><goal></c:muted>"
   goal-separator: " <c:muted>·</c:muted> "
@@ -83,3 +159,87 @@ menu:
     lore:
       - "<c:muted><sym:time> A secret achievement."
       - "<c:muted>Keep playing to find it."
+  # Island tab (AC3). <island> = island name.
+  island:
+    disabled:
+      name: "<c:error>Island achievements are off"
+      lore: ["<c:muted>Staff turned them off for now."]
+    none:
+      name: "<c:text>No island yet"
+      lore:
+        - "<c:muted>Island achievements are shared"
+        - "<c:muted>by an island's members."
+        - ""
+        - "<c:text>Make one with <c:value>/is</c:value><c:text>."
+    summary:
+      name: "<c:flame><island>"
+      lore:
+        - "<c:muted>Island achievements"
+        - ""
+        - "<c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
+        - "<bar> <c:value><percent>%"
+        - ""
+        - "<bold><c:header>| Island points</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Points: </c:text><c:value><points>"
+        - "<c:bar>| </c:bar><c:text>Level points: </c:text><c:value><level-points>"
+    list:
+      name: "<c:flame>Island achievements"
+      lore:
+        - "<c:text>Goals all members work on."
+        - "<c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+    boost:
+      name:
+        production: "<c:flame>Island production"
+        crystals: "<c:flame>Island crystals"
+        island_xp: "<c:flame>Island XP"
+        fuel: "<c:flame>Fuel efficiency"
+      lore:
+        production: ["<c:text>Generators, crops, mob loot", "<c:text>and spawners, as one factor."]
+        crystals: ["<c:text>Crystals from island missions", "<c:text>and island sources."]
+        island_xp: ["<c:text>Pillar XP of the whole island."]
+        fuel: ["<c:text>Less Island Fuel burned per", "<c:text>offline hour."]
+      value: "<c:bar>| </c:bar><c:text>Now: </c:text><c:value>+<value>%<c:muted> / <cap>%"
+      value-max: "<c:bar>| </c:bar><c:text>Now: </c:text><c:success>+<value>% <sym:check> Maxed"
+      full: "<c:bar>| </c:bar><c:muted>Maxed at <points> island points"
+      later:
+        production: ["<c:muted>Saved now; it starts to work", "<c:muted>with island production."]
+        crystals: ["<c:muted>Saved now; it starts to work", "<c:muted>with island missions."]
+        fuel: ["<c:muted>Saved now; it starts to work", "<c:muted>with Island Fuel."]
+    top:
+      name: "<c:flame>Top members"
+      intro:
+        - "<c:muted>Blocks, crops, logs and mobs"
+        - "<c:muted>on this island, all time."
+        - ""
+      empty: ["<c:muted>Nothing counted yet."]
+      line: "<c:value>#<place></c:value> <c:text><player> <c:muted><sym:dot> <c:value><amount>"
+  # History tab (AC4): one book per finished season and profile.
+  history:
+    header:
+      name: "<c:flame>Season history"
+      lore:
+        - "<c:text>What you did in past seasons."
+        - "<c:text>Titles you won always stay."
+    error:
+      name: "<c:error><sym:cross> Couldn't load this"
+      lore: ["<c:muted>Try again in a moment."]
+    empty:
+      name: "<c:text>No past seasons yet"
+      lore: ["<c:muted>Your first season is still on."]
+    season:
+      name: "<c:flame>Season <season>"
+      lore:
+        - "<c:muted>Profile <sym:dot> <profile>"
+        - ""
+        - "<bold><c:header>| Personal</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Tiers: </c:text><c:value><tiers>"
+        - "<c:bar>| </c:bar><c:text>Finished: </c:text><c:value><done>"
+        - "<c:bar>| </c:bar><c:text>Boost points: </c:text><c:value><points>"
+        - ""
+        - "<bold><c:header>| Island</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Tiers: </c:text><c:value><island-tiers>"
+        - "<c:bar>| </c:bar><c:text>Island points: </c:text><c:value><island-points>"
+      titles: "<bold><c:header>| Titles won</c:header></bold>"
+      title: "<c:bar>| </c:bar><title> <c:muted>S<season>"

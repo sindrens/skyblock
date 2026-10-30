@@ -745,7 +745,10 @@ public final class AuctionModule implements SkyblockModule, Listener {
                 granted.add(info.getPermission());
             }
         }
-        return ListingRules.slots(config, granted);
+        // AC2: personal Economy achievements add up to +2 slots on top of the rank slots (own small cap there).
+        int achievements = core.services().optional(net.skybornmc.skyblock.common.achievements.AchievementService.class)
+                .map(a -> a.extraAuctionSlots(player.getUniqueId())).orElse(0);
+        return ListingRules.slots(config, granted) + Math.max(0, achievements);
     }
 
     /**

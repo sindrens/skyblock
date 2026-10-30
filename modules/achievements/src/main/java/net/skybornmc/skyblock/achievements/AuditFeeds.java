@@ -34,6 +34,8 @@ final class AuditFeeds {
     static final String TRADE_COMPLETE = "trade_complete";
     static final Set<String> ENCHANT_ACTIONS = Set.of("enchant_apply", "enchant_combine_tool");
     static final String ISLAND_VISIT = "island_visit";
+    /** {@code island/island_like}: target = the liked island's id (AC3 island metric {@code likes}). */
+    static final String ISLAND_LIKE = "island_like";
 
     private AuditFeeds() {
     }
@@ -44,13 +46,18 @@ final class AuditFeeds {
             case ECONOMY -> SELL.equals(e.action());
             case TRADE -> TRADE_COMPLETE.equals(e.action());
             case ITEM -> ENCHANT_ACTIONS.contains(e.action());
-            case ISLAND -> ISLAND_VISIT.equals(e.action());
+            case ISLAND -> ISLAND_VISIT.equals(e.action()) || ISLAND_LIKE.equals(e.action());
             default -> false;
         };
     }
 
+    /** The island a like row is about, or null for every other row. */
+    static UUID islandLiked(AuditEntry e) {
+        return e.category() == AuditCategory.ISLAND && ISLAND_LIKE.equals(e.action()) ? uuid(e.target()) : null;
+    }
+
     static List<Feed> map(AuditEntry e) {
-        if (!relevant(e)) {
+        if (!relevant(e) || ISLAND_LIKE.equals(e.action())) {
             return List.of();
         }
         List<Feed> out = new ArrayList<>(3);

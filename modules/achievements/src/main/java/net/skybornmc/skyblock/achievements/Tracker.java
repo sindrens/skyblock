@@ -81,10 +81,22 @@ final class Tracker implements Listener {
     /** Join gauge polls are spread over this many ticks. */
     private static final int JOIN_SPREAD_TICKS = 20;
     private Runnable stopAudit;
+    private final IslandTracker islands;
+    /** True while the season reset runs: no progress is added or saved until it finished. */
+    private boolean resetting;
 
     Tracker(AchievementsModule module) {
         this.module = module;
         this.core = module.core();
+        this.islands = new IslandTracker(module, this);
+    }
+
+    IslandTracker islands() {
+        return islands;
+    }
+
+    boolean resetting() {
+        return resetting;
     }
 
     private ProfileService profiles() {
@@ -105,6 +117,7 @@ final class Tracker implements Listener {
         stopAudit = core.audit().listen(this::onAudit);
         Bukkit.getOnlinePlayers().forEach(p -> attach(p, profiles().profileKey(p.getUniqueId())));
         schedule();
+        islands.start();
     }
 
     /** (Re)starts the timers with the current settings. */
@@ -113,7 +126,10 @@ final class Tracker implements Listener {
         tasks.clear();
         Scheduler s = core.scheduler();
         long save = 20L * config().saveIntervalSeconds;
-        tasks.add(s.repeat("achievements-save", save, save, this::saveAll));
+        tasks.add(s.repeat("achievements-save", save, save, () -> {
+            saveAll();
+            islands.saveAll();
+        }));
         // QUICK1 (P-12/P-20): every second one slice of the players, so each player is still polled every
         // gauge-poll-seconds but never all of them on the same tick.
         gaugeTick = 0;
@@ -136,6 +152,8 @@ final class Tracker implements Listener {
         } catch (Exception e) {
             core.plugin().getLogger().warning("Achievements: earlier writes did not finish in time: " + e.getMessage());
         }
+        islands.unhook();
+        islands.saveBlocking();
         long now = System.currentTimeMillis();
         for (ProfileProgress p : online.values()) {
             // Also profiles still loading: their values are deltas since join / best values, exactly what is written.
@@ -159,6 +177,11 @@ final class Tracker implements Listener {
 
     Optional<ProfileProgress> progress(UUID player) {
         return Optional.ofNullable(online.get(player));
+    }
+
+    /** Hot path (bonus source, per block/kill): no Optional. */
+    ProfileProgress progressOrNull(UUID player) {
+        return online.get(player);
     }
 
     int completed(UUID player) {
@@ -216,6 +239,7 @@ final class Tracker implements Listener {
                 return;
             }
             p.load(loaded.values(), loaded.unlocks());
+            p.points(registry(), config().perTier());
             Player online = Bukkit.getPlayer(uuid);
             handle(online, Progression.evaluateAll(p, registry()));
             // QUICK1 (PERFORMANCE "achievements-load"): the gauge poll (skills, wardrobe, balance, hotbar tools) runs a
@@ -235,12 +259,17 @@ final class Tracker implements Listener {
             return;
         }
         // Counters are deltas and gauges maxima, so saving a profile that never finished loading is still correct.
-        save(p);
+        if (!resetting) { // during a season reset the progress is wiped anyway (a save queued after it would bring it back)
+            save(p);
+        }
     }
 
     // ------------------------------------------------------------------ saving
 
     private void saveAll() {
+        if (resetting) {
+            return;
+        }
         for (ProfileProgress p : online.values()) {
             if (p.loaded()) {
                 save(p);
@@ -300,10 +329,110 @@ final class Tracker implements Listener {
     }
 
     /** Runs database work after every earlier piece of this module's database work (one ordered chain). */
-    private synchronized <T> CompletableFuture<T> queue(Sql.SqlFunction<T> work) {
+    synchronized <T> CompletableFuture<T> queue(Sql.SqlFunction<T> work) {
         CompletableFuture<T> next = chain.handle((v, e) -> null).thenCompose(v -> core.database().async(work));
         chain = next.handle((v, e) -> null);
         return next;
+    }
+
+    // ------------------------------------------------------------------ season reset (AC4, owner 354 / RTA-44)
+
+    /** Result of a season reset: history rows written and progress rows wiped; {@code written = -1} = already done. */
+    record ResetResult(int written, int wiped) {
+    }
+
+    /**
+     * Season reset: saves what is in memory, writes the season summary (history) of every profile, then wipes every
+     * personal and island progress row in <b>one transaction</b>. Titles stay on the accounts (cosmetics). Refuses to run
+     * twice for the same season (the summary of that season exists): then only the pending progress is saved.
+     * Main thread; the work runs in the module's ordered database chain.
+     */
+    CompletableFuture<ResetResult> seasonReset(int season, Actor actor) {
+        if (resetting) {
+            return CompletableFuture.failedFuture(new IllegalStateException("a season reset is already running"));
+        }
+        resetting = true;
+        long now = System.currentTimeMillis();
+        Map<UUID, List<ProfileProgress.Row>> personal = new HashMap<>();
+        for (ProfileProgress p : online.values()) {
+            List<ProfileProgress.Row> rows = p.drain();
+            if (!rows.isEmpty()) {
+                personal.put(p.key(), rows);
+            }
+        }
+        Map<UUID, List<IslandProgress.Row>> islandRows = islands.drainAll();
+        Map<UUID, UUID> memberIsland = islands.memberIslands();
+        Map<UUID, UUID> memberOwner = new HashMap<>();
+        ProfileService profiles = profiles();
+        memberIsland.keySet().forEach(key -> memberOwner.put(key, profiles.ownerOf(key)));
+        java.util.Set<UUID> team = islands.teamIslands();
+        AchievementRegistry reg = registry();
+        int[] perTier = config().perTier();
+        CompletableFuture<ResetResult> result = queue(c -> {
+            boolean auto = c.getAutoCommit();
+            c.setAutoCommit(false);
+            try {
+                for (Map.Entry<UUID, List<ProfileProgress.Row>> e : personal.entrySet()) {
+                    store.save(c, e.getKey(), e.getValue(), now);
+                }
+                for (Map.Entry<UUID, List<IslandProgress.Row>> e : islandRows.entrySet()) {
+                    store.saveIsland(c, e.getKey(), e.getValue(), now);
+                }
+                if (store.hasHistory(c, season)) {
+                    c.commit();
+                    return new ResetResult(-1, 0);
+                }
+                List<SeasonSummary.Entry> entries = SeasonSummary.compute(season, reg, perTier, store.allUnlocks(c),
+                        store.allIslandUnlocks(c), memberIsland, memberOwner, team);
+                store.insertHistory(c, entries, now);
+                int wiped = store.wipeSeason(c);
+                c.commit();
+                return new ResetResult(entries.size(), wiped);
+            } catch (java.sql.SQLException | RuntimeException e) {
+                c.rollback();
+                throw e;
+            } finally {
+                c.setAutoCommit(auto);
+            }
+        });
+        CompletableFuture<ResetResult> done = new CompletableFuture<>();
+        result.whenComplete((r, error) -> core.scheduler().main("achievements-season-reset", () -> {
+            resetting = false;
+            if (error != null) {
+                // Nothing was wiped (rolled back): give the drained rows back so the next save writes them.
+                for (ProfileProgress p : online.values()) {
+                    List<ProfileProgress.Row> rows = personal.get(p.key());
+                    if (rows != null) {
+                        p.restore(rows);
+                    }
+                }
+                islandRows.forEach((id, rows) -> islands.find(id).ifPresent(ip -> ip.restore(rows)));
+                core.plugin().getLogger().log(Level.SEVERE, "Achievements: the season reset failed and changed nothing", Database.cause(error));
+                done.completeExceptionally(Database.cause(error));
+                return;
+            }
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("season", season);
+            details.put("history_rows", r.written());
+            details.put("wiped_rows", r.wiped());
+            core.audit().log(AuditCategory.ITEM, r.written() < 0 ? "achievements_season_reset_refused" : "achievements_season_reset",
+                    actor == null ? Actor.system(AchievementsModule.ID) : actor, details);
+            if (r.written() >= 0) {
+                for (Map.Entry<UUID, ProfileProgress> e : online.entrySet()) {
+                    ProfileProgress fresh = new ProfileProgress(e.getValue().key(), e.getValue().owner());
+                    fresh.load(Map.of(), Map.of());
+                    fresh.points(registry(), config().perTier());
+                    e.setValue(fresh);
+                    Player player = Bukkit.getPlayer(e.getKey());
+                    if (player != null) {
+                        module.msg().send(player, "season.reset", Msg.p("season", season));
+                    }
+                }
+                islands.resetAll();
+            }
+            done.complete(r);
+        }));
+        return done;
     }
 
     // ------------------------------------------------------------------ adding progress
@@ -311,7 +440,7 @@ final class Tracker implements Listener {
     /** Adds to the active profile of an online player. */
     void add(UUID player, Metric metric, long amount) {
         ProfileProgress p = online.get(player);
-        if (p == null || !registry().usedMetrics().contains(metric)) {
+        if (p == null || resetting || !registry().usedMetrics().contains(metric)) {
             return;
         }
         handle(Bukkit.getPlayer(player), Progression.apply(p, registry(), metric, amount));
@@ -328,6 +457,11 @@ final class Tracker implements Listener {
 
     private void onAudit(AuditEntry entry) {
         if (!AuditFeeds.relevant(entry)) {
+            return;
+        }
+        UUID liked = AuditFeeds.islandLiked(entry);
+        if (liked != null) {
+            core.scheduler().ensureMain("achievements-island-like", () -> islands.add(liked, IslandMetric.LIKES, 1));
             return;
         }
         List<AuditFeeds.Feed> feeds = AuditFeeds.map(entry);
@@ -369,6 +503,11 @@ final class Tracker implements Listener {
         }
         for (UUID uuid : List.copyOf(online.keySet())) {
             add(uuid, Metric.PLAYTIME_MINUTES, 1);
+            ProfileProgress p = online.get(uuid);
+            Player player = Bukkit.getPlayer(uuid);
+            if (p != null && player != null && !resetting) {
+                islands.minute(player, p.key());
+            }
         }
     }
 
@@ -483,6 +622,7 @@ final class Tracker implements Listener {
                 return;
             }
             core.scheduler().main("achievements-island-stats", () -> {
+                this.islands.onSnapshot(islandId, snap);
                 for (UUID uuid : players) {
                     ProfileProgress p = online.get(uuid);
                     if (p == null) {
@@ -501,7 +641,11 @@ final class Tracker implements Listener {
     void reevaluateAll() {
         for (Map.Entry<UUID, ProfileProgress> e : online.entrySet()) {
             handle(Bukkit.getPlayer(e.getKey()), Progression.evaluateAll(e.getValue(), registry()));
+            if (e.getValue().loaded()) {
+                e.getValue().points(registry(), config().perTier());
+            }
         }
+        islands.reload();
     }
 
     /** Stores, audits and shows unlocks; grants the reward title to the account on the last tier. */
@@ -510,6 +654,13 @@ final class Tracker implements Listener {
             return;
         }
         long now = System.currentTimeMillis();
+        int[] perTier = config().perTier();
+        for (Progression.Unlock u : unlocks) {
+            ProfileProgress p = online.get(u.owner());
+            if (p != null && p.key().equals(u.profileKey())) {
+                p.points(registry(), perTier); // boosts follow at once (one pass over the registry per unlock batch is cheap)
+            }
+        }
         for (Progression.Unlock u : unlocks) {
             long value = progressValue(u); // main thread (the online map); the rest runs where the write finished
             queue(c -> store.unlock(c, u.profileKey(), u.def().id(), u.tier(), u.owner(), now)).whenComplete((added, error) -> {
@@ -526,6 +677,8 @@ final class Tracker implements Listener {
                 details.put("tiers", u.def().tiers());
                 details.put("profile", u.profileKey().toString());
                 details.put("value", value);
+                details.put("points", BoostMath.tierPoints(perTier, u.tier()));
+                details.put("boost", registry().boostOf(u.def()).id());
                 details.put("new", added);
                 if (u.title() != null) {
                     details.put("title", u.title());

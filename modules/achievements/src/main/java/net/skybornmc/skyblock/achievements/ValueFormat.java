@@ -12,8 +12,12 @@ final class ValueFormat {
 
     /** Progress value: exact below 10,000, compact above; money with $; minutes as a duration. */
     static String format(Metric metric, long value) {
+        return format(metric.unit(), value);
+    }
+
+    static String format(Metric.Unit unit, long value) {
         long v = Math.max(0, value);
-        return switch (metric.unit()) {
+        return switch (unit) {
             case MONEY -> Format.money(v);
             case MINUTES -> Format.duration(Duration.ofMinutes(v));
             case LEVEL -> Format.number(v);
@@ -23,8 +27,12 @@ final class ValueFormat {
 
     /** Goal in the goals line: always short ("10k", "$1M", "50h"). */
     static String compact(Metric metric, long value) {
+        return compact(metric.unit(), value);
+    }
+
+    static String compact(Metric.Unit unit, long value) {
         long v = Math.max(0, value);
-        return switch (metric.unit()) {
+        return switch (unit) {
             case MONEY -> "$" + (v < 1_000 ? Format.number(v) : Format.compact(v));
             case MINUTES -> v % 60 == 0 && v >= 60 ? (v / 60) + "h" : v + "m";
             case LEVEL -> Format.number(v);

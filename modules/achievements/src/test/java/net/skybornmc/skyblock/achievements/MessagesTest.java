@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /** Every message key the code uses exists, and menu lore lines fit 36 visible characters (Bedrock, UI_STYLE §4). */
 class MessagesTest {
 
-    private static final Pattern KEY = Pattern.compile("\"((?:unlock|menu|title-source|no-permission)(?:\\.[a-z][a-z-]*)*)\"");
+    private static final Pattern KEY = Pattern.compile("\"((?:unlock|menu|title-source|title-source-island|no-permission|season)(?:\\.[a-z][a-z-]*)*)\"");
 
     @Test
     void usedKeysExist() throws Exception {
@@ -63,5 +63,37 @@ class MessagesTest {
                 yml.loadFromString(text); // throws on a broken quote
             }
         }
+    }
+
+    /** Keys built from enum ids at runtime (tabs, boost names, island boosts) exist too. */
+    @Test
+    void dynamicKeysExist() {
+        YamlConfiguration yml = Fixtures.resource("messages/achievements.yml");
+        Set<String> missing = new TreeSet<>();
+        for (AchievementsMenu.Tab tab : AchievementsMenu.Tab.values()) {
+            String id = tab.name().toLowerCase(java.util.Locale.ROOT);
+            for (String key : List.of("menu.tab." + id, "menu.tab-hint." + id)) {
+                if (!yml.isString(key)) {
+                    missing.add(key);
+                }
+            }
+        }
+        for (PersonalBoost boost : PersonalBoost.values()) {
+            if (!yml.isString("menu.boost.name." + boost.id())) {
+                missing.add("menu.boost.name." + boost.id());
+            }
+        }
+        for (net.skybornmc.skyblock.common.achievements.IslandBoost boost : net.skybornmc.skyblock.common.achievements.IslandBoost.values()) {
+            if (!yml.isString("menu.island.boost.name." + boost.id())) {
+                missing.add("menu.island.boost.name." + boost.id());
+            }
+            if (!yml.isList("menu.island.boost.lore." + boost.id())) {
+                missing.add("menu.island.boost.lore." + boost.id());
+            }
+            if (boost != net.skybornmc.skyblock.common.achievements.IslandBoost.ISLAND_XP && !yml.isList("menu.island.boost.later." + boost.id())) {
+                missing.add("menu.island.boost.later." + boost.id());
+            }
+        }
+        assertEquals(Set.of(), missing);
     }
 }
