@@ -1,0 +1,94 @@
+# Owner answers, round 1 (30 Oct 2026, asked one by one)
+
+Code: s = keep the suggestion, n = no, o = other (see note). Ids match tools/owner_sheet/final_q.json and the Decisions page.
+
+- **1** Show sell price lines in red in item tooltips? — suggested: Yes, red → **SUGGESTED** 
+- **2** Show action lines in bold yellow, like '» RIGHT-CLICK buy 64'? — suggested: Yes, bold yellow → **SUGGESTED** 
+- **3** Put the thin red bar on every line inside a tooltip section? — suggested: Yes, every line → **SUGGESTED** 
+- **5** If a player switches profile with the sell chest open, keep their items for that profile? — suggested: Yes, never lost → **SUGGESTED** 
+- **6** Should 'Sell inventory' keep tools, weapons and armor in the hotbar? — suggested: Yes, keep them → **OTHER** Only sells sellable items (tools/armor are not sellable anyway)
+- **7** If returned items don't fit the inventory, put them in the ender chest first, then drop them? — suggested: Yes → **OTHER** Never drop. Overflow goes to a new /box (item mailbox) for full inventories, also used for crate rewards, gifts etc.
+- **8** Should shop quick-buy ask for confirmation only for purchases of $100k or more? — suggested: Yes, $100k → **NO** No confirmation on quick-buys
+- **9** If a player can't afford 64 items, refuse the purchase instead of buying what they can afford? — suggested: Yes, refuse → **SUGGESTED** 
+- **31** Launch with English only and add Norwegian later? — suggested: Yes, English only at launch → **OTHER** English only, always. Never Norwegian.
+- **32** Show big numbers short in menus (1.2M) and in full in chat and /bal? — suggested: Yes → **SUGGESTED** 
+- **33** Use normal chest menus for Bedrock players too, not special pop-up forms? — suggested: Yes, chest menus everywhere → **OTHER** Yes chest menus. A forced resource pack will skin ALL GUIs later, so GUIs need little vanilla design; pick items that can be retextured. Pack will be forced (required).
+- **34** Use a compact, shorter item lore for Bedrock phone players? — suggested: Yes, compact mode → **OTHER** Everything compact for all players; Bedrock-specific changes later if needed.
+- **41** Hide unfinished features (Quests, Crates, Pets...) from the main menu at launch? — suggested: Yes, 'Coming soon' in testing, hidden at launch → **SUGGESTED** 
+- **43** Add a 5-step 'Start here' help topic: starter kit, island, mine, sell, upgrade? — suggested: Yes → **OTHER** Yes, and much more: a guided join tutorial with an animation/camera showing where to go, an arrow/guide pointing the way, professionally made, walking the player through every step.
+- **44** Should every feature be usable from menus on Bedrock, with no long commands to type? — suggested: Yes → **OTHER** Yes. Also right-click NPCs and holograms that explain things: help everywhere, but lores must stay clean and simple.
+- **50** Make chat, social and sound settings follow the account, with scoreboard and menu item per profile? — suggested: Yes → **SUGGESTED** 
+- **51** Add a 'Hide other players' option with a quick toggle at spawn? — suggested: Yes, default 'all' → **SUGGESTED** 
+- **75** Keep the Bedrock pack small, aiming at 5 MB (limit 8 MB)? — suggested: Yes, target 5 MB → **OTHER** Size not critical; custom textures on crates, GUIs, sets/wardrobe, tools; optimize later.
+- **76** Use vanilla-like 16x16 pixel art with ember colors for the pack? — suggested: Yes → **OTHER** Style not decided; custom textures on crates, GUIs, sets/wardrobe, tools etc.
+- **77** Allow only original or licensed art, no AI-generated art? — suggested: Yes, no AI art → **OTHER** Owner makes the art himself. Needs a brief description of absolutely every texture needed (agent can write it). Then build + optimize the pack, FORCED, asked before joining, professional.
+- **78** Should you or one trusted tester check each pack release on a Bedrock phone first? — suggested: Yes → **SUGGESTED** 
+- **94** Keep the whitelist until closed beta, then open with a launch countdown in the server list? — suggested: Yes → **SUGGESTED** 
+- **95** Use 'PHOENIX SKYBLOCK - Season 1 starts DATE - Java and Bedrock' as the launch server-list text? — suggested: Yes → **SUGGESTED** 
+- **96** Add a one-command maintenance mode that only staff can join? — suggested: Yes → **SUGGESTED** 
+- **117** Keep refusing to delete a profile that leads a team island until leadership is transferred? — suggested: Yes, as described → **SUGGESTED** 
+- **118** Keep refusing to delete a profile that has active auction listings? — suggested: Yes, cancel them first → **OTHER** Deleting a profile deletes everything on it, auction listings and skills included (keep only the account-wide list). Auctions must never be a way to move things to another profile: you can't buy listings made by your own other profiles.
+- **119** Should two of your own profiles never be allowed to share an island, even one after the other? — suggested: Yes, strict → **SUGGESTED** 
+- **120** When a rank that gave profile slot 2 or 3 is lost, should that profile be locked (not switchable, still deletable)? — suggested: Yes, locked → **SUGGESTED** 
+- **121** Should new profiles get no start money, with one start balance per player per season? — suggested: Yes → **OTHER** Every profile gets start money. No disband/cooldown delay when creating a new island or joining someone else's.
+- **127** Should crate keys and key fragments belong to one profile, not be shared by all your profiles? — suggested: Yes, per profile → **SUGGESTED** 
+- **128** Should the daily login reward and streak be once per account, paid to the profile you are on? — suggested: Yes → **NO** Daily login reward and streak per profile, not per account
+- **129** Should one vote give one reward, paid to the active profile? — suggested: Yes → **SUGGESTED** 
+- **121b** (derived) — suggested:  → **OTHER** No limit: money is per profile, so deleting a profile loses it anyway. (Keep: no way to move money/items between your own profiles.)
+- **130** Should the collection log and pets be per profile? — suggested: Yes, both → **SUGGESTED** 
+- **131** Should the 30-minute new-account limit not apply again to a new second or third profile? — suggested: Yes, account playtime counts → **OTHER** Remove the 30-minute new-account limit entirely. Instead: permissions unlock step by step while doing the tutorial; full perms when the tutorial is finished.
+- **132** Should profile switching be blocked in the warzone and boss arena, but allowed in the Depths outside combat? — suggested: Yes → **SUGGESTED** 
+- **133** Should island invites be accepted only on a profile with no island, with a hint to switch profile? — suggested: Yes → **SUGGESTED** 
+- **134** Should staff be able to pick which profile to view in /inspect, /invsee, /ecsee and /logs? — suggested: Yes, profile picker → **SUGGESTED** 
+- **135** Should creating a new profile show a confirm screen: empty inventory, $0, no island? — suggested: Yes → **SUGGESTED** 
+- **141** Block a leader from disbanding for 24 hours after a new member joins? — suggested: Yes, 24 hours → **OTHER** An island with other members can't be disbanded: the leader must promote someone else first. Leaving an island = you lose everything (profile progress); rejoining starts you like a starter, but island perks/masteries belong to the island.
+- **142** Let only admins delete or reset islands, not mods? — suggested: Yes, admins only → **SUGGESTED** 
+- **148** Save island chat in a log that staff can read when handling a report? — suggested: Yes, kept 30 days → **SUGGESTED** 
+- **149** Let only mods and up secretly watch island chat, not helpers? — suggested: Yes, mods and up only → **SUGGESTED** 
+- **157** Start islands at 3x3 chunks and let them grow up to 15x15 through upgrades? — suggested: Yes, 3x3 to 15x15 → **OTHER** 3x3 up to 9x9 through normal upgrades; bigger than 9x9 only with gems or from the black market.
+- **158** Is this the right starter chest (lava, ice, bone meal, bread, saplings, sugar cane, cactus, seeds)? — suggested: Yes, as built → **OTHER** Make the starter chest custom and relevant to this server (Claude must design it from the server's systems and propose it).
+- **159** Show a clickable 'Create your island' chat line instead of forcing the screen open? — suggested: Yes, do not force it → **OTHER** First thing on the server: the player walks into a portal at spawn that creates their island; the portal always teleports anyone who jumps in to their island. On the island the tutorial starts; after it they explore the rest.
+- **160** Respawn players at their island home if they have one, otherwise spawn? — suggested: Yes → **NO** Always respawn at spawn
+- **161** Let a player create a new solo island right after leaving or being kicked from a team? — suggested: Yes, no cooldown → **SUGGESTED** 
+- **167** Make island size upgrades grow 2 chunks each level (3 to 15, six levels)? — suggested: Yes, six levels → **OTHER** (from answer 157) normal upgrades 3x3 to 9x9; above 9x9 only gems/black market
+- **171** Allow buying island upgrades with gems (store money)? — suggested: No, never → **OTHER** (from answer 157) island size above 9x9 can be bought with gems or from the black market
+- **203** Block accounts with under 30 minutes of playtime from joining team islands or coop? — suggested: Yes, same 30-minute rule as /pay and /ah → **OTHER** (from answer 131) no 30-minute limit; permissions unlock through the tutorial
+- **168** Keep island level at its highest value even if players remove valuable blocks? — suggested: Yes → **OTHER** Island level is dynamic, earned from many things besides island value. Needs its own plan later (ISLAND-LEVEL plan).
+- **169** Let upgrades be paid from either the island bank or the player's own money? — suggested: Yes, either → **OTHER** Island bank only. Also: higher bank interest, paid every 8 hours; withdrawal fee 2%, lowered by /is masteries as the island progresses.
+- **170** Let the leader give members the right to start upgrades? — suggested: Yes, via a new Upgrades box → **SUGGESTED** 
+- **172** Make Size I come after 30-60 minutes and Member Slots after a few hours? — suggested: Yes → **SUGGESTED** 
+- **176** Show pinned note holograms only to members, with an optional public sign per note? — suggested: Yes → **SUGGESTED** 
+- **185** Let only the leader and admin change island settings? — suggested: Yes, as built → **SUGGESTED** 
+- **186** Let visitors fly only if the island has Wings, visitor-fly is on, and they hold the fly right? — suggested: Yes, all three → **SUGGESTED** 
+- **195** Count only active time, not AFK time, as time on the island? — suggested: Yes, once AFK detection works → **NO** Count all time, AFK included
+- **204** Pass leadership automatically if the leader is permanently banned? — suggested: Yes: Admin, then Mod, then oldest Member → **SUGGESTED** 
+- **214** Make new warps private until the leader makes them public? — suggested: Yes, private by default → **SUGGESTED** 
+- **215** Run warp names and sign text through the chat word filter? — suggested: Yes → **SUGGESTED** 
+- **225** Ignore re-breaking recently placed blocks for mined/chopped counts, so players cannot farm stats? — suggested: Yes, ripe crops still count → **SUGGESTED** 
+- **230** Make /is open the island menu instead of teleporting home? — suggested: Yes, menu → **SUGGESTED** 
+- **236** Let members tick any note done but edit only their own, with leader/admin/mod managing all? — suggested: Yes, as described → **SUGGESTED** 
+- **242** Count the leader inside the starting team size of 4 (upgradable to 8)? — suggested: Yes, leader included → **NO** Team size is 4 plus the leader (upgradable)
+- **243** Give island fly to no rank until rank perks are planned? — suggested: Yes, no rank for now → **OTHER** Some ranks will get fly. Plan ranks after this question round (REMIND OWNER).
+- **247** Give each member 1 personal home (/is setmyhome), removed when they leave? — suggested: Yes, 1 per member → **NO** No personal homes, remove /is setmyhome
+- **251** Let admins kick mods and members, with only the leader managing admins? — suggested: Yes → **OTHER** Yes, but staff must be able to restore a kicked member: keep a backup of their inventory and island profile when kicked, so nobody can be kicked to lose everything for good.
+- **252** Let the 'settings' right go only to Admin, Mod or Member, given by someone who has it? — suggested: Yes → **SUGGESTED** 
+- **254** Let players with an untouched starter island accept an invite by auto-disbanding it? — suggested: No, they must disband first → **OTHER** Yes, disband first, unless they have an unused profile they can use for the invite.
+- **255** Keep invite, kick and coop fixed to Leader and Mod, not permission toggles? — suggested: Yes, fixed → **SUGGESTED** 
+- **260** Keep island reset staff-only, with no player /is reset? — suggested: Yes, staff only → **SUGGESTED** 
+- **261** Make players type the word 'disband' to confirm, not the island name? — suggested: Yes, the word → **NO** A confirm button is enough
+- **265** Let helpers and mods use island info and teleport, with delete/reset/kick for admins only? — suggested: Yes → **SUGGESTED** 
+- **267** Give /is bypass to admins only, not mods or helpers? — suggested: Yes, admins only → **SUGGESTED** 
+- **258** Skip the 24-hour join cooldown after a disband, staff delete or reset? — suggested: Yes, no cooldown → **OTHER** (from 121/161) no join or creation cooldowns at all
+- **259** Start the 24-hour creation cooldown only after /is disband, not staff delete or reset? — suggested: Yes → **OTHER** (from 121/161) no creation cooldown at all
+- **263** Decide who gets the island bank money on disband later, with the bank feature? — suggested: Yes, decide later → **OTHER** Island bank money is deleted on disband (it belongs to the island, not to players).
+- **268** Switch off the staff bypass at relog instead of remembering it? — suggested: Yes, per session → **SUGGESTED** 
+- **269** Give default role rights: Mod all, Member all but spawners, Coop all but fire and spawners? — suggested: Yes, as listed → **SUGGESTED** 
+- **271** Delete falling sand, gravel and anvils that land outside their island border? — suggested: Yes → **SUGGESTED** 
+- **273** Keep players joining the server at spawn, not at their island? — suggested: Yes, keep spawn → **SUGGESTED** 
+- **275** Show 'Lv -' for island level on the scoreboard until levels exist? — suggested: Yes → **NO** Hide the island level line until levels exist
+- **276** Let mods lock, expel, ban and manage warps, not just the leader? — suggested: Yes, leader and mods → **SUGGESTED** 
+- **278** Require visiting an island before you can rate or like it? — suggested: Yes → **SUGGESTED** 
+- **280** Send current visitors to spawn when an island is locked? — suggested: Yes → **SUGGESTED** 
+- **281** Refuse to ban members or coop players, and send banned players off the island at once? — suggested: Yes → **SUGGESTED** 
+- **282** Rank the visit browser: most visited = daily visitors over 7 days, top rated = at least 3 ratings? — suggested: Yes, as listed → **SUGGESTED** 
+- **284** Let helpers and up enter locked or banning islands unseen and uncounted? — suggested: Yes → **SUGGESTED** 
