@@ -4,7 +4,7 @@ Layout: `menu.yml` (hub), `help.yml` (help categories, topics, pages), `navigati
 
 | Command | Description | Permission | Status |
 |---|---|---|---|
-| `/menu` (`/gui`) | Main hub: every feature; not-yet-built ones shown locked "Coming soon". Also the **menu item** (Nether Star, hotbar slot 9; right-click/tap) | `skyblock.menu` (everyone) | ✅ |
+| `/menu` (`/gui`) | Main hub: every feature; not-yet-built ones shown locked "Coming soon". Also the **menu item** (Nether Star, hotbar slot 9; right-click/tap). FIXES1: it always stays in the inventory (can't be dropped, moved, stored or lost on death; put back on join, respawn, world/game mode change, after closing any inventory and every `menu-item.check-seconds` (5)); paused while staff mode owns the hotbar or a profile switch runs; players can still turn it off in `/settings`. Root cause of the old "Removed 1 menu item(s) from X's inventory" log: it shared the GUI button key, so the menu framework's leak check deleted it on join and after every menu close; it has its own key now | `skyblock.menu` (everyone) | ✅ |
 | `/help [topic\|category\|commands]` (`/guide`) | Help menu: categories, topics with pages, Take me there, Show in chat; command lists generated from the commands you may use. Console/chat gets the chat version. Every menu's "?" opens `/help <topic>` | `skyblock.help` (everyone) | ✅ |
 | `/settings [setting] [on\|off\|toggle]` (`/options`, `/prefs`) | Personal settings menu (Chat, Social, Display, Sounds); chat form for quick changes, Tab lists them | `skyblock.settings` (everyone) | ✅ |
 | `/staff` (`/staffmenu`) | Staff hub: Display, Config editor, Titles & Tags, staff tools (unbuilt ones "Coming soon") | `skyblock.staff.menu` | ✅ |

@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.command.CommandSpec;
+import net.skybornmc.skyblock.common.flight.FlightGrants;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Bukkit;
@@ -66,7 +67,7 @@ final class StaffMode extends StaffFeature implements Listener {
         LOGS(3, Material.CLOCK),
         VANISH(4, Material.LIME_DYE),
         PUNISH(6, Material.BREEZE_ROD),
-        REPORTS(7, Material.WRITABLE_BOOK),
+        REPORTS(7, Material.BOOK),
         EXIT(8, Material.BARRIER);
 
         final int slot;
@@ -105,9 +106,10 @@ final class StaffMode extends StaffFeature implements Listener {
     }
 
     void register() {
-        core.commands().register(CommandSpec.command("staffmode")
+        // FIXES1 (owner): /s is the main command; /staffmode, /sm and /mod stay as aliases.
+        core.commands().register(CommandSpec.command("s")
                 .description("Toggle staff mode").category("Staff")
-                .permission(StaffPerms.MODE).playerOnly().aliases("s", "sm", "mod")
+                .permission(StaffPerms.MODE).playerOnly().aliases("staffmode", "sm", "mod")
                 .executes(ctx -> toggle(ctx.player())));
     }
 
@@ -156,6 +158,7 @@ final class StaffMode extends StaffFeature implements Listener {
         if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.ADVENTURE) {
             player.setGameMode(GameMode.SURVIVAL);
         }
+        FlightGrants.grant(player.getUniqueId(), FlightGrants.STAFF_MODE);
         player.setAllowFlight(true);
         player.setFlying(true);
         player.setCanPickupItems(false);
@@ -206,8 +209,15 @@ final class StaffMode extends StaffFeature implements Listener {
         System.arraycopy(items, 0, sized, 0, Math.min(items.length, sized.length));
         inv.setContents(sized);
         player.setGameMode(gameMode);
-        player.setAllowFlight(allowFlight);
-        player.setFlying(allowFlight && flying);
+        // FIXES1: flight after staff mode comes from what still gives it now (/fly, island fly), not from the saved
+        // flag: a flag saved on an island (island fly) used to leave flight on at spawn with nothing owning it.
+        // Creative/spectator keep what their game mode gives. The saved allowFlight stays in the snapshot (old rows,
+        // crash recovery) but no longer decides anything.
+        boolean others = !FlightGrants.revoke(player.getUniqueId(), FlightGrants.STAFF_MODE);
+        if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
+            player.setAllowFlight(others);
+            player.setFlying(others && flying);
+        }
         player.setCanPickupItems(true);
     }
 
@@ -359,7 +369,7 @@ final class StaffMode extends StaffFeature implements Listener {
                     }
                 });
             }
-            case PUNISH -> target(staff, clicked).ifPresentOrElse(t -> dispatch(staff, "punish " + t.getName()),
+            case PUNISH -> target(staff, clicked).ifPresentOrElse(t -> dispatch(staff, "p " + t.getName()),
                     () -> msg.actionBar(staff, "tool.need-target"));
             case REPORTS -> reports.openList(staff, Report.Status.OPEN);
             case EXIT -> exit(staff, true);

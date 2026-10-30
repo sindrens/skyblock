@@ -104,4 +104,49 @@ final class StaffPowerRules {
     static boolean keep(boolean enforced, boolean inMode) {
         return !enforced || inMode;
     }
+
+    /** What {@code /fly} does (FIXES1). */
+    enum FlyAction {
+        /** Creative or spectator: they always fly; nothing changes. */
+        GAME_MODE,
+        /** Give {@code /fly} (checked against the staff/build mode rule first). */
+        TURN_ON,
+        /** Take {@code /fly} away. */
+        TURN_OFF
+    }
+
+    /**
+     * The {@code /fly} toggle reads only its own grant, never {@code allowFlight}: island fly, staff mode or freeze can
+     * make {@code allowFlight} true too, and reading it made {@code /fly} "turn off" a flight it never gave (FIXES1 root
+     * cause: on an island with island fly, every {@code /fly} printed "Flying off." and island fly gave flight back).
+     *
+     * @param ownGrant           {@code /fly} is on for the player
+     * @param creativeOrSpectator the player is in creative or spectator
+     */
+    static FlyAction fly(boolean ownGrant, boolean creativeOrSpectator) {
+        if (creativeOrSpectator) {
+            return FlyAction.GAME_MODE;
+        }
+        return ownGrant ? FlyAction.TURN_OFF : FlyAction.TURN_ON;
+    }
+
+    /** Result text of {@code /fly}, chosen from the real state after the change ({@code fly.<key>}). */
+    enum FlyText {
+        ENABLED, DISABLED, DISABLED_STILL_FLYING;
+
+        String key() {
+            return name().toLowerCase(Locale.ROOT).replace('_', '-');
+        }
+    }
+
+    /**
+     * Picks the text from what the player really has now: {@code /fly} on, or off with flight still given by another
+     * source (island fly, staff mode), or off with no flight at all.
+     */
+    static FlyText flyText(boolean ownGrantNow, boolean canFlyNow) {
+        if (ownGrantNow) {
+            return FlyText.ENABLED;
+        }
+        return canFlyNow ? FlyText.DISABLED_STILL_FLYING : FlyText.DISABLED;
+    }
 }

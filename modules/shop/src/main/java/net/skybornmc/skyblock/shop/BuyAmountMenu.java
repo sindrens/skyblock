@@ -21,7 +21,7 @@ import java.util.List;
  *  B ✘ · ✔ [Buy N for $X] ✔ · · B       37 Cancel, 39-41 Buy
  *  ← O B ?  ✘  H B O R
  * </pre>
- * Buying more than fits buys what fits (charged only for that); purchases from {@code buy.confirm-above} ask first.
+ * Buying more than fits buys what fits (charged only for that); purchases never ask to confirm (owner answer 8).
  */
 final class BuyAmountMenu extends Menu {
 

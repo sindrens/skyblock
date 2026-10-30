@@ -17,6 +17,11 @@ public final class MenusConfig extends ModuleConfig {
     @Setting(path = "menu-item.material", desc = "Item used for the menu item.")
     public String menuItemMaterial = "nether_star";
 
+    @Setting(path = "menu-item.check-seconds", desc = "Seconds between checks that put a missing menu item back "
+            + "(it is also restored on join, respawn, world/game mode change and after closing an inventory). 0 = off.",
+            min = 0, max = 300)
+    public int menuItemCheckSeconds = 5;
+
     @Setting(path = "settings.ui-sound-keys", desc = "Sounds (sounds.yml keys) that count as menu sounds wherever they play; "
             + "players who turn 'Menu sounds' off in /settings don't hear them. Every sound a menu plays is muted too.")
     public List<String> uiSoundKeys = List.of("click", "menu-open", "menu-close", "page");

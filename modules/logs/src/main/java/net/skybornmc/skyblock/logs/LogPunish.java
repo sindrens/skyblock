@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 final class LogPunish {
 
     /** The punish menu command (owned by the moderation module) and the permission it needs. */
-    static final String COMMAND = "punish";
+    static final String COMMAND = "p";
     static final String PERM_PUNISH = "skyblock.staff.punish.gui";
     /** Audit actions of a chat line (chat module). */
     static final Set<String> CHAT_ACTIONS = Set.of("chat", "chat_blocked");

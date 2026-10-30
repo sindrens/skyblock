@@ -62,6 +62,11 @@ public final class MenuService implements Listener {
     private final Sounds sounds;
     private final ConfigManager configs;
     private final MenuConfig config = new MenuConfig();
+    /**
+     * PDC key name on every GUI button. An item with this key in a player's own inventory is a leaked button and is
+     * deleted on join and after a menu closes, so nothing else may use this key (FIXES1: the hotbar menu item did).
+     */
+    public static final String BUTTON_KEY = "menu_item";
     private final NamespacedKey menuItemKey;
     private final Debounce debounce;
     private final Map<UUID, Menu> open = new ConcurrentHashMap<>();
@@ -77,7 +82,7 @@ public final class MenuService implements Listener {
         this.configs = configs;
         this.messages = messages;
         this.sounds = sounds;
-        this.menuItemKey = new NamespacedKey(plugin, "menu_item");
+        this.menuItemKey = new NamespacedKey(plugin, BUTTON_KEY);
         this.debounce = new Debounce(config.clickDebounceMs);
         this.heads = new MenuHeads(plugin.getLogger());
         reload();

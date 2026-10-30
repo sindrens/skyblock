@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.wardrobe;
 
+import net.skybornmc.skyblock.common.wardrobe.ArmorPiece;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.inventory.PrepareSmithingEvent;
@@ -29,8 +31,9 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 /**
- * The lock (WARDROBE §4.3, WD20): worn pieces can only be put on and taken off through {@code /wardrobe}. Every way of
- * moving them is cancelled (click, shift-click, number keys, off-hand swap, drag, drop, armor stands, item frames,
+ * The lock (WARDROBE §4.3, WD20): worn pieces can only be put on and taken off through the wardrobe. A plain click on a
+ * worn piece in your own armor slot takes it off through the wardrobe (FIXES1; it stays in your wardrobe, no item
+ * reaches the cursor). Every other way of moving them is cancelled (click, shift-click, number keys, off-hand swap, drag, drop, armor stands, item frames,
  * dispensers, right-click armor swap) with a rate-limited hint, and the inventory is re-sent next tick so Bedrock
  * (Geyser) never shows a ghost item. Set Tokens can't be placed, crafted, renamed or dispensed. While a wardrobe action
  * is saving the player's inventory is locked and their commands wait.
@@ -85,8 +88,47 @@ final class LockListener implements Listener {
         ItemStack offhand = event.getClick() == ClickType.SWAP_OFFHAND ? player.getInventory().getItemInOffHand() : null;
         if (WardrobeItems.isPiece(event.getCurrentItem()) || WardrobeItems.isPiece(event.getCursor())
                 || WardrobeItems.isPiece(hotbar) || WardrobeItems.isPiece(offhand)) {
+            ArmorPiece worn = takeOffClick(player, event);
+            if (worn != null) {
+                // FIXES1: clicking a worn set piece in your armor slot takes it off through the wardrobe (database
+                // first, the piece stays in your wardrobe), instead of only showing "use /wardrobe".
+                event.setCancelled(true);
+                module.core.scheduler().later("wardrobe-resend", 1L, () -> {
+                    if (player.isOnline()) {
+                        player.updateInventory();
+                    }
+                });
+                module.equipment().takeOff(player, java.util.List.of(worn));
+                return;
+            }
             deny(player, event);
         }
+    }
+
+    /**
+     * The worn piece a click takes off, or null: a plain click (left, right, shift) with an empty cursor on a set piece
+     * in one of the player's own armor slots. Everything else stays locked.
+     */
+    private static ArmorPiece takeOffClick(Player player, InventoryClickEvent event) {
+        if (event.getSlotType() != InventoryType.SlotType.ARMOR || event.getClickedInventory() != player.getInventory()
+                || !WardrobeItems.isPiece(event.getCurrentItem())
+                || (event.getCursor() != null && !event.getCursor().isEmpty())) {
+            return null;
+        }
+        return armorAt(event.getClick(), event.getSlot());
+    }
+
+    /** Pure part of {@link #takeOffClick}: the armor piece of a player-inventory armor index (36-39) for a plain click. */
+    static ArmorPiece armorAt(ClickType click, int slot) {
+        if (click != ClickType.LEFT && click != ClickType.RIGHT && click != ClickType.SHIFT_LEFT && click != ClickType.SHIFT_RIGHT) {
+            return null;
+        }
+        for (ArmorPiece piece : ArmorPiece.values()) {
+            if (Equipment.armorSlotIndex(piece) == slot) {
+                return piece;
+            }
+        }
+        return null;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

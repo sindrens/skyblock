@@ -64,7 +64,7 @@ public final class EssentialsConfig extends ModuleConfig {
     // ------------------------------------------------------------------ ANS3 staff powers (owner answers 331-334)
 
     @Setting(path = "staff-powers.enabled", desc = "Owner answers 331/333: creative only in the creative worlds, and god mode, "
-            + "/fly and /heal only in staff mode (/staffmode) or build mode (/build). Off = only the permissions count.")
+            + "/fly and /heal only in staff mode (/s) or build mode (/build). Off = only the permissions count.")
     public boolean staffPowersEnabled = true;
 
     @Setting(path = "staff-powers.creative-worlds", desc = "Owner answer 331: worlds where builders and admins may use creative "

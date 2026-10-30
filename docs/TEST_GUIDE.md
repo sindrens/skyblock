@@ -597,7 +597,7 @@ Staff get tools to move around and help: teleport to players or coordinates, set
 
 1. As helper: /vanish, then check /list and tab do not show you. Relog: you are still vanished. Check no join/quit message.
 2. As helper: /tp to a player, /invsee and /ecsee (view only). Try to move an item: refused. As admin: edit and check every change appears in /logs.
-3. As mod outside staff mode: /fly, /god and /heal are refused. Turn on /staffmode: they work. Leave staff mode: god and fly switch off within a second. /gm c as mod: refused (mods use /gm sp).
+3. As mod outside staff mode: /fly, /god and /heal are refused. Turn on /s (alias /staffmode): they work. Leave staff mode: god and fly switch off within a second. /gm c as mod: refused (mods use /gm sp).
 4. As builder: /gm c at spawn works; go to your island: you are switched to survival. Take an item from the creative inventory and try /sell, /ah sell and /trade with it: all refused (staff item).
 5. As mod: /clear <player>: you must repeat the command within 10 seconds to confirm.
 6. As builder: /i diamond 64 and /give. Try to sell the diamonds: refused. Then check /logs staff shows what you gave.
@@ -812,7 +812,7 @@ Staff mode swaps a staff member's inventory for moderation tools (inspect, freez
 
 | Command | Who | What |
 |---|---|---|
-| `/staffmode (/s /sm /mod)` | helper | Turn staff mode on or off. |
+| `/s (/staffmode /sm /mod)` | helper | Turn staff mode on or off. |
 | `/freeze <player> (/ss)  /unfreeze <player>` | helper | Freeze or unfreeze a player. |
 | `/inspect <player> (/check)` | helper | Open a player card: rank, playtime, platform, ping, location, inventory, ender chest, punish, logs. |
 | `/report <player> [reason]` | player | Report a player with a reason picker or typed text. |
@@ -820,7 +820,7 @@ Staff mode swaps a staff member's inventory for moderation tools (inspect, freez
 
 **Test:**
 
-1. As helper: /staffmode. Your inventory is swapped for the staff hotbar and you are vanished with night vision. Leave and check your items return exactly.
+1. As helper: /s. Your inventory is swapped for the staff hotbar and you are vanished with night vision. Leave and check your items return exactly.
 2. In staff mode right-click a player with the blaze rod (Inspect) and with the breeze rod (Punish). On Bedrock tap the player.
 3. Freeze a test account: it cannot move, build, use commands, take damage or chat publicly; staff see its chat. Relog while frozen: still frozen. Unfreeze: 10 seconds without fall damage.
 4. Ban the frozen account: the freeze is cleared.

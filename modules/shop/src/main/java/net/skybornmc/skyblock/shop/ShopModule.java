@@ -663,25 +663,11 @@ public final class ShopModule implements SkyblockModule, Listener {
 
     // ================================================================== quick buy (SELL2)
 
-    /** Buys now, or asks to confirm first when the total reaches {@code buy.confirm-above}. {@code after}: refresh. */
+    /**
+     * Buys now. Owner answer 8 (FIXES1): quick-buys never ask to confirm, whatever the price (the old
+     * {@code buy.confirm-above} screen is gone). {@code after}: refresh.
+     */
     void attempt(Menu from, Player player, ShopCatalog.Item item, int amount, Runnable after) {
-        long total = ShopMath.total(item.price(), amount).orElse(Long.MAX_VALUE);
-        if (total >= settings.confirmAbove) {
-            Material m = material(item);
-            Material shownMaterial = m == null ? Material.BARRIER : m;
-            Component name = itemName(shownMaterial);
-            ItemStack shown = core.menus().item(new ItemStack(shownMaterial, Math.max(1, Math.min(shownMaterial.getMaxStackSize(), amount))),
-                    core.menus().text(player, ID, "confirm.shown", Msg.number("amount", amount), Msg.c("item", name)),
-                    core.menus().lines(player, ID, "confirm.shown-lore", money("total", total)));
-            net.skybornmc.skyblock.common.menu.ConfirmMenu confirm = new net.skybornmc.skyblock.common.menu.ConfirmMenu(
-                    v -> core.menus().text(v, ID, "confirm.crumb"), shown,
-                    v -> core.menus().lines(v, ID, "confirm.lines", Msg.number("amount", amount), Msg.c("item", name),
-                            money("total", total), money("balance", balance(v))),
-                    p -> buy(p, item, amount, after), null);
-            confirm.parent(from);
-            core.menus().open(player, confirm);
-            return;
-        }
         buy(player, item, amount, after);
     }
 

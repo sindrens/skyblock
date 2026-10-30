@@ -18,8 +18,9 @@ public final class ChatConfig extends ModuleConfig {
             + "Titles go before the name, tags after it: [MOD] Pouched (Phoenix) » hi")
     public String chatFormat = "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>";
 
-    @Setting(path = "format.tab", desc = "Tab list entry. Parts: <rank> <name> <title> <tag> <afk>. Default: [MOD] Pouched (Phoenix)")
-    public String tabFormat = "<title><rank><name><tag><afk>";
+    @Setting(path = "format.tab", desc = "Tab list entry. Parts: <rank> <name> <title> <tag> <afk>. Default (FIXES1, clean): "
+            + "MOD Pouched (Phoenix) - rank prefix, name in the rank color, tag; the title stays in chat.")
+    public String tabFormat = "<rank><name><tag><afk>";
 
     @Setting(path = "format.title-part", desc = "How a title looks when a player has one. <value> = the title. Empty = never shown.")
     public String titlePart = "<value> ";
@@ -154,13 +155,14 @@ public final class ChatConfig extends ModuleConfig {
     }
 
     /**
-     * Formats whose default changed (UX1: titles before, tags after the name). A file that still has the old default
-     * gets the new one; a value the owner edited is kept. path → {old default, new default}.
+     * Formats whose default changed (UX1: titles before, tags after the name; FIXES1: clean tab = rank, name, tag). A
+     * file that still has an old default gets the new one; a value the owner edited is kept.
+     * path → {old default, older default…, new default} (the last value is the new default).
      */
     static final Map<String, String[]> CHANGED_DEFAULTS = Map.of(
             "format.chat", new String[]{"<title><rank><name> <c:muted>»</c:muted> <c:text><message>",
                     "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>"},
-            "format.tab", new String[]{"<rank><name><title><tag><afk>", "<title><rank><name><tag><afk>"},
+            "format.tab", new String[]{"<rank><name><title><tag><afk>", "<title><rank><name><tag><afk>", "<rank><name><tag><afk>"},
             "format.tab-title-part", new String[]{" <value>", "<value> "},
             "format.tag-part", new String[]{"", " <value>"});
 
@@ -168,8 +170,12 @@ public final class ChatConfig extends ModuleConfig {
     static Map<String, String> upgrades(Map<String, String> current) {
         Map<String, String> out = new java.util.TreeMap<>();
         CHANGED_DEFAULTS.forEach((path, values) -> {
-            if (values[0].equals(current.get(path))) {
-                out.put(path, values[1]);
+            String now = current.get(path);
+            for (int i = 0; i < values.length - 1; i++) {
+                if (values[i].equals(now)) {
+                    out.put(path, values[values.length - 1]);
+                    return;
+                }
             }
         });
         return out;

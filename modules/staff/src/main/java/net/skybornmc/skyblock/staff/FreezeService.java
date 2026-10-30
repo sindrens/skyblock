@@ -278,6 +278,7 @@ final class FreezeService extends StaffFeature implements Listener {
         p.closeInventory();
         p.setFallDistance(0);
         spots.put(p.getUniqueId(), p.getLocation().clone());
+        net.skybornmc.skyblock.common.flight.FlightGrants.grant(p.getUniqueId(), net.skybornmc.skyblock.common.flight.FlightGrants.FREEZE);
         keepHovering(p);
         p.setCollidable(false); // nobody can push them around
         hints(p);
@@ -314,7 +315,11 @@ final class FreezeService extends StaffFeature implements Listener {
         spots.remove(p.getUniqueId());
         p.setCollidable(true);
         boolean creativeFlight = p.getGameMode() == GameMode.CREATIVE || p.getGameMode() == GameMode.SPECTATOR;
-        boolean allow = creativeFlight || record == null || record.allowFlight();
+        // FIXES1: flight after a freeze comes from what still gives it (/fly, island fly, staff mode); the saved flag
+        // only counts when a source still exists, so a freeze never leaves flight behind that nobody owns.
+        boolean others = !net.skybornmc.skyblock.common.flight.FlightGrants.revoke(p.getUniqueId(),
+                net.skybornmc.skyblock.common.flight.FlightGrants.FREEZE);
+        boolean allow = creativeFlight || others;
         boolean flying = allow && (creativeFlight ? p.isFlying() : record == null || record.flying());
         p.setFlying(flying);
         p.setAllowFlight(allow);
