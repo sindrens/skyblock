@@ -18,13 +18,15 @@ final class AfkStore {
     record Grant(long id, UUID player, UUID profileKey, String kind, String ref, long amount) {
     }
 
-    /** A profile's AFK booster: banked time not started yet, and when the running one ends. */
-    record Booster(int percent, long bankedMillis, long activeUntil) {
+    /**
+     * A sell booster left in the old {@code afk_boosters} table (before M10.2 moved boosters to the boosters module):
+     * banked time and when the running one ends. Moved into the boosters module's bank once at start-up.
+     */
+    record LegacyBooster(UUID profileKey, int percent, long bankedMillis, long activeUntil) {
 
-        static final Booster NONE = new Booster(0, 0, 0);
-
-        boolean active(long now) {
-            return activeUntil > now && percent > 0;
+        /** Banked time plus what was left of the running booster at {@code now}. */
+        long left(long now) {
+            return Math.max(0, bankedMillis) + Math.max(0, activeUntil - now);
         }
     }
 
@@ -133,34 +135,15 @@ final class AfkStore {
         addGrant(c, g.player(), g.profileKey(), g.kind(), g.ref(), g.amount(), now);
     }
 
-    // ------------------------------------------------------------------ boosters
+    // ------------------------------------------------------------------ legacy boosters (moved to the boosters module)
 
-    Booster booster(Connection c, UUID profileKey) throws SQLException {
-        return Sql.queryOne(c, "SELECT bonus_percent, banked_ms, active_until FROM afk_boosters WHERE profile_key = ?",
-                rs -> new Booster(rs.getInt("bonus_percent"), rs.getLong("banked_ms"), rs.getLong("active_until")), profileKey).orElse(Booster.NONE);
+    List<LegacyBooster> legacyBoosters(Connection c) throws SQLException {
+        return Sql.query(c, "SELECT profile_key, bonus_percent, banked_ms, active_until FROM afk_boosters",
+                rs -> new LegacyBooster(Sql.uuid(rs, "profile_key"), rs.getInt("bonus_percent"), rs.getLong("banked_ms"),
+                        rs.getLong("active_until")));
     }
 
-    /** Banks booster time (capped at {@code maxMillis}); the percent of the newest win applies. */
-    Booster bank(Connection c, UUID profileKey, int percent, long addMillis, long maxMillis, long now) throws SQLException {
-        Booster cur = booster(c, profileKey);
-        long banked = Math.min(maxMillis, cur.bankedMillis() + addMillis);
-        if (Sql.update(c, "UPDATE afk_boosters SET bonus_percent = ?, banked_ms = ?, updated_at = ? WHERE profile_key = ?",
-                percent, banked, now, profileKey) == 0) {
-            Sql.update(c, "INSERT INTO afk_boosters (profile_key, bonus_percent, banked_ms, active_until, updated_at) VALUES (?, ?, ?, 0, ?)",
-                    profileKey, percent, banked, now);
-        }
-        return new Booster(percent, banked, cur.activeUntil());
-    }
-
-    /** Starts the banked time (added to a running booster). Returns the new state, or empty when nothing was banked. */
-    Optional<Booster> activate(Connection c, UUID profileKey, long now) throws SQLException {
-        Booster cur = booster(c, profileKey);
-        if (cur.bankedMillis() <= 0) {
-            return Optional.empty();
-        }
-        long until = Math.max(now, cur.activeUntil()) + cur.bankedMillis();
-        int changed = Sql.update(c, "UPDATE afk_boosters SET banked_ms = 0, active_until = ?, updated_at = ? WHERE profile_key = ? AND banked_ms = ?",
-                until, now, profileKey, cur.bankedMillis());
-        return changed == 1 ? Optional.of(new Booster(cur.percent(), 0, until)) : Optional.empty();
+    void deleteLegacyBooster(Connection c, UUID profileKey) throws SQLException {
+        Sql.update(c, "DELETE FROM afk_boosters WHERE profile_key = ?", profileKey);
     }
 }

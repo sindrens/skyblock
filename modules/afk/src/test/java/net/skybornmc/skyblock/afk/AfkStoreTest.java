@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The AFK tables on H2 in MySQL mode (same SQL as MariaDB): crash/restore of daily totals, replay safety, grants, boosters. */
+/** The AFK tables on H2 in MySQL mode (same SQL as MariaDB): crash/restore of daily totals, replay safety, grants, old boosters. */
 class AfkStoreTest {
 
     private static final long MIN = 60_000L;
@@ -127,16 +127,20 @@ class AfkStoreTest {
     }
 
     @Test
-    void boosterIsBankedCappedAndStartedOnce() {
+    void legacyBoostersAreReadAndDeleted() {
         UUID profile = UUID.randomUUID();
-        db.blockingTransaction(c -> store.bank(c, profile, 50, 10 * MIN, 25 * MIN, 1L));
-        db.blockingTransaction(c -> store.bank(c, profile, 50, 10 * MIN, 25 * MIN, 2L));
-        AfkStore.Booster b = db.blockingTransaction(c -> store.bank(c, profile, 50, 10 * MIN, 25 * MIN, 3L));
-        assertEquals(25 * MIN, b.bankedMillis(), "capped at the max banked time");
-        assertFalse(b.active(1_000));
-        AfkStore.Booster started = db.blockingTransaction(c -> store.activate(c, profile, 1_000)).orElseThrow();
-        assertEquals(1_000 + 25 * MIN, started.activeUntil());
-        assertTrue(started.active(2_000));
-        assertTrue(db.blockingTransaction(c -> store.activate(c, profile, 2_000)).isEmpty(), "nothing banked any more");
+        db.blockingTransaction(c -> net.skybornmc.skyblock.common.db.Sql.update(c,
+                "INSERT INTO afk_boosters (profile_key, bonus_percent, banked_ms, active_until, updated_at) VALUES (?, ?, ?, ?, ?)",
+                profile, 50, 10 * MIN, 5_000L, 1L));
+        List<AfkStore.LegacyBooster> rows = db.blocking(c -> store.legacyBoosters(c));
+        assertEquals(1, rows.size());
+        assertEquals(50, rows.getFirst().percent());
+        assertEquals(10 * MIN + 4_000, rows.getFirst().left(1_000), "banked time plus what was left of the running one");
+        assertEquals(10 * MIN, rows.getFirst().left(9_000), "a finished running booster adds nothing");
+        db.blockingTransaction(c -> {
+            store.deleteLegacyBooster(c, profile);
+            return null;
+        });
+        assertTrue(db.blocking(c -> store.legacyBoosters(c)).isEmpty());
     }
 }

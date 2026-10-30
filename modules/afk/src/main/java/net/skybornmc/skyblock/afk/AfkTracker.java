@@ -3,6 +3,8 @@ package net.skybornmc.skyblock.afk;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
+import net.skybornmc.skyblock.common.booster.BoosterService;
+import net.skybornmc.skyblock.common.booster.BoosterType;
 import net.skybornmc.skyblock.common.crate.CrateKeys;
 import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.economy.AccountRef;
@@ -53,6 +55,8 @@ import java.util.logging.Level;
 final class AfkTracker implements Listener {
 
     private static final String REASON_KEYS = TxReason.AFK_POOL;
+    /** Bank source of AFK pool sell boosters (boosters module, audit {@code bank_add}). */
+    static final String BOOSTER_SOURCE = "afk_pool";
 
     private final AfkModule m;
     private final Core core;
@@ -172,7 +176,6 @@ final class AfkTracker implements Listener {
             tails.put(p.getUniqueId(), tail);
             tail.whenComplete((v, e) -> tails.remove(p.getUniqueId(), tail));
         }
-        m.boosters().forget(ProfileService.of(core.services()).profileKey(p));
     }
 
     private void load(Player p) {
@@ -230,7 +233,6 @@ final class AfkTracker implements Listener {
                 if (a.inside) {
                     leave(p, a);
                 }
-                startBankedBooster(p, a);
                 continue;
             }
             if (!a.inside) {
@@ -375,12 +377,15 @@ final class AfkTracker implements Listener {
         if (cfg.fuelEnabled && cfg.fuelMinutes > 0) {
             island = core.services().optional(IslandService.class).flatMap(s -> s.islandOf(player)).map(IslandService.IslandInfo::id).orElse(null);
         }
-        boolean booster = cfg.boosterEnabled && reward.sessionMillis() >= cfg.boosterMinSession * AfkRules.MINUTE
+        // M10.2: the banked sell booster lives in the boosters module (one place for all boosters); without it, no roll.
+        Optional<BoosterService> boosterService = BoosterService.of(core.services());
+        boolean booster = cfg.boosterEnabled && boosterService.isPresent()
+                && reward.sessionMillis() >= cfg.boosterMinSession * AfkRules.MINUTE
                 && ThreadLocalRandom.current().nextDouble(100.0) < cfg.boosterChance;
         AfkAccount.Snapshot snap = a.snapshot();
         long seq = reward.seq();
         UUID fuelIsland = island;
-        AtomicReference<AfkStore.Booster> banked = new AtomicReference<>();
+        AtomicReference<Long> banked = new AtomicReference<>();
         TxGuard guard = c -> {
             if (!m.store().reward(c, snap, seq, now)) {
                 return false;
@@ -389,8 +394,8 @@ final class AfkTracker implements Listener {
                 m.store().addGrant(c, player, profileKey, AfkStore.KIND_FUEL, fuelIsland.toString(), cfg.fuelMinutes, now);
             }
             if (booster) {
-                banked.set(m.store().bank(c, profileKey, cfg.boosterPercent, cfg.boosterMinutes * AfkRules.MINUTE,
-                        cfg.boosterMaxBanked * AfkRules.MINUTE, now));
+                banked.set(boosterService.get().bank(c, profileKey, BoosterType.SELL, cfg.boosterPercent,
+                        cfg.boosterMinutes * AfkRules.MINUTE, cfg.boosterMaxBanked * AfkRules.MINUTE, BOOSTER_SOURCE));
             }
             return true;
         };
@@ -437,13 +442,16 @@ final class AfkTracker implements Listener {
                     m.msg().send(online, key, Msg.money("money", finalMoney), Msg.p("fuel", cfg.fuelMinutes), Msg.p("percent", percent));
                 }
                 if (booster && banked.get() != null) {
-                    m.boosters().put(profileKey, banked.get());
                     m.msg().send(online, "booster.won", Msg.p("percent", cfg.boosterPercent), Msg.p("minutes", cfg.boosterMinutes),
-                            Msg.p("banked", AfkText.hoursMinutes(banked.get().bankedMillis())));
+                            Msg.p("banked", AfkText.hoursMinutes(banked.get())));
                 }
                 if (!cfg.rewardSound.isBlank()) {
                     core.sounds().play(online, cfg.rewardSound);
                 }
+            }
+            if (booster && banked.get() != null) {
+                boosterService.get().banked(profileKey, BoosterType.SELL, cfg.boosterPercent, cfg.boosterMinutes * AfkRules.MINUTE,
+                        banked.get(), BOOSTER_SOURCE, Actor.SYSTEM);
             }
             deliver(a);
         }));
@@ -553,37 +561,14 @@ final class AfkTracker implements Listener {
 
     // ------------------------------------------------------------------ boosters
 
-    private void startBankedBooster(Player p, AfkAccount a) {
-        if (!a.loaded) {
-            return;
-        }
-        UUID key = ProfileService.of(core.services()).profileKey(p);
-        AfkStore.Booster b = m.boosters().get(key);
-        if (b.bankedMillis() <= 0) {
-            return;
-        }
-        long now = System.currentTimeMillis();
-        m.boosters().put(key, new AfkStore.Booster(b.percent(), 0, b.activeUntil()));
-        UUID player = p.getUniqueId();
-        queue(a, () -> core.database().transaction(c -> m.store().activate(c, key, now))).whenComplete((r, error) ->
-                core.scheduler().ensureMain("afk-booster", () -> {
-                    if (error != null || r == null || r.isEmpty()) {
-                        if (error != null) {
-                            core.plugin().getLogger().log(Level.WARNING, "AFK pool: could not start the booster of " + player, error);
-                        }
-                        m.boosters().forget(key);
-                        return;
-                    }
-                    AfkStore.Booster started = r.get();
-                    m.boosters().put(key, started);
-                    core.audit().logPlayer(AuditCategory.ECONOMY, "afk_booster_start", Actor.SYSTEM, player, null, (long) started.percent(), null,
-                            Map.of("until", started.activeUntil(), "profile", key.toString()));
-                    Player online = Bukkit.getPlayer(player);
-                    if (online != null) {
-                        m.msg().send(online, "booster.started", Msg.p("percent", started.percent()),
-                                Msg.p("time", AfkText.hoursMinutes(started.activeUntil() - now)));
-                    }
-                }));
+    /**
+     * True while the player stands in the AFK pool: the boosters module keeps their banked boosters from starting then,
+     * so a won booster is never wasted while AFK (it starts when they leave).
+     */
+    boolean holdsBoosters(Player p) {
+        PoolArea pool = area.orElse(null);
+        AfkAccount a = accounts.get(p.getUniqueId());
+        return (a != null && a.inside) || (pool != null && pool.contains(p.getLocation()));
     }
 
     // ------------------------------------------------------------------ saving
