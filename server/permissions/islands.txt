@@ -8,6 +8,11 @@
 # Admins only for now (open question: also moderators?).
 lp group admin permission set skyblock.island.bypass true
 
+# Visiting (M2.4): /is visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like use skyblock.island
+# (everyone); the island role decides who may lock, ban and manage warps. Staff enter locked islands and islands that
+# banned them (needed for /isadmin tp and reports); helper < mod < admin, so everyone above inherits it.
+lp group helper permission set skyblock.island.visit.bypass true
+
 # Island staff tools (M2.7, /isadmin; every use is logged in category staff). Helpers look (info, tp); admins change.
 # helper < mod < admin, so mods and admins inherit the helper nodes.
 lp group helper permission set skyblock.island.admin true

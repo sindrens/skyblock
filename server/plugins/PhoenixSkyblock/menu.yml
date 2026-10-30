@@ -26,7 +26,7 @@ entries:
   events:       {slot: 24, icon: clock,            command: "events",      status: auto}
   pets:         {slot: 25, icon: bone,             command: "pets",        status: auto}
   # Row 4: world, collection and community
-  warps:        {slot: 28, icon: ender_pearl,      command: "warps",       status: auto}
+  warps:        {slot: 28, icon: ender_pearl,      command: "is warp",     status: auto}   # island warp browser (M2.4)
   collection:   {slot: 29, icon: bookshelf,        command: "collection",  status: auto}
   leaderboards: {slot: 30, icon: golden_helmet,    command: "leaderboards", status: auto}
   titles:       {slot: 31, icon: name_tag,         command: "tags",        status: auto}

@@ -50,6 +50,10 @@ public final class Island {
     private Home home;
     private String name;
     private String ownerName;
+    /** M2.4: locked = only members and coop players can enter. */
+    private boolean locked;
+    /** M2.4: warp slots of this island ({@code null} = warps.start-slots). */
+    private Integer warpSlots;
 
     public Island(UUID id, int seasonId, UUID owner, boolean team, int slotId, int gridX, int gridZ, int sizeChunks, Home home,
                   String name, long createdAt, String world) {
@@ -110,6 +114,24 @@ public final class Island {
 
     void memberSlots(Integer memberSlots) {
         this.memberSlots = memberSlots;
+    }
+
+    /** Locked: visitors can't enter (M2.4 {@code /is lock}). */
+    public boolean locked() {
+        return locked;
+    }
+
+    void locked(boolean locked) {
+        this.locked = locked;
+    }
+
+    /** Warp slots stored on the island ({@code null} = warps.start-slots from islands.yml). */
+    public Integer warpSlots() {
+        return warpSlots;
+    }
+
+    void warpSlots(Integer warpSlots) {
+        this.warpSlots = warpSlots;
     }
 
     public int slotId() {

@@ -435,6 +435,37 @@ topics:
           - "<c:value>/is disband</c:value><c:text>: confirm, then type the word."
           - "<c:text>Members are removed. You can create"
           - "<c:text>a new island after a short cooldown."
+  visiting:
+    icon: ender_pearl
+    aliases: [visit, warp, warps, lock, unlock, ban, unban, expel, rate, like, setwarp, delwarp]
+    name: "<c:flame>Visiting & warps"
+    summary: ["<c:text>Visit islands, set warps, lock", "<c:text>your island, rate and like."]
+    take-me-there: "is visit"
+    commands: [Island]
+    pages:
+      - title: "<c:value>Visiting"
+        lines:
+          - "<c:value>/is visit</c:value> <c:text>opens the island browser:"
+          - "<c:text>most visited, top rated, most liked"
+          - "<c:text>and newest. <c:value>/is visit Steve</c:value> <c:text>takes you"
+          - "<c:text>straight to Steve's island."
+      - title: "<c:value>Warps"
+        lines:
+          - "<c:text>Leader and mods set up to 3 warps:"
+          - "<c:value>/is setwarp shop shops</c:value> <c:text>or a sign with"
+          - "<c:value>[warp]</c:value> <c:text>and the name. Everyone finds them"
+          - "<c:text>in <c:value>/is warp</c:value><c:text>, sorted by category."
+      - title: "<c:value>Keeping visitors out"
+        lines:
+          - "<c:value>/is lock</c:value> <c:text>lets only members in. Send a"
+          - "<c:text>visitor off with <c:value>/is expel</c:value><c:text>, or keep them"
+          - "<c:text>out for good with <c:value>/is ban</c:value><c:text>. Turn visit"
+          - "<c:text>alerts on or off in <c:value>/settings</c:value><c:text>."
+      - title: "<c:value>Ratings & likes"
+        lines:
+          - "<c:text>Liked an island you visited? Give it"
+          - "<c:value>/is rate Steve 5</c:value> <c:text>(once a season, you can"
+          - "<c:text>change it) and <c:value>/is like Steve</c:value> <c:text>once a day."
   money:
     icon: gold_ingot
     aliases: [economy, balance, bal, pay, baltop, transactions, currencies]
