@@ -167,7 +167,7 @@ final class ForgeMenu extends Menu {
                         Msg.c("skill", module.msg().component(viewer, "skill." + def.kind().skill().id())),
                         Msg.p("level", def.skillLevel()), Msg.p("have", skill == Integer.MAX_VALUE ? def.skillLevel() : skill)));
             }
-            Map<String, Integer> have = Forge.count(viewer.getInventory(), def.recipe().materials().keySet());
+            Map<String, Integer> have = forge.count(viewer, def.recipe().materials().keySet());
             def.recipe().materials().forEach((id, need) -> {
                 int got = have.getOrDefault(id, 0);
                 lore.addAll(lines(got >= need ? "forge.tier.material-ok" : "forge.tier.material",

@@ -32,6 +32,15 @@ public interface ToolService {
         return read(stack).isPresent();
     }
 
+    /**
+     * Depths drops per block/log with this item (M4.9): 1 + Forge tier fortune + level fortune + the tool's
+     * extra-drops bonus family, as an expected value (1.15 = 15% chance of one extra drop). 1.0 for anything that is
+     * not a custom tool.
+     */
+    default double dropMultiplier(ItemStack stack) {
+        return 1.0;
+    }
+
     /** Highest tool level (50). */
     int maxLevel();
 

@@ -59,6 +59,11 @@ final class ToolTracker implements ToolService {
     }
 
     @Override
+    public double dropMultiplier(ItemStack stack) {
+        return ToolItems.read(stack).map(d -> module.items().fortune(d)).orElse(1.0);
+    }
+
+    @Override
     public List<Integer> slotLevels() {
         return module.config().slotLevels();
     }

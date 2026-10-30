@@ -67,4 +67,18 @@ public interface SellService {
      * stack in {@link SellResult#giveBack()}.
      */
     CompletableFuture<SellResult> sell(SellRequest request);
+
+    /**
+     * Like {@link #sell(SellRequest)}, but {@code guard} runs in the <b>same</b> database transaction as the payment and the
+     * sale record: both commit or both roll back. The satchel (M4.4) uses it to remove the sold items from its table in
+     * that transaction, so items held in the database can never be paid twice or vanish without payment. A guard that
+     * returns false refuses the sale ({@link SellResult.Status#DUPLICATE}, nothing paid, every stack in giveBack).
+     * Implementations without guard support refuse with ERROR, never sell without the guard.
+     */
+    default CompletableFuture<SellResult> sell(SellRequest request, net.skybornmc.skyblock.common.economy.TxGuard guard) {
+        if (guard == null) {
+            return sell(request);
+        }
+        return CompletableFuture.completedFuture(new SellResult(SellResult.Status.ERROR, null, request.items(), null, null));
+    }
 }

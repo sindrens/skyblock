@@ -66,7 +66,7 @@ final class BlueprintMenu extends PagedMenu<Map.Entry<UUID, String>> {
         }
         ToolCatalog.BlueprintDef b = def.get();
         Forge forge = module.forge();
-        Map<String, Integer> have = Forge.count(viewer.getInventory(), b.recipe().materials().keySet());
+        Map<String, Integer> have = forge.count(viewer, b.recipe().materials().keySet());
         List<Component> lore = new ArrayList<>(lines("blueprint.menu.makes", Msg.mm("tool", module.items().rawOr("blueprint." + b.id() + ".tool-name", b.id())),
                 Msg.p("tier", b.tier()), Msg.mm("ability", module.items().abilityName(b.ability()))));
         lore.addAll(lines("ability." + b.ability() + ".description"));

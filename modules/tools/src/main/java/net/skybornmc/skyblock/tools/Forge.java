@@ -10,6 +10,7 @@ import net.skybornmc.skyblock.common.economy.Transaction;
 import net.skybornmc.skyblock.common.economy.TxResult;
 import net.skybornmc.skyblock.common.item.ItemRegistry;
 import net.skybornmc.skyblock.common.profile.ProfileService;
+import net.skybornmc.skyblock.common.satchel.SatchelService;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.tools.ToolKind;
@@ -92,6 +93,52 @@ final class Forge {
         return out;
     }
 
+    /**
+     * How many of each recipe material the player has: inventory plus the Depths satchel (M4.4; Forge materials are
+     * Depths drops, so they mostly sit in the satchel).
+     */
+    Map<String, Integer> count(Player player, Set<String> ids) {
+        Map<String, Integer> out = count(player.getInventory(), ids);
+        Optional<SatchelService> satchel = module.core.services().optional(SatchelService.class);
+        if (satchel.isPresent() && satchel.get().loaded(player)) {
+            for (String id : ids) {
+                long held = satchel.get().amount(player, id);
+                if (held > 0) {
+                    out.merge(id, (int) Math.min(Integer.MAX_VALUE, held), (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Takes the recipe materials: from the inventory first, the rest from the satchel (all or nothing). Returns false and
+     * takes nothing if they are not all there any more (call it right after {@link #count(Player, Set)} in the same tick).
+     */
+    boolean takeMaterials(Player player, Map<String, Integer> materials) {
+        PlayerInventory inv = player.getInventory();
+        Map<String, Integer> inInventory = count(inv, materials.keySet());
+        Map<String, Integer> fromInventory = new LinkedHashMap<>();
+        Map<String, Integer> fromSatchel = new LinkedHashMap<>();
+        materials.forEach((id, need) -> {
+            int inv0 = Math.min(need, inInventory.getOrDefault(id, 0));
+            if (inv0 > 0) {
+                fromInventory.put(id, inv0);
+            }
+            if (need - inv0 > 0) {
+                fromSatchel.put(id, need - inv0);
+            }
+        });
+        if (!fromSatchel.isEmpty()) {
+            Optional<SatchelService> satchel = module.core.services().optional(SatchelService.class);
+            if (satchel.isEmpty() || !satchel.get().consume(player, fromSatchel, "forge", Actor.player(player))) {
+                return false;
+            }
+        }
+        take(inv, fromInventory);
+        return true;
+    }
+
     /** Removes the recipe materials (call only after {@link #count} showed they are all there). */
     static void take(PlayerInventory inv, Map<String, Integer> materials) {
         Map<String, Integer> left = new LinkedHashMap<>(materials);
@@ -159,7 +206,7 @@ final class Forge {
         if (skillLevel(player, def.kind()) < def.skillLevel()) {
             return State.NEEDS_SKILL;
         }
-        if (!def.recipe().missing(count(inv, def.recipe().materials().keySet())).isEmpty()) {
+        if (!def.recipe().missing(count(player, def.recipe().materials().keySet())).isEmpty()) {
             return State.NEEDS_MATERIALS;
         }
         if (def.recipe().money() > 0 && money(player) < def.recipe().money()) {
@@ -199,7 +246,7 @@ final class Forge {
                     Msg.p("level", def.skillLevel()), Msg.p("have", skill));
             return;
         }
-        Map<String, Integer> missing = def.recipe().missing(count(player.getInventory(), def.recipe().materials().keySet()));
+        Map<String, Integer> missing = def.recipe().missing(count(player, def.recipe().materials().keySet()));
         if (!missing.isEmpty()) {
             fail(player, "forge.needs-materials", Msg.p("materials", describe(missing)));
             return;
@@ -238,13 +285,12 @@ final class Forge {
         PlayerInventory inv = player.getInventory();
         int slot = ToolTracker.find(inv, toolId);
         ToolData tool = slot < 0 ? null : ToolItems.read(inv.getItem(slot)).orElse(null);
-        Map<String, Integer> missing = def.recipe().missing(count(inv, def.recipe().materials().keySet()));
-        if (tool == null || tool.tier() != def.tier() - 1 || !missing.isEmpty()) {
+        Map<String, Integer> missing = def.recipe().missing(count(player, def.recipe().materials().keySet()));
+        if (tool == null || tool.tier() != def.tier() - 1 || !missing.isEmpty() || !takeMaterials(player, def.recipe().materials())) {
             refund(player.getUniqueId(), player.getName(), def.recipe().money(), key, "items_moved");
             fail(player, "forge.items-moved");
             return;
         }
-        take(inv, def.recipe().materials());
         ToolData upgraded = ToolProgress.upgrade(tool, def.tier());
         ItemStack stack = module.items().apply(inv.getItem(slot), upgraded);
         inv.setItem(slot, stack);
@@ -291,7 +337,7 @@ final class Forge {
                     Msg.p("level", needed), Msg.p("have", skill));
             return;
         }
-        Map<String, Integer> missing = def.recipe().missing(count(inv, def.recipe().materials().keySet()));
+        Map<String, Integer> missing = def.recipe().missing(count(player, def.recipe().materials().keySet()));
         if (!missing.isEmpty()) {
             fail(player, "forge.needs-materials", Msg.p("materials", describe(missing)));
             return;
@@ -362,11 +408,11 @@ final class Forge {
     private boolean completeBlueprint(Player player, ToolCatalog.BlueprintDef def, UUID blueprintItem, ToolData tool) {
         PlayerInventory inv = player.getInventory();
         int slot = blueprintSlot(inv, blueprintItem);
-        if (slot < 0 || !def.recipe().missing(count(inv, def.recipe().materials().keySet())).isEmpty()) {
+        if (slot < 0 || !def.recipe().missing(count(player, def.recipe().materials().keySet())).isEmpty()
+                || !takeMaterials(player, def.recipe().materials())) {
             return false;
         }
         inv.setItem(slot, null);
-        take(inv, def.recipe().materials());
         ItemStack stack = module.items().create(tool, "blueprint:" + def.id(), player.getName(), def.id());
         give(player, stack);
         module.msg().send(player, "blueprint.crafted", Msg.mm("tool", module.items().displayName(tool, stack)),
