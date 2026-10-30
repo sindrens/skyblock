@@ -7,6 +7,7 @@ import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.Transaction;
 import net.skybornmc.skyblock.common.economy.TxGuard;
 import net.skybornmc.skyblock.common.economy.TxResult;
+import net.skybornmc.skyblock.common.tools.ToolPerk;
 import net.skybornmc.skyblock.common.wardrobe.ArmorPiece;
 
 import java.sql.Connection;
@@ -336,17 +337,66 @@ final class WardrobeOps {
      * (written first, inside the same transaction, so a level reached a moment ago counts).
      */
     record MergeRequest(Who who, UUID entryA, SetDef defA, UUID entryB, SetDef defB, String lookSetId, long fee,
-                        double pendingA, double pendingB, SetLevels levels, int season) {
+                        double pendingA, double pendingB, SetLevels levels, int season, MergeEnchants enchants) {
+        MergeRequest {
+            enchants = enchants == null ? MergeEnchants.NONE : enchants;
+        }
+
+        /** A merge whose inputs carry no armor enchants. */
+        MergeRequest(Who who, UUID entryA, SetDef defA, UUID entryB, SetDef defB, String lookSetId, long fee,
+                     double pendingA, double pendingB, SetLevels levels, int season) {
+            this(who, entryA, defA, entryB, defB, lookSetId, fee, pendingA, pendingB, levels, season, MergeEnchants.NONE);
+        }
+    }
+
+    /**
+     * E5 (WARDROBE §5.1 "Enchants"): the merged pieces keep the enchants of the look set's entry; the other entry's enchants
+     * come back as enchant books into the Wardrobe Chest (even past its size, so nothing is lost and no merge is blocked).
+     *
+     * @param otherExpected the other entry's enchants as the menu saw them (re-checked on the locked rows: a change = GONE)
+     * @param books         one prepared book per enchant of {@code otherExpected} ({@link MergeRules#returnedBooks})
+     * @param sink          writes a book's {@code enchant_books} row in the same transaction (the enchants module)
+     */
+    record MergeEnchants(Map<ArmorPiece, List<ToolPerk>> otherExpected, List<ReturnedBook> books, BookSink sink) {
+        static final MergeEnchants NONE = new MergeEnchants(Map.of(), List.of(), null);
+
+        MergeEnchants {
+            otherExpected = otherExpected == null ? Map.of() : Map.copyOf(otherExpected);
+            books = books == null ? List.of() : List.copyOf(books);
+        }
+    }
+
+    /**
+     * A book an armor enchant comes back as: the item was built on the main thread (id = its unique id), its row and its
+     * chest row are written in the merge transaction.
+     */
+    record ReturnedBook(UUID id, String enchant, int level, ArmorPiece piece, String kind, String itemId, String name, byte[] item) {
+    }
+
+    /** Writes a returned book's {@code enchant_books} row inside the merge transaction. */
+    @FunctionalInterface
+    interface BookSink {
+        void insert(Connection c, ReturnedBook book, UUID player, UUID profile, String reason) throws SQLException;
     }
 
     /** Why the guard refused (reset on every retry). */
     private static final class MergeWhy {
         Status status;
         MergeRules.Refusal refusal;
+        Map<ArmorPiece, List<ToolPerk>> enchants = Map.of();
     }
 
     /** Result of a merge: the new entry, or the status (and the refusal for REFUSED). */
-    record MergeResult(Status status, WardrobeStore.Entry entry, MergeRules.Refusal refusal, Long balance) {
+    record MergeResult(Status status, WardrobeStore.Entry entry, MergeRules.Refusal refusal, Long balance,
+                       Map<ArmorPiece, List<ToolPerk>> enchants) {
+        MergeResult {
+            enchants = enchants == null ? Map.of() : Map.copyOf(enchants);
+        }
+
+        MergeResult(Status status, WardrobeStore.Entry entry, MergeRules.Refusal refusal, Long balance) {
+            this(status, entry, refusal, balance, Map.of());
+        }
+
         boolean ok() {
             return status == Status.OK;
         }
@@ -366,6 +416,7 @@ final class WardrobeOps {
         TxGuard guard = c -> {
             why.status = null;
             why.refusal = null;
+            why.enchants = Map.of();
             // Lock in a fixed order (two merges of overlapping entries can't deadlock).
             boolean aFirst = r.entryA().compareTo(r.entryB()) < 0;
             UUID first = aFirst ? r.entryA() : r.entryB();
@@ -398,6 +449,33 @@ final class WardrobeOps {
             }
             store.insertMerged(c, fresh, r.season(), r.who().player());
             store.insertMergeRecord(c, fresh.entryId(), r.who().profile(), a, b, r.lookSetId(), r.fee(), r.who().player(), now);
+            // E5: the look's enchants move to the merged entry, the other entry's come back as books.
+            WardrobeStore.Entry look = a.setId().equals(r.lookSetId()) ? a : b;
+            WardrobeStore.Entry other = look == a ? b : a;
+            if (!MergeRules.sameEnchants(store.entryEnchants(c, other.entryId()), r.enchants().otherExpected())) {
+                why.status = Status.GONE;
+                return false;
+            }
+            Map<ArmorPiece, List<ToolPerk>> kept = store.entryEnchants(c, look.entryId());
+            for (Map.Entry<ArmorPiece, List<ToolPerk>> e : kept.entrySet()) {
+                store.savePiece(c, fresh.entryId(), e.getKey(), e.getValue());
+            }
+            store.deletePieces(c, a.entryId());
+            store.deletePieces(c, b.entryId());
+            if (!r.enchants().books().isEmpty() && r.enchants().sink() == null) {
+                why.status = Status.ERROR;
+                return false;
+            }
+            for (ReturnedBook book : r.enchants().books()) {
+                r.enchants().sink().insert(c, book, r.who().player(), r.who().profile(), REASON_MERGE + ":" + fresh.entryId());
+                WardrobeStore.Stored row = new WardrobeStore.Stored(book.id(), r.who().profile(), book.kind(), book.itemId(), book.name(),
+                        book.item(), WardrobeStore.StorageState.STORED, null, now);
+                if (store.put(c, row, Integer.MAX_VALUE, now) != WardrobeStore.PutResult.OK) {
+                    why.status = Status.ERROR;
+                    return false;
+                }
+            }
+            why.enchants = kept;
             // W3 (WD22): loadouts that wore either input now wear the merged set.
             LOADOUTS.repoint(c, r.who().profile(), a.entryId(), fresh.entryId(), now);
             LOADOUTS.repoint(c, r.who().profile(), b.entryId(), fresh.entryId(), now);
@@ -408,7 +486,7 @@ final class WardrobeOps {
                 if (!guard.holds(c)) {
                     throw new Refused(Status.ERROR);
                 }
-                return new MergeResult(Status.OK, fresh, null, null);
+                return new MergeResult(Status.OK, fresh, null, null, why.enchants);
             }).exceptionally(e -> {
                 Throwable cause = Database.cause(e);
                 if (cause instanceof Refused) {
@@ -427,7 +505,7 @@ final class WardrobeOps {
                 .detail("set_b", r.defB().id())
                 .detail("target_name", r.who().name());
         return safeMerge(() -> payer.run(tx, guard).thenApply(res -> switch (res.status()) {
-            case SUCCESS -> new MergeResult(Status.OK, fresh, null, res.fromBalance());
+            case SUCCESS -> new MergeResult(Status.OK, fresh, null, res.fromBalance(), why.enchants);
             case INSUFFICIENT_FUNDS -> new MergeResult(Status.NOT_ENOUGH, null, null, null);
             case DUPLICATE -> new MergeResult(why.status != null ? why.status : Status.ERROR, null, why.refusal, null);
             default -> new MergeResult(Status.ERROR, null, null, null);

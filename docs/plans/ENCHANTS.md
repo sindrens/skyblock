@@ -318,6 +318,8 @@ None of these work on players.
 | `phoenix_thorns` | Phoenix Thorns | Rare | III | Reflect 5 / 10 / 15% of melee damage to mobs | Chestplate, leggings | 1 | Combat T5 | 2 / 4 / 6% |
 | `phoenix_rebirth` | Phoenix Rebirth | Mythic | I | Once per 10 min: lethal damage leaves you at 4 hearts with Fire Resistance + Regeneration II for 5 s | Chestplate | P | Mythic sources | — (off in warzone and duels) |
 
+**How E5 implements §6.8** (defaults in `enchanter.yml → armor.*` and `wardrobe.yml → enchants.*`): armor enchants are stored on the **wardrobe entry** (`wardrobe_pieces`, per profile), never on loose vanilla armor; worn pieces only show them (lore section, re-rendered in place). `/enchanter → Armor` lists the profile's owned sets; apply / upgrade / combine / remove / shatter run as one transaction with the book rows and the crystal payment (the entry row is locked and re-checked). Slots: 1, a 2nd at set Lv 25, the chestplate's mythic slot at Lv 50 (Mythics only there, `armor.mythic-slot-mythic-only`). An enchant above the set level gate or in a slot that is not open yet is **dormant** (gray, no effect). Vitality and Fortitude go into the health and damage reduction families (the enchants module applies both families, so set bonuses of those families count inside the same caps); Phoenix Thorns on chestplate + leggings add up to `armor.thorns-max-percent` (30%). Warzone: every armor enchant at its PvP value and only if W2 allows its family there (`wardrobe.yml → warzone.families`, so Vitality is off there by default). Merging (WARDROBE §5): the look set's enchants stay on the merged set, the other set's come back as books in the Wardrobe Chest (even past its size).
+
 **Count:** 9 + 4 + 4 + 5 + 8 + 4 + 5 + 9 = **48**.
 
 ### 6.9 Name rules

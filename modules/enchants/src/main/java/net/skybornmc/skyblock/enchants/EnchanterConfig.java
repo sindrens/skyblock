@@ -261,6 +261,28 @@ final class EnchanterConfig extends ModuleConfig {
             min = 0.1, max = 1000)
     public double effectsPerfWarnMs = 5;
 
+    // ------------------------------------------------------------------ armor enchants on wardrobe set pieces (E5)
+
+    @Setting(path = "armor.effects-enabled", desc = "Armor enchant effects on worn set pieces (Vitality, Fortitude, Phoenix Rebirth ...). Off = they stay on the pieces and do nothing.")
+    public boolean armorEffects = true;
+
+    @Setting(path = "armor.refresh-ticks", desc = "How often (ticks) max health, walk speed, Night Eye and Second Wind are updated.", min = 5, max = 200)
+    public int armorRefreshTicks = 20;
+
+    @Setting(path = "armor.night-vision-ticks", desc = "Length of the Night Eye effect, refreshed before it runs out (above 200 avoids the vanilla flicker).",
+            min = 220, max = 2400)
+    public int nightVisionTicks = 400;
+
+    @Setting(path = "armor.thorns-max-percent", desc = "Phoenix Thorns on chestplate and leggings add up to at most this share of the melee damage.",
+            min = 0, max = 100, level = Setting.Level.OWNER)
+    public double thornsMaxPercent = 30;
+
+    @Setting(path = "armor.mythic-slot-mythic-only", desc = "The chestplate's mythic slot takes Mythic enchants only (false: any enchant).", level = Setting.Level.OWNER)
+    public boolean mythicSlotMythicOnly = true;
+
+    @Setting(path = "sounds.rebirth", desc = "Sound when Phoenix Rebirth saves a player.")
+    public String soundRebirth = "unlock";
+
     // ------------------------------------------------------------------ rules and feel
 
     @Setting(path = "rules.two-slot-in-prestige-slot", desc = "May a 2-slot enchant use the prestige slot as its second slot.")

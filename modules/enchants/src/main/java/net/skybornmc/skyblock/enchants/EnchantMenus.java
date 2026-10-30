@@ -36,6 +36,28 @@ final class EnchantMenus {
         module.core.menus().open(player, new EnchanterMenu(module));
     }
 
+    /** E5: the Armor tab (every owned set of the active profile). */
+    void openArmor(Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
+        ArmorEntriesMenu menu = new ArmorEntriesMenu(module);
+        if (parent != null) {
+            menu.parent(parent);
+        }
+        module.core.menus().open(player, menu);
+    }
+
+    /** E5: the pieces and slots of one owned set (also from the wardrobe's set screen). */
+    void openArmorEntry(Player player, UUID entryId, net.skybornmc.skyblock.common.menu.Menu parent) {
+        if (module.wardrobe() == null) {
+            module.msg().send(player, "armor.unavailable");
+            return;
+        }
+        ArmorEntryMenu menu = new ArmorEntryMenu(module, entryId);
+        if (parent != null) {
+            menu.parent(parent);
+        }
+        module.core.menus().open(player, menu);
+    }
+
     /** Book shop: loads today's rolls first. */
     void openShop(Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
         UUID uuid = player.getUniqueId();
@@ -104,6 +126,26 @@ final class EnchantMenus {
 
     static String problemKey(EnchantRules.Problem problem) {
         return problem.name().toLowerCase(Locale.ROOT).replace('_', '-');
+    }
+
+    /**
+     * E5: the message key of a problem on a set piece (under {@code rule.} / {@code why.}): set level instead of tool level,
+     * "piece" instead of "tool", the mythic slot instead of the prestige slot.
+     */
+    static String armorProblemKey(EnchantRules.Problem problem) {
+        return switch (problem) {
+            case LEVEL_GATE -> "armor-level-gate";
+            case SLOT_LOCKED -> "armor-slot-locked";
+            case WRONG_TOOL -> "wrong-piece";
+            case ALREADY_ON_TOOL -> "already-on-piece";
+            case PRESTIGE_ONLY -> "mythic-slot-only";
+            default -> problemKey(problem);
+        };
+    }
+
+    /** The red lore line for a problem on a set piece. */
+    Component whyArmor(Player viewer, EnchantRules.Verdict verdict, EnchantDef def) {
+        return text(viewer, "why." + armorProblemKey(verdict.problem()), problemPlaceholders(verdict, def, null));
     }
 
     /** Placeholders for {@code rule.*} and {@code why.*}: other, level, tools, max. */

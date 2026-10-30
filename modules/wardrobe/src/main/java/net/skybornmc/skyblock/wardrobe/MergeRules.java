@@ -1,9 +1,15 @@
 package net.skybornmc.skyblock.wardrobe;
 
 import net.skybornmc.skyblock.common.bonus.BonusFamily;
+import net.skybornmc.skyblock.common.tools.ToolPerk;
+import net.skybornmc.skyblock.common.wardrobe.ArmorPiece;
+import net.skybornmc.skyblock.common.wardrobe.PieceEnchants;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -101,6 +107,39 @@ final class MergeRules {
         out.addAll(a.families());
         out.retainAll(b.families());
         return out;
+    }
+
+    /** One armor enchant that a merge returns as a book (E5). */
+    record Returned(ArmorPiece piece, String enchant, int level) {
+    }
+
+    /**
+     * E5 (WARDROBE §5.1): the merged pieces keep the look entry's enchants; every enchant of the other entry comes back as
+     * one book at its level (pieces in armor order, slots in order). {@code maxLevel} clamps a level above the enchant's
+     * current max (a lowered max in enchants.yml); unknown enchants (maxLevel 0) are returned too, so the caller refuses
+     * the merge instead of losing them.
+     */
+    static List<Returned> returnedBooks(Map<ArmorPiece, List<ToolPerk>> other, java.util.function.ToIntFunction<String> maxLevel) {
+        List<Returned> out = new ArrayList<>();
+        for (ArmorPiece piece : ArmorPiece.values()) {
+            for (ToolPerk p : PieceEnchants.sorted(other.getOrDefault(piece, List.of()))) {
+                int max = maxLevel.applyAsInt(p.id());
+                out.add(new Returned(piece, p.id(), max > 0 ? Math.min(p.level(), max) : p.level()));
+            }
+        }
+        return out;
+    }
+
+    /** Same enchants on the same pieces (pieces without enchants count as absent). */
+    static boolean sameEnchants(Map<ArmorPiece, List<ToolPerk>> a, Map<ArmorPiece, List<ToolPerk>> b) {
+        for (ArmorPiece piece : ArmorPiece.values()) {
+            List<ToolPerk> x = PieceEnchants.sorted(a.getOrDefault(piece, List.of()));
+            List<ToolPerk> y = PieceEnchants.sorted(b.getOrDefault(piece, List.of()));
+            if (!x.equals(y)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Fee (WD23): {@code perStep × (tier A + tier B − 1)}; never negative. */

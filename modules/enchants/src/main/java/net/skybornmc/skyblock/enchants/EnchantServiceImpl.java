@@ -4,6 +4,11 @@ import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.enchant.EnchantBook;
 import net.skybornmc.skyblock.common.enchant.EnchantService;
+import net.skybornmc.skyblock.common.enchant.PreparedBook;
+import net.skybornmc.skyblock.common.menu.Menu;
+import org.bukkit.entity.Player;
+import java.sql.Connection;
+import java.sql.SQLException;
 import net.skybornmc.skyblock.common.item.Rarity;
 import net.skybornmc.skyblock.common.tools.ToolInfo;
 import net.skybornmc.skyblock.common.tools.ToolPerk;
@@ -99,6 +104,32 @@ final class EnchantServiceImpl implements EnchantService {
     public CompletableFuture<ItemStack> createScroll(String origin, UUID owner) {
         return module.core.scheduler().supplyMain("enchants-create-scroll", () -> module.books().createScroll(origin))
                 .thenCompose(stack -> insert(stack, true, null, 0, origin, owner));
+    }
+
+    @Override
+    public PreparedBook prepareBook(String enchantId, int level, String origin) {
+        Optional<EnchantDef> def = module.registry().get(enchantId);
+        if (def.isEmpty() || level < 1 || level > def.get().maxLevel()) {
+            throw new IllegalArgumentException("Unknown enchant or level: " + enchantId + " " + level);
+        }
+        ItemStack stack = module.books().createBook(enchantId, level, origin);
+        return new PreparedBook(BookItems.id(stack), enchantId, level, stack);
+    }
+
+    @Override
+    public void insertBook(Connection connection, PreparedBook book, String origin, UUID owner, UUID profile, String reason) throws SQLException {
+        int season = module.config().seasonId;
+        long now = System.currentTimeMillis();
+        module.store().insert(connection, book.id(), false, book.enchant(), book.level(), season, origin == null ? "api" : origin, owner,
+                profile, now, reason == null ? "api" : reason);
+        if (owner != null) {
+            module.store().markSeen(connection, owner, season, book.enchant(), now);
+        }
+    }
+
+    @Override
+    public void openArmor(Player player, UUID entryId, Menu parent) {
+        module.menus().openArmorEntry(player, entryId, parent);
     }
 
     private CompletableFuture<ItemStack> insert(ItemStack stack, boolean scroll, String enchant, int level, String origin, UUID owner) {

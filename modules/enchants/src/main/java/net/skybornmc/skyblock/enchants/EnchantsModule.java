@@ -62,6 +62,7 @@ public final class EnchantsModule implements SkyblockModule {
     private SpeedBursts bursts;
     private BookDrops drops;
     private SwordEffects swords;
+    private ArmorEffects armor;
     private Object depthsHooks;
     private StackPerf effectsPerf;
 
@@ -103,6 +104,19 @@ public final class EnchantsModule implements SkyblockModule {
                     }
                     tools.savePerks(c, toolId, perks);
                 },
+                new OpRunner.PieceStore() {
+                    @Override
+                    public java.util.Optional<List<ToolPerk>> lock(java.sql.Connection c, java.util.UUID profile, java.util.UUID entryId,
+                                                                  net.skybornmc.skyblock.common.wardrobe.ArmorPiece piece) throws java.sql.SQLException {
+                        return requireWardrobe().lockPieceEnchants(c, profile, entryId, piece);
+                    }
+
+                    @Override
+                    public void save(java.sql.Connection c, java.util.UUID entryId, net.skybornmc.skyblock.common.wardrobe.ArmorPiece piece,
+                                     List<ToolPerk> enchants) throws java.sql.SQLException {
+                        requireWardrobe().savePieceEnchants(c, entryId, piece, enchants);
+                    }
+                },
                 System::currentTimeMillis, core.plugin().getLogger());
         ops = new EnchantOps(this);
         menus = new EnchantMenus(this);
@@ -123,6 +137,9 @@ public final class EnchantsModule implements SkyblockModule {
         swords = new SwordEffects(this, procBar, effectsPerf);
         Bukkit.getPluginManager().registerEvents(drops, core.plugin());
         Bukkit.getPluginManager().registerEvents(swords, core.plugin());
+        armor = new ArmorEffects(this);
+        Bukkit.getPluginManager().registerEvents(armor, core.plugin());
+        armor.start();
         registerDepthsHooks();
         perfTask = core.scheduler().repeat("enchants-stack-perf", 1200L, 1200L, () -> {
             stacks.perf().report();
@@ -172,6 +189,10 @@ public final class EnchantsModule implements SkyblockModule {
         }
         if (swords != null) {
             HandlerList.unregisterAll(swords);
+        }
+        if (armor != null) {
+            HandlerList.unregisterAll(armor);
+            armor.stop();
         }
         if (drops != null) {
             HandlerList.unregisterAll(drops);
@@ -281,7 +302,7 @@ public final class EnchantsModule implements SkyblockModule {
 
     private void registerCommands() {
         core.commands().register(CommandSpec.command("enchanter")
-                .description("The Enchanter: put enchant books on your tools, upgrade, combine, remove, Book shop and guide")
+                .description("The Enchanter: put enchant books on your tools and set pieces, upgrade, combine, remove, Book shop and guide")
                 .category("Enchants").permission(PERM_USE).playerOnly().example("enchanter")
                 .executes(ctx -> menus.openMain(ctx.player())));
     }
@@ -403,6 +424,29 @@ public final class EnchantsModule implements SkyblockModule {
 
     ToolService tools() {
         return core.services().optional(ToolService.class).orElse(null);
+    }
+
+    /** The wardrobe (E5 armor enchants), or null when the wardrobe module is not running. */
+    net.skybornmc.skyblock.common.wardrobe.WardrobeService wardrobe() {
+        return core.services().optional(net.skybornmc.skyblock.common.wardrobe.WardrobeService.class).orElse(null);
+    }
+
+    private net.skybornmc.skyblock.common.wardrobe.WardrobeService requireWardrobe() throws java.sql.SQLException {
+        net.skybornmc.skyblock.common.wardrobe.WardrobeService w = wardrobe();
+        if (w == null) {
+            throw new java.sql.SQLException("The wardrobe module is not running");
+        }
+        return w;
+    }
+
+    /** Armor enchant rules with the wardrobe's live slot levels (E5). */
+    ArmorRules armorRules() {
+        net.skybornmc.skyblock.common.wardrobe.WardrobeService w = wardrobe();
+        return new ArmorRules(w == null ? net.skybornmc.skyblock.common.wardrobe.ArmorSlots.DEFAULTS : w.armorSlots(), config.mythicSlotMythicOnly);
+    }
+
+    ArmorEffects armor() {
+        return armor;
     }
 
     EconomyService economy() {

@@ -13,7 +13,11 @@ import net.skybornmc.skyblock.common.item.ItemRegistry;
 import net.skybornmc.skyblock.common.item.ItemType;
 import net.skybornmc.skyblock.common.item.LoreBuilder;
 import net.skybornmc.skyblock.common.item.Rarity;
+import net.skybornmc.skyblock.common.enchant.EnchantService;
+import net.skybornmc.skyblock.common.tools.ToolPerk;
 import net.skybornmc.skyblock.common.wardrobe.ArmorPiece;
+import net.skybornmc.skyblock.common.wardrobe.ArmorSlots;
+import net.skybornmc.skyblock.common.wardrobe.PieceEnchants;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -54,6 +58,8 @@ final class WardrobeItems {
     static final NamespacedKey PROFILE = ItemKeys.key("wardrobe_profile");
     static final NamespacedKey NONCE = ItemKeys.key("wardrobe_nonce");
     static final NamespacedKey LEVEL = ItemKeys.key("wardrobe_level");
+    /** Armor enchants of the piece (E5), {@link PieceEnchants#tag} format; the database row is the truth. */
+    static final NamespacedKey ENCHANTS = ItemKeys.key("wardrobe_enchants");
     static final NamespacedKey TOME_XP = ItemKeys.key("wardrobe_tome_xp");
     static final NamespacedKey TOME_KIND = ItemKeys.key("wardrobe_tome_kind");
     static final String TOME_ID = "wardrobe_tome";
@@ -103,7 +109,8 @@ final class WardrobeItems {
      * merged entry also carries its other set. From set level 10 the trim uses the upgraded material, from level 50 the
      * piece glints; in the warzone the armor points are the normalized ones (WD18).
      */
-    ItemStack piece(SetDef def, WardrobeStore.Entry entry, ArmorPiece piece, UUID profile, UUID nonce, boolean warzone) {
+    ItemStack piece(SetDef def, WardrobeStore.Entry entry, ArmorPiece piece, UUID profile, UUID nonce, boolean warzone,
+                    List<ToolPerk> enchants) {
         String other = entry.isMerged() ? (def.id().equals(entry.mergedSetId()) ? entry.setId() : entry.mergedSetId()) : null;
         int level = levelsShown(entry);
         ItemStack base = module.core.items().create(PIECE_ID, 1, null, pdc -> {
@@ -116,6 +123,9 @@ final class WardrobeItems {
             pdc.set(PROFILE, PersistentDataType.STRING, profile.toString());
             pdc.set(NONCE, PersistentDataType.STRING, nonce.toString());
             pdc.set(LEVEL, PersistentDataType.INTEGER, level);
+            if (enchants != null && !enchants.isEmpty()) {
+                pdc.set(ENCHANTS, PersistentDataType.STRING, PieceEnchants.tag(enchants));
+            }
         });
         ItemStack stack = base.withType(material(def.look().base(), piece));
         boolean levels = module.config().levelsEnabled;
@@ -227,6 +237,23 @@ final class WardrobeItems {
         return stack;
     }
 
+    /**
+     * A menu copy of an entry's piece (E5 Enchanter): the piece's name and full lore (bonuses, enchants) on a plain item in
+     * the set's look, so it is never a real piece.
+     */
+    ItemStack pieceIcon(SetDef def, WardrobeStore.Entry entry, ArmorPiece piece, List<ToolPerk> enchants) {
+        ItemStack real = piece(def, entry, piece, entry.profile(), new UUID(0, 0), false, enchants);
+        ItemStack icon = icon(def, piece);
+        icon.editMeta(meta -> {
+            meta.itemName(real.effectiveName());
+            meta.lore(real.lore());
+        });
+        if (real.hasData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE)) {
+            icon.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+        }
+        return icon;
+    }
+
     // ------------------------------------------------------------------ tokens
 
     /** A new token item (random unique id; the caller writes the database row with {@link ItemRegistry#uuidOf}). */
@@ -322,7 +349,41 @@ final class WardrobeItems {
                 lore.line(LoreBuilder.fill(text.raw("piece.merged"), Map.of("set", LoreBuilder.escape(m.shortName()))));
                 bonusLines(lore, m, multiplier);
             });
+            Optional<ArmorPiece> piece = ArmorPiece.byKey(stack.getPersistentDataContainer().get(PIECE, PersistentDataType.STRING));
+            piece.ifPresent(p -> enchantLines(lore, p, PieceEnchants.fromTag(stack.getPersistentDataContainer().get(ENCHANTS,
+                    PersistentDataType.STRING)), module.config().levelsEnabled ? lv : module.config().maxLevel));
             lore.action(text.plain("piece.action-input"), text.plain("piece.action-text"));
+        }
+    }
+
+    /**
+     * The armor enchant section (E5, ENCHANTS §9 tool lore style): one line per slot of the piece: the enchant (gray and
+     * "dormant" when its slot is not open yet or its level is above the set level gate), an empty slot, or the level that
+     * opens the slot. Left out when the enchants module is not running.
+     */
+    void enchantLines(LoreBuilder lore, ArmorPiece piece, List<ToolPerk> enchants, int level) {
+        EnchantService service = module.core.services().optional(EnchantService.class).orElse(null);
+        if (service == null) {
+            return;
+        }
+        WardrobeText text = module.text();
+        ArmorSlots slots = module.config().armorSlots();
+        lore.line(text.raw("piece.enchants.header"));
+        for (int slot : slots.slots(piece)) {
+            boolean mythic = ArmorSlots.mythic(slot);
+            Optional<ToolPerk> perk = PieceEnchants.at(enchants, slot);
+            if (perk.isPresent()) {
+                ToolPerk p = perk.get();
+                String name = LoreBuilder.escape(service.displayName(p.id(), p.level()));
+                boolean working = service.enabled(p.id()) && slots.working(piece, p, level, service.maxLevel(p.id()));
+                String key = working ? (mythic ? "piece.enchants.mythic" : "piece.enchants.active") : "piece.enchants.dormant";
+                lore.line(LoreBuilder.fill(text.raw(key), Map.of("name", name, "rarity", service.rarity(p.id()).id())));
+            } else if (slots.unlocked(piece, slot, level)) {
+                lore.line(text.raw(mythic ? "piece.enchants.mythic-empty" : "piece.enchants.empty"));
+            } else {
+                lore.line(LoreBuilder.fill(text.raw(mythic ? "piece.enchants.mythic-locked" : "piece.enchants.locked"),
+                        Map.of("slot", String.valueOf(slot), "level", String.valueOf(slots.unlockLevel(slot)))));
+            }
         }
     }
 

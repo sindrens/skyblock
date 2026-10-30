@@ -47,6 +47,30 @@ final class Session {
     List<Loadout> loadouts = List.of();
     /** Loadout slots bought with store credits (account-wide). */
     int boughtSlots;
+    /** Armor enchants (E5) of the active entries: entry id → piece → enchants (sorted by slot). */
+    Map<UUID, Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>>> enchants = new java.util.HashMap<>();
+
+    /** The enchants of a piece of an entry (empty list for none). */
+    List<net.skybornmc.skyblock.common.tools.ToolPerk> enchants(UUID entryId, ArmorPiece piece) {
+        Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>> m = enchants.get(entryId);
+        return m == null ? List.of() : m.getOrDefault(piece, List.of());
+    }
+
+    /** All piece enchants of an entry (empty map for none). */
+    Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>> enchants(UUID entryId) {
+        Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>> m = enchants.get(entryId);
+        return m == null ? Map.of() : m;
+    }
+
+    /** Replaces the cached enchants of one piece. */
+    void putEnchants(UUID entryId, ArmorPiece piece, List<net.skybornmc.skyblock.common.tools.ToolPerk> list) {
+        Map<ArmorPiece, List<net.skybornmc.skyblock.common.tools.ToolPerk>> m = enchants.computeIfAbsent(entryId, k -> new EnumMap<>(ArmorPiece.class));
+        if (list == null || list.isEmpty()) {
+            m.remove(piece);
+        } else {
+            m.put(piece, net.skybornmc.skyblock.common.wardrobe.PieceEnchants.sorted(list));
+        }
+    }
 
     Optional<Loadout> loadout(UUID id) {
         return loadouts.stream().filter(l -> l.id().equals(id)).findFirst();
@@ -155,6 +179,7 @@ final class Session {
     void remove(UUID entryId) {
         entries = entries.stream().filter(e -> !e.entryId().equals(entryId)).toList();
         equipped.values().removeIf(q -> q.entryId().equals(entryId));
+        enchants.remove(entryId);
     }
 
     /** Pieces of an entry worn now. */

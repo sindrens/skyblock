@@ -1,7 +1,9 @@
 package net.skybornmc.skyblock.wardrobe;
 
 import net.skybornmc.skyblock.common.db.Sql;
+import net.skybornmc.skyblock.common.tools.ToolPerk;
 import net.skybornmc.skyblock.common.wardrobe.ArmorPiece;
+import net.skybornmc.skyblock.common.wardrobe.PieceEnchants;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -230,6 +232,63 @@ final class WardrobeStore {
     void insertMergeRecord(Connection c, UUID mergeId, UUID profile, Entry a, Entry b, String look, long fee, UUID by, long now) throws SQLException {
         Sql.update(c, "INSERT INTO wardrobe_merges (merge_id, profile_key, entry_a, entry_b, set_a, set_b, look_set_id, fee, merged_at, merged_by) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", mergeId, profile, a.entryId(), b.entryId(), a.setId(), b.setId(), look, fee, now, by);
+    }
+
+    // ------------------------------------------------------------------ piece enchants (E5)
+
+    /** Armor enchants of every active entry of a profile: entry id → piece → enchants (pieces without any left out). */
+    Map<UUID, Map<ArmorPiece, List<ToolPerk>>> pieceEnchants(Connection c, UUID profile) throws SQLException {
+        Map<UUID, Map<ArmorPiece, List<ToolPerk>>> out = new java.util.HashMap<>();
+        for (Object[] row : Sql.query(c, "SELECT p.entry_id, p.piece, p.enchants FROM wardrobe_pieces p JOIN wardrobe_sets s ON s.entry_id = p.entry_id "
+                + "WHERE s.profile_key = ? AND s.state = ?", rs -> new Object[]{Sql.uuid(rs, "entry_id"), rs.getString("piece"), rs.getString("enchants")},
+                profile, EntryState.ACTIVE.key())) {
+            Optional<ArmorPiece> piece = ArmorPiece.byKey((String) row[1]);
+            List<ToolPerk> list = PieceEnchants.decode((String) row[2]);
+            if (piece.isPresent() && !list.isEmpty()) {
+                out.computeIfAbsent((UUID) row[0], k -> new EnumMap<>(ArmorPiece.class)).put(piece.get(), list);
+            }
+        }
+        return out;
+    }
+
+    /** All piece enchants of one entry (no lock). */
+    Map<ArmorPiece, List<ToolPerk>> entryEnchants(Connection c, UUID entryId) throws SQLException {
+        Map<ArmorPiece, List<ToolPerk>> out = new EnumMap<>(ArmorPiece.class);
+        for (Object[] row : Sql.query(c, "SELECT piece, enchants FROM wardrobe_pieces WHERE entry_id = ?",
+                rs -> new Object[]{rs.getString("piece"), rs.getString("enchants")}, entryId)) {
+            Optional<ArmorPiece> piece = ArmorPiece.byKey((String) row[0]);
+            List<ToolPerk> list = PieceEnchants.decode((String) row[1]);
+            if (piece.isPresent() && !list.isEmpty()) {
+                out.put(piece.get(), list);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Locks an entry row and reads one piece's enchants; empty when the entry is not active or not the profile's.
+     */
+    Optional<List<ToolPerk>> lockPiece(Connection c, UUID profile, UUID entryId, ArmorPiece piece) throws SQLException {
+        Optional<Entry> e = entryForUpdate(c, entryId);
+        if (e.isEmpty() || e.get().state() != EntryState.ACTIVE || !e.get().profile().equals(profile)) {
+            return Optional.empty();
+        }
+        return Optional.of(Sql.queryOne(c, "SELECT enchants FROM wardrobe_pieces WHERE entry_id = ? AND piece = ?",
+                rs -> PieceEnchants.decode(rs.getString(1)), entryId, piece.key()).orElse(List.of()));
+    }
+
+    /** Stores a piece's enchants (deletes the row when there are none). */
+    void savePiece(Connection c, UUID entryId, ArmorPiece piece, List<ToolPerk> enchants) throws SQLException {
+        Sql.update(c, "DELETE FROM wardrobe_pieces WHERE entry_id = ? AND piece = ?", entryId, piece.key());
+        if (enchants != null && !enchants.isEmpty()) {
+            Sql.update(c, "INSERT INTO wardrobe_pieces (entry_id, piece, enchants) VALUES (?, ?, ?)", entryId, piece.key(),
+                    PieceEnchants.encode(enchants));
+        }
+    }
+
+    /** Removes every piece row of an entry (its enchants moved on, e.g. a merge). */
+    void deletePieces(Connection c, UUID entryId) throws SQLException {
+        Sql.update(c, "DELETE FROM wardrobe_pieces WHERE entry_id = ?", entryId);
     }
 
     // ------------------------------------------------------------------ tomes (W2)

@@ -40,8 +40,18 @@ final class OpRunner {
         void save(Connection c, UUID toolId, List<ToolPerk> perks) throws SQLException;
     }
 
+    /** E5: reads (locked) and stores a wardrobe piece's armor enchants inside the transaction ({@code WardrobeService}). */
+    interface PieceStore {
+        /** The piece's enchants with the entry row locked; empty when the entry is not active or not this profile's. */
+        Optional<List<ToolPerk>> lock(Connection c, UUID profile, UUID entryId, net.skybornmc.skyblock.common.wardrobe.ArmorPiece piece) throws SQLException;
+
+        void save(Connection c, UUID entryId, net.skybornmc.skyblock.common.wardrobe.ArmorPiece piece, List<ToolPerk> enchants) throws SQLException;
+    }
+
     enum Status {
         OK,
+        /** E5: the set piece changed or is gone (merged, removed, another profile). Nothing changed. */
+        PIECE_CHANGED,
         /** Not enough crystals. Nothing changed. */
         NOT_ENOUGH,
         /** A book/scroll row is used up, void or unknown: the item is a copy. Nothing changed. */
@@ -93,14 +103,20 @@ final class OpRunner {
     private final BookStore store;
     private final Payer payer;
     private final PerkSaver perks;
+    private final PieceStore pieces;
     private final LongSupplier clock;
     private final Logger log;
 
     OpRunner(Database db, BookStore store, Payer payer, PerkSaver perks, LongSupplier clock, Logger log) {
+        this(db, store, payer, perks, null, clock, log);
+    }
+
+    OpRunner(Database db, BookStore store, Payer payer, PerkSaver perks, PieceStore pieces, LongSupplier clock, Logger log) {
         this.db = db;
         this.store = store;
         this.payer = payer;
         this.perks = perks;
+        this.pieces = pieces;
         this.clock = clock;
         this.log = log;
     }
@@ -152,6 +168,9 @@ final class OpRunner {
         if (plan.toolId() != null) {
             out = out.detail("tool", plan.toolId().toString());
         }
+        if (plan.piece() != null) {
+            out = out.detail("set_entry", plan.piece().entryId().toString()).detail("piece", plan.piece().piece().key());
+        }
         return out;
     }
 
@@ -168,6 +187,18 @@ final class OpRunner {
     private boolean apply(Connection c, OpPlan plan, Failure failure) throws SQLException {
         failure.reset();
         long now = clock.getAsLong();
+        if (plan.piece() != null) {
+            // Lock the wardrobe row first (fixed order: piece, then books) and check nothing moved since the menu.
+            if (pieces == null) {
+                throw new SQLException("The wardrobe is not running");
+            }
+            Optional<List<ToolPerk>> current = pieces.lock(c, plan.profile(), plan.piece().entryId(), plan.piece().piece());
+            if (current.isEmpty() || !net.skybornmc.skyblock.common.wardrobe.PieceEnchants.sorted(current.get())
+                    .equals(net.skybornmc.skyblock.common.wardrobe.PieceEnchants.sorted(plan.perksBefore()))) {
+                failure.set(Status.PIECE_CHANGED, null);
+                return false;
+            }
+        }
         for (OpPlan.Book b : plan.consume()) {
             Optional<BookStore.Row> row = store.lock(c, b.id());
             if (row.isEmpty() || row.get().state() != BookStore.State.ACTIVE || row.get().scroll() != b.scroll()
@@ -189,6 +220,9 @@ final class OpRunner {
         }
         if (plan.toolId() != null) {
             perks.save(c, plan.toolId(), plan.perksAfter());
+        }
+        if (plan.piece() != null) {
+            pieces.save(c, plan.piece().entryId(), plan.piece().piece(), plan.perksAfter());
         }
         for (String enchant : enchants(plan)) {
             store.markSeen(c, plan.player(), plan.season(), enchant, now);
@@ -213,6 +247,16 @@ final class OpRunner {
     CompletableFuture<Boolean> undo(OpPlan plan) {
         TxGuard guard = c -> {
             long now = clock.getAsLong();
+            if (plan.piece() != null) {
+                // Checked before any write: undo only if the piece still holds exactly what this operation wrote, else
+                // books and crystals would come back while the enchant stays (staff check the audit log instead).
+                Optional<List<ToolPerk>> current = pieces == null ? Optional.empty()
+                        : pieces.lock(c, plan.profile(), plan.piece().entryId(), plan.piece().piece());
+                if (current.isEmpty() || !net.skybornmc.skyblock.common.wardrobe.PieceEnchants.sorted(current.get())
+                        .equals(net.skybornmc.skyblock.common.wardrobe.PieceEnchants.sorted(plan.perksAfter()))) {
+                    return false;
+                }
+            }
             for (OpPlan.Book b : plan.consume()) {
                 store.reactivate(c, b.id(), plan.reason(), now);
             }
@@ -224,6 +268,9 @@ final class OpRunner {
             }
             if (plan.toolId() != null) {
                 perks.save(c, plan.toolId(), plan.perksBefore());
+            }
+            if (plan.piece() != null) {
+                pieces.save(c, plan.piece().entryId(), plan.piece().piece(), plan.perksBefore());
             }
             return true;
         };

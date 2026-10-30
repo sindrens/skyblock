@@ -32,7 +32,26 @@ import java.util.UUID;
  */
 record OpPlan(UUID id, String action, UUID player, UUID profile, String playerName, int season, UUID toolId, List<ToolPerk> perksBefore,
               List<ToolPerk> perksAfter, List<Book> consume, List<Book> mint, long cost, long refund, Daily daily,
-              String ledgerReason, Map<String, Object> details) {
+              String ledgerReason, Map<String, Object> details, Piece piece) {
+
+    /**
+     * E5: a wardrobe set piece whose armor enchants change instead of a tool's perks ({@code toolId} is then null and
+     * {@code perksBefore}/{@code perksAfter} are the piece's enchants).
+     */
+    record Piece(UUID entryId, net.skybornmc.skyblock.common.wardrobe.ArmorPiece piece) {
+        Piece {
+            Objects.requireNonNull(entryId, "entryId");
+            Objects.requireNonNull(piece, "piece");
+        }
+    }
+
+    /** A plan for a tool (or no item at all). */
+    OpPlan(UUID id, String action, UUID player, UUID profile, String playerName, int season, UUID toolId, List<ToolPerk> perksBefore,
+           List<ToolPerk> perksAfter, List<Book> consume, List<Book> mint, long cost, long refund, Daily daily,
+           String ledgerReason, Map<String, Object> details) {
+        this(id, action, player, profile, playerName, season, toolId, perksBefore, perksAfter, consume, mint, cost, refund, daily,
+                ledgerReason, details, null);
+    }
 
     /** A book or scroll row (expected or new). {@code origin} only matters for new rows. */
     record Book(UUID id, boolean scroll, String enchant, int level, String origin) {
@@ -63,6 +82,9 @@ record OpPlan(UUID id, String action, UUID player, UUID profile, String playerNa
         consume = consume == null ? List.of() : List.copyOf(consume);
         mint = mint == null ? List.of() : List.copyOf(mint);
         details = details == null ? Map.of() : Map.copyOf(new LinkedHashMap<>(details));
+        if (piece != null && toolId != null) {
+            throw new IllegalArgumentException("An operation changes a tool or a set piece, not both");
+        }
         if (cost < 0 || refund < 0 || (cost > 0 && refund > 0)) {
             throw new IllegalArgumentException("An operation either costs or refunds crystals");
         }
