@@ -19,6 +19,14 @@ public final class CoreConfig extends ModuleConfig {
             + "Stored times stay UTC; only the display changes.")
     public String displayTimezone = Format.DEFAULT_ZONE.getId();
 
+    @Setting(path = "combat.tag-seconds", desc = "Combat tag: seconds a player counts as in combat after dealing or taking damage "
+            + "from a player or a hostile mob (modules can use their own length, e.g. wardrobe.yml loadout.combat-seconds).",
+            min = 0, max = 600)
+    public int combatTagSeconds = 10;
+
+    @Setting(path = "combat.mobs", desc = "Hitting or being hit by a hostile mob counts as combat too (off = only PvP).")
+    public boolean combatMobs = true;
+
     @Override
     public String fileName() {
         return "core.yml";

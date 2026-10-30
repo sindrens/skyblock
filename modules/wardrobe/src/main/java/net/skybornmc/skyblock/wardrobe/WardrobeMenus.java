@@ -85,7 +85,8 @@ final class WardrobeMenus {
         Menu open = module.core.menus().openMenu(player);
         if (open instanceof ChestMenu chest) {
             openChest(player, chest.parent());
-        } else if (open instanceof WardrobeMenu || open instanceof SetMenu || open instanceof StorePickMenu || open instanceof MergePickMenu) {
+        } else if (open instanceof WardrobeMenu || open instanceof SetMenu || open instanceof StorePickMenu || open instanceof MergePickMenu
+                || open instanceof LoadoutMenu || open instanceof LoadoutEditMenu || open instanceof LoadoutIconMenu) {
             open.refresh();
         }
     }

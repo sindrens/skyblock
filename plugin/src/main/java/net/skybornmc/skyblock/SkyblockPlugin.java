@@ -132,6 +132,12 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                         .optional(net.skybornmc.skyblock.common.economy.EconomyService.class)
                         .map(net.skybornmc.skyblock.common.economy.EconomyService::sellBonusCapPercent)
                         .orElse(net.skybornmc.skyblock.common.economy.MultiplierCap.DEFAULT_CAP_PERCENT), getLogger()));
+        // WARDROBE §7.3: one combat tag for every module (loadouts, wardrobe equips, later profile switches).
+        net.skybornmc.skyblock.common.combat.DefaultCombatTagService combat = new net.skybornmc.skyblock.common.combat.DefaultCombatTagService(
+                () -> coreConfig.combatTagSeconds, () -> coreConfig.combatMobs, System::currentTimeMillis);
+        services.register("core", net.skybornmc.skyblock.common.combat.CombatTagService.class, combat);
+        getServer().getPluginManager().registerEvents(combat, this);
+        getServer().getScheduler().runTaskTimer(this, combat::prune, 20L * 600, 20L * 600);
         PlaceholderRegistry placeholders = new PlaceholderRegistry(getLogger());
         RankProvider ranks = RankProvider.create(this);
         BedrockInfo bedrockInfo = BedrockInfo.create(this, bedrock);

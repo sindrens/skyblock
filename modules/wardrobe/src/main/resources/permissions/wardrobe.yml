@@ -19,3 +19,24 @@ skyblock.wardrobe.staff:
 skyblock.wardrobe.admin:
   description: Give or remove a player's sets and give Set Tokens from the /inspect wardrobe view (audited)
   default: op
+skyblock.loadout:
+  description: Use loadouts (/loadout, /loadout <name>, the Loadouts button in /wardrobe) to save and swap set pieces and hotbar tools
+  default: true
+skyblock.loadout.slots.3:
+  description: 3 loadout presets instead of wardrobe.yml loadout.free-slots (the highest grant counts; bought slots add on top, max loadout.max-slots)
+  default: false
+skyblock.loadout.slots.4:
+  description: 4 loadout presets instead of wardrobe.yml loadout.free-slots (the highest grant counts; bought slots add on top, max loadout.max-slots)
+  default: false
+skyblock.loadout.slots.5:
+  description: 5 loadout presets instead of wardrobe.yml loadout.free-slots (the highest grant counts; bought slots add on top, max loadout.max-slots)
+  default: false
+skyblock.loadout.slots.6:
+  description: 6 loadout presets instead of wardrobe.yml loadout.free-slots (the highest grant counts; bought slots add on top, max loadout.max-slots)
+  default: false
+skyblock.loadout.slots.7:
+  description: 7 loadout presets instead of wardrobe.yml loadout.free-slots (the highest grant counts; bought slots add on top, max loadout.max-slots)
+  default: false
+skyblock.loadout.slots.8:
+  description: 8 loadout presets instead of wardrobe.yml loadout.free-slots (the highest grant counts; bought slots add on top, max loadout.max-slots)
+  default: false

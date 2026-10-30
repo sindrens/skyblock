@@ -3,7 +3,11 @@ package net.skybornmc.skyblock.wardrobe;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.bonus.BonusService;
+import net.skybornmc.skyblock.common.combat.CombatTagService;
+import net.skybornmc.skyblock.common.command.Arg;
+import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandSpec;
+import net.skybornmc.skyblock.common.command.Suggest;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.economy.TxResult;
@@ -21,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
@@ -30,7 +35,8 @@ import java.util.logging.Level;
  * locked real armor, the Wardrobe Chest (escrow), buying with money/crystals/gems (account Sigils + one claim per profile
  * per season), Set Tokens, {@code /wardrobe} (alias {@code /sets}), set bonuses through the {@link BonusService} and the
  * staff view in {@code /inspect}. W2: set levels 0-50 with set XP from the boosted activity, Wardrobe Tomes, merging two
- * max-level sets, warzone normalization. Publishes {@link WardrobeService}. Loadouts come with W3.
+ * max-level sets, warzone normalization. W3: {@code /loadout} presets (armor, pet hook, hotbar tools) applied atomically
+ * through the chest escrow, combat/warzone/freeze guards. Publishes {@link WardrobeService}.
  *
  * <p>Settings: {@code wardrobe.yml}; sets: {@code sets.yml}; texts: {@code messages/wardrobe.yml}; data: {@code db/wardrobe}.</p>
  */
@@ -45,6 +51,7 @@ public final class WardrobeModule implements SkyblockModule {
     final Core core;
     private final WardrobeConfig config = new WardrobeConfig();
     private final WardrobeStore store = new WardrobeStore();
+    private final LoadoutStore loadoutStore = new LoadoutStore();
     private volatile SetRegistry registry = SetRegistry.empty();
     private ModuleMessages msg;
     private WardrobeText text;
@@ -57,6 +64,8 @@ public final class WardrobeModule implements SkyblockModule {
     private Leveling leveling;
     private Merging merging;
     private Tomes tomes;
+    private LoadoutOps loadoutOps;
+    private Loadouts loadouts;
     private WardrobeMenus menus;
     private LockListener lock;
     private boolean dupeHandler;
@@ -89,6 +98,8 @@ public final class WardrobeModule implements SkyblockModule {
             EconomyService eco = core.services().optional(EconomyService.class).orElse(null);
             return eco == null ? CompletableFuture.completedFuture(TxResult.of(TxResult.Status.ERROR)) : eco.executeGuarded(tx, guard);
         }, System::currentTimeMillis, core.plugin().getLogger());
+        loadoutOps = new LoadoutOps(core.database(), store, loadoutStore, System::currentTimeMillis, core.plugin().getLogger());
+        loadouts = new Loadouts(this);
         equipment = new Equipment(this);
         shop = new Shop(this);
         chest = new Chest(this);
@@ -229,6 +240,12 @@ public final class WardrobeModule implements SkyblockModule {
                 .description("Your wardrobe: every set, buy and wear them, set bonuses, the Wardrobe Chest")
                 .category("Wardrobe").permission(PERM_USE).playerOnly().aliases("sets").example("wardrobe")
                 .executes(ctx -> menus.openMain(ctx.player())));
+        // W3: /loadout [name] (WARDROBE §7.5). One optional argument, no sub-commands (framework rule).
+        Arg<String> name = Args.word("name", Suggest.bySender(sender -> sender instanceof Player p ? loadouts.names(p) : List.of()));
+        core.commands().register(CommandSpec.command("loadout")
+                .description("Your loadouts: swap set pieces and tools in one click, or /loadout <name>")
+                .category("Wardrobe").permission(Loadouts.PERM_USE).playerOnly().optional(name).example("loadout Mining")
+                .executes(ctx -> loadouts.command(ctx.player(), ctx.has(name) ? ctx.get(name) : null)));
     }
 
     // ------------------------------------------------------------------ helpers
@@ -236,6 +253,20 @@ public final class WardrobeModule implements SkyblockModule {
     /** Bonus multiplier of a set level (fixed while set levels are off, W2). */
     double bonusMultiplier(int level) {
         return SetBonuses.multiplier(level, config.levelsEnabled, config.fixedMultiplier, config.maxLevel, config.maxMultiplier);
+    }
+
+    /** Frozen by staff (the staff module publishes the {@code frozen} placeholder). */
+    boolean frozen(Player player) {
+        return core.placeholders().has("frozen")
+                && core.placeholders().text(player, "frozen").map("true"::equalsIgnoreCase).orElse(false);
+    }
+
+    /** Milliseconds left of the player's combat tag for a tag of {@code seconds} (0 = not in combat or the rule is off). */
+    long combatLeft(Player player, int seconds) {
+        if (seconds <= 0) {
+            return 0;
+        }
+        return core.services().optional(CombatTagService.class).orElse(CombatTagService.NONE).remainingMillis(player.getUniqueId(), seconds);
     }
 
     /** An error message plus the error sound. */
@@ -302,5 +333,17 @@ public final class WardrobeModule implements SkyblockModule {
 
     Tomes tomes() {
         return tomes;
+    }
+
+    LoadoutStore loadoutStore() {
+        return loadoutStore;
+    }
+
+    LoadoutOps loadoutOps() {
+        return loadoutOps;
+    }
+
+    Loadouts loadouts() {
+        return loadouts;
     }
 }

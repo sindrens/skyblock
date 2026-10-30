@@ -33,7 +33,7 @@ import org.bukkit.inventory.ItemStack;
  * moving them is cancelled (click, shift-click, number keys, off-hand swap, drag, drop, armor stands, item frames,
  * dispensers, right-click armor swap) with a rate-limited hint, and the inventory is re-sent next tick so Bedrock
  * (Geyser) never shows a ghost item. Set Tokens can't be placed, crafted, renamed or dispensed. While a wardrobe action
- * is saving the player's inventory is locked.
+ * is saving the player's inventory is locked and their commands wait.
  */
 final class LockListener implements Listener {
 
@@ -128,6 +128,18 @@ final class LockListener implements Listener {
         Item item = event.getEntity();
         if (WardrobeItems.isPiece(item.getItemStack())) {
             event.setCancelled(true);
+        }
+    }
+
+    /**
+     * No commands while a wardrobe action is saving (one database round trip): a command that takes an item from the
+     * inventory (e.g. {@code /ah sell}) must never run between "stored in the chest" and "taken out of the inventory".
+     */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onCommand(org.bukkit.event.player.PlayerCommandPreprocessEvent event) {
+        if (busy(event.getPlayer())) {
+            event.setCancelled(true);
+            module.msg().send(event.getPlayer(), "busy");
         }
     }
 

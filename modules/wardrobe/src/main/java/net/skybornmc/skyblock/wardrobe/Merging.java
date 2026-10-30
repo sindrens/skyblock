@@ -149,6 +149,7 @@ final class Merging {
                         s.remove(entryA);
                         s.remove(entryB);
                         s.add(r.entry());
+                        s.loadouts = Loadouts.repointed(s.loadouts, entryA, entryB, r.entry().entryId());
                         module.equipment().refreshBonuses(s);
                         module.equipment().reconcile(p);
                     }

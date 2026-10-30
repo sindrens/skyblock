@@ -102,8 +102,10 @@ final class Equipment implements Listener {
         s.profile = profile;
         int season = module.config().seasonId;
         WardrobeStore store = module.store();
+        LoadoutStore loadouts = module.loadoutStore();
         module.core.database().async(c -> new Object[]{store.activeEntries(c, profile), store.equipped(c, profile),
-                store.sigils(c, uuid), store.claims(c, profile, season)}).whenComplete((data, error) -> module.core.scheduler().main("wardrobe-load", () -> {
+                store.sigils(c, uuid), store.claims(c, profile, season), loadouts.loadouts(c, profile), loadouts.bought(c, uuid)})
+                .whenComplete((data, error) -> module.core.scheduler().main("wardrobe-load", () -> {
             Player p = Bukkit.getPlayer(uuid);
             Session current = sessions.get(uuid);
             if (p == null || current != s || s.generation != generation) {
@@ -135,6 +137,10 @@ final class Equipment implements Listener {
             s.equipped.putAll(equipped);
             s.sigils = Set.copyOf(sigils);
             s.claims = Set.copyOf(claims);
+            @SuppressWarnings("unchecked")
+            List<Loadout> presets = (List<Loadout>) data[4];
+            s.loadouts = List.copyOf(presets);
+            s.boughtSlots = (Integer) data[5];
             s.loaded = true;
             s.stripped = false;
             module.leveling().applyPending(s);
@@ -203,6 +209,13 @@ final class Equipment implements Listener {
         Session s = sessions.get(event.getPlayer().getUniqueId());
         if (s != null && s.busy) {
             event.refuse(module.msg().component(event.getPlayer(), "busy"));
+        }
+    }
+
+    /** Re-renders worn pieces from the session rows (after a loadout swap wrote new rows). Public for {@link Loadouts}. */
+    void renderWorn(Player player, Session s) {
+        for (WardrobeStore.Equipped row : List.copyOf(s.equipped.values())) {
+            render(player, s, row); // a gone entry is cleaned by the next reconcile
         }
     }
 
@@ -441,8 +454,14 @@ final class Equipment implements Listener {
         if (s.busy || s.stripped || profiles().isSwitching(player.getUniqueId())) {
             return "busy";
         }
+        if (module.frozen(player)) {
+            return "frozen";
+        }
         if (module.config().blockedWorld(player.getWorld().getName())) {
             return "blocked-world";
+        }
+        if (module.combatLeft(player, module.config().equipCombatSeconds) > 0) {
+            return "in-combat"; // LD6: the loadout place rules apply to single pieces too
         }
         return null;
     }
