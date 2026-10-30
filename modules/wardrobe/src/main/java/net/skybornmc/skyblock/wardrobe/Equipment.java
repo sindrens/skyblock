@@ -137,10 +137,12 @@ final class Equipment implements Listener {
             s.claims = Set.copyOf(claims);
             s.loaded = true;
             s.stripped = false;
+            module.leveling().applyPending(s);
             refreshBonuses(s);
             reconcile(p);
             module.chest().recover(p);
             module.shop().cleanTokens(p);
+            module.tomes().clean(p);
         }));
     }
 
@@ -391,8 +393,42 @@ final class Equipment implements Listener {
         if (entry.isEmpty() || def.isEmpty()) {
             return false;
         }
-        player.getInventory().setItem(row.piece().slot(), module.items().piece(def.get(), entry.get(), row.piece(), s.profile, row.nonce()));
+        player.getInventory().setItem(row.piece().slot(), module.items().piece(def.get(), entry.get(), row.piece(), s.profile, row.nonce(), s.warzone));
         return true;
+    }
+
+    /**
+     * Re-renders worn pieces in place (same nonce): after a level-up (trim, glint, lore) or a world change (warzone armor).
+     * Only slots that hold the valid piece are touched.
+     */
+    void rerender(Player player, Session s, java.util.function.Predicate<UUID> entries) {
+        if (s == null || !s.loaded || s.stripped) {
+            return;
+        }
+        for (WardrobeStore.Equipped row : s.equipped.values()) {
+            if (!entries.test(row.entryId())) {
+                continue;
+            }
+            Optional<WardrobeItems.PieceTag> tag = WardrobeItems.tag(player.getInventory().getItem(row.piece().slot()));
+            if (tag.isPresent() && row.nonce().equals(tag.get().nonce()) && row.entryId().equals(tag.get().entry())) {
+                render(player, s, row);
+            }
+        }
+    }
+
+    /** Warzone rules on/off when the player changes world (bonuses and armor points). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onWorldChange(org.bukkit.event.player.PlayerChangedWorldEvent event) {
+        Player player = event.getPlayer();
+        Session s = sessions.get(player.getUniqueId());
+        if (s == null || !s.loaded) {
+            return;
+        }
+        boolean before = s.warzone;
+        refreshBonuses(s);
+        if (before != s.warzone) {
+            rerender(player, s, id -> true);
+        }
     }
 
     // ------------------------------------------------------------------ wear / take off
@@ -561,19 +597,28 @@ final class Equipment implements Listener {
 
     // ------------------------------------------------------------------ bonuses
 
-    /** Recomputes the cached bonuses from the worn rows (never per block). */
+    /**
+     * Recomputes the cached bonuses from the worn rows (never per block). In a warzone world every set counts at 1× and
+     * only the warzone families work (WD18).
+     */
     void refreshBonuses(Session s) {
         List<SetBonuses.Worn> worn = new ArrayList<>();
         for (WardrobeStore.Equipped q : s.equipped.values()) {
             s.entry(q.entryId()).ifPresent(e -> worn.add(new SetBonuses.Worn(e.setId(), e.mergedSetId(), e.level())));
         }
-        s.bonuses = SetBonuses.compute(module.registry(), worn, module::bonusMultiplier);
+        Player player = Bukkit.getPlayer(s.player);
+        s.warzone = player != null && module.config().warzoneWorld(player.getWorld().getName());
+        s.bonuses = SetBonuses.compute(module.registry(), worn, module::bonusMultiplier, s.warzone ? module.config().normalization() : null);
     }
 
     /** After a registry/config reload. */
     void refreshAll() {
         for (Session s : sessions.values()) {
             refreshBonuses(s);
+            Player p = Bukkit.getPlayer(s.player);
+            if (p != null) {
+                rerender(p, s, id -> true);
+            }
         }
     }
 

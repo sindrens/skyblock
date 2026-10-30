@@ -48,6 +48,28 @@ final class WardrobeStore {
         static Entry fresh(UUID profile, String setId, String origin, String originRef, long now) {
             return new Entry(UUID.randomUUID(), profile, setId, null, null, 0, 0, EntryState.ACTIVE, origin, originRef, now);
         }
+
+        /** A merged entry of two sets (level 0, the look of {@code lookSetId}). */
+        static Entry merged(UUID profile, String setId, String mergedSetId, String lookSetId, long now) {
+            return new Entry(UUID.randomUUID(), profile, setId, mergedSetId, lookSetId, 0, 0, EntryState.ACTIVE, "merge", null, now);
+        }
+
+        boolean isMerged() {
+            return mergedSetId != null;
+        }
+
+        /** The set whose look the pieces use. */
+        String look() {
+            return lookSetId != null ? lookSetId : setId;
+        }
+
+        Entry withXp(double newXp, int newLevel) {
+            return new Entry(entryId, profile, setId, mergedSetId, lookSetId, newLevel, newXp, state, origin, originRef, createdAt);
+        }
+    }
+
+    /** One Wardrobe Tome row. */
+    record Tome(UUID id, String kind, long xp, TokenState state, String origin) {
     }
 
     /** One worn slot (wardrobe_equipped). */
@@ -146,6 +168,88 @@ final class WardrobeStore {
             Sql.update(c, "DELETE FROM wardrobe_equipped WHERE entry_id = ?", entryId);
         }
         return n == 1;
+    }
+
+    // ------------------------------------------------------------------ levels (W2)
+
+    /** An entry, locked for the rest of the transaction. */
+    Optional<Entry> entryForUpdate(Connection c, UUID entryId) throws SQLException {
+        return Sql.queryOne(c, "SELECT " + ENTRY_COLUMNS + " FROM wardrobe_sets WHERE entry_id = ? FOR UPDATE", WardrobeStore::entry, entryId);
+    }
+
+    /**
+     * Adds set XP to an active entry (locked); the level follows from the new total (clamped at the max level).
+     *
+     * @return the updated entry, or empty when the entry is not active any more (merged, removed: the XP is dropped)
+     */
+    Optional<Entry> addXp(Connection c, UUID entryId, double delta, SetLevels levels, long now) throws SQLException {
+        Optional<Entry> found = entryForUpdate(c, entryId);
+        if (found.isEmpty() || found.get().state() != EntryState.ACTIVE) {
+            return Optional.empty();
+        }
+        Entry e = found.get();
+        double add = delta > 0 && Double.isFinite(delta) ? delta : 0;
+        double xp = levels.clamp(e.xp() + add, e.isMerged());
+        // The level is always recomputed from the total, so a changed curve (wardrobe.yml) is applied on the next save.
+        int level = levels.level(xp, e.isMerged());
+        if (add == 0 && level == e.level() && xp == e.xp()) {
+            return Optional.of(e);
+        }
+        Sql.update(c,"UPDATE wardrobe_sets SET xp = ?, level = ?, version = version + 1 WHERE entry_id = ? AND state = ?",
+                xp, level, entryId, EntryState.ACTIVE.key());
+        return Optional.of(e.withXp(xp, level));
+    }
+
+    /** Sets an active entry's total XP and level (staff, tomes). False if the entry is not active. */
+    boolean writeXp(Connection c, UUID entryId, double xp, int level, UUID by, long now) throws SQLException {
+        return Sql.update(c, "UPDATE wardrobe_sets SET xp = ?, level = ?, changed_at = ?, changed_by = ?, version = version + 1 "
+                + "WHERE entry_id = ? AND state = ?", xp, level, now, by, entryId, EntryState.ACTIVE.key()) == 1;
+    }
+
+    // ------------------------------------------------------------------ merging (W2)
+
+    /** active → merged (its worn slots are emptied). False if it was not active. */
+    boolean markMerged(Connection c, UUID entryId, UUID by, long now) throws SQLException {
+        int n = Sql.update(c, "UPDATE wardrobe_sets SET state = ?, active_key = NULL, changed_at = ?, changed_by = ?, version = version + 1 "
+                + "WHERE entry_id = ? AND state = ?", EntryState.MERGED.key(), now, by, entryId, EntryState.ACTIVE.key());
+        if (n == 1) {
+            Sql.update(c, "DELETE FROM wardrobe_equipped WHERE entry_id = ?", entryId);
+        }
+        return n == 1;
+    }
+
+    /** Inserts a merged entry (active_key NULL: the inputs' sets can be owned again, WD6). */
+    void insertMerged(Connection c, Entry e, int season, UUID by) throws SQLException {
+        Sql.update(c, "INSERT INTO wardrobe_sets (entry_id, profile_key, set_id, merged_set_id, look_set_id, active_key, level, xp, state, "
+                        + "origin, origin_ref, season_id, created_at, changed_at, changed_by, version) VALUES (?, ?, ?, ?, ?, NULL, 0, 0, ?, ?, NULL, ?, ?, NULL, ?, 0)",
+                e.entryId(), e.profile(), e.setId(), e.mergedSetId(), e.look(), EntryState.ACTIVE.key(), clip(e.origin(), 16), season,
+                e.createdAt(), by);
+    }
+
+    /** The merge record (inputs are unique: an entry can only ever be merged once). */
+    void insertMergeRecord(Connection c, UUID mergeId, UUID profile, Entry a, Entry b, String look, long fee, UUID by, long now) throws SQLException {
+        Sql.update(c, "INSERT INTO wardrobe_merges (merge_id, profile_key, entry_a, entry_b, set_a, set_b, look_set_id, fee, merged_at, merged_by) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", mergeId, profile, a.entryId(), b.entryId(), a.setId(), b.setId(), look, fee, now, by);
+    }
+
+    // ------------------------------------------------------------------ tomes (W2)
+
+    void insertTome(Connection c, UUID id, String kind, long xp, String origin, UUID createdFor, long now) throws SQLException {
+        Sql.update(c, "INSERT INTO wardrobe_tomes (tome_uuid, kind, xp_amount, state, origin, created_for, created_at, changed_at, changed_by, "
+                + "used_entry, reason) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL)", id, clip(kind, 16), xp, TokenState.ACTIVE.key(),
+                clip(origin, 64), createdFor, now);
+    }
+
+    Optional<Tome> tome(Connection c, UUID id, boolean lock) throws SQLException {
+        return Sql.queryOne(c, "SELECT tome_uuid, kind, xp_amount, state, origin FROM wardrobe_tomes WHERE tome_uuid = ?" + (lock ? " FOR UPDATE" : ""),
+                rs -> new Tome(Sql.uuid(rs, "tome_uuid"), rs.getString("kind"), rs.getLong("xp_amount"), TokenState.byKey(rs.getString("state")),
+                        rs.getString("origin")), id);
+    }
+
+    /** {@code from → to} if still in {@code from} (REDEEMED = used on an entry). */
+    boolean moveTome(Connection c, UUID id, TokenState from, TokenState to, UUID by, UUID entry, long now, String reason) throws SQLException {
+        return Sql.update(c, "UPDATE wardrobe_tomes SET state = ?, changed_at = ?, changed_by = ?, used_entry = COALESCE(?, used_entry), reason = ? "
+                + "WHERE tome_uuid = ? AND state = ?", to.key(), now, by, entry, clip(reason, 64), id, from.key()) == 1;
     }
 
     // ------------------------------------------------------------------ equipped

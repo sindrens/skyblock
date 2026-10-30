@@ -29,7 +29,8 @@ import java.util.logging.Level;
  * The wardrobe, W1 (docs/plans/WARDROBE.md): the 16 sets ({@code sets.yml}), per-profile wardrobe entries shown as
  * locked real armor, the Wardrobe Chest (escrow), buying with money/crystals/gems (account Sigils + one claim per profile
  * per season), Set Tokens, {@code /wardrobe} (alias {@code /sets}), set bonuses through the {@link BonusService} and the
- * staff view in {@code /inspect}. Publishes {@link WardrobeService}. Set levels and merging come with W2, loadouts with W3.
+ * staff view in {@code /inspect}. W2: set levels 0-50 with set XP from the boosted activity, Wardrobe Tomes, merging two
+ * max-level sets, warzone normalization. Publishes {@link WardrobeService}. Loadouts come with W3.
  *
  * <p>Settings: {@code wardrobe.yml}; sets: {@code sets.yml}; texts: {@code messages/wardrobe.yml}; data: {@code db/wardrobe}.</p>
  */
@@ -53,6 +54,9 @@ public final class WardrobeModule implements SkyblockModule {
     private Shop shop;
     private Chest chest;
     private StaffActions staff;
+    private Leveling leveling;
+    private Merging merging;
+    private Tomes tomes;
     private WardrobeMenus menus;
     private LockListener lock;
     private boolean dupeHandler;
@@ -89,8 +93,12 @@ public final class WardrobeModule implements SkyblockModule {
         shop = new Shop(this);
         chest = new Chest(this);
         staff = new StaffActions(this);
+        leveling = new Leveling(this);
+        merging = new Merging(this);
+        tomes = new Tomes(this);
         menus = new WardrobeMenus(this);
         lock = new LockListener(this);
+        Bukkit.getPluginManager().registerEvents(leveling, core.plugin());
         Bukkit.getPluginManager().registerEvents(equipment, core.plugin());
         Bukkit.getPluginManager().registerEvents(lock, core.plugin());
         if (!dupeHandler) {
@@ -107,6 +115,7 @@ public final class WardrobeModule implements SkyblockModule {
         core.services().optional(BonusService.class).ifPresent(b -> b.register(WardrobeService.BONUS_SOURCE, new WardrobeBonusSource(this)));
         registerCommands();
         equipment.start();
+        leveling.start();
     }
 
     @Override
@@ -114,6 +123,9 @@ public final class WardrobeModule implements SkyblockModule {
         loadConfig();
         core.messages().load(ID);
         registry = loadRegistry();
+        if (leveling != null) {
+            leveling.reload();
+        }
         if (equipment != null) {
             equipment.refreshAll();
         }
@@ -121,6 +133,11 @@ public final class WardrobeModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        if (leveling != null) {
+            leveling.stop(); // saves earned set XP (blocking) while the sessions still exist
+            HandlerList.unregisterAll(leveling);
+            leveling = null;
+        }
         if (equipment != null) {
             equipment.stop();
             HandlerList.unregisterAll(equipment);
@@ -273,5 +290,17 @@ public final class WardrobeModule implements SkyblockModule {
 
     WardrobeMenus menus() {
         return menus;
+    }
+
+    Leveling leveling() {
+        return leveling;
+    }
+
+    Merging merging() {
+        return merging;
+    }
+
+    Tomes tomes() {
+        return tomes;
     }
 }

@@ -143,28 +143,28 @@ final class LockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onInteractEntity(PlayerInteractEntityEvent event) {
         ItemStack hand = event.getPlayer().getInventory().getItem(event.getHand());
-        if (busy(event.getPlayer()) || WardrobeItems.isPiece(hand) || WardrobeItems.isToken(hand)) {
+        if (busy(event.getPlayer()) || WardrobeItems.isPiece(hand) || WardrobeItems.isUnique(hand)) {
             event.setCancelled(true); // item frames, allays, armor stands
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onDispenseArmor(BlockDispenseArmorEvent event) {
-        if (WardrobeItems.isPiece(event.getItem()) || WardrobeItems.isToken(event.getItem())) {
+        if (WardrobeItems.isPiece(event.getItem()) || WardrobeItems.isUnique(event.getItem())) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onDispense(BlockDispenseEvent event) {
-        if (WardrobeItems.isPiece(event.getItem()) || WardrobeItems.isToken(event.getItem())) {
+        if (WardrobeItems.isPiece(event.getItem()) || WardrobeItems.isUnique(event.getItem())) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlace(BlockPlaceEvent event) {
-        if (busy(event.getPlayer()) || WardrobeItems.isToken(event.getItemInHand()) || WardrobeItems.isPiece(event.getItemInHand())) {
+        if (busy(event.getPlayer()) || WardrobeItems.isUnique(event.getItemInHand()) || WardrobeItems.isPiece(event.getItemInHand())) {
             event.setCancelled(true);
         }
     }
@@ -186,6 +186,15 @@ final class LockListener implements Listener {
             event.setUseInteractedBlock(Event.Result.DENY);
             if (event.getHand() == EquipmentSlot.HAND && !busy(player)) {
                 module.shop().redeem(player, player.getInventory().getHeldItemSlot());
+            }
+            return;
+        }
+        if (WardrobeItems.isTome(hand)) {
+            event.setCancelled(true);
+            event.setUseItemInHand(Event.Result.DENY);
+            event.setUseInteractedBlock(Event.Result.DENY);
+            if (event.getHand() == EquipmentSlot.HAND) {
+                module.msg().send(player, "tome-hint");
             }
             return;
         }
@@ -211,7 +220,7 @@ final class LockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onCraft(PrepareItemCraftEvent event) {
         for (ItemStack item : event.getInventory().getMatrix()) {
-            if (WardrobeItems.isToken(item) || WardrobeItems.isPiece(item)) {
+            if (WardrobeItems.isUnique(item) || WardrobeItems.isPiece(item)) {
                 event.getInventory().setResult(null);
                 return;
             }
@@ -221,7 +230,7 @@ final class LockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onAnvil(PrepareAnvilEvent event) {
         for (ItemStack item : event.getInventory().getContents()) {
-            if (WardrobeItems.isToken(item) || WardrobeItems.isPiece(item)) {
+            if (WardrobeItems.isUnique(item) || WardrobeItems.isPiece(item)) {
                 event.setResult(null);
                 return;
             }
@@ -231,10 +240,25 @@ final class LockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onSmithing(PrepareSmithingEvent event) {
         for (ItemStack item : event.getInventory().getContents()) {
-            if (WardrobeItems.isToken(item) || WardrobeItems.isPiece(item)) {
+            if (WardrobeItems.isUnique(item) || WardrobeItems.isPiece(item)) {
                 event.setResult(null);
                 return;
             }
+        }
+    }
+
+    /** Tokens, tomes and pieces never go on an enchanting table. */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onEnchantPrepare(org.bukkit.event.enchantment.PrepareItemEnchantEvent event) {
+        if (WardrobeItems.isUnique(event.getItem()) || WardrobeItems.isPiece(event.getItem())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onEnchant(org.bukkit.event.enchantment.EnchantItemEvent event) {
+        if (WardrobeItems.isUnique(event.getItem()) || WardrobeItems.isPiece(event.getItem())) {
+            event.setCancelled(true);
         }
     }
 }

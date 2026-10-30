@@ -34,6 +34,15 @@ final class Session {
     boolean stripped;
     long lastEquip;
     long lastHint;
+    /** Set XP earned but not saved yet: entry id → XP (already in {@link #entries}; saved by the flush). */
+    final Map<UUID, Double> pendingXp = new java.util.HashMap<>();
+    /** Hourly set XP caps (sell). */
+    final SetXp.HourlyCap caps = new SetXp.HourlyCap();
+    long lastBar;
+    /** The bonuses (and worn armor) use the warzone rules right now. */
+    boolean warzone;
+    /** Where the last trail puff was (moving players only). */
+    org.bukkit.Location lastTrail;
 
     Session(UUID player, UUID profile) {
         this.player = player;
@@ -66,6 +75,40 @@ final class Session {
             if (e.mergedSetId() != null) {
                 out.add(e.mergedSetId());
             }
+        }
+        return out;
+    }
+
+    /** Replaces an entry (same id) with a newer copy (XP, level). */
+    void replace(WardrobeStore.Entry e) {
+        List<WardrobeStore.Entry> next = new ArrayList<>(entries.size());
+        for (WardrobeStore.Entry old : entries) {
+            next.add(old.entryId().equals(e.entryId()) ? e : old);
+        }
+        entries = List.copyOf(next);
+    }
+
+    /** Active entries that contain a set (its own entry and merged entries with it). */
+    List<WardrobeStore.Entry> containing(String setId) {
+        List<WardrobeStore.Entry> out = new ArrayList<>();
+        for (WardrobeStore.Entry e : entries) {
+            if (e.setId().equals(setId) || setId.equals(e.mergedSetId())) {
+                out.add(e);
+            }
+        }
+        return out;
+    }
+
+    /** Merged entries (shown after their first set in /wardrobe). */
+    List<WardrobeStore.Entry> mergedEntries() {
+        return entries.stream().filter(WardrobeStore.Entry::isMerged).toList();
+    }
+
+    /** Worn pieces per entry id. */
+    Map<UUID, Integer> wornPerEntry() {
+        Map<UUID, Integer> out = new java.util.LinkedHashMap<>();
+        for (WardrobeStore.Equipped q : equipped.values()) {
+            out.merge(q.entryId(), 1, Integer::sum);
         }
         return out;
     }

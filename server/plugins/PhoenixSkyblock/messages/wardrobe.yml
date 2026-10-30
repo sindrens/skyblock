@@ -1,4 +1,4 @@
-# Wardrobe (Phase W, docs/plans/WARDROBE.md): /wardrobe, set pieces, Set Tokens, the Wardrobe Chest, staff view.
+# Wardrobe (Phase W, docs/plans/WARDROBE.md): /wardrobe, set pieces, Set Tokens, set levels, tomes, merging, the Wardrobe Chest, staff view.
 # MiniMessage + style tags (style.yml). Item lore uses {placeholders} (filled by the plugin); chat and menus use <placeholders>.
 # Menu and lore lines: max 36 visible characters (Bedrock). Set names live in sets.yml.
 # Reload: /skyblock reload wardrobe
@@ -38,6 +38,45 @@ redeemed: "<prefix><c:success><sym:check></c:success> <c:text><c:value><set></c:
 staff-token-copy: "<c:error><bold>DUPE</bold></c:error> <c:value><player></c:value> <c:text>used a copied Set Token <c:muted>(<id>)</c:muted><c:text>. Taken."
 staff-copy-alert: "<c:error><bold>DUPE</bold></c:error> <c:value><player></c:value> <c:text>had a copied set piece in <c:value><where></c:value><c:text>. Deleted."
 
+# Set levels (W2)
+xp-bar: "<c:value><set></c:value> <c:muted>Lv <level> · <percent>%</c:muted> <c:success>+<xp> XP"
+level-up: "<c:value><set></c:value> <c:success>Lv <level></c:success> <c:muted>· <multiplier>x"
+level-title:
+  title: "<c:success>Lv <level>"
+  subtitle: "<c:value><set></c:value> <c:muted>· <multiplier>x"
+  fade-in: 10
+  stay: 50
+  fade-out: 20
+level-max: "<prefix><c:success><sym:star></c:success> <c:value><set></c:value> <c:text>is max level (<c:value><level></c:value>). You can merge it now."
+trail-on: "<prefix><c:success><sym:check></c:success> <c:text>Trail on."
+trail-off: "<prefix><c:success><sym:check></c:success> <c:text>Trail off."
+
+# Wardrobe Tomes (W2)
+tome-hint: "<c:text>Use it on a set in <c:value>/wardrobe</c:value><c:text>."
+tome-gone: "<prefix><c:error><sym:cross></c:error> <c:text>Tome not found. Put it in your inventory."
+tome-capped: "<prefix><c:error><sym:cross></c:error> <c:text>Tomes only work below <c:value>Lv <level></c:value><c:text>. Play to level up."
+tome-used: "<prefix><c:success><sym:check></c:success> <c:value><set></c:value> <c:text>is <c:value>Lv <level></c:value> <c:text>now."
+tome-copy: "<prefix><c:error><sym:cross></c:error> <c:text>That tome was a copy. It was taken and staff were told."
+tome-received: "<prefix><c:success><sym:check></c:success> <c:text>You got a <c:value>Wardrobe Tome</c:value><c:text>. Use it in /wardrobe."
+staff-tome-copy: "<c:error><bold>DUPE</bold></c:error> <c:value><player></c:value> <c:text>used a copied Wardrobe Tome <c:muted>(<id>)</c:muted><c:text>. Taken."
+
+# Merging (W2). <why> is one of merge.why.*
+merge:
+  turned-off: "<prefix><c:error><sym:cross></c:error> <c:text>Merging is turned off for now."
+  refused: "<prefix><c:error><sym:cross></c:error> <c:text>Can't merge: <why><c:text>."
+  gone: "<prefix><c:error><sym:cross></c:error> <c:text>One of the sets changed. Try again."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Merged into <c:value><set></c:value> <c:muted>(<fee>)</c:muted><c:text>. It starts at Lv 0."
+  free: "free"
+  why:
+    same-entry: "<c:error>pick another set"
+    same-set: "<c:error>same set"
+    gone: "<c:error>set not found"
+    already-merged: "<c:error>already merged"
+    tier-iv: "<c:error>tier IV can't merge"
+    disabled: "<c:error>set is turned off"
+    not-max: "<c:error>needs max level"
+    shared-family: "<c:error>same bonus type"
+
 chest:
   not-storable: "<prefix><c:error><sym:cross></c:error> <c:text>Only tools, enchant books, scrolls and tokens fit."
   stored: "<prefix><c:success><sym:check></c:success> <c:value><item></c:value> <c:text>is in your Wardrobe Chest."
@@ -57,6 +96,8 @@ staff:
   owned: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already owns that set."
   offline: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>must be online for a token."
   target-full: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value><c:text>'s inventory is full."
+  level-set: "<prefix><c:success><sym:check></c:success> <c:value><set></c:value> <c:text>of <c:value><player></c:value> <c:text>is <c:value>Lv <level></c:value> <c:text>now."
+  tome-given: "<prefix><c:success><sym:check></c:success> <c:text>Gave a Wardrobe Tome to <c:value><player></c:value><c:text>."
 
 # ---------------------------------------------------------------- names
 piece-name:
@@ -84,6 +125,28 @@ wing-name:
   combat: "Combat"
   farming: "Farming"
   fishing: "Fishing"
+
+# Merged entries in menus: {a} and {b} are the short names (Deepforge · Coinmaster).
+merged-name: "{a} · {b}"
+
+# XP activities (set screen "Earns from").
+xp-activity:
+  mining: "Mining"
+  foraging: "Foraging"
+  farming: "Farming"
+  combat: "Combat"
+  boss: "Bosses"
+  fishing: "Fishing"
+  sell: "Selling"
+  conquest: "Conquest"
+  pvp: "Warzone kills"
+  none: "nothing"
+
+# /settings toggle
+settings:
+  trail:
+    name: "Set trail"
+    lore: ["<c:text>Particles behind you while you", "<c:text>wear a max level set."]
 
 feature-name:
   conquest: "the Warzone"
@@ -157,6 +220,7 @@ piece:
   subtitle: "<c:muted>Set piece · Tier {tier}"
   set: "<c:text>Set: {set}"
   merged: "<c:text>Merged with <c:value>{set}"
+  level: "<c:text>Lv <c:value>{level}</c:value> <c:muted>· {multiplier}x"
   action-input: "/wardrobe"
   action-text: "to take it off"
 
@@ -169,6 +233,16 @@ token:
   tradeable: "<c:muted>Trade it or sell it on /ah."
   action-input: "Right-click"
   action-text: "to redeem"
+
+tome:
+  fallback-name: "<rarity:epic>Wardrobe Tome"
+  name:
+    normal: "<rarity:epic>Wardrobe Tome"
+    greater: "<rarity:legendary>Greater Wardrobe Tome"
+  subtitle: "<c:muted>Consumable · Set XP"
+  description: "Adds {xp} set XP to one of your sets. Never past level {level}."
+  action-input: "/wardrobe"
+  action-text: "to use it on a set"
 
 # ---------------------------------------------------------------- menus
 menu:
@@ -214,12 +288,41 @@ menu:
       two: "<c:muted>2 pieces"
       four: "<c:muted>4 pieces"
       line: "<c:ember>▸</c:ember> <c:text><text>"
+      merged: "<c:muted>Merged with <set>:"
+      warzone: ["", "<c:warning>Warzone: 1x, only damage", "<c:warning>reduction and conquest work."]
     level:
       name: "<c:value>Set level <level>"
-      lore: ["<c:text>Bonus: <c:value><multiplier>x"]
+      lore: ["<c:ember><bar></c:ember> <c:muted><percent>%", "<c:text>Bonus: <c:value><multiplier>x", "<c:muted>Lv <max>: <max_multiplier>x"]
+      next: ["<c:text>Lv <next> in <c:value><xp></c:value> XP"]
+      maxed: ["<c:success><sym:star> Max level"]
+      earns: ["", "<c:text>Earns XP from: <c:value><from>", "<c:muted>Wear 2+ pieces (4 = full XP)."]
+      merged: ["<c:muted>Merged: <factor>x XP per level"]
+      not-owned: ["<c:muted>Starts at Lv 0 (0x)."]
+      warzone: ["<c:warning>Warzone: counts as <multiplier>x"]
     level-off:
       name: "<c:value>Set level"
-      lore: ["<c:text>Set levels come soon.", "<c:text>Bonus now: <c:value><multiplier>x"]
+      lore: ["<c:text>Set levels are off.", "<c:text>Bonus now: <c:value><multiplier>x"]
+    gone:
+      name: "<c:error>Set not found"
+      lore: ["<c:text>This set is not in your", "<c:text>wardrobe any more."]
+    tome:
+      name: "<c:success>Use a Wardrobe Tome"
+      lore: ["<c:text>+<c:value><xp></c:value> set XP from your tome.", "<c:text>Then: <c:value>Lv <level>", "<c:muted>Tomes stop at Lv <cap>.", "", "<c:action><sym:bullet> Click to use"]
+    tome-capped:
+      name: "<c:muted>Wardrobe Tome"
+      lore: ["<c:text>Tomes only work below", "<c:text>Lv <level>. Play to level up."]
+    merge:
+      name: "<c:success>Merge"
+      lore: ["<c:text>Combine with another max", "<c:text>level set: both bonuses in", "<c:text>one set, back to Lv 0.", "", "<c:action><sym:bullet> Click to pick a set"]
+    merge-locked:
+      name: "<c:muted>Merge"
+      lore: ["<c:text>Combine two max level sets.", "<c:error><sym:cross></c:error> <why>"]
+    trail-on:
+      name: "<c:success>Trail: on"
+      lore: ["<c:text>Particles behind you while", "<c:text>you wear all 4 pieces.", "", "<c:action><sym:bullet> Click to turn off"]
+    trail-off:
+      name: "<c:muted>Trail: off"
+      lore: ["<c:text>Particles behind you while", "<c:text>you wear all 4 pieces.", "", "<c:action><sym:bullet> Click to turn on"]
     enchants:
       name: "<c:muted>Enchants <dark_gray>(Coming soon)"
       lore: ["<c:text>Armor enchants come soon."]
@@ -234,6 +337,21 @@ menu:
       lore: ["<c:text>You own this Sigil: claim", "<c:text>the set here for free.", "", "<c:action><sym:bullet> Click to claim"]
     state:
       name: "<c:value>How to get it"
+  merge:
+    title: "Merge"
+    info: ["<c:text>Pick a 2nd max level set.", "<c:text>The new set has both sets'", "<c:text>bonuses and starts at Lv 0."]
+    empty:
+      name: "<c:muted>No other sets"
+      lore: ["<c:text>Own a 2nd set to merge."]
+    entry: ["<c:text>Lv <c:value><level></c:value> <c:muted>· <multiplier>x"]
+    refused: ["<c:error><sym:cross></c:error> <why>"]
+    fee: ["<c:text>Fee: <c:value><fee>"]
+    click: ["", "<c:action><sym:bullet> Click to choose"]
+    look-title: "Pick a look"
+    look-info:
+      name: "<c:value>Pick a look"
+      lore: ["<c:text>The merged pieces use the", "<c:text>look of the set you click."]
+    look-pick: ["<c:text>Use the <c:value><set></c:value> <c:text>look.", "", "<c:action><sym:bullet> Click to pick"]
   chest:
     title: "Chest"
     info: ["<c:text>Unique items only: tools,", "<c:text>enchant books, scrolls and", "<c:text>tokens. Safe per profile."]
@@ -262,6 +380,21 @@ menu:
       lore: ["<c:text>This profile owns no set."]
     entry: ["<c:text>From: <c:value><origin>", "<c:text>Since: <c:value><date>", "<c:text>Level: <c:value><level>"]
     remove-click: ["", "<c:action><sym:bullet> Click to remove"]
+    manage-click: ["", "<c:action><sym:bullet> Click to set level / remove"]
+    entry-head: ["<c:text>Level now: <c:value><level>"]
+    set-level:
+      name: "<c:value>Set to Lv <level>"
+      lore: ["<c:text>Staff test tool. Logged.", "", "<c:action><sym:bullet> Click to set"]
+    remove:
+      name: "<c:error>Remove set"
+      lore: ["<c:text>Takes the set away. Logged.", "", "<c:action><sym:bullet> Click to remove"]
+    give-tome:
+      normal:
+        name: "<c:success>Give a tome"
+        lore: ["<c:text>Wardrobe Tome: +<xp> XP.", "<c:text>The player must be online.", "", "<c:action><sym:bullet> Click to give"]
+      greater:
+        name: "<c:success>Give a greater tome"
+        lore: ["<c:text>Greater tome: +<xp> XP.", "<c:text>The player must be online.", "", "<c:action><sym:bullet> Click to give"]
     chest:
       name: "<c:value>Wardrobe Chest"
       lore: ["<c:text>Items stored: <c:value><count>"]
@@ -278,7 +411,9 @@ menu:
 
 # Owned/locked state lines (list entries and the set screen).
 status:
-  owned: ["<c:success><sym:check> Owned", "<c:text>Worn: <c:value><worn>/4", "<c:text>Bonus: <c:value><multiplier>x"]
+  owned: ["<c:success><sym:check> Owned", "<c:text>Worn: <c:value><worn>/4", "<c:text>Lv <c:value><level></c:value> <c:muted>· <multiplier>x"]
+  owned-fixed: ["<c:success><sym:check> Owned", "<c:text>Worn: <c:value><worn>/4", "<c:text>Bonus: <c:value><multiplier>x"]
+  merged: ["<c:success><sym:check> Merged set", "<c:muted><a> + <b>", "<c:text>Worn: <c:value><worn>/4", "<c:text>Lv <c:value><level></c:value> <c:muted>· <multiplier>x"]
   disabled: ["<c:error><sym:cross> Turned off for now"]
   arrives: ["<c:error><sym:cross> Arrives with <feature>"]
   locked: ["<c:error><sym:cross> Locked", "<c:text>Needs <requirement>"]
@@ -292,6 +427,19 @@ confirm:
   buy:
     crumb: "Buy set"
     details: ["<c:text>Add <c:value><set></c:value>", "<c:text>Cost: <c:value><price>", "<c:text>No refunds."]
+  tome:
+    crumb: "Use tome"
+    details: ["<c:text>Use a tome on <c:value><set>", "<c:text>+<c:value><xp></c:value> set XP", "<c:text>Then: <c:value>Lv <level>"]
+    capped: ["<c:warning>Stops at Lv <cap>: some XP", "<c:warning>of the tome is lost."]
+  merge:
+    crumb: "Merge sets"
+    details: ["<c:text>Combine <c:value><a></c:value> <c:muted>Lv <level_a>", "<c:text>and <c:value><b></c:value> <c:muted>Lv <level_b>", "<c:text>into one set at <c:value>Lv 0", "<c:text>Look: <c:value><look>", "<c:text>Cost: <c:value><fee>", "<c:error>Can't be undone."]
+  set-level:
+    crumb: "Set level"
+    details: ["<c:text>Set <c:value><set>", "<c:text>of <c:value><player>", "<c:text>to <c:value>Lv <level>"]
+  give-tome:
+    crumb: "Give tome"
+    details: ["<c:text>Give a tome (+<xp> XP)", "<c:text>to <c:value><player>"]
   remove:
     crumb: "Remove set"
     details: ["<c:text>Remove <c:value><set></c:value>", "<c:text>from <c:value><player></c:value>"]

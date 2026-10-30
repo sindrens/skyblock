@@ -18,7 +18,12 @@ import java.util.List;
  *  46 filter (one click cycles) · 47 worn now · 51 Wardrobe Chest · 52 loadouts (W3)
  * </pre>
  */
-final class WardrobeMenu extends PagedMenu<SetDef> {
+final class WardrobeMenu extends PagedMenu<WardrobeMenu.Row> {
+
+    /** A list entry: a set, or a merged entry (shown right after its first set). */
+    record Row(SetDef def, WardrobeStore.Entry merged) {
+    }
+
 
     static final List<String> FILTERS = List.of("all", "owned", "mining", "foraging", "farming", "combat", "fishing", "conquest", "other");
     static final List<String> GROUP_ORDER = List.of("mining", "foraging", "farming", "combat", "fishing", "conquest", "other");
@@ -60,24 +65,39 @@ final class WardrobeMenu extends PagedMenu<SetDef> {
     }
 
     @Override
-    protected List<SetDef> entries() {
+    protected List<Row> entries() {
         Session s = session();
         String f = FILTERS.get(filter);
-        List<SetDef> out = new ArrayList<>();
+        List<SetDef> sets = new ArrayList<>();
         for (SetDef d : module.registry().all()) {
             boolean owned = s != null && s.ownedIds().contains(d.id());
             if (f.equals("all") || (f.equals("owned") && owned) || f.equals(d.group())) {
-                out.add(d);
+                sets.add(d);
             }
         }
-        out.sort(Comparator.comparingInt((SetDef d) -> GROUP_ORDER.indexOf(d.group()))
+        sets.sort(Comparator.comparingInt((SetDef d) -> GROUP_ORDER.indexOf(d.group()))
                 .thenComparing(d -> s == null || !s.ownedIds().contains(d.id()))
                 .thenComparingInt(SetDef::tier));
+        List<Row> out = new ArrayList<>();
+        for (SetDef d : sets) {
+            out.add(new Row(d, null));
+            if (s != null) {
+                for (WardrobeStore.Entry m : s.mergedEntries()) {
+                    if (m.setId().equals(d.id())) {
+                        out.add(new Row(d, m));
+                    }
+                }
+            }
+        }
         return out;
     }
 
     @Override
-    protected MenuButton entry(SetDef def) {
+    protected MenuButton entry(Row row) {
+        if (row.merged() != null) {
+            return merged(row);
+        }
+        SetDef def = row.def();
         Session s = session();
         Offers.Offer offer = module.shop().offer(viewer, s, def);
         List<Component> lore = new ArrayList<>();
@@ -90,6 +110,21 @@ final class WardrobeMenu extends PagedMenu<SetDef> {
         return MenuButton.of(service.item(module.items().icon(def, ArmorPiece.CHEST),
                 module.core.messages().parse(viewer, WardrobeText.colored(def)), lore),
                 click -> openChild(new SetMenu(module, def)));
+    }
+
+    private MenuButton merged(Row row) {
+        WardrobeStore.Entry e = row.merged();
+        SetDef look = module.registry().get(e.look()).orElse(row.def());
+        List<Component> lore = new ArrayList<>();
+        lore.add(module.menus().text(viewer, "menu.set.subtitle", Msg.p("activity", module.text().plain("activity-name." + row.def().activity())),
+                Msg.p("tier", WardrobeText.roman(row.def().tier()))));
+        lore.add(Component.empty());
+        lore.addAll(module.menus().mergedStatus(viewer, e, session()));
+        lore.add(Component.empty());
+        lore.addAll(module.menus().lines(viewer, "menu.main.click"));
+        return MenuButton.of(service.item(module.items().icon(look, ArmorPiece.CHEST),
+                module.core.messages().parse(viewer, module.text().entryColored(module.registry(), e)), lore),
+                click -> openChild(new SetMenu(module, row.def(), e.entryId())));
     }
 
     @Override

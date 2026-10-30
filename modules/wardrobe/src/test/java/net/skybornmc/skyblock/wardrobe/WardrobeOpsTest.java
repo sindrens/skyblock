@@ -323,4 +323,197 @@ class WardrobeOpsTest {
         assertEquals(2, db.blocking(c -> store.stored(c, profile1)).size());
         assertTrue(ops.recovery(profile1, List.of()).join().releasing().isEmpty());
     }
+
+    // ------------------------------------------------------------------ set levels (W2)
+
+    private final SetLevels levels = new WardrobeConfig().levels();
+
+    private WardrobeStore.Entry entry(UUID entryId) {
+        return db.blocking(c -> store.entry(c, entryId)).orElseThrow();
+    }
+
+    private WardrobeStore.Entry give(UUID profile, String set, int level) {
+        WardrobeStore.Entry e = ops.giveSet(profile, set, null, 0).join().entry();
+        if (level > 0) {
+            assertTrue(ops.setLevel(e.entryId(), profile, level, levels, null).join().ok());
+        }
+        return entry(e.entryId());
+    }
+
+    @Test
+    void flushAddsXpAndTheLevelFollows() {
+        WardrobeStore.Entry e = give(profile1, "delver", 0);
+        assertTrue(ops.flushXp(Map.of(e.entryId(), 150.0), levels).join());
+        assertTrue(ops.flushXp(Map.of(e.entryId(), 100.0), levels).join());
+        WardrobeStore.Entry now = entry(e.entryId());
+        assertEquals(250, now.xp(), 1e-9, "additive: two saves add up");
+        assertEquals(1, now.level());
+        assertTrue(ops.flushXp(Map.of(e.entryId(), 1e9), levels).join());
+        assertEquals(levels.total(50, false), entry(e.entryId()).xp(), 1e-6, "never past the max level");
+        assertEquals(50, entry(e.entryId()).level());
+    }
+
+    @Test
+    void xpForARemovedSetIsDropped() {
+        WardrobeStore.Entry e = give(profile1, "delver", 0);
+        assertTrue(ops.removeSet(e.entryId(), null).join().ok());
+        assertTrue(ops.flushXp(Map.of(e.entryId(), 500.0), levels).join());
+        assertEquals(0, entry(e.entryId()).xp(), 1e-9);
+    }
+
+    @Test
+    void staffSetsALevelOnlyOnTheProfilesActiveSet() {
+        WardrobeStore.Entry e = give(profile1, "deepforge", 0);
+        WardrobeOps.Result r = ops.setLevel(e.entryId(), profile1, 25, levels, UUID.randomUUID()).join();
+        assertTrue(r.ok());
+        assertEquals(25, entry(e.entryId()).level());
+        assertEquals(levels.total(25, false), entry(e.entryId()).xp(), 1e-6);
+        assertEquals(WardrobeOps.Status.GONE, ops.setLevel(e.entryId(), profile2, 50, levels, null).join().status(), "P4");
+        assertEquals(50, ops.setLevel(e.entryId(), profile1, 99, levels, null).join().entry().level(), "clamped");
+    }
+
+    // ------------------------------------------------------------------ merging (W2)
+
+    private WardrobeOps.MergeRequest merge(WardrobeOps.Who who, WardrobeStore.Entry a, WardrobeStore.Entry b, long fee, double pa, double pb) {
+        return new WardrobeOps.MergeRequest(who, a.entryId(), Fixtures.def(a.setId()), b.entryId(), Fixtures.def(b.setId()), b.setId(),
+                fee, pa, pb, levels, 0);
+    }
+
+    @Test
+    void mergeMakesOneSetAtLevelZeroInOneTransaction() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile1, "coinmaster", 50);
+        assertTrue(ops.equip(profile1, List.of(new WardrobeStore.Equipped(ArmorPiece.HEAD, a.entryId(), UUID.randomUUID()),
+                new WardrobeStore.Equipped(ArmorPiece.CHEST, b.entryId(), UUID.randomUUID())), List.of()).join().ok());
+
+        WardrobeOps.MergeResult r = ops.merge(merge(who1, a, b, 25_000, 0, 0)).join();
+        assertEquals(WardrobeOps.Status.OK, r.status());
+        assertEquals(5_000, balance(profile1, "crystals"), "fee paid once");
+        assertTrue(usedKeys.contains(WardrobeOps.REASON_MERGE + ":" + r.entry().entryId()));
+
+        List<WardrobeStore.Entry> active = entries(profile1);
+        assertEquals(1, active.size());
+        WardrobeStore.Entry m = active.getFirst();
+        assertEquals("deepforge", m.setId());
+        assertEquals("coinmaster", m.mergedSetId());
+        assertEquals("coinmaster", m.look());
+        assertEquals(0, m.level(), "owner rule: merging resets the level");
+        assertEquals(0, m.xp(), 1e-9);
+        assertEquals("merge", m.origin());
+        assertEquals(WardrobeStore.EntryState.MERGED, entry(a.entryId()).state());
+        assertEquals(WardrobeStore.EntryState.MERGED, entry(b.entryId()).state());
+        assertTrue(db.blocking(c -> store.equipped(c, profile1)).isEmpty(), "both inputs came off");
+        assertEquals(1, db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM wardrobe_merges WHERE merge_id = ?", rs -> rs.getInt(1),
+                m.entryId())).orElse(0));
+
+        assertTrue(ops.giveSet(profile1, "deepforge", null, 0).join().ok(), "the merged set is a separate entry (WD6)");
+        assertEquals(WardrobeOps.Status.GONE, ops.merge(merge(who1, a, b, 25_000, 0, 0)).join().status(), "inputs can't be merged twice");
+        assertEquals(5_000, balance(profile1, "crystals"));
+    }
+
+    @Test
+    void refusedMergeChangesNothing() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile1, "coinmaster", 49);
+        WardrobeOps.MergeResult r = ops.merge(merge(who1, a, b, 25_000, 0, 0)).join();
+        assertEquals(WardrobeOps.Status.REFUSED, r.status());
+        assertEquals(MergeRules.Refusal.NOT_MAX, r.refusal());
+        assertEquals(30_000, balance(profile1, "crystals"), "no fee");
+        assertEquals(2, entries(profile1).size());
+
+        WardrobeStore.Entry delver = give(profile1, "delver", 50);
+        assertEquals(MergeRules.Refusal.SHARED_FAMILY, ops.merge(merge(who1, delver, a, 15_000, 0, 0)).join().refusal());
+        assertEquals(3, entries(profile1).size());
+    }
+
+    @Test
+    void unsavedXpCountsInsideTheMerge() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile1, "coinmaster", 49);
+        double missing = levels.total(50, false) - b.xp();
+        WardrobeOps.MergeResult r = ops.merge(merge(who1, a, b, 25_000, 0, missing)).join();
+        assertEquals(WardrobeOps.Status.OK, r.status(), "the level reached a moment ago (not saved yet) counts");
+    }
+
+    @Test
+    void notEnoughCrystalsRollsEverythingBack() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile1, "coinmaster", 49);
+        WardrobeOps.MergeResult r = ops.merge(merge(who1, a, b, 31_000, 0, 1e9)).join();
+        assertEquals(WardrobeOps.Status.NOT_ENOUGH, r.status());
+        assertEquals(49, entry(b.entryId()).level(), "the unsaved XP rolled back too (the caller keeps it)");
+        assertEquals(WardrobeStore.EntryState.ACTIVE, entry(a.entryId()).state());
+        assertEquals(2, entries(profile1).size());
+    }
+
+    @Test
+    void cantMergeAnotherProfilesSet() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile2, "coinmaster", 50);
+        assertEquals(WardrobeOps.Status.GONE, ops.merge(merge(who1, a, b, 25_000, 0, 0)).join().status(), "P4");
+        assertEquals(30_000, balance(profile1, "crystals"));
+    }
+
+    @Test
+    void concurrentMergesOfTheSameSetsMergeOnce() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile1, "coinmaster", 50);
+        List<CompletableFuture<WardrobeOps.MergeResult>> all = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            all.add(ops.merge(merge(who1, a, b, 5_000, 0, 0)));
+        }
+        assertEquals(1, all.stream().map(CompletableFuture::join).filter(WardrobeOps.MergeResult::ok).count());
+        assertEquals(25_000, balance(profile1, "crystals"));
+        assertEquals(1, entries(profile1).size());
+    }
+
+    @Test
+    void freeMergeWorksWithoutPayment() {
+        WardrobeStore.Entry a = give(profile1, "dreadguard", 50);
+        WardrobeStore.Entry b = give(profile1, "lorekeeper", 50);
+        assertEquals(WardrobeOps.Status.OK, ops.merge(merge(who1, a, b, 0, 0, 0)).join().status());
+        assertEquals(30_000, balance(profile1, "crystals"));
+    }
+
+    @Test
+    void mergedSetsLevelOnTheSlowerCurve() {
+        WardrobeStore.Entry a = give(profile1, "deepforge", 50);
+        WardrobeStore.Entry b = give(profile1, "coinmaster", 50);
+        WardrobeStore.Entry m = ops.merge(merge(who1, a, b, 25_000, 0, 0)).join().entry();
+        assertTrue(ops.flushXp(Map.of(m.entryId(), levels.total(25, false)), levels).join());
+        assertEquals(levels.level(levels.total(25, false), true), entry(m.entryId()).level());
+        assertTrue(entry(m.entryId()).level() < 25);
+    }
+
+    // ------------------------------------------------------------------ tomes (W2)
+
+    @Test
+    void tomeAddsXpOnceAndStopsAtLevelForty() {
+        WardrobeStore.Entry e = give(profile1, "delver", 39);
+        UUID tome = UUID.randomUUID();
+        assertTrue(ops.mintTome(tome, Tomes.GREATER, 10_000, "test", player).join());
+        WardrobeOps.Result r = ops.useTome(who1, tome, e.entryId(), 0, levels, 40).join();
+        assertEquals(WardrobeOps.Status.OK, r.status());
+        assertEquals(40, entry(e.entryId()).level(), "capped at the start of level 40");
+        assertEquals(levels.total(40, false), entry(e.entryId()).xp(), 1e-6);
+        assertEquals(WardrobeStore.TokenState.REDEEMED, db.blocking(c -> store.tome(c, tome, false)).orElseThrow().state());
+        assertEquals(WardrobeOps.Status.TOKEN_INVALID, ops.useTome(who1, tome, e.entryId(), 0, levels, 40).join().status(), "a copy");
+
+        UUID second = UUID.randomUUID();
+        ops.mintTome(second, Tomes.NORMAL, 2_500, "test", player).join();
+        assertEquals(WardrobeOps.Status.TOME_CAPPED, ops.useTome(who1, second, e.entryId(), 0, levels, 40).join().status());
+        assertEquals(WardrobeStore.TokenState.ACTIVE, db.blocking(c -> store.tome(c, second, false)).orElseThrow().state(), "kept");
+        WardrobeStore.Entry other = give(profile2, "delver", 0);
+        assertEquals(WardrobeOps.Status.GONE, ops.useTome(who1, second, other.entryId(), 0, levels, 40).join().status(), "P4");
+        assertTrue(ops.voidTome(second, "test").join());
+    }
+
+    @Test
+    void tomeOnALowSetAddsItsFullAmount() {
+        WardrobeStore.Entry e = give(profile1, "woodsman", 0);
+        UUID tome = UUID.randomUUID();
+        ops.mintTome(tome, Tomes.NORMAL, 2_500, "test", player).join();
+        assertTrue(ops.useTome(who1, tome, e.entryId(), 100, levels, 40).join().ok());
+        assertEquals(2_600, entry(e.entryId()).xp(), 1e-9, "unsaved XP + the tome");
+    }
 }

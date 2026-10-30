@@ -37,6 +37,29 @@ final class WardrobeText {
         return def.shortName() + " " + plain("piece-name." + piece.key());
     }
 
+    /** Plain menu name of an entry: the set name, or {@code Deepforge · Coinmaster} for a merged entry. */
+    String entryName(SetRegistry registry, WardrobeStore.Entry entry) {
+        String a = registry.get(entry.setId()).map(SetDef::shortName).orElse(entry.setId());
+        if (!entry.isMerged()) {
+            return registry.get(entry.setId()).map(SetDef::name).orElse(entry.setId());
+        }
+        String b = registry.get(entry.mergedSetId()).map(SetDef::shortName).orElse(entry.mergedSetId());
+        return LoreBuilder.fill(plain("merged-name"), Map.of("a", a, "b", b));
+    }
+
+    /** Colored (MiniMessage) menu name of an entry, in the look set's rarity color. */
+    String entryColored(SetRegistry registry, WardrobeStore.Entry entry) {
+        String rarity = registry.get(entry.look()).or(() -> registry.get(entry.setId())).map(d -> d.rarity().id()).orElse("common");
+        return "<rarity:" + rarity + ">" + LoreBuilder.escape(entryName(registry, entry));
+    }
+
+    /** {@code ●●●●○○○○○○} for a progress 0..1 with {@code cells} cells. */
+    static String bar(double progress, int cells) {
+        int n = Math.max(1, cells);
+        int full = (int) Math.floor(Math.max(0, Math.min(1, progress)) * n + 1e-9);
+        return "●".repeat(full) + "○".repeat(n - full);
+    }
+
     /** {@code <rarity:epic>Deepforge Plate} (MiniMessage, escaped name). */
     static String colored(SetDef def) {
         return "<rarity:" + def.rarity().id() + ">" + LoreBuilder.escape(def.name());

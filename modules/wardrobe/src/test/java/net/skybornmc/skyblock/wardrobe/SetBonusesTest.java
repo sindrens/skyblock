@@ -117,4 +117,43 @@ class SetBonusesTest {
         assertEquals(60, bonus.capped(BonusFamily.CONQUEST, envoy), 1e-9);
         assertEquals(25, conq.value(BonusFamily.CONQUEST, "death_loss"), 1e-9, "per stat: death loss is its own activity");
     }
+
+    // ------------------------------------------------------------------ warzone normalization (WD18)
+
+    private static SetBonuses.Result warzone(SetBonuses.Worn... pieces) {
+        return SetBonuses.compute(R, List.of(pieces), level -> SetBonuses.multiplier(level, true, 1.0, 50, 2.0),
+                new WardrobeConfig().normalization());
+    }
+
+    @Test
+    void warzoneCountsEverySetAtOneTimesAndOnlyDamageReductionAndConquest() {
+        SetBonuses.Worn low = new SetBonuses.Worn("dreadguard", null, 3);
+        SetBonuses.Result r = warzone(low, low, low, low);
+        assertEquals(4, r.value(BonusFamily.DAMAGE_REDUCTION, "combat"), 1e-9, "8% at 1x, halved");
+        assertEquals(0, r.value(BonusFamily.MOB_DAMAGE, "combat"), "mob damage does nothing there");
+        SetBonuses.Worn max = new SetBonuses.Worn("dreadguard", null, 50);
+        assertEquals(4, warzone(max, max).value(BonusFamily.DAMAGE_REDUCTION, "combat"), 1e-9, "level 50 is normalized to 1x too");
+
+        SetBonuses.Worn coin = new SetBonuses.Worn("coinmaster", null, 50);
+        assertEquals(0, warzone(coin, coin, coin, coin).value(BonusFamily.SELL, null), "sell bonuses do nothing there");
+
+        SetBonuses.Worn ban = new SetBonuses.Worn("banneret", null, 0);
+        assertEquals(10, warzone(ban, ban).value(BonusFamily.CONQUEST, "envoy_luck"), 1e-9, "conquest at 1x even at level 0");
+        SetBonuses.Result normal = SetBonuses.compute(R, List.of(ban, ban), level -> SetBonuses.multiplier(level, true, 1.0, 50, 2.0));
+        assertEquals(0, normal.value(BonusFamily.CONQUEST, "envoy_luck"), "outside the warzone level 0 gives 0x");
+    }
+
+    @Test
+    void levelsScaleBonusesOutsideTheWarzone() {
+        SetBonuses.Worn half = new SetBonuses.Worn("delver", null, 25);
+        SetBonuses.Worn full = new SetBonuses.Worn("delver", null, 50);
+        var mult = (java.util.function.IntToDoubleFunction) level -> SetBonuses.multiplier(level, true, 1.0, 50, 2.0);
+        assertEquals(4, SetBonuses.compute(R, List.of(half, half), mult).value(BonusFamily.SPEED, "mining"), 1e-9);
+        assertEquals(8, SetBonuses.compute(R, List.of(full, full), mult).value(BonusFamily.SPEED, "mining"), 1e-9);
+        assertEquals(4, SetBonuses.compute(R, List.of(half, full), mult).value(BonusFamily.SPEED, "mining"), 1e-9, "lowest level counts");
+        SetBonuses.Worn merged = new SetBonuses.Worn("deepforge", "coinmaster", 50);
+        SetBonuses.Result m = SetBonuses.compute(R, List.of(merged, merged, merged, merged), mult);
+        assertEquals(50, m.value(BonusFamily.SELL, null), 1e-9, "merged: Coinmaster's +20% +30% at 2x");
+        assertEquals(32, m.value(BonusFamily.CRYSTALS, "mining"), 1e-9, "and Deepforge's crystals at 2x");
+    }
 }

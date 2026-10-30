@@ -79,6 +79,20 @@ class MessagesTest {
                 "confirm.give-token.details", "menu.set.level", "menu.set.level-off")) {
             check(yml, k, missing);
         }
+        for (MergeRules.Refusal r : MergeRules.Refusal.values()) {
+            check(yml, "merge.why." + r.key(), missing);
+        }
+        for (String a : SetXp.ACTIVITIES) {
+            check(yml, "xp-activity." + a, missing);
+        }
+        for (String k : List.of(Tomes.NORMAL, Tomes.GREATER)) {
+            check(yml, "tome.name." + k, missing);
+            check(yml, "menu.staff.give-tome." + k, missing);
+        }
+        for (String k : List.of("xp-activity.none", "level-title.title", "level-title.subtitle", "menu.set.trail-on", "menu.set.trail-off",
+                "status.owned-fixed", "status.merged", "settings.trail", "merged-name", "merge.free")) {
+            check(yml, k, missing);
+        }
         assertEquals(Set.of(), missing);
     }
 
@@ -92,7 +106,7 @@ class MessagesTest {
     void menuAndLoreLinesFitBedrock() {
         YamlConfiguration yml = Fixtures.resource("messages/wardrobe.yml");
         Set<String> tooLong = new TreeSet<>();
-        for (String root : List.of("menu", "status", "confirm", "piece", "token", "bonus", "bonus-text", "gate")) {
+        for (String root : List.of("menu", "status", "confirm", "piece", "token", "tome", "bonus", "bonus-text", "gate", "settings")) {
             ConfigurationSection section = yml.getConfigurationSection(root);
             if (section == null) {
                 continue;
