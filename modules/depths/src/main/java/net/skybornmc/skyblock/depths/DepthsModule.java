@@ -9,7 +9,13 @@ import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.satchel.SatchelService;
+import net.skybornmc.skyblock.depths.combat.AmbientMobs;
+import net.skybornmc.skyblock.depths.combat.CombatZones;
+import net.skybornmc.skyblock.depths.combat.MobCatalog;
+import net.skybornmc.skyblock.depths.combat.MobSections;
 import net.skybornmc.skyblock.depths.drops.DepthsDrops;
+import net.skybornmc.skyblock.depths.forest.ForestGuard;
+import net.skybornmc.skyblock.depths.zones.TreeTemplates;
 import net.skybornmc.skyblock.depths.drops.DropItems;
 import net.skybornmc.skyblock.depths.drops.DropSections;
 import net.skybornmc.skyblock.depths.drops.DropTable;
@@ -38,8 +44,11 @@ import java.util.List;
  * as {@link ZoneService}; its ore/log fields become engine regions), {@code /depths generate} (placeholder builds) and
  * {@code /depths tp}. M4.6: tier locks and gates ({@link TierGates}), {@code /dungeon} ({@link Dungeon}) and the
  * placeholders {@code depths_zone} / {@code depths_tier}. M4.4 satchel ({@link SatchelManager}, published as
- * {@link SatchelService}, opened from {@code /dungeon}) and M4.9 drops and crystals ({@link DepthsDrops}). Settings,
- * regions and drop tables in {@code depths.yml}, texts in {@code messages/depths.yml}.
+ * {@link SatchelService}, opened from {@code /dungeon}) and M4.9 drops and crystals ({@link DepthsDrops}). M4.7 forest:
+ * tree templates per tier ({@link TreeTemplates}, used by {@code /depths generate}) and decorative leaves
+ * ({@link ForestGuard}). M4.8 combat zones ({@link CombatZones}: shared mobs, mini-boss placeholders) and per-player
+ * ambient mobs ({@link AmbientMobs}) from {@code mobs.yml}. Settings, regions, drop tables and tree templates in
+ * {@code depths.yml}, texts in {@code messages/depths.yml}.
  */
 public final class DepthsModule implements SkyblockModule {
 
@@ -57,6 +66,10 @@ public final class DepthsModule implements SkyblockModule {
     private DropItems dropItems;
     private SatchelManager satchel;
     private DepthsDrops drops;
+    private volatile TreeTemplates trees = TreeTemplates.DEFAULTS;
+    private ForestGuard forest;
+    private CombatZones combat;
+    private AmbientMobs ambient;
 
     public DepthsModule(Core core) {
         this.core = core;
@@ -85,6 +98,7 @@ public final class DepthsModule implements SkyblockModule {
         portals = new ZonePortals(zones, config, msg);
         core.plugin().getServer().getPluginManager().registerEvents(portals, core.plugin());
         ZoneCommands zoneCommands = new ZoneCommands(zones, generator, config, msg);
+        zoneCommands.trees(() -> trees);
 
         gates = new TierGates(core, config, zones, msg);
         core.plugin().getServer().getPluginManager().registerEvents(gates, core.plugin());
@@ -94,9 +108,20 @@ public final class DepthsModule implements SkyblockModule {
         dropItems = new DropItems(core.items(), key -> core.messages().raw(ID, key));
         satchel = new SatchelManager(core, config, msg, dropItems);
         drops = new DepthsDrops(core, config, msg, zones, satchel, dropItems);
+        // M4.7 forest + M4.8 combat/ambient mobs (mobs.yml); loadDrops() fills their catalogs.
+        forest = new ForestGuard(config, zones, msg);
+        core.plugin().getServer().getPluginManager().registerEvents(forest, core.plugin());
+        net.skybornmc.skyblock.depths.combat.MobFactory factory = net.skybornmc.skyblock.depths.combat.MobFactory.create(core.plugin());
+        combat = new CombatZones(core, config, msg, zones, satchel, drops, factory);
+        ambient = new AmbientMobs(core, config, msg, zones, factory);
+        combat.otherOwned(ambient::owns);
         loadDrops();
         satchel.start();
         drops.start();
+        core.plugin().getServer().getPluginManager().registerEvents(combat, core.plugin());
+        core.plugin().getServer().getPluginManager().registerEvents(ambient, core.plugin());
+        ambient.start();
+        combat.start();
         core.services().register(ID, SatchelService.class, satchel);
         core.plugin().getServer().getPluginManager().registerEvents(satchel, core.plugin());
         core.plugin().getServer().getPluginManager().registerEvents(drops, core.plugin());
@@ -114,7 +139,12 @@ public final class DepthsModule implements SkyblockModule {
                 .sub(CommandSpec.sub("debug")
                         .description("Region at your feet, depleted blocks and engine numbers")
                         .permission(DepthsPerms.DEBUG).playerOnly().optional(target).example("depths debug")
-                        .executes(ctx -> DepthsDebug.show(engine, msg, ctx.player(), ctx.getOr(target, ctx.player()))))
+                        .executes(ctx -> {
+                            Player shown = ctx.getOr(target, ctx.player());
+                            DepthsDebug.show(engine, msg, ctx.player(), shown);
+                            combat.debug(ctx.player(), shown);
+                            ambient.debug(ctx.player(), shown);
+                        }))
                 .sub(CommandSpec.sub("generate")
                         .description("Build the placeholder layout (The Gate, zones, boss arena); skips zones marked built")
                         .permission(DepthsPerms.GENERATE).optional(generateTarget)
@@ -131,13 +161,23 @@ public final class DepthsModule implements SkyblockModule {
                 .executes(ctx -> dungeon.open(ctx.player())));
     }
 
-    /** Reads drop-items and drops from depths.yml (defaults copied in when missing) and registers the drop items. */
+    /**
+     * Reads drop-items, drops and trees from depths.yml (defaults copied in when missing) and mobs.yml (combat drop items,
+     * mobs, combat spawning, ambient mobs), registers the drop items and hands the catalogs out.
+     */
     private void loadDrops() {
         File file = new File(core.plugin().getDataFolder(), config.fileName());
         java.util.function.Consumer<String> warn = problem -> core.plugin().getLogger().warning("depths.yml → " + problem);
+        java.util.function.Consumer<String> warnMobs = problem -> core.plugin().getLogger().warning(MobSections.FILE + " → " + problem);
         org.bukkit.configuration.file.YamlConfiguration yaml = DropSections.load(file, warn);
-        dropItems.load(yaml.getConfigurationSection(DropSections.ITEMS), warn);
+        org.bukkit.configuration.file.YamlConfiguration mobs = MobSections.load(new File(core.plugin().getDataFolder(), MobSections.FILE), warnMobs);
+        dropItems.load(java.util.Arrays.asList(yaml.getConfigurationSection(DropSections.ITEMS),
+                mobs.getConfigurationSection(MobSections.ITEMS)), warn);
         drops.table(DropTable.parse(yaml.getConfigurationSection(DropSections.DROPS), dropItems.ids(), warn));
+        trees = TreeTemplates.parse(yaml.getConfigurationSection(DropSections.TREES), config.forestMaxTrunkHeight, warn);
+        MobCatalog catalog = MobCatalog.parse(mobs, dropItems.ids(), net.skybornmc.skyblock.depths.combat.MobFactory::spawnableMob, warnMobs);
+        combat.catalog(catalog);
+        ambient.catalog(catalog);
     }
 
     /**
@@ -189,11 +229,24 @@ public final class DepthsModule implements SkyblockModule {
         loadDrops();
         satchel.reload();
         drops.start();
+        combat.start();
+        ambient.start();
     }
 
     @Override
     public void disable() {
         core.placeholders().unregisterAll(ID);
+        if (combat != null) {
+            HandlerList.unregisterAll(combat);
+            combat.stop();
+        }
+        if (ambient != null) {
+            HandlerList.unregisterAll(ambient);
+            ambient.stop();
+        }
+        if (forest != null) {
+            HandlerList.unregisterAll(forest);
+        }
         if (drops != null) {
             HandlerList.unregisterAll(drops);
             drops.stop();

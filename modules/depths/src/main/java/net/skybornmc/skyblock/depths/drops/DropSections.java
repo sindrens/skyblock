@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Reads the {@code drop-items} and {@code drops} sections of {@code depths.yml}; a missing section is copied from
+ * Reads the {@code drop-items}, {@code drops} and {@code trees} sections of {@code depths.yml}; a missing section is copied from
  * {@code depths-drops-defaults.yml} in the jar first (the owner edits the copy). A broken file keeps the defaults in
  * memory and never overwrites the owner's file.
  */
@@ -20,7 +20,9 @@ public final class DropSections {
 
     public static final String ITEMS = "drop-items";
     public static final String DROPS = "drops";
-    static final List<String> SECTIONS = List.of(ITEMS, DROPS);
+    /** Tree templates per forest tier (M4.7, {@code TreeTemplates}); copied in like the drop sections. */
+    public static final String TREES = "trees";
+    static final List<String> SECTIONS = List.of(ITEMS, DROPS, TREES);
     static final String DEFAULTS = "depths-drops-defaults.yml";
 
     private DropSections() {

@@ -9,8 +9,9 @@
 #   rarity:       footer rarity (common, uncommon, rare, epic, legendary, mythic)
 #   skill-level:  level of the tool's skill needed to forge it (= the Depths tier unlock)
 #   money:        Forge price ($), materials: item id -> amount (vanilla ids or custom item ids; counted from the
-#                 inventory plus the Depths satchel, the inventory is used first). Mine/forest materials are the
-#                 Depths drops (depths_coal .. depths_netherite, depths_oak_log .. depths_crimson_stem, M4.9). Prices follow docs/ECONOMY_BALANCE.md §5.1: $15k x 2.35^(t-2) and
+#                 inventory plus the Depths satchel, the inventory is used first). Mine/forest/combat materials are
+#                 the Depths drops (depths_coal .. depths_netherite, depths_oak_log .. depths_crimson_stem, M4.9;
+#                 depths_rotten_flesh .. depths_wither_ash from combat kills, M4.8). Prices follow docs/ECONOMY_BALANCE.md §5.1: $15k x 2.35^(t-2) and
 #                 256 x 1.35^(t-2) drops of the previous tier.
 tiers:
   pickaxe:
@@ -40,15 +41,15 @@ tiers:
     - {id: warped,   material: netherite_axe, efficiency: 4, rarity: epic,     skill-level: 58, money: 32787000, materials: {depths_crimson_stem: 3813}}
   sword:
     - {id: grave,   material: stone_sword,     damage: 4,   attack-speed: -2.4, rarity: common,    skill-level: 0}
-    - {id: bone,    material: copper_sword,    damage: 4.5, attack-speed: -2.4, rarity: common,    skill-level: 6,  money: 15000,    materials: {rotten_flesh: 64}}
-    - {id: venom,   material: iron_sword,      damage: 5,   attack-speed: -2.4, rarity: common,    skill-level: 12, money: 35200,    materials: {bone: 87}}
-    - {id: slime,   material: iron_sword,      damage: 5.5, attack-speed: -2.4, rarity: uncommon,  skill-level: 18, money: 82800,    materials: {string: 117}}
-    - {id: tide,    material: iron_sword,      damage: 6,   attack-speed: -2.4, rarity: uncommon,  skill-level: 24, money: 194700,   materials: {slime_ball: 158}}
-    - {id: hex,     material: diamond_sword,   damage: 6.5, attack-speed: -2.4, rarity: uncommon,  skill-level: 30, money: 457500,   materials: {prismarine_shard: 213}}
-    - {id: raider,  material: diamond_sword,   damage: 7,   attack-speed: -2.4, rarity: rare,      skill-level: 38, money: 1075100,  materials: {glowstone_dust: 287}}
-    - {id: blaze,   material: diamond_sword,   damage: 7.5, attack-speed: -2.4, rarity: rare,      skill-level: 46, money: 2526400,  materials: {arrow: 388}}
-    - {id: wither,  material: netherite_sword, damage: 8,   attack-speed: -2.4, rarity: epic,      skill-level: 55, money: 5937000,  materials: {blaze_rod: 523}}
-    - {id: warlord, material: netherite_sword, damage: 9,   attack-speed: -2.4, rarity: legendary, skill-level: 66, money: 13952000, materials: {wither_rose: 706}}
+    - {id: bone,    material: copper_sword,    damage: 4.5, attack-speed: -2.4, rarity: common,    skill-level: 6,  money: 15000,    materials: {depths_rotten_flesh: 256}}
+    - {id: venom,   material: iron_sword,      damage: 5,   attack-speed: -2.4, rarity: common,    skill-level: 12, money: 35200,    materials: {depths_bone: 346}}
+    - {id: slime,   material: iron_sword,      damage: 5.5, attack-speed: -2.4, rarity: uncommon,  skill-level: 18, money: 82800,    materials: {depths_spider_eye: 467}}
+    - {id: tide,    material: iron_sword,      damage: 6,   attack-speed: -2.4, rarity: uncommon,  skill-level: 24, money: 194700,   materials: {depths_slime_ball: 630}}
+    - {id: hex,     material: diamond_sword,   damage: 6.5, attack-speed: -2.4, rarity: uncommon,  skill-level: 30, money: 457500,   materials: {depths_prismarine: 850}}
+    - {id: raider,  material: diamond_sword,   damage: 7,   attack-speed: -2.4, rarity: rare,      skill-level: 38, money: 1075100,  materials: {depths_glowstone: 1148}}
+    - {id: blaze,   material: diamond_sword,   damage: 7.5, attack-speed: -2.4, rarity: rare,      skill-level: 46, money: 2526400,  materials: {depths_raider_scrap: 1550}}
+    - {id: wither,  material: netherite_sword, damage: 8,   attack-speed: -2.4, rarity: epic,      skill-level: 55, money: 5937000,  materials: {depths_blaze_rod: 2092}}
+    - {id: warlord, material: netherite_sword, damage: 9,   attack-speed: -2.4, rarity: legendary, skill-level: 66, money: 13952000, materials: {depths_wither_ash: 2824}}
   # Farming hoes and fishing rods get their tiers in Phase 7: only the starter piece for now.
   hoe:
     - {id: basic, material: stone_hoe,    rarity: common, skill-level: 0}
@@ -68,7 +69,7 @@ blueprints:
   sage_pickaxe:   {kind: pickaxe, tier: 2, ability: scholar,    rarity: rare, drop: {wing: mine,   min-tier: 1, chance: 0.0000667}, money: 25000,  materials: {depths_coal: 256}}
   magma_pickaxe:  {kind: pickaxe, tier: 4, ability: auto_smelt, rarity: epic, drop: {wing: mine,   min-tier: 4, chance: 0.00005},   money: 150000, materials: {depths_gold: 320}}
   windcutter_axe: {kind: axe,     tier: 3, ability: swift,      rarity: rare, drop: {wing: forest, min-tier: 2, chance: 0.0000667}, money: 50000,  materials: {depths_birch_log: 320}}
-  vampire_blade:  {kind: sword,   tier: 5, ability: lifesteal,  rarity: epic, drop: {wing: combat, min-tier: 4, chance: 0.000667},  money: 250000, materials: {slime_ball: 160}}
+  vampire_blade:  {kind: sword,   tier: 5, ability: lifesteal,  rarity: epic, drop: {wing: combat, min-tier: 4, chance: 0.000667},  money: 250000, materials: {depths_slime_ball: 160}}
 
 # Skins: cosmetic looks (collection kept across seasons). kinds: tool types it fits. model: Java item model
 # (resource pack, e.g. phoenix:skin/frostbite_pickaxe; {kind} is replaced with the tool type); empty = name only.
