@@ -1,4 +1,4 @@
-# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.7, ISL2
+# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.7, ISL2, NOTES
 
 Grid, creation, home and per-player borders. Config `islands.yml`, texts `messages/islands.yml`, schematics in
 `plugins/PhoenixSkyblock/schematics/` (`<creation.schematic>.schem` + optional `<name>.yml` metadata with `home`, `chest`,
@@ -22,6 +22,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is coop <player>` | Leader/Admin/Mod: temporary trust for an online player (coop role permissions). Ends automatically when no leader or mod of the island is online; never turns solo into team; no XP, task progress or bank access; takes no member slot (max `members.max-coops`) | `skyblock.island` | ✅ |
 | `/is uncoop <player>` | Leader/Admin/Mod: end a player's coop trust | `skyblock.island` | ✅ |
 | `/is members` | Member list GUI: heads with role, join date, inviter, online state; click a head for the actions you may use (promote, demote, transfer, kick, uncoop, leave). Buttons: Invites, Invite (player picker), Permissions (the matrix) and Settings | `skyblock.island` | ✅ |
+| `/is notes [island]` | NOTES (owner N1-N9): your island's shared notes / to-do list menu (also from `/is members`). Add a note (chat input, max `notes.max-length` 200 characters, chat filter), click a note to tick it done / open it again, change its text, pin it as a hologram where you stand, unpin or delete it (confirm). Open as book (temporary book, saved on close), Clear done notes (manage). Without an island, opens the notes of the island you stand on when your role may read them (coop). `[island]` = staff only: any island's notes read only plus its deleted notes (tab completes island names for staff) | `skyblock.island`; `[island]`: `skyblock.island.notes.staff` | ✅ |
 | `/is invites` | ISL2: invites you received (click: Accept / Deny) and invites your island sent (click: cancel, Leader/Admin/Mod; confirm). Refreshes every 2 s | `skyblock.island` | ✅ |
 | `/is settings [setting] [on\|off\|value]` | ISL2: the island settings menu; with a setting name it changes it right away (no value: toggles flip, weather/time go to the next value). Who may change: the `settings` role permission (Leader + Admin by default); every member can look. Tab completes settings and, after one, its values | `skyblock.island` | ✅ |
 | `/is disband` | Leader only: confirm screen (what is lost, members removed, creation cooldown), then type `disband` in chat (`disband.confirm-word`, `cancel` keeps it). The island is removed for good: members and coop players are removed and told, everyone on it is sent to spawn, the slot is cleared and reused. New island after `creation.cooldown-hours` (24 h) | `skyblock.island` | ✅ |
@@ -205,6 +206,43 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
   `extraHomesProvider(function)`; `IslandService.Role` gained `ADMIN`.
 
 Permission definitions: `modules/islands/src/main/resources/permissions/islands.yml`. Rank grants: `server/permissions/islands.txt`.
+
+## Island notes (NOTES)
+Owner answers N1-N9 (`docs/DECISIONS_2026-10-30.md`, `docs/QUESTIONS_ROUND2.md` Part 3). Table `island_notes` (V008).
+- **Who:** three new rows in the permission matrix (own defaults, never part of `*`): **Read notes** (`notes-read`:
+  Admin, Mod, Member, Coop), **Write notes** (`notes-write`: add notes, tick any note done/open, change/pin/unpin/delete
+  your own; Admin, Mod, Member) and **Manage notes** (`notes-manage`: change/pin/unpin/delete anyone's notes, clear done
+  ones; Admin, Mod). Write and Manage are management rights (stored members only). The leader has all three. Config:
+  `permissions.role-defaults.notes-read|notes-write|notes-manage`.
+- **Notes:** one shared list per island (N2), max `notes.max-notes` (50, open + done; deleted ones don't count), each
+  max `notes.max-length` (200) characters (N6), author (profile key, name shown) and date, who ticked it and when (N4).
+  Text goes through the chat filter (links, IPs, phone numbers, blocked/replaced words, caps; `TextFilter` service from
+  the chat module, N8); colors and line breaks are removed; text is never parsed as formatting. Anti-spam:
+  `notes.add-cooldown-ms`.
+- **Menu:** open notes newest first, then done ones; summary (open/done, x/50, pins x/5), Open as book (46), Add (47),
+  Clear done (51, manage), Deleted notes (52, staff). Click a note: Tick done / Open again, Change text, Pin here / Move
+  pin here, Unpin, Delete (confirm). All single plain clicks (Bedrock). Lore width `notes.lore-width`.
+- **Temporary book (N3):** writers get a Book and Quill with one open note per page plus an empty page; closing it (Done,
+  sign or Escape) saves in one transaction: changed pages change their notes (own, or anyone's with manage), new pages
+  become notes up to the limit, emptied pages are ignored (deleting is done in the menu). Readers get a written book with
+  every note. The book is taken back after saving, after `notes.book-seconds` (300), on quit, death, profile switch,
+  island removal and module disable; it can't be moved, dropped, crafted with, put in frames/lecterns/bookshelves or
+  given to allays. A book without a live session (after a crash) is removed on join.
+- **Holograms (N9):** pin a note where you stand (inside your island's border, Y `build.min-y`..`build.max-y`), at most
+  `notes.max-holograms` (5) per island. Paper `TextDisplay`, not saved with the chunk (persistent = false), spawned when
+  the island's notes load and when the pin's chunk loads, removed on chunk unload, unpin, tick done (N9), delete,
+  island removal and module disable. Never shown outside its own island (re-checked on every spawn). Settings:
+  `notes.hologram.y-offset`, `line-width`, `view-range`. Holograms count toward the stacking module's display limit.
+- **Notify (N5):** online members and coop players who can read get "X added a note: ... [Open]" (`/settings` toggle
+  "New island notes", on). Placeholder `island_next_note` = the newest open note of your island when your `/settings`
+  toggle "Next note on scoreboard" is on (off by default; the scoreboard line itself is for the hud module).
+- **Deleted notes (N7):** deleting, clearing done notes and removing the island (disband, staff delete, reset) only mark
+  notes deleted; staff see them in the Deleted notes view for `notes.deleted-keep-days` (7) days, then they are removed
+  for good (checked on enable and daily).
+- **Logged** (category `island`): `island_note_add`, `island_note_edit`, `island_note_done`, `island_note_reopen`,
+  `island_note_pin`, `island_note_unpin`, `island_note_delete`, `island_note_clear`, `island_note_book`,
+  `island_note_purge`, all with the full text; `island_note_blocked` (category `chat`) for filtered text;
+  `island_notes_view` (category `staff`) when staff open another island's notes.
 
 ## Profiles (PROF)
 Island membership, ownership, roles, coop trust, invites and personal homes belong to the active **profile** (stored under the profile key; profile 1 = the player UUID, so all existing islands are profile 1's). Join limits and the join cooldown stay **per player** (owner P11): `player_island_joins` is per player and remembers the profile (`profile_id`, migration V007; old rows = profile 1). Two profiles of one player are never on the same island, also not one after the other (P3): invite, accept, coop and `/isadmin addmember` are refused (`*.own-profile`, audited `profile_transfer_blocked`). An island of your other profile can't be visited or entered (not even with the staff bypass) and nothing can be done on it (`protection.own-profile`), so no item can move between your profiles. Bans, likes and ratings are per player; an island any of your profiles belongs to counts as your own for ratings/likes. Deleting a profile: refused while it leads a team island with other members; otherwise its solo island is removed and its memberships/coops end. `IslandService#islandOf/role/isCoop` take an online player's UUID (active profile) or a profile key; `islandOfProfile(key)` never resolves.

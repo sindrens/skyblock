@@ -71,6 +71,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandFlagListener flagListener;
     private IslandEnvironment environment;
     private IslandFly fly;
+    private IslandAdmin admin;
+    private IslandNotes notes;
     private net.skybornmc.skyblock.common.util.Scheduler.Task sweepTask;
 
     public IslandsModule(Core core) {
@@ -116,6 +118,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         flagListener = new IslandFlagListener(manager);
         environment = new IslandEnvironment(this, manager);
         fly = new IslandFly(this, manager);
+        notes = new IslandNotes(this, manager, new IslandNoteStore(core.database()), name -> admin == null ? null : admin.find(name));
         visits.onPresence(environment::apply);
         manager.onFlagChange((island, flag) -> {
             if (flag == IslandFlag.WEATHER || flag == IslandFlag.TIME) {
@@ -135,13 +138,20 @@ public final class IslandsModule implements SkyblockModule, Listener {
         environment.start();
         fly.start();
         // /settings (menus) and the TeleportService (essentials) may enable after us: hook them one tick later.
-        core.scheduler().later("islands:services", 1L, visits::hookServices);
+        core.scheduler().later("islands:services", 1L, () -> {
+            visits.hookServices();
+            if (notes != null) {
+                notes.hookSettings();
+            }
+        });
         startSweep();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         core.services().register(ID, IslandService.class, manager);
         registerPlaceholders();
         registerCommands();
-        new IslandAdmin(this, manager, lifecycle, protection).register();
+        admin = new IslandAdmin(this, manager, lifecycle, protection);
+        admin.register();
+        notes.start();
         Bukkit.getOnlinePlayers().forEach(borders::update);
         refreshPlayers();
         if (Bukkit.getWorld(config.world) == null) {
@@ -171,6 +181,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
         if (visits != null) {
             visits.startStats();
         }
+        if (notes != null) {
+            notes.restartSweep();
+        }
         core.messages().load(ID);
         Bukkit.getOnlinePlayers().forEach(borders::update);
         refreshPlayers();
@@ -189,6 +202,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
 
     @Override
     public void disable() {
+        if (notes != null) {
+            notes.stop(); // holograms removed, temporary books taken back
+            notes = null;
+        }
         if (lifecycle != null) {
             lifecycle.stop();
         }
@@ -280,6 +297,11 @@ public final class IslandsModule implements SkyblockModule, Listener {
         return lifecycle;
     }
 
+    /** The island notes (NOTES), or null before enable / after disable. */
+    IslandNotes notes() {
+        return notes;
+    }
+
     IslandSettingsManager islandSettings() {
         return islandSettings;
     }
@@ -352,6 +374,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Arg<String> myHomeName = Args.word("name", Suggest.bySender(homes::names));
         Arg<String> setting = Args.word("setting", Suggest.of(IslandSettingsManager::keys));
         Arg<String> settingValue = Args.word("value", islandSettings.values("setting"));
+        // NOTES: the optional island is for staff only (players see no suggestions and get a clear message)
+        Arg<String> notesIsland = Args.word("island", Suggest.bySender(s -> notes == null ? List.of() : notes.staffNames(s, visits::islandNames)));
         core.commands().register(CommandSpec.command("is")
                 .description("Your island: create it, or go home").category("Island")
                 .permission(PERM_USE).playerOnly().aliases("island")
@@ -366,6 +390,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
                         .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(setting).optional(settingValue)
                         .example("is settings weather rain")
                         .executes(ctx -> islandSettings.command(ctx.player(), ctx.getOr(setting, null), ctx.getOr(settingValue, null))))
+                .sub(CommandSpec.sub("notes").description("Your island's shared notes and to-do list (book view, pinned holograms)")
+                        .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(notesIsland).example("is notes")
+                        .executes(ctx -> notes.command(ctx.player(), ctx.getOr(notesIsland, null))))
                 .sub(CommandSpec.sub("invites").description("Invites you received and invites your island sent").permission(PERM_USE)
                         .playerOnly().example("is invites")
                         .executes(ctx -> members.openInvites(ctx.player())))

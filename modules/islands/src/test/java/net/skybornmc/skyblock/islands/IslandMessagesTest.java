@@ -27,7 +27,9 @@ class IslandMessagesTest {
             "VisitManager.java", "WarpManager.java", "VisitMenu.java", "WarpBrowserMenu.java", "WarpEditMenu.java", "IconPickerMenu.java",
             // ISL2
             "PersonalHomes.java", "IslandSettingsManager.java", "SettingsMenu.java", "InvitesMenu.java", "InviteActionsMenu.java",
-            "IslandFly.java", "PermissionsMenu.java", "MemberActionsMenu.java", "MembersMenu.java", "MemberManager.java");
+            "IslandFly.java", "PermissionsMenu.java", "MemberActionsMenu.java", "MembersMenu.java", "MemberManager.java",
+            // NOTES
+            "IslandNotes.java", "NotesMenu.java", "NoteActionsMenu.java", "DeletedNotesMenu.java", "NoteBook.java", "NoteHolograms.java");
     /** Keys of other files (commands.yml) and strings that are not message keys. */
     private static final Set<String> FOREIGN = Set.of("invalid-number", "player-unknown", "frame.next", "frame.previous", "title.page");
 
@@ -97,6 +99,14 @@ class IslandMessagesTest {
             keys.add("fly." + state);
         }
         keys.add("disband.confirm-word");
+        // NOTES: deleted reasons and /settings toggles
+        for (String reason : List.of(IslandNoteStore.REASON_DELETE, IslandNoteStore.REASON_CLEAR, IslandNoteStore.REASON_DISBAND)) {
+            keys.add("notes.deleted.reason." + reason);
+        }
+        for (String toggle : List.of(IslandNotes.SETTING_ALERTS, IslandNotes.SETTING_SCOREBOARD)) {
+            keys.add("settings." + toggle + ".name");
+            keys.add("settings." + toggle + ".lore");
+        }
         // M2.4: built from parts in VisitManager.voteDenied, the browser tabs, warp categories and /settings toggles
         for (String what : List.of("rate", "like")) {
             for (String part : List.of(".own", ".not-visited", ".already")) {

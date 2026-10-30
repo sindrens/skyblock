@@ -75,6 +75,9 @@ protection:
     spawners: "change spawners"
     hurt-monsters: "hurt monsters"
     settings: "change the island settings"
+    notes-read: "read the island notes"
+    notes-write: "add notes, tick them and change their own"
+    notes-manage: "change, pin and delete anyone's notes"
 
 bypass:
   "on": "<prefix><c:warning><sym:bullet></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>Logged. /is bypass to turn it off."
@@ -290,6 +293,12 @@ notify:
 
 members:
   crumb: "Members"
+  notes:
+    name: "<c:flame><bold>Island notes"
+    lore:
+      - "<c:text>Your island's shared to-do list."
+      - ""
+      - "<c:action>Click to open"
   info:
     - "<c:text>Everyone on your island and their role."
     - "<c:text>Click a head for actions."
@@ -497,6 +506,9 @@ perms:
     spawners: "Spawners"
     hurt-monsters: "Hurt monsters"
     settings: "Island settings"
+    notes-read: "Read notes"
+    notes-write: "Write notes"
+    notes-manage: "Manage notes"
 
 # ---------------------------------------------------------------- M2.7 lifecycle (/is disband) and staff tools (/isadmin)
 disband:
@@ -691,6 +703,12 @@ settings:
   island-visitor-departures:
     name: "<c:flame>Visitor departures"
     lore: ["<c:text>Tell me when a visitor leaves", "<c:text>my island."]
+  island-note-alerts:
+    name: "<c:flame>New island notes"
+    lore: ["<c:text>Tell me when someone adds", "<c:text>a note to my island."]
+  island-notes-scoreboard:
+    name: "<c:flame>Next note on scoreboard"
+    lore: ["<c:text>Show the newest open island", "<c:text>note on my scoreboard."]
 
 visit:
   no-island: "<prefix><c:error><sym:cross> <c:value><player></c:value> doesn't have an island."
@@ -1166,3 +1184,231 @@ fly:
 # Island profiles (PROF).
 profiles:
   delete-team-leader: "<prefix><c:error><sym:cross> This profile leads <c:value><island></c:value> with other members. Switch to it and hand the island over (<c:action>/is transfer</c:action>) first."
+
+# ---------------------------------------------------------------- NOTES (/is notes, owner N1-N9)
+# <text> = the note (player text, never parsed), <player> / <author> = names, <date> = members.date-format.
+notes:
+  crumb: "Notes"
+  info:
+    - "<c:text>Your island's shared to-do list."
+    - "<c:text>Click a note to tick it, change it,"
+    - "<c:text>pin it here as a hologram or delete it."
+    - "<c:muted>Who may write: the Notes permissions."
+  empty:
+    name: "<c:muted>No notes yet"
+    lore:
+      - "<c:text>Add the first one with the feather."
+  summary:
+    name: "<c:flame><bold><island>"
+    lore:
+      - "<c:text>Open: <c:value><open></c:value> <c:muted>·</c:muted> <c:text>Done: <c:value><done>"
+      - "<c:text>Notes: <c:value><count>/<max>"
+      - "<c:text>Pinned: <c:value><pins>/<max-pins>"
+  book-button:
+    name: "<c:flame>Open as book"
+    lore:
+      - "<c:text>Puts a temporary book in your"
+      - "<c:text>inventory: one note per page."
+      - "<c:text>Change pages or write new ones,"
+      - "<c:text>then close it to save."
+      - "<c:muted>Taken back after saving or <seconds>s."
+      - ""
+      - "<c:action>Click to get the book"
+    lore-read:
+      - "<c:text>Puts a temporary book with every"
+      - "<c:text>note in your inventory."
+      - "<c:muted>Taken back after <seconds>s."
+      - ""
+      - "<c:action>Click to get the book"
+  add:
+    name: "<c:success><bold>Add a note"
+    lore:
+      - "<c:text>Type it in chat, up to <c:value><length></c:value> characters."
+      - "<c:text>Notes: <c:value><count>/<max>"
+      - ""
+      - "<c:action>Click to write"
+    lore-full:
+      - "<c:error><sym:cross> The list is full (<count>/<max>)."
+      - "<c:text>Delete or clear done notes first."
+  clear-button:
+    name: "<c:warning><bold>Clear done notes"
+    lore:
+      - "<c:text>Deletes the <c:value><count></c:value> ticked note(s)."
+      - ""
+      - "<c:action>Click to clear"
+  deleted-button:
+    name: "<c:info><bold>Deleted notes"
+    lore:
+      - "<c:text>Staff: notes deleted in the"
+      - "<c:text>last <c:value><days></c:value> days."
+      - ""
+      - "<c:action>Click to look"
+  entry:
+    name: "<c:value><text>"
+    name-done: "<c:success><sym:check></c:success> <c:muted><text>"
+    line:
+      - "<c:parchment><line>"
+    by:
+      - "<c:text>By <c:value><player></c:value> <c:muted>· <date>"
+    changed:
+      - "<c:muted>Changed by <player> · <date>"
+    open:
+      - "<c:flame>● Open"
+    done:
+      - "<c:success><sym:check> Done by <player></c:success> <c:muted>· <date>"
+    pinned:
+      - "<c:text>Pinned at <c:value><x> <y> <z>"
+    click:
+      - "<c:action>Click for options"
+  actions:
+    crumb: "Note"
+    back:
+      name: "<c:text>Back"
+      lore:
+        - "<c:action>Click to go back"
+    gone:
+      name: "<c:muted>This note is gone"
+      lore:
+        - "<c:text>Go back and refresh."
+    done:
+      name: "<c:success><bold>Tick done"
+      lore:
+        - "<c:text>Marks it done for everyone."
+        - "<c:text>A pinned hologram is removed."
+        - ""
+        - "<c:action>Click to tick"
+    reopen:
+      name: "<c:warning><bold>Open again"
+      lore:
+        - "<c:text>Puts it back on the to-do list."
+        - ""
+        - "<c:action>Click to open again"
+    edit:
+      name: "<c:flame><bold>Change text"
+      lore:
+        - "<c:text>Type the new text in chat,"
+        - "<c:text>up to <c:value><length></c:value> characters."
+        - ""
+        - "<c:action>Click to change"
+    pin:
+      name: "<c:flame><bold>Pin here"
+      lore:
+        - "<c:text>Shows this note as a hologram"
+        - "<c:text>where you stand on the island."
+        - "<c:muted>Up to <max> pinned notes."
+        - ""
+        - "<c:action>Click to pin"
+    move-pin:
+      name: "<c:flame><bold>Move pin here"
+      lore:
+        - "<c:text>Moves the hologram to where"
+        - "<c:text>you stand on the island."
+        - ""
+        - "<c:action>Click to move"
+    unpin:
+      name: "<c:warning><bold>Unpin"
+      lore:
+        - "<c:text>Removes the hologram."
+        - "<c:text>The note stays on the list."
+        - ""
+        - "<c:action>Click to unpin"
+    delete:
+      name: "<c:error><bold>Delete"
+      lore:
+        - "<c:text>Removes it from the list."
+        - "<c:muted>Staff can still read it for <days> days."
+        - ""
+        - "<c:action>Click to delete"
+  delete:
+    crumb: "Delete note"
+    shown:
+      name: "<c:error><bold>Delete this note?"
+      lore:
+        - "<c:value><text>"
+    details:
+      - "<c:text>The note leaves the list for everyone."
+      - "<c:muted>Staff can read it for <days> days (reports)."
+  clear:
+    crumb: "Clear done notes"
+    shown:
+      name: "<c:warning><bold>Clear <count> done note(s)?"
+      lore:
+        - "<c:text>Open notes stay."
+    details:
+      - "<c:text>Every ticked note leaves the list."
+      - "<c:muted>Staff can read them for <days> days (reports)."
+  deleted:
+    crumb: "Deleted"
+    info:
+      - "<c:text>Notes deleted in the last few days."
+      - "<c:text>Read only. Full history: <c:value>/logs"
+    empty:
+      name: "<c:muted>Nothing deleted"
+      lore:
+        - "<c:text>No notes were deleted lately."
+    by:
+      - "<c:error>Deleted by <player></c:error> <c:muted>· <date> · <reason>"
+    island:
+      - "<c:muted>Island: <island>"
+    reason:
+      delete: "deleted"
+      clear-done: "cleared as done"
+      disband: "island removed"
+  prompt:
+    add: "<prefix><c:text>Type your note in chat <c:muted>(max <max> characters; <cancel> to stop, <seconds>s)"
+    edit: "<prefix><c:text>Type the new text <c:muted>(max <max>; <cancel> to stop, <seconds>s)</c:muted><newline><c:muted>Now: <text>"
+  hologram: "<c:value><text><newline><c:muted><author>"
+  book:
+    name: "<c:flame><bold>Island notes</bold> <c:muted>(temporary)"
+    name-read: "<c:flame><bold>Island notes</bold> <c:muted>(read only)"
+    title: "Island notes"
+    lore:
+      - "<c:text>One note per page. Change a page"
+      - "<c:text>or write on the empty last page."
+      - "<c:text>Close the book to save."
+      - "<c:muted>Delete notes in /is notes."
+      - "<c:muted>Taken back after saving or <seconds>s."
+    lore-read:
+      - "<c:text>Every note of your island."
+      - "<c:muted>Taken back after <seconds>s."
+    page: "<black><text><newline><newline><dark_gray><author>, <date>"
+    page-done: "<dark_green>✔ <black><text><newline><newline><dark_gray><author>, <date>"
+    page-empty: "<dark_gray>No notes yet."
+    given: "<prefix><c:success><sym:check> <c:text>The notes book is in your inventory. Right-click it, then close it to save. <c:muted>(<seconds>s)"
+    given-read: "<prefix><c:success><sym:check> <c:text>The notes book is in your inventory. Right-click it to read. <c:muted>(<seconds>s)"
+    full: "<prefix><c:error><sym:cross> Your inventory is full. Make room for the book."
+    no-drop: "<prefix><c:error><sym:cross> The notes book can't leave your inventory."
+    taken: "<prefix><c:text>The notes book was taken back."
+    expired: "<prefix><c:warning><sym:cross></c:warning> <c:text>The notes book ran out of time and was taken back. Nothing was saved."
+    saved: "<prefix><c:success><sym:check> <c:text>Book saved: <c:value><added></c:value> added, <c:value><changed></c:value> changed. <c:muted>(<skipped> skipped)"
+    saved-none: "<prefix><c:error><sym:cross> Nothing saved: <c:value><refused></c:value> page(s) you can't change, <c:value><blocked></c:value> not allowed or too long."
+    saved-nothing: "<prefix><c:text>Book closed. Nothing changed."
+    saved-nothing-emptied: "<prefix><c:text>Book closed. Emptied pages don't delete notes: use <click:run_command:'/is notes'><c:action>/is notes</c:action></click>."
+  added: "<prefix><c:success><sym:check> <c:text>Note added."
+  changed: "<prefix><c:success><sym:check> <c:text>Note changed."
+  done: "<prefix><c:success><sym:check> <c:text>Note ticked done."
+  reopened: "<prefix><c:success><sym:check> <c:text>Note open again."
+  pinned: "<prefix><c:success><sym:check> <c:text>Note pinned here."
+  pin-moved: "<prefix><c:success><sym:check> <c:text>Pin moved here."
+  unpinned: "<prefix><c:success><sym:check> <c:text>Pin removed."
+  removed: "<prefix><c:success><sym:check> <c:text>Note deleted."
+  cleared: "<prefix><c:success><sym:check> <c:text>Cleared <c:value><count></c:value> done note(s)."
+  notify: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>added a note: <c:value><text></c:value> <click:run_command:'/is notes'><hover:show_text:'<c:text>Open the island notes'><c:action>[Open]</c:action></hover></click>"
+  empty-text: "<prefix><c:error><sym:cross> The note is empty."
+  too-long: "<prefix><c:error><sym:cross> Notes can be <c:value><max></c:value> characters at most."
+  blocked: "<prefix><c:error><sym:cross> That note isn't allowed. <c:muted>No links, IPs, phone numbers or bad words."
+  limit: "<prefix><c:error><sym:cross> Your island has <c:value><max></c:value> notes, the most allowed. Delete or clear done ones first."
+  slow-down: "<prefix><c:error><sym:cross> You're adding notes too fast. Wait a moment."
+  gone: "<prefix><c:error><sym:cross> That note is gone. Refresh the list."
+  no-read: "<prefix><c:error><sym:cross> Your island role can't read the notes."
+  no-write: "<prefix><c:error><sym:cross> Your island role can't write notes."
+  no-change: "<prefix><c:error><sym:cross> You can only change your own notes. <c:muted>Mods and up can change any."
+  no-manage: "<prefix><c:error><sym:cross> Your island role can't manage notes."
+  clear-none: "<prefix><c:error><sym:cross> There are no done notes to clear."
+  pin-outside: "<prefix><c:error><sym:cross> Stand inside your island's border to pin a note."
+  pin-height: "<prefix><c:error><sym:cross> Pins must be between <c:value>Y <min></c:value> and <c:value>Y <max></c:value>."
+  pin-done: "<prefix><c:error><sym:cross> Done notes can't be pinned. Open it again first."
+  pin-limit: "<prefix><c:error><sym:cross> Your island has <c:value><max></c:value> pinned notes. Unpin one first."
+  pin-off: "<prefix><c:error><sym:cross> Pinning notes is turned off."
+  staff-only: "<prefix><c:error><sym:cross> Only staff can open another island's notes. Use <c:value>/is notes</c:value>."
+  not-found: "<prefix><c:error><sym:cross> No island found for <c:value><input></c:value>. Press Tab to see them."

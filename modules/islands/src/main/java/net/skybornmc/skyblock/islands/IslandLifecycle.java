@@ -210,6 +210,10 @@ final class IslandLifecycle {
             islands.deindex(island);
         }
         islands.memberManager().invites().removeIsland(island.id());
+        IslandNotes notes = module.notes();
+        if (notes != null) {
+            notes.islandRemoved(island.id()); // NOTES: holograms and temporary books go with the island
+        }
         islands.refreshBorders(island);
         int sentAway = sendAway(IslandGrid.slotBounds(island.world(), done.gridX(), done.gridZ()));
         notifyRemoved(name, done, reason, actor);

@@ -40,7 +40,13 @@ public enum IslandPerm {
     /** ISL2 (owner #25): hurt hostile mobs (zombies, skeletons, creepers …). Defaults per role: own list in islands.yml. */
     HURT_MONSTERS("hurt-monsters", true, false),
     /** ISL2: change the island settings ({@code /is settings}). Management: stored members only, default Leader + Admin. */
-    SETTINGS("settings", true, true);
+    SETTINGS("settings", true, true),
+    /** NOTES (owner N1): read the island notes ({@code /is notes}). Default Admin, Mod, Member and Coop (read only). */
+    NOTES_READ("notes-read", true, false),
+    /** NOTES: add notes, tick them done/open, change, pin and delete your own. Stored members only, default Admin/Mod/Member. */
+    NOTES_WRITE("notes-write", true, true),
+    /** NOTES: change, pin, unpin and delete anyone's notes, clear done ones. Stored members only, default Admin + Mod. */
+    NOTES_MANAGE("notes-manage", true, true);
 
     private static final IslandPerm[] VALUES = values();
 
