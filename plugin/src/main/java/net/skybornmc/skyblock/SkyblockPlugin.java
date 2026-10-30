@@ -222,6 +222,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.wardrobe.WardrobeModule(core));
         modules.register(new net.skybornmc.skyblock.trade.TradeModule(core));
         modules.register(new net.skybornmc.skyblock.shop.ShopModule(core));
+        // Last: reads skills, islands, wardrobe, tools, economy and cosmetics services (all optional).
+        modules.register(new net.skybornmc.skyblock.achievements.AchievementsModule(core));
     }
 
     public ModuleRegistry modules() {

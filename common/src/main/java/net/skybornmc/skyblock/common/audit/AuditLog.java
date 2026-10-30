@@ -26,12 +26,14 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,6 +72,7 @@ public final class AuditLog implements AutoCloseable {
     private final AtomicLong spooled = new AtomicLong();
     private final Object spoolLock = new Object();
     private volatile IntSupplier season = () -> 0;
+    private final List<Consumer<AuditEntry>> listeners = new CopyOnWriteArrayList<>();
     private volatile ScheduledExecutorService scheduler;
     private volatile boolean closed;
     private volatile long lastFailureWarning;
@@ -144,10 +147,36 @@ public final class AuditLog implements AutoCloseable {
             y = location.getBlockY();
             z = location.getBlockZ();
         }
-        enqueue(new AuditEntry(0, System.currentTimeMillis(), season.getAsInt(), config.serverId,
+        AuditEntry entry = new AuditEntry(0, System.currentTimeMillis(), season.getAsInt(), config.serverId,
                 Objects.requireNonNull(category, "category"), clip(Objects.requireNonNull(action, "action"), 48),
                 Objects.requireNonNull(actor, "actor"), clip(target, 64), clip(targetName, 64), amount, world, x, y, z,
-                details == null ? Map.of() : Map.copyOf(details)));
+                details == null ? Map.of() : Map.copyOf(details));
+        enqueue(entry);
+        notifyListeners(entry);
+    }
+
+    /**
+     * Calls {@code listener} for every row logged from now on (F3 achievements count trades, sales, enchants and visits
+     * from the rows those modules already write, so no module needs a new event). The listener runs on the thread that
+     * logged the row (often a database thread): it must be fast (O(1)), thread-safe and hop to the main thread itself
+     * for anything that touches the server. Exceptions are caught and logged.
+     *
+     * @return removes the listener again (call it when the module disables)
+     */
+    public Runnable listen(Consumer<AuditEntry> listener) {
+        Objects.requireNonNull(listener, "listener");
+        listeners.add(listener);
+        return () -> listeners.remove(listener);
+    }
+
+    private void notifyListeners(AuditEntry entry) {
+        for (Consumer<AuditEntry> listener : listeners) {
+            try {
+                listener.accept(entry);
+            } catch (RuntimeException e) {
+                log.log(Level.WARNING, "Audit log: a listener failed on " + entry.category().key() + "/" + entry.action(), e);
+            }
+        }
     }
 
     /** {@link #log} where the target is a player (stored as the uuid string, name kept for display). */

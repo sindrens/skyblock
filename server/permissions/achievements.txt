@@ -1,0 +1,3 @@
+# LuckPerms grants for the achievements module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/achievements/src/main/resources/permissions/achievements.yml. One console command per line; # = comment.
+# skyblock.achievements (open the menu) defaults to true, so players need no grant. The module has no staff nodes yet.

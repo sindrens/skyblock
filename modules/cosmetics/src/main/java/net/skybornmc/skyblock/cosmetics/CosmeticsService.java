@@ -132,8 +132,34 @@ public final class CosmeticsService implements Cosmetics, Listener {
         return grant(player, kind, id, reason, Actor.system("cosmetics"));
     }
 
+    @Override
+    public CompletableFuture<Boolean> grant(UUID player, Kind kind, String id, String reason, boolean notify) {
+        return grant(player, kind, id, reason, Actor.system("cosmetics"), notify);
+    }
+
+    @Override
+    public boolean defineTitle(String id, String display, net.skybornmc.skyblock.common.item.Rarity rarity, String source, boolean secret) {
+        if (!Cosmetic.validId(id) || registry.get(Kind.TITLE, id).isPresent()) {
+            return false;
+        }
+        try {
+            registry.put(new Cosmetic(Kind.TITLE, id, display, rarity == null ? net.skybornmc.skyblock.common.item.Rarity.COMMON : rarity,
+                    source, secret, true));
+        } catch (java.io.IOException e) {
+            core.plugin().getLogger().log(Level.WARNING, "Could not add title '" + id + "' to " + CosmeticRegistry.FILE, e);
+            return false;
+        }
+        core.audit().log(AuditCategory.CONFIG, "title_define", Actor.system("cosmetics"), id, null, null, null,
+                Map.of("display", String.valueOf(display), "source", String.valueOf(source)));
+        return true;
+    }
+
     /** {@link #grant} with the actor for the audit log (staff command, item redeem). */
     CompletableFuture<Boolean> grant(UUID player, Kind kind, String id, String reason, Actor actor) {
+        return grant(player, kind, id, reason, actor, true);
+    }
+
+    private CompletableFuture<Boolean> grant(UUID player, Kind kind, String id, String reason, Actor actor, boolean notify) {
         Optional<Cosmetic> cosmetic = registry.get(kind, id);
         if (cosmetic.isEmpty()) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("Unknown " + kind.name().toLowerCase(Locale.ROOT) + " '" + id + "'"));
@@ -164,7 +190,7 @@ public final class CosmeticsService implements Cosmetics, Listener {
                 core.audit().logPlayer(actor.isPlayer() || actor.name().equals("CONSOLE") ? AuditCategory.STAFF : AuditCategory.ITEM,
                         kind == Kind.TITLE ? "title_grant" : "tag_grant", actor, player, null, null, null,
                         Map.of("id", key, "reason", reason == null ? "" : reason));
-                Player online = Bukkit.getPlayer(player);
+                Player online = notify ? Bukkit.getPlayer(player) : null;
                 if (online != null) {
                     msg.send(online, kind == Kind.TITLE ? "unlocked.title" : "unlocked.tag", Msg.c("display", display(online, cosmetic.get())));
                     core.sounds().play(online, "unlock");

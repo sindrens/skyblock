@@ -1,0 +1,85 @@
+# Achievements (F3): unlock toast and menu. MiniMessage + style tags (style.yml). Placeholders: <name>.
+# Achievement names and descriptions are in achievements.yml. Reload: /skyblock reload achievements
+
+# Unlock toast: screen title for the best unlock, a chat line per unlock, one sound (achievements-settings.yml → toast.*).
+# <name> = the achievement's name, <tier> = " II" for achievements with tiers (empty for one-step ones).
+unlock:
+  screen:
+    title: "<c:flame>Achievement!"
+    subtitle: "<name><c:value><tier>"
+    fade-in: 5
+    stay: 50
+    fade-out: 15
+  screen-done:
+    title: "<grad:phoenix>Achievement done!</grad>"
+    subtitle: "<name><c:value><tier>"
+    fade-in: 5
+    stay: 60
+    fade-out: 15
+  chat: "<prefix><c:success><sym:star></c:success> <c:text>Achievement: <name><c:value><tier></c:value>"
+  chat-done: "<prefix><c:success><sym:star></c:success> <c:text>Achievement done: <name><c:value><tier></c:value><c:text>!"
+  more: "<prefix><c:text>And <c:value><count></c:value> more. See them in <click:run_command:'/tags'><hover:show_text:'<c:text>Open /tags, then Achievements'><c:action>[Achievements]</c:action></hover></click>"
+  # A reward title the account did not have yet. <display>
+  title: "<prefix><c:success><sym:star></c:success> <c:text>New title: <display><c:text>! <click:run_command:'/titles'><hover:show_text:'<c:text>Open /titles'><c:action>[Equip]</c:action></hover></click>"
+
+# 'How to earn it' text of reward titles added to tags-titles.yml (shown on locked titles in /tags). <name>
+title-source: "Finish the achievement <name>."
+
+no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open achievements. Ask staff if this is wrong."
+
+# Menus (Bedrock-safe: taps only). Lore lines stay within 36 characters.
+menu:
+  title: "Achievements"
+  info:
+    - "<c:text>Achievements of this profile."
+    - "<c:text>Last tiers give titles for"
+    - "<c:text>every profile."
+  category-info:
+    - "<c:text>Progress to the next goal."
+    - "<c:text>Secret ones show as ???."
+  loading:
+    name: "<c:text>Loading..."
+    lore: ["<c:muted>Your progress is on its way."]
+  empty:
+    name: "<c:text>Nothing here yet"
+    lore: ["<c:muted>New achievements come later."]
+  bar:
+    filled: "<c:flame>●</c:flame>"
+    empty: "<c:muted>●</c:muted>"
+  head:
+    name: "<c:value><player>"
+    lore:
+      - "<c:muted>Achievements <sym:dot> <profile>"
+      - ""
+      - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
+      - "<c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
+      - "<bar> <c:value><percent>%"
+  category:
+    lore:
+      - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
+      - "<bar> <c:value><percent>%"
+      - ""
+      - "<c:action><sym:bullet> Click to open"
+  entry:
+    name: "<name><c:value><tier>"
+    name-done: "<name><c:value><tier></c:value> <c:success><sym:check>"
+    name-locked: "<name>"
+    subtitle: "<c:muted>Achievement <sym:dot> <category>"
+    subtitle-tiers: "<c:muted><category> <sym:dot> Tier <tier>/<tiers>"
+    progress:
+      - "<bar> <c:value><percent>%"
+      - "<c:value><value></c:value><c:muted>/<goal>"
+    done:
+      - "<c:success><sym:check> Done"
+      - "<c:text>Reached: <c:value><value>"
+    goals: "<c:text>Goals: <goals>"
+    reward: "<c:text>Reward: <title> <c:muted>title"
+    reward-owned: "<c:text>Reward: <title> <c:success><sym:check>"
+  goal-done: "<c:success><goal></c:success>"
+  goal-open: "<c:muted><goal></c:muted>"
+  goal-separator: " <c:muted>·</c:muted> "
+  secret:
+    name: "<c:muted>???"
+    lore:
+      - "<c:muted><sym:time> A secret achievement."
+      - "<c:muted>Keep playing to find it."

@@ -1,0 +1,338 @@
+# Achievements (F3). Edit here, then: /skyblock reload achievements. Settings: achievements-settings.yml.
+# Texts around them (menu, unlock toast): messages/achievements.yml.
+#
+# Progress is per profile; a reward title goes to the account (all profiles) when any profile finishes the last tier.
+# New achievements from an update are added to this file automatically: turn one off with "enabled: false" instead of
+# deleting it. Every key inside 'categories' and 'achievements' is one entry (no other settings belong in this file).
+#
+# categories.<id>:   name, icon (item id), slot (inner slot of the 6-row menu: 10-16, 19-25, 28-34, 37-43), description
+# achievements.<id>:
+#   name:        shown name (MiniMessage, max 24 visible characters)
+#   description: 1-3 lines (max 36 visible characters each)
+#   icon:        item id
+#   category:    a category id
+#   metric:      what is counted (list below)
+#   goals:       one goal per tier, rising, e.g. [10, 100, 1000] (max 10 tiers). One goal = a one-step achievement.
+#   title:       reward title for the last tier: an id from tags-titles.yml, or {id, display, rarity}: the title is
+#                added to tags-titles.yml when it does not exist yet (an existing title is never changed). Optional.
+#   hidden:      true = shown as ??? until the first tier is done (secret achievements)
+#   enabled:     false = not shown, not counted
+#
+# Metrics (per profile; every value only goes up):
+#   playtime_minutes      minutes online                     stacked_kills       mobs killed from stacks
+#   items_sold            items sold (/sell, satchel)        money_earned        money earned by selling
+#   enchants_applied      books applied to tools             trades_completed    finished /trade trades
+#   islands_visited       islands visited (1 per island/day) best_sale           biggest single sale
+#   best_stack_kill       most mobs killed from a stack at once
+#   skill_mining, skill_foraging, skill_combat, skill_farming, skill_fishing   skill level
+#   skill_total           sum of the open skills' levels     skill_best          highest skill level
+#   island_blocks_mined, island_logs_chopped, island_crops_harvested, island_blocks_placed, island_mobs_killed
+#                         your own all-time island stats (/is stats)
+#   island_visitors       unique visitors of your island, all time
+#   wardrobe_sets_owned   sets owned                         wardrobe_best_level highest set level
+#   tool_best_level       highest custom tool level          tool_best_prestige  highest tool prestige
+#   balance_peak          most money held at once
+
+categories:
+  skills:
+    name: "<c:flame>Skills"
+    icon: experience_bottle
+    slot: 20
+    description: "<c:text>Level up your skills."
+  island:
+    name: "<c:flame>Island"
+    icon: grass_block
+    slot: 21
+    description: "<c:text>Grow and show off your island."
+  combat:
+    name: "<c:flame>Combat"
+    icon: iron_sword
+    slot: 22
+    description: "<c:text>Clear out the monsters."
+  economy:
+    name: "<c:flame>Economy"
+    icon: emerald
+    slot: 23
+    description: "<c:text>Sell, trade and get rich."
+  gear:
+    name: "<c:flame>Gear"
+    icon: smithing_table
+    slot: 24
+    description: "<c:text>Tools, enchants and sets."
+  social:
+    name: "<c:flame>Exploring"
+    icon: compass
+    slot: 31
+    description: "<c:text>Play, visit and explore."
+
+achievements:
+  # ------------------------------------------------------------------ skills
+  prospector:
+    name: "<pillar:mining>Prospector"
+    description: ["<c:text>Level up <pillar:mining>Mining</pillar:mining><c:text> in The Depths."]
+    icon: iron_pickaxe
+    category: skills
+    metric: skill_mining
+    goals: [10, 25, 50, 66, 100]
+    title: {id: prospector, display: "<pillar:mining>Prospector", rarity: epic}
+  lumberjack:
+    name: "<pillar:foraging>Lumberjack"
+    description: ["<c:text>Level up <pillar:foraging>Foraging</pillar:foraging><c:text> in The Depths."]
+    icon: iron_axe
+    category: skills
+    metric: skill_foraging
+    goals: [10, 25, 50, 58, 100]
+    title: {id: lumberjack, display: "<pillar:foraging>Lumberjack", rarity: epic}
+  warrior:
+    name: "<pillar:combat>Warrior"
+    description: ["<c:text>Level up <pillar:combat>Combat</pillar:combat><c:text> by fighting."]
+    icon: iron_sword
+    category: skills
+    metric: skill_combat
+    goals: [10, 25, 50, 66, 100]
+    title: {id: warrior, display: "<pillar:combat>Warrior", rarity: epic}
+  harvester:
+    name: "<pillar:farming>Harvester"
+    description: ["<c:text>Level up <pillar:farming>Farming</pillar:farming><c:text>."]
+    icon: wheat
+    category: skills
+    metric: skill_farming
+    goals: [10, 25, 50, 66, 100]
+    title: {id: harvester, display: "<pillar:farming>Harvester", rarity: epic}
+    enabled: false   # Farming opens in Phase 7
+  angler:
+    name: "<pillar:fishing>Angler"
+    description: ["<c:text>Level up <pillar:fishing>Fishing</pillar:fishing><c:text>."]
+    icon: fishing_rod
+    category: skills
+    metric: skill_fishing
+    goals: [10, 25, 50, 66, 100]
+    title: {id: angler, display: "<pillar:fishing>Angler", rarity: epic}
+    enabled: false   # Fishing opens in Phase 7
+  into_the_void:
+    name: "<c:sky_ice>Into the Void"
+    description: ["<c:text>Reach <pillar:mining>Mining</pillar:mining> <c:value>66</c:value><c:text> and open the", "<c:text>last tier of the Mine."]
+    icon: echo_shard
+    category: skills
+    metric: skill_mining
+    goals: [66]
+    title: deep_diver
+  well_rounded:
+    name: "<c:flame>Well Rounded"
+    description: ["<c:text>Total level of all open skills."]
+    icon: experience_bottle
+    category: skills
+    metric: skill_total
+    goals: [30, 75, 150, 225, 300]
+    title: {id: all_rounder, display: "<c:flame>All-Rounder", rarity: epic}
+  grandmaster:
+    name: "<grad:legendary>Grandmaster</grad>"
+    description: ["<c:text>Take one skill all the way", "<c:text>to the top."]
+    icon: nether_star
+    category: skills
+    metric: skill_best
+    goals: [150]
+    title: {id: grandmaster, display: "<grad:legendary>Grandmaster</grad>", rarity: legendary}
+    hidden: true
+
+  # ------------------------------------------------------------------ island
+  quarry_master:
+    name: "<c:flame>Quarry Master"
+    description: ["<c:text>Mine blocks on your island."]
+    icon: cobblestone
+    category: island
+    metric: island_blocks_mined
+    goals: [1000, 10000, 100000, 1000000]
+    title: {id: quarry_master, display: "<pillar:mining>Quarry Master", rarity: epic}
+  woodcutter:
+    name: "<c:flame>Woodcutter"
+    description: ["<c:text>Chop logs on your island."]
+    icon: oak_log
+    category: island
+    metric: island_logs_chopped
+    goals: [500, 5000, 50000, 500000]
+    title: {id: woodcutter, display: "<pillar:foraging>Woodcutter", rarity: epic}
+  green_thumb:
+    name: "<c:flame>Green Thumb"
+    description: ["<c:text>Harvest ripe crops on your island."]
+    icon: wheat
+    category: island
+    metric: island_crops_harvested
+    goals: [500, 5000, 50000, 500000]
+    title: {id: green_thumb, display: "<pillar:farming>Green Thumb", rarity: epic}
+  builder:
+    name: "<c:flame>Builder"
+    description: ["<c:text>Place blocks on your island."]
+    icon: bricks
+    category: island
+    metric: island_blocks_placed
+    goals: [500, 5000, 50000, 250000]
+    title: {id: builder, display: "<c:ember>Builder", rarity: rare}
+  crowd_pleaser:
+    name: "<c:flame>Crowd Pleaser"
+    description: ["<c:text>Get visitors on your island", "<c:text>(each visitor once a day)."]
+    icon: oak_door
+    category: island
+    metric: island_visitors
+    goals: [10, 100, 500, 2500]
+    title: {id: crowd_pleaser, display: "<c:sky_ice>Crowd Pleaser", rarity: epic}
+
+  # ------------------------------------------------------------------ combat
+  exterminator:
+    name: "<pillar:combat>Exterminator"
+    description: ["<c:text>Kill mobs on your island."]
+    icon: bone
+    category: combat
+    metric: island_mobs_killed
+    goals: [100, 1000, 10000, 100000]
+    title: {id: exterminator, display: "<pillar:combat>Exterminator", rarity: epic}
+  slayer:
+    name: "<pillar:combat>Slayer"
+    description: ["<c:text>Kill mobs from stacks."]
+    icon: diamond_sword
+    category: combat
+    metric: stacked_kills
+    goals: [1000, 10000, 100000, 1000000]
+    title: {id: slayer, display: "<pillar:combat>Slayer", rarity: legendary}
+  overkill:
+    name: "<c:error>Overkill"
+    description: ["<c:text>Wipe out a big chunk of a", "<c:text>stack in one go."]
+    icon: tnt
+    category: combat
+    metric: best_stack_kill
+    goals: [64]
+    title: {id: overkill, display: "<c:error>Overkill", rarity: epic}
+    hidden: true
+
+  # ------------------------------------------------------------------ economy
+  first_sale:
+    name: "<c:flame>First Sale"
+    description: ["<c:text>Sell something with <c:value>/sell</c:value><c:text>."]
+    icon: gold_nugget
+    category: economy
+    metric: items_sold
+    goals: [1]
+  merchant:
+    name: "<c:flame>Merchant"
+    description: ["<c:text>Sell items."]
+    icon: chest
+    category: economy
+    metric: items_sold
+    goals: [1000, 10000, 100000, 1000000, 10000000]
+    title: {id: merchant, display: "<cur:money>Merchant", rarity: epic}
+  mogul:
+    name: "<cur:money>Mogul"
+    description: ["<c:text>Earn money by selling."]
+    icon: gold_ingot
+    category: economy
+    metric: money_earned
+    goals: [100000, 1000000, 10000000, 100000000, 1000000000]
+    title: {id: mogul, display: "<cur:money>Mogul", rarity: legendary}
+  millionaire:
+    name: "<cur:money>Millionaire"
+    description: ["<c:text>Hold this much money at once."]
+    icon: gold_block
+    category: economy
+    metric: balance_peak
+    goals: [1000000, 10000000, 100000000]
+  tycoon:
+    name: "<cur:money>Tycoon"
+    description: ["<c:text>Hold <cur:money>$1B</cur:money><c:text> at once."]
+    icon: emerald_block
+    category: economy
+    metric: balance_peak
+    goals: [1000000000]
+    title: tycoon
+  jackpot:
+    name: "<cur:money>Jackpot"
+    description: ["<c:text>Make one huge sale."]
+    icon: sunflower
+    category: economy
+    metric: best_sale
+    goals: [1000000]
+    title: {id: jackpot, display: "<cur:money>Jackpot", rarity: epic}
+    hidden: true
+  dealmaker:
+    name: "<c:flame>Dealmaker"
+    description: ["<c:text>Finish trades with <c:value>/trade</c:value><c:text>."]
+    icon: emerald
+    category: economy
+    metric: trades_completed
+    goals: [1, 10, 50, 250]
+    title: {id: dealmaker, display: "<c:flame>Dealmaker", rarity: rare}
+
+  # ------------------------------------------------------------------ gear
+  runesmith:
+    name: "<c:enchant>Runesmith"
+    description: ["<c:text>Apply enchant books to tools", "<c:text>at <c:value>/enchanter</c:value><c:text>."]
+    icon: enchanted_book
+    category: gear
+    metric: enchants_applied
+    goals: [1, 10, 50, 200]
+    title: {id: runesmith, display: "<c:enchant>Runesmith", rarity: epic}
+  toolsmith:
+    name: "<c:flame>Toolsmith"
+    description: ["<c:text>Level up a custom tool."]
+    icon: smithing_table
+    category: gear
+    metric: tool_best_level
+    goals: [10, 25, 50]
+    title: {id: toolsmith, display: "<c:ember>Toolsmith", rarity: rare}
+  reborn:
+    name: "<grad:flame>Reborn</grad>"
+    description: ["<c:text>Prestige a tool for the first", "<c:text>time."]
+    icon: blaze_powder
+    category: gear
+    metric: tool_best_prestige
+    goals: [1]
+    title: phoenix_reborn
+  trendsetter:
+    name: "<c:flame>Trendsetter"
+    description: ["<c:text>Own sets in your <c:value>/wardrobe</c:value><c:text>."]
+    icon: leather_chestplate
+    category: gear
+    metric: wardrobe_sets_owned
+    goals: [1, 4, 8, 16]
+    title: {id: trendsetter, display: "<c:sky_ice>Trendsetter", rarity: epic}
+  set_master:
+    name: "<c:flame>Set Master"
+    description: ["<c:text>Level up a set."]
+    icon: netherite_chestplate
+    category: gear
+    metric: wardrobe_best_level
+    goals: [10, 25, 50]
+    title: {id: set_master, display: "<c:flame>Set Master", rarity: legendary}
+
+  # ------------------------------------------------------------------ exploring
+  first_steps:
+    name: "<c:flame>First Steps"
+    description: ["<c:text>Play for 10 minutes."]
+    icon: leather_boots
+    category: social
+    metric: playtime_minutes
+    goals: [10]
+  dedicated:
+    name: "<c:flame>Dedicated"
+    description: ["<c:text>Play on this profile."]
+    icon: clock
+    category: social
+    metric: playtime_minutes
+    goals: [60, 600, 3000, 12000, 30000]
+    title: {id: dedicated, display: "<c:flame>Dedicated", rarity: epic}
+  unstoppable:
+    name: "<grad:phoenix>Unstoppable</grad>"
+    description: ["<c:text>Keep coming back. A lot."]
+    icon: recovery_compass
+    category: social
+    metric: playtime_minutes
+    goals: [60000]
+    title: {id: unstoppable, display: "<grad:phoenix>Unstoppable</grad>", rarity: legendary}
+    hidden: true
+  explorer:
+    name: "<c:flame>Explorer"
+    description: ["<c:text>Visit other islands", "<c:text>(each island once a day)."]
+    icon: map
+    category: social
+    metric: islands_visited
+    goals: [5, 25, 100, 500]
+    title: {id: explorer, display: "<c:sky_blue>Explorer", rarity: rare}

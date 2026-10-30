@@ -73,6 +73,24 @@ class AuditLogTest {
     }
 
     @Test
+    void listenersSeeEveryNewRowUntilRemoved() {
+        List<AuditEntry> seen = new java.util.ArrayList<>();
+        Runnable stop = audit.listen(seen::add);
+        audit.listen(e -> {
+            throw new IllegalStateException("a broken listener must not stop logging");
+        });
+        UUID steve = UUID.randomUUID();
+        audit.logPlayer(AuditCategory.TRADE, "trade_complete", Actor.player(steve, "Steve"), UUID.randomUUID(), "Alex", 5L, null, Map.of());
+        assertEquals(1, seen.size());
+        assertEquals("trade_complete", seen.getFirst().action());
+        assertEquals(steve, seen.getFirst().actor().uuid());
+        stop.run();
+        audit.log(AuditCategory.STAFF, "other", Actor.SYSTEM, Map.of());
+        assertEquals(1, seen.size());
+        assertEquals(2, audit.flush());
+    }
+
+    @Test
     void betweenFindsBothDirectionsOnly() throws Exception {
         UUID a = UUID.randomUUID();
         UUID b = UUID.randomUUID();
