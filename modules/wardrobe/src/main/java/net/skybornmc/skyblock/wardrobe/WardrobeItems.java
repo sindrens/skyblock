@@ -53,6 +53,10 @@ final class WardrobeItems {
     static final NamespacedKey PIECE = ItemKeys.key("wardrobe_piece");
     static final NamespacedKey PROFILE = ItemKeys.key("wardrobe_profile");
     static final NamespacedKey NONCE = ItemKeys.key("wardrobe_nonce");
+    static final NamespacedKey LEVEL = ItemKeys.key("wardrobe_level");
+    static final NamespacedKey TOME_XP = ItemKeys.key("wardrobe_tome_xp");
+    static final NamespacedKey TOME_KIND = ItemKeys.key("wardrobe_tome_kind");
+    static final String TOME_ID = "wardrobe_tome";
 
     /** What a worn piece says about itself. */
     record PieceTag(UUID entry, String setId, ArmorPiece piece, UUID profile, UUID nonce) {
@@ -76,30 +80,54 @@ final class WardrobeItems {
         }
         items.register(ItemDefinition.builder(TOKEN_ID, token, ItemType.SET_PIECE, Rarity.RARE)
                 .name(module.text().raw("token.fallback-name")).unique().glint().renderer(new TokenRenderer()).build());
+        Material tome = Material.matchMaterial(module.config().tomeMaterial);
+        if (tome == null || !tome.isItem() || tome.isAir()) {
+            module.core.plugin().getLogger().warning("wardrobe.yml → tomes.material '" + module.config().tomeMaterial
+                    + "' is not an item; using BOOK");
+            tome = Material.BOOK;
+        }
+        items.register(ItemDefinition.builder(TOME_ID, tome, ItemType.CONSUMABLE, Rarity.EPIC)
+                .name(module.text().raw("tome.fallback-name")).unique().glint().renderer(new TomeRenderer()).build());
     }
 
     void unregister() {
         module.core.items().unregister(PIECE_ID);
         module.core.items().unregister(TOKEN_ID);
+        module.core.items().unregister(TOME_ID);
     }
 
     // ------------------------------------------------------------------ pieces
 
-    /** A new worn piece for an entry (the caller writes the nonce to the database first). */
-    ItemStack piece(SetDef def, WardrobeStore.Entry entry, ArmorPiece piece, UUID profile, UUID nonce) {
+    /**
+     * A new worn piece for an entry (the caller writes the nonce to the database first). {@code def} is the look set; a
+     * merged entry also carries its other set. From set level 10 the trim uses the upgraded material, from level 50 the
+     * piece glints; in the warzone the armor points are the normalized ones (WD18).
+     */
+    ItemStack piece(SetDef def, WardrobeStore.Entry entry, ArmorPiece piece, UUID profile, UUID nonce, boolean warzone) {
+        String other = entry.isMerged() ? (def.id().equals(entry.mergedSetId()) ? entry.setId() : entry.mergedSetId()) : null;
+        int level = levelsShown(entry);
         ItemStack base = module.core.items().create(PIECE_ID, 1, null, pdc -> {
             pdc.set(SET, PersistentDataType.STRING, def.id());
-            if (entry.mergedSetId() != null) {
-                pdc.set(MERGED, PersistentDataType.STRING, entry.mergedSetId());
+            if (other != null) {
+                pdc.set(MERGED, PersistentDataType.STRING, other);
             }
             pdc.set(ENTRY, PersistentDataType.STRING, entry.entryId().toString());
             pdc.set(PIECE, PersistentDataType.STRING, piece.key());
             pdc.set(PROFILE, PersistentDataType.STRING, profile.toString());
             pdc.set(NONCE, PersistentDataType.STRING, nonce.toString());
+            pdc.set(LEVEL, PersistentDataType.INTEGER, level);
         });
         ItemStack stack = base.withType(material(def.look().base(), piece));
-        look(stack, def);
-        armor(stack, def.tier(), piece);
+        boolean levels = module.config().levelsEnabled;
+        look(stack, def, levels && level >= module.config().trimUpgradeLevel);
+        if (warzone) {
+            armor(stack, module.config().warzoneArmorPoints(), module.config().warzoneToughness, module.config().warzoneKnockback, piece);
+        } else {
+            armor(stack, module.config().armor(def.tier()), module.config().toughness(def.tier()), module.config().knockback(def.tier()), piece);
+        }
+        if (levels && level >= module.config().glintLevel) {
+            stack.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+        }
         stack.setData(DataComponentTypes.UNBREAKABLE);
         hideTooltips(stack);
         module.core.items().render(stack);
@@ -132,18 +160,29 @@ final class WardrobeItems {
         return m == null ? Material.LEATHER_CHESTPLATE : m;
     }
 
-    /** Dye and trim of the set's look (unknown trim ids are skipped). */
+    /** The level a piece shows (the entry's level; the fixed state while levels are off). */
+    private int levelsShown(WardrobeStore.Entry entry) {
+        return Math.max(0, entry.level());
+    }
+
     void look(ItemStack stack, SetDef def) {
+        look(stack, def, false);
+    }
+
+    /** Dye and trim of the set's look (unknown trim ids are skipped); {@code upgraded} uses the level-10 trim material. */
+    void look(ItemStack stack, SetDef def, boolean upgraded) {
         SetDef.Look look = def.look();
         if (look.base() == SetDef.Base.LEATHER && look.dye() >= 0) {
             stack.setData(DataComponentTypes.DYED_COLOR, DyedItemColor.dyedItemColor(Color.fromRGB(look.dye())));
         }
-        if (!look.trimPattern().isEmpty() && !look.trimMaterial().isEmpty()) {
+        String trimMaterial = upgraded && look.upgradedTrimMaterial() != null && !look.upgradedTrimMaterial().isEmpty()
+                ? look.upgradedTrimMaterial() : look.trimMaterial();
+        if (!look.trimPattern().isEmpty() && !trimMaterial.isEmpty()) {
             try {
                 TrimPattern pattern = RegistryAccess.registryAccess().getRegistry(RegistryKey.TRIM_PATTERN)
                         .get(NamespacedKey.minecraft(look.trimPattern()));
                 TrimMaterial material = RegistryAccess.registryAccess().getRegistry(RegistryKey.TRIM_MATERIAL)
-                        .get(NamespacedKey.minecraft(look.trimMaterial()));
+                        .get(NamespacedKey.minecraft(trimMaterial));
                 if (pattern != null && material != null) {
                     stack.setData(DataComponentTypes.TRIM, ItemArmorTrim.itemArmorTrim(new ArmorTrim(material, pattern)).build());
                 }
@@ -153,9 +192,8 @@ final class WardrobeItems {
         }
     }
 
-    /** Armor, toughness and knockback resistance for the piece's slot (wardrobe.yml → armor.tier-N). */
-    private void armor(ItemStack stack, int tier, ArmorPiece piece) {
-        List<Double> armor = module.config().armor(tier);
+    /** Armor, toughness and knockback resistance for the piece's slot (wardrobe.yml → armor.tier-N or warzone.*). */
+    private void armor(ItemStack stack, List<Double> armor, double toughness, double knockback, ArmorPiece piece) {
         double points = piece.ordinal() < armor.size() ? armor.get(piece.ordinal()) : 0;
         EquipmentSlotGroup group = piece.slot().getGroup();
         String k = piece.key();
@@ -164,12 +202,10 @@ final class WardrobeItems {
             b.addModifier(Attribute.ARMOR, new AttributeModifier(ItemKeys.key("wardrobe_armor_" + k), points,
                     AttributeModifier.Operation.ADD_NUMBER, group), group);
         }
-        double toughness = module.config().toughness(tier);
         if (toughness > 0) {
             b.addModifier(Attribute.ARMOR_TOUGHNESS, new AttributeModifier(ItemKeys.key("wardrobe_toughness_" + k), toughness,
                     AttributeModifier.Operation.ADD_NUMBER, group), group);
         }
-        double knockback = module.config().knockback(tier);
         if (knockback > 0) {
             b.addModifier(Attribute.KNOCKBACK_RESISTANCE, new AttributeModifier(ItemKeys.key("wardrobe_knockback_" + k), knockback,
                     AttributeModifier.Operation.ADD_NUMBER, group), group);
@@ -210,6 +246,34 @@ final class WardrobeItems {
         return ItemRegistry.is(stack, TOKEN_ID);
     }
 
+    // ------------------------------------------------------------------ tomes (W2)
+
+    /** A new tome item (random unique id; the caller writes the database row with {@link ItemRegistry#uuidOf}). */
+    ItemStack tome(String kind, long xp, String source) {
+        return module.core.items().create(TOME_ID, 1, source, pdc -> {
+            pdc.set(TOME_KIND, PersistentDataType.STRING, kind);
+            pdc.set(TOME_XP, PersistentDataType.LONG, xp);
+        });
+    }
+
+    static boolean isTome(ItemStack stack) {
+        return ItemRegistry.is(stack, TOME_ID);
+    }
+
+    /** Set Tokens and Wardrobe Tomes: unique wardrobe items that are never placed, crafted, enchanted or dispensed. */
+    static boolean isUnique(ItemStack stack) {
+        return isToken(stack) || isTome(stack);
+    }
+
+    /** XP a tome item shows (the database row is the truth). */
+    static long tomeXp(ItemStack stack) {
+        if (!isTome(stack)) {
+            return 0;
+        }
+        Long xp = stack.getPersistentDataContainer().get(TOME_XP, PersistentDataType.LONG);
+        return xp == null ? 0 : xp;
+    }
+
     // ------------------------------------------------------------------ renderers
 
     private final class PieceRenderer implements ItemDefinition.Renderer {
@@ -245,10 +309,19 @@ final class WardrobeItems {
             WardrobeText text = module.text();
             lore.subtitle(LoreBuilder.fill(text.raw("piece.subtitle"), Map.of("tier", WardrobeText.roman(def.tier()))));
             lore.line(LoreBuilder.fill(text.raw("piece.set"), Map.of("set", WardrobeText.colored(def))));
+            Integer level = stack.getPersistentDataContainer().get(LEVEL, PersistentDataType.INTEGER);
+            int lv = level == null ? 0 : level;
+            double multiplier = module.bonusMultiplier(lv);
+            if (module.config().levelsEnabled) {
+                lore.line(LoreBuilder.fill(text.raw("piece.level"), Map.of("level", String.valueOf(lv),
+                        "multiplier", WardrobeText.number(multiplier))));
+            }
+            bonusLines(lore, def, multiplier);
             String merged = stack.getPersistentDataContainer().get(MERGED, PersistentDataType.STRING);
-            module.registry().get(merged).ifPresent(m -> lore.line(LoreBuilder.fill(text.raw("piece.merged"),
-                    Map.of("set", LoreBuilder.escape(m.shortName())))));
-            bonusLines(lore, def, module.bonusMultiplier(0));
+            module.registry().get(merged).ifPresent(m -> {
+                lore.line(LoreBuilder.fill(text.raw("piece.merged"), Map.of("set", LoreBuilder.escape(m.shortName()))));
+                bonusLines(lore, m, multiplier);
+            });
             lore.action(text.plain("piece.action-input"), text.plain("piece.action-text"));
         }
     }
@@ -296,6 +369,33 @@ final class WardrobeItems {
             bonusLines(lore, found.get(), module.bonusMultiplier(0));
             lore.line(text.raw("token.tradeable"));
             lore.action(text.plain("token.action-input"), text.plain("token.action-text"));
+        }
+    }
+
+    private final class TomeRenderer implements ItemDefinition.Renderer {
+
+        private String kind(ItemStack stack) {
+            String k = stack.getPersistentDataContainer().get(TOME_KIND, PersistentDataType.STRING);
+            return Tomes.GREATER.equals(k) ? Tomes.GREATER : Tomes.NORMAL;
+        }
+
+        @Override
+        public String name(ItemStack stack, ItemDefinition definition) {
+            return module.text().raw("tome.name." + kind(stack));
+        }
+
+        @Override
+        public Rarity rarity(ItemStack stack, ItemDefinition definition) {
+            return Tomes.GREATER.equals(kind(stack)) ? Rarity.LEGENDARY : Rarity.EPIC;
+        }
+
+        @Override
+        public void lore(ItemStack stack, ItemDefinition definition, LoreBuilder lore) {
+            WardrobeText text = module.text();
+            lore.subtitle(text.raw("tome.subtitle"));
+            lore.description(LoreBuilder.fill(text.plain("tome.description"), Map.of(
+                    "xp", WardrobeText.number(tomeXp(stack)), "level", String.valueOf(module.config().tomeMaxLevel))));
+            lore.action(text.plain("tome.action-input"), text.plain("tome.action-text"));
         }
     }
 

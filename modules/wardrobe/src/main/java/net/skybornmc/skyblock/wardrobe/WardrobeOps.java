@@ -13,7 +13,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.LongSupplier;
@@ -54,6 +56,10 @@ final class WardrobeOps {
         FULL,
         /** The item is already in the chest: the one in hand is a stale copy. Nothing changed. */
         STALE,
+        /** A merge rule refused (re-checked on the locked rows). Nothing changed. */
+        REFUSED,
+        /** A tome can't add anything to this set (at or past the tome level cap). Nothing changed. */
+        TOME_CAPPED,
         /** Database or economy error. Nothing changed. */
         ERROR
     }
@@ -66,6 +72,10 @@ final class WardrobeOps {
     record Result(Status status, WardrobeStore.Entry entry, WardrobeStore.Stored stored, Long balance) {
         static Result of(Status s) {
             return new Result(s, null, null, null);
+        }
+
+        static Result ok(WardrobeStore.Entry entry) {
+            return new Result(Status.OK, entry, null, null);
         }
 
         boolean ok() {
@@ -96,6 +106,7 @@ final class WardrobeOps {
     }
 
     static final String REASON_BUY = "wardrobe_buy";
+    static final String REASON_MERGE = "wardrobe_merge";
 
     private final Database db;
     private final WardrobeStore store;
@@ -250,6 +261,239 @@ final class WardrobeOps {
             }
             return new Result(Status.OK, entry.get(), null, null);
         });
+    }
+
+    // ------------------------------------------------------------------ set levels (W2)
+
+    /**
+     * Saves earned set XP (entry id → XP to add) in one transaction. XP of entries that are not active any more is
+     * dropped. False on a database error (the caller keeps the XP for the next try).
+     */
+    CompletableFuture<Boolean> flushXp(Map<UUID, Double> deltas, SetLevels levels) {
+        if (deltas.isEmpty()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        long now = clock.getAsLong();
+        Map<UUID, Double> copy = new TreeMap<>(deltas); // fixed lock order
+        try {
+            return db.transaction(c -> {
+                for (Map.Entry<UUID, Double> e : copy.entrySet()) {
+                    store.addXp(c, e.getKey(), e.getValue(), levels, now);
+                }
+                return true;
+            }).exceptionally(e -> {
+                log.log(Level.WARNING, "Wardrobe: could not save set XP of " + copy.size() + " set(s) (kept for the next try)", Database.cause(e));
+                return false;
+            });
+        } catch (RuntimeException e) {
+            log.log(Level.WARNING, "Wardrobe: could not start saving set XP", e);
+            return CompletableFuture.completedFuture(false);
+        }
+    }
+
+    /** Blocking flush for shutdown. */
+    boolean flushXpNow(Map<UUID, Double> deltas, SetLevels levels) {
+        if (deltas.isEmpty()) {
+            return true;
+        }
+        long now = clock.getAsLong();
+        try {
+            return db.blockingTransaction(c -> {
+                for (Map.Entry<UUID, Double> e : new TreeMap<>(deltas).entrySet()) {
+                    store.addXp(c, e.getKey(), e.getValue(), levels, now);
+                }
+                return true;
+            });
+        } catch (RuntimeException e) {
+            log.log(Level.SEVERE, "Wardrobe: could not save set XP on shutdown", e);
+            return false;
+        }
+    }
+
+    /** Staff: sets an active entry of a profile to a level (total XP = the start of that level). GONE if not active. */
+    CompletableFuture<Result> setLevel(UUID entryId, UUID profile, int level, SetLevels levels, UUID staff) {
+        long now = clock.getAsLong();
+        return plain("set level " + entryId, c -> {
+            Optional<WardrobeStore.Entry> e = store.entryForUpdate(c, entryId);
+            if (e.isEmpty() || e.get().state() != WardrobeStore.EntryState.ACTIVE || !e.get().profile().equals(profile)) {
+                throw new Refused(Status.GONE);
+            }
+            int l = Math.max(0, Math.min(level, levels.maxLevel()));
+            double xp = levels.total(l, e.get().isMerged());
+            if (!store.writeXp(c, entryId, xp, l, staff, now)) {
+                throw new Refused(Status.GONE);
+            }
+            return Result.ok(e.get().withXp(xp, l));
+        });
+    }
+
+    // ------------------------------------------------------------------ merging (W2, §5)
+
+    /**
+     * What a merge needs: both inputs (as the menu saw them), the look, the fee and the inputs' XP not saved yet
+     * (written first, inside the same transaction, so a level reached a moment ago counts).
+     */
+    record MergeRequest(Who who, UUID entryA, SetDef defA, UUID entryB, SetDef defB, String lookSetId, long fee,
+                        double pendingA, double pendingB, SetLevels levels, int season) {
+    }
+
+    /** Why the guard refused (reset on every retry). */
+    private static final class MergeWhy {
+        Status status;
+        MergeRules.Refusal refusal;
+    }
+
+    /** Result of a merge: the new entry, or the status (and the refusal for REFUSED). */
+    record MergeResult(Status status, WardrobeStore.Entry entry, MergeRules.Refusal refusal, Long balance) {
+        boolean ok() {
+            return status == Status.OK;
+        }
+    }
+
+    /**
+     * Merges two entries in <b>one</b> database transaction (WD22): the inputs' unsaved XP is written, both rows are
+     * locked and re-checked against every rule, both become {@code merged} (their worn slots emptied), the new entry is
+     * inserted at level 0, the merge record written and the crystal fee paid (idempotency key
+     * {@code wardrobe_merge:<new entry>}). Any failure rolls all of it back: a crash at any point leaves either both
+     * inputs or the merged set, never both and never neither.
+     */
+    CompletableFuture<MergeResult> merge(MergeRequest r) {
+        long now = clock.getAsLong();
+        WardrobeStore.Entry fresh = WardrobeStore.Entry.merged(r.who().profile(), r.defA().id(), r.defB().id(), r.lookSetId(), now);
+        MergeWhy why = new MergeWhy();
+        TxGuard guard = c -> {
+            why.status = null;
+            why.refusal = null;
+            // Lock in a fixed order (two merges of overlapping entries can't deadlock).
+            boolean aFirst = r.entryA().compareTo(r.entryB()) < 0;
+            UUID first = aFirst ? r.entryA() : r.entryB();
+            UUID second = aFirst ? r.entryB() : r.entryA();
+            Optional<WardrobeStore.Entry> one = store.addXp(c, first, aFirst ? r.pendingA() : r.pendingB(), r.levels(), now);
+            Optional<WardrobeStore.Entry> two = store.addXp(c, second, aFirst ? r.pendingB() : r.pendingA(), r.levels(), now);
+            if (one.isEmpty() || two.isEmpty()) {
+                why.status = Status.GONE;
+                return false;
+            }
+            WardrobeStore.Entry a = aFirst ? one.get() : two.get();
+            WardrobeStore.Entry b = aFirst ? two.get() : one.get();
+            if (!a.profile().equals(r.who().profile()) || !b.profile().equals(r.who().profile())
+                    || !a.setId().equals(r.defA().id()) || !b.setId().equals(r.defB().id())) {
+                why.status = Status.GONE;
+                return false;
+            }
+            Optional<MergeRules.Refusal> refusal = MergeRules.check(
+                    new MergeRules.Side(a.entryId(), r.defA(), a.level(), a.isMerged(), a.state() == WardrobeStore.EntryState.ACTIVE),
+                    new MergeRules.Side(b.entryId(), r.defB(), b.level(), b.isMerged(), b.state() == WardrobeStore.EntryState.ACTIVE),
+                    r.levels().maxLevel());
+            if (refusal.isPresent()) {
+                why.status = Status.REFUSED;
+                why.refusal = refusal.get();
+                return false;
+            }
+            if (!store.markMerged(c, a.entryId(), r.who().player(), now) || !store.markMerged(c, b.entryId(), r.who().player(), now)) {
+                why.status = Status.GONE;
+                return false;
+            }
+            store.insertMerged(c, fresh, r.season(), r.who().player());
+            store.insertMergeRecord(c, fresh.entryId(), r.who().profile(), a, b, r.lookSetId(), r.fee(), r.who().player(), now);
+            return true;
+        };
+        if (r.fee() <= 0) {
+            return safeMerge(() -> db.transaction(c -> {
+                if (!guard.holds(c)) {
+                    throw new Refused(Status.ERROR);
+                }
+                return new MergeResult(Status.OK, fresh, null, null);
+            }).exceptionally(e -> {
+                Throwable cause = Database.cause(e);
+                if (cause instanceof Refused) {
+                    return new MergeResult(why.status != null ? why.status : Status.ERROR, null, why.refusal, null);
+                }
+                log.log(Level.SEVERE, "Wardrobe: merge failed and was rolled back", cause);
+                return new MergeResult(Status.ERROR, null, null, null);
+            }));
+        }
+        Transaction tx = Transaction.withdraw(AccountRef.player(r.who().profile()), Currency.CRYSTALS, r.fee(), REASON_MERGE)
+                .actor(r.who().actor())
+                .reference(r.defA().id() + "+" + r.defB().id())
+                .idempotencyKey(REASON_MERGE + ":" + fresh.entryId())
+                .detail("entry", fresh.entryId().toString())
+                .detail("set_a", r.defA().id())
+                .detail("set_b", r.defB().id())
+                .detail("target_name", r.who().name());
+        return safeMerge(() -> payer.run(tx, guard).thenApply(res -> switch (res.status()) {
+            case SUCCESS -> new MergeResult(Status.OK, fresh, null, res.fromBalance());
+            case INSUFFICIENT_FUNDS -> new MergeResult(Status.NOT_ENOUGH, null, null, null);
+            case DUPLICATE -> new MergeResult(why.status != null ? why.status : Status.ERROR, null, why.refusal, null);
+            default -> new MergeResult(Status.ERROR, null, null, null);
+        }));
+    }
+
+    private CompletableFuture<MergeResult> safeMerge(java.util.function.Supplier<CompletableFuture<MergeResult>> start) {
+        try {
+            return start.get().exceptionally(e -> {
+                log.log(Level.SEVERE, "Wardrobe: merge failed", Database.cause(e));
+                return new MergeResult(Status.ERROR, null, null, null);
+            });
+        } catch (RuntimeException e) {
+            log.log(Level.SEVERE, "Wardrobe: could not start a merge", e);
+            return CompletableFuture.completedFuture(new MergeResult(Status.ERROR, null, null, null));
+        }
+    }
+
+    // ------------------------------------------------------------------ tomes (W2, WD13)
+
+    /** Writes a new tome row (before the item is handed out). */
+    CompletableFuture<Boolean> mintTome(UUID tomeId, String kind, long xp, String origin, UUID owner) {
+        long now = clock.getAsLong();
+        return db.transaction(c -> {
+            store.insertTome(c, tomeId, kind, xp, origin, owner, now);
+            return true;
+        }).exceptionally(e -> {
+            log.log(Level.SEVERE, "Wardrobe: could not write Wardrobe Tome " + tomeId, Database.cause(e));
+            return false;
+        });
+    }
+
+    /** A tome that was minted but never reached a player: active → void. */
+    CompletableFuture<Boolean> voidTome(UUID tomeId, String reason) {
+        long now = clock.getAsLong();
+        return db.transaction(c -> store.moveTome(c, tomeId, WardrobeStore.TokenState.ACTIVE, WardrobeStore.TokenState.VOID, null, null, now, reason))
+                .exceptionally(e -> false);
+    }
+
+    /**
+     * Uses a tome on an entry in one transaction: the tome row active → redeemed (used) and the entry's XP raised by the
+     * row's amount, but never past the start of {@code maxTomeLevel}. TOKEN_INVALID = the item was a copy (take it);
+     * TOME_CAPPED / GONE = nothing happened (keep the item).
+     */
+    CompletableFuture<Result> useTome(Who who, UUID tomeId, UUID entryId, double pending, SetLevels levels, int maxTomeLevel) {
+        long now = clock.getAsLong();
+        return plain("tome " + tomeId, c -> {
+            Optional<WardrobeStore.Tome> tome = store.tome(c, tomeId, true);
+            if (tome.isEmpty() || tome.get().state() != WardrobeStore.TokenState.ACTIVE) {
+                throw new Refused(Status.TOKEN_INVALID);
+            }
+            Optional<WardrobeStore.Entry> entry = store.addXp(c, entryId, pending, levels, now);
+            if (entry.isEmpty() || !entry.get().profile().equals(who.profile())) {
+                throw new Refused(Status.GONE);
+            }
+            WardrobeStore.Entry e = entry.get();
+            if (!levels.tomeUsable(e.xp(), maxTomeLevel, e.isMerged())) {
+                throw new Refused(Status.TOME_CAPPED);
+            }
+            double xp = levels.tome(e.xp(), tome.get().xp(), maxTomeLevel, e.isMerged());
+            int level = levels.level(xp, e.isMerged());
+            if (!store.writeXp(c, entryId, xp, level, who.player(), now)
+                    || !store.moveTome(c, tomeId, WardrobeStore.TokenState.ACTIVE, WardrobeStore.TokenState.REDEEMED, who.player(), entryId, now, "used")) {
+                throw new Refused(Status.GONE);
+            }
+            return Result.ok(e.withXp(xp, level));
+        });
+    }
+
+    CompletableFuture<Optional<WardrobeStore.Tome>> tomeRow(UUID tomeId) {
+        return db.async(c -> store.tome(c, tomeId, false)).exceptionally(e -> Optional.empty());
     }
 
     // ------------------------------------------------------------------ equipping

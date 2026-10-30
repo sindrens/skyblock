@@ -63,9 +63,28 @@ final class SetBonuses {
     }
 
     /**
+     * Warzone/duel normalization (WARDROBE §3.6, WD18): every set counts at {@code multiplier} (1×) whatever its level, and
+     * only the listed families work, each scaled by its factor (damage reduction 0.5, conquest 1). Families not listed
+     * give nothing there (mob damage, gathering, sell, XP).
+     */
+    record Normalization(double multiplier, Map<BonusFamily, Double> factors) {
+        Normalization {
+            factors = Map.copyOf(factors);
+        }
+    }
+
+    /**
      * @param multiplier bonus multiplier of a set level (see {@link #multiplier})
      */
     static Result compute(SetRegistry registry, Collection<Worn> worn, IntToDoubleFunction multiplier) {
+        return compute(registry, worn, multiplier, null);
+    }
+
+    /**
+     * @param multiplier    bonus multiplier of a set level (see {@link #multiplier})
+     * @param normalization warzone rules, or null for the normal rules
+     */
+    static Result compute(SetRegistry registry, Collection<Worn> worn, IntToDoubleFunction multiplier, Normalization normalization) {
         if (worn.isEmpty()) {
             return Result.EMPTY;
         }
@@ -83,22 +102,34 @@ final class SetBonuses {
             if (def.isEmpty() || !def.get().enabled() || e.getValue() < 2) {
                 continue;
             }
-            double m = multiplier.applyAsDouble(lowest.get(e.getKey()));
+            double m = normalization != null ? normalization.multiplier() : multiplier.applyAsDouble(lowest.get(e.getKey()));
             if (!(m > 0)) {
                 continue;
             }
             for (SetDef.Bonus b : def.get().two()) {
-                lines.computeIfAbsent(b.family(), f -> new ArrayList<>())
-                        .add(new Line(e.getKey(), b.family(), b.value() * m, b.activities(), b.text(), false));
+                addLine(lines, e.getKey(), b, m, false, normalization);
             }
             if (e.getValue() >= 4) {
                 for (SetDef.Bonus b : def.get().four()) {
-                    lines.computeIfAbsent(b.family(), f -> new ArrayList<>())
-                            .add(new Line(e.getKey(), b.family(), b.value() * m, b.activities(), b.text(), true));
+                    addLine(lines, e.getKey(), b, m, true, normalization);
                 }
             }
         }
         return new Result(Map.copyOf(count), lines);
+    }
+
+    private static void addLine(Map<BonusFamily, List<Line>> lines, String setId, SetDef.Bonus b, double m, boolean four,
+                                Normalization normalization) {
+        double factor = 1;
+        if (normalization != null) {
+            Double f = normalization.factors().get(b.family());
+            if (f == null || !(f > 0)) {
+                return;
+            }
+            factor = f;
+        }
+        lines.computeIfAbsent(b.family(), f -> new ArrayList<>())
+                .add(new Line(setId, b.family(), b.value() * m * factor, b.activities(), b.text(), four));
     }
 
     private static void add(Map<String, Integer> count, Map<String, Integer> lowest, String set, int level) {

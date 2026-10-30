@@ -40,6 +40,18 @@ final class WardrobeMenus {
         module.core.menus().open(player, new WardrobeMenu(module));
     }
 
+    /** Opens the set screen of an entry (merged entries get their own screen). */
+    void openSet(Player player, WardrobeStore.Entry entry) {
+        Optional<SetDef> def = module.registry().get(entry.setId());
+        if (def.isEmpty()) {
+            openMain(player);
+            return;
+        }
+        WardrobeMenu main = new WardrobeMenu(module);
+        module.core.menus().open(player, main);
+        main.openChild(new SetMenu(module, def.get(), entry.isMerged() ? entry.entryId() : null));
+    }
+
     /** The Wardrobe Chest: loads the stored items first. */
     void openChest(Player player, Menu parent) {
         Session s = module.equipment().sessionOrNull(player.getUniqueId());
@@ -73,7 +85,7 @@ final class WardrobeMenus {
         Menu open = module.core.menus().openMenu(player);
         if (open instanceof ChestMenu chest) {
             openChest(player, chest.parent());
-        } else if (open instanceof WardrobeMenu || open instanceof SetMenu || open instanceof StorePickMenu) {
+        } else if (open instanceof WardrobeMenu || open instanceof SetMenu || open instanceof StorePickMenu || open instanceof MergePickMenu) {
             open.refresh();
         }
     }
@@ -120,8 +132,9 @@ final class WardrobeMenus {
             case OWNED -> {
                 Optional<WardrobeStore.Entry> e = s == null ? Optional.empty() : s.owned(def.id());
                 int worn = e.map(x -> s.worn(x.entryId())).orElse(0);
-                out.addAll(lines(viewer, "status.owned", Msg.p("worn", worn),
-                        Msg.p("multiplier", WardrobeText.number(module.bonusMultiplier(e.map(WardrobeStore.Entry::level).orElse(0))))));
+                int level = e.map(WardrobeStore.Entry::level).orElse(0);
+                out.addAll(lines(viewer, module.config().levelsEnabled ? "status.owned" : "status.owned-fixed", Msg.p("worn", worn),
+                        Msg.p("level", level), Msg.p("multiplier", WardrobeText.number(module.bonusMultiplier(level)))));
                 if (!def.enabled()) {
                     out.addAll(lines(viewer, "status.disabled"));
                 }
@@ -138,6 +151,70 @@ final class WardrobeMenus {
             out.addAll(lines(viewer, "status.also-from", Msg.p("crates", crates(def))));
         }
         return out;
+    }
+
+    /** Status lines of a merged entry (list entry and its set screen). */
+    List<Component> mergedStatus(Player viewer, WardrobeStore.Entry e, Session s) {
+        int worn = s == null ? 0 : s.worn(e.entryId());
+        String other = module.registry().get(e.mergedSetId()).map(SetDef::name).orElse(String.valueOf(e.mergedSetId()));
+        String first = module.registry().get(e.setId()).map(SetDef::name).orElse(e.setId());
+        return lines(viewer, "status.merged", Msg.p("a", first), Msg.p("b", other), Msg.p("worn", worn), Msg.p("level", e.level()),
+                Msg.p("multiplier", WardrobeText.number(module.bonusMultiplier(e.level()))));
+    }
+
+    /**
+     * The level item (set screen, WARDROBE §6.2): {@code Lv 23 ●●●●○○○○○○ 46% · 0.92× · next: 1,612 XP · earns from: Mining}.
+     *
+     * @param e the owned entry, or null (not owned: shows the curve's start)
+     */
+    org.bukkit.inventory.ItemStack levelItem(Player viewer, WardrobeStore.Entry e, SetDef def) {
+        var service = module.core.menus();
+        if (!module.config().levelsEnabled) {
+            return service.item(org.bukkit.Material.EXPERIENCE_BOTTLE, viewer, WardrobeModule.ID, "menu.set.level-off",
+                    Msg.p("multiplier", WardrobeText.number(module.bonusMultiplier(0))));
+        }
+        SetLevels levels = module.config().levels();
+        boolean merged = e != null && e.isMerged();
+        double xp = e == null ? 0 : e.xp();
+        int level = e == null ? 0 : e.level();
+        double progress = levels.progress(xp, merged);
+        List<Component> lore = new ArrayList<>(lines(viewer, "menu.set.level.lore",
+                Msg.p("bar", WardrobeText.bar(progress, 10)), Msg.p("percent", (int) Math.floor(progress * 100)),
+                Msg.p("multiplier", WardrobeText.number(module.bonusMultiplier(level))),
+                Msg.p("max", module.config().maxLevel),
+                Msg.p("max_multiplier", WardrobeText.number(module.bonusMultiplier(module.config().maxLevel)))));
+        if (level >= module.config().maxLevel) {
+            lore.addAll(lines(viewer, "menu.set.level.maxed"));
+        } else {
+            lore.addAll(lines(viewer, "menu.set.level.next", Msg.p("xp", WardrobeText.number(Math.ceil(levels.toNext(xp, merged)))),
+                    Msg.p("next", level + 1)));
+        }
+        lore.addAll(lines(viewer, "menu.set.level.earns", Msg.p("from", earnsFrom(e, def))));
+        if (merged) {
+            lore.addAll(lines(viewer, "menu.set.level.merged", Msg.p("factor", WardrobeText.number(module.config().mergedXpFactor))));
+        }
+        if (e == null) {
+            lore.addAll(lines(viewer, "menu.set.level.not-owned"));
+        }
+        Session s = module.equipment().sessionOrNull(viewer.getUniqueId());
+        if (s != null && s.warzone) {
+            lore.addAll(lines(viewer, "menu.set.level.warzone", Msg.p("multiplier", WardrobeText.number(module.config().warzoneMultiplier))));
+        }
+        return service.item(org.bukkit.Material.EXPERIENCE_BOTTLE, text(viewer, "menu.set.level.name", Msg.p("level", level)), lore);
+    }
+
+    /** {@code Mining, Selling} (plain): the XP activities an entry (or set) earns from. */
+    String earnsFrom(WardrobeStore.Entry e, SetDef def) {
+        java.util.LinkedHashSet<String> activities = new java.util.LinkedHashSet<>(module.config().sources(def.activity()).keySet());
+        if (e != null && e.isMerged()) {
+            module.registry().get(e.setId().equals(def.id()) ? e.mergedSetId() : e.setId())
+                    .ifPresent(o -> activities.addAll(module.config().sources(o.activity()).keySet()));
+        }
+        List<String> names = new ArrayList<>();
+        for (String a : activities) {
+            names.add(module.text().plain("xp-activity." + a));
+        }
+        return names.isEmpty() ? module.text().plain("xp-activity.none") : String.join(", ", names);
     }
 
     /** "Worn now": every active bonus line with its value; families the cap cuts show "capped". */

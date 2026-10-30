@@ -45,12 +45,23 @@ final class WardrobeServiceImpl implements WardrobeService {
     @Override
     public int setLevel(UUID profileKey, String setId) {
         Session s = byProfile(profileKey);
-        return s == null ? 0 : s.owned(setId).map(WardrobeStore.Entry::level).orElse(0);
+        if (s == null || setId == null) {
+            return 0;
+        }
+        return s.containing(setId).stream().mapToInt(WardrobeStore.Entry::level).max().orElse(0);
     }
 
     @Override
-    public void setXp(Player player, String activity, double amount) {
-        // Set levels arrive with W2 (wardrobe.yml → levels.enabled); until then XP is not counted.
+    public void setXp(Player player, String action, double amount) {
+        Leveling leveling = module.leveling();
+        if (leveling != null) {
+            leveling.api(player, action, amount);
+        }
+    }
+
+    @Override
+    public double levelMultiplier(int level) {
+        return module.bonusMultiplier(level);
     }
 
     @Override

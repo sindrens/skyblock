@@ -305,7 +305,7 @@ topics:
 
   wardrobe:
     icon: leather_chestplate
-    aliases: [sets, set, armor, wardrobe-chest, set-token, sigil, sigils]
+    aliases: [sets, set, armor, wardrobe-chest, set-token, sigil, sigils, set-level, merge, tome]
     name: "<c:flame>Wardrobe"
     summary: ["<c:text>Armor sets with bonuses, the", "<c:text>Wardrobe Chest and Set Tokens."]
     take-me-there: "wardrobe"
@@ -339,6 +339,18 @@ topics:
           - "<c:text>Keep tools, enchant books and"
           - "<c:text>tokens safe in the chest. Plain"
           - "<c:text>items don't fit."
+      - title: "<c:value>Set levels"
+        lines:
+          - "<c:text>New sets start at Lv 0 (no"
+          - "<c:text>bonus). Wear 2+ pieces while you"
+          - "<c:text>do the set's activity to level"
+          - "<c:text>it: Lv 25 = 1x, Lv 50 = 2x."
+      - title: "<c:value>Merging"
+        lines:
+          - "<c:text>Two Lv 50 sets with different"
+          - "<c:text>bonuses can merge into one set"
+          - "<c:text>with both bonuses. It starts at"
+          - "<c:text>Lv 0 again. Costs crystals."
 
   skills:
     icon: experience_bottle

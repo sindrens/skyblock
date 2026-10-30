@@ -20,7 +20,7 @@ import java.util.UUID;
 /**
  * Staff view of a player's wardrobe (the Wardrobe button in {@code /inspect}, WD25): their active profile's sets and
  * chest size; admins ({@code skyblock.wardrobe.admin}) can remove a set (confirm), give a set or give a Set Token. All
- * audited. Set levels come with W2.
+ * audited. Clicking an entry opens its admin actions (set level, remove).
  */
 final class StaffMenu extends PagedMenu<WardrobeStore.Entry> {
 
@@ -83,15 +83,12 @@ final class StaffMenu extends PagedMenu<WardrobeStore.Entry> {
                 Msg.p("origin", e.origin()), Msg.p("date", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(e.createdAt()))),
                 Msg.p("level", e.level())));
         if (admin()) {
-            lore.addAll(module.menus().lines(viewer, "menu.staff.remove-click"));
+            lore.addAll(module.menus().lines(viewer, "menu.staff.manage-click"));
         }
-        Component name = def.map(d -> module.core.messages().parse(viewer, WardrobeText.colored(d))).orElse(Component.text(e.setId()));
-        var icon = def.map(d -> module.items().icon(d, ArmorPiece.CHEST)).orElse(new org.bukkit.inventory.ItemStack(Material.LEATHER_CHESTPLATE));
-        return MenuButton.of(service.item(icon, name, lore), admin() ? click -> openChild(new ConfirmMenu(
-                v -> module.menus().text(v, "confirm.remove.crumb"), null,
-                v -> module.menus().lines(v, "confirm.remove.details", Msg.p("set", def.map(SetDef::name).orElse(e.setId())), Msg.p("player", targetName)),
-                p -> module.staff().remove(p, this, e), p -> {
-                })) : null);
+        Component name = module.core.messages().parse(viewer, module.text().entryColored(module.registry(), e));
+        var look = module.registry().get(e.look()).or(() -> def);
+        var icon = look.map(d -> module.items().icon(d, ArmorPiece.CHEST)).orElse(new org.bukkit.inventory.ItemStack(Material.LEATHER_CHESTPLATE));
+        return MenuButton.of(service.item(icon, name, lore), admin() ? click -> openChild(new StaffEntryMenu(module, this, e)) : null);
     }
 
     @Override
@@ -102,6 +99,15 @@ final class StaffMenu extends PagedMenu<WardrobeStore.Entry> {
                     click -> openChild(new StaffPickMenu(module, this, false)));
             set(51, service.item(Material.ARMOR_STAND, viewer, WardrobeModule.ID, "menu.staff.give-token"),
                     click -> openChild(new StaffPickMenu(module, this, true)));
+            for (String kind : List.of(Tomes.NORMAL, Tomes.GREATER)) {
+                int slot = Tomes.NORMAL.equals(kind) ? 52 : 46;
+                long xp = module.tomes().xpOf(kind);
+                set(slot, service.item(Material.BOOK, viewer, WardrobeModule.ID, "menu.staff.give-tome." + kind, Msg.p("xp", WardrobeText.number(xp))),
+                        click -> openChild(new ConfirmMenu(v -> module.menus().text(v, "confirm.give-tome.crumb"), null,
+                                v -> module.menus().lines(v, "confirm.give-tome.details", Msg.p("xp", WardrobeText.number(xp)), Msg.p("player", targetName)),
+                                p -> module.staff().giveTome(p, this, kind), p -> {
+                        })));
+            }
         }
     }
 }

@@ -57,6 +57,17 @@ public final class SellServiceImpl implements SellService {
     private final LongSupplier clock;
     private final Supplier<ZoneId> zone;
     private final Logger log;
+    /** Called (off the main thread) after every successful sale: player, profile key, items sold. Set by {@link SellFeature}. */
+    private volatile SoldListener soldListener;
+
+    /** Hook for features that react to sales (wardrobe set XP); never affects the sale itself. */
+    interface SoldListener {
+        void sold(UUID player, UUID profileKey, long items);
+    }
+
+    void onSold(SoldListener listener) {
+        this.soldListener = listener;
+    }
     private volatile LocalDate hotDay;
     private volatile String hotKey;
     private volatile SellCatalog hotCatalog;
@@ -220,6 +231,14 @@ public final class SellServiceImpl implements SellService {
                 return new SellResult(SellResult.Status.ERROR, q, stacks, null, null);
             }
             if (result.ok()) {
+                SoldListener listener = soldListener;
+                if (listener != null) {
+                    try {
+                        listener.sold(request.player(), request.profileKey(), q.items());
+                    } catch (RuntimeException e) {
+                        log.log(Level.WARNING, "Sell: sale listener failed for " + request.playerName(), e);
+                    }
+                }
                 return new SellResult(SellResult.Status.SOLD, q, unsold, saleId, result.toBalance());
             }
             book.undo(reservation);

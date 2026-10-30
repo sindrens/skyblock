@@ -17,7 +17,7 @@ import java.util.logging.Level;
 
 /**
  * Staff tools through the Wardrobe button in {@code /inspect} (WD25, no new command): view a player's sets and chest;
- * admins give a set, give a Set Token or remove a set. Everything audited (category staff). Works on the target's
+ * admins give a set, give a Set Token or a Wardrobe Tome, set a set's level or remove a set. Everything audited (category staff). Works on the target's
  * active profile (offline: last active).
  */
 final class StaffActions {
@@ -120,6 +120,77 @@ final class StaffActions {
                 }
             }
         }));
+    }
+
+    /** Sets an entry's level (staff test tool, WD25). Audited. */
+    void setLevel(Player staff, StaffMenu menu, WardrobeStore.Entry entry, int level) {
+        if (!staff.hasPermission(WardrobeModule.PERM_ADMIN)) {
+            module.fail(staff, "no-permission");
+            return;
+        }
+        UUID staffId = staff.getUniqueId();
+        module.ops().setLevel(entry.entryId(), menu.profile, level, module.config().levels(), staffId)
+                .thenAccept(r -> module.core.scheduler().main("wardrobe-staff-level", () -> {
+                    Player p = Bukkit.getPlayer(staffId);
+                    if (r.ok()) {
+                        module.core.audit().logPlayer(AuditCategory.STAFF, "wardrobe_level_set", p == null ? Actor.system("wardrobe") : Actor.player(p),
+                                menu.target, menu.targetName, null, null, Map.of("set", entry.setId(), "entry", entry.entryId().toString(),
+                                        "from", entry.level(), "to", r.entry().level(), "profile", menu.profile.toString()));
+                        refreshTarget(menu.target, menu.profile);
+                    }
+                    if (p != null) {
+                        if (r.ok()) {
+                            module.msg().send(p, "staff.level-set", Msg.p("set", module.text().entryName(module.registry(), entry)),
+                                    Msg.p("player", menu.targetName), Msg.p("level", r.entry().level()));
+                            reopen(p, menu);
+                        } else {
+                            module.fail(p, r.status() == WardrobeOps.Status.GONE ? "staff.gone" : "error");
+                        }
+                    }
+                }));
+    }
+
+    /** Gives a new Wardrobe Tome to the inspected player (must be online with a free slot). */
+    void giveTome(Player staff, StaffMenu menu, String kind) {
+        if (!staff.hasPermission(WardrobeModule.PERM_ADMIN)) {
+            module.fail(staff, "no-permission");
+            return;
+        }
+        Player target = Bukkit.getPlayer(menu.target);
+        if (target == null) {
+            module.fail(staff, "staff.offline", Msg.p("player", menu.targetName));
+            return;
+        }
+        if (Equipment.freeSlots(target.getInventory()) < 1) {
+            module.fail(staff, "staff.target-full", Msg.p("player", menu.targetName));
+            return;
+        }
+        UUID staffId = staff.getUniqueId();
+        module.tomes().create(kind, "staff:" + staff.getName(), menu.target, Actor.player(staff)).whenComplete((item, error) -> {
+            Player p = Bukkit.getPlayer(staffId);
+            Player t = Bukkit.getPlayer(menu.target);
+            if (error != null) {
+                if (p != null) {
+                    module.fail(p, "error");
+                }
+                return;
+            }
+            UUID id = net.skybornmc.skyblock.common.item.ItemRegistry.uuidOf(item).orElseThrow();
+            if (t == null || Equipment.freeSlots(t.getInventory()) < 1) {
+                module.ops().voidTome(id, "not_delivered");
+                if (p != null) {
+                    module.fail(p, "staff.target-full", Msg.p("player", menu.targetName));
+                }
+                return;
+            }
+            t.getInventory().addItem(item);
+            module.core.audit().logPlayer(AuditCategory.STAFF, "wardrobe_tome_given", p == null ? Actor.system("wardrobe") : Actor.player(p),
+                    menu.target, menu.targetName, null, null, Map.of("kind", kind, "tome", id.toString()));
+            module.msg().send(t, "tome-received");
+            if (p != null) {
+                module.msg().send(p, "staff.tome-given", Msg.p("player", menu.targetName));
+            }
+        });
     }
 
     /** Gives a new Set Token to the inspected player (must be online with a free slot). */

@@ -107,6 +107,15 @@ public final class SellFeature implements Listener {
                 () -> core.services().optional(BonusService.class), System::currentTimeMillis, Format::zone,
                 core.plugin().getLogger());
         core.services().register(EconomyModule.ID, SellService.class, service);
+        // Wardrobe set XP for selling (WARDROBE §3.1): main thread, only if the same profile is still active.
+        service.onSold((playerId, profileKey, items) -> core.scheduler().main("sell-set-xp", () -> {
+            org.bukkit.entity.Player p = org.bukkit.Bukkit.getPlayer(playerId);
+            if (p == null || !net.skybornmc.skyblock.common.profile.ProfileService.of(core.services()).profileKey(p).equals(profileKey)) {
+                return;
+            }
+            core.services().optional(net.skybornmc.skyblock.common.wardrobe.WardrobeService.class)
+                    .ifPresent(w -> w.setXp(p, net.skybornmc.skyblock.common.wardrobe.WardrobeService.XP_SELL_ITEM, items));
+        }));
         store.loadPrices().whenComplete((loaded, error) -> {
             if (error != null) {
                 core.plugin().getLogger().log(Level.SEVERE, "Sell: could not load prices; selling stays off until a restart", error);

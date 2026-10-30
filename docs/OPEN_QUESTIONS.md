@@ -1,6 +1,13 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- W2 SELL XP: done by the main session: every `/sell` sale gives set XP (`sell_item` per item, hourly cap 8,000) to the worn set of the profile that sold. OK?
+- W2 LEVELS ON: set levels are now on by default (`levels.enabled: true`, the W1 placeholder `false` was moved to `legacy.w1-levels-enabled`), so every owned set starts at Lv 0 = 0x and levels up by playing (plan WD14). OK? (default: on)
+- W2 MERGE FAMILIES: the plan's example "Thornward · Cropwarden" shares the extra-drops family, so the "no shared bonus family" rule refuses it. Keep the strict rule (default), or allow merges that share a family?
+- W2 ISLAND XP: island generator blocks count only when the generator made them, island logs only when the tree grew (both remembered in memory, up to `xp.tracked-blocks`, forgotten on restart), crops only fully grown and with a hoe (`xp.crops-need-hoe`). Farming set XP is capped at 10,000/h (`xp.hourly-caps`) against bone-meal farming (not in the plan). OK? (default: as described)
+- W2 TOMES: Wardrobe Tomes exist as unique items (normal +2,500, greater +10,000, max Lv 40) but have no source yet besides staff (`/inspect` → Wardrobe); crates and quests add them later. Tomes are tradeable like other unique items. OK? (default: yes)
+- W2 TRAIL: the Lv 50 trail is a dust particle in the set's dye color (or `trail.color`), on by default (`/settings` → Display → Set trail), hidden for vanished/invisible/spectator players and in the warzone. OK? (default: on)
+- W2 XP BAR: earning set XP shows "Deepforge Plate Lv 3 · 46% +1 XP" in the action bar at most every 10 s (`xp.bar-seconds`), which briefly replaces the skills XP line. OK, or only show level-ups? (default: every 10 s)
 - E3: stacked-spawner mobs now count as spawner mobs for tool XP too (`tools.yml → xp.spawner-mobs: false` = no sword XP from spawner stacks, same as skills). Fixed by the main session; say if spawner stacks should give sword XP.
 - E3 STACK area effects: Reaper's Sweep and Phoenix Wrath only reach stacks on the same island and of the same group (monsters or animals) as the hit mob, so they never pass an island permission. Phoenix Wrath counts hits on stacked mobs only until E2 adds its Depths nova. OK? (default: as described)
 - E3 STACK books: the island stack pool rolls Uncommon 60% / Rare 40% (`enchanter.yml → stacks.book-odds`), book level I 85% / II 12% / III 3%, gated by the Combat tier; found books go into the inventory (overflow drops at the player). OK? (default: as described)
