@@ -52,3 +52,4 @@ server/plugins/**
 .claude/
 server/plugins/PhoenixSkyblock/data/
 server/plugins/PhoenixSkyblock/database.yml
+__pycache__/
