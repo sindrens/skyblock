@@ -128,6 +128,59 @@ public final class IslandsConfig extends ModuleConfig {
             + "roles: admin, mod, member; coop players and visitors never).")
     public List<String> settingsRoles = List.of("admin");
 
+    @Setting(path = "permissions.role-defaults.notes-read", desc = "Roles that may read /is notes by default (owner N1: members and "
+            + "coop players; roles: admin, mod, member, coop, visitor). The leader always can.")
+    public List<String> notesReadRoles = List.of("admin", "mod", "member", "coop");
+
+    @Setting(path = "permissions.role-defaults.notes-write", desc = "Roles that may add notes, tick them done and change/pin/delete "
+            + "their own by default (roles: admin, mod, member; coop players and visitors never).")
+    public List<String> notesWriteRoles = List.of("admin", "mod", "member");
+
+    @Setting(path = "permissions.role-defaults.notes-manage", desc = "Roles that may change, pin and delete anyone's notes and clear "
+            + "done ones by default (roles: admin, mod, member).")
+    public List<String> notesManageRoles = List.of("admin", "mod");
+
+    // ------------------------------------------------------------------ NOTES (/is notes, owner N1-N9)
+
+    @Setting(path = "notes.max-notes", desc = "Most notes an island can have, open and done together (owner N6: 50). Deleted notes "
+            + "don't count.", min = 1, max = 500)
+    public int notesMax = 50;
+
+    @Setting(path = "notes.max-length", desc = "Most characters in one note (owner N6: 200).", min = 10, max = 250)
+    public int notesMaxLength = 200;
+
+    @Setting(path = "notes.max-holograms", desc = "Most notes an island can pin as a hologram at once (N9).", min = 0, max = 30)
+    public int notesMaxHolograms = 5;
+
+    @Setting(path = "notes.deleted-keep-days", desc = "Days deleted notes (also of disbanded islands) are kept for staff before "
+            + "they are removed for good (owner N7: 7).", min = 1, max = 90)
+    public int notesKeepDays = 7;
+
+    @Setting(path = "notes.book-seconds", desc = "Seconds the temporary notes book stays in the inventory before it is taken back "
+            + "unsaved (N3).", min = 30, max = 3600)
+    public int notesBookSeconds = 300;
+
+    @Setting(path = "notes.hologram.y-offset", desc = "Blocks above the pinned spot (the player's feet) the hologram floats.",
+            min = 0, max = 4)
+    public double notesHologramYOffset = 1.6;
+
+    @Setting(path = "notes.hologram.line-width", desc = "Hologram text width in pixels before it wraps.", min = 60, max = 400)
+    public int notesHologramLineWidth = 160;
+
+    @Setting(path = "notes.hologram.view-range", desc = "Hologram view range multiplier (1 = about 64 blocks).", min = 0.1, max = 4)
+    public double notesHologramViewRange = 0.5;
+
+    @Setting(path = "notes.lore-width", desc = "Characters per lore line when a note is shown in the menu.", min = 20, max = 60)
+    public int notesLoreWidth = 32;
+
+    @Setting(path = "notes.scoreboard-length", desc = "Characters of the newest open note shown by the island_next_note placeholder "
+            + "(longer ones end with ...).", min = 8, max = 64)
+    public int notesScoreboardLength = 24;
+
+    @Setting(path = "notes.add-cooldown-ms", desc = "Minimum time between two notes added by the same player (anti-spam).",
+            min = 0, max = 60_000)
+    public int notesAddCooldownMs = 2000;
+
     @Setting(path = "members.start-slots", desc = "Members an island can have at the start, leader included (REVIEW B1: 4). "
             + "The Member Slots upgrade (Phase 5) raises an island's own value.", min = 1, max = 32, level = Setting.Level.OWNER)
     public int startSlots = 4;
@@ -392,6 +445,9 @@ public final class IslandsConfig extends ModuleConfig {
         java.util.Map<IslandPerm, List<String>> perPermission = new java.util.EnumMap<>(IslandPerm.class);
         perPermission.put(IslandPerm.HURT_MONSTERS, hurtMonstersRoles);
         perPermission.put(IslandPerm.SETTINGS, settingsRoles);
+        perPermission.put(IslandPerm.NOTES_READ, notesReadRoles);
+        perPermission.put(IslandPerm.NOTES_WRITE, notesWriteRoles);
+        perPermission.put(IslandPerm.NOTES_MANAGE, notesManageRoles);
         return RolePermissions.parse(defaultsAdmin, defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor, perPermission);
     }
 

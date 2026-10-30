@@ -117,6 +117,11 @@ public final class ChatModule implements SkyblockModule, Listener {
         pm.registerEvents(tab, core.plugin());
         registerPlaceholders();
         registerCommands();
+        // The same content filter for text written outside the chat (island notes, owner N8).
+        core.services().register(ID, net.skybornmc.skyblock.common.text.TextFilter.class, (author, text) -> {
+            ChatFilter.Result result = ChatFilter.check(text, config.rules(), author != null && author.hasPermission(PERM_LINKS));
+            return new net.skybornmc.skyblock.common.text.TextFilter.Result(result.text(), result.blocked());
+        });
         tab.start();
         // The menus module (which publishes PlayerSettings) enables after us; register our toggles one tick later.
         core.scheduler().later("chat:settings", 1L, this::registerSettings);

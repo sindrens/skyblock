@@ -26,7 +26,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [economy](commands/economy.md) | Economy (`modules/economy`) |
 | [essentials](commands/essentials.md) | Essentials (module `essentials`) |
 | [hud](commands/hud.md) | Scoreboard (M1.4, module `hud`) |
-| [islands](commands/islands.md) | Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.7, ISL2 |
+| [islands](commands/islands.md) | Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.7, ISL2, NOTES |
 | [logs](commands/logs.md) | Logs (`modules/logs`, M1.10) |
 | [menus](commands/menus.md) | Menus module (`modules/menus`): M1.6 + M1.7 + staff hub and `/admin` (M1.12) |
 | [moderation](commands/moderation.md) | Punishments (`modules/moderation`, M1.8; replace vanilla `/ban /kick /pardon`) |

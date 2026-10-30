@@ -59,6 +59,9 @@ final class PermissionsMenu extends Menu {
         ICONS.put(IslandPerm.SPAWNERS, Material.SPAWNER);
         ICONS.put(IslandPerm.HURT_MONSTERS, Material.IRON_SWORD);
         ICONS.put(IslandPerm.SETTINGS, Material.REPEATER);
+        ICONS.put(IslandPerm.NOTES_READ, Material.BOOK);
+        ICONS.put(IslandPerm.NOTES_WRITE, Material.WRITABLE_BOOK);
+        ICONS.put(IslandPerm.NOTES_MANAGE, Material.LECTERN);
         ROLE_ICONS.put(PermRole.ADMIN, Material.DIAMOND_HELMET);
         ROLE_ICONS.put(PermRole.MOD, Material.GOLDEN_HELMET);
         ROLE_ICONS.put(PermRole.MEMBER, Material.IRON_HELMET);

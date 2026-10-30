@@ -30,3 +30,8 @@ lp group admin permission set skyblock.island.admin.teleport-slot true
 # Islands round 2 (ISL2): /is settings, /is setmyhome, /is invites use skyblock.island (everyone); the island role and the
 # "settings" role permission decide who may change settings. Island fly (skyblock.island.fly) is a perk: no rank gets it
 # yet (open question: which ranks?); staff with * have it. The Wings mastery will give fly per island without this node.
+
+# Island notes (NOTES): /is notes uses skyblock.island (everyone); the island role permissions notes-read, notes-write and
+# notes-manage decide who reads and writes. Staff read any island's notes and recently deleted ones (owner N7: for scam
+# and abuse reports); every staff look is logged (category staff). helper < mod < admin.
+lp group helper permission set skyblock.island.notes.staff true

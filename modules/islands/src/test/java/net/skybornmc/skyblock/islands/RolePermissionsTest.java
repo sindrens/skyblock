@@ -164,7 +164,8 @@ class RolePermissionsTest {
         assertFalse(IslandPerm.BREAK.ownDefaults());
         assertEquals(0, IslandPerm.wildcard() & IslandPerm.SETTINGS.bit());
         assertEquals(0, IslandPerm.notApplicable(PermRole.MEMBER));
-        assertEquals(IslandPerm.SETTINGS.bit(), IslandPerm.notApplicable(PermRole.VISITOR));
+        assertEquals(IslandPerm.SETTINGS.bit() | IslandPerm.NOTES_WRITE.bit() | IslandPerm.NOTES_MANAGE.bit(),
+                IslandPerm.notApplicable(PermRole.VISITOR), "management rights (NOTES: write, manage) never reach visitors");
     }
 
     @Test
@@ -182,5 +183,38 @@ class RolePermissionsTest {
         return type.cast(java.lang.reflect.Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, (proxy, method, args) -> {
             throw new UnsupportedOperationException(method.getName());
         }));
+    }
+
+    // ------------------------------------------------------------------ NOTES
+
+    @Test
+    void notesDefaultsMatchOwnerN1() {
+        RolePermissions perms = defaults();
+        for (PermRole role : List.of(PermRole.LEADER, PermRole.ADMIN, PermRole.MOD)) {
+            assertTrue(perms.allows(null, role, IslandPerm.NOTES_READ), "read: " + role);
+            assertTrue(perms.allows(null, role, IslandPerm.NOTES_WRITE), "write: " + role);
+            assertTrue(perms.allows(null, role, IslandPerm.NOTES_MANAGE), "manage: " + role);
+        }
+        assertTrue(perms.allows(null, PermRole.MEMBER, IslandPerm.NOTES_READ));
+        assertTrue(perms.allows(null, PermRole.MEMBER, IslandPerm.NOTES_WRITE), "members add and tick");
+        assertFalse(perms.allows(null, PermRole.MEMBER, IslandPerm.NOTES_MANAGE));
+        assertTrue(perms.allows(null, PermRole.COOP, IslandPerm.NOTES_READ), "coop reads (owner N1)");
+        assertFalse(perms.allows(null, PermRole.COOP, IslandPerm.NOTES_WRITE));
+        assertFalse(perms.allows(null, PermRole.VISITOR, IslandPerm.NOTES_READ), "visitors see nothing");
+    }
+
+    @Test
+    void notesWriteAndManageNeverReachCoopOrVisitors() {
+        RolePermissions perms = defaults();
+        IslandPerms island = new IslandPerms();
+        island.set(PermRole.COOP, IslandPerm.NOTES_WRITE, true);
+        island.set(PermRole.VISITOR, IslandPerm.NOTES_MANAGE, true);
+        assertFalse(perms.allows(island, PermRole.COOP, IslandPerm.NOTES_WRITE));
+        assertFalse(perms.allows(island, PermRole.VISITOR, IslandPerm.NOTES_MANAGE));
+        island.set(PermRole.VISITOR, IslandPerm.NOTES_READ, true);
+        assertTrue(perms.allows(island, PermRole.VISITOR, IslandPerm.NOTES_READ), "an island may make its notes public");
+        island.set(PermRole.MEMBER, IslandPerm.NOTES_WRITE, false);
+        assertFalse(perms.allows(island, PermRole.MEMBER, IslandPerm.NOTES_WRITE), "the matrix toggle (owner N1)");
+        assertEquals(0L, IslandPerm.wildcard() & IslandPerm.NOTES_READ.bit(), "* in a role list does not grant notes");
     }
 }
