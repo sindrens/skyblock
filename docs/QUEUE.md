@@ -40,8 +40,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PORTALS | Build portals teleport (step in → target); spawn portal that creates your island on first use and always takes you to it (owner 159) | builds applied | worlds + islands | ✅ |
 | DEPTHSPROT | Protect the Depths outside ore/log fields; safe zones and dev flags from the builds (no PvE in arrival/exit, no pearls/wind charges in combat zones, no anvils/containers in the Forge Quarter) | builds applied | depths + worlds | ✅ |
 | PLAN5 | Plan Phase 5 (pillars, dynamic island level, masteries with tasks incl. bank fee discount, leaderboards) + questions to the Decisions page | — | docs | ✅ |
-| PLAN10 | Plan Phase 10 (crates/keys, voting, daily rewards per profile, quests, battle pass, collection log, Black Market, tutorial) + questions | — | docs | 🔄 |
-| PLAN7 | Plan Phase 7 (island production, Island Fuel, collectors, outposts) + questions; unblocks E6 | — | docs | ⬜ |
+| PLAN10 | Plan Phase 10 (crates/keys, voting, daily rewards per profile, quests, battle pass, collection log, Black Market, tutorial) + questions | — | docs | ✅ docs/phases/PHASE-10-REWARDS.md |
+| PLAN7 | Plan Phase 7 (island production, Island Fuel, collectors, outposts) + questions; unblocks E6 | — | docs | 🔄 |
 | PLAN8 / PLAN9 / PLAN11 / PLAN12 / PLAN13 | Plans for PvE, conquest/events, store/ranks/Discord, seasons, launch prep | — | docs | ⬜ |
 | ANS3 | Skipped from ANS2: /ignore blocks tpa/trade/invites + hides chat (shared ignore service), staff powers (creative only builders/admins in spawn/Depths/builder areas, staff item tag unsellable, god/fly/heal only in staff/build mode, staff play normally with transfers flagged), /ec and /craft blocked in warzone/boss/10 s after combat, banned player's island locked for visitors | owner round 2 | several | 🔄 |
 | TUT1 | Build the tutorial TU1-TU4 from docs/plans/TUTORIAL.md with the suggested answers (portal hook, steps engine, guides, locks via TutorialGate, starter chest) | PLANTUT, PORTALS | new module tutorial | 🔄 |

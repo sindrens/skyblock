@@ -61,7 +61,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - ANS3 skipped round-2 items
 - TUT1 tutorial build TU1-TU4
-- PLAN10 rewards phase plan
+- PLAN7 island production plan
 
 ## Parked / broken
 (none)
