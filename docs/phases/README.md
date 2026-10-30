@@ -9,8 +9,9 @@ Each phase has its own detailed plan. A phase is split into **milestones**; ever
 | 2 | [PHASE-2-ISLANDS.md](PHASE-2-ISLANDS.md) | Islands: grid, creation, protection, members/roles, visiting, warps, island menu, stats tracking, admin tools |
 | 3 | [PHASE-3-ECONOMY.md](PHASE-3-ECONOMY.md) | Currencies + ledger, `/pay`, notes, banks + interest, selling + dynamic prices, builder shop, auction house, secure trade, economy dashboard |
 | 4 | [PHASE-4-DEPTHS.md](PHASE-4-DEPTHS.md) | Tools (starter kit, Forge, living tools, blueprints, skins), per-player ore/log blocks, satchel, mine/forest/combat tiers, skill core (XP/levels), crystals, `/dungeon` |
+| 5 | [PHASE-5-PROGRESSION.md](PHASE-5-PROGRESSION.md) | Pillars, dynamic island level (8 sources), task engine, `/is upgrade` upgrades + masteries + Ascension, paid sizes above 9x9, leaderboards (solo/team/weekly, Hall of Heroes), staff tools |
 
-Later phases (5+): progression (pillars, island level, `/is upgrade`), skills perks/sets/enchants, island production + outposts, PvE/bosses/pets, conquest/events, rewards/crates/quests, store/ranks/Discord, seasons, balance + launch. They get the same level of detail before they start.
+Later phases (6+): skills perks/sets/enchants, island production + outposts, PvE/bosses/pets, conquest/events, rewards/crates/quests, store/ranks/Discord, seasons, balance + launch. They get the same level of detail before they start.
 
 ## Rules for every phase
 1. **Read first:** `CONTEXT.md`, `DESIGN.md`, `STANDARDS.md`, `UI_STYLE.md`, `REVIEW.md`, and the phase plan.
