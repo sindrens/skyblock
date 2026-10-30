@@ -50,6 +50,7 @@ public final class Cooldowns {
             return;
         }
         expiries.computeIfAbsent(player, u -> new ConcurrentHashMap<>()).put(key, clock.getAsLong() + duration.toMillis());
+        maybePrune();
     }
 
     /**
@@ -68,6 +69,9 @@ public final class Cooldowns {
             used[0] = true;
             return now + Math.max(1, duration.toMillis());
         });
+        if (used[0]) {
+            maybePrune();
+        }
         return used[0];
     }
 
@@ -81,5 +85,38 @@ public final class Cooldowns {
     /** Forget a player (on quit), keeping memory flat. */
     public void clear(UUID player) {
         expiries.remove(player);
+    }
+
+    /**
+     * Drops every cooldown that has run out and players with none left (PERF2, P-37). Called by itself every
+     * {@link #PRUNE_EVERY} writes, so a long-running server does not keep one entry per player ever seen, while a
+     * cooldown that is still running survives a relog (clearing on quit would let players skip it).
+     *
+     * @return how many cooldowns were removed
+     */
+    public int prune() {
+        long now = clock.getAsLong();
+        int[] removed = {0};
+        expiries.values().removeIf(map -> {
+            int before = map.size();
+            map.values().removeIf(until -> until <= now);
+            removed[0] += before - map.size();
+            return map.isEmpty();
+        });
+        return removed[0];
+    }
+
+    /** Players with at least one stored (possibly expired) cooldown. */
+    public int size() {
+        return expiries.size();
+    }
+
+    static final int PRUNE_EVERY = 256;
+    private final java.util.concurrent.atomic.AtomicInteger writes = new java.util.concurrent.atomic.AtomicInteger();
+
+    private void maybePrune() {
+        if (writes.incrementAndGet() % PRUNE_EVERY == 0) {
+            prune();
+        }
     }
 }

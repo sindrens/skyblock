@@ -38,6 +38,7 @@ public abstract class Menu implements InventoryHolder {
     private Menu parent;
     private boolean open;
     private long ticks;
+    private final ItemStack[] frameButtons = new ItemStack[4];
 
     /** Number of rows (1-6). */
     public abstract int rows();
@@ -120,6 +121,17 @@ public abstract class Menu implements InventoryHolder {
         ItemStack item = service.mark(button.item());
         buttons.put(slot, new MenuButton(item, button.onClick()));
         inventory.setItem(slot, item);
+    }
+
+    /** Framework only: puts an item that is already marked as a menu item (cached frame panes and buttons). */
+    final void setMarked(int slot, ItemStack marked, Consumer<MenuClick> onClick) {
+        buttons.put(slot, new MenuButton(marked, onClick));
+        inventory.setItem(slot, marked);
+    }
+
+    /** The fixed frame buttons built for this opening (back, info, close, help), reused by every refresh (PERF2). */
+    final ItemStack[] frameButtons() {
+        return frameButtons;
     }
 
     protected final void set(int slot, ItemStack item, Consumer<MenuClick> onClick) {
@@ -208,6 +220,7 @@ public abstract class Menu implements InventoryHolder {
         this.viewer = viewer;
         this.inventory = inventory;
         this.buttons.clear();
+        java.util.Arrays.fill(this.frameButtons, null);
         this.ticks = 0;
         this.open = true;
     }

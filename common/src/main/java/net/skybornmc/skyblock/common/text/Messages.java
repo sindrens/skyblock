@@ -187,6 +187,34 @@ public final class Messages {
         return parse(viewer, text, placeholders);
     }
 
+    private record Fixed(String source, int style, Component component) {
+    }
+
+    /** Parsed messages without placeholders, per viewer type (see {@link #fixed}). */
+    private final Map<String, Fixed> fixed = new ConcurrentHashMap<>();
+
+    /**
+     * A message that takes no placeholders (a separator, a dash, a skill name), parsed once per viewer type and reused
+     * until its text changes (PERF2, P-17/P-29). Texts with player placeholders ({@code <ph:...>}) are parsed every time.
+     */
+    public Component fixed(Audience viewer, String module, String key) {
+        String text = raw(module, key);
+        if (text == null || text.contains("<ph:")) {
+            return component(viewer, module, key);
+        }
+        String cacheKey = (isBedrock(viewer) ? "b|" : "j|") + module + "|" + key;
+        Fixed hit = fixed.get(cacheKey);
+        if (hit != null && hit.style() == style.version() && hit.source().equals(text)) {
+            return hit.component();
+        }
+        Component parsed = parse(viewer, text);
+        if (fixed.size() > 4096) {
+            fixed.clear();
+        }
+        fixed.put(cacheKey, new Fixed(text, style.version(), parsed));
+        return parsed;
+    }
+
     /** Parses any MiniMessage text with the style tags for {@code viewer}. */
     public Component parse(Audience viewer, String text, TagResolver... placeholders) {
         boolean be = isBedrock(viewer);

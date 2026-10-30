@@ -340,8 +340,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
             sweepTask = null;
         }
         if (borderProtection != null && config.returnEntities) {
-            long period = config.returnEntitiesIntervalTicks;
-            sweepTask = core.scheduler().repeat("island-return-entities", period, period, borderProtection::sweep);
+            // Every tick: the sweep handles each island once per interval in its own slot (PERF2, P-25).
+            sweepTask = core.scheduler().repeat("island-return-entities", 1L, 1L, borderProtection::sweep);
         }
     }
 

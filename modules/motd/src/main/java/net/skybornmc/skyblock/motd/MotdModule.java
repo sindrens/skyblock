@@ -90,8 +90,7 @@ public final class MotdModule implements SkyblockModule, Listener {
                         : usable.get((int) ((now / Math.max(1000, rotateMillis)) % usable.size()));
                 String countdown = target == null ? "" : countdown(target, Instant.ofEpochMilli(now));
                 double phase = animate ? MotdRenderer.phaseAt(now, cycleMillis, frames) : 0;
-                event.motd(renderer.render(motd.line1().replace("{countdown}", countdown),
-                        motd.line2().replace("{countdown}", countdown), phase, center));
+                event.motd(frame(motd.line1().replace("{countdown}", countdown), motd.line2().replace("{countdown}", countdown), phase));
             }
         }
 
@@ -106,7 +105,33 @@ public final class MotdModule implements SkyblockModule, Listener {
         }
     }
 
+    /** A rendered MOTD frame. */
+    private record FrameKey(String line1, String line2, double phase, boolean center) {
+    }
+
+    /**
+     * Rendered frames (PERF2, P-36): the gradient was rendered again on every ping, and pings are free to send. The same
+     * lines at the same animation phase give the same frame, so it is rendered once. Cleared on reload and when it grows.
+     */
+    private final java.util.Map<FrameKey, net.kyori.adventure.text.Component> renderedFrames = new java.util.concurrent.ConcurrentHashMap<>();
+    static final int MAX_FRAMES = 512;
+
+    private net.kyori.adventure.text.Component frame(String line1, String line2, double phase) {
+        FrameKey key = new FrameKey(line1, line2, phase, center);
+        net.kyori.adventure.text.Component cached = renderedFrames.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        net.kyori.adventure.text.Component rendered = renderer.render(line1, line2, phase, center);
+        if (renderedFrames.size() >= MAX_FRAMES) {
+            renderedFrames.clear(); // a countdown makes new lines every second: never keep more than a few hundred
+        }
+        renderedFrames.put(key, rendered);
+        return rendered;
+    }
+
     private void load() {
+        renderedFrames.clear();
         File file = new File(plugin.getDataFolder(), "motd.yml");
         if (!file.exists()) {
             plugin.saveResource("motd.yml", false);
