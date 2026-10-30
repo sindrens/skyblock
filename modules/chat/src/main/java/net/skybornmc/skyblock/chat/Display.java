@@ -35,9 +35,29 @@ final class Display {
     /** Parsed legacy prefixes ({@code "&c&lADMIN &c"} → Component); a handful of ranks, so this stays tiny. */
     private final java.util.Map<String, Component> legacyPrefixes = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /**
+     * Snapshot of the rank parts that change how a player looks (PERF4). The tab list reads LuckPerms off the main
+     * thread into this record and only compares/uses the snapshot on the main thread.
+     */
+    record RankView(String prefix, TextColor color, int weight) {
+        RankView {
+            prefix = prefix == null ? "" : prefix;
+            color = color == null ? DEFAULT_NAME : color;
+        }
+    }
+
+    /** Reads the rank parts from the rank provider (LuckPerms). Thread-safe; the tab list calls it asynchronously. */
+    RankView rankView(Player player) {
+        return new RankView(core.ranks().prefix(player), color(player), core.ranks().weight(player));
+    }
+
     /** LuckPerms prefix ({@code &} codes like Essentials, or MiniMessage), empty if the rank has none. */
     Component rank(Audience viewer, Player player) {
-        String prefix = core.ranks().prefix(player);
+        return rankPrefix(viewer, core.ranks().prefix(player));
+    }
+
+    /** {@link #rank(Audience, Player)} from an already-read prefix. */
+    Component rankPrefix(Audience viewer, String prefix) {
         if (prefix == null || prefix.isBlank()) {
             return Component.empty();
         }
@@ -55,11 +75,20 @@ final class Display {
      * color, weight, display name, AFK, title, tag. When it is unchanged, nothing needs to be rebuilt or resent.
      */
     String key(Player player) {
-        TextColor color = color(player);
-        return core.ranks().prefix(player) + '\u0000' + color.value() + '\u0000' + core.ranks().weight(player) + '\u0000'
-                + (hasNick(player) ? PlainTextComponentSerializer.plainText().serialize(player.displayName())
-                        + player.displayName().hashCode() : "") + '\u0000'
-                + afk(player) + '\u0000' + hookText(player, "title") + '\u0000' + hookText(player, "tag");
+        return key(player, rankView(player));
+    }
+
+    /** {@link #key(Player)} with the rank parts from a snapshot (no rank provider lookups). */
+    String key(Player player, RankView rank) {
+        String nick = hasNick(player) ? PlainTextComponentSerializer.plainText().serialize(player.displayName())
+                + player.displayName().hashCode() : "";
+        return key(rank, nick, afk(player), hookText(player, "title"), hookText(player, "tag"));
+    }
+
+    /** The fingerprint itself (pure, unit-tested). */
+    static String key(RankView rank, String nick, boolean afk, String title, String tag) {
+        return rank.prefix() + '\u0000' + rank.color().value() + '\u0000' + rank.weight() + '\u0000' + nick + '\u0000'
+                + afk + '\u0000' + title + '\u0000' + tag;
     }
 
     private String hookText(Player player, String key) {
@@ -79,12 +108,17 @@ final class Display {
 
     /** Name in the rank color; a nickname (perks module) keeps its own colors on top of the rank color. */
     Component name(Player player) {
+        return name(player, color(player));
+    }
+
+    /** {@link #name(Player)} with an already-read rank color. */
+    Component name(Player player, TextColor color) {
         Component display = player.displayName();
         String plain = PlainTextComponentSerializer.plainText().serialize(display);
         if (plain.isEmpty() || plain.equals(player.getName())) {
-            return Component.text(player.getName(), color(player));
+            return Component.text(player.getName(), color);
         }
-        return Component.text().color(color(player)).append(display).build();
+        return Component.text().color(color).append(display).build();
     }
 
     boolean hasNick(Player player) {
@@ -115,11 +149,16 @@ final class Display {
 
     /** The tab entry of {@code player} (viewer-independent; Geyser rounds colors for Bedrock). */
     Component tabEntry(Player player) {
+        return tabEntry(player, rankView(player));
+    }
+
+    /** {@link #tabEntry(Player)} with the rank parts from a snapshot. */
+    Component tabEntry(Player player, RankView rank) {
         ChatConfig c = config.get();
         Audience viewer = Audience.empty();
         return core.messages().parse(viewer, c.tabFormat,
-                Msg.c("rank", rank(viewer, player)),
-                Msg.c("name", name(player)),
+                Msg.c("rank", rankPrefix(viewer, rank.prefix())),
+                Msg.c("name", name(player, rank.color())),
                 Msg.c("title", part(viewer, c.tabTitlePart, hook(player, "title"))),
                 Msg.c("tag", part(viewer, c.tabTagPart, hook(player, "tag"))),
                 Msg.c("afk", afk(player) ? core.messages().parse(viewer, c.afkPart) : Component.empty()));
@@ -128,6 +167,11 @@ final class Display {
     /** Nearest classic color of the rank color (nametag name color supports only these). */
     NamedTextColor teamColor(Player player) {
         return NamedTextColor.nearestTo(color(player));
+    }
+
+    /** {@link #teamColor(Player)} from a snapshot. */
+    static NamedTextColor teamColor(RankView rank) {
+        return NamedTextColor.nearestTo(rank.color());
     }
 
     Component afkSuffix(Player player) {
