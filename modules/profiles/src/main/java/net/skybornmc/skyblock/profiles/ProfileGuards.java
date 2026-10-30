@@ -148,6 +148,13 @@ final class ProfileGuards implements Listener {
         }
         if (foreignOwnProfile(player, event.getItem())) {
             event.setCancelled(true);
+            return;
+        }
+        // REVIEW3 R3-2: bound loot (from bound crate keys) is only picked up by the profile it is bound to.
+        org.bukkit.inventory.ItemStack stack = event.getItem().getItemStack();
+        if (net.skybornmc.skyblock.common.item.BoundItems.isBound(stack)
+                && !net.skybornmc.skyblock.common.item.BoundItems.mayReceive(stack, profiles.profileKey(player.getUniqueId()))) {
+            event.setCancelled(true);
         }
     }
 

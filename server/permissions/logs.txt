@@ -15,6 +15,7 @@ lp group mod permission set skyblock.staff.logs.category.item true
 lp group mod permission set skyblock.staff.logs.category.punishment true
 lp group mod permission set skyblock.staff.logs.category.world true
 lp group helper permission set skyblock.staff.logs.category.tutorial true
+lp group mod permission set skyblock.staff.logs.category.crates true
 lp group mod permission set skyblock.staff.logs.teleport true
 lp group admin permission set skyblock.staff.logs.category.staff true
 lp group admin permission set skyblock.staff.logs.staff true

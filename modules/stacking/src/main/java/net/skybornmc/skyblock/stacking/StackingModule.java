@@ -292,4 +292,19 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     public int killFromStack(LivingEntity stack, int count, Player killer) {
         return mobs.killBatch(stack, count, killer);
     }
+
+    @Override
+    public List<String> spawnerTypes(int tier) {
+        SpawnerTiers t = tiers;
+        if (t == null) {
+            return List.of();
+        }
+        return t.types().stream().filter(type -> t.tier(type).orElse(0) == tier).toList();
+    }
+
+    @Override
+    public java.util.Optional<org.bukkit.inventory.ItemStack> createSpawner(String type, int amount, String source) {
+        SpawnerItems made = spawnerItems;
+        return made == null ? java.util.Optional.empty() : made.create(type, amount, source);
+    }
 }
