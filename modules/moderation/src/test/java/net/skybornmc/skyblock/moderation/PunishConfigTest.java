@@ -144,7 +144,7 @@ class PunishConfigTest {
             for (String button : PunishConfig.BUTTONS) {
                 assertTrue(msg.contains("punish.buttons." + button + ".name"), file + ": punish.buttons." + button);
             }
-            for (String stage : List.of("self", "exempt", "offline", "permission", "length-limit", "never-shorten")) {
+            for (String stage : List.of("self", "exempt", "offline", "permission", "length-limit", "duplicate", "never-shorten")) {
                 assertTrue(msg.contains("punish.blocked." + stage), file + ": punish.blocked." + stage);
             }
             for (String kind : Templates.Step.KINDS) {
@@ -160,7 +160,19 @@ class PunishConfigTest {
                     "config.bad-mode", "config.bad-duration", "config.bad-rules", "config.bad-rule-at",
                     "config.duplicate-rule-at", "config.bad-rule-action", "config.repeat-incomplete", "config.hint",
                     "error.already-muted", "error.already-banned", "error.no-permission-type", "warn-rules.reason",
-                    "warn-rules.repeat-reason", "words.system-auto", "muted.auto", "muted.auto-repeat", "muted.join")) {
+                    "warn-rules.repeat-reason", "words.system-auto", "muted.auto", "muted.auto-repeat", "muted.join",
+                    // P2
+                    "error.duplicate", "error.duplicate-self", "error.no-force", "punish.reason.older", "punish.reason.older-one",
+                    "punish.summary.undo", "undo.offer", "undo.button", "undo.hover", "undo.reason", "undo.notify", "undo.expired",
+                    "undo.not-yours", "undo.already", "undo.not-undoable", "undo.not-found", "undo.player-mute",
+                    "undo.player-mute-still", "undo.player-warn", "stats.header", "stats.given", "stats.reversed",
+                    "stats.suggestions", "stats.top-header", "stats.top-empty", "stats.top-line", "stats.bad-period",
+                    "stats.no-permission-others", "config.bad-zone", "config.bad-period", "config.bad-number",
+                    "config.confirm-longer")) {
+                assertTrue(msg.contains(key), file + ": missing " + key);
+            }
+            for (PunishStats.Period period : PunishStats.Period.values()) {
+                String key = "stats.periods." + period.id;
                 assertTrue(msg.contains(key), file + ": missing " + key);
             }
         }
@@ -266,8 +278,9 @@ class PunishConfigTest {
         assertTrue(r.ok());
         assertNull(r.config().warnRules().warnExpire());
         PunishConfigParser.Result noMenu = parse(BASE.substring(0, BASE.indexOf("menu:")));
-        assertTrue(noMenu.ok(), "an old file without menu/warn-rules still loads (with defaults)");
-        assertEquals(2, noMenu.warnings().size());
+        assertTrue(noMenu.ok(), "an old file without menu/warn-rules/extras still loads (with defaults)");
+        assertEquals(3, noMenu.warnings().size());
+        assertEquals(PunishConfig.Extras.DEFAULT, noMenu.config().extras());
         assertFalse(noMenu.config().warnRules().enabled());
     }
 

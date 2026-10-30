@@ -61,3 +61,20 @@ Release steps for the main session (before each release, in this order):
 - **Texts** moved out of `punishments.yml`: `reasons.<id>`, `categories.<id>`, `warn-buttons.<id>.name/.reason`; a legacy
   `name:` in the YAML is still read as a fallback.
 
+
+## P2 implementation notes (for P3+)
+- **Config:** `punishments.yml → extras` is parsed into `PunishConfig.Extras` (undo-window, duplicate-window,
+  duplicate-confirm, offence-expire, stats.timezone/cache/default-period/top). Later milestones add their keys to the same
+  record and parser method. Per reason: `offence-expire: perm | <time>` (cheating reasons ship with `perm`).
+- **Duplicate stage** (`PunishDecision.withDuplicates`, slot DUPLICATE): input fields `reasonKey` (= stored `template`:
+  reason id or warn-button id), `force`, `confirmed`, `recent` (newest not-pardoned punishment for that reason, read in
+  the issue transaction under the target lock). A duplicate verdict stays clickable in the menu; the service arms
+  `DuplicateGuard` and the next identical request within `duplicate-confirm` is `confirmed`.
+- **Undo:** `Undo.check` (pure) + `PunishmentStore.undo` (atomic). The chat button is an Adventure click callback (no
+  extra command); Bedrock uses the `/p` head. Undo = pardon with reason `undo.reason`; warn-rule suggestions carry
+  `cause_id` (V003) and a pending one is set to status `REMOVED`, which the rules treat as never fired (filtered out of
+  `PunishmentStore.suggestions`).
+- **Offences:** `Offences.counting/expired` with `Template.cutoff(now)`; `Target.previous(template, cutoff)`.
+- **Stats:** `PunishStats` (periods, argument + permission rules, aggregation, ranking, 60 s cache); queries in
+  `PunishmentStore.statRows/topRows` use the V003 index `(issuer_uuid, created)`. Rows without an issuer uuid (system,
+  console) never count.

@@ -15,6 +15,8 @@ record Suggestion(long id, UUID target, String targetName, String kind, Integer 
     /** Notes on SKIPPED rows. */
     static final String NOTE_EXEMPT = "exempt";
     static final String NOTE_ALREADY = "already-punished";
+    /** Note on REMOVED rows: the warn that fired it was undone (spec 12.1). */
+    static final String NOTE_UNDONE = "undone";
 
     enum Status {
         /** Waiting for staff (until {@code expires}). */
@@ -26,7 +28,9 @@ record Suggestion(long id, UUID target, String targetName, String kind, Integer 
         /** Applied by the system ({@code warn-rules.mode: auto}). */
         AUTO,
         /** Nothing applied: the target is exempt or already muted/banned for longer. */
-        SKIPPED
+        SKIPPED,
+        /** Withdrawn: the warn that fired it was undone (spec 12.1). Counts as if it never fired. */
+        REMOVED
     }
 
     /** Still waiting for staff at {@code now}. */
@@ -41,7 +45,7 @@ record Suggestion(long id, UUID target, String targetName, String kind, Integer 
 
     /** A handled trigger: restarts the counter (reset-after-trigger) and opens the repeat window. */
     boolean handled() {
-        return status != Status.PENDING;
+        return status != Status.PENDING && status != Status.REMOVED;
     }
 
     /** When it was handled ({@code created} for rows that were handled at once). */

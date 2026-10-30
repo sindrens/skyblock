@@ -88,7 +88,8 @@ final class PunishConfigParser {
             errors.add(new ConfigProblem("config.yaml-invalid", "", line, Map.of("detail", detail)));
             return new Result(null, List.copyOf(errors), List.copyOf(warnings));
         }
-        List<Templates.Category> categories = categories(yaml);
+        PunishConfig.Extras extras = extras(yaml);
+        List<Templates.Category> categories = categories(yaml, extras.offenceExpire());
         Map<String, Templates.Template> byId = new LinkedHashMap<>();
         categories.forEach(c -> c.templates().forEach(t -> byId.put(t.id(), t)));
         PunishConfig.MenuLayout menu = menu(yaml, byId);
@@ -96,7 +97,7 @@ final class PunishConfigParser {
         if (!errors.isEmpty()) {
             return new Result(null, List.copyOf(errors), List.copyOf(warnings));
         }
-        return new Result(new PunishConfig(List.copyOf(categories), menu, rules), List.of(), List.copyOf(warnings));
+        return new Result(new PunishConfig(List.copyOf(categories), menu, rules, extras), List.of(), List.copyOf(warnings));
     }
 
     /** SnakeYAML says "line 12, column 3"; keep the line for the message. */
@@ -114,7 +115,7 @@ final class PunishConfigParser {
     /** Lower-case reason id → path (to catch warn buttons reusing a reason id). */
     private Map<String, String> reasonIds = Map.of();
 
-    private List<Templates.Category> categories(YamlConfiguration yaml) {
+    private List<Templates.Category> categories(YamlConfiguration yaml, Duration defaultOffenceExpire) {
         ConfigurationSection root = yaml.getConfigurationSection("categories");
         List<Templates.Category> out = new ArrayList<>();
         if (root == null) {
@@ -150,8 +151,10 @@ final class PunishConfigParser {
                     }
                     List<Templates.Step> ladder = ladder(t, path + ".ladder");
                     Material icon = icon(t.getString("icon"), path + ".icon", Material.PAPER);
+                    // spec 12.3: per reason, e.g. offence-expire: perm for cheating, 180d for a slow-burning reason
+                    Duration expire = duration(t, "offence-expire", path + ".offence-expire", defaultOffenceExpire, true);
                     if (!ladder.isEmpty()) {
-                        templates.add(new Templates.Template(id, catId, t.getString("name"), icon, List.copyOf(ladder)));
+                        templates.add(new Templates.Template(id, catId, t.getString("name"), icon, List.copyOf(ladder), expire));
                     }
                 }
             }
@@ -442,6 +445,69 @@ final class PunishConfigParser {
         }
         return new WarnRules.Settings(enabled, mode, warnExpire, reset, pendingExpire, List.copyOf(rules), repeatWindow,
                 repeatAction);
+    }
+
+    // ------------------------------------------------------------------ extras (spec 12.13, P2 keys)
+
+    private PunishConfig.Extras extras(YamlConfiguration yaml) {
+        PunishConfig.Extras d = PunishConfig.Extras.DEFAULT;
+        ConfigurationSection x = yaml.getConfigurationSection("extras");
+        if (x == null) {
+            warn("config.missing-optional", "extras", "section", "extras");
+            return d;
+        }
+        Duration undo = positive(x, "undo-window", "extras.undo-window", d.undoWindow());
+        Duration dup = positive(x, "duplicate-window", "extras.duplicate-window", d.duplicateWindow());
+        Duration confirm = positive(x, "duplicate-confirm", "extras.duplicate-confirm", d.duplicateConfirm());
+        Duration expire = duration(x, "offence-expire", "extras.offence-expire", d.offenceExpire(), true);
+        java.time.ZoneId zone = d.statsZone();
+        Duration cache = d.statsCache();
+        PunishStats.Period period = d.statsPeriod();
+        int top = d.statsTop();
+        ConfigurationSection stats = x.getConfigurationSection("stats");
+        if (stats != null) {
+            if (stats.contains("timezone")) {
+                String raw = String.valueOf(stats.get("timezone")).strip();
+                try {
+                    zone = java.time.ZoneId.of(raw);
+                } catch (java.time.DateTimeException e) {
+                    error("config.bad-zone", "extras.stats.timezone", "value", raw);
+                }
+            }
+            cache = positive(stats, "cache", "extras.stats.cache", cache);
+            if (stats.contains("default-period")) {
+                String raw = String.valueOf(stats.get("default-period")).strip();
+                java.util.Optional<PunishStats.Period> p = PunishStats.Period.parse(raw);
+                if (p.isEmpty()) {
+                    error("config.bad-period", "extras.stats.default-period", "value", raw, "suggestion",
+                            nullToEmpty(Hints.closest(raw.toLowerCase(Locale.ROOT), PunishStats.Period.ids())));
+                } else {
+                    period = p.get();
+                }
+            }
+            if (stats.contains("top")) {
+                Object raw = stats.get("top");
+                if (!(raw instanceof Integer n) || n < 1 || n > 50) {
+                    error("config.bad-number", "extras.stats.top", "value", String.valueOf(raw), "min", "1", "max", "50");
+                } else {
+                    top = n;
+                }
+            }
+        }
+        if (confirm.compareTo(dup) > 0) {
+            warn("config.confirm-longer", "extras.duplicate-confirm");
+        }
+        return new PunishConfig.Extras(undo, dup, confirm, expire, zone, cache, period, top);
+    }
+
+    /** A duration that must be more than zero ({@code perm} not allowed). */
+    private Duration positive(ConfigurationSection s, String key, String path, Duration fallback) {
+        Duration d = duration(s, key, path, fallback, false);
+        if (d == null || d.isZero() || d.isNegative()) {
+            error("config.bad-duration", path, "value", String.valueOf(s.get(key)));
+            return fallback;
+        }
+        return d;
     }
 
     /** A duration key; {@code perm} allowed only if {@code permAllowed} (returns {@code null} = never). */

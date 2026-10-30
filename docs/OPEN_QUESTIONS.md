@@ -112,6 +112,13 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 - Depths (M4.6): first unlocks are audited for every tier including tier 1 (3 rows per new player when they first log in). Skip tier 1 rows? (default: audit all)
 - Depths (M4.6): the season of remembered unlocks is `depths.yml → tiers.season-id` (must match `skills.yml → season-id` until a central season service exists). OK? (default: yes)
 - Depths (M4.6): staff with `/depths tp` into a locked tier get a pass for that zone only (no XP or drops there); builders and admins have `skyblock.depths.bypass` (all gates open, mining counts, no warmup). OK? (default: yes)
+- Punishments (P2): double-punish protection also blocks **your own** second click/command for the same player + reason within 15 s (a double click is the same mistake); the message then says "You just punished ...". Spec only names "another staff member". Only block other staff? (default: block everyone, second click within 5 s or -force applies)
+- Punishments (P2): duplicate protection runs for the menu, More reasons and `/p <player> <reason>`. Direct commands (`/tempmute`, `/warn` ...) have no reason id so they are not checked; [Apply] on a suggestion is already first-click-wins. Also check direct commands by their reason text? (default: no)
+- Punishments (P2): /pstats periods: `24h` = the last 24 hours; `7d` / `30d` = whole days in Europe/Oslo (today plus the 6 / 29 days before, from midnight). Or rolling 7×24 h? (default: whole days)
+- Punishments (P2): [Undo] uses a server-side click callback (no new command). The chat button stops answering 10 minutes after the window (Paper then says the click expired); inside that time it says "Too late to undo". OK? (default: yes)
+- Punishments (P2): undoing a warn removes only a **pending** suggestion it caused. If the suggestion was already applied (or auto-applied) the mute stays; staff remove it themselves. OK? (default: yes)
+- Punishments (P2): `skyblock.staff.punish.undo.others` (undo other staff's punishments, and automatic ones) is granted to admins only. Also mods? (default: admins)
+- Punishments (P2): the undo window is not shown live in the `/p` head (it refreshes after any click or when reopened); the click is always re-checked on the server. OK? (default: yes)
 
 ## Economy
 1. **Shards:** how are they earned? (Proposal: bosses, envoys, KOTH, high-tier dungeon zones.)

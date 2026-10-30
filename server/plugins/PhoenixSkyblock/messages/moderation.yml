@@ -170,6 +170,10 @@ error:
   no-permission-suggestion: "<prefix><c:error><sym:cross> You can't handle punishment suggestions."
   already-muted: "<prefix><c:warning>Nothing applied: <c:value><player></c:value> is already muted for longer (<c:value><left></c:value> left, #<id>). <c:text>Use /unmute first to change it."
   already-banned: "<prefix><c:warning>Nothing applied: <c:value><player></c:value> is already banned for longer (<c:value><left></c:value> left, #<id>). <c:text>Use /unban first to change it."
+  # Double-punish protection (P2). <staff>, <ago>, <reason>, <id> of the earlier one; <confirm> = extras.duplicate-confirm.
+  duplicate: "<prefix><c:warning><c:value><player></c:value> was just punished for <c:value><reason></c:value> by <c:value><staff></c:value> <ago> ago. <c:text>Do it again within <confirm> to apply anyway."
+  duplicate-self: "<prefix><c:warning>You just punished <c:value><player></c:value> for <c:value><reason></c:value> <ago> ago. <c:text>Do it again within <confirm> to apply a second one."
+  no-force: "<prefix><c:error><sym:cross> You can't use -force."
 
 history:
   header: "<prefix><c:value>History of <player></c:value> <c:muted>(<total>)</c:muted> <c:text><bans> bans <sym:dot> <mutes> mutes <sym:dot> <warns> warnings <sym:dot> <kicks> kicks"
@@ -276,6 +280,10 @@ punish:
     never-shorten:
       - "<c:warning>Already punished for longer (<left> left)"
       - "<c:muted>Clicking changes nothing (never shortens)"
+    # Same player + same reason within extras.duplicate-window (P2). <staff>, <ago>, <confirm>.
+    duplicate:
+      - "<c:warning>Just punished for this by <staff> (<ago> ago)"
+      - "<c:action><sym:bullet> Click, then again within <confirm>, to apply anyway"
   reason:
     name: "<c:value><reason>"
     lore:
@@ -283,6 +291,9 @@ punish:
       - "<c:text>Next step: <c:flame><step>"
     after: "<c:muted>Then: <step>"
     after-repeat: "<c:muted>Then: <step> (last step repeats)"
+    # Offences older than offence-expire (P2). <older> = how many.
+    older-one: "<c:muted>(1 older offence no longer counts)"
+    older: "<c:muted>(<older> older offences no longer count)"
   warn-button:
     name: "<c:flame><name>"
     lore:
@@ -295,6 +306,11 @@ punish:
       - ""
       - "<c:warning>Pending: suggested <action>"
       - "<c:action><sym:bullet> Click to apply or dismiss"
+    # [Undo] for Bedrock (P2): your last action on this player while extras.undo-window is open. <type>, <reason>, <id>, <left>.
+    undo:
+      - ""
+      - "<c:text>Last action: <type> <c:muted>(<reason>, #<id>)"
+      - "<c:action><sym:bullet> Click to undo <c:muted>(<left> left)"
   counter:
     name: "<c:flame>Warnings: <c:value><count> / <next>"
     "off":
@@ -368,6 +384,7 @@ suggest:
     dismissed: "dismissed"
     auto: "applied automatically"
     skipped: "skipped"
+    removed: "removed (warning undone)"
   menu:
     title: "Suggestion"
     info:
@@ -438,3 +455,43 @@ config:
   duplicate-rule-at: "<file> line <line>: <path>: there is already a rule at <value> warnings"
   bad-rule-action: "<file> line <line>: <path>: \"<value>\" is not allowed: automatic actions must be a mute or ban (never warn or kick)"
   repeat-incomplete: "<file> line <line>: <path>: repeat-window and repeat-action go together; the repeat rule is off"
+  bad-zone: "<file> line <line>: <path>: '<value>' is not a time zone (example: Europe/Oslo)"
+  bad-period: "<file> line <line>: <path>: '<value>' must be 24h, 7d, 30d or all<hint>"
+  bad-number: "<file> line <line>: <path>: '<value>' must be a whole number from <min> to <max>"
+  confirm-longer: "<file> line <line>: <path>: duplicate-confirm is longer than duplicate-window (it still works)"
+
+# ---------------------------------------------------------------- [Undo] (P2, spec 12.1)
+# Placeholders as in notify.* (<player>, <type>, <reason>, <id>, <length>), plus <window> = extras.undo-window.
+undo:
+  offer: "<c:muted>[Punish]</c:muted> <c:text>Done: <type> for <c:value><player></c:value> <c:muted>(#<id>)</c:muted>. <undo>"
+  button: "<c:warning>[Undo]</c:warning>"
+  hover: "<c:action>Undo this (mistake). Works for <window>."
+  # Stored as the pardon reason. <staff> = who clicked.
+  reason: "Undone by <staff> (mistake)"
+  notify: "<c:muted>[Staff]</c:muted> <click:run_command:'/history <target>'><hover:show_text:'<c:action>Click for history'><c:value><staff></c:value> <c:success>undid</c:success> <type> <c:muted>#<id></c:muted> <c:text>for <c:value><player></c:value> <c:muted>(given by <by>)</hover></click>"
+  expired: "<prefix><c:warning>Too late to undo (<window> passed). <c:text>Use /unmute, /unban or /unwarn."
+  not-yours: "<prefix><c:error><sym:cross> You can only undo your own punishments."
+  already: "<prefix><c:warning>Already removed by <c:value><by></c:value>."
+  not-undoable: "<prefix><c:error><sym:cross> A kick can't be undone."
+  not-found: "<prefix><c:error><sym:cross> That punishment doesn't exist."
+  # To the player.
+  player-mute: "<prefix><c:success><sym:check> Your mute was removed (staff mistake)."
+  player-mute-still: "<prefix><c:text>One of your mutes was removed, but another one is still active."
+  player-warn: "<prefix><c:success><sym:check> Your last warning was removed (staff mistake)."
+
+# ---------------------------------------------------------------- /pstats (P2, spec 12.10)
+stats:
+  header: "<prefix><c:value>Punishments by <staff></c:value> <c:muted>(<period>)"
+  given: " <c:text>Warns <c:value><warns></c:value> <c:muted><sym:dot></c:muted> Mutes <c:value><mutes></c:value> <c:muted><sym:dot></c:muted> Bans <c:value><bans></c:value> <c:muted><sym:dot></c:muted> Kicks <c:value><kicks></c:value>  <c:text>= <c:value><given></c:value> given"
+  reversed: " <c:text>Reversed (undone or pardoned): <c:value><reversed></c:value> <c:muted>(<percent>%)</c:muted>  <c:text>Net: <c:value><net>"
+  suggestions: " <c:text>Applied from automatic suggestions: <c:value><applied>"
+  top-header: "<prefix><c:value>Top staff</c:value> <c:muted>(<period>)"
+  top-empty: " <c:muted>No punishments in this period."
+  top-line: " <c:muted><place>.</c:muted> <click:run_command:'/pstats <target>'><hover:show_text:'<c:action>Show details'><c:value><staff></c:value></hover></click> <c:text><given> given <c:muted><sym:dot></c:muted> <reversed> reversed (<percent>%) <c:muted><sym:dot></c:muted> net <net>"
+  bad-period: "<prefix><c:error><sym:cross> Unknown period. <c:text>Use one of: <c:value><periods>"
+  no-permission-others: "<prefix><c:error><sym:cross> You can only see your own numbers."
+  periods:
+    24h: "last 24 hours"
+    7d: "last 7 days"
+    30d: "last 30 days"
+    all: "all time"

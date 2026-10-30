@@ -10,9 +10,32 @@ import java.util.Map;
  * One validated, immutable {@code punishments.yml}. Texts are never here (they live in {@code messages/moderation.yml});
  * this only holds ids, slots, icons, ladders and rules.
  */
-record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRules.Settings warnRules) {
+record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRules.Settings warnRules, Extras extras) {
 
-    static final PunishConfig EMPTY = new PunishConfig(List.of(), MenuLayout.EMPTY, WarnRules.Settings.DISABLED);
+    static final PunishConfig EMPTY = new PunishConfig(List.of(), MenuLayout.EMPTY, WarnRules.Settings.DISABLED, Extras.DEFAULT);
+
+    PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRules.Settings warnRules) {
+        this(categories, menu, warnRules, Extras.DEFAULT);
+    }
+
+    /**
+     * {@code extras:} (spec 12.13). P2 keys only; later milestones add theirs.
+     *
+     * @param undoWindow       how long [Undo] works after a punishment (12.1)
+     * @param duplicateWindow  same target + reason within this time is blocked (12.2)
+     * @param duplicateConfirm a second click within this time applies anyway (12.2)
+     * @param offenceExpire    default for reasons without their own {@code offence-expire}; {@code null} = never (12.3)
+     * @param statsZone        time zone of the /pstats periods (owner: Europe/Oslo)
+     * @param statsCache       how long /pstats results are reused
+     * @param statsPeriod      period when none is typed
+     * @param statsTop         lines in /pstats top
+     */
+    record Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
+                  java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop) {
+
+        static final Extras DEFAULT = new Extras(Duration.ofMinutes(2), Duration.ofSeconds(15), Duration.ofSeconds(5),
+                Duration.ofDays(90), java.time.ZoneId.of("Europe/Oslo"), Duration.ofSeconds(60), PunishStats.Period.D7, 10);
+    }
 
     /** A fixed bottom-row button ({@code kick}, {@code history}, ...). */
     record Button(String id, int slot, Material icon) {

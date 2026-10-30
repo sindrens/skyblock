@@ -44,13 +44,21 @@ final class PunishmentService {
     static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
             .withZone(ZoneId.systemDefault());
 
-    /** What a staff member asked for. {@code duration == null} = permanent (ban/mute). */
+    /**
+     * What a staff member asked for. {@code duration == null} = permanent (ban/mute). {@code template} (reason id or
+     * warn-button id) also turns on the duplicate check (spec 12.2); {@code force} = the {@code -force} flag.
+     */
     record Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
-                   boolean ipWide, String ip, String template, Integer ladderStep, String source) {
+                   boolean ipWide, String ip, String template, Integer ladderStep, String source, boolean force) {
 
         Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
                 boolean ipWide, String ip, String template, Integer ladderStep) {
-            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null);
+            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null, false);
+        }
+
+        Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
+                boolean ipWide, String ip, String template, Integer ladderStep, boolean force) {
+            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null, force);
         }
     }
 
@@ -126,15 +134,29 @@ final class PunishmentService {
 
     // ------------------------------------------------------------------ issue (the single pipeline)
 
-    private final PunishDecision decision = PunishDecision.standard();
     private java.util.function.Supplier<WarnRules.Settings> warnRules = () -> WarnRules.Settings.DISABLED;
+    private java.util.function.Supplier<PunishConfig.Extras> extras = () -> PunishConfig.Extras.DEFAULT;
+    /** "Click again within 5s" armings (spec 12.2). */
+    private final DuplicateGuard duplicates = new DuplicateGuard();
+    /** /pstats results (spec 12.10: cache 60 s). */
+    private final PunishStats.Cache<String, CompletableFuture<?>> statsCache =
+            new PunishStats.Cache<>(PunishConfig.Extras.DEFAULT.statsCache(), System::currentTimeMillis);
 
     void warnRules(java.util.function.Supplier<WarnRules.Settings> source) {
         this.warnRules = source;
     }
 
+    void extras(java.util.function.Supplier<PunishConfig.Extras> source) {
+        this.extras = source;
+    }
+
+    PunishConfig.Extras extras() {
+        return extras.get();
+    }
+
+    /** The one pipeline, with the current duplicate window (P2 fills the DUPLICATE slot). */
     PunishDecision decision() {
-        return decision;
+        return PunishDecision.withDuplicates(extras.get().duplicateWindow());
     }
 
     /** Permissions of {@code sender} as a pipeline actor. Main thread (reads permissions). */
@@ -147,7 +169,8 @@ final class PunishmentService {
         }
         return new PunishDecision.Actor(sender.getName(), false, java.util.Set.copyOf(types),
                 sender.hasPermission(ModerationModule.PERM_IPBAN), sender.hasPermission(ModerationModule.PERM_SILENT),
-                maxDuration(sender), sender.hasPermission(ModerationModule.PERM_EXEMPT_BYPASS));
+                maxDuration(sender), sender.hasPermission(ModerationModule.PERM_EXEMPT_BYPASS),
+                sender instanceof Player p ? p.getUniqueId() : null, sender.hasPermission(ModerationModule.PERM_FORCE));
     }
 
     /** The pipeline input for {@code sender} punishing {@code target}. Main thread. Active punishments are filled in later. */
@@ -163,8 +186,15 @@ final class PunishmentService {
     /** What {@code viewer} would get for this step right now (menu lore), using the active mute/ban already loaded. */
     PunishDecision.Verdict preview(CommandSender viewer, UUID target, String targetName, Templates.Step step, boolean silent,
                                    Punishment activeMute, Punishment activeBan) {
-        return decision.decide(input(viewer, target, targetName, step.type(), step.duration(), step.ipWide(), silent,
-                System.currentTimeMillis()).withActive(activeMute, activeBan));
+        return preview(viewer, target, targetName, step, silent, activeMute, activeBan, null, null);
+    }
+
+    /** Same, with the duplicate check ({@code recent} = newest punishment for {@code reasonKey} from the loaded history). */
+    PunishDecision.Verdict preview(CommandSender viewer, UUID target, String targetName, Templates.Step step, boolean silent,
+                                   Punishment activeMute, Punishment activeBan, String reasonKey, Punishment recent) {
+        return decision().decide(input(viewer, target, targetName, step.type(), step.duration(), step.ipWide(), silent,
+                System.currentTimeMillis()).withActive(activeMute, activeBan).withReason(reasonKey, false, false)
+                .withRecent(recent));
     }
 
     private PunishmentStore.RuleHook ruleHook(UUID target, long now) {
@@ -177,7 +207,7 @@ final class PunishmentService {
                 false, now);
         template = new PunishDecision.Input(PunishDecision.Actor.system(auto), template.type(), null, false, false,
                 template.targetExempt(), false, template.targetOnline(), null, null, now);
-        return new PunishmentStore.RuleHook(settings, decision, template, auto, trigger -> trigger.repeat()
+        return new PunishmentStore.RuleHook(settings, decision(), template, auto, trigger -> trigger.repeat()
                 ? text(null, "warn-rules.repeat-reason", Msg.p("window", PunishConfig.text(settings.repeatWindow())))
                 : text(null, "warn-rules.reason", Msg.p("count", trigger.ruleAt())));
     }
@@ -190,7 +220,13 @@ final class PunishmentService {
     CompletableFuture<PunishmentStore.IssueResult> issue(CommandSender sender, Request r) {
         long now = System.currentTimeMillis();
         UUID issuer = sender instanceof Player p ? p.getUniqueId() : null;
-        PunishDecision.Input in = input(sender, r.target(), r.targetName(), r.type(), r.duration(), r.ipWide(), r.silent(), now);
+        PunishConfig.Extras x = extras.get();
+        String guardKey = r.template() == null || r.target() == null ? null
+                : DuplicateGuard.key(issuer == null ? sender.getName() : issuer.toString(), r.target(), r.template());
+        boolean confirmed = guardKey != null && duplicates.consume(guardKey, now, x.duplicateConfirm());
+        PunishDecision.Input in = input(sender, r.target(), r.targetName(), r.type(), r.duration(), r.ipWide(), r.silent(), now)
+                .withReason(r.template(), r.force(), confirmed);
+        PunishDecision decision = decision();
         PunishmentStore.RuleHook hook = ruleHook(r.target(), now);
         CompletableFuture<String> ipFuture = r.ipWide() && r.ip() == null && r.target() != null
                 ? store.lastIp(r.target()).thenApply(o -> o.orElse(null))
@@ -203,6 +239,12 @@ final class PunishmentService {
                     r.ladderStep(), issuer, sender.getName(), now, null, r.silent(), null, null, null, null, r.source());
             return store.issue(draft, in, decision, hook);
         }).thenApplyAsync(result -> {
+            if (guardKey != null && "duplicate".equals(result.verdict().stage())) {
+                duplicates.arm(guardKey, now, x.duplicateConfirm());
+                core.audit().log(AuditCategory.PUNISHMENT, "duplicate_blocked", Actor.of(sender), String.valueOf(r.target()),
+                        r.targetName(), null, null, Map.of("reason", r.template(), "recent",
+                                result.verdict().args().getOrDefault("id", "?")));
+            }
             handle(sender, r.targetName(), result);
             return result;
         }, main);
@@ -218,6 +260,7 @@ final class PunishmentService {
         apply(p);
         announce(sender, p);
         audit(sender, p);
+        offerUndo(sender, p);
         if (result.trigger() != null) {
             reportTrigger(result.trigger());
         }
@@ -231,6 +274,7 @@ final class PunishmentService {
         if ("permission".equals(v.stage()) && v.args().containsKey("type")) {
             tags.add(Msg.p("type_name", text(sender instanceof Player pl ? pl : null, "types." + v.args().get("type"))));
         }
+        tags.add(Msg.p("confirm", PunishConfig.text(extras.get().duplicateConfirm())));
         msg.send(sender, v.key(), tags.toArray(TagResolver[]::new));
         if (sender instanceof Player pl) {
             core.sounds().play(pl, "error");
@@ -312,7 +356,7 @@ final class PunishmentService {
             long now = System.currentTimeMillis();
             PunishDecision.Input in = input(sender, s.target(), s.targetName(), step.type(), step.duration(), step.ipWide(),
                     false, now);
-            return store.apply(id, x -> in, decision, by, sender.getName(), now);
+            return store.apply(id, x -> in, decision(), by, sender.getName(), now);
         }, main).thenApplyAsync(r -> {
             handleClick(sender, r);
             return r;
@@ -353,6 +397,7 @@ final class PunishmentService {
                 apply(p);
                 announce(sender, p);
                 audit(sender, p);
+                offerUndo(sender, p);
                 notifyStaff(sender, "suggest.applied", suggestionParts(viewer, s), Msg.p("staff", sender.getName()));
                 core.audit().log(AuditCategory.PUNISHMENT, "suggestion_apply", Actor.of(sender), s.target().toString(),
                         s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(), "id", p.id()));
@@ -435,26 +480,8 @@ final class PunishmentService {
                             msg.send(online, "muted.unmuted");
                         }
                     }
-                    if (type == Punishment.Type.BAN && config.get().vanillaSync) {
-                        if (target != null) {
-                            Bukkit.getBanList(BanListType.PROFILE).pardon(Bukkit.createProfile(target, targetName));
-                        }
-                        for (Punishment p : list) {
-                            if (p.ipWide() && p.ip() != null) {
-                                try {
-                                    Bukkit.getBanList(BanListType.IP).pardon(InetAddress.getByName(p.ip()));
-                                } catch (Exception ignored) {
-                                    // not a valid address
-                                }
-                            }
-                        }
-                        if (ip != null) {
-                            try {
-                                Bukkit.getBanList(BanListType.IP).pardon(InetAddress.getByName(ip));
-                            } catch (Exception ignored) {
-                                // not a valid address
-                            }
-                        }
+                    if (type == Punishment.Type.BAN) {
+                        liftVanillaBans(target, targetName, list, ip);
                     }
                     String action = switch (type) {
                         case BAN -> "unban";
@@ -471,6 +498,175 @@ final class PunishmentService {
                             targetName, null, sender instanceof Player p ? p.getLocation() : null, details);
                     return list;
                 }, main);
+    }
+
+    /** Removes pardoned bans from the vanilla ban list (account and IP-wide entries). Main thread. */
+    private void liftVanillaBans(UUID target, String targetName, List<Punishment> pardoned, String ip) {
+        if (!config.get().vanillaSync) {
+            return;
+        }
+        if (target != null) {
+            Bukkit.getBanList(BanListType.PROFILE).pardon(Bukkit.createProfile(target, targetName));
+        }
+        java.util.Set<String> ips = new java.util.LinkedHashSet<>();
+        for (Punishment p : pardoned) {
+            if (p.ipWide() && p.ip() != null) {
+                ips.add(p.ip());
+            }
+        }
+        if (ip != null) {
+            ips.add(ip);
+        }
+        for (String address : ips) {
+            try {
+                Bukkit.getBanList(BanListType.IP).pardon(InetAddress.getByName(address));
+            } catch (Exception ignored) {
+                // not a valid address
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ undo (spec 12.1)
+
+    /**
+     * Sends the staff member who just applied {@code p} a chat line with a clickable [Undo] (works for
+     * {@code undo-window}). The click is a server-side callback (no extra command); after the window it says "expired".
+     * Bedrock players use the same action from the head of {@code /p} instead. Kicks and console get no line.
+     */
+    void offerUndo(CommandSender sender, Punishment p) {
+        if (!(sender instanceof Player staff) || p.type() == Punishment.Type.KICK || p.target() == null) {
+            return;
+        }
+        Duration window = extras.get().undoWindow();
+        Component button = msg.component(staff, "undo.button", Msg.p("window", PunishConfig.text(window)))
+                .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(msg.component(staff, "undo.hover",
+                        Msg.p("window", PunishConfig.text(window)))))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.callback(audience -> {
+                    if (audience instanceof Player clicker) {
+                        undo(clicker, p.id());
+                    }
+                }, options -> options.uses(net.kyori.adventure.text.event.ClickCallback.UNLIMITED_USES)
+                        .lifetime(window.plus(Duration.ofMinutes(10)))));
+        msg.send(staff, "undo.offer", parts(staff, p), Msg.c("undo", button), Msg.p("window", PunishConfig.text(window)));
+    }
+
+    /** What {@code viewer} could undo on this target right now (head of /p), or {@code null}. */
+    Punishment undoable(Player viewer, List<Punishment> history) {
+        return Undo.latestUndoable(history, viewer.getUniqueId(), viewer.hasPermission(ModerationModule.PERM_UNDO_OTHERS),
+                extras.get().undoWindow(), System.currentTimeMillis());
+    }
+
+    /**
+     * [Undo] (chat click or the /p head): a normal pardon with the reason "Undone by <staff> (mistake)", allowed for
+     * whoever applied it or with {@code skyblock.staff.punish.undo.others}, only inside {@code undo-window}. Main thread
+     * in and out.
+     */
+    CompletableFuture<PunishmentStore.UndoResult> undo(Player staff, long id) {
+        long now = System.currentTimeMillis();
+        Duration window = extras.get().undoWindow();
+        String reason = text(null, "undo.reason", Msg.p("staff", staff.getName()));
+        return store.undo(id, staff.getUniqueId(), staff.getName(), staff.hasPermission(ModerationModule.PERM_UNDO_OTHERS),
+                window, reason, now).thenApplyAsync(r -> {
+                    handleUndo(staff, r, reason, window);
+                    return r;
+                }, main).exceptionally(e -> {
+                    core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Undo failed", e);
+                    core.scheduler().ensureMain("moderation:undo", () -> msg.send(staff, "error.failed"));
+                    return null;
+                });
+    }
+
+    private void handleUndo(Player staff, PunishmentStore.UndoResult r, String reason, Duration window) {
+        Punishment p = r.punishment();
+        switch (r.result()) {
+            case NOT_FOUND -> msg.send(staff, "undo.not-found");
+            case NOT_UNDOABLE -> msg.send(staff, "undo.not-undoable", parts(staff, p));
+            case ALREADY_REMOVED -> msg.send(staff, "undo.already", parts(staff, p),
+                    Msg.p("by", p.removedByName() == null ? "?" : p.removedByName()));
+            case EXPIRED -> msg.send(staff, "undo.expired", parts(staff, p), Msg.p("window", PunishConfig.text(window)));
+            case NOT_YOURS -> msg.send(staff, "undo.not-yours", parts(staff, p));
+            case OK -> {
+                lift(p);
+                notifyStaff(staff, "undo.notify", parts(staff, p), Msg.p("staff", staff.getName()),
+                        Msg.p("by", p.issuerName()));
+                Map<String, Object> details = new LinkedHashMap<>();
+                details.put("id", p.id());
+                details.put("type", p.type().name().toLowerCase(Locale.ROOT));
+                details.put("reason", reason);
+                details.put("issuer", p.issuerName());
+                if (!r.removedSuggestions().isEmpty()) {
+                    details.put("removed_suggestions", r.removedSuggestions());
+                }
+                core.audit().log(AuditCategory.PUNISHMENT, "undo", Actor.of(staff), p.target() == null ? p.ip() : p.target().toString(),
+                        p.targetName(), null, staff.getLocation(), details);
+                core.sounds().play(staff, "success");
+                return;
+            }
+        }
+        core.sounds().play(staff, "error");
+    }
+
+    /** Ends the effects of an undone punishment at once: unmute/unban (unless another one is still active), tell the player. */
+    private void lift(Punishment p) {
+        UUID target = p.target();
+        switch (p.type()) {
+            case MUTE -> store.activeMute(target, null).thenAcceptAsync(other -> {
+                cacheMute(target, other.orElse(null));
+                Player online = Bukkit.getPlayer(target);
+                if (online != null) {
+                    msg.send(online, other.isPresent() ? "undo.player-mute-still" : "undo.player-mute", parts(online, p));
+                }
+            }, main);
+            case BAN -> store.activeBan(target, null).thenAcceptAsync(other -> {
+                if (other.isEmpty()) {
+                    liftVanillaBans(target, p.targetName(), List.of(p), null);
+                }
+            }, main);
+            case WARN -> {
+                Player online = Bukkit.getPlayer(target);
+                if (online != null) {
+                    msg.send(online, "undo.player-warn", parts(online, p));
+                }
+            }
+            case KICK -> {
+                // never undone
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ /pstats (spec 12.10)
+
+    /** Counts of one staff member for a period (cached {@code stats.cache}). */
+    @SuppressWarnings("unchecked")
+    CompletableFuture<PunishStats.Counts> stats(UUID staff, PunishStats.Period period) {
+        PunishConfig.Extras x = extras.get();
+        statsCache.ttl(x.statsCache());
+        String key = "own:" + staff + ":" + period.id;
+        CompletableFuture<PunishStats.Counts> f = (CompletableFuture<PunishStats.Counts>) statsCache.get(key, () ->
+                store.statRows(staff, period.start(System.currentTimeMillis(), x.statsZone())).thenApply(PunishStats.Counts::of));
+        f.whenComplete((v, e) -> {
+            if (e != null) {
+                statsCache.invalidate(key);
+            }
+        });
+        return f;
+    }
+
+    /** The staff ranking for a period (cached {@code stats.cache}). */
+    @SuppressWarnings("unchecked")
+    CompletableFuture<List<PunishStats.Ranked>> statsTop(PunishStats.Period period) {
+        PunishConfig.Extras x = extras.get();
+        statsCache.ttl(x.statsCache());
+        String key = "top:" + period.id + ":" + x.statsTop();
+        CompletableFuture<List<PunishStats.Ranked>> f = (CompletableFuture<List<PunishStats.Ranked>>) statsCache.get(key, () ->
+                store.topRows(period.start(System.currentTimeMillis(), x.statsZone()))
+                        .thenApply(t -> PunishStats.rank(t.names(), t.rows(), x.statsTop())));
+        f.whenComplete((v, e) -> {
+            if (e != null) {
+                statsCache.invalidate(key);
+            }
+        });
+        return f;
     }
 
     // ------------------------------------------------------------------ mutes
