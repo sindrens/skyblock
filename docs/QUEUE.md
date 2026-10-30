@@ -33,7 +33,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
 | PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
 | FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | — | modules/perks or cosmetics | ✅ (in R2A) |
-| BUILDS | Owner 2026-10-30: paste all finished builds (server/builds: spawn base + forge quarter + market square, Depths gate + mine T1/T2 + forest T1 + graveyard T1, starter island) on the test server with FAWE (backup first) and wire their metadata (spawn point, portals, holograms, NPC spots, zones, regions); starter island = /is schematic | — | modules/worlds (+ islands/depths/essentials hooks) | ⬜ next free slot |
+| BUILDS | Owner 2026-10-30: paste all finished builds (server/builds: spawn base + forge quarter + market square, Depths gate + mine T1/T2 + forest T1 + graveyard T1, starter island) on the test server with FAWE (backup first) and wire their metadata (spawn point, portals, holograms, NPC spots, zones, regions); starter island = /is schematic | — | modules/worlds (+ islands/depths/essentials hooks) | 🔄 |
 | SELL2 | `/sell` becomes a chest you put items into + Sell button (items saved while inside, crash-safe), Sell inventory button; quick-buy `/shop` grid with Bedrock amount screen; Sell button in `/shop` | DESIGN approved | modules/economy (sell), modules/shop | ⬜ waits for sketch approval |
 | DESIGN | Owner 2026-10-30: sketches for GUIs, chat, /shop (quick-buy grid), lores, prices, /sell chest GUI (put items in + click sell; sell also in satchel and shop), /forge etc.; vanilla now + resource-pack version later; owner reviews before implementation | — | docs/design + artifact | 🔄 main session |
 | AFK | AFK pool (fuel + money + keys, better loot over time, max 8 h/day) | economy, islands fuel | new module | ⬜ (needs balance numbers) |
@@ -94,7 +94,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | E1 | Registry (enchants.yml, 48 defs + validation test), unique DB books + Disenchant Scrolls, `/enchanter` GUI (apply/upgrade/combine/remove/rolls/guide), slot/conflict/level rules, crystal costs, lore, EnchantService + BonusService in common | M4.2, CRY | modules/enchants, common/enchant, common/bonus | ✅ |
-| E2 | Book drops from Depths mine/forest/combat, gathering + area effects via the block engine, Depths sword effects | E1, M4.7, M4.8, M4.9 | modules/enchants + depths hooks | ⬜ |
+| E2 | Book drops from Depths mine/forest/combat, gathering + area effects via the block engine, Depths sword effects | E1, M4.7, M4.8, M4.9 | modules/enchants + depths hooks | 🔄 |
 | E3 | Stacked-mob kill enchants (Slaughter etc.), batch kill API | E1, STACK | modules/enchants + stacking API | ✅ |
 | E4 | Tuning: enchant factors in economy model, family caps, drop rates | E2, E3, BAL2 | docs, tools, configs | ⬜ |
 | E5 | Armor enchants on wardrobe set pieces | E1, W2 | modules/enchants + wardrobe | ⬜ |
