@@ -20,6 +20,9 @@ debug:
   timers: " <c:ember><sym:bullet></c:ember> <c:text>Timers pending: <c:value><timers></c:value> <c:muted><sym:dot> pool <capacity>, wheel <slots> ticks <sym:dot> regions: <regions>"
   perf: " <c:ember><sym:bullet></c:ember> <c:text>Break handling: avg <c:value><avg> ms</c:value> <c:muted><sym:dot> max <max> ms <sym:dot> <breaks> breaks"
   flags: " <c:ember><sym:bullet></c:ember> <c:text>Fast-break flags for <player>: <c:value><window></c:value> <c:muted>in window <sym:dot> <total> this session <sym:dot> <all> on the server"
+  combat: " <c:ember><sym:bullet></c:ember> <c:text>Combat mobs: <c:value><alive></c:value> <c:muted>of max <max> <sym:dot> <zones> active zones"
+  combat-zone: " <c:ember><sym:bullet></c:ember> <c:text>This zone (<zone>): <c:value><alive></c:value> <c:text>alive, target <c:value><target></c:value> <c:muted><sym:dot> <players> players <sym:dot> mini-boss: <boss>"
+  ambient: " <c:ember><sym:bullet></c:ember> <c:text>Ambient mobs: <c:value><alive></c:value> <c:muted>of max <max> <sym:dot> <player>: <own>"
 
 # Zones (M4.1): layout from zones.yml, /depths generate, /depths tp, boss portal.
 zones:
@@ -258,6 +261,56 @@ drop-items:
     depths_warped_stem: "Warped Stem"
     depths_geode: "Geode"
     depths_key_fragment: "Key Fragment"
+    depths_rotten_flesh: "Grave Flesh"
+    depths_bone: "Crypt Bone"
+    depths_spider_eye: "Venom Eye"
+    depths_slime_ball: "Bog Slime"
+    depths_prismarine: "Tide Shard"
+    depths_glowstone: "Hex Dust"
+    depths_raider_scrap: "Raider Scrap"
+    depths_blaze_rod: "Forge Rod"
+    depths_wither_ash: "Wither Ash"
+    depths_warlord_sigil: "Warlord Sigil"
+
+# Forest (M4.7). Action bar when breaking leaves in a forest zone.
+forest:
+  leaves: "<c:error><sym:cross></c:error> <c:text>Leaves are decoration. Chop the logs."
+
+# Combat zones (M4.8). <name> is the mob name (mobs.<id>), <zone> the zone name, <player> the killer.
+combat:
+  mini-boss:
+    # Custom name of a mini-boss (around its mobs.<id> name).
+    name: "<c:error><sym:star></c:error> <name> <c:error><sym:star></c:error>"
+    bar: "<name>"
+    spawn: "<prefix><c:error><sym:sword></c:error> <c:text>Mini-boss <name> <c:text>appeared in <c:value><zone></c:value><c:text>!"
+    killed: "<prefix><c:success><sym:check></c:success> <name> <c:text>was defeated by <c:value><player></c:value><c:text>."
+    reward: "<prefix><c:success><sym:star></c:success> <c:text>You helped defeat <name><c:text>. Rewards are in your satchel."
+
+# Mob names (mobs.yml ids). Missing = the vanilla name. Ambient mobs keep their vanilla name.
+mobs:
+  grave_walker: "<c:muted>Grave Walker"
+  grave_warden: "<c:value>Grave Warden"
+  crypt_skeleton: "<c:muted>Crypt Skeleton"
+  crypt_archer: "<c:value>Crypt Archer"
+  den_spider: "<c:muted>Den Spider"
+  den_cave_spider: "<c:muted>Den Crawler"
+  broodmother: "<c:value>Broodmother"
+  bog_slime: "<c:muted>Bog Slime"
+  king_slime: "<c:value>King Slime"
+  ruin_drowned: "<c:muted>Drowned Sentry"
+  tide_caller: "<c:value>Tide Caller"
+  hollow_witch: "<c:muted>Hollow Witch"
+  coven_elder: "<c:value>Coven Elder"
+  outpost_pillager: "<c:muted>Outpost Pillager"
+  outpost_vindicator: "<c:muted>Outpost Vindicator"
+  raid_captain: "<c:value>Raid Captain"
+  forge_blaze: "<c:muted>Forge Blaze"
+  forge_lord: "<c:value>Forge Lord"
+  keep_wither_skeleton: "<c:muted>Keep Guard"
+  bone_king: "<c:value>Bone King"
+  citadel_ravager: "<c:muted>Citadel Ravager"
+  citadel_evoker: "<c:muted>Citadel Evoker"
+  warlord: "<c:value>Warlord"
 
 # Placeholders (scoreboard, tab): <ph:depths_zone>, <ph:depths_tier>, <ph:satchel_used>, <ph:satchel_max> (<value> <percent>)
 placeholders:

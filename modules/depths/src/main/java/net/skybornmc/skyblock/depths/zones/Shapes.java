@@ -50,8 +50,13 @@ public final class Shapes {
         return parts;
     }
 
-    /** The zone's causeway (if any) and the zone itself. */
+    /** The zone's causeway (if any) and the zone itself, with the default tree template. */
     public static List<Part> zone(Zone zone, BossArena arena) {
+        return zone(zone, arena, TreeTemplate.DEFAULT);
+    }
+
+    /** The zone's causeway (if any) and the zone itself; forest fields use {@code trees} (M4.7). */
+    public static List<Part> zone(Zone zone, BossArena arena, TreeTemplate trees) {
         List<Part> parts = new ArrayList<>();
         String resource = zone.fields().isEmpty() || zone.fields().getFirst().resources().isEmpty() ? null
                 : zone.fields().getFirst().resources().getFirst().block();
@@ -63,7 +68,7 @@ public final class Shapes {
         if (arena != null && arena.portal() != null && zone.id().equals(arena.portalZone())) {
             portals.add(arena.portal());
         }
-        parts.add(new Part(zone.id(), zone.region(), zoneShape(zone, portals), zone.palette(), resource, zone.biome()));
+        parts.add(new Part(zone.id(), zone.region(), zoneShape(zone, portals, trees), zone.palette(), resource, zone.biome()));
         return parts;
     }
 
@@ -104,6 +109,11 @@ public final class Shapes {
     // ------------------------------------------------------------------ tier zones
 
     static Shape zoneShape(Zone zone, List<Box> portals) {
+        return zoneShape(zone, portals, TreeTemplate.DEFAULT);
+    }
+
+    static Shape zoneShape(Zone zone, List<Box> portals, TreeTemplate trees) {
+        TreeTemplate tree = trees == null ? TreeTemplate.DEFAULT : trees;
         Box r = zone.region();
         int stand = zone.spawn().blockY();
         int sx = zone.spawn().blockX();
@@ -122,7 +132,7 @@ public final class Shapes {
                 }
             }
             if (field != null && field.box().contains(x, y, z)) {
-                return zone.aspect() == Aspect.FOREST ? forestField(field.box(), x, y, z) : mineField(field.box(), x, y, z);
+                return zone.aspect() == Aspect.FOREST ? tree.at(field.box(), x, y, z) : mineField(field.box(), x, y, z);
             }
             if (gate.contains(x, y, z) || (exit != null && exit.contains(x, y, z))) {
                 return Piece.AIR;
@@ -190,53 +200,9 @@ public final class Shapes {
         return y < columnTop ? Piece.BASE : Piece.AIR;
     }
 
-    /** Trunk spacing in forest fields (trees at 4, 12, 20 … with a free spot in the middle). */
-    static final int TREE_SPACING = 8;
-
-    /** True if a tree stands at field-local column (lx, lz). */
-    static boolean treeAt(Box f, int lx, int lz) {
-        if (lx % TREE_SPACING != TREE_SPACING / 2 || lz % TREE_SPACING != TREE_SPACING / 2) {
-            return false;
-        }
-        if (lx > f.sizeX() - TREE_SPACING / 2 || lz > f.sizeZ() - TREE_SPACING / 2) {
-            return false;
-        }
-        int midX = (f.sizeX() / 2) / TREE_SPACING * TREE_SPACING + TREE_SPACING / 2;
-        int midZ = (f.sizeZ() / 2) / TREE_SPACING * TREE_SPACING + TREE_SPACING / 2;
-        return !(lx == midX && lz == midZ);
-    }
-
-    /** Trunk height (4 or 5 logs, never higher than 5 above the ground: BUILDER_BRIEF §10.2). */
-    static int trunkHeight(int lx, int lz) {
-        return 4 + ((lx / TREE_SPACING + lz / TREE_SPACING) % 2);
-    }
-
-    /** Trees of 4–5 logs with compact crowns starting 3 blocks above the ground; invisible lights between trunks. */
+    /** A forest field with the default template (per-tier templates: {@link TreeTemplate#at}). */
     static Piece forestField(Box f, int x, int y, int z) {
-        int lx = x - f.minX();
-        int lz = z - f.minZ();
-        int rel = y - f.minY();
-        int tx = lx / TREE_SPACING * TREE_SPACING + TREE_SPACING / 2;
-        int tz = lz / TREE_SPACING * TREE_SPACING + TREE_SPACING / 2;
-        if (treeAt(f, tx, tz)) {
-            int h = trunkHeight(tx, tz);
-            int dx = lx - tx;
-            int dz = lz - tz;
-            if (dx == 0 && dz == 0 && rel < h) {
-                return Piece.RESOURCE;
-            }
-            if (rel >= 3 && rel <= h + 1) {
-                int radius = rel <= h - 1 ? 2 : 1;
-                boolean corner = Math.abs(dx) == radius && Math.abs(dz) == radius && radius == 2;
-                if (Math.abs(dx) <= radius && Math.abs(dz) <= radius && !corner) {
-                    return Piece.LEAVES;
-                }
-            }
-        }
-        if (rel == 1 && lx % 4 == 0 && lz % 4 == 0 && !(lx % TREE_SPACING == TREE_SPACING / 2 && lz % TREE_SPACING == TREE_SPACING / 2)) {
-            return Piece.LIGHT_BLOCK;
-        }
-        return Piece.AIR;
+        return TreeTemplate.DEFAULT.at(f, x, y, z);
     }
 
     /** A 9-wide walled path: floor, 2-high walls with lights, a narrow underside. */

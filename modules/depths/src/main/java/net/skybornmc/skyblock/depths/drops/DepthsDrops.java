@@ -185,6 +185,18 @@ public final class DepthsDrops implements Listener {
         }
     }
 
+    /**
+     * Crystals found outside a block break (M4.8 combat kills): added to the player's profile batch (paid with the next
+     * payout, ledger reason {@code depths_drop}) and to the satchel's batched audit row. Main thread.
+     */
+    public void credit(Player player, long crystalsFound) {
+        if (crystalsFound <= 0 || core.services().optional(EconomyService.class).isEmpty()) {
+            return;
+        }
+        crystals.add(satchel.profileKey(player), crystalsFound);
+        satchel.addCrystals(player, crystalsFound);
+    }
+
     private List<CompletableFuture<?>> payCrystals() {
         Optional<EconomyService> economy = core.services().optional(EconomyService.class);
         if (economy.isEmpty() || crystals.idle()) {

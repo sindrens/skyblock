@@ -86,8 +86,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | ✅ (with M4.9) |
 | M4.6 | Tiers, unlocks, `/dungeon` | M4.1, M4.5 | modules/depths | ✅ |
 | M4.2 | Tools: starter kit (24 h), Forge, living tools (perk slots 5/15/30/45 + prestige), blueprints, skins; `/tool give`, `/blueprint give`, `/skin give` | M3.1, M4.5 | modules/tools | ✅ |
-| M4.7 | Forest | M4.3, M4.1 | modules/depths | 🔄 (with M4.8) |
-| M4.8 | Combat zones (shared mobs) | M4.1 | modules/depths (combat pkg) | 🔄 (with M4.7) |
+| M4.7 | Forest | M4.3, M4.1 | modules/depths | ✅ (with M4.8) |
+| M4.8 | Combat zones (shared mobs) | M4.1 | modules/depths (combat pkg) | ✅ (with M4.7) |
 | M4.9 | Drops + tokens | M4.4, M3.1 | modules/depths | ✅ (with M4.4) |
 
 ## Phase E: Enchants (docs/plans/ENCHANTS.md)

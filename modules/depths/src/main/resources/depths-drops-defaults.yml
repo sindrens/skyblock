@@ -66,3 +66,26 @@ drops:
     9:  {item: depths_pale_oak_log, crystal-chance: 0.408}
     10: {item: depths_crimson_stem, crystal-chance: 0.530}
     11: {item: depths_warped_stem,  crystal-chance: 0.689, rare: {depths_key_fragment: 0.0}}
+
+# Tree templates per forest tier (M4.7), used by /depths generate for the placeholder forest fields. Logs are the
+# per-player resource blocks (10 s respawn); leaves are decoration and can't be broken.
+#   shape:         round | cone | flat | cap
+#   trunk-min/max: logs per trunk (trees alternate); never above forest.max-trunk-height (reach)
+#   trunk-width:   1, or 2 for a 2x2 trunk
+#   crown-radius:  blocks from the trunk (must fit the cell: max spacing/2 - trunk-width)
+#   crown-height:  crown layers; the crown is cut off at the top of the field box
+#   crown-overlap: top logs wrapped by the crown (0 = every log can be chopped; more = those logs are out of reach)
+#   spacing:       one tree per spacing x spacing cell (the middle cell stays a clearing)
+# Changing a template changes the next /depths generate; built zones (built: true) are never touched.
+trees:
+  1:  {shape: round, trunk-min: 4, trunk-max: 5, trunk-width: 1, crown-radius: 2, crown-height: 3, spacing: 8}
+  2:  {shape: round, trunk-min: 5, trunk-max: 5, trunk-width: 1, crown-radius: 2, crown-height: 2, spacing: 8}
+  3:  {shape: cone,  trunk-min: 4, trunk-max: 5, trunk-width: 1, crown-radius: 2, crown-height: 3, spacing: 8}
+  4:  {shape: round, trunk-min: 5, trunk-max: 5, trunk-width: 2, crown-radius: 2, crown-height: 3, spacing: 8}
+  5:  {shape: flat,  trunk-min: 4, trunk-max: 5, trunk-width: 1, crown-radius: 3, crown-height: 2, spacing: 8}
+  6:  {shape: round, trunk-min: 4, trunk-max: 4, trunk-width: 2, crown-radius: 2, crown-height: 2, spacing: 8}
+  7:  {shape: round, trunk-min: 4, trunk-max: 5, trunk-width: 1, crown-radius: 3, crown-height: 2, spacing: 8}
+  8:  {shape: flat,  trunk-min: 4, trunk-max: 5, trunk-width: 1, crown-radius: 3, crown-height: 2, spacing: 8}
+  9:  {shape: round, trunk-min: 4, trunk-max: 5, trunk-width: 2, crown-radius: 2, crown-height: 2, spacing: 8}
+  10: {shape: cap,   trunk-min: 4, trunk-max: 5, trunk-width: 1, crown-radius: 2, crown-height: 3, spacing: 8}
+  11: {shape: cap,   trunk-min: 4, trunk-max: 5, trunk-width: 1, crown-radius: 2, crown-height: 3, spacing: 8}

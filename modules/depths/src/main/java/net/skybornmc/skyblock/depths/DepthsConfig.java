@@ -176,6 +176,90 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "crystals.action-bar", desc = "Show the crystals of each payout on the action bar.")
     public boolean crystalsActionBar = true;
 
+    // ------------------------------------------------------------------ forest (M4.7)
+
+    @Setting(path = "forest.max-trunk-height", desc = "Highest tree trunk (logs above the ground) a tree template may have; logs above it would be out of reach.", min = 1, max = 16)
+    public int forestMaxTrunkHeight = 5;
+
+    @Setting(path = "forest.no-leaf-decay", desc = "Leaves never decay in the Depths world (logs never really disappear there, but real builds may have far leaves).")
+    public boolean forestNoLeafDecay = true;
+
+    @Setting(path = "forest.protect-leaves", desc = "Leaves in forest zones are decoration: players can't break them (staff in creative with skyblock.depths.build can).")
+    public boolean forestProtectLeaves = true;
+
+    // ------------------------------------------------------------------ combat zones (M4.8)
+
+    @Setting(path = "combat.enabled", desc = "Shared combat mobs spawn in the combat zones (mobs.yml).")
+    public boolean combatEnabled = true;
+
+    @Setting(path = "combat.cycle-ticks", desc = "Ticks between combat spawn cycles (all zones are handled in one batched pass).", min = 10, max = 1200)
+    public int combatCycleTicks = 40;
+
+    @Setting(path = "combat.max-total-mobs", desc = "Most combat mobs alive in all combat zones together (hard cap for performance).", min = 0, max = 5000)
+    public int combatMaxTotalMobs = 300;
+
+    @Setting(path = "combat.spawns-per-cycle", desc = "Most mobs one zone spawns per cycle (fills up gradually instead of all at once).", min = 1, max = 100)
+    public int combatSpawnsPerCycle = 4;
+
+    @Setting(path = "combat.spawn-attempts", desc = "Random spots tried per mob before giving up for this cycle.", min = 1, max = 64)
+    public int combatSpawnAttempts = 8;
+
+    @Setting(path = "combat.min-player-distance", desc = "Mobs never spawn closer than this many blocks to a player.", min = 0, max = 64)
+    public int combatMinPlayerDistance = 6;
+
+    @Setting(path = "combat.despawn-after-seconds", desc = "Seconds a combat zone may be empty of players before its mobs (and mini-boss) are removed.", min = 0, max = 3600)
+    public int combatDespawnAfterSeconds = 30;
+
+    @Setting(path = "combat.leash", desc = "Mobs that leave their zone are put back at a spawn spot in the arena.")
+    public boolean combatLeash = true;
+
+    @Setting(path = "combat.vanilla-xp", desc = "Kills give the mob's vanilla-xp (mobs.yml) straight to the killer (no orbs on the ground).")
+    public boolean combatVanillaXp = true;
+
+    @Setting(path = "combat.max-drop-multiplier", desc = "Most a kill's drops can be multiplied by looting/fortune bonuses.", min = 1.0, max = 10.0)
+    public double combatMaxDropMultiplier = 3.0;
+
+    @Setting(path = "combat.block-other-spawns", desc = "In the Depths world, mobs only appear when this plugin (or a command / spawn egg) spawns them: no natural spawns, reinforcements, vexes, jockeys or slime splits.")
+    public boolean combatBlockOtherSpawns = true;
+
+    @Setting(path = "combat.mini-boss.min-damage-share", desc = "Share of a mini-boss's health a player must deal to get its rewards (the killer always gets them).", min = 0.0, max = 1.0)
+    public double miniBossMinDamageShare = 0.1;
+
+    @Setting(path = "combat.mini-boss.boss-bar", desc = "Show a boss bar with the mini-boss's health to players in its zone.")
+    public boolean miniBossBar = true;
+
+    @Setting(path = "combat.mini-boss.spawn-sound", desc = "Sound (sounds.yml) for players in the zone when a mini-boss appears (empty = none).")
+    public String miniBossSpawnSound = "unlock";
+
+    @Setting(path = "combat.mini-boss.kill-sound", desc = "Sound (sounds.yml) for rewarded players when a mini-boss dies (empty = none).")
+    public String miniBossKillSound = "money";
+
+    // ------------------------------------------------------------------ ambient mobs (M4.8, REVIEW B6)
+
+    @Setting(path = "ambient.enabled", desc = "Harmless per-player ambient mobs in mine and forest zones (only you see yours).")
+    public boolean ambientEnabled = true;
+
+    @Setting(path = "ambient.per-player", desc = "Ambient mobs around each player in a mine/forest zone.", min = 0, max = 10)
+    public int ambientPerPlayer = 2;
+
+    @Setting(path = "ambient.max-total", desc = "Most ambient mobs on the server at once (hard cap for performance).", min = 0, max = 5000)
+    public int ambientMaxTotal = 300;
+
+    @Setting(path = "ambient.cycle-ticks", desc = "Ticks between ambient cycles (spawn near players, remove far or left-behind ones).", min = 20, max = 2400)
+    public int ambientCycleTicks = 100;
+
+    @Setting(path = "ambient.radius-min", desc = "Ambient mobs spawn at least this many blocks from their player.", min = 1, max = 32)
+    public int ambientRadiusMin = 5;
+
+    @Setting(path = "ambient.radius-max", desc = "Ambient mobs spawn at most this many blocks from their player.", min = 2, max = 48)
+    public int ambientRadiusMax = 12;
+
+    @Setting(path = "ambient.despawn-distance", desc = "An ambient mob farther than this from its player is removed (a new one spawns nearby).", min = 8, max = 128)
+    public int ambientDespawnDistance = 32;
+
+    @Setting(path = "ambient.silent", desc = "Ambient mobs make no sounds (other players can't see them, so their sounds would come from nowhere).")
+    public boolean ambientSilent = true;
+
     @Setting(path = "generate.blocks-per-tick", desc = "/depths generate: most blocks changed per tick (keeps the server smooth).", min = 100, max = 50000)
     public int generateBlocksPerTick = 3000;
 
@@ -207,6 +291,9 @@ public final class DepthsConfig extends ModuleConfig {
                 drop-items: the Depths drop items (custom item ids, also sell.yml keys and Forge materials).
                 drops: drop table per wing and tier: item, amount, crystal-chance, crystal-amount, rare {item: chance}.
                   Blueprint chances stay in tools.yml (blueprints.<id>.drop), rolled by the tools module.
+                trees: tree template per forest tier (shape, trunk, crown, spacing) for /depths generate (M4.7).
+                Combat mobs, mini-bosses, combat drop items and ambient mobs are in mobs.yml (M4.8); their caps and
+                timers are the combat.* and ambient.* settings here.
                 Texts are in messages/depths.yml. Reload: /skyblock reload depths""";
     }
 }

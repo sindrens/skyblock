@@ -60,12 +60,27 @@ public final class DropItems {
 
     /** Reads the section and (re-)registers the items. Broken entries are reported and skipped. */
     public void load(ConfigurationSection section, Consumer<String> problem) {
+        load(java.util.Collections.singletonList(section), problem);
+    }
+
+    /**
+     * Reads several {@code drop-items} sections (depths.yml, then mobs.yml for the combat drops, M4.8) into one list. An
+     * id defined twice keeps the first definition.
+     */
+    public void load(List<ConfigurationSection> sections, Consumer<String> problem) {
         unregister();
         Map<String, Def> out = new LinkedHashMap<>();
-        if (section != null) {
+        for (ConfigurationSection section : sections) {
+            if (section == null) {
+                continue;
+            }
             for (String key : section.getKeys(false)) {
                 String id = key.trim().toLowerCase(Locale.ROOT);
                 String where = "drop-items." + key;
+                if (out.containsKey(id)) {
+                    problem.accept(where + ": defined twice (depths.yml and mobs.yml), the first one is used");
+                    continue;
+                }
                 ConfigurationSection s = section.getConfigurationSection(key);
                 if (s == null || !ItemDefinition.isValidId(id)) {
                     problem.accept(where + ": must be a section {material, rarity} with an id of a-z, 0-9 and _, skipped");

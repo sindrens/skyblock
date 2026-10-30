@@ -118,3 +118,15 @@ custom-items:
     depths_pale_oak_log: 360
     depths_crimson_stem: 791
     depths_warped_stem: 1740
+  # Depths combat drops (ECONOMY_BALANCE §3.2: ~4 drops per kill, drop value per kill = the combat table, M4.8).
+  depths-combat:
+    depths_rotten_flesh: 26
+    depths_bone: 44
+    depths_spider_eye: 66
+    depths_slime_ball: 109
+    depths_prismarine: 162
+    depths_glowstone: 241
+    depths_raider_scrap: 400
+    depths_blaze_rod: 575
+    depths_wither_ash: 1400
+    depths_warlord_sigil: 3675

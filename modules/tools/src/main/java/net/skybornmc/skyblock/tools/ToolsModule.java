@@ -221,6 +221,7 @@ public final class ToolsModule implements SkyblockModule {
         int catalogVersion = yaml.getInt(CATALOG_VERSION_KEY, 1);
         if (file.exists() && catalogVersion < CATALOG_VERSION) {
             // v2 (M4.9): Forge and blueprint recipes use the Depths drop items instead of vanilla items.
+            // v3 (M4.8): sword recipes use the combat drops.
             backup(file, "tools-catalog-v" + catalogVersion + "-backup.yml");
             for (String section : List.of("tiers", "blueprints")) {
                 replaceEntries(yaml, defaults, section);
@@ -257,7 +258,7 @@ public final class ToolsModule implements SkyblockModule {
     }
 
     /** Version of the catalog sections; a lower version in tools.yml replaces tiers and blueprints once (backup kept). */
-    static final int CATALOG_VERSION = 2;
+    static final int CATALOG_VERSION = 3;
     static final String CATALOG_VERSION_KEY = "catalog-version";
 
     /** True if the section has at least one catalog entry (plain setting keys don't count). */

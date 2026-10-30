@@ -28,6 +28,8 @@ public final class ZoneCommands {
     /** Runs before a staff teleport into a zone (M4.6: a pass through that zone's tier lock). */
     private BiConsumer<Player, String> beforeZoneTeleport = (player, zone) -> {
     };
+    /** Tree templates of the forest tiers (M4.7, depths.yml → trees). */
+    private java.util.function.Supplier<TreeTemplates> trees = () -> TreeTemplates.DEFAULTS;
 
     public ZoneCommands(ZoneManager zones, ZoneGenerator generator, DepthsConfig config, ModuleMessages msg) {
         this.zones = zones;
@@ -49,6 +51,10 @@ public final class ZoneCommands {
     }
 
     static Selection select(ZoneSet set, String target) {
+        return select(set, target, TreeTemplates.DEFAULTS);
+    }
+
+    static Selection select(ZoneSet set, String target, TreeTemplates trees) {
         List<Shapes.Part> parts = new ArrayList<>();
         List<String> skipped = new ArrayList<>();
         boolean all = ALL.equalsIgnoreCase(target);
@@ -64,7 +70,7 @@ public final class ZoneCommands {
                 if (z.built()) {
                     skipped.add(z.id());
                 } else {
-                    parts.addAll(Shapes.zone(z, set.arena()));
+                    parts.addAll(Shapes.zone(z, set.arena(), z.aspect() == Aspect.FOREST ? trees.get(z.tier()) : TreeTemplate.DEFAULT));
                 }
             }
         }
@@ -90,7 +96,7 @@ public final class ZoneCommands {
             msg.send(sender, "zones.generate.busy", Msg.p("done", p[0]), Msg.p("total", p[1]), Msg.p("percent", p[2]));
             return;
         }
-        Selection sel = select(set, target);
+        Selection sel = select(set, target, trees.get());
         if (!sel.skipped().isEmpty()) {
             msg.send(sender, "zones.generate.skipped-built", Msg.p("zones", String.join(", ", sel.skipped())));
         }
@@ -101,6 +107,11 @@ public final class ZoneCommands {
         generator.start(sel.parts(), world, sender instanceof Player p ? p : null, Actor.of(sender), target.toLowerCase(java.util.Locale.ROOT));
         msg.send(sender, "zones.generate.start", Msg.p("parts", sel.parts().size()), Msg.p("world", world.getName()),
                 Msg.p("blocks", config.generateBlocksPerTick));
+    }
+
+    /** Where {@code /depths generate} gets the forest tree templates from (reloaded with depths.yml). */
+    public void trees(java.util.function.Supplier<TreeTemplates> trees) {
+        this.trees = trees == null ? () -> TreeTemplates.DEFAULTS : trees;
     }
 
     /** {@code /depths tp} ignores tier locks: {@code hook} grants the pass (zone id) right before the teleport. */

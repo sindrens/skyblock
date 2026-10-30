@@ -1,0 +1,132 @@
+# The Depths mobs (M4.8). Copied to plugins/PhoenixSkyblock/mobs.yml on first start; a missing section is added back
+# from the jar. Settings (caps, timers, ambient radius ...) are in depths.yml -> combat.* and ambient.*. Mob names are in
+# messages/depths.yml -> mobs.<id>. Reload: /skyblock reload depths
+#
+# Balance (docs/ECONOMY_BALANCE.md section 3.2 / 9.1): about 4 drops per kill (3-5), so the drop value per kill matches the
+# combat table (tier 1 $104 ... tier 10 $14.7k with sell.yml -> custom-items.depths-combat); crystals per kill = the mine's
+# crystals per block of the same tier x the "= mine drops" factor. Combat XP = the skills table (zombie 5 ... ravager 1200).
+# Health is sized for ~2.5 s per kill with that tier's Forge sword; damage grows per tier (tiers 1-3 are safe for new
+# players). Mini-bosses are placeholders until Phase 8: 15x health, 20x XP/crystals, 15x drops, glowing, a boss bar.
+
+# Combat drop items: custom items like the mine/forest drops (sell.yml keys custom:<id>, Forge materials). Names:
+# messages/depths.yml -> drop-items.names.<id>. Materials are picked so they can't be placed as blocks.
+drop-items:
+  depths_rotten_flesh:   {material: rotten_flesh,     rarity: common}
+  depths_bone:           {material: bone,             rarity: common}
+  depths_spider_eye:     {material: spider_eye,       rarity: common}
+  depths_slime_ball:     {material: slime_ball,       rarity: uncommon}
+  depths_prismarine:     {material: prismarine_shard, rarity: uncommon}
+  depths_glowstone:      {material: glowstone_dust,   rarity: uncommon}
+  depths_raider_scrap:   {material: iron_nugget,      rarity: rare}
+  depths_blaze_rod:      {material: blaze_rod,        rarity: rare}
+  depths_wither_ash:     {material: gunpowder,        rarity: epic}
+  depths_warlord_sigil:  {material: nether_star,      rarity: legendary}
+
+# Mob definitions:
+#   type:           vanilla mob (zombie, skeleton, spider, cave_spider, slime, drowned, witch, pillager, vindicator,
+#                   blaze, wither_skeleton, ravager, evoker, bat, ...)
+#   health, damage: max health; damage per hit to players (melee and projectiles; armor still counts); 0 = vanilla
+#   speed:          movement speed attribute (0 = vanilla), scale: size (1 = normal), size: slime size (0 = vanilla)
+#   xp:             Combat skill XP per kill, vanilla-xp: experience given straight to the killer
+#   crystal-chance: chance per kill of crystals (above 1 = several hits), crystal-amount: crystals per hit
+#   drops:          list of {item, min, max, chance}; looting/fortune bonuses multiply the amounts (max depths.yml ->
+#                   combat.max-drop-multiplier). Drops go into the satchel (full satchel = the items are lost, warning shown)
+#   glowing, name-visible: outline and always-visible name (mini-bosses)
+# Ambient mobs (mine/forest) only need a type: they are harmless, per player, and give nothing.
+mobs:
+  # Tier 1 Graveyard
+  grave_walker:     {type: zombie, health: 20, damage: 2, xp: 5, vanilla-xp: 5, crystal-chance: 0.26, drops: [{item: depths_rotten_flesh, min: 3, max: 5}]}
+  grave_warden:     {type: zombie, health: 300, damage: 4, scale: 1.6, xp: 100, vanilla-xp: 50, crystal-chance: 5.2, glowing: true, name-visible: true, drops: [{item: depths_rotten_flesh, min: 50, max: 70}]}
+  # Tier 2 Bone Crypt
+  crypt_skeleton:   {type: skeleton, health: 22, damage: 2.5, xp: 10, vanilla-xp: 5, crystal-chance: 0.42, drops: [{item: depths_bone, min: 3, max: 5}]}
+  crypt_archer:     {type: skeleton, health: 330, damage: 5, scale: 1.4, xp: 200, vanilla-xp: 50, crystal-chance: 8.4, glowing: true, name-visible: true, drops: [{item: depths_bone, min: 50, max: 70}]}
+  # Tier 3 Spider Den
+  den_spider:       {type: spider, health: 24, damage: 3, xp: 22, vanilla-xp: 5, crystal-chance: 0.61, drops: [{item: depths_spider_eye, min: 3, max: 5}]}
+  den_cave_spider:  {type: cave_spider, health: 18, damage: 2.5, xp: 22, vanilla-xp: 5, crystal-chance: 0.61, drops: [{item: depths_spider_eye, min: 3, max: 5}]}
+  broodmother:      {type: spider, health: 360, damage: 6, scale: 2.0, xp: 440, vanilla-xp: 50, crystal-chance: 12.2, glowing: true, name-visible: true, drops: [{item: depths_spider_eye, min: 50, max: 70}]}
+  # Tier 4 Slime Bog
+  bog_slime:        {type: slime, size: 2, health: 26, damage: 4, xp: 40, vanilla-xp: 5, crystal-chance: 0.98, drops: [{item: depths_slime_ball, min: 3, max: 5}]}
+  king_slime:       {type: slime, size: 4, health: 390, damage: 7, scale: 1.5, xp: 800, vanilla-xp: 50, crystal-chance: 19.6, glowing: true, name-visible: true, drops: [{item: depths_slime_ball, min: 50, max: 70}]}
+  # Tier 5 Sunken Ruins
+  ruin_drowned:     {type: drowned, health: 28, damage: 5, xp: 72, vanilla-xp: 5, crystal-chance: 1.4, drops: [{item: depths_prismarine, min: 3, max: 5}]}
+  tide_caller:      {type: drowned, health: 420, damage: 8, scale: 1.5, xp: 1440, vanilla-xp: 50, crystal-chance: 28, glowing: true, name-visible: true, drops: [{item: depths_prismarine, min: 50, max: 70}]}
+  # Tier 6 Witch Hollow
+  hollow_witch:     {type: witch, health: 30, damage: 6, xp: 135, vanilla-xp: 5, crystal-chance: 2.0, drops: [{item: depths_glowstone, min: 3, max: 5}]}
+  coven_elder:      {type: witch, health: 450, damage: 9, scale: 1.4, xp: 2700, vanilla-xp: 50, crystal-chance: 40, glowing: true, name-visible: true, drops: [{item: depths_glowstone, min: 50, max: 70}]}
+  # Tier 7 Pillager Outpost
+  outpost_pillager: {type: pillager, health: 32, damage: 7, xp: 250, vanilla-xp: 5, crystal-chance: 3.1, drops: [{item: depths_raider_scrap, min: 3, max: 5}]}
+  outpost_vindicator: {type: vindicator, health: 34, damage: 7, xp: 250, vanilla-xp: 5, crystal-chance: 3.1, drops: [{item: depths_raider_scrap, min: 3, max: 5}]}
+  raid_captain:     {type: vindicator, health: 500, damage: 11, scale: 1.4, xp: 5000, vanilla-xp: 50, crystal-chance: 62, glowing: true, name-visible: true, drops: [{item: depths_raider_scrap, min: 50, max: 70}]}
+  # Tier 8 Blaze Forge
+  forge_blaze:      {type: blaze, health: 34, damage: 8, xp: 420, vanilla-xp: 10, crystal-chance: 4.4, drops: [{item: depths_blaze_rod, min: 3, max: 5}]}
+  forge_lord:       {type: blaze, health: 510, damage: 12, scale: 1.8, xp: 8400, vanilla-xp: 50, crystal-chance: 88, glowing: true, name-visible: true, drops: [{item: depths_blaze_rod, min: 50, max: 70}]}
+  # Tier 9 Wither Keep
+  keep_wither_skeleton: {type: wither_skeleton, health: 36, damage: 9, xp: 700, vanilla-xp: 5, crystal-chance: 6.4, drops: [{item: depths_wither_ash, min: 3, max: 5}]}
+  bone_king:        {type: wither_skeleton, health: 540, damage: 13, scale: 1.5, xp: 14000, vanilla-xp: 50, crystal-chance: 128, glowing: true, name-visible: true, drops: [{item: depths_wither_ash, min: 50, max: 70}]}
+  # Tier 10 Warlord's Citadel
+  citadel_ravager:  {type: ravager, health: 40, damage: 10, xp: 1200, vanilla-xp: 20, crystal-chance: 9.9, drops: [{item: depths_warlord_sigil, min: 3, max: 5}]}
+  citadel_evoker:   {type: evoker, health: 40, damage: 10, xp: 1200, vanilla-xp: 10, crystal-chance: 9.9, drops: [{item: depths_warlord_sigil, min: 3, max: 5}]}
+  warlord:          {type: ravager, health: 600, damage: 15, scale: 1.3, xp: 24000, vanilla-xp: 50, crystal-chance: 198, glowing: true, name-visible: true, drops: [{item: depths_warlord_sigil, min: 50, max: 70}]}
+
+  # Ambient mobs of the mine (WORLD.md 4.2) and forest.
+  ambient_bat:              {type: bat}
+  ambient_silverfish:       {type: silverfish}
+  ambient_zombie:           {type: zombie}
+  ambient_husk:             {type: husk}
+  ambient_skeleton:         {type: skeleton}
+  ambient_drowned:          {type: drowned}
+  ambient_stray:            {type: stray}
+  ambient_cave_spider:      {type: cave_spider}
+  ambient_endermite:        {type: endermite}
+  ambient_zombified_piglin: {type: zombified_piglin}
+  ambient_magma_cube:       {type: magma_cube, size: 1}
+  ambient_enderman:         {type: enderman}
+  ambient_rabbit:           {type: rabbit}
+  ambient_fox:              {type: fox}
+  ambient_parrot:           {type: parrot}
+  ambient_frog:             {type: frog}
+  ambient_bee:              {type: bee}
+  ambient_strider:          {type: strider}
+
+# Combat spawning per tier: mobs {id: weight}; alive = base + per-player x players in the zone, at most max (also
+# depths.yml -> combat.max-total-mobs for all zones together). Nothing spawns while the zone is empty; its mobs go after
+# combat.despawn-after-seconds. mini-boss: mob id, one at a time, mini-boss-minutes after the previous one died.
+combat-zones:
+  1:  {mobs: {grave_walker: 1}, base: 8, per-player: 2, max: 30, mini-boss: grave_warden, mini-boss-minutes: 10}
+  2:  {mobs: {crypt_skeleton: 1}, base: 8, per-player: 2, max: 30, mini-boss: crypt_archer, mini-boss-minutes: 10}
+  3:  {mobs: {den_spider: 3, den_cave_spider: 1}, base: 8, per-player: 2, max: 30, mini-boss: broodmother, mini-boss-minutes: 10}
+  4:  {mobs: {bog_slime: 1}, base: 8, per-player: 2, max: 30, mini-boss: king_slime, mini-boss-minutes: 10}
+  5:  {mobs: {ruin_drowned: 1}, base: 8, per-player: 2, max: 30, mini-boss: tide_caller, mini-boss-minutes: 10}
+  6:  {mobs: {hollow_witch: 1}, base: 8, per-player: 2, max: 30, mini-boss: coven_elder, mini-boss-minutes: 10}
+  7:  {mobs: {outpost_pillager: 1, outpost_vindicator: 1}, base: 8, per-player: 2, max: 30, mini-boss: raid_captain, mini-boss-minutes: 10}
+  8:  {mobs: {forge_blaze: 1}, base: 8, per-player: 2, max: 30, mini-boss: forge_lord, mini-boss-minutes: 10}
+  9:  {mobs: {keep_wither_skeleton: 1}, base: 8, per-player: 2, max: 30, mini-boss: bone_king, mini-boss-minutes: 10}
+  10: {mobs: {citadel_ravager: 1, citadel_evoker: 2}, base: 8, per-player: 2, max: 30, mini-boss: warlord, mini-boss-minutes: 10}
+
+# Ambient mobs per mine/forest tier: harmless, per player (only you see yours), depths.yml -> ambient.per-player each.
+ambient:
+  mine:
+    1:  {mobs: {ambient_bat: 1}}
+    2:  {mobs: {ambient_silverfish: 1}}
+    3:  {mobs: {ambient_zombie: 1}}
+    4:  {mobs: {ambient_husk: 1}}
+    5:  {mobs: {ambient_skeleton: 1}}
+    6:  {mobs: {ambient_drowned: 1}}
+    7:  {mobs: {ambient_stray: 1}}
+    8:  {mobs: {ambient_cave_spider: 1}}
+    9:  {mobs: {ambient_endermite: 1}}
+    10: {mobs: {ambient_zombified_piglin: 1}}
+    11: {mobs: {ambient_magma_cube: 1}}
+    12: {mobs: {ambient_enderman: 1}}
+  forest:
+    1:  {mobs: {ambient_rabbit: 1}}
+    2:  {mobs: {ambient_rabbit: 1}}
+    3:  {mobs: {ambient_fox: 1}}
+    4:  {mobs: {ambient_parrot: 1}}
+    5:  {mobs: {ambient_rabbit: 1}}
+    6:  {mobs: {ambient_bat: 1}}
+    7:  {mobs: {ambient_frog: 1}}
+    8:  {mobs: {ambient_bee: 1}}
+    9:  {mobs: {ambient_bat: 1}}
+    10: {mobs: {ambient_strider: 1}}
+    11: {mobs: {ambient_strider: 1}}

@@ -239,6 +239,7 @@ sell:
     mob-loot: "Mob loot"
     depths-mine: "Depths ores"
     depths-forest: "Depths logs"
+    depths-combat: "Depths combat drops"
   # Names of sell bonus sources in the menu (BonusService source ids); missing ids are shown as words.
   bonus-source:
     enchants: "Enchants"
