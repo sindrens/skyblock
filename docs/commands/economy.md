@@ -20,10 +20,33 @@ Currencies: Money, Crystals (island crystals, replaced tokens; not tradeable), G
 | `/eco set <player> <currency> <amount> <reason>` | Staff: set an exact balance (`0` allowed); the ledger gets the difference | `skyblock.admin.economy` | ✅ |
 | `/eco reset <player> <currency\|all> <reason>` | Staff: back to the starting balance (`start.*`) | `skyblock.admin.economy` | ✅ |
 | `/eco note <player> <amount> <reason>` | Staff: give an **online** player a money note without taking money (offline → refused). Staff alert + audit `admin_note`; the money is created when the note is cashed (`note_redeem`) | `skyblock.admin.economy` | ✅ |
+| `/eco admin [alert]` | Staff: the **economy dashboard** (money supply and trend, created vs removed today / 7 d / 14 d, sink ratio, inflation risk badge, biggest sources and sinks, every reason, sell price index, velocity, interest and auction volume, top earners, biggest transactions, alerts). With an alert number (`/eco admin 12`, tab-completes the newest): that alert's evidence | `skyblock.staff.economy.dashboard` | ✅ |
 
-`/eco` is for admins and the owner (`skyblock.admin.economy`, granted to admin; owner decision #47). Every use is audited (ledger + `/logs`), alerts online staff and the console, and tells the player. The old node `skyblock.owner.economy` still works (it grants `skyblock.admin.economy`).
+`/eco give|take|set|reset|note` are for admins and the owner (`skyblock.admin.economy`, granted to admin; owner decision #47). Every use is audited (ledger + `/logs`), alerts online staff and the console, and tells the player. The old node `skyblock.owner.economy` still works (it grants `skyblock.admin.economy`). `/eco` itself needs `skyblock.staff.economy.dashboard` (moderators and up; `skyblock.admin.economy` includes it), so moderators only see `/eco admin`.
 
-Other: `skyblock.staff.economy.alerts` (chat alert when staff use `/eco`; helpers and up).
+Other: `skyblock.staff.economy.alerts` (chat alert when staff use `/eco`; helpers and up), `skyblock.staff.economy.anomalies` (economy anomaly alerts, moderators and up).
+
+## Economy dashboard + anomaly alerts (M3.8)
+Settings: `economy-watch.yml`; texts: `messages/economy.yml → watch.*`; data: `db/economy/V006__economy_watch.sql`.
+
+**How the numbers are made.** A background job (every `job.interval-seconds`, 60 s, never on the main thread) reads only the ledger rows after its saved cursor (`eco_watch_state`, last processed ledger id), in batches (`job.batch-size` 5,000, at most `job.max-batches-per-run` 20 per run), and adds them to summary tables: money **created / removed / moved** per UTC hour, currency and ledger reason (`eco_watch_flows`), and per profile and hour what was **earned / spent** (`eco_watch_accounts`; own bank moves and staff changes are left out, `earnings.ignore-reasons`). The sums and the new cursor commit in **one transaction**, so every ledger row is counted exactly once, also after a crash. A missing ledger id (a transaction still committing) is waited for up to `job.gap-grace-seconds` (120 s). The money supply (every balance in player, island and bank accounts + money notes not cashed yet) is snapshotted every `job.supply-minutes` (60) for the trend (`eco_watch_supply`). Old rows are purged daily (`retention.*`). The dashboard only reads these tables (and the ledger in small indexed windows for the lists).
+
+**Transit reasons** (`flows.transit-groups`): money that only passes through the server counts by its difference, so the sink ratio is honest: the auction (buyer pays `ah_buy`, seller gets `ah_sale`) counts only its sales tax as a sink, money notes (`note_withdraw` / `note_redeem`) only staff notes beyond those made.
+
+**Inflation risk badge** (ECONOMY_BALANCE §7.2, BAL2): 14-day sink ratio = removed / created. **OK** at or above `risk.watch-below-percent` (75), **Watch** below it, **ACT** below `risk.act-below-percent` (60) on `risk.act-days` (3) days in a row (staff get a `sink-ratio` alert once a day), **Not enough data** before `risk.min-days` (3). **Sell price index**: today's sell table as a basket weighted by base price, in % of base (100 = all at base). **Velocity**: money moved between accounts in 7 days / money supply.
+
+**Anomaly alerts** (all thresholds in `economy-watch.yml → rules.*`, per currency in `alerts.currencies`):
+| Rule | Fires when | Default |
+|---|---|---|
+| `earn-rate` | a profile earned in one hour more than `multiplier` × the baseline (average earning per active profile-hour over `baseline-days`, 14; ECONOMY_BALANCE R6) and at least `min.<currency>` | 3×, $5M |
+| `big-transfer` | one transfer between two players (pay, trade), or one amount created at once (not staff), at or above `supply-percent` of the supply and `min.<currency>` | 0.5%, $50M |
+| `repeat-transfer` | the same profile sent the same receiver `count` amounts within `tolerance-percent` of each other in `window-minutes` | 5 in 10 min, 5%, from $10k |
+| `note-redeem` | a profile cashed `count` money notes in one hour | 10 |
+| `sell-spike` | the whole server sold more in one hour than `multiplier` × the hourly sell average (14 days) and at least `min-amount` | 4×, $50M |
+| `balance-mismatch` | an account's balance before a transaction is not what its previous transaction left: it changed **without a ledger row** (money from nowhere) | on |
+| `sink-ratio` | the badge says ACT | once a day |
+
+An alert goes to online staff with `skyblock.staff.economy.anomalies` (chat line with **[Open]** → `/eco admin <id>` and **[Punish]** → `/p <player>`), the console, the audit log (`economy / eco_anomaly`) and Discord channel `alerts.discord-channel` (off until a webhook with that name exists). The same rule + profile is sent at most once per `alerts.cooldown-minutes` (60). Only hours from the last `alerts.max-age-hours` (2) make alerts, so the first start (the job reads the whole existing ledger once, in batches) and catching up after a downtime fill the numbers without old alerts. **Alerts never punish.** The evidence screen shows the ledger rows behind the alert (earn-rate: the profile's biggest incoming rows of that hour; sell spike: the biggest sales of that hour; others: the stored rows), the profile's full history, **Open /p**, **Suggest punishment** (files a suggestion with reason `alerts.suggest-reason` through the moderation module; staff still press Apply or Dismiss), **Mark reviewed**, **False alarm** and **Open again** (audited: `eco_alert_review`, `eco_alert_dismiss`, `eco_alert_reopen`, `eco_alert_suggest`). `alerts.auto-suggest-rules` (empty) can file suggestions at once for chosen rules.
 
 **Sell multiplier cap.** `economy.yml → sell.multiplier-cap-percent` (default `300` = at most ×4.0, owner decision #46). Every sell bonus (rank, Sell Multiplier upgrade, sets, personal/global boosters, events) is added up and capped once. Sell code reads the cap with `EconomyService.sellBonusCapPercent()` and applies it with `MultiplierCap.apply(base, totalBonusPercent, cap)` (`common/economy`; rounds down, never overflows, never negative).
 

@@ -55,6 +55,7 @@ import java.util.concurrent.Executor;
  * Money notes (M3.2): {@code /withdraw}, {@code /eco note} and the redeemable note item ({@link MoneyNotes}).
  * Selling (M3.4): {@code /sell}, dynamic prices and {@code SellService} (package {@code sell}).
  * Banks (M3.3): {@code /bank}, personal and island banks with interest and {@code BankService} (package {@code bank}).
+ * Economy dashboard + anomaly alerts (M3.8): {@code /eco admin [alert]} (package {@code admin}).
  * Settings: {@code economy.yml}; texts: {@code messages/economy.yml}; data: {@code db/economy}.
  */
 public final class EconomyModule implements SkyblockModule, Listener {
@@ -86,6 +87,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private MoneyNotes notes;
     private net.skybornmc.skyblock.economy.sell.SellFeature sell;
     private net.skybornmc.skyblock.economy.bank.BankFeature bank;
+    private net.skybornmc.skyblock.economy.admin.EconomyWatch watch;
     private Baltop baltop;
     private Executor main;
     private Scheduler.Task baltopTask;
@@ -127,6 +129,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         // M3.3 banks: /bank, personal (per profile) and island banks, interest, BankService.
         bank = new net.skybornmc.skyblock.economy.bank.BankFeature(this, core, msg, service);
         bank.enable();
+        // M3.8 economy watch: summary tables, anomaly alerts, /eco admin.
+        watch = new net.skybornmc.skyblock.economy.admin.EconomyWatch(this, core, msg);
+        watch.enable();
         registerPlaceholders();
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
@@ -149,6 +154,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         }
         if (bank != null) {
             bank.reload();
+        }
+        if (watch != null) {
+            watch.reload();
         }
     }
 
@@ -185,6 +193,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         if (bank != null) {
             bank.disable();
         }
+        if (watch != null) {
+            watch.disable();
+        }
         HandlerList.unregisterAll(this);
     }
 
@@ -204,6 +215,14 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     public Executor mainThread() {
         return main;
+    }
+
+    /**
+     * Opens a profile's full ledger (the players' own {@code /transactions} view) for staff, as a child of {@code from}
+     * (M3.8 dashboard: top earners, alert evidence). Gem rows come from the profile's player.
+     */
+    public void openHistory(net.skybornmc.skyblock.common.menu.Menu from, UUID profileKey) {
+        from.openChild(new TransactionsMenu(this, AccountRef.player(profileKey), AccountRef.player(profiles().ownerOf(profileKey))));
     }
 
     // ================================================================== players
@@ -461,31 +480,38 @@ public final class EconomyModule implements SkyblockModule, Listener {
         Arg<String> reasonReset = Args.text("reason", reasons);
         String[] noteReasons = NOTE_REASONS.toArray(String[]::new);
 
+        // /eco needs the dashboard node (admins get it as a child of skyblock.admin.economy); every balance-changing
+        // sub-command needs skyblock.admin.economy itself (owner decision #47), /eco admin only the dashboard node (M3.8).
         core.commands().register(CommandSpec.command("eco")
-                .description("Staff: change a player's balance or give a money note (always logged)")
+                .description("Staff: economy dashboard, change a player's balance or give a money note (always logged)")
                 .category("Staff")
-                .permission(PERM_ECO)
+                .permission(net.skybornmc.skyblock.economy.admin.EconomyWatch.PERM_DASHBOARD)
                 .aliases("economy")
+                .sub(watch.adminCommand())
                 .sub(CommandSpec.sub("give")
                         .description("Give a player currency")
+                        .permission(PERM_ECO)
                         .arg(player).arg(currency).arg(amount).arg(reasonGive)
                         .example("eco give Steve money 10k Event prize")
                         .executes(ctx -> eco(ctx.sender(), EcoAction.GIVE, ctx.get(player), List.of(ctx.get(currency)),
                                 ctx.get(amount), ctx.get(reasonGive))))
                 .sub(CommandSpec.sub("take")
                         .description("Take currency from a player")
+                        .permission(PERM_ECO)
                         .arg(player).arg(currency).arg(amount).arg(reasonTake)
                         .example("eco take Steve money 10k Dupe removal")
                         .executes(ctx -> eco(ctx.sender(), EcoAction.TAKE, ctx.get(player), List.of(ctx.get(currency)),
                                 ctx.get(amount), ctx.get(reasonTake))))
                 .sub(CommandSpec.sub("set")
                         .description("Set a player's balance")
+                        .permission(PERM_ECO)
                         .arg(player).arg(currency).arg(setAmount).arg(reasonSet)
                         .example("eco set Steve money 0 Dupe removal")
                         .executes(ctx -> eco(ctx.sender(), EcoAction.SET, ctx.get(player), List.of(ctx.get(currency)),
                                 ctx.get(setAmount), ctx.get(reasonSet))))
                 .sub(CommandSpec.sub("reset")
                         .description("Reset a balance to the starting amount")
+                        .permission(PERM_ECO)
                         .arg(player).arg(resetCurrency).arg(reasonReset)
                         .example("eco reset Steve all Testing")
                         .executes(ctx -> {
@@ -494,7 +520,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                                     : List.of(Currency.byKey(which).orElseThrow());
                             eco(ctx.sender(), EcoAction.RESET, ctx.get(player), list, 0, ctx.get(reasonReset));
                         }))
-                .sub(notes.ecoNoteCommand(noteReasons)));
+                .sub(notes.ecoNoteCommand(noteReasons).permission(PERM_ECO)));
     }
 
     // ================================================================== /bal

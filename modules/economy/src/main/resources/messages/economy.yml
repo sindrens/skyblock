@@ -590,3 +590,376 @@ bank:
         - ""
         - "<c:muted><ago> ago <sym:dot> <date>"
         - "<c:muted>#<id>"
+
+# Economy dashboard + anomaly alerts (M3.8): /eco admin. Staff only. Amount placeholders are colored with their currency.
+# Alerts never punish anyone: staff open the evidence and decide.
+watch:
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The economy watch is switched off (<c:value>economy-watch.yml</c:value> <c:muted>enabled</c:muted>)."
+  invalid-alert: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not an alert number. Use the number from the alert, like <c:value>/eco admin 12</c:value>."
+  unknown-alert: "<prefix><c:error><sym:cross></c:error> <c:text>Alert <c:value>#<id></c:value> doesn't exist (old alerts are removed after a while)."
+  refreshed: "<prefix><c:success><sym:check></c:success> <c:text>Read <c:value><rows></c:value> new transactions. Numbers are up to date."
+  state-changed: "<prefix><c:success><sym:check></c:success> <c:text>Alert <c:value>#<id></c:value> is now <c:value><state></c:value>."
+  state-unchanged: "<prefix><c:error><sym:cross></c:error> <c:text>Alert <c:value>#<id></c:value> was already <c:value><state></c:value>."
+  suggested: "<prefix><c:success><sym:check></c:success> <c:text>Filed a punishment suggestion for <c:value><player></c:value>. Staff decide with Apply or Dismiss."
+  suggest-refreshed: "<prefix><c:success><sym:check></c:success> <c:text>The waiting suggestion for <c:value><player></c:value> was updated."
+  suggest-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't file a suggestion (<c:value><why></c:value>). Check <c:value>alerts.suggest-reason</c:value> in economy-watch.yml."
+  suggest-unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Suggestions need the moderation module. Use <c:value>/p <player></c:value> instead."
+  no-player: "<prefix><c:error><sym:cross></c:error> <c:text>This alert is not about one player."
+
+  # The staff chat line. <severity>, <rule>, <details> are filled from the keys below.
+  chat:
+    player: "<c:error>[Eco]</c:error> <severity> <c:value><rule></c:value> <c:muted><sym:dot></c:muted> <details> <click:run_command:'/eco admin <id>'><hover:show_text:'<c:text>Open the evidence of alert #<id>'><c:action>[Open]</c:action></hover></click> <click:run_command:'/p <player>'><hover:show_text:'<c:text>Open the punishment menu for <player>'><c:action>[Punish]</c:action></hover></click>"
+    server: "<c:error>[Eco]</c:error> <severity> <c:value><rule></c:value> <c:muted><sym:dot></c:muted> <details> <click:run_command:'/eco admin <id>'><hover:show_text:'<c:text>Open the evidence of alert #<id>'><c:action>[Open]</c:action></hover></click>"
+  severity:
+    high: "<c:error><bold>HIGH</bold></c:error>"
+    watch: "<c:warning>WATCH</c:warning>"
+  state:
+    open: "open"
+    reviewed: "reviewed"
+    dismissed: "a false alarm"
+  # Short rule names and the one-line details. <player> <other> <amount> <expected> <hits> <ratio> <line> <hour> <currency>.
+  rules:
+    earn-rate:
+      name: "Earning fast"
+      text: "<c:value><player></c:value> <c:text>earned <amount> <c:text>in the hour from <hour> <c:muted>(alert above <expected>)"
+    big-transfer:
+      name: "Big transfer"
+      text: "<c:value><player></c:value> <c:text>moved <amount> <c:text>to <c:value><other></c:value> <c:text>in one go <c:muted>(alert from <expected>)"
+    big-transfer-created:
+      name: "Big payout"
+      text: "<c:value><player></c:value> <c:text>got <amount> <c:text>in one transaction <c:muted>(alert from <expected>)"
+    repeat-transfer:
+      name: "Repeated transfers"
+      text: "<c:value><player></c:value> <c:text>sent <c:value><other></c:value> <c:text>about the same amount <c:value><hits></c:value> <c:text>times in a few minutes <c:muted>(total <amount>)"
+    note-redeem:
+      name: "Many notes cashed"
+      text: "<c:value><player></c:value> <c:text>cashed <c:value><hits></c:value> <c:text>money notes in the hour from <hour>"
+    sell-spike:
+      name: "Sell spike"
+      text: "<c:text>The server sold for <amount> <c:text>in the hour from <hour> <c:muted>(alert above <expected>)"
+    balance-mismatch:
+      name: "Balance jump"
+      text: "<c:value><player></c:value><c:text>'s <currency> <c:text>changed by <amount> <c:text>without a transaction <c:muted>(was <expected>)"
+    balance-mismatch-account:
+      name: "Balance jump"
+      text: "<c:text>An island or bank account's <currency> <c:text>changed by <amount> <c:text>without a transaction <c:muted>(was <expected>)"
+    sink-ratio:
+      name: "Inflation"
+      text: "<c:text>Only <c:value><ratio>%</c:value> <c:text>of new money was removed over the last 14 days, <c:value><hits></c:value> <c:text>days below <line>% <c:muted>(see /eco admin)"
+
+  # Account labels in lists.
+  account:
+    unknown: "Unknown"
+    server: "Server"
+    island: "Island bank"
+    bank: "Personal bank"
+    profile: "<player>"
+  # Transit groups (economy-watch.yml flows.transit-groups) as staff read them.
+  groups:
+    auction: "Auction house (net)"
+    notes: "Money notes (net)"
+  range:
+    today: "Today"
+    week: "Last 7 days"
+    fortnight: "Last 14 days"
+    day: "Last 24 hours"
+  percent-none: "-"
+  risk:
+    no-data: "<c:muted>Not enough data"
+    ok: "<c:success>OK"
+    watch: "<c:warning>Watch"
+    act: "<c:error><bold>ACT</bold>"
+
+  # ---------------------------------------------------------------- dashboard (/eco admin)
+  menu:
+    title: "Economy"
+    info:
+      - "<c:text>Money created and removed, the"
+      - "<c:text>money supply, top earners and"
+      - "<c:text>anomaly alerts. Staff only."
+    supply:
+      name: "<c:flame><sym:star></c:flame> <c:value>Money supply <c:muted>(<currency><c:muted>)"
+      lore:
+        - "<c:text>Held now: <amount>"
+        - "<c:text>Of that in notes: <notes>"
+        - ""
+        - "<c:text>24 hours ago: <day> <c:muted>(<day-change>)"
+        - "<c:text>7 days ago: <week> <c:muted>(<week-change>)"
+        - ""
+        - "<c:muted>All balances, island and personal"
+        - "<c:muted>banks, plus notes not cashed yet."
+    risk:
+      name: "<c:value>Inflation risk: <level>"
+      lore:
+        - "<c:text>Sink ratio (14 days): <c:value><ratio>"
+        - "<c:text>Days below <act>% in a row: <c:value><below>"
+        - "<c:text>Days with data: <c:value><days>"
+        - ""
+        - "<c:muted>Removed / created money. Target:"
+        - "<c:muted>80% over the season. Watch below"
+        - "<c:muted><watch>%, act below <act>% for <act-days> days."
+    period:
+      name: "<c:value><range>"
+      lore:
+        - "<c:text>Created: <created>"
+        - "<c:text>Removed: <removed>"
+        - "<c:text>Net: <net>"
+        - "<c:text>Sink ratio: <c:value><ratio>"
+        - "<c:text>Moved between players: <moved>"
+    sell-index:
+      name: "<c:value>Sell price index: <c:flame><index>"
+      lore:
+        - "<c:text>Whole sell table in % of base."
+        - "<c:text>Items below base: <c:value><below></c:value> <c:muted>of <items>"
+        - "<c:text>Items above base: <c:value><above>"
+        - "<c:text>Cheapest now: <c:value><lowest></c:value> <c:muted>(<lowest-percent>)"
+        - "<c:text>Hot item: <c:value><hot>"
+    sell-index-none:
+      name: "<c:value>Sell price index"
+      lore:
+        - "<c:text>Selling is not loaded yet."
+    highlights:
+      name: "<c:value>Last 7 days"
+      lore:
+        - "<c:text>Velocity: <c:value><velocity></c:value> <c:muted>(supply changed hands)"
+        - "<c:text>Interest paid: <interest>"
+        - "<c:text>Auction volume: <ah-volume>"
+        - "<c:text>Auction fees and tax: <ah-tax>"
+        - "<c:text>Shop spending: <shop>"
+    sources:
+      name: "<c:success>Biggest sources <c:muted>(7 days)"
+      line: "<c:muted><sym:bullet></c:muted> <c:text><reason><c:muted>:</c:muted> <amount> <c:muted>(<share>)"
+      empty: "<c:muted>Nothing created yet."
+      footer:
+        - ""
+        - "<c:action><sym:bullet> Click for every reason"
+    sinks:
+      name: "<c:error>Biggest sinks <c:muted>(7 days)"
+      line: "<c:muted><sym:bullet></c:muted> <c:text><reason><c:muted>:</c:muted> <amount> <c:muted>(<share>)"
+      empty: "<c:muted>Nothing removed yet."
+      footer:
+        - ""
+        - "<c:action><sym:bullet> Click for every reason"
+    reasons:
+      name: "<c:value>Every reason"
+      lore:
+        - "<c:text>Created, removed and moved"
+        - "<c:text>money per ledger reason."
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    top:
+      name: "<c:value>Top earners"
+      lore:
+        - "<c:text>Profiles that earned the most,"
+        - "<c:text>with player names."
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    biggest:
+      name: "<c:value>Biggest transactions"
+      lore:
+        - "<c:text>The largest single transactions"
+        - "<c:text>of the last 24 hours."
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    alerts:
+      name: "<c:value>Alerts <c:muted>(<open> open)"
+      lore:
+        - "<c:text>Unusual earning, transfers,"
+        - "<c:text>notes, sell spikes, balance jumps."
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    currency:
+      name: "<c:value>Currency: <currency>"
+      lore:
+        - "<c:text>Show another currency."
+        - ""
+        - "<c:action><sym:bullet> Click to change"
+    refresh:
+      name: "<c:value>Refresh"
+      lore:
+        - "<c:text>Read the newest transactions now."
+        - "<c:text>Last update: <c:value><ago></c:value> ago"
+        - "<c:text>Read up to transaction <c:value>#<cursor>"
+        - ""
+        - "<c:action><sym:bullet> Click to refresh"
+
+  # ---------------------------------------------------------------- reasons drill-down
+  reasons-menu:
+    title: "Reasons"
+    info:
+      - "<c:text>Money per ledger reason."
+      - "<c:text>Click one for its biggest"
+      - "<c:text>transactions of the last 24 hours."
+    entry:
+      name: "<c:value><reason>"
+      lore:
+        - "<c:text>Created: <created>"
+        - "<c:text>Removed: <removed>"
+        - "<c:text>Moved: <moved>"
+        - "<c:text>Transactions: <c:value><count>"
+    transit:
+      - "<c:muted>Passed through: in <in><c:muted>, out <out>"
+    footer:
+      - ""
+      - "<c:muted>Key: <key>"
+      - "<c:action><sym:bullet> Click for the biggest of 24 hours"
+    range:
+      name: "<c:value>Period: <range>"
+      lore:
+        - "<c:text>Today, 7 days or 14 days."
+        - ""
+        - "<c:action><sym:bullet> Click to change"
+    sort:
+      name: "<c:value>Sort: <sort>"
+      lore:
+        - "<c:text>By volume, created or removed."
+        - ""
+        - "<c:action><sym:bullet> Click to change"
+    sorts:
+      volume: "Volume"
+      created: "Created"
+      removed: "Removed"
+    empty:
+      name: "<c:muted>Nothing here"
+      lore:
+        - "<c:text>No money moved in this period."
+
+  # ---------------------------------------------------------------- top earners
+  top-menu:
+    title: "Top earners"
+    info:
+      - "<c:text>Profiles that earned the most."
+      - "<c:text>Bank moves and staff changes"
+      - "<c:text>are not counted. Click for history."
+    entry:
+      name: "<c:muted>#<rank></c:muted> <c:value><player>"
+      lore:
+        - "<c:text>Earned: <earned>"
+        - "<c:text>Spent: <spent>"
+        - "<c:text>Transactions: <c:value><count>"
+        - ""
+        - "<c:muted>Profile <profile>"
+        - "<c:action><sym:bullet> Click for the full history"
+    range:
+      name: "<c:value>Period: <range>"
+      lore:
+        - "<c:text>24 hours or 7 days."
+        - ""
+        - "<c:action><sym:bullet> Click to change"
+    empty:
+      name: "<c:muted>Nothing here"
+      lore:
+        - "<c:text>Nobody earned anything yet."
+
+  # ---------------------------------------------------------------- transactions lists (biggest, evidence)
+  tx:
+    title: "Biggest"
+    info:
+      - "<c:text>The largest transactions,"
+      - "<c:text>biggest first. Click one for"
+      - "<c:text>that player's full history."
+    entry:
+      name: "<amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
+      lore:
+        - "<c:text>From: <c:value><from>"
+        - "<c:text>To: <c:value><to>"
+        - ""
+        - "<c:muted><ago> ago <sym:dot> <date>"
+        - "<c:muted>#<id>"
+    click:
+      - "<c:action><sym:bullet> Click for <c:value><player></c:value><c:action>'s history"
+    empty:
+      name: "<c:muted>Nothing here"
+      lore:
+        - "<c:text>No transactions in this window."
+
+  # ---------------------------------------------------------------- alerts
+  alerts-menu:
+    title: "Alerts"
+    info:
+      - "<c:text>Newest first. Alerts never"
+      - "<c:text>punish: open one, check the"
+      - "<c:text>evidence and decide."
+    entry:
+      name: "<severity> <c:value><rule></c:value> <c:muted>#<id>"
+      lore:
+        - "<details>"
+        - ""
+        - "<c:text>State: <c:value><state>"
+        - "<c:muted><ago> ago <sym:dot> <date>"
+        - "<c:action><sym:bullet> Click for the evidence"
+    filter:
+      name: "<c:value>Show: <filter>"
+      lore:
+        - "<c:text>Open alerts or all alerts."
+        - ""
+        - "<c:action><sym:bullet> Click to change"
+    filters:
+      open: "Open"
+      all: "All"
+    empty:
+      name: "<c:muted>No alerts"
+      lore:
+        - "<c:text>Nothing unusual. Good."
+
+  alert-menu:
+    title: "Alert #<id>"
+    info:
+      - "<c:text>What was seen and the rows"
+      - "<c:text>that show it. Nothing happens"
+      - "<c:text>to the player unless staff act."
+    summary:
+      name: "<severity> <c:value><rule></c:value> <c:muted>#<id>"
+      lore:
+        - "<details>"
+        - ""
+        - "<c:text>State: <c:value><state>"
+        - "<c:text>Reviewed by: <c:value><by>"
+        - "<c:muted><ago> ago <sym:dot> <date>"
+    history:
+      name: "<c:value>Full history"
+      lore:
+        - "<c:text>Every transaction of"
+        - "<c:value><player></c:value><c:text>'s profile."
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    punish:
+      name: "<c:value>Open /p"
+      lore:
+        - "<c:text>The punishment menu for"
+        - "<c:value><player></c:value><c:text>. You decide."
+        - ""
+        - "<c:action><sym:bullet> Click to open"
+    suggest:
+      name: "<c:value>Suggest punishment"
+      lore:
+        - "<c:text>Files a suggestion (reason"
+        - "<c:value><reason></c:value><c:text>). Staff then press"
+        - "<c:text>Apply or Dismiss. Never automatic."
+        - ""
+        - "<c:action><sym:bullet> Click to suggest"
+    review:
+      name: "<c:success>Mark reviewed"
+      lore:
+        - "<c:text>Checked: something was off"
+        - "<c:text>and is handled (or is fine)."
+        - ""
+        - "<c:action><sym:bullet> Click to mark"
+    dismiss:
+      name: "<c:muted>False alarm"
+      lore:
+        - "<c:text>Nothing wrong. Helps tune"
+        - "<c:text>the thresholds later."
+        - ""
+        - "<c:action><sym:bullet> Click to dismiss"
+    reopen:
+      name: "<c:warning>Open again"
+      lore:
+        - "<c:text>Put it back on the open list."
+        - ""
+        - "<c:action><sym:bullet> Click to reopen"
+    no-evidence:
+      name: "<c:muted>No rows"
+      lore:
+        - "<c:text>This alert is about totals."
+        - "<c:text>See the dashboard numbers."
