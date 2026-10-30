@@ -149,7 +149,7 @@ final class IslandMenu extends Menu {
                 click -> openChild(new VisitMenu(module, islands, module.visits(), warps, Showcase.Sort.DISCOVER))));
         set(SLOT_STATS, stats());
         set(SLOT_BANK, bank());
-        set(SLOT_UPGRADES, comingSoon(Material.ANVIL, "menu.upgrades"));
+        set(SLOT_UPGRADES, upgrades());
         if (role == Role.LEADER) {
             set(SLOT_LEAVE, button(Material.TNT, "menu.disband", click -> {
                 viewer.closeInventory();
@@ -225,6 +225,15 @@ final class IslandMenu extends Menu {
             return comingSoon(Material.ENDER_CHEST, "menu.bank-off");
         }
         return button(Material.ENDER_CHEST, "menu.bank", click -> bank.get().openIslandBank(viewer, this));
+    }
+
+    /** PHASE-5 M5.4: /is upgrade of the progression module; "Coming soon" without it. */
+    private MenuButton upgrades() {
+        var progression = module.progression();
+        if (progression.isEmpty() || !progression.get().upgradesAvailable() || !viewer.hasPermission(IslandsModule.PERM_UPGRADE)) {
+            return comingSoon(Material.ANVIL, "menu.upgrades");
+        }
+        return button(Material.ANVIL, "menu.upgrades-open", click -> progression.get().openUpgradeMenu(viewer, this));
     }
 
     private MenuButton notes() {

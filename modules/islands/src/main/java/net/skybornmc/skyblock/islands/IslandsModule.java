@@ -59,6 +59,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
     /** Owned by the progression module (permissions/progression.yml): /is level and /is top (PHASE-5 M5.2). */
     static final String PERM_LEVEL = "skyblock.progression.level";
     static final String PERM_TOP = "skyblock.progression.top";
+    /** PHASE-5 M5.4: /is upgrade (node owned by the progression module). */
+    static final String PERM_UPGRADE = "skyblock.progression.upgrade";
 
     private final Core core;
     private final ModuleMessages msg;
@@ -422,6 +424,16 @@ public final class IslandsModule implements SkyblockModule, Listener {
         return core.services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class);
     }
 
+    /** /is upgrade (PHASE-5 M5.4) lives in the progression module; without it the player is told. */
+    private void openUpgrades(Player player) {
+        var progression = progression();
+        if (progression.isEmpty() || !progression.get().upgradesAvailable()) {
+            msg().send(player, "upgrade.unavailable");
+            return;
+        }
+        progression.get().openUpgradeMenu(player, null);
+    }
+
     /** /is level and /is top live in the progression module; without it the player is told. */
     private void openProgression(Player player, boolean top) {
         var progression = progression();
@@ -527,6 +539,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("top").description("Island leaderboards: level and value, solo and team")
                         .permission(PERM_TOP).playerOnly().cooldown(Duration.ofSeconds(1)).example("is top")
                         .executes(ctx -> openProgression(ctx.player(), true)))
+                // PHASE-5 M5.4: island upgrades (menu of the progression module, which owns the node).
+                .sub(CommandSpec.sub("upgrade").description("Island upgrades: size, members, bank, sell bonus and more (island bank)")
+                        .permission(PERM_UPGRADE).playerOnly().cooldown(Duration.ofSeconds(1)).example("is upgrade")
+                        .executes(ctx -> openUpgrades(ctx.player())))
                 .sub(CommandSpec.sub("invites").description("Invites you received and invites your island sent").permission(PERM_USE)
                         .playerOnly().example("is invites")
                         .executes(ctx -> members.openInvites(ctx.player())))

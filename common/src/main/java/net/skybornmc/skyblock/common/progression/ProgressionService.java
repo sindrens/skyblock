@@ -146,4 +146,20 @@ public interface ProgressionService {
     /** Opens {@code /is top}; {@code parent} = Back target or null. Main thread. */
     default void openTopMenu(org.bukkit.entity.Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
     }
+
+    // ------------------------------------------------------------------ island upgrades (M5.4)
+
+    /** True when island upgrades can be opened (the upgrade catalog is loaded and switched on). */
+    default boolean upgradesAvailable() {
+        return false;
+    }
+
+    /** Opens {@code /is upgrade} for {@code player} (their own island); {@code parent} = Back target or null. Main thread. */
+    default void openUpgradeMenu(org.bukkit.entity.Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
+    }
+
+    /** The bought level of an upgrade ({@code upgrades.yml} id, e.g. {@code island_size}) on the island; 0 = none. */
+    default int upgradeLevel(UUID islandId, String upgradeId) {
+        return 0;
+    }
 }

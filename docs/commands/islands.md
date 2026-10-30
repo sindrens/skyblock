@@ -30,6 +30,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is stats` | M2.6: your island's **stats menu** (also the Stats button of the island menu): per category all time, today, this week, last week and the change vs last week; click a category for each member's part (heads, share in %, this week, today; former members keep theirs). Categories without their feature yet show `-` (Coming soon). Members only; reloads every 10 s while open | `skyblock.island.stats` (everyone) | ✅ |
 | `/is level` | M5.2 (owner P5-25): opens the island level menu of the progression module (points per source, Recalculate, pillars); also the island item in the island menu. See `docs/commands/progression.md` | `skyblock.progression.level` (everyone, progression module) | ✅ |
 | `/is top` | M5.2 (owner P5-25): island leaderboards of the progression module (Level/Value, Solo/Team) | `skyblock.progression.top` (everyone, progression module) | ✅ |
+| `/is upgrade` | M5.4: island upgrades of the progression module (tabs Island, Economy, Depths, Production; tasks + island bank money; buy needs the island permission `upgrades`); also the Upgrades button of the island menu and the Upgrades source in `/is level`. See `docs/commands/progression.md` | `skyblock.progression.upgrade` (everyone, progression module) | ✅ |
 | `/is invites` | ISL2: invites you received (click: Accept / Deny) and invites your island sent (click: cancel, Leader/Admin/Mod; confirm). Refreshes every 2 s | `skyblock.island` | ✅ |
 | `/is settings [setting] [on\|off\|value]` | ISL2: the island settings menu; with a setting name it changes it right away (no value: toggles flip, weather/time go to the next value). Who may change: the `settings` role permission (Leader + Admin by default); every member can look. Tab completes settings and, after one, its values | `skyblock.island` | ✅ |
 | `/is disband` | Leader only, and only while nobody else is a member (owner answer 141: `/is transfer` first, then `/is leave`); one confirm screen with a confirm button (owner answer 261, no typed word). The island is removed for good: coop players are told, everyone on it is sent to spawn, the slot is cleared and reused, and the island bank money is deleted (owner answer 263). A new island right away (no cooldown). Owner answer 591: this profile's money, inventory and ender chest are reset (staff keep a restorable backup) | `skyblock.island` | ✅ |
@@ -48,7 +49,9 @@ Rules: one island per player (database-enforced), no creation or join cooldown a
 delete or reset (owner answers 121/161/258/259), start size 3x3 chunks (48x48). Normal Island Size upgrades reach
 `size.normal-max-chunks` (9x9, owner answer 157); bigger sizes up to `size.max-chunks` (15) only with gems or from the
 black market (hook for Phase 5; `/isadmin setsize` can set up to `size.max-chunks`). Upgrades are paid from the island
-bank only (`upgrades.island-bank-only`, owner answer 169; `/is upgrade` is not built yet). Players always respawn at
+bank only (`upgrades.island-bank-only`, owner answer 169; `/is upgrade`, PHASE-5 M5.4, raises size, member slots and
+warp slots through `IslandService#setSize`, `#setMemberSlots` and `#setWarpSlots`, logged `island_size`,
+`island_member_slots`, `island_warp_slots`). Players always respawn at
 spawn after dying, never at the island home (essentials, owner answer 160). Only players
 on an island see its border. Void falls return you to the island home without damage.
 Everything that changes data is logged (category `island`: `island_create`, `island_build`, `island_build_failed`,
@@ -350,6 +353,8 @@ Island membership, ownership, roles, coop trust, invites and personal homes belo
 Three rows in the permission matrix (own defaults, never part of `*`, management rights: stored members only, never coop
 players or visitors): **Bank deposit** (`bank-deposit`: Admin, Mod, Member), **Bank withdraw** (`bank-withdraw`: Admin;
 daily limit per role in `bank.yml`) and **Bank history** (`bank-history`: Admin, Mod). The Leader has all three. Config:
-`permissions.role-defaults.bank-deposit|bank-withdraw|bank-history`. The island menu's **Bank** button opens `/bank`
+`permissions.role-defaults.bank-deposit|bank-withdraw|bank-history`. **Upgrades** (`upgrades`, PHASE-5 M5.4, owner
+170 / P5-10): buy island upgrades with the island bank; default Leader + Admin (`permissions.role-defaults.upgrades`),
+never coop players or visitors; everyone can look at `/is upgrade` and hand in task items. The island menu's **Bank** button opens `/bank`
 (economy module, `docs/commands/economy.md`). When an island is disbanded, what is left in its bank is deleted (owner
 answer 263: the money belongs to the island); a staff delete or reset keeps it in the closed bank.

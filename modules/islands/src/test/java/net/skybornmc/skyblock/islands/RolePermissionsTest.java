@@ -26,7 +26,8 @@ class RolePermissionsTest {
         for (IslandPerm perm : IslandPerm.values()) {
             assertTrue(perms.allows(null, PermRole.LEADER, perm), "leader: " + perm);
             assertTrue(perms.allows(null, PermRole.ADMIN, perm), "admin: " + perm);
-            assertEquals(perm != IslandPerm.SETTINGS && perm != IslandPerm.BANK_WITHDRAW, perms.allows(null, PermRole.MOD, perm),
+            assertEquals(perm != IslandPerm.SETTINGS && perm != IslandPerm.BANK_WITHDRAW && perm != IslandPerm.UPGRADES,
+                    perms.allows(null, PermRole.MOD, perm),
                     "mod: " + perm);
             assertEquals(perm == IslandPerm.HURT_MONSTERS, perms.allows(null, PermRole.VISITOR, perm),
                     "visitors walk, look and fight monsters: " + perm);
@@ -157,6 +158,20 @@ class RolePermissionsTest {
     }
 
     @Test
+    void upgradesPermissionDefaultsToLeaderAndAdmin() {
+        // PHASE-5 M5.4, owner 170 / P5-10: Leader always, Admin on, Mod and Member off; never coop or visitors.
+        RolePermissions perms = defaults();
+        assertTrue(perms.allows(null, PermRole.LEADER, IslandPerm.UPGRADES));
+        assertTrue(perms.allows(null, PermRole.ADMIN, IslandPerm.UPGRADES));
+        assertFalse(perms.allows(null, PermRole.MOD, IslandPerm.UPGRADES));
+        assertFalse(perms.allows(null, PermRole.MEMBER, IslandPerm.UPGRADES));
+        assertFalse(IslandPerm.UPGRADES.appliesTo(PermRole.COOP));
+        assertFalse(IslandPerm.UPGRADES.appliesTo(PermRole.VISITOR));
+        assertEquals("upgrades", IslandPerm.UPGRADES.key());
+        assertEquals("upgrades", net.skybornmc.skyblock.common.island.IslandService.PERM_UPGRADES);
+    }
+
+    @Test
     void newPermissionsHaveOwnDefaultsAndStableKeys() {
         assertEquals("hurt-monsters", IslandPerm.HURT_MONSTERS.key());
         assertEquals("settings", IslandPerm.SETTINGS.key());
@@ -166,7 +181,8 @@ class RolePermissionsTest {
         assertEquals(0, IslandPerm.wildcard() & IslandPerm.SETTINGS.bit());
         assertEquals(0, IslandPerm.notApplicable(PermRole.MEMBER));
         assertEquals(IslandPerm.SETTINGS.bit() | IslandPerm.NOTES_WRITE.bit() | IslandPerm.NOTES_MANAGE.bit()
-                        | IslandPerm.BANK_DEPOSIT.bit() | IslandPerm.BANK_WITHDRAW.bit() | IslandPerm.BANK_HISTORY.bit(),
+                        | IslandPerm.BANK_DEPOSIT.bit() | IslandPerm.BANK_WITHDRAW.bit() | IslandPerm.BANK_HISTORY.bit()
+                        | IslandPerm.UPGRADES.bit(),
                 IslandPerm.notApplicable(PermRole.VISITOR), "management rights (NOTES: write, manage; bank) never reach visitors");
         assertEquals(IslandPerm.notApplicable(PermRole.VISITOR), IslandPerm.notApplicable(PermRole.COOP),
                 "coop players never get bank rights either (REVIEW A4)");

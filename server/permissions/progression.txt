@@ -6,3 +6,5 @@
 # plugin default true (everyone): nothing to grant.
 # M5.3: skyblock.progression.tasks (challenge book button in /is level, hand-ins members only) is plugin default true
 # (everyone): nothing to grant.
+# M5.4: skyblock.progression.upgrade (/is upgrade and the Upgrades buttons) is plugin default true (everyone): nothing to
+# grant. Who may buy is the island permission "Upgrades" (/is permissions; leader always, admin by default).

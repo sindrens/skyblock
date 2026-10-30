@@ -99,6 +99,12 @@ public final class IslandStore {
                 sizeChunks, islandId) == 1);
     }
 
+    /** PHASE-5 Warp Slots upgrade / admin: the island's own warp slots. */
+    public CompletableFuture<Boolean> saveWarpSlots(UUID islandId, int slots) {
+        return db.async(c -> Sql.update(c, "UPDATE islands SET warp_slots = ? WHERE id = ? AND deleted_at IS NULL",
+                slots, islandId) == 1);
+    }
+
     /**
      * Saves one role permission override of an island ({@code null} = back to the default: the row is removed).
      * Delete + insert in one transaction, so a row is never half-written.

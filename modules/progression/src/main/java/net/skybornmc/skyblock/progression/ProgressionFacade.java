@@ -20,11 +20,19 @@ final class ProgressionFacade implements ProgressionService {
     private final PillarManager pillars;
     private final LevelManager levels;
     private final LevelMenus menus;
+    private UpgradeManager upgrades;
+    private UpgradeMenus upgradeMenus;
 
     ProgressionFacade(PillarManager pillars, LevelManager levels, LevelMenus menus) {
         this.pillars = pillars;
         this.levels = levels;
         this.menus = menus;
+    }
+
+    /** M5.4: the upgrades, set once they exist. */
+    void upgrades(UpgradeManager upgrades, UpgradeMenus menus) {
+        this.upgrades = upgrades;
+        this.upgradeMenus = menus;
     }
 
     // ------------------------------------------------------------------ pillars (M5.1)
@@ -166,5 +174,24 @@ final class ProgressionFacade implements ProgressionService {
     @Override
     public void openTopMenu(Player player, Menu parent) {
         menus.openTop(player, parent);
+    }
+
+    // ------------------------------------------------------------------ island upgrades (M5.4)
+
+    @Override
+    public boolean upgradesAvailable() {
+        return upgrades != null && upgrades.available();
+    }
+
+    @Override
+    public void openUpgradeMenu(Player player, Menu parent) {
+        if (upgradeMenus != null) {
+            upgradeMenus.open(player, parent);
+        }
+    }
+
+    @Override
+    public int upgradeLevel(UUID islandId, String upgradeId) {
+        return upgrades == null ? 0 : upgrades.level(islandId, upgradeId);
     }
 }

@@ -52,7 +52,9 @@ public enum IslandPerm {
     /** M3.3: take money out of the island bank (daily limit per role in bank.yml). Stored members only, default Admin. */
     BANK_WITHDRAW("bank-withdraw", true, true),
     /** M3.3: see the island bank history (Island, Bank, History). Stored members only, default Admin + Mod. */
-    BANK_HISTORY("bank-history", true, true);
+    BANK_HISTORY("bank-history", true, true),
+    /** PHASE-5 M5.4 (owner 170): buy island upgrades with the island bank. Stored members only, default Admin (P5-10). */
+    UPGRADES("upgrades", true, true);
 
     private static final IslandPerm[] VALUES = values();
 
