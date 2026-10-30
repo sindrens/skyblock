@@ -56,6 +56,7 @@ items:
   no-item: "<prefix><c:error><sym:cross></c:error> <c:text>Tap an item in your inventory."
   dupe-flagged: "<prefix><c:error><sym:cross></c:error> <c:text>This item is flagged as a possible dupe. Ask staff."
   staff-item: "<prefix><c:error><sym:cross></c:error> <c:text>Items made by staff can't be traded."
+  bound-item: "<prefix><c:error><sym:cross></c:error> <c:text>Bound loot stays on your profile and can't be traded."
   starter: "<prefix><c:error><sym:cross></c:error> <c:text>Starter kit items can't be traded."
   blocked: "<prefix><c:error><sym:cross></c:error> <c:text>This item can't be traded."
   filled-container: "<prefix><c:error><sym:cross></c:error> <c:text>Empty it first. Shulker boxes and bundles must be empty."
