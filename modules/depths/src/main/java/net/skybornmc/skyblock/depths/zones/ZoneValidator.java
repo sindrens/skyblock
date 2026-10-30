@@ -10,6 +10,9 @@ import java.util.List;
  */
 public final class ZoneValidator {
 
+    /** How far inside the zone edge a gate or exit may sit (builders' door planes are inset). */
+    static final int EDGE_INSET = 3;
+
     private ZoneValidator() {
     }
 
@@ -64,10 +67,10 @@ public final class ZoneValidator {
                 parts.add(new Part(n + ".causeway", z.causeway()));
             }
             inside(problems, n + ".spawn", z.spawn(), z.region());
-            if (!z.gate().onEdgeOf(z.region())) {
+            if (!z.gate().nearEdgeOf(z.region(), EDGE_INSET)) {
                 problems.add(n + ".gate is not on the zone's edge");
             }
-            if (z.exit() != null && !z.exit().onEdgeOf(z.region())) {
+            if (z.exit() != null && !z.exit().nearEdgeOf(z.region(), EDGE_INSET)) {
                 problems.add(n + ".exit is not on the zone's edge");
             }
             if (z.arena() != null && !z.region().contains(z.arena())) {

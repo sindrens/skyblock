@@ -63,6 +63,17 @@ public record Box(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         return minX == zone.minX || maxX == zone.maxX || minZ == zone.minZ || maxZ == zone.maxZ;
     }
 
+    /**
+     * True if the box stays within the zone's footprint and lies at most {@code inset} blocks inside one of its edges
+     * (builders put tier gate door planes 1-3 blocks inside the zone edge).
+     */
+    public boolean nearEdgeOf(Box zone, int inset) {
+        if (minX < zone.minX || maxX > zone.maxX || minZ < zone.minZ || maxZ > zone.maxZ) {
+            return false;
+        }
+        return minX - zone.minX <= inset || zone.maxX - maxX <= inset || minZ - zone.minZ <= inset || zone.maxZ - maxZ <= inset;
+    }
+
     public int sizeX() {
         return maxX - minX + 1;
     }

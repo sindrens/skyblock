@@ -94,6 +94,9 @@ public final class DepthsModule implements SkyblockModule {
         zones = new ZoneManager(core, config, engine);
         loadZones();
         core.services().register(ID, ZoneService.class, zones);
+        // BUILDS: /skyblock builds apply merges the builders' layout into zones.yml, then the module reloads.
+        core.services().register(ID, net.skybornmc.skyblock.common.builds.DepthsLayoutHook.class,
+                new net.skybornmc.skyblock.depths.zones.ZoneBuildHook(core.plugin().getDataFolder(), this::reload, core.plugin().getLogger()));
         generator = new ZoneGenerator(core, config, msg);
         portals = new ZonePortals(zones, config, msg);
         core.plugin().getServer().getPluginManager().registerEvents(portals, core.plugin());
