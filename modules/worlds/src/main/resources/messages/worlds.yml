@@ -125,3 +125,19 @@ portals:
   combat-left: "<prefix><c:error><sym:cross></c:error> <c:text>You left the portal. Step in again to travel."
   no-islands: "<prefix><c:error><sym:cross></c:error> <c:text>Islands aren't available right now. Try again soon."
   warzone-only: "<prefix><c:error><sym:cross></c:error> <c:text>The warzone can only be entered through its portal in the castle gatehouse."
+
+# World protection + region flags (DEPTHSPROT): one action bar line per denial (worlds.yml protection.message-cooldown-millis).
+protection:
+  build: "<c:error><sym:cross></c:error> <c:text>This area is protected. You can't build here."
+  interact: "<c:error><sym:cross></c:error> <c:text>You can't use that here."
+  containers: "<c:error><sym:cross></c:error> <c:text>Containers here are decoration."
+  workstations: "<c:error><sym:cross></c:error> <c:text>This one is decoration. Talk to the NPCs instead."
+  entity-edit: "<c:error><sym:cross></c:error> <c:text>Decorations here can't be changed."
+  fire: "<c:error><sym:cross></c:error> <c:text>You can't light fires here."
+  explosions: "<c:error><sym:cross></c:error> <c:text>Explosions can't break blocks here."
+  pve-dealt: "<c:error><sym:cross></c:error> <c:text>This is a safe zone. Step out to fight."
+  pve-taken: "<c:text>Safe zone: mobs can't hurt you here."
+  mob-target: "<c:text>Safe zone: mobs ignore you here."
+  ender-pearl: "<c:error><sym:cross></c:error> <c:text>Ender pearls don't work here."
+  wind-charge: "<c:error><sym:cross></c:error> <c:text>Wind charges don't work here."
+  bypass-hint: "<c:muted>Protected area <sym:dot> switch to </c:muted><c:value>creative</c:value><c:muted> to edit</c:muted>"

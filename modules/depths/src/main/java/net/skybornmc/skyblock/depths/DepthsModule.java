@@ -6,6 +6,7 @@ import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
+import net.skybornmc.skyblock.common.region.RegionFlags;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.satchel.SatchelService;
@@ -94,6 +95,7 @@ public final class DepthsModule implements SkyblockModule {
 
         zones = new ZoneManager(core, config, engine);
         loadZones();
+        publishFlagRegions();
         core.services().register(ID, ZoneService.class, zones);
         // BUILDS: /skyblock builds apply merges the builders' layout into zones.yml, then the module reloads.
         core.services().register(ID, net.skybornmc.skyblock.common.builds.DepthsLayoutHook.class,
@@ -147,6 +149,7 @@ public final class DepthsModule implements SkyblockModule {
                         .executes(ctx -> {
                             Player shown = ctx.getOr(target, ctx.player());
                             DepthsDebug.show(engine, msg, ctx.player(), shown);
+                            DepthsDebug.flags(core.services().optional(RegionFlags.class).orElse(null), msg, ctx.player(), shown);
                             combat.debug(ctx.player(), shown);
                             ambient.debug(ctx.player(), shown);
                         }))
@@ -219,6 +222,15 @@ public final class DepthsModule implements SkyblockModule {
         zones.load();
     }
 
+    /**
+     * DEPTHSPROT: hands the ore/log fields (kind field: the engine decides there), the tier zones, The Gate and the boss
+     * arena to the worlds module's region flags, which protect the rest of the Depths world.
+     */
+    private void publishFlagRegions() {
+        core.services().optional(RegionFlags.class).ifPresent(flags -> flags.contribute(DepthsRegionFlags.OWNER,
+                DepthsRegionFlags.of(zones.world(), engine.regions(), zones.zones(), zones.hub(), zones.bossArena())));
+    }
+
     private List<net.skybornmc.skyblock.depths.engine.DepthsRegion> loadRegions() {
         File file = new File(core.plugin().getDataFolder(), config.fileName());
         return RegionLoader.load(file, config, problem -> core.plugin().getLogger().warning(problem));
@@ -230,6 +242,7 @@ public final class DepthsModule implements SkyblockModule {
         core.messages().load(ID);
         engine.configRegions(loadRegions());
         loadZones();
+        publishFlagRegions();
         gates.reload();
         loadDrops();
         satchel.reload();
@@ -245,6 +258,7 @@ public final class DepthsModule implements SkyblockModule {
             teleports.unregister();
             teleports = null;
         }
+        core.services().optional(RegionFlags.class).ifPresent(flags -> flags.contribute(DepthsRegionFlags.OWNER, List.of()));
         if (combat != null) {
             HandlerList.unregisterAll(combat);
             combat.stop();

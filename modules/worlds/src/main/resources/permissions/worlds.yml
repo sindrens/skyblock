@@ -2,3 +2,6 @@
 skyblock.admin.builds:
   description: "/skyblock builds: list, inspect, paste and apply the finished builds (owner/admin only)"
   default: op
+skyblock.worlds.protection.bypass:
+  description: "Build in protected worlds and regions (Depths outside the ore/log fields, warzone, protected build regions) while in creative mode (worlds.yml protection.*)"
+  default: op

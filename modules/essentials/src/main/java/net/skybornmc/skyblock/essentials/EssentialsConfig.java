@@ -53,7 +53,8 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "protection.worlds", desc = "Worlds with spawn protection (no building, damage, hunger, drops or mob spawning).")
     public java.util.List<String> protectedWorlds = java.util.List.of("spawn");
 
-    @Setting(path = "protection.interact-allowed", desc = "Blocks players may still use in protected worlds (* = wildcard).")
+    @Setting(path = "protection.interact-allowed", desc = "Blocks players may still use in protected worlds (* = wildcard). "
+            + "Spawn is also protected by worlds.yml protection.*: allow a block in both lists.")
     public java.util.List<String> interactAllowed = java.util.List.of("*_door", "*_button", "lever", "*_pressure_plate",
             "*_fence_gate", "ender_chest", "crafting_table", "*_sign", "*_hanging_sign");
 
