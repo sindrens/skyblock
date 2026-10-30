@@ -41,12 +41,14 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param watchlist        watchlist (13.5)
      * @param probation        probation after a natural end (13.7)
      * @param muteEnded        "mute ended" / "welcome back" message (13.13)
+     * @param bulk             bulk punish (13.8)
+     * @param appeal           appeals (13.10)
      */
     record Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
                   java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
                   boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
                   PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
-                  WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded) {
+                  WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded, Bulk bulk, Appeals appeal) {
 
         static final Extras DEFAULT = new Extras(Duration.ofMinutes(2), Duration.ofSeconds(15), Duration.ofSeconds(5),
                 Duration.ofDays(90), java.time.ZoneId.of("Europe/Oslo"), Duration.ofSeconds(60), PunishStats.Period.D7, 10,
@@ -62,6 +64,46 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
                     closeReports, evidence, notes, ack, rulesLink, discord, playerView, chatSuggestions, Approval.Settings.DEFAULT,
                     WatchSettings.DEFAULT, Probation.Settings.DEFAULT, MuteEnded.DEFAULT);
         }
+
+        /** The P4 set of keys; the P5 ones get their defaults. */
+        Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
+               java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
+               boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
+               PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
+               WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded) {
+            this(undoWindow, duplicateWindow, duplicateConfirm, offenceExpire, statsZone, statsCache, statsPeriod, statsTop,
+                    closeReports, evidence, notes, ack, rulesLink, discord, playerView, chatSuggestions, approval, watchlist,
+                    probation, muteEnded, Bulk.DEFAULT, Appeals.DEFAULT);
+        }
+    }
+
+    /**
+     * Bulk punish (13.8): {@code /pbulk} and the Bulk button of {@code /p}.
+     *
+     * @param max most players in one bulk action
+     */
+    record Bulk(int max) {
+        static final Bulk DEFAULT = new Bulk(20);
+    }
+
+    /**
+     * Appeals (13.10): {@code /appeal} for players, {@code /appeals} for staff, and the appeals webhook (off by default).
+     *
+     * @param types          punishment types that can be appealed (a reason can still say {@code appealable: false})
+     * @param cooldown       after a denied appeal, the same punishment can be appealed again after this
+     * @param minLength      shortest appeal text
+     * @param maxLength      longest appeal text
+     * @param reminder       open appeals older than this are listed to staff when they join
+     * @param reduceMaxDays  Reduce on a permanent punishment offers up to this many days
+     * @param denyReasons    preset deny buttons (ids, texts {@code appeal.deny-reasons.<id>}), max 6
+     * @param discordEnabled post new appeals and decisions to the {@code discordChannel} webhook (also needs the secret)
+     */
+    record Appeals(boolean enabled, java.util.Set<Punishment.Type> types, Duration cooldown, int minLength, int maxLength,
+                   Duration reminder, int reduceMaxDays, List<String> denyReasons, boolean discordEnabled,
+                   String discordChannel) {
+        static final Appeals DEFAULT = new Appeals(true, java.util.Set.of(Punishment.Type.MUTE, Punishment.Type.BAN),
+                Duration.ofDays(7), 20, 500, Duration.ofHours(48), 365, List.of("clear-evidence", "fair", "no-reason"),
+                false, "appeals");
     }
 
     /**
@@ -119,9 +161,10 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param colors embed colour per kind (ban, mute, warn, kick, pardon, undo), 0xRRGGBB
      */
     record Discord(boolean enabled, String channel, int queueSize, int maxAttempts, Map<String, Integer> colors) {
-        static final List<String> KINDS = List.of("ban", "mute", "warn", "kick", "pardon", "undo");
+        static final List<String> KINDS = List.of("ban", "mute", "warn", "kick", "pardon", "undo", "bulk", "appeal");
         static final Discord DEFAULT = new Discord(false, "punishments", 100, 3, Map.of("ban", 0xE74C3C, "mute", 0xE67E22,
-                "warn", 0xF1C40F, "kick", 0x95A5A6, "pardon", 0x2ECC71, "undo", 0x3498DB));
+                "warn", 0xF1C40F, "kick", 0x95A5A6, "pardon", 0x2ECC71, "undo", 0x3498DB, "bulk", 0x9B59B6,
+                "appeal", 0x1ABC9C));
 
         int color(String kind) {
             return colors.getOrDefault(kind, 0x95A5A6);
@@ -152,7 +195,7 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
         }
     }
 
-    /** Fixed button ids, in config order. Sanctions, bulk and dry run show "Not available yet" until P7/P5/P8. */
+    /** Fixed button ids, in config order. Sanctions and dry run show "Not available yet" until P7/P8. */
     static final List<String> BUTTONS = List.of("sanctions", "kick", "bulk", "history", "close", "more-reasons", "dry-run");
 
     /** Quarters of the menu, in config order. */

@@ -81,6 +81,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
     /** P4 (spec 13.4, 13.5). */
     static final String PERM_APPROVE = "skyblock.staff.punish.approve";
     static final String PERM_WATCH = "skyblock.staff.watch";
+    /** P5 (spec 13.8, 13.10). */
+    static final String PERM_BULK = "skyblock.staff.punish.bulk";
+    static final String PERM_APPEAL = "skyblock.punish.appeal";
+    static final String PERM_APPEALS = "skyblock.staff.appeals";
     /** Staff told about broken punishments.yml edits (whoever may reload configs). */
     static final String PERM_CONFIG_ALERT = "skyblock.admin.reload";
 
@@ -115,6 +119,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
     private volatile List<String> recentNoteIds = List.of();
     /** Names on the watchlist (tab completion of /watch remove). */
     private volatile List<String> watchedNames = List.of();
+    /** P5: bulk punish (13.8) and appeals (13.10). */
+    private BulkPunish bulk;
+    private AppealService appeals;
 
     public ModerationModule(Core core) {
         this.core = core;
@@ -144,6 +151,14 @@ public final class ModerationModule implements SkyblockModule, Listener {
         return core;
     }
 
+    BulkPunish bulk() {
+        return bulk;
+    }
+
+    AppealService appeals() {
+        return appeals;
+    }
+
     @Override
     public void enable() throws Exception {
         new Migrations(core.database(), plugin.getLogger()).migrate(ID, getClass().getClassLoader());
@@ -158,8 +173,11 @@ public final class ModerationModule implements SkyblockModule, Listener {
         // P3: Discord sink (off without a webhook secret), side effects, suggestion API
         loadWebhooks();
         discord = WebhookDiscordSink.create(() -> webhooks,
-                channel -> templates.config().extras().discord().enabled()
-                        && channel.equals(templates.config().extras().discord().channel()),
+                channel -> (templates.config().extras().discord().enabled()
+                        && channel.equals(templates.config().extras().discord().channel()))
+                        // spec 13.10 step 1: the appeals channel has its own switch (off by default)
+                        || (templates.config().extras().appeal().discordEnabled()
+                        && channel.equals(templates.config().extras().appeal().discordChannel())),
                 () -> templates.config().extras().discord(), plugin.getLogger());
         try {
             core.services().register(ID, net.skybornmc.skyblock.common.discord.DiscordSink.class, discord);
@@ -169,6 +187,12 @@ public final class ModerationModule implements SkyblockModule, Listener {
         extras = new PunishExtras(core, msg, service.store(), () -> templates.config().extras(),
                 () -> templates.config().warnRules(), () -> core.services().optional(net.skybornmc.skyblock.common.discord.DiscordSink.class));
         service.hooks(extras);
+        bulk = new BulkPunish(this);
+        appeals = new AppealService(this);
+        service.appealHint(p -> {
+            PunishConfig.Appeals a = templates.config().extras().appeal();
+            return a.enabled() && a.types().contains(p.type()) && templates.appealable(p.template());
+        });
         core.services().register(ID, net.skybornmc.skyblock.common.moderation.SuggestionService.class,
                 new ApiSuggestions(core, service, templates, () -> templates.config().warnRules(), t -> reasonName(null, t)));
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -443,14 +467,29 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .executes(ctx -> pardonPlayer(ctx.sender(), Punishment.Type.WARN, ctx.get(player), ctx.get(pardonReason))));
 
         Arg<String> punishTarget = player;
-        Arg<String> template = Args.oneOf("reason", templates::reasonIds);
+        // A reason id, or a flag right away (/p Steve --evidence 123 opens the menu with that log line as evidence)
+        Arg<String> template = Arg.word("reason", (sender, raw) -> {
+            if (raw.startsWith("-")) {
+                return raw;
+            }
+            for (String id : templates.reasonIds()) {
+                if (id.equalsIgnoreCase(raw)) {
+                    return id;
+                }
+            }
+            throw CommandFailure.of("invalid-choice", Msg.p("input", raw), Msg.p("choices", String.join(", ", templates.reasonIds())));
+        }, Suggest.bySender(sender -> {
+            List<String> out = new ArrayList<>(templates.reasonIds());
+            out.add(LogEvidence.FLAG);
+            return out;
+        }));
         Arg<String> flags = Arg.greedy("flags", (sender, raw) -> raw.strip(), (ctx, builder) -> {
             Flags.suggestions(builder.getRemaining(), Flags.allowed(ctx.getSource().getSender()::hasPermission))
                     .forEach(builder::suggest);
             return builder.buildFuture();
         });
         commands.register(CommandSpec.command("punish")
-                .description("Punishment menu for a player, or apply a reason directly (-s silent, -ip IP-wide, -force)")
+                .description("Punishment menu for a player, or apply a reason directly (-s silent, -ip IP-wide, -force, --evidence <log id>)")
                 .category("Staff").permission(PERM_GUI).aliases("p").arg(punishTarget).optional(template).optional(flags)
                 .example("p Steve toxicity")
                 .executes(ctx -> punishCommand(ctx.sender(), ctx.get(punishTarget), ctx.getOr(template, null), ctx.getOr(flags, ""))));
@@ -530,6 +569,45 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .category("Staff").permission(PERM_WATCH).example("watchlist")
                 .executes(ctx -> watchlist(ctx.sender())));
 
+        // ---- P5: /pbulk (13.8), /appeal and /appeals (13.10)
+        Arg<String> bulkReason = Args.oneOf("reason", templates::reasonIds);
+        Arg<String> bulkPlayers = Arg.greedy("players", (sender, raw) -> raw.strip(), (ctx, builder) -> {
+            List<String> known = new ArrayList<>();
+            Bukkit.getOnlinePlayers().forEach(p -> known.add(p.getName()));
+            known.addAll(net.skybornmc.skyblock.common.command.OfflineNames.names());
+            BulkSelection.suggestions(builder.getRemaining(), known.stream().distinct().toList(),
+                    templates.config().extras().bulk().max()).forEach(builder::suggest);
+            return builder.buildFuture();
+        });
+        commands.register(CommandSpec.command("pbulk")
+                .description("Punish several players for one reason (each gets their own next step); always asks to confirm")
+                .category("Staff").permission(PERM_BULK).playerOnly().arg(bulkReason).arg(bulkPlayers)
+                .example("pbulk spam Steve Alex Notch")
+                .executes(ctx -> pbulk(ctx.player(), ctx.get(bulkReason), ctx.get(bulkPlayers))));
+        Arg<String> appealText = Arg.greedy("text", (sender, raw) -> raw.strip(), Suggest.bySender(sender -> {
+            List<String> out = new ArrayList<>();
+            if (sender instanceof Player p) {
+                service.mute(p.getUniqueId()).ifPresent(m -> out.add(String.valueOf(m.id())));
+            }
+            out.add("I was not spamming, I answered a question");
+            return out;
+        }));
+        commands.register(CommandSpec.command("appeal")
+                .description("Appeal your mute or ban: /appeal shows what you can appeal, /appeal <text> sends it (/appeal <id> <text> for another one)")
+                .category("Community").permission(PERM_APPEAL).playerOnly().optional(appealText)
+                .example("appeal I was not spamming, I answered a question")
+                .executes(ctx -> {
+                    if (ctx.has(appealText)) {
+                        appeals.submit(ctx.player(), ctx.get(appealText));
+                    } else {
+                        appeals.status(ctx.player());
+                    }
+                }));
+        commands.register(CommandSpec.command("appeals")
+                .description("Open appeals, oldest first: accept, reduce or deny them (menu; chat list from the console)")
+                .category("Staff").permission(PERM_APPEALS).example("appeals")
+                .executes(ctx -> appeals.queue(ctx.sender())));
+
         Arg<String> altsTarget = player;
         commands.register(CommandSpec.command("alts")
                 .description("Accounts that share an IP address with a player").category("Staff").permission(PERM_ALTS)
@@ -537,25 +615,46 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .executes(ctx -> alts(ctx.sender(), ctx.get(altsTarget))));
     }
 
-    /** Parsed reason with flags removed ({@code -s} silent, {@code -ip} IP-wide, {@code -force} skip the duplicate check). */
-    record Reason(String text, boolean silent, boolean ipWide, boolean force) {
+    /**
+     * Parsed reason with flags removed ({@code -s} silent, {@code -ip} IP-wide, {@code -force} skip the duplicate check,
+     * {@code --evidence <log id>} a {@code /logs} chat line as evidence, spec 13.11). {@code badEvidence}: the flag without a
+     * valid id.
+     */
+    record Reason(String text, boolean silent, boolean ipWide, boolean force, Long evidence, boolean badEvidence) {
+
+        Reason(String text, boolean silent, boolean ipWide, boolean force) {
+            this(text, silent, ipWide, force, null, false);
+        }
+
         static Reason parse(String raw) {
             boolean silent = false;
             boolean ip = false;
             boolean force = false;
+            Long evidence = null;
+            boolean bad = false;
             List<String> words = new ArrayList<>();
-            for (String w : raw.trim().split("\\s+")) {
+            String[] parts = raw.trim().split("\\s+");
+            for (int i = 0; i < parts.length; i++) {
+                String w = parts[i];
                 if (w.equalsIgnoreCase("-s")) {
                     silent = true;
                 } else if (w.equalsIgnoreCase("-ip")) {
                     ip = true;
                 } else if (w.equalsIgnoreCase("-force")) {
                     force = true;
+                } else if (w.equalsIgnoreCase(LogEvidence.FLAG)) {
+                    Long id = i + 1 < parts.length ? LogEvidence.parseId(parts[i + 1]) : null;
+                    if (id == null || (evidence != null && !evidence.equals(id))) {
+                        bad = true;
+                    } else {
+                        evidence = id;
+                        i++;
+                    }
                 } else if (!w.isEmpty()) {
                     words.add(w);
                 }
             }
-            return new Reason(String.join(" ", words), silent, ip, force);
+            return new Reason(String.join(" ", words), silent, ip, force, evidence, bad);
         }
     }
 
@@ -586,6 +685,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
      */
     private void direct(CommandSender sender, Punishment.Type type, String targetName, Duration duration, String rawReason) {
         Reason reason = Reason.parse(rawReason);
+        if (reason.evidence() != null || reason.badEvidence()) {
+            throw fail("log-evidence.only-p");
+        }
         if (type == Punishment.Type.KICK && Bukkit.getPlayerExact(targetName) == null) {
             throw CommandFailure.of("player-offline", Msg.p("input", targetName));
         }
@@ -615,6 +717,9 @@ public final class ModerationModule implements SkyblockModule, Listener {
 
     private void ipban(CommandSender sender, String target, String rawReason) {
         Reason reason = Reason.parse(rawReason);
+        if (reason.evidence() != null || reason.badEvidence()) {
+            throw fail("log-evidence.only-p");
+        }
         String text = reason.text().isEmpty() ? service.text(sender instanceof Player p ? p : null, "words.no-reason") : reason.text();
         if (BanTargets.looksLikeIp(target)) {
             service.issue(sender, new PunishmentService.Request(Punishment.Type.BAN, null, target, null, text, reason.silent(),
@@ -692,41 +797,96 @@ public final class ModerationModule implements SkyblockModule, Listener {
 
     /** Opens the single-screen /p menu for {@code viewer} (loads the target first). */
     void openPunishMenu(Player viewer, String name) {
+        openPunishMenu(viewer, name, null);
+    }
+
+    /** Same, keeping a {@code /logs} chat line as the evidence of every punishment from the menu (spec 13.11). */
+    void openPunishMenu(Player viewer, String name, LogEvidence.Anchor evidence) {
         target(name).thenAcceptAsync(t -> {
             if (t.isEmpty()) {
                 msg.send(viewer, "error.unknown", Msg.p("player", name));
                 return;
             }
-            core.menus().open(viewer, new PunishMenus.PunishMenu(this, t.get()));
+            core.menus().open(viewer, new PunishMenus.PunishMenu(this, t.get().withEvidence(evidence)));
         }, main).exceptionally(e -> failed(viewer, e));
     }
 
-    private void punishCommand(CommandSender sender, String name, String reasonId, String flags) {
+    private void punishCommand(CommandSender sender, String name, String reasonWord, String rawFlags) {
+        // The reason slot may already hold a flag (/p Steve --evidence 123): then there is no reason and the menu opens.
+        String reasonId = reasonWord;
+        String flags = rawFlags;
+        if (reasonWord != null && reasonWord.startsWith("-")) {
+            flags = reasonWord + " " + rawFlags;
+            reasonId = null;
+        }
+        Reason parsed = Reason.parse(flags);
+        if (parsed.badEvidence()) {
+            throw fail("log-evidence.usage");
+        }
         if (reasonId == null && !(sender instanceof Player)) {
             throw CommandFailure.of("players-only");
         }
-        if (reasonId == null) {
-            openPunishMenu((Player) sender, name);
-            return;
-        }
-        Reason parsed = Reason.parse(flags);
-        target(name).thenAcceptAsync(t -> {
+        String id = reasonId;
+        target(name).thenComposeAsync(t -> {
             if (t.isEmpty()) {
                 msg.send(sender, "error.unknown", Msg.p("player", name));
+                return CompletableFuture.completedFuture(Optional.<PunishMenus.Target>empty());
+            }
+            return withLogEvidence(sender, t.get(), parsed.evidence());
+        }, main).thenAcceptAsync(found -> {
+            if (found.isEmpty()) {
                 return;
             }
-            Optional<Templates.Template> template = templates.template(reasonId);
+            PunishMenus.Target t = found.get();
+            if (id == null) {
+                core.menus().open((Player) sender, new PunishMenus.PunishMenu(this, t));
+                if (t.evidence() != null) {
+                    msg.send(sender, "log-evidence.attached", Msg.p("player", t.name()), Msg.p("line", t.evidence().line()),
+                            Msg.p("id", t.evidence().id()));
+                }
+                return;
+            }
+            Optional<Templates.Template> template = templates.template(id);
             if (template.isPresent()) {
-                punishWithTemplate(sender, t.get(), template.get(), parsed.silent(), parsed.ipWide(), parsed.force());
+                punishWithTemplate(sender, t, template.get(), parsed.silent(), parsed.ipWide(), parsed.force());
                 return;
             }
-            Optional<PunishConfig.WarnButton> button = templates.warnButton(reasonId);
+            Optional<PunishConfig.WarnButton> button = templates.warnButton(id);
             if (button.isPresent()) {
-                punishWithWarnButton(sender, t.get(), button.get(), parsed.silent(), parsed.force());
+                punishWithWarnButton(sender, t, button.get(), parsed.silent(), parsed.force());
                 return;
             }
-            msg.send(sender, "error.unknown-template", Msg.p("reason", reasonId));
+            msg.send(sender, "error.unknown-template", Msg.p("reason", id));
         }, main).exceptionally(e -> failed(sender, e));
+    }
+
+    /**
+     * spec 13.11: {@code t} with the {@code /logs} entry as evidence, after checking it (the logs module says whether the
+     * sender may see it; it must be a chat line of this player). Empty (and the sender told why) when it can't be used.
+     * Main thread in, main thread out.
+     */
+    CompletableFuture<Optional<PunishMenus.Target>> withLogEvidence(CommandSender sender, PunishMenus.Target t, Long entryId) {
+        if (entryId == null) {
+            return CompletableFuture.completedFuture(Optional.of(t));
+        }
+        Optional<net.skybornmc.skyblock.common.audit.LogLookup> lookup =
+                core.services().optional(net.skybornmc.skyblock.common.audit.LogLookup.class);
+        if (lookup.isEmpty()) {
+            msg.send(sender, "log-evidence.unavailable");
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+        return lookup.get().entry(sender, entryId).thenApplyAsync(entry -> {
+            Optional<LogEvidence.Problem> problem = LogEvidence.check(entry.orElse(null), t.uuid());
+            if (problem.isPresent()) {
+                msg.send(sender, problem.get().key(), Msg.p("id", entryId), Msg.p("player", t.name()));
+                if (sender instanceof Player p) {
+                    core.sounds().play(p, "error");
+                }
+                return Optional.<PunishMenus.Target>empty();
+            }
+            return Optional.of(t.withEvidence(LogEvidence.anchor(entry.get(), Format.zone(), 60,
+                    service.text(null, "evidence.ip-hidden"))));
+        }, main);
     }
 
     /** Display name of a reason: messages reasons.<id>, else the legacy YAML name, else the id. */
@@ -763,6 +923,16 @@ public final class ModerationModule implements SkyblockModule, Listener {
     CompletableFuture<PunishmentStore.IssueResult> punishWithTemplate(CommandSender sender, PunishMenus.Target target,
                                                                      Templates.Template template, boolean silent, boolean ipFlag,
                                                                      boolean force) {
+        return punishWithTemplate(sender, target, template, silent, ipFlag, force, null);
+    }
+
+    /**
+     * Same, as part of a bulk action ({@code group} = {@code bulk:<id>}, spec 13.8) or not ({@code null}). The target's
+     * {@code /logs} evidence line (spec 13.11) goes with it.
+     */
+    CompletableFuture<PunishmentStore.IssueResult> punishWithTemplate(CommandSender sender, PunishMenus.Target target,
+                                                                     Templates.Template template, boolean silent, boolean ipFlag,
+                                                                     boolean force, String group) {
         // spec 12.3: only offences younger than the reason's offence-expire count for the ladder
         int previous = target.previous(template.id(), template.cutoff(System.currentTimeMillis()));
         Templates.Step step = template.stepFor(previous);
@@ -773,7 +943,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
                         reasonName(null, template), silent, ipWide, online != null && (ipWide || template.ladder().stream()
                                 .anyMatch(Templates.Step::ipWide)) ? ip(online) : null,
                         template.id(), template.stepIndex(previous), null, force, step.weight(),
-                        escalation(target, template, previous, ipFlag)))
+                        escalation(target, template, previous, ipFlag)).with(target.evidenceEntry(), group))
                 .exceptionally(e -> failed(sender, e));
     }
 
@@ -794,16 +964,53 @@ public final class ModerationModule implements SkyblockModule, Listener {
     CompletableFuture<PunishmentStore.IssueResult> punishWithWarnButton(CommandSender sender, PunishMenus.Target target,
                                                                        PunishConfig.WarnButton button, boolean silent,
                                                                        boolean force) {
+        return punishWithWarnButton(sender, target, button, silent, force, null);
+    }
+
+    /** Same, as part of a bulk action ({@code group}, spec 13.8) or not ({@code null}). */
+    CompletableFuture<PunishmentStore.IssueResult> punishWithWarnButton(CommandSender sender, PunishMenus.Target target,
+                                                                       PunishConfig.WarnButton button, boolean silent,
+                                                                       boolean force, String group) {
         return service.issue(sender, new PunishmentService.Request(Punishment.Type.WARN, target.uuid(), target.name(), null,
-                        warnButtonText(null, button, "reason"), silent, false, null, button.id(), null, force, button.weight()))
+                        warnButtonText(null, button, "reason"), silent, false, null, button.id(), null, force, button.weight())
+                        .with(target.evidenceEntry(), group))
                 .exceptionally(e -> failed(sender, e));
     }
 
     /** Kick from the /p menu with the default kick reason. */
     CompletableFuture<PunishmentStore.IssueResult> kickFromMenu(Player sender, PunishMenus.Target target) {
         return service.issue(sender, new PunishmentService.Request(Punishment.Type.KICK, target.uuid(), target.name(), null,
-                service.text(null, "punish.kick-reason"), false, false, null, null, null))
+                service.text(null, "punish.kick-reason"), false, false, null, null, null).with(target.evidenceEntry(), null))
                 .exceptionally(e -> failed(sender, e));
+    }
+
+    // ================================================================== /pbulk (spec 13.8)
+
+    /** {@code /pbulk <reason> <players...>}: checks the list, previews every player and opens the confirm. */
+    private void pbulk(Player staff, String reasonId, String rawPlayers) {
+        int max = templates.config().extras().bulk().max();
+        BulkSelection.Names names = BulkSelection.parse(rawPlayers, max);
+        if (names.empty()) {
+            throw fail("bulk.no-players");
+        }
+        if (names.tooMany()) {
+            throw fail("bulk.too-many", Msg.number("count", names.names().size()), Msg.number("max", max));
+        }
+        if (!names.duplicates().isEmpty()) {
+            msg.send(staff, "bulk.duplicates", Msg.p("names", String.join(", ", names.duplicates())));
+        }
+        bulk.plan(staff, reasonId, names.names()).whenComplete((plan, e) -> core.scheduler().ensureMain("moderation:bulk", () -> {
+            if (e != null || plan == null) {
+                if (e != null) {
+                    plugin.getLogger().log(Level.WARNING, "Bulk preview failed", e);
+                }
+                msg.send(staff, e != null ? "error.failed" : "error.unknown-template", Msg.p("reason", reasonId));
+                return;
+            }
+            if (staff.isOnline()) {
+                bulk.confirm(staff, plan, null);
+            }
+        }));
     }
 
     // ================================================================== /warns
@@ -905,7 +1112,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 }
                 service.stats(viewer.getUniqueId(), q.period()).thenCombine(requestCounts(viewer.getUniqueId(), q.period()),
                                 Map::entry)
-                        .thenAcceptAsync(c -> sendStats(sender, viewer.getName(), periodText, c.getKey(), c.getValue()), main)
+                        .thenAcceptAsync(c -> sendStatsFull(sender, viewer.getUniqueId(), viewer.getName(), periodText,
+                                c.getKey(), c.getValue(), q.period()), main)
                         .exceptionally(e -> failed(sender, e));
             }
             case OTHER -> service.store().staffByName(q.staff()).thenCompose(found -> found.isPresent()
@@ -913,13 +1121,14 @@ public final class ModerationModule implements SkyblockModule, Listener {
                             : core.players().offline(q.staff()).thenApply(o -> o.map(snap -> Map.entry(snap.uuid(), snap.name()))))
                     .thenCompose(found -> found.isEmpty() ? CompletableFuture.completedFuture(null)
                             : service.stats(found.get().getKey(), q.period())
-                            .thenCombine(requestCounts(found.get().getKey(), q.period()), (c, rc) -> new StaffStats(found.get().getValue(), c, rc)))
+                            .thenCombine(requestCounts(found.get().getKey(), q.period()), (c, rc) -> new StaffStats(found.get().getKey(),
+                                    found.get().getValue(), c, rc)))
                     .thenAcceptAsync(result -> {
                         if (result == null) {
                             msg.send(sender, "error.unknown", Msg.p("player", q.staff()));
                             return;
                         }
-                        sendStats(sender, result.name(), periodText, result.counts(), result.requests());
+                        sendStatsFull(sender, result.id(), result.name(), periodText, result.counts(), result.requests(), q.period());
                     }, main).exceptionally(e -> failed(sender, e));
             case TOP -> service.statsTop(q.period()).thenAcceptAsync(list -> {
                 msg.send(sender, "stats.top-header", Msg.p("period", periodText), Msg.number("count", list.size()));
@@ -942,7 +1151,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         }
     }
 
-    private record StaffStats(String name, PunishStats.Counts counts, PunishmentStore.RequestCounts requests) {
+    private record StaffStats(UUID id, String name, PunishStats.Counts counts, PunishmentStore.RequestCounts requests) {
     }
 
     /** Approval request numbers of a staff member for a period (spec 13.4: made / approved / denied). */
@@ -950,6 +1159,25 @@ public final class ModerationModule implements SkyblockModule, Listener {
         long now = System.currentTimeMillis();
         return service.store().requestCounts(staff, period.start(now, templates.config().extras().statsZone()), now)
                 .exceptionally(e -> PunishmentStore.RequestCounts.NONE);
+    }
+
+    /** Appeal numbers of a staff member for a period (spec 13.10: handled appeals, own punishments reversed by appeal). */
+    private CompletableFuture<PunishmentStore.AppealCounts> appealCounts(UUID staff, PunishStats.Period period) {
+        long now = System.currentTimeMillis();
+        return service.store().appealCounts(staff, period.start(now, templates.config().extras().statsZone()))
+                .exceptionally(e -> PunishmentStore.AppealCounts.NONE);
+    }
+
+    /** /pstats for one staff member, with request (13.4) and appeal (13.10) lines. Main thread. */
+    private void sendStatsFull(CommandSender sender, UUID staffId, String staff, String period, PunishStats.Counts c,
+                               PunishmentStore.RequestCounts rc, PunishStats.Period p) {
+        appealCounts(staffId, p).thenAcceptAsync(ac -> {
+            sendStats(sender, staff, period, c, rc);
+            if (ac.handled() + ac.reversedByAppeal() > 0) {
+                msg.send(sender, "stats.appeals", Msg.number("accepted", ac.accepted()), Msg.number("reduced", ac.reduced()),
+                        Msg.number("denied", ac.denied()), Msg.number("reversed", ac.reversedByAppeal()));
+            }
+        }, main).exceptionally(e -> failed(sender, e));
     }
 
     private void sendStats(CommandSender sender, String staff, String period, PunishStats.Counts c,
@@ -1080,6 +1308,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         watchOnJoin(player); // spec 13.5: staff only, never the player
         service.requestsOnJoin(player); // spec 13.4: outcomes for requesters, waiting requests for approvers
         extras.joined(player); // spec 12.6: unacknowledged warnings are reminded once
+        appeals.joined(player); // spec 13.10: decisions not told yet; staff: appeals waiting longer than appeal.reminder
         if (lastLoadRejected && player.hasPermission(PERM_CONFIG_ALERT) && !lastProblems.isEmpty()) {
             sendProblems(player, lastProblems, "config.rejected");
         }
@@ -1153,7 +1382,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         }
     }
 
-    private static final java.util.Set<String> ACK_ALLOWED = java.util.Set.of("ack", "rules", "mypunishments");
+    private static final java.util.Set<String> ACK_ALLOWED = java.util.Set.of("ack", "rules", "mypunishments", "appeal");
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onSign(SignChangeEvent event) {

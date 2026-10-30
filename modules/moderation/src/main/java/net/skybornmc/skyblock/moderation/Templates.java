@@ -124,7 +124,13 @@ final class Templates {
      * probation when they end.
      */
     record Template(String id, String category, String yamlName, Material icon, List<Step> ladder, Duration offenceExpire,
-                    boolean probation) {
+                    boolean probation, boolean appealable) {
+
+        /** A reason that can be appealed (spec 13.10; {@code appealable: false} e.g. for alt abuse and RMT). */
+        Template(String id, String category, String yamlName, Material icon, List<Step> ladder, Duration offenceExpire,
+                 boolean probation) {
+            this(id, category, yamlName, icon, ladder, offenceExpire, probation, true);
+        }
 
         /** A reason whose offences never expire. */
         Template(String id, String category, String yamlName, Material icon, List<Step> ladder) {
@@ -208,6 +214,11 @@ final class Templates {
     /** Whether a stored template (reason id) starts probation; unknown ids and direct commands ({@code null}) do. */
     boolean probation(String templateId) {
         return templateId == null || template(templateId).map(Template::probation).orElse(true);
+    }
+
+    /** Whether punishments of a stored reason id can be appealed (spec 13.10); unknown ids and direct commands can. */
+    boolean appealable(String templateId) {
+        return templateId == null || template(templateId).map(Template::appealable).orElse(true);
     }
 
     Optional<PunishConfig.WarnButton> warnButton(String id) {

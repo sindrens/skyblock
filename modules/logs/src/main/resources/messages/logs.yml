@@ -245,6 +245,8 @@ entry:
   click-teleport: "<c:action>Click to teleport there"
   right-click-chat: "<c:action>Right-click: full details in chat"
   click-chat: "<c:action>Click: full details in chat"
+  # Phase P 13.11: a chat line opens the punish menu (/p) with this line (and the lines before it) as evidence.
+  click-punish: "<c:action>Click to punish with this line as evidence"
 
 hover:
   header: "<c:flame><category></c:flame> <c:muted><sym:dot> <utc>"
@@ -261,6 +263,9 @@ chat:
   text: "<c:muted>:</c:muted> <c:text><text>"
   location: " <c:info>[<x>, <y>, <z>]"
   location-hover: "<c:text>Teleport to <c:value><world> <x>, <y>, <z>"
+  # Phase P 13.11: after a chat line, for staff who may punish (opens /p with this line as evidence).
+  punish: " <c:action>[Punish]"
+  punish-hover: "<c:text>Open the punish menu for <c:value><actor></c:value> with this line as evidence <c:muted>(#<id>)"
   previous: "<c:action>[« Previous]"
   previous-off: "<c:muted>[« Previous]"
   next: "<c:action>[Next <sym:arrow>]"

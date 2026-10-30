@@ -413,7 +413,7 @@ topics:
 
   rules:
     icon: lectern
-    aliases: [rule]
+    aliases: [rule, appeal, appeals, punishments]
     name: "<c:flame>Server rules"
     summary: ["<c:text>The short version, and where", "<c:text>to read the full rules."]
     take-me-there: "rules"
@@ -430,6 +430,12 @@ topics:
         lines:
           - "<c:text>Read them all with <c:value>/rules</c:value>."
           - "<c:text>Not knowing a rule is never an excuse."
+      - title: "<c:value>Punished? Your options"
+        lines:
+          - "<c:text>See your mute, warnings and history"
+          - "<c:text>with <c:value>/mypunishments</c:value>."
+          - "<c:text>Think it was a mistake? Send an"
+          - "<c:text>appeal with <c:value>/appeal</c:value>."
 
   chat:
     icon: oak_sign

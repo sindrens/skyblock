@@ -138,3 +138,38 @@ Release steps for the main session (before each release, in this order):
 - **Audit actions:** approval_request, approval_merge, approval_approve, approval_deny, approval_skip, suggestion_request,
   watch_add, watch_update, watch_remove, watchlist_view, mute_end_notice, ban_end_notice. Approved punishments carry
   `issuer` + `approved_by` in their own audit details.
+
+## P5 implementation notes (for P6+)
+- **Config:** `PunishConfig.Extras` gained `bulk` (`Bulk(max)`) and `appeal` (`Appeals`: enabled, types, cooldown,
+  min/max length, reminder, reduce-max-days, deny-reasons, discord enabled/channel). Per reason `appealable:` (default
+  true; `alt-abuse` and `rmt` ship with false) → `Templates.Template.appealable`, `Templates.appealable(id)`. Discord kinds
+  `bulk`, `appeal` got colours.
+- **V006:** `punishment_requests.evidence_entry`, table `appeals` (status OPEN/ACCEPTED/REDUCED/DENIED/CLOSED, issuer and
+  handler, response, old/new expires, `player_notified`). Bulk needs no column: `source = bulk:<group>`
+  (`BulkSelection.group`), which `/pstats` does not count as "from suggestions" (that is `auto:%`).
+- **One pipeline, two new request flags:** `PunishmentService.Request` gained `evidenceEntry` (13.11) and `bulk` (13.8);
+  build them with `request.with(evidence, group)`. A bulk request gets no per-player chat line, [Undo] or Discord embed
+  (`handle()`), a REQUEST verdict creates the request silently for the requester (approvers still get each one with its
+  own buttons). `BulkPunish` previews with `PunishmentService.preview` (same as the /p lore), applies every not-skipped
+  player with `punishWithTemplate/WarnButton(..., group)` (the store decides again atomically) and then sends one summary,
+  one `bulk_punish` audit entry, one Discord embed (`PunishExtras.bulkApplied`) and [Undo all] (`undoQuiet` per
+  punishment, once per group). Planned skips stay skipped (staff confirmed exactly that list).
+- **Punish from logs:** `common/audit/LogLookup` (new interface, provided by the logs module: entry by id, only when the
+  viewer may see its category). Logs → moderation goes through the command `/punish <name> --evidence <id>` (the same
+  entry point the staff tools dispatch), so logs never touches moderation classes. `/p` accepts a flag in the reason slot.
+  `LogEvidence.check` (chat/chat_blocked, written by the target), `Anchor` on `PunishMenus.Target.evidence` (kept on
+  menu reloads), `PunishExtras.captureFromLog` saves the lines up to that entry, for every type. Requests keep it in
+  `evidence_entry`; approve applies with it.
+- **Appeals:** `AppealRules` (pure: canAppeal, cooldownUntil (after DENIED or REDUCED), text limits, `/appeal [id] <text>`
+  parsing, pick = active mute first, reduce range/end), `Appeal.Status.canMoveTo` (OPEN → final, once). Store methods run
+  under the player's lock: `submitAppeal` (one OPEN per punishment), `acceptAppeal` (pardon + ACCEPTED in one
+  transaction), `reduceAppeal` (UPDATE expires, REDUCED), `denyAppeal`; a punishment that is no longer active CLOSES the
+  appeal. Effects after a decision in `AppealService` (mute cache/timer, vanilla ban list via `resyncVanillaBan`,
+  "mute ended" when a reduce ends it now). Player told now (`markAppealNotified`) or on join (`appealUpdates`). Staff
+  reminder on join for OPEN appeals older than `appeal.reminder`. `/pstats` line from `appealCounts`.
+- **Discord (13.10 step 1):** `PunishExtras.appealPosted` posts to `appeal.discord.channel` only when
+  `appeal.discord.enabled` and the webhook secret exist; the module's sink accepts that channel with its own switch.
+  Embeds: `PunishEmbeds.appealNew` (ids, type, reason, staff, text, history counts; never IPs), `appealDecision`.
+  Step 2 (Discord `/appeal <ban-id>`, verified/unverified, DM) waits for the Discord bot.
+- **Audit actions:** bulk_punish, bulk_undo, undo (with `bulk` group), appeal_create, appeal_accepted, appeal_reduced,
+  appeal_denied, appeal_closed, appeal_view, appeals_view, evidence_saved (with `log_entry`), logs: logs_punish_open.

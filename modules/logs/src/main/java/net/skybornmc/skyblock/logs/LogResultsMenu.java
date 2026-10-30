@@ -116,6 +116,12 @@ final class LogResultsMenu extends Menu {
         for (int i = 0; i < rows.size() && i < PagedMenu.CONTENT_SLOTS.length; i++) {
             AuditEntry entry = rows.get(i);
             set(PagedMenu.CONTENT_SLOTS[i], module.render.item(viewer, entry, now), click -> {
+                // spec 13.11: a chat line opens the punish menu with that line as evidence (plain click: Bedrock too)
+                if (click.isLeft() && LogPunish.punishable(entry) && LogPunish.allowed(viewer)) {
+                    viewer.closeInventory();
+                    module.punishFrom(viewer, entry);
+                    return;
+                }
                 if (click.isLeft() && entry.hasLocation() && module.canTeleport(viewer)) {
                     World world = Bukkit.getWorld(entry.world());
                     if (world == null) {

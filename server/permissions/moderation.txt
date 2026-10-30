@@ -37,3 +37,10 @@ lp group helper permission set skyblock.staff.punish.notes true
 # create requests. Every staff member can watch players; the join line goes to skyblock.staff.notify.
 lp group admin permission set skyblock.staff.punish.approve true
 lp group helper permission set skyblock.staff.watch true
+
+# --- Phase P, P5: bulk punish, appeals. /appeal (skyblock.punish.appeal) is default: true for everyone ---
+# Bulk is senior staff (mods and up). Appeals are handled by mods and up (accepting lifts a mute or ban, which helpers
+# can't do with /unmute or /unban either). New appeals are announced to skyblock.staff.notify; old open ones
+# (extras.appeal.reminder) are listed on join to skyblock.staff.appeals.
+lp group mod permission set skyblock.staff.punish.bulk true
+lp group mod permission set skyblock.staff.appeals true

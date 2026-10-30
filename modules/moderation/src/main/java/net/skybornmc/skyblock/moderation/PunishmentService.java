@@ -48,7 +48,19 @@ final class PunishmentService {
      */
     record Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
                    boolean ipWide, String ip, String template, Integer ladderStep, String source, boolean force, int weight,
-                   PunishDecision.Escalation escalation) {
+                   PunishDecision.Escalation escalation, Long evidenceEntry, boolean bulk) {
+
+        /**
+         * P4 shape: no log evidence, not part of a bulk action. {@code evidenceEntry} (spec 13.11) = the {@code /logs} chat
+         * line to save as evidence; {@code bulk} (spec 13.8) = part of a bulk action (no per-player chat lines, [Undo] or
+         * Discord embed: the bulk action sends one summary of each).
+         */
+        Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
+                boolean ipWide, String ip, String template, Integer ladderStep, String source, boolean force, int weight,
+                PunishDecision.Escalation escalation) {
+            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, source, force, weight,
+                    escalation, null, false);
+        }
 
         Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
                 boolean ipWide, String ip, String template, Integer ladderStep, String source, boolean force, int weight) {
@@ -69,6 +81,12 @@ final class PunishmentService {
         Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
                 boolean ipWide, String ip, String template, Integer ladderStep, boolean force, int weight) {
             this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null, force, weight);
+        }
+
+        /** Same request with log evidence and/or as part of a bulk action ({@code group} = its source, or {@code null}). */
+        Request with(Long evidence, String group) {
+            return new Request(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep,
+                    group != null ? group : source, force, weight, escalation, evidence, group != null);
         }
     }
 
@@ -278,7 +296,7 @@ final class PunishmentService {
             Punishment draft = new Punishment(0, r.type(), r.target(), r.targetName(), ip, r.ipWide(), r.reason(), r.template(),
                     r.ladderStep(), issuer, sender.getName(), now, null, r.silent(), null, null, null, null, r.source(),
                     r.weight(), null);
-            return store.issue(draft, in, decision, hook, x.approval().expire());
+            return store.issue(draft, in, decision, hook, x.approval().expire(), r.evidenceEntry());
         }).thenApplyAsync(result -> {
             if (guardKey != null && "duplicate".equals(result.verdict().stage())) {
                 duplicates.arm(guardKey, now, x.duplicateConfirm());
@@ -286,26 +304,35 @@ final class PunishmentService {
                         r.targetName(), null, null, Map.of("reason", r.template(), "recent",
                                 result.verdict().args().getOrDefault("id", "?")));
             }
-            handle(sender, r.targetName(), result);
+            handle(sender, r, result);
             return result;
         }, main);
     }
 
-    private void handle(CommandSender sender, String targetName, PunishmentStore.IssueResult result) {
+    private void handle(CommandSender sender, Request r, PunishmentStore.IssueResult result) {
         PunishDecision.Verdict v = result.verdict();
         if (v.outcome() == PunishDecision.Outcome.REQUEST && result.request() != null) {
-            requested(sender, result.request(), result.merged());
+            // bulk (13.8): the requester gets one summary; approvers still get each request with its own buttons
+            requested(sender, result.request(), result.merged(), !r.bulk());
             return;
         }
         if (!v.applied()) {
-            tell(sender, v, targetName);
+            if (!r.bulk()) {
+                tell(sender, v, r.targetName());
+            }
             return;
         }
         Punishment p = result.punishment();
-        apply(p);
-        announce(sender, p);
+        apply(p, r.evidenceEntry(), !r.bulk());
+        if (r.bulk()) {
+            announcePublic(p); // the staff line, [Undo all] and the Discord embed come once, from the bulk action
+        } else {
+            announce(sender, p);
+        }
         audit(sender, p);
-        offerUndo(sender, p);
+        if (!r.bulk()) {
+            offerUndo(sender, p);
+        }
         if (hooks != null) {
             hooks.linkReports(sender, p);
         }
@@ -478,6 +505,14 @@ final class PunishmentService {
 
     /** Kicks/bans online players hit by the punishment, updates mute caches and the vanilla ban list. */
     private void apply(Punishment p) {
+        apply(p, null, true);
+    }
+
+    /**
+     * Same, with the {@code /logs} line to save as evidence ({@code null} = the player's last lines, spec 13.11) and
+     * whether this punishment gets its own Discord embed ({@code false} inside a bulk action: one embed for all).
+     */
+    private void apply(Punishment p, Long evidenceEntry, boolean discord) {
         List<Player> affected = affected(p);
         if (p.type() == Punishment.Type.BAN) {
             // Before the kick, so listeners (staff: a ban clears the freeze) act before quit handlers run.
@@ -493,6 +528,9 @@ final class PunishmentService {
                 case MUTE -> {
                     cacheMute(online.getUniqueId(), longer(mutes.get(online.getUniqueId()), p));
                     msg.send(online, "muted.you", parts(online, p));
+                    if (appealHint.test(p)) {
+                        msg.send(online, "appeal.hint", parts(online, p)); // spec 13.10: muted players can /appeal
+                    }
                     if (p.automatic() && p.source().startsWith(Punishment.AUTO_PREFIX + Suggestion.KIND_WARN_RULE + ":")) {
                         String rule = p.source().substring(p.source().lastIndexOf(':') + 1);
                         msg.send(online, "repeat".equals(rule) ? "muted.auto-repeat" : "muted.auto", parts(online, p),
@@ -512,7 +550,7 @@ final class PunishmentService {
             }
         }
         if (hooks != null) {
-            hooks.applied(p); // spec 12.4 evidence, 12.11 Discord
+            hooks.applied(p, evidenceEntry, discord); // spec 12.4 evidence (13.11 from a log line), 12.11 Discord
         }
         if (p.type() == Punishment.Type.BAN && config.get().vanillaSync) {
             Date until = p.expires() == null ? null : new Date(p.expires());
@@ -594,8 +632,29 @@ final class PunishmentService {
                 }, main);
     }
 
+    /**
+     * After a ban's end changed (appeal reduced, spec 13.10): the vanilla ban list gets the new end, or the entry is
+     * removed when the ban is over and no other ban is active. Main thread.
+     */
+    void resyncVanillaBan(Punishment p) {
+        if (p.type() != Punishment.Type.BAN || !config.get().vanillaSync || p.target() == null) {
+            return;
+        }
+        if (p.active(System.currentTimeMillis())) {
+            Date until = p.expires() == null ? null : new Date(p.expires());
+            Bukkit.getBanList(BanListType.PROFILE).addBan(Bukkit.createProfile(p.target(), p.targetName()),
+                    "Phoenix #" + p.id() + ": " + p.reason(), until, p.issuerName());
+            return;
+        }
+        store.activeBan(p.target(), null).thenAcceptAsync(other -> {
+            if (other.isEmpty()) {
+                liftVanillaBans(p.target(), p.targetName(), List.of(p), null);
+            }
+        }, main);
+    }
+
     /** Removes pardoned bans from the vanilla ban list (account and IP-wide entries). Main thread. */
-    private void liftVanillaBans(UUID target, String targetName, List<Punishment> pardoned, String ip) {
+    void liftVanillaBans(UUID target, String targetName, List<Punishment> pardoned, String ip) {
         if (!config.get().vanillaSync) {
             return;
         }
@@ -703,8 +762,37 @@ final class PunishmentService {
         core.sounds().play(staff, "error");
     }
 
+    /**
+     * One punishment of a bulk action undone with [Undo all] (spec 13.8): the same checks and pardon as [Undo], the effects
+     * end at once and it is audited, but there is no chat line per punishment (the bulk action sends one summary).
+     */
+    CompletableFuture<PunishmentStore.UndoResult> undoQuiet(Player staff, long id, String group) {
+        long now = System.currentTimeMillis();
+        Duration window = extras.get().undoWindow();
+        String reason = text(null, "undo.reason", Msg.p("staff", staff.getName()));
+        return store.undo(id, staff.getUniqueId(), staff.getName(), staff.hasPermission(ModerationModule.PERM_UNDO_OTHERS),
+                window, reason, now).thenApplyAsync(r -> {
+                    if (r.result() == Undo.Result.OK) {
+                        Punishment p = r.punishment();
+                        lift(p);
+                        Map<String, Object> details = new LinkedHashMap<>();
+                        details.put("id", p.id());
+                        details.put("type", p.type().name().toLowerCase(Locale.ROOT));
+                        details.put("reason", reason);
+                        details.put("issuer", p.issuerName());
+                        details.put("bulk", group);
+                        if (!r.removedSuggestions().isEmpty()) {
+                            details.put("removed_suggestions", r.removedSuggestions());
+                        }
+                        core.audit().log(AuditCategory.PUNISHMENT, "undo", Actor.of(staff), p.target() == null ? p.ip()
+                                : p.target().toString(), p.targetName(), null, staff.getLocation(), details);
+                    }
+                    return r;
+                }, main);
+    }
+
     /** Ends the effects of an undone punishment at once: unmute/unban (unless another one is still active), tell the player. */
-    private void lift(Punishment p) {
+    void lift(Punishment p) {
         UUID target = p.target();
         switch (p.type()) {
             case MUTE -> store.activeMute(target, null).thenAcceptAsync(other -> {
@@ -873,6 +961,11 @@ final class PunishmentService {
         if (!(sender instanceof Player)) {
             msg.send(sender, key, parts(null, p), Msg.p("staff", p.issuerName()), Msg.p("silent", p.silent() ? "(silent)" : ""));
         }
+        announcePublic(p);
+    }
+
+    /** The public "Steve was muted" line (bans and mutes, not silent, {@code announce.public}). */
+    private void announcePublic(Punishment p) {
         boolean publicType = p.type() == Punishment.Type.BAN || p.type() == Punishment.Type.MUTE;
         if (config.get().announcePublic && !p.silent() && publicType) {
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -963,10 +1056,16 @@ final class PunishmentService {
 
     /** A request was created (or merged): tell the requester, audit, and tell the approvers about a new one. */
     private void requested(CommandSender sender, PunishRequest r, boolean merged) {
+        requested(sender, r, merged, true);
+    }
+
+    private void requested(CommandSender sender, PunishRequest r, boolean merged, boolean tellRequester) {
         Player viewer = sender instanceof Player p ? p : null;
-        msg.send(sender, merged ? "approval.merged" : "approval.requested", requestParts(viewer, r));
-        if (viewer != null) {
-            core.sounds().play(viewer, "success");
+        if (tellRequester) {
+            msg.send(sender, merged ? "approval.merged" : "approval.requested", requestParts(viewer, r));
+            if (viewer != null) {
+                core.sounds().play(viewer, "success");
+            }
         }
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("request", r.id());
@@ -1107,7 +1206,7 @@ final class PunishmentService {
             }
             case APPROVED -> {
                 Punishment p = res.punishment();
-                apply(p);
+                apply(p, r.evidenceEntry(), true); // spec 13.11: a request made from a /logs line keeps that line
                 announce(staff, p);
                 audit(staff, p);
                 offerUndo(staff, p);
@@ -1203,6 +1302,13 @@ final class PunishmentService {
     }
 
     // ================================================================== P4: "mute ended" (13.13) + probation notice (13.7)
+
+    /** Whether a newly muted player is told they can /appeal (spec 13.10; set by the module). */
+    private java.util.function.Predicate<Punishment> appealHint = p -> false;
+
+    void appealHint(java.util.function.Predicate<Punishment> source) {
+        this.appealHint = source;
+    }
 
     /** Whether a stored reason id starts probation (set by the module from punishments.yml). */
     private java.util.function.Predicate<String> probationReasons = t -> true;

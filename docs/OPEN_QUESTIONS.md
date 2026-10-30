@@ -7,6 +7,16 @@
 - W3 LOADOUT FROZEN: frozen players can't swap loadouts, wear/take off sets or use the Wardrobe Chest (LD3). OK? (default: yes)
 - W3 LOADOUT SLOTS: 2 free, `skyblock.loadout.slots.3`..`.8` for ranks (the Knight 3 / Warlord 4 / Monarch 5 grants are written but commented out in `server/permissions/wardrobe.txt` until the donor groups exist), bought slots in table `loadout_slots_bought` (+1 each, max +3, account-wide; no store yet). A preset above your current slots (rank lost) is kept but locked (can still be deleted). OK? (default: as written)
 - W3 TOOLS LOCATION: the plan mentions a `tools` row location `WARDROBE`; the tools table has no location column, and the `wardrobe_storage` row already is the truth for where a tool is. Add a location column to tools for staff lookups later? (default: no, not needed)
+- P5 bulk: `skyblock.staff.punish.bulk` is given to mods and up ("senior staff"). Helpers too, or admins only? (default: mods and up)
+- P5 bulk: `/pbulk` is players only (the confirm is a menu); the console can't bulk punish. Needed for the console? (default: no)
+- P5 bulk: the Bulk picker lists online players (plus the player whose /p you opened); offline players are added with `/pbulk <reason> <names...>`. OK? (default: as described)
+- P5 bulk: players the preview skipped stay skipped even if things changed before you clicked Confirm (you confirmed exactly that list); the others are decided again at Confirm. OK? (default: as described)
+- P5 appeals: handled by mods and up (`skyblock.staff.appeals`), because Accept lifts a mute or ban (helpers can't /unmute or /unban either). Let helpers read the queue (without deciding)? (default: mods and up)
+- P5 appeals: the 7-day cooldown also starts after a Reduce (staff already decided), not only after a Deny. OK? (default: yes)
+- P5 appeals: Reduce picks the new total length (from when it was given) in days for perm (up to `reduce-max-days` 365) and long punishments, hours or minutes for short ones; a length already served ends it at once (that counts as ending by time, so probation starts). OK? (default: as described)
+- P5 appeals: Accept asks for a confirm (it lifts a ban at once); Reduce has the number picker's confirm; Deny needs a reason. OK? (default: yes)
+- P5 appeals: warnings can't be appealed by default (`appealable-types: [mute, ban]`, the spec default). Add `warn`? (default: no)
+- P5 logs: in `/logs` results, a left click on a chat line now opens the punish menu with that line as evidence (staff with `skyblock.staff.punish.gui`) instead of teleporting to where it was said; right click still prints it. OK? (default: punish)
 - W2 SELL XP: done by the main session: every `/sell` sale gives set XP (`sell_item` per item, hourly cap 8,000) to the worn set of the profile that sold. OK?
 - W2 LEVELS ON: set levels are now on by default (`levels.enabled: true`, the W1 placeholder `false` was moved to `legacy.w1-levels-enabled`), so every owned set starts at Lv 0 = 0x and levels up by playing (plan WD14). OK? (default: on)
 - W2 MERGE FAMILIES: the plan's example "Thornward · Cropwarden" shares the extra-drops family, so the "no shared bonus family" rule refuses it. Keep the strict rule (default), or allow merges that share a family?
