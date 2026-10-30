@@ -53,6 +53,11 @@ public record ItemDefinition(
         /** Adds lines/stats/enchants/actions for this stack. */
         default void lore(ItemStack stack, ItemDefinition definition, LoreBuilder lore) {
         }
+
+        /** The rarity shown in the footer for this stack (e.g. a tool's tier). Default: the definition's rarity. */
+        default Rarity rarity(ItemStack stack, ItemDefinition definition) {
+            return definition.rarity();
+        }
     }
 
     public ItemDefinition {

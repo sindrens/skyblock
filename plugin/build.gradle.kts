@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":modules:islands"))
     implementation(project(":modules:auction"))
     implementation(project(":modules:stacking"))
+    implementation(project(":modules:tools"))
 }
 
 tasks {

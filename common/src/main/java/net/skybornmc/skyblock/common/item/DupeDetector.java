@@ -141,7 +141,9 @@ public final class DupeDetector implements Listener {
                 collect(player.getInventory(), name, "inventory", player.getUniqueId(), seen, copies);
                 collect(player.getEnderChest(), name, "ender chest", player.getUniqueId(), seen, copies);
                 Inventory top = player.getOpenInventory().getTopInventory();
-                if (top.getType() != InventoryType.CRAFTING && top.getType() != InventoryType.PLAYER) {
+                // Plugin menus only show copies for display (players can't take them), so they are never scanned.
+                if (top.getType() != InventoryType.CRAFTING && top.getType() != InventoryType.PLAYER
+                        && !(top.getHolder(false) instanceof net.skybornmc.skyblock.common.menu.Menu)) {
                     collect(top, name, "open " + top.getType().name().toLowerCase(java.util.Locale.ROOT).replace('_', ' '),
                             player.getUniqueId(), seen, copies);
                 }

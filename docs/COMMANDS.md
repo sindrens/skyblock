@@ -36,6 +36,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [social](commands/social.md) | Social (`modules/social`) |
 | [stacking](commands/stacking.md) | Stacking (`modules/stacking`) |
 | [staff](commands/staff.md) | Staff tools (M1.9, module `staff`) |
+| [tools](commands/tools.md) | Tools module (`modules/tools`): M4.2 |
 | [worlds](commands/worlds.md) | Worlds (`modules/worlds`) |
 | [planned](commands/planned.md) | Planned commands |
 <!-- END GENERATED INDEX -->
