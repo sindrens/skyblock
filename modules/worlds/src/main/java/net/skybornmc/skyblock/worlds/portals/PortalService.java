@@ -434,9 +434,12 @@ public final class PortalService implements Listener {
             return;
         }
         index(); // picks up a new apply
+        // PERF4: each world is looked up (and its player list copied) once per run, not once per puff.
+        Map<String, Optional<World>> watched = new HashMap<>();
         for (Puff p : puffs) {
-            World world = Bukkit.getWorld(p.world());
-            if (world == null || world.getPlayers().isEmpty() || !world.isChunkLoaded((int) Math.floor(p.x()) >> 4, (int) Math.floor(p.z()) >> 4)) {
+            World world = watched.computeIfAbsent(p.world(), name -> Optional.ofNullable(Bukkit.getWorld(name))
+                    .filter(w -> !w.getPlayers().isEmpty())).orElse(null);
+            if (world == null || !world.isChunkLoaded((int) Math.floor(p.x()) >> 4, (int) Math.floor(p.z()) >> 4)) {
                 continue;
             }
             world.spawnParticle(p.particle(), p.x(), p.y(), p.z(), config.portalParticleCount, p.dx(), p.dy(), p.dz(), 0, p.data());

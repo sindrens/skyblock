@@ -101,9 +101,22 @@ final class IslandEnvironment implements Listener {
 
     private long ticks(String time) {
         if ("real".equals(time)) {
-            return IslandClock.realTicks(LocalTime.now(VisitRules.zone(config().timezone)));
+            return IslandClock.realTicks(LocalTime.now(zone()));
         }
         return config().timeTicks(time);
+    }
+
+    private String zoneSource;
+    private java.time.ZoneId zone;
+
+    /** The configured time zone, parsed once per config value (PERF4: was parsed per player per "real" refresh). */
+    private java.time.ZoneId zone() {
+        String id = config().timezone;
+        if (zone == null || !java.util.Objects.equals(id, zoneSource)) {
+            zone = VisitRules.zone(id);
+            zoneSource = id;
+        }
+        return zone;
     }
 
     private long thunderDelay() {
