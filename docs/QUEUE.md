@@ -21,8 +21,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PROF | **Island profiles** per docs/DECISIONS_2026-10-30.md (P1–P12): profile layer in common (ProfileService, active profile per player, `/profiles`), migrate every module's per-player data to (player, profile) keys, inventory/ender chest/armor/XP swap, zero transfer between own profiles | — | common + all modules (one agent, careful, big) | 🔄 |
 | PROF-ADOPT | Modules merged after PROF (tools M4.2, stacking, enchants, notes…) store per-player data per profile via ProfileService | PROF | each new module | ⬜ |
 | CRY | Replace tokens with **island crystals** everywhere (currency enum, messages, HUD, docs) | — | common/economy, modules/economy, hud, docs | ✅ |
-| R2B | Economy part of round 2: new-account limit 30 min for /pay + /withdraw (economy.yml notes/pay), `/eco` for admins via permission, sell multiplier cap config 300% | PROF-ADOPT | Modules merged after PROF (tools M4.2, stacking, enchants, notes…) store per-player data per profile via ProfileService | PROF | each new module | ⬜ |
-| CRY | modules/economy | ✅ |
+| R2B | Economy part of round 2: new-account limit 30 min for /pay + /withdraw (economy.yml notes/pay), `/eco` for admins via permission, sell multiplier cap config 300% | — | modules/economy | ✅ (in R2A) |
 | R2A | Round-2 quick decisions: account-age 30 min (pay/withdraw/AH), `/eco` for admin permission, remove amount suggestions (10k/10m/10b) in tab completion, sell cap 300% (config), freeze cleared by a ban, Inspect tool = blaze rod, public announcements unless -s, timezone Europe/Oslo, skill cap 150, staff `/skills set|add` (admin+owner), `/freerank` (30 min playtime) | — | economy, auction, common/command, moderation, staff, skills | ✅ |
 | ISL2 | Islands round 2: role Admin (+ old leader → Admin on transfer), hurt-monsters role permission, join cooldown from last join only, `/is settings` flags, island fly for everyone (perm/mastery), likes per player, member homes (1 + masteries), invites menu | M2.4 | modules/islands | ✅ |
 | STACK | Stacking module: mobs (1024, weapon-based kills, no AI for spawner mobs, breeding by food, max 8 stacks/chunk/type, no despawn), items, spawners (8→512, menu, ignore conditions, crops grow without light) | answered (round 2+3) | new modules/stacking | ✅ |
@@ -32,11 +31,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PLAN-ENCH | Plan doc: full custom enchant list (levels, effects, how each is obtained: mob kills, mining, chopping, dungeons, crates, /enchanter, crystals), synergy with tools/sets/stacking kills | — | docs/plans/ENCHANTS.md | ✅ docs/plans/ENCHANTS.md |
 | PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | ✅ docs/plans/WARDROBE.md |
 | STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
-| PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ⬜ |
-| PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
-| FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | R2B | Economy part of round 2: new-account limit 30 min for /pay + /withdraw (economy.yml notes/pay), `/eco` for admins via permission, sell multiplier cap config 300% | PROF-ADOPT | Modules merged after PROF (tools M4.2, stacking, enchants, notes…) store per-player data per profile via ProfileService | PROF | each new module | ⬜ |
-| CRY | modules/economy | ✅ (in R2A) |
-| R2A | modules/perks or cosmetics | ⬜ |
+| PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ⬜ |
+| FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | — | modules/perks or cosmetics | ✅ (in R2A) |
 | AFK | AFK pool (fuel + money + keys, better loot over time, max 8 h/day) | economy, islands fuel | new module | ⬜ (needs balance numbers) |
 
 ## Phase P: Punishment system v2 (owner spec `docs/specs/PUNISH_SPEC.md` + `PUNISH_SPEC_NOTES.md`) — one lane (modules/moderation), sequential, priority
