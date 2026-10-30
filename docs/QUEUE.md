@@ -101,7 +101,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
 | W1 | Wardrobe core: sets.yml (16 sets), per-profile tables, virtual entries + locked real armor, Wardrobe Chest with escrow, buy with money/crystals/gems (Sigils), Set Tokens, /wardrobe GUI, bonuses via BonusService | PROF, CRY, E1 (common/bonus) | modules/wardrobe, common/wardrobe | ✅ |
-| W2 | Set levels, merging, warzone normalization | W1, M4.5 | modules/wardrobe | ⬜ |
+| W2 | Set levels, merging, warzone normalization | W1, M4.5 | modules/wardrobe | 🔄 |
 | W3 | /loadout presets (2 free, rank/credit slots), atomic apply, guards, 2 s cooldown, pet hook | W1, M4.2 | modules/wardrobe, modules/tools | ⬜ |
 | W4 | Balance: set factors in economy model | W2, W3, BAL2 | docs, tools | ⬜ |
 
