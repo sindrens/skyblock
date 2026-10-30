@@ -23,3 +23,6 @@ skyblock.depths.dungeon:
 skyblock.depths.bypass:
   description: "Ignore Depths tier locks (all gates open, enter any zone, mine anywhere) and skip the /dungeon warmup."
   default: op
+skyblock.depths.satchel:
+  description: "Open the Depths satchel (from /dungeon): see your drops, sell them, take them out, buy upgrades."
+  default: true

@@ -27,7 +27,7 @@ categories:
     slot: 13
     name: "<c:flame><bold>The Depths"
     lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and crystals."]
-    topics: [depths]
+    topics: [depths, satchel]
   economy:
     icon: emerald
     status: active
@@ -219,6 +219,44 @@ topics:
           - "<c:text>open one to teleport there."
           - "<c:text>Locked ones show your progress."
           - "<c:text>Stand still for the countdown."
+
+  satchel:
+    icon: bundle
+    aliases: [drops, drop, crystals, crystal, bag]
+    name: "<c:flame>Satchel and drops"
+    summary: ["<c:text>Depths drops land in your satchel.", "<c:text>Sell them, forge with them, or take them out."]
+    take-me-there: "dungeon"
+    commands: [Depths]
+    pages:
+      - title: "<c:value>Drops"
+        lines:
+          - "<c:text>Ore and logs you break in The"
+          - "<c:text>Depths go straight into your"
+          - "<c:text>satchel. Better tools give more."
+          - "<c:text>Each profile has its own satchel."
+      - title: "<c:value>Opening it"
+        lines:
+          - "<c:text>Open <c:value>/dungeon</c:value> <c:text>and click"
+          - "<c:value>Satchel</c:value><c:text>. The scoreboard shows how"
+          - "<c:text>full it is, e.g. Satchel 412 / 640."
+      - title: "<c:value>Selling"
+        lines:
+          - "<c:value>Sell all</c:value> <c:text>sells everything at today's"
+          - "<c:text>prices with your sell bonus. Click"
+          - "<c:text>an item to sell only that one or"
+          - "<c:text>to take it out into your inventory."
+      - title: "<c:value>When it's full"
+        lines:
+          - "<c:text>A full satchel stops your mining"
+          - "<c:text>(nothing is lost). Sell, or get"
+          - "<c:text>more space from Mining and Foraging"
+          - "<c:text>levels and the upgrades in the menu."
+      - title: "<c:value>Crystals and the Forge"
+        lines:
+          - "<c:text>Blocks can drop crystals: they go"
+          - "<c:text>to your balance every few seconds."
+          - "<c:text>The Forge takes its materials from"
+          - "<c:text>your inventory first, then the satchel."
 
   tools:
     icon: iron_pickaxe

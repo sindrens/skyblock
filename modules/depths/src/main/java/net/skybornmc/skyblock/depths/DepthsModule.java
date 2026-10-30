@@ -8,9 +8,15 @@ import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.satchel.SatchelService;
+import net.skybornmc.skyblock.depths.drops.DepthsDrops;
+import net.skybornmc.skyblock.depths.drops.DropItems;
+import net.skybornmc.skyblock.depths.drops.DropSections;
+import net.skybornmc.skyblock.depths.drops.DropTable;
 import net.skybornmc.skyblock.depths.engine.Depths;
 import net.skybornmc.skyblock.depths.engine.DepthsEngine;
 import net.skybornmc.skyblock.depths.tiers.Dungeon;
+import net.skybornmc.skyblock.depths.satchel.SatchelManager;
 import net.skybornmc.skyblock.depths.tiers.TierGates;
 import net.skybornmc.skyblock.depths.zones.Hub;
 import net.skybornmc.skyblock.depths.zones.Zone;
@@ -31,7 +37,9 @@ import java.util.List;
  * service, plus {@code /depths debug} for staff. M4.1: the layout from {@code zones.yml} ({@link ZoneManager}, published
  * as {@link ZoneService}; its ore/log fields become engine regions), {@code /depths generate} (placeholder builds) and
  * {@code /depths tp}. M4.6: tier locks and gates ({@link TierGates}), {@code /dungeon} ({@link Dungeon}) and the
- * placeholders {@code depths_zone} / {@code depths_tier}. Settings and regions in {@code depths.yml}, texts in {@code messages/depths.yml}.
+ * placeholders {@code depths_zone} / {@code depths_tier}. M4.4 satchel ({@link SatchelManager}, published as
+ * {@link SatchelService}, opened from {@code /dungeon}) and M4.9 drops and crystals ({@link DepthsDrops}). Settings,
+ * regions and drop tables in {@code depths.yml}, texts in {@code messages/depths.yml}.
  */
 public final class DepthsModule implements SkyblockModule {
 
@@ -46,6 +54,9 @@ public final class DepthsModule implements SkyblockModule {
     private TierGates gates;
     private Dungeon dungeon;
     private ModuleMessages msg;
+    private DropItems dropItems;
+    private SatchelManager satchel;
+    private DepthsDrops drops;
 
     public DepthsModule(Core core) {
         this.core = core;
@@ -79,7 +90,19 @@ public final class DepthsModule implements SkyblockModule {
         core.plugin().getServer().getPluginManager().registerEvents(gates, core.plugin());
         gates.start();
         zoneCommands.beforeZoneTeleport(gates::grantPass);
+        // M4.4 satchel + M4.9 drops: drop items and tables from depths.yml, satchel per profile, crystal batches.
+        dropItems = new DropItems(core.items(), key -> core.messages().raw(ID, key));
+        satchel = new SatchelManager(core, config, msg, dropItems);
+        drops = new DepthsDrops(core, config, msg, zones, satchel, dropItems);
+        loadDrops();
+        satchel.start();
+        drops.start();
+        core.services().register(ID, SatchelService.class, satchel);
+        core.plugin().getServer().getPluginManager().registerEvents(satchel, core.plugin());
+        core.plugin().getServer().getPluginManager().registerEvents(drops, core.plugin());
+
         dungeon = new Dungeon(core, config, zones, gates, msg);
+        dungeon.satchel(satchel, satchel::menu);
         dungeon.start();
         registerPlaceholders();
 
@@ -108,8 +131,22 @@ public final class DepthsModule implements SkyblockModule {
                 .executes(ctx -> dungeon.open(ctx.player())));
     }
 
-    /** {@code depths_zone}: zone name (or The Gate); {@code depths_tier}: "Mine · Tier 3". Empty dash elsewhere. */
+    /** Reads drop-items and drops from depths.yml (defaults copied in when missing) and registers the drop items. */
+    private void loadDrops() {
+        File file = new File(core.plugin().getDataFolder(), config.fileName());
+        java.util.function.Consumer<String> warn = problem -> core.plugin().getLogger().warning("depths.yml → " + problem);
+        org.bukkit.configuration.file.YamlConfiguration yaml = DropSections.load(file, warn);
+        dropItems.load(yaml.getConfigurationSection(DropSections.ITEMS), warn);
+        drops.table(DropTable.parse(yaml.getConfigurationSection(DropSections.DROPS), dropItems.ids(), warn));
+    }
+
+    /**
+     * {@code depths_zone}: zone name (or The Gate); {@code depths_tier}: "Mine · Tier 3". Empty dash elsewhere.
+     * {@code satchel_used} / {@code satchel_max}: satchel fill of the active profile (scoreboard {@code Satchel 412 / 640}).
+     */
     private void registerPlaceholders() {
+        core.placeholders().register(ID, "satchel_used", player -> satchel.placeholder(player, false));
+        core.placeholders().register(ID, "satchel_max", player -> satchel.placeholder(player, true));
         core.placeholders().register(ID, "depths_zone", player -> {
             String place = player == null ? null : gates.place(player.getUniqueId());
             if (place == null) {
@@ -149,11 +186,25 @@ public final class DepthsModule implements SkyblockModule {
         engine.configRegions(loadRegions());
         loadZones();
         gates.reload();
+        loadDrops();
+        satchel.reload();
+        drops.start();
     }
 
     @Override
     public void disable() {
         core.placeholders().unregisterAll(ID);
+        if (drops != null) {
+            HandlerList.unregisterAll(drops);
+            drops.stop();
+        }
+        if (satchel != null) {
+            HandlerList.unregisterAll(satchel);
+            satchel.stop();
+        }
+        if (dropItems != null) {
+            dropItems.unregister();
+        }
         if (dungeon != null) {
             dungeon.stop();
         }

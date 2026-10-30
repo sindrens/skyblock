@@ -109,10 +109,161 @@ dungeon:
   arrived: "<c:ember><sym:pickaxe></c:ember> <wing> <c:value>Tier <tier></c:value> <c:muted><sym:dot></c:muted> <c:text><name>"
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't teleport to <c:value><name></c:value>. Try again soon."
   locked: "<prefix><c:error><sym:cross></c:error> <wing> <c:text>Tier <tier> needs <skill> <c:value><required></c:value> <c:muted>(you: <level>)</c:muted><c:text>. Level up in <click:run_command:'/skills'><hover:show_text:'<c:text>Open /skills'><c:action>[Skills]</c:action></hover></click>"
+  # Satchel button (M4.4). <used> <max>
+  satchel:
+    name: "<c:flame>Satchel"
+    lore:
+      - "<c:text>Your Depths drops: <c:value><used></c:value><c:muted>/<max>"
+      - "<c:text>Sell them or take them out."
+      - ""
+      - "<c:action>▶ Click to open"
 
-# Placeholders (scoreboard, tab): <ph:depths_zone>, <ph:depths_tier>
+# Satchel (M4.4): virtual storage per profile for Depths drops.
+satchel:
+  # Action bar while mining. <used> <max>
+  full: "<c:error><sym:cross></c:error> <c:text>Satchel full <c:value><used>/<max></c:value> <c:muted><sym:dot> sell in /dungeon, Satchel"
+  loading: "<c:muted>Your satchel is loading..."
+  not-loaded: "<prefix><c:error><sym:cross></c:error> <c:text>Your satchel is still loading. Try again in a moment."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>Wait a moment, your last satchel action is still running."
+  changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your satchel changed. Try again."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work, nothing changed. Try again."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open the satchel."
+  sell-off: "<prefix><c:error><sym:cross></c:error> <c:text>Selling is off right now. Try again later."
+  sell-none: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing in your satchel can be sold."
+  too-cheap: "<prefix><c:error><sym:cross></c:error> <c:text>Those items are worth less than $1 right now. Nothing was sold."
+  overflow: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance is at the limit. Nothing was sold."
+  # <items> <money> <bonus>
+  sold: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <cur:money><money></cur:money><c:text>."
+  sold-bonus: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <cur:money><money></cur:money> <c:muted>(+<bonus>% bonus)</c:muted><c:text>."
+  take-off: "<prefix><c:error><sym:cross></c:error> <c:text>Taking items out is off right now. You can still sell them or use them at the Forge."
+  take-none: "<prefix><c:error><sym:cross></c:error> <c:text>You have none of that left."
+  inventory-full: "<prefix><c:error><sym:cross></c:error> <c:text>Your inventory is full. Make room first."
+  # <amount> <item>
+  taken: "<prefix><c:success><sym:check></c:success> <c:text>Took <c:value><amount>x</c:value> <item> <c:text>out of your satchel."
+  taken-rest: "<prefix><c:text><c:value><amount></c:value> didn't fit and stayed in your satchel."
+  # Upgrades. <level> <capacity> <max> <price>
+  upgraded: "<prefix><c:success><sym:check></c:success> <c:text>Satchel upgrade <c:value><level></c:value> bought: <c:value>+<capacity></c:value> space <c:muted>(now <max>)</c:muted><c:text>."
+  upgrade-money: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:money><price></cur:money> <c:text>for the next upgrade."
+  upgrade-max: "<prefix><c:error><sym:cross></c:error> <c:text>Your satchel has every upgrade."
+  menu:
+    title: "Satchel"
+    info:
+      - "<c:text>Depths drops land here, not in"
+      - "<c:text>your inventory. Sell them, use them"
+      - "<c:text>at the Forge or take them out."
+    empty:
+      name: "<c:muted>Empty"
+      lore: ["<c:text>Mine and chop in The Depths:", "<c:text>your drops land here."]
+    # <used> <max> <percent> <worth> <bonus>
+    summary:
+      name: "<c:flame>Satchel <c:value><used></c:value><c:muted>/<max>"
+      lore:
+        - "<c:text>Space used: <c:value><percent>%"
+        - "<c:text>Worth about: <cur:money><worth>"
+        - "<c:muted>(sell bonus +<bonus>% included)"
+        - ""
+        - "<c:text>More space: Mining and Foraging"
+        - "<c:text>levels, and upgrades below."
+      loading: ["<c:muted>Loading..."]
+    sell-all:
+      name: "<c:success>Sell all"
+      lore:
+        - "<c:text>Sell everything for about"
+        - "<cur:money><worth> <c:muted>(+<bonus>% bonus)"
+        - ""
+        - "<c:action>▶ Click to sell all"
+      empty: ["<c:muted>Nothing to sell yet."]
+    # <level> <next> <levels> <capacity> <price>
+    upgrade:
+      name: "<c:flame>Upgrade <c:value><next></c:value><c:muted>/<levels>"
+      lore:
+        - "<c:text>Space: <c:value>+<capacity>"
+        - "<c:text>Price: <cur:money><price>"
+        - ""
+        - "<c:action>▶ Click to buy"
+      name-max: "<c:flame>Upgrades <c:success><sym:check>"
+      max: ["<c:text>All <c:value><levels></c:value> upgrades bought."]
+    # <item> <amount> <price> <worth> <trend>
+    entry:
+      name: "<item>"
+      lore:
+        - "<c:text>Amount: <c:value><amount>"
+        - "<c:text>Price: <cur:money><price></cur:money> <c:muted>each (<trend>%)"
+        - "<c:text>Worth: <cur:money><worth>"
+      no-price: ["<c:muted>Can't be sold to the server."]
+      click: ["<c:action>▶ Click to sell or take out"]
+  item:
+    gone:
+      name: "<c:muted>None left"
+      lore: ["<c:text>You have none of this item now."]
+    # <item> <amount> <worth>
+    sell:
+      name: "<c:success>Sell all <c:value><amount></c:value>"
+      lore:
+        - "<c:text>For about <cur:money><worth>"
+        - "<c:muted>(before your sell bonus)"
+        - ""
+        - "<c:action>▶ Click to sell"
+    no-sell:
+      name: "<c:muted>Can't be sold"
+      lore: ["<c:text>The server doesn't buy this.", "<c:text>Take it out to trade it."]
+    take-stack:
+      name: "<c:flame>Take one stack"
+      lore: ["<c:text>Up to 64 into your inventory.", "", "<c:action>▶ Click to take"]
+    take-all:
+      name: "<c:flame>Take all that fit"
+      lore: ["<c:text>As many as your inventory holds.", "", "<c:action>▶ Click to take"]
+    take-off:
+      name: "<c:muted>Taking out is off"
+      lore: ["<c:text>Sell it or use it at the Forge."]
+
+# Drops and crystals (M4.9).
+drops:
+  # Action bar after each crystal payout. <amount>
+  crystals: "<cur:crystals><sym:crystals> +<amount></cur:crystals> <c:text>crystals"
+  # Chat line for a rare find. <item> <amount>
+  rare: "<prefix><c:success><sym:star></c:success> <c:text>Rare find: <c:value><amount>x</c:value> <item><c:text>! It's in your satchel."
+
+# Drop items (M4.9): names, lore. {rarity} and {name} are filled by the plugin.
+drop-items:
+  name: "<rarity:{rarity}>{name}"
+  subtitle: "<c:muted>Depths material"
+  description: "Sell it from your satchel or use it at the Forge."
+  descriptions:
+    depths_geode: "A rare find. Its use arrives in a later update."
+    depths_key_fragment: "A rare find. Its use arrives in a later update."
+  names:
+    depths_coal: "Coal"
+    depths_copper: "Copper"
+    depths_iron: "Iron"
+    depths_gold: "Gold"
+    depths_redstone: "Redstone"
+    depths_lapis: "Lapis"
+    depths_diamond: "Diamond"
+    depths_emerald: "Emerald"
+    depths_amethyst: "Amethyst"
+    depths_quartz: "Quartz"
+    depths_netherite: "Netherite"
+    depths_voidstone: "Voidstone"
+    depths_oak_log: "Oak Log"
+    depths_birch_log: "Birch Log"
+    depths_spruce_log: "Spruce Log"
+    depths_jungle_log: "Jungle Log"
+    depths_acacia_log: "Acacia Log"
+    depths_dark_oak_log: "Dark Oak Log"
+    depths_mangrove_log: "Mangrove Log"
+    depths_cherry_log: "Cherry Log"
+    depths_pale_oak_log: "Pale Oak Log"
+    depths_crimson_stem: "Crimson Stem"
+    depths_warped_stem: "Warped Stem"
+    depths_geode: "Geode"
+    depths_key_fragment: "Key Fragment"
+
+# Placeholders (scoreboard, tab): <ph:depths_zone>, <ph:depths_tier>, <ph:satchel_used>, <ph:satchel_max> (<value> <percent>)
 placeholders:
   none: "<c:muted>-"
   zone: "<c:value><name>"
   hub: "<c:value>The Gate"
   tier: "<wing> <c:muted><sym:dot></c:muted> <c:value>Tier <tier>"
+  satchel-used: "<c:value><value>"
+  satchel-max: "<c:muted><value>"

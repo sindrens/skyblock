@@ -187,6 +187,11 @@ public final class SellServiceImpl implements SellService {
 
     @Override
     public CompletableFuture<SellResult> sell(SellRequest request) {
+        return sell(request, null);
+    }
+
+    @Override
+    public CompletableFuture<SellResult> sell(SellRequest request, net.skybornmc.skyblock.common.economy.TxGuard guard) {
         List<ItemStack> stacks = request.items();
         SellQuote quote;
         try {
@@ -226,7 +231,7 @@ public final class SellServiceImpl implements SellService {
                 request.playerName(), request.source(), quote);
         CompletableFuture<TxResult> future;
         try {
-            future = economy.executeGuarded(tx, c -> store.insertSale(c, record));
+            future = economy.executeGuarded(tx, c -> (guard == null || guard.holds(c)) && store.insertSale(c, record));
         } catch (RuntimeException e) {
             future = CompletableFuture.failedFuture(e);
         }

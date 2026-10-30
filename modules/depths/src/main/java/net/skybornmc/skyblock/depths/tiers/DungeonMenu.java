@@ -22,6 +22,8 @@ final class DungeonMenu extends Menu {
     /** Tab slots in {@link Aspect} order (centre of the top frame row). */
     static final int[] TAB_SLOTS = {3, 4, 5};
     static final int SLOT_EMPTY = 22;
+    /** Satchel button (M4.4), bottom row left of the info item. */
+    static final int SLOT_SATCHEL = 47;
 
     private final Dungeon dungeon;
     private Aspect tab;
@@ -78,6 +80,7 @@ final class DungeonMenu extends Menu {
                 }
             });
         }
+        satchelButton();
         List<Zone> wing = dungeon.zones().zones(tab);
         if (wing.isEmpty()) {
             set(SLOT_EMPTY, service.item(DungeonIcons.locked(dungeon.config()), text("dungeon.empty.name"), lines("dungeon.empty.lore")));
@@ -100,6 +103,25 @@ final class DungeonMenu extends Menu {
                 });
             }
         }
+    }
+
+    private void satchelButton() {
+        var service0 = dungeon.satchelService();
+        if (service0 == null || !viewer.hasPermission(net.skybornmc.skyblock.depths.DepthsPerms.SATCHEL)) {
+            return;
+        }
+        long used = service0.used(viewer);
+        long max = service0.capacity(viewer);
+        org.bukkit.Material icon = org.bukkit.Material.matchMaterial(dungeon.config().satchelIcon);
+        TagResolver tags = TagResolver.resolver(Msg.p("used", net.skybornmc.skyblock.common.util.Format.number(used)),
+                Msg.p("max", net.skybornmc.skyblock.common.util.Format.number(max)));
+        set(SLOT_SATCHEL, service.item(new ItemStack(icon == null || !icon.isItem() ? org.bukkit.Material.BUNDLE : icon),
+                text("dungeon.satchel.name", tags), lines("dungeon.satchel.lore", tags)), click -> {
+            var menu = dungeon.satchelMenu();
+            if (menu != null) {
+                openChild(menu);
+            }
+        });
     }
 
     private ItemStack tabItem(Aspect aspect) {

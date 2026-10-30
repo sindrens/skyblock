@@ -86,8 +86,8 @@ scoreboard:
       - ""
       - " <c:muted>Zone</c:muted>  <ph:depths_zone>"
       - " <c:muted>Tier</c:muted>  <ph:depths_tier>"
+      - " <c:muted>Satchel</c:muted>  <ph:satchel_used> <c:muted>/</c:muted> <ph:satchel_max>"
       - " <c:muted>Mining</c:muted>  <c:value>Lv <ph:skill_mining_level></c:value> <c:muted>(<ph:skill_mining_progress>%)"
-      - ""
       - " <c:muted>Money</c:muted>  <money>"
       - " <c:sky_ice>play.skybornmc.net"
 
@@ -114,8 +114,8 @@ scoreboard:
       - ""
       - " <c:muted>Zone</c:muted>  <ph:depths_zone>"
       - " <c:muted>Tier</c:muted>  <ph:depths_tier>"
+      - " <c:muted>Satchel</c:muted>  <ph:satchel_used> <c:muted>/</c:muted> <ph:satchel_max>"
       - " <c:muted>Foraging</c:muted>  <c:value>Lv <ph:skill_foraging_level></c:value> <c:muted>(<ph:skill_foraging_progress>%)"
-      - ""
       - " <c:muted>Money</c:muted>  <money>"
       - " <c:sky_ice>play.skybornmc.net"
 

@@ -23,6 +23,9 @@ public final class Dungeon {
     private final TierGates gates;
     private final ModuleMessages msg;
     private final DungeonTeleport teleport;
+    /** Satchel button (M4.4): the service for the fill shown on the button and the menu to open, or null. */
+    private net.skybornmc.skyblock.common.satchel.SatchelService satchel;
+    private java.util.function.Supplier<net.skybornmc.skyblock.common.menu.Menu> satchelMenu;
 
     public Dungeon(Core core, DepthsConfig config, ZoneService zones, TierGates gates, ModuleMessages msg) {
         this.core = core;
@@ -47,6 +50,21 @@ public final class Dungeon {
         String place = gates.place(player.getUniqueId());
         Aspect tab = place == null ? Aspect.MINE : zones.zone(place).map(Zone::aspect).orElse(Aspect.MINE);
         core.menus().open(player, new DungeonMenu(this, tab));
+    }
+
+    /** Adds the Satchel button to the menu. */
+    public void satchel(net.skybornmc.skyblock.common.satchel.SatchelService service,
+                        java.util.function.Supplier<net.skybornmc.skyblock.common.menu.Menu> menu) {
+        this.satchel = service;
+        this.satchelMenu = menu;
+    }
+
+    net.skybornmc.skyblock.common.satchel.SatchelService satchelService() {
+        return satchel;
+    }
+
+    net.skybornmc.skyblock.common.menu.Menu satchelMenu() {
+        return satchelMenu == null ? null : satchelMenu.get();
     }
 
     void teleport(Player player, Zone zone) {

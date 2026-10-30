@@ -22,6 +22,9 @@ public final class DepthsPerms {
     /** Ignore tier locks (gates open, enter any zone) and skip the {@code /dungeon} warmup. */
     public static final String BYPASS = "skyblock.depths.bypass";
 
+    /** Open the satchel (M4.4): see, sell, take out, buy upgrades. */
+    public static final String SATCHEL = "skyblock.depths.satchel";
+
     private DepthsPerms() {
     }
 }

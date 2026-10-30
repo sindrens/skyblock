@@ -118,6 +118,64 @@ public final class DepthsConfig extends ModuleConfig {
     public List<String> dungeonCombatIcons = List.of("zombie_head", "skeleton_skull", "cobweb", "slime_ball", "trident",
             "potion", "crossbow", "blaze_rod", "wither_skeleton_skull", "totem_of_undying");
 
+    // ------------------------------------------------------------------ satchel (M4.4)
+
+    @Setting(path = "satchel.enabled", desc = "Depths drops go into the satchel (virtual storage per profile). Off = no drops are given at all.")
+    public boolean satchelEnabled = true;
+
+    @Setting(path = "satchel.base-capacity", desc = "Items every satchel holds before skills and upgrades.", min = 1, max = 1000000)
+    public int satchelBaseCapacity = 256;
+
+    @Setting(path = "satchel.per-mining-level", desc = "Extra satchel space per Mining level.", min = 0, max = 100000)
+    public int satchelPerMiningLevel = 16;
+
+    @Setting(path = "satchel.per-foraging-level", desc = "Extra satchel space per Foraging level.", min = 0, max = 100000)
+    public int satchelPerForagingLevel = 16;
+
+    @Setting(path = "satchel.max-capacity", desc = "Largest satchel possible, whatever skills, upgrades and bonuses add.", min = 1, max = 100000000)
+    public int satchelMaxCapacity = 100000;
+
+    @Setting(path = "satchel.upgrades", desc = "Satchel upgrades bought in the satchel menu, in order, as extra-space=price ($).")
+    public List<String> satchelUpgrades = List.of("256=25000", "512=100000", "1024=400000", "2048=1600000", "4096=6400000");
+
+    @Setting(path = "satchel.take-out", desc = "Players can take items out of the satchel into their inventory (to trade them). Selling and the Forge work without it.")
+    public boolean satchelTakeOut = true;
+
+    @Setting(path = "satchel.save-seconds", desc = "Seconds between batched satchel saves (new drops). Take-outs, sales and Forge use are saved at once.", min = 1, max = 60)
+    public int satchelSaveSeconds = 5;
+
+    @Setting(path = "satchel.audit-seconds", desc = "Seconds between the batched audit rows of Depths drops (one row per player with every item and crystal).", min = 10, max = 3600)
+    public int satchelAuditSeconds = 60;
+
+    @Setting(path = "satchel.full-warning-ms", desc = "Minimum milliseconds between two 'satchel full' action bar warnings (UI_STYLE: max one per 1.5 s).", min = 0, max = 60000)
+    public int satchelFullWarningMs = 1500;
+
+    @Setting(path = "satchel.full-sound", desc = "Sound (sounds.yml) with the 'satchel full' warning (empty = none).")
+    public String satchelFullSound = "error";
+
+    @Setting(path = "satchel.sell-sound", desc = "Sound (sounds.yml) after a satchel sale (empty = none).")
+    public String satchelSellSound = "money";
+
+    @Setting(path = "satchel.icon", desc = "Item of the Satchel button in /dungeon and the satchel menu header.")
+    public String satchelIcon = "bundle";
+
+    @Setting(path = "satchel.refresh-ticks", desc = "Ticks between live refreshes of the open satchel menu (new drops, prices); 0 = never.", min = 0, max = 1200)
+    public int satchelRefreshTicks = 40;
+
+    // ------------------------------------------------------------------ drops and crystals (M4.9)
+
+    @Setting(path = "drops.max-per-block", desc = "Most drops one block/log can give with fortune (BonusFamily extra_drops: max 3 per action).", min = 1, max = 64)
+    public int dropsMaxPerBlock = 3;
+
+    @Setting(path = "drops.rare-sound", desc = "Sound (sounds.yml) when a rare drop is found (empty = none).")
+    public String dropsRareSound = "unlock";
+
+    @Setting(path = "crystals.batch-seconds", desc = "Seconds between crystal payouts: crystals found are added up per player and paid in one ledger row (reason depths_drop).", min = 1, max = 60)
+    public int crystalsBatchSeconds = 3;
+
+    @Setting(path = "crystals.action-bar", desc = "Show the crystals of each payout on the action bar.")
+    public boolean crystalsActionBar = true;
+
     @Setting(path = "generate.blocks-per-tick", desc = "/depths generate: most blocks changed per tick (keeps the server smooth).", min = 100, max = 50000)
     public int generateBlocksPerTick = 3000;
 
@@ -146,6 +204,9 @@ public final class DepthsConfig extends ModuleConfig {
                   resources:
                     - { block: iron_ore, depleted: tuff, respawn-seconds: 10 }
                 The layout (The Gate, wings, tier zones, ore/log fields, boss arena) is in zones.yml.
+                drop-items: the Depths drop items (custom item ids, also sell.yml keys and Forge materials).
+                drops: drop table per wing and tier: item, amount, crystal-chance, crystal-amount, rare {item: chance}.
+                  Blueprint chances stay in tools.yml (blueprints.<id>.drop), rolled by the tools module.
                 Texts are in messages/depths.yml. Reload: /skyblock reload depths""";
     }
 }
