@@ -19,6 +19,15 @@ public record TeleportRules(boolean cancelOnMove, double moveDistance, boolean c
     public enum Start { FROZEN, COOLDOWN, IN_COMBAT, INSTANT, WARMUP }
 
     /**
+     * The warmup a teleport really gets (owner answers 285/341/345): teleports are instant (the reason's own value, 0 by
+     * default), but while combat-tagged or inside a combat zone at least {@code dangerSeconds}.
+     */
+    public static int warmup(int reasonSeconds, int dangerSeconds, boolean inDanger) {
+        int base = Math.max(0, reasonSeconds);
+        return inDanger ? Math.max(base, Math.max(0, dangerSeconds)) : base;
+    }
+
+    /**
      * Whether a requested teleport may start.
      *
      * @param warmupSeconds      the reason's warmup

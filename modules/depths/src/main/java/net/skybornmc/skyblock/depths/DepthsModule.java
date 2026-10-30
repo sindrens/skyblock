@@ -61,6 +61,7 @@ public final class DepthsModule implements SkyblockModule {
     private ZoneGenerator generator;
     private ZonePortals portals;
     private TierGates gates;
+    private net.skybornmc.skyblock.depths.tiers.DepthsTeleports teleports;
     private Dungeon dungeon;
     private ModuleMessages msg;
     private DropItems dropItems;
@@ -107,6 +108,8 @@ public final class DepthsModule implements SkyblockModule {
         core.plugin().getServer().getPluginManager().registerEvents(gates, core.plugin());
         gates.start();
         zoneCommands.beforeZoneTeleport(gates::grantPass);
+        teleports = new net.skybornmc.skyblock.depths.tiers.DepthsTeleports(core, config, zones, gates);
+        teleports.register();
         // M4.4 satchel + M4.9 drops: drop items and tables from depths.yml, satchel per profile, crystal batches.
         dropItems = new DropItems(core.items(), key -> core.messages().raw(ID, key));
         satchel = new SatchelManager(core, config, msg, dropItems);
@@ -238,6 +241,10 @@ public final class DepthsModule implements SkyblockModule {
     @Override
     public void disable() {
         core.placeholders().unregisterAll(ID);
+        if (teleports != null) {
+            teleports.unregister();
+            teleports = null;
+        }
         if (combat != null) {
             HandlerList.unregisterAll(combat);
             combat.stop();

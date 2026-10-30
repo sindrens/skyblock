@@ -92,6 +92,14 @@ public final class DepthsConfig extends ModuleConfig {
 
     // Warmup and cancel rules of /dungeon moved to teleport.yml (F4: dungeon.*, cancel.*).
 
+    @Setting(path = "teleport.combat-tiers-are-danger", desc = "Owner answer 345: the combat tiers count as a combat zone (the boss "
+            + "arena always does), so teleports out of them wait teleport.yml danger.warmup-seconds.")
+    public boolean teleportCombatTiersAreDanger = true;
+
+    @Setting(path = "teleport.refuse-locked-tiers", desc = "Owner answer 346: /tpahere and other player teleports into a tier "
+            + "the traveller has not unlocked are refused (the Depths bypass skips it).")
+    public boolean teleportRefuseLockedTiers = true;
+
     @Setting(path = "dungeon.bar-length", desc = "/dungeon: segments of the progress bar on locked tiers.", min = 1, max = 20)
     public int dungeonBarLength = 10;
 

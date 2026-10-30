@@ -110,6 +110,8 @@ dungeon:
   destination: "<wing> <c:value>Tier <tier></c:value> <c:muted><sym:dot></c:muted> <c:value><name>"
   arrived: "<c:ember><sym:pickaxe></c:ember> <wing> <c:value>Tier <tier></c:value> <c:muted><sym:dot></c:muted> <c:text><name>"
   locked: "<prefix><c:error><sym:cross></c:error> <wing> <c:text>Tier <tier> needs <skill> <c:value><required></c:value> <c:muted>(you: <level>)</c:muted><c:text>. Level up in <click:run_command:'/skills'><hover:show_text:'<c:text>Open /skills'><c:action>[Skills]</c:action></hover></click>"
+  # Owner answer 346: a /tpahere (or other teleport) into a tier the traveller has not unlocked.
+  teleport-locked: "<prefix><c:error><sym:cross></c:error> <c:text>You can't go there: that Depths tier is still locked for you. See <click:run_command:'/dungeon'><hover:show_text:'<c:text>Open /dungeon'><c:action>[Tiers]</c:action></hover></click>"
   # Satchel button (M4.4). <used> <max>
   satchel:
     name: "<c:flame>Satchel"

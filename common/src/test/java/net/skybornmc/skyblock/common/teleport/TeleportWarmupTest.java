@@ -180,11 +180,14 @@ class TeleportWarmupTest {
         TeleportConfig config = new TeleportConfig();
         assertEquals(0, config.warmupSeconds(TeleportReason.SPAWN), "/spawn instant (owner decision)");
         assertEquals(5, config.cooldownSeconds(TeleportReason.SPAWN));
-        assertEquals(3, config.warmupSeconds(TeleportReason.TPA));
+        assertEquals(0, config.warmupSeconds(TeleportReason.TPA), "owner answer 341: instant outside combat");
         assertEquals(0, config.warmupSeconds(TeleportReason.ISLAND_HOME));
-        assertEquals(3, config.warmupSeconds(TeleportReason.ISLAND_VISIT));
-        assertEquals(3, config.warmupSeconds(TeleportReason.ISLAND_WARP));
-        assertEquals(3, config.warmupSeconds(TeleportReason.DUNGEON));
+        assertEquals(0, config.warmupSeconds(TeleportReason.ISLAND_VISIT), "owner answer 285");
+        assertEquals(0, config.warmupSeconds(TeleportReason.ISLAND_WARP), "owner answer 285");
+        assertEquals(0, config.warmupSeconds(TeleportReason.DUNGEON), "owner answer 341");
+        assertEquals(3, config.dangerWarmupSeconds, "3 s while in combat or a combat zone");
+        assertTrue(config.dangerWorlds.contains("warzone"));
+        assertTrue(config.portalOnlyWorlds.contains("warzone"), "owner answer 413");
         assertEquals(0, config.warmupSeconds(TeleportReason.PROFILE), "profile switch teleports are instant");
         assertEquals(0, config.warmupSeconds(TeleportReason.STAFF));
         assertEquals(TeleportRules.DEFAULTS, config.rules());
@@ -215,5 +218,30 @@ class TeleportWarmupTest {
             assertTrue(yaml.contains("\n" + reason.id() + ":"), "section " + reason.id());
         }
         assertTrue(yaml.contains("move-distance: 1.0"));
+    }
+
+    @Test
+    void instantExceptInCombatOrCombatZones() {
+        assertEquals(0, TeleportRules.warmup(0, 3, false), "instant outside combat");
+        assertEquals(3, TeleportRules.warmup(0, 3, true), "3 s while tagged or in a combat zone");
+        assertEquals(5, TeleportRules.warmup(5, 3, true), "a longer own warmup stays");
+        assertEquals(5, TeleportRules.warmup(5, 3, false));
+        assertEquals(0, TeleportRules.warmup(0, 0, true), "danger warmup off");
+        assertEquals(Start.INSTANT, RULES.start(TeleportRules.warmup(0, 3, false), false, 0, false, 0));
+        assertEquals(Start.WARMUP, RULES.start(TeleportRules.warmup(0, 3, true), false, 0, false, 5_000),
+                "never blocked in combat (block-in-combat off), only delayed");
+        assertEquals(Start.INSTANT, RULES.start(TeleportRules.warmup(0, 3, true), true, 0, false, 5_000), "staff bypass");
+    }
+
+    @Test
+    void oldThreeSecondDefaultsBecomeInstant(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve("teleport.yml"), "config-version: 1\ntpa:\n  warmup-seconds: 3\nisland-visit:\n  warmup-seconds: 3\n"
+                + "island-warp:\n  warmup-seconds: 5\ndungeon:\n  warmup-seconds: 3\n");
+        TeleportConfig config = new TeleportConfig();
+        assertTrue(new ConfigManager(dir.toFile(), Logger.getLogger("test")).load(config).isEmpty());
+        assertEquals(0, config.tpaWarmupSeconds);
+        assertEquals(0, config.islandVisitWarmupSeconds);
+        assertEquals(5, config.islandWarpWarmupSeconds, "an owner-chosen value stays");
+        assertEquals(0, config.dungeonWarmupSeconds);
     }
 }
