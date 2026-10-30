@@ -4,11 +4,14 @@ import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 import net.skybornmc.skyblock.common.island.IslandService.Role;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Typed settings of {@code bank.yml} (M3.3). Numbers follow the balance sheet (docs/ECONOMY_BALANCE.md §6, BAL2): interest
- * stays about 2% of a regular player's season income because every payout is capped.
+ * Typed settings of {@code bank.yml} (M3.3, BANK2). Numbers follow the balance sheet (docs/ECONOMY_BALANCE.md §6): owner
+ * answer 169 asked for higher interest paid every 8 hours, so the rates and payout caps are 4x the M3.3 values per payout
+ * (3 payouts a day instead of 8 = +50% per day). Interest stays under ~8% of season income because every payout is capped.
  */
 public final class BankConfig extends ModuleConfig {
 
@@ -17,18 +20,19 @@ public final class BankConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ interest
 
-    @Setting(path = "interest.period-hours", desc = "Hours between interest payouts (DESIGN 4.4: 3). Payouts happen at fixed "
-            + "times (every N hours from midnight UTC), also while you are offline.", min = 1, max = 24, restart = true,
-            level = Setting.Level.OWNER)
-    public int periodHours = 3;
+    @Setting(path = "interest.period-hours", desc = "Hours between interest payouts (owner #169: 8). Payouts happen at fixed "
+            + "times (every N hours from midnight UTC: 00, 08, 16 UTC), also while you are offline. A change takes effect "
+            + "after a restart; bank states are converted to the new period length then (no time is ever paid twice).",
+            min = 1, max = 24, restart = true, level = Setting.Level.OWNER)
+    public int periodHours = 8;
 
-    @Setting(path = "interest.personal-rate-percent", desc = "Interest per payout on a personal bank, in percent (0.15).",
-            min = 0, max = 5, level = Setting.Level.OWNER)
-    public double personalRatePercent = 0.15;
+    @Setting(path = "interest.personal-rate-percent", desc = "Interest per payout on a personal bank, in percent (owner #169: "
+            + "0.6 every 8 h).", min = 0, max = 10, level = Setting.Level.OWNER)
+    public double personalRatePercent = 0.6;
 
-    @Setting(path = "interest.island-rate-percent", desc = "Interest per payout on an island bank, in percent (0.25).",
-            min = 0, max = 5, level = Setting.Level.OWNER)
-    public double islandRatePercent = 0.25;
+    @Setting(path = "interest.island-rate-percent", desc = "Interest per payout on an island bank, in percent (owner #169: "
+            + "1.0 every 8 h).", min = 0, max = 10, level = Setting.Level.OWNER)
+    public double islandRatePercent = 1.0;
 
     @Setting(path = "interest.activity-minutes", desc = "Only accounts played at least this many minutes in the last "
             + "interest.activity-days days earn interest (owner #38: 2 h in 7 days). Island banks: one member must have played "
@@ -40,8 +44,8 @@ public final class BankConfig extends ModuleConfig {
     public int activityDays = 7;
 
     @Setting(path = "interest.catch-up-periods", desc = "After a server downtime at most this many missed payouts are paid "
-            + "per account (older ones are skipped).", min = 0, max = 80, level = Setting.Level.OWNER)
-    public int catchUpPeriods = 8;
+            + "per account (older ones are skipped). 3 payouts of 8 h = one day.", min = 0, max = 80, level = Setting.Level.OWNER)
+    public int catchUpPeriods = 3;
 
     @Setting(path = "interest.sweep-minutes", desc = "Minutes between background runs that pay due interest (off the main "
             + "thread, in small batches). Accounts are also settled when someone opens the bank.", min = 1, max = 60, restart = true)
@@ -63,10 +67,16 @@ public final class BankConfig extends ModuleConfig {
     @Setting(path = "withdraw.min", desc = "Smallest withdrawal.", min = 1, level = Setting.Level.OWNER)
     public long withdrawMin = 100;
 
-    @Setting(path = "withdraw.fee-percent", desc = "Early-withdrawal fee in percent of the amount taken out (owner E4: keep "
-            + "2%). The fee leaves the economy. A withdrawal with a fee also forfeits the interest of the current period.",
-            min = 0, max = 50, level = Setting.Level.OWNER)
+    @Setting(path = "withdraw.fee-percent", desc = "Withdrawal fee in percent of the amount taken out, before island "
+            + "masteries (owner E4 + #169: 2%). Personal and island bank. The fee leaves the economy. A withdrawal with a fee "
+            + "also forfeits the interest of the current period.", min = 0, max = 50, level = Setting.Level.OWNER)
     public double withdrawFeePercent = 2.0;
+
+    @Setting(path = "withdraw.mastery-fee-percent", desc = "Withdrawal fee in percent at island bank-fee mastery level 1, "
+            + "2, 3 ... (owner #169: the fee gets lower as the island progresses, /is masteries). Level 0 pays "
+            + "withdraw.fee-percent; levels above the list pay the last entry. Personal banks use the mastery of the profile's "
+            + "island. A step above the one before is lowered to it.", level = Setting.Level.OWNER)
+    public List<String> masteryFeePercent = List.of("1.5", "1.0", "0.5");
 
     @Setting(path = "withdraw.free-minutes", desc = "Minutes right after each interest payout in which withdrawals are free "
             + "(no fee, the period's interest is not forfeited; the lowest-balance rule still applies). 0 = always a fee.",
@@ -79,31 +89,31 @@ public final class BankConfig extends ModuleConfig {
             + "interest payout (amounts like 100k, 2.5M). Tier 1 is free (balance sheet 6.1; cost = 2% of capacity, owner #42).",
             level = Setting.Level.OWNER)
     public List<String> personalTiers = List.of(
-            "100k 0 150",
-            "500k 10k 480",
-            "2.5M 50k 1536",
-            "12.5M 250k 4915",
-            "62.5M 1.25M 15729",
-            "312.5M 6.25M 50332",
-            "1.5625B 31.25M 161061",
-            "7.8125B 156.25M 515396",
-            "39.0625B 781.25M 1649267",
-            "195.3125B 3.90625B 5277655");
+            "100k 0 600",
+            "500k 10k 1920",
+            "2.5M 50k 6144",
+            "12.5M 250k 19661",
+            "62.5M 1.25M 62915",
+            "312.5M 6.25M 201327",
+            "1.5625B 31.25M 644245",
+            "7.8125B 156.25M 2061584",
+            "39.0625B 781.25M 6597070",
+            "195.3125B 3.90625B 21110623");
 
     @Setting(path = "island.levels", desc = "Island bank by level 0-10, one line each: capacity (Bank Capacity upgrade level) "
             + "and payout cap per interest payout (Bank Interest upgrade level). Balance sheet 6.2.", level = Setting.Level.OWNER)
     public List<String> islandLevels = List.of(
-            "1M 2.5k",
-            "4M 7.5k",
-            "16M 22.5k",
-            "64M 67.5k",
-            "256M 202.5k",
-            "1.024B 607.5k",
-            "4.096B 1.8225M",
-            "16.384B 5.4675M",
-            "65.536B 16.4025M",
-            "262.144B 49.2075M",
-            "1.048576T 147.6225M");
+            "1M 10k",
+            "4M 30k",
+            "16M 90k",
+            "64M 270k",
+            "256M 810k",
+            "1.024B 2.43M",
+            "4.096B 7.29M",
+            "16.384B 21.87M",
+            "65.536B 65.61M",
+            "262.144B 196.83M",
+            "1.048576T 590.49M");
 
     @Setting(path = "island.withdraw-limit-percent.leader", desc = "Most the Leader may take out of the island bank per day, "
             + "in percent of the bank's capacity. -1 = no limit.", min = -1, max = 100, level = Setting.Level.OWNER)
@@ -135,6 +145,69 @@ public final class BankConfig extends ModuleConfig {
     @Override
     public String fileName() {
         return "bank.yml";
+    }
+
+    /** Version 2 (BANK2, owner #169): interest every 8 h with higher rates and caps; see {@link #upgradeValues}. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** M3.3 defaults that BANK2 replaces in an existing bank.yml (only when still untouched). */
+    static final Map<String, Object> OLD_DEFAULTS = oldDefaults();
+
+    private static Map<String, Object> oldDefaults() {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("interest.period-hours", 3);
+        m.put("interest.personal-rate-percent", 0.15);
+        m.put("interest.island-rate-percent", 0.25);
+        m.put("interest.catch-up-periods", 8);
+        m.put("personal.tiers", List.of("100k 0 150", "500k 10k 480", "2.5M 50k 1536", "12.5M 250k 4915", "62.5M 1.25M 15729",
+                "312.5M 6.25M 50332", "1.5625B 31.25M 161061", "7.8125B 156.25M 515396", "39.0625B 781.25M 1649267",
+                "195.3125B 3.90625B 5277655"));
+        m.put("island.levels", List.of("1M 2.5k", "4M 7.5k", "16M 22.5k", "64M 67.5k", "256M 202.5k", "1.024B 607.5k",
+                "4.096B 1.8225M", "16.384B 5.4675M", "65.536B 16.4025M", "262.144B 49.2075M", "1.048576T 147.6225M"));
+        return java.util.Collections.unmodifiableMap(m);
+    }
+
+    /**
+     * Value changes the key renames can't do (version 1 → 2), applied to the raw file before it is loaded: every key
+     * that still holds its untouched M3.3 default gets the BANK2 default; owner-chosen values are kept. Returns the
+     * paths that were changed (empty = nothing to do).
+     */
+    static List<String> upgradeValues(org.bukkit.configuration.file.YamlConfiguration yaml) {
+        if (yaml.getKeys(false).isEmpty() || yaml.getInt("config-version", 1) >= 2) {
+            return List.of();
+        }
+        BankConfig fresh = new BankConfig();
+        Map<String, Object> now = Map.of(
+                "interest.period-hours", fresh.periodHours,
+                "interest.personal-rate-percent", fresh.personalRatePercent,
+                "interest.island-rate-percent", fresh.islandRatePercent,
+                "interest.catch-up-periods", fresh.catchUpPeriods,
+                "personal.tiers", fresh.personalTiers,
+                "island.levels", fresh.islandLevels);
+        List<String> changed = new java.util.ArrayList<>();
+        for (Map.Entry<String, Object> e : OLD_DEFAULTS.entrySet()) {
+            if (sameValue(yaml.get(e.getKey()), e.getValue())) {
+                yaml.set(e.getKey(), now.get(e.getKey()));
+                changed.add(e.getKey());
+            }
+        }
+        return changed;
+    }
+
+    private static boolean sameValue(Object raw, Object old) {
+        if (raw == null) {
+            return false;
+        }
+        if (old instanceof List<?> list) {
+            return raw instanceof List<?> r && r.stream().map(o -> String.valueOf(o).trim()).toList().equals(list);
+        }
+        if (raw instanceof Number n && old instanceof Number o) {
+            return Math.abs(n.doubleValue() - o.doubleValue()) < 1e-9;
+        }
+        return false;
     }
 
     @Override

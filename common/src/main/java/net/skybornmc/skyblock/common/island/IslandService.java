@@ -290,4 +290,17 @@ public interface IslandService {
 
     /** Masteries module hook for {@link #extraMemberHomes} ({@code null} = none). Main thread. */
     void extraHomesProvider(java.util.function.ToIntBiFunction<UUID, UUID> provider);
+
+    /**
+     * The island's bank-fee mastery level (BANK2, owner #169): every level lowers the bank withdrawal fee one step
+     * ({@code bank.yml → withdraw.mastery-fee-percent}: 2% → 1.5% → 1.0% → 0.5%) for the island bank and for the personal
+     * banks of its members. 0 until {@code /is masteries} sets a provider ({@link #bankFeeMasteryProvider}). Main thread.
+     */
+    default int bankFeeMasteryLevel(UUID islandId) {
+        return 0;
+    }
+
+    /** Masteries module hook for {@link #bankFeeMasteryLevel} ({@code null} = level 0 everywhere). Main thread. */
+    default void bankFeeMasteryProvider(java.util.function.ToIntFunction<UUID> provider) {
+    }
 }

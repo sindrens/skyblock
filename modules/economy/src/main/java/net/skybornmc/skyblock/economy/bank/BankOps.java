@@ -31,6 +31,9 @@ import java.util.logging.Logger;
  */
 final class BankOps {
 
+    /** The M3.3 period length (3 h): every bank state written before BANK2 counts periods of this length. */
+    static final long LEGACY_PERIOD_MILLIS = 3 * 3_600_000L;
+
     /** The money rules of one bank account at the moment of an operation. */
     record Terms(long capacity, long payoutCap, double ratePercent, boolean earning) {
     }
@@ -82,11 +85,14 @@ final class BankOps {
     private final LongSupplier clock;
     private final IntSupplier today;
     private final Logger log;
+    /** Period length in effect since the bank started (a config change needs a restart: states are converted then). */
+    private final long periodMillis;
 
     BankOps(EconomyService economy, BankStore store, Supplier<BankConfig> config, Supplier<BankTiers> tiers,
             Supplier<ProfileService> profiles, LongSupplier clock, IntSupplier today, Logger log) {
         this.economy = economy;
         this.store = store;
+        this.periodMillis = store.periodMillis();
         this.config = config;
         this.tiers = tiers;
         this.profiles = profiles;
@@ -100,7 +106,7 @@ final class BankOps {
     }
 
     long periodMillis() {
-        return config.get().periodMillis();
+        return periodMillis;
     }
 
     long currentPeriod() {
@@ -154,7 +160,7 @@ final class BankOps {
 
     /**
      * Pays every finished period of the account that is still open (at most {@code interest.catch-up-periods}), one
-     * ledger transaction per period with the key {@code bank_interest:<account>:<period>}. Safe to run any number of
+     * ledger transaction per period with the key {@code bank_interest:<account>:<minutes>m:<period>}. Safe to run any number of
      * times, also at once from several threads: a period is paid at most once.
      */
     CompletableFuture<Settled> settle(AccountRef account, Terms terms) {
@@ -190,8 +196,8 @@ final class BankOps {
             Transaction tx = Transaction.deposit(account, Currency.MONEY, amount, TxReason.INTEREST)
                     .actor(Actor.system("bank"))
                     .reference("period " + next)
-                    .idempotencyKey(interestKey(account, next))
-                    .detail("period", next).detail("basis", basis).detail("rate_percent", terms.ratePercent())
+                    .idempotencyKey(interestKey(account, periodMillis, next))
+                    .detail("period", next).detail("period_hours", periodMillis / 3_600_000d).detail("basis", basis).detail("rate_percent", terms.ratePercent())
                     .detail("payout_cap", terms.payoutCap());
             return economy.executeGuarded(tx, c -> store.markSettled(c, account, next, state.cycle())).thenCompose(result -> {
                 Settled now = result.ok() ? new Settled(sofar.paid() + amount, sofar.periods() + 1) : sofar;
@@ -205,8 +211,16 @@ final class BankOps {
         });
     }
 
-    static String interestKey(AccountRef account, long period) {
-        return "bank_interest:" + account + ":" + period;
+    /**
+     * The payout key of one period. It names the period length (minutes) because period numbers of different lengths
+     * mean different times (BANK2: 3 h → 8 h); M3.3 keys had no length and only ever used 3 h numbers, so 3 h keeps
+     * that old form (a period paid before the update is still recognised).
+     */
+    static String interestKey(AccountRef account, long periodMillis, long period) {
+        if (periodMillis == LEGACY_PERIOD_MILLIS) {
+            return "bank_interest:" + account + ":" + period;
+        }
+        return "bank_interest:" + account + ":" + (periodMillis / 60_000L) + "m:" + period;
     }
 
     // ------------------------------------------------------------------------------------------------ deposit
@@ -268,20 +282,29 @@ final class BankOps {
 
     // ------------------------------------------------------------------------------------------------ withdraw
 
-    /** The fee a withdrawal of {@code amount} costs right now (0 in the free minutes after a payout). */
-    long feeNow(long amount) {
-        BankConfig cfg = config.get();
-        if (InterestMath.inFreeWindow(clock.getAsLong(), cfg.periodMillis(), cfg.withdrawFreeMinutes)) {
+    /** True in the free minutes right after a payout (withdrawals cost no fee and keep the period's interest). */
+    boolean freeNow() {
+        return InterestMath.inFreeWindow(clock.getAsLong(), periodMillis, config.get().withdrawFreeMinutes);
+    }
+
+    /**
+     * The fee a withdrawal of {@code amount} costs right now at {@code feePercent} (the island's mastery-lowered fee,
+     * {@link WithdrawFee}): 0 in the free minutes after a payout.
+     */
+    long feeNow(long amount, double feePercent) {
+        if (freeNow()) {
             return 0;
         }
-        return InterestMath.fee(amount, cfg.withdrawFeePercent);
+        return InterestMath.fee(amount, feePercent);
     }
 
     /**
      * Takes {@code amount} out of {@code bank}: the purse gets {@code amount - fee}, the fee leaves the economy, both in one
      * atomic batch. A withdrawal with a fee forfeits the period's interest. {@code limit}: island daily limit or null.
+     * {@code feePercent}: the fee after island masteries ({@link WithdrawFee}, decided on the main thread).
      */
-    CompletableFuture<Outcome> withdraw(UUID purseKey, AccountRef bank, long amount, Terms terms, Limit limit, Actor actor) {
+    CompletableFuture<Outcome> withdraw(UUID purseKey, AccountRef bank, long amount, Terms terms, Limit limit, double feePercent,
+                                        Actor actor) {
         Status access = access(purseKey, bank, actor, "bank_withdraw");
         if (access != Status.OK) {
             return CompletableFuture.completedFuture(Outcome.of(access));
@@ -289,15 +312,16 @@ final class BankOps {
         if (amount < config.get().withdrawMin) {
             return CompletableFuture.completedFuture(Outcome.of(Status.BELOW_MIN));
         }
-        return prepare(bank, terms).thenCompose(v -> withdrawOnce(purseKey, bank, amount, limit, actor))
+        return prepare(bank, terms).thenCompose(v -> withdrawOnce(purseKey, bank, amount, limit, feePercent, actor))
                 .thenCompose(out -> out.status() == Status.BUSY
-                        ? prepare(bank, terms).thenCompose(v -> withdrawOnce(purseKey, bank, amount, limit, actor))
+                        ? prepare(bank, terms).thenCompose(v -> withdrawOnce(purseKey, bank, amount, limit, feePercent, actor))
                         : CompletableFuture.completedFuture(out))
                 .exceptionally(e -> fail("withdraw", bank, e));
     }
 
-    private CompletableFuture<Outcome> withdrawOnce(UUID purseKey, AccountRef bank, long amount, Limit limit, Actor actor) {
-        long fee = feeNow(amount);
+    private CompletableFuture<Outcome> withdrawOnce(UUID purseKey, AccountRef bank, long amount, Limit limit, double feePercent,
+                                                    Actor actor) {
+        long fee = feeNow(amount, feePercent);
         long net = amount - fee;
         if (net <= 0) {
             return CompletableFuture.completedFuture(Outcome.of(Status.BELOW_MIN));
@@ -308,7 +332,7 @@ final class BankOps {
         String where = bank.isBank() ? "personal bank" : "island bank";
         List<Transaction> txs = new ArrayList<>(2);
         txs.add(Transaction.transfer(bank, AccountRef.player(purseKey), Currency.MONEY, net, TxReason.BANK_WITHDRAW)
-                .actor(actor).reference(where).detail("bank", bank.toString()).detail("fee", fee).detail("requested", amount));
+                .actor(actor).reference(where).detail("bank", bank.toString()).detail("fee", fee).detail("fee_percent", feePercent).detail("requested", amount));
         if (fee > 0) {
             txs.add(Transaction.withdraw(bank, Currency.MONEY, fee, TxReason.BANK_FEE).actor(actor).reference(where)
                     .detail("bank", bank.toString()).detail("withdrawn", amount));

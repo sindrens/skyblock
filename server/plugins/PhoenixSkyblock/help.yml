@@ -859,7 +859,7 @@ topics:
           - "<c:text>this profile and stays if you leave."
       - title: "<c:value>Interest"
         lines:
-          - "<c:text>Both banks earn interest every 3 hours,"
+          - "<c:text>Both banks earn interest every 8 hours,"
           - "<c:text>also offline, on the lowest balance of"
           - "<c:text>that period. Play 2 hours in 7 days"
           - "<c:text>to earn it. Each payout has a cap."
@@ -867,8 +867,9 @@ topics:
         lines:
           - "<c:text>A withdrawal costs a 2% fee and that"
           - "<c:text>period's interest, except in the first"
-          - "<c:text>minutes after a payout. You always see"
-          - "<c:text>the fee before you confirm."
+          - "<c:text>minutes after a payout. Island masteries"
+          - "<c:text>lower the fee step by step. You always"
+          - "<c:text>see the fee before you confirm."
       - title: "<c:value>Tiers and roles"
         lines:
           - "<c:text>Buy bank tiers to hold more. On the"

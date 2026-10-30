@@ -266,7 +266,7 @@ menu:
     name: "<c:value>Island bank"
     lore:
       - "<c:text>Shared money of the island."
-      - "<c:text>Earns interest every few hours."
+      - "<c:text>Earns interest every 8 hours."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   bank-off:
