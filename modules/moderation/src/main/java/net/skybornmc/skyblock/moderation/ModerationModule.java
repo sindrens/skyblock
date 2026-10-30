@@ -70,6 +70,11 @@ public final class ModerationModule implements SkyblockModule, Listener {
     static final String PERM_ALTS = "skyblock.staff.punish.alts";
     static final String PERM_EXEMPT = "skyblock.staff.punish.exempt";
     static final String PERM_EXEMPT_BYPASS = "skyblock.staff.punish.exempt.bypass";
+    /** P2 (spec 12.1, 12.2, 12.10). */
+    static final String PERM_UNDO_OTHERS = "skyblock.staff.punish.undo.others";
+    static final String PERM_FORCE = "skyblock.staff.punish.force";
+    static final String PERM_STATS = "skyblock.staff.punish.stats";
+    static final String PERM_STATS_OTHERS = "skyblock.staff.punish.stats.others";
     /** Staff told about broken punishments.yml edits (whoever may reload configs). */
     static final String PERM_CONFIG_ALERT = "skyblock.admin.reload";
 
@@ -88,6 +93,8 @@ public final class ModerationModule implements SkyblockModule, Listener {
     private final Map<UUID, List<PunishmentStore.Alt>> pendingAltAlerts = new ConcurrentHashMap<>();
     /** Pending suggestion ids for tab completion of /warns <player> apply|dismiss <id>. */
     private volatile List<String> pendingIds = List.of();
+    /** Names of staff who ever punished (tab completion of /pstats). */
+    private volatile List<String> staffNames = List.of();
     /** Problems of the last punishments.yml load (shown to staff who can reload when they join). */
     private volatile List<ConfigProblem> lastProblems = List.of();
     private volatile boolean lastLoadRejected;
@@ -123,6 +130,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         main = new MainThread(plugin);
         service = new PunishmentService(core, msg, new PunishmentStore(core.database()), () -> config);
         service.warnRules(() -> templates.config().warnRules());
+        service.extras(() -> templates.config().extras());
         loadPunishments(null);
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         core.placeholders().registerText(ID, "muted", p -> p != null && service.mute(p.getUniqueId()).isPresent() ? "true" : "false");
@@ -275,6 +283,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
         service.store().bannedNames().thenAccept(names -> bannedNames = List.copyOf(names))
                 .exceptionally(e -> null);
         service.store().pendingIds().thenAccept(ids -> pendingIds = List.copyOf(ids)).exceptionally(e -> null);
+        service.store().staffNames().thenAccept(names -> staffNames = List.copyOf(names)).exceptionally(e -> null);
     }
 
     private static String ip(Player p) {
@@ -346,11 +355,12 @@ public final class ModerationModule implements SkyblockModule, Listener {
         Arg<String> punishTarget = player;
         Arg<String> template = Args.oneOf("reason", templates::reasonIds);
         Arg<String> flags = Arg.greedy("flags", (sender, raw) -> raw.strip(), (ctx, builder) -> {
-            Flags.suggestions(builder.getRemaining()).forEach(builder::suggest);
+            Flags.suggestions(builder.getRemaining(), Flags.allowed(ctx.getSource().getSender()::hasPermission))
+                    .forEach(builder::suggest);
             return builder.buildFuture();
         });
         commands.register(CommandSpec.command("punish")
-                .description("Punishment menu for a player, or apply a reason directly (-s silent, -ip IP-wide)")
+                .description("Punishment menu for a player, or apply a reason directly (-s silent, -ip IP-wide, -force)")
                 .category("Staff").permission(PERM_GUI).aliases("p").arg(punishTarget).optional(template).optional(flags)
                 .example("p Steve toxicity")
                 .executes(ctx -> punishCommand(ctx.sender(), ctx.get(punishTarget), ctx.getOr(template, null), ctx.getOr(flags, ""))));
@@ -369,6 +379,21 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .description("All punishments of a player (menu, or chat)").category("Staff").permission(PERM_HISTORY)
                 .aliases("punishments").arg(historyTarget).optional(mode).example("history Steve")
                 .executes(ctx -> history(ctx.sender(), ctx.get(historyTarget), ctx.getOr(mode, null))));
+        Arg<String> statsWho = Arg.word("staff", (sender, raw) -> raw, Suggest.bySender(sender -> {
+            List<String> out = new ArrayList<>(PunishStats.Period.ids());
+            if (sender.hasPermission(PERM_STATS_OTHERS)) {
+                out.add("top");
+                out.addAll(staffNames);
+            }
+            return out;
+        }));
+        Arg<String> statsPeriod = Args.oneOf("period", PunishStats.Period::ids);
+        commands.register(CommandSpec.command("pstats")
+                .description("How many punishments you (or another staff member) gave: 24h, 7d, 30d or all; 'top' ranks all staff")
+                .category("Staff").permission(PERM_STATS).aliases("mystats").optional(statsWho).optional(statsPeriod)
+                .example("pstats 30d")
+                .executes(ctx -> pstats(ctx.sender(), ctx.getOr(statsWho, null), ctx.getOr(statsPeriod, null))));
+
         Arg<String> altsTarget = player;
         commands.register(CommandSpec.command("alts")
                 .description("Accounts that share an IP address with a player").category("Staff").permission(PERM_ALTS)
@@ -376,22 +401,25 @@ public final class ModerationModule implements SkyblockModule, Listener {
                 .executes(ctx -> alts(ctx.sender(), ctx.get(altsTarget))));
     }
 
-    /** Parsed reason with flags removed. */
-    record Reason(String text, boolean silent, boolean ipWide) {
+    /** Parsed reason with flags removed ({@code -s} silent, {@code -ip} IP-wide, {@code -force} skip the duplicate check). */
+    record Reason(String text, boolean silent, boolean ipWide, boolean force) {
         static Reason parse(String raw) {
             boolean silent = false;
             boolean ip = false;
+            boolean force = false;
             List<String> words = new ArrayList<>();
             for (String w : raw.trim().split("\\s+")) {
                 if (w.equalsIgnoreCase("-s")) {
                     silent = true;
                 } else if (w.equalsIgnoreCase("-ip")) {
                     ip = true;
+                } else if (w.equalsIgnoreCase("-force")) {
+                    force = true;
                 } else if (!w.isEmpty()) {
                     words.add(w);
                 }
             }
-            return new Reason(String.join(" ", words), silent, ip);
+            return new Reason(String.join(" ", words), silent, ip, force);
         }
     }
 
@@ -544,12 +572,12 @@ public final class ModerationModule implements SkyblockModule, Listener {
             }
             Optional<Templates.Template> template = templates.template(reasonId);
             if (template.isPresent()) {
-                punishWithTemplate(sender, t.get(), template.get(), parsed.silent(), parsed.ipWide());
+                punishWithTemplate(sender, t.get(), template.get(), parsed.silent(), parsed.ipWide(), parsed.force());
                 return;
             }
             Optional<PunishConfig.WarnButton> button = templates.warnButton(reasonId);
             if (button.isPresent()) {
-                punishWithWarnButton(sender, t.get(), button.get(), parsed.silent());
+                punishWithWarnButton(sender, t.get(), button.get(), parsed.silent(), parsed.force());
                 return;
             }
             msg.send(sender, "error.unknown-template", Msg.p("reason", reasonId));
@@ -583,21 +611,35 @@ public final class ModerationModule implements SkyblockModule, Listener {
      */
     CompletableFuture<PunishmentStore.IssueResult> punishWithTemplate(CommandSender sender, PunishMenus.Target target,
                                                                      Templates.Template template, boolean silent, boolean ipFlag) {
-        int previous = target.previous(template.id());
+        return punishWithTemplate(sender, target, template, silent, ipFlag, false);
+    }
+
+    /** Same, with {@code -force} (skip the duplicate check, needs skyblock.staff.punish.force). */
+    CompletableFuture<PunishmentStore.IssueResult> punishWithTemplate(CommandSender sender, PunishMenus.Target target,
+                                                                     Templates.Template template, boolean silent, boolean ipFlag,
+                                                                     boolean force) {
+        // spec 12.3: only offences younger than the reason's offence-expire count for the ladder
+        int previous = target.previous(template.id(), template.cutoff(System.currentTimeMillis()));
         Templates.Step step = template.stepFor(previous);
         boolean ipWide = step.ipWide() || (ipFlag && (step.type() == Punishment.Type.BAN || step.type() == Punishment.Type.MUTE));
         Player online = Bukkit.getPlayer(target.uuid());
         return service.issue(sender, new PunishmentService.Request(step.type(), target.uuid(), target.name(), step.duration(),
                         reasonName(null, template), silent, ipWide, ipWide && online != null ? ip(online) : null,
-                        template.id(), template.stepIndex(previous)))
+                        template.id(), template.stepIndex(previous), force))
                 .exceptionally(e -> failed(sender, e));
     }
 
     /** One plain warn with the button's preset reason. */
     CompletableFuture<PunishmentStore.IssueResult> punishWithWarnButton(CommandSender sender, PunishMenus.Target target,
                                                                        PunishConfig.WarnButton button, boolean silent) {
+        return punishWithWarnButton(sender, target, button, silent, false);
+    }
+
+    CompletableFuture<PunishmentStore.IssueResult> punishWithWarnButton(CommandSender sender, PunishMenus.Target target,
+                                                                       PunishConfig.WarnButton button, boolean silent,
+                                                                       boolean force) {
         return service.issue(sender, new PunishmentService.Request(Punishment.Type.WARN, target.uuid(), target.name(), null,
-                        warnButtonText(null, button, "reason"), silent, false, null, button.id(), null))
+                        warnButtonText(null, button, "reason"), silent, false, null, button.id(), null, force))
                 .exceptionally(e -> failed(sender, e));
     }
 
@@ -682,6 +724,67 @@ public final class ModerationModule implements SkyblockModule, Listener {
             return String.valueOf(counter.next().at());
         }
         return rules.rules().isEmpty() ? "-" : String.valueOf(rules.rules().getFirst().at());
+    }
+
+    // ================================================================== /pstats (spec 12.10)
+
+    private void pstats(CommandSender sender, String first, String second) {
+        boolean others = sender.hasPermission(PERM_STATS_OTHERS); // checked on every call
+        PunishConfig.Extras x = templates.config().extras();
+        PunishStats.Query q = PunishStats.parse(first, second, sender.getName(), others, x.statsPeriod());
+        if (!q.ok()) {
+            throw fail(q.error(), Msg.p("periods", String.join(", ", PunishStats.Period.ids())));
+        }
+        Player viewer = sender instanceof Player p ? p : null;
+        String periodText = service.text(viewer, "stats.periods." + q.period().id);
+        switch (q.kind()) {
+            case OWN -> {
+                if (viewer == null) {
+                    throw CommandFailure.of("players-only");
+                }
+                service.stats(viewer.getUniqueId(), q.period()).thenAcceptAsync(c -> sendStats(sender, viewer.getName(), periodText, c),
+                        main).exceptionally(e -> failed(sender, e));
+            }
+            case OTHER -> service.store().staffByName(q.staff()).thenCompose(found -> found.isPresent()
+                            ? CompletableFuture.completedFuture(found)
+                            : core.players().offline(q.staff()).thenApply(o -> o.map(snap -> Map.entry(snap.uuid(), snap.name()))))
+                    .thenCompose(found -> found.isEmpty() ? CompletableFuture.completedFuture(null)
+                            : service.stats(found.get().getKey(), q.period()).thenApply(c -> Map.entry(found.get().getValue(), c)))
+                    .thenAcceptAsync(result -> {
+                        if (result == null) {
+                            msg.send(sender, "error.unknown", Msg.p("player", q.staff()));
+                            return;
+                        }
+                        sendStats(sender, result.getKey(), periodText, result.getValue());
+                    }, main).exceptionally(e -> failed(sender, e));
+            case TOP -> service.statsTop(q.period()).thenAcceptAsync(list -> {
+                msg.send(sender, "stats.top-header", Msg.p("period", periodText), Msg.number("count", list.size()));
+                if (list.isEmpty()) {
+                    msg.send(sender, "stats.top-empty");
+                }
+                int place = 1;
+                for (PunishStats.Ranked r : list) {
+                    msg.send(sender, "stats.top-line", Msg.number("place", place++), Msg.p("staff", r.name()),
+                            PunishmentService.pre("target", r.name()), Msg.number("given", r.counts().given()),
+                            Msg.number("reversed", r.counts().reversed()), Msg.number("percent", r.counts().reversedPercent()),
+                            Msg.number("net", r.counts().net()));
+                }
+            }, main).exceptionally(e -> failed(sender, e));
+        }
+        if (q.kind() != PunishStats.Kind.OWN) {
+            core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "pstats_view",
+                    net.skybornmc.skyblock.common.audit.Actor.of(sender), null, q.kind() == PunishStats.Kind.TOP ? "top" : q.staff(),
+                    null, null, Map.of("period", q.period().id));
+        }
+    }
+
+    private void sendStats(CommandSender sender, String staff, String period, PunishStats.Counts c) {
+        msg.send(sender, "stats.header", Msg.p("staff", staff), Msg.p("period", period));
+        msg.send(sender, "stats.given", Msg.number("warns", c.warns()), Msg.number("mutes", c.mutes()),
+                Msg.number("bans", c.bans()), Msg.number("kicks", c.kicks()), Msg.number("given", c.given()));
+        msg.send(sender, "stats.reversed", Msg.number("reversed", c.reversed()), Msg.number("percent", c.reversedPercent()),
+                Msg.number("net", c.net()));
+        msg.send(sender, "stats.suggestions", Msg.number("applied", c.fromSuggestions()));
     }
 
     private void history(CommandSender sender, String name, String mode) {

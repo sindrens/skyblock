@@ -52,9 +52,29 @@ final class PunishMenus {
             return PunishmentStore.longest(history.stream().filter(p -> p.type() == type && p.active(now)).toList());
         }
 
-        /** Earlier (not pardoned) punishments with this template = offence number - 1. */
-        int previous(String template) {
-            return (int) history.stream().filter(p -> template.equals(p.template()) && !p.removed()).count();
+        /**
+         * Earlier (not pardoned, not undone) punishments with this template created after {@code cutoff} = offence
+         * number - 1 (spec 12.3: older offences no longer count; {@code Long.MIN_VALUE} = all count).
+         */
+        int previous(String template, long cutoff) {
+            return Offences.counting(history, template, cutoff);
+        }
+
+        /** Not pardoned punishments with this template that are too old to count ("1 older offence no longer counts"). */
+        int expiredOffences(String template, long cutoff) {
+            return Offences.expired(history, template, cutoff);
+        }
+
+        /** The newest not-pardoned punishment with this template (duplicate check preview, spec 12.2), or {@code null}. */
+        Punishment recent(String template) {
+            Punishment best = null;
+            for (Punishment p : history) {
+                if (template.equalsIgnoreCase(String.valueOf(p.template())) && !p.removed()
+                        && (best == null || p.created() > best.created() || p.created() == best.created() && p.id() > best.id())) {
+                    best = p;
+                }
+            }
+            return best;
         }
     }
 
@@ -75,6 +95,15 @@ final class PunishMenus {
     /** Summary item (head): name, counts, active ban/mute with time left, and a waiting suggestion. */
     static ItemStack summaryItem(ModerationModule module, net.skybornmc.skyblock.common.menu.MenuService service,
                                  org.bukkit.entity.Player viewer, Target target) {
+        return summaryItem(module, service, viewer, target, null);
+    }
+
+    /**
+     * Same, plus "Last action: ... (click to undo)" for {@code undoable} (spec 12.1, the Bedrock path: clickable chat is
+     * unreliable there). Only the {@code /p} screen passes it, because only there the head is clickable.
+     */
+    static ItemStack summaryItem(ModerationModule module, net.skybornmc.skyblock.common.menu.MenuService service,
+                                 org.bukkit.entity.Player viewer, Target target, Punishment undoable) {
         Punishment ban = target.longestActive(Punishment.Type.BAN);
         Punishment mute = target.longestActive(Punishment.Type.MUTE);
         String permanent = module.service().text(viewer, "words.permanent");
@@ -95,7 +124,14 @@ final class PunishMenus {
         }
         WarnRules.Counter counter = WarnRules.counter(target.history(), target.suggestions(),
                 module.templates().config().warnRules(), System.currentTimeMillis());
-        if (counter.pending() != null) {
+        if (undoable != null) {
+            long left = Math.max(1, (undoable.created() + module.service().extras().undoWindow().toMillis()
+                    - System.currentTimeMillis()) / 1000);
+            lore.addAll(service.lines(viewer, MODULE, "punish.summary.undo",
+                    Msg.p("type", module.service().text(viewer, "types." + undoable.type().name().toLowerCase(Locale.ROOT))),
+                    Msg.p("reason", undoable.reason()), Msg.p("id", undoable.id()),
+                    Msg.p("left", PunishConfig.text(Duration.ofSeconds(left)))));
+        } else if (counter.pending() != null) {
             lore.addAll(service.lines(viewer, MODULE, "punish.summary.pending",
                     Msg.p("action", module.service().stepText(viewer, counter.pending().step()))));
         }
@@ -164,10 +200,16 @@ final class PunishMenus {
             }
             WarnRules.Settings rules = module.templates().config().warnRules();
             WarnRules.Counter counter = WarnRules.counter(target.history(), target.suggestions(), rules, System.currentTimeMillis());
-            ItemStack summary = summaryItem(module, service, viewer, target);
-            set(l.summarySlot(), counter.pending() != null
-                    ? MenuButton.of(summary, click -> openSuggestion(counter.pending()))
-                    : MenuButton.display(summary));
+            Punishment undoable = module.service().undoable(viewer, target.history());
+            ItemStack summary = summaryItem(module, service, viewer, target, undoable);
+            if (undoable != null) {
+                // spec 12.1: the head is the Bedrock-safe [Undo] while the window is open (pending stays on the counter)
+                set(l.summarySlot(), MenuButton.of(summary, guarded(() -> module.service().undo(viewer, undoable.id()))));
+            } else {
+                set(l.summarySlot(), counter.pending() != null
+                        ? MenuButton.of(summary, click -> openSuggestion(counter.pending()))
+                        : MenuButton.display(summary));
+            }
             set(l.warnCounterSlot(), counterButton(l, rules, counter));
             l.reasonSlots().forEach((id, slot) -> module.templates().template(id)
                     .ifPresent(t -> set(slot, reasonButton(t, l.quarterOf().get(id)))));
@@ -268,22 +310,29 @@ final class PunishMenus {
         }
 
         private MenuButton reasonButton(Templates.Template t, String quarter) {
-            int previous = target.previous(t.id());
+            long cutoff = t.cutoff(System.currentTimeMillis());
+            int previous = target.previous(t.id(), cutoff);
+            int older = target.expiredOffences(t.id(), cutoff);
             int index = t.stepIndex(previous);
             Templates.Step step = t.ladder().get(index);
             Templates.Step after = t.ladder().get(Math.min(index + 1, t.ladder().size() - 1));
             boolean repeats = index + 1 >= t.ladder().size();
             PunishDecision.Verdict preview = module.service().preview(viewer, target.uuid(), target.name(), step, false,
-                    target.longestActive(Punishment.Type.MUTE), target.longestActive(Punishment.Type.BAN));
+                    target.longestActive(Punishment.Type.MUTE), target.longestActive(Punishment.Type.BAN), t.id(),
+                    target.recent(t.id()));
             List<Component> lore = new ArrayList<>(service.lines(viewer, MODULE, "punish.reason.lore",
                     Msg.number("offence", previous + 1), Msg.p("step", module.service().stepText(viewer, step))));
+            if (older > 0) {
+                lore.addAll(service.lines(viewer, MODULE, older == 1 ? "punish.reason.older-one" : "punish.reason.older",
+                        Msg.number("older", older)));
+            }
             lore.addAll(service.lines(viewer, MODULE, repeats ? "punish.reason.after-repeat" : "punish.reason.after",
                     Msg.p("step", module.service().stepText(viewer, after))));
             lore.add(Component.empty());
             lore.addAll(verdictLines(preview));
             ItemStack item = service.item(t.icon(), service.text(viewer, MODULE, "punish.reason.name",
                     Msg.p("reason", module.reasonName(viewer, t)), Msg.p("quarter", quarter == null ? "" : quarter)), lore);
-            if (preview.outcome() == PunishDecision.Outcome.BLOCKED) {
+            if (blocked(preview)) {
                 return MenuButton.display(item);
             }
             return MenuButton.of(item, guardedConfirm(item, module.reasonName(viewer, t), step, previous,
@@ -292,14 +341,15 @@ final class PunishMenus {
 
         private MenuButton warnButton(PunishConfig.WarnButton w) {
             Templates.Step warn = new Templates.Step(Punishment.Type.WARN, null, false);
-            PunishDecision.Verdict preview = module.service().preview(viewer, target.uuid(), target.name(), warn, false, null, null);
+            PunishDecision.Verdict preview = module.service().preview(viewer, target.uuid(), target.name(), warn, false, null, null,
+                    w.id(), target.recent(w.id()));
             List<Component> lore = new ArrayList<>(service.lines(viewer, MODULE, "punish.warn-button.lore",
                     Msg.p("reason", module.warnButtonText(viewer, w, "reason"))));
             lore.add(Component.empty());
             lore.addAll(verdictLines(preview));
             ItemStack item = service.item(w.icon(), service.text(viewer, MODULE, "punish.warn-button.name",
                     Msg.p("name", module.warnButtonText(viewer, w, "name"))), lore);
-            if (preview.outcome() == PunishDecision.Outcome.BLOCKED) {
+            if (blocked(preview)) {
                 return MenuButton.display(item);
             }
             return MenuButton.of(item, guardedConfirm(item, module.warnButtonText(viewer, w, "name"), warn,
@@ -309,12 +359,7 @@ final class PunishMenus {
 
         /** Click hint, or why it can't be applied (from the same pipeline the click uses). */
         private List<Component> verdictLines(PunishDecision.Verdict v) {
-            return switch (v.outcome()) {
-                case APPLY -> service.lines(viewer, MODULE, "punish.click");
-                case SKIPPED -> service.lines(viewer, MODULE, "punish.blocked." + v.stage(), Msg.p("left", v.args().getOrDefault("left", "?")));
-                case BLOCKED -> service.lines(viewer, MODULE, "punish.blocked." + v.stage(),
-                        Msg.p("max", v.args().getOrDefault("max", "?")));
-            };
+            return PunishMenus.verdictLines(service, module, viewer, v);
         }
 
         /** Applies at once (owner decision), or through the confirm menu when {@code menu.confirm: true}. */
@@ -380,6 +425,26 @@ final class PunishMenus {
         private static Material icon(PunishConfig.Button b, Material fallback) {
             return b.icon() == null ? fallback : b.icon();
         }
+    }
+
+    /**
+     * BLOCKED for good (display only). A duplicate block stays clickable: "click again within 5s to apply anyway"
+     * (spec 12.2); the second click is confirmed by the service.
+     */
+    static boolean blocked(PunishDecision.Verdict v) {
+        return v.outcome() == PunishDecision.Outcome.BLOCKED && !"duplicate".equals(v.stage());
+    }
+
+    /** Lore for a verdict: click hint, or why it can't be applied (every placeholder a stage may give). */
+    static List<Component> verdictLines(net.skybornmc.skyblock.common.menu.MenuService service, ModerationModule module,
+                                        org.bukkit.entity.Player viewer, PunishDecision.Verdict v) {
+        if (v.outcome() == PunishDecision.Outcome.APPLY) {
+            return service.lines(viewer, MODULE, "punish.click");
+        }
+        return service.lines(viewer, MODULE, "punish.blocked." + v.stage(),
+                Msg.p("max", v.args().getOrDefault("max", "?")), Msg.p("left", v.args().getOrDefault("left", "?")),
+                Msg.p("staff", v.args().getOrDefault("staff", "?")), Msg.p("ago", v.args().getOrDefault("ago", "?")),
+                Msg.p("confirm", PunishConfig.text(module.service().extras().duplicateConfirm())));
     }
 
     // ================================================================== pending suggestion: Apply / Dismiss
@@ -543,10 +608,13 @@ final class PunishMenus {
 
         @Override
         protected MenuButton entry(Templates.Template template) {
-            int previous = target.previous(template.id());
+            long cutoff = template.cutoff(System.currentTimeMillis());
+            int previous = target.previous(template.id(), cutoff);
+            int older = target.expiredOffences(template.id(), cutoff);
             Templates.Step step = template.stepFor(previous);
             PunishDecision.Verdict preview = module.service().preview(viewer, target.uuid(), target.name(), step, false,
-                    target.longestActive(Punishment.Type.MUTE), target.longestActive(Punishment.Type.BAN));
+                    target.longestActive(Punishment.Type.MUTE), target.longestActive(Punishment.Type.BAN), template.id(),
+                    target.recent(template.id()));
             List<Component> ladder = new ArrayList<>();
             for (int i = 0; i < template.ladder().size(); i++) {
                 String key = i == template.stepIndex(previous) ? "menu.ladder-current" : "menu.ladder-step";
@@ -556,11 +624,13 @@ final class PunishMenus {
             List<Component> lore = new ArrayList<>(service.lines(viewer, MODULE, "menu.reason.lore",
                     Msg.number("offence", previous + 1), Msg.p("step", module.service().stepText(viewer, step))));
             lore.addAll(ladder);
+            if (older > 0) {
+                lore.addAll(service.lines(viewer, MODULE, older == 1 ? "punish.reason.older-one" : "punish.reason.older",
+                        Msg.number("older", older)));
+            }
             lore.add(Component.empty());
-            boolean blocked = preview.outcome() == PunishDecision.Outcome.BLOCKED;
-            lore.addAll(preview.outcome() == PunishDecision.Outcome.APPLY ? service.lines(viewer, MODULE, "punish.click")
-                    : service.lines(viewer, MODULE, "punish.blocked." + preview.stage(),
-                    Msg.p("max", preview.args().getOrDefault("max", "?")), Msg.p("left", preview.args().getOrDefault("left", "?"))));
+            boolean blocked = blocked(preview);
+            lore.addAll(verdictLines(service, module, viewer, preview));
             ItemStack item = service.item(template.icon(), service.text(viewer, MODULE, "menu.reason.name",
                     Msg.p("reason", module.reasonName(viewer, template))), lore);
             if (blocked) {

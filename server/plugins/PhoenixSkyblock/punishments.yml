@@ -11,7 +11,9 @@
 # messages/moderation.yml (reasons.<id>, categories.<id>, warn-buttons.<id>.name / .reason).
 #
 # Ladders: the 1st offence uses the 1st step, the 2nd offence the 2nd step, and so on (the last step repeats).
-# Offences = earlier punishments with the same reason that were not pardoned.
+# Offences = earlier punishments with the same reason that were not pardoned or undone, and are younger than
+# offence-expire (extras.offence-expire below, 90d; a reason can override it: offence-expire: perm | 180d).
+# History is never deleted: only the counting for the ladder changes.
 # Steps: warn | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>   (times: 30m, 1h, 12h, 1d, 7d, 30d)
 # Reason ids: lowercase a-z, 0-9 and - only, unique. icon = any item id.
 
@@ -22,15 +24,19 @@ categories:
       hacking:
         icon: IRON_SWORD
         ladder: ["ban 30d", "ban perm"]
+        offence-expire: perm        # cheating never expires (owner spec 12.3)
       xray:
         icon: DIAMOND_ORE
         ladder: ["ban 14d", "ban 60d", "ban perm"]
+        offence-expire: perm        # cheating never expires (owner spec 12.3)
       macro:
         icon: STONE_BUTTON
         ladder: ["warn", "ban 3d", "ban 14d", "ban perm"]
+        offence-expire: perm        # cheating never expires (owner spec 12.3)
       alt-abuse:
         icon: PLAYER_HEAD
         ladder: ["ipban perm"]
+        offence-expire: perm        # cheating never expires (owner spec 12.3)
 
   chat:
     icon: WRITABLE_BOOK
@@ -69,6 +75,7 @@ categories:
       rmt:
         icon: GOLD_INGOT
         ladder: ["ban 30d", "ban perm"]
+        offence-expire: perm        # cheating never expires (owner spec 12.3)
 
   other:
     icon: ARMOR_STAND
@@ -153,3 +160,16 @@ warn-rules:
   # No 4-warn ban (owner dropped it). Example if wanted later:
   #   - at: 4
   #     action: "ban 1d"
+
+# ---------- extras (owner spec section 12) ----------
+# Times: 30s, 2m, 1h, 7d. Texts for all of this are in messages/moderation.yml (undo.*, stats.*, error.duplicate*).
+extras:
+  undo-window: 2m             # [Undo] after a punishment works this long (chat button + the head in /p for Bedrock)
+  duplicate-window: 15s       # same player + same reason again within this time is blocked ("just punished by ...")
+  duplicate-confirm: 5s       # ... unless the same staff member clicks/types it again within this time (or uses -force)
+  offence-expire: 90d         # default for every reason; perm = never. Cheating reasons above set offence-expire: perm
+  stats:                      # /pstats
+    timezone: Europe/Oslo     # owner decision: CET. 7d / 30d = whole days in this time zone, 24h = the last 24 hours
+    cache: 60s                # results are reused this long
+    default-period: 7d        # 24h | 7d | 30d | all
+    top: 10                   # lines in /pstats top

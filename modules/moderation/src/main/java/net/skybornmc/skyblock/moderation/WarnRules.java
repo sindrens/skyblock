@@ -127,7 +127,7 @@ final class WarnRules {
         }
         int highest = 0;
         for (Suggestion x : suggestions) {
-            if (x.ruleAt() == null || x.expired(now)) {
+            if (x.ruleAt() == null || x.expired(now) || x.status() == Suggestion.Status.REMOVED) {
                 continue;
             }
             boolean after = s.resetAfterTrigger() ? x.created() > since : x.created() >= since;

@@ -7,8 +7,23 @@ import java.util.Locale;
 /** Tab completion of the {@code /p <player> <reason> [flags]} flags: offers each flag not typed yet, after what is typed. */
 final class Flags {
 
-    /** The flags of {@code /p}: {@code -s} silent, {@code -ip} IP-wide. */
-    static final List<String> ALL = List.of("-s", "-ip");
+    /** The flags of {@code /p}: {@code -s} silent, {@code -ip} IP-wide, {@code -force} skip the duplicate check. */
+    static final List<String> ALL = List.of("-s", "-ip", "-force");
+
+    /** The flags {@code sender} may use (tab completion only offers those); permission check per flag. */
+    static List<String> allowed(java.util.function.Predicate<String> hasPermission) {
+        List<String> out = new ArrayList<>();
+        if (hasPermission.test(ModerationModule.PERM_SILENT)) {
+            out.add("-s");
+        }
+        if (hasPermission.test(ModerationModule.PERM_IPBAN)) {
+            out.add("-ip");
+        }
+        if (hasPermission.test(ModerationModule.PERM_FORCE)) {
+            out.add("-force");
+        }
+        return out;
+    }
 
     private Flags() {
     }
@@ -18,6 +33,11 @@ final class Flags {
      * {@code -s -ip}; {@code "-i"} → {@code -ip}.
      */
     static List<String> suggestions(String typed) {
+        return suggestions(typed, ALL);
+    }
+
+    /** Same, offering only {@code flags}. */
+    static List<String> suggestions(String typed, List<String> flags) {
         String text = typed == null ? "" : typed;
         int cut = text.lastIndexOf(' ') + 1;
         String done = text.substring(0, cut);
@@ -29,7 +49,7 @@ final class Flags {
             }
         }
         List<String> out = new ArrayList<>();
-        for (String flag : ALL) {
+        for (String flag : flags) {
             if (!used.contains(flag) && flag.startsWith(current)) {
                 out.add(done + flag);
             }

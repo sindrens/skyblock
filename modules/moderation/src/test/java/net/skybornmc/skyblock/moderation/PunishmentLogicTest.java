@@ -55,15 +55,27 @@ class PunishmentLogicTest {
         assertTrue(r.ipWide());
         assertFalse(ModerationModule.Reason.parse("spam").silent());
         assertEquals("", ModerationModule.Reason.parse("").text());
+        ModerationModule.Reason forced = ModerationModule.Reason.parse("-force -s");
+        assertTrue(forced.force());
+        assertTrue(forced.silent());
+        assertEquals("", forced.text());
+        assertFalse(ModerationModule.Reason.parse("spam").force());
     }
 
     @Test
     void flagSuggestions() {
-        assertEquals(List.of("-s", "-ip"), Flags.suggestions(""));
-        assertEquals(List.of("-ip"), Flags.suggestions("-i"));
-        assertEquals(List.of("-s -ip"), Flags.suggestions("-s "));
-        assertEquals(List.of("-ip -s"), Flags.suggestions("-ip "));
-        assertEquals(List.of(), Flags.suggestions("-s -ip "));
+        List<String> p1 = List.of("-s", "-ip");
+        assertEquals(List.of("-s", "-ip"), Flags.suggestions("", p1));
+        assertEquals(List.of("-ip"), Flags.suggestions("-i", p1));
+        assertEquals(List.of("-s -ip"), Flags.suggestions("-s ", p1));
+        assertEquals(List.of("-ip -s"), Flags.suggestions("-ip ", p1));
+        assertEquals(List.of(), Flags.suggestions("-s -ip ", p1));
+        // P2: -force, offered only to staff who may use it
+        assertEquals(List.of("-s", "-ip", "-force"), Flags.suggestions(""));
+        assertEquals(List.of("-s -force"), Flags.suggestions("-s -f"));
+        assertEquals(List.of("-force"), Flags.allowed(ModerationModule.PERM_FORCE::equals));
+        assertEquals(List.of("-s", "-ip", "-force"), Flags.allowed(perm -> true));
+        assertEquals(List.of(), Flags.allowed(perm -> false));
     }
 
     @Test

@@ -16,7 +16,8 @@ import java.util.Set;
  *
  * <p>Stages run in the order of {@link Slot}. Each stage either lets the request continue (possibly changed, e.g.
  * probation will raise the step) or stops it with a {@link Verdict}. P1 fills {@link Slot#EXEMPT}, {@link Slot#PERMISSION},
- * {@link Slot#LENGTH_LIMIT} and {@link Slot#NEVER_SHORTEN}; later milestones plug into the empty slots with
+ * {@link Slot#LENGTH_LIMIT} and {@link Slot#NEVER_SHORTEN}; P2 fills {@link Slot#DUPLICATE} ({@link #withDuplicates});
+ * later milestones plug into the empty slots with
  * {@link #with(Slot, Stage)} instead of adding a second code path:</p>
  * <ul>
  *   <li>{@link Slot#GUARD}: P9, spec 14.1 (rate limits per staff member, locks)</li>
@@ -42,9 +43,17 @@ final class PunishDecision {
         SKIPPED
     }
 
-    /** Who is punishing, resolved on the main thread. {@code maxDuration == null} = no length limit. */
+    /**
+     * Who is punishing, resolved on the main thread. {@code maxDuration == null} = no length limit. {@code id} = the
+     * staff member's uuid ({@code null} for console and the system), {@code force} = may use {@code -force} (P2, 12.2).
+     */
     record Actor(String name, boolean system, Set<Punishment.Type> types, boolean ipBan, boolean silent,
-                 Duration maxDuration, boolean bypassExempt) {
+                 Duration maxDuration, boolean bypassExempt, java.util.UUID id, boolean force) {
+
+        Actor(String name, boolean system, Set<Punishment.Type> types, boolean ipBan, boolean silent, Duration maxDuration,
+              boolean bypassExempt) {
+            this(name, system, types, ipBan, silent, maxDuration, bypassExempt, null, false);
+        }
 
         /** The automatic rules ("System (auto)"): all types, no limit, but never past the exempt permission. */
         static Actor system(String name) {
@@ -59,17 +68,41 @@ final class PunishDecision {
      * @param targetOnline needed for kicks
      * @param activeMute   the target's longest active mute, or {@code null}
      * @param activeBan    the target's longest active ban, or {@code null}
+     * @param reasonKey    the reason id / warn-button id (the stored {@code template}); {@code null} = no duplicate check
+     *                     (direct commands, [Apply], automatic rules)
+     * @param force        {@code -force} was given (needs {@link Actor#force()})
+     * @param confirmed    the actor clicked again within {@code duplicate-confirm} after being blocked
+     * @param recent       the target's newest not-pardoned punishment for {@code reasonKey}, read inside the transaction
      */
     record Input(Actor actor, Punishment.Type type, Duration duration, boolean ipWide, boolean silent, boolean targetExempt,
-                 boolean self, boolean targetOnline, Punishment activeMute, Punishment activeBan, long now) {
+                 boolean self, boolean targetOnline, Punishment activeMute, Punishment activeBan, long now,
+                 String reasonKey, boolean force, boolean confirmed, Punishment recent) {
+
+        Input(Actor actor, Punishment.Type type, Duration duration, boolean ipWide, boolean silent, boolean targetExempt,
+              boolean self, boolean targetOnline, Punishment activeMute, Punishment activeBan, long now) {
+            this(actor, type, duration, ipWide, silent, targetExempt, self, targetOnline, activeMute, activeBan, now, null,
+                    false, false, null);
+        }
 
         Input withActive(Punishment mute, Punishment ban) {
-            return new Input(actor, type, duration, ipWide, silent, targetExempt, self, targetOnline, mute, ban, now);
+            return new Input(actor, type, duration, ipWide, silent, targetExempt, self, targetOnline, mute, ban, now,
+                    reasonKey, force, confirmed, recent);
         }
 
         Input withStep(Punishment.Type newType, Duration newDuration, boolean newIpWide) {
             return new Input(actor, newType, newDuration, newIpWide, silent, targetExempt, self, targetOnline, activeMute,
-                    activeBan, now);
+                    activeBan, now, reasonKey, force, confirmed, recent);
+        }
+
+        /** The duplicate-check fields (spec 12.2). */
+        Input withReason(String key, boolean forceFlag, boolean confirmedClick) {
+            return new Input(actor, type, duration, ipWide, silent, targetExempt, self, targetOnline, activeMute, activeBan,
+                    now, key, forceFlag, confirmedClick, recent);
+        }
+
+        Input withRecent(Punishment newest) {
+            return new Input(actor, type, duration, ipWide, silent, targetExempt, self, targetOnline, activeMute, activeBan,
+                    now, reasonKey, force, confirmed, newest);
         }
 
         /** When the new punishment would end ({@code null} = never / n/a). */
@@ -116,6 +149,15 @@ final class PunishDecision {
 
     /** The P1 pipeline: exempt → permission → length limit → never shorten → apply. */
     static PunishDecision standard() {
+        return p1();
+    }
+
+    /** P2: the P1 pipeline plus the duplicate check (spec 12.2) with this window ({@code null}/zero = off). */
+    static PunishDecision withDuplicates(Duration window) {
+        return p1().with(Slot.DUPLICATE, duplicate(window));
+    }
+
+    private static PunishDecision p1() {
         Map<Slot, Stage> map = new EnumMap<>(Slot.class);
         map.put(Slot.EXEMPT, PunishDecision::exempt);
         map.put(Slot.PERMISSION, PunishDecision::permission);
@@ -187,6 +229,9 @@ final class PunishDecision {
         if (in.silent() && !a.silent()) {
             return stop(Outcome.BLOCKED, "permission", "error.no-silent", in);
         }
+        if (in.force() && !a.force() && !a.system()) {
+            return stop(Outcome.BLOCKED, "permission", "error.no-force", in);
+        }
         return new Next(in);
     }
 
@@ -203,6 +248,32 @@ final class PunishDecision {
             return stop(Outcome.BLOCKED, "length-limit", "error.too-long", in, "max", PunishConfig.text(max));
         }
         return new Next(in);
+    }
+
+    /**
+     * Double-punish protection (spec 12.2): the same target got a punishment for the same reason within {@code window}
+     * (by anyone, also yourself: a double click or a repeated command is the same mistake). Blocked unless {@code -force}
+     * or a second click within {@code duplicate-confirm}. {@code recent} is read in the issue transaction under the
+     * target's lock, so two clicks in the same tick can never both pass.
+     */
+    static Stage duplicate(Duration window) {
+        return in -> {
+            if (window == null || window.isZero() || window.isNegative() || in.reasonKey() == null || in.actor().system()) {
+                return new Next(in);
+            }
+            Punishment r = in.recent();
+            if (r == null || r.removed() || r.template() == null || !r.template().equalsIgnoreCase(in.reasonKey())) {
+                return new Next(in);
+            }
+            long ago = in.now() - r.created();
+            if (ago < 0 || ago >= window.toMillis() || in.force() || in.confirmed()) {
+                return new Next(in);
+            }
+            boolean own = in.actor().id() != null && in.actor().id().equals(r.issuer());
+            return stop(Outcome.BLOCKED, "duplicate", own ? "error.duplicate-self" : "error.duplicate", in,
+                    "staff", r.issuerName(), "ago", PunishConfig.text(Duration.ofSeconds(Math.max(1, ago / 1000))),
+                    "reason", r.reason(), "id", String.valueOf(r.id()));
+        };
     }
 
     /** Never replace an active mute/ban with a shorter one (spec 5.5 / 12.2). */

@@ -51,3 +51,15 @@ skyblock.staff.punish.max.mod:
   default: false
 skyblock.staff.punish.max.admin:
   description: Punishment length tier 'admin' (moderation.yml limits.max-duration)
+skyblock.staff.punish.undo.others:
+  description: Undo punishments other staff gave (within the undo window, /p head or [Undo])
+  default: op
+skyblock.staff.punish.force:
+  description: Use -force on /p to skip the double-punish check
+  default: op
+skyblock.staff.punish.stats:
+  description: See your own punishment numbers (/pstats, /mystats)
+  default: op
+skyblock.staff.punish.stats.others:
+  description: See other staff members' numbers and the ranking (/pstats <staff>, /pstats top)
+  default: op

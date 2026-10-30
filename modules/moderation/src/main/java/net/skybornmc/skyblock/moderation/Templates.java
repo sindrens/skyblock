@@ -99,9 +99,21 @@ final class Templates {
 
     /**
      * A reason with its ladder. {@code yamlName} is an optional legacy name from the YAML; the display name normally comes
-     * from {@code messages/moderation.yml → reasons.<id>}.
+     * from {@code messages/moderation.yml → reasons.<id>}. {@code offenceExpire}: earlier punishments older than this no
+     * longer count as offences ({@code null} = never expire, spec 12.3).
      */
-    record Template(String id, String category, String yamlName, Material icon, List<Step> ladder) {
+    record Template(String id, String category, String yamlName, Material icon, List<Step> ladder, Duration offenceExpire) {
+
+        /** A reason whose offences never expire. */
+        Template(String id, String category, String yamlName, Material icon, List<Step> ladder) {
+            this(id, category, yamlName, icon, ladder, null);
+        }
+
+        /** Punishments created after this moment count as offences. */
+        long cutoff(long now) {
+            return Offences.cutoff(offenceExpire, now);
+        }
+
         /** The step for a player who already has {@code previous} punishments with this template. */
         Step stepFor(int previous) {
             return ladder.get(Math.min(Math.max(0, previous), ladder.size() - 1));

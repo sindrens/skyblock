@@ -21,3 +21,10 @@ lp group admin permission set skyblock.staff.punish.ipban true
 lp group admin permission set skyblock.staff.punish.max.admin true
 lp group admin permission set skyblock.staff.punish.exempt true
 lp group admin permission set skyblock.staff.punish.exempt.bypass true
+
+# --- Phase P, P2: undo, double-punish protection, /pstats ---
+# Every staff member sees their own numbers; admins see everyone's and the ranking, may use -force and undo others.
+lp group helper permission set skyblock.staff.punish.stats true
+lp group admin permission set skyblock.staff.punish.stats.others true
+lp group admin permission set skyblock.staff.punish.force true
+lp group admin permission set skyblock.staff.punish.undo.others true
