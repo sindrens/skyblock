@@ -6,7 +6,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 ## Phase 1 follow-ups
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
-| F1 | Hook remaining `/settings` toggles: join-messages, tpa-requests (essentials), scoreboard (hud), ui-sounds | Phase 1 | modules/essentials, modules/hud | 🔄 |
+| F1 | Hook remaining `/settings` toggles: join-messages, tpa-requests (essentials), scoreboard (hud), ui-sounds | Phase 1 | modules/essentials, modules/hud | ✅ |
 | F2 | Per-module permission files instead of shared `plugin.yml`/`luckperms.txt`/`COMMANDS.md` | — | common/command, plugin, server/permissions, scripts | ✅ |
 | F4 | Move a TeleportService interface (warmup, guards) into common so /dungeon, /spawn, /tpa, /is home share one warmup | — | common, essentials, depths | ✅ |
 | F3 | Achievements system (progress tracking → `Cosmetics.grantTitle`) | Phase 2+ stats | new modules/achievements | ✅ |
@@ -97,7 +97,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | E1 | Registry (enchants.yml, 48 defs + validation test), unique DB books + Disenchant Scrolls, `/enchanter` GUI (apply/upgrade/combine/remove/rolls/guide), slot/conflict/level rules, crystal costs, lore, EnchantService + BonusService in common | M4.2, CRY | modules/enchants, common/enchant, common/bonus | ✅ |
 | E2 | Book drops from Depths mine/forest/combat, gathering + area effects via the block engine, Depths sword effects | E1, M4.7, M4.8, M4.9 | modules/enchants + depths hooks | ✅ |
 | E3 | Stacked-mob kill enchants (Slaughter etc.), batch kill API | E1, STACK | modules/enchants + stacking API | ✅ |
-| E4 | Tuning: enchant factors in economy model, family caps, drop rates | E2, E3, BAL2 | docs, tools, configs | 🔄 (TUNE, with W4) |
+| E4 | Tuning: enchant factors in economy model, family caps, drop rates | E2, E3, BAL2 | docs, tools, configs | ✅ |
 | E5 | Armor enchants on wardrobe set pieces | E1, W2 | modules/enchants + wardrobe | ✅ |
 | E6 | Hoe + rod effects, farming/fishing pools | E1, Phase 7 | modules/enchants | ⬜ |
 
@@ -107,7 +107,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | W1 | Wardrobe core: sets.yml (16 sets), per-profile tables, virtual entries + locked real armor, Wardrobe Chest with escrow, buy with money/crystals/gems (Sigils), Set Tokens, /wardrobe GUI, bonuses via BonusService | PROF, CRY, E1 (common/bonus) | modules/wardrobe, common/wardrobe | ✅ |
 | W2 | Set levels, merging, warzone normalization | W1, M4.5 | modules/wardrobe | ✅ |
 | W3 | /loadout presets (2 free, rank/credit slots), atomic apply, guards, 2 s cooldown, pet hook | W1, M4.2 | modules/wardrobe, modules/tools | ✅ |
-| W4 | Balance: set factors in economy model | W2, W3, BAL2 | docs, tools | 🔄 (TUNE, with E4) |
+| W4 | Balance: set factors in economy model | W2, W3, BAL2 | docs, tools | ✅ |
 
 ## Later (not planned in detail yet)
 Crates (`/crate give`), quests, progression (pillars, island level, `/is upgrade`), enchants/sets, production/outposts, PvE/bosses/pets, conquest/events, store/ranks/Discord, seasons.

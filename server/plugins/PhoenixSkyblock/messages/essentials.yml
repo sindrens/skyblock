@@ -25,6 +25,8 @@ tpa:
   self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't send a request to yourself."
   already-sent: "<prefix><c:error><sym:cross></c:error> <c:text>You already asked <c:value><player></c:value>. Wait, or use <c:value>/tpcancel</c:value>."
   target-full: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has too many requests. Try again soon."
+  # F1: the target turned "Teleport requests" off in /settings.
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>doesn't accept teleport requests."
   none: "<prefix><c:error><sym:cross></c:error> <c:text>You have no teleport requests."
   none-from: "<prefix><c:error><sym:cross></c:error> <c:text>No request from <c:value><player></c:value>."
   requester-offline: "<prefix><c:error><sym:cross></c:error> <c:text>That player is offline now."
@@ -160,7 +162,8 @@ invsee:
 
 # --- M1.1 join flow ---
 join:
-  # Join/quit lines are only shown for players with the join-message permission (ranks + staff).
+  # Join/quit lines are only shown for players with the join-message permission (ranks + staff), and only to players
+  # who keep "Join & leave messages" on in /settings (also the first-join welcome line).
   message: "<c:muted>[</c:muted><c:success>+</c:success><c:muted>]</c:muted> <player>"
   quit: "<c:muted>[</c:muted><c:error>-</c:error><c:muted>]</c:muted> <player>"
   first-broadcast: "<c:ember><sym:sparkle></c:ember> <c:text>Welcome <c:value><player></c:value> to Phoenix Skyblock! <c:muted>(#<number>)"
