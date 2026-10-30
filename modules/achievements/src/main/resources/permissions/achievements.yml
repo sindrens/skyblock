@@ -2,5 +2,5 @@
 # Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
 # LuckPerms grants for these nodes: server/permissions/achievements.txt. Commands: docs/commands/achievements.md.
 skyblock.achievements:
-  description: Open the achievements menu (/tags -> Achievements). Progress is counted for everyone.
+  description: Use /achievements (also /tags -> Achievements). Progress, boosts and island achievements count for everyone.
   default: true

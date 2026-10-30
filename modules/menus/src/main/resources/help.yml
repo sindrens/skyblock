@@ -683,10 +683,11 @@ topics:
 
   achievements:
     icon: knowledge_book
-    aliases: [achievement, secrets]
+    aliases: [achievement, secrets, boosts]
     name: "<c:flame>Achievements"
-    summary: ["<c:text>Goals for everything you do,", "<c:text>with titles as rewards."]
-    take-me-there: "tags"
+    summary: ["<c:text>Goals for everything you do,", "<c:text>with boosts and titles."]
+    take-me-there: "achievements"
+    commands: [Achievements]
     pages:
       - title: "<c:value>What they are"
         lines:
@@ -696,15 +697,30 @@ topics:
           - "<c:text>Most have tiers (I, II, III ...)."
       - title: "<c:value>Where to see them"
         lines:
-          - "<c:text>Open <c:value>/tags</c:value> and click <c:flame>Achievements</c:flame>."
-          - "<c:text>Each category shows your progress"
-          - "<c:text>to the next goal. Secret ones show"
-          - "<c:text>as <c:value>???</c:value> until you find them."
-      - title: "<c:value>Titles"
+          - "<c:text>Type <c:value>/achievements</c:value><c:text>. Tabs at"
+          - "<c:text>the top: Personal, Island, History."
+          - "<c:text>Secret ones show as <c:value>???</c:value> until"
+          - "<c:text>you find them."
+      - title: "<c:value>Boosts"
         lines:
-          - "<c:text>The last tier often gives a title."
-          - "<c:text>Titles are shared by all your"
-          - "<c:text>profiles. Equip it in <c:value>/titles</c:value>."
+          - "<c:text>Every tier gives boost points."
+          - "<c:text>A category's points give a small"
+          - "<c:text>boost: skill XP, tool XP, mob"
+          - "<c:text>damage, rare finds, crystals or"
+          - "<c:text>auction slots. Each has a cap."
+          - "<c:text>Never sell prices or money."
+      - title: "<c:value>Island achievements"
+        lines:
+          - "<c:text>All members work on them together."
+          - "<c:text>They boost the whole island and"
+          - "<c:text>add island level points. Titles go"
+          - "<c:text>to members with 3+ days there."
+      - title: "<c:value>Titles and seasons"
+        lines:
+          - "<c:text>The last tier often gives a title,"
+          - "<c:text>shared by all your profiles. Each"
+          - "<c:text>season starts fresh; titles stay"
+          - "<c:text>and History shows what you did."
       - title: "<c:value>Profiles"
         lines:
           - "<c:text>Progress is per profile: a new"

@@ -101,8 +101,18 @@ final class CategoryMenu extends PagedMenu<AchievementDef> {
         if (def.tiers() > 1) {
             lore.add(text("menu.entry.goals", Msg.mm("goals", goals(def, unlocked))));
         }
-        if (def.hasTitle()) {
+        if (!complete || def.hasTitle()) {
             lore.add(Component.empty());
+            lore.add(text("menu.entry.rewards"));
+        }
+        if (!complete) {
+            // AC2: the next tier's boost points (1/2/3/5/8 by default) and what they feed.
+            PersonalBoost boost = module.registry().boostOf(def);
+            lore.add(text(boost == PersonalBoost.NONE ? "menu.entry.reward-points" : "menu.entry.reward-points-boost",
+                    Msg.p("points", BoostMath.tierPoints(module.config().perTier(), unlocked + 1)),
+                    Msg.mm("boost", raw("menu.boost.name." + boost.id()))));
+        }
+        if (def.hasTitle()) {
             lore.add(text(titleOwned(def) ? "menu.entry.reward-owned" : "menu.entry.reward", Msg.c("title", titleDisplay(def))));
         }
         int shownTier = Math.max(1, unlocked);

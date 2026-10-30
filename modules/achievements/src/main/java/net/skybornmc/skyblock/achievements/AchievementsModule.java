@@ -2,6 +2,12 @@ package net.skybornmc.skyblock.achievements;
 
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.achievements.AchievementService;
+import net.skybornmc.skyblock.common.achievements.IslandBoost;
+import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.bonus.BonusContext;
+import net.skybornmc.skyblock.common.bonus.BonusFamily;
+import net.skybornmc.skyblock.common.bonus.BonusService;
+import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.cosmetics.Cosmetics;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.menu.Menu;
@@ -22,14 +28,25 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
 /**
- * Achievements (F3, DESIGN §9): about 30 achievements in categories ({@code achievements.yml}), progress per
- * <b>profile</b> from existing events and services ({@link Tracker}), reward titles granted to the <b>account</b> through
- * {@code Cosmetics#grant} (owner decision PR1), an unlock toast, the achievements menu (reached from {@code /tags} →
- * Achievements and {@code /help achievements}; no own command, see docs/OPEN_QUESTIONS.md) and the placeholders
- * {@code achievements_done} and {@code achievements_total}.
+ * Achievements (F3, DESIGN §9; AC1-AC4 of RANKS_TITLES_ACHIEVEMENTS §C): about 30 personal achievements in categories
+ * ({@code achievements.yml}), progress per <b>profile</b> from existing events and services ({@link Tracker}), reward
+ * titles granted to the <b>account</b> through {@code Cosmetics#grant} (owner decision PR1), an unlock toast, and:
+ * <ul>
+ *   <li>{@code /achievements} (owner 356) with Personal, Island and History tabs ({@link AchievementsMenu}); also from
+ *       {@code /tags} → Achievements.</li>
+ *   <li>Boost points per tier (1/2/3/5/8): personal categories feed {@code BonusService} families with their own caps
+ *       (skill XP, tool XP, mob damage, rare finds, crystals) and extra auction slots. Never sell or money (RTA-39).</li>
+ *   <li>Island achievements ({@link IslandTracker}): shared by the island's members, island boosts (island XP through
+ *       {@code ProgressionService#islandXpBoost}; production, island crystals and fuel published for their systems) and
+ *       the island level source {@code achievements}.</li>
+ *   <li>Season reset ({@link #seasonReset}): history rows, then progress wiped; titles stay.</li>
+ * </ul>
+ * Placeholders {@code achievements_done}, {@code achievements_total}, {@code achievements_points},
+ * {@code achievements_island_points}.
  *
  * <p>Settings: {@code achievements-settings.yml}; achievements: {@code achievements.yml}; texts:
  * {@code messages/achievements.yml}; data: {@code db/achievements}.</p>
@@ -66,7 +83,10 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
         tracker = new Tracker(this);
         core.services().register(ID, AchievementService.class, this);
         Bukkit.getPluginManager().registerEvents(tracker, core.plugin());
+        Bukkit.getPluginManager().registerEvents(tracker.islands(), core.plugin());
+        core.services().optional(BonusService.class).ifPresent(b -> b.register(IslandTracker.SOURCE, this::bonus));
         registerPlaceholders();
+        registerCommands();
         tracker.start();
     }
 
@@ -78,6 +98,7 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
         defineTitles();
         tracker.schedule();
         tracker.reevaluateAll();
+        tracker.islands().hook();
     }
 
     @Override
@@ -86,6 +107,8 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
             return;
         }
         HandlerList.unregisterAll(tracker);
+        HandlerList.unregisterAll(tracker.islands());
+        core.services().optional(BonusService.class).ifPresent(b -> b.unregister(IslandTracker.SOURCE));
         tracker.shutdown();
     }
 
@@ -93,16 +116,70 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
 
     @Override
     public void open(Player player, Menu parent) {
+        open(player, parent, AchievementsMenu.Tab.PERSONAL);
+    }
+
+    @Override
+    public void openIsland(Player player, Menu parent) {
+        open(player, parent, AchievementsMenu.Tab.ISLAND);
+    }
+
+    private void open(Player player, Menu parent, AchievementsMenu.Tab tab) {
         if (!player.hasPermission(PERM_MENU)) {
             msg.send(player, "no-permission");
             core.sounds().play(player, "error");
             return;
         }
-        AchievementsMenu menu = new AchievementsMenu(this);
+        AchievementsMenu menu = new AchievementsMenu(this, tab);
         if (parent != null) {
             menu.parent(parent);
         }
         core.menus().open(player, menu);
+    }
+
+    @Override
+    public int extraAuctionSlots(UUID player) {
+        if (tracker == null || !config.boostsEnabled) {
+            return 0;
+        }
+        ProfileProgress p = tracker.progress(player).filter(ProfileProgress::loaded).orElse(null);
+        return p == null ? 0 : BoostMath.slots(p.boostPoints(PersonalBoost.AH_SLOTS), config.ahSlotFirst, config.ahSlotSecond);
+    }
+
+    @Override
+    public double islandBoostPercent(UUID islandId, IslandBoost boost) {
+        return tracker == null || boost == null ? 0 : tracker.islands().percent(islandId, boost);
+    }
+
+    @Override
+    public int islandPoints(UUID islandId) {
+        return tracker == null ? 0 : tracker.islands().points(islandId);
+    }
+
+    /**
+     * Season reset (AC4, owner 354 / RTA-44), for the season script (PLAN12): writes every profile's summary of
+     * {@code endedSeason} to the History tab, then wipes all personal and island progress in one transaction. Titles stay.
+     * Completes with the history rows written, or -1 when that season was already reset (nothing wiped). Main thread.
+     */
+    @Override
+    public CompletableFuture<Integer> seasonReset(int endedSeason, Actor actor) {
+        if (tracker == null) {
+            return CompletableFuture.completedFuture(0);
+        }
+        return tracker.seasonReset(endedSeason, actor).thenApply(Tracker.ResetResult::written);
+    }
+
+    /** BonusService source (AC2): a profile's personal boost in a family, after this boost's own cap. */
+    private double bonus(BonusFamily family, BonusContext context) {
+        if (!config.boostsEnabled || context == null || context.player() == null || tracker == null) {
+            return 0;
+        }
+        PersonalBoost boost = PersonalBoost.byFamily(family);
+        if (boost == null) {
+            return 0;
+        }
+        ProfileProgress p = tracker.progressOrNull(context.player().getUniqueId());
+        return p == null || !p.loaded() ? 0 : BoostMath.percent(p.boostPoints(boost), config.step(boost), config.cap(boost));
     }
 
     @Override
@@ -163,14 +240,33 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
     private void registerPlaceholders() {
         core.placeholders().register(ID, "achievements_done", Placeholder.text(p -> p == null ? "0" : String.valueOf(completed(p.getUniqueId()))));
         core.placeholders().register(ID, "achievements_total", Placeholder.text(p -> String.valueOf(total())));
+        core.placeholders().register(ID, "achievements_points", Placeholder.text(p -> p == null || tracker == null ? "0"
+                : String.valueOf(tracker.progress(p.getUniqueId()).filter(ProfileProgress::loaded).map(ProfileProgress::totalPoints).orElse(0))));
+        core.placeholders().register(ID, "achievements_island_points", Placeholder.text(p -> {
+            if (p == null || tracker == null) {
+                return "0";
+            }
+            UUID key = ProfileService.of(core.services()).profileKey(p.getUniqueId());
+            return String.valueOf(core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class)
+                    .flatMap(s -> s.islandOfProfile(key)).map(i -> islandPoints(i.id())).orElse(0));
+        }));
+    }
+
+    /** {@code /achievements} (owner 356): no arguments (the tabs are in the menu). */
+    private void registerCommands() {
+        core.commands().register(CommandSpec.command("achievements")
+                .description("Your achievements: personal, island and season history, with their boosts")
+                .category("Achievements").permission(PERM_MENU).playerOnly().example("achievements")
+                .executes(ctx -> open(ctx.player(), null)));
     }
 
     // ------------------------------------------------------------------ achievements.yml and titles
 
     /**
-     * Reads {@code achievements.yml} from the data folder. A missing file is written from the bundled one; categories and
-     * achievements that are new in the bundled file are added to an existing file (turn one off with
-     * {@code enabled: false} instead of deleting it, or it comes back after an update).
+     * Reads {@code achievements.yml} from the data folder. A missing file is written from the bundled one; categories,
+     * achievements and island achievements that are new in the bundled file are added to an existing file (turn one off
+     * with {@code enabled: false} instead of deleting it, or it comes back after an update), and new fields of existing
+     * categories (e.g. {@code boost}) are filled in.
      */
     private AchievementRegistry loadRegistry() {
         File file = new File(core.plugin().getDataFolder(), AchievementRegistry.FILE);
@@ -197,7 +293,7 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
             }
             yaml = bundled;
         } else {
-            for (String root : new String[]{AchievementRegistry.CATEGORIES, AchievementRegistry.ACHIEVEMENTS}) {
+            for (String root : new String[]{AchievementRegistry.CATEGORIES, AchievementRegistry.ACHIEVEMENTS, AchievementRegistry.ISLAND_ACHIEVEMENTS}) {
                 if (bundled.getConfigurationSection(root) == null) {
                     continue;
                 }
@@ -206,6 +302,15 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
                     if (!yaml.contains(path)) {
                         yaml.set(path, bundled.get(path));
                         changed = true;
+                    } else if (root.equals(AchievementRegistry.CATEGORIES) && yaml.isConfigurationSection(path)
+                            && bundled.isConfigurationSection(path)) {
+                        // New category fields from an update (AC2: boost) are added; values staff set are never changed.
+                        for (String field : bundled.getConfigurationSection(path).getKeys(false)) {
+                            if (!yaml.contains(path + "." + field)) {
+                                yaml.set(path + "." + field, bundled.get(path + "." + field));
+                                changed = true;
+                            }
+                        }
                     }
                 }
             }
@@ -218,7 +323,8 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
             }
         }
         AchievementRegistry loaded = AchievementRegistry.load(yaml, this::isItem, w -> core.plugin().getLogger().warning(w));
-        core.plugin().getLogger().info("Achievements: " + loaded.size() + " achievement(s) in " + loaded.categories().size() + " categories.");
+        core.plugin().getLogger().info("Achievements: " + loaded.size() + " achievement(s) in " + loaded.categories().size() + " categories, "
+                + loaded.island().size() + " island achievement(s).");
         return loaded;
     }
 
@@ -251,18 +357,30 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
         }
         String sourceTemplate = core.messages().raw(ID, "title-source");
         for (AchievementDef def : registry.all()) {
-            if (!def.hasTitle() || cosmetics.ids(Cosmetics.Kind.TITLE).contains(def.title().id())) {
-                continue;
+            if (def.hasTitle()) {
+                defineTitle(cosmetics, def.title(), def.name(), def.hidden(), sourceTemplate, AchievementRegistry.ACHIEVEMENTS + "." + def.id());
             }
-            if (config.addMissingTitles && def.title().display() != null) {
-                String source = (sourceTemplate == null ? "<name>" : sourceTemplate).replace("<name>", AchievementRegistry.visible(def.name()));
-                if (cosmetics.defineTitle(def.title().id(), def.title().display(), def.title().rarity(), source, def.hidden())) {
-                    core.plugin().getLogger().info("Achievements: added title '" + def.title().id() + "' to tags-titles.yml.");
-                    continue;
-                }
-            }
-            core.plugin().getLogger().warning(AchievementRegistry.FILE + " → achievements." + def.id() + ": reward title '"
-                    + def.title().id() + "' does not exist in tags-titles.yml (add it there or give it a display here).");
         }
+        String islandTemplate = core.messages().raw(ID, "title-source-island");
+        for (IslandAchievementDef def : registry.island()) {
+            if (def.hasTitle()) {
+                defineTitle(cosmetics, def.title(), def.name(), def.hidden(), islandTemplate, AchievementRegistry.ISLAND_ACHIEVEMENTS + "." + def.id());
+            }
+        }
+    }
+
+    private void defineTitle(Cosmetics cosmetics, AchievementDef.Title title, String name, boolean hidden, String template, String where) {
+        if (cosmetics.ids(Cosmetics.Kind.TITLE).contains(title.id())) {
+            return;
+        }
+        if (config.addMissingTitles && title.display() != null) {
+            String source = (template == null ? "<name>" : template).replace("<name>", AchievementRegistry.visible(name));
+            if (cosmetics.defineTitle(title.id(), title.display(), title.rarity(), source, hidden)) {
+                core.plugin().getLogger().info("Achievements: added title '" + title.id() + "' to tags-titles.yml.");
+                return;
+            }
+        }
+        core.plugin().getLogger().warning(AchievementRegistry.FILE + " → " + where + ": reward title '"
+                + title.id() + "' does not exist in tags-titles.yml (add it there or give it a display here).");
     }
 }

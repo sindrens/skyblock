@@ -22,14 +22,18 @@ import java.util.regex.Pattern;
  * Every category and achievement from {@code achievements.yml}, validated on load: a broken entry is skipped with a
  * readable problem, the rest still load. Pure (no server), unit-tested against the bundled file.
  *
- * <p>The file has exactly two sections, {@code categories} and {@code achievements}; each key inside them is one entry
- * (there are no plain settings in this file: those live in {@code achievements-settings.yml}).</p>
+ * <p>The file has exactly three sections, {@code categories}, {@code achievements} (personal) and
+ * {@code island-achievements} (shared by an island's members, AC3); each key inside them is one entry (there are no plain
+ * settings in this file: those live in {@code achievements-settings.yml}).</p>
  */
 final class AchievementRegistry {
 
     static final String FILE = "achievements.yml";
     static final String CATEGORIES = "categories";
     static final String ACHIEVEMENTS = "achievements";
+    static final String ISLAND_ACHIEVEMENTS = "island-achievements";
+    /** Slot of the summary head on the Personal tab (no category may use it). */
+    static final int SUMMARY_SLOT = 13;
     /** Visible characters of a name (Bedrock item names stay on one line). */
     static final int MAX_NAME = 24;
     /** Visible characters of one description line (UI_STYLE §4: lore lines up to 36). */
@@ -48,10 +52,13 @@ final class AchievementRegistry {
     private final Map<String, Category> categories;
     private final Map<String, AchievementDef> achievements;
     private final Map<Metric, List<AchievementDef>> byMetric;
+    private final Map<String, IslandAchievementDef> island;
 
-    private AchievementRegistry(Map<String, Category> categories, Map<String, AchievementDef> achievements) {
+    private AchievementRegistry(Map<String, Category> categories, Map<String, AchievementDef> achievements,
+                                Map<String, IslandAchievementDef> island) {
         this.categories = Collections.unmodifiableMap(categories);
         this.achievements = Collections.unmodifiableMap(achievements);
+        this.island = Collections.unmodifiableMap(island);
         Map<Metric, List<AchievementDef>> metric = new EnumMap<>(Metric.class);
         for (AchievementDef def : achievements.values()) {
             metric.computeIfAbsent(def.metric(), m -> new ArrayList<>()).add(def);
@@ -61,7 +68,22 @@ final class AchievementRegistry {
     }
 
     static AchievementRegistry empty() {
-        return new AchievementRegistry(new LinkedHashMap<>(), new LinkedHashMap<>());
+        return new AchievementRegistry(new LinkedHashMap<>(), new LinkedHashMap<>(), new LinkedHashMap<>());
+    }
+
+    /** Island achievements (AC3), in file order. */
+    Collection<IslandAchievementDef> island() {
+        return island.values();
+    }
+
+    Optional<IslandAchievementDef> islandAchievement(String id) {
+        return id == null ? Optional.empty() : Optional.ofNullable(island.get(id.toLowerCase(Locale.ROOT)));
+    }
+
+    /** The boost of a personal achievement's category ({@link PersonalBoost#NONE} for unknown ones). */
+    PersonalBoost boostOf(AchievementDef def) {
+        Category c = categories.get(def.category());
+        return c == null ? PersonalBoost.NONE : c.boost();
     }
 
     Collection<Category> categories() {
@@ -104,10 +126,15 @@ final class AchievementRegistry {
         return achievements.size();
     }
 
-    /** Distinct reward titles. */
+    /** Distinct reward titles (personal and island). */
     List<AchievementDef.Title> titles() {
         Map<String, AchievementDef.Title> out = new LinkedHashMap<>();
         for (AchievementDef def : achievements.values()) {
+            if (def.hasTitle()) {
+                out.putIfAbsent(def.title().id(), def.title());
+            }
+        }
+        for (IslandAchievementDef def : island.values()) {
             if (def.hasTitle()) {
                 out.putIfAbsent(def.title().id(), def.title());
             }
@@ -127,7 +154,7 @@ final class AchievementRegistry {
         ConfigurationSection cats = yaml == null ? null : yaml.getConfigurationSection(CATEGORIES);
         if (cats == null) {
             problems.accept(FILE + ": no 'categories' section, no achievements loaded");
-            return new AchievementRegistry(categories, achievements);
+            return new AchievementRegistry(categories, achievements, new LinkedHashMap<>());
         }
         Set<Integer> slots = new HashSet<>();
         for (String id : cats.getKeys(false)) {
@@ -148,7 +175,7 @@ final class AchievementRegistry {
         ConfigurationSection list = yaml.getConfigurationSection(ACHIEVEMENTS);
         if (list == null) {
             problems.accept(FILE + ": no 'achievements' section, no achievements loaded");
-            return new AchievementRegistry(categories, achievements);
+            return new AchievementRegistry(categories, achievements, loadIsland(yaml, materialExists, problems));
         }
         for (String id : list.getKeys(false)) {
             List<String> errors = new ArrayList<>();
@@ -165,34 +192,57 @@ final class AchievementRegistry {
                 achievements.put(id, def);
             }
         }
-        return new AchievementRegistry(categories, achievements);
+        return new AchievementRegistry(categories, achievements, loadIsland(yaml, materialExists, problems));
     }
 
-    private static Category parseCategory(String id, ConfigurationSection s, Predicate<String> materialExists, List<String> errors) {
+    /** The {@code island-achievements} section (optional: a file without it simply has no island achievements). */
+    private static Map<String, IslandAchievementDef> loadIsland(ConfigurationSection yaml, Predicate<String> materialExists,
+                                                               Consumer<String> problems) {
+        Map<String, IslandAchievementDef> out = new LinkedHashMap<>();
+        ConfigurationSection list = yaml.getConfigurationSection(ISLAND_ACHIEVEMENTS);
+        if (list == null) {
+            return out;
+        }
+        for (String id : list.getKeys(false)) {
+            List<String> errors = new ArrayList<>();
+            ConfigurationSection s = list.getConfigurationSection(id);
+            IslandAchievementDef def = s == null ? null : parseIsland(id, s, materialExists, errors);
+            if (s == null) {
+                errors.add("is not a section");
+            }
+            if (def == null || !errors.isEmpty()) {
+                errors.forEach(e -> problems.accept(FILE + " → " + ISLAND_ACHIEVEMENTS + "." + id + ": " + e + " (skipped)"));
+                continue;
+            }
+            if (s.getBoolean("enabled", true)) {
+                out.put(id, def);
+            }
+        }
+        return out;
+    }
+
+    private static IslandAchievementDef parseIsland(String id, ConfigurationSection s, Predicate<String> materialExists, List<String> errors) {
         if (!ID.matcher(id).matches()) {
             errors.add("id must be a-z, 0-9 and _ (max 48)");
         }
         String name = s.getString("name", "").trim();
         checkName(name, errors);
+        List<String> description = description(s, errors);
         String icon = icon(s, materialExists, errors);
-        int slot = s.getInt("slot", -1);
-        if (!INNER_SLOTS.contains(slot)) {
-            errors.add("slot must be an inner slot (10-16, 19-25, 28-34, 37-43)");
+        Optional<IslandMetric> metric = IslandMetric.byKey(s.getString("metric"));
+        if (metric.isEmpty()) {
+            errors.add("metric '" + s.getString("metric") + "' is unknown (island metrics are listed at the top of the file)");
         }
-        String description = s.getString("description", "").trim();
-        if (visible(description).length() > MAX_LINE) {
-            errors.add("description must be at most " + MAX_LINE + " visible characters");
+        List<Long> goals = goals(s, errors);
+        AchievementDef.Title title = title(s, errors);
+        if (!errors.isEmpty() || metric.isEmpty()) {
+            return null;
         }
-        return errors.isEmpty() ? new Category(id, name, icon, slot, description) : null;
+        return new IslandAchievementDef(id, name, description, icon, metric.get(), goals, title, s.getBoolean("hidden", false),
+                s.getBoolean("team-only", false));
     }
 
-    private static AchievementDef parse(String id, ConfigurationSection s, Set<String> categories, Predicate<String> materialExists,
-                                        List<String> errors) {
-        if (!ID.matcher(id).matches()) {
-            errors.add("id must be a-z, 0-9 and _ (max 48)");
-        }
-        String name = s.getString("name", "").trim();
-        checkName(name, errors);
+    private static List<String> description(ConfigurationSection s, List<String> errors) {
         List<String> description = s.isList("description") ? s.getStringList("description")
                 : s.getString("description", "").isBlank() ? List.of() : List.of(s.getString("description").trim());
         if (description.isEmpty() || description.size() > MAX_LINES) {
@@ -203,6 +253,39 @@ final class AchievementRegistry {
                 errors.add("description line '" + visible(line) + "' is longer than " + MAX_LINE + " characters (Bedrock)");
             }
         }
+        return description;
+    }
+
+    private static Category parseCategory(String id, ConfigurationSection s, Predicate<String> materialExists, List<String> errors) {
+        if (!ID.matcher(id).matches()) {
+            errors.add("id must be a-z, 0-9 and _ (max 48)");
+        }
+        String name = s.getString("name", "").trim();
+        checkName(name, errors);
+        String icon = icon(s, materialExists, errors);
+        int slot = s.getInt("slot", -1);
+        if (!INNER_SLOTS.contains(slot) || slot == SUMMARY_SLOT) {
+            errors.add("slot must be an inner slot (10-16, 19-25, 28-34, 37-43) other than " + SUMMARY_SLOT + " (the summary)");
+        }
+        String description = s.getString("description", "").trim();
+        if (visible(description).length() > MAX_LINE) {
+            errors.add("description must be at most " + MAX_LINE + " visible characters");
+        }
+        Optional<PersonalBoost> boost = PersonalBoost.byId(s.getString("boost"));
+        if (boost.isEmpty()) {
+            errors.add("boost '" + s.getString("boost") + "' is unknown (skill_xp, tool_xp, mob_damage, rare_finds, crystals, ah_slots, none)");
+        }
+        return errors.isEmpty() ? new Category(id, name, icon, slot, description, boost.orElse(PersonalBoost.NONE)) : null;
+    }
+
+    private static AchievementDef parse(String id, ConfigurationSection s, Set<String> categories, Predicate<String> materialExists,
+                                        List<String> errors) {
+        if (!ID.matcher(id).matches()) {
+            errors.add("id must be a-z, 0-9 and _ (max 48)");
+        }
+        String name = s.getString("name", "").trim();
+        checkName(name, errors);
+        List<String> description = description(s, errors);
         String icon = icon(s, materialExists, errors);
         String category = s.getString("category", "").trim().toLowerCase(Locale.ROOT);
         if (!categories.contains(category)) {

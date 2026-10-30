@@ -5,7 +5,16 @@
 # New achievements from an update are added to this file automatically: turn one off with "enabled: false" instead of
 # deleting it. Every key inside 'categories' and 'achievements' is one entry (no other settings belong in this file).
 #
-# categories.<id>:   name, icon (item id), slot (inner slot of the 6-row menu: 10-16, 19-25, 28-34, 37-43), description
+# categories.<id>:   name, icon (item id), slot (inner slot of the 6-row menu: 10-12, 14-16, 19-25, 28-34, 37-43;
+#                    13 is the summary), description, boost (what the category's boost points give, see below)
+#
+# Boost points (AC2): every finished tier gives points (achievements-settings.yml -> points.*, default 1/2/3/5/8).
+# A category's points feed its boost, each point adds a step up to a small cap (boosts.* in achievements-settings.yml):
+#   skill_xp     skill XP family           tool_xp      custom tool XP family
+#   mob_damage   damage to mobs (never PvP) rare_finds   rare finds family
+#   crystals     crystals family           ah_slots     +1/+2 auction listing slots at point thresholds
+#   none         no boost
+# Personal achievements never boost sell prices or money (owner RTA-39).
 # achievements.<id>:
 #   name:        shown name (MiniMessage, max 24 visible characters)
 #   description: 1-3 lines (max 36 visible characters each)
@@ -32,6 +41,16 @@
 #   wardrobe_sets_owned   sets owned                         wardrobe_best_level highest set level
 #   tool_best_level       highest custom tool level          tool_best_prestige  highest tool prestige
 #   balance_peak          most money held at once
+#
+# island-achievements.<id> (AC3): progress shared by every member of the island (coop players and visitors never count).
+#   Same keys as achievements, without category. team-only: true = only team islands (solo islands don't see it).
+#   The last tier's title goes to every member who has been on the island island.title-min-days (default 3) days.
+#   Finished tiers give island points: island boosts (production, island crystals, island XP, fuel) and island level
+#   points (achievements-settings.yml -> island.*).
+# Island metrics:
+#   island_level          the island level                   likes               likes received
+#   crops_harvested, blocks_mined, logs_chopped, mobs_killed   all members together (all-time /is stats)
+#   visitors              unique visitors, all time          team_active         members active the same day (best day)
 
 categories:
   skills:
@@ -39,31 +58,37 @@ categories:
     icon: experience_bottle
     slot: 20
     description: "<c:text>Level up your skills."
+    boost: skill_xp
   island:
     name: "<c:flame>Island"
     icon: grass_block
     slot: 21
     description: "<c:text>Grow and show off your island."
+    boost: crystals
   combat:
     name: "<c:flame>Combat"
     icon: iron_sword
     slot: 22
     description: "<c:text>Clear out the monsters."
+    boost: mob_damage
   economy:
     name: "<c:flame>Economy"
     icon: emerald
     slot: 23
     description: "<c:text>Sell, trade and get rich."
+    boost: ah_slots
   gear:
     name: "<c:flame>Gear"
     icon: smithing_table
     slot: 24
     description: "<c:text>Tools, enchants and sets."
+    boost: tool_xp
   social:
     name: "<c:flame>Exploring"
     icon: compass
     slot: 31
     description: "<c:text>Play, visit and explore."
+    boost: rare_finds
 
 achievements:
   # ------------------------------------------------------------------ skills
@@ -336,3 +361,49 @@ achievements:
     metric: islands_visited
     goals: [5, 25, 100, 500]
     title: {id: explorer, display: "<c:sky_blue>Explorer", rarity: rare}
+
+# ------------------------------------------------------------------ island achievements (AC3, shared by the island)
+island-achievements:
+  rising_island:
+    name: "<c:flame>Rising Island"
+    description: ["<c:text>Raise your island level together."]
+    icon: beacon
+    metric: island_level
+    goals: [10, 25, 50, 75, 100]
+    title: {id: island_ascendant, display: "<c:flame>Island Ascendant", rarity: legendary}
+  deep_roots:
+    name: "<pillar:farming>Deep Roots"
+    description: ["<c:text>Harvest crops on your island,", "<c:text>all members together."]
+    icon: wheat
+    metric: crops_harvested
+    goals: [10000, 100000, 1000000, 5000000]
+    title: {id: ashbloom_grove, display: "<pillar:farming>Ashbloom Grove", rarity: epic}
+  stone_heart:
+    name: "<pillar:mining>Stone Heart"
+    description: ["<c:text>Mine blocks on your island,", "<c:text>all members together."]
+    icon: cobblestone
+    metric: blocks_mined
+    goals: [10000, 100000, 1000000, 10000000]
+    title: {id: forgeheart, display: "<pillar:mining>Forgeheart", rarity: epic}
+  open_doors:
+    name: "<c:flame>Open Doors"
+    description: ["<c:text>Welcome unique visitors."]
+    icon: oak_door
+    metric: visitors
+    goals: [25, 250, 1000, 5000]
+    title: {id: lighthouse, display: "<c:flame>Lighthouse", rarity: rare}
+  loved_isle:
+    name: "<c:flame>Loved Isle"
+    description: ["<c:text>Get likes from visitors."]
+    icon: poppy
+    metric: likes
+    goals: [10, 100, 1000]
+    title: {id: beloved_isle, display: "<c:flame>Beloved Isle", rarity: rare}
+  team_flame:
+    name: "<c:flame>Team Flame"
+    description: ["<c:text>Members who each play 30 min", "<c:text>on the same day (one per IP)."]
+    icon: campfire
+    metric: team_active
+    goals: [2, 3, 4, 5]
+    team-only: true
+    title: {id: kindred, display: "<c:flame>Kindred", rarity: rare}

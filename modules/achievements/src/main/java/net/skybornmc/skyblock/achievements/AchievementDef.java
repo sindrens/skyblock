@@ -16,7 +16,7 @@ import java.util.Objects;
  * @param hidden      shown as "???" until its first tier is done
  */
 record AchievementDef(String id, String name, List<String> description, String icon, String category, Metric metric,
-                      List<Long> goals, Title title, boolean hidden) {
+                      List<Long> goals, Title title, boolean hidden) implements Tiered {
 
     /**
      * A reward title. {@code display} is optional: when set and the title does not exist in {@code tags-titles.yml}
@@ -33,18 +33,6 @@ record AchievementDef(String id, String name, List<String> description, String i
     AchievementDef {
         description = List.copyOf(description);
         goals = List.copyOf(goals);
-    }
-
-    int tiers() {
-        return goals.size();
-    }
-
-    long goal(int tier) {
-        return goals.get(tier - 1);
-    }
-
-    long finalGoal() {
-        return goals.getLast();
     }
 
     boolean hasTitle() {
