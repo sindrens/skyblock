@@ -202,13 +202,9 @@ final class MoneyNotes implements Listener {
         }
     }
 
-    /** Puts the item in the inventory; anything that doesn't fit drops at the player's feet (with a message). */
+    /** Puts the item in the inventory; anything that doesn't fit goes to /box (owner answer 7: never dropped). */
     private void give(Player player, ItemStack item) {
-        Map<Integer, ItemStack> rest = player.getInventory().addItem(item);
-        if (!rest.isEmpty()) {
-            rest.values().forEach(r -> player.getWorld().dropItem(player.getLocation(), r, drop -> drop.setOwner(player.getUniqueId())));
-            module.msg.send(player, P + "dropped");
-        }
+        net.skybornmc.skyblock.common.box.ItemBox.give(module.core.services(), player, net.skybornmc.skyblock.common.box.BoxSource.NOTES, item);
     }
 
     // ================================================================== commands

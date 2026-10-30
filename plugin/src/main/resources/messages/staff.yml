@@ -288,6 +288,9 @@ menu:
     wardrobe:
       name: "<c:ember><bold>Wardrobe</bold></c:ember>"
       lore: ["<c:text>Sets and chest of <player>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    box:
+      name: "<c:ember><bold>Item box</bold></c:ember>"
+      lore: ["<c:text>Items waiting in <player>'s /box.", "<c:text>View, remove or clear (admin, logged).", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
 
 # Profile switch refused by staff rules (round 3 PR4).
 profiles:

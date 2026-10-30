@@ -600,11 +600,24 @@ public final class TradeModule implements SkyblockModule, Listener {
         if (p != null && !staffMode(p)) {
             ItemStack item = TradeItems.decode(offer.bytes());
             Map<Integer, ItemStack> left = p.getInventory().addItem(item);
-            left.values().forEach(rest -> putBack(tradeId, player, profile, rest));
+            overflow(tradeId, player, profile, left.values());
             savePlayer(p);
             return;
         }
         putBack(tradeId, player, profile, offer);
+    }
+
+    /** Owner answer 7: what does not fit goes to /box; without the box module it waits in the trade escrow as before. */
+    private void overflow(long tradeId, UUID player, UUID profile, java.util.Collection<ItemStack> rest) {
+        if (rest.isEmpty()) {
+            return;
+        }
+        Optional<net.skybornmc.skyblock.common.box.ItemBox> box = net.skybornmc.skyblock.common.box.ItemBox.of(core.services());
+        if (box.isPresent()) {
+            box.get().deliver(profile, rest, net.skybornmc.skyblock.common.box.BoxSource.TRADE, Actor.system("trade"));
+        } else {
+            rest.forEach(r -> putBack(tradeId, player, profile, r));
+        }
     }
 
     private void putBack(long tradeId, UUID player, UUID profile, ItemStack stack) {
@@ -618,7 +631,12 @@ public final class TradeModule implements SkyblockModule, Listener {
                 return;
             }
             Player p = online(profile);
-            if (p != null) {
+            Optional<net.skybornmc.skyblock.common.box.ItemBox> box = net.skybornmc.skyblock.common.box.ItemBox.of(core.services());
+            if (box.isPresent()) {
+                // Owner answer 7: the escrow refused it, the /box keeps it (never dropped).
+                box.get().deliver(profile, List.of(TradeItems.decode(offer.bytes())), net.skybornmc.skyblock.common.box.BoxSource.TRADE,
+                        Actor.system("trade"));
+            } else if (p != null) {
                 p.getWorld().dropItemNaturally(p.getLocation(), TradeItems.decode(offer.bytes())); // last resort: never lose it
             } else {
                 core.plugin().getLogger().log(Level.SEVERE, "Trade: could not return an item to " + player + ". Restore it from "
@@ -985,7 +1003,7 @@ public final class TradeModule implements SkyblockModule, Listener {
                 return;
             }
             Map<Integer, ItemStack> left = now.getInventory().addItem(item);
-            left.values().forEach(rest -> putBack(row.tradeId(), row.ownerPlayer(), profile, rest));
+            overflow(row.tradeId(), row.ownerPlayer(), profile, left.values());
             deliverNext(profile, rows, index + 1, delivered + 1);
         }, main);
     }

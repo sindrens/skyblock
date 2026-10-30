@@ -529,13 +529,14 @@ final class Forge {
         return Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong() & 0xffffffffL);
     }
 
-    /** Puts the item in the inventory; the rest drops at the player's feet (owned by them), with a message. */
+    /** Puts a Forge item in the inventory; the rest goes to /box (owner answer 7: never dropped; the box tells the player). */
     void give(Player player, ItemStack item) {
-        Map<Integer, ItemStack> rest = player.getInventory().addItem(item);
-        if (!rest.isEmpty()) {
-            rest.values().forEach(r -> player.getWorld().dropItem(player.getLocation(), r, drop -> drop.setOwner(player.getUniqueId())));
-            module.msg().send(player, "inventory-full");
-        }
+        give(player, item, net.skybornmc.skyblock.common.box.BoxSource.FORGE);
+    }
+
+    /** {@link #give(Player, ItemStack)} with the /box source shown in the lore ({@code BoxSource}). */
+    void give(Player player, ItemStack item, String boxSource) {
+        net.skybornmc.skyblock.common.box.ItemBox.give(module.core.services(), player, boxSource, item);
     }
 
     private CompletableFuture<TxResult> pay(Player player, long amount, String reason, String reference, String key, Map<String, Object> details) {

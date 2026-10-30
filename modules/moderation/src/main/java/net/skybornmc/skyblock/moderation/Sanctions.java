@@ -719,9 +719,7 @@ final class Sanctions implements SanctionService {
                 return;
             }
             ItemStack item = ItemStack.deserializeBytes(bytes.get());
-            for (ItemStack rest : now.getInventory().addItem(item).values()) {
-                now.getWorld().dropItemNaturally(now.getLocation(), rest);
-            }
+            net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), now, net.skybornmc.skyblock.common.box.BoxSource.SANCTION, item); // never dropped: the rest goes to /box
             Sanction restored = s.handled(Sanction.State.RESTORED, by, byName, System.currentTimeMillis(), why);
             notifyStaff(sender, "sanctions.notify.restored", parts(null, restored), Msg.p("by", byName));
             msg.send(now, "sanctions.you.item-restored", parts(now, restored));

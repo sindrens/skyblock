@@ -7,7 +7,6 @@
 error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Try again in a moment."
 unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>The Enchanter is closed right now. Try again later."
 busy: "<c:warning>Wait a moment, saving your enchant..."
-inventory-full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full. The rest dropped at your feet."
 not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>You need <c:value><sym:crystals> <cost></c:value>. You have <c:value><sym:crystals> <have></c:value>."
 tool-gone: "<prefix><c:error><sym:cross></c:error> <c:text>Tool not found. Put it in your inventory."
 book-gone: "<prefix><c:error><sym:cross></c:error> <c:text>Book not found. Put it in your inventory."

@@ -181,7 +181,6 @@ buy:
   bought: "<prefix><c:success><sym:check></c:success> <c:text>Bought <c:value><amount>x <item></c:value> <c:text>for <cur:money><price></cur:money><c:text>. Balance: <cur:money><balance></cur:money>"
   partial: "<prefix><c:warning><sym:check></c:warning> <c:text>Bought <c:value><amount></c:value> of <c:value><requested>x <item></c:value><c:text>: no more room. Paid only <cur:money><price></cur:money><c:text>."
   delivered-late: "<prefix><c:success><sym:check></c:success> <c:text>Here is your shop purchase: <c:value><amount>x <item></c:value><c:text>."
-  dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your inventory filled up: <c:value><amount></c:value> <c:text>items dropped at your feet."
   waiting-no-room: "<prefix><c:warning><sym:cross></c:warning> <c:text>A shop purchase (<c:value><amount>x <item></c:value><c:text>) is waiting. Make room, then rejoin or switch profile."
   not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>That costs <cur:money><price></cur:money><c:text>, you have <cur:money><balance></cur:money><c:text>. Buy fewer or sell items first."
   no-room: "<prefix><c:error><sym:cross></c:error> <c:text>Your inventory is full. Make some room first."

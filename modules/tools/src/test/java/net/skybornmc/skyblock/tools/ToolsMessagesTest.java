@@ -62,7 +62,7 @@ class ToolsMessagesTest {
     @Test
     void dynamicKeysExist() throws Exception {
         YamlConfiguration yml = messages();
-        List<String> keys = new ArrayList<>(List.of("error", "inventory-full"));
+        List<String> keys = new ArrayList<>(List.of("error"));
         for (ToolKind kind : ToolKind.values()) {
             keys.add("kind." + kind.id());
             keys.add("kind-plural." + kind.id());

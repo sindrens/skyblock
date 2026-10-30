@@ -1,0 +1,9 @@
+# Permissions of the item mailbox module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/box.txt. Commands: docs/commands/box.md.
+skyblock.box.use:
+  description: Open /box and take your waiting items out.
+  default: true
+skyblock.box.admin:
+  description: View, remove and clear a player's item box from /inspect (audited).
+  default: op

@@ -129,7 +129,7 @@ give:
   self: "<prefix><c:success><sym:check></c:success> <c:text>Gave you <c:value><amount>x <item></c:value>."
   other: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><amount>x <item></c:value> to <c:value><player></c:value>."
   notify: "<prefix><c:text>You got <c:value><amount>x <item></c:value> from <c:value><staff></c:value>."
-  dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full. <c:value><amount></c:value> item(s) dropped on the ground."
+  boxed: "<prefix><c:text>Their inventory was full: <c:value><amount></c:value> item(s) went to <c:value><player></c:value><c:text>'s /box."
   unknown-item: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not an item. Press Tab to see them all."
   too-many: "<prefix><c:error><sym:cross></c:error> <c:text>Max <c:value><max></c:value> at once."
 

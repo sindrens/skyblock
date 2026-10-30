@@ -212,6 +212,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new ModerationModule(core));
         // Profiles early: other modules read the active profile key in their own join handlers.
         modules.register(new net.skybornmc.skyblock.profiles.ProfilesModule(core));
+        // Item mailbox (owner answer 7) early: every later module hands overflowing items to ItemBox, and it stops late.
+        modules.register(new net.skybornmc.skyblock.box.BoxModule(core));
         modules.register(new net.skybornmc.skyblock.essentials.EssentialsModule(core));
         modules.register(new net.skybornmc.skyblock.hud.HudModule(core));
         modules.register(new net.skybornmc.skyblock.staff.StaffModule(core));

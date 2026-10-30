@@ -1,0 +1,7 @@
+# LuckPerms grants for the item mailbox module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/box/src/main/resources/permissions/box.yml. One console command per line; # = comment.
+# skyblock.box.use (/box) defaults to true, so players need no grant.
+
+# --- Item box (staff) ---
+# Admins view, remove and clear a player's box from /inspect (owner: admin only, audited).
+lp group admin permission set skyblock.box.admin true

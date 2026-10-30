@@ -322,15 +322,10 @@ final class StackEnchants implements StackKillProvider, Listener {
         }));
     }
 
-    /** Into the inventory; what does not fit (or an offline player) drops where the stack died. */
+    /** Into the inventory; what does not fit goes to /box (owner answer 7). An offline killer's book drops where the stack died (loot). */
     static void give(EnchantsModule module, Player player, Location at, ItemStack book) {
         if (player.isOnline()) {
-            Map<Integer, ItemStack> rest = player.getInventory().addItem(book);
-            if (rest.isEmpty()) {
-                return;
-            }
-            rest.values().forEach(s -> player.getWorld().dropItemNaturally(player.getLocation(), s));
-            module.msg().send(player, "inventory-full");
+            net.skybornmc.skyblock.common.box.ItemBox.give(module.core.services(), player, net.skybornmc.skyblock.common.box.BoxSource.ENCHANTER, book);
             return;
         }
         if (at.getWorld() != null) {

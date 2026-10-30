@@ -392,7 +392,7 @@ public final class ToolsModule implements SkyblockModule {
                 Msg.p("tier", tierRaw), Msg.p("tiers", String.join(", ", catalog.tiers(kind).stream().map(ToolCatalog.TierDef::id).toList()))));
         ToolData tool = ToolData.fresh(UUID.randomUUID(), kind, tier.tier(), false, null);
         ItemStack stack = items.create(tool, "admin:" + sender.getName(), sender.getName(), null);
-        forge.give(target, stack);
+        forge.give(target, stack, net.skybornmc.skyblock.common.box.BoxSource.STAFF);
         UUID owner = target.getUniqueId();
         String ownerName = target.getName();
         int season = config.seasonId;

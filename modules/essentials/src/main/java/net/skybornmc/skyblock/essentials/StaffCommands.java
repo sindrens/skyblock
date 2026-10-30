@@ -425,16 +425,15 @@ final class StaffCommands extends CommandGroup implements Listener {
             throw fail("give.too-many", Msg.p("max", config.giveMaxAmount));
         }
         int left = amount;
-        int dropped = 0;
         int max = Math.max(1, material.getMaxStackSize());
+        java.util.List<ItemStack> stacks = new java.util.ArrayList<>();
         while (left > 0) {
             int n = Math.min(left, max);
             left -= n;
-            for (ItemStack rest : target.getInventory().addItem(new ItemStack(material, n)).values()) {
-                dropped += rest.getAmount();
-                target.getWorld().dropItemNaturally(target.getLocation(), rest);
-            }
+            stacks.add(new ItemStack(material, n));
         }
+        // Owner answer 7: never dropped; what does not fit goes to the target's /box.
+        int boxed = net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), target, net.skybornmc.skyblock.common.box.BoxSource.STAFF, stacks).stream().mapToInt(ItemStack::getAmount).sum();
         String item = material.getKey().getKey();
         if (same(sender, target)) {
             msg.send(target, "give.self", Msg.p("amount", amount), Msg.p("item", item));
@@ -442,8 +441,8 @@ final class StaffCommands extends CommandGroup implements Listener {
             msg.send(sender, "give.other", Msg.p("amount", amount), Msg.p("item", item), Msg.p("player", target.getName()));
             notifyTarget(sender, target, "give.notify", Msg.p("amount", amount), Msg.p("item", item));
         }
-        if (dropped > 0) {
-            msg.send(sender, "give.dropped", Msg.p("amount", dropped));
+        if (boxed > 0 && !same(sender, target)) {
+            msg.send(sender, "give.boxed", Msg.p("amount", boxed), Msg.p("player", target.getName()));
         }
         audit("give", sender, target, Map.of("item", item, "amount", amount));
     }
@@ -462,8 +461,7 @@ final class StaffCommands extends CommandGroup implements Listener {
                 meta.setPlayerProfile(error == null && completed != null ? completed : profile);
                 head.setItemMeta(meta);
             }
-            player.getInventory().addItem(head).values()
-                    .forEach(rest -> player.getWorld().dropItemNaturally(player.getLocation(), rest));
+            net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), player, net.skybornmc.skyblock.common.box.BoxSource.STAFF, head);
             msg.send(player, "skull.given", Msg.p("player", name));
         }));
     }
