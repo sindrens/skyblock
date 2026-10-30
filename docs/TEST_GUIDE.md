@@ -1,36 +1,47 @@
 # Phoenix Skyblock · feature and test guide
 
-_Written 30 October 2026 after update83. The server runs all of this now (26 modules)._
+_Written 30 October 2026 after update83, refreshed after update92. The server runs all of this now (28 modules)._
 
 How to use this guide:
 - Each area has its features. Every feature has: what it does, its commands, and what to test.
 - Test on Java first, then on Bedrock where it says so.
-- The questions for every feature are in the spreadsheet **Phoenix_Skyblock_questions.xlsx** (1,037 questions). Start with Priority = "before launch".
+- The questions for every feature are on the **Decisions page** (one tap: Suggested / No / Other; link in [BACKLOG.md](BACKLOG.md)). Start with the ones marked "before launch". New questions from this round have ids `Q2-1` and up.
 - Staff commands need the right rank. "admin" = only admins.
 
-## What is new since you went to sleep
+**Not built yet / needs planning:** everything that is not in this guide is listed in [BACKLOG.md](BACKLOG.md) (by area). Every plan and phase, its status, its open questions and the next build step are in one table in [PLANNING.md](PLANNING.md).
+
+## What is new since update83
 
 | Update | What |
 |---|---|
-| update79 | Armor enchants on wardrobe set pieces (E5): new Armor tab in `/enchanter`. |
-| update80 | Monthly punishment report `/preport` and the automatic "Honorable" title (P10). The punishment system is now complete. |
-| update81 | `/settings` toggles that work now: join messages, teleport requests, scoreboard, island invites, particles, menu sounds, event sounds (F1). Balance tuning for enchants and sets; combat book drops made rarer on the live server (TUNE). |
-| update82 | The new V2 look: brighter colors, bold names, red `| Header` sections, green Buy / red Sell prices, bold `» CLICK` lines, new scoreboards (STYLE2). Resource pack plan written (docs/plans/RESOURCE_PACK.md). |
-| update83 | `/sell` is now a sell chest; `/shop` is a quick-buy grid (left 1, right 64, shift = amount); satchel has a Sell chest button (SELL2). AFK pool module (closed until you place an `afk_pool` region). |
+| update84 | New builds pasted: spawn base v1 update, 7 spawn districts, iron mine, birch forest and the crypt. |
+| update85 | Resource pack art brief written (docs/plans/RESOURCE_PACK_ART_BRIEF.md); the Java pack will be forced (accept before joining). Restarts no longer flood the console with LuckPerms lines. |
+| update86 | Banks (BANK2): interest every 8 h (00/08/16 UTC) at 0.6% personal / 1.0% island; 2% withdrawal fee that island masteries will lower to 1.5 / 1.0 / 0.5%; next payout countdown in `/bank`. |
+| update87 | `/box` item mailbox: items that don't fit are never dropped; they wait per profile in `/box` (sell chest, shop, Forge, Enchanter, wardrobe, trade, auction, staff gives). |
+| update88 | Your round 1 answers (ANS1): no join or creation cooldowns, start money on every profile, the 30-minute new-account limit is gone, team = 4 + leader, `/is setmyhome` removed, kick backups + `/isadmin restore`, disband only without members (confirm button) and it deletes the island bank, always respawn at spawn, level line hidden, normal size cap 9x9, profile delete wipes auction listings. Builds re-pasted after a grief. |
+| update89 | NPCs, holograms and leaderboards from the builds (NPCHOLO): right-click opens, sneak + right-click explains, top-10 boards, `/skyblock npcs`. |
+| update90 | Portals (PORTALS): Depths <-> spawn portals, the gatehouse island portal creates your island on first use and always takes you home; warzone only through its portal. |
+| update91 | Your round 2 answers (ANS2): teleports instant (3 s only in combat), visit browser Discover tab, rating needs 1 h + max 3 accounts per IP, `/isadmin hide`, disband/reset resets member profiles with backups, `/p` Silent button, ban screen with time left and appeal date, English word lists and filter on signs/books/anvils/warps/nicks, rules 7-9, `/home` = island home and staff use `/shome`. Region protection in the Depths, spawn and warzone (DEPTHSPROT). |
+| update92 | ANS3: `/ignore` also blocks tpa, trades and island invites and can hide chat; creative only for builders/admins in spawn and the Depths; staff items can't be sold; god/fly/heal only in staff or build mode; big staff transfers alert admins; `/ec` and `/craft` blocked in the warzone, boss arena and 10 s after combat; a banned leader's island is closed to visitors. |
 
-Still waiting: E6 (hoe and rod enchants) needs Phase 7 (farming and fishing), which has no plan yet. STORE2 needs island storage, which does not exist yet. Both are questions in the sheet.
+Plans written in the same time (no game change): ranks/titles/achievements, Phase 5 progression, tutorial + starter chest, Phase 10 rewards, Phase 7 production. Their questions are on the Decisions page (Phase 7 follows); see [PLANNING.md](PLANNING.md). Updates 79-83: see CHANGELOG.md.
 
-## Test these first (most changed tonight)
+Still waiting: E6 (hoe and rod enchants) waits for Phase 7 (plan written, M7.3 farming and M7.8 fishing). STORE2 waits for the Island Vault upgrade from Phase 5 (M5.4). The tutorial is being built now (TU1-TU4).
 
-1. `/sell`: put items in, Sell inventory, Sell, close with items inside (they come back), kill the server with items inside and rejoin.
-1. `/shop`: left-click buys 1, right-click 64, shift-click opens the amount screen; buy 64 with only 40 free slots.
-1. Look at tooltips: a forge tool, an enchant book, a set piece, a money note, shop items. Bold names, red `| Header` sections, bold yellow `» CLICK` lines.
-1. Scoreboards on your island, at spawn and in The Depths: gradient title, `| Profile` / `| Island` sections.
-1. `/settings`: switch off scoreboard (it disappears at once), menu sounds, teleport requests.
-1. `/enchanter` → Armor tab: put a book on a set piece you own.
-1. `/preport` (admin): last month's punishment report.
-1. AFK pool: add the `afk_pool` region to a build (or the box in `afk.yml`), stand in it, watch the action bar.
-1. Bedrock: open `/sell`, `/shop` (tap opens the amount screen), and check that all symbols show.
+## Test these first (most changed since update83)
+
+1. Island portal: with a fresh account (or a new profile) walk into the gatehouse island portal at spawn. Your island is created and you land on it; walk in again from spawn and you go straight home.
+1. `/box`: fill your inventory, buy from `/shop` or close a sell chest with items inside. The rest goes to `/box`; rejoin and click the join line; "Take all that fit".
+1. Teleports: `/spawn`, `/tpa`, `/is visit`, `/is warp`, `/dungeon` are instant; hit a mob first and they wait 3 seconds.
+1. Disband and restore: on a test island with no other members, `/is disband` (one confirm button). Money, inventory and ender chest of that profile reset and the island bank is gone; an admin brings it back with `/isadmin restore <player>`.
+1. Kick backup: kick a member, then `/isadmin restore <member>` as admin. They rejoin with the old role and their money is topped up.
+1. NPCs: right-click the Banker, Blacksmith and Guide; sneak + right-click for the help text; check the leaderboards in the Hall of Heroes.
+1. `/bank`: the Interest clock shows "every 8h" and a countdown; withdraw and read the 2% fee line.
+1. `/ignore <alt>`: the alt can't `/tpa`, trade or invite you and its chat is hidden; staff can't be ignored.
+1. Staff: `/gm c` as mod is refused; as builder at spawn it works and items you take become staff items (try `/sell` with one); `/fly` outside staff mode is refused.
+1. `/p <alt>` → Silent button, then ban: no public line. Read the ban screen (time left, appeal date).
+1. Protection: in the Depths and at spawn try a trapdoor, an anvil in the Forge Quarter, an ender pearl in a combat zone: all refused.
+1. Bedrock: island portal, `/box`, NPC help menu (Bedrock gets a 3-row menu), `/isadmin restore` menu, and the filter on a sign.
 
 ## Contents
 
@@ -69,7 +80,7 @@ The tab list shows a SKYBORNMC header, the online count and season, and every pl
 6. As staff check the TPS (green/orange/red) and ping line at the bottom.
 7. Bedrock: check the symbols (arrows, dots) do not show as boxes.
 
-_Questions for this feature: 8 in the sheet (Feature = "Tab list and nametags")._
+_Questions for this feature: 8 on the Decisions page (Feature = "Tab list and nametags")._
 
 ### Main menu (/menu), menu item and /help
 
@@ -92,11 +103,11 @@ _Questions for this feature: 8 in the sheet (Feature = "Tab list and nametags").
 6. As staff open /staff and /admin: change a harmless setting and check it appears in /logs under config.
 7. Bedrock: open /menu with the item and check all icons and names are readable.
 
-_Questions for this feature: 9 in the sheet (Feature = "Main menu (/menu), menu item and /help")._
+_Questions for this feature: 9 on the Decisions page (Feature = "Main menu (/menu), menu item and /help")._
 
 ### Personal settings (/settings)
 
-Players can switch personal options in four groups (Chat, Social, Display, Sounds): private messages, mention sound, join messages, chat colours, timestamps, teleport requests, trade requests, island invites, AFK messages, scoreboard, menu item, particles, menu sounds and event sounds. Changes apply immediately.
+Players can switch personal options in four groups (Chat, Social, Display, Sounds): private messages, mention sound, join messages, chat colours, timestamps, teleport requests, trade requests, island invites, AFK messages, hide ignored chat (on by default), scoreboard, menu item, particles, menu sounds and event sounds. Changes apply immediately.
 
 | Command | Who | What |
 |---|---|---|
@@ -113,7 +124,7 @@ Players can switch personal options in four groups (Chat, Social, Display, Sound
 7. Type /settings scoreboard off (chat form) and use Tab to see all names.
 8. Bedrock: open the menu and tap toggles.
 
-_Questions for this feature: 8 in the sheet (Feature = "Personal settings (/settings)")._
+_Questions for this feature: 8 on the Decisions page (Feature = "Personal settings (/settings)")._
 
 ### Server list MOTD and join flow
 
@@ -127,17 +138,17 @@ The server list shows an animated SKYBORNMC / PHOENIX SKYBLOCK message in two li
 
 1. Add the server in Minecraft Java and Bedrock. Check the two MOTD lines, animated gradient and hover text.
 2. Check the player count and version text. Check the icon.
-3. Join with a new account (whitelisted): welcome title, broadcast 'Welcome <name> to Phoenix Skyblock (#N)', welcome lines with clickable /menu and /help.
+3. Join with a new account (whitelisted): welcome title, broadcast 'Welcome <name> to Phoenix Skyblock (#N)', welcome lines with clickable /menu and /help, and the line that chat and commands are logged for 30 days with the privacy link.
 4. Leave and join again: 'Welcome back' title.
 5. Try a non-whitelisted account: you should see a clear message that the server is in testing.
 6. Join with an old Java version (1.20) and a new one (1.21.5+): old gets a friendly kick message, new joins.
 7. Check join/quit lines: only ranked players have them.
 
-_Questions for this feature: 10 in the sheet (Feature = "Server list MOTD and join flow")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Server list MOTD and join flow")._
 
 ### Scoreboards (sidebar)
 
-Each player sees a sidebar that changes with where they are: spawn, their own island, someone else's island, The Depths (gate, mine, forest, combat) and the warzone. It shows name and rank, money, crystals, gems, island level and, on the island, the next to-do note. Players can turn the scoreboard off in /settings.
+Each player sees a sidebar that changes with where they are: spawn, their own island, someone else's island, The Depths (gate, mine, forest, combat) and the warzone. It shows name and rank, money, crystals, gems and, on the island, the next to-do note (the island level line is hidden until levels exist). Players can turn the scoreboard off in /settings.
 
 | Command | Who | What |
 |---|---|---|
@@ -145,7 +156,7 @@ Each player sees a sidebar that changes with where they are: spawn, their own is
 
 **Test:**
 
-1. Join and look at the scoreboard at spawn: Profile (name, rank, money, crystals, gems) and Island (level).
+1. Join and look at the scoreboard at spawn: Profile (name, rank, money, crystals, gems) and Island (no level line until levels exist).
 2. Go to your island: layout changes, and a 'Next:' note line appears when you have an open island note and the setting is on.
 3. Visit someone else's island: 'Visiting: <island>' is shown.
 4. Go to The Depths gate, mine, forest and combat zones: each has its own layout.
@@ -154,26 +165,26 @@ Each player sees a sidebar that changes with where they are: spawn, their own is
 7. Turn the scoreboard off in /settings and on again.
 8. Bedrock: check all lines fit, symbols are visible and nothing is cut at the edge.
 
-_Questions for this feature: 9 in the sheet (Feature = "Scoreboards (sidebar)")._
+_Questions for this feature: 9 on the Decisions page (Feature = "Scoreboards (sidebar)")._
 
 ### Resource pack plan
 
-The plan adds a resource pack for Java and Bedrock with custom item looks, menu backgrounds, font icons, sounds, HUD bars, crate animations and a custom border. Everything works without the pack (vanilla fallback). It is optional at first. Nothing is built yet. This sheet only adds questions beyond the RP-D1 to RP-D17 list.
+The plan adds a resource pack for Java and Bedrock with custom item looks, menu backgrounds, font icons, sounds, HUD bars, crate animations and a custom border. Decided: the Java pack is **forced** (players accept it before they join) and **you draw the art** from the art brief (docs/plans/RESOURCE_PACK_ART_BRIEF.md, every texture listed). Everything still works without the pack (vanilla fallback for Bedrock and failed downloads). Nothing is built yet: RP1 starts when the first art arrives.
 
 | Command | Who | What |
 |---|---|---|
-| `/settings > Resource pack` | player | Planned toggle to turn the pack on or off |
+| `(no command)` | player | The pack is sent before joining; there is no on/off toggle while it is forced. |
 | `/skyblock reload` | admin | Planned: push a new pack version to players |
 
 **Test:**
 
 1. Nothing to test in game yet (planning only).
-2. Read docs/plans/RESOURCE_PACK.md section 0 and 17 and answer RP-D1 to RP-D17.
-3. Look at the UI sketches in the design artifact and decide the art direction.
-4. Check that the plan says every menu stays usable with the pack off, and tell the developer if you disagree.
-5. List which art you can make yourself and which you need to buy (RP-D7).
+2. Read docs/plans/RESOURCE_PACK.md section 0 and 17 and the art brief.
+3. Answer the remaining RP-D questions on the Decisions page (feature "Resource pack plan").
+4. Draw the 5 pilot pieces from the art brief first, so they can be checked in game before you draw the rest.
+5. Check that the plan says every menu stays usable with the pack off, and tell the developer if you disagree.
 
-_Questions for this feature: 10 in the sheet (Feature = "Resource pack plan")._
+_Questions for this feature: 24 on the Decisions page (Feature = "Resource pack plan")._
 
 ### Look and feel V2 (colors, lore, menus, scoreboard)
 
@@ -194,13 +205,13 @@ The whole server uses one style: brand red, ember, aqua crystals and green gems,
 6. Trigger an error message and a success message and check the mark and color.
 7. Look at chat prefix, tab list and the join/quit lines.
 
-_Questions for this feature: 10 in the sheet (Feature = "Look and feel V2 (colors, lore, menus, scoreboard)")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Look and feel V2 (colors, lore, menus, scoreboard)")._
 
 ## Profiles
 
 ### Profiles (up to 3 islands per player)
 
-Every player can have up to three profiles. A profile is one island plus its own money, crystals, items, ender chest, skills and progress. Gems, rank, titles and cosmetics are shared between all profiles. You switch with /profiles, and nothing can ever be moved between your own profiles.
+Every player can have up to three profiles. A profile is one island plus its own money, crystals, items, ender chest, skills, `/box` and progress. Gems, rank, titles and cosmetics are shared between all profiles. Every profile gets the start money. You switch with /profiles, and nothing can ever be moved between your own profiles. Deleting a profile deletes everything on it, auction listings and collection bin included (a profile with items in `/box` can't be deleted until you take them out).
 
 | Command | Who | What |
 |---|---|---|
@@ -210,46 +221,48 @@ Every player can have up to three profiles. A profile is one island plus its own
 
 1. Type /profiles. Profile 1 is yours and active. Slots 2 and 3 are locked and show a price (500 and 1,500 gems) or the rank needed.
 2. Ask staff to give you gems, then buy slot 2. Check the gems go down only once and the slot opens.
-3. Click the empty slot and create a profile. You land at spawn with an empty inventory, $0 and no island. Gems and rank stay the same.
+3. Click the empty slot and create a profile. You land at spawn with an empty inventory, the start money ($1,000) and no island. Gems and rank stay the same.
 4. Run /is on profile 2 and make an island, then put a stone block in your inventory. Switch back to profile 1: your old items, money and island home are back and you land at your old island.
 5. Rename the profile (you type the new name in chat) and change its icon. Relog right after a switch: you must come back on the same profile.
 6. Try to cheat on purpose: drop an item on profile 1, switch to profile 2 and try to pick it up. It must be refused. Also try to cash a money note made on the other profile and to buy your own other profile's /ah listing. All must be refused.
 7. Try to visit or join the island of your other profile (use an alt to invite it). It must be refused.
-8. Delete profile 2: you get a confirm screen and must type the profile name. You cannot delete the profile you are playing on.
+8. Put an item on profile 2's `/ah` and delete profile 2: you get a confirm screen and must type the profile name. The listing is gone too. You cannot delete the profile you are playing on, nor one with items in `/box`.
 9. Bedrock: do all of the above by tapping. Check that renaming (typing in chat) works on a phone.
 
-_Questions for this feature: 14 in the sheet (Feature = "Profiles (up to 3 islands per player)")._
+_Questions for this feature: 14 on the Decisions page (Feature = "Profiles (up to 3 islands per player)")._
 
 ## Islands
 
 ### Island creation, starter island and homes
 
-A new player lands at spawn and types /is to create an island. The starter island is built for them with a starter chest, and they are sent there. Once you have an island, /is opens the island menu and /is home takes you back. Leaders can move the island home and every member gets one personal home.
+A new player lands at spawn and walks into the **island portal** in the gatehouse: the island is created right away (no confirm screen) and they are brought there; later the same portal always takes them home. Typing /is without an island still opens the 'Create your island' screen. Once you have an island, /is opens the island menu and /is home (or just /home) takes you back, instantly. Leaders, Admins and Mods can move the island home. There are no personal homes, no creation cooldown, and players always respawn at spawn.
 
 | Command | Who | What |
 |---|---|---|
+| `Island portal (gatehouse at spawn)` | player | No island on this profile: creates it and takes you there. With an island: instant teleport home (3 s while in combat). |
 | `/is` | player | No island: open the 'Create your island' screen. With an island: open the island menu. |
-| `/is home [home name]` | player | Teleport to the island home, or to one of your personal homes. |
-| `/is go` | player | Same as /is home. |
-| `/is sethome` | player | Set the island home where you stand (Leader, Admin and Mod). |
-| `/is setmyhome [name]` | player | Set your own personal home on the island (1 per member). Same name again moves it. |
+| `/is home (/is go, /home)` | player | Teleport to the island home (instant; 3 s while in combat). |
+| `/is sethome (/sethome)` | player | Set the island home where you stand (Leader, Admin and Mod). |
 
 **Test:**
 
-1. Use a fresh account. Join, then type /is. You should see a 'Create your island' confirm screen. Confirm.
-2. You get a title and sound, the starter island appears under you and a starter chest is on it. Open the chest and check the contents.
-3. Type /spawn, then /is home. You should land on the island home.
-4. Stand somewhere else on the island and type /is sethome, then /is home from spawn. You land at the new spot. Try to set a home outside the island border or in the air: refused.
-5. Type /is setmyhome base, walk away, then /is home base. You return to your personal home.
-6. Jump off the island into the void. You should land back on your island home without damage.
-7. Die (ask staff to /kill you). Check where you respawn and that you keep your inventory.
-8. Bedrock: do the create screen and the island menu by tapping; check the title and the chest are readable.
+1. Use a fresh account. Join and walk from the spawn point to the gatehouse island portal. Step in: a 'Creating your island' title, the starter island appears and you land on it with a starter chest. Open the chest and check the contents.
+2. Type /spawn, walk into the island portal again: you go straight home, no new island.
+3. Make a new profile with /profiles and use the portal again: that profile gets its own island the same way.
+4. On a second fresh account type /is instead: you see the 'Create your island' confirm screen. Confirm.
+5. Type /spawn, then /home. You land on the island home at once (no countdown).
+6. Stand somewhere else on the island and type /sethome, then /is home from spawn. You land at the new spot. Try to set a home outside the island border or in the air: refused.
+7. Try /is setmyhome: it no longer exists (tab completion does not show it).
+8. Jump off the island into the void. You should land back on your island home without damage.
+9. Die (ask staff to /kill you), also with a bed next to you: you always respawn at spawn and keep your inventory.
+10. Hit a mob, then type /is home within 10 seconds: you wait 3 seconds.
+11. Bedrock: walk into the portal, use the create screen and the island menu by tapping; check the title and the chest are readable.
 
-_Questions for this feature: 10 in the sheet (Feature = "Island creation, starter island and homes")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Island creation, starter island and homes")._
 
 ### Island team: invites, roles, coop and permissions
 
-Leaders can invite players to form a team island (4 members including the leader, 8 with upgrades). Roles are Leader, Admin, Mod, Member and Coop (temporary trust). A permission screen lets the leader decide what each role may do (break, place, containers, spawners and more). Members can leave and the leader can transfer the island.
+Leaders can invite players to form a team island (4 members plus the leader, 8 plus the leader with upgrades). Roles are Leader, Admin, Mod, Member and Coop (temporary trust). A permission screen lets the leader decide what each role may do (break, place, containers, spawners and more). Members can leave and the leader can transfer the island. There is no join cooldown (only 3 island joins per season). A player you `/ignore` can't invite you. When a member is kicked, a backup of their role, money and (if online) inventory is kept, and an admin can restore it.
 
 | Command | Who | What |
 |---|---|---|
@@ -265,6 +278,7 @@ Leaders can invite players to form a team island (4 members including the leader
 | `/is coop <player> / /is uncoop <player>` | player | Give or remove temporary trust for an online player (max 4). |
 | `/isadmin addmember <island> <player>` | admin | Staff: add a member without an invite. |
 | `/isadmin setowner <island> <member>` | admin | Staff: make a member the leader. |
+| `/isadmin restore <player>` | admin | Staff: open the player's kick and reset backups and restore one (rejoins with the old role, money topped up, items into an empty inventory). |
 
 **Test:**
 
@@ -274,38 +288,44 @@ Leaders can invite players to form a team island (4 members including the leader
 4. A promotes B to Mod, then to Admin. Check what B can now do (invite, kick a Member, change settings).
 5. A uses /is transfer B. B becomes Leader and A becomes Admin.
 6. Coop: A types /is coop on a third account C. C can build; when A and all Mods log out, C is no longer trusted.
-7. B types /is leave and confirms. Then try to join another island within 24 hours: it must be refused (join cooldown). A fourth join in a season is also refused.
-8. Try to invite a fifth player on a 4-member island: refused (island full).
-9. Bedrock: open /is members, tap a head, check the action buttons are readable.
+7. B types /is leave and confirms, then joins another island right away: allowed (no cooldown). A fourth join in one season is refused.
+8. Fill the island with the leader + 4 members and invite one more: refused (island full). The member list shows the count.
+9. Kick a member who is online with items and money. As admin type /isadmin restore <member>: the backup is listed; click it and confirm. The member is back with the old role, money topped up, items given back only if their inventory is empty.
+10. Let C /ignore A, then A invites C: A gets the same answer as when invites are off.
+11. Bedrock: open /is members, tap a head, check the action buttons are readable; open the /isadmin restore menu by tapping.
 
-_Questions for this feature: 11 in the sheet (Feature = "Island team: invites, roles, coop and permissions")._
+_Questions for this feature: 12 on the Decisions page (Feature = "Island team: invites, roles, coop and permissions")._
 
 ### Visiting: browser, lock, ban, ratings and likes
 
-Players can visit other islands from a browser (most visited, top rated, most liked, newest) or by name. Leaders, Admins and Mods can lock the island, send visitors away and ban players. Visitors can rate an island 1 to 5 stars once per season and like it once a day.
+Players can visit other islands from a browser or by name, instantly (3 seconds only while in combat). The browser opens on **Discover**: every island in random order, favouring islands with more playtime; the other tabs are Most visited, Top rated, Most liked and Newest. There is no visitor limit. Leaders, Admins and Mods can lock the island, send visitors away and ban players. Visitors can rate an island 1 to 5 stars once per season and like it once a day; both need 1 hour of playtime and at most 3 accounts from one address per island. An island whose leader is banned is closed to visitors. Staff can hide an island from the browser.
 
 | Command | Who | What |
 |---|---|---|
-| `/is visit [player]` | player | Open the visit browser, or go to a player's island (3 second warmup). |
+| `/is visit [player]` | player | Open the visit browser (Discover tab first), or go to a player's island (instant; 3 s in combat). |
 | `/is lock / /is unlock` | player | Leader/Admin/Mod: only members and coop players can enter a locked island. |
 | `/is expel <player>` | player | Send a visitor on your island to spawn. |
 | `/is ban <player> / /is unban <player>` | player | Ban or unban a visitor from entering your island (max 100). |
 | `/is rate <player> <1-5>` | player | Rate an island you have visited. |
 | `/is like <player>` | player | Like an island you have visited (once a day). |
 | `/is info [player]` | player | Show info about your island or another player's island in chat. |
+| `/isadmin hide <island> [note] / /isadmin unhide <island>` | mod | Staff: hide an island from the visit browser (still visitable by name) or show it again. |
 
 **Test:**
 
-1. With two accounts: B types /is visit and picks A's island in the browser (or /is visit A). Stand still for 3 seconds. B lands on A's island and A sees a visitor message.
+1. With two accounts: B types /is visit and picks A's island in the browser (or /is visit A). B lands on A's island at once and A sees a visitor message.
 2. As B try to break a block. It must be refused (visitors can only look by default).
 3. A types /is lock. B (on the island) is sent to spawn. B tries /is visit A again: refused. A types /is unlock.
 4. A bans B (/is ban B). B cannot enter by /is visit, /tpa, ender pearl or by relogging on the island. A unbans B.
 5. B types /is rate A 5 and /is like A. Try /is like A again the same day: refused. Try to rate your own island: refused.
-6. Try /is rate on an island you never visited: refused.
-7. Open the browser and check the four lists. Locked islands should not show up.
-8. Bedrock: open the browser and tap an island. Check the 3 second warmup message and that moving cancels it.
+6. Try /is rate on an island you never visited, and with an account under 1 hour of playtime: both refused. A 4th account from the same address: refused.
+7. Open the browser: Discover is first and the order changes each time you open it. Check the other four tabs. Locked islands should not show up.
+8. As mod: /isadmin hide <A's island> test. It disappears from the browser but /is visit A still works. /isadmin unhide brings it back.
+9. Ban A's leader (test account) with /p: visitors on A's island are sent to spawn and it is gone from the browser; A's members still play. Unban: it opens again within 2 minutes.
+10. Hit a mob, then /is visit A: you wait 3 seconds and moving cancels it.
+11. Bedrock: open the browser and tap an island.
 
-_Questions for this feature: 12 in the sheet (Feature = "Visiting: browser, lock, ban, ratings and likes")._
+_Questions for this feature: 12 on the Decisions page (Feature = "Visiting: browser, lock, ban, ratings and likes")._
 
 ### Island warps and warp signs
 
@@ -315,19 +335,19 @@ Every island gets 3 warps (up to 10 with a later upgrade) in five categories: sh
 |---|---|---|
 | `/is setwarp <name> [category]` | player | Leader/Admin/Mod: set a warp where you stand. |
 | `/is delwarp <name>` | player | Delete one of your island's warps. |
-| `/is warp [player] [name]` | player | Open the warp browser or go to a warp (3 second warmup). |
+| `/is warp [player] [name]` | player | Open the warp browser or go to a warp (instant; 3 s in combat). |
 
 **Test:**
 
 1. On your island type /is setwarp farm farms. Check it appears in /is warp under Your warps.
 2. Open the warp, change the icon, make it public and private. Check as another player that private warps are hidden.
-3. As another player: /is warp, pick a category and use the warp. You wait 3 seconds, then arrive.
+3. As another player: /is warp, pick a category and use the warp. You arrive at once. Then try to set a warp whose name has a swear word: refused by the chat filter.
 4. Place a sign, write [warp] on line 1 and a name on line 2. The sign turns into a warp sign and uses one slot.
 5. Try a 4th warp: refused. Break the sign: the warp is removed.
 6. Set a warp with the same name again: it moves instead of making a second one.
 7. Bedrock: open the browser and tap warps. Also try the [warp] sign on a phone.
 
-_Questions for this feature: 9 in the sheet (Feature = "Island warps and warp signs")._
+_Questions for this feature: 9 on the Decisions page (Feature = "Island warps and warp signs")._
 
 ### Island settings, weather, time and island fly
 
@@ -347,7 +367,7 @@ Each island has settings the leader (and anyone allowed) can change: mob spawnin
 6. Island fly: ask staff for skyblock.island.fly. Double-tap jump to fly inside the border. At the border you cannot go further. Take the permission away and check you get a soft landing.
 7. Bedrock: open the settings menu and tap each setting. Check weather/time cycle values on tap.
 
-_Questions for this feature: 10 in the sheet (Feature = "Island settings, weather, time and island fly")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Island settings, weather, time and island fly")._
 
 ### Island notes (shared to-do list)
 
@@ -368,7 +388,7 @@ Each island has one shared notes list (max 50 notes, 200 characters each). Membe
 7. As a staff member: /is notes <island>. Read only; check it is logged in /logs staff.
 8. Bedrock: add a note (chat typing) and open the book view.
 
-_Questions for this feature: 9 in the sheet (Feature = "Island notes (shared to-do list)")._
+_Questions for this feature: 9 on the Decisions page (Feature = "Island notes (shared to-do list)")._
 
 ### Island stats
 
@@ -390,7 +410,7 @@ The stats screen shows what your island and each member did: blocks mined, logs 
 6. As admin: /isadmin stats reset <island> and confirm. Everything resets.
 7. Bedrock: tap each category and check the percent bars are readable.
 
-_Questions for this feature: 8 in the sheet (Feature = "Island stats")._
+_Questions for this feature: 8 on the Decisions page (Feature = "Island stats")._
 
 ### Island chat
 
@@ -409,20 +429,21 @@ Members of an island can talk privately to each other in island chat. Messages a
 5. Try a bad word or a link in island chat: blocked. A muted player cannot use it.
 6. As staff turn on 'Island chat spy' in /settings and check you see island chat. Check /mutechat does not stop island chat.
 
-_Questions for this feature: 9 in the sheet (Feature = "Island chat")._
+_Questions for this feature: 9 on the Decisions page (Feature = "Island chat")._
 
 ### Disband, remove and staff island tools
 
-The leader can disband the island (confirm and type the word 'disband'). The island is wiped and its space is reused. Staff have /isadmin tools to look up, teleport, delete, reset, resize, add members and change the owner.
+The leader can disband the island only when nobody else is a member (transfer and leave first), with one confirm button. The island is wiped, its space is reused and a new island can be made at once. A disband or a staff reset also resets every member profile of that island (money, and inventory + ender chest of members online on that profile) and deletes the island bank money; staff keep a backup of everything and can restore it with /isadmin restore. Staff have /isadmin tools to look up, teleport, delete, reset, resize, hide, add members and change the owner.
 
 | Command | Who | What |
 |---|---|---|
-| `/is disband` | player | Leader only: remove the island for good after a confirm screen and typing 'disband'. |
+| `/is disband` | player | Leader only, only without other members: one confirm button. Removes the island, resets this profile (backup kept) and deletes the island bank money. |
 | `/is bypass` | admin | Staff: ignore island protection for this session (logged). |
 | `/isadmin info <island>` | helper | Look up an island: owner, members, size, slot, created. |
 | `/isadmin tp <island>` | helper | Teleport to an island. |
 | `/isadmin delete <island>` | admin | Remove an island for good. |
-| `/isadmin reset <island>` | admin | Remove an island and give its leader a fresh one. |
+| `/isadmin reset <island>` | admin | Remove an island and give its leader a fresh one; every member profile is reset and the bank money deleted, with restorable backups. |
+| `/isadmin restore <player>` | admin | Restore a kick, disband or reset backup (money topped up, island bank money into the purse, items into an empty inventory). |
 | `/isadmin setsize <island> <size>` | admin | Set the border width in chunks. |
 | `/isadmin kick <player>` | admin | Remove a member or coop player from an island. |
 | `/isadmin slots` | admin | Grid overview of all island slots. |
@@ -430,19 +451,20 @@ The leader can disband the island (confirm and type the word 'disband'). The isl
 
 **Test:**
 
-1. On a test island put a chest with an item and some money in the island bank. Type /is disband. Read the confirm screen, type disband. The island is wiped and you can create a new one at once (no cooldown).
-2. Check the leader gets the island bank money.
-3. As staff use /isadmin info on your friend's island. Teleport with /isadmin tp.
-4. As admin run /isadmin setsize <island> 5. The border changes.
-5. Run /isadmin reset on a test island. The leader gets a new starter island, other members are removed.
-6. Run /isadmin slots to see the grid. Check cleared slots become free again and are reused.
-7. Check /logs island for all of these actions.
+1. On a team island, as leader type /is disband: refused while there are other members.
+2. On a solo test island put some money in the island bank and keep money and items on you. Type /is disband and press the confirm button (no typing). The island is wiped, your money, inventory and ender chest on this profile are reset, and the island bank money is gone. You can create a new island at once (no cooldown).
+3. As admin type /isadmin restore <you>: the disband backup is listed. Restore it: money topped up, the old island bank money paid into your purse, items back into your (empty) inventory.
+4. As staff use /isadmin info on your friend's island. Teleport with /isadmin tp.
+5. As admin run /isadmin setsize <island> 5. The border changes. Normal upgrades will stop at 9x9.
+6. Run /isadmin reset on a test team island. The leader gets a new starter island, other members are removed, and every member profile is reset with a backup.
+7. Run /isadmin slots to see the grid. Check cleared slots become free again and are reused.
+8. Check /logs island for all of these actions.
 
-_Questions for this feature: 7 in the sheet (Feature = "Disband, remove and staff island tools")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Disband, remove and staff island tools")._
 
 ### Island level, pillars and upgrades (planned, not built yet)
 
-Island level, the five pillars (Mining, Foraging, Farming, Combat, Conquest) and the upgrades menu (/is upgrade) are the next big island phase. Buttons for them already show 'Coming soon' in the island menu. This page only collects the decisions that are still open before the build starts.
+Island level, the five pillars (Mining, Foraging, Farming, Combat, Conquest) and the upgrades menu (/is upgrade) are the next big island phase. The plan is written (docs/phases/PHASE-5-PROGRESSION.md: island level from 8 sources, task engine, upgrades + masteries, paid sizes above 9x9, leaderboards) and its 37 questions are on the Decisions page. Buttons already show 'Coming soon' in the island menu.
 
 | Command | Who | What |
 |---|---|---|
@@ -450,31 +472,31 @@ Island level, the five pillars (Mining, Foraging, Farming, Combat, Conquest) and
 
 **Test:**
 
-1. Open /is: check Upgrades, Bank and Level show as coming soon or '-' where they are not built.
-2. Check the scoreboard island line shows 'Level: -' for now.
+1. Open /is: check Upgrades and Level show as coming soon where they are not built (Bank works now).
+2. Check the scoreboard has no island level line for now (it comes back when levels exist).
 3. Check /is info shows 'Level (Phase 5)' or a dash instead of a number.
 4. Check the mastery names (Timber, Swift Hands, Warrior, Deep Pockets, Market Contacts, Crystal Rush, Lucky Strike, Fuel Efficiency, Beast Tamer, Angler, Homestead, Wings) are listed in the plan and read well to you.
 
-_Questions for this feature: 9 in the sheet (Feature = "Island level, pillars and upgrades (planned, not built yet)")._
+_Questions for this feature: 9 on the Decisions page (Feature = "Island level, pillars and upgrades (planned, not built yet)")._
 
 ## Social & chat
 
 ### Social: private messages, ignore, AFK and info commands
 
-Players can send private messages, reply, ignore someone's private messages, go AFK, see who is online by rank and look up playtime, ping and last seen. There are clickable link commands (/discord, /store, /vote, /website) and /rules. Staff can read private messages (social spy), look up a player with /whois and send server announcements.
+Players can send private messages, reply, ignore someone, go AFK, see who is online by rank and look up playtime, ping and last seen. Ignoring a player blocks their private messages, /tpa and /tpahere, trade requests and island invites (they get the same answer as "requests off", so they never learn it), and the /settings option "Hide ignored chat" (on by default) hides their public chat for you. Staff can't be ignored. There are clickable link commands (/discord, /store, /vote, /website) and /rules with rules 1-9 (7: English only in public chat, 8: no alt abuse, 9: no macros or AFK farming outside the AFK pool) and a "logged for 30 days" line. Mods and up can read private messages (social spy), staff look up a player with /whois and admins send server announcements.
 
 | Command | Who | What |
 |---|---|---|
 | `/msg <player> <message> (/w /tell /m /pm)` | player | Send a private message (clickable names, rate limited, logged 30 days). |
 | `/r <message> (/reply)` | player | Reply to the last private message. |
-| `/ignore <player> / /ignore list / /unignore <player>` | player | Block (or unblock) private messages from a player. Staff cannot be ignored. |
+| `/ignore <player> / /ignore list / /unignore <player>` | player | Ignore (or stop ignoring) a player: no messages, tpa, trade requests or island invites from them; their chat hidden if "Hide ignored chat" is on. Staff cannot be ignored. |
 | `/afk` | player | Toggle AFK. It also turns on by itself after 5 minutes without activity. |
 | `/list (/online /who)` | player | Online players grouped by rank. |
 | `/ping [player]` | player | Connection delay. |
 | `/playtime [player] (/pt)` | player | Total play time. |
 | `/seen <player>` | player | When a player was last online and first joined. |
 | `/discord /store /vote /website /rules` | player | Clickable links and the server rules. |
-| `/socialspy` | helper | See everyone's private messages. |
+| `/socialspy` | mod | See everyone's private messages (mods and up, not helpers). |
 | `/whois <player>` | helper | UUID, rank, platform, times, location, names. IP and alt accounts for mods. |
 | `/broadcast <message> (/bc /announce)` | admin | Server announcement with title and sound. |
 
@@ -482,19 +504,19 @@ Players can send private messages, reply, ignore someone's private messages, go 
 
 1. With two accounts: A types /msg B hello. B sees a clickable name and answers with /r hi.
 2. Send 6 messages in a row quickly. The rate limit should slow you down.
-3. B types /ignore A. A tries /msg B: blocked. Check that a staff member can still message B.
+3. B types /ignore A. A tries /msg B, /tpa B, /trade B and (as island leader) /is invite B: all refused with the normal "turned off" answer. A's public chat is hidden for B. B turns off "Hide ignored chat" in /settings: A's chat shows again. Check that a staff member can still message B and can't be ignored.
 4. Stand still 5 minutes (or use /afk). The tab list shows [AFK] and a chat line says you are AFK. Move to come back.
 5. Type /list, /ping, /playtime, /seen <name>. Check a vanished staff member does not appear in /list.
-6. Type /rules, /discord, /store, /vote, /website and click the links. Check the web addresses are the right ones.
-7. As staff turn on /socialspy and send a private message with the other accounts. You should see it.
+6. Type /rules: rules 1-9 and the privacy line. Type /discord, /store, /vote, /website and click the links. Check the web addresses are the right ones.
+7. As a helper try /socialspy: refused. As mod turn it on and send a private message with the other accounts. You should see it.
 8. As admin: /broadcast <gradient>Hello</gradient>. Everyone sees a chat line, title and sound.
 9. Bedrock: click a name in chat to reply, and use /rules links. Check clickable text works on a phone.
 
-_Questions for this feature: 15 in the sheet (Feature = "Social: private messages, ignore, AFK and info commands")._
+_Questions for this feature: 18 on the Decisions page (Feature = "Social: private messages, ignore, AFK and info commands")._
 
 ### Chat: format, filters, mentions and staff chat
 
-Public chat shows title, rank, name, tag and message. The chat filter blocks spam, repeats, too many capital letters, links, IP addresses and phone numbers. Players can show their held item with [item] and are highlighted when someone mentions them. Staff have staff chat and chat controls (clear, lock, slow mode).
+Public chat shows title, rank, name, tag and message. The chat filter blocks spam, repeats, too many capital letters, links, IP addresses and phone numbers, and uses an English-only word list: mild swearing becomes ***, slurs and threats are blocked and staff are alerted. The same filter checks signs, book text, anvil names, island warp names, island notes and nicknames. Public chat is English only (rule 7, enforced by staff, no automatic detection); private messages may be any language. The name hover card shows only rank, island and playtime. Players can show their held item with [item] and are highlighted when someone mentions them. Staff have staff chat and chat controls (clear, lock, slow mode).
 
 | Command | Who | What |
 |---|---|---|
@@ -513,19 +535,21 @@ Public chat shows title, rank, name, tag and message. The chat filter blocks spa
 6. As a staff member try &c colors in chat. As a normal player they are not used.
 7. As staff run /chat slow 10, /mutechat, /clearchat. A normal player is blocked; staff are not.
 8. With a brand-new account: you cannot chat for the first 30 seconds on the first day.
-9. Bedrock: send chat and check hover and clicks. Check that [item] works from a phone.
+9. Type a mild swear word: it shows as ***. Type a slur from the block list (on a test account): the message is blocked and staff get an alert.
+10. Write a swear word on a sign, in a book and as an anvil name: the edit is undone. Try it as a nickname with /nick: refused.
+11. Bedrock: send chat and check hover and clicks. Check that [item] works from a phone, and the sign filter on Bedrock.
 
-_Questions for this feature: 15 in the sheet (Feature = "Chat: format, filters, mentions and staff chat")._
+_Questions for this feature: 16 on the Decisions page (Feature = "Chat: format, filters, mentions and staff chat")._
 
 ## Teleports & essentials
 
 ### Teleports: /spawn and /tpa
 
-Players can go to spawn at once and can ask other players to teleport to them (or ask to teleport to someone). Requests expire after 60 seconds and teleports need the player to stand still for 3 seconds. All warmups and cooldowns are set in one file (teleport.yml).
+Every player teleport is **instant**: /spawn, /tpa, /home, /is visit, /is warp, /dungeon and portals. Only while you are in combat (you hit or were hit in the last seconds) or inside a combat zone (the warzone, the Depths boss arena and combat tiers) you stand still for 3 seconds first; they are never blocked. Requests expire after 60 seconds. The warzone can only be entered through its portal. All warmups and cooldowns are set in one file (teleport.yml).
 
 | Command | Who | What |
 |---|---|---|
-| `/spawn` | player | Teleport to spawn (instant, 5 second cooldown). |
+| `/spawn` | player | Teleport to spawn (instant, 5 second cooldown; 3 s in combat). |
 | `/tpa <player>` | player | Ask to teleport to a player. |
 | `/tpahere <player>` | player | Ask a player to teleport to you. |
 | `/tpaccept [player] (/tpyes)` | player | Accept a request. |
@@ -535,19 +559,19 @@ Players can go to spawn at once and can ask other players to teleport to them (o
 **Test:**
 
 1. Type /spawn from your island. You land at spawn at once. Type it again right away: 5 second cooldown.
-2. With two accounts: A types /tpa B. B sees clickable [Accept] [Deny]. B clicks Accept. A waits 3 seconds without moving and arrives.
-3. Repeat and move more than 1 block during the 3 seconds: the teleport is cancelled. Do it again but take damage: cancelled.
+2. With two accounts: A types /tpa B. B sees clickable [Accept] [Deny]. B clicks Accept. A arrives at once.
+3. A hits a mob, then B accepts a new request: A waits 3 seconds. Move more than 1 block during the 3 seconds: cancelled. Do it again but take damage: cancelled.
 4. Send /tpa and wait 60 seconds: it expires. Send many requests quickly: the 15 second request cooldown stops you.
-5. Turn off 'TPA requests' in B's /settings. A's request is refused.
+5. Turn off 'TPA requests' in B's /settings. A's request is refused. B /ignores A: same answer.
 6. Lock B's island or ban A from it, then /tpa B while B is on it: refused.
-7. Try /tpa to a player in The Depths and in the warzone (when it exists). Check what happens.
+7. Stand in a Depths combat tier and type /spawn: you wait 3 seconds, never refused. /tpa to a player in the warzone: refused (warzone only through its portal).
 8. Bedrock: tap [Accept] in chat, or use /tpaccept if tapping does not work.
 
-_Questions for this feature: 9 in the sheet (Feature = "Teleports: /spawn and /tpa")._
+_Questions for this feature: 9 on the Decisions page (Feature = "Teleports: /spawn and /tpa")._
 
 ### Staff essentials (teleport, game mode, fly, vanish, inventory, items)
 
-Staff get tools to move around and help: teleport to players or coordinates, set game mode and speed, fly, heal and feed, vanish, look in (and with admin, edit) inventories and ender chests, give vanilla items, set time and weather, and keep up to 5 staff homes. Every staff action is written to the log.
+Staff get tools to move around and help: teleport to players or coordinates, set game mode and speed, fly, heal and feed, vanish, look in (and with admin, edit) inventories and ender chests, give vanilla items, set time and weather, and keep up to 5 staff homes (/shome; /home is the island home). Staff play normally on the same account with their powers off: creative mode only for builders and admins and only in spawn and the Depths (mods use spectator); god mode, /fly and /heal only while in staff mode or /build mode. Items from /give, /i, /more, /skull and the creative inventory are hidden **staff items**: they can't be sold, traded or auctioned. Pay or trades of $5M or more to or from a staff account alert the admins. Every staff action is written to the log.
 
 | Command | Who | What |
 |---|---|---|
@@ -556,14 +580,14 @@ Staff get tools to move around and help: teleport to players or coordinates, set
 | `/tppos <x> <y> <z> [world]` | builder | Teleport to coordinates. |
 | `/top` | builder | Go to the highest block above you. |
 | `/back` | mod | Return to the previous location or death point. |
-| `/home [name] /sethome [name] /delhome <name>` | mod | Staff homes (max 5). |
-| `/gm <c\|s\|sp\|a> [player] (/gmc /gms /gmsp /gma)` | mod | Game mode (builders: creative and survival only). |
-| `/fly [player] /speed <1-10> [fly\|walk]` | builder | Fly and speed. |
-| `/god [player] /heal [player] /feed [player]` | mod | No damage and hunger; heal; feed. |
+| `/shome [name] /setshome [name] /delshome <name>` | mod | Staff homes (max 5). |
+| `/gm <c\|s\|sp\|a> [player] (/gmc /gms /gmsp /gma)` | mod | Game mode. Creative: builders and admins only, only in spawn and the Depths. Mods: survival, spectator, adventure. |
+| `/fly [player] /speed <1-10> [fly\|walk]` | builder | Fly (only in staff mode or /build mode, target too) and speed. |
+| `/god [player] /heal [player] /feed [player]` | mod | No damage and hunger; heal (both only in staff or build mode); feed. |
 | `/clear [player] (/ci)` | mod | Clear an inventory (confirm for others, contents logged). |
 | `/invsee <player> /ecsee <player>` | helper | View inventory or ender chest. Admins can edit (every change logged). |
 | `/vanish [player] (/v)` | helper | Become invisible, silent join/quit, stays after rejoin. |
-| `/i <item> [amount] /give <player> <item> [amount]` | builder | Give vanilla items (max 2,304). |
+| `/i <item> [amount] /give <player> <item> [amount]` | builder | Give vanilla items (max 2,304); they are always staff items (unsellable). |
 | `/time <day\|noon\|night\|midnight\|ticks> [world] /weather <clear\|rain\|thunder> [world]` | builder | Set time and weather. |
 | `/skull <player> /more` | admin | Player head; fill the held stack. |
 | `/build` | builder | Turn on build mode in protected worlds such as spawn. |
@@ -573,14 +597,16 @@ Staff get tools to move around and help: teleport to players or coordinates, set
 
 1. As helper: /vanish, then check /list and tab do not show you. Relog: you are still vanished. Check no join/quit message.
 2. As helper: /tp to a player, /invsee and /ecsee (view only). Try to move an item: refused. As admin: edit and check every change appears in /logs.
-3. As mod: /gm sp, /fly, /heal, /feed, /god. Check each has its permission (builders only get creative/survival).
-4. As mod: /clear <player>: you must repeat the command within 10 seconds to confirm.
-5. As builder: /i diamond 64 and /give. Then check /logs staff shows what you gave.
-6. As admin: /time noon and /weather clear in the spawn world. Check the result (islands use their own per-island weather and time).
-7. As staff: /sethome base, /home base, /delhome base. Try to set a 6th: refused.
-8. As builder: /build in spawn lets you break blocks; without it you cannot.
+3. As mod outside staff mode: /fly, /god and /heal are refused. Turn on /staffmode: they work. Leave staff mode: god and fly switch off within a second. /gm c as mod: refused (mods use /gm sp).
+4. As builder: /gm c at spawn works; go to your island: you are switched to survival. Take an item from the creative inventory and try /sell, /ah sell and /trade with it: all refused (staff item).
+5. As mod: /clear <player>: you must repeat the command within 10 seconds to confirm.
+6. As builder: /i diamond 64 and /give. Try to sell the diamonds: refused. Then check /logs staff shows what you gave.
+7. As admin: /time noon and /weather clear in the spawn world. Check the result (islands use their own per-island weather and time).
+8. As staff: /setshome base, /shome base, /delshome base. Try to set a 6th: refused. /home takes a staff member to their island like everyone else.
+9. Pay $5,000,000 from a test account to a staff account: admins get a "Staff transfer" alert.
+10. As builder: /build in spawn lets you break blocks; without it you cannot.
 
-_Questions for this feature: 10 in the sheet (Feature = "Staff essentials (teleport, game mode, fly, vanish, inventory, items)")._
+_Questions for this feature: 13 on the Decisions page (Feature = "Staff essentials (teleport, game mode, fly, vanish, inventory, items)")._
 
 ## Ranks, perks & cosmetics
 
@@ -607,7 +633,7 @@ A title is earned (achievements, events, first join) and shows before your rank.
 8. As admin open /display and change the chat format with the live preview.
 9. Bedrock: open /tags and tap through both tabs; check gradient names are readable.
 
-_Questions for this feature: 12 in the sheet (Feature = "Titles and tags")._
+_Questions for this feature: 12 on the Decisions page (Feature = "Titles and tags")._
 
 ### Achievements
 
@@ -628,19 +654,19 @@ There are 30 achievements in six groups (skills, island, combat, economy, gear, 
 7. Join for the first time after an update: you should see one toast with up to 3 lines and '+N more'.
 8. Bedrock: check progress bars and text fit on a phone.
 
-_Questions for this feature: 11 in the sheet (Feature = "Achievements")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Achievements")._
 
 ### Rank perks: /craft, /ec, /hat, /nick, /trash and staff tools
 
-Donor ranks will get small convenience commands: crafting table anywhere, ender chest anywhere, wear an item as a hat, a custom nickname (with ~ marker), and a trash menu. Staff also have /repair and /realname, and the owner has /sudo. Right now only staff and ops have them until the donor ranks exist.
+Donor ranks will get small convenience commands: crafting table anywhere, ender chest anywhere, wear an item as a hat and a custom nickname (with ~ marker). /craft and /ec don't work in the warzone, the Depths boss arena or for 10 seconds after combat (for everyone, staff too). The trash menu is for admins and the owner only. Staff also have /repair and /realname, and the owner has /sudo. Right now only staff and ops have them until the donor ranks exist (rank perks are planned in docs/plans/RANKS_TITLES_ACHIEVEMENTS.md).
 
 | Command | Who | What |
 |---|---|---|
-| `/craft (/workbench /wb)` | donor | Open a crafting table anywhere. |
-| `/ec (/enderchest)` | donor | Open your ender chest anywhere. |
+| `/craft (/workbench /wb)` | donor | Open a crafting table anywhere (not in the warzone, boss arena or 10 s after combat). |
+| `/ec (/enderchest)` | donor | Open your ender chest anywhere (same limits as /craft). |
 | `/hat` | donor | Wear the held item as a hat. |
-| `/nick <nickname\|off>` | donor | Set or remove a nickname (3-16 characters, letters/numbers/_, shown with ~). |
-| `/trash (/disposal)` | donor | Menu where items you leave are destroyed on close. |
+| `/nick <nickname\|off>` | donor | Set or remove a nickname (3-16 characters, letters/numbers/_, shown with ~; checked by the chat filter). |
+| `/trash (/disposal)` | admin | Admins and owner only: menu where items you leave are destroyed on close. |
 | `/setnick <player> <nickname\|off>` | mod | Set or remove another player's nickname. |
 | `/realname <nickname> (/whonick)` | helper | Find the real account behind a nickname. |
 | `/repair [hand\|all] [player] (/fix)` | mod | Repair vanilla item durability. |
@@ -648,16 +674,17 @@ Donor ranks will get small convenience commands: crafting table anywhere, ender 
 
 **Test:**
 
-1. Give yourself the perk with LuckPerms (for example lp user <you> permission set skyblock.perks.craft true) and test /craft, /ec, /hat, /trash.
-2. /nick Phoenix2: you get a ~ in front, the tab and chat show it, and /realname Phoenix2 shows your real name to staff.
-3. Try a reserved nickname (admin, owner, staff), another player's name, and a nickname within 60 seconds of the last change. All refused.
-4. Remove the nick permission: the nickname is reset when the rank that allowed it is lost.
-5. Put a custom item (a tool or enchant book) in /trash and close it: check the warning in chat and that the item is gone and logged.
-6. As mod: /repair hand on a damaged vanilla pickaxe. Custom tools have no durability.
-7. As owner: /sudo <player> c:hello. Check the audit log.
-8. Bedrock: open /trash and /ec and check taps work.
+1. Give yourself the perk with LuckPerms (for example lp user <you> permission set skyblock.perks.craft true) and test /craft, /ec, /hat. As a mod try /trash: refused (admins only).
+2. Hit a mob and type /ec within 10 seconds: refused. Try /craft in the Depths boss arena: refused. In a normal Depths combat tier outside combat it works.
+3. /nick Phoenix2: you get a ~ in front, the tab and chat show it, and /realname Phoenix2 shows your real name to staff.
+4. Try a reserved nickname (admin, owner, staff), another player's name, and a nickname within 60 seconds of the last change. All refused.
+5. Remove the nick permission: the nickname is reset when the rank that allowed it is lost.
+6. Put a custom item (a tool or enchant book) in /trash and close it: check the warning in chat and that the item is gone and logged.
+7. As mod: /repair hand on a damaged vanilla pickaxe. Custom tools have no durability.
+8. As owner: /sudo <player> c:hello. Check the audit log.
+9. Bedrock: open /trash and /ec and check taps work.
 
-_Questions for this feature: 11 in the sheet (Feature = "Rank perks: /craft, /ec, /hat, /nick, /trash and staff tools")._
+_Questions for this feature: 12 on the Decisions page (Feature = "Rank perks: /craft, /ec, /hat, /nick, /trash and staff tools")._
 
 ### Ranks, the free Ember rank and staff ranks
 
@@ -677,7 +704,7 @@ Staff ranks exist now: Builder, Helper, Moderator, Admin, Owner, with colors and
 5. Ask the owner to give a test account the helper rank: check prefix, color, staff chat and tab sorting.
 6. Check /profiles shows slot 2 locked until you have 500 gems or Knight (when donor ranks exist).
 
-_Questions for this feature: 11 in the sheet (Feature = "Ranks, the free Ember rank and staff ranks")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Ranks, the free Ember rank and staff ranks")._
 
 ## Worlds & builds
 
@@ -706,7 +733,76 @@ The server has five empty (void) worlds: spawn, islands, outposts, The Depths an
 7. Check the border: walk or fly toward the edge of spawn (1,000 blocks wide) and The Depths (2,000).
 8. Bedrock: walk through the castle and check doors/buttons work with taps.
 
-_Questions for this feature: 13 in the sheet (Feature = "Worlds, spawn and builds")._
+_Questions for this feature: 13 on the Decisions page (Feature = "Worlds, spawn and builds")._
+
+### NPCs, holograms and leaderboards
+
+Every NPC pad, hologram and leaderboard spot from the builds now has its NPC or text (spawn and the Depths). Right-click an NPC to open its feature (Banker → /bank, Blacksmith and Quartermaster → /forge, Enchanter, Shop, Sell, Auction, Depths guide → /dungeon); sneak + right-click shows a short help text. Help-only NPCs (Guide, Info, Mine Foreman, and Quests, Daily, Vote, Black Market for now) show help with an [Open] button. Hitting an NPC works like right-clicking (Bedrock tap). Holograms with a help text can be clicked. Leaderboards show the top 10 (#1 / #2 / #3 in their own colors) for the five skills and money, refreshed every 5 minutes; island boards say Coming soon until island levels exist. NPCs are player-shaped mannequins without skins.
+
+| Command | Who | What |
+|---|---|---|
+| `Right-click / sneak + right-click an NPC` | player | Open its feature / read its help (Bedrock gets a small menu with the text and an Open button). |
+| `/skyblock npcs [list]` | admin | Menu of every NPC, hologram and leaderboard; click one to teleport to it. Also in the /staff hub. |
+| `/skyblock npcs tp <id>` | admin | Teleport in front of one. |
+| `/skyblock npcs respawn` | admin | Re-read the build points and respawn everything (after applying a build). |
+
+**Test:**
+
+1. Walk through spawn: every pad has an NPC with a name and a 'Right-click' line; heads turn to you when you come close.
+2. Right-click the Banker, Blacksmith, Enchanter, Shop and Auction NPCs: each opens its menu.
+3. Sneak + right-click the same NPCs: you get the help text with an [Open] button instead.
+4. Right-click the Guide and a Mine Foreman in the Depths: help text with [Open].
+5. Hit an NPC: it acts like a right-click and takes no damage. Try to push, burn or trade with it: nothing happens.
+6. Look at the leaderboards in the Hall of Heroes: top 10 with colored #1-#3, 'Updates every 5 min'. Earn some skill XP and check it moves within 5 minutes.
+7. Click a hologram that has help: the help text appears.
+8. As admin: /skyblock npcs, click an entry to teleport; /skyblock npcs respawn and check nothing is doubled.
+9. Bedrock: check the NPCs are visible (mannequins on Geyser), tap one, and read the Bedrock help menu.
+
+_Questions for this feature: 6 on the Decisions page (Feature = "NPCs, holograms and leaderboards")._
+
+### Portals and the island portal
+
+Portals in the builds now work: step in and you travel. The gatehouse at spawn has the **island portal** (creates your island on first use, then always takes you home) and the Depths portal; The Gate in the Depths has the portal back to spawn. Travel is instant; while in combat (or inside the warzone) you wait 3 seconds inside the portal. Frozen players can't use portals. The warzone portal says it isn't built yet, and the outposts and events portals stay closed with bars until those features exist. The warzone can only be entered through its portal.
+
+| Command | Who | What |
+|---|---|---|
+| `(no command)` | player | Walk into a portal. |
+| `/skyblock builds apply <id>` | admin | Re-applying a build also lists its portals and their targets. |
+
+**Test:**
+
+1. At spawn walk into the Depths portal in the gatehouse: you land on the Depths arrival pad with particles at the portal.
+2. Walk into the portal at The Gate: you land in front of the gatehouse at spawn, facing the passage. You don't bounce straight back.
+3. Walk into the island portal: your island (made on the first visit). See the island creation section for the first-visit test.
+4. Hit a mob, then step into a portal: you wait 3 seconds; step out and it is cancelled.
+5. Ask staff to freeze you and walk into a portal: refused and pushed back out.
+6. Try the warzone, outposts and events portals: 'isn't built yet' / 'isn't open yet', pushed back, one message at a time.
+7. Bedrock: walk through each portal and check the messages are readable.
+
+_Questions for this feature: 2 on the Decisions page (Feature = "Portals and the island portal")._
+
+### Region protection (spawn, the Depths, warzone)
+
+Spawn, the Depths (outside the ore and log fields) and the warzone are protected: no building, no breaking, no containers, no workstations, no fire, no item frames or armor stands, and explosions don't break blocks. Doors, buttons, levers, pressure plates, fence gates, ender chests, crafting tables and signs still work; trapdoors and other decoration don't. The arrival and exit pads in the Depths are safe zones where mobs can't target or hurt you (the graveyard's arrival and exit path also stop you hurting mobs). Ender pearls and wind charges are blocked in combat zones and the boss arena. In the Forge Quarter at spawn the anvils, enchanting table and chests are decoration: talk to the NPCs instead. Builders bypass the protection only in creative mode. New builds only need a region kind.
+
+| Command | Who | What |
+|---|---|---|
+| `(no command)` | player | Protection works by itself; a short action bar line says why something is refused. |
+| `/build` | builder | Build mode at spawn (builders also need creative mode to bypass the region flags). |
+| `/depths debug [player]` | admin | Shows the regions and refused flags where a player stands. |
+
+**Test:**
+
+1. At spawn and in the Depths (outside ore fields) try to break and place a block, open a chest, use an anvil, light a fire, rotate an item frame: all refused with a short action bar line.
+2. Open a door, press a button, use an ender chest and a crafting table: allowed. Click a trapdoor: refused.
+3. In the Forge Quarter right-click the anvil or enchanting table: 'This one is decoration. Talk to the NPCs instead.'
+4. In the Depths stand on an arrival pad near mobs: they don't target or hurt you. In the graveyard's arrival area you can't hit mobs either.
+5. In a combat zone throw an ender pearl and a wind charge: refused. Throw a pearl into a combat zone from outside: refused where it lands.
+6. As builder in survival: still refused. Switch to creative (spawn or Depths): you can build.
+7. As admin: /depths debug while standing in a safe zone; check it lists the region and flags.
+8. Bedrock: try the same with taps (doors, trapdoor, anvil).
+
+_Questions for this feature: 5 on the Decisions page (Feature = "Region protection (spawn, Depths, warzone)")._
 
 ## Staff & punishments
 
@@ -733,11 +829,11 @@ Staff mode swaps a staff member's inventory for moderation tools (inspect, freez
 7. Close 3 reports from the same player as 'invalid': staff get a suggestion for the report-abuse reason.
 8. Crash your client while in staff mode (kill the game) and join again: your inventory is restored.
 
-_Questions for this feature: 11 in the sheet (Feature = "Staff mode, freeze, inspect and player reports")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Staff mode, freeze, inspect and player reports")._
 
 ### Punishments (/p menu, ladders and warnings)
 
-Staff open one menu with /p <player> and click a reason. Each reason has a ladder (for example warn, mute 1h, mute 1d). The system picks the next step from the player's history, keeps a warning counter, shows a 2-minute [Undo], protects against double punishing, saves chat evidence, and asks an admin to approve big punishments. Players get a clear ban or mute screen with an ID and a link to appeal.
+Staff open one menu with /p <player> and click a reason. Each reason has a ladder (for example warn, mute 1h, mute 1d). The system picks the next step from the player's history, keeps a warning counter, shows a 2-minute [Undo], protects against double punishing, saves chat evidence, and asks an admin to approve big punishments. Bans and mutes are announced publicly (rule number only, no staff name) unless the staff member uses -s or the **Silent** button in /p (off every time the menu opens). Players get a clear ban or mute screen with an ID, the rule, the time left, when an appeal is possible (permanent bans after 30 days, cheating after 90 days, temporary bans right away) and a link to appeal.
 
 | Command | Who | What |
 |---|---|---|
@@ -758,12 +854,13 @@ Staff open one menu with /p <player> and click a reason. Each reason has a ladde
 3. Warn the same player twice: staff get a suggestion 'mute 1h' with [Apply] / [Dismiss]. Apply it.
 4. Have two staff punish the same player within 15 seconds: the second is blocked unless they click again.
 5. As mod: /p <player> hacking. A 30-day ban is a request for an admin ([Approve]/[Deny]); a 7-day ban is applied.
-6. As the punished test account: read the ban screen (ID, appeal link), then /mypunishments and /ack.
-7. As staff: /history <player> and click an entry to see the evidence lines. IPs must not show.
-8. Try to punish an admin: refused (exempt).
-9. Bedrock: open /p with a tap and check slots, icons and Undo on the head.
+6. As the punished test account: read the ban screen (ID, rule, time left, 'Appeal: from <date>' for a permanent ban, 'possible now' for a temporary one, appeal link), then /mypunishments and /ack. Try /appeal on a permanent ban before 30 days: refused.
+7. Open /p, click Silent, then a mute: no public line. Reopen /p: Silent is off again. /p <player> <reason> -s does the same from chat.
+8. As staff: /history <player> and click an entry to see the evidence lines. IPs must not show.
+9. Try to punish an admin: refused (exempt).
+10. Bedrock: open /p with a tap and check slots, icons and Undo on the head.
 
-_Questions for this feature: 10 in the sheet (Feature = "Punishments (/p menu, ladders and warnings)")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Punishments (/p menu, ladders and warnings)")._
 
 ### Punishment safeguards: appeals, lockdown, watchlist, guard and reports
 
@@ -787,7 +884,7 @@ Players can appeal bans and mutes in game. Staff can start a chat or join lockdo
 **Test:**
 
 1. As a muted test account: /appeal and read what can be appealed. Send an appeal text under 20 characters (refused), then a proper one. Staff see it in /appeals and Accept, Reduce or Deny with a reason.
-2. Start /lockdown chat 5m. A brand-new account cannot chat or /msg; an older or ranked account can. /lockdown off ends it.
+2. Start /lockdown chat 5m. A brand-new account cannot chat or /msg; an older account, staff, the free rank and donor ranks can. /lockdown off ends it.
 3. Start /lockdown join 2m: an account that never joined cannot join (friendly 'server is busy' screen), returning players can.
 4. /watch <player> reason, then have that player join: staff see one line. The player is never told. /watchlist shows the list.
 5. /pnote <player> text; /pnote <player> shows notes with [Remove].
@@ -796,7 +893,7 @@ Players can appeal bans and mutes in game. Staff can start a chat or join lockdo
 8. As admin: /prollback <staff> 1h shows a preview; confirm to undo.
 9. Check /preport lists last month with no player names.
 
-_Questions for this feature: 8 in the sheet (Feature = "Punishment safeguards: appeals, lockdown, watchlist, guard and reports")._
+_Questions for this feature: 8 on the Decisions page (Feature = "Punishment safeguards: appeals, lockdown, watchlist, guard and reports")._
 
 ### Staff logs (/logs)
 
@@ -823,13 +920,13 @@ Everything players and staff do is written to a log: chat, commands, money, trad
 6. Check that a helper cannot see IPs or economy lines, and a mod cannot see staff logs.
 7. Bedrock: open the viewer by tap, or use the chat output (/logs page).
 
-_Questions for this feature: 9 in the sheet (Feature = "Staff logs (/logs)")._
+_Questions for this feature: 9 on the Decisions page (Feature = "Staff logs (/logs)")._
 
 ## Economy
 
 ### Balances, /pay and /baltop
 
-Every player has four kinds of money: money ($), island crystals, gems and shards. Players can check balances, pay each other (money and shards only), see the richest list and read their own history of every change. Money, crystals and shards belong to the active profile. Gems belong to the player. New accounts need 30 minutes of play before they can pay.
+Every player has four kinds of money: money ($), island crystals, gems and shards. Players can check balances, pay each other (money and shards only), see the richest list and read their own history of every change. Money, crystals and shards belong to the active profile. Gems belong to the player. There is no new-account limit (the tutorial will unlock paying step by step).
 
 | Command | Who | What |
 |---|---|---|
@@ -843,15 +940,15 @@ Every player has four kinds of money: money ($), island crystals, gems and shard
 
 1. Type /bal. You should see money $1,000 and 0 crystals, gems, shards on a new account.
 2. Type /bal <other player>. Check it shows their balances.
-3. With a second account that has played less than 30 minutes, try /pay. It should be refused with the reason.
-4. With an old account type /pay <friend> 500. Check both sides get a message and /bal changes.
+3. With a brand-new second account try /pay <friend> 100: it works (the 30-minute limit is gone).
+4. Type /pay <friend> 500. Check both sides get a message and /bal changes.
 5. Type /pay <friend> 2M. A confirm screen should appear. Click confirm, then repeat and let it time out (30 s).
 6. Try /pay <friend> 5 (below the $10 minimum), /pay yourself, and /pay with more than you own. Each should give a clear error.
 7. Open /transactions and filter by Pay, then by 24h. Your payments should be listed.
 8. Type /baltop and /baltop shards. Then /eco give <you> money 1000 test as admin and wait 30 s for the list to move.
 9. Do the same on a Bedrock phone: type amounts like 1.5k and use the confirm screen by tapping.
 
-_Questions for this feature: 15 in the sheet (Feature = "Balances, /pay and /baltop")._
+_Questions for this feature: 15 on the Decisions page (Feature = "Balances, /pay and /baltop")._
 
 ### Money notes (/withdraw)
 
@@ -859,7 +956,7 @@ A player can turn money into a paper note item and give it to someone else, or c
 
 | Command | Who | What |
 |---|---|---|
-| `/withdraw <amount> [currency]` | player | Turn money into a note item (needs a free slot and 30 minutes of playtime) |
+| `/withdraw <amount> [currency]` | player | Turn money into a note item (needs a free slot; no playtime limit) |
 | `Right-click a note` | player | Cash the note back into your purse |
 | `/eco note <player> <amount> <reason>` | admin | Staff: give an online player a note without taking money |
 
@@ -875,11 +972,11 @@ A player can turn money into a paper note item and give it to someone else, or c
 8. Try to craft with a note, sell it with /sell, and list it in /ah. All should be refused.
 9. Check /transactions shows 'Note' entries for both withdraw and cash.
 
-_Questions for this feature: 12 in the sheet (Feature = "Money notes (/withdraw)")._
+_Questions for this feature: 12 on the Decisions page (Feature = "Money notes (/withdraw)")._
 
 ### Bank (personal and island)
 
-Each profile has a personal bank with 10 tiers. Each island has its own bank that the team shares. Banks keep money safe and pay interest every 8 hours. Taking money out costs a 2% fee (island masteries will lower it), except right after a payout. The island leader decides who may deposit, withdraw and see history.
+Each profile has a personal bank with 10 tiers. Each island has its own bank that the team shares. Banks keep money safe and pay interest every 8 hours (0.6% personal, 1.0% island per payout). Taking money out costs a 2% fee, except in the first 10 minutes after a payout; island masteries will lower it to 1.5 / 1.0 / 0.5% once /is masteries exists (the Withdraw button already shows how low it can go). The island leader decides who may deposit, withdraw and see history. When an island is disbanded or reset, its bank money is deleted (staff keep a backup).
 
 | Command | Who | What |
 |---|---|---|
@@ -890,16 +987,17 @@ Each profile has a personal bank with 10 tiers. Each island has its own bank tha
 
 1. Type /bank. Check you see a personal bank (tier 1, $100k) and the island bank side by side.
 2. Deposit $500. Check purse goes down and bank up. Try depositing more than the free room.
-3. Withdraw $100. The confirm screen should show the 2% fee and what you get.
-4. Buy tier 2 ($10k). Check the capacity and the payout cap change.
-5. Wait for the next payout time (every 8 hours from midnight UTC: 01:00, 09:00, 17:00 Oslo winter time) or ask staff to shorten it. Check the interest line in history and that money arrived.
-6. Withdraw within 10 minutes after a payout. It should be free.
-7. As leader, open /is permissions and remove Bank deposit from Member. Test with an alt member.
-8. Try to deposit into another own profile's bank. It must be refused.
-9. Check the island bank daily limits: Member can only take 10% of capacity per day.
-10. Test on Bedrock: the number picker and confirm screens by tapping.
+3. Withdraw $100. The Withdraw button shows 'Fee: 2%' and the confirm screen shows amount, fee and what you get.
+4. Hover the Interest clock: '| Interest every 8h', rate, cap and a live countdown to the next payout.
+5. Buy tier 2 ($10k). Check the capacity and the payout cap change.
+6. Wait for the next payout time (every 8 hours from midnight UTC: 01:00, 09:00, 17:00 Oslo winter time) or ask staff to shorten it. Check the interest line in history and that money arrived.
+7. Withdraw within 10 minutes after a payout. It should be free.
+8. As leader, open /is permissions and remove Bank deposit from Member. Test with an alt member.
+9. Try to deposit into another own profile's bank. It must be refused.
+10. Check the island bank daily limits: Member can only take 10% of capacity per day.
+11. Test on Bedrock: the number picker and confirm screens by tapping.
 
-_Questions for this feature: 14 in the sheet (Feature = "Bank (personal and island)")._
+_Questions for this feature: 16 on the Decisions page (Feature = "Bank (personal and island)")._
 
 ### Interest (bank payouts)
 
@@ -919,7 +1017,7 @@ Every 8 hours the server pays interest on the lowest balance each bank had durin
 6. Withdraw with a fee and check that period's interest is forfeited.
 7. Open /eco admin as staff and check the interest line on the dashboard.
 
-_Questions for this feature: 10 in the sheet (Feature = "Interest (bank payouts)")._
+_Questions for this feature: 12 on the Decisions page (Feature = "Interest (bank payouts)")._
 
 ### Sell chest (/sell)
 
@@ -936,7 +1034,7 @@ A chest menu where players drop items and press Sell. It shows the live total, t
 
 1. Type /sell. Put cobblestone in the chest. The total should update every second.
 2. Click the green Sell button. Check money and the sale line in chat or action bar.
-3. Close the chest with items in it. They must all come back to the inventory.
+3. Close the chest with items in it. They must all come back to the inventory; with a full inventory the rest goes to /box (never dropped).
 4. Press Sell inventory with a pickaxe and a sword in the hotbar. They must stay.
 5. Try to sell a tool, an enchant book, a money note and a wardrobe piece. All must be refused.
 6. Sell a big stack worth over $100,000. A chat line with a hover breakdown should appear.
@@ -945,7 +1043,7 @@ A chest menu where players drop items and press Sell. It shows the live total, t
 9. Try shift-click, drag, number keys and double-click in the chest on Java. Check nothing duplicates.
 10. On Bedrock, tap items into the chest and press Sell.
 
-_Questions for this feature: 11 in the sheet (Feature = "Sell chest (/sell)")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Sell chest (/sell)")._
 
 ### Dynamic sell prices, Hot Item and the +300% cap
 
@@ -966,7 +1064,7 @@ Sell prices move between 40% and 150% of the base price. Selling an item lowers 
 6. Restart the server (ask staff) and check prices are kept.
 7. Compare the price shown for two different players with different bonuses.
 
-_Questions for this feature: 10 in the sheet (Feature = "Dynamic sell prices, Hot Item and the +300% cap")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Dynamic sell prices, Hot Item and the +300% cap")._
 
 ### Shop quick-buy (/shop)
 
@@ -984,13 +1082,13 @@ A builder shop with 8 categories and 332 items: blocks, wood, glass, decoration,
 3. Right-click to buy 64. Check the amount and cost.
 4. Shift-click and use the amount screen (+1, +16, +64). Buy 100.
 5. Try buying with too little money. Check the message.
-6. Fill your inventory and buy. Nothing should be taken if there is no room.
-7. Buy an item costing $100,000 or more. A confirm screen should appear.
+6. Fill your inventory and buy: you only pay for what fits.
+7. Buy an item costing $100,000 or more. A confirm screen still appears (your answer 8, no confirm on quick-buys, is not built yet).
 8. Use /shop wood to jump straight to a category.
 9. On Bedrock, tap an item and use the amount screen.
 10. Try to sell something to the shop. It must say the shop does not buy.
 
-_Questions for this feature: 12 in the sheet (Feature = "Shop quick-buy (/shop)")._
+_Questions for this feature: 12 on the Decisions page (Feature = "Shop quick-buy (/shop)")._
 
 ### Auction house (/ah)
 
@@ -1015,7 +1113,7 @@ Players list items at a fixed price. Buyers browse by category, search and sort.
 9. As staff remove a listing and check the seller sees the reason.
 10. Test on Bedrock: search prompt, sort and the buy confirm.
 
-_Questions for this feature: 14 in the sheet (Feature = "Auction house (/ah)")._
+_Questions for this feature: 14 on the Decisions page (Feature = "Auction house (/ah)")._
 
 ### Trading (/trade)
 
@@ -1036,10 +1134,31 @@ Two players near each other can trade items and money (never crystals) in a safe
 5. Complete a trade and check both inventories and balances.
 6. Fill one inventory and complete. Items should wait and arrive when there is room.
 7. Walk more than 24 blocks away, take damage, or log out mid-trade. The trade must cancel and return items.
-8. Try to trade with a new account (under 30 min) with money. Money should be refused, items allowed.
-9. Try to trade with your own other profile. It must be refused.
+8. Trade money with a brand-new account: allowed (no new-account limit). Try a staff item (from /give): refused.
+9. Try to trade with your own other profile, or with a player who /ignores you: both refused.
 
-_Questions for this feature: 11 in the sheet (Feature = "Trading (/trade)")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Trading (/trade)")._
+
+### Item box (/box)
+
+Items are never dropped on the ground. Whatever does not fit your inventory waits in your **item box**, one per profile, until you take it out: sell chest returns, shop buys, Forge and Enchanter items, wardrobe and loadout returns, trade deliveries, auction collection overflow and staff gives. Later crates, gifts and AFK keys use it too. You get a clickable line when you join (or switch profile) with items waiting. Above 500 stacks you are warned, but nothing is ever deleted or refused. Admins can view and remove items from a player's box in /inspect (removed items are kept for staff).
+
+| Command | Who | What |
+|---|---|---|
+| `/box` | player | Open your item box: oldest first, click a stack to take it, or 'Take all that fit'. |
+| `/inspect <player> → Box` | admin | View a player's box per profile; remove one stack or clear it (confirm, logged). |
+
+**Test:**
+
+1. Fill your inventory completely. Buy 64 stone in /shop and close a sell chest with items inside: the extra items go to /box with a chat line, action bar and sound.
+2. Type /box. Each stack shows where it came from and when. Click one stack, then 'Take all that fit'. With a full inventory only what fits is taken; the rest stays.
+3. Leave and join: 'You have N item(s) in /box' (click to open).
+4. Switch profile: the other profile has its own box. Try to delete a profile that has items in its box: refused.
+5. Double-click and spam-click a stack: you never get it twice.
+6. As admin: /inspect <player> → Box, switch profile with the head, remove a stack and clear the box (confirms). Check /logs.
+7. Bedrock: open /box by command and from the join line, tap stacks and 'Take all that fit'.
+
+_Questions for this feature: 3 on the Decisions page (Feature = "Item box (/box)"), plus 2 under "From your answers"._
 
 ### Economy dashboard and alerts (/eco admin)
 
@@ -1062,17 +1181,17 @@ Staff (moderators and up) see a dashboard of how much money is created and remov
 6. Click [Open] on the alert chat line and the [Punish] button (do not apply).
 7. Check helpers cannot open the dashboard.
 
-_Questions for this feature: 10 in the sheet (Feature = "Economy dashboard and alerts (/eco admin)")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Economy dashboard and alerts (/eco admin)")._
 
 ## The Depths
 
 ### The Depths: zones and tier locks
 
-The Depths is the main money world. It has three wings (Mine with 12 tiers, Forest with 11, Combat with 10) around a hub called The Gate. Each tier needs a skill level (0, 5, 10 ... 66). A locked tier shows iron bars only to you and pushes you back. Unlocked tiers are reached with /dungeon after a short countdown.
+The Depths is the main money world. It has three wings (Mine with 12 tiers, Forest with 11, Combat with 10) around a hub called The Gate. Each tier needs a skill level (0, 5, 10 ... 66). A locked tier shows iron bars only to you and pushes you back. Unlocked tiers are reached with /dungeon instantly (3 seconds only while in combat or in a combat tier), or through the portal at spawn. The Depths are protected outside the ore and log fields (see Region protection).
 
 | Command | Who | What |
 |---|---|---|
-| `/dungeon` | player | Tier menu with tabs Mine, Forest, Combat. Click an unlocked tier to teleport (3 s countdown) |
+| `/dungeon` | player | Tier menu with tabs Mine, Forest, Combat. Click an unlocked tier to teleport (instant; 3 s in combat or from a combat tier) |
 | `/depths tp <zone>` | builder | Staff: teleport to The Gate, a tier or the boss arena, ignoring locks |
 | `/depths generate [zone\|all]` | admin | Staff: build the placeholder layout |
 | `/depths debug [player]` | admin | Staff: show region, timers, flags |
@@ -1080,15 +1199,15 @@ The Depths is the main money world. It has three wings (Mine with 12 tiers, Fore
 **Test:**
 
 1. Type /dungeon. Check the three tabs and that locked tiers show 'Mining 5 needed' with a progress bar.
-2. Click tier 1 of the Mine. Wait for the 3 s countdown. Move during it and see it cancel.
+2. Click tier 1 of the Mine: you arrive at once. From a combat tier, click a Mine tier: you wait 3 seconds; move during it and see it cancel.
 3. Walk to the gate of tier 2 without the level. Bars should appear and you should be pushed back.
 4. Ask staff to /skills set you mining 5 and see the tier 2 gate open with a title and sound.
 5. Ask staff to lower your level while you stand in tier 2. You should be sent to The Gate.
 6. Try to break a normal block or place a block in a zone. It must be refused.
 7. Try ender pearls into a locked tier. They must not get you in.
-8. Test on Bedrock: the /dungeon menu and the teleport countdown.
+8. Test on Bedrock: the /dungeon menu and the 3 second countdown from a combat tier.
 
-_Questions for this feature: 11 in the sheet (Feature = "The Depths: zones and tier locks")._
+_Questions for this feature: 11 on the Decisions page (Feature = "The Depths: zones and tier locks")._
 
 ### The Depths: ore, logs and drops
 
@@ -1109,7 +1228,7 @@ In the Mine and Forest each block gives a custom drop (coal, copper, iron ... vo
 7. Break blocks quickly with an auto-clicker style (ask staff) and see the fast-break check ignore them silently.
 8. Check the scoreboard shows the satchel fill.
 
-_Questions for this feature: 12 in the sheet (Feature = "The Depths: ore, logs and drops")._
+_Questions for this feature: 12 on the Decisions page (Feature = "The Depths: ore, logs and drops")._
 
 ### The Depths: combat zones, mobs and mini-bosses
 
@@ -1131,7 +1250,7 @@ The Combat wing has 10 tiers (Graveyard to Warlord's Citadel). Mobs spawn while 
 7. Test with a bow, a trident and a crossbow and see how they compare to a sword.
 8. On Bedrock check the boss bar and hits.
 
-_Questions for this feature: 12 in the sheet (Feature = "The Depths: combat zones, mobs and mini-bosses")._
+_Questions for this feature: 12 on the Decisions page (Feature = "The Depths: combat zones, mobs and mini-bosses")._
 
 ### Satchel (Depths storage)
 
@@ -1155,7 +1274,7 @@ A virtual bag that holds everything dropped in the Depths. It starts at 256 item
 7. Switch profile and check each profile has its own satchel.
 8. On Bedrock, tap items and Sell all.
 
-_Questions for this feature: 10 in the sheet (Feature = "Satchel (Depths storage)")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Satchel (Depths storage)")._
 
 ## Tools, skills & enchants
 
@@ -1181,7 +1300,7 @@ Every player gets a free starter kit (pickaxe, axe, hoe, sword, rod) from the Qu
 8. Drop the tool and try to throw it into lava.
 9. On Bedrock, use /tool instead of shift+right-click.
 
-_Questions for this feature: 10 in the sheet (Feature = "Forge and living tools")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Forge and living tools")._
 
 ### Blueprints and skins
 
@@ -1204,7 +1323,7 @@ Blueprints are rare drops (about 1 in 15,000 to 20,000 blocks or 1 in 1,500 kill
 7. Play 2 hours in the Depths and count how many blueprints drop (probably none; that is the point).
 8. Check Bedrock shows the skin name even without the resource pack.
 
-_Questions for this feature: 10 in the sheet (Feature = "Blueprints and skins")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Blueprints and skins")._
 
 ### Skills (/skills)
 
@@ -1227,7 +1346,7 @@ Three skills exist now: Mining, Foraging and Combat (Farming and Fishing come la
 7. Break an island generator block and check you get no Mining XP.
 8. Switch profile and check the skills are different.
 
-_Questions for this feature: 10 in the sheet (Feature = "Skills (/skills)")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Skills (/skills)")._
 
 ### Enchants and the Enchanter (/enchanter)
 
@@ -1251,7 +1370,7 @@ There are 48 custom enchants (mining, forestry, farming, combat, fishing, armor)
 8. Trade a book to a friend and list one in /ah.
 9. Check a copy of a book (staff test) is taken away when used.
 
-_Questions for this feature: 10 in the sheet (Feature = "Enchants and the Enchanter (/enchanter)")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Enchants and the Enchanter (/enchanter)")._
 
 ## Wardrobe & sets
 
@@ -1277,7 +1396,7 @@ There are 16 sets (5 starter sets for $20k, then sets bought with money, crystal
 8. Ask staff for a Wardrobe Tome and a Set Token and use both.
 9. Test merging with staff help at level 50: check the result is level 0 with both bonuses.
 
-_Questions for this feature: 11 in the sheet (Feature = "Wardrobe and armor sets (/wardrobe)")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Wardrobe and armor sets (/wardrobe)")._
 
 ### Loadouts (/loadout)
 
@@ -1299,7 +1418,7 @@ A loadout is a saved preset of set pieces, a pet and the custom tools in your ho
 7. Try a 3rd preset on a free account (should say locked).
 8. Check names with spaces turn into dashes.
 
-_Questions for this feature: 10 in the sheet (Feature = "Loadouts (/loadout)")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Loadouts (/loadout)")._
 
 ## Stacking & spawners
 
@@ -1324,7 +1443,7 @@ On islands, mobs of the same kind within 5 blocks join one stack (up to 1,024), 
 8. Try name-tagging, leading and riding a stacked mob. Each should be refused.
 9. Shear a sheep stack.
 
-_Questions for this feature: 10 in the sheet (Feature = "Stacking: mobs, items, entity limits and dark crops")._
+_Questions for this feature: 10 on the Decisions page (Feature = "Stacking: mobs, items, entity limits and dark crops")._
 
 ### Spawners (stackable)
 
@@ -1348,7 +1467,7 @@ Spawner items come in 5 tiers (pigs and cows up to blaze, iron golem, evoker). T
 8. Place a TNT next to it and check the spawners survive.
 9. Kill the stack, sell the loot, and compare money per minute with your other income.
 
-_Questions for this feature: 11 in the sheet (Feature = "Spawners (stackable)")._
+_Questions for this feature: 11 on the Decisions page (Feature = "Spawners (stackable)")._
 
 ## AFK pool
 
@@ -1372,5 +1491,5 @@ A small area at spawn where standing still pays. Every 15 minutes inside gives m
 7. Check the sell booster starts only after you step out of the pool.
 8. On Bedrock check the action bar and whether two Bedrock players on one network are paused.
 
-_Questions for this feature: 10 in the sheet (Feature = "AFK pool")._
+_Questions for this feature: 13 on the Decisions page (Feature = "AFK pool")._
 
