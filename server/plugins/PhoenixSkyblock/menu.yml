@@ -19,7 +19,7 @@ entries:
   black-market: {slot: 16, icon: wither_rose,      command: "blackmarket", status: auto}
   # Row 3: progression and rewards
   skills:       {slot: 19, icon: experience_bottle, command: "skills",     status: auto}
-  sets:         {slot: 20, icon: leather_chestplate, command: "sets",      status: auto}
+  sets:         {slot: 20, icon: leather_chestplate, command: "wardrobe",  status: auto}   # /wardrobe (W1; /sets is its alias)
   enchanter:    {slot: 21, icon: enchanting_table, command: "enchanter",   status: auto}
   quests:       {slot: 22, icon: writable_book,    command: "quests",      status: auto}
   crates:       {slot: 23, icon: tripwire_hook,    command: "crates",      status: auto}

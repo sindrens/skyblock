@@ -1,0 +1,303 @@
+# Wardrobe (Phase W, docs/plans/WARDROBE.md): /wardrobe, set pieces, Set Tokens, the Wardrobe Chest, staff view.
+# MiniMessage + style tags (style.yml). Item lore uses {placeholders} (filled by the plugin); chat and menus use <placeholders>.
+# Menu and lore lines: max 36 visible characters (Bedrock). Set names live in sets.yml.
+# Reload: /skyblock reload wardrobe
+
+# ---------------------------------------------------------------- chat
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Try again in a moment."
+unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>The shop is closed right now. Try again later."
+no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't do that."
+loading: "<prefix><c:error><sym:cross></c:error> <c:text>Your wardrobe is still loading. Try again in a second."
+busy: "<c:warning>Wait a moment, saving your wardrobe..."
+blocked-world: "<prefix><c:error><sym:cross></c:error> <c:text>You can't change sets here."
+cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Wait <c:value><time></c:value> before changing sets again."
+not-owned: "<prefix><c:error><sym:cross></c:error> <c:text>You don't own that set."
+already-worn: "<prefix><c:error><sym:cross></c:error> <c:text>You already wear that."
+nothing-worn: "<prefix><c:error><sym:cross></c:error> <c:text>You don't wear any of it."
+make-room: "<prefix><c:error><sym:cross></c:error> <c:text>Make room for your <c:value><item></c:value> first."
+worn: "<prefix><c:success><sym:check></c:success> <c:text>Wearing <c:value><set></c:value> <c:muted>(<count>/4)</c:muted><c:text>."
+taken-off: "<prefix><c:success><sym:check></c:success> <c:text>Took off <c:value><count></c:value> piece(s). They stay in your wardrobe."
+locked-hint: "<c:text>Use <c:value>/wardrobe</c:value> to take this off."
+
+cant-buy: "<prefix><c:error><sym:cross></c:error> <c:text>You can't buy that set right now."
+cant-claim: "<prefix><c:error><sym:cross></c:error> <c:text>You can't claim that set right now."
+bought: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><set></c:value> for <c:value><price></c:value>. Wear it in /wardrobe."
+claimed: "<prefix><c:success><sym:check></c:success> <c:text>You claimed <c:value><set></c:value> on this profile."
+claimed-already: "<prefix><c:error><sym:cross></c:error> <c:text>You already claimed that set this season."
+has-sigil: "<prefix><c:error><sym:cross></c:error> <c:text>You already own that Sigil. Claim the set instead."
+not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>You need <c:value><price></c:value>. You have <c:value><have></c:value>."
+owned: "<prefix><c:error><sym:cross></c:error> <c:text>You already own that set on this profile."
+unknown-set: "<prefix><c:error><sym:cross></c:error> <c:text>That set does not exist any more. Ask staff."
+set-disabled: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><set></c:value> is turned off for now."
+arrives: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><set></c:value> isn't out yet."
+locked: "<prefix><c:error><sym:cross></c:error> <c:text>Needs <requirement><c:text>."
+token-gone: "<prefix><c:error><sym:cross></c:error> <c:text>Token not found. Put it in your inventory."
+token-copy: "<prefix><c:error><sym:cross></c:error> <c:text>That token was a copy. It was taken and staff were told."
+token-received: "<prefix><c:success><sym:check></c:success> <c:text>You got a <c:value><set></c:value> token. Right-click it to redeem."
+redeemed: "<prefix><c:success><sym:check></c:success> <c:text><c:value><set></c:value> is in your wardrobe now."
+staff-token-copy: "<c:error><bold>DUPE</bold></c:error> <c:value><player></c:value> <c:text>used a copied Set Token <c:muted>(<id>)</c:muted><c:text>. Taken."
+staff-copy-alert: "<c:error><bold>DUPE</bold></c:error> <c:value><player></c:value> <c:text>had a copied set piece in <c:value><where></c:value><c:text>. Deleted."
+
+chest:
+  not-storable: "<prefix><c:error><sym:cross></c:error> <c:text>Only tools, enchant books, scrolls and tokens fit."
+  stored: "<prefix><c:success><sym:check></c:success> <c:value><item></c:value> <c:text>is in your Wardrobe Chest."
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>Your Wardrobe Chest is full (<c:value><size></c:value>)."
+  stale: "<prefix><c:warning><sym:cross></c:warning> <c:text>That item was already in your chest. The copy was removed."
+  inventory-full: "<prefix><c:error><sym:cross></c:error> <c:text>Make room in your inventory first."
+  gone: "<prefix><c:error><sym:cross></c:error> <c:text>That item is not in your chest any more."
+  taken: "<prefix><c:success><sym:check></c:success> <c:text>You took <c:value><item></c:value> out."
+  recovered: "<prefix><c:success><sym:check></c:success> <c:text>Gave you <c:value><count></c:value> item(s) from your Wardrobe Chest."
+  kept: "<prefix><c:warning><sym:cross></c:warning> <c:value><count></c:value> <c:text>item(s) stayed in your Wardrobe Chest. Make room and take them out."
+
+staff:
+  removed: "<prefix><c:success><sym:check></c:success> <c:text>Removed <c:value><set></c:value> from <c:value><player></c:value>."
+  given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><set></c:value> to <c:value><player></c:value>."
+  token-given: "<prefix><c:success><sym:check></c:success> <c:text>Gave a <c:value><set></c:value> token to <c:value><player></c:value>."
+  gone: "<prefix><c:error><sym:cross></c:error> <c:text>That set is already gone."
+  owned: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already owns that set."
+  offline: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>must be online for a token."
+  target-full: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value><c:text>'s inventory is full."
+
+# ---------------------------------------------------------------- names
+piece-name:
+  head: "Helm"
+  chest: "Cuirass"
+  legs: "Greaves"
+  feet: "Boots"
+
+activity-name:
+  mining: "Mining"
+  foraging: "Foraging"
+  farming: "Farming"
+  combat: "Combat"
+  fishing: "Fishing"
+  conquest: "Conquest"
+  selling: "Selling"
+  skills: "All skills"
+  gathering: "Gathering"
+  all: "Everything"
+
+wing-name:
+  any: "Any"
+  mining: "Mining"
+  foraging: "Forest"
+  combat: "Combat"
+  farming: "Farming"
+  fishing: "Fishing"
+
+feature-name:
+  conquest: "the Warzone"
+  fishing: "Fishing"
+
+crate-name:
+  blaze: "Blaze crate"
+  inferno: "Inferno crate"
+  phoenix: "Phoenix crate"
+  eclipse: "Eclipse crate"
+  conqueror: "Conqueror crate"
+  black_market: "Black Market"
+
+filter:
+  all: "All"
+  owned: "Owned"
+  mining: "Mining"
+  foraging: "Foraging"
+  farming: "Farming"
+  combat: "Combat"
+  fishing: "Fishing"
+  conquest: "Conquest"
+  other: "Other"
+
+# Gate requirement (lore and chat): {wing}, {need}, {have}.
+gate:
+  tier: "<c:value>{wing} tier {need}</c:value> <c:muted>▸ {have}/{need}"
+  tier-any: "<c:value>Depths tier {need}</c:value> <c:muted>▸ {have}/{need}"
+  any-skill: "<c:value>Any skill {need}</c:value> <c:muted>▸ {have}/{need}"
+  skill: "<c:value>{wing} {need}</c:value> <c:muted>▸ {have}/{need}"
+  none: "<c:value>nothing"
+
+# Bonus lines ({value} = the number after the set level multiplier). Keep them short (lore).
+bonus-text:
+  mining-speed: "Mining speed +{value}%"
+  chopping-speed: "Chopping speed +{value}%"
+  gather-speed: "Gathering speed +{value}%"
+  mining-crystals: "Mining crystals +{value}%"
+  gather-crystals: "Gathering crystals +{value}%"
+  all-crystals: "Crystals +{value}%"
+  extra-ores: "Extra ores +{value}%"
+  extra-logs: "Extra logs +{value}%"
+  extra-crops: "Extra crops +{value}%"
+  gather-drops: "Gathering drops +{value}%"
+  all-drops: "Extra drops +{value}%"
+  double-catch: "Double catch +{value}%"
+  farming-xp: "Farming XP +{value}%"
+  all-skill-xp: "All skill XP +{value}%"
+  tool-xp: "Tool XP +{value}%"
+  mob-damage-taken: "Damage from mobs -{value}%"
+  mob-damage: "Damage to mobs +{value}%"
+  boss-damage: "Damage to mobs/bosses +{value}%"
+  bite-wait: "Wait for a bite -{value}%"
+  rare-fish: "Rare fish +{value}%"
+  crop-growth: "Nearby crop growth +{value}%"
+  sell-price: "Sell price +{value}%"
+  envoy-luck: "Envoy loot luck +{value}%"
+  capture-speed: "KOTH capture speed +{value}%"
+  conquest-xp: "Island Conquest XP +{value}%"
+  death-loss: "Warzone money loss -{value}%"
+
+bonus:
+  two-header: "<c:muted>2 pieces"
+  four-header: "<c:muted>4 pieces"
+  line: " <c:ember>▸</c:ember> <c:text>{text}"
+
+# ---------------------------------------------------------------- items
+piece:
+  fallback-name: "<rarity:uncommon>Set Piece"
+  unknown: "This set no longer exists."
+  subtitle: "<c:muted>Set piece · Tier {tier}"
+  set: "<c:text>Set: {set}"
+  merged: "<c:text>Merged with <c:value>{set}"
+  action-input: "/wardrobe"
+  action-text: "to take it off"
+
+token:
+  fallback-name: "<rarity:rare>Set Token"
+  name: "<rarity:{rarity}>Token: {set}"
+  unknown: "This set no longer exists."
+  subtitle: "<c:muted>Set Token · Tier {tier}"
+  description: "Adds this set to your wardrobe. Tradeable until redeemed."
+  tradeable: "<c:muted>Trade it or sell it on /ah."
+  action-input: "Right-click"
+  action-text: "to redeem"
+
+# ---------------------------------------------------------------- menus
+menu:
+  title: "Wardrobe"
+  click: ["<c:action><sym:bullet> Click to open"]
+  main:
+    info: ["<c:text>Every set in the game. Buy", "<c:text>a set once, wear it any time.", "<c:text>2 and 4 pieces give bonuses."]
+    click: ["<c:action><sym:bullet> Click to open"]
+    empty:
+      name: "<c:muted>No sets here"
+      lore: ["<c:text>Try another filter."]
+    filter:
+      name: "<c:value>Filter: <filter>"
+      lore: ["<c:text>Show only some sets.", "", "<c:action><sym:bullet> Click to switch"]
+    worn:
+      name: "<c:value>Worn now"
+      lore: ["<c:text>Your active set bonuses.", ""]
+      none: ["<c:muted>Wear 2 pieces of a set."]
+      line: "<c:ember>▸</c:ember> <c:text><text>"
+      line-capped: "<c:ember>▸</c:ember> <c:text><text> <c:warning>(capped)"
+    chest:
+      name: "<c:value>Wardrobe Chest"
+      lore: ["<c:text>Keep tools, books and tokens", "<c:text>safe. Space: <c:value><size></c:value>", "", "<c:action><sym:bullet> Click to open"]
+    loadouts:
+      name: "<c:muted>Loadouts <dark_gray>(Coming soon)"
+      lore: ["<c:text>Swap armor and tools in", "<c:text>one click. Coming soon."]
+  set:
+    subtitle: "<c:muted><activity> · Tier <tier>"
+    info: ["<c:text>Wear pieces one by one or all", "<c:text>at once. 2 and 4 pieces give", "<c:text>bonuses. Sets stay yours."]
+    piece:
+      not-owned: ["<c:error><sym:cross> Not owned"]
+      worn: ["<c:success><sym:check> Worn", "", "<c:action><sym:bullet> Click to take off"]
+      wear: ["<c:text>In your wardrobe.", "", "<c:action><sym:bullet> Click to wear"]
+    wear-all:
+      name: "<c:success>Wear all"
+      lore: ["<c:text>Put on all 4 pieces.", "", "<c:action><sym:bullet> Click to wear"]
+    take-off-all:
+      name: "<c:error>Take all off"
+      lore: ["<c:text>The pieces stay yours.", "", "<c:action><sym:bullet> Click to take off"]
+    bonuses:
+      name: "<c:value>Bonuses"
+      lore: ["<c:text>Values at your set level.", ""]
+      two: "<c:muted>2 pieces"
+      four: "<c:muted>4 pieces"
+      line: "<c:ember>▸</c:ember> <c:text><text>"
+    level:
+      name: "<c:value>Set level <level>"
+      lore: ["<c:text>Bonus: <c:value><multiplier>x"]
+    level-off:
+      name: "<c:value>Set level"
+      lore: ["<c:text>Set levels come soon.", "<c:text>Bonus now: <c:value><multiplier>x"]
+    enchants:
+      name: "<c:muted>Enchants <dark_gray>(Coming soon)"
+      lore: ["<c:text>Armor enchants come soon."]
+    redeem:
+      name: "<c:success>Redeem token"
+      lore: ["<c:text>You carry a token for this", "<c:text>set.", "", "<c:action><sym:bullet> Click to redeem"]
+    buy:
+      name: "<c:success>Buy"
+      lore: ["<c:text>Price: <c:value><price>", "<c:text>Goes into your wardrobe.", "", "<c:action><sym:bullet> Click to buy"]
+    claim:
+      name: "<c:success>Claim"
+      lore: ["<c:text>You own this Sigil: claim", "<c:text>the set here for free.", "", "<c:action><sym:bullet> Click to claim"]
+    state:
+      name: "<c:value>How to get it"
+  chest:
+    title: "Chest"
+    info: ["<c:text>Unique items only: tools,", "<c:text>enchant books, scrolls and", "<c:text>tokens. Safe per profile."]
+    empty:
+      name: "<c:muted>Your chest is empty"
+      lore: ["<c:text>Use Store an item below."]
+    take: ["<c:action><sym:bullet> Click to take out"]
+    store:
+      name: "<c:value>Store an item"
+      lore: ["<c:text>Pick a tool, book or token", "<c:text>from your inventory.", "<c:muted>Fits now: <count>", "", "<c:action><sym:bullet> Click to choose"]
+    space:
+      name: "<c:value>Space <used>/<size>"
+      lore: ["<c:text>Ranks can add more space."]
+  store:
+    title: "Store"
+    info: ["<c:text>Click an item to put it in", "<c:text>your Wardrobe Chest."]
+    empty:
+      name: "<c:muted>Nothing fits"
+      lore: ["<c:text>Only tools, enchant books,", "<c:text>scrolls and tokens fit."]
+    click: ["<c:action><sym:bullet> Click to store"]
+  staff:
+    title: "Wardrobe of <player>"
+    info: ["<c:text>Sets of this player's active", "<c:text>profile. Admins can give and", "<c:text>remove sets. All logged."]
+    empty:
+      name: "<c:muted>No sets"
+      lore: ["<c:text>This profile owns no set."]
+    entry: ["<c:text>From: <c:value><origin>", "<c:text>Since: <c:value><date>", "<c:text>Level: <c:value><level>"]
+    remove-click: ["", "<c:action><sym:bullet> Click to remove"]
+    chest:
+      name: "<c:value>Wardrobe Chest"
+      lore: ["<c:text>Items stored: <c:value><count>"]
+    give-set:
+      name: "<c:success>Give a set"
+      lore: ["<c:text>Add a set to this profile.", "", "<c:action><sym:bullet> Click to pick"]
+    give-token:
+      name: "<c:success>Give a token"
+      lore: ["<c:text>Give a Set Token item.", "<c:text>The player must be online.", "", "<c:action><sym:bullet> Click to pick"]
+    pick-set: "Give set"
+    pick-token: "Give token"
+    pick-set-click: ["<c:action><sym:bullet> Click to give"]
+    pick-token-click: ["<c:action><sym:bullet> Click to give a token"]
+
+# Owned/locked state lines (list entries and the set screen).
+status:
+  owned: ["<c:success><sym:check> Owned", "<c:text>Worn: <c:value><worn>/4", "<c:text>Bonus: <c:value><multiplier>x"]
+  disabled: ["<c:error><sym:cross> Turned off for now"]
+  arrives: ["<c:error><sym:cross> Arrives with <feature>"]
+  locked: ["<c:error><sym:cross> Locked", "<c:text>Needs <requirement>"]
+  claim: ["<c:success><sym:check> Sigil owned", "<c:text>Claim it here for free."]
+  claimed: ["<c:error><sym:cross> Claimed this season"]
+  buy: ["<c:text>Price: <c:value><price>", "<c:success><sym:check> You can buy it"]
+  crate: ["<c:text>Only from: <c:value><crates>"]
+  also-from: ["<c:muted>Also from: <crates>"]
+
+confirm:
+  buy:
+    crumb: "Buy set"
+    details: ["<c:text>Add <c:value><set></c:value>", "<c:text>Cost: <c:value><price>", "<c:text>No refunds."]
+  remove:
+    crumb: "Remove set"
+    details: ["<c:text>Remove <c:value><set></c:value>", "<c:text>from <c:value><player></c:value>"]
+  give-set:
+    crumb: "Give set"
+    details: ["<c:text>Give <c:value><set></c:value>", "<c:text>to <c:value><player></c:value>"]
+  give-token:
+    crumb: "Give token"
+    details: ["<c:text>Give a <c:value><set></c:value> token", "<c:text>to <c:value><player></c:value>"]

@@ -136,6 +136,10 @@ final class EnchanterConfig extends ModuleConfig {
     public double capDamageReduction = 60;
     @Setting(path = "caps.health", desc = "Cap of extra hearts from custom sources.", min = 0, max = 1000, level = Setting.Level.OWNER)
     public double capHealth = 10;
+    @Setting(path = "caps.crop-growth", desc = "Cap of the crop growth family in percent (WARDROBE §2.5: Cropwarden Robes, growth upgrades, events).", min = 0, max = 100_000, level = Setting.Level.OWNER)
+    public double capCropGrowth = 100;
+    @Setting(path = "caps.conquest", desc = "Cap of each conquest stat in percent (envoy luck, capture speed, Conquest XP, warzone death-loss reduction).", min = 0, max = 100_000, level = Setting.Level.OWNER)
+    public double capConquest = 60;
 
     // ------------------------------------------------------------------ rules and feel
 
@@ -196,6 +200,8 @@ final class EnchanterConfig extends ModuleConfig {
         out.put(BonusFamily.MOB_DAMAGE, capMobDamage);
         out.put(BonusFamily.DAMAGE_REDUCTION, capDamageReduction);
         out.put(BonusFamily.HEALTH, capHealth);
+        out.put(BonusFamily.CROP_GROWTH, capCropGrowth);
+        out.put(BonusFamily.CONQUEST, capConquest);
         return out;
     }
 

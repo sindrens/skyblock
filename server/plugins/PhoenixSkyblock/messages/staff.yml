@@ -271,6 +271,9 @@ menu:
     logs:
       name: "<c:ember><bold>Logs</bold></c:ember>"
       lore: ["<c:text>Everything <player> did.", "", "<c:action><sym:bullet> Click to open"]
+    wardrobe:
+      name: "<c:ember><bold>Wardrobe</bold></c:ember>"
+      lore: ["<c:text>Sets and chest of <player>.", "", "<c:action><sym:bullet> Click to open"]
 
 # Profile switch refused by staff rules (round 3 PR4).
 profiles:

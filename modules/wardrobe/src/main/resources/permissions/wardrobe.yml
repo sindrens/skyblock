@@ -1,0 +1,21 @@
+# Permissions of the wardrobe module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/wardrobe.txt. Commands: docs/commands/wardrobe.md.
+skyblock.wardrobe:
+  description: Open the wardrobe (/wardrobe, alias /sets) to see, buy, claim, redeem and wear sets and use the Wardrobe Chest
+  default: true
+skyblock.wardrobe.storage.1:
+  description: Wardrobe Chest +1 storage grant (wardrobe.yml → storage.per-grant extra items; the highest grant counts)
+  default: false
+skyblock.wardrobe.storage.2:
+  description: Wardrobe Chest +2 storage grants
+  default: false
+skyblock.wardrobe.storage.3:
+  description: Wardrobe Chest +3 storage grants
+  default: false
+skyblock.wardrobe.staff:
+  description: See a player's wardrobe (sets, chest size) through the Wardrobe button in /inspect
+  default: op
+skyblock.wardrobe.admin:
+  description: Give or remove a player's sets and give Set Tokens from the /inspect wardrobe view (audited)
+  default: op

@@ -1,0 +1,9 @@
+# LuckPerms grants for the wardrobe module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/wardrobe/src/main/resources/permissions/wardrobe.yml. One console command per line; # = comment.
+
+# /wardrobe (alias /sets) is for everyone (plugin default: true); nothing to grant.
+# Wardrobe Chest size grants (skyblock.wardrobe.storage.1-3) are rank perks, decided with the store/rank plan (not granted yet).
+
+# Staff: the Wardrobe button in /inspect (WD25). Helpers and mods see; admins (and the owner, who inherits admin) manage.
+lp group helper permission set skyblock.wardrobe.staff true
+lp group admin permission set skyblock.wardrobe.admin true

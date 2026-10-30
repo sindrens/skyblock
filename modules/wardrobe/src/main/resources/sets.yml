@@ -1,0 +1,234 @@
+# Wardrobe sets (docs/plans/WARDROBE.md §2). Every value is a default the owner can change (WD1-WD4).
+# Written from the jar on first start; sets that are new in an update are added to an existing file.
+# Turn a set off with "enabled: false" instead of deleting it (owned copies stay, shown gray, no bonus).
+#
+# name: max 16 characters (Bedrock). short-name: max 12 (pieces are "<short-name> Helm/Cuirass/Greaves/Boots").
+# activity: mining, foraging, farming, combat, fishing, conquest, selling, skills, gathering, all (menu filter group).
+# tier: 1-4 (I uncommon, II rare, III epic, IV legendary). Tier IV sets can't be merged.
+# enabled-from: a feature that must exist first (conquest, fishing); listed in wardrobe.yml → features.available.
+# look.base: leather, chainmail, iron, gold, diamond, netherite. dye: #RRGGBB (leather only).
+#   trim-pattern / trim-material: vanilla ids. upgraded-trim-material: used from set level 10 (W2).
+# source.type: money, crystals, gems (account Sigil + one claim per profile per season), crate (Set Tokens only).
+#   price: whole units. crates: where tokens can come from (for the crates plan; shown as "Also from").
+# gate: any one part is enough. wing: any|mining|foraging|combat|farming|fishing + tier (Depths tier in that wing),
+#   any-skill: any skill at this level, skill + skill-level: one skill at a level.
+# bonuses.two / bonuses.four: values at 1x (set level 25). family: a bonus family (sell, crystals, extra_drops, speed,
+#   skill_xp, tool_xp, rare_finds, mob_damage, damage_reduction, crop_growth, conquest). activities: where it counts
+#   (empty = everywhere): mining, foraging, farming, combat, fishing, sell, envoy_luck, capture_speed, conquest_xp,
+#   death_loss, crop_growth. text: key under bonus-text in messages/wardrobe.yml.
+# Reload: /skyblock reload wardrobe
+
+sets:
+  delver:
+    name: "Delver's Garb"
+    short-name: "Delver"
+    activity: mining
+    tier: 1
+    look: {base: chainmail, trim-pattern: wayfinder, trim-material: copper, upgraded-trim-material: gold}
+    source: {type: money, price: 20000}
+    bonuses:
+      two:
+        - {family: speed, value: 4, activities: [mining], text: mining-speed}
+      four:
+        - {family: crystals, value: 8, activities: [mining], text: mining-crystals}
+  woodsman:
+    name: "Woodsman's Hide"
+    short-name: "Woodsman"
+    activity: foraging
+    tier: 1
+    look: {base: leather, dye: "#5E7D32", trim-pattern: wild, trim-material: emerald, upgraded-trim-material: diamond}
+    source: {type: money, price: 20000}
+    bonuses:
+      two:
+        - {family: speed, value: 4, activities: [foraging], text: chopping-speed}
+      four:
+        - {family: extra_drops, value: 6, activities: [foraging], text: extra-logs}
+  tiller:
+    name: "Tiller's Smock"
+    short-name: "Tiller"
+    activity: farming
+    tier: 1
+    look: {base: leather, dye: "#D9B45A", trim-pattern: shaper, trim-material: gold, upgraded-trim-material: emerald}
+    source: {type: money, price: 20000}
+    bonuses:
+      two:
+        - {family: skill_xp, value: 8, activities: [farming], text: farming-xp}
+      four:
+        - {family: extra_drops, value: 6, activities: [farming], text: extra-crops}
+  footman:
+    name: "Footman's Mail"
+    short-name: "Footman"
+    activity: combat
+    tier: 1
+    look: {base: iron, trim-pattern: sentry, trim-material: redstone, upgraded-trim-material: gold}
+    source: {type: money, price: 20000}
+    bonuses:
+      two:
+        - {family: damage_reduction, value: 4, activities: [combat], text: mob-damage-taken}
+      four:
+        - {family: mob_damage, value: 8, activities: [combat], text: mob-damage}
+  netcaster:
+    name: "Netcaster's Garb"
+    short-name: "Netcaster"
+    activity: fishing
+    tier: 1
+    enabled-from: fishing
+    look: {base: leather, dye: "#3F76A8", trim-pattern: coast, trim-material: lapis, upgraded-trim-material: diamond}
+    source: {type: money, price: 20000}
+    bonuses:
+      two:
+        - {family: speed, value: 5, activities: [fishing], text: bite-wait}
+      four:
+        - {family: rare_finds, value: 10, activities: [fishing], text: rare-fish}
+  banneret:
+    name: "Banneret Tabard"
+    short-name: "Banneret"
+    activity: conquest
+    tier: 2
+    enabled-from: conquest
+    look: {base: iron, trim-pattern: raiser, trim-material: redstone, upgraded-trim-material: gold}
+    source: {type: money, price: 2500000, crates: [conqueror]}
+    gate: {wing: any, tier: 5}
+    bonuses:
+      two:
+        - {family: conquest, value: 10, activities: [envoy_luck], text: envoy-luck}
+      four:
+        - {family: conquest, value: 8, activities: [capture_speed], text: capture-speed}
+        - {family: conquest, value: 10, activities: [conquest_xp], text: conquest-xp}
+  lorekeeper:
+    name: "Lorekeeper Robes"
+    short-name: "Lorekeeper"
+    activity: skills
+    tier: 2
+    look: {base: leather, dye: "#E8DCC0", trim-pattern: host, trim-material: amethyst, upgraded-trim-material: diamond}
+    source: {type: gems, price: 400, crates: [blaze]}
+    gate: {wing: any, tier: 5, any-skill: 25}
+    bonuses:
+      two:
+        - {family: skill_xp, value: 6, text: all-skill-xp}
+      four:
+        - {family: tool_xp, value: 10, text: tool-xp}
+  deepforge:
+    name: "Deepforge Plate"
+    short-name: "Deepforge"
+    activity: mining
+    tier: 3
+    look: {base: netherite, trim-pattern: rib, trim-material: gold, upgraded-trim-material: diamond}
+    source: {type: crystals, price: 25000, crates: [inferno]}
+    gate: {wing: mining, tier: 6}
+    bonuses:
+      two:
+        - {family: extra_drops, value: 10, activities: [mining], text: extra-ores}
+      four:
+        - {family: crystals, value: 16, activities: [mining], text: mining-crystals}
+  thornward:
+    name: "Thornward Mantle"
+    short-name: "Thornward"
+    activity: foraging
+    tier: 3
+    look: {base: leather, dye: "#4A3221", trim-pattern: ward, trim-material: emerald, upgraded-trim-material: diamond}
+    source: {type: gems, price: 900, crates: [inferno]}
+    gate: {wing: foraging, tier: 6}
+    bonuses:
+      two:
+        - {family: speed, value: 8, activities: [foraging], text: chopping-speed}
+      four:
+        - {family: extra_drops, value: 12, activities: [foraging], text: extra-logs}
+  cropwarden:
+    name: "Cropwarden Robes"
+    short-name: "Cropwarden"
+    activity: farming
+    tier: 3
+    look: {base: leather, dye: "#E3A42B", trim-pattern: flow, trim-material: copper, upgraded-trim-material: gold}
+    source: {type: crystals, price: 25000, crates: [inferno]}
+    gate: {wing: farming, tier: 6}
+    bonuses:
+      two:
+        - {family: extra_drops, value: 12, activities: [farming], text: extra-crops}
+      four:
+        - {family: crop_growth, value: 15, activities: [crop_growth], text: crop-growth}
+  dreadguard:
+    name: "Dreadguard Mail"
+    short-name: "Dreadguard"
+    activity: combat
+    tier: 3
+    look: {base: diamond, trim-pattern: snout, trim-material: netherite, upgraded-trim-material: gold}
+    source: {type: crystals, price: 25000, crates: [inferno]}
+    gate: {wing: combat, tier: 6}
+    bonuses:
+      two:
+        - {family: damage_reduction, value: 8, activities: [combat], text: mob-damage-taken}
+      four:
+        - {family: mob_damage, value: 16, activities: [combat], text: boss-damage}
+  stormkeel:
+    name: "Stormkeel Scale"
+    short-name: "Stormkeel"
+    activity: fishing
+    tier: 3
+    enabled-from: fishing
+    look: {base: chainmail, trim-pattern: tide, trim-material: diamond, upgraded-trim-material: netherite}
+    source: {type: gems, price: 900, crates: [inferno]}
+    gate: {skill: fishing, skill-level: 40}
+    bonuses:
+      two:
+        - {family: speed, value: 10, activities: [fishing], text: bite-wait}
+      four:
+        - {family: extra_drops, value: 10, activities: [fishing], text: double-catch}
+  coinmaster:
+    name: "Coinmaster Silks"
+    short-name: "Coinmaster"
+    activity: selling
+    tier: 3
+    look: {base: leather, dye: "#5B2A86", trim-pattern: eye, trim-material: gold, upgraded-trim-material: diamond}
+    source: {type: money, price: 40000000, crates: [black_market]}
+    gate: {wing: any, tier: 8}
+    bonuses:
+      two:
+        - {family: sell, value: 10, text: sell-price}
+      four:
+        - {family: sell, value: 15, text: sell-price}
+  voidforged:
+    name: "Voidforged Plate"
+    short-name: "Voidforged"
+    activity: gathering
+    tier: 4
+    look: {base: netherite, trim-pattern: silence, trim-material: amethyst, upgraded-trim-material: diamond}
+    source: {type: crate, crates: [phoenix, black_market]}
+    gate: {wing: any, tier: 7}
+    bonuses:
+      two:
+        - {family: speed, value: 6, activities: [mining, foraging, farming], text: gather-speed}
+      four:
+        - {family: extra_drops, value: 10, activities: [mining, foraging, farming], text: gather-drops}
+        - {family: crystals, value: 10, activities: [mining, foraging, farming], text: gather-crystals}
+  conqueror:
+    name: "Conqueror Aegis"
+    short-name: "Conqueror"
+    activity: conquest
+    tier: 4
+    enabled-from: conquest
+    look: {base: netherite, trim-pattern: bolt, trim-material: redstone, upgraded-trim-material: gold}
+    source: {type: crate, crates: [conqueror]}
+    gate: {wing: any, tier: 7}
+    bonuses:
+      two:
+        - {family: conquest, value: 15, activities: [envoy_luck], text: envoy-luck}
+        - {family: conquest, value: 12, activities: [capture_speed], text: capture-speed}
+      four:
+        - {family: conquest, value: 25, activities: [death_loss], text: death-loss}
+        - {family: conquest, value: 15, activities: [conquest_xp], text: conquest-xp}
+  phoenix:
+    name: "Phoenix Regalia"
+    short-name: "Phoenix"
+    activity: all
+    tier: 4
+    look: {base: gold, trim-pattern: spire, trim-material: redstone, upgraded-trim-material: gold}
+    source: {type: crate, crates: [eclipse, black_market]}
+    gate: {wing: any, tier: 7}
+    bonuses:
+      two:
+        - {family: skill_xp, value: 5, text: all-skill-xp}
+      four:
+        - {family: sell, value: 6, text: sell-price}
+        - {family: crystals, value: 6, text: all-crystals}
+        - {family: extra_drops, value: 6, text: all-drops}

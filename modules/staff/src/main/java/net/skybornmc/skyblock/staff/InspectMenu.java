@@ -121,6 +121,11 @@ final class InspectMenu extends Menu {
         } else {
             set(29, service.item(Material.GRAY_DYE, viewer, StaffFeature.MODULE, "menu.inspect.offline", Msg.p("player", name)));
         }
+        // Wardrobe (WD25): sets, chest; admins give/remove sets and tokens. Shown when the wardrobe module runs.
+        s.core().services().optional(net.skybornmc.skyblock.common.wardrobe.WardrobeService.class)
+                .filter(w -> viewer.hasPermission("skyblock.wardrobe.staff"))
+                .ifPresent(w -> set(31, service.item(Material.LEATHER_CHESTPLATE, viewer, StaffFeature.MODULE, "menu.inspect.wardrobe",
+                        Msg.p("player", name)), click -> w.openStaffView(click.player(), id, name, this)));
         button(33, Material.BREEZE_ROD, "menu.inspect.punish", "punish " + name, name);
         button(34, Material.CLOCK, "menu.inspect.logs", "logs player " + name, name);
     }

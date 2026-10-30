@@ -213,6 +213,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.stacking.StackingModule(core));
         modules.register(new net.skybornmc.skyblock.tools.ToolsModule(core));
         modules.register(new net.skybornmc.skyblock.enchants.EnchantsModule(core));
+        modules.register(new net.skybornmc.skyblock.wardrobe.WardrobeModule(core));
     }
 
     public ModuleRegistry modules() {
