@@ -1,6 +1,8 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- R2B sell cap: `economy.yml → sell.multiplier-cap-percent: 300` (#46), but the balance sheet (`docs/ECONOMY_BALANCE.md` §2 and `tools/economy_model.py`) still models a +100% total cap. Re-run the model with +300% before M3.4 prices go live, and lower prices if income at the cap is too high? (default: yes; config stays 300 meanwhile, no sell system uses it yet)
+- R2B: the 30-minute new-account limit only stops the payer (and `/withdraw`); new accounts can still receive `/pay` and cash notes. OK? (default: yes)
 - CRY colors: crystals are aqua `#4FD1FF` with `◆` (the old gems look); gems are now emerald `#3DDC97` with `✦` (Bedrock falls back to dark green, money stays light green `$`). Menu icons: crystals = prismarine crystals, gems = emerald (were amethyst shard / diamond). OK? (default: yes, all in `style.yml` and `economy.yml → icons`)
 - CRY: the island shop and island missions that earn/spend crystals (CR1/CR2) don't exist yet; crystals currently only exist as a balance (`/bal`, `/eco`, HUD). Build them with the island upgrades milestone? (default: yes)
 - UX1 tab: the lines beside SKYBORN are now left frost white (first letter) and right blue (the "MC"), instead of one long gradient over the whole line. OK, or try the long gradient? (default: left white, right blue)
@@ -75,7 +77,7 @@
 - M2.1 Players still join at spawn (`essentials.yml` `join.teleport-to-spawn: true`). Join at your island instead once islands exist? (default: keep spawn)
 - M2.1 Staff build bypass on islands is permission-only (`skyblock.island.bypass`, admins) until M2.2 adds the logged `/is bypass` toggle. OK? (default: yes)
 - M2.1 Scoreboard shows "Lv -" for island level until Phase 5 and no island position (`island_rank` empty). OK? (default: yes)
-- Economy (M3.1): `/eco give|take|set|reset` is owner-only (`skyblock.owner.economy`); should admins get it too? (default: owner only, STANDARDS "economy edits = owner")
+- ~~Economy (M3.1): `/eco give|take|set|reset` is owner-only; should admins get it too?~~ Decided (#47): owner + admin via `skyblock.admin.economy` (R2B).
 - ~~Economy (M3.1): should tokens be tradeable?~~ Decided: tokens replaced by island crystals (`economy.yml → tradeable.crystals: false`, CR3).
 - Economy (M3.1): `/pay` minimums $10 / 1 crystal / 1 gem / 1 shard and confirm thresholds $1M (decided) / 10,000 crystals / 100 gems / 1,000 shards. OK? (all in `economy.yml`)
 - Economy (M3.1): balances are global and the ledger records the season (0 until the season service exists). At season start, which currencies are wiped (money, crystals, shards) and which kept (gems: see Economy question 2)? The starting $1,000 is given once per season per player. (default: decide with the season system)
@@ -99,9 +101,9 @@
 - Auction (M3.6): staff alert for sales far above an item's 7-day median or between linked accounts (balance sheet R4) is left to the M3.8 anomaly alerts. OK? (default: M3.8)
 - Auction (M3.6): money only for now; listings in shards ("filters (currency later)") later? (default: money only)
 - Money notes (M3.2): money notes stay NOT listable on the auction house (`auction.yml → items.allow-money-notes: false`). Allow them? (default: not listable)
-- Money notes (M3.2): `/eco note` sits under `/eco`, so it is owner-only (`skyblock.owner.economy`) like `/eco give`, although the plan says "staff". Give admins (or moderators) a separate node for it? (default: owner only, it creates money)
+- ~~Money notes (M3.2): `/eco note` owner-only?~~ Decided (#47): owner + admin, same node as `/eco give` (`skyblock.admin.economy`, R2B).
 - Money notes (M3.2): limits $100 minimum / $1T maximum per note, 10 s between `/withdraw`, no fee (balance sheet §9.4). OK? (all in `economy.yml → notes`)
-- Money notes (M3.2): new accounts (< 2 h played, `notes.new-account-minutes: 120`) can't `/withdraw`, the same as the balance sheet's "new accounts can't /pay" (a note is a way to pay). Cashing a note is allowed for everyone. OK? (default: yes; note `/pay` itself does not have this rule yet)
+- ~~Money notes (M3.2): new-account limit for `/withdraw`~~ Decided (#40): 30 minutes of playtime for `/withdraw` and `/pay` (`notes.new-account-minutes`, `pay.new-account-minutes`; an untouched old 120 is changed to 30 on load). Cashing a note stays allowed for everyone (R2B).
 - Money notes (M3.2): notes are money only (`notes.currencies: [money]`). Also shard notes? (default: money only)
 - Money notes (M3.2): a note whose id is not in the database (e.g. spawned with a generic item give) is confiscated like a copy, with the same staff alert and a `note_dupe` audit row (`why: unknown`). OK? (default: yes)
 - Money notes (M3.2): if the server crashes in the instant between taking the money and handing out the note, the note row stays active without an item; staff can see it in `/logs` (`note_withdraw`) and re-issue it with `/eco note`. Automatic recovery (e.g. a "pending" state re-delivered on join)? (default: manual, very rare)

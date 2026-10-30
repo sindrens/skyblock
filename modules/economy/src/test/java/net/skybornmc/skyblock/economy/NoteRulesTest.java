@@ -14,7 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The /withdraw and /eco note checks (pure logic). */
 class NoteRulesTest {
 
-    private static final long TWO_HOURS = 120 * 60_000L;
+    /** Owner decision #40: new accounts need 30 minutes of playtime. */
+    private static final long HALF_HOUR = 30 * 60_000L;
 
     @Test
     void moneyOnlyByDefault() {
@@ -22,7 +23,7 @@ class NoteRulesTest {
         assertTrue(NoteRules.allowed(config, Currency.MONEY));
         assertFalse(NoteRules.allowed(config, Currency.SHARDS));
         assertFalse(NoteRules.allowed(config, Currency.GEMS));
-        assertEquals(Optional.of(NoteRules.Problem.NOT_ALLOWED), NoteRules.withdraw(config, 500, Currency.SHARDS, false, TWO_HOURS));
+        assertEquals(Optional.of(NoteRules.Problem.NOT_ALLOWED), NoteRules.withdraw(config, 500, Currency.SHARDS, false, HALF_HOUR));
     }
 
     @Test
@@ -36,13 +37,14 @@ class NoteRulesTest {
     @Test
     void limitsFrozenAndNewAccounts() {
         EconomyConfig config = new EconomyConfig();
-        assertEquals(Optional.empty(), NoteRules.withdraw(config, 100, Currency.MONEY, false, TWO_HOURS));
-        assertEquals(Optional.of(NoteRules.Problem.BELOW_MINIMUM), NoteRules.withdraw(config, 99, Currency.MONEY, false, TWO_HOURS));
+        assertEquals(Optional.empty(), NoteRules.withdraw(config, 100, Currency.MONEY, false, HALF_HOUR));
+        assertEquals(Optional.of(NoteRules.Problem.BELOW_MINIMUM), NoteRules.withdraw(config, 99, Currency.MONEY, false, HALF_HOUR));
         assertEquals(Optional.of(NoteRules.Problem.ABOVE_MAXIMUM),
-                NoteRules.withdraw(config, config.noteMaxMoney + 1, Currency.MONEY, false, TWO_HOURS));
-        assertEquals(Optional.of(NoteRules.Problem.FROZEN), NoteRules.withdraw(config, 500, Currency.MONEY, true, TWO_HOURS));
-        assertEquals(Optional.of(NoteRules.Problem.NEW_ACCOUNT), NoteRules.withdraw(config, 500, Currency.MONEY, false, TWO_HOURS - 1));
-        assertEquals(60_000L, NoteRules.playtimeLeft(config, TWO_HOURS - 60_000L));
+                NoteRules.withdraw(config, config.noteMaxMoney + 1, Currency.MONEY, false, HALF_HOUR));
+        assertEquals(Optional.of(NoteRules.Problem.FROZEN), NoteRules.withdraw(config, 500, Currency.MONEY, true, HALF_HOUR));
+        assertEquals(Optional.of(NoteRules.Problem.NEW_ACCOUNT), NoteRules.withdraw(config, 500, Currency.MONEY, false, HALF_HOUR - 1));
+        assertEquals(60_000L, NoteRules.playtimeLeft(config, HALF_HOUR - 60_000L));
+        assertEquals(30, config.noteMinPlaytimeMinutes);
 
         config.noteMinPlaytimeMinutes = 0;
         assertEquals(Optional.empty(), NoteRules.withdraw(config, 500, Currency.MONEY, false, 0));

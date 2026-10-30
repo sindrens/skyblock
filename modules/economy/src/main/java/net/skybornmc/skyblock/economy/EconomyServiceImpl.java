@@ -201,6 +201,11 @@ final class EconomyServiceImpl implements EconomyService {
     }
 
     @Override
+    public double sellBonusCapPercent() {
+        return config.get().sellMultiplierCapPercent;
+    }
+
+    @Override
     public String format(Currency currency, long amount) {
         return Amounts.withSymbol(symbols.apply(currency), currency, amount);
     }

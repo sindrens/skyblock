@@ -37,15 +37,35 @@ class EconomyLogicTest {
         assertEquals("✧ 7", Amounts.withSymbol("✧", Currency.SHARDS, 7));
     }
 
+    /** Owner decision #40: new accounts need 30 minutes of playtime before /pay and /withdraw. */
+    private static final long HALF_HOUR = 30 * 60_000L;
+
+    @Test
+    void newAccountLimitIsThirtyMinutes() {
+        EconomyConfig c = new EconomyConfig();
+        assertEquals(30, c.payMinPlaytimeMinutes);
+        assertEquals(30, c.noteMinPlaytimeMinutes);
+        assertEquals(60_000L, PayRules.playtimeLeft(c, HALF_HOUR - 60_000L));
+        assertEquals(0L, PayRules.playtimeLeft(c, HALF_HOUR));
+        assertEquals(HALF_HOUR, PayRules.playtimeLeft(c, -5), "negative playtime counts as 0");
+        c.payMinPlaytimeMinutes = 0;
+        assertTrue(PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, false, 0).isEmpty(), "0 = rule off");
+    }
+
     @Test
     void payRulesFollowTheOwnerDecisions() {
         EconomyConfig c = new EconomyConfig();
-        assertTrue(PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, false).isEmpty());
-        assertTrue(PayRules.check(c, "Alex", "Steve", 5, Currency.SHARDS, false).isEmpty());
-        assertEquals(PayRules.Problem.NOT_TRADEABLE, PayRules.check(c, "Alex", "Steve", 5, Currency.GEMS, false).orElseThrow());
-        assertEquals(PayRules.Problem.SELF, PayRules.check(c, "Alex", "alex", 1_500, Currency.MONEY, false).orElseThrow());
-        assertEquals(PayRules.Problem.FROZEN, PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, true).orElseThrow());
-        assertEquals(PayRules.Problem.BELOW_MINIMUM, PayRules.check(c, "Alex", "Steve", 9, Currency.MONEY, false).orElseThrow());
+        assertTrue(PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, false, HALF_HOUR).isEmpty());
+        assertTrue(PayRules.check(c, "Alex", "Steve", 5, Currency.SHARDS, false, HALF_HOUR).isEmpty());
+        assertEquals(PayRules.Problem.NOT_TRADEABLE, PayRules.check(c, "Alex", "Steve", 5, Currency.GEMS, false, HALF_HOUR).orElseThrow());
+        assertEquals(PayRules.Problem.SELF, PayRules.check(c, "Alex", "alex", 1_500, Currency.MONEY, false, HALF_HOUR).orElseThrow());
+        assertEquals(PayRules.Problem.FROZEN, PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, true, HALF_HOUR).orElseThrow());
+        assertEquals(PayRules.Problem.BELOW_MINIMUM, PayRules.check(c, "Alex", "Steve", 9, Currency.MONEY, false, HALF_HOUR).orElseThrow());
+
+        assertEquals(PayRules.Problem.NEW_ACCOUNT,
+                PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, false, HALF_HOUR - 1).orElseThrow());
+        assertEquals(PayRules.Problem.FROZEN, PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, true, 0).orElseThrow(),
+                "frozen is reported first");
 
         assertFalse(PayRules.needsConfirm(c, 999_999, Currency.MONEY));
         assertTrue(PayRules.needsConfirm(c, 1_000_000, Currency.MONEY));

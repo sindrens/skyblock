@@ -5,5 +5,7 @@
 
 # --- Economy (staff) ---
 lp group helper permission set skyblock.staff.economy.alerts true
-# Balance changes and /eco note are owner-only by default (STANDARDS: economy edits = owner). See docs/OPEN_QUESTIONS.md.
+# /eco give|take|set|reset|note: admins and the owner (owner decision #47; owner inherits admin). Always audited and
+# staff-alerted. The old owner node stays granted so nothing changes for the owner if inheritance is ever removed.
+lp group admin permission set skyblock.admin.economy true
 lp group owner permission set skyblock.owner.economy true
