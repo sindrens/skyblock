@@ -1,4 +1,4 @@
-# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.7, ISL2, NOTES
+# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.5, M2.7, ISL2, NOTES
 
 Grid, creation, home and per-player borders. Config `islands.yml`, texts `messages/islands.yml`, schematics in
 `plugins/PhoenixSkyblock/schematics/` (`<creation.schematic>.schem` + optional `<name>.yml` metadata with `home`, `chest`,
@@ -6,7 +6,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 
 | Command | Description | Permission | Status |
 |---|---|---|---|
-| `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: teleport home | `skyblock.island` (everyone) | ✅ |
+| `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: the **island menu** (M2.5, see below; `/is home` teleports) | `skyblock.island` (everyone) | ✅ |
 | `/is home [home]` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `home.warmup-seconds`). With a name: one of your own homes (ISL2, tab completes them) | `skyblock.island` | ✅ |
 | `/is setmyhome [name]` | ISL2: set your own home on your island where you stand (inside the border, safe spot, Y 0-256). Every member has `homes.per-member` (1), more from masteries later; the same name again moves it. Name default `homes.default-name` (`my`) | `skyblock.island` | ✅ |
 | `/is go` | Same as `/is home` (your island is the one you're a member of; visiting others is `/is visit`) | `skyblock.island` | ✅ |
@@ -23,6 +23,8 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is uncoop <player>` | Leader/Admin/Mod: end a player's coop trust | `skyblock.island` | ✅ |
 | `/is members` | Member list GUI: heads with role, join date, inviter, online state; click a head for the actions you may use (promote, demote, transfer, kick, uncoop, leave). Buttons: Invites, Invite (player picker), Permissions (the matrix) and Settings | `skyblock.island` | ✅ |
 | `/is notes [island]` | NOTES (owner N1-N9): your island's shared notes / to-do list menu (also from `/is members`). Add a note (chat input, max `notes.max-length` 200 characters, chat filter), click a note to tick it done / open it again, change its text, pin it as a hologram where you stand, unpin or delete it (confirm). Open as book (temporary book, saved on close), Clear done notes (manage). Without an island, opens the notes of the island you stand on when your role may read them (coop). `[island]` = staff only: any island's notes read only plus its deleted notes (tab completes island names for staff) | `skyblock.island`; `[island]`: `skyblock.island.notes.staff` | ✅ |
+| `/is chat [message]` | M2.5: island chat. Without text: switch your chat to your island and back (toggle mode; also the Island chat button in the menu). With text: one message to your island. Members only (Leader, Admin, Mod, Member; coop players and visitors don't hear it). Lines are `[Island] <role> <name> » text` in the role's color (the leader picks role colors in the menu). Uses the chat module's checks: mute, rate limit, duplicates, word/link filter, `&` colors by permission, `[item]`. Tab: example texts | `skyblock.island` | ✅ |
+| `/is info [player]` | M2.5: your island, or that player's island, in chat: name, solo/team, open/locked, leader, members, size, level (Phase 5), warps, created date and your role there. Tab: island names | `skyblock.island` | ✅ |
 | `/is invites` | ISL2: invites you received (click: Accept / Deny) and invites your island sent (click: cancel, Leader/Admin/Mod; confirm). Refreshes every 2 s | `skyblock.island` | ✅ |
 | `/is settings [setting] [on\|off\|value]` | ISL2: the island settings menu; with a setting name it changes it right away (no value: toggles flip, weather/time go to the next value). Who may change: the `settings` role permission (Leader + Admin by default); every member can look. Tab completes settings and, after one, its values | `skyblock.island` | ✅ |
 | `/is disband` | Leader only: confirm screen (what is lost, members removed, creation cooldown), then type `disband` in chat (`disband.confirm-word`, `cancel` keeps it). The island is removed for good: members and coop players are removed and told, everyone on it is sent to spawn, the slot is cleared and reused. New island after `creation.cooldown-hours` (24 h) | `skyblock.island` | ✅ |
@@ -243,6 +245,32 @@ Owner answers N1-N9 (`docs/DECISIONS_2026-10-30.md`, `docs/QUESTIONS_ROUND2.md` 
   `island_note_pin`, `island_note_unpin`, `island_note_delete`, `island_note_clear`, `island_note_book`,
   `island_note_purge`, all with the full text; `island_note_blocked` (category `chat`) for filtered text;
   `island_notes_view` (category `staff`) when staff open another island's notes.
+
+## Island menu and island chat (M2.5)
+- **`/is` with an island opens the island menu** (6 rows, UI_STYLE frame, one plain click per button, Bedrock-safe; refreshes every 2 s):
+  4 island info (name, your role, leader, solo/team, members, size, warps, level, created, open/locked) ·
+  10 Home (teleport) · 11 Members (`/is members`) · 12 Permissions (the matrix) · 13 Warps (your island's warps) ·
+  14 Visitors (open/locked, visitors on it now, bans; Leader/Admin/Mod click = lock/unlock) · 15 Settings (`/is settings`) ·
+  16 Invites (`/is invites`) · 19 Notes (`/is notes`, when your role may read them) · 20 Island chat (toggle) ·
+  21 Chat colors · 22 Visit islands (the browser) · 23 Stats, 24 Bank, 25 Upgrades: gray "Coming soon" ·
+  40 Disband (leader, same confirm + typed word as `/is disband`) or Leave (everyone else, confirm). Back from every sub-menu
+  returns to the island menu. `/is home` and `/is go` still teleport straight home.
+- **Island chat** (`/is chat`): toggle mode is per player and not saved (off after a relog or a profile switch). Routing:
+  islands publishes a `ChatChannel` service (common/chat); the chat module checks every chat message after mute, freeze and
+  menu prompts (LOWEST) and, when the player's island chat is on, runs its normal checks and hands the message to the island
+  instead of broadcasting it. One-shots go through the chat module's `ChatChannels` service (same checks; mute via the
+  moderation `muted` placeholder). Staff chat mode (`/sc`) wins over island chat. The chat lock (`/mutechat`) and slow mode
+  don't apply to island chat by default (`chat.yml` → `channels.respect-lock` / `channels.respect-slow-mode`). Without the chat
+  module: one-shots still work (mute check, the text filter if present, plain text), toggle mode has nothing to capture.
+- **Role colors** (owner I11): Chat colors menu, one wool per role (Leader, Admin, Mod, Member) in its color; the **leader**
+  clicks a role for the next color of `islands.yml` → `chat.palette` (8 colors by default: gold, red, aqua, green, yellow,
+  light_purple, blue, white). Defaults `chat.role-colors.*` (gold, red, aqua, green). Saved atomically (re-checks the leader in the
+  transaction), table `island_chat_colors` (migration V009), removed with the island. Everyone else sees them read-only.
+- **Staff spy:** `skyblock.island.chat.spy` (helper+) + the "Island chat spy" toggle in `/settings` → Chat (default off) shows
+  every island's chat as `[Spy] [island] ...`. The console gets the same line (`chat.console`, default on).
+- **Logged:** every island chat message as category `chat`, action `chat`, with `channel: island`, the island id/name and the
+  number of recipients (blocked ones as `chat_blocked` with the reason, like public chat); role color changes as category
+  `island`, `island_chat_color` (role, from, to).
 
 ## Profiles (PROF)
 Island membership, ownership, roles, coop trust, invites and personal homes belong to the active **profile** (stored under the profile key; profile 1 = the player UUID, so all existing islands are profile 1's). Join limits and the join cooldown stay **per player** (owner P11): `player_island_joins` is per player and remembers the profile (`profile_id`, migration V007; old rows = profile 1). Two profiles of one player are never on the same island, also not one after the other (P3): invite, accept, coop and `/isadmin addmember` are refused (`*.own-profile`, audited `profile_transfer_blocked`). An island of your other profile can't be visited or entered (not even with the staff bypass) and nothing can be done on it (`protection.own-profile`), so no item can move between your profiles. Bans, likes and ratings are per player; an island any of your profiles belongs to counts as your own for ratings/likes. Deleting a profile: refused while it leads a team island with other members; otherwise its solo island is removed and its memberships/coops end. `IslandService#islandOf/role/isCoop` take an online player's UUID (active profile) or a profile key; `islandOfProfile(key)` never resolves.

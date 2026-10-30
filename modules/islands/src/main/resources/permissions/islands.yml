@@ -2,7 +2,7 @@
 # Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
 # LuckPerms grants for these nodes: server/permissions/islands.txt. Commands: docs/commands/islands.md.
 skyblock.island:
-  description: Use /is (create your island, home, go, sethome, setmyhome, invite, invites, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, settings, notes, disband, visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like)
+  description: Use /is (create your island, home, go, sethome, setmyhome, invite, invites, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, settings, notes, chat, info, disband, visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like)
   default: true
 skyblock.island.fly:
   description: Island fly - fly inside any island's border (members always; visitors when that island's visitor-fly setting is on). Off when leaving the border, no fall damage on landing. The Wings mastery gives the same on its island later.
@@ -12,6 +12,9 @@ skyblock.island.bypass:
   default: op
 skyblock.island.notes.staff:
   description: Staff - /is notes <island> opens any island's notes read only (logged) and shows its deleted notes of the last notes.deleted-keep-days days (owner N7)
+  default: op
+skyblock.island.chat.spy:
+  description: Staff - see every island's chat (M2.5) while the "Island chat spy" toggle in /settings is on (default off); island chat is always in the audit log
   default: op
 skyblock.island.visit.bypass:
   description: Staff - enter locked islands and islands that banned you (teleports, /isadmin tp); can't be expelled; never counted as a visitor while vanished

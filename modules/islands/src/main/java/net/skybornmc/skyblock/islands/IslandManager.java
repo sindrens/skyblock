@@ -691,7 +691,7 @@ final class IslandManager implements IslandService {
     void openOrCreate(Player player) {
         Optional<Island> own = islandOfPlayer(key(player));
         if (own.isPresent()) {
-            goHome(player, own.get(), false);
+            module.hub().open(player, own.get()); // M2.5: the island menu (home is one click there, or /is home)
             return;
         }
         if (building.contains(key(player))) {

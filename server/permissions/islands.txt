@@ -35,3 +35,8 @@ lp group admin permission set skyblock.island.admin.teleport-slot true
 # notes-manage decide who reads and writes. Staff read any island's notes and recently deleted ones (owner N7: for scam
 # and abuse reports); every staff look is logged (category staff). helper < mod < admin.
 lp group helper permission set skyblock.island.notes.staff true
+
+# Island menu and island chat (M2.5): /is (menu), /is chat and /is info use skyblock.island (everyone); island chat is for
+# stored members (not coop/visitors). Staff spy on island chat with the "Island chat spy" /settings toggle (default off),
+# like /socialspy. helper < mod < admin.
+lp group helper permission set skyblock.island.chat.spy true
