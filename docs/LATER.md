@@ -9,3 +9,4 @@ Things decided but deliberately postponed. Check this list when planning each ph
 - Discord bot appeals for banned players (Phase P 13.10 step 2).
 - Network mode for punishments (scope network) when a second server exists.
 - CoreProtect when it supports 26.3 (block logs in `/logs near`).
+- Nether and End as custom worlds for later content (owner 2026-10-30).
