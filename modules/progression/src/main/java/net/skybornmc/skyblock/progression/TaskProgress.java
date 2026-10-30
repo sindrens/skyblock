@@ -151,11 +151,39 @@ final class TaskProgress {
         Island s = island(islandId);
         List<TaskDef> out = new ArrayList<>();
         for (TaskDef def : catalog.all()) {
+            if (settled(s, def)) {
+                continue; // PERF5: done or completing tasks are never claimed, so their live value is not read
+            }
             String key = def.info().counterKey();
             long value = key != null ? s.counter(key) : reach == null ? 0 : reach.applyAsLong(def);
             claimIfReady(s, def, value, out);
         }
         return out;
+    }
+
+    /**
+     * PERF5: only the reach tasks (skill, pillar, island level) of the island that are ready now, claimed like
+     * {@link #readyFor}. Counter tasks complete the moment they are counted ({@link #readyFor}, {@link #release}), so
+     * the periodic check reads only these once an island had its full check ({@link #readyAll}) after a load, a catalog
+     * change or a failed save. Done and completing tasks are skipped before their live value is read.
+     */
+    List<TaskDef> readyReach(UUID islandId, ToLongFunction<TaskDef> reach) {
+        Island s = peek(islandId);
+        List<TaskDef> out = new ArrayList<>();
+        for (TaskDef def : catalog.reach()) {
+            if (s != null && settled(s, def)) {
+                continue;
+            }
+            long value = reach == null ? 0 : reach.applyAsLong(def);
+            if (value >= def.info().amount()) {
+                claimIfReady(s == null ? island(islandId) : s, def, value, out);
+            }
+        }
+        return out;
+    }
+
+    private static boolean settled(Island s, TaskDef def) {
+        return s.done.contains(def.id()) || s.completing.contains(def.id());
     }
 
     private static void claimIfReady(Island s, TaskDef def, long value, List<TaskDef> out) {

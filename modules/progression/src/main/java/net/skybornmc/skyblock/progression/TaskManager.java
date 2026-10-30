@@ -94,6 +94,8 @@ final class TaskManager implements TaskService, Listener {
     private final TaskStore store = new TaskStore();
     private final TaskBuffer buffer = new TaskBuffer();
     private final TaskProgress progress = new TaskProgress(TaskCatalog.empty());
+    private final TaskCheckPlan checks = new TaskCheckPlan();
+    private long checkSecond;
     private final Executor main;
     private volatile TaskStorage storage;
     private TaskMenus menus;
@@ -153,6 +155,7 @@ final class TaskManager implements TaskService, Listener {
     /** Reload: settings and tasks.yml. Progress stays; new tasks that are already met complete on the next check. */
     void applyConfig() {
         progress.catalog(loadCatalog());
+        checks.invalidateAll();
         if (flushTask != null) {
             flushTask.cancel();
         }
@@ -165,8 +168,8 @@ final class TaskManager implements TaskService, Listener {
     private void schedule() {
         long flush = Math.max(2, config.flushSeconds) * 20L;
         flushTask = core.scheduler().repeat("progression-task-flush", flush, flush, this::flush);
-        long check = Math.max(5, config.checkSeconds) * 20L;
-        checkTask = core.scheduler().repeat("progression-task-check", check, check, this::checkOnline);
+        // PERF5: every second one slice of the islands, so each island is still checked once per check-seconds.
+        checkTask = core.scheduler().repeat("progression-task-check", 20L, 20L, this::checkSlice);
     }
 
     private void load() {
@@ -184,6 +187,7 @@ final class TaskManager implements TaskService, Listener {
                 progress.addStored(row.island(), row.counter(), row.amount());
             }
             loaded.done().forEach((island, done) -> done.forEach(id -> progress.markDone(island, id)));
+            checks.invalidateAll();
             ready = true;
             core.plugin().getLogger().info("Progression: loaded the tasks of " + progress.islandIds().size() + " islands ("
                     + catalog().size() + " tasks, season " + season + ").");
@@ -343,8 +347,11 @@ final class TaskManager implements TaskService, Listener {
         return false;
     }
 
-    /** Checks every island with an online member: reach tasks, and tasks a reload or the load made ready. */
-    void checkOnline() {
+    /**
+     * PERF5: one slice of the islands with an online member per second (each island once per {@code check-seconds}):
+     * reach tasks, and after a load, reload or failed save every task ({@link TaskCheckPlan}).
+     */
+    void checkSlice() {
         if (!ready || !enabled()) {
             return;
         }
@@ -352,39 +359,85 @@ final class TaskManager implements TaskService, Listener {
         if (islands == null) {
             return;
         }
+        int slices = Math.max(5, config.checkSeconds);
+        long second = checkSecond++;
         Set<UUID> seen = new HashSet<>();
         for (Player p : Bukkit.getOnlinePlayers()) {
             islands.islandOf(p.getUniqueId()).map(IslandService.IslandInfo::id).ifPresent(id -> {
-                if (seen.add(id)) {
+                if (TaskCheckPlan.inSlice(id, second, slices) && seen.add(id)) {
                     check(id);
                 }
             });
         }
     }
 
-    /** Completes everything that is ready on one island now. */
+    /** Completes everything that is ready on one island now (only the reach tasks once it had its full check). */
     void check(UUID islandId) {
         if (!ready || !enabled() || islandId == null) {
             return;
         }
-        List<Player> online = onlineMembers(islandId);
-        for (TaskDef def : progress.readyAll(islandId, d -> reachValue(islandId, d.info(), online))) {
+        Reach reach = new Reach(islandId);
+        List<TaskDef> found;
+        if (checks.needsFull(islandId)) {
+            checks.fullDone(islandId);
+            found = progress.readyAll(islandId, reach);
+        } else {
+            found = progress.readyReach(islandId, reach);
+        }
+        for (TaskDef def : found) {
             complete(islandId, def, null);
+        }
+    }
+
+    /** PERF5: live reach values of one check; online members and best skill levels are read once, only when needed. */
+    private final class Reach implements java.util.function.ToLongFunction<TaskDef> {
+        private final UUID islandId;
+        private List<Player> online;
+        private final Map<SkillType, Integer> bestSkill = new java.util.EnumMap<>(SkillType.class);
+
+        Reach(UUID islandId) {
+            this.islandId = islandId;
+        }
+
+        @Override
+        public long applyAsLong(TaskDef def) {
+            return reachValue(islandId, def.info(), this);
+        }
+
+        List<Player> online() {
+            if (online == null) {
+                online = onlineMembers(islandId);
+            }
+            return online;
         }
     }
 
     /** Live value of a reach task: best online member's skill, the pillar level, the island level. */
     long reachValue(UUID islandId, TaskInfo info, List<Player> online) {
+        Reach reach = new Reach(islandId);
+        reach.online = online;
+        return reachValue(islandId, info, reach);
+    }
+
+    private long reachValue(UUID islandId, TaskInfo info, Reach reach) {
         return switch (info.type()) {
             case SKILL_LEVEL -> {
-                SkillService skills = core.services().optional(SkillService.class).orElse(null);
                 SkillType skill = SkillType.byId(info.target()).orElse(null);
+                if (skill == null) {
+                    yield 0;
+                }
+                Integer cached = reach.bestSkill.get(skill);
+                if (cached != null) {
+                    yield cached;
+                }
+                SkillService skills = core.services().optional(SkillService.class).orElse(null);
                 int best = 0;
-                if (skills != null && skill != null) {
-                    for (Player p : online) {
+                if (skills != null) {
+                    for (Player p : reach.online()) {
                         best = Math.max(best, skills.level(p, skill));
                     }
                 }
+                reach.bestSkill.put(skill, best);
                 yield best;
             }
             case PILLAR_LEVEL -> Pillar.byId(info.target()).map(p -> pillars.pillarLevel(islandId, p)).orElse(0);
@@ -418,6 +471,7 @@ final class TaskManager implements TaskService, Listener {
     public void onIslandRemoved(IslandRemovedEvent event) {
         progress.forget(event.islandId());
         buffer.forget(event.islandId());
+        checks.forget(event.islandId());
     }
 
     // ------------------------------------------------------------------ completion
@@ -452,6 +506,7 @@ final class TaskManager implements TaskService, Listener {
         saved.whenComplete((ok, error) -> core.scheduler().main("progression-task-done", () -> {
             if (error != null || ok == null) {
                 progress.finish(islandId, def, false);
+                checks.invalidate(islandId); // PERF5: the next check of the island is a full one and claims it again
                 core.plugin().getLogger().log(Level.WARNING, "Progression: saving task " + info.id() + " of island " + islandId
                         + " failed; it is tried again on the next check", error == null ? null : Database.cause(error));
                 return;
