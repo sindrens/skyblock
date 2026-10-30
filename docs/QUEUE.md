@@ -80,12 +80,12 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M4.3 | Per-player blocks engine (depleted state per player, 10 s respawn, timing wheel) | Phase 1 | modules/depths (engine pkg) | ✅ |
 | M4.1 | Depths layout from `depths.yml` (placeholder zones by code, U-shaped wings) | M4.3 | modules/depths (zones pkg) | ✅ |
 | M4.5 | Skill core (XP/levels, `/skills`) | Phase 1 | modules/skills | ✅ |
-| M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | ⬜ |
+| M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | 🔄 (with M4.9) |
 | M4.6 | Tiers, unlocks, `/dungeon` | M4.1, M4.5 | modules/depths | ✅ |
 | M4.2 | Tools: starter kit (24 h), Forge, living tools (perk slots 5/15/30/45 + prestige), blueprints, skins; `/tool give`, `/blueprint give`, `/skin give` | M3.1, M4.5 | modules/tools | ✅ |
 | M4.7 | Forest | M4.3, M4.1 | modules/depths | ⬜ |
 | M4.8 | Combat zones (shared mobs) | M4.1 | modules/depths (combat pkg) | ⬜ |
-| M4.9 | Drops + tokens | M4.4, M3.1 | modules/depths | ⬜ |
+| M4.9 | Drops + tokens | M4.4, M3.1 | modules/depths | 🔄 (with M4.4) |
 
 ## Phase E: Enchants (docs/plans/ENCHANTS.md)
 | # | Item | Depends on | Lane | Status |
