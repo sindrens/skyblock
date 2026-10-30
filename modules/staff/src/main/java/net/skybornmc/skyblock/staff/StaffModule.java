@@ -28,6 +28,8 @@ public final class StaffModule implements SkyblockModule {
     private ReportService reports;
     private StaffMode mode;
 
+    private ProfileSwitchGuard profileGuard;
+
     public StaffModule(Core core) {
         this.core = core;
     }
@@ -68,7 +70,10 @@ public final class StaffModule implements SkyblockModule {
     }
 
     private List<Listener> listeners() {
-        return List.of(freeze, reports, mode);
+        if (profileGuard == null) {
+            profileGuard = new ProfileSwitchGuard(freeze, mode, core.messages(id()));
+        }
+        return List.of(freeze, reports, mode, profileGuard);
     }
 
     @Override
@@ -87,5 +92,6 @@ public final class StaffModule implements SkyblockModule {
         for (Listener listener : listeners()) {
             HandlerList.unregisterAll(listener);
         }
+        profileGuard = null;
     }
 }

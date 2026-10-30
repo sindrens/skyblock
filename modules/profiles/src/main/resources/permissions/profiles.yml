@@ -1,0 +1,12 @@
+# Permissions of the profiles module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/profiles.txt. Commands: docs/commands/profiles.md.
+skyblock.profiles.use:
+  description: Open /profiles and switch, create, rename and delete your own profiles
+  default: true
+skyblock.profiles.slots.2:
+  description: Profile slot 2 for free (rank Knight and up, owner PR5); without it slot 2 costs gems
+  default: false
+skyblock.profiles.slots.3:
+  description: Profile slot 3 for free (rank Warlord and up, owner PR5); without it slot 3 costs gems
+  default: false

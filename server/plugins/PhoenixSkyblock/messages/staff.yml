@@ -271,3 +271,8 @@ menu:
     logs:
       name: "<c:ember><bold>Logs</bold></c:ember>"
       lore: ["<c:text>Everything <player> did.", "", "<c:action><sym:bullet> Click to open"]
+
+# Profile switch refused by staff rules (round 3 PR4).
+profiles:
+  frozen: "<prefix><c:error><sym:cross> You can't switch profiles while frozen."
+  staff-mode: "<prefix><c:error><sym:cross> Leave staff mode first (<c:action>/staffmode</c:action>)."

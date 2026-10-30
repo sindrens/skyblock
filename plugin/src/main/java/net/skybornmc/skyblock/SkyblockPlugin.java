@@ -188,6 +188,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(worlds);
         modules.register(new MotdModule(core));
         modules.register(new ModerationModule(core));
+        // Profiles early: other modules read the active profile key in their own join handlers.
+        modules.register(new net.skybornmc.skyblock.profiles.ProfilesModule(core));
         modules.register(new net.skybornmc.skyblock.essentials.EssentialsModule(core));
         modules.register(new net.skybornmc.skyblock.hud.HudModule(core));
         modules.register(new net.skybornmc.skyblock.staff.StaffModule(core));
