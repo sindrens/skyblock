@@ -25,7 +25,9 @@ public enum AuditCategory {
     /** Crates and keys (PHASE-10 M10.1): keys given and taken, opens, reward hand-outs and reviews. */
     CRATES,
     /** Boosters (PHASE-10 M10.2): items started, banked time, global boosters, thanks. */
-    BOOSTERS;
+    BOOSTERS,
+    /** Rewards (PHASE-10 M10.5/M10.6): daily calendar claims, streak rewards, playtime rewards, later votes. */
+    REWARDS;
 
     /** Key stored in the database, e.g. {@code "economy"}. */
     public String key() {

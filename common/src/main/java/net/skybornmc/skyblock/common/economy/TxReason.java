@@ -50,6 +50,12 @@ public final class TxReason {
     /** The gem a player's thanks gives the starter of a global booster (PHASE-10 M10.2, RW2); new gems. */
     public static final String BOOSTER_THANKS = "booster_thanks";
 
+    /** Money, crystals and gems from the daily calendar and its streak (PHASE-10 M10.6); new currency. */
+    public static final String DAILY_REWARD = "daily_reward";
+
+    /** Crystals from active playtime (PHASE-10 M10.6, R6); new currency. */
+    public static final String PLAYTIME_REWARD = "playtime_reward";
+
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 
     private TxReason() {

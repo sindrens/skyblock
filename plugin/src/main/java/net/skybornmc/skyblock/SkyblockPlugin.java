@@ -254,6 +254,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // Crates core (PHASE-10 M10.1): needs economy; reads box, enchants, wardrobe, stacking, cosmetics, islands, skills and
         // builds services (optional). Publishes CrateKeys once ready (the AFK pool then hands over its pending keys).
         modules.register(new net.skybornmc.skyblock.crates.CratesModule(core));
+        // Rewards (PHASE-10 M10.6 daily calendar + playtime; M10.5 voting later): needs economy; hands keys out through
+        // CrateKeys (crates, above) and reads box, boosters, enchants, cosmetics, islands, skills, afk, profiles (optional).
+        modules.register(new net.skybornmc.skyblock.rewards.RewardsModule(core));
     }
 
     public ModuleRegistry modules() {

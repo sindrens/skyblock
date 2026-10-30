@@ -1,0 +1,5 @@
+# LuckPerms grants for the rewards module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/rewards/src/main/resources/permissions/rewards.yml. One console command per line; # = comment.
+# skyblock.rewards.daily (/daily, the Daily Rewards NPC) and skyblock.rewards.playtime (playtime rewards) default to true,
+# so players need no grant. Staff see every claim, streak reward, playtime reward and hand-out in /logs (category rewards:
+# skyblock.staff.logs.category.rewards, granted to mod in logs.txt). No staff commands (not in the approved list yet).
