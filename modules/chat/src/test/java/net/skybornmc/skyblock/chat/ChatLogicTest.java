@@ -110,4 +110,13 @@ class ChatLogicTest {
         assertFalse(ChatConfig.upgrades(old).containsKey("format.chat"));
         assertTrue(ChatConfig.upgrades(new ChatConfig().changedDefaultValues()).isEmpty(), "new defaults are final");
     }
+
+    @Test
+    void tpsTiers() {
+        assertEquals("good", TabService.tpsTier(20.0, 19.0, 15.0));
+        assertEquals("good", TabService.tpsTier(19.0, 19.0, 15.0));
+        assertEquals("ok", TabService.tpsTier(18.9, 19.0, 15.0));
+        assertEquals("ok", TabService.tpsTier(15.0, 19.0, 15.0));
+        assertEquals("bad", TabService.tpsTier(14.9, 19.0, 15.0));
+    }
 }

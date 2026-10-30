@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.hud;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 /** Pure helpers for the flicker-free sidebar: invisible unique entries and line diffs. */
 final class SidebarLines {
@@ -37,5 +38,10 @@ final class SidebarLines {
     /** Players are spread over the update interval: does this player update on {@code tick}? */
     static boolean due(int playerHash, long tick, int interval) {
         return Math.floorMod(playerHash, interval) == Math.floorMod(tick, interval);
+    }
+
+    /** Layout for a world without a module rule: the layout named after the world (e.g. {@code depths}) if it exists, else {@code default}. */
+    static String layout(String world, Predicate<String> exists) {
+        return world != null && !world.isBlank() && exists.test(world) ? world : "default";
     }
 }

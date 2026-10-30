@@ -97,6 +97,12 @@ public final class ChatConfig extends ModuleConfig {
     @Setting(path = "tab.season", desc = "Season text in the tab header until the seasons feature provides it.")
     public String season = "Season 1 · Preseason";
 
+    @Setting(path = "tab.tps-good", desc = "Staff TPS line: at or above this TPS it shows green (messages tab.tps.good).", min = 0, max = 20)
+    public double tpsGood = 19.0;
+
+    @Setting(path = "tab.tps-ok", desc = "Staff TPS line: at or above this TPS (and below tps-good) it shows orange; below it red.", min = 0, max = 20)
+    public double tpsOk = 15.0;
+
     @Override
     public String fileName() {
         return "chat.yml";
