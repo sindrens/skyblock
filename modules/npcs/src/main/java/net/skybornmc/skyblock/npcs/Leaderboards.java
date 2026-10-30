@@ -47,10 +47,10 @@ final class Leaderboards {
         this.module = module;
     }
 
-    /** Parses the sources (problems logged) and starts the refresh task. */
-    void start(List<String> problems) {
+    /** Takes the parsed sources ({@link NpcPlan}, parsed off the main thread) and starts the refresh task. */
+    void start(Map<String, BoardSource> parsed) {
         stop();
-        sources = BoardSource.parseAll(module.config().sources, problems);
+        sources = parsed;
         long period = module.config().refreshMinutes * 60L * 20L;
         // First read shortly after start (services of later modules are registered by then).
         task = module.core().scheduler().asyncRepeat(40, period, this::refresh);

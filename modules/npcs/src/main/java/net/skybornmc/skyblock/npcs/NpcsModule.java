@@ -21,12 +21,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 
 /**
  * NPCs, holograms and leaderboard holograms at the points of the applied builds (NPCHOLO). Positions: the worlds
@@ -53,6 +54,7 @@ public final class NpcsModule implements SkyblockModule {
     private volatile Map<String, String> skins = Map.of();
     private volatile Map<String, Material> held = Map.of();
     private Placer placer;
+    private LatestLoad<NpcPlan> loader;
     private Leaderboards boards;
     private NpcListener listener;
     private HelpDialog help;
@@ -82,6 +84,7 @@ public final class NpcsModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(placer, core.plugin());
         Bukkit.getPluginManager().registerEvents(listener, core.plugin());
         core.services().register(ID, NpcDirectory.class, new Directory());
+        loader = new LatestLoad<>(r -> core.scheduler().async(r), r -> core.scheduler().main("npcs:apply", r));
         // One tick later: worlds are loaded and services of modules enabled after this one exist.
         core.scheduler().later("npcs:start", 1, this::place);
     }
@@ -100,6 +103,7 @@ public final class NpcsModule implements SkyblockModule {
         if (placer == null) {
             return;
         }
+        loader.cancel();
         boards.stop();
         placer.stop();
         HandlerList.unregisterAll(placer);
@@ -108,52 +112,56 @@ public final class NpcsModule implements SkyblockModule {
         placer = null;
     }
 
-    /** Reads the rules and points again and respawns everything. */
-    private void place() {
+    /**
+     * Reads the rules and points again and respawns everything. PERF3: the parsing runs off the main thread
+     * ({@link NpcPlan}), the result is applied on it ({@code npcs:apply}), and the spawns are spread over the next ticks
+     * ({@code npcs:spawn}, {@link SpawnQueue}). Completes on the main thread once applied (false when a newer call won).
+     */
+    private CompletableFuture<Boolean> place() {
+        if (placer == null || loader == null) {
+            return CompletableFuture.completedFuture(false);
+        }
+        NpcPlan.Inputs inputs = NpcPlan.Inputs.of(config);
+        BuildPoints points = core.services().optional(BuildPoints.class).orElse(null);
+        CompletableFuture<Boolean> done = loader.load(() -> NpcPlan.compute(inputs, points, NpcsModule::heldMaterial, this::hasHologramText),
+                this::apply);
+        done.whenComplete((applied, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "[npcs] could not place the NPCs and holograms", error);
+            }
+        });
+        return done;
+    }
+
+    /** Main thread: takes over a parsed plan and (re)places everything. */
+    private void apply(NpcPlan plan) {
         if (placer == null) {
             return;
         }
-        List<String> problems = new ArrayList<>();
-        RoleRules parsedRoles = RoleRules.parse(config.npcRoles, config.roleActions);
-        problems.addAll(parsedRoles.problems());
-        roles = parsedRoles;
-        skins = RoleRules.pairs("npcs.skins", config.skins, problems);
-        held = materials(RoleRules.pairs("npcs.held-items", config.heldItems, problems), problems);
-        BuildPoints points = core.services().optional(BuildPoints.class).orElse(null);
-        Spots planned = points == null ? Spots.empty()
-                : Spots.from(points, parsedRoles, lower(config.hologramSkip));
-        problems.addAll(planned.problems());
-        spots = planned;
-        boards.start(problems);
-        placer.start(planned);
-        List<String> noText = new ArrayList<>();
-        planned.holograms().stream().filter(t -> hologramContent(t) == null).forEach(t -> noText.add(t.id()));
-        if (!noText.isEmpty()) {
-            problems.add("messages/npcs.yml -> holograms: no text for " + String.join(", ", noText) + " (not shown)");
-        }
-        problems.forEach(p -> core.plugin().getLogger().warning("[npcs] " + p));
+        roles = plan.roles();
+        skins = plan.skins();
+        held = plan.held();
+        spots = plan.spots();
+        boards.start(plan.sources());
+        placer.start(plan.spots());
+        plan.problems().forEach(p -> core.plugin().getLogger().warning("[npcs] " + p));
+        Spots planned = plan.spots();
         core.plugin().getLogger().info("[npcs] " + planned.npcs().size() + " NPCs, " + planned.holograms().size()
                 + " holograms, " + planned.boards().size() + " leaderboards from the builds"
-                + (points == null ? " (worlds module's build points not available)" : ""));
+                + (plan.pointsAvailable() ? "" : " (worlds module's build points not available)")
+                + (placer.waiting() > 0 ? "; spawning " + placer.waiting() + " in loaded chunks over the next ticks" : ""));
     }
 
-    private static Set<String> lower(List<String> ids) {
-        Set<String> out = new HashSet<>();
-        ids.forEach(id -> out.add(id.trim().toLowerCase(Locale.ROOT)));
-        return out;
+    /** A held-item name to an item, null when it is not one (thread-safe: enum and frozen registry lookups). */
+    private static Material heldMaterial(String name) {
+        Material m = Material.matchMaterial(name);
+        return m == null || !m.isItem() || m.isAir() ? null : m;
     }
 
-    private static Map<String, Material> materials(Map<String, String> raw, List<String> problems) {
-        Map<String, Material> out = new LinkedHashMap<>();
-        raw.forEach((id, name) -> {
-            Material m = Material.matchMaterial(name);
-            if (m == null || !m.isItem() || m.isAir()) {
-                problems.add("npcs.yml -> npcs.held-items: '" + name + "' is not an item (skipped)");
-            } else {
-                out.put(id, m);
-            }
-        });
-        return out;
+    /** Same test as {@link #hologramContent} returning non-null, without building the text (any thread). */
+    private boolean hasHologramText(Spots.Text t) {
+        String raw = raw("holograms." + t.id());
+        return (raw != null && !raw.isBlank()) || !t.fallbackText().isBlank();
     }
 
     // ------------------------------------------------------------------ shared helpers
@@ -410,10 +418,14 @@ public final class NpcsModule implements SkyblockModule {
         if (placer == null) {
             return;
         }
-        place();
-        boards.refresh();
-        msg.send(sender, "admin.respawned", Msg.number("total", spots.total()));
-        core.audit().log(AuditCategory.CONFIG, "npcs_respawn", Actor.of(sender), ID, (long) spots.total(), null, null);
+        place().whenComplete((applied, error) -> {
+            if (error != null || placer == null) {
+                return; // logged by place()
+            }
+            boards.refresh();
+            msg.send(sender, "admin.respawned", Msg.number("total", spots.total()));
+            core.audit().log(AuditCategory.CONFIG, "npcs_respawn", Actor.of(sender), ID, (long) spots.total(), null, null);
+        });
     }
 
     // ------------------------------------------------------------------ NpcDirectory

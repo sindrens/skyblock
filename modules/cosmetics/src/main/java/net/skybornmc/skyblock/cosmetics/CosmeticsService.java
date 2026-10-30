@@ -144,13 +144,11 @@ public final class CosmeticsService implements Cosmetics, Listener {
         if (!Cosmetic.validId(id) || registry.get(Kind.TITLE, id).isPresent()) {
             return false;
         }
-        try {
-            registry.put(new Cosmetic(Kind.TITLE, id, display, rarity == null ? net.skybornmc.skyblock.common.item.Rarity.COMMON : rarity,
-                    source, secret, true));
-        } catch (java.io.IOException e) {
-            core.plugin().getLogger().log(Level.WARNING, "Could not add title '" + id + "' to " + CosmeticRegistry.FILE, e);
-            return false;
-        }
+        // PERF3: active at once; the file is written off the main thread (one write for a burst of definitions).
+        registry.putLater(new Cosmetic(Kind.TITLE, id, display, rarity == null ? net.skybornmc.skyblock.common.item.Rarity.COMMON : rarity,
+                source, secret, true), r -> core.scheduler().async(r),
+                e -> core.plugin().getLogger().log(Level.WARNING, "Could not write new titles (latest: '" + id + "') to "
+                        + CosmeticRegistry.FILE + "; they stay active until the next restart", e));
         core.audit().log(AuditCategory.CONFIG, "title_define", Actor.system("cosmetics"), id, null, null, null,
                 Map.of("display", String.valueOf(display), "source", String.valueOf(source)));
         return true;

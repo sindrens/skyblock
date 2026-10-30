@@ -424,3 +424,18 @@ Keys: `q` question, `s` suggested answer, `why` why it matters, `p` priority (1 
   {"q": "May I fix the docs that disagree with the owner decisions (CONTEXT.md line 62, WORLD.md section 6)?", "s": "Yes, after Q1 and Q2 are answered.", "why": "Wrong docs cause wrong code later.", "p": 3}
 ]
 ```
+
+---
+
+## PERF3 (startup slow operations on update101)
+
+Measured by reading the code paths (no test server). What each warning was and what changed:
+
+| Task (update101) | Root cause | Fix |
+|---|---|---|
+| `npcs:start` 1065 ms | One tick did everything: parse roles/skins/held items/build points/leaderboard sources, build every hologram's MiniMessage text once just to check that it exists, walk every entity of every world for left-overs (tag-set copy per entity), then spawn every NPC, hologram and leaderboard in the loaded chunks (mannequin + text display + click box, MiniMessage parse, first-time Adventure-to-vanilla conversion) in that same tick. No chunk was loaded. | Parsing runs off the main thread (`NpcPlan`, applied on the main thread through `LatestLoad`; a newer reload/respawn drops older results). The "has a text" check reads the raw message only. Left-over purge only looks at villagers, mannequins, text displays and interactions. Spawns go through `SpawnQueue`: at most `spawning.per-tick` (8) sets or `spawning.budget-ms` (2 ms) per tick, always at least one; chunk-load spawns use the same queue (one task instead of one task per chunk). Chunks are still never loaded. |
+| `tutorial:start` 14.5 ms | `Cosmetics.defineTitle` (the tutorial reward title) wrote `tags-titles.yml` on the main thread (load + save of the whole YAML file). The same path ran once per new achievement title. | `CosmeticRegistry.putLater`: the title is active at once, the file is written off the main thread, a burst of definitions shares one write. A reload before the write writes it first. |
+| `sell-stat-sources` 7.3 ms | Two set inserts; the time was first-tick JVM warm-up (class loading, lambda bootstrap, safepoints while every module's async start-up load runs). | Registered directly in `enable()` (islands is enabled before economy); the one-tick task is only a fallback. |
+| `afk-start` 7.2 ms | Same as above: area lookup in memory and two timers. The banked booster (boosters module, M10-2) does its database work async; boosters has no start task. | `AfkTracker.start()` runs in `enable()`; no separate first-tick task. |
+
+What to look for in the next startup log: no `npcs:start`, `tutorial:start`, `sell-stat-sources` or `afk-start` warnings; the `[npcs] … from the builds; spawning N in loaded chunks over the next ticks` line; at most one `npcs:spawn` warning (the very first spawn pays the cold-start cost) and `npcs:purge` / `npcs:apply` warnings only if those steps are still slow (they now time themselves).
