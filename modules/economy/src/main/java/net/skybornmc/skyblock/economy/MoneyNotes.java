@@ -17,7 +17,6 @@ import net.skybornmc.skyblock.common.item.ItemRegistry;
 import net.skybornmc.skyblock.common.item.ItemType;
 import net.skybornmc.skyblock.common.item.LoreBuilder;
 import net.skybornmc.skyblock.common.item.Rarity;
-import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Cooldowns;
 import net.skybornmc.skyblock.common.util.Format;
@@ -253,13 +252,11 @@ final class MoneyNotes implements Listener {
             return; // P7: frozen balance or blocked trading
         }
         UUID uuid = player.getUniqueId();
-        long played = module.core.players().get(uuid).map(PlayerData::playtimeMillis).orElse(0L);
-        Optional<NoteRules.Problem> problem = NoteRules.withdraw(module.config, amount, currency, module.frozen(player), played);
+        Optional<NoteRules.Problem> problem = NoteRules.withdraw(module.config, amount, currency, module.frozen(player));
         if (problem.isPresent()) {
             throw fail(problem.get().key, Msg.c("currency", module.currencyName(player, currency)),
                     module.amountTag("min", player, currency, module.config.noteMin(currency)),
-                    module.exactAmountTag("max", player, currency, module.config.noteMax(currency)),
-                    Msg.p("time", Format.duration(Duration.ofMillis(NoteRules.playtimeLeft(module.config, played)))));
+                    module.exactAmountTag("max", player, currency, module.config.noteMax(currency)));
         }
         if (player.getInventory().firstEmpty() < 0) {
             throw fail("inventory-full");

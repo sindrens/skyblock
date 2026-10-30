@@ -291,9 +291,10 @@ final class EconomyServiceImpl implements EconomyService {
     // ------------------------------------------------------------------------------------------------ players
 
     /**
-     * On join: gives the season's starting balances (exactly once per season and player, by idempotency key on the
-     * player UUID, so a new profile never gets a second start balance) and loads the balances into the display cache:
-     * gems from the player account, the rest from the active profile.
+     * On join: gives the active profile its season starting balances and loads the balances into the display cache: gems
+     * from the player account, the rest from the active profile. Owner answers 121/121b (round 1): every profile gets the
+     * start money (once per season and profile, by idempotency key on the profile key; profile 1's key is the player UUID,
+     * so old grants still count). Gems are account-wide and keep one start balance per player.
      */
     CompletableFuture<Void> loadPlayer(UUID player, String name) {
         UUID key = profiles().profileKey(player);
@@ -303,6 +304,11 @@ final class EconomyServiceImpl implements EconomyService {
         if (previous != null && !previous.equals(key) && !previous.equals(player)) {
             cache.forget(previous);
         }
+        return grantStart(player, key, name).thenCompose(v -> loadKey(player, key));
+    }
+
+    /** The start balances of profile {@code key} of {@code player} (each at most once per season; see {@link #loadPlayer}). */
+    private CompletableFuture<Void> grantStart(UUID player, UUID key, String name) {
         List<CompletableFuture<TxResult>> starts = new ArrayList<>();
         EconomyConfig cfg = config.get();
         for (Currency currency : Currency.values()) {
@@ -310,12 +316,16 @@ final class EconomyServiceImpl implements EconomyService {
             if (amount > 0) {
                 starts.add(execute(Transaction.deposit(AccountRef.player(key), currency, amount, TxReason.START_BALANCE)
                         .actor(Actor.system("economy"))
-                        .idempotencyKey(startKey(season.getAsInt(), currency, player))
-                        .detail("target_name", name)));
+                        .idempotencyKey(startKey(season.getAsInt(), currency, startOwner(currency, player, key)))
+                        .detail("target_name", name == null ? "" : name)));
             }
         }
-        return CompletableFuture.allOf(starts.toArray(CompletableFuture[]::new))
-                .thenCompose(v -> loadKey(player, key));
+        return CompletableFuture.allOf(starts.toArray(CompletableFuture[]::new));
+    }
+
+    /** Whose start balance a currency is: gems per player (account-wide), everything else per profile. Pure. */
+    static UUID startOwner(Currency currency, UUID player, UUID profileKey) {
+        return currency == Currency.GEMS ? player : profileKey;
     }
 
     /** Loads {@code key}'s balances (and the player's gems) into the cache. */
@@ -327,7 +337,10 @@ final class EconomyServiceImpl implements EconomyService {
         return own.thenCompose(v -> store.balances(AccountRef.player(key))).thenAccept(b -> cache.load(key, b));
     }
 
-    /** The player switched profile: drop the old profile's cached balances and load the new one's. */
+    /**
+     * The player switched profile: drop the old profile's cached balances, give a new profile its start money (owner
+     * answer 121) and load the new one's balances.
+     */
     CompletableFuture<Void> switchedProfile(UUID player, UUID newKey) {
         cache.track(player);
         cache.track(newKey);
@@ -335,7 +348,7 @@ final class EconomyServiceImpl implements EconomyService {
         if (previous != null && !previous.equals(newKey) && !previous.equals(player)) {
             cache.forget(previous);
         }
-        return loadKey(player, newKey);
+        return grantStart(player, newKey, names.apply(player)).thenCompose(v -> loadKey(player, newKey));
     }
 
     /** On quit: forgets the player's cache entries. */

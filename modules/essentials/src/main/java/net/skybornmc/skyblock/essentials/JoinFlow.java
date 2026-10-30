@@ -145,9 +145,10 @@ final class JoinFlow implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    /** Owner answer 160 (round 1): always respawn at spawn, never at the island home, a bed or an anchor. */
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onRespawn(PlayerRespawnEvent event) {
-        if (config.respawnAtSpawn && !event.isBedSpawn() && !event.isAnchorSpawn()) {
+        if (config.respawnAtSpawn) {
             spawn().ifPresent(event::setRespawnLocation);
         }
     }

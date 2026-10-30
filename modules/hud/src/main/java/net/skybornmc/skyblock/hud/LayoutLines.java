@@ -8,7 +8,9 @@ import java.util.function.Predicate;
  * One parsed scoreboard layout (pure, no Bukkit): its lines with optional conditions.
  *
  * <p>A line written as {@code "if:<placeholder>|<text>"} is only shown while that placeholder has a value (not empty,
- * not "-"), e.g. {@code "if:island_next_note| <c:muted>Next</c:muted>  <ph:island_next_note>"}. Hidden lines take no
+ * not "-"), e.g. {@code "if:island_next_note| <c:muted>Next</c:muted>  <ph:island_next_note>"}. Several placeholders
+ * separated by commas ({@code "if:island_level,island_next_note|"}) show the line while <b>any</b> of them has a value
+ * (a section header over conditional lines, owner answer 275). Hidden lines take no
  * space, so the board never shows a label without a value. Parsed once per message text and cached by the service,
  * so a refresh does not split strings again.</p>
  */
@@ -16,7 +18,7 @@ record LayoutLines(String source, List<Line> lines) {
 
     static final String IF = "if:";
 
-    /** One line: {@code condition} is a placeholder key or null (always shown); {@code text} is MiniMessage. */
+    /** One line: {@code condition} is a placeholder key (or keys joined by commas) or null (always shown); {@code text} is MiniMessage. */
     record Line(String condition, String text) {
 
         boolean blank() {
@@ -43,7 +45,7 @@ record LayoutLines(String source, List<Line> lines) {
         if (line.startsWith(IF)) {
             int bar = line.indexOf('|');
             String key = bar < 0 ? "" : line.substring(IF.length(), bar).trim();
-            if (!key.isEmpty() && key.matches("[a-z0-9_]+")) {
+            if (!key.isEmpty() && key.matches("[a-z0-9_]+(,[a-z0-9_]+)*")) {
                 return new Line(key, line.substring(bar + 1));
             }
         }
@@ -69,11 +71,21 @@ record LayoutLines(String source, List<Line> lines) {
             if (out.size() >= max) {
                 break;
             }
-            if (line.condition() == null || shown.test(line.condition())) {
+            if (line.condition() == null || anyShown(line.condition(), shown)) {
                 out.add(line);
             }
         }
         return out;
+    }
+
+    /** True if any key of a condition ({@code a} or {@code a,b,...}) has a value. */
+    static boolean anyShown(String condition, Predicate<String> shown) {
+        for (String key : condition.split(",")) {
+            if (shown.test(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Lines that are always visible plus conditional ones: the most a layout can show. */

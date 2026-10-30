@@ -105,7 +105,6 @@ public final class EconomyModule implements SkyblockModule, Listener {
     @Override
     public void enable() throws Exception {
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
-        upgradeConfigFile();
         core.configs().load(config);
         main = new MainThread(core.plugin());
         // Season id: 0 until the season service exists (Phase 10); the ledger and start-balance keys already carry it.
@@ -146,7 +145,6 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     @Override
     public void reload() {
-        upgradeConfigFile();
         core.configs().load(config);
         core.messages().load(ID);
         if (sell != null) {
@@ -157,25 +155,6 @@ public final class EconomyModule implements SkyblockModule, Listener {
         }
         if (watch != null) {
             watch.reload();
-        }
-    }
-
-    /** Value changes between config versions ({@link EconomyConfig#upgradeValues}); never touches a broken file. */
-    private void upgradeConfigFile() {
-        java.io.File file = new java.io.File(core.plugin().getDataFolder(), config.fileName());
-        if (!file.isFile()) {
-            return;
-        }
-        org.bukkit.configuration.file.YamlConfiguration yaml = new org.bukkit.configuration.file.YamlConfiguration();
-        try {
-            yaml.load(file);
-            if (EconomyConfig.upgradeValues(yaml)) {
-                yaml.save(file);
-                core.plugin().getLogger().info(config.fileName() + ": new-account limit changed from the old default "
-                        + EconomyConfig.OLD_NOTE_MINUTES_DEFAULT + " to 30 minutes (owner decision #40)");
-            }
-        } catch (java.io.IOException | org.bukkit.configuration.InvalidConfigurationException e) {
-            // The config manager reports broken files and keeps every value; nothing to do here.
         }
     }
 
@@ -426,7 +405,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                     Currency currency = ctx.getOr(payCurrency, Currency.MONEY);
                     long amount = ctx.get(payAmount);
                     Player p = (Player) ctx.sender();
-                    return PayRules.check(config, p.getName(), ctx.get(payTarget), amount, currency, frozen(p), playtime(p))
+                    return PayRules.check(config, p.getName(), ctx.get(payTarget), amount, currency, frozen(p))
                             .isEmpty()
                             && PayRules.needsConfirm(config, amount, currency);
                 })
@@ -621,22 +600,14 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     // ================================================================== /pay
 
-    /** Total playtime of an online player, including the current session. */
-    long playtime(Player player) {
-        return core.players().get(player.getUniqueId()).map(PlayerData::playtimeMillis).orElse(0L);
-    }
-
     private void pay(Player payer, String targetName, long amount, Currency currency) {
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), payer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.PAY)) {
             return; // P7: frozen balance or blocked trading
         }
-        long played = playtime(payer);
-        Optional<PayRules.Problem> problem = PayRules.check(config, payer.getName(), targetName, amount, currency, frozen(payer),
-                played);
+        Optional<PayRules.Problem> problem = PayRules.check(config, payer.getName(), targetName, amount, currency, frozen(payer));
         if (problem.isPresent()) {
             throw fail("pay." + problem.get().key, Msg.c("currency", currencyName(payer, currency)),
-                    amountTag("min", payer, currency, config.payMin(currency)),
-                    Msg.p("time", Format.duration(Duration.ofMillis(PayRules.playtimeLeft(config, played)))));
+                    amountTag("min", payer, currency, config.payMin(currency)));
         }
         then(payer, resolve(targetName), found -> {
             if (found.isEmpty()) {

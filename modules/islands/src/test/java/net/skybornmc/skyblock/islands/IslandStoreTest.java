@@ -52,7 +52,7 @@ class IslandStoreTest {
     }
 
     private IslandStore.CreateResult create(UUID owner, long now) {
-        return db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, DAY, "islands", now));
+        return db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", now));
     }
 
     @Test
@@ -84,7 +84,7 @@ class IslandStoreTest {
         List<CompletableFuture<IslandStore.CreateResult>> futures = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
             UUID owner = i < 2 ? twice : UUID.randomUUID();
-            futures.add(db.async(c -> IslandStore.createWithRetry(c, owner, 1, 3, DAY, "islands", 1000L)));
+            futures.add(db.async(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", 1000L)));
         }
         Set<Integer> slots = new HashSet<>();
         int created = 0;
@@ -98,7 +98,7 @@ class IslandStoreTest {
     }
 
     @Test
-    void cooldownAfterDisbandAndFreeSlotReuse() {
+    void noCooldownAfterDisbandAndFreeSlotReuse() {
         UUID owner = UUID.randomUUID();
         Island first = ((IslandStore.CreateResult.Created) create(owner, 1000L)).island();
         create(UUID.randomUUID(), 1001L);
@@ -109,9 +109,8 @@ class IslandStoreTest {
             Sql.update(c, "DELETE FROM island_members WHERE island_id = ?", first.id());
             return Sql.update(c, "UPDATE island_slots SET state = ?, island_id = NULL WHERE id = ?", IslandStore.STATE_FREE, first.slotId());
         });
-        IslandStore.CreateResult early = create(owner, disbandAt + DAY / 2);
-        assertEquals(DAY / 2, assertInstanceOf(IslandStore.CreateResult.Cooldown.class, early).remainingMillis());
-        Island again = assertInstanceOf(IslandStore.CreateResult.Created.class, create(owner, disbandAt + DAY + 1)).island();
+        // Owner answers 121/259: no creation cooldown, a new island right after the disband.
+        Island again = assertInstanceOf(IslandStore.CreateResult.Created.class, create(owner, disbandAt + 1)).island();
         assertEquals(first.slotId(), again.slotId(), "the freed slot is reused first");
         assertEquals(disbandAt, db.blocking(c -> IslandStore.lastDisband(c, owner)).orElseThrow());
     }

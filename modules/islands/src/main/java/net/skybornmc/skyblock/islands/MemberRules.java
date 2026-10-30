@@ -81,11 +81,6 @@ public final class MemberRules {
         return isManager(actor);
     }
 
-    /** {@code /is setmyhome} (ISL2): every stored member (coop players are not members). */
-    public static boolean canSetPersonalHome(Role actor) {
-        return actor == Role.LEADER || actor == Role.ADMIN || actor == Role.MOD || actor == Role.MEMBER;
-    }
-
     /** The leader can't leave (transfer first, or disband in M2.7); coop is not a stored membership. */
     public static boolean canLeave(Role actor) {
         return actor == Role.ADMIN || actor == Role.MOD || actor == Role.MEMBER;

@@ -132,10 +132,8 @@ public final class BankConfig extends ModuleConfig {
             + "the capacity, -1 = no limit).", min = -1, max = 100, level = Setting.Level.OWNER)
     public int limitMember = 10;
 
-    @Setting(path = "island.pay-leader-on-disband", desc = "When an island is disbanded or reset, what is left in its bank "
-            + "goes to the leader. Staff deletes always keep the money in the (closed) bank for staff to decide.",
-            level = Setting.Level.OWNER)
-    public boolean payLeaderOnDisband = true;
+    // Owner answer 263 (round 1): island bank money belongs to the island and is deleted on disband; there is no
+    // "pay the leader" option any more (the old key island.pay-leader-on-disband is ignored). See BankRules#onRemoved.
 
     // ------------------------------------------------------------------ menu
 

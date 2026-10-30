@@ -67,7 +67,6 @@ money:
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <c:text>That currency can't be traded."
   negative: "<prefix><c:error><sym:cross></c:error> <c:text>The amount can't be below 0."
   too-much: "<prefix><c:error><sym:cross></c:error> <c:text>You only have <c:value><balance></c:value><c:text>."
-  new-account: "<prefix><c:error><sym:cross></c:error> <c:text>New players can offer money after <c:value><hours></c:value> <c:text>of play. <c:value><time></c:value> <c:text>left."
 
 confirm:
   other-ready: "<prefix><c:value><player></c:value> <c:text>confirmed. Check the trade and confirm too."

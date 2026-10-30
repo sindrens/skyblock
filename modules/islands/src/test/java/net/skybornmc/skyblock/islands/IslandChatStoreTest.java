@@ -38,7 +38,7 @@ class IslandChatStoreTest {
         db.start();
         new Migrations(db, Logger.getLogger("test")).migrate("islands", getClass().getClassLoader());
         owner = UUID.randomUUID();
-        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, 0, "islands", 1000L));
+        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", 1000L));
         island = assertInstanceOf(IslandStore.CreateResult.Created.class, result).island().id();
     }
 

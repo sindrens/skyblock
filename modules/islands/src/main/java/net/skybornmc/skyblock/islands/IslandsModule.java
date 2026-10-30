@@ -44,7 +44,8 @@ import java.util.UUID;
  * browser ({@link VisitManager}), island warps with categories, sign warps and the warp browser ({@link WarpManager}).
  * ISL2: the Admin role, the hurt-monsters and settings permissions, join cooldown from the last join, {@code /is settings}
  * ({@link IslandSettingsManager}, {@link IslandFlagListener}, {@link IslandEnvironment}), island fly ({@link IslandFly}),
- * personal homes ({@link PersonalHomes}) and {@code /is invites}. M2.5: the island menu ({@link IslandMenu}, {@code /is} with
+ * and {@code /is invites} (personal homes were removed again: owner answer 247). Round-1 answers (ANS1): no join or
+ * creation cooldowns, kick backups restorable by admins ({@link KickBackups}), disband only without other members. M2.5: the island menu ({@link IslandMenu}, {@code /is} with
  * an island), {@code /is info} ({@link IslandHub}) and island chat ({@link IslandChat}, {@code /is chat}). M2.6: island stats
  * ({@link IslandStats}, {@code /is stats}, publishes {@link net.skybornmc.skyblock.common.island.IslandStatsService}). Publishes {@link IslandService} and the placeholders {@code island_name},
  * {@code island_level} and {@code island_rank}.
@@ -70,7 +71,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private WarpManager warps;
     private RolePermissions rolePermissions = RolePermissions.none();
     private FlagDefaults flagDefaults = FlagDefaults.owner();
-    private PersonalHomes homes;
+    private KickBackups kickBackups;
     private IslandSettingsManager islandSettings;
     private IslandFlagListener flagListener;
     private IslandEnvironment environment;
@@ -120,7 +121,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
         visits.warps(warps);
         visits.load();
         warps.load();
-        homes = new PersonalHomes(this, manager, new MemberHomeStore(core.database()));
+        kickBackups = new KickBackups(this, manager, new KickBackupStore(core.database()));
+        kickBackups.refreshNames();
         islandSettings = new IslandSettingsManager(this, manager);
         flagListener = new IslandFlagListener(manager);
         environment = new IslandEnvironment(this, manager);
@@ -282,6 +284,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     }
 
     private void loadConfig() {
+        upgradeConfigFile();
         core.configs().load(config);
         config.sizeProblems().forEach(core.plugin().getLogger()::warning);
         StarterItems.Result parsed = StarterItems.parse(config.starterItems, key -> {
@@ -296,6 +299,25 @@ public final class IslandsModule implements SkyblockModule, Listener {
         FlagDefaults.Result flags = config.flagDefaults();
         flags.problems().forEach(problem -> core.plugin().getLogger().warning("islands.yml: " + problem));
         flagDefaults = flags.defaults();
+    }
+
+    /** Value changes between config versions ({@link IslandsConfig#upgradeValues}); never touches a broken file. */
+    private void upgradeConfigFile() {
+        java.io.File file = new java.io.File(core.plugin().getDataFolder(), config.fileName());
+        if (!file.isFile()) {
+            return;
+        }
+        org.bukkit.configuration.file.YamlConfiguration yaml = new org.bukkit.configuration.file.YamlConfiguration();
+        try {
+            yaml.load(file);
+            List<String> changed = IslandsConfig.upgradeValues(yaml);
+            if (!changed.isEmpty()) {
+                yaml.save(file);
+                core.plugin().getLogger().info(config.fileName() + ": owner answers round 1: " + String.join(", ", changed));
+            }
+        } catch (java.io.IOException | org.bukkit.configuration.InvalidConfigurationException e) {
+            // The config manager reports broken files and keeps every value; nothing to do here.
+        }
     }
 
     /** (Re)starts the sweep that returns entities pushed out of island borders. */
@@ -326,6 +348,11 @@ public final class IslandsModule implements SkyblockModule, Listener {
 
     IslandLifecycle lifecycle() {
         return lifecycle;
+    }
+
+    /** Kick backups (owner answer 251), or null before enable. */
+    KickBackups kickBackups() {
+        return kickBackups;
     }
 
     /** The island notes (NOTES), or null before enable / after disable. */
@@ -424,8 +451,6 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Arg<String> warpIsland = Args.word("player", Suggest.bySender(visits::islandNames));
         Arg<String> warpName = Args.word("name", warps.warpNamesOfTypedIsland("player"));
         // ISL2
-        Arg<String> homeName = Args.word("home", Suggest.bySender(homes::names));
-        Arg<String> myHomeName = Args.word("name", Suggest.bySender(homes::names));
         Arg<String> setting = Args.word("setting", Suggest.of(IslandSettingsManager::keys));
         Arg<String> settingValue = Args.word("value", islandSettings.values("setting"));
         // NOTES: the optional island is for staff only (players see no suggestions and get a clear message)
@@ -437,12 +462,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .description("Your island: create it, or open the island menu").category("Island")
                 .permission(PERM_USE).playerOnly().aliases("island")
                 .executes(ctx -> manager.openOrCreate(ctx.player()))
-                .sub(CommandSpec.sub("home").description("Teleport to your island home, or to one of your own homes").permission(PERM_USE)
-                        .playerOnly().cooldown(Duration.ofSeconds(3)).optional(homeName).example("is home")
-                        .executes(ctx -> homes.home(ctx.player(), ctx.getOr(homeName, null))))
-                .sub(CommandSpec.sub("setmyhome").description("Set your own home on your island where you stand").permission(PERM_USE)
-                        .playerOnly().cooldown(Duration.ofSeconds(3)).optional(myHomeName).example("is setmyhome")
-                        .executes(ctx -> homes.setHome(ctx.player(), ctx.getOr(myHomeName, null))))
+                .sub(CommandSpec.sub("home").description("Teleport to your island home").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(3)).example("is home")
+                        .executes(ctx -> manager.teleportHome(ctx.player())))
                 .sub(CommandSpec.sub("settings").description("Island settings: spawning, fire, explosions, weather, time and more")
                         .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(setting).optional(settingValue)
                         .example("is settings weather rain")
@@ -498,7 +520,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("members").description("Your island's members, roles and permissions").permission(PERM_USE)
                         .playerOnly().example("is members")
                         .executes(ctx -> members.openMembers(ctx.player())))
-                .sub(CommandSpec.sub("disband").description("Delete your island for good (leader; confirm + type the word)")
+                .sub(CommandSpec.sub("disband").description("Delete your island for good (leader, no other members; confirm)")
                         .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(3)).example("is disband")
                         .executes(ctx -> lifecycle.disband(ctx.player())))
                 .sub(CommandSpec.sub("sethome").description("Set your island home where you stand (leader/mod)").permission(PERM_USE).playerOnly()
@@ -594,7 +616,6 @@ public final class IslandsModule implements SkyblockModule, Listener {
         manager.forget(event.getPlayer().getUniqueId());
         members.onQuit(event.getPlayer());
         warps.forget(event.getPlayer().getUniqueId());
-        homes.forget(event.getPlayer().getUniqueId());
         islandSettings.forget(event.getPlayer().getUniqueId());
         chat.forget(event.getPlayer().getUniqueId());
     }

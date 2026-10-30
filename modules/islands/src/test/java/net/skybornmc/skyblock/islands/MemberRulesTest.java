@@ -237,15 +237,6 @@ class MemberRulesTest {
     }
 
     @Test
-    void personalHomesForStoredMembersOnly() {
-        assertTrue(MemberRules.canSetPersonalHome(Role.LEADER));
-        assertTrue(MemberRules.canSetPersonalHome(Role.ADMIN));
-        assertTrue(MemberRules.canSetPersonalHome(Role.MEMBER));
-        assertFalse(MemberRules.canSetPersonalHome(Role.COOP));
-        assertFalse(MemberRules.canSetPersonalHome(null));
-    }
-
-    @Test
     void adminActionsInTheMemberMenu() {
         assertTrue(MemberActionsMenu.hasActions(Role.ADMIN, Role.MOD, false));
         assertTrue(MemberActionsMenu.hasActions(Role.LEADER, Role.ADMIN, false));

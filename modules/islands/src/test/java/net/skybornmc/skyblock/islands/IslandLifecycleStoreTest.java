@@ -25,7 +25,7 @@ class IslandLifecycleStoreTest {
 
     private static final long HOUR = 3_600_000L;
     private static final long MIN5 = 5 * 60_000L;
-    private static final MemberStore.Limits LIMITS = new MemberStore.Limits(1, 3, 24 * HOUR, 4, 8);
+    private static final MemberStore.Limits LIMITS = new MemberStore.Limits(1, 3, 4, 8);
 
     @TempDir
     Path dir;
@@ -48,13 +48,13 @@ class IslandLifecycleStoreTest {
         db.close();
     }
 
-    private Island create(UUID owner, long at, long cooldown) {
-        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, cooldown, "islands", at));
+    private Island create(UUID owner, long at) {
+        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", at));
         return assertInstanceOf(IslandStore.CreateResult.Created.class, result).island();
     }
 
     private IslandStore.CreateResult tryCreate(UUID owner, long at) {
-        return db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, 24 * HOUR, "islands", at));
+        return db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", at));
     }
 
     private IslandStore.DisbandResult disband(UUID island, UUID expectedOwner, String reason, long at) {
@@ -78,7 +78,7 @@ class IslandLifecycleStoreTest {
     @Test
     void disbandRemovesEverythingButKeepsTheIslandRowForHistory() {
         UUID leader = UUID.randomUUID();
-        Island island = create(leader, now, 0);
+        Island island = create(leader, now);
         UUID member = UUID.randomUUID();
         join(island.id(), leader, member, now + 1);
         UUID coop = UUID.randomUUID();
@@ -116,7 +116,7 @@ class IslandLifecycleStoreTest {
     @Test
     void onlyTheCurrentLeaderCanDisband() {
         UUID leader = UUID.randomUUID();
-        Island island = create(leader, now, 0);
+        Island island = create(leader, now);
         assertInstanceOf(IslandStore.DisbandResult.NotLeader.class, disband(island.id(), UUID.randomUUID(), IslandStore.REASON_DISBAND, now));
         assertEquals("used", slotState(island.slotId()), "nothing changed");
         assertEquals(1, count("SELECT COUNT(*) FROM island_members WHERE island_id = ?", island.id()));
@@ -125,7 +125,7 @@ class IslandLifecycleStoreTest {
     @Test
     void aClearingSlotIsNotReusedUntilItIsFree() {
         UUID first = UUID.randomUUID();
-        Island island = create(first, now, 0);
+        Island island = create(first, now);
         disband(island.id(), first, IslandStore.REASON_DELETE, now + 1);
         List<IslandStore.ClearingSlot> clearing = db.blocking(IslandStore::clearingSlots);
         assertEquals(1, clearing.size());
@@ -133,7 +133,7 @@ class IslandLifecycleStoreTest {
         assertEquals(island.id(), clearing.getFirst().islandId());
         assertEquals(3, clearing.getFirst().sizeChunks());
 
-        Island second = create(UUID.randomUUID(), now + 2, 0);
+        Island second = create(UUID.randomUUID(), now + 2);
         assertFalse(second.slotId() == island.slotId(), "a half-cleared slot never gets a new island");
 
         assertTrue(db.<Boolean>blocking(c -> IslandStore.freeSlot(c, island.slotId(), now + 3)));
@@ -142,32 +142,29 @@ class IslandLifecycleStoreTest {
         assertEquals(0, count("SELECT COUNT(*) FROM island_slots WHERE id = ? AND island_id IS NOT NULL", island.slotId()));
         assertTrue(db.blocking(IslandStore::clearingSlots).isEmpty());
 
-        Island third = create(UUID.randomUUID(), now + 5, 0);
+        Island third = create(UUID.randomUUID(), now + 5);
         assertEquals(island.slotId(), third.slotId(), "the freed slot is reused first");
         assertEquals("used", slotState(third.slotId()));
     }
 
     @Test
-    void onlyAPlayerDisbandStartsTheCreationCooldown() {
+    void noCreationCooldownAfterADisbandDeleteOrReset() {
+        // Owner answers 121/161/258/259: a new island right away, whatever removed the old one.
         UUID owner = UUID.randomUUID();
-        Island deleted = create(owner, now, 0);
+        Island deleted = create(owner, now);
         disband(deleted.id(), null, IslandStore.REASON_DELETE, now + 1);
-        assertTrue(db.blocking(c -> IslandStore.lastDisband(c, owner)).isEmpty(), "a staff delete is no cooldown");
-        Island reset = assertInstanceOf(IslandStore.CreateResult.Created.class, tryCreate(owner, now + 2)).island();
+        Island reset = assertInstanceOf(IslandStore.CreateResult.Created.class, tryCreate(owner, now + 2), "after a staff delete").island();
         disband(reset.id(), null, IslandStore.REASON_RESET, now + 3);
-        Island again = assertInstanceOf(IslandStore.CreateResult.Created.class, tryCreate(owner, now + 4), "a reset is no cooldown").island();
-
+        Island again = assertInstanceOf(IslandStore.CreateResult.Created.class, tryCreate(owner, now + 4), "after a reset").island();
         disband(again.id(), owner, IslandStore.REASON_DISBAND, now + 5);
-        assertEquals(now + 5, db.blocking(c -> IslandStore.lastDisband(c, owner)).orElseThrow());
-        IslandStore.CreateResult.Cooldown cooldown = assertInstanceOf(IslandStore.CreateResult.Cooldown.class, tryCreate(owner, now + 5 + HOUR));
-        assertEquals(23 * HOUR, cooldown.remainingMillis());
-        assertInstanceOf(IslandStore.CreateResult.Created.class, tryCreate(owner, now + 5 + 24 * HOUR));
+        assertEquals(now + 5, db.blocking(c -> IslandStore.lastDisband(c, owner)).orElseThrow(), "kept as history");
+        assertInstanceOf(IslandStore.CreateResult.Created.class, tryCreate(owner, now + 6), "a moment after a disband");
     }
 
     @Test
     void disbandNeverStartsTheJoinCooldown() {
         UUID leader = UUID.randomUUID();
-        Island island = create(leader, now, 0);
+        Island island = create(leader, now);
         UUID member = UUID.randomUUID();
         join(island.id(), leader, member, now);
         long later = now + 30 * HOUR; // the join itself is older than the 24 h cooldown
@@ -181,7 +178,7 @@ class IslandLifecycleStoreTest {
 
         // a real leave still counts
         UUID other = UUID.randomUUID();
-        Island second = create(other, later, 0);
+        Island second = create(other, later);
         join(second.id(), other, member, later + 1);
         db.blockingTransaction(c -> MemberStore.removeMember(c, second.id(), member, MemberStore.LEFT_LEAVE, 1, later + 2));
         assertEquals(later + 2, db.blocking(c -> MemberStore.history(c, member, 1)).lastLeave());
@@ -190,7 +187,7 @@ class IslandLifecycleStoreTest {
     @Test
     void staffAddMemberSkipsJoinLimitsButKeepsSlotsAndOneIsland() {
         UUID leader = UUID.randomUUID();
-        Island island = create(leader, now, 0);
+        Island island = create(leader, now);
         UUID staff = UUID.randomUUID();
         UUID target = UUID.randomUUID();
         // the target is on cooldown and at the season limit: staff can still add them
@@ -208,7 +205,7 @@ class IslandLifecycleStoreTest {
         assertInstanceOf(MemberStore.AddResult.HasIsland.class,
                 db.blockingTransaction(c -> MemberStore.addMember(c, island.id(), target, staff, now, LIMITS)));
         UUID owner2 = UUID.randomUUID();
-        create(owner2, now, 0);
+        create(owner2, now);
         assertInstanceOf(MemberStore.AddResult.HasIsland.class,
                 db.blockingTransaction(c -> MemberStore.addMember(c, island.id(), owner2, staff, now, LIMITS)));
         for (int i = 0; i < 2; i++) {

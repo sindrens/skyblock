@@ -1,0 +1,289 @@
+{
+  "m": {
+    "141": {
+      "a": "o",
+      "note": "An island with other members can't be disbanded: the leader must promote someone else first. Leaving an island = you lose everything (profile progress); rejoining starts you like a starter, but island perks/masteries belong to the island.",
+      "t": 1793379913382
+    },
+    "142": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "148": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "149": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "157": {
+      "a": "o",
+      "note": "3x3 up to 9x9 through normal upgrades; bigger than 9x9 only with gems or from the black market.",
+      "t": 1793379913382
+    },
+    "158": {
+      "a": "o",
+      "note": "Make the starter chest custom and relevant to this server (Claude must design it from the server's systems and propose it).",
+      "t": 1793379913382
+    },
+    "159": {
+      "a": "o",
+      "note": "First thing on the server: the player walks into a portal at spawn that creates their island; the portal always teleports anyone who jumps in to their island. On the island the tutorial starts; after it they explore the rest.",
+      "t": 1793379913382
+    },
+    "160": {
+      "a": "n",
+      "note": "Always respawn at spawn",
+      "t": 1793379913382
+    },
+    "161": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "167": {
+      "a": "o",
+      "note": "(from answer 157) normal upgrades 3x3 to 9x9; above 9x9 only gems/black market",
+      "t": 1793379913382
+    },
+    "168": {
+      "a": "o",
+      "note": "Island level is dynamic, earned from many things besides island value. Needs its own plan later (ISLAND-LEVEL plan).",
+      "t": 1793379913382
+    },
+    "169": {
+      "a": "o",
+      "note": "Island bank only. Also: higher bank interest, paid every 8 hours; withdrawal fee 2%, lowered by /is masteries as the island progresses.",
+      "t": 1793379913382
+    },
+    "170": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "171": {
+      "a": "o",
+      "note": "(from answer 157) island size above 9x9 can be bought with gems or from the black market",
+      "t": 1793379913382
+    },
+    "172": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "176": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "185": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "186": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "195": {
+      "a": "n",
+      "note": "Count all time, AFK included",
+      "t": 1793379913382
+    },
+    "203": {
+      "a": "o",
+      "note": "(from answer 131) no 30-minute limit; permissions unlock through the tutorial",
+      "t": 1793379913382
+    },
+    "204": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "214": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "215": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "225": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "230": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "236": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "242": {
+      "a": "n",
+      "note": "Team size is 4 plus the leader (upgradable)",
+      "t": 1793379913382
+    },
+    "243": {
+      "a": "o",
+      "note": "Some ranks will get fly. Plan ranks after this question round (REMIND OWNER).",
+      "t": 1793379913382
+    },
+    "247": {
+      "a": "n",
+      "note": "No personal homes, remove /is setmyhome",
+      "t": 1793379913382
+    },
+    "251": {
+      "a": "o",
+      "note": "Yes, but staff must be able to restore a kicked member: keep a backup of their inventory and island profile when kicked, so nobody can be kicked to lose everything for good.",
+      "t": 1793379913382
+    },
+    "252": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "254": {
+      "a": "o",
+      "note": "Yes, disband first, unless they have an unused profile they can use for the invite.",
+      "t": 1793379913382
+    },
+    "255": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "258": {
+      "a": "o",
+      "note": "(from 121/161) no join or creation cooldowns at all",
+      "t": 1793379913382
+    },
+    "259": {
+      "a": "o",
+      "note": "(from 121/161) no creation cooldown at all",
+      "t": 1793379913382
+    },
+    "260": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "261": {
+      "a": "n",
+      "note": "A confirm button is enough",
+      "t": 1793379913382
+    },
+    "263": {
+      "a": "o",
+      "note": "Island bank money is deleted on disband (it belongs to the island, not to players).",
+      "t": 1793379913382
+    },
+    "265": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "267": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "268": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "269": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "271": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "273": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "275": {
+      "a": "n",
+      "note": "Hide the island level line until levels exist",
+      "t": 1793379913382
+    },
+    "276": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "278": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "280": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "281": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "282": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "284": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "285": {
+      "a": "o",
+      "note": "instant, but not while in combat, or if inside a combat zone its 3 seconds",
+      "t": 1793380494427
+    },
+    "289": {
+      "a": "s",
+      "note": "",
+      "t": 1793380494527
+    },
+    "290": {
+      "a": "o",
+      "note": "every island, all random, but preferably the ones with the more playtime",
+      "t": 1793380545578
+    },
+    "291": {
+      "a": "o",
+      "note": "no limit",
+      "t": 1793380553796
+    },
+    "292": {
+      "a": "o",
+      "note": "can use max 3 accounts from same ip and 1 hour required playime",
+      "t": 1793380582212
+    },
+    "293": {
+      "a": "s",
+      "note": "",
+      "t": 1793380582360
+    }
+  }
+}

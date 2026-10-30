@@ -50,7 +50,6 @@ pay:
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay while frozen. Wait for staff."
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be paid to players."
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest payment is <min><c:text>."
-  new-account: "<prefix><c:error><sym:cross></c:error> <c:text>New players can't pay yet. <c:value><time></c:value> <c:text>left."
 
 eco:
   done-give: "<prefix><c:success><sym:check></c:success> <c:text>Gave <amount> <c:text>to <c:value><player></c:value>. <c:muted>Now </c:muted><balance> <c:muted>(<reason>)"
@@ -90,7 +89,6 @@ note:
   currency-not-allowed: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be made into notes. Money can: <c:value>/withdraw 50k</c:value>"
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest note is <min><c:text>."
   above-maximum: "<prefix><c:error><sym:cross></c:error> <c:text>The largest note is <max><c:text>. Make several instead."
-  new-account: "<prefix><c:error><sym:cross></c:error> <c:text>New players can't make notes yet. <c:value><time></c:value> <c:text>left."
   redeemed: "<prefix><c:success><sym:check></c:success> <c:text>Cashed a note of <amount> <c:muted>(signed by <c:value><signer></c:value>)<c:text>. <c:muted>Balance: </c:muted><balance>"
   overflow: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance can't hold that much. You got the note back."
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>This note is from your other profile, so it can't be cashed here. You got it back."
@@ -125,6 +123,8 @@ reasons:
   bank_fee: "Bank fee"
   bank_tier: "Bank tier"
   bank_payout: "Island bank paid out"
+  bank_island_deleted: "Island bank deleted (disband)"
+  island_kick_restore: "Restored by staff (kick backup)"
   note: "Money notes"
   note_withdraw: "Money note made"
   note_redeem: "Money note cashed"
@@ -354,7 +354,7 @@ bank:
     no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Your island role can't do that. The Leader sets it in <c:value>/is permissions</c:value>."
     not-member: "<prefix><c:error><sym:cross></c:error> <c:text>You're not a member of that island anymore."
     limit: "<prefix><c:error><sym:cross></c:error> <c:text>That's over your daily island bank limit. Try a smaller amount or wait until tomorrow."
-    paid-out: "<prefix><c:text>Your island is gone. What was left in its bank, <amount><c:text>, went to your balance."
+    deleted: "<prefix><c:text>Your island is gone, and so is its bank: <amount><c:text> was deleted with it."
   tier:
     bought: "<prefix><c:success><sym:check></c:success> <c:text>Bank tier <c:value><tier></c:value> unlocked: it holds <capacity> <c:text>now. <c:muted>Paid </c:muted><amount> <c:muted><sym:dot> balance: </c:muted><balance>"
     no-money: "<prefix><c:error><sym:cross></c:error> <c:text>The next tier costs <amount><c:text>. Nothing was taken."

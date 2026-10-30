@@ -276,24 +276,32 @@ public final class BankFeature implements Listener, BankService {
 
     // ================================================================== island removal
 
-    /** M2.7 removal: disband and reset pay the island bank to the leader's profile; staff deletes keep it closed. */
+    /**
+     * M2.7 removal (owner answer 263): a disband deletes what is left in the island bank (it belongs to the island, not
+     * to players); staff deletes and resets keep the money in the closed bank for staff to decide.
+     */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onIslandRemoved(IslandRemovedEvent event) {
         AccountRef bank = AccountRef.island(event.islandId());
-        boolean pay = config.payLeaderOnDisband && event.owner() != null && !IslandRemovedEvent.DELETE.equals(event.reason());
-        CompletableFuture<Long> paid = pay ? ops.payOut(bank, event.owner(), event.actor()) : CompletableFuture.completedFuture(0L);
-        paid.thenCompose(amount -> ops.store().deleteState(bank).thenApply(v -> amount)).whenCompleteAsync((amount, error) -> {
-            if (error != null) {
-                core.plugin().getLogger().log(Level.SEVERE, "Bank: closing the bank of island " + event.islandId() + " failed", error);
-                return;
-            }
-            if (amount > 0) {
-                profiles().onlinePlayer(event.owner()).ifPresent(p -> {
-                    msg.send(p, "bank.island.paid-out", module.amountTag("amount", p, Currency.MONEY, amount));
-                    core.sounds().play(p, "money");
-                });
-            }
-        }, module.mainThread());
+        if (BankRules.onRemoved(event.reason()) == BankRules.Removal.KEEP_CLOSED) {
+            ops.store().deleteState(bank).whenComplete((v, error) -> {
+                if (error != null) {
+                    core.plugin().getLogger().log(Level.SEVERE, "Bank: closing the bank of island " + event.islandId() + " failed", error);
+                }
+            });
+            return;
+        }
+        ops.deleteMoney(bank, event.actor()).thenCompose(amount -> ops.store().deleteState(bank).thenApply(v -> amount))
+                .whenCompleteAsync((amount, error) -> {
+                    if (error != null) {
+                        core.plugin().getLogger().log(Level.SEVERE, "Bank: deleting the bank of island " + event.islandId() + " failed", error);
+                        return;
+                    }
+                    if (amount > 0 && event.owner() != null) {
+                        profiles().onlinePlayer(event.owner()).ifPresent(p ->
+                                msg.send(p, "bank.island.deleted", module.amountTag("amount", p, Currency.MONEY, amount)));
+                    }
+                }, module.mainThread());
     }
 
     // ================================================================== interest sweep

@@ -13,8 +13,6 @@ no-permission-sell: "<prefix><c:error><sym:cross></c:error> <c:text>You can't se
 rules:
   price-too-low: "<prefix><c:error><sym:cross></c:error> <c:text>The lowest price is <min><c:text>."
   price-too-high: "<prefix><c:error><sym:cross></c:error> <c:text>The highest price is <max><c:text>."
-  new-account: "<prefix><c:error><sym:cross></c:error> <c:text>New players can sell after <c:value><hours></c:value> <c:text>of play. <c:value><time></c:value> <c:text>left."
-  new-account-buy: "<prefix><c:error><sym:cross></c:error> <c:text>New players can buy after <c:value><hours></c:value> <c:text>of play. <c:value><time></c:value> <c:text>left."
   no-slots: "<prefix><c:error><sym:cross></c:error> <c:text>You have <c:value><slots></c:value> listings, your max. Cancel one or wait for a sale."
   cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Wait <c:value><time></c:value> before listing again."
   relist-limit: "<prefix><c:error><sym:cross></c:error> <c:text>You listed this <c:value><limit></c:value> times lately. Try again later (limit per <window>)."
@@ -316,7 +314,3 @@ mine:
     pending:
       - ""
       - "<c:muted>Being listed..."
-
-# Island profiles (PROF).
-profiles:
-  delete-listings: "<prefix><c:error><sym:cross></c:error> <c:text>This profile still has <c:value><count></c:value> auction listing(s). Switch to it and cancel them first."

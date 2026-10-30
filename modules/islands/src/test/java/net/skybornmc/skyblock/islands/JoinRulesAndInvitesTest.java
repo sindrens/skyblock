@@ -16,48 +16,37 @@ class JoinRulesAndInvitesTest {
 
     @Test
     void firstJoinIsAllowed() {
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(JoinRules.History.NONE, null, NOW, 3, 24 * HOUR));
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(null, null, NOW, 3, 24 * HOUR));
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(JoinRules.History.NONE, null, NOW, 3));
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(null, null, NOW, 3));
     }
 
     @Test
     void maxThreeJoinsPerSeason() {
         JoinRules.History two = new JoinRules.History(2, NOW - 100 * HOUR, NOW - 50 * HOUR);
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(two, null, NOW, 3, 24 * HOUR));
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(two, null, NOW, 3));
         JoinRules.History three = new JoinRules.History(3, NOW - 100 * HOUR, NOW - 50 * HOUR);
-        assertEquals(3, assertInstanceOf(JoinRules.Check.SeasonLimit.class, JoinRules.check(three, null, NOW, 3, 24 * HOUR)).max());
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(three, null, NOW, 0, 24 * HOUR), "0 = unlimited");
+        assertEquals(3, assertInstanceOf(JoinRules.Check.SeasonLimit.class, JoinRules.check(three, null, NOW, 3)).max());
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(three, null, NOW, 0), "0 = unlimited");
     }
 
     @Test
-    void cooldownCountsFromTheLastJoinOnly() {
-        // ISL2 (owner #20): a recent leave or kick never starts or extends the cooldown.
-        JoinRules.History joinedLongAgoLeftRecently = new JoinRules.History(1, NOW - 100 * HOUR, NOW - 2 * HOUR);
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(joinedLongAgoLeftRecently, null, NOW, 3, 24 * HOUR));
-        JoinRules.History leftWithoutJoin = new JoinRules.History(0, null, NOW - HOUR);
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(leftWithoutJoin, null, NOW, 3, 24 * HOUR),
-                "a founder leaving after a transfer never joined");
+    void noJoinCooldownAfterLeavingOrBeingKicked() {
+        // Owner answers 121/161/258/259 (round 1): no join cooldown at all; only the season count stays.
         JoinRules.History joinedThenKicked = new JoinRules.History(1, NOW - 3 * HOUR, NOW - HOUR);
-        assertEquals(21 * HOUR, assertInstanceOf(JoinRules.Check.Cooldown.class,
-                JoinRules.check(joinedThenKicked, null, NOW, 3, 24 * HOUR)).remainingMillis(), "from the join, not the kick");
-        assertEquals(21 * HOUR, JoinRules.cooldownRemaining(NOW - 3 * HOUR, NOW, 24 * HOUR));
-        assertEquals(0, JoinRules.cooldownRemaining(null, NOW, 24 * HOUR));
-        assertEquals(0, JoinRules.cooldownRemaining(NOW - 30 * HOUR, NOW, 24 * HOUR));
-        JoinRules.History joinedRecently = new JoinRules.History(1, NOW - 5 * HOUR, null);
-        assertEquals(19 * HOUR, assertInstanceOf(JoinRules.Check.Cooldown.class,
-                JoinRules.check(joinedRecently, null, NOW, 3, 24 * HOUR)).remainingMillis());
-        JoinRules.History old = new JoinRules.History(1, NOW - 50 * HOUR, NOW - 25 * HOUR);
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(old, null, NOW, 3, 24 * HOUR));
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(joinedRecently, null, NOW, 3, 0), "cooldown off");
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(joinedThenKicked, null, NOW, 3), "kicked an hour ago");
+        JoinRules.History joinedJustNow = new JoinRules.History(2, NOW - 1, null);
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(joinedJustNow, null, NOW, 3), "joined a moment ago");
+        JoinRules.History leftJustNow = new JoinRules.History(1, NOW - 2, NOW - 1);
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(leftJustNow, null, NOW, 3));
     }
 
     @Test
     void staffBlockWinsUntilItEnds() {
         assertEquals(NOW + HOUR, assertInstanceOf(JoinRules.Check.Blocked.class,
-                JoinRules.check(JoinRules.History.NONE, NOW + HOUR, NOW, 3, 24 * HOUR)).until());
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(JoinRules.History.NONE, NOW, NOW, 3, 24 * HOUR), "ended block");
+                JoinRules.check(JoinRules.History.NONE, NOW + HOUR, NOW, 3)).until());
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(JoinRules.History.NONE, NOW, NOW, 3), "ended block");
         assertInstanceOf(JoinRules.Check.Blocked.class,
-                JoinRules.check(new JoinRules.History(3, null, null), NOW + 1, NOW, 3, 24 * HOUR), "block before the limit");
+                JoinRules.check(new JoinRules.History(3, null, null), NOW + 1, NOW, 3), "block before the limit");
     }
 
     @Test

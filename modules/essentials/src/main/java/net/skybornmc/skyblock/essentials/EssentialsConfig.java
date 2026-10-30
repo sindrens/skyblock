@@ -44,7 +44,8 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "join.message-permission", desc = "Only players with this permission get a join/quit message (ranks + staff).")
     public String joinMessagePermission = "skyblock.join.message";
 
-    @Setting(path = "respawn.at-spawn", desc = "Players respawn at spawn after dying.")
+    @Setting(path = "respawn.at-spawn", desc = "Players always respawn at spawn after dying, also with a bed or respawn anchor "
+            + "(owner answer 160: never at the island home).")
     public boolean respawnAtSpawn = true;
 
     // ------------------------------------------------------------------ M1.1 spawn protection

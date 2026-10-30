@@ -89,23 +89,13 @@ class TradeRulesTest {
 
     @Test
     void moneyOffers() {
-        assertEquals(Optional.of(TradeRules.MoneyProblem.NOT_TRADEABLE), TradeRules.money(false, 10, 0, 100, 0));
-        assertEquals(Optional.of(TradeRules.MoneyProblem.NEGATIVE), TradeRules.money(true, -1, 0, 100, 0));
-        assertEquals(Optional.of(TradeRules.MoneyProblem.TOO_MUCH), TradeRules.money(true, 101, 0, 100, 0));
-        assertEquals(Optional.empty(), TradeRules.money(true, 100, 0, 100, 0));
-        // New accounts (owner #40, 30 min) can't raise an offer, but can always lower or remove it.
-        assertEquals(Optional.of(TradeRules.MoneyProblem.NEW_ACCOUNT), TradeRules.money(true, 10, 0, 100, 60_000));
-        assertEquals(Optional.empty(), TradeRules.money(true, 0, 50, 100, 60_000));
-        assertEquals(Optional.empty(), TradeRules.money(true, 40, 50, 0, 60_000));
-    }
-
-    @Test
-    void playtimeRule() {
-        assertEquals(30 * 60_000L, TradeRules.playtimeLeft(30, 0));
-        assertEquals(60_000L, TradeRules.playtimeLeft(30, 29 * 60_000L));
-        assertEquals(0, TradeRules.playtimeLeft(30, 31 * 60_000L));
-        assertEquals(0, TradeRules.playtimeLeft(0, 0));
-        assertEquals(30, new TradeConfig().newAccountMinutes);
+        assertEquals(Optional.of(TradeRules.MoneyProblem.NOT_TRADEABLE), TradeRules.money(false, 10, 0, 100));
+        assertEquals(Optional.of(TradeRules.MoneyProblem.NEGATIVE), TradeRules.money(true, -1, 0, 100));
+        assertEquals(Optional.of(TradeRules.MoneyProblem.TOO_MUCH), TradeRules.money(true, 101, 0, 100));
+        assertEquals(Optional.empty(), TradeRules.money(true, 100, 0, 100));
+        // Owner answer 131: no new-account limit; lowering or removing an offer is always fine.
+        assertEquals(Optional.empty(), TradeRules.money(true, 0, 50, 100));
+        assertEquals(Optional.empty(), TradeRules.money(true, 40, 50, 0));
     }
 
     @Test

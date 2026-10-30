@@ -153,7 +153,7 @@ class IslandSettingsTest {
         try {
             new Migrations(db, Logger.getLogger("test")).migrate("islands", getClass().getClassLoader());
             UUID owner = UUID.randomUUID();
-            IslandStore.CreateResult created = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, 0, "islands", 1000));
+            IslandStore.CreateResult created = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", 1000));
             UUID id = assertInstanceOf(IslandStore.CreateResult.Created.class, created).island().id();
             db.blocking(c -> {
                 IslandStore.saveSetting(c, id, IslandFlag.WEATHER, "storm", 1000);

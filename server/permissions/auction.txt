@@ -5,5 +5,3 @@
 
 # --- Auction house (staff) ---
 lp group mod permission set skyblock.staff.auction.remove true
-# Staff test the auction house on fresh test accounts without waiting 2 h.
-lp group admin permission set skyblock.auction.bypass-playtime true

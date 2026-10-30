@@ -1,0 +1,74 @@
+{
+  "m": {
+    "117": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "118": {
+      "a": "o",
+      "note": "Deleting a profile deletes everything on it, auction listings and skills included (keep only the account-wide list). Auctions must never be a way to move things to another profile: you can't buy listings made by your own other profiles.",
+      "t": 1793379913382
+    },
+    "119": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "120": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "121": {
+      "a": "o",
+      "note": "Every profile gets start money. No disband/cooldown delay when creating a new island or joining someone else's.",
+      "t": 1793379913382
+    },
+    "127": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "128": {
+      "a": "n",
+      "note": "Daily login reward and streak per profile, not per account",
+      "t": 1793379913382
+    },
+    "129": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "130": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "131": {
+      "a": "o",
+      "note": "Remove the 30-minute new-account limit entirely. Instead: permissions unlock step by step while doing the tutorial; full perms when the tutorial is finished.",
+      "t": 1793379913382
+    },
+    "132": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "133": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "134": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    },
+    "135": {
+      "a": "s",
+      "note": "",
+      "t": 1793379913382
+    }
+  }
+}

@@ -43,8 +43,6 @@ public final class Island {
     private final IslandPerms perms = new IslandPerms();
     /** ISL2: the island's own {@code /is settings} values. */
     private final IslandSettings settings = new IslandSettings();
-    /** ISL2: personal homes per stored member ({@code /is setmyhome}), name → home, in the order they were set. */
-    private final Map<UUID, Map<String, Home>> personalHomes = new HashMap<>();
     private int sizeChunks;
     // The playable area as plain ints (protection checks run per block event: no Bounds allocation there).
     private int minX;
@@ -198,16 +196,6 @@ public final class Island {
         return settings;
     }
 
-    /** Personal homes of {@code member} (name → home; empty map when none). */
-    public Map<String, Home> personalHomes(UUID member) {
-        Map<String, Home> homes = personalHomes.get(member);
-        return homes == null ? Map.of() : Collections.unmodifiableMap(homes);
-    }
-
-    void putPersonalHome(UUID member, String name, Home home) {
-        personalHomes.computeIfAbsent(member, k -> new LinkedHashMap<>()).put(name, home);
-    }
-
     /** Empty until the island was built (a missing home means the paste never finished: it is rebuilt on /is). */
     public Optional<Home> home() {
         return Optional.ofNullable(home);
@@ -250,7 +238,6 @@ public final class Island {
 
     void removeMember(UUID uuid) {
         members.remove(uuid);
-        personalHomes.remove(uuid);
         joinedAt.remove(uuid);
         invitedBy.remove(uuid);
     }

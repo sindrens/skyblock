@@ -26,14 +26,16 @@ class IslandMessagesTest {
             // M2.4
             "VisitManager.java", "WarpManager.java", "VisitMenu.java", "WarpBrowserMenu.java", "WarpEditMenu.java", "IconPickerMenu.java",
             // ISL2
-            "PersonalHomes.java", "IslandSettingsManager.java", "SettingsMenu.java", "InvitesMenu.java", "InviteActionsMenu.java",
+            "IslandSettingsManager.java", "SettingsMenu.java", "InvitesMenu.java", "InviteActionsMenu.java",
             "IslandFly.java", "PermissionsMenu.java", "MemberActionsMenu.java", "MembersMenu.java", "MemberManager.java",
             // NOTES
             "IslandNotes.java", "NotesMenu.java", "NoteActionsMenu.java", "DeletedNotesMenu.java", "NoteBook.java", "NoteHolograms.java",
             // M2.5
             "IslandMenu.java", "ChatColorsMenu.java", "IslandChat.java", "IslandHub.java",
             // M2.6
-            "IslandStats.java", "IslandStatsMenu.java", "IslandStatsMembersMenu.java", "IslandStatsListener.java");
+            "IslandStats.java", "IslandStatsMenu.java", "IslandStatsMembersMenu.java", "IslandStatsListener.java",
+            // ANS1 (owner answers round 1): kick backups
+            "KickBackups.java", "KickBackupsMenu.java");
     /** Keys of other files (commands.yml) and strings that are not message keys. */
     private static final Set<String> FOREIGN = Set.of("invalid-number", "player-unknown", "frame.next", "frame.previous", "title.page");
 
@@ -102,7 +104,10 @@ class IslandMessagesTest {
             keys.add("flags.click." + state);
             keys.add("fly." + state);
         }
-        keys.add("disband.confirm-word");
+        // ANS1: kick backup states (KickBackupsMenu)
+        for (String state : List.of("open", "items", "restored")) {
+            keys.add("admin.restore.state." + state);
+        }
         // NOTES: deleted reasons and /settings toggles
         for (String reason : List.of(IslandNoteStore.REASON_DELETE, IslandNoteStore.REASON_CLEAR, IslandNoteStore.REASON_DISBAND)) {
             keys.add("notes.deleted.reason." + reason);

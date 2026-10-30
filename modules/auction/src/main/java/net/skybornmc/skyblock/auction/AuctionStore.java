@@ -148,6 +148,39 @@ final class AuctionStore {
         });
     }
 
+    /** What {@link #deleteProfile} removed: the cancelled listings and the deleted collection bin entries. */
+    record ProfileWipe(List<Listing> listings, List<CollectionEntry> entries) {
+        boolean empty() {
+            return listings.isEmpty() && entries.isEmpty();
+        }
+    }
+
+    /**
+     * Owner answer 118 (round 1): a deleted profile loses everything, auction items included. In <b>one transaction</b>
+     * every ACTIVE listing of {@code seller} becomes CANCELLED <b>without</b> a collection entry (the item is deleted with the
+     * profile, never returned) and the profile's collection bin is emptied. Listings in PENDING/BUYING are left to finish
+     * (the caller runs this again shortly after). The rows keep the item data as history.
+     */
+    CompletableFuture<ProfileWipe> deleteProfile(UUID seller, long now) {
+        return db.transaction(c -> {
+            List<Listing> listings = Sql.query(c, "SELECT " + COLUMNS + " FROM ah_listings WHERE seller = ? AND status = 'active' "
+                    + "ORDER BY id", AuctionStore::listing, seller);
+            List<Listing> cancelled = new java.util.ArrayList<>();
+            for (Listing l : listings) {
+                if (Sql.update(c, "UPDATE ah_listings SET status = 'cancelled', ended_at = ? WHERE id = ? AND status = 'active'",
+                        now, l.id()) == 1) {
+                    cancelled.add(l);
+                }
+            }
+            List<CollectionEntry> entries = Sql.query(c, "SELECT id, owner, listing_id, source, item, material, amount, item_name, "
+                    + "created_at FROM ah_collection WHERE owner = ? ORDER BY id", AuctionStore::entry, seller);
+            for (CollectionEntry e : entries) {
+                Sql.update(c, "DELETE FROM ah_collection WHERE id = ?", e.id());
+            }
+            return new ProfileWipe(List.copyOf(cancelled), List.copyOf(entries));
+        });
+    }
+
     /** Ids of active listings whose time is up. */
     CompletableFuture<List<Long>> due(long now, int limit) {
         return db.async(c -> Sql.query(c, "SELECT id FROM ah_listings WHERE status = 'active' AND expires_at <= ? ORDER BY expires_at "

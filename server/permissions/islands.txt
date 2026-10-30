@@ -26,8 +26,10 @@ lp group admin permission set skyblock.island.admin.setowner true
 lp group admin permission set skyblock.island.admin.reset true
 lp group admin permission set skyblock.island.admin.slots true
 lp group admin permission set skyblock.island.admin.teleport-slot true
+# Owner answers 142/251: only admins restore a kicked member from their kick backup (/isadmin restore, logged).
+lp group admin permission set skyblock.island.admin.restore true
 
-# Islands round 2 (ISL2): /is settings, /is setmyhome, /is invites use skyblock.island (everyone); the island role and the
+# Islands round 2 (ISL2): /is settings, /is invites use skyblock.island (everyone); the island role and the
 # "settings" role permission decide who may change settings. Island fly (skyblock.island.fly) is a perk: no rank gets it
 # yet (open question: which ranks?); staff with * have it. The Wings mastery will give fly per island without this node.
 

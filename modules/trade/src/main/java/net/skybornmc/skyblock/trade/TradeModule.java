@@ -16,7 +16,6 @@ import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.PlayerPickerMenu;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
-import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchEvent;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent;
@@ -80,7 +79,6 @@ public final class TradeModule implements SkyblockModule, Listener {
     static final String ID = "trade";
 
     static final String PERM_USE = "skyblock.trade.use";
-    static final String PERM_BYPASS_PLAYTIME = "skyblock.trade.bypass-playtime";
 
     static final String SETTING_REQUESTS = "trade-requests";
 
@@ -662,11 +660,9 @@ public final class TradeModule implements SkyblockModule, Listener {
         TradeSession.Side side = s.side(p.getUniqueId());
         long balance = economy().cached(p.getUniqueId(), currency).orElse(0L);
         Optional<TradeRules.MoneyProblem> problem = TradeRules.money(currencies().contains(currency), amount, side.money(currency),
-                balance, playtimeLeft(p));
+                balance);
         if (problem.isPresent()) {
-            send(p, "money." + problem.get().key(), amountTag("balance", currency, balance), amountTag("amount", currency, amount),
-                    Msg.p("time", Format.duration(Duration.ofMillis(Math.max(1000, playtimeLeft(p))))),
-                    Msg.p("hours", Format.duration(Duration.ofMinutes(config.newAccountMinutes))));
+            send(p, "money." + problem.get().key(), amountTag("balance", currency, balance), amountTag("amount", currency, amount));
             sound(p, "error");
             return;
         }
@@ -674,14 +670,6 @@ public final class TradeModule implements SkyblockModule, Listener {
             sound(p, "money");
             refreshMenus(s);
         }
-    }
-
-    long playtimeLeft(Player p) {
-        if (p.hasPermission(PERM_BYPASS_PLAYTIME)) {
-            return 0;
-        }
-        return TradeRules.playtimeLeft(config.newAccountMinutes,
-                core.players().get(p.getUniqueId()).map(PlayerData::playtimeMillis).orElse(0L));
     }
 
     // ================================================================== confirm and swap

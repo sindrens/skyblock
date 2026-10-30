@@ -398,17 +398,21 @@ final class BankOps {
 
     // ------------------------------------------------------------------------------------------------ closing
 
+    /** Ledger reason (and audit action) of island bank money deleted with its island (owner answer 263). */
+    static final String REASON_DELETED = "bank_island_deleted";
+
     /**
-     * Pays everything left in a closed island bank to {@code toProfile} (the leader's profile), once per island
-     * ({@code bank_payout:<island>}). Completes with the amount paid (0 if empty or already paid).
+     * Deletes everything left in a removed island's bank (owner answer 263: the money belongs to the island). One ledger
+     * withdrawal, so the amount stays in /transactions and /logs; once per island ({@code bank_deleted:<island>}).
+     * Completes with the amount deleted (0 if empty or already deleted).
      */
-    CompletableFuture<Long> payOut(AccountRef bank, UUID toProfile, Actor actor) {
+    CompletableFuture<Long> deleteMoney(AccountRef bank, Actor actor) {
         return store.db().async(c -> BankStore.balance(c, bank)).thenCompose(balance -> {
             if (balance <= 0) {
                 return CompletableFuture.completedFuture(0L);
             }
-            return economy.execute(Transaction.transfer(bank, AccountRef.player(toProfile), Currency.MONEY, balance, TxReason.BANK_PAYOUT)
-                    .actor(actor).reference("island removed").idempotencyKey("bank_payout:" + bank.owner()))
+            return economy.execute(Transaction.withdraw(bank, Currency.MONEY, balance, REASON_DELETED)
+                    .actor(actor).reference("island disbanded").idempotencyKey("bank_deleted:" + bank.owner()))
                     .thenApply(r -> r.ok() ? balance : 0L);
         });
     }

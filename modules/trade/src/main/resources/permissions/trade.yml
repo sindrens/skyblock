@@ -4,6 +4,3 @@
 skyblock.trade.use:
   description: Trade items and money with a player nearby (/trade, /trade accept, /trade deny)
   default: true
-skyblock.trade.bypass-playtime:
-  description: Offer money in trades before the new-account playtime (testing)
-  default: op

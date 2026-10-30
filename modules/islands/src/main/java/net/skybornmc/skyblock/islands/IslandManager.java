@@ -707,6 +707,7 @@ final class IslandManager implements IslandService {
         this.wingsProvider = provider;
     }
 
+    /** Unused since owner answer 247 (no personal member homes); kept because it is part of the shared IslandService. */
     @Override
     public int extraMemberHomes(UUID islandId, UUID player) {
         java.util.function.ToIntBiFunction<UUID, UUID> provider = extraHomesProvider;
@@ -753,18 +754,8 @@ final class IslandManager implements IslandService {
         if (!worldLoaded(player)) {
             return;
         }
-        UUID id = key(player);
-        store.lastDisband(id).thenAcceptAsync(last -> {
-            if (!player.isOnline()) {
-                return;
-            }
-            long remaining = cooldownRemaining(last.orElse(null), cooldownMillis(), System.currentTimeMillis());
-            if (remaining > 0) {
-                sendCooldown(player, remaining);
-                return;
-            }
-            core.menus().open(player, confirmMenu(player));
-        }, main).exceptionally(error -> databaseError(player, "lastDisband", error));
+        // Owner answers 121/161/258/259: no creation cooldown after a disband, kick, leave, staff delete or reset.
+        core.menus().open(player, confirmMenu(player));
     }
 
     private ConfirmMenu confirmMenu(Player player) {
@@ -774,7 +765,7 @@ final class IslandManager implements IslandService {
                 core.menus().item(Material.GRASS_BLOCK, player, IslandsModule.ID, "create.menu.shown",
                         Msg.p("size", size), Msg.p("blocks", size * IslandGrid.CHUNK)),
                 viewer -> module.lines(viewer, "create.menu.details", Msg.p("size", size), Msg.p("blocks", size * IslandGrid.CHUNK),
-                        Msg.p("max", config.maxSize())),
+                        Msg.p("max", config.normalMaxSize())), // owner answer 157: normal upgrades reach 9x9
                 this::create,
                 viewer -> msg.send(viewer, "create.cancelled"));
     }
@@ -786,23 +777,6 @@ final class IslandManager implements IslandService {
         }
         fail(player, "error.world", Msg.p("world", config.world));
         return false;
-    }
-
-    long cooldownMillis() {
-        return Duration.ofHours(config.creationCooldownHours).toMillis();
-    }
-
-    /** Milliseconds left of the creation cooldown after a disband at {@code lastDisband} (0 = ready). Pure. */
-    static long cooldownRemaining(Long lastDisband, long cooldownMillis, long now) {
-        if (lastDisband == null || cooldownMillis <= 0) {
-            return 0;
-        }
-        return Math.max(0, lastDisband + cooldownMillis - now);
-    }
-
-    private void sendCooldown(Player player, long remainingMillis) {
-        msg.send(player, "create.cooldown", Msg.p("time", Format.duration(Duration.ofMillis(remainingMillis))));
-        core.sounds().play(player, "error");
     }
 
     /** Confirmed: saves the island (one transaction), builds the islet, teleports. */
@@ -838,7 +812,7 @@ final class IslandManager implements IslandService {
 
     private void createNow(Player player, UUID id) {
         msg.send(player, "create.started");
-        store.create(id, config.seasonId, config.startSize(), cooldownMillis(), config.world).whenCompleteAsync((result, error) -> {
+        store.create(id, config.seasonId, config.startSize(), config.world).whenCompleteAsync((result, error) -> {
             if (error != null) {
                 building.remove(id);
                 databaseError(player, "create", error);
@@ -848,10 +822,6 @@ final class IslandManager implements IslandService {
                 case IslandStore.CreateResult.AlreadyHasIsland ignored -> {
                     building.remove(id);
                     msg.send(player, "create.already");
-                }
-                case IslandStore.CreateResult.Cooldown cooldown -> {
-                    building.remove(id);
-                    sendCooldown(player, cooldown.remainingMillis());
                 }
                 case IslandStore.CreateResult.Created created -> {
                     Island island = created.island();
@@ -869,11 +839,11 @@ final class IslandManager implements IslandService {
     }
 
     /**
-     * Staff reset (M2.7): a new island for {@code owner} right away (no creation cooldown). Built and entered at once when
+     * Staff reset (M2.7): a new island for {@code owner} right away. Built and entered at once when
      * the owner is online; otherwise built the next time they use {@code /is} (offline islands are never loaded).
      */
     CompletableFuture<IslandStore.CreateResult> createFor(UUID owner, Actor actor) {
-        return store.create(owner, config.seasonId, config.startSize(), 0, config.world).thenApplyAsync(result -> {
+        return store.create(owner, config.seasonId, config.startSize(), config.world).thenApplyAsync(result -> {
             if (result instanceof IslandStore.CreateResult.Created created) {
                 Island island = created.island();
                 island.ownerName(name(owner));

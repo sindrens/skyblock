@@ -6,8 +6,8 @@ import java.util.Optional;
 
 /**
  * The checks {@code /pay} makes before touching the database (owner decisions 2026-10-29: muted players can pay,
- * frozen players can't, offline targets are fine, gems are not tradeable; owner decision #40: accounts with less than
- * {@code pay.new-account-minutes} of playtime can't pay). Pure logic, unit-tested.
+ * frozen players can't, offline targets are fine, gems are not tradeable). Owner answer 131 (round 1) removed the
+ * new-account playtime limit. Pure logic, unit-tested.
  */
 final class PayRules {
 
@@ -16,8 +16,7 @@ final class PayRules {
         FROZEN("frozen"),
         SELF("self"),
         NOT_TRADEABLE("not-tradeable"),
-        BELOW_MINIMUM("below-minimum"),
-        NEW_ACCOUNT("new-account");
+        BELOW_MINIMUM("below-minimum");
 
         final String key;
 
@@ -30,11 +29,12 @@ final class PayRules {
     }
 
     /**
-     * The first problem with this payment, if any. {@code targetName} is compared ignoring case; {@code playtimeMillis}
-     * is the payer's total playtime.
+     * The first problem with this payment, if any. {@code targetName} is compared ignoring case.
      */
+    // TODO(tutorial): owner answers 131/203 removed the 30-minute new-account limit. The coming join tutorial unlocks
+    // permissions step by step instead; gate this through its command permission then (no playtime check here).
     static Optional<Problem> check(EconomyConfig config, String payerName, String targetName, long amount, Currency currency,
-                                   boolean frozen, long playtimeMillis) {
+                                   boolean frozen) {
         if (frozen) {
             return Optional.of(Problem.FROZEN);
         }
@@ -47,16 +47,7 @@ final class PayRules {
         if (amount < config.payMin(currency)) {
             return Optional.of(Problem.BELOW_MINIMUM);
         }
-        if (playtimeLeft(config, playtimeMillis) > 0) {
-            return Optional.of(Problem.NEW_ACCOUNT);
-        }
         return Optional.empty();
-    }
-
-    /** Playtime still needed before a new account may pay (0 = allowed or the rule is off). */
-    static long playtimeLeft(EconomyConfig config, long playtimeMillis) {
-        long needed = config.payMinPlaytimeMinutes * 60_000L;
-        return needed <= 0 ? 0 : Math.max(0, needed - Math.max(0, playtimeMillis));
     }
 
     /** Whether {@code /pay} asks to confirm this amount (at or above the currency's threshold; 0 = never). */

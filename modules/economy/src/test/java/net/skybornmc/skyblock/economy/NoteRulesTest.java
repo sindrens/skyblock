@@ -14,16 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The /withdraw and /eco note checks (pure logic). */
 class NoteRulesTest {
 
-    /** Owner decision #40: new accounts need 30 minutes of playtime. */
-    private static final long HALF_HOUR = 30 * 60_000L;
-
     @Test
     void moneyOnlyByDefault() {
         EconomyConfig config = new EconomyConfig();
         assertTrue(NoteRules.allowed(config, Currency.MONEY));
         assertFalse(NoteRules.allowed(config, Currency.SHARDS));
         assertFalse(NoteRules.allowed(config, Currency.GEMS));
-        assertEquals(Optional.of(NoteRules.Problem.NOT_ALLOWED), NoteRules.withdraw(config, 500, Currency.SHARDS, false, HALF_HOUR));
+        assertEquals(Optional.of(NoteRules.Problem.NOT_ALLOWED), NoteRules.withdraw(config, 500, Currency.SHARDS, false));
     }
 
     @Test
@@ -35,20 +32,15 @@ class NoteRulesTest {
     }
 
     @Test
-    void limitsFrozenAndNewAccounts() {
+    void limitsAndFrozen() {
         EconomyConfig config = new EconomyConfig();
-        assertEquals(Optional.empty(), NoteRules.withdraw(config, 100, Currency.MONEY, false, HALF_HOUR));
-        assertEquals(Optional.of(NoteRules.Problem.BELOW_MINIMUM), NoteRules.withdraw(config, 99, Currency.MONEY, false, HALF_HOUR));
+        assertEquals(Optional.empty(), NoteRules.withdraw(config, 100, Currency.MONEY, false));
+        assertEquals(Optional.of(NoteRules.Problem.BELOW_MINIMUM), NoteRules.withdraw(config, 99, Currency.MONEY, false));
         assertEquals(Optional.of(NoteRules.Problem.ABOVE_MAXIMUM),
-                NoteRules.withdraw(config, config.noteMaxMoney + 1, Currency.MONEY, false, HALF_HOUR));
-        assertEquals(Optional.of(NoteRules.Problem.FROZEN), NoteRules.withdraw(config, 500, Currency.MONEY, true, HALF_HOUR));
-        assertEquals(Optional.of(NoteRules.Problem.NEW_ACCOUNT), NoteRules.withdraw(config, 500, Currency.MONEY, false, HALF_HOUR - 1));
-        assertEquals(60_000L, NoteRules.playtimeLeft(config, HALF_HOUR - 60_000L));
-        assertEquals(30, config.noteMinPlaytimeMinutes);
-
-        config.noteMinPlaytimeMinutes = 0;
-        assertEquals(Optional.empty(), NoteRules.withdraw(config, 500, Currency.MONEY, false, 0));
-        assertEquals(0L, NoteRules.playtimeLeft(config, 0));
+                NoteRules.withdraw(config, config.noteMaxMoney + 1, Currency.MONEY, false));
+        assertEquals(Optional.of(NoteRules.Problem.FROZEN), NoteRules.withdraw(config, 500, Currency.MONEY, true));
+        // Owner answer 131 (round 1): no new-account limit, a fresh account can make notes.
+        assertEquals(Optional.empty(), NoteRules.withdraw(config, 500, Currency.MONEY, false));
     }
 
     @Test

@@ -24,7 +24,7 @@ class IslandProfilesTest {
 
     private static final long HOUR = 3_600_000L;
     private static final long MIN5 = 5 * 60_000L;
-    private static final MemberStore.Limits LIMITS = new MemberStore.Limits(1, 2, 0, 4, 8);
+    private static final MemberStore.Limits LIMITS = new MemberStore.Limits(1, 2, 4, 8);
 
     @TempDir
     Path dir;
@@ -50,7 +50,7 @@ class IslandProfilesTest {
     }
 
     private UUID island(UUID owner) {
-        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, 0, "islands", now));
+        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", now));
         return assertInstanceOf(IslandStore.CreateResult.Created.class, result).island().id();
     }
 

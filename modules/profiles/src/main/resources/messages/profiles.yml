@@ -44,7 +44,7 @@ menu:
     lore:
       - "<c:muted>Slot <slot>"
       - "<c:text>A fresh start: new island,"
-      - "<c:text>empty inventory, own money."
+      - "<c:text>empty inventory, start money."
       - "<c:text>Gems, rank and titles are shared."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to create"
@@ -151,7 +151,8 @@ delete:
     lore: ["<c:text>Gone forever."]
   details:
     - "<c:error>Everything on <profile> is deleted:"
-    - "<c:error>items, money, crystals, shards, skills."
+    - "<c:error>items, money, crystals, shards, skills,"
+    - "<c:error>auction listings and their items."
     - "<c:error>This can't be undone."
     - "<c:text>Gems, rank and titles stay."
     - "<c:muted>Next: type the profile name in chat."

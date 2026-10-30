@@ -30,9 +30,6 @@ public final class IslandStore {
 
         record AlreadyHasIsland() implements CreateResult {
         }
-
-        record Cooldown(long remainingMillis) implements CreateResult {
-        }
     }
 
     /** One slot row (admin overview, M2.7). */
@@ -63,9 +60,9 @@ public final class IslandStore {
     static final String STATE_FREE = SlotState.FREE.key();
     static final String STATE_CLEARING = SlotState.CLEARING.key();
 
-    /** {@code islands.deleted_reason}: the leader disbanded it (starts the creation cooldown). */
+    /** {@code islands.deleted_reason}: the leader disbanded it (no creation cooldown: owner answers 121/161/259). */
     static final String REASON_DISBAND = "disband";
-    /** Staff removed it ({@code /isadmin delete}); no creation cooldown. */
+    /** Staff removed it ({@code /isadmin delete}). */
     static final String REASON_DELETE = "delete";
     /** Staff reset it ({@code /isadmin reset}): the leader got a new island right away. */
     static final String REASON_RESET = "reset";
@@ -84,18 +81,13 @@ public final class IslandStore {
         return db.blocking(c -> loadAll(c, world));
     }
 
-    /** Last time {@code owner} disbanded an island (epoch millis), if ever. */
-    public CompletableFuture<Optional<Long>> lastDisband(UUID owner) {
-        return db.async(c -> lastDisband(c, owner));
-    }
-
     /**
-     * Creates an island for {@code owner} in one transaction: checks one-island-per-player and the disband cooldown,
-     * takes the first free slot (or adds the next spiral slot), inserts the island and the owner as leader. Retries
+     * Creates an island for {@code owner} in one transaction: checks one-island-per-player (no creation cooldown, owner
+     * answers 121/161/259), takes the first free slot (or adds the next spiral slot), inserts the island and the owner as leader. Retries
      * when another server/thread took the same new slot at the same time.
      */
-    public CompletableFuture<CreateResult> create(UUID owner, int seasonId, int sizeChunks, long cooldownMillis, String world) {
-        return db.async(c -> createWithRetry(c, owner, seasonId, sizeChunks, cooldownMillis, world, System.currentTimeMillis()));
+    public CompletableFuture<CreateResult> create(UUID owner, int seasonId, int sizeChunks, String world) {
+        return db.async(c -> createWithRetry(c, owner, seasonId, sizeChunks, world, System.currentTimeMillis()));
     }
 
     public CompletableFuture<Void> saveHome(UUID islandId, Island.Home home) {
@@ -167,7 +159,6 @@ public final class IslandStore {
         loadPerms(c, islands);
         loadSettings(c, islands);
         MemberStore.loadCoops(c, islands);
-        MemberHomeStore.load(c, islands);
         return ordered;
     }
 
@@ -246,7 +237,7 @@ public final class IslandStore {
         }
     }
 
-    /** Last time {@code owner} disbanded an island themselves (staff deletes and resets don't count). */
+    /** Last time {@code owner} disbanded an island themselves (history only; staff deletes and resets don't count). */
     static Optional<Long> lastDisband(Connection c, UUID owner) throws SQLException {
         return Sql.queryOne(c, "SELECT MAX(deleted_at) FROM islands WHERE owner_uuid = ? AND deleted_at IS NOT NULL "
                 + "AND (deleted_reason IS NULL OR deleted_reason = ?)", IslandStore::nullableFirst, owner, REASON_DISBAND);
@@ -283,7 +274,6 @@ public final class IslandStore {
         Sql.update(c, "DELETE FROM island_role_perms WHERE island_id = ?", islandId);
         VisitStore.deleteIsland(c, islandId); // M2.4: warps and bans end with the island
         Sql.update(c, "DELETE FROM island_settings WHERE island_id = ?", islandId); // ISL2
-        MemberHomeStore.deleteIsland(c, islandId); // ISL2
         IslandChatStore.deleteIsland(c, islandId); // M2.5
         IslandNoteStore.deleteIsland(c, islandId, by, now); // NOTES: soft, staff can still read them (N7)
         // used -> clearing (SlotState); the island id stays until the clearer frees the slot.
@@ -314,12 +304,12 @@ public final class IslandStore {
         return Sql.queryOne(c, "SELECT 1 FROM island_members WHERE uuid = ?", rs -> Boolean.TRUE, player).isPresent();
     }
 
-    static CreateResult createWithRetry(Connection c, UUID owner, int seasonId, int sizeChunks, long cooldownMillis, String world,
-                                        long now) throws SQLException {
+    static CreateResult createWithRetry(Connection c, UUID owner, int seasonId, int sizeChunks, String world, long now)
+            throws SQLException {
         SQLException last = null;
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             try {
-                return inTransaction(c, () -> createOnce(c, owner, seasonId, sizeChunks, cooldownMillis, world, now));
+                return inTransaction(c, () -> createOnce(c, owner, seasonId, sizeChunks, world, now));
             } catch (SQLException e) {
                 if (!isConstraintViolation(e)) {
                     throw e;
@@ -334,17 +324,10 @@ public final class IslandStore {
         throw last;
     }
 
-    private static CreateResult createOnce(Connection c, UUID owner, int seasonId, int sizeChunks, long cooldownMillis, String world,
-                                           long now) throws SQLException {
+    private static CreateResult createOnce(Connection c, UUID owner, int seasonId, int sizeChunks, String world, long now)
+            throws SQLException {
         if (hasIsland(c, owner)) {
             return new CreateResult.AlreadyHasIsland();
-        }
-        Optional<Long> disbanded = lastDisband(c, owner);
-        if (disbanded.isPresent() && cooldownMillis > 0) {
-            long remaining = disbanded.get() + cooldownMillis - now;
-            if (remaining > 0) {
-                return new CreateResult.Cooldown(remaining);
-            }
         }
         UUID islandId = UUID.randomUUID();
         int[] slot = takeSlot(c, islandId, now);
