@@ -34,6 +34,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [perks](commands/perks.md) | Perks module (`modules/perks`) |
 | [skills](commands/skills.md) | Skills module (`modules/skills`): M4.5 |
 | [social](commands/social.md) | Social (`modules/social`) |
+| [stacking](commands/stacking.md) | Stacking (`modules/stacking`) |
 | [staff](commands/staff.md) | Staff tools (M1.9, module `staff`) |
 | [worlds](commands/worlds.md) | Worlds (`modules/worlds`) |
 | [planned](commands/planned.md) | Planned commands |
