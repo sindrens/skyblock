@@ -12,6 +12,7 @@ import net.skybornmc.skyblock.common.skills.SkillLevelUpEvent;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.skills.SkillType;
 import net.skybornmc.skyblock.common.skills.SkillXpGainEvent;
+import net.skybornmc.skyblock.common.stacking.StackingService;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Scheduler;
@@ -252,7 +253,9 @@ final class SkillManager implements SkillService, Listener {
         if (killer == null || entity.getScoreboardTags().contains(NO_XP_TAG)) {
             return;
         }
-        if (!config.spawnerMobsGiveXp && entity.fromMobSpawner()) {
+        // Stacked spawners (stacking module) spawn their mobs themselves, so ask its service as well.
+        if (!config.spawnerMobsGiveXp && (entity.fromMobSpawner() || core.services().optional(StackingService.class)
+                .map(s -> s.fromStackedSpawner(entity)).orElse(false))) {
             return;
         }
         double xp = tables.xp(SkillType.COMBAT, entity.getType().getKey().getKey());

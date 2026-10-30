@@ -20,7 +20,7 @@ categories:
     slot: 12
     name: "<c:flame><bold>Islands"
     lore: ["<c:text>Your own island in the sky:", "<c:text>build, grow and team up."]
-    topics: [island]
+    topics: [island, spawners]
   depths:
     icon: iron_pickaxe
     status: active
@@ -436,6 +436,44 @@ topics:
           - "<c:value>/is disband</c:value><c:text>: confirm, then type the word."
           - "<c:text>Members are removed. You can create"
           - "<c:text>a new island after a short cooldown."
+  spawners:
+    icon: spawner
+    aliases: [spawner, stacking, stacks, stacked]
+    name: "<c:flame>Spawners and stacking"
+    summary: ["<c:text>Mobs, drops and spawners stack", "<c:text>on islands to keep things fast."]
+    take-me-there: "is"
+    commands: []
+    pages:
+      - title: "<c:value>Stacked mobs"
+        lines:
+          - "<c:text>Mobs of the same kind join one stack,"
+          - "<c:text>shown as <c:value>Zombie</c:value> <c:ember>x45</c:ember><c:text>. A hit kills one;"
+          - "<c:text>falls, lava and the void kill the whole"
+          - "<c:text>stack, with all drops and XP."
+      - title: "<c:value>Breeding"
+        lines:
+          - "<c:text>Feed a stack: each food item breeds"
+          - "<c:text>one pair and the babies join the stack."
+          - "<c:text>Named, tamed or leashed mobs and"
+          - "<c:text>villagers never stack."
+      - title: "<c:value>Dropped items"
+        lines:
+          - "<c:text>Drops merge into one item with a count,"
+          - "<c:text>like <c:value>Diamond</c:value> <c:ember>x1,234</c:ember><c:text>. You pick up what fits;"
+          - "<c:text>hoppers take 64 at a time. Drops vanish"
+          - "<c:text>after about 10 minutes."
+      - title: "<c:value>Spawners"
+        lines:
+          - "<c:text>Place a spawner, then right-click it with"
+          - "<c:text>more of the same kind to stack them."
+          - "<c:text>Sneak-right-click opens its menu. Each"
+          - "<c:text>spawner in the stack adds full speed."
+      - title: "<c:value>Breaking and limits"
+        lines:
+          - "<c:text>Breaking takes one spawner; sneak-break"
+          - "<c:text>takes all. No silk touch needed. A"
+          - "<c:text>spawner runs while you are within 16"
+          - "<c:text>blocks, and light is not needed."
   visiting:
     icon: ender_pearl
     aliases: [visit, warp, warps, lock, unlock, ban, unban, expel, rate, like, setwarp, delwarp]

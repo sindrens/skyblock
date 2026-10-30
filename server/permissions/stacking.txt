@@ -1,0 +1,6 @@
+# LuckPerms grants for the stacking module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/stacking/src/main/resources/permissions/stacking.yml. One console command per line; # = comment.
+
+# Stacked mobs, items and spawners need no node (island role permissions decide who may use spawners).
+# Staff: /spawner give (approved item-give pattern, admin; owner inherits admin).
+lp group admin permission set skyblock.spawner.give true

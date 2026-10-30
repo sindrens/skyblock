@@ -1,0 +1,7 @@
+# Permissions of the stacking module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/stacking.txt. Commands: docs/commands/stacking.md.
+# Using spawners (place, add, take, menu) needs no node: island role permissions decide (islands → "spawners").
+skyblock.spawner.give:
+  description: Staff /spawner give <player> <type> [amount] (spawner items, audited)
+  default: op
