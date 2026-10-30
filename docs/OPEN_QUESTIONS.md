@@ -1,6 +1,7 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- **PLANRANKS (`docs/plans/RANKS_TITLES_ACHIEVEMENTS.md` §E, 46 yes/no questions, JSON block for the one-click page):** rank names (Phoenix life set: Hatchling → Immortal, free rank Ashborn), prices €5–€100, won season ranks (Torchbearer/Flameheart/Firecrown), perk table, RK-CAP (rank max +15% sell, +10% skill XP), monthly low keys after 5 h played (vs. "keys are earned only"), themed title/tag catalog, personal + island achievement boosts and caps. Also: owner must check Mojang's usage guidelines on paid gameplay perks and keys before the store opens (RK1). (default: every suggested answer in §E)
 - NPCHOLO NPC body: NPCs are Paper **mannequins** (player-shaped, no Citizens). Geyser's mannequin support is not verified on our Bedrock clients; if Bedrock players can't see them, set `npcs.yml → npcs.body: villager` (villagers without AI). Mannequins OK? (default: mannequin)
 - NPCHOLO NPC skins: NPCs use the default mannequin skins (no Mojang skin lookups). Want skins per NPC (`npcs.skins`, a Minecraft account name each)? Which accounts? (default: none)
 - NPCHOLO clicks: right-click runs the NPC's action (Banker → /bank, Blacksmith → /forge ...), sneak + right-click shows a short help; help-only NPCs (Guide, Info, Quests ...) show help with an [Open] button. Hitting an NPC acts like a right-click (Bedrock touch). OK? (default: as built)
