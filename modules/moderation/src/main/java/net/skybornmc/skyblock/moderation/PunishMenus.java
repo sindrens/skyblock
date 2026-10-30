@@ -35,7 +35,14 @@ final class PunishMenus {
      * P3: pending API suggestions (12.8), the newest staff notes and the number of active notes (12.5).
      */
     record Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions,
-                  List<Suggestion> apiSuggestions, List<Notes.Note> notes, int noteCount) {
+                  List<Suggestion> apiSuggestions, List<Notes.Note> notes, int noteCount, List<PunishRequest> requests,
+                  Watchlist.Entry watch) {
+
+        /** P3 shape: no pending requests, not watched (P4, spec 13.4 / 13.5). */
+        Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions,
+               List<Suggestion> apiSuggestions, List<Notes.Note> notes, int noteCount) {
+            this(uuid, name, history, suggestions, apiSuggestions, notes, noteCount, List.of(), null);
+        }
 
         Target(UUID uuid, String name, List<Punishment> history) {
             this(uuid, name, history, List.of());
@@ -132,6 +139,18 @@ final class PunishMenus {
         }
         WarnRules.Counter counter = WarnRules.counter(target.history(), target.suggestions(),
                 module.templates().config().warnRules(), System.currentTimeMillis());
+        // spec 13.7: "On probation until 12 Nov (+1 step)"
+        Long probation = module.service().probationUntil(target.history());
+        int bonus = module.templates().config().extras().probation().stepBonus();
+        if (probation != null && bonus > 0) {
+            lore.addAll(service.lines(viewer, MODULE, "punish.summary.probation", Msg.p("until", ModerationModule.day(probation)),
+                    Msg.number("bonus", bonus)));
+        }
+        // spec 13.5: watched by staff (never shown to the player)
+        if (target.watch() != null && viewer != null && viewer.hasPermission(ModerationModule.PERM_WATCH)) {
+            lore.addAll(service.lines(viewer, MODULE, "punish.summary.watch", module.watchParts(viewer, target.watch())));
+        }
+        PunishRequest request = target.requests().isEmpty() ? null : target.requests().getFirst();
         if (undoable != null) {
             long left = Math.max(1, (undoable.created() + module.service().extras().undoWindow().toMillis()
                     - System.currentTimeMillis()) / 1000);
@@ -139,6 +158,11 @@ final class PunishMenus {
                     Msg.p("type", module.service().text(viewer, "types." + undoable.type().name().toLowerCase(Locale.ROOT))),
                     Msg.p("reason", undoable.reason()), Msg.p("id", undoable.id()),
                     Msg.p("left", PunishConfig.text(Duration.ofSeconds(left)))));
+        } else if (request != null) {
+            // spec 13.4: pending requests show on the head; approvers click to approve or deny
+            boolean approver = viewer != null && module.service().mayApprove(viewer, request);
+            lore.addAll(service.lines(viewer, MODULE, approver ? "punish.summary.request" : "punish.summary.request-wait",
+                    module.service().requestParts(viewer, request), Msg.number("count", target.requests().size())));
         } else if (counter.pending() != null) {
             lore.addAll(service.lines(viewer, MODULE, "punish.summary.pending",
                     Msg.p("action", module.service().stepText(viewer, counter.pending().step()))));
@@ -249,6 +273,14 @@ final class PunishMenus {
             if (undoable != null) {
                 // spec 12.1: the head is the Bedrock-safe [Undo] while the window is open (pending stays on the counter)
                 set(l.summarySlot(), MenuButton.of(summary, guarded(() -> module.service().undo(viewer, undoable.id()))));
+            } else if (!target.requests().isEmpty()) {
+                // spec 13.4 (Bedrock path for [Approve] / [Deny]): the oldest pending request
+                PunishRequest request = target.requests().getFirst();
+                set(l.summarySlot(), MenuButton.of(summary, click -> {
+                    if (module.service().mayApprove(viewer, request)) {
+                        openChild(new RequestMenu(module, target, request));
+                    }
+                }));
             } else {
                 Suggestion waiting = counter.pending() != null ? counter.pending()
                         : target.apiSuggestions().isEmpty() ? null : target.apiSuggestions().getFirst();
@@ -359,15 +391,23 @@ final class PunishMenus {
             long cutoff = t.cutoff(System.currentTimeMillis());
             int previous = target.previous(t.id(), cutoff);
             int older = target.expiredOffences(t.id(), cutoff);
-            int index = t.stepIndex(previous);
+            int normal = t.stepIndex(previous);
+            Templates.Step normalStep = t.ladder().get(normal);
+            PunishDecision.Escalation escalation = module.escalation(target, t, previous, false);
+            PunishDecision.Verdict preview = module.service().preview(viewer, target.uuid(), target.name(), normalStep, false,
+                    target.longestActive(Punishment.Type.MUTE), target.longestActive(Punishment.Type.BAN), t.id(),
+                    target.recent(t.id()), escalation);
+            // spec 13.7: the step that will really be applied (probation may raise it)
+            int index = raisedIndex(preview, normal);
             Templates.Step step = t.ladder().get(index);
             Templates.Step after = t.ladder().get(Math.min(index + 1, t.ladder().size() - 1));
             boolean repeats = index + 1 >= t.ladder().size();
-            PunishDecision.Verdict preview = module.service().preview(viewer, target.uuid(), target.name(), step, false,
-                    target.longestActive(Punishment.Type.MUTE), target.longestActive(Punishment.Type.BAN), t.id(),
-                    target.recent(t.id()));
             List<Component> lore = new ArrayList<>(service.lines(viewer, MODULE, "punish.reason.lore",
                     Msg.number("offence", previous + 1), Msg.p("step", module.service().stepText(viewer, step))));
+            if (index != normal) {
+                lore.addAll(service.lines(viewer, MODULE, "punish.reason.probation", Msg.number("bonus", index - normal),
+                        Msg.p("normal", module.service().stepText(viewer, normalStep))));
+            }
             if (older > 0) {
                 lore.addAll(service.lines(viewer, MODULE, older == 1 ? "punish.reason.older-one" : "punish.reason.older",
                         Msg.number("older", older)));
@@ -478,10 +518,16 @@ final class PunishMenus {
 
     /**
      * BLOCKED for good (display only). A duplicate block stays clickable: "click again within 5s to apply anyway"
-     * (spec 12.2); the second click is confirmed by the service.
+     * (spec 12.2); the second click is confirmed by the service. A REQUEST (spec 13.4) is clickable: it sends the request.
      */
     static boolean blocked(PunishDecision.Verdict v) {
         return v.outcome() == PunishDecision.Outcome.BLOCKED && !"duplicate".equals(v.stage());
+    }
+
+    /** The ladder index the verdict settled on (probation may have raised it, spec 13.7), else {@code normal}. */
+    static int raisedIndex(PunishDecision.Verdict v, int normal) {
+        PunishDecision.Escalation e = v.input() == null ? null : v.input().escalation();
+        return e != null && e.raised() ? e.index() : normal;
     }
 
     /** Lore for a verdict: click hint, or why it can't be applied (every placeholder a stage may give). */
@@ -489,6 +535,11 @@ final class PunishMenus {
                                         org.bukkit.entity.Player viewer, PunishDecision.Verdict v) {
         if (v.outcome() == PunishDecision.Outcome.APPLY) {
             return service.lines(viewer, MODULE, "punish.click");
+        }
+        if (v.outcome() == PunishDecision.Outcome.REQUEST) {
+            String rule = v.args().getOrDefault("rule", "limit");
+            return "limit".equals(rule) ? service.lines(viewer, MODULE, "punish.request-limit")
+                    : service.lines(viewer, MODULE, "punish.request", Msg.p("rule", rule));
         }
         return service.lines(viewer, MODULE, "punish.blocked." + v.stage(),
                 Msg.p("max", v.args().getOrDefault("max", "?")), Msg.p("left", v.args().getOrDefault("left", "?")),
@@ -660,13 +711,15 @@ final class PunishMenus {
             long cutoff = template.cutoff(System.currentTimeMillis());
             int previous = target.previous(template.id(), cutoff);
             int older = target.expiredOffences(template.id(), cutoff);
-            Templates.Step step = template.stepFor(previous);
-            PunishDecision.Verdict preview = module.service().preview(viewer, target.uuid(), target.name(), step, false,
+            Templates.Step normalStep = template.stepFor(previous);
+            PunishDecision.Verdict preview = module.service().preview(viewer, target.uuid(), target.name(), normalStep, false,
                     target.longestActive(Punishment.Type.MUTE), target.longestActive(Punishment.Type.BAN), template.id(),
-                    target.recent(template.id()));
+                    target.recent(template.id()), module.escalation(target, template, previous, false));
+            int current = raisedIndex(preview, template.stepIndex(previous)); // spec 13.7: probation may raise it
+            Templates.Step step = template.ladder().get(current);
             List<Component> ladder = new ArrayList<>();
             for (int i = 0; i < template.ladder().size(); i++) {
-                String key = i == template.stepIndex(previous) ? "menu.ladder-current" : "menu.ladder-step";
+                String key = i == current ? "menu.ladder-current" : "menu.ladder-step";
                 ladder.add(service.text(viewer, MODULE, key, Msg.number("n", i + 1),
                         Msg.p("step", module.service().stepText(viewer, template.ladder().get(i)))));
             }
@@ -871,6 +924,9 @@ final class PunishMenus {
                 }
                 lore.addAll(ackLines(service, viewer, p));
             }
+            if (p.approvedByName() != null) {
+                lore.addAll(service.lines(viewer, MODULE, "menu.history.approved", Msg.p("by", p.approvedByName())));
+            }
             if (p.removed()) {
                 lore.addAll(service.lines(viewer, MODULE, "menu.history.removed",
                         Msg.p("by", p.removedByName() == null ? "?" : p.removedByName()),
@@ -903,6 +959,216 @@ final class PunishMenus {
         private String plain(String key) {
             return net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
                     .serialize(service.text(viewer, MODULE, key));
+        }
+    }
+
+    // ================================================================== P4: approval request (spec 13.4)
+
+    /**
+     * One pending request: what is asked (middle), Approve (left), Deny (right, opens the reasons), Back. The Bedrock path
+     * for the chat [Approve] / [Deny]. Plain left clicks only; the permission is checked again on every click.
+     */
+    static final class RequestMenu extends Menu {
+
+        private final ModerationModule module;
+        private final Target target;
+        private final PunishRequest request;
+        private boolean used;
+
+        RequestMenu(ModerationModule module, Target target, PunishRequest request) {
+            this.module = module;
+            this.target = target;
+            this.request = request;
+        }
+
+        @Override
+        public int rows() {
+            return 3;
+        }
+
+        @Override
+        public Component title() {
+            return service.title(viewer, service.text(viewer, MODULE, "punish.title"), Component.text(target.name()),
+                    service.text(viewer, MODULE, "approval.menu.title"));
+        }
+
+        @Override
+        public String messageModule() {
+            return MODULE;
+        }
+
+        @Override
+        protected void build() {
+            frame();
+            net.kyori.adventure.text.minimessage.tag.resolver.TagResolver parts = module.service().requestParts(viewer, request);
+            set(13, service.item(Material.PAPER, viewer, MODULE, "approval.menu.info", parts));
+            set(11, service.item(Material.LIME_CONCRETE, viewer, MODULE, "approval.menu.approve", parts), click -> {
+                if (used || !module.service().mayApprove(viewer, request)) {
+                    return;
+                }
+                used = true;
+                module.service().approve(viewer, request.id()).whenComplete((r, e) -> Bukkit.getScheduler().runTask(
+                        service.plugin(), () -> module.openPunishMenu(viewer, target.name())));
+            });
+            set(15, service.item(Material.RED_CONCRETE, viewer, MODULE, "approval.menu.deny", parts), click -> {
+                if (!viewer.hasPermission(ModerationModule.PERM_APPROVE)) {
+                    return;
+                }
+                openChild(new DenyMenu(module, request, target));
+            });
+            set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
+        }
+    }
+
+    /**
+     * Deny a request: preset reasons ({@code approval.deny-reasons}, texts {@code approval.deny-reasons.<id>}) and
+     * "Type a reason" (chat prompt, works on Bedrock too). The requester is told the reason.
+     */
+    static final class DenyMenu extends Menu {
+
+        private static final int[] SLOTS = {10, 11, 12, 13, 14, 15};
+
+        private final ModerationModule module;
+        private final PunishRequest request;
+        /** Where to go back to after denying ({@code null} = opened from chat: just close). */
+        private final Target target;
+        private boolean used;
+
+        DenyMenu(ModerationModule module, PunishRequest request, Target target) {
+            this.module = module;
+            this.request = request;
+            this.target = target;
+        }
+
+        @Override
+        public int rows() {
+            return 3;
+        }
+
+        @Override
+        public Component title() {
+            return service.title(viewer, service.text(viewer, MODULE, "approval.menu.title"), Component.text(request.targetName()),
+                    service.text(viewer, MODULE, "approval.deny-menu.title"));
+        }
+
+        @Override
+        public String messageModule() {
+            return MODULE;
+        }
+
+        @Override
+        protected void build() {
+            frame();
+            net.kyori.adventure.text.minimessage.tag.resolver.TagResolver parts = module.service().requestParts(viewer, request);
+            List<String> reasons = module.templates().config().extras().approval().denyReasons();
+            for (int i = 0; i < reasons.size() && i < SLOTS.length; i++) {
+                String id = reasons.get(i);
+                String text = reasonText(id);
+                set(SLOTS[i], service.item(Material.RED_DYE, viewer, MODULE, "approval.deny-menu.reason", parts,
+                        Msg.p("deny_reason", text)), click -> deny(text));
+            }
+            set(16, service.item(Material.WRITABLE_BOOK, viewer, MODULE, "approval.deny-menu.type", parts), click -> {
+                if (used || !viewer.hasPermission(ModerationModule.PERM_APPROVE)) {
+                    return;
+                }
+                service.prompt(viewer, MODULE, "approval.deny-prompt", 200, text -> {
+                    used = true;
+                    module.service().deny(viewer, request.id(), text).whenComplete((r, e) -> after());
+                }, () -> { }, parts);
+            });
+            set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> {
+                if (parent() != null) {
+                    back();
+                } else {
+                    viewer.closeInventory();
+                }
+            });
+        }
+
+        private String reasonText(String id) {
+            String key = "approval.deny-reasons." + id;
+            return module.messages().has(key) ? module.service().text(viewer, key) : id;
+        }
+
+        private void deny(String text) {
+            if (used || !viewer.hasPermission(ModerationModule.PERM_APPROVE)) {
+                return;
+            }
+            used = true;
+            module.service().deny(viewer, request.id(), text).whenComplete((r, e) -> after());
+        }
+
+        private void after() {
+            Bukkit.getScheduler().runTask(service.plugin(), () -> {
+                if (target != null) {
+                    module.openPunishMenu(viewer, target.name());
+                } else if (isOpen()) {
+                    viewer.closeInventory();
+                }
+            });
+        }
+    }
+
+    // ================================================================== P4: /watchlist (spec 13.5)
+
+    /** Everyone on the watchlist, newest first: head, reason, who added them, when it ends. Click opens /p (or history). */
+    static final class WatchlistMenu extends PagedMenu<Watchlist.Entry> {
+
+        private final ModerationModule module;
+        private final List<Watchlist.Entry> entries;
+
+        WatchlistMenu(ModerationModule module, List<Watchlist.Entry> entries) {
+            this.module = module;
+            this.entries = entries;
+        }
+
+        @Override
+        public String messageModule() {
+            return MODULE;
+        }
+
+        @Override
+        public String infoKey() {
+            return "watch.menu.info";
+        }
+
+        @Override
+        public String helpTopic() {
+            return "staff";
+        }
+
+        @Override
+        protected List<Watchlist.Entry> entries() {
+            return entries;
+        }
+
+        @Override
+        protected List<Component> titleCrumbs() {
+            return List.of(service.text(viewer, MODULE, "watch.menu.title"));
+        }
+
+        @Override
+        protected String emptyKey() {
+            return "watch.menu.empty";
+        }
+
+        @Override
+        protected MenuButton entry(Watchlist.Entry e) {
+            ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+            head.editMeta(SkullMeta.class, meta -> meta.setPlayerProfile(Bukkit.createProfile(e.target(), e.targetName())));
+            net.kyori.adventure.text.minimessage.tag.resolver.TagResolver parts = module.watchParts(viewer, e);
+            boolean punish = viewer.hasPermission(ModerationModule.PERM_GUI);
+            List<Component> lore = new ArrayList<>(service.lines(viewer, MODULE, "watch.menu.entry.lore", parts));
+            lore.add(Component.empty());
+            lore.addAll(service.lines(viewer, MODULE, punish ? "watch.menu.entry.click-punish" : "watch.menu.entry.click-history"));
+            return MenuButton.of(service.item(head, service.text(viewer, MODULE, "watch.menu.entry.name", parts), lore), click -> {
+                if (viewer.hasPermission(ModerationModule.PERM_GUI)) {
+                    module.openPunishMenu(viewer, e.targetName());
+                } else if (viewer.hasPermission(ModerationModule.PERM_HISTORY)) {
+                    module.target(e.target(), e.targetName()).thenAccept(t -> Bukkit.getScheduler().runTask(service.plugin(),
+                            () -> openChild(new HistoryMenu(t, module))));
+                }
+            });
         }
     }
 }

@@ -4,12 +4,22 @@ import java.util.UUID;
 
 /**
  * One row of the {@code punishments} table. {@code expires == null} = permanent. {@code weight} = warn weight in tenths
- * (spec 12.7, 10 = 1); {@code acknowledgedAt} = when the player acknowledged a warning (spec 12.6), or {@code null}.
+ * (spec 12.7, 10 = 1); {@code acknowledgedAt} = when the player acknowledged a warning (spec 12.6), or {@code null};
+ * {@code approvedBy}/{@code approvedByName} = the approver of a request (spec 13.4), {@code null} for everything else.
  */
 public record Punishment(long id, Type type, UUID target, String targetName, String ip, boolean ipWide, String reason,
                          String template, Integer ladderStep, UUID issuer, String issuerName, long created, Long expires,
                          boolean silent, Long removedAt, UUID removedBy, String removedByName, String removedReason,
-                         String source, int weight, Long acknowledgedAt) {
+                         String source, int weight, Long acknowledgedAt, UUID approvedBy, String approvedByName) {
+
+    /** A row without an approver (everything before P4, and every punishment that needed no approval). */
+    public Punishment(long id, Type type, UUID target, String targetName, String ip, boolean ipWide, String reason,
+                      String template, Integer ladderStep, UUID issuer, String issuerName, long created, Long expires,
+                      boolean silent, Long removedAt, UUID removedBy, String removedByName, String removedReason,
+                      String source, int weight, Long acknowledgedAt) {
+        this(id, type, target, targetName, ip, ipWide, reason, template, ladderStep, issuer, issuerName, created, expires,
+                silent, removedAt, removedBy, removedByName, removedReason, source, weight, acknowledgedAt, null, null);
+    }
 
     /** A row with weight 1 and not acknowledged (everything before P3, and every non-warn). */
     public Punishment(long id, Type type, UUID target, String targetName, String ip, boolean ipWide, String reason,
@@ -36,13 +46,22 @@ public record Punishment(long id, Type type, UUID target, String targetName, Str
     /** Same row with a database id (after insert). */
     public Punishment withId(long newId) {
         return new Punishment(newId, type, target, targetName, ip, ipWide, reason, template, ladderStep, issuer, issuerName,
-                created, expires, silent, removedAt, removedBy, removedByName, removedReason, source, weight, acknowledgedAt);
+                created, expires, silent, removedAt, removedBy, removedByName, removedReason, source, weight, acknowledgedAt,
+                approvedBy, approvedByName);
+    }
+
+    /** Same row approved by {@code by} (spec 13.4). */
+    public Punishment withApprover(UUID by, String byName) {
+        return new Punishment(id, type, target, targetName, ip, ipWide, reason, template, ladderStep, issuer, issuerName,
+                created, expires, silent, removedAt, removedBy, removedByName, removedReason, source, weight, acknowledgedAt,
+                by, byName);
     }
 
     /** Same row with another warn weight (tenths). */
     public Punishment withWeight(int tenths) {
         return new Punishment(id, type, target, targetName, ip, ipWide, reason, template, ladderStep, issuer, issuerName,
-                created, expires, silent, removedAt, removedBy, removedByName, removedReason, source, tenths, acknowledgedAt);
+                created, expires, silent, removedAt, removedBy, removedByName, removedReason, source, tenths, acknowledgedAt,
+                approvedBy, approvedByName);
     }
 
     /** A warning the player acknowledged ([I understand] or /ack). */

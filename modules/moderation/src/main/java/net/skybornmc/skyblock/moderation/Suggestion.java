@@ -30,6 +30,8 @@ record Suggestion(long id, UUID target, String targetName, String kind, Integer 
     static final String NOTE_ALREADY = "already-punished";
     /** Note on REMOVED rows: the warn that fired it was undone (spec 12.1). */
     static final String NOTE_UNDONE = "undone";
+    /** Note prefix on REQUESTED rows: {@code request:<id>} of the approval request it became (spec 13.4). */
+    static final String NOTE_REQUEST = "request:";
 
     enum Status {
         /** Waiting for staff (until {@code expires}). */
@@ -43,7 +45,9 @@ record Suggestion(long id, UUID target, String targetName, String kind, Integer 
         /** Nothing applied: the target is exempt or already muted/banned for longer. */
         SKIPPED,
         /** Withdrawn: the warn that fired it was undone (spec 12.1). Counts as if it never fired. */
-        REMOVED
+        REMOVED,
+        /** [Apply] by staff who need an approver: it became an approval request (spec 13.4). Counts as handled. */
+        REQUESTED
     }
 
     /** Still waiting for staff at {@code now}. */

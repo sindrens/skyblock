@@ -18,7 +18,7 @@ final class PunishmentStore {
 
     private static final String COLUMNS = "id, type, target_uuid, target_name, ip, ip_wide, reason, template, ladder_step, "
             + "issuer_uuid, issuer_name, created, expires, silent, removed_at, removed_by_uuid, removed_by_name, removed_reason, source, "
-            + "weight, acknowledged_at";
+            + "weight, acknowledged_at, approved_by_uuid, approved_by_name";
     private static final String SUGGESTION_COLUMNS = "id, target_uuid, target_name, kind, rule_at, repeat_trigger, action, reason, "
             + "source, warn_count, created, expires, status, handled_at, handled_by_uuid, handled_by_name, punishment_id, note, "
             + "warn_tenths, reason_id, details";
@@ -38,7 +38,7 @@ final class PunishmentStore {
                 rs.getLong("created"), Sql.nullableLong(rs, "expires"), rs.getBoolean("silent"),
                 Sql.nullableLong(rs, "removed_at"), Sql.uuid(rs, "removed_by_uuid"), rs.getString("removed_by_name"),
                 rs.getString("removed_reason"), rs.getString("source"), Weights.fromDb(rs.getBigDecimal("weight")),
-                Sql.nullableLong(rs, "acknowledged_at"));
+                Sql.nullableLong(rs, "acknowledged_at"), Sql.uuid(rs, "approved_by_uuid"), rs.getString("approved_by_name"));
     }
 
     private static byte[] bytes(UUID uuid) {
@@ -50,10 +50,11 @@ final class PunishmentStore {
         // weight only matters for warns (spec 12.7); NULL = 1 for everything else
         java.math.BigDecimal weight = p.type() == Punishment.Type.WARN && p.weight() != Weights.ONE ? Weights.decimal(p.weight()) : null;
         long id = Sql.insertReturningId(c, "INSERT INTO punishments (type, target_uuid, target_name, ip, ip_wide, reason, "
-                        + "template, ladder_step, issuer_uuid, issuer_name, created, expires, silent, source, weight) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        + "template, ladder_step, issuer_uuid, issuer_name, created, expires, silent, source, weight, "
+                        + "approved_by_uuid, approved_by_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 p.type().name(), bytes(p.target()), p.targetName(), p.ip(), p.ipWide(), clip(p.reason(), 255), p.template(),
-                p.ladderStep(), bytes(p.issuer()), clip(p.issuerName(), 32), p.created(), p.expires(), p.silent(), p.source(), weight);
+                p.ladderStep(), bytes(p.issuer()), clip(p.issuerName(), 32), p.created(), p.expires(), p.silent(), p.source(), weight,
+                bytes(p.approvedBy()), clip(p.approvedByName(), 32));
         return p.withId(id);
     }
 
@@ -259,9 +260,20 @@ final class PunishmentStore {
                          PunishDecision.Verdict verdict) {
     }
 
-    /** Outcome of {@link #issue}: {@code punishment == null} unless the verdict applied. */
-    record IssueResult(PunishDecision.Verdict verdict, Punishment punishment, TriggerResult trigger) {
+    /**
+     * Outcome of {@link #issue}: {@code punishment == null} unless the verdict applied; {@code request} = the request
+     * created (or merged into, {@code merged}) for a REQUEST verdict (spec 13.4).
+     */
+    record IssueResult(PunishDecision.Verdict verdict, Punishment punishment, TriggerResult trigger, PunishRequest request,
+                       boolean merged) {
+
+        IssueResult(PunishDecision.Verdict verdict, Punishment punishment, TriggerResult trigger) {
+            this(verdict, punishment, trigger, null, false);
+        }
     }
+
+    /** How long a request waits when none is given (spec 13.4 default). */
+    static final java.time.Duration DEFAULT_REQUEST_EXPIRE = java.time.Duration.ofHours(24);
 
     /**
      * The one way to store a punishment: decides with {@code decision} (active mute/ban read in the same transaction),
@@ -269,17 +281,33 @@ final class PunishmentStore {
      * rules off). {@code draft} supplies everything but type/duration, which come from the (possibly changed) verdict.
      */
     CompletableFuture<IssueResult> issue(Punishment draft, PunishDecision.Input input, PunishDecision decision, RuleHook hook) {
-        return db.async(c -> issueBlocking(c, draft, input, decision, hook));
+        return issue(draft, input, decision, hook, DEFAULT_REQUEST_EXPIRE);
+    }
+
+    /** Same, with how long a request waits for an approver (REQUEST verdicts, spec 13.4). */
+    CompletableFuture<IssueResult> issue(Punishment draft, PunishDecision.Input input, PunishDecision decision, RuleHook hook,
+                                         java.time.Duration requestExpire) {
+        return db.async(c -> issueBlocking(c, draft, input, decision, hook, requestExpire));
     }
 
     IssueResult issueBlocking(Connection c, Punishment draft, PunishDecision.Input input, PunishDecision decision, RuleHook hook)
             throws SQLException {
+        return issueBlocking(c, draft, input, decision, hook, DEFAULT_REQUEST_EXPIRE);
+    }
+
+    IssueResult issueBlocking(Connection c, Punishment draft, PunishDecision.Input input, PunishDecision decision, RuleHook hook,
+                              java.time.Duration requestExpire) throws SQLException {
         return locked(c, draft.target(), conn -> {
             long now = input.now();
             Active act = active(conn, draft.target(), draft.ip(), now);
             Punishment recent = input.reasonKey() == null || draft.target() == null ? null
                     : newestFor(conn, draft.target(), input.reasonKey());
             PunishDecision.Verdict verdict = decision.decide(input.withActive(act.mute(), act.ban()).withRecent(recent));
+            if (verdict.outcome() == PunishDecision.Outcome.REQUEST) {
+                RequestSaved saved = requestLocked(conn, shaped(draft, verdict.input()), verdict.input().duration(), now,
+                        requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire);
+                return new IssueResult(verdict, null, null, saved.request(), saved.merged());
+            }
             if (!verdict.applied()) {
                 return new IssueResult(verdict, null, null);
             }
@@ -296,12 +324,21 @@ final class PunishmentStore {
                 Sql.toBytes(target), template).orElse(null);
     }
 
-    /** {@code draft} with the type, duration and scope the verdict settled on. */
+    /**
+     * {@code draft} with the type, duration and scope the verdict settled on. A step raised by probation (spec 13.7)
+     * stores its own ladder index and weight. IP-wide only with a known address (a raised {@code ipban} step for a player
+     * without one stays an account ban).
+     */
     private static Punishment shaped(Punishment d, PunishDecision.Input in) {
         boolean timed = in.type() == Punishment.Type.BAN || in.type() == Punishment.Type.MUTE;
-        return new Punishment(0, in.type(), d.target(), d.targetName(), d.ip(), in.ipWide(), d.reason(), d.template(),
-                d.ladderStep(), d.issuer(), d.issuerName(), d.created(), timed ? in.endsAt() : null, d.silent(),
-                null, null, null, null, d.source(), in.type() == Punishment.Type.WARN ? d.weight() : Weights.ONE, null);
+        PunishDecision.Escalation e = in.escalation();
+        boolean raised = e != null && e.raised();
+        Integer step = raised ? Integer.valueOf(e.index()) : d.ladderStep();
+        int weight = in.type() != Punishment.Type.WARN ? Weights.ONE : raised ? e.step().weight() : d.weight();
+        boolean ipWide = in.ipWide() && d.ip() != null;
+        return new Punishment(0, in.type(), d.target(), d.targetName(), ipWide ? d.ip() : null, ipWide, d.reason(),
+                d.template(), step, d.issuer(), d.issuerName(), d.created(), timed ? in.endsAt() : null, d.silent(),
+                null, null, null, null, d.source(), weight, null, d.approvedBy(), d.approvedByName());
     }
 
     private TriggerResult runRules(Connection c, Punishment event, RuleHook hook, long now) throws SQLException {
@@ -412,10 +449,15 @@ final class PunishmentStore {
                 System.currentTimeMillis()));
     }
 
-    /** What happened when a staff member clicked [Apply] or [Dismiss]. */
-    enum HandleKind { APPLIED, DISMISSED, SKIPPED, BLOCKED, ALREADY_HANDLED, EXPIRED, NOT_FOUND }
+    /** What happened when a staff member clicked [Apply] or [Dismiss]. REQUESTED = sent for approval (spec 13.4). */
+    enum HandleKind { APPLIED, DISMISSED, SKIPPED, BLOCKED, ALREADY_HANDLED, EXPIRED, NOT_FOUND, REQUESTED }
 
-    record HandleResult(HandleKind kind, Suggestion suggestion, PunishDecision.Verdict verdict, Punishment punishment) {
+    record HandleResult(HandleKind kind, Suggestion suggestion, PunishDecision.Verdict verdict, Punishment punishment,
+                        PunishRequest request, boolean merged) {
+
+        HandleResult(HandleKind kind, Suggestion suggestion, PunishDecision.Verdict verdict, Punishment punishment) {
+            this(kind, suggestion, verdict, punishment, null, false);
+        }
     }
 
     /**
@@ -425,6 +467,16 @@ final class PunishmentStore {
      */
     CompletableFuture<HandleResult> apply(long id, java.util.function.Function<Suggestion, PunishDecision.Input> inputFor,
                                           PunishDecision decision, UUID by, String byName, long now) {
+        return apply(id, inputFor, decision, by, byName, now, DEFAULT_REQUEST_EXPIRE);
+    }
+
+    /**
+     * Same; a REQUEST verdict (the clicker needs an approver, spec 13.4) creates a request with the suggestion's punishment
+     * and marks the suggestion REQUESTED (handled: the warn counter restarts as for any handled trigger).
+     */
+    CompletableFuture<HandleResult> apply(long id, java.util.function.Function<Suggestion, PunishDecision.Input> inputFor,
+                                          PunishDecision decision, UUID by, String byName, long now,
+                                          java.time.Duration requestExpire) {
         return db.async(c -> {
             java.util.Optional<Suggestion> first = suggestionById(c, id);
             if (first.isEmpty()) {
@@ -445,6 +497,20 @@ final class PunishmentStore {
                 if (verdict.outcome() == PunishDecision.Outcome.SKIPPED) {
                     claim(conn, id, Suggestion.Status.SKIPPED, by, byName, null, Suggestion.NOTE_ALREADY, now);
                     return new HandleResult(HandleKind.SKIPPED, suggestionById(conn, id).orElseThrow(), verdict, null);
+                }
+                if (verdict.outcome() == PunishDecision.Outcome.REQUEST) {
+                    String rip = verdict.input().ipWide() ? lastIpBlocking(conn, s.target()) : null;
+                    Punishment wanted = shaped(new Punishment(0, step.type(), s.target(), s.targetName(), rip, false,
+                            s.reason(), s.api() ? s.reasonId() : null, null, by, byName, now, null, false, null, null, null, null,
+                            s.source()), verdict.input());
+                    RequestSaved saved = requestLocked(conn, wanted, verdict.input().duration(), now,
+                            requestExpire == null ? DEFAULT_REQUEST_EXPIRE : requestExpire);
+                    if (claim(conn, id, Suggestion.Status.REQUESTED, by, byName, null,
+                            Suggestion.NOTE_REQUEST + saved.request().id(), now) != 1) {
+                        throw new SQLException("suggestion " + id + " changed while locked");
+                    }
+                    return new HandleResult(HandleKind.REQUESTED, suggestionById(conn, id).orElseThrow(), verdict, null,
+                            saved.request(), saved.merged());
                 }
                 String ip = verdict.input().ipWide() ? lastIpBlocking(conn, s.target()) : null;
                 PunishDecision.Input eff = verdict.input().withStep(verdict.input().type(), verdict.input().duration(),
@@ -774,5 +840,305 @@ final class PunishmentStore {
         } catch (SQLException e) {
             return null; // social module not installed
         }
+    }
+
+    // ================================================================== P4: approval requests (spec 13.4)
+
+    private static final String REQUEST_COLUMNS = "id, target_uuid, target_name, reason_key, type, duration_ms, ip_wide, ip, "
+            + "reason, template, ladder_step, weight_tenths, silent, source, requester_uuid, requester_name, created, expires, "
+            + "status, handled_at, handler_uuid, handler_name, deny_reason, punishment_id, merges, notified";
+
+    private static PunishRequest mapRequest(ResultSet rs) throws SQLException {
+        return new PunishRequest(rs.getLong("id"), Sql.uuid(rs, "target_uuid"), rs.getString("target_name"),
+                rs.getString("reason_key"), Punishment.Type.valueOf(rs.getString("type")), Sql.nullableLong(rs, "duration_ms"),
+                rs.getBoolean("ip_wide"), rs.getString("ip"), rs.getString("reason"), rs.getString("template"),
+                nullableInt(rs, "ladder_step"), rs.getInt("weight_tenths"), rs.getBoolean("silent"), rs.getString("source"),
+                Sql.uuid(rs, "requester_uuid"), rs.getString("requester_name"), rs.getLong("created"), rs.getLong("expires"),
+                PunishRequest.Status.valueOf(rs.getString("status")), Sql.nullableLong(rs, "handled_at"),
+                Sql.uuid(rs, "handler_uuid"), rs.getString("handler_name"), rs.getString("deny_reason"),
+                Sql.nullableLong(rs, "punishment_id"), rs.getInt("merges"), rs.getBoolean("notified"));
+    }
+
+    /** A request after {@link #requestLocked}: the row, and whether it was merged into an existing pending one. */
+    record RequestSaved(PunishRequest request, boolean merged) {
+    }
+
+    private static Optional<PunishRequest> requestById(Connection c, long id) throws SQLException {
+        return Sql.queryOne(c, "SELECT " + REQUEST_COLUMNS + " FROM punishment_requests WHERE id = ?", PunishmentStore::mapRequest, id);
+    }
+
+    /**
+     * Stores a request for {@code wanted} (the punishment as it would be applied; {@code duration} {@code null} = perm), or
+     * merges it into the pending request for the same target and reason (spec 13.4: "a second request ... is merged").
+     * Runs inside the caller's transaction and target lock.
+     */
+    private static RequestSaved requestLocked(Connection c, Punishment wanted, java.time.Duration duration, long now,
+                                              java.time.Duration expire) throws SQLException {
+        String key = Approval.mergeKey(wanted.template(), wanted.type(), wanted.reason());
+        if (wanted.target() != null) {
+            Optional<PunishRequest> waiting = Sql.queryOne(c, "SELECT " + REQUEST_COLUMNS + " FROM punishment_requests "
+                            + "WHERE target_uuid = ? AND reason_key = ? AND status = 'PENDING' AND expires > ? ORDER BY id DESC LIMIT 1",
+                    PunishmentStore::mapRequest, Sql.toBytes(wanted.target()), key, now);
+            if (waiting.isPresent()) {
+                Sql.update(c, "UPDATE punishment_requests SET merges = merges + 1 WHERE id = ?", waiting.get().id());
+                return new RequestSaved(requestById(c, waiting.get().id()).orElseThrow(), true);
+            }
+        }
+        boolean timed = wanted.type() == Punishment.Type.BAN || wanted.type() == Punishment.Type.MUTE;
+        long id = Sql.insertReturningId(c, "INSERT INTO punishment_requests (target_uuid, target_name, reason_key, type, duration_ms, "
+                        + "ip_wide, ip, reason, template, ladder_step, weight_tenths, silent, source, requester_uuid, requester_name, "
+                        + "created, expires, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')",
+                bytes(wanted.target()), clip(wanted.targetName(), 32), key, wanted.type().name(),
+                timed && duration != null ? duration.toMillis() : null, wanted.ipWide(), wanted.ip(), clip(wanted.reason(), 255),
+                wanted.template(), wanted.ladderStep(), wanted.weight(), wanted.silent(), clip(wanted.source(), 48),
+                bytes(wanted.issuer()), clip(wanted.issuerName(), 32), now, now + expire.toMillis());
+        return new RequestSaved(requestById(c, id).orElseThrow(), false);
+    }
+
+    CompletableFuture<Optional<PunishRequest>> request(long id) {
+        return db.async(c -> requestById(c, id));
+    }
+
+    /** Pending (not expired) requests for one player, oldest first (head of /p). */
+    CompletableFuture<List<PunishRequest>> pendingRequests(UUID target, long now) {
+        return db.async(c -> Sql.query(c, "SELECT " + REQUEST_COLUMNS + " FROM punishment_requests WHERE target_uuid = ? "
+                        + "AND status = 'PENDING' AND expires > ? ORDER BY created, id", PunishmentStore::mapRequest,
+                Sql.toBytes(target), now));
+    }
+
+    /** All pending (not expired) requests, oldest first, at most {@code limit} (approvers on join). */
+    CompletableFuture<List<PunishRequest>> pendingRequests(long now, int limit) {
+        return db.async(c -> Sql.query(c, "SELECT " + REQUEST_COLUMNS + " FROM punishment_requests WHERE status = 'PENDING' "
+                + "AND expires > ? ORDER BY created, id LIMIT " + Math.max(1, limit), PunishmentStore::mapRequest, now));
+    }
+
+    /** What happened when an approver clicked [Approve] or [Deny]. */
+    enum RequestKind { APPROVED, DENIED, SKIPPED, BLOCKED, OWN_REQUEST, ALREADY_HANDLED, EXPIRED, NOT_FOUND }
+
+    record RequestResult(RequestKind kind, PunishRequest request, PunishDecision.Verdict verdict, Punishment punishment) {
+    }
+
+    private static RequestKind kindOf(Approval.Check check) {
+        return switch (check) {
+            case NOT_FOUND -> RequestKind.NOT_FOUND;
+            case EXPIRED -> RequestKind.EXPIRED;
+            case ALREADY_HANDLED -> RequestKind.ALREADY_HANDLED;
+            case OWN_REQUEST -> RequestKind.OWN_REQUEST;
+            case OK -> throw new IllegalArgumentException("ok");
+        };
+    }
+
+    private static int claimRequest(Connection c, long id, PunishRequest.Status status, UUID by, String byName, Long punishmentId,
+                                    String denyReason, long now) throws SQLException {
+        return Sql.update(c, "UPDATE punishment_requests SET status = ?, handled_at = ?, handler_uuid = ?, handler_name = ?, "
+                        + "punishment_id = ?, deny_reason = ? WHERE id = ? AND status = 'PENDING' AND expires > ?",
+                status.name(), now, bytes(by), clip(byName, 32), punishmentId, clip(denyReason, 255), id, now);
+    }
+
+    /**
+     * [Approve]: under the target's lock, checks the request ({@link Approval#check}: pending, not expired, not your own),
+     * decides with the approver's permissions ({@code inputFor}: their rank limit stays the hard maximum) and applies it
+     * with {@code issuer} = the requester and {@code approved_by} = the approver. First click wins. BLOCKED leaves it
+     * pending for someone who may; an already longer mute/ban marks it SKIPPED.
+     */
+    CompletableFuture<RequestResult> approve(long id, java.util.function.Function<PunishRequest, PunishDecision.Input> inputFor,
+                                             PunishDecision decision, UUID by, String byName, boolean selfApprove, long now) {
+        return db.async(c -> {
+            Optional<PunishRequest> first = requestById(c, id);
+            if (first.isEmpty()) {
+                return new RequestResult(RequestKind.NOT_FOUND, null, null, null);
+            }
+            return locked(c, first.get().target(), conn -> {
+                PunishRequest r = requestById(conn, id).orElseThrow();
+                Approval.Check check = Approval.check(r, by, true, selfApprove, now);
+                if (check != Approval.Check.OK) {
+                    return new RequestResult(kindOf(check), r, null, null);
+                }
+                Active act = active(conn, r.target(), r.ipWide() ? r.ip() : null, now);
+                PunishDecision.Verdict verdict = decision.decide(inputFor.apply(r).withActive(act.mute(), act.ban()));
+                if (verdict.outcome() == PunishDecision.Outcome.SKIPPED) {
+                    claimRequest(conn, id, PunishRequest.Status.SKIPPED, by, byName, null, null, now);
+                    return new RequestResult(RequestKind.SKIPPED, requestById(conn, id).orElseThrow(), verdict, null);
+                }
+                if (!verdict.applied()) {
+                    return new RequestResult(RequestKind.BLOCKED, r, verdict, null);
+                }
+                Punishment p = insertRow(conn, shaped(new Punishment(0, r.type(), r.target(), r.targetName(), r.ip(), r.ipWide(),
+                        r.reason(), r.template(), r.ladderStep(), r.requester(), r.requesterName(), now, null, r.silent(), null,
+                        null, null, null, r.source(), r.weight(), null, by, byName), verdict.input()));
+                if (claimRequest(conn, id, PunishRequest.Status.APPROVED, by, byName, p.id(), null, now) != 1) {
+                    throw new SQLException("request " + id + " changed while locked");
+                }
+                return new RequestResult(RequestKind.APPROVED, requestById(conn, id).orElseThrow(), verdict, p);
+            });
+        });
+    }
+
+    /** [Deny] with a reason (first click wins). Denying your own request withdraws it. */
+    CompletableFuture<RequestResult> deny(long id, UUID by, String byName, String reason, long now) {
+        return db.async(c -> {
+            Optional<PunishRequest> first = requestById(c, id);
+            if (first.isEmpty()) {
+                return new RequestResult(RequestKind.NOT_FOUND, null, null, null);
+            }
+            return locked(c, first.get().target(), conn -> {
+                PunishRequest r = requestById(conn, id).orElseThrow();
+                Approval.Check check = Approval.check(r, by, false, true, now);
+                if (check != Approval.Check.OK) {
+                    return new RequestResult(kindOf(check), r, null, null);
+                }
+                if (claimRequest(conn, id, PunishRequest.Status.DENIED, by, byName, null, reason, now) != 1) {
+                    throw new SQLException("request " + id + " changed while locked");
+                }
+                return new RequestResult(RequestKind.DENIED, requestById(conn, id).orElseThrow(), null, null);
+            });
+        });
+    }
+
+    /**
+     * The requester's outcomes not told yet (approved, denied, skipped, or expired without an answer); marks them told,
+     * atomically, so each is told once (now if online, else on the next join).
+     */
+    CompletableFuture<List<PunishRequest>> requesterUpdates(UUID requester, long now) {
+        return db.transaction(c -> {
+            List<PunishRequest> due = Sql.query(c, "SELECT " + REQUEST_COLUMNS + " FROM punishment_requests WHERE requester_uuid = ? "
+                            + "AND notified = FALSE AND (status <> 'PENDING' OR expires <= ?) ORDER BY id",
+                    PunishmentStore::mapRequest, Sql.toBytes(requester), now);
+            List<PunishRequest> out = new ArrayList<>();
+            for (PunishRequest r : due) {
+                if (Sql.update(c, "UPDATE punishment_requests SET notified = TRUE WHERE id = ? AND notified = FALSE", r.id()) == 1) {
+                    out.add(r);
+                }
+            }
+            return out;
+        });
+    }
+
+    /** Marks one request's outcome as told (the requester was online when it was handled). */
+    CompletableFuture<Boolean> markNotified(long id) {
+        return db.async(c -> Sql.update(c, "UPDATE punishment_requests SET notified = TRUE WHERE id = ? AND notified = FALSE", id) == 1);
+    }
+
+    /**
+     * Request numbers of one staff member since {@code since} (/pstats, spec 13.4): as requester (made, approved, denied,
+     * waiting, expired) and as approver (approved, denied).
+     */
+    record RequestCounts(long made, long approved, long denied, long waiting, long expired, long handledApproved,
+                         long handledDenied) {
+        static final RequestCounts NONE = new RequestCounts(0, 0, 0, 0, 0, 0, 0);
+    }
+
+    CompletableFuture<RequestCounts> requestCounts(UUID staff, long since, long now) {
+        return db.async(c -> {
+            long[] own = Sql.queryOne(c, "SELECT COUNT(*) AS n, "
+                            + "SUM(CASE WHEN status IN ('APPROVED', 'SKIPPED') THEN 1 ELSE 0 END) AS ok_n, "
+                            + "SUM(CASE WHEN status = 'DENIED' THEN 1 ELSE 0 END) AS denied_n, "
+                            + "SUM(CASE WHEN status = 'PENDING' AND expires > ? THEN 1 ELSE 0 END) AS waiting_n, "
+                            + "SUM(CASE WHEN status = 'PENDING' AND expires <= ? THEN 1 ELSE 0 END) AS expired_n "
+                            + "FROM punishment_requests WHERE requester_uuid = ? AND created >= ?",
+                    rs -> new long[]{rs.getLong("n"), rs.getLong("ok_n"), rs.getLong("denied_n"), rs.getLong("waiting_n"), rs.getLong("expired_n")},
+                    now, now, Sql.toBytes(staff), since).orElse(new long[5]);
+            long[] handled = Sql.queryOne(c, "SELECT SUM(CASE WHEN status IN ('APPROVED', 'SKIPPED') THEN 1 ELSE 0 END) AS ok_n, "
+                            + "SUM(CASE WHEN status = 'DENIED' THEN 1 ELSE 0 END) AS denied_n FROM punishment_requests "
+                            + "WHERE handler_uuid = ? AND handled_at >= ?",
+                    rs -> new long[]{rs.getLong("ok_n"), rs.getLong("denied_n")}, Sql.toBytes(staff), since).orElse(new long[2]);
+            return new RequestCounts(own[0], own[1], own[2], own[3], own[4], handled[0], handled[1]);
+        });
+    }
+
+    // ================================================================== P4: watchlist (spec 13.5)
+
+    private static final String WATCH_COLUMNS = "id, target_uuid, target_name, author_uuid, author_name, reason, created, expires, "
+            + "removed, removed_at, removed_by_name";
+
+    private static Watchlist.Entry mapWatch(ResultSet rs) throws SQLException {
+        return new Watchlist.Entry(rs.getLong("id"), Sql.uuid(rs, "target_uuid"), rs.getString("target_name"),
+                Sql.uuid(rs, "author_uuid"), rs.getString("author_name"), rs.getString("reason"), rs.getLong("created"),
+                Sql.nullableLong(rs, "expires"), rs.getBoolean("removed"), Sql.nullableLong(rs, "removed_at"),
+                rs.getString("removed_by_name"));
+    }
+
+    private static Optional<Watchlist.Entry> activeWatch(Connection c, UUID target, long now) throws SQLException {
+        return Sql.queryOne(c, "SELECT " + WATCH_COLUMNS + " FROM watchlist WHERE target_uuid = ? AND removed = FALSE "
+                + "AND (expires IS NULL OR expires > ?) ORDER BY id DESC LIMIT 1", PunishmentStore::mapWatch, Sql.toBytes(target), now);
+    }
+
+    /** {@link #watch} result: the entry now, and the active entry it replaced ({@code null} = newly added). */
+    record WatchSaved(Watchlist.Entry entry, Watchlist.Entry before) {
+    }
+
+    /**
+     * Adds a player to the watchlist, or renews the active entry (new reason, author, date and expiry), under the target's
+     * lock so there is never more than one active entry per player.
+     */
+    CompletableFuture<WatchSaved> watch(UUID target, String targetName, UUID author, String authorName, String reason, long now,
+                                        Long expires) {
+        return db.async(c -> locked(c, target, conn -> {
+            Optional<Watchlist.Entry> before = activeWatch(conn, target, now);
+            long id;
+            if (before.isPresent()) {
+                id = before.get().id();
+                Sql.update(conn, "UPDATE watchlist SET target_name = ?, author_uuid = ?, author_name = ?, reason = ?, created = ?, "
+                                + "expires = ? WHERE id = ?", clip(targetName, 32), bytes(author), clip(authorName, 32),
+                        clip(reason, 255), now, expires, id);
+            } else {
+                id = Sql.insertReturningId(conn, "INSERT INTO watchlist (target_uuid, target_name, author_uuid, author_name, reason, "
+                                + "created, expires) VALUES (?, ?, ?, ?, ?, ?, ?)", Sql.toBytes(target), clip(targetName, 32),
+                        bytes(author), clip(authorName, 32), clip(reason, 255), now, expires);
+            }
+            Watchlist.Entry saved = Sql.queryOne(conn, "SELECT " + WATCH_COLUMNS + " FROM watchlist WHERE id = ?",
+                    PunishmentStore::mapWatch, id).orElseThrow();
+            return new WatchSaved(saved, before.orElse(null));
+        }));
+    }
+
+    /** Removes the player's active entry (the row stays, marked removed); empty if they were not watched. */
+    CompletableFuture<Optional<Watchlist.Entry>> unwatch(UUID target, UUID by, String byName, long now) {
+        return db.async(c -> locked(c, target, conn -> {
+            Optional<Watchlist.Entry> before = activeWatch(conn, target, now);
+            if (before.isEmpty()) {
+                return Optional.<Watchlist.Entry>empty();
+            }
+            Sql.update(conn, "UPDATE watchlist SET removed = TRUE, removed_at = ?, removed_by_uuid = ?, removed_by_name = ? "
+                    + "WHERE id = ? AND removed = FALSE", now, bytes(by), clip(byName, 32), before.get().id());
+            return before;
+        }));
+    }
+
+    CompletableFuture<Optional<Watchlist.Entry>> activeWatch(UUID target, long now) {
+        return db.async(c -> activeWatch(c, target, now));
+    }
+
+    /** Every active entry, newest first, at most 200 (/watchlist, tab completion of /watch remove). */
+    CompletableFuture<List<Watchlist.Entry>> watchlist(long now) {
+        return db.async(c -> Sql.query(c, "SELECT " + WATCH_COLUMNS + " FROM watchlist WHERE removed = FALSE "
+                + "AND (expires IS NULL OR expires > ?) ORDER BY created DESC, id DESC LIMIT 200", PunishmentStore::mapWatch, now));
+    }
+
+    // ================================================================== P4: "mute ended" / "welcome back" (spec 13.13)
+
+    /**
+     * Claims the end notices of the target's mutes ({@code mutes}) and/or bans ({@code bans}) that ended naturally (not
+     * pardoned or undone) and were not told yet: sets {@code end_notice_sent} and returns those rows, atomically under the
+     * target's lock, so the line is sent exactly once (online at the end, or on the next join).
+     */
+    CompletableFuture<List<Punishment>> claimEndNotices(UUID target, long now, boolean mutes, boolean bans) {
+        if (!mutes && !bans) {
+            return CompletableFuture.completedFuture(List.of());
+        }
+        String types = mutes && bans ? "('MUTE', 'BAN')" : mutes ? "('MUTE')" : "('BAN')";
+        return db.async(c -> locked(c, target, conn -> {
+            List<Punishment> ended = Sql.query(conn, "SELECT " + COLUMNS + " FROM punishments WHERE target_uuid = ? AND type IN "
+                    + types + " AND removed_at IS NULL AND expires IS NOT NULL AND expires <= ? AND end_notice_sent = FALSE "
+                    + "ORDER BY expires", PunishmentStore::map, Sql.toBytes(target), now);
+            List<Punishment> claimed = new ArrayList<>();
+            for (Punishment p : ended) {
+                if (Sql.update(conn, "UPDATE punishments SET end_notice_sent = TRUE WHERE id = ? AND end_notice_sent = FALSE",
+                        p.id()) == 1) {
+                    claimed.add(p);
+                }
+            }
+            return claimed;
+        }));
     }
 }

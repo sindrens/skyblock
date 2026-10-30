@@ -37,16 +37,51 @@ record PunishConfig(List<Templates.Category> categories, MenuLayout menu, WarnRu
      * @param discord          Discord log (12.11; the webhook URL itself is a secret, never here)
      * @param playerView       /mypunishments (12.12)
      * @param chatSuggestions  detector settings for the suggestion API (12.8), name → settings
+     * @param approval         approval for big punishments (13.4)
+     * @param watchlist        watchlist (13.5)
+     * @param probation        probation after a natural end (13.7)
+     * @param muteEnded        "mute ended" / "welcome back" message (13.13)
      */
     record Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
                   java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
                   boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
-                  PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions) {
+                  PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions, Approval.Settings approval,
+                  WatchSettings watchlist, Probation.Settings probation, MuteEnded muteEnded) {
 
         static final Extras DEFAULT = new Extras(Duration.ofMinutes(2), Duration.ofSeconds(15), Duration.ofSeconds(5),
                 Duration.ofDays(90), java.time.ZoneId.of("Europe/Oslo"), Duration.ofSeconds(60), PunishStats.Period.D7, 10,
                 true, Evidence.DEFAULT, Notes.DEFAULT, Ack.DEFAULT, "https://skybornmc.net/rules", Discord.DEFAULT,
                 PlayerView.DEFAULT, Map.of());
+
+        /** The P3 set of keys; the P4 ones get their defaults. */
+        Extras(Duration undoWindow, Duration duplicateWindow, Duration duplicateConfirm, Duration offenceExpire,
+               java.time.ZoneId statsZone, Duration statsCache, PunishStats.Period statsPeriod, int statsTop,
+               boolean closeReports, Evidence evidence, Notes notes, Ack ack, String rulesLink, Discord discord,
+               PlayerView playerView, Map<String, ChatSuggestion> chatSuggestions) {
+            this(undoWindow, duplicateWindow, duplicateConfirm, offenceExpire, statsZone, statsCache, statsPeriod, statsTop,
+                    closeReports, evidence, notes, ack, rulesLink, discord, playerView, chatSuggestions, Approval.Settings.DEFAULT,
+                    WatchSettings.DEFAULT, Probation.Settings.DEFAULT, MuteEnded.DEFAULT);
+        }
+    }
+
+    /**
+     * Watchlist (13.5).
+     *
+     * @param expire          an entry is gone after this ({@code null} = until removed)
+     * @param reasonMaxLength longest reason
+     */
+    record WatchSettings(Duration expire, int reasonMaxLength) {
+        static final WatchSettings DEFAULT = new WatchSettings(Duration.ofDays(30), 100);
+    }
+
+    /**
+     * "Mute ended" (13.13): the message when a mute ends naturally (online, or once on the next join) and "Welcome back"
+     * after a ban ended.
+     *
+     * @param sound named sound (sounds.yml), empty = none
+     */
+    record MuteEnded(boolean enabled, String sound) {
+        static final MuteEnded DEFAULT = new MuteEnded(true, "notify");
     }
 
     /**

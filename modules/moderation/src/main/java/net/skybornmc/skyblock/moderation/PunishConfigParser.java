@@ -138,6 +138,8 @@ final class PunishConfigParser {
             }
             checkId(catId, catPath);
             Material catIcon = icon(cat.getString("icon"), catPath + ".icon", Material.BOOK);
+            // spec 13.7: per category switch (default on); a reason may override it with its own probation: key
+            boolean catProbation = bool(cat, "probation", catPath + ".probation", true);
             List<Templates.Template> templates = new ArrayList<>();
             ConfigurationSection reasons = cat.getConfigurationSection("reasons");
             if (reasons == null) {
@@ -159,8 +161,10 @@ final class PunishConfigParser {
                     Material icon = icon(t.getString("icon"), path + ".icon", Material.PAPER);
                     // spec 12.3: per reason, e.g. offence-expire: perm for cheating, 180d for a slow-burning reason
                     Duration expire = duration(t, "offence-expire", path + ".offence-expire", defaultOffenceExpire, true);
+                    boolean probation = bool(t, "probation", path + ".probation", catProbation);
                     if (!ladder.isEmpty()) {
-                        templates.add(new Templates.Template(id, catId, t.getString("name"), icon, List.copyOf(ladder), expire));
+                        templates.add(new Templates.Template(id, catId, t.getString("name"), icon, List.copyOf(ladder), expire,
+                                probation));
                     }
                 }
             }
@@ -527,7 +531,104 @@ final class PunishConfigParser {
         return new PunishConfig.Extras(undo, dup, confirm, expire, zone, cache, period, top, closeReports,
                 evidence(x.getConfigurationSection("evidence")), notes(x.getConfigurationSection("notes")),
                 ack(x.getConfigurationSection("ack")), rulesLink, discord(x.getConfigurationSection("discord")),
-                playerView(x.getConfigurationSection("player-view")), chatSuggestions(x.getConfigurationSection("chat-suggestions")));
+                playerView(x.getConfigurationSection("player-view")), chatSuggestions(x.getConfigurationSection("chat-suggestions")),
+                approval(x.getConfigurationSection("approval")), watchlist(x.getConfigurationSection("watchlist")),
+                probation(x.getConfigurationSection("probation")), muteEnded(x.getConfigurationSection("mute-ended")));
+    }
+
+    // ------------------------------------------------------------------ extras (P4: spec 13.4, 13.5, 13.7, 13.13)
+
+    private Approval.Settings approval(ConfigurationSection s) {
+        Approval.Settings d = Approval.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.approval.";
+        boolean enabled = bool(s, "enabled", p + "enabled", d.enabled());
+        Duration expire = positive(s, "expire", p + "expire", d.expire());
+        boolean self = bool(s, "self-approve", p + "self-approve", d.selfApprove());
+        List<Approval.Rule> rules = d.rules();
+        if (s.contains("rules")) {
+            if (!s.isList("rules")) {
+                error("config.bad-approval-rules", p + "rules");
+            } else {
+                List<Approval.Rule> parsed = new ArrayList<>();
+                for (String raw : s.getStringList("rules")) {
+                    try {
+                        parsed.add(Approval.Rule.parse(raw));
+                    } catch (IllegalArgumentException e) {
+                        String value = raw == null ? "" : raw.strip();
+                        String kind = value.split("\\s+", 2)[0].toLowerCase(Locale.ROOT);
+                        error("config.bad-approval-rule", p + "rules", "value", value, "suggestion",
+                                Approval.Rule.BAD_KIND.equals(e.getMessage())
+                                        ? nullToEmpty(Hints.closest(kind, Approval.Rule.KINDS)) : "");
+                    }
+                }
+                rules = List.copyOf(parsed);
+            }
+        }
+        List<String> deny = d.denyReasons();
+        if (s.contains("deny-reasons")) {
+            if (!s.isList("deny-reasons")) {
+                error("config.bad-list", p + "deny-reasons");
+            } else {
+                List<String> ids = new ArrayList<>();
+                for (String id : s.getStringList("deny-reasons")) {
+                    String clean = id == null ? "" : id.strip();
+                    if (!clean.matches(ID_PATTERN)) {
+                        error("config.bad-id", p + "deny-reasons", "value", clean);
+                    } else if (!ids.contains(clean)) {
+                        ids.add(clean);
+                    }
+                }
+                if (ids.size() > 6) {
+                    error("config.bad-number", p + "deny-reasons", "value", String.valueOf(ids.size()), "min", "0", "max", "6");
+                    ids = ids.subList(0, 6);
+                }
+                deny = List.copyOf(ids);
+            }
+        }
+        return new Approval.Settings(enabled, expire, self, rules, deny);
+    }
+
+    private PunishConfig.WatchSettings watchlist(ConfigurationSection s) {
+        PunishConfig.WatchSettings d = PunishConfig.WatchSettings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.watchlist.";
+        Duration expire = duration(s, "expire", p + "expire", d.expire(), true);
+        if (expire != null && (expire.isZero() || expire.isNegative())) {
+            error("config.bad-duration", p + "expire", "value", String.valueOf(s.get("expire")));
+            expire = d.expire();
+        }
+        return new PunishConfig.WatchSettings(expire, number(s, "reason-max-length", p + "reason-max-length",
+                d.reasonMaxLength(), 10, 200));
+    }
+
+    private Probation.Settings probation(ConfigurationSection s) {
+        Probation.Settings d = Probation.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.probation.";
+        return new Probation.Settings(bool(s, "enabled", p + "enabled", d.enabled()),
+                positive(s, "duration", p + "duration", d.duration()),
+                number(s, "step-bonus", p + "step-bonus", d.stepBonus(), 0, 5));
+    }
+
+    private PunishConfig.MuteEnded muteEnded(ConfigurationSection s) {
+        PunishConfig.MuteEnded d = PunishConfig.MuteEnded.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.mute-ended.";
+        String sound = s.contains("sound") ? String.valueOf(s.get("sound")).strip() : d.sound();
+        if (!sound.isEmpty() && !sound.matches(ID_PATTERN)) {
+            error("config.bad-id", p + "sound", "value", sound);
+            sound = d.sound();
+        }
+        return new PunishConfig.MuteEnded(bool(s, "enabled", p + "enabled", d.enabled()), sound);
     }
 
     // ------------------------------------------------------------------ extras (P3: spec 12.4-12.12)
