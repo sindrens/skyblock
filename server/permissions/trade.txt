@@ -1,0 +1,7 @@
+# LuckPerms grants for the trade module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/trade/src/main/resources/permissions/trade.yml. One console command per line; # = comment.
+# Player nodes (/trade, /trade accept, /trade deny) default to true, so they need no grants.
+
+# --- Secure trade (staff) ---
+# Staff test money offers on fresh test accounts without waiting for the new-account playtime.
+lp group admin permission set skyblock.trade.bypass-playtime true

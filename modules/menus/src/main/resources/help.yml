@@ -34,7 +34,7 @@ categories:
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, selling, banks, the", "<c:text>auction house and trading."]
-    topics: [money, sell, notes, auction]
+    topics: [money, sell, notes, auction, trade]
   progression:
     icon: experience_bottle
     status: active
@@ -814,6 +814,39 @@ topics:
           - "<c:text>of play. Starter kit items and money"
           - "<c:text>notes can't be sold here. Every sale is"
           - "<c:text>logged, so scams get caught."
+
+  trade:
+    icon: emerald
+    aliases: [trading, secure-trade, swap]
+    name: "<c:flame>Trading"
+    summary: ["<c:text>Swap items and money safely", "<c:text>with a player next to you."]
+    take-me-there: "trade"
+    commands: [Economy]
+    pages:
+      - title: "<c:value>Starting a trade"
+        lines:
+          - "<c:value>/trade Steve</c:value> <c:text>asks a player nearby."
+          - "<c:text>They click <c:value>[Accept]</c:value> <c:text>or type"
+          - "<c:value>/trade accept</c:value><c:text>. Stand close and stay"
+          - "<c:text>in the same world."
+      - title: "<c:value>Offering"
+        lines:
+          - "<c:text>Tap items in your own inventory to"
+          - "<c:text>offer them. Tap the gold ingot to add"
+          - "<c:text>money. Tap your offered item to take"
+          - "<c:text>it back."
+      - title: "<c:value>Confirming"
+        lines:
+          - "<c:text>Both tap <c:value>Confirm</c:value><c:text>. After a short"
+          - "<c:text>countdown the trade happens. Any"
+          - "<c:text>change resets both confirmations, so"
+          - "<c:text>check the other side first."
+      - title: "<c:value>Safe by design"
+        lines:
+          - "<c:text>Offered items are stored safely until"
+          - "<c:text>the trade ends. Closing, leaving or"
+          - "<c:text>moving away cancels it and gives"
+          - "<c:text>everything back. Crystals can't be traded."
 
   staff:
     icon: shield

@@ -1,0 +1,9 @@
+# Permissions of the trade module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/trade.txt. Commands: docs/commands/trade.md.
+skyblock.trade.use:
+  description: Trade items and money with a player nearby (/trade, /trade accept, /trade deny)
+  default: true
+skyblock.trade.bypass-playtime:
+  description: Offer money in trades before the new-account playtime (testing)
+  default: op
