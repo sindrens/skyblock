@@ -26,7 +26,7 @@ import java.util.UUID;
  * Refreshes every 2 s while open.
  * <pre>
  *  R O B B ✦ B B O R      4 level, progress, board position
- *  B ▥ ⚒ ◆ ▤ B B B B      10 pillars, 11 upgrades, 12 achievements, 13 collections
+ *  B ▥ ⚒ ◆ ▤ . . 📖 B      10 pillars, 11 upgrades, 12 achievements, 13 collections, 16 challenge book (M5.3)
  *  B ⚗ ⛏ $ ◇ . ⟳ . B      19 skills, 20 Depths, 21 bank, 22 blocks, 24 recalculate
  *  B ⛏ 🪓 🌾 ⚔ ⚑ . . B      28-32 Mining, Foraging, Farming, Combat, Conquest
  *  B . . . . . . . B
@@ -37,6 +37,7 @@ final class LevelMenu extends Menu {
 
     static final int SLOT_HEADER = 4;
     static final int SLOT_RECALCULATE = 24;
+    static final int SLOT_TASKS = 16;
     static final List<LevelSource> SOURCES = List.of(LevelSource.PILLARS, LevelSource.UPGRADES, LevelSource.ACHIEVEMENTS,
             LevelSource.COLLECTIONS, LevelSource.SKILLS, LevelSource.DEPTHS, LevelSource.BANK, LevelSource.BLOCKS);
     static final List<Integer> SOURCE_SLOTS = List.of(10, 11, 12, 13, 19, 20, 21, 22);
@@ -101,6 +102,7 @@ final class LevelMenu extends Menu {
             set(SOURCE_SLOTS.get(i), MenuButton.display(source(SOURCES.get(i), s)));
         }
         set(SLOT_RECALCULATE, recalculate());
+        set(SLOT_TASKS, tasks());
         Pillar[] all = Pillar.values();
         for (int i = 0; i < all.length && i < PILLAR_SLOTS.size(); i++) {
             set(PILLAR_SLOTS.get(i), MenuButton.display(pillar(all[i])));
@@ -201,6 +203,18 @@ final class LevelMenu extends Menu {
             return MenuButton.display(item);
         }
         return MenuButton.of(item, click -> menus.recalculate(viewer, islandId, this::refresh));
+    }
+
+    /** The challenge book button (M5.3): tasks done on this island. */
+    private MenuButton tasks() {
+        TaskMenus book = menus.tasks();
+        if (book == null || !book.tasks().config().enabled || !viewer.hasPermission(TaskManager.PERM_TASKS)) {
+            return MenuButton.display(service.item(new ItemStack(Material.BOOK), text("level-menu.tasks.name"),
+                    lines("level-menu.tasks.lore-locked")));
+        }
+        TagResolver[] p = {Msg.number("done", book.tasks().completedCount(islandId)), Msg.number("total", book.tasks().catalog().size())};
+        ItemStack item = service.item(new ItemStack(Material.WRITABLE_BOOK), text("level-menu.tasks.name"), lines("level-menu.tasks.lore", p));
+        return MenuButton.of(item, click -> book.openBook(viewer, this));
     }
 
     private ItemStack pillar(Pillar pillar) {

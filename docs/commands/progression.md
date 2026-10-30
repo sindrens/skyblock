@@ -1,4 +1,4 @@
-# Progression module (`modules/progression`): M5.1 pillars, M5.2 island level
+# Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine
 
 Island pillars (PHASE-5 M5.1): Mining, Foraging, Farming, Combat, and Conquest (hidden until KOTH/events feed it,
 `pillars.yml → conquest.enabled`). Dynamic island level (M5.2). Settings: `pillars.yml`, `progression.yml`,
@@ -11,6 +11,7 @@ of this module and need its permission nodes.
 | Command | Description | Permission | Status |
 |---|---|---|---|
 | `/is level` | Island level menu: level, progress, board place, points per source (cap, how to raise it), Recalculate button (members, 10 min per island), the pillar row (M5.2). Also from the island menu's island item. | `skyblock.progression.level` (everyone); button: `skyblock.progression.recalculate` (everyone, members only) | ✅ built (owner P5-25) |
+| Challenge Book (button in `/is level`) | The island task list (M5.3, O6): chapters per task tier, every task with its shared progress and rewards, hand-in screen for deliver tasks (from the inventory; from the island storage once STORE2 exists). No new command. | `skyblock.progression.tasks` (everyone; hand-ins members only) | ✅ built |
 | `/is upgrade`, `/is masteries` | Upgrades and masteries (M5.4, M5.5) | `skyblock.progression.upgrade` (everyone) | ⬜ planned |
 | `/is top` | Island leaderboards: Level and Value tabs, Solo/Team toggle, places 1-28, your island; Weekly gain and Pillars tabs come with M5.7 | `skyblock.progression.top` (everyone) | ✅ built (owner P5-25) |
 | `/isadmin progression <player>` | Staff view/edit (M5.10) | `skyblock.progression.admin.view` (mod), `.admin.edit` (admin) | ⬜ planned (owner P5-31) |
@@ -72,6 +73,40 @@ of this module and need its permission nodes.
   lowest bank balance, last scan), one `island_level_history` row per island and day (V2), chunk worths in
   `island_block_worth` (written every `blocks.flush-seconds`), bank samples in `island_bank_samples` (pruned nightly).
 
+## How the task engine works (M5.3, the challenge book)
+- **Catalog:** `tasks.yml` (one section `tasks`, every key a task: `tier`, `type`, `target`, `amount`, `rewards`,
+  `unlocks`, optional `icon`, `name`, `enabled`). Broken entries are reported at start and skipped; new bundled tasks
+  are added to an existing file (turn one off with `enabled: false`). Settings: `tasks-settings.yml`. The default
+  catalog (180 tasks, 12 tiers x 15 kinds) comes from `tools/gen_tasks_catalog.py` (counts grow 1.35x per tier, money
+  tasks 0.5 h / 0.4 h of `REF(t)`).
+- **Types:** `mine` (Depths ore via `ResourceBreakEvent`, island blocks), `chop` (Depths logs, natural island logs),
+  `farm` (ripe crops and `natural-harvest` blocks on the island, sweet berry right-click harvests), `kill` (own hit or
+  arrow, `kill-damage-causes`), `craft` (the vanilla crafted statistic: shift-clicks and smelting count), `sell`/`earn`
+  (`ItemsSoldEvent`, AFK pool excluded by `excluded-sell-sources`), `deposit` (island bank deposits), `deliver` (hand
+  in), `skill-level` (best online member), `pillar-level`, `island-level`. Targets can be `any` for mine/chop/farm/kill/craft.
+- **Shared progress (owner P5-9):** one counter per island and counter key (`mine:coal_ore`, `earn:any`); every task
+  reading it sees it, from the island's creation on. Only counted keys are tracked. Counters are buffered and written as
+  deltas every `flush-seconds` (a crash loses at most one interval, nothing counts twice).
+- **Anti-abuse (same as the pillars):** only stored members count (never coop players or visitors), never in
+  creative/spectator; on islands only on their own island; blocks placed by players (last `placed-memory` positions per
+  island) count nothing when broken; fall, lava and stack kills count nothing.
+- **Completion:** exactly once per island, task and season. The `island_task_done` row and every member's crystals
+  (ledger reason `island_task`, idempotency key per member and task) commit in one database transaction; pillar XP
+  (`rewards.pillar-xp`, island boosts on top) is added after the commit. A failed save is retried by the next progress
+  or the periodic check (`check-seconds`, islands with an online member: reach tasks and tasks a reload made ready).
+  Notices: action bar + island chat line (`/settings` toggle `task-notices`) + sound.
+- **Deliveries (crash can lose, never dupe):** room is reserved first (two members can't overfill a task), the items
+  leave the inventory, the player file is saved (`PlayerSaves`), and only then the progress is written; a failed save or
+  write gives the items back (inventory, then `/box`). Only plain items count: a material id matches the vanilla item
+  without custom id, name, lore or enchants; `custom:<id>` matches that stackable custom item (Depths drops).
+  Island storage (STORE2) plugs in through `TaskService#storage(TaskStorage)`: storage rows and progress in one transaction.
+- **Unlock keys (for M5.4 / M5.5):** `upgrade.<id>.<level>` and `mastery.<id>.<rank>`; `TaskService#unlocked(island,
+  key)` is true when every task listing the key is done. Default ids: island_size, member_slots, warp_slots,
+  island_vault, entity_limits, bank_capacity, bank_interest, sell_multiplier, mine_fortune, lumberjack, xp_boost,
+  spawner_stack_limit, fuel_tank, spawner_rate, mob_loot, crop_growth, harvest_yield, generator; masteries timber,
+  swift_hands, warrior, deep_pockets, crystal_rush, lucky_strike, fuel_efficiency, beast_tamer, angler, homestead,
+  wings, treasury.
+
 ## For other modules
 `core.services().optional(ProgressionService.class)` (`common/progression`): `shownPillars`, `pillarLevel`, `pillarXp`,
 `pillarProgress`, `pillarLevels`, `lowestPillarLevel`, `totalPillarLevels` (island level source 1, M5.2),
@@ -88,11 +123,20 @@ are registered by the islands module and read this service (the scoreboard Level
 `<ph:pillar_mining_level>`, `<ph:pillar_mining_progress>` (percent; same for `foraging`, `farming`,
 `combat`, `conquest`), `<ph:pillars_lowest>`, `<ph:pillars_total>`, `<ph:island_xp_bonus>` (percent).
 
-`/settings` toggle: `pillar-notices` (Chat): the island pillar level-up lines.
+`/settings` toggles: `pillar-notices` (Chat): the island pillar level-up lines; `task-notices` (Chat): the task done
+lines (M5.3).
+
+M5.3: `core.services().optional(TaskService.class)` (`common/progression`): `tasks`, `task`, `tasksFor(unlockKey)`,
+`progress`, `completed`, `unlocked(island, unlockKey)`, `completedCount`, `taskName`, `taskLines` (ready-made lore lines
+for upgrade/mastery menus), `openBook`, `openTask`, `storage(TaskStorage)` (STORE2 hook). Event `TaskCompletedEvent`
+(island, task, cause profile, unlock keys that just became complete). Placeholders `<ph:island_tasks_done>`,
+`<ph:island_tasks_total>`. Data: `island_task_progress` (counters), `island_task_done` (completions).
 
 Audit (category `island`): `pillar_level_up` (every level-up), `pillar_milestone`, `pillar_xp_add` (staff/console adds
 through the service), `island_level_change` (every level change, with the points per source), `island_block_rescan`
-(Recalculate button: worth before/after). Economy ledger: `pillar_milestone` (crystals).
+(Recalculate button: worth before/after), `task_complete` (M5.3: task, tier, crystals per member, pillar XP, unlock keys
+completed), `task_deliver` (M5.3: task, item, amount, inventory/storage, profile). Economy ledger: `pillar_milestone`,
+`island_task` (crystals).
 
 Storage: XP is kept in memory and written as deltas every `flush-seconds` (10 s) and on shutdown (a crash loses at most
 one interval, nothing is counted twice); weekly gains per pillar go to `island_pillar_weekly` for the weekly board (M5.7).

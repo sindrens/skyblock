@@ -49,6 +49,9 @@ settings:
   pillar-notices:
     name: "<c:value>Island pillar messages"
     lore: ["<c:text>Show a chat line when one of", "<c:text>your island's pillars levels up."]
+  task-notices:
+    name: "<c:value>Island task messages"
+    lore: ["<c:text>Show a chat line when your", "<c:text>island finishes a task."]
 
 # ---------------------------------------------------------------- M5.2 island level
 # Level-ups: only a new highest level this season is announced (never the first calculation).
@@ -68,6 +71,16 @@ level:
 level-menu:
   crumb-island: "Island"
   crumb: "Level"
+  # Challenge book button (M5.3). <done> <total>
+  tasks:
+    name: "<c:flame><bold>Challenge Book"
+    lore:
+      - "<c:text>Island tasks: <c:value><done></c:value><c:muted>/<total>"
+      - "<c:muted>Unlock upgrades and masteries."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+    lore-locked:
+      - "<c:muted>Not available right now."
   no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have an island yet. <click:run_command:'/is'><hover:show_text:'<c:text>Create your island'><c:action>[Create]</c:action></hover></click>"
   no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't see island levels."
   info:
@@ -281,3 +294,169 @@ top-menu:
       - "<c:muted>Not on this board yet."
     no-island:
       - "<c:muted>You don't have an island yet."
+
+# ---------------------------------------------------------------- M5.3 task engine (the challenge book)
+# Tasks are in tasks.yml; these are the texts around them. Lore lines max ~36 characters (Bedrock).
+tasks:
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open the challenge book."
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The challenge book is closed right now."
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have an island yet. <click:run_command:'/is'><hover:show_text:'<c:text>Create your island'><c:action>[Create]</c:action></hover></click>"
+  not-ready: "<prefix><c:error><sym:cross></c:error> <c:text>Island tasks are still loading. Try again in a moment."
+  # Task names. <amount> goal, <object> block/mob/item/skill/pillar name
+  name:
+    mine: "Mine <amount> <object>"
+    chop: "Chop <amount> <object>"
+    farm: "Harvest <amount> <object>"
+    kill: "Kill <amount> <object>"
+    craft: "Craft <amount> <object>"
+    sell: "Sell <amount> items"
+    earn: "Earn $<amount> by selling"
+    deposit: "Deposit $<amount> in the island bank"
+    deliver: "Hand in <amount> <object>"
+    skill-level: "<object> skill level <amount>"
+    pillar-level: "<object> <c:text>pillar level <amount>"
+    island-level: "Island level <amount>"
+  # Names for tasks with target 'any'
+  name-any:
+    mine: "Mine <amount> blocks"
+    chop: "Chop <amount> logs"
+    farm: "Harvest <amount> crops"
+    kill: "Kill <amount> mobs"
+    craft: "Craft <amount> items"
+    deliver: "Hand in <amount> items"
+  # One task as a lore line (upgrade and mastery menus, chapter items). <task> <progress> <goal>
+  line:
+    done: "<c:success><sym:check></c:success> <c:muted><task>"
+    open: "<c:error><sym:cross></c:error> <c:text><task> <c:muted><progress>/<goal>"
+  # Finished task: to every online member. <task> name, <by> who finished it, <crystals> reward per member
+  done:
+    action-bar: "<c:success><sym:check></c:success> <c:text>Island task done: <c:value><task>"
+    chat: "<c:flame><sym:star></c:flame> <c:text>Island task done: <c:value><task></c:value> <by> <click:run_command:'/is level'><hover:show_text:'<c:text>Open the island level and the challenge book'><c:action>[Book]</c:action></hover></click>"
+    by: "<c:muted>(<player>)"
+    reward: "<prefix><c:success><sym:check></c:success> <c:text>Task reward: <cur:crystals><sym:crystals> <crystals></cur:crystals>"
+  # Task item in the book. <task> <progress> <goal> <percent> <tier>
+  item:
+    name: "<c:value><task>"
+    name-done: "<c:success><sym:check> <task>"
+    type:
+      mine:
+        - "<c:muted>Depths ore or your island."
+        - "<c:muted>Placed blocks don't count."
+      chop:
+        - "<c:muted>Depths logs or your island."
+        - "<c:muted>Placed logs don't count."
+      farm:
+        - "<c:muted>Ripe crops on your island."
+      kill:
+        - "<c:muted>Your own hit or arrow."
+      craft:
+        - "<c:muted>Crafting and smelting count."
+      sell:
+        - "<c:muted>Items sold to the server."
+      earn:
+        - "<c:muted>Money from selling."
+      deposit:
+        - "<c:muted>Island bank deposits."
+      deliver:
+        - "<c:muted>Hand in items: they are used up."
+      skill-level:
+        - "<c:muted>Any member's skill counts."
+      pillar-level:
+        - "<c:muted>Your island's pillar level."
+      island-level:
+        - "<c:muted>Your island's level."
+    progress:
+      - "<c:bar>|</c:bar> <c:text>Progress: <c:value><progress></c:value><c:muted>/<goal> (<percent>%)"
+    done:
+      - "<c:bar>|</c:bar> <c:success><sym:check> Done"
+    rewards:
+      - "<c:bar>|</c:bar> <c:header>Rewards"
+    reward-crystals:
+      - "  <c:success>[+]</c:success> <cur:crystals><sym:crystals> <crystals></cur:crystals> <c:muted>each member"
+    reward-pillar:
+      - "  <c:success>[+]</c:success> <c:value><xp></c:value> <pillar> <c:text>pillar XP"
+    click-deliver:
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to hand in items"
+  # The book (chapters = task tiers). <done> <total> <tier>
+  book:
+    crumb: "Challenge Book"
+    info:
+      - "<c:text>Tasks for your whole island."
+      - "<c:text>Every member's play counts,"
+      - "<c:text>from the island's start."
+      - "<c:text>Tasks unlock upgrades."
+      - "<c:muted>Coop players never count."
+    header:
+      name: "<c:flame><bold>Challenge Book"
+      lore:
+        - "<c:text>Tasks done: <c:value><done></c:value><c:muted>/<total>"
+        - "<c:muted>Pick a tier to see its tasks."
+      lore-empty:
+        - "<c:muted>No tasks yet."
+    chapter:
+      name: "<c:value>Tier <tier>"
+      name-done: "<c:success><sym:check> Tier <tier>"
+      lore:
+        - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
+        - "<c:text>Next:"
+      lore-done:
+        - "<c:success>All <total> tasks done!"
+      click:
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see the tasks"
+  tier:
+    crumb: "Tier <tier>"
+    info:
+      - "<c:text>Progress is shared by all"
+      - "<c:text>members of your island."
+      - "<c:text>Hand-in tasks: click them."
+    empty:
+      name: "<c:muted>No tasks"
+      lore:
+        - "<c:muted>This tier has no tasks."
+  # Hand-in screen. <item> name, <have> items you (or the storage) have, <room> items the task still takes
+  deliver:
+    crumb: "Hand in"
+    info:
+      - "<c:text>Hand in items for this task."
+      - "<c:text>Only plain items count; named"
+      - "<c:text>or enchanted items stay."
+      - "<c:muted>Items are used up."
+    inventory:
+      name: "<c:value>From your inventory"
+      lore:
+        - "<c:text>You have: <c:value><have></c:value> <item>"
+        - "<c:text>Still needed: <c:value><room>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to hand in"
+      lore-none:
+        - "<c:text>You have no <item>."
+        - "<c:text>Still needed: <c:value><room>"
+    storage:
+      name: "<c:value>From island storage"
+      lore:
+        - "<c:text>In storage: <c:value><have></c:value> <item>"
+        - "<c:text>Still needed: <c:value><room>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to hand in"
+      lore-none:
+        - "<c:text>No <item> in storage."
+        - "<c:text>Still needed: <c:value><room>"
+      lore-soon:
+        - "<c:muted>Coming soon: hand in"
+        - "<c:muted>from the island storage."
+    full:
+      name: "<c:success><sym:check> Enough handed in"
+      lore:
+        - "<c:text>This task needs no more items."
+    busy:
+      name: "<c:muted>Saving..."
+      lore:
+        - "<c:muted>One moment."
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Handed in <c:value><amount></c:value> <item>. Task: <c:value><progress></c:value><c:muted>/<goal>"
+    none: "<prefix><c:error><sym:cross></c:error> <c:text>You have no plain <item> to hand in."
+    none-in-storage: "<prefix><c:error><sym:cross></c:error> <c:text>The island storage has nothing to hand in for this task."
+    no-storage: "<prefix><c:error><sym:cross></c:error> <c:text>The island storage isn't open yet."
+    not-needed: "<prefix><c:error><sym:cross></c:error> <c:text>This task needs no more items."
+    not-member: "<prefix><c:error><sym:cross></c:error> <c:text>Only island members can hand in items."
+    unknown: "<prefix><c:error><sym:cross></c:error> <c:text>That task doesn't exist anymore."
+    failed: "<prefix><c:error><sym:cross></c:error> <c:text>The hand-in couldn't be saved. Your items are back."

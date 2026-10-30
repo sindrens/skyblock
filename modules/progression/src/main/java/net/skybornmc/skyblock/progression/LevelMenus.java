@@ -21,6 +21,7 @@ final class LevelMenus {
     private final ModuleMessages msg;
     private final LevelManager levels;
     private final PillarManager pillars;
+    private TaskMenus tasks;
 
     LevelMenus(Core core, ModuleMessages msg, LevelManager levels, PillarManager pillars) {
         this.core = core;
@@ -43,6 +44,15 @@ final class LevelMenus {
 
     PillarManager pillars() {
         return pillars;
+    }
+
+    /** The challenge book (M5.3), opened from the book button. */
+    void tasks(TaskMenus tasks) {
+        this.tasks = tasks;
+    }
+
+    TaskMenus tasks() {
+        return tasks;
     }
 
     Optional<IslandService.IslandInfo> islandOf(Player player) {

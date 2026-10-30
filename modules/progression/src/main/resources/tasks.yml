@@ -1,0 +1,1948 @@
+# Challenge book (Phase 5, M5.3, O6): the island task list. Edit here, then: /skyblock reload progression.
+# Settings: tasks-settings.yml. Texts around the tasks (names, menus, notices): messages/progression.yml.
+#
+# Progress is shared by every member of an island (never coop players or visitors) and counts from the island's
+# creation, so earlier play is never wasted. A task is done once per season; its rewards are paid once.
+# New tasks from an update are added to this file automatically: turn one off with "enabled: false" instead of
+# deleting it. Every key inside 'tasks' is one task (no other settings belong in this file).
+#
+# tasks.<id>:
+#   tier:      chapter of the book (1-28); tier n uses Depths tier n content
+#   type:      mine | chop | farm | kill | craft | sell | earn | deposit | deliver | skill-level | pillar-level | island-level
+#   target:    mine/chop/farm: block id; kill: entity id; craft: item id (or any for all of them);
+#              deliver: item id (plain items only) or custom:<id> (e.g. custom:depths_coal);
+#              skill-level: skill id (best member); pillar-level: pillar id; sell/earn/deposit/island-level: leave out
+#   amount:    count (counted types) or level (skill/pillar/island level)
+#   rewards:   crystals (to every member, once) and pillar + pillar-xp (island boosts apply on top)
+#   unlocks:   keys this task is required for: upgrade.<id>.<level> (M5.4), mastery.<id>.<rank> (M5.5).
+#              A key is open when every task listing it is done.
+#   icon:      item id shown in the book (optional); name: own name (optional, MiniMessage, max 32 characters)
+#   enabled:   false = not shown, not counted
+#
+# Anti-abuse: blocks placed by players count nothing, kills only by your own hit or arrow, the AFK pool does not
+# count for sell/earn. Generated defaults (tools/gen_tasks_catalog.py), tuned in the M5.9 balance pass.
+
+tasks:
+  # ---------------------------------------------------------------- tier 1
+  t1_mine:
+    tier: 1
+    type: mine
+    target: "coal_ore"
+    amount: 300
+    rewards:
+      crystals: 20
+      pillar: mining
+      pillar-xp: 50
+    unlocks:
+      - upgrade.island_size.1
+      - upgrade.island_vault.1
+      - upgrade.mine_fortune.1
+      - mastery.deep_pockets.1
+      - upgrade.generator.1
+  t1_chop:
+    tier: 1
+    type: chop
+    target: "oak_log"
+    amount: 200
+    rewards:
+      crystals: 20
+      pillar: foraging
+      pillar-xp: 50
+    unlocks:
+      - upgrade.island_size.1
+      - upgrade.lumberjack.1
+  t1_kill:
+    tier: 1
+    type: kill
+    target: "zombie"
+    amount: 60
+    rewards:
+      crystals: 20
+      pillar: combat
+      pillar-xp: 50
+    unlocks:
+      - upgrade.xp_boost.1
+      - upgrade.spawner_stack_limit.1
+      - upgrade.spawner_rate.1
+      - upgrade.spawner_rate.2
+      - upgrade.mob_loot.1
+  t1_farm:
+    tier: 1
+    type: farm
+    target: "wheat"
+    amount: 100
+    rewards:
+      crystals: 20
+      pillar: farming
+      pillar-xp: 50
+    unlocks:
+      - upgrade.island_size.1
+      - upgrade.fuel_tank.1
+      - upgrade.crop_growth.1
+      - upgrade.harvest_yield.1
+  t1_craft:
+    tier: 1
+    type: craft
+    target: "bread"
+    amount: 16
+    rewards:
+      crystals: 20
+    unlocks:
+      - upgrade.spawner_rate.1
+      - upgrade.spawner_rate.2
+      - upgrade.crop_growth.1
+      - upgrade.generator.1
+  t1_deliver:
+    tier: 1
+    type: deliver
+    target: "custom:depths_coal"
+    amount: 64
+    rewards:
+      crystals: 20
+    unlocks:
+      - upgrade.island_vault.1
+      - upgrade.spawner_stack_limit.1
+      - upgrade.fuel_tank.1
+      - upgrade.harvest_yield.1
+  t1_sell:
+    tier: 1
+    type: sell
+    amount: 500
+    rewards:
+      crystals: 20
+    unlocks:
+      - upgrade.bank_interest.1
+      - upgrade.sell_multiplier.1
+      - mastery.deep_pockets.1
+      - upgrade.mob_loot.1
+  t1_earn:
+    tier: 1
+    type: earn
+    amount: 25000
+    rewards:
+      crystals: 20
+    unlocks:
+      - upgrade.bank_capacity.1
+      - upgrade.sell_multiplier.1
+  t1_deposit:
+    tier: 1
+    type: deposit
+    amount: 20000
+    rewards:
+      crystals: 20
+    unlocks:
+      - upgrade.bank_capacity.1
+      - upgrade.bank_interest.1
+  t1_skill:
+    tier: 1
+    type: skill-level
+    target: "mining"
+    amount: 3
+    rewards:
+      crystals: 20
+    unlocks:
+      - upgrade.xp_boost.1
+  t1_pillar_mining:
+    tier: 1
+    type: pillar-level
+    target: "mining"
+    amount: 5
+    rewards:
+      crystals: 20
+    unlocks:
+      - upgrade.mine_fortune.1
+  t1_pillar_foraging:
+    tier: 1
+    type: pillar-level
+    target: "foraging"
+    amount: 5
+    rewards:
+      crystals: 20
+    unlocks:
+      - upgrade.lumberjack.1
+  t1_pillar_combat:
+    tier: 1
+    type: pillar-level
+    target: "combat"
+    amount: 5
+    rewards:
+      crystals: 20
+    unlocks: []
+  t1_pillar_farming:
+    tier: 1
+    type: pillar-level
+    target: "farming"
+    amount: 5
+    rewards:
+      crystals: 20
+    unlocks: []
+  t1_island_level:
+    tier: 1
+    type: island-level
+    amount: 2
+    rewards:
+      crystals: 20
+    unlocks: []
+  # ---------------------------------------------------------------- tier 2
+  t2_mine:
+    tier: 2
+    type: mine
+    target: "copper_ore"
+    amount: 400
+    rewards:
+      crystals: 27
+      pillar: mining
+      pillar-xp: 68
+    unlocks:
+      - upgrade.mine_fortune.2
+      - mastery.swift_hands.1
+      - upgrade.generator.2
+  t2_chop:
+    tier: 2
+    type: chop
+    target: "birch_log"
+    amount: 270
+    rewards:
+      crystals: 27
+      pillar: foraging
+      pillar-xp: 68
+    unlocks:
+      - upgrade.lumberjack.2
+      - mastery.timber.1
+  t2_kill:
+    tier: 2
+    type: kill
+    target: "skeleton"
+    amount: 80
+    rewards:
+      crystals: 27
+      pillar: combat
+      pillar-xp: 68
+    unlocks:
+      - upgrade.member_slots.1
+      - upgrade.xp_boost.2
+      - upgrade.spawner_stack_limit.2
+      - mastery.warrior.1
+      - mastery.beast_tamer.1
+      - upgrade.spawner_rate.3
+      - upgrade.mob_loot.2
+      - upgrade.mob_loot.3
+  t2_farm:
+    tier: 2
+    type: farm
+    target: "carrots"
+    amount: 140
+    rewards:
+      crystals: 27
+      pillar: farming
+      pillar-xp: 68
+    unlocks:
+      - upgrade.fuel_tank.2
+      - mastery.beast_tamer.1
+      - upgrade.crop_growth.2
+      - upgrade.harvest_yield.2
+  t2_craft:
+    tier: 2
+    type: craft
+    target: "baked_potato"
+    amount: 20
+    rewards:
+      crystals: 27
+    unlocks:
+      - upgrade.spawner_rate.3
+      - upgrade.crop_growth.2
+      - upgrade.generator.2
+  t2_deliver:
+    tier: 2
+    type: deliver
+    target: "custom:depths_copper"
+    amount: 80
+    rewards:
+      crystals: 27
+    unlocks:
+      - upgrade.warp_slots.1
+      - upgrade.spawner_stack_limit.2
+      - upgrade.fuel_tank.2
+      - upgrade.harvest_yield.2
+  t2_sell:
+    tier: 2
+    type: sell
+    amount: 680
+    rewards:
+      crystals: 27
+    unlocks:
+      - upgrade.warp_slots.1
+      - upgrade.bank_interest.2
+      - upgrade.sell_multiplier.2
+      - upgrade.mob_loot.2
+      - upgrade.mob_loot.3
+  t2_earn:
+    tier: 2
+    type: earn
+    amount: 44000
+    rewards:
+      crystals: 27
+    unlocks:
+      - upgrade.member_slots.1
+      - upgrade.bank_capacity.2
+      - upgrade.sell_multiplier.2
+      - mastery.crystal_rush.1
+  t2_deposit:
+    tier: 2
+    type: deposit
+    amount: 35000
+    rewards:
+      crystals: 27
+    unlocks:
+      - upgrade.bank_capacity.2
+      - upgrade.bank_interest.2
+  t2_skill:
+    tier: 2
+    type: skill-level
+    target: "foraging"
+    amount: 6
+    rewards:
+      crystals: 27
+    unlocks:
+      - upgrade.xp_boost.2
+  t2_pillar_mining:
+    tier: 2
+    type: pillar-level
+    target: "mining"
+    amount: 10
+    rewards:
+      crystals: 27
+    unlocks:
+      - upgrade.mine_fortune.2
+      - mastery.swift_hands.1
+  t2_pillar_foraging:
+    tier: 2
+    type: pillar-level
+    target: "foraging"
+    amount: 10
+    rewards:
+      crystals: 27
+    unlocks:
+      - upgrade.lumberjack.2
+      - mastery.timber.1
+  t2_pillar_combat:
+    tier: 2
+    type: pillar-level
+    target: "combat"
+    amount: 10
+    rewards:
+      crystals: 27
+    unlocks:
+      - mastery.warrior.1
+  t2_pillar_farming:
+    tier: 2
+    type: pillar-level
+    target: "farming"
+    amount: 10
+    rewards:
+      crystals: 27
+    unlocks: []
+  t2_island_level:
+    tier: 2
+    type: island-level
+    amount: 5
+    rewards:
+      crystals: 27
+    unlocks:
+      - upgrade.member_slots.1
+      - mastery.crystal_rush.1
+  # ---------------------------------------------------------------- tier 3
+  t3_mine:
+    tier: 3
+    type: mine
+    target: "iron_ore"
+    amount: 550
+    rewards:
+      crystals: 36
+      pillar: mining
+      pillar-xp: 91
+    unlocks:
+      - upgrade.island_size.2
+      - upgrade.island_vault.2
+      - upgrade.mine_fortune.3
+      - mastery.deep_pockets.2
+      - mastery.lucky_strike.1
+      - upgrade.generator.3
+  t3_chop:
+    tier: 3
+    type: chop
+    target: "spruce_log"
+    amount: 360
+    rewards:
+      crystals: 36
+      pillar: foraging
+      pillar-xp: 91
+    unlocks:
+      - upgrade.island_size.2
+      - upgrade.lumberjack.3
+  t3_kill:
+    tier: 3
+    type: kill
+    target: "spider"
+    amount: 110
+    rewards:
+      crystals: 36
+      pillar: combat
+      pillar-xp: 91
+    unlocks:
+      - upgrade.xp_boost.3
+      - upgrade.spawner_stack_limit.3
+      - mastery.lucky_strike.1
+      - upgrade.spawner_rate.4
+      - upgrade.mob_loot.4
+  t3_farm:
+    tier: 3
+    type: farm
+    target: "beetroots"
+    amount: 180
+    rewards:
+      crystals: 36
+      pillar: farming
+      pillar-xp: 91
+    unlocks:
+      - upgrade.island_size.2
+      - upgrade.fuel_tank.3
+      - mastery.angler.1
+      - upgrade.crop_growth.3
+      - upgrade.crop_growth.4
+      - upgrade.harvest_yield.3
+  t3_craft:
+    tier: 3
+    type: craft
+    target: "iron_ingot"
+    amount: 25
+    rewards:
+      crystals: 36
+    unlocks:
+      - upgrade.spawner_rate.4
+      - upgrade.crop_growth.3
+      - upgrade.crop_growth.4
+      - upgrade.generator.3
+  t3_deliver:
+    tier: 3
+    type: deliver
+    target: "custom:depths_iron"
+    amount: 112
+    rewards:
+      crystals: 36
+    unlocks:
+      - upgrade.island_vault.2
+      - upgrade.spawner_stack_limit.3
+      - upgrade.fuel_tank.3
+      - upgrade.harvest_yield.3
+  t3_sell:
+    tier: 3
+    type: sell
+    amount: 910
+    rewards:
+      crystals: 36
+    unlocks:
+      - upgrade.bank_interest.3
+      - upgrade.sell_multiplier.3
+      - mastery.deep_pockets.2
+      - upgrade.mob_loot.4
+  t3_earn:
+    tier: 3
+    type: earn
+    amount: 77000
+    rewards:
+      crystals: 36
+    unlocks:
+      - upgrade.bank_capacity.3
+      - upgrade.sell_multiplier.3
+      - mastery.treasury.1
+  t3_deposit:
+    tier: 3
+    type: deposit
+    amount: 62000
+    rewards:
+      crystals: 36
+    unlocks:
+      - upgrade.bank_capacity.3
+      - upgrade.bank_interest.3
+      - mastery.treasury.1
+  t3_skill:
+    tier: 3
+    type: skill-level
+    target: "combat"
+    amount: 10
+    rewards:
+      crystals: 36
+    unlocks:
+      - upgrade.xp_boost.3
+  t3_pillar_mining:
+    tier: 3
+    type: pillar-level
+    target: "mining"
+    amount: 15
+    rewards:
+      crystals: 36
+    unlocks:
+      - upgrade.mine_fortune.3
+  t3_pillar_foraging:
+    tier: 3
+    type: pillar-level
+    target: "foraging"
+    amount: 15
+    rewards:
+      crystals: 36
+    unlocks:
+      - upgrade.lumberjack.3
+  t3_pillar_combat:
+    tier: 3
+    type: pillar-level
+    target: "combat"
+    amount: 15
+    rewards:
+      crystals: 36
+    unlocks: []
+  t3_pillar_farming:
+    tier: 3
+    type: pillar-level
+    target: "farming"
+    amount: 15
+    rewards:
+      crystals: 36
+    unlocks:
+      - mastery.angler.1
+  t3_island_level:
+    tier: 3
+    type: island-level
+    amount: 8
+    rewards:
+      crystals: 36
+    unlocks: []
+  # ---------------------------------------------------------------- tier 4
+  t4_mine:
+    tier: 4
+    type: mine
+    target: "gold_ore"
+    amount: 740
+    rewards:
+      crystals: 49
+      pillar: mining
+      pillar-xp: 123
+    unlocks:
+      - upgrade.mine_fortune.4
+      - mastery.swift_hands.2
+      - upgrade.generator.4
+  t4_chop:
+    tier: 4
+    type: chop
+    target: "jungle_log"
+    amount: 490
+    rewards:
+      crystals: 49
+      pillar: foraging
+      pillar-xp: 123
+    unlocks:
+      - upgrade.lumberjack.4
+      - mastery.timber.2
+  t4_kill:
+    tier: 4
+    type: kill
+    target: "slime"
+    amount: 150
+    rewards:
+      crystals: 49
+      pillar: combat
+      pillar-xp: 123
+    unlocks:
+      - upgrade.member_slots.2
+      - upgrade.xp_boost.4
+      - upgrade.spawner_stack_limit.4
+      - mastery.warrior.2
+      - upgrade.spawner_rate.5
+      - upgrade.mob_loot.5
+  t4_farm:
+    tier: 4
+    type: farm
+    target: "sugar_cane"
+    amount: 250
+    rewards:
+      crystals: 49
+      pillar: farming
+      pillar-xp: 123
+    unlocks:
+      - upgrade.fuel_tank.4
+      - upgrade.crop_growth.5
+      - upgrade.harvest_yield.4
+      - upgrade.harvest_yield.5
+  t4_craft:
+    tier: 4
+    type: craft
+    target: "gold_ingot"
+    amount: 31
+    rewards:
+      crystals: 49
+    unlocks:
+      - upgrade.spawner_rate.5
+      - upgrade.crop_growth.5
+      - upgrade.generator.4
+  t4_deliver:
+    tier: 4
+    type: deliver
+    target: "custom:depths_gold"
+    amount: 144
+    rewards:
+      crystals: 49
+    unlocks:
+      - upgrade.warp_slots.2
+      - upgrade.spawner_stack_limit.4
+      - upgrade.fuel_tank.4
+      - mastery.homestead.1
+      - mastery.wings.1
+      - upgrade.harvest_yield.4
+      - upgrade.harvest_yield.5
+  t4_sell:
+    tier: 4
+    type: sell
+    amount: 1230
+    rewards:
+      crystals: 49
+    unlocks:
+      - upgrade.warp_slots.2
+      - upgrade.bank_interest.4
+      - upgrade.sell_multiplier.4
+      - upgrade.mob_loot.5
+  t4_earn:
+    tier: 4
+    type: earn
+    amount: 140000
+    rewards:
+      crystals: 49
+    unlocks:
+      - upgrade.member_slots.2
+      - upgrade.bank_capacity.4
+      - upgrade.sell_multiplier.4
+      - mastery.crystal_rush.2
+  t4_deposit:
+    tier: 4
+    type: deposit
+    amount: 110000
+    rewards:
+      crystals: 49
+    unlocks:
+      - upgrade.bank_capacity.4
+      - upgrade.bank_interest.4
+  t4_skill:
+    tier: 4
+    type: skill-level
+    target: "mining"
+    amount: 15
+    rewards:
+      crystals: 49
+    unlocks:
+      - upgrade.xp_boost.4
+  t4_pillar_mining:
+    tier: 4
+    type: pillar-level
+    target: "mining"
+    amount: 20
+    rewards:
+      crystals: 49
+    unlocks:
+      - upgrade.mine_fortune.4
+      - mastery.swift_hands.2
+  t4_pillar_foraging:
+    tier: 4
+    type: pillar-level
+    target: "foraging"
+    amount: 20
+    rewards:
+      crystals: 49
+    unlocks:
+      - upgrade.lumberjack.4
+      - mastery.timber.2
+  t4_pillar_combat:
+    tier: 4
+    type: pillar-level
+    target: "combat"
+    amount: 20
+    rewards:
+      crystals: 49
+    unlocks:
+      - mastery.warrior.2
+  t4_pillar_farming:
+    tier: 4
+    type: pillar-level
+    target: "farming"
+    amount: 20
+    rewards:
+      crystals: 49
+    unlocks: []
+  t4_island_level:
+    tier: 4
+    type: island-level
+    amount: 12
+    rewards:
+      crystals: 49
+    unlocks:
+      - upgrade.member_slots.2
+      - mastery.crystal_rush.2
+      - mastery.homestead.1
+      - mastery.wings.1
+  # ---------------------------------------------------------------- tier 5
+  t5_mine:
+    tier: 5
+    type: mine
+    target: "redstone_ore"
+    amount: 1000
+    rewards:
+      crystals: 66
+      pillar: mining
+      pillar-xp: 166
+    unlocks:
+      - upgrade.island_size.3
+      - upgrade.island_vault.3
+      - upgrade.mine_fortune.5
+      - mastery.lucky_strike.2
+      - upgrade.generator.5
+      - upgrade.generator.6
+  t5_chop:
+    tier: 5
+    type: chop
+    target: "acacia_log"
+    amount: 660
+    rewards:
+      crystals: 66
+      pillar: foraging
+      pillar-xp: 166
+    unlocks:
+      - upgrade.island_size.3
+      - upgrade.lumberjack.5
+  t5_kill:
+    tier: 5
+    type: kill
+    target: "drowned"
+    amount: 200
+    rewards:
+      crystals: 66
+      pillar: combat
+      pillar-xp: 166
+    unlocks:
+      - upgrade.entity_limits.1
+      - upgrade.xp_boost.5
+      - upgrade.spawner_stack_limit.5
+      - mastery.lucky_strike.2
+      - mastery.beast_tamer.2
+      - upgrade.spawner_rate.6
+      - upgrade.mob_loot.6
+  t5_farm:
+    tier: 5
+    type: farm
+    target: "melon"
+    amount: 330
+    rewards:
+      crystals: 66
+      pillar: farming
+      pillar-xp: 166
+    unlocks:
+      - upgrade.island_size.3
+      - upgrade.entity_limits.1
+      - upgrade.fuel_tank.5
+      - mastery.fuel_efficiency.1
+      - mastery.beast_tamer.2
+      - upgrade.crop_growth.6
+      - upgrade.harvest_yield.6
+  t5_craft:
+    tier: 5
+    type: craft
+    target: "redstone_block"
+    amount: 39
+    rewards:
+      crystals: 66
+    unlocks:
+      - upgrade.spawner_rate.6
+      - upgrade.crop_growth.6
+      - upgrade.generator.5
+      - upgrade.generator.6
+  t5_deliver:
+    tier: 5
+    type: deliver
+    target: "custom:depths_redstone"
+    amount: 184
+    rewards:
+      crystals: 66
+    unlocks:
+      - upgrade.island_vault.3
+      - upgrade.spawner_stack_limit.5
+      - upgrade.fuel_tank.5
+      - upgrade.harvest_yield.6
+  t5_sell:
+    tier: 5
+    type: sell
+    amount: 1660
+    rewards:
+      crystals: 66
+    unlocks:
+      - upgrade.bank_interest.5
+      - upgrade.sell_multiplier.5
+      - upgrade.mob_loot.6
+  t5_earn:
+    tier: 5
+    type: earn
+    amount: 240000
+    rewards:
+      crystals: 66
+    unlocks:
+      - upgrade.bank_capacity.5
+      - upgrade.sell_multiplier.5
+  t5_deposit:
+    tier: 5
+    type: deposit
+    amount: 190000
+    rewards:
+      crystals: 66
+    unlocks:
+      - upgrade.bank_capacity.5
+      - upgrade.bank_interest.5
+  t5_skill:
+    tier: 5
+    type: skill-level
+    target: "foraging"
+    amount: 20
+    rewards:
+      crystals: 66
+    unlocks:
+      - upgrade.xp_boost.5
+  t5_pillar_mining:
+    tier: 5
+    type: pillar-level
+    target: "mining"
+    amount: 25
+    rewards:
+      crystals: 66
+    unlocks:
+      - upgrade.mine_fortune.5
+  t5_pillar_foraging:
+    tier: 5
+    type: pillar-level
+    target: "foraging"
+    amount: 25
+    rewards:
+      crystals: 66
+    unlocks:
+      - upgrade.lumberjack.5
+  t5_pillar_combat:
+    tier: 5
+    type: pillar-level
+    target: "combat"
+    amount: 25
+    rewards:
+      crystals: 66
+    unlocks: []
+  t5_pillar_farming:
+    tier: 5
+    type: pillar-level
+    target: "farming"
+    amount: 25
+    rewards:
+      crystals: 66
+    unlocks:
+      - mastery.fuel_efficiency.1
+  t5_island_level:
+    tier: 5
+    type: island-level
+    amount: 16
+    rewards:
+      crystals: 66
+    unlocks: []
+  # ---------------------------------------------------------------- tier 6
+  t6_mine:
+    tier: 6
+    type: mine
+    target: "lapis_ore"
+    amount: 1350
+    rewards:
+      crystals: 90
+      pillar: mining
+      pillar-xp: 224
+    unlocks:
+      - upgrade.mine_fortune.6
+      - mastery.deep_pockets.3
+      - upgrade.generator.7
+  t6_chop:
+    tier: 6
+    type: chop
+    target: "dark_oak_log"
+    amount: 900
+    rewards:
+      crystals: 90
+      pillar: foraging
+      pillar-xp: 224
+    unlocks:
+      - upgrade.lumberjack.6
+  t6_kill:
+    tier: 6
+    type: kill
+    target: "witch"
+    amount: 270
+    rewards:
+      crystals: 90
+      pillar: combat
+      pillar-xp: 224
+    unlocks:
+      - upgrade.member_slots.3
+      - upgrade.xp_boost.6
+      - upgrade.spawner_stack_limit.6
+      - upgrade.spawner_rate.7
+      - upgrade.spawner_rate.8
+      - upgrade.mob_loot.7
+  t6_farm:
+    tier: 6
+    type: farm
+    target: "cocoa"
+    amount: 450
+    rewards:
+      crystals: 90
+      pillar: farming
+      pillar-xp: 224
+    unlocks:
+      - upgrade.fuel_tank.6
+      - mastery.angler.2
+      - upgrade.crop_growth.7
+      - upgrade.harvest_yield.7
+  t6_craft:
+    tier: 6
+    type: craft
+    target: "lapis_block"
+    amount: 49
+    rewards:
+      crystals: 90
+    unlocks:
+      - upgrade.spawner_rate.7
+      - upgrade.spawner_rate.8
+      - upgrade.crop_growth.7
+      - upgrade.generator.7
+  t6_deliver:
+    tier: 6
+    type: deliver
+    target: "custom:depths_lapis"
+    amount: 240
+    rewards:
+      crystals: 90
+    unlocks:
+      - upgrade.warp_slots.3
+      - upgrade.spawner_stack_limit.6
+      - upgrade.fuel_tank.6
+      - upgrade.harvest_yield.7
+  t6_sell:
+    tier: 6
+    type: sell
+    amount: 2240
+    rewards:
+      crystals: 90
+    unlocks:
+      - upgrade.warp_slots.3
+      - upgrade.bank_interest.6
+      - upgrade.sell_multiplier.6
+      - mastery.deep_pockets.3
+      - upgrade.mob_loot.7
+  t6_earn:
+    tier: 6
+    type: earn
+    amount: 420000
+    rewards:
+      crystals: 90
+    unlocks:
+      - upgrade.member_slots.3
+      - upgrade.bank_capacity.6
+      - upgrade.sell_multiplier.6
+  t6_deposit:
+    tier: 6
+    type: deposit
+    amount: 330000
+    rewards:
+      crystals: 90
+    unlocks:
+      - upgrade.bank_capacity.6
+      - upgrade.bank_interest.6
+  t6_skill:
+    tier: 6
+    type: skill-level
+    target: "combat"
+    amount: 25
+    rewards:
+      crystals: 90
+    unlocks:
+      - upgrade.xp_boost.6
+  t6_pillar_mining:
+    tier: 6
+    type: pillar-level
+    target: "mining"
+    amount: 30
+    rewards:
+      crystals: 90
+    unlocks:
+      - upgrade.mine_fortune.6
+  t6_pillar_foraging:
+    tier: 6
+    type: pillar-level
+    target: "foraging"
+    amount: 30
+    rewards:
+      crystals: 90
+    unlocks:
+      - upgrade.lumberjack.6
+  t6_pillar_combat:
+    tier: 6
+    type: pillar-level
+    target: "combat"
+    amount: 30
+    rewards:
+      crystals: 90
+    unlocks: []
+  t6_pillar_farming:
+    tier: 6
+    type: pillar-level
+    target: "farming"
+    amount: 30
+    rewards:
+      crystals: 90
+    unlocks:
+      - mastery.angler.2
+  t6_island_level:
+    tier: 6
+    type: island-level
+    amount: 20
+    rewards:
+      crystals: 90
+    unlocks:
+      - upgrade.member_slots.3
+  # ---------------------------------------------------------------- tier 7
+  t7_mine:
+    tier: 7
+    type: mine
+    target: "deepslate_diamond_ore"
+    amount: 1820
+    rewards:
+      crystals: 121
+      pillar: mining
+      pillar-xp: 303
+    unlocks:
+      - upgrade.island_vault.4
+      - upgrade.mine_fortune.7
+      - mastery.swift_hands.3
+      - upgrade.generator.8
+  t7_chop:
+    tier: 7
+    type: chop
+    target: "mangrove_log"
+    amount: 1210
+    rewards:
+      crystals: 121
+      pillar: foraging
+      pillar-xp: 303
+    unlocks:
+      - upgrade.lumberjack.7
+      - mastery.timber.3
+  t7_kill:
+    tier: 7
+    type: kill
+    target: "pillager"
+    amount: 360
+    rewards:
+      crystals: 121
+      pillar: combat
+      pillar-xp: 303
+    unlocks:
+      - upgrade.xp_boost.7
+      - upgrade.spawner_stack_limit.7
+      - mastery.warrior.3
+      - upgrade.spawner_rate.9
+      - upgrade.mob_loot.8
+      - upgrade.mob_loot.9
+  t7_farm:
+    tier: 7
+    type: farm
+    target: "cactus"
+    amount: 610
+    rewards:
+      crystals: 121
+      pillar: farming
+      pillar-xp: 303
+    unlocks:
+      - upgrade.fuel_tank.7
+      - upgrade.crop_growth.8
+      - upgrade.harvest_yield.8
+  t7_craft:
+    tier: 7
+    type: craft
+    target: "diamond_block"
+    amount: 61
+    rewards:
+      crystals: 121
+    unlocks:
+      - upgrade.spawner_rate.9
+      - upgrade.crop_growth.8
+      - upgrade.generator.8
+  t7_deliver:
+    tier: 7
+    type: deliver
+    target: "custom:depths_diamond"
+    amount: 312
+    rewards:
+      crystals: 121
+    unlocks:
+      - upgrade.island_vault.4
+      - upgrade.spawner_stack_limit.7
+      - upgrade.fuel_tank.7
+      - upgrade.harvest_yield.8
+  t7_sell:
+    tier: 7
+    type: sell
+    amount: 3030
+    rewards:
+      crystals: 121
+    unlocks:
+      - upgrade.bank_interest.7
+      - upgrade.sell_multiplier.7
+      - upgrade.mob_loot.8
+      - upgrade.mob_loot.9
+  t7_earn:
+    tier: 7
+    type: earn
+    amount: 730000
+    rewards:
+      crystals: 121
+    unlocks:
+      - upgrade.bank_capacity.7
+      - upgrade.sell_multiplier.7
+      - mastery.crystal_rush.3
+      - mastery.treasury.2
+  t7_deposit:
+    tier: 7
+    type: deposit
+    amount: 580000
+    rewards:
+      crystals: 121
+    unlocks:
+      - upgrade.bank_capacity.7
+      - upgrade.bank_interest.7
+      - mastery.treasury.2
+  t7_skill:
+    tier: 7
+    type: skill-level
+    target: "mining"
+    amount: 30
+    rewards:
+      crystals: 121
+    unlocks:
+      - upgrade.xp_boost.7
+  t7_pillar_mining:
+    tier: 7
+    type: pillar-level
+    target: "mining"
+    amount: 35
+    rewards:
+      crystals: 121
+    unlocks:
+      - upgrade.mine_fortune.7
+      - mastery.swift_hands.3
+  t7_pillar_foraging:
+    tier: 7
+    type: pillar-level
+    target: "foraging"
+    amount: 35
+    rewards:
+      crystals: 121
+    unlocks:
+      - upgrade.lumberjack.7
+      - mastery.timber.3
+  t7_pillar_combat:
+    tier: 7
+    type: pillar-level
+    target: "combat"
+    amount: 35
+    rewards:
+      crystals: 121
+    unlocks:
+      - mastery.warrior.3
+  t7_pillar_farming:
+    tier: 7
+    type: pillar-level
+    target: "farming"
+    amount: 35
+    rewards:
+      crystals: 121
+    unlocks: []
+  t7_island_level:
+    tier: 7
+    type: island-level
+    amount: 25
+    rewards:
+      crystals: 121
+    unlocks:
+      - mastery.crystal_rush.3
+  # ---------------------------------------------------------------- tier 8
+  t8_mine:
+    tier: 8
+    type: mine
+    target: "deepslate_emerald_ore"
+    amount: 2450
+    rewards:
+      crystals: 163
+      pillar: mining
+      pillar-xp: 409
+    unlocks:
+      - upgrade.mine_fortune.8
+      - mastery.lucky_strike.3
+      - upgrade.generator.9
+  t8_chop:
+    tier: 8
+    type: chop
+    target: "cherry_log"
+    amount: 1630
+    rewards:
+      crystals: 163
+      pillar: foraging
+      pillar-xp: 409
+    unlocks:
+      - upgrade.lumberjack.8
+  t8_kill:
+    tier: 8
+    type: kill
+    target: "blaze"
+    amount: 490
+    rewards:
+      crystals: 163
+      pillar: combat
+      pillar-xp: 409
+    unlocks:
+      - upgrade.member_slots.4
+      - upgrade.xp_boost.8
+      - upgrade.spawner_stack_limit.8
+      - mastery.lucky_strike.3
+      - mastery.beast_tamer.3
+      - upgrade.spawner_rate.10
+      - upgrade.mob_loot.10
+  t8_farm:
+    tier: 8
+    type: farm
+    target: "sweet_berry_bush"
+    amount: 820
+    rewards:
+      crystals: 163
+      pillar: farming
+      pillar-xp: 409
+    unlocks:
+      - upgrade.fuel_tank.8
+      - mastery.beast_tamer.3
+      - upgrade.crop_growth.9
+      - upgrade.crop_growth.10
+      - upgrade.harvest_yield.9
+  t8_craft:
+    tier: 8
+    type: craft
+    target: "emerald_block"
+    amount: 76
+    rewards:
+      crystals: 163
+    unlocks:
+      - upgrade.spawner_rate.10
+      - upgrade.crop_growth.9
+      - upgrade.crop_growth.10
+      - upgrade.generator.9
+  t8_deliver:
+    tier: 8
+    type: deliver
+    target: "custom:depths_emerald"
+    amount: 400
+    rewards:
+      crystals: 163
+    unlocks:
+      - upgrade.warp_slots.4
+      - upgrade.spawner_stack_limit.8
+      - upgrade.fuel_tank.8
+      - mastery.homestead.2
+      - upgrade.harvest_yield.9
+  t8_sell:
+    tier: 8
+    type: sell
+    amount: 4090
+    rewards:
+      crystals: 163
+    unlocks:
+      - upgrade.warp_slots.4
+      - upgrade.bank_interest.8
+      - upgrade.sell_multiplier.8
+      - upgrade.mob_loot.10
+  t8_earn:
+    tier: 8
+    type: earn
+    amount: 1300000
+    rewards:
+      crystals: 163
+    unlocks:
+      - upgrade.member_slots.4
+      - upgrade.bank_capacity.8
+      - upgrade.sell_multiplier.8
+  t8_deposit:
+    tier: 8
+    type: deposit
+    amount: 1000000
+    rewards:
+      crystals: 163
+    unlocks:
+      - upgrade.bank_capacity.8
+      - upgrade.bank_interest.8
+  t8_skill:
+    tier: 8
+    type: skill-level
+    target: "foraging"
+    amount: 35
+    rewards:
+      crystals: 163
+    unlocks:
+      - upgrade.xp_boost.8
+  t8_pillar_mining:
+    tier: 8
+    type: pillar-level
+    target: "mining"
+    amount: 40
+    rewards:
+      crystals: 163
+    unlocks:
+      - upgrade.mine_fortune.8
+  t8_pillar_foraging:
+    tier: 8
+    type: pillar-level
+    target: "foraging"
+    amount: 40
+    rewards:
+      crystals: 163
+    unlocks:
+      - upgrade.lumberjack.8
+  t8_pillar_combat:
+    tier: 8
+    type: pillar-level
+    target: "combat"
+    amount: 40
+    rewards:
+      crystals: 163
+    unlocks: []
+  t8_pillar_farming:
+    tier: 8
+    type: pillar-level
+    target: "farming"
+    amount: 40
+    rewards:
+      crystals: 163
+    unlocks: []
+  t8_island_level:
+    tier: 8
+    type: island-level
+    amount: 30
+    rewards:
+      crystals: 163
+    unlocks:
+      - upgrade.member_slots.4
+      - mastery.homestead.2
+  # ---------------------------------------------------------------- tier 9
+  t9_mine:
+    tier: 9
+    type: mine
+    target: "amethyst_block"
+    amount: 3310
+    rewards:
+      crystals: 221
+      pillar: mining
+      pillar-xp: 552
+    unlocks:
+      - upgrade.island_vault.5
+      - upgrade.mine_fortune.9
+      - mastery.deep_pockets.4
+      - upgrade.generator.10
+  t9_chop:
+    tier: 9
+    type: chop
+    target: "pale_oak_log"
+    amount: 2210
+    rewards:
+      crystals: 221
+      pillar: foraging
+      pillar-xp: 552
+    unlocks:
+      - upgrade.lumberjack.9
+  t9_kill:
+    tier: 9
+    type: kill
+    target: "wither_skeleton"
+    amount: 660
+    rewards:
+      crystals: 221
+      pillar: combat
+      pillar-xp: 552
+    unlocks:
+      - upgrade.xp_boost.9
+      - upgrade.spawner_stack_limit.9
+  t9_farm:
+    tier: 9
+    type: farm
+    target: "nether_wart"
+    amount: 1100
+    rewards:
+      crystals: 221
+      pillar: farming
+      pillar-xp: 552
+    unlocks:
+      - upgrade.fuel_tank.9
+      - mastery.fuel_efficiency.2
+      - mastery.angler.3
+      - upgrade.harvest_yield.10
+  t9_craft:
+    tier: 9
+    type: craft
+    target: "amethyst_block"
+    amount: 95
+    rewards:
+      crystals: 221
+    unlocks:
+      - upgrade.generator.10
+  t9_deliver:
+    tier: 9
+    type: deliver
+    target: "custom:depths_amethyst"
+    amount: 520
+    rewards:
+      crystals: 221
+    unlocks:
+      - upgrade.island_vault.5
+      - upgrade.spawner_stack_limit.9
+      - upgrade.fuel_tank.9
+      - upgrade.harvest_yield.10
+  t9_sell:
+    tier: 9
+    type: sell
+    amount: 5520
+    rewards:
+      crystals: 221
+    unlocks:
+      - upgrade.bank_interest.9
+      - upgrade.sell_multiplier.9
+      - mastery.deep_pockets.4
+  t9_earn:
+    tier: 9
+    type: earn
+    amount: 3700000
+    rewards:
+      crystals: 221
+    unlocks:
+      - upgrade.bank_capacity.9
+      - upgrade.sell_multiplier.9
+  t9_deposit:
+    tier: 9
+    type: deposit
+    amount: 2900000
+    rewards:
+      crystals: 221
+    unlocks:
+      - upgrade.bank_capacity.9
+      - upgrade.bank_interest.9
+  t9_skill:
+    tier: 9
+    type: skill-level
+    target: "combat"
+    amount: 42
+    rewards:
+      crystals: 221
+    unlocks:
+      - upgrade.xp_boost.9
+  t9_pillar_mining:
+    tier: 9
+    type: pillar-level
+    target: "mining"
+    amount: 45
+    rewards:
+      crystals: 221
+    unlocks:
+      - upgrade.mine_fortune.9
+  t9_pillar_foraging:
+    tier: 9
+    type: pillar-level
+    target: "foraging"
+    amount: 45
+    rewards:
+      crystals: 221
+    unlocks:
+      - upgrade.lumberjack.9
+  t9_pillar_combat:
+    tier: 9
+    type: pillar-level
+    target: "combat"
+    amount: 45
+    rewards:
+      crystals: 221
+    unlocks: []
+  t9_pillar_farming:
+    tier: 9
+    type: pillar-level
+    target: "farming"
+    amount: 45
+    rewards:
+      crystals: 221
+    unlocks:
+      - mastery.fuel_efficiency.2
+      - mastery.angler.3
+  t9_island_level:
+    tier: 9
+    type: island-level
+    amount: 40
+    rewards:
+      crystals: 221
+    unlocks: []
+  # ---------------------------------------------------------------- tier 10
+  t10_mine:
+    tier: 10
+    type: mine
+    target: "nether_quartz_ore"
+    amount: 4470
+    rewards:
+      crystals: 298
+      pillar: mining
+      pillar-xp: 745
+    unlocks:
+      - upgrade.mine_fortune.10
+      - mastery.swift_hands.4
+      - mastery.lucky_strike.4
+  t10_chop:
+    tier: 10
+    type: chop
+    target: "crimson_stem"
+    amount: 2980
+    rewards:
+      crystals: 298
+      pillar: foraging
+      pillar-xp: 745
+    unlocks:
+      - upgrade.lumberjack.10
+      - mastery.timber.4
+  t10_kill:
+    tier: 10
+    type: kill
+    target: "ravager"
+    amount: 890
+    rewards:
+      crystals: 298
+      pillar: combat
+      pillar-xp: 745
+    unlocks:
+      - upgrade.xp_boost.10
+      - upgrade.spawner_stack_limit.10
+      - mastery.warrior.4
+      - mastery.lucky_strike.4
+  t10_farm:
+    tier: 10
+    type: farm
+    target: "torchflower"
+    amount: 1490
+    rewards:
+      crystals: 298
+      pillar: farming
+      pillar-xp: 745
+    unlocks:
+      - upgrade.fuel_tank.10
+  t10_craft:
+    tier: 10
+    type: craft
+    target: "quartz_block"
+    amount: 119
+    rewards:
+      crystals: 298
+    unlocks: []
+  t10_deliver:
+    tier: 10
+    type: deliver
+    target: "custom:depths_quartz"
+    amount: 680
+    rewards:
+      crystals: 298
+    unlocks:
+      - upgrade.warp_slots.5
+      - upgrade.spawner_stack_limit.10
+      - upgrade.fuel_tank.10
+  t10_sell:
+    tier: 10
+    type: sell
+    amount: 7450
+    rewards:
+      crystals: 298
+    unlocks:
+      - upgrade.warp_slots.5
+      - upgrade.bank_interest.10
+      - upgrade.sell_multiplier.10
+  t10_earn:
+    tier: 10
+    type: earn
+    amount: 10000000
+    rewards:
+      crystals: 298
+    unlocks:
+      - upgrade.bank_capacity.10
+      - upgrade.sell_multiplier.10
+      - mastery.crystal_rush.4
+  t10_deposit:
+    tier: 10
+    type: deposit
+    amount: 8400000
+    rewards:
+      crystals: 298
+    unlocks:
+      - upgrade.bank_capacity.10
+      - upgrade.bank_interest.10
+  t10_skill:
+    tier: 10
+    type: skill-level
+    target: "mining"
+    amount: 50
+    rewards:
+      crystals: 298
+    unlocks:
+      - upgrade.xp_boost.10
+  t10_pillar_mining:
+    tier: 10
+    type: pillar-level
+    target: "mining"
+    amount: 50
+    rewards:
+      crystals: 298
+    unlocks:
+      - upgrade.mine_fortune.10
+      - mastery.swift_hands.4
+  t10_pillar_foraging:
+    tier: 10
+    type: pillar-level
+    target: "foraging"
+    amount: 50
+    rewards:
+      crystals: 298
+    unlocks:
+      - upgrade.lumberjack.10
+      - mastery.timber.4
+  t10_pillar_combat:
+    tier: 10
+    type: pillar-level
+    target: "combat"
+    amount: 50
+    rewards:
+      crystals: 298
+    unlocks:
+      - mastery.warrior.4
+  t10_pillar_farming:
+    tier: 10
+    type: pillar-level
+    target: "farming"
+    amount: 50
+    rewards:
+      crystals: 298
+    unlocks: []
+  t10_island_level:
+    tier: 10
+    type: island-level
+    amount: 50
+    rewards:
+      crystals: 298
+    unlocks:
+      - mastery.crystal_rush.4
+  # ---------------------------------------------------------------- tier 11
+  t11_mine:
+    tier: 11
+    type: mine
+    target: "ancient_debris"
+    amount: 6030
+    rewards:
+      crystals: 402
+      pillar: mining
+      pillar-xp: 1005
+    unlocks:
+      - upgrade.mine_fortune.11
+  t11_chop:
+    tier: 11
+    type: chop
+    target: "warped_stem"
+    amount: 4020
+    rewards:
+      crystals: 402
+      pillar: foraging
+      pillar-xp: 1005
+    unlocks:
+      - upgrade.lumberjack.11
+  t11_kill:
+    tier: 11
+    type: kill
+    target: "ravager"
+    amount: 1210
+    rewards:
+      crystals: 402
+      pillar: combat
+      pillar-xp: 1005
+    unlocks:
+      - upgrade.xp_boost.11
+      - upgrade.spawner_stack_limit.11
+  t11_farm:
+    tier: 11
+    type: farm
+    target: "pitcher_crop"
+    amount: 2010
+    rewards:
+      crystals: 402
+      pillar: farming
+      pillar-xp: 1005
+    unlocks:
+      - upgrade.fuel_tank.11
+  t11_craft:
+    tier: 11
+    type: craft
+    target: "netherite_scrap"
+    amount: 149
+    rewards:
+      crystals: 402
+    unlocks: []
+  t11_deliver:
+    tier: 11
+    type: deliver
+    target: "custom:depths_netherite"
+    amount: 880
+    rewards:
+      crystals: 402
+    unlocks:
+      - upgrade.spawner_stack_limit.11
+      - upgrade.fuel_tank.11
+  t11_sell:
+    tier: 11
+    type: sell
+    amount: 10050
+    rewards:
+      crystals: 402
+    unlocks:
+      - upgrade.sell_multiplier.11
+  t11_earn:
+    tier: 11
+    type: earn
+    amount: 30000000
+    rewards:
+      crystals: 402
+    unlocks:
+      - upgrade.sell_multiplier.11
+  t11_deposit:
+    tier: 11
+    type: deposit
+    amount: 24000000
+    rewards:
+      crystals: 402
+    unlocks: []
+  t11_skill:
+    tier: 11
+    type: skill-level
+    target: "foraging"
+    amount: 58
+    rewards:
+      crystals: 402
+    unlocks:
+      - upgrade.xp_boost.11
+  t11_pillar_mining:
+    tier: 11
+    type: pillar-level
+    target: "mining"
+    amount: 55
+    rewards:
+      crystals: 402
+    unlocks:
+      - upgrade.mine_fortune.11
+  t11_pillar_foraging:
+    tier: 11
+    type: pillar-level
+    target: "foraging"
+    amount: 55
+    rewards:
+      crystals: 402
+    unlocks:
+      - upgrade.lumberjack.11
+  t11_pillar_combat:
+    tier: 11
+    type: pillar-level
+    target: "combat"
+    amount: 55
+    rewards:
+      crystals: 402
+    unlocks: []
+  t11_pillar_farming:
+    tier: 11
+    type: pillar-level
+    target: "farming"
+    amount: 55
+    rewards:
+      crystals: 402
+    unlocks: []
+  t11_island_level:
+    tier: 11
+    type: island-level
+    amount: 60
+    rewards:
+      crystals: 402
+    unlocks: []
+  # ---------------------------------------------------------------- tier 12
+  t12_mine:
+    tier: 12
+    type: mine
+    target: "crying_obsidian"
+    amount: 8140
+    rewards:
+      crystals: 543
+      pillar: mining
+      pillar-xp: 1357
+    unlocks:
+      - upgrade.mine_fortune.12
+      - mastery.swift_hands.5
+      - mastery.deep_pockets.5
+      - mastery.lucky_strike.5
+  t12_chop:
+    tier: 12
+    type: chop
+    target: "warped_stem"
+    amount: 5430
+    rewards:
+      crystals: 543
+      pillar: foraging
+      pillar-xp: 1357
+    unlocks:
+      - upgrade.lumberjack.12
+      - mastery.timber.5
+  t12_kill:
+    tier: 12
+    type: kill
+    target: "any"
+    amount: 1630
+    rewards:
+      crystals: 543
+      pillar: combat
+      pillar-xp: 1357
+    unlocks:
+      - upgrade.xp_boost.12
+      - upgrade.spawner_stack_limit.12
+      - mastery.warrior.5
+      - mastery.lucky_strike.5
+      - mastery.beast_tamer.4
+  t12_farm:
+    tier: 12
+    type: farm
+    target: "any"
+    amount: 2710
+    rewards:
+      crystals: 543
+      pillar: farming
+      pillar-xp: 1357
+    unlocks:
+      - upgrade.fuel_tank.12
+      - mastery.fuel_efficiency.3
+      - mastery.beast_tamer.4
+      - mastery.angler.4
+  t12_craft:
+    tier: 12
+    type: craft
+    target: "netherite_ingot"
+    amount: 186
+    rewards:
+      crystals: 543
+    unlocks: []
+  t12_deliver:
+    tier: 12
+    type: deliver
+    target: "custom:depths_voidstone"
+    amount: 1144
+    rewards:
+      crystals: 543
+    unlocks:
+      - upgrade.warp_slots.6
+      - upgrade.spawner_stack_limit.12
+      - upgrade.fuel_tank.12
+  t12_sell:
+    tier: 12
+    type: sell
+    amount: 13570
+    rewards:
+      crystals: 543
+    unlocks:
+      - upgrade.warp_slots.6
+      - upgrade.sell_multiplier.12
+      - mastery.deep_pockets.5
+  t12_earn:
+    tier: 12
+    type: earn
+    amount: 86000000
+    rewards:
+      crystals: 543
+    unlocks:
+      - upgrade.sell_multiplier.12
+      - mastery.crystal_rush.5
+      - mastery.treasury.3
+  t12_deposit:
+    tier: 12
+    type: deposit
+    amount: 69000000
+    rewards:
+      crystals: 543
+    unlocks:
+      - mastery.treasury.3
+  t12_skill:
+    tier: 12
+    type: skill-level
+    target: "combat"
+    amount: 66
+    rewards:
+      crystals: 543
+    unlocks:
+      - upgrade.xp_boost.12
+  t12_pillar_mining:
+    tier: 12
+    type: pillar-level
+    target: "mining"
+    amount: 60
+    rewards:
+      crystals: 543
+    unlocks:
+      - upgrade.mine_fortune.12
+      - mastery.swift_hands.5
+  t12_pillar_foraging:
+    tier: 12
+    type: pillar-level
+    target: "foraging"
+    amount: 60
+    rewards:
+      crystals: 543
+    unlocks:
+      - upgrade.lumberjack.12
+      - mastery.timber.5
+  t12_pillar_combat:
+    tier: 12
+    type: pillar-level
+    target: "combat"
+    amount: 60
+    rewards:
+      crystals: 543
+    unlocks:
+      - mastery.warrior.5
+  t12_pillar_farming:
+    tier: 12
+    type: pillar-level
+    target: "farming"
+    amount: 60
+    rewards:
+      crystals: 543
+    unlocks:
+      - mastery.fuel_efficiency.3
+      - mastery.angler.4
+  t12_island_level:
+    tier: 12
+    type: island-level
+    amount: 70
+    rewards:
+      crystals: 543
+    unlocks:
+      - mastery.crystal_rush.5

@@ -128,6 +128,8 @@ Targets: casual end of season ~40, regular end ~70, grinder solo end ~105, activ
 **Data:** `island_task_progress` (island_id, task_target, amount, updated_at). Targets are shared by every task that reads them (one "coal_ore mined" counter for all levels).
 **Config:** `tasks.yml` (catalog list per upgrade/mastery level).
 
+**Built (M5-3, 30 Oct):** `TaskService` + `TaskCompletedEvent` + `TaskStorage` (STORE2 hook) in `common/progression`; `TaskManager`, `TaskSources`, `DepthsTaskListener`, the challenge book menus (button in `/is level`, no new command). Tasks list the unlock keys they gate (`upgrade.<id>.<level>`, `mastery.<id>.<rank>`); M5.4/M5.5 call `TaskService#unlocked`. Rewards per task: crystals to every member (with the done row in one transaction) and pillar XP. Extra types: `craft`, `sell` (items), `deposit` (island bank). Default catalog: 180 tasks from `tools/gen_tasks_catalog.py`; settings `tasks-settings.yml`; `island_task_done` holds completions. Open points: `docs/OPEN_QUESTIONS.md` (M5-3). Details: `docs/commands/progression.md`.
+
 ## M5.4 Upgrades (`/is upgrade`)
 - Each level needs **its tasks done** + **money from the island bank** (owner 169). One click → confirm screen (cost, bank after, what you get) → bought. Instant, no timers.
 - **Payment is atomic** in the database (`UPDATE … WHERE balance >= ?`) with ledger reason `island_upgrade`; level and money change in one transaction. No 2% fee (it is not a withdrawal) and no forfeited interest (default, see questions).
