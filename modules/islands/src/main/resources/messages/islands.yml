@@ -265,6 +265,17 @@ notify:
   cooped: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>is coop on the island <c:muted>(by <by>)</c:muted>."
   uncooped: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>is no longer coop on the island."
   still-team: "<prefix><c:muted>Your island stays a Team Island even with only you on it: solo and team leaderboards are kept apart for fairness."
+  # M2.4 visiting (arrival, departure and attempts are /settings toggles for each member)
+  arrived: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>is visiting your island."
+  departed: "<c:muted><sym:bullet> <player> left your island."
+  attempt: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>tried to visit, but your island is locked. <click:run_command:'/is unlock'><hover:show_text:'<c:text>Open your island to visitors'><c:action>[Unlock]</c:action></hover></click>"
+  locked: "<c:ember><sym:bullet></c:ember> <c:text>The island was locked <c:muted>(by <by>)</c:muted>."
+  unlocked: "<c:ember><sym:bullet></c:ember> <c:text>The island is open to visitors again <c:muted>(by <by>)</c:muted>."
+  expelled: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>was sent off the island <c:muted>(by <by>)</c:muted>."
+  banned: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>was banned from the island <c:muted>(by <by>)</c:muted>."
+  unbanned: "<c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>can visit the island again <c:muted>(by <by>)</c:muted>."
+  liked: "<c:ember><sym:heart></c:ember> <c:value><player></c:value> <c:text>liked your island!"
+  warp-gone: "<c:ember><sym:bullet></c:ember> <c:text>Warp <c:value><warp></c:value> was removed: its sign is gone."
 
 members:
   crumb: "Members"
@@ -619,3 +630,317 @@ admin:
         - "<c:muted>Changed: <updated>"
       click:
         - "<c:action>Click to teleport"
+
+# ---------------------------------------------------------------- M2.4 visiting, warps and showcase
+# /settings toggles (category Social) for island members.
+settings:
+  island-visit-attempts:
+    name: "<c:flame>Locked island visits"
+    lore: ["<c:text>Tell me when someone tries to", "<c:text>visit my island while it's locked."]
+  island-visitor-arrivals:
+    name: "<c:flame>Visitor arrivals"
+    lore: ["<c:text>Tell me when someone arrives", "<c:text>on my island."]
+  island-visitor-departures:
+    name: "<c:flame>Visitor departures"
+    lore: ["<c:text>Tell me when a visitor leaves", "<c:text>my island."]
+
+visit:
+  no-island: "<prefix><c:error><sym:cross> <c:value><player></c:value> doesn't have an island."
+  not-ready: "<prefix><c:error><sym:cross> <c:value><island></c:value> isn't built yet. Try again later."
+  unsafe: "<prefix><c:error><sym:cross> There's no safe spot to land on <c:value><island></c:value> right now."
+  banned: "<prefix><c:error><sym:cross> You're banned from <c:value><island></c:value>."
+  locked: "<prefix><c:error><sym:cross> <c:value><island></c:value> is locked. Only its members can enter."
+  join-banned: "<prefix><c:error><sym:cross> You're banned from <c:value><island></c:value>, so you were sent to spawn."
+  join-locked: "<prefix><c:error><sym:cross> <c:value><island></c:value> is locked, so you were sent to spawn."
+  welcome: "<c:ember><sym:bullet></c:ember> <c:text>Visiting <c:value><island></c:value>"
+
+lock:
+  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can do that."
+  already: "<prefix><c:text>Your island is already locked. <click:run_command:'/is unlock'><c:action>[Unlock]</c:action></click>"
+  done: "<prefix><c:success><sym:check> <c:text>Island locked. Only members can enter now."
+  visitors-sent: "<prefix><c:text><c:value><count></c:value> visitor(s) were sent to spawn."
+  sent-off: "<prefix><c:error><sym:cross> <c:value><island></c:value> was locked, so you were sent to spawn."
+unlock:
+  already: "<prefix><c:text>Your island is already open to visitors."
+  done: "<prefix><c:success><sym:check> <c:text>Island unlocked. Visitors can come again."
+
+expel:
+  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can send visitors off."
+  self: "<prefix><c:error><sym:cross> You can't expel yourself."
+  member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is on your island team. Use <c:value>/is kick</c:value> or <c:value>/is uncoop</c:value>."
+  not-here: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't on your island."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>was sent to spawn."
+  you: "<prefix><c:error><sym:cross> You were sent off <c:value><island></c:value>."
+
+ban:
+  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can ban players."
+  unknown: "<prefix><c:error><sym:cross> No player called <c:value><player></c:value> has played here."
+  self: "<prefix><c:error><sym:cross> You can't ban yourself."
+  member: "<prefix><c:error><sym:cross> <c:value><player></c:value> is a member. Kick them first with <c:value>/is kick</c:value>."
+  coop: "<prefix><c:error><sym:cross> <c:value><player></c:value> is coop. End it first with <c:value>/is uncoop</c:value>."
+  already: "<prefix><c:error><sym:cross> <c:value><player></c:value> is already banned."
+  limit: "<prefix><c:error><sym:cross> Your island has the most bans allowed (<c:value><max></c:value>). Unban someone first."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>is banned from your island."
+  you: "<prefix><c:error><sym:cross> You were banned from <c:value><island></c:value>."
+unban:
+  not-banned: "<prefix><c:error><sym:cross> <c:value><player></c:value> isn't banned from your island."
+  done: "<prefix><c:success><sym:check> <c:value><player></c:value> <c:text>can visit your island again."
+  you: "<prefix><c:text>You can visit <c:value><island></c:value> again."
+
+rate:
+  stars: "<prefix><c:error><sym:cross> Pick 1 to <c:value><max></c:value> stars."
+  own: "<prefix><c:error><sym:cross> You can't rate your own island."
+  not-visited: "<prefix><c:error><sym:cross> Visit <c:value><island></c:value> before you rate it."
+  already: "<prefix><c:text>You already gave <c:value><island></c:value> <c:flame><stars> <sym:star></c:flame>."
+  done: "<prefix><c:success><sym:check> <c:text>You gave <c:value><island></c:value> <c:flame><stars>/<max> <sym:star></c:flame>."
+  changed: "<prefix><c:success><sym:check> <c:text>Rating for <c:value><island></c:value> changed from <c:value><old></c:value> to <c:flame><stars> <sym:star></c:flame>."
+
+like:
+  own: "<prefix><c:error><sym:cross> You can't like your own island."
+  not-visited: "<prefix><c:error><sym:cross> Visit <c:value><island></c:value> before you like it."
+  already: "<prefix><c:text>You already liked <c:value><island></c:value> today. Come back tomorrow."
+  done: "<prefix><c:success><sym:heart> <c:text>You liked <c:value><island></c:value>."
+
+warp:
+  # Shown as "Teleporting to ..." by the teleport warmup.
+  destination: "<warp> on <island>"
+  # Examples suggested by tab completion of /is setwarp when the island has no warps yet (comma-separated).
+  name-hints: "shop,farm,parkour,spawn"
+  not-allowed: "<prefix><c:error><sym:cross> Only the island leader and mods can manage warps."
+  name-empty: "<prefix><c:error><sym:cross> Give the warp a name."
+  name-long: "<prefix><c:error><sym:cross> Warp names can be up to <c:value><max></c:value> characters."
+  name-chars: "<prefix><c:error><sym:cross> Warp names can only use letters, numbers, <c:value>_</c:value> and <c:value>-</c:value>."
+  bad-category: "<prefix><c:error><sym:cross> <c:value><input></c:value> isn't a category. Use one of: <c:value><choices></c:value>."
+  outside: "<prefix><c:error><sym:cross> Stand inside your island's border to set a warp."
+  unsafe: "<prefix><c:error><sym:cross> This spot isn't safe. Stand on solid ground with room above you."
+  full: "<prefix><c:error><sym:cross> Your island has all <c:value><slots></c:value> warps. Delete one first with <c:value>/is delwarp</c:value>."
+  created: "<prefix><c:success><sym:check> <c:text>Warp <c:value><warp></c:value> set <c:muted>(<category>, <count>/<slots>)</c:muted>."
+  moved: "<prefix><c:success><sym:check> <c:text>Warp <c:value><warp></c:value> moved here."
+  deleted: "<prefix><c:success><sym:check> <c:text>Warp <c:value><warp></c:value> deleted."
+  not-found: "<prefix><c:error><sym:cross> Your island has no warp called <c:value><warp></c:value>."
+  not-found-on: "<prefix><c:error><sym:cross> <c:value><island></c:value> has no warp called <c:value><warp></c:value>."
+  none: "<prefix><c:error><sym:cross> <c:value><island></c:value> has no warps you can use."
+  private: "<prefix><c:error><sym:cross> Warp <c:value><warp></c:value> is only for the island's members."
+  gone: "<prefix><c:error><sym:cross> That warp doesn't exist anymore."
+  icon-set: "<prefix><c:success><sym:check> <c:text>New icon for <c:value><warp></c:value>."
+  now-public: "<prefix><c:success><sym:check> <c:text>Warp <c:value><warp></c:value> is public: everyone can use it."
+  now-private: "<prefix><c:success><sym:check> <c:text>Warp <c:value><warp></c:value> is private: members only."
+  sign-created: "<prefix><c:success><sym:check> <c:text>Sign warp <c:value><warp></c:value> set <c:muted>(<category>, <count>/<slots>)</c:muted>. Break the sign to delete it."
+  sign-deleted: "<prefix><c:text>Warp <c:value><warp></c:value> deleted with its sign."
+  sign-locked: "<prefix><c:error><sym:cross> This is the sign of warp <c:value><warp></c:value>. Break it to delete the warp."
+  sign-not-yours: "<prefix><c:error><sym:cross> Warp signs only work on your own island."
+  sign-name-taken: "<prefix><c:error><sym:cross> Your island already has a warp called <c:value><warp></c:value>."
+  # The text a [warp] sign gets once the warp exists (4 lines).
+  sign:
+    line-1: "<c:ember>[Warp]"
+    line-2: "<c:value><warp>"
+    line-3: "<c:text><category>"
+    line-4: "<c:muted><island>"
+
+warps:
+  crumb: "Warps"
+  crumb-island: "<island>"
+  crumb-category: "<category>"
+  # Category names (keys never change: shops, farms, parkour, builds, other).
+  category:
+    shops: "Shops"
+    farms: "Farms"
+    parkour: "Parkour"
+    builds: "Builds"
+    other: "Other"
+  info:
+    - "<c:text>Public warps of every island."
+    - "<c:text>Pick a category at the top."
+    - "<c:muted>Most visited warps come first."
+  info-island:
+    - "<c:text>The warps of this island."
+    - "<c:muted>Leader and mods click a warp to edit it."
+  empty:
+    name: "<c:muted>No warps yet"
+    lore:
+      - "<c:text>Set one on your island with"
+      - "<c:value>/is setwarp <name>"
+  empty-island:
+    name: "<c:muted>No warps here"
+    lore:
+      - "<c:text>Leader and mods add warps with"
+      - "<c:value>/is setwarp <name>"
+  filter:
+    name: "<c:flame><category>"
+    lore:
+      - "<c:text>Warps: <c:value><count>"
+    click:
+      - "<c:action>Click to show only these"
+    selected:
+      - "<c:success>Shown <c:muted>· click again for all"
+  islands:
+    name: "<c:flame><bold>Islands"
+    lore:
+      - "<c:text>Most visited, top rated,"
+      - "<c:text>most liked and newest islands."
+      - ""
+      - "<c:action>Click to browse"
+  own:
+    name: "<c:flame><bold>Your warps"
+    lore:
+      - "<c:text>Warps: <c:value><count>/<slots>"
+      - ""
+      - "<c:action>Click to see and edit"
+  how:
+    name: "<c:flame>Adding warps"
+    lore:
+      - "<c:text>Warps: <c:value><count>/<slots>"
+      - "<c:text>Stand on the spot and type"
+      - "<c:value>/is setwarp <name> [category]"
+      - "<c:text>or place a sign with <c:value><tag></c:value>"
+      - "<c:text>on line 1 and the name on line 2."
+  entry:
+    name: "<c:value><warp>"
+    lore:
+      - "<c:text>Island: <c:value><island>"
+      - "<c:text>Category: <c:value><category>"
+      - "<c:text>Visits: <c:value><visits>"
+    rated:
+      - "<c:text>Island rating: <c:flame><rating> <sym:star></c:flame> <c:muted>(<ratings>)"
+    unrated:
+      - "<c:text>Island rating: <c:muted>none yet"
+    private:
+      - "<c:warning>Private: members only"
+    sign:
+      - "<c:muted>Sign warp: break the sign to delete it"
+    click:
+      - "<c:action>Click to teleport"
+    click-edit:
+      - "<c:action>Click to edit"
+  edit:
+    crumb: "<warp>"
+    info:
+      - "<c:text>Change how this warp shows"
+      - "<c:text>in the warp browser."
+    warp:
+      name: "<c:flame><bold><warp>"
+      lore:
+        - "<c:text>Category: <c:value><category>"
+        - "<c:text>Visits: <c:value><visits>"
+    teleport:
+      name: "<c:flame>Teleport"
+      lore:
+        - "<c:action>Click to go there"
+    icon:
+      name: "<c:flame>Icon"
+      lore:
+        - "<c:text>The item shown in the browser."
+        - ""
+        - "<c:action>Click to pick another"
+    public:
+      name: "<c:success>Public"
+      lore:
+        - "<c:text>Everyone can use this warp."
+        - ""
+        - "<c:action>Click to make it private"
+    private:
+      name: "<c:warning>Private"
+      lore:
+        - "<c:text>Only members and coop players"
+        - "<c:text>can use this warp."
+        - ""
+        - "<c:action>Click to make it public"
+    category:
+      name: "<c:flame>Category: <category>"
+      lore:
+        - "<c:text>Where it shows in the browser."
+        - ""
+        - "<c:action>Click for <next>"
+    delete:
+      name: "<c:error>Delete"
+      lore:
+        - "<c:text>Removes this warp for good."
+        - ""
+        - "<c:action>Click to delete"
+  delete:
+    crumb: "Delete warp"
+    shown: "<c:error><bold>Delete <warp>"
+    details:
+      - "<c:text>Warp <c:value><warp></c:value> is removed"
+      - "<c:text>with its <c:value><visits></c:value> visits."
+  icons:
+    crumb: "Icon for <warp>"
+    info:
+      - "<c:text>Pick the icon of this warp."
+    pick: "<c:value>Use this icon"
+    current: "<c:success>Current icon"
+    empty:
+      name: "<c:muted>No icons"
+      lore:
+        - "<c:text>Staff can add icons in islands.yml"
+        - "<c:value>warps.icons"
+
+browser:
+  crumb: "Visit"
+  info:
+    - "<c:text>Visit other players' islands."
+    - "<c:text>Pick a list at the top."
+    - "<c:muted>Rate with /is rate, like with /is like."
+  empty:
+    name: "<c:muted>No islands to visit yet"
+    lore:
+      - "<c:text>Check back soon."
+  empty-rated:
+    name: "<c:muted>No rated islands yet"
+    lore:
+      - "<c:text>Visit an island and rate it"
+      - "<c:text>with <c:value>/is rate <player> <stars>"
+  gone:
+    name: "<c:muted>Island removed"
+  tab-click:
+    - "<c:action>Click to show"
+  tab-selected:
+    - "<c:success>Shown"
+  warps:
+    name: "<c:flame><bold>Warps"
+    lore:
+      - "<c:text>Shops, farms, parkour and"
+      - "<c:text>builds of every island."
+      - ""
+      - "<c:action>Click to browse"
+  sort:
+    visits:
+      crumb: "Most visited"
+      name: "<c:flame>Most visited"
+      lore:
+        - "<c:text>Unique visitors per day,"
+        - "<c:text>last <c:value><days></c:value> days."
+    rating:
+      crumb: "Top rated"
+      name: "<c:flame>Top rated"
+      lore:
+        - "<c:text>Average stars this season."
+        - "<c:muted>Needs at least <min> ratings."
+    likes:
+      crumb: "Most liked"
+      name: "<c:flame>Most liked"
+      lore:
+        - "<c:text>Likes this season."
+    newest:
+      crumb: "Newest"
+      name: "<c:flame>Newest"
+      lore:
+        - "<c:text>Islands created most recently."
+  entry:
+    name: "<c:flame><island>"
+    lore:
+      - "<c:text>Owner: <c:value><owner>"
+      - "<c:text>Members: <c:value><members>"
+      - "<c:text>Visits: <c:value><visits></c:value> <c:muted>(<days> days)"
+      - "<c:text>Likes: <c:value><likes>"
+      - "<c:text>Warps: <c:value><warps>"
+    rated:
+      - "<c:text>Rating: <c:flame><rating> <sym:star></c:flame> <c:muted>(<ratings>)"
+    unrated:
+      - "<c:text>Rating: <c:muted>none yet"
+    click:
+      - "<c:action>Click to visit"
+    own:
+      - "<c:action>Your island · click to go home"
+    banned:
+      - "<c:error>You're banned from this island."

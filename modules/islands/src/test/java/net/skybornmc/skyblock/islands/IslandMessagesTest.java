@@ -22,7 +22,9 @@ class IslandMessagesTest {
 
     private static final Pattern LITERAL = Pattern.compile("\"([a-z][a-z-]*(?:\\.[a-z][a-z-]*)+)\"");
     /** Files written for M2.7 (older files are covered by their own reviews). */
-    private static final List<String> FILES = List.of("IslandLifecycle.java", "IslandAdmin.java", "SlotsMenu.java", "IslandClearer.java");
+    private static final List<String> FILES = List.of("IslandLifecycle.java", "IslandAdmin.java", "SlotsMenu.java", "IslandClearer.java",
+            // M2.4
+            "VisitManager.java", "WarpManager.java", "VisitMenu.java", "WarpBrowserMenu.java", "WarpEditMenu.java", "IconPickerMenu.java");
     /** Keys of other files (commands.yml) and strings that are not message keys. */
     private static final Set<String> FOREIGN = Set.of("invalid-number", "player-unknown");
 
@@ -75,6 +77,24 @@ class IslandMessagesTest {
             keys.add("role." + role);
         }
         keys.add("disband.confirm-word");
+        // M2.4: built from parts in VisitManager.voteDenied, the browser tabs, warp categories and /settings toggles
+        for (String what : List.of("rate", "like")) {
+            for (String part : List.of(".own", ".not-visited", ".already")) {
+                keys.add(what + part);
+            }
+        }
+        for (Showcase.Sort sort : Showcase.Sort.values()) {
+            keys.add("browser.sort." + sort.key() + ".crumb");
+            keys.add("browser.sort." + sort.key() + ".name");
+            keys.add("browser.sort." + sort.key() + ".lore");
+        }
+        for (WarpCategory category : WarpCategory.values()) {
+            keys.add("warps.category." + category.key());
+        }
+        for (String toggle : List.of(VisitManager.SETTING_ATTEMPTS, VisitManager.SETTING_ARRIVALS, VisitManager.SETTING_DEPARTURES)) {
+            keys.add("settings." + toggle + ".name");
+            keys.add("settings." + toggle + ".lore");
+        }
         Set<String> missing = new TreeSet<>();
         for (String key : keys) {
             if (!yml.contains(key)) {
