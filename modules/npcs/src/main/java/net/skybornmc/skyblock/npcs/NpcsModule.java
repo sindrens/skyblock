@@ -1,0 +1,475 @@
+package net.skybornmc.skyblock.npcs;
+
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.audit.Actor;
+import net.skybornmc.skyblock.common.audit.AuditCategory;
+import net.skybornmc.skyblock.common.builds.BuildPoints;
+import net.skybornmc.skyblock.common.module.SkyblockModule;
+import net.skybornmc.skyblock.common.npc.NpcDirectory;
+import net.skybornmc.skyblock.common.text.ModuleMessages;
+import net.skybornmc.skyblock.common.text.Msg;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * NPCs, holograms and leaderboard holograms at the points of the applied builds (NPCHOLO). Positions: the worlds
+ * module's {@link BuildPoints} ({@code build-points.yml}); settings: {@code npcs.yml}; texts: {@code messages/npcs.yml}.
+ * NPC bodies are Paper mannequins (or villagers without AI), never saved, respawned when their chunk loads and removed on
+ * disable. Clicking an NPC runs its role's action or shows its help (owner answer 44); holograms with a help text get a
+ * click box. Publishes {@link NpcDirectory} for the tutorial. Staff: {@code /skyblock npcs} (list, tp, respawn).
+ */
+public final class NpcsModule implements SkyblockModule {
+
+    static final String ID = "npcs";
+    /** Staff tools: {@code /skyblock npcs} (list menu, teleport, respawn). */
+    public static final String PERM_ADMIN = "skyblock.admin.npcs";
+
+    /** A text and its line count (for fitting it into a board). */
+    record TextContent(Component text, int lines) {
+    }
+
+    private final Core core;
+    private final NpcsConfig config = new NpcsConfig();
+    private ModuleMessages msg;
+    private volatile RoleRules roles = RoleRules.parse(List.of(), List.of());
+    private volatile Spots spots = Spots.empty();
+    private volatile Map<String, String> skins = Map.of();
+    private volatile Map<String, Material> held = Map.of();
+    private Placer placer;
+    private Leaderboards boards;
+    private NpcListener listener;
+    private HelpDialog help;
+
+    public NpcsModule(Core core) {
+        this.core = core;
+    }
+
+    @Override
+    public String id() {
+        return ID;
+    }
+
+    @Override
+    public Set<String> dependencies() {
+        return Set.of("worlds");
+    }
+
+    @Override
+    public void enable() {
+        core.configs().load(config);
+        msg = core.messages(ID);
+        placer = new Placer(this);
+        boards = new Leaderboards(this);
+        help = new HelpDialog(this);
+        listener = new NpcListener(this);
+        Bukkit.getPluginManager().registerEvents(placer, core.plugin());
+        Bukkit.getPluginManager().registerEvents(listener, core.plugin());
+        core.services().register(ID, NpcDirectory.class, new Directory());
+        // One tick later: worlds are loaded and services of modules enabled after this one exist.
+        core.scheduler().later("npcs:start", 1, this::place);
+    }
+
+    @Override
+    public void reload() {
+        core.configs().load(config);
+        core.messages().load(ID);
+        if (placer != null) {
+            place();
+        }
+    }
+
+    @Override
+    public void disable() {
+        if (placer == null) {
+            return;
+        }
+        boards.stop();
+        placer.stop();
+        HandlerList.unregisterAll(placer);
+        HandlerList.unregisterAll(listener);
+        core.services().unregisterAll(ID);
+        placer = null;
+    }
+
+    /** Reads the rules and points again and respawns everything. */
+    private void place() {
+        if (placer == null) {
+            return;
+        }
+        List<String> problems = new ArrayList<>();
+        RoleRules parsedRoles = RoleRules.parse(config.npcRoles, config.roleActions);
+        problems.addAll(parsedRoles.problems());
+        roles = parsedRoles;
+        skins = RoleRules.pairs("npcs.skins", config.skins, problems);
+        held = materials(RoleRules.pairs("npcs.held-items", config.heldItems, problems), problems);
+        BuildPoints points = core.services().optional(BuildPoints.class).orElse(null);
+        Spots planned = points == null ? Spots.empty()
+                : Spots.from(points, parsedRoles, lower(config.hologramSkip));
+        problems.addAll(planned.problems());
+        spots = planned;
+        boards.start(problems);
+        placer.start(planned);
+        List<String> noText = new ArrayList<>();
+        planned.holograms().stream().filter(t -> hologramContent(t) == null).forEach(t -> noText.add(t.id()));
+        if (!noText.isEmpty()) {
+            problems.add("messages/npcs.yml -> holograms: no text for " + String.join(", ", noText) + " (not shown)");
+        }
+        problems.forEach(p -> core.plugin().getLogger().warning("[npcs] " + p));
+        core.plugin().getLogger().info("[npcs] " + planned.npcs().size() + " NPCs, " + planned.holograms().size()
+                + " holograms, " + planned.boards().size() + " leaderboards from the builds"
+                + (points == null ? " (worlds module's build points not available)" : ""));
+    }
+
+    private static Set<String> lower(List<String> ids) {
+        Set<String> out = new HashSet<>();
+        ids.forEach(id -> out.add(id.trim().toLowerCase(Locale.ROOT)));
+        return out;
+    }
+
+    private static Map<String, Material> materials(Map<String, String> raw, List<String> problems) {
+        Map<String, Material> out = new LinkedHashMap<>();
+        raw.forEach((id, name) -> {
+            Material m = Material.matchMaterial(name);
+            if (m == null || !m.isItem() || m.isAir()) {
+                problems.add("npcs.yml -> npcs.held-items: '" + name + "' is not an item (skipped)");
+            } else {
+                out.put(id, m);
+            }
+        });
+        return out;
+    }
+
+    // ------------------------------------------------------------------ shared helpers
+
+    Core core() {
+        return core;
+    }
+
+    NpcsConfig config() {
+        return config;
+    }
+
+    ModuleMessages msg() {
+        return msg;
+    }
+
+    RoleRules roles() {
+        return roles;
+    }
+
+    Placer placer() {
+        return placer;
+    }
+
+    HelpDialog help() {
+        return help;
+    }
+
+    Map<String, String> skins() {
+        return skins;
+    }
+
+    /** A per-NPC value, else the role's value, else null. */
+    <T> T mapped(Map<String, T> map, String npcId, String role) {
+        T v = map.get(npcId);
+        return v != null ? v : map.get(role);
+    }
+
+    Material heldItem(String npcId, String role) {
+        return mapped(held, npcId, role);
+    }
+
+    /** Ids of the leaderboards from the builds (immutable, any thread). */
+    List<String> boardIds() {
+        return spots.boards().stream().map(Spots.Text::id).toList();
+    }
+
+    /** A message for no particular viewer (holograms are the same for everyone; Java colors, Geyser converts). */
+    Component text(String key, TagResolver... placeholders) {
+        return msg.component(Audience.empty(), key, placeholders);
+    }
+
+    /** A message as plain text ({@code ""} when missing). */
+    String plain(String key) {
+        String raw = core.messages().raw(ID, key);
+        return raw == null ? "" : MiniMessage.miniMessage().stripTags(raw);
+    }
+
+    private String raw(String key) {
+        return core.messages().raw(ID, key);
+    }
+
+    /** {@code roles.<role>.name}-style name of an NPC (MiniMessage from our file): per id, per role, else the id. */
+    String npcNameRaw(String npcId, String role) {
+        String byId = raw("npc-names." + npcId);
+        if (byId != null && !byId.isBlank()) {
+            return byId;
+        }
+        String byRole = raw("roles." + role + ".name");
+        if (byRole != null && !byRole.isBlank()) {
+            return byRole;
+        }
+        return pretty(npcId);
+    }
+
+    /** {@code black_market} → {@code Black Market}. */
+    static String pretty(String id) {
+        StringBuilder sb = new StringBuilder();
+        for (String part : id.split("[_-]+")) {
+            if (part.isEmpty()) {
+                continue;
+            }
+            if (!sb.isEmpty()) {
+                sb.append(' ');
+            }
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return MiniMessage.miniMessage().escapeTags(sb.toString());
+    }
+
+    /** The name text above an NPC: name + one short hint line. */
+    Component npcLabel(Spots.Npc npc) {
+        RoleRules.Action action = roles.actionOf(npc.role());
+        Component hint = text(action.type() == RoleRules.Type.COMMAND ? "npc.hint-action" : "npc.hint-help");
+        return text("npc.label", Msg.mm("name", npcNameRaw(npc.id(), npc.role())), Msg.c("hint", hint));
+    }
+
+    /** A hologram's text: {@code holograms.<id>}, else the metadata's text; {@code null} = nothing to show. */
+    TextContent hologramContent(Spots.Text t) {
+        String raw = raw("holograms." + t.id());
+        if (raw != null && !raw.isBlank()) {
+            return new TextContent(text("holograms." + t.id()), Layout.lineCount(raw));
+        }
+        if (!t.fallbackText().isBlank()) {
+            return new TextContent(text("hologram-fallback", Msg.p("text", Layout.bedrockSafe(t.fallbackText()))), 1);
+        }
+        return null;
+    }
+
+    /** A leaderboard's text: title, exactly {@code size} places (or "Coming soon"), footer. */
+    TextContent boardContent(Spots.Text t) {
+        String titleRaw = raw("leaderboard.titles." + t.id());
+        TagResolver title = titleRaw != null && !titleRaw.isBlank() ? Msg.mm("title", titleRaw) : Msg.mm("title", pretty(t.id()));
+        List<Component> lines = new ArrayList<>();
+        lines.add(text("leaderboard.title", title));
+        int count = Layout.lineCount(raw("leaderboard.title"));
+        if (boards.sourceOf(t.id()) instanceof BoardSource.None) {
+            lines.add(text("leaderboard.coming-soon"));
+            count += Layout.lineCount(raw("leaderboard.coming-soon"));
+        } else {
+            for (Leaderboards.Line line : Leaderboards.lines(boards.rowsOf(t.id()), config.size)) {
+                Leaderboards.Row row = line.row();
+                lines.add(text(line.key(), Msg.number("place", line.place()),
+                        Msg.p("player", row == null ? "" : row.player()),
+                        Msg.c("value", row == null ? Component.empty() : row.value())));
+            }
+            count += config.size;
+            lines.add(text("leaderboard.footer", Msg.number("minutes", config.refreshMinutes)));
+            count += Layout.lineCount(raw("leaderboard.footer"));
+        }
+        return new TextContent(Component.join(net.kyori.adventure.text.JoinConfiguration.newlines(), lines), count);
+    }
+
+    /** True when a hologram or board has a help text (gets a click box). */
+    boolean hasHelp(Placed p) {
+        return core.messages().has(ID, "hologram-help." + p.pointId());
+    }
+
+    /** New rows for a source: re-sets the text of every placed board that shows it. */
+    void boardUpdated(String sourceKey) {
+        if (placer == null) {
+            return;
+        }
+        for (Placed p : placer.all()) {
+            if (p.kind == Placed.Kind.BOARD && p.spawned() && boards.sourceOf(p.pointId()).key().equals(sourceKey)) {
+                placer.setText(p, boardContent(p.text).text());
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ staff tools (/skyblock npcs)
+
+    /** Ids for {@code /skyblock npcs tp <id>} tab completion: NPCs, holograms and boards. */
+    public List<String> ids() {
+        if (placer == null) {
+            return List.of();
+        }
+        return placer.all().stream().map(p -> p.id).distinct().sorted().toList();
+    }
+
+    /** {@code /skyblock npcs [list]}: the menu for players, a chat list for the console. */
+    public void list(CommandSender sender) {
+        if (placer == null) {
+            return;
+        }
+        if (sender instanceof Player player) {
+            core.menus().open(player, new NpcListMenu(this));
+            return;
+        }
+        msg.send(sender, "admin.list.header", Msg.number("npcs", spots.npcs().size()),
+                Msg.number("holograms", spots.holograms().size()), Msg.number("boards", spots.boards().size()));
+        for (Placed p : placer.all()) {
+            World w = Bukkit.getWorld(p.world);
+            Location at = p.where(w);
+            msg.send(sender, "admin.list.line", Msg.p("kind", plain("admin.kind." + p.kind.name().toLowerCase(Locale.ROOT))),
+                    Msg.p("id", p.id), Msg.p("world", p.world), Msg.number("x", at.getBlockX()), Msg.number("y", at.getBlockY()),
+                    Msg.number("z", at.getBlockZ()),
+                    Msg.p("state", plain(p.spawned() ? "admin.state.spawned" : "admin.state.unloaded")));
+        }
+    }
+
+    /** {@code /skyblock npcs tp <id>}: teleports staff in front of an NPC / hologram / board. */
+    public void teleport(CommandSender sender, String id) {
+        if (!(sender instanceof Player player)) {
+            msg.send(sender, "admin.players-only");
+            return;
+        }
+        if (placer == null) {
+            return;
+        }
+        Placed p = null;
+        for (Placed.Kind kind : Placed.Kind.values()) {
+            p = placer.get(kind, id.toLowerCase(Locale.ROOT)).orElse(null);
+            if (p != null) {
+                break;
+            }
+        }
+        if (p == null) {
+            msg.send(sender, "admin.tp.unknown", Msg.p("id", id));
+            return;
+        }
+        teleport(player, p);
+    }
+
+    /** Teleports {@code player} 2 blocks in front of a placed set, facing it. Audited (staff). */
+    void teleport(Player player, Placed p) {
+        World w = Bukkit.getWorld(p.world);
+        if (w == null) {
+            msg.send(player, "admin.tp.no-world", Msg.p("world", p.world));
+            return;
+        }
+        Location at = p.where(w);
+        float facing = p.npc != null ? p.npc.yaw() : (p.text.faced() ? p.text.yaw() : at.getYaw());
+        double[] dir = Layout.direction(facing);
+        Location target = at.clone().add(dir[0] * 2.5, 0, dir[1] * 2.5);
+        if (p.npc == null) {
+            target.setY(standY(w, target, Layout.bottomY(p.text.y(), p.text.height())));
+        }
+        target.setYaw(facing + 180f);
+        target.setPitch(0f);
+        String id = p.id;
+        player.teleportAsync(target).thenAccept(ok -> {
+            if (ok) {
+                msg.send(player, "admin.tp.done", Msg.p("id", id));
+            }
+        });
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("kind", p.kind.name().toLowerCase(Locale.ROOT));
+        details.put("id", id);
+        core.audit().log(AuditCategory.STAFF, "npc_teleport", Actor.of(player), id, null, target, details);
+    }
+
+    /**
+     * Feet height for staff in front of a board: the first floor at most 16 blocks below {@code fromY} (signposts hang
+     * high above the road); {@code fromY} itself when the chunk isn't loaded or there is no floor.
+     */
+    private static double standY(World w, Location at, double fromY) {
+        if (!w.isChunkLoaded(at.getBlockX() >> 4, at.getBlockZ() >> 4)) {
+            return fromY;
+        }
+        int top = (int) Math.floor(fromY);
+        for (int y = top; y > top - 16 && y > w.getMinHeight(); y--) {
+            if (w.getBlockAt(at.getBlockX(), y - 1, at.getBlockZ()).getType().isSolid()
+                    && !w.getBlockAt(at.getBlockX(), y, at.getBlockZ()).getType().isSolid()
+                    && !w.getBlockAt(at.getBlockX(), y + 1, at.getBlockZ()).getType().isSolid()) {
+                return y;
+            }
+        }
+        return fromY;
+    }
+
+    /** {@code /skyblock npcs respawn}: re-reads the build points and settings and respawns everything. Audited. */
+    public void respawn(CommandSender sender) {
+        if (placer == null) {
+            return;
+        }
+        place();
+        boards.refresh();
+        msg.send(sender, "admin.respawned", Msg.number("total", spots.total()));
+        core.audit().log(AuditCategory.CONFIG, "npcs_respawn", Actor.of(sender), ID, (long) spots.total(), null, null);
+    }
+
+    // ------------------------------------------------------------------ NpcDirectory
+
+    /** The service for the tutorial and quests (main thread). */
+    private final class Directory implements NpcDirectory {
+
+        @Override
+        public List<NpcInfo> npcs() {
+            List<NpcInfo> out = new ArrayList<>();
+            for (Spots.Npc n : spots.npcs()) {
+                World w = Bukkit.getWorld(n.world());
+                if (w != null) {
+                    out.add(new NpcInfo(n.id(), n.role(), location(n, w)));
+                }
+            }
+            return out;
+        }
+
+        @Override
+        public java.util.Optional<Location> npcLocation(String npcId) {
+            return npcs().stream().filter(i -> i.id().equalsIgnoreCase(npcId)).map(NpcInfo::location).findFirst();
+        }
+
+        @Override
+        public java.util.Optional<NpcInfo> npcByRole(String role) {
+            return npcs().stream().filter(i -> i.role().equalsIgnoreCase(role)).findFirst();
+        }
+
+        @Override
+        public java.util.Optional<Location> hologramLocation(String hologramId) {
+            if (placer == null) {
+                return java.util.Optional.empty();
+            }
+            String id = hologramId.toLowerCase(Locale.ROOT);
+            return placer.get(Placed.Kind.HOLOGRAM, id).or(() -> placer.get(Placed.Kind.BOARD, id))
+                    .map(p -> p.where(Bukkit.getWorld(p.world)));
+        }
+
+        @Override
+        public java.util.Optional<String> npcId(org.bukkit.entity.Entity entity) {
+            if (placer == null) {
+                return java.util.Optional.empty();
+            }
+            Placed p = placer.find(entity);
+            return p != null && p.kind == Placed.Kind.NPC ? java.util.Optional.of(p.pointId()) : java.util.Optional.empty();
+        }
+
+        private Location location(Spots.Npc n, World w) {
+            if (placer != null) {
+                Placed p = placer.get(Placed.Kind.NPC, n.ref()).orElse(null);
+                if (p != null && p.location != null) {
+                    return p.location.clone();
+                }
+            }
+            return new Location(w, Layout.centre(n.x()), n.y(), Layout.centre(n.z()), n.yaw(), 0f);
+        }
+    }
+}

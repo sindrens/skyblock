@@ -1,0 +1,292 @@
+# NPCs, holograms and leaderboards (NPCHOLO): name texts, help texts, hologram texts, leaderboard lines and staff tools.
+# MiniMessage + style tags (style.yml). Bedrock-safe symbols only. Keep help short: a few lines, plain words
+# (owner answer 44: things are explained where they are, item lores stay clean and simple).
+# Holograms are the same for every viewer (Java colors; Geyser converts them for Bedrock).
+# Reload (respawns everything): /skyblock reload npcs
+
+# ------------------------------------------------------------------ NPC name text (above the NPC)
+npc:
+  # <name> NPC name (npc-names.<id>, else roles.<role>.name), <hint> one of the hints below
+  label: "<c:flame><bold><name></bold><newline><hint>"
+  hint-action: "<c:muted>Right-click"
+  hint-help: "<c:muted>Right-click for help"
+
+# Names per NPC id (when it differs from the role name).
+npc-names:
+  quartermaster: "Quartermaster"
+  blacksmith: "Blacksmith"
+  depths_forge: "Blacksmith"
+  depths_sell: "Merchant"
+  depths_guide: "Depths Guide"
+  mine_foreman: "Foreman"
+  help: "Info Clerk"
+
+# ------------------------------------------------------------------ roles: name + help (sneak-click, or click for help roles)
+roles:
+  guide:
+    name: "Guide"
+    help:
+      - "<c:text>Welcome to Phoenix Skyblock!"
+      - "<c:text>Everything is in the main menu: <c:value>/menu</c:value>"
+      - "<c:text>Get an island: <c:value>/is</c:value> <c:muted>·</c:muted> <c:text>help: <c:value>/help"
+  info:
+    name: "Info"
+    help:
+      - "<c:text>Questions? Every topic is in <c:value>/help</c:value><c:text>."
+      - "<c:text>Rules: <c:value>/rules</c:value> <c:muted>·</c:muted> <c:text>staff help on Discord."
+  forge:
+    name: "Blacksmith"
+    help:
+      - "<c:text>Forge better tools here: <c:value>/forge</c:value>"
+      - "<c:text>Free starter kit every 24 hours."
+      - "<c:text>Tools keep their level when forged."
+  enchanter:
+    name: "Enchanter"
+    help:
+      - "<c:text>Put enchant books on your tools."
+      - "<c:text>Pay with island crystals: <c:value>/enchanter"
+  wardrobe:
+    name: "Tailor"
+    help:
+      - "<c:text>Save and swap armor sets: <c:value>/wardrobe"
+  bank:
+    name: "Banker"
+    help:
+      - "<c:text>Keep money safe and earn interest."
+      - "<c:text>Open it any time: <c:value>/bank"
+  shop:
+    name: "Builder Shop"
+    help:
+      - "<c:text>Buy blocks and items: <c:value>/shop"
+  sell:
+    name: "Merchant"
+    help:
+      - "<c:text>Sell your loot for money: <c:value>/sell"
+  auction:
+    name: "Auctioneer"
+    help:
+      - "<c:text>Buy and sell with other players."
+      - "<c:text>Open it any time: <c:value>/ah"
+  dungeon:
+    name: "Depths Guide"
+    help:
+      - "<c:text>Pick a tier to travel to: <c:value>/dungeon"
+      - "<c:text>Level your skills to open new tiers."
+  foreman:
+    name: "Foreman"
+    help:
+      - "<c:text>Mine the ore field in this tier."
+      - "<c:text>Higher Mining levels open deeper tiers."
+      - "<c:text>Travel between tiers: <c:value>/dungeon"
+  crates:
+    name: "Crate Keeper"
+    help:
+      - "<c:text>Crates open soon. Keys come from"
+      - "<c:text>voting, quests and events."
+  black_market:
+    name: "Black Market"
+    help:
+      - "<c:text>A shady trader who visits now and then."
+      - "<c:text>Opens soon."
+  quests:
+    name: "Quest Master"
+    help:
+      - "<c:text>Quests open soon."
+  daily:
+    name: "Daily Rewards"
+    help:
+      - "<c:text>Daily rewards open soon."
+  vote:
+    name: "Voting"
+    help:
+      - "<c:text>Vote for the server to earn keys."
+      - "<c:text>Voting opens soon."
+
+# ------------------------------------------------------------------ help dialog
+help:
+  # <name> NPC or hologram name
+  header: "<c:flame><bold><name>"
+  open: "<c:action><bold>[Open]"
+  # <command> the command it runs
+  open-hover: "<c:text>Click to open <c:value><command>"
+  missing: "<c:text>Nothing to explain here yet."
+  menu:
+    crumb: "<name>"
+    open:
+      name: "<c:success><bold>Open"
+      lore: ["<c:muted><command>"]
+
+# ------------------------------------------------------------------ holograms: text per hologram id (from the builds)
+# A list = several lines. Ids without a text here use the build's own text, or are not shown.
+# Ids of live boards written by other modules are in npcs.yml -> holograms.skip.
+holograms:
+  info_board:
+    - "<c:flame><bold>Phoenix Skyblock"
+    - "<c:text>Open the menu: <c:value>/menu"
+    - "<c:text>Get an island: <c:value>/is"
+    - "<c:text>Help: <c:value>/help"
+  signpost_gatehouse: "<c:flame><bold>Gatehouse"
+  signpost_crate_yard: "<c:flame><bold>Crate Yard"
+  signpost_forge_quarter: "<c:flame><bold>Forge Quarter"
+  signpost_market_square: "<c:flame><bold>Market Square"
+  signpost_tavern: "<c:flame><bold>Tavern"
+  signpost_hall_of_heroes: "<c:flame><bold>Hall of Heroes"
+  portal_to_warzone: "<c:flame><bold>Warzone <c:muted>· Soon"
+  portal_to_depths: "<c:flame><bold>The Depths"
+  portal_to_island: "<c:flame><bold>Your Island"
+  portal_to_outposts: "<c:flame><bold>Outposts <c:muted>· Soon"
+  portal_to_events: "<c:flame><bold>Events <c:muted>· Soon"
+  event_board:
+    - "<c:flame><bold>Events"
+    - "<c:text>Bosses, KOTH and envoys"
+    - "<c:muted>Coming soon"
+  key_board:
+    - "<c:flame><bold>Crate Keys"
+    - "<c:text>Get keys from voting,"
+    - "<c:text>quests and events."
+  blueprint_wall:
+    - "<c:flame><bold>Blueprints"
+    - "<c:text>Find blueprints in the Depths"
+    - "<c:text>and craft special tools: <c:value>/forge"
+  rules_board:
+    - "<c:flame><bold>Rules"
+    - "<c:text>Be kind, no cheats,"
+    - "<c:text>no scamming, no spam."
+    - "<c:text>All rules: <c:value>/rules"
+  spawn_map:
+    - "<c:flame><bold>Spawn"
+    - "<c:text>N <c:muted>·</c:muted> <c:text>Gatehouse  <c:text>S <c:muted>·</c:muted> <c:text>Market"
+    - "<c:text>E <c:muted>·</c:muted> <c:text>Forge, Crates  <c:text>W <c:muted>·</c:muted> <c:text>Tavern, Heroes"
+  ah_board:
+    - "<c:flame><bold>Auction House"
+    - "<c:text>Buy and sell with players"
+    - "<c:value>/ah"
+  quest_board:
+    - "<c:flame><bold>Quests"
+    - "<c:muted>Coming soon"
+  vote_party:
+    - "<c:flame><bold>Vote Party"
+    - "<c:muted>Coming soon"
+  showcase_store_discord:
+    - "<c:flame><bold>Join us"
+    - "<c:text>Discord: <c:value>/discord"
+  dungeon_board:
+    - "<c:flame><bold>The Depths"
+    - "<c:text>Mine, chop and fight"
+    - "<c:text>through the tiers."
+    - "<c:text>Travel: <c:value>/dungeon"
+
+# Format of a build's own text (ids without a text above). <text> the builder's text, never parsed.
+hologram-fallback: "<c:flame><bold><text>"
+
+# Help shown when a hologram is clicked (gets an invisible click box). Title: hologram-names.<id>, else the id.
+hologram-names:
+  info_board: "Phoenix Skyblock"
+  rules_board: "Rules"
+  spawn_map: "Spawn map"
+  key_board: "Crate keys"
+  blueprint_wall: "Blueprints"
+  dungeon_board: "The Depths"
+  ah_board: "Auction House"
+hologram-help:
+  info_board:
+    - "<c:text>Start with <c:value>/menu</c:value><c:text>: every feature is there."
+    - "<c:text>Create your island with <c:value>/is</c:value><c:text>."
+  rules_board:
+    - "<c:text>Read all rules with <c:value>/rules</c:value><c:text>."
+    - "<c:text>See something wrong? <c:value>/report"
+  spawn_map:
+    - "<c:text>Back to spawn any time: <c:value>/spawn"
+  key_board:
+    - "<c:text>Crates open soon. Keys you earn are saved."
+  blueprint_wall:
+    - "<c:text>Blueprints drop in the Depths."
+    - "<c:text>Craft them at the Blacksmith: <c:value>/forge"
+  dungeon_board:
+    - "<c:text>Each tier opens with a skill level."
+    - "<c:text>Pick a tier: <c:value>/dungeon"
+  ah_board:
+    - "<c:text>List an item: hold it and type <c:value>/ah sell"
+  mining:
+    - "<c:text>Top players by Mining XP. Updates every few minutes."
+  foraging:
+    - "<c:text>Top players by Foraging XP. Updates every few minutes."
+  combat:
+    - "<c:text>Top players by Combat XP. Updates every few minutes."
+
+# ------------------------------------------------------------------ leaderboards (V2 style, like messages/items.yml hologram.*)
+leaderboard:
+  # <title> leaderboard.titles.<id>, else the id
+  title: "<c:header><bold><title>"
+  # <place>, <player> name, <value> formatted value. #1-#3 use the top1/top2/top3 colors.
+  top1: "<bold><c:top1>#1</c:top1></bold> <c:value><player></c:value> <c:muted>·</c:muted> <value>"
+  top2: "<bold><c:top2>#2</c:top2></bold> <c:value><player></c:value> <c:muted>·</c:muted> <value>"
+  top3: "<bold><c:top3>#3</c:top3></bold> <c:value><player></c:value> <c:muted>·</c:muted> <value>"
+  place: "<c:muted>#<place></c:muted> <c:value><player></c:value> <c:muted>·</c:muted> <value>"
+  # A place nobody holds yet (keeps the board the same height).
+  empty-place: "<c:locked>#<place> -"
+  coming-soon: "<c:muted>Coming soon"
+  # <minutes> leaderboards.refresh-minutes
+  footer: "<c:muted>Updates every <minutes> min"
+  unknown-player: "Unknown"
+  unknown-island: "Unnamed island"
+  value:
+    # <amount> formatted with the currency symbol
+    currency: "<c:money><amount>"
+    # <level>, <xp>
+    skill: "<c:value>Lv <level>"
+    # <amount>
+    island: "<c:value><amount>"
+  titles:
+    island_top_solo: "Top Islands <c:muted>· Solo"
+    island_top_team: "Top Islands <c:muted>· Team"
+    weekly_island_gain: "Island Gain <c:muted>· Week"
+    weekly_pillar_gain: "Pillar Gain <c:muted>· Week"
+    boss_damage: "Boss Damage"
+    mining: "Top Mining"
+    foraging: "Top Foraging"
+    combat: "Top Combat"
+    farming: "Top Farming"
+    fishing: "Top Fishing"
+    baltop: "Richest Players"
+    money: "Richest Players"
+
+# ------------------------------------------------------------------ staff tools (/skyblock npcs)
+admin:
+  kind:
+    npc: "NPC"
+    hologram: "Hologram"
+    board: "Leaderboard"
+  state:
+    spawned: "spawned"
+    unloaded: "chunk not loaded"
+  # Console list. <npcs>, <holograms>, <boards> counts
+  list:
+    header: "<prefix><c:text>From the builds: <c:value><npcs></c:value> NPCs, <c:value><holograms></c:value> holograms, <c:value><boards></c:value> leaderboards."
+    # <kind>, <id>, <world>, <x> <y> <z>, <state>
+    line: "<c:muted> - </c:muted><c:value><id></c:value> <c:muted>(<kind>)</c:muted> <c:text><world> <x>, <y>, <z></c:text> <c:muted><state>"
+  players-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only players can teleport."
+  tp:
+    # <id>
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to <c:value><id></c:value>."
+    unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No NPC or hologram <c:value><id></c:value>. See <c:value>/skyblock npcs list</c:value>."
+    # <world>
+    no-world: "<prefix><c:error><sym:cross></c:error> <c:text>World <c:value><world></c:value> isn't loaded."
+  # <total> points placed
+  respawned: "<prefix><c:success><sym:check></c:success> <c:text>Respawned <c:value><total></c:value> NPCs, holograms and leaderboards from the builds."
+  menu:
+    crumb: "NPCs & Holograms"
+    info: ["<c:text>Every NPC, hologram and leaderboard", "<c:text>from the builds. Click one to go there."]
+    empty:
+      name: "<c:muted>Nothing placed"
+      lore: ["<c:text>Apply a build first:", "<c:value>/skyblock builds apply <id>"]
+    # <name>, <id>, <kind>, <role>, <world>, <x> <y> <z>, <state>
+    entry:
+      name: "<c:flame><name>"
+      lore:
+        - "<c:muted><kind> <sym:dot> <id>"
+        - "<c:text>Role: <c:value><role>"
+        - "<c:text><world> <x>, <y>, <z>"
+        - "<c:muted><state>"
+        - ""
+        - "<c:action>Click to teleport"

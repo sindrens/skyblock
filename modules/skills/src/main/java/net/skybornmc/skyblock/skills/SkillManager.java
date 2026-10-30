@@ -237,6 +237,16 @@ final class SkillManager implements SkillService, Listener {
         });
     }
 
+    /** Leaderboard holograms (npcs module): best live profile per player, saved XP only. */
+    @Override
+    public CompletableFuture<List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(SkillType skill, int limit) {
+        if (skill == null || limit <= 0) {
+            return CompletableFuture.completedFuture(List.of());
+        }
+        ProfileService profiles = profiles();
+        return core.database().async(c -> repo.top(c, season, skill, limit, profiles::bestPerOwner));
+    }
+
     @Override
     public boolean setXp(Player player, SkillType skill, double totalXp, Actor by, String reason) {
         if (!Bukkit.isPrimaryThread()) {

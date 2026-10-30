@@ -92,4 +92,13 @@ public interface EconomyService {
     default double sellBonusCapPercent() {
         return MultiplierCap.DEFAULT_CAP_PERCENT;
     }
+
+    /**
+     * The richest players in a currency, richest first, one line per player from their best live profile (owner decision
+     * P7, like {@code /baltop}); for leaderboard holograms. Reads the database off the main thread; callers cache the
+     * result (the npcs module refreshes every few minutes). Implementations without it return an empty list.
+     */
+    default CompletableFuture<java.util.List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(Currency currency, int limit) {
+        return CompletableFuture.completedFuture(java.util.List.of());
+    }
 }

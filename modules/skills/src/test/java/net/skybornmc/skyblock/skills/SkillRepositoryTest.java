@@ -81,4 +81,37 @@ class SkillRepositoryTest {
                 "SELECT level FROM skills WHERE player = ? AND season_id = 0 AND skill = 'mining'", rs -> rs.getInt("level"), a)).orElseThrow();
         assertEquals(1, level, "level follows the curve");
     }
+
+    @Test
+    void topListsBestProfilePerPlayerWithNames() {
+        db.blocking(c -> {
+            net.skybornmc.skyblock.common.db.Sql.update(c, "CREATE TABLE IF NOT EXISTS players (uuid BINARY(16) NOT NULL PRIMARY KEY, name VARCHAR(32) NOT NULL)");
+            return null;
+        });
+        UUID steve = UUID.randomUUID();
+        UUID steveAlt = UUID.randomUUID(); // second profile of steve
+        UUID alex = UUID.randomUUID();
+        UUID nobody = UUID.randomUUID();
+        Map<UUID, UUID> owners = Map.of(steve, steve, steveAlt, steve, alex, alex, nobody, nobody);
+        db.blockingTransaction(c -> {
+            net.skybornmc.skyblock.common.db.Sql.update(c, "INSERT INTO players (uuid, name) VALUES (?, ?)", steve, "Steve");
+            net.skybornmc.skyblock.common.db.Sql.update(c, "INSERT INTO players (uuid, name) VALUES (?, ?)", alex, "Alex");
+            repo.save(c, 0, List.of(new PlayerSkills.Row(steve, SkillType.MINING, 100.9, 1),
+                    new PlayerSkills.Row(steveAlt, SkillType.MINING, 5_000, 9),
+                    new PlayerSkills.Row(alex, SkillType.MINING, 900, 3),
+                    new PlayerSkills.Row(nobody, SkillType.MINING, 50, 1),
+                    new PlayerSkills.Row(alex, SkillType.COMBAT, 99_999, 20)), 1L);
+            return null;
+        });
+        var top = db.blocking(c -> repo.top(c, 0, SkillType.MINING, 10,
+                values -> net.skybornmc.skyblock.common.profile.BestProfile.collapse(values, owners::get, k -> true)));
+        assertEquals(3, top.size());
+        assertEquals(new net.skybornmc.skyblock.common.leaderboard.TopLine(steve, "Steve", 5_000), top.get(0), "best profile counts once");
+        assertEquals(new net.skybornmc.skyblock.common.leaderboard.TopLine(alex, "Alex", 900), top.get(1));
+        assertEquals(new net.skybornmc.skyblock.common.leaderboard.TopLine(nobody, null, 50), top.get(2), "unknown name stays null");
+        assertEquals(2, db.blocking(c -> repo.top(c, 0, SkillType.MINING, 2,
+                values -> net.skybornmc.skyblock.common.profile.BestProfile.collapse(values, owners::get, k -> true))).size());
+        assertTrue(db.blocking(c -> repo.top(c, 1, SkillType.MINING, 10,
+                values -> net.skybornmc.skyblock.common.profile.BestProfile.collapse(values, owners::get, k -> true))).isEmpty());
+    }
 }

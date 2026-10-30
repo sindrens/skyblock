@@ -32,6 +32,7 @@ dependencies {
     implementation(project(":modules:shop"))
     implementation(project(":modules:achievements"))
     implementation(project(":modules:afk"))
+    implementation(project(":modules:npcs"))
 }
 
 tasks {

@@ -1,0 +1,6 @@
+# LuckPerms grants for the NPC and hologram module. Applied by scripts/apply-permissions.sh after base.txt.
+# Node definitions: modules/npcs/src/main/resources/permissions/npcs.yml.
+# Clicking NPCs and holograms needs no permission. Staff tools (/skyblock npcs list, tp, respawn): builders place the
+# builds, so they can check and respawn the NPCs; admin and owner inherit builder.
+lp group builder permission set skyblock.admin.npcs true
+lp group mod permission set skyblock.admin.npcs true

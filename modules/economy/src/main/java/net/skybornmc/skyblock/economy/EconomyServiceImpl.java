@@ -397,4 +397,15 @@ final class EconomyServiceImpl implements EconomyService {
     public String format(Currency currency, long amount) {
         return Amounts.withSymbol(symbols.apply(currency), currency, amount);
     }
+
+    /** Leaderboard holograms (npcs module): the /baltop query (best live profile per player, P7). */
+    @Override
+    public CompletableFuture<List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(Currency currency, int limit) {
+        if (currency == null || limit <= 0) {
+            return CompletableFuture.completedFuture(List.of());
+        }
+        return store.topBest(currency, limit, profiles.get()).thenApply(rows -> rows.stream()
+                .map(r -> new net.skybornmc.skyblock.common.leaderboard.TopLine(r.player(), r.name(), r.balance()))
+                .toList());
+    }
 }

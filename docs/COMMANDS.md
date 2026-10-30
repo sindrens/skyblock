@@ -34,6 +34,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [menus](commands/menus.md) | Menus module (`modules/menus`): M1.6 + M1.7 + staff hub and `/admin` (M1.12) |
 | [moderation](commands/moderation.md) | Punishments (`modules/moderation`, M1.8; replace vanilla `/ban /kick /pardon`) |
 | [motd](commands/motd.md) | MOTD (`modules/motd`) |
+| [npcs](commands/npcs.md) | NPCs and holograms (`modules/npcs`) |
 | [perks](commands/perks.md) | Perks module (`modules/perks`) |
 | [profiles](commands/profiles.md) | Profiles module (`modules/profiles`): PROF |
 | [shop](commands/shop.md) | Builder shop (`modules/shop`) |
