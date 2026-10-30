@@ -192,6 +192,7 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 - **Global dynamic prices.** Each item has a base price. Global sales push the price down, and it recovers toward base over time (e.g. 2% per 10 min). Floor 40% / ceiling 150% of base (tunable). Unsold items climb above base, which rewards selling a mix.
 - The GUI shows price, trend arrow and % from base. A daily **Hot Item** gets a temporary boost.
 - Prices reset at season start.
+- Selling (M3.4, built): `/sell` sell box (tap items in your inventory to add them; they stay in the inventory until the sale), `/sell hand`, `/sell all`; prices in `sell.yml` (draft, owner approves before launch); dynamic prices with adaptive impact (settles at 85% of base at normal volume), 2%/10 min recovery, +10%/day drift for unsold items, daily Hot Item +25%; unique items (tools, enchant books, notes, set pieces) are never sellable; every sale is one ledger transaction paid to the active profile. Details: `docs/commands/economy.md`.
 - **Max total sell multiplier** (upgrades + rank + boosters + sets) is capped at **+300% (×4.00)** (owner #46, tunable; reached only with the best of everything). See `ECONOMY_BALANCE.md` §8.
 
 ### 4.3 Auction house and player shops

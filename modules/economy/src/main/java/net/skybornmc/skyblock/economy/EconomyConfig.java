@@ -158,6 +158,115 @@ public final class EconomyConfig extends ModuleConfig {
             max = 10_000, level = Setting.Level.OWNER)
     public double sellMultiplierCapPercent = net.skybornmc.skyblock.common.economy.MultiplierCap.DEFAULT_CAP_PERCENT;
 
+    // ------------------------------------------------------------------ /sell (M3.4). Prices: sell.yml (owner approves them)
+
+    @Setting(path = "sell.dynamic.enabled", desc = "Dynamic prices on: every sale lowers the price a little, it recovers "
+            + "over time, unsold items drift above base. Off = always the base price.", level = Setting.Level.OWNER)
+    public boolean sellDynamicEnabled = true;
+
+    @Setting(path = "sell.dynamic.floor-percent", desc = "Lowest price in percent of base (PHASE-3: 40).", min = 1, max = 100,
+            level = Setting.Level.OWNER)
+    public double sellFloorPercent = 40;
+
+    @Setting(path = "sell.dynamic.ceiling-percent", desc = "Highest price in percent of base (PHASE-3: 150).", min = 100,
+            max = 1_000, level = Setting.Level.OWNER)
+    public double sellCeilingPercent = 150;
+
+    @Setting(path = "sell.dynamic.recovery-percent", desc = "Part of the gap to base that closes every interval (PHASE-3: 2% "
+            + "per 10 min, half-life ~5.7 h).", min = 0, max = 100, level = Setting.Level.OWNER)
+    public double sellRecoveryPercent = 2;
+
+    @Setting(path = "sell.dynamic.interval-minutes", desc = "Minutes between two recovery/drift steps.", min = 1, max = 1_440,
+            restart = true, level = Setting.Level.OWNER)
+    public int sellIntervalMinutes = 10;
+
+    @Setting(path = "sell.dynamic.target-percent", desc = "Where a price settles when an item keeps selling at its usual "
+            + "24 h volume (ECONOMY_BALANCE §8: 85). The impact per item is recomputed every hour to hit it.", min = 1, max = 100,
+            level = Setting.Level.OWNER)
+    public double sellTargetPercent = 85;
+
+    @Setting(path = "sell.dynamic.default-impact-ppm", desc = "Price drop per item sold, in millionths of base, while there "
+            + "is too little volume to compute it (1 = selling 10,000 items lowers the price by 1%).", min = 0, max = 100_000,
+            level = Setting.Level.OWNER)
+    public double sellDefaultImpactPpm = 1;
+
+    @Setting(path = "sell.dynamic.min-impact-ppm", desc = "Smallest computed impact per item (millionths of base).", min = 0,
+            max = 100_000, level = Setting.Level.OWNER)
+    public double sellMinImpactPpm = 0.01;
+
+    @Setting(path = "sell.dynamic.max-impact-ppm", desc = "Largest computed impact per item (millionths of base); keeps rare "
+            + "items from crashing after one big sale.", min = 0, max = 100_000, level = Setting.Level.OWNER)
+    public double sellMaxImpactPpm = 100;
+
+    @Setting(path = "sell.dynamic.min-volume", desc = "Items sold in 24 h before the impact is computed from volume (below: "
+            + "default-impact-ppm).", min = 0, level = Setting.Level.OWNER)
+    public long sellMinVolume = 1_000;
+
+    @Setting(path = "sell.dynamic.drift-quiet-minutes", desc = "Minutes without any sale before an item at or above base starts "
+            + "to drift up.", min = 0, max = 10_080, level = Setting.Level.OWNER)
+    public int sellQuietMinutes = 60;
+
+    @Setting(path = "sell.dynamic.drift-percent-per-day", desc = "How fast unsold items climb toward the ceiling, in percent "
+            + "of base per day (ECONOMY_BALANCE §8: +10% after 24 h without sales).", min = 0, max = 100,
+            level = Setting.Level.OWNER)
+    public double sellDriftPercentPerDay = 10;
+
+    @Setting(path = "sell.dynamic.trend-threshold-percent", desc = "Change in the last hour (percent of base) before a price "
+            + "shows as rising or falling.", min = 0, max = 100)
+    public double sellTrendThresholdPercent = 0.5;
+
+    @Setting(path = "sell.dynamic.catch-up-max-hours", desc = "After a restart, prices recover/drift for the time the server "
+            + "was off, up to this many hours.", min = 0, max = 2_160, level = Setting.Level.OWNER)
+    public int sellCatchUpMaxHours = 168;
+
+    @Setting(path = "sell.dynamic.save-seconds", desc = "How often changed prices are saved to the database (seconds).", min = 30,
+            max = 3_600, restart = true)
+    public int sellSaveSeconds = 300;
+
+    @Setting(path = "sell.hot-item.enabled", desc = "A daily Hot Item sells for more (changes the price, not the sell bonus).",
+            level = Setting.Level.OWNER)
+    public boolean sellHotEnabled = true;
+
+    @Setting(path = "sell.hot-item.percent", desc = "Hot Item price boost in percent (ECONOMY_BALANCE §8 proposal: 25).", min = 0,
+            max = 500, level = Setting.Level.OWNER)
+    public double sellHotPercent = 25;
+
+    @Setting(path = "sell.hot-item.categories", desc = "sell.yml categories the Hot Item is picked from (empty = all).",
+            level = Setting.Level.OWNER)
+    public List<String> sellHotCategories = List.of();
+
+    @Setting(path = "sell.hot-item.salt", desc = "Any number; changes which items become hot on which day.",
+            level = Setting.Level.OWNER)
+    public long sellHotSalt = 7_919;
+
+    @Setting(path = "sell.blocked-ids", desc = "Custom item ids that can never be sold (* at the end = any id starting with it). "
+            + "Unique items (tools, enchant books, money notes, set pieces) are never sellable anyway.", level = Setting.Level.OWNER)
+    public List<String> sellBlockedIds = List.of("money_note", "starter_*", "tool_*");
+
+    @Setting(path = "sell.blocked-data-keys", desc = "Items carrying any of these data keys (namespace:key) can't be sold, e.g. "
+            + "the starter kit marker.", level = Setting.Level.OWNER)
+    public List<String> sellBlockedDataKeys = List.of("phoenixskyblock:starter_kit", "phoenixskyblock:menu_item");
+
+    @Setting(path = "sell.custom-types", desc = "Types of custom items that may be sold when they are in sell.yml (item types: "
+            + "material, consumable ...). Default: materials only.", level = Setting.Level.OWNER)
+    public List<String> sellCustomTypes = List.of("material");
+
+    @Setting(path = "sell.save-player-data", desc = "Save the player's data right after the sold items are taken and before "
+            + "the money is paid, so a server crash can never give both the items and the money back.")
+    public boolean sellSavePlayerData = true;
+
+    @Setting(path = "sell.cooldown-seconds", desc = "Seconds between two /sell hand or /sell all of the same player.", min = 0,
+            max = 60, restart = true)
+    public int sellCooldownSeconds = 2;
+
+    @Setting(path = "sell.menu-refresh-ticks", desc = "How often the /sell menu updates prices and checks your items (ticks).",
+            min = 5, max = 200)
+    public int sellMenuRefreshTicks = 20;
+
+    @Setting(path = "sell.menu-click-ms", desc = "Smallest time between two item clicks in your inventory while the /sell "
+            + "menu is open (milliseconds).", min = 0, max = 2_000)
+    public int sellMenuClickMs = 150;
+
     @Setting(desc = "Icon per currency in menus: currency:MATERIAL.")
     public List<String> icons = List.of("money:GOLD_INGOT", "crystals:PRISMARINE_CRYSTALS", "gems:EMERALD", "shards:PRISMARINE_SHARD");
 
@@ -207,8 +316,17 @@ public final class EconomyConfig extends ModuleConfig {
     @Override
     public String header() {
         return """
-                Phoenix Skyblock economy (currencies, /pay, /baltop, /transactions). Texts: messages/economy.yml.
+                Phoenix Skyblock economy (currencies, /pay, /baltop, /transactions, /sell). Texts: messages/economy.yml.
+                Sell prices per item: sell.yml (dynamic price rules: sell.dynamic.* below).
                 /pay cooldown: commands.yml. Reload: /skyblock reload economy""";
+    }
+
+    /** The dynamic price settings as plain fractions (sell package). */
+    public net.skybornmc.skyblock.economy.sell.DynamicSettings dynamicSettings() {
+        return new net.skybornmc.skyblock.economy.sell.DynamicSettings(sellDynamicEnabled, sellFloorPercent / 100.0,
+                sellCeilingPercent / 100.0, sellRecoveryPercent / 100.0, sellIntervalMinutes, sellTargetPercent / 100.0,
+                sellDefaultImpactPpm / 1e6, sellMinImpactPpm / 1e6, sellMaxImpactPpm / 1e6, sellMinVolume, sellQuietMinutes,
+                sellDriftPercentPerDay, sellTrendThresholdPercent, sellCatchUpMaxHours, sellHotEnabled, sellHotPercent);
     }
 
     long start(Currency currency) {

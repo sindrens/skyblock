@@ -19,6 +19,9 @@ skyblock.economy.transactions:
 skyblock.economy.withdraw:
   description: Turn money into a tradeable money note (/withdraw); redeeming a note needs no permission
   default: true
+skyblock.economy.sell:
+  description: Sell items to the server at live prices (/sell, /sell hand, /sell all)
+  default: true
 skyblock.admin.economy:
   description: Change balances (/eco give|take|set|reset) and make money notes (/eco note); admins and owner, always logged and staff-alerted
   default: op

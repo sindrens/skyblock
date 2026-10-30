@@ -192,3 +192,139 @@ menu:
       - ""
       - "<c:muted><ago> ago <sym:dot> <date> UTC"
       - "<c:muted>#<id>"
+
+# Selling (M3.4): /sell, /sell hand, /sell all. <amount>, <balance>, <total>, <subtotal>, <worth>, <price> are colored
+# amounts; <bonus>/<percent>/<value> are signed numbers like +25 (add the % yourself); <item> is the item's name.
+# Trends are words, not arrows: the arrows are not on the Bedrock-safe symbol list.
+sell:
+  loading: "<prefix><c:error><sym:cross></c:error> <c:text>Prices are still loading. Try again in a moment."
+  frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't sell while frozen. Wait for staff."
+  switching: "<prefix><c:error><sym:cross></c:error> <c:text>You can't sell while your profile is switching."
+  busy: "<prefix><c:text>Your last sale is still going through. One moment."
+  hand-empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell, or type <c:value>/sell</c:value>."
+  all-nothing: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing in your inventory can be sold. <c:muted>/help sell</c:muted>"
+  changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Some items moved before the sale and were left in your inventory."
+  sold: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount><c:text>. <c:muted>Balance: </c:muted><balance>"
+  sold-bonus: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)</c:muted><c:text>. <c:muted>Balance: </c:muted><balance>"
+  some-unsold: "<prefix><c:text><stacks> stack(s) couldn't be sold and are back in your inventory."
+  too-cheap: "<prefix><c:error><sym:cross></c:error> <c:text>Those items are worth less than $1 right now. Nothing was sold."
+  overflow: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance can't hold that much. Your items are back."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>The sale didn't go through, your items are back. Try again."
+  returned-dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full: <stacks> returned stack(s) dropped at your feet. Pick them up!"
+  refund-delivered: "<prefix><c:success><sym:check></c:success> <c:text>You got back <c:value><amount>x</c:value> <item> <c:text>from a sale that didn't go through."
+  # Why an item can't be sold (/sell hand, and the action bar when you tap it in the sell menu).
+  reason:
+    empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell."
+    dupe: "<prefix><c:error><sym:cross></c:error> <item> <c:text>is flagged as a copy and can't be sold. Ask staff."
+    unique: "<prefix><c:error><sym:cross></c:error> <item> <c:text>is a unique item and can't be sold. Try the auction house."
+    blocked: "<prefix><c:error><sym:cross></c:error> <item> <c:text>can't be sold."
+    custom-type: "<prefix><c:error><sym:cross></c:error> <item> <c:text>can't be sold. Try the auction house."
+    not-in-table: "<prefix><c:error><sym:cross></c:error> <item> <c:text>can't be sold to the server. <c:muted>/help sell</c:muted>"
+    disabled: "<prefix><c:error><sym:cross></c:error> <item> <c:text>can't be sold right now."
+  trend:
+    rising: "<c:success>Rising"
+    falling: "<c:error>Falling"
+    steady: "<c:muted>Steady"
+  percent:
+    up: "<c:success><value>%"
+    down: "<c:error><value>%"
+    zero: "<c:muted>base price"
+  category:
+    ores: "Ores"
+    crops: "Crops"
+    mob-loot: "Mob loot"
+    depths-mine: "Depths ores"
+    depths-forest: "Depths logs"
+  # Names of sell bonus sources in the menu (BonusService source ids); missing ids are shown as words.
+  bonus-source:
+    enchants: "Enchants"
+    rank: "Rank"
+    upgrades: "Island upgrades"
+    mastery: "Mastery"
+    sets: "Set"
+    wardrobe: "Set"
+    boosters: "Boosters"
+    events: "Event"
+  menu:
+    title: "Sell"
+    info:
+      - "<c:text>Tap items in your inventory"
+      - "<c:text>to put them in. Tap them here"
+      - "<c:text>to take them out, then sell."
+    summary:
+      name: "<c:flame><sym:star></c:flame> <c:value>Total: <total>"
+      lore:
+        - "<c:text>Items: <c:value><items></c:value> <c:muted>(<stacks> stacks)"
+        - "<c:text>Before bonus: <subtotal>"
+        - "<c:text>Sell bonus: <c:value><bonus>%"
+        - "<c:text>You get: <total>"
+        - ""
+        - "<c:muted>Prices change live. Items stay in"
+        - "<c:muted>your inventory until you sell."
+      hot:
+        - ""
+        - "<c:flame><sym:star> Hot item today:</c:flame> <c:value><item></c:value> <c:success><percent>%"
+    item:
+      lore:
+        - "<c:text>Price: <price> <c:text>each <c:muted>(<percent><c:muted>)"
+        - "<c:text>Trend: <trend>"
+        - "<c:text>Worth: <worth> <c:muted>for <amount>"
+        - "<c:text>Category: <c:value><category>"
+      hot:
+        - "<c:flame><sym:star> Hot item: <percent>% today"
+      footer:
+        - ""
+        - "<c:action><sym:bullet> Click to take it out"
+    more:
+      name: "<c:value>+<stacks> more stacks"
+      lore:
+        - "<c:text>They are in the box and will"
+        - "<c:text>be sold too."
+    empty:
+      name: "<c:muted>The sell box is empty"
+      lore:
+        - "<c:text>Tap items in your inventory"
+        - "<c:text>to put them in."
+    add-all:
+      name: "<c:value>Add all sellable"
+      lore:
+        - "<c:text>Puts every item from your"
+        - "<c:text>inventory that can be sold in."
+        - ""
+        - "<c:action><sym:bullet> Click to add all"
+    clear:
+      name: "<c:value>Take all out"
+      lore:
+        - "<c:text>Empties the sell box. Nothing"
+        - "<c:text>leaves your inventory."
+        - ""
+        - "<c:action><sym:bullet> Click to empty"
+    bonus:
+      name: "<c:value>Sell bonus: <c:success><bonus>%"
+      none:
+        - "<c:text>No sell bonus yet. Ranks, island"
+        - "<c:text>upgrades, sets, enchants and"
+        - "<c:text>boosters add to it."
+      line: "<c:muted><sym:bullet></c:muted> <c:text><source><c:muted>:</c:muted> <c:success><value>%"
+      footer:
+        - ""
+        - "<c:muted>All bonuses add up, max <cap>%."
+      capped:
+        - ""
+        - "<c:warning>Capped: <total>% counts as <cap>%."
+    confirm:
+      name: "<c:success><sym:check> Sell for <total>"
+      lore:
+        - "<c:text>Sells <c:value><items></c:value> items now."
+        - "<c:text>Sell bonus: <c:value><bonus>%"
+        - ""
+        - "<c:action><sym:bullet> Click to sell"
+    confirm-empty:
+      name: "<c:muted>Nothing to sell"
+      lore:
+        - "<c:text>Tap items in your inventory first."
+    busy:
+      name: "<c:value><sym:time> Selling..."
+      lore:
+        - "<c:text>One moment."
+    nothing-picked: "<c:error><sym:cross></c:error> <c:text>Tap items in your inventory first."

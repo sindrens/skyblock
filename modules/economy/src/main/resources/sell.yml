@@ -1,0 +1,120 @@
+# =====================================================================================================================
+#  SELL PRICES (M3.4)  -  DRAFT: THE OWNER APPROVES THESE PRICES BEFORE LAUNCH (docs/ECONOMY_BALANCE.md §12).
+# =====================================================================================================================
+# Base price per item for /sell (and later the satchel, AFK pool, auto-sell chests). Whole money units.
+# Defaults come from docs/ECONOMY_BALANCE.md (BAL2): §4.1 island products (crops, generator drops), §4.3 spawner mob loot,
+# §3.1/§3.2 Depths drops. The live price is base x a dynamic multiplier (40%..150%, economy.yml -> sell.dynamic.*),
+# x1.25 for the daily Hot Item; the player's sell bonus (+300% cap) comes on top.
+#
+# Format:
+#   categories.<category>.<vanilla item id>: <price>
+#   custom-items.<category>.<custom item id>: <price>        (custom items are NEVER priced as the vanilla item they are)
+#   <id>: { price: 82, sellable: false }                    (keeps the price but switches selling off)
+# Category names are shown from messages/economy.yml -> sell.category.<category> (missing = the id).
+# Items not listed here can't be sold. Unique items (custom tools, enchant books, money notes, set pieces) can never be
+# sold, even if listed. New entries in a plugin update are added to this file automatically; to remove an item, set
+# sellable: false (a deleted entry comes back on the next update).
+#
+# Rules used for the defaults (keep them when changing prices, see ECONOMY_BALANCE §8 and docs/OPEN_QUESTIONS.md):
+#  - No item sells for more than what it is crafted/smelted from (no ingots above raw ore, no storage blocks, no sugar,
+#    paper, sticks, bone meal, dyes, seeds); those are simply not listed.
+#  - Island items sell for half the Depths item of the same tier (the Depths stay the main money place).
+# Reload: /skyblock reload economy
+config-version: 1
+
+categories:
+  # Island generator drops (ECONOMY_BALANCE §4.1: one tier below the Depths ore, half its price).
+  ores:
+    cobblestone: 1
+    coal: 10
+    raw_copper: 14
+    raw_iron: 18
+    raw_gold: 25
+    redstone: 33
+    lapis_lazuli: 45
+    diamond: 61
+    # Off until villager trading is limited: fletchers turn free sticks into emeralds (docs/OPEN_QUESTIONS.md).
+    emerald: { price: 82, sellable: false }
+
+  # Island crops by Farming unlock tier (ECONOMY_BALANCE §4.1).
+  crops:
+    wheat: 10
+    carrot: 14
+    potato: 14
+    beetroot: 18
+    sugar_cane: 25
+    melon_slice: 33
+    pumpkin: 33
+    cocoa_beans: 45
+    cactus: 61
+    sweet_berries: 82
+    nether_wart: 180
+    torchflower: 396
+    pitcher_plant: 870
+
+  # Spawner mob loot (ECONOMY_BALANCE §4.3: island price of Depths tier 1/3/5/7/9 per item, ~1.5 items per mob).
+  mob-loot:
+    # Spawner tier 1 (pig, cow, chicken, sheep, rabbit): $10
+    porkchop: 10
+    cooked_porkchop: 10
+    beef: 10
+    cooked_beef: 10
+    chicken: 10
+    cooked_chicken: 10
+    mutton: 10
+    cooked_mutton: 10
+    rabbit: 10
+    cooked_rabbit: 10
+    leather: 10
+    feather: 10
+    rabbit_hide: 10
+    rabbit_foot: 10
+    # Spawner tier 2 (zombie, skeleton, spider, slime): $18. Arrows are not listed: 1 feather crafts 4 arrows.
+    rotten_flesh: 18
+    bone: 18
+    string: 18
+    spider_eye: 18
+    slime_ball: 18
+    # Spawner tier 3 (creeper, witch, drowned, husk): $33
+    gunpowder: 33
+    glowstone_dust: 33
+    # Spawner tier 4 (blaze, enderman, guardian, piglin): $61
+    blaze_rod: 61
+    ender_pearl: 61
+    prismarine_shard: 61
+    prismarine_crystals: 61
+    # Spawner tier 5 (iron golem, wither skeleton, shulker): $180
+    shulker_shell: 180
+    wither_skeleton_skull: 180
+    # Iron golems drop iron ingots; an ingot can't sell above raw iron (smelting), so it gets the raw iron price.
+    iron_ingot: 18
+
+custom-items:
+  # Depths mine drops (ECONOMY_BALANCE §3.1). The ids are proposals for M4.9 (drops are not built yet); M4.9 renames them
+  # here if it picks other ids. Vanilla coal from an island generator is NOT these items.
+  depths-mine:
+    depths_coal: 20
+    depths_copper: 27
+    depths_iron: 36
+    depths_gold: 49
+    depths_redstone: 66
+    depths_lapis: 90
+    depths_diamond: 121
+    depths_emerald: 163
+    depths_amethyst: 360
+    depths_quartz: 791
+    depths_netherite: 1740
+    depths_voidstone: 3829
+  # Depths forest drops (ECONOMY_BALANCE §3.2: same price as the ore of the same tier).
+  depths-forest:
+    depths_oak_log: 20
+    depths_birch_log: 27
+    depths_spruce_log: 36
+    depths_jungle_log: 49
+    depths_acacia_log: 66
+    depths_dark_oak_log: 90
+    depths_mangrove_log: 121
+    depths_cherry_log: 163
+    depths_pale_oak_log: 360
+    depths_crimson_stem: 791
+    depths_warped_stem: 1740

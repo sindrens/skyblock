@@ -34,7 +34,7 @@ categories:
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, selling, banks, the", "<c:text>auction house and trading."]
-    topics: [money, notes, auction]
+    topics: [money, sell, notes, auction]
   progression:
     icon: experience_bottle
     status: active
@@ -669,6 +669,39 @@ topics:
           - "<c:text>balances: who paid you, what you sold"
           - "<c:text>and bought. Filter by currency, type"
           - "<c:text>and time. <c:value>/baltop</c:value> <c:text>shows the richest."
+
+  sell:
+    icon: gold_nugget
+    aliases: [selling, sell-hand, sell-all, prices, hot-item, sell-bonus]
+    name: "<c:flame>Selling"
+    summary: ["<c:text>Sell your loot to the server", "<c:text>at live prices."]
+    take-me-there: "sell"
+    commands: [Economy]
+    pages:
+      - title: "<c:value>The sell box"
+        lines:
+          - "<c:value>/sell</c:value> <c:text>opens the sell box. Tap items"
+          - "<c:text>in your inventory to put them in, tap"
+          - "<c:text>them in the box to take them out, then"
+          - "<c:text>click <c:value>Sell</c:value><c:text>. Items stay yours until then."
+      - title: "<c:value>Quick selling"
+        lines:
+          - "<c:value>/sell hand</c:value> <c:text>sells the stack you hold."
+          - "<c:value>/sell all</c:value> <c:text>sells everything in your"
+          - "<c:text>inventory that can be sold. Armor and"
+          - "<c:text>your offhand are never touched."
+      - title: "<c:value>Live prices"
+        lines:
+          - "<c:text>Every sale lowers a price a little and"
+          - "<c:text>it climbs back over time. Items nobody"
+          - "<c:text>sells go above base. One <c:value>Hot item</c:value>"
+          - "<c:text>a day sells for more. Sell a mix!"
+      - title: "<c:value>Sell bonus"
+        lines:
+          - "<c:text>Ranks, island upgrades, sets, enchants"
+          - "<c:text>and boosters add up to your sell bonus,"
+          - "<c:text>up to +300%. Tools, enchant books,"
+          - "<c:text>notes and set pieces can't be sold."
 
   notes:
     icon: paper
