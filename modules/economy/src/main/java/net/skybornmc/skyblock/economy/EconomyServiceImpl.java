@@ -66,6 +66,11 @@ final class EconomyServiceImpl implements EconomyService {
         return execute(tx, null);
     }
 
+    @Override
+    public CompletableFuture<TxResult> executeGuarded(Transaction tx, net.skybornmc.skyblock.common.economy.TxGuard guard) {
+        return guard == null ? execute(tx, null) : execute(tx, guard::holds);
+    }
+
     /** {@link #execute(Transaction)} with extra SQL that commits or rolls back together with it (money notes). */
     CompletableFuture<TxResult> execute(Transaction tx, EconomyStore.Guard guard) {
         String problem = tx.problem();

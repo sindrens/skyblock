@@ -22,7 +22,7 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/withdraw` | Money notes (M3.2); `/bal`, `/pay`, `/baltop`, `/transactions`, `/eco` are live: see `economy.md` | `skyblock.economy.*` | ⬜ |
 | `/bank` | Personal + island bank | `skyblock.bank` | ⬜ |
 | `/sell`, `/shop` (`/ah` built: [auction](auction.md)) | Selling and trading | `skyblock.sell` | ⬜ |
-| `/sets`, `/enchanter` (`/skills` built: [skills](skills.md)) | Progression | … | ⬜ |
+| `/sets` (`/skills` built: [skills](skills.md), `/enchanter` built: [enchants](enchants.md)) | Progression | … | ⬜ |
 | `/crates`, `/vote`, `/daily`, `/quests`, `/pass`, `/blackmarket`, `/collection` | Rewards | … | ⬜ |
 | `/pets`, `/duel`, `/events`, `/report`, `/pv` | Misc | … | ⬜ |
 | `/is chat` (`/is leave`, `/is disband`, `/is transfer` built: [islands](islands.md)) | Island membership (REVIEW B10) | `skyblock.island.*` | ⬜ |

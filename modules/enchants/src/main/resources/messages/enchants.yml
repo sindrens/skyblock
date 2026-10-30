@@ -1,0 +1,471 @@
+# Enchants (Phase E, docs/plans/ENCHANTS.md): books, the Enchanter, guide. MiniMessage + style tags (style.yml).
+# Book lore uses {placeholders} (filled by the plugin); chat and menus use <placeholders>.
+# Enchant effects: {key} = the enchant's number at that level (enchants.yml → values / params). Keep effects short:
+# they must fit two lore lines of ~32 characters at every level.
+# Reload: /skyblock reload enchants
+
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Try again in a moment."
+unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>The Enchanter is closed right now. Try again later."
+busy: "<c:warning>Wait a moment, saving your enchant..."
+inventory-full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full. The rest dropped at your feet."
+not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>You need <c:value><sym:crystals> <cost></c:value>. You have <c:value><sym:crystals> <have></c:value>."
+tool-gone: "<prefix><c:error><sym:cross></c:error> <c:text>Tool not found. Put it in your inventory."
+book-gone: "<prefix><c:error><sym:cross></c:error> <c:text>Book not found. Put it in your inventory."
+enchant-gone: "<prefix><c:error><sym:cross></c:error> <c:text>That enchant is not on the tool any more."
+unknown-enchant: "<prefix><c:error><sym:cross></c:error> <c:text>This enchant does not exist any more. Ask staff."
+no-scroll: "<prefix><c:error><sym:cross></c:error> <c:text>You need a Disenchant Scroll. Get one in the Book shop."
+confiscated: "<prefix><c:error><sym:cross></c:error> <c:text>That item was a copy. It was taken and staff were told."
+staff-confiscated: "<c:error><bold>DUPE</bold></c:error> <c:value><player></c:value> <c:text>used a copied <c:value><book></c:value> <c:muted>(<id>)</c:muted><c:text>. Taken."
+undone: "<prefix><c:warning><sym:cross></c:warning> <c:text>Something moved, so nothing changed. Your crystals are back."
+
+applied: "<prefix><c:success><sym:check></c:success> <c:enchant><enchant></c:enchant> <c:text>is on your <c:value><tool></c:value><c:text>. Paid <c:value><sym:crystals> <cost></c:value>."
+upgraded: "<prefix><c:success><sym:check></c:success> <c:text>Now <c:enchant><enchant></c:enchant><c:text>. Paid <c:value><sym:crystals> <cost></c:value>."
+combined: "<prefix><c:success><sym:check></c:success> <c:text>You made <c:enchant><enchant></c:enchant><c:text>. Paid <c:value><sym:crystals> <cost></c:value>."
+removed: "<prefix><c:success><sym:check></c:success> <c:enchant><enchant></c:enchant> <c:text>came off as a book."
+shattered: "<prefix><c:success><sym:check></c:success> <c:enchant><enchant></c:enchant> <c:text>shattered. You got <c:value><sym:crystals> <refund></c:value> back."
+rolled: "<prefix><c:success><sym:check></c:success> <c:text>You got <book><c:text>! Paid <c:value><sym:crystals> <cost></c:value>."
+scroll-bought: "<prefix><c:success><sym:check></c:success> <c:text>You bought a Disenchant Scroll for <c:value><sym:crystals> <cost></c:value>."
+
+roll:
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>No rolls of this kind left today. New ones tomorrow."
+  closed: "<prefix><c:error><sym:cross></c:error> <c:text>This roll is closed right now."
+  tier: "<prefix><c:error><sym:cross></c:error> <c:text>Needs <pool> tier <c:value><tier></c:value>."
+  empty: "<prefix><c:error><sym:cross></c:error> <c:text>No book can come from this roll yet."
+
+# Chat when a rule blocks something (<other> enchant, <level> tool level, <tools> tool types, <max> max level).
+rule:
+  ok: "<prefix><c:success><sym:check></c:success>"
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>This enchant is turned off for now."
+  wrong-tool: "<prefix><c:error><sym:cross></c:error> <c:text>Only for: <c:value><tools></c:value>."
+  already-on-tool: "<prefix><c:error><sym:cross></c:error> <c:text>The tool already has it. Use Upgrade."
+  conflict: "<prefix><c:error><sym:cross></c:error> <c:text>Conflicts with <c:value><other></c:value>."
+  slot-locked: "<prefix><c:error><sym:cross></c:error> <c:text>That slot opens at tool <c:value>Lv <level></c:value>."
+  slot-used: "<prefix><c:error><sym:cross></c:error> <c:text>That slot is full."
+  needs-two-slots: "<prefix><c:error><sym:cross></c:error> <c:text>Needs 2 free slots next to each other."
+  prestige-only: "<prefix><c:error><sym:cross></c:error> <c:text>Mythics go in the prestige slot only."
+  level-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Needs tool <c:value>Lv <level></c:value> for that level."
+  max-level: "<prefix><c:error><sym:cross></c:error> <c:text>Already max level (<max>)."
+  not-a-pair: "<prefix><c:error><sym:cross></c:error> <c:text>Needs the same enchant at the same level."
+
+# The same as one red lore line in menus.
+why:
+  ok: "<c:success><sym:check> Fits"
+  disabled: "<c:error><sym:cross> Turned off for now"
+  wrong-tool: "<c:error><sym:cross> Only for: <tools>"
+  already-on-tool: "<c:error><sym:cross> Already on this tool"
+  conflict: "<c:error><sym:cross> Conflicts with <other>"
+  slot-locked: "<c:error><sym:cross> Slot opens at Lv <level>"
+  slot-locked-prestige: "<c:error><sym:cross> Prestige the tool first"
+  slot-used: "<c:error><sym:cross> Slot is full"
+  needs-two-slots: "<c:error><sym:cross> Needs 2 free slots"
+  prestige-only: "<c:error><sym:cross> Prestige slot only"
+  level-gate: "<c:error><sym:cross> Needs tool Lv <level>"
+  max-level: "<c:error><sym:cross> Max level (<max>)"
+  not-a-pair: "<c:error><sym:cross> Not the same enchant and level"
+  needs-pair: "<c:error><sym:cross> Needs a second <book>"
+  tool-gone: "<c:error><sym:cross> Tool not found"
+  unknown: "<c:error><sym:cross> Unknown enchant"
+
+prestige-prefix: "★ "
+disabled-suffix: " (off)"
+
+rarity:
+  common: "Common"
+  uncommon: "Uncommon"
+  rare: "Rare"
+  epic: "Epic"
+  legendary: "Legendary"
+  mythic: "Mythic"
+
+target:
+  all-tools: "All tools"
+  all-armor: "All armor"
+  pickaxe: "Pickaxe"
+  axe: "Axe"
+  hoe: "Hoe"
+  sword: "Sword"
+  rod: "Rod"
+  helmet: "Helmet"
+  chestplate: "Chestplate"
+  leggings: "Leggings"
+  boots: "Boots"
+
+pool:
+  mining: "Mining"
+  foraging: "Foraging"
+  farming: "Farming"
+  combat: "Combat"
+  fishing: "Fishing"
+  stacks: "Island stacks"
+
+# Book and scroll items (lore formats use {placeholders}).
+book:
+  fallback-name: "<rarity:common>Enchant Book"
+  name: "<rarity:{rarity}>{name}"
+  subtitle: "<c:muted>Enchant Book · {targets}"
+  details: "<c:muted>Details"
+  max-level: " <c:enchant>▸ <c:text>Max level <c:value>{value}"
+  slot-cost: " <c:enchant>▸ <c:text>Slot cost <c:value>{value}"
+  prestige-slot: " <c:enchant>▸ <c:text>Prestige slot only"
+  conflicts: " <c:enchant>▸ <c:text>Conflicts <c:value>{value}"
+  armor: "<c:muted>For wardrobe set pieces (soon)"
+  disabled: "<c:error>Turned off for now"
+  unknown: "This enchant does not exist any more."
+  action-input: "Use at"
+  action-text: "/enchanter"
+scroll:
+  name: "<rarity:rare>Disenchant Scroll"
+  subtitle: "<c:muted>Scroll"
+  description: "Takes an enchant off a tool as a book."
+
+# ---------------------------------------------------------------------------------------------------------- menus
+menu:
+  title: "Enchanter"
+  text-line: "<c:text><text>"
+  click: ["", "<c:action>▶ Click <c:text>to choose"]
+  tool-gone:
+    name: "<c:error>Tool not found"
+    lore: ["<c:text>Put it in your inventory", "<c:text>and open the menu again."]
+  mode:
+    apply: "Apply a book"
+    upgrade: "Upgrade"
+    remove: "Remove"
+    combine: "Combine books"
+  main:
+    info: ["<c:text>Put enchant books on custom", "<c:text>tools, then level them up with", "<c:text>crystals. Never a fail chance."]
+    apply:
+      name: "<c:value>Apply a book"
+      lore: ["<c:text>Put a book in a free slot", "<c:text>of a custom tool.", "<c:muted>Books with you: <books>", "", "<c:action>▶ Click <c:text>to choose a tool"]
+    upgrade:
+      name: "<c:value>Upgrade"
+      lore: ["<c:text>Raise an enchant on a tool", "<c:text>with crystals or a book.", "<c:muted>Tools with you: <tools>", "", "<c:action>▶ Click <c:text>to choose a tool"]
+    combine:
+      name: "<c:value>Combine books"
+      lore: ["<c:text>Two equal books make one", "<c:text>book a level higher.", "<c:muted>Books with you: <books>", "", "<c:action>▶ Click <c:text>to open"]
+    remove:
+      name: "<c:value>Remove"
+      lore: ["<c:text>With a scroll you keep the", "<c:text>book. Without, it shatters.", "", "<c:action>▶ Click <c:text>to choose a tool"]
+    shop:
+      name: "<c:value>Book shop"
+      lore: ["<c:text>Random books and Disenchant", "<c:text>Scrolls for crystals.", "", "<c:action>▶ Click <c:text>to open"]
+    guide:
+      name: "<c:value>Enchant guide"
+      lore: ["<c:text>Every enchant, what it does", "<c:text>and where it drops.", "", "<c:action>▶ Click <c:text>to open"]
+    crystals:
+      name: "<cur:crystals><sym:crystals> <crystals></cur:crystals> <c:text>crystals"
+      lore: ["<c:muted>Earn crystals on your island", "<c:muted>and in The Depths."]
+  tools:
+    info: ["<c:text>Pick one of the custom tools", "<c:text>in your inventory."]
+    empty:
+      name: "<c:muted>No custom tools"
+      lore: ["<c:text>Get one at <c:value>/forge</c:value><c:text>.", "<c:text>Vanilla tools can't get these."]
+    entry: ["<c:muted>Lv <level> · slots <used>/<slots>"]
+    click:
+      apply: ["<c:action>▶ Click <c:text>to pick a slot"]
+      upgrade: ["<c:action>▶ Click <c:text>to pick an enchant"]
+      remove: ["<c:action>▶ Click <c:text>to pick an enchant"]
+  slots:
+    info:
+      apply: ["<c:text>Pick a free slot for the book.", "<c:text>Slots open at Lv 5, 15, 30, 45.", "<c:text>Slot 5 opens with prestige."]
+      upgrade: ["<c:text>Pick the enchant to upgrade."]
+      remove: ["<c:text>Pick the enchant to remove."]
+    covered:
+      name: "<c:muted>Slot <slot>"
+      lore: ["<c:text>Used by <c:enchant><enchant></c:enchant> <c:text>(2 slots)"]
+    filled:
+      name: "<enchant>"
+      unknown: "<c:error><enchant>"
+      lore: ["<c:muted>Slot <slot> · put in <sym:crystals> <invested>"]
+      click:
+        apply: ["", "<c:muted>Slot is full"]
+        upgrade: ["", "<c:action>▶ Click <c:text>to upgrade"]
+        remove: ["", "<c:action>▶ Click <c:text>to remove"]
+    disabled: ["<c:error>Turned off for now"]
+    empty:
+      apply:
+        name: "<c:value>Slot <slot>"
+        lore: ["<c:muted><sym:bullet> Empty slot", "", "<c:action>▶ Click <c:text>to pick a book"]
+      other:
+        name: "<c:value>Slot <slot>"
+        lore: ["<c:muted><sym:bullet> Empty slot"]
+    prestige-empty:
+      apply:
+        name: "<c:flame><sym:star> Prestige slot"
+        lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Fits Mythic enchants too.", "", "<c:action>▶ Click <c:text>to pick a book"]
+      other:
+        name: "<c:flame><sym:star> Prestige slot"
+        lore: ["<c:muted><sym:bullet> Empty slot"]
+    prestige-locked:
+      name: "<c:muted><sym:star> Prestige slot"
+      lore: ["<c:error><sym:cross> <c:text>Prestige the tool to open"]
+    locked:
+      name: "<c:muted>Slot <slot>"
+      lore: ["<c:error><sym:cross> <c:text>Opens at Lv <level>", "<c:muted>Now Lv <have>"]
+  books:
+    info: ["<c:text>Books that fit are at the top.", "<c:text>The others say why not."]
+    crumb: "Slot <slot>"
+    empty:
+      name: "<c:muted>No enchant books"
+      lore: ["<c:text>Find books in The Depths or", "<c:text>roll one in the Book shop."]
+    fits: ["<c:success><sym:check> Fits", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<c:action>▶ Click <c:text>to apply"]
+  upgrade:
+    info: ["<c:text>Crystals raise it one level.", "<c:text>A book of the same level is", "<c:text>cheaper but uses the book."]
+    name: "<enchant>"
+    now: ["<c:muted>Max <max> · this tool allows <gate>"]
+    crystals:
+      name: "<c:value>Upgrade with crystals"
+      lore: ["<c:text>To <next>", "<c:text>Costs <c:value><sym:crystals> <cost>"]
+    book:
+      name: "<c:value>Upgrade with a book"
+      none: ["<c:error><sym:cross> <c:text>No <book> <c:text>book", "<c:muted>with you."]
+      lore: ["<c:text>Uses <book>", "<c:text>To <next>", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<c:action>▶ Click <c:text>to choose"]
+  remove:
+    info: ["<c:text>A scroll gives you the book", "<c:text>back. Shatter destroys it."]
+    name: "<enchant>"
+    now: ["<c:muted>Put in: <sym:crystals> <invested>"]
+    scroll:
+      name: "<c:value>Remove with a scroll"
+      lore: ["<c:text>You get <enchant> <c:text>back", "<c:text>as a book. Uses 1 scroll.", "<c:muted>Scrolls with you: <scrolls>", "", "<c:action>▶ Click <c:text>to choose"]
+    no-scroll:
+      name: "<c:muted>Remove with a scroll"
+      lore: ["<c:error><sym:cross> <c:text>No Disenchant Scroll", "<c:muted>Buy one in the Book shop."]
+    scroll-unknown:
+      name: "<c:muted>Remove with a scroll"
+      lore: ["<c:error><sym:cross> <c:text>Unknown enchant: shatter only"]
+    shatter:
+      name: "<c:error>Shatter"
+      lore: ["<c:error>Destroys <enchant><c:error>.", "<c:text>You get <c:value><sym:crystals> <refund></c:value> <c:text>back.", "", "<c:action>▶ Click <c:text>to choose"]
+  combine:
+    info: ["<c:text>Two books of the same enchant", "<c:text>and level make one book a", "<c:text>level higher."]
+    empty:
+      name: "<c:muted>No enchant books"
+      lore: ["<c:text>Find books in The Depths or", "<c:text>roll one in the Book shop."]
+    hint:
+      name: "<c:value>Book onto a tool?"
+      lore: ["<c:text>To add a book to an enchant", "<c:text>on a tool, use Upgrade.", "", "<c:action>▶ Click <c:text>to open Upgrade"]
+    count: ["<c:muted>You have <count>"]
+    ready: ["<c:success><sym:check> <c:text>Makes <next>", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<c:action>▶ Click <c:text>to combine"]
+  shop:
+    crumb: "Book shop"
+    info: ["<c:text>Pay crystals for a random book", "<c:text>of a pool. Rolls never give", "<c:text>Mythics. Limits reset daily."]
+    pool:
+      name: "<c:value><pool>"
+      lore: ["<c:text>Your tier: <c:value><tier>", "<c:muted>Higher tiers open more enchants."]
+    scroll:
+      name: "<rarity:rare>Disenchant Scroll"
+      lore: ["<c:text>Takes an enchant off a tool", "<c:text>as a book.", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<c:action>▶ Click <c:text>to buy"]
+    roll:
+      apprentice: "<c:value>Apprentice Roll <c:muted>(<pool>)"
+      adept: "<c:value>Adept Roll <c:muted>(<pool>)"
+      master: "<c:value>Master Roll <c:muted>(<pool>)"
+      lore: ["<c:text>Costs <c:value><sym:crystals> <cost>", "<c:muted><left>/<daily> left today"]
+      odd: " <rarity> <c:text><percent>%"
+      tier-ok: "<c:success><sym:check> <c:text><pool> tier <tier>"
+      tier-low: "<c:error><sym:cross> <c:text>Needs <pool> tier <tier> <c:muted>(<have>)"
+      none-left: ["<c:error><sym:cross> <c:text>None left today"]
+  guide:
+    crumb: "Enchant guide"
+    info: ["<c:text>Every enchant by tool. Mythics", "<c:text>stay secret until you find one."]
+    empty:
+      name: "<c:muted>Nothing here"
+      lore: ["<c:text>No enchants for this tab."]
+    tab:
+      pickaxe: "Pickaxe"
+      axe: "Axe"
+      hoe: "Hoe"
+      sword: "Sword"
+      rod: "Rod"
+      armor: "Armor"
+    tab-selected:
+      name: "<c:flame><sym:bullet> <tab>"
+      lore: ["<c:muted>Shown now"]
+    tab-other:
+      name: "<c:value><tab>"
+      lore: ["<c:action>▶ Click <c:text>to show"]
+    secret:
+      name: "<rarity:mythic>???"
+      lore: ["<c:text>A Mythic enchant.", "<c:muted>Find one to learn more."]
+    name: "<enchant>"
+    head: ["<rarity> <c:muted>· max <c:value><max>"]
+    per-level: "<c:muted>Per level: <c:value><values>"
+    prestige-slot: "<c:enchant>▸ <c:text>Prestige slot only"
+    slot-cost: "<c:enchant>▸ <c:text>Slot cost <c:value><slots>"
+    conflicts: "<c:enchant>▸ <c:text>Conflicts <c:value><names>"
+    drops: "<c:enchant>▸ <c:text><pools> <c:muted>from tier <tier>"
+    drops-special: "<c:enchant>▸ <c:text>Bosses and special crates"
+    armor: "<c:muted>For wardrobe set pieces (soon)"
+    disabled: "<c:error>Turned off for now"
+    found: "<c:success><sym:check> Found this season"
+    not-found: "<c:muted><sym:cross> Not found yet"
+  confirm:
+    apply:
+      crumb: "Apply a book"
+      details: ["<c:text>Put <enchant>", "<c:text>on <c:value><tool></c:value> <c:muted>(slot <slot>)", "<c:text>Uses the book", "<c:text>Costs <c:value><sym:crystals> <cost>"]
+    upgrade:
+      crumb: "Upgrade"
+      details: ["<c:text>Raise to <next>", "<c:text>Costs <c:value><sym:crystals> <cost>"]
+    combine-tool:
+      details: ["<c:text>Uses your <book> <c:text>book", "<c:text>Raises it to <next>", "<c:text>Costs <c:value><sym:crystals> <cost>"]
+    combine:
+      crumb: "Combine books"
+      details: ["<c:text>Uses two <book> <c:text>books", "<c:text>Makes <next>", "<c:text>Costs <c:value><sym:crystals> <cost>"]
+    remove:
+      crumb: "Remove"
+      details: ["<c:text>Takes <enchant> <c:text>off", "<c:text>You get it back as a book", "<c:text>Uses 1 Disenchant Scroll"]
+    shatter:
+      crumb: "Shatter"
+      details: ["<c:error>Destroys <enchant>", "<c:text>You get <c:value><sym:crystals> <refund></c:value> <c:text>back", "<c:error>This can't be undone"]
+    scroll:
+      crumb: "Book shop"
+      details: ["<c:text>Buy a Disenchant Scroll", "<c:text>Costs <c:value><sym:crystals> <cost>"]
+    roll:
+      crumb: "Book shop"
+      details: ["<roll>", "<c:text>Gives a random book", "<c:text>Costs <c:value><sym:crystals> <cost>"]
+
+# ---------------------------------------------------------------------------------------------------------- enchants
+# name: max 17 characters (Bedrock). effect: plain text, fits 2 lines at every level.
+enchant:
+  swiftness:
+    name: "Swiftness"
+    effect: "+{percent}% break and chop speed."
+  scholars_insight:
+    name: "Scholar's Insight"
+    effect: "+{percent}% skill XP for this tool's skill."
+  prosperity:
+    name: "Prosperity"
+    effect: "{chance}% chance for 1 extra drop."
+  crystal_seeker:
+    name: "Crystal Seeker"
+    effect: "+{percent}% crystals from this tool."
+  tempering:
+    name: "Tempering"
+    effect: "+{percent}% tool XP."
+  gilded_touch:
+    name: "Gilded Touch"
+    effect: "{chance}% chance a drop is Gilded (sells for {multiplier}x)."
+  ember_momentum:
+    name: "Ember Momentum"
+    effect: "+{percent}% speed per {actions} actions in a row (max {max-stacks}x)."
+  phoenix_haste:
+    name: "Phoenix Haste"
+    effect: "{chance}% chance: +{percent}% speed for {seconds}s."
+  treasure_hunter:
+    name: "Treasure Hunter"
+    effect: "+{percent}% chance for blueprints, key fragments and geodes."
+  geode_sense:
+    name: "Geode Sense"
+    effect: "{chance}% chance per block for a Crystal Geode."
+  vein_rend:
+    name: "Vein Rend"
+    effect: "{chance}% chance to break {count} nearby ores of yours at {yield}% yield."
+  dragonfire_blast:
+    name: "Dragonfire Blast"
+    effect: "{chance}% chance to blast your blocks {size}x{size}x{depth} at {yield}% yield."
+  worldbreaker:
+    name: "Worldbreaker"
+    effect: "Every {every}th block: a {size}x{size}x{depth} blast and a Crystal Geode."
+  amber_sap:
+    name: "Amber Sap"
+    effect: "{chance}% chance per log for Amber Resin."
+  treefeller:
+    name: "Treefeller"
+    effect: "Fells {count} more logs of your tree at {yield}% yield ({cooldown}s cooldown)."
+  wildfire:
+    name: "Wildfire"
+    effect: "{chance}% chance: your tree and {trees} nearby burn down at {yield}% yield."
+  ashen_grove:
+    name: "Ashen Grove"
+    effect: "Every {every}th log: all your trees within {radius} blocks fall."
+  green_thumb:
+    name: "Green Thumb"
+    effect: "Replanted crops start {stages} growth stages ahead."
+  golden_seed:
+    name: "Golden Seed"
+    effect: "{chance}% chance per crop for a Golden Seed."
+  wide_reap:
+    name: "Wide Reap"
+    effect: "+{rings} rings to your harvest area (max {max-size}x{max-size})."
+  harvest_moon:
+    name: "Harvest Moon"
+    effect: "{chance}% chance per swing: {multiplier}x crops for {seconds}s."
+  sunfire_harvest:
+    name: "Sunfire Harvest"
+    effect: "Every {every}th swing: harvests {size}x{size} with {multiplier}x crops."
+  phoenix_edge:
+    name: "Phoenix Edge"
+    effect: "+{percent}% damage to mobs."
+  bloodthirst:
+    name: "Bloodthirst"
+    effect: "Heal {percent}% of the damage you deal."
+  ember_strike:
+    name: "Ember Strike"
+    effect: "{chance}% chance to set the target on fire for {seconds}s."
+  plunder:
+    name: "Plunder"
+    effect: "{chance}% chance for an extra loot roll per mob."
+  cleave:
+    name: "Cleave"
+    effect: "{percent}% of your hit to other mobs within {radius} blocks."
+  giant_slayer:
+    name: "Giant Slayer"
+    effect: "+{percent}% damage to mini-bosses and world bosses."
+  executioner:
+    name: "Executioner"
+    effect: "Mobs below {health}% health die on hit (not bosses)."
+  phoenix_wrath:
+    name: "Phoenix Wrath"
+    effect: "Every {every}th hit: a fire nova for {damage}% damage around you."
+  slaughter:
+    name: "Slaughter"
+    effect: "A killing hit on a stack kills {count} mobs."
+  soul_reaper:
+    name: "Soul Reaper"
+    effect: "+{xp}% XP and +{skill}% Combat XP from stacked kills."
+  bloodlust:
+    name: "Bloodlust"
+    effect: "Fast stack kills add up to +{percent}% to Slaughter."
+  reapers_sweep:
+    name: "Reaper's Sweep"
+    effect: "Also kills {percent}% of that from {stacks} nearby stacks."
+  quick_bite:
+    name: "Quick Bite"
+    effect: "-{percent}% wait for a bite."
+  double_catch:
+    name: "Double Catch"
+    effect: "{chance}% chance to catch two."
+  deep_line:
+    name: "Deep Line"
+    effect: "+{percent}% chance for rare fish."
+  tidecaller:
+    name: "Tidecaller"
+    effect: "{chance}% chance per catch for a Tide Chest."
+  leviathans_hook:
+    name: "Leviathan's Hook"
+    effect: "Every {every}th catch is rare and brings a Tide Chest."
+  vitality:
+    name: "Vitality"
+    effect: "+{hearts} max hearts (all armor: max {all-pieces-max})."
+  featherfall:
+    name: "Featherfall"
+    effect: "-{percent}% fall damage."
+  night_eye:
+    name: "Night Eye"
+    effect: "Night vision in The Depths and on islands."
+  fortitude:
+    name: "Fortitude"
+    effect: "-{percent}% damage from mobs."
+  swiftfoot:
+    name: "Swiftfoot"
+    effect: "+{percent}% walk speed."
+  ember_ward:
+    name: "Ember Ward"
+    effect: "Immune to fire and lava damage."
+  second_wind:
+    name: "Second Wind"
+    effect: "After {delay}s without damage: heal {hearts} hearts per second."
+  phoenix_thorns:
+    name: "Phoenix Thorns"
+    effect: "Reflect {percent}% of melee damage to mobs."
+  phoenix_rebirth:
+    name: "Phoenix Rebirth"
+    effect: "Once per {cooldown}s: lethal damage leaves you at {hearts} hearts."

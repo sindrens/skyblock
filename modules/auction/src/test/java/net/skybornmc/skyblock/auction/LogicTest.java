@@ -121,5 +121,7 @@ class LogicTest {
         assertEquals(Category.TOOLS, Category.categorize("NAME_TAG", "tool", false, false));
         assertEquals(Category.COSMETICS, Category.categorize("NAME_TAG", "cosmetic", false, false));
         assertEquals(Category.SPECIAL, Category.categorize("PAPER", "crate-key", false, false));
+        assertEquals(Category.ENCHANT_BOOKS, Category.categorize("ENCHANTED_BOOK", "enchant-book", false, false));
+        assertEquals(Category.ENCHANT_BOOKS, Category.categorize("PAPER", "scroll", false, false));
     }
 }

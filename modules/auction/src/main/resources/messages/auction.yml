@@ -162,6 +162,7 @@ categories:
   materials: "<c:value>Materials"
   consumables: "<c:value>Food & potions"
   cosmetics: "<c:value>Cosmetics"
+  enchant_books: "<c:value>Enchant books"
   special: "<c:value>Special items"
 
 sort:

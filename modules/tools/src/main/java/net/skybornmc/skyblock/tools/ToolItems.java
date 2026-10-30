@@ -262,18 +262,33 @@ final class ToolItems {
         stack.setData(DataComponentTypes.ATTRIBUTE_MODIFIERS, mods.build());
     }
 
-    /** Break speed bonus as a fraction (0.12 = +12%): tool level plus the Swift ability. */
+    /**
+     * Break speed bonus as a fraction (0.12 = +12%): tool level plus the Swift ability plus the speed family of the
+     * {@link net.skybornmc.skyblock.common.bonus.BonusService} for this tool (enchants such as Swiftness, capped there).
+     */
     double speedBonus(ToolData data) {
         double bonus = data.level() * module.config().speedPerLevel / 100.0;
         if (ABILITY_SWIFT.equals(data.ability())) {
             bonus += module.catalog().ability(ABILITY_SWIFT).map(ToolCatalog.AbilityDef::value).orElse(0.0);
         }
+        bonus += familyBonus(net.skybornmc.skyblock.common.bonus.BonusFamily.SPEED, data) / 100.0;
         return Math.max(0, bonus);
     }
 
-    /** Drop multiplier for Depths drops (M4.9): 1 + per-tier + per-level fortune. */
+    /**
+     * Drop multiplier for Depths drops (M4.9): 1 + per-tier + per-level fortune + the extra-drops family for this tool
+     * (enchants such as Prosperity, as an expected value, capped in the BonusService).
+     */
     double fortune(ToolData data) {
-        return 1 + (data.tier() - 1) * module.config().fortunePerTier / 100.0 + data.level() * module.config().fortunePerLevel / 100.0;
+        return 1 + (data.tier() - 1) * module.config().fortunePerTier / 100.0 + data.level() * module.config().fortunePerLevel / 100.0
+                + familyBonus(net.skybornmc.skyblock.common.bonus.BonusFamily.EXTRA_DROPS, data) / 100.0;
+    }
+
+    /** The capped family bonus (percent) that sources such as enchants give this tool by itself (no player). */
+    double familyBonus(net.skybornmc.skyblock.common.bonus.BonusFamily family, ToolData data) {
+        return module.core.services().optional(net.skybornmc.skyblock.common.bonus.BonusService.class)
+                .map(b -> b.capped(family, net.skybornmc.skyblock.common.bonus.BonusContext.ofTool(data.info(module.config().slotLevels()))))
+                .orElse(0.0);
     }
 
     /**

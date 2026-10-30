@@ -48,7 +48,7 @@ categories:
     slot: 20
     name: "<c:flame><bold>Gear"
     lore: ["<c:text>Tools, the Forge, sets,", "<c:text>enchants and blueprints."]
-    topics: [tools]
+    topics: [tools, enchants]
   combat-events:
     icon: clock
     status: coming-soon
@@ -263,6 +263,45 @@ topics:
           - "<c:text>Shift + right-click a tool (or"
           - "<c:value>/tool</c:value><c:text>) for its menu. Custom tools"
           - "<c:text>stay with you when you die."
+
+  enchants:
+    icon: enchanted_book
+    aliases: [enchant, enchanter, enchanting, books, book, scroll, disenchant]
+    name: "<c:flame>Enchants"
+    summary: ["<c:text>Enchant books for your custom", "<c:text>tools, the Enchanter and rolls."]
+    take-me-there: "enchanter"
+    commands: [Enchants]
+    pages:
+      - title: "<c:value>Books"
+        lines:
+          - "<c:text>Enchant books drop in The Depths"
+          - "<c:text>or come from Book shop rolls."
+          - "<c:text>Each book is one enchant at one"
+          - "<c:text>level. You can trade and sell them."
+      - title: "<c:value>Applying"
+        lines:
+          - "<c:text>Open <c:value>/enchanter</c:value><c:text>, pick a tool,"
+          - "<c:text>a free perk slot and a book. It"
+          - "<c:text>costs crystals and never fails."
+          - "<c:text>Higher tool levels allow more."
+      - title: "<c:value>Upgrading"
+        lines:
+          - "<c:text>Raise an enchant with crystals,"
+          - "<c:text>or combine two equal books into"
+          - "<c:text>one book a level higher. A book"
+          - "<c:text>on a tool enchant works too."
+      - title: "<c:value>Removing"
+        lines:
+          - "<c:text>A Disenchant Scroll takes an"
+          - "<c:text>enchant off as a book, so you can"
+          - "<c:text>move it. Without one it shatters"
+          - "<c:text>and you get some crystals back."
+      - title: "<c:value>Rules"
+        lines:
+          - "<c:text>Some enchants conflict (one area"
+          - "<c:text>enchant per tool). Mythics only"
+          - "<c:text>fit the prestige slot. See the"
+          - "<c:text>Enchant guide for every enchant."
 
   skills:
     icon: experience_bottle

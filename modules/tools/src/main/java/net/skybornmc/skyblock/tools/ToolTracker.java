@@ -111,6 +111,12 @@ final class ToolTracker implements ToolService {
         if (ToolItems.ABILITY_SCHOLAR.equals(data.ability())) {
             xp *= 1 + module.catalog().ability(ToolItems.ABILITY_SCHOLAR).map(ToolCatalog.AbilityDef::value).orElse(0.0);
         }
+        // Tool XP family (Tempering and later boosters), capped once in the BonusService (ENCHANTS §8.1).
+        ToolData forBonus = data;
+        xp *= module.core.services().optional(net.skybornmc.skyblock.common.bonus.BonusService.class)
+                .map(b -> b.multiplier(net.skybornmc.skyblock.common.bonus.BonusFamily.TOOL_XP,
+                        new net.skybornmc.skyblock.common.bonus.BonusContext(player, stack, forBonus.info(slotLevels()), forBonus.kind().skill().id())))
+                .orElse(1.0);
         ToolProgress.Gain gain = ToolProgress.addXp(data, xp, module.curve());
         ToolData next = stat == null ? gain.tool() : gain.tool().addStat(stat, 1);
         ToolItems.writeProgress(stack, next);

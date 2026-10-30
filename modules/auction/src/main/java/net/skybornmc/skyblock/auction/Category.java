@@ -15,6 +15,8 @@ enum Category {
     MATERIALS,
     CONSUMABLES,
     COSMETICS,
+    /** Custom enchant books and Disenchant Scrolls (ENCHANTS §9, EN18). */
+    ENCHANT_BOOKS,
     SPECIAL;
 
     private static final Set<String> TOOL_SUFFIXES = Set.of("_PICKAXE", "_AXE", "_SHOVEL", "_HOE", "_SWORD", "_SPEAR");
@@ -61,6 +63,9 @@ enum Category {
                 }
                 case "material" -> {
                     return MATERIALS;
+                }
+                case "enchant-book", "scroll" -> {
+                    return ENCHANT_BOOKS;
                 }
                 default -> {
                     return SPECIAL; // crate keys, pets, collectors, blueprints, notes …

@@ -1,0 +1,5 @@
+# LuckPerms grants for the enchants module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/enchants/src/main/resources/permissions/enchants.yml. One console command per line; # = comment.
+
+# /enchanter is for everyone (plugin default: true); nothing to grant.
+# Staff test commands (/enchanter admin give|apply|clear) are not approved yet (EN20), so there are no staff nodes.

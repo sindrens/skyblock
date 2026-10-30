@@ -24,6 +24,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [cosmetics](commands/cosmetics.md) | Cosmetics module (`modules/cosmetics`): M1.11 |
 | [depths](commands/depths.md) | Depths commands |
 | [economy](commands/economy.md) | Economy (`modules/economy`) |
+| [enchants](commands/enchants.md) | Enchants module (`modules/enchants`): E1 |
 | [essentials](commands/essentials.md) | Essentials (module `essentials`) |
 | [hud](commands/hud.md) | Scoreboard (M1.4, module `hud`) |
 | [islands](commands/islands.md) | Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.7, ISL2 |

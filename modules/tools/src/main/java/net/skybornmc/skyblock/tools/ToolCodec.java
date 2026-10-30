@@ -34,6 +34,9 @@ final class ToolCodec {
             if (p.size() != 1) {
                 o.addProperty("size", p.size());
             }
+            if (p.invested() > 0) {
+                o.addProperty("invested", p.invested());
+            }
             array.add(o);
         }
         return GSON.toJson(array);
@@ -53,7 +56,8 @@ final class ToolCodec {
                 try {
                     JsonObject o = e.getAsJsonObject();
                     int size = o.has("size") ? o.get("size").getAsInt() : 1;
-                    out.add(new ToolPerk(o.get("slot").getAsInt(), o.get("id").getAsString(), o.get("level").getAsInt(), size));
+                    long invested = o.has("invested") ? Math.max(0, o.get("invested").getAsLong()) : 0;
+                    out.add(new ToolPerk(o.get("slot").getAsInt(), o.get("id").getAsString(), o.get("level").getAsInt(), size, invested));
                 } catch (RuntimeException skip) {
                     // one broken entry is skipped, the rest still loads
                 }

@@ -1,0 +1,6 @@
+# Permissions of the enchants module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/enchants.txt. Commands: docs/commands/enchants.md.
+skyblock.enchants.use:
+  description: Open the Enchanter (/enchanter) to apply, upgrade, combine and remove enchants, roll books and read the guide
+  default: true

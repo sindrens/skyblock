@@ -126,6 +126,12 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         DupeDetector dupes = new DupeDetector(this, itemsConfig, messages.of("items"));
 
         ServiceRegistry services = new ServiceRegistry(getLogger());                                  // M0.9
+        // ENCHANTS §8.1: bonus families + caps for every module; the sell cap is always the economy's (+300%, #46).
+        services.register("core", net.skybornmc.skyblock.common.bonus.BonusService.class,
+                new net.skybornmc.skyblock.common.bonus.DefaultBonusService(() -> services
+                        .optional(net.skybornmc.skyblock.common.economy.EconomyService.class)
+                        .map(net.skybornmc.skyblock.common.economy.EconomyService::sellBonusCapPercent)
+                        .orElse(net.skybornmc.skyblock.common.economy.MultiplierCap.DEFAULT_CAP_PERCENT), getLogger()));
         PlaceholderRegistry placeholders = new PlaceholderRegistry(getLogger());
         RankProvider ranks = RankProvider.create(this);
         BedrockInfo bedrockInfo = BedrockInfo.create(this, bedrock);
@@ -204,6 +210,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.auction.AuctionModule(core));
         modules.register(new net.skybornmc.skyblock.stacking.StackingModule(core));
         modules.register(new net.skybornmc.skyblock.tools.ToolsModule(core));
+        modules.register(new net.skybornmc.skyblock.enchants.EnchantsModule(core));
     }
 
     public ModuleRegistry modules() {

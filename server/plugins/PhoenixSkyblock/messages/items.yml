@@ -39,6 +39,8 @@ type:
   note: "NOTE"
   spawner: "SPAWNER"
   cosmetic: "COSMETIC"
+  enchant-book: "BOOK"
+  scroll: "SCROLL"
   menu: ""
 
 dupe:

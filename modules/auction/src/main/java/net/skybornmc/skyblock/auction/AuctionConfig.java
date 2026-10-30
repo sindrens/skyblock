@@ -104,7 +104,7 @@ public final class AuctionConfig extends ModuleConfig {
 
     @Setting(path = "menu.icons", desc = "Menu icons: name:MATERIAL (categories, sort, search, own listings, collection bin).")
     public List<String> icons = List.of("all:CHEST", "tools:DIAMOND_PICKAXE", "armor:IRON_CHESTPLATE", "blocks:GRASS_BLOCK",
-            "materials:IRON_INGOT", "consumables:GOLDEN_APPLE", "cosmetics:NAME_TAG", "special:NETHER_STAR", "sort:HOPPER",
+            "materials:IRON_INGOT", "consumables:GOLDEN_APPLE", "cosmetics:NAME_TAG", "enchant_books:ENCHANTED_BOOK", "special:NETHER_STAR", "sort:HOPPER",
             "search:OAK_SIGN", "clear-search:BARRIER", "mine:GOLD_BLOCK", "collection:ENDER_CHEST", "sell:EMERALD",
             "refresh:SPYGLASS", "staff-remove:LAVA_BUCKET");
 

@@ -26,6 +26,16 @@ public interface EconomyService {
     /** Runs one transaction. Never completes exceptionally: errors become {@link TxResult.Status#ERROR}. */
     CompletableFuture<TxResult> execute(Transaction transaction);
 
+    /**
+     * Runs one transaction together with extra SQL ({@code guard}) in the same database transaction: both commit or
+     * both roll back (enchant books consumed + crystals paid + tool perks saved, ENCHANTS §4.2). A guard returning false
+     * gives {@link TxResult.Status#DUPLICATE}. Implementations without guard support refuse with ERROR, never run the
+     * transaction without its guard.
+     */
+    default CompletableFuture<TxResult> executeGuarded(Transaction transaction, TxGuard guard) {
+        return guard == null ? execute(transaction) : CompletableFuture.completedFuture(TxResult.of(TxResult.Status.ERROR));
+    }
+
     /** Player to player payment helper (reason {@code pay} by default for {@code /pay}). */
     default CompletableFuture<TxResult> transfer(UUID from, UUID to, Currency currency, long amount, String reason, Actor actor) {
         return execute(Transaction.transfer(AccountRef.player(from), AccountRef.player(to), currency, amount, reason).actor(actor));

@@ -1,0 +1,430 @@
+# Custom enchants (Phase E, docs/plans/ENCHANTS.md §6). Every number here is a default the owner can change.
+# Names and effect texts are in messages/enchants.yml → enchant.<id>.name / .effect ({key} = the number at that level).
+# Costs, fees, rolls and caps are in enchanter.yml. Reload: /skyblock reload enchants
+#
+# Keys per enchant:
+#   rarity:        common, uncommon, rare, epic, legendary, mythic (mythic = prestige slot only, one level)
+#   max-level:     1-10 (levels show as Roman numerals)
+#   tools:         pickaxe, axe, hoe, sword, rod, helmet, chestplate, leggings, boots, or "tools" / "armor" for all
+#   slot-cost:     perk slots it takes (1, or 2 for the two Legendary area enchants)
+#   conflicts:     conflict groups: a tool holds only one enchant per group (mythics are always in group "mythic")
+#   pools:         book pools it drops from (mining, foraging, farming, combat, fishing, stacks); none for mythics
+#   min-tier:      lowest tier of the pool's wing it drops from (fishing: band A = 1, B = 2, C = 3, D = 4)
+#   family:        bonus family of the effect (sell, crystals, extra_drops, speed, skill_xp, tool_xp, rare_finds, area,
+#                  mob_damage, damage_reduction, health); families add up and are capped once (enchanter.yml → caps)
+#   passive:       which values list is a flat percent of the family (reported to the bonus service right away)
+#   values:        one number per level for each key, used by the effect and the effect text
+#   params:        constant numbers (cooldowns, radius, yield …)
+#   pvp-percent:   strength in the warzone and duels in percent of the normal value (0 = no effect there)
+#   weight:        chance weight inside its rarity when a pool picks an enchant (default 1)
+#   enabled:       false = kill switch: stays on items (shown as off), does nothing, can't be applied or rolled
+
+enchants:
+  # ---------------------------------------------------------------- shared gathering (9)
+  swiftness:
+    rarity: common
+    max-level: 5
+    tools: [pickaxe, axe]
+    pools: [mining, foraging]
+    min-tier: 1
+    family: speed
+    passive: percent
+    values: {percent: [6, 12, 18, 24, 30]}
+  scholars_insight:
+    rarity: common
+    max-level: 5
+    tools: [tools]
+    pools: [mining, foraging, farming, combat, fishing]
+    min-tier: 1
+    family: skill_xp
+    passive: percent
+    values: {percent: [5, 10, 15, 20, 25]}
+  prosperity:
+    rarity: uncommon
+    max-level: 5
+    tools: [pickaxe, axe, hoe]
+    pools: [mining, foraging, farming]
+    min-tier: 1
+    family: extra_drops
+    passive: chance
+    values: {chance: [4, 8, 12, 16, 20]}
+  crystal_seeker:
+    rarity: uncommon
+    max-level: 5
+    tools: [tools]
+    pools: [mining, foraging, farming, combat, fishing]
+    min-tier: 1
+    family: crystals
+    passive: percent
+    values: {percent: [8, 16, 24, 32, 40]}
+  tempering:
+    rarity: uncommon
+    max-level: 5
+    tools: [tools]
+    pools: [mining, foraging, farming, combat, fishing]
+    min-tier: 1
+    family: tool_xp
+    passive: percent
+    values: {percent: [8, 16, 24, 32, 40]}
+  gilded_touch:
+    rarity: rare
+    max-level: 5
+    tools: [pickaxe, axe, hoe, rod]
+    pools: [mining, foraging, farming, fishing]
+    min-tier: 3
+    family: sell
+    values: {chance: [3, 6, 9, 12, 15]}
+    params: {multiplier: 2}
+  ember_momentum:
+    rarity: rare
+    max-level: 3
+    tools: [pickaxe, axe, hoe]
+    conflicts: [burst]
+    pools: [mining, foraging, farming]
+    min-tier: 4
+    family: speed
+    values: {percent: [5, 8, 12]}
+    params: {actions: 40, idle-seconds: 4, max-stacks: 3}
+  phoenix_haste:
+    rarity: epic
+    max-level: 3
+    tools: [pickaxe, axe]
+    conflicts: [burst]
+    pools: [mining, foraging]
+    min-tier: 4
+    family: speed
+    values: {chance: [1, 1.5, 2], seconds: [6, 8, 10]}
+    params: {percent: 40, cooldown: 20}
+  treasure_hunter:
+    rarity: epic
+    max-level: 3
+    tools: [tools]
+    pools: [mining, foraging, farming, combat, fishing]
+    min-tier: 6
+    family: rare_finds
+    passive: percent
+    values: {percent: [15, 30, 45]}
+
+  # ---------------------------------------------------------------- pickaxe (4)
+  geode_sense:
+    rarity: rare
+    max-level: 4
+    tools: [pickaxe]
+    pools: [mining]
+    min-tier: 1
+    family: crystals
+    values: {chance: [0.1, 0.2, 0.3, 0.4]}
+    params: {worth: 40}
+  vein_rend:
+    rarity: epic
+    max-level: 3
+    tools: [pickaxe]
+    conflicts: [mine_area]
+    pools: [mining]
+    min-tier: 5
+    family: area
+    values: {chance: [8, 12, 16], count: [2, 4, 6]}
+    params: {radius: 2, yield: 50}
+  dragonfire_blast:
+    rarity: legendary
+    max-level: 3
+    tools: [pickaxe]
+    slot-cost: 2
+    conflicts: [mine_area]
+    pools: [mining]
+    min-tier: 7
+    family: area
+    values: {chance: [4, 6, 8], depth: [1, 2, 3]}
+    params: {size: 3, yield: 25}
+  worldbreaker:
+    rarity: mythic
+    max-level: 1
+    tools: [pickaxe]
+    family: area
+    params: {every: 100, size: 5, depth: 3, yield: 50}
+
+  # ---------------------------------------------------------------- axe (4)
+  amber_sap:
+    rarity: rare
+    max-level: 4
+    tools: [axe]
+    pools: [foraging]
+    min-tier: 1
+    family: crystals
+    values: {chance: [0.1, 0.2, 0.3, 0.4]}
+    params: {worth: 40}
+  treefeller:
+    rarity: epic
+    max-level: 3
+    tools: [axe]
+    conflicts: [forest_area]
+    pools: [foraging]
+    min-tier: 5
+    family: area
+    values: {count: [3, 6, 9], cooldown: [4, 3.5, 3]}
+    params: {yield: 35}
+  wildfire:
+    rarity: legendary
+    max-level: 3
+    tools: [axe]
+    slot-cost: 2
+    conflicts: [forest_area]
+    pools: [foraging]
+    min-tier: 7
+    family: area
+    values: {chance: [3, 4.5, 6], trees: [1, 2, 3]}
+    params: {radius: 8, yield: 25}
+  ashen_grove:
+    rarity: mythic
+    max-level: 1
+    tools: [axe]
+    family: area
+    params: {every: 60, radius: 8, yield: 50}
+
+  # ---------------------------------------------------------------- hoe (5)
+  green_thumb:
+    rarity: rare
+    max-level: 4
+    tools: [hoe]
+    pools: [farming]
+    min-tier: 3
+    values: {stages: [1, 2, 3, 4]}
+  golden_seed:
+    rarity: rare
+    max-level: 3
+    tools: [hoe]
+    pools: [farming]
+    min-tier: 4
+    values: {chance: [0.05, 0.1, 0.15]}
+    params: {worth: 50}
+  wide_reap:
+    rarity: epic
+    max-level: 2
+    tools: [hoe]
+    pools: [farming]
+    min-tier: 5
+    values: {rings: [1, 2]}
+    params: {max-size: 9}
+  harvest_moon:
+    rarity: legendary
+    max-level: 3
+    tools: [hoe]
+    conflicts: [hoe_burst]
+    pools: [farming]
+    min-tier: 7
+    family: extra_drops
+    values: {chance: [1, 1.5, 2]}
+    params: {seconds: 10, cooldown: 60, multiplier: 2}
+  sunfire_harvest:
+    rarity: mythic
+    max-level: 1
+    tools: [hoe]
+    conflicts: [hoe_burst]
+    family: extra_drops
+    params: {every: 80, size: 9, multiplier: 2}
+
+  # ---------------------------------------------------------------- sword: Depths combat and bosses (8)
+  phoenix_edge:
+    rarity: common
+    max-level: 5
+    tools: [sword]
+    pools: [combat]
+    min-tier: 1
+    family: mob_damage
+    passive: percent
+    values: {percent: [5, 10, 15, 20, 25]}
+    pvp-percent: 40
+  bloodthirst:
+    rarity: uncommon
+    max-level: 4
+    tools: [sword]
+    pools: [combat]
+    min-tier: 1
+    values: {percent: [2, 3, 4, 5]}
+    pvp-percent: 50
+  ember_strike:
+    rarity: uncommon
+    max-level: 3
+    tools: [sword]
+    pools: [combat]
+    min-tier: 2
+    values: {chance: [10, 15, 20]}
+    params: {seconds: 3}
+    pvp-percent: 50
+  plunder:
+    rarity: uncommon
+    max-level: 4
+    tools: [sword]
+    pools: [combat, stacks]
+    min-tier: 2
+    family: extra_drops
+    values: {chance: [5, 10, 15, 20]}
+  cleave:
+    rarity: rare
+    max-level: 3
+    tools: [sword]
+    pools: [combat]
+    min-tier: 3
+    values: {percent: [25, 35, 45], radius: [2, 2.5, 3]}
+  giant_slayer:
+    rarity: rare
+    max-level: 4
+    tools: [sword]
+    pools: [combat]
+    min-tier: 4
+    family: mob_damage
+    values: {percent: [8, 16, 24, 32]}
+  executioner:
+    rarity: epic
+    max-level: 3
+    tools: [sword]
+    pools: [combat]
+    min-tier: 6
+    values: {health: [10, 15, 20]}
+  phoenix_wrath:
+    rarity: mythic
+    max-level: 1
+    tools: [sword]
+    params: {every: 20, damage: 300, radius: 5}
+
+  # ---------------------------------------------------------------- sword: stacked mobs (4, E3)
+  slaughter:
+    rarity: rare
+    max-level: 10
+    tools: [sword]
+    pools: [combat, stacks]
+    min-tier: 2
+    values: {count: [2, 3, 4, 6, 8, 12, 16, 24, 32, 48]}
+  soul_reaper:
+    rarity: uncommon
+    max-level: 5
+    tools: [sword]
+    pools: [combat, stacks]
+    min-tier: 1
+    family: skill_xp
+    values: {xp: [10, 20, 30, 40, 50], skill: [6, 12, 18, 24, 30]}
+  bloodlust:
+    rarity: rare
+    max-level: 5
+    tools: [sword]
+    pools: [combat, stacks]
+    min-tier: 3
+    values: {percent: [10, 20, 30, 40, 50]}
+    params: {window: 2}
+  reapers_sweep:
+    rarity: epic
+    max-level: 3
+    tools: [sword]
+    pools: [combat]
+    min-tier: 5
+    values: {percent: [25, 50, 75], stacks: [2, 4, 6]}
+    params: {radius: 4}
+
+  # ---------------------------------------------------------------- rod (5, Phase 7)
+  quick_bite:
+    rarity: common
+    max-level: 5
+    tools: [rod]
+    pools: [fishing]
+    min-tier: 1
+    family: speed
+    values: {percent: [6, 12, 18, 24, 30]}
+  double_catch:
+    rarity: uncommon
+    max-level: 5
+    tools: [rod]
+    pools: [fishing]
+    min-tier: 1
+    family: extra_drops
+    values: {chance: [4, 8, 12, 16, 20]}
+  deep_line:
+    rarity: rare
+    max-level: 4
+    tools: [rod]
+    pools: [fishing]
+    min-tier: 2
+    family: rare_finds
+    values: {percent: [10, 20, 30, 40]}
+  tidecaller:
+    rarity: epic
+    max-level: 3
+    tools: [rod]
+    pools: [fishing]
+    min-tier: 2
+    family: rare_finds
+    values: {chance: [3, 4, 5]}
+  leviathans_hook:
+    rarity: mythic
+    max-level: 1
+    tools: [rod]
+    params: {every: 25}
+
+  # ---------------------------------------------------------------- armor on wardrobe set pieces (9, E5)
+  vitality:
+    rarity: common
+    max-level: 5
+    tools: [armor]
+    pools: [combat]
+    min-tier: 1
+    family: health
+    values: {hearts: [1, 2, 3, 4, 5]}
+    params: {all-pieces-max: 10}
+    pvp-percent: 50
+  featherfall:
+    rarity: common
+    max-level: 4
+    tools: [boots]
+    pools: [combat]
+    min-tier: 1
+    values: {percent: [20, 40, 60, 80]}
+    pvp-percent: 100
+  night_eye:
+    rarity: common
+    max-level: 1
+    tools: [helmet]
+    pools: [combat]
+    min-tier: 2
+  fortitude:
+    rarity: uncommon
+    max-level: 4
+    tools: [armor]
+    pools: [combat]
+    min-tier: 2
+    family: damage_reduction
+    values: {percent: [3, 6, 9, 12]}
+    pvp-percent: 33
+  swiftfoot:
+    rarity: uncommon
+    max-level: 3
+    tools: [boots]
+    pools: [combat]
+    min-tier: 3
+    values: {percent: [5, 10, 15]}
+  ember_ward:
+    rarity: rare
+    max-level: 1
+    tools: [armor]
+    pools: [combat]
+    min-tier: 8
+  second_wind:
+    rarity: rare
+    max-level: 3
+    tools: [chestplate]
+    pools: [combat]
+    min-tier: 4
+    values: {hearts: [0.5, 1, 1.5]}
+    params: {delay: 5}
+    pvp-percent: 50
+  phoenix_thorns:
+    rarity: rare
+    max-level: 3
+    tools: [chestplate, leggings]
+    pools: [combat]
+    min-tier: 5
+    values: {percent: [5, 10, 15]}
+    pvp-percent: 40
+  phoenix_rebirth:
+    rarity: mythic
+    max-level: 1
+    tools: [chestplate]
+    params: {cooldown: 600, hearts: 4, seconds: 5}
