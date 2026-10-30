@@ -39,7 +39,7 @@ hub:
       lore: ["<c:text>Your island in the sky: build,", "<c:text>grow it and invite friends."]
     depths:
       name: "<c:flame><bold>The Depths"
-      lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and tokens."]
+      lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and crystals."]
     shop:
       name: "<c:flame><bold>Shop"
       lore: ["<c:text>Building blocks, farming and", "<c:text>utility items."]

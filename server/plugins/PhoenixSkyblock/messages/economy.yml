@@ -5,13 +5,13 @@
 # How amounts look. <value> = 12,500 below 100k, 1.2M above; <exact> = every digit.
 format:
   money: "<hover:show_text:'<c:text><exact>'><cur:money><sym:money><value></cur:money></hover>"
-  tokens: "<hover:show_text:'<c:text><exact>'><cur:tokens><sym:tokens> <value></cur:tokens></hover>"
+  crystals: "<hover:show_text:'<c:text><exact>'><cur:crystals><sym:crystals> <value></cur:crystals></hover>"
   gems: "<hover:show_text:'<c:text><exact>'><cur:gems><sym:gems> <value></cur:gems></hover>"
   shards: "<hover:show_text:'<c:text><exact>'><cur:shards><sym:shards> <value></cur:shards></hover>"
 
 names:
   money: "<cur:money>Money</cur:money>"
-  tokens: "<cur:tokens>Tokens</cur:tokens>"
+  crystals: "<cur:crystals>Crystals</cur:crystals>"
   gems: "<cur:gems>Gems</cur:gems>"
   shards: "<cur:shards>Shards</cur:shards>"
 
@@ -46,6 +46,7 @@ pay:
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay while frozen. Wait for staff."
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be paid to players."
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest payment is <min><c:text>."
+  new-account: "<prefix><c:error><sym:cross></c:error> <c:text>New players can't pay yet. <c:value><time></c:value> <c:text>left."
 
 eco:
   done-give: "<prefix><c:success><sym:check></c:success> <c:text>Gave <amount> <c:text>to <c:value><player></c:value>. <c:muted>Now </c:muted><balance> <c:muted>(<reason>)"
@@ -62,7 +63,7 @@ eco:
 
 # Money notes (M3.2). <amount>, <balance>, <min>, <max> are colored amounts; <id> = first 8 characters of the note id.
 note:
-  # The note item (lore follows UI_STYLE §4; {tokens} are filled by the plugin, max ~36 visible characters per line).
+  # The note item (lore follows UI_STYLE §4; {placeholders} are filled by the plugin, max ~36 visible characters per line).
   item:
     name: "<cur:{currency}>{amount} Note"
     name-unknown: "<cur:money>Money Note"

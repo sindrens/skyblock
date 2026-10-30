@@ -179,6 +179,93 @@ public final class IslandsConfig extends ModuleConfig {
             min = 0, max = 600)
     public int clearStartDelaySeconds = 10;
 
+    // ------------------------------------------------------------------ M2.4 visiting, warps, showcase
+
+    @Setting(path = "visiting.warmup-seconds", desc = "Seconds to stand still before /is visit and /is warp teleport (0 = instant).",
+            min = 0, max = 30)
+    public int visitWarmupSeconds = 3;
+
+    @Setting(path = "visiting.max-bans", desc = "Most players one island can ban.", min = 1, max = 1000)
+    public int maxBans = 100;
+
+    @Setting(path = "visiting.require-visit", desc = "Players must have visited an island before they can rate or like it.")
+    public boolean requireVisit = true;
+
+    @Setting(path = "visiting.timezone", desc = "Time zone of \"once per day\" (likes, unique visitors per day). Resets at local midnight.")
+    public String timezone = "Europe/Oslo";
+
+    @Setting(path = "visiting.notify-cooldown-seconds", desc = "The same visitor arriving or leaving again within this time is not "
+            + "announced to the members again.", min = 0, max = 3600)
+    public int notifyCooldownSeconds = 30;
+
+    @Setting(path = "visiting.attempt-cooldown-seconds", desc = "Members hear about the same player trying to visit their locked "
+            + "island at most once per this many seconds.", min = 0, max = 3600)
+    public int attemptCooldownSeconds = 60;
+
+    @Setting(path = "warps.start-slots", desc = "Warps an island can have at the start (owner: 3; sign warps count too). "
+            + "A later upgrade raises an island's own value.", min = 0, max = 54, level = Setting.Level.OWNER)
+    public int warpStartSlots = 3;
+
+    @Setting(path = "warps.max-slots", desc = "Most warps any island can have (cap of the later warp upgrade).", min = 0, max = 54,
+            level = Setting.Level.OWNER)
+    public int warpMaxSlots = 10;
+
+    @Setting(path = "warps.name-max-length", desc = "Longest warp name (letters, digits, _ and -).", min = 3, max = 32)
+    public int warpNameMaxLength = 16;
+
+    @Setting(path = "warps.sign-tag", desc = "First line of a sign that creates a warp (second line = name, third = category).")
+    public String warpSignTag = "[warp]";
+
+    @Setting(path = "warps.category-icons.shops", desc = "Icon of new warps in the shops category (item id).")
+    public String iconShops = "emerald";
+
+    @Setting(path = "warps.category-icons.farms", desc = "Icon of new warps in the farms category.")
+    public String iconFarms = "wheat";
+
+    @Setting(path = "warps.category-icons.parkour", desc = "Icon of new warps in the parkour category.")
+    public String iconParkour = "feather";
+
+    @Setting(path = "warps.category-icons.builds", desc = "Icon of new warps in the builds category.")
+    public String iconBuilds = "bricks";
+
+    @Setting(path = "warps.category-icons.other", desc = "Icon of new warps in the other category.")
+    public String iconOther = "ender_pearl";
+
+    @Setting(path = "warps.icons", desc = "Icons players can pick for their warps (item ids; one menu page holds 28).")
+    public List<String> warpIcons = List.of(
+            "ender_pearl", "emerald", "diamond", "gold_ingot", "iron_ingot", "chest", "barrel", "wheat", "carrot", "potato",
+            "sugar_cane", "melon_slice", "pumpkin", "cactus", "oak_sapling", "feather", "slime_ball", "ladder", "bricks",
+            "oak_planks", "stone_bricks", "quartz_block", "beacon", "nether_star", "spawner", "bone", "fishing_rod", "lantern");
+
+    @Setting(path = "browser.visits-days", desc = "\"Most visited\" counts unique visitors per day over this many days.", min = 1,
+            max = 365)
+    public int browserVisitsDays = 7;
+
+    @Setting(path = "browser.min-ratings", desc = "Islands need at least this many ratings to show under \"Top rated\".", min = 1,
+            max = 100)
+    public int browserMinRatings = 3;
+
+    @Setting(path = "browser.refresh-seconds", desc = "How often visit, rating and like totals are reloaded from the database.",
+            min = 10, max = 3600)
+    public int browserRefreshSeconds = 120;
+
+    /** The default icon of a warp category (falls back to ender_pearl when the setting is empty). */
+    String categoryIcon(WarpCategory category) {
+        String icon = switch (category) {
+            case SHOPS -> iconShops;
+            case FARMS -> iconFarms;
+            case PARKOUR -> iconParkour;
+            case BUILDS -> iconBuilds;
+            case OTHER -> iconOther;
+        };
+        return icon == null || icon.isBlank() ? "ender_pearl" : icon.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /** Warp slot limits for {@link VisitStore#saveWarp}. */
+    VisitStore.WarpLimits warpLimits() {
+        return new VisitStore.WarpLimits(Math.min(warpStartSlots, warpMaxSlots), warpMaxSlots);
+    }
+
     /** The role defaults parsed from {@code permissions.defaults.*} (problems = unknown keys). */
     public RolePermissions.Result rolePermissions() {
         return RolePermissions.parse(defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor);
@@ -229,6 +316,14 @@ public final class IslandsConfig extends ModuleConfig {
             java.time.format.DateTimeFormatter.ofPattern(dateFormat);
         } catch (IllegalArgumentException e) {
             problems.add("islands.yml: members.date-format '" + dateFormat + "' is not a valid date pattern; using yyyy-MM-dd.");
+        }
+        try {
+            java.time.ZoneId.of(timezone);
+        } catch (RuntimeException e) {
+            problems.add("islands.yml: visiting.timezone '" + timezone + "' is not a valid time zone; using UTC.");
+        }
+        if (warpStartSlots > warpMaxSlots) {
+            problems.add("islands.yml: warps.start-slots is bigger than warps.max-slots; using " + warpMaxSlots + ".");
         }
         return problems;
     }

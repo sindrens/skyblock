@@ -152,7 +152,7 @@ public final class IslandStore {
         Map<UUID, Island> islands = new HashMap<>();
         List<Island> ordered = new ArrayList<>();
         for (Island island : Sql.query(c, "SELECT i.id, i.season_id, i.owner_uuid, i.type, i.slot_id, i.size_chunks, i.home_x, i.home_y, "
-                + "i.home_z, i.home_yaw, i.home_pitch, i.name, i.created_at, i.member_slots, s.grid_x, s.grid_z FROM islands i "
+                + "i.home_z, i.home_yaw, i.home_pitch, i.name, i.created_at, i.member_slots, i.locked, i.warp_slots, s.grid_x, s.grid_z FROM islands i "
                 + "JOIN island_slots s ON s.id = i.slot_id WHERE i.deleted_at IS NULL ORDER BY i.created_at", rs -> island(rs, world))) {
             islands.put(island.id(), island);
             ordered.add(island);
@@ -202,6 +202,9 @@ public final class IslandStore {
                 rs.getInt("size_chunks"), home, rs.getString("name"), rs.getLong("created_at"), world);
         int slots = rs.getInt("member_slots");
         island.memberSlots(rs.wasNull() ? null : slots);
+        island.locked(rs.getBoolean("locked"));
+        int warps = rs.getInt("warp_slots");
+        island.warpSlots(rs.wasNull() ? null : warps);
         return island;
     }
 
@@ -248,6 +251,7 @@ public final class IslandStore {
         Sql.update(c, "DELETE FROM island_coops WHERE island_id = ?", islandId);
         Sql.update(c, "DELETE FROM island_invites WHERE island_id = ?", islandId);
         Sql.update(c, "DELETE FROM island_role_perms WHERE island_id = ?", islandId);
+        VisitStore.deleteIsland(c, islandId); // M2.4: warps and bans end with the island
         // used -> clearing (SlotState); the island id stays until the clearer frees the slot.
         Sql.update(c, "UPDATE island_slots SET state = ?, island_id = ?, updated_at = ? WHERE id = ?", STATE_CLEARING, islandId, now, slotId);
         return new DisbandResult.Disbanded(owner, slotId, grid[0], grid[1], size, members, coops, now);

@@ -2,10 +2,13 @@
 # Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
 # LuckPerms grants for these nodes: server/permissions/islands.txt. Commands: docs/commands/islands.md.
 skyblock.island:
-  description: Use /is (create your island, home, go, sethome, invite, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, disband)
+  description: Use /is (create your island, home, go, sethome, invite, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, disband, visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like)
   default: true
 skyblock.island.bypass:
   description: Staff - /is bypass and /isadmin bypass toggle ignoring island protection (build, containers, borders); every toggle is logged
+  default: op
+skyblock.island.visit.bypass:
+  description: Staff - enter locked islands and islands that banned you (teleports, /isadmin tp); can't be expelled; never counted as a visitor while vanished
   default: op
 # M2.7 /isadmin: one node per sub-command (the root node only shows the command). Every use is logged (category staff).
 skyblock.island.admin:

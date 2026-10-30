@@ -14,8 +14,9 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "start.money", desc = "Money a new player starts with (once per season).", min = 0, level = Setting.Level.OWNER)
     public long startMoney = 1_000;
 
-    @Setting(path = "start.tokens", desc = "Tokens a new player starts with (once per season).", min = 0, level = Setting.Level.OWNER)
-    public long startTokens = 0;
+    @Setting(path = "start.crystals", desc = "Island crystals a new player starts with (once per season).", min = 0,
+            level = Setting.Level.OWNER)
+    public long startCrystals = 0;
 
     @Setting(path = "start.gems", desc = "Gems a new player starts with (once per season).", min = 0, level = Setting.Level.OWNER)
     public long startGems = 0;
@@ -28,8 +29,9 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "tradeable.money", desc = "Players can /pay and trade money.", level = Setting.Level.OWNER)
     public boolean tradeableMoney = true;
 
-    @Setting(path = "tradeable.tokens", desc = "Players can /pay and trade tokens.", level = Setting.Level.OWNER)
-    public boolean tradeableTokens = false;
+    @Setting(path = "tradeable.crystals", desc = "Players can /pay and trade island crystals (owner decision CR3: no).",
+            level = Setting.Level.OWNER)
+    public boolean tradeableCrystals = false;
 
     @Setting(path = "tradeable.gems", desc = "Players can /pay and trade gems (owner decision: no).", level = Setting.Level.OWNER)
     public boolean tradeableGems = false;
@@ -42,8 +44,8 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "pay.min.money", desc = "Smallest /pay amount in money.", min = 1, level = Setting.Level.OWNER)
     public long payMinMoney = 10;
 
-    @Setting(path = "pay.min.tokens", desc = "Smallest /pay amount in tokens.", min = 1, level = Setting.Level.OWNER)
-    public long payMinTokens = 1;
+    @Setting(path = "pay.min.crystals", desc = "Smallest /pay amount in crystals.", min = 1, level = Setting.Level.OWNER)
+    public long payMinCrystals = 1;
 
     @Setting(path = "pay.min.gems", desc = "Smallest /pay amount in gems.", min = 1, level = Setting.Level.OWNER)
     public long payMinGems = 1;
@@ -54,14 +56,18 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "pay.confirm-above.money", desc = "/pay asks to confirm at or above this much money. 0 = never.", min = 0)
     public long payConfirmMoney = 1_000_000;
 
-    @Setting(path = "pay.confirm-above.tokens", desc = "/pay asks to confirm at or above this many tokens. 0 = never.", min = 0)
-    public long payConfirmTokens = 10_000;
+    @Setting(path = "pay.confirm-above.crystals", desc = "/pay asks to confirm at or above this many crystals. 0 = never.", min = 0)
+    public long payConfirmCrystals = 10_000;
 
     @Setting(path = "pay.confirm-above.gems", desc = "/pay asks to confirm at or above this many gems. 0 = never.", min = 0)
     public long payConfirmGems = 100;
 
     @Setting(path = "pay.confirm-above.shards", desc = "/pay asks to confirm at or above this many shards. 0 = never.", min = 0)
     public long payConfirmShards = 1_000;
+
+    @Setting(path = "pay.new-account-minutes", desc = "Playtime (minutes) needed before /pay works (owner decision #40: "
+            + "30). Stops fresh alts from passing money on. 0 = off.", min = 0, level = Setting.Level.OWNER)
+    public int payMinPlaytimeMinutes = 30;
 
     @Setting(path = "pay.confirm-seconds", desc = "How long a /pay confirmation stays valid (seconds).", min = 5, max = 120,
             restart = true)
@@ -99,9 +105,9 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "notes.min.money", desc = "Smallest money note.", min = 1, level = Setting.Level.OWNER)
     public long noteMinMoney = 100;
 
-    @Setting(path = "notes.min.tokens", desc = "Smallest tokens note (only if tokens are in notes.currencies).", min = 1,
+    @Setting(path = "notes.min.crystals", desc = "Smallest crystals note (only if crystals are in notes.currencies).", min = 1,
             level = Setting.Level.OWNER)
-    public long noteMinTokens = 1;
+    public long noteMinCrystals = 1;
 
     @Setting(path = "notes.min.gems", desc = "Smallest gems note (only if gems are in notes.currencies).", min = 1,
             level = Setting.Level.OWNER)
@@ -114,8 +120,8 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "notes.max.money", desc = "Largest money note (also the limit of /eco note).", min = 1, level = Setting.Level.OWNER)
     public long noteMaxMoney = 1_000_000_000_000L;
 
-    @Setting(path = "notes.max.tokens", desc = "Largest tokens note.", min = 1, level = Setting.Level.OWNER)
-    public long noteMaxTokens = 1_000_000_000L;
+    @Setting(path = "notes.max.crystals", desc = "Largest crystals note.", min = 1, level = Setting.Level.OWNER)
+    public long noteMaxCrystals = 1_000_000_000L;
 
     @Setting(path = "notes.max.gems", desc = "Largest gems note.", min = 1, level = Setting.Level.OWNER)
     public long noteMaxGems = 1_000_000L;
@@ -128,8 +134,8 @@ public final class EconomyConfig extends ModuleConfig {
     public int noteWithdrawCooldownSeconds = 10;
 
     @Setting(path = "notes.new-account-minutes", desc = "Playtime (minutes) needed before /withdraw works; notes are a way "
-            + "to pay, and new accounts can't pay (balance sheet R3). 0 = off.", min = 0, level = Setting.Level.OWNER)
-    public int noteMinPlaytimeMinutes = 120;
+            + "to pay, and new accounts can't pay (owner decision #40: 30). 0 = off.", min = 0, level = Setting.Level.OWNER)
+    public int noteMinPlaytimeMinutes = 30;
 
     @Setting(path = "notes.item.material", desc = "Material of the money note item (a resource-pack model can replace the "
             + "look later).", restart = true)
@@ -145,8 +151,53 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "notes.date-format", desc = "Date on the note (java DateTimeFormatter pattern, UTC).")
     public String noteDateFormat = "yyyy-MM-dd";
 
+    // ------------------------------------------------------------------ selling (used by every sell system)
+
+    @Setting(path = "sell.multiplier-cap-percent", desc = "Global cap on the total sell bonus in percent (owner decision "
+            + "#46: 300 = at most x4.0). Rank, upgrades, sets, boosters and events are added up, then capped here.", min = 0,
+            max = 10_000, level = Setting.Level.OWNER)
+    public double sellMultiplierCapPercent = net.skybornmc.skyblock.common.economy.MultiplierCap.DEFAULT_CAP_PERCENT;
+
     @Setting(desc = "Icon per currency in menus: currency:MATERIAL.")
-    public List<String> icons = List.of("money:GOLD_INGOT", "tokens:AMETHYST_SHARD", "gems:DIAMOND", "shards:PRISMARINE_SHARD");
+    public List<String> icons = List.of("money:GOLD_INGOT", "crystals:PRISMARINE_CRYSTALS", "gems:EMERALD", "shards:PRISMARINE_SHARD");
+
+    /**
+     * Version 2: tokens were replaced by island crystals (owner decision O8); old keys are moved on load.
+     * Version 3: the new-account limit went from 120 to 30 minutes (owner decision #40); see {@link #upgradeValues}.
+     */
+    @Override
+    public int version() {
+        return 3;
+    }
+
+    /** The old default of {@code notes.new-account-minutes} (before owner decision #40). */
+    static final int OLD_NOTE_MINUTES_DEFAULT = 120;
+
+    /**
+     * Value changes the key renames can't do, applied to the raw file before it is loaded. Only an untouched old
+     * default is changed (an owner-chosen value is kept). Returns true if something changed.
+     */
+    static boolean upgradeValues(org.bukkit.configuration.file.YamlConfiguration yaml) {
+        if (yaml.getKeys(false).isEmpty() || yaml.getInt("config-version", 1) >= 3) {
+            return false;
+        }
+        if (yaml.isInt("notes.new-account-minutes") && yaml.getInt("notes.new-account-minutes") == OLD_NOTE_MINUTES_DEFAULT) {
+            yaml.set("notes.new-account-minutes", 30);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
+        return java.util.Map.of(2, java.util.Map.of(
+                "start.tokens", "start.crystals",
+                "tradeable.tokens", "tradeable.crystals",
+                "pay.min.tokens", "pay.min.crystals",
+                "pay.confirm-above.tokens", "pay.confirm-above.crystals",
+                "notes.min.tokens", "notes.min.crystals",
+                "notes.max.tokens", "notes.max.crystals"));
+    }
 
     @Override
     public String fileName() {
@@ -163,7 +214,7 @@ public final class EconomyConfig extends ModuleConfig {
     long start(Currency currency) {
         return switch (currency) {
             case MONEY -> startMoney;
-            case TOKENS -> startTokens;
+            case CRYSTALS -> startCrystals;
             case GEMS -> startGems;
             case SHARDS -> startShards;
         };
@@ -172,7 +223,7 @@ public final class EconomyConfig extends ModuleConfig {
     boolean tradeable(Currency currency) {
         return switch (currency) {
             case MONEY -> tradeableMoney;
-            case TOKENS -> tradeableTokens;
+            case CRYSTALS -> tradeableCrystals;
             case GEMS -> tradeableGems;
             case SHARDS -> tradeableShards;
         };
@@ -181,7 +232,7 @@ public final class EconomyConfig extends ModuleConfig {
     long payMin(Currency currency) {
         return switch (currency) {
             case MONEY -> payMinMoney;
-            case TOKENS -> payMinTokens;
+            case CRYSTALS -> payMinCrystals;
             case GEMS -> payMinGems;
             case SHARDS -> payMinShards;
         };
@@ -189,20 +240,29 @@ public final class EconomyConfig extends ModuleConfig {
 
     /** The menu icon of a currency ({@code icons}), or {@code fallback} if missing/invalid. */
     org.bukkit.Material icon(Currency currency, org.bukkit.Material fallback) {
+        String name = iconName(currency);
+        if (name == null) {
+            return fallback;
+        }
+        org.bukkit.Material m = org.bukkit.Material.matchMaterial(name);
+        return m == null || !m.isItem() ? fallback : m;
+    }
+
+    /** The material name configured for a currency in {@code icons}, or null. An old {@code tokens:} entry = crystals. */
+    String iconName(Currency currency) {
         for (String entry : icons) {
             int colon = entry.indexOf(':');
-            if (colon > 0 && entry.substring(0, colon).trim().equalsIgnoreCase(currency.key())) {
-                org.bukkit.Material m = org.bukkit.Material.matchMaterial(entry.substring(colon + 1).trim());
-                return m == null || !m.isItem() ? fallback : m;
+            if (colon > 0 && Currency.byKey(entry.substring(0, colon)).orElse(null) == currency) {
+                return entry.substring(colon + 1).trim();
             }
         }
-        return fallback;
+        return null;
     }
 
     long noteMin(Currency currency) {
         return switch (currency) {
             case MONEY -> noteMinMoney;
-            case TOKENS -> noteMinTokens;
+            case CRYSTALS -> noteMinCrystals;
             case GEMS -> noteMinGems;
             case SHARDS -> noteMinShards;
         };
@@ -211,7 +271,7 @@ public final class EconomyConfig extends ModuleConfig {
     long noteMax(Currency currency) {
         return switch (currency) {
             case MONEY -> noteMaxMoney;
-            case TOKENS -> noteMaxTokens;
+            case CRYSTALS -> noteMaxCrystals;
             case GEMS -> noteMaxGems;
             case SHARDS -> noteMaxShards;
         };
@@ -220,7 +280,7 @@ public final class EconomyConfig extends ModuleConfig {
     long payConfirmAbove(Currency currency) {
         return switch (currency) {
             case MONEY -> payConfirmMoney;
-            case TOKENS -> payConfirmTokens;
+            case CRYSTALS -> payConfirmCrystals;
             case GEMS -> payConfirmGems;
             case SHARDS -> payConfirmShards;
         };

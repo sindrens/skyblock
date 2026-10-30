@@ -40,6 +40,10 @@ public final class Style {
     private static final Pattern GRAD_OPEN = Pattern.compile("<grad:([a-z0-9_-]+)>");
 
     private volatile Map<String, Map<String, Color>> colors = Map.of();
+    /** Removed currency key (tokens were replaced by island crystals); resolved as {@link #CRYSTALS} if not defined. */
+    static final String LEGACY_TOKENS = "tokens";
+    static final String CRYSTALS = "crystals";
+
     private volatile Map<String, String> symbols = Map.of();
     private volatile Map<String, List<Color>> gradients = Map.of();
     private volatile String prefix = "";
@@ -157,6 +161,9 @@ public final class Style {
             builder.tag(section, (args, ctx) -> {
                 String name = args.popOr("missing color name").value();
                 Color c = map.get(name);
+                if (c == null && LEGACY_TOKENS.equals(name)) {
+                    c = map.get(CRYSTALS); // tokens were replaced by crystals: old message files keep working
+                }
                 if (c == null) {
                     return Tag.styling(NamedTextColor.WHITE);
                 }
@@ -164,7 +171,7 @@ public final class Style {
             });
         }
         Map<String, String> syms = symbols;
-        builder.tag("sym", (args, ctx) -> Tag.selfClosingInserting(Component.text(syms.getOrDefault(args.popOr("missing symbol").value(), "?"))));
+        builder.tag("sym", (args, ctx) -> Tag.selfClosingInserting(Component.text(symbol(syms, args.popOr("missing symbol").value()))));
         return builder.build();
     }
 
@@ -227,6 +234,15 @@ public final class Style {
     }
 
     public String symbol(String name) {
-        return symbols.getOrDefault(name, "?");
+        return symbol(symbols, name);
+    }
+
+    /** A symbol; the removed {@code tokens} falls back to {@code crystals} (owner decision O8) so old texts keep working. */
+    private static String symbol(Map<String, String> syms, String name) {
+        String value = syms.get(name);
+        if (value == null && LEGACY_TOKENS.equals(name)) {
+            value = syms.get(CRYSTALS);
+        }
+        return value == null ? "?" : value;
     }
 }

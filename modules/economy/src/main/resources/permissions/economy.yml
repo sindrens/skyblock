@@ -19,9 +19,14 @@ skyblock.economy.transactions:
 skyblock.economy.withdraw:
   description: Turn money into a tradeable money note (/withdraw); redeeming a note needs no permission
   default: true
-skyblock.owner.economy:
-  description: Change balances (/eco give|take|set|reset) and make money notes (/eco note), always logged
+skyblock.admin.economy:
+  description: Change balances (/eco give|take|set|reset) and make money notes (/eco note); admins and owner, always logged and staff-alerted
   default: op
+skyblock.owner.economy:
+  description: Old node for /eco (before admins got it); still grants skyblock.admin.economy
+  default: op
+  children:
+    skyblock.admin.economy: true
 skyblock.staff.economy.alerts:
   description: Get a chat alert when staff change a balance or make a note with /eco
   default: op

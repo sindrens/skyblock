@@ -62,7 +62,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private static final long BALTOP_CHECK_TICKS = 100L;
     static final String PERM_PAY = "skyblock.economy.pay";
     static final String PERM_TRANSACTIONS = "skyblock.economy.transactions";
-    static final String PERM_ECO = "skyblock.owner.economy";
+    /** {@code /eco give|take|set|reset|note}: admins and the owner (owner decision #47). */
+    static final String PERM_ECO = "skyblock.admin.economy";
     static final String PERM_ALERTS = "skyblock.staff.economy.alerts";
 
     /** Tab hints for the reason of {@code /eco note}. */
@@ -94,6 +95,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     @Override
     public void enable() throws Exception {
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
+        upgradeConfigFile();
         core.configs().load(config);
         main = new MainThread(core.plugin());
         // Season id: 0 until the season service exists (Phase 10); the ledger and start-balance keys already carry it.
@@ -119,8 +121,28 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     @Override
     public void reload() {
+        upgradeConfigFile();
         core.configs().load(config);
         core.messages().load(ID);
+    }
+
+    /** Value changes between config versions ({@link EconomyConfig#upgradeValues}); never touches a broken file. */
+    private void upgradeConfigFile() {
+        java.io.File file = new java.io.File(core.plugin().getDataFolder(), config.fileName());
+        if (!file.isFile()) {
+            return;
+        }
+        org.bukkit.configuration.file.YamlConfiguration yaml = new org.bukkit.configuration.file.YamlConfiguration();
+        try {
+            yaml.load(file);
+            if (EconomyConfig.upgradeValues(yaml)) {
+                yaml.save(file);
+                core.plugin().getLogger().info(config.fileName() + ": new-account limit changed from the old default "
+                        + EconomyConfig.OLD_NOTE_MINUTES_DEFAULT + " to 30 minutes (owner decision #40)");
+            }
+        } catch (java.io.IOException | org.bukkit.configuration.InvalidConfigurationException e) {
+            // The config manager reports broken files and keeps every value; nothing to do here.
+        }
     }
 
     @Override
@@ -169,10 +191,13 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private void registerPlaceholders() {
         core.placeholders().registerText(ID, "balance", p -> raw(p, Currency.MONEY));
         core.placeholders().registerText(ID, "balance_formatted", p -> formatted(p, Currency.MONEY));
-        for (Currency currency : List.of(Currency.TOKENS, Currency.GEMS, Currency.SHARDS)) {
+        for (Currency currency : List.of(Currency.CRYSTALS, Currency.GEMS, Currency.SHARDS)) {
             core.placeholders().registerText(ID, currency.key(), p -> raw(p, currency));
             core.placeholders().registerText(ID, currency.key() + "_formatted", p -> formatted(p, currency));
         }
+        // Deprecated aliases: tokens were replaced by crystals (O8); old formats keep showing the crystals balance.
+        core.placeholders().registerText(ID, Currency.LEGACY_TOKENS_KEY, p -> raw(p, Currency.CRYSTALS));
+        core.placeholders().registerText(ID, Currency.LEGACY_TOKENS_KEY + "_formatted", p -> formatted(p, Currency.CRYSTALS));
     }
 
     private String raw(Player p, Currency currency) {
@@ -292,7 +317,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
                     Currency currency = ctx.getOr(payCurrency, Currency.MONEY);
                     long amount = ctx.get(payAmount);
                     Player p = (Player) ctx.sender();
-                    return PayRules.check(config, p.getName(), ctx.get(payTarget), amount, currency, frozen(p)).isEmpty()
+                    return PayRules.check(config, p.getName(), ctx.get(payTarget), amount, currency, frozen(p), playtime(p))
+                            .isEmpty()
                             && PayRules.needsConfirm(config, amount, currency);
                 })
                 .confirmMessage(ID, "pay.confirm", ctx -> new TagResolver[]{
@@ -475,11 +501,19 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     // ================================================================== /pay
 
+    /** Total playtime of an online player, including the current session. */
+    long playtime(Player player) {
+        return core.players().get(player.getUniqueId()).map(PlayerData::playtimeMillis).orElse(0L);
+    }
+
     private void pay(Player payer, String targetName, long amount, Currency currency) {
-        Optional<PayRules.Problem> problem = PayRules.check(config, payer.getName(), targetName, amount, currency, frozen(payer));
+        long played = playtime(payer);
+        Optional<PayRules.Problem> problem = PayRules.check(config, payer.getName(), targetName, amount, currency, frozen(payer),
+                played);
         if (problem.isPresent()) {
             throw fail("pay." + problem.get().key, Msg.c("currency", currencyName(payer, currency)),
-                    amountTag("min", payer, currency, config.payMin(currency)));
+                    amountTag("min", payer, currency, config.payMin(currency)),
+                    Msg.p("time", Format.duration(Duration.ofMillis(PayRules.playtimeLeft(config, played)))));
         }
         then(payer, resolve(targetName), found -> {
             if (found.isEmpty()) {

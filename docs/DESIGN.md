@@ -34,7 +34,7 @@ Design rules that apply to *every* feature:
 |---|---|
 | Season length | 3 months (tunable) |
 | Pre-season | 1 week of normal gameplay with faster progress (global boost, tunable), then a full wipe |
-| Wiped at reset | Islands, outposts, levels, pillars, skills, tools, money, tokens, shards, items, loot |
+| Wiped at reset | Islands, outposts, levels, pillars, skills, tools, money, crystals, shards, items, loot |
 | Kept at reset | Titles, cosmetics, ranks (gems: see open questions) |
 | Final week | Double Conquest XP + extra KOTHs, so the island top is never decided early |
 
@@ -83,6 +83,7 @@ There are also **weekly mini-leaderboards** (island level gained, pillars, skill
 - `/is visit <player>` and the warp GUI.
 - 3 public **island warps** per island (tunable), with a warp browser ranked by visits/votes, as an **island showcase**.
 - The Leader can **lock** the island. Members get notified when someone tries to visit, arrives or leaves.
+- M2.4 (built): visit browser (most visited, top rated, most liked, newest), `/is lock|unlock|expel|ban|unban` (Leader + Mod), 3 warps per island with categories (shops, farms, parkour, builds, other), icon, public/private and `[warp]` sign warps (count toward the slots), warp browser by category, ratings 1-5 (one per player per island per season, changeable) and likes (one per player per island per day, separate from ratings). Rating and liking need a visit first. Member alerts for locked-visit attempts, arrivals and departures are `/settings` toggles. Details: `docs/commands/islands.md`.
 
 ### 3.5 Upgrades = masteries (`/is upgrade`)
 `/is upgrade` and `/is masteries` are the **same GUI**. Every upgrade has levels. Each level requires:
@@ -178,11 +179,12 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 | Currency | Earned by | Used for |
 |---|---|---|
 | **Money** | Selling, quests, events, interest | Upgrades, shop, auction house, everything general |
-| **Tokens** | Using custom tools (breaking, killing, chopping, farming) | Custom enchants (`/enchanter`), sets, Forge extras |
+| **Crystals** (island crystals) | Using custom tools (breaking, killing, chopping, farming) and island missions | Island shop, custom enchants (`/enchanter`), Forge extras. **Not tradeable** (no `/pay`, not on the AH) |
 | **Gems** | Store credits, voting, saying "gg" when someone buys from the store | Premium items in-game |
 | **Shards** | (see open questions) | The **Black Market** (rotating rare shop) |
 
-- `/pay <player> <amount> [currency]`. Tradeable currencies are configurable per currency.
+- Island crystals replaced tokens (owner decision O8 / #39, CR1–CR4 in `DECISIONS_2026-10-30.md`); old `tokens` data, config keys and placeholders are migrated or aliased to crystals.
+- `/pay <player> <amount> [currency]`. Tradeable currencies are configurable per currency (money and shards yes; gems and crystals no).
 - Money can be withdrawn as **physical notes** (M3.2, built): `/withdraw <amount>` (money only, no fee, $100 to $1T, 10 s cooldown, not for accounts under 30 min played, owner #40) gives a unique Money Note; right-click cashes it. Every note is a database row cashed in one transaction, so a copy can never be cashed twice: it is confiscated, staff are alerted and it is audited. Staff: `/eco note`. Details: `docs/commands/economy.md`.
 
 ### 4.2 Selling and dynamic prices
@@ -220,7 +222,7 @@ Four connected systems. **All custom tools, blueprints and skins are tradeable**
 |---|---|
 | **Starter kit** (Quartermaster NPC at spawn) | Free basic custom pickaxe, axe, hoe, sword and rod. Re-claimable every 24 h if lost. The first step of the tutorial |
 | **The Forge** (blacksmith NPC at spawn) | Forges tier tools (pickaxe, axe, hoe, sword, rod) from **Depths materials + money**. Each Depths tier unlocks the next tool tier (Coal Pickaxe → Copper → Iron → … → Voidstone). Grinding a tier gives the materials for the next tool |
-| **Living tools** | Every custom tool gains XP when used and levels **1–50**. Levels give speed/fortune and unlock **perk slots** where custom enchants go (`/enchanter`, tokens). The tool remembers its stats (blocks mined, kills…) |
+| **Living tools** | Every custom tool gains XP when used and levels **1–50**. Levels give speed/fortune and unlock **perk slots** where custom enchants go (`/enchanter`, crystals). The tool remembers its stats (blocks mined, kills…) |
 | **Blueprints** | Rare drops in the Depths and from bosses (e.g. *Blueprint: Magma Pickaxe*, Epic). Blueprint + materials at the Forge = a special tool with a unique ability. Valuable trade items |
 | **Skins** | Cosmetic looks for tools (Phoenix Flame, Frostbite, Royal Gold …) from crates, store and events; applied in a skin menu; tradeable; kept across seasons |
 
@@ -262,7 +264,7 @@ Mining, Foraging, Farming, Combat, Fishing. **Max level 150** (owner #65); tiers
 | Set | Theme |
 |---|---|
 | Farmer | Crops near you grow faster, Haste, extra crops when harvesting |
-| Miner | More tokens, faster block breaking in the mine |
+| Miner | More crystals, faster block breaking in the mine |
 | Merchant | More money when selling |
 | Forager | Double logs chance, faster chopping |
 | Warrior | Damage/defense vs. mobs and bosses |
@@ -272,7 +274,7 @@ Mining, Foraging, Farming, Combat, Fishing. **Max level 150** (owner #65); tiers
 ### 6.3 Custom enchants (`/enchanter`)
 - A decent, balanced number across all tools and armor, in tiers.
 - **Always guaranteed** (no fail/destroy chance).
-- Applied in the `/enchanter` GUI into a tool's **perk slots** (from tool levels), paid with **tokens** earned by using tools.
+- Applied in the `/enchanter` GUI into a tool's **perk slots** (from tool levels), paid with **crystals** earned by using tools and island missions.
 - Can be levelled, removed and moved.
 - Area enchants (explosive, vein miner, treefeller) are included, balanced.
 - Enchants work in PvP.

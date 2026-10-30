@@ -59,4 +59,12 @@ public interface EconomyService {
 
     /** Player-facing plain text of an amount, e.g. {@code $12,500}, {@code $1.2M}, {@code ✦ 1,500}. */
     String format(Currency currency, long amount);
+
+    /**
+     * The global cap on the total sell bonus in percent ({@code economy.yml → sell.multiplier-cap-percent}, owner decision
+     * #46: 300). Sell code applies it with {@link MultiplierCap#apply(long, double, double)}.
+     */
+    default double sellBonusCapPercent() {
+        return MultiplierCap.DEFAULT_CAP_PERCENT;
+    }
 }

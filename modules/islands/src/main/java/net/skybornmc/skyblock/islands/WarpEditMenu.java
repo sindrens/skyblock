@@ -1,0 +1,134 @@
+package net.skybornmc.skyblock.islands;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.skybornmc.skyblock.common.menu.ConfirmMenu;
+import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.text.Msg;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Editing one warp (M2.4, leader and mods): 13 the warp; 29 teleport, 30 icon (picker), 31 public/private, 32 category
+ * (each click = the next one), 33 delete (confirm). One plain click each (Bedrock-safe). Closes itself when the warp or
+ * the viewer's right to manage it is gone.
+ */
+final class WarpEditMenu extends Menu {
+
+    static final int SLOT_WARP = 13;
+    static final int SLOT_TELEPORT = 29;
+    static final int SLOT_ICON = 30;
+    static final int SLOT_PUBLIC = 31;
+    static final int SLOT_CATEGORY = 32;
+    static final int SLOT_DELETE = 33;
+
+    private final IslandsModule module;
+    private final IslandManager islands;
+    private final WarpManager warps;
+    private final Island island;
+    private final IslandWarp warp;
+
+    WarpEditMenu(IslandsModule module, IslandManager islands, WarpManager warps, Island island, IslandWarp warp) {
+        this.module = module;
+        this.islands = islands;
+        this.warps = warps;
+        this.island = island;
+        this.warp = warp;
+    }
+
+    @Override
+    public int rows() {
+        return 6;
+    }
+
+    @Override
+    public Component title() {
+        return service.title(viewer, List.of(text("menu.crumb"), text("warps.crumb"), text("warps.edit.crumb", Msg.p("warp", warp.name()))),
+                null);
+    }
+
+    @Override
+    public String messageModule() {
+        return IslandsModule.ID;
+    }
+
+    @Override
+    public String infoKey() {
+        return "warps.edit.info";
+    }
+
+    @Override
+    public String helpTopic() {
+        return "visiting";
+    }
+
+    @Override
+    public int tickInterval() {
+        return 40;
+    }
+
+    @Override
+    protected void tick() {
+        if (!valid()) {
+            viewer.closeInventory();
+        }
+    }
+
+    private boolean valid() {
+        return islands.byId(island.id()) == island && warps.warps(island.id()).contains(warp) && warps.canManage(viewer, island);
+    }
+
+    @Override
+    protected void build() {
+        frame();
+        TagResolver[] p = {
+                Msg.p("warp", warp.name()),
+                Msg.p("category", warps.categoryName(warp.category())),
+                Msg.p("visits", warp.visits())};
+        List<Component> lore = new ArrayList<>(lines("warps.edit.warp.lore", p));
+        if (warp.sign() != null) {
+            lore.addAll(lines("warps.entry.sign"));
+        }
+        set(SLOT_WARP, service.item(new ItemStack(warps.icon(warp)), text("warps.edit.warp.name", p), lore));
+        set(SLOT_TELEPORT, service.item(Material.ENDER_PEARL, viewer, IslandsModule.ID, "warps.edit.teleport", p), click -> {
+            viewer.closeInventory();
+            warps.teleport(viewer, island, warp);
+        });
+        set(SLOT_ICON, service.item(warps.icon(warp), viewer, IslandsModule.ID, "warps.edit.icon", p),
+                click -> openChild(new IconPickerMenu(module, islands, warps, island, warp)));
+        set(SLOT_PUBLIC, service.item(warp.isPublic() ? Material.LIME_DYE : Material.GRAY_DYE, viewer, IslandsModule.ID,
+                warp.isPublic() ? "warps.edit.public" : "warps.edit.private", p), click -> {
+            if (valid()) {
+                warps.togglePublic(viewer, island, warp, this::refresh);
+            }
+        });
+        set(SLOT_CATEGORY, service.item(Material.NAME_TAG, viewer, IslandsModule.ID, "warps.edit.category",
+                Msg.p("category", warps.categoryName(warp.category())), Msg.p("next", warps.categoryName(warp.category().next()))), click -> {
+            if (valid()) {
+                warps.cycleCategory(viewer, island, warp, this::refresh);
+            }
+        });
+        set(SLOT_DELETE, service.item(Material.LAVA_BUCKET, viewer, IslandsModule.ID, "warps.edit.delete", p), click -> {
+            if (!valid()) {
+                return;
+            }
+            openChild(new ConfirmMenu(
+                    v -> text("warps.delete.crumb"),
+                    service.item(new ItemStack(warps.icon(warp)), text("warps.delete.shown", p), List.of()),
+                    v -> lines("warps.delete.details", p),
+                    v -> warps.delete(v, island, warp, WarpManager.REASON_MENU),
+                    null));
+        });
+    }
+
+    private Component text(String key, TagResolver... placeholders) {
+        return service.text(viewer, IslandsModule.ID, key, placeholders);
+    }
+
+    private List<Component> lines(String key, TagResolver... placeholders) {
+        return service.lines(viewer, IslandsModule.ID, key, placeholders);
+    }
+}

@@ -347,9 +347,9 @@ At your right hand, 4–6 blocks from the spawn point and inside the first view,
 
 ### 5.6 Forge Quarter (east-south-east)
 
-**Purpose:** tools. **Quartermaster** (free starter kit every 24 h, first tutorial step), **Blacksmith** (the Forge: tool tiers from Depths materials), **Enchanter** (custom enchants for tokens, Phase 6), and a wall for blueprints/skins later.
+**Purpose:** tools. **Quartermaster** (free starter kit every 24 h, first tutorial step), **Blacksmith** (the Forge: tool tiers from Depths materials), **Enchanter** (custom enchants for crystals, Phase 6), and a wall for blueprints/skins later.
 
-**As if standing there:** heat. The road opens into a cobbled yard with a big open **forge hall**: blackstone and deepslate walls, a huge chimney with campfires on top for smoke, anvils, grindstones, smithing tables, blast furnaces (unlit; few lit ones, they are tile entities), lava behind glass in a "smelter" (max 6 sources, contained, not within 2 blocks of a path), hanging chains with lanterns, cut copper floor inlays and lit copper bulbs. Left of the hall, the **Quartermaster's armory**: tool "racks" built from grindstones, tripwire hooks, trapdoors and fences (no item frames), barrels, a phoenix banner. Right of the hall, a round **Enchanter's tower**: calcite and deepslate, purple and red stained glass, bookshelves, an enchanting table and amethyst clusters (tokens are purple in the UI, so purple lives here only).
+**As if standing there:** heat. The road opens into a cobbled yard with a big open **forge hall**: blackstone and deepslate walls, a huge chimney with campfires on top for smoke, anvils, grindstones, smithing tables, blast furnaces (unlit; few lit ones, they are tile entities), lava behind glass in a "smelter" (max 6 sources, contained, not within 2 blocks of a path), hanging chains with lanterns, cut copper floor inlays and lit copper bulbs. Left of the hall, the **Quartermaster's armory**: tool "racks" built from grindstones, tripwire hooks, trapdoors and fences (no item frames), barrels, a phoenix banner. Right of the hall, a round **Enchanter's tower**: calcite and deepslate, purple and red stained glass, bookshelves, an enchanting table and amethyst clusters (purple marks enchanting; crystals are aqua in the UI).
 
 | NPC / element | Placement | Notes |
 |---|---|---|

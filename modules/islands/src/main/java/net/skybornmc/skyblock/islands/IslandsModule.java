@@ -32,7 +32,8 @@ import java.util.Set;
  * PvP off, staff {@code /is bypass}. M2.3: members and roles ({@link MemberManager}: invite with the Team Island warning,
  * accept/deny, kick, leave, promote/demote, transfer, coop/uncoop, {@code /is members} and the permission matrix,
  * join limits). M2.7: lifecycle ({@link IslandLifecycle}: {@code /is disband}, slot clearing by {@link IslandClearer}) and
- * the staff tools {@code /isadmin} ({@link IslandAdmin}). Publishes {@link IslandService} and the placeholders {@code island_name},
+ * the staff tools {@code /isadmin} ({@link IslandAdmin}). M2.4: visiting, lock, expel, bans, rating, likes and the visit
+ * browser ({@link VisitManager}), island warps with categories, sign warps and the warp browser ({@link WarpManager}). Publishes {@link IslandService} and the placeholders {@code island_name},
  * {@code island_level} and {@code island_rank}.
  */
 public final class IslandsModule implements SkyblockModule, Listener {
@@ -51,6 +52,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandProtection protection;
     private BorderProtection borderProtection;
     private IslandLifecycle lifecycle;
+    private VisitManager visits;
+    private WarpManager warps;
     private RolePermissions rolePermissions = RolePermissions.none();
     private net.skybornmc.skyblock.common.util.Scheduler.Task sweepTask;
 
@@ -86,9 +89,18 @@ public final class IslandsModule implements SkyblockModule, Listener {
         borderProtection = new BorderProtection(this, manager, protection);
         lifecycle = new IslandLifecycle(this, manager);
         lifecycle.load();
+        visits = new VisitManager(this, manager, protection, new VisitStore(core.database()));
+        warps = new WarpManager(this, manager, visits);
+        visits.warps(warps);
+        visits.load();
+        warps.load();
         Bukkit.getPluginManager().registerEvents(borders, core.plugin());
         Bukkit.getPluginManager().registerEvents(protection, core.plugin());
         Bukkit.getPluginManager().registerEvents(borderProtection, core.plugin());
+        Bukkit.getPluginManager().registerEvents(visits, core.plugin());
+        Bukkit.getPluginManager().registerEvents(warps, core.plugin());
+        // /settings (menus) and the TeleportService (essentials) may enable after us: hook them one tick later.
+        core.scheduler().later("islands:services", 1L, visits::hookServices);
         startSweep();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         core.services().register(ID, IslandService.class, manager);
@@ -112,6 +124,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
         startSweep();
         if (members != null) {
             members.startSweep();
+        }
+        if (visits != null) {
+            visits.startStats();
         }
         core.messages().load(ID);
         Bukkit.getOnlinePlayers().forEach(borders::update);
@@ -139,6 +154,13 @@ public final class IslandsModule implements SkyblockModule, Listener {
         }
         if (borderProtection != null) {
             HandlerList.unregisterAll(borderProtection);
+        }
+        if (visits != null) {
+            visits.stop();
+            HandlerList.unregisterAll(visits);
+        }
+        if (warps != null) {
+            HandlerList.unregisterAll(warps);
         }
         HandlerList.unregisterAll(this);
     }
@@ -237,6 +259,19 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Arg<String> demotable = Args.word("player", Suggest.bySender(s -> members.memberNames(s, MemberRules::canDemote)));
         Arg<String> heir = Args.word("player", Suggest.bySender(s -> members.memberNames(s, MemberRules::canTransfer)));
         Arg<String> uncooped = Args.word("player", Suggest.bySender(members::coopNames));
+        // M2.4 visiting and warps
+        Arg<String> visited = Args.word("player", Suggest.bySender(visits::islandNames));
+        Arg<String> expelled = Args.word("player", Suggest.bySender(visits::visitorNames));
+        Arg<String> bannable = Args.word("player", Suggest.bySender(visits::banCandidates));
+        Arg<String> unbannable = Args.word("player", Suggest.bySender(visits::bannedNames));
+        Arg<String> rated = Args.word("player", Suggest.bySender(visits::islandNames));
+        Arg<Integer> stars = Args.integer("stars", 1, VisitManager.MAX_STARS, "1", "2", "3", "4", "5");
+        Arg<String> liked = Args.word("player", Suggest.bySender(visits::islandNames));
+        Arg<String> newWarp = Args.word("name", Suggest.bySender(warps::setwarpNames));
+        Arg<WarpCategory> category = Args.choice("category", WarpCategory.class);
+        Arg<String> oldWarp = Args.word("name", Suggest.bySender(warps::ownWarpNames));
+        Arg<String> warpIsland = Args.word("player", Suggest.bySender(visits::islandNames));
+        Arg<String> warpName = Args.word("name", warps.warpNamesOfTypedIsland("player"));
         core.commands().register(CommandSpec.command("is")
                 .description("Your island: create it, or go home").category("Island")
                 .permission(PERM_USE).playerOnly().aliases("island")
@@ -286,6 +321,40 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("sethome").description("Set your island home where you stand (leader/mod)").permission(PERM_USE).playerOnly()
                         .cooldown(Duration.ofSeconds(3)).example("is sethome")
                         .executes(ctx -> manager.setHome(ctx.player())))
+                .sub(CommandSpec.sub("visit").description("Visit a player's island, or browse islands without a name").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(3)).optional(visited).example("is visit Steve")
+                        .executes(ctx -> visits.visit(ctx.player(), ctx.getOr(visited, null))))
+                .sub(CommandSpec.sub("lock").description("Lock your island: only members can enter (leader/mod)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).example("is lock")
+                        .executes(ctx -> visits.lock(ctx.player(), true)))
+                .sub(CommandSpec.sub("unlock").description("Open your island to visitors again (leader/mod)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).example("is unlock")
+                        .executes(ctx -> visits.lock(ctx.player(), false)))
+                .sub(CommandSpec.sub("expel").description("Send a visitor off your island (leader/mod)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(1)).arg(expelled).example("is expel Steve")
+                        .executes(ctx -> visits.expel(ctx.player(), ctx.get(expelled))))
+                .sub(CommandSpec.sub("ban").description("Ban a player from visiting your island (leader/mod)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).arg(bannable).example("is ban Steve")
+                        .executes(ctx -> visits.ban(ctx.player(), ctx.get(bannable))))
+                .sub(CommandSpec.sub("unban").description("Let a banned player visit again (leader/mod)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).arg(unbannable).example("is unban Steve")
+                        .executes(ctx -> visits.unban(ctx.player(), ctx.get(unbannable))))
+                .sub(CommandSpec.sub("setwarp").description("Set an island warp where you stand (leader/mod)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).arg(newWarp).optional(category).example("is setwarp shop shops")
+                        .executes(ctx -> warps.setWarp(ctx.player(), ctx.get(newWarp),
+                                ctx.has(category) ? ctx.get(category).key() : null)))
+                .sub(CommandSpec.sub("delwarp").description("Delete one of your island warps (leader/mod)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).arg(oldWarp).example("is delwarp shop")
+                        .executes(ctx -> warps.delWarp(ctx.player(), ctx.get(oldWarp))))
+                .sub(CommandSpec.sub("warp").description("Go to an island warp, or browse warps without a name").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(3)).optional(warpIsland).optional(warpName).example("is warp Steve shop")
+                        .executes(ctx -> warps.warp(ctx.player(), ctx.getOr(warpIsland, null), ctx.getOr(warpName, null))))
+                .sub(CommandSpec.sub("rate").description("Rate an island 1-5 stars (once per season, changeable)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).arg(rated).arg(stars).example("is rate Steve 5")
+                        .executes(ctx -> visits.rate(ctx.player(), ctx.get(rated), ctx.get(stars))))
+                .sub(CommandSpec.sub("like").description("Like an island (once per day)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).arg(liked).example("is like Steve")
+                        .executes(ctx -> visits.like(ctx.player(), ctx.get(liked))))
                 .sub(CommandSpec.sub("bypass").description("Staff: toggle island protection bypass (logged)").permission(PERM_BYPASS)
                         .playerOnly().example("is bypass")
                         .executes(ctx -> protection.toggleBypass(ctx.player()))));
@@ -295,5 +364,6 @@ public final class IslandsModule implements SkyblockModule, Listener {
     public void onQuit(PlayerQuitEvent event) {
         manager.forget(event.getPlayer().getUniqueId());
         members.onQuit(event.getPlayer());
+        warps.forget(event.getPlayer().getUniqueId());
     }
 }

@@ -84,7 +84,7 @@ Ideas taken from big skyblock plugins (SuperiorSkyblock2, BentoBox + addons, Iri
 | # | Idea | What it means | Seen in | Status | Owner answer (2026-10-30) |
 |---|---|---|---|---|---|
 | 55 | Island bank | Shared money for members with logs | SuperiorSkyblock, Iridium | Planned | yes |
-| 56 | Island shop (upgrades with crystals) | Island currency for upgrades | Iridium | New (we use money/tokens) | yes |
+| 56 | Island shop (upgrades with crystals) | Island currency for upgrades | Iridium | Decided: island crystals replaced tokens (O8) | yes |
 | 57 | Player shops (chest shops) | Players sell items from a chest on their island | Big servers | New | yes |
 | 58 | Buy orders | Players post "I buy 64 iron for $X", others fill it | Big servers | New | yes |
 | 59 | Sell wand | Right-click a chest to sell everything inside | Big servers | New | yes |

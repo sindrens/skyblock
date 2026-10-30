@@ -63,6 +63,8 @@ final class IslandManager implements IslandService {
     private final Set<UUID> rescuing = new HashSet<>();
     private IslandBorders borders;
     private MemberManager members;
+    /** Called after an island left every cache (M2.4: visiting and warp caches drop it too). */
+    private final List<java.util.function.Consumer<Island>> removalHooks = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     IslandManager(IslandsModule module, IslandStore store) {
         this.module = module;
@@ -137,6 +139,12 @@ final class IslandManager implements IslandService {
         byMember.values().removeIf(value -> value == island);
         island.clearCoops();
         slotStates.put(island.slotId(), SlotState.CLEARING);
+        removalHooks.forEach(hook -> hook.accept(island));
+    }
+
+    /** Runs {@code hook} for every island removed from the caches (disband, staff delete or reset). */
+    void onRemoved(java.util.function.Consumer<Island> hook) {
+        removalHooks.add(hook);
     }
 
     /** Updates the cached state of a slot (the clearer freed it). */

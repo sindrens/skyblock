@@ -33,8 +33,8 @@ colors:
 
 currencies:
   money: "#5BE37D green"
-  tokens: "#C77DFF light_purple"
-  gems: "#4FD1FF aqua"
+  crystals: "#4FD1FF aqua"      # island crystals (replaced tokens): aqua crystal look
+  gems: "#3DDC97 dark_green"    # emerald green, clearly different from crystals
   shards: "#FF6B6B red"
   credits: "#FF8A1F gold"
 
@@ -65,9 +65,10 @@ gradients:
 
 symbols:
   money: "$"
-  tokens: "✦"
-  gems: "◆"
+  crystals: "◆"
+  gems: "✦"
   shards: "✧"
+  sparkle: "✦"
   arrow: "»"
   bullet: "▸"
   dot: "·"
