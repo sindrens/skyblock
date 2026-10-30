@@ -409,23 +409,19 @@ final class Placer implements Listener {
     private void look() {
         NpcsConfig c = module.config();
         double r = c.lookRadius;
+        // PERF4: one pass over each world's players into a grid instead of a nearby-players query per NPC.
+        Map<World, NearestGrid<Player>> grids = new HashMap<>();
         for (Placed p : byKey.values()) {
             if (p.kind != Placed.Kind.NPC || p.body == null || !p.body.isValid()) {
                 continue;
             }
-            Location eye = p.location.clone().add(0, EYE, 0);
-            Player nearest = null;
-            double best = r * r;
-            for (Player player : eye.getWorld().getNearbyPlayers(eye, r)) {
-                if (player.getGameMode() == GameMode.SPECTATOR) {
-                    continue;
-                }
-                double d = player.getEyeLocation().distanceSquared(eye);
-                if (d <= best) {
-                    best = d;
-                    nearest = player;
-                }
-            }
+            Location at = p.location;
+            World world = at.getWorld();
+            NearestGrid<Player> grid = grids.computeIfAbsent(world, w -> playersOf(w, r));
+            double ex = at.getX();
+            double ey = at.getY() + EYE;
+            double ez = at.getZ();
+            Player nearest = grid.nearest(ex, ey, ez, r);
             float yaw;
             float pitch;
             if (nearest == null) {
@@ -437,7 +433,7 @@ final class Placer implements Listener {
                 p.lookingAway = true;
             } else {
                 Location target = nearest.getEyeLocation();
-                float[] yp = Layout.lookAt(target.getX() - eye.getX(), target.getY() - eye.getY(), target.getZ() - eye.getZ());
+                float[] yp = Layout.lookAt(target.getX() - ex, target.getY() - ey, target.getZ() - ez);
                 yaw = yp[0];
                 pitch = yp[1];
                 p.lookingAway = false;
@@ -450,5 +446,21 @@ final class Placer implements Listener {
             p.body.setRotation(yaw, pitch);
             p.body.setBodyYaw(yaw);
         }
+    }
+
+    /** The non-spectator players of a world by eye position (empty grid for a world nobody is in). */
+    private static NearestGrid<Player> playersOf(World world, double radius) {
+        NearestGrid<Player> grid = new NearestGrid<>(radius);
+        if (world == null) {
+            return grid;
+        }
+        for (Player player : world.getPlayers()) {
+            if (player.getGameMode() == GameMode.SPECTATOR) {
+                continue;
+            }
+            Location loc = player.getLocation();
+            grid.add(player, loc.getX(), loc.getY() + player.getEyeHeight(), loc.getZ());
+        }
+        return grid;
     }
 }

@@ -447,12 +447,29 @@ public final class NpcsModule implements SkyblockModule {
 
         @Override
         public java.util.Optional<Location> npcLocation(String npcId) {
-            return npcs().stream().filter(i -> i.id().equalsIgnoreCase(npcId)).map(NpcInfo::location).findFirst();
+            return first(n -> n.id().equalsIgnoreCase(npcId)).map(NpcInfo::location);
         }
 
         @Override
         public java.util.Optional<NpcInfo> npcByRole(String role) {
-            return npcs().stream().filter(i -> i.role().equalsIgnoreCase(role)).findFirst();
+            return first(n -> n.role().equalsIgnoreCase(role));
+        }
+
+        /**
+         * PERF4: the first NPC in a loaded world matching {@code test}, same order as {@link #npcs()}, without building
+         * a location for every NPC (the tutorial guides ask for the Forge/help NPC every few ticks).
+         */
+        private java.util.Optional<NpcInfo> first(java.util.function.Predicate<Spots.Npc> test) {
+            for (Spots.Npc n : spots.npcs()) {
+                if (!test.test(n)) {
+                    continue;
+                }
+                World w = Bukkit.getWorld(n.world());
+                if (w != null) {
+                    return java.util.Optional.of(new NpcInfo(n.id(), n.role(), location(n, w)));
+                }
+            }
+            return java.util.Optional.empty();
         }
 
         @Override
