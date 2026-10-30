@@ -97,8 +97,12 @@ final class MenuItem implements Listener {
         return item;
     }
 
+    /**
+     * SMALL2: reads the item's data through the read-only PDC view; {@code getItemMeta()} built a full copy of the meta
+     * (name, lore, enchantments, data) for every slot it looked at, which made each check and scan expensive.
+     */
     boolean is(ItemStack item) {
-        return item != null && item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(key);
+        return item != null && !item.isEmpty() && item.getPersistentDataContainer().has(key);
     }
 
     /**
@@ -106,7 +110,7 @@ final class MenuItem implements Listener {
      * before the menu framework's leak check runs, so the framework never logs it as a leaked GUI button.
      */
     private boolean isLegacy(ItemStack item) {
-        if (item == null || !item.hasItemMeta() || !item.getItemMeta().getPersistentDataContainer().has(legacyKey)) {
+        if (item == null || item.isEmpty() || !item.getPersistentDataContainer().has(legacyKey)) {
             return false;
         }
         Material material = Material.matchMaterial(config.menuItemMaterial);
@@ -126,16 +130,50 @@ final class MenuItem implements Listener {
         return nav.core.services().optional(ProfileService.class).map(p -> p.isSwitching(player.getUniqueId())).orElse(false);
     }
 
+    /** What a cheap check does about the menu item slot (pure, unit-tested). */
+    enum Placement {
+        /** Nothing: not wanted, paused, or already in its slot. */
+        NONE,
+        /** The slot is empty: put the item there. */
+        PUT,
+        /** The slot holds the player's own item: move it to {@code firstEmpty} first, then put the item. */
+        MOVE_THEN_PUT,
+        /** The slot holds the player's own item and the inventory is full: keep theirs (no scan; tried again next check). */
+        NO_ROOM
+    }
+
+    static Placement placement(boolean wanted, boolean paused, boolean inSlot, boolean slotEmpty, int firstEmpty) {
+        if (!wanted || inSlot || paused) {
+            return Placement.NONE;
+        }
+        if (slotEmpty) {
+            return Placement.PUT;
+        }
+        return firstEmpty >= 0 ? Placement.MOVE_THEN_PUT : Placement.NO_ROOM;
+    }
+
     /**
-     * Cheap check (one slot): puts the item back when it is wanted but not in its slot. Turning it off and extra copies
-     * are handled by {@link #apply} (setting change, join, respawn, profile switch); the item can't be moved, so no
-     * copies appear in between.
+     * Cheap check (one slot): runs {@link #apply} only when the item is wanted, missing from its slot <b>and</b> there is
+     * room to put it back. SMALL2 root cause of 'menus:menu-item' being slow: this check runs for every online player
+     * every {@code check-seconds}; a player whose slot 9 held their own item with a full inventory fell through to
+     * {@link #apply} on every run, which read all 41 slots and built a full item meta copy for each
+     * ({@code getItemMeta()}) just to find nothing to do. Now such a player costs one slot read and {@code firstEmpty()},
+     * the full scan only happens when the item really goes back, and {@link #is} reads the PDC view without a meta copy.
      */
     void ensure(Player player) {
-        if (!player.isOnline() || !wanted(player) || is(player.getInventory().getItem(slot())) || paused(player)) {
+        if (!player.isOnline() || !wanted(player)) {
             return;
         }
-        apply(player);
+        PlayerInventory inv = player.getInventory();
+        ItemStack current = inv.getItem(slot());
+        if (is(current)) {
+            return;
+        }
+        boolean slotEmpty = current == null || current.isEmpty();
+        Placement what = placement(true, paused(player), false, slotEmpty, slotEmpty ? -1 : inv.firstEmpty());
+        if (what == Placement.PUT || what == Placement.MOVE_THEN_PUT) {
+            apply(player);
+        }
     }
 
     /** Puts the item in its slot if the player wants it, or removes every copy if not. */

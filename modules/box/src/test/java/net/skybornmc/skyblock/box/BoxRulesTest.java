@@ -13,6 +13,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Cap levels, inventory fit planning and source keys. */
 class BoxRulesTest {
 
+    /** SMALL2: the join count runs async; the main thread is only used when the active profile has stacks waiting. */
+    @Test
+    void joinNoticeOnlyWhenTheActiveProfileHasStacks() {
+        java.util.UUID active = java.util.UUID.randomUUID();
+        java.util.UUID other = java.util.UUID.randomUUID();
+        assertTrue(BoxService.needsNotice(java.util.Map.of(active, 3, other, 0), active));
+        assertFalse(BoxService.needsNotice(java.util.Map.of(active, 0, other, 9), active), "other profiles don't count");
+        assertFalse(BoxService.needsNotice(java.util.Map.of(other, 9), active), "not loaded");
+        assertFalse(BoxService.needsNotice(java.util.Map.of(active, 3), null));
+    }
+
     @Test
     void capLevels() {
         assertEquals(BoxCap.Level.OK, BoxCap.of(0, 500, 90));
