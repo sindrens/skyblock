@@ -1,20 +1,21 @@
 # The Depths: per-player resource blocks (M4.3). MiniMessage + style tags (style.yml). Placeholders: <name>.
 # Reload: /skyblock reload depths
+# Format (docs/UI_STYLE.md §3): prefix only on replies, success/error marks + gray text, values in <c:value>, clicks in <c:action>.
 
 # Action bar when breaking a non-resource block or placing a block inside a region.
-protected: "<c:error><sym:cross> You can only mine resource blocks here."
+protected: "<c:error><sym:cross></c:error> <c:text>Only resource blocks can be mined here."
 
 alert:
-  fast-break: "<c:muted>[Depths]</c:muted> <c:value><player></c:value> <c:warning>broke <block> too fast</c:warning> <c:muted>(<actual> ms, needs at least <min> ms of <expected> ms with <tool>) <sym:dot> <count> flags in <seconds> s"
-  no-start: "<c:muted>[Depths]</c:muted> <c:value><player></c:value> <c:warning>broke <block> without starting to mine it</c:warning> <c:muted>(needs <expected> ms with <tool>) <sym:dot> <count> flags in <seconds> s"
+  fast-break: "<c:muted>[Depths]</c:muted> <c:value><player></c:value> <c:text>broke <c:value><block></c:value> too fast <c:muted>(<actual> ms, min <min> of <expected> ms with <tool>) <sym:dot> <count> flags in <seconds> s"
+  no-start: "<c:muted>[Depths]</c:muted> <c:value><player></c:value> <c:text>broke <c:value><block></c:value> without mining it first <c:muted>(needs <expected> ms with <tool>) <sym:dot> <count> flags in <seconds> s"
 
 debug:
-  header: "<prefix><c:text>Depths debug for <c:value><player></c:value>"
+  header: "<prefix><c:text>Depths debug: <c:value><player></c:value>"
   region: " <c:ember><sym:bullet></c:ember> <c:text>Region at feet: <c:value><region></c:value> <c:muted>(<world> <min> to <max>, <resources> resource blocks, from <source>)"
   no-region: " <c:ember><sym:bullet></c:ember> <c:text>Region at feet: <c:muted>none in <world>"
   target-plain: " <c:ember><sym:bullet></c:ember> <c:text>Looking at <c:value><block></c:value> <c:muted>(not a resource block here)"
-  target-resource: " <c:ember><sym:bullet></c:ember> <c:text>Looking at <c:value><block></c:value> <c:success>resource</c:success> <c:muted>(depleted: <depleted>, respawn <seconds> s)"
-  target-depleted: " <c:ember><sym:bullet></c:ember> <c:text>Looking at <c:value><block></c:value> <c:warning>depleted for this player</c:warning> <c:muted>(shows <depleted>, respawn <seconds> s)"
+  target-resource: " <c:ember><sym:bullet></c:ember> <c:text>Looking at <c:value><block></c:value>, a resource block <c:muted>(depleted: <depleted>, respawn <seconds> s)"
+  target-depleted: " <c:ember><sym:bullet></c:ember> <c:text>Looking at <c:value><block></c:value>, depleted for this player <c:muted>(shows <depleted>, respawn <seconds> s)"
   depleted: " <c:ember><sym:bullet></c:ember> <c:text>Depleted for <player>: <c:value><count></c:value> <c:muted><sym:dot> all players: <total> (<players> tracked)"
   timers: " <c:ember><sym:bullet></c:ember> <c:text>Timers pending: <c:value><timers></c:value> <c:muted><sym:dot> pool <capacity>, wheel <slots> ticks <sym:dot> regions: <regions>"
   perf: " <c:ember><sym:bullet></c:ember> <c:text>Break handling: avg <c:value><avg> ms</c:value> <c:muted><sym:dot> max <max> ms <sym:dot> <breaks> breaks"
@@ -28,24 +29,24 @@ zones:
     combat: "<pillar:combat>Combat"
     farming: "<pillar:farming>Farming"
     fishing: "<pillar:fishing>Fishing"
-  no-world: "<prefix><c:error><sym:cross> The world <c:value><world></c:value> is not loaded. Check worlds.yml, then <c:action>/skyblock reload depths</c:action>."
+  no-world: "<prefix><c:error><sym:cross></c:error> <c:text>World <c:value><world></c:value> isn't loaded. Check worlds.yml, then <click:run_command:'/skyblock reload depths'><hover:show_text:'<c:text>Reload the Depths config'><c:action>[Reload]</c:action></hover></click>"
   generate:
-    start: "<prefix><c:text>Building <c:value><parts></c:value> placeholder part(s) in <c:value><world></c:value> <c:muted>(max <blocks> blocks per tick, progress on your action bar)"
-    skipped-built: "<prefix><c:warning>Skipped, marked <c:value>built: true</c:value> in zones.yml (builder work is never overwritten): <c:value><zones>"
-    nothing: "<prefix><c:warning>Nothing to build: everything selected is marked <c:value>built: true</c:value> in zones.yml."
-    busy: "<prefix><c:error><sym:cross> A Depths build is already running <c:muted>(part <done>/<total>, <percent>%)</c:muted>. Wait until it is done."
+    start: "<prefix><c:text>Building <c:value><parts></c:value> placeholder part(s) in <c:value><world></c:value>. <c:muted>(max <blocks> blocks per tick, progress on the action bar)"
+    skipped-built: "<prefix><c:warning><sym:cross></c:warning> <c:text>Skipped (<c:value>built: true</c:value> in zones.yml, never overwritten): <c:value><zones>"
+    nothing: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing to build: all of it is <c:value>built: true</c:value> in zones.yml."
+    busy: "<prefix><c:error><sym:cross></c:error> <c:text>A build is already running <c:muted>(part <done>/<total>, <percent>%)</c:muted><c:text>. Wait for it to finish."
     progress: "<c:ember><sym:pickaxe></c:ember> <c:text>Depths build <c:value><percent>%</c:value> <c:muted><sym:dot> part <done>/<total>: <part> <sym:dot> <changed> blocks changed"
     progress-console: "<c:muted>[Depths]</c:muted> <c:text>Build <c:value><percent>%</c:value> <c:muted><sym:dot> part <done>/<total>: <part> <sym:dot> <changed> blocks changed"
-    bad-block: "<prefix><c:warning><part>: '<block>' is not a valid block in zones.yml, <c:value><used></c:value> is used instead."
-    bad-biome: "<prefix><c:warning><part>: biome '<biome>' is unknown, the biome is left as it is."
-    done: "<prefix><c:success><sym:check> Placeholder build done: <c:value><parts></c:value> part(s), <c:value><changed></c:value> blocks changed in <seconds> s."
+    bad-block: "<prefix><c:warning><sym:cross></c:warning> <c:value><part></c:value><c:text>: <c:value><block></c:value> isn't a block (zones.yml). Using <c:value><used></c:value>."
+    bad-biome: "<prefix><c:warning><sym:cross></c:warning> <c:value><part></c:value><c:text>: unknown biome <c:value><biome></c:value>. Biome left as it is."
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Build done: <c:value><parts></c:value> part(s), <c:value><changed></c:value> blocks changed. <c:muted>(<seconds> s)"
   tp:
-    done: "<prefix><c:text>Teleported to <c:value><name></c:value> <c:muted>(<zone>)"
-    failed: "<prefix><c:error><sym:cross> Could not teleport to <c:value><zone></c:value>."
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to <c:value><name></c:value>. <c:muted>(<zone>)"
+    failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't teleport to <c:value><zone></c:value>. Check zones.yml."
   portal:
     boss: "<c:ember><sym:sword></c:ember> <c:text>Entering the <c:value><name></c:value>"
     back: "<c:ember><sym:arrow></c:ember> <c:text>Back to <c:value><name></c:value>"
-    locked: "<c:error><sym:cross> <skill> <required> needed <c:muted>(<level>/<required>)"
+    locked: "<c:error><sym:cross></c:error> <c:text>Needs <skill> <c:value><required></c:value> <c:muted>(<level>/<required>)"
 
 # Tiers (M4.6): locks, gates, unlocks. Placeholders in every tiers.* / dungeon.* text:
 #   <skill> <required> <level> <missing> <name> (zone name) <tier> <wing>
@@ -55,9 +56,9 @@ tiers:
     forest: "<pillar:foraging>Forest"
     combat: "<pillar:combat>Combat"
   # Action bar when a locked zone blocks you (walking, teleport, pearl, mining).
-  locked: "<c:error><sym:cross> <skill> <required> needed <c:muted>(<level>/<required>) <sym:dot> <wing> Tier <tier>"
-  kicked: "<prefix><c:warning><wing> Tier <tier> <c:value><name></c:value> needs <skill> <required> <c:muted>(you: <level>)</c:muted>. Sent back to The Gate."
-  unlocked: "<prefix><c:success><sym:star> New tier unlocked: <wing> <c:value>Tier <tier></c:value> <c:text><name></c:text>! <click:run_command:'/dungeon'><hover:show_text:'<c:text>Open /dungeon'><c:action>[Teleport]</c:action></hover></click>"
+  locked: "<c:error><sym:cross></c:error> <c:text>Needs <skill> <c:value><required></c:value> <c:muted>(<level>/<required>) <sym:dot> <wing> <c:muted>Tier <tier>"
+  kicked: "<prefix><c:error><sym:cross></c:error> <wing> <c:text>Tier <tier> <c:value><name></c:value> <c:text>needs <skill> <c:value><required></c:value> <c:muted>(you: <level>)</c:muted><c:text>. Sent back to <c:value>The Gate</c:value>."
+  unlocked: "<prefix><c:success><sym:star></c:success> <c:text>Unlocked <wing> <c:value>Tier <tier></c:value> <c:value><name></c:value>! <click:run_command:'/dungeon'><hover:show_text:'<c:text>Open /dungeon'><c:action>[Teleport]</c:action></hover></click>"
   first-visit:
     title: "<c:value><name>"
     subtitle: "<wing> <c:muted><sym:dot></c:muted> <c:text>Tier <tier>"
@@ -79,7 +80,7 @@ dungeon:
       - ""
       - "<c:text>Tiers open: <c:value><open></c:value><c:muted>/<total>"
     next: "<c:text>Next: <c:value>Tier <tier></c:value> <c:muted>at <skill> <c:muted><required>"
-    all-open: "<c:success><sym:check> <c:text>Every tier open"
+    all-open: "<c:success><sym:check> Every tier open"
     selected: "<c:ember><sym:bullet> <c:text>Showing this wing"
     click: "<c:action>Click to show"
   tier:
@@ -89,10 +90,10 @@ dungeon:
     resource: "<c:text>Resource: <c:value><resource>"
     requirement-met: "<c:text>Needs <skill> <c:value><required></c:value> <c:success><sym:check>"
     requirement-none: "<c:text>Open for everyone <c:success><sym:check>"
-    requirement-missing: "<c:error><sym:cross> <skill> <required> needed <c:muted><sym:dot> <level>/<required>"
+    requirement-missing: "<c:error><sym:cross> <c:text>Needs <skill> <c:value><required></c:value> <c:muted><sym:dot> <level>/<required>"
     progress: "<bar> <c:muted>(<missing> to go)"
     here: "<c:ember><sym:bullet> <c:text>You are here"
-    teleport: "<c:success><sym:check> Click to teleport"
+    teleport: "<c:action>Click to teleport"
     how:
       - "<c:text>Level up <skill> <c:text>to open it:"
       - "<c:value>/skills"
@@ -102,12 +103,12 @@ dungeon:
   empty:
     name: "<c:muted>No tiers yet"
     lore: ["<c:text>This wing has no zones in", "<c:text>zones.yml yet."]
-  warmup: "<prefix><c:text>Teleporting to <wing> <c:value>Tier <tier></c:value> in <c:value><seconds> s</c:value>. Don't move."
+  warmup: "<prefix><c:text>Teleporting to <wing> <c:value>Tier <tier></c:value> <c:text>in <c:value><seconds> s</c:value>. Don't move."
   countdown: "<c:ember><sym:time></c:ember> <c:text>Teleporting to <c:value><name></c:value> in <c:value><seconds></c:value>..."
-  cancelled: "<prefix><c:error><sym:cross> Teleport cancelled <c:muted>(you moved or took damage)</c:muted>. Use <c:action>/dungeon</c:action> again."
+  cancelled: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you moved or got hit. <click:run_command:'/dungeon'><hover:show_text:'<c:text>Open /dungeon'><c:action>[Try again]</c:action></hover></click>"
   arrived: "<c:ember><sym:pickaxe></c:ember> <wing> <c:value>Tier <tier></c:value> <c:muted><sym:dot></c:muted> <c:text><name>"
-  failed: "<prefix><c:error><sym:cross> Could not teleport to <c:value><name></c:value>. Try again in a moment."
-  locked: "<prefix><c:error><sym:cross> <wing> Tier <tier> needs <skill> <required> <c:muted>(you: <level>)</c:muted>. Level up in <c:action>/skills</c:action>."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't teleport to <c:value><name></c:value>. Try again soon."
+  locked: "<prefix><c:error><sym:cross></c:error> <wing> <c:text>Tier <tier> needs <skill> <c:value><required></c:value> <c:muted>(you: <level>)</c:muted><c:text>. Level up in <click:run_command:'/skills'><hover:show_text:'<c:text>Open /skills'><c:action>[Skills]</c:action></hover></click>"
 
 # Placeholders (scoreboard, tab): <ph:depths_zone>, <ph:depths_tier>
 placeholders:

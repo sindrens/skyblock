@@ -119,7 +119,7 @@ Anything else must be tested on Bedrock first and added here.
 ## 3. Chat messages
 
 **Owner (2026-10-30): "clean, short, direct messages with normal words".** Every message file follows the same format
-(UX1 rewrote all of them; moderation, depths and islands follow in UX2).
+(UX1 rewrote all of them; UX2 did moderation, depths and islands). Island roles are written as in ISL2: Leader, Admin, Mod, Member, Coop.
 
 ### 3.1 Format
 ```
