@@ -1,8 +1,13 @@
 package net.skybornmc.skyblock.common.stacking;
 
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+
+import java.util.List;
 
 /**
  * Stacked mobs, items and spawners as seen by other modules (published by the stacking module:
@@ -26,4 +31,27 @@ public interface StackingService {
 
     /** True if the entity came from a stacked spawner (no AI, vanilla loot only). */
     boolean fromStackedSpawner(Entity entity);
+
+    /**
+     * Stacks (two or more mobs) near a location, nearest first, in the stacking worlds only; never bosses, named, tamed or
+     * never-stack mobs. Uses the module's chunk index (no entity scan).
+     */
+    List<LivingEntity> stacksNear(Location at, double radius);
+
+    /**
+     * Batch kill API (ENCHANTS §7.2, E3): kills up to {@code count} mobs of a stack at once without a death event. Loot is
+     * rolled a few times and scaled to all killed mobs (plus the weapon's {@link StackKillProvider#bonus}), merged into
+     * stacked item drops; vanilla XP comes as one orb; strong spawner drops keep their rare chance per mob. The stack
+     * shrinks, or is removed when every mob died. Fires one {@link StackKillEvent} ({@link StackKillEvent.Cause#AREA}) so
+     * skill XP, tool XP and book drops are paid for the batch.
+     *
+     * <p>The caller checks the rules (island permissions, enchant levels); this only refuses entities that are no stack
+     * (players, bosses, removed entities, other worlds). Main thread.</p>
+     *
+     * @param stack  the stacked mob
+     * @param count  mobs to kill (clamped to the stack size)
+     * @param killer the player credited (loot context, XP, events)
+     * @return mobs killed (0 when refused)
+     */
+    int killFromStack(LivingEntity stack, int count, Player killer);
 }

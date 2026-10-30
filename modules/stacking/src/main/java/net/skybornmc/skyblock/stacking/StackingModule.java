@@ -40,7 +40,8 @@ import java.util.Set;
  * ({@link ItemStacker}) and spawner blocks ({@link SpawnerManager}) in the worlds of {@code stacking.yml → worlds},
  * island entity limits ({@link EntityLimits}) and crops that grow in the dark ({@link CropGrowth}). Stacking can't be
  * turned off (owner S11). Publishes {@link StackingService}; reads {@link IslandService} upgrade hooks and the optional
- * {@code StackKillProvider}. Command: {@code /spawner give} (staff).
+ * {@code StackKillProvider} (weapon multi-kills and per-mob bonuses), offers the batch kill API
+ * ({@link StackingService#killFromStack}, fires {@code StackKillEvent}). Command: {@code /spawner give} (staff).
  */
 public final class StackingModule implements SkyblockModule, StackingService, Listener {
 
@@ -280,5 +281,15 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     @Override
     public boolean fromStackedSpawner(Entity entity) {
         return MobStacker.isSpawnerMob(entity);
+    }
+
+    @Override
+    public List<LivingEntity> stacksNear(org.bukkit.Location at, double radius) {
+        return mobs.stacksNear(at, radius);
+    }
+
+    @Override
+    public int killFromStack(LivingEntity stack, int count, Player killer) {
+        return mobs.killBatch(stack, count, killer);
     }
 }

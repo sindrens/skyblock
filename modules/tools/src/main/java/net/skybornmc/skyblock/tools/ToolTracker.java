@@ -99,6 +99,11 @@ final class ToolTracker implements ToolService {
      * ability; {@code stat} is the counter to add 1 to (blocks, logs, kills) or null.
      */
     void gain(Player player, double baseXp, String stat) {
+        gain(player, baseXp, stat, 1);
+    }
+
+    /** {@link #gain(Player, double, String)} for a batch: the stat grows by {@code statAmount} (stacked kills, E3). */
+    void gain(Player player, double baseXp, String stat, long statAmount) {
         PlayerInventory inv = player.getInventory();
         int slot = inv.getHeldItemSlot();
         ItemStack stack = inv.getItem(slot);
@@ -118,7 +123,7 @@ final class ToolTracker implements ToolService {
                         new net.skybornmc.skyblock.common.bonus.BonusContext(player, stack, forBonus.info(slotLevels()), forBonus.kind().skill().id())))
                 .orElse(1.0);
         ToolProgress.Gain gain = ToolProgress.addXp(data, xp, module.curve());
-        ToolData next = stat == null ? gain.tool() : gain.tool().addStat(stat, 1);
+        ToolData next = stat == null ? gain.tool() : gain.tool().addStat(stat, statAmount);
         ToolItems.writeProgress(stack, next);
         long now = System.currentTimeMillis();
         if (gain.levelledUp()) {

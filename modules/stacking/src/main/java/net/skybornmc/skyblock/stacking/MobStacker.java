@@ -2,10 +2,13 @@ package net.skybornmc.skyblock.stacking;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.skybornmc.skyblock.common.stacking.StackKillBonus;
+import net.skybornmc.skyblock.common.stacking.StackKillEvent;
 import net.skybornmc.skyblock.common.stacking.StackKillProvider;
 import net.skybornmc.skyblock.common.stacking.StackingService;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -454,26 +457,32 @@ final class MobStacker implements Listener {
             boolean whole = wholeStackDamage.contains(event.getDamageSource().getDamageType().getKey().getKey());
             int weaponKills = 1;
             ItemStack weapon = killer == null ? null : killer.getInventory().getItemInMainHand();
-            if (!whole && killer != null && stack > 1) {
-                StackKillProvider provider = module.core().services().optional(StackKillProvider.class).orElse(null);
-                if (provider != null) {
-                    try {
-                        weaponKills = provider.killsPerHit(killer, weapon, entity, stack);
-                    } catch (RuntimeException e) {
-                        module.core().plugin().getLogger().log(Level.WARNING, "StackKillProvider failed; one kill counted", e);
-                    }
+            StackKillProvider provider = killer == null || whole ? null
+                    : module.core().services().optional(StackKillProvider.class).orElse(null);
+            if (provider != null && stack > 1) {
+                try {
+                    weaponKills = provider.killsPerHit(killer, weapon, entity, stack);
+                } catch (RuntimeException e) {
+                    module.core().plugin().getLogger().log(Level.WARNING, "StackKillProvider failed; one kill counted", e);
                 }
             }
+            StackKillBonus bonus = bonus(provider, killer, weapon, entity);
             int killed = StackMath.killed(stack, whole, weaponKills);
-            int extra = killed - 1;
+            long rolls = StackMath.extraRolls(killed, bonus.extraLootPercent(), () -> ThreadLocalRandom.current().nextDouble());
+            long lootMobs = StackMath.lootMobs(killed, true, rolls);
             Location at = entity.getLocation();
-            List<Drop> extras = extra > 0 ? extraLoot(entity, killer, extra, event.getDrops()) : new ArrayList<>();
+            List<Drop> extras = lootMobs > 0 ? extraLoot(entity, killer, lootMobs, event.getDrops()) : new ArrayList<>();
             if (spawnerMob) {
                 applyRareDrops(entity.getType(), event.getDrops(), extras, killed);
             }
-            event.setDroppedExp(StackMath.xp(event.getDroppedExp(), killed));
+            event.setDroppedExp(StackMath.xp(event.getDroppedExp(), killed, bonus.xpPercent()));
             for (Drop drop : extras) {
                 module.items().drop(at, drop.prototype(), drop.amount());
+            }
+            if (killer != null && !whole) {
+                // Before the rest lives on as a copy, so area effects (Reaper's Sweep) never hit this stack again.
+                Bukkit.getPluginManager().callEvent(new StackKillEvent(killer, weapon, entity, at, killed, killed - 1, weaponKills,
+                        spawnerMob, StackKillEvent.Cause.HIT));
             }
             int remainder = stack - killed;
             if (remainder > 0) {
@@ -484,15 +493,94 @@ final class MobStacker implements Listener {
         }
     }
 
+    private StackKillBonus bonus(StackKillProvider provider, Player killer, ItemStack weapon, LivingEntity victim) {
+        if (provider == null || killer == null) {
+            return StackKillBonus.NONE;
+        }
+        try {
+            StackKillBonus bonus = provider.bonus(killer, weapon, victim);
+            return bonus == null ? StackKillBonus.NONE : bonus;
+        } catch (RuntimeException e) {
+            module.core().plugin().getLogger().log(Level.WARNING, "StackKillProvider bonus failed; no bonus", e);
+            return StackKillBonus.NONE;
+        }
+    }
+
+    // ================================================================== batch kill API (ENCHANTS §7.2, E3)
+
+    /** Stacks (2+ mobs) within {@code radius} of {@code at}, nearest first. */
+    List<LivingEntity> stacksNear(Location at, double radius) {
+        if (at.getWorld() == null || !module.eligible(at.getWorld()) || radius <= 0) {
+            return List.of();
+        }
+        double r2 = radius * radius;
+        List<LivingEntity> out = new ArrayList<>();
+        index.near(at.getWorld().getUID(), at.getX(), at.getZ(), radius, e -> {
+            if (e.isValid() && count(e) > 1 && canStack(e) && e.getLocation().distanceSquared(at) <= r2) {
+                out.add(e);
+            }
+        });
+        out.sort(java.util.Comparator.comparingDouble(e -> e.getLocation().distanceSquared(at)));
+        return out;
+    }
+
+    /**
+     * Kills up to {@code count} mobs of a stack in one batch, without a death event: loot sampled and scaled (plus the
+     * weapon's extra rolls), merged item drops, one XP orb, rare spawner drops per mob; the stack shrinks or is removed.
+     * Fires one {@link StackKillEvent} (AREA).
+     *
+     * @return mobs killed, 0 when the entity is no stack here
+     */
+    int killBatch(LivingEntity stack, int count, Player killer) {
+        if (count < 1 || killer == null || stack instanceof Player || !stack.isValid() || stack.isDead()
+                || !module.eligible(stack.getWorld()) || !canStack(stack) || (count(stack) < 2 && !isSpawnerMob(stack))) {
+            return 0; // a single natural mob is no stack: it dies through normal damage only
+        }
+        long start = module.perf().start();
+        try {
+            int size = count(stack);
+            int killed = Math.min(size, count);
+            boolean spawnerMob = isSpawnerMob(stack);
+            ItemStack weapon = killer.getInventory().getItemInMainHand();
+            StackKillBonus bonus = bonus(module.core().services().optional(StackKillProvider.class).orElse(null), killer, weapon, stack);
+            long rolls = StackMath.extraRolls(killed, bonus.extraLootPercent(), () -> ThreadLocalRandom.current().nextDouble());
+            long lootMobs = StackMath.lootMobs(killed, false, rolls);
+            Location at = stack.getLocation();
+            List<Drop> loot = extraLoot(stack, killer, lootMobs, List.of());
+            if (spawnerMob) {
+                applyRareDrops(stack.getType(), new ArrayList<>(), loot, killed);
+            }
+            for (Drop drop : loot) {
+                module.items().drop(at, drop.prototype(), drop.amount());
+            }
+            int perMob = stack instanceof Mob mob ? mob.getPossibleExperienceReward() : 0;
+            int xp = StackMath.xp(perMob, killed, bonus.xpPercent());
+            if (xp > 0) {
+                at.getWorld().spawn(at, ExperienceOrb.class, orb -> orb.setExperience(xp));
+            }
+            if (killed >= size) {
+                index.remove(stack);
+                stack.remove();
+            } else {
+                setCount(stack, size - killed);
+            }
+            Bukkit.getPluginManager().callEvent(new StackKillEvent(killer, weapon, stack, at, killed, killed, count, spawnerMob,
+                    StackKillEvent.Cause.AREA));
+            return killed;
+        } finally {
+            module.perf().end(start);
+        }
+    }
+
     /**
      * Loot of {@code extra} more mobs: the loot table rolled {@code mobs.loot-samples} times and scaled, so a 1,024 stack
      * costs the same as a small one. Falls back to the dying mob's drops times {@code extra} if the table can't be rolled.
      * Equipment (e.g. picked-up items) is never multiplied: only the loot table counts.
      */
-    private List<Drop> extraLoot(LivingEntity entity, Player killer, int extra, List<ItemStack> ownDrops) {
+    private List<Drop> extraLoot(LivingEntity entity, Player killer, long extra, List<ItemStack> ownDrops) {
         List<ItemStack> prototypes = new ArrayList<>();
         List<long[]> sums = new ArrayList<>();
-        int samples = Math.min(extra, module.config().lootSamples);
+        int samples = (int) Math.min(extra, module.config().lootSamples);
         LootTable table = entity instanceof Lootable lootable ? lootable.getLootTable() : null;
         boolean rolled = false;
         if (table != null) {

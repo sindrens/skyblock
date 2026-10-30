@@ -7,6 +7,7 @@ import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.enchant.EnchantService;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
+import net.skybornmc.skyblock.common.stacking.StackKillProvider;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.tools.ToolPerk;
 import net.skybornmc.skyblock.common.tools.ToolService;
@@ -30,7 +31,9 @@ import java.util.logging.Level;
  * Disenchant Scrolls (one database row each, tradeable, auction house category "Enchant books"), the Enchanter
  * ({@code /enchanter}: apply, upgrade, combine, remove/shatter, Book shop rolls, guide; no fail chance), slot / conflict /
  * tool-level gate rules, crystal costs, lore on tools and books, and the passive bonus families. Publishes
- * {@link EnchantService}. Drop and kill effects come with E2/E3 through {@link EnchantService#level}/{@link EnchantService#value}.
+ * {@link EnchantService}. E3: the stacked-mob enchants ({@link StackEnchants}: Slaughter, Bloodlust, Plunder and Soul Reaper per
+ * mob, Reaper's Sweep, Phoenix Wrath on stacks, island stack books) as the published {@link StackKillProvider}. Depths
+ * drops and effects come with E2 through {@link EnchantService#level}/{@link EnchantService#value}.
  *
  * <p>Settings: {@code enchanter.yml}; texts: {@code messages/enchants.yml}; data: {@code db/enchants}.</p>
  */
@@ -52,6 +55,8 @@ public final class EnchantsModule implements SkyblockModule {
     private EnchantOps ops;
     private EnchantMenus menus;
     private EnchantsListener listener;
+    private StackEnchants stacks;
+    private net.skybornmc.skyblock.common.util.Scheduler.Task perfTask;
 
     public EnchantsModule(Core core) {
         this.core = core;
@@ -95,9 +100,13 @@ public final class EnchantsModule implements SkyblockModule {
         ops = new EnchantOps(this);
         menus = new EnchantMenus(this);
         listener = new EnchantsListener(this);
+        stacks = new StackEnchants(this);
         Bukkit.getPluginManager().registerEvents(ops, core.plugin());
         Bukkit.getPluginManager().registerEvents(listener, core.plugin());
+        Bukkit.getPluginManager().registerEvents(stacks, core.plugin());
         core.services().register(ID, EnchantService.class, new EnchantServiceImpl(this));
+        core.services().register(ID, StackKillProvider.class, stacks);
+        perfTask = core.scheduler().repeat("enchants-stack-perf", 1200L, 1200L, stacks.perf()::report);
         core.services().optional(BonusService.class).ifPresent(b -> {
             b.register(EnchantBonusSource.ID, new EnchantBonusSource(this));
             b.caps(config.caps());
@@ -124,6 +133,14 @@ public final class EnchantsModule implements SkyblockModule {
         }
         if (listener != null) {
             HandlerList.unregisterAll(listener);
+        }
+        if (stacks != null) {
+            HandlerList.unregisterAll(stacks);
+            core.services().unregister(ID, StackKillProvider.class);
+        }
+        if (perfTask != null) {
+            perfTask.cancel();
+            perfTask = null;
         }
         core.services().optional(BonusService.class).ifPresent(b -> b.unregister(EnchantBonusSource.ID));
         ToolService tools = tools();
@@ -280,6 +297,10 @@ public final class EnchantsModule implements SkyblockModule {
 
     EnchantMenus menus() {
         return menus;
+    }
+
+    StackEnchants stacks() {
+        return stacks;
     }
 
     ToolService tools() {
