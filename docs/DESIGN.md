@@ -83,6 +83,7 @@ There are also **weekly mini-leaderboards** (island level gained, pillars, skill
 - `/is visit <player>` and the warp GUI.
 - 3 public **island warps** per island (tunable), with a warp browser ranked by visits/votes, as an **island showcase**.
 - The Leader can **lock** the island. Members get notified when someone tries to visit, arrives or leaves.
+- M2.4 (built): visit browser (most visited, top rated, most liked, newest), `/is lock|unlock|expel|ban|unban` (Leader + Mod), 3 warps per island with categories (shops, farms, parkour, builds, other), icon, public/private and `[warp]` sign warps (count toward the slots), warp browser by category, ratings 1-5 (one per player per island per season, changeable) and likes (one per player per island per day, separate from ratings). Rating and liking need a visit first. Member alerts for locked-visit attempts, arrivals and departures are `/settings` toggles. Details: `docs/commands/islands.md`.
 
 ### 3.5 Upgrades = masteries (`/is upgrade`)
 `/is upgrade` and `/is masteries` are the **same GUI**. Every upgrade has levels. Each level requires:

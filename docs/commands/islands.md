@@ -1,4 +1,4 @@
-# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.7
+# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.7
 
 Grid, creation, home and per-player borders. Config `islands.yml`, texts `messages/islands.yml`, schematics in
 `plugins/PhoenixSkyblock/schematics/` (`<creation.schematic>.schem` + optional `<name>.yml` metadata with `home`, `chest`,
@@ -8,7 +8,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 |---|---|---|---|
 | `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: teleport home | `skyblock.island` (everyone) | ✅ |
 | `/is home` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `home.warmup-seconds`) | `skyblock.island` | ✅ |
-| `/is go` | Same as `/is home` (your island is the one you're a member of; visiting others is M2.4) | `skyblock.island` | ✅ |
+| `/is go` | Same as `/is home` (your island is the one you're a member of; visiting others is `/is visit`) | `skyblock.island` | ✅ |
 | `/is sethome` | Set the home where you stand: Leader + Mod (M2.3), inside your border, safe spot, Y 0-256 | `skyblock.island` | ✅ |
 | `/is invite <player>` | Leader/Mod: invite an online player without an island. On a **solo** island the leader first sees "Inviting makes your island a Team Island forever. Solo and team islands are on separate leaderboards." (confirm screen; cancel keeps it solo). The target gets a clickable `[Accept] [Deny]`; expires after `members.invite-expiry-seconds` (5 min) | `skyblock.island` | ✅ |
 | `/is accept [player]` | Accept your newest invite, or the one from that player's island (inviter or any member). Checks join limits, member slots and the target having no island, all in one transaction | `skyblock.island` | ✅ |
@@ -22,6 +22,15 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is uncoop <player>` | Leader/Mod: end a player's coop trust | `skyblock.island` | ✅ |
 | `/is members` | Member list GUI: heads with role, join date, inviter, online state; click a head for the actions you may use (promote, demote, transfer, kick, uncoop, leave). Buttons: Invite (player picker) and Permissions (the matrix) | `skyblock.island` | ✅ |
 | `/is disband` | Leader only: confirm screen (what is lost, members removed, creation cooldown), then type `disband` in chat (`disband.confirm-word`, `cancel` keeps it). The island is removed for good: members and coop players are removed and told, everyone on it is sent to spawn, the slot is cleared and reused. New island after `creation.cooldown-hours` (24 h) | `skyblock.island` | ✅ |
+| `/is visit [player]` | No name: the **visit browser** (Most visited, Top rated, Most liked, Newest; click an island to visit). With a name (any member of that island, online or offline): teleport to that island's home after a safe-spot check and `visiting.warmup-seconds` (3 s). Your own island = home | `skyblock.island` | ✅ |
+| `/is lock` / `/is unlock` | Leader/Mod: only members and coop players can enter a locked island; locking sends visitors on it to spawn. Locked islands are hidden in the browsers | `skyblock.island` | ✅ |
+| `/is expel <player>` | Leader/Mod: send a visitor on your island to spawn (tab: visitors on your island) | `skyblock.island` | ✅ |
+| `/is ban <player>` / `/is unban <player>` | Leader/Mod: banned players can't enter, teleport or pearl in (any teleport into the slot is refused); banned while inside = sent to spawn. Members must be kicked and coop players uncooped first. Max `visiting.max-bans` (100) | `skyblock.island` | ✅ |
+| `/is setwarp <name> [category]` | Leader/Mod: set a warp where you stand (inside the border, safe spot). Categories: `shops`, `farms`, `parkour`, `builds`, `other` (default). The same name again moves the warp. Max `warps.start-slots` (3) per island, sign warps included | `skyblock.island` | ✅ |
+| `/is delwarp <name>` | Leader/Mod: delete one of your warps | `skyblock.island` | ✅ |
+| `/is warp [player] [name]` | No name: the **warp browser** (public warps of every unlocked island, most visited first, one button per category). Player only: their warp, or their warp list when there are several. Player + name: that warp (private warps only for members) | `skyblock.island` | ✅ |
+| `/is rate <player> <1-5>` | Rate an island you visited: one rating per player per island per season, change it any time; never your own island | `skyblock.island` | ✅ |
+| `/is like <player>` | Like an island you visited: once per day per island (separate from ratings); never your own island | `skyblock.island` | ✅ |
 | `/is bypass` | Staff: toggle ignoring island protection (build, containers, everything; also walk out of borders). Off by default and again on quit; every toggle is logged (`staff`: `island_bypass_on` / `island_bypass_off`) | `skyblock.island.bypass` (admin) | ✅ |
 
 Rules: one island per player (database-enforced), creation cooldown after a disband `creation.cooldown-hours` (24 h),
@@ -115,5 +124,40 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
 | `/isadmin bypass` | Same as `/is bypass` | `skyblock.island.bypass` (admin) | ✅ |
 | `/isadmin slots` | Grid overview GUI (spiral order): used (owner, members, size), clearing (progress), free; filter and reload buttons; click = teleport | `skyblock.island.admin.slots` (admin) | ✅ |
 | `/isadmin teleport-slot <slot>` | Teleport to the top of a slot's center column (tab completes slot ids) | `skyblock.island.admin.teleport-slot` (admin) | ✅ |
+
+## Visiting, warps and showcase (M2.4)
+- **Who enters:** members and coop players always; everyone else unless banned (checked first) or the island is locked.
+  Staff with `skyblock.island.visit.bypass` (helper and up), the `/is bypass` toggle or spectator mode ignore locks and
+  bans. Enforced on every teleport into an island's slot (commands, `/tpa`, ender pearls, chorus fruit, plugins: the
+  essentials TeleportService guard plus a teleport listener), when flying in across the void (stopped at the slot edge)
+  and on login (sent to spawn).
+- **Member alerts** (chat, each a `/settings` toggle in Social, all on): someone tried to visit while locked (with an
+  [Unlock] button), a visitor arrived, a visitor left. The same visitor is announced at most every
+  `visiting.notify-cooldown-seconds` (30 s) / `visiting.attempt-cooldown-seconds` (60 s). Vanished staff and
+  spectators are never announced or counted. Visitors see "Visiting <island>" in the action bar.
+- **Visit counter:** unique visitors per island and day (members never count; day = `visiting.timezone`, Europe/Oslo).
+- **Warps:** 3 per island (`warps.start-slots`; island column `warp_slots` for a later upgrade, cap `warps.max-slots`
+  10). Names: letters, digits, `_`, `-`, up to `warps.name-max-length` (16), unique per island ignoring case. Icon
+  (picker from `warps.icons`; new warps get their category's icon from `warps.category-icons.*`), public/private,
+  category and delete in the warp edit menu (`/is warp` → Your warps → click a warp). Teleports check the spot is safe
+  (else the nearest safe spot inside the border). Warp visits count once per visitor per day.
+- **Sign warps:** a sign with `[warp]` (`warps.sign-tag`) on line 1, the name on line 2 and optionally a category on
+  line 3, written by the leader or a mod inside their border, creates a warp at the spot where they stand (counts toward
+  the slots). The sign is rewritten to show the warp; editing it is blocked; breaking it deletes the warp (a sign
+  destroyed another way removes its warp the next time someone uses it).
+- **Ratings and likes:** `/is rate` 1-5 stars (one per player per island per season, changeable), `/is like` once per
+  player per island per day (owner O7, per account). Both need a visit first (`visiting.require-visit`) and never work on
+  your own island; members are told about likes.
+- **Browsers** (6-row redesigned menus, paged, one plain click everywhere for Bedrock): visit browser tabs Most visited
+  (unique visitors per day over `browser.visits-days` = 7 days), Top rated (season average, at least
+  `browser.min-ratings` = 3 ratings), Most liked (season), Newest. Totals are reloaded every `browser.refresh-seconds`
+  (120 s) and updated at once for your own rating/like/visit. `/menu` → Warps opens the warp browser.
+- **Tables (V005):** `islands.locked`, `islands.warp_slots`, `island_bans`, `island_warps`, `island_warp_visits`,
+  `island_visits`, `island_ratings`, `island_likes`. Removing an island (M2.7) deletes its warps and bans; visits,
+  ratings and likes stay as history.
+- **Logged** (category `island`): `island_lock`, `island_unlock`, `island_expel`, `island_ban`, `island_unban`,
+  `island_warp_set` (create/move, sign), `island_warp_delete` (command/menu/sign-broken/sign-missing), `island_warp_icon`,
+  `island_warp_public`, `island_warp_category`, `island_warp_visit`, `island_visit` (first visit of the day),
+  `island_rate` (old/new stars), `island_like`.
 
 Permission definitions: `modules/islands/src/main/resources/permissions/islands.yml`. Rank grants: `server/permissions/islands.txt`.
