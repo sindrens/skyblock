@@ -1189,6 +1189,12 @@ topics:
         lines:
           - "<c:text>Every staff action is stored in the"
           - "<c:text>audit log with who, what and when."
+      - title: "<c:value>Crate keys"
+        lines:
+          - "<c:text>Admins fix keys with</c:text> <c:value>/crates admin</c:value><c:text>:"
+          - "<c:value>give</c:value><c:text>, </c:text><c:value>take</c:value> <c:text>(bound first) and</c:text> <c:value>view</c:value>"
+          - "<c:text>(keys and pity per profile). Big"
+          - "<c:text>amounts ask to confirm; all logged."
       - title: "<c:value>Chat language"
         lines:
           - "<c:text>Public chat is English only (rule 7)."

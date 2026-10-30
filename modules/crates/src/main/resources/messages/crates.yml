@@ -270,3 +270,59 @@ result:
   more:
     name: "<c:muted>And <more> more"
     lore: ["<c:text>See the chat summary."]
+
+# Staff: /crates admin give|take|view (P10-41, admin only, logged). <key> = key name, <amount>/<has>/<left> = numbers,
+# <kind> = admin.kind.bound / admin.kind.tradeable, <profile> = profile name, <command>/<time> come from the confirm.
+admin:
+  given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><amount></c:value> <kind> <key><c:text> to <c:value><player></c:value> <c:muted>(<profile>). Logged."
+  received: "<prefix><c:success><sym:check></c:success> <c:text>Staff gave you <c:value><amount></c:value> <kind> <key><c:text>. Open them with <click:run_command:'/crates'><c:value>/crates</c:value></click><c:text>."
+  taken: "<prefix><c:success><sym:check></c:success> <c:text>Took <c:value><amount></c:value> <key><c:text> from <c:value><player></c:value> <c:muted>(<profile>: <bound> bound, <tradeable> tradeable, <left> left). Logged."
+  not-enough: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has only <c:value><has></c:value> <key><c:text> on <profile>, not <amount>. Nothing was taken."
+  unknown-player: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling (Bedrock names start with a dot)."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>That did not work. Nothing changed; try again soon."
+  confirm-give: "<prefix><c:text>Give <c:value><amount></c:value> <key><c:text> to <c:value><player></c:value>? <click:run_command:'/<command> confirm'><hover:show_text:'<c:text>Runs /<command> confirm'><c:action>[Confirm]</c:action></hover></click> <c:muted>or type /<command> confirm within <time>."
+  confirm-take: "<prefix><c:text>Take <c:value><amount></c:value> <key><c:text> from <c:value><player></c:value>? <click:run_command:'/<command> confirm'><hover:show_text:'<c:text>Runs /<command> confirm'><c:action>[Confirm]</c:action></hover></click> <c:muted>or type /<command> confirm within <time>."
+  profile-default: "Profile <slot>"
+  kind:
+    bound: "<c:muted>bound</c:muted>"
+    tradeable: "<c:value>tradeable</c:value>"
+  view:
+    header: "<prefix><c:text>Keys of <c:value><player></c:value> <c:muted>(<profile>)"
+    header-active: "<prefix><c:text>Keys of <c:value><player></c:value> <c:muted>(<profile>, active)"
+    line: " <c:muted><sym:bullet></c:muted> <key><c:text>: <c:value><bound></c:value> <c:text>bound, <c:value><tradeable></c:value> <c:text>tradeable <c:muted><sym:dot> pity <pity>/<max>"
+    line-no-pity: " <c:muted><sym:bullet></c:muted> <key><c:text>: <c:value><bound></c:value> <c:text>bound, <c:value><tradeable></c:value> <c:text>tradeable"
+    none: " <c:muted>No keys and no pity on this profile."
+  menu:
+    title: "Keys of <player>"
+    info:
+      - "<c:text>Keys and pity of one profile."
+      - "<c:text>Change them with"
+      - "<c:value>/crates admin give</c:value> <c:text>or"
+      - "<c:value>/crates admin take</c:value><c:text>."
+    loading:
+      name: "<c:muted>Loading keys..."
+      lore: []
+    failed:
+      name: "<c:error>Could not load the keys"
+      lore: ["<c:text>Close the menu and try again."]
+    profile:
+      name: "<c:value><profile>"
+      lore:
+        - "<c:text>The profile shown."
+    profile-switch:
+      name: "<c:value><profile> <c:muted>(<profiles> profiles)"
+      lore:
+        - "<c:text>The profile shown."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next profile"
+    crate:
+      - "<c:text>Bound keys: <c:value><bound>"
+      - "<c:text>Tradeable keys: <c:value><tradeable>"
+      - "<c:text>Pity: <c:value><pity>/<max>"
+      - ""
+      - "<c:muted><profile>"
+    crate-no-pity:
+      - "<c:text>Bound keys: <c:value><bound>"
+      - "<c:text>Tradeable keys: <c:value><tradeable>"
+      - ""
+      - "<c:muted><profile>"

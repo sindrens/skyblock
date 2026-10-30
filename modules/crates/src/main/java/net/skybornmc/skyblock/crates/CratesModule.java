@@ -248,6 +248,10 @@ public final class CratesModule implements SkyblockModule, Listener {
         return opener;
     }
 
+    CrateKeysService keys() {
+        return keysService;
+    }
+
     // ================================================================== command
 
     private void registerCommand() {
@@ -261,7 +265,8 @@ public final class CratesModule implements SkyblockModule, Listener {
                 .playerOnly()
                 .optional(crate)
                 .example("crates ember")
-                .executes(ctx -> open(ctx.player(), ctx.getOr(crate, null))));
+                .executes(ctx -> open(ctx.player(), ctx.getOr(crate, null)))
+                .sub(new CratesAdmin(this).spec()));
     }
 
     List<String> visibleIds() {
@@ -317,9 +322,17 @@ public final class CratesModule implements SkyblockModule, Listener {
                 }, main);
     }
 
+    /** Reads keys and pity of any profile without caching it (staff views); completes on the main thread. */
+    CompletableFuture<ProfileView> readView(UUID profile) {
+        return core.database().async(c -> new ProfileView(CrateStore.keys(c, profile), CrateStore.pities(c, profile)))
+                .thenApplyAsync(v -> v, main);
+    }
+
     /** Re-reads a profile's keys after a change and refreshes an open crates menu of its player. */
     void changed(UUID profile) {
-        if (!ready) {
+        // Only profiles a menu can show (online and active, or already cached): a staff give to an offline profile must
+        // not leave a cache entry nobody removes.
+        if (!ready || (!views.containsKey(profile) && profiles().onlinePlayer(profile).isEmpty())) {
             return;
         }
         loadView(profile).whenComplete((v, e) -> {
@@ -537,7 +550,7 @@ public final class CratesModule implements SkyblockModule, Listener {
     }
 
     static boolean isCratesMenu(Menu menu) {
-        if (menu instanceof CratesMenu || menu instanceof PreviewMenu || menu instanceof ResultMenu) {
+        if (menu instanceof CratesMenu || menu instanceof PreviewMenu || menu instanceof ResultMenu || menu instanceof StaffCratesMenu) {
             return true;
         }
         return menu != null && menu.parent() != null && isCratesMenu(menu.parent());

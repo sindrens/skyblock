@@ -40,7 +40,21 @@ final class CrateKeysService implements CrateKeys {
         if (crate == null) {
             return CompletableFuture.completedFuture(false);
         }
-        boolean bound = m.settings.bound(reason);
+        return grant(profileKey, crate, amount, m.settings.bound(reason), reason, actor, null, null);
+    }
+
+    /**
+     * Adds keys with an explicit bound/tradeable choice (staff give, P10-41) or the source's rule ({@link #giveKeys}).
+     * One transaction, one audit row {@code crates/key_give} (actor, reason, bound), then open crate menus refresh.
+     *
+     * @param owner     the player the profile belongs to (null = looked up; only reliable for online players)
+     * @param ownerName their name for the audit row (null = none)
+     */
+    CompletableFuture<Boolean> grant(UUID profileKey, CrateCatalog.Crate crate, int amount, boolean bound, String reason, Actor actor,
+                                     UUID owner, String ownerName) {
+        if (profileKey == null || crate == null || amount < 1 || amount > MAX_PER_CALL) {
+            return CompletableFuture.completedFuture(false);
+        }
         long now = System.currentTimeMillis();
         CompletableFuture<Boolean> done = m.core.database().transaction(c -> {
             CrateStore.addKeys(c, profileKey, crate.id(), bound ? amount : 0, bound ? 0 : amount, now);
@@ -57,7 +71,8 @@ final class CrateKeysService implements CrateKeys {
             d.put("reason", reason == null ? "" : reason);
             d.put("bound", bound);
             d.put("profile", profileKey.toString());
-            m.audit("key_give", actor == null ? Actor.SYSTEM : actor, m.profiles().ownerOf(profileKey), null, (long) amount, d);
+            m.audit("key_give", actor == null ? Actor.SYSTEM : actor, owner != null ? owner : m.profiles().ownerOf(profileKey), ownerName,
+                    (long) amount, d);
             m.main().execute(() -> m.changed(profileKey));
             return true;
         });

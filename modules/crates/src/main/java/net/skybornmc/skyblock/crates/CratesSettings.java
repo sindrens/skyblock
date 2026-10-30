@@ -89,6 +89,25 @@ public final class CratesSettings extends ModuleConfig {
             + "profile module loads the active profile first).", min = 1, max = 1_200)
     public int joinDelayTicks = 40;
 
+    @Setting(path = "admin.max-amount", desc = "Most keys one /crates admin give or take can move (P10-41).", min = 1,
+            max = CrateKeysService.MAX_PER_CALL, level = Setting.Level.OWNER)
+    public int adminMaxAmount = 1_000;
+
+    @Setting(path = "admin.confirm-above", desc = "A /crates admin give or take of more keys than this asks to confirm first "
+            + "(click or type it again with 'confirm').", min = 0, max = CrateKeysService.MAX_PER_CALL, level = Setting.Level.OWNER)
+    public int adminConfirmAbove = 64;
+
+    @Setting(path = "admin.confirm-seconds", desc = "Seconds a /crates admin confirmation stays valid (read at server start).",
+            min = 5, max = 120, restart = true)
+    public int adminConfirmSeconds = 15;
+
+    @Setting(path = "admin.default-tradeable", desc = "Kind of keys /crates admin give adds when the type is left out: false = "
+            + "bound (safest: never traded), true = tradeable.", level = Setting.Level.OWNER)
+    public boolean adminDefaultTradeable = false;
+
+    @Setting(path = "admin.notify-player", desc = "Tell an online player on that profile when staff give them keys.")
+    public boolean adminNotify = true;
+
     @Override
     public String fileName() {
         return "crates-settings.yml";

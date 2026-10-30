@@ -37,6 +37,22 @@ final class CrateMath {
         return new KeyUse((int) b, (int) t);
     }
 
+    /**
+     * Staff take ({@code /crates admin take}, P10-41): which keys {@code amount} takes from what the profile has, bound
+     * keys first (the same order as opening), then tradeable. {@code null} when the profile has fewer than
+     * {@code amount} keys in total or the amount is not positive: a staff take never goes below zero and never takes
+     * only part of what was asked.
+     */
+    static KeyUse staffTake(long bound, long tradeable, long amount) {
+        long b = Math.max(0, bound);
+        long t = Math.max(0, tradeable);
+        if (amount < 1 || amount > Integer.MAX_VALUE || b + t < amount) {
+            return null;
+        }
+        long fromBound = Math.min(b, amount);
+        return new KeyUse((int) fromBound, (int) (amount - fromBound));
+    }
+
     /** Stage tier (1..n) for the highest stage skill level; {@code tierLevels[i]} unlocks tier i+1. */
     static int tierFor(int level, int[] tierLevels) {
         int tier = 1;

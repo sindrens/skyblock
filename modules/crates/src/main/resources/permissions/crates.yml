@@ -1,7 +1,9 @@
 # Permissions of the crates module (PHASE-10 M10.1). Registered when the module enables, removed when it disables.
 # Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
 # LuckPerms grants for these nodes: server/permissions/crates.txt. Commands: docs/commands/crates.md.
-# Staff sub-commands (/crates admin give|take|reset|test) wait for the owner's OK (PHASE-10 RX41).
 skyblock.crates.use:
   description: Open crates with your keys and preview their rewards (/crates [crate], crate yard blocks)
   default: true
+skyblock.crates.admin:
+  description: Staff key tools /crates admin give|take|view (owner approved P10-41; admin only, audited)
+  default: op

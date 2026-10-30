@@ -97,6 +97,34 @@ final class CrateStore {
                 bound, tradeable, now, profile, crate, bound, tradeable) == 1;
     }
 
+    /** A staff take: what was there before, how many bound / tradeable keys were taken, and whether it happened. */
+    record StaffTake(Keys before, long bound, long tradeable, boolean done) {
+
+        long total() {
+            return bound + tradeable;
+        }
+    }
+
+    /**
+     * Staff take ({@code /crates admin take}): {@code amount} keys, bound first, all or nothing. Not {@code done} when
+     * the profile has fewer keys ({@code before} is then what it has and nothing changed). The conditional
+     * {@code UPDATE} is retried when an open or a grant changed the counters in between, so the result is always exact.
+     * Call inside one transaction.
+     */
+    static StaffTake staffTake(Connection c, UUID profile, String crate, long amount, long now, int attempts) throws SQLException {
+        for (int i = 0; i < Math.max(1, attempts); i++) {
+            Keys have = keys(c, profile, crate);
+            CrateMath.KeyUse use = CrateMath.staffTake(have.bound(), have.tradeable(), amount);
+            if (use == null) {
+                return new StaffTake(have, 0, 0, false);
+            }
+            if (take(c, profile, crate, use.bound(), use.tradeable(), now)) {
+                return new StaffTake(have, use.bound(), use.tradeable(), true);
+            }
+        }
+        throw new SQLException("crate keys of " + profile + " kept changing during a staff take");
+    }
+
     // ------------------------------------------------------------------ pity
 
     static Optional<Pity> pity(Connection c, UUID profile, String crate) throws SQLException {
