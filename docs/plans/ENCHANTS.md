@@ -113,11 +113,11 @@ Target: **~1–1.4 books per played hour in every activity at every stage**, so 
 | Depths ore block | 1 in 2,000 | 1 in 3,000 | 1 in 4,000 | 1 in 5,000 |
 | Depths log | 1 in 2,000 | 1 in 3,000 | 1 in 4,000 | 1 in 5,000 |
 | Mature crop (custom hoe) | 1 in 4,000 | 1 in 5,000 | 1 in 6,000 | 1 in 7,000 |
-| Depths combat kill | 1 in 150 | 1 in 200 | 1 in 250 | 1 in 300 |
+| Depths combat kill | 1 in 300 | 1 in 350 | 1 in 400 | 1 in 450 |
 | Fishing catch | 1 in 60 | 1 in 70 | 1 in 80 | 1 in 90 |
 | Island stacked mob killed | 1 in 25,000 (max 5 books per day per profile) | | | |
 
-Area-enchant blocks, Treefeller logs and harvester-area crops count as actions at the same yield as their drops (50% / 35% / 25%), so area enchants don't multiply book drops beyond their throughput. Crop and combat numbers are first guesses; E4 tunes them against measured actions per hour to hit the same books per hour as mining.
+Area-enchant blocks, Treefeller logs and harvester-area crops count as actions at the same yield as their drops (50% / 35% / 25%), so area enchants don't multiply book drops beyond their throughput. Crop numbers are first guesses (E6 tunes them). **E4 (TUNE) tuned combat:** a regular kills ~370–500 mobs per played hour, so the first guess (1 in 150 / 200 / 250 / 300) gave 1.8–2.9 books/h; the defaults are now 1 in 300 / 350 / 400 / 450 (1.2–1.4 books/h, `ECONOMY_BALANCE.md` §9.7). Mining stays; band D gives 1.35–1.9 books/h once Vein Rend II–III is on the pickaxe (watch, open question).
 
 **Bosses** (Phase 8 hooks, stubs until then):
 | Source | Roll |
@@ -144,7 +144,7 @@ Each enchant also has a **minimum tier** (§6 column "From"): it only drops from
 
 ### 3.4 Fast start and bad-luck protection (EN5)
 - **First finds:** in each activity, your 100th action gives a guaranteed **Common** book and your 1,000th a guaranteed **Uncommon** (once per **account** per season, so new profiles can't farm it).
-- **Pity:** after 2.5× the tier's expected gap without a book (5,000 / 7,500 / 10,000 / 12,500 blocks or logs by tier band; kills 375–750; catches 150–225), the next action guarantees one (counter per profile and activity; resets on any book from that activity).
+- **Pity:** after 2.5× the tier's expected gap without a book (5,000 / 7,500 / 10,000 / 12,500 blocks or logs by tier band; kills 750 / 875 / 1,000 / 1,125 since E4; catches 150–225), the next action guarantees one (counter per profile and activity; resets on any book from that activity).
 - Both show in the Enchanter guide ("Next guaranteed book in 1,240 blocks").
 
 ### 3.5 Enchanter rolls (crystal sink, EN9)
@@ -472,7 +472,7 @@ Warzone and duels use the **PvP** column of §6 (values in `enchants.yml → <id
 
 ## 12. Balancing tables
 
-Inputs: `ECONOMY_BALANCE.md` §2.4 (tier, tool level and slots per stage), §8 (drops per played hour per tier) and §9.1 (crystals per played hour). Actions per hour ≈ drops ÷ tool fortune. These are **estimates**; E4 adds the enchant factors to `tools/economy_model.py` so the sheet regenerates them.
+Inputs: `ECONOMY_BALANCE.md` §2.4 (tier, tool level and slots per stage), §8 (drops per played hour per tier) and §9.1 (crystals per played hour). Actions per hour ≈ drops ÷ tool fortune. These are **estimates**; E4 (TUNE) added the enchant factors to `tools/economy_model.py`, and `ECONOMY_BALANCE.md` §9.5–§9.10 now regenerates the real numbers for 1 / 3 / 8 h-per-day players (build per stage, books per hour by band, crystal prices in hours).
 
 ### 12.1 Books: expected played hours to the first book of each rarity (mining pool, at that stage's tier)
 **Active player** (4 h/day):
@@ -519,7 +519,7 @@ Read: "at that stage's crystal income". The tool-level gate keeps the early colu
 **What it feels like (active player):** day 1 = two level-I enchants; week 1 = three slots at levels II–III; week 2 = first Epic and Legendary books arrive, levels III–IV; month 1 = four slots with one maxed; month 2 = prestige slot, first Mythic hunt (world bosses, Eclipse crate); month 3 = everything on the main tools maxed, armor and second tools still growing. **Casual:** 2–3 slots at levels I–III by month 1, one Epic. **Top:** four maxed slots by ~week 2–3, Mythics from bosses.
 
 ### 12.3 Throughput check for the balance model (E4)
-Effective extra blocks per hour at max level: Vein Rend +48%, Dragonfire Blast +52%, Treefeller +52%, Wildfire +48%, a Mythic +15%, Prosperity +20% drops, Gilded Touch +15% value. The balance sheet today models break rate and slots (`+12% per slot`) but no area factor: **E4 must add an area factor (≤ ×1.5 at endgame, ×1.1–1.25 mid-game) and re-check the income targets**, together with BAL2 (+300% sell cap).
+Effective extra blocks per hour at max level: Vein Rend +48%, Dragonfire Blast +52%, Treefeller +52%, Wildfire +48%, a Mythic +15%, Prosperity +20% drops, Gilded Touch +15% value. ~~The balance sheet today models break rate and slots (`+12% per slot`) but no area factor.~~ **Done in E4 (TUNE):** the `+12% per slot` stand-in is replaced by a real build (Swiftness, Scholar's Insight, Prosperity, Vein Rend; area blocks at yield give items and crystals but no skill XP). Enchants add +4–14% income in week 1 and +33–58% late in the season; the income targets, pacing and the +300% cap check still pass (`ECONOMY_BALANCE.md` §0, §9.5–§9.8).
 
 ---
 
@@ -539,7 +539,7 @@ Effective extra blocks per hour at max level: Vein Rend +48%, Dragonfire Blast +
 | E1 | Enchant registry (`enchants.yml`, all 48 typed definitions + validation test), enchant books + Disenchant Scrolls as unique DB-backed items (dupe-safe, tradeable, AH category), `/enchanter` GUI (apply, upgrade, combine, remove/shatter, book shop rolls + scrolls, guide), slot/conflict/level-gate rules, crystal costs, tool + book lore, `EnchantService` + `BonusService` in common; simple stat effects (Swiftness, Tempering, Scholar's Insight, Crystal Seeker hooks where tools exist) | M4.2 (perk slots), CRY | new modules/enchants, common/enchant, common/bonus | ⬜ |
 | E2 | Book drops: Depths mine/forest/combat hooks, rarity bands by tier, min tiers, first finds + pity, mini/world boss + crate + Black Market hooks (stubs until those exist); gathering effects (Prosperity, Gilded Touch, Geode Sense, Amber Sap, Treasure Hunter, Momentum, Haste) and area enchants through the per-player block engine (enchant-break flag for anti-fast-break); Depths sword effects (Phoenix Edge, Bloodthirst, Ember Strike, Plunder, Cleave, Giant Slayer, Executioner, Phoenix Wrath) + PvP values | E1, M4.7, M4.8, M4.9 | modules/enchants + hook events in modules/depths | ⬜ |
 | E3 | Stacked-mob kill enchants: Slaughter, Bloodlust, Reaper's Sweep, Soul Reaper, Plunder per mob, Phoenix Wrath on stacks; batch kill API in stacking; island stack book drops with the daily cap; keep-up table re-checked with real spawner rates | E1, STACK | modules/enchants + kill API in modules/stacking | ⬜ |
-| E4 | Tuning: enchant factors (area, drop/crystal families, book rates, roll costs) in `tools/economy_model.py` + `ECONOMY_BALANCE.md` §9; family caps verified in `BonusService` tests; combat/fishing/crop drop chances tuned to ~1–1.4 books/h; dashboard rows (books created/consumed per day, crystals spent at the Enchanter) for M3.8 | E2, E3, BAL2 | docs, tools/economy_model.py, enchants/enchanter configs | ⬜ |
+| E4 | Tuning: enchant factors (area, drop/crystal families, book rates, roll costs) in `tools/economy_model.py` + `ECONOMY_BALANCE.md` §9; family caps verified in `BonusService` tests; combat/fishing/crop drop chances tuned to ~1–1.4 books/h; dashboard rows (books created/consumed per day, crystals spent at the Enchanter) for M3.8 | E2, E3, BAL2 | docs, tools/economy_model.py, enchants/enchanter configs | ✅ (TUNE: model + doc + combat drop defaults; dashboard rows left for M3.8 follow-up) |
 | E5 | Armor enchants on wardrobe set pieces (slots by set level, Vitality … Phoenix Rebirth, PvP values) | E1, wardrobe build (PLAN-SETS) | modules/enchants + wardrobe module API | ⬜ |
 | E6 | Hoe + rod effects: harvester-hoe hooks (Wide Reap, Green Thumb, Golden Seed + Golden crop, Harvest Moon, Sunfire Harvest), fishing hooks (Quick Bite, Double Catch, Deep Line, Tidecaller + Tide Chest, Leviathan's Hook); farming/fishing book pools go live | E1, Phase 7 farming/fishing + harvester hoe | modules/enchants + farming/fishing modules | ⬜ |
 
