@@ -23,7 +23,7 @@ skyblock.perks.nick.bypass:
   description: Ignore the reserved-word list for nicknames
   default: op
 skyblock.perks.trash:
-  description: Open the trash can (/trash), donators
+  description: Open the trash can (/trash), admins and the owner only (owner answer 376)
   default: op
 skyblock.staff.nick.others:
   description: Set or remove other players' nicknames (/setnick)

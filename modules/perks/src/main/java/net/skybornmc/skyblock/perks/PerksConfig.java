@@ -59,7 +59,7 @@ public final class PerksConfig extends ModuleConfig {
     @Override
     public String header() {
         return """
-                Phoenix Skyblock perks: /craft, /ec, /hat, /nick, /trash (rank perks), /freerank and /repair, /sudo, /realname (staff).
+                Phoenix Skyblock perks: /craft, /ec, /hat, /nick (rank perks), /freerank and /trash, /repair, /sudo, /realname (staff).
                 Edit, then run /skyblock reload perks. Wrong values are reported in the console and the old value stays active.""";
     }
 }

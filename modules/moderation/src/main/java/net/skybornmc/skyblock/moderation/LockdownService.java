@@ -281,7 +281,10 @@ final class LockdownService {
         if (chat == null || !chat.live(now)) {
             return false;
         }
-        boolean exempt = player.hasPermission(PERM_BYPASS) || player.hasPermission(ModerationModule.PERM_NOTIFY);
+        // Owner answers 460: staff, builders, the free rank and donor ranks are exempt. Donor groups don't exist yet, so any
+        // LuckPerms rank above default (weight > 0) counts as well as the bypass node.
+        boolean exempt = player.hasPermission(PERM_BYPASS) || player.hasPermission(ModerationModule.PERM_NOTIFY)
+                || Lockdown.rankExempt(core.ranks().available(), core.ranks().available() ? core.ranks().weight(player) : 0);
         Optional<PlayerData> data = core.players().get(player.getUniqueId());
         boolean isNew = data.isPresent() && Lockdown.isNew(data.get().firstSeen(), data.get().playtimeMillis(), now, settings());
         return Lockdown.chatBlocked(chat, now, exempt, isNew);

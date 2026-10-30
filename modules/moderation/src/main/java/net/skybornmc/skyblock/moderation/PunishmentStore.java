@@ -1279,11 +1279,18 @@ final class PunishmentStore {
     CompletableFuture<Submitted> submitAppeal(long punishmentId, UUID player, String playerName, String text,
                                               java.util.function.Predicate<String> reasonAppealable, PunishConfig.Appeals cfg,
                                               long now) {
+        return submitAppeal(punishmentId, player, playerName, text, reasonAppealable, cfg, now, x -> null);
+    }
+
+    /** Same, with owner answer 423: {@code earliest} gives the first moment a punishment can be appealed (null = any time). */
+    CompletableFuture<Submitted> submitAppeal(long punishmentId, UUID player, String playerName, String text,
+                                              java.util.function.Predicate<String> reasonAppealable, PunishConfig.Appeals cfg,
+                                              long now, java.util.function.Function<Punishment, Long> earliest) {
         return db.async(c -> locked(c, player, conn -> {
             Punishment p = byId(conn, punishmentId).orElse(null);
             List<Appeal> previous = p == null ? List.of() : appealsOf(conn, punishmentId);
             Optional<AppealRules.Problem> problem = AppealRules.canAppeal(p, player, previous,
-                    p != null && reasonAppealable.test(p.template()), cfg, now);
+                    p != null && reasonAppealable.test(p.template()), cfg, now, p == null ? null : earliest.apply(p));
             if (problem.isPresent()) {
                 return new Submitted(null, problem.get(), p);
             }

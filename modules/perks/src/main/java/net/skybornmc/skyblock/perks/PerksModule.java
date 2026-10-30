@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Rank perks ({@code /craft}, {@code /ec}, {@code /hat}, {@code /nick}, {@code /trash}), {@code /freerank} and restricted staff tools
+ * Rank perks ({@code /craft}, {@code /ec}, {@code /hat}, {@code /nick}), the admin {@code /trash} (owner answer 376), {@code /freerank} and restricted staff tools
  * ({@code /setnick}, {@code /realname}, {@code /repair}, {@code /sudo}).
  *
  * <p>Rank perks are permission-gated; donor ranks arrive with the store (Phase 11), so for now only staff/ops have them.</p>
@@ -227,7 +227,7 @@ public final class PerksModule implements SkyblockModule {
                 .executes(ctx -> realName(ctx.sender(), ctx.get(realArg))));
 
         commands.register(CommandSpec.command("trash")
-                .description("Open a trash can to destroy items").category("Perks")
+                .description("Open a trash can to destroy items (admins)").category("Staff")
                 .permission(PERM_TRASH).playerOnly().aliases("disposal")
                 .executes(ctx -> trash.open(ctx.player())));
 

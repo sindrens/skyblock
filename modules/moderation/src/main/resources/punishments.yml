@@ -166,6 +166,7 @@ menu:
     history: { slot: 48, icon: WRITABLE_BOOK }
     close: { slot: 49, icon: BARRIER }
     more-reasons: { slot: 50, icon: BOOKSHELF }
+    silent: { slot: 51, icon: GRAY_DYE }           # owner answer 500: no public ban/mute line (the menu's -s)
     dry-run: { slot: 52, icon: GRAY_DYE }          # P8
 
   # Four quarters (owner decision). Reason ids come from categories above.

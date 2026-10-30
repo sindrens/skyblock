@@ -267,9 +267,19 @@ final class PunishMenus {
          * Buttons that open real actions (sanctions, bulk, undo/approve on the head) are display-only meanwhile.
          */
         private boolean dryRun;
+        /**
+         * Owner answer 500: bans and mutes are announced publicly unless the staff picks Silent here (the menu's -s). Starts
+         * off every time the menu opens, so nobody forgets it on; needs {@code skyblock.staff.punish.silent}.
+         */
+        private boolean silent;
 
         PunishMenu(ModerationModule module, Target target) {
             this(module, target, false);
+        }
+
+        /** Silent applies only while the permission is still there (re-checked on every click). */
+        private boolean silentNow() {
+            return silent && viewer.hasPermission(ModerationModule.PERM_SILENT);
         }
 
         PunishMenu(ModerationModule module, Target target, boolean dryRun) {
@@ -511,7 +521,7 @@ final class PunishMenus {
                 return MenuButton.display(item);
             }
             return MenuButton.of(item, guardedConfirm(item, module.reasonName(viewer, t), step, previous,
-                    () -> module.punishWithTemplate(viewer, target, t, false, false)));
+                    () -> module.punishWithTemplate(viewer, target, t, silentNow(), false)));
         }
 
         private MenuButton warnButton(PunishConfig.WarnButton w) {
@@ -609,7 +619,7 @@ final class PunishMenus {
                         Msg.number("reasons", module.templates().templateIds().size()),
                         Msg.number("unplaced", module.templates().templateIds().stream()
                                 .filter(id -> !l.reasonSlots().containsKey(id)).count())),
-                        click -> openChild(new CategoryMenu(module, target, dryRun)));
+                        click -> openChild(new CategoryMenu(module, target, dryRun, silentNow())));
                 case "bulk" -> {
                     // spec 13.8: pick players (this one is selected), then the reason, then a confirm with the count
                     if (dryRun) {
@@ -645,6 +655,21 @@ final class PunishMenus {
                     yield MenuButton.of(service.item(icon(b, Material.GOLD_INGOT), viewer, MODULE, key + "-ready",
                             Msg.number("active", active), Msg.number("total", target.sanctions().size())),
                             click -> openChild(new SanctionMenus.SanctionsMenu(module, target)));
+                }
+                case "silent" -> {
+                    // Owner answer 500: the menu's -s (no public ban/mute line); off each time the menu opens
+                    if (!viewer.hasPermission(ModerationModule.PERM_SILENT)) {
+                        yield MenuButton.display(service.item(Material.GRAY_DYE, viewer, MODULE, key + "-locked"));
+                    }
+                    Material off = b.icon() == null ? Material.GRAY_DYE : b.icon();
+                    yield MenuButton.of(service.item(silent ? Material.LIME_DYE : off, viewer, MODULE, silent ? key + "-on" : key),
+                            click -> {
+                                silent = !silent && viewer.hasPermission(ModerationModule.PERM_SILENT);
+                                module.messages().send(viewer, silent ? "punish.silent-on" : "punish.silent-off",
+                                        Msg.p("player", target.name()));
+                                module.core().sounds().play(viewer, "click");
+                                refresh();
+                            });
                 }
                 case "dry-run" -> {
                     // P8, spec 14.6: turns the whole menu into dry-run mode while it is open
@@ -771,15 +796,22 @@ final class PunishMenus {
         private final Target target;
         /** Opened from a /p menu in dry-run mode (spec 14.6): the reasons only report what would happen. */
         private final boolean dryRun;
+        /** Owner answer 500: Silent was picked in the /p menu this was opened from. */
+        private final boolean silent;
 
         CategoryMenu(ModerationModule module, Target target) {
             this(module, target, false);
         }
 
         CategoryMenu(ModerationModule module, Target target, boolean dryRun) {
+            this(module, target, dryRun, false);
+        }
+
+        CategoryMenu(ModerationModule module, Target target, boolean dryRun, boolean silent) {
             this.module = module;
             this.target = target;
             this.dryRun = dryRun;
+            this.silent = silent;
         }
 
         @Override
@@ -819,7 +851,7 @@ final class PunishMenus {
                 long reasons = category.templates().size();
                 set(SLOTS[i++], service.item(category.icon(), viewer, MODULE, "menu.category",
                                 Msg.p("category", module.categoryName(viewer, category)), Msg.number("reasons", reasons)),
-                        click -> openChild(new TemplateMenu(module, target, category, dryRun)));
+                        click -> openChild(new TemplateMenu(module, target, category, dryRun, silent)));
             }
             set(40, service.item(Material.WRITABLE_BOOK, viewer, MODULE, "menu.punish.history-button",
                     Msg.number("total", target.history().size())), click -> openChild(new HistoryMenu(target, module)));
@@ -834,6 +866,7 @@ final class PunishMenus {
         private final Target target;
         private final Templates.Category category;
         private final boolean dryRun;
+        private final boolean silent;
         private boolean used;
 
         TemplateMenu(ModerationModule module, Target target, Templates.Category category) {
@@ -841,10 +874,15 @@ final class PunishMenus {
         }
 
         TemplateMenu(ModerationModule module, Target target, Templates.Category category, boolean dryRun) {
+            this(module, target, category, dryRun, false);
+        }
+
+        TemplateMenu(ModerationModule module, Target target, Templates.Category category, boolean dryRun, boolean silent) {
             this.module = module;
             this.target = target;
             this.category = category;
             this.dryRun = dryRun;
+            this.silent = silent;
         }
 
         @Override
@@ -925,7 +963,8 @@ final class PunishMenus {
             if (blocked) {
                 return MenuButton.display(item);
             }
-            Runnable apply = () -> module.punishWithTemplate(viewer, target, template, false, false)
+            Runnable apply = () -> module.punishWithTemplate(viewer, target, template,
+                    silent && viewer.hasPermission(ModerationModule.PERM_SILENT), false)
                     .whenComplete((r, e) -> Bukkit.getScheduler().runTask(service.plugin(),
                             () -> module.openPunishMenu(viewer, target.name(), target.evidence())));
             if (!module.templates().config().menu().confirm()) {

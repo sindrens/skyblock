@@ -115,6 +115,11 @@ final class Lockdown {
      * Is a chat line / private message / sign / book of this player blocked right now? Only during a live chat lockdown,
      * only for new accounts, never for bypass holders or staff.
      */
+    /** Owner answer 460: every rank above default (staff, builders, the free rank, donors) is exempt. Pure. */
+    static boolean rankExempt(boolean ranksAvailable, int weight) {
+        return ranksAvailable && weight > 0;
+    }
+
     static boolean chatBlocked(Active chat, long now, boolean exempt, boolean isNew) {
         return chat != null && chat.live(now) && !exempt && isNew;
     }

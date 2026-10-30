@@ -231,6 +231,7 @@ public final class ModerationModule implements SkyblockModule, Listener {
             PunishConfig.Appeals a = templates.config().extras().appeal();
             return a.enabled() && a.types().contains(p.type()) && templates.appealable(p.template());
         });
+        service.appealWait(this::earliestAppeal);
         apiSuggestions = new ApiSuggestions(core, service, templates, () -> templates.config().warnRules(), t -> reasonName(null, t));
         core.services().register(ID, net.skybornmc.skyblock.common.moderation.SuggestionService.class, apiSuggestions);
         lockdown = new LockdownService(core, msg, service, extras, () -> templates.config().extras());
@@ -1298,6 +1299,14 @@ public final class ModerationModule implements SkyblockModule, Listener {
      * Applies the ladder step for this offence (menu, More reasons, /p <player> <reason>). Completes on the main thread
      * with the result ({@code null} if it failed before the pipeline).
      */
+    /** Owner answer 423: first moment {@code p} can be appealed (permanent bans wait), or {@code null} for any time. */
+    Long earliestAppeal(Punishment p) {
+        String category = p == null || p.template() == null ? null
+                : templates.template(p.template()).map(Templates.Template::category).orElse(null);
+        ModerationConfig c = config;
+        return AppealRules.earliestAppeal(p, category, c.appealWaitPermBanDays, c.appealWaitCheatingDays, c.appealWaitCheatingCategories);
+    }
+
     CompletableFuture<PunishmentStore.IssueResult> punishWithTemplate(CommandSender sender, PunishMenus.Target target,
                                                                      Templates.Template template, boolean silent, boolean ipFlag) {
         return punishWithTemplate(sender, target, template, silent, ipFlag, false);

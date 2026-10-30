@@ -93,7 +93,7 @@ class PunishConfigTest {
             assertEquals(4, m.summarySlot());
             assertEquals(31, m.warnCounterSlot());
             assertEquals(Map.of("sanctions", 45, "kick", 46, "bulk", 47, "history", 48, "close", 49, "more-reasons", 50,
-                    "dry-run", 52), Map.copyOf(m.buttons().entrySet().stream().collect(java.util.stream.Collectors.toMap(
+                    "silent", 51, "dry-run", 52), Map.copyOf(m.buttons().entrySet().stream().collect(java.util.stream.Collectors.toMap(
                     Map.Entry::getKey, e -> e.getValue().slot()))));
             assertEquals(9, m.reasonSlots().get("toxicity"));
             assertEquals("mutes", m.quarterOf().get("toxicity"));

@@ -41,7 +41,7 @@ P7 extras (`punishments.yml → extras.sanctions`, island ladder steps, texts `m
 
 | Command | What it does | Permission | Status |
 |---|---|---|---|
-| `/p <player>` (`/punish`) | Single-screen punishment menu: mutes top-left, warn buttons bottom-left, bans top-right, small things bottom-right, head + warn counter in the middle; bottom row: Sanctions (P7: freeze balance, block trading, remove money, confiscate), Kick, Bulk, History, Close, More reasons, Dry run (P8). One click applies the next ladder step and the menu refreshes. Offline players work | `skyblock.staff.punish.gui` | ✅ |
+| `/p <player>` (`/punish`) | Single-screen punishment menu: mutes top-left, warn buttons bottom-left, bans top-right, small things bottom-right, head + warn counter in the middle; bottom row: Sanctions (P7: freeze balance, block trading, remove money, confiscate), Kick, Bulk, History, Close, More reasons, Silent (owner answer 500: the menu's `-s`, no public ban/mute line; off every time the menu opens; `skyblock.staff.punish.silent`), Dry run (P8). One click applies the next ladder step and the menu refreshes. Offline players work | `skyblock.staff.punish.gui` | ✅ |
 | `/p <player> <reason-id> [-s] [-ip] [-force]` | Apply a reason (ladder) or a warn button directly. Tab completes players (online, offline, Bedrock), reason ids and the flags you may use | `skyblock.staff.punish.gui` (+ `.silent` for `-s`, `.ipban` for `-ip`, `.force` for `-force`) | ✅ |
 | `/p <player> [reason-id] --evidence <log id>` | Same, with a `/logs` chat line of that player as the evidence (without a reason: opens the menu with it). What a `/logs` chat line click runs | `skyblock.staff.punish.gui` (+ seeing chat logs) | ✅ |
 | `/pbulk <reason-id> <player> <player> ...` | Bulk punish up to `extras.bulk.max` (20) players for one reason; always a confirm with the count and each player's step; [Undo all]. Tab completes reason ids, then player names repeatedly (names already typed are not offered again) | `skyblock.staff.punish.bulk` | ✅ |
@@ -50,7 +50,7 @@ P7 extras (`punishments.yml → extras.sanctions`, island ladder steps, texts `m
 | `/appeals` | Staff appeal queue (open first, oldest first): read, Accept / Reduce / Deny. Chat list from the console | `skyblock.staff.appeals` | ✅ |
 | `/warns <player>` | Warn counter (active warns since the last trigger), the automatic rules, when each warn expires, the repeat window and a waiting suggestion with [Apply] / [Dismiss] | `skyblock.staff.punish.history` | ✅ |
 | `/warns <player> apply\|dismiss <id>` | Handle a waiting suggestion (what the clickable [Apply] / [Dismiss] run; first click wins) | `skyblock.staff.punish.gui` (+ the permission for the suggested punishment) | ✅ |
-| `/ban <player> [reason]` · `/tempban <player> <time> [reason]` | Ban (offline + Bedrock names work), styled ban screen with ID and appeal link | `skyblock.staff.punish.ban` | ✅ |
+| `/ban <player> [reason]` · `/tempban <player> <time> [reason]` | Ban (offline + Bedrock names work), styled ban screen with ID, time left and when an appeal is possible (owner answer 423: permanent bans after `moderation.yml → appeal-wait.perm-ban-days` (30), reasons in `appeal-wait.cheating-categories` after `cheating-days` (90); `/appeal` refuses earlier) and the appeal link. Bans and mutes are announced publicly (rule number only) unless `-s` | `skyblock.staff.punish.ban` | ✅ |
 | `/ipban <player\|ip> [reason]` (`/ban-ip`) | Ban the account and its last IP (or an IP) | `skyblock.staff.punish.ipban` | ✅ |
 | `/mute <player> [reason]` · `/tempmute <player> <time> [reason]` | Mute: blocks chat, private messages, signs and books | `skyblock.staff.punish.mute` | ✅ |
 | `/warn <player> <reason>` | Warning (chat + title) | `skyblock.staff.punish.warn` | ✅ |
@@ -91,7 +91,7 @@ Staff guard (P9, spec 14.1): who is blocked, locked or allowed (with a click to 
 
 Warn rules (`punishments.yml → warn-rules`): 2 active warns suggest a 1 h mute; another warn or any mute within 7 days of a trigger suggests 1 d. Staff with `skyblock.staff.notify` get `[Apply] [Dismiss] [Open /p]`; unhandled suggestions show in `/p` and `/warns` for 24 h. Mode `auto` applies at once as "System (auto)". Broken `punishments.yml` edits are rejected (old config kept) and reported to the console and to `skyblock.admin.reload`.
 
-Lockdown bypass: `skyblock.lockdown.bypass` (never limited by a chat lockdown; every rank above default).
+Lockdown bypass: `skyblock.lockdown.bypass` (never limited by a chat lockdown; every rank above default). Owner answer 460: donor ranks too; the code also exempts every LuckPerms group with weight > 0, so new donor groups need no extra grant.
 
 Training (P8, spec 14.6): `skyblock.staff.punish.trainee` marks a trainee (no rank has it; give it per player or with a trainee group, remove it to graduate). A trainee's ban, mute, kick, island step or bulk action (`extras.training.requests-for`) becomes an approval request shown as "Alex (trainee) requests ..."; warnings apply directly and approvers get the line with [Undo] (any approver, within `approval.expire`); sanctions are refused for trainees. Trainees never approve or deny.
 
