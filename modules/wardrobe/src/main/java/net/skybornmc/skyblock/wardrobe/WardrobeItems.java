@@ -343,11 +343,11 @@ final class WardrobeItems {
                 lore.line(LoreBuilder.fill(text.raw("piece.level"), Map.of("level", String.valueOf(lv),
                         "multiplier", WardrobeText.number(multiplier))));
             }
-            bonusLines(lore, def, multiplier);
+            bonusLines(lore, def, multiplier, null);
             String merged = stack.getPersistentDataContainer().get(MERGED, PersistentDataType.STRING);
             module.registry().get(merged).ifPresent(m -> {
                 lore.line(LoreBuilder.fill(text.raw("piece.merged"), Map.of("set", LoreBuilder.escape(m.shortName()))));
-                bonusLines(lore, m, multiplier);
+                bonusLines(lore, m, multiplier, m);
             });
             Optional<ArmorPiece> piece = ArmorPiece.byKey(stack.getPersistentDataContainer().get(PIECE, PersistentDataType.STRING));
             piece.ifPresent(p -> enchantLines(lore, p, PieceEnchants.fromTag(stack.getPersistentDataContainer().get(ENCHANTS,
@@ -368,7 +368,7 @@ final class WardrobeItems {
         }
         WardrobeText text = module.text();
         ArmorSlots slots = module.config().armorSlots();
-        lore.line(text.raw("piece.enchants.header"));
+        LoreBuilder.Section section = lore.section(text.raw("piece.enchants.header"));
         for (int slot : slots.slots(piece)) {
             boolean mythic = ArmorSlots.mythic(slot);
             Optional<ToolPerk> perk = PieceEnchants.at(enchants, slot);
@@ -377,27 +377,35 @@ final class WardrobeItems {
                 String name = LoreBuilder.escape(service.displayName(p.id(), p.level()));
                 boolean working = service.enabled(p.id()) && slots.working(piece, p, level, service.maxLevel(p.id()));
                 String key = working ? (mythic ? "piece.enchants.mythic" : "piece.enchants.active") : "piece.enchants.dormant";
-                lore.line(LoreBuilder.fill(text.raw(key), Map.of("name", name, "rarity", service.rarity(p.id()).id())));
+                section.text(LoreBuilder.fill(text.raw(key), Map.of("name", name, "rarity", service.rarity(p.id()).id())));
             } else if (slots.unlocked(piece, slot, level)) {
-                lore.line(text.raw(mythic ? "piece.enchants.mythic-empty" : "piece.enchants.empty"));
+                section.text(text.raw(mythic ? "piece.enchants.mythic-empty" : "piece.enchants.empty"));
             } else {
-                lore.line(LoreBuilder.fill(text.raw(mythic ? "piece.enchants.mythic-locked" : "piece.enchants.locked"),
+                section.text(LoreBuilder.fill(text.raw(mythic ? "piece.enchants.mythic-locked" : "piece.enchants.locked"),
                         Map.of("slot", String.valueOf(slot), "level", String.valueOf(slots.unlockLevel(slot)))));
             }
         }
     }
 
-    /** "2 pieces" / "4 pieces" sections with the bonus values at a multiplier. */
-    void bonusLines(LoreBuilder lore, SetDef def, double multiplier) {
+    /**
+     * "| 2 Pieces" / "| 4 Pieces" sections with the bonus values at a multiplier; for the second set of a merged piece
+     * ({@code merged} not null) the headers name that set.
+     */
+    void bonusLines(LoreBuilder lore, SetDef def, double multiplier, SetDef merged) {
         WardrobeText text = module.text();
-        lore.line(text.raw("bonus.two-header"));
+        LoreBuilder.Section two = lore.section(header(text, "bonus.two-header", merged));
         for (SetDef.Bonus b : def.two()) {
-            lore.line(LoreBuilder.fill(text.raw("bonus.line"), Map.of("text", text.bonus(b.text(), b.value() * multiplier))));
+            two.text(LoreBuilder.fill(text.raw("bonus.line"), Map.of("text", text.bonus(b.text(), b.value() * multiplier))));
         }
-        lore.line(text.raw("bonus.four-header"));
+        LoreBuilder.Section four = lore.section(header(text, "bonus.four-header", merged));
         for (SetDef.Bonus b : def.four()) {
-            lore.line(LoreBuilder.fill(text.raw("bonus.line"), Map.of("text", text.bonus(b.text(), b.value() * multiplier))));
+            four.text(LoreBuilder.fill(text.raw("bonus.line"), Map.of("text", text.bonus(b.text(), b.value() * multiplier))));
         }
+    }
+
+    private static String header(WardrobeText text, String key, SetDef merged) {
+        return merged == null ? text.raw(key) : LoreBuilder.fill(text.raw("bonus.merged-header"),
+                Map.of("set", LoreBuilder.escape(merged.shortName()), "pieces", text.raw(key)));
     }
 
     private final class TokenRenderer implements ItemDefinition.Renderer {
@@ -427,7 +435,7 @@ final class WardrobeItems {
             }
             lore.subtitle(LoreBuilder.fill(text.raw("token.subtitle"), Map.of("tier", WardrobeText.roman(found.get().tier()))));
             lore.description(text.plain("token.description"));
-            bonusLines(lore, found.get(), module.bonusMultiplier(0));
+            bonusLines(lore, found.get(), module.bonusMultiplier(0), null);
             lore.line(text.raw("token.tradeable"));
             lore.action(text.plain("token.action-input"), text.plain("token.action-text"));
         }

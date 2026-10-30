@@ -80,9 +80,11 @@ final class ItemMenu extends Menu {
         long balance = module.balance(viewer);
         set(ShopMenu.SLOT_SUMMARY, service.item(Material.EMERALD, viewer, ShopModule.ID, "menu.summary",
                 module.money("balance", balance)));
+        List<Component> shownLore = new java.util.ArrayList<>(service.lines(viewer, ShopModule.ID, "item.shown.lore",
+                module.money("price", item.price()), Msg.number("fits", fits), module.money("balance", balance)));
+        shownLore.addAll(module.priceLines(viewer, item, balance));
         set(SLOT_ITEM, service.item(new ItemStack(material()), service.text(viewer, ShopModule.ID, "item.shown.name",
-                Msg.c("item", name())), service.lines(viewer, ShopModule.ID, "item.shown.lore", module.money("price", item.price()),
-                Msg.number("fits", fits), module.money("balance", balance))));
+                Msg.c("item", name())), shownLore));
         List<Integer> amounts = module.settings.quickAmounts();
         int[] slots = amountSlots(amounts.size());
         for (int i = 0; i < amounts.size() && i < slots.length; i++) {

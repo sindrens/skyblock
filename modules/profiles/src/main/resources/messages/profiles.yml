@@ -25,7 +25,7 @@ menu:
   rank-2: "<c:value>Knight</c:value>"
   rank-3: "<c:value>Warlord</c:value>"
   status-active: "<c:success><sym:check> Playing now"
-  status-switch: "<c:action><sym:bullet> Click to manage"
+  status-switch: "<bold><c:action>» CLICK</c:action></bold> <c:text>to manage"
   status-locked: "<c:error>Slot locked: you can't switch to it"
   # A profile in a slot. <profile> <slot> <island> <level> <created> <playtime> <status>
   profile:
@@ -47,7 +47,7 @@ menu:
       - "<c:text>empty inventory, own money."
       - "<c:text>Gems, rank and titles are shared."
       - ""
-      - "<c:action><sym:bullet> Click to create"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to create"
   # Locked slot that can be bought. <slot> <price> <rank>
   locked:
     name: "<c:muted>Locked slot <slot>"
@@ -56,7 +56,7 @@ menu:
       - "<c:text>or rank <rank><c:text>+."
       - "<c:muted>Bought slots are kept forever."
       - ""
-      - "<c:action><sym:bullet> Click to buy"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
   locked-rank:
     name: "<c:muted>Locked slot <slot>"
     lore:
@@ -85,20 +85,20 @@ manage:
       - "<c:text>profile's are loaded."
       - "<c:text>You go to its island (or spawn)."
       - ""
-      - "<c:action><sym:bullet> Click to switch"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"
   rename:
     name: "<c:value>Rename"
-    lore: ["<c:text>Give <c:value><profile></c:value> a name.", "", "<c:action><sym:bullet> Click, then type it in chat"]
+    lore: ["<c:text>Give <c:value><profile></c:value> a name.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>then type it in chat"]
   icon:
     name: "<c:value>Change icon"
-    lore: ["<c:text>Pick the icon of <c:value><profile></c:value>.", "", "<c:action><sym:bullet> Click to pick"]
+    lore: ["<c:text>Pick the icon of <c:value><profile></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
   delete:
     name: "<c:error>Delete profile"
     lore:
       - "<c:text>Deletes <c:value><profile></c:value> and everything"
       - "<c:text>on it, forever."
       - ""
-      - "<c:action><sym:bullet> Click to delete"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to delete"
   delete-active:
     name: "<c:muted>Delete profile"
     lore: ["<c:text>You are playing on it.", "<c:text>Switch to another profile first."]
@@ -141,7 +141,7 @@ icon:
     name: "<c:muted>No icons to pick"
     lore: []
   current: "<c:success><sym:check> Current icon"
-  pick: "<c:action>Click to pick"
+  pick: "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"
   gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
 
 delete:

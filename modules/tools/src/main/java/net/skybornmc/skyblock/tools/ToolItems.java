@@ -448,16 +448,17 @@ final class ToolItems {
             if (d.prestige() > 0) {
                 lore.line(LoreBuilder.fill(raw("item.prestige"), Map.of("count", String.valueOf(d.prestige()))));
             }
+            LoreBuilder.Section info = lore.section(raw("item.info-title"));
             if (d.ability() != null) {
-                lore.line(LoreBuilder.fill(raw("item.ability"), Map.of("ability", abilityName(d.ability()))));
+                info.text(LoreBuilder.fill(raw("item.ability"), Map.of("ability", abilityName(d.ability()))));
             }
             if (d.skin() != null) {
-                lore.line(LoreBuilder.fill(raw("item.skin"), Map.of("skin", skinName(d.skin()))));
+                info.text(LoreBuilder.fill(raw("item.skin"), Map.of("skin", skinName(d.skin()))));
             }
+            history(info, d);
             if (d.starter()) {
                 lore.line(raw("item.starter"));
             }
-            history(lore, d);
             int speed = (int) Math.round(speedBonus(d) * 100);
             if (d.kind() != ToolKind.SWORD && d.kind() != ToolKind.ROD) {
                 lore.stat("pillar:" + d.kind().skill().id(), plain("item.stat.speed"), "+" + speed + "%");
@@ -485,11 +486,11 @@ final class ToolItems {
             }
         }
 
-        private void history(LoreBuilder lore, ToolData d) {
+        private void history(LoreBuilder.Section info, ToolData d) {
             for (String stat : List.of(ToolData.STAT_BLOCKS, ToolData.STAT_LOGS, ToolData.STAT_KILLS)) {
                 long value = d.stat(stat);
                 if (value > 0) {
-                    lore.line(LoreBuilder.fill(raw("item.history." + stat), Map.of("value",
+                    info.text(LoreBuilder.fill(raw("item.history." + stat), Map.of("value",
                             LoreBuilder.escape(net.skybornmc.skyblock.common.util.Format.number(value)))));
                 }
             }
@@ -518,9 +519,10 @@ final class ToolItems {
                 return;
             }
             ToolCatalog.BlueprintDef b = def.get();
-            lore.line(LoreBuilder.fill(raw("blueprint-item.makes"), Map.of("tool", rawOr("blueprint." + b.id() + ".tool-name", b.id()),
+            LoreBuilder.Section info = lore.section(raw("item.info-title"));
+            info.text(LoreBuilder.fill(raw("blueprint-item.makes"), Map.of("tool", rawOr("blueprint." + b.id() + ".tool-name", b.id()),
                     "tier", String.valueOf(b.tier()))));
-            lore.line(LoreBuilder.fill(raw("blueprint-item.ability"), Map.of("ability", abilityName(b.ability()))));
+            info.text(LoreBuilder.fill(raw("blueprint-item.ability"), Map.of("ability", abilityName(b.ability()))));
             if (!b.dropWing().isBlank()) {
                 lore.line(LoreBuilder.fill(raw("blueprint-item.source"), Map.of("wing", rawOr("wing." + b.dropWing(), b.dropWing()),
                         "tier", String.valueOf(b.dropMinTier()))));

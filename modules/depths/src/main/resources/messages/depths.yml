@@ -85,7 +85,7 @@ dungeon:
     next: "<c:text>Next: <c:value>Tier <tier></c:value> <c:muted>at <skill> <c:muted><required>"
     all-open: "<c:success><sym:check> Every tier open"
     selected: "<c:ember><sym:bullet> <c:text>Showing this wing"
-    click: "<c:action>Click to show"
+    click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
   tier:
     name: "<c:value>Tier <tier> <c:muted><sym:dot></c:muted> <c:text><name>"
     locked-name: "<c:muted>Tier <tier> <sym:dot> <name>"
@@ -96,7 +96,7 @@ dungeon:
     requirement-missing: "<c:error><sym:cross> <c:text>Needs <skill> <c:value><required></c:value> <c:muted><sym:dot> <level>/<required>"
     progress: "<bar> <c:muted>(<missing> to go)"
     here: "<c:ember><sym:bullet> <c:text>You are here"
-    teleport: "<c:action>Click to teleport"
+    teleport: "<bold><c:action>» CLICK</c:action></bold> <c:text>to teleport"
     how:
       - "<c:text>Level up <skill> <c:text>to open it:"
       - "<c:value>/skills"
@@ -117,7 +117,7 @@ dungeon:
       - "<c:text>Your Depths drops: <c:value><used></c:value><c:muted>/<max>"
       - "<c:text>Sell them or take them out."
       - ""
-      - "<c:action>▶ Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
 
 # Satchel (M4.4): virtual storage per profile for Depths drops.
 satchel:
@@ -172,27 +172,29 @@ satchel:
         - "<c:text>Sell everything for about"
         - "<cur:money><worth> <c:muted>(+<bonus>% bonus)"
         - ""
-        - "<c:action>▶ Click to sell all"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell all"
       empty: ["<c:muted>Nothing to sell yet."]
     # <level> <next> <levels> <capacity> <price>
     upgrade:
       name: "<c:flame>Upgrade <c:value><next></c:value><c:muted>/<levels>"
       lore:
-        - "<c:text>Space: <c:value>+<capacity>"
-        - "<c:text>Price: <cur:money><price>"
+        - "<bold><c:buy>| Buy Price: </c:buy><cur:money><price></cur:money></bold>"
+        - "<c:text>Space: </c:text><c:value>+<capacity>"
         - ""
-        - "<c:action>▶ Click to buy"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
       name-max: "<c:flame>Upgrades <c:success><sym:check>"
       max: ["<c:text>All <c:value><levels></c:value> upgrades bought."]
     # <item> <amount> <price> <worth> <trend>
     entry:
       name: "<item>"
       lore:
-        - "<c:text>Amount: <c:value><amount>"
-        - "<c:text>Price: <cur:money><price></cur:money> <c:muted>each (<trend>%)"
-        - "<c:text>Worth: <cur:money><worth>"
+        - "<bold><c:sell>| Sell Price: </c:sell><cur:money><price></cur:money></bold> <c:muted>each (<trend>%)"
+        - ""
+        - "<bold><c:header>| Information</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Amount: </c:text><c:value><amount>"
+        - "<c:bar>| </c:bar><c:text>Worth: </c:text><cur:money><worth>"
       no-price: ["<c:muted>Can't be sold to the server."]
-      click: ["<c:action>▶ Click to sell or take out"]
+      click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to sell or take out"]
   item:
     gone:
       name: "<c:muted>None left"
@@ -204,16 +206,16 @@ satchel:
         - "<c:text>For about <cur:money><worth>"
         - "<c:muted>(before your sell bonus)"
         - ""
-        - "<c:action>▶ Click to sell"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell"
     no-sell:
       name: "<c:muted>Can't be sold"
       lore: ["<c:text>The server doesn't buy this.", "<c:text>Take it out to trade it."]
     take-stack:
       name: "<c:flame>Take one stack"
-      lore: ["<c:text>Up to 64 into your inventory.", "", "<c:action>▶ Click to take"]
+      lore: ["<c:text>Up to 64 into your inventory.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to take"]
     take-all:
       name: "<c:flame>Take all that fit"
-      lore: ["<c:text>As many as your inventory holds.", "", "<c:action>▶ Click to take"]
+      lore: ["<c:text>As many as your inventory holds.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to take"]
     take-off:
       name: "<c:muted>Taking out is off"
       lore: ["<c:text>Sell it or use it at the Forge."]

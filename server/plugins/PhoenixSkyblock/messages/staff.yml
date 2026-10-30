@@ -18,34 +18,34 @@ tool:
   need-target: "<c:error><sym:cross></c:error> <c:text>Look at a player (or right-click one)."
   inspect:
     name: "<c:info><bold>Inspect</bold></c:info> <c:muted><sym:dot> Right-click a player"
-    lore: ["<c:text>Profile, inventory, reports and logs.", "", "<c:action><sym:bullet> Right-click a player"]
+    lore: ["<c:text>Profile, inventory, reports and logs.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>a player"]
   freeze:
     name: "<c:sky_ice><bold>Freeze</bold></c:sky_ice> <c:muted><sym:dot> Right-click a player"
-    lore: ["<c:text>Freeze or unfreeze for a check.", "", "<c:action><sym:bullet> Right-click a player"]
+    lore: ["<c:text>Freeze or unfreeze for a check.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>a player"]
   random-tp:
     name: "<c:flame><bold>Random player</bold></c:flame> <c:muted><sym:dot> Right-click"
-    lore: ["<c:text>Teleport to a random player", "<c:text>(other staff are skipped).", "", "<c:action><sym:bullet> Right-click"]
+    lore: ["<c:text>Teleport to a random player", "<c:text>(other staff are skipped).", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold>"]
     none: "<c:muted>No players to teleport to.</c:muted>"
     done: "<c:text>Teleported to <c:value><player></c:value>"
   logs:
     name: "<c:ember><bold>Logs here</bold></c:ember> <c:muted><sym:dot> Right-click"
-    lore: ["<c:text>Recent actions around you.", "", "<c:action><sym:bullet> Right-click"]
+    lore: ["<c:text>Recent actions around you.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold>"]
   vanish:
     "on":
       name: "<c:success><bold>Vanished</bold></c:success> <c:muted><sym:dot> Right-click"
-      lore: ["<c:text>Players can't see you.", "", "<c:action><sym:bullet> Right-click to show yourself"]
+      lore: ["<c:text>Players can't see you.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>to show yourself"]
     "off":
       name: "<c:muted><bold>Visible</bold></c:muted> <c:muted><sym:dot> Right-click"
-      lore: ["<c:warning>Players can see you!", "", "<c:action><sym:bullet> Right-click to vanish"]
+      lore: ["<c:warning>Players can see you!", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>to vanish"]
   punish:
     name: "<c:error><bold>Punish</bold></c:error> <c:muted><sym:dot> Right-click a player"
-    lore: ["<c:text>Opens the punishment menu.", "", "<c:action><sym:bullet> Right-click a player"]
+    lore: ["<c:text>Opens the punishment menu.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>a player"]
   reports:
     name: "<c:parchment><bold>Reports</bold></c:parchment> <c:muted><sym:dot> Right-click"
-    lore: ["<c:text>Open player reports.", "", "<c:action><sym:bullet> Right-click"]
+    lore: ["<c:text>Open player reports.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold>"]
   exit:
     name: "<c:brand_bright><bold>Leave staff mode</bold></c:brand_bright>"
-    lore: ["<c:text>Gives your own inventory back.", "", "<c:action><sym:bullet> Right-click"]
+    lore: ["<c:text>Gives your own inventory back.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold>"]
 
 # --- Freeze ---
 freeze:
@@ -130,19 +130,19 @@ reports:
 outcome:
   punished:
     name: "<c:success><bold>Punished</bold></c:success>"
-    lore: ["<c:text>The report was right and <c:value><player></c:value>", "<c:text>was punished.", "", "<c:muted>Tells <reporter>: action was taken.", "<c:action><sym:bullet> Click to close"]
+    lore: ["<c:text>The report was right and <c:value><player></c:value>", "<c:text>was punished.", "", "<c:muted>Tells <reporter>: action was taken.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
   warned:
     name: "<c:flame><bold>Warned</bold></c:flame>"
-    lore: ["<c:value><player></c:value> <c:text>was warned.", "", "<c:muted>Tells <reporter>: the player was warned.", "<c:action><sym:bullet> Click to close"]
+    lore: ["<c:value><player></c:value> <c:text>was warned.", "", "<c:muted>Tells <reporter>: the player was warned.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
   no-evidence:
     name: "<c:warning><bold>No evidence</bold></c:warning>"
-    lore: ["<c:text>Checked, but nothing was found.", "", "<c:muted>Tells <reporter>: no evidence.", "<c:action><sym:bullet> Click to close"]
+    lore: ["<c:text>Checked, but nothing was found.", "", "<c:muted>Tells <reporter>: no evidence.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
   invalid:
     name: "<c:error><bold>Invalid</bold></c:error>"
-    lore: ["<c:text>No rule was broken.", "", "<c:muted>Tells <reporter>: closed, no rule broken.", "<c:action><sym:bullet> Click to close"]
+    lore: ["<c:text>No rule was broken.", "", "<c:muted>Tells <reporter>: closed, no rule broken.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
   duplicate:
     name: "<c:muted><bold>Duplicate</bold></c:muted>"
-    lore: ["<c:text>Already handled in another report.", "", "<c:muted>Tells <reporter>: duplicate.", "<c:action><sym:bullet> Click to close"]
+    lore: ["<c:text>Already handled in another report.", "", "<c:muted>Tells <reporter>: duplicate.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
 
 # --- Menus ---
 menu:
@@ -154,10 +154,10 @@ menu:
       lore: ["<c:text>You are reporting this player."]
     reason:
       name: "<c:warning><bold><reason></bold></c:warning>"
-      lore: ["<c:text>Report <c:value><player></c:value> for <reason>.", "", "<c:action><sym:bullet> Click to send"]
+      lore: ["<c:text>Report <c:value><player></c:value> for <reason>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to send"]
     other:
       name: "<c:warning><bold><reason></bold></c:warning>"
-      lore: ["<c:text>Something else? Describe it", "<c:text>in one line in chat.", "", "<c:action><sym:bullet> Click to type"]
+      lore: ["<c:text>Something else? Describe it", "<c:text>in one line in chat.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to type"]
 
   reports:
     title: "Reports"
@@ -169,19 +169,19 @@ menu:
     tab:
       open:
         name: "Open"
-        lore: ["<c:text>Reports nobody has claimed yet.", "", "<c:action><sym:bullet> Click to show"]
+        lore: ["<c:text>Reports nobody has claimed yet.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
       open-selected:
         name: "<c:value><bold>Open</bold></c:value>"
         lore: ["<c:success>Showing open reports."]
       claimed:
         name: "Claimed"
-        lore: ["<c:text>Reports a staff member is handling.", "", "<c:action><sym:bullet> Click to show"]
+        lore: ["<c:text>Reports a staff member is handling.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
       claimed-selected:
         name: "<c:value><bold>Claimed</bold></c:value>"
         lore: ["<c:success>Showing claimed reports."]
       closed:
         name: "Closed"
-        lore: ["<c:text>Recently closed reports.", "", "<c:action><sym:bullet> Click to show"]
+        lore: ["<c:text>Recently closed reports.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
       closed-selected:
         name: "<c:value><bold>Closed</bold></c:value>"
         lore: ["<c:success>Showing closed reports."]
@@ -194,7 +194,7 @@ menu:
           - "<c:ember>When</c:ember> <c:text><ago> ago"
           - "<c:ember>Where</c:ember> <c:text><where>"
           - ""
-          - "<c:action><sym:bullet> Click to open"
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
       claimed:
         name: "<c:info><bold>#<id></bold></c:info> <c:value><player></c:value> <c:muted><sym:dot> <reason>"
         lore:
@@ -204,7 +204,7 @@ menu:
           - "<c:ember>When</c:ember> <c:text><ago> ago"
           - "<c:ember>Where</c:ember> <c:text><where>"
           - ""
-          - "<c:action><sym:bullet> Click to open"
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
       closed:
         name: "<c:muted><bold>#<id></bold></c:muted> <c:value><player></c:value> <c:muted><sym:dot> <reason>"
         lore:
@@ -214,32 +214,32 @@ menu:
           - "<c:ember>Details</c:ember> <c:text><details>"
           - "<c:ember>Filed</c:ember> <c:text><ago> ago"
           - ""
-          - "<c:action><sym:bullet> Click to open"
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
 
   report-view:
     title: "#<id>"
     info: ["<c:text>Claim the report so others know you", "<c:text>are on it, check the player, then", "<c:text>close it with the outcome."]
     claim:
       name: "<c:success><bold>Claim</bold></c:success>"
-      lore: ["<c:text>Tell other staff you handle this.", "<c:muted>Current: <claimer>", "", "<c:action><sym:bullet> Click to claim"]
+      lore: ["<c:text>Tell other staff you handle this.", "<c:muted>Current: <claimer>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
     unclaim:
       name: "<c:warning><bold>Unclaim</bold></c:warning>"
-      lore: ["<c:text>Put the report back in the open list.", "", "<c:action><sym:bullet> Click to unclaim"]
+      lore: ["<c:text>Put the report back in the open list.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to unclaim"]
     teleport:
       name: "<c:value><bold>Teleport</bold></c:value>"
-      lore: ["<c:text>Go to <c:value><player></c:value>.", "", "<c:action><sym:bullet> Click to teleport"]
+      lore: ["<c:text>Go to <c:value><player></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to teleport"]
     offline:
       name: "<c:muted><bold>Offline</bold></c:muted>"
       lore: ["<c:text><player> is not online."]
     inspect:
       name: "<c:info><bold>Inspect</bold></c:info>"
-      lore: ["<c:text>Profile, inventory, history.", "", "<c:action><sym:bullet> Click to inspect"]
+      lore: ["<c:text>Profile, inventory, history.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to inspect"]
     punish:
       name: "<c:error><bold>Punish</bold></c:error>"
-      lore: ["<c:text>Open the punishment menu.", "", "<c:action><sym:bullet> Click to punish"]
+      lore: ["<c:text>Open the punishment menu.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to punish"]
     close:
       name: "<c:brand_bright><bold>Close report</bold></c:brand_bright>"
-      lore: ["<c:text>Choose the outcome.", "<c:muted>The reporter is told the result.", "", "<c:action><sym:bullet> Click to close"]
+      lore: ["<c:text>Choose the outcome.", "<c:muted>The reporter is told the result.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
 
   outcome:
     title: "Close #<id>"
@@ -260,34 +260,34 @@ menu:
         - "<c:ember>Game mode</c:ember> <c:value><gamemode>"
     reports:
       name: "<c:parchment><bold>Reports</bold></c:parchment>"
-      lore: ["<c:ember>Open</c:ember> <c:value><open>", "<c:ember>Total</c:ember> <c:value><total>", "", "<c:action><sym:bullet> Click to see them"]
+      lore: ["<c:ember>Open</c:ember> <c:value><open>", "<c:ember>Total</c:ember> <c:value><total>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to see them"]
     inventory:
       name: "<c:value><bold>Inventory</bold></c:value>"
-      lore: ["<c:text>Look into <player>'s inventory.", "", "<c:action><sym:bullet> Click to open"]
+      lore: ["<c:text>Look into <player>'s inventory.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     enderchest:
       name: "<c:value><bold>Ender chest</bold></c:value>"
-      lore: ["<c:text>Look into <player>'s ender chest.", "", "<c:action><sym:bullet> Click to open"]
+      lore: ["<c:text>Look into <player>'s ender chest.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     teleport:
       name: "<c:value><bold>Teleport</bold></c:value>"
-      lore: ["<c:text>Go to <player>.", "", "<c:action><sym:bullet> Click to teleport"]
+      lore: ["<c:text>Go to <player>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to teleport"]
     freeze:
       name: "<c:sky_ice><bold>Freeze</bold></c:sky_ice>"
-      lore: ["<c:text>Freeze <player> for a check.", "", "<c:action><sym:bullet> Click to freeze"]
+      lore: ["<c:text>Freeze <player> for a check.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to freeze"]
     unfreeze:
       name: "<c:sky_ice><bold>Unfreeze</bold></c:sky_ice>"
-      lore: ["<c:warning><player> is frozen.", "", "<c:action><sym:bullet> Click to unfreeze"]
+      lore: ["<c:warning><player> is frozen.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to unfreeze"]
     offline:
       name: "<c:muted><bold>Offline</bold></c:muted>"
       lore: ["<c:text>Inventory, teleport and freeze", "<c:text>need <player> to be online."]
     punish:
       name: "<c:error><bold>Punish</bold></c:error>"
-      lore: ["<c:text>Open the punishment menu.", "", "<c:action><sym:bullet> Click to punish"]
+      lore: ["<c:text>Open the punishment menu.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to punish"]
     logs:
       name: "<c:ember><bold>Logs</bold></c:ember>"
-      lore: ["<c:text>Everything <player> did.", "", "<c:action><sym:bullet> Click to open"]
+      lore: ["<c:text>Everything <player> did.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     wardrobe:
       name: "<c:ember><bold>Wardrobe</bold></c:ember>"
-      lore: ["<c:text>Sets and chest of <player>.", "", "<c:action><sym:bullet> Click to open"]
+      lore: ["<c:text>Sets and chest of <player>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
 
 # Profile switch refused by staff rules (round 3 PR4).
 profiles:

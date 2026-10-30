@@ -16,36 +16,37 @@
 # An empty line "" is a blank separator.
 # A line starting with "if:<placeholder>|" only shows while that placeholder has a value (not empty, not "-"):
 #   "if:island_next_note| <c:muted>Next</c:muted>  ..." hides the whole line when there is no open note.
-# Colors: brand red only in the title, labels muted gray, values white or their currency color.
+# V2 look (STYLE2): phoenix gradient title, bold red "| Section" headers, rows start with a dark red "|" bar,
+# labels gray with a colon, values white or their currency color, footer play.skybornmc.net. Max 9 lines + title.
 
 scoreboard:
   default:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     lines:
+      - " <bold><c:header>| Profile</c:header></bold>"
+      - " <c:bar>|</c:bar> <name> <c:muted><sym:dot></c:muted> <rank>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - " <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
+      - " <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
       - ""
-      - " <name> <c:muted><sym:dot></c:muted> <rank>"
-      - ""
-      - " <c:muted>Money</c:muted>  <money>"
-      - " <c:muted>Crystals</c:muted>  <crystals>"
-      - " <c:muted>Gems</c:muted>  <gems>"
-      - ""
-      - " <c:muted>Island</c:muted>  <island>"
-      # Optional (island profiles): show the active profile. Remove the "# " to turn it on.
-      # - " <c:muted>Profile</c:muted>  <c:value><ph:profile_name>"
+      - " <bold><c:header>| Island</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
+      # Optional (island profiles): show the active profile. Remove the "# " to turn it on (max 9 lines).
+      # - " <c:bar>|</c:bar> <c:text>Profile:</c:text> <c:value><ph:profile_name>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # Spawn: the hub. Same as default for now; change it freely.
   spawn:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     lines:
+      - " <bold><c:header>| Profile</c:header></bold>"
+      - " <c:bar>|</c:bar> <name> <c:muted><sym:dot></c:muted> <rank>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - " <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
+      - " <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
       - ""
-      - " <name> <c:muted><sym:dot></c:muted> <rank>"
-      - ""
-      - " <c:muted>Money</c:muted>  <money>"
-      - " <c:muted>Crystals</c:muted>  <crystals>"
-      - " <c:muted>Gems</c:muted>  <gems>"
-      - ""
-      - " <c:muted>Island</c:muted>  <island>"
+      - " <bold><c:header>| Island</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # Your own island: island first, the newest open note (only when there is one and the
@@ -53,96 +54,94 @@ scoreboard:
   island:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     lines:
-      - ""
-      - " <name> <c:muted><sym:dot></c:muted> <rank>"
-      - ""
-      - " <c:muted>Island</c:muted>  <island>"
-      - "if:island_next_note| <c:muted>Next</c:muted>  <c:value><ph:island_next_note>"
-      - " <c:muted>Money</c:muted>  <money>"
-      - " <c:muted>Crystals</c:muted>  <crystals>"
-      - " <c:muted>Gems</c:muted>  <gems>"
+      - " <bold><c:header>| Island</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
+      - "if:island_next_note| <c:bar>|</c:bar> <c:text>Next:</c:text> <c:value><ph:island_next_note>"
+      - " <bold><c:header>| Profile</c:header></bold>"
+      - " <c:bar>|</c:bar> <name> <c:muted><sym:dot></c:muted> <rank>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - " <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
+      - " <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # Someone else's island: whose island you are on.
   island-visit:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     lines:
+      - " <bold><c:header>| Island</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Visiting:</c:text> <island_here>"
       - ""
-      - " <name> <c:muted><sym:dot></c:muted> <rank>"
-      - ""
-      - " <c:muted>Visiting</c:muted>  <island_here>"
-      - ""
-      - " <c:muted>Money</c:muted>  <money>"
-      - " <c:muted>Crystals</c:muted>  <crystals>"
-      - " <c:muted>Gems</c:muted>  <gems>"
+      - " <bold><c:header>| Profile</c:header></bold>"
+      - " <c:bar>|</c:bar> <name> <c:muted><sym:dot></c:muted> <rank>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - " <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
+      - " <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # The Depths, Mine wing and causeways: where you are and how far your mining is.
   depths:
     title: "<grad:phoenix><bold>THE DEPTHS</bold></grad>"
     lines:
+      - " <bold><c:header>| Depths</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Zone:</c:text> <c:value><ph:depths_zone>"
+      - " <c:bar>|</c:bar> <c:text>Tier:</c:text> <c:value><ph:depths_tier>"
+      - " <c:bar>|</c:bar> <c:text>Satchel:</c:text> <c:value><ph:satchel_used></c:value> <c:muted>/</c:muted> <c:value><ph:satchel_max>"
+      - " <c:bar>|</c:bar> <c:text>Mining:</c:text> <c:value>Lv <ph:skill_mining_level></c:value> <c:muted>(<ph:skill_mining_progress>%)"
       - ""
-      - " <name> <c:muted><sym:dot></c:muted> <rank>"
-      - ""
-      - " <c:muted>Zone</c:muted>  <ph:depths_zone>"
-      - " <c:muted>Tier</c:muted>  <ph:depths_tier>"
-      - " <c:muted>Satchel</c:muted>  <ph:satchel_used> <c:muted>/</c:muted> <ph:satchel_max>"
-      - " <c:muted>Mining</c:muted>  <c:value>Lv <ph:skill_mining_level></c:value> <c:muted>(<ph:skill_mining_progress>%)"
-      - " <c:muted>Money</c:muted>  <money>"
+      - " <bold><c:header>| Profile</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # The Gate (Depths hub): the three skills that unlock the wings.
   depths-gate:
     title: "<grad:phoenix><bold>THE DEPTHS</bold></grad>"
     lines:
+      - " <bold><c:header>| Depths</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Zone:</c:text> <c:value><ph:depths_zone>"
       - ""
-      - " <name> <c:muted><sym:dot></c:muted> <rank>"
+      - " <bold><c:header>| Skills</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Mining:</c:text> <c:value>Lv <ph:skill_mining_level>"
+      - " <c:bar>|</c:bar> <c:text>Foraging:</c:text> <c:value>Lv <ph:skill_foraging_level>"
+      - " <c:bar>|</c:bar> <c:text>Combat:</c:text> <c:value>Lv <ph:skill_combat_level>"
       - ""
-      - " <c:muted>Zone</c:muted>  <ph:depths_zone>"
-      - ""
-      - " <c:muted>Mining</c:muted>  <c:value>Lv <ph:skill_mining_level>"
-      - " <c:muted>Foraging</c:muted>  <c:value>Lv <ph:skill_foraging_level>"
-      - " <c:muted>Combat</c:muted>  <c:value>Lv <ph:skill_combat_level>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # Forest wing: foraging instead of mining.
   depths-forest:
     title: "<grad:phoenix><bold>THE DEPTHS</bold></grad>"
     lines:
+      - " <bold><c:header>| Depths</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Zone:</c:text> <c:value><ph:depths_zone>"
+      - " <c:bar>|</c:bar> <c:text>Tier:</c:text> <c:value><ph:depths_tier>"
+      - " <c:bar>|</c:bar> <c:text>Satchel:</c:text> <c:value><ph:satchel_used></c:value> <c:muted>/</c:muted> <c:value><ph:satchel_max>"
+      - " <c:bar>|</c:bar> <c:text>Foraging:</c:text> <c:value>Lv <ph:skill_foraging_level></c:value> <c:muted>(<ph:skill_foraging_progress>%)"
       - ""
-      - " <name> <c:muted><sym:dot></c:muted> <rank>"
-      - ""
-      - " <c:muted>Zone</c:muted>  <ph:depths_zone>"
-      - " <c:muted>Tier</c:muted>  <ph:depths_tier>"
-      - " <c:muted>Satchel</c:muted>  <ph:satchel_used> <c:muted>/</c:muted> <ph:satchel_max>"
-      - " <c:muted>Foraging</c:muted>  <c:value>Lv <ph:skill_foraging_level></c:value> <c:muted>(<ph:skill_foraging_progress>%)"
-      - " <c:muted>Money</c:muted>  <money>"
+      - " <bold><c:header>| Profile</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # Combat wing: combat instead of mining.
   depths-combat:
     title: "<grad:phoenix><bold>THE DEPTHS</bold></grad>"
     lines:
+      - " <bold><c:header>| Depths</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Zone:</c:text> <c:value><ph:depths_zone>"
+      - " <c:bar>|</c:bar> <c:text>Tier:</c:text> <c:value><ph:depths_tier>"
+      - " <c:bar>|</c:bar> <c:text>Combat:</c:text> <c:value>Lv <ph:skill_combat_level></c:value> <c:muted>(<ph:skill_combat_progress>%)"
       - ""
-      - " <name> <c:muted><sym:dot></c:muted> <rank>"
-      - ""
-      - " <c:muted>Zone</c:muted>  <ph:depths_zone>"
-      - " <c:muted>Tier</c:muted>  <ph:depths_tier>"
-      - " <c:muted>Combat</c:muted>  <c:value>Lv <ph:skill_combat_level></c:value> <c:muted>(<ph:skill_combat_progress>%)"
-      - ""
-      - " <c:muted>Money</c:muted>  <money>"
+      - " <bold><c:header>| Profile</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # Warzone: placeholder until the warzone is built (kills, bounty and event timer come with it).
   warzone:
     title: "<grad:phoenix><bold>WARZONE</bold></grad>"
     lines:
+      - " <bold><c:header>| Warzone</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Combat:</c:text> <c:value>Lv <ph:skill_combat_level></c:value> <c:muted>(<ph:skill_combat_progress>%)"
       - ""
-      - " <name> <c:muted><sym:dot></c:muted> <rank>"
-      - ""
-      - " <c:muted>Combat</c:muted>  <c:value>Lv <ph:skill_combat_level></c:value> <c:muted>(<ph:skill_combat_progress>%)"
-      - ""
-      - " <c:muted>Money</c:muted>  <money>"
+      - " <bold><c:header>| Profile</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - " <c:sky_ice>play.skybornmc.net"
 
 values:

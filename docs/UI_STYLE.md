@@ -29,72 +29,83 @@ Theme: **phoenix fire**, mainly **red**, balanced with ember orange, flame gold,
 
 > **Bedrock:** Geyser only shows the 16 legacy colors and rounds hex values. Every color has a **legacy fallback** that must still read correctly. Test on Bedrock.
 
-### 1.1 Core
+### 1.1 Core (V2 palette, owner approved 2026-10-30, STYLE2)
+The V2 update made every color brighter so it reads on the light chest background and on phones. Format in
+`style.yml`: `"<hex> <legacy fallback>"`. Bedrock shows the legacy color.
+
 | Name | Hex | Legacy fallback | Use |
 |---|---|---|---|
-| `brand` | `#C21F2B` | dark_red `§4` | **Phoenix Red.** Server name, GUI titles, headers, scoreboard title, borders |
-| `brand_bright` | `#FF3D2E` | red `§c` | Gradient highlight only (never alone, so it can't be confused with errors) |
-| `ember` | `#FF8A1F` | gold `§6` | Secondary accent: section headers, separators `»`, scoreboard labels |
-| `flame` | `#FFD23F` | yellow `§e` | Highlights, "new"/"ready" badges |
-| `charcoal` | `#2B2B2B` | black `§0` | Dark backgrounds (GUI filler, resource-pack panels) |
+| `brand` | `#FF2D3F` | red `§c` | **Phoenix Red.** Server name, titles, the prefix gradient start |
+| `frame` | `#D1202F` | dark_red `§4` | Frames and borders (the old dark brand red) |
+| `brand_bright` | `#FF5A4D` | red `§c` | Gradient highlight only |
+| `ember` | `#FF8C1A` | gold `§6` | Secondary accent: separators `»`, small labels |
+| `flame` | `#FFD21A` | yellow `§e` | Highlights, filled progress/level dots, "new"/"ready" badges |
+| `charcoal` | `#2B2B2B` | black `§0` | Dark backgrounds (resource-pack panels) |
 | `parchment` | `#E8DCC0` | white `§f` | Highlighted body text |
-| `text` | `#C9C9C9` | gray `§7` | Normal body text, lore descriptions |
-| `muted` | `#7A7A7A` | dark_gray `§8` | Hints, subtitles, separators |
+| `text` | `#E0E0E0` | gray `§7` | Normal body text, lore labels |
+| `muted` | `#A0A0A0` | dark_gray `§8` | Hints, subtitles, "each", asides |
+| `locked` | `#5E5E66` | dark_gray `§8` | Empty progress dots, locked or empty slots |
 | `value` | `#FFFFFF` | white `§f` | Numbers, names, the important part of a line |
-| `action` | `#FFD23F` | yellow `§e` | "Click to …" lines, clickable chat (same as `flame`) |
+| `action` | `#FFE135` | yellow `§e` | `» CLICK` action lines, clickable chat |
+| `header` | `#FF2D3F` | red `§c` | Bold `\| Header` section titles in lore and on the scoreboard |
+| `bar` | `#D1202F` | dark_red `§4` | The `\|` bar in front of every section row |
+| `buy` | `#4DFF88` | green `§a` | `\| Buy Price:` |
+| `sell` | `#FF5A5A` | red `§c` | `\| Sell Price:` |
+| `top1` / `top2` / `top3` | `#FFD21A` / `#E6E6E6` / `#FF9A3D` | yellow / white / gold | Leaderboard places #1, #2, #3 (gold, silver, bronze) |
 
 ### 1.2 Status
 | Name | Hex | Legacy | Use |
 |---|---|---|---|
-| `success` | `#6BDB7A` | green `§a` | Success messages, "Unlocked", "Ready" |
-| `error` | `#FF5C5C` | red `§c` | Errors, "Locked", "Not enough" |
-| `warning` | `#FFB347` | gold `§6` | Confirmations, irreversible-action warnings |
-| `info` | `#63B8FF` | aqua `§b` | Tips, neutral notices |
+| `success` | `#4DFF6A` | green `§a` | Success messages, "Unlocked", `[+]` rewards |
+| `error` | `#FF3B3B` | red `§c` | Errors, "Locked", "Not enough" |
+| `warning` | `#FFB020` | gold `§6` | Confirmations, irreversible-action warnings |
+| `info` | `#3DC8FF` | aqua `§b` | Tips, neutral notices |
+| `enchant` | `#D17AFF` | light_purple `§d` | Custom enchants |
 
 ### 1.3 Currencies
 | Currency | Hex | Legacy | Symbol | Format |
 |---|---|---|---|---|
-| Money | `#5BE37D` | green `§a` | `$` | `$1.2M` |
-| Crystals (island) | `#4FD1FF` | aqua `§b` | `◆` | `◆ 4,250` |
-| Gems | `#3DDC97` | dark_green `§2` | `✦` | `✦ 120` |
-| Shards | `#FF6B6B` | red `§c` | `✧` | `✧ 35` |
-| Credits (store) | `#FF8A1F` | gold `§6` | none | `120 Credits` |
+| Money | `#4DFF88` | green `§a` | `$` | `$1.2M` |
+| Crystals (island) | `#33E0FF` | aqua `§b` | `◆` | `◆ 4,250` |
+| Gems | `#2EFFC0` | dark_green `§2` | `✦` | `✦ 120` |
+| Shards | `#FF6B8A` | red `§c` | `✧` | `✧ 35` |
+| Credits (store) | `#FF8C1A` | gold `§6` | none | `120 Credits` |
 
-Crystals replaced tokens (owner decision O8): aqua crystal look. Gems got a new emerald color and the `✦` symbol so the two are never confused; the old `<cur:tokens>`/`<sym:tokens>` tags still resolve to crystals. `<sym:sparkle>` (`✦`) is the decorative star for non-currency texts.
+Crystals replaced tokens (owner decision O8): aqua crystal look. Gems have the emerald color and the `✦` symbol so the two are never confused; the old `<cur:tokens>`/`<sym:tokens>` tags still resolve to crystals. `<sym:sparkle>` (`✦`) is the decorative star for non-currency texts.
 
 ### 1.4 Rarity (items, crates, pets, enchants)
 | Rarity | Hex | Legacy | Footer text |
 |---|---|---|---|
-| Common | `#D9D9D9` | white `§f` | `COMMON` |
-| Uncommon | `#6BDB7A` | green `§a` | `UNCOMMON` |
-| Rare | `#4F9DFF` | blue `§9` | `RARE` |
-| Epic | `#B266FF` | dark_purple `§5` | `EPIC` |
-| Legendary | `#FFAA00` | gold `§6` | `LEGENDARY` |
-| Mythic | `#FF55D4` | light_purple `§d` | `MYTHIC` (monthly/seasonal only) |
-| Special | `#FF4040` | red `§c` | `SPECIAL` (event/limited) |
+| Common | `#F2F2F2` | white `§f` | `COMMON` |
+| Uncommon | `#4DFF6A` | green `§a` | `UNCOMMON` |
+| Rare | `#3DA5FF` | blue `§9` | `RARE` |
+| Epic | `#C05CFF` | dark_purple `§5` | `EPIC` |
+| Legendary | `#FFB414` | gold `§6` | `LEGENDARY` |
+| Mythic | `#FF4FD8` | light_purple `§d` | `MYTHIC` (monthly/seasonal only) |
+| Special | `#FF2D3F` | red `§c` | `SPECIAL` (event/limited) |
 
-Crates use the same colors: Common, Uncommon, Rare, Epic and Legendary crates, and the Monthly crate = Mythic.
+Crates (7): Ember (common), Cinder (uncommon), Blaze (rare), Inferno (epic), Phoenix (legendary), Eclipse (monthly, mythic), Conqueror (KOTH).
 
 ### 1.5 Pillars and skills
 | Pillar | Hex | Legacy | Icon item |
 |---|---|---|---|
-| Mining | `#B7C0CC` | gray `§7` | Iron pickaxe |
-| Foraging | `#8BCB5A` | green `§a` | Oak log |
-| Farming | `#F0D264` | yellow `§e` | Wheat |
-| Combat | `#E5534B` | red `§c` | Iron sword |
-| Conquest | `#F0883E` | gold `§6` | Golden banner pattern / white banner |
-| Fishing (skill) | `#5AC8E6` | aqua `§b` | Fishing rod |
+| Mining | `#D0D8E4` | gray `§7` | Iron pickaxe |
+| Foraging | `#7CFF4D` | green `§a` | Oak log |
+| Farming | `#FFE04D` | yellow `§e` | Wheat |
+| Combat | `#FF4D4D` | red `§c` | Iron sword |
+| Conquest | `#FF9A3D` | gold `§6` | Golden banner pattern / white banner |
+| Fishing (skill) | `#3DD8FF` | aqua `§b` | Fishing rod |
 
 ### 1.6 Gradients
 Gradients only for: the server name, Legendary/Mythic item names, season titles and big announcements. **Never** on normal text. Bedrock shows the first color only, so the first color must be the right one.
 
-**Phoenix fire gradient** (the signature): `<gradient:#C21F2B:#FF3D2E:#FF8A1F>`, dark red → bright red → ember. Used for `PHOENIX` in the scoreboard title, tab header, join title and announcements.
+**Phoenix fire gradient** (the signature, V2): `<gradient:#FF2D3F:#FF6A1A:#FFC21A>`, red → orange → gold. Used for `PHOENIX` in the scoreboard title, tab header, join title and announcements.
 
 ### 1.6b Essentials-style color codes (owner request)
 Besides MiniMessage, `&` codes work wherever players or staff type colors: LuckPerms prefixes/suffixes, nicknames, player chat (by permission), broadcasts. Supported: `&0-&9 &a-&f`, `&l &o &n &m &k &r`, hex `&#FF3D2E` or `{#FF3D2E}` (`LegacyColors` in common). Rank prefixes stay classic `&` colors so Bedrock and other plugins read them; our chat/tab/nametags may add the rank's hex `color` meta on top.
 
 ### 1.7 Brand vs. errors
-Brand red (`§4` on Bedrock) and error red (`§c`) must never be confused:
+Since V2 the brand red and the error red share `§c` on Bedrock, so they are told apart by shape, never by color alone:
 - Errors always start with `✘` and are sentences; brand red is only used for names, titles and frames.
 - Brand red is never used for body text.
 
@@ -159,31 +170,48 @@ Blank line, a centered header with the brand gradient, 1–2 lines, a clickable 
 
 ## 4. Items
 
-### 4.1 Lore template (every custom item)
+### 4.1 Lore template (V2, STYLE2; one shared builder: `common/item/LoreBuilder`)
 ```
-<rarity>Item Name                          ← name, rarity color, no italics
-<muted>Category · Tier III                 ← subtitle line
+Iron Pickaxe                               ← name: rarity color, BOLD, no italics
+Tool · Tier 3                              ← subtitle, muted
 
-<text>Short description of what it        ← max 2 lines, ~32 chars/line
-<text>does, in plain words.
+Mine ore. Levels up as you use it.         ← description, text color, wrapped (max ~32-36 chars)
 
-<muted>Stats                               ← section header (only if needed)
- <pillar>▸ <text>Mining Speed <value>+12%
- <pillar>▸ <text>Crystal Bonus <value>+5%
+Lv 23 ●●●●●●○○○○ 62%                       ← custom lines (level bar: flame filled, locked empty)
 
-<muted>Enchants
- <c:enchant>Fortune III                    ← custom enchant color #C77DFF
- <c:enchant>Vein Miner I
+| Buy Price: $8 each                       ← bold, buy green  (shop/sell menus only, never on inventory items)
+| Sell Price: $2 each                      ← bold, sell red
+You can afford: 12
 
-<action>▶ Right-click <text>to open upgrades
-<action>▶ Shift + Right-click <text>to view stats
+| Stats                                    ← bold header color; empty sections are dropped
+| Speed: +12%                              ← bar "|" dark red, label gray + colon, value white
 
-<rarity><bold>RARE TOOL                    ← footer: RARITY + TYPE
+| Information                              ← any custom section (tools, notes, books "Details", sets "2 Pieces")
+| Ability: Vein Breaker
+
+| Perk Slots 2/3
+| Fortune III                              ← enchant color
+| Empty slot                               ← locked color
+
+Progress: 23 / 50                          ← quests/achievements
+●●●●○○○○○○ 46%
+
+| Rewards
+★ Inferno Key (x2) | 12.5%                 ← crate rewards: name in its rarity color, chance in white
+[+] $5,000                                 ← quest rewards: bold green [+]
+
+» RIGHT-CLICK buy 64                       ← bold action color, verb UPPER CASE, always last before the footer
+
+RARE TOOL                                  ← footer: bold rarity color
 ```
 Rules:
-- Max **~36 characters per line** (mobile/Bedrock readability).
-- Empty line between sections. No section if it's empty.
-- **Action lines always last** before the footer, always `▶` + `action` color.
+- Max **~36 visible characters per line** (mobile/Bedrock readability); descriptions wrap at 32, max 3 lines.
+- Exactly one empty line between sections. No section if it's empty.
+- **Action lines always last** before the footer: `<bold><c:action>» VERB</c:action></bold> <c:text>what it does`.
+- Only Bedrock-safe symbols: `|` is plain ASCII, `★ ● »` are on the safe list.
+- All words and formats live in `messages/items.yml → lore.*` (and module message files); the builder only arranges them.
+- Menus whose lore comes straight from a messages file write the same formats by hand (`<bold><c:buy>| Buy Price: </c:buy>…`,
+  `<bold><c:header>| Information</c:header></bold>`, `<c:bar>| </c:bar><c:text>Label: </c:text><c:value>value`).
 - Hide vanilla attributes, enchant lists and potion text (`HIDE_*` flags/tooltip display). Show our own lines instead.
 - Custom enchanted items get the enchant **glint**.
 - Lore is **generated from data** (stats, enchants, level) on every change. Never edited manually.
@@ -220,7 +248,7 @@ Built by the menu framework (`common/menu`, `frame()`), so every menu looks the 
 - **Navigation heads:** Back/Previous/Next are textured player heads (Mojang's official `MHF_ArrowLeft` / `MHF_ArrowRight` by default, or any minecraft-heads.com texture value in `menus.yml → heads.*`); loaded once in the background, with a plain arrow until ready or if the lookup fails. Bedrock shows a player head with the same name.
 - **Title format:** `▸ Island » Upgrades (2/5)`: red `▸` marker, crumbs in title gray `#3F3F3F` (readable on the light chest background), separator and page in `#8B8B8B`. Built with `service.title(viewer, crumbs…)`. Max **32 characters** (`menus.yml → title.max-length`): leading crumbs are dropped first, then the last one is shortened with `..`.
 - **Page indicator:** in the title (`(2/5)`, only when there is more than one page) and in the lore of Previous/Next ("Go to page 3 of 5").
-- **Button lore:** name = color word + white value; lore = description lines (`<c:text>`), an empty line, then the action line `▸ Click to …` in `<c:action>`. No italics anywhere.
+- **Button lore:** name = color word + white value; lore = description lines (`<c:text>`), an empty line, then the action line `» CLICK to …` (bold action color, verb upper case). No italics anywhere.
 - **States:** Loading = clock "⌛ Loading..."; Error = red stained glass "✘ Couldn't load this"; Empty list = cobweb in slot 22 "Nothing here yet" + a hint (per-menu key); Toggle = lime dye "✔ Enabled" / red dye "✘ Disabled" + "▸ Click to switch".
 - Smaller GUIs (3-row) for simple choices and confirmations: same frame, inner slots filled with gray panes.
 
@@ -287,19 +315,19 @@ Required for: anything irreversible, anything above a money threshold, solo→te
 
 ## 6. HUD
 
-### 6.1 Scoreboard (right side, 10 lines with the title)
-Owner (2026-10-30): "cleaner, better colors, it looks hard now". Fewer labels, more space, soft colors:
+### 6.1 Scoreboard (right side, max 9 lines + title)
+V2 (STYLE2): the same `| Header` sections as lore.
 ```
- PHOENIX SKYBLOCK          ← phoenix fire gradient, bold (the only red)
+ PHOENIX SKYBLOCK          ← phoenix gradient (red → orange → gold), bold
+ | Profile                 ← bold header color
+ | Pouched · Mod           ← dark red bar, name + rank in the rank color
+ | Money: $1.2M            ← label gray + colon, money green
+ | Crystals: ◆ 4,250
+ | Gems: ✦ 120
 
-  Pouched · Mod            ← name + rank, both in the rank color, muted dot
-
-  Money  $1.2M             ← labels muted gray, money green
-  Crystals  ◆ 4,250        ← crystals aqua
-  Gems  ✦ 120              ← gems emerald
-
-  Island  Lv 34 #12        ← level white, position muted
-  play.skybornmc.net       ← address, network ice blue
+ | Island
+ | Level: Lv 34 #12
+ play.skybornmc.net        ← footer, network ice blue
 ```
 **Per place (SB, owner Q6 "a different scoreboard per place, only relevant lines").** `hud.yml → places` picks the layout from where the player is; the layouts (title + lines) are in `messages/hud.yml → scoreboard.<layout>`:
 
@@ -330,7 +358,7 @@ Owner (2026-10-30): "cleaner, better colors, it looks hard now". Fewer labels, m
 - The board switches on the tick after a teleport or respawn and right away on a world change; walking onto another island or into another Depths zone switches on the next refresh (1 s). Only changed lines are sent, so switching never flickers.
 - Conditional lines: `"if:<placeholder>|<line>"` only shows while the placeholder has a value (not empty, not `-`); hidden lines take no space.
 - Built-in `<island_here>`: name of the island you stand on (visit board).
-- Labels `<c:muted>`, values `<c:value>` white or their currency color, two spaces between label and value, one leading space.
+- Section headers `<bold><c:header>| Name`, rows `<c:bar>|</c:bar> <c:text>Label:</c:text> value`, values white or their currency color, one leading space. Layouts that would pass 9 lines drop the blank line between sections.
 - No separator bars, no online count, no objective line (the objective returns with the tutorial/quests as its own layout).
 - Max 10 lines with the title, conditional lines included (`SidebarLinesTest` checks every bundled layout). Events add their own layout through `HudService#addLayout` (wins over places).
 
@@ -363,6 +391,11 @@ Skill XP gains (`+12 Mining XP (68%)`), tool mode changes, satchel full warnings
 
 ### 6.4 Boss bar
 Event and timer countdowns (KOTH, envoys, world boss HP, boosters). Color = event color.
+
+### 6.4b Holograms (V2)
+Shared formats in `messages/items.yml → hologram.*` for every module that spawns one (crates, leaderboards):
+title bold in its rarity color, `Right-Click: Open` / `Left-Click: View Rewards` in bold action color, leaderboard places
+`#1` / `#2` / `#3` bold in `top1` / `top2` / `top3`, other places muted. `/baltop` uses the same place colors.
 
 ### 6.5 Titles (screen)
 Only big moments: level up (island/skill/tool), unlocks, season winners, event start. Keep them short and with a sound.

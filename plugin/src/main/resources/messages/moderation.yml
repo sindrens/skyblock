@@ -238,13 +238,13 @@ menu:
       lore:
         - "<c:text><total> punishment(s) on record."
         - ""
-        - "<c:action><sym:bullet> Click to view"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"
   category:
     name: "<c:value><category>"
     lore:
       - "<c:text><reasons> reason(s)"
       - ""
-      - "<c:action><sym:bullet> Click to choose a reason"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose a reason"
   empty-category:
     name: "<c:text>No reasons here"
     lore:
@@ -256,7 +256,7 @@ menu:
       - "<c:text>Punishment: <c:flame><step>"
       - ""
       - "<c:muted>Ladder:"
-    click: "<c:action><sym:bullet> Click to punish"
+    click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to punish"
     too-long: "<c:error><sym:cross> Your rank can't do this (max <max>)"
   ladder-current: " <c:flame><sym:bullet> <n>. <step></c:flame>"
   ladder-step: " <c:muted><n>. <step>"
@@ -296,7 +296,7 @@ menu:
     approved: "<c:text>Approved by: <c:value><by>"
     # P8 (spec 14.2): only shown when the reason has a rule number.
     rule: "<c:text>Rule: <c:value><rule-text>"
-    click: "<c:action><sym:bullet> Click for details and evidence"
+    click: "<bold><c:action>» CLICK</c:action></bold> <c:text>for details and evidence"
 
 # ---------------------------------------------------------------- /p <player> (single-screen menu, Phase P)
 punish:
@@ -306,18 +306,18 @@ punish:
     - "<c:text>Right: bans (top) and small things (bottom)."
     - "<c:text>One click applies the next ladder step."
   kick-reason: "Kicked by staff. Follow the rules."
-  click: "<c:action><sym:bullet> Click to apply"
+  click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to apply"
   # Needs an approver (P4, spec 13.4): the click sends a request instead. <rule> = the approval rule ("ban perm").
   request:
     - "<c:warning>Needs approval <c:muted>(<rule>)"
-    - "<c:action><sym:bullet> Click to send a request"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to send a request"
   request-limit:
     - "<c:warning>Longer than your rank allows: needs approval"
-    - "<c:action><sym:bullet> Click to send a request"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to send a request"
   # P8 (spec 14.6): you're a trainee, so this goes to a mentor first.
   request-trainee:
     - "<c:warning>Training: a mentor approves this"
-    - "<c:action><sym:bullet> Click to send a request"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to send a request"
   # Why a button can't be used right now (same checks as the click).
   blocked:
     self: "<c:error><sym:cross> You can't punish yourself"
@@ -331,7 +331,7 @@ punish:
     # Same player + same reason within extras.duplicate-window (P2). <staff>, <ago>, <confirm>.
     duplicate:
       - "<c:warning>Just punished for this by <staff> (<ago> ago)"
-      - "<c:action><sym:bullet> Click, then again within <confirm>, to apply anyway"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>twice within <confirm> to apply anyway"
   reason:
     name: "<c:value><reason>"
     lore:
@@ -359,17 +359,17 @@ punish:
     pending:
       - ""
       - "<c:warning>Pending: suggested <action>"
-      - "<c:action><sym:bullet> Click to apply or dismiss"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to apply or dismiss"
     # [Undo] for Bedrock (P2): your last action on this player while extras.undo-window is open. <type>, <reason>, <id>, <left>.
     undo:
       - ""
       - "<c:text>Last action: <type> <c:muted>(<reason>, #<id>)"
-      - "<c:action><sym:bullet> Click to undo <c:muted>(<left> left)"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to undo <c:muted>(<left> left)"
     # A detector suggestion is waiting (P3, spec 12.8). <action>, <reason>, <details>, <count> = how many are waiting.
     api-pending:
       - ""
       - "<c:warning>Suggested (<details>): <reason>, <action>"
-      - "<c:action><sym:bullet> Click to apply or dismiss"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to apply or dismiss"
     # Staff notes (P3, spec 12.5): newest notes, only for staff with skyblock.staff.punish.notes. <count> = all active notes.
     notes-header:
       - ""
@@ -391,7 +391,7 @@ punish:
       - ""
       - "<c:warning>Request: <action> by <staff>"
       - "<c:muted>(<reason>, <ago> ago)"
-      - "<c:action><sym:bullet> Click to approve or deny"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to approve or deny"
     request-wait:
       - ""
       - "<c:warning>Request: <action> by <staff>"
@@ -417,7 +417,7 @@ punish:
       auto: "<c:muted>Mode: applied automatically"
     pending:
       - "<c:warning>Pending: suggested <action>"
-      - "<c:action><sym:bullet> Click to apply or dismiss"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to apply or dismiss"
   # Bottom row.
   buttons:
     # P7 (spec 13.1). sanctions = sanctions are switched off (extras.sanctions.enabled: false).
@@ -433,7 +433,7 @@ punish:
         - "<c:text>remove money, confiscate an item."
         - "<c:text>Active: <c:value><active></c:value> <c:muted>(<total> on record)"
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     sanctions-locked:
       name: "<c:muted>Sanctions"
       lore:
@@ -450,7 +450,7 @@ punish:
         - "<c:text>Each gets their own next step."
         - "<c:muted>This player is already selected."
         - ""
-        - "<c:action><sym:bullet> Click to pick the players"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick the players"
     bulk-locked:
       name: "<c:muted>Bulk punish"
       lore:
@@ -460,7 +460,7 @@ punish:
       lore:
         - "<c:text><total> punishment(s) on record."
         - ""
-        - "<c:action><sym:bullet> Click to view"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"
     close:
       name: "<c:error>Close"
       lore: []
@@ -470,7 +470,7 @@ punish:
         - "<c:text>All <reasons> reasons by category"
         - "<c:muted>(<unplaced> not placed on this screen)"
         - ""
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     # P8 (spec 14.6): turns the whole menu into dry-run mode while it is open. <trainee> = training.you-are or empty.
     dry-run:
       name: "<c:value>Dry run: <c:muted>off"
@@ -478,14 +478,14 @@ punish:
         - "<c:text>Practice: clicks only show what"
         - "<c:text>would happen. Nothing is applied."
         - "<trainee>"
-        - "<c:action><sym:bullet> Click to turn on"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to turn on"
     dry-run-on:
       name: "<c:warning>Dry run: <c:success>on"
       lore:
         - "<c:text>Clicks only show what would happen."
         - "<c:text>Nothing is applied, nobody is told."
         - "<trainee>"
-        - "<c:action><sym:bullet> Click to turn off"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to turn off"
     dry-run-locked:
       name: "<c:muted>Dry run"
       lore:
@@ -688,7 +688,7 @@ ack:
         - "<c:text>You got a warning from staff."
         - "<c:text>Follow the rules to avoid more."
         - ""
-        - "<c:action><sym:bullet> Click to confirm"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm"
 
 # Evidence (12.4): stored with mutes/warns (never IP addresses).
 evidence:
@@ -706,7 +706,7 @@ entry:
   evidence-name: "<c:value>Evidence <c:muted>(<count> lines)"
   evidence-line: "<c:muted><line>"
   evidence-more: "<c:muted>... <more> older line(s), see chat"
-  evidence-click: "<c:action><sym:bullet> Click to show all lines in chat"
+  evidence-click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to show all lines in chat"
   evidence-none:
     name: "<c:muted>No evidence"
     lore:
@@ -937,13 +937,13 @@ approval:
       lore:
         - "<c:text>Deny <c:value><action></c:value> for <c:value><player></c:value>."
         - ""
-        - "<c:action><sym:bullet> Click to deny with this reason"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to deny with this reason"
     type:
       name: "<c:value>Type a reason"
       lore:
         - "<c:text>Write your own reason in chat."
         - ""
-        - "<c:action><sym:bullet> Click to type it"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type it"
 
 # Mute ended / welcome back (13.13), once per ended punishment, combined with the probation notice (13.7) when it runs.
 # <rules> = extras.rules-link, <until> = end of probation (date). Only for punishments that ended by time (not pardoned).
@@ -983,8 +983,8 @@ watch:
         - "<c:text>Reason: <c:value><reason>"
         - "<c:text>Added by: <c:value><staff></c:value> <c:muted>(<date>)"
         - "<c:text>Until: <c:value><expires>"
-      click-punish: "<c:action><sym:bullet> Click to open the punish menu"
-      click-history: "<c:action><sym:bullet> Click for the history"
+      click-punish: "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the punish menu"
+      click-history: "<bold><c:action>» CLICK</c:action></bold> <c:text>for the history"
 
 # ---------------------------------------------------------------- P5 (spec 13.8, 13.10, 13.11)
 
@@ -1063,10 +1063,10 @@ bulk:
       name: "<c:value><player>"
       selected: "<c:success><sym:check> <player>"
       lore:
-        - "<c:action><sym:bullet> Click to select"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to select"
       lore-selected:
         - "<c:success>Selected"
-        - "<c:action><sym:bullet> Click to unselect"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to unselect"
     clear:
       name: "<c:value>Clear selection"
       lore:
@@ -1076,7 +1076,7 @@ bulk:
       lore:
         - "<c:text><count> player(s) selected."
         - ""
-        - "<c:action><sym:bullet> Click to continue"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to continue"
     next-none:
       name: "<c:muted>Next: pick the reason"
       lore:
@@ -1090,7 +1090,7 @@ bulk:
     lore:
       - "<c:text>Ladder: <c:value><ladder>"
       - ""
-      - "<c:action><sym:bullet> Click to preview for <count> player(s)"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to preview for <count> player(s)"
   result:
     title: "Done"
     info:
@@ -1210,7 +1210,7 @@ appeal:
         - "<c:text>Sent: <c:value><ago> ago"
         - ""
       ended: "<c:warning>The punishment already ended."
-      click: "<c:action><sym:bullet> Click to read and decide"
+      click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to read and decide"
     text-line: "<c:value><line>"
     text-chat: "<prefix><c:text>Appeal <c:value>#<aid></c:value> by <c:value><player></c:value>: <c:value><text>"
     head:
@@ -1231,7 +1231,7 @@ appeal:
         - "<c:warning>Given by <given_by>: talk to them first."
     text:
       name: "<c:value>Appeal text"
-      click: "<c:action><sym:bullet> Click to read it in chat"
+      click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to read it in chat"
     evidence-none:
       name: "<c:muted>No evidence saved"
       lore:
@@ -1241,7 +1241,7 @@ appeal:
       lore:
         - "<c:text><bans> bans, <mutes> mutes, <warns> warns, <kicks> kicks"
         - ""
-        - "<c:action><sym:bullet> Click to view"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"
     accept:
       name: "<c:success><sym:check> Accept"
       lore:
@@ -1277,18 +1277,18 @@ appeal:
       lore:
         - "<c:text>Deny appeal <c:value>#<aid></c:value> of <c:value><player></c:value>."
         - ""
-        - "<c:action><sym:bullet> Click to deny with this reason"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to deny with this reason"
     deny-type:
       name: "<c:value>Type a reason"
       lore:
         - "<c:text>Write your own reason in chat."
         - ""
-        - "<c:action><sym:bullet> Click to type it"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type it"
     close:
       name: "<c:muted>Close appeal"
       lore:
         - "<c:text>The punishment already ended."
-        - "<c:action><sym:bullet> Click to close it (no decision)"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to close it (no decision)"
     handled:
       name: "<c:muted>Already handled"
       lore:
@@ -1353,7 +1353,7 @@ lockdown:
         - "<c:text>write signs or books."
         - "<c:muted>Everyone else is unaffected."
         - ""
-        - "<c:action><sym:bullet> Click to start (<length>)"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to start (<length>)"
         - "<c:muted>Other time: /lockdown chat <time> (max <max>)"
     chat-on:
       name: "<c:warning>Chat lockdown: active"
@@ -1361,14 +1361,14 @@ lockdown:
         - "<c:text>Time left: <c:value><left>"
         - "<c:text>Started by: <c:value><staff></c:value> <c:muted>(<ago> ago)"
         - ""
-        - "<c:action><sym:bullet> Click to end it now"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to end it now"
     join-off:
       name: "<c:value>Join lockdown"
       lore:
         - "<c:text>Accounts that never joined before"
         - "<c:text>can't join. Returning players can."
         - ""
-        - "<c:action><sym:bullet> Click to start (<length>)"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to start (<length>)"
         - "<c:muted>Other time: /lockdown join <time> (max <max>)"
     join-on:
       name: "<c:warning>Join lockdown: active"
@@ -1376,7 +1376,7 @@ lockdown:
         - "<c:text>Time left: <c:value><left>"
         - "<c:text>Started by: <c:value><staff></c:value> <c:muted>(<ago> ago)"
         - ""
-        - "<c:action><sym:bullet> Click to end it now"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to end it now"
     status-off:
       name: "<c:success><sym:check> No lockdown active"
       lore:
@@ -1521,14 +1521,14 @@ sanctions:
         - "<c:text>No paying, money notes, bank, shop,"
         - "<c:text>auction house or trades."
         - ""
-        - "<c:action><sym:bullet> Click: pick a length, then a reason"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>pick a length, then a reason"
     freeze-on:
       name: "<c:error>Balance frozen"
       lore:
         - "<c:text>Until <c:value><until></c:value> <c:muted>(#<sid>)"
         - "<c:text>By <c:value><staff></c:value><c:text>: <reason>"
         - ""
-        - "<c:action><sym:bullet> Click to lift"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to lift"
     freeze-locked:
       name: "<c:muted>Freeze balance"
       lore:
@@ -1543,14 +1543,14 @@ sanctions:
         - "<c:text>No auction house, /pay or trades."
         - "<c:text>Their listings go back to their collection bin."
         - ""
-        - "<c:action><sym:bullet> Click: pick a length, then a reason"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>pick a length, then a reason"
     trade-on:
       name: "<c:error>Trading blocked"
       lore:
         - "<c:text>Until <c:value><until></c:value> <c:muted>(#<sid>)"
         - "<c:text>By <c:value><staff></c:value><c:text>: <reason>"
         - ""
-        - "<c:action><sym:bullet> Click to lift"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to lift"
     trade-locked:
       name: "<c:muted>Block trading"
       lore:
@@ -1565,7 +1565,7 @@ sanctions:
         - "<c:text>Takes at most their balance (max <c:value><max></c:value><c:text>)."
         - "<c:text>Can be restored later."
         - ""
-        - "<c:action><sym:bullet> Click: pick the amount, then a reason"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>pick the amount, then a reason"
     money-locked:
       name: "<c:muted>Remove money"
       lore:
@@ -1581,7 +1581,7 @@ sanctions:
         - "<c:text>or ender chest. Can be restored later."
         - "<c:muted>Only while they are online."
         - ""
-        - "<c:action><sym:bullet> Click to pick the item"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick the item"
     confiscate-locked:
       name: "<c:muted>Confiscate item"
       lore:
@@ -1602,7 +1602,7 @@ sanctions:
         - "<c:text><reason> <c:muted>(<state>)"
         - "<c:text>By <staff> on <date>, until <until>"
         - ""
-        - "<c:action><sym:bullet> Click to lift"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to lift"
     entry-restore:
       name: "<c:muted>#<sid></c:muted> <c:warning><kind>"
       lore:
@@ -1610,26 +1610,26 @@ sanctions:
         - "<c:text>By <staff> on <date>"
         - "<c:text>Amount: <amount> <c:muted><sym:dot></c:muted> <c:text>Item: <item>"
         - ""
-        - "<c:action><sym:bullet> Click to restore"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to restore"
     length:
       name: "<c:value><length>"
       lore:
         - "<c:text><kind> for <player>"
         - ""
-        - "<c:action><sym:bullet> Click to choose"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
     reason:
       name: "<c:value><reason>"
       lore:
         - "<c:text><kind> for <player>"
         - ""
-        - "<c:action><sym:bullet> Click to apply"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to apply"
   money:
     picker: "Remove money: <player>"
   confiscate-menu:
     title-inventory: "Confiscate: inventory"
     title-ender: "Confiscate: ender chest"
     click:
-      - "<c:action><sym:bullet> Click to confiscate <item>"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to confiscate <item>"
     show-ender:
       name: "<c:value>Show ender chest"
       lore: []
@@ -1999,15 +1999,15 @@ report:
       lore:
         - "<c:text>Prints the whole report in chat."
         - ""
-        - "<c:action><sym:bullet> Click to print"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to print"
     previous:
       name: "<c:value><month>"
       lore:
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     next:
       name: "<c:value><month>"
       lore:
-        - "<c:action><sym:bullet> Click to open"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     empty: "<c:muted>Nothing this month."
 
 # "Honorable" title (14.11): earned after extras.clean-streak.days (60) without a warn, mute, ban or kick, with an account

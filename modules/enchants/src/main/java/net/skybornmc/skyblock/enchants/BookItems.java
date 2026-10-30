@@ -141,12 +141,12 @@ final class BookItems {
             EnchantText text = module.text();
             lore.subtitle(LoreBuilder.fill(text.raw("book.subtitle"), Map.of("targets", LoreBuilder.escape(text.targets(def)))));
             lore.description(text.effect(def, level));
-            lore.line(text.raw("book.details"));
-            lore.line(LoreBuilder.fill(text.raw("book.max-level"), Map.of("value", EnchantText.roman(def.maxLevel()))));
+            LoreBuilder.Section details = lore.section(text.raw("book.details"));
+            details.text(LoreBuilder.fill(text.raw("book.max-level"), Map.of("value", EnchantText.roman(def.maxLevel()))));
             if (def.mythic()) {
-                lore.line(text.raw("book.prestige-slot"));
+                details.text(text.raw("book.prestige-slot"));
             } else {
-                lore.line(LoreBuilder.fill(text.raw("book.slot-cost"), Map.of("value", String.valueOf(def.slotCost()))));
+                details.text(LoreBuilder.fill(text.raw("book.slot-cost"), Map.of("value", String.valueOf(def.slotCost()))));
             }
             List<String> conflicts = new ArrayList<>();
             for (EnchantDef other : module.registry().all()) {
@@ -155,7 +155,7 @@ final class BookItems {
                 }
             }
             if (!conflicts.isEmpty()) {
-                lore.line(LoreBuilder.fill(text.raw("book.conflicts"), Map.of("value", LoreBuilder.escape(String.join(", ", conflicts)))));
+                details.text(LoreBuilder.fill(text.raw("book.conflicts"), Map.of("value", LoreBuilder.escape(String.join(", ", conflicts)))));
             }
             if (def.armorOnly()) {
                 lore.line(text.raw("book.armor"));

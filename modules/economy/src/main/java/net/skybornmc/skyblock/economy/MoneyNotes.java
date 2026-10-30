@@ -143,11 +143,12 @@ final class MoneyNotes implements Listener {
                             return;
                         }
                         Data d = data.get();
-                        lore.line(LoreBuilder.fill(raw(P + "item.amount"), Map.of("currency", d.currency().key(),
+                        LoreBuilder.Section info = lore.section(raw(P + "item.info-title"));
+                        info.text(LoreBuilder.fill(raw(P + "item.amount"), Map.of("currency", d.currency().key(),
                                 "amount", LoreBuilder.escape(exact(d.currency(), d.amount())))));
-                        lore.line(LoreBuilder.fill(raw(P + "item.signed-by"), Map.of("signer", LoreBuilder.escape(d.signer()))));
-                        lore.line(LoreBuilder.fill(raw(P + "item.date"), Map.of("date", LoreBuilder.escape(date(d.created())))));
-                        lore.line(LoreBuilder.fill(raw(P + "item.id"), Map.of("id", LoreBuilder.escape(MoneyNote.shortId(d.id())))));
+                        info.text(LoreBuilder.fill(raw(P + "item.signed-by"), Map.of("signer", LoreBuilder.escape(d.signer()))));
+                        info.text(LoreBuilder.fill(raw(P + "item.date"), Map.of("date", LoreBuilder.escape(date(d.created())))));
+                        info.text(LoreBuilder.fill(raw(P + "item.id"), Map.of("id", LoreBuilder.escape(MoneyNote.shortId(d.id())))));
                     }
                 });
         if (module.config.noteGlint) {

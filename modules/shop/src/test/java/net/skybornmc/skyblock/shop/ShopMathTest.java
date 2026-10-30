@@ -22,6 +22,14 @@ class ShopMathTest {
     };
 
     @Test
+    void affordableIsBalanceOverPrice() {
+        assertEquals(12, ShopMath.affordable(8, 100));
+        assertEquals(0, ShopMath.affordable(8, 7));
+        assertEquals(0, ShopMath.affordable(0, 100));
+        assertEquals(0, ShopMath.affordable(5, -3));
+    }
+
+    @Test
     void totals() {
         assertEquals(64 * 6L, ShopMath.total(6, 64).getAsLong());
         assertEquals(2_304 * 2_400L, ShopMath.total(2_400, 2_304).getAsLong());

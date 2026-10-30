@@ -610,7 +610,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
             EconomyStore.TopEntry e = top.entries().get(i);
             String name = e.name() == null ? e.player().toString().substring(0, 8) : e.name();
             boolean you = sender instanceof Player p && p.getUniqueId().equals(e.player());
-            msg.send(sender, you ? "baltop.line-you" : "baltop.line", Msg.number("rank", i + 1), Msg.p("player", name),
+            msg.send(sender, baltopKey(i + 1, you), Msg.number("rank", i + 1), Msg.p("player", name),
                     amountTag("amount", sender, currency, e.balance()), Msg.p("exact", Format.number(e.balance())));
         }
         if (sender instanceof Player p && top.rank(p.getUniqueId()) == 0) {
@@ -770,5 +770,13 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 msg.send(online, "eco.notify", amountTag("balance", online, currency, now), Msg.c("currency", currencyName(online, currency)));
             }
         });
+    }
+
+    /** STYLE2: places 1-3 use the top1/top2/top3 colors ({@code baltop.line-top<n>}); your own line keeps its highlight. */
+    static String baltopKey(int rank, boolean you) {
+        if (you) {
+            return "baltop.line-you";
+        }
+        return rank >= 1 && rank <= 3 ? "baltop.line-top" + rank : "baltop.line";
     }
 }

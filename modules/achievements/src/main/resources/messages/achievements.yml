@@ -45,7 +45,7 @@ menu:
     lore: ["<c:muted>New achievements come later."]
   bar:
     filled: "<c:flame>●</c:flame>"
-    empty: "<c:muted>●</c:muted>"
+    empty: "<c:locked>●</c:locked>"
   head:
     name: "<c:value><player>"
     lore:
@@ -59,7 +59,7 @@ menu:
       - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
       - "<bar> <c:value><percent>%"
       - ""
-      - "<c:action><sym:bullet> Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   entry:
     name: "<name><c:value><tier>"
     name-done: "<name><c:value><tier></c:value> <c:success><sym:check>"
@@ -67,14 +67,14 @@ menu:
     subtitle: "<c:muted>Achievement <sym:dot> <category>"
     subtitle-tiers: "<c:muted><category> <sym:dot> Tier <tier>/<tiers>"
     progress:
-      - "<bar> <c:value><percent>%"
-      - "<c:value><value></c:value><c:muted>/<goal>"
+      - "<c:text>Progress: </c:text><c:value><value></c:value><c:muted> / </c:muted><c:value><goal>"
+      - "<bar> <c:muted><percent>%"
     done:
       - "<c:success><sym:check> Done"
       - "<c:text>Reached: <c:value><value>"
     goals: "<c:text>Goals: <goals>"
-    reward: "<c:text>Reward: <title> <c:muted>title"
-    reward-owned: "<c:text>Reward: <title> <c:success><sym:check>"
+    reward: "<c:success><bold>[+]</bold></c:success> <title> <c:muted>title"
+    reward-owned: "<c:success><bold>[+]</bold></c:success> <title> <c:success><sym:check>"
   goal-done: "<c:success><goal></c:success>"
   goal-open: "<c:muted><goal></c:muted>"
   goal-separator: " <c:muted>·</c:muted> "

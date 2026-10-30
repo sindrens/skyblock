@@ -155,13 +155,13 @@ menu:
       - "<c:text>Ends the trade. Every item"
       - "<c:text>goes back to its owner."
       - ""
-      - "<c:action><sym:bullet> Click to cancel"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to cancel"
   my-money:
     name: "<c:value>Your money offer"
     lore:
       - "<c:text>Now: <money>"
       - ""
-      - "<c:action><sym:bullet> Click to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
   my-money-locked:
     name: "<c:value>Your money offer"
     lore:
@@ -171,14 +171,14 @@ menu:
     lore:
       - "<c:text>Waiting for the other player."
       - ""
-      - "<c:action><sym:bullet> Click to take it back"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take it back"
   my-not-ready:
     name: "<c:warning>Confirm trade"
     lore:
       - "<c:text>Check both sides first."
       - "<c:text>Any change resets this."
       - ""
-      - "<c:action><sym:bullet> Click to confirm"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm"
   their-ready:
     name: "<c:success><sym:check> <player> confirmed"
     lore:
@@ -210,7 +210,7 @@ menu:
       - "<c:text>Ask staff; it is safe in the database."
   take-back:
     - ""
-    - "<c:action><sym:bullet> Click to take back"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take back"
 
 money-menu:
   title: "Money offer"
@@ -221,4 +221,4 @@ money-menu:
       - "<c:text>Your offer: <c:value><offer>"
       - "<c:text>You have: <c:value><balance>"
       - ""
-      - "<c:action><sym:bullet> Click to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"

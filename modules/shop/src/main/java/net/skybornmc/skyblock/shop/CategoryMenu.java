@@ -75,6 +75,8 @@ final class CategoryMenu extends PagedMenu<ShopCatalog.Item> {
         Component itemName = material == null ? Component.text(item.id()) : ShopModule.itemName(material);
         List<Component> lore = new ArrayList<>(service.lines(viewer, ShopModule.ID, "category.entry.lore",
                 module.money("price", item.price()), module.money("stack", ShopMath.total(item.price(), 64).orElse(Long.MAX_VALUE))));
+        lore.addAll(module.priceLines(viewer, item, module.balance(viewer)));
+        lore.add(Component.empty());
         String state = state(module, viewer, item, lore);
         lore.addAll(service.lines(viewer, ShopModule.ID, "category.entry." + state));
         ItemStack shown = service.item(icon, service.text(viewer, ShopModule.ID, "category.entry.name", Msg.c("item", itemName)), lore);

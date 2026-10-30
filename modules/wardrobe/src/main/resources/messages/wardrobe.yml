@@ -246,16 +246,18 @@ bonus-text:
   death-loss: "Warzone money loss -{value}%"
 
 bonus:
-  two-header: "<c:muted>2 pieces"
-  four-header: "<c:muted>4 pieces"
-  line: " <c:ember>▸</c:ember> <c:text>{text}"
+  # Section titles (the lore builder adds the bold red "| " header look); merged-header names the second set of a merge.
+  two-header: "2 Pieces"
+  four-header: "4 Pieces"
+  merged-header: "{set} {pieces}"
+  line: "<c:text>{text}"
 
 # ---------------------------------------------------------------- items
 piece:
   fallback-name: "<rarity:uncommon>Set Piece"
   unknown: "This set no longer exists."
   subtitle: "<c:muted>Set piece · Tier {tier}"
-  set: "<c:text>Set: {set}"
+  set: "<c:text>Set: </c:text>{set}"
   merged: "<c:text>Merged with <c:value>{set}"
   level: "<c:text>Lv <c:value>{level}</c:value> <c:muted>· {multiplier}x"
   action-input: "/wardrobe"
@@ -263,14 +265,14 @@ piece:
   # Armor enchants (E5): one line per slot. {name} enchant + level, {rarity} its rarity id, {slot} slot number,
   # {level} set level that opens the slot. Dormant = slot not open yet or level above the set level gate (no effect).
   enchants:
-    header: "<c:muted>Enchants"
-    active: " <c:enchant>▸ <rarity:{rarity}>{name}"
-    mythic: " <c:enchant>★ <rarity:{rarity}>{name}"
-    dormant: " <c:muted>▸ {name} (dormant)"
-    empty: " <c:muted>▸ Empty slot"
-    locked: " <c:muted>▸ Slot {slot} at Lv {level}"
-    mythic-empty: " <c:muted>★ Empty mythic slot"
-    mythic-locked: " <c:muted>★ Mythic slot at Lv {level}"
+    header: "Enchants"
+    active: "<rarity:{rarity}>{name}"
+    mythic: "<c:enchant>★ <rarity:{rarity}>{name}"
+    dormant: "<c:locked>{name} (dormant)"
+    empty: "<c:locked>Empty slot"
+    locked: "<c:locked>Slot {slot} at Lv {level}"
+    mythic-empty: "<c:locked>★ Empty mythic slot"
+    mythic-locked: "<c:locked>★ Mythic slot at Lv {level}"
 
 token:
   fallback-name: "<rarity:rare>Set Token"
@@ -295,16 +297,16 @@ tome:
 # ---------------------------------------------------------------- menus
 menu:
   title: "Wardrobe"
-  click: ["<c:action><sym:bullet> Click to open"]
+  click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   main:
     info: ["<c:text>Every set in the game. Buy", "<c:text>a set once, wear it any time.", "<c:text>2 and 4 pieces give bonuses."]
-    click: ["<c:action><sym:bullet> Click to open"]
+    click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     empty:
       name: "<c:muted>No sets here"
       lore: ["<c:text>Try another filter."]
     filter:
       name: "<c:value>Filter: <filter>"
-      lore: ["<c:text>Show only some sets.", "", "<c:action><sym:bullet> Click to switch"]
+      lore: ["<c:text>Show only some sets.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
     worn:
       name: "<c:value>Worn now"
       lore: ["<c:text>Your active set bonuses.", ""]
@@ -313,29 +315,29 @@ menu:
       line-capped: "<c:ember>▸</c:ember> <c:text><text> <c:warning>(capped)"
     chest:
       name: "<c:value>Wardrobe Chest"
-      lore: ["<c:text>Keep tools, books and tokens", "<c:text>safe. Space: <c:value><size></c:value>", "", "<c:action><sym:bullet> Click to open"]
+      lore: ["<c:text>Keep tools, books and tokens", "<c:text>safe. Space: <c:value><size></c:value>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     loadouts:
       name: "<c:value>Loadouts"
-      lore: ["<c:text>Swap sets and tools in one", "<c:text>click. Saved: <c:value><count>/<slots>", "", "<c:action><sym:bullet> Click to open"]
+      lore: ["<c:text>Swap sets and tools in one", "<c:text>click. Saved: <c:value><count>/<slots>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   set:
     subtitle: "<c:muted><activity> · Tier <tier>"
     info: ["<c:text>Wear pieces one by one or all", "<c:text>at once. 2 and 4 pieces give", "<c:text>bonuses. Sets stay yours."]
     piece:
       not-owned: ["<c:error><sym:cross> Not owned"]
-      worn: ["<c:success><sym:check> Worn", "", "<c:action><sym:bullet> Click to take off"]
-      wear: ["<c:text>In your wardrobe.", "", "<c:action><sym:bullet> Click to wear"]
+      worn: ["<c:success><sym:check> Worn", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to take off"]
+      wear: ["<c:text>In your wardrobe.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to wear"]
     wear-all:
       name: "<c:success>Wear all"
-      lore: ["<c:text>Put on all 4 pieces.", "", "<c:action><sym:bullet> Click to wear"]
+      lore: ["<c:text>Put on all 4 pieces.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to wear"]
     take-off-all:
       name: "<c:error>Take all off"
-      lore: ["<c:text>The pieces stay yours.", "", "<c:action><sym:bullet> Click to take off"]
+      lore: ["<c:text>The pieces stay yours.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to take off"]
     bonuses:
       name: "<c:value>Bonuses"
       lore: ["<c:text>Values at your set level.", ""]
-      two: "<c:muted>2 pieces"
-      four: "<c:muted>4 pieces"
-      line: "<c:ember>▸</c:ember> <c:text><text>"
+      two: "<bold><c:header>| 2 Pieces</c:header></bold>"
+      four: "<bold><c:header>| 4 Pieces</c:header></bold>"
+      line: "<c:bar>| </c:bar><c:text><text>"
       merged: "<c:muted>Merged with <set>:"
       warzone: ["", "<c:warning>Warzone: 1x, only damage", "<c:warning>reduction and conquest work."]
     level:
@@ -355,28 +357,28 @@ menu:
       lore: ["<c:text>This set is not in your", "<c:text>wardrobe any more."]
     tome:
       name: "<c:success>Use a Wardrobe Tome"
-      lore: ["<c:text>+<c:value><xp></c:value> set XP from your tome.", "<c:text>Then: <c:value>Lv <level>", "<c:muted>Tomes stop at Lv <cap>.", "", "<c:action><sym:bullet> Click to use"]
+      lore: ["<c:text>+<c:value><xp></c:value> set XP from your tome.", "<c:text>Then: <c:value>Lv <level>", "<c:muted>Tomes stop at Lv <cap>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to use"]
     tome-capped:
       name: "<c:muted>Wardrobe Tome"
       lore: ["<c:text>Tomes only work below", "<c:text>Lv <level>. Play to level up."]
     merge:
       name: "<c:success>Merge"
-      lore: ["<c:text>Combine with another max", "<c:text>level set: both bonuses in", "<c:text>one set, back to Lv 0.", "", "<c:action><sym:bullet> Click to pick a set"]
+      lore: ["<c:text>Combine with another max", "<c:text>level set: both bonuses in", "<c:text>one set, back to Lv 0.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a set"]
     merge-locked:
       name: "<c:muted>Merge"
       lore: ["<c:text>Combine two max level sets.", "<c:error><sym:cross></c:error> <why>"]
     trail-on:
       name: "<c:success>Trail: on"
-      lore: ["<c:text>Particles behind you while", "<c:text>you wear all 4 pieces.", "", "<c:action><sym:bullet> Click to turn off"]
+      lore: ["<c:text>Particles behind you while", "<c:text>you wear all 4 pieces.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to turn off"]
     trail-off:
       name: "<c:muted>Trail: off"
-      lore: ["<c:text>Particles behind you while", "<c:text>you wear all 4 pieces.", "", "<c:action><sym:bullet> Click to turn on"]
+      lore: ["<c:text>Particles behind you while", "<c:text>you wear all 4 pieces.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to turn on"]
     enchants:
       name: "<c:enchant>Enchants"
       lore: ["<c:text>Armor enchants per piece:", ""]
       piece: "<c:muted><piece>: <c:text><enchants>"
       none: "none"
-      click: ["", "<c:action><sym:bullet> Click to open the Enchanter"]
+      click: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the Enchanter"]
     enchants-not-owned:
       name: "<c:muted>Enchants"
       lore: ["<c:text>Own this set to put armor", "<c:text>enchants on its pieces."]
@@ -385,13 +387,13 @@ menu:
       lore: ["<c:text>The Enchanter is closed", "<c:text>right now."]
     redeem:
       name: "<c:success>Redeem token"
-      lore: ["<c:text>You carry a token for this", "<c:text>set.", "", "<c:action><sym:bullet> Click to redeem"]
+      lore: ["<c:text>You carry a token for this", "<c:text>set.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to redeem"]
     buy:
       name: "<c:success>Buy"
-      lore: ["<c:text>Price: <c:value><price>", "<c:text>Goes into your wardrobe.", "", "<c:action><sym:bullet> Click to buy"]
+      lore: ["<c:text>Price: <c:value><price>", "<c:text>Goes into your wardrobe.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"]
     claim:
       name: "<c:success>Claim"
-      lore: ["<c:text>You own this Sigil: claim", "<c:text>the set here for free.", "", "<c:action><sym:bullet> Click to claim"]
+      lore: ["<c:text>You own this Sigil: claim", "<c:text>the set here for free.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
     state:
       name: "<c:value>How to get it"
   merge:
@@ -403,21 +405,21 @@ menu:
     entry: ["<c:text>Lv <c:value><level></c:value> <c:muted>· <multiplier>x"]
     refused: ["<c:error><sym:cross></c:error> <why>"]
     fee: ["<c:text>Fee: <c:value><fee>"]
-    click: ["", "<c:action><sym:bullet> Click to choose"]
+    click: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
     look-title: "Pick a look"
     look-info:
       name: "<c:value>Pick a look"
       lore: ["<c:text>The merged pieces use the", "<c:text>look of the set you click."]
-    look-pick: ["<c:text>Use the <c:value><set></c:value> <c:text>look.", "", "<c:action><sym:bullet> Click to pick"]
+    look-pick: ["<c:text>Use the <c:value><set></c:value> <c:text>look.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
   loadout:
     title: "Loadouts"
     info: ["<c:text>Click a loadout to swap your", "<c:text>sets and hotbar tools. Old", "<c:text>tools go to the chest."]
     edit:
       name: "<c:value>Edit <name>"
-      lore: ["<c:text>Save, rename, icon, delete.", "", "<c:action><sym:bullet> Click to edit"]
+      lore: ["<c:text>Save, rename, icon, delete.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit"]
     empty:
       name: "<c:muted>Empty loadout <n>"
-      lore: ["<c:text>Saves the sets you wear and", "<c:text>the tools in your hotbar.", "", "<c:action><sym:bullet> Click to save your gear"]
+      lore: ["<c:text>Saves the sets you wear and", "<c:text>the tools in your hotbar.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to save your gear"]
     locked-slot:
       name: "<c:muted>Loadout <n>"
       lore: ["<c:error><sym:cross> Locked", "<c:text>Ranks and the store add", "<c:text>more loadouts."]
@@ -432,12 +434,12 @@ menu:
       lore: ["<c:text>Pets are coming. Loadouts", "<c:text>will save your pet too."]
     wardrobe:
       name: "<c:value>Wardrobe"
-      lore: ["<c:text>All sets and the chest.", "", "<c:action><sym:bullet> Click to open"]
+      lore: ["<c:text>All sets and the chest.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     preset:
       name: "<c:value><name>"
       lore: ["<c:text>Set pieces: <c:value><pieces>", "<c:text>Tools: <c:value><tools>"]
       missing: ["<c:error><sym:cross> <count> missing"]
-      click: ["<c:action><sym:bullet> Click to use"]
+      click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to use"]
       locked: ["<c:error><sym:cross> Locked: rank or store"]
     edit-title: "<name>"
     edit-info: ["<c:text>Use it, save what you wear", "<c:text>now, rename it, pick an", "<c:text>icon or delete it."]
@@ -446,22 +448,22 @@ menu:
       lore: ["<c:text>Open /loadout again."]
     apply:
       name: "<c:success>Use now"
-      lore: ["<c:text>Swap to this loadout.", "", "<c:action><sym:bullet> Click to use"]
+      lore: ["<c:text>Swap to this loadout.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to use"]
     apply-locked:
       name: "<c:muted>Use now"
       lore: ["<c:error><sym:cross> Locked: rank or store"]
     save:
       name: "<c:value>Save current"
-      lore: ["<c:text>Replace it with the sets you", "<c:text>wear and your hotbar tools.", "", "<c:action><sym:bullet> Click to save"]
+      lore: ["<c:text>Replace it with the sets you", "<c:text>wear and your hotbar tools.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to save"]
     rename:
       name: "<c:value>Rename"
-      lore: ["<c:text>Type a new name in chat.", "<c:muted>Max <max>, one word.", "", "<c:action><sym:bullet> Click to rename"]
+      lore: ["<c:text>Type a new name in chat.", "<c:muted>Max <max>, one word.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to rename"]
     icon:
       name: "<c:value>Icon"
-      lore: ["<c:text>Pick the item shown for", "<c:text>this loadout.", "", "<c:action><sym:bullet> Click to pick"]
+      lore: ["<c:text>Pick the item shown for", "<c:text>this loadout.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
     delete:
       name: "<c:error>Delete"
-      lore: ["<c:text>Sets and tools stay yours.", "", "<c:action><sym:bullet> Click to delete"]
+      lore: ["<c:text>Sets and tools stay yours.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to delete"]
     icon-title: "Icon"
     icon-info: ["<c:text>Click an item to use it as", "<c:text>this loadout's icon."]
     icon-empty:
@@ -469,7 +471,7 @@ menu:
       lore: ["<c:text>Ask staff to add icons."]
     icon-pick:
       name: "<c:value>Use this icon"
-      lore: ["<c:action><sym:bullet> Click to pick"]
+      lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
     line:
       keep: "<c:text><part>: <c:muted>keep"
       empty: "<c:text><part>: <c:muted>empty"
@@ -486,10 +488,10 @@ menu:
     empty:
       name: "<c:muted>Your chest is empty"
       lore: ["<c:text>Use Store an item below."]
-    take: ["<c:action><sym:bullet> Click to take out"]
+    take: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to take out"]
     store:
       name: "<c:value>Store an item"
-      lore: ["<c:text>Pick a tool, book or token", "<c:text>from your inventory.", "<c:muted>Fits now: <count>", "", "<c:action><sym:bullet> Click to choose"]
+      lore: ["<c:text>Pick a tool, book or token", "<c:text>from your inventory.", "<c:muted>Fits now: <count>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
     space:
       name: "<c:value>Space <used>/<size>"
       lore: ["<c:text>Ranks can add more space."]
@@ -499,7 +501,7 @@ menu:
     empty:
       name: "<c:muted>Nothing fits"
       lore: ["<c:text>Only tools, enchant books,", "<c:text>scrolls and tokens fit."]
-    click: ["<c:action><sym:bullet> Click to store"]
+    click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to store"]
   staff:
     title: "Wardrobe of <player>"
     info: ["<c:text>Sets of this player's active", "<c:text>profile. Admins can give and", "<c:text>remove sets. All logged."]
@@ -507,35 +509,35 @@ menu:
       name: "<c:muted>No sets"
       lore: ["<c:text>This profile owns no set."]
     entry: ["<c:text>From: <c:value><origin>", "<c:text>Since: <c:value><date>", "<c:text>Level: <c:value><level>"]
-    remove-click: ["", "<c:action><sym:bullet> Click to remove"]
-    manage-click: ["", "<c:action><sym:bullet> Click to set level / remove"]
+    remove-click: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
+    manage-click: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to set level / remove"]
     entry-head: ["<c:text>Level now: <c:value><level>"]
     set-level:
       name: "<c:value>Set to Lv <level>"
-      lore: ["<c:text>Staff test tool. Logged.", "", "<c:action><sym:bullet> Click to set"]
+      lore: ["<c:text>Staff test tool. Logged.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to set"]
     remove:
       name: "<c:error>Remove set"
-      lore: ["<c:text>Takes the set away. Logged.", "", "<c:action><sym:bullet> Click to remove"]
+      lore: ["<c:text>Takes the set away. Logged.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
     give-tome:
       normal:
         name: "<c:success>Give a tome"
-        lore: ["<c:text>Wardrobe Tome: +<xp> XP.", "<c:text>The player must be online.", "", "<c:action><sym:bullet> Click to give"]
+        lore: ["<c:text>Wardrobe Tome: +<xp> XP.", "<c:text>The player must be online.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to give"]
       greater:
         name: "<c:success>Give a greater tome"
-        lore: ["<c:text>Greater tome: +<xp> XP.", "<c:text>The player must be online.", "", "<c:action><sym:bullet> Click to give"]
+        lore: ["<c:text>Greater tome: +<xp> XP.", "<c:text>The player must be online.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to give"]
     chest:
       name: "<c:value>Wardrobe Chest"
       lore: ["<c:text>Items stored: <c:value><count>"]
     give-set:
       name: "<c:success>Give a set"
-      lore: ["<c:text>Add a set to this profile.", "", "<c:action><sym:bullet> Click to pick"]
+      lore: ["<c:text>Add a set to this profile.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
     give-token:
       name: "<c:success>Give a token"
-      lore: ["<c:text>Give a Set Token item.", "<c:text>The player must be online.", "", "<c:action><sym:bullet> Click to pick"]
+      lore: ["<c:text>Give a Set Token item.", "<c:text>The player must be online.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
     pick-set: "Give set"
     pick-token: "Give token"
-    pick-set-click: ["<c:action><sym:bullet> Click to give"]
-    pick-token-click: ["<c:action><sym:bullet> Click to give a token"]
+    pick-set-click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to give"]
+    pick-token-click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to give a token"]
 
 # Owned/locked state lines (list entries and the set screen).
 status:

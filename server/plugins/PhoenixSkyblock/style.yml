@@ -7,23 +7,33 @@
 prefix: "<grad:phoenix><bold>PHOENIX</bold></grad> <c:ember>»</c:ember> "
 
 colors:
-  # Phoenix Skyblock core
-  brand: "#C21F2B dark_red"
-  brand_bright: "#FF3D2E red"
-  ember: "#FF8A1F gold"
-  flame: "#FFD23F yellow"
+  # Phoenix Skyblock core (V2 palette, owner approved 2026-10-30)
+  brand: "#FF2D3F red"
+  frame: "#D1202F dark_red"        # frames and borders (the old dark brand red)
+  brand_bright: "#FF5A4D red"
+  ember: "#FF8C1A gold"
+  flame: "#FFD21A yellow"
   charcoal: "#2B2B2B black"
   parchment: "#E8DCC0 white"
-  text: "#C9C9C9 gray"
-  muted: "#7A7A7A dark_gray"
+  text: "#E0E0E0 gray"
+  muted: "#A0A0A0 dark_gray"
+  locked: "#5E5E66 dark_gray"      # empty progress dots, locked entries
   value: "#FFFFFF white"
-  action: "#FFD23F yellow"
+  action: "#FFE135 yellow"
   # Status
-  success: "#6BDB7A green"
-  error: "#FF5C5C red"
-  warning: "#FFB347 gold"
-  info: "#63B8FF aqua"
-  enchant: "#C77DFF light_purple"
+  success: "#4DFF6A green"
+  error: "#FF3B3B red"
+  warning: "#FFB020 gold"
+  info: "#3DC8FF aqua"
+  enchant: "#D17AFF light_purple"
+  # Lore and HUD (V2): "| Header" sections, bar-prefixed lines, price lines, leaderboard places
+  header: "#FF2D3F red"
+  bar: "#D1202F dark_red"
+  buy: "#4DFF88 green"
+  sell: "#FF5A5A red"
+  top1: "#FFD21A yellow"
+  top2: "#E6E6E6 white"
+  top3: "#FF9A3D gold"
   # SkybornMC network (from the logo)
   sky_frost: "#E4EBF0 white"
   sky_ice: "#9FC6E8 aqua"
@@ -32,36 +42,36 @@ colors:
   sky_cloud: "#FBFCFF white"
 
 currencies:
-  money: "#5BE37D green"
-  crystals: "#4FD1FF aqua"      # island crystals (replaced tokens): aqua crystal look
-  gems: "#3DDC97 dark_green"    # emerald green, clearly different from crystals
-  shards: "#FF6B6B red"
-  credits: "#FF8A1F gold"
+  money: "#4DFF88 green"
+  crystals: "#33E0FF aqua"      # island crystals (replaced tokens): aqua crystal look
+  gems: "#2EFFC0 dark_green"    # emerald green, clearly different from crystals
+  shards: "#FF6B8A red"
+  credits: "#FF8C1A gold"
 
 rarity:
-  common: "#D9D9D9 white"
-  uncommon: "#6BDB7A green"
-  rare: "#4F9DFF blue"
-  epic: "#B266FF dark_purple"
-  legendary: "#FFAA00 gold"
-  mythic: "#FF55D4 light_purple"
-  special: "#FF4040 red"
+  common: "#F2F2F2 white"
+  uncommon: "#4DFF6A green"
+  rare: "#3DA5FF blue"
+  epic: "#C05CFF dark_purple"
+  legendary: "#FFB414 gold"
+  mythic: "#FF4FD8 light_purple"
+  special: "#FF2D3F red"
 
 pillar:
-  mining: "#B7C0CC gray"
-  foraging: "#8BCB5A green"
-  farming: "#F0D264 yellow"
-  combat: "#E5534B red"
-  conquest: "#F0883E gold"
-  fishing: "#5AC8E6 aqua"
+  mining: "#D0D8E4 gray"
+  foraging: "#7CFF4D green"
+  farming: "#FFE04D yellow"
+  combat: "#FF4D4D red"
+  conquest: "#FF9A3D gold"
+  fishing: "#3DD8FF aqua"
 
 # Gradients: color names from 'colors' or hex values. Bedrock shows the first color only.
 gradients:
-  phoenix: [brand, brand_bright, ember]
+  phoenix: ["#FF2D3F", "#FF6A1A", "#FFC21A"]
   flame: [ember, flame]
   skyborn: [sky_frost, sky_ice, sky_blue]
-  legendary: ["#FFAA00", "#FFD23F"]
-  mythic: ["#FF55D4", "#B266FF"]
+  legendary: ["#FFB414", "#FFD21A"]
+  mythic: ["#FF4FD8", "#C05CFF"]
 
 symbols:
   money: "$"

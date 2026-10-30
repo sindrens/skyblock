@@ -127,12 +127,12 @@ public final class ItemRegistry {
         lore.footer(java.util.Objects.requireNonNullElse(def.renderer().rarity(stack, def), def.rarity()), def.type());
 
         Audience viewer = Audience.empty(); // items are shared between viewers: hex colors, Geyser rounds for Bedrock
+        // V2 look: every custom item name is bold in its rarity color (the name format sets the color), never italic
         Component name = messages.parse(viewer, def.renderer().name(stack, def))
-                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                .decorationIfAbsent(TextDecoration.BOLD, TextDecoration.State.TRUE);
         List<Component> lines = new ArrayList<>();
-        for (String line : lore.build()) {
-            lines.add(messages.parse(viewer, line).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
-        }
+        lines.addAll(LoreBuilder.components(messages, viewer, lore.build()));
         stack.setData(DataComponentTypes.ITEM_NAME, name);
         stack.unsetData(DataComponentTypes.CUSTOM_NAME);
         stack.setData(DataComponentTypes.LORE, ItemLore.lore(lines));
@@ -141,12 +141,7 @@ public final class ItemRegistry {
 
     /** The label/format text for the lore builder; missing keys show {@code [missing: items:key]} (logged once). */
     String label(String key) {
-        String raw = messages.raw(MESSAGES, key);
-        if (raw == null) {
-            messages.component(Audience.empty(), MESSAGES, key); // logs the missing key once
-            return "<red>[missing: items:" + key + "]</red>";
-        }
-        return raw;
+        return LoreBuilder.labels(messages).apply(key);
     }
 
     // ------------------------------------------------------------------ identification
