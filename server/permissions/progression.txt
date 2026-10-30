@@ -1,0 +1,4 @@
+# LuckPerms grants for the progression module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/progression/src/main/resources/permissions/progression.yml. One console command per line; # = comment.
+
+# M5.1 (island pillars) has no command or permission: nothing to grant yet.

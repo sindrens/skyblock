@@ -58,6 +58,8 @@ New module: **`modules/progression`** (pillars, island level, tasks, upgrades, m
 **Config:** `pillars.yml` (curve, sources and multipliers, balance bonus, milestones, `conquest.enabled: false`).
 **Permissions:** none new (menu is part of `/is level`).
 
+**Built (M5-1, 30 Oct):** `modules/progression` + `common/progression` (`ProgressionService`, `PillarLevelUpEvent`, `PillarMilestoneEvent`). Base XP = `SkillXpGainEvent#getBaseAmount` (new). The ISLAND_XP family lives in the progression module (`ProgressionService#islandXpBoost`; `BonusService` is per player). Island sources until the Farming/Foraging skills pay them: ripe crops, natural logs (placed logs give 0) and spawner mobs killed by the player's own hit or arrow. Milestones pay island crystals to every member in one transaction with the milestone row. Defaults (base 250, rewards 500/1.5k/4k/10k) are in `docs/OPEN_QUESTIONS.md` (M5-1). Details: `docs/commands/progression.md`.
+
 ## M5.2 Island level (dynamic, 8 sources)
 
 **Island Level = floor(total level points ÷ 10).** The menu shows the progress to the next level ("Level 38 · 40% to 39").

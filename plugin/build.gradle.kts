@@ -35,6 +35,7 @@ dependencies {
     implementation(project(":modules:box"))
     implementation(project(":modules:npcs"))
     implementation(project(":modules:tutorial"))
+    implementation(project(":modules:progression"))
 }
 
 tasks {
