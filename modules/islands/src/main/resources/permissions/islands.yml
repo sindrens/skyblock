@@ -4,6 +4,9 @@
 skyblock.island:
   description: Use /is (create your island, home, go, sethome, setmyhome, invite, invites, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, settings, notes, chat, info, disband, visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like)
   default: true
+skyblock.island.stats:
+  description: Use /is stats and the Stats button of the island menu (M2.6) - your island's stats and each member's part
+  default: true
 skyblock.island.fly:
   description: Island fly - fly inside any island's border (members always; visitors when that island's visitor-fly setting is on). Off when leaving the border, no fall damage on landing. The Wings mastery gives the same on its island later.
   default: false
@@ -52,4 +55,11 @@ skyblock.island.admin.slots:
   default: op
 skyblock.island.admin.teleport-slot:
   description: Staff - /isadmin teleport-slot <id> teleports to a grid slot (also by clicking in /isadmin slots)
+  default: op
+# M2.6 island stats (/isadmin stats)
+skyblock.island.admin.stats:
+  description: Staff - /isadmin stats view <island> opens any island's stats menu read only (logged)
+  default: op
+skyblock.island.admin.stats.reset:
+  description: Staff - /isadmin stats reset <island> deletes all stats of an island (confirm, logged)
   default: op

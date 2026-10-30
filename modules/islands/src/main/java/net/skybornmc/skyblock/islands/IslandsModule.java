@@ -45,7 +45,8 @@ import java.util.UUID;
  * ISL2: the Admin role, the hurt-monsters and settings permissions, join cooldown from the last join, {@code /is settings}
  * ({@link IslandSettingsManager}, {@link IslandFlagListener}, {@link IslandEnvironment}), island fly ({@link IslandFly}),
  * personal homes ({@link PersonalHomes}) and {@code /is invites}. M2.5: the island menu ({@link IslandMenu}, {@code /is} with
- * an island), {@code /is info} ({@link IslandHub}) and island chat ({@link IslandChat}, {@code /is chat}). Publishes {@link IslandService} and the placeholders {@code island_name},
+ * an island), {@code /is info} ({@link IslandHub}) and island chat ({@link IslandChat}, {@code /is chat}). M2.6: island stats
+ * ({@link IslandStats}, {@code /is stats}, publishes {@link net.skybornmc.skyblock.common.island.IslandStatsService}). Publishes {@link IslandService} and the placeholders {@code island_name},
  * {@code island_level} and {@code island_rank}.
  */
 public final class IslandsModule implements SkyblockModule, Listener {
@@ -53,6 +54,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     static final String ID = "islands";
     static final String PERM_USE = "skyblock.island";
     static final String PERM_BYPASS = "skyblock.island.bypass";
+    static final String PERM_STATS = "skyblock.island.stats";
 
     private final Core core;
     private final ModuleMessages msg;
@@ -77,6 +79,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandNotes notes;
     private IslandChat chat;
     private IslandHub hub;
+    private IslandStats stats;
     private net.skybornmc.skyblock.common.util.Scheduler.Task sweepTask;
 
     public IslandsModule(Core core) {
@@ -158,6 +161,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
         startSweep();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         core.services().register(ID, IslandService.class, manager);
+        // M2.6 island stats (publishes IslandStatsService)
+        stats = new IslandStats(this, manager);
+        stats.enable();
+        visits.onVisit(island -> stats.tracker().recordIsland(island.id(), net.skybornmc.skyblock.common.island.IslandStat.VISITORS, 1));
         // M2.5: island chat as a chat channel (the chat module routes toggled chat here and checks one-shots)
         core.services().register(ID, ChatChannel.class, chat);
         registerPlaceholders();
@@ -200,6 +207,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
         if (chat != null) {
             chat.loadConfig();
         }
+        if (stats != null) {
+            stats.reload();
+        }
         core.messages().load(ID);
         Bukkit.getOnlinePlayers().forEach(borders::update);
         refreshPlayers();
@@ -218,6 +228,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
 
     @Override
     public void disable() {
+        if (stats != null) {
+            stats.disable(); // writes the buffered counters (blocking)
+            stats = null;
+        }
         if (notes != null) {
             notes.stop(); // holograms removed, temporary books taken back
             notes = null;
@@ -335,6 +349,11 @@ public final class IslandsModule implements SkyblockModule, Listener {
         return chat;
     }
 
+    /** Island stats (M2.6), or null before enable / after disable. */
+    IslandStats stats() {
+        return stats;
+    }
+
     /** The island menu and /is info (M2.5). */
     IslandHub hub() {
         return hub;
@@ -436,6 +455,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("info").description("Info about your island or a player's island: leader, members, size, warps")
                         .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(infoIsland).example("is info Steve")
                         .executes(ctx -> hub.info(ctx.player(), ctx.getOr(infoIsland, null))))
+                .sub(CommandSpec.sub("stats").description("Your island's stats: totals, today, this week and each member's part")
+                        .permission(PERM_STATS).playerOnly().cooldown(Duration.ofSeconds(2)).example("is stats")
+                        .executes(ctx -> stats.command(ctx.player())))
                 .sub(CommandSpec.sub("invites").description("Invites you received and invites your island sent").permission(PERM_USE)
                         .playerOnly().example("is invites")
                         .executes(ctx -> members.openInvites(ctx.player())))

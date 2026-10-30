@@ -40,3 +40,8 @@ lp group helper permission set skyblock.island.notes.staff true
 # stored members (not coop/visitors). Staff spy on island chat with the "Island chat spy" /settings toggle (default off),
 # like /socialspy. helper < mod < admin.
 lp group helper permission set skyblock.island.chat.spy true
+
+# Island stats (M2.6): /is stats uses skyblock.island.stats (plugin default true, everyone). Staff look at any island's
+# stats (helpers and up); only admins reset them (confirm; logged in category staff as isadmin_stats_reset).
+lp group helper permission set skyblock.island.admin.stats true
+lp group admin permission set skyblock.island.admin.stats.reset true

@@ -20,7 +20,7 @@ import java.util.List;
  * <pre>
  *  R O B B 🌱 B B O R      4 island info (name, role, leader, members, size, warps, level, created, open/locked)
  *  B 🛏 👤 ⚙ ✈ 🚪 🔁 📄 B   10 home, 11 members, 12 permissions, 13 warps, 14 visitors (lock), 15 settings, 16 invites
- *  B 📖 💬 🎨 🗺 ★ ▣ ⚒ B   19 notes, 20 island chat, 21 chat colors, 22 visit islands, 23 stats*, 24 bank, 25 upgrades*
+ *  B 📖 💬 🎨 🗺 ★ ▣ ⚒ B   19 notes, 20 island chat, 21 chat colors, 22 visit islands, 23 stats, 24 bank, 25 upgrades*
  *  B . . . . . . . B
  *  B . . . 💣 . . . B      40 disband (leader) / leave (everyone else)
  *  ← O B ? ✘ H B O R      45 back, 48 info, 49 close, 50 help        * = coming soon (gray)
@@ -147,7 +147,7 @@ final class IslandMenu extends Menu {
                 click -> openChild(new ChatColorsMenu(module, islands, chat, island))));
         set(SLOT_VISIT, button(Material.FILLED_MAP, "menu.visit",
                 click -> openChild(new VisitMenu(module, islands, module.visits(), warps, Showcase.Sort.VISITS))));
-        set(SLOT_STATS, comingSoon(Material.GOLD_INGOT, "menu.stats"));
+        set(SLOT_STATS, stats());
         set(SLOT_BANK, bank());
         set(SLOT_UPGRADES, comingSoon(Material.ANVIL, "menu.upgrades"));
         if (role == Role.LEADER) {
@@ -192,6 +192,15 @@ final class IslandMenu extends Menu {
             return MenuButton.display(item);
         }
         return MenuButton.of(item, click -> visits.lock(viewer, !island.locked()));
+    }
+
+    /** M2.6: island stats (every member). */
+    private MenuButton stats() {
+        IslandStats stats = module.stats();
+        if (stats == null) {
+            return comingSoon(Material.GOLD_INGOT, "menu.stats-off");
+        }
+        return button(Material.GOLD_INGOT, "menu.stats", click -> stats.open(viewer, island, this, false));
     }
 
     /** M3.3: opens the bank menu of the economy module (personal and island bank side by side). */

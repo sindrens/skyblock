@@ -31,7 +31,9 @@ class IslandMessagesTest {
             // NOTES
             "IslandNotes.java", "NotesMenu.java", "NoteActionsMenu.java", "DeletedNotesMenu.java", "NoteBook.java", "NoteHolograms.java",
             // M2.5
-            "IslandMenu.java", "ChatColorsMenu.java", "IslandChat.java", "IslandHub.java");
+            "IslandMenu.java", "ChatColorsMenu.java", "IslandChat.java", "IslandHub.java",
+            // M2.6
+            "IslandStats.java", "IslandStatsMenu.java", "IslandStatsMembersMenu.java", "IslandStatsListener.java");
     /** Keys of other files (commands.yml) and strings that are not message keys. */
     private static final Set<String> FOREIGN = Set.of("invalid-number", "player-unknown", "frame.next", "frame.previous", "title.page");
 
@@ -133,7 +135,15 @@ class IslandMessagesTest {
         for (var role : IslandChatRules.COLOR_ROLES) {
             keys.add("role." + MemberStore.key(role));
         }
-        for (String button : List.of("home", "visit", "stats", "bank", "upgrades", "disband", "leave")) {
+        // M2.6: category names, trend lines, the stats button when the service is off
+        for (var stat : net.skybornmc.skyblock.common.island.IslandStat.values()) {
+            keys.add("stats.category." + stat.key());
+        }
+        for (var kind : net.skybornmc.skyblock.islands.stats.StatsTrend.Kind.values()) {
+            keys.add("stats.item.trend." + kind.name().toLowerCase(java.util.Locale.ROOT));
+        }
+        keys.add("stats.members.former");
+        for (String button : List.of("home", "visit", "stats", "stats-off", "bank", "upgrades", "disband", "leave")) {
             keys.add("menu." + button + ".name");
             keys.add("menu." + button + ".lore");
         }

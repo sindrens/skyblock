@@ -1,4 +1,4 @@
-# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.5, M2.7, ISL2, NOTES
+# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.5, M2.6, M2.7, ISL2, NOTES
 
 Grid, creation, home and per-player borders. Config `islands.yml`, texts `messages/islands.yml`, schematics in
 `plugins/PhoenixSkyblock/schematics/` (`<creation.schematic>.schem` + optional `<name>.yml` metadata with `home`, `chest`,
@@ -25,6 +25,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is notes [island]` | NOTES (owner N1-N9): your island's shared notes / to-do list menu (also from `/is members`). Add a note (chat input, max `notes.max-length` 200 characters, chat filter), click a note to tick it done / open it again, change its text, pin it as a hologram where you stand, unpin or delete it (confirm). Open as book (temporary book, saved on close), Clear done notes (manage). Without an island, opens the notes of the island you stand on when your role may read them (coop). `[island]` = staff only: any island's notes read only plus its deleted notes (tab completes island names for staff) | `skyblock.island`; `[island]`: `skyblock.island.notes.staff` | ✅ |
 | `/is chat [message]` | M2.5: island chat. Without text: switch your chat to your island and back (toggle mode; also the Island chat button in the menu). With text: one message to your island. Members only (Leader, Admin, Mod, Member; coop players and visitors don't hear it). Lines are `[Island] <role> <name> » text` in the role's color (the leader picks role colors in the menu). Uses the chat module's checks: mute, rate limit, duplicates, word/link filter, `&` colors by permission, `[item]`. Tab: example texts | `skyblock.island` | ✅ |
 | `/is info [player]` | M2.5: your island, or that player's island, in chat: name, solo/team, open/locked, leader, members, size, level (Phase 5), warps, created date and your role there. Tab: island names | `skyblock.island` | ✅ |
+| `/is stats` | M2.6: your island's **stats menu** (also the Stats button of the island menu): per category all time, today, this week, last week and the change vs last week; click a category for each member's part (heads, share in %, this week, today; former members keep theirs). Categories without their feature yet show `-` (Coming soon). Members only; reloads every 10 s while open | `skyblock.island.stats` (everyone) | ✅ |
 | `/is invites` | ISL2: invites you received (click: Accept / Deny) and invites your island sent (click: cancel, Leader/Admin/Mod; confirm). Refreshes every 2 s | `skyblock.island` | ✅ |
 | `/is settings [setting] [on\|off\|value]` | ISL2: the island settings menu; with a setting name it changes it right away (no value: toggles flip, weather/time go to the next value). Who may change: the `settings` role permission (Leader + Admin by default); every member can look. Tab completes settings and, after one, its values | `skyblock.island` | ✅ |
 | `/is disband` | Leader only: confirm screen (what is lost, members removed, creation cooldown), then type `disband` in chat (`disband.confirm-word`, `cancel` keeps it). The island is removed for good: members and coop players are removed and told, everyone on it is sent to spawn, the slot is cleared and reused. New island after `creation.cooldown-hours` (24 h) | `skyblock.island` | ✅ |
@@ -130,6 +131,8 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
 | `/isadmin bypass` | Same as `/is bypass` | `skyblock.island.bypass` (admin) | ✅ |
 | `/isadmin slots` | Grid overview GUI (spiral order): used (owner, members, size), clearing (progress), free; filter and reload buttons; click = teleport | `skyblock.island.admin.slots` (admin) | ✅ |
 | `/isadmin teleport-slot <slot>` | Teleport to the top of a slot's center column (tab completes slot ids) | `skyblock.island.admin.teleport-slot` (admin) | ✅ |
+| `/isadmin stats view <island>` | M2.6: open any island's stats menu read only (logged `isadmin_stats_view`) | `skyblock.island.admin.stats` (helper) | ✅ |
+| `/isadmin stats reset <island>` | M2.6: delete all stats of an island: day, week and all-time counters plus the ones not saved yet (confirm `/isadmin stats reset <island> confirm` within 30 s; logged `isadmin_stats_reset` with the rows removed) | `skyblock.island.admin.stats.reset` (admin) | ✅ |
 
 ## Visiting, warps and showcase (M2.4)
 - **Who enters:** members and coop players always; everyone else unless banned (checked first) or the island is locked.
@@ -271,6 +274,36 @@ Owner answers N1-N9 (`docs/DECISIONS_2026-10-30.md`, `docs/QUESTIONS_ROUND2.md` 
 - **Logged:** every island chat message as category `chat`, action `chat`, with `channel: island`, the island id/name and the
   number of recipients (blocked ones as `chat_blocked` with the reason, like public chat); role color changes as category
   `island`, `island_chat_color` (role, from, to).
+
+## Island stats (M2.6)
+Counters per island **and** per member (profile key) and category, in **day** and **week** buckets plus **all-time**
+totals (tables `island_stats_daily`, `island_stats_weekly`, `island_stats_total`, migration V010). Days are local calendar
+days in `island-stats.yml → timezone` (Europe/Oslo: 23/25-hour days on DST changes), weeks start Monday 00:00.
+
+| Category | Counted when | Who |
+|---|---|---|
+| Blocks mined / Logs chopped / Crops harvested | a member breaks a block inside the island border: logs → logs, ripe crops (`crops.ripe-blocks` at max age) and `crops.harvest-blocks` → crops, everything else → blocks mined. A block placed on the island recently (`anti-farm.placed-memory`, 512 per island) gives nothing when broken again (ripe crops excepted) | member |
+| Blocks placed | a member places a block on the island | member |
+| Generator output | lava + water forms `generator.blocks` (cobblestone, stone, basalt) on the island | island |
+| Mobs killed | a member kills a mob on the island; stacked batch kills add their extra kills (`StackKillEvent`) | member |
+| Visitors | first visit of a player to the island today (the same unique-visitor rule as the visit browser) | island |
+| Time on the island | every `playtime-sample-seconds` (60) for members standing inside their own island's border | member |
+| Items sold / Money earned | fed by the sell system through `IslandStatsService.recordFor` (not hooked yet: shows `-`) | member |
+| KOTH time / Bosses killed | Phase 7/8 features (show `-` until then) | member |
+
+- Only stored members count: never coop players or visitors (REVIEW A4), never creative/spectator mode. What a member
+  added stays with the island when they leave (A5) and shows as "Former member".
+- **Performance:** every event is an O(1) grid lookup + one in-memory increment at MONITOR (cancelled actions never
+  count). Counters are written in **one batched transaction** every `flush-seconds` (30) and on shutdown; a failed write
+  is retried with the next flush (nothing is lost or counted twice); a crash loses at most one flush interval. Reads
+  (the menu) include the counters not saved yet.
+- **Retention:** day rows `retention.daily-days` (35), week rows `retention.weekly-weeks` (104), totals forever (rows of
+  removed islands stay for season history); cleanup every `retention.purge-hours` (6).
+- **API** (`common/island/IslandStatsService`): `record`, `recordIsland`, `recordFor(player, stat, amount)` (members only),
+  `source(stat)` (marks a category as fed), `snapshot(island)` (totals, today, this week, last week, per member) and
+  `top(stat, period, board, limit)` (TODAY / THIS_WEEK / LAST_WEEK / ALL_TIME, solo / team / all boards, deleted islands
+  left out) for the island top (Phase 5), missions and achievements.
+- Audit: only staff actions (`isadmin_stats_view`, `isadmin_stats_reset`); counting itself is not logged.
 
 ## Profiles (PROF)
 Island membership, ownership, roles, coop trust, invites and personal homes belong to the active **profile** (stored under the profile key; profile 1 = the player UUID, so all existing islands are profile 1's). Join limits and the join cooldown stay **per player** (owner P11): `player_island_joins` is per player and remembers the profile (`profile_id`, migration V007; old rows = profile 1). Two profiles of one player are never on the same island, also not one after the other (P3): invite, accept, coop and `/isadmin addmember` are refused (`*.own-profile`, audited `profile_transfer_blocked`). An island of your other profile can't be visited or entered (not even with the staff bypass) and nothing can be done on it (`protection.own-profile`), so no item can move between your profiles. Bans, likes and ratings are per player; an island any of your profiles belongs to counts as your own for ratings/likes. Deleting a profile: refused while it leads a team island with other members; otherwise its solo island is removed and its memberships/coops end. `IslandService#islandOf/role/isCoop` take an online player's UUID (active profile) or a profile key; `islandOfProfile(key)` never resolves.
