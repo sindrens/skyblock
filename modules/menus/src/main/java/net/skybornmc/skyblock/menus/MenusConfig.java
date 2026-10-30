@@ -3,6 +3,8 @@ package net.skybornmc.skyblock.menus;
 import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 
+import java.util.List;
+
 /** Settings of /menu, /help, /settings and the menu item ({@code navigation.yml}). Layout: menu.yml, help: help.yml. */
 public final class MenusConfig extends ModuleConfig {
 
@@ -14,6 +16,10 @@ public final class MenusConfig extends ModuleConfig {
 
     @Setting(path = "menu-item.material", desc = "Item used for the menu item.")
     public String menuItemMaterial = "nether_star";
+
+    @Setting(path = "settings.ui-sound-keys", desc = "Sounds (sounds.yml keys) that count as menu sounds wherever they play; "
+            + "players who turn 'Menu sounds' off in /settings don't hear them. Every sound a menu plays is muted too.")
+    public List<String> uiSoundKeys = List.of("click", "menu-open", "menu-close", "page");
 
     @Override
     public String fileName() {

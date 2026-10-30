@@ -57,6 +57,8 @@ import java.util.logging.Level;
 final class Leveling implements Listener {
 
     static final String SETTING_TRAIL = "wardrobe-trail";
+    /** F1: the shared /settings toggle "Particles" (see other players' cosmetic particles), owned here for now. */
+    static final String SETTING_PARTICLES = "particles";
 
     private final WardrobeModule module;
     private BlockMemory generated;
@@ -117,6 +119,12 @@ final class Leveling implements Listener {
                         WardrobeModule.ID, "settings.trail", false));
             } catch (IllegalStateException | IllegalArgumentException e) {
                 module.core.plugin().getLogger().fine("Wardrobe: trail toggle already registered: " + e.getMessage());
+            }
+            try {
+                s.register(new SettingToggle(WardrobeModule.ID, SETTING_PARTICLES, SettingCategory.DISPLAY, Material.BLAZE_POWDER, true, null,
+                        "navigation", "settings.toggles." + SETTING_PARTICLES, false));
+            } catch (IllegalStateException | IllegalArgumentException e) {
+                module.core.plugin().getLogger().fine("Wardrobe: particles toggle already registered: " + e.getMessage());
             }
             settings = s;
         }));
@@ -407,6 +415,23 @@ final class Leveling implements Listener {
         return trailEntry(s).isPresent();
     }
 
+    /** The viewer's "Particles" toggle (on while the settings service is not there). */
+    boolean particlesOn(Player viewer) {
+        PlayerSettings ps = settings;
+        return ps == null || ps.get(viewer, SETTING_PARTICLES);
+    }
+
+    /**
+     * Whether a viewer gets a trail puff (pure, for tests): the owner always sees their own trail (they control it with
+     * the wardrobe-trail toggle); others only with "Particles" on, when they can see the owner and are within range.
+     */
+    static boolean showsTrail(boolean self, boolean viewerWantsParticles, boolean canSee, double distanceSquared, double range) {
+        if (self) {
+            return true;
+        }
+        return viewerWantsParticles && canSee && distanceSquared <= range * range;
+    }
+
     boolean trailOn(Player player) {
         PlayerSettings ps = settings;
         return ps == null || ps.get(player, SETTING_TRAIL);
@@ -458,16 +483,30 @@ final class Leveling implements Listener {
                 continue; // only while moving
             }
             Optional<WardrobeStore.Entry> entry = trailEntry(s);
-            try {
-                if (particle == Particle.DUST) {
-                    Color color = color(entry.map(WardrobeStore.Entry::look).orElse(null));
-                    p.getWorld().spawnParticle(particle, at.clone().add(0, 0.1, 0), module.config().trailCount, 0.2, 0.05, 0.2, 0,
-                            new Particle.DustOptions(color, 1.0f));
-                } else if (particle.getDataType() == Void.class) {
-                    p.getWorld().spawnParticle(particle, at.clone().add(0, 0.1, 0), module.config().trailCount, 0.2, 0.05, 0.2, 0);
+            Particle.DustOptions dust = null;
+            if (particle == Particle.DUST) {
+                dust = new Particle.DustOptions(color(entry.map(WardrobeStore.Entry::look).orElse(null)), 1.0f);
+            } else if (particle.getDataType() != Void.class) {
+                continue;
+            }
+            Location puff = at.clone().add(0, 0.1, 0);
+            double range = module.config().trailViewDistance;
+            // F1: sent per viewer, so players who turned "Particles" off never get other players' trails.
+            for (Player viewer : p.getWorld().getPlayers()) {
+                boolean self = viewer.equals(p);
+                if (!showsTrail(self, self || particlesOn(viewer), self || viewer.canSee(p),
+                        viewer.getLocation().distanceSquared(at), range)) {
+                    continue;
                 }
-            } catch (RuntimeException e) {
-                module.core.plugin().getLogger().log(Level.FINE, "Wardrobe: trail particle failed", e);
+                try {
+                    if (dust != null) {
+                        viewer.spawnParticle(particle, puff, module.config().trailCount, 0.2, 0.05, 0.2, 0, dust);
+                    } else {
+                        viewer.spawnParticle(particle, puff, module.config().trailCount, 0.2, 0.05, 0.2, 0);
+                    }
+                } catch (RuntimeException e) {
+                    module.core.plugin().getLogger().log(Level.FINE, "Wardrobe: trail particle failed", e);
+                }
             }
         }
     }

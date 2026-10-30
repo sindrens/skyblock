@@ -222,6 +222,10 @@ final class WardrobeConfig extends ModuleConfig {
     @Setting(path = "trail.count", desc = "Particles per puff.", min = 1, max = 20)
     public int trailCount = 3;
 
+    @Setting(path = "trail.view-distance", desc = "Blocks within which other players see a trail (players who turn 'Particles' off in /settings never see other players' trails).",
+            min = 8, max = 128)
+    public int trailViewDistance = 32;
+
     // ------------------------------------------------------------------ equipping
 
     @Setting(path = "equip.cooldown-seconds", desc = "Seconds between two wear/take-off actions (a loadout swap counts as one too).", min = 0, max = 60)

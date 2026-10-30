@@ -151,6 +151,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         // /settings (menus) and the TeleportService (essentials) may enable after us: hook them one tick later.
         core.scheduler().later("islands:services", 1L, () -> {
             visits.hookServices();
+            members.hookSettings();
             if (notes != null) {
                 notes.hookSettings();
             }

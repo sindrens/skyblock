@@ -22,6 +22,7 @@ import org.bukkit.event.HandlerList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Navigation: {@code /menu} (hub + menu item in hotbar slot 9), {@code /help} (categories → topics → pages, command
@@ -34,6 +35,9 @@ public final class MenusModule implements SkyblockModule {
     static final String PERM_HELP = "skyblock.help";
     static final String PERM_SETTINGS = "skyblock.settings";
     static final String PERM_STAFF = "skyblock.staff.menu";
+    /** Shared sound groups (common Sounds): owned here because every module's menus and events use them. */
+    static final String SETTING_UI_SOUNDS = "ui-sounds";
+    static final String SETTING_EVENT_SOUNDS = "event-sounds";
 
     private final Core core;
     private final MenusConfig config = new MenusConfig();
@@ -58,6 +62,7 @@ public final class MenusModule implements SkyblockModule {
         loadFiles();
         core.services().register(ID, PlayerSettings.class, settings);
         registerBuiltinSettings();
+        installSoundFilters();
         menuItem = new MenuItem(nav, config);
         Bukkit.getPluginManager().registerEvents(menuItem, core.plugin());
         settings.onChange(MenuItem.SETTING, (player, value) -> menuItem.apply(player));
@@ -70,6 +75,7 @@ public final class MenusModule implements SkyblockModule {
         core.configs().load(config);
         core.messages().load(Nav.TEXTS);
         loadFiles();
+        installSoundFilters();
         if (menuItem != null) {
             menuItem.applyAll();
         }
@@ -81,7 +87,15 @@ public final class MenusModule implements SkyblockModule {
             HandlerList.unregisterAll(menuItem);
             menuItem.removeAll(); // never leave a dead menu item behind if the module is off
         }
+        core.sounds().setUiFilter(null, null);
+        core.sounds().setEventFilter(null);
         settings.unregisterAll(ID);
+    }
+
+    /** F1: menu sounds and event sounds follow the players' /settings (checked on every play, so changes are instant). */
+    private void installSoundFilters() {
+        core.sounds().setUiFilter(Set.copyOf(config.uiSoundKeys), player -> settings.get(player, SETTING_UI_SOUNDS));
+        core.sounds().setEventFilter(player -> settings.get(player, SETTING_EVENT_SOUNDS));
     }
 
     private void loadFiles() {
@@ -103,9 +117,12 @@ public final class MenusModule implements SkyblockModule {
     // ------------------------------------------------------------------ settings
 
     /**
-     * The settings players expect in the menu. Only the menu item is implemented here; the others are placeholders
-     * shown as "Coming soon" until the module that owns the feature registers the same id (social: private-messages,
-     * mentions-sound, join-messages, chat-colors, afk-broadcast; essentials: tpa-requests; hud: scoreboard, tips …).
+     * The settings players expect in the menu. The menu item and the two shared sound groups (ui-sounds, event-sounds:
+     * {@code Sounds#playUi}/{@code Sounds#playEvent}) are implemented here; the others are placeholders shown as
+     * "Coming soon" until the module that owns the feature registers the same id (social: private-messages,
+     * afk-broadcast; chat: mentions-sound, chat-colors, chat-timestamps; essentials: join-messages, tpa-requests; hud:
+     * scoreboard; islands: island-invites; trade: trade-requests; wardrobe: particles). Still placeholders (no feature
+     * yet): tips, depths-visibility.
      */
     private void registerBuiltinSettings() {
         placeholder("private-messages", SettingCategory.CHAT, Material.WRITABLE_BOOK, true);
@@ -123,12 +140,19 @@ public final class MenusModule implements SkyblockModule {
         placeholder("tips", SettingCategory.DISPLAY, Material.LANTERN, true);
         placeholder("particles", SettingCategory.DISPLAY, Material.BLAZE_POWDER, true);
         placeholder("depths-visibility", SettingCategory.DISPLAY, Material.SPYGLASS, true);
-        placeholder("ui-sounds", SettingCategory.SOUNDS, Material.NOTE_BLOCK, true);
-        placeholder("event-sounds", SettingCategory.SOUNDS, Material.GOAT_HORN, true);
+        active(SETTING_UI_SOUNDS, SettingCategory.SOUNDS, Material.NOTE_BLOCK, true);
+        active(SETTING_EVENT_SOUNDS, SettingCategory.SOUNDS, Material.GOAT_HORN, true);
     }
 
     private void placeholder(String id, SettingCategory category, Material icon, boolean defaultValue) {
+        if (settings.toggle(id).filter(t -> !t.comingSoon()).isPresent()) {
+            return; // a module already took it over (menus re-enabled at runtime): never put the placeholder back over it
+        }
         settings.register(new SettingToggle(ID, id, category, icon, defaultValue, null, Nav.TEXTS, "settings.toggles." + id, true));
+    }
+
+    private void active(String id, SettingCategory category, Material icon, boolean defaultValue) {
+        settings.register(new SettingToggle(ID, id, category, icon, defaultValue, null, Nav.TEXTS, "settings.toggles." + id, false));
     }
 
     // ------------------------------------------------------------------ commands

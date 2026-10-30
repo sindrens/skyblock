@@ -149,12 +149,12 @@ public final class MenuService implements Listener {
             plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " failed to build", e);
             menu.detach();
             messages.send(player, MODULE, "error");
-            sounds.play(player, "error");
+            sounds.playUi(player, "error");
             return;
         }
         open.put(player.getUniqueId(), menu);
         player.openInventory(inventory);
-        sounds.play(player, previous == null ? "menu-open" : "page");
+        sounds.playUi(player, previous == null ? "menu-open" : "page");
     }
 
     /** The menu {@code player} has open, or {@code null}. */
@@ -404,7 +404,7 @@ public final class MenuService implements Listener {
             Prompt p = prompts.remove(player.getUniqueId());
             if (p != null) {
                 messages.send(player, MODULE, "prompt.timeout");
-                sounds.play(player, "error");
+                sounds.playUi(player, "error");
                 p.onCancel().run();
             }
         }, seconds * 20L);
@@ -414,7 +414,7 @@ public final class MenuService implements Listener {
         all[placeholders.length] = Msg.p("cancel", config.promptCancelWord);
         all[placeholders.length + 1] = Msg.p("seconds", seconds);
         messages.send(player, module, key, all);
-        sounds.play(player, "notify");
+        sounds.playUi(player, "notify");
     }
 
     public boolean hasPrompt(Player player) {
@@ -446,7 +446,7 @@ public final class MenuService implements Listener {
             }
             if (text.length() > p.maxLength()) {
                 messages.send(player, MODULE, "prompt.too-long", Msg.p("max", p.maxLength()));
-                sounds.play(player, "error");
+                sounds.playUi(player, "error");
                 return; // keep waiting
             }
             prompts.remove(player.getUniqueId());
@@ -496,13 +496,13 @@ public final class MenuService implements Listener {
         if (!debounce.tryClick(player.getUniqueId(), System.currentTimeMillis())) {
             return;
         }
-        sounds.play(player, "click");
+        sounds.playUi(player, "click");
         try {
             button.onClick().accept(new MenuClick(player, menu, slot, type));
         } catch (RuntimeException e) {
             plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " click on slot " + slot + " failed", e);
             messages.send(player, MODULE, "error");
-            sounds.play(player, "error");
+            sounds.playUi(player, "error");
         }
     }
 
@@ -529,7 +529,7 @@ public final class MenuService implements Listener {
         if (menu.getInventory() == event.getInventory() && open.remove(player.getUniqueId(), menu)) {
             menu.detach();
             if (event.getReason() == InventoryCloseEvent.Reason.PLAYER) {
-                sounds.play(player, "menu-close");
+                sounds.playUi(player, "menu-close");
             }
         }
         Bukkit.getScheduler().runTask(plugin, () -> purgeMenuItems(player));
@@ -595,9 +595,9 @@ public final class MenuService implements Listener {
         }
     }
 
-    /** Plays a named sound (sounds.yml) for menu code. */
+    /** Plays a named sound (sounds.yml) for menu code (a UI sound: muted for players who turned menu sounds off). */
     public void sound(Player player, String key) {
-        sounds.play(player, key);
+        sounds.playUi(player, key);
     }
 
     public Messages messages() {

@@ -221,7 +221,7 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "combat.mini-boss.boss-bar", desc = "Show a boss bar with the mini-boss's health to players in its zone.")
     public boolean miniBossBar = true;
 
-    @Setting(path = "combat.mini-boss.spawn-sound", desc = "Sound (sounds.yml) for players in the zone when a mini-boss appears (empty = none).")
+    @Setting(path = "combat.mini-boss.spawn-sound", desc = "Sound (sounds.yml) for players in the zone when a mini-boss appears (empty = none; players with 'Event sounds' off in /settings don't hear it).")
     public String miniBossSpawnSound = "unlock";
 
     @Setting(path = "combat.mini-boss.kill-sound", desc = "Sound (sounds.yml) for rewarded players when a mini-boss dies (empty = none).")

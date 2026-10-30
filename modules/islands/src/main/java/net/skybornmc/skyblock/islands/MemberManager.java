@@ -8,6 +8,9 @@ import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.island.IslandService.Role;
 import net.skybornmc.skyblock.common.profile.ProfileService;
+import net.skybornmc.skyblock.common.settings.PlayerSettings;
+import net.skybornmc.skyblock.common.settings.SettingCategory;
+import net.skybornmc.skyblock.common.settings.SettingToggle;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
@@ -63,6 +66,26 @@ final class MemberManager {
 
     private IslandsConfig config() {
         return module.config();
+    }
+
+    /** The /settings toggle (F1): players can refuse island invites. */
+    static final String SETTING_INVITES = "island-invites";
+
+    /** Registers the island-invites toggle (one tick after enable: the menus module enables later). */
+    void hookSettings() {
+        core.services().optional(PlayerSettings.class).ifPresent(service -> {
+            try {
+                service.register(new SettingToggle(IslandsModule.ID, SETTING_INVITES, SettingCategory.SOCIAL, Material.GRASS_BLOCK, true,
+                        null, "navigation", "settings.toggles." + SETTING_INVITES, false));
+            } catch (RuntimeException e) {
+                core.plugin().getLogger().warning("Islands: could not register the island-invites setting: " + e.getMessage());
+            }
+        });
+    }
+
+    /** Whether {@code target} accepts island invites (on while the settings service is not there). Read live: instant. */
+    private boolean acceptsInvites(Player target) {
+        return core.services().optional(PlayerSettings.class).map(s -> s.get(target, SETTING_INVITES)).orElse(true);
     }
 
     /** Loads pending invites and drops coop trust on islands without an online leader/mod (blocking, enable only). */
@@ -124,6 +147,10 @@ final class MemberManager {
         }
         if (target.getUniqueId().equals(player.getUniqueId())) {
             islands.fail(player, "invite.self");
+            return;
+        }
+        if (!acceptsInvites(target)) {
+            islands.fail(player, "invite.disabled", Msg.p("player", target.getName()));
             return;
         }
         // P3: a player's other profile is (or was) on this island: their profiles never share one.
