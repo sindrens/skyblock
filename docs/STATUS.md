@@ -31,7 +31,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Owner gets a push notification on every release (PushNotification tool).
 
 ## Owner answers page
-- Round-2 questions are answered in the artifact https://claude.ai/artifact/QHrsxdXw45E9Tti5jHtVVy (db doc `answers/owner`: map code → {c: d=suggested | n=no | o=other, t: text}, `done: true` when finished). Read it with ArtifactData `get` collection `answers` doc `owner`. Source questions: `docs/QUESTIONS_ROUND2.md`.
+- Round-2 questions are answered in the artifact https://claude.ai/artifact/QHrsxdXw45E9Tti5jHtVVy (db doc `answers/owner`: map code → {c: d=suggested | n=no | o=other, t: text}, `done: true` when finished). Read it with ArtifactData `get` collection `answers` doc `owner`. Source questions: `docs/QUESTIONS_ROUND2.md` (answered in chat → `docs/DECISIONS_2026-10-30.md`). Round 3: `docs/QUESTIONS_ROUND3.md`, answers in db doc `answers/round3`.
 
 ## Owner rules (always)
 - Unit tests allowed: `./gradlew build` (with tests) must pass before every merge. Never a test server without permission.
