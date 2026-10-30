@@ -226,7 +226,7 @@ final class WardrobeConfig extends ModuleConfig {
             min = 8, max = 128)
     public int trailViewDistance = 32;
 
-    @Setting(path = "trail.max-viewers", desc = "Most players (nearest first is not guaranteed) who get one trail puff; caps the cost in crowds. The owner always sees their own trail.",
+    @Setting(path = "trail.max-viewers", desc = "Most other players who get one trail puff (caps the cost in crowds). The owner always sees their own trail.",
             min = 1, max = 500)
     public int trailMaxViewers = 60;
 
