@@ -52,7 +52,7 @@ class SidebarLinesTest {
     }
 
     /**
-     * UX1 + SB: every bundled layout stays short (title + max 9 lines, conditional lines included), every place layout
+     * UX1 + SB: every bundled layout stays short (title + max 10 lines (FIXES1: blank line under the title), conditional lines included), every place layout
      * named in hud.yml's defaults exists, and each layout shows what is relevant for its place.
      */
     @Test
@@ -70,7 +70,7 @@ class SidebarLinesTest {
             for (String layout : section.getKeys(false)) {
                 List<String> lines = yaml.getStringList("scoreboard." + layout + ".lines");
                 assertTrue(yaml.isString("scoreboard." + layout + ".title"), file + " " + layout + " title");
-                assertTrue(!lines.isEmpty() && lines.size() <= 9, file + " " + layout + ": " + lines.size() + " lines");
+                assertTrue(!lines.isEmpty() && lines.size() <= 10, file + " " + layout + ": " + lines.size() + " lines");
                 for (String line : lines) {
                     assertTrue(!line.startsWith(LayoutLines.IF) || LayoutLines.line(line).condition() != null,
                             file + " " + layout + ": broken if: line " + line);
