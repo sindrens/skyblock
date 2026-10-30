@@ -4,10 +4,19 @@
 
 | Command | Description | Permission | Status |
 |---|---|---|---|
-| `/depths debug [player]` | Region at your feet, targeted block, depleted counts, timers, break-handling time, fast-break flags, combat mobs (total, this zone, mini-boss timer) and ambient mobs | `skyblock.depths.debug` | ✅ |
+| `/depths debug [player]` | Region at your feet, region flags there (regions, denied flags, bypass), targeted block, depleted counts, timers, break-handling time, fast-break flags, combat mobs (total, this zone, mini-boss timer) and ambient mobs | `skyblock.depths.debug` | ✅ |
 | `/depths generate [zone\|all]` | Builds the placeholder layout from `zones.yml` by code in throttled slices (`depths.yml → generate.*`): The Gate (`gate`), a tier zone with its causeway (`mine_t01` …), the boss arena (`boss_arena`) or everything (`all`, default, asks to confirm). Idempotent (a second run changes nothing); never touches anything marked `built: true`; audited (`world`) | `skyblock.depths.generate` | ✅ |
 | `/depths tp <zone>` | Teleport to the spawn of The Gate (`gate`), a tier zone or the boss arena (`boss_arena`); ignores tier locks | `skyblock.depths.tp` | ✅ |
 | `/dungeon` | Tier menu: tabs Mine / Forest / Combat, every tier of the wing; unlocked tiers teleport to their arrival pad after a `teleport.yml → dungeon.warmup-seconds` countdown (moving, damage, combat or a freeze cancels), locked tiers show "✘ Mining 15 needed · 9/15" with a progress bar. Opens on the wing you stand in | `skyblock.depths.dungeon` (everyone) | ✅ |
+
+Protection (DEPTHSPROT, no command): the whole Depths world is protected by the worlds module's region flags
+(`worlds.yml → protection.*`, see [worlds](worlds.md)): no breaking or placing outside the ore/log fields, no
+containers, workstations, trapdoors or other usable blocks (doors, buttons, levers, gates stay usable), no buckets,
+fire, block-breaking explosions or item frame/armor stand edits. Builders bypass in creative mode
+(`skyblock.worlds.protection.bypass` or `skyblock.depths.build`). Inside the fields the engine decides as before. Combat
+zones: no ender pearls or wind charges. Safe zones of the combat builds (`kind: safe`): mobs never target or hurt you;
+combat mobs drop a target standing there and are sent back to a spawn spot if they get in; the graveyard's safe zones
+and the crypt's rail bands also stop players hitting mobs.
 
 Tier locks (M4.6, no command): a tier's zone needs its wing's skill level (`zones.yml → required-level`). Players below it see bars in that gate (only them), are pushed back when they walk, teleport or pearl in, get no XP or drops there and are sent to The Gate if they stand in a zone that became locked. `skyblock.depths.bypass` (builders, admins) ignores all locks and the `/dungeon` warmup; `/depths tp` gives a one-zone pass. First unlock of a tier is remembered per season and audited (`world`, `depths_tier_unlock`); the first visit shows a title. Placeholders: `depths_zone`, `depths_tier`.
 

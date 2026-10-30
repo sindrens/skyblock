@@ -20,6 +20,7 @@ builds of `builds.template-worlds` (islands, outposts) are never pasted. One pas
 thread. Back up the world folder before pasting.
 
 Permission: `skyblock.admin.builds` (default op; LuckPerms: admin, owner inherits; `server/permissions/worlds.txt`).
+Protection bypass: `skyblock.worlds.protection.bypass` (default op; LuckPerms: builder, admins inherit), creative mode only.
 
 ## Build portals (no command)
 
@@ -50,6 +51,55 @@ Rules:
 - Overrides without editing the build: `portals.island-portal` (which portal is the island portal; empty = target
   `island`, or an id containing `island`/`start`), `portals.target-overrides` (`portal=target`), `portals.force-open`,
   `portals.disabled`. Changes apply with `/skyblock reload worlds`; a new `/skyblock builds apply` is picked up at once.
+
+## World protection and region flags (no command, DEPTHSPROT)
+
+The worlds module protects whole worlds and the regions of the applied builds by flags. Settings:
+`worlds.yml → protection.*` (also editable with `/admin`), texts: `messages/worlds.yml → protection.*` (one action bar
+line per denial, at most every `protection.message-cooldown-millis`). Changes apply with `/skyblock reload worlds`; a new
+`/skyblock builds apply` is picked up at once. `/depths debug` shows the regions and denied flags at a player's feet.
+
+| Flag | Denies | Bypass |
+|---|---|---|
+| `build` | breaking/placing blocks, buckets, bone meal, trampling farmland, editing/dyeing signs, placing armor stands, boats, frames | builders |
+| `interact` | right-clicking any block with an action except `protection.interact-allowed` (doors, buttons, levers, plates, fence gates, ender chest, crafting table, signs; trapdoors are not free) | builders |
+| `containers` | chests, barrels, furnaces, hoppers, shulkers, lecterns, campfires, pots, cauldrons... (`protection.containers`) | builders |
+| `workstations` | anvils, enchanting tables, grindstones, smithing tables, stonecutters, looms... (`protection.workstations`) | builders |
+| `entity-edit` | item frames (rotate, put in, take out), armor stands, breaking paintings/frames/armor stands (also by explosions) | builders |
+| `fire` | lighting fires (flint and steel, fire charges, lightning...), fire spread, blocks burning | builders |
+| `explosions` | explosions destroying blocks (the blast still hurts) | none |
+| `pve-dealt` | players standing here damaging mobs (melee or projectiles) | none |
+| `pve-taken` | mobs (or their projectiles) damaging players standing here | none |
+| `mob-target` | mobs targeting players standing here; Depths combat mobs also drop such a target and are sent back to a spawn spot if they get in | none |
+| `ender-pearl` | throwing a pearl here, or a pearl landing here | none |
+| `wind-charge` | throwing a wind charge here | none |
+
+**Builders** bypass the protection flags in **creative mode** with `skyblock.worlds.protection.bypass` (builder group,
+admins inherit) or the world's own permission (`protection.world-bypass-permissions`: Depths `skyblock.depths.build`,
+spawn `skyblock.build.spawn`). Essentials `/build` mode counts too in spawn. Gameplay flags apply to everyone.
+
+**Resolution** at a block: the regions containing it whose kind sets the flag, highest priority wins (deny wins a tie),
+else the world's flags, else allowed. Chunk-indexed: two hash lookups and a few box checks per event, rebuilt only when
+builds are applied, modules hand in regions or the config reloads.
+
+Shipped defaults:
+- Worlds (`protection.world-flags`): **spawn** build, interact, entity-edit, fire, explosions (essentials protects spawn
+  too: a block must be allowed in both `interact-allowed` lists); **depths** and **warzone** everything protective
+  (build, interact, containers, workstations, entity-edit, fire, explosions). Islands/outposts: none (islands module).
+- Kinds (`protection.kind-flags`, build yml `kind`): `protected` 10 (all protective flags), `safe` 20 (pve-taken,
+  mob-target), `safe_no_pve` 20 (+ pve-dealt), `no_pve_damage` 20 (pve-dealt), `use_deny` 30 and `forge_quarter` 30
+  (containers, workstations; use_deny also interact), `combat_zone` 5 and `boss_arena` 5 (ender-pearl, wind-charge),
+  `field` 100 (allow build). A new build with these kinds works without code.
+- Region overrides (`protection.region-kinds`, `build:region=kind`): spawn's `forge_quarter_plot` = `forge_quarter`
+  (anvils, enchanting table, containers are decoration: lores/menus through the NPCs); the graveyard's `arrival_safe`,
+  `arrival_safe_lychgate`, `exit_path` = `safe_no_pve` (builder dev flag: no PvE damage there). The crypt marks its
+  melee strips as `no_pve_damage` itself.
+- Module regions: the depths module hands in its ore/log fields (`field`, so the Depths engine decides there), tier
+  zones (`mine_zone`, `forest_zone`, `combat_zone`), The Gate (`depths_hub`) and the boss arena (`boss_arena`).
+
+For developers: `core.services().optional(RegionFlags.class)` (common `net.skybornmc.skyblock.common.region`):
+`denied(location, RegionFlag.MOB_TARGET)`, `contribute(owner, regions)` (replaces that owner's regions),
+`addBypass(owner, (player, world) -> ...)`.
 
 ## For developers: BuildPoints
 

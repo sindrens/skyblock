@@ -58,6 +58,9 @@ public final class EssentialsModule implements SkyblockModule {
             core.plugin().getServer().getPluginManager().registerEvents(listener, core.plugin());
         }
         teleportCommands.start();
+        // DEPTHSPROT: /build mode also lifts the worlds module's protection flags in the protected worlds (spawn).
+        core.services().optional(net.skybornmc.skyblock.common.region.RegionFlags.class)
+                .ifPresent(flags -> flags.addBypass(id(), protection::buildModeIn));
         core.scheduler().later("essentials:settings", 1L, settings::register);
     }
 
@@ -78,6 +81,7 @@ public final class EssentialsModule implements SkyblockModule {
             return;
         }
         teleportCommands.stop();
+        core.services().optional(net.skybornmc.skyblock.common.region.RegionFlags.class).ifPresent(flags -> flags.removeBypass(id()));
         settings.unregister();
         views.shutdown();
         vanish.shutdown();

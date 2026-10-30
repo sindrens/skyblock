@@ -40,5 +40,6 @@ Ranks (luckperms.txt): builder = `/i /give /gm c+s /fly /speed /time /weather /t
 - Join/quit messages only for players with `skyblock.join.message` (staff ranks now, donor ranks later). First-join welcome + broadcast with join number for everyone.
 - Menu item: Nether Star in hotbar slot 9, runs `/menu`; service `MenuItem` (`setEnabled(player, bool)` for `/settings`).
 - Spawn protection in `protection.worlds`: no build/break, whitelisted blocks only, no damage/hunger/drops/natural mobs/explosions, void → spawn.
+- DEPTHSPROT: the worlds module's region flags (`worlds.yml → protection.*`) protect spawn too and close the gaps (bone meal, sign editing/dyeing, flint and steel, placing armor stands/boats, fire spread); `/build` mode also lifts them. A block must be allowed in both `interact-allowed` lists. The Forge Quarter's anvils, enchanting table and containers are decoration (region kind `forge_quarter`).
 
 Permission definitions: `modules/essentials/src/main/resources/permissions/essentials.yml`. Rank grants: `server/permissions/essentials.txt`.

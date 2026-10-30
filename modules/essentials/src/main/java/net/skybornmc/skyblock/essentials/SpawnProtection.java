@@ -123,6 +123,11 @@ final class SpawnProtection extends CommandGroup implements Listener {
         return player.hasPermission(Perms.BUILD_SPAWN) && building.contains(player.getUniqueId());
     }
 
+    /** True if the player has {@code /build} on and {@code world} is a protected world (region flags bypass hook). */
+    boolean buildModeIn(Player player, String world) {
+        return config.protectedWorlds.contains(world) && canBuild(player);
+    }
+
     private void deny(Player player, Cancellable event) {
         event.setCancelled(true);
         if (player.hasPermission(Perms.BUILD_SPAWN)) {

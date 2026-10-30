@@ -22,6 +22,10 @@ debug:
   flags: " <c:ember><sym:bullet></c:ember> <c:text>Fast-break flags for <player>: <c:value><window></c:value> <c:muted>in window <sym:dot> <total> this session <sym:dot> <all> on the server"
   combat: " <c:ember><sym:bullet></c:ember> <c:text>Combat mobs: <c:value><alive></c:value> <c:muted>of max <max> <sym:dot> <zones> active zones"
   combat-zone: " <c:ember><sym:bullet></c:ember> <c:text>This zone (<zone>): <c:value><alive></c:value> <c:text>alive, target <c:value><target></c:value> <c:muted><sym:dot> <players> players <sym:dot> mini-boss: <boss>"
+  region-flags: " <c:ember><sym:bullet></c:ember> <c:text>Region flags at feet: <c:value><regions></c:value> <c:muted><sym:dot> denied: <denied> <sym:dot> bypass: <bypass>"
+  region-flags-off: " <c:ember><sym:bullet></c:ember> <c:muted>Region flags: the worlds module isn't running"
+  "yes": "yes"
+  "no": "no"
   ambient: " <c:ember><sym:bullet></c:ember> <c:text>Ambient mobs: <c:value><alive></c:value> <c:muted>of max <max> <sym:dot> <player>: <own>"
 
 # Zones (M4.1): layout from zones.yml, /depths generate, /depths tp, boss portal.

@@ -3,6 +3,8 @@ package net.skybornmc.skyblock.depths.combat;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.region.RegionFlag;
+import net.skybornmc.skyblock.common.region.RegionFlags;
 import net.skybornmc.skyblock.common.bonus.BonusContext;
 import net.skybornmc.skyblock.common.bonus.BonusFamily;
 import net.skybornmc.skyblock.common.bonus.BonusService;
@@ -210,6 +212,7 @@ public final class CombatZones implements Listener {
         Set<String> live = new HashSet<>();
         RandomGenerator rng = ThreadLocalRandom.current();
         MobCatalog cat = catalog;
+        RegionFlags flags = core.services().optional(RegionFlags.class).orElse(null);
         for (Zone zone : zones.zones(Aspect.COMBAT)) {
             ZoneSpawns spawns = cat.combat(zone.tier());
             if (spawns == null) {
@@ -221,7 +224,7 @@ public final class CombatZones implements Listener {
                 state.clock = new MiniBossClock(now, spawns.miniBossMinutes() * 60_000L);
                 state.clockMinutes = spawns.miniBossMinutes();
             }
-            prune(state, zone, world, rng);
+            prune(state, zone, world, rng, flags);
             List<Player> players = present.getOrDefault(zone.id(), List.of());
             state.players = players.size();
             if (players.isEmpty()) {
@@ -266,7 +269,7 @@ public final class CombatZones implements Listener {
     }
 
     /** Drops dead/unloaded mobs and puts mobs that left their zone back on a spawn spot. */
-    private void prune(ZoneState state, Zone zone, World world, RandomGenerator rng) {
+    private void prune(ZoneState state, Zone zone, World world, RandomGenerator rng, RegionFlags flags) {
         for (Iterator<UUID> it = state.mobs.iterator(); it.hasNext(); ) {
             UUID id = it.next();
             Tracked t = tracked.get(id);
@@ -278,11 +281,20 @@ public final class CombatZones implements Listener {
                 }
                 continue;
             }
-            if (!config.combatLeash) {
+            Location l = t.entity().getLocation();
+            // DEPTHSPROT (builders' hard rule): tier mobs never keep a target standing in a safe zone (flag mob-target),
+            // and a mob that got into one goes back to a spawn spot.
+            boolean inSafe = false;
+            if (flags != null && t.entity() instanceof Mob mob) {
+                if (mob.getTarget() instanceof Player target && flags.denied(target.getLocation(), RegionFlag.MOB_TARGET)) {
+                    mob.setTarget(null);
+                }
+                inSafe = flags.denied(l, RegionFlag.MOB_TARGET);
+            }
+            if (!config.combatLeash && !inSafe) {
                 continue;
             }
-            Location l = t.entity().getLocation();
-            if (l.getWorld() != world || !zone.region().contains(l.getX(), l.getY(), l.getZ())) {
+            if (inSafe || l.getWorld() != world || !zone.region().contains(l.getX(), l.getY(), l.getZ())) {
                 Location back = spot(world, zone, List.of(), rng);
                 if (back != null) {
                     t.entity().teleportAsync(back);

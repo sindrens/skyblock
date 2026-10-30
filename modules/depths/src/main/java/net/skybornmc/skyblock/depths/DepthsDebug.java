@@ -53,4 +53,19 @@ final class DepthsDebug {
         msg.send(viewer, "debug.flags", Msg.p("player", target.getName()), Msg.p("window", flags[0]),
                 Msg.p("total", flags[1]), Msg.p("all", s.flagsTotal()));
     }
+
+    /** DEPTHSPROT: the region flags at the target's feet (regions there and the flags they deny). */
+    static void flags(net.skybornmc.skyblock.common.region.RegionFlags flags, ModuleMessages msg, Player viewer, Player target) {
+        if (flags == null) {
+            msg.send(viewer, "debug.region-flags-off");
+            return;
+        }
+        org.bukkit.Location l = target.getLocation();
+        String world = l.getWorld().getName();
+        java.util.List<String> regions = flags.regionsAt(world, l.getBlockX(), l.getBlockY(), l.getBlockZ());
+        java.util.List<String> denied = flags.deniedAt(world, l.getBlockX(), l.getBlockY(), l.getBlockZ());
+        msg.send(viewer, "debug.region-flags", Msg.p("regions", regions.isEmpty() ? "-" : String.join(", ", regions)),
+                Msg.p("denied", denied.isEmpty() ? "-" : String.join(", ", denied)),
+                Msg.p("bypass", msg.messages().raw("depths", flags.bypasses(target, world) ? "debug.yes" : "debug.no")));
+    }
 }

@@ -4,6 +4,7 @@ import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.worlds.builds.BuildsService;
 import net.skybornmc.skyblock.worlds.portals.PortalService;
+import net.skybornmc.skyblock.worlds.protection.RegionProtection;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
@@ -32,7 +33,8 @@ import java.util.logging.Logger;
 /**
  * Creates and configures every world listed in {@code worlds.yml}: void generation, game rules, difficulty,
  * spawn point, spawn platform for builders, fixed time and world border. Settings are re-applied on every
- * start and on reload, so the config file is the single source of truth.
+ * start and on reload, so the config file is the single source of truth. Also the builds ({@code /skyblock builds}),
+ * build portals and world protection + region flags ({@link RegionProtection}, published as RegionFlags).
  */
 public final class WorldsModule implements SkyblockModule {
 
@@ -45,6 +47,7 @@ public final class WorldsModule implements SkyblockModule {
     private final WorldsConfig config = new WorldsConfig();
     private BuildsService builds;
     private PortalService portals;
+    private RegionProtection protection;
 
     public WorldsModule(Core core) {
         this.core = core;
@@ -65,6 +68,8 @@ public final class WorldsModule implements SkyblockModule {
         builds.enable();
         portals = new PortalService(core, this, config, builds.pointsStore());
         portals.enable();
+        protection = new RegionProtection(core, config, builds.pointsStore());
+        protection.enable();
     }
 
     @Override
@@ -77,6 +82,9 @@ public final class WorldsModule implements SkyblockModule {
         }
         if (portals != null) {
             portals.reload();
+        }
+        if (protection != null) {
+            protection.reload();
         }
     }
 
@@ -124,6 +132,10 @@ public final class WorldsModule implements SkyblockModule {
     @Override
     public void disable() {
         // Worlds are saved by the server on shutdown.
+        if (protection != null) {
+            protection.disable();
+            protection = null;
+        }
         if (portals != null) {
             portals.disable();
             portals = null;

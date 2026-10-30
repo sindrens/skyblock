@@ -104,6 +104,68 @@ public final class WorldsConfig extends ModuleConfig {
             + "(staff teleports with the teleport bypass still work).")
     public boolean warzonePortalOnly = true;
 
+    // ------------------------------------------------------------------ protection + region flags (DEPTHSPROT)
+
+    @Setting(path = "protection.enabled", desc = "World protection and region flags (protection.world-flags, kind-flags, region-kinds) are enforced.")
+    public boolean protectionEnabled = true;
+
+    @Setting(path = "protection.world-flags", desc = "'world: flag, flag' = flags denied in the whole world (lowest priority). Flags: build, interact, "
+            + "containers, workstations, entity-edit, fire, explosions, pve-dealt, pve-taken, mob-target, ender-pearl, wind-charge. "
+            + "Spawn is also protected by essentials.yml protection.*.")
+    public List<String> protectionWorldFlags = List.of(
+            "spawn: build, interact, entity-edit, fire, explosions",
+            "depths: build, interact, containers, workstations, entity-edit, fire, explosions",
+            "warzone: build, interact, containers, workstations, entity-edit, fire, explosions");
+
+    @Setting(path = "protection.kind-flags", desc = "'kind priority: flag, flag' = flags of build regions of that kind (build yml 'kind') and of "
+            + "module regions (depths: field, mine_zone, forest_zone, combat_zone, boss_arena). 'allow x' switches to allow (field: the "
+            + "Depths engine handles ore/log fields). Highest priority wins at a block, deny wins a tie; nothing set = the world's flags.")
+    public List<String> protectionKindFlags = List.of(
+            "protected 10: build, interact, containers, workstations, entity-edit, fire, explosions",
+            "safe 20: pve-taken, mob-target",
+            "safe_no_pve 20: pve-taken, mob-target, pve-dealt",
+            "no_pve_damage 20: pve-dealt",
+            "use_deny 30: interact, containers, workstations",
+            "forge_quarter 30: containers, workstations",
+            "combat_zone 5: ender-pearl, wind-charge",
+            "boss_arena 5: ender-pearl, wind-charge",
+            "field 100: allow build");
+
+    @Setting(path = "protection.region-kinds", desc = "'build:region=kind' = give one region another kind (build id optional; module regions use "
+            + "the module id, e.g. depths:mine_t01). Graveyard: its safe regions also stop PvE damage (builder dev flag).")
+    public List<String> protectionRegionKinds = List.of(
+            "spawn_forge_quarter_v1:forge_quarter_plot=forge_quarter",
+            "depths_combat_t01_graveyard_v1:arrival_safe=safe_no_pve",
+            "depths_combat_t01_graveyard_v1:arrival_safe_lychgate=safe_no_pve",
+            "depths_combat_t01_graveyard_v1:exit_path=safe_no_pve");
+
+    @Setting(path = "protection.interact-allowed", desc = "Blocks anyone may still right-click where 'interact' is denied (* = wildcard). "
+            + "Keep in line with essentials.yml protection.interact-allowed for spawn.")
+    public List<String> protectionInteractAllowed = List.of("*_door", "*_button", "lever", "*_pressure_plate",
+            "*_fence_gate", "ender_chest", "crafting_table", "*_sign", "*_hanging_sign");
+
+    @Setting(path = "protection.containers", desc = "Blocks the 'containers' flag locks (* = wildcard; interact-allowed wins).")
+    public List<String> protectionContainers = List.of("chest", "trapped_chest", "barrel", "*shulker_box", "furnace", "blast_furnace",
+            "smoker", "hopper", "dropper", "dispenser", "crafter", "brewing_stand", "lectern", "jukebox", "chiseled_bookshelf",
+            "decorated_pot", "campfire", "soul_campfire", "flower_pot", "potted_*", "*cauldron", "composter", "vault");
+
+    @Setting(path = "protection.workstations", desc = "Blocks the 'workstations' flag locks (* = wildcard; interact-allowed wins).")
+    public List<String> protectionWorkstations = List.of("*anvil", "enchanting_table", "grindstone", "smithing_table", "stonecutter",
+            "loom", "cartography_table", "fletching_table", "beacon");
+
+    @Setting(path = "protection.bypass-permission", desc = "Permission that bypasses protection flags in every world (builders, admins).")
+    public String protectionBypassPermission = "skyblock.worlds.protection.bypass";
+
+    @Setting(path = "protection.world-bypass-permissions", desc = "'world=permission' = an extra permission that bypasses protection in that world.")
+    public List<String> protectionWorldBypass = List.of("depths=skyblock.depths.build", "spawn=skyblock.build.spawn");
+
+    @Setting(path = "protection.bypass-needs-creative", desc = "The bypass permissions work only in creative mode (essentials /build mode always counts in spawn).")
+    public boolean protectionBypassNeedsCreative = true;
+
+    @Setting(path = "protection.message-cooldown-millis", desc = "At most one 'you can't do that here' action bar line per player this often.",
+            min = 0, max = 60000)
+    public int protectionMessageCooldownMillis = 1500;
+
     @Override
     public String fileName() {
         return "worlds.yml";
