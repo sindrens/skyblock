@@ -60,6 +60,8 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - W3 /loadout (+ combat tag)
+- P5 punishments: bulk, punish from logs, appeals
+- M3.3 banks + interest
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
 
 ## Parked / broken
