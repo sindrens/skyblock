@@ -15,8 +15,7 @@ final class NoteRules {
         FROZEN("frozen"),
         NOT_ALLOWED("currency-not-allowed"),
         BELOW_MINIMUM("below-minimum"),
-        ABOVE_MAXIMUM("above-maximum"),
-        NEW_ACCOUNT("new-account");
+        ABOVE_MAXIMUM("above-maximum");
 
         final String key;
 
@@ -41,8 +40,10 @@ final class NoteRules {
         return false;
     }
 
-    /** The first problem with a {@code /withdraw}, if any. */
-    static Optional<Problem> withdraw(EconomyConfig config, long amount, Currency currency, boolean frozen, long playtimeMillis) {
+    /** The first problem with a {@code /withdraw}, if any (no new-account limit since owner answer 131). */
+    // TODO(tutorial): owner answers 131/203 removed the 30-minute new-account limit. The coming join tutorial unlocks
+    // permissions step by step instead; gate this through its command permission then (no playtime check here).
+    static Optional<Problem> withdraw(EconomyConfig config, long amount, Currency currency, boolean frozen) {
         if (frozen) {
             return Optional.of(Problem.FROZEN);
         }
@@ -55,9 +56,6 @@ final class NoteRules {
         if (amount > config.noteMax(currency)) {
             return Optional.of(Problem.ABOVE_MAXIMUM);
         }
-        if (playtimeLeft(config, playtimeMillis) > 0) {
-            return Optional.of(Problem.NEW_ACCOUNT);
-        }
         return Optional.empty();
     }
 
@@ -67,11 +65,5 @@ final class NoteRules {
             return Optional.of(Problem.ABOVE_MAXIMUM);
         }
         return Optional.empty();
-    }
-
-    /** Playtime still needed before a new account may make notes (0 = allowed or the rule is off). */
-    static long playtimeLeft(EconomyConfig config, long playtimeMillis) {
-        long needed = config.noteMinPlaytimeMinutes * 60_000L;
-        return needed <= 0 ? 0 : Math.max(0, needed - Math.max(0, playtimeMillis));
     }
 }

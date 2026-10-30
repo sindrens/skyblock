@@ -675,7 +675,7 @@ topics:
 
   island:
     icon: grass_block
-    aliases: [islands, is, home, sethome, setmyhome, invites, fly, island-chat, ischat, info, island-stats, isstats]
+    aliases: [islands, is, home, sethome, invites, fly, island-chat, ischat, info, island-stats, isstats]
     name: "<c:flame>Your island"
     summary: ["<c:text>Create your island, open its", "<c:text>menu and talk to your team."]
     take-me-there: "is"
@@ -717,15 +717,10 @@ topics:
           - "<c:text>back on your island without damage."
       - title: "<c:value>Starting over"
         lines:
-          - "<c:text>The leader can delete the island with"
-          - "<c:value>/is disband</c:value><c:text>: confirm, then type the word."
-          - "<c:text>Members are removed. You can create"
-          - "<c:text>a new island after a short cooldown."
-      - title: "<c:value>Your own home"
-        lines:
-          - "<c:value>/is setmyhome</c:value> <c:text>saves your own spot on"
-          - "<c:text>your island. Go there with</c:text> <c:value>/is home my</c:value><c:text>."
-          - "<c:value>/is home</c:value> <c:text>alone is the island home.</c:text>"
+          - "<c:text>A leader alone on the island can delete"
+          - "<c:text>it with</c:text> <c:value>/is disband</c:value> <c:text>and a confirm click."
+          - "<c:text>With members, hand it over first. A new"
+          - "<c:text>island or another team: right away."
       - title: "<c:value>Island settings"
         lines:
           - "<c:value>/is settings</c:value> <c:text>turns mob spawning, fire,"
@@ -959,8 +954,7 @@ topics:
         lines:
           - "<c:text>Notes can be traded, dropped and kept"
           - "<c:text>in chests like any item. They can't be"
-          - "<c:text>sold on the auction house. New players"
-          - "<c:text>can make notes after some play time."
+          - "<c:text>sold on the auction house."
       - title: "<c:value>Copies don't work"
         lines:
           - "<c:text>Every note has its own id and can be"
@@ -996,9 +990,9 @@ topics:
           - "<c:text>You can have 5 listings at once."
       - title: "<c:value>Rules"
         lines:
-          - "<c:text>New players can use it after 2 hours"
-          - "<c:text>of play. Starter kit items and money"
-          - "<c:text>notes can't be sold here. Every sale is"
+          - "<c:text>Starter kit items and money notes"
+          - "<c:text>can't be sold here. Your other profiles"
+          - "<c:text>can't buy your items. Every sale is"
           - "<c:text>logged, so scams get caught."
 
   trade:

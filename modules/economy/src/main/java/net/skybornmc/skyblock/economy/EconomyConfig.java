@@ -11,7 +11,7 @@ public final class EconomyConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ starting balances (given once per season)
 
-    @Setting(path = "start.money", desc = "Money a new player starts with (once per season).", min = 0, level = Setting.Level.OWNER)
+    @Setting(path = "start.money", desc = "Money every new profile starts with (once per season and profile; owner answer 121).", min = 0, level = Setting.Level.OWNER)
     public long startMoney = 1_000;
 
     @Setting(path = "start.crystals", desc = "Island crystals a new player starts with (once per season).", min = 0,
@@ -64,10 +64,6 @@ public final class EconomyConfig extends ModuleConfig {
 
     @Setting(path = "pay.confirm-above.shards", desc = "/pay asks to confirm at or above this many shards. 0 = never.", min = 0)
     public long payConfirmShards = 1_000;
-
-    @Setting(path = "pay.new-account-minutes", desc = "Playtime (minutes) needed before /pay works (owner decision #40: "
-            + "30). Stops fresh alts from passing money on. 0 = off.", min = 0, level = Setting.Level.OWNER)
-    public int payMinPlaytimeMinutes = 30;
 
     @Setting(path = "pay.confirm-seconds", desc = "How long a /pay confirmation stays valid (seconds).", min = 5, max = 120,
             restart = true)
@@ -132,10 +128,6 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "notes.withdraw-cooldown-seconds", desc = "Seconds between two /withdraw of the same player. 0 = none.",
             min = 0, max = 3600)
     public int noteWithdrawCooldownSeconds = 10;
-
-    @Setting(path = "notes.new-account-minutes", desc = "Playtime (minutes) needed before /withdraw works; notes are a way "
-            + "to pay, and new accounts can't pay (owner decision #40: 30). 0 = off.", min = 0, level = Setting.Level.OWNER)
-    public int noteMinPlaytimeMinutes = 30;
 
     @Setting(path = "notes.item.material", desc = "Material of the money note item (a resource-pack model can replace the "
             + "look later).", restart = true)
@@ -289,29 +281,13 @@ public final class EconomyConfig extends ModuleConfig {
 
     /**
      * Version 2: tokens were replaced by island crystals (owner decision O8); old keys are moved on load.
-     * Version 3: the new-account limit went from 120 to 30 minutes (owner decision #40); see {@link #upgradeValues}.
+     * Version 3: the new-account limit went from 120 to 30 minutes (owner decision #40). Since owner answer 131 (round 1)
+     * there is no new-account limit; the old keys {@code pay.new-account-minutes} and {@code notes.new-account-minutes}
+     * are ignored.
      */
     @Override
     public int version() {
         return 3;
-    }
-
-    /** The old default of {@code notes.new-account-minutes} (before owner decision #40). */
-    static final int OLD_NOTE_MINUTES_DEFAULT = 120;
-
-    /**
-     * Value changes the key renames can't do, applied to the raw file before it is loaded. Only an untouched old
-     * default is changed (an owner-chosen value is kept). Returns true if something changed.
-     */
-    static boolean upgradeValues(org.bukkit.configuration.file.YamlConfiguration yaml) {
-        if (yaml.getKeys(false).isEmpty() || yaml.getInt("config-version", 1) >= 3) {
-            return false;
-        }
-        if (yaml.isInt("notes.new-account-minutes") && yaml.getInt("notes.new-account-minutes") == OLD_NOTE_MINUTES_DEFAULT) {
-            yaml.set("notes.new-account-minutes", 30);
-            return true;
-        }
-        return false;
     }
 
     @Override

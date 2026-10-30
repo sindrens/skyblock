@@ -16,6 +16,9 @@
 # An empty line "" is a blank separator.
 # A line starting with "if:<placeholder>|" only shows while that placeholder has a value (not empty, not "-"):
 #   "if:island_next_note| <c:muted>Next</c:muted>  ..." hides the whole line when there is no open note.
+#   "if:a,b|" shows the line while any of them has a value (used for section headers over conditional lines).
+# Owner answer 275: the island Level line (and its "| Island" header when nothing else is under it) stays hidden until
+#   island levels exist (island_level is "-" until then).
 # V2 look (STYLE2): phoenix gradient title, bold red "| Section" headers, rows start with a dark red "|" bar,
 # labels gray with a colon, values white or their currency color, footer play.skybornmc.net. Max 9 lines + title.
 
@@ -29,8 +32,8 @@ scoreboard:
       - " <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
       - " <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
       - ""
-      - " <bold><c:header>| Island</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
+      - "if:island_level| <bold><c:header>| Island</c:header></bold>"
+      - "if:island_level| <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
       # Optional (island profiles): show the active profile. Remove the "# " to turn it on (max 9 lines).
       # - " <c:bar>|</c:bar> <c:text>Profile:</c:text> <c:value><ph:profile_name>"
       - " <c:sky_ice>play.skybornmc.net"
@@ -46,8 +49,8 @@ scoreboard:
       - " <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
       # Blank separator, except while standing in the AFK pool: then the AFK line (messages/afk.yml -> scoreboard.line).
       - "<ph:afk_line>"
-      - " <bold><c:header>| Island</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
+      - "if:island_level| <bold><c:header>| Island</c:header></bold>"
+      - "if:island_level| <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # Your own island: island first, the newest open note (only when there is one and the
@@ -55,8 +58,8 @@ scoreboard:
   island:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     lines:
-      - " <bold><c:header>| Island</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
+      - "if:island_level,island_next_note| <bold><c:header>| Island</c:header></bold>"
+      - "if:island_level| <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
       - "if:island_next_note| <c:bar>|</c:bar> <c:text>Next:</c:text> <c:value><ph:island_next_note>"
       - " <bold><c:header>| Profile</c:header></bold>"
       - " <c:bar>|</c:bar> <name> <c:muted><sym:dot></c:muted> <rank>"

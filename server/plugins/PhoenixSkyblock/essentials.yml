@@ -39,7 +39,7 @@ join:
   # Only players with this permission get a join/quit message (ranks + staff).
   message-permission: skyblock.join.message
 respawn:
-  # Players respawn at spawn after dying.
+  # Players always respawn at spawn after dying, also with a bed or respawn anchor (owner answer 160: never at the island home).
   at-spawn: true
 protection:
   # Worlds with spawn protection (no building, damage, hunger, drops or mob spawning).

@@ -156,6 +156,31 @@ class AuctionEngineTest {
     }
 
     @Test
+    void deletingAProfileCancelsItsListingsAndDeletesTheItems() {
+        // Owner answer 118: everything on a deleted profile goes, auction items included (never returned)
+        list(1_000);
+        list(2_000);
+        list(3_000);
+        clock.addAndGet(25 * HOUR);
+        engine.expireDue().join(); // all three expire into the bin...
+        assertEquals(3, collectionRows(seller));
+        Listing fresh = list(4_000);
+        Listing other = engine.create(buyer, "Buyer", item("gold"), 500, 24 * HOUR, 5, Actor.SYSTEM).join().listing();
+        long sellerMoney = economy.get(seller);
+
+        AuctionStore.ProfileWipe wipe = engine.deleteProfile(seller, Actor.SYSTEM).join();
+        assertEquals(List.of(fresh.id()), wipe.listings().stream().map(Listing::id).toList());
+        assertEquals(3, wipe.entries().size());
+        assertEquals(ListingStatus.CANCELLED, status(fresh.id()));
+        assertEquals(0, collectionRows(seller), "the items are deleted with the profile, not returned");
+        assertEquals(sellerMoney, economy.get(seller), "no fee refund for a deleted profile");
+        assertEquals(ListingStatus.ACTIVE, status(other.id()), "other players' listings are untouched");
+        assertEquals(List.of(other.id()), engine.activeListings().stream().map(Listing::id).toList());
+        assertEquals(AuctionEngine.BuyOutcome.GONE, engine.buy(fresh.id(), buyer, "Buyer", Actor.SYSTEM).join().outcome());
+        assertTrue(engine.deleteProfile(seller, Actor.SYSTEM).join().empty(), "running it again does nothing");
+    }
+
+    @Test
     void sellerNoticesAreTakenOnce() {
         Listing l = list(500);
         engine.buy(l.id(), buyer, "Buyer", Actor.SYSTEM).join();

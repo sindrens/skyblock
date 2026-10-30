@@ -2,7 +2,7 @@
 # Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
 # LuckPerms grants for these nodes: server/permissions/islands.txt. Commands: docs/commands/islands.md.
 skyblock.island:
-  description: Use /is (create your island, home, go, sethome, setmyhome, invite, invites, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, settings, notes, chat, info, disband, visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like)
+  description: Use /is (create your island, home, go, sethome, invite, invites, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, settings, notes, chat, info, disband, visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like)
   default: true
 skyblock.island.stats:
   description: Use /is stats and the Stats button of the island menu (M2.6) - your island's stats and each member's part
@@ -49,6 +49,9 @@ skyblock.island.admin.setowner:
   default: op
 skyblock.island.admin.reset:
   description: Staff - /isadmin reset <island> deletes an island and gives its leader a new one (confirm)
+  default: op
+skyblock.island.admin.restore:
+  description: Staff - /isadmin restore <player> restores a kicked member from their kick backup (role, money, items; confirm)
   default: op
 skyblock.island.admin.slots:
   description: Staff - /isadmin slots opens the grid overview (used, clearing, free slots)

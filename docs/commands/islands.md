@@ -9,8 +9,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | Command | Description | Permission | Status |
 |---|---|---|---|
 | `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: the **island menu** (M2.5, see below; `/is home` teleports) | `skyblock.island` (everyone) | ✅ |
-| `/is home [home]` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `teleport.yml → island-home.warmup-seconds`). With a name: one of your own homes (ISL2, tab completes them) | `skyblock.island` | ✅ |
-| `/is setmyhome [name]` | ISL2: set your own home on your island where you stand (inside the border, safe spot, Y 0-256). Every member has `homes.per-member` (1), more from masteries later; the same name again moves it. Name default `homes.default-name` (`my`) | `skyblock.island` | ✅ |
+| `/is home` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `teleport.yml → island-home.warmup-seconds`). Personal member homes and `/is setmyhome` were removed (owner answer 247) | `skyblock.island` | ✅ |
 | `/is go` | Same as `/is home` (your island is the one you're a member of; visiting others is `/is visit`) | `skyblock.island` | ✅ |
 | `/is sethome` | Set the island home where you stand: Leader, Admin, Mod; inside your border, safe spot, Y 0-256 | `skyblock.island` | ✅ |
 | `/is invite <player>` | Leader/Admin/Mod: invite an online player without an island. On a **solo** island the leader first sees "Inviting makes your island a Team Island forever. Solo and team islands are on separate leaderboards." (confirm screen; cancel keeps it solo). The target gets a clickable `[Accept] [Deny]`; expires after `members.invite-expiry-seconds` (5 min) | `skyblock.island` | ✅ |
@@ -30,7 +29,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is stats` | M2.6: your island's **stats menu** (also the Stats button of the island menu): per category all time, today, this week, last week and the change vs last week; click a category for each member's part (heads, share in %, this week, today; former members keep theirs). Categories without their feature yet show `-` (Coming soon). Members only; reloads every 10 s while open | `skyblock.island.stats` (everyone) | ✅ |
 | `/is invites` | ISL2: invites you received (click: Accept / Deny) and invites your island sent (click: cancel, Leader/Admin/Mod; confirm). Refreshes every 2 s | `skyblock.island` | ✅ |
 | `/is settings [setting] [on\|off\|value]` | ISL2: the island settings menu; with a setting name it changes it right away (no value: toggles flip, weather/time go to the next value). Who may change: the `settings` role permission (Leader + Admin by default); every member can look. Tab completes settings and, after one, its values | `skyblock.island` | ✅ |
-| `/is disband` | Leader only: confirm screen (what is lost, members removed, creation cooldown), then type `disband` in chat (`disband.confirm-word`, `cancel` keeps it). The island is removed for good: members and coop players are removed and told, everyone on it is sent to spawn, the slot is cleared and reused. New island after `creation.cooldown-hours` (24 h) | `skyblock.island` | ✅ |
+| `/is disband` | Leader only, and only while nobody else is a member (owner answer 141: `/is transfer` first, then `/is leave`); one confirm screen with a confirm button (owner answer 261, no typed word). The island is removed for good: coop players are told, everyone on it is sent to spawn, the slot is cleared and reused, and the island bank money is deleted (owner answer 263). A new island right away (no cooldown) | `skyblock.island` | ✅ |
 | `/is visit [player]` | No name: the **visit browser** (Most visited, Top rated, Most liked, Newest; click an island to visit). With a name (any member of that island, online or offline): teleport to that island's home after a safe-spot check and `teleport.yml → island-visit.warmup-seconds` (3 s; `/is warp`: `island-warp.*`). Your own island = home | `skyblock.island` | ✅ |
 | `/is lock` / `/is unlock` | Leader/Mod: only members and coop players can enter a locked island; locking sends visitors on it to spawn. Locked islands are hidden in the browsers | `skyblock.island` | ✅ |
 | `/is expel <player>` | Leader/Mod: send a visitor on your island to spawn (tab: visitors on your island) | `skyblock.island` | ✅ |
@@ -42,8 +41,12 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is like <player>` | Like an island you visited: once per day per island (separate from ratings); never your own island | `skyblock.island` | ✅ |
 | `/is bypass` | Staff: toggle ignoring island protection (build, containers, everything; also walk out of borders). Off by default and again on quit; every toggle is logged (`staff`: `island_bypass_on` / `island_bypass_off`) | `skyblock.island.bypass` (admin) | ✅ |
 
-Rules: one island per player (database-enforced), creation cooldown after a disband `creation.cooldown-hours` (24 h),
-start size 3x3 chunks (48x48), grows by chunk rings up to 15x15 (`IslandService.setSize`, Phase 5 / `/isadmin setsize`). Only players
+Rules: one island per player (database-enforced), no creation or join cooldown after a leave, kick, disband, staff
+delete or reset (owner answers 121/161/258/259), start size 3x3 chunks (48x48). Normal Island Size upgrades reach
+`size.normal-max-chunks` (9x9, owner answer 157); bigger sizes up to `size.max-chunks` (15) only with gems or from the
+black market (hook for Phase 5; `/isadmin setsize` can set up to `size.max-chunks`). Upgrades are paid from the island
+bank only (`upgrades.island-bank-only`, owner answer 169; `/is upgrade` is not built yet). Players always respawn at
+spawn after dying, never at the island home (essentials, owner answer 160). Only players
 on an island see its border. Void falls return you to the island home without damage.
 Everything that changes data is logged (category `island`: `island_create`, `island_build`, `island_build_failed`,
 `island_sethome`, `island_size`, `island_rescue_block`, `island_perm`, and from M2.3 `island_invite` (sent/denied,
@@ -82,10 +85,14 @@ read-only. Every change is logged (`island_perm`).
 
 - **Solo → team:** the first invite that is actually sent turns the island into a team island forever (same
   transaction as the invite). Kicking everyone never turns it back; the leader is told so.
-- **Limits (REVIEW A5/B1):** `members.start-slots` 4 members including the leader (island column `member_slots`, raised
-  by the Phase 5 Member Slots upgrade up to `members.max-slots` 8); a player joins at most
-  `members.max-joins-per-season` (3) islands per season (`season-id`) and waits `members.join-cooldown-hours` (24 h)
-  after their last join, leave or kick (table `player_island_joins`). Founding an island never counts as a join.
+- **Limits (REVIEW A5/B1, owner answer 242):** `members.start-slots` 5 = 4 members plus the leader (island column
+  `member_slots`, raised by the Phase 5 Member Slots upgrade up to `members.max-slots` 9 = 8 plus the leader; old files
+  with the untouched defaults 4/8 are moved to 5/9 once, `config-version` 2); a player joins at most
+  `members.max-joins-per-season` (3) islands per season (`season-id`, table `player_island_joins`). No join cooldown.
+  Founding an island never counts as a join.
+- **Kick backups (owner answer 251):** kicking a stored member (`/is kick`, `/isadmin kick`, moderation removals) saves a
+  backup in `island_kick_backups` (V012): island, role, the profile's money and, if the profile was online and active,
+  its inventory and ender chest (logged `island_kick_backup`). Admins restore it with `/isadmin restore <player>`.
 - XP a member earned stays with the island when they leave (A5; implemented with stats in M2.6).
 - Online members are told about every member change (invites, joins, leaves, kicks, promotions, transfers, coop).
 - Tables (V003): `island_invites`, `island_coops`, `player_island_joins`, `island_join_blocks`, columns
@@ -100,9 +107,10 @@ actor)` and `blockJoining(uuid, until[, reason, actor])` / `joinBlockedUntil` fo
 ## Lifecycle (M2.7)
 - **Removing an island** (`/is disband`, `/isadmin delete`, `/isadmin reset`) is one transaction: the `islands` row gets
   `deleted_at`, `deleted_reason` (`disband` | `delete` | `reset`) and `deleted_by` and is kept with its `season_id` for
-  history; memberships end (`player_island_joins.left_reason = disband`, never starts the join cooldown), coop players,
-  invites and permission overrides are removed and the slot goes to `clearing`. Only `disband` starts the creation
-  cooldown. Island money/bank: decided with the island bank (M3.3).
+  history; memberships end (`player_island_joins.left_reason = disband`), coop players, invites and permission
+  overrides are removed and the slot goes to `clearing`. No creation cooldown after any of them. Island bank: a disband
+  deletes the money (owner answer 263, ledger reason `bank_island_deleted`); staff delete and reset keep it in the
+  closed bank for staff to decide.
 - **Slot states** (`island_slots.state`): `used` → `clearing` → `free` → `used`. A clearing slot is never handed out;
   free slots are reused (lowest id first) before a new spiral slot is added.
 - **Clearer:** empties the max island size + `lifecycle.clear.extra-ring-chunks` chunk rings around the slot center,
@@ -130,6 +138,7 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
 | `/isadmin kick <player>` | Remove a member or coop player from their island (confirm). Leaders: `setowner` first or `delete` | `skyblock.island.admin.kick` (admin) | ✅ |
 | `/isadmin setowner <island> <member>` | Make a member the leader (confirm); the old leader becomes an Admin | `skyblock.island.admin.setowner` (admin) | ✅ |
 | `/isadmin reset <island>` | Remove the island and give its leader a new starter island right away (built now if online, else on their next `/is`); other members removed (confirm) | `skyblock.island.admin.reset` (admin) | ✅ |
+| `/isadmin restore <player>` | Owner answer 251: the player's kick backups (chest menu, newest first: island, role, money, items saved or not, who kicked, state). Click → confirm → the profile joins the island again with its old role (once; slots and one island per profile apply, a refused restore stays open), its money is topped up to the amount at the kick (never taken away; ledger `island_kick_restore`) and the saved inventory + ender chest are given back only into an empty inventory and ender chest of that profile while it is online (else they wait; click again later). Tab completes players with open backups. Logged `isadmin_restore`, `island_kick_restore`, `island_kick_restore_items` | `skyblock.island.admin.restore` (admin) | ✅ |
 | `/isadmin bypass` | Same as `/is bypass` | `skyblock.island.bypass` (admin) | ✅ |
 | `/isadmin slots` | Grid overview GUI (spiral order): used (owner, members, size), clearing (progress), free; filter and reload buttons; click = teleport | `skyblock.island.admin.slots` (admin) | ✅ |
 | `/isadmin teleport-slot <slot>` | Teleport to the top of a slot's center column (tab completes slot ids) | `skyblock.island.admin.teleport-slot` (admin) | ✅ |
@@ -182,8 +191,8 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
   every role and visitors, `permissions.role-defaults.hurt-monsters`) and **Island settings** (`settings`: may change
   `/is settings`; default Leader + Admin, `permissions.role-defaults.settings`; only for Admin/Mod/Member and only given
   by someone who has it). `*` in a role list never includes these two, so older `islands.yml` files keep working.
-- **Join cooldown** (owner #20): `members.join-cooldown-hours` (24 h) counts from the last join only; leaving or being
-  kicked never restarts it. `/is leave` tells the time that is left.
+- **Join cooldown:** removed (owner answers 121/161/258/259, round 1); the old `members.join-cooldown-hours` and
+  `creation.cooldown-hours` keys are ignored.
 - **`/is settings`** (owner round 3; defaults in `islands.yml → flags.defaults.*`, island changes in `island_settings`,
   only differences from the defaults): mob spawning (off), animal spawning (on), fire spread (off), explosions break
   blocks (off), leaf decay (on), crop trampling (off; protects farmland from players and mobs), visitors pick up items
@@ -203,11 +212,12 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
   permission or a setting change turns it off at once; the next fall within `fly.landing-protection-seconds` (10) does
   no damage (also after you stop flying yourself). Flight from creative, staff mode or freeze is never touched.
   Checked on every block move plus every `fly.check-interval-ticks` (20).
-- **Personal homes** (owner I13): see `/is setmyhome`; table `island_member_homes`; removed when the member leaves or is
-  removed and with the island. Mastery hook: `IslandService.extraMemberHomes` / `extraHomesProvider`.
+- **Personal homes:** removed (owner answer 247): no `/is setmyhome`, no `/is home <name>`; the table
+  `island_member_homes` is dropped by V012 and the `homes.*` keys are ignored. `IslandService.extraMemberHomes` stays in
+  the shared API but is unused.
 - **Invites menu** (owner O17): `/is invites`, also from `/is members`. Cancelling is logged (`island_invite`,
   `result: cancelled`).
-- **Logged** (category `island`): `island_setting`, `island_member_home` (set/move), `island_invite` (cancelled), plus
+- **Logged** (category `island`): `island_setting`, `island_invite` (cancelled), plus
   the existing role/permission events with the new values.
 - **Service hooks:** `hasWings(island)`, `wingsProvider(predicate)`, `extraMemberHomes(island, player)`,
   `extraHomesProvider(function)`; `IslandService.Role` gained `ADMIN`.
@@ -315,5 +325,5 @@ Three rows in the permission matrix (own defaults, never part of `*`, management
 players or visitors): **Bank deposit** (`bank-deposit`: Admin, Mod, Member), **Bank withdraw** (`bank-withdraw`: Admin;
 daily limit per role in `bank.yml`) and **Bank history** (`bank-history`: Admin, Mod). The Leader has all three. Config:
 `permissions.role-defaults.bank-deposit|bank-withdraw|bank-history`. The island menu's **Bank** button opens `/bank`
-(economy module, `docs/commands/economy.md`). When an island is disbanded or reset, what is left in its bank goes to the
-leader's balance.
+(economy module, `docs/commands/economy.md`). When an island is disbanded, what is left in its bank is deleted (owner
+answer 263: the money belongs to the island); a staff delete or reset keeps it in the closed bank.

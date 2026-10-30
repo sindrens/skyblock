@@ -14,10 +14,9 @@ import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.EconomyService;
-import net.skybornmc.skyblock.common.profile.ProfileDeleteEvent;
+import net.skybornmc.skyblock.common.profile.ProfileDeletedEvent;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
-import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
@@ -58,7 +57,6 @@ public final class AuctionModule implements SkyblockModule, Listener {
 
     static final String PERM_USE = "skyblock.auction.use";
     static final String PERM_SELL = "skyblock.auction.sell";
-    static final String PERM_BYPASS_PLAYTIME = "skyblock.auction.bypass-playtime";
     static final String PERM_STAFF_REMOVE = "skyblock.staff.auction.remove";
 
     final Core core;
@@ -228,10 +226,8 @@ public final class AuctionModule implements SkyblockModule, Listener {
         if (frozen(player)) {
             return Optional.of("frozen");
         }
-        Optional<ListingRules.Rejection> account = accountProblem(player, true);
-        if (account.isPresent()) {
-            return Optional.of("rules." + account.get().problem().key());
-        }
+        // TODO(tutorial): owner answers 131/203 removed the 30-minute new-account limit; the coming join tutorial unlocks
+        // the auction permissions (skyblock.auction.*) step by step instead.
         Optional<String> item = codec.problem(hand, config);
         if (item.isPresent()) {
             return Optional.of("items." + item.get());
@@ -249,14 +245,11 @@ public final class AuctionModule implements SkyblockModule, Listener {
 
     TagResolver[] sellPlaceholders(Player player, long price) {
         long fee = Pricing.fee(config, price);
-        long playtimeLeft = accountProblem(player, true).map(ListingRules.Rejection::value).orElse(0L);
         return new TagResolver[]{
                 moneyTag("price", player, price), moneyTag("fee", player, fee), moneyTag("tax", player, Pricing.tax(config, price)),
                 moneyTag("net", player, Pricing.net(config, price)), moneyTag("min", player, config.priceMin),
                 moneyTag("max", player, config.priceMax),
-                moneyTag("balance", player, economy().cached(player.getUniqueId(), Currency.MONEY).orElse(0)),
-                Msg.p("time", Format.duration(Duration.ofMillis(playtimeLeft))),
-                Msg.p("hours", Format.duration(Duration.ofMinutes(config.minPlaytimeMinutes)))};
+                moneyTag("balance", player, economy().cached(player.getUniqueId(), Currency.MONEY).orElse(0))};
     }
 
     // ================================================================== listing
@@ -350,8 +343,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
         long v = r.value();
         return new TagResolver[]{moneyTag("min", player, v), moneyTag("max", player, v), Msg.number("slots", v),
                 Msg.p("time", Format.duration(Duration.ofMillis(Math.max(1000, v)))), Msg.number("limit", config.relistMaxSameItem),
-                Msg.p("window", Format.duration(Duration.ofMinutes(v))),
-                Msg.p("hours", Format.duration(Duration.ofMinutes(config.minPlaytimeMinutes)))};
+                Msg.p("window", Format.duration(Duration.ofMinutes(v)))};
     }
 
     /**
@@ -406,12 +398,6 @@ public final class AuctionModule implements SkyblockModule, Listener {
         }
         if (frozen(player)) {
             send(player, "frozen");
-            sound(player, "error");
-            return;
-        }
-        Optional<ListingRules.Rejection> account = accountProblem(player, false);
-        if (account.isPresent()) {
-            send(player, "rules.new-account-buy", rejectionPlaceholders(player, account.get()));
             sound(player, "error");
             return;
         }
@@ -663,14 +649,32 @@ public final class AuctionModule implements SkyblockModule, Listener {
         return profiles().onlinePlayer(key).filter(p -> !profiles().isSwitching(p.getUniqueId())).orElse(null);
     }
 
-    /** P9: a profile with active listings can't be deleted (they could still sell): cancel them first. */
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onProfileDelete(ProfileDeleteEvent event) {
+    /**
+     * Owner answer 118 (round 1, replaces P9's refusal): deleting a profile deletes everything on it, auction listings
+     * included: its active listings are cancelled and their items deleted with the profile (never returned), and its
+     * collection bin is emptied. Run again after {@code tasks.recover-after-seconds} for listings that were still
+     * pending or being bought at that moment (a purchase that fails puts the listing back to active).
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileDeleted(ProfileDeletedEvent event) {
         UUID key = event.profile().id();
-        long count = engine.activeListings().stream().filter(l -> l.seller().equals(key)).count();
-        if (count > 0) {
-            event.refuse(msg.component(event.getPlayer(), "profiles.delete-listings", Msg.number("count", count)));
-        }
+        Actor actor = Actor.system("profiles");
+        wipeProfile(key, actor);
+        long delay = 20L * Math.max(5, config.recoverAfterSeconds + 5);
+        core.scheduler().later("auction:profile-delete", delay, () -> wipeProfile(key, actor));
+    }
+
+    private void wipeProfile(UUID key, Actor actor) {
+        engine.deleteProfile(key, actor).whenCompleteAsync((wipe, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.SEVERE, "Auction: deleting the listings of deleted profile " + key + " failed",
+                        Database.cause(error));
+                return;
+            }
+            if (!wipe.empty()) {
+                refreshMenus();
+            }
+        }, main);
     }
 
     /** Rebuilds open auction menus (after a sale, cancel or expiry). */
@@ -717,12 +721,12 @@ public final class AuctionModule implements SkyblockModule, Listener {
         return ListingRules.slots(config, granted);
     }
 
-    Optional<ListingRules.Rejection> accountProblem(Player player, boolean listing) {
-        if (player.hasPermission(PERM_BYPASS_PLAYTIME)) {
-            return Optional.empty();
-        }
-        long played = core.players().get(player.getUniqueId()).map(PlayerData::playtimeMillis).orElse(0L);
-        return ListingRules.account(config, played, listing);
+    /**
+     * Owner answer 118 / P4: true when {@code listing} was made by another profile of the viewer's own player (refused and
+     * audited as profile_transfer_blocked). The engine checks again inside the purchase.
+     */
+    boolean ownOtherProfile(Player player, Listing listing) {
+        return profiles().ownOtherProfile(listing.seller(), key(player));
     }
 
     boolean frozen(Player player) {

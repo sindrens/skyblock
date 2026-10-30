@@ -51,7 +51,7 @@ class VisitStoreTest {
     }
 
     private UUID island(UUID owner) {
-        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, 0, "islands", now));
+        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", now));
         return assertInstanceOf(IslandStore.CreateResult.Created.class, result).island().id();
     }
 

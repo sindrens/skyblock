@@ -63,15 +63,7 @@ public final class AuctionConfig extends ModuleConfig {
     @Setting(path = "anti-abuse.relist.window-minutes", desc = "Window of the relist limit (minutes).", min = 1, max = 1440)
     public int relistWindowMinutes = 30;
 
-    @Setting(path = "anti-abuse.new-account.min-playtime-minutes", desc = "Playtime needed before using the auction house "
-            + "(owner #40: 30 minutes). 0 = no limit.", min = 0, max = 10_000, level = Setting.Level.OWNER)
-    public int minPlaytimeMinutes = 30;
-
-    @Setting(path = "anti-abuse.new-account.block-listing", desc = "New accounts can't list items.", level = Setting.Level.OWNER)
-    public boolean newBlockListing = true;
-
-    @Setting(path = "anti-abuse.new-account.block-buying", desc = "New accounts can't buy items.", level = Setting.Level.OWNER)
-    public boolean newBlockBuying = true;
+    // Owner answers 131/203 (round 1): no new-account playtime limit (the old anti-abuse.new-account.* keys are ignored).
 
     // ------------------------------------------------------------------ what can be listed
 

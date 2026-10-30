@@ -29,7 +29,7 @@ class MemberStoreTest {
 
     private static final long HOUR = 3_600_000L;
     private static final long MIN5 = 5 * 60_000L;
-    private static final MemberStore.Limits LIMITS = new MemberStore.Limits(1, 3, 24 * HOUR, 4, 8);
+    private static final MemberStore.Limits LIMITS = new MemberStore.Limits(1, 3, 4, 8);
 
     @TempDir
     Path dir;
@@ -53,7 +53,7 @@ class MemberStoreTest {
     }
 
     private UUID island(UUID owner) {
-        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, 0, "islands", now));
+        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", now));
         return assertInstanceOf(IslandStore.CreateResult.Created.class, result).island().id();
     }
 
@@ -165,7 +165,7 @@ class MemberStoreTest {
     }
 
     @Test
-    void joinCooldownAndSeasonLimit() {
+    void noJoinCooldownButASeasonLimit() {
         UUID hopper = UUID.randomUUID();
         UUID[] leaders = new UUID[4];
         UUID[] islands = new UUID[4];
@@ -173,20 +173,19 @@ class MemberStoreTest {
             leaders[i] = UUID.randomUUID();
             islands[i] = island(leaders[i]);
         }
+        // Owner answers 121/161/258/259: leave, kick and join again right away, no waiting.
         join(islands[0], leaders[0], hopper);
         leave(islands[0], hopper, MemberStore.LEFT_LEAVE);
-        MemberStore.InviteResult limited = invite(islands[1], leaders[1], hopper);
-        assertInstanceOf(JoinRules.Check.Cooldown.class, assertInstanceOf(MemberStore.InviteResult.Limited.class, limited).check());
-        now += 25 * HOUR;
+        now += 1;
         join(islands[1], leaders[1], hopper);
         leave(islands[1], hopper, MemberStore.LEFT_KICK);
-        now += 25 * HOUR;
+        now += 1;
         join(islands[2], leaders[2], hopper);
         leave(islands[2], hopper, MemberStore.LEFT_LEAVE);
-        now += 25 * HOUR;
+        now += 1;
         MemberStore.InviteResult fourth = invite(islands[3], leaders[3], hopper);
         assertEquals(3, ((JoinRules.Check.SeasonLimit) assertInstanceOf(MemberStore.InviteResult.Limited.class, fourth).check()).max());
-        MemberStore.Limits nextSeason = new MemberStore.Limits(2, 3, 24 * HOUR, 4, 8);
+        MemberStore.Limits nextSeason = new MemberStore.Limits(2, 3, 4, 8);
         assertInstanceOf(MemberStore.InviteResult.Created.class,
                 db.blockingTransaction(c -> MemberStore.invite(c, islands[3], leaders[3], hopper, now, now + MIN5, nextSeason)),
                 "a new season resets the count");
@@ -197,7 +196,7 @@ class MemberStoreTest {
     }
 
     @Test
-    void leaderIsNeverRemovedAndFounderLeaveNeitherCountsNorStartsTheCooldown() {
+    void leaderIsNeverRemovedAndFounderLeaveIsNoJoin() {
         UUID leader = UUID.randomUUID();
         UUID id = island(leader);
         assertTrue(leave(id, leader, MemberStore.LEFT_KICK).isEmpty(), "the leader can't be removed");
@@ -208,8 +207,7 @@ class MemberStoreTest {
         JoinRules.History history = db.blocking(c -> MemberStore.history(c, leader, 1));
         assertEquals(0, history.joinsThisSeason(), "founding an island is not a join");
         assertEquals(now, history.lastLeave());
-        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(history, null, now, 3, 24 * HOUR),
-                "ISL2: only a join starts the cooldown");
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(history, null, now, 3));
     }
 
     @Test
@@ -285,17 +283,16 @@ class MemberStoreTest {
     // ------------------------------------------------------------------ ISL2
 
     @Test
-    void kickRightAfterJoiningKeepsTheCooldownFromTheJoin() {
+    void kickedPlayerCanJoinAnotherIslandRightAway() {
         UUID hopper = UUID.randomUUID();
         UUID a = UUID.randomUUID();
         UUID b = UUID.randomUUID();
         UUID islandA = island(a);
         UUID islandB = island(b);
         join(islandA, a, hopper);
-        now += 20 * HOUR;
         leave(islandA, hopper, MemberStore.LEFT_KICK);
-        now += 5 * HOUR; // 25 h after the join, 5 h after the kick
-        assertInstanceOf(MemberStore.InviteResult.Created.class, invite(islandB, b, hopper), "the kick didn't restart the cooldown");
+        assertInstanceOf(MemberStore.InviteResult.Created.class, invite(islandB, b, hopper), "no cooldown after a kick (answer 161)");
+        assertInstanceOf(MemberStore.AcceptResult.Joined.class, accept(islandB, hopper));
     }
 
     @Test
@@ -312,28 +309,72 @@ class MemberStoreTest {
         assertEquals(Role.ADMIN, IslandStore.role("admin"));
     }
 
+    // ------------------------------------------------------------------ owner answer 251: kick backups
+
+    private long backup(UUID island, UUID member, Role role, Long money, byte[] inventory) {
+        return db.blocking(c -> KickBackupStore.save(c, new KickBackupStore.NewBackup(island, "Island", member, member, "Alex", role,
+                money, inventory, inventory == null ? null : new byte[]{9}, MemberStore.LEFT_KICK, "Steve", now)));
+    }
+
     @Test
-    void personalHomesRespectTheLimitAndEndWithTheMembership() {
+    void kickBackupRestoresTheMemberWithTheOldRoleOnce() {
         UUID leader = UUID.randomUUID();
         UUID id = island(leader);
         UUID member = UUID.randomUUID();
         join(id, leader, member);
-        Island.Home home = new Island.Home(1, 100, 2, 0, 0);
-        assertEquals(MemberHomeStore.SaveResult.SAVED, db.blockingTransaction(c -> MemberHomeStore.save(c, id, member, "my", home, 1, now)));
-        assertEquals(MemberHomeStore.SaveResult.MOVED, db.blockingTransaction(c -> MemberHomeStore.save(c, id, member, "my",
-                new Island.Home(3, 100, 4, 90, 0), 1, now)));
-        now += 1;
-        assertEquals(MemberHomeStore.SaveResult.LIMIT, db.blockingTransaction(c -> MemberHomeStore.save(c, id, member, "farm", home, 1, now)));
-        assertEquals(MemberHomeStore.SaveResult.SAVED, db.blockingTransaction(c -> MemberHomeStore.save(c, id, member, "farm", home, 2, now)),
-                "a mastery raised the limit");
-        assertEquals(MemberHomeStore.SaveResult.NOT_MEMBER, db.blockingTransaction(c -> MemberHomeStore.save(c, id, UUID.randomUUID(), "my",
-                home, 1, now)));
+        assertTrue(db.<Boolean>blocking(c -> MemberStore.setRole(c, id, member, Role.MEMBER, Role.MOD)));
+        assertEquals(Role.MOD, leave(id, member, MemberStore.LEFT_KICK).orElseThrow());
+        long backupId = backup(id, member, Role.MOD, 12_345L, new byte[]{1, 2, 3});
+
+        KickBackupStore.Backup saved = db.blocking(c -> KickBackupStore.ofPlayer(c, member, 10)).getFirst();
+        assertEquals(backupId, saved.id());
+        assertEquals(12_345L, saved.money());
+        assertTrue(saved.open());
+        assertTrue(saved.itemsOpen());
+        assertEquals(Role.MOD, saved.role());
+
+        now += HOUR;
+        KickBackupStore.RestoreResult first = db.blocking(c -> KickBackupStore.restoreMembership(c, backupId, "Admin", now, LIMITS));
+        assertInstanceOf(KickBackupStore.RestoreResult.Restored.class, first);
         Island island = db.blocking(c -> IslandStore.loadAll(c, "islands")).getFirst();
-        assertEquals(java.util.List.of("my", "farm"), java.util.List.copyOf(island.personalHomes(member).keySet()));
-        assertEquals(3, island.personalHomes(member).get("my").x());
-        leave(id, member, MemberStore.LEFT_LEAVE);
-        int rows = db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM island_member_homes WHERE uuid = ?", rs -> rs.getInt(1), member)
-                .orElse(0));
-        assertEquals(0, rows, "homes end with the membership");
+        assertEquals(Role.MOD, island.role(member).orElseThrow(), "back with the role they had");
+        assertInstanceOf(KickBackupStore.RestoreResult.AlreadyRestored.class,
+                db.blocking(c -> KickBackupStore.restoreMembership(c, backupId, "Admin", now, LIMITS)), "only once");
+        assertTrue(db.<Boolean>blocking(c -> KickBackupStore.claimItems(c, backupId, now)));
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.claimItems(c, backupId, now)), "items only once too");
+        KickBackupStore.Backup after = db.blocking(c -> KickBackupStore.ofPlayer(c, member, 10)).getFirst();
+        assertFalse(after.open());
+        assertFalse(after.itemsOpen());
+        assertEquals("Admin", after.restoredBy());
+    }
+
+    @Test
+    void refusedRestoreKeepsTheBackupOpen() {
+        UUID leader = UUID.randomUUID();
+        UUID id = island(leader);
+        UUID member = UUID.randomUUID();
+        join(id, leader, member);
+        leave(id, member, MemberStore.LEFT_KICK);
+        long backupId = backup(id, member, Role.MEMBER, null, null);
+        island(member); // they made their own island meanwhile
+        KickBackupStore.RestoreResult refused = db.blocking(c -> KickBackupStore.restoreMembership(c, backupId, "Admin", now, LIMITS));
+        assertInstanceOf(MemberStore.AddResult.HasIsland.class, assertInstanceOf(KickBackupStore.RestoreResult.Refused.class, refused).reason());
+        KickBackupStore.Backup still = db.blocking(c -> KickBackupStore.ofPlayer(c, member, 10)).getFirst();
+        assertTrue(still.open(), "nothing claimed: staff can try again");
+        assertFalse(still.itemsOpen(), "no items were captured (offline at the kick)");
+        assertFalse(db.<Boolean>blocking(c -> KickBackupStore.claimItems(c, backupId, now)));
+    }
+
+    @Test
+    void onlyKicksOfStoredMembersGetABackup() {
+        assertTrue(KickBackups.wanted(MemberStore.LEFT_KICK, Role.MEMBER, ""));
+        assertTrue(KickBackups.wanted(MemberStore.LEFT_REMOVED, Role.ADMIN, "griefing"), "staff/moderation removal");
+        assertFalse(KickBackups.wanted(MemberStore.LEFT_LEAVE, Role.MEMBER, ""), "leaving is their own choice");
+        assertFalse(KickBackups.wanted(MemberStore.LEFT_REMOVED, Role.MEMBER, KickBackups.NOTE_PROFILE_DELETED), "profile gone");
+        assertFalse(KickBackups.wanted(MemberStore.LEFT_KICK, Role.LEADER, ""));
+        assertFalse(KickBackups.wanted(MemberStore.LEFT_KICK, null, ""));
+        assertEquals(500, KickBackups.missingMoney(1_500, 1_000));
+        assertEquals(0, KickBackups.missingMoney(1_000, 4_000), "money is never taken away");
+        assertEquals(1_000, KickBackups.missingMoney(1_000, -5));
     }
 }

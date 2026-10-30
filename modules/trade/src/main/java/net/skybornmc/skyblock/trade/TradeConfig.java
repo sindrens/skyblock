@@ -58,9 +58,8 @@ public final class TradeConfig extends ModuleConfig {
             + "are never tradeable (CR3); gems only if economy.yml allows it.", level = Setting.Level.OWNER)
     public List<String> currencies = List.of("money", "shards");
 
-    @Setting(path = "money.new-account-minutes", desc = "Playtime (minutes) needed before a player can offer money "
-            + "(same rule as /pay, owner decision #40: 30). 0 = off.", min = 0, max = 10_000, level = Setting.Level.OWNER)
-    public int newAccountMinutes = 30;
+    // Owner answers 131/203 (round 1): no new-account playtime limit for money offers (old key money.new-account-minutes
+    // is ignored). TODO(tutorial): the coming join tutorial gates trading through permissions instead.
 
     // ------------------------------------------------------------------ what can be offered
 

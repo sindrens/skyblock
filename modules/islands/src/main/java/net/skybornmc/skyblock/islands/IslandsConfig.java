@@ -19,16 +19,25 @@ public final class IslandsConfig extends ModuleConfig {
             level = Setting.Level.OWNER)
     public int startChunks = 3;
 
-    @Setting(path = "size.max-chunks", desc = "Largest border width in chunks (odd, Island Size upgrade cap; 15 = 240x240).", min = 1,
-            max = 31, level = Setting.Level.OWNER)
+    @Setting(path = "size.max-chunks", desc = "Largest border width in chunks any island can ever have (odd; 15 = 240x240): the cap "
+            + "of the paid sizes above size.normal-max-chunks (gems or black market, owner answers 157/167/171) and of /isadmin setsize.",
+            min = 1, max = 31, level = Setting.Level.OWNER)
     public int maxChunks = 15;
+
+    @Setting(path = "size.normal-max-chunks", desc = "Largest border width the normal Island Size upgrades reach (odd; owner answer "
+            + "157: 3x3 up to 9x9). Bigger sizes only with gems or from the black market (hook for Phase 5 upgrades).", min = 1,
+            max = 31, level = Setting.Level.OWNER)
+    public int normalMaxChunks = 9;
+
+    @Setting(path = "upgrades.island-bank-only", desc = "Island upgrades are paid from the island bank only, never from a "
+            + "player's own money (owner answer 169). Hook for the Phase 5 upgrades (/is upgrade is not built yet).",
+            level = Setting.Level.OWNER)
+    public boolean upgradesIslandBankOnly = true;
 
     @Setting(path = "creation.surface-y", desc = "Y of the starter island's top surface (the home block).", min = 1, max = 250)
     public int surfaceY = 100;
 
-    @Setting(path = "creation.cooldown-hours", desc = "Hours after disbanding before the same player can create a new island.",
-            min = 0, max = 720)
-    public int creationCooldownHours = 0;   // owner 2026-10-30: no cooldown after disband
+    // Owner answers 121/161/258/259 (round 1): no creation cooldown at all (old key creation.cooldown-hours is ignored).
 
     @Setting(path = "creation.schematic", desc = "Starter schematic in plugins/PhoenixSkyblock/schematics/ (without .schem). "
             + "Missing file or no FastAsyncWorldEdit = the built-in placeholder islet.")
@@ -190,22 +199,21 @@ public final class IslandsConfig extends ModuleConfig {
             min = 0, max = 60_000)
     public int notesAddCooldownMs = 2000;
 
-    @Setting(path = "members.start-slots", desc = "Members an island can have at the start, leader included (REVIEW B1: 4). "
-            + "The Member Slots upgrade (Phase 5) raises an island's own value.", min = 1, max = 32, level = Setting.Level.OWNER)
-    public int startSlots = 4;
+    @Setting(path = "members.start-slots", desc = "Members an island can have at the start, leader included (owner answer 242: "
+            + "4 members plus the leader = 5). The Member Slots upgrade (Phase 5) raises an island's own value.", min = 1, max = 32,
+            level = Setting.Level.OWNER)
+    public int startSlots = 5;
 
-    @Setting(path = "members.max-slots", desc = "Most members any island can have, leader included (Member Slots upgrade cap: 8).",
-            min = 1, max = 32, level = Setting.Level.OWNER)
-    public int maxSlots = 8;
+    @Setting(path = "members.max-slots", desc = "Most members any island can have, leader included (Member Slots upgrade cap: "
+            + "8 members plus the leader = 9).", min = 1, max = 32, level = Setting.Level.OWNER)
+    public int maxSlots = 9;
 
     @Setting(path = "members.max-joins-per-season", desc = "How many islands a player can join per season by accepting invites "
             + "(REVIEW A5: 3; 0 = unlimited).", min = 0, max = 100, level = Setting.Level.OWNER)
     public int maxJoinsPerSeason = 3;
 
-    @Setting(path = "members.join-cooldown-hours", desc = "Hours after joining an island before the same player can join another "
-            + "one (REVIEW A5: 24; 0 = off). Counts from the last join only: leaving or being kicked doesn't restart it (owner #20).",
-            min = 0, max = 720, level = Setting.Level.OWNER)
-    public int joinCooldownHours = 24;
+    // Owner answers 121/161/258/259 (round 1): no join cooldown at all (old key members.join-cooldown-hours is ignored);
+    // the per-season join count above stays.
 
     @Setting(path = "members.invite-expiry-seconds", desc = "Seconds an island invite stays valid (5 min).", min = 30, max = 3600)
     public int inviteExpirySeconds = 300;
@@ -222,9 +230,8 @@ public final class IslandsConfig extends ModuleConfig {
     @Setting(path = "members.date-format", desc = "How join dates are shown in /is members (Java DateTimeFormatter pattern).")
     public String dateFormat = "yyyy-MM-dd";
 
-    @Setting(path = "lifecycle.disband-prompt-length", desc = "Longest text accepted when /is disband asks the leader to type the "
-            + "confirm word in chat (the word itself is in messages/islands.yml: disband.confirm-word).", min = 8, max = 64)
-    public int disbandPromptLength = 32;
+    // Owner answer 261 (round 1): /is disband confirms with a button, no typed word (old key lifecycle.disband-prompt-length
+    // is ignored).
 
     @Setting(path = "lifecycle.clear.use-fawe", desc = "Empty removed islands with FastAsyncWorldEdit when it is installed "
             + "(off = always the built-in throttled clearer).")
@@ -388,15 +395,7 @@ public final class IslandsConfig extends ModuleConfig {
             + "flying, the next fall within this time does no damage.", min = 0, max = 60)
     public int flyLandingSeconds = 10;
 
-    @Setting(path = "homes.per-member", desc = "Personal homes every member has on their island (/is setmyhome); masteries add more later.",
-            min = 0, max = 20, level = Setting.Level.OWNER)
-    public int homesPerMember = 1;
-
-    @Setting(path = "homes.default-name", desc = "Name of a personal home when /is setmyhome is used without a name (/is home <name>).")
-    public String homesDefaultName = "my";
-
-    @Setting(path = "homes.name-max-length", desc = "Longest personal home name (letters, digits, _ and -).", min = 2, max = 16)
-    public int homesNameMaxLength = 16;
+    // Owner answer 247 (round 1): no personal member homes; the old homes.* keys are ignored.
 
     // ---------------------------------------------------------------- M2.5 island chat (/is chat)
 
@@ -495,8 +494,7 @@ public final class IslandsConfig extends ModuleConfig {
 
     /** The join limits for invites and accepts (REVIEW A5, B1). */
     MemberStore.Limits memberLimits() {
-        return new MemberStore.Limits(seasonId, maxJoinsPerSeason, java.time.Duration.ofHours(joinCooldownHours).toMillis(),
-                Math.min(startSlots, maxSlots), maxSlots);
+        return new MemberStore.Limits(seasonId, maxJoinsPerSeason, Math.min(startSlots, maxSlots), maxSlots);
     }
 
     /** {@code members.date-format}, or {@code yyyy-MM-dd} when invalid. */
@@ -513,6 +511,11 @@ public final class IslandsConfig extends ModuleConfig {
         return odd(maxChunks);
     }
 
+    /** The cap of the normal Island Size upgrades (owner answer 157: 9x9), odd and never above {@link #maxSize()}. */
+    public int normalMaxSize() {
+        return Math.min(odd(normalMaxChunks), maxSize());
+    }
+
     /** The start size made valid: odd and never above {@link #maxSize()}. */
     public int startSize() {
         return Math.min(odd(startChunks), maxSize());
@@ -524,6 +527,9 @@ public final class IslandsConfig extends ModuleConfig {
         if (startChunks % 2 == 0 || maxChunks % 2 == 0) {
             problems.add("islands.yml: island sizes must be odd (start " + startChunks + ", max " + maxChunks + "); using "
                     + startSize() + " and " + maxSize() + ".");
+        }
+        if (normalMaxChunks % 2 == 0) {
+            problems.add("islands.yml: size.normal-max-chunks must be odd (" + normalMaxChunks + "); using " + normalMaxSize() + ".");
         }
         if (odd(startChunks) > maxSize()) {
             problems.add("islands.yml: size.start-chunks is bigger than size.max-chunks; using " + startSize() + ".");
@@ -553,6 +559,39 @@ public final class IslandsConfig extends ModuleConfig {
     static int odd(int value) {
         int v = Math.max(1, Math.min(IslandGrid.MAX_POSSIBLE_CHUNKS, value));
         return v % 2 == 0 ? v - 1 : v;
+    }
+
+    /**
+     * Version 2 (owner answers round 1): member slots count the leader on top of the team (4 + leader = 5, cap 8 + leader
+     * = 9); see {@link #upgradeValues}. Sizes need no value change: the new size.normal-max-chunks (9) caps normal upgrades.
+     */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** Old defaults that version 2 changes (only untouched old defaults are changed; owner-chosen values stay). */
+    static final int OLD_START_SLOTS = 4;
+    static final int OLD_MAX_SLOTS = 8;
+
+    /**
+     * Value changes a key rename can't do, applied to the raw file before it is loaded. Returns the changed keys (empty
+     * when nothing changed). A new file (no keys) gets the new defaults anyway.
+     */
+    static List<String> upgradeValues(org.bukkit.configuration.file.YamlConfiguration yaml) {
+        List<String> changed = new java.util.ArrayList<>();
+        if (yaml.getKeys(false).isEmpty() || yaml.getInt("config-version", 1) >= 2) {
+            return changed;
+        }
+        if (yaml.isInt("members.start-slots") && yaml.getInt("members.start-slots") == OLD_START_SLOTS) {
+            yaml.set("members.start-slots", 5);
+            changed.add("members.start-slots 4 -> 5");
+        }
+        if (yaml.isInt("members.max-slots") && yaml.getInt("members.max-slots") == OLD_MAX_SLOTS) {
+            yaml.set("members.max-slots", 9);
+            changed.add("members.max-slots 8 -> 9");
+        }
+        return changed;
     }
 
     @Override

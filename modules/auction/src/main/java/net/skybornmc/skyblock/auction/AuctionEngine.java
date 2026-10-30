@@ -485,6 +485,35 @@ final class AuctionEngine {
         });
     }
 
+    // ================================================================== profile deletion
+
+    /**
+     * Owner answer 118: a deleted profile's active listings are cancelled and their items deleted (not returned), and its
+     * collection bin is emptied; one audit row per listing ({@code ah_profile_delete}) and per bin item
+     * ({@code ah_collection_delete}) with the full item data, so staff can still see (and restore) what was lost.
+     */
+    CompletableFuture<AuctionStore.ProfileWipe> deleteProfile(UUID profile, Actor actor) {
+        return store.deleteProfile(profile, clock.getAsLong()).thenApply(wipe -> {
+            for (Listing l : wipe.listings()) {
+                active.remove(l.id());
+                audit(l, "ah_profile_delete", actor, Map.of("reason", "profile deleted"));
+            }
+            for (CollectionEntry e : wipe.entries()) {
+                Map<String, Object> details = new LinkedHashMap<>();
+                details.put("entry", e.id());
+                details.put("listing", e.listingId());
+                details.put("source", e.source());
+                details.put("material", e.material());
+                details.put("amount", e.amount());
+                details.put("name", e.name());
+                details.put("reason", "profile deleted");
+                ItemSnapshot.putData(details, e.bytes());
+                audit.logPlayer(AuditCategory.AUCTION, "ah_collection_delete", actor, profile, null, null, null, details);
+            }
+            return wipe;
+        });
+    }
+
     // ================================================================== collection bin
 
     /** Takes one item out of the bin (exactly once) and logs it with full item data. */

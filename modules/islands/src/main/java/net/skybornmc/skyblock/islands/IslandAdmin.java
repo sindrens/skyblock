@@ -63,6 +63,8 @@ final class IslandAdmin {
     static final String PERM_TELEPORT_SLOT = "skyblock.island.admin.teleport-slot";
     static final String PERM_STATS = "skyblock.island.admin.stats";
     static final String PERM_STATS_RESET = "skyblock.island.admin.stats.reset";
+    /** Owner answer 251: restore a kicked member from their kick backup (admins only). */
+    static final String PERM_RESTORE = "skyblock.island.admin.restore";
 
     private static final int CONFIRM_SECONDS = 30;
 
@@ -101,9 +103,11 @@ final class IslandAdmin {
         Arg<Integer> slot = slotArg();
         Arg<String> statsIsland = islandArg();
         Arg<String> statsResetIsland = islandArg();
+        Arg<String> restorePlayer = Args.word("player", Suggest.bySender(sender -> module.kickBackups() == null ? List.of()
+                : module.kickBackups().names()));
         Predicate<CmdContext> console = ctx -> !(ctx.sender() instanceof Player);
         core.commands().register(CommandSpec.command("isadmin")
-                .description("Staff: island tools (info, teleport, delete, size, members, owner, reset, slots, stats)").category("Staff")
+                .description("Staff: island tools (info, teleport, delete, size, members, owner, reset, restore, slots, stats)").category("Staff")
                 .permission(PERM_ROOT)
                 .sub(CommandSpec.sub("info").description("Island details: owner, members, slot, size, home").permission(PERM_INFO)
                         .arg(infoIsland).example("isadmin info Steve")
@@ -141,6 +145,9 @@ final class IslandAdmin {
                 .sub(CommandSpec.sub("bypass").description("Toggle ignoring island protection (logged)").permission(IslandsModule.PERM_BYPASS)
                         .playerOnly().example("isadmin bypass")
                         .executes(ctx -> protection.toggleBypass(ctx.player())))
+                .sub(CommandSpec.sub("restore").description("Kick backups of a player: restore role, money and items (confirm)")
+                        .permission(PERM_RESTORE).playerOnly().arg(restorePlayer).example("isadmin restore Alex")
+                        .executes(ctx -> restore(ctx.player(), ctx.get(restorePlayer))))
                 .sub(CommandSpec.sub("slots").description("Grid overview: every slot, used, clearing or free").permission(PERM_SLOTS)
                         .playerOnly().example("isadmin slots")
                         .executes(ctx -> openSlots(ctx.player(), null)))
@@ -560,6 +567,17 @@ final class IslandAdmin {
                     success(sender);
                     staffLog(sender, "kick", from, Map.of("player", uuid.toString(), "player_name", shown));
                 }, main));
+    }
+
+    /** {@code /isadmin restore <player>}: the player's kick backups (owner answer 251); logged in category staff. */
+    private void restore(Player staff, String playerName) {
+        KickBackups backups = module.kickBackups();
+        if (backups == null) {
+            fail(staff, "error.database");
+            return;
+        }
+        backups.open(staff, playerName);
+        staffLog(staff, "restore", null, Map.of("player_name", playerName));
     }
 
     private void setOwner(CommandSender sender, Island island, String memberName) {

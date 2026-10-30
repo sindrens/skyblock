@@ -7,9 +7,6 @@ skyblock.auction.use:
 skyblock.auction.sell:
   description: List items on the auction house (/ah sell)
   default: true
-skyblock.auction.bypass-playtime:
-  description: Use the auction house before the new-account playtime (testing)
-  default: op
 skyblock.staff.auction.remove:
   description: Remove any listing from the auction house (item goes to the seller's collection bin, logged)
   default: op

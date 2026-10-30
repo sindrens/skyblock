@@ -35,6 +35,20 @@ class LayoutLinesTest {
     }
 
     @Test
+    void islandSectionHidesUntilLevelsExist() {
+        // Owner answer 275: no "Level: -" line and no empty "| Island" header while island levels don't exist.
+        LayoutLines layout = LayoutLines.parse("if:island_level,island_next_note| Island<newline>if:island_level| Level<newline>"
+                + "if:island_next_note| Next<newline> Profile");
+        assertEquals("island_level,island_next_note", layout.lines().getFirst().condition());
+        assertEquals(List.of(" Profile"), texts(layout.visible(k -> false, 15)), "no level, no note: no island section");
+        assertEquals(List.of(" Island", " Next", " Profile"), texts(layout.visible(Set.of("island_next_note")::contains, 15)),
+                "the header stays for the note");
+        assertEquals(List.of(" Island", " Level", " Profile"), texts(layout.visible(Set.of("island_level")::contains, 15)));
+        assertFalse(LayoutLines.present("-"), "island_level is '-' until levels exist");
+        assertNull(LayoutLines.line("if:a,,b| x").condition(), "an empty key keeps the line plain");
+    }
+
+    @Test
     void brokenConditionsStayPlainText() {
         assertNull(LayoutLines.line("if:no bar here").condition());
         assertNull(LayoutLines.line("if:Bad-Key| x").condition());

@@ -10,7 +10,7 @@ final class ListingRules {
 
     /** Why a listing or purchase is refused; texts: {@code rules.<key>}. */
     enum Problem {
-        PRICE_TOO_LOW, PRICE_TOO_HIGH, NEW_ACCOUNT, NO_SLOTS, COOLDOWN, RELIST_LIMIT;
+        PRICE_TOO_LOW, PRICE_TOO_HIGH, NO_SLOTS, COOLDOWN, RELIST_LIMIT;
 
         String key() {
             return name().toLowerCase(Locale.ROOT).replace('_', '-');
@@ -38,16 +38,6 @@ final class ListingRules {
         }
         if (price > config.priceMax) {
             return Optional.of(new Rejection(Problem.PRICE_TOO_HIGH, config.priceMax));
-        }
-        return Optional.empty();
-    }
-
-    /** New accounts (less than {@code min-playtime-minutes} played) are kept out of listing and/or buying. */
-    static Optional<Rejection> account(AuctionConfig config, long playtimeMillis, boolean listing) {
-        boolean blocked = listing ? config.newBlockListing : config.newBlockBuying;
-        long needed = config.minPlaytimeMinutes * 60_000L;
-        if (blocked && needed > 0 && playtimeMillis < needed) {
-            return Optional.of(new Rejection(Problem.NEW_ACCOUNT, needed - playtimeMillis));
         }
         return Optional.empty();
     }

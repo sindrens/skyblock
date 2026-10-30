@@ -27,7 +27,6 @@ create:
   blocked-perm: "<prefix><c:error><sym:cross></c:error> <c:text>Staff blocked you from creating or joining islands."
   busy: "<prefix><c:text>Your island is still being built. You'll be teleported when it's ready."
   already: "<prefix><c:error><sym:cross></c:error> <c:text>You already have an island. <click:run_command:'/is home'><hover:show_text:'<c:text>Go to your island'><c:action>[Go home]</c:action></hover></click>"
-  cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>You disbanded an island recently. Create a new one in <c:value><time></c:value>."
   cancelled: "<prefix><c:text>No island yet. <click:run_command:'/is'><hover:show_text:'<c:text>Create your island'><c:action>[Create one]</c:action></hover></click> <c:muted>(when you're ready)"
   build-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't build your island. Try <c:value>/is</c:value> again soon, or tell staff."
   title:
@@ -150,7 +149,6 @@ menu:
     name: "<c:flame><bold>Home"
     lore:
       - "<c:text>Go to your island home."
-      - "<c:muted>Your own home: /is home my"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to teleport"
   members:
@@ -281,7 +279,7 @@ menu:
     name: "<c:error><bold>Disband island"
     lore:
       - "<c:text>Delete your island for good."
-      - "<c:muted>You confirm twice first."
+      - "<c:muted>Only when nobody else is on it."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to disband"
   leave:
@@ -357,7 +355,6 @@ invite:
   too-many: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has <c:value><max></c:value> open invites. Wait until some are answered or expire."
   target-blocked: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't join islands at the moment."
   target-season-limit: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already joined <c:value><max></c:value> islands this season, the max."
-  target-cooldown: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>changed islands recently. They can join again in <c:value><time></c:value>."
   sent: "<prefix><c:success><sym:check></c:success> <c:text>Invite sent to <c:value><player></c:value>. <c:muted>(expires in <time>)"
   now-team: "<prefix><c:warning><sym:star></c:warning> <c:text>Your island is now a <c:value>Team Island</c:value>. <c:muted>It's on the team leaderboard from now on."
   received: "<prefix><c:value><player></c:value> <c:text>invited you to <c:value><island></c:value>. <c:muted>(<members>/<slots> members)</c:muted><newline><click:run_command:'/is accept <from>'><hover:show_text:'<c:text>Join <island>'><c:action>[Accept]</c:action></hover></click> <click:run_command:'/is deny <from>'><hover:show_text:'<c:text>Decline the invite'><c:action>[Deny]</c:action></hover></click> <c:muted>(expires in <time>)"
@@ -390,7 +387,6 @@ accept:
   full: "<prefix><c:error><sym:cross></c:error> <c:text>That island is full (<c:value><slots></c:value> members)."
   blocked: "<prefix><c:error><sym:cross></c:error> <c:text>You can't join islands at the moment."
   season-limit: "<prefix><c:error><sym:cross></c:error> <c:text>You already joined <c:value><max></c:value> islands this season, the max."
-  cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>You changed islands recently. Join another in <c:value><time></c:value>."
   joined: "<prefix><c:success><sym:check></c:success> <c:text>You joined <c:value><island></c:value>! <click:run_command:'/is home'><hover:show_text:'<c:text>Go to the island'><c:action>[Go there]</c:action></hover></click> <click:run_command:'/is members'><hover:show_text:'<c:text>See the members'><c:action>[Members]</c:action></hover></click>"
   title:
     title: "<grad:phoenix><bold>NEW ISLAND</bold></grad>"
@@ -415,6 +411,7 @@ kick:
     - "<c:text><c:value><player></c:value> is removed from your island"
     - "<c:text>and sent to spawn if they're on it."
     - "<c:text>XP they earned stays with the island."
+    - "<c:muted>Staff keep a backup of what they had."
   done: "<prefix><c:success><sym:check></c:success> <c:text>Removed <c:value><player></c:value> from your island."
   you: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>removed you from <c:value><island></c:value>."
   you-reason: "<prefix><c:error><sym:cross></c:error> <c:text>You were removed from <c:value><island></c:value>. Reason: <c:value><reason>"
@@ -429,9 +426,7 @@ leave:
   details:
     - "<c:text>You leave <c:value><island></c:value>."
     - "<c:text>XP you earned stays with the island."
-    - "<c:warning>You can join another island <c:value><time></c:value>"
-    - "<c:warning>after you joined this one.</c:warning>"
-  done: "<prefix><c:success><sym:check></c:success> <c:text>You left <c:value><island></c:value>. <c:muted>Join another island in <time>, or</c:muted> <click:run_command:'/is'><hover:show_text:'<c:text>Create your own island'><c:action>[Create one]</c:action></hover></click>"
+    - "<c:text>You can join or create another island right away."
   done-free: "<prefix><c:success><sym:check></c:success> <c:text>You left <c:value><island></c:value>. <c:muted>Join another island now, or</c:muted> <click:run_command:'/is'><hover:show_text:'<c:text>Create your own island'><c:action>[Create one]</c:action></hover></click>"
 
 promote:
@@ -742,6 +737,8 @@ perms:
 disband:
   leader-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the island Leader can disband. <c:muted>Members can</c:muted> <click:run_command:'/is leave'><hover:show_text:'<c:text>Leave the island'><c:action>[Leave]</c:action></hover></click>"
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your island is being built or removed. Try again soon."
+  # Owner answer 141: an island with other members can't be disbanded. <members> = other members.
+  has-members: "<prefix><c:error><sym:cross></c:error> <c:text>Your island still has <c:value><members></c:value> other member(s). Make one of them Leader first: <click:suggest_command:'/is transfer '><hover:show_text:'<c:text>Pick a new Leader'><c:action>[Transfer]</c:action></hover></click>"
   crumb: "Disband island"
   shown:
     name: "<c:error><bold>Disband <island>"
@@ -749,21 +746,10 @@ disband:
       - "<c:text>Deletes your island for good."
   details:
     - "<c:error>Your island and everything on it is"
-    - "<c:error>deleted forever. This can't be undone."
-    - "<c:text>You can create a new island after <c:value><time></c:value>."
-    - "<c:muted>Next: type the confirm word in chat."
-  details-team:
-    - "<c:error>Your island and everything on it is"
-    - "<c:error>deleted forever. This can't be undone."
-    - "<c:text><c:value><members></c:value> member(s) are removed and told."
-    - "<c:text>You can create a new island after <c:value><time></c:value>."
-    - "<c:muted>Next: type the confirm word in chat."
+    - "<c:error>deleted forever, its bank money too."
+    - "<c:error>This can't be undone."
+    - "<c:text>You can create a new island right away."
   cancelled: "<prefix><c:text>Your island stays. Nothing changed."
-  # The word the leader must type in chat to disband (case doesn't matter).
-  confirm-word: "disband"
-  type: "<prefix><c:warning><sym:cross></c:warning> <c:text>Last step: type <c:value><word></c:value> in chat to delete <c:value><island></c:value> forever. <c:muted>(<cancel> to keep it, <seconds>s)"
-  wrong-word: "<prefix><c:error><sym:cross></c:error> <c:text>That wasn't <c:value><word></c:value>, so your island stays. <click:run_command:'/is disband'><hover:show_text:'<c:text>Start again'><c:action>[Try again]</c:action></hover></click>"
-  done: "<prefix><c:success><sym:check></c:success> <c:value><island></c:value> <c:text>was disbanded. Create a new island in <c:value><time></c:value>, or join a friend's."
   done-now: "<prefix><c:success><sym:check></c:success> <c:value><island></c:value> <c:text>was disbanded. <click:run_command:'/is'><hover:show_text:'<c:text>Create a new island'><c:action>[Create one]</c:action></hover></click>"
   notify: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>disbanded <c:value><island></c:value>. Join another island or <click:run_command:'/is'><hover:show_text:'<c:text>Create your own island'><c:action>[Create one]</c:action></hover></click>"
   notify-coop: "<prefix><c:text>Your coop on <c:value><island></c:value> ended: the island was removed."
@@ -854,6 +840,56 @@ admin:
       - "<c:text><c:value><player></c:value> is removed from <c:value><island></c:value>"
       - "<c:text>and sent to spawn if they're on it."
     done: "<prefix><c:success><sym:check></c:success> <c:text>Removed <c:value><player></c:value> from <c:value><island></c:value>."
+  # Owner answer 251: kick backups (/isadmin restore <player>). <role> = the island role they had, <money> = money at the kick.
+  restore:
+    unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No player called <c:value><player></c:value> has played here."
+    menu-crumb: "Kick backups of <player>"
+    info:
+      - "<c:text>Backups made when this player"
+      - "<c:text>was kicked from an island."
+      - "<c:muted>Click one to restore it."
+    empty:
+      name: "<c:muted>No kick backups"
+      lore:
+        - "<c:muted>This player was never kicked."
+    entry:
+      name: "<c:value><island></c:value> <c:muted>#<id>"
+      lore:
+        - "<c:bar>| </c:bar><c:text>Role: <c:value><role>"
+        - "<c:bar>| </c:bar><c:text>Money: <c:value><money>"
+        - "<c:bar>| </c:bar><c:text>Items: <c:value><items>"
+        - "<c:bar>| </c:bar><c:text>Kicked by <c:value><by></c:value> <c:muted>on <date>"
+        - "<c:bar>| </c:bar><c:text>State: <c:value><state>"
+      click:
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to restore"
+    state:
+      open: "Not restored"
+      items: "Items waiting"
+      restored: "Restored"
+    items-yes: "Saved"
+    items-no: "Not saved (offline)"
+    crumb: "Restore <player>"
+    shown:
+      name: "<c:success><bold>Restore <player>"
+      lore:
+        - "<c:text>To: <c:value><island>"
+    details:
+      - "<c:text><c:value><player></c:value> joins <c:value><island></c:value> again"
+      - "<c:text>as <c:value><role></c:value>. Money is topped up to"
+      - "<c:text>what they had. Items only go into an"
+      - "<c:text>empty inventory, so nothing is doubled."
+    done: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>is back on <c:value><island></c:value> as <c:value><role></c:value>. <c:muted>Money added: <money>"
+    you: "<prefix><c:success><sym:star></c:success> <c:text>Staff restored your place on <c:value><island></c:value>."
+    done-already: "<prefix><c:error><sym:cross></c:error> <c:text>That backup was already restored."
+    profile-deleted: "<prefix><c:error><sym:cross></c:error> <c:text>That profile of <c:value><player></c:value> was deleted. Nothing to restore."
+    island-gone: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>doesn't exist any more. Nothing was restored."
+    has-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is on another island now. Remove them there first with <c:value>/isadmin kick</c:value>."
+    full: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>is full (<c:value><slots></c:value> slots). Nothing was restored."
+    items-offline: "<prefix><c:warning><sym:cross></c:warning> <c:text>Items wait in the backup: <c:value><player></c:value> must be online on that profile. Click the backup again then."
+    items-not-empty: "<prefix><c:warning><sym:cross></c:warning> <c:text>Items wait in the backup: <c:value><player></c:value><c:text>'s inventory or ender chest isn't empty (that would double items)."
+    items-done: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><player></c:value> their saved inventory and ender chest back."
+    items-you: "<prefix><c:success><sym:star></c:success> <c:text>Staff gave you back your saved inventory and ender chest."
   setowner:
     not-member: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>isn't a member of <c:value><island></c:value>. Add them first with <c:value>/isadmin addmember</c:value>."
     already: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already leads <c:value><island></c:value>."
@@ -1394,18 +1430,6 @@ flags:
   not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>You can't change the island settings. Ask your Leader or an Admin."
   already: "<prefix><c:error><sym:cross></c:error> <c:value><setting></c:value> <c:text>is already <c:value><value></c:value>."
   changed: "<prefix><c:success><sym:check></c:success> <c:value><setting></c:value> <c:text>is now <c:value><value></c:value>."
-
-# Personal homes (/is setmyhome, /is home <name>). Island home = /is home without a name.
-myhome:
-  set: "<prefix><c:success><sym:check></c:success> <c:text>Home <c:value><name></c:value> set. <click:run_command:'/is home <name>'><hover:show_text:'<c:text>Go there (/is home <name>)'><c:action>[Go there]</c:action></hover></click>"
-  moved: "<prefix><c:success><sym:check></c:success> <c:text>Home <c:value><name></c:value> moved here."
-  bad-name: "<prefix><c:error><sym:cross></c:error> <c:text>Use letters, numbers, <c:value>_</c:value> or <c:value>-</c:value> for the home name."
-  too-long: "<prefix><c:error><sym:cross></c:error> <c:text>Home names can be <c:value><max></c:value> characters at most."
-  none: "<prefix><c:error><sym:cross></c:error> <c:text>You can't have your own home on this island."
-  limit: "<prefix><c:error><sym:cross></c:error> <c:text>You have <c:value><max></c:value> home(s): <c:value><homes></c:value>. Use the same name to move one."
-  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No home <c:value><name></c:value>. <c:muted>Yours: <homes>"
-  unknown-none: "<prefix><c:error><sym:cross></c:error> <c:text>No home <c:value><name></c:value>. Set one with <click:run_command:'/is setmyhome'><hover:show_text:'<c:text>Set a home where you stand'><c:action>[Set home]</c:action></hover></click>"
-  arrived: "<c:ember><sym:bullet></c:ember> <c:text>Home <c:value><name>"
 
 # Island fly (action bar)
 fly:

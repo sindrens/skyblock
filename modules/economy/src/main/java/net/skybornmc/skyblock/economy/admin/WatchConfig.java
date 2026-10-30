@@ -66,7 +66,8 @@ public final class WatchConfig extends ModuleConfig {
             + "money to the own bank, staff changes, the start balance). Used for top earners and the earn-rate alert.",
             level = Setting.Level.OWNER)
     public List<String> ignoreReasons = List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance",
-            "admin_give", "admin_take", "admin_set", "admin_reset", "sanction_remove", "sanction_restore", "profile_delete");
+            "admin_give", "admin_take", "admin_set", "admin_reset", "sanction_remove", "sanction_restore", "profile_delete",
+            "island_kick_restore");
 
     @Setting(path = "baseline-days", desc = "Days the baselines look back (BAL2: the dashboard uses the 14-day average).",
             min = 1, max = 60, level = Setting.Level.OWNER)

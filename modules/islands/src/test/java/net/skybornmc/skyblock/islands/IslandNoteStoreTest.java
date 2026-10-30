@@ -40,7 +40,7 @@ class IslandNoteStoreTest {
         db.start();
         new Migrations(db, Logger.getLogger("test")).migrate("islands", getClass().getClassLoader());
         owner = UUID.randomUUID();
-        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, 0, "islands", now));
+        IslandStore.CreateResult result = db.blocking(c -> IslandStore.createWithRetry(c, owner, 1, 3, "islands", now));
         island = assertInstanceOf(IslandStore.CreateResult.Created.class, result).island().id();
     }
 
@@ -147,7 +147,7 @@ class IslandNoteStoreTest {
         add(a, 50);
         UUID otherOwner = UUID.randomUUID();
         UUID other = assertInstanceOf(IslandStore.CreateResult.Created.class,
-                db.blocking(c -> IslandStore.createWithRetry(c, otherOwner, 1, 3, 0, "islands", now))).island().id();
+                db.blocking(c -> IslandStore.createWithRetry(c, otherOwner, 1, 3, "islands", now))).island().id();
         assertFalse(yes(c -> IslandNoteStore.edit(c, other, a.id(), "hacked", otherOwner, ++now)));
         assertFalse(yes(c -> IslandNoteStore.delete(c, other, a.id(), otherOwner, IslandNoteStore.REASON_DELETE, ++now)));
         assertEquals(IslandNoteStore.PinResult.GONE, db.blockingTransaction(c ->

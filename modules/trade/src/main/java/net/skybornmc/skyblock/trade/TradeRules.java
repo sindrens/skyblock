@@ -142,8 +142,7 @@ final class TradeRules {
     enum MoneyProblem {
         NOT_TRADEABLE("not-tradeable"),
         NEGATIVE("negative"),
-        TOO_MUCH("too-much"),
-        NEW_ACCOUNT("new-account");
+        TOO_MUCH("too-much");
 
         private final String key;
 
@@ -157,10 +156,10 @@ final class TradeRules {
     }
 
     /**
-     * Checks a money offer. Lowering an offer (or removing it) is always allowed; raising it needs the playtime and
-     * enough balance (the swap itself checks the real balance again, atomically).
+     * Checks a money offer. Lowering an offer (or removing it) is always allowed; raising it needs enough balance (the
+     * swap itself checks the real balance again, atomically). No new-account limit since owner answer 131.
      */
-    static Optional<MoneyProblem> money(boolean allowed, long amount, long current, long balance, long playtimeLeftMillis) {
+    static Optional<MoneyProblem> money(boolean allowed, long amount, long current, long balance) {
         if (!allowed) {
             return Optional.of(MoneyProblem.NOT_TRADEABLE);
         }
@@ -170,19 +169,10 @@ final class TradeRules {
         if (amount <= current) {
             return Optional.empty();
         }
-        if (playtimeLeftMillis > 0) {
-            return Optional.of(MoneyProblem.NEW_ACCOUNT);
-        }
         if (amount > balance) {
             return Optional.of(MoneyProblem.TOO_MUCH);
         }
         return Optional.empty();
-    }
-
-    /** Playtime still needed before money can be offered (0 = fine). */
-    static long playtimeLeft(int minutes, long playtimeMillis) {
-        long needed = minutes * 60_000L;
-        return needed <= 0 ? 0 : Math.max(0, needed - Math.max(0, playtimeMillis));
     }
 
     /** True if a custom item id matches a blocked pattern ({@code starter_*} = prefix). */

@@ -275,13 +275,24 @@ class BankOpsTest {
     }
 
     @Test
-    void islandBankPaysOutOnceWhenTheIslandIsRemoved() {
+    void islandBankMoneyIsDeletedOnceWhenTheIslandIsDisbanded() {
         AccountRef island = AccountRef.island(UUID.randomUUID());
         ops.deposit(alex, island, 30_000, ops.islandTerms(0, 0, true), actor).join();
-        assertEquals(30_000L, ops.payOut(island, steve, actor).join());
-        assertEquals(0L, ops.payOut(island, steve, actor).join());
-        assertEquals(1_030_000, purse(steve));
-        assertEquals(1, ledgerRows("bank_payout"));
+        long steveBefore = purse(steve);
+        long alexBefore = purse(alex);
+        assertEquals(30_000L, ops.deleteMoney(island, actor).join());
+        assertEquals(0L, ops.deleteMoney(island, actor).join(), "a second event deletes nothing more");
+        assertEquals(0, bal(island));
+        assertEquals(steveBefore, purse(steve), "owner answer 263: nobody gets the island's money");
+        assertEquals(alexBefore, purse(alex));
+        assertEquals(1, ledgerRows(BankOps.REASON_DELETED));
+    }
+
+    @Test
+    void onlyADisbandDeletesTheBankMoney() {
+        assertEquals(BankRules.Removal.DELETE_MONEY, BankRules.onRemoved("disband"));
+        assertEquals(BankRules.Removal.KEEP_CLOSED, BankRules.onRemoved("delete"), "staff delete: staff decide");
+        assertEquals(BankRules.Removal.KEEP_CLOSED, BankRules.onRemoved("reset"));
     }
 
     // ------------------------------------------------------------------------------------------------ tiers

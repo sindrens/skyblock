@@ -331,9 +331,8 @@ final class AuctionMenu extends PagedMenu<Listing> {
     }
 
     void openBuyConfirm(Listing l) {
-        Optional<ListingRules.Rejection> account = module.accountProblem(viewer, false);
-        if (account.isPresent()) {
-            module.send(viewer, "rules.new-account-buy", module.rejectionPlaceholders(viewer, account.get()));
+        if (module.ownOtherProfile(viewer, l)) {
+            module.send(viewer, "buy.own-profile"); // owner answer 118: never buy from your own other profile
             service.sound(viewer, "error");
             return;
         }

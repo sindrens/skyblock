@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * PROF in the economy: money/crystals/shards per profile, gems per player, one start balance per player, P4 note
+ * PROF in the economy: money/crystals/shards per profile, gems per player, start money per profile (answer 121), P4 note
  * guard, P7 best-profile /baltop, profile ledger with the player's gems.
  */
 class ProfileEconomyTest {
@@ -89,8 +89,8 @@ class ProfileEconomyTest {
 
         profiles.switchTo(steve, steve2);
         economy.switchedProfile(steve, steve2).join();
-        assertEquals(0, bal(steve2, Currency.MONEY), "a new profile has its own money (no second start balance)");
-        assertEquals(0, economy.cached(steve, Currency.MONEY).getAsLong());
+        assertEquals(1_000, bal(steve2, Currency.MONEY), "owner answer 121: every profile gets the start money");
+        assertEquals(1_000, economy.cached(steve, Currency.MONEY).getAsLong());
         // gems paid to the profile key land on the player and are the same on every profile
         economy.deposit(steve2, Currency.GEMS, 25, "test", Actor.SYSTEM).join();
         assertEquals(75, bal(steve, Currency.GEMS));
@@ -100,7 +100,7 @@ class ProfileEconomyTest {
         // money earned on profile 2 stays there
         economy.deposit(steve2, Currency.MONEY, 300, "test", Actor.SYSTEM).join();
         economy.deposit(steve2, Currency.CRYSTALS, 7, "test", Actor.SYSTEM).join();
-        assertEquals(300, economy.cached(steve, Currency.MONEY).getAsLong());
+        assertEquals(1_300, economy.cached(steve, Currency.MONEY).getAsLong());
         assertEquals(1_000, bal(steve, Currency.MONEY));
         assertEquals(0, bal(steve, Currency.CRYSTALS));
         assertEquals(7, bal(steve2, Currency.CRYSTALS));
@@ -109,7 +109,11 @@ class ProfileEconomyTest {
         assertEquals(0, rowsOnKey2Gems, "no gem account ever exists on a profile key");
 
         economy.loadPlayer(steve, "Steve").join();
-        assertEquals(300, bal(steve2, Currency.MONEY), "rejoining never gives a second start balance");
+        assertEquals(1_300, bal(steve2, Currency.MONEY), "rejoining never gives a second start balance");
+        economy.switchedProfile(steve, steve2).join();
+        assertEquals(1_300, bal(steve2, Currency.MONEY), "switching back never gives a second start balance");
+        assertEquals(steve, EconomyServiceImpl.startOwner(Currency.GEMS, steve, steve2), "gems: one start per player");
+        assertEquals(steve2, EconomyServiceImpl.startOwner(Currency.MONEY, steve, steve2));
     }
 
     @Test

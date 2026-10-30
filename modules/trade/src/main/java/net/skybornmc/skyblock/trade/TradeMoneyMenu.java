@@ -62,11 +62,11 @@ final class TradeMoneyMenu extends Menu {
         set(18, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
     }
 
-    /** The amount picker for one currency: 0 to the balance (only lower than now while the account is too new). */
+    /** The amount picker for one currency: 0 to the balance. */
     static NumberPickerMenu picker(TradeModule module, TradeSession session, Player player, Currency currency) {
         long current = session.side(player.getUniqueId()).money(currency);
         long balance = module.economy().cached(player.getUniqueId(), currency).orElse(0L);
-        long max = module.playtimeLeft(player) > 0 ? current : Math.max(current, balance);
+        long max = Math.max(current, balance);
         return new NumberPickerMenu(v -> module.msg.component(v, "money-menu.picker-title",
                 Msg.c("currency", module.msg.component(v, "currency." + currency.key()))), 0, max, current, module.config.steps(currency), (p, value) -> {
             module.setMoney(p, currency, value);

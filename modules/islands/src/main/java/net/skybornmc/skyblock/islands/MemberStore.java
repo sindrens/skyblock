@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 final class MemberStore {
 
     /** The join limits handed to invite/accept (from islands.yml). */
-    record Limits(int seasonId, int maxJoins, long cooldownMillis, int startSlots, int maxSlots) {
+    record Limits(int seasonId, int maxJoins, int startSlots, int maxSlots) {
     }
 
     /** Result of sending an invite. */
@@ -254,8 +254,8 @@ final class MemberStore {
     static JoinRules.History history(Connection c, UUID uuid, int seasonId) throws SQLException {
         int joins = Sql.queryOne(c, "SELECT COUNT(*) FROM player_island_joins WHERE uuid = ? AND season_id = ? AND counted = ?",
                 rs -> rs.getInt(1), uuid, seasonId, true).orElse(0);
-        // ISL2 (owner #20): only the last counted join starts the cooldown; the last leave is history only (a leave
-        // because the island was removed, M2.7, is not even shown as one).
+        // History only (no join cooldown since owner answers 121/161/258/259); a leave because the island was removed
+        // (M2.7) is not shown as a leave.
         Long[] last = Sql.queryOne(c, "SELECT MAX(CASE WHEN counted = ? THEN joined_at END), "
                         + "MAX(CASE WHEN left_reason IS NULL OR left_reason <> ? THEN left_at END) FROM player_island_joins WHERE uuid = ?",
                 rs -> {
@@ -274,7 +274,7 @@ final class MemberStore {
 
     static JoinRules.Check joinCheck(Connection c, UUID target, long now, Limits limits) throws SQLException {
         return JoinRules.check(history(c, target, limits.seasonId()), blockedUntil(c, target, now).orElse(null), now,
-                limits.maxJoins(), limits.cooldownMillis());
+                limits.maxJoins());
     }
 
     static InviteResult invite(Connection c, UUID islandId, UUID inviter, UUID target, long now, long expiresAt, Limits limits)
@@ -375,6 +375,15 @@ final class MemberStore {
 
     static AddResult addMember(Connection c, UUID islandId, UUID uuid, UUID player, UUID addedBy, long now, Limits limits)
             throws SQLException {
+        return addMember(c, islandId, uuid, player, addedBy, now, limits, Role.MEMBER);
+    }
+
+    /**
+     * Staff add with a role (owner answer 251: {@code /isadmin restore} puts a kicked member back with the role they had).
+     * Never the leader: {@code LEADER} and {@code COOP} are stored as {@code MEMBER}.
+     */
+    static AddResult addMember(Connection c, UUID islandId, UUID uuid, UUID player, UUID addedBy, long now, Limits limits, Role role)
+            throws SQLException {
         Optional<IslandRow> island = lockIsland(c, islandId);
         if (island.isEmpty()) {
             return new AddResult.IslandGone();
@@ -392,8 +401,9 @@ final class MemberStore {
         // A second member makes a solo island a team island forever (DESIGN 3.2), also when staff adds them.
         boolean converted = !island.get().team()
                 && Sql.update(c, "UPDATE islands SET type = ? WHERE id = ? AND type = ?", "team", islandId, "solo") == 1;
+        Role stored = role == null || role == Role.LEADER || role == Role.COOP ? Role.MEMBER : role;
         Sql.update(c, "INSERT INTO island_members (island_id, uuid, role, joined_at, invited_by) VALUES (?, ?, ?, ?, ?)",
-                islandId, uuid, "member", now, addedBy);
+                islandId, uuid, key(stored), now, addedBy);
         Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, counted, profile_id) VALUES (?, ?, ?, ?, ?, ?)",
                 player, islandId, limits.seasonId(), now, false, uuid);
         Sql.update(c, "DELETE FROM island_invites WHERE target_uuid = ?", uuid);
@@ -414,7 +424,6 @@ final class MemberStore {
             return Optional.empty();
         }
         Sql.update(c, "DELETE FROM island_members WHERE island_id = ? AND uuid = ? AND role <> ?", islandId, uuid, "leader");
-        MemberHomeStore.deleteMember(c, islandId, uuid); // ISL2: personal homes end with the membership
         int closed = Sql.update(c, "UPDATE player_island_joins SET left_at = ?, left_reason = ? WHERE uuid = ? AND island_id = ? "
                         + "AND COALESCE(profile_id, uuid) = ? AND left_at IS NULL", now, reason, player, islandId, uuid);
         if (closed == 0) {

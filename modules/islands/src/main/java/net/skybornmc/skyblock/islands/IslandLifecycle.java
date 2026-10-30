@@ -10,13 +10,11 @@ import net.skybornmc.skyblock.common.island.IslandService.Role;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
-import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +29,8 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 
 /**
- * M2.7 island lifecycle (main thread): removing an island ({@code /is disband} by the leader, staff delete and reset via
+ * M2.7 island lifecycle (main thread): removing an island ({@code /is disband} by the leader of an island without other
+ * members, staff delete and reset via
  * {@code /isadmin}) and handing the emptied slot back ({@link IslandClearer}).
  *
  * <p>Removing is one database transaction ({@link IslandStore#disband}): the island row is marked deleted (kept with its
@@ -89,7 +88,10 @@ final class IslandLifecycle {
 
     // ------------------------------------------------------------------ /is disband (leader)
 
-    /** {@code /is disband}: leader only; confirm screen, then the confirm word typed in chat, then the island is removed. */
+    /**
+     * {@code /is disband}: leader only, and only while nobody else is on the island (owner answer 141: promote or hand the
+     * island to someone first); one confirm screen with a confirm button (owner answer 261, no typed word).
+     */
     void disband(Player player) {
         Optional<Island> own = islands.islandOfPlayer(islands.key(player));
         if (own.isEmpty()) {
@@ -97,8 +99,9 @@ final class IslandLifecycle {
             return;
         }
         Island island = own.get();
-        if (island.roleOrNull(islands.key(player)) != Role.LEADER) {
-            islands.fail(player, "disband.leader-only");
+        Optional<String> refused = refusal(island.roleOrNull(islands.key(player)), island.memberCount());
+        if (refused.isPresent()) {
+            islands.fail(player, refused.get(), Msg.p("members", Math.max(0, island.memberCount() - 1)));
             return;
         }
         if (islands.isBuilding(islands.key(player)) || removing.contains(island.id())) {
@@ -106,28 +109,26 @@ final class IslandLifecycle {
             return;
         }
         String name = islands.displayName(island);
-        int others = Math.max(0, island.memberCount() - 1);
-        String cooldown = Format.duration(Duration.ofMillis(islands.cooldownMillis()));
         core.menus().open(player, new ConfirmMenu(
                 viewer -> module.text(viewer, "disband.crumb"),
                 core.menus().item(Material.TNT, player, IslandsModule.ID, "disband.shown", Msg.p("island", name)),
-                viewer -> module.lines(viewer, others > 0 ? "disband.details-team" : "disband.details",
-                        Msg.p("island", name), Msg.p("members", others), Msg.p("time", cooldown)),
-                viewer -> askWord(viewer, island, name),
+                viewer -> module.lines(viewer, "disband.details", Msg.p("island", name)),
+                viewer -> confirmed(viewer, island),
                 viewer -> msg.send(viewer, "disband.cancelled")));
     }
 
-    /** Second step: the leader types the confirm word in chat (Bedrock-friendly, no sign GUI). */
-    private void askWord(Player player, Island island, String name) {
-        String word = module.raw("disband.confirm-word").trim();
-        core.menus().prompt(player, IslandsModule.ID, "disband.type", config().disbandPromptLength, input -> {
-            if (!input.trim().equalsIgnoreCase(word)) {
-                islands.fail(player, "disband.wrong-word", Msg.p("word", word));
-                return;
-            }
-            confirmed(player, island);
-        }, () -> {
-        }, Msg.p("word", word), Msg.p("island", name));
+    /**
+     * Why {@code /is disband} is refused (message key), or empty. Only the leader can disband, and only an island without
+     * other members (owner answer 141). Pure, unit-tested.
+     */
+    static Optional<String> refusal(Role role, int memberCount) {
+        if (role != Role.LEADER) {
+            return Optional.of("disband.leader-only");
+        }
+        if (memberCount > 1) {
+            return Optional.of("disband.has-members");
+        }
+        return Optional.empty();
     }
 
     private void confirmed(Player player, Island island) {
@@ -135,8 +136,9 @@ final class IslandLifecycle {
             islands.fail(player, "error.island-gone");
             return;
         }
-        if (island.roleOrNull(islands.key(player)) != Role.LEADER) {
-            islands.fail(player, "disband.leader-only");
+        Optional<String> refused = refusal(island.roleOrNull(islands.key(player)), island.memberCount());
+        if (refused.isPresent()) {
+            islands.fail(player, refused.get(), Msg.p("members", Math.max(0, island.memberCount() - 1)));
             return;
         }
         if (islands.isBuilding(islands.key(player)) || removing.contains(island.id())) {
@@ -154,12 +156,7 @@ final class IslandLifecycle {
                     if (!player.isOnline()) {
                         return;
                     }
-                    long cooldown = islands.cooldownMillis();
-                    if (cooldown > 0) {
-                        msg.send(player, "disband.done", Msg.p("island", name), Msg.p("time", Format.duration(Duration.ofMillis(cooldown))));
-                    } else {
-                        msg.send(player, "disband.done-now", Msg.p("island", name));
-                    }
+                    msg.send(player, "disband.done-now", Msg.p("island", name)); // no creation cooldown (owner answer 121)
                     core.sounds().play(player, "success");
                 }
                 case IslandStore.DisbandResult.NotLeader ignored -> islands.fail(player, "disband.leader-only");
@@ -234,7 +231,7 @@ final class IslandLifecycle {
                 new Location(Bukkit.getWorld(island.world()), island.centerX(), config().surfaceY, island.centerZ()), details);
 
         clearer.enqueue(new IslandClearer.Job(done.slotId(), done.gridX(), done.gridZ(), island.id(), done.sizeChunks(), reason));
-        // M3.3: other modules clean up what belongs to the island (the island bank pays out to the leader).
+        // M3.3: other modules clean up what belongs to the island (owner answer 263: a disband deletes the bank money).
         Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.island.IslandRemovedEvent(island.id(), done.owner(),
                 reason, actor));
     }

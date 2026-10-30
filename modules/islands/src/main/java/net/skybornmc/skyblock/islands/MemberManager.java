@@ -252,8 +252,6 @@ final class MemberManager {
             case JoinRules.Check.Blocked blocked -> islands.fail(player, "invite.target-blocked", Msg.p("player", targetName));
             case JoinRules.Check.SeasonLimit limit -> islands.fail(player, "invite.target-season-limit", Msg.p("player", targetName),
                     Msg.p("max", limit.max()));
-            case JoinRules.Check.Cooldown cooldown -> islands.fail(player, "invite.target-cooldown", Msg.p("player", targetName),
-                    Msg.p("time", Format.duration(Duration.ofMillis(cooldown.remainingMillis()))));
             case JoinRules.Check.Ok ok -> {
                 // not a limit
             }
@@ -263,6 +261,8 @@ final class MemberManager {
     // ------------------------------------------------------------------ accept / deny
 
     /** {@code /is accept [player]}: the newest invite, or the one from {@code from}'s island. */
+    // TODO(tutorial): owner answers 131/203 (round 1): no new-account limit for joining a team or coop; the coming join
+    // tutorial will unlock these step by step through permissions instead (not built yet).
     void accept(Player player, String from) {
         findInvite(player, from).ifPresent(invite -> accept(player, invite));
     }
@@ -352,8 +352,6 @@ final class MemberManager {
         switch (check) {
             case JoinRules.Check.Blocked blocked -> islands.fail(player, "accept.blocked");
             case JoinRules.Check.SeasonLimit limit -> islands.fail(player, "accept.season-limit", Msg.p("max", limit.max()));
-            case JoinRules.Check.Cooldown cooldown -> islands.fail(player, "accept.cooldown",
-                    Msg.p("time", Format.duration(Duration.ofMillis(cooldown.remainingMillis()))));
             case JoinRules.Check.Ok ok -> {
                 // not a limit
             }
@@ -524,8 +522,7 @@ final class MemberManager {
         open(player, parent, new ConfirmMenu(
                 viewer -> module.text(viewer, "leave.crumb"),
                 core.menus().item(Material.OAK_DOOR, player, IslandsModule.ID, "leave.shown", Msg.p("island", name)),
-                viewer -> module.lines(viewer, "leave.details", Msg.p("island", name),
-                        Msg.p("time", Format.duration(Duration.ofHours(config().joinCooldownHours)))),
+                viewer -> module.lines(viewer, "leave.details", Msg.p("island", name)),
                 viewer -> remove(viewer, island, islands.key(viewer), MemberStore.LEFT_LEAVE, "", Actor.player(viewer)),
                 null));
     }
@@ -577,11 +574,15 @@ final class MemberManager {
             details.put("note", note);
         }
         core.audit().log(AuditCategory.ISLAND, leave ? "island_leave" : "island_kick", actor, island.id().toString(), name, null, null, details);
+        KickBackups backups = module.kickBackups();
+        if (backups != null && KickBackups.wanted(reason, oldRole, note)) {
+            backups.capture(island, target, oldRole, reason, actor); // owner answer 251: staff can restore a kicked member
+        }
         Player player = islands.online(target);
         if (leave) {
             if (player != null) {
                 core.sounds().play(player, "success");
-                tellJoinCooldown(player, name);
+                msg.send(player, "leave.done-free", Msg.p("island", name)); // no join cooldown (owner answer 161)
             }
             notifyMembers(island, target, "notify.left", Msg.p("player", targetName));
         } else {
@@ -611,25 +612,6 @@ final class MemberManager {
                 msg.send(leader, "notify.still-team");
             }
         }
-    }
-
-    /**
-     * After a leave: "You left X" with the time left of the join cooldown (ISL2, owner #20: it counts from the last
-     * join only, so it may already be over).
-     */
-    private void tellJoinCooldown(Player player, String islandName) {
-        long cooldown = config().memberLimits().cooldownMillis();
-        store.history(player.getUniqueId(), config().seasonId).whenCompleteAsync((history, error) -> {
-            if (!player.isOnline()) {
-                return;
-            }
-            long remaining = error != null ? 0 : JoinRules.cooldownRemaining(history.lastJoin(), System.currentTimeMillis(), cooldown);
-            if (remaining > 0) {
-                msg.send(player, "leave.done", Msg.p("island", islandName), Msg.p("time", Format.duration(Duration.ofMillis(remaining))));
-            } else {
-                msg.send(player, "leave.done-free", Msg.p("island", islandName));
-            }
-        }, main);
     }
 
     // ------------------------------------------------------------------ promote / demote / transfer
