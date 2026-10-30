@@ -599,14 +599,14 @@ final class PunishmentStore {
 
     /** Saves the evidence lines of a punishment (already sanitized by {@link Evidence#build}). */
     CompletableFuture<Void> saveEvidence(long punishmentId, long created, List<String> lines) {
-        return db.run(c -> Sql.update(c, "INSERT INTO punishment_evidence (punishment_id, created, line_count, lines) "
+        return db.run(c -> Sql.update(c, "INSERT INTO punishment_evidence (punishment_id, created, line_count, chat_lines) "
                 + "VALUES (?, ?, ?, ?)", punishmentId, created, lines.size(), Evidence.join(lines)));
     }
 
     /** Evidence lines of a punishment (empty = none saved, or deleted after the retention). */
     CompletableFuture<List<String>> evidence(long punishmentId) {
-        return db.async(c -> Sql.queryOne(c, "SELECT lines FROM punishment_evidence WHERE punishment_id = ? ORDER BY id DESC LIMIT 1",
-                rs -> Evidence.split(rs.getString("lines")), punishmentId).orElse(List.of()));
+        return db.async(c -> Sql.queryOne(c, "SELECT chat_lines FROM punishment_evidence WHERE punishment_id = ? ORDER BY id DESC LIMIT 1",
+                rs -> Evidence.split(rs.getString("chat_lines")), punishmentId).orElse(List.of()));
     }
 
     /** Ids of the given punishments that have evidence (history menu marks them). */

@@ -1,21 +1,22 @@
 -- Phase P (P3): evidence, staff notes, warning acknowledgement, warn weights, suggestion API. Never edit V001-V003.
+-- Re-runnable: a first try on MariaDB stopped at the evidence table (`lines` is a reserved word), so every ALTER uses IF NOT EXISTS.
 
 -- 12.7 warn weight: NULL = 1 (rows from before P3). One decimal (0.5, 1, 2).
-ALTER TABLE punishments ADD COLUMN weight DECIMAL(5,1) NULL;
+ALTER TABLE punishments ADD COLUMN IF NOT EXISTS weight DECIMAL(5,1) NULL;
 
 -- 12.6 acknowledgement: when the player clicked [I understand] or typed /ack (NULL = not yet).
-ALTER TABLE punishments ADD COLUMN acknowledged_at BIGINT NULL;
+ALTER TABLE punishments ADD COLUMN IF NOT EXISTS acknowledged_at BIGINT NULL;
 
 -- 12.6: the one reminder on the next join was sent.
-ALTER TABLE punishments ADD COLUMN ack_join_sent BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE punishments ADD COLUMN IF NOT EXISTS ack_join_sent BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- 12.7: the weighted warn count when the rule fired, in tenths (15 = 1.5). NULL for rows from before P3 (use warn_count).
-ALTER TABLE punishment_suggestions ADD COLUMN warn_tenths INT NULL;
+ALTER TABLE punishment_suggestions ADD COLUMN IF NOT EXISTS warn_tenths INT NULL;
 
 -- 12.8: suggestions from detectors (kind 'api'): the reason id of punishments.yml and what was detected.
-ALTER TABLE punishment_suggestions ADD COLUMN reason_id VARCHAR(48) NULL;
+ALTER TABLE punishment_suggestions ADD COLUMN IF NOT EXISTS reason_id VARCHAR(48) NULL;
 
-ALTER TABLE punishment_suggestions ADD COLUMN details VARCHAR(255) NULL;
+ALTER TABLE punishment_suggestions ADD COLUMN IF NOT EXISTS details VARCHAR(255) NULL;
 
 CREATE INDEX IF NOT EXISTS idx_punishment_suggestions_reason ON punishment_suggestions (target_uuid, kind, reason_id, status);
 
@@ -25,7 +26,7 @@ CREATE TABLE IF NOT EXISTS punishment_evidence (
   punishment_id BIGINT NOT NULL,
   created BIGINT NOT NULL,
   line_count INT NOT NULL DEFAULT 0,
-  lines TEXT NOT NULL
+  chat_lines TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_punishment_evidence_punishment ON punishment_evidence (punishment_id);
