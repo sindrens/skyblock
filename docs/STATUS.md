@@ -61,7 +61,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - ANS2 owner answers round 2
 - DEPTHSPROT Depths protection + safe zones
-- PLANTUT tutorial + starter chest plan
+- PLAN5 Phase 5 progression plan
 
 ## Parked / broken
 (none)

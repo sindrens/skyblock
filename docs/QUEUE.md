@@ -39,7 +39,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | NPCHOLO | NPC + hologram module: spawn the NPC pads, holograms and leaderboards stored in build-points.yml (BuildPoints API); right-click NPCs/holograms explain things (owner 44); leaderboard holograms with #1/#2/#3 colors | builds applied | new module | ✅ |
 | PORTALS | Build portals teleport (step in → target); spawn portal that creates your island on first use and always takes you to it (owner 159) | builds applied | worlds + islands | ✅ |
 | DEPTHSPROT | Protect the Depths outside ore/log fields; safe zones and dev flags from the builds (no PvE in arrival/exit, no pearls/wind charges in combat zones, no anvils/containers in the Forge Quarter) | builds applied | depths + worlds | 🔄 |
-| PLAN5 | Plan Phase 5 (pillars, dynamic island level, masteries with tasks incl. bank fee discount, leaderboards) + questions to the Decisions page | — | docs | ⬜ |
+| PLAN5 | Plan Phase 5 (pillars, dynamic island level, masteries with tasks incl. bank fee discount, leaderboards) + questions to the Decisions page | — | docs | 🔄 |
 | PLAN10 | Plan Phase 10 (crates/keys, voting, daily rewards per profile, quests, battle pass, collection log, Black Market, tutorial) + questions | — | docs | ⬜ |
 | PLAN7 | Plan Phase 7 (island production, Island Fuel, collectors, outposts) + questions; unblocks E6 | — | docs | ⬜ |
 | PLAN8 / PLAN9 / PLAN11 / PLAN12 / PLAN13 | Plans for PvE, conquest/events, store/ranks/Discord, seasons, launch prep | — | docs | ⬜ |
@@ -48,7 +48,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | ANS1 | Owner answers round 1: islands/profiles rules (no cooldowns, start money per profile, no 30-min limit, team 4+leader, no setmyhome, kick backup + staff restore, no disband with members, bank deleted on disband, respawn at spawn, hide level line, size cap 9x9, profile delete removes listings, no buying own-profile listings) | owner 30 Oct | islands, profiles, hud | ✅ |
 | BOX | `/box` item mailbox: nothing is ever dropped; every overflow (sell chest, shop, crates, gifts, staff gives) goes to the box | owner answer 7 | common + economy | ✅ |
 | BANK2 | Bank interest higher, every 8 h; 2% withdrawal fee lowered by island masteries | owner answer 169 | economy | ✅ |
-| TUTORIAL | (PLANTUT running: docs/plans/TUTORIAL.md + starter chest design) Join flow: portal at spawn creates the island and always teleports to it; guided tutorial on the island (camera/animation, arrow guide, step-by-step), permissions unlock per step, full perms when done; help NPCs/holograms everywhere | owner answers 43, 44, 131, 159 | needs a plan + sketches first | ⬜ plan |
+| TUTORIAL | (plan done: docs/plans/TUTORIAL.md, 32 questions on the page; build TU1-TU8 next) Join flow: portal at spawn creates the island and always teleports to it; guided tutorial on the island (camera/animation, arrow guide, step-by-step), permissions unlock per step, full perms when done; help NPCs/holograms everywhere | owner answers 43, 44, 131, 159 | needs a plan + sketches first | ⬜ plan |
 | STARTER | Custom starter chest designed for this server (proposal to owner) | owner answer 158 | islands | ⬜ |
 | ISLAND-LEVEL | Plan: dynamic island level from many sources, not only block value | owner answer 168 | plan | ⬜ |
 | RANKS | Plan ranks, titles, achievements (PLANRANKS: 7 themed donor ranks, free-rank rename, season ranks, perks, titles/tags catalog, personal + island achievements) | owner answers 243, 355, 375, 386-390, 398 | docs/plans | ✅ plan written, 46 questions on the page |
