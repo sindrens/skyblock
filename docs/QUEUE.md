@@ -26,7 +26,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | ISL2 | Islands round 2: role Admin (+ old leader → Admin on transfer), hurt-monsters role permission, join cooldown from last join only, `/is settings` flags, island fly for everyone (perm/mastery), likes per player, member homes (1 + masteries), invites menu | M2.4 | modules/islands | ✅ |
 | STACK | Stacking module: mobs (1024, weapon-based kills, no AI for spawner mobs, breeding by food, max 8 stacks/chunk/type, no despawn), items, spawners (8→512, menu, ignore conditions, crops grow without light) | answered (round 2+3) | new modules/stacking | ✅ |
 | NOTES | `/is notes` (N1–N9: shared to-do list, temporary book, pinned holograms) | M2.4 | modules/islands | ✅ |
-| SB | Per-place scoreboards (island, Depths, spawn, warzone) | UX1 | modules/hud | ⬜ |
+| SB | Per-place scoreboards (island, Depths, spawn, warzone) | UX1 | modules/hud | 🔄 |
 | BAL2 | Re-run the balance model with the +300% sell cap and the owner's progression wish (#61: fast start, progressively harder, ups and downs); update ECONOMY_BALANCE | R2B | docs + tools/economy_model.py | ✅ |
 | PLAN-ENCH | Plan doc: full custom enchant list (levels, effects, how each is obtained: mob kills, mining, chopping, dungeons, crates, /enchanter, crystals), synergy with tools/sets/stacking kills | — | docs/plans/ENCHANTS.md | ✅ docs/plans/ENCHANTS.md |
 | PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | ✅ docs/plans/WARDROBE.md |
@@ -70,7 +70,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M3.4 | Selling + dynamic prices (`/sell`) | M3.1 | modules/economy (sell pkg) | ✅ |
 | M3.5 | Builder shop `/shop` | M3.1 | modules/shop | ⬜ |
 | M3.6 | Auction house `/ah` | M3.1 | modules/auction | ✅ |
-| M3.7 | Secure trade `/trade` | M3.1 | modules/trade | ⬜ |
+| M3.7 | Secure trade `/trade` | M3.1 | modules/trade | 🔄 |
 | M3.3 | Banks + interest (personal + island) | M3.1, M2.3 | modules/economy (bank pkg) | ⬜ |
 | M3.8 | Economy dashboard + anomaly alerts | M3.1–M3.7 | modules/economy (admin pkg) | ⬜ |
 
@@ -92,7 +92,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 |---|---|---|---|---|
 | E1 | Registry (enchants.yml, 48 defs + validation test), unique DB books + Disenchant Scrolls, `/enchanter` GUI (apply/upgrade/combine/remove/rolls/guide), slot/conflict/level rules, crystal costs, lore, EnchantService + BonusService in common | M4.2, CRY | modules/enchants, common/enchant, common/bonus | ✅ |
 | E2 | Book drops from Depths mine/forest/combat, gathering + area effects via the block engine, Depths sword effects | E1, M4.7, M4.8, M4.9 | modules/enchants + depths hooks | ⬜ |
-| E3 | Stacked-mob kill enchants (Slaughter etc.), batch kill API | E1, STACK | modules/enchants + stacking API | ⬜ |
+| E3 | Stacked-mob kill enchants (Slaughter etc.), batch kill API | E1, STACK | modules/enchants + stacking API | 🔄 |
 | E4 | Tuning: enchant factors in economy model, family caps, drop rates | E2, E3, BAL2 | docs, tools, configs | ⬜ |
 | E5 | Armor enchants on wardrobe set pieces | E1, W2 | modules/enchants + wardrobe | ⬜ |
 | E6 | Hoe + rod effects, farming/fishing pools | E1, Phase 7 | modules/enchants | ⬜ |
