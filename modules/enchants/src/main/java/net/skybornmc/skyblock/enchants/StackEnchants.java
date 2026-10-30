@@ -304,7 +304,7 @@ final class StackEnchants implements StackKillProvider, Listener {
             if (!Boolean.TRUE.equals(ok)) {
                 return; // daily cap reached: the book was never handed out and has no row
             }
-            give(player, at, book);
+            give(module, player, at, book);
             String name = module.text().displayName(enchant, level);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("book", bookId.toString());
@@ -323,7 +323,7 @@ final class StackEnchants implements StackKillProvider, Listener {
     }
 
     /** Into the inventory; what does not fit (or an offline player) drops where the stack died. */
-    private void give(Player player, Location at, ItemStack book) {
+    static void give(EnchantsModule module, Player player, Location at, ItemStack book) {
         if (player.isOnline()) {
             Map<Integer, ItemStack> rest = player.getInventory().addItem(book);
             if (rest.isEmpty()) {

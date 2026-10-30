@@ -32,8 +32,9 @@ import java.util.logging.Level;
  * ({@code /enchanter}: apply, upgrade, combine, remove/shatter, Book shop rolls, guide; no fail chance), slot / conflict /
  * tool-level gate rules, crystal costs, lore on tools and books, and the passive bonus families. Publishes
  * {@link EnchantService}. E3: the stacked-mob enchants ({@link StackEnchants}: Slaughter, Bloodlust, Plunder and Soul Reaper per
- * mob, Reaper's Sweep, Phoenix Wrath on stacks, island stack books) as the published {@link StackKillProvider}. Depths
- * drops and effects come with E2 through {@link EnchantService#level}/{@link EnchantService#value}.
+ * mob, Reaper's Sweep, Phoenix Wrath on stacks, island stack books) as the published {@link StackKillProvider}. E2: Depths
+ * book drops with first finds and pity ({@link BookDrops}), gathering and area enchants through the per-player block
+ * engine ({@link DepthsEnchants}), speed bursts ({@link SpeedBursts}) and sword effects ({@link SwordEffects}).
  *
  * <p>Settings: {@code enchanter.yml}; texts: {@code messages/enchants.yml}; data: {@code db/enchants}.</p>
  */
@@ -57,6 +58,12 @@ public final class EnchantsModule implements SkyblockModule {
     private EnchantsListener listener;
     private StackEnchants stacks;
     private net.skybornmc.skyblock.common.util.Scheduler.Task perfTask;
+    private ProcBar procBar;
+    private SpeedBursts bursts;
+    private BookDrops drops;
+    private SwordEffects swords;
+    private Object depthsHooks;
+    private StackPerf effectsPerf;
 
     public EnchantsModule(Core core) {
         this.core = core;
@@ -106,7 +113,21 @@ public final class EnchantsModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(stacks, core.plugin());
         core.services().register(ID, EnchantService.class, new EnchantServiceImpl(this));
         core.services().register(ID, StackKillProvider.class, stacks);
-        perfTask = core.scheduler().repeat("enchants-stack-perf", 1200L, 1200L, stacks.perf()::report);
+        procBar = new ProcBar(this);
+        effectsPerf = new StackPerf(core.plugin().getLogger(), () -> config.effectsPerfWarnMs, "E2 gathering and sword enchants",
+                EnchanterConfig.PERF_EFFECTS);
+        bursts = new SpeedBursts(this, procBar);
+        bursts.start();
+        drops = new BookDrops(this, new DropStore(store));
+        drops.start();
+        swords = new SwordEffects(this, procBar, effectsPerf);
+        Bukkit.getPluginManager().registerEvents(drops, core.plugin());
+        Bukkit.getPluginManager().registerEvents(swords, core.plugin());
+        registerDepthsHooks();
+        perfTask = core.scheduler().repeat("enchants-stack-perf", 1200L, 1200L, () -> {
+            stacks.perf().report();
+            effectsPerf.report();
+        });
         core.services().optional(BonusService.class).ifPresent(b -> {
             b.register(EnchantBonusSource.ID, new EnchantBonusSource(this));
             b.caps(config.caps());
@@ -124,6 +145,9 @@ public final class EnchantsModule implements SkyblockModule {
         core.messages().load(ID);
         registry = loadRegistry();
         core.services().optional(BonusService.class).ifPresent(b -> b.caps(config.caps()));
+        if (drops != null) {
+            drops.reload();
+        }
     }
 
     @Override
@@ -142,6 +166,20 @@ public final class EnchantsModule implements SkyblockModule {
             perfTask.cancel();
             perfTask = null;
         }
+        if (depthsHooks instanceof org.bukkit.event.Listener hooks) {
+            HandlerList.unregisterAll(hooks);
+            depthsHooks = null;
+        }
+        if (swords != null) {
+            HandlerList.unregisterAll(swords);
+        }
+        if (drops != null) {
+            HandlerList.unregisterAll(drops);
+            drops.stop();
+        }
+        if (bursts != null) {
+            bursts.stop();
+        }
         core.services().optional(BonusService.class).ifPresent(b -> b.unregister(EnchantBonusSource.ID));
         ToolService tools = tools();
         if (tools != null) {
@@ -158,6 +196,18 @@ public final class EnchantsModule implements SkyblockModule {
             core.plugin().getLogger().warning(problem);
         }
         costs = config.costs();
+    }
+
+    /** Depths book drops and gathering/area effects only if the depths classes are in the jar (see {@link DepthsEnchants}). */
+    private void registerDepthsHooks() {
+        try {
+            DepthsEnchants hooks = new DepthsEnchants(this, drops, bursts, procBar, effectsPerf);
+            Bukkit.getPluginManager().registerEvents(hooks, core.plugin());
+            depthsHooks = hooks;
+        } catch (NoClassDefFoundError e) {
+            depthsHooks = null;
+            core.plugin().getLogger().info("Enchants: the depths module is not in this build; Depths book drops and gathering enchants are off.");
+        }
     }
 
     // ------------------------------------------------------------------ registry
@@ -250,6 +300,42 @@ public final class EnchantsModule implements SkyblockModule {
         return name;
     }
 
+    // ------------------------------------------------------------------ effect helpers (E2)
+
+    /** The custom tool data of an item, or null (not a custom tool, or the tools module is off). */
+    net.skybornmc.skyblock.common.tools.ToolInfo tool(org.bukkit.inventory.ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return null;
+        }
+        ToolService tools = tools();
+        return tools == null ? null : tools.read(stack).orElse(null);
+    }
+
+    /** Working enchants of a tool: id → level (disabled enchants and enchants for other tools left out). */
+    java.util.Map<String, Integer> working(net.skybornmc.skyblock.common.tools.ToolInfo tool) {
+        if (tool == null || tool.perks().isEmpty()) {
+            return java.util.Map.of();
+        }
+        java.util.Map<String, Integer> out = new java.util.HashMap<>();
+        EnchantRegistry reg = registry;
+        for (ToolPerk perk : tool.perks()) {
+            reg.get(perk.id()).filter(d -> d.enabled() && d.fits(tool.kind()))
+                    .ifPresent(d -> out.put(d.id(), Math.min(perk.level(), d.maxLevel())));
+        }
+        return out;
+    }
+
+    /** An enchant number at a level, 0 when missing (NaN-safe). */
+    double num(String id, String key, int level) {
+        double v = registry.get(id).map(d -> d.value(key, level)).orElse(Double.NaN);
+        return Double.isFinite(v) ? v : 0;
+    }
+
+    /** An enchant's PvP strength in percent (§8.3), 0 for unknown enchants. */
+    double pvp(String id) {
+        return registry.get(id).map(EnchantDef::pvpPercent).orElse(0.0);
+    }
+
     // ------------------------------------------------------------------ accessors
 
     EnchanterConfig config() {
@@ -301,6 +387,18 @@ public final class EnchantsModule implements SkyblockModule {
 
     StackEnchants stacks() {
         return stacks;
+    }
+
+    BookDrops drops() {
+        return drops;
+    }
+
+    SpeedBursts bursts() {
+        return bursts;
+    }
+
+    ProcBar procBar() {
+        return procBar;
     }
 
     ToolService tools() {

@@ -161,7 +161,7 @@ public final class DepthsDrops implements Listener {
         Map<String, Integer> extra = roll.rare();
         if (DepthsDropEvent.getHandlerList().getRegisteredListeners().length > 0) {
             DepthsDropEvent hook = new DepthsDropEvent(player, event.getBlock(), tool, found.zone().aspect().id(), found.zone().tier(),
-                    found.drops().item(), amount, crystalsFound, extra);
+                    found.drops().item(), amount, crystalsFound, extra, found.drops().crystalsPerBlock());
             Bukkit.getPluginManager().callEvent(hook);
             amount = hook.getItems();
             crystalsFound = hook.getCrystals();
