@@ -1,0 +1,4 @@
+# Permissions of the worlds module (registered when the module enables). Format: plugin.yml permissions section.
+skyblock.admin.builds:
+  description: "/skyblock builds: list, inspect, paste and apply the finished builds (owner/admin only)"
+  default: op

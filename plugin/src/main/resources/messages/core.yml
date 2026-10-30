@@ -32,6 +32,7 @@ worlds:
   not-loaded: " <c:muted><sym:bullet></c:muted> <c:value><name></c:value> <c:muted><sym:dot> not loaded"
   teleported: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to <c:value><world></c:value>."
   teleport-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't teleport to <c:value><world></c:value>. Try again."
+  builds-unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>The worlds module isn't running, so builds can't be used. Check <c:value>/skyblock modules</c:value>."
 
 style:
   header: "<prefix><c:text>Style preview <c:muted>(hover a color for its name and Bedrock color):"

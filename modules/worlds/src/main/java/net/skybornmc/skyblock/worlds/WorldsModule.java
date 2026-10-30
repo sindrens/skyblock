@@ -1,6 +1,8 @@
 package net.skybornmc.skyblock.worlds;
 
+import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
+import net.skybornmc.skyblock.worlds.builds.BuildsService;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
@@ -35,12 +37,16 @@ public final class WorldsModule implements SkyblockModule {
 
     private static final int PLATFORM_RADIUS = 3; // 7x7
 
+    private final Core core;
     private final JavaPlugin plugin;
     private final Logger log;
     private final Map<String, WorldSettings> settings = new LinkedHashMap<>();
+    private final WorldsConfig config = new WorldsConfig();
+    private BuildsService builds;
 
-    public WorldsModule(JavaPlugin plugin) {
-        this.plugin = plugin;
+    public WorldsModule(Core core) {
+        this.core = core;
+        this.plugin = core.plugin();
         this.log = plugin.getLogger();
     }
 
@@ -53,12 +59,54 @@ public final class WorldsModule implements SkyblockModule {
     public void enable() {
         loadConfig();
         settings.values().forEach(this::setUp);
+        builds = new BuildsService(core, this, config);
+        builds.enable();
     }
 
     @Override
     public void reload() {
         loadConfig();
         settings.values().forEach(this::setUp);
+        core.messages().load(id());
+        if (builds != null) {
+            builds.reload();
+        }
+    }
+
+    /** {@code /skyblock builds} (catalog, paste, apply); {@code null} before the module is enabled. */
+    public BuildsService builds() {
+        return builds;
+    }
+
+    /**
+     * Moves a world's spawn point (live and in worlds.yml, re-applied on every start). Used by
+     * {@code /skyblock builds apply} for a build's {@code player_spawn}; {@code /spawn} and the first join use the spawn
+     * world's spawn point. Returns false if the world isn't configured or the file couldn't be saved.
+     */
+    public boolean setSpawn(String worldName, double x, double y, double z, float yaw, float pitch) {
+        String name = worldName.toLowerCase(Locale.ROOT);
+        File file = new File(plugin.getDataFolder(), "worlds.yml");
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+        if (!yaml.contains("worlds." + name)) {
+            return false;
+        }
+        String path = "worlds." + name + ".spawn";
+        yaml.set(path + ".x", x);
+        yaml.set(path + ".y", y);
+        yaml.set(path + ".z", z);
+        yaml.set(path + ".yaw", (double) yaw);
+        try {
+            yaml.save(file);
+        } catch (java.io.IOException e) {
+            log.warning("Could not save worlds.yml: " + e.getMessage());
+            return false;
+        }
+        loadConfig();
+        World world = Bukkit.getWorld(name);
+        if (world != null) {
+            world.setSpawnLocation(new Location(world, x, y, z, yaw, pitch));
+        }
+        return true;
     }
 
     @Override
@@ -89,9 +137,11 @@ public final class WorldsModule implements SkyblockModule {
         if (!file.exists()) {
             plugin.saveResource("worlds.yml", false);
         }
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-        Map<String, Object> defaults = WorldSettings.parseDefaults(config);
-        ConfigurationSection worlds = config.getConfigurationSection("worlds");
+        // Typed settings (builds.*) live in the same file, outside the worlds: section.
+        core.configs().load(config);
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+        Map<String, Object> defaults = WorldSettings.parseDefaults(yaml);
+        ConfigurationSection worlds = yaml.getConfigurationSection("worlds");
         settings.clear();
         if (worlds == null) {
             log.warning("worlds.yml has no 'worlds' section; no worlds configured.");
@@ -146,7 +196,9 @@ public final class WorldsModule implements SkyblockModule {
 
         if (s.border() > 0) {
             WorldBorder border = world.getWorldBorder();
-            border.setCenter(spawn.getX(), spawn.getZ());
+            // Centred on the world origin, not the spawn: builds are planned around 0,0 (BUILDER_BRIEF §3.1, depths
+            // layout radius), and moving a spawn with /skyblock builds apply or /setspawn must not move the border.
+            border.setCenter(0, 0);
             border.setSize(s.border());
         }
 

@@ -5,7 +5,7 @@
 # create:      false = the world is made by the server itself (the main world from server.properties level-name)
 # biome:       vanilla biome id used for the whole void world
 # spawn:       world spawn point; a small platform is placed under it if there is nothing there yet (for builders)
-# border:      world border diameter in blocks (0 = no border). Islands/outposts get per-island borders from the plugin later
+# border:      world border diameter in blocks, centred on 0,0 (0 = no border). Islands/outposts get per-island borders from the plugin
 # time:        fixed time of day (0-24000) when advance_time is false; omit to leave as is
 # gamerules:   vanilla game rule ids (26.x snake_case names, e.g. advance_weather)
 
@@ -111,3 +111,26 @@ worlds:
       spawn_monsters: false
       pvp: true
       random_tick_speed: 0
+
+# Finished builds (/skyblock builds, owner/admin): .schem + .yml per build from the builders (BUILDER_BRIEF §3.5/3.6).
+builds:
+  # Folder with the finished builds (.schem + .yml per build, depths_layout.yml). Relative to the server folder, or an absolute path.
+  folder: builds
+  # Store of applied build spots (NPC pads, holograms, crates...) in the plugin folder.
+  points-file: build-points.yml
+  # Which builds were pasted/applied, when and by whom (plugin folder).
+  state-file: builds-state.yml
+  # Seconds a paste preview stays valid for its confirm.
+  confirm-seconds: 60
+  # Chunks loaded per tick before a paste (lower = smoother, slower).
+  chunks-per-tick: 4
+  # Seconds between progress messages while a paste runs.
+  progress-seconds: 5
+  # A paste running longer than this is reported as failed (FAWE may still finish).
+  paste-timeout-minutes: 30
+  # Worlds whose builds are templates (the island schematic): never pasted, only applied.
+  template-worlds: [islands, outposts]
+  # paste-all order: builds whose id starts with an earlier prefix go first.
+  paste-order: [spawn_base, spawn_, depths_gate, depths_mine_, depths_forest_, depths_combat_, depths_, warzone_]
+  # Folder (plugin folder) the islands module reads its starter schematic from.
+  islands-schematics-folder: schematics

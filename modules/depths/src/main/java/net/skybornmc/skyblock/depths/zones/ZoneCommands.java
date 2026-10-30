@@ -55,6 +55,11 @@ public final class ZoneCommands {
     }
 
     static Selection select(ZoneSet set, String target, TreeTemplates trees) {
+        return select(set, target, trees, false);
+    }
+
+    /** {@code builtCauseways}: the causeway of a built zone is still built (it isn't part of the zone's schematic). */
+    static Selection select(ZoneSet set, String target, TreeTemplates trees, boolean builtCauseways) {
         List<Shapes.Part> parts = new ArrayList<>();
         List<String> skipped = new ArrayList<>();
         boolean all = ALL.equalsIgnoreCase(target);
@@ -69,6 +74,10 @@ public final class ZoneCommands {
             if (all || z.id().equalsIgnoreCase(target)) {
                 if (z.built()) {
                     skipped.add(z.id());
+                    if (builtCauseways && z.causeway() != null) {
+                        parts.add(new Shapes.Part(z.id() + " causeway", z.causeway(), Shapes.causeway(z.causeway(), z.spawn().blockY()),
+                                z.palette(), null, null));
+                    }
                 } else {
                     parts.addAll(Shapes.zone(z, set.arena(), z.aspect() == Aspect.FOREST ? trees.get(z.tier()) : TreeTemplate.DEFAULT));
                 }
@@ -96,7 +105,7 @@ public final class ZoneCommands {
             msg.send(sender, "zones.generate.busy", Msg.p("done", p[0]), Msg.p("total", p[1]), Msg.p("percent", p[2]));
             return;
         }
-        Selection sel = select(set, target, trees.get());
+        Selection sel = select(set, target, trees.get(), config.causewaysOfBuiltZones);
         if (!sel.skipped().isEmpty()) {
             msg.send(sender, "zones.generate.skipped-built", Msg.p("zones", String.join(", ", sel.skipped())));
         }

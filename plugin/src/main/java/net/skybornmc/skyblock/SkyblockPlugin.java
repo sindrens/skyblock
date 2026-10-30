@@ -196,7 +196,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
 
     /** Register every feature module here (see CLAUDE.md "Adding a module"). */
     private void registerModules() {
-        worlds = new WorldsModule(this);
+        worlds = new WorldsModule(core);
         modules.register(worlds);
         modules.register(new MotdModule(core));
         modules.register(new ModerationModule(core));
@@ -331,7 +331,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                 Commands.literal("skyblock")
                         .requires(src -> src.getSender().hasPermission("skyblock.admin.modules")
                                 || src.getSender().hasPermission("skyblock.admin.reload")
-                                || src.getSender().hasPermission("skyblock.admin.worlds"))
+                                || src.getSender().hasPermission("skyblock.admin.worlds")
+                                || src.getSender().hasPermission(BUILDS_PERMISSION))
                         .then(Commands.literal("modules")
                                 .requires(src -> src.getSender().hasPermission("skyblock.admin.modules"))
                                 .executes(ctx -> run(() -> sendModuleStatus(ctx.getSource().getSender()))))
@@ -362,9 +363,53 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
                                 .then(Commands.argument("world", ArgumentTypes.world())
                                         .executes(ctx -> run(() -> teleport((Player) ctx.getSource().getSender(),
                                                 ctx.getArgument("world", World.class))))))
+                        .then(buildsCommand())
                         .build(),
                 "Phoenix Skyblock admin commands",
                 List.of("sb")));
+    }
+
+    /** Owner/admin only: {@code /skyblock builds} (worlds module, BUILDER_BRIEF builds). */
+    private static final String BUILDS_PERMISSION = "skyblock.admin.builds";
+
+    /** {@code /skyblock builds [list|info <id>|paste <id> [confirm]|apply <id>|paste-all [confirm]]}. */
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> buildsCommand() {
+        return Commands.literal("builds")
+                .requires(src -> src.getSender().hasPermission(BUILDS_PERMISSION))
+                .executes(ctx -> run(() -> withBuilds(ctx, b -> b.list(ctx.getSource().getSender()))))
+                .then(Commands.literal("list")
+                        .executes(ctx -> run(() -> withBuilds(ctx, b -> b.list(ctx.getSource().getSender())))))
+                .then(Commands.literal("info")
+                        .then(Commands.argument("id", StringArgumentType.word())
+                                .suggests(suggest(() -> worlds.builds() == null ? List.of() : worlds.builds().ids()))
+                                .executes(ctx -> run(() -> withBuilds(ctx, b -> b.info(ctx.getSource().getSender(), buildId(ctx)))))))
+                .then(Commands.literal("paste")
+                        .then(Commands.argument("id", StringArgumentType.word())
+                                .suggests(suggest(() -> worlds.builds() == null ? List.of() : worlds.builds().pasteIds()))
+                                .executes(ctx -> run(() -> withBuilds(ctx, b -> b.paste(ctx.getSource().getSender(), buildId(ctx), false))))
+                                .then(Commands.literal("confirm")
+                                        .executes(ctx -> run(() -> withBuilds(ctx, b -> b.paste(ctx.getSource().getSender(), buildId(ctx), true)))))))
+                .then(Commands.literal("apply")
+                        .then(Commands.argument("id", StringArgumentType.word())
+                                .suggests(suggest(() -> worlds.builds() == null ? List.of() : worlds.builds().applyIds()))
+                                .executes(ctx -> run(() -> withBuilds(ctx, b -> b.apply(ctx.getSource().getSender(), buildId(ctx)))))))
+                .then(Commands.literal("paste-all")
+                        .executes(ctx -> run(() -> withBuilds(ctx, b -> b.pasteAll(ctx.getSource().getSender(), false))))
+                        .then(Commands.literal("confirm")
+                                .executes(ctx -> run(() -> withBuilds(ctx, b -> b.pasteAll(ctx.getSource().getSender(), true))))));
+    }
+
+    private static String buildId(CommandContext<CommandSourceStack> ctx) {
+        return StringArgumentType.getString(ctx, "id").toLowerCase(Locale.ROOT);
+    }
+
+    private void withBuilds(CommandContext<CommandSourceStack> ctx, java.util.function.Consumer<net.skybornmc.skyblock.worlds.builds.BuildsService> action) {
+        net.skybornmc.skyblock.worlds.builds.BuildsService builds = worlds.builds();
+        if (builds == null) {
+            msg.send(ctx.getSource().getSender(), "worlds.builds-unavailable");
+            return;
+        }
+        action.accept(builds);
     }
 
     private static int run(Runnable action) {

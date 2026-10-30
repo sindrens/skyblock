@@ -263,6 +263,10 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "generate.blocks-per-tick", desc = "/depths generate: most blocks changed per tick (keeps the server smooth).", min = 100, max = 50000)
     public int generateBlocksPerTick = 3000;
 
+    @Setting(path = "generate.causeways-of-built-zones", desc = "/depths generate also builds the causeway into a zone marked built "
+            + "(the builders' zone schematics stop at the zone edge; set false once causeways are real builds).")
+    public boolean causewaysOfBuiltZones = true;
+
     @Setting(path = "generate.positions-per-tick", desc = "/depths generate: most positions checked per tick (unchanged blocks are only read).", min = 1000, max = 500000)
     public int generatePositionsPerTick = 20000;
 

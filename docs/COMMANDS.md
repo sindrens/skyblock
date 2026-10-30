@@ -43,7 +43,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [tools](commands/tools.md) | Tools module (`modules/tools`): M4.2 |
 | [trade](commands/trade.md) | Secure trade (`modules/trade`) |
 | [wardrobe](commands/wardrobe.md) | Wardrobe module (`modules/wardrobe`): W1 + W2 + W3 |
-| [worlds](commands/worlds.md) | Worlds (`modules/worlds`) |
+| [worlds](commands/worlds.md) | Worlds (`modules/worlds`): worlds and finished builds |
 | [planned](commands/planned.md) | Planned commands |
 <!-- END GENERATED INDEX -->
 
