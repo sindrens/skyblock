@@ -20,6 +20,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **M4.6 Depths tiers** merged (per-player gate bars, /dungeon).
 - **P1** merged: `/p` single-screen menu from punishments.yml, `/warns`, warn rules, PunishDecision pipeline, safe reload.
 - **M2.7** merged: `/is disband`, slot clearing + reuse, `/isadmin`.
+- **UX1** merged: short plain messages in one format, cleaner scoreboard (+ Depths layout) and tab, instant rank refresh, /baltop 30 s async, tags after the name.
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -27,7 +28,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Code repo in the cloud workspace: `/home/claude/skyblock` (branch `main`). The owner's Mac clone: `~/Development/skyblock` (GitHub `sindrens/skyblock`).
 - Release (one call): build jar → `git bundle create /mnt/user-data/outputs/updateN.bundle <last>..main` + copy jar as `phoenix-uN.jar` → `device_commit_files` both to `~/Development/.skyborn-claude/` → device: `timeout 175 ~/mnt/Development/.skyborn-claude/release.sh N` (pulls bundle, pushes GitHub, deploys to VPS, prints jar md5 + log). The jar md5 printed must equal the local one.
 - Console access for verification: device `~/vps.sh '<cmd>'`, console commands via `tmux send-keys -t skyblock "<cmd>" Enter`. Restore anything changed.
-- Last released bundle: update41. Next bundle number: 42.
+- Last released bundle: update42. Next bundle number: 43.
 - Owner gets a push notification on every release (PushNotification tool).
 
 ## Owner answers page
@@ -49,7 +50,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- UX1 messages/scoreboard/tab (resumed; 3 parts committed) — wnl7nutxi
+- CRY tokens → crystals
 - P2 undo, double-punish, offence expiry, /pstats — wl7qqysat
 - M2.4 island visiting, warps, ratings, likes — w8z4uyvta
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
