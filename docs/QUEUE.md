@@ -97,7 +97,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | E2 | Book drops from Depths mine/forest/combat, gathering + area effects via the block engine, Depths sword effects | E1, M4.7, M4.8, M4.9 | modules/enchants + depths hooks | ✅ |
 | E3 | Stacked-mob kill enchants (Slaughter etc.), batch kill API | E1, STACK | modules/enchants + stacking API | ✅ |
 | E4 | Tuning: enchant factors in economy model, family caps, drop rates | E2, E3, BAL2 | docs, tools, configs | ⬜ |
-| E5 | Armor enchants on wardrobe set pieces | E1, W2 | modules/enchants + wardrobe | ⬜ |
+| E5 | Armor enchants on wardrobe set pieces | E1, W2 | modules/enchants + wardrobe | 🔄 |
 | E6 | Hoe + rod effects, farming/fishing pools | E1, Phase 7 | modules/enchants | ⬜ |
 
 ## Phase W: Wardrobe + loadout (docs/plans/WARDROBE.md)
