@@ -58,6 +58,7 @@
 - **Owner 2026-10-30:** Axiom removed; `/s` = `/staffmode`; no creation cooldown after `/is disband`.
 - **UX1:** every message short and plain in one format (prefix on replies, green ✔ / red ✘ with gray text, white values, yellow [Click] actions); cleaner 10-line scoreboard + Depths scoreboard; tab without the command footer, gradient address, matching lines beside SKYBORN, color-coded staff TPS; rank changes show instantly; `/baltop` refreshes every 30 s async; tags after the name.
 - **Islands:** a solo island only becomes a team island when the invite is accepted.
+- **P2 punishments:** [Undo] for 2 minutes (chat + /p head for Bedrock), double-punish protection (15 s, click again or -force), offences expire (90 d, cheating never), `/pstats` (`/mystats`, top, per staff).
 - **M2.7 island lifecycle:** `/is disband` (confirm + type the word), slots cleared (FAWE or throttled fallback) and reused, `/isadmin` (info, tp, delete, setsize, addmember, kick, setowner, reset, bypass, slots overview, teleport-slot).
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).

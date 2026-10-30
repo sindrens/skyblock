@@ -21,6 +21,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 - **P1** merged: `/p` single-screen menu from punishments.yml, `/warns`, warn rules, PunishDecision pipeline, safe reload.
 - **M2.7** merged: `/is disband`, slot clearing + reuse, `/isadmin`.
 - **UX1** merged: short plain messages in one format, cleaner scoreboard (+ Depths layout) and tab, instant rank refresh, /baltop 30 s async, tags after the name.
+- **P2** merged: [Undo], double-punish guard, offence expiry, /pstats.
 - **Builds:** done by a separate builder agent/team from `docs/BUILDER_BRIEF.md` (not our job).
 
 ## Release / infrastructure
@@ -51,7 +52,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - CRY tokens → crystals
-- P2 undo, double-punish, offence expiry, /pstats — wl7qqysat
+- R2A round-2 quick decisions batch
 - M2.4 island visiting, warps, ratings, likes — w8z4uyvta
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
 
