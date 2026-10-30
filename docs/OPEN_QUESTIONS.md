@@ -1,6 +1,17 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- PROF profiles: a profile can only be deleted while you play on another one (switch first), so a player with 1 slot can't delete their only profile. Allow "delete and start fresh" for the active/only profile (it would empty everything and make a new profile 1)? (default: no, switch first)
+- PROF profiles: deleting a profile that leads a team island with other members is refused until leadership is transferred; a solo island is removed with the profile; a member just leaves. OK? (default: as described)
+- PROF profiles: a profile with active auction listings can't be deleted (cancel them first); items still in its auction collection bin are deleted with it. OK? (default: as described)
+- PROF profiles: two own profiles can never share an island, **also not one after the other** (a profile can never join an island another profile of the same player was ever on, this season or before). Too strict? (default: strict, safest against moving items)
+- PROF profiles: when a rank that gave slot 2/3 is lost, the profile in that slot stays but can't be switched to (it can still be deleted). Or should it stay playable? (default: locked)
+- PROF profiles: a new profile gets **no** start balance (one start balance per player and season goes to the profile active at the first join of the season), so creating/deleting profiles can't print money. OK? (default: one per player)
+- PROF profiles: switching has only a 10 s anti-spam cooldown (P5 gave no cooldown). Combat and the boss arena don't exist yet: their modules will refuse the switch through `ProfileSwitchEvent`; until then `profiles.yml → switch.blocked-worlds` can list worlds. Which world(s) is the boss arena? (default: none listed)
+- PROF profiles: `/settings` values, the `/menu` star setting and the scoreboard on/off are per profile; vanish, staff homes and equipped titles/tags are account-wide (`profiles.yml → settings.profile-keys`). OK? (default: as described)
+- PROF profiles: the scoreboard does not show the profile name yet; `messages/hud.yml` has a commented line with `<ph:profile_name>` to turn it on. Show it by default? (default: off)
+- PROF profiles: `/isadmin addmember` on an offline player uses their profile 1 (staff can't pick another profile from the command). OK? (default: online players use their active profile)
+- PROF profiles: profile slots bought with gems are kept forever (also after a season reset). Should a season reset also delete the profiles themselves, or keep the profiles and only reset their islands/data? (default: decided with the season system, Phase 10)
 - R2A skills: max level 150 with tiers still at 0–66. After level 66 each level costs 2% more (`skills.yml → curve.end-growth: 1.02`). With today's XP sources a top player ends a 90-day season around level 81; level 150 needs ~3.5B XP (~8.6× a top season). Should 150 be reachable in one season (then levels after 66 must get cheaper, or XP boosts bigger)? (default: 2% growth, 150 is a far goal)
 - R2A `/skills set|add <player> <skill> <amount>`: the amount is in **levels** (set = start of that level, add = keeps progress), online players only. Want raw XP or offline players too? (default: levels, online only)
 - R2A `/freerank`: the free tags are ember, spark and ash. `ember` was also a Rare-crate tag and `ashes` an Uncommon-crate tag, so the free pick makes the crate `ember` tag less special. Rename the crate tag, or pick other free tags? (default: as given, configurable in `perks.yml → freerank.tags`)

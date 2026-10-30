@@ -58,6 +58,10 @@ public final class ProfilesModule implements SkyblockModule {
         core.placeholders().registerText(ID, "profile_name", p -> p == null ? "" : service.activeName(p));
         core.placeholders().registerText(ID, "profile_slot",
                 p -> p == null ? "" : service.active(p.getUniqueId()).map(pr -> String.valueOf(pr.slot())).orElse(""));
+        // Playtime of the active profile (owner P2: playtime is per profile; the account total stays in <ph:playtime>).
+        core.placeholders().registerText(ID, "profile_playtime", p -> p == null ? "" : service.active(p.getUniqueId())
+                .map(pr -> net.skybornmc.skyblock.common.util.Format.duration(java.time.Duration.ofMillis(service.playtime(p.getUniqueId(), pr))))
+                .orElse(""));
         core.commands().register(CommandSpec.command("profiles")
                 .description("Your island profiles: switch, create, rename, delete")
                 .category("Island")

@@ -451,7 +451,8 @@ final class ProfileServiceImpl implements ProfileService, Listener {
     }
 
     /** Owner decision P8 (for the season reset, Phase 10): drops every stored slot unlock that was not bought with gems. */
-    CompletableFuture<Integer> seasonReset(Actor actor) {
+    @Override
+    public CompletableFuture<Integer> seasonResetSlots(Actor actor) {
         return core.database().transaction(store::seasonReset).thenApply(removed -> {
             core.audit().log(AuditCategory.AUTH, "profile_slots_season_reset", actor, Map.of("removed", removed));
             return removed;
@@ -673,9 +674,11 @@ final class ProfileServiceImpl implements ProfileService, Listener {
         Map<String, String> settings = data.get().snapshot().settings();
         long playtimeAdd = Math.max(0, now - s.checkpoint);
         module.msg.send(player, "switch.started", Msg.p("profile", name(target)));
-        core.database().transaction(c -> store.switchTo(c, owner, from.id(), target.id(), current, settings,
-                        config()::profileSetting, playtimeAdd, System.currentTimeMillis()))
-                .orTimeout(config().switchTimeoutSeconds, TimeUnit.SECONDS)
+        CompletableFuture<ProfileStore.Switched> tx = core.database().transaction(c -> store.switchTo(c, owner, from.id(), target.id(),
+                current, settings, config()::profileSetting, playtimeAdd, System.currentTimeMillis()));
+        // Only the real end of the transaction lets this player log in again (a timeout below does not).
+        tx.whenComplete((result, error) -> inFlight.remove(owner));
+        tx.copy().orTimeout(config().switchTimeoutSeconds, TimeUnit.SECONDS)
                 .whenCompleteAsync((result, error) -> finishSwitch(player, s, from, target, result, error), main);
     }
 
@@ -683,8 +686,18 @@ final class ProfileServiceImpl implements ProfileService, Listener {
         UUID owner = player.getUniqueId();
         try {
             if (error != null) {
-                s.switching = false;
                 Throwable cause = Database.cause(error);
+                if (cause instanceof TimeoutException) {
+                    // The outcome is unknown and may still commit. The player was locked since the save, so their player
+                    // file equals the saved state: kick them (it saves that file) and let the next join apply whatever
+                    // the database decided. They can't log in before the transaction has really ended.
+                    core.plugin().getLogger().severe("Profiles: switch of " + player.getName() + " timed out; kicked to keep their items safe.");
+                    if (player.isOnline()) {
+                        player.kick(module.msg.component(player, "login.switch-timeout"));
+                    }
+                    return;
+                }
+                s.switching = false;
                 if (cause instanceof ProfileStore.Refused refused) {
                     module.fail(player, "switch." + switch (refused.key) {
                         case "same" -> "same";
@@ -692,7 +705,7 @@ final class ProfileServiceImpl implements ProfileService, Listener {
                         default -> "changed";
                     });
                 } else {
-                    // Timeout or database error: if the transaction still commits later, the next join applies it.
+                    // The transaction rolled back: nothing changed, the player keeps playing on the current profile.
                     core.plugin().getLogger().log(Level.SEVERE, "Profiles: switch of " + player.getName() + " failed", cause);
                     module.fail(player, "error");
                 }
@@ -705,7 +718,15 @@ final class ProfileServiceImpl implements ProfileService, Listener {
                 // the next join applies the target state.
                 return;
             }
-            StateCodec.apply(player, result.target());
+            try {
+                StateCodec.apply(player, result.target());
+            } catch (RuntimeException e) {
+                // Never play on with a half-loaded inventory: the database says "target, not applied", so the next join
+                // applies it again from the saved state.
+                core.plugin().getLogger().log(Level.SEVERE, "Profiles: loading profile " + target.id() + " of " + player.getName() + " failed", e);
+                player.kick(module.msg.component(player, "login.switch-timeout"));
+                return;
+            }
             s.active = target.id();
             s.checkpoint = now;
             s.lastSwitch = now;
@@ -726,8 +747,9 @@ final class ProfileServiceImpl implements ProfileService, Listener {
             module.msg.send(player, "switch.done", Msg.p("profile", name(result.to())));
             core.sounds().play(player, "teleport");
         } finally {
-            s.switching = false;
-            inFlight.remove(owner);
+            if (player.isOnline()) {
+                s.switching = false;
+            }
         }
     }
 

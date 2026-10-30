@@ -10,6 +10,7 @@ error: "<prefix><c:error><sym:cross> Something went wrong. Nothing was changed, 
 login:
   failed: "<c:error>Your profiles could not be loaded.<newline><c:text>Please join again in a moment."
   switching: "<c:error>Your profile switch is still saving.<newline><c:text>Please join again in a few seconds."
+  switch-timeout: "<c:error>Your profile switch took too long.<newline><c:text>Your items are safe. Please join again in a few seconds."
 
 menu:
   title: "Profiles"

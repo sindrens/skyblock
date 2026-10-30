@@ -21,6 +21,8 @@ scoreboard:
       - " <c:muted>Gems</c:muted>  <gems>"
       - ""
       - " <c:muted>Island</c:muted>  <island>"
+      # Optional (island profiles): show the active profile. Remove the "# " to turn it on.
+      # - " <c:muted>Profile</c:muted>  <c:value><ph:profile_name>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # The Depths world ("depths"): where you are and how far your mining is.

@@ -58,6 +58,11 @@ final class IdentityProfiles implements ProfileService {
     }
 
     @Override
+    public CompletableFuture<Integer> seasonResetSlots(Actor actor) {
+        return CompletableFuture.completedFuture(0);
+    }
+
+    @Override
     public boolean blockOwnTransfer(AuditCategory category, String path, UUID fromKey, UUID toKey, Actor actor) {
         return false;
     }
