@@ -174,3 +174,49 @@ portals:
   warzone-world: warzone
   # Teleports into the warzone from other worlds are refused except through its portal (staff teleports with the teleport bypass still work).
   warzone-portal-only: true
+
+# World protection + region flags (DEPTHSPROT). Flags: build, interact, containers, workstations, entity-edit, fire,
+# explosions (protection: builders in creative with the bypass permission ignore them), pve-dealt, pve-taken,
+# mob-target, ender-pearl, wind-charge (gameplay: everyone). A flag at a block = the highest-priority region that sets
+# it (deny wins a tie), else the world's flags, else allowed. Regions: the 'regions' of the applied builds by their
+# 'kind', plus module regions (depths: field = ore/log fields, mine_zone, forest_zone, combat_zone, boss_arena).
+# See docs/commands/worlds.md. Changes apply with /skyblock reload worlds.
+protection:
+  # World protection and region flags (protection.world-flags, kind-flags, region-kinds) are enforced.
+  enabled: true
+  # 'world: flag, flag' = flags denied in the whole world (lowest priority). Spawn is also protected by essentials.yml protection.*.
+  world-flags:
+  - "spawn: build, interact, entity-edit, fire, explosions"
+  - "depths: build, interact, containers, workstations, entity-edit, fire, explosions"
+  - "warzone: build, interact, containers, workstations, entity-edit, fire, explosions"
+  # 'kind priority: flag, flag' = flags of regions of that kind. 'allow x' switches to allow.
+  kind-flags:
+  - "protected 10: build, interact, containers, workstations, entity-edit, fire, explosions"
+  - "safe 20: pve-taken, mob-target"
+  - "safe_no_pve 20: pve-taken, mob-target, pve-dealt"
+  - "no_pve_damage 20: pve-dealt"
+  - "use_deny 30: interact, containers, workstations"
+  - "forge_quarter 30: containers, workstations"
+  - "combat_zone 5: ender-pearl, wind-charge"
+  - "boss_arena 5: ender-pearl, wind-charge"
+  - "field 100: allow build"
+  # 'build:region=kind' = give one region another kind (build id optional; module regions use the module id).
+  region-kinds:
+  - "spawn_forge_quarter_v1:forge_quarter_plot=forge_quarter"
+  - "depths_combat_t01_graveyard_v1:arrival_safe=safe_no_pve"
+  - "depths_combat_t01_graveyard_v1:arrival_safe_lychgate=safe_no_pve"
+  - "depths_combat_t01_graveyard_v1:exit_path=safe_no_pve"
+  # Blocks anyone may still right-click where 'interact' is denied (* = wildcard).
+  interact-allowed: ["*_door", "*_button", lever, "*_pressure_plate", "*_fence_gate", ender_chest, crafting_table, "*_sign", "*_hanging_sign"]
+  # Blocks the 'containers' flag locks.
+  containers: [chest, trapped_chest, barrel, "*shulker_box", furnace, blast_furnace, smoker, hopper, dropper, dispenser, crafter, brewing_stand, lectern, jukebox, chiseled_bookshelf, decorated_pot, campfire, soul_campfire, flower_pot, "potted_*", "*cauldron", composter, vault]
+  # Blocks the 'workstations' flag locks.
+  workstations: ["*anvil", enchanting_table, grindstone, smithing_table, stonecutter, loom, cartography_table, fletching_table, beacon]
+  # Permission that bypasses protection flags in every world (builders, admins).
+  bypass-permission: skyblock.worlds.protection.bypass
+  # 'world=permission' = an extra permission that bypasses protection in that world.
+  world-bypass-permissions: [depths=skyblock.depths.build, spawn=skyblock.build.spawn]
+  # The bypass permissions work only in creative mode (essentials /build mode always counts in spawn).
+  bypass-needs-creative: true
+  # At most one 'you can't do that here' action bar line per player this often.
+  message-cooldown-millis: 1500
