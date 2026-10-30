@@ -1,0 +1,148 @@
+# Builder shop (M3.5): /shop [category]. MiniMessage + style tags (style.yml).
+# Amount placeholders (<price>, <total>, <balance>, <stack>) are plain text like $1,500; they are colored here.
+# Item names (<item>) are the translated vanilla names (Java and Bedrock).
+# Reload: /skyblock reload shop
+
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was taken; try again soon."
+loading: "<prefix><c:error><sym:cross></c:error> <c:text>The shop is still loading. Try again in a moment."
+frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't shop while frozen."
+staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't shop in staff mode."
+switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
+unknown-category: "<prefix><c:error><sym:cross></c:error> <c:text>No shop category <c:value><input></c:value><c:text>. Try: <c:value><categories>"
+
+skills:
+  mining: "Mining"
+  foraging: "Foraging"
+  combat: "Combat"
+  farming: "Farming"
+  fishing: "Fishing"
+
+# Category names and descriptions (ids from shop.yml).
+categories:
+  building-blocks:
+    name: "Building blocks"
+    lore: ["<c:text>Dirt, sand, quartz, prismarine", "<c:text>and other basic blocks."]
+  wood:
+    name: "Wood"
+    lore: ["<c:text>Logs, planks and stripped", "<c:text>logs of every tree."]
+  stone-bricks:
+    name: "Stone & bricks"
+    lore: ["<c:text>Stone, deepslate, tuff,", "<c:text>bricks and nether bricks."]
+  glass-colors:
+    name: "Glass & colors"
+    lore: ["<c:text>Glass, concrete, terracotta,", "<c:text>wool and dyes in every color."]
+  decoration:
+    name: "Decoration"
+    lore: ["<c:text>Lights, flowers, carpets,", "<c:text>frames and furniture."]
+  redstone:
+    name: "Redstone"
+    lore: ["<c:text>Pistons, hoppers, rails", "<c:text>and everything that ticks."]
+  farming:
+    name: "Farming"
+    lore: ["<c:text>Seeds, saplings and plants", "<c:text>to start your farms."]
+  utility:
+    name: "Utility"
+    lore: ["<c:text>Workstations, storage,", "<c:text>buckets and beds."]
+
+menu:
+  title: "Shop"
+  info:
+    - "<c:text>Buy blocks and items for your island."
+    - "<c:text>Pick a category, then an item and"
+    - "<c:text>how many. Selling is <c:value>/sell</c:value><c:text>."
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>Builder shop"
+    lore:
+      - "<c:text>Your balance: <cur:money><balance></cur:money>"
+      - ""
+      - "<c:muted>Items go straight to your inventory."
+      - "<c:muted>Keep some room free."
+  category:
+    name: "<c:flame><name>"
+    lore:
+      - ""
+      - "<c:muted><items> items"
+      - "<c:action><sym:bullet> Click to browse"
+  empty:
+    name: "<c:muted>The shop is empty"
+    lore: ["<c:text>Staff haven't added items yet."]
+
+category:
+  info:
+    - "<c:text>Everything in this category."
+    - "<c:text>Click an item to choose how many."
+  empty:
+    name: "<c:muted>Nothing here right now"
+    lore: ["<c:text>Try another category."]
+  entry:
+    name: "<c:value><item>"
+    lore:
+      - "<c:text>Price: <cur:money><price></cur:money> <c:muted>each"
+      - "<c:text>A stack of 64: <cur:money><stack></cur:money>"
+      - ""
+    open: "<c:action><sym:bullet> Click to choose an amount"
+    locked: "<c:error><sym:cross> Locked"
+    requires: "<c:text>Needs <c:value><skill> <level></c:value><c:text>."
+    unavailable:
+      - "<c:error><sym:cross> Not for sale right now"
+      - "<c:muted>Staff are fixing its price."
+
+item:
+  info:
+    - "<c:text>Pick how many to buy. The money is"
+    - "<c:text>taken first, then the items go into"
+    - "<c:text>your inventory. Full inventory: no buy."
+  picker-title: "Buy <item>"
+  shown:
+    name: "<c:value><item>"
+    lore:
+      - "<c:text>Price: <cur:money><price></cur:money> <c:muted>each"
+      - "<c:text>Room in your inventory: <c:value><fits>"
+      - "<c:text>Your balance: <cur:money><balance></cur:money>"
+  amount:
+    name: "<c:success>Buy <amount>x <c:value><item>"
+    lore:
+      - "<c:text>Total: <cur:money><total></cur:money>"
+      - "<c:muted><amount> x <price>"
+      - ""
+    buy: "<c:action><sym:bullet> Click to buy"
+    no-room: "<c:error><sym:cross> Not enough room <c:muted>(fits <fits>)"
+    too-expensive: "<c:error><sym:cross> You can't afford this"
+  custom:
+    name: "<c:value>Custom amount"
+    lore:
+      - "<c:text>Type or pick any amount"
+      - "<c:text>up to <c:value><max></c:value><c:text>."
+      - ""
+      - "<c:action><sym:bullet> Click to choose"
+  custom-full:
+    name: "<c:muted>Custom amount"
+    lore:
+      - "<c:error><sym:cross> Your inventory is full."
+      - "<c:text>Make some room first."
+
+confirm:
+  crumb: "Confirm purchase"
+  lines:
+    - "<c:text>This will:"
+    - "<c:text>Buy <c:value><amount>x <item></c:value>"
+    - "<c:text>for <cur:money><total></cur:money><c:text>."
+    - "<c:muted>Balance: <balance>"
+    - ""
+    - "<c:action><sym:bullet> Click to confirm"
+
+buy:
+  bought: "<prefix><c:success><sym:check></c:success> <c:text>Bought <c:value><amount>x <item></c:value> <c:text>for <cur:money><price></cur:money><c:text>. Balance: <cur:money><balance></cur:money>"
+  delivered-late: "<prefix><c:success><sym:check></c:success> <c:text>Here is your shop purchase: <c:value><amount>x <item></c:value><c:text>."
+  dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your inventory filled up: <c:value><amount></c:value> <c:text>items dropped at your feet."
+  waiting-no-room: "<prefix><c:warning><sym:cross></c:warning> <c:text>A shop purchase (<c:value><amount>x <item></c:value><c:text>) is waiting. Make room, then rejoin or switch profile."
+  not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>That costs <cur:money><price></cur:money><c:text>, you have <cur:money><balance></cur:money><c:text>."
+  no-room: "<prefix><c:error><sym:cross></c:error> <c:text>Your inventory is full. Make some room first."
+  no-room-some: "<prefix><c:error><sym:cross></c:error> <c:text>Only <c:value><fits></c:value> <c:text>fit in your inventory. Buy fewer or make room."
+  bad-amount: "<prefix><c:error><sym:cross></c:error> <c:text>Pick an amount from 1 to <c:value><max></c:value><c:text>."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your last purchase is still going through."
+  gone: "<prefix><c:error><sym:cross></c:error> <c:text>That item isn't for sale any more."
+  price-changed: "<prefix><c:error><sym:cross></c:error> <c:text>The price just changed. Check it and try again."
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>That item isn't for sale right now."
+  locked: "<prefix><c:error><sym:cross></c:error> <c:text>You need <c:value><skill> <level></c:value> <c:text>to buy that."
+  locked-click: "<prefix><c:error><sym:cross></c:error> <c:text>That item is locked. Its lore says what you need."
