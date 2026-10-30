@@ -49,7 +49,8 @@ final class BlueprintDrops {
     UUID give(Player player, ToolCatalog.BlueprintDef def, String source, Actor actor) {
         ItemStack item = module.items().createBlueprint(def, source);
         UUID id = ToolItems.readBlueprint(item).map(Map.Entry::getValue).orElse(null);
-        module.forge().give(player, item);
+        module.forge().give(player, item, source.startsWith("admin") ? net.skybornmc.skyblock.common.box.BoxSource.STAFF
+                : net.skybornmc.skyblock.common.box.BoxSource.TOOLS);
         UUID uuid = player.getUniqueId();
         int season = module.config().seasonId;
         module.core.database().run(c -> module.repository().recordBlueprint(c, uuid, def.id(), season, System.currentTimeMillis()))

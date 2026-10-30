@@ -45,7 +45,6 @@ spawner:
   disabled-type: "<prefix><c:error><sym:cross></c:error> <c:text>This spawner type is turned off. Ask staff."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, this spawner is being saved."
   error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Your spawners are safe; try again."
-  dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full. The rest dropped at your feet."
   # The spawner item (custom item, lore built by the item framework). {mob} {tier} {rarity}
   item:
     name: "<rarity:{rarity}>{mob} Spawner"

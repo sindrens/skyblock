@@ -358,8 +358,13 @@ final class Loadouts {
             if (current != null && !current.isEmpty() && !WardrobeItems.isPiece(current)) {
                 Map<Integer, ItemStack> left = inv.addItem(current);
                 if (!left.isEmpty()) {
-                    blocked.add(q.piece()); // vanilla armor could not move (changed against the lock): keep it, drop the row
-                    continue;
+                    if (net.skybornmc.skyblock.common.box.ItemBox.of(module.core.services()).isEmpty()) {
+                        blocked.add(q.piece()); // vanilla armor could not move (changed against the lock): keep it, drop the row
+                        continue;
+                    }
+                    // Owner answer 7: the vanilla piece that does not fit goes to /box instead of blocking the slot.
+                    net.skybornmc.skyblock.common.box.ItemBox.overflow(module.core.services(), p,
+                            net.skybornmc.skyblock.common.box.BoxSource.LOADOUT, left.values());
                 }
                 inv.setItem(q.piece().slot(), null);
             }

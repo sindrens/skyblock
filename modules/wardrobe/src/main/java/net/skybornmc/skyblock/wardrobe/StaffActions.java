@@ -161,7 +161,7 @@ final class StaffActions {
             module.fail(staff, "staff.offline", Msg.p("player", menu.targetName));
             return;
         }
-        if (Equipment.freeSlots(target.getInventory()) < 1) {
+        if (noRoom(target)) {
             module.fail(staff, "staff.target-full", Msg.p("player", menu.targetName));
             return;
         }
@@ -176,14 +176,14 @@ final class StaffActions {
                 return;
             }
             UUID id = net.skybornmc.skyblock.common.item.ItemRegistry.uuidOf(item).orElseThrow();
-            if (t == null || Equipment.freeSlots(t.getInventory()) < 1) {
+            if (t == null || noRoom(t)) {
                 module.ops().voidTome(id, "not_delivered");
                 if (p != null) {
                     module.fail(p, "staff.target-full", Msg.p("player", menu.targetName));
                 }
                 return;
             }
-            t.getInventory().addItem(item);
+            net.skybornmc.skyblock.common.box.ItemBox.give(module.core.services(), t, net.skybornmc.skyblock.common.box.BoxSource.STAFF, item);
             module.core.audit().logPlayer(AuditCategory.STAFF, "wardrobe_tome_given", p == null ? Actor.system("wardrobe") : Actor.player(p),
                     menu.target, menu.targetName, null, null, Map.of("kind", kind, "tome", id.toString()));
             module.msg().send(t, "tome-received");
@@ -204,7 +204,7 @@ final class StaffActions {
             module.fail(staff, "staff.offline", Msg.p("player", menu.targetName));
             return;
         }
-        if (Equipment.freeSlots(target.getInventory()) < 1) {
+        if (noRoom(target)) {
             module.fail(staff, "staff.target-full", Msg.p("player", menu.targetName));
             return;
         }
@@ -219,7 +219,7 @@ final class StaffActions {
                 return;
             }
             UUID id = net.skybornmc.skyblock.common.item.ItemRegistry.uuidOf(item).orElseThrow();
-            if (t == null || Equipment.freeSlots(t.getInventory()) < 1) {
+            if (t == null || noRoom(t)) {
                 module.ops().voidToken(id, "not_delivered");
                 if (p != null) {
                     module.fail(p, "staff.target-full", Msg.p("player", menu.targetName));
@@ -227,7 +227,7 @@ final class StaffActions {
                 return;
             }
             ItemStack give = item;
-            t.getInventory().addItem(give);
+            net.skybornmc.skyblock.common.box.ItemBox.give(module.core.services(), t, net.skybornmc.skyblock.common.box.BoxSource.STAFF, give);
             module.core.audit().logPlayer(AuditCategory.STAFF, "wardrobe_token_given", p == null ? Actor.system("wardrobe") : Actor.player(p),
                     menu.target, menu.targetName, null, null, Map.of("set", def.id(), "token", id.toString()));
             module.msg().send(t, "token-received", Msg.p("set", def.name()));
@@ -235,5 +235,10 @@ final class StaffActions {
                 module.msg().send(p, "staff.token-given", Msg.p("set", def.name()), Msg.p("player", menu.targetName));
             }
         });
+    }
+
+    /** No free slot and no /box to take the rest (owner answer 7: with the box module the item waits in /box instead). */
+    private boolean noRoom(Player target) {
+        return Equipment.freeSlots(target.getInventory()) < 1 && net.skybornmc.skyblock.common.box.ItemBox.of(module.core.services()).isEmpty();
     }
 }

@@ -81,7 +81,6 @@ note:
     action-input: "Right-click"
     action-text: "to redeem"
   withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Made a note of <amount><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(#<id>) <sym:dot> right-click it to cash it."
-  dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full: the note dropped at your feet. Pick it up!"
   insufficient: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have <amount><c:text>. <c:muted>Balance: </c:muted><balance>"
   inventory-full: "<prefix><c:error><sym:cross></c:error> <c:text>Inventory full. Free a slot and try again. Nothing was taken."
   cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Make another note in <c:value><time></c:value>."
@@ -229,8 +228,6 @@ sell:
   too-cheap: "<prefix><c:error><sym:cross></c:error> <c:text>Those items are worth less than $1 right now. Nothing was sold."
   overflow: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance can't hold that much. Your items are back."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>The sale didn't go through, your items are back. Try again."
-  returned-dropped: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory and ender chest full: <stacks> returned stack(s) dropped at your feet. Pick them up!"
-  returned-ender: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full: <stacks> returned stack(s) went into your ender chest."
   refund-delivered: "<prefix><c:success><sym:check></c:success> <c:text>You got back <c:value><amount>x</c:value> <item> <c:text>from a sale that didn't go through."
   # Why an item can't be sold (/sell hand, and the action bar when you put it into the sell chest).
   reason:

@@ -668,7 +668,7 @@ public final class SellFeature implements Listener {
         msg.send(player, "sell.chest.recovered", Msg.number("items", count));
     }
 
-    /** Hands stacks back to an online player (inventory, ender chest, feet); used by the sell chest. */
+    /** Hands stacks back to an online player (inventory, the rest to /box); used by the sell chest. */
     void returnItems(Player player, List<ItemStack> stacks) {
         giveBack(player.getUniqueId(), profiles().profileKey(player), stacks);
     }
@@ -695,7 +695,7 @@ public final class SellFeature implements Listener {
 
     // ================================================================== giving items back
 
-    /** Hands stacks back to their owner: inventory, else at their feet; stored for later if they left or switched profile. */
+    /** Hands stacks back to their owner: inventory, the rest to /box; stored for later if they left or switched profile. */
     void giveBack(UUID owner, UUID profile, List<ItemStack> stacks) {
         if (stacks.isEmpty()) {
             return;
@@ -703,23 +703,14 @@ public final class SellFeature implements Listener {
         Player player = Bukkit.getPlayer(owner);
         if (player != null && player.isOnline() && !profiles().isSwitching(owner) && profiles().profileKey(player).equals(profile)) {
             List<ItemStack> copies = stacks.stream().filter(java.util.Objects::nonNull).filter(s -> !s.isEmpty()).map(ItemStack::clone).toList();
-            ChestFill.Returned<ItemStack> returned = ChestFill.giveBack(copies,
-                    stack -> new ArrayList<>(player.getInventory().addItem(stack).values()),
-                    stack -> new ArrayList<>(player.getEnderChest().addItem(stack).values()), STACK_OPS);
-            for (ItemStack rest : returned.dropped()) {
-                player.getWorld().dropItemNaturally(player.getLocation(), rest);
-            }
-            if (returned.overflowed()) {
+            // Owner answer 7: never dropped. What does not fit goes to /box (the box tells the player).
+            List<ItemStack> boxed = net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), player,
+                    net.skybornmc.skyblock.common.box.BoxSource.SELL, copies);
+            if (!boxed.isEmpty()) {
                 Map<String, Object> details = new LinkedHashMap<>();
-                details.put("to_ender_chest", returned.toEnder());
-                details.put("dropped", returned.dropped().stream().map(i -> i.getType().name().toLowerCase(Locale.ROOT) + "x" + i.getAmount()).toList());
+                details.put("to_box", boxed.stream().map(i -> i.getType().name().toLowerCase(Locale.ROOT) + "x" + i.getAmount()).toList());
                 core.audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.ITEM, "sell_return_overflow",
                         Actor.system("economy"), owner, player.getName(), null, player.getLocation(), details);
-            }
-            if (!returned.dropped().isEmpty()) {
-                msg.send(player, "sell.returned-dropped", Msg.number("stacks", returned.dropped().size()));
-            } else if (returned.toEnder() > 0) {
-                msg.send(player, "sell.returned-ender", Msg.number("stacks", returned.toEnder()));
             }
             return;
         }

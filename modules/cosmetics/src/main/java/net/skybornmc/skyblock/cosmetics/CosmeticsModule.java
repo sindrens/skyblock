@@ -181,8 +181,7 @@ public final class CosmeticsModule implements SkyblockModule {
         int count = Math.max(1, Math.min(config.tagItemMaxAmount, amount));
         for (int i = 0; i < count; i++) {
             ItemStack item = tagItems.create(tagId, "staff:" + staff.getName());
-            target.getInventory().addItem(item).values()
-                    .forEach(rest -> target.getWorld().dropItemNaturally(target.getLocation(), rest));
+            net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), target, net.skybornmc.skyblock.common.box.BoxSource.STAFF, item);
             core.audit().logPlayer(AuditCategory.STAFF, "tag_item_create", Actor.of(staff), target.getUniqueId(), target.getName(),
                     null, target.getLocation(), Map.of("tag", tagId,
                             "item_uuid", net.skybornmc.skyblock.common.item.ItemRegistry.uuidOf(item).map(UUID::toString).orElse("")));

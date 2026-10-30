@@ -366,9 +366,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
             if (left.isEmpty()) {
                 return;
             }
-            for (ItemStack rest : left.values()) {
-                putBack(uuid, rest);
-            }
+            overflow(uuid, left.values());
             return;
         }
         engine.putBack(uuid, snapshot.bytes(), snapshot.material(), snapshot.amount(), snapshot.name()).exceptionally(e -> {
@@ -377,12 +375,29 @@ public final class AuctionModule implements SkyblockModule, Listener {
         });
     }
 
+    /** Owner answer 7: what does not fit goes to /box; without the box module back into the collection bin as before. */
+    private void overflow(UUID owner, java.util.Collection<ItemStack> rest) {
+        if (rest.isEmpty()) {
+            return;
+        }
+        Optional<net.skybornmc.skyblock.common.box.ItemBox> box = net.skybornmc.skyblock.common.box.ItemBox.of(core.services());
+        if (box.isPresent()) {
+            box.get().deliver(owner, rest, net.skybornmc.skyblock.common.box.BoxSource.AUCTION, Actor.system("auction"));
+        } else {
+            rest.forEach(r -> putBack(owner, r));
+        }
+    }
+
     private void putBack(UUID owner, ItemStack stack) {
         byte[] bytes = stack.serializeAsBytes();
         engine.putBack(owner, bytes, stack.getType().name(), stack.getAmount(), ItemCodec.plainName(stack)).exceptionally(e -> {
             main.execute(() -> {
                 Player p = online(owner);
-                if (p != null) {
+                Optional<net.skybornmc.skyblock.common.box.ItemBox> box = net.skybornmc.skyblock.common.box.ItemBox.of(core.services());
+                if (box.isPresent()) {
+                    // Owner answer 7: the collection bin refused it, the /box keeps it (never dropped).
+                    box.get().deliver(owner, List.of(stack), net.skybornmc.skyblock.common.box.BoxSource.AUCTION, Actor.system("auction"));
+                } else if (p != null) {
                     p.getWorld().dropItemNaturally(p.getLocation(), stack); // last resort: never lose it
                 } else {
                     lost(owner, bytes, e);
@@ -560,7 +575,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
                 return;
             }
             Map<Integer, ItemStack> left = p.getInventory().addItem(item);
-            left.values().forEach(rest -> putBack(uuid, rest));
+            overflow(uuid, left.values());
             sound(p, "success");
             done.accept(true);
         }, main);

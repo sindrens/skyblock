@@ -541,8 +541,13 @@ final class Equipment implements Listener {
                 if (current != null && !current.isEmpty() && !WardrobeItems.isPiece(current)) {
                     Map<Integer, ItemStack> left = p.getInventory().addItem(current);
                     if (!left.isEmpty()) {
-                        blocked.add(q.piece()); // filled meanwhile: keep the vanilla piece, drop the row
-                        continue;
+                        if (net.skybornmc.skyblock.common.box.ItemBox.of(module.core.services()).isEmpty()) {
+                            blocked.add(q.piece()); // filled meanwhile: keep the vanilla piece, drop the row
+                            continue;
+                        }
+                        // Owner answer 7: the vanilla piece that does not fit goes to /box instead of blocking the slot.
+                        net.skybornmc.skyblock.common.box.ItemBox.overflow(module.core.services(), p,
+                                net.skybornmc.skyblock.common.box.BoxSource.WARDROBE, left.values());
                     }
                 }
                 s.equipped.put(q.piece(), q);

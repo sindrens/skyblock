@@ -769,16 +769,8 @@ final class EnchantOps implements Listener {
             // The row is the truth (committed); the cache and the worn piece follow.
             wardrobe.pieceEnchantsChanged(player, plan.piece().entryId(), plan.piece().piece(), plan.perksAfter());
         }
-        boolean dropped = false;
-        for (ItemStack stack : minted) {
-            for (ItemStack rest : inv.addItem(stack).values()) {
-                player.getWorld().dropItemNaturally(player.getLocation(), rest);
-                dropped = true;
-            }
-        }
-        if (dropped) {
-            module.msg().send(player, "inventory-full");
-        }
+        // Owner answer 7: never dropped. What does not fit goes to /box (the box tells the player).
+        net.skybornmc.skyblock.common.box.ItemBox.give(module.core.services(), player, net.skybornmc.skyblock.common.box.BoxSource.ENCHANTER, minted);
         success.accept(player);
         Map<String, Object> details = new LinkedHashMap<>(plan.details());
         details.put("op", plan.id().toString());

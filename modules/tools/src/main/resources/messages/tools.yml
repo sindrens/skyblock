@@ -3,7 +3,6 @@
 # Reload: /skyblock reload tools
 
 error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Try again in a moment."
-inventory-full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full. The rest dropped at your feet."
 
 # Tool types (singular / plural) and skills.
 kind:

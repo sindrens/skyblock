@@ -290,7 +290,7 @@ public final class PerksModule implements SkyblockModule {
             inv.setItemInMainHand(hand);
             inv.setHelmet(wear);
             if (hasHelmet) {
-                inv.addItem(helmet).values().forEach(rest -> player.getWorld().dropItemNaturally(player.getLocation(), rest));
+                net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), player, net.skybornmc.skyblock.common.box.BoxSource.PERKS, helmet); // never dropped: the rest goes to /box
             }
         }
         msg.send(player, "hat.done", Msg.p("item", type));

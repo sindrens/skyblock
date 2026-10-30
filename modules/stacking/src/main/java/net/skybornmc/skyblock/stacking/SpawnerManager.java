@@ -614,11 +614,8 @@ final class SpawnerManager implements Listener {
 
     private void give(Player player, Location fallback, ItemStack item, int amount) {
         if (player != null) {
-            Map<Integer, ItemStack> rest = player.getInventory().addItem(item);
-            if (!rest.isEmpty()) {
-                rest.values().forEach(r -> player.getWorld().dropItem(player.getLocation(), r, d -> d.setOwner(player.getUniqueId())));
-                module.msg().send(player, "spawner.dropped");
-            }
+            // Owner answer 7: never dropped; what does not fit goes to /box (the box tells the player).
+            net.skybornmc.skyblock.common.box.ItemBox.give(module.core().services(), player, net.skybornmc.skyblock.common.box.BoxSource.SPAWNER, item);
         } else if (fallback != null && fallback.getWorld() != null) {
             fallback.getWorld().dropItem(fallback, item);
         } else {

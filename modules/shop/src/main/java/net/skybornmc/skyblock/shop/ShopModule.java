@@ -496,14 +496,14 @@ public final class ShopModule implements SkyblockModule, Listener {
             store.move(p.id(), ShopStore.DELIVERING, ShopStore.PENDING, System.currentTimeMillis());
             return;
         }
-        int dropped = 0;
         int maxStack = new ItemStack(material).getMaxStackSize();
+        java.util.List<ItemStack> stacks = new java.util.ArrayList<>();
         for (int amount : ShopMath.stacks(p.quantity(), maxStack)) {
-            for (ItemStack rest : player.getInventory().addItem(new ItemStack(material, amount)).values()) {
-                player.getWorld().dropItemNaturally(player.getLocation(), rest);
-                dropped += rest.getAmount();
-            }
+            stacks.add(new ItemStack(material, amount));
         }
+        // Owner answer 7: never dropped. If the inventory filled up meanwhile, the rest goes to /box.
+        // The box tells the player.
+        net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), player, net.skybornmc.skyblock.common.box.BoxSource.SHOP, stacks);
         if (settings.savePlayerData) {
             try {
                 player.saveData();
@@ -531,9 +531,6 @@ public final class ShopModule implements SkyblockModule, Listener {
             if (p.totalPrice() >= settings.chatFrom) {
                 msg.send(player, partial ? "buy.partial" : "buy.bought", tags);
             }
-        }
-        if (dropped > 0) {
-            msg.send(player, "buy.dropped", Msg.number("amount", dropped));
         }
         core.sounds().play(player, late ? "money" : settings.buySound);
     }

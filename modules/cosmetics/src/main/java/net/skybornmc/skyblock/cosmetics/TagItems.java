@@ -134,9 +134,8 @@ final class TagItems implements Listener {
         module.service().grant(player.getUniqueId(), Cosmetics.Kind.TAG, tag.id(), "item:" + itemUuid, Actor.player(player))
                 .whenComplete((added, error) -> module.core().plugin().getServer().getScheduler().runTask(module.core().plugin(), () -> {
                     if (error != null || !Boolean.TRUE.equals(added)) {
-                        // Nothing was granted: give the item back (inventory, or at the player's feet).
-                        player.getInventory().addItem(taken).values()
-                                .forEach(rest -> player.getWorld().dropItemNaturally(player.getLocation(), rest));
+                        // Nothing was granted: give the item back (inventory, or /box: owner answer 7, never dropped).
+                        net.skybornmc.skyblock.common.box.ItemBox.give(module.core().services(), player, net.skybornmc.skyblock.common.box.BoxSource.COSMETICS, taken);
                         module.msg().send(player, error != null ? "redeem.error" : "redeem.owned",
                                 Msg.c("display", module.service().display(player, tag)));
                         return;
