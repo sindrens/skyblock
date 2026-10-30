@@ -75,7 +75,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M3.6 | Auction house `/ah` | M3.1 | modules/auction | ✅ |
 | M3.7 | Secure trade `/trade` | M3.1 | modules/trade | ✅ |
 | M3.3 | Banks + interest (personal + island) | M3.1, M2.3 | modules/economy (bank pkg) | ✅ |
-| M3.8 | Economy dashboard + anomaly alerts | M3.1–M3.7 | modules/economy (admin pkg) | 🔄 |
+| M3.8 | Economy dashboard + anomaly alerts | M3.1–M3.7 | modules/economy (admin pkg) | ✅ |
 
 ## Phase 4: Tools + The Depths (docs/phases/PHASE-4-DEPTHS.md)
 | # | Item | Depends on | Lane | Status |
