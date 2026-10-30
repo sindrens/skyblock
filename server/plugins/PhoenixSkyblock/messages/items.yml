@@ -1,5 +1,5 @@
 # Custom item texts (MiniMessage + style tags). Lore is generated from these formats; never edit lore on items.
-# {tokens} are filled by the plugin; <placeholders> are used in chat messages.
+# {placeholders} are filled by the plugin; <placeholders> are used in chat messages.
 # Layout follows docs/UI_STYLE.md §4: max ~36 visible characters per line, Bedrock-safe symbols only.
 
 lore:

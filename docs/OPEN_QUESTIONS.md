@@ -1,6 +1,8 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- CRY colors: crystals are aqua `#4FD1FF` with `◆` (the old gems look); gems are now emerald `#3DDC97` with `✦` (Bedrock falls back to dark green, money stays light green `$`). Menu icons: crystals = prismarine crystals, gems = emerald (were amethyst shard / diamond). OK? (default: yes, all in `style.yml` and `economy.yml → icons`)
+- CRY: the island shop and island missions that earn/spend crystals (CR1/CR2) don't exist yet; crystals currently only exist as a balance (`/bal`, `/eco`, HUD). Build them with the island upgrades milestone? (default: yes)
 - UX1 tab: the lines beside SKYBORN are now left frost white (first letter) and right blue (the "MC"), instead of one long gradient over the whole line. OK, or try the long gradient? (default: left white, right blue)
 - UX1 scoreboard: the objective line ("Next: ...") and the online count were removed to keep it at 10 lines. Bring one of them back? (default: no; the objective returns with the tutorial/quests)
 - UX1 join/quit lines are now just `[+] Name` / `[-] Name` (no "joined the server"). OK? (default: yes)
@@ -57,7 +59,7 @@
 - M3.0: tool XP curve x1.21 per level instead of x1.12 so perk slots land at ~1 h / day 2 / week 1 / week 4 (default: x1.21)?
 - M3.0: combat skill thresholds per tier 0/6/12/18/24/30/38/46/55/66 (default: as proposed)?
 - M3.0: interest on the lowest balance of each 3 h cycle + interest only for accounts with >= 2 h play in the last 7 days (default: both on)?
-- M3.0: tokens tradeable via /pay or AH? (default: no, prevents alt farming)
+- ~~M3.0: tokens tradeable via /pay or AH?~~ Decided: tokens replaced by island crystals, not tradeable (O8, CR3).
 - M3.0: new accounts (< 2 h played) can't /pay or list on the AH (default: yes)?
 - M3.0: island production only counts as "online" while a member was active in the last 15 min, otherwise it burns fuel (default: yes)? Also: does time in The Depths earn island fuel? (default: no, as DESIGN §5.4 says "on the island")
 - M3.0: dynamic price recovery as 2% of the gap per 10 min (default) instead of a fixed 2 points; Hot Item +25% for 24 h?
@@ -74,9 +76,9 @@
 - M2.1 Staff build bypass on islands is permission-only (`skyblock.island.bypass`, admins) until M2.2 adds the logged `/is bypass` toggle. OK? (default: yes)
 - M2.1 Scoreboard shows "Lv -" for island level until Phase 5 and no island position (`island_rank` empty). OK? (default: yes)
 - Economy (M3.1): `/eco give|take|set|reset` is owner-only (`skyblock.owner.economy`); should admins get it too? (default: owner only, STANDARDS "economy edits = owner")
-- Economy (M3.1): tokens can't be paid with `/pay` (`economy.yml → tradeable.tokens: false`). Should tokens be tradeable? (default: no; money and shards yes, gems no as decided)
-- Economy (M3.1): `/pay` minimums $10 / 1 token / 1 gem / 1 shard and confirm thresholds $1M (decided) / 10,000 tokens / 100 gems / 1,000 shards. OK? (all in `economy.yml`)
-- Economy (M3.1): balances are global and the ledger records the season (0 until the season service exists). At season start, which currencies are wiped (money, tokens, shards) and which kept (gems: see Economy question 2)? The starting $1,000 is given once per season per player. (default: decide with the season system)
+- ~~Economy (M3.1): should tokens be tradeable?~~ Decided: tokens replaced by island crystals (`economy.yml → tradeable.crystals: false`, CR3).
+- Economy (M3.1): `/pay` minimums $10 / 1 crystal / 1 gem / 1 shard and confirm thresholds $1M (decided) / 10,000 crystals / 100 gems / 1,000 shards. OK? (all in `economy.yml`)
+- Economy (M3.1): balances are global and the ledger records the season (0 until the season service exists). At season start, which currencies are wiped (money, crystals, shards) and which kept (gems: see Economy question 2)? The starting $1,000 is given once per season per player. (default: decide with the season system)
 - Economy (M3.1): `/bal <player>` lets every player see others' balances (`skyblock.economy.balance.others`, default true). OK, or staff only? (default: everyone)
 - Economy (M3.1): the staff reason of `/eco` is shown to the player in `/transactions` (as the note, max 64 characters). OK? (default: yes)
 - Skills (M4.5): max skill level 66 (= the highest tier unlock, Voidstone); XP keeps counting after it for leaderboards (`skills.yml → curve.max-level`). Higher cap for Phase 6 perks? (default: 66)
@@ -127,12 +129,12 @@ Decisions the owner still needs to make. **Developers: never guess. Add new ques
 4. **Max total sell multiplier:** proposal +100% max.
 
 ## The Depths
-5. **Mine drops:** ore items to sell, tokens, key chance, rare items? Exact mix per tier.
+5. **Mine drops:** ore items to sell, crystals, key chance, rare items? Exact mix per tier.
 6. Number of custom ore/tree tiers after vanilla, and their names.
 7. Tier unlock thresholds (blocks broken / logs / kills) per tier.
 
 ## Gear
-8. **Sets:** how are pieces obtained (tokens, drops, crafting)? Final set list.
+8. **Sets:** how are pieces obtained (crystals, drops, crafting)? Final set list.
 9. Tool prestige at level 50: confirm, and what it gives (default: permanent title + skin unlock + small bonus on that tool).
 
 ## Leaderboards

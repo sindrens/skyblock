@@ -4,7 +4,7 @@
 #   with the title is the house style (docs/UI_STYLE.md §6.1).
 #   "default" is used everywhere, unless a layout with the world's name exists (scoreboard.depths is used in the
 #   "depths" world) or a module picks one (events later).
-# Built-in values: <name> (rank color), <rank>, <money>, <tokens>, <gems>, <island>, <objective>, <online>.
+# Built-in values: <name> (rank color), <rank>, <money>, <crystals>, <gems>, <island>, <objective>, <online>.
 #   Any placeholder works too: <ph:playtime>, <ph:ping>, <ph:depths_zone>, <ph:skill_mining_level> ...
 # An empty line "" is a blank separator.
 # Colors: brand red only in the title, labels muted gray, values white or their currency color.
@@ -17,7 +17,7 @@ scoreboard:
       - " <name> <c:muted><sym:dot></c:muted> <rank>"
       - ""
       - " <c:muted>Money</c:muted>  <money>"
-      - " <c:muted>Tokens</c:muted>  <tokens>"
+      - " <c:muted>Crystals</c:muted>  <crystals>"
       - " <c:muted>Gems</c:muted>  <gems>"
       - ""
       - " <c:muted>Island</c:muted>  <island>"
@@ -40,7 +40,7 @@ scoreboard:
 values:
   dash: "<c:muted>-"   # "—" would need a Bedrock test first (style.yml bedrock-safe-symbols)
   money: "<cur:money><sym:money><value>"
-  tokens: "<cur:tokens><sym:tokens> <value>"
+  crystals: "<cur:crystals><sym:crystals> <value>"
   gems: "<cur:gems><sym:gems> <value>"
   island: "<c:value>Lv <level></c:value> <c:muted>#<position>"
   island-no-rank: "<c:value>Lv <level>"

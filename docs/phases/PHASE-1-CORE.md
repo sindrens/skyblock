@@ -38,7 +38,7 @@ Depends on Phase 0 (config, messages, DB, commands, menus, audit log).
 
 ## M1.4 Scoreboard (sidebar)
 - Fire-gradient title, max 12 lines, updates every 1 s (only changed lines resent, no flicker), contextual by world (exact layouts in [UI mockups](#ui-mockups)).
-- **Detailed layout without fuel or member count** (owner decision): objective, player name, rank, money, tokens, gems, island level + position, online. Fuel lives in `/is fuel`.
+- **Detailed layout without fuel or member count** (owner decision): objective, player name, rank, money, crystals, gems, island level + position, online. Fuel lives in `/is fuel`.
 - Lines show "—" for features not built yet, so the layout never jumps.
 - Toggle in `/settings`; Bedrock tested (Bedrock shows 15 lines max).
 
@@ -117,8 +117,8 @@ The audit log (M0.8) made searchable in-game. **This is how staff check "who pai
   Pouched                     ← player name in rank color
   Rank      Owner             ← label ember, value rank color
   Money     $1.2M             ← money green ("—" until Phase 3)
-  Tokens    ✦ 4,250           ← purple ("—" until Phase 4)
-  Gems      ◆ 120             ← aqua ("—" until the store phase)
+  Crystals  ◆ 4,250           ← aqua ("—" until Phase 4)
+  Gems      ✦ 120             ← emerald ("—" until the store phase)
 
   Island    Lv 34 (#12)       ← "—" until Phase 2/5
 

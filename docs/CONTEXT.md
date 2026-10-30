@@ -47,7 +47,7 @@ Decided 2026-10-29:
 | **Quests, events, KOTH, envoys, bosses** | **~15%** | Bursts and variety |
 
 - **Big numbers:** start with **$1,000**; mid-game millions; late-game billions. Display compact (`$1.2M`, `$3.4B`).
-- Money is stored as a whole-dollar `long` (max ≈ 9.2 quintillion). Tokens, gems and shards are `long` too.
+- Money is stored as a whole-dollar `long` (max ≈ 9.2 quintillion). Crystals, gems and shards are `long` too.
 - Dynamic global sell prices (floor 40%, ceiling 150% of base), price floors and interest caps control inflation. No extra money sinks besides gameplay costs (owner decision).
 - A **balance sheet** (target earnings per hour/day/week per tier) is made and approved by the owner **before** prices are coded (Phase 3).
 

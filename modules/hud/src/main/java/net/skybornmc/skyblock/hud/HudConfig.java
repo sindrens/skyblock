@@ -23,8 +23,8 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "values.money", desc = "Placeholder key that gives the formatted money balance (shows a dash while no module provides it).")
     public String moneyKey = "balance_formatted";
 
-    @Setting(path = "values.tokens", desc = "Placeholder key for the formatted token balance.")
-    public String tokensKey = "tokens_formatted";
+    @Setting(path = "values.crystals", desc = "Placeholder key for the formatted island crystals balance.")
+    public String crystalsKey = "crystals_formatted";
 
     @Setting(path = "values.gems", desc = "Placeholder key for the formatted gem balance.")
     public String gemsKey = "gems_formatted";
@@ -37,6 +37,17 @@ public final class HudConfig extends ModuleConfig {
 
     @Setting(path = "values.objective", desc = "Placeholder key for the current objective (tutorial/quests).")
     public String objectiveKey = "objective";
+
+    /** Version 2: tokens were replaced by island crystals (owner decision O8). */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
+        return java.util.Map.of(2, java.util.Map.of("values.tokens", "values.crystals"));
+    }
 
     @Override
     public String fileName() {

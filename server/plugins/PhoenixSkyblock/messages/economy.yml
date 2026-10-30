@@ -5,13 +5,13 @@
 # How amounts look. <value> = 12,500 below 100k, 1.2M above; <exact> = every digit.
 format:
   money: "<hover:show_text:'<c:text><exact>'><cur:money><sym:money><value></cur:money></hover>"
-  tokens: "<hover:show_text:'<c:text><exact>'><cur:tokens><sym:tokens> <value></cur:tokens></hover>"
+  crystals: "<hover:show_text:'<c:text><exact>'><cur:crystals><sym:crystals> <value></cur:crystals></hover>"
   gems: "<hover:show_text:'<c:text><exact>'><cur:gems><sym:gems> <value></cur:gems></hover>"
   shards: "<hover:show_text:'<c:text><exact>'><cur:shards><sym:shards> <value></cur:shards></hover>"
 
 names:
   money: "<cur:money>Money</cur:money>"
-  tokens: "<cur:tokens>Tokens</cur:tokens>"
+  crystals: "<cur:crystals>Crystals</cur:crystals>"
   gems: "<cur:gems>Gems</cur:gems>"
   shards: "<cur:shards>Shards</cur:shards>"
 
@@ -62,7 +62,7 @@ eco:
 
 # Money notes (M3.2). <amount>, <balance>, <min>, <max> are colored amounts; <id> = first 8 characters of the note id.
 note:
-  # The note item (lore follows UI_STYLE §4; {tokens} are filled by the plugin, max ~36 visible characters per line).
+  # The note item (lore follows UI_STYLE §4; {placeholders} are filled by the plugin, max ~36 visible characters per line).
   item:
     name: "<cur:{currency}>{amount} Note"
     name-unknown: "<cur:money>Money Note"

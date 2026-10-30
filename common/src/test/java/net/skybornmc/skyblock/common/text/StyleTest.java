@@ -40,6 +40,19 @@ class StyleTest {
     }
 
     @Test
+    void oldTokensSymbolFallsBackToCrystals(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("style.yml");
+        Files.writeString(file, """
+                symbols:
+                  crystals: "◆"
+                """);
+        Style style = new Style();
+        style.load(file.toFile());
+        assertEquals("◆", style.symbol("tokens"), "tokens were replaced by crystals");
+        assertEquals("?", style.symbol("nothing"));
+    }
+
+    @Test
     void gradientsExpandForJavaAndBedrock(@TempDir Path dir) throws Exception {
         Path file = dir.resolve("style.yml");
         Files.writeString(file, YAML);

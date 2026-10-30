@@ -174,15 +174,20 @@ public final class HudService implements Listener {
         sidebar.lines(lines);
     }
 
-    /** Built-in values: name, rank, money, tokens, gems, island, objective, online. "—" when a feature isn't there yet. */
+    /**
+     * Built-in values: name, rank, money, crystals, gems, island, objective, online. "—" when a feature isn't there yet.
+     * {@code <tokens>} is a deprecated alias of {@code <crystals>} (tokens were replaced by crystals) for old layouts.
+     */
     private TagResolver values(Player player) {
         var ranks = core.ranks();
         var color = ranks.rankColor(player);
+        Component crystals = value(player, config.crystalsKey, "values.crystals");
         return TagResolver.resolver(
                 Msg.c("name", Component.text(player.getName(), color)),
                 Msg.c("rank", Component.text(ranks.groupDisplayName(player), color)),
                 Msg.c("money", value(player, config.moneyKey, "values.money")),
-                Msg.c("tokens", value(player, config.tokensKey, "values.tokens")),
+                Msg.c("crystals", crystals),
+                Msg.c("tokens", crystals),
                 Msg.c("gems", value(player, config.gemsKey, "values.gems")),
                 Msg.c("island", island(player)),
                 Msg.c("objective", objective(player)),

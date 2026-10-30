@@ -92,7 +92,7 @@ class EconomyStoreTest {
         assertNull(result.fromBalance());
         assertEquals(1_000L, result.toBalance());
         assertEquals(1_000L, balance(alice, Currency.MONEY));
-        assertEquals(0L, balance(alice, Currency.TOKENS));
+        assertEquals(0L, balance(alice, Currency.CRYSTALS));
 
         LedgerEntry row = db.blocking(c -> EconomyStore.entry(c, result.ledgerId())).orElseThrow();
         assertEquals(3, row.season());
@@ -281,19 +281,41 @@ class EconomyStoreTest {
     }
 
     @Test
+    void migrationV003MovesOldTokenRowsToCrystals() throws Exception {
+        // Rows as they were written before tokens were replaced by crystals (O8).
+        db.blocking(c -> Sql.update(c, "INSERT INTO eco_accounts (owner_type, owner_id, currency, balance, updated_at) "
+                + "VALUES ('player', ?, 'tokens', 42, 0)", alice.owner()));
+        db.blocking(c -> Sql.update(c, "INSERT INTO eco_ledger (created_at, season_id, currency, to_type, to_id, amount, "
+                + "to_balance, reason, actor_name) VALUES (0, 3, 'tokens', 'player', ?, 42, 42, 'sell', 'CONSOLE')", alice.owner()));
+        String sql;
+        try (var in = getClass().getClassLoader().getResourceAsStream("db/economy/V003__tokens_to_crystals.sql")) {
+            sql = new String(java.util.Objects.requireNonNull(in, "V003 missing").readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+        for (String line : sql.lines().filter(l -> !l.isBlank() && !l.startsWith("--")).toList()) {
+            db.blocking(c -> Sql.update(c, line.substring(0, line.lastIndexOf(';'))));
+        }
+        assertEquals(0L, (long) db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM eco_accounts WHERE currency = 'tokens'",
+                rs -> rs.getLong(1)).orElseThrow()));
+        assertEquals(0L, (long) db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM eco_ledger WHERE currency = 'tokens'",
+                rs -> rs.getLong(1)).orElseThrow()));
+        assertEquals(42L, balance(alice, Currency.CRYSTALS));
+        assertEquals(1, store.history(alice, LedgerFilter.ALL.withCurrency(Currency.CRYSTALS), 0, 50).join().total());
+    }
+
+    @Test
     void historyFiltersByCurrencyReasonGroupAndTime() {
         give(alice, 10_000);
         run(Transaction.transfer(alice, bob, Currency.MONEY, 100, TxReason.PAY));
         clock.addAndGet(Duration.ofDays(2).toMillis());
         run(Transaction.transfer(alice, bob, Currency.MONEY, 200, TxReason.AH_BUY));
         run(Transaction.transfer(bob, alice, Currency.MONEY, 50, TxReason.AH_SALE));
-        run(Transaction.deposit(alice, Currency.TOKENS, 7, TxReason.SELL));
+        run(Transaction.deposit(alice, Currency.CRYSTALS, 7, TxReason.SELL));
 
         EconomyStore.LedgerPage all = store.history(alice, LedgerFilter.ALL, 0, 50).join();
         assertEquals(5, all.total());
         assertEquals(TxReason.SELL, all.rows().getFirst().reason()); // newest first
 
-        assertEquals(1, store.history(alice, LedgerFilter.ALL.withCurrency(Currency.TOKENS), 0, 50).join().total());
+        assertEquals(1, store.history(alice, LedgerFilter.ALL.withCurrency(Currency.CRYSTALS), 0, 50).join().total());
         assertEquals(2, store.history(alice, LedgerFilter.ALL.withReason("ah"), 0, 50).join().total());
         assertEquals(1, store.history(alice, LedgerFilter.ALL.withReason("pay"), 0, 50).join().total());
         assertEquals(1, store.history(alice, LedgerFilter.ALL.withReason("admin"), 0, 50).join().total());

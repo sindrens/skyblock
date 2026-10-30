@@ -7,7 +7,7 @@
 #   Phoenix (gamemode)        = red #C21F2B, bright red #FF3D2E, ember #FF8A1F, flame #FFD23F
 #   white = the important words. Separator lines = <st> on spaces in blue.
 #
-# Tokens: {brand} = the brand below, {phase} = animation phase (for gradients), {countdown} = time left until
+# Placeholders: {brand} = the brand below, {phase} = animation phase (for gradients), {countdown} = time left until
 # countdown.target ("2d 1h"). Messages with {countdown} are skipped while countdown.target is empty.
 # Animation: every server list refresh shows the next frame, so {phase} gradients "flow".
 

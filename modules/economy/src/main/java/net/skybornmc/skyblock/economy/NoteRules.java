@@ -34,7 +34,7 @@ final class NoteRules {
             return false;
         }
         for (String key : config.noteCurrencies) {
-            if (key != null && key.trim().equalsIgnoreCase(currency.key())) {
+            if (key != null && Currency.byKey(key).orElse(null) == currency) { // old "tokens" = crystals
                 return true;
             }
         }

@@ -1,5 +1,5 @@
 # Titles & tags (/tags, /titles), tag items, the registry editor and the display editor (/display).
-# MiniMessage + style tags (style.yml). Placeholders: <name>. Item texts use {token}. Reload: /skyblock reload cosmetics
+# MiniMessage + style tags (style.yml). Placeholders: <name>. Item texts use {placeholder}. Reload: /skyblock reload cosmetics
 # Format (docs/UI_STYLE.md §3): success/error marks + gray text, values in <c:value>, clicks in <c:action>.
 
 rarity:

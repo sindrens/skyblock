@@ -26,7 +26,7 @@ categories:
     status: active
     slot: 13
     name: "<c:flame><bold>The Depths"
-    lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and tokens."]
+    lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and crystals."]
     topics: [depths]
   economy:
     icon: emerald
@@ -446,7 +446,7 @@ topics:
       - title: "<c:value>Four currencies"
         lines:
           - "<cur:money>Money</cur:money> <c:text>for almost everything,"
-          - "<cur:tokens>Tokens</cur:tokens> <c:text>from your tools, <cur:gems>Gems</cur:gems>"
+          - "<cur:crystals>Crystals</cur:crystals> <c:text>for your island, <cur:gems>Gems</cur:gems>"
           - "<c:text>for premium items and <cur:shards>Shards</cur:shards> <c:text>for"
           - "<c:text>the Black Market. See them: <c:value>/bal</c:value>"
       - title: "<c:value>Paying players"
@@ -458,7 +458,7 @@ topics:
       - title: "<c:value>What can be paid"
         lines:
           - "<c:text>Money and shards can be paid."
-          - "<c:text>Gems stay with you."
+          - "<c:text>Gems and crystals stay with you."
           - "<c:text>Payments can't be undone, so check"
           - "<c:text>the name before you confirm."
       - title: "<c:value>Your history"

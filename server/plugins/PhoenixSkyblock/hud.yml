@@ -16,8 +16,8 @@ scoreboard:
 values:
   # Placeholder key that gives the formatted money balance (shows a dash while no module provides it).
   money: balance_formatted
-  # Placeholder key for the formatted token balance.
-  tokens: tokens_formatted
+  # Placeholder key for the formatted island crystals balance.
+  crystals: crystals_formatted
   # Placeholder key for the formatted gem balance.
   gems: gems_formatted
   # Placeholder key for the island level.
@@ -26,4 +26,4 @@ values:
   island-rank: island_rank
   # Placeholder key for the current objective (tutorial/quests).
   objective: objective
-config-version: 1
+config-version: 2

@@ -8,7 +8,7 @@ Each phase has its own detailed plan. A phase is split into **milestones**; ever
 | 1 | [PHASE-1-CORE.md](PHASE-1-CORE.md) | The network feel: spawn, teleports, chat + ranks everywhere, scoreboard, tab, nametags, `/menu`, `/help`, `/settings`, punishments, staff mode, **staff log viewer**, reports, `/admin` |
 | 2 | [PHASE-2-ISLANDS.md](PHASE-2-ISLANDS.md) | Islands: grid, creation, protection, members/roles, visiting, warps, island menu, stats tracking, admin tools |
 | 3 | [PHASE-3-ECONOMY.md](PHASE-3-ECONOMY.md) | Currencies + ledger, `/pay`, notes, banks + interest, selling + dynamic prices, builder shop, auction house, secure trade, economy dashboard |
-| 4 | [PHASE-4-DEPTHS.md](PHASE-4-DEPTHS.md) | Tools (starter kit, Forge, living tools, blueprints, skins), per-player ore/log blocks, satchel, mine/forest/combat tiers, skill core (XP/levels), tokens, `/dungeon` |
+| 4 | [PHASE-4-DEPTHS.md](PHASE-4-DEPTHS.md) | Tools (starter kit, Forge, living tools, blueprints, skins), per-player ore/log blocks, satchel, mine/forest/combat tiers, skill core (XP/levels), crystals, `/dungeon` |
 
 Later phases (5+): progression (pillars, island level, `/is upgrade`), skills perks/sets/enchants, island production + outposts, PvE/bosses/pets, conquest/events, rewards/crates/quests, store/ranks/Discord, seasons, balance + launch. They get the same level of detail before they start.
 
