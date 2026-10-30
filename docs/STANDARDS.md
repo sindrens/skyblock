@@ -65,6 +65,7 @@ See `DESIGN.md` §14 for the decided list. Everything else is custom.
 - **Main thread is sacred:** all database and file I/O is async. Target: the server stays at 20 TPS / MSPT < 40 at 300 players. Profile with spark.
 - **Database:** MySQL/MariaDB via HikariCP. Versioned migrations. Player and island data cached with write-behind.
 - **No silent failures:** log with context, and fail loudly in development.
+- **Crash safety for items (SECFIX1):** a crash may lose, never duplicate. Inventory to database: take the items, then `PlayerSaves.commitAfterSave(player, ...)` (saves the player file, then writes; a failed save skips the write). Database to inventory: remove the row first, give, then `PlayerSaves.save(player, ...)`. Restores give back only what was really taken, once. Value checks that fail (sanctions) fail closed.
 - Small classes, clear names, Javadoc on public APIs.
 - Conventional commits: `feat(island): ...`, `fix(economy): ...`, `test: ...`, `docs: ...`.
 
