@@ -9,7 +9,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | Command | Description | Permission | Status |
 |---|---|---|---|
 | `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: the **island menu** (M2.5, see below; `/is home` teleports) | `skyblock.island` (everyone) | ✅ |
-| `/is home [home]` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `home.warmup-seconds`). With a name: one of your own homes (ISL2, tab completes them) | `skyblock.island` | ✅ |
+| `/is home [home]` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `teleport.yml → island-home.warmup-seconds`). With a name: one of your own homes (ISL2, tab completes them) | `skyblock.island` | ✅ |
 | `/is setmyhome [name]` | ISL2: set your own home on your island where you stand (inside the border, safe spot, Y 0-256). Every member has `homes.per-member` (1), more from masteries later; the same name again moves it. Name default `homes.default-name` (`my`) | `skyblock.island` | ✅ |
 | `/is go` | Same as `/is home` (your island is the one you're a member of; visiting others is `/is visit`) | `skyblock.island` | ✅ |
 | `/is sethome` | Set the island home where you stand: Leader, Admin, Mod; inside your border, safe spot, Y 0-256 | `skyblock.island` | ✅ |
@@ -31,7 +31,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is invites` | ISL2: invites you received (click: Accept / Deny) and invites your island sent (click: cancel, Leader/Admin/Mod; confirm). Refreshes every 2 s | `skyblock.island` | ✅ |
 | `/is settings [setting] [on\|off\|value]` | ISL2: the island settings menu; with a setting name it changes it right away (no value: toggles flip, weather/time go to the next value). Who may change: the `settings` role permission (Leader + Admin by default); every member can look. Tab completes settings and, after one, its values | `skyblock.island` | ✅ |
 | `/is disband` | Leader only: confirm screen (what is lost, members removed, creation cooldown), then type `disband` in chat (`disband.confirm-word`, `cancel` keeps it). The island is removed for good: members and coop players are removed and told, everyone on it is sent to spawn, the slot is cleared and reused. New island after `creation.cooldown-hours` (24 h) | `skyblock.island` | ✅ |
-| `/is visit [player]` | No name: the **visit browser** (Most visited, Top rated, Most liked, Newest; click an island to visit). With a name (any member of that island, online or offline): teleport to that island's home after a safe-spot check and `visiting.warmup-seconds` (3 s). Your own island = home | `skyblock.island` | ✅ |
+| `/is visit [player]` | No name: the **visit browser** (Most visited, Top rated, Most liked, Newest; click an island to visit). With a name (any member of that island, online or offline): teleport to that island's home after a safe-spot check and `teleport.yml → island-visit.warmup-seconds` (3 s; `/is warp`: `island-warp.*`). Your own island = home | `skyblock.island` | ✅ |
 | `/is lock` / `/is unlock` | Leader/Mod: only members and coop players can enter a locked island; locking sends visitors on it to spawn. Locked islands are hidden in the browsers | `skyblock.island` | ✅ |
 | `/is expel <player>` | Leader/Mod: send a visitor on your island to spawn (tab: visitors on your island) | `skyblock.island` | ✅ |
 | `/is ban <player>` / `/is unban <player>` | Leader/Mod: banned players can't enter, teleport or pearl in (any teleport into the slot is refused); banned while inside = sent to spawn. Members must be kicked and coop players uncooped first. Max `visiting.max-bans` (100) | `skyblock.island` | ✅ |
@@ -140,7 +140,7 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
 - **Who enters:** members and coop players always; everyone else unless banned (checked first) or the island is locked.
   Staff with `skyblock.island.visit.bypass` (helper and up), the `/is bypass` toggle or spectator mode ignore locks and
   bans. Enforced on every teleport into an island's slot (commands, `/tpa`, ender pearls, chorus fruit, plugins: the
-  essentials TeleportService guard plus a teleport listener), when flying in across the void (stopped at the slot edge)
+  core TeleportService guard plus a teleport listener), when flying in across the void (stopped at the slot edge)
   and on login (sent to spawn).
 - **Member alerts** (chat, each a `/settings` toggle in Social, all on): someone tried to visit while locked (with an
   [Unlock] button), a visitor arrived, a visitor left. The same visitor is announced at most every

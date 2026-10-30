@@ -53,3 +53,22 @@ style:
     stay: 50
     fade-out: 15
   action-bar: "<c:ember><sym:sparkle></c:ember> <c:text>Action bar preview <c:muted><sym:dot></c:muted> <cur:money>$1.2M</cur:money>"
+
+# Teleports (F4): one warmup for /spawn, /tpa, /is home, /is visit, /is warp and /dungeon (settings in teleport.yml).
+# <destination> = where the player goes, <seconds> = warmup left, <time> = cooldown/combat time left,
+# <retry> = the [Try again] click when the feature offers one (else empty).
+teleport:
+  warmup: "<prefix><c:text>Teleporting to <c:value><destination></c:value> in <c:value><seconds>s</c:value>. Don't move."
+  countdown: "<c:ember><sym:time></c:ember> <c:text>Teleporting to <c:value><destination></c:value> in <c:value><seconds></c:value>..."
+  cancelled:
+    moved: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you moved.<retry>"
+    damage: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you got hit.<retry>"
+    combat: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you're in combat.<retry>"
+    frozen: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you were frozen by staff."
+    world: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you changed worlds.<retry>"
+  retry: " <click:run_command:'<command>'><hover:show_text:'<c:text>Run <command>'><c:action>[Try again]</c:action></hover></click>"
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't teleport you to <c:value><destination></c:value>. Try again."
+  unsafe: "<prefix><c:error><sym:cross></c:error> <c:text>No safe spot to land at <c:value><destination></c:value>. Try again later."
+  cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Slow down. Try again in <c:value><time></c:value>."
+  in-combat: "<prefix><c:error><sym:cross></c:error> <c:text>You can't teleport in combat. Wait <c:value><time></c:value>."
+  frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't teleport while frozen."

@@ -7,11 +7,7 @@ no-permission-others: "<prefix><c:error><sym:cross></c:error> <c:text>You can't 
 needs-player: "<prefix><c:error><sym:cross></c:error> <c:text>Name a player when using this from the console."
 cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Slow down. Try again in <c:value><time></c:value>."
 
-teleport:
-  warmup: "<prefix><c:text>Teleporting to <c:value><destination></c:value> in <c:value><seconds>s</c:value>. Don't move."
-  countdown: "<c:muted><sym:time></c:muted> <c:text>Teleporting in <c:value><seconds></c:value>..."
-  cancelled: "<prefix><c:error><sym:cross></c:error> <c:text>Teleport cancelled: you moved or got hit."
-  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't teleport you to <c:value><destination></c:value>. Try again."
+# Teleport warmup, countdown, cancel and failure texts are shared by every module: messages/core.yml → teleport.*
 
 spawn:
   arrived: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to <c:value>spawn</c:value>."

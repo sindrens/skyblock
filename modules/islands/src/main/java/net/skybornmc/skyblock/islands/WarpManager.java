@@ -490,7 +490,8 @@ final class WarpManager implements Listener {
         String destination = module.raw("warp.destination").replace("<warp>", warp.name()).replace("<island>", islands.displayName(island));
         boolean count = role == null && !VisitManager.hidden(player);
         // The visit counts once the player really arrived (a cancelled warmup never counts).
-        visits.teleportVisitor(player, island, target, destination, count ? () -> countVisit(player, island, warp) : null);
+        visits.teleportVisitor(player, island, target, destination, net.skybornmc.skyblock.common.teleport.TeleportReason.ISLAND_WARP,
+                count ? () -> countVisit(player, island, warp) : null);
     }
 
     private void countVisit(Player player, Island island, IslandWarp warp) {

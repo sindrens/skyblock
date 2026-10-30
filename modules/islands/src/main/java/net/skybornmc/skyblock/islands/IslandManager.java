@@ -11,7 +11,9 @@ import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
-import net.skybornmc.skyblock.essentials.TeleportService;
+import net.skybornmc.skyblock.common.teleport.TeleportOptions;
+import net.skybornmc.skyblock.common.teleport.TeleportReason;
+import net.skybornmc.skyblock.common.teleport.TeleportService;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -1069,27 +1071,16 @@ final class IslandManager implements IslandService {
 
     // ------------------------------------------------------------------ helpers
 
-    /** Teleport through the essentials TeleportService (guards, warmup, /back) when present. */
+    /** Teleport through the core TeleportService (guards, warmup {@code teleport.yml → island-home.*}, /back). */
     void teleport(Player player, Location target, boolean instant, Runnable onArrive) {
-        String destination = module.raw("home.destination");
         player.setFallDistance(0);
-        Optional<TeleportService> teleports = core.services().optional(TeleportService.class);
-        if (teleports.isPresent()) {
-            if (instant) {
-                teleports.get().now(player, target, destination, onArrive);
-            } else {
-                teleports.get().teleport(player, target, config.homeWarmupSeconds, destination, onArrive);
-            }
-            return;
+        TeleportService teleports = core.services().get(TeleportService.class);
+        TeleportOptions options = TeleportOptions.to(module.raw("home.destination"), onArrive);
+        if (instant) {
+            teleports.now(player, target, TeleportReason.ISLAND_HOME, options);
+        } else {
+            teleports.request(player, target, TeleportReason.ISLAND_HOME, options);
         }
-        player.teleportAsync(target, PlayerTeleportEvent.TeleportCause.COMMAND).thenAcceptAsync(ok -> {
-            if (ok) {
-                core.sounds().play(player, "teleport");
-                onArrive.run();
-            } else {
-                msg.send(player, "error.teleport");
-            }
-        }, main);
     }
 
     void fail(Player player, String key, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver... placeholders) {

@@ -90,14 +90,7 @@ public final class DepthsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ /dungeon (M4.6)
 
-    @Setting(path = "dungeon.warmup-seconds", desc = "/dungeon: seconds to stand still before the teleport (0 = instant; skyblock.depths.bypass skips it).", min = 0, max = 30)
-    public int dungeonWarmupSeconds = 3;
-
-    @Setting(path = "dungeon.cancel-on-move", desc = "/dungeon: moving to another block cancels the warmup.")
-    public boolean dungeonCancelOnMove = true;
-
-    @Setting(path = "dungeon.cancel-on-damage", desc = "/dungeon: taking damage cancels the warmup.")
-    public boolean dungeonCancelOnDamage = true;
+    // Warmup and cancel rules of /dungeon moved to teleport.yml (F4: dungeon.*, cancel.*).
 
     @Setting(path = "dungeon.bar-length", desc = "/dungeon: segments of the progress bar on locked tiers.", min = 1, max = 20)
     public int dungeonBarLength = 10;

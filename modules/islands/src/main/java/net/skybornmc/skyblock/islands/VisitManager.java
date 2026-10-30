@@ -13,7 +13,9 @@ import net.skybornmc.skyblock.common.settings.SettingToggle;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Scheduler;
-import net.skybornmc.skyblock.essentials.TeleportService;
+import net.skybornmc.skyblock.common.teleport.TeleportOptions;
+import net.skybornmc.skyblock.common.teleport.TeleportReason;
+import net.skybornmc.skyblock.common.teleport.TeleportService;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -427,7 +429,7 @@ final class VisitManager implements Listener {
             return;
         }
         Location target = new Location(world, home.x(), home.y(), home.z(), home.yaw(), home.pitch());
-        teleportVisitor(player, island, target, islands.displayName(island), null);
+        teleportVisitor(player, island, target, islands.displayName(island), TeleportReason.ISLAND_VISIT, null);
     }
 
     /**
@@ -457,10 +459,10 @@ final class VisitManager implements Listener {
 
     /**
      * Safe-spot check at {@code target} (the nearest safe spot inside the island, else refused), then the teleport with
-     * {@code visiting.warmup-seconds} through the essentials TeleportService (its guard re-checks bans and locks when the
-     * warmup ends).
+     * the reason's warmup ({@code teleport.yml → island-visit.* / island-warp.*}) through the core TeleportService (its
+     * guard re-checks bans and locks when the warmup ends; the safe spot is checked again on arrival).
      */
-    void teleportVisitor(Player player, Island island, Location target, String destination, Runnable onArrive) {
+    void teleportVisitor(Player player, Island island, Location target, String destination, TeleportReason reason, Runnable onArrive) {
         target.getWorld().getChunkAtAsync(target).thenAcceptAsync(chunk -> {
             if (!player.isOnline()) {
                 return;
@@ -472,18 +474,11 @@ final class VisitManager implements Listener {
                 return;
             }
             player.setFallDistance(0);
-            if (teleports != null) {
-                teleports.teleport(player, safe, config().visitWarmupSeconds, destination, onArrive);
-                return;
-            }
-            player.teleportAsync(safe, PlayerTeleportEvent.TeleportCause.COMMAND).thenAcceptAsync(ok -> {
-                if (ok) {
-                    core.sounds().play(player, "teleport");
-                    if (onArrive != null) {
-                        onArrive.run();
-                    }
-                }
-            }, main);
+            core.services().get(TeleportService.class).request(player, safe, reason, TeleportOptions.builder()
+                    .destination(destination).onArrive(onArrive)
+                    .safe(at -> SafeSpots.isSafe(at) ? Optional.of(at) : SafeSpots.nearest(at, island.bounds(),
+                            config().safeSearchRadius, config().minBuildY, config().maxBuildY))
+                    .build());
         }, main);
     }
 

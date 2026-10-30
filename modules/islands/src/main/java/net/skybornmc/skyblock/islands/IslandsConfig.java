@@ -47,9 +47,6 @@ public final class IslandsConfig extends ModuleConfig {
             "lava_bucket:1", "ice:1", "bone_meal:2", "bread:16", "oak_sapling:2", "sugar_cane:1", "cactus:1",
             "melon_seeds:1", "pumpkin_seeds:1");
 
-    @Setting(path = "home.warmup-seconds", desc = "Seconds to stand still before /is home teleports (0 = instant).", min = 0, max = 30)
-    public int homeWarmupSeconds = 0;
-
     @Setting(path = "home.search-radius", desc = "How far (blocks) to look for a safe spot when the home is blocked or over the void.",
             min = 0, max = 64)
     public int safeSearchRadius = 8;
@@ -258,10 +255,6 @@ public final class IslandsConfig extends ModuleConfig {
     public int clearStartDelaySeconds = 10;
 
     // ------------------------------------------------------------------ M2.4 visiting, warps, showcase
-
-    @Setting(path = "visiting.warmup-seconds", desc = "Seconds to stand still before /is visit and /is warp teleport (0 = instant).",
-            min = 0, max = 30)
-    public int visitWarmupSeconds = 3;
 
     @Setting(path = "visiting.max-bans", desc = "Most players one island can ban.", min = 1, max = 1000)
     public int maxBans = 100;

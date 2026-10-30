@@ -36,7 +36,7 @@ Ranks (luckperms.txt): builder = `/i /give /gm c+s /fly /speed /time /weather /t
 | `/build` | Build mode in protected worlds (spawn); without it builders can't break anything by accident | `skyblock.build.spawn` | ✅ |
 | `/setspawn` | Set the spawn point where you stand (saved to `worlds.yml`) | `skyblock.admin.setspawn` | ✅ |
 
-- `/spawn` is now instant (`essentials.yml → spawn.warmup-seconds: 0`).
+- `/spawn` is now instant (`teleport.yml → spawn.warmup-seconds: 0`; every warmup and cooldown lives in `teleport.yml` since F4).
 - Join/quit messages only for players with `skyblock.join.message` (staff ranks now, donor ranks later). First-join welcome + broadcast with join number for everyone.
 - Menu item: Nether Star in hotbar slot 9, runs `/menu`; service `MenuItem` (`setEnabled(player, bool)` for `/settings`).
 - Spawn protection in `protection.worlds`: no build/break, whitelisted blocks only, no damage/hunger/drops/natural mobs/explosions, void → spawn.

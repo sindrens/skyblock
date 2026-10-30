@@ -131,7 +131,6 @@ public final class DepthsModule implements SkyblockModule {
 
         dungeon = new Dungeon(core, config, zones, gates, msg);
         dungeon.satchel(satchel, satchel::menu);
-        dungeon.start();
         registerPlaceholders();
 
         Arg<Player> target = Args.onlinePlayer("player");
@@ -260,9 +259,6 @@ public final class DepthsModule implements SkyblockModule {
         }
         if (dropItems != null) {
             dropItems.unregister();
-        }
-        if (dungeon != null) {
-            dungeon.stop();
         }
         if (gates != null) {
             HandlerList.unregisterAll(gates);
