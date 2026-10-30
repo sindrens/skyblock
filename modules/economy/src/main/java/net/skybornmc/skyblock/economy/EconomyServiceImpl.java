@@ -147,6 +147,44 @@ final class EconomyServiceImpl implements EconomyService {
         });
     }
 
+    /** All transactions (and the guard) in one database transaction; cache and audit are updated per leg on success. */
+    @Override
+    public CompletableFuture<net.skybornmc.skyblock.common.economy.BatchResult> executeBatch(List<Transaction> transactions,
+                                                                                             net.skybornmc.skyblock.common.economy.TxGuard guard) {
+        List<Transaction> txs = new ArrayList<>(transactions.size());
+        for (int i = 0; i < transactions.size(); i++) {
+            Transaction tx = normalize(transactions.get(i));
+            String problem = tx.problem();
+            if (problem != null) {
+                log.warning("Economy: refused invalid batch transaction (" + problem + "): " + tx);
+                return CompletableFuture.completedFuture(net.skybornmc.skyblock.common.economy.BatchResult.failed(TxResult.Status.INVALID, i));
+            }
+            txs.add(tx);
+        }
+        CompletableFuture<net.skybornmc.skyblock.common.economy.BatchResult> future;
+        try {
+            future = store.executeBatch(txs, guard == null ? null : guard::holds);
+        } catch (RuntimeException e) {
+            future = CompletableFuture.failedFuture(e);
+        }
+        return future.handle((result, error) -> {
+            if (error != null) {
+                log.log(Level.SEVERE, "Economy: batch of " + txs.size() + " failed and was rolled back: " + txs, Database.cause(error));
+                return net.skybornmc.skyblock.common.economy.BatchResult.failed(TxResult.Status.ERROR, -1);
+            }
+            if (result.ok()) {
+                for (int i = 0; i < txs.size(); i++) {
+                    Transaction tx = txs.get(i);
+                    TxResult r = result.results().get(i);
+                    applyToCache(tx.from(), tx.currency(), r.fromBalance(), r.ledgerId());
+                    applyToCache(tx.to(), tx.currency(), r.toBalance(), r.ledgerId());
+                    audit(tx.reason(), tx.actor(), tx.from(), tx.to(), tx.currency(), tx.amount(), r, tx.reference(), tx.details());
+                }
+            }
+            return result;
+        });
+    }
+
     /**
      * Staff {@code /eco set} and {@code /eco reset}: sets an exact balance (the ledger and audit get the difference).
      */

@@ -194,6 +194,109 @@ final class EconomyStore {
         });
     }
 
+    // ------------------------------------------------------------------------------------------------ batches
+
+    /** Stops a batch with a status and the index of the transaction that caused it (rolls back). */
+    private static final class BatchAbort extends RuntimeException {
+        private final transient net.skybornmc.skyblock.common.economy.BatchResult result;
+
+        BatchAbort(net.skybornmc.skyblock.common.economy.BatchResult result) {
+            super(result.status().name(), null, false, false);
+            this.result = result;
+        }
+    }
+
+    /** One account row touched by a batch, in lock order (account, then currency). */
+    private record Row(AccountRef account, Currency currency) implements Comparable<Row> {
+        @Override
+        public int compareTo(Row o) {
+            int byAccount = AccountRef.LOCK_ORDER.compare(account, o.account);
+            return byAccount != 0 ? byAccount : currency.compareTo(o.currency);
+        }
+    }
+
+    /**
+     * Several transactions plus an optional guard in one database transaction (secure trade). All account rows are
+     * locked up front in one global order, so batches can't deadlock with each other or with single transfers.
+     */
+    CompletableFuture<net.skybornmc.skyblock.common.economy.BatchResult> executeBatch(List<Transaction> txs, Guard guard) {
+        return db.async(c -> withRetry(() -> runBatch(c, txs, guard)));
+    }
+
+    net.skybornmc.skyblock.common.economy.BatchResult runBatch(Connection c, List<Transaction> txs, Guard guard) throws SQLException {
+        java.util.TreeSet<Row> rows = new java.util.TreeSet<>();
+        java.util.Set<String> keys = new java.util.HashSet<>();
+        for (int i = 0; i < txs.size(); i++) {
+            Transaction tx = txs.get(i);
+            if (tx.problem() != null) {
+                return net.skybornmc.skyblock.common.economy.BatchResult.failed(TxResult.Status.INVALID, i);
+            }
+            if (tx.idempotencyKey() != null && (!keys.add(tx.idempotencyKey()) || keyUsed(c, tx.idempotencyKey()))) {
+                return net.skybornmc.skyblock.common.economy.BatchResult.failed(TxResult.Status.DUPLICATE, i);
+            }
+            if (tx.from() != null) {
+                rows.add(new Row(tx.from(), tx.currency()));
+            }
+            if (tx.to() != null) {
+                rows.add(new Row(tx.to(), tx.currency()));
+            }
+        }
+        if (txs.isEmpty() && guard == null) {
+            return net.skybornmc.skyblock.common.economy.BatchResult.success(List.of());
+        }
+        for (Row row : rows) {
+            ensureAccount(c, row.account(), row.currency());
+        }
+        boolean auto = c.getAutoCommit();
+        c.setAutoCommit(false);
+        try {
+            if (guard != null && !guard.holds(c)) {
+                throw new BatchAbort(net.skybornmc.skyblock.common.economy.BatchResult.failed(TxResult.Status.DUPLICATE, -1));
+            }
+            for (Row row : rows) {
+                lock(c, row.account(), row.currency());
+            }
+            long now = clock.getAsLong();
+            List<TxResult> results = new ArrayList<>(txs.size());
+            for (int i = 0; i < txs.size(); i++) {
+                Transaction tx = txs.get(i);
+                Currency currency = tx.currency();
+                if (tx.from() != null && Sql.update(c, DEBIT, tx.amount(), now, tx.from().type().key(), tx.from().owner(),
+                        currency.key(), tx.amount()) == 0) {
+                    throw new BatchAbort(net.skybornmc.skyblock.common.economy.BatchResult.failed(TxResult.Status.INSUFFICIENT_FUNDS, i));
+                }
+                if (tx.to() != null && Sql.update(c, CREDIT, tx.amount(), now, tx.to().type().key(), tx.to().owner(),
+                        currency.key(), Long.MAX_VALUE - tx.amount()) == 0) {
+                    throw new BatchAbort(net.skybornmc.skyblock.common.economy.BatchResult.failed(TxResult.Status.OVERFLOW, i));
+                }
+                Long fromBalance = tx.from() == null ? null : read(c, tx.from(), currency);
+                Long toBalance = tx.to() == null ? null : read(c, tx.to(), currency);
+                long id;
+                try {
+                    id = ledger(c, now, currency, tx.from(), tx.to(), tx.amount(), fromBalance, toBalance, tx.reason(),
+                            tx.reference(), tx.idempotencyKey(), tx.actor());
+                } catch (Abort duplicate) {
+                    throw new BatchAbort(net.skybornmc.skyblock.common.economy.BatchResult.failed(duplicate.result.status(), i));
+                }
+                results.add(new TxResult(TxResult.Status.SUCCESS, id, fromBalance, toBalance));
+            }
+            c.commit();
+            return net.skybornmc.skyblock.common.economy.BatchResult.success(results);
+        } catch (BatchAbort abort) {
+            c.rollback();
+            return abort.result;
+        } catch (SQLException | RuntimeException e) {
+            try {
+                c.rollback();
+            } catch (SQLException rollback) {
+                e.addSuppressed(rollback);
+            }
+            throw e;
+        } finally {
+            c.setAutoCommit(auto);
+        }
+    }
+
     SetOutcome runSet(Connection c, AccountRef account, Currency currency, long value, String reason, String reference, Actor actor)
             throws SQLException {
         if (value < 0 || !TxReason.isValid(reason)) {

@@ -1,0 +1,224 @@
+# Secure trade (M3.7): /trade <player>, /trade accept|deny [player]. MiniMessage + style tags (style.yml).
+# Amount placeholders (<amount>, <balance>, <money>) are plain text like $1,500 or ✧ 20.
+# Reload: /skyblock reload trade
+
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Your items and money are safe; try again soon."
+
+settings:
+  requests:
+    name: "<c:value>Trade requests"
+    lore: ["<c:text>Let players send you", "<c:text>trade requests."]
+
+picker:
+  title: "Trade with"
+
+currency:
+  money: "Money"
+  crystals: "Crystals"
+  gems: "Gems"
+  shards: "Shards"
+
+request:
+  sent: "<prefix><c:success><sym:check></c:success> <c:text>Trade request sent to <c:value><player></c:value><c:text>. It expires in <seconds>s."
+  received: "<prefix><c:value><player></c:value> <c:text>wants to trade. <click:run_command:'/trade accept'><hover:show_text:'<c:text>Accept the trade'><c:success>[Accept]</c:success></hover></click> <click:run_command:'/trade deny'><hover:show_text:'<c:text>Deny the trade'><c:error>[Deny]</c:error></hover></click> <c:muted>or type /trade accept"
+  hint-accept: "<prefix><c:value><player></c:value> <c:text>asked you to trade: <c:value>/trade accept</c:value>"
+  already: "<prefix><c:error><sym:cross></c:error> <c:text>You already asked <c:value><player></c:value><c:text>. Wait for an answer."
+  denied: "<prefix><c:text>You denied <c:value><player></c:value><c:text>'s trade request."
+  denied-other: "<prefix><c:value><player></c:value> <c:text>denied your trade request."
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>Nobody asked you to trade."
+  none-from: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>didn't ask you to trade."
+  which: "<prefix><c:text>Several players asked: <c:value><names></c:value><c:text>. Type <c:value>/trade <action> name</c:value><c:text>."
+  expired: "<prefix><c:muted>Your trade request to <player> expired."
+
+# Why a request or accept was refused.
+rules:
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't trade with yourself."
+  you-busy: "<prefix><c:error><sym:cross></c:error> <c:text>You are already trading. Type <c:value>/trade</c:value> <c:text>to open it."
+  target-busy: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is already trading."
+  frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't trade while frozen."
+  target-frozen: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't trade right now."
+  staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't trade in staff mode."
+  target-staff-mode: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't trade right now."
+  combat: "<prefix><c:error><sym:cross></c:error> <c:text>You are in combat. Try again in <c:value><time></c:value><c:text>."
+  target-combat: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is in combat. Try again in <c:value><time></c:value><c:text>."
+  other-world: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is in another world."
+  too-far: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is too far away. Get within <c:value><blocks></c:value> <c:text>blocks."
+  requests-off: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>doesn't accept trade requests."
+  cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Wait <c:value><time></c:value> <c:text>before the next request."
+  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>Your profiles can't trade with each other."
+
+start:
+  started: "<prefix><c:success><sym:check></c:success> <c:text>Trading with <c:value><player></c:value><c:text>. Tap items in your inventory to offer them."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>The trade couldn't start. Try again."
+
+# Why an item can't be offered.
+items:
+  no-item: "<prefix><c:error><sym:cross></c:error> <c:text>Tap an item in your inventory."
+  dupe-flagged: "<prefix><c:error><sym:cross></c:error> <c:text>This item is flagged as a possible dupe. Ask staff."
+  starter: "<prefix><c:error><sym:cross></c:error> <c:text>Starter kit items can't be traded."
+  blocked: "<prefix><c:error><sym:cross></c:error> <c:text>This item can't be traded."
+  filled-container: "<prefix><c:error><sym:cross></c:error> <c:text>Empty it first. Shulker boxes and bundles must be empty."
+
+offer:
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>You can offer up to <c:value><max></c:value> <c:text>stacks."
+
+money:
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>No currency can be traded right now."
+  not-tradeable: "<prefix><c:error><sym:cross></c:error> <c:text>That currency can't be traded."
+  negative: "<prefix><c:error><sym:cross></c:error> <c:text>The amount can't be below 0."
+  too-much: "<prefix><c:error><sym:cross></c:error> <c:text>You only have <c:value><balance></c:value><c:text>."
+  new-account: "<prefix><c:error><sym:cross></c:error> <c:text>New players can offer money after <c:value><hours></c:value> <c:text>of play. <c:value><time></c:value> <c:text>left."
+
+confirm:
+  other-ready: "<prefix><c:value><player></c:value> <c:text>confirmed. Check the trade and confirm too."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>An item is still moving. Try again in a second."
+  empty: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing is offered yet."
+  no-space: "<prefix><c:error><sym:cross></c:error> <c:text>Make room in your inventory for what you get first."
+  money-short: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have <c:value><amount></c:value> <c:text>any more. Lower your offer."
+  stopped: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is short on money or inventory space. Confirm again when it's fixed."
+
+swap:
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Trade with <c:value><player></c:value> <c:text>done. You got <c:value><items></c:value> <c:text>item stack(s) and <c:value><money></c:value><c:text>."
+  no-money: "no money"
+  insufficient: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>doesn't have the money any more. Nothing changed; confirm again."
+  overflow: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't hold that much money. Nothing changed."
+
+# Why a trade ended. <player> = who caused it. Items always go back to their owner.
+cancel:
+  generic: "<prefix><c:error><sym:cross></c:error> <c:text>The trade was cancelled. Your items are back."
+  cancelled:
+    you: "<prefix><c:text>You cancelled the trade. Your items are back."
+    other: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>cancelled the trade. Your items are back."
+  closed:
+    you: "<prefix><c:text>You closed the trade. Your items are back."
+    other: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>closed the trade. Your items are back."
+  quit: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended: <c:value><player></c:value> <c:text>left. Your items are back."
+  damage: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended because of combat. Your items are back."
+  teleport: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended because of a teleport. Your items are back."
+  profile: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended because of a profile switch. Your items are back."
+  frozen: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended: <c:value><player></c:value> <c:text>was frozen. Your items are back."
+  staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended: staff mode. Your items are back."
+  distance: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended: you moved too far apart. Your items are back."
+  timeout: "<prefix><c:error><sym:cross></c:error> <c:text>The trade took too long and ended. Your items are back."
+  changed: "<prefix><c:error><sym:cross></c:error> <c:text>The trade changed while finishing and was cancelled. Nothing was swapped."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>The trade failed and was cancelled. Nothing was swapped; your items are back."
+  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>Your profiles can't trade with each other."
+
+delivery:
+  received: "<prefix><c:success><sym:check></c:success> <c:value><count></c:value> <c:text>trade item(s) put in your inventory."
+  full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full: <c:value><count></c:value> <c:text>trade item(s) are waiting. Make room and they come in a moment."
+
+menu:
+  title: "Trade » <player>"
+  info:
+    - "<c:text>Tap items in your inventory to offer"
+    - "<c:text>them. Both confirm, then a short"
+    - "<c:text>countdown. Any change resets it."
+    - "<c:text>Closing this window cancels the trade."
+  you:
+    name: "<c:value>You <c:muted>(<player>)"
+    lore:
+      - "<c:text>Items: <c:value><items>"
+      - "<c:text>Money: <money>"
+      - "<ready>"
+  them:
+    name: "<c:value><player>"
+    lore:
+      - "<c:text>Items: <c:value><items>"
+      - "<c:text>Money: <money>"
+      - "<ready>"
+  state-ready: "<c:success><sym:check> Confirmed"
+  state-not-ready: "<c:muted>Not confirmed"
+  no-money: "<c:muted>none"
+  money-value: "<c:value><value>"
+  status:
+    open:
+      name: "<c:value>Waiting"
+      lore:
+        - "<c:text>When both confirm, the trade"
+        - "<c:text>happens after <c:value><seconds>s</c:value><c:text>."
+    countdown:
+      name: "<c:success>Trading in <seconds>..."
+      lore:
+        - "<c:text>Any change stops the countdown."
+    completing:
+      name: "<c:success>Swapping..."
+      lore:
+        - "<c:text>Nothing can change now."
+    ended:
+      name: "<c:muted>Trade over"
+      lore:
+        - "<c:text>You can close this window."
+  cancel:
+    name: "<c:error>Cancel trade"
+    lore:
+      - "<c:text>Ends the trade. Every item"
+      - "<c:text>goes back to its owner."
+      - ""
+      - "<c:action><sym:bullet> Click to cancel"
+  my-money:
+    name: "<c:value>Your money offer"
+    lore:
+      - "<c:text>Now: <money>"
+      - ""
+      - "<c:action><sym:bullet> Click to change"
+  my-money-locked:
+    name: "<c:value>Your money offer"
+    lore:
+      - "<c:text>Now: <money>"
+  my-ready:
+    name: "<c:success><sym:check> You confirmed"
+    lore:
+      - "<c:text>Waiting for the other player."
+      - ""
+      - "<c:action><sym:bullet> Click to take it back"
+  my-not-ready:
+    name: "<c:warning>Confirm trade"
+    lore:
+      - "<c:text>Check both sides first."
+      - "<c:text>Any change resets this."
+      - ""
+      - "<c:action><sym:bullet> Click to confirm"
+  their-ready:
+    name: "<c:success><sym:check> <player> confirmed"
+    lore:
+      - "<c:text>They agree to this trade."
+  their-not-ready:
+    name: "<c:muted><player> hasn't confirmed"
+    lore:
+      - "<c:text>Waiting for them."
+  their-money:
+    name: "<c:value><player>'s money offer"
+    lore:
+      - "<c:text>Now: <money>"
+  storing:
+    name: "<c:muted>Adding..."
+    lore:
+      - "<c:text>The item is being stored."
+  empty-mine:
+    name: "<c:muted>Empty slot"
+    lore:
+      - "<c:text>Tap an item in your inventory"
+      - "<c:text>to offer it."
+  empty-locked:
+    name: "<c:muted>Empty slot"
+    lore:
+      - "<c:text>Nothing can change now."
+  unreadable:
+    name: "<c:error>Unreadable item"
+    lore:
+      - "<c:text>Ask staff; it is safe in the database."
+  take-back:
+    - ""
+    - "<c:action><sym:bullet> Click to take back"
+
+money-menu:
+  title: "Money offer"
+  picker-title: "Offer <currency>"
+  currency:
+    name: "<c:value><currency>"
+    lore:
+      - "<c:text>Your offer: <c:value><offer>"
+      - "<c:text>You have: <c:value><balance>"
+      - ""
+      - "<c:action><sym:bullet> Click to change"
