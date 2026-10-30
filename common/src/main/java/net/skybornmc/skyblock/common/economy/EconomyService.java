@@ -40,6 +40,16 @@ public interface EconomyService {
         return guard == null ? execute(transaction) : CompletableFuture.completedFuture(TxResult.of(TxResult.Status.ERROR));
     }
 
+    /**
+     * Runs several transactions and an optional {@code guard} in <b>one</b> database transaction: all of them commit or
+     * none does (secure trade M3.7: both sides' money in one go, together with the item escrow switch). Every
+     * transaction still writes its own ledger and audit row and should carry its own idempotency key. An empty list
+     * with a guard runs just the guard. Implementations without batch support refuse with ERROR, never run part of it.
+     */
+    default CompletableFuture<BatchResult> executeBatch(java.util.List<Transaction> transactions, TxGuard guard) {
+        return CompletableFuture.completedFuture(BatchResult.failed(TxResult.Status.ERROR, -1));
+    }
+
     /** Player to player payment helper (reason {@code pay} by default for {@code /pay}); both ids are profile keys. */
     default CompletableFuture<TxResult> transfer(UUID from, UUID to, Currency currency, long amount, String reason, Actor actor) {
         return execute(Transaction.transfer(AccountRef.player(from), AccountRef.player(to), currency, amount, reason).actor(actor));
