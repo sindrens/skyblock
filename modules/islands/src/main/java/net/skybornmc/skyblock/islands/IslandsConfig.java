@@ -99,8 +99,12 @@ public final class IslandsConfig extends ModuleConfig {
             max = 8)
     public double returnEntitiesMargin = 1.5;
 
+    @Setting(path = "permissions.defaults.admin", desc = "Default permissions of island admins (ISL2; between leader and mod). "
+            + "Same keys as the mod list; * = all of them. hurt-monsters and settings have their own role lists below.")
+    public List<String> defaultsAdmin = List.of("*");
+
     @Setting(path = "permissions.defaults.mod", desc = "Default permissions of island mods (keys: break, place, interact, containers, "
-            + "redstone, animals, villagers, pickup, drop, armor-stands, vehicles, fire, ender-pearls, spawners; * = all). "
+            + "redstone, animals, villagers, pickup, drop, armor-stands, vehicles, fire, ender-pearls, spawners; * = all of these). "
             + "The leader always has everything. Islands can change these (M2.3 permission menu).")
     public List<String> defaultsMod = List.of("*");
 
@@ -116,6 +120,14 @@ public final class IslandsConfig extends ModuleConfig {
             + "Islands can change this in their settings (M2.5).")
     public List<String> defaultsVisitor = List.of();
 
+    @Setting(path = "permissions.role-defaults.hurt-monsters", desc = "Roles that may hurt hostile mobs by default (owner #25; "
+            + "roles: admin, mod, member, coop, visitor). Islands change it in the permission menu.")
+    public List<String> hurtMonstersRoles = List.of("admin", "mod", "member", "coop", "visitor");
+
+    @Setting(path = "permissions.role-defaults.settings", desc = "Roles that may change /is settings by default (the leader always can; "
+            + "roles: admin, mod, member; coop players and visitors never).")
+    public List<String> settingsRoles = List.of("admin");
+
     @Setting(path = "members.start-slots", desc = "Members an island can have at the start, leader included (REVIEW B1: 4). "
             + "The Member Slots upgrade (Phase 5) raises an island's own value.", min = 1, max = 32, level = Setting.Level.OWNER)
     public int startSlots = 4;
@@ -128,8 +140,9 @@ public final class IslandsConfig extends ModuleConfig {
             + "(REVIEW A5: 3; 0 = unlimited).", min = 0, max = 100, level = Setting.Level.OWNER)
     public int maxJoinsPerSeason = 3;
 
-    @Setting(path = "members.join-cooldown-hours", desc = "Hours a player waits after joining, leaving or being kicked from an island "
-            + "before joining another one (REVIEW A5: 24; 0 = off).", min = 0, max = 720, level = Setting.Level.OWNER)
+    @Setting(path = "members.join-cooldown-hours", desc = "Hours after joining an island before the same player can join another "
+            + "one (REVIEW A5: 24; 0 = off). Counts from the last join only: leaving or being kicked doesn't restart it (owner #20).",
+            min = 0, max = 720, level = Setting.Level.OWNER)
     public int joinCooldownHours = 24;
 
     @Setting(path = "members.invite-expiry-seconds", desc = "Seconds an island invite stays valid (5 min).", min = 30, max = 3600)
@@ -249,6 +262,114 @@ public final class IslandsConfig extends ModuleConfig {
             min = 10, max = 3600)
     public int browserRefreshSeconds = 120;
 
+    // ------------------------------------------------------------------ ISL2 /is settings, island fly, personal homes
+
+    @Setting(path = "flags.defaults.mob-spawning", desc = "Default of /is settings: hostile mobs spawn naturally (spawners always work).")
+    public boolean flagMobSpawning = false;
+
+    @Setting(path = "flags.defaults.animal-spawning", desc = "Default of /is settings: animals spawn naturally.")
+    public boolean flagAnimalSpawning = true;
+
+    @Setting(path = "flags.defaults.fire-spread", desc = "Default of /is settings: fire spreads and burns blocks.")
+    public boolean flagFireSpread = false;
+
+    @Setting(path = "flags.defaults.explosions", desc = "Default of /is settings: explosions break blocks.")
+    public boolean flagExplosions = false;
+
+    @Setting(path = "flags.defaults.leaf-decay", desc = "Default of /is settings: leaves decay.")
+    public boolean flagLeafDecay = true;
+
+    @Setting(path = "flags.defaults.crop-trampling", desc = "Default of /is settings: players and mobs trample farmland.")
+    public boolean flagCropTrampling = false;
+
+    @Setting(path = "flags.defaults.notifications", desc = "Default of /is settings: members hear about visitors (each member can "
+            + "still mute them in /settings). Visitors picking up items is the visitor row of permissions.defaults.")
+    public boolean flagNotifications = true;
+
+    @Setting(path = "flags.defaults.visitor-fly", desc = "Default of /is settings: visitors with island fly may fly here.")
+    public boolean flagVisitorFly = true;
+
+    @Setting(path = "flags.defaults.weather", desc = "Default of /is settings: weather everyone on the island sees (sunny, rain, storm).")
+    public String flagWeather = "sunny";
+
+    @Setting(path = "flags.defaults.time", desc = "Default of /is settings: time everyone on the island sees (day, noon, sunset, night, "
+            + "real = the server's local clock in visiting.timezone).")
+    public String flagTime = "day";
+
+    @Setting(path = "flags.time.day-ticks", desc = "Time of day (ticks, 0-23999) shown for \"day\".", min = 0, max = 23_999)
+    public int timeDayTicks = 1000;
+
+    @Setting(path = "flags.time.noon-ticks", desc = "Time of day (ticks) shown for \"noon\".", min = 0, max = 23_999)
+    public int timeNoonTicks = 6000;
+
+    @Setting(path = "flags.time.sunset-ticks", desc = "Time of day (ticks) shown for \"sunset\".", min = 0, max = 23_999)
+    public int timeSunsetTicks = 12_000;
+
+    @Setting(path = "flags.time.night-ticks", desc = "Time of day (ticks) shown for \"night\".", min = 0, max = 23_999)
+    public int timeNightTicks = 18_000;
+
+    @Setting(path = "flags.time.real-refresh-seconds", desc = "How often the \"real\" time is updated for players on such islands.",
+            min = 5, max = 600)
+    public int timeRealRefreshSeconds = 30;
+
+    @Setting(path = "flags.weather.thunder-seconds", desc = "\"storm\": seconds between thunder sounds for players on the island "
+            + "(only they hear it; 0 = rain without thunder).", min = 0, max = 600)
+    public int stormThunderSeconds = 25;
+
+    @Setting(path = "flags.weather.thunder-sound", desc = "Sound key of the storm thunder (e.g. entity.lightning_bolt.thunder).")
+    public String stormThunderSound = "entity.lightning_bolt.thunder";
+
+    @Setting(path = "flags.weather.thunder-volume", desc = "Volume of the storm thunder (0.1-2).", min = 0.1, max = 2)
+    public double stormThunderVolume = 0.6;
+
+    @Setting(path = "fly.check-interval-ticks", desc = "How often island fly is re-checked for players in the islands world "
+            + "(permission, role, settings changes). Crossing the border is checked right away.", min = 5, max = 200)
+    public int flyCheckTicks = 20;
+
+    @Setting(path = "fly.landing-protection-seconds", desc = "After island fly is turned off (border, settings) or the player stops "
+            + "flying, the next fall within this time does no damage.", min = 0, max = 60)
+    public int flyLandingSeconds = 10;
+
+    @Setting(path = "homes.per-member", desc = "Personal homes every member has on their island (/is setmyhome); masteries add more later.",
+            min = 0, max = 20, level = Setting.Level.OWNER)
+    public int homesPerMember = 1;
+
+    @Setting(path = "homes.default-name", desc = "Name of a personal home when /is setmyhome is used without a name (/is home <name>).")
+    public String homesDefaultName = "my";
+
+    @Setting(path = "homes.name-max-length", desc = "Longest personal home name (letters, digits, _ and -).", min = 2, max = 16)
+    public int homesNameMaxLength = 16;
+
+    /** The {@code /is settings} defaults parsed from {@code flags.defaults.*} (problems = invalid values). */
+    public FlagDefaults.Result flagDefaults() {
+        java.util.Map<IslandFlag, String> map = new java.util.EnumMap<>(IslandFlag.class);
+        map.put(IslandFlag.MOB_SPAWNING, onOff(flagMobSpawning));
+        map.put(IslandFlag.ANIMAL_SPAWNING, onOff(flagAnimalSpawning));
+        map.put(IslandFlag.FIRE_SPREAD, onOff(flagFireSpread));
+        map.put(IslandFlag.EXPLOSIONS, onOff(flagExplosions));
+        map.put(IslandFlag.LEAF_DECAY, onOff(flagLeafDecay));
+        map.put(IslandFlag.CROP_TRAMPLING, onOff(flagCropTrampling));
+        map.put(IslandFlag.NOTIFICATIONS, onOff(flagNotifications));
+        map.put(IslandFlag.VISITOR_FLY, onOff(flagVisitorFly));
+        map.put(IslandFlag.WEATHER, flagWeather);
+        map.put(IslandFlag.TIME, flagTime);
+        return FlagDefaults.parse(map);
+    }
+
+    private static String onOff(boolean value) {
+        return value ? IslandFlag.ON : IslandFlag.OFF;
+    }
+
+    /** Ticks shown for a fixed {@code time} choice ({@code real} is computed by {@link IslandClock}). */
+    int timeTicks(String choice) {
+        return switch (choice) {
+            case "noon" -> timeNoonTicks;
+            case "sunset" -> timeSunsetTicks;
+            case "night" -> timeNightTicks;
+            default -> timeDayTicks;
+        };
+    }
+
     /** The default icon of a warp category (falls back to ender_pearl when the setting is empty). */
     String categoryIcon(WarpCategory category) {
         String icon = switch (category) {
@@ -268,7 +389,10 @@ public final class IslandsConfig extends ModuleConfig {
 
     /** The role defaults parsed from {@code permissions.defaults.*} (problems = unknown keys). */
     public RolePermissions.Result rolePermissions() {
-        return RolePermissions.parse(defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor);
+        java.util.Map<IslandPerm, List<String>> perPermission = new java.util.EnumMap<>(IslandPerm.class);
+        perPermission.put(IslandPerm.HURT_MONSTERS, hurtMonstersRoles);
+        perPermission.put(IslandPerm.SETTINGS, settingsRoles);
+        return RolePermissions.parse(defaultsAdmin, defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor, perPermission);
     }
 
     /** The join limits for invites and accepts (REVIEW A5, B1). */

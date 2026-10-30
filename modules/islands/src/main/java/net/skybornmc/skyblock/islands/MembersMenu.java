@@ -22,8 +22,9 @@ import java.util.UUID;
 /**
  * {@code /is members} (M2.3): one head per member (leader, mods, members by join date, then coop players) with role,
  * join date, inviter and online state. Clicking a head opens the actions the viewer may use on that player
- * ({@link MemberActionsMenu}; one plain click, Bedrock-safe). Top: island summary. Bottom row: Invite (47, leader/mod)
- * and Permissions (51, the matrix). Live: refreshes every 2 s so roles and online states stay current.
+ * ({@link MemberActionsMenu}; one plain click, Bedrock-safe). Top: island summary. Bottom row: Invites (46, ISL2),
+ * Invite (47, leader/admin/mod), Permissions (51, the matrix) and Settings (52, ISL2). Live: refreshes every 2 s so roles
+ * and online states stay current.
  */
 final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
 
@@ -34,6 +35,8 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
     static final int SLOT_SUMMARY = 4;
     static final int SLOT_INVITE = 47;
     static final int SLOT_PERMISSIONS = 51;
+    static final int SLOT_INVITES = 46;
+    static final int SLOT_SETTINGS = 52;
 
     private final IslandsModule module;
     private final IslandManager islands;
@@ -45,7 +48,7 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
         this.island = island;
     }
 
-    /** Leader first, then mods, members (each by join date), then coop players. */
+    /** Leader first, then admins, mods, members (each by join date), then coop players. */
     static List<Entry> order(Map<UUID, Role> members, Iterable<UUID> coops, java.util.function.ToLongFunction<UUID> joined) {
         List<Entry> list = new ArrayList<>();
         members.forEach((uuid, role) -> list.add(new Entry(uuid, role)));
@@ -132,6 +135,12 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
                         }));
             });
         }
+        int pending = members.invites().pendingFrom(island.id(), System.currentTimeMillis())
+                + members.invites().of(viewer.getUniqueId(), System.currentTimeMillis()).size();
+        set(SLOT_INVITES, service.item(new ItemStack(Material.PAPER), text("members.invites.name"),
+                lines("members.invites.lore", Msg.p("count", pending))), click -> openChild(new InvitesMenu(module, islands, members)));
+        set(SLOT_SETTINGS, service.item(new ItemStack(Material.REPEATER), text("members.settings.name"),
+                lines("members.settings.lore")), click -> module.islandSettings().openFor(viewer, island, this));
         set(SLOT_PERMISSIONS, service.item(new ItemStack(Material.COMPARATOR), text("members.permissions.name"),
                 lines(MemberRules.canEditPerms(viewerRole(), PermRole.MEMBER) ? "members.permissions.lore-edit" : "members.permissions.lore-view")),
                 click -> openChild(new PermissionsMenu(module, islands, island)));

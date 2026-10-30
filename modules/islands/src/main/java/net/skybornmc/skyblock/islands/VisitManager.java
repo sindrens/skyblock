@@ -49,7 +49,8 @@ import java.util.logging.Level;
 /**
  * M2.4 visiting (main thread): {@code /is visit}, lock/unlock, expel, ban/unban, rate, like, the visit browser data
  * ({@link Showcase} stats cache), entry enforcement (teleports, ender pearls, flying in, joining inside) and the member
- * notifications (visit attempt while locked, arrival, departure; each a {@code /settings} toggle). Every change is
+ * notifications (visit attempt while locked, arrival, departure; each a {@code /settings} toggle per member and, since
+ * ISL2, the island's {@code notifications} setting). Every change is
  * saved first ({@link VisitStore}), then cached, logged (category island) and announced.
  */
 final class VisitManager implements Listener {
@@ -85,6 +86,8 @@ final class VisitManager implements Listener {
     private TeleportService teleports;
     private final TeleportService.Guard guard = this::guardMessage;
     private WarpManager warps;
+    /** ISL2: told whenever a player's island slot changes ({@code null} = no island), e.g. for weather and time. */
+    private final List<java.util.function.BiConsumer<Player, Island>> presenceHooks = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     VisitManager(IslandsModule module, IslandManager islands, IslandProtection protection, VisitStore store) {
         this.module = module;
@@ -102,6 +105,11 @@ final class VisitManager implements Listener {
 
     VisitStore store() {
         return store;
+    }
+
+    /** Runs {@code hook} (main thread) every time a player enters another island's slot or leaves all of them. */
+    void onPresence(java.util.function.BiConsumer<Player, Island> hook) {
+        presenceHooks.add(hook);
     }
 
     private IslandsConfig config() {
@@ -840,6 +848,7 @@ final class VisitManager implements Listener {
         if (java.util.Objects.equals(before, nowId)) {
             return;
         }
+        presenceHooks.forEach(hook -> hook.accept(player, now));
         if (before != null) {
             Island old = islands.byId(before);
             if (old != null) {
@@ -906,6 +915,9 @@ final class VisitManager implements Listener {
     }
 
     private void notifyMembers(Island island, Player visitor, String setting, String key) {
+        if (!islands.flagOn(island, IslandFlag.NOTIFICATIONS)) {
+            return; // ISL2: the island turned visitor notifications off in /is settings
+        }
         TagResolver who = Msg.p("player", visitor.getName());
         for (UUID member : List.copyOf(island.members().keySet())) {
             Player online = Bukkit.getPlayer(member);

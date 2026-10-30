@@ -197,18 +197,19 @@ class MemberStoreTest {
     }
 
     @Test
-    void leaderIsNeverRemovedAndFounderLeaveStartsTheCooldownWithoutCounting() {
+    void leaderIsNeverRemovedAndFounderLeaveNeitherCountsNorStartsTheCooldown() {
         UUID leader = UUID.randomUUID();
         UUID id = island(leader);
         assertTrue(leave(id, leader, MemberStore.LEFT_KICK).isEmpty(), "the leader can't be removed");
         UUID heir = UUID.randomUUID();
         join(id, leader, heir);
         assertTrue(db.<Boolean>blockingTransaction(c -> MemberStore.transfer(c, id, leader, heir)));
-        assertEquals(Role.MOD, leave(id, leader, MemberStore.LEFT_LEAVE).orElseThrow());
+        assertEquals(Role.ADMIN, leave(id, leader, MemberStore.LEFT_LEAVE).orElseThrow(), "ISL2: the old leader is an admin");
         JoinRules.History history = db.blocking(c -> MemberStore.history(c, leader, 1));
         assertEquals(0, history.joinsThisSeason(), "founding an island is not a join");
         assertEquals(now, history.lastLeave());
-        assertInstanceOf(JoinRules.Check.Cooldown.class, JoinRules.check(history, null, now, 3, 24 * HOUR));
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(history, null, now, 3, 24 * HOUR),
+                "ISL2: only a join starts the cooldown");
     }
 
     @Test
@@ -223,7 +224,7 @@ class MemberStoreTest {
         Island island = db.blocking(c -> IslandStore.loadAll(c, "islands")).getFirst();
         assertEquals(heir, island.owner());
         assertEquals(Role.LEADER, island.role(heir).orElseThrow());
-        assertEquals(Role.MOD, island.role(leader).orElseThrow());
+        assertEquals(Role.ADMIN, island.role(leader).orElseThrow(), "ISL2: the old leader becomes an admin");
         assertEquals(1, island.members().values().stream().filter(r -> r == Role.LEADER).count());
     }
 
@@ -279,5 +280,60 @@ class MemberStoreTest {
         assertEquals(Role.LEADER, island.roleOrNull(leader));
         assertTrue(island.role(coop).isEmpty(), "coop is not a stored member");
         assertEquals(1, island.memberCount(), "coop players take no slot");
+    }
+
+    // ------------------------------------------------------------------ ISL2
+
+    @Test
+    void kickRightAfterJoiningKeepsTheCooldownFromTheJoin() {
+        UUID hopper = UUID.randomUUID();
+        UUID a = UUID.randomUUID();
+        UUID b = UUID.randomUUID();
+        UUID islandA = island(a);
+        UUID islandB = island(b);
+        join(islandA, a, hopper);
+        now += 20 * HOUR;
+        leave(islandA, hopper, MemberStore.LEFT_KICK);
+        now += 5 * HOUR; // 25 h after the join, 5 h after the kick
+        assertInstanceOf(MemberStore.InviteResult.Created.class, invite(islandB, b, hopper), "the kick didn't restart the cooldown");
+    }
+
+    @Test
+    void adminRoleIsStoredAndLoaded() {
+        UUID leader = UUID.randomUUID();
+        UUID id = island(leader);
+        UUID member = UUID.randomUUID();
+        join(id, leader, member);
+        assertTrue(db.<Boolean>blocking(c -> MemberStore.setRole(c, id, member, Role.MEMBER, Role.MOD)));
+        assertTrue(db.<Boolean>blocking(c -> MemberStore.setRole(c, id, member, Role.MOD, Role.ADMIN)));
+        Island island = db.blocking(c -> IslandStore.loadAll(c, "islands")).getFirst();
+        assertEquals(Role.ADMIN, island.role(member).orElseThrow());
+        assertEquals("admin", MemberStore.key(Role.ADMIN));
+        assertEquals(Role.ADMIN, IslandStore.role("admin"));
+    }
+
+    @Test
+    void personalHomesRespectTheLimitAndEndWithTheMembership() {
+        UUID leader = UUID.randomUUID();
+        UUID id = island(leader);
+        UUID member = UUID.randomUUID();
+        join(id, leader, member);
+        Island.Home home = new Island.Home(1, 100, 2, 0, 0);
+        assertEquals(MemberHomeStore.SaveResult.SAVED, db.blockingTransaction(c -> MemberHomeStore.save(c, id, member, "my", home, 1, now)));
+        assertEquals(MemberHomeStore.SaveResult.MOVED, db.blockingTransaction(c -> MemberHomeStore.save(c, id, member, "my",
+                new Island.Home(3, 100, 4, 90, 0), 1, now)));
+        now += 1;
+        assertEquals(MemberHomeStore.SaveResult.LIMIT, db.blockingTransaction(c -> MemberHomeStore.save(c, id, member, "farm", home, 1, now)));
+        assertEquals(MemberHomeStore.SaveResult.SAVED, db.blockingTransaction(c -> MemberHomeStore.save(c, id, member, "farm", home, 2, now)),
+                "a mastery raised the limit");
+        assertEquals(MemberHomeStore.SaveResult.NOT_MEMBER, db.blockingTransaction(c -> MemberHomeStore.save(c, id, UUID.randomUUID(), "my",
+                home, 1, now)));
+        Island island = db.blocking(c -> IslandStore.loadAll(c, "islands")).getFirst();
+        assertEquals(java.util.List.of("my", "farm"), java.util.List.copyOf(island.personalHomes(member).keySet()));
+        assertEquals(3, island.personalHomes(member).get("my").x());
+        leave(id, member, MemberStore.LEFT_LEAVE);
+        int rows = db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM island_member_homes WHERE uuid = ?", rs -> rs.getInt(1), member)
+                .orElse(0));
+        assertEquals(0, rows, "homes end with the membership");
     }
 }

@@ -30,10 +30,19 @@ class JoinRulesAndInvitesTest {
     }
 
     @Test
-    void cooldownCountsFromTheLaterOfJoinAndLeave() {
+    void cooldownCountsFromTheLastJoinOnly() {
+        // ISL2 (owner #20): a recent leave or kick never starts or extends the cooldown.
         JoinRules.History joinedLongAgoLeftRecently = new JoinRules.History(1, NOW - 100 * HOUR, NOW - 2 * HOUR);
-        assertEquals(22 * HOUR, assertInstanceOf(JoinRules.Check.Cooldown.class,
-                JoinRules.check(joinedLongAgoLeftRecently, null, NOW, 3, 24 * HOUR)).remainingMillis());
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(joinedLongAgoLeftRecently, null, NOW, 3, 24 * HOUR));
+        JoinRules.History leftWithoutJoin = new JoinRules.History(0, null, NOW - HOUR);
+        assertInstanceOf(JoinRules.Check.Ok.class, JoinRules.check(leftWithoutJoin, null, NOW, 3, 24 * HOUR),
+                "a founder leaving after a transfer never joined");
+        JoinRules.History joinedThenKicked = new JoinRules.History(1, NOW - 3 * HOUR, NOW - HOUR);
+        assertEquals(21 * HOUR, assertInstanceOf(JoinRules.Check.Cooldown.class,
+                JoinRules.check(joinedThenKicked, null, NOW, 3, 24 * HOUR)).remainingMillis(), "from the join, not the kick");
+        assertEquals(21 * HOUR, JoinRules.cooldownRemaining(NOW - 3 * HOUR, NOW, 24 * HOUR));
+        assertEquals(0, JoinRules.cooldownRemaining(null, NOW, 24 * HOUR));
+        assertEquals(0, JoinRules.cooldownRemaining(NOW - 30 * HOUR, NOW, 24 * HOUR));
         JoinRules.History joinedRecently = new JoinRules.History(1, NOW - 5 * HOUR, null);
         assertEquals(19 * HOUR, assertInstanceOf(JoinRules.Check.Cooldown.class,
                 JoinRules.check(joinedRecently, null, NOW, 3, 24 * HOUR)).remainingMillis());

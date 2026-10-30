@@ -238,7 +238,8 @@ final class MemberStore {
     static JoinRules.History history(Connection c, UUID uuid, int seasonId) throws SQLException {
         int joins = Sql.queryOne(c, "SELECT COUNT(*) FROM player_island_joins WHERE uuid = ? AND season_id = ? AND counted = ?",
                 rs -> rs.getInt(1), uuid, seasonId, true).orElse(0);
-        // A leave because the island was removed (M2.7: disband, staff delete, reset) never starts the join cooldown.
+        // ISL2 (owner #20): only the last counted join starts the cooldown; the last leave is history only (a leave
+        // because the island was removed, M2.7, is not even shown as one).
         Long[] last = Sql.queryOne(c, "SELECT MAX(CASE WHEN counted = ? THEN joined_at END), "
                         + "MAX(CASE WHEN left_reason IS NULL OR left_reason <> ? THEN left_at END) FROM player_island_joins WHERE uuid = ?",
                 rs -> {
@@ -351,10 +352,12 @@ final class MemberStore {
             return Optional.empty();
         }
         Sql.update(c, "DELETE FROM island_members WHERE island_id = ? AND uuid = ? AND role <> ?", islandId, uuid, "leader");
+        MemberHomeStore.deleteMember(c, islandId, uuid); // ISL2: personal homes end with the membership
         int closed = Sql.update(c, "UPDATE player_island_joins SET left_at = ?, left_reason = ? WHERE uuid = ? AND island_id = ? AND left_at IS NULL",
                 now, reason, uuid, islandId);
         if (closed == 0) {
-            // A member without a join row (e.g. the founder after a transfer): record the leave for the cooldown only.
+            // A member without a join row (e.g. the founder after a transfer): record the leave for history only
+            // (counted = false: never a join, and since ISL2 a leave never starts the join cooldown).
             Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, left_at, left_reason, counted) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?)", uuid, islandId, seasonId, now, now, reason, false);
         }
@@ -379,7 +382,7 @@ final class MemberStore {
             return false;
         }
         if (Sql.update(c, "UPDATE island_members SET role = ? WHERE island_id = ? AND uuid = ? AND role = ?",
-                "mod", islandId, oldLeader, "leader") != 1) {
+                key(MemberRules.AFTER_TRANSFER), islandId, oldLeader, "leader") != 1) {
             throw new SQLException("Transfer of " + islandId + ": the old leader row is missing"); // rolls back
         }
         Sql.update(c, "UPDATE island_members SET role = ? WHERE island_id = ? AND uuid = ?", "leader", islandId, newLeader);

@@ -398,6 +398,17 @@ final class IslandProtection implements Listener {
         return null;
     }
 
+    /**
+     * The permission needed to <i>hurt</i> {@code entity}: hostile mobs need {@link IslandPerm#HURT_MONSTERS} (ISL2, owner
+     * #25), everything else the same permission as using it ({@link #entityPerm}).
+     */
+    static IslandPerm damagePerm(Entity entity) {
+        if (entity instanceof Enemy && !(entity instanceof Player)) {
+            return IslandPerm.HURT_MONSTERS;
+        }
+        return entityPerm(entity, false);
+    }
+
     /** The player behind an attack (directly, a projectile, lit TNT or a lingering cloud), or null. */
     static Player attacker(Entity damager) {
         if (damager instanceof Player player) {
@@ -447,16 +458,28 @@ final class IslandProtection implements Listener {
             }
             return;
         }
-        enforce(attacker, victim, entityPerm(victim, false), event);
+        enforce(attacker, victim, damagePerm(victim), event);
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onCombust(EntityCombustByEntityEvent event) {
-        if (event.getEntity() instanceof Player victim && !module.config().pvp && islands.isIslandWorld(victim.getWorld())) {
-            Player attacker = attacker(event.getCombuster());
-            if (attacker != null && attacker != victim) {
+        Entity victim = event.getEntity();
+        if (!islands.isIslandWorld(victim.getWorld())) {
+            return;
+        }
+        Player attacker = attacker(event.getCombuster());
+        if (attacker == null || attacker == victim) {
+            return;
+        }
+        if (victim instanceof Player) {
+            if (!module.config().pvp) {
                 event.setCancelled(true);
             }
+            return;
+        }
+        IslandPerm perm = damagePerm(victim);
+        if (perm != null) {
+            enforce(attacker, check(attacker, victim, perm), perm, event, false); // fire aspect / flame: the hit already told them
         }
     }
 
@@ -509,7 +532,7 @@ final class IslandProtection implements Listener {
             }
             return;
         }
-        enforce(event.getPlayer(), caught, entityPerm(caught, false), event);
+        enforce(event.getPlayer(), caught, damagePerm(caught), event);
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)

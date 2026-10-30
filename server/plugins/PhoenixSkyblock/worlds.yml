@@ -54,9 +54,10 @@ worlds:
     border: 0
     gamerules:
       advance_time: true
-      advance_weather: false
-      spawn_mobs: false          # natural spawning off; mobs come from spawners
-      spawn_monsters: false
+      advance_weather: false       # weather and time are shown per island (/is settings, client-side)
+      spawn_mobs: true             # natural spawning on; the islands module turns it off per island (/is settings,
+      spawn_monsters: true         #   default: mob spawning off, animal spawning on)
+      fire_spread_radius_around_player: 128   # the islands module stops fire spread per island (/is settings, default off)
       spawner_blocks_work: true
       spawn_wandering_traders: true
       pvp: false

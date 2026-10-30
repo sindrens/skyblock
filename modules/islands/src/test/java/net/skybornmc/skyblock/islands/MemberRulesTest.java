@@ -40,9 +40,11 @@ class MemberRulesTest {
     @Test
     void onlyTheLeaderPromotesDemotesAndTransfers() {
         assertTrue(MemberRules.canPromote(Role.LEADER, Role.MEMBER));
-        assertFalse(MemberRules.canPromote(Role.LEADER, Role.MOD), "mod is the highest promotion");
+        assertTrue(MemberRules.canPromote(Role.LEADER, Role.MOD), "ISL2: mod → admin");
+        assertFalse(MemberRules.canPromote(Role.LEADER, Role.ADMIN), "admin is the highest promotion");
         assertFalse(MemberRules.canPromote(Role.MOD, Role.MEMBER));
         assertTrue(MemberRules.canDemote(Role.LEADER, Role.MOD));
+        assertTrue(MemberRules.canDemote(Role.LEADER, Role.ADMIN));
         assertFalse(MemberRules.canDemote(Role.LEADER, Role.MEMBER));
         assertFalse(MemberRules.canDemote(Role.MOD, Role.MOD));
         assertTrue(MemberRules.canTransfer(Role.LEADER, Role.MOD));
@@ -51,7 +53,9 @@ class MemberRulesTest {
         assertFalse(MemberRules.canTransfer(Role.LEADER, Role.LEADER));
         assertFalse(MemberRules.canTransfer(Role.MOD, Role.MEMBER));
         assertEquals(Role.MOD, MemberRules.promoted(Role.MEMBER));
-        assertEquals(Role.MOD, MemberRules.promoted(Role.MOD));
+        assertEquals(Role.ADMIN, MemberRules.promoted(Role.MOD));
+        assertEquals(Role.ADMIN, MemberRules.promoted(Role.ADMIN));
+        assertEquals(Role.MOD, MemberRules.demoted(Role.ADMIN));
         assertEquals(Role.MEMBER, MemberRules.demoted(Role.MOD));
         assertEquals(Role.MEMBER, MemberRules.demoted(Role.MEMBER));
     }
@@ -72,6 +76,7 @@ class MemberRulesTest {
         }
         assertFalse(MemberRules.canEditPerms(Role.MOD, PermRole.LEADER));
         assertFalse(MemberRules.canEditPerms(Role.MOD, PermRole.MOD), "mods can't edit mod permissions");
+        assertFalse(MemberRules.canEditPerms(Role.MOD, PermRole.ADMIN));
         assertTrue(MemberRules.canEditPerms(Role.MOD, PermRole.MEMBER));
         assertTrue(MemberRules.canEditPerms(Role.MOD, PermRole.COOP));
         assertTrue(MemberRules.canEditPerms(Role.MOD, PermRole.VISITOR));
@@ -104,6 +109,7 @@ class MemberRulesTest {
     @Test
     void memberListOrderLeaderModsMembersThenCoops() {
         java.util.UUID leader = java.util.UUID.randomUUID();
+        java.util.UUID admin = java.util.UUID.randomUUID();
         java.util.UUID mod = java.util.UUID.randomUUID();
         java.util.UUID early = java.util.UUID.randomUUID();
         java.util.UUID late = java.util.UUID.randomUUID();
@@ -113,9 +119,10 @@ class MemberRulesTest {
         members.put(mod, Role.MOD);
         members.put(early, Role.MEMBER);
         members.put(leader, Role.LEADER);
-        java.util.Map<java.util.UUID, Long> joined = java.util.Map.of(leader, 1L, mod, 5L, early, 2L, late, 9L);
+        members.put(admin, Role.ADMIN);
+        java.util.Map<java.util.UUID, Long> joined = java.util.Map.of(leader, 1L, admin, 7L, mod, 5L, early, 2L, late, 9L);
         var order = MembersMenu.order(members, java.util.List.of(coop, early), joined::get);
-        assertEquals(java.util.List.of(leader, mod, early, late, coop), order.stream().map(MembersMenu.Entry::uuid).toList());
+        assertEquals(java.util.List.of(leader, admin, mod, early, late, coop), order.stream().map(MembersMenu.Entry::uuid).toList());
         assertEquals(Role.COOP, order.getLast().role());
     }
 
@@ -132,15 +139,117 @@ class MemberRulesTest {
 
     @Test
     void permissionMatrixLayoutFitsInsideTheFrame() {
-        assertEquals(2, PermissionsMenu.pages());
-        for (int row = 0; row < PermissionsMenu.ROWS.length; row++) {
-            for (int column = 0; column < PermissionsMenu.PER_PAGE; column++) {
+        assertEquals((IslandPerm.values().length + 3) / 4, PermissionsMenu.pages());
+        java.util.Set<Integer> used = new java.util.HashSet<>();
+        for (int row = 0; row < PermissionsMenu.PER_PAGE; row++) {
+            for (int column = 0; column < PermissionsMenu.COLUMNS.length; column++) {
                 int slot = PermissionsMenu.cellSlot(row, column);
                 assertTrue(slot % 9 >= 1 && slot % 9 <= 7 && slot / 9 >= 1 && slot / 9 <= 4, "cell " + slot);
+                assertTrue(used.add(slot), "one cell per slot: " + slot);
             }
+            assertTrue(used.add((row + 1) * 9 + PermissionsMenu.ICON_COLUMN), "action icon slot");
+        }
+        for (int column = 0; column < PermissionsMenu.COLUMNS.length; column++) {
+            int slot = PermissionsMenu.headerSlot(column);
+            assertTrue(slot >= 1 && slot <= 7, "header " + slot);
         }
         for (IslandPerm perm : IslandPerm.values()) {
             assertTrue(PermissionsMenu.ICONS.containsKey(perm), "icon for " + perm);
         }
+        for (PermRole role : PermissionsMenu.COLUMNS) {
+            assertTrue(PermissionsMenu.ROLE_ICONS.containsKey(role), "icon for " + role);
+        }
+    }
+
+    // ------------------------------------------------------------------ ISL2: Admin role
+
+    @Test
+    void adminSitsBetweenLeaderAndMod() {
+        assertTrue(MemberRules.rank(Role.LEADER) > MemberRules.rank(Role.ADMIN));
+        assertTrue(MemberRules.rank(Role.ADMIN) > MemberRules.rank(Role.MOD));
+        assertTrue(MemberRules.isManager(Role.ADMIN));
+        assertTrue(MemberRules.canInvite(Role.ADMIN));
+        assertTrue(MemberRules.canCoop(Role.ADMIN));
+        assertTrue(MemberRules.canSetHome(Role.ADMIN));
+        assertTrue(MemberRules.canLeave(Role.ADMIN));
+        assertTrue(MemberRules.canView(Role.ADMIN));
+        assertTrue(VisitRules.canManageVisitors(Role.ADMIN));
+        assertTrue(WarpRules.canManage(Role.ADMIN));
+    }
+
+    @Test
+    void adminPromotesAndDemotesBetweenMemberAndMod() {
+        assertTrue(MemberRules.canPromote(Role.ADMIN, Role.MEMBER));
+        assertFalse(MemberRules.canPromote(Role.ADMIN, Role.MOD), "only the leader makes admins");
+        assertTrue(MemberRules.canDemote(Role.ADMIN, Role.MOD));
+        assertFalse(MemberRules.canDemote(Role.ADMIN, Role.ADMIN));
+        assertFalse(MemberRules.canDemote(Role.ADMIN, Role.MEMBER));
+        assertFalse(MemberRules.canPromote(Role.MOD, Role.MEMBER));
+    }
+
+    @Test
+    void adminKicksLowerRolesOnly() {
+        assertTrue(MemberRules.canKick(Role.ADMIN, Role.MOD));
+        assertTrue(MemberRules.canKick(Role.ADMIN, Role.MEMBER));
+        assertFalse(MemberRules.canKick(Role.ADMIN, Role.ADMIN));
+        assertFalse(MemberRules.canKick(Role.ADMIN, Role.LEADER));
+        assertFalse(MemberRules.canKick(Role.MOD, Role.ADMIN));
+        assertTrue(MemberRules.canKick(Role.LEADER, Role.ADMIN));
+    }
+
+    @Test
+    void onlyTheLeaderTransfersAndTheOldLeaderBecomesAdmin() {
+        assertFalse(MemberRules.canTransfer(Role.ADMIN, Role.MEMBER));
+        assertTrue(MemberRules.canTransfer(Role.LEADER, Role.ADMIN));
+        assertEquals(Role.ADMIN, MemberRules.AFTER_TRANSFER);
+        assertFalse(MemberRules.canLeave(Role.LEADER));
+    }
+
+    @Test
+    void adminEditsTheModRowButNotItsOwn() {
+        assertTrue(MemberRules.canEditPerms(Role.ADMIN, PermRole.MOD));
+        assertTrue(MemberRules.canEditPerms(Role.ADMIN, PermRole.MEMBER));
+        assertTrue(MemberRules.canEditPerms(Role.ADMIN, PermRole.VISITOR));
+        assertFalse(MemberRules.canEditPerms(Role.ADMIN, PermRole.ADMIN));
+        assertFalse(MemberRules.canEditPerms(Role.ADMIN, PermRole.LEADER));
+        assertTrue(MemberRules.canEditPerms(Role.LEADER, PermRole.ADMIN));
+    }
+
+    @Test
+    void settingsRightIsOnlyHandedOutByHolders() {
+        assertTrue(MemberRules.canEditCell(Role.LEADER, PermRole.MOD, IslandPerm.SETTINGS, false), "the leader always has it");
+        assertTrue(MemberRules.canEditCell(Role.ADMIN, PermRole.MOD, IslandPerm.SETTINGS, true));
+        assertFalse(MemberRules.canEditCell(Role.ADMIN, PermRole.MOD, IslandPerm.SETTINGS, false), "can't give what you don't have");
+        assertFalse(MemberRules.canEditCell(Role.LEADER, PermRole.VISITOR, IslandPerm.SETTINGS, true), "never for visitors");
+        assertFalse(MemberRules.canEditCell(Role.LEADER, PermRole.COOP, IslandPerm.SETTINGS, true), "never for coop players");
+        assertTrue(MemberRules.canEditCell(Role.MOD, PermRole.VISITOR, IslandPerm.HURT_MONSTERS, false), "normal cells need no holder");
+        assertFalse(MemberRules.canEditCell(Role.MOD, PermRole.MOD, IslandPerm.BREAK, true));
+    }
+
+    @Test
+    void whoChangesIslandSettings() {
+        assertTrue(MemberRules.canChangeSettings(Role.LEADER, false));
+        assertTrue(MemberRules.canChangeSettings(Role.ADMIN, true));
+        assertFalse(MemberRules.canChangeSettings(Role.ADMIN, false));
+        assertTrue(MemberRules.canChangeSettings(Role.MEMBER, true), "when the leader allows members");
+        assertFalse(MemberRules.canChangeSettings(Role.COOP, true));
+        assertFalse(MemberRules.canChangeSettings(null, true));
+    }
+
+    @Test
+    void personalHomesForStoredMembersOnly() {
+        assertTrue(MemberRules.canSetPersonalHome(Role.LEADER));
+        assertTrue(MemberRules.canSetPersonalHome(Role.ADMIN));
+        assertTrue(MemberRules.canSetPersonalHome(Role.MEMBER));
+        assertFalse(MemberRules.canSetPersonalHome(Role.COOP));
+        assertFalse(MemberRules.canSetPersonalHome(null));
+    }
+
+    @Test
+    void adminActionsInTheMemberMenu() {
+        assertTrue(MemberActionsMenu.hasActions(Role.ADMIN, Role.MOD, false));
+        assertTrue(MemberActionsMenu.hasActions(Role.LEADER, Role.ADMIN, false));
+        assertFalse(MemberActionsMenu.hasActions(Role.MOD, Role.ADMIN, false));
+        assertTrue(MemberActionsMenu.hasActions(Role.ADMIN, Role.ADMIN, true), "leave");
     }
 }

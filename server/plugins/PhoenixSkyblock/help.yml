@@ -404,7 +404,7 @@ topics:
 
   island:
     icon: grass_block
-    aliases: [islands, is, home, sethome]
+    aliases: [islands, is, home, sethome, setmyhome, invites, fly]
     name: "<c:flame>Your island"
     summary: ["<c:text>Create your island and find", "<c:text>your way back home."]
     take-me-there: "is"
@@ -435,6 +435,26 @@ topics:
           - "<c:value>/is disband</c:value><c:text>: confirm, then type the word."
           - "<c:text>Members are removed. You can create"
           - "<c:text>a new island after a short cooldown."
+      - title: "<c:value>Your own home"
+        lines:
+          - "<c:value>/is setmyhome</c:value> <c:text>saves your own spot on"
+          - "<c:text>your island. Go there with</c:text> <c:value>/is home my</c:value><c:text>."
+          - "<c:value>/is home</c:value> <c:text>alone is the island home.</c:text>"
+      - title: "<c:value>Island settings"
+        lines:
+          - "<c:value>/is settings</c:value> <c:text>turns mob spawning, fire,"
+          - "<c:text>explosions, trampling and more on or off,"
+          - "<c:text>and picks the weather and time on your island."
+      - title: "<c:value>Roles & invites"
+        lines:
+          - "<c:text>Leader > Admin > Mod > Member. Admins help"
+          - "<c:text>run the island. See open invites with"
+          - "<c:value>/is invites</c:value><c:text>.</c:text>"
+      - title: "<c:value>Flying"
+        lines:
+          - "<c:text>With island fly, double-tap jump on an"
+          - "<c:text>island to fly. It stops at the border and"
+          - "<c:text>you land without damage.</c:text>"
   visiting:
     icon: ender_pearl
     aliases: [visit, warp, warps, lock, unlock, ban, unban, expel, rate, like, setwarp, delwarp]

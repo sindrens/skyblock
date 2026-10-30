@@ -24,9 +24,12 @@ class IslandMessagesTest {
     /** Files written for M2.7 (older files are covered by their own reviews). */
     private static final List<String> FILES = List.of("IslandLifecycle.java", "IslandAdmin.java", "SlotsMenu.java", "IslandClearer.java",
             // M2.4
-            "VisitManager.java", "WarpManager.java", "VisitMenu.java", "WarpBrowserMenu.java", "WarpEditMenu.java", "IconPickerMenu.java");
+            "VisitManager.java", "WarpManager.java", "VisitMenu.java", "WarpBrowserMenu.java", "WarpEditMenu.java", "IconPickerMenu.java",
+            // ISL2
+            "PersonalHomes.java", "IslandSettingsManager.java", "SettingsMenu.java", "InvitesMenu.java", "InviteActionsMenu.java",
+            "IslandFly.java", "PermissionsMenu.java", "MemberActionsMenu.java", "MembersMenu.java", "MemberManager.java");
     /** Keys of other files (commands.yml) and strings that are not message keys. */
-    private static final Set<String> FOREIGN = Set.of("invalid-number", "player-unknown");
+    private static final Set<String> FOREIGN = Set.of("invalid-number", "player-unknown", "frame.next", "frame.previous", "title.page");
 
     private static YamlConfiguration messages() throws Exception {
         try (var in = IslandMessagesTest.class.getClassLoader().getResourceAsStream("messages/islands.yml")) {
@@ -73,8 +76,25 @@ class IslandMessagesTest {
             keys.add(prefix + ".details");
             keys.add(prefix + ".confirm");
         }
-        for (String role : List.of("leader", "mod", "member", "coop")) {
-            keys.add("role." + role);
+        for (PermRole role : PermRole.values()) {
+            keys.add("role." + role.key());
+        }
+        // ISL2: matrix names/actions per permission, /is settings labels and values
+        for (IslandPerm perm : IslandPerm.values()) {
+            keys.add("perms.names." + perm.key());
+            keys.add("protection.actions." + perm.key());
+        }
+        for (IslandFlag flag : IslandFlag.values()) {
+            keys.add("flags." + flag.key() + ".label");
+            keys.add("flags." + flag.key() + ".lore");
+            for (String value : flag.choices()) {
+                keys.add("flags.value." + value);
+            }
+        }
+        for (String state : List.of("on", "off")) {
+            keys.add("flags.state." + state);
+            keys.add("flags.click." + state);
+            keys.add("fly." + state);
         }
         keys.add("disband.confirm-word");
         // M2.4: built from parts in VisitManager.voteDenied, the browser tabs, warp categories and /settings toggles

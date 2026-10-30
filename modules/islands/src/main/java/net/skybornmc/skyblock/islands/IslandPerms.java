@@ -10,6 +10,14 @@ public final class IslandPerms {
 
     private final long[] allow = new long[PermRole.cached().length];
     private final long[] deny = new long[PermRole.cached().length];
+    /** Per role: permissions it can never have (management rights for coop players and visitors). */
+    private static final long[] NOT_APPLICABLE = new long[PermRole.cached().length];
+
+    static {
+        for (PermRole role : PermRole.cached()) {
+            NOT_APPLICABLE[role.ordinal()] = IslandPerm.notApplicable(role);
+        }
+    }
 
     /** The effective mask of {@code role} given its default mask. The leader always has everything. */
     public long effective(PermRole role, long defaultMask) {
@@ -17,7 +25,7 @@ public final class IslandPerms {
             return IslandPerm.all();
         }
         int i = role.ordinal();
-        return (defaultMask | allow[i]) & ~deny[i];
+        return (defaultMask | allow[i]) & ~deny[i] & ~NOT_APPLICABLE[i];
     }
 
     /** The override of one permission: TRUE/FALSE, or null when it follows the default. */
@@ -34,7 +42,7 @@ public final class IslandPerms {
 
     /** Sets (TRUE/FALSE) or clears (null = use the default) one override. The leader is never overridden. */
     public void set(PermRole role, IslandPerm perm, Boolean allowed) {
-        if (!role.editable()) {
+        if (!role.editable() || !perm.appliesTo(role)) {
             return;
         }
         int i = role.ordinal();

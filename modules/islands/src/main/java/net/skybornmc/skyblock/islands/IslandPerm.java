@@ -36,14 +36,45 @@ public enum IslandPerm {
     /** Ender pearls and chorus fruit teleports onto the island. */
     ENDER_PEARLS("ender-pearls"),
     /** Spawners and trial spawners (change, break). Custom spawners arrive later. */
-    SPAWNERS("spawners");
+    SPAWNERS("spawners"),
+    /** ISL2 (owner #25): hurt hostile mobs (zombies, skeletons, creepers …). Defaults per role: own list in islands.yml. */
+    HURT_MONSTERS("hurt-monsters", true, false),
+    /** ISL2: change the island settings ({@code /is settings}). Management: stored members only, default Leader + Admin. */
+    SETTINGS("settings", true, true);
 
     private static final IslandPerm[] VALUES = values();
 
     private final String key;
+    private final boolean ownDefaults;
+    private final boolean management;
 
     IslandPerm(String key) {
+        this(key, false, false);
+    }
+
+    IslandPerm(String key, boolean ownDefaults, boolean management) {
         this.key = key;
+        this.ownDefaults = ownDefaults;
+        this.management = management;
+    }
+
+    /**
+     * True for permissions added after the first release (ISL2): their default roles come from their own list
+     * ({@code permissions.role-defaults.<key>}), never from {@code "*"} in a role's list, so existing islands.yml files
+     * get the owner's defaults without being rewritten.
+     */
+    public boolean ownDefaults() {
+        return ownDefaults;
+    }
+
+    /** A management right (not a build/use action): only stored members (Admin, Mod, Member) can ever have it. */
+    public boolean management() {
+        return management;
+    }
+
+    /** True if {@code role} can have this permission at all (management rights: stored members only). */
+    public boolean appliesTo(PermRole role) {
+        return !management || role.stored();
     }
 
     /** Stable key used in islands.yml, the database and message keys. */
@@ -59,6 +90,28 @@ public enum IslandPerm {
     /** Every permission set. */
     public static long all() {
         return (1L << VALUES.length) - 1;
+    }
+
+    /** What {@code "*"} in a role's default list means: everything except the permissions with their own defaults. */
+    public static long wildcard() {
+        long mask = 0;
+        for (IslandPerm perm : VALUES) {
+            if (!perm.ownDefaults) {
+                mask |= perm.bit();
+            }
+        }
+        return mask;
+    }
+
+    /** Bits of the permissions {@code role} can't have at all (management rights for coop players and visitors). */
+    public static long notApplicable(PermRole role) {
+        long mask = 0;
+        for (IslandPerm perm : VALUES) {
+            if (!perm.appliesTo(role)) {
+                mask |= perm.bit();
+            }
+        }
+        return mask;
     }
 
     public static Optional<IslandPerm> byKey(String key) {
