@@ -86,7 +86,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M4.5 | Skill core (XP/levels, `/skills`) | Phase 1 | modules/skills | ✅ |
 | M4.4 | Satchel | M4.3, M3.4 | modules/depths (satchel pkg) | ⬜ |
 | M4.6 | Tiers, unlocks, `/dungeon` | M4.1, M4.5 | modules/depths | ✅ |
-| M4.2 | Tools: starter kit (24 h), Forge, living tools (perk slots 5/15/30/45 + prestige), blueprints, skins; `/tool give`, `/blueprint give`, `/skin give` | M3.1, M4.5 | modules/tools | 🔄 |
+| M4.2 | Tools: starter kit (24 h), Forge, living tools (perk slots 5/15/30/45 + prestige), blueprints, skins; `/tool give`, `/blueprint give`, `/skin give` | M3.1, M4.5 | modules/tools | ✅ |
 | M4.7 | Forest | M4.3, M4.1 | modules/depths | ⬜ |
 | M4.8 | Combat zones (shared mobs) | M4.1 | modules/depths (combat pkg) | ⬜ |
 | M4.9 | Drops + tokens | M4.4, M3.1 | modules/depths | ⬜ |
@@ -94,7 +94,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 ## Phase E: Enchants (docs/plans/ENCHANTS.md)
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|
-| E1 | Registry (enchants.yml, 48 defs + validation test), unique DB books + Disenchant Scrolls, `/enchanter` GUI (apply/upgrade/combine/remove/rolls/guide), slot/conflict/level rules, crystal costs, lore, EnchantService + BonusService in common | M4.2, CRY | modules/enchants, common/enchant, common/bonus | ⬜ |
+| E1 | Registry (enchants.yml, 48 defs + validation test), unique DB books + Disenchant Scrolls, `/enchanter` GUI (apply/upgrade/combine/remove/rolls/guide), slot/conflict/level rules, crystal costs, lore, EnchantService + BonusService in common | M4.2, CRY | modules/enchants, common/enchant, common/bonus | 🔄 |
 | E2 | Book drops from Depths mine/forest/combat, gathering + area effects via the block engine, Depths sword effects | E1, M4.7, M4.8, M4.9 | modules/enchants + depths hooks | ⬜ |
 | E3 | Stacked-mob kill enchants (Slaughter etc.), batch kill API | E1, STACK | modules/enchants + stacking API | ⬜ |
 | E4 | Tuning: enchant factors in economy model, family caps, drop rates | E2, E3, BAL2 | docs, tools, configs | ⬜ |

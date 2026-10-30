@@ -44,11 +44,11 @@ categories:
     topics: [skills]
   gear:
     icon: smithing_table
-    status: coming-soon
+    status: active
     slot: 20
     name: "<c:flame><bold>Gear"
     lore: ["<c:text>Tools, the Forge, sets,", "<c:text>enchants and blueprints."]
-    topics: []
+    topics: [tools]
   combat-events:
     icon: clock
     status: coming-soon
@@ -219,6 +219,50 @@ topics:
           - "<c:text>open one to teleport there."
           - "<c:text>Locked ones show your progress."
           - "<c:text>Stand still for the countdown."
+
+  tools:
+    icon: iron_pickaxe
+    aliases: [tool, forge, blueprint, blueprints, skin, skins, starter, prestige]
+    name: "<c:flame>Tools and the Forge"
+    summary: ["<c:text>Custom tools that level up,", "<c:text>the Forge, blueprints and skins."]
+    take-me-there: "forge"
+    commands: [Tools]
+    pages:
+      - title: "<c:value>Starter kit"
+        lines:
+          - "<c:text>Open <c:value>/forge</c:value> <c:text>and click Starter kit"
+          - "<c:text>for a free pickaxe, axe, hoe,"
+          - "<c:text>sword and rod. Lost one? Claim"
+          - "<c:text>the missing ones every 24 h."
+      - title: "<c:value>Living tools"
+        lines:
+          - "<c:text>Custom tools never break and"
+          - "<c:text>level up as you use them (1-50)."
+          - "<c:text>Levels give speed and open perk"
+          - "<c:text>slots at Lv 5, 15, 30 and 45."
+      - title: "<c:value>The Forge"
+        lines:
+          - "<c:text>Forge the next tier with money"
+          - "<c:text>and Depths materials. Your level,"
+          - "<c:text>perks and stats stay. Tiers follow"
+          - "<c:text>the Depths tiers of each wing."
+      - title: "<c:value>Prestige"
+        lines:
+          - "<c:text>At Lv 50 a tool can prestige:"
+          - "<c:text>back to Lv 1, keeps perks and"
+          - "<c:text>stats, opens slot 5 and gets a"
+          - "<c:text>star. Once per tool per season."
+      - title: "<c:value>Blueprints and skins"
+        lines:
+          - "<c:text>Rare blueprints drop in The Depths."
+          - "<c:text>Craft them at the Forge for a"
+          - "<c:text>special tool. Skins change the"
+          - "<c:text>look and stay with you forever."
+      - title: "<c:value>Tips"
+        lines:
+          - "<c:text>Shift + right-click a tool (or"
+          - "<c:value>/tool</c:value><c:text>) for its menu. Custom tools"
+          - "<c:text>stay with you when you die."
 
   skills:
     icon: experience_bottle
