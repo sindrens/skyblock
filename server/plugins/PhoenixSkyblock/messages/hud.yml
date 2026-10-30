@@ -49,7 +49,7 @@ scoreboard:
       - " <c:sky_ice>play.skybornmc.net"
 
   # Your own island: island first, the newest open note (only when there is one and the
-  # "Next note on scoreboard" setting is on), then money and crystals.
+  # "Next note on scoreboard" setting is on), then money, crystals and gems (owner: gems on the scoreboard).
   island:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     lines:
@@ -58,9 +58,9 @@ scoreboard:
       - ""
       - " <c:muted>Island</c:muted>  <island>"
       - "if:island_next_note| <c:muted>Next</c:muted>  <c:value><ph:island_next_note>"
-      - ""
       - " <c:muted>Money</c:muted>  <money>"
       - " <c:muted>Crystals</c:muted>  <crystals>"
+      - " <c:muted>Gems</c:muted>  <gems>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # Someone else's island: whose island you are on.
@@ -74,6 +74,7 @@ scoreboard:
       - ""
       - " <c:muted>Money</c:muted>  <money>"
       - " <c:muted>Crystals</c:muted>  <crystals>"
+      - " <c:muted>Gems</c:muted>  <gems>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # The Depths, Mine wing and causeways: where you are and how far your mining is.
