@@ -46,6 +46,9 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PLAN9 / PLAN11 / PLAN12 / PLAN13 | Plans for PvE, conquest/events, store/ranks/Discord, seasons, launch prep | — | docs | ⬜ |
 | GUIDE2 | TEST_GUIDE refresh for everything built today + new open questions onto the Decisions page | — | docs + tools/owner_sheet | ✅ |
 | FIXES1 | Tester feedback (fly, /s, /p, menu item, armor, tab ranks, scoreboard line, report book, shop confirm, usage errors) | owner/Maarten 30 Oct | several | ✅ |
+| M10-1 | Phase 10 M10.1 crates core (+ bound items from bound keys, R3-2) | PLAN10 | modules/crates | 🔄 |
+| M5-1 | Phase 5 M5.1 pillars | PLAN5 | modules/progression | 🔄 |
+| QUICK1 | QoL quick wins (sell protection, drop protection, island auto-pickup), server config hardening, safe performance fixes | audits | several | 🔄 |
 | SECFIX1 | High security findings without owner decision (crash-rollback dupes, kick-restore dupe, frozen spawners, box caps, depletion persisted, shop recovery, sanctions fail closed) | audit | economy, auction, islands, stacking, box | ✅ |
 | ANS3 | Skipped from ANS2: /ignore blocks tpa/trade/invites + hides chat (shared ignore service), staff powers (creative only builders/admins in spawn/Depths/builder areas, staff item tag unsellable, god/fly/heal only in staff/build mode, staff play normally with transfers flagged), /ec and /craft blocked in warzone/boss/10 s after combat, banned player's island locked for visitors | owner round 2 | several | ✅ |
 | TUT1 | Build the tutorial TU1-TU4 from docs/plans/TUTORIAL.md with the suggested answers (portal hook, steps engine, guides, locks via TutorialGate, starter chest) | PLANTUT, PORTALS | new module tutorial | ✅ TU5+ (cameras, Pip, analytics) left |
