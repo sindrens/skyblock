@@ -12,10 +12,21 @@
 - P0 freeze: with `freeze.logout-action: ban` the freeze is still stored, so after an unban they come back frozen. Clear the freeze on a ban instead? (default: keep it)
 - P0 staff mode: the Inspect tool is now an ender eye (`mode.inspect-tool-material`), because a spyglass always zooms on the player's screen. Another item? (default: ender eye)
 - Islands (M2.3): the member cap (4, upgradable to 8) counts the leader, so a starting team is 4 players in total. OK? (default: yes, leader included)
-- Islands (M2.3): join cooldown counts 24 h from the later of the last join and the last leave/kick (stricter than "between joins"). OK? (default: yes)
+- ~~Islands (M2.3): join cooldown from the later of join and leave/kick?~~ Decided (#20, ISL2): from the last join only.
+- Islands (ISL2): island fly (`skyblock.island.fly`): which ranks get it? Nobody has it yet except staff with `*`; the Wings mastery will give it per island. (default: no rank until the rank perks are planned)
+- Islands (ISL2): the islands world now has natural spawning (`spawn_mobs`, `spawn_monsters`) and fire spread (`fire_spread_radius_around_player: 128`) turned on in `worlds.yml`, and the islands module switches them off per island (`/is settings`: mob spawning off, animal spawning on, fire spread off by default). Without that, "on" could never work. OK? (default: yes)
+- Islands (ISL2): "storm" weather is rain plus thunder sounds only the players on that island hear (`flags.weather.thunder-seconds` 25); Minecraft can't show a thunderstorm to one player only (no lightning flashes, no darker sky). OK? (default: yes)
+- Islands (ISL2): "real" time follows the server clock in `visiting.timezone` (Europe/Oslo), not each player's own time zone. OK? (default: yes)
+- Islands (ISL2): personal homes: `/is setmyhome [name]` (default name `my`, `homes.default-name`) and `/is home <name>`; `/is home` alone stays the island home. 1 per member (`homes.per-member`), more from masteries later. There is no delete command (setting the same name moves it); a member's homes are removed when they leave or are kicked. OK? (default: yes)
+- Islands (ISL2): "Visitors pick up items" in `/is settings` is the same switch as the Visitor "Pick up items" cell in the permission matrix (one value, two places). OK? (default: yes)
+- Islands (ISL2): the island "Visitor alerts" setting (notifications) only covers visitors arriving, leaving and knocking on a locked island; member changes (joins, kicks, promotions) are always announced. OK? (default: yes)
+- Islands (ISL2): crop trampling off protects farmland from everyone, members too (not only visitors). OK? (default: yes)
+- Islands (ISL2): admins kick mods and members (one rank lower, like the leader kicks admins); only the leader makes or removes admins. OK? (default: yes)
+- Islands (ISL2): the "settings" right can only be given to Admin/Mod/Member (never coop or visitors), and only by someone who has it (the leader always). The leader can give it to mods or members in the matrix. OK? (default: yes)
+- Islands (ISL2): the permission matrix now shows roles as columns (Admin, Mod, Member, Coop, Visitor) and actions as rows, 4 per page (4 pages), because 5 role rows no longer fit next to the headers. OK? (default: yes)
 - Islands (M2.3): a player who already owns an island (even a fresh solo one) can't accept invites until they leave it; a solo leader can only leave by disbanding (M2.7). Allow accepting an invite to auto-disband an untouched starter island? (default: no, they must disband first)
 - Islands (M2.3): invite, kick and coop are fixed to Leader + Mod (not toggles in the permission matrix). Make them matrix toggles too? (default: fixed)
-- Islands (M2.3): after `/is transfer` the old leader becomes a Mod. Or a Member? (default: Mod)
+- ~~Islands (M2.3): after `/is transfer` the old leader becomes a Mod?~~ Decided (#23, ISL2): Admin.
 - Islands (M2.3): coop limit per island `members.max-coops` = 4, and a coop player can be coop on several islands at once. OK? (default: yes)
 - Islands (M2.3): `/is go` stays "go to your island home" (same as `/is home`); visiting other islands is `/is visit` in M2.4. OK? (default: yes)
 - P1 warn rules: a suggestion nobody handles within `pending-expire` (24h) disappears without restarting the counter, so the next warn suggests again (staff missed it, the player kept going). Or should expiry count like a dismiss (counter restarts)? (default: suggest again)
@@ -65,7 +76,7 @@
 - M3.0: dynamic price recovery as 2% of the gap per 10 min (default) instead of a fixed 2 points; Hot Item +25% for 24 h?
 - M3.0: personal bank tier unlock cost 2% of the tier's capacity (default: yes)?
 - M2.1 `/is go <member island?>`: what should the argument mean once teams exist (M2.3)? (default: `/is go` = `/is home` without an argument until then)
-- M2.2 island protection: hostile mobs can be hurt by everyone, visitors too (self-defense; there is no "monsters" permission in the plan). OK? (default: yes)
+- ~~M2.2 island protection: hostile mobs can be hurt by everyone?~~ Decided (#25, ISL2): "Hurt monsters" role permission, default yes for every role and visitors.
 - M2.2: `/is bypass` is granted to admins only (`server/permissions/islands.txt`). Also moderators/helpers? (default: admins only)
 - M2.2: the staff bypass toggle is per session (off after relog, every toggle and the quit-off logged). Persist it? (default: per session)
 - M2.2: default role permissions (`islands.yml → permissions.defaults`): Mod everything; Member everything except spawners; Coop everything except fire and spawners; visitors nothing. OK? (default: as listed)

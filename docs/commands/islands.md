@@ -1,4 +1,4 @@
-# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.7
+# Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.7, ISL2
 
 Grid, creation, home and per-player borders. Config `islands.yml`, texts `messages/islands.yml`, schematics in
 `plugins/PhoenixSkyblock/schematics/` (`<creation.schematic>.schem` + optional `<name>.yml` metadata with `home`, `chest`,
@@ -7,20 +7,23 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | Command | Description | Permission | Status |
 |---|---|---|---|
 | `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: teleport home | `skyblock.island` (everyone) | ✅ |
-| `/is home` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `home.warmup-seconds`) | `skyblock.island` | ✅ |
+| `/is home [home]` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `home.warmup-seconds`). With a name: one of your own homes (ISL2, tab completes them) | `skyblock.island` | ✅ |
+| `/is setmyhome [name]` | ISL2: set your own home on your island where you stand (inside the border, safe spot, Y 0-256). Every member has `homes.per-member` (1), more from masteries later; the same name again moves it. Name default `homes.default-name` (`my`) | `skyblock.island` | ✅ |
 | `/is go` | Same as `/is home` (your island is the one you're a member of; visiting others is `/is visit`) | `skyblock.island` | ✅ |
-| `/is sethome` | Set the home where you stand: Leader + Mod (M2.3), inside your border, safe spot, Y 0-256 | `skyblock.island` | ✅ |
-| `/is invite <player>` | Leader/Mod: invite an online player without an island. On a **solo** island the leader first sees "Inviting makes your island a Team Island forever. Solo and team islands are on separate leaderboards." (confirm screen; cancel keeps it solo). The target gets a clickable `[Accept] [Deny]`; expires after `members.invite-expiry-seconds` (5 min) | `skyblock.island` | ✅ |
+| `/is sethome` | Set the island home where you stand: Leader, Admin, Mod; inside your border, safe spot, Y 0-256 | `skyblock.island` | ✅ |
+| `/is invite <player>` | Leader/Admin/Mod: invite an online player without an island. On a **solo** island the leader first sees "Inviting makes your island a Team Island forever. Solo and team islands are on separate leaderboards." (confirm screen; cancel keeps it solo). The target gets a clickable `[Accept] [Deny]`; expires after `members.invite-expiry-seconds` (5 min) | `skyblock.island` | ✅ |
 | `/is accept [player]` | Accept your newest invite, or the one from that player's island (inviter or any member). Checks join limits, member slots and the target having no island, all in one transaction | `skyblock.island` | ✅ |
 | `/is deny [player]` | Decline your newest invite, or the one from that player's island; the inviter is told | `skyblock.island` | ✅ |
-| `/is kick <player>` | Leader kicks mods/members, Mod kicks members (confirm screen). Kicked players are sent to spawn if they stand on the island | `skyblock.island` | ✅ |
+| `/is kick <player>` | Only a higher role kicks: Leader kicks admins/mods/members, Admin mods/members, Mod members (confirm screen). Kicked players are sent to spawn if they stand on the island | `skyblock.island` | ✅ |
 | `/is leave` | Leave your island (confirm screen). The leader must `/is transfer` first, or `/is disband` | `skyblock.island` | ✅ |
-| `/is promote <player>` | Leader: Member → Mod | `skyblock.island` | ✅ |
-| `/is demote <player>` | Leader: Mod → Member | `skyblock.island` | ✅ |
-| `/is transfer <player>` | Leader: hand the island to a member (two confirm screens); the old leader becomes a Mod | `skyblock.island` | ✅ |
-| `/is coop <player>` | Leader/Mod: temporary trust for an online player (coop role permissions). Ends automatically when no leader or mod of the island is online; never turns solo into team; no XP, task progress or bank access; takes no member slot (max `members.max-coops`) | `skyblock.island` | ✅ |
-| `/is uncoop <player>` | Leader/Mod: end a player's coop trust | `skyblock.island` | ✅ |
-| `/is members` | Member list GUI: heads with role, join date, inviter, online state; click a head for the actions you may use (promote, demote, transfer, kick, uncoop, leave). Buttons: Invite (player picker) and Permissions (the matrix) | `skyblock.island` | ✅ |
+| `/is promote <player>` | Leader: Member → Mod, Mod → Admin. Admin: Member → Mod | `skyblock.island` | ✅ |
+| `/is demote <player>` | Leader: Admin → Mod, Mod → Member. Admin: Mod → Member | `skyblock.island` | ✅ |
+| `/is transfer <player>` | Leader only: hand the island to a member (two confirm screens); the old leader becomes an **Admin** (ISL2, owner #23) | `skyblock.island` | ✅ |
+| `/is coop <player>` | Leader/Admin/Mod: temporary trust for an online player (coop role permissions). Ends automatically when no leader or mod of the island is online; never turns solo into team; no XP, task progress or bank access; takes no member slot (max `members.max-coops`) | `skyblock.island` | ✅ |
+| `/is uncoop <player>` | Leader/Admin/Mod: end a player's coop trust | `skyblock.island` | ✅ |
+| `/is members` | Member list GUI: heads with role, join date, inviter, online state; click a head for the actions you may use (promote, demote, transfer, kick, uncoop, leave). Buttons: Invites, Invite (player picker), Permissions (the matrix) and Settings | `skyblock.island` | ✅ |
+| `/is invites` | ISL2: invites you received (click: Accept / Deny) and invites your island sent (click: cancel, Leader/Admin/Mod; confirm). Refreshes every 2 s | `skyblock.island` | ✅ |
+| `/is settings [setting] [on\|off\|value]` | ISL2: the island settings menu; with a setting name it changes it right away (no value: toggles flip, weather/time go to the next value). Who may change: the `settings` role permission (Leader + Admin by default); every member can look. Tab completes settings and, after one, its values | `skyblock.island` | ✅ |
 | `/is disband` | Leader only: confirm screen (what is lost, members removed, creation cooldown), then type `disband` in chat (`disband.confirm-word`, `cancel` keeps it). The island is removed for good: members and coop players are removed and told, everyone on it is sent to spawn, the slot is cleared and reused. New island after `creation.cooldown-hours` (24 h) | `skyblock.island` | ✅ |
 | `/is visit [player]` | No name: the **visit browser** (Most visited, Top rated, Most liked, Newest; click an island to visit). With a name (any member of that island, online or offline): teleport to that island's home after a safe-spot check and `visiting.warmup-seconds` (3 s). Your own island = home | `skyblock.island` | ✅ |
 | `/is lock` / `/is unlock` | Leader/Mod: only members and coop players can enter a locked island; locking sends visitors on it to spawn. Locked islands are hidden in the browsers | `skyblock.island` | ✅ |
@@ -64,10 +67,10 @@ farming, containers and redstone but no fire/spawners; visitors nothing (walk an
   pickup are silent).
 
 ## Members and roles (M2.3)
-Roles: **Leader** (everything; the only one who promotes, demotes and transfers), **Mod** (invite, kick members, coop,
+Roles (ISL2: Admin added, see below): **Leader** (everything; the only one who transfers and disbands), **Mod** (invite, kick members, coop,
 sethome, edit the Member/Coop/Visitor permissions), **Member** (sees the member list and the matrix, can leave), **Coop**
-(temporary, never stored). The **permission matrix** (`/is members` → Permissions): rows = Mod, Member, Coop, Visitor;
-columns = the 14 actions above, 7 per page. One plain click toggles a cell (Bedrock-safe); a value equal to the server
+(temporary, never stored). The **permission matrix** (`/is members` → Permissions): since ISL2 columns = Admin, Mod,
+Member, Coop, Visitor and rows = the actions above plus hurt-monsters and settings, 4 per page. One plain click toggles a cell (Bedrock-safe); a value equal to the server
 default is stored as "default" again. The leader always has everything; a mod can't change the Mod row; members see it
 read-only. Every change is logged (`island_perm`).
 
@@ -119,7 +122,7 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
 | `/isadmin setsize <island> <size>` | Border width in chunks (odd, 1 to `size.max-chunks`); shown at once | `skyblock.island.admin.setsize` (admin) | ✅ |
 | `/isadmin addmember <island> <player>` | Add a player as Member without an invite (member slots and one island per player still apply; no join limit/cooldown, doesn't count as a join; makes a solo island a team island) | `skyblock.island.admin.addmember` (admin) | ✅ |
 | `/isadmin kick <player>` | Remove a member or coop player from their island (confirm). Leaders: `setowner` first or `delete` | `skyblock.island.admin.kick` (admin) | ✅ |
-| `/isadmin setowner <island> <member>` | Make a member the leader (confirm); the old leader becomes a Mod | `skyblock.island.admin.setowner` (admin) | ✅ |
+| `/isadmin setowner <island> <member>` | Make a member the leader (confirm); the old leader becomes an Admin | `skyblock.island.admin.setowner` (admin) | ✅ |
 | `/isadmin reset <island>` | Remove the island and give its leader a new starter island right away (built now if online, else on their next `/is`); other members removed (confirm) | `skyblock.island.admin.reset` (admin) | ✅ |
 | `/isadmin bypass` | Same as `/is bypass` | `skyblock.island.bypass` (admin) | ✅ |
 | `/isadmin slots` | Grid overview GUI (spiral order): used (owner, members, size), clearing (progress), free; filter and reload buttons; click = teleport | `skyblock.island.admin.slots` (admin) | ✅ |
@@ -159,5 +162,46 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
   `island_warp_set` (create/move, sign), `island_warp_delete` (command/menu/sign-broken/sign-missing), `island_warp_icon`,
   `island_warp_public`, `island_warp_category`, `island_warp_visit`, `island_visit` (first visit of the day),
   `island_rate` (old/new stars), `island_like`.
+
+## Islands round 2 (ISL2)
+- **Admin role** (owner #23) between Leader and Mod: every Mod right, plus editing the Mod column of the permission
+  matrix and promoting/demoting Member ↔ Mod; kicks mods and members. Only the leader makes or removes admins,
+  transfers and disbands. After `/is transfer` (and `/isadmin setowner`) the old leader becomes Admin. Stored as `admin`
+  in `island_members.role` and `island_role_perms.role` (migration V006 also turns unknown roles into `member`).
+  Defaults: `permissions.defaults.admin` (`*`).
+- **Permission matrix:** columns = Admin, Mod, Member, Coop, Visitor; rows = actions, 4 per page. New actions:
+  **Hurt monsters** (`hurt-monsters`, owner #25: hitting, shooting, fire aspect and fishing rods on hostile mobs; default
+  every role and visitors, `permissions.role-defaults.hurt-monsters`) and **Island settings** (`settings`: may change
+  `/is settings`; default Leader + Admin, `permissions.role-defaults.settings`; only for Admin/Mod/Member and only given
+  by someone who has it). `*` in a role list never includes these two, so older `islands.yml` files keep working.
+- **Join cooldown** (owner #20): `members.join-cooldown-hours` (24 h) counts from the last join only; leaving or being
+  kicked never restarts it. `/is leave` tells the time that is left.
+- **`/is settings`** (owner round 3; defaults in `islands.yml → flags.defaults.*`, island changes in `island_settings`,
+  only differences from the defaults): mob spawning (off), animal spawning (on), fire spread (off), explosions break
+  blocks (off), leaf decay (on), crop trampling (off; protects farmland from players and mobs), visitors pick up items
+  (off; the same switch as the Visitor "Pick up items" matrix cell), visitor alerts (on; members hear about visitors
+  arriving/leaving/knocking, each member can still mute them in `/settings`), visitor fly (on), weather (sunny, rain,
+  storm; default sunny) and time (day, noon, sunset, night, real; default day). Weather and time are client-side (player
+  weather/time) for everyone in the island's slot and reset when they leave; "storm" = rain + thunder sounds only they
+  hear (`flags.weather.thunder-*`), "real" = the server clock in `visiting.timezone` (refreshed every
+  `flags.time.real-refresh-seconds`); tick values in `flags.time.*-ticks`. Natural spawning counts NATURAL, patrol,
+  reinforcement, trap, jockey, mount and village-invasion spawns; spawners, eggs, breeding and commands always work. The
+  islands world has natural spawning and fire spread on in `worlds.yml`; the module switches them off per island. Mob
+  stacking is not a setting. Changes are logged (`island_setting`, or `island_perm` for visitor pickup) and announced
+  to the members.
+- **Island fly** (owner I4): `skyblock.island.fly` (no rank yet) or the island's Wings mastery
+  (`IslandService.hasWings`, false until the masteries exist) lets you fly inside an island's border (double-tap jump):
+  members and coop players always, visitors while the island's visitor-fly setting is on. Leaving the border, losing the
+  permission or a setting change turns it off at once; the next fall within `fly.landing-protection-seconds` (10) does
+  no damage (also after you stop flying yourself). Flight from creative, staff mode or freeze is never touched.
+  Checked on every block move plus every `fly.check-interval-ticks` (20).
+- **Personal homes** (owner I13): see `/is setmyhome`; table `island_member_homes`; removed when the member leaves or is
+  removed and with the island. Mastery hook: `IslandService.extraMemberHomes` / `extraHomesProvider`.
+- **Invites menu** (owner O17): `/is invites`, also from `/is members`. Cancelling is logged (`island_invite`,
+  `result: cancelled`).
+- **Logged** (category `island`): `island_setting`, `island_member_home` (set/move), `island_invite` (cancelled), plus
+  the existing role/permission events with the new values.
+- **Service hooks:** `hasWings(island)`, `wingsProvider(predicate)`, `extraMemberHomes(island, player)`,
+  `extraHomesProvider(function)`; `IslandService.Role` gained `ADMIN`.
 
 Permission definitions: `modules/islands/src/main/resources/permissions/islands.yml`. Rank grants: `server/permissions/islands.txt`.
