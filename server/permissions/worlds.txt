@@ -1,0 +1,4 @@
+# LuckPerms grants for the worlds module. Applied by scripts/apply-permissions.sh after base.txt.
+# Node definitions: modules/worlds/src/main/resources/permissions/worlds.yml.
+# /skyblock builds pastes whole builds into live worlds: admin (and owner, who inherits admin) only.
+lp group admin permission set skyblock.admin.builds true

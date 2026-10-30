@@ -10,6 +10,7 @@ The `/skyblock` admin command lives in the plugin itself; its permissions stay i
 | `/skyblock config [file]` | List config files with status / show a file's active values (hover = description + default) | `skyblock.admin.reload` | ✅ |
 | `/skyblock worlds` | List worlds (click to teleport) | `skyblock.admin.worlds` | ✅ |
 | `/skyblock tp <world>` | Teleport to a world's spawn | `skyblock.admin.worlds` | ✅ |
+| `/skyblock builds ...` | Finished builds: list, info, paste, paste-all, apply (see [worlds](worlds.md)) | `skyblock.admin.builds` | ✅ |
 
 Other permissions: `skyblock.cooldown.bypass` skips command cooldowns. Per-command aliases and cooldowns live in `commands.yml`.
 
