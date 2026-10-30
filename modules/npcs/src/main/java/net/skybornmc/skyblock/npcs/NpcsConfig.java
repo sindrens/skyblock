@@ -90,6 +90,12 @@ public final class NpcsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ holograms
 
+    @Setting(path = "spawning.per-tick", desc = "Most NPCs, holograms and leaderboards spawned per tick; the rest follow in the next ticks (spreads the cost of start-up and chunk loads).", min = 1, max = 200)
+    public int spawnsPerTick = 8;
+
+    @Setting(path = "spawning.budget-ms", desc = "Stop spawning for the current tick after this many milliseconds (at least one is always spawned per tick).", min = 1, max = 50)
+    public int spawnBudgetMs = 2;
+
     @Setting(path = "holograms.enabled", desc = "Spawn the text holograms at the builds' hologram points (text: messages/npcs.yml -> holograms.<id>).")
     public boolean hologramsEnabled = true;
 

@@ -75,8 +75,10 @@ public final class AfkModule implements SkyblockModule {
             return status.isEmpty() ? Component.empty() : msg.component(p, "scoreboard.line", Msg.p("status", status),
                     Msg.p("today", tracker.todayText(p)));
         });
-        // Services published by modules enabled after this one (crates later) are looked up when used.
-        core.scheduler().later("afk-start", 1, tracker::start);
+        // Services published by modules enabled after this one (crates later) are looked up when used. PERF3: started
+        // right here instead of one tick later; it only reads the area from the worlds module's build points (loaded
+        // before this module) and starts the timers, so the separate first-tick task ("afk-start") is gone.
+        tracker.start();
     }
 
     @Override

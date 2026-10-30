@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
@@ -25,19 +27,38 @@ public final class CosmeticRegistry {
 
     static final String FILE = "tags-titles.yml";
 
-    private final JavaPlugin plugin;
+    private final File folder;
+    private final Consumer<String> copyDefault;
     private volatile Map<String, Cosmetic> titles = Map.of();
     private volatile Map<String, Cosmetic> tags = Map.of();
+    /** PERF3: a background write of the file is queued and has not started yet. */
+    private final AtomicBoolean savePending = new AtomicBoolean();
+    /** Serialises writes of the file (background and editor). */
+    private final Object fileLock = new Object();
 
     CosmeticRegistry(JavaPlugin plugin) {
-        this.plugin = plugin;
+        this(plugin.getDataFolder(), name -> plugin.saveResource(name, false));
+    }
+
+    /** @param copyDefault copies a bundled file into {@code folder} (the plugin's {@code saveResource}) */
+    CosmeticRegistry(File folder, Consumer<String> copyDefault) {
+        this.folder = folder;
+        this.copyDefault = copyDefault;
     }
 
     /** Loads the file (copied from the jar on first start). A broken file keeps the previous registry. */
-    void load(Consumer<String> problem) {
-        File file = new File(plugin.getDataFolder(), FILE);
+    synchronized void load(Consumer<String> problem) {
+        File file = new File(folder, FILE);
+        if (savePending.getAndSet(false)) {
+            // A title defined a moment ago is not on disk yet: write it first so the reload keeps it.
+            try {
+                save();
+            } catch (IOException e) {
+                problem.accept(FILE + ": could not write a new title before reloading: " + e.getMessage());
+            }
+        }
         if (!file.exists()) {
-            plugin.saveResource(FILE, false);
+            copyDefault.accept(FILE);
         }
         YamlConfiguration yaml = new YamlConfiguration();
         try {
@@ -100,6 +121,33 @@ public final class CosmeticRegistry {
         save();
     }
 
+    /**
+     * PERF3: adds or replaces one entry right away and writes the file off the main thread ({@code background}). Used for
+     * titles other modules define at start-up (tutorial, achievements, moderation): their synchronous file write showed
+     * as the slow {@code tutorial:start} task. Several calls in a row share one write.
+     *
+     * @param failed told when the background write fails (the entry stays active in memory)
+     */
+    synchronized void putLater(Cosmetic cosmetic, Executor background, Consumer<IOException> failed) {
+        Map<String, Cosmetic> copy = new LinkedHashMap<>(map(cosmetic.kind()));
+        copy.put(cosmetic.id(), cosmetic);
+        replace(cosmetic.kind(), copy);
+        if (savePending.compareAndSet(false, true)) {
+            background.execute(() -> {
+                synchronized (fileLock) { // never the registry lock: the main thread must not wait for this write
+                    if (!savePending.getAndSet(false)) {
+                        return; // a reload already wrote it
+                    }
+                    try {
+                        save();
+                    } catch (IOException e) {
+                        failed.accept(e);
+                    }
+                }
+            });
+        }
+    }
+
     /** Removes one entry and writes the file. Players keep it in the database but it no longer shows. */
     synchronized boolean remove(Cosmetics.Kind kind, String id) throws IOException {
         Map<String, Cosmetic> copy = new LinkedHashMap<>(map(kind));
@@ -120,7 +168,12 @@ public final class CosmeticRegistry {
     }
 
     private void save() throws IOException {
-        File file = new File(plugin.getDataFolder(), FILE);
+        synchronized (fileLock) {
+            write(new File(folder, FILE));
+        }
+    }
+
+    private void write(File file) throws IOException {
         YamlConfiguration yaml = new YamlConfiguration();
         try {
             yaml.load(file); // keep the header comments

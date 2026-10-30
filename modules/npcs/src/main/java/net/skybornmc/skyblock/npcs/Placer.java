@@ -58,6 +58,9 @@ final class Placer implements Listener {
     private final Map<String, Placed> byKey = new LinkedHashMap<>();
     private final Map<String, Map<Long, List<Placed>>> byChunk = new HashMap<>();
     private net.skybornmc.skyblock.common.util.Scheduler.Task lookTask;
+    /** PERF3: sets waiting to be spawned, a few per tick ({@code spawning.per-tick} / {@code spawning.budget-ms}). */
+    private final SpawnQueue<Placed> queue = new SpawnQueue<>();
+    private net.skybornmc.skyblock.common.util.Scheduler.Task spawnTask;
 
     Placer(NpcsModule module) {
         this.module = module;
@@ -67,10 +70,15 @@ final class Placer implements Listener {
 
     // ------------------------------------------------------------------ lifecycle
 
-    /** Removes every placed set and left-over, then places {@code spots} in the loaded chunks. */
+    /**
+     * Removes every placed set and left-over, then queues {@code spots} in the loaded chunks; they are spawned over the
+     * next ticks (PERF3: spawning them all in this tick took over a second on update101). Never loads a chunk.
+     */
     void start(Spots spots) {
         stop();
+        long purgeStart = System.nanoTime();
         purgeLeftovers();
+        module.core().scheduler().timer().record("npcs:purge", System.nanoTime() - purgeStart);
         NpcsConfig c = module.config();
         if (c.npcsEnabled) {
             spots.npcs().forEach(n -> track(new Placed(Placed.Kind.NPC, n, null)));
@@ -82,11 +90,11 @@ final class Placer implements Listener {
             spots.boards().forEach(t -> track(new Placed(Placed.Kind.BOARD, null, t)));
         }
         for (Placed p : byKey.values()) {
-            World w = Bukkit.getWorld(p.world);
-            if (w != null && w.isChunkLoaded(p.chunkX, p.chunkZ) && w.getChunkAt(p.chunkX, p.chunkZ).isEntitiesLoaded()) {
-                spawn(p, w);
+            if (loaded(p) != null) {
+                queue.add(p);
             }
         }
+        drainLater();
         if (c.npcsEnabled && c.lookAtPlayers && !spots.npcs().isEmpty()) {
             lookTask = module.core().scheduler().repeat("npcs:look", c.lookTicks, c.lookTicks, this::look);
         }
@@ -98,6 +106,11 @@ final class Placer implements Listener {
             lookTask.cancel();
             lookTask = null;
         }
+        if (spawnTask != null) {
+            spawnTask.cancel();
+            spawnTask = null;
+        }
+        queue.clear();
         byKey.values().forEach(Placed::remove);
         byKey.clear();
         byChunk.clear();
@@ -112,7 +125,8 @@ final class Placer implements Listener {
     private void purgeLeftovers() {
         int removed = 0;
         for (World w : Bukkit.getWorlds()) {
-            for (Entity e : w.getEntities()) {
+            // PERF3: only the entity kinds NPCs are made of can carry the tag (no tag-set copy for every mob and item).
+            for (Entity e : w.getEntitiesByClasses(Villager.class, Mannequin.class, TextDisplay.class, Interaction.class)) {
                 if (e.getScoreboardTags().contains(TAG)) {
                     e.remove();
                     removed++;
@@ -148,20 +162,56 @@ final class Placer implements Listener {
         if (here == null) {
             return;
         }
-        // Spawned one tick later, outside the chunk-load event, and only if the chunk is still there.
-        World world = event.getWorld();
-        int cx = chunk.getX();
-        int cz = chunk.getZ();
-        module.core().scheduler().later("npcs:spawn", 1, () -> {
-            if (!world.isChunkLoaded(cx, cz) || !world.getChunkAt(cx, cz).isEntitiesLoaded()) {
-                return;
+        // Spawned from the next tick on (outside the chunk-load event, a few per tick), only if the chunk is still there.
+        for (Placed p : here) {
+            if (!p.spawned()) {
+                queue.add(p);
             }
-            for (Placed p : here) {
-                if (!p.spawned() && byKey.get(p.key()) == p) {
-                    spawn(p, world);
-                }
-            }
-        });
+        }
+        drainLater();
+    }
+
+    // ------------------------------------------------------------------ spawn queue (PERF3)
+
+    /** Number of sets waiting to be spawned. */
+    int waiting() {
+        return queue.size();
+    }
+
+    /** Starts the per-tick spawn task (from the next tick) unless it runs or nothing waits. */
+    private void drainLater() {
+        if (spawnTask == null && !queue.isEmpty()) {
+            spawnTask = module.core().scheduler().repeat("npcs:spawn", 1, 1, this::drain);
+        }
+    }
+
+    /** One tick of spawning; stops the task when the queue is empty. */
+    private void drain() {
+        NpcsConfig c = module.config();
+        queue.drain(c.spawnsPerTick, c.spawnBudgetMs * 1_000_000L, System::nanoTime, this::spawnIfWanted);
+        if (queue.isEmpty() && spawnTask != null) {
+            spawnTask.cancel();
+            spawnTask = null;
+        }
+    }
+
+    /** Spawns a queued set if it is still tracked, not spawned and its chunk's entities are still loaded. */
+    private boolean spawnIfWanted(Placed p) {
+        if (byKey.get(p.key()) != p || p.spawned()) {
+            return false;
+        }
+        World w = loaded(p);
+        if (w == null) {
+            return false;
+        }
+        spawn(p, w);
+        return true;
+    }
+
+    /** The set's world when its chunk is loaded with entities (never loads a chunk), else null. */
+    private static World loaded(Placed p) {
+        World w = Bukkit.getWorld(p.world);
+        return w != null && w.isChunkLoaded(p.chunkX, p.chunkZ) && w.getChunkAt(p.chunkX, p.chunkZ).isEntitiesLoaded() ? w : null;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

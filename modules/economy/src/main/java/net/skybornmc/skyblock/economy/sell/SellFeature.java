@@ -128,6 +128,15 @@ public final class SellFeature implements Listener {
 
     // ================================================================== lifecycle
 
+    /** Tells the island stats that selling feeds "items sold" and "money earned"; false when the service is missing. */
+    private boolean registerStatSources() {
+        return core.services().optional(net.skybornmc.skyblock.common.island.IslandStatsService.class).map(stats -> {
+            stats.source(net.skybornmc.skyblock.common.island.IslandStat.ITEMS_SOLD);
+            stats.source(net.skybornmc.skyblock.common.island.IslandStat.MONEY_EARNED);
+            return true;
+        }).orElse(false);
+    }
+
     public void enable() {
         catalog = loadCatalog();
         book = new PriceBook(config::dynamicSettings);
@@ -140,11 +149,12 @@ public final class SellFeature implements Listener {
         service.chestOpener(this::openChest);
         // After a sale (main thread): island stats (items sold, money earned) for the profile that sold, and wardrobe
         // set XP (WARDROBE §3.1) only if that profile is still the active one.
-        core.scheduler().later("sell-stat-sources", 1, () -> core.services().optional(net.skybornmc.skyblock.common.island.IslandStatsService.class)
-                .ifPresent(stats -> {
-                    stats.source(net.skybornmc.skyblock.common.island.IslandStat.ITEMS_SOLD);
-                    stats.source(net.skybornmc.skyblock.common.island.IslandStat.MONEY_EARNED);
-                }));
+        // PERF3: the islands module is enabled before economy, so its stats service is normally here already and the
+        // sources are registered right away; the one-tick-later task (a slow first-tick task on update101) is only the
+        // fallback for an islands module enabled later.
+        if (!registerStatSources()) {
+            core.scheduler().later("sell-stat-sources", 1, this::registerStatSources);
+        }
         service.onSold((playerId, profileKey, items, money, source) -> core.scheduler().main("sell-set-xp", () -> {
             core.services().optional(net.skybornmc.skyblock.common.island.IslandStatsService.class).ifPresent(stats -> {
                 stats.recordFor(profileKey, net.skybornmc.skyblock.common.island.IslandStat.ITEMS_SOLD, items);
