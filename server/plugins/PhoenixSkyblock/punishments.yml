@@ -386,3 +386,29 @@ extras:
                               # punishment is kept this long, then deleted. 0 = keep nothing that has ended. A punishment
                               # still in force (e.g. a ban) is always kept until it ends. Check this with the privacy policy.
     confirm-window: 60s       # the typed confirm must follow the preview within this time
+
+  # ---------- owner spec section 14 (P10) ----------
+  report:                     # monthly punishment report: /preport [month] (skyblock.staff.punish.report; staff names
+                              # need skyblock.staff.punish.report.staff). Numbers only: no player names, IPs or evidence.
+    enabled: true             # the scheduled run (/preport works anyway; a missing past month is made on demand)
+    day: 1                    # day of the month (1-28) the report of the PREVIOUS month is made, stored and announced ...
+    time: "09:00"             # ... at this time in stats.timezone (Europe/Oslo); caught up after downtime
+    reoffence-window: 30d     # "of the players who got step 2 of Spam, 41% got another Spam punishment within 30d"
+                              # (max 31d; measured for the month BEFORE the report month, so the windows are complete)
+    top-reasons: 10           # most used reasons listed
+    reoffence-lines: 10       # reoffence lines shown in chat and the menu
+    staff-lines: 15           # staff lines shown in chat and the menu (the CSV has everyone)
+    discord: false            # post the report (server totals only, never names) to Discord. Also needs
+                              # extras.discord.enabled and a webhook (channel: discord.channels.report, else 'channel')
+    csv: true                 # also write plugins/PhoenixSkyblock/reports/punishments-<year>-<month>.csv
+  clean-streak:               # the title "Honorable" (tags-titles.yml: name, colour and lore). Staff can't give or take it.
+    enabled: true
+    days: 60                  # no warn, mute, ban or kick in this many days (pardoned, undone, rolled back and accepted-
+                              # appeal punishments don't count), and the account is older than that ...
+    min-playtime: 10h         # ... and at least this much played in those days (inactive or alt accounts can't farm it;
+                              # counting starts with this update, so nobody has it on day one)
+    check: 6h                 # online players are checked this often (and on join); never per tick
+    join-delay: 10s           # the join check waits this long (after the join messages)
+    title: honorable          # title id in tags-titles.yml (only use a title nothing else gives: it is taken on a punishment)
+    sound: unlock             # sound (sounds.yml) when it unlocks, "" = none
+    tell-lost: true           # one line to the player when a new punishment hides it

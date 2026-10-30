@@ -258,6 +258,11 @@ public final class CosmeticsModule implements SkyblockModule {
 
     private void giveOrTake(CommandSender staff, String name, Cosmetics.Kind kind, String id, boolean give) {
         String kindKey = kind == Cosmetics.Kind.TITLE ? "title" : "tag";
+        if (service.automatic(kind, id)) {
+            // spec 14.11: e.g. the clean-streak title is earned and lost by itself; staff can't give or take it
+            msg.send(staff, "staff.automatic-" + kindKey, Msg.p("id", id));
+            return;
+        }
         resolve(name).thenComposeAsync(uuid -> {
             if (uuid.isEmpty()) {
                 msg.send(staff, "staff.unknown-player", Msg.p("player", name));

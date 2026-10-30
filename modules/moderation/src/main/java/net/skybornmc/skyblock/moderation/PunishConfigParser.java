@@ -673,7 +673,73 @@ final class PunishConfigParser {
                 training(x.getConfigurationSection("training")),
                 notify(x.getConfigurationSection("notify"), x.getConfigurationSection("discord")),
                 guard(x.getConfigurationSection("guard")), rollback(x.getConfigurationSection("rollback")),
-                falseReports(x.getConfigurationSection("false-reports")), purge(x.getConfigurationSection("purge")));
+                falseReports(x.getConfigurationSection("false-reports")), purge(x.getConfigurationSection("purge")),
+                report(x.getConfigurationSection("report")), cleanStreak(x.getConfigurationSection("clean-streak")));
+    }
+
+    // ------------------------------------------------------------------ extras (P10: spec 14.8, 14.11)
+
+    /** The reoffence window may never be longer than this (the cohort is the month before the report month). */
+    static final Duration REOFFENCE_MAX = Duration.ofDays(31);
+
+    private MonthlyReport.Settings report(ConfigurationSection s) {
+        MonthlyReport.Settings d = MonthlyReport.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.report.";
+        java.time.LocalTime time = d.time();
+        if (s.contains("time")) {
+            String raw = String.valueOf(s.get("time")).strip();
+            java.time.LocalTime parsed = clock(raw);
+            if (parsed == null) {
+                error("config.bad-clock", p + "time", "value", raw);
+            } else {
+                time = parsed;
+            }
+        }
+        return new MonthlyReport.Settings(bool(s, "enabled", p + "enabled", d.enabled()),
+                number(s, "day", p + "day", d.day(), 1, 28), time,
+                capped(s, "reoffence-window", p + "reoffence-window", d.reoffenceWindow(), REOFFENCE_MAX),
+                number(s, "top-reasons", p + "top-reasons", d.topReasons(), 1, 25),
+                number(s, "reoffence-lines", p + "reoffence-lines", d.reoffenceLines(), 1, 25),
+                number(s, "staff-lines", p + "staff-lines", d.staffLines(), 1, 50),
+                bool(s, "discord", p + "discord", d.discord()), bool(s, "csv", p + "csv", d.csv()));
+    }
+
+    /** {@code "09:00"} / {@code "9:30"} (24 hours), or {@code null}. */
+    static java.time.LocalTime clock(String raw) {
+        if (raw == null || !raw.strip().matches("\\d{1,2}:\\d{2}")) {
+            return null;
+        }
+        String[] parts = raw.strip().split(":");
+        int h = Integer.parseInt(parts[0]);
+        int m = Integer.parseInt(parts[1]);
+        return h > 23 || m > 59 ? null : java.time.LocalTime.of(h, m);
+    }
+
+    private CleanStreak.Settings cleanStreak(ConfigurationSection s) {
+        CleanStreak.Settings d = CleanStreak.Settings.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.clean-streak.";
+        String title = s.contains("title") ? String.valueOf(s.get("title")).strip() : d.title();
+        if (!title.matches("[a-z0-9_]{1,64}")) {
+            error("config.bad-title-id", p + "title", "value", title);
+            title = d.title();
+        }
+        String sound = s.contains("sound") ? String.valueOf(s.get("sound")).strip() : d.sound();
+        Duration check = capped(s, "check", p + "check", d.check(), Duration.ofDays(1));
+        if (check.compareTo(Duration.ofMinutes(10)) < 0) {
+            error("config.duration-too-short", p + "check", "value", String.valueOf(s.get("check")), "min", "10m");
+            check = Duration.ofMinutes(10);
+        }
+        return new CleanStreak.Settings(bool(s, "enabled", p + "enabled", d.enabled()),
+                number(s, "days", p + "days", d.days(), 1, 365),
+                capped(s, "min-playtime", p + "min-playtime", d.minPlaytime(), Duration.ofDays(30)), check,
+                capped(s, "join-delay", p + "join-delay", d.joinDelay(), Duration.ofMinutes(5)), title, sound,
+                bool(s, "tell-lost", p + "tell-lost", d.tellLost()));
     }
 
     // ------------------------------------------------------------------ extras (P9: spec 14.1, 14.5, 14.10)

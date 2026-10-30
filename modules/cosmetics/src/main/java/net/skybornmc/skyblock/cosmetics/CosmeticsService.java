@@ -52,6 +52,8 @@ public final class CosmeticsService implements Cosmetics, Listener {
     private final CosmeticRegistry registry;
     private final ModuleMessages msg;
     private final Map<UUID, Owned> owned = new ConcurrentHashMap<>();
+    /** Ids ({@code KIND:id}) only their module grants and takes (spec 14.11: the clean-streak title). */
+    private final Set<String> automatic = ConcurrentHashMap.newKeySet();
     private volatile String autoTitle = "";
     private volatile String tagFormat = "";
     private volatile boolean tagStripBrackets = true;
@@ -222,6 +224,18 @@ public final class CosmeticsService implements Cosmetics, Listener {
             }
             return removed;
         }, new MainThread(core.plugin()));
+    }
+
+    @Override
+    public void markAutomatic(Kind kind, String id) {
+        if (kind != null && id != null) {
+            automatic.add(kind.name() + ":" + id.toLowerCase(Locale.ROOT));
+        }
+    }
+
+    @Override
+    public boolean automatic(Kind kind, String id) {
+        return kind != null && id != null && automatic.contains(kind.name() + ":" + id.toLowerCase(Locale.ROOT));
     }
 
     @Override
