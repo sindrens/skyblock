@@ -61,6 +61,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-29 (aft
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - M4.4 satchel + M4.9 Depths drops/crystals (depths lane)
 - M2.6 island stats (islands lane)
+- P6 punishments: raid lockdown, anticheat suggestions, network-ready
 - NOTE: interrupting a main-session tool call kills running workflows; check /home/claude/wt/* and restart with tools/queue-item.js (it resumes an existing worktree).
 
 ## Parked / broken
