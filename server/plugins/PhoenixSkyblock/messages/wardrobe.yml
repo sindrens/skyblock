@@ -17,7 +17,7 @@ nothing-worn: "<prefix><c:error><sym:cross></c:error> <c:text>You don't wear any
 make-room: "<prefix><c:error><sym:cross></c:error> <c:text>Make room for your <c:value><item></c:value> first."
 worn: "<prefix><c:success><sym:check></c:success> <c:text>Wearing <c:value><set></c:value> <c:muted>(<count>/4)</c:muted><c:text>."
 taken-off: "<prefix><c:success><sym:check></c:success> <c:text>Took off <c:value><count></c:value> piece(s). They stay in your wardrobe."
-locked-hint: "<c:text>Use <c:value>/wardrobe</c:value> to take this off."
+locked-hint: "<c:text>Click the piece in your armor slot to take it off, or use <c:value>/wardrobe</c:value><c:text>."
 frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't do that while frozen."
 in-combat: "<prefix><c:error><sym:cross></c:error> <c:text>You're in combat. Wait a few seconds."
 
