@@ -1,0 +1,108 @@
+# Owner answers, round 2 (30 Oct 2026, from the Decisions page)
+
+Code: SUGGESTED / NO / OTHER (+ note). Ids match tools/owner_sheet/final_q.json.
+
+- **285** [Islands] Add a 3-second warmup to /is visit and /is warp, cancelled by moving or damage? — suggested: Yes, 3 seconds → **OTHER** instant, but not while in combat, or if inside a combat zone its 3 seconds
+- **289** [Islands] Make new islands open to visitors from the start? — suggested: Yes, open by default → **SUGGESTED** 
+- **290** [Islands] List an island in the visit browser only after a minimum level or 1 hour of playtime? — suggested: Yes, with a hide switch → **OTHER** every island, all random, but preferably the ones with the more playtime
+- **291** [Islands] Limit an island to 20 visitors at once? — suggested: Yes, 20 → **OTHER** no limit
+- **292** [Islands] Require 1 hour of playtime and a different IP from members to rate or like islands? — suggested: Yes → **OTHER** can use max 3 accounts from same ip and 1 hour required playime
+- **293** [Islands] Let staff hide an island from the visit browser, with a note? — suggested: Yes → **SUGGESTED** 
+- **301** [Social & chat] Should the developer prepare a starter blocked-word list in English and Norwegian for you to approve? — suggested: Yes, you approve it → **OTHER** ONLY english and yes
+- **302** [Social & chat] Should a name's hover card show only rank, island and playtime, hiding join date and Discord name? — suggested: Yes → **SUGGESTED** 
+- **303** [Social & chat] Should the dot in Bedrock names be hidden in chat and tab, with 'Bedrock' on the hover card for staff only? — suggested: Yes → **NO** 
+- **304** [Social & chat] Should signs, anvil names, book text, island and warp names and nicknames go through the chat filter too? — suggested: Yes, all of them → **SUGGESTED** 
+- **305** [Social & chat] Should public chat allow English and Norwegian only, with other languages in private messages? — suggested: Yes → **OTHER** ONLY english in public chat, and everything in private messages
+- **316** [Social & chat] Should /ignore also block that player's /tpa, trade requests and island invites (never staff)? — suggested: Yes → **SUGGESTED** 
+- **317** [Social & chat] Should /ignore hide that player's public chat lines for you only? — suggested: Yes, as an option → **SUGGESTED** 
+- **318** [Social & chat] Should /socialspy be limited to mods and up, not helpers? — suggested: Yes, mods and up → **SUGGESTED** 
+- **319** [Social & chat] Should /rules and first join say that private messages and commands are logged for 30 days and staff can read them? — suggested: Yes, with privacy policy link → **SUGGESTED** 
+- **320** [Social & chat] Are these the final web addresses: discord.skybornmc.net, store.skybornmc.net, skybornmc.net/vote, skybornmc.net, skybornmc.net/rules? — suggested: Yes, owner confirms they exist → **SUGGESTED** 
+- **321** [Social & chat] Change the rules line to 'Staff decisions are final unless you appeal with /appeal in game or on Discord'? — suggested: Yes → **SUGGESTED** 
+- **322** [Social & chat] Add rules for language, alt abuse and macros/AFK farming outside the AFK pool? — suggested: Yes, add all three → **SUGGESTED** 
+- **331** [Teleports & essentials] Limit creative mode to builders and admins, in spawn, Depths and builder areas only? — suggested: Yes, mods use spectator → **SUGGESTED** 
+- **332** [Teleports & essentials] Mark items from /give, /i or creative as staff items that cannot be sold, traded or auctioned? — suggested: Yes, hidden tag → **SUGGESTED** 
+- **333** [Teleports & essentials] Allow god mode, fly and heal only in staff mode or build mode? — suggested: Yes → **SUGGESTED** 
+- **334** [Teleports & essentials] Let staff play normally on the same account, with powers off and big transfers to staff flagged? — suggested: Yes → **SUGGESTED** 
+- **341** [Teleports & essentials] Run all teleport warmups from one shared settings file (spawn 0 s, tpa 3 s, home 0 s, visit/warp/dungeon 3 s)? — suggested: Yes → **OTHER** what logical
+- **342** [Teleports & essentials] Block teleports while in combat? — suggested: No → **SUGGESTED** 
+- **345** [Teleports & essentials] Block /spawn and /tpa in the warzone, boss arena and events? — suggested: Yes → **OTHER** no, and it has to have a delay when in warzone boss arena and events
+- **346** [Teleports & essentials] Refuse /tpahere into a Depths tier you have not unlocked? — suggested: Yes, with a message → **SUGGESTED** 
+- **347** [Teleports & essentials] Let players type /home and /sethome for their island, with staff using /shome? — suggested: Yes → **SUGGESTED** 
+- **354** [Ranks, perks & cosmetics] Reset achievement progress every season while earned titles stay? — suggested: Yes → **SUGGESTED** 
+- **355** [Ranks, perks & cosmetics] Should achievement tiers give small rewards, not only titles? — suggested: Yes: crystals per tier, key at last → **OTHER** there are personal achievements which gives personal boost for the player for tha tprofile and island achievements that are for the whole island this needs to be planned
+- **356** [Ranks, perks & cosmetics] Add an /achievements command and a menu button? — suggested: Yes, add both → **SUGGESTED** 
+- **375** [Ranks, perks & cosmetics] Use the proposed perks per donor rank (Squire /hat, Knight /craft, Paladin /ec and /nick...)? — suggested: Yes, as proposed → **OTHER** we need to understand the server, and plan it, list it to need to be planned
+- **376** [Ranks, perks & cosmetics] Should /trash ask for a second confirm before destroying valuable custom items? — suggested: Yes, second confirm → **OTHER** remove /trash command its only for admin and owner
+- **377** [Ranks, perks & cosmetics] Block /ec and /craft in the warzone, boss arena and 10 seconds after combat? — suggested: Yes → **SUGGESTED** 
+- **386** [Ranks, perks & cosmetics] Are the donor rank names final: Squire, Knight, Paladin, Warlord, Monarch? — suggested: Yes → **OTHER** please make them more relevant to the theme and make it 7 ranks
+- **387** [Ranks, perks & cosmetics] Are donor ranks permanent and kept across seasons? — suggested: Yes, permanent → **OTHER** yes, there will be purcahes permanent ranks and be won ranks that are temporaliy for a season and resets each season
+- **388** [Ranks, perks & cosmetics] When upgrading a rank, should the player pay only the difference? — suggested: Yes → **SUGGESTED** 
+- **389** [Ranks, perks & cosmetics] Limit rank perks to convenience and cosmetics, dropping the progress boost? — suggested: Yes; keep profile slots and AH slots → **OTHER** both to a degree its donations
+- **390** [Ranks, perks & cosmetics] Add a Trainee staff rank between Ember and Helper? — suggested: Yes → **OTHER** no and change name from ember to something more relevant
+- **391** [Ranks, perks & cosmetics] Should only the owner be able to hand out staff ranks? — suggested: Yes, admins can never change permissions → **SUGGESTED** 
+- **397** [Ranks, perks & cosmetics] Should only admins give titles and tags, with mods giving event titles from a short list? — suggested: Yes → **SUGGESTED** 
+- **398** [Ranks, perks & cosmetics] Give the 'Founder' title only to players with 1+ hour in the pre-season week? — suggested: Yes, 1 hour → **OTHER** need to plan out what kind of titles and tags we want and make them relevant
+- **409** [Worlds & builds] Turn mob griefing on in island worlds so villager farms work, and keep it off at spawn, the Depths and the warzone? — suggested: Yes → **SUGGESTED** 
+- **411** [Worlds & builds] Back up every 6 hours, keep 7 days, add an off-site copy and a backup before every update? — suggested: Yes → **SUGGESTED** 
+- **412** [Worlds & builds] Use the castle districts as proposed: Tavern for quests, Hall of Heroes for leaderboards, Keep for rules, and so on? — suggested: Yes, as proposed → **SUGGESTED** 
+- **413** [Worlds & builds] Should the warzone be reachable only through the portal at the castle, not by /spawn or /tpa? — suggested: Yes → **SUGGESTED** 
+- **414** [Worlds & builds] At season reset, wipe islands and outposts only, and keep Depths, spawn and warzone worlds (resetting player data)? — suggested: Yes → **SUGGESTED** 
+- **422** [Staff & punishments] Raise raid alerts to 60 new accounts per 30 seconds during launch week? — suggested: Yes, 60 in launch week, then back to 15 → **SUGGESTED** 
+- **423** [Staff & punishments] Should permanent bans be appealable after 30 days (90 days for cheating)? — suggested: Yes, 30 days; cheating 90 days → **OTHER** yes and say on ban menu showing time remaining
+- **430** [Staff & punishments] Use the proposed list of 6 rules and which punishment reasons point to which rule? — suggested: Yes, all link to skybornmc.net/rules → **SUGGESTED** 
+- **437** [Staff & punishments] Should a staff punishment-limit block stay until an admin lifts it? — suggested: Yes, until an admin acts → **SUGGESTED** 
+- **442** [Staff & punishments] Should admins also be allowed to purge a player's personal data? — suggested: No, owner only → **SUGGESTED** 
+- **443** [Staff & punishments] Is the proposed player-data purge OK (deletes chat evidence, notes and IP history, keeps a minimal ban record)? — suggested: Yes, as proposed → **SUGGESTED** 
+- **444** [Staff & punishments] Should moderators be able to see the monthly punishment report? — suggested: No, admins only → **SUGGESTED** 
+- **450** [Staff & punishments] Should staff without approval rights be refused sanctions instead of queuing a request? — suggested: Yes, refused; admins do it → **SUGGESTED** 
+- **451** [Staff & punishments] Should 'Remove money' only take from the player's active profile? — suggested: Yes, active profile only → **SUGGESTED** 
+- **455** [Staff & punishments] Should a team block also stop the player from creating a new island? — suggested: Yes, as the spec says → **SUGGESTED** 
+- **458** [Staff & punishments] Should a dupe report also freeze the player's balance automatically? — suggested: No, staff click it themselves → **SUGGESTED** 
+- **459** [Staff & punishments] Should all staff, including helpers, be able to start and end a lockdown? — suggested: Yes, helpers and up → **SUGGESTED** 
+- **460** [Staff & punishments] Should staff, builders and the free Ember rank be exempt from lockdown? — suggested: Yes, exempt → **OTHER** yes and donor ranks
+- **467** [Staff & punishments] Should anti-cheat punishment suggestions never be applied automatically? — suggested: Yes, staff always decide → **SUGGESTED** 
+- **470** [Staff & punishments] Should mods and up, but not helpers, be able to punish many players at once? — suggested: Yes, mods and up → **SUGGESTED** 
+- **474** [Staff & punishments] Keep appeals to mods and up, with helpers unable to read the queue? — suggested: Yes, mods and up → **SUGGESTED** 
+- **480** [Staff & punishments] Keep mod bans of 30 days or more as requests that an admin must approve? — suggested: Yes, admins approve → **SUGGESTED** 
+- **493** [Staff & punishments] Should a shorter mute or ban be refused while a longer one is active? — suggested: Yes, refused → **SUGGESTED** 
+- **499** [Staff & punishments] Use the proposed punishment ladders, e.g. hacking 30 days then permanent? — suggested: Yes, as proposed → **SUGGESTED** 
+- **500** [Staff & punishments] Announce bans and mutes publicly to all players? — suggested: Yes, on → **OTHER** unless its command is with -s (silent)
+- **501** [Staff & punishments] Should helpers be able to freeze, use staff mode and see join logs with IPs hidden? — suggested: Yes, IPs hidden → **SUGGESTED** 
+- **502** [Staff & punishments] When a frozen player logs out, should staff only be alerted, not auto-ban them? — suggested: Yes, alert only → **SUGGESTED** 
+- **509** [Staff & punishments] Should only admins be able to undo other staff members' punishments? — suggested: Yes, admins only → **SUGGESTED** 
+- **513** [Staff & punishments] Keep private messages out of punishment evidence? — suggested: Yes, public chat only → **SUGGESTED** 
+- **519** [Staff & punishments] Should public ban/mute announcements show only the rule number, with no staff name? — suggested: Yes, rule number only → **SUGGESTED** 
+- **520** [Staff & punishments] Add a 'severe' reason (threats, child safety, doxxing) with instant permanent ban and admin approval? — suggested: Yes, evidence kept → **SUGGESTED** 
+- **521** [Staff & punishments] Should bans of 7 days or longer require evidence before they can be applied? — suggested: Yes, 7 days or more → **SUGGESTED** 
+- **522** [Staff & punishments] Should a banned player's island be locked for visitors while their team keeps playing? — suggested: Yes, locked for visitors → **SUGGESTED** 
+- **529** [Staff & punishments] Delete IPs and login history 12 months after the player's last login? — suggested: Yes, 12 months, plus a privacy policy → **SUGGESTED** 
+- **530** [Staff & punishments] Should every staff lookup of a player be recorded so admins can see who looked at whom? — suggested: Yes, kept 12 months → **SUGGESTED** 
+- **531** [Staff & punishments] Keep logs of valuable unique items searchable for 180 days? — suggested: Yes, 180 days → **SUGGESTED** 
+- **532** [Staff & punishments] Show new players a notice that chat and actions are logged, with a privacy link? — suggested: Yes, one line and a link → **SUGGESTED** 
+- **533** [Staff & punishments] Should mods search private messages only by typing a reason that is also logged? — suggested: Yes, reason required and logged → **SUGGESTED** 
+- **538** [Staff & punishments] Alert staff when a player has been frozen for 10 minutes, never unfreezing automatically? — suggested: Yes, alert at 10 minutes → **SUGGESTED** 
+- **539** [Staff & punishments] Require 10 minutes of playtime before a player can use /report? — suggested: Yes, 10 minutes → **SUGGESTED** 
+- **540** [Staff & punishments] Should reports about staff members go only to admins? — suggested: Yes, admins only → **SUGGESTED** 
+- **541** [Staff & punishments] Block staff in staff mode from using /ah, /pay, /shop and /sell? — suggested: Yes, while in staff mode → **SUGGESTED** 
+- **549** [Economy] Keep the auction listing fee non-refundable when a seller cancels a listing? — suggested: No refund on cancel → **SUGGESTED** 
+- **550** [Economy] Should brand-new players (under 30 minutes played) be blocked from both listing and buying on the auction house? — suggested: Yes, both blocked → **SUGGESTED** 
+- **552** [Economy] Keep money notes unsellable on the auction house for now? — suggested: Yes, not listable → **SUGGESTED** 
+- **553** [Economy] Should filled shulker boxes and bundles be blocked from the auction house? — suggested: Yes, must be empty → **SUGGESTED** 
+- **554** [Economy] Keep the auction anti-abuse limits: $10 to $1T price, 10 seconds between listings, same item max 3 times per 30 minutes? — suggested: Yes, keep as built → **SUGGESTED** 
+- **559** [Economy] Should buyers be able to buy part of a stack (10 of 64) at the per-item price? — suggested: No, whole listing only → **SUGGESTED** 
+- **560** [Economy] Should the listing screen show the price per item and the typical price (7-day median)? — suggested: Yes, both → **SUGGESTED** 
+- **561** [Economy] Should the auction house warn and ask to confirm when a price is far from typical (10x higher or lower)? — suggested: Yes, warning with confirm → **SUGGESTED** 
+- **562** [Economy] Should enchant books be searchable by enchant name and level? — suggested: Yes, with a book filter → **SUGGESTED** 
+- **563** [Economy] Should items in the collection bin stay forever during the season? — suggested: Yes, never expire → **OTHER** yes never expire
+- **573** [Economy] Should /pay have no daily limit, with alerts only for huge or repeated transfers? — suggested: Yes, no limit → **SUGGESTED** 
+- **574** [Economy] Should other players be unable to see your gem balance in /bal and /baltop? — suggested: Yes, hide gems from others → **SUGGESTED** 
+- **575** [Economy] Should /baltop leave out a gems list and show only money, crystals and shards? — suggested: Yes, no gems list → **SUGGESTED** 
+- **576** [Economy] Should staff accounts be hidden from /baltop? — suggested: Yes, hide staff → **SUGGESTED** 
+- **577** [Economy] Should /bal show a 'Bank: $X' line under your purse? — suggested: Yes, show bank line → **SUGGESTED** 
+- **578** [Economy] Should money be whole dollars only, with no cents anywhere? — suggested: Yes, whole dollars → **SUGGESTED** 
+- **579** [Economy] Should players get a join message about payments received while offline (one line per payer, max 5)? — suggested: Yes, max 5 lines then 'and N more' → **SUGGESTED** 
+- **588** [Economy] Keep the 2% early bank withdrawal fee, free for 10 minutes after each payout? — suggested: Yes, 10 free minutes → **SUGGESTED** 
+- **589** [Economy] Keep island bank daily withdraw limits: Leader and Admin none, Mod 25%, Member 10% of capacity? — suggested: Yes, as listed → **SUGGESTED** 
+- **590** [Economy] Keep island bank permissions: deposit for Admin, Mod and Member; withdraw Admin only; history Admin and Mod? — suggested: Yes, as listed → **SUGGESTED** 
+- **591** [Economy] On island disband or reset, pay the bank money to the leader? — suggested: Yes, delete keeps it → **OTHER** if an island is disbaned or reset all the profiles for peope on tha tisland is reset, money gets deleted and staff can recover it as its backuped please these questions are not fully updated with previous answers

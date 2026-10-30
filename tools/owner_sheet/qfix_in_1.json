@@ -1,0 +1,3665 @@
+[
+{
+"id": "551",
+"a": "Economy",
+"f": "Auction house",
+"q": "Should nobody get extra auction slots until store ranks exist?",
+"s": "Yes, no extra slots yet",
+"c": "Everyone has 5 listing slots for now.",
+"p": 0
+},
+{
+"id": "555",
+"a": "Economy",
+"f": "Auction house",
+"q": "Keep the /ah sell command for listing items from chat?",
+"s": "Yes, keep it",
+"c": "The menu can still do the same.",
+"p": 0
+},
+{
+"id": "556",
+"a": "Economy",
+"f": "Auction house",
+"q": "Should admins get an /ah admin command to view a player's listings?",
+"s": "No, not until approved",
+"c": "Staff can already remove listings from the menu.",
+"p": 0
+},
+{
+"id": "557",
+"a": "Economy",
+"f": "Auction house",
+"q": "Should alerts for suspicious auction sales wait for the later anomaly-alert feature?",
+"s": "Yes, wait for it",
+"c": "Covers prices far above normal or sales between linked accounts.",
+"p": 0
+},
+{
+"id": "558",
+"a": "Economy",
+"f": "Auction house",
+"q": "Should the auction house take money only, with other currencies (shards) later?",
+"s": "Yes, money only",
+"c": "",
+"p": 0
+},
+{
+"id": "564",
+"a": "Economy",
+"f": "Auction house (/ah)",
+"q": "Should the auction house also have real bidding auctions next to fixed prices?",
+"s": "No, fixed price only",
+"c": "Bidding can come later.",
+"p": 0
+},
+{
+"id": "565",
+"a": "Economy",
+"f": "Auction house (/ah)",
+"q": "Should the listing fee stay lost when a listing expires unsold?",
+"s": "Yes, no refund",
+"c": "The fee is a money sink.",
+"p": 0
+},
+{
+"id": "566",
+"a": "Economy",
+"f": "Auction house (/ah)",
+"q": "Should big auction sales be announced in chat for rare items only, without money amounts?",
+"s": "Yes, rare items only",
+"c": "",
+"p": 0
+},
+{
+"id": "567",
+"a": "Economy",
+"f": "Auction house (/ah)",
+"q": "Should the auction house be blocked only while in combat?",
+"s": "Yes, combat only",
+"c": "Same as /sell and /bank.",
+"p": 0
+},
+{
+"id": "568",
+"a": "Economy",
+"f": "Auction house (/ah)",
+"q": "Should sellers get a one-click Relist button for expired items?",
+"s": "Yes, add Relist",
+"c": "",
+"p": 0
+},
+{
+"id": "569",
+"a": "Economy",
+"f": "Auction house (/ah)",
+"q": "Should paid 'promoted listings' that show first be added later as a money sink?",
+"s": "Yes, later",
+"c": "",
+"p": 0
+},
+{
+"id": "570",
+"a": "Economy",
+"f": "Auction house (/ah)",
+"q": "Should buyers see how long a seller has played?",
+"s": "No",
+"c": "The 30-minute rule already blocks new alts.",
+"p": 0
+},
+{
+"id": "571",
+"a": "Economy",
+"f": "Auction house (/ah)",
+"q": "Should one listing be allowed to hold several stacks (bulk lot)?",
+"s": "No, one stack per listing",
+"c": "",
+"p": 0
+},
+{
+"id": "572",
+"a": "Economy",
+"f": "Auction house (/ah)",
+"q": "Should sellers get only an action bar message and sound when a high-value item sells?",
+"s": "Yes, no big title",
+"c": "",
+"p": 0
+},
+{
+"id": "580",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should /pay stay free, with no fee?",
+"s": "Yes, no fee",
+"c": "A 2% fee would be a money sink but players would dislike it.",
+"p": 0
+},
+{
+"id": "581",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should players be able to switch off incoming payments?",
+"s": "No, everyone can be paid",
+"c": "",
+"p": 0
+},
+{
+"id": "582",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should /baltop show your own rank (e.g. 'You are #137') when outside the top 10?",
+"s": "Yes, add the line",
+"c": "",
+"p": 0
+},
+{
+"id": "583",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should big numbers show short (1.2M) in menus and in full in /bal?",
+"s": "Yes, short in menus, full in /bal",
+"c": "",
+"p": 0
+},
+{
+"id": "584",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should there be no maximum balance for now?",
+"s": "Yes, no cap",
+"c": "Only matters near 9 quintillion.",
+"p": 0
+},
+{
+"id": "585",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should there be no daily earning limit, only alerts at 3x the usual rate?",
+"s": "Yes, alerts only",
+"c": "",
+"p": 0
+},
+{
+"id": "586",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should there be no daily tax on very large balances for now?",
+"s": "Yes, no tax now",
+"c": "Kept as an emergency lever against inflation.",
+"p": 0
+},
+{
+"id": "587",
+"a": "Economy",
+"f": "Balances, /pay and /baltop",
+"q": "Should the log also record refused /pay attempts so staff can see why?",
+"s": "Yes, log refusals",
+"c": "",
+"p": 0
+},
+{
+"id": "592",
+"a": "Economy",
+"f": "Bank",
+"q": "Should personal bank tiers have no perks until you send the perk list?",
+"s": "Yes, none until your list",
+"c": "",
+"p": 0
+},
+{
+"id": "593",
+"a": "Economy",
+"f": "Bank",
+"q": "Should bank money stay out of /baltop (purse only)?",
+"s": "Yes, purse only",
+"c": "",
+"p": 1
+},
+{
+"id": "594",
+"a": "Economy",
+"f": "Bank",
+"q": "Should personal and island banks be wiped together with money at season reset?",
+"s": "Yes, wipe with money",
+"c": "",
+"p": 1
+},
+{
+"id": "595",
+"a": "Economy",
+"f": "Bank",
+"q": "Should admins get a /eco bank command to view and fix player or island banks?",
+"s": "No, not until approved",
+"c": "Staff can see all bank moves in the logs.",
+"p": 0
+},
+{
+"id": "596",
+"a": "Economy",
+"f": "Bank",
+"q": "Should there be no chat message when bank interest is paid out?",
+"s": "Yes, no message",
+"c": "The bank menu shows next payout and history.",
+"p": 0
+},
+{
+"id": "597",
+"a": "Economy",
+"f": "Bank",
+"q": "Should bank interest pause if a profile played under 2 hours in the last 7 days?",
+"s": "Yes, pause",
+"c": "AFK time counts as played time for now.",
+"p": 1
+},
+{
+"id": "598",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should /bank work anywhere instead of only at a Banker NPC?",
+"s": "Yes, anywhere",
+"c": "",
+"p": 1
+},
+{
+"id": "599",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should /bank be blocked only while in combat?",
+"s": "Yes, combat only",
+"c": "Stops using the bank as a safe in PvP fights.",
+"p": 1
+},
+{
+"id": "600",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "When a deposit is bigger than the free room, should the bank deposit what fits and say so?",
+"s": "Yes, deposit what fits",
+"c": "",
+"p": 1
+},
+{
+"id": "601",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Is 0.15% personal bank interest per 3 hours (about 1.2% per day) right?",
+"s": "Yes, 0.15%",
+"c": "This is the main lever for saving versus spending.",
+"p": 1
+},
+{
+"id": "602",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Is 0.25% island bank interest per 3 hours (about 2% per day) right?",
+"s": "Yes, 0.25%",
+"c": "",
+"p": 1
+},
+{
+"id": "603",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should all island members see the bank balance, with history for Mod and up only?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "604",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should frozen players and players in staff mode be blocked from bank deposits?",
+"s": "Yes, block them",
+"c": "Closes a loophole for hiding frozen money.",
+"p": 1
+},
+{
+"id": "605",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should the bank menu get Deposit All and Withdraw All buttons with a confirm?",
+"s": "Yes, both",
+"c": "",
+"p": 0
+},
+{
+"id": "606",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should bank payouts follow Oslo time (00, 03, 06...)?",
+"s": "Yes, Oslo time",
+"c": "",
+"p": 0
+},
+{
+"id": "607",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should the next payout time show only in /bank, not on the scoreboard?",
+"s": "Yes, only in /bank",
+"c": "",
+"p": 0
+},
+{
+"id": "608",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should bank tiers be permanent for the season, never sold back or lowered?",
+"s": "Yes, permanent",
+"c": "",
+"p": 0
+},
+{
+"id": "609",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should the bank have no loans?",
+"s": "Yes, no loans",
+"c": "Could be a late-season feature.",
+"p": 0
+},
+{
+"id": "610",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should a bank tier-up give a title and sound to that player only?",
+"s": "Yes, player only",
+"c": "",
+"p": 0
+},
+{
+"id": "611",
+"a": "Economy",
+"f": "Bank (personal and island)",
+"q": "Should the bank show a one-line estimate of interest you would earn today?",
+"s": "Yes, one line",
+"c": "",
+"p": 0
+},
+{
+"id": "612",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should sell prices be shared by the whole server rather than per island or player?",
+"s": "Yes, whole server",
+"c": "One player dumping a huge stack lowers the price for everyone.",
+"p": 1
+},
+{
+"id": "613",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should one player be limited in how far they can push a sell price down per hour (about 10%)?",
+"s": "Yes, about 10% per hour",
+"c": "Protects others from price griefing.",
+"p": 1
+},
+{
+"id": "614",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should the owner have an emergency setting to scale all sell prices (for example x0.9)?",
+"s": "Yes, owner only",
+"c": "A lever against inflation.",
+"p": 1
+},
+{
+"id": "615",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should there be one Hot Item per day, shown at login?",
+"s": "Yes, one per day",
+"c": "",
+"p": 0
+},
+{
+"id": "616",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should staff be able to start a special Hot Item for events?",
+"s": "Yes, from the dashboard",
+"c": "",
+"p": 0
+},
+{
+"id": "617",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Keep the 150% ceiling on prices that drift above base?",
+"s": "Yes, keep 150%",
+"c": "",
+"p": 0
+},
+{
+"id": "618",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should item price info use trend words only, without a 7-day chart?",
+"s": "Yes, trend words only",
+"c": "",
+"p": 0
+},
+{
+"id": "619",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should /sell show how close you are to the +300% bonus cap?",
+"s": "Yes, e.g. 'Bonus +120% of max +300%'",
+"c": "",
+"p": 0
+},
+{
+"id": "620",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should shop prices stay fixed, with no sell bonus discount?",
+"s": "Yes, fixed",
+"c": "",
+"p": 0
+},
+{
+"id": "621",
+"a": "Economy",
+"f": "Dynamic sell prices, Hot Item and the +300% cap",
+"q": "Should /sell have a page listing today's 10 best-paying items?",
+"s": "Yes, small page in sell menu",
+"c": "",
+"p": 0
+},
+{
+"id": "622",
+"a": "Economy",
+"f": "Economy dashboard & alerts",
+"q": "Should moderators and up (not only admins) see the economy dashboard and alerts?",
+"s": "Yes, moderators and up",
+"c": "Changing money (/eco give, take, set) stays admin only.",
+"p": 1
+},
+{
+"id": "623",
+"a": "Economy",
+"f": "Economy dashboard & alerts",
+"q": "Should economy alerts use their own permission, with no per-staff off switch for now?",
+"s": "Yes, own permission",
+"c": "",
+"p": 0
+},
+{
+"id": "624",
+"a": "Economy",
+"f": "Economy dashboard & alerts",
+"q": "Keep the current economy alert thresholds and tune them after the first real week?",
+"s": "Yes, keep these values",
+"c": "Example: earn rate 3x average, big transfer 0.5% of all money.",
+"p": 1
+},
+{
+"id": "625",
+"a": "Economy",
+"f": "Economy dashboard & alerts",
+"q": "Should alerts never create punishment suggestions automatically?",
+"s": "Yes, staff press the button",
+"c": "",
+"p": 1
+},
+{
+"id": "626",
+"a": "Economy",
+"f": "Economy dashboard & alerts",
+"q": "Should a dashboard button be added to the /staff menu at the next menu change?",
+"s": "Yes, next menu change",
+"c": "",
+"p": 0
+},
+{
+"id": "627",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should the owner get a daily economy summary on Discord once Discord exists?",
+"s": "Yes, once a day",
+"c": "",
+"p": 1
+},
+{
+"id": "628",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should the dashboard have owner-only emergency buttons (global sell scale, shop scale, interest on/off) with a log?",
+"s": "Yes, owner only",
+"c": "",
+"p": 1
+},
+{
+"id": "629",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should a balance-mismatch alert freeze that balance until staff look?",
+"s": "Yes, freeze only",
+"c": "Not a punishment; money from nowhere is usually a bug or dupe.",
+"p": 1
+},
+{
+"id": "630",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should the owner get an alert when staff create lots of money with /eco?",
+"s": "Yes, owner only",
+"c": "",
+"p": 1
+},
+{
+"id": "631",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should /eco changes above $1B need a second admin to confirm?",
+"s": "Yes, two-person rule",
+"c": "",
+"p": 1
+},
+{
+"id": "632",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should staff have no public economy health number to share with players for now?",
+"s": "Yes, none for now",
+"c": "",
+"p": 0
+},
+{
+"id": "633",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should the dashboard show simple bars of where money comes from (Depths, spawners, AFK pool, events)?",
+"s": "Yes, simple bars",
+"c": "",
+"p": 0
+},
+{
+"id": "634",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should staff be able to mark an alert as normal so it is ignored for that profile for 7 days?",
+"s": "Yes, 7 days",
+"c": "",
+"p": 0
+},
+{
+"id": "635",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should the dashboard keep one snapshot row per week forever?",
+"s": "Yes, one per week",
+"c": "",
+"p": 0
+},
+{
+"id": "636",
+"a": "Economy",
+"f": "Economy dashboard and alerts (/eco admin)",
+"q": "Should the dashboard compare this season with the last season?",
+"s": "Yes, simple trend lines",
+"c": "",
+"p": 0
+},
+{
+"id": "637",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Make combat book drops in the Depths rarer on the live server at the next release?",
+"s": "Yes, at next release",
+"c": "Test server still has the old, more generous rates.",
+"p": 1
+},
+{
+"id": "638",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Leave Depths band D book drops unchanged and watch the dashboard?",
+"s": "Yes, no change",
+"c": "",
+"p": 0
+},
+{
+"id": "639",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Leave bank payout caps for tiers 3-5 unchanged?",
+"s": "Yes, no change",
+"c": "Casual interest is only slightly over target, about $6.6M per season.",
+"p": 0
+},
+{
+"id": "640",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should the Enchanter guide recommend an XP enchant to new players?",
+"s": "Yes, add a guide line",
+"c": "",
+"p": 0
+},
+{
+"id": "641",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should each spawner produce 1 mob instead of 4 per spawner?",
+"s": "Suggest 1; stays 4 until you decide",
+"c": "At 4, spawners would be about 69% of income and double the money supply.",
+"p": 1
+},
+{
+"id": "642",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should each extra spawner of the same tier cost 10% more than the last?",
+"s": "Yes, for the shop",
+"c": "A fixed price lets spawners pay for each other.",
+"p": 1
+},
+{
+"id": "643",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Keep the planned sell bonuses (rank +15%, upgrades, boosters, events) with the +300% cap?",
+"s": "Yes, as planned",
+"c": "Nobody reaches the cap without boosters.",
+"p": 1
+},
+{
+"id": "644",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Grow late-game Depths tier prices by 2.2x per tier instead of 2.4x?",
+"s": "Yes, 2.2x",
+"c": "Keeps a top grinder's second month near $50B.",
+"p": 1
+},
+{
+"id": "645",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should a new Depths tier's ore break at 70% speed until you forge the next tool?",
+"s": "Yes, as a design rule",
+"c": "Nothing is built yet.",
+"p": 0
+},
+{
+"id": "646",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Re-check the enchant and wardrobe plans against the new 1h/3h/8h player types later?",
+"s": "Yes, later",
+"c": "Regular players earn about 20% fewer crystals than those plans assumed.",
+"p": 0
+},
+{
+"id": "647",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should the sink dashboard use a 14-day average instead of 7 days?",
+"s": "Yes, 14 days",
+"c": "Target is 80% of money removed per season; act below 60% for 3 days.",
+"p": 0
+},
+{
+"id": "648",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should crates give mostly boosters, books, spawners and sets, with money kept small?",
+"s": "Yes",
+"c": "Crate money stays inside the 30% event income.",
+"p": 0
+},
+{
+"id": "649",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should new accounts still be allowed to receive /pay and cash notes?",
+"s": "Yes, only sending is blocked",
+"c": "",
+"p": 1
+},
+{
+"id": "650",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Approve the economy balance sheet as drafted before sell prices go live?",
+"s": "Yes, approve as built",
+"c": "",
+"p": 1
+},
+{
+"id": "651",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Accept the smooth price curve even though day 3 reaches about $15M instead of the $5M target?",
+"s": "Yes, smooth curve",
+"c": "",
+"p": 1
+},
+{
+"id": "652",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Add an endless money sink called Mastery after upgrade level 12?",
+"s": "Yes",
+"c": "Without it, only about 25% of money is removed after day 60.",
+"p": 1
+},
+{
+"id": "653",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Make tool XP per level grow 1.21x instead of 1.12x?",
+"s": "Yes, 1.21x",
+"c": "Perk slots then arrive at about 1 hour, day 2, week 1, week 4.",
+"p": 0
+},
+{
+"id": "654",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Use the proposed combat skill thresholds (0, 6, 12... up to 66 per tier)?",
+"s": "Yes, as proposed",
+"c": "",
+"p": 0
+},
+{
+"id": "655",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Pay bank interest on the lowest balance of each 3-hour cycle, and only to players with 2+ hours played in 7 days?",
+"s": "Yes, both rules on",
+"c": "",
+"p": 1
+},
+{
+"id": "656",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Block accounts with under 2 hours played from /pay and from listing on the auction house?",
+"s": "Yes",
+"c": "Other rows use a 30-minute limit instead.",
+"p": 1
+},
+{
+"id": "657",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Count island production as online only if a member was active in the last 15 minutes?",
+"s": "Yes, 15 minutes",
+"c": "Otherwise it burns fuel.",
+"p": 1
+},
+{
+"id": "657b",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should time in the Depths earn island fuel?",
+"s": "No, only time on the island",
+"c": "",
+"p": 0
+},
+{
+"id": "658",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Let sell prices recover by 2% of the gap every 10 minutes?",
+"s": "Yes",
+"c": "The alternative is a fixed 2 points.",
+"p": 1
+},
+{
+"id": "658b",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Make the Hot Item pay +25% for 24 hours?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "659",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should unlocking a personal bank tier cost 2% of that tier's capacity?",
+"s": "Yes, 2%",
+"c": "",
+"p": 1
+},
+{
+"id": "660",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Keep /pay minimums ($10, 1 crystal, 1 gem, 1 shard) and confirm prompts from $1M or 10,000 crystals, 100 gems, 1,000 shards?",
+"s": "Yes, as built",
+"c": "",
+"p": 1
+},
+{
+"id": "661",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Wipe money, crystals and shards at season start, and decide the rest with the season system?",
+"s": "Decide with the season system",
+"c": "Starting $1,000 is given once per season.",
+"p": 0
+},
+{
+"id": "662",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should every player be able to see others' balances with /bal <player>?",
+"s": "Yes, everyone",
+"c": "",
+"p": 1
+},
+{
+"id": "663",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should players see the staff reason (max 64 characters) for /eco changes in /transactions?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "665",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Keep money note limits: $100 to $1T per note, 10 seconds between /withdraw, no fee?",
+"s": "Yes, as built",
+"c": "",
+"p": 1
+},
+{
+"id": "666",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should money notes be money only, with no shard notes?",
+"s": "Yes, money only",
+"c": "",
+"p": 1
+},
+{
+"id": "667",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should a money note that is not in the database be confiscated with a staff alert?",
+"s": "Yes",
+"c": "Such a note is treated like a copy.",
+"p": 1
+},
+{
+"id": "668",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should crash-lost money notes be re-issued by staff by hand instead of automatically?",
+"s": "Yes, manual",
+"c": "Very rare; staff can see it in the logs.",
+"p": 0
+},
+{
+"id": "669",
+"a": "Economy",
+"f": "Economy: money, pay, notes, limits",
+"q": "Should money notes be unusable in crafting, villager trades and cartography tables?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "671",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should AFK pool time not count toward the 2-hour interest activity rule?",
+"s": "Yes, active play only",
+"c": "Otherwise parked alts could earn interest for free.",
+"p": 1
+},
+{
+"id": "672",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should interest stay the same for every rank, with no donor bonus?",
+"s": "Yes, no rank bonus",
+"c": "",
+"p": 1
+},
+{
+"id": "673",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should the owner have a dashboard switch to turn interest off in an emergency?",
+"s": "Yes, owner only",
+"c": "",
+"p": 1
+},
+{
+"id": "674",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should players get a login line like 'You earned $X interest while away'?",
+"s": "Yes, one line",
+"c": "",
+"p": 0
+},
+{
+"id": "675",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should interest have no extra stop for very high bank balances?",
+"s": "Yes, payout cap is enough",
+"c": "",
+"p": 0
+},
+{
+"id": "676",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should the interest rate stay fixed all season?",
+"s": "Yes, fixed",
+"c": "",
+"p": 0
+},
+{
+"id": "677",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should interest not count as earned money for achievements and set levels?",
+"s": "Yes, does not count",
+"c": "",
+"p": 0
+},
+{
+"id": "678",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Should interest rates stay unchanged automatically, with staff using the emergency switch instead?",
+"s": "Yes, staff decide",
+"c": "",
+"p": 0
+},
+{
+"id": "679",
+"a": "Economy",
+"f": "Interest (bank payouts)",
+"q": "Keep the rule that interest counts only money held since the cycle's lowest balance?",
+"s": "Yes, keep it",
+"c": "New deposits wait up to 3 hours to earn.",
+"p": 0
+},
+{
+"id": "680",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should money notes be fireproof and never despawn?",
+"s": "Yes",
+"c": "Paper would otherwise burn and the money would be lost.",
+"p": 1
+},
+{
+"id": "681",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should /withdraw and note cashing be blocked in combat and in the warzone?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "682",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should the warzone death loss (2% of money) apply only to the purse, not to notes?",
+"s": "Yes, purse only",
+"c": "Notes are then a safe place to keep money.",
+"p": 1
+},
+{
+"id": "683",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should anyone holding a note be able to cash it, even if the maker was frozen or banned?",
+"s": "Yes, bearer item",
+"c": "Staff can freeze the balance but not the note.",
+"p": 1
+},
+{
+"id": "684",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should staff be able to void a single note by its id, with a logged action?",
+"s": "Yes",
+"c": "Needed when a note was made from duped money.",
+"p": 1
+},
+{
+"id": "685",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should a note show the name of the player who made it?",
+"s": "Yes, 'Issued by <name>'",
+"c": "",
+"p": 0
+},
+{
+"id": "686",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should notes of the same value stack together?",
+"s": "No, one note per slot",
+"c": "Each note is unique for dupe safety.",
+"p": 0
+},
+{
+"id": "687",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should /withdraw accept 'all' and 'half' as the amount?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "688",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should there be no daily limit on turning money into notes, only an alert at 10 notes cashed per hour?",
+"s": "Yes, no limit",
+"c": "",
+"p": 0
+},
+{
+"id": "689",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should players be able to add a name tag to a note?",
+"s": "No",
+"c": "Prevents scams and spam text.",
+"p": 0
+},
+{
+"id": "690",
+"a": "Economy",
+"f": "Money notes (/withdraw)",
+"q": "Should notes look different for small, medium and large values once the resource pack exists?",
+"s": "Yes, 3 looks",
+"c": "",
+"p": 0
+},
+{
+"id": "692",
+"a": "Economy",
+"f": "Sell",
+"q": "Approve the draft sell prices (generator drops, crops, spawner loot, Depths drops) and put them live on the test server?",
+"s": "Yes, test server first",
+"c": "",
+"p": 1
+},
+{
+"id": "693",
+"a": "Economy",
+"f": "Sell",
+"q": "Keep emeralds unsellable?",
+"s": "Yes, off",
+"c": "Villagers turn free sticks into emeralds.",
+"p": 1
+},
+{
+"id": "694",
+"a": "Economy",
+"f": "Sell",
+"q": "Keep unsellable the items that would give craft or smelt profit (arrows, most ingots, storage blocks, wool, etc.)?",
+"s": "Yes, as described",
+"c": "Iron golems earn little; a custom golem drop could come later.",
+"p": 1
+},
+{
+"id": "695",
+"a": "Economy",
+"f": "Sell",
+"q": "Should vanilla mob drops sell from any farm, while vanilla logs are not sellable (only Depths logs)?",
+"s": "Yes, as described",
+"c": "",
+"p": 1
+},
+{
+"id": "696",
+"a": "Economy",
+"f": "Sell",
+"q": "Show 'Rising / Falling / Steady' words instead of ▲▼ arrows in the sell menu?",
+"s": "Yes, words",
+"c": "Arrows are not safe on Bedrock.",
+"p": 0
+},
+{
+"id": "697",
+"a": "Economy",
+"f": "Sell",
+"q": "Show the daily Hot Item only in the /sell menu, with no chat or scoreboard announcement?",
+"s": "Yes, /sell menu only",
+"c": "",
+"p": 0
+},
+{
+"id": "698",
+"a": "Economy",
+"f": "Sell",
+"q": "Should admins have no /sell admin command to inspect or reset prices for now?",
+"s": "Yes, edit the file via a developer",
+"c": "",
+"p": 0
+},
+{
+"id": "699",
+"a": "Economy",
+"f": "Sell",
+"q": "Keep sell box items in the player's inventory while the box is open, so closing or crashing never loses items?",
+"s": "Yes, as described",
+"c": "",
+"p": 1
+},
+{
+"id": "700",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should /sell all warn and ask to confirm when it includes items the Forge needs?",
+"s": "Yes, one warning with a confirm button",
+"c": "Stops accidentally selling materials for the next tool tier.",
+"p": 1
+},
+{
+"id": "701",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should /sell be blocked in combat, and allowed in the warzone only out of combat?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "702",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should /sell work everywhere, including other players' islands, the Depths and spawn?",
+"s": "Yes, everywhere",
+"c": "",
+"p": 1
+},
+{
+"id": "703",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should a sale use the price at the moment of the Sell click?",
+"s": "Yes, price at the click",
+"c": "The total updates each second while the chest is open.",
+"p": 1
+},
+{
+"id": "704",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should vanilla items with a custom name, enchants or damage be unsellable?",
+"s": "Yes, only plain items sell",
+"c": "",
+"p": 1
+},
+{
+"id": "705",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should /sell skip the confirmation for big sales (say above $1M)?",
+"s": "Yes, no extra confirm",
+"c": "",
+"p": 0
+},
+{
+"id": "706",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should the Sell inventory button leave out the satchel?",
+"s": "Yes, satchel has its own Sell all",
+"c": "",
+"p": 0
+},
+{
+"id": "707",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should players be able to lock favorite items so /sell all never sells them, added later?",
+"s": "Yes, later",
+"c": "Shift-click lock in the inventory.",
+"p": 0
+},
+{
+"id": "708",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should a weekly top 10 sellers list be shown on a hologram?",
+"s": "Yes, weekly top 10",
+"c": "",
+"p": 0
+},
+{
+"id": "709",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should /sell keep a receipt of the last 10 sales?",
+"s": "Yes, last 10",
+"c": "",
+"p": 0
+},
+{
+"id": "710",
+"a": "Economy",
+"f": "Sell chest (/sell)",
+"q": "Should selling have no random bonus chance (crystal or key)?",
+"s": "Yes, no bonus chance",
+"c": "",
+"p": 0
+},
+{
+"id": "711",
+"a": "Economy",
+"f": "Shop",
+"q": "Approve the draft shop prices (e.g. basic blocks $4-8, anvil $400, enchanting table $1,500) and put them live on the test server?",
+"s": "Yes, test server first",
+"c": "",
+"p": 1
+},
+{
+"id": "712",
+"a": "Economy",
+"f": "Shop",
+"q": "Should shop items that can also be sold always cost more than they sell for?",
+"s": "Yes",
+"c": "1:1 convertible items are left out of the shop; stops buy-and-resell loops.",
+"p": 1
+},
+{
+"id": "713",
+"a": "Economy",
+"f": "Shop",
+"q": "Add tier 1-2 spawners to the shop later, with price rising 10% per owned spawner?",
+"s": "Yes, later",
+"c": "Needs the spawner stacking feature first.",
+"p": 0
+},
+{
+"id": "714",
+"a": "Economy",
+"f": "Shop",
+"q": "Should all seeds be unlocked from the start until farming tiers exist?",
+"s": "Yes, all unlocked",
+"c": "",
+"p": 0
+},
+{
+"id": "715",
+"a": "Economy",
+"f": "Shop",
+"q": "Should a full inventory refuse a purchase before payment, and late purchases be handed over on next join?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "716",
+"a": "Economy",
+"f": "Shop",
+"q": "Should shop purchases from $100,000 ask for confirmation, with up to 2,304 items per purchase?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "717",
+"a": "Economy",
+"f": "Shop",
+"q": "Should /shop <category> open a category directly?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "718",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should the shop have a search button to find items by name (332 items)?",
+"s": "Yes, chat search",
+"c": "",
+"p": 1
+},
+{
+"id": "719",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should /shop work from anywhere, not only near an NPC?",
+"s": "Yes, anywhere",
+"c": "",
+"p": 1
+},
+{
+"id": "720",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should rank holders get no shop discount?",
+"s": "Yes, no discount",
+"c": "Discounts for donors would be pay-to-win.",
+"p": 1
+},
+{
+"id": "721",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should lava buckets, water buckets and flint and steel be sold in the shop?",
+"s": "Yes, island permissions protect others",
+"c": "",
+"p": 1
+},
+{
+"id": "722",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should spawn eggs, TNT, beacons, elytra and totems stay out of the shop?",
+"s": "Yes, only crates and events give them",
+"c": "",
+"p": 1
+},
+{
+"id": "723",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should staff be able to run shop sales (e.g. 20% off for a weekend)?",
+"s": "Yes, staff-set sale",
+"c": "",
+"p": 0
+},
+{
+"id": "724",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should expensive shop items (anvil, ender chest, enchanting table) have no daily buy limit?",
+"s": "Yes, no limit",
+"c": "",
+"p": 0
+},
+{
+"id": "725",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should the shop get a favorites row at the top, added later?",
+"s": "Yes, later",
+"c": "",
+"p": 0
+},
+{
+"id": "726",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should shop prices stay fixed all season?",
+"s": "Yes, fixed",
+"c": "Staff can change prices if inflation hits.",
+"p": 0
+},
+{
+"id": "727",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should all building materials be open from day 1, with no skill or Depths gating?",
+"s": "Yes, open from day 1",
+"c": "",
+"p": 0
+},
+{
+"id": "728",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should the shop leave out decoration packs bought with crystals (crystals go to the island shop later)?",
+"s": "Yes, leave them out",
+"c": "",
+"p": 0
+},
+{
+"id": "729",
+"a": "Economy",
+"f": "Shop quick-buy (/shop)",
+"q": "Should shop buying be blocked only while in combat?",
+"s": "Yes, combat only",
+"c": "",
+"p": 0
+},
+{
+"id": "730",
+"a": "Economy",
+"f": "Trading",
+"q": "Keep Trade off the /menu hub and reachable only through /help and /trade?",
+"s": "Yes, help and command only",
+"c": "The hub has no free slot.",
+"p": 0
+},
+{
+"id": "731",
+"a": "Economy",
+"f": "Trading",
+"q": "Keep trade rules: start within 16 blocks, ends beyond 24 blocks or after 10 minutes, 3 second countdown?",
+"s": "Yes, as written",
+"c": "",
+"p": 1
+},
+{
+"id": "732",
+"a": "Economy",
+"f": "Trading",
+"q": "Should players with under 30 minutes played be unable to offer money in a trade, but still offer items?",
+"s": "Yes",
+"c": "Same rule as /pay.",
+"p": 1
+},
+{
+"id": "733",
+"a": "Economy",
+"f": "Trading",
+"q": "Should any damage end an open trade, with no requests within 10 seconds of combat?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "734",
+"a": "Economy",
+"f": "Trading",
+"q": "Should locked wardrobe armor, menu items, dupe-flagged items and filled shulker boxes be untradeable?",
+"s": "Yes, as written",
+"c": "Starter kit pieces can be traded.",
+"p": 1
+},
+{
+"id": "735",
+"a": "Economy",
+"f": "Trading",
+"q": "Should trade items that do not fit be delivered automatically later, with no trade bin menu?",
+"s": "Yes, automatic delivery",
+"c": "",
+"p": 0
+},
+{
+"id": "736",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should the trade window show each item's estimated value on hover?",
+"s": "Yes, as a hint line",
+"c": "",
+"p": 1
+},
+{
+"id": "737",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should the trade show a red warning when one side gives far more value than the other?",
+"s": "Yes, before the countdown",
+"c": "Protects new players from scams.",
+"p": 1
+},
+{
+"id": "738",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should ignoring a player (/ignore) also block their trade requests?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "739",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should a trade request show the other player's rank and playtime?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "740",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should there be no limit on money in one trade?",
+"s": "Yes, no limit",
+"c": "Alerts cover huge transfers.",
+"p": 0
+},
+{
+"id": "741",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should trading be blocked in combat and in the warzone, but allowed elsewhere?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "742",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should players see their last trades in /transactions?",
+"s": "Yes, simple list",
+"c": "",
+"p": 0
+},
+{
+"id": "743",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Keep trades limited to 12 stacks per side?",
+"s": "Yes, 12",
+"c": "Window size on Bedrock.",
+"p": 0
+},
+{
+"id": "744",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should moderators be able to open a read-only view of a suspicious trade?",
+"s": "Yes, read-only",
+"c": "",
+"p": 0
+},
+{
+"id": "746",
+"a": "Economy",
+"f": "Trading (/trade)",
+"q": "Should shards in trades have no daily cap?",
+"s": "Yes, no cap",
+"c": "",
+"p": 0
+},
+{
+"id": "4",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Should the big-sale chat message apply to every /sell sale, not only the sell chest?",
+"s": "Yes, all sales",
+"c": "",
+"p": 0
+},
+{
+"id": "10",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Add a quick 'Buy 1' option for Bedrock players too?",
+"s": "No, amount screen only",
+"c": "",
+"p": 0
+},
+{
+"id": "11",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Should players be able to drag satchel items into the sell chest?",
+"s": "No, sell them from the satchel",
+"c": "",
+"p": 0
+},
+{
+"id": "12",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Keep the server's main color red on Bedrock, the same as errors?",
+"s": "Yes, red",
+"c": "Errors still differ by the ✘ mark.",
+"p": 0
+},
+{
+"id": "13",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Should the shop's sell price be shown before the player's own sell bonus?",
+"s": "Yes, before bonus",
+"c": "",
+"p": 0
+},
+{
+"id": "14",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Is the island scoreboard fine with no blank line, and Depths boards showing money only?",
+"s": "Yes, as built",
+"c": "",
+"p": 0
+},
+{
+"id": "15",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Keep the scoreboard footer in ice blue?",
+"s": "Yes, ice blue",
+"c": "",
+"p": 0
+},
+{
+"id": "16",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Use yellow-gold for filled progress dots rather than orange?",
+"s": "Yes, yellow-gold",
+"c": "",
+"p": 0
+},
+{
+"id": "17",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Let item descriptions wrap over up to 3 lines instead of 2?",
+"s": "Yes, 3 lines",
+"c": "",
+"p": 0
+},
+{
+"id": "18",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Move all menu lore into one shared code builder later?",
+"s": "No, the look already matches",
+"c": "",
+"p": 0
+},
+{
+"id": "19",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Is it OK that crate, quest and leaderboard holograms come later?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "20",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Keep scoreboard text in the message files, like all other player text?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "21",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Should coop players see the visitor scoreboard on the island they are cooped to?",
+"s": "Yes, visitor board",
+"c": "",
+"p": 0
+},
+{
+"id": "22",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "On someone else's island, show only the island name on the scoreboard?",
+"s": "Yes, island name only",
+"c": "",
+"p": 0
+},
+{
+"id": "23",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Keep Gems on the island scoreboard, with the 'Next' note line only when there is a note?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "24",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Keep the Depths scoreboard choosing its zone layout from the zone name text?",
+"s": "Yes, text match",
+"c": "",
+"p": 0
+},
+{
+"id": "25",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Is a placeholder warzone scoreboard (Combat level and money) fine until warzone exists?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "26",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Use aqua ◆ for crystals and green ✦ for gems, with new menu icons?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "27",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Build the crystal island shop and missions later, with the island upgrades?",
+"s": "Yes",
+"c": "Crystals are only a balance for now.",
+"p": 0
+},
+{
+"id": "28",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Show SKYBORN in the tab list as white on the left and blue 'MC' on the right?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "29",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Keep the 'Next' objective and online count off the scoreboard for now?",
+"s": "Yes, objective returns with quests",
+"c": "",
+"p": 0
+},
+{
+"id": "30",
+"a": "Look & feel",
+"f": "Look & feel (colors, lores, menus)",
+"q": "Show join and quit as just [+] Name and [-] Name?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "35",
+"a": "Look & feel",
+"f": "Look and feel V2 (colors, lore, menus, scoreboard)",
+"q": "Add a high-contrast or color-blind mode in /settings later?",
+"s": "Yes, later",
+"c": "",
+"p": 0
+},
+{
+"id": "36",
+"a": "Look & feel",
+"f": "Look and feel V2 (colors, lore, menus, scoreboard)",
+"q": "Let players hide single scoreboard lines, such as gems?",
+"s": "Yes, a toggle per line",
+"c": "",
+"p": 0
+},
+{
+"id": "37",
+"a": "Look & feel",
+"f": "Look and feel V2 (colors, lore, menus, scoreboard)",
+"q": "Add seasonal color palettes, such as a December theme?",
+"s": "Yes, small color swaps",
+"c": "",
+"p": 0
+},
+{
+"id": "38",
+"a": "Look & feel",
+"f": "Look and feel V2 (colors, lore, menus, scoreboard)",
+"q": "Set menu click sounds to 50% volume for new players?",
+"s": "Yes, 50%",
+"c": "",
+"p": 0
+},
+{
+"id": "39",
+"a": "Look & feel",
+"f": "Look and feel V2 (colors, lore, menus, scoreboard)",
+"q": "Open the Help page automatically the first time a player joins?",
+"s": "Yes, only once",
+"c": "",
+"p": 0
+},
+{
+"id": "40",
+"a": "Look & feel",
+"f": "Look and feel V2 (colors, lore, menus, scoreboard)",
+"q": "Show every money change on the action bar, grouped every 1.5 seconds?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "45",
+"a": "Look & feel",
+"f": "Main menu (/menu), menu item and /help",
+"q": "Give everyone a Nether Star menu item in slot 9 on every join?",
+"s": "Yes, fixed in place, can be turned off in /settings",
+"c": "",
+"p": 0
+},
+{
+"id": "46",
+"a": "Look & feel",
+"f": "Main menu (/menu), menu item and /help",
+"q": "Should the top-center /menu button show name, rank, money, crystals and island level?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "47",
+"a": "Look & feel",
+"f": "Main menu (/menu), menu item and /help",
+"q": "Keep the menu layout always the same, not remembering the last page used?",
+"s": "Yes, always the same",
+"c": "",
+"p": 0
+},
+{
+"id": "48",
+"a": "Look & feel",
+"f": "Main menu (/menu), menu item and /help",
+"q": "Add one staff-editable 'Featured' button at the top of the menu for events and news?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "49",
+"a": "Look & feel",
+"f": "Main menu (/menu), menu item and /help",
+"q": "Should admins edit normal settings in /admin, with owner-level settings reserved for you?",
+"s": "Yes, as built",
+"c": "",
+"p": 0
+},
+{
+"id": "52",
+"a": "Look & feel",
+"f": "Personal settings (/settings)",
+"q": "Keep the new-player settings as now (tips and particles on)?",
+"s": "Yes, same as now",
+"c": "",
+"p": 0
+},
+{
+"id": "53",
+"a": "Look & feel",
+"f": "Personal settings (/settings)",
+"q": "Add a one-switch 'Do not disturb' setting for sounds, mentions and requests?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "55",
+"a": "Look & feel",
+"f": "Personal settings (/settings)",
+"q": "Let players turn off the skill XP action bar and other players' trail particles?",
+"s": "Yes, already built",
+"c": "",
+"p": 0
+},
+{
+"id": "56",
+"a": "Look & feel",
+"f": "Personal settings (/settings)",
+"q": "Add a 'Reset all settings' button with a confirm?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "57",
+"a": "Look & feel",
+"f": "Personal settings (/settings)",
+"q": "Let staff see a player's settings, read-only, in /inspect?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "58",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Make the Java resource pack optional, re-offered once a day to those who decline?",
+"s": "Yes, optional",
+"c": "Bedrock already forces it.",
+"p": 0
+},
+{
+"id": "59",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Send the resource pack from the plugin rather than from the server settings?",
+"s": "Yes, from the plugin",
+"c": "",
+"p": 0
+},
+{
+"id": "60",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Create custom item looks with model tags on normal items, safe if the pack is missing?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "61",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Keep the resource pack files in the main project folder?",
+"s": "Yes, one folder, one release",
+"c": "",
+"p": 0
+},
+{
+"id": "62",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Host the pack at pack.skybornmc.net on the VPS, with Cloudflare later?",
+"s": "Yes; needs a DNS record from you",
+"c": "",
+"p": 0
+},
+{
+"id": "63",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Let players switch the pack on or off in /settings?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "64",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Use simple original placeholder art until you or an artist make the real art?",
+"s": "Yes, no Mojang textures",
+"c": "",
+"p": 0
+},
+{
+"id": "65",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Use dark charcoal menu panels with ember corners?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "66",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Convert the pack for Bedrock with our own small converter?",
+"s": "Yes",
+"c": "Icons, glyphs and sounds only.",
+"p": 0
+},
+{
+"id": "67",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Keep Depths drops looking vanilla, except voidstone, raider scrap and wither ash?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "68",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Give pack users custom back/next arrows, and others the player heads?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "69",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Change tool looks by tier only, with a spark overlay for prestige?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "70",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Keep status marks (✔ ✘ ★ ⌛) as plain text symbols?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "71",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Add a custom ember-pattern world border texture?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "72",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Add custom tooltip backgrounds per rarity?",
+"s": "No, not while the pack is optional",
+"c": "",
+"p": 0
+},
+{
+"id": "73",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Paint the player-inventory half of menus too?",
+"s": "No, top half only",
+"c": "",
+"p": 0
+},
+{
+"id": "74",
+"a": "Look & feel",
+"f": "Resource pack (plan)",
+"q": "Show rank badges as pictures in chat and tab for pack users?",
+"s": "Yes",
+"c": "Others still see the text prefix.",
+"p": 0
+},
+{
+"id": "79",
+"a": "Look & feel",
+"f": "Resource pack plan",
+"q": "Host the pack on the VPS first and add a CDN once over 200 players?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "80",
+"a": "Look & feel",
+"f": "Resource pack plan",
+"q": "Give a one-time cosmetic tag for accepting the resource pack?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "81",
+"a": "Look & feel",
+"f": "Resource pack plan",
+"q": "Should the pack only add new sounds, not replace vanilla sounds?",
+"s": "Yes, only add new",
+"c": "",
+"p": 0
+},
+{
+"id": "82",
+"a": "Look & feel",
+"f": "Resource pack plan",
+"q": "Limit pack changes to one update per month?",
+"s": "Yes, monthly",
+"c": "Each update means a re-download.",
+"p": 0
+},
+{
+"id": "83",
+"a": "Look & feel",
+"f": "Resource pack plan",
+"q": "Leave store-sold hats and backpacks out of the first pack version?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "84",
+"a": "Look & feel",
+"f": "Resource pack plan",
+"q": "Ship just one small pack, with no lite version?",
+"s": "Yes, one 5 MB pack",
+"c": "",
+"p": 0
+},
+{
+"id": "86",
+"a": "Look & feel",
+"f": "Scoreboards (sidebar)",
+"q": "On scoreboards, show numbers in full below $100k and short above?",
+"s": "Yes, as built",
+"c": "",
+"p": 0
+},
+{
+"id": "87",
+"a": "Look & feel",
+"f": "Scoreboards (sidebar)",
+"q": "Show the season countdown on the spawn scoreboard only?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "88",
+"a": "Look & feel",
+"f": "Scoreboards (sidebar)",
+"q": "Should the warzone scoreboard show kills, bounty, event timer and combat tag?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "89",
+"a": "Look & feel",
+"f": "Scoreboards (sidebar)",
+"q": "Show satchel fullness on the Depths scoreboard, turning red at 90%?",
+"s": "Yes, red at 90%",
+"c": "Players lose drops when the satchel is full.",
+"p": 0
+},
+{
+"id": "90",
+"a": "Look & feel",
+"f": "Scoreboards (sidebar)",
+"q": "Show an island rank line ('Rank #34') on the island scoreboard once the top list exists?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "91",
+"a": "Look & feel",
+"f": "Scoreboards (sidebar)",
+"q": "Show staff in staff mode a separate board with reports, TPS and frozen players?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "92",
+"a": "Look & feel",
+"f": "Scoreboards (sidebar)",
+"q": "Keep one scoreboard layout per place, with no short/long choice?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "93",
+"a": "Look & feel",
+"f": "Scoreboards (sidebar)",
+"q": "Hide the scoreboard when a menu or book is open?",
+"s": "No",
+"c": "",
+"p": 0
+},
+{
+"id": "97",
+"a": "Look & feel",
+"f": "Server list MOTD and join flow",
+"q": "Show only 'Java & Bedrock' in the server list, with exact versions on the website?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "98",
+"a": "Look & feel",
+"f": "Server list MOTD and join flow",
+"q": "Show the real max player count in the server list?",
+"s": "Yes, the real number",
+"c": "",
+"p": 0
+},
+{
+"id": "99",
+"a": "Look & feel",
+"f": "Server list MOTD and join flow",
+"q": "Leave vanished staff out of the server-list player count?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "100",
+"a": "Look & feel",
+"f": "Server list MOTD and join flow",
+"q": "Teleport every player to spawn when they join?",
+"s": "Yes, spawn on join",
+"c": "",
+"p": 0
+},
+{
+"id": "101",
+"a": "Look & feel",
+"f": "Server list MOTD and join flow",
+"q": "Add a rules reminder line, 'Be kind. /rules', to the first-join welcome?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "102",
+"a": "Look & feel",
+"f": "Server list MOTD and join flow",
+"q": "Show the 'Welcome back' title to returning players only once per day?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "103",
+"a": "Look & feel",
+"f": "Server list MOTD and join flow",
+"q": "Show a 'pre-season ends in X days' line on join during the pre-season week?",
+"s": "Yes",
+"c": "The pre-season ends with a wipe.",
+"p": 0
+},
+{
+"id": "104",
+"a": "Look & feel",
+"f": "Settings",
+"q": "Should turning off 'Join & leave messages' also hide the first-join welcome line?",
+"s": "Yes, hidden with the toggle",
+"c": "",
+"p": 0
+},
+{
+"id": "105",
+"a": "Look & feel",
+"f": "Settings",
+"q": "Should turning off 'Event sounds' also mute the mini-boss reward sound?",
+"s": "No, only the spawn sound",
+"c": "",
+"p": 0
+},
+{
+"id": "106",
+"a": "Look & feel",
+"f": "Settings",
+"q": "Should 'Menu sounds' off mute all menu sounds but keep command error/success sounds?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "107",
+"a": "Look & feel",
+"f": "Settings",
+"q": "Should 'Particles' off hide other players' wardrobe trails?",
+"s": "Yes",
+"c": "Tips and Depths-player toggles stay 'Coming soon'.",
+"p": 0
+},
+{
+"id": "108",
+"a": "Look & feel",
+"f": "Tab list and nametags",
+"q": "Sort the tab list by rank, then name, with no dividers?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "109",
+"a": "Look & feel",
+"f": "Tab list and nametags",
+"q": "Leave vanished staff out of the online number in the tab header?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "110",
+"a": "Look & feel",
+"f": "Tab list and nametags",
+"q": "Show 'Season 1 - Preseason' in the tab header until the season system exists?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "111",
+"a": "Look & feel",
+"f": "Tab list and nametags",
+"q": "Keep island level out of the tab list?",
+"s": "Yes, keep it clean",
+"c": "",
+"p": 0
+},
+{
+"id": "112",
+"a": "Look & feel",
+"f": "Tab list and nametags",
+"q": "Add a /settings switch to hide the tab header and footer?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "113",
+"a": "Look & feel",
+"f": "Tab list and nametags",
+"q": "Keep nametags above heads to the rank prefix only?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "114",
+"a": "Look & feel",
+"f": "Tab list and nametags",
+"q": "Should staff in staff mode be fully hidden, with other staff seeing a [V] mark?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "115",
+"a": "Look & feel",
+"f": "Tab list and nametags",
+"q": "Show staff a small 'B' marker for Bedrock players in the tab list?",
+"s": "Yes, staff only",
+"c": "",
+"p": 0
+},
+{
+"id": "747",
+"a": "The Depths",
+"f": "Satchel",
+"q": "Skip a /satchel shortcut command?",
+"s": "Yes, no new command",
+"c": "The satchel opens from /dungeon and /menu.",
+"p": 0
+},
+{
+"id": "748",
+"a": "The Depths",
+"f": "Satchel",
+"q": "When the satchel is full, should mining be refused instead of letting players mine without drops?",
+"s": "Yes, refuse the break",
+"c": "Nothing is lost; the block stays.",
+"p": 1
+},
+{
+"id": "749",
+"a": "The Depths",
+"f": "Satchel",
+"q": "Keep the satchel size: 256 base, +16 per Mining and Foraging level, plus 5 money upgrades up to $6.4M?",
+"s": "Yes, as written",
+"c": "Upgrades are in the satchel menu, not at the Forge.",
+"p": 1
+},
+{
+"id": "750",
+"a": "The Depths",
+"f": "Satchel",
+"q": "Allow taking items out of the satchel to trade or sell, with no deposit button?",
+"s": "Yes, take-out only",
+"c": "",
+"p": 1
+},
+{
+"id": "751",
+"a": "The Depths",
+"f": "Satchel",
+"q": "Leave satchel auto-sell for later, as a rank or mastery perk?",
+"s": "Yes, later",
+"c": "",
+"p": 0
+},
+{
+"id": "752",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should the satchel's Sell all keep the items your next Forge upgrade needs, with a toggle?",
+"s": "Yes, toggle 'Keep Forge materials'",
+"c": "",
+"p": 1
+},
+{
+"id": "753",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should island crops and generator ores auto-pickup to the inventory, and Depths drops to the satchel?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "754",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should the satchel have one shared capacity for all item types?",
+"s": "Yes, one shared total",
+"c": "",
+"p": 1
+},
+{
+"id": "755",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should players get a warning and sound once at 90% satchel full?",
+"s": "Yes, once, with action bar line",
+"c": "",
+"p": 1
+},
+{
+"id": "756",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should staff see a player's satchel in the inspect view, read-only, with admins able to fix it?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "757",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should the satchel have no item filter?",
+"s": "Yes, no filter",
+"c": "",
+"p": 0
+},
+{
+"id": "758",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should satchel fullness show only on the scoreboard, not the action bar?",
+"s": "Yes, scoreboard only",
+"c": "",
+"p": 0
+},
+{
+"id": "759",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should satchel contents be wiped with the profile at season reset?",
+"s": "Yes, wiped",
+"c": "",
+"p": 0
+},
+{
+"id": "760",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should satchel upgrade prices be fixed, with no rank discount?",
+"s": "Yes, fixed prices",
+"c": "",
+"p": 0
+},
+{
+"id": "761",
+"a": "The Depths",
+"f": "Satchel (Depths storage)",
+"q": "Should the satchel silently count lifetime stats per item for achievements?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "762",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Leave Depths build portals as stored only for now, with players using /spawn?",
+"s": "Yes, portals later",
+"c": "They do not teleport yet.",
+"p": 0
+},
+{
+"id": "763",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Leave extra Depths world protection (outside ore fields) for later?",
+"s": "Yes, no change now",
+"c": "Open question: protect the whole world or per area.",
+"p": 0
+},
+{
+"id": "764",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Spawn Depths NPCs, holograms, leaderboards and crates later when those features exist?",
+"s": "Yes, later",
+"c": "",
+"p": 0
+},
+{
+"id": "765",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Add Depths safe zones (no mob damage at the graveyard, no pearls in combat zones) at the next Depths item?",
+"s": "Yes, next Depths item",
+"c": "",
+"p": 0
+},
+{
+"id": "766",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep world borders centred on 0,0 so moving spawn never moves a border?",
+"s": "Yes",
+"c": "Nothing visible changes.",
+"p": 0
+},
+{
+"id": "767",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep placeholder causeways between Depths zones until builders deliver real ones?",
+"s": "Yes, placeholders for now",
+"c": "",
+"p": 0
+},
+{
+"id": "768",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep placeholder Depths trees with the leaf crown on top of the trunk?",
+"s": "Yes, crown on top",
+"c": "The alternative leaves the top log unreachable.",
+"p": 0
+},
+{
+"id": "769",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should kills with a full satchel still give XP and crystals but lose the drops, with a warning?",
+"s": "Yes, drops lost",
+"c": "",
+"p": 1
+},
+{
+"id": "770",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should every player who did at least 10% of a mini-boss's damage get the full rewards?",
+"s": "Yes, full rewards each",
+"c": "",
+"p": 1
+},
+{
+"id": "771",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep the mini-boss timer: one per combat zone every 10 minutes while players are there?",
+"s": "Yes, as written",
+"c": "",
+"p": 0
+},
+{
+"id": "772",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should combat kills drop new custom items, used for Forge sword recipes instead of vanilla items?",
+"s": "Yes, as written",
+"c": "Drops are priced to match the balance sheet.",
+"p": 1
+},
+{
+"id": "773",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep 2 silent harmless ambient mobs per player in mine and forest zones?",
+"s": "Yes, 2 per player, silent",
+"c": "",
+"p": 0
+},
+{
+"id": "774",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep the combat mob numbers: 8 per zone plus 2 per player, max 30 per zone, damage 2 to 10 per hit?",
+"s": "Yes, as written",
+"c": "",
+"p": 1
+},
+{
+"id": "775",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Allow players to place Depths logs, which then become plain logs with no value?",
+"s": "Yes, allowed",
+"c": "",
+"p": 0
+},
+{
+"id": "776",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Make mine and forest Forge recipes use Depths drops instead of vanilla items?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "777",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep geodes, key fragments and tier 9+ shards switched off until their features exist?",
+"s": "Yes, off",
+"c": "",
+"p": 0
+},
+{
+"id": "778",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep blueprint drop chances in the tools settings, not in the Depths drop tables?",
+"s": "Yes, stay there",
+"c": "",
+"p": 0
+},
+{
+"id": "779",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Pay Depths crystals in one batch every 3 seconds, with a '+N crystals' action bar line?",
+"s": "Yes, every 3 seconds",
+"c": "",
+"p": 0
+},
+{
+"id": "780",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should impossibly fast Depths breaks be ignored silently, with a staff alert after 3 flags in 10 seconds?",
+"s": "Yes, silent",
+"c": "",
+"p": 1
+},
+{
+"id": "781",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep fast-break log entries under the 'world' category instead of a new anti-cheat category?",
+"s": "Yes, world",
+"c": "",
+"p": 0
+},
+{
+"id": "782",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should the player's Depths visibility choice be saved once the /settings toggle exists?",
+"s": "Yes, save it later",
+"c": "",
+"p": 0
+},
+{
+"id": "783",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should players in Depths regions be unable to break non-resource blocks or place blocks?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "784",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep the Depths wing layout with the strip south of The Gate left free for a possible fourth wing?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "785",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Use the proposed Combat tier unlock levels (0, 6, 12... up to 66)?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "786",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep the Depths world spawn in the middle of The Gate, not at the arrival pad?",
+"s": "Yes, keep",
+"c": "",
+"p": 0
+},
+{
+"id": "787",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep Depths tier gates as open frames until per-player doors are built?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "788",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep Depths zone coordinates out of the deploy so builders' changes are never overwritten?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "789",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should only admins be able to generate Depths placeholders, not builders?",
+"s": "Yes, admin only",
+"c": "",
+"p": 0
+},
+{
+"id": "790",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Accept a one-tick flash of the real ore right after a Depths break?",
+"s": "Yes, accept it",
+"c": "Fixing it needs an extra plugin.",
+"p": 0
+},
+{
+"id": "791",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should a locked tier's gate show iron bars to that player?",
+"s": "Yes, iron bars",
+"c": "",
+"p": 0
+},
+{
+"id": "792",
+"a": "The Depths",
+"f": "The Depths",
+"q": "If a zone becomes locked while a player is inside, should they be sent back to The Gate?",
+"s": "Yes, with a message",
+"c": "",
+"p": 0
+},
+{
+"id": "793",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Use one shared teleport warmup for all teleports, including /dungeon?",
+"s": "Yes, already done",
+"c": "",
+"p": 0
+},
+{
+"id": "794",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should every first tier unlock be logged, including tier 1?",
+"s": "Yes, log all",
+"c": "",
+"p": 0
+},
+{
+"id": "795",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Keep the Depths unlock season setting matched to the skills season setting?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "796",
+"a": "The Depths",
+"f": "The Depths",
+"q": "Should staff teleporting into a locked tier get no XP or drops, while builders and admins bypass all gates?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "797",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should mini-bosses get +25% health per extra player, up to +100%?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "798",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should bows, crossbows and tridents work in combat zones with their own damage numbers?",
+"s": "Yes",
+"c": "Many Bedrock players use bows.",
+"p": 1
+},
+{
+"id": "799",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should a tier-10 mob take about 8 hits to kill an average player wearing a matching armor set?",
+"s": "Yes, about 8 hits",
+"c": "",
+"p": 1
+},
+{
+"id": "800",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should combat zones have a safe arrival pad where mobs do not follow?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "801",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should rare elite mobs (1 in 100) spawn with extra drops and a glow?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "802",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should kill streaks give bonus crystals?",
+"s": "No, not for now",
+"c": "",
+"p": 0
+},
+{
+"id": "803",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should mob names show health, with no floating damage numbers?",
+"s": "Yes",
+"c": "Damage numbers cost entities and cause lag.",
+"p": 0
+},
+{
+"id": "804",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should everyone who did at least 10% of a mob's damage get its drops?",
+"s": "Yes, as built",
+"c": "",
+"p": 0
+},
+{
+"id": "805",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should a hurt mob reset to full health after 10 seconds without a hit?",
+"s": "Yes",
+"c": "Stops pulling mobs to a trap spot.",
+"p": 0
+},
+{
+"id": "806",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should mob damage stay fixed per tier, ignoring the player's armor?",
+"s": "Yes, fixed",
+"c": "",
+"p": 0
+},
+{
+"id": "807",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should there be a weekly top 10 leaderboard for mini-boss kills?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "808",
+"a": "The Depths",
+"f": "The Depths: combat zones, mobs and mini-bosses",
+"q": "Should bosses drop trophies that decorate islands?",
+"s": "No",
+"c": "Trophies need item models and storage.",
+"p": 0
+},
+{
+"id": "809",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should each Depths tier drop only one item type?",
+"s": "Yes, one per tier",
+"c": "Mixed drops make prices and Forge costs harder.",
+"p": 1
+},
+{
+"id": "810",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should only custom tools work in the Depths, not plain vanilla pickaxes and axes?",
+"s": "Yes, starter kit is free",
+"c": "",
+"p": 1
+},
+{
+"id": "811",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should a geode give 5 to 50 crystals, and 10 key fragments make a crate key?",
+"s": "Yes",
+"c": "Both drop with 0 chance today.",
+"p": 1
+},
+{
+"id": "812",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should Depths drops be tradeable and listable on the auction house, not only sellable?",
+"s": "Yes, like normal items",
+"c": "",
+"p": 1
+},
+{
+"id": "813",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should ore respawn in the same 10 seconds in every tier?",
+"s": "Yes, 10 seconds",
+"c": "",
+"p": 0
+},
+{
+"id": "814",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should rare glowing ore (1 in 500 blocks) give 5x drops?",
+"s": "Yes, small glow particle",
+"c": "",
+"p": 0
+},
+{
+"id": "815",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Keep crystal drops as small chances, with rare bundles only via the Geode enchant?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "816",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should /dungeon show a table of what each tier's drops are worth?",
+"s": "Yes, price per drop",
+"c": "",
+"p": 0
+},
+{
+"id": "817",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should there be no daily double-drops zone for now?",
+"s": "Yes, none for now",
+"c": "",
+"p": 0
+},
+{
+"id": "818",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should mining have no combo or streak bonus?",
+"s": "Yes, no combo",
+"c": "",
+"p": 0
+},
+{
+"id": "819",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Should the Forest have no special golden tree event for now?",
+"s": "Yes, not now",
+"c": "",
+"p": 0
+},
+{
+"id": "820",
+"a": "The Depths",
+"f": "The Depths: ore, logs and drops",
+"q": "Keep one ore block per tier, so tiers look clearly different?",
+"s": "Yes, as built",
+"c": "",
+"p": 0
+},
+{
+"id": "821",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should players be allowed to bring a lower-level friend into a locked zone?",
+"s": "No, no guest passes",
+"c": "Passes would let high players boost low ones past the levels.",
+"p": 1
+},
+{
+"id": "822",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should PvP be off everywhere in the Depths, with the warzone as the only PvP place?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "823",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "After dying in the Depths, should players respawn at the arrival pad of their current tier?",
+"s": "Yes",
+"c": "Death has no penalty.",
+"p": 1
+},
+{
+"id": "824",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should combat zones cap at 40 players, with no cap on ore tiers?",
+"s": "Yes",
+"c": "Ore is personal, but 300 players would crowd the combat mobs.",
+"p": 1
+},
+{
+"id": "825",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should flying be disabled in the Depths?",
+"s": "Yes, no flying",
+"c": "Flying skips gates and causeways.",
+"p": 1
+},
+{
+"id": "826",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should a lower tool still mine higher ore but slower (70% speed with the previous tier)?",
+"s": "Yes, slower",
+"c": "Not impossible; much slower with even lower tools.",
+"p": 1
+},
+{
+"id": "827",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should /spawn and /is home work from inside the Depths at any time?",
+"s": "Yes, with normal warmups",
+"c": "",
+"p": 0
+},
+{
+"id": "828",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should staff be able to lock and unlock a Depths zone for events or maintenance?",
+"s": "Yes, toggle per zone",
+"c": "",
+"p": 0
+},
+{
+"id": "829",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should the Depths always be bright and clear, with no night or weather?",
+"s": "Yes",
+"c": "Dark caves are hard to see on Bedrock and phones.",
+"p": 0
+},
+{
+"id": "830",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should /dungeon have a 'Last tier' button at the top?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "831",
+"a": "The Depths",
+"f": "The Depths: zones and tier locks",
+"q": "Should the first visit to each tier give a small one-time reward (crystals and a title line)?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "988",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Should spawner items be tradeable and sellable on the auction house?",
+"s": "Yes, tradeable",
+"c": "Spawners are the strongest money source; trading adds exploit risk.",
+"p": 1
+},
+{
+"id": "989",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Put no limit on how many spawner blocks one island can place?",
+"s": "Yes, no block limit; stack caps apply",
+"c": "",
+"p": 1
+},
+{
+"id": "990",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Should spawners work across the whole island while a member is on it?",
+"s": "Yes",
+"c": "Today the range is 16 blocks.",
+"p": 1
+},
+{
+"id": "991",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Add a spawner fuel/upkeep cost once Island Fuel exists?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "992",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Should spawner output stop when the island hits its mob or item limits?",
+"s": "Yes, with a 'Limit reached' line",
+"c": "",
+"p": 1
+},
+{
+"id": "993",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Show a floating label with type and stack size above each spawner?",
+"s": "Yes, one per block",
+"c": "",
+"p": 0
+},
+{
+"id": "994",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Keep one mob type per spawner block, with no mixing?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "995",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Let staff see a list of the biggest spawner stacks in the economy dashboard?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "996",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Ask for confirmation before sneak-breaking a stack of 10 or more spawners?",
+"s": "Yes",
+"c": "Accident protection.",
+"p": 0
+},
+{
+"id": "997",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Require the Spawner mastery to place tier 3 and higher spawners?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "998",
+"a": "Stacking & spawners",
+"f": "Spawners (stackable)",
+"q": "Show an estimated money-per-hour figure in the spawner menu?",
+"s": "Yes, from today's sell prices",
+"c": "",
+"p": 0
+},
+{
+"id": "999",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Keep spawner speed as built, 4 mobs per spawner every 10-40 seconds?",
+"s": "Yes",
+"c": "A full 512 stack makes about 4,900 mobs per minute.",
+"p": 1
+},
+{
+"id": "1000",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Keep rare spawner drops low: evoker totem 2% and shulker shell 5%?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "1001",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Should shearing a sheep stack shear them all, while other stacks can't be sheared?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "1002",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "For spawner mobs: no daylight burning, no zombifying, slimes always smallest?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "1003",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Count entity limits only in the island's loaded chunks?",
+"s": "Yes",
+"c": "Faster; a rare edge case can exceed the limit.",
+"p": 0
+},
+{
+"id": "1004",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Should plugin holograms also count toward the island's limit of 30?",
+"s": "Yes, everything counts",
+"c": "",
+"p": 0
+},
+{
+"id": "1005",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Make these crops grow in the dark: wheat, carrots, potatoes, beetroots, stems, berries, torchflowers?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "1006",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "After a crash, remove a spawner block that is missing from the database?",
+"s": "Yes",
+"c": "A crash can lose a spawner but never duplicate one.",
+"p": 1
+},
+{
+"id": "1007",
+"a": "Stacking & spawners",
+"f": "Stacking & spawners",
+"q": "Limit /spawner give to 1-2,304 per command, admins only?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "1008",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Should explosions kill at most 10 mobs of a stack?",
+"s": "Yes, up to 10 per explosion",
+"c": "",
+"p": 1
+},
+{
+"id": "1009",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "When a stack is killed, should its drops spill as one stacked item to pick up?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "1010",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Give staff a tool to clear or split huge stacks on an island that lags?",
+"s": "Yes",
+"c": "",
+"p": 1
+},
+{
+"id": "1011",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Tell island members when a spawn is cancelled by the 8-stacks-per-chunk limit?",
+"s": "Yes, a rare action bar line",
+"c": "",
+"p": 1
+},
+{
+"id": "1012",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Should bows and tridents work with the stack-kill enchants?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "1013",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Show only name and count on stacked mobs, with no health bar?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "1014",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Should mobs above the per-chunk stack limit join the biggest stack, or cancel if it is full?",
+"s": "Yes, join the biggest stack",
+"c": "",
+"p": 0
+},
+{
+"id": "1015",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Show the island's remaining entity limits in /is info?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "1016",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Use the same 1,024 max stack size for all mobs?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "1017",
+"a": "Stacking & spawners",
+"f": "Stacking: mobs, items, entity limits and dark crops",
+"q": "Exclude stacked mob farms from island level?",
+"s": "Yes, excluded",
+"c": "",
+"p": 0
+},
+{
+"id": "306",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Should players also be allowed to post twitch.tv and tiktok.com links, with all other sites blocked?",
+"s": "Yes",
+"c": "Today only a few sites like YouTube and imgur are allowed.",
+"p": 0
+},
+{
+"id": "307",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Should only mods and up be allowed to post any link?",
+"s": "Yes, mods and up only",
+"c": "",
+"p": 0
+},
+{
+"id": "308",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Should colored chat be Squire+, bold/italic Knight+, and hex colors Warlord+?",
+"s": "Yes, staff as now",
+"c": "Must fit the rank plan.",
+"p": 0
+},
+{
+"id": "309",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Keep the 30-second chat delay for new accounts on their first day?",
+"s": "Yes, 30 seconds",
+"c": "Raid lockdown handles bot waves.",
+"p": 0
+},
+{
+"id": "310",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Keep chat order 'Title Rank Name (Tag) » message', with a /settings switch to hide titles?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "311",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Should repeated blocked messages (3 in 10 seconds) create a mute suggestion for staff, never an automatic mute?",
+"s": "Yes, suggestion only",
+"c": "",
+"p": 0
+},
+{
+"id": "312",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Should there be one public chat plus island chat, with party chat later?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "313",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Should normal emoji be allowed in chat, while invisible characters and 'zalgo' text are blocked?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "314",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Should everyone see the first-join welcome message with the join number?",
+"s": "Yes, as now",
+"c": "",
+"p": 0
+},
+{
+"id": "315",
+"a": "Social & chat",
+"f": "Chat: format, filters, mentions and staff chat",
+"q": "Should there be a single staff chat with no extra admin-only chat?",
+"s": "Yes, one staff chat",
+"c": "",
+"p": 0
+},
+{
+"id": "323",
+"a": "Social & chat",
+"f": "Social: private messages, ignore, AFK and info commands",
+"q": "Should AFK show only as a tab list mark, with the chat line off by default?",
+"s": "Yes, tab mark only",
+"c": "",
+"p": 0
+},
+{
+"id": "324",
+"a": "Social & chat",
+"f": "Social: private messages, ignore, AFK and info commands",
+"q": "Should AFK players be kicked after 30 minutes only when the server is over 90% full?",
+"s": "Yes, AFK pool excluded",
+"c": "",
+"p": 0
+},
+{
+"id": "325",
+"a": "Social & chat",
+"f": "Social: private messages, ignore, AFK and info commands",
+"q": "Should the offline /mail command wait until after launch?",
+"s": "Yes, later",
+"c": "",
+"p": 0
+},
+{
+"id": "326",
+"a": "Social & chat",
+"f": "Social: private messages, ignore, AFK and info commands",
+"q": "Should /seen show everyone's last online time, with a 'Hide my last seen' option for donors?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "327",
+"a": "Social & chat",
+"f": "Social: private messages, ignore, AFK and info commands",
+"q": "Should /broadcast be admins only?",
+"s": "Yes, admins only",
+"c": "Mods can use /sc or ask an admin.",
+"p": 0
+},
+{
+"id": "328",
+"a": "Social & chat",
+"f": "Social: private messages, ignore, AFK and info commands",
+"q": "Should the server post an automatic chat tip every 10 minutes, with a Tips switch in /settings?",
+"s": "Yes, every 10 minutes",
+"c": "",
+"p": 0
+},
+{
+"id": "329",
+"a": "Social & chat",
+"f": "Social: private messages, ignore, AFK and info commands",
+"q": "Should /playtime show two lines, 'This profile' and 'All profiles'?",
+"s": "Yes, both lines",
+"c": "",
+"p": 0
+},
+{
+"id": "330",
+"a": "Social & chat",
+"f": "Social: private messages, ignore, AFK and info commands",
+"q": "Should staff have no @everyone-style mentions in public chat?",
+"s": "Yes, use /broadcast",
+"c": "",
+"p": 0
+},
+{
+"id": "116",
+"a": "Profiles",
+"f": "Profiles",
+"q": "Should a player with only one profile be allowed to delete it and start fresh?",
+"s": "No, switch first",
+"c": "",
+"p": 0
+},
+{
+"id": "122",
+"a": "Profiles",
+"f": "Profiles",
+"q": "Should no world be listed yet as blocked for profile switching?",
+"s": "Yes, none listed",
+"c": "Combat and boss arena will refuse the switch themselves; 10 second cooldown applies.",
+"p": 0
+},
+{
+"id": "123",
+"a": "Profiles",
+"f": "Profiles",
+"q": "Should settings be per profile, while vanish, staff homes and equipped titles are shared across the account?",
+"s": "Yes, as described",
+"c": "",
+"p": 0
+},
+{
+"id": "124",
+"a": "Profiles",
+"f": "Profiles",
+"q": "Should the scoreboard show the profile name?",
+"s": "No, off",
+"c": "",
+"p": 0
+},
+{
+"id": "125",
+"a": "Profiles",
+"f": "Profiles",
+"q": "Should /isadmin addmember on an offline player use their profile 1, and an online player's active profile?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "126",
+"a": "Profiles",
+"f": "Profiles",
+"q": "Should the season reset decide later (with the season system) whether profiles themselves are deleted?",
+"s": "Yes, decide later",
+"c": "Gem-bought slots are kept forever either way.",
+"p": 0
+},
+{
+"id": "136",
+"a": "Profiles",
+"f": "Profiles (up to 3 islands per player)",
+"q": "Should other players be unable to see which profile you are on?",
+"s": "Yes, only you and staff",
+"c": "",
+"p": 0
+},
+{
+"id": "137",
+"a": "Profiles",
+"f": "Profiles (up to 3 islands per player)",
+"q": "If a player bought slot 2 with gems and later gets Knight rank, should the gems stay unrefunded?",
+"s": "Yes, no refund",
+"c": "",
+"p": 0
+},
+{
+"id": "138",
+"a": "Profiles",
+"f": "Profiles (up to 3 islands per player)",
+"q": "Should 3 profiles stay the hard maximum?",
+"s": "Yes, hard maximum of 3",
+"c": "",
+"p": 0
+},
+{
+"id": "139",
+"a": "Profiles",
+"f": "Profiles (up to 3 islands per player)",
+"q": "Should profile names go through the chat filter, with a 16 character maximum?",
+"s": "Yes",
+"c": "",
+"p": 0
+},
+{
+"id": "140",
+"a": "Profiles",
+"f": "Profiles (up to 3 islands per player)",
+"q": "Should a few profile icons be unlockable later, with the basic ones free?",
+"s": "Yes, later",
+"c": "",
+"p": 0
+}
+]
