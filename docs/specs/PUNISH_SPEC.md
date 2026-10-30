@@ -380,7 +380,7 @@ Punishments by Alex (last 7 days)
 Rules:
 - Count punishments where the creator is that staff member. `System (auto)` is never a staff member. An applied suggestion counts for the staff member who clicked `[Apply]`; a dismissed one counts for nobody.
 - **Reversed** = pardoned by anyone with a reason, including `[Undo]`. Shown separately; net = given − reversed.
-- Time zone for periods: `stats.timezone` (default `Europe/Amsterdam`).
+- Time zone for periods: `stats.timezone` (default `Europe/Oslo`, owner #16).
 - Tab completion: periods, `top`, and names of staff who ever punished (online and offline).
 - Must not scan the whole table on every use: query with an index on (`by_uuid`, `created`) and cache results for `stats.cache` (**60s**).
 - Staff with only the own-stats permission can never see other people's numbers (check on every call).
@@ -418,7 +418,7 @@ extras:
     bedrock-menu: true
   rules-link: "https://play.skybornmc.net/rules"   # owner: replace with the real link
   stats:
-    timezone: Europe/Amsterdam
+    timezone: Europe/Oslo
     cache: 60s
     default-period: 7d
   discord:

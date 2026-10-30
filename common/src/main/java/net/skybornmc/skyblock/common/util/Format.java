@@ -2,7 +2,9 @@ package net.skybornmc.skyblock.common.util;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.DateTimeException;
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.Locale;
 
 /** Player-facing number and time formatting, used everywhere (STANDARDS §1.3, UI_STYLE §1.3). */
@@ -11,7 +13,38 @@ public final class Format {
     private static final ThreadLocal<DecimalFormat> GROUPED =
             ThreadLocal.withInitial(() -> new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
 
+    /** Owner #16: the server shows CET (Europe/Oslo). Storage is always UTC epoch millis. */
+    public static final ZoneId DEFAULT_ZONE = ZoneId.of("Europe/Oslo");
+    private static volatile ZoneId zone = DEFAULT_ZONE;
+
     private Format() {
+    }
+
+    /** Time zone for every displayed date/time ({@code core.yml → display-timezone}). */
+    public static ZoneId zone() {
+        return zone;
+    }
+
+    /** Sets the display zone; returns false (and keeps the current one) when {@code id} is not a valid zone. */
+    public static boolean zone(String id) {
+        ZoneId parsed = parseZone(id);
+        if (parsed == null) {
+            return false;
+        }
+        zone = parsed;
+        return true;
+    }
+
+    /** A zone id such as {@code Europe/Oslo}, or null when blank/invalid. */
+    public static ZoneId parseZone(String id) {
+        if (id == null || id.isBlank()) {
+            return null;
+        }
+        try {
+            return ZoneId.of(id.strip());
+        } catch (DateTimeException e) {
+            return null;
+        }
     }
 
     /** {@code 1234567} → {@code "1,234,567"}. */

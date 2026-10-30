@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.Locale;
 final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     static final int SLOT_PROFILE = 4;
-    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH).withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
 
     private final Nav nav;
 
@@ -97,7 +96,7 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
                 nav.text(viewer, "hub.profile.name"),
                 nav.lines(viewer, "hub.profile.lore",
                         Msg.p("playtime", Format.duration(java.time.Duration.ofMillis(playtime))),
-                        Msg.p("joined", DATE.format(Instant.ofEpochMilli(firstSeen)))));
+                        Msg.p("joined", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(firstSeen)))));
         head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(viewer));
         return head;
     }

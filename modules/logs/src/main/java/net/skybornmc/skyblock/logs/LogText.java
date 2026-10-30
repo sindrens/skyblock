@@ -6,7 +6,6 @@ import net.skybornmc.skyblock.common.util.Format;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,8 +21,8 @@ final class LogText {
     static final Set<String> IP_KEYS = Set.of("ip", "ips", "address", "addresses", "host", "ip_address");
     static final String HIDDEN = "(hidden)";
     private static final Gson PRETTY = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().serializeNulls().create();
-    private static final DateTimeFormatter UTC = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'", Locale.ROOT)
-            .withZone(ZoneOffset.UTC);
+    /** Owner #16: times shown in the display zone (core.yml display-timezone, CET) with its short name (CET/CEST). */
+    private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z", Locale.ENGLISH);
 
     private LogText() {
     }
@@ -42,8 +41,13 @@ final class LogText {
         return Format.duration(Duration.ofMillis(ms)) + " ago";
     }
 
+    /** Kept as {@code utc} (the message placeholder name), but shows the display zone (CET/CEST). */
     static String utc(long time) {
-        return UTC.format(Instant.ofEpochMilli(time));
+        return stamp(time, Format.zone());
+    }
+
+    static String stamp(long time, java.time.ZoneId zone) {
+        return STAMP.withZone(zone).format(Instant.ofEpochMilli(time));
     }
 
     /** A copy of {@code details} with IP-like values replaced by {@link #HIDDEN} (recursively), unless allowed. */

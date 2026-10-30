@@ -64,8 +64,8 @@ public final class AuctionConfig extends ModuleConfig {
     public int relistWindowMinutes = 30;
 
     @Setting(path = "anti-abuse.new-account.min-playtime-minutes", desc = "Playtime needed before using the auction house "
-            + "(balance sheet R3: 2 h). 0 = no limit.", min = 0, max = 10_000, level = Setting.Level.OWNER)
-    public int minPlaytimeMinutes = 120;
+            + "(owner #40: 30 minutes). 0 = no limit.", min = 0, max = 10_000, level = Setting.Level.OWNER)
+    public int minPlaytimeMinutes = 30;
 
     @Setting(path = "anti-abuse.new-account.block-listing", desc = "New accounts can't list items.", level = Setting.Level.OWNER)
     public boolean newBlockListing = true;

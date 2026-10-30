@@ -15,7 +15,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.UUID;
@@ -28,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
  */
 final class InspectMenu extends Menu {
 
-    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.ENGLISH).withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.ENGLISH);
 
     private final StaffModule.Services s;
     private final PlayerData.Snapshot profile;
@@ -81,7 +80,7 @@ final class InspectMenu extends Menu {
                 Msg.p("player", name),
                 Msg.p("rank", online != null ? s.core().ranks().groupDisplayName(online) : "-"),
                 Msg.p("playtime", Format.duration(Duration.ofMillis(playtime))),
-                Msg.p("first", DATE.format(Instant.ofEpochMilli(profile.firstSeen()))),
+                Msg.p("first", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(profile.firstSeen()))),
                 Msg.p("last", online != null ? "online" : ReportService.ago(profile.lastSeen()) + " ago"),
                 Msg.p("platform", platform),
                 Msg.p("ping", online != null ? online.getPing() + " ms" : "-"),
@@ -122,7 +121,7 @@ final class InspectMenu extends Menu {
         } else {
             set(29, service.item(Material.GRAY_DYE, viewer, StaffFeature.MODULE, "menu.inspect.offline", Msg.p("player", name)));
         }
-        button(33, Material.BLAZE_ROD, "menu.inspect.punish", "punish " + name, name);
+        button(33, Material.BREEZE_ROD, "menu.inspect.punish", "punish " + name, name);
         button(34, Material.CLOCK, "menu.inspect.logs", "logs player " + name, name);
     }
 

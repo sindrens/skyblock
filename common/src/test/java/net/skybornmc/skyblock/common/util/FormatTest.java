@@ -39,4 +39,17 @@ class FormatTest {
     void rejectsBadAmounts(String input) {
         assertThrows(IllegalArgumentException.class, () -> Format.parseAmount(input));
     }
+
+    @Test
+    void displayZoneDefaultsToOsloAndRejectsBadIds() {
+        assertEquals("Europe/Oslo", Format.DEFAULT_ZONE.getId());
+        assertEquals(java.time.ZoneId.of("Europe/Oslo"), Format.parseZone(" Europe/Oslo "));
+        assertEquals(null, Format.parseZone("Mars/Olympus"));
+        assertEquals(null, Format.parseZone(""));
+        java.time.ZoneId before = Format.zone();
+        assertEquals(false, Format.zone("not a zone"));
+        assertEquals(before, Format.zone());
+        assertEquals(true, Format.zone("Europe/Oslo"));
+        assertEquals(Format.DEFAULT_ZONE, Format.zone());
+    }
 }

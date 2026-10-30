@@ -42,7 +42,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -86,8 +85,7 @@ public final class SocialModule implements SkyblockModule, Listener {
 
     private static final UUID CONSOLE_ID = new UUID(0, 0);
     private static final String SETTING_SPY = "socialspy";
-    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
-            .withZone(ZoneId.systemDefault());
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH);
 
     private final Core core;
     private final CommandService commands;
@@ -404,7 +402,7 @@ public final class SocialModule implements SkyblockModule, Listener {
         }
         boolean blocked = target instanceof Player t && !sender.hasPermission(PERM_UNIGNORABLE)
                 && ignores.getOrDefault(t.getUniqueId(), Set.of()).contains(idOf(sender));
-        String time = DATE.format(Instant.now());
+        String time = DATE.withZone(Format.zone()).format(Instant.now());
 
         msg.send(sender, "dm.sent", pre("target", target.getName()), Msg.p("message", text), Msg.p("time", time));
         if (!blocked) {
@@ -728,7 +726,7 @@ public final class SocialModule implements SkyblockModule, Listener {
         if (online != null && !hiddenFrom(online, sender)) {
             PlayerData data = core.players().get(online.getUniqueId()).orElse(null);
             msg.send(sender, "seen.online", Msg.p("player", online.getName()),
-                    Msg.p("first", data == null ? "?" : DATE.format(Instant.ofEpochMilli(data.firstSeen()))));
+                    Msg.p("first", data == null ? "?" : DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(data.firstSeen()))));
             if (details) {
                 msg.send(sender, "seen.details", pre("uuid", online.getUniqueId()),
                         Msg.p("platform", core.bedrock().isBedrock(online.getUniqueId()) ? "Bedrock" : "Java"));
@@ -743,8 +741,8 @@ public final class SocialModule implements SkyblockModule, Listener {
             PlayerData.Snapshot s = snap.get();
             long ago = Math.max(0, System.currentTimeMillis() - s.lastSeen());
             msg.send(sender, "seen.offline", Msg.p("player", s.name()), Msg.p("ago", Format.duration(Duration.ofMillis(ago))),
-                    Msg.p("last", DATE.format(Instant.ofEpochMilli(s.lastSeen()))),
-                    Msg.p("first", DATE.format(Instant.ofEpochMilli(s.firstSeen()))));
+                    Msg.p("last", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(s.lastSeen()))),
+                    Msg.p("first", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(s.firstSeen()))));
             if (details) {
                 msg.send(sender, "seen.details", pre("uuid", s.uuid()), Msg.p("platform", s.bedrock() ? "Bedrock" : "Java"));
             }
@@ -790,8 +788,8 @@ public final class SocialModule implements SkyblockModule, Listener {
         msg.send(sender, "whois.status", Msg.p("status", isOnline ? "online" : "offline"),
                 Msg.p("ago", Format.duration(Duration.ofMillis(Math.max(0, System.currentTimeMillis() - s.lastSeen())))));
         msg.send(sender, "whois.rank", Msg.p("rank", rank), Msg.p("platform", platform));
-        msg.send(sender, "whois.times", Msg.p("first", DATE.format(Instant.ofEpochMilli(s.firstSeen()))),
-                Msg.p("last", DATE.format(Instant.ofEpochMilli(s.lastSeen()))),
+        msg.send(sender, "whois.times", Msg.p("first", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(s.firstSeen()))),
+                Msg.p("last", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(s.lastSeen()))),
                 Msg.p("playtime", Format.duration(Duration.ofMillis(playtime))));
         if (isOnline) {
             Location l = online.getLocation();

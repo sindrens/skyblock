@@ -93,6 +93,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         ConfigManager configs = new ConfigManager(getDataFolder(), getLogger());
         CoreConfig coreConfig = new CoreConfig();
         configs.load(coreConfig);
+        applyZone(coreConfig);
         Style style = new Style();
         Sounds sounds = new Sounds(getLogger());
         Messages messages = new Messages(this, style);
@@ -215,6 +216,14 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
     @Override
     public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
         return new VoidChunkGenerator(id == null || id.isBlank() ? "the_void" : id, 0.5, 100, 0.5);
+    }
+
+    /** core.yml → display-timezone (owner #16: Europe/Oslo); a wrong zone keeps the current one and is logged. */
+    private void applyZone(CoreConfig config) {
+        if (!Format.zone(config.displayTimezone)) {
+            getLogger().warning("core.yml → display-timezone: '" + config.displayTimezone + "' is not a time zone (example: Europe/Oslo), using "
+                    + Format.zone().getId());
+        }
     }
 
     // ------------------------------------------------------------------ style, messages, problems
@@ -353,6 +362,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         List<String> failed = new ArrayList<>();
         if (target == null || target.equals("core")) {
             core.configs().load(core.config());
+            applyZone(core.config());
             core.configs().load(itemsConfig);
             core.configs().load(auditConfig);
             loadStyle(core.style(), core.sounds());

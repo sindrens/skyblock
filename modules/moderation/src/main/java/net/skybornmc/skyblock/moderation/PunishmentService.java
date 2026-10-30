@@ -21,7 +21,6 @@ import org.bukkit.entity.Player;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -41,8 +40,7 @@ import java.util.concurrent.Executor;
  */
 final class PunishmentService {
 
-    static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
-            .withZone(ZoneId.systemDefault());
+    static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH);
 
     /**
      * What a staff member asked for. {@code duration == null} = permanent (ban/mute). {@code template} (reason id or
@@ -336,7 +334,7 @@ final class PunishmentService {
         return TagResolver.resolver(Msg.p("player", s.targetName()), pre("target", s.targetName()), pre("sid", s.id()),
                 Msg.p("count", s.warnCount()), Msg.p("action", stepText(viewer, step)), Msg.p("reason", s.reason()),
                 Msg.p("window", settings.repeatWindow() == null ? "-" : PunishConfig.text(settings.repeatWindow())),
-                Msg.p("date", DATE.format(Instant.ofEpochMilli(s.created()))),
+                Msg.p("date", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(s.created()))),
                 Msg.p("expires", s.expires() == null ? text(viewer, "words.never")
                         : Format.duration(Duration.ofMillis(Math.max(1000, s.expires() - System.currentTimeMillis())))),
                 Msg.p("staff", s.handledByName() == null ? text(viewer, "words.system") : s.handledByName()),
@@ -417,7 +415,15 @@ final class PunishmentService {
 
     /** Kicks/bans online players hit by the punishment, updates mute caches and the vanilla ban list. */
     private void apply(Punishment p) {
-        for (Player online : affected(p)) {
+        List<Player> affected = affected(p);
+        if (p.type() == Punishment.Type.BAN) {
+            // Before the kick, so listeners (staff: a ban clears the freeze) act before quit handlers run.
+            Map<UUID, String> online = new LinkedHashMap<>();
+            affected.forEach(o -> online.put(o.getUniqueId(), o.getName()));
+            bannedAccounts(p, online).forEach((id, name) -> Bukkit.getPluginManager().callEvent(
+                    new net.skybornmc.skyblock.common.moderation.PlayerBannedEvent(id, name, p.issuerName(), p.id())));
+        }
+        for (Player online : affected) {
             switch (p.type()) {
                 case BAN -> online.kick(banScreen(online, p));
                 case KICK -> online.kick(msg.component(online, "screen.kick", parts(online, p)));
@@ -453,6 +459,22 @@ final class PunishmentService {
                 }
             }
         }
+    }
+
+    /**
+     * Accounts a ban hits, each once: the target (when known), then the online players it also hits (IP-wide bans).
+     * Empty for every other type.
+     */
+    static Map<UUID, String> bannedAccounts(Punishment p, Map<UUID, String> affectedOnline) {
+        Map<UUID, String> out = new LinkedHashMap<>();
+        if (p.type() != Punishment.Type.BAN) {
+            return out;
+        }
+        if (p.target() != null) {
+            out.put(p.target(), p.targetName());
+        }
+        affectedOnline.forEach(out::putIfAbsent);
+        return out;
     }
 
     /** Online players affected: the target, plus everyone on the same address for IP-wide punishments. */
@@ -715,7 +737,7 @@ final class PunishmentService {
                 Msg.p("staff", config.get().showStaff ? p.issuerName() : text(viewer, "words.staff")),
                 Msg.p("staff_real", p.issuerName()),
                 Msg.p("expires", expires), Msg.p("length", length),
-                Msg.p("date", DATE.format(Instant.ofEpochMilli(p.created()))),
+                Msg.p("date", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(p.created()))),
                 Msg.p("type", text(viewer, "types." + p.type().name().toLowerCase(Locale.ROOT))),
                 pre("target", p.targetName()), pre("appeal", appealUrl()));
     }

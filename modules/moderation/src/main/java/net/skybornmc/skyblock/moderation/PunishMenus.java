@@ -721,7 +721,7 @@ final class PunishMenus {
                     : Format.duration(Duration.ofMillis(Math.max(1000, p.expires() - now)));
             List<Component> lore = new ArrayList<>(service.lines(viewer, MODULE, "menu.history.entry",
                     Msg.p("id", p.id()), Msg.p("reason", p.reason()), Msg.p("staff", p.issuerName()),
-                    Msg.p("date", PunishmentService.DATE.format(Instant.ofEpochMilli(p.created()))),
+                    Msg.p("date", PunishmentService.DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(p.created()))),
                     Msg.p("length", length), Msg.p("left", left),
                     Msg.p("status", plain("status." + status.name().toLowerCase(Locale.ROOT))),
                     Msg.p("template", p.template() == null ? "-" : p.template() + " #" + (p.ladderStep() == null ? 1 : p.ladderStep() + 1)),
@@ -730,7 +730,7 @@ final class PunishMenus {
                 lore.addAll(service.lines(viewer, MODULE, "menu.history.removed",
                         Msg.p("by", p.removedByName() == null ? "?" : p.removedByName()),
                         Msg.p("removed_reason", p.removedReason() == null ? "-" : p.removedReason()),
-                        Msg.p("removed_date", PunishmentService.DATE.format(Instant.ofEpochMilli(p.removedAt())))));
+                        Msg.p("removed_date", PunishmentService.DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(p.removedAt())))));
             }
             return MenuButton.display(service.item(icon, service.text(viewer, MODULE, "menu.history.name",
                     Msg.mm("type", type == null ? p.type().name() : type), Msg.p("id", p.id()),

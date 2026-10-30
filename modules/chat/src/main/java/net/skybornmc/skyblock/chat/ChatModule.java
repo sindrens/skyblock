@@ -38,7 +38,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -75,12 +74,10 @@ public final class ChatModule implements SkyblockModule, Listener {
     static final String SETTING_MENTIONS = "mentions-sound";
     static final String SETTING_COLORS = "chat-colors";
     static final String SETTING_TIMESTAMPS = "chat-timestamps";
-    private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
-            .withZone(ZoneId.systemDefault());
+    private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
 
     private static final Pattern ITEM_TOKEN = Pattern.compile("(?i)\\[(?:item|i)]");
-    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
-            .withZone(ZoneId.systemDefault());
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
 
     private final Core core;
     private final CommandService commands;
@@ -466,7 +463,7 @@ public final class ChatModule implements SkyblockModule, Listener {
             }
             Component line = core.messages().parse(viewer, config.chatFormat, display.chatParts(viewer, player, name, body));
             if (target != null && setting(target.getUniqueId(), SETTING_TIMESTAMPS, false)) {
-                line = msg.component(viewer, "timestamp", Msg.p("time", CLOCK.format(Instant.now()))).append(line);
+                line = msg.component(viewer, "timestamp", Msg.p("time", CLOCK.withZone(Format.zone()).format(Instant.now()))).append(line);
             }
             return line;
         });
@@ -525,7 +522,7 @@ public final class ChatModule implements SkyblockModule, Listener {
                         ? core.messages().raw(ID, "hover-nick").replace("<real_name>", player.getName()) : "" : ""),
                 Msg.p("island", island.isBlank() ? "-" : island),
                 Msg.p("playtime", data == null ? "-" : Format.duration(Duration.ofMillis(data.playtimeMillis()))),
-                Msg.p("first", data == null ? "-" : DATE.format(Instant.ofEpochMilli(data.firstSeen()))),
+                Msg.p("first", data == null ? "-" : DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(data.firstSeen()))),
                 Msg.mm("discord", data != null && data.discordId() != null ? "<c:success><sym:check></c:success>"
                         : "<c:error><sym:cross></c:error>"),
                 Msg.number("ping", player.getPing()));

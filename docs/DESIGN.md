@@ -183,7 +183,7 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 | **Shards** | (see open questions) | The **Black Market** (rotating rare shop) |
 
 - `/pay <player> <amount> [currency]`. Tradeable currencies are configurable per currency.
-- Money can be withdrawn as **physical notes** (M3.2, built): `/withdraw <amount>` (money only, no fee, $100 to $1T, 10 s cooldown, not for accounts under 2 h played) gives a unique Money Note; right-click cashes it. Every note is a database row cashed in one transaction, so a copy can never be cashed twice: it is confiscated, staff are alerted and it is audited. Staff: `/eco note`. Details: `docs/commands/economy.md`.
+- Money can be withdrawn as **physical notes** (M3.2, built): `/withdraw <amount>` (money only, no fee, $100 to $1T, 10 s cooldown, not for accounts under 30 min played, owner #40) gives a unique Money Note; right-click cashes it. Every note is a database row cashed in one transaction, so a copy can never be cashed twice: it is confiscated, staff are alerted and it is audited. Staff: `/eco note`. Details: `docs/commands/economy.md`.
 
 ### 4.2 Selling and dynamic prices
 - `/sell` GUI, sell wand, auto-sell chest, chunk collector.
@@ -194,7 +194,7 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 
 ### 4.3 Auction house and player shops
 - `/ah` auction house and player shops.
-- Auction house (M3.6, built): money only; 1% listing fee + 5% sales tax (decided); 12/24/48 h listings; 5 listings by default, more by rank (`skyblock.auction.slots.<n>`); tag items, tools, blueprints and skins can be sold, starter-kit items and money notes can't; players with < 2 h playtime can't list or buy; sold money reaches the seller even offline; expired/cancelled items wait in a collection bin. Details: `docs/commands/auction.md`.
+- Auction house (M3.6, built): money only; 1% listing fee + 5% sales tax (decided); 12/24/48 h listings; 5 listings by default, more by rank (`skyblock.auction.slots.<n>`); tag items, tools, blueprints and skins can be sold, starter-kit items and money notes can't; players with < 30 min playtime can't list or buy (owner #40); sold money reaches the seller even offline; expired/cancelled items wait in a collection bin. Details: `docs/commands/auction.md`.
 - No extra money sinks beyond gameplay costs (owner decision). Inflation is controlled by price floors, interest caps and offline fuel.
 
 ### 4.4 Banks (`/bank` shows both)

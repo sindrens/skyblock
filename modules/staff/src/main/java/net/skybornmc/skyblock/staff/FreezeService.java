@@ -232,6 +232,29 @@ final class FreezeService extends StaffFeature implements Listener {
                 "frozen_for_seconds", (System.currentTimeMillis() - record.frozenAt()) / 1000));
     }
 
+    /**
+     * Owner #4: a ban clears the freeze. Moderation fires this before kicking, so the quit handler no longer sees a freeze
+     * and the logout action (e.g. an extra ban) does not run.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onBanned(net.skybornmc.skyblock.common.moderation.PlayerBannedEvent event) {
+        StaffStore.Frozen record = frozen.remove(event.getPlayer());
+        if (record == null) {
+            return;
+        }
+        persist(Bukkit.getConsoleSender(), record.uuid(), () -> store.deleteFrozen(record.uuid()));
+        Player target = Bukkit.getPlayer(record.uuid());
+        if (target != null) {
+            letGo(target, record);
+        }
+        fallGrace.remove(record.uuid());
+        notifyStaff(StaffPerms.NOTIFY, null, "freeze.staff-ban-cleared", Msg.p("player", record.name()));
+        core.audit().logPlayer(AuditCategory.PUNISHMENT, "unfreeze_ban", Actor.system("ban"), record.uuid(), record.name(), null,
+                target == null ? null : target.getLocation(), Map.of("banned_by", String.valueOf(event.getBannedBy()),
+                        "punishment", event.getPunishmentId(), "frozen_by", record.frozenBy(),
+                        "frozen_for_seconds", (System.currentTimeMillis() - record.frozenAt()) / 1000));
+    }
+
     /** Saves or deletes in submit order; a failure is logged and told to the staff member (the freeze itself still works). */
     private void persist(CommandSender staff, UUID player, java.util.function.Supplier<java.util.concurrent.CompletableFuture<Void>> write) {
         writes.submit(player, write).exceptionally(e -> {

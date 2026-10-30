@@ -56,6 +56,22 @@ public final class Suggest {
         };
     }
 
+    /**
+     * A single placeholder hint {@code <name>} instead of values (used for amounts, owner #48). Shown only while
+     * nothing is typed yet; once the player starts typing nothing is suggested, so a typed number is never replaced.
+     */
+    public static SuggestionProvider<CommandSourceStack> hint(String name) {
+        return (ctx, builder) -> {
+            hintFor(name, builder.getRemaining()).forEach(builder::suggest);
+            return builder.buildFuture();
+        };
+    }
+
+    /** The hint list for {@link #hint(String)}: {@code [<name>]} when {@code typed} is empty, otherwise empty. */
+    public static List<String> hintFor(String name, String typed) {
+        return typed == null || typed.isEmpty() ? List.of("<" + name + ">") : List.of();
+    }
+
     /** Number-with-unit suggestions: typing {@code 2} offers {@code 2m 2h 2d}; otherwise the filtered defaults. */
     public static List<String> withUnits(String typed, List<String> units, List<String> defaults) {
         if (typed != null && !typed.isEmpty() && typed.chars().allMatch(c -> Character.isDigit(c) || c == '.')) {

@@ -26,7 +26,7 @@ public final class StaffConfig extends ModuleConfig {
 
     @Setting(path = "mode.inspect-tool-material", desc = "Item of the Inspect tool. Use one that does nothing on its own: "
             + "a spyglass zooms on the player's screen and that can't be stopped by the server.")
-    public String inspectToolMaterial = "ender_eye";
+    public String inspectToolMaterial = "blaze_rod";
 
     // ------------------------------------------------------------------ freeze
 

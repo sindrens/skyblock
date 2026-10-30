@@ -24,7 +24,8 @@ class LogsLogicTest {
         assertEquals("island invite", LogText.humanize("island_invite"));
         assertEquals("just now", LogText.ago(1_000, 3_000));
         assertEquals("2h 15m ago", LogText.ago(0, Duration.ofMinutes(135).toMillis()));
-        assertEquals("1970-01-01 00:00:00 UTC", LogText.utc(0));
+        assertEquals("1970-01-01 01:00:00 CET", LogText.stamp(0, java.time.ZoneId.of("Europe/Oslo")));
+        assertEquals("2026-07-01 02:00:00 CEST", LogText.stamp(1_782_864_000_000L, java.time.ZoneId.of("Europe/Oslo")));
     }
 
     @Test

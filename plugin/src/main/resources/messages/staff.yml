@@ -54,6 +54,7 @@ freeze:
   released: "<prefix><c:success><sym:check></c:success> <c:text>You're unfrozen <c:muted>(<staff>)</c:muted>. Thanks for waiting!"
   staff-on: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>froze <c:value><player></c:value>."
   staff-off: "<c:muted>[Staff]</c:muted> <c:value><staff></c:value> <c:text>unfroze <c:value><player></c:value>."
+  staff-ban-cleared: "<c:muted>[Staff]</c:muted> <c:value><player></c:value> <c:text>was banned, so the freeze was removed."
   self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't freeze yourself."
   exempt: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't be frozen."
   not-frozen: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is not frozen."
@@ -237,7 +238,7 @@ menu:
       lore:
         - "<c:ember>Rank</c:ember> <c:value><rank>"
         - "<c:ember>Playtime</c:ember> <c:value><playtime>"
-        - "<c:ember>First joined</c:ember> <c:value><first> UTC"
+        - "<c:ember>First joined</c:ember> <c:value><first>"
         - "<c:ember>Last seen</c:ember> <c:value><last>"
         - "<c:ember>Platform</c:ember> <c:value><platform>"
         - "<c:ember>Ping</c:ember> <c:value><ping>"

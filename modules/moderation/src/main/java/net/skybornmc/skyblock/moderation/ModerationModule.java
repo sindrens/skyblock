@@ -952,6 +952,6 @@ public final class ModerationModule implements SkyblockModule, Listener {
     }
 
     static String when(long millis) {
-        return PunishmentService.DATE.format(Instant.ofEpochMilli(millis));
+        return PunishmentService.DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(millis));
     }
 }

@@ -1,5 +1,7 @@
 package net.skybornmc.skyblock.common.config;
 
+import net.skybornmc.skyblock.common.util.Format;
+
 /** Global plugin settings ({@code core.yml}). */
 public final class CoreConfig extends ModuleConfig {
 
@@ -12,6 +14,10 @@ public final class CoreConfig extends ModuleConfig {
 
     @Setting(desc = "Show config problems to staff with skyblock.admin.reload when they join.")
     public boolean notifyStaffOfConfigProblems = true;
+
+    @Setting(desc = "Time zone of every date and time shown to players and staff (owner: CET, Europe/Oslo). "
+            + "Stored times stay UTC; only the display changes.")
+    public String displayTimezone = Format.DEFAULT_ZONE.getId();
 
     @Override
     public String fileName() {

@@ -55,16 +55,17 @@ import java.util.concurrent.ThreadLocalRandom;
 final class StaffMode extends StaffFeature implements Listener {
 
     /**
-     * The kit. Slots are the hotbar positions. Inspect's item comes from {@code mode.inspect-tool-material} (default ender
-     * eye): it used to be a spyglass, which zooms on the client and the server can't cancel that.
+     * The kit. Slots are the hotbar positions. Inspect's item comes from {@code mode.inspect-tool-material} (default blaze
+     * rod, owner #5): it used to be a spyglass, which zooms on the client and the server can't cancel that. Punish uses a
+     * breeze rod so the two never look the same.
      */
     enum Tool {
-        INSPECT(0, Material.ENDER_EYE),
+        INSPECT(0, Material.BLAZE_ROD),
         FREEZE(1, Material.PACKED_ICE),
         RANDOM_TP(2, Material.COMPASS),
         LOGS(3, Material.CLOCK),
         VANISH(4, Material.LIME_DYE),
-        PUNISH(6, Material.BLAZE_ROD),
+        PUNISH(6, Material.BREEZE_ROD),
         REPORTS(7, Material.WRITABLE_BOOK),
         EXIT(8, Material.BARRIER);
 

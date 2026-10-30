@@ -55,15 +55,15 @@ class LogicTest {
     }
 
     @Test
-    void newAccountsAreKeptOutForTwoHours() {
-        long hour = 3_600_000L;
-        var r = ListingRules.account(config, hour, true).orElseThrow();
+    void newAccountsAreKeptOutForThirtyMinutes() {
+        long minute = 60_000L;
+        var r = ListingRules.account(config, 10 * minute, true).orElseThrow();
         assertEquals(ListingRules.Problem.NEW_ACCOUNT, r.problem());
-        assertEquals(hour, r.value());
-        assertTrue(ListingRules.account(config, 2 * hour, true).isEmpty());
-        assertFalse(ListingRules.account(config, hour, false).isEmpty());
+        assertEquals(20 * minute, r.value());
+        assertTrue(ListingRules.account(config, 30 * minute, true).isEmpty());
+        assertFalse(ListingRules.account(config, 10 * minute, false).isEmpty());
         config.newBlockBuying = false;
-        assertTrue(ListingRules.account(config, hour, false).isEmpty());
+        assertTrue(ListingRules.account(config, 10 * minute, false).isEmpty());
     }
 
     @Test

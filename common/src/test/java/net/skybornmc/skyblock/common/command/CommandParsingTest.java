@@ -50,6 +50,14 @@ class CommandParsingTest {
     }
 
     @Test
+    void amountHintHasNoNumberSuggestions() {
+        assertEquals(List.of("<amount>"), Suggest.hintFor("amount", ""));
+        assertEquals(List.of("<price>"), Suggest.hintFor("price", null));
+        assertEquals(List.of(), Suggest.hintFor("amount", "10"));
+        assertEquals(List.of(), Suggest.hintFor("amount", "1"));
+    }
+
+    @Test
     void amountAndDurationArgsGiveFrameworkErrors() {
         CommandFailure amount = assertThrows(CommandFailure.class, () -> Args.amount("amount").parse(null, "lots"));
         assertEquals("invalid-amount", amount.key());

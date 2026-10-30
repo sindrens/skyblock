@@ -20,8 +20,6 @@ public final class Args {
 
     private static final List<String> DURATION_UNITS = List.of("m", "h", "d", "w");
     private static final List<String> DURATION_DEFAULTS = List.of("30m", "1h", "12h", "1d", "3d", "7d", "14d", "30d");
-    private static final List<String> AMOUNT_UNITS = List.of("", "k", "M", "B");
-    private static final List<String> AMOUNT_DEFAULTS = List.of("1k", "10k", "100k", "1M", "10M", "100M", "1B");
 
     private Args() {
     }
@@ -85,7 +83,11 @@ public final class Args {
         });
     }
 
-    /** A positive whole amount with optional suffix: {@code 1500}, {@code 1.5k}, {@code 2M}, {@code 3B}. */
+    /**
+     * A positive whole amount with optional suffix: {@code 1500}, {@code 1.5k}, {@code 2M}, {@code 3B}.
+     * Tab completion shows only the hint {@code <name>} (owner #48: no number suggestions like 10k/10M/10B;
+     * players still type suffixes themselves).
+     */
     public static Arg<Long> amount(String name) {
         return Arg.word(name, (sender, raw) -> {
             try {
@@ -93,10 +95,7 @@ public final class Args {
             } catch (IllegalArgumentException e) {
                 throw CommandFailure.of("invalid-amount", Msg.p("input", raw));
             }
-        }, (ctx, builder) -> {
-            Suggest.withUnits(builder.getRemaining(), AMOUNT_UNITS, AMOUNT_DEFAULTS).forEach(builder::suggest);
-            return builder.buildFuture();
-        });
+        }, Suggest.hint(name));
     }
 
     /** A whole number between {@code min} and {@code max}; suggests {@code examples}. */

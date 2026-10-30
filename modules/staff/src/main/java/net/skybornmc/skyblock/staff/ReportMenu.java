@@ -76,7 +76,7 @@ final class ReportMenu extends Menu {
                     click.player().closeInventory();
                     reports.dispatchFor(click.player(), "inspect " + report.targetName());
                 });
-        set(32, service.item(Material.BLAZE_ROD, viewer, StaffFeature.MODULE, "menu.report-view.punish", Msg.p("player", report.targetName())),
+        set(32, service.item(Material.BREEZE_ROD, viewer, StaffFeature.MODULE, "menu.report-view.punish", Msg.p("player", report.targetName())),
                 click -> {
                     click.player().closeInventory();
                     reports.dispatchFor(click.player(), "punish " + report.targetName());
