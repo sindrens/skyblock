@@ -2,11 +2,23 @@ package net.skybornmc.skyblock.moderation;
 
 import java.util.UUID;
 
-/** One row of the {@code punishments} table. {@code expires == null} = permanent. */
+/**
+ * One row of the {@code punishments} table. {@code expires == null} = permanent. {@code weight} = warn weight in tenths
+ * (spec 12.7, 10 = 1); {@code acknowledgedAt} = when the player acknowledged a warning (spec 12.6), or {@code null}.
+ */
 public record Punishment(long id, Type type, UUID target, String targetName, String ip, boolean ipWide, String reason,
                          String template, Integer ladderStep, UUID issuer, String issuerName, long created, Long expires,
                          boolean silent, Long removedAt, UUID removedBy, String removedByName, String removedReason,
-                         String source) {
+                         String source, int weight, Long acknowledgedAt) {
+
+    /** A row with weight 1 and not acknowledged (everything before P3, and every non-warn). */
+    public Punishment(long id, Type type, UUID target, String targetName, String ip, boolean ipWide, String reason,
+                      String template, Integer ladderStep, UUID issuer, String issuerName, long created, Long expires,
+                      boolean silent, Long removedAt, UUID removedBy, String removedByName, String removedReason,
+                      String source) {
+        this(id, type, target, targetName, ip, ipWide, reason, template, ladderStep, issuer, issuerName, created, expires,
+                silent, removedAt, removedBy, removedByName, removedReason, source, 10, null);
+    }
 
     /** Source prefix of punishments created by an automatic rule ({@code auto:warn-rule:2}). */
     public static final String AUTO_PREFIX = "auto:";
@@ -24,7 +36,18 @@ public record Punishment(long id, Type type, UUID target, String targetName, Str
     /** Same row with a database id (after insert). */
     public Punishment withId(long newId) {
         return new Punishment(newId, type, target, targetName, ip, ipWide, reason, template, ladderStep, issuer, issuerName,
-                created, expires, silent, removedAt, removedBy, removedByName, removedReason, source);
+                created, expires, silent, removedAt, removedBy, removedByName, removedReason, source, weight, acknowledgedAt);
+    }
+
+    /** Same row with another warn weight (tenths). */
+    public Punishment withWeight(int tenths) {
+        return new Punishment(id, type, target, targetName, ip, ipWide, reason, template, ladderStep, issuer, issuerName,
+                created, expires, silent, removedAt, removedBy, removedByName, removedReason, source, tenths, acknowledgedAt);
+    }
+
+    /** A warning the player acknowledged ([I understand] or /ack). */
+    public boolean acknowledged() {
+        return acknowledgedAt != null;
     }
 
     public boolean permanent() {

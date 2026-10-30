@@ -15,6 +15,7 @@
 # offence-expire (extras.offence-expire below, 90d; a reason can override it: offence-expire: perm | 180d).
 # History is never deleted: only the counting for the ladder changes.
 # Steps: warn | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>   (times: 30m, 1h, 12h, 1d, 7d, 30d)
+#        warn 0.5 = a warning that counts half toward the warn rules (weight, 0.1 to 10; plain warn = 1)
 # Reason ids: lowercase a-z, 0-9 and - only, unique. icon = any item id.
 
 categories:
@@ -124,6 +125,7 @@ menu:
     personal-info: 18
     disrespect-staff: 19
   warns:                            # BOTTOM-LEFT (slots 27-30, 36-39): plain warn buttons, one warning each, no ladder
+    # weight = how much the warning counts toward the warn rules (default 1; e.g. 0.5 for a light reminder, 2 for serious)
     warn-language: { slot: 27, icon: PAPER }
     warn-caps-spam: { slot: 28, icon: WRITABLE_BOOK }
     warn-rules: { slot: 29, icon: BOOK }
@@ -144,8 +146,8 @@ menu:
     inappropriate-skin: 35
 
 # ---------- automatic warn system ----------
-# Only active warns count (not removed with /unwarn, younger than warn-expire). The counter is calculated from the
-# database, never stored. Rule actions must be a mute or ban (never warn or kick, so a rule can't trigger itself).
+# Only active warns count (not removed with /unwarn, younger than warn-expire). The counter is the SUM OF THE WEIGHTS
+# of those warns (0.5 + 0.5 + 1 = 2) and is calculated from the database, never stored. "at: 2" fires at 2 or more. Rule actions must be a mute or ban (never warn or kick, so a rule can't trigger itself).
 warn-rules:
   enabled: true
   mode: notify                # owner decision: staff decide with [Apply] / [Dismiss]. "auto" applies at once as "System (auto)"
@@ -173,3 +175,33 @@ extras:
     cache: 60s                # results are reused this long
     default-period: 7d        # 24h | 7d | 30d | all
     top: 10                   # lines in /pstats top
+  close-reports: true        # a punishment closes the reports about that player YOU claimed (outcome: punished)
+  evidence:                   # chat lines saved with every mute and warning (shown in /history -> click an entry)
+    enabled: true
+    chat-lines: 10            # the player's last chat lines
+    context-lines: 5          # other players' lines before them
+    retention: 180d           # deleted automatically after this (privacy); IP addresses are never stored
+    max-line-length: 200      # one line is cut to this many characters
+    max-chars: 6000           # all lines of one punishment together
+  notes:                      # /pnote: private staff notes
+    max-length: 200
+    shown: 3                  # newest notes on the head of /p
+    cut: 40                   # characters per note there
+  ack:                        # warnings: [I understand] / /ack
+    repeat: 30s               # reminder every ...
+    max-repeats: 3            # ... this many times (and once on the next join)
+    block-until-ack: false    # true = no chat/commands (except /ack, /rules, /mypunishments) until confirmed
+    bedrock-menu: true        # Bedrock players also get a small menu with one "I understand" button
+  rules-link: "https://skybornmc.net/rules"
+  discord:                    # punishment log on Discord. OFF: Discord is postponed (docs/LATER.md)
+    enabled: false            # also needs the webhook URL, which is a SECRET: never here, only on the server in
+                              # plugins/PhoenixSkyblock/secrets/discord.yml (written by server/scripts/apply-secrets.sh)
+    channel: punishments      # name of the webhook in secrets/discord.yml
+    queue-size: 100           # messages waiting at most (more are dropped, the punishment itself always works)
+    max-attempts: 3           # tries per message (rate limits and errors are retried)
+    colors: { ban: "#e74c3c", mute: "#e67e22", warn: "#f1c40f", kick: "#95a5a6", pardon: "#2ecc71", undo: "#3498db" }
+  player-view:                # /mypunishments
+    show-staff: false         # owner spec: staff names hidden from players
+    last-entries: 5
+  chat-suggestions:           # for a chat filter that suggests punishments (never applied automatically). The API is
+    spam: { hits: 3, within: 10s, reason: spam }   # ready; the detector that uses this is a separate task

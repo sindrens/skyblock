@@ -30,11 +30,19 @@ final class PunishMenus {
 
     static final String MODULE = "moderation";
 
-    /** The target of a punish/history menu with their history and warn-rule suggestions (loaded before opening). */
-    record Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions) {
+    /**
+     * The target of a punish/history menu with their history and warn-rule suggestions (loaded before opening), plus
+     * P3: pending API suggestions (12.8), the newest staff notes and the number of active notes (12.5).
+     */
+    record Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions,
+                  List<Suggestion> apiSuggestions, List<Notes.Note> notes, int noteCount) {
 
         Target(UUID uuid, String name, List<Punishment> history) {
             this(uuid, name, history, List.of());
+        }
+
+        Target(UUID uuid, String name, List<Punishment> history, List<Suggestion> suggestions) {
+            this(uuid, name, history, suggestions, List.of(), List.of(), 0);
         }
 
         long count(Punishment.Type type) {
@@ -134,8 +142,44 @@ final class PunishMenus {
         } else if (counter.pending() != null) {
             lore.addAll(service.lines(viewer, MODULE, "punish.summary.pending",
                     Msg.p("action", module.service().stepText(viewer, counter.pending().step()))));
+        } else if (!target.apiSuggestions().isEmpty()) {
+            Suggestion api = target.apiSuggestions().getFirst();
+            lore.addAll(service.lines(viewer, MODULE, "punish.summary.api-pending",
+                    Msg.p("action", module.service().stepText(viewer, api.step())), Msg.p("reason", api.reason()),
+                    Msg.p("details", api.details() == null ? "-" : api.details()),
+                    Msg.number("count", target.apiSuggestions().size())));
         }
+        lore.addAll(noteLines(module, service, viewer, target));
         return service.item(head(target), service.text(viewer, MODULE, "menu.summary.name", Msg.p("player", target.name())), lore);
+    }
+
+    /** spec 12.5: the newest notes (author, date, text cut) and "N more, use /pnote", only for staff who may read notes. */
+    static List<Component> noteLines(ModerationModule module, net.skybornmc.skyblock.common.menu.MenuService service,
+                                     org.bukkit.entity.Player viewer, Target target) {
+        List<Component> lore = new ArrayList<>();
+        if (viewer == null || !viewer.hasPermission(ModerationModule.PERM_NOTES)) {
+            return lore;
+        }
+        PunishConfig.Notes cfg = module.templates().config().extras().notes();
+        List<Notes.Note> shown = Notes.latest(target.notes(), cfg.shown());
+        if (cfg.shown() <= 0) {
+            return lore;
+        }
+        if (shown.isEmpty()) {
+            lore.addAll(service.lines(viewer, MODULE, "punish.summary.notes-none"));
+            return lore;
+        }
+        lore.addAll(service.lines(viewer, MODULE, "punish.summary.notes-header", Msg.number("count", target.noteCount())));
+        for (Notes.Note n : shown) {
+            lore.addAll(service.lines(viewer, MODULE, "punish.summary.note", Msg.p("author", n.authorName()),
+                    Msg.p("date", ModerationModule.day(n.created())), Msg.p("text", Notes.cut(n.text(), cfg.cut()))));
+        }
+        int more = target.noteCount() - shown.size();
+        if (more > 0) {
+            lore.addAll(service.lines(viewer, MODULE, "punish.summary.notes-more", Msg.number("more", more),
+                    Msg.p("player", target.name())));
+        }
+        return lore;
     }
 
     /** Summary item (top middle) for the history and category menus. */
@@ -206,8 +250,10 @@ final class PunishMenus {
                 // spec 12.1: the head is the Bedrock-safe [Undo] while the window is open (pending stays on the counter)
                 set(l.summarySlot(), MenuButton.of(summary, guarded(() -> module.service().undo(viewer, undoable.id()))));
             } else {
-                set(l.summarySlot(), counter.pending() != null
-                        ? MenuButton.of(summary, click -> openSuggestion(counter.pending()))
+                Suggestion waiting = counter.pending() != null ? counter.pending()
+                        : target.apiSuggestions().isEmpty() ? null : target.apiSuggestions().getFirst();
+                set(l.summarySlot(), waiting != null
+                        ? MenuButton.of(summary, click -> openSuggestion(waiting))
                         : MenuButton.display(summary));
             }
             set(l.warnCounterSlot(), counterButton(l, rules, counter));
@@ -304,7 +350,7 @@ final class PunishMenus {
                 }
             }
             ItemStack item = service.item(l.warnCounterIcon(), service.text(viewer, MODULE, "punish.counter.name",
-                    Msg.p("count", counter.count()), Msg.p("next", ModerationModule.counterLimit(counter, rules))), lore);
+                    Msg.p("count", counter.text()), Msg.p("next", ModerationModule.counterLimit(counter, rules))), lore);
             Suggestion pending = counter.pending();
             return pending == null ? MenuButton.display(item) : MenuButton.of(item, click -> openSuggestion(pending));
         }
@@ -340,11 +386,14 @@ final class PunishMenus {
         }
 
         private MenuButton warnButton(PunishConfig.WarnButton w) {
-            Templates.Step warn = new Templates.Step(Punishment.Type.WARN, null, false);
+            Templates.Step warn = new Templates.Step(Punishment.Type.WARN, null, false, w.weight());
             PunishDecision.Verdict preview = module.service().preview(viewer, target.uuid(), target.name(), warn, false, null, null,
                     w.id(), target.recent(w.id()));
             List<Component> lore = new ArrayList<>(service.lines(viewer, MODULE, "punish.warn-button.lore",
                     Msg.p("reason", module.warnButtonText(viewer, w, "reason"))));
+            if (w.weight() != Weights.ONE) {
+                lore.addAll(service.lines(viewer, MODULE, "punish.warn-button.weight", Msg.p("weight", Weights.text(w.weight()))));
+            }
             lore.add(Component.empty());
             lore.addAll(verdictLines(preview));
             ItemStack item = service.item(w.icon(), service.text(viewer, MODULE, "punish.warn-button.name",
@@ -662,6 +711,96 @@ final class PunishMenus {
         }
     }
 
+    /** "Acknowledged 14:03" / "Not acknowledged" (spec 12.6) for a warning. */
+    static List<Component> ackLines(net.skybornmc.skyblock.common.menu.MenuService service, org.bukkit.entity.Player viewer,
+                                    Punishment p) {
+        return p.acknowledged()
+                ? service.lines(viewer, MODULE, "menu.history.ack-yes", Msg.p("date", ModerationModule.when(p.acknowledgedAt())))
+                : service.lines(viewer, MODULE, "menu.history.ack-no");
+    }
+
+    // ================================================================== /history entry: details + evidence (12.4)
+
+    /**
+     * One history entry: the punishment, its evidence (chat lines saved with a mute/warn) and for warnings whether the
+     * player acknowledged it. 3 rows, plain clicks (Bedrock): the evidence button also prints the lines in chat, where
+     * long lines are easier to read.
+     */
+    static final class EntryMenu extends Menu {
+
+        private final ModerationModule module;
+        private final Target target;
+        private final Punishment p;
+        private final List<String> evidence;
+
+        EntryMenu(ModerationModule module, Target target, Punishment p, List<String> evidence) {
+            this.module = module;
+            this.target = target;
+            this.p = p;
+            this.evidence = evidence;
+        }
+
+        @Override
+        public int rows() {
+            return 3;
+        }
+
+        @Override
+        public Component title() {
+            return service.title(viewer, service.text(viewer, MODULE, "menu.history.title"), Component.text(target.name()),
+                    Component.text("#" + p.id()));
+        }
+
+        @Override
+        public String messageModule() {
+            return MODULE;
+        }
+
+        @Override
+        protected void build() {
+            frame();
+            String type = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
+                    .serialize(service.text(viewer, MODULE, "types." + p.type().name().toLowerCase(Locale.ROOT)));
+            List<Component> info = new ArrayList<>(service.lines(viewer, MODULE, "entry.info.lore", Msg.p("id", p.id()),
+                    Msg.p("type", type), Msg.p("reason", p.reason()), Msg.p("staff", p.issuerName()),
+                    Msg.p("date", ModerationModule.when(p.created()))));
+            if (p.type() == Punishment.Type.WARN) {
+                info.addAll(ackLines(service, viewer, p));
+            }
+            set(11, MenuButton.display(service.item(Material.PAPER, service.text(viewer, MODULE, "entry.info.name",
+                    Msg.p("type", type), Msg.p("id", p.id())), info)));
+            boolean evidenceType = p.type() == Punishment.Type.MUTE || p.type() == Punishment.Type.WARN;
+            if (evidence.isEmpty()) {
+                set(15, MenuButton.display(service.item(Material.GRAY_DYE, viewer, MODULE,
+                        evidenceType ? "entry.evidence-none" : "entry.evidence-type", Msg.p("retention", Format.duration(
+                                module.templates().config().extras().evidence().retention())))));
+            } else {
+                List<Component> lore = new ArrayList<>();
+                int max = 12;
+                for (String line : evidence.subList(Math.max(0, evidence.size() - max), evidence.size())) {
+                    lore.addAll(service.lines(viewer, MODULE, "entry.evidence-line", Msg.p("line", line)));
+                }
+                if (evidence.size() > max) {
+                    lore.addAll(service.lines(viewer, MODULE, "entry.evidence-more", Msg.number("more", evidence.size() - max)));
+                }
+                lore.add(Component.empty());
+                lore.addAll(service.lines(viewer, MODULE, "entry.evidence-click"));
+                set(15, MenuButton.of(service.item(Material.WRITABLE_BOOK, service.text(viewer, MODULE, "entry.evidence-name",
+                        Msg.number("count", evidence.size())), lore), click -> {
+                            if (!viewer.hasPermission(ModerationModule.PERM_HISTORY)) {
+                                viewer.closeInventory();
+                                return;
+                            }
+                            module.messages().send(viewer, "entry.chat-header", Msg.p("id", p.id()), Msg.p("player", target.name()));
+                            for (String line : evidence) {
+                                module.messages().send(viewer, "entry.chat-line", Msg.p("line", line));
+                            }
+                        }));
+            }
+            set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
+        }
+    }
+
     // ================================================================== /history
 
     static final class HistoryMenu extends PagedMenu<Punishment> {
@@ -726,15 +865,39 @@ final class PunishMenus {
                     Msg.p("status", plain("status." + status.name().toLowerCase(Locale.ROOT))),
                     Msg.p("template", p.template() == null ? "-" : p.template() + " #" + (p.ladderStep() == null ? 1 : p.ladderStep() + 1)),
                     Msg.p("scope", p.ipWide() ? plain("words.ip-wide") : plain("words.account"))));
+            if (p.type() == Punishment.Type.WARN) {
+                if (p.weight() != Weights.ONE) {
+                    lore.addAll(service.lines(viewer, MODULE, "menu.history.weight", Msg.p("weight", Weights.text(p.weight()))));
+                }
+                lore.addAll(ackLines(service, viewer, p));
+            }
             if (p.removed()) {
                 lore.addAll(service.lines(viewer, MODULE, "menu.history.removed",
                         Msg.p("by", p.removedByName() == null ? "?" : p.removedByName()),
                         Msg.p("removed_reason", p.removedReason() == null ? "-" : p.removedReason()),
                         Msg.p("removed_date", PunishmentService.DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(p.removedAt())))));
             }
-            return MenuButton.display(service.item(icon, service.text(viewer, MODULE, "menu.history.name",
+            lore.add(Component.empty());
+            lore.addAll(service.lines(viewer, MODULE, "menu.history.click"));
+            return MenuButton.of(service.item(icon, service.text(viewer, MODULE, "menu.history.name",
                     Msg.mm("type", type == null ? p.type().name() : type), Msg.p("id", p.id()),
-                    Msg.p("status", plain("status." + status.name().toLowerCase(Locale.ROOT)))), lore));
+                    Msg.p("status", plain("status." + status.name().toLowerCase(Locale.ROOT)))), lore), click -> {
+                        // spec 12.4: evidence only for staff who may read history (checked again on every click)
+                        if (!viewer.hasPermission(ModerationModule.PERM_HISTORY)) {
+                            module.messages().send(viewer, "error.no-permission-menu");
+                            return;
+                        }
+                        module.service().store().evidence(p.id()).thenAccept(lines -> Bukkit.getScheduler().runTask(
+                                service.plugin(), () -> {
+                                    if (viewer.isOnline()) {
+                                        module.core().audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF,
+                                                "evidence_view", net.skybornmc.skyblock.common.audit.Actor.player(viewer),
+                                                String.valueOf(target.uuid()), target.name(), null, null,
+                                                java.util.Map.of("id", p.id(), "lines", lines.size()));
+                                        openChild(new EntryMenu(module, target, p, lines));
+                                    }
+                                }));
+                    });
         }
 
         private String plain(String key) {

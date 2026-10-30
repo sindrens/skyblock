@@ -47,16 +47,22 @@ final class PunishmentService {
      * warn-button id) also turns on the duplicate check (spec 12.2); {@code force} = the {@code -force} flag.
      */
     record Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
-                   boolean ipWide, String ip, String template, Integer ladderStep, String source, boolean force) {
+                   boolean ipWide, String ip, String template, Integer ladderStep, String source, boolean force, int weight) {
 
         Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
                 boolean ipWide, String ip, String template, Integer ladderStep) {
-            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null, false);
+            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null, false, Weights.ONE);
         }
 
         Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
                 boolean ipWide, String ip, String template, Integer ladderStep, boolean force) {
-            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null, force);
+            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null, force, Weights.ONE);
+        }
+
+        /** With a warn weight in tenths (spec 12.7: warn buttons and {@code warn 0.5} ladder steps). */
+        Request(Punishment.Type type, UUID target, String targetName, Duration duration, String reason, boolean silent,
+                boolean ipWide, String ip, String template, Integer ladderStep, boolean force, int weight) {
+            this(type, target, targetName, duration, reason, silent, ipWide, ip, template, ladderStep, null, force, weight);
         }
     }
 
@@ -78,6 +84,17 @@ final class PunishmentService {
 
     PunishmentStore store() {
         return store;
+    }
+
+    /** P3 side effects (evidence, acknowledgement, report link, Discord); set by the module. */
+    private PunishExtras hooks;
+
+    void hooks(PunishExtras hooks) {
+        this.hooks = hooks;
+    }
+
+    PunishExtras hooks() {
+        return hooks;
     }
 
     // ------------------------------------------------------------------ limits
@@ -234,7 +251,8 @@ final class PunishmentService {
                 throw new IllegalStateException("no-ip");
             }
             Punishment draft = new Punishment(0, r.type(), r.target(), r.targetName(), ip, r.ipWide(), r.reason(), r.template(),
-                    r.ladderStep(), issuer, sender.getName(), now, null, r.silent(), null, null, null, null, r.source());
+                    r.ladderStep(), issuer, sender.getName(), now, null, r.silent(), null, null, null, null, r.source(),
+                    r.weight(), null);
             return store.issue(draft, in, decision, hook);
         }).thenApplyAsync(result -> {
             if (guardKey != null && "duplicate".equals(result.verdict().stage())) {
@@ -259,6 +277,9 @@ final class PunishmentService {
         announce(sender, p);
         audit(sender, p);
         offerUndo(sender, p);
+        if (hooks != null) {
+            hooks.linkReports(sender, p);
+        }
         if (result.trigger() != null) {
             reportTrigger(result.trigger());
         }
@@ -287,7 +308,7 @@ final class PunishmentService {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("suggestion", s.id());
         details.put("rule", s.repeat() ? "repeat" : s.ruleAt());
-        details.put("count", s.warnCount());
+        details.put("count", s.countText());
         details.put("action", s.action());
         details.put("status", s.status().name().toLowerCase(Locale.ROOT));
         if (s.note() != null) {
@@ -332,7 +353,8 @@ final class PunishmentService {
         Templates.Step step = s.step();
         WarnRules.Settings settings = warnRules.get();
         return TagResolver.resolver(Msg.p("player", s.targetName()), pre("target", s.targetName()), pre("sid", s.id()),
-                Msg.p("count", s.warnCount()), Msg.p("action", stepText(viewer, step)), Msg.p("reason", s.reason()),
+                Msg.p("count", s.countText()), Msg.p("action", stepText(viewer, step)), Msg.p("reason", s.reason()),
+                Msg.p("details", s.details() == null ? "-" : s.details()),
                 Msg.p("window", settings.repeatWindow() == null ? "-" : PunishConfig.text(settings.repeatWindow())),
                 Msg.p("date", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(s.created()))),
                 Msg.p("expires", s.expires() == null ? text(viewer, "words.never")
@@ -396,6 +418,9 @@ final class PunishmentService {
                 announce(sender, p);
                 audit(sender, p);
                 offerUndo(sender, p);
+                if (hooks != null) {
+                    hooks.linkReports(sender, p);
+                }
                 notifyStaff(sender, "suggest.applied", suggestionParts(viewer, s), Msg.p("staff", sender.getName()));
                 core.audit().log(AuditCategory.PUNISHMENT, "suggestion_apply", Actor.of(sender), s.target().toString(),
                         s.targetName(), null, null, Map.of("suggestion", s.id(), "action", s.action(), "id", p.id()));
@@ -409,6 +434,9 @@ final class PunishmentService {
     /** "Mute 1h", "Ban permanent", "Warning" for a step (messages steps.*). */
     String stepText(Player viewer, Templates.Step step) {
         String kind = step.ipWide() ? "ipban" : step.type().name().toLowerCase(Locale.ROOT);
+        if (step.type() == Punishment.Type.WARN && step.weight() != Weights.ONE) {
+            return text(viewer, "steps.warn-weighted", Msg.p("weight", Weights.text(step.weight())));
+        }
         String length = step.duration() == null ? text(viewer, "words.permanent") : Format.duration(step.duration());
         return text(viewer, "steps." + kind, Msg.p("length", length));
     }
@@ -430,7 +458,7 @@ final class PunishmentService {
                 case MUTE -> {
                     cacheMute(online.getUniqueId(), longer(mutes.get(online.getUniqueId()), p));
                     msg.send(online, "muted.you", parts(online, p));
-                    if (p.automatic()) {
+                    if (p.automatic() && p.source().startsWith(Punishment.AUTO_PREFIX + Suggestion.KIND_WARN_RULE + ":")) {
                         String rule = p.source().substring(p.source().lastIndexOf(':') + 1);
                         msg.send(online, "repeat".equals(rule) ? "muted.auto-repeat" : "muted.auto", parts(online, p),
                                 Msg.p("count", rule));
@@ -442,8 +470,14 @@ final class PunishmentService {
                     online.showTitle(net.kyori.adventure.title.Title.title(msg.component(online, "warned.title"),
                             msg.component(online, "warned.subtitle", parts(online, p))));
                     core.sounds().play(online, "warning");
+                    if (hooks != null && online.getUniqueId().equals(p.target())) {
+                        hooks.warned(online, p); // spec 12.6: [I understand] + rules link
+                    }
                 }
             }
+        }
+        if (hooks != null) {
+            hooks.applied(p); // spec 12.4 evidence, 12.11 Discord
         }
         if (p.type() == Punishment.Type.BAN && config.get().vanillaSync) {
             Date until = p.expires() == null ? null : new Date(p.expires());
@@ -513,6 +547,9 @@ final class PunishmentService {
                     };
                     notifyStaff(sender, "notify." + action, Msg.p("player", targetName), Msg.p("reason", reason),
                             Msg.p("staff", sender.getName()), pre("target", targetName));
+                    if (hooks != null) {
+                        hooks.pardoned(list, targetName, sender.getName(), reason);
+                    }
                     Map<String, Object> details = new LinkedHashMap<>();
                     details.put("reason", reason);
                     details.put("ids", list.stream().map(Punishment::id).toList());
@@ -621,6 +658,9 @@ final class PunishmentService {
                 }
                 core.audit().log(AuditCategory.PUNISHMENT, "undo", Actor.of(staff), p.target() == null ? p.ip() : p.target().toString(),
                         p.targetName(), null, staff.getLocation(), details);
+                if (hooks != null) {
+                    hooks.undone(p, staff.getName(), reason);
+                }
                 core.sounds().play(staff, "success");
                 return;
             }
@@ -838,6 +878,9 @@ final class PunishmentService {
         }
         if (p.silent()) {
             details.put("silent", true);
+        }
+        if (p.type() == Punishment.Type.WARN && p.weight() != Weights.ONE) {
+            details.put("weight", Weights.text(p.weight()));
         }
         if (p.ip() != null) {
             details.put("ip", p.ip());

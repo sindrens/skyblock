@@ -16,8 +16,16 @@ import java.util.Optional;
  */
 final class Templates {
 
-    /** One ladder step: what happens on the n-th offence. {@code duration == null} = permanent (or n/a for warn/kick). */
-    record Step(Punishment.Type type, Duration duration, boolean ipWide) {
+    /**
+     * One ladder step: what happens on the n-th offence. {@code duration == null} = permanent (or n/a for warn/kick).
+     * {@code weight} (tenths, spec 12.7) only matters for warns: {@code warn 0.5} counts half toward the warn rules.
+     */
+    record Step(Punishment.Type type, Duration duration, boolean ipWide, int weight) {
+
+        /** A step with the default weight 1. */
+        Step(Punishment.Type type, Duration duration, boolean ipWide) {
+            this(type, duration, ipWide, Weights.ONE);
+        }
 
         /** Error codes thrown by {@link #parse} (as the exception message). */
         static final String BAD_KIND = "kind";
@@ -27,7 +35,7 @@ final class Templates {
         static final List<String> KINDS = List.of("warn", "kick", "mute", "ban", "ipban");
 
         /**
-         * Parses {@code warn | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>}.
+         * Parses {@code warn [weight] | kick | mute <time|perm> | ban <time|perm> | ipban <time|perm>} ({@code warn 0.5}).
          *
          * @throws IllegalArgumentException with message {@link #BAD_KIND} or {@link #BAD_TIME}
          */
@@ -42,13 +50,21 @@ final class Templates {
             String kind = parts[0];
             String time = parts.length > 1 ? parts[1] : null;
             return switch (kind) {
-                case "warn" -> noTime(Punishment.Type.WARN, time);
+                case "warn" -> time == null ? new Step(Punishment.Type.WARN, null, false) : weighted(time);
                 case "kick" -> noTime(Punishment.Type.KICK, time);
                 case "mute" -> new Step(Punishment.Type.MUTE, duration(time), false);
                 case "ban" -> new Step(Punishment.Type.BAN, duration(time), false);
                 case "ipban" -> new Step(Punishment.Type.BAN, duration(time), true);
                 default -> throw new IllegalArgumentException(BAD_KIND);
             };
+        }
+
+        private static Step weighted(String weight) {
+            try {
+                return new Step(Punishment.Type.WARN, null, false, Weights.parse(weight));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(BAD_TIME);
+            }
         }
 
         private static Step noTime(Punishment.Type type, String time) {
@@ -75,7 +91,10 @@ final class Templates {
             if (ipWide) {
                 base = "ip" + base;
             }
-            if (type == Punishment.Type.WARN || type == Punishment.Type.KICK) {
+            if (type == Punishment.Type.WARN) {
+                return weight == Weights.ONE ? base : base + " " + Weights.text(weight);
+            }
+            if (type == Punishment.Type.KICK) {
                 return base;
             }
             return base + " " + (duration == null ? "perm" : compact(duration));

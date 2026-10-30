@@ -94,6 +94,12 @@ final class PunishConfigParser {
         categories.forEach(c -> c.templates().forEach(t -> byId.put(t.id(), t)));
         PunishConfig.MenuLayout menu = menu(yaml, byId);
         WarnRules.Settings rules = warnRules(yaml);
+        extras.chatSuggestions().forEach((name, cs) -> {
+            if (!byId.containsKey(cs.reason())) {
+                error("config.unknown-reason", "extras.chat-suggestions." + name + ".reason", "value", cs.reason(),
+                        "suggestion", nullToEmpty(Hints.closest(cs.reason(), byId.keySet())));
+            }
+        });
         if (!errors.isEmpty()) {
             return new Result(null, List.copyOf(errors), List.copyOf(warnings));
         }
@@ -309,8 +315,9 @@ final class PunishConfigParser {
                 int s = slotValue(w, id, path, "warn button " + id, used);
                 Material icon = icon(w.isConfigurationSection(id) ? w.getString(id + ".icon") : null, path + ".icon",
                         Material.PAPER);
+                int weight = w.isConfigurationSection(id) ? weight(w.getConfigurationSection(id), path + ".weight") : Weights.ONE;
                 if (s >= 0) {
-                    warns.add(new PunishConfig.WarnButton(id, s, icon));
+                    warns.add(new PunishConfig.WarnButton(id, s, icon, weight));
                 }
             }
         }
@@ -336,6 +343,20 @@ final class PunishConfigParser {
         return new PunishConfig.MenuLayout(confirm, keepOpen, filler, divider, List.copyOf(dividers), summary, counter,
                 counterIcon, unavailable, Map.copyOf(buttons), java.util.Collections.unmodifiableMap(reasonSlots),
                 Map.copyOf(quarterOf), List.copyOf(warns));
+    }
+
+    /** {@code weight: 0.5} of a warn button (spec 12.7), in tenths; missing = 1. */
+    private int weight(ConfigurationSection s, String path) {
+        if (s == null || !s.contains("weight")) {
+            return Weights.ONE;
+        }
+        String raw = String.valueOf(s.get("weight")).strip();
+        try {
+            return Weights.parse(raw);
+        } catch (IllegalArgumentException e) {
+            error("config.bad-weight", path, "value", raw);
+            return Weights.ONE;
+        }
     }
 
     private boolean bool(ConfigurationSection s, String key, String path, boolean fallback) {
@@ -497,7 +518,150 @@ final class PunishConfigParser {
         if (confirm.compareTo(dup) > 0) {
             warn("config.confirm-longer", "extras.duplicate-confirm");
         }
-        return new PunishConfig.Extras(undo, dup, confirm, expire, zone, cache, period, top);
+        boolean closeReports = bool(x, "close-reports", "extras.close-reports", d.closeReports());
+        String rulesLink = x.contains("rules-link") ? String.valueOf(x.get("rules-link")).strip() : d.rulesLink();
+        if (rulesLink.contains("'") || rulesLink.contains("<") || rulesLink.contains(">") || rulesLink.contains(" ")) {
+            error("config.bad-link", "extras.rules-link", "value", rulesLink);
+            rulesLink = d.rulesLink();
+        }
+        return new PunishConfig.Extras(undo, dup, confirm, expire, zone, cache, period, top, closeReports,
+                evidence(x.getConfigurationSection("evidence")), notes(x.getConfigurationSection("notes")),
+                ack(x.getConfigurationSection("ack")), rulesLink, discord(x.getConfigurationSection("discord")),
+                playerView(x.getConfigurationSection("player-view")), chatSuggestions(x.getConfigurationSection("chat-suggestions")));
+    }
+
+    // ------------------------------------------------------------------ extras (P3: spec 12.4-12.12)
+
+    private PunishConfig.Evidence evidence(ConfigurationSection s) {
+        PunishConfig.Evidence d = PunishConfig.Evidence.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.evidence.";
+        return new PunishConfig.Evidence(bool(s, "enabled", p + "enabled", d.enabled()),
+                number(s, "chat-lines", p + "chat-lines", d.chatLines(), 1, 30),
+                number(s, "context-lines", p + "context-lines", d.contextLines(), 0, 30),
+                positive(s, "retention", p + "retention", d.retention()),
+                number(s, "max-line-length", p + "max-line-length", d.maxLineLength(), 20, 256),
+                number(s, "max-chars", p + "max-chars", d.maxChars(), 200, 60000));
+    }
+
+    private PunishConfig.Notes notes(ConfigurationSection s) {
+        PunishConfig.Notes d = PunishConfig.Notes.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.notes.";
+        return new PunishConfig.Notes(number(s, "max-length", p + "max-length", d.maxLength(), 10, 255),
+                number(s, "shown", p + "shown", d.shown(), 0, 10), number(s, "cut", p + "cut", d.cut(), 10, 100));
+    }
+
+    private PunishConfig.Ack ack(ConfigurationSection s) {
+        PunishConfig.Ack d = PunishConfig.Ack.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.ack.";
+        return new PunishConfig.Ack(positive(s, "repeat", p + "repeat", d.repeat()),
+                number(s, "max-repeats", p + "max-repeats", d.maxRepeats(), 0, 20),
+                bool(s, "block-until-ack", p + "block-until-ack", d.blockUntilAck()),
+                bool(s, "bedrock-menu", p + "bedrock-menu", d.bedrockMenu()));
+    }
+
+    private PunishConfig.Discord discord(ConfigurationSection s) {
+        PunishConfig.Discord d = PunishConfig.Discord.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.discord.";
+        if (s.contains("webhook") || s.contains("url") || s.contains("webhook-url")) {
+            // spec 12.11: the URL is a secret and never belongs in this tracked file
+            error("config.webhook-in-config", p + (s.contains("webhook") ? "webhook" : s.contains("url") ? "url" : "webhook-url"));
+        }
+        String channel = s.contains("channel") ? String.valueOf(s.get("channel")).strip() : d.channel();
+        if (!channel.matches(ID_PATTERN)) {
+            error("config.bad-id", p + "channel", "value", channel);
+            channel = d.channel();
+        }
+        Map<String, Integer> colors = new LinkedHashMap<>(d.colors());
+        ConfigurationSection c = s.getConfigurationSection("colors");
+        if (c != null) {
+            for (String kind : c.getKeys(false)) {
+                String path = p + "colors." + kind;
+                if (!PunishConfig.Discord.KINDS.contains(kind)) {
+                    error("config.unknown-key", path, "value", kind, "suggestion",
+                            nullToEmpty(Hints.closest(kind, PunishConfig.Discord.KINDS)));
+                    continue;
+                }
+                String raw = String.valueOf(c.get(kind)).strip();
+                Integer rgb = color(raw);
+                if (rgb == null) {
+                    error("config.bad-color", path, "value", raw);
+                } else {
+                    colors.put(kind, rgb);
+                }
+            }
+        }
+        return new PunishConfig.Discord(bool(s, "enabled", p + "enabled", d.enabled()), channel,
+                number(s, "queue-size", p + "queue-size", d.queueSize(), 1, 1000),
+                number(s, "max-attempts", p + "max-attempts", d.maxAttempts(), 1, 10), Map.copyOf(colors));
+    }
+
+    /** {@code "#e74c3c"} → 0xE74C3C, or {@code null}. */
+    static Integer color(String raw) {
+        String hex = raw.startsWith("#") ? raw.substring(1) : raw;
+        if (!hex.matches("[0-9a-fA-F]{6}")) {
+            return null;
+        }
+        return Integer.parseInt(hex, 16);
+    }
+
+    private PunishConfig.PlayerView playerView(ConfigurationSection s) {
+        PunishConfig.PlayerView d = PunishConfig.PlayerView.DEFAULT;
+        if (s == null) {
+            return d;
+        }
+        String p = "extras.player-view.";
+        return new PunishConfig.PlayerView(bool(s, "show-staff", p + "show-staff", d.showStaff()),
+                number(s, "last-entries", p + "last-entries", d.lastEntries(), 1, 20));
+    }
+
+    private Map<String, PunishConfig.ChatSuggestion> chatSuggestions(ConfigurationSection s) {
+        if (s == null) {
+            return Map.of();
+        }
+        Map<String, PunishConfig.ChatSuggestion> out = new LinkedHashMap<>();
+        for (String name : s.getKeys(false)) {
+            String path = "extras.chat-suggestions." + name;
+            ConfigurationSection c = s.getConfigurationSection(name);
+            if (c == null) {
+                error("config.not-a-section", path, "value", name);
+                continue;
+            }
+            checkId(name, path);
+            int hits = number(c, "hits", path + ".hits", 3, 1, 100);
+            Duration within = positive(c, "within", path + ".within", Duration.ofSeconds(10));
+            String reason = c.contains("reason") ? String.valueOf(c.get("reason")).strip() : "";
+            if (reason.isEmpty()) {
+                error("config.missing-key", path + ".reason", "key", "reason");
+                continue;
+            }
+            out.put(name, new PunishConfig.ChatSuggestion(hits, within, reason));
+        }
+        return java.util.Collections.unmodifiableMap(out);
+    }
+
+    /** A whole number key between {@code min} and {@code max}. */
+    private int number(ConfigurationSection s, String key, String path, int fallback, int min, int max) {
+        if (!s.contains(key)) {
+            return fallback;
+        }
+        Object raw = s.get(key);
+        if (!(raw instanceof Integer n) || n < min || n > max) {
+            error("config.bad-number", path, "value", String.valueOf(raw), "min", String.valueOf(min), "max", String.valueOf(max));
+            return fallback;
+        }
+        return n;
     }
 
     /** A duration that must be more than zero ({@code perm} not allowed). */

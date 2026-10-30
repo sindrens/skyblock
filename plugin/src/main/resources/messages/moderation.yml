@@ -22,6 +22,8 @@ words:
 # How a ladder step / rule action reads ("Next step: Mute 1h"). <length> = time or "permanent".
 steps:
   warn: "Warning"
+  # A warning with another weight than 1 (P3, spec 12.7: "warn 0.5" ladder steps, warn button weight). <weight> = 0.5, 2.
+  warn-weighted: "Warning (counts <weight>)"
   kick: "Kick"
   mute: "Mute <length>"
   ban: "Ban <length>"
@@ -260,6 +262,11 @@ menu:
       - ""
       - "<c:success>Removed by <c:value><by></c:value> on <c:value><removed_date>"
       - "<c:text>Why: <c:value><removed_reason>"
+    # P3: warn weight (12.7), acknowledgement (12.6), click for details + evidence (12.4).
+    weight: "<c:text>Counts: <c:value><weight>"
+    ack-yes: "<c:success><sym:check> Acknowledged <date>"
+    ack-no: "<c:warning><sym:cross> Not acknowledged"
+    click: "<c:action><sym:bullet> Click for details and evidence"
 
 # ---------------------------------------------------------------- /p <player> (single-screen menu, Phase P)
 punish:
@@ -299,6 +306,8 @@ punish:
     lore:
       - "<c:text>One warning: <c:value><reason>"
       - "<c:muted>Counts toward the automatic rules."
+    # P3 (spec 12.7): only shown when the button's weight is not 1.
+    weight: "<c:text>Counts as <c:value><weight></c:value> warning(s)."
   summary:
     ban-left: "<c:error>Banned: <left> left <c:muted>(<reason>)"
     mute-left: "<c:warning>Muted: <left> left <c:muted>(<reason>)"
@@ -311,6 +320,20 @@ punish:
       - ""
       - "<c:text>Last action: <type> <c:muted>(<reason>, #<id>)"
       - "<c:action><sym:bullet> Click to undo <c:muted>(<left> left)"
+    # A detector suggestion is waiting (P3, spec 12.8). <action>, <reason>, <details>, <count> = how many are waiting.
+    api-pending:
+      - ""
+      - "<c:warning>Suggested (<details>): <reason>, <action>"
+      - "<c:action><sym:bullet> Click to apply or dismiss"
+    # Staff notes (P3, spec 12.5): newest notes, only for staff with skyblock.staff.punish.notes. <count> = all active notes.
+    notes-header:
+      - ""
+      - "<c:text>Notes <c:muted>(<count>)</c:muted>:"
+    note: " <c:muted><sym:bullet> <author>, <date>:</c:muted> <c:value><text>"
+    notes-more: " <c:muted><more> more, use /pnote <player>"
+    notes-none:
+      - ""
+      - "<c:muted>No staff notes."
   counter:
     name: "<c:flame>Warnings: <c:value><count> / <next>"
     "off":
@@ -372,6 +395,8 @@ suggest:
   auto: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>reached <c:value><count> warnings</c:value>: automatically <c:flame><action></c:flame> <c:muted>(#<id>)</c:muted>. <click:run_command:'/history <target>'><hover:show_text:'<c:action>Click for history'><c:sky_ice>[History]</c:sky_ice></hover></click>"
   auto-repeat: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>was punished again within <c:value><window></c:value>: automatically <c:flame><action></c:flame> <c:muted>(#<id>)</c:muted>. <click:run_command:'/history <target>'><hover:show_text:'<c:action>Click for history'><c:sky_ice>[History]</c:sky_ice></hover></click>"
   skipped-exempt: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>would have been given <c:flame><action></c:flame> by the warn rules, but is exempt. Nothing applied."
+  # A detector (chat filter, anticheat) suggests a punishment through the suggestion API (P3, spec 12.8). <details> = "chat filter: 3 spam hits in 10s".
+  api-notify: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:muted>(<details>)</c:muted> <c:text>suggested: <c:flame><reason>, <action></c:flame>.  <click:run_command:'/warns <target> apply <sid>'><hover:show_text:'<c:action>Apply <action> now'><c:success>[Apply]</c:success></hover></click> <click:run_command:'/warns <target> dismiss <sid>'><hover:show_text:'<c:action>Not too bad: apply nothing'><c:error>[Dismiss]</c:error></hover></click> <click:run_command:'/p <target>'><hover:show_text:'<c:action>Open the punish menu'><c:sky_ice>[Open /p]</c:sky_ice></hover></click>"
   skipped-already: "<c:muted>[Punish]</c:muted> <c:value><player></c:value> <c:text>is already punished for longer (<c:value><left></c:value> left), so <c:flame><action></c:flame> was skipped (never shortens)."
   applied: "<c:muted>[Punish]</c:muted> <c:value><staff></c:value> <c:success>applied</c:success> <c:text>the suggestion for <c:value><player></c:value>: <c:flame><action></c:flame>"
   dismissed: "<c:muted>[Punish]</c:muted> <c:value><staff></c:value> <c:text>dismissed the suggestion for <c:value><player></c:value> (<action>). The counter restarts."
@@ -417,7 +442,12 @@ warns:
   rule: " <c:text>At <c:value><at></c:value> warnings: <c:flame><action>"
   repeat-rule: " <c:text>Again within <c:value><window></c:value> of a rule: <c:flame><action>"
   none: " <c:success><sym:check> No warnings count right now."
-  line: " <c:ember><sym:bullet></c:ember> <hover:show_text:'<c:text>By <staff> on <date>'><c:muted>#<id></c:muted> <c:text><reason></hover> <c:muted>(stops counting <expires>)"
+  line: " <c:ember><sym:bullet></c:ember> <hover:show_text:'<c:text>By <staff> on <date><newline>Counts: <weight><newline><ack>'><c:muted>#<id></c:muted> <c:text><reason></hover> <c:muted>(stops counting <expires>)"
+  # Hover of a warning line (P3, spec 12.6).
+  ack-yes: "Acknowledged by the player"
+  ack-no: "Not acknowledged yet"
+  # A waiting suggestion from a detector (P3, spec 12.8). Same placeholders as suggest.*, plus <details>.
+  api-pending: " <c:warning>Suggested by <details>: <c:flame><reason>, <action></c:flame> <c:muted>(disappears in <expires>)</c:muted>  <click:run_command:'/warns <target> apply <sid>'><hover:show_text:'<c:action>Apply <action> now'><c:success>[Apply]</c:success></hover></click> <click:run_command:'/warns <target> dismiss <sid>'><hover:show_text:'<c:action>Apply nothing'><c:error>[Dismiss]</c:error></hover></click>"
   repeat-open: " <c:warning>Repeat window open until <until>: any warning or mute suggests <action>."
   pending: " <c:warning>Pending: suggested <action> <c:muted>(<reason>, disappears in <expires>)</c:muted>  <click:run_command:'/warns <target> apply <sid>'><c:success>[Apply]</c:success></click> <click:run_command:'/warns <target> dismiss <sid>'><c:error>[Dismiss]</c:error></click>"
   footer: " <click:run_command:'/history <target>'><hover:show_text:'<c:action>All punishments'><c:action>Full history</c:action></hover></click>"
@@ -440,7 +470,7 @@ config:
   duplicate-id: "<file> line <line>: <path>: id '<value>' is already used at <other>"
   empty-ladder: "<file> line <line>: <path>: needs a list with at least one step, e.g. [\"warn\", \"mute 1h\"]"
   bad-step: "<file> line <line>: <path>: unknown step \"<value>\"<hint>. Steps: warn, kick, mute 1h, ban 7d, ipban perm"
-  bad-step-time: "<file> line <line>: <path>: \"<value>\" has a bad time (use 30m, 1h, 7d or perm; warn and kick take no time)"
+  bad-step-time: "<file> line <line>: <path>: \"<value>\" has a bad time (use 30m, 1h, 7d or perm; kick takes no time; warn takes an optional weight like 0.5)"
   bad-icon: "<file> line <line>: <path>: '<value>' is not an item<hint>"
   unknown-reason: "<file> line <line>: <path>: no reason '<value>' in categories<hint>"
   unknown-button: "<file> line <line>: <path>: unknown button '<value>'<hint>"
@@ -459,6 +489,12 @@ config:
   bad-period: "<file> line <line>: <path>: '<value>' must be 24h, 7d, 30d or all<hint>"
   bad-number: "<file> line <line>: <path>: '<value>' must be a whole number from <min> to <max>"
   confirm-longer: "<file> line <line>: <path>: duplicate-confirm is longer than duplicate-window (it still works)"
+  bad-weight: "<file> line <line>: <path>: weight '<value>' must be a number from 0.1 to 10 with at most one decimal (0.5, 1, 2)"
+  bad-link: "<file> line <line>: <path>: '<value>' is not a valid link (no spaces, quotes or < >)"
+  webhook-in-config: "<file> line <line>: <path>: the Discord webhook URL is a secret and must not be in this file (it goes in secrets/discord.yml on the server)"
+  unknown-key: "<file> line <line>: <path>: unknown key '<value>'<hint>"
+  bad-color: "<file> line <line>: <path>: '<value>' is not a colour (use \"#e74c3c\")"
+  missing-key: "<file> line <line>: <path>: '<key>' is required"
 
 # ---------------------------------------------------------------- [Undo] (P2, spec 12.1)
 # Placeholders as in notify.* (<player>, <type>, <reason>, <id>, <length>), plus <window> = extras.undo-window.
@@ -495,3 +531,118 @@ stats:
     7d: "last 7 days"
     30d: "last 30 days"
     all: "all time"
+
+# ---------------------------------------------------------------- P3 (spec 12.4-12.12)
+
+# Warning acknowledgement (12.6). <ack> = the clickable [I understand] (ack.button), <rules> = extras.rules-link.
+ack:
+  prompt: "<prefix><c:text>Please read the rules: <click:open_url:'<rules>'><hover:show_text:'<c:action>Open the rules'><c:action>[Rules]</c:action></hover></click> <c:text>and confirm: <ack> <c:muted>(or type /ack)"
+  reminder: "<prefix><c:warning>Reminder:</c:warning> <c:text>you have a warning. Read the <click:open_url:'<rules>'><hover:show_text:'<c:action>Open the rules'><c:action>[Rules]</c:action></hover></click> <c:text>and confirm: <ack> <c:muted>(or /ack)"
+  join: "<prefix><c:warning>You got a warning.</c:warning> <c:text>See it with /mypunishments, read the <click:open_url:'<rules>'><hover:show_text:'<c:action>Open the rules'><c:action>[Rules]</c:action></hover></click> <c:text>and confirm: <ack>"
+  button: "<c:action>[I understand]</c:action>"
+  hover: "<c:action>Confirm you read the warning and the rules"
+  done: "<prefix><c:success><sym:check> Thanks. <c:text>Warning(s) confirmed: <c:value><count>"
+  nothing: "<prefix><c:text>You have no warnings to confirm."
+  blocked: "<prefix><c:error><sym:cross> Confirm your warning first: <c:value>/ack"
+  menu:
+    title: "Warning"
+    button:
+      name: "<c:success><sym:check> I understand"
+      lore:
+        - "<c:text>You got a warning from staff."
+        - "<c:text>Please follow the rules."
+        - ""
+        - "<c:action><sym:bullet> Click to confirm"
+
+# Evidence (12.4): stored with mutes/warns (never IP addresses).
+evidence:
+  ip-hidden: "[IP hidden]"
+  blocked: "(blocked)"
+
+# History entry details (12.4, 12.6). Click an entry in /history.
+entry:
+  info:
+    name: "<type> <c:muted>#<id>"
+    lore:
+      - "<c:text>Reason: <c:value><reason>"
+      - "<c:text>By: <c:value><staff>"
+      - "<c:text>Date: <c:value><date>"
+  evidence-name: "<c:value>Evidence <c:muted>(<count> lines)"
+  evidence-line: "<c:muted><line>"
+  evidence-more: "<c:muted>... <more> older line(s), see chat"
+  evidence-click: "<c:action><sym:bullet> Click to show all lines in chat"
+  evidence-none:
+    name: "<c:muted>No evidence"
+    lore:
+      - "<c:text>No chat lines were saved,"
+      - "<c:text>or they were deleted after <retention>."
+  evidence-type:
+    name: "<c:muted>No evidence"
+    lore:
+      - "<c:text>Evidence is only saved for"
+      - "<c:text>mutes and warnings."
+  chat-header: "<prefix><c:value>Evidence for #<id></c:value> <c:muted>(<player>)"
+  chat-line: " <c:muted><line>"
+
+# Staff notes (12.5): /pnote <player> [text], /pnote remove <id>. Only staff ever see them.
+notes:
+  added: "<prefix><c:success><sym:check> Note <c:value>#<id></c:value> added for <c:value><player></c:value>. <click:run_command:'/pnote <target>'><hover:show_text:'<c:action>Show all notes'><c:action>[Show notes]</c:action></hover></click>"
+  header: "<prefix><c:value>Notes on <player></c:value> <c:muted>(<count>)"
+  none: " <c:muted>No notes yet. Add one with /pnote, the name and the text."
+  line: " <c:ember><sym:bullet></c:ember> <c:muted>#<id> <date> <author>:</c:muted> <c:value><text></c:value> <click:run_command:'/pnote remove <nid>'><hover:show_text:'<c:action>Remove this note (kept in the log)'><c:action>[Remove]</c:action></hover></click>"
+  removed: "<prefix><c:success><sym:check> Note <c:value>#<id></c:value> on <c:value><player></c:value> removed."
+  already-removed: "<prefix><c:warning>Note #<id> was already removed by <c:value><by></c:value>."
+  not-found: "<prefix><c:error><sym:cross> No note #<id>. <c:text>Type /pnote and the player name to see the ids."
+  bad-id: "<prefix><c:error><sym:cross> '<input>' is not a note id. <c:text>Press Tab to see the ids."
+  empty: "<prefix><c:error><sym:cross> The note is empty."
+  too-long: "<prefix><c:error><sym:cross> The note is too long (<length>/<max>). <c:text>Make it shorter."
+
+# Report link (12.9), to the staff member who punished.
+reports:
+  closed: "<prefix><c:success><sym:check> Closed <c:value><count></c:value> report(s) you claimed on <c:value><player></c:value> <c:muted>(<ids>)</c:muted> as punished. <c:text>The reporters were told."
+  open: "<prefix><c:text><c:value><count></c:value> open report(s) on <c:value><player></c:value>. <click:run_command:'/reports player <target>'><hover:show_text:'<c:action>See the reports'><c:action>[Open /reports player <target>]</c:action></hover></click>"
+
+# /mypunishments (12.12): only your own data. Staff names are hidden unless extras.player-view.show-staff is on.
+mine:
+  header: "<prefix><c:value>Your punishments"
+  no-mute: " <c:success><sym:check> You are not muted."
+  mute: " <c:warning>Muted:</c:warning> <c:value><reason></c:value> <c:muted>(#<id>)</c:muted> <c:text>ends in <c:value><left></c:value>. <click:open_url:'<appeal_url>'><hover:show_text:'<c:action>Appeal this mute'><c:action>[Appeal]</c:action></hover></click>"
+  warnings: " <c:text>Warnings: <c:flame><count> / <next></c:flame>"
+  warning: "   <c:ember><sym:bullet></c:ember> <c:text><reason> <c:muted>(<date>, stops counting <expires>)"
+  ack: " <c:warning>You have a warning to confirm:</c:warning> <ack>"
+  recent-header: " <c:text>Last <count>:"
+  none: "   <c:success><sym:check> Nothing on record."
+  entry: "   <c:ember><sym:bullet></c:ember> <type> <c:text><reason> <c:muted>(<date>, <status>)"
+  entry-staff: "   <c:ember><sym:bullet></c:ember> <type> <c:text><reason> <c:muted>(<date>, <status>, by <staff>)"
+
+# Discord log embeds (12.11). Plain text only (no colour tags). Off until a webhook is set up (docs/LATER.md).
+discord:
+  titles:
+    ban: "Ban"
+    mute: "Mute"
+    warn: "Warning"
+    kick: "Kick"
+    pardon: "Pardon"
+    undo: "Undone"
+  fields:
+    type: "Type"
+    target: "Player"
+    staff: "Staff"
+    reason: "Reason"
+    length: "Length"
+    weight: "Counts"
+    id: "ID"
+    rule: "Rule"
+    given-by: "Given by"
+  types:
+    ban: "Ban"
+    ipban: "IP-ban"
+    mute: "Mute"
+    ipmute: "IP-mute"
+    warn: "Warning"
+    kick: "Kick"
+  system: "System"
+  permanent: "permanent"
+  footer: "Phoenix Skyblock"
+  rule-repeat: "repeat"
+  rule-count: "<count> warnings"

@@ -13,6 +13,8 @@ import java.util.Optional;
  * <p>Definitions (owner decisions 2026-10-29):</p>
  * <ul>
  *   <li><b>Active warn</b>: type WARN, not pardoned, younger than {@code warn-expire} ({@code perm} = never expires).</li>
+ *   <li><b>Count</b> (spec 12.7): the sum of the weights of the counted warns, in whole tenths (0.5 + 0.5 + 1 = 2.0
+ *       exactly). A rule with {@code at: 2} fires when the sum is at least 2.</li>
  *   <li><b>Trigger</b>: a suggestion row. A <i>handled</i> trigger (applied, dismissed, auto-applied or skipped) restarts
  *       the counter when {@code reset-after-trigger} is on: warns created up to the moment it was handled no longer
  *       count. A pending trigger blocks new triggers (one at a time). An expired pending trigger (nobody clicked within
@@ -50,8 +52,13 @@ final class WarnRules {
         }
     }
 
-    /** What fired: a rule ({@code ruleAt}) or the repeat rule ({@code repeat}). */
-    record Trigger(Integer ruleAt, boolean repeat, Templates.Step action, int count) {
+    /** What fired: a rule ({@code ruleAt}) or the repeat rule ({@code repeat}); {@code tenths} = weighted count. */
+    record Trigger(Integer ruleAt, boolean repeat, Templates.Step action, int tenths) {
+
+        /** Whole warnings (rounded down). */
+        int count() {
+            return tenths / Weights.ONE;
+        }
 
         String source() {
             return Punishment.AUTO_PREFIX + Suggestion.KIND_WARN_RULE + ":" + (repeat ? "repeat" : String.valueOf(ruleAt));
@@ -66,7 +73,17 @@ final class WarnRules {
      * @param repeatUntil  end of the open repeat window, or {@code null}
      * @param pending      the waiting suggestion, or {@code null}
      */
-    record Counter(int count, Rule next, List<Long> expiries, Long repeatUntil, Suggestion pending) {
+    record Counter(int tenths, Rule next, List<Long> expiries, Long repeatUntil, Suggestion pending) {
+
+        /** Whole warnings (rounded down); {@link #text()} for display. */
+        int count() {
+            return tenths / Weights.ONE;
+        }
+
+        /** "1.5", "2". */
+        String text() {
+            return Weights.text(tenths);
+        }
     }
 
     private WarnRules() {
@@ -116,6 +133,15 @@ final class WarnRules {
         return out;
     }
 
+    /** Sum of the weights (tenths) of {@code counted}. */
+    static int tenths(List<Punishment> counted) {
+        int sum = 0;
+        for (Punishment p : counted) {
+            sum += Math.max(0, p.weight());
+        }
+        return sum;
+    }
+
     /** Highest rule 'at' that already fired since the last reset (0 = none). */
     static int highestFired(List<Punishment> counted, List<Suggestion> suggestions, Settings s, long now) {
         long since;
@@ -158,17 +184,17 @@ final class WarnRules {
         if (s.repeatEnabled() && last.isPresent()) {
             long since = event.created() - last.get().created();
             if (since >= 0 && since <= s.repeatWindow().toMillis()) {
-                return Optional.of(new Trigger(null, true, s.repeatAction(), counted.size()));
+                return Optional.of(new Trigger(null, true, s.repeatAction(), tenths(counted)));
             }
         }
         if (event.type() != Punishment.Type.WARN) {
             return Optional.empty();
         }
-        int count = counted.size();
+        int count = tenths(counted);
         int fired = highestFired(counted, suggestions, s, now);
         Rule best = null;
         for (Rule rule : s.rules()) {
-            if (rule.at() <= count && rule.at() > fired && (best == null || rule.at() > best.at())) {
+            if (Weights.reaches(count, rule.at()) && rule.at() > fired && (best == null || rule.at() > best.at())) {
                 best = rule;
             }
         }
@@ -178,11 +204,11 @@ final class WarnRules {
     /** The counter for display. */
     static Counter counter(List<Punishment> history, List<Suggestion> suggestions, Settings s, long now) {
         List<Punishment> counted = counted(history, suggestions, s, now);
-        int count = counted.size();
+        int count = tenths(counted);
         int fired = highestFired(counted, suggestions, s, now);
         Rule next = null;
         for (Rule rule : s.rules()) {
-            if (rule.at() > fired && rule.at() > count && (next == null || rule.at() < next.at())) {
+            if (rule.at() > fired && !Weights.reaches(count, rule.at()) && (next == null || rule.at() < next.at())) {
                 next = rule;
             }
         }
