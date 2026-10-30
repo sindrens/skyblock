@@ -46,6 +46,7 @@ pay:
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay while frozen. Wait for staff."
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be paid to players."
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest payment is <min><c:text>."
+  new-account: "<prefix><c:error><sym:cross></c:error> <c:text>New players can't pay yet. <c:value><time></c:value> <c:text>left."
 
 eco:
   done-give: "<prefix><c:success><sym:check></c:success> <c:text>Gave <amount> <c:text>to <c:value><player></c:value>. <c:muted>Now </c:muted><balance> <c:muted>(<reason>)"
