@@ -20,6 +20,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 |---|---|
 | [core](commands/core.md) | Core (`plugin`, `common`) |
 | [achievements](commands/achievements.md) | Achievements (`modules/achievements`) |
+| [afk](commands/afk.md) | AFK pool (`modules/afk`) |
 | [auction](commands/auction.md) | Auction house (`modules/auction`) |
 | [chat](commands/chat.md) | Chat, tab list, nametags (`modules/chat`) |
 | [cosmetics](commands/cosmetics.md) | Cosmetics module (`modules/cosmetics`): M1.11 |

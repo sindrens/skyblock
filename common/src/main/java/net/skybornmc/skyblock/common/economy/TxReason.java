@@ -38,6 +38,8 @@ public final class TxReason {
     public static final String SANCTION_REMOVE = "sanction_remove";
     /** Money removed by a sanction was given back ({@code /psanction restore}). */
     public static final String SANCTION_RESTORE = "sanction_restore";
+    /** A 15-minute reward of the AFK pool (modules/afk, O10/RW3); new money, a source on the economy dashboard. */
+    public static final String AFK_POOL = "afk_pool";
 
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 

@@ -1,0 +1,6 @@
+# Permissions of the AFK pool module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/afk.txt. Commands: docs/commands/afk.md (none).
+skyblock.afk:
+  description: Earn AFK pool rewards while standing in the pool at spawn (money, island fuel, crate keys).
+  default: true
