@@ -82,3 +82,10 @@ Follow-up questions are at the end of this file (and in chat).
 - `/sell`: **a chest GUI where players put items in and click Sell** (replaces the current "tap items in your inventory" box). Selling is also reachable from the satchel and from `/shop`. No price lines on inventory items, no `/price`.
 - Builds in builds/out: **paste all on the test server** (backup first) and use their metadata.
 - Sketches for review: artifact "Phoenix Skyblock UI Sketches" (shop, sell chest, satchel, forge, lores, chat). Nothing is implemented until the owner approves them.
+
+## Sketches approved (owner: "okay ser bra ut")
+- Design canvas V2 boards 1-9 approved. The 12 open questions were not answered, so the picked defaults apply until the owner says otherwise:
+  sell price red, action lines bold yellow "» ACTION", red | bar on every section line, right-click buys 64, "You can afford" line shown,
+  buys in the action bar (chat line from $100k), sell chest 4 rows, Sell inventory button yes, forge shows stat change, footer kept,
+  big sales as one chat line with hover, title case names.
+- Order: STYLE2 (palette + shared lore builder) first, then SELL2 (sell chest + quick-buy shop) on top of it.

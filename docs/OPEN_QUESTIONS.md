@@ -1,7 +1,7 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
-- V2 colors (design canvas, V2 boards): (1) Sell price red like the examples (default) or gold? (2) Action lines bold yellow `» RIGHT-CLICK` (default) or green `CLICK HERE`? (3) Thin red `|` bar on every section line (default) or only on headers? STYLE2 waits for the OK on the V2 boards.
+- V2 colors (design canvas, V2 boards): (1) Sell price red like the examples (default) or gold? (2) Action lines bold yellow `» RIGHT-CLICK` (default) or green `CLICK HERE`? (3) Thin red `|` bar on every section line (default) or only on headers? Boards approved 30 Oct; defaults apply until answered.
 - E5 armor enchants, warzone: the task rule "the warzone keeps only what W2 allows" means an armor enchant whose bonus family is not in `wardrobe.yml → warzone.families` does nothing there, so **Vitality is off in the warzone** (ENCHANTS §6.8 said "half"); Fortitude works at its PvP value (−1% per level, not also ×0.5). Keep, or give Vitality half in the warzone (add `health:1` to `warzone.families`)? (default: off)
 - E5 armor enchants: the chestplate's mythic slot (set Lv 50) takes **Mythic enchants only** (`enchanter.yml → armor.mythic-slot-mythic-only: true`); tools let any enchant use the prestige slot. Allow any enchant in the mythic slot? (default: Mythics only)
 - E5 merge: the other set's armor enchants come back as books in the **Wardrobe Chest, even past its size** (the plan said "or the AH collection bin when storage is full"; there is no shared collection-bin API yet). A full chest then holds more than its size until items are taken out. OK? (default: yes; a merge never fails or loses a book because the chest is full)
