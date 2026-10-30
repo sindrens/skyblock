@@ -75,17 +75,23 @@ category:
     name: "<c:muted>Nothing here right now"
     lore: ["<c:text>Try another category."]
   entry:
-    name: "<c:value><item>"
+    name: "<c:value><bold><item>"
+    # The | Sell Price and You can afford lines (price.*) follow these lines, then a blank line and the action.
     lore:
-      - "<c:text>Price: <cur:money><price></cur:money> <c:muted>each"
-      - "<c:text>A stack of 64: <cur:money><stack></cur:money>"
-      - ""
+      - "<bold><c:buy>| Buy Price: </c:buy><cur:money><price></cur:money></bold> <c:muted>each"
+      - "<c:text>A stack of 64: </c:text><cur:money><stack></cur:money>"
     open: "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
     locked: "<c:error><sym:cross> Locked"
     requires: "<c:text>Needs <c:value><skill> <level></c:value><c:text>."
     unavailable:
       - "<c:error><sym:cross> Not for sale right now"
       - "<c:muted>Staff are fixing its price."
+
+# V2 price block (STYLE2) under the buy price: <sell> today's /sell price (only shown when /sell buys the item),
+# <afford> how many your balance pays for.
+price:
+  sell: ["<bold><c:sell>| Sell Price: </c:sell><cur:money><sell></cur:money></bold> <c:muted>each"]
+  afford: ["<c:text>You can afford: </c:text><c:value><afford>"]
 
 item:
   info:
@@ -94,11 +100,11 @@ item:
     - "<c:text>your inventory. Full inventory: no buy."
   picker-title: "Buy <item>"
   shown:
-    name: "<c:value><item>"
+    name: "<c:value><bold><item>"
     lore:
-      - "<c:text>Price: <cur:money><price></cur:money> <c:muted>each"
-      - "<c:text>Room in your inventory: <c:value><fits>"
-      - "<c:text>Your balance: <cur:money><balance></cur:money>"
+      - "<bold><c:buy>| Buy Price: </c:buy><cur:money><price></cur:money></bold> <c:muted>each"
+      - "<c:text>Room in your inventory: </c:text><c:value><fits>"
+      - "<c:text>Your balance: </c:text><cur:money><balance></cur:money>"
   amount:
     name: "<c:success>Buy <amount>x <c:value><item>"
     lore:

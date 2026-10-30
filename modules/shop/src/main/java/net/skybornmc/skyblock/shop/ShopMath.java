@@ -47,6 +47,11 @@ public final class ShopMath {
         return Math.max(self, parts);
     }
 
+    /** How many a balance can pay for at {@code price} each ("You can afford: N"); 0 for a free or broken price. */
+    public static long affordable(long price, long balance) {
+        return price <= 0 || balance <= 0 ? 0 : balance / price;
+    }
+
     /** True if buying the item for {@code price} and selling it (or its parts) could ever pay {@code price} or more. */
     public static boolean undercutsSell(ShopCatalog.Item item, Function<String, OptionalDouble> maxSell) {
         return undercutsSell(item.id(), item.price(), item.contains(), maxSell);

@@ -168,14 +168,15 @@ item:
     rod: "Catch fish. Fishing comes later."
   max-level: "<c:text>Lv <c:value>{level}</c:value> <c:flame>MAX"
   prestige: "<c:flame><sym:star> Prestige {count}"
-  ability: "<c:text>Ability: <c:enchant>{ability}"
-  skin: "<c:text>Skin: <c:value>{skin}"
+  info-title: "Information"
+  ability: "<c:text>Ability: </c:text><c:enchant>{ability}"
+  skin: "<c:text>Skin: </c:text><c:value>{skin}"
   starter: "<c:muted>Starter kit (not for the AH)"
   next-slot: "<c:muted>Next perk slot at Lv {level}"
   history:
-    blocks: "<c:text>Blocks mined <c:value>{value}"
-    logs: "<c:text>Logs chopped <c:value>{value}"
-    kills: "<c:text>Kills <c:value>{value}"
+    blocks: "<c:text>Blocks mined: </c:text><c:value>{value}"
+    logs: "<c:text>Logs chopped: </c:text><c:value>{value}"
+    kills: "<c:text>Kills: </c:text><c:value>{value}"
   stat:
     speed: "Speed"
     fortune: "Fortune"
@@ -188,8 +189,8 @@ blueprint-item:
   name-unknown: "<c:error>Unknown blueprint"
   subtitle: "<c:muted>Blueprint"
   description: "Bring it to the Forge with money and materials."
-  makes: "<c:text>Makes: <c:value>{tool}</c:value> <c:muted>(tier {tier})"
-  ability: "<c:text>Ability: <c:enchant>{ability}"
+  makes: "<c:text>Makes: </c:text><c:value>{tool}</c:value> <c:muted>(tier {tier})"
+  ability: "<c:text>Ability: </c:text><c:enchant>{ability}"
   source: "<c:muted>Drops in the {wing}, tier {tier}+"
   action-input: "/forge"
   action-text: "then Blueprints"
@@ -213,7 +214,7 @@ tool-menu:
     lore: ["<c:text>Put it back in your inventory", "<c:text>and open the menu again."]
   bar:
     filled: "<c:flame>●"
-    empty: "<c:muted>●"
+    empty: "<c:locked>●"
   level:
     name: "<c:value>Level <level> <c:muted>/ <max>"
     progress: "<bar> <c:value><percent>%"

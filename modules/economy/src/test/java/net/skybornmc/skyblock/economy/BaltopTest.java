@@ -89,4 +89,12 @@ class BaltopTest {
         assertEquals(0, cached.withLive(me, "Me", 0, 10).rank(me), "spent everything: not listed");
         assertEquals(0, cached.withLive(me, "Me", 50, 2).rank(me), "below the top 2");
     }
+
+    @Test
+    void topThreeGetTheirOwnLineKeys() {
+        assertEquals("baltop.line-top1", EconomyModule.baltopKey(1, false));
+        assertEquals("baltop.line-top3", EconomyModule.baltopKey(3, false));
+        assertEquals("baltop.line", EconomyModule.baltopKey(4, false));
+        assertEquals("baltop.line-you", EconomyModule.baltopKey(1, true));
+    }
 }

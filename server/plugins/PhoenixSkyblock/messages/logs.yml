@@ -37,28 +37,28 @@ hub:
       - "<c:text>Everything a player online now did"
       - "<c:text>or had done to them."
       - ""
-      - "<c:action>Click to pick a player"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a player"
   any:
     name: "<c:flame>Any player"
     lore:
       - "<c:text>Online or offline: type the name"
       - "<c:text>in chat."
       - ""
-      - "<c:action>Click to type a name"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type a name"
   staff:
     name: "<c:flame>Staff member"
     lore:
       - "<c:text>Only what a staff member <c:value>did</c:value>."
       - "<c:text>For accountability."
       - ""
-      - "<c:action>Click to type a name"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type a name"
   near:
     name: "<c:flame>Near me"
     lore:
       - "<c:text>Actions around where you stand."
       - "<c:text>Change the radius below."
       - ""
-      - "<c:action>Click to search around you"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to search around you"
   item:
     name: "<c:flame>Item"
     lore:
@@ -66,53 +66,53 @@ hub:
       - "<c:text>created, traded, sold, flagged as dupe."
       - "<c:text>Uses the item in your hand, or type its id."
       - ""
-      - "<c:action>Click to choose the item"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose the item"
   island:
     name: "<c:flame>Island"
     lore:
       - "<c:text>Invites, kicks, roles, bank, upgrades."
       - "<c:text>Type the owner's name or the island id."
       - ""
-      - "<c:action>Click to type a name or id"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type a name or id"
   all:
     name: "<c:flame>Everything"
     lore:
       - "<c:text>All actions on the server, newest first."
       - ""
-      - "<c:action>Click to select"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to select"
   category:
     name: "<c:value>Category"
     lore:
       - "<c:text>Now: <c:value><categories>"
       - ""
-      - "<c:action>Click to choose"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
   time:
     name: "<c:value>Time range"
     lore:
       - "<c:text>Now: <c:value><range>"
       - "<c:muted>Options: <options>"
       - ""
-      - "<c:action>Click for the next range"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next range"
   radius:
     name: "<c:value>Radius"
     lore:
       - "<c:text>Now: <c:value><radius> blocks"
       - "<c:muted>Options: <options>"
       - ""
-      - "<c:action>Click for the next radius"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next radius"
   reset:
     name: "<c:error>Reset"
     lore:
       - "<c:text>Clear who, category and time."
       - ""
-      - "<c:action>Click to reset"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to reset"
   search:
     name: "<c:success><bold>SEARCH</bold>"
     lore:
       - "<c:text>Show the logs of <c:value><subject></c:value>,"
       - "<c:text>newest first."
       - ""
-      - "<c:action>Click to search"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to search"
   export:
     name: "<c:value>Export as CSV"
     lore:
@@ -120,7 +120,7 @@ hub:
       - "<c:value>plugins/PhoenixSkyblock/exports/</c:value>"
       - "<c:text>for appeals and evidence."
       - ""
-      - "<c:action>Click to export"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to export"
 
 # ------------------------------------------------------------------ results
 results:
@@ -142,27 +142,27 @@ results:
     lore:
       - "<c:text>Back to who, category and time."
       - ""
-      - "<c:action>Click to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
   chat:
     name: "<c:value>Show in chat"
     lore:
       - "<c:text>Prints this page in chat, one line per"
       - "<c:text>entry with hover details."
       - ""
-      - "<c:action>Click to show"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
   refresh:
     name: "<c:value>Refresh"
     lore:
       - "<c:text>Load the newest entries."
       - ""
-      - "<c:action>Click to refresh"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to refresh"
   export:
     name: "<c:value>Export as CSV"
     lore:
       - "<c:text>Every result of this search, saved to"
       - "<c:value>plugins/PhoenixSkyblock/exports/"
       - ""
-      - "<c:action>Click to export"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to export"
   empty:
     name: "<c:text>No logs found"
     lore:
@@ -185,7 +185,7 @@ category-menu:
     - "<c:success><sym:check> Selected"
   click:
     - ""
-    - "<c:action>Click to select"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to select"
   descriptions:
     economy: ["<c:text>Payments, money given or taken, banks."]
     trade: ["<c:text>Secure trades, with both sides."]
@@ -242,11 +242,11 @@ entry:
   details-header: "<c:ember>Details"
   detail: " <c:muted>•</c:muted> <c:text><line>"
   meta: "<c:muted>#<id> <sym:dot> <server> <sym:dot> season <season> <sym:dot> <raw-action>"
-  click-teleport: "<c:action>Click to teleport there"
-  right-click-chat: "<c:action>Right-click: full details in chat"
-  click-chat: "<c:action>Click: full details in chat"
+  click-teleport: "<bold><c:action>» CLICK</c:action></bold> <c:text>to teleport there"
+  right-click-chat: "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>full details in chat"
+  click-chat: "<bold><c:action>» CLICK</c:action></bold> <c:text>full details in chat"
   # Phase P 13.11: a chat line opens the punish menu (/p) with this line (and the lines before it) as evidence.
-  click-punish: "<c:action>Click to punish with this line as evidence"
+  click-punish: "<bold><c:action>» CLICK</c:action></bold> <c:text>to punish with this line as evidence"
 
 hover:
   header: "<c:flame><category></c:flame> <c:muted><sym:dot> <utc>"

@@ -1586,7 +1586,7 @@ notes:
   prompt:
     add: "<prefix><c:text>Type your note in chat. <c:muted>(max <max> characters, <cancel> to stop, <seconds>s)"
     edit: "<prefix><c:text>Type the new text. <c:muted>(max <max>, <cancel> to stop, <seconds>s)</c:muted><newline><c:muted>Now: <text>"
-  hologram: "<c:value><text><newline><c:muted><author>"
+  hologram: "<bold><c:value><text></c:value></bold><newline><c:muted><author>"
   book:
     name: "<c:flame><bold>Island notes</bold> <c:muted>(temporary)"
     name-read: "<c:flame><bold>Island notes</bold> <c:muted>(read only)"

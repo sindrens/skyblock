@@ -85,16 +85,16 @@ menu:
       - "<c:muted><range> blocks. Light is not needed."
   add-one:
     name: "<c:success>Add 1"
-    lore: ["<c:text>Adds one <c:value><mob></c:value> <c:text>spawner", "<c:text>from your inventory.", "<c:text>You carry <c:value><carried>", "", "<c:action><sym:bullet> Click to add"]
+    lore: ["<c:text>Adds one <c:value><mob></c:value> <c:text>spawner", "<c:text>from your inventory.", "<c:text>You carry <c:value><carried>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to add"]
   add-all:
     name: "<c:success>Add all"
-    lore: ["<c:text>Adds every <c:value><mob></c:value> <c:text>spawner", "<c:text>you carry, up to the limit.", "<c:text>You carry <c:value><carried>", "", "<c:action><sym:bullet> Click to add"]
+    lore: ["<c:text>Adds every <c:value><mob></c:value> <c:text>spawner", "<c:text>you carry, up to the limit.", "<c:text>You carry <c:value><carried>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to add"]
   take-one:
     name: "<c:error>Take 1"
-    lore: ["<c:text>Takes one spawner into", "<c:text>your inventory.", "", "<c:action><sym:bullet> Click to take"]
+    lore: ["<c:text>Takes one spawner into", "<c:text>your inventory.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to take"]
   take-all:
     name: "<c:error>Take all"
-    lore: ["<c:text>Takes all <c:value><count></c:value> <c:text>spawners.", "<c:text>The block disappears.", "", "<c:action><sym:bullet> Click to take"]
+    lore: ["<c:text>Takes all <c:value><count></c:value> <c:text>spawners.", "<c:text>The block disappears.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to take"]
   upgrades:
     name: "<c:ember>Upgrades"
     lore:

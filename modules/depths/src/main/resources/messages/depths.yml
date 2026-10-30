@@ -178,8 +178,8 @@ satchel:
     upgrade:
       name: "<c:flame>Upgrade <c:value><next></c:value><c:muted>/<levels>"
       lore:
-        - "<c:text>Space: <c:value>+<capacity>"
-        - "<c:text>Price: <cur:money><price>"
+        - "<bold><c:buy>| Buy Price: </c:buy><cur:money><price></cur:money></bold>"
+        - "<c:text>Space: </c:text><c:value>+<capacity>"
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
       name-max: "<c:flame>Upgrades <c:success><sym:check>"
@@ -188,9 +188,11 @@ satchel:
     entry:
       name: "<item>"
       lore:
-        - "<c:text>Amount: <c:value><amount>"
-        - "<c:text>Price: <cur:money><price></cur:money> <c:muted>each (<trend>%)"
-        - "<c:text>Worth: <cur:money><worth>"
+        - "<bold><c:sell>| Sell Price: </c:sell><cur:money><price></cur:money></bold> <c:muted>each (<trend>%)"
+        - ""
+        - "<bold><c:header>| Information</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Amount: </c:text><c:value><amount>"
+        - "<c:bar>| </c:bar><c:text>Worth: </c:text><cur:money><worth>"
       no-price: ["<c:muted>Can't be sold to the server."]
       click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to sell or take out"]
   item:

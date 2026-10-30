@@ -35,6 +35,18 @@ lore:
   level-bar-empty: "●"
   footer: "<rarity:{rarity}><bold>{rarity-name} {type-name}"
 
+# Holograms (crates, leaderboards; V2 look). Shared formats for every module that spawns one.
+# {title} name, {rarity} rarity id, {place} 1-3, {player} name, {value} score (already formatted).
+hologram:
+  title: "<rarity:{rarity}><bold>{title}"
+  right-click: "<bold><c:action>Right-Click: </c:action></bold><c:text>Open"
+  left-click: "<bold><c:action>Left-Click: </c:action></bold><c:text>View Rewards"
+  leaderboard-title: "<bold><c:header>{title}"
+  top1: "<bold><c:top1>#1</c:top1></bold> <c:value>{player}</c:value> <c:muted><sym:dot></c:muted> {value}"
+  top2: "<bold><c:top2>#2</c:top2></bold> <c:value>{player}</c:value> <c:muted><sym:dot></c:muted> {value}"
+  top3: "<bold><c:top3>#3</c:top3></bold> <c:value>{player}</c:value> <c:muted><sym:dot></c:muted> {value}"
+  place: "<c:muted>#{place}</c:muted> <c:value>{player}</c:value> <c:muted><sym:dot></c:muted> {value}"
+
 rarity:
   common: "COMMON"
   uncommon: "UNCOMMON"

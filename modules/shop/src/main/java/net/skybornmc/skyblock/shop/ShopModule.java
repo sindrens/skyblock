@@ -275,6 +275,26 @@ public final class ShopModule implements SkyblockModule, Listener {
         return core.services().optional(SellService.class).map(s -> s.maxUnitPrice(itemId)).orElse(OptionalDouble.empty());
     }
 
+    /** Today's /sell price of one shop item (before sell bonuses), rounded to whole money; empty if /sell doesn't buy it. */
+    java.util.OptionalLong sellPrice(ShopCatalog.Item item) {
+        return core.services().optional(SellService.class).flatMap(s -> s.price(item.id()))
+                .map(p -> java.util.OptionalLong.of(Math.max(0, Math.round(p.unit())))).orElse(java.util.OptionalLong.empty());
+    }
+
+    /**
+     * The V2 price block under the buy price (STYLE2): the red {@code | Sell Price} line when /sell buys the item and
+     * {@code You can afford: N}.
+     */
+    List<net.kyori.adventure.text.Component> priceLines(Player viewer, ShopCatalog.Item item, long balance) {
+        List<net.kyori.adventure.text.Component> out = new java.util.ArrayList<>();
+        java.util.OptionalLong sell = sellPrice(item);
+        if (sell.isPresent() && sell.getAsLong() > 0) {
+            out.addAll(core.menus().lines(viewer, ID, "price.sell", money("sell", sell.getAsLong())));
+        }
+        out.addAll(core.menus().lines(viewer, ID, "price.afford", Msg.number("afford", ShopMath.affordable(item.price(), balance))));
+        return out;
+    }
+
     /** True if this item may be sold now: its price is above anything /sell could pay for it (or the check is off). */
     boolean priceSafe(ShopCatalog.Item item) {
         return !settings.checkSellPrices || !ShopMath.undercutsSell(item, this::maxSell);

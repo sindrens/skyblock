@@ -1,7 +1,7 @@
 # Menu (GUI) framework texts. MiniMessage + style tags (style.yml). Lore can be a list (one line per entry).
 # Rules (docs/UI_STYLE.md section 5):
 #  - Item names: one color word + white value, never italic. Lore: description in <c:text>, an empty line, then the
-#    action line "<c:action><sym:bullet> Click to ...". Only Bedrock-safe symbols.
+#    action line "<bold><c:action>» CLICK</c:action></bold> <c:text>to ...". Only Bedrock-safe symbols.
 #  - Titles are dark gray on the light chest background with a red marker; keep crumbs short (whole title max ~32).
 # Reload: /skyblock reload core
 
@@ -16,27 +16,27 @@ title:
 frame:
   back:
     name: "<c:ember><sym:arrow></c:ember> <c:value>Back"
-    lore: ["<c:text>Back to the last menu.", "", "<c:action><sym:bullet> Click to go back"]
+    lore: ["<c:text>Back to the last menu.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go back"]
   close:
     name: "<c:error><sym:cross></c:error> <c:value>Close"
-    lore: ["", "<c:action><sym:bullet> Click to close"]
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
   help:
     name: "<c:info>Help & guides"
     lore:
       - "<c:text>Every feature, step by step."
       - ""
-      - "<c:action><sym:bullet> Click to open help"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open help"
   info:
     name: "<c:info>About this menu"
     footer:
       - ""
-      - "<c:action><sym:bullet> Click for the full guide"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the full guide"
   previous:
     name: "<c:ember><sym:arrow></c:ember> <c:value>Previous page"
-    lore: ["<c:text>Go to page <c:value><page></c:value> of <c:value><pages></c:value>.", "", "<c:action><sym:bullet> Click to go back a page"]
+    lore: ["<c:text>Go to page <c:value><page></c:value> of <c:value><pages></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go back a page"]
   next:
     name: "<c:value>Next page</c:value> <c:ember><sym:arrow>"
-    lore: ["<c:text>Go to page <c:value><page></c:value> of <c:value><pages></c:value>.", "", "<c:action><sym:bullet> Click for the next page"]
+    lore: ["<c:text>Go to page <c:value><page></c:value> of <c:value><pages></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next page"]
 
 loading:
   name: "<c:ember><sym:time></c:ember> <c:value>Loading..."
@@ -51,7 +51,7 @@ empty:
 toggle:
   "on": ["", "<c:text>Status: <c:success><sym:check> On"]
   "off": ["", "<c:text>Status: <c:error><sym:cross> Off"]
-  action: ["", "<c:action><sym:bullet> Click to switch"]
+  action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
 
 confirm:
   crumb: "Are you sure?"
@@ -61,10 +61,10 @@ confirm:
   "yes":
     name: "<c:success><sym:check> Confirm"
     lore-top: ["<c:text>This will:"]
-    lore: ["", "<c:action><sym:bullet> Click to confirm"]
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm"]
   "no":
     name: "<c:error><sym:cross> Cancel"
-    lore: ["<c:text>Nothing will change.", "", "<c:action><sym:bullet> Click to cancel"]
+    lore: ["<c:text>Nothing will change.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to cancel"]
 
 number:
   crumb: "Choose an amount"
@@ -73,25 +73,25 @@ number:
     - "<c:text>or type an exact amount in chat."
   minus:
     name: "<c:error>- <step>"
-    lore: ["", "<c:action><sym:bullet> Click to remove <step>"]
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove <step>"]
   plus:
     name: "<c:success>+ <step>"
-    lore: ["", "<c:action><sym:bullet> Click to add <step>"]
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to add <step>"]
   value:
     name: "<c:value><value>"
     lore: ["<c:text>Selected: <c:flame><compact></c:flame>", "", "<c:text>Min <c:value><min></c:value> <c:muted><sym:dot></c:muted> Max <c:value><max>"]
   set-min:
     name: "<c:value>Minimum"
-    lore: ["<c:text>Set the amount to <c:value><min></c:value>.", "", "<c:action><sym:bullet> Click to set"]
+    lore: ["<c:text>Set the amount to <c:value><min></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to set"]
   set-max:
     name: "<c:value>Maximum"
-    lore: ["<c:text>Set the amount to <c:value><max></c:value>.", "", "<c:action><sym:bullet> Click to set"]
+    lore: ["<c:text>Set the amount to <c:value><max></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to set"]
   custom:
     name: "<c:value>Type an amount"
-    lore: ["<c:text>Write the exact amount in chat.", "<c:text>Examples: <c:value>1500</c:value>, <c:value>1.5k</c:value>, <c:value>2M", "", "<c:action><sym:bullet> Click to type"]
+    lore: ["<c:text>Write the exact amount in chat.", "<c:text>Examples: <c:value>1500</c:value>, <c:value>1.5k</c:value>, <c:value>2M", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to type"]
   confirm:
     name: "<c:success><sym:check> Confirm</c:success> <c:value><value>"
-    lore: ["", "<c:action><sym:bullet> Click to confirm"]
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm"]
   ask: "<prefix><c:text>Type an amount from <c:value><min></c:value> to <c:value><max></c:value> in chat. <c:muted>(<cancel> to cancel, <seconds>s)"
   invalid: "<prefix><c:error><sym:cross></c:error> <c:text>Not an amount. Use <c:value><min></c:value> to <c:value><max></c:value>, like 1500 or 1.5k."
 
@@ -100,7 +100,7 @@ players:
   info: ["<c:text>Everyone online right now.", "<c:text>Click a head to choose them."]
   entry:
     name: "<c:value><player>"
-    lore: ["", "<c:action><sym:bullet> Click to choose"]
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
   empty:
     name: "<c:text>No other players online"
     lore: ["<c:muted>Try again when your friends are on."]

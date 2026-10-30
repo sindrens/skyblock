@@ -192,7 +192,7 @@ menu-item:
     - "<c:text>Everything on the server:"
     - "<c:text>island, Depths, shop, settings."
     - ""
-    - "<c:action><sym:bullet> Right-click to open"
+    - "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>to open"
   coming-soon: "<prefix><c:text>The main menu is coming soon."
 
 build:

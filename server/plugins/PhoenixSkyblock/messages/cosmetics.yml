@@ -35,7 +35,7 @@ menu:
     name: "<c:flame><bold>Tags"
     lore: ["<c:text>From crates and the store.", "<c:text>Owned: <c:value><owned></c:value><c:muted>/<total>"]
   tab-selected: ["", "<c:success><sym:check> Showing now"]
-  tab-action: ["", "<c:action><sym:bullet> Click to show"]
+  tab-action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
   preview:
     name: "<c:value>How you look"
     chat-label: "<c:muted>Chat:"
@@ -45,8 +45,8 @@ menu:
   earned: "<c:text>Earned: <c:muted><source>"
   status-equipped: ["", "<c:success><sym:check> Equipped"]
   status-owned: ["", "<c:text>Owned"]
-  action-equip: ["", "<c:action><sym:bullet> Click to equip"]
-  action-unequip: ["", "<c:action><sym:bullet> Click to unequip"]
+  action-equip: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to equip"]
+  action-unequip: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to unequip"]
   locked-name: "<c:muted><name>"
   locked-title: ["<c:error><sym:cross> Not earned yet", "<c:text>How to earn it:", "<c:value><source>"]
   locked-tag: ["<c:error><sym:cross> Not owned", "<c:text>How to get it:", "<c:value><source>"]
@@ -56,16 +56,16 @@ menu:
   secret-lore: ["<c:muted><sym:time> A secret title.", "<c:muted>Find out how to earn it."]
   unequip-titles:
     name: "<c:error><sym:cross></c:error> <c:value>Remove title"
-    lore: ["<c:text>Wearing: <display>", "", "<c:action><sym:bullet> Click to remove"]
+    lore: ["<c:text>Wearing: <display>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
   unequip-tags:
     name: "<c:error><sym:cross></c:error> <c:value>Remove tag"
-    lore: ["<c:text>Wearing: <display>", "", "<c:action><sym:bullet> Click to remove"]
+    lore: ["<c:text>Wearing: <display>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
   achievements:
     name: "<c:flame>Achievements"
-    lore: ["<c:text>Most titles come from these.", "<c:text>Done: <c:value><done></c:value><c:muted>/<total>", "", "<c:action><sym:bullet> Click to open"]
+    lore: ["<c:text>Most titles come from these.", "<c:text>Done: <c:value><done></c:value><c:muted>/<total>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   edit:
     name: "<c:warning>Edit titles & tags"
-    lore: ["<c:text>Staff: create and change titles", "<c:text>and tags.", "", "<c:action><sym:bullet> Click to edit"]
+    lore: ["<c:text>Staff: create and change titles", "<c:text>and tags.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit"]
   empty:
     name: "<c:text>Nothing here yet"
     lore: ["<c:muted>New ones are added over time."]
@@ -120,13 +120,13 @@ editor:
     - "<c:text>and how players get it."
   id: "<c:muted>Id: <id>"
   source: "<c:text>How to get: <c:muted><source>"
-  action-edit: ["", "<c:action><sym:bullet> Click to edit"]
+  action-edit: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit"]
   create-titles:
     name: "<c:success>+ New title"
-    lore: ["<c:text>Create a new title.", "", "<c:action><sym:bullet> Click to create"]
+    lore: ["<c:text>Create a new title.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to create"]
   create-tags:
     name: "<c:success>+ New tag"
-    lore: ["<c:text>Create a new tag.", "", "<c:action><sym:bullet> Click to create"]
+    lore: ["<c:text>Create a new tag.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to create"]
   prompt-id: "<prefix><c:text>Type an id (a-z, 0-9, _), like <c:value>night_owl</c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
   prompt-display: "<prefix><c:text>Type how it looks (MiniMessage or & codes), like <c:value>&c[Fire]</c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
   prompt-source: "<prefix><c:text>Type how players get it (or <c:value>none</c:value>). <c:muted>(<cancel> to cancel, <seconds>s)"
@@ -141,13 +141,13 @@ editor:
   preview-lore: ["<c:muted>Id: <id>"]
   display:
     name: "<c:value>Look"
-    lore: ["<c:text>Shown as: <shown>", "<c:muted>Text: <raw>", "", "<c:action><sym:bullet> Click to change"]
+    lore: ["<c:text>Shown as: <shown>", "<c:muted>Text: <raw>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   rarity:
     name: "<c:value>Rarity"
-    lore: ["<c:text>Now: <rarity>", "<c:text>Next: <next>", "", "<c:action><sym:bullet> Click to change"]
+    lore: ["<c:text>Now: <rarity>", "<c:text>Next: <next>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   source-item:
     name: "<c:value>How to get it"
-    lore: ["<c:text><source>", "", "<c:action><sym:bullet> Click to change"]
+    lore: ["<c:text><source>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   none: "<c:muted>(not set)"
   secret:
     name: "<c:value>Secret"
@@ -157,10 +157,10 @@ editor:
     lore: ["<c:text>Players keep it when a new", "<c:text>season starts."]
   give-item:
     name: "<c:value>Get a tag item"
-    lore: ["<c:text>A redeemable item of this tag", "<c:text>in your inventory.", "", "<c:action><sym:bullet> Click to get one"]
+    lore: ["<c:text>A redeemable item of this tag", "<c:text>in your inventory.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to get one"]
   delete:
     name: "<c:error>Delete"
-    lore: ["<c:text>Removes it from the menu.", "<c:text>Players who own it lose it from view.", "", "<c:action><sym:bullet> Click to delete"]
+    lore: ["<c:text>Removes it from the menu.", "<c:text>Players who own it lose it from view.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to delete"]
     crumb: "Delete"
     details: ["<c:text>This removes it for everyone."]
   saved: "<prefix><c:success><sym:check></c:success> <c:text>Saved: <display>"
@@ -214,7 +214,7 @@ display:
       lore: ["<c:text>Show the rank prefix above", "<c:text>players' heads."]
   current: "<c:text>Now: <c:muted><raw>"
   default: "<c:text>Default: <c:muted><raw>"
-  action-edit: ["", "<c:action><sym:bullet> Click to change"]
+  action-edit: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   preview:
     name: "<c:value>Preview (you)"
     afk-label: "<c:muted>AFK marker:"

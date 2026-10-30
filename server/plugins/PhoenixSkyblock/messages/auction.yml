@@ -51,7 +51,7 @@ sell:
       - "<c:text>When it sells you get <net> <c:muted>(<tax-percent>% tax: </c:muted><tax><c:muted>)"
       - "<c:muted>Unsold items come back to your collection bin."
       - ""
-      - "<c:action><sym:bullet> Click to list for <time>"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to list for <time>"
 
 buy:
   crumb: "Buy item"
@@ -92,14 +92,14 @@ staff:
     lore:
       - "<c:text>Buy it like any player."
       - ""
-      - "<c:action><sym:bullet> Click to buy"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
   remove:
     name: "<c:error>Remove: <c:value><reason>"
     lore:
       - "<c:text>The item goes back to <c:value><seller></c:value><c:text>'s"
       - "<c:text>collection bin. Logged with this reason."
       - ""
-      - "<c:action><sym:bullet> Click to remove"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"
   removed: "<prefix><c:success><sym:check></c:success> <c:text>Removed <c:value><seller></c:value><c:text>'s listing of <c:value><item></c:value><c:text>. It's in their collection bin."
   removed-seller: "<prefix><c:text>Staff removed your listing of <c:value><item></c:value><c:text>. It's in your collection bin (<c:value>/ah</c:value>)."
 
@@ -120,7 +120,7 @@ collection:
       - "<c:text>Moves items into your inventory"
       - "<c:text>until it is full."
       - ""
-      - "<c:action><sym:bullet> Click to take all"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take all"
   unreadable:
     name: "<c:error>Unreadable item"
     lore:
@@ -130,7 +130,7 @@ collection:
     - "<c:text>Why: <source>"
     - "<c:muted><ago> ago"
     - ""
-    - "<c:action><sym:bullet> Click to take"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take"
   source:
     expired: "<c:value>ran out of time"
     cancelled: "<c:value>you cancelled it"
@@ -196,14 +196,14 @@ browse:
       - "<c:muted>Lowest price: </c:muted><min>"
       - "<c:muted>Also: </c:muted><c:value><command> 1.5k 24h"
       - ""
-      - "<c:action><sym:bullet> Click to sell"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell"
   mine:
     name: "<c:value>My listings <c:muted>(<used>/<slots>)"
     lore:
       - "<c:text>Your items on sale. Cancel one"
       - "<c:text>to get it back."
       - ""
-      - "<c:action><sym:bullet> Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   summary:
     name: "<c:flame><sym:star></c:flame> <c:value>Auction House"
     lore:
@@ -219,7 +219,7 @@ browse:
       - "<c:text>didn't fit in your inventory."
       - "<c:muted>Empty."
       - ""
-      - "<c:action><sym:bullet> Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   collection-full:
     name: "<c:flame>Collection bin <c:muted>(<count>)"
     lore:
@@ -227,46 +227,46 @@ browse:
       - "<c:text>didn't fit in your inventory."
       - "<c:value><count></c:value> <c:text>item(s) waiting."
       - ""
-      - "<c:action><sym:bullet> Click to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   refresh:
     name: "<c:value>Refresh"
     lore:
       - "<c:text>Load the newest listings."
       - ""
-      - "<c:action><sym:bullet> Click to refresh"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to refresh"
   category:
     name: "<c:value>Category: <value>"
     lore-top:
       - ""
     lore:
       - ""
-      - "<c:action><sym:bullet> Click for the next one"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next one"
   sort:
     name: "<c:value>Sort: <value>"
     lore-top:
       - ""
     lore:
       - ""
-      - "<c:action><sym:bullet> Click to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
   search:
     name: "<c:value>Search"
     lore:
       - "<c:text>Find items by name, or all items"
       - "<c:text>of one seller (exact name)."
       - ""
-      - "<c:action><sym:bullet> Click to type a search"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type a search"
   search-active:
     name: "<c:value>Search: <c:flame><search>"
     lore:
       - "<c:text>Showing items matching your search."
       - ""
-      - "<c:action><sym:bullet> Click to search again"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to search again"
   clear-search:
     name: "<c:error>Clear search"
     lore:
       - "<c:text>Show all items again."
       - ""
-      - "<c:action><sym:bullet> Click to clear"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to clear"
   list-selected: "<c:flame><sym:bullet></c:flame> <name>"
   list-other: "<c:muted>  <name>"
   entry:
@@ -277,14 +277,14 @@ browse:
       - "<c:muted><sym:line></c:muted> <c:text>Ends in: <c:value><time>"
     buy:
       - ""
-      - "<c:action><sym:bullet> Click to buy"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
     own:
       - ""
       - "<c:muted>This is your listing."
-      - "<c:action><sym:bullet> Click to cancel it"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to cancel it"
     staff:
       - ""
-      - "<c:action><sym:bullet> Click to buy or remove (staff)"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy or remove (staff)"
 
 mine:
   title: "My listings"
@@ -304,7 +304,7 @@ mine:
   entry:
     active:
       - ""
-      - "<c:action><sym:bullet> Click to cancel"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to cancel"
     ending:
       - ""
       - "<c:muted>Ended; moving to your collection bin."

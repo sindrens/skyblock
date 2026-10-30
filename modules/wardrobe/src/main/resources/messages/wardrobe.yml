@@ -246,16 +246,18 @@ bonus-text:
   death-loss: "Warzone money loss -{value}%"
 
 bonus:
-  two-header: "<c:muted>2 pieces"
-  four-header: "<c:muted>4 pieces"
-  line: " <c:ember>▸</c:ember> <c:text>{text}"
+  # Section titles (the lore builder adds the bold red "| " header look); merged-header names the second set of a merge.
+  two-header: "2 Pieces"
+  four-header: "4 Pieces"
+  merged-header: "{set} {pieces}"
+  line: "<c:text>{text}"
 
 # ---------------------------------------------------------------- items
 piece:
   fallback-name: "<rarity:uncommon>Set Piece"
   unknown: "This set no longer exists."
   subtitle: "<c:muted>Set piece · Tier {tier}"
-  set: "<c:text>Set: {set}"
+  set: "<c:text>Set: </c:text>{set}"
   merged: "<c:text>Merged with <c:value>{set}"
   level: "<c:text>Lv <c:value>{level}</c:value> <c:muted>· {multiplier}x"
   action-input: "/wardrobe"
@@ -263,14 +265,14 @@ piece:
   # Armor enchants (E5): one line per slot. {name} enchant + level, {rarity} its rarity id, {slot} slot number,
   # {level} set level that opens the slot. Dormant = slot not open yet or level above the set level gate (no effect).
   enchants:
-    header: "<c:muted>Enchants"
-    active: " <c:enchant>▸ <rarity:{rarity}>{name}"
-    mythic: " <c:enchant>★ <rarity:{rarity}>{name}"
-    dormant: " <c:muted>▸ {name} (dormant)"
-    empty: " <c:muted>▸ Empty slot"
-    locked: " <c:muted>▸ Slot {slot} at Lv {level}"
-    mythic-empty: " <c:muted>★ Empty mythic slot"
-    mythic-locked: " <c:muted>★ Mythic slot at Lv {level}"
+    header: "Enchants"
+    active: "<rarity:{rarity}>{name}"
+    mythic: "<c:enchant>★ <rarity:{rarity}>{name}"
+    dormant: "<c:locked>{name} (dormant)"
+    empty: "<c:locked>Empty slot"
+    locked: "<c:locked>Slot {slot} at Lv {level}"
+    mythic-empty: "<c:locked>★ Empty mythic slot"
+    mythic-locked: "<c:locked>★ Mythic slot at Lv {level}"
 
 token:
   fallback-name: "<rarity:rare>Set Token"
@@ -333,9 +335,9 @@ menu:
     bonuses:
       name: "<c:value>Bonuses"
       lore: ["<c:text>Values at your set level.", ""]
-      two: "<c:muted>2 pieces"
-      four: "<c:muted>4 pieces"
-      line: "<c:ember>▸</c:ember> <c:text><text>"
+      two: "<bold><c:header>| 2 Pieces</c:header></bold>"
+      four: "<bold><c:header>| 4 Pieces</c:header></bold>"
+      line: "<c:bar>| </c:bar><c:text><text>"
       merged: "<c:muted>Merged with <set>:"
       warzone: ["", "<c:warning>Warzone: 1x, only damage", "<c:warning>reduction and conquest work."]
     level:

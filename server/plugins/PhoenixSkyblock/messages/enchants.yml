@@ -125,11 +125,11 @@ book:
   fallback-name: "<rarity:common>Enchant Book"
   name: "<rarity:{rarity}>{name}"
   subtitle: "<c:muted>Enchant Book · {targets}"
-  details: "<c:muted>Details"
-  max-level: " <c:enchant>▸ <c:text>Max level <c:value>{value}"
-  slot-cost: " <c:enchant>▸ <c:text>Slot cost <c:value>{value}"
-  prestige-slot: " <c:enchant>▸ <c:text>Prestige slot only"
-  conflicts: " <c:enchant>▸ <c:text>Conflicts <c:value>{value}"
+  details: "Details"
+  max-level: "<c:text>Max level: </c:text><c:value>{value}"
+  slot-cost: "<c:text>Slot cost: </c:text><c:value>{value}"
+  prestige-slot: "<c:text>Prestige slot only"
+  conflicts: "<c:text>Conflicts: </c:text><c:value>{value}"
   armor: "<c:muted>For wardrobe set pieces"
   disabled: "<c:error>Turned off for now"
   unknown: "This enchant does not exist any more."
@@ -165,7 +165,7 @@ scroll:
 menu:
   title: "Enchanter"
   text-line: "<c:text><text>"
-  click: ["", "<c:action>▶ Click <c:text>to choose"]
+  click: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
   tool-gone:
     name: "<c:error>Tool not found"
     lore: ["<c:text>Put it in your inventory", "<c:text>and open the menu again."]
@@ -179,28 +179,28 @@ menu:
     info: ["<c:text>Put enchant books on custom", "<c:text>tools, then level them up with", "<c:text>crystals. Never a fail chance."]
     apply:
       name: "<c:value>Apply a book"
-      lore: ["<c:text>Put a book in a free slot", "<c:text>of a custom tool.", "<c:muted>Books with you: <books>", "", "<c:action>▶ Click <c:text>to choose a tool"]
+      lore: ["<c:text>Put a book in a free slot", "<c:text>of a custom tool.", "<c:muted>Books with you: <books>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose a tool"]
     upgrade:
       name: "<c:value>Upgrade"
-      lore: ["<c:text>Raise an enchant on a tool", "<c:text>with crystals or a book.", "<c:muted>Tools with you: <tools>", "", "<c:action>▶ Click <c:text>to choose a tool"]
+      lore: ["<c:text>Raise an enchant on a tool", "<c:text>with crystals or a book.", "<c:muted>Tools with you: <tools>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose a tool"]
     combine:
       name: "<c:value>Combine books"
-      lore: ["<c:text>Two equal books make one", "<c:text>book a level higher.", "<c:muted>Books with you: <books>", "", "<c:action>▶ Click <c:text>to open"]
+      lore: ["<c:text>Two equal books make one", "<c:text>book a level higher.", "<c:muted>Books with you: <books>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     remove:
       name: "<c:value>Remove"
-      lore: ["<c:text>With a scroll you keep the", "<c:text>book. Without, it shatters.", "", "<c:action>▶ Click <c:text>to choose a tool"]
+      lore: ["<c:text>With a scroll you keep the", "<c:text>book. Without, it shatters.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose a tool"]
     armor:
       name: "<c:value>Armor"
-      lore: ["<c:text>Enchant the pieces of the sets", "<c:text>in your wardrobe.", "<c:muted>Sets you own: <sets>", "", "<c:action>▶ Click <c:text>to choose a set"]
+      lore: ["<c:text>Enchant the pieces of the sets", "<c:text>in your wardrobe.", "<c:muted>Sets you own: <sets>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose a set"]
     armor-off:
       name: "<c:muted>Armor"
       lore: ["<c:text>Armor enchants need the", "<c:text>wardrobe. Closed right now."]
     shop:
       name: "<c:value>Book shop"
-      lore: ["<c:text>Random books and Disenchant", "<c:text>Scrolls for crystals.", "", "<c:action>▶ Click <c:text>to open"]
+      lore: ["<c:text>Random books and Disenchant", "<c:text>Scrolls for crystals.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     guide:
       name: "<c:value>Enchant guide"
-      lore: ["<c:text>Every enchant, what it does", "<c:text>and where it drops.", "", "<c:action>▶ Click <c:text>to open"]
+      lore: ["<c:text>Every enchant, what it does", "<c:text>and where it drops.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     crystals:
       name: "<cur:crystals><sym:crystals> <crystals></cur:crystals> <c:text>crystals"
       lore: ["<c:muted>Earn crystals on your island", "<c:muted>and in The Depths."]
@@ -216,9 +216,9 @@ menu:
       lore: ["<c:text>Get one at <c:value>/forge</c:value><c:text>.", "<c:text>Vanilla tools can't get these."]
     entry: ["<c:muted>Lv <level> · slots <used>/<slots>"]
     click:
-      apply: ["<c:action>▶ Click <c:text>to pick a slot"]
-      upgrade: ["<c:action>▶ Click <c:text>to pick an enchant"]
-      remove: ["<c:action>▶ Click <c:text>to pick an enchant"]
+      apply: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a slot"]
+      upgrade: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick an enchant"]
+      remove: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick an enchant"]
   slots:
     info:
       apply: ["<c:text>Pick a free slot for the book.", "<c:text>Slots open at Lv 5, 15, 30, 45.", "<c:text>Slot 5 opens with prestige."]
@@ -233,20 +233,20 @@ menu:
       lore: ["<c:muted>Slot <slot> · put in <sym:crystals> <invested>"]
       click:
         apply: ["", "<c:muted>Slot is full"]
-        upgrade: ["", "<c:action>▶ Click <c:text>to upgrade"]
-        remove: ["", "<c:action>▶ Click <c:text>to remove"]
+        upgrade: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to upgrade"]
+        remove: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
     disabled: ["<c:error>Turned off for now"]
     empty:
       apply:
         name: "<c:value>Slot <slot>"
-        lore: ["<c:muted><sym:bullet> Empty slot", "", "<c:action>▶ Click <c:text>to pick a book"]
+        lore: ["<c:muted><sym:bullet> Empty slot", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a book"]
       other:
         name: "<c:value>Slot <slot>"
         lore: ["<c:muted><sym:bullet> Empty slot"]
     prestige-empty:
       apply:
         name: "<c:flame><sym:star> Prestige slot"
-        lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Fits Mythic enchants too.", "", "<c:action>▶ Click <c:text>to pick a book"]
+        lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Fits Mythic enchants too.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a book"]
       other:
         name: "<c:flame><sym:star> Prestige slot"
         lore: ["<c:muted><sym:bullet> Empty slot"]
@@ -265,7 +265,7 @@ menu:
     name: "<set>"
     entry: ["<c:muted>Set Lv <level> · <enchants> enchant(s)"]
     worn: ["<c:muted>Wearing <count>/4 pieces"]
-    click: ["", "<c:action>▶ Click <c:text>to see the pieces"]
+    click: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to see the pieces"]
   armor-entry:
     info: ["<c:text>Each row is a piece and its", "<c:text>slots. Slot 2 and the mythic", "<c:text>slot open with the set level.", "<c:text>Gray = dormant: works again", "<c:text>when the set level is high", "<c:text>enough."]
     gone:
@@ -276,14 +276,14 @@ menu:
       lore: ["<c:text>Set Lv <c:value><level>", "<c:muted>Slot 2 at Lv <second>", "<c:muted>Mythic slot at Lv <mythic>", "<c:muted>Higher levels allow higher", "<c:muted>enchant levels."]
     filled:
       lore: ["<c:muted>Slot <slot> · put in <sym:crystals> <invested>"]
-      click: ["", "<c:action>▶ Click <c:text>to upgrade or remove"]
+      click: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to upgrade or remove"]
     dormant: ["<c:warning>Dormant: no effect until", "<c:warning>set Lv <level>"]
     empty:
       name: "<c:value>Slot <slot>"
-      lore: ["<c:muted><sym:bullet> Empty slot", "", "<c:action>▶ Click <c:text>to pick a book"]
+      lore: ["<c:muted><sym:bullet> Empty slot", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a book"]
     mythic-empty:
       name: "<c:flame><sym:star> Mythic slot"
-      lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Fits Mythic armor enchants.", "", "<c:action>▶ Click <c:text>to pick a book"]
+      lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Fits Mythic armor enchants.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a book"]
     locked:
       name: "<c:muted>Slot <slot>"
       lore: ["<c:error><sym:cross> <c:text>Opens at set Lv <level>", "<c:muted>Now Lv <have>"]
@@ -304,7 +304,7 @@ menu:
     empty:
       name: "<c:muted>No enchant books"
       lore: ["<c:text>Find books in The Depths or", "<c:text>roll one in the Book shop."]
-    fits: ["<c:success><sym:check> Fits", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<c:action>▶ Click <c:text>to apply"]
+    fits: ["<c:success><sym:check> Fits", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to apply"]
   upgrade:
     info: ["<c:text>Crystals raise it one level.", "<c:text>A book of the same level is", "<c:text>cheaper but uses the book."]
     name: "<enchant>"
@@ -315,14 +315,14 @@ menu:
     book:
       name: "<c:value>Upgrade with a book"
       none: ["<c:error><sym:cross> <c:text>No <book> <c:text>book", "<c:muted>with you."]
-      lore: ["<c:text>Uses <book>", "<c:text>To <next>", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<c:action>▶ Click <c:text>to choose"]
+      lore: ["<c:text>Uses <book>", "<c:text>To <next>", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
   remove:
     info: ["<c:text>A scroll gives you the book", "<c:text>back. Shatter destroys it."]
     name: "<enchant>"
     now: ["<c:muted>Put in: <sym:crystals> <invested>"]
     scroll:
       name: "<c:value>Remove with a scroll"
-      lore: ["<c:text>You get <enchant> <c:text>back", "<c:text>as a book. Uses 1 scroll.", "<c:muted>Scrolls with you: <scrolls>", "", "<c:action>▶ Click <c:text>to choose"]
+      lore: ["<c:text>You get <enchant> <c:text>back", "<c:text>as a book. Uses 1 scroll.", "<c:muted>Scrolls with you: <scrolls>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
     no-scroll:
       name: "<c:muted>Remove with a scroll"
       lore: ["<c:error><sym:cross> <c:text>No Disenchant Scroll", "<c:muted>Buy one in the Book shop."]
@@ -331,7 +331,7 @@ menu:
       lore: ["<c:error><sym:cross> <c:text>Unknown enchant: shatter only"]
     shatter:
       name: "<c:error>Shatter"
-      lore: ["<c:error>Destroys <enchant><c:error>.", "<c:text>You get <c:value><sym:crystals> <refund></c:value> <c:text>back.", "", "<c:action>▶ Click <c:text>to choose"]
+      lore: ["<c:error>Destroys <enchant><c:error>.", "<c:text>You get <c:value><sym:crystals> <refund></c:value> <c:text>back.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
   combine:
     info: ["<c:text>Two books of the same enchant", "<c:text>and level make one book a", "<c:text>level higher."]
     empty:
@@ -339,9 +339,9 @@ menu:
       lore: ["<c:text>Find books in The Depths or", "<c:text>roll one in the Book shop."]
     hint:
       name: "<c:value>Book onto a tool?"
-      lore: ["<c:text>To add a book to an enchant", "<c:text>on a tool, use Upgrade.", "", "<c:action>▶ Click <c:text>to open Upgrade"]
+      lore: ["<c:text>To add a book to an enchant", "<c:text>on a tool, use Upgrade.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open Upgrade"]
     count: ["<c:muted>You have <count>"]
-    ready: ["<c:success><sym:check> <c:text>Makes <next>", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<c:action>▶ Click <c:text>to combine"]
+    ready: ["<c:success><sym:check> <c:text>Makes <next>", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to combine"]
   shop:
     crumb: "Book shop"
     info: ["<c:text>Pay crystals for a random book", "<c:text>of a pool. Rolls never give", "<c:text>Mythics. Limits reset daily."]
@@ -350,7 +350,7 @@ menu:
       lore: ["<c:text>Your tier: <c:value><tier>", "<c:muted>Higher tiers open more enchants."]
     scroll:
       name: "<rarity:rare>Disenchant Scroll"
-      lore: ["<c:text>Takes an enchant off a tool", "<c:text>as a book.", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<c:action>▶ Click <c:text>to buy"]
+      lore: ["<c:text>Takes an enchant off a tool", "<c:text>as a book.", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"]
     roll:
       apprentice: "<c:value>Apprentice Roll <c:muted>(<pool>)"
       adept: "<c:value>Adept Roll <c:muted>(<pool>)"
@@ -378,7 +378,7 @@ menu:
       lore: ["<c:muted>Shown now"]
     tab-other:
       name: "<c:value><tab>"
-      lore: ["<c:action>▶ Click <c:text>to show"]
+      lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
     secret:
       name: "<rarity:mythic>???"
       lore: ["<c:text>A Mythic enchant.", "<c:muted>Find one to learn more."]
