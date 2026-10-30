@@ -29,10 +29,8 @@ public final class IslandsConfig extends ModuleConfig {
             max = 31, level = Setting.Level.OWNER)
     public int normalMaxChunks = 9;
 
-    @Setting(path = "upgrades.island-bank-only", desc = "Island upgrades are paid from the island bank only, never from a "
-            + "player's own money (owner answer 169). Phase 5 /is upgrade always pays from the island bank.",
-            level = Setting.Level.OWNER)
-    public boolean upgradesIslandBankOnly = true;
+    // Owner answer 169: island upgrades are paid from the island bank only (progression module, always). The old switch
+    // upgrades.island-bank-only was read by nothing and is removed on load (removedKeys).
 
     @Setting(path = "creation.surface-y", desc = "Y of the starter island's top surface (the home block).", min = 1, max = 250)
     public int surfaceY = 100;
@@ -213,8 +211,8 @@ public final class IslandsConfig extends ModuleConfig {
     public int maxSlots = 9;
 
     @Setting(path = "members.max-joins-per-season", desc = "How many islands a player can join per season by accepting invites "
-            + "(REVIEW A5: 3; 0 = unlimited).", min = 0, max = 100, level = Setting.Level.OWNER)
-    public int maxJoinsPerSeason = 3;
+            + "(owner N2-1: 0 = unlimited; REVIEW A5 had 3).", min = 0, max = 100, level = Setting.Level.OWNER)
+    public int maxJoinsPerSeason = 0;
 
     // Owner answers 121/161/258/259 (round 1): no join cooldown at all (old key members.join-cooldown-hours is ignored);
     // the per-season join count above stays.
@@ -663,6 +661,15 @@ public final class IslandsConfig extends ModuleConfig {
             changed.add("members.max-slots 8 -> 9");
         }
         return changed;
+    }
+
+    /** REVIEW3 §3.6: keys no code reads any more, deleted on load (join-cooldown-hours stays for now: open question N2-1). */
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        return java.util.Map.of(
+                "lifecycle.disband-prompt-length", "owner answer 261: /is disband confirms with a button, no typed word",
+                "homes", "owner answer 247: no personal member homes (shared homes come with P5-21)",
+                "upgrades.island-bank-only", "owner answer 169: upgrades always pay from the island bank (progression), no switch");
     }
 
     @Override

@@ -306,6 +306,14 @@ public final class EconomyConfig extends ModuleConfig {
                 "notes.max.tokens", "notes.max.crystals"));
     }
 
+    /** R3-16: the old new-account keys (decision #40, then owner answer 131: no limit) are deleted on load. */
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        return java.util.Map.of(
+                "pay.new-account-minutes", "owner answer 131: no new-account limit for /pay (R3-16)",
+                "notes.new-account-minutes", "owner answer 131: no new-account limit for /withdraw (R3-16)");
+    }
+
     @Override
     public String fileName() {
         return "economy.yml";
