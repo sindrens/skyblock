@@ -130,6 +130,7 @@
 - Island pillars (M5.1, new module progression): Mining, Foraging, Farming and Combat grow from members' base skill XP plus island crops, trees and spawner kills (coop, boosts and AFK kills don't count); 1.12 curve, balance bonus up to +10%, synergy milestones at 10/25/40/60 pay crystals once; notices can be hidden in /settings.
 - Crates core (M10.1, new module crates): keys per profile (bound/tradeable; loot from bound keys stays bound), 7 crate tables, pity and duplicate re-roll, /crates with preview (★ Name (xN) | chance%) and open 1/10/all, one atomic transaction per open, rewards to inventory or /box; AFK pool keys are delivered.
 - Staff `/crates admin give|take|view` (admin only, console OK, confirm above 64, audited, profile picker); join-time tasks (box notice, menu item check, Honorable title check, baltop refresh) moved off the main thread or made cheap (SMALL2).
+- Tutorial TU5-TU8: skippable camera flyovers (Java smooth, Bedrock cut-and-fade, crash-safe restore), Pip the parrot companion, the Guide NPC opens /tutorial, 9 optional steps with 5-crystal rewards and first-visit tips (/settings -> Tips), tutorial stats for staff (/tutorial admin stats, /staff, /inspect).
 - `/unban <player|ip>` (moderation module) with banned-name tab completion and staff notifications.
 - `deploy.sh` (no-sudo deploy as minecraft, used by Claude and GitHub Actions) and `authorize-claude.sh` (one-time approval of Claude's deploy key).
 - Logo v2: red S, feathered wings with red tips, sunrise sky, gold rim with red gems, floating island.
