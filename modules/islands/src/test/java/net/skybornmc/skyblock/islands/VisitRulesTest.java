@@ -22,6 +22,21 @@ class VisitRulesTest {
     }
 
     @Test
+    void bannedLeaderClosesTheIslandToVisitorsOnly() {
+        // Owner answer 522: the team keeps playing, visitors stay out, staff bypass still enters.
+        for (Role role : Role.values()) {
+            assertEquals(VisitRules.Access.MEMBER, VisitRules.access(role, false, false, false, false, false, true), role.name());
+        }
+        assertEquals(VisitRules.Access.CLOSED, VisitRules.access(null, false, false, false, false, false, true));
+        assertEquals(VisitRules.Access.CLOSED, VisitRules.access(null, false, true, false, false, false, true));
+        assertEquals(VisitRules.Access.BANNED, VisitRules.access(null, true, false, false, false, false, true),
+                "an island ban on the visitor is told first");
+        assertEquals(VisitRules.Access.BYPASS, VisitRules.access(null, false, false, true, false, false, true));
+        assertFalse(VisitRules.Access.CLOSED.allowed());
+        assertEquals(VisitRules.Access.VISITOR, VisitRules.access(null, false, false, false, false, false, false));
+    }
+
+    @Test
     void banBeatsLockAndBypassBeatsBoth() {
         assertEquals(VisitRules.Access.BANNED, VisitRules.access(null, true, true, false));
         assertEquals(VisitRules.Access.BANNED, VisitRules.access(null, true, false, false));

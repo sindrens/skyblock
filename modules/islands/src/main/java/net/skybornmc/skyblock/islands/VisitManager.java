@@ -95,6 +95,9 @@ final class VisitManager implements Listener {
     /** ISL2: told whenever a player's island slot changes ({@code null} = no island), e.g. for weather and time. */
     private final List<java.util.function.BiConsumer<Player, Island>> presenceHooks = new java.util.concurrent.CopyOnWriteArrayList<>();
     private final List<java.util.function.Consumer<Island>> visitHooks = new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** Owner answer 522: accounts with an active ban (moderation BanStatus), refreshed on a timer and on every new ban. */
+    private volatile Set<UUID> bannedPlayers = Set.of();
+    private Scheduler.Task bannedTask;
 
     VisitManager(IslandsModule module, IslandManager islands, IslandProtection protection, VisitStore store) {
         this.module = module;
@@ -185,6 +188,10 @@ final class VisitManager implements Listener {
         if (statsTask != null) {
             statsTask.cancel();
             statsTask = null;
+        }
+        if (bannedTask != null) {
+            bannedTask.cancel();
+            bannedTask = null;
         }
         if (settings != null) {
             settings.unregisterAll(IslandsModule.ID);
@@ -334,7 +341,73 @@ final class VisitManager implements Listener {
         // P3/P4: never onto an island where another of your own profiles is a member or coop.
         boolean ownProfile = role == null && islands.ownOtherProfileOn(island, key, null) != null;
         return VisitRules.access(role, isBanned(island.id(), player.getUniqueId()), island.locked(), bypass(player), ownProfile,
-                staffBanned(island.id(), player.getUniqueId()));
+                staffBanned(island.id(), player.getUniqueId()), leaderBanned(island));
+    }
+
+    // ------------------------------------------------------------------ owner answer 522: banned leader
+
+    /** True if the island's leader (the player behind the owner profile) is banned and the setting is on. */
+    boolean leaderBanned(Island island) {
+        Set<UUID> banned = bannedPlayers;
+        return !banned.isEmpty() && config().closeBannedLeaderIslands && island.owner() != null
+                && banned.contains(islands.profiles().ownerOf(island.owner()));
+    }
+
+    /** Starts the ban-status refresh (moderation's BanStatus; without it nothing is ever closed). */
+    void startBanRefresh() {
+        if (bannedTask != null) {
+            bannedTask.cancel();
+        }
+        long period = Math.max(20L, config().bannedLeaderRefreshSeconds * 20L);
+        bannedTask = core.scheduler().repeat("islands:banned-leaders", 40L, period, this::refreshBans);
+    }
+
+    private void refreshBans() {
+        core.services().optional(net.skybornmc.skyblock.common.moderation.BanStatus.class).ifPresentOrElse(status ->
+                status.bannedAccounts().whenCompleteAsync((set, error) -> {
+                    if (error != null) {
+                        core.plugin().getLogger().warning("Islands: could not read the ban list: " + Database.cause(error));
+                        return;
+                    }
+                    Set<UUID> before = bannedPlayers;
+                    bannedPlayers = Set.copyOf(set);
+                    for (UUID id : set) {
+                        if (!before.contains(id)) {
+                            closeIslandsOf(id);
+                        }
+                    }
+                }, main), () -> bannedPlayers = Set.of());
+    }
+
+    /** A new ban closes the banned leader's islands to visitors at once and sends their visitors to spawn. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerBanned(net.skybornmc.skyblock.common.moderation.PlayerBannedEvent event) {
+        Set<UUID> next = new HashSet<>(bannedPlayers);
+        if (next.add(event.getPlayer())) {
+            bannedPlayers = Set.copyOf(next);
+            closeIslandsOf(event.getPlayer());
+        }
+    }
+
+    private void closeIslandsOf(UUID player) {
+        if (!config().closeBannedLeaderIslands) {
+            return;
+        }
+        for (Island island : List.copyOf(islands.islands())) {
+            if (island.owner() == null || !player.equals(islands.profiles().ownerOf(island.owner()))) {
+                continue;
+            }
+            int sent = 0;
+            for (Player visitor : visitorsOn(island)) {
+                if (access(visitor, island) == VisitRules.Access.CLOSED) {
+                    msg.send(visitor, "visit.closed-sent-off", Msg.p("island", islands.displayName(island)));
+                    islands.sendOff(visitor, island);
+                    sent++;
+                }
+            }
+            core.audit().log(AuditCategory.ISLAND, "island_closed_banned_leader", Actor.system("islands"), island.id().toString(),
+                    islands.displayName(island), null, null, Map.of("leader", player.toString(), "visitors_sent", sent));
+        }
     }
 
     /** The island whose slot contains {@code at}, or null. */
@@ -403,7 +476,7 @@ final class VisitManager implements Listener {
     List<Island> listed() {
         List<Island> list = new ArrayList<>();
         for (Island island : islands.islands()) {
-            if (!island.locked() && !island.browserHidden() && island.home().isPresent()) {
+            if (!island.locked() && !island.browserHidden() && island.home().isPresent() && !leaderBanned(island)) {
                 list.add(island);
             }
         }
@@ -468,6 +541,8 @@ final class VisitManager implements Listener {
             islands.fail(player, "visit.banned", Msg.p("island", name));
         } else if (access == VisitRules.Access.OWN_PROFILE) {
             islands.fail(player, "visit.own-profile", Msg.p("island", name));
+        } else if (access == VisitRules.Access.CLOSED) {
+            islands.fail(player, "visit.closed", Msg.p("island", name));
         } else {
             islands.fail(player, "visit.locked", Msg.p("island", name));
             notifyAttempt(island, player);
@@ -513,7 +588,8 @@ final class VisitManager implements Listener {
             notifyAttempt(target, player);
         }
         String key = access == VisitRules.Access.BANNED ? "visit.banned"
-                : access == VisitRules.Access.OWN_PROFILE ? "visit.own-profile" : "visit.locked";
+                : access == VisitRules.Access.OWN_PROFILE ? "visit.own-profile"
+                : access == VisitRules.Access.CLOSED ? "visit.closed" : "visit.locked";
         return Optional.of(module.raw(key).replace("<island>", escape(islands.displayName(target))));
     }
 
@@ -988,7 +1064,8 @@ final class VisitManager implements Listener {
                 VisitRules.Access access = access(player, here);
                 if (!access.allowed()) {
                     msg.send(player, access == VisitRules.Access.BANNED ? "visit.join-banned"
-                                    : access == VisitRules.Access.OWN_PROFILE ? "visit.join-own-profile" : "visit.join-locked",
+                                    : access == VisitRules.Access.OWN_PROFILE ? "visit.join-own-profile"
+                                    : access == VisitRules.Access.CLOSED ? "visit.closed-sent-off" : "visit.join-locked",
                             Msg.p("island", islands.displayName(here)));
                     islands.sendOff(player, here);
                     return;

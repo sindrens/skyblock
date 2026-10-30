@@ -58,6 +58,8 @@ public final class EconomyWatch {
     public static final String PERM_DASHBOARD = "skyblock.staff.economy.dashboard";
     /** Anomaly alerts in chat. */
     public static final String PERM_ANOMALIES = "skyblock.staff.economy.anomalies";
+    /** Owner answer 334: accounts whose big transfers admins are told about. */
+    public static final String PERM_FLAGGED = "skyblock.staff.economy.flagged";
 
     private static final long WARN_EVERY_MS = 600_000L;
     private static final int RECENT_IDS = 20;
@@ -73,6 +75,8 @@ public final class EconomyWatch {
     private volatile long lastWarning;
     private final List<String> recentIds = new CopyOnWriteArrayList<>();
     private final Map<Currency, DashboardData> cache = new EnumMap<>(Currency.class);
+    /** Player UUIDs of staff accounts seen online since the start (owner answer 334). */
+    private final java.util.Set<UUID> staffAccounts = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public EconomyWatch(EconomyModule module, Core core, ModuleMessages msg) {
         this.module = module;
@@ -85,7 +89,8 @@ public final class EconomyWatch {
     public void enable() {
         core.configs().load(config);
         store = new WatchStore(core.database());
-        detector = new AnomalyDetector(() -> config);
+        detector = new AnomalyDetector(() -> config, this::staffAccount);
+        Bukkit.getOnlinePlayers().forEach(this::rememberStaff);
         job = new WatchJob(store, detector, () -> config, System::currentTimeMillis, Format::zone,
                 () -> profiles()::ownerOf);
         long period = Math.max(10, config.intervalSeconds) * 20L;
@@ -114,6 +119,27 @@ public final class EconomyWatch {
 
     ProfileService profiles() {
         return module.profiles();
+    }
+
+    /** Called on join (economy module): remembers (or forgets) a staff account for the staff-transfer rule. */
+    public void rememberStaff(Player player) {
+        if (player.hasPermission(PERM_FLAGGED)) {
+            staffAccounts.add(player.getUniqueId());
+        } else {
+            staffAccounts.remove(player.getUniqueId());
+        }
+    }
+
+    /** A profile key or player UUID of a staff account (any thread). */
+    private boolean staffAccount(UUID id) {
+        if (id == null || staffAccounts.isEmpty()) {
+            return false;
+        }
+        if (staffAccounts.contains(id)) {
+            return true;
+        }
+        ProfileService profiles = profiles();
+        return profiles != null && staffAccounts.contains(profiles.ownerOf(id));
     }
 
     WatchStore store() {
@@ -187,7 +213,7 @@ public final class EconomyWatch {
         core.audit().log(AuditCategory.ECONOMY, "eco_anomaly", Actor.system("economy-watch"),
                 target == null ? null : target.toString(), alert.subject() == null ? null : player, alert.amount(), null, details);
         for (Player staff : Bukkit.getOnlinePlayers()) {
-            if (staff.hasPermission(PERM_ANOMALIES)) {
+            if (staff.hasPermission(alert.rule() == Rule.STAFF_TRANSFER ? config.staffAlertPermission : PERM_ANOMALIES)) {
                 msg.send(staff, chatKey(alert), chatTags(staff, alert, names));
                 core.sounds().play(staff, "notify");
             }

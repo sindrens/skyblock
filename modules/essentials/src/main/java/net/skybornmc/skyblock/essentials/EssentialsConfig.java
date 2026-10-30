@@ -61,6 +61,30 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "protection.void-y", desc = "Falling below this Y in a protected world teleports back to spawn.", min = -2048, max = 320)
     public int voidY = 0;
 
+    // ------------------------------------------------------------------ ANS3 staff powers (owner answers 331-334)
+
+    @Setting(path = "staff-powers.enabled", desc = "Owner answers 331/333: creative only in the creative worlds, and god mode, "
+            + "/fly and /heal only in staff mode (/staffmode) or build mode (/build). Off = only the permissions count.")
+    public boolean staffPowersEnabled = true;
+
+    @Setting(path = "staff-powers.creative-worlds", desc = "Owner answer 331: worlds where builders and admins may use creative "
+            + "mode (spawn, the Depths, builder areas). Leaving them switches a creative player to survival.")
+    public java.util.List<String> creativeWorlds = java.util.List.of("spawn", "depths");
+
+    @Setting(path = "staff-powers.check-seconds", desc = "Seconds between checks that take god mode and /fly away from players "
+            + "who are no longer in staff mode or build mode.", min = 1, max = 60, restart = true)
+    public int staffPowersCheckSeconds = 1;
+
+    @Setting(path = "staff-powers.tag-staff-items", desc = "Owner answer 332: items from /give, /i, /more, /skull and the creative "
+            + "inventory get a hidden staff tag; they can't be sold, traded, auctioned or sent to others. The tag also goes onto "
+            + "crafting and smelting results made with them.", level = Setting.Level.OWNER)
+    public boolean tagStaffItems = true;
+
+    @Setting(path = "staff-powers.track-placed-blocks", desc = "Owner answer 332: a staff item placed as a block in survival "
+            + "drops staff items again when mined (remembered in the chunk). Creative builds are not tracked.",
+            level = Setting.Level.OWNER)
+    public boolean trackStaffBlocks = true;
+
     // ------------------------------------------------------------------ M1.1 menu item
 
 

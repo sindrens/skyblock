@@ -4,7 +4,7 @@
 |---|---|---|---|
 | `/msg <player> <message>` (`/w`, `/tell`, `/whisper`, `/m`, `/pm`) | Private message; click a name to reply; rate-limited; logged (30 days) | `skyblock.social.msg` | ✅ |
 | `/r <message>` (`/reply`) | Reply to your last private message | `skyblock.social.msg` | ✅ |
-| `/ignore <player>` / `/ignore list` | Block a player's private messages (staff can't be ignored) | `skyblock.social.ignore` | ✅ |
+| `/ignore <player>` / `/ignore list` | Ignore a player: no private messages, `/tpa`/`/tpahere`, trade requests or island invites from them (they get the same answer as "requests off"); `/settings → Hide ignored chat` (on by default) also hides their public chat for you only. Staff can't be ignored (owner answers 316/317) | `skyblock.social.ignore` | ✅ |
 | `/unignore <player>` | Stop ignoring | `skyblock.social.ignore` | ✅ |
 | `/afk` | Toggle AFK (auto after `social.yml → afk.auto-minutes`) | `skyblock.social.afk` | ✅ |
 | `/list` (`/online`, `/who`) | Online players grouped by rank | `skyblock.social.list` | ✅ |
@@ -16,6 +16,8 @@
 | `/whois <player>` | Staff: UUID, rank, platform, times, location, names; IP + alts with `skyblock.staff.whois.ip` | `skyblock.staff.whois` | ✅ |
 | `/broadcast <message>` (`/bc`, `/announce`) | Staff: announcement in chat + title + sound (MiniMessage) | `skyblock.staff.broadcast` | ✅ |
 
-Other: `skyblock.staff.unignorable` (private messages always delivered), `skyblock.staff.vanish.see` (see vanished players in `/list` and tab completion; defined by the vanish feature).
+Other: `skyblock.staff.unignorable` (can't be ignored: messages, requests, invites and chat always delivered), `skyblock.staff.vanish.see` (see vanished players in `/list` and tab completion; defined by the vanish feature).
+
+Shared ignore service (ANS3): `IgnoreService` in common (`isIgnoring(viewer, sender)`, `hidesChat`, static `IgnoreService.ignoring(services, viewer, sender)` with the staff rule), published by this module and used by essentials (tpa), trade and islands (invites). Settings: `social.yml → ignore.hide-chat-default`.
 
 Permission definitions: `modules/social/src/main/resources/permissions/social.yml`. Rank grants: `server/permissions/social.txt`.

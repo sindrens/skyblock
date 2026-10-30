@@ -50,6 +50,15 @@ class SellRulesTest {
     }
 
     @Test
+    void staffItemsNeverSell() {
+        // Owner answer 332: /give, /i and creative items carry a hidden tag and are never bought by the server.
+        SellRules.ItemFacts staffCoal = new SellRules.ItemFacts("coal", null, null, false, false, false, true);
+        assertEquals(Optional.of(SellRules.Reason.STAFF_ITEM), check(staffCoal));
+        assertEquals("staff-item", SellRules.Reason.STAFF_ITEM.key());
+        assertTrue(check(new SellRules.ItemFacts("coal", null, null, false, false, false)).isEmpty(), "untagged coal still sells");
+    }
+
+    @Test
     void uniqueItemsNeverSellEvenWhenListed() {
         assertEquals(Optional.of(SellRules.Reason.UNIQUE), check(SellRules.ItemFacts.custom("book", "enchant_book", "material", true)));
         assertEquals(Optional.of(SellRules.Reason.UNIQUE), check(SellRules.ItemFacts.custom("coal", "depths_coal", "material", true)));

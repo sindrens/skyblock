@@ -209,6 +209,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         load(event.getPlayer());
+        if (watch != null) {
+            watch.rememberStaff(event.getPlayer());
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

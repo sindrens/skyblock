@@ -14,3 +14,7 @@ lp group owner permission set skyblock.owner.economy true
 # the dashboard as a child of skyblock.admin.economy). Read-only plus alert review; alerts never punish anyone.
 lp group mod permission set skyblock.staff.economy.dashboard true
 lp group mod permission set skyblock.staff.economy.anomalies true
+
+# Owner answer 334: staff accounts (builders, helpers and up) play normally; their big transfers alert admins.
+lp group builder permission set skyblock.staff.economy.flagged true
+lp group helper permission set skyblock.staff.economy.flagged true

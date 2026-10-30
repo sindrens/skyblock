@@ -147,6 +147,33 @@ final class PunishmentStore {
         return db.async(c -> activeOf(c, Punishment.Type.BAN, target, ip, System.currentTimeMillis()).stream().findFirst());
     }
 
+    /** ANS3 (owner answer 522): true if this account has an active ban on this server. */
+    CompletableFuture<Boolean> isBanned(UUID target) {
+        return activeBan(target, null).thenApply(Optional::isPresent);
+    }
+
+    /** ANS3 (owner answer 522): every account with an active ban right now (in this server's scope). */
+    CompletableFuture<java.util.Set<UUID>> bannedAccounts() {
+        return db.async(c -> bannedAccountsAt(c, System.currentTimeMillis()));
+    }
+
+    private java.util.Set<UUID> bannedAccountsAt(Connection c, long now) throws SQLException {
+        NetworkScope.Settings ns = networkSettings();
+        String scope = NetworkScope.sql(ns);
+        String server = NetworkScope.parameter(ns);
+        String sql = "SELECT DISTINCT target_uuid FROM punishments WHERE type = ? AND removed_at IS NULL "
+                + "AND (expires IS NULL OR expires > ?)" + scope;
+        List<UUID> ids = server == null ? Sql.query(c, sql, rs -> Sql.toUuid(rs.getBytes("target_uuid")), Punishment.Type.BAN.name(), now)
+                : Sql.query(c, sql, rs -> Sql.toUuid(rs.getBytes("target_uuid")), Punishment.Type.BAN.name(), now, server);
+        java.util.Set<UUID> out = new java.util.HashSet<>();
+        for (UUID id : ids) {
+            if (id != null) {
+                out.add(id);
+            }
+        }
+        return out;
+    }
+
     CompletableFuture<Optional<Punishment>> activeMute(UUID target, String ip) {
         return db.async(c -> activeOf(c, Punishment.Type.MUTE, target, ip, System.currentTimeMillis()).stream().findFirst());
     }

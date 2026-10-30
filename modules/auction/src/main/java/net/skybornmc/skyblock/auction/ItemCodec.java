@@ -42,6 +42,10 @@ final class ItemCodec {
         if (pdc.has(ItemKeys.DUPE_FLAG)) {
             return Optional.of("dupe-flagged");
         }
+        // Owner answer 332: items made by staff (/give, /i, creative) never change hands, also not inside a container.
+        if (net.skybornmc.skyblock.common.item.StaffItems.containsMarked(stack)) {
+            return Optional.of("staff-item");
+        }
         Optional<String> id = ItemRegistry.idOf(stack);
         if (id.isPresent() && ListingRules.idBlocked(id.get(), config.blockedIds)) {
             return Optional.of("starter");

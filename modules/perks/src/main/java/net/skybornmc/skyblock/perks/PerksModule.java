@@ -250,7 +250,25 @@ public final class PerksModule implements SkyblockModule {
 
     // ------------------------------------------------------------------ /craft, /ec
 
+    /**
+     * Owner answer 377: refuses (with the reason) {@code /ec} and {@code /craft} in the warzone, a boss arena and for
+     * {@code blocked.combat-seconds} after combat (for everyone, staff too).
+     */
+    private void checkBlocked(Player player) {
+        boolean world = config.blockedWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(player.getWorld().getName()));
+        boolean arena = config.blockedBossArena && core.services().optional(net.skybornmc.skyblock.common.combat.BossArenas.class)
+                .map(a -> a.inBossArena(player)).orElse(false);
+        long combat = config.blockedCombatSeconds <= 0 ? 0 : core.services()
+                .optional(net.skybornmc.skyblock.common.combat.CombatTagService.class)
+                .map(c -> c.remainingMillis(player.getUniqueId(), config.blockedCombatSeconds)).orElse(0L);
+        PerkBlocks.check(world, arena, combat).ifPresent(reason -> {
+            throw new CommandFailure(ID, "blocked." + reason.key(),
+                    Msg.p("time", net.skybornmc.skyblock.common.util.Format.duration(Duration.ofMillis(Math.max(1000, combat + 999)))));
+        });
+    }
+
     private void craft(Player player) {
+        checkBlocked(player);
         MenuType.CRAFTING.builder()
                 .title(msg.component(player, "craft.title"))
                 .checkReachable(false)
@@ -259,6 +277,7 @@ public final class PerksModule implements SkyblockModule {
     }
 
     private void enderChest(Player player) {
+        checkBlocked(player);
         player.openInventory(player.getEnderChest());
         core.sounds().play(player, "menu-open");
     }

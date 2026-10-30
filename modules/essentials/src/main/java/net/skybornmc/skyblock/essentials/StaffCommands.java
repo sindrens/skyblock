@@ -33,11 +33,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Staff tools: gamemode, fly, speed, god, heal, feed, clear, time, weather, skull, more, /i and /give. */
+/**
+ * Staff tools: gamemode, fly, speed, god, heal, feed, clear, time, weather, skull, more, /i and /give. Owner answers
+ * 331-333: creative only for builders/admins in the creative worlds, god/fly/heal only in staff or build mode
+ * ({@link StaffPowers}), and everything /give, /i, /more and /skull make is a staff item.
+ */
 final class StaffCommands extends CommandGroup implements Listener {
 
     /** Item ids for tab completion, built on first use (needs a running server, so not in a static initializer). */
@@ -56,12 +59,13 @@ final class StaffCommands extends CommandGroup implements Listener {
         return list;
     }
 
-    private final Set<UUID> god = ConcurrentHashMap.newKeySet();
+    private final StaffPowers powers;
     /** staff uuid → (target uuid, expires at) for /clear <player> confirmation. */
     private final Map<UUID, Map.Entry<UUID, Long>> clearConfirm = new ConcurrentHashMap<>();
 
-    StaffCommands(Core core, EssentialsConfig config, ModuleMessages msg) {
+    StaffCommands(Core core, EssentialsConfig config, ModuleMessages msg, StaffPowers powers) {
         super(core, config, msg);
+        this.powers = powers;
     }
 
     @Override
@@ -189,6 +193,14 @@ final class StaffCommands extends CommandGroup implements Listener {
             throw fail("gamemode.no-permission", Msg.p("mode", modeName(mode)));
         }
         Player target = targetOrSelf(sender, given, Perms.GAMEMODE_OTHERS);
+        if (mode == GameMode.CREATIVE) {
+            // Owner answer 331: builders and admins only, and only in the creative worlds (mods use spectator).
+            StaffPowerRules.Creative check = powers.creative(target);
+            if (check != StaffPowerRules.Creative.OK) {
+                throw fail((same(sender, target) ? "creative." : "creative.other-") + check.key(), powers.worlds(),
+                        Msg.p("player", target.getName()));
+            }
+        }
         GameMode before = target.getGameMode();
         target.setGameMode(mode);
         String name = modeName(mode);
@@ -209,7 +221,11 @@ final class StaffCommands extends CommandGroup implements Listener {
     private void fly(CommandSender sender, Player given) {
         Player target = targetOrSelf(sender, given, Perms.FLY_OTHERS);
         boolean enable = !target.getAllowFlight();
+        if (enable) {
+            powers.require(StaffPowerRules.Power.FLY, sender, target); // owner answer 333
+        }
         target.setAllowFlight(enable);
+        powers.flyGranted(target.getUniqueId(), enable);
         if (!enable) {
             target.setFlying(false);
         }
@@ -237,10 +253,10 @@ final class StaffCommands extends CommandGroup implements Listener {
 
     private void god(CommandSender sender, Player given) {
         Player target = targetOrSelf(sender, given, Perms.GOD_OTHERS);
-        boolean enable = god.add(target.getUniqueId());
-        if (!enable) {
-            god.remove(target.getUniqueId());
+        if (!powers.isGod(target.getUniqueId())) {
+            powers.require(StaffPowerRules.Power.GOD, sender, target); // owner answer 333
         }
+        boolean enable = powers.toggleGod(target.getUniqueId());
         String key = enable ? "god.enabled" : "god.disabled";
         if (same(sender, target)) {
             msg.send(target, key);
@@ -252,26 +268,25 @@ final class StaffCommands extends CommandGroup implements Listener {
     }
 
     boolean isGod(UUID player) {
-        return god.contains(player);
+        return powers.isGod(player);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onDamage(EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player p && god.contains(p.getUniqueId())) {
+        if (event.getEntity() instanceof Player p && powers.isGod(p.getUniqueId())) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onHunger(FoodLevelChangeEvent event) {
-        if (event.getEntity() instanceof Player p && god.contains(p.getUniqueId()) && event.getFoodLevel() < p.getFoodLevel()) {
+        if (event.getEntity() instanceof Player p && powers.isGod(p.getUniqueId()) && event.getFoodLevel() < p.getFoodLevel()) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        god.remove(event.getPlayer().getUniqueId());
         clearConfirm.remove(event.getPlayer().getUniqueId());
     }
 
@@ -279,6 +294,7 @@ final class StaffCommands extends CommandGroup implements Listener {
 
     private void heal(CommandSender sender, Player given) {
         Player target = targetOrSelf(sender, given, Perms.HEAL_OTHERS);
+        powers.require(StaffPowerRules.Power.HEAL, sender, target); // owner answer 333
         AttributeInstance max = target.getAttribute(Attribute.MAX_HEALTH);
         target.setHealth(max == null ? 20 : max.getValue());
         target.setFoodLevel(20);
@@ -432,6 +448,10 @@ final class StaffCommands extends CommandGroup implements Listener {
             left -= n;
             stacks.add(new ItemStack(material, n));
         }
+        // Owner answer 332: made out of nothing by staff → hidden staff-item tag (can't be sold, traded or auctioned).
+        if (config.tagStaffItems) {
+            net.skybornmc.skyblock.common.item.StaffItems.markAll(stacks, "give:" + sender.getName());
+        }
         // Owner answer 7: never dropped; what does not fit goes to the target's /box.
         int boxed = net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), target, net.skybornmc.skyblock.common.box.BoxSource.STAFF, stacks).stream().mapToInt(ItemStack::getAmount).sum();
         String item = material.getKey().getKey();
@@ -461,6 +481,9 @@ final class StaffCommands extends CommandGroup implements Listener {
                 meta.setPlayerProfile(error == null && completed != null ? completed : profile);
                 head.setItemMeta(meta);
             }
+            if (config.tagStaffItems) {
+                net.skybornmc.skyblock.common.item.StaffItems.mark(head, "skull:" + player.getName());
+            }
             net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), player, net.skybornmc.skyblock.common.box.BoxSource.STAFF, head);
             msg.send(player, "skull.given", Msg.p("player", name));
         }));
@@ -476,6 +499,10 @@ final class StaffCommands extends CommandGroup implements Listener {
             throw fail("more.custom");
         }
         hand.setAmount(hand.getMaxStackSize());
+        if (config.tagStaffItems) {
+            net.skybornmc.skyblock.common.item.StaffItems.mark(hand, "more:" + player.getName());
+            player.getInventory().setItemInMainHand(hand);
+        }
         msg.send(player, "more.done", Msg.p("amount", hand.getAmount()));
         audit("more", player, null, Map.of("item", hand.getType().getKey().getKey(), "amount", hand.getAmount()));
     }

@@ -292,6 +292,14 @@ public final class IslandsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ M2.4 visiting, warps, showcase
 
+    @Setting(path = "visiting.close-banned-leader-islands", desc = "Owner answer 522: while an island's leader is banned the island "
+            + "is closed to visitors (hidden from the browser, visitors sent to spawn); members and coop players keep playing.")
+    public boolean closeBannedLeaderIslands = true;
+
+    @Setting(path = "visiting.banned-leader-refresh-seconds", desc = "Seconds between reads of the ban list (ended or lifted "
+            + "bans reopen the island after at most this long; new bans close it at once).", min = 10, max = 3600, restart = true)
+    public int bannedLeaderRefreshSeconds = 120;
+
     @Setting(path = "visiting.max-bans", desc = "Most players one island can ban.", min = 1, max = 1000)
     public int maxBans = 100;
 

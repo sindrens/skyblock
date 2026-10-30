@@ -34,7 +34,9 @@ public final class VisitRules {
         BANNED,
         LOCKED,
         /** Owner P3/P4: another profile of this player is a member or coop of the island. */
-        OWN_PROFILE;
+        OWN_PROFILE,
+        /** Owner answer 522: the island's leader is banned, so it is closed to visitors (the team keeps playing). */
+        CLOSED;
 
         public boolean allowed() {
             return this == MEMBER || this == BYPASS || this == VISITOR;
@@ -63,6 +65,16 @@ public final class VisitRules {
      */
     public static Access access(Role role, boolean banned, boolean locked, boolean bypass, boolean ownOtherProfile,
                                 boolean staffBanned) {
+        return access(role, banned, locked, bypass, ownOtherProfile, staffBanned, false);
+    }
+
+    /**
+     * Same, with owner answer 522: when the island's leader is banned ({@code leaderBanned}) the island is closed to
+     * visitors; members and coop players keep playing and the staff bypass still enters. An island ban on the visitor is
+     * told first.
+     */
+    public static Access access(Role role, boolean banned, boolean locked, boolean bypass, boolean ownOtherProfile,
+                                boolean staffBanned, boolean leaderBanned) {
         if (staffBanned && !bypass) {
             return Access.BANNED;
         }
@@ -77,6 +89,9 @@ public final class VisitRules {
         }
         if (banned) {
             return Access.BANNED;
+        }
+        if (leaderBanned) {
+            return Access.CLOSED;
         }
         return locked ? Access.LOCKED : Access.VISITOR;
     }

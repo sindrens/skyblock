@@ -240,6 +240,20 @@ public final class ModerationModule implements SkyblockModule, Listener {
         sanctions.start();
         sanctions.notified(p -> service.wants(p, NotifyRules.Type.PUNISHMENTS));
         core.services().register(ID, net.skybornmc.skyblock.common.moderation.SanctionService.class, sanctions);
+        // ANS3 (owner answer 522): a small ban-status query (islands close a banned leader's island to visitors).
+        PunishmentStore banStore = service.store();
+        core.services().register(ID, net.skybornmc.skyblock.common.moderation.BanStatus.class,
+                new net.skybornmc.skyblock.common.moderation.BanStatus() {
+                    @Override
+                    public CompletableFuture<Boolean> isBanned(UUID player) {
+                        return banStore.isBanned(player);
+                    }
+
+                    @Override
+                    public CompletableFuture<java.util.Set<UUID>> bannedAccounts() {
+                        return banStore.bannedAccounts();
+                    }
+                });
         // P9, spec 14.1: the guard (pipeline slot GUARD + sanctions) counts what each staff member applied
         guard = new GuardService(core, msg, new GuardStore(core.database()), () -> templates.config().extras().guard(),
                 this::rankTiers);

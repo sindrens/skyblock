@@ -38,6 +38,7 @@ final class SellItems {
                 break;
             }
         }
-        return new SellRules.ItemFacts(material, customId.orElse(null), type, unique, dupe, blocked);
+        boolean staff = net.skybornmc.skyblock.common.item.StaffItems.containsMarked(stack);
+        return new SellRules.ItemFacts(material, customId.orElse(null), type, unique, dupe, blocked, staff);
     }
 }

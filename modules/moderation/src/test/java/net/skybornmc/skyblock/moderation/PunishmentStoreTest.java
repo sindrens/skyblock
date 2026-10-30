@@ -107,6 +107,20 @@ class PunishmentStoreTest {
     // ---------------------------------------------------------------- rule firing through the store
 
     @Test
+    void banStatusSeesActiveBansOnly() {
+        UUID banned = UUID.randomUUID();
+        UUID muted = UUID.randomUUID();
+        UUID ended = UUID.randomUUID();
+        issue(banned, Punishment.Type.BAN, null, now, null);
+        issue(muted, Punishment.Type.MUTE, Duration.ofHours(1), now, null);
+        issue(ended, Punishment.Type.BAN, Duration.ofMillis(1), now - 10_000, null);
+        assertTrue(store.isBanned(banned).join());
+        assertTrue(!store.isBanned(muted).join(), "a mute is not a ban");
+        assertTrue(!store.isBanned(ended).join(), "an ended ban no longer counts");
+        assertEquals(Set.of(banned), store.bannedAccounts().join());
+    }
+
+    @Test
     void secondWarnCreatesOnePendingSuggestion() {
         UUID steve = UUID.randomUUID();
         assertNull(issue(steve, Punishment.Type.WARN, null, now, hook(WarnRules.Mode.NOTIFY, false)).trigger());

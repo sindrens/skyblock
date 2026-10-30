@@ -173,6 +173,29 @@ public final class WatchConfig extends ModuleConfig {
             + "sale, an auction payout). Staff /eco changes are never included (they have their own alert).")
     public boolean bigIncludeCreated = true;
 
+    // ------------------------------------------------------------------ rule: staff transfer (owner answer 334)
+
+    @Setting(path = "rules.staff-transfer.enabled", desc = "Owner answer 334: alert admins when a staff account sends or gets a "
+            + "big transfer (pay, trade). Staff accounts: players with skyblock.staff.economy.flagged seen online since the "
+            + "last restart.")
+    public boolean staffTransferEnabled = true;
+
+    @Setting(path = "rules.staff-transfer.min.money", desc = "Never alert below this much money.", min = 1)
+    public long staffMinMoney = 5_000_000;
+
+    @Setting(path = "rules.staff-transfer.min.crystals", desc = "Never alert below this many crystals.", min = 1)
+    public long staffMinCrystals = 100_000;
+
+    @Setting(path = "rules.staff-transfer.min.gems", desc = "Never alert below this many gems.", min = 1)
+    public long staffMinGems = 1_000;
+
+    @Setting(path = "rules.staff-transfer.min.shards", desc = "Never alert below this many shards.", min = 1)
+    public long staffMinShards = 10_000;
+
+    @Setting(path = "rules.staff-transfer.alert-permission", desc = "Who gets staff-transfer alerts in chat (admins: the "
+            + "mods' own transfers are not shown to mods).", level = Setting.Level.OWNER)
+    public String staffAlertPermission = "skyblock.admin.economy";
+
     // ------------------------------------------------------------------ rule: repeated near-identical transfers
 
     @Setting(path = "rules.repeat-transfer.enabled", desc = "Alert when one profile sends another the same amount again and "
@@ -283,6 +306,16 @@ public final class WatchConfig extends ModuleConfig {
             case CRYSTALS -> bigMinCrystals;
             case GEMS -> bigMinGems;
             case SHARDS -> bigMinShards;
+        };
+    }
+
+    /** Minimum amount for a staff-transfer alert. */
+    long staffMin(Currency currency) {
+        return switch (currency) {
+            case MONEY -> staffMinMoney;
+            case CRYSTALS -> staffMinCrystals;
+            case GEMS -> staffMinGems;
+            case SHARDS -> staffMinShards;
         };
     }
 

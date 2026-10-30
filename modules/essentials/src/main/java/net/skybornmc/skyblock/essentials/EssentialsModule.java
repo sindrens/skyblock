@@ -29,6 +29,7 @@ public final class EssentialsModule implements SkyblockModule {
     private JoinFlow join;
     private SpawnProtection protection;
     private EssentialsSettings settings;
+    private StaffPowers powers;
 
     public EssentialsModule(Core core) {
         this.core = core;
@@ -45,11 +46,13 @@ public final class EssentialsModule implements SkyblockModule {
         msg = core.messages(id());
         settings = new EssentialsSettings(core);
         teleportCommands = new TeleportCommands(core, config, msg, core.services().get(TeleportService.class), settings);
-        staff = new StaffCommands(core, config, msg);
         vanish = new VanishService(core, config, msg);
         views = new InventoryViews(core, config, msg);
         join = new JoinFlow(core, config, msg, settings);
         protection = new SpawnProtection(core, config, msg, join);
+        // Owner answers 331-334: creative only in the creative worlds, god/fly/heal only in staff or build mode, staff items.
+        powers = new StaffPowers(core, config, msg, protection::buildModeOn);
+        staff = new StaffCommands(core, config, msg, powers);
 
         for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection)) {
             group.register();
@@ -58,6 +61,7 @@ public final class EssentialsModule implements SkyblockModule {
             core.plugin().getServer().getPluginManager().registerEvents(listener, core.plugin());
         }
         teleportCommands.start();
+        powers.start();
         // DEPTHSPROT: /build mode also lifts the worlds module's protection flags in the protected worlds (spawn).
         core.services().optional(net.skybornmc.skyblock.common.region.RegionFlags.class)
                 .ifPresent(flags -> flags.addBypass(id(), protection::buildModeIn));
@@ -65,7 +69,7 @@ public final class EssentialsModule implements SkyblockModule {
     }
 
     private List<Listener> listeners() {
-        return List.of(teleportCommands, staff, vanish, views, join, protection);
+        return List.of(teleportCommands, staff, vanish, views, join, protection, powers);
     }
 
     @Override
@@ -81,6 +85,7 @@ public final class EssentialsModule implements SkyblockModule {
             return;
         }
         teleportCommands.stop();
+        powers.stop();
         core.services().optional(net.skybornmc.skyblock.common.region.RegionFlags.class).ifPresent(flags -> flags.removeBypass(id()));
         settings.unregister();
         views.shutdown();

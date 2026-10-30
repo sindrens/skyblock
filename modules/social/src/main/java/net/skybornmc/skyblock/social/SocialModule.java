@@ -21,6 +21,7 @@ import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.settings.PlayerSettings;
 import net.skybornmc.skyblock.common.settings.SettingCategory;
 import net.skybornmc.skyblock.common.settings.SettingToggle;
+import net.skybornmc.skyblock.common.social.IgnoreService;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
@@ -61,7 +62,7 @@ import java.util.concurrent.Executor;
  * {@code /list}, {@code /ping}, {@code /playtime}, {@code /seen}, {@code /whois}, {@code /broadcast} and link commands.
  * Texts: {@code messages/social.yml}; settings: {@code social.yml}.
  */
-public final class SocialModule implements SkyblockModule, Listener {
+public final class SocialModule implements SkyblockModule, Listener, IgnoreService {
 
     static final String ID = "social";
 
@@ -102,6 +103,8 @@ public final class SocialModule implements SkyblockModule, Listener {
 
     static final String SETTING_PMS = "private-messages";
     static final String SETTING_AFK_BROADCAST = "afk-broadcast";
+    /** Owner answer 317: hide the public chat lines of players you ignore (for you only). */
+    static final String SETTING_HIDE_IGNORED = "hide-ignored-chat";
 
     public SocialModule(Core core) {
         this.core = core;
@@ -123,6 +126,8 @@ public final class SocialModule implements SkyblockModule, Listener {
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         registerPlaceholders();
         registerCommands();
+        // ANS3 (owner answers 316/317): one ignore list for tpa, trades, island invites and chat.
+        core.services().register(ID, IgnoreService.class, this);
         long now = System.currentTimeMillis();
         for (Player p : Bukkit.getOnlinePlayers()) {
             afk.active(p.getUniqueId(), now);
@@ -142,6 +147,8 @@ public final class SocialModule implements SkyblockModule, Listener {
                 "navigation", "settings.toggles." + SETTING_PMS, false));
         service.register(new SettingToggle(ID, SETTING_AFK_BROADCAST, SettingCategory.SOCIAL, Material.RED_BED, true, null,
                 "navigation", "settings.toggles." + SETTING_AFK_BROADCAST, false));
+        service.register(new SettingToggle(ID, SETTING_HIDE_IGNORED, SettingCategory.CHAT, Material.GRAY_DYE,
+                config.hideIgnoredChatDefault, null, ID, "settings." + SETTING_HIDE_IGNORED, false));
         settings = service;
     }
 
@@ -206,7 +213,7 @@ public final class SocialModule implements SkyblockModule, Listener {
             return values;
         }));
         commands.register(CommandSpec.command("ignore")
-                .description("Ignore a player's private messages, or see your ignore list")
+                .description("Ignore a player (messages, tpa, trades, invites), or see your ignore list")
                 .category("Social")
                 .permission(PERM_IGNORE)
                 .playerOnly()
@@ -455,6 +462,32 @@ public final class SocialModule implements SkyblockModule, Listener {
     }
 
     // ================================================================== ignore
+
+    @Override
+    public boolean isIgnoring(UUID viewer, UUID sender) {
+        return viewer != null && sender != null && ignores.getOrDefault(viewer, Set.of()).contains(sender);
+    }
+
+    @Override
+    public boolean hidesChat(UUID viewer, UUID sender) {
+        return isIgnoring(viewer, sender) && setting(viewer, SETTING_HIDE_IGNORED, config.hideIgnoredChatDefault);
+    }
+
+    /**
+     * Owner answer 317: public chat lines of an ignored player are not shown to the players who ignore them and have
+     * {@code /settings → Hide ignored chat} on. NORMAL: after the chat checks (LOW), before the chat module renders
+     * (HIGH) and plays mention sounds, so an ignored player's mention makes no sound either. Staff are never hidden.
+     */
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onPublicChat(AsyncChatEvent event) {
+        Player source = event.getPlayer();
+        if (source.hasPermission(PERM_UNIGNORABLE)) {
+            return;
+        }
+        UUID id = source.getUniqueId();
+        event.viewers().removeIf(audience -> audience instanceof Player viewer && !viewer.getUniqueId().equals(id)
+                && hidesChat(viewer.getUniqueId(), id));
+    }
 
     private void loadIgnores(UUID uuid) {
         store.ignores(uuid).thenAcceptAsync(set -> {

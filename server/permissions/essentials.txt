@@ -28,7 +28,8 @@ lp group mod permission set skyblock.staff.back true
 lp group mod permission set skyblock.staff.home true
 lp group mod permission set skyblock.staff.teleport.bypass true
 lp group mod permission set skyblock.staff.gamemode true
-lp group mod permission set skyblock.staff.gamemode.creative true
+# Owner answer 331: creative is for builders and admins only (admin inherits it from builder); mods use spectator.
+lp group mod permission unset skyblock.staff.gamemode.creative
 lp group mod permission set skyblock.staff.gamemode.survival true
 lp group mod permission set skyblock.staff.gamemode.spectator true
 lp group mod permission set skyblock.staff.gamemode.adventure true

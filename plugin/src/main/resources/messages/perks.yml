@@ -6,6 +6,12 @@
 craft:
   title: "<c:text>Crafting"
 
+# Owner answer 377: /ec and /craft are closed in combat areas. <time> = time left of the combat block.
+blocked:
+  warzone: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open that in the warzone."
+  boss-arena: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open that in the boss arena."
+  combat: "<prefix><c:error><sym:cross></c:error> <c:text>You're in combat. Try again in <c:value><time></c:value>."
+
 hat:
   done: "<prefix><c:success><sym:check></c:success> <c:text>You're wearing <c:value><item></c:value>."
   empty-hand: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to wear."

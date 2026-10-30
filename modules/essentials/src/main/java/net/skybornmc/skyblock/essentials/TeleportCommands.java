@@ -195,7 +195,10 @@ final class TeleportCommands extends CommandGroup implements Listener {
 
     private void request(Player sender, Player target, TpaRequests.Type type) {
         // F1: the target turned teleport requests off in /settings (self-requests keep their own message).
-        if (!sender.getUniqueId().equals(target.getUniqueId()) && !settings.acceptsTpa(target.getUniqueId())) {
+        // Owner answer 316: a player you /ignore can't send you /tpa or /tpahere (same answer as "requests off", so the
+        // ignore list stays private; staff can't be ignored).
+        if (!sender.getUniqueId().equals(target.getUniqueId()) && (!settings.acceptsTpa(target.getUniqueId())
+                || net.skybornmc.skyblock.common.social.IgnoreService.ignoring(core.services(), target, sender))) {
             throw fail("tpa.disabled", Msg.p("player", target.getName()));
         }
         if (!sender.hasPermission(Perms.TELEPORT_BYPASS)) {
