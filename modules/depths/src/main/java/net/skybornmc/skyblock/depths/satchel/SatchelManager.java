@@ -582,6 +582,10 @@ public final class SatchelManager implements SatchelService, Listener {
             if (given < n) {
                 state.credit(itemId, n - given); // no room any more (or offline/switched): back into the satchel
             }
+            if (given > 0) {
+                // SECFIX1 F-01c: the database side is already gone; saving now keeps a crash from losing the items.
+                net.skybornmc.skyblock.common.player.PlayerSaves.save(online, "a satchel take-out");
+            }
             core.audit().logPlayer(AuditCategory.ITEM, "satchel_take", Actor.player(playerId, state.ownerName), playerId, state.ownerName,
                     given, online == null ? null : online.getLocation(), Map.of("item", itemId, "amount", given, "returned", n - given,
                             "profile", state.profile.toString()));

@@ -89,6 +89,13 @@ public interface SanctionService {
     /** Tells {@code viewer} that {@code otherName} can't do {@code use} right now (no details about the sanction). */
     void tellOther(Player viewer, String otherName, Use use);
 
+    /**
+     * SECFIX1 F-15: tells {@code player} that {@code use} is paused because the sanction check failed (fail closed). The
+     * default says nothing; the moderation module sends its message. Main thread.
+     */
+    default void tellUnavailable(Player player, Use use) {
+    }
+
     /** The published service, if the moderation module runs. */
     static Optional<SanctionService> of(ServiceRegistry services) {
         return services == null ? Optional.empty() : services.optional(SanctionService.class);
@@ -103,9 +110,31 @@ public interface SanctionService {
         if (service.isEmpty() || player == null) {
             return false;
         }
-        Optional<Block> block = service.get().block(player.getUniqueId(), use);
+        Optional<Block> block;
+        try {
+            block = service.get().block(player.getUniqueId(), use);
+        } catch (RuntimeException e) {
+            return failClosed(service.get(), player, use, e); // SECFIX1 F-15
+        }
         block.ifPresent(b -> service.get().tell(player, b, use));
         return block.isPresent();
+    }
+
+    /**
+     * SECFIX1 F-15: the check threw, so the value move is refused (fail closed: "everything not allowed is impossible")
+     * and {@code player} is told it is paused. Always true.
+     */
+    private static boolean failClosed(SanctionService service, Player player, Use use, RuntimeException error) {
+        java.util.logging.Logger.getLogger("PhoenixSkyblock").log(java.util.logging.Level.SEVERE,
+                "Sanction check failed for " + (player == null ? "?" : player.getName()) + " (" + use.id() + "); refused", error);
+        if (player != null) {
+            try {
+                service.tellUnavailable(player, use);
+            } catch (RuntimeException ignored) {
+                // the service is broken: refusing is what matters
+            }
+        }
+        return true;
     }
 
     /**
@@ -117,7 +146,12 @@ public interface SanctionService {
         if (service.isEmpty() || other == null) {
             return false;
         }
-        boolean blocked = service.get().block(other.getUniqueId(), use).isPresent();
+        boolean blocked;
+        try {
+            blocked = service.get().block(other.getUniqueId(), use).isPresent();
+        } catch (RuntimeException e) {
+            return failClosed(service.get(), viewer, use, e); // SECFIX1 F-15
+        }
         if (blocked && viewer != null) {
             service.get().tellOther(viewer, other.getName(), use);
         }

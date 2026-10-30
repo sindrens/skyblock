@@ -123,13 +123,19 @@ public final class ShopModule implements SkyblockModule, Listener {
         warnUndercuts();
         registerCommand();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
-        store.recover(System.currentTimeMillis()).whenComplete((n, e) -> {
+        store.recover(System.currentTimeMillis()).whenComplete((stuck, e) -> {
             if (e != null) {
                 core.plugin().getLogger().log(Level.SEVERE, "Shop: startup recovery failed; purchases may wait until the next start",
                         Database.cause(e));
-            } else if (n > 0) {
-                core.plugin().getLogger().warning("Shop: " + n + " purchase(s) were paid but not handed over (crash or stop); "
-                        + "they are handed over on the next join.");
+            } else if (!stuck.isEmpty()) {
+                // SECFIX1 F-12: maybe handed over already (items in the saved inventory): never again automatically.
+                core.plugin().getLogger().warning("Shop: " + stuck.size() + " purchase(s) were paid while the server stopped mid "
+                        + "hand-over; they are marked 'review' for staff (shop_review in /logs). Check the player's inventory and "
+                        + "/box, then refund or deliver by hand.");
+                for (ShopStore.Purchase p : stuck) {
+                    core.audit().logPlayer(AuditCategory.ITEM, "shop_review", Actor.system("shop"), p.player(), p.playerName(),
+                            p.totalPrice(), null, details(p));
+                }
             }
             ready = true;
             main.execute(() -> Bukkit.getOnlinePlayers().forEach(this::deliverPending));

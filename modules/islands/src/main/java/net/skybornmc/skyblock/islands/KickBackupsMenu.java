@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * Admins only (owner answer 251): the kick backups of one player, newest first ({@code /isadmin restore <player>}).
- * Each entry shows the island, role, money and whether items were captured; a click on an open one asks to confirm and
+ * Each entry shows the island, role, the money and items a restore gives back (SECFIX1 F-02); a click on an open one asks to confirm and
  * restores it ({@link KickBackups}). Chest menu only (Bedrock-safe).
  */
 final class KickBackupsMenu extends PagedMenu<KickBackupStore.Backup> {
@@ -67,8 +67,10 @@ final class KickBackupsMenu extends PagedMenu<KickBackupStore.Backup> {
         var formatter = module.config().dateFormatter();
         String state = b.open() ? "open" : b.itemsOpen() ? "items" : "restored";
         TagResolver[] p = {Msg.p("island", b.islandName()), Msg.p("role", module.raw("role." + MemberStore.key(b.role()))),
-                Msg.p("money", b.money() == null ? "-" : Format.number(b.money())),
-                Msg.p("items", module.raw(b.itemsCaptured() ? "admin.restore.items-yes" : "admin.restore.items-no")),
+                // SECFIX1 F-02: the money a restore gives back (what a disband/reset really took; kicks take none)
+                Msg.p("money", b.restoreMoney() <= 0 ? "-" : Format.number(b.restoreMoney())),
+                Msg.p("items", module.raw(b.itemsOpen() || b.itemsRestoredAt() != null && b.islandRemoval() ? "admin.restore.items-yes"
+                        : b.itemsPending() ? "admin.restore.items-pending" : "admin.restore.items-no")),
                 Msg.p("by", b.kickedBy()), Msg.p("date", formatter.format(Instant.ofEpochMilli(b.createdAt()))),
                 Msg.p("state", module.raw("admin.restore.state." + state)), Msg.p("id", b.id())};
         List<Component> lore = new ArrayList<>(lines("admin.restore.entry.lore", p));

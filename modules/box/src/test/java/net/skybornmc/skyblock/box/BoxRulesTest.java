@@ -24,6 +24,13 @@ class BoxRulesTest {
         assertEquals(BoxCap.Level.OK, BoxCap.of(499, 500, 100), "100% warns only when full");
         assertFalse(BoxCap.isFull(499, 500));
         assertTrue(BoxCap.isFull(500, 500));
+        // SECFIX1 F-09: the hard safety cap sits far above the soft cap and refuses new actions from there.
+        assertFalse(BoxCap.isHardFull(4_999, 500, 5_000));
+        assertTrue(BoxCap.isHardFull(5_000, 500, 5_000));
+        assertTrue(BoxCap.isHardFull(9_000, 500, 5_000));
+        assertFalse(BoxCap.isHardFull(600, 500, 5_000), "over the soft cap only warns");
+        assertTrue(BoxCap.isHardFull(500, 500, 100), "a hard cap below the soft cap counts as the soft cap");
+        assertFalse(BoxCap.isHardFull(499, 500, 100));
     }
 
     private static List<FitPlan.Slot<String>> inventory(int free, String... used) {

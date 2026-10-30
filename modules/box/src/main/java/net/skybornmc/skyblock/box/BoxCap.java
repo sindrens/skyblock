@@ -27,4 +27,15 @@ final class BoxCap {
     static boolean isFull(int count, int max) {
         return max > 0 && count >= max;
     }
+
+    /**
+     * SECFIX1 F-09: the hard safety cap ({@code cap.hard-max-entries}, far above the soft cap). From here sources that can
+     * stop (breaking a spawner, claiming, buying) are refused with a message instead of growing the box forever. Items
+     * that already left somewhere are still stored: nothing is ever lost. A hard cap below the soft cap counts as the
+     * soft cap.
+     */
+    static boolean isHardFull(int count, int softMax, int hardMax) {
+        int hard = Math.max(hardMax, softMax);
+        return hard > 0 && count >= hard;
+    }
 }

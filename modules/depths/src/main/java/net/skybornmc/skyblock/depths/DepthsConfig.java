@@ -22,6 +22,9 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "engine.timer-slots", desc = "Size of the respawn timer wheel in ticks (power of two; respawns longer than this still work, just a bit less efficiently).", min = 64, max = 65536, restart = true)
     public int timerSlots = 1024;
 
+    @Setting(path = "engine.remembered-per-player", desc = "SECFIX1 F-11: depleted blocks whose timer still runs are remembered when a player leaves or changes world (so relogging doesn't reset ores). Most remembered per player; above it the timers that end first are dropped.", min = 64, max = 100000)
+    public int rememberedPerPlayer = 4096;
+
     @Setting(path = "engine.protect-regions", desc = "Inside regions, players can't break other blocks or place blocks (only resource blocks can be mined).")
     public boolean protectRegions = true;
 

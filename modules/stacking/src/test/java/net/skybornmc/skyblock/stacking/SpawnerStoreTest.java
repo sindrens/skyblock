@@ -92,4 +92,40 @@ class SpawnerStoreTest {
         assertTrue(ok(c -> store.deleteAny(c, "islands", 1, 70, -5)));
         assertFalse(ok(c -> store.deleteAny(c, "islands", 1, 70, -5)));
     }
+
+    // ------------------------------------------------------------------ SECFIX1 F-07 / R3-13: frozen, never deleted
+
+    @Test
+    void aLostBlockIsFrozenWithEverythingKept() {
+        db.blocking(c -> store.insert(c, row(1, "zombie", 1), 1L));
+        assertTrue(ok(c -> store.change(c, "islands", 1, 70, -5, "zombie", 1, 64, 2L)));
+        java.util.Optional<SpawnerStore.Frozen> frozen = db.blocking(c -> store.freeze(c, "islands", 1, 70, -5, "block_gone", 5L));
+        assertTrue(frozen.isPresent());
+        assertEquals(64, frozen.get().row().amount(), "all 64 spawners are kept for staff");
+        assertEquals("zombie", frozen.get().row().type());
+        assertEquals(player, frozen.get().row().placedBy());
+        assertEquals(SpawnerStore.FROZEN, frozen.get().state());
+        assertTrue(db.blocking(store::loadAll).isEmpty(), "a frozen spawner never loads, so it never spawns and can't be taken");
+        List<SpawnerStore.Frozen> waiting = db.blocking(c -> store.frozen(c, 10));
+        assertEquals(1, waiting.size());
+        assertEquals("block_gone", waiting.getFirst().reason());
+    }
+
+    @Test
+    void frozenSpawnersCanNotBeTakenOrAddedTo() {
+        db.blocking(c -> store.insert(c, row(1, "zombie", 8), 1L));
+        db.blocking(c -> store.freeze(c, "islands", 1, 70, -5, "block_gone", 5L));
+        assertFalse(ok(c -> store.change(c, "islands", 1, 70, -5, "zombie", 8, 0, 6L)), "no take from a frozen stack");
+        assertFalse(ok(c -> store.change(c, "islands", 1, 70, -5, "zombie", 8, 9, 6L)), "no add to a frozen stack");
+        assertTrue(db.blocking(c -> store.freeze(c, "islands", 1, 70, -5, "block_gone", 7L)).isEmpty(), "frozen once only");
+        assertEquals(1, db.blocking(c -> store.frozen(c, 10)).size());
+        // The place is free again for a new spawner.
+        assertTrue(ok(c -> store.insert(c, row(1, "pig", 1), 8L)));
+    }
+
+    @Test
+    void freezingNothingDoesNothing() {
+        assertTrue(db.blocking(c -> store.freeze(c, "islands", 9, 70, -5, "block_gone", 5L)).isEmpty());
+        assertTrue(db.blocking(c -> store.frozen(c, 10)).isEmpty());
+    }
 }
