@@ -8,8 +8,8 @@
 npc:
   # <name> NPC name (npc-names.<id>, else roles.<role>.name), <hint> one of the hints below
   label: "<c:flame><bold><name></bold><newline><hint>"
-  hint-action: "<c:muted>Right-click"
-  hint-help: "<c:muted>Right-click for help"
+  hint-action: "<c:muted>Click"
+  hint-help: "<c:muted>Click for help"
 
 # Names per NPC id (when it differs from the role name).
 npc-names:

@@ -33,7 +33,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
 
 /**
- * The menu item (owner decision): a Nether Star with a red glint in hotbar slot 9, "Menu · Right-click".
+ * The menu item (owner decision): a Nether Star with a red glint in hotbar slot 9, "Menu · Click".
  * Right- or left-click (also a tap on Bedrock) opens {@code /menu}. It always stays in the inventory (FIXES1): it can't
  * be dropped, moved, put in containers, crafted with or lost on death, and it is put back on join, respawn, world
  * change, game mode change, after closing any inventory and by a light check every {@code menu-item.check-seconds}.

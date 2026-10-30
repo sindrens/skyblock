@@ -12,11 +12,11 @@ coming-soon:
     - "<c:muted>Keep an eye on /discord for news."
 
 menu-item:
-  name: "<c:flame><bold>Menu</bold></c:flame> <c:muted><sym:dot></c:muted> <c:text>Right-click"
+  name: "<c:flame><bold>Menu</bold></c:flame> <c:muted><sym:dot></c:muted> <c:text>Click"
   lore:
     - "<c:text>Every feature in one place."
     - ""
-    - "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>to open the menu"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the menu"
 
 hub:
   title: "Menu"

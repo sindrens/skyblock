@@ -4,7 +4,7 @@ NPCs, text holograms and leaderboard holograms at the points of the applied buil
 `build-points.yml` through the worlds module's `BuildPoints` service (written by `/skyblock builds apply`): lists
 `npcs`, `holograms`, `leaderboards` of each build's metadata (`BUILDER_BRIEF.md` §3.6). Settings: `npcs.yml` (all editable
 in `/admin`); texts: `messages/npcs.yml`. Reload (re-reads the points and respawns everything): `/skyblock reload npcs`.
-Help: `/help npcs`. No new player command: everything is right-click.
+Help: `/help npcs`. No new player command: everything is a click (right or left; a tap on Bedrock).
 
 | Command | Description | Permission | Status |
 |---|---|---|---|
@@ -15,9 +15,9 @@ Help: `/help npcs`. No new player command: everything is right-click.
 ## NPCs
 - **Body:** a Paper mannequin (player-shaped, `npcs.body: mannequin`) or a villager without AI (`villager`). No Citizens. Invulnerable, silent, no gravity, not collidable, never saved (`persistent=false`): spawned when the chunk's entities load, removed when they unload and on disable; left-overs with the module's tag are removed on load. Optional skin (`npcs.skins`, a Minecraft name, default none) and held item (`npcs.held-items`).
 - **Position:** the pad's feet cell from the metadata, centred; if that block is solid (the pad itself was given) the NPC stands on top of it. Facing = the metadata `yaw`. Heads turn to the nearest player within `npcs.look-radius` every `npcs.look-ticks` (no per-tick work; a rotation is only sent when it changed by 3° or more).
-- **Name text:** a text display above the head: name (`npc-names.<id>`, else `roles.<role>.name`) + one hint line (`Right-click` / `Right-click for help`).
+- **Name text:** a text display above the head: name (`npc-names.<id>`, else `roles.<role>.name`) + one hint line (`Click` / `Click for help`).
 - **Role:** the metadata's `role` key, else `npcs.roles` (`id: role`), else the id. Defaults: quartermaster/blacksmith/depths_forge → forge, help → info, ah → auction, depths_sell → sell, depths_guide → dungeon, mine_foreman → foreman.
-- **Click** (`npcs.actions`): `role: command <cmd>` runs the command as the player (the command checks its own permission); sneak + click shows the role's help instead (`npcs.sneak-for-help`). `role: help [cmd]` shows the help with an `[Open]` button for the command. Roles without a line show their help. Hitting an NPC acts like right-clicking (`npcs.left-click-acts`, Bedrock touch = tap). One click per `npcs.click-cooldown-ms`. No trading, no damage, no fire, mobs ignore them.
+- **Click** (`npcs.actions`): `role: command <cmd>` runs the command as the player (the command checks its own permission); sneak + click shows the role's help instead (`npcs.sneak-for-help`). `role: help [cmd]` shows the help with an `[Open]` button for the command. Roles without a line show their help. Right-click and hitting both act (`npcs.left-click-acts`, Bedrock touch = tap). UX3 root cause of "only left-click works": Paper 26.x fires only `PlayerInteractAtEntityEvent` for a right-click (one interact packet with the hit position), and the listener used to wait for a plain `PlayerInteractEntityEvent` that never comes; now every main-hand interact acts (off-hand copy ignored). One click per `npcs.click-cooldown-ms` (removes the second packet of the same click). No trading, no damage, no fire, mobs ignore them.
 - **Help:** `roles.<role>.help` (a few short lines; owner answer 44: explained where it is, lores stay clean). Java: chat lines + clickable `[Open]`; Bedrock: a 3-row menu with the text on a book and a big Open button.
 
 | Role | Action | NPCs (default builds) |

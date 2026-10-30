@@ -41,7 +41,7 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "npcs.click-cooldown-ms", desc = "Minimum time between two clicks of one player on NPCs and holograms (milliseconds).", min = 100, max = 5000)
     public int clickCooldownMs = 600;
 
-    @Setting(path = "npcs.left-click-acts", desc = "Hitting an NPC or hologram acts like right-clicking it (Bedrock touch players tap = hit).")
+    @Setting(path = "npcs.left-click-acts", desc = "Hitting an NPC or hologram acts like right-clicking it (Bedrock touch players tap = hit). Off: only right-click acts; the texts say Click.")
     public boolean leftClickActs = true;
 
     @Setting(path = "npcs.sneak-for-help", desc = "Sneak + click on an NPC with an action shows its help text instead of running the action.")
