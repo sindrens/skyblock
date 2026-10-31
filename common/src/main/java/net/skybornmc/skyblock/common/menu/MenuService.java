@@ -223,10 +223,11 @@ public final class MenuService implements Listener {
         if (previous != null && previous != menu) {
             previous.detach(); // re-opening the same menu (e.g. after a prompt) is not a close
         }
-        int rows = Math.max(1, Math.min(6, menu.rows()));
-        // The holder must exist before the inventory; the title needs the viewer for Bedrock colors.
+        // The holder must exist before the inventory; the title needs the viewer for Bedrock colors, and rows() may
+        // depend on what this viewer sees (the You menu grows to 4 rows with 9+ entries).
         menu.viewer = player;
         menu.service = this;
+        int rows = Math.max(1, Math.min(6, menu.rows()));
         Component title = menu.title();
         Inventory inventory = Bukkit.createInventory(menu, rows * 9, title);
         menu.attach(this, player, inventory);

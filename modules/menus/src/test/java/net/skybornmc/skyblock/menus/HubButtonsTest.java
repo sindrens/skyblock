@@ -31,15 +31,20 @@ class HubButtonsTest {
     }
 
     private static final Predicate<String> ALL = s -> true;
-    /** Item ids without a server (the item registry needs one): lower-case words only. */
-    static final Predicate<String> ITEMS = id -> id.matches("[a-z_]+");
+    /** Item ids or icon keys without a server (the item registry needs one): lower-case words, optionally group/name. */
+    static final Predicate<String> ITEMS = id -> id.matches("[a-z_]+(/[a-z_]+)?");
 
     @Test
     void bundledHubHas15ButtonsIn4Groups() throws Exception {
         List<String> problems = new ArrayList<>();
         ButtonLayout hub = ButtonLayout.hub(resource("menu.yml"), ITEMS, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(15, hub.buttons().size(), "your head + 14 features");
+        assertEquals(16, hub.buttons().size(), "your head + 14 features + the Staff tile (G9)");
+        ButtonLayout.Button staff = hub.buttons().stream().filter(b -> ButtonLayout.STAFF.equals(b.action())).findFirst().orElseThrow();
+        assertEquals(HubMenu.SLOT_STAFF, staff.slot());
+        assertFalse(staff.showLocked(), "players without the node do not see it");
+        assertEquals(HubMenu.PERM_STAFF_TILE, staff.permission());
+        assertEquals(Map.of("play", "home", "money", "money", "power", "skills", "more", "reward"), hub.groups());
         assertEquals(List.of("play", "money", "power", "more"), List.copyOf(hub.groups().keySet()));
 
         Map<String, List<Integer>> slots = hub.buttons().stream().filter(b -> b.group() != null)
@@ -83,9 +88,9 @@ class HubButtonsTest {
         List<String> problems = new ArrayList<>();
         ButtonLayout you = ButtonLayout.you(resource("menu.yml"), ITEMS, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(List.of("profiles", "titles", "achievements", "settings", "store", "rules", "quests", "collection", "credits"),
+        assertEquals(List.of("profiles", "titles", "achievements", "quests", "collection", "settings", "rules", "store", "credits"),
                 you.buttons().stream().map(ButtonLayout.Button::id).toList());
-        assertEquals(List.of(10, 11, 12, 13, 14, 15, 16, 24, 20), you.buttons().stream().map(ButtonLayout.Button::slot).toList());
+        assertTrue(you.buttons().stream().allMatch(b -> b.slot() == -1), "You entries are placed by Centered, not by slot");
     }
 
     @Test
@@ -98,14 +103,11 @@ class HubButtonsTest {
                 assertTrue(texts.isList("hub.buttons." + b.id() + ".lore"), b.id());
             }
         }
-        for (String group : ButtonLayout.hub(menu, ITEMS, p -> { }).groups().keySet()) {
-            assertTrue(texts.isString("hub.groups." + group + ".name"), group);
-        }
         for (ButtonLayout.Button b : ButtonLayout.you(menu, ITEMS, p -> { }).buttons()) {
             assertTrue(texts.isString("you.buttons." + b.id() + ".name"), b.id());
         }
-        for (String key : new String[]{"hub.head.name", "hub.head.lore", "you.head.lore", "hub.rewards.ready-name", "hub.rewards.ready",
-                "hub.rewards.none", "hub.rewards.nothing", "hub.rewards.sources.daily", "hub.fallback-name", "you.title", "you.info"}) {
+        for (String key : new String[]{"hub.head.name", "hub.head.lore", "you.head.lore", "hub.rewards.ready",
+                "hub.rewards.nothing", "hub.rewards.sources.daily", "hub.fallback-name", "you.title", "you.info"}) {
             assertTrue(texts.contains(key), key);
         }
     }
@@ -127,8 +129,8 @@ class HubButtonsTest {
         // The test server switch shows them as Coming soon.
         assertEquals(ButtonLayout.State.COMING_SOON, hub.buttons().stream().filter(b -> b.id().equals("wardrobe")).findFirst()
                 .orElseThrow().state(services, commands, true));
-        // Everything built: all 15 show.
-        assertEquals(15, hub.buttons().stream().filter(b -> b.state(ALL, ALL, false) == ButtonLayout.State.ACTIVE).count());
+        // Everything built: all 16 show (the Staff tile is then hidden per viewer by its permission).
+        assertEquals(16, hub.buttons().stream().filter(b -> b.state(ALL, ALL, false) == ButtonLayout.State.ACTIVE).count());
     }
 
     @Test
@@ -142,7 +144,7 @@ class HubButtonsTest {
     @Test
     void badButtonsAreSkippedWithAReason() {
         YamlConfiguration yaml = new YamlConfiguration();
-        yaml.set("hub-groups.play.mark", "lime_stained_glass_pane");
+        yaml.set("hub-groups.play.color", "home");
         yaml.set("hub.a.slot", 10);
         yaml.set("hub.a.command", "is");
         yaml.set("hub.b.slot", 12);
@@ -162,13 +164,5 @@ class HubButtonsTest {
         assertEquals(List.of("a", "f"), hub.buttons().stream().map(ButtonLayout.Button::id).toList());
         assertEquals(null, hub.buttons().get(1).group());
         assertEquals(6, problems.size(), String.join("\n", problems));
-    }
-
-    @Test
-    void groupMarksSitOnTheLeftEdgeOfTheRow() {
-        ButtonLayout.Button a = new ButtonLayout.Button("a", 21, "money", "stone", "command", "x", null, true, null);
-        ButtonLayout.Button b = new ButtonLayout.Button("b", 25, "money", "stone", "command", "y", null, true, null);
-        assertEquals(18, ButtonLayout.markSlot(List.of(b, a)));
-        assertEquals(-1, ButtonLayout.markSlot(List.of()), "all hidden: no mark");
     }
 }

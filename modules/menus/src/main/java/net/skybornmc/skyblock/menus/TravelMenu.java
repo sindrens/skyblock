@@ -4,12 +4,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.builds.BuildPoint;
 import net.skybornmc.skyblock.common.builds.BuildPoints;
+import net.skybornmc.skyblock.common.menu.Centered;
 import net.skybornmc.skyblock.common.teleport.TeleportOptions;
 import net.skybornmc.skyblock.common.teleport.TeleportReason;
 import net.skybornmc.skyblock.common.teleport.TeleportService;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -19,12 +19,13 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * {@code /menu → Travel} (GUI_DESIGN §7.3, GUI-2; replaces the UX3 warps menu): 3 rows, places on 10-16 from
- * {@code menu.yml → travel}, 18 Back (to the hub), 22 Close. One click teleports through the core {@link TeleportService}
+ * {@code /menu → Travel} (G9 v3, I9 v2; replaces the UX3 warps menu): 3 rows, the places of {@code menu.yml → travel}
+ * centred on row 1 in file order ({@code Centered}: 7 places = slots 10-16; fewer re-centre, hidden ones leave no hole),
+ * 18 Back (to the hub), 22 Close. One click teleports through the core {@link TeleportService}
  * (warmup, cooldown, guards such as locked Depths tiers, combat block) or runs the place's command (My Island =
  * {@code is home}, Visit Islands = the {@code is visit} browser, which gets Back to this menu). Places that do not exist
  * here (build not applied, world not loaded, command missing) are hidden, so the menu only shows places that work.
- * Plain items only: Bedrock-safe.
+ * Icons come from the catalogue (plain base items without the pack): Bedrock-safe.
  */
 final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
@@ -62,26 +63,30 @@ final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
     @Override
     protected void build() {
         navBar();
-        int shown = 0;
+        List<WarpLayout.Warp> shown = new ArrayList<>();
         for (WarpLayout.Warp warp : nav.travel.warps()) {
-            if (!available(warp)) {
-                continue;
+            if (available(warp) && shown.size() < WarpLayout.MAX_PLACES) {
+                shown.add(warp);
             }
-            shown++;
+        }
+        if (shown.isEmpty()) {
+            setEmpty(Nav.TEXTS, "travel.empty");
+            return;
+        }
+        int[] slots = Centered.layout(shown.size()).slots();
+        for (int i = 0; i < shown.size(); i++) {
+            WarpLayout.Warp warp = shown.get(i);
             Component name = name(warp);
             List<Component> lore = new ArrayList<>(nav.lines(viewer, "travel.places." + warp.id() + ".lore"));
             if (warp.permission() != null && !warp.permission().isBlank() && !viewer.hasPermission(warp.permission())) {
                 lore.addAll(nav.lines(viewer, "hub.locked"));
-                set(warp.slot(), nav.item(Nav.material(warp.icon(), Material.ENDER_PEARL), name, lore));
+                set(slots[i], nav.icon(viewer, warp.icon(), name, lore));
                 continue;
             }
             String actionKey = nav.core.messages().raw(Nav.TEXTS, "travel.places." + warp.id() + ".action") != null
                     ? "travel.places." + warp.id() + ".action" : "travel.action";
             lore.addAll(nav.lines(viewer, actionKey));
-            set(warp.slot(), nav.item(Nav.material(warp.icon(), Material.ENDER_PEARL), name, lore), click -> go(click.player(), warp, name));
-        }
-        if (shown == 0) {
-            setEmpty(Nav.TEXTS, "travel.empty");
+            set(slots[i], nav.icon(viewer, warp.icon(), name, lore), click -> go(click.player(), warp, name));
         }
     }
 

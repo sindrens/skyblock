@@ -3,3 +3,5 @@
 
 # Staff hub (M1.12).
 lp group helper permission set skyblock.staff.menu true
+# G9: the Staff tile on the /menu hub (same groups as /staff).
+lp group helper permission set skyblock.staff.hub true

@@ -83,16 +83,40 @@ public final class Nav {
         return core.menus().item(icon, name, lore);
     }
 
-    /** The item of a parsed icon id ({@link ButtonLayout}, {@link WarpLayout}); {@code fallback} if it is not an item. */
+    /** The item of a plain item id (the fallback path of {@link #icon}); {@code fallback} if it is not an item. */
     static Material material(String id, Material fallback) {
         Material m = Material.matchMaterial(id == null ? "" : id);
         return m == null || !m.isItem() ? fallback : m;
     }
 
+    /**
+     * The icon of a {@code menu.yml} button: an icon catalogue key goes through {@code MenuService#icon} (our picture for
+     * viewers with the pack loaded, the base item for everyone else); a plain item id is that item for everyone.
+     */
+    ItemStack icon(Player viewer, String spec, Component name, List<Component> lore) {
+        if (core.menus().icons().has(spec)) {
+            return core.menus().icon(viewer, spec, name, lore);
+        }
+        return item(material(spec, Material.BOOK), name, lore);
+    }
+
     /** Text of {@code key}, or {@code fallback-key} with the prettified {@code id} when an owner-added button has no texts yet. */
     Component textOr(Player viewer, String key, String fallbackKey, String id) {
+        return textOr(viewer, key, fallbackKey, id, null);
+    }
+
+    /**
+     * Same; the fallback name of a hub button takes its group's area colour ({@code area}, e.g. {@code home}) when it
+     * has a group (G9: hub names take their row colour).
+     */
+    Component textOr(Player viewer, String key, String fallbackKey, String id, String area) {
         if (core.messages().raw(TEXTS, key) == null) {
-            return text(viewer, fallbackKey, pre("name", TravelMenu.pretty(id)));
+            Component fallback = text(viewer, fallbackKey, pre("name", TravelMenu.pretty(id)));
+            if (area == null) {
+                return fallback;
+            }
+            return core.messages().parse(viewer, "<area:" + area + "><bold>" + net.kyori.adventure.text.minimessage.MiniMessage
+                    .miniMessage().escapeTags(TravelMenu.pretty(id))).decoration(TextDecoration.ITALIC, false);
         }
         return text(viewer, key);
     }
@@ -124,6 +148,14 @@ public final class Nav {
     }
 
     /** The locked "Coming soon" look: real icon, gray name with the suffix, the description, then a locked line. */
+    ItemStack comingSoon(Player viewer, String spec, Component name, List<Component> description) {
+        String plain = PlainTextComponentSerializer.plainText().serialize(name);
+        List<Component> lore = new ArrayList<>(description);
+        lore.addAll(lines(viewer, "coming-soon.lore"));
+        return icon(viewer, spec, text(viewer, "coming-soon.name", net.skybornmc.skyblock.common.text.Msg.p("name", plain)), lore);
+    }
+
+    /** Same with a plain item (help, staff and settings screens keep Material icons until their pass). */
     ItemStack comingSoon(Player viewer, Material icon, Component name, List<Component> description) {
         String plain = PlainTextComponentSerializer.plainText().serialize(name);
         List<Component> lore = new ArrayList<>(description);

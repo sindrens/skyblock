@@ -110,10 +110,14 @@ public final class MenusModule implements SkyblockModule {
         YamlConfiguration hub = YamlFiles.load(core.plugin(), "menu.yml", this::problem);
         if (hub != null) {
             migrateHub(hub);
-            nav.hub = ButtonLayout.hub(hub, this::problem);
-            nav.you = ButtonLayout.you(hub, this::problem);
+            migrateIcons(hub);
+            // I9: an icon is a vanilla item id (plain for everyone) or an icon catalogue key (our picture with the pack).
+            java.util.function.Predicate<String> icons = s -> ButtonLayout.isItem(s) || core.menus().icons().has(s);
+            Set<String> areas = core.style().colors().getOrDefault("area", java.util.Map.of()).keySet();
+            nav.hub = ButtonLayout.hub(hub, icons, areas.isEmpty() ? ButtonLayout.AREAS : areas, this::problem);
+            nav.you = ButtonLayout.you(hub, icons, this::problem);
             nav.staff = HubLayout.parse(hub, "staff-entries", this::problem);
-            nav.travel = WarpLayout.parse(hub, this::problem);
+            nav.travel = WarpLayout.parse(hub, icons, this::problem);
         }
         YamlConfiguration help = YamlFiles.load(core.plugin(), "help.yml", this::problem);
         if (help != null) {
@@ -143,6 +147,34 @@ public final class MenusModule implements SkyblockModule {
                         + "(GUI-2); the old file is kept as " + HubV2Migration.BACKUP);
             } catch (java.io.IOException e) {
                 problem("menu.yml: could not save the new /menu layout (it is active until the next restart): " + e.getMessage());
+            }
+        }
+    }
+
+    /** GUI-P2: icon keys, area colours instead of marker panes, centred You/Travel, the Staff tile (once; backup kept). */
+    private void migrateIcons(YamlConfiguration hub) {
+        if (!MenuV3Migration.needed(hub)) {
+            return;
+        }
+        java.io.File file = new java.io.File(core.plugin().getDataFolder(), "menu.yml");
+        java.io.File backup = new java.io.File(core.plugin().getDataFolder(), MenuV3Migration.BACKUP);
+        try {
+            if (file.exists() && !backup.exists()) {
+                java.nio.file.Files.copy(file.toPath(), backup.toPath());
+            }
+        } catch (java.io.IOException e) {
+            problem("menu.yml: could not keep a backup before the I9 menu update, the old layout stays for now: " + e.getMessage());
+            return;
+        }
+        if (MenuV3Migration.apply(hub)) {
+            try {
+                hub.save(file);
+                core.plugin().getLogger().info("menu.yml: switched to icon keys, area colours and centred You/Travel menus "
+                        + "(GUI-P2, I9); the old file is kept as " + MenuV3Migration.BACKUP);
+                core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.CONFIG, "menu_yml_p2_migrate",
+                        net.skybornmc.skyblock.common.audit.Actor.system(ID), java.util.Map.of("backup", MenuV3Migration.BACKUP));
+            } catch (java.io.IOException e) {
+                problem("menu.yml: could not save the I9 menu update (it is active until the next restart): " + e.getMessage());
             }
         }
     }

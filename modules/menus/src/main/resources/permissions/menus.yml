@@ -13,3 +13,6 @@ skyblock.settings:
 skyblock.staff.menu:
   description: Open the staff hub (/staff)
   default: op
+skyblock.staff.hub:
+  description: See the Staff tile on the /menu hub
+  default: op

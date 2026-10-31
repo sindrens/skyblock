@@ -20,14 +20,10 @@ menu-item:
 
 hub:
   title: "Menu"
-  info:
-    - "<c:text>Everything in four groups:"
-    - "<c:text>Play, Money, Power and More."
-    - "<c:text>Click your head for profiles,"
-    - "<c:text>titles, settings and the store."
+  # G9 / I9 tooltip: bold name in the row's area colour, one grey sentence, then the yellow action line.
   action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   locked: ["", "<c:error><sym:cross></c:error> <c:text>Your rank can't open this yet."]
-  # A button added in menu.yml without texts here: <name> = its id.
+  # A button added in menu.yml without texts here: <name> = its id (hub buttons take their group's area colour instead).
   fallback-name: "<c:flame><bold><name>"
   # Your head (slot 4). <money>, <crystals>, <playtime> are plain text.
   head:
@@ -39,73 +35,66 @@ hub:
       - "<c:bar>| </c:bar><c:text>Crystals: <cur:crystals><crystals>"
       - "<c:bar>| </c:bar><c:text>Playtime: <c:value><playtime>"
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for profiles, titles, settings"
-  groups:
-    play:
-      name: "<c:success><bold>Play"
-      lore: ["<c:text>Your island, the Depths", "<c:text>and getting around."]
-    money:
-      name: "<c:flame><bold>Money"
-      lore: ["<c:text>Sell, buy, save and trade."]
-    power:
-      name: "<c:enchant><bold>Power"
-      lore: ["<c:text>Tools, skills, enchants", "<c:text>and armor sets."]
-    more:
-      name: "<c:ember><bold>More"
-      lore: ["<c:text>Rewards and leaderboards."]
-  # Rewards button (owner G7). <count> = number ready, <list> = their names (sources below), plain text.
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  # Rewards button (owner G7, G9). <count> = number ready, <list> = their names (sources below), plain text. The count is
+  # also the stack size, with a glint. Nothing ready: the sentence and hub.action.
   rewards:
-    ready-name: "<c:flame><bold>Rewards</bold> <c:value>(<count> ready)"
-    ready: ["", "<c:flame><sym:dot></c:flame> <c:text>Ready: <c:value><list>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim everything"]
-    none: ["", "<c:muted>Nothing to claim right now.", "<c:muted>Playtime rewards pay by themselves.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open your rewards"]
+    ready: ["", "<c:flame>● <count> ready", "<c:muted><list>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
     nothing: "<prefix><c:muted><sym:time></c:muted> <c:text>Nothing to claim right now. Playtime rewards pay by themselves."
     sources:
       daily: "daily reward"
       vote: "vote"
       pass: "battle pass"
+  # Per button: name, lore (one sentence) and an optional own action line (else hub.action).
   buttons:
     home:
-      name: "<c:success><bold>Home"
-      lore: ["<c:text>Go to your island."]
+      name: "<area:home><bold>Home"
+      lore: ["<c:text>Teleport to your island."]
+      action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
     island:
-      name: "<c:success><bold>Island"
-      lore: ["<c:text>Members, upgrades, warps", "<c:text>and settings."]
+      name: "<area:home><bold>Island"
+      lore: ["<c:text>Manage your island."]
     depths:
-      name: "<c:info><bold>The Depths"
-      lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and crystals."]
+      name: "<area:home><bold>The Depths"
+      lore: ["<c:text>Mine, chop and fight for loot."]
+      action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
     travel:
-      name: "<c:success><bold>Travel"
-      lore: ["<c:text>Spawn, crates, market, Forge", "<c:text>and other islands."]
+      name: "<area:home><bold>Travel"
+      lore: ["<c:text>Spawn, markets and more."]
     sell:
-      name: "<c:flame><bold>Sell"
-      lore: ["<c:text>Sell your loot."]
+      name: "<area:money><bold>Sell"
+      lore: ["<c:text>Sell items for money."]
     shop:
-      name: "<c:flame><bold>Shop"
-      lore: ["<c:text>Blocks, farming and", "<c:text>utility items."]
+      name: "<area:money><bold>Shop"
+      lore: ["<c:text>Buy blocks and basics."]
     bank:
-      name: "<c:flame><bold>Bank"
-      lore: ["<c:text>Keep money safe and earn", "<c:text>interest, even offline."]
+      name: "<area:money><bold>Bank"
+      lore: ["<c:text>Keep your money safe."]
     auction:
-      name: "<c:flame><bold>Auction House"
-      lore: ["<c:text>Buy and sell items with", "<c:text>other players."]
+      name: "<area:money><bold>Auction House"
+      lore: ["<c:text>Trade with other players."]
     forge:
-      name: "<c:enchant><bold>Forge"
-      lore: ["<c:text>Craft and upgrade your tools."]
+      name: "<area:skills><bold>Forge"
+      lore: ["<c:text>Make better tools."]
     skills:
-      name: "<c:enchant><bold>Skills"
-      lore: ["<c:text>Level Mining, Foraging, Combat", "<c:text>and more for perks."]
+      name: "<area:skills><bold>Skills"
+      lore: ["<c:text>See your levels."]
     enchanter:
-      name: "<c:enchant><bold>Enchanter"
-      lore: ["<c:text>Add and upgrade enchants."]
+      name: "<area:skills><bold>Enchanter"
+      lore: ["<c:text>Upgrade your gear."]
     wardrobe:
-      name: "<c:enchant><bold>Wardrobe"
-      lore: ["<c:text>Sets and loadouts."]
+      name: "<area:skills><bold>Wardrobe"
+      lore: ["<c:text>Change how you look."]
     rewards:
-      name: "<c:flame><bold>Rewards"
-      lore: ["<c:text>Daily rewards and playtime."]
+      name: "<area:reward><bold>Rewards"
+      lore: ["<c:text>Daily and vote rewards."]
     top:
-      name: "<c:ember><bold>Top"
-      lore: ["<c:text>Best islands, richest", "<c:text>players and top skills."]
+      name: "<area:reward><bold>Top"
+      lore: ["<c:text>See the best islands and players."]
+    # Staff tile (slot 8): only staff with skyblock.staff.hub see it.
+    staff:
+      name: "<area:neutral><bold>Staff"
+      lore: ["<c:text>Staff tools."]
 
 # /menu → You (GUI-2): your head (display only), profiles, titles, achievements, settings, store, rules.
 # /menu → Top (GUI_DESIGN §7.6, GUI-4c): tabs, a podium for #1-#3 and #4-#10 below. The key fact is in the item name.
