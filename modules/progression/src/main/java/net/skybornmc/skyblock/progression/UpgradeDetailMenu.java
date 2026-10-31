@@ -39,12 +39,14 @@ final class UpgradeDetailMenu extends Menu {
     private final String upgradeId;
     private long bank;
     private boolean fetching;
+    /** PERF6: built items per slot, reused while their inputs are unchanged. */
+    private final ItemMemo<ItemStack> memo = new ItemMemo<>();
 
     UpgradeDetailMenu(UpgradeMenus menus, UUID islandId, String upgradeId, long bank) {
         this.menus = menus;
         this.islandId = islandId;
         this.upgradeId = upgradeId;
-        this.bank = bank;
+        this.bank = bank >= 0 ? bank : menus.upgrades().knownBank(islandId);
     }
 
     @Override
@@ -123,21 +125,27 @@ final class UpgradeDetailMenu extends Menu {
         }
         UpgradeManager upgrades = menus.upgrades();
         int current = upgrades.level(islandId, def.id());
-        set(SLOT_HEADER, MenuButton.display(menus.upgradeItem(service, viewer, islandId, def, bank, false)));
+        set(SLOT_HEADER, MenuButton.display(memo.get(SLOT_HEADER, menus.upgradeSignature(viewer, islandId, def, bank, false),
+                () -> service.mark(menus.upgradeItem(service, viewer, islandId, def, bank, false)))));
         List<TaskCatalog.TaskDef> taskDefs = current >= def.maxLevel() ? List.of() : upgrades.tasks().catalog().byUnlock(def.unlockKey(current + 1));
         for (int i = 0; i < taskDefs.size() && i < TASK_SLOTS.length; i++) {
-            set(TASK_SLOTS[i], task(taskDefs.get(i)));
+            set(TASK_SLOTS[i], task(TASK_SLOTS[i], taskDefs.get(i)));
         }
         for (int n = 1; n <= def.maxLevel() && n <= LEVEL_SLOTS.length; n++) {
-            set(LEVEL_SLOTS[n - 1], MenuButton.display(levelItem(def, n, current)));
+            int level = n;
+            String state = n <= current ? "bought" : n == current + 1 ? "next" : "later";
+            set(LEVEL_SLOTS[n - 1], MenuButton.display(memo.get(LEVEL_SLOTS[n - 1], UpgradeMenus.signature(menus.textsKey(), def, n, state,
+                    upgrades.effectInputs(def, n, islandId)), () -> service.mark(levelItem(def, level, current)))));
         }
         set(SLOT_BUY, buyButton(def, current));
     }
 
-    private MenuButton task(TaskCatalog.TaskDef taskDef) {
+    private MenuButton task(int slot, TaskCatalog.TaskDef taskDef) {
         TaskMenus book = menus.taskMenus();
-        boolean deliver = taskDef.info().type() == TaskType.DELIVER && !menus.upgrades().tasks().completed(islandId, taskDef.id());
-        ItemStack item = book.taskItem(service, viewer, islandId, taskDef, true);
+        boolean done = menus.upgrades().tasks().completed(islandId, taskDef.id());
+        boolean deliver = taskDef.info().type() == TaskType.DELIVER && !done;
+        ItemStack item = memo.get(slot, UpgradeMenus.signature(menus.textsKey(), taskDef, done, menus.upgrades().tasks().progressOf(islandId, taskDef)),
+                () -> service.mark(book.taskItem(service, viewer, islandId, taskDef, true)));
         if (!deliver) {
             return MenuButton.display(item);
         }
@@ -168,12 +176,14 @@ final class UpgradeDetailMenu extends Menu {
         UpgradeCatalog.Level next = def.level(current + 1);
         TagResolver[] p = {Msg.p("cost", Format.money(next == null ? 0 : next.cost())), Msg.p("island-level", next == null ? 0 : next.minIslandLevel()),
                 Msg.p("bank", bank < 0 ? "..." : Format.money(bank))};
+        Object signature = UpgradeMenus.signature(menus.textsKey(), def, current, status, bank);
         if (status != UpgradeRules.Status.READY) {
             String reason = UpgradeMenus.stateKey(status);
-            return MenuButton.display(service.item(new ItemStack(Material.GRAY_DYE), text("upgrades.detail.buy.name-locked", p),
-                    lines("upgrades.state." + reason, p)));
+            return MenuButton.display(memo.get(SLOT_BUY, signature, () -> service.mark(service.item(new ItemStack(Material.GRAY_DYE),
+                    text("upgrades.detail.buy.name-locked", p), lines("upgrades.state." + reason, p)))));
         }
-        ItemStack item = service.item(new ItemStack(Material.LIME_CONCRETE), text("upgrades.detail.buy.name", p), lines("upgrades.detail.buy.lore", p));
+        ItemStack item = memo.get(SLOT_BUY, signature, () -> service.mark(service.item(new ItemStack(Material.LIME_CONCRETE),
+                text("upgrades.detail.buy.name", p), lines("upgrades.detail.buy.lore", p))));
         return MenuButton.of(item, click -> {
             Menu back = parent();
             openChild(menus.confirm(service, viewer, islandId, def, bank, () -> upgrades.core().menus()

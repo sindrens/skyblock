@@ -175,6 +175,15 @@ final class OptionalSteps {
         }
         long now = System.currentTimeMillis();
         List<OptionalStep> steps = visible();
+        tickTargets = new java.util.HashMap<>();
+        try {
+            tickPlayers(steps, now);
+        } finally {
+            tickTargets = null;
+        }
+    }
+
+    private void tickPlayers(List<OptionalStep> steps, long now) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             Progress p = counting(player);
             if (p == null || module.cameras().running(player.getUniqueId())) {
@@ -219,8 +228,16 @@ final class OptionalSteps {
         }
     }
 
+    /**
+     * Targets resolved during the running {@link #tick()} (PERF6): each visit/near/tip target ({@code npc:}, {@code role:},
+     * {@code build:} spec parse + NPC directory lookup) is resolved once per check instead of once per online player and
+     * step. Null outside a tick, so other callers always resolve fresh.
+     */
+    private Map<String, Optional<Location>> tickTargets;
+
     private boolean near(Player player, String spec, double radius) {
-        Optional<Location> at = module.targets().resolve(spec, null);
+        Optional<Location> at = tickTargets == null ? module.targets().resolve(spec, null)
+                : tickTargets.computeIfAbsent(spec, k -> module.targets().resolve(k, null));
         return at.isPresent() && at.get().getWorld() != null && at.get().getWorld().equals(player.getWorld())
                 && at.get().distanceSquared(player.getLocation()) <= radius * radius;
     }

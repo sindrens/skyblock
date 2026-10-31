@@ -122,8 +122,8 @@ public final class RewardsModule implements SkyblockModule, Listener {
             activity.touch(p.getUniqueId());
             daily.load(p);
         }
-        long tick = 20L * settings.tickSeconds;
-        tasks.add(core.scheduler().repeat("rewards:playtime-tick", tick, tick, playtime::tick));
+        // PERF6: every tick, each player in their own slot once per playtime.tick-seconds (see PlaytimeService#tick).
+        tasks.add(core.scheduler().repeat("rewards:playtime-tick", 1L, 1L, playtime::tick));
         long save = 20L * settings.saveSeconds;
         tasks.add(core.scheduler().repeat("rewards:playtime-save", save, save, playtime::flushAll));
         long retry = 20L * settings.retrySeconds;

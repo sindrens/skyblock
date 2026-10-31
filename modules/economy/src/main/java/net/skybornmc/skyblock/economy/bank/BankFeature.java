@@ -357,8 +357,16 @@ public final class BankFeature implements Listener, BankService {
             return;
         }
         UUID key = profiles().profileKey(player);
-        settleAccount(AccountRef.bank(key));
-        islands().flatMap(i -> i.islandOfProfile(key)).ifPresent(info -> settleAccount(AccountRef.island(info.id())));
+        UUID island = islands().flatMap(i -> i.islandOfProfile(key)).map(IslandService.IslandInfo::id).orElse(null);
+        // PERF6: the main thread only reads the two keys. Starting the settle chains (database futures, their first-run
+        // class loading and lambda linking) happens off the main thread; the island terms still come from the main thread
+        // ("bank:island-terms"). Settling is idempotent per period, so nothing about what is paid changes.
+        core.scheduler().async(() -> {
+            settleAccount(AccountRef.bank(key));
+            if (island != null) {
+                settleAccount(AccountRef.island(island));
+            }
+        });
     }
 
     // ================================================================== island context (main thread)

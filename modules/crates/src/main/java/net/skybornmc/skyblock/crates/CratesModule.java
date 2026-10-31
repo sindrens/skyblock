@@ -519,7 +519,9 @@ public final class CratesModule implements SkyblockModule, Listener {
         Player player = event.getPlayer();
         core.scheduler().later("crates:view", settings.joinDelayTicks, () -> {
             if (player.isOnline() && ready) {
-                loadView(profiles().profileKey(player));
+                // PERF6: the read starts off the main thread; the view is still stored on the main thread.
+                UUID profile = profiles().profileKey(player);
+                core.scheduler().async(() -> loadView(profile));
             }
         });
     }
