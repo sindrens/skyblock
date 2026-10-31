@@ -190,7 +190,8 @@ final class LevelManager implements Listener {
             List<LevelStore.WorthRow> worth = store.loadWorth(c, season);
             List<LevelStore.BankRow> bank = new ArrayList<>(store.loadLatestBefore(c, season, now - window, 0));
             bank.addAll(store.loadBankSamples(c, season, now - window));
-            return new Object[]{levels, worth, bank};
+            // PERF11: the objects are built here, off the main thread; the main thread only hands them over.
+            return LevelLoad.prepare(levels, worth, bank);
         }).whenComplete((loaded, error) -> core.scheduler().main("progression-level-load", () -> {
             if (closed) {
                 return;
@@ -200,33 +201,20 @@ final class LevelManager implements Listener {
                 loadRetry = core.scheduler().later("progression-level-load-retry", 30 * 20L, this::load);
                 return;
             }
-            @SuppressWarnings("unchecked") List<LevelStore.LevelRow> levels = (List<LevelStore.LevelRow>) loaded[0];
-            @SuppressWarnings("unchecked") List<LevelStore.WorthRow> worth = (List<LevelStore.WorthRow>) loaded[1];
-            @SuppressWarnings("unchecked") List<LevelStore.BankRow> bank = (List<LevelStore.BankRow>) loaded[2];
-            for (LevelStore.LevelRow row : levels) {
-                State s = state(row.island());
-                s.points = new EnumMap<>(row.points());
-                s.total = row.total();
-                s.earned = row.earned();
-                s.level = row.level();
-                s.bestLevel = Math.max(row.bestLevel(), row.level());
-                s.reachedAt = row.reachedAt();
-                s.updatedAt = row.updatedAt();
-                s.scannedAt = row.scannedAt();
-                s.bankLow = row.bankLow();
-                s.blockWorth = row.blockWorth();
-                s.calculated = true;
-            }
-            blocks.restore(worth);
-            for (LevelStore.BankRow row : bank) {
-                banks.computeIfAbsent(row.island(), k -> new BankSamples()).restore(row.at(), row.balance());
-            }
+            LevelLoad.adoptStates(states, loaded.states());
+            blocks.adopt(loaded.worth());
+            LevelLoad.adoptBanks(banks, loaded.banks());
             ready = true;
-            core.plugin().getLogger().info("Progression: loaded " + levels.size() + " island levels (season " + season + ").");
+            core.plugin().getLogger().info("Progression: loaded " + loaded.levels() + " island levels (season " + season + ").");
             for (Player p : Bukkit.getOnlinePlayers()) {
                 joined(p);
             }
-            onLoaded.run();
+            // PERF11: the first board ranking (TopBoards copies every island's numbers) runs in the next tick, on its own.
+            core.scheduler().main("progression-level-loaded", () -> {
+                if (!closed) {
+                    onLoaded.run();
+                }
+            });
         }));
     }
 

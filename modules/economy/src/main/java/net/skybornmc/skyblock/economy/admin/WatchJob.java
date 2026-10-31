@@ -62,8 +62,12 @@ public final class WatchJob {
         this.owners = owners;
     }
 
-    /** Starts a run (or returns the one in progress). Completes exceptionally on a database error. */
-    public CompletableFuture<Result> run() {
+    /**
+     * Starts a run (or returns the one in progress). Completes exceptionally on a database error. Any thread
+     * (PERF11: the periodic trigger is an async task, the dashboard's run button is on the main thread); synchronized so
+     * a caller that finds a run going always gets that run's future.
+     */
+    public synchronized CompletableFuture<Result> run() {
         if (!running.compareAndSet(false, true)) {
             return current;
         }

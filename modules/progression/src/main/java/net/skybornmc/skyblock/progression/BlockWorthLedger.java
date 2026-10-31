@@ -123,6 +123,52 @@ final class BlockWorthLedger {
         c.spawners = Math.max(0, spawners);
     }
 
+    /**
+     * PERF11: stored rows grouped per island and chunk off the main thread; {@link #adopt} puts them back on the main
+     * thread with the same result as {@link #restore} per row.
+     */
+    static final class Restored {
+        private final Map<UUID, Map<Long, ChunkWorth>> islands = new HashMap<>();
+
+        int islands() {
+            return islands.size();
+        }
+    }
+
+    /** Any thread: the stored rows as chunk values (a later row of the same chunk wins, as with {@link #restore}). */
+    static Restored prepare(List<LevelStore.WorthRow> rows) {
+        Restored out = new Restored();
+        for (LevelStore.WorthRow r : rows) {
+            ChunkWorth c = out.islands.computeIfAbsent(r.island(), k -> new HashMap<>())
+                    .computeIfAbsent(chunkKey(r.chunkX(), r.chunkZ()), k -> new ChunkWorth());
+            c.blocks = Math.max(0, r.blocks());
+            c.spawners = Math.max(0, r.spawners());
+        }
+        return out;
+    }
+
+    /**
+     * Main thread: hands prepared rows over. An island not known yet takes the prepared chunks as they are; a known
+     * chunk keeps its object (and a running scan) and gets the stored blocks and spawners, like {@link #restore}.
+     * {@code restored} must not be used afterwards.
+     */
+    void adopt(Restored restored) {
+        for (Map.Entry<UUID, Map<Long, ChunkWorth>> e : restored.islands.entrySet()) {
+            Map<Long, ChunkWorth> known = islands.putIfAbsent(e.getKey(), e.getValue());
+            if (known == null) {
+                continue;
+            }
+            for (Map.Entry<Long, ChunkWorth> chunk : e.getValue().entrySet()) {
+                ChunkWorth c = known.putIfAbsent(chunk.getKey(), chunk.getValue());
+                if (c != null) {
+                    c.blocks = chunk.getValue().blocks;
+                    c.spawners = chunk.getValue().spawners;
+                }
+            }
+        }
+        restored.islands.clear();
+    }
+
     /** Money worth of the island's placed blocks and spawners. */
     double worth(UUID island) {
         Map<Long, ChunkWorth> m = islands.get(island);
