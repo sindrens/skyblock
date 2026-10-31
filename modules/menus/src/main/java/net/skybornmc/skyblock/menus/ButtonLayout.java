@@ -33,9 +33,11 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
     public static final String REWARDS = "rewards";
     public static final String SETTINGS = "settings";
     public static final String HELP = "help";
+    /** The Top screen (GUI-4c, GUI_DESIGN §7.6): island, weekly, money and skill boards. */
+    public static final String TOP = "top";
     /** Runs {@link Button#command()} as the player. */
     public static final String COMMAND = "command";
-    static final Set<String> ACTIONS = Set.of(YOU, TRAVEL, REWARDS, SETTINGS, HELP, COMMAND);
+    static final Set<String> ACTIONS = Set.of(YOU, TRAVEL, REWARDS, SETTINGS, HELP, TOP, COMMAND);
 
     /** What a button looks like for a viewer. */
     public enum State { HIDDEN, COMING_SOON, ACTIVE }

@@ -143,6 +143,7 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
             case ButtonLayout.TRAVEL -> openChild(new TravelMenu(nav));
             case ButtonLayout.SETTINGS -> openChild(new SettingsMenu(nav));
             case ButtonLayout.HELP -> openChild(new HelpMenu(nav));
+            case ButtonLayout.TOP -> openChild(new TopMenu(nav));
             default -> service.navigate(player, this, () -> player.performCommand(button.command()));
         }
     }

@@ -79,6 +79,7 @@ final class YouMenu extends net.skybornmc.skyblock.common.menu.Menu {
             case ButtonLayout.SETTINGS -> openChild(new SettingsMenu(nav));
             case ButtonLayout.HELP -> openChild(new HelpMenu(nav));
             case ButtonLayout.TRAVEL -> openChild(new TravelMenu(nav));
+            case ButtonLayout.TOP -> openChild(new TopMenu(nav));
             case ButtonLayout.COMMAND -> service.navigate(player, this, () -> player.performCommand(button.command()));
             default -> back(); // you / rewards belong to the hub: lead back there
         }

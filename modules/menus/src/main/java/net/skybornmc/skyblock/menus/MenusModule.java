@@ -103,6 +103,8 @@ public final class MenusModule implements SkyblockModule {
 
     private void loadFiles() {
         nav.showUnbuilt = config.hubShowUnbuilt;
+        nav.topCacheSeconds = config.topCacheSeconds;
+        nav.tops.clear();
         YamlConfiguration hub = YamlFiles.load(core.plugin(), "menu.yml", this::problem);
         if (hub != null) {
             migrateHub(hub);
