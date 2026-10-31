@@ -313,6 +313,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // Rewards (PHASE-10 M10.6 daily calendar + playtime; M10.5 voting later): needs economy; hands keys out through
         // CrateKeys (crates, above) and reads box, boosters, enchants, cosmetics, islands, skills, afk, profiles (optional).
         modules.register(new net.skybornmc.skyblock.rewards.RewardsModule(core));
+        // Quests (PHASE-10 M10.7): needs economy; keys through CrateKeys, pass XP through PassXp; reads depths (events),
+        // islands, skills, tools, enchants, sell, tutorial and profiles services (all optional).
+        modules.register(new net.skybornmc.skyblock.quests.QuestsModule(core));
     }
 
     public ModuleRegistry modules() {

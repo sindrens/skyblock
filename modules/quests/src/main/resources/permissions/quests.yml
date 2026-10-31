@@ -1,0 +1,9 @@
+# Permissions of the quests module (PHASE-10 M10.7). Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/quests.txt. Commands: docs/commands/quests.md.
+skyblock.quests.use:
+  description: Open /quests (also the Quest Master NPC), do daily and weekly quests and help with island missions
+  default: true
+skyblock.quests.admin:
+  description: Staff tools /quests admin view|reset|complete (P10-41; every use is logged)
+  default: op

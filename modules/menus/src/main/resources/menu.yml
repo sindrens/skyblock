@@ -44,7 +44,7 @@ hub-groups:
   power: {mark: purple_stained_glass_pane}
   more:  {mark: orange_stained_glass_pane}
 
-# /menu → You (GUI_DESIGN §7.2, owner G6: the store lives here). 3 rows, slots 10-16. Same keys as the hub (no group).
+# /menu → You (GUI_DESIGN §7.2, owner G6: the store lives here; M10.7: Quests on 16). 3 rows, slots 10-16. Same keys as the hub (no group).
 # Texts: messages/navigation.yml → you.buttons.<id>.
 you:
   profiles:     {slot: 10, icon: armor_stand,       command: "profiles",     service: ProfileService}
@@ -53,6 +53,7 @@ you:
   settings:     {slot: 13, icon: comparator,        action: settings}
   store:        {slot: 14, icon: diamond,           command: "store"}
   rules:        {slot: 15, icon: lectern,           command: "rules"}
+  quests:       {slot: 16, icon: writable_book,     command: "quests",       service: QuestService}
 
 # /menu → Travel (GUI_DESIGN §7.3; replaces the UX3 warps menu). 3 rows, slots 10-16. One click teleports with the /spawn
 # warmup (reason: dungeon = the /dungeon warmup); locked places explain why (e.g. Depths tiers). A place that does not

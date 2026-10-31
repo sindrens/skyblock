@@ -1,0 +1,33 @@
+# Quests (`modules/quests`)
+
+Daily and weekly quests per profile and weekly island missions per island (PHASE-10-REWARDS.md **M10.7**, P10-21, P10-22, RX19, RX23; staff tools P10-41). Each profile has its own quests (nothing moves between your own profiles, P4). Settings: `quests.yml`; texts: `messages/quests.yml`. Reload: `/skyblock reload quests`.
+
+| Command | What it does | Permission | Status |
+|---|---|---|---|
+| `/quests` | Opens the quests menu with three tabs that switch in place: **Daily** (3 quests, new at 00:00 Oslo), **Weekly** (5 quests, new Monday 00:00) and **Island** (3 missions for your island this week). Each quest shows its goal, the Depths tier for mine/chop/kill, a progress bar and its rewards; slot 40 shows the all-done key (or the helper rule) and the reset countdown. Click an open daily quest to swap it (1 free swap per day, with a confirm). Also opened by the **Quest Master NPC** (role `quests`; sneak-click keeps the help text), `/menu` → You → Quests and `/help quests`. No arguments | `skyblock.quests.use` (everyone) | ✅ |
+| `/quests admin view <player>` | Chat summary of an online player's daily, weekly and island quests (progress, swaps, bonus) | `skyblock.quests.admin` (admin) | ✅ |
+| `/quests admin reset <player> <daily\|weekly\|island>` | Throws away that board's current quests and rolls new ones (audited `staff_reset`) | `skyblock.quests.admin` (admin) | ✅ |
+| `/quests admin complete <player> <daily\|weekly\|island> <quest>` | Finishes quest 1-7 of that board now; the normal rewards follow (audited `staff_complete`). For testing and support | `skyblock.quests.admin` (admin) | ✅ |
+
+Tab completion: online players, the three boards, quest numbers 1-5.
+
+**Boards**
+- **Daily** (P10-21): 3 quests per profile per day (`daily.count`), each sized for ~12 minutes of play at your tier (`daily.minutes`). Each pays **3 minutes of income** at your tier (`daily.money-minutes`, REF(t) from `pouch.ref-per-minute`), a crystal pouch (`daily.crystals` 20 x 1.3^(tier-1)) and **100 pass XP** (once the battle pass exists). **All 3 done = 1 tradeable Cinder key** (`daily.bonus-crate`, key source `quest_daily`). **1 free swap** per day (`daily.free-rerolls`).
+- **Weekly** (P10-22): 5 quests per profile (reset Monday 00:00 Oslo), ~45 minutes each; **8 minutes of income** + crystals (base 60) + **400 pass XP**; **all 5 = 1 tradeable Blaze key** (`quest_weekly`). No swaps.
+- **Island missions** (RX23, CR1): 3 per island per week, progress shared by the island's stored members (**never coop players**). When a mission is done, every member with at least **5%** of it (`island.helper-min-percent`) gets crystals (base 60 x 1.3^(tier-1)) + **150 pass XP**. No money, no key.
+
+**Only live content** (the pool lines in `daily.pool`, `weekly.pool`, `island.pool`, one `<type> [target]` per line): mine / chop / kill in a Depths tier (only when the depths module runs, the tutorial opened the Depths for you and that wing has an open tier), sell for an amount (sell service), gain tool levels and forge (you carry a living tool), add or raise an enchant (enchants module + a tool), visit islands and like islands (islands module + the tutorial's island step; likes only after 1 hour of playtime, `rules.like-min-playtime-minutes`). A set never has the same type twice or both visit and like. Island work, fishing and bosses join when Phase 7-9 build them.
+
+**Targets** scale with you: mine/chop/kill = the regular's rate per played minute at that Depths tier (`rates.mine|forest|combat`, ECONOMY_BALANCE §3) x the board's minutes, counted in your best open tier **minus 1** or deeper (`rates.tier-offset`), rounded to a round number; sell = REF(t) per minute x minutes x 0.8 (`rates.sell-share`); the others use the fixed number of their pool line. Targets and rewards are fixed when a quest is rolled.
+
+**Progress** (server events only, never the client): Depths breaks after the fast-break check (Depths blocks are per player, never placed, so placed blocks never count; logs = chop), Depths kills only for players who earned the mob's rewards (own kill or a mini-boss damage share; no island, stack or spawner kills), real sales (`ItemsSoldEvent`; never the AFK pool, `rules.excluded-sell-sources`), tool level-ups, and the new `GameActionEvent` (common) for forge upgrades, enchants added or raised, the first visit of the day to another player's island, and likes. Creative and spectator never count. An action bar shows every 25% (`notify.step-percent`); a finished quest shows a title, a chat line with the rewards and a sound. The placeholder `%quest_next%` holds the open quest closest to done (`Mine blocks 230/400`) for a scoreboard line (not added to the bundled layouts: they are at their 10-line limit).
+
+**Rules (crash-safe, never double)**
+- A finished quest is paid in **one database transaction**: the quest is marked done only if it is still open (same quest instance), money and crystals go through the ledger (reason `quest_reward`, idempotency key per quest instance and currency), the all-done bonus is claimed once per set (the set row is locked, so two quests finishing at the same moment still pay one key) and keys / pass XP are written as **pending** grant rows. All of it commits or nothing does; a failed payout is tried again every 30 s.
+- Hand-outs after the commit: `pending` → `sending` → `delivered` (keys through `CrateKeys`, pass XP through `PassXp`); a missing module leaves the row pending (tried again every 5 minutes and at the next start); a stop in the middle marks the row **review** (`grant_review` in /logs). Lost, never doubled.
+- Progress is saved every 30 s (`save.seconds`, only upwards); a crash loses at most that much progress, never a reward. A swap is one transaction too (the free-swap count and the open quest must be unchanged).
+- A deleted profile loses its quests; a removed island loses its missions.
+
+**Audit** (category `quests`, `/logs`): `quests_rolled`, `missions_rolled`, `quest_swapped`, `quest_done` (money, crystals, pass XP, bonus), `mission_done` (helpers), `grant_delivered`, `grant_review`, `staff_reset`, `staff_complete`, `profile_reset`, `island_reset`. The economy writes `quest_reward` ledger rows; crates logs the keys.
+
+**For other modules:** `QuestService` (common/quest: open the menu, daily quests done today) and `GameActionEvent` (common/quest: forge, enchant, visit, like; fired by tools, enchants and islands; the battle pass can count them too).

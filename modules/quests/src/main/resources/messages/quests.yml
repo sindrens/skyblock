@@ -1,0 +1,201 @@
+# Quests (PHASE-10 M10.7): /quests, daily and weekly quests, island missions. MiniMessage + style tags (style.yml).
+# Reload: /skyblock reload quests
+# Placeholders are plain text unless noted: <target> and <progress> (already formatted: 1,500 or $12,000 for sell quests),
+# <tier> (Depths tier), <percent>, <time> (like 5h 12m), <crate> (crate name). <quest> is a full component (the quest's name).
+
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was lost, so just try again."
+busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, the last change is still saving."
+disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Quests are turned off right now."
+
+# One line per quest type. name = the goal, name-one = the goal when the target is 1 (optional), where = the Depths tier
+# line (mine, chop, kill), short = the action bar and scoreboard name.
+quest:
+  mine:
+    name: "<c:value>Mine <target> blocks"
+    where: "<c:bar>| </c:bar><c:text>In <c:info>Mine Tier <tier></c:info> <c:text>or deeper"
+    short: "Mine blocks"
+  chop:
+    name: "<c:value>Chop <target> logs"
+    where: "<c:bar>| </c:bar><c:text>In <c:info>Forest Tier <tier></c:info> <c:text>or deeper"
+    short: "Chop logs"
+  kill:
+    name: "<c:value>Kill <target> Depths mobs"
+    where: "<c:bar>| </c:bar><c:text>In <c:info>Combat Tier <tier></c:info> <c:text>or deeper"
+    short: "Kill mobs"
+  sell:
+    name: "<c:value>Sell items for <cur:money><target></cur:money>"
+    short: "Sell items"
+  tool_levels:
+    name: "<c:value>Gain <target> tool levels"
+    name-one: "<c:value>Gain a tool level"
+    short: "Tool levels"
+  forge:
+    name: "<c:value>Forge <target> tools"
+    name-one: "<c:value>Forge a tool"
+    short: "Forge"
+  enchant:
+    name: "<c:value>Add or raise <target> enchants"
+    name-one: "<c:value>Add or raise an enchant"
+    short: "Enchant"
+  visit:
+    name: "<c:value>Visit <target> islands"
+    name-one: "<c:value>Visit an island"
+    short: "Visit islands"
+  like:
+    name: "<c:value>Like <target> islands"
+    name-one: "<c:value>Like an island"
+    short: "Like islands"
+
+# Progress dots in the menu: 10 dots, done ones in the first look.
+bar:
+  filled: "<c:flame>●</c:flame>"
+  empty: "<c:locked>●</c:locked>"
+
+# One reward line (menu lore and chat after a finished quest).
+reward:
+  money: "  <c:muted>+</c:muted> <cur:money><amount>"
+  crystals: "  <c:muted>+</c:muted> <cur:crystals><amount>"
+  pass-xp: "  <c:muted>+</c:muted> <c:value><amount> pass XP"
+  pass-xp-soon: "  <c:muted>+ <amount> pass XP (when the battle pass opens)"
+
+# Action bar at every step (25, 50, 75%). <quest> = the short name.
+step:
+  personal: "<c:flame><sym:bullet></c:flame> <c:text><quest> <c:value><percent>%</c:value> <c:muted>(<progress>/<target>)"
+  island: "<c:flame><sym:bullet></c:flame> <c:text>Island: <quest> <c:value><percent>%</c:value> <c:muted>(<progress>/<target>)"
+
+# A finished quest: a screen title, a chat line, the rewards, one sound.
+done:
+  screen:
+    title: "<c:success><sym:check> Quest done!"
+    subtitle: "<quest>"
+    fade-in: 5
+    stay: 40
+    fade-out: 15
+  island-screen:
+    title: "<c:success><sym:check> Island mission done!"
+    subtitle: "<quest>"
+    fade-in: 5
+    stay: 40
+    fade-out: 15
+  daily: "<prefix><c:success><sym:check></c:success> <c:text>Daily quest done (<c:value><done>/<total></c:value><c:text>): <quest><c:text>. Rewards:"
+  weekly: "<prefix><c:success><sym:check></c:success> <c:text>Weekly quest done (<c:value><done>/<total></c:value><c:text>): <quest><c:text>. Rewards:"
+  all-daily: "<prefix><c:flame><sym:star></c:flame> <c:text>All <total> daily quests done: <c:value>+1 <crate> Key</c:value> <c:muted>(tradeable)</c:muted><c:text>. Open it in</c:text> <c:action>/crates</c:action><c:text>."
+  all-weekly: "<prefix><c:flame><sym:star></c:flame> <c:text>All <total> weekly quests done: <c:value>+1 <crate> Key</c:value> <c:muted>(tradeable)</c:muted><c:text>. Open it in</c:text> <c:action>/crates</c:action><c:text>."
+  island: "<prefix><c:success><sym:check></c:success> <c:text>Island mission done: <quest><c:text>. <c:value><helpers></c:value> <c:text>helpers paid. Your share:"
+  island-not-helped: "<prefix><c:success><sym:check></c:success> <c:text>Island mission done: <quest><c:text>. Help with at least <c:value><min>%</c:value> <c:text>of the next one to get a share."
+
+# Swapping a daily quest (free swaps per day).
+swap:
+  crumb: "Swap this quest?"
+  details:
+    - "<quest>"
+    - "<c:text>Progress <c:value><progress>/<target></c:value> <c:text>is lost."
+    - "<c:text>You get a new quest of another type."
+    - "<c:text>Free swaps left after this: <c:value><left>"
+  swapped: "<prefix><c:success><sym:check></c:success> <c:text>New quest: <quest><c:text>."
+  gone: "<prefix><c:error><sym:cross></c:error> <c:text>Your daily quests are still loading. Try again in a moment."
+  done: "<prefix><c:error><sym:cross></c:error> <c:text>That quest is done already, so it can't be swapped."
+  none-left: "<prefix><c:error><sym:cross></c:error> <c:text>No free swaps left today. New quests come at 00:00 (Oslo time)."
+  no-other: "<prefix><c:error><sym:cross></c:error> <c:text>There is no other quest you can do yet. Unlock more of the Depths first."
+  changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your quests just changed. Have a look and try again."
+
+# The scoreboard placeholder %quest_next% (the open quest closest to done). Plain text.
+placeholder:
+  next: "<quest> <progress>/<target>"
+
+menu:
+  title: "Quests"
+  disabled:
+    name: "<c:muted>Quests are turned off"
+    lore: ["<c:text>Staff turned quests off for now."]
+  board-off:
+    name: "<c:muted>No quests on this board"
+    lore: ["<c:text>This board is turned off for now."]
+  nothing-yet:
+    name: "<c:muted>No quests for you yet"
+    lore: ["<c:text>Reach the Depths first (finish the tutorial)."]
+  island:
+    no-island:
+      name: "<c:muted>You have no island"
+      lore: ["<c:text>Island missions are for island members. Start one with</c:text> <c:action>/is</c:action><c:text>."]
+  tabs:
+    daily:
+      crumb: "Daily"
+      name: "<c:flame><bold>Daily"
+      lore: ["<c:text>3 quests a day, new at 00:00."]
+    weekly:
+      crumb: "Weekly"
+      name: "<c:flame><bold>Weekly"
+      lore: ["<c:text>5 bigger quests, new every Monday."]
+    island:
+      crumb: "Island"
+      name: "<c:flame><bold>Island"
+      lore: ["<c:text>Missions you do together", "<c:text>with your island members."]
+  info:
+    daily:
+      - "<c:text>Quests sized to your tier. They"
+      - "<c:text>pay by themselves when done."
+      - "<c:text>Finish all for a tradeable key."
+      - "<c:text>Each profile has its own quests."
+    weekly:
+      - "<c:text>Bigger quests for the whole week."
+      - "<c:text>They pay by themselves when done."
+      - "<c:text>Finish all for a tradeable key."
+    island:
+      - "<c:text>Every member's work counts."
+      - "<c:text>Everyone who helped gets the"
+      - "<c:text>reward. Coop players don't count."
+  quest:
+    name: "<quest>"
+    done-name: "<c:success><sym:check></c:success> <quest>"
+    done-lore: ["<c:bar>| </c:bar><c:success>Done! The rewards were paid."]
+    progress: "<c:bar>| </c:bar><c:text>Progress: <c:value><progress>/<target>"
+    bar: "<c:bar>| </c:bar><bar> <c:value><percent>%"
+    rewards: "<bold><c:header>| Rewards"
+    rewards-island: "<bold><c:header>| Each helper gets"
+    swap: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to swap it <c:muted>(<left> free today)"]
+    no-swap: ["<c:muted>No free swaps left today."]
+  summary:
+    daily-name: "<c:flame><sym:star></c:flame> <c:value>Daily quests <done>/<total>"
+    weekly-name: "<c:flame><sym:star></c:flame> <c:value>Weekly quests <done>/<total>"
+    island-name: "<c:flame><sym:star></c:flame> <c:value>Island missions"
+    bonus:
+      - "<c:text>Finish all <total>: <c:value>1 <crate> Key"
+      - "<c:muted>(tradeable)"
+      - ""
+      - "<c:text>New quests in <c:value><time>"
+    bonus-paid:
+      - "<c:success><sym:check></c:success> <c:text>All done! Your <c:value><crate> Key</c:value> <c:text>is in</c:text> <c:action>/crates</c:action><c:text>."
+      - ""
+      - "<c:text>New quests in <c:value><time>"
+    no-bonus:
+      - "<c:text>Done: <c:value><done>/<total>"
+      - ""
+      - "<c:text>New quests in <c:value><time>"
+    island:
+      - "<c:text>Done: <c:value><done>/<total>"
+      - "<c:text>Everyone with <c:value><min>%</c:value> <c:text>or more of a"
+      - "<c:text>mission gets the reward."
+      - ""
+      - "<c:text>New missions in <c:value><time>"
+
+crates:
+  ember: "Ember"
+  cinder: "Cinder"
+  blaze: "Blaze"
+  inferno: "Inferno"
+  phoenix: "Phoenix"
+  eclipse: "Eclipse"
+
+# /quests admin (staff, P10-41).
+admin:
+  view:
+    header: "<c:header><bold>| Quests of <player></bold> <c:muted>(profile <profile>)"
+    board: "<c:bar>|</c:bar> <c:text><board>: <c:value><done>/<total></c:value> <c:muted>done <sym:dot> swaps <swaps> <sym:dot> bonus <bonus>"
+    none: "<c:bar>|</c:bar> <c:text><board>: <c:muted>not loaded"
+    quest: "  <c:muted><slot>.</c:muted> <quest> <c:muted><progress>/<target>"
+    quest-done: "  <c:muted><slot>.</c:muted> <c:success><sym:check></c:success> <quest>"
+  reset: "<prefix><c:success><sym:check></c:success> <c:text>Rolled new <c:value><board></c:value> <c:text>quests for <c:value><player></c:value><c:text>."
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is not a member of an island."
+  no-quest: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has no open <board> quest <c:value><slot></c:value><c:text>."
+  completed: "<prefix><c:success><sym:check></c:success> <c:text>Finished <board> quest <c:value><slot></c:value> <c:text>of <c:value><player></c:value><c:text>. The rewards follow."

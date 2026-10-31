@@ -39,6 +39,7 @@ dependencies {
     implementation(project(":modules:boosters"))
     implementation(project(":modules:progression"))
     implementation(project(":modules:rewards"))
+    implementation(project(":modules:quests"))
 }
 
 tasks {

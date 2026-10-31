@@ -1,0 +1,6 @@
+# LuckPerms grants for the quests module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/quests/src/main/resources/permissions/quests.yml. One console command per line; # = comment.
+# skyblock.quests.use (/quests, the Quest Master NPC, quest progress) defaults to true, so players need no grant.
+# Staff see every roll, swap, finished quest, island mission and hand-out in /logs (category quests:
+# skyblock.staff.logs.category.quests, granted to mod in logs.txt).
+lp group admin permission set skyblock.quests.admin true
