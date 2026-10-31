@@ -292,3 +292,57 @@ decisions:
     file: social.yml
     path: dm.new-player-protection
     value: true
+
+  - id: "F2-1"
+    answer: "Diminishing spawner output per island and tier (counted across all blocks): spawners 1-16 work at 100%"
+    module: stacking
+    file: stacking.yml
+    path: spawners.efficiency
+    item: "1-16:100"
+
+  - id: "F2-2"
+    answer: "Diminishing spawner output: spawners 17-32 of a tier on one island work at 60%"
+    module: stacking
+    file: stacking.yml
+    path: spawners.efficiency
+    item: "17-32:60"
+
+  - id: "F2-3"
+    answer: "Diminishing spawner output: spawners 33-64 of a tier on one island work at 35%"
+    module: stacking
+    file: stacking.yml
+    path: spawners.efficiency
+    item: "33-64:35"
+
+  - id: "F2-4"
+    answer: "Diminishing spawner output: spawners 65-128 of a tier on one island work at 20%"
+    module: stacking
+    file: stacking.yml
+    path: spawners.efficiency
+    item: "65-128:20"
+
+  - id: "F2-5"
+    answer: "Diminishing spawner output: spawner 129 and up of a tier on one island work at 10%"
+    module: stacking
+    file: stacking.yml
+    path: spawners.efficiency
+    item: "129+:10"
+
+  - id: "F2-payback-good"
+    answer: "Shop spawner payback shows green up to 100 h"
+    module: shop
+    file: shop-settings.yml
+    path: spawners.payback-good-hours
+    value: 100
+
+  - id: "F2-payback-ok"
+    answer: "Shop spawner payback shows yellow up to 300 h, red 'Poor deal' above"
+    module: shop
+    file: shop-settings.yml
+    path: spawners.payback-ok-hours
+    value: 300
+
+  - id: "642"
+    answer: "Replaced by F2: no +10% shop price per owned spawner; tier 1-2 spawners have a fixed /shop price (117k / 213k), the brake is the diminishing output"
+    module: shop
+    check: false

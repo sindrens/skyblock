@@ -57,6 +57,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     private Perf perf;
     private Set<String> worlds = Set.of();
     private SpawnerTiers tiers;
+    private SpawnerEfficiency efficiency = SpawnerEfficiency.defaults();
     private List<SpawnerTiers.RareDrop> rareDrops = List.of();
     private MobStacker mobs;
     private ItemStacker items;
@@ -109,6 +110,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         core.configs().load(config);
         core.messages().load(ID);
         applyConfig();
+        spawners.recount(); // F2: the tier lists may have changed
         hoppers.loadAll(); // the counter may have been switched on, or the worlds changed
     }
 
@@ -143,6 +145,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         List<String> problems = new ArrayList<>();
         tiers = SpawnerTiers.load(List.of(config.tier1, config.tier2, config.tier3, config.tier4, config.tier5),
                 id -> isMobType(entityType(id)), problems::add);
+        efficiency = SpawnerEfficiency.parse(config.spawnerEfficiency, problems::add);
         rareDrops = SpawnerTiers.rareDrops(config.rareDrops, id -> isMobType(entityType(id)),
                 id -> Material.matchMaterial(id) != null && Material.matchMaterial(id).isItem(), problems::add);
         if (config.spawnerStackStart > config.spawnerStackMax) {
@@ -251,6 +254,10 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         return tiers;
     }
 
+    SpawnerEfficiency efficiency() {
+        return efficiency;
+    }
+
     List<SpawnerTiers.RareDrop> rareDrops() {
         return rareDrops;
     }
@@ -354,6 +361,30 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
             return List.of();
         }
         return t.types().stream().filter(type -> t.tier(type).orElse(0) == tier).toList();
+    }
+
+    /**
+     * Owner F2: how well the next spawner of {@code type} works on the player's island (their active profile's island),
+     * from the in-memory counts of that tier. 100 without an island (the first spawner always works fully).
+     */
+    @Override
+    public int nextSpawnerOutputPercent(Player player, String type) {
+        SpawnerTiers t = tiers;
+        SpawnerManager s = spawners;
+        if (t == null || s == null || player == null || type == null) {
+            return 100;
+        }
+        int tier = t.tier(type).orElse(0);
+        java.util.UUID island = islands().flatMap(i -> i.islandOf(player.getUniqueId())).map(IslandService.IslandInfo::id).orElse(null);
+        return nextPercent(efficiency, island == null ? 0 : s.islandCount(island, tier), tier);
+    }
+
+    /** The shop hook's value: the next spawner's percent, rounded; 100 for an unknown tier. */
+    static int nextPercent(SpawnerEfficiency curve, long owned, int tier) {
+        if (tier < 1) {
+            return 100;
+        }
+        return (int) Math.round(curve.nextPercent(owned));
     }
 
     @Override

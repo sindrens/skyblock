@@ -182,4 +182,18 @@ public final class ShopMath {
         }
         return OptionalDouble.of(price / (incomePerHour * (outputPercent / 100.0)));
     }
+
+    /** Owner F2: how good a spawner buy is, by its payback time (green, yellow, red "Poor deal"). */
+    public enum Payback {
+        GOOD, OK, POOR
+    }
+
+    /** GOOD up to {@code goodHours}, OK up to {@code okHours}, POOR above (or when it never pays back). */
+    public static Payback payback(OptionalDouble hours, long goodHours, long okHours) {
+        if (hours.isEmpty()) {
+            return Payback.POOR;
+        }
+        double h = hours.getAsDouble();
+        return h <= goodHours ? Payback.GOOD : h <= Math.max(goodHours, okHours) ? Payback.OK : Payback.POOR;
+    }
 }

@@ -50,7 +50,9 @@ import java.util.logging.Level;
  * <p>Spawning: vanilla spawning is switched off for these blocks; a priority queue holds the next spawn tick of every
  * spawner, so a tick only touches the spawners that are due (no scans). A due spawner runs when a player is within
  * {@code spawners.activation-range}, or when the island has fuel and no member is online; it then adds
- * {@code mobs-per-spawner x stack x rate mastery} mobs into stacks next to it (light, space and blocks ignored).</p>
+ * {@code mobs-per-spawner x stack x rate mastery x E(n)/n} mobs into stacks next to it (light, space and blocks ignored),
+ * where {@code E(n)/n} is the owner F2 diminishing output for the n spawners of that tier on the island
+ * ({@link SpawnerEfficiency}, counts in {@link SpawnerCounts}, kept in memory).</p>
  */
 final class SpawnerManager implements Listener {
 
@@ -98,6 +100,8 @@ final class SpawnerManager implements Listener {
     private final SpawnerStore store = new SpawnerStore();
     private final Map<Pos, Spawner> spawners = new HashMap<>();
     private final PriorityQueue<Due> queue = new PriorityQueue<>((a, b) -> Long.compare(a.tick(), b.tick()));
+    /** Owner F2: spawners per island and tier (diminishing output), kept up to date by every change below. */
+    private final SpawnerCounts counts = new SpawnerCounts();
 
     SpawnerManager(StackingModule module) {
         this.module = module;
@@ -113,6 +117,7 @@ final class SpawnerManager implements Listener {
             Spawner sp = new Spawner(new Pos(row.world(), row.x(), row.y(), row.z()), SpawnerTiers.normalize(row.type()), row.amount(),
                     row.island(), row.placedBy(), row.placedAt());
             spawners.put(sp.pos, sp);
+            count(sp, sp.amount);
             schedule(sp, now + ThreadLocalRandom.current().nextInt(20, 200)); // spread the first spawns
         }
         module.core().plugin().getLogger().info("Stacking: " + rows.size() + " stacked spawner block(s) loaded.");
@@ -134,6 +139,56 @@ final class SpawnerManager implements Listener {
             }
         }
         return sum;
+    }
+
+    // ================================================================== F2: diminishing output per island and tier
+
+    /** Tier (1-5) of a spawner's type, 0 when the type is no longer in the tier lists (then it isn't counted). */
+    int tierOf(Spawner sp) {
+        return module.tiers().tier(sp.type).orElse(0);
+    }
+
+    /** Counts {@code delta} spawners of {@code sp}'s island and tier (only while the spawner is live in memory). */
+    private void count(Spawner sp, long delta) {
+        count(counts, sp, tierOf(sp), delta);
+    }
+
+    /** F2 bookkeeping, pure: a removed spawner no longer counts (its spawners were subtracted or cleared already). */
+    static void count(SpawnerCounts counts, Spawner sp, int tier, long delta) {
+        if (!sp.removed && sp.island != null) {
+            counts.add(sp.island, tier, delta);
+        }
+    }
+
+    /** Rebuilds the counts from the spawners in memory (after a reload: the tier lists may have changed). */
+    static void rebuild(SpawnerCounts counts, Iterable<Spawner> spawners, java.util.function.ToIntFunction<String> tier) {
+        counts.clear();
+        for (Spawner sp : spawners) {
+            count(counts, sp, tier.applyAsInt(sp.type), sp.amount);
+        }
+    }
+
+    void recount() {
+        rebuild(counts, spawners.values(), type -> module.tiers().tier(type).orElse(0));
+    }
+
+    /** Spawners of {@code tier} on {@code island} (all blocks; outposts later). */
+    long islandCount(UUID island, int tier) {
+        return counts.get(island, tier);
+    }
+
+    /** Spawners of this spawner's tier on its island. */
+    long islandCount(Spawner sp) {
+        return counts.get(sp.island, tierOf(sp));
+    }
+
+    /** F2: share of full output each spawner of this block runs at, {@code E(n)/n} for its island and tier. */
+    double efficiencyFactor(Spawner sp) {
+        return sp.island == null ? 1.0 : module.efficiency().factor(islandCount(sp));
+    }
+
+    SpawnerCounts counts() {
+        return counts;
     }
 
     int count(Block block) {
@@ -162,8 +217,14 @@ final class SpawnerManager implements Listener {
         return StackMath.stackLimit(mastery, module.config().spawnerStackStart, module.config().spawnerStackMax);
     }
 
-    double rateMultiplier(Spawner sp) {
+    /** The island's Spawner Rate mastery (the menu's "Speed"). */
+    double masteryMultiplier(Spawner sp) {
         return sp.island == null ? 1.0 : module.islands().map(s -> s.spawnerRateMultiplier(sp.island)).orElse(1.0);
+    }
+
+    /** Everything that scales this block's output: Spawner Rate mastery x F2 diminishing output ({@code E(n)/n}). */
+    double rateMultiplier(Spawner sp) {
+        return masteryMultiplier(sp) * efficiencyFactor(sp);
     }
 
     /** Mobs per minute at the average interval (menu). */
@@ -274,6 +335,7 @@ final class SpawnerManager implements Listener {
      * taken (no dupe), and staff can give the spawners back from that table and the {@code spawner_frozen} audit row.
      */
     private void orphan(Spawner sp, String reason) {
+        count(sp, -sp.amount); // frozen spawners don't work, so they don't count
         sp.removed = true;
         spawners.remove(sp.pos, sp);
         Pos p = sp.pos;
@@ -323,6 +385,7 @@ final class SpawnerManager implements Listener {
                 inMemory++;
             }
         }
+        counts.clearIsland(island);
         int dropped = inMemory;
         then(module.core().database().transaction(c -> store.clearIsland(c, island)), cleared -> {
             if (cleared.rows().isEmpty() && cleared.frozenRows() == 0) {
@@ -485,6 +548,7 @@ final class SpawnerManager implements Listener {
         Spawner sp = new Spawner(pos, type.get(), 1, island, player.getUniqueId(), now);
         sp.busy = true;
         spawners.put(pos, sp);
+        count(sp, 1); // counted at once (a pending placement doesn't spawn); undone if the placement fails
         // Creative placing uses no item, so nothing is handed back if saving fails.
         ItemStack refund = player.getGameMode() == GameMode.CREATIVE ? null : item.asOne();
         UUID playerId = player.getUniqueId();
@@ -496,6 +560,7 @@ final class SpawnerManager implements Listener {
         module.core().scheduler().later("stacking-spawner-place", 1L, () -> {
             Block b = block.getWorld().getBlockAt(pos.x(), pos.y(), pos.z());
             if (b.getType() != Material.SPAWNER || sp.removed) {
+                count(sp, -1);
                 sp.removed = true;
                 spawners.remove(pos, sp);
                 return; // cancelled after us: the item was never used
@@ -526,6 +591,7 @@ final class SpawnerManager implements Listener {
     }
 
     private void failPlace(Spawner sp, Block block, ItemStack refund, UUID playerId) {
+        count(sp, -sp.amount);
         sp.removed = true;
         spawners.remove(sp.pos, sp);
         Block b = block.getWorld().getBlockAt(sp.pos.x(), sp.pos.y(), sp.pos.z());
@@ -590,6 +656,7 @@ final class SpawnerManager implements Listener {
                         }
                         return;
                     }
+                    count(sp, -take);
                     sp.amount = after;
                     World world = Bukkit.getWorld(p.world());
                     Location at = world == null ? null : p.center(world);
@@ -704,6 +771,7 @@ final class SpawnerManager implements Listener {
                         return;
                     }
                     sp.busy = false;
+                    count(sp, taken);
                     sp.amount = after;
                     World world = Bukkit.getWorld(p.world());
                     audit("spawner_add", Actor.player(playerId, name), sp, before, after, world == null ? null : p.center(world), Map.of());

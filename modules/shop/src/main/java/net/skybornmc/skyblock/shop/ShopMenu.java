@@ -187,8 +187,15 @@ final class ShopMenu extends PagedMenu<ShopCatalog.Item> {
             int percent = module.nextOutputPercent(viewer, item);
             info.row(module.raw("lore.next-works"), LoreBuilder.fill(module.raw("lore.percent"), Map.of("percent", String.valueOf(percent))));
             OptionalDouble hours = ShopMath.paybackHours(item.price(), module.incomePerHour(item), percent);
-            info.row(module.raw("lore.payback"), hours.isPresent()
-                    ? LoreBuilder.fill(module.raw("lore.hours"), Map.of("hours", Format.number(Math.max(1, Math.round(hours.getAsDouble())))))
+            // Owner F2: green up to 100 h, yellow up to 300 h, red "Poor deal" above (shop-settings.yml spawners.payback-*).
+            ShopMath.Payback grade = ShopMath.payback(hours, module.settings.paybackGoodHours, module.settings.paybackOkHours);
+            String hoursText = hours.isPresent() ? Format.number(Math.max(1, Math.round(hours.getAsDouble()))) : "";
+            info.rowMini(LoreBuilder.escape(module.raw("lore.payback")), hours.isPresent()
+                    ? LoreBuilder.fill(module.raw(switch (grade) {
+                        case GOOD -> "lore.payback-good";
+                        case OK -> "lore.payback-ok";
+                        case POOR -> "lore.payback-poor";
+                    }), Map.of("hours", hoursText))
                     : module.raw("lore.never"));
         }
         if (action) {

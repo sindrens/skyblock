@@ -121,6 +121,10 @@ menu:
       - "<c:text>Next spawn in <c:value><next>s"
       - "<c:text>Status <status>"
       - ""
+      - "<c:text>Tier <tier> on this island: <c:value><tier-count>"
+      - "<c:text>= <c:value><effective></c:value> <c:text>at full output."
+      - "<c:text>Next one works at <c:value><next-percent>%</c:value><c:text>."
+      - ""
       - "<c:muted>Runs while a player is within"
       - "<c:muted><range> blocks. Light is not needed."
   add-one:

@@ -100,8 +100,12 @@ lore:
   next-works: "Next works at"
   percent: "{percent}%"
   payback: "Pays back in"
-  hours: "about {hours} h"
-  never: "never"
+  never: "<c:error>never <sym:dot> Poor deal"
+  # Owner F2 payback colors (these three are MiniMessage; {hours} is filled in). Thresholds: shop-settings.yml
+  # spawners.payback-good-hours / payback-ok-hours.
+  payback-good: "<c:success>about {hours} h"
+  payback-ok: "<c:warning>about {hours} h"
+  payback-poor: "<c:error>{hours} h <sym:dot> Poor deal"
   action-input: "CLICK"
   action: "to choose an amount"
 

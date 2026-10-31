@@ -71,7 +71,7 @@ final class SpawnerMenu extends Menu {
      * fixed buttons and six items with 11 placeholders each) every second and after every click. Now only the info item
      * (next spawn, status) is redrawn each second; the buttons only when one of these values changed.
      */
-    record Shown(int amount, int limit, int carried, int tier, String rate, String multiplier) {
+    record Shown(int amount, int limit, int carried, int tier, String rate, String multiplier, long tierCount) {
     }
 
     private Shown shown;
@@ -80,7 +80,7 @@ final class SpawnerMenu extends Menu {
         SpawnerManager manager = module.spawners();
         return new Shown(spawner.amount, manager.limit(spawner), SpawnerManager.countInInventory(viewer.getInventory(), spawner.type),
                 module.tiers().tier(spawner.type).orElse(0), SpawnerManager.number(manager.mobsPerMinute(spawner)),
-                SpawnerManager.number(manager.rateMultiplier(spawner)));
+                SpawnerManager.number(manager.masteryMultiplier(spawner)), manager.islandCount(spawner));
     }
 
     /** Redraws what changed: everything when the buttons changed, else only the info item. */
@@ -110,9 +110,18 @@ final class SpawnerMenu extends Menu {
                 Msg.p("carried", Format.number(s.carried())),
                 Msg.p("range", module.config().activationRange),
                 Msg.p("absolute-max", Format.number(module.config().spawnerStackMax)),
+                // Owner F2: "Tier 2 on this island: 38 = 27.7 at full output. Next one works at 35%."
+                Msg.p("tier-count", Format.number(s.tierCount())),
+                Msg.p("effective", SpawnerManager.number(module.efficiency().effective(s.tierCount()))),
+                Msg.p("next-percent", percent(module.efficiency().nextPercent(s.tierCount()))),
                 Msg.c("status", service.text(viewer, StackingModule.ID, spawner.busy ? "menu.status.busy"
                         : manager.isActive(spawner) ? "menu.status.active" : "menu.status.paused"))
         };
+    }
+
+    /** 35 → "35", 12.5 → "12.5". */
+    static String percent(double value) {
+        return value == Math.rint(value) ? String.valueOf((long) value) : String.format(java.util.Locale.ROOT, "%.1f", value);
     }
 
     private org.bukkit.inventory.ItemStack info(TagResolver[] p) {

@@ -396,8 +396,29 @@ SP_MOBS_PER_SPAWN = 1.0   # stacking.yml -> spawners.mobs-per-spawner (BAL2 reco
 SP_INTERVAL_MIN, SP_INTERVAL_MAX = 10, 40   # stacking.yml -> spawners.min/max-interval-seconds
 # Shop price of the next spawner of tier s = SP_PRICE[s] * SP_G^(spawners of that tier the island already owns).
 # SP_PRICE[s] = SP_PRICE_H production hours of that spawner's own output (at the recommended rate, no multipliers).
+# Owner F2 (SPAWN-F2): the price is FIXED (SP_G = 1, answer 642 dropped); the brake is the diminishing output below.
 SP_PRICE_H = 60
-SP_G = 1.10
+SP_G = 1.0
+
+
+def _sp_bands(lines):
+    """stacking.yml spawners.efficiency lines ("1-16:100", "129+:10") -> [(from, to or None, share)]."""
+    out = []
+    for line in lines:
+        rng, pct_ = line.split(":")
+        if rng.endswith("+"):
+            out.append((int(rng[:-1]), None, float(pct_) / 100))
+        else:
+            a, b = rng.split("-")
+            out.append((int(a), int(b), float(pct_) / 100))
+    return out
+
+
+# Owner F2: the k-th spawner of one tier on an island works at the share of its band; E(n) = sum of the bands.
+SP_EFF = _sp_bands(config_strings("stacking.yml", "spawners.efficiency")
+                   or ["1-16:100", "17-32:60", "33-64:35", "65-128:20", "129+:10"])
+SP_EFF_OFF = [(1, None, 1.0)]
+SP_SHOP_MAX_TIER = 2      # shop-settings.yml spawners.max-tier (owner S5): tier 3-5 only from drops, crates, Black Market
 SP_DROP_PER_H = 0.10      # spawners found per played hour (Depths drops, crates), best tier in reach
 
 # Island level upgrades (no income, give island level points, REVIEW A1): 12 upgrades x 12 levels,
@@ -855,6 +876,25 @@ def sp_price(s: int, owned: int) -> float:
     return SP_PRICE[s - 1] * SP_G ** owned
 
 
+def sp_eff_total(n: int) -> float:
+    """E(n): spawners' worth of output that n spawners of one tier on one island make (owner F2)."""
+    total = 0.0
+    for a, b, share in SP_EFF:
+        if n < a:
+            break
+        total += ((n if b is None else min(n, b)) - a + 1) * share
+    return total
+
+
+def sp_eff_next(owned: int) -> float:
+    """Share of full output the next spawner works at when the island owns `owned` of that tier."""
+    k = owned + 1
+    for a, b, share in SP_EFF:
+        if b is None or k <= b:
+            return share
+    return SP_EFF[-1][2]
+
+
 _BANK_YML = None
 
 
@@ -1145,7 +1185,7 @@ class Player:
     def spawner_rate(self) -> float:
         """Money per production hour from stacked spawners."""
         mobs = sp_mobs_per_hour()
-        return (sum(n * mobs * sp_value(s + 1) for s, n in enumerate(self.spawners)) * DYN_ISLAND
+        return (sum(sp_eff_total(n) * mobs * sp_value(s + 1) for s, n in enumerate(self.spawners)) * DYN_ISLAND
                 * self.sell_mult(False))
 
     def spawner_count(self) -> int:
@@ -1241,11 +1281,12 @@ class Player:
                     and self.pay("production", prod_cost(self.pl + 1))):
                 self.pl += 1
                 continue
-            # 4. Spawners (best tier in reach) while they pay back and fit in the stacks
-            s = self.best_spawner_tier()
+            # 4. Spawners (best tier in reach the /shop sells, F2: tier 1-2 at a fixed price) while they pay back and fit
+            s = min(self.best_spawner_tier(), SP_SHOP_MAX_TIER)
             owned = self.spawners[s - 1]
             if self.spawner_count() < self.stack_limit() * SP_BLOCKS:
-                gain = sp_mobs_per_hour() * sp_value(s) * DYN_ISLAND * self.sell_mult(False) * self.a["prod_hours"]
+                gain = (sp_mobs_per_hour() * sp_value(s) * DYN_ISLAND * self.sell_mult(False) * self.a["prod_hours"]
+                        * sp_eff_next(owned))
                 if sp_price(s, owned) <= gain * PAYBACK_DAYS and self.pay("spawners", sp_price(s, owned)):
                     self.spawners[s - 1] += 1
                     continue
@@ -1626,8 +1667,11 @@ def t_params():
         ("Production level", f"C_p(k) = {money(CP1)} x {CPG}^(k-1)", f"max {PL_PER_TIER} x tier; bought if payback <= {PAYBACK_DAYS:g} days"),
         ("Spawner output", f"{SP_MOBS_PER_SPAWN:g} mob per spawner every {SP_INTERVAL_MIN}-{SP_INTERVAL_MAX} s = {sp_mobs_per_hour():.0f} mobs/h",
          f"each mob {SP_LOOT} items worth {ISL_PRICE} x P(2s-1)"),
-        ("Spawner price", f"base(s) x {SP_G}^(spawners of that tier on the island)",
+        ("Spawner price", "fixed base(s) (owner F2; no rise per owned spawner)" if SP_G == 1 else
+         f"base(s) x {SP_G}^(spawners of that tier on the island)",
          f"base = {SP_PRICE_H} production h of its own output: {' / '.join(money(x) for x in SP_PRICE)}"),
+        ("Spawner output per island", "E(n) = sum of the bands for n spawners of one tier",
+         ", ".join(f"{a}{'+' if b is None else '-' + str(b)}: {share * 100:g}%" for a, b, share in SP_EFF)),
         ("Spawners found", f"{SP_DROP_PER_H:g} per played hour", "Depths drops + crates, best tier in reach"),
         ("Spawner stack limit", " -> ".join(str(v) for _, v in STACK_STEPS), "per block, by Spawner Stack Limit level"),
         ("Level upgrade", f"C_u(u,n) = W_u x {LV_H} x {LV_HG}^(n-1) x REF(n)", f"12 upgrades x {LV_MAX} levels, level n needs tier n"),
@@ -1920,11 +1964,14 @@ def t_spawners():
         per_h_cfg = sp_mobs_per_hour(cfg) * sp_value(s) * DYN_ISLAND if isinstance(cfg, float) else None
         rows.append([s, SPAWNER_EXAMPLES[s - 1], SPAWNER_SOURCE[s - 1], SPAWNER_GATE[s - 1], money(sp_value(s)),
                      money(per_h) + "/h", money(per_h_cfg) + "/h" if per_h_cfg else "?",
-                     money(sp_price(s, 0)), money(sp_price(s, 9)), money(sp_price(s, 24))])
+                     money(sp_price(s, 0))] + [f"{sp_price(s, k - 1) / (per_h * sp_eff_next(k - 1)):.0f} h" for k in SP_PAYBACK_AT])
     return table(["Spawner tier", "Types (stacking.yml)", "Source", "Model: in reach at Depths tier", "Loot per mob",
                   f"One spawner, {SP_MOBS_PER_SPAWN:g} mob/spawn (recommended)",
                   f"One spawner, config today ({cfg:g} mobs/spawn)" if isinstance(cfg, float) else "Config today",
-                  "Price: first of this tier", "10th", "25th"], rows)
+                  "Price (fixed, F2)"] + [f"Pays back: no. {k} of the tier ({sp_eff_next(k - 1) * 100:g}%)" for k in SP_PAYBACK_AT], rows)
+
+
+SP_PAYBACK_AT = [1, 17, 33, 65, 129]   # first spawner of each F2 band (payback in production hours, no multipliers)
 
 
 @register("stack_steps")
@@ -2302,7 +2349,8 @@ def sensitivity_cases():
     return [
         ("Baseline (this sheet)", {}),
         (f"Spawners at today's config ({cfg:g} mobs per spawn)", {"SP_MOBS_PER_SPAWN": cfg}),
-        ("Shop spawner price does not rise per owned spawner", {"SP_G": 1.0}),
+        ("No diminishing spawner output (fixed price, every spawner 100%)", {"SP_EFF": SP_EFF_OFF}),
+        ("Old plan 642: +10% price per owned spawner, no curve", {"SP_G": 1.10, "SP_EFF": SP_EFF_OFF}),
         ("No mastery (no endless sink)", {"MASTERY": False}),
         ("Boosters always on (personal + global)", {"GLOBAL_BOOST_UPTIME": 1.0,
                                                     "ARCHETYPES": {k: dict(v, boost=1.0) for k, v in ARCHETYPES.items()}}),
@@ -2855,8 +2903,9 @@ def t_config_changes():
                  "watch, not applied: with Vein Rend II-III a regular gets 1.35-1.9 books/h at tiers 10-12 (target 1-1.4); "
                  "the plan counts area blocks at yield on purpose (open question)"])
     planned = [
-        ("`shop.yml` (M3.5, new)", "`spawners.price-growth-per-owned`", "not built", f"{SP_G}",
-         f"price of a shop spawner rises {(SP_G - 1) * 100:.0f}% per spawner of that tier the island owns; without it spawners compound (§4.3)"),
+        ("`stacking.yml` (F2)", "`spawners.efficiency`", "built (SPAWN-F2)",
+         " / ".join(f"{a}{'+' if b is None else '-' + str(b)}:{share * 100:g}" for a, b, share in SP_EFF),
+         "diminishing output per island and tier replaces the +10% price per owned spawner (642); without a brake spawners compound (§4.3)"),
         ("`shop.yml` (M3.5, new)", "`spawners.price.tier-1..2`", "not built", f"{money(SP_PRICE[0])} / {money(SP_PRICE[1])}",
          "first spawner of that tier"),
         ("`boosters.yml` (new)", "`sell.personal-percent` / `sell.global-percent`", "not built",
