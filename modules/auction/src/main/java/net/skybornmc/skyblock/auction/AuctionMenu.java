@@ -243,11 +243,12 @@ final class AuctionMenu extends PagedMenu<Listing> {
     }
 
     private void askSearch() {
-        service.prompt(viewer, AuctionModule.ID, "search.ask", module.config.searchMaxLength, text -> {
+        // GUI-4c: Bedrock players type in a popup with the on-screen keyboard (MenuService.input), Java players in chat.
+        service.input(viewer, AuctionModule.ID, "search.ask", module.config.searchMaxLength, search, text -> {
             search = text.strip();
             page(0);
             service.open(viewer, this);
-        }, () -> service.open(viewer, this));
+        }, () -> service.open(viewer, this), Msg.p("max", module.config.searchMaxLength));
     }
 
     private void sellHeld() {
