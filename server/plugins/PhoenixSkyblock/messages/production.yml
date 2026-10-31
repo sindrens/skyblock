@@ -72,3 +72,19 @@ cell:
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use Fuel Cells while frozen."
   staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use Fuel Cells in staff mode."
   switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
+
+# Custom island generators (M7.2, generators.yml). Item texts use {rarity} and {name} (filled in by the item).
+generator:
+  cant-place: "<prefix><c:error><sym:cross></c:error> <c:text>Island ores only come from your generator. You can't place this block on an island."
+  item:
+    name: "<rarity:{rarity}>{name}"
+    subtitle: "<c:muted>Island ore"
+    description: "Mined from your island generator. Sell it with /sell."
+  # Custom ores of generators.yml (ores with item=): name and an optional own description.
+  items:
+    ashstone:
+      name: "Ashstone"
+      description: "A rare ore from a level 9+ island generator. Sell it with /sell."
+    emberite:
+      name: "Emberite"
+      description: "The rarest island ore, from a level 10 generator. Sell it with /sell."

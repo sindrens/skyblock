@@ -1,6 +1,6 @@
 # Production (`modules/production`)
 
-Island production (PHASE-7-PRODUCTION.md). Built so far: **M7.1 Island Fuel**. Settings: `production.yml`; texts: `messages/production.yml`. Reload: `/skyblock reload production` (Fuel Cell item look: restart).
+Island production (PHASE-7-PRODUCTION.md). Built so far: **M7.1 Island Fuel**, **M7.2 custom generators**. Settings: `production.yml` (fuel), `generators.yml` (generators); texts: `messages/production.yml`. Reload: `/skyblock reload production` (Fuel Cell item look: restart).
 
 | Command | What it does | Permission | Status |
 |---|---|---|---|
@@ -23,3 +23,14 @@ No commands yet, so there is nothing to tab-complete.
 - Tanks live in memory and are saved every `fuel.save-seconds` (30) and on stop; the time since the last save burns at the next start (nobody was active while the server was down). Every write (saves, grants, cells) runs in one ordered chain.
 - Grants: one transaction writes the current value, then `UPDATE … SET fuel_ms = LEAST(fuel_ms + ?, cap) WHERE … AND fuel_ms < cap`. Cells: `… SET fuel_ms = fuel_ms + ? WHERE … AND fuel_ms + ? <= cap` plus the used-cell row (`production_used_cells`); a cell that doesn't fit rolls back completely.
 - Audit (category `production`, `/logs`): `fuel_add` (island, minutes, source, actor, tank after, cell id) and `fuel_asleep`.
+
+**Custom generators (M7.2, owner V4, PD6–PD9). Switch: OFF by default** (`generators.yml → enabled: false`, own switch next to Island Fuel); `/skyblock reload production` applies it.
+- **What it does:** any lava + water generator on an island that forms **cobblestone or stone** (`form-blocks`) forms a block rolled from the island's **Generator level** table instead (`levels`, 0–10, weights from the plan: level 1 = 90% cobble + 10% coal … level 10 = 40% cobble, 6% each vanilla ore, 7% Ashstone, 5% Emberite). The "cobble" share keeps the block that formed. Basalt and obsidian stay vanilla. Level 0 = vanilla.
+- **Generator level** = the **Generator** upgrade (`/is upgrade` → Production; "Coming soon" while generators are off, live while on). Staff test switch: `test.level-override` (-1 = off) gives every island that level.
+- **Drops:** vanilla ore blocks drop their vanilla items at the island prices of `sell.yml` (`categories.ores`). The two **custom ores** (ores with `item=`): **Ashstone** (gilded blackstone, level 9+, `custom:ashstone` $180) and **Emberite** (nether gold ore, level 10, `custom:emberite` $396), custom items of type material (`custom-items.island-ores` in `sell.yml`, so `/sell` and the satchel price them). A custom ore block on an island **always** drops exactly one custom item (Silk Touch too, no Fortune), players can't place those blocks on islands (creative excepted), explosions and mobs don't break them. This guard runs even while generators are off.
+- **XP:** no Mining skill XP (M4.5). **Mining pillar XP at `pillar-xp.percent` (25%)** of the matching Depths ore (`depths-xp`: coal 1 … Ashstone 28 = amethyst, Emberite 40 = quartz) for blocks the generator **really made** (remembered per island, `memory.per-island` 512 positions, a restart forgets) and only for members on their own island in survival (coop players and visitors: nothing). Island stats `GENERATOR_OUTPUT` and the wardrobe's island-ore set XP keep counting ore results.
+- **Books:** every member's generator ore fires `IslandGatherEvent` (player, block, island, ore, tier, generator-made; `common/production`). The enchants module rolls Mining books on it at `enchanter.yml → drops.island-generator-percent` (25%) of a Depths ore action, custom pickaxe and generator-made blocks only. Area enchants never run on islands (they only react to Depths blocks).
+- **Island Fuel:** while Island Fuel is on, an **Asleep** island forms plain cobblestone (`fuel.plain-when-asleep`); a member's action wakes it at once.
+- **Lag guard:** at most `lag-guard.max-rolls-per-second` (40) rolls per island per second, then the plain block.
+- **Hooks:** `GeneratorService` (common, published while on: `generatorLevel`, `maxGeneratorLevel`), `GeneratorOutput` (blocks a generator can form, for later listeners), `IslandGatherEvent`.
+- No new commands (nothing to tab-complete); no database tables (memory only).

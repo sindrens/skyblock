@@ -45,6 +45,9 @@ import java.util.concurrent.Executor;
  *   <li>Fuel gauge in the island menu, placeholders {@code island_fuel} / {@code island_fuel_state}, join and asleep
  *       messages.</li>
  * </ul>
+ * <b>M7.2 custom generators</b> ({@link Generators}, {@code generators.yml}, own switch {@code enabled: false} by default):
+ * lava + water on an island forms ores by the island's Generator level; Ashstone / Emberite custom ores; Mining pillar XP at
+ * 25% for generator-made ores; {@code IslandGatherEvent} for enchant books.
  * <b>Off by default</b> ({@code fuel.enabled: false}): then nothing is published and nothing changes anywhere; the Fuel
  * Cell item stays defined so existing cells keep their look ("Island Fuel is off" when used).
  */
@@ -57,8 +60,10 @@ public final class ProductionModule implements SkyblockModule, Listener {
     final Core core;
     final ModuleMessages msg;
     final ProductionSettings settings = new ProductionSettings();
+    final GeneratorSettings generatorSettings = new GeneratorSettings();
     private final ActivityTracker activity;
     private final FuelCells cells;
+    private final Generators generators;
     private FuelEngine engine;
     private Executor main;
     private Scheduler.Task checkTask;
@@ -74,6 +79,7 @@ public final class ProductionModule implements SkyblockModule, Listener {
             }
         });
         this.cells = new FuelCells(this);
+        this.generators = new Generators(this, generatorSettings);
     }
 
     @Override
@@ -104,6 +110,8 @@ public final class ProductionModule implements SkyblockModule, Listener {
         } else {
             core.plugin().getLogger().info("Production: Island Fuel is off (production.yml → fuel.enabled: false). Nothing is paused.");
         }
+        core.configs().load(generatorSettings);
+        generators.apply();
     }
 
     @Override
@@ -119,10 +127,13 @@ public final class ProductionModule implements SkyblockModule, Listener {
         } else if (running) {
             scheduleTasks();
         }
+        core.configs().load(generatorSettings);
+        generators.apply();
     }
 
     @Override
     public void disable() {
+        generators.shutdown();
         stop();
         HandlerList.unregisterAll(this);
         cells.unregister();
@@ -319,6 +330,7 @@ public final class ProductionModule implements SkyblockModule, Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onIslandRemoved(IslandRemovedEvent event) {
+        generators.islandRemoved(event.islandId());
         FuelEngine e = engine;
         if (e != null) {
             e.removed(event.islandId());

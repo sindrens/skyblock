@@ -11,8 +11,9 @@
 #   tab:      island | economy | depths | production
 #   icon:     item id; order: position in its tab (lower first)
 #   effect:   what the value does (fixed per upgrade, see below); effects whose feature does not exist yet show
-#             "Coming soon" and can't be bought: island-vault, fuel-tank, mob-loot, crop-growth, harvest-yield,
-#             generator, and mine-fortune / lumberjack / xp-boost until the Depths roll and skill XP read them
+#             "Coming soon" and can't be bought: island-vault, mob-loot, crop-growth, harvest-yield, and
+#             mine-fortune / lumberjack / xp-boost until the Depths roll and skill XP read them; fuel-tank while
+#             Island Fuel is off (production.yml), generator while custom generators are off (generators.yml)
 #   enabled:  false = not shown, not bought (bought levels keep working)
 #   levels:   one entry per level, in order:
 #     tier:            task tier of the level (island level points: upgrades-settings.yml -> level-points)

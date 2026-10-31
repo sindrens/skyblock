@@ -39,7 +39,7 @@ class ProductionMessagesTest {
         Path src = Path.of("src/main/java/net/skybornmc/skyblock/production");
         Set<String> missing = new TreeSet<>();
         try (Stream<Path> files = Files.list(src)) {
-            for (Path file : files.filter(f -> f.toString().endsWith(".java") && !f.endsWith("ProductionSettings.java")).toList()) {
+            for (Path file : files.filter(f -> f.toString().endsWith(".java") && !f.toString().endsWith("Settings.java")).toList()) {
                 Matcher m = LITERAL.matcher(Files.readString(file));
                 while (m.find()) {
                     String key = m.group(1);
@@ -63,6 +63,17 @@ class ProductionMessagesTest {
             assertTrue(yml.contains("gauge.state-" + s.key()), "gauge.state-" + s.key());
         }
         assertTrue(yml.contains("gauge.state-never"));
+    }
+
+    @Test
+    void everyCustomOreHasAName() {
+        YamlConfiguration yml = yml();
+        GeneratorSettings s = new GeneratorSettings();
+        for (GeneratorTable.Ore ore : GeneratorTable.parse(s.ores, s.levels, p -> { }).ores().values()) {
+            if (ore.custom()) {
+                assertTrue(yml.contains("generator.items." + ore.id() + ".name"), ore.id());
+            }
+        }
     }
 
     @Test

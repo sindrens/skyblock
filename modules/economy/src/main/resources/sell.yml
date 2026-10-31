@@ -90,6 +90,11 @@ categories:
     iron_ingot: 18
 
 custom-items:
+  # Custom island generator ores (PHASE-7 M7.2, generators.yml; ECONOMY_BALANCE §4.1: half the Depths ore one tier up:
+  # Ashstone = half of Depths amethyst, Emberite = half of Depths quartz). Only an island generator at level 9 / 10 makes them.
+  island-ores:
+    ashstone: 180
+    emberite: 396
   # Depths mine drops (ECONOMY_BALANCE §3.1). The ids are proposals for M4.9 (drops are not built yet); M4.9 renames them
   # here if it picks other ids. Vanilla coal from an island generator is NOT these items.
   depths-mine:
