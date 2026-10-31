@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -85,27 +86,54 @@ final class DailyService {
 
     /** Claims today's reward for the player's active profile (menu click, main thread). */
     void claim(Player p) {
+        claim(p, false);
+    }
+
+    /** What a claim ended with (for the /menu Rewards button, GUI-2). */
+    enum Outcome { CLAIMED, ALREADY, FAILED }
+
+    /**
+     * @param inline one-line text of what was paid (empty unless {@link Outcome#CLAIMED})
+     */
+    record Result(Outcome outcome, int day, int streak, net.kyori.adventure.text.Component inline) {
+        static Result of(Outcome outcome) {
+            return new Result(outcome, 0, 0, net.kyori.adventure.text.Component.empty());
+        }
+    }
+
+    /**
+     * Claims today's reward (main thread). The future completes on the main thread. Problems are always told to the
+     * player; {@code quiet} (the /menu Rewards button) leaves out the "already claimed" note and the per-reward lines,
+     * because the caller shows one summary line instead.
+     */
+    CompletableFuture<Result> claim(Player p, boolean quiet) {
+        CompletableFuture<Result> done = new CompletableFuture<>();
         if (!m.settings.calendarEnabled) {
             m.msg.send(p, "daily.disabled");
-            return;
+            done.complete(Result.of(Outcome.FAILED));
+            return done;
         }
         if (!p.hasPermission(RewardsModule.PERM_DAILY)) {
             m.msg.send(p, "no-permission");
-            return;
+            done.complete(Result.of(Outcome.FAILED));
+            return done;
         }
         Optional<String> problem = m.problem(p);
         if (problem.isPresent()) {
             m.msg.send(p, problem.get());
-            return;
+            done.complete(Result.of(Outcome.FAILED));
+            return done;
         }
         if (ItemBox.refuses(m.core.services(), p)) {
             m.msg.send(p, "box-full");
-            return;
+            done.complete(Result.of(Outcome.FAILED));
+            return done;
         }
         UUID player = p.getUniqueId();
         if (!busy.add(player)) {
             m.msg.send(p, "busy");
-            return;
+            done.complete(Result.of(Outcome.FAILED));
+            return done;
         }
         UUID profile = m.profiles().profileKey(p);
         m.core.database().async(c -> RewardStore.calendar(c, profile)).whenCompleteAsync((before, e) -> {
@@ -113,17 +141,20 @@ final class DailyService {
                 busy.remove(player);
                 m.core.plugin().getLogger().log(Level.WARNING, "Rewards: could not read the calendar of profile " + profile, Database.cause(e));
                 m.msg.send(p, "error");
+                done.complete(Result.of(Outcome.FAILED));
                 return;
             }
             if (!p.isOnline() || !m.profiles().profileKey(p).equals(profile) || m.problem(p).isPresent()) {
                 busy.remove(player);
+                done.complete(Result.of(Outcome.FAILED));
                 return;
             }
-            commit(p, profile, before);
+            commit(p, profile, before, quiet, done);
         }, m.main());
+        return done;
     }
 
-    private void commit(Player p, UUID profile, Optional<DailyRules.State> before) {
+    private void commit(Player p, UUID profile, Optional<DailyRules.State> before, boolean quiet, CompletableFuture<Result> done) {
         UUID player = p.getUniqueId();
         long now = System.currentTimeMillis();
         int today = DailyRules.today(now, m.zone());
@@ -133,8 +164,11 @@ final class DailyService {
         Optional<DailyRules.Claim> claim = DailyRules.claim(state, today, calendar.size());
         if (claim.isEmpty()) {
             busy.remove(player);
-            m.msg.send(p, "daily.already", Msg.p("time", Format.duration(DailyRules.untilReset(now, m.zone()))));
+            if (!quiet) {
+                m.msg.send(p, "daily.already", Msg.p("time", Format.duration(DailyRules.untilReset(now, m.zone()))));
+            }
             m.refreshMenus(profile);
+            done.complete(Result.of(Outcome.ALREADY));
             return;
         }
         DailyRules.Claim c = claim.get();
@@ -164,6 +198,7 @@ final class DailyService {
                             m.msg.send(p, "error");
                         }
                         load(p);
+                        done.complete(Result.of(Outcome.FAILED));
                         return;
                     }
                     if (status == ClaimEngine.Status.CHANGED) {
@@ -171,14 +206,18 @@ final class DailyService {
                             m.msg.send(p, "daily.changed");
                             load(p);
                         }
+                        done.complete(Result.of(Outcome.FAILED));
                         return;
                     }
                     states.put(profile, c.after());
-                    claimed(p, profile, c, payout, rows, tier, key);
+                    claimed(p, profile, c, payout, rows, tier, key, quiet);
+                    done.complete(new Result(Outcome.CLAIMED, c.day(), c.streakAfter(),
+                            p.isOnline() ? RewardText.inline(m, p, payout) : net.kyori.adventure.text.Component.empty()));
                 }, m.main());
     }
 
-    private void claimed(Player p, UUID profile, DailyRules.Claim c, Payout payout, List<RewardStore.GrantRow> rows, int tier, String key) {
+    private void claimed(Player p, UUID profile, DailyRules.Claim c, Payout payout, List<RewardStore.GrantRow> rows, int tier, String key,
+                         boolean quiet) {
         Map<String, Object> d = new LinkedHashMap<>();
         d.put("profile", profile.toString());
         d.put("day", c.day());
@@ -193,16 +232,19 @@ final class DailyService {
         d.put("gems", payout.total(Currency.GEMS));
         d.put("rewards", RewardText.summary(payout));
         d.put("key", key);
+        d.put("via", quiet ? "menu-rewards" : "daily");
         m.audit("daily_claim", Actor.player(p), p.getUniqueId(), p.getName(), (long) c.day(), d);
         m.grants().handOut(rows);
         if (p.isOnline()) {
-            m.msg.send(p, "daily.claimed", Msg.number("day", c.day()), Msg.number("streak", c.streakAfter()));
-            RewardText.lines(m, p, payout).forEach(p::sendMessage);
+            if (!quiet) {
+                m.msg.send(p, "daily.claimed", Msg.number("day", c.day()), Msg.number("streak", c.streakAfter()));
+                RewardText.lines(m, p, payout).forEach(p::sendMessage);
+            }
             if (c.streakBroken() && c.after().lostStreak() > 1) {
                 m.msg.send(p, "daily.streak-lost", Msg.number("lost", c.after().lostStreak()));
             }
             long gems = payout.total(Currency.GEMS);
-            if (gems > 0 && DailyRules.streakGems(c.streakAfter(), m.settings.gemEvery, m.settings.gems) > 0) {
+            if (!quiet && gems > 0 && DailyRules.streakGems(c.streakAfter(), m.settings.gemEvery, m.settings.gems) > 0) {
                 m.msg.send(p, "daily.streak-gems", Msg.number("streak", c.streakAfter()),
                         Msg.p("gems", m.economy().map(e -> e.format(Currency.GEMS, m.settings.gems)).orElse(String.valueOf(m.settings.gems))));
             }

@@ -13,7 +13,10 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
-/** The {@code /menu} hub layout from {@code menu.yml}: one entry per feature, texts in {@code messages/navigation.yml}. */
+/**
+ * The {@code /staff} hub layout from {@code menu.yml → staff-entries}: one entry per tool, texts in
+ * {@code messages/navigation.yml → staff.entries}. (The /menu hub uses {@link ButtonLayout} since GUI-2.)
+ */
 public record HubLayout(List<Entry> entries) {
 
     /** {@code auto}: active when its command exists on the server, otherwise "Coming soon". */
@@ -43,11 +46,7 @@ public record HubLayout(List<Entry> entries) {
     /** Slots the frame owns in a 6-row menu (edges, 45-53) and the profile head; entries can't use them. */
     static final Set<Integer> RESERVED = reserved();
 
-    static HubLayout parse(YamlConfiguration yaml, Consumer<String> problem) {
-        return parse(yaml, "entries", problem);
-    }
-
-    /** Parses one section of entries ({@code entries} = /menu, {@code staff-entries} = /staff). */
+    /** Parses one section of entries ({@code staff-entries} = /staff). */
     static HubLayout parse(YamlConfiguration yaml, String sectionName, Consumer<String> problem) {
         List<Entry> entries = new ArrayList<>();
         Set<Integer> used = new HashSet<>();

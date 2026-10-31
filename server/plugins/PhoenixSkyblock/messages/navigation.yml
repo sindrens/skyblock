@@ -21,141 +21,160 @@ menu-item:
 hub:
   title: "Menu"
   info:
-    - "<c:text>Every feature of Phoenix Skyblock."
-    - "<c:text>Gray icons are coming soon."
+    - "<c:text>Everything in four groups:"
+    - "<c:text>Play, Money, Power and More."
+    - "<c:text>Click your head for profiles,"
+    - "<c:text>titles, settings and the store."
   action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   locked: ["", "<c:error><sym:cross></c:error> <c:text>Your rank can't open this yet."]
-  profile:
+  # A button added in menu.yml without texts here: <name> = its id.
+  fallback-name: "<c:flame><bold><name>"
+  # Your head (slot 4). <money>, <crystals>, <playtime> are plain text.
+  head:
     name: "<ph:displayname>"
     lore:
-      - "<c:text>Rank: <ph:rank>"
-      - "<c:text>Playtime: <c:value><playtime>"
-      - "<c:text>Joined: <c:value><joined>"
+      - "<c:muted><ph:rank>"
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open your settings"
-  entries:
+      - "<c:bar>| </c:bar><c:text>Money: <cur:money><money>"
+      - "<c:bar>| </c:bar><c:text>Crystals: <cur:crystals><crystals>"
+      - "<c:bar>| </c:bar><c:text>Playtime: <c:value><playtime>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for profiles, titles, settings"
+  groups:
+    play:
+      name: "<c:success><bold>Play"
+      lore: ["<c:text>Your island, the Depths", "<c:text>and getting around."]
+    money:
+      name: "<c:flame><bold>Money"
+      lore: ["<c:text>Sell, buy, save and trade."]
+    power:
+      name: "<c:enchant><bold>Power"
+      lore: ["<c:text>Tools, skills, enchants", "<c:text>and armor sets."]
+    more:
+      name: "<c:ember><bold>More"
+      lore: ["<c:text>Rewards and leaderboards."]
+  # Rewards button (owner G7). <count> = number ready, <list> = their names (sources below), plain text.
+  rewards:
+    ready-name: "<c:flame><bold>Rewards</bold> <c:value>(<count> ready)"
+    ready: ["", "<c:flame><sym:dot></c:flame> <c:text>Ready: <c:value><list>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim everything"]
+    none: ["", "<c:muted>Nothing to claim right now.", "<c:muted>Playtime rewards pay by themselves.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open your rewards"]
+    nothing: "<prefix><c:muted><sym:time></c:muted> <c:text>Nothing to claim right now. Playtime rewards pay by themselves."
+    sources:
+      daily: "daily reward"
+      vote: "vote"
+  buttons:
+    home:
+      name: "<c:success><bold>Home"
+      lore: ["<c:text>Go to your island."]
     island:
-      name: "<c:flame><bold>Island"
-      lore: ["<c:text>Your island in the sky: build,", "<c:text>grow it and invite friends."]
+      name: "<c:success><bold>Island"
+      lore: ["<c:text>Members, upgrades, warps", "<c:text>and settings."]
     depths:
-      name: "<c:flame><bold>The Depths"
+      name: "<c:info><bold>The Depths"
       lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and crystals."]
-    shop:
-      name: "<c:flame><bold>Shop"
-      lore: ["<c:text>Building blocks, farming and", "<c:text>utility items."]
+    travel:
+      name: "<c:success><bold>Travel"
+      lore: ["<c:text>Spawn, crates, market, Forge", "<c:text>and other islands."]
     sell:
       name: "<c:flame><bold>Sell"
-      lore: ["<c:text>Sell your loot at live prices."]
+      lore: ["<c:text>Sell your loot."]
+    shop:
+      name: "<c:flame><bold>Shop"
+      lore: ["<c:text>Blocks, farming and", "<c:text>utility items."]
     bank:
       name: "<c:flame><bold>Bank"
       lore: ["<c:text>Keep money safe and earn", "<c:text>interest, even offline."]
     auction:
       name: "<c:flame><bold>Auction House"
       lore: ["<c:text>Buy and sell items with", "<c:text>other players."]
-    black-market:
-      name: "<c:flame><bold>Black Market"
-      lore: ["<c:text>Rare offers that change", "<c:text>every few hours."]
     forge:
-      name: "<c:flame><bold>The Forge"
-      lore: ["<c:text>Upgrade your tools, craft", "<c:text>blueprints, get a starter kit."]
+      name: "<c:enchant><bold>Forge"
+      lore: ["<c:text>Craft and upgrade your tools."]
     skills:
-      name: "<c:flame><bold>Skills"
+      name: "<c:enchant><bold>Skills"
       lore: ["<c:text>Level Mining, Foraging, Combat", "<c:text>and more for perks."]
-    sets:
-      name: "<c:flame><bold>Wardrobe"
-      lore: ["<c:text>Armor sets with bonuses for", "<c:text>every playstyle."]
     enchanter:
-      name: "<c:flame><bold>Enchanter"
-      lore: ["<c:text>Custom enchants for your", "<c:text>tools and gear."]
-    quests:
-      name: "<c:flame><bold>Quests"
-      lore: ["<c:text>Daily and weekly goals", "<c:text>with rewards."]
-    crates:
-      name: "<c:flame><bold>Crates"
-      lore: ["<c:text>Open crates with keys", "<c:text>you earn by playing."]
-    events:
-      name: "<c:flame><bold>Events"
-      lore: ["<c:text>KOTH, envoys and boss", "<c:text>fights: when and where."]
-    pets:
-      name: "<c:flame><bold>Pets"
-      lore: ["<c:text>Companions that level up", "<c:text>and help you grind."]
-    warps:
-      name: "<c:flame><bold>Warps"
-      lore: ["<c:text>Spawn, crates, the Depths", "<c:text>and player warps."]
-    collection:
-      name: "<c:flame><bold>Collection"
-      lore: ["<c:text>Everything you've found,", "<c:text>with rewards for milestones."]
-    leaderboards:
-      name: "<c:flame><bold>Leaderboards"
-      lore: ["<c:text>Top islands and players", "<c:text>of the season."]
-    titles:
-      name: "<c:flame><bold>Titles & Tags"
-      lore: ["<c:text>Show off in chat and tab", "<c:text>with titles and tags."]
-    store:
-      name: "<c:flame><bold>Store"
-      lore: ["<c:text>Ranks and cosmetics.", "<c:text>Every purchase supports us."]
-    vote:
-      name: "<c:flame><bold>Vote"
-      lore: ["<c:text>Vote daily for rewards."]
-    discord:
-      name: "<c:flame><bold>Discord"
-      lore: ["<c:text>News, sneak peeks, support", "<c:text>and giveaways."]
-    profiles:
-      name: "<c:flame><bold>Profiles"
-      lore: ["<c:text>Up to 3 islands, each with", "<c:text>its own items and money."]
-    spawn:
-      name: "<c:flame><bold>Spawn"
-      lore: ["<c:text>Back to spawn."]
-    rules:
-      name: "<c:flame><bold>Rules"
-      lore: ["<c:text>The server rules."]
-    settings:
-      name: "<c:flame><bold>Settings"
-      lore: ["<c:text>Chat, display and sound", "<c:text>settings."]
-    help:
-      name: "<c:flame><bold>Help"
-      lore: ["<c:text>Guides for every feature", "<c:text>and all your commands."]
-    website:
-      name: "<c:flame><bold>Website"
-      lore: ["<c:text>skybornmc.net"]
+      name: "<c:enchant><bold>Enchanter"
+      lore: ["<c:text>Add and upgrade enchants."]
+    wardrobe:
+      name: "<c:enchant><bold>Wardrobe"
+      lore: ["<c:text>Sets and loadouts."]
+    rewards:
+      name: "<c:flame><bold>Rewards"
+      lore: ["<c:text>Daily rewards and playtime."]
+    top:
+      name: "<c:ember><bold>Top"
+      lore: ["<c:text>The best islands:", "<c:text>level and value."]
 
-# /menu → Warps (UX3). Places: menu.yml → warps. <name> in fallback-name = the entry id when it has no texts here.
-warps:
-  title: "Warps"
+# /menu → You (GUI-2): your head (display only), profiles, titles, achievements, settings, store, rules.
+you:
+  title: "You"
+  info:
+    - "<c:text>Everything about you:"
+    - "<c:text>profiles, titles, settings,"
+    - "<c:text>the store and the rules."
+  head:
+    name: "<ph:displayname>"
+    lore:
+      - "<c:muted><ph:rank>"
+      - ""
+      - "<c:bar>| </c:bar><c:text>Money: <cur:money><money>"
+      - "<c:bar>| </c:bar><c:text>Crystals: <cur:crystals><crystals>"
+      - "<c:bar>| </c:bar><c:text>Playtime: <c:value><playtime>"
+  buttons:
+    profiles:
+      name: "<c:parchment><bold>Profiles"
+      lore: ["<c:text>Up to 3 islands, each with", "<c:text>its own items and money."]
+    titles:
+      name: "<c:enchant><bold>Titles & Tags"
+      lore: ["<c:text>Show off in chat and tab."]
+    achievements:
+      name: "<c:flame><bold>Achievements"
+      lore: ["<c:text>Goals, boosts and your", "<c:text>season history."]
+    settings:
+      name: "<c:parchment><bold>Settings"
+      lore: ["<c:text>Chat, display and sounds."]
+    store:
+      name: "<c:success><bold>Store"
+      lore: ["<c:text>Ranks and cosmetics.", "<c:text>Every purchase supports us."]
+    rules:
+      name: "<c:parchment><bold>Rules & links"
+      lore: ["<c:text>Rules, Discord and website."]
+
+# /menu → Travel (GUI-2, was Warps). Places: menu.yml → travel. <name> in fallback-name = the place id when it has no texts.
+travel:
+  title: "Travel"
   info:
     - "<c:text>Places at spawn and beyond."
     - "<c:text>Click one to go there."
-  action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go there"]
+  action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
   fallback-name: "<c:flame><bold><name>"
   gone: "<prefix><c:error><sym:cross></c:error> <c:text>That place is not there right now. Try again later."
   empty:
-    name: "<c:muted>No warps yet"
+    name: "<c:muted>No places yet"
     lore: ["<c:text>Places appear here once", "<c:text>they are built."]
-  entries:
+  places:
     spawn:
-      name: "<c:flame><bold>Spawn"
+      name: "<c:brand><bold>Spawn"
       lore: ["<c:text>The courtyard at spawn."]
-    market:
-      name: "<c:flame><bold>Market Square"
-      lore: ["<c:text>Shop, Sell, Auction House", "<c:text>and the Bank."]
+    my-island:
+      name: "<c:success><bold>My Island"
+      lore: ["<c:text>Your island home."]
+    depths-gate:
+      name: "<c:info><bold>Depths Gate"
+      lore: ["<c:text>Mine, chop and fight", "<c:text>from here."]
     crate-yard:
-      name: "<c:flame><bold>Crate Yard"
+      name: "<c:brand><bold>Crate Yard"
       lore: ["<c:text>Open your crates."]
-    forge:
-      name: "<c:flame><bold>Forge Quarter"
+    market:
+      name: "<c:flame><bold>Market"
+      lore: ["<c:text>Shop, Sell, Auction House", "<c:text>and the Bank."]
+    forge-quarter:
+      name: "<c:enchant><bold>Forge Quarter"
       lore: ["<c:text>Blacksmith and Enchanter."]
-    tavern:
-      name: "<c:flame><bold>Tavern"
-      lore: ["<c:text>Quests, rewards and votes."]
-    hall-of-heroes:
-      name: "<c:flame><bold>Hall of Heroes"
-      lore: ["<c:text>The leaderboards."]
-    depths:
-      name: "<c:flame><bold>The Depths"
-      lore: ["<c:text>The Gate: mine, chop", "<c:text>and fight from here."]
-    island-warps:
-      name: "<c:flame><bold>Player Warps"
-      lore: ["<c:text>Visit the best islands and", "<c:text>shops of other players."]
+    visit-islands:
+      name: "<c:success><bold>Visit Islands"
+      lore: ["<c:text>See the islands of", "<c:text>other players."]
       action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to browse"]
 
 settings:

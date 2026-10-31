@@ -19,6 +19,12 @@ daily:
   streak-lost: "<prefix><c:muted><sym:time></c:muted> <c:text>You missed a day, so your <c:value><lost></c:value><c:text>-day streak started over. Your calendar day stays."
   streak-gems: "<prefix><c:flame><sym:star></c:flame> <c:text>Streak of <c:value><streak></c:value> <c:text>days: <cur:gems>+<gems></cur:gems><c:text>!"
 
+# /menu Rewards button (GUI-2): one click claims everything ready, then this one line. <rewards> is a full component
+# (the rewards joined with the separator). Playtime rewards pay out by themselves, so only the daily reward is claimed.
+claim-all:
+  claimed: "<prefix><c:success><sym:check></c:success> <c:text>Day <c:value><day></c:value> <c:text>claimed: <rewards><c:muted> (playtime pays by itself)"
+  separator: "<c:muted>, "
+
 playtime:
   reward: "<prefix><c:success><sym:time></c:success> <c:text>Playtime reward: <c:value><hours></c:value> <c:text>active hours on this profile."
 

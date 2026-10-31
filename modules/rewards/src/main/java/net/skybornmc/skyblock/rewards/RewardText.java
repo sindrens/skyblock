@@ -59,6 +59,28 @@ final class RewardText {
         return out;
     }
 
+    /**
+     * Every reward of a committed payout in one line, joined with {@code claim-all.separator} (the /menu Rewards button,
+     * GUI-2). A fallback shows what it paid (crystals).
+     */
+    static Component inline(RewardsModule m, Player p, Payout payout) {
+        List<Component> parts = new ArrayList<>();
+        for (Payout.Line l : payout.lines()) {
+            parts.add(l.fallback()
+                    ? m.msg.component(p, "reward.crystals", Msg.p("amount", format(m, Currency.CRYSTALS, l.value())))
+                    : line(m, p, l));
+        }
+        for (Payout.Grant g : payout.grants()) {
+            if (Payout.TITLE.equals(g.kind())) {
+                Component title = m.cosmetics().map(c -> c.display(p, Cosmetics.Kind.TITLE, g.ref())).orElse(Component.text(g.ref()));
+                parts.add(m.msg.component(p, "reward.title", Msg.c("title", title)));
+            } else if (Payout.PASS_XP.equals(g.kind())) {
+                parts.add(m.msg.component(p, "reward.pass-xp", Msg.number("amount", g.amount())));
+            }
+        }
+        return Component.join(net.kyori.adventure.text.JoinConfiguration.separator(m.msg.component(p, "claim-all.separator")), parts);
+    }
+
     private static Component line(RewardsModule m, Player p, Payout.Line l) {
         return switch (l.kind()) {
             case MONEY -> m.msg.component(p, "reward.money", Msg.p("amount", format(m, Currency.MONEY, l.value())));

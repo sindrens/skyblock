@@ -102,23 +102,44 @@ public final class MenusModule implements SkyblockModule {
     }
 
     private void loadFiles() {
+        nav.showUnbuilt = config.hubShowUnbuilt;
         YamlConfiguration hub = YamlFiles.load(core.plugin(), "menu.yml", this::problem);
         if (hub != null) {
-            if (HubWarpsMigration.apply(hub)) {
-                try {
-                    hub.save(new java.io.File(core.plugin().getDataFolder(), "menu.yml"));
-                    core.plugin().getLogger().info("menu.yml: the Warps button now opens the warps menu (UX3; player warps are inside it)");
-                } catch (java.io.IOException e) {
-                    problem("menu.yml: could not save the Warps button change: " + e.getMessage());
-                }
-            }
-            nav.hub = HubLayout.parse(hub, this::problem);
+            migrateHub(hub);
+            nav.hub = ButtonLayout.hub(hub, this::problem);
+            nav.you = ButtonLayout.you(hub, this::problem);
             nav.staff = HubLayout.parse(hub, "staff-entries", this::problem);
-            nav.warps = WarpLayout.parse(hub, this::problem);
+            nav.travel = WarpLayout.parse(hub, this::problem);
         }
         YamlConfiguration help = YamlFiles.load(core.plugin(), "help.yml", this::problem);
         if (help != null) {
             nav.help = HelpBook.parse(help, this::problem);
+        }
+    }
+
+    /** GUI-2: the old 28-entry hub and the warps list become the clean hub, You and Travel (once; backup kept). */
+    private void migrateHub(YamlConfiguration hub) {
+        java.io.File file = new java.io.File(core.plugin().getDataFolder(), "menu.yml");
+        java.io.File backup = new java.io.File(core.plugin().getDataFolder(), HubV2Migration.BACKUP);
+        if (!hub.isConfigurationSection("entries")) {
+            return;
+        }
+        try {
+            if (file.exists() && !backup.exists()) {
+                java.nio.file.Files.copy(file.toPath(), backup.toPath());
+            }
+        } catch (java.io.IOException e) {
+            problem("menu.yml: could not keep a backup before the new /menu layout, the old layout stays for now: " + e.getMessage());
+            return;
+        }
+        if (HubV2Migration.apply(hub)) {
+            try {
+                hub.save(file);
+                core.plugin().getLogger().info("menu.yml: switched to the new /menu (15 buttons in 4 groups), You and Travel menus "
+                        + "(GUI-2); the old file is kept as " + HubV2Migration.BACKUP);
+            } catch (java.io.IOException e) {
+                problem("menu.yml: could not save the new /menu layout (it is active until the next restart): " + e.getMessage());
+            }
         }
     }
 

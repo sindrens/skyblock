@@ -19,27 +19,29 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * {@code /menu → Warps} (UX3): a small menu of server places from {@code menu.yml → warps}. One click teleports through the
- * core {@link TeleportService} (warmup, cooldown, guards such as locked Depths tiers, combat block) or runs the entry's
- * command. Entries whose place does not exist here (build not applied, world not loaded, command missing) are hidden, so
- * the menu only ever shows places that work. Plain items only: Bedrock-safe.
+ * {@code /menu → Travel} (GUI_DESIGN §7.3, GUI-2; replaces the UX3 warps menu): 3 rows, places on 10-16 from
+ * {@code menu.yml → travel}, 18 Back (to the hub), 22 Close. One click teleports through the core {@link TeleportService}
+ * (warmup, cooldown, guards such as locked Depths tiers, combat block) or runs the place's command (My Island =
+ * {@code is home}, Visit Islands = the {@code is visit} browser, which gets Back to this menu). Places that do not exist
+ * here (build not applied, world not loaded, command missing) are hidden, so the menu only shows places that work.
+ * Plain items only: Bedrock-safe.
  */
-final class WarpsMenu extends net.skybornmc.skyblock.common.menu.Menu {
+final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     private final Nav nav;
 
-    WarpsMenu(Nav nav) {
+    TravelMenu(Nav nav) {
         this.nav = nav;
     }
 
     @Override
     public int rows() {
-        return 6;
+        return 3;
     }
 
     @Override
     public Component title() {
-        return service.titleKeys(viewer, Nav.TEXTS, "hub.title", "warps.title");
+        return service.titleKeys(viewer, Nav.TEXTS, "hub.title", "travel.title");
     }
 
     @Override
@@ -49,7 +51,7 @@ final class WarpsMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     @Override
     public String infoKey() {
-        return "warps.info";
+        return "travel.info";
     }
 
     @Override
@@ -61,32 +63,32 @@ final class WarpsMenu extends net.skybornmc.skyblock.common.menu.Menu {
     protected void build() {
         frame();
         int shown = 0;
-        for (WarpLayout.Warp warp : nav.warps.warps()) {
+        for (WarpLayout.Warp warp : nav.travel.warps()) {
             if (!available(warp)) {
                 continue;
             }
             shown++;
             Component name = name(warp);
-            List<Component> lore = new ArrayList<>(nav.lines(viewer, "warps.entries." + warp.id() + ".lore"));
+            List<Component> lore = new ArrayList<>(nav.lines(viewer, "travel.places." + warp.id() + ".lore"));
             if (warp.permission() != null && !warp.permission().isBlank() && !viewer.hasPermission(warp.permission())) {
                 lore.addAll(nav.lines(viewer, "hub.locked"));
-                set(warp.slot(), nav.item(warp.icon(), name, lore));
+                set(warp.slot(), nav.item(Nav.material(warp.icon(), Material.ENDER_PEARL), name, lore));
                 continue;
             }
-            String actionKey = nav.core.messages().raw(Nav.TEXTS, "warps.entries." + warp.id() + ".action") != null
-                    ? "warps.entries." + warp.id() + ".action" : "warps.action";
+            String actionKey = nav.core.messages().raw(Nav.TEXTS, "travel.places." + warp.id() + ".action") != null
+                    ? "travel.places." + warp.id() + ".action" : "travel.action";
             lore.addAll(nav.lines(viewer, actionKey));
-            set(warp.slot(), nav.item(warp.icon(), name, lore), click -> go(click.player(), warp, name));
+            set(warp.slot(), nav.item(Nav.material(warp.icon(), Material.ENDER_PEARL), name, lore), click -> go(click.player(), warp, name));
         }
         if (shown == 0) {
-            set(22, nav.item(Material.GRAY_DYE, nav.text(viewer, "warps.empty.name"), nav.lines(viewer, "warps.empty.lore")));
+            setEmpty(Nav.TEXTS, "travel.empty");
         }
     }
 
     private Component name(WarpLayout.Warp warp) {
-        String key = "warps.entries." + warp.id() + ".name";
+        String key = "travel.places." + warp.id() + ".name";
         if (nav.core.messages().raw(Nav.TEXTS, key) == null) {
-            return nav.text(viewer, "warps.fallback-name", Nav.pre("name", pretty(warp.id())));
+            return nav.text(viewer, "travel.fallback-name", Nav.pre("name", pretty(warp.id())));
         }
         return nav.text(viewer, key);
     }
@@ -100,11 +102,15 @@ final class WarpsMenu extends net.skybornmc.skyblock.common.menu.Menu {
     }
 
     private void go(Player player, WarpLayout.Warp warp, Component name) {
-        player.closeInventory();
         switch (warp.target()) {
-            case WarpLayout.Command c -> player.performCommand(c.command());
-            case WarpLayout.Point p -> location(p).ifPresentOrElse(to -> teleport(player, warp, to, name), () -> gone(player));
+            // A screen the command opens (the island browser) gets Back to Travel; a teleport closes the menu.
+            case WarpLayout.Command c -> service.navigate(player, this, () -> player.performCommand(c.command()));
+            case WarpLayout.Point p -> {
+                player.closeInventory();
+                location(p).ifPresentOrElse(to -> teleport(player, warp, to, name), () -> gone(player));
+            }
             case WarpLayout.Place p -> {
+                player.closeInventory();
                 World world = Bukkit.getWorld(p.world());
                 if (world == null) {
                     gone(player);
@@ -126,7 +132,7 @@ final class WarpsMenu extends net.skybornmc.skyblock.common.menu.Menu {
     }
 
     private void gone(Player player) {
-        nav.msg.send(player, "warps.gone");
+        nav.msg.send(player, "travel.gone");
         nav.core.sounds().play(player, "error");
     }
 
@@ -156,7 +162,7 @@ final class WarpsMenu extends net.skybornmc.skyblock.common.menu.Menu {
         return TeleportReason.SPAWN;
     }
 
-    private static String pretty(String id) {
+    static String pretty(String id) {
         String spaced = id.replace('_', ' ').replace('-', ' ');
         return spaced.isEmpty() ? id : spaced.substring(0, 1).toUpperCase(Locale.ROOT) + spaced.substring(1);
     }
