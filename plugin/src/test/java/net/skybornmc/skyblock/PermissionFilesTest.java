@@ -28,9 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class PermissionFilesTest {
 
-    /** Nodes checked with a dynamic suffix in code (e.g. one node per audit category); not declared one by one. */
-    private static final List<String> DYNAMIC_PREFIXES = List.of("skyblock.staff.logs.category.");
-
     private static Path root() {
         Path dir = Path.of("").toAbsolutePath();
         while (dir != null && !Files.exists(dir.resolve("settings.gradle.kts"))) {
@@ -116,8 +113,7 @@ class PermissionFilesTest {
                     // lp group <group> permission set <node> <value>
                     if (parts.length >= 6 && parts[0].equals("lp") && parts[3].equals("permission") && parts[4].equals("set")) {
                         String node = parts[5];
-                        boolean ok = !node.startsWith("skyblock.") || node.endsWith("*") || owners.containsKey(node)
-                                || DYNAMIC_PREFIXES.stream().anyMatch(node::startsWith);
+                        boolean ok = !node.startsWith("skyblock.") || node.endsWith("*") || owners.containsKey(node);
                         if (!ok) {
                             undeclared.add(node + " in " + file.getFileName());
                         }
