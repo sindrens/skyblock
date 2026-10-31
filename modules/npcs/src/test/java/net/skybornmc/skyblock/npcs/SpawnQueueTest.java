@@ -94,6 +94,68 @@ class SpawnQueueTest {
     }
 
     @Test
+    void aBatchIsReadInOrderAfterSingleAdds() {
+        SpawnQueue<String> q = new SpawnQueue<>();
+        q.addAll(List.of("a", "b", "c"));
+        q.addAll(List.of());
+        q.addAll(List.of("d"));
+        q.add("chunk-load");
+        assertEquals(5, q.size());
+        assertFalse(q.isEmpty());
+        List<String> seen = new ArrayList<>();
+        assertEquals(2, q.drain(2, 1000 * MS, () -> 0L, seen::add));
+        assertEquals(List.of("chunk-load", "a"), seen, "single adds (chunk loads, live texts) go first");
+        assertEquals(3, q.size());
+        q.drain(8, 1000 * MS, () -> 0L, seen::add);
+        assertEquals(List.of("chunk-load", "a", "b", "c", "d"), seen);
+        assertTrue(q.isEmpty());
+        assertEquals(0, q.size());
+    }
+
+    @Test
+    void clearDropsBatches() {
+        SpawnQueue<String> q = new SpawnQueue<>();
+        q.addAll(List.of("a", "b"));
+        q.drain(1, 1000 * MS, () -> 0L, s -> true);
+        q.clear();
+        assertTrue(q.isEmpty());
+        q.addAll(List.of("x"));
+        List<String> seen = new ArrayList<>();
+        q.drain(8, 1000 * MS, () -> 0L, seen::add);
+        assertEquals(List.of("x"), seen, "a cleared batch is not read on from its old position");
+    }
+
+    @Test
+    void skippingStopsOnceTheBudgetHasPassed() {
+        SpawnQueue<String> q = new SpawnQueue<>();
+        List<String> unloaded = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            unloaded.add("far" + i);
+        }
+        q.addAll(List.copyOf(unloaded));
+        AtomicLong clock = new AtomicLong();
+        // every loaded-chunk check "takes" 0.1 ms; budget 2 ms: 20 checks per tick, none of them spawns
+        assertEquals(0, q.drain(8, 2 * MS, clock::get, s -> {
+            clock.addAndGet(100_000L);
+            return false;
+        }));
+        assertEquals(80, q.size(), "every skipped item left the queue, so it still moves");
+    }
+
+    @Test
+    void aSetInABatchAndQueuedByAChunkLoadSpawnsOnce() {
+        SpawnQueue<String> q = new SpawnQueue<>();
+        String set = "npc";
+        q.addAll(List.of(set));
+        q.add(set); // its chunk loaded before the batch got to it
+        java.util.Set<String> spawned = new java.util.HashSet<>();
+        int work = q.drain(8, 1000 * MS, () -> 0L, spawned::add); // add returns false when already spawned
+        assertEquals(1, work);
+        assertEquals(java.util.Set.of(set), spawned);
+        assertTrue(q.isEmpty());
+    }
+
+    @Test
     void neighbourGridFindsTheNearestInRange() {
         NearestGrid<String> grid = new NearestGrid<>(6);
         assertTrue(grid.isEmpty());

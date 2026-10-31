@@ -54,6 +54,13 @@ public final class NpcsModule implements SkyblockModule {
     private volatile Spots spots = Spots.empty();
     private volatile Map<String, String> skins = Map.of();
     private volatile Map<String, Material> held = Map.of();
+    /** PERF9: static hologram texts by point ref and NPC name texts by NPC ref, built off the main thread (NpcPlan). */
+    private volatile Map<String, TextContent> hologramTexts = Map.of();
+    private volatile Map<String, Component> labels = Map.of();
+    /** PERF9: made once in enable() so npcs:start only hands work to the loader (no lambda bootstrap in that tick). */
+    private java.util.function.Supplier<NpcPlan> planner;
+    private java.util.function.Consumer<NpcPlan> applier;
+    private java.util.function.BiConsumer<Boolean, Throwable> placeFailed;
     private Placer placer;
     private LatestLoad<NpcPlan> loader;
     private Leaderboards boards;
@@ -96,7 +103,15 @@ public final class NpcsModule implements SkyblockModule {
         core.services().register(ID, NpcDirectory.class, new Directory());
         core.services().register(ID, HologramTexts.class, new Texts());
         loader = new LatestLoad<>(r -> core.scheduler().async(r), r -> core.scheduler().main("npcs:apply", r));
-        // One tick later: worlds are loaded and services of modules enabled after this one exist.
+        planner = this::computePlan;
+        applier = this::apply;
+        placeFailed = (applied, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "[npcs] could not place the NPCs and holograms", error);
+            }
+        };
+        // One tick later: worlds are loaded and services of modules enabled after this one exist. PERF9: this tick only
+        // starts the loader; reading the settings and build points happens on the loader thread.
         core.scheduler().later("npcs:start", 1, this::place);
     }
 
@@ -127,21 +142,37 @@ public final class NpcsModule implements SkyblockModule {
      * Reads the rules and points again and respawns everything. PERF3: the parsing runs off the main thread
      * ({@link NpcPlan}), the result is applied on it ({@code npcs:apply}), and the spawns are spread over the next ticks
      * ({@code npcs:spawn}, {@link SpawnQueue}). Completes on the main thread once applied (false when a newer call won).
+     * PERF9: the settings snapshot and the build points are read on the loader thread too (a reload meanwhile starts a
+     * newer load, which wins), so this only hands the work over.
      */
     private CompletableFuture<Boolean> place() {
         if (placer == null || loader == null) {
             return CompletableFuture.completedFuture(false);
         }
+        CompletableFuture<Boolean> done = loader.load(planner, applier);
+        done.whenComplete(placeFailed);
+        return done;
+    }
+
+    /**
+     * Loader thread: the plan with everything that needs no world access (rules, points, tracked sets, per-chunk map,
+     * hologram and name texts). Thread-safe reads only: config fields (replaced whole on reload), the service registry,
+     * messages.
+     */
+    private NpcPlan computePlan() {
         NpcPlan.Inputs inputs = NpcPlan.Inputs.of(config);
         BuildPoints points = core.services().optional(BuildPoints.class).orElse(null);
-        CompletableFuture<Boolean> done = loader.load(() -> NpcPlan.compute(inputs, points, NpcsModule::heldMaterial, this::hasHologramText),
-                this::apply);
-        done.whenComplete((applied, error) -> {
-            if (error != null) {
-                core.plugin().getLogger().log(Level.WARNING, "[npcs] could not place the NPCs and holograms", error);
+        return NpcPlan.compute(inputs, points, NpcsModule::heldMaterial, this::hasHologramText, new NpcPlan.Texts() {
+            @Override
+            public TextContent hologram(Spots.Text t) {
+                return staticHologramContent(t);
+            }
+
+            @Override
+            public Component label(RoleRules rules, Spots.Npc npc) {
+                return npcLabel(rules, npc);
             }
         });
-        return done;
     }
 
     /** Main thread: takes over a parsed plan and (re)places everything. */
@@ -153,17 +184,27 @@ public final class NpcsModule implements SkyblockModule {
         skins = plan.skins();
         held = plan.held();
         spots = plan.spots();
+        hologramTexts = plan.hologramTexts();
+        labels = plan.labels();
         // PERF8: every part of the apply is timed on its own (nested inside npcs:apply): npcs:apply-boards, and inside
         // npcs:apply-place: npcs:apply-retire, npcs:apply-track, npcs:apply-queue. The left-over walk is npcs:purge (now in
         // the first npcs:spawn tick).
         core.scheduler().timer().time("npcs:apply-boards", () -> boards.start(plan.sources()));
-        core.scheduler().timer().time("npcs:apply-place", () -> placer.start(plan.spots()));
-        plan.problems().forEach(p -> core.plugin().getLogger().warning("[npcs] " + p));
-        Spots planned = plan.spots();
-        core.plugin().getLogger().info("[npcs] " + planned.npcs().size() + " NPCs, " + planned.holograms().size()
-                + " holograms, " + planned.boards().size() + " leaderboards from the builds"
-                + (plan.pointsAvailable() ? "" : " (worlds module's build points not available)")
-                + (placer.waiting() > 0 ? "; spawning " + placer.waiting() + " in loaded chunks over the next ticks" : ""));
+        boolean look = config.npcsEnabled && config.lookAtPlayers && !plan.spots().npcs().isEmpty();
+        core.scheduler().timer().time("npcs:apply-place", () -> placer.start(plan.index(), look));
+        // PERF9: the lines were built with the plan; writing them to the console happens off the main thread.
+        List<String> lines = plan.logLines();
+        int problems = plan.problems().size();
+        core.scheduler().async(() -> {
+            var log = core.plugin().getLogger();
+            for (int i = 0; i < lines.size(); i++) {
+                if (i < problems) {
+                    log.warning(lines.get(i));
+                } else {
+                    log.info(lines.get(i));
+                }
+            }
+        });
     }
 
     /** A held-item name to an item, null when it is not one (thread-safe: enum and frozen registry lookups). */
@@ -269,20 +310,35 @@ public final class NpcsModule implements SkyblockModule {
         return MiniMessage.miniMessage().escapeTags(sb.toString());
     }
 
-    /** The name text above an NPC: name + one short hint line. */
+    /** The name text above an NPC: name + one short hint line (PERF9: built with the plan, else here). */
     Component npcLabel(Spots.Npc npc) {
+        Component built = labels.get(npc.ref());
+        return built != null ? built : npcLabel(roles, npc);
+    }
+
+    /** The name text above an NPC with these role rules (any thread: message parsing only). */
+    private Component npcLabel(RoleRules roles, Spots.Npc npc) {
         RoleRules.Action action = roles.actionOf(npc.role());
         Component hint = text(action.type() == RoleRules.Type.COMMAND ? "npc.hint-action" : "npc.hint-help");
         return text("npc.label", Msg.mm("name", npcNameRaw(npc.id(), npc.role())), Msg.c("hint", hint));
     }
 
-    /** A hologram's text: {@code holograms.<id>}, else the metadata's text; {@code null} = nothing to show. */
+    /**
+     * A hologram's text: a live text (M10-3 {@link HologramTexts}), else {@code holograms.<id>}, else the metadata's text;
+     * {@code null} = nothing to show. PERF9: the static text comes from the plan when it was built there.
+     */
     TextContent hologramContent(Spots.Text t) {
         LiveText live = liveTexts.get(t.id());
         if (live != null) {
             return new TextContent(Component.join(net.kyori.adventure.text.JoinConfiguration.newlines(), live.lines()),
                     live.lines().size());
         }
+        TextContent built = hologramTexts.get(t.ref());
+        return built != null ? built : staticHologramContent(t);
+    }
+
+    /** A hologram's own text without live texts (any thread: message parsing only); null when it has none. */
+    private TextContent staticHologramContent(Spots.Text t) {
         String raw = raw("holograms." + t.id());
         if (raw != null && !raw.isBlank()) {
             return new TextContent(text("holograms." + t.id()), Layout.lineCount(raw));
