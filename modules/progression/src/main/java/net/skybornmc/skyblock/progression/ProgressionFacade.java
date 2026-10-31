@@ -152,7 +152,7 @@ final class ProgressionFacade implements ProgressionService {
 
     @Override
     public int islandRank(UUID islandId) {
-        return levels.place(islandId);
+        return menus.boards().place(islandId);
     }
 
     @Override
@@ -169,7 +169,17 @@ final class ProgressionFacade implements ProgressionService {
 
     @Override
     public List<IslandTop.Entry> islandTop(IslandTop.Kind kind, IslandTop.Board board, int limit) {
-        return levels.top(kind, board, limit);
+        return menus.boards().top(kind, board, limit);
+    }
+
+    @Override
+    public List<IslandTop.Entry> pillarTop(Pillar pillar, IslandTop.Board board, int limit) {
+        return menus.boards().pillarTop(pillar, board, limit);
+    }
+
+    @Override
+    public int boardCycleSeconds() {
+        return menus.boards().cycleSeconds();
     }
 
     @Override

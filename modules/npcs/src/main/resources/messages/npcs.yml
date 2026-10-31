@@ -244,6 +244,12 @@ leaderboard:
     island-level: "<c:value>Lv <level>"
     # island_value boards (block worth). <amount> with the money symbol
     island-value: "<c:money><amount>"
+    # PHASE-5 M5.7 weekly boards: island_gain <points> (earned level points this week), pillar_gain <levels>
+    island-gain: "<c:value>+<points> pts"
+    pillar-gain: "<c:value>+<levels> lv"
+    # Boards set to 'cycle' switch Solo/Team every few seconds; this tag says which one is shown. <value> the line above
+    cycle-solo: "<value> <c:muted>Solo"
+    cycle-team: "<value> <c:muted>Team"
   titles:
     island_top_solo: "Top Islands <c:muted>· Solo"
     island_top_team: "Top Islands <c:muted>· Team"

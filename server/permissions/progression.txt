@@ -8,3 +8,6 @@
 # (everyone): nothing to grant.
 # M5.4: skyblock.progression.upgrade (/is upgrade and the Upgrades buttons) is plugin default true (everyone): nothing to
 # grant. Who may buy is the island permission "Upgrades" (/is permissions; leader always, admin by default).
+# M5.7: skyblock.progression.top (/is top) is plugin default true. Staff islands are hidden from the island leaderboards
+# and the Hall of Heroes boards (owner 576): helper and up (inherited by mod, admin, owner).
+lp group helper permission set skyblock.progression.top.hidden true

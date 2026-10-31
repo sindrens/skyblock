@@ -133,6 +133,15 @@ public final class LevelConfig extends ModuleConfig {
     @Setting(path = "top.refresh-seconds", desc = "The island boards (/is top, Hall of Heroes) are ranked again this often (from memory, no database).", min = 10, max = 3600)
     public int topRefreshSeconds = 300;
 
+    @Setting(path = "top.time-zone", desc = "Time zone of the weekly boards: a week runs from Monday 00:00 to the next Monday 00:00 here (M5.7).", restart = true)
+    public String topTimeZone = "Europe/Oslo";
+
+    @Setting(path = "top.week-places", desc = "Places stored per weekly board when a week ends (leaderboard_weekly; the weekly rewards hook gets these).", min = 1, max = 100)
+    public int weekPlaces = 10;
+
+    @Setting(path = "top.hall-cycle-seconds", desc = "Hall of Heroes weekly boards set to 'cycle' switch between Solo and Team this often (owner PG28 default 10).", min = 3, max = 600)
+    public int hallCycleSeconds = 10;
+
     // ------------------------------------------------------------------ notices
 
     @Setting(path = "notify.level-up", desc = "Tell online members (title, chat line, sound) when the island reaches a new highest level this season.")

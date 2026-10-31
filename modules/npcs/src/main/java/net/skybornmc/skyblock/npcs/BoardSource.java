@@ -16,7 +16,9 @@ import java.util.Optional;
 /**
  * Where a leaderboard's rows come from (pure, unit-tested): {@code money} (or another currency), {@code skill <type>},
  * {@code island <stat> [period] [board]}, {@code island_level [all|solo|team]}, {@code island_value [all|solo|team]}
- * (PHASE-5 M5.2, progression module) or {@code none} (shown as "Coming soon").
+ * (PHASE-5 M5.2, progression module), {@code island_gain [this_week] [all|solo|team|cycle]},
+ * {@code pillar_gain [this_week] [all|solo|team|cycle]} (M5.7 weekly boards; {@code cycle} switches between Solo and Team)
+ * or {@code none} (shown as "Coming soon").
  * Parsed from {@code npcs.yml → leaderboards.sources}.
  */
 sealed interface BoardSource {
@@ -60,6 +62,17 @@ sealed interface BoardSource {
         }
     }
 
+    /**
+     * Weekly island gain or weekly pillar gain board of the progression module (PHASE-5 M5.7). {@code cycle} = the panel
+     * switches between the Solo and the Team board ({@code board} is then {@link IslandTop.Board#SOLO}, unused).
+     */
+    record IslandWeekly(IslandTop.Kind kind, IslandTop.Board board, boolean cycle) implements BoardSource {
+        @Override
+        public String key() {
+            return "island_" + kind.id() + ":" + (cycle ? "cycle" : board.id());
+        }
+    }
+
     /** One source text; empty = invalid. */
     static Optional<BoardSource> parse(String text) {
         if (text == null || text.isBlank()) {
@@ -76,6 +89,23 @@ sealed interface BoardSource {
                 IslandTop.Kind kind = p[0].equals("island_level") ? IslandTop.Kind.LEVEL : IslandTop.Kind.VALUE;
                 Optional<IslandTop.Board> board = p.length == 2 ? IslandTop.Board.byId(p[1]) : Optional.of(IslandTop.Board.ALL);
                 return board.map(b -> new IslandLevel(kind, b));
+            }
+            case "island_gain", "pillar_gain": {
+                IslandTop.Kind kind = p[0].equals("island_gain") ? IslandTop.Kind.WEEKLY_GAIN : IslandTop.Kind.WEEKLY_PILLARS;
+                int i = 1;
+                if (i < p.length && p[i].equals("this_week")) {
+                    i++;
+                }
+                if (p.length - i > 1) {
+                    return Optional.empty();
+                }
+                if (i == p.length) {
+                    return Optional.of(new IslandWeekly(kind, IslandTop.Board.ALL, false));
+                }
+                if (p[i].equals("cycle")) {
+                    return Optional.of(new IslandWeekly(kind, IslandTop.Board.SOLO, true));
+                }
+                return IslandTop.Board.byId(p[i]).map(b -> new IslandWeekly(kind, b, false));
             }
             case "skill":
                 return p.length == 2 ? SkillType.byId(p[1]).map(Skill::new) : Optional.empty();

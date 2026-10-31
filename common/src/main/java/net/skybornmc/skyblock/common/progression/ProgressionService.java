@@ -139,6 +139,19 @@ public interface ProgressionService {
         return java.util.List.of();
     }
 
+    /**
+     * Islands ranked by one pillar's level (tie: pillar XP, then island id), best first, from the cached boards (M5.7).
+     * Any thread.
+     */
+    default java.util.List<IslandTop.Entry> pillarTop(Pillar pillar, IslandTop.Board board, int limit) {
+        return java.util.List.of();
+    }
+
+    /** Seconds a Hall of Heroes panel that switches between Solo and Team shows each (M5.7, default 10). */
+    default int boardCycleSeconds() {
+        return 10;
+    }
+
     /** Opens {@code /is level} for {@code player} (their own island); {@code parent} = Back target or null. Main thread. */
     default void openLevelMenu(org.bukkit.entity.Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
     }

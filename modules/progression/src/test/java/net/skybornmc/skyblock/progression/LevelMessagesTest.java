@@ -84,11 +84,28 @@ class LevelMessagesTest {
                 missing.add("level-menu.recalculate." + state);
             }
         }
-        for (String tab : List.of("level", "value")) {
-            for (String part : List.of(".name", ".lore", ".lore-active")) {
+        for (String tab : List.of("level", "value", "weekly", "pillars")) {
+            for (String part : List.of(".name", ".lore")) {
                 if (!yml.contains("top-menu.tab." + tab + part)) {
                     missing.add("top-menu.tab." + tab + part);
                 }
+            }
+        }
+        for (String tab : List.of("weekly", "pillars")) {
+            if (!yml.contains("top-menu.tab." + tab + ".lore-active")) {
+                missing.add("top-menu.tab." + tab + ".lore-active");
+            }
+        }
+        // TopMenu builds these from a prefix: tab key + ".name"/".lore", weekly option key + "-name"/"-lore".
+        for (String key : List.of("top-menu.weekly.points-name", "top-menu.weekly.points-lore", "top-menu.weekly.pillars-name",
+                "top-menu.weekly.pillars-lore")) {
+            if (!yml.contains(key)) {
+                missing.add(key);
+            }
+        }
+        for (net.skybornmc.skyblock.common.progression.Pillar pillar : net.skybornmc.skyblock.common.progression.Pillar.values()) {
+            if (!yml.contains("pillar." + pillar.id() + ".name")) {
+                missing.add("pillar." + pillar.id() + ".name");
             }
         }
         assertEquals(Set.of(), missing);
@@ -112,6 +129,10 @@ class LevelMessagesTest {
         assertTrue(inner(LevelMenu.SLOT_RECALCULATE));
         assertEquals(LevelMenu.SOURCES.size(), LevelMenu.SOURCE_SLOTS.size());
         assertEquals(LevelSource.values().length, LevelMenu.slots().size());
+        Set<Integer> top = new HashSet<>(List.of(TopMenu.SLOT_LEVEL, TopMenu.SLOT_WEEKLY, TopMenu.SLOT_VALUE, TopMenu.SLOT_PILLARS,
+                TopMenu.SLOT_BOARD));
+        assertEquals(5, top.size(), "top row slots used twice");
+        top.forEach(slot -> assertTrue(slot > 0 && slot < 8, "top row slot " + slot));
         assertEquals(28, TopMenu.PLACES.size());
         assertEquals(28, new HashSet<>(TopMenu.PLACES).size());
         TopMenu.PLACES.forEach(slot -> assertTrue(inner(slot), "place slot " + slot));

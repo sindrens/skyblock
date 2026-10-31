@@ -227,47 +227,72 @@ top-menu:
     - "<c:text>The best islands. Solo and team"
     - "<c:text>islands have their own boards."
     - "<c:text>One island per player."
+    - "<c:text>Weekly boards restart Monday 00:00."
     - "<c:muted>Updated every few minutes."
+  # Level and Value: the framework adds the "selected / click" line. Weekly gain and Pillars open a pick list.
+  # <left> time until Monday 00:00, <board> the weekly board shown, <pillar> the pillar shown
   tab:
     level:
       name: "<c:flame><bold>Level"
       lore:
         - "<c:text>Ranked by island level."
-        - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
-      lore-active:
-        - "<c:text>Ranked by island level."
-        - "<c:success><sym:check> Showing"
     value:
       name: "<c:flame><bold>Value"
       lore:
         - "<c:text>Ranked by block worth."
-        - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
-      lore-active:
-        - "<c:text>Ranked by block worth."
-        - "<c:success><sym:check> Showing"
     weekly:
-      name: "<c:muted>Weekly gain"
+      name: "<c:flame><bold>Weekly gain"
       lore:
-        - "<c:muted>Coming soon"
+        - "<c:text>Who grew most since Monday."
+        - "<c:muted>Restarts in <left>."
+      lore-active:
+        - "<c:text>Showing: <board>"
+        - "<c:muted>Restarts in <left>."
     pillars:
-      name: "<c:muted>Pillars"
+      name: "<c:flame><bold>Pillars"
       lore:
-        - "<c:muted>Coming soon"
+        - "<c:text>Ranked by one pillar's level."
+      lore-active:
+        - "<c:text>Showing: <pillar>"
+    # Added under Weekly gain and Pillars (they open a list).
+    pick:
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a board"
+  weekly:
+    crumb: "Weekly gain"
+    points-name: "<c:value>Points gained"
+    points-lore:
+      - "<c:text>Level points earned this week:"
+      - "<c:text>pillars, upgrades, masteries,"
+      - "<c:text>achievements. Blocks and money"
+      - "<c:text>don't count."
+      - "<c:muted>Restarts in <left>."
+    pillars-name: "<c:value>Pillar levels gained"
+    pillars-lore:
+      - "<c:text>Pillar levels gained this week,"
+      - "<c:text>all pillars together."
+      - "<c:muted>Restarts in <left>."
+  pillar-pick:
+    crumb: "Pillar"
+    lore:
+      - "<c:text>Islands ranked by this pillar."
   board:
-    # GUI-4: the name says what you see now AND where a click goes (it read like the opposite before).
-    solo-name: "<c:value>Showing: Solo islands <c:muted><sym:dot></c:muted> <c:text>switch to Team"
-    solo-lore:
+    crumb: "Board"
+    # The name says what you see now; a click opens the Solo/Team list.
+    solo-name: "<c:value>Showing: Solo islands"
+    team-name: "<c:value>Showing: Team islands"
+    lore:
+      - "<c:text>Solo and team islands have"
+      - "<c:text>their own boards."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick Solo or Team"
+    pick-solo: "<c:value>Solo islands"
+    pick-solo-lore:
       - "<c:text>Islands with one player."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for team islands"
-    team-name: "<c:value>Showing: Team islands <c:muted><sym:dot></c:muted> <c:text>switch to Solo"
-    team-lore:
+    pick-team: "<c:value>Team islands"
+    pick-team-lore:
       - "<c:text>Islands with members."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for solo islands"
-  # <place> <island> <level> <points> <worth> <leader>
+  # <place> <island> <level> <points> <worth> <leader> <gain> <pillar> <pillar-level> <left>
   entry:
     name-1: "<bold><c:top1>#1</c:top1></bold> <c:value><island>"
     name-2: "<bold><c:top2>#2</c:top2></bold> <c:value><island>"
@@ -280,23 +305,48 @@ top-menu:
       - "<c:text>Worth: <c:value><worth>"
       - "<c:text>Level: <c:value><level>"
       - "<c:text>Leader: <c:value><leader>"
+    lore-weekly-points:
+      - "<c:text>This week: <c:value>+<gain></c:value> <c:text>points"
+      - "<c:text>Level: <c:value><level>"
+      - "<c:text>Leader: <c:value><leader>"
+    lore-weekly-pillars:
+      - "<c:text>This week: <c:value>+<gain></c:value> <c:text>pillar levels"
+      - "<c:text>Level: <c:value><level>"
+      - "<c:text>Leader: <c:value><leader>"
+    lore-pillar:
+      - "<pillar><c:text>: <c:value>Lv <pillar-level>"
+      - "<c:text>Level: <c:value><level>"
+      - "<c:text>Leader: <c:value><leader>"
     yours:
       - "<c:success><sym:check> Your island"
   empty:
     name: "<c:locked>#<place> -"
     lore:
       - "<c:muted>Nobody here yet."
+    lore-weekly:
+      - "<c:muted>Nobody here yet this week."
   you:
     name: "<c:flame><bold>Your island"
-    # <place> <level> <worth>
+    # <place> <label> <value> <left>
     ranked:
       - "<c:text>Place: <c:value>#<place>"
-      - "<c:text>Level: <c:value><level>"
+      - "<label>: <c:value><value>"
     unranked:
-      - "<c:text>Level: <c:value><level>"
+      - "<label>: <c:value><value>"
       - "<c:muted>Not on this board yet."
+    hidden:
+      - "<label>: <c:value><value>"
+      - "<c:muted>Staff islands are not ranked."
+    week-left:
+      - "<c:muted>Restarts in <left>."
     no-island:
       - "<c:muted>You don't have an island yet."
+    label:
+      level: "<c:text>Level"
+      value: "<c:text>Worth"
+      weekly-points: "<c:text>Points this week"
+      weekly-pillars: "<c:text>Pillar levels this week"
+      pillar: "<c:text>Pillar level"
 
 # ---------------------------------------------------------------- M5.3 task engine (the challenge book)
 # Tasks are in tasks.yml; these are the texts around them. Lore lines max ~36 characters (Bedrock).

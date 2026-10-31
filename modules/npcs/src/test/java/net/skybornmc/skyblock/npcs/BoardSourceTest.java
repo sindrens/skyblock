@@ -70,11 +70,45 @@ class BoardSourceTest {
         assertEquals(new BoardSource.Skill(SkillType.FISHING), all.get("fishing"));
         assertEquals(new BoardSource.IslandLevel(IslandTop.Kind.LEVEL, IslandTop.Board.SOLO), all.get("island_top_solo"));
         assertEquals(new BoardSource.IslandLevel(IslandTop.Kind.LEVEL, IslandTop.Board.TEAM), all.get("island_top_team"));
+        assertEquals(new BoardSource.IslandWeekly(IslandTop.Kind.WEEKLY_GAIN, IslandTop.Board.SOLO, true), all.get("weekly_island_gain"));
+        assertEquals(new BoardSource.IslandWeekly(IslandTop.Kind.WEEKLY_PILLARS, IslandTop.Board.SOLO, true), all.get("weekly_pillar_gain"));
         assertInstanceOf(BoardSource.None.class, all.get("boss_damage"));
         assertEquals(new BoardSource.Money(Currency.MONEY), all.get("baltop"));
 
         Map<String, BoardSource> broken = BoardSource.parseAll(List.of("a: skill cooking", "nope"), problems);
         assertInstanceOf(BoardSource.None.class, broken.get("a"));
         assertEquals(2, problems.size());
+    }
+
+    @Test
+    void weeklyBoards() {
+        assertEquals(Optional.of(new BoardSource.IslandWeekly(IslandTop.Kind.WEEKLY_GAIN, IslandTop.Board.ALL, false)),
+                BoardSource.parse("island_gain"));
+        assertEquals(Optional.of(new BoardSource.IslandWeekly(IslandTop.Kind.WEEKLY_GAIN, IslandTop.Board.TEAM, false)),
+                BoardSource.parse("island_gain this_week team"));
+        assertEquals(Optional.of(new BoardSource.IslandWeekly(IslandTop.Kind.WEEKLY_PILLARS, IslandTop.Board.SOLO, false)),
+                BoardSource.parse("Pillar_Gain solo"));
+        assertEquals(Optional.of(new BoardSource.IslandWeekly(IslandTop.Kind.WEEKLY_PILLARS, IslandTop.Board.SOLO, true)),
+                BoardSource.parse("pillar_gain this_week cycle"));
+        assertEquals(Optional.empty(), BoardSource.parse("island_gain last_week"));
+        assertEquals(Optional.empty(), BoardSource.parse("island_gain this_week solo team"));
+        assertEquals("island_weekly_gain:cycle", BoardSource.parse("island_gain cycle").orElseThrow().key());
+        assertEquals("island_weekly_pillars:team", BoardSource.parse("pillar_gain team").orElseThrow().key());
+    }
+
+    @Test
+    void cycleSwitchesSoloAndTeamByTheClock() {
+        assertEquals(IslandTop.Board.SOLO, IslandTop.cycleBoard(0, 10));
+        assertEquals(IslandTop.Board.SOLO, IslandTop.cycleBoard(9_999, 10));
+        assertEquals(IslandTop.Board.TEAM, IslandTop.cycleBoard(10_000, 10));
+        assertEquals(IslandTop.Board.SOLO, IslandTop.cycleBoard(20_000, 10));
+        assertEquals(0, Leaderboards.cycleIndex(IslandTop.Board.SOLO));
+        assertEquals(1, Leaderboards.cycleIndex(IslandTop.Board.TEAM));
+    }
+
+    @Test
+    void m57MigrationOnlyReplacesTheUntouchedOldDefault() {
+        assertEquals(4, new NpcsConfig().version());
+        assertEquals(NpcsConfig.SOURCES_V2.size(), new NpcsConfig().sources.size());
     }
 }
