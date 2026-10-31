@@ -230,6 +230,9 @@ you:
     settings:
       name: "<c:parchment><bold>Settings"
       lore: ["<c:text>Chat, display and sounds."]
+    credits:
+      name: "<cur:credits><bold>Credits"
+      lore: ["<c:text>Your bought and earned credits.", "<c:text>Earned ones are spent first."]
     store:
       name: "<c:success><bold>Store"
       lore: ["<c:text>Ranks and cosmetics.", "<c:text>Every purchase supports us."]
