@@ -167,6 +167,8 @@ Counts are today's catalogs. New entries in a catalog need a texture or they fal
 | Menu buttons | `phoenix:menu/<button>` | ~30 | the button's current material | `common/menu` + module menus | See §5.3. |
 
 ### 5.3 Menu buttons
+> **Done (31 Oct):** the button, feature, tab and currency art (v1) and the final id list are in `RESOURCE_PACK_GUI.md` §5. That list replaces the one below (for example `minus_1/10/100` became `minus_small/mid/big`, and `main_menu`, `undo`, `buy_1/16/64` and `fill` are new).
+
 `blank` (frame panes), `back`, `previous`, `next` (replace the player heads; heads stay the fallback), `close`, `info`, `help`, `confirm`, `confirm_side`, `cancel`, `cancel_side`, `toggle_on`, `toggle_off`, `loading`, `error`, `empty`, `locked`, `maxed`, `minus_1/10/100`, `plus_1/10/100`, `set_min`, `set_max`, `type_amount`, `sell`, `sell_all`, `take_all`, `buy`, `search`, `filter`, `sort`.
 - Head buttons: a textured head can't take `custom_model_data` from our pack in a fallback-safe way and still look right without it. Default: pack users get an `arrow`-material button with the model; non-pack users keep the heads (RP-D11).
 
@@ -193,9 +195,11 @@ Counts are today's catalogs. New entries in a catalog need a texture or they fal
 - The background art includes the frame. The frame panes become invisible (`phoenix:menu/blank`), so the art shows through. Clicks on frame slots still do nothing (same as now).
 - The art must leave the **content slots and button slots visible** (18×18 cells at the vanilla positions). The title text still shows (crumbs + page), drawn over the top band.
 - Starting values (tuned in RP3 on a test client, stored in `ids.yml → menus.<id>`): glyph `ascent: 13`, title text offset `+8` after the shift back.
-- The player inventory half stays vanilla (default; painting it is possible but every menu would need it).
+- The player inventory half is painted too (RP-D16 changed 31 Oct). The art and the per-menu background list are in `RESOURCE_PACK_GUI.md` (31 backgrounds: key screens + area frames).
 
 ### 6.2 Per menu
+> **Replaced (31 Oct):** the owner chose key screens + area frames (31 backgrounds). The file list, codepoints U+E300–U+E31E and every menu class → background are in `RESOURCE_PACK_GUI.md` §4 and §8. The table below is kept for history.
+
 | Menu | Code | Rows | Glyph | Background idea |
 |---|---|---|---|---|
 | Generic 6-row frame | `common/menu` (every PagedMenu) | 6 | U+E300 | Charcoal panel, ember corner flames, dark slot wells. Default for every menu without its own art. |
@@ -233,7 +237,7 @@ Counts are today's catalogs. New entries in a catalog need a texture or they fal
 |---|---|
 | U+E200–E20F | currencies and brand: `E200` money coin, `E201` crystal, `E202` gem, `E203` shard, `E204` credits, `E205` phoenix logo (small, chat prefix), `E206` phoenix logo (wide, scoreboard/tab title), `E207` SkybornMC "S" logo |
 | U+E210–E21F | status marks: check, cross, warning, info, lock, star, hourglass (only if they look better than the safe symbols; default: keep the Unicode symbols, RP-D13) |
-| U+E220–E23F | rank badges: `E220` Ember (free rank), `E221` Squire, `E222` Knight, `E223` Paladin, `E224` Warlord, `E225` Monarch; `E230` Helper, `E231` Mod, `E232` Admin, `E233` Owner, `E234` Builder |
+| U+E220–E23F | rank badges: `E220` Ashborn (free), `E221` Hatchling, `E222` Fledgling, `E223` Firewing, `E224` Flamecrest, `E225` Sunfeather, `E226` Pyrelord, `E227` Immortal, `E228` Torchbearer, `E229` Flameheart, `E22A` Firecrown; `E230` Helper, `E231` Mod, `E232` Admin, `E233` Owner, `E234` Builder (art: RESOURCE_PACK_GUI.md §6) |
 | U+E240–E24F | rarity tags for lore footers: common, uncommon, rare, epic, legendary, mythic, special |
 | U+E250–E25F | pillars/skills: mining, foraging, farming, combat, conquest, fishing |
 | U+E260–E27F | island roles (leader, admin, mod, member, coop), chat channel tags (island, staff) |
@@ -416,7 +420,7 @@ build/pack/                     ← output (gitignored)
 | RP-D13 | Status marks (✔ ✘ ★ ⌛) stay Unicode, not glyphs? | Yes (they already work on Bedrock). |
 | RP-D14 | Custom world border texture (global, every border)? | Yes, ember pattern. |
 | RP-D15 | Custom tooltip backgrounds per rarity (needs a required pack)? | Changed by RP-D1: allowed on Java, P2 art (S02–S08 in the art brief). |
-| RP-D16 | Paint the player-inventory half of menus too? | No, top half only. |
+| RP-D16 | Paint the player-inventory half of menus too? | **Yes** (changed 31 Oct): Phoenix Night paints the whole canvas, inventory half included, with a parchment plate behind the client's "Inventory" label. See RESOURCE_PACK_GUI.md §2. |
 | RP-D17 | Rank badges as glyphs in chat and tab (text prefix stays for non-pack viewers)? | Yes. |
 | RP-D18 | Download failure with the forced pack: let the player in on the vanilla fallback (and retry next join) instead of kicking? | Yes (a broken host must never lock everyone out). |
 | RP-D19 | Worn set looks for Java (RP4b) as part of the first pack release (P1)? | Yes; Bedrock keeps vanilla armor + trims + dye. |

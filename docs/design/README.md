@@ -9,4 +9,5 @@ Nothing in this folder is built yet. The owner reviews it and answers the decisi
 | [UX_REVIEW.md](UX_REVIEW.md) | Feedback on everything else: top 15 changes, click depth, first hour, Bedrock, bugs found, text |
 | [MENU_FIXES.md](MENU_FIXES.md) | All 189 menus with the rules to apply and the notes found in the code |
 | [menus.json](menus.json) | The raw inventory of every menu (slots, labels, materials, notes) |
+| [../plans/RESOURCE_PACK_GUI.md](../plans/RESOURCE_PACK_GUI.md) | **Pack art v1 (31 Oct):** 31 backgrounds, 95 icons, 22 glyphs in `resourcepack/`, every menu's background, how to wire it (GUI-6). Previews: `resourcepack/src/preview/screens.png` |
 | [sketches/gui-sketches.html](sketches/gui-sketches.html) | The sketch page (open in a browser): looks, round-1 screens, colour system, ranks, chat, tab, scoreboard, every menu |

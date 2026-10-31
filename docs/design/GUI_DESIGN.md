@@ -71,7 +71,7 @@ Same as six rows, with the bottom bar on row 3: 27 Back, 30 ?, 31 Close, 32 Main
 ### 1.5 Tabs
 - Tabs sit in row 0.
 - Normal screens have 3–5 tabs, centred on slot 4. The shop is the exception, with 9 tabs across the whole row.
-- **Selected tab:** gold well, glint, and "✔ You are here".
+- **Selected tab:** glint and "✔ You are here" (the background is static, so the selected look lives on the item; see RESOURCE_PACK_GUI.md §2).
 - A tab click **refreshes in place** (same window, no cursor jump), and the title stays the same.
 
 ---
@@ -107,7 +107,7 @@ Same as six rows, with the bottom bar on row 3: 27 Back, 30 ?, 31 Close, 32 Main
 ## 3. States (one look each, everywhere)
 | State | Look | Click |
 |---|---|---|
-| **Ready** (reward, invite, task done) | Gold well, sparkle, count = how many | Does the thing (claims, opens) |
+| **Ready** (reward, invite, task done) | Ready look on the item (Rewards: `rewards_ready` model, open chest + sparkles; others: glint), count = how many. The hub's Rewards well has a fixed gold rim. | Does the thing (claims, opens) |
 | **Selected** (tab, filter, current choice) | Glint, "✔ You are here" / "✔ Showing" | Nothing |
 | **Locked** | Grey padlock, `✘ Name`, then how to unlock: `Mining 15 ▸ 9/15` | Action-bar message + error sound |
 | **Empty list** | Cobweb in slot 22: "Nothing here yet" + one hint | Nothing |
@@ -226,6 +226,8 @@ See `SHOP_DESIGN.md`. In short:
 ---
 
 ## 8. Resource pack notes (what this changes in the art brief)
+> **Done 31 Oct:** the GUI art v1 is in `resourcepack/`, documented in `docs/plans/RESOURCE_PACK_GUI.md` (backgrounds, icons, badges, every menu's background, wiring steps).
+
 - **B08 hub background:** draw for the 15-button layout:
   - Wells at 4, 10, 12, 14, 16, 19, 21, 23, 25, 28, 30, 32, 34, 39, 41.
   - Group marks painted in slots 9, 18, 27, 36.
