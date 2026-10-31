@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.common.crate;
 
 import net.skybornmc.skyblock.common.audit.Actor;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,4 +30,32 @@ public interface CrateKeys {
      * @param reason     short snake_case source, e.g. {@code afk_pool}
      */
     CompletableFuture<Boolean> giveKeys(UUID profileKey, String crateId, int amount, String reason, Actor actor);
+
+    /**
+     * One reward of a crate as other modules may show it (M10.10 collection log).
+     *
+     * @param crate    crate id
+     * @param id       reward id inside that crate ({@code cinder_key}, {@code spawner_t3} ...)
+     * @param top      a star (top) reward
+     * @param live     the reward really exists today (false for "coming soon" rewards that pay a crystal fallback)
+     * @param icon     vanilla item id of its icon ({@code tripwire_hook})
+     * @param nameMini its display name as MiniMessage with style tags (rarity color included)
+     */
+    record RewardInfo(String crate, String id, boolean top, boolean live, String icon, String nameMini) {
+    }
+
+    /** Ids of every crate in display order (empty when the crates module does not publish them). */
+    default List<String> crateIds() {
+        return List.of();
+    }
+
+    /** The rewards of one crate in catalog order (empty for an unknown crate). */
+    default List<RewardInfo> rewards(String crateId) {
+        return List.of();
+    }
+
+    /** Display name of a crate as MiniMessage with style tags ({@code crateId} when unknown). */
+    default String crateNameMini(String crateId) {
+        return crateId;
+    }
 }

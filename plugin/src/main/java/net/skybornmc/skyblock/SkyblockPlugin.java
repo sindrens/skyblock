@@ -313,6 +313,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // Rewards (PHASE-10 M10.6 daily calendar + playtime; M10.5 voting later): needs economy; hands keys out through
         // CrateKeys (crates, above) and reads box, boosters, enchants, cosmetics, islands, skills, afk, profiles (optional).
         modules.register(new net.skybornmc.skyblock.rewards.RewardsModule(core));
+        // Collection log (PHASE-10 M10.10, /collection): after crates (its Crates page reads CrateKeys) and progression (the
+        // "Collections" island level source). Hooks Depths drop/kill events; reads cosmetics, islands, wardrobe (optional).
+        modules.register(new net.skybornmc.skyblock.collection.CollectionModule(core));
     }
 
     public ModuleRegistry modules() {

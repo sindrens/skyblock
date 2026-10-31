@@ -22,9 +22,10 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/bank` | Personal + island bank | `skyblock.bank` | ⬜ |
 | `/sell` (built: [economy](economy.md)), `/shop` (built: [shop](shop.md)), `/ah` (built: [auction](auction.md)) | Selling and trading | see module files | ✅ |
 | `/wardrobe` (replaces `/sets`), `/loadout [name]` (`/skills` built: [skills](skills.md), `/enchanter` built: [enchants](enchants.md)) | Progression (plans: `docs/plans/WARDROBE.md`, `docs/plans/ENCHANTS.md`) | `skyblock.wardrobe`, `skyblock.loadout` … | ⬜ |
-| `/vote`, `/quests`, `/pass`, `/blackmarket`, `/collection` | Rewards | … | ⬜ |
+| `/vote`, `/quests`, `/pass`, `/blackmarket` | Rewards | … | ⬜ |
 | `/daily` | Rewards: built in M10.6, see [rewards.md](rewards.md) | `skyblock.rewards.daily` | ✅ |
 | `/crates` | Rewards: built in M10.1, see [crates.md](crates.md) | `skyblock.crates.use` | ✅ |
+| `/collection` | Collection log: built in M10.10, see [collection.md](collection.md) | `skyblock.collection.use` | ✅ |
 | `/pets`, `/duel`, `/events`, `/report`, `/pv` | Misc | … | ⬜ |
 | `/is chat` (`/is leave`, `/is disband`, `/is transfer` built: [islands](islands.md)) | Island membership (REVIEW B10) | `skyblock.island.*` | ⬜ |
 | `/msg`, `/r`, `/ignore`, `/mail` | Messaging | `skyblock.msg` … | ⬜ |

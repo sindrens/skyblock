@@ -25,6 +25,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [boosters](commands/boosters.md) | Boosters (`modules/boosters`) |
 | [box](commands/box.md) | Item mailbox (`modules/box`) |
 | [chat](commands/chat.md) | Chat, tab list, nametags (`modules/chat`) |
+| [collection](commands/collection.md) | Collection (`modules/collection`) |
 | [cosmetics](commands/cosmetics.md) | Cosmetics module (`modules/cosmetics`): M1.11 |
 | [crates](commands/crates.md) | Crates (`modules/crates`) |
 | [depths](commands/depths.md) | Depths commands |
@@ -40,7 +41,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [npcs](commands/npcs.md) | NPCs and holograms (`modules/npcs`) |
 | [perks](commands/perks.md) | Perks module (`modules/perks`) |
 | [profiles](commands/profiles.md) | Profiles module (`modules/profiles`): PROF |
-| [progression](commands/progression.md) | Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades, M5.5 masteries |
+| [progression](commands/progression.md) | Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades, M5.5 masteries, M5.7 leaderboards |
 | [rewards](commands/rewards.md) | Rewards (`modules/rewards`) |
 | [shop](commands/shop.md) | Builder shop (`modules/shop`) |
 | [skills](commands/skills.md) | Skills module (`modules/skills`): M4.5 |

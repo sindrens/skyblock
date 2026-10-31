@@ -1,0 +1,5 @@
+# LuckPerms grants for the collection module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/collection/src/main/resources/permissions/collection.yml. One console command per line; # = comment.
+# skyblock.collection.use (/collection) defaults to true, so players need no grant. Staff see every first find, milestone
+# and reward hand-out in /logs (category collection). No staff commands (not in the approved list yet).
+lp group mod permission set skyblock.staff.logs.category.collection true

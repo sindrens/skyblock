@@ -53,6 +53,7 @@ you:
   settings:     {slot: 13, icon: comparator,        action: settings}
   store:        {slot: 14, icon: diamond,           command: "store"}
   rules:        {slot: 15, icon: lectern,           command: "rules"}
+  collection:   {slot: 16, icon: bookshelf,         command: "collection",   service: CollectionLog}
 
 # /menu → Travel (GUI_DESIGN §7.3; replaces the UX3 warps menu). 3 rows, slots 10-16. One click teleports with the /spawn
 # warmup (reason: dungeon = the /dungeon warmup); locked places explain why (e.g. Depths tiers). A place that does not

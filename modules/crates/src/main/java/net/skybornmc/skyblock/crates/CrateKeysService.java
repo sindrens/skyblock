@@ -4,7 +4,10 @@ import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.crate.CrateKeys;
 import net.skybornmc.skyblock.common.db.Database;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +32,34 @@ final class CrateKeysService implements CrateKeys {
     @Override
     public boolean exists(String crateId) {
         return m.catalog().crate(crateId).isPresent();
+    }
+
+    @Override
+    public List<String> crateIds() {
+        return m.catalog().ids();
+    }
+
+    /** M10.10: the rewards as the collection log shows them. "Live" = not a coming-soon reward and not an empty cosmetic pool. */
+    @Override
+    public List<RewardInfo> rewards(String crateId) {
+        CrateCatalog.Crate crate = m.catalog().crate(crateId).orElse(null);
+        if (crate == null) {
+            return List.of();
+        }
+        List<RewardInfo> out = new ArrayList<>(crate.rewards().size());
+        for (CrateCatalog.Reward r : crate.rewards()) {
+            boolean live = r.type() != RewardType.COMING_SOON
+                    && !((r.type() == RewardType.TAG || r.type() == RewardType.TITLE) && r.ids().isEmpty());
+            out.add(new RewardInfo(crate.id(), r.id(), r.top(), live, m.icon(r).getKey().getKey().toLowerCase(Locale.ROOT),
+                    m.rewardMini(crate, r, String.valueOf(CratesModule.count(r)))));
+        }
+        return out;
+    }
+
+    @Override
+    public String crateNameMini(String crateId) {
+        CrateCatalog.Crate crate = m.catalog().crate(crateId).orElse(null);
+        return crate == null ? crateId : m.raw("crates." + crate.id() + ".name", CratesModule.capitalize(crate.id()));
     }
 
     @Override

@@ -33,7 +33,9 @@ public enum AuditCategory {
     /** Boosters (PHASE-10 M10.2): items started, banked time, global boosters, thanks. */
     BOOSTERS,
     /** Rewards (PHASE-10 M10.5/M10.6): daily calendar claims, streak rewards, playtime rewards, later votes. */
-    REWARDS;
+    REWARDS,
+    /** Collection log (PHASE-10 M10.10): first finds, page milestones, their reward hand-outs and reviews. */
+    COLLECTION;
 
     /** Key stored in the database, e.g. {@code "economy"}. */
     public String key() {

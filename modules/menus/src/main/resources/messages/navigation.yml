@@ -140,6 +140,9 @@ you:
     rules:
       name: "<c:parchment><bold>Rules & links"
       lore: ["<c:text>Rules, Discord and website."]
+    collection:
+      name: "<c:flame><bold>Collection"
+      lore: ["<c:text>Everything you found yourself,", "<c:text>page milestones and rewards."]
 
 # /menu → Travel (GUI-2, was Warps). Places: menu.yml → travel. <name> in fallback-name = the place id when it has no texts.
 travel:

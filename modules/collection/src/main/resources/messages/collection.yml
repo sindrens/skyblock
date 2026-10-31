@@ -1,0 +1,126 @@
+# Collection log (PHASE-10 M10.10): /collection, finds, milestones. MiniMessage + style tags (style.yml).
+# Reload: /skyblock reload collection
+# Placeholders are plain text unless noted: <found>, <total>, <percent>, <tier>, <points>, <amount>.
+# <item>, <page>, <crate>, <title>, <hint>, <source> and <rewards> are full components.
+
+text: "<text>"
+disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The collection log is turned off right now."
+
+pages:
+  mine:
+    name: "<c:sky_ice>Mine"
+  forest:
+    name: "<c:success>Forest"
+  combat:
+    name: "<c:error>Combat"
+  crates:
+    name: "<c:flame>Crates"
+
+# Titles (account-wide, added to tags-titles.yml once). A full page gives its page title, the whole log gives "log".
+titles:
+  mine: "<rarity:epic>Deep Miner"
+  forest: "<rarity:epic>Woodwarden"
+  combat: "<rarity:epic>Monster Hunter"
+  crates: "<rarity:epic>Lucky Hand"
+  log: "<grad:mythic>Keeper of Ashes</grad>"
+
+# How to get a locked entry (shown in its name, so Bedrock sees it too).
+hint:
+  mine: "<c:text>Mine tier <tier> in the Depths"
+  forest: "<c:text>Forest tier <tier> in the Depths"
+  combat: "<c:text>Combat tier <tier> in the Depths"
+  crates: "<c:text>Star reward of the <crate> <c:text>crate"
+
+sources:
+  depths_mine: "<c:text>Depths mine"
+  depths_forest: "<c:text>Depths forest"
+  depths_combat: "<c:text>Depths combat"
+  crate: "<c:text>Crate"
+  other: "<c:text>Found it yourself"
+
+found:
+  screen:
+    title: ""
+    subtitle: "<c:flame><sym:sparkle></c:flame> <c:text>New find:</c:text> <item>"
+    fade-in: 5
+    stay: 30
+    fade-out: 10
+  chat: "<prefix><c:flame><sym:sparkle></c:flame> <c:text>New in your collection: <item> <c:muted>(<page> <c:muted><found>/<total>)"
+
+milestone:
+  chat: "<prefix><c:success><sym:star></c:success> <c:text>Collection <page> <c:value><percent>%</c:value><c:text>! <c:muted>+<points> island level point"
+  screen:
+    title: "<c:flame>Collection <percent>%"
+    subtitle: "<page>"
+    fade-in: 5
+    stay: 40
+    fade-out: 10
+  page-done:
+    chat: "<prefix><c:success><sym:star></c:success> <page> <c:text>page complete! You got <rewards><c:text>. <c:muted>+<points> island level point"
+    screen:
+      title: "<c:flame>Page complete!"
+      subtitle: "<page>"
+      fade-in: 5
+      stay: 50
+      fade-out: 15
+  all:
+    chat: "<prefix><c:success><sym:star></c:success> <c:text>You completed the whole collection log! You got <rewards><c:text>."
+    screen:
+      title: "<grad:phoenix>Keeper of Ashes</grad>"
+      subtitle: "<c:text>The whole collection log is complete"
+      fade-in: 5
+      stay: 70
+      fade-out: 20
+
+# One milestone reward. <crate> and <title> are full components.
+reward:
+  title: "<c:text>title</c:text> <title>"
+  key: "<c:value><amount>x</c:value> <crate> <c:value>Key"
+  set: "<c:enchant>a secret set token"
+  none: "<c:muted>island level points"
+  separator: "<c:text>, "
+
+menu:
+  title: "Collection"
+  info:
+    - "<c:text>Everything you found yourself."
+    - "<c:text>Drops and crates count; trades and"
+    - "<c:text>the auction house don't. Each"
+    - "<c:text>profile has its own log."
+  loading:
+    name: "<c:muted>Loading..."
+    lore: []
+  empty:
+    name: "<c:muted>Nothing to collect yet"
+    lore: ["<c:text>Pages appear when their feature is live."]
+  tab:
+    name: "<page> <c:value><found>/<total>"
+    lore: ["<c:text>Found <c:value><found></c:value><c:text> of <c:value><total></c:value> <c:muted>(<percent>%)"]
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>Collection <found>/<total> <c:muted>(<percent>%)"
+    lore:
+      - "<c:text>Profile: <c:value><profile>"
+      - ""
+    rewards:
+      - "<c:text>Every 25% of a page: <c:value>+<points></c:value> <c:text>island level"
+      - "<c:text>Full page: <page-rewards>"
+      - "<c:text>Whole log: <log-rewards>"
+    complete:
+      - ""
+      - "<c:success><sym:check> You completed the whole log!"
+  milestones:
+    name: "<page> <c:text>milestones <c:value><reached>/<total>"
+    reached: "<c:success><sym:check> <percent>%</c:success> <c:muted>(<need> found)"
+    open: "<c:locked><sym:cross> <percent>%</c:locked> <c:muted>(<need> found)"
+    lore:
+      - ""
+      - "<c:text>Each one: +1 island level point."
+      - "<c:text>Full page: <rewards>"
+  entry:
+    locked: "<c:muted>???</c:muted> <c:muted><sym:dot></c:muted> <hint>"
+    found:
+      name: "<c:success><sym:check></c:success> <item>"
+      lore:
+        - "<hint>"
+        - "<c:text>Found <c:value><ago></c:value> <c:text>ago"
+        - "<c:text>From: <source>"
