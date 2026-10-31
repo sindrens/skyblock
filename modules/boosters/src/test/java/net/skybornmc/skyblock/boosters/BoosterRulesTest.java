@@ -89,4 +89,12 @@ class BoosterRulesTest {
         assertTrue(s.valid(50, 60, true));
         assertFalse(s.valid(200, 60, true), "above global.max-percent");
     }
+
+    @Test
+    void globalTimeIsNotSavedInTheFirstTick() {
+        long period = 30_000;
+        assertFalse(BoosterRules.saveDue(true, 0, 1_000_000, period), "PERF8: nothing elapsed in the first tick");
+        assertFalse(BoosterRules.saveDue(false, 1_000_000, 1_029_999, period));
+        assertTrue(BoosterRules.saveDue(false, 1_000_000, 1_030_000, period), "one period after the first tick");
+    }
 }

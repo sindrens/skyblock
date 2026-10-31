@@ -138,7 +138,9 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
             afk.active(p.getUniqueId(), now);
             loadIgnores(p.getUniqueId());
         }
-        afkTask = core.scheduler().repeat("social:auto-afk", 200L, 200L, this::checkAutoAfk);
+        // PERF8: the idle scan runs off the main thread (the tracker is thread-safe); the main thread only gets a task
+        // (social:auto-afk) when someone is due, and checks each of them again there.
+        afkTask = core.scheduler().asyncRepeat(200L, 200L, this::checkAutoAfk);
         // The menus module (which publishes PlayerSettings) enables after us; register our toggles one tick later.
         core.scheduler().later("social:settings", 1L, this::registerSettings);
     }
@@ -646,16 +648,26 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         }
     }
 
+    /** Any thread: finds the players idle long enough; marks them AFK on the main thread. */
     private void checkAutoAfk() {
         if (config.afkAutoMinutes <= 0) {
             return;
         }
-        for (UUID id : afk.dueForAuto(System.currentTimeMillis(), config.afkAutoMinutes * 60_000L)) {
-            Player p = Bukkit.getPlayer(id);
-            if (p != null && afk.set(id, true, System.currentTimeMillis())) {
-                announceAfk(p, true);
-            }
+        long idle = config.afkAutoMinutes * 60_000L;
+        java.util.Set<UUID> due = afk.dueForAuto(System.currentTimeMillis(), idle);
+        if (due.isEmpty() || !core.plugin().isEnabled()) {
+            return;
         }
+        core.scheduler().ensureMain("social:auto-afk", () -> {
+            long now = System.currentTimeMillis();
+            for (UUID id : due) {
+                Player p = Bukkit.getPlayer(id);
+                // Checked again here: activity between the scan and this tick keeps them active, as before.
+                if (p != null && afk.stillDue(id, now, idle) && afk.set(id, true, now)) {
+                    announceAfk(p, true);
+                }
+            }
+        });
     }
 
     private void activity(Player player) {

@@ -18,8 +18,14 @@ public final class CoreConfig extends ModuleConfig {
     public boolean preloadClasses = true;
 
     @Setting(path = "performance.preload-delay-ticks", desc = "Ticks after the server finished starting before the class "
-            + "preload begins. Read at server start.", min = 0, max = 1200)
+            + "preload begins (only with performance.preload-at-enable: false). Read at server start.", min = 0, max = 1200)
     public int preloadDelayTicks = 20;
+
+    @Setting(path = "performance.preload-at-enable", desc = "Start the class preload while the plugin enables (own background "
+            + "thread), so it is finished before the first tick instead of running during the first seconds of play, when "
+            + "every module's start-up tasks run for the first time (PERF8). false = start preload-delay-ticks after the "
+            + "server finished starting (PERF6). Read at server start.")
+    public boolean preloadAtEnable = true;
 
     @Setting(desc = "Show config problems to staff with skyblock.admin.reload when they join.")
     public boolean notifyStaffOfConfigProblems = true;

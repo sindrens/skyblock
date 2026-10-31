@@ -93,7 +93,8 @@ final class GlobalBoosters {
                 }
             }
             return Map.entry(rows, thanked);
-        })).whenCompleteAsync((data, error) -> {
+        })).whenCompleteAsync((data, error) -> m.core.scheduler().timer().time("boosters:global-load", () -> {
+            // PERF8: this main-thread step (queue, promotions, first bars for everyone) was not timed before.
             if (error != null) {
                 m.core.plugin().getLogger().log(Level.SEVERE, "Boosters: could not load global boosters (they resume at the next start)",
                         Database.cause(error));
@@ -117,7 +118,7 @@ final class GlobalBoosters {
             ready = true;
             refreshBars();
             retryUnpaid();
-        }, m.main());
+        }), m.main());
     }
 
     // ================================================================== tick
@@ -127,8 +128,12 @@ final class GlobalBoosters {
             return;
         }
         long now = System.currentTimeMillis();
-        long elapsed = lastTick == 0 ? 0 : Math.min(10_000, Math.max(0, now - lastTick));
+        boolean first = lastTick == 0;
+        long elapsed = first ? 0 : Math.min(10_000, Math.max(0, now - lastTick));
         lastTick = now;
+        if (first) {
+            lastSave = now; // PERF8: the next save is one period from now (nothing to save yet, see BoosterRules.saveDue)
+        }
         GlobalQueue.Tick t = queue.tick(elapsed, now);
         for (GlobalQueue.Entry e : t.ended()) {
             long id = e.id;
@@ -153,11 +158,11 @@ final class GlobalBoosters {
         }
         long grace = m.settings.thanksGraceSeconds * BoosterRules.SECOND;
         recent.removeIf(e -> now - e.endedAt > grace);
-        if (now - lastSave >= m.settings.globalSaveSeconds * BoosterRules.SECOND) {
+        if (BoosterRules.saveDue(first, lastSave, now, m.settings.globalSaveSeconds * BoosterRules.SECOND)) {
             lastSave = now;
             save();
         }
-        updateBars();
+        m.core.scheduler().timer().time("boosters:tick-bars", this::updateBars);
     }
 
     private void persistStart(GlobalQueue.Entry e) {
@@ -241,8 +246,11 @@ final class GlobalBoosters {
             return;
         }
         for (GlobalQueue.Entry e : queue.active()) {
-            BossBar bar = bars.computeIfAbsent(e.id, id -> BossBar.bossBar(barName(e), BoosterRules.progress(e.remaining, e.duration),
-                    color(), BossBar.Overlay.PROGRESS));
+            BossBar bar = bars.computeIfAbsent(e.id, id -> {
+                // PERF8: remember what the new bar shows, so the next tick doesn't parse the same text a second time.
+                barTexts.put(id, barText(e));
+                return BossBar.bossBar(barName(e), BoosterRules.progress(e.remaining, e.duration), color(), BossBar.Overlay.PROGRESS);
+            });
             for (Player p : Bukkit.getOnlinePlayers()) {
                 if (m.wantsBar(p)) {
                     p.showBossBar(bar);

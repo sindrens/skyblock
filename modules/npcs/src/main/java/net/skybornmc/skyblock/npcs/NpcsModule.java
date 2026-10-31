@@ -142,8 +142,11 @@ public final class NpcsModule implements SkyblockModule {
         skins = plan.skins();
         held = plan.held();
         spots = plan.spots();
-        boards.start(plan.sources());
-        placer.start(plan.spots());
+        // PERF8: every part of the apply is timed on its own (nested inside npcs:apply): npcs:apply-boards, and inside
+        // npcs:apply-place: npcs:apply-retire, npcs:apply-track, npcs:apply-queue. The left-over walk is npcs:purge (now in
+        // the first npcs:spawn tick).
+        core.scheduler().timer().time("npcs:apply-boards", () -> boards.start(plan.sources()));
+        core.scheduler().timer().time("npcs:apply-place", () -> placer.start(plan.spots()));
         plan.problems().forEach(p -> core.plugin().getLogger().warning("[npcs] " + p));
         Spots planned = plan.spots();
         core.plugin().getLogger().info("[npcs] " + planned.npcs().size() + " NPCs, " + planned.holograms().size()
