@@ -68,8 +68,29 @@ tier:
     warlord: "Warlord Sword"
   hoe:
     basic: "Farmer's Hoe"
+    copper: "Copper Hoe"
+    iron: "Iron Hoe"
+    gold: "Gold Hoe"
+    diamond: "Diamond Hoe"
+    netherite: "Netherite Hoe"
+    sunscorch: "Sunscorch Hoe"
+    briarthorn: "Briarthorn Hoe"
+    netherbloom: "Netherbloom Hoe"
+    torchbloom: "Torchbloom Hoe"
+    verdant: "Verdant Crown Hoe"
   rod:
     basic: "Angler's Rod"
+    reed: "Reed Rod"
+    willow: "Willow Rod"
+    copper: "Copper Rod"
+    iron: "Iron Rod"
+    gold: "Gold Rod"
+    coral: "Coral Rod"
+    diamond: "Diamond Rod"
+    emerald: "Emerald Rod"
+    stormcall: "Stormcall Rod"
+    netherite: "Netherite Rod"
+    abyssal: "Abyssal Rod"
 
 # Blueprint abilities (tools.yml → abilities).
 ability:
@@ -163,7 +184,8 @@ item:
     pickaxe: "Mine ore. Levels up as you use it."
     axe: "Chop logs. Levels up as you use it."
     sword: "Fight mobs. Levels up as you use it."
-    hoe: "Harvest crops."
+    hoe: "Harvest crops. Levels up as you use it."
+    harvester: "Right-click a ripe crop to reap and replant the area around it."
     rod: "Catch fish."
   max-level: "<c:text>Lv <c:value>{level}</c:value> <c:flame>MAX"
   prestige: "<c:flame><sym:star> Prestige {count}"
@@ -176,9 +198,12 @@ item:
     blocks: "<c:text>Blocks mined: </c:text><c:value>{value}"
     logs: "<c:text>Logs chopped: </c:text><c:value>{value}"
     kills: "<c:text>Kills: </c:text><c:value>{value}"
+    crops: "<c:text>Crops harvested: </c:text><c:value>{value}"
   stat:
     speed: "Speed"
     fortune: "Fortune"
+    crop-drops: "Crop drops"
+    area: "Reap area"
     damage: "Damage"
   action-input: "SNEAK + USE"
   action-text: "to open the tool menu"
@@ -251,7 +276,7 @@ tool-menu:
       lore: ["<c:error><sym:cross> <c:text>Prestige at Lv <max> to open it"]
   history:
     name: "<c:value>History"
-    lore: ["<c:text>Blocks mined <c:value><blocks>", "<c:text>Logs chopped <c:value><logs>", "<c:text>Kills <c:value><kills>", "<c:text>Total XP <c:value><xp>", "<c:text>Times forged <c:value><forged>", "<c:text>Prestiges <c:value><prestige>", "<c:muted>Made by <creator>"]
+    lore: ["<c:text>Blocks mined <c:value><blocks>", "<c:text>Logs chopped <c:value><logs>", "<c:text>Kills <c:value><kills>", "<c:text>Crops harvested <c:value><crops>", "<c:text>Total XP <c:value><xp>", "<c:text>Times forged <c:value><forged>", "<c:text>Prestiges <c:value><prestige>", "<c:muted>Made by <creator>"]
   skin:
     name: "<c:value>Skin"
     lore: ["<c:text>Now: <c:value><skin>", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
@@ -299,6 +324,7 @@ forge:
   needs-money: "<prefix><c:error><sym:cross></c:error> <c:text>You need <c:value><money></c:value>."
   duplicate: "<prefix><c:warning><sym:cross></c:warning> <c:text>That was already done."
   items-moved: "<prefix><c:error><sym:cross></c:error> <c:text>Your items moved, so nothing was forged. Money refunded."
+  kind-closed: "<prefix><c:error><sym:cross></c:error> <kind> <c:text>can't be forged yet. They open with their skill."
   state:
     owned: "<prefix><c:text>You already have this tier or better."
     craftable: "<prefix><c:text>Click again to forge it."
@@ -308,7 +334,7 @@ forge:
     needs-money: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have enough money yet."
   menu:
     title: "Forge"
-    info: ["<c:text>Forge the next tier from the", "<c:text>tool you have. Level, perks", "<c:text>and stats stay. Pay with money", "<c:text>and Depths materials."]
+    info: ["<c:text>Forge the next tier from the", "<c:text>tool you have. Level, perks", "<c:text>and stats stay. Pay with money", "<c:text>and materials (drops or crops)."]
     tab: "<c:text><kind>"
     tab-selected: "<c:flame><sym:bullet> <kind>"
     tab-lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
@@ -324,6 +350,7 @@ forge:
     subtitle: "<c:muted><kind> <sym:dot> Tier <tier>"
     damage: "<c:text>Damage <c:value><damage>"
     efficiency: "<c:text>Mining power <c:value>+<efficiency>"
+    crop-drops: "<c:text>Crop drops <c:value>+<percent>%"
     starter: ["<c:text>Free from the starter kit."]
     needs-tool: "<c:error><sym:cross> <c:text>Needs <tool>"
     needs-tool-ok: "<c:success><sym:check> <c:text>Needs <tool>"
@@ -374,3 +401,7 @@ admin:
   unknown-blueprint: "<prefix><c:error><sym:cross></c:error> <c:text>No blueprint <c:value><blueprint></c:value>. Press Tab to see them."
   unknown-skin: "<prefix><c:error><sym:cross></c:error> <c:text>No skin <c:value><skin></c:value>. Press Tab to see them."
   unknown-player: "<prefix><c:error><sym:cross></c:error> <c:text>No player <c:value><player></c:value> has joined before."
+
+# Harvester hoe (PHASE-7 M7.4). <count> crops broken, <size> area side.
+harvester:
+  reaped: "<c:success><sym:check></c:success> <c:text>Reaped <c:value><count></c:value> crops <c:muted>(<size>x<size>)"

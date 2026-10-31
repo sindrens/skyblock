@@ -234,6 +234,11 @@ final class Forge {
             fail(player, "forge.unknown-tier");
             return;
         }
+        if (!module.forgeOpen(kind)) {
+            // G2: hoe tiers wait for farming (crops.yml → enabled), rod tiers for fishing (M7.8).
+            fail(player, "forge.kind-closed", Msg.c("kind", module.items().kindPlural(player, kind)));
+            return;
+        }
         ToolCatalog.TierDef def = found.get();
         Optional<Map.Entry<Integer, ToolData>> base = baseTool(player.getInventory(), kind, target);
         if (base.isEmpty()) {

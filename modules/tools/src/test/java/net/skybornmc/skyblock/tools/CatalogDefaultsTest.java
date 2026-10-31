@@ -41,4 +41,29 @@ class CatalogDefaultsTest {
         assertEquals("axe", y.getString("blueprints.frost_axe.kind"));
         assertTrue(ToolsModule.hasEntries(y, "blueprints"));
     }
+
+    /** Catalog v4 (PHASE-7 M7.4): starter-only hoe/rod lists get the full tiers; lists the owner extended are kept. */
+    @Test
+    void v4FillsOnlyStarterOnlyTierLists() throws Exception {
+        YamlConfiguration d = yaml("tiers:\n  hoe:\n    - {id: basic}\n    - {id: copper}\n  rod:\n    - {id: basic}\n    - {id: reed}\n");
+        YamlConfiguration y = yaml("tiers:\n  hoe:\n    - {id: basic}\n  rod:\n    - {id: basic}\n    - {id: mine}\n    - {id: own}\n");
+        assertTrue(ToolsModule.fillStarterOnlyTiers(y, d, net.skybornmc.skyblock.common.tools.ToolKind.HOE));
+        assertEquals(2, y.getList("tiers.hoe").size());
+        assertFalse(ToolsModule.fillStarterOnlyTiers(y, d, net.skybornmc.skyblock.common.tools.ToolKind.ROD), "owner list kept");
+        assertEquals(3, y.getList("tiers.rod").size());
+        YamlConfiguration missing = yaml("tiers:\n  pickaxe:\n    - {id: coal}\n");
+        assertTrue(ToolsModule.fillStarterOnlyTiers(missing, d, net.skybornmc.skyblock.common.tools.ToolKind.HOE), "a missing list is added");
+    }
+
+    /** G2: hoe tiers only while farming is on, rod tiers only while fishing is open; the Depths tools always. */
+    @Test
+    void forgeKindsFollowTheSwitches() {
+        var hoe = net.skybornmc.skyblock.common.tools.ToolKind.HOE;
+        var rod = net.skybornmc.skyblock.common.tools.ToolKind.ROD;
+        assertFalse(ToolsModule.openKind(hoe, false, true));
+        assertTrue(ToolsModule.openKind(hoe, true, false));
+        assertFalse(ToolsModule.openKind(rod, true, false));
+        assertTrue(ToolsModule.openKind(rod, false, true));
+        assertTrue(ToolsModule.openKind(net.skybornmc.skyblock.common.tools.ToolKind.PICKAXE, false, false));
+    }
 }

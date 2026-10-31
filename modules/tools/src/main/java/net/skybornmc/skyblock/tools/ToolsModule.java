@@ -68,6 +68,7 @@ public final class ToolsModule implements SkyblockModule {
     private BlueprintDrops drops;
     private ToolsListener listener;
     private DepthsHooks depthsHooks;
+    private Harvester harvester;
     private Scheduler.Task saveTask;
 
     public ToolsModule(Core core) {
@@ -94,6 +95,9 @@ public final class ToolsModule implements SkyblockModule {
         core.services().register(ID, ToolService.class, tracker);
         listener = new ToolsListener(this);
         Bukkit.getPluginManager().registerEvents(listener, core.plugin());
+        harvester = new Harvester(this);
+        harvester.apply();
+        Bukkit.getPluginManager().registerEvents(harvester, core.plugin());
         registerDepthsHooks();
         registerCommands();
         scheduleSave();
@@ -105,6 +109,9 @@ public final class ToolsModule implements SkyblockModule {
         core.messages().load(ID);
         catalog = loadCatalog();
         curve = buildCurve();
+        if (harvester != null) {
+            harvester.apply();
+        }
         scheduleSave();
     }
 
@@ -116,6 +123,10 @@ public final class ToolsModule implements SkyblockModule {
         }
         if (listener != null) {
             HandlerList.unregisterAll(listener);
+        }
+        if (harvester != null) {
+            HandlerList.unregisterAll(harvester);
+            harvester = null;
         }
         if (depthsHooks != null) {
             HandlerList.unregisterAll(depthsHooks);
@@ -166,6 +177,36 @@ public final class ToolsModule implements SkyblockModule {
 
     ModuleMessages msg() {
         return msg;
+    }
+
+    /** The harvester hoe (null before enable). */
+    Harvester harvester() {
+        return harvester;
+    }
+
+    /**
+     * Tool types the Forge offers right now (G2: hide what is not built): hoe tiers only while farming is on (a
+     * {@code FarmingService} is registered, {@code crops.yml → enabled}), rod tiers only while the Fishing skill is open
+     * (M7.8). The starter pieces stay in the starter kit either way.
+     */
+    boolean forgeOpen(ToolKind kind) {
+        boolean farming = net.skybornmc.skyblock.common.production.FarmingService.of(core.services()).isPresent();
+        boolean fishing = core.services().optional(net.skybornmc.skyblock.common.skills.SkillService.class)
+                .map(s -> s.available(net.skybornmc.skyblock.common.skills.SkillType.FISHING)).orElse(false);
+        return openKind(kind, farming, fishing);
+    }
+
+    static boolean openKind(ToolKind kind, boolean farming, boolean fishing) {
+        return switch (kind) {
+            case HOE -> farming;
+            case ROD -> fishing;
+            default -> true;
+        };
+    }
+
+    /** The tool types shown as Forge tabs, in catalog order. */
+    List<ToolKind> forgeKinds() {
+        return catalog.kinds().stream().filter(this::forgeOpen).toList();
     }
 
     /** The Depths bridge, or null when the depths module is not in this build. */
@@ -219,7 +260,7 @@ public final class ToolsModule implements SkyblockModule {
         YamlConfiguration defaults = defaults();
         boolean changed = false;
         int catalogVersion = yaml.getInt(CATALOG_VERSION_KEY, 1);
-        if (file.exists() && catalogVersion < CATALOG_VERSION) {
+        if (file.exists() && catalogVersion < 3) {
             // v2 (M4.9): Forge and blueprint recipes use the Depths drop items instead of vanilla items.
             // v3 (M4.8): sword recipes use the combat drops.
             backup(file, "tools-catalog-v" + catalogVersion + "-backup.yml");
@@ -228,6 +269,20 @@ public final class ToolsModule implements SkyblockModule {
             }
             core.plugin().getLogger().info("tools.yml: tool tiers and blueprints updated to catalog v" + CATALOG_VERSION
                     + " (Depths drop recipes); the old file is kept as tools-catalog-v" + catalogVersion + "-backup.yml");
+            changed = true;
+        } else if (file.exists() && catalogVersion < 4) {
+            // v4 (PHASE-7 M7.4): hoe and rod tiers (only lists that still hold just the starter piece; owner edits stay).
+            List<String> filled = new ArrayList<>();
+            for (ToolKind kind : List.of(ToolKind.HOE, ToolKind.ROD)) {
+                if (fillStarterOnlyTiers(yaml, defaults, kind)) {
+                    filled.add(kind.id());
+                }
+            }
+            if (!filled.isEmpty()) {
+                backup(file, "tools-catalog-v" + catalogVersion + "-backup.yml");
+                core.plugin().getLogger().info("tools.yml: tiers for " + String.join(", ", filled) + " added (catalog v4, harvester hoe "
+                        + "and rod tiers); the old file is kept as tools-catalog-v" + catalogVersion + "-backup.yml");
+            }
             changed = true;
         }
         if (yaml.getInt(CATALOG_VERSION_KEY, 1) != CATALOG_VERSION) {
@@ -258,7 +313,23 @@ public final class ToolsModule implements SkyblockModule {
     }
 
     /** Version of the catalog sections; a lower version in tools.yml replaces tiers and blueprints once (backup kept). */
-    static final int CATALOG_VERSION = 3;
+    static final int CATALOG_VERSION = 4;
+
+    /**
+     * Catalog v4: replaces {@code tiers.<kind>} with the default list when it holds at most one tier (the starter piece);
+     * a list the owner already extended is kept. Returns true if it changed.
+     */
+    static boolean fillStarterOnlyTiers(org.bukkit.configuration.ConfigurationSection yaml, org.bukkit.configuration.ConfigurationSection defaults,
+                                        ToolKind kind) {
+        String path = "tiers." + kind.id();
+        List<?> current = yaml.getList(path);
+        List<?> def = defaults.getList(path);
+        if (def == null || def.size() <= 1 || (current != null && current.size() > 1)) {
+            return false;
+        }
+        yaml.set(path, def);
+        return true;
+    }
     static final String CATALOG_VERSION_KEY = "catalog-version";
 
     /** True if the section has at least one catalog entry (plain setting keys don't count). */
@@ -339,12 +410,12 @@ public final class ToolsModule implements SkyblockModule {
     }
 
     private void registerCommands() {
-        Arg<String> forgeType = Args.oneOf("type", this::kindIds);
+        Arg<String> forgeType = Args.oneOf("type", () -> forgeKinds().stream().map(ToolKind::id).toList());
         core.commands().register(CommandSpec.command("forge")
                 .description("The Forge: upgrade your tools, craft blueprints, claim the starter kit").category("Tools")
                 .permission(PERM_FORGE).playerOnly().optional(forgeType).example("forge pickaxe")
                 .executes(ctx -> core.menus().open(ctx.player(), new ForgeMenu(this,
-                        ctx.has(forgeType) ? ToolKind.byId(ctx.get(forgeType)).orElse(ToolKind.PICKAXE) : heldKind(ctx.player())))));
+                        forgeKind(ctx.has(forgeType) ? ToolKind.byId(ctx.get(forgeType)).orElse(ToolKind.PICKAXE) : heldKind(ctx.player()))))));
 
         Arg<Player> givePlayer = Args.onlinePlayer("player");
         Arg<String> giveTool = Args.oneOf("tool", this::kindIds);
@@ -379,6 +450,11 @@ public final class ToolsModule implements SkyblockModule {
                 .sub(CommandSpec.sub("give").description("Add a tool skin to a player's collection (staff)").category("Staff").permission(PERM_SKIN)
                         .arg(skinPlayer).arg(skinId).example("skin give Steve frostbite")
                         .executes(ctx -> giveSkin(ctx.sender(), ctx.get(skinPlayer), ctx.get(skinId)))));
+    }
+
+    /** The requested Forge tab, or pickaxes when that type is not offered (yet). */
+    ToolKind forgeKind(ToolKind wanted) {
+        return wanted != null && catalog.kinds().contains(wanted) && forgeOpen(wanted) ? wanted : ToolKind.PICKAXE;
     }
 
     private ToolKind heldKind(Player player) {
