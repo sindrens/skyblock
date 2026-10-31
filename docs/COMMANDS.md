@@ -40,6 +40,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [moderation](commands/moderation.md) | Punishments (`modules/moderation`, M1.8; replace vanilla `/ban /kick /pardon`) |
 | [motd](commands/motd.md) | MOTD (`modules/motd`) |
 | [npcs](commands/npcs.md) | NPCs and holograms (`modules/npcs`) |
+| [pack](commands/pack.md) | Resource pack (`modules/pack`) |
 | [pass](commands/pass.md) | Battle pass (`modules/pass`) |
 | [perks](commands/perks.md) | Perks module (`modules/perks`) |
 | [production](commands/production.md) | Production (`modules/production`) |

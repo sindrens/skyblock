@@ -1,0 +1,22 @@
+# Resource pack (RP1-RP3): kick messages (shown while joining, before the world loads) and /pack output.
+# MiniMessage + style tags (style.yml). Reload: /pack reload or /skyblock reload pack
+kick:
+  # Declined the prompt while the pack is required. Shown on the disconnect screen.
+  declined: "<c:warning><bold>The Phoenix resource pack is needed to play</bold></c:warning><newline><newline><c:text>Phoenix Skyblock uses its own menus, rank badges and sounds, and they need the pack to show correctly.<newline><newline><c:text>To turn it on:<newline><c:value>Multiplayer → select Phoenix Skyblock → Edit → Server Resource Packs: Enabled</c:value><newline><newline><c:text>Then join again. It is small and only downloads once."
+  # The download or loading failed (or took too long).
+  failed: "<c:warning><bold>Couldn't download the pack</bold></c:warning><newline><newline><c:text>Couldn't download the pack, please rejoin.<newline><c:muted>If it keeps happening, check your connection and that Server Resource Packs is Enabled for this server."
+
+command:
+  # <variant> safe or shine, <count> players online who got it again
+  reloaded: "<prefix><c:success><sym:check></c:success> <c:text>Pack reloaded (<c:value><variant></c:value>) and sent again to <c:value><count></c:value> online player(s)."
+  # <player>, <status>, <info> (the line from 'status' below)
+  status: "<prefix><c:value><player></c:value><c:text>: <c:value><status></c:value> <c:muted>(<info>)"
+
+# One short explanation per status, shown by /pack status.
+status:
+  loaded: "<c:muted>pack loaded, sees menus, badges and sounds"
+  declined: "<c:muted>declined the pack"
+  failed: "<c:muted>download or loading failed"
+  bedrock: "<c:muted>Bedrock player, text fallback"
+  pending: "<c:muted>not answered yet or still downloading"
+  disabled: "<c:muted>the pack is turned off in pack.yml"
