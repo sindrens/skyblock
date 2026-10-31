@@ -11,7 +11,7 @@ import org.bukkit.Material;
  * <pre>
  *  R O B B B B B O R
  *  B . ✔ . ☺ . ✘ . B     11 accept, 13 the invite, 15 deny
- *  R O B B ← B B O R     22 back
+ *  ← O B B ✘ B B O R     18 Back, 22 Close (framework)
  * </pre>
  * Accepting re-checks everything in the database (slots, join limits, one island per player).
  */
@@ -20,7 +20,6 @@ final class InviteActionsMenu extends Menu {
     static final int SLOT_ACCEPT = 11;
     static final int SLOT_INFO_ITEM = 13;
     static final int SLOT_DENY = 15;
-    static final int SLOT_BACK_SMALL = 22;
 
     private final IslandsModule module;
     private final IslandManager islands;
@@ -68,7 +67,6 @@ final class InviteActionsMenu extends Menu {
             members.deny(viewer, invite);
             back();
         });
-        set(SLOT_BACK_SMALL, service.item(Material.ARROW, viewer, IslandsModule.ID, "invites.actions.back"), click -> back());
     }
 
     private Component text(String key, TagResolver... placeholders) {

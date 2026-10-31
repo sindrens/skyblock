@@ -13,7 +13,7 @@ import java.util.List;
  * Admin actions on one entry of the inspected player's wardrobe (WD25, no new command): set its level (buttons for the
  * usual test levels) or remove it. Every action confirms first and is audited.
  * <pre>
- *  4  the entry     10-16 set level 0 · 1 · 10 · 25 · 40 · 49 · max     22 remove
+ *  4  the entry     10-16 set level 0 · 1 · 10 · 25 · 40 · 49 · max     26 remove (22 is Close)
  * </pre>
  */
 final class StaffEntryMenu extends Menu {
@@ -64,7 +64,7 @@ final class StaffEntryMenu extends Menu {
                     p -> module.staff().setLevel(p, staffMenu, entry, target), p -> {
             })));
         }
-        set(22, service.item(Material.BARRIER, viewer, WardrobeModule.ID, "menu.staff.remove"), click -> openChild(new ConfirmMenu(
+        set(26, service.item(Material.BARRIER, viewer, WardrobeModule.ID, "menu.staff.remove"), click -> openChild(new ConfirmMenu(
                 v -> m.text(v, "confirm.remove.crumb"), null,
                 v -> m.lines(v, "confirm.remove.details", Msg.p("set", name), Msg.p("player", staffMenu.targetName)),
                 p -> module.staff().remove(p, staffMenu, entry), p -> {

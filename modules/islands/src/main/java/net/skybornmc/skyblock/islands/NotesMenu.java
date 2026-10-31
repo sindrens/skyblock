@@ -19,7 +19,7 @@ import java.util.List;
  *  B n n n n n n n B      lore = the full text, author and date, who ticked it, where it is pinned;
  *  B n n n n n n n B      click = the note's actions ({@link NoteActionsMenu}) when the viewer has any
  *  B n n n n n n n B
- *  ← 📖 + ? X ⓘ ♻ 🗄 →    46 open as book, 47 add (write), 51 clear done (manage), 52 deleted notes (staff)
+ *  ← 📖 + ? X ⓘ ♻ 🗄 →    46 open as book, 47 add (write), 51 clear done (manage); top row 6 deleted notes (staff)
  * </pre>
  * One plain click per action (Bedrock-safe). Refreshes every 2 s; closes when the viewer can no longer read the notes.
  */
@@ -29,7 +29,7 @@ final class NotesMenu extends PagedMenu<Note> {
     static final int SLOT_BOOK = 46;
     static final int SLOT_ADD = 47;
     static final int SLOT_CLEAR = 51;
-    static final int SLOT_DELETED = 52;
+    static final int SLOT_DELETED = 6; // GUI-1: 52 is Previous page now
 
     private final IslandsModule module;
     private final IslandManager islands;

@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.crates;
 
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -11,9 +12,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * {@code /crates}: your keys (slot 4) and every crate in a row (hidden ones as "Coming soon"). Java: left-click =
- * preview, right-click = open 1, shift-click = open 10. Bedrock: a tap opens the preview, which has buttons for
- * everything (no right or shift clicks needed).
+ * {@code /crates}: your keys (slot 4) and every crate in a row (hidden ones as "Coming soon"). A click (left or right,
+ * or a Bedrock tap) opens the preview, which has buttons for everything. Java-only shortcuts (GUI-1, marked on the
+ * button): right-click opens 1, shift-click opens the bulk amount.
  */
 final class CratesMenu extends Menu {
 
@@ -74,11 +75,12 @@ final class CratesMenu extends Menu {
                         service.lines(viewer, CratesModule.ID, "menu.crate.coming-soon")));
                 continue;
             }
-            set(CRATE_SLOTS[i], crateItem(crate, view), click -> click(click.player(), crate, click.isLeft(), click.isRight(),
-                    click.isShift()));
+            set(CRATE_SLOTS[i], MenuButton.of(crateItem(crate, view), click -> openChild(new PreviewMenu(m, crate)))
+                    .withRight(click -> open(click.player(), crate, 1))
+                    .withShift(click -> open(click.player(), crate, m.settings.bulkAmount)));
         }
         if (crates.isEmpty()) {
-            set(22, service.item(Material.COBWEB, viewer, CratesModule.ID, "menu.empty"));
+            setEmpty(CratesModule.ID, "menu.empty");
         }
     }
 
@@ -104,20 +106,14 @@ final class CratesMenu extends Menu {
         return service.item(m.icon(crate), m.mini(viewer, m.crateMini(crate)), lore);
     }
 
-    private void click(Player player, CrateCatalog.Crate crate, boolean left, boolean right, boolean shift) {
-        if (m.bedrock(player) || (left && !shift)) {
-            openChild(new PreviewMenu(m, crate));
-            return;
-        }
-        int amount = shift ? m.settings.bulkAmount : 1;
-        if (right || shift) {
-            m.opener().open(player, crate, amount, plan -> {
-                if (plan != null && plan.grants().size() > 1 && isOpen()) {
-                    m.opener().showResult(player, plan, this);
-                } else {
-                    refresh();
-                }
-            });
-        }
+    /** Java-only shortcut: opens {@code amount} crates right from the list (Bedrock players use the preview's buttons). */
+    private void open(Player player, CrateCatalog.Crate crate, int amount) {
+        m.opener().open(player, crate, amount, plan -> {
+            if (plan != null && plan.grants().size() > 1 && isOpen()) {
+                m.opener().showResult(player, plan, this);
+            } else {
+                refresh();
+            }
+        });
     }
 }

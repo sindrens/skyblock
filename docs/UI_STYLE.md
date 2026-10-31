@@ -241,25 +241,30 @@ Built by the menu framework (`common/menu`, `frame()`), so every menu looks the 
  B  .  .  .  .  .  .  .  B
  B  .  .  .  .  .  .  .  B
  B  .  .  .  .  .  .  .  B
- ←  O  B  ?  ✘  H  B  O  →      45 Back/Previous · 48 Info · 49 Close · 50 Help · 53 Next
+ ←  a  a  ?  ✘  M  a  <  >      45 Back · 46/47/51 screen actions · 48 ? · 49 Close · 50 Main menu · 52/53 pages
 ```
 - **Why this frame:** full red rows (the old look) were loud and fought with red error items and the content. A dark border makes items pop; red only on the corners with an orange "glow" next to them is the phoenix accent, like embers at the edges. Content slots stay empty (no filler), so the list reads cleanly. All panes have no tooltip at all.
-- **Fixed slots everywhere:** 45 = Back on page 1 (only when there is a parent menu) and Previous page on page 2+ (decided 2026-10-29, no right-click needed on Bedrock); 48 = Info (book: what this screen does + opens `/help <topic>`); 49 = Close (barrier); 50 = Help (knowledge book); 53 = Next page.
+- **Fixed slots everywhere (GUI-1, docs/design/GUI_DESIGN.md §1.1, `MenuLayout`):** 45 = Back on every page (when there is somewhere to go back to); 48 = **?** "What is this?" (book: the screen's short guide in the lore, a click opens its help topic and Back returns here); 49 = Close (barrier); 50 = Main menu (nether star, opens /menu; on /menu itself: Help & guides); 52 = Previous page, 53 = Next page (only when there is one). Free for screen actions: 46, 47, 51. A paged menu that puts its own button on 52 is logged at startup of that menu.
+- **4 and 5 rows:** the same bar on the last row (4 rows: 27 Back, 30 ?, 31 Close, 32 Main menu, 34/35 pages). **3 rows:** 18 Back, 22 Close.
+- **Back (navigation stack):** Back returns to the menu that opened this one. A menu opened from another menu (also through a command, e.g. /menu → /is, or after a chat prompt) gets it as its Back target automatically; /menu is the bottom of the stack; closing the menu ends the stack (`common/menu/Navigation`).
+- **In place:** tabs, page turns and refreshes rebuild the same window and update the title in place (no close/reopen flicker, the cursor stays). `menus.yml → title.update-in-place: false` falls back to reopening when the title changes.
+- **Clicks:** left and right click both run a button's action (a Bedrock tap too). Right-click and shift-click only do something else on buttons that mark a Java-only shortcut (`MenuButton.withRight/withShift`); the plain click must still do the main thing.
 - **Navigation heads:** Back/Previous/Next are textured player heads (Mojang's official `MHF_ArrowLeft` / `MHF_ArrowRight` by default, or any minecraft-heads.com texture value in `menus.yml → heads.*`); loaded once in the background, with a plain arrow until ready or if the lookup fails. Bedrock shows a player head with the same name.
-- **Title format:** `▸ Island » Upgrades (2/5)`: red `▸` marker, crumbs in title gray `#3F3F3F` (readable on the light chest background), separator and page in `#8B8B8B`. Built with `service.title(viewer, crumbs…)`. Max **32 characters** (`menus.yml → title.max-length`): leading crumbs are dropped first, then the last one is shortened with `..`.
+- **Title format:** `▸ Island » Upgrades (2/5)`: red `▸` marker, crumbs in title gray `#3F3F3F` (readable on the light chest background), separator and page in `#8B8B8B`. Built with `service.title(viewer, crumbs…)`. Rule `Feature » Screen`: at most **2 parts** (`title.max-parts`, the item or player name stays last) and max **32 characters** (`menus.yml → title.max-length`): leading crumbs are dropped first, then the last one is shortened with `..`. An empty title shows the fallback title (`messages/menus.yml → title.fallback`).
 - **Page indicator:** in the title (`(2/5)`, only when there is more than one page) and in the lore of Previous/Next ("Go to page 3 of 5").
 - **Button lore:** name = color word + white value; lore = description lines (`<c:text>`), an empty line, then the action line `» CLICK to …` (bold action color, verb upper case). No italics anywhere.
-- **States:** Loading = clock "⌛ Loading..."; Error = red stained glass "✘ Couldn't load this"; Empty list = cobweb in slot 22 "Nothing here yet" + a hint (per-menu key); Toggle = lime dye "✔ Enabled" / red dye "✘ Disabled" + "▸ Click to switch".
-- Smaller GUIs (3-row) for simple choices and confirmations: same frame, inner slots filled with gray panes.
+- **States (one look each, shared builders in `MenuService`):** Loading = clock "⌛ Loading..." (`loadingItem`, `Menu.setLoading`); Error = red stained glass "✘ Couldn't load this" (`errorItem`, with a retry click when given); Empty list = cobweb in slot 22 (13 on small menus) "Nothing here yet" + one hint (`emptyItem`, `Menu.setEmpty`); Locked = gray dye "✘ Name" + how to unlock, a click shows it in the action bar (`locked`); Tab = selected glints with "✔ You are here", others "» CLICK to view" (`tab`); Toggle = lime dye "✔ Enabled" / red dye "✘ Disabled" + "▸ Click to switch".
+- Smaller GUIs (3-row) for simple choices and confirmations: same frame, inner slots filled with gray panes, Back 18 and Close 22.
 
 ### 5.2 Confirmation dialog (3-row)
 ```
  R  O  B  B  B  B  B  O  R
  B  ✔  ✔  ✔  ◆  ✘  ✘  ✘  B      10-12 Confirm (11 lime concrete, 10/12 lime panes: one big target)
- R  O  B  B  B  B  B  O  R      13 the item/action being confirmed · 14-16 Cancel (15 red concrete, 14/16 red panes)
+ ←  O  B  B  ✘  B  B  O  R      13 what is confirmed + what you lose · 14-16 Cancel (15 red concrete) · 18 Back · 22 Close
 ```
-- Confirm lore: "This will:" + exactly what happens and what it costs + "▸ Click to confirm". Cancel: "Nothing will change."
+- The middle item (13) carries the details: its name is the key fact, the lore says "This will:" + exactly what happens and what it costs (GUI-1: no longer on the green button, so Bedrock players read it before tapping). Confirm: "Read the middle item first". Cancel: "Nothing will change."
 - One-shot: a confirm can never run twice. Cancel returns to the parent menu.
+- **Two-step** (`ConfirmMenu.twoStep()`) for things that can't be undone (disband, delete profile, permanent ban): the first Confirm shows a second check in the same window with the sides swapped (Cancel left, "Yes, do it" right) and "Last check: this can't be undone"; the title shows `(1/2)` / `(2/2)`.
 - Title: `▸ Disband island` (or the default `▸ Are you sure?`).
 
 Required for: anything irreversible, anything above a money threshold, solo→team, disband, prestige, merges, leaving islands, buying with gems.
@@ -271,11 +276,11 @@ Required for: anything irreversible, anything above a money threshold, solo→te
  B −100 −10 −1  $  +1 +10 +100 B   19-21 red dye (stack size = step), 22 sunflower = value (exact + compact, min/max)
  B  ·  · Min  ✎  Max ·  ·  B     30 bucket = set minimum, 31 name tag = type an amount in chat (1.5k/2M), 32 water bucket = set maximum
  B  ·  ·  ✔ [✔]  ✔  ·  ·  B     39-41 Confirm (40 lime concrete)
- ←  O  B  ?  ✘  H  B  O  R
+ ←  O  B  ?  ✘  M  B  O  R
 ```
 
 ### 5.3 Help on every screen
-- **Info item (slot 48):** what this screen does, in 2–4 lines, plus "Click for full help". Opens `/help <topic>` for that screen.
+- **? item (slot 48, "What is this?"):** what this screen does, in 2–4 lines, plus "Click for the full guide". Opens `/help <topic>` for that screen; Back in the help returns to the screen.
 - Every clickable item's lore ends with the action lines (§4.1).
 - First time a player opens a feature GUI: a one-time tip in chat with a link to its help topic (togglable in `/settings`).
 

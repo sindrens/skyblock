@@ -15,7 +15,7 @@ import java.util.List;
  * {@code /wardrobe} (WARDROBE §6.1): every set, owned or not, grouped by activity (owned first in each group).
  * <pre>
  *  content: the 16 sets (lock, price or "Lv · ×" and pieces worn)
- *  46 filter (one click cycles) · 47 worn now · 51 Wardrobe Chest · 52 loadouts (/loadout)
+ *  46 filter (one click cycles) · 47 worn now · 51 Wardrobe Chest · top row 4 loadouts (/loadout)
  * </pre>
  */
 final class WardrobeMenu extends PagedMenu<WardrobeMenu.Row> {
@@ -142,7 +142,8 @@ final class WardrobeMenu extends PagedMenu<WardrobeMenu.Row> {
                 Msg.p("size", module.chest().capacity(viewer))), click -> module.menus().openChest(viewer, this));
         if (module.config().loadoutEnabled) {
             Session s = session();
-            set(52, service.item(Material.ARMOR_STAND, viewer, WardrobeModule.ID, "menu.main.loadouts",
+            // GUI-1: 52 is Previous page now (Back stays on 45), so Loadouts moved to the top row.
+            set(4, service.item(Material.ARMOR_STAND, viewer, WardrobeModule.ID, "menu.main.loadouts",
                     Msg.p("count", s == null ? 0 : s.loadouts.size()), Msg.p("slots", module.loadouts().slots(viewer, s))),
                     click -> module.loadouts().open(viewer, this));
         }

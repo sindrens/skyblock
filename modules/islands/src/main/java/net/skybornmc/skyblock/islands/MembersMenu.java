@@ -23,7 +23,7 @@ import java.util.UUID;
  * {@code /is members} (M2.3): one head per member (leader, mods, members by join date, then coop players) with role,
  * join date, inviter and online state. Clicking a head opens the actions the viewer may use on that player
  * ({@link MemberActionsMenu}; one plain click, Bedrock-safe). Top: island summary. Bottom row: Invites (46, ISL2),
- * Invite (47, leader/admin/mod), Permissions (51, the matrix) and Settings (52, ISL2); top row: Notes (6, NOTES). Live: refreshes every 2 s so roles
+ * Invite (47, leader/admin/mod), Permissions (51, the matrix) and top row: Settings (2, ISL2) and Notes (6, NOTES). Live: refreshes every 2 s so roles
  * and online states stay current.
  */
 final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
@@ -36,7 +36,7 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
     static final int SLOT_INVITE = 47;
     static final int SLOT_PERMISSIONS = 51;
     static final int SLOT_INVITES = 46;
-    static final int SLOT_SETTINGS = 52;
+    static final int SLOT_SETTINGS = 2; // GUI-1: 52 is Previous page now
     static final int SLOT_NOTES = 6;
 
     private final IslandsModule module;

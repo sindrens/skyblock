@@ -9,9 +9,11 @@ import java.util.List;
 /**
  * A 6-row menu listing entries in the 28 inner slots (rows 2-5 inside the frame).
  * <ul>
- *   <li>Slot 45: Back on page 1 (if there is a parent), Previous page on page 2+. Slot 53: Next page.</li>
+ *   <li>The standard bottom bar ({@link MenuLayout}): 45 Back on every page (if there is somewhere to go back to),
+ *       52 Previous page, 53 Next page (only when there is one). Free action slots for {@link #decorate()}: 46, 47, 51.</li>
  *   <li>The title shows the page when there is more than one: {@code ▸ Island » Warps (2/5)}.</li>
  *   <li>An empty list shows one "nothing here" item in the middle (slot 22).</li>
+ *   <li>Turning a page updates the open window in place (no flicker).</li>
  * </ul>
  */
 public abstract class PagedMenu<T> extends Menu {
@@ -65,6 +67,8 @@ public abstract class PagedMenu<T> extends Menu {
     protected final void build() {
         frame();
         decorate();
+        MenuButton atPrevious = button(SLOT_PREVIOUS); // frame panes are display-only; a clickable one came from decorate()
+        boolean customPrevious = atPrevious != null && atPrevious.clickable();
         List<T> list = entries();
         Pagination pages = new Pagination(list.size(), CONTENT_SLOTS.length);
         page = pages.clamp(page);
@@ -73,11 +77,14 @@ public abstract class PagedMenu<T> extends Menu {
             set(CONTENT_SLOTS[slot++], entry(list.get(i)));
         }
         if (list.isEmpty()) {
-            set(SLOT_EMPTY, service.item(Material.COBWEB, viewer, messageModule(), emptyKey()));
+            set(SLOT_EMPTY, service.emptyItem(viewer, messageModule(), emptyKey()));
         }
         int shown = page + 1;
         int total = pages.pages();
         if (pages.hasPrevious(page)) {
+            if (customPrevious) {
+                service.warnStandardSlot(this, SLOT_PREVIOUS);
+            }
             set(SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",
                     Msg.p("page", shown - 1), Msg.p("pages", total)), click -> turn(-1));
         }
@@ -87,10 +94,10 @@ public abstract class PagedMenu<T> extends Menu {
         }
     }
 
-    /** Re-opens with the new page so the title shows it (plays the page sound). */
+    /** Shows the new page in the same window; the title's page indicator updates in place (plays the page sound). */
     private void turn(int delta) {
         page += delta;
-        service.open(viewer, this);
+        redraw();
     }
 
     public final int page() {

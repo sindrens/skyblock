@@ -1,5 +1,5 @@
 # Menu (GUI) framework texts. MiniMessage + style tags (style.yml). Lore can be a list (one line per entry).
-# Rules (docs/UI_STYLE.md section 5):
+# Rules (docs/UI_STYLE.md section 5, docs/design/GUI_DESIGN.md):
 #  - Item names: one color word + white value, never italic. Lore: description in <c:text>, an empty line, then the
 #    action line "<bold><c:action>» CLICK</c:action></bold> <c:text>to ...". Only Bedrock-safe symbols.
 #  - Titles are dark gray on the light chest background with a red marker; keep crumbs short (whole title max ~32).
@@ -15,6 +15,8 @@ title:
   # Used when a menu's own title text is missing or empty (an empty chest title shows "Large Chest" on Bedrock).
   fallback: "Phoenix Skyblock"
 
+# The standard buttons (GUI_DESIGN section 1): 6 rows: 45 Back, 48 ?, 49 Close, 50 Main menu, 52/53 pages.
+# 3 rows: 18 Back, 22 Close. The main menu shows Help & guides on 50 instead of Main menu.
 frame:
   back:
     name: "<c:ember><sym:arrow></c:ember> <c:value>Back"
@@ -22,14 +24,21 @@ frame:
   close:
     name: "<c:error><sym:cross></c:error> <c:value>Close"
     lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
+  main-menu:
+    name: "<c:ember><sym:bullet></c:ember> <c:value>Main menu"
+    lore:
+      - "<c:text>Every feature in one place."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the main menu"
   help:
     name: "<c:info>Help & guides"
     lore:
       - "<c:text>Every feature, step by step."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open help"
+  # "?" (what is this): the menu's own short guide is the lore (infoKey), then this footer.
   info:
-    name: "<c:info>About this menu"
+    name: "<c:info><bold>?</bold></c:info> <c:value>What is this?"
     footer:
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the full guide"
@@ -46,27 +55,51 @@ loading:
 error-item:
   name: "<c:error><sym:cross> Couldn't load this"
   lore: ["<c:text>Close the menu and open it again.", "<c:text>Still broken? Tell staff."]
+error-retry:
+  name: "<c:error><sym:cross> Couldn't load this"
+  lore: ["<c:text>Still broken after a retry? Tell staff.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to try again"]
 empty:
   name: "<c:text>Nothing here yet"
   lore: ["<c:muted>This list fills up as you play."]
+
+# One look for every state (GUI_DESIGN section 3). <name> = the feature, <hint> = how to unlock it.
+state:
+  locked:
+    name: "<c:locked><sym:cross> <name>"
+    lore: ["", "<c:locked>Locked"]
+    actionbar: "<c:error><sym:cross></c:error> <c:text>Locked: <hint>"
+
+# Tabs (row 0). The selected tab glints.
+tab:
+  selected: ["", "<c:flame><sym:check> You are here"]
+  action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"]
 
 toggle:
   "on": ["", "<c:text>Status: <c:success><sym:check> On"]
   "off": ["", "<c:text>Status: <c:error><sym:cross> Off"]
   action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
 
+# Confirm screen (GUI_DESIGN section 4): green 10-12, the details in the middle (13), red 14-16, Back 18, Close 22.
+# Two-step confirms (disband, delete profile, permanent ban) swap the sides on the second screen.
 confirm:
   crumb: "Are you sure?"
+  # <step>/<steps> after the title of a two-step confirm.
+  step: " <#8B8B8B>(<step>/<steps>)</#8B8B8B>"
   shown:
     name: "<c:warning>Please confirm"
-    lore: ["<c:text>See the details on the green button."]
+    lore: []
+  details-top: ["<c:text>This will:"]
   "yes":
     name: "<c:success><sym:check> Confirm"
-    lore-top: ["<c:text>This will:"]
-    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm"]
+    lore: ["<c:text>Read the middle item first.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm"]
   "no":
     name: "<c:error><sym:cross> Cancel"
     lore: ["<c:text>Nothing will change.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to cancel"]
+  second:
+    warning: ["", "<c:error><sym:cross></c:error> <c:warning>Last check: this can't be undone."]
+    "yes":
+      name: "<c:success><sym:check> Yes, do it"
+      lore: ["<c:text>The buttons swapped sides.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm for good"]
 
 number:
   crumb: "Choose an amount"

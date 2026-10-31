@@ -20,7 +20,7 @@ import java.util.function.Function;
  *  B −100 −10 −1 [value] +1 +10 +100 B      19-21 / 22 / 23-25
  *  B · · Min [type] Max · · B               30 / 31 / 32
  *  B · · ✔ [CONFIRM] ✔ · · B                39-41
- *  ← O B ?  ✘  H B O R                      45 back, 48 info, 49 close, 50 help
+ *  ← O B ?  ✘  M B O R                      45 Back, 48 ?, 49 Close, 50 Main menu
  * </pre>
  */
 public final class NumberPickerMenu extends Menu {

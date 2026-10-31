@@ -292,7 +292,8 @@ public final class Messages {
         return Duration.ofMillis(value * 50L);
     }
 
-    private boolean isBedrock(Audience viewer) {
+    /** True if {@code viewer} is a Bedrock (Geyser/Floodgate) player. */
+    public boolean isBedrock(Audience viewer) {
         return viewer instanceof Player p && bedrock.isBedrock(p.getUniqueId());
     }
 

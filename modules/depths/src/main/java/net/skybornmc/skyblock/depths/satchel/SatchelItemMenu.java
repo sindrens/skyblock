@@ -21,7 +21,6 @@ import java.util.Optional;
  */
 final class SatchelItemMenu extends Menu {
 
-    static final int SLOT_BACK = 10;
     static final int SLOT_SELL = 12;
     static final int SLOT_ITEM = 13;
     static final int SLOT_TAKE_STACK = 14;
@@ -65,7 +64,6 @@ final class SatchelItemMenu extends Menu {
     protected void build() {
         frame();
         long amount = satchel.amount(viewer, id);
-        set(SLOT_BACK, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
         set(SLOT_ITEM, display(satchel, service, viewer, id, amount, null));
         if (amount <= 0) {
             set(SLOT_SELL, service.item(new ItemStack(Material.GRAY_DYE), text("satchel.item.gone.name"), lines("satchel.item.gone.lore")));

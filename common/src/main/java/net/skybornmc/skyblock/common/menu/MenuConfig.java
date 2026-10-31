@@ -31,6 +31,25 @@ public final class MenuConfig extends ModuleConfig {
             min = 12, max = 48)
     public int titleMaxLength = 32;
 
+    @Setting(path = "title.max-parts", desc = "Most title parts (Feature » Screen = 2). Extra leading parts are dropped; the item or player name stays.",
+            min = 1, max = 4)
+    public int titleMaxParts = 2;
+
+    @Setting(path = "title.update-in-place", desc = "Tabs, pages and refreshes update the open window (no close/reopen flicker). "
+            + "false = reopen the window when its title changes (fallback if a client shows the old title).")
+    public boolean titleUpdateInPlace = true;
+
+    @Setting(path = "bar.main-menu-command", desc = "Command the Main menu button (slot 50) runs, without the slash.")
+    public String mainMenuCommand = "menu";
+
+    @Setting(path = "navigation.max-depth", desc = "Most screens Back remembers per player (older ones are forgotten).",
+            min = 2, max = 64)
+    public int navigationMaxDepth = 16;
+
+    @Setting(path = "navigation.origin-seconds", desc = "Seconds a menu that ran a command (e.g. /menu → /is) stays the Back target "
+            + "for a screen that opens a moment later (after loading data).", min = 0, max = 30)
+    public int navigationOriginSeconds = 3;
+
     @Setting(desc = "Minimum milliseconds between two clicks of one player in a menu (anti double-click dupes).",
             min = 0, max = 2000)
     public int clickDebounceMs = 120;
