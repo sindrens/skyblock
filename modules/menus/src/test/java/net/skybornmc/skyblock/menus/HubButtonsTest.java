@@ -79,13 +79,13 @@ class HubButtonsTest {
     }
 
     @Test
-    void youMenuHasProfilesTitlesAchievementsSettingsStoreRulesQuests() throws Exception {
+    void youMenuHasProfilesTitlesAchievementsSettingsStoreRulesQuestsCollection() throws Exception {
         List<String> problems = new ArrayList<>();
         ButtonLayout you = ButtonLayout.you(resource("menu.yml"), ITEMS, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(List.of("profiles", "titles", "achievements", "settings", "store", "rules", "quests"),
+        assertEquals(List.of("profiles", "titles", "achievements", "settings", "store", "rules", "quests", "collection"),
                 you.buttons().stream().map(ButtonLayout.Button::id).toList());
-        assertEquals(List.of(10, 11, 12, 13, 14, 15, 16), you.buttons().stream().map(ButtonLayout.Button::slot).toList());
+        assertEquals(List.of(10, 11, 12, 13, 14, 15, 16, 24), you.buttons().stream().map(ButtonLayout.Button::slot).toList());
     }
 
     @Test

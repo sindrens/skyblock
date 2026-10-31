@@ -35,7 +35,9 @@ public enum AuditCategory {
     /** Rewards (PHASE-10 M10.5/M10.6): daily calendar claims, streak rewards, playtime rewards, later votes. */
     REWARDS,
     /** Quests (PHASE-10 M10.7): quests rolled, swapped and finished, island missions, reward hand-outs, staff resets. */
-    QUESTS;
+    QUESTS,
+    /** Collection log (PHASE-10 M10.10): first finds, page milestones, their reward hand-outs and reviews. */
+    COLLECTION;
 
     /** Key stored in the database, e.g. {@code "economy"}. */
     public String key() {

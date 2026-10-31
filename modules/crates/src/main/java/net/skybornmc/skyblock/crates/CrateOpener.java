@@ -273,6 +273,7 @@ final class CrateOpener {
         audit(plan, player, name, profile, actor);
         m.changed(profile);
         handOut(plan, player, name, profile, actor);
+        fireOpened(plan, player, profile, online);
         // M10.3: the show only starts now. The reward is decided, saved and handed out above; the spinner / in-world show
         // is cosmetic, and leaving or closing the menu mid-show changes nothing.
         try {
@@ -283,6 +284,23 @@ final class CrateOpener {
                 m.show().ended(online.getUniqueId());
                 feedback(online, plan);
             }
+        }
+    }
+
+    /** M10.10: other modules (collection log, later quests) hear about the committed batch. Never breaks the open. */
+    private void fireOpened(OpenPlan.Plan plan, UUID player, UUID profile, Player online) {
+        if (net.skybornmc.skyblock.common.crate.CrateOpenedEvent.getHandlerList().getRegisteredListeners().length == 0) {
+            return;
+        }
+        try {
+            List<net.skybornmc.skyblock.common.crate.CrateOpenedEvent.Won> won = new ArrayList<>(plan.grants().size());
+            for (OpenPlan.Grant g : plan.grants()) {
+                won.add(new net.skybornmc.skyblock.common.crate.CrateOpenedEvent.Won(g.reward().id(), g.top(), g.fallback()));
+            }
+            Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.crate.CrateOpenedEvent(player,
+                    online != null && online.isOnline() ? online : null, profile, plan.crate().id(), won));
+        } catch (RuntimeException e) {
+            m.core.plugin().getLogger().log(Level.WARNING, "Crates: a listener of the open event failed (the reward is given)", e);
         }
     }
 

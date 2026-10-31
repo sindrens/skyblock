@@ -96,7 +96,7 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
     /** Hub slots: the 28 inner slots of the 6-row menu plus 4 (your head). */
     static final Set<Integer> HUB_SLOTS = hubSlots();
     /** 3-row menus (You, Travel): the middle row, 10-16. */
-    static final Set<Integer> SMALL_SLOTS = Set.of(10, 11, 12, 13, 14, 15, 16);
+    static final Set<Integer> SMALL_SLOTS = Set.of(10, 11, 12, 13, 14, 15, 16, 20, 24);
 
     /** True if {@code id} is an item (server only: needs the item registry). */
     static boolean isItem(String id) {

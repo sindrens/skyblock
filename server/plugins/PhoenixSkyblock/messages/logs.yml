@@ -206,6 +206,7 @@ category-menu:
     boosters: ["<c:text>Boosters started, banked, global, thanks."]
     rewards: ["<c:text>Daily claims, streaks, playtime rewards."]
     quests: ["<c:text>Quests rolled, swapped and done, island missions."]
+    collection: ["<c:text>Collection log finds, milestones, rewards."]
 
 categories:
   all: "All you can see"
@@ -228,6 +229,7 @@ categories:
   boosters: "Boosters"
   rewards: "Rewards"
   quests: "Quests"
+  collection: "Collection"
 
 ranges:
   all: "All time"

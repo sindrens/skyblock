@@ -41,7 +41,7 @@ categories:
     slot: 15
     name: "<c:flame><bold>Progression"
     lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and achievements."]
-    topics: [island-level, island-upgrades, skills, pillars, achievements]
+    topics: [island-level, island-upgrades, skills, pillars, achievements, collection]
   gear:
     icon: smithing_table
     status: active
@@ -727,6 +727,39 @@ topics:
         lines:
           - "<c:value>/store</c:value> <c:text>for ranks and cosmetics,"
           - "<c:value>/website</c:value> <c:text>for everything else."
+
+  collection:
+    icon: bookshelf
+    aliases: [collection-log, collections, log-book]
+    name: "<c:flame>Collection"
+    summary: ["<c:text>Everything you found yourself,", "<c:text>with milestones and rewards."]
+    take-me-there: "collection"
+    commands: [Progression]
+    pages:
+      - title: "<c:value>What it is"
+        lines:
+          - "<c:value>/collection</c:value> <c:text>lists items you can"
+          - "<c:text>find. The first time you get one"
+          - "<c:text>yourself, it unlocks and glows."
+          - "<c:text>Locked ones show how to get them."
+      - title: "<c:value>What counts"
+        lines:
+          - "<c:text>Depths drops (mine, forest, mobs)"
+          - "<c:text>and crate star rewards. Trades and"
+          - "<c:text>auction buys never count, so the"
+          - "<c:text>log can't be bought."
+      - title: "<c:value>Milestones"
+        lines:
+          - "<c:text>Every 25% of a page gives +1"
+          - "<c:text>island level point. A full page"
+          - "<c:text>gives a title and a Blaze key."
+          - "<c:text>The whole log: Keeper of Ashes!"
+      - title: "<c:value>Good to know"
+        lines:
+          - "<c:text>Each profile has its own log."
+          - "<c:text>Find it in</c:text> <c:value>/menu</c:value> <c:text>under your"
+          - "<c:text>head (You). More pages come with"
+          - "<c:text>fishing, bosses and events."
 
   achievements:
     icon: knowledge_book
