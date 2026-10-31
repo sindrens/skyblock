@@ -81,6 +81,30 @@ public final class TradeConfig extends ModuleConfig {
             "REPEATING_COMMAND_BLOCK", "COMMAND_BLOCK_MINECART", "STRUCTURE_BLOCK", "STRUCTURE_VOID", "JIGSAW", "LIGHT",
             "DEBUG_STICK", "KNOWLEDGE_BOOK");
 
+    // ------------------------------------------------------------------ value hints (owner R3-38)
+
+    @Setting(path = "value-hints.enabled", desc = "Offered items show what they are worth: the server sell price, the /shop "
+            + "price and the auction median (items with neither server price show 'Value unknown').")
+    public boolean valueHints = true;
+
+    @Setting(path = "value-hints.ah-min-sellers", desc = "The auction median only shows when this many different players sold the "
+            + "item (owner R3-38: 5). Sales between the same person or accounts sharing an address never count.", min = 1, max = 100)
+    public int valueAhMinSellers = 5;
+
+    @Setting(path = "value-hints.ah-min-buyers", desc = "... and this many different players bought it (owner R3-38: 5).", min = 1,
+            max = 100)
+    public int valueAhMinBuyers = 5;
+
+    @Setting(path = "value-hints.ah-days", desc = "Days of auction sales the median looks back.", min = 1, max = 90)
+    public int valueAhDays = 14;
+
+    @Setting(path = "value-hints.ah-max-sales", desc = "Most recent sales read per item for the median.", min = 10, max = 2_000)
+    public int valueAhMaxSales = 200;
+
+    @Setting(path = "value-hints.cache-minutes", desc = "How long an item's auction median is kept before it is read again.",
+            min = 1, max = 1_440)
+    public int valueCacheMinutes = 10;
+
     // ------------------------------------------------------------------ menu
 
     @Setting(path = "menu.icons", desc = "Menu icons: name:MATERIAL.")

@@ -69,6 +69,8 @@ money:
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <c:text>That currency can't be traded."
   negative: "<prefix><c:error><sym:cross></c:error> <c:text>The amount can't be below 0."
   too-much: "<prefix><c:error><sym:cross></c:error> <c:text>You only have <c:value><balance></c:value><c:text>."
+  # Owner F1: <required>, <earned>, <missing> (money). Island members can always be paid.
+  send-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Earn <c:value><required></c:value> <c:text>yourself before you trade money away. Earn <c:value><missing></c:value> <c:text>more (selling, rewards). <c:muted>Trading with island members always works."
 
 confirm:
   other-ready: "<prefix><c:value><player></c:value> <c:text>confirmed. Check the trade and confirm too."
@@ -223,3 +225,17 @@ money-menu:
       - "<c:text>You have: <c:value><balance>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
+
+# Owner R3-38: what an offered stack is worth (added to the item's lore in the trade window). <total> = for the whole stack.
+value:
+  header:
+    - ""
+    - "<bold><c:header>| Value</c:header></bold> <c:muted>(this stack)"
+  sell:
+    - "<c:bar>| </c:bar><c:text>Server sells for: </c:text><c:value><total>"
+  shop:
+    - "<c:bar>| </c:bar><c:text>Shop price: </c:text><c:value><total>"
+  ah:
+    - "<c:bar>| </c:bar><c:text>Auction median: </c:text><c:value><total>"
+  unknown:
+    - "<c:bar>| </c:bar><c:muted>Value unknown"
