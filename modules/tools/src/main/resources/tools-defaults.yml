@@ -50,11 +50,37 @@ tiers:
     - {id: blaze,   material: diamond_sword,   damage: 7.5, attack-speed: -2.4, rarity: rare,      skill-level: 46, money: 2526400,  materials: {depths_raider_scrap: 1550}}
     - {id: wither,  material: netherite_sword, damage: 8,   attack-speed: -2.4, rarity: epic,      skill-level: 55, money: 5937000,  materials: {depths_blaze_rod: 2092}}
     - {id: warlord, material: netherite_sword, damage: 9,   attack-speed: -2.4, rarity: legendary, skill-level: 66, money: 13952000, materials: {depths_wither_ash: 2824}}
-  # Farming hoes and fishing rods get their tiers in Phase 7: only the starter piece for now.
+  # Farming hoes (PHASE-7 M7.4): one tier per crop tier, gated by Farming level (the crop's planting level), forged with
+  # money F(t) and M(t) crops of the tier before (ECONOMY_BALANCE §1.2, same numbers as pickaxes). Shown in the Forge only
+  # while farming is on (crops.yml → enabled). Higher tiers: +fortune.per-tier-percent crop drops per tier.
   hoe:
-    - {id: basic, material: stone_hoe,    rarity: common, skill-level: 0}
+    - {id: basic,       material: stone_hoe,     rarity: common,    skill-level: 0}
+    - {id: copper,      material: copper_hoe,    rarity: common,    skill-level: 5,  money: 15000, materials: {wheat: 256}}
+    - {id: iron,        material: iron_hoe,      rarity: common,    skill-level: 10, money: 35200, materials: {carrot: 346}}
+    - {id: gold,        material: iron_hoe,      rarity: uncommon,  skill-level: 15, money: 82800, materials: {beetroot: 467}, model: "minecraft:golden_hoe"}
+    - {id: diamond,     material: diamond_hoe,   rarity: uncommon,  skill-level: 20, money: 194700, materials: {sugar_cane: 630}}
+    - {id: netherite,   material: netherite_hoe, rarity: rare,      skill-level: 25, money: 457500, materials: {melon_slice: 850}}
+    - {id: sunscorch,   material: netherite_hoe, rarity: rare,      skill-level: 30, money: 1075100, materials: {cocoa_beans: 1148}}
+    - {id: briarthorn,  material: netherite_hoe, rarity: rare,      skill-level: 35, money: 2526400, materials: {cactus: 1550}}
+    - {id: netherbloom, material: netherite_hoe, rarity: epic,      skill-level: 42, money: 5937000, materials: {sweet_berries: 2092}}
+    - {id: torchbloom,  material: netherite_hoe, rarity: epic,      skill-level: 50, money: 13952000, materials: {nether_wart: 2824}}
+    - {id: verdant,     material: netherite_hoe, rarity: legendary, skill-level: 58, money: 32787000, materials: {torchflower: 3813}}
+  # Fishing rods (PHASE-7 M7.4 config, used from M7.8): one tier per Fishing tier, gated by Fishing level, forged with
+  # money and the custom fish of the tier before (fish item ids come with M7.8). Hidden in the Forge until the Fishing
+  # skill is open (G2: unbuilt features are hidden).
   rod:
-    - {id: basic, material: fishing_rod,  rarity: common, skill-level: 0}
+    - {id: basic,     material: fishing_rod, rarity: common,    skill-level: 0}
+    - {id: reed,      material: fishing_rod, rarity: common,    skill-level: 5,  money: 15000, materials: {fish_pond_cod: 256}}
+    - {id: willow,    material: fishing_rod, rarity: common,    skill-level: 10, money: 35200, materials: {fish_river_salmon: 346}}
+    - {id: copper,    material: fishing_rod, rarity: uncommon,  skill-level: 15, money: 82800, materials: {fish_reef_snapper: 467}}
+    - {id: iron,      material: fishing_rod, rarity: uncommon,  skill-level: 20, money: 194700, materials: {fish_spinefish: 630}}
+    - {id: gold,      material: fishing_rod, rarity: uncommon,  skill-level: 25, money: 457500, materials: {fish_ember_trout: 850}}
+    - {id: coral,     material: fishing_rod, rarity: rare,      skill-level: 30, money: 1075100, materials: {fish_ashfin: 1148}}
+    - {id: diamond,   material: fishing_rod, rarity: rare,      skill-level: 35, money: 2526400, materials: {fish_glowscale: 1550}}
+    - {id: emerald,   material: fishing_rod, rarity: rare,      skill-level: 42, money: 5937000, materials: {fish_cinder_eel: 2092}}
+    - {id: stormcall, material: fishing_rod, rarity: epic,      skill-level: 50, money: 13952000, materials: {fish_magma_carp: 2824}}
+    - {id: netherite, material: fishing_rod, rarity: epic,      skill-level: 58, money: 32787000, materials: {fish_starlight_koi: 3813}}
+    - {id: abyssal,   material: fishing_rod, rarity: legendary, skill-level: 66, money: 77049500, materials: {fish_voidfin: 5147}}
 
 # Abilities a blueprint tool can have (one each). value: the ability's number (see the comment per ability).
 abilities:

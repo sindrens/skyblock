@@ -39,7 +39,7 @@ final class ForgeMenu extends Menu {
 
     ForgeMenu(ToolsModule module, ToolKind kind) {
         this.module = module;
-        this.kind = kind;
+        this.kind = module.forgeKind(kind);
     }
 
     @Override
@@ -80,7 +80,10 @@ final class ForgeMenu extends Menu {
     @Override
     protected void build() {
         frame();
-        List<ToolKind> kinds = new ArrayList<>(module.catalog().kinds());
+        if (!module.forgeOpen(kind)) {
+            kind = module.forgeKind(kind); // farming was switched off while the menu was open
+        }
+        List<ToolKind> kinds = new ArrayList<>(module.forgeKinds());
         for (int i = 0; i < kinds.size() && i < TAB_SLOTS.length; i++) {
             ToolKind k = kinds.get(i);
             boolean selected = k == kind;
@@ -150,6 +153,9 @@ final class ForgeMenu extends Menu {
             lore.addAll(lines("forge.tier.damage", Msg.p("damage", ToolItems.trim(1 + def.damage()))));
         } else if (def.efficiency() > 0) {
             lore.addAll(lines("forge.tier.efficiency", Msg.p("efficiency", ToolItems.trim(def.efficiency()))));
+        }
+        if (def.kind() == ToolKind.HOE && def.tier() > 1) {
+            lore.addAll(lines("forge.tier.crop-drops", Msg.p("percent", ToolItems.trim((def.tier() - 1) * module.config().fortunePerTier))));
         }
         if (def.tier() == 1) {
             lore.addAll(lines("forge.tier.starter"));

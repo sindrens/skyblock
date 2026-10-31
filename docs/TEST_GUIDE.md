@@ -1845,6 +1845,20 @@ Every player gets a free starter kit (pickaxe, axe, hoe, sword, rod) from the Qu
 
 _Questions for this feature: 10 on the Decisions page (Feature = "Forge and living tools")._
 
+### Harvester hoe and hoe tiers (M7.4, off until farming is on)
+
+Needs `crops.yml → enabled: true` (then `/skyblock reload production`). The Forge gets a Hoes tab (11 tiers, money + crops of the tier before, Farming level gate). Right-click a crop with any custom hoe on your own island: the ripe crops around it are harvested (3x3 from Lv 1, 5x5 at Lv 15, 7x7 at Lv 30) and wheat/carrots/potatoes/beetroots/nether wart/cocoa are replanted. Rods stay hidden until fishing exists.
+
+1. Farming off: `/forge` has no Hoes tab; right-clicking crops with the starter hoe does nothing special.
+2. Farming on: Hoes tab appears; a Copper Hoe needs Farming 5, 256 wheat and $15,000; forge it, level and perks stay.
+3. Plant a 7x7 wheat field, let it ripen (bone meal is fine for drops, but gives no XP), right-click the middle with the starter hoe: 3x3 harvested and replanted, action bar "Reaped 9 crops (3x3)".
+4. Unripe crops in the square stay; a carrot you could not plant (Farming below 5) stays too.
+5. Farming XP and hoe XP rise once per crop (compare 9 single breaks with one swing: same XP); bone-mealed crops give none.
+6. `/tool give <you> hoe 1`, then `/tool` → staff can't set levels, so test 5x5 on a hoe that reached Lv 15 (or temporarily set `harvester.size-levels` to 1, 2, 3 and reload tools).
+7. Sugar cane / cactus: cut above the bottom block. Melons: only fruits next to an attached stem; a placed melon stays.
+8. As a visitor or coop player: right-click does nothing special; break by hand.
+9. Bedrock: tap (use) a crop with the hoe on touch and controller; the swing works the same.
+
 ### Blueprints and skins
 
 Blueprints are rare drops (about 1 in 15,000 to 20,000 blocks or 1 in 1,500 kills). With money and materials at the Forge a blueprint turns into a special tool with one ability: auto-smelt, swift, scholar (more tool XP) or lifesteal. Skins are looks for tools (Phoenix Flame, Frostbite, Royal Gold) kept across seasons. Staff can give both.

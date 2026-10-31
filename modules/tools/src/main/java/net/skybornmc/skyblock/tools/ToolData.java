@@ -26,6 +26,7 @@ record ToolData(UUID id, ToolKind kind, int tier, int level, double xp, int pres
     static final String STAT_BLOCKS = "blocks";
     static final String STAT_LOGS = "logs";
     static final String STAT_KILLS = "kills";
+    static final String STAT_CROPS = "crops";
     static final String STAT_XP = "xp";
     static final String STAT_FORGED = "forged";
 

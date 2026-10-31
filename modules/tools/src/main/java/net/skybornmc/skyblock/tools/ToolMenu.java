@@ -177,6 +177,7 @@ final class ToolMenu extends Menu {
                 Msg.p("blocks", Format.number(tool.stat(ToolData.STAT_BLOCKS))),
                 Msg.p("logs", Format.number(tool.stat(ToolData.STAT_LOGS))),
                 Msg.p("kills", Format.number(tool.stat(ToolData.STAT_KILLS))),
+                Msg.p("crops", Format.number(tool.stat(ToolData.STAT_CROPS))),
                 Msg.p("xp", Format.number(tool.stat(ToolData.STAT_XP))),
                 Msg.p("forged", Format.number(tool.stat(ToolData.STAT_FORGED))),
                 Msg.p("prestige", tool.prestige()),

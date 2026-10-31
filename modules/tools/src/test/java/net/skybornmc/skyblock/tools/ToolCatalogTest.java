@@ -42,8 +42,8 @@ class ToolCatalogTest {
         assertEquals(12, c.maxTier(ToolKind.PICKAXE), "Mine: Coal → Voidstone");
         assertEquals(11, c.maxTier(ToolKind.AXE), "Forest: Oak → Warped");
         assertEquals(10, c.maxTier(ToolKind.SWORD), "Combat: 10 tiers");
-        assertEquals(1, c.maxTier(ToolKind.HOE));
-        assertEquals(1, c.maxTier(ToolKind.ROD));
+        assertEquals(11, c.maxTier(ToolKind.HOE), "PHASE-7 M7.4: one hoe per crop tier");
+        assertEquals(12, c.maxTier(ToolKind.ROD), "PHASE-7 M7.4: one rod per fishing tier");
         assertEquals("coal", c.tier(ToolKind.PICKAXE, 1).orElseThrow().id());
         assertEquals("voidstone", c.tier(ToolKind.PICKAXE, 12).orElseThrow().id());
         assertEquals("warped", c.tier(ToolKind.AXE, 11).orElseThrow().id());
@@ -71,6 +71,48 @@ class ToolCatalogTest {
         List<Integer> mine = List.of(0, 5, 10, 15, 20, 25, 30, 35, 42, 50, 58, 66);
         for (int t = 1; t <= 12; t++) {
             assertEquals(mine.get(t - 1), c.tier(ToolKind.PICKAXE, t).orElseThrow().skillLevel());
+        }
+    }
+
+    /** PHASE-7 M7.4 (PD14): hoe and rod Forge costs follow F(t) and M(t) like pickaxes; materials are the tier before. */
+    @Test
+    void hoeAndRodCostsFollowTheBalanceSheet() throws Exception {
+        ToolCatalog c = catalog();
+        for (ToolKind kind : List.of(ToolKind.HOE, ToolKind.ROD)) {
+            assertEquals(0, c.tier(kind, 1).orElseThrow().recipe().money(), kind + " tier 1 = free starter kit");
+            assertTrue(c.tier(kind, 1).orElseThrow().recipe().materials().isEmpty());
+            for (int t = 2; t <= c.maxTier(kind); t++) {
+                ToolCatalog.Recipe r = c.tier(kind, t).orElseThrow().recipe();
+                double money = 15_000 * Math.pow(2.35, t - 2);
+                double mats = 256 * Math.pow(1.35, t - 2);
+                assertEquals(money, r.money(), money * 0.01, kind + " money tier " + t);
+                assertEquals(1, r.materials().size(), kind + " one material per tier");
+                assertEquals(mats, r.materials().values().iterator().next(), 1.0, kind + " materials tier " + t);
+            }
+        }
+    }
+
+    /** Hoe tier t needs the crop of tier t-1 and the Farming level of crop tier t (crops.yml defaults, WORLD §5.1). */
+    @Test
+    void hoeTiersFollowTheCropTiers() throws Exception {
+        ToolCatalog c = catalog();
+        List<Integer> farming = List.of(0, 5, 10, 15, 20, 25, 30, 35, 42, 50, 58);
+        List<String> previousCrop = List.of("", "wheat", "carrot", "beetroot", "sugar_cane", "melon_slice", "cocoa_beans", "cactus",
+                "sweet_berries", "nether_wart", "torchflower");
+        for (int t = 1; t <= 11; t++) {
+            ToolCatalog.TierDef def = c.tier(ToolKind.HOE, t).orElseThrow();
+            assertEquals(farming.get(t - 1), def.skillLevel(), "Farming level, hoe tier " + t);
+            assertTrue(def.material().name().endsWith("_HOE"), "a vanilla hoe (Farming XP needs a hoe)");
+            if (t > 1) {
+                assertEquals(previousCrop.get(t - 1), def.recipe().materials().keySet().iterator().next(), "material of hoe tier " + t);
+            }
+        }
+        assertEquals("basic", c.tier(ToolKind.HOE, 1).orElseThrow().id(), "the starter hoe keeps its id");
+        assertEquals(Material.STONE_HOE, c.tier(ToolKind.HOE, 1).orElseThrow().material());
+        List<Integer> fishing = List.of(0, 5, 10, 15, 20, 25, 30, 35, 42, 50, 58, 66);
+        for (int t = 1; t <= 12; t++) {
+            assertEquals(fishing.get(t - 1), c.tier(ToolKind.ROD, t).orElseThrow().skillLevel(), "Fishing level, rod tier " + t);
+            assertEquals(Material.FISHING_ROD, c.tier(ToolKind.ROD, t).orElseThrow().material());
         }
     }
 

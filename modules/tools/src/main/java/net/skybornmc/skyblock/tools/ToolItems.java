@@ -439,7 +439,9 @@ final class ToolItems {
             ToolCurve curve = module.curve();
             List<Integer> slotLevels = module.config().slotLevels();
             lore.subtitle(LoreBuilder.fill(raw("item.subtitle"), Map.of("kind", kindName(d.kind()), "tier", String.valueOf(d.tier()))));
-            lore.description(raw("item.description." + d.kind().id()).replaceAll("<[^>]+>", ""));
+            boolean harvester = d.kind() == ToolKind.HOE && module.harvester() != null && module.config().harvesterEnabled
+                    && module.forgeOpen(ToolKind.HOE);
+            lore.description(raw(harvester ? "item.description.harvester" : "item.description." + d.kind().id()).replaceAll("<[^>]+>", ""));
             if (d.level() >= curve.maxLevel()) {
                 lore.line(LoreBuilder.fill(raw("item.max-level"), Map.of("level", String.valueOf(d.level()))));
             } else {
@@ -467,6 +469,13 @@ final class ToolItems {
                 int fortune = (int) Math.round((fortune(d) - 1) * 100);
                 lore.stat("pillar:" + d.kind().skill().id(), plain("item.stat.fortune"), "+" + fortune + "%");
             }
+            if (d.kind() == ToolKind.HOE && module.harvester() != null && module.forgeOpen(ToolKind.HOE)) {
+                // PHASE-7 M7.4: only while farming is on (G2: nothing about unbuilt features).
+                int fortune = (int) Math.round((fortune(d) - 1) * 100);
+                lore.stat("pillar:farming", plain("item.stat.crop-drops"), "+" + fortune + "%");
+                int size = module.harvester().baseSize(d);
+                lore.stat("pillar:farming", plain("item.stat.area"), size + "x" + size);
+            }
             module.catalog().tier(d.kind(), d.tier()).filter(t -> t.damage() != 0)
                     .ifPresent(t -> lore.stat("pillar:combat", plain("item.stat.damage"), trim(1 + t.damage())));
             int slots = d.slots(slotLevels);
@@ -487,7 +496,7 @@ final class ToolItems {
         }
 
         private void history(LoreBuilder.Section info, ToolData d) {
-            for (String stat : List.of(ToolData.STAT_BLOCKS, ToolData.STAT_LOGS, ToolData.STAT_KILLS)) {
+            for (String stat : List.of(ToolData.STAT_BLOCKS, ToolData.STAT_LOGS, ToolData.STAT_KILLS, ToolData.STAT_CROPS)) {
                 long value = d.stat(stat);
                 if (value > 0) {
                     info.text(LoreBuilder.fill(raw("item.history." + stat), Map.of("value",
