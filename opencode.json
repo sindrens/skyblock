@@ -1,0 +1,33 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-5-5",
+  "default_agent": "review",
+  "instructions": [
+    "docs/OWNER_PRINCIPLES.md",
+    "feature-overview/README.md"
+  ],
+  "permission": {
+    "bash": {
+      "*": "allow",
+      "git push*": "ask",
+      "git commit*": "ask",
+      "git merge*": "ask",
+      "git reset*": "ask",
+      "git rebase*": "ask",
+      "git clean*": "ask",
+      "git checkout --*": "ask",
+      "gh *": "ask",
+      "*deploy.sh*": "ask",
+      "*release2.sh*": "ask",
+      "*release.sh*": "ask",
+      "*vps.sh*": "ask",
+      "ssh *": "ask",
+      "scp *": "ask",
+      "rsync *": "ask",
+      "tmux *": "ask",
+      "rm *": "ask",
+      "*gradlew runServer*": "deny",
+      "*gradlew* runServer*": "deny"
+    }
+  }
+}
