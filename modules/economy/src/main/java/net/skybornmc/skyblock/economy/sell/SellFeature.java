@@ -147,6 +147,9 @@ public final class SellFeature implements Listener {
         core.services().register(EconomyModule.ID, SellService.class, service);
         chestKey = new NamespacedKey(core.plugin(), "sell_chest");
         service.chestOpener(this::openChest);
+        // GUI-P3: the shop sells one item kind from the inventory through the same escrow and payment as /sell.
+        service.itemSeller(this::sellItem);
+        service.carriedCounter(this::carried);
         // After a sale (main thread): island stats (items sold, money earned) for the profile that sold, and wardrobe
         // set XP (WARDROBE §3.1) only if that profile is still the active one.
         // PERF3: the islands module is enabled before economy, so its stats service is normally here already and the
@@ -544,6 +547,84 @@ public final class SellFeature implements Listener {
         pay(player, taken, source, done);
     }
 
+    /** Sellable items like {@code template} in the storage slots 0-35 (hotbar included, never armor/offhand). Main thread. */
+    long carried(Player player, ItemStack template) {
+        if (player == null || template == null || template.isEmpty()) {
+            return 0;
+        }
+        PlayerInventory inv = player.getInventory();
+        long sum = 0;
+        for (int slot = 0; slot < STORAGE_SLOTS; slot++) {
+            ItemStack stack = inv.getItem(slot);
+            if (stack != null && !stack.isEmpty() && stack.isSimilar(template) && service.sellable(stack)) {
+                sum += stack.getAmount();
+            }
+        }
+        return sum;
+    }
+
+    /**
+     * GUI-P3: sells up to {@code amount} (0 = all) of one item kind from the storage slots (lowest slot first, the last
+     * stack partly), through the same escrow, payment, give-back and report as {@code /sell}. {@code done} gets null when
+     * nothing was attempted. Main thread.
+     */
+    void sellItem(Player player, ItemStack template, int amount, String source, Consumer<SellResult> done) {
+        UUID uuid = player.getUniqueId();
+        if (!ready || module.frozen(player) || profiles().isSwitching(uuid)) {
+            msg.send(player, !ready ? "sell.loading" : module.frozen(player) ? "sell.frozen" : "sell.switching");
+            sound(player, "error");
+            finish(done, null);
+            return;
+        }
+        if (template == null || template.isEmpty() || !service.sellable(template)) {
+            sound(player, "error"); // the shop tile already says Not sellable
+            finish(done, null);
+            return;
+        }
+        if (!selling.add(uuid)) {
+            msg.send(player, "sell.busy");
+            finish(done, null);
+            return;
+        }
+        PlayerInventory inv = player.getInventory();
+        List<Integer> slots = new ArrayList<>();
+        List<Integer> amounts = new ArrayList<>();
+        for (int slot = 0; slot < STORAGE_SLOTS; slot++) {
+            ItemStack stack = inv.getItem(slot);
+            if (stack != null && !stack.isEmpty() && stack.isSimilar(template) && service.sellable(stack)) {
+                slots.add(slot);
+                amounts.add(stack.getAmount());
+            }
+        }
+        int[] plan = net.skybornmc.skyblock.common.sell.SellTake.plan(amounts.stream().mapToInt(Integer::intValue).toArray(), amount);
+        List<ItemStack> taken = new ArrayList<>();
+        for (int i = 0; i < plan.length; i++) {
+            if (plan[i] <= 0) {
+                continue;
+            }
+            int slot = slots.get(i);
+            ItemStack stack = inv.getItem(slot);
+            ItemStack copy = stack.clone();
+            copy.setAmount(plan[i]);
+            taken.add(copy);
+            int rest = stack.getAmount() - plan[i];
+            if (rest <= 0) {
+                inv.setItem(slot, null); // escrow: from here the items only exist in this sale
+            } else {
+                ItemStack kept = stack.clone();
+                kept.setAmount(rest);
+                inv.setItem(slot, kept);
+            }
+        }
+        if (taken.isEmpty()) {
+            selling.remove(uuid);
+            sound(player, "error");
+            finish(done, null);
+            return;
+        }
+        pay(player, taken, source, done);
+    }
+
     /**
      * Sells stacks the caller already took out of the world (escrow, e.g. the sell chest). If selling is not possible
      * right now every stack is handed back at once. {@code done} runs on the main thread afterwards.
@@ -606,6 +687,11 @@ public final class SellFeature implements Listener {
                     Component line = msg.component(player, bonus ? "sell.sold-big-bonus" : "sell.sold-big", p)
                             .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(breakdown(player, q)));
                     player.sendMessage(line);
+                } else if (q.lines().size() == 1) {
+                    // One item kind (/sell hand, the shop): "Sold 16x Coal for $32".
+                    TagResolver[] one = {Msg.number("items", q.items()), Msg.c("item", keyName(q.lines().getFirst().price().itemKey())),
+                            module.amountTag("amount", player, Currency.MONEY, q.total()), Msg.p("bonus", percentText(q.cappedBonusPercent()))};
+                    msg.actionBar(player, bonus ? "sell.sold-bar-item-bonus" : "sell.sold-bar-item", one);
                 } else {
                     msg.actionBar(player, bonus ? "sell.sold-bar-bonus" : "sell.sold-bar", p);
                 }

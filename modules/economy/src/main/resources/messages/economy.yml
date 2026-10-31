@@ -309,6 +309,9 @@ sell:
   # chat line whose hover shows the breakdown (sell.breakdown.*).
   sold-bar: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount>"
   sold-bar-bonus: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)"
+  # One item kind (/sell hand, the shop's sell GUI and sell all): <items> count, <item> the item name.
+  sold-bar-item: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items>x <item></c:value> for <amount>"
+  sold-bar-item-bonus: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items>x <item></c:value> for <amount> <c:muted>(<bonus>% bonus)"
   sold-big: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(hover for details)"
   sold-big-bonus: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)</c:muted><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(hover for details)"
   breakdown:

@@ -81,6 +81,40 @@ public final class SellServiceImpl implements SellService {
         var opener = chestOpener;
         return opener != null && opener.test(player, parent);
     }
+
+    /** Sells N of one item from the inventory (set by {@link SellFeature}, GUI-P3). */
+    interface ItemSeller {
+        void sell(org.bukkit.entity.Player player, ItemStack template, int amount, String source,
+                  java.util.function.Consumer<net.skybornmc.skyblock.common.sell.SellResult> done);
+    }
+
+    private volatile ItemSeller itemSeller;
+    private volatile java.util.function.ToLongBiFunction<org.bukkit.entity.Player, ItemStack> carriedCounter;
+
+    void itemSeller(ItemSeller seller) {
+        this.itemSeller = seller;
+    }
+
+    void carriedCounter(java.util.function.ToLongBiFunction<org.bukkit.entity.Player, ItemStack> counter) {
+        this.carriedCounter = counter;
+    }
+
+    @Override
+    public long carried(org.bukkit.entity.Player player, ItemStack template) {
+        var counter = carriedCounter;
+        return counter == null || player == null || template == null ? 0 : counter.applyAsLong(player, template);
+    }
+
+    @Override
+    public void sellItem(org.bukkit.entity.Player player, ItemStack template, int amount, String source,
+                         java.util.function.Consumer<net.skybornmc.skyblock.common.sell.SellResult> done) {
+        var seller = itemSeller;
+        if (seller == null) {
+            done.accept(null);
+            return;
+        }
+        seller.sell(player, template, amount, source, done);
+    }
     private volatile LocalDate hotDay;
     private volatile String hotKey;
     private volatile SellCatalog hotCatalog;
