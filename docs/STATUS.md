@@ -67,6 +67,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - M7-2 generators
 - QOL3 small fixes + QoL quick wins
+- M8-1 mob framework v2
 - NOTE: a separate owner-started agent works on docs/planning/*.md and docs/design/; do not overwrite those files, merge carefully.
 
 ## Parked / broken
