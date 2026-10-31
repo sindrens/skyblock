@@ -18,10 +18,17 @@ import java.util.logging.Level;
  * Base class of every chest menu. One instance per viewer: subclasses describe the content in {@link #build()} with
  * {@link #set}; the {@link MenuService} handles opening, click protection, debounce, sounds and live updates.
  *
- * <p>Layout (docs/design/GUI_DESIGN.md §1, {@link MenuLayout}): call {@link #frame()} first in {@code build()} for the
- * standard frame (black border, red corners with ember glow) and the standard buttons: on 6 rows 45 Back, 48 ? (what is
- * this), 49 Close, 50 Main menu, 52/53 pages; on 3 rows 18 Back and 22 Close. Free action slots on the bottom bar: 46,
- * 47 and 51. Build titles with {@link MenuService#title} so every menu reads {@code ▸ Island » Upgrades}.</p>
+ * <p>Layout (I9 v2, {@link MenuLayout}): menus are 3, 4 or 6 rows; empty slots stay empty (no frame, no filler panes).
+ * Call {@link #navBar()} first in {@code build()} for the minimal bottom row: Back (when there is somewhere to go back
+ * to) and Close; paged menus add Previous/Next ({@link MenuService#pageItem}).</p>
+ * <pre>
+ *  Rows | Back | Actions | Close | Search (AH only) | Previous | Next | Danger corner | Summary
+ *   6   |  45  |  46 47  |  49   |        51        |    52    |  53  |       8       |    4
+ *   4   |  27  |  28 29  |  31   |        -         |    34    |  35  |       8       |    4
+ *   3   |  18  |  19 20  |  22   |        -         |    -     |  -   |       8       |    4
+ * </pre>
+ * <p>Small menus centre their buttons with {@link Centered}; lists use the 7x4 grid. Build titles with
+ * {@link MenuService#title} so every menu reads {@code ▸ Island » Upgrades}.</p>
  *
  * <p>Back returns to the menu that opened this one ({@link Navigation}); re-opening this menu
  * ({@code service.open(viewer, this)}, {@link #redraw()}) updates the open window in place.</p>
@@ -31,11 +38,17 @@ public abstract class Menu implements InventoryHolder {
     public static final int SLOT_BACK = 45;
     /** Previous page (52, so Back at 45 works on every page). */
     public static final int SLOT_PREVIOUS = 52;
-    public static final int SLOT_INFO = 48;
     public static final int SLOT_CLOSE = 49;
-    /** Main menu (on the main menu itself: Help & guides). */
-    public static final int SLOT_MAIN_MENU = 50;
     public static final int SLOT_NEXT = 53;
+    /** The optional summary tile of the top row (your head, balance, "what is this"). */
+    public static final int SLOT_SUMMARY = 4;
+    /** Free screen actions of the 6-row bottom row (shop: Sell 46, Undo 47). */
+    public static final int SLOT_ACTION_A = 46;
+    public static final int SLOT_ACTION_B = 47;
+    /** The auction house's Search button (I9 section 11; nowhere else). */
+    public static final int SLOT_SEARCH = 51;
+    /** The red danger tile corner (I9 section 5). */
+    public static final int SLOT_DANGER = 8;
     /** Back on 3-row menus. */
     public static final int SLOT_SMALL_BACK = 18;
     /** Close on 3-row menus. */
@@ -48,7 +61,8 @@ public abstract class Menu implements InventoryHolder {
     private Menu parent;
     private boolean open;
     private long ticks;
-    private final ItemStack[] frameButtons = new ItemStack[4];
+    /** The Back and Close items built for this opening, reused by every refresh (PERF2). */
+    private final ItemStack[] navItems = new ItemStack[2];
     /** The title the open window shows (to update it in place only when it changed). */
     Component shownTitle;
 
@@ -66,12 +80,17 @@ public abstract class Menu implements InventoryHolder {
         return "menus";
     }
 
-    /** Message key (in {@link #messageModule()}) of the 2-4 info lines of the "?" item, or {@code null} for no info item. */
+    /**
+     * Ignored: there is no {@code ?} button any more (I9 section 4). Kept so the menus that still override it compile;
+     * the overrides and their {@code *.info} texts go in the per-module pass.
+     */
+    @Deprecated
     public String infoKey() {
         return null;
     }
 
-    /** The /help topic the "?" item opens. */
+    /** Ignored (no {@code ?} button any more, I9 section 4); see {@link #infoKey()}. */
+    @Deprecated
     public String helpTopic() {
         return "menus";
     }
@@ -105,10 +124,7 @@ public abstract class Menu implements InventoryHolder {
         return out.toString();
     }
 
-    /**
-     * True for the main menu (/menu): the bottom of the navigation stack (never gets a parent) and its slot 50 shows
-     * Help & guides instead of Main menu.
-     */
+    /** True for the main menu (/menu): the bottom of the navigation stack (never gets a parent, so no Back). */
     public boolean isMainMenu() {
         return false;
     }
@@ -143,15 +159,15 @@ public abstract class Menu implements InventoryHolder {
         inventory.setItem(slot, item);
     }
 
-    /** Framework only: puts an item that is already marked as a menu item (cached frame panes and buttons). */
+    /** Framework only: puts an item that is already marked as a menu item (the cached Back and Close). */
     final void setMarked(int slot, ItemStack marked, Consumer<MenuClick> onClick) {
         buttons.put(slot, new MenuButton(marked, onClick));
         inventory.setItem(slot, marked);
     }
 
-    /** The fixed frame buttons built for this opening (back, info, close, help), reused by every refresh (PERF2). */
-    final ItemStack[] frameButtons() {
-        return frameButtons;
+    /** The Back and Close items built for this opening, reused by every refresh (PERF2). */
+    final ItemStack[] navItems() {
+        return navItems;
     }
 
     protected final void set(int slot, ItemStack item, Consumer<MenuClick> onClick) {
@@ -182,9 +198,12 @@ public abstract class Menu implements InventoryHolder {
         }));
     }
 
-    /** Standard frame: black border, red corners, ember glow next to them, plus the standard buttons ({@link MenuLayout}). */
-    protected final void frame() {
-        service.applyFrame(this);
+    /**
+     * The minimal bottom row (I9 section 4): Back when there is somewhere to go back to (never on the main menu) and
+     * Close, for this menu's row count. No panes, no {@code ?}, no Main menu button.
+     */
+    protected final void navBar() {
+        service.applyNavBar(this);
     }
 
     /** The one "nothing here yet" item (cobweb, framework texts) in the middle of the content. */
@@ -270,7 +289,7 @@ public abstract class Menu implements InventoryHolder {
         this.viewer = viewer;
         this.inventory = inventory;
         this.buttons.clear();
-        java.util.Arrays.fill(this.frameButtons, null);
+        java.util.Arrays.fill(this.navItems, null);
         this.ticks = 0;
         this.open = true;
     }

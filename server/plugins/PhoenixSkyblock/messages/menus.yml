@@ -18,35 +18,23 @@ title:
 # The standard buttons (GUI_DESIGN section 1): 6 rows: 45 Back, 48 ?, 49 Close, 50 Main menu, 52/53 pages.
 # 3 rows: 18 Back, 22 Close. The main menu shows Help & guides on 50 instead of Main menu.
 frame:
+  # I9 section 4: the minimal bottom row. Names are bold in their meaning colour (move = ember, neutral = white);
+  # Close is never red (red is danger only).
   back:
-    name: "<c:ember><sym:arrow></c:ember> <c:value>Back"
+    name: "<area:move><bold>Back"
     lore: ["<c:text>Back to the last menu.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go back"]
   close:
-    name: "<c:error><sym:cross></c:error> <c:value>Close"
+    name: "<area:neutral><bold>Close"
     lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
-  main-menu:
-    name: "<c:ember><sym:bullet></c:ember> <c:value>Main menu"
-    lore:
-      - "<c:text>Every feature in one place."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the main menu"
+  # Hub only (slot 50): opens /help.
   help:
-    name: "<c:info>Help & guides"
-    lore:
-      - "<c:text>Every feature, step by step."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open help"
-  # "?" (what is this): the menu's own short guide is the lore (infoKey), then this footer.
-  info:
-    name: "<c:info><bold>?</bold></c:info> <c:value>What is this?"
-    footer:
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the full guide"
+    name: "<area:neutral><bold>Help"
+    lore: ["<c:text>Every feature, step by step.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   previous:
-    name: "<c:ember><sym:arrow></c:ember> <c:value>Previous page"
+    name: "<area:move><bold>Previous page"
     lore: ["<c:text>Go to page <c:value><page></c:value> of <c:value><pages></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go back a page"]
   next:
-    name: "<c:value>Next page</c:value> <c:ember><sym:arrow>"
+    name: "<area:move><bold>Next page"
     lore: ["<c:text>Go to page <c:value><page></c:value> of <c:value><pages></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next page"]
 
 loading:
@@ -92,6 +80,7 @@ toggle:
 
 # Confirm screen (GUI_DESIGN section 4): green 10-12, the details in the middle (13), red 14-16, Back 18, Close 22.
 # Two-step confirms (disband, delete profile, permanent ban) swap the sides on the second screen.
+# Confirm (I9 section 5, 3 rows): lime Confirm tile 11, details 13, red Cancel tile 15; the second check swaps them.
 confirm:
   crumb: "Are you sure?"
   # <step>/<steps> after the title of a two-step confirm.
@@ -139,6 +128,7 @@ offer:
       name: "<c:success><command>"
       lore: ["<c:muted>Runs <command>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to run it"]
 
+# Number picker (4 rows): value 4; -100 -10 -1 at 10-12, Confirm 13, +1 +10 +100 at 14-16; Min 20, Type 22, Max 24.
 number:
   crumb: "Choose an amount"
   info:

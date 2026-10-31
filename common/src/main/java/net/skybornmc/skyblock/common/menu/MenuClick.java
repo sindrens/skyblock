@@ -17,4 +17,9 @@ public record MenuClick(Player player, Menu menu, int slot, ClickType type) {
     public boolean isShift() {
         return type.isShiftClick();
     }
+
+    /** A real middle click (Shift + Right-click routed to the middle handler reports SHIFT_RIGHT). */
+    public boolean isMiddle() {
+        return type == ClickType.MIDDLE;
+    }
 }

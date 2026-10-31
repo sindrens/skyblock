@@ -3,32 +3,46 @@ package net.skybornmc.skyblock.common.menu;
 import org.bukkit.event.inventory.ClickType;
 
 /**
- * Which handler of a {@link MenuButton} a click runs (GUI_DESIGN §0.2 "one plain click does it"). Pure, unit-tested.
- * <ul>
- *   <li>Left and right click (with or without shift) run the button's plain action, so both mouse buttons work and a
- *       Bedrock tap always works.</li>
- *   <li>A button can add Java-only shortcuts ({@link MenuButton#withRight}, {@link MenuButton#withShift}): only then do
- *       right-click or shift-click do something else. Bedrock players always get the plain action.</li>
- *   <li>Number keys, drop, double-click, middle-click and offhand swap never run anything.</li>
- * </ul>
+ * Which handler of a {@link MenuButton} a click runs (I9 rule 2 "one plain click does it"). Pure, unit-tested.
+ * Rules, in this order:
+ * <ol>
+ *   <li>Bedrock: left, right and shift clicks run the plain action; anything else is ignored.</li>
+ *   <li>Middle click: the middle handler when the button has one, else ignored.</li>
+ *   <li>Shift + Right-click with a middle handler: the middle handler (a survival client sends no middle click).</li>
+ *   <li>Other shift clicks with a shift handler: the shift handler.</li>
+ *   <li>Right click with a right handler: the right handler; else left/right/shift run the plain action.</li>
+ *   <li>Number keys, drop, double-click, offhand swap, creative drop and the rest: ignored.</li>
+ * </ol>
  */
 public enum ClickRoute {
     PLAIN,
     RIGHT,
     SHIFT,
+    MIDDLE,
     IGNORED;
 
     public static ClickRoute of(ClickType type, boolean bedrock, boolean hasRight, boolean hasShift) {
-        if (type != ClickType.LEFT && type != ClickType.RIGHT && type != ClickType.SHIFT_LEFT && type != ClickType.SHIFT_RIGHT) {
+        return of(type, bedrock, hasRight, hasShift, false);
+    }
+
+    public static ClickRoute of(ClickType type, boolean bedrock, boolean hasRight, boolean hasShift, boolean hasMiddle) {
+        boolean basic = type == ClickType.LEFT || type == ClickType.RIGHT || type == ClickType.SHIFT_LEFT || type == ClickType.SHIFT_RIGHT;
+        if (bedrock) {
+            return basic ? PLAIN : IGNORED;
+        }
+        if (type == ClickType.MIDDLE) {
+            return hasMiddle ? MIDDLE : IGNORED;
+        }
+        if (!basic) {
             return IGNORED;
         }
-        if (bedrock) {
-            return PLAIN;
+        if (type == ClickType.SHIFT_RIGHT && hasMiddle) {
+            return MIDDLE;
         }
-        if (hasShift && type.isShiftClick()) {
+        if (type.isShiftClick() && hasShift) {
             return SHIFT;
         }
-        if (hasRight && type.isRightClick()) {
+        if (type.isRightClick() && hasRight) {
             return RIGHT;
         }
         return PLAIN;

@@ -68,19 +68,6 @@ class MenuLogicTest {
     }
 
     @Test
-    void frameRolesFollowTheStyleGuide() {
-        assertEquals(MenuService.FrameRole.ACCENT, MenuService.frameRole(0, 6));
-        assertEquals(MenuService.FrameRole.GLOW, MenuService.frameRole(1, 6));
-        assertEquals(MenuService.FrameRole.BORDER, MenuService.frameRole(4, 6));
-        assertEquals(MenuService.FrameRole.BORDER, MenuService.frameRole(9, 6));
-        assertEquals(MenuService.FrameRole.INNER, MenuService.frameRole(10, 6));
-        assertEquals(MenuService.FrameRole.ACCENT, MenuService.frameRole(53, 6));
-        assertEquals(MenuService.FrameRole.GLOW, MenuService.frameRole(46, 6));
-        assertEquals(MenuService.FrameRole.ACCENT, MenuService.frameRole(18, 3));
-        assertEquals(MenuService.FrameRole.INNER, MenuService.frameRole(13, 3));
-    }
-
-    @Test
     void longTitlesDropLeadingCrumbsFirst() {
         java.util.List<String> crumbs = java.util.List.of("Island", "Upgrades", "Member Slots");
         // marker "▸ " = 2, separator " » " = 3
@@ -97,13 +84,5 @@ class MenuLogicTest {
         assertTrue(MenuTitles.blank(java.util.List.of()));
         assertTrue(MenuTitles.blank(java.util.List.of("", "  ")));
         assertFalse(MenuTitles.blank(java.util.List.of("", "Menu")));
-    }
-
-    @Test
-    void headSourcesAreRecognised() {
-        assertTrue(MenuHeads.isPlayerName("MHF_ArrowLeft"));
-        assertFalse(MenuHeads.isPlayerName("not a name"));
-        assertTrue(MenuHeads.looksLikeTexture("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWJjIn19fQ=="));
-        assertFalse(MenuHeads.looksLikeTexture("MHF_ArrowLeft"));
     }
 }

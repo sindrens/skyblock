@@ -37,7 +37,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,7 +50,8 @@ import java.util.logging.Level;
  *   <li>every click/drag/move touching a menu is cancelled, so nothing can leave or enter it (shift, number keys,
  *       offhand swap, double-click collect, drop, creative middle-click, hoppers);</li>
  *   <li>only plain left/right (and shift) clicks on a button run its action, at most one per {@code click-debounce-ms};
- *       both mouse buttons run the plain action unless the button marks a Java-only shortcut ({@link ClickRoute});</li>
+ *       both mouse buttons run the plain action unless the button marks a Java-only shortcut ({@link ClickRoute}:
+ *       right, shift, middle or Shift + Right-click); every other click is ignored and the client resynced;</li>
  *   <li>all menu items carry a marker; a marked item found outside a menu is deleted (defence in depth);</li>
  *   <li>live updates for menus with a tick interval; chat prompts for text/number input (Bedrock-friendly);</li>
  *   <li>navigation (GUI_DESIGN §0.3): Back returns to the menu that opened this one ({@link Navigation}); re-opening the
@@ -86,7 +86,6 @@ public final class MenuService implements Listener {
     private final java.util.Set<String> slotWarnings = ConcurrentHashMap.newKeySet();
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.builder()
             .character(LegacyComponentSerializer.SECTION_CHAR).hexColors().useUnusualXRepeatedCharacterHexFormat().build();
-    private final MenuHeads heads;
     private final Offers offers;
     /** The pack service lookup (set by the plugin once the service registry exists); returns null without a pack. */
     private volatile Supplier<net.skybornmc.skyblock.common.pack.PackService> packs = () -> null;
@@ -106,7 +105,6 @@ public final class MenuService implements Listener {
         this.sounds = sounds;
         this.menuItemKey = new NamespacedKey(plugin, BUTTON_KEY);
         this.debounce = new Debounce(config.clickDebounceMs);
-        this.heads = new MenuHeads(plugin.getLogger());
         this.icons = new net.skybornmc.skyblock.common.icon.Icons(
                 () -> net.skybornmc.skyblock.common.icon.IconCatalog.bundled(MenuService.class.getClassLoader(),
                         problem -> plugin.getLogger().warning("icons/icons.json: " + problem)),
@@ -174,10 +172,6 @@ public final class MenuService implements Listener {
         if (icons != null) {
             icons.reload();
         }
-        framePanes = null;
-        heads.load("back", config.headBack);
-        heads.load("previous", config.headPrevious);
-        heads.load("next", config.headNext);
         if (offers != null) {
             offers.reload();
         }
@@ -335,17 +329,6 @@ public final class MenuService implements Listener {
         player.closeInventory();
     }
 
-    /** Opens the main menu (/menu) as a new navigation stack: the Main menu button. */
-    public void openMainMenu(Player player) {
-        origins.remove(player.getUniqueId());
-        String command = config.mainMenuCommand == null ? "" : config.mainMenuCommand.strip();
-        Menu before = open.get(player.getUniqueId());
-        player.performCommand(command.startsWith("/") ? command.substring(1) : command);
-        if (before != null && open.get(player.getUniqueId()) == before) {
-            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        }
-    }
-
     // ------------------------------------------------------------------ items and text
 
     /** Text of {@code key} in {@code module} for {@code viewer}, never italic. */
@@ -409,12 +392,45 @@ public final class MenuService implements Listener {
         return item(icons.item(viewer, key), name, lore);
     }
 
+    /** Back (arrow, our {@code nav/back} icon): "Back to the last menu." */
+    public ItemStack backItem(Player viewer) {
+        return icon(viewer, "nav/back", text(viewer, "frame.back.name"), lines(viewer, "frame.back.lore"));
+    }
+
+    /** Close (barrier, {@code nav/close}); never red, red is danger only (I9 section 5). */
+    public ItemStack closeItem(Player viewer) {
+        return icon(viewer, "nav/close", text(viewer, "frame.close.name"), lines(viewer, "frame.close.lore"));
+    }
+
     /**
-     * A navigation button: textured head ({@code heads.<headKey>} in menus.yml) with {@code fallback} until it is loaded,
-     * named {@code <key>.name} / {@code <key>.lore}.
+     * Previous or Next page (paper, {@code nav/prev} / {@code nav/next}); the stack count is the target page (Bedrock
+     * reads it too). {@code targetPage} and {@code pages} are 1-based.
      */
-    public ItemStack navItem(String headKey, Material fallback, Player viewer, String key, TagResolver... placeholders) {
-        return item(heads.item(headKey, fallback), text(viewer, key + ".name", placeholders), lines(viewer, key + ".lore", placeholders));
+    public ItemStack pageItem(Player viewer, boolean next, int targetPage, int pages) {
+        String key = next ? "frame.next" : "frame.previous";
+        TagResolver[] tags = {Msg.p("page", targetPage), Msg.p("pages", pages)};
+        ItemStack item = icon(viewer, next ? "nav/next" : "nav/prev", text(viewer, key + ".name", tags), lines(viewer, key + ".lore", tags));
+        item.setAmount(Math.max(1, Math.min(64, targetPage)));
+        return item;
+    }
+
+    /**
+     * The red danger tile (TNT, {@code nav/danger}; I9 section 5): {@code <key>.name} / {@code <key>.lore} from
+     * {@code module}. Put it in {@link MenuLayout#danger} and send the click to a {@link ConfirmMenu}.
+     */
+    public ItemStack dangerItem(Player viewer, String module, String key, TagResolver... tags) {
+        return icon(viewer, "nav/danger", text(viewer, module, key + ".name", tags), lines(viewer, module, key + ".lore", tags));
+    }
+
+    /**
+     * Lore lines only Java players see (I9 section 6 "Java-only hint": {@code Right-click: sell}); Bedrock players have
+     * no right or middle click, so they get an empty list.
+     */
+    public List<Component> javaLines(Player viewer, String module, String key, TagResolver... tags) {
+        if (viewer != null && messages.isBedrock(viewer)) {
+            return new ArrayList<>();
+        }
+        return lines(viewer, module, key, tags);
     }
 
     /**
@@ -493,9 +509,9 @@ public final class MenuService implements Listener {
 
     // ------------------------------------------------------------------ states (GUI_DESIGN §3: one look each, everywhere)
 
-    /** "⌛ Loading..." (clock), display only. */
+    /** "⌛ Loading..." (clock, {@code state/loading}), display only. */
     public MenuButton loadingItem(Player viewer) {
-        return MenuButton.display(item(Material.CLOCK, viewer, "loading"));
+        return MenuButton.display(icon(viewer, "state/loading", text(viewer, "loading.name"), lines(viewer, "loading.lore")));
     }
 
     /** "✘ Couldn't load this" (red glass). With {@code retry} a click tries again; {@code null} = display only. */
@@ -511,9 +527,12 @@ public final class MenuService implements Listener {
         return emptyItem(viewer, MODULE, "empty");
     }
 
-    /** "Nothing here yet" (cobweb) with a menu's own texts: {@code <key>.name} (the key fact) and {@code <key>.lore} (one hint). */
+    /**
+     * "Nothing here yet" (cobweb, {@code state/empty}) with a menu's own texts: {@code <key>.name} (the key fact) and
+     * {@code <key>.lore} (one hint).
+     */
     public MenuButton emptyItem(Player viewer, String module, String key) {
-        return MenuButton.display(item(Material.COBWEB, viewer, module, key));
+        return MenuButton.display(icon(viewer, "state/empty", text(viewer, module, key + ".name"), lines(viewer, module, key + ".lore")));
     }
 
     /**
@@ -524,7 +543,7 @@ public final class MenuService implements Listener {
         List<Component> lore = new ArrayList<>();
         lore.add(howToUnlock);
         lore.addAll(lines(viewer, "state.locked.lore"));
-        ItemStack item = item(Material.GRAY_DYE, text(viewer, "state.locked.name", Msg.c("name", name)), lore);
+        ItemStack item = icon(viewer, "state/locked", text(viewer, "state.locked.name", Msg.c("name", name)), lore);
         return MenuButton.of(item, click -> {
             messages.actionBar(click.player(), MODULE, "state.locked.actionbar", Msg.c("hint", howToUnlock));
             sounds.playUi(click.player(), "error");
@@ -549,94 +568,27 @@ public final class MenuService implements Listener {
         });
     }
 
-    /** Filler for empty slots inside small menus (confirm, number picker). */
-    ItemStack innerFiller() {
-        return filler(material(config.frameInner, Material.GRAY_STAINED_GLASS_PANE));
-    }
-
-    /** Material from a config id, or {@code fallback} (logged) if unknown. */
-    Material material(String id, Material fallback) {
-        Material m = Material.matchMaterial(id == null ? "" : id.trim());
-        if (m == null || !m.isItem()) {
-            plugin.getLogger().warning("menus.yml: '" + id + "' is not an item id, using " + fallback.name().toLowerCase(Locale.ROOT));
-            return fallback;
-        }
-        return m;
-    }
-
-    /** The marked frame panes (border, accent, glow, inner), built once per reload instead of on every redraw. */
-    private volatile ItemStack[] framePanes;
-
-    private ItemStack[] framePanes(Player viewer) {
-        ItemStack[] panes = framePanes;
-        if (panes == null) {
-            panes = new ItemStack[]{
-                    mark(filler(material(config.frameBorder, Material.BLACK_STAINED_GLASS_PANE))),
-                    mark(filler(material(config.frameAccent, Material.RED_STAINED_GLASS_PANE))),
-                    mark(filler(material(config.frameAccentGlow, Material.ORANGE_STAINED_GLASS_PANE))),
-                    mark(innerFiller())};
-            framePanes = panes;
-        }
-        return panes;
-    }
-
     /**
-     * See {@link Menu#frame()}. PERF2 (P-22, "stacking-menu-refresh"): the panes are cached per reload and the fixed
-     * buttons per menu opening, so a live refresh no longer clones, tags and re-parses ~50 items every time.
+     * See {@link Menu#navBar()}: Back (when the menu has a parent and is not the main menu) and Close. PERF2: the two
+     * items are built once per opening and reused by every live refresh.
      */
-    void applyFrame(Menu menu) {
+    void applyNavBar(Menu menu) {
         int rows = menu.rows();
         Player viewer = menu.viewer();
-        ItemStack[] panes = framePanes(viewer);
-        for (int slot = 0; slot < rows * 9; slot++) {
-            switch (frameRole(slot, rows)) {
-                case ACCENT -> menu.setMarked(slot, panes[1], null);
-                case GLOW -> menu.setMarked(slot, panes[2], null);
-                case BORDER -> menu.setMarked(slot, panes[0], null);
-                case INNER -> {
-                    if (rows <= 3) {
-                        menu.setMarked(slot, panes[3], null);
-                    }
-                }
-            }
-        }
-        ItemStack[] fixed = menu.frameButtons();
+        ItemStack[] cached = menu.navItems();
         int back = MenuLayout.back(rows);
-        if (back != MenuLayout.NONE && menu.parent() != null) {
-            if (fixed[0] == null) {
-                fixed[0] = mark(navItem("back", Material.ARROW, viewer, "frame.back"));
+        if (back != MenuLayout.NONE && menu.parent() != null && !menu.isMainMenu()) {
+            if (cached[0] == null) {
+                cached[0] = mark(backItem(viewer));
             }
-            menu.setMarked(back, fixed[0], click -> click.menu().back());
-        }
-        int info = MenuLayout.info(rows);
-        if (info != MenuLayout.NONE && menu.infoKey() != null) {
-            if (fixed[1] == null) {
-                List<Component> lore = new ArrayList<>(lines(viewer, menu.messageModule(), menu.infoKey()));
-                lore.addAll(lines(viewer, "frame.info.footer"));
-                fixed[1] = mark(item(Material.BOOK, text(viewer, "frame.info.name"), lore));
-            }
-            menu.setMarked(info, fixed[1], click -> runHelp(click.player(), click.menu(), menu.helpTopic()));
+            menu.setMarked(back, cached[0], click -> click.menu().back());
         }
         int close = MenuLayout.close(rows);
         if (close != MenuLayout.NONE) {
-            if (fixed[2] == null) {
-                fixed[2] = mark(item(Material.BARRIER, viewer, "frame.close"));
+            if (cached[1] == null) {
+                cached[1] = mark(closeItem(viewer));
             }
-            menu.setMarked(close, fixed[2], click -> close(click.player()));
-        }
-        int main = MenuLayout.mainMenu(rows);
-        if (main != MenuLayout.NONE) {
-            if (menu.isMainMenu()) {
-                if (fixed[3] == null) {
-                    fixed[3] = mark(item(Material.KNOWLEDGE_BOOK, viewer, "frame.help"));
-                }
-                menu.setMarked(main, fixed[3], click -> runHelp(click.player(), click.menu(), null));
-            } else {
-                if (fixed[3] == null) {
-                    fixed[3] = mark(item(Material.NETHER_STAR, viewer, "frame.main-menu"));
-                }
-                menu.setMarked(main, fixed[3], click -> openMainMenu(click.player()));
-            }
+            menu.setMarked(close, cached[1], click -> close(click.player()));
         }
     }
 
@@ -647,33 +599,8 @@ public final class MenuService implements Listener {
     void warnStandardSlot(Menu menu, int slot) {
         if (slotWarnings.add(menu.getClass().getName() + "#" + slot)) {
             plugin.getLogger().warning("Menu " + menu.getClass().getSimpleName() + " uses slot " + slot
-                    + ", a standard bottom-bar slot (GUI_DESIGN §1.1); move its button to 46, 47 or 51.");
+                    + ", a standard bottom-row slot (I9 section 4); move its button to 46, 47 or another free slot.");
         }
-    }
-
-    /** What a slot of the standard frame shows (docs/UI_STYLE.md §5.1). */
-    enum FrameRole { ACCENT, GLOW, BORDER, INNER }
-
-    /** Corners = red accent, the slot next to each corner on the top/bottom row = ember glow, rest of the edge = border. */
-    static FrameRole frameRole(int slot, int rows) {
-        int row = slot / 9;
-        int col = slot % 9;
-        boolean edgeRow = row == 0 || row == rows - 1;
-        if (edgeRow && (col == 0 || col == 8)) {
-            return FrameRole.ACCENT;
-        }
-        if (edgeRow && (col == 1 || col == 7)) {
-            return FrameRole.GLOW;
-        }
-        if (edgeRow || col == 0 || col == 8) {
-            return FrameRole.BORDER;
-        }
-        return FrameRole.INNER;
-    }
-
-    /** Opens a help topic (or the help home) with {@code from} as its Back target. */
-    private void runHelp(Player player, Menu from, String topic) {
-        navigate(player, from, () -> player.performCommand(topic == null ? "help" : "help " + topic));
     }
 
     /**
@@ -686,7 +613,8 @@ public final class MenuService implements Listener {
         lore.addAll(lines(viewer, "toggle.action"));
         // GUI-4c: the state is in the name too ("Chat colors ✔ On"), not only in the dye colour and the lore.
         Component name = text(viewer, state ? "toggle.name-on" : "toggle.name-off", Msg.c("name", text(viewer, module, key + ".name")));
-        ItemStack item = item(state ? Material.LIME_DYE : Material.RED_DYE, name, lore);
+        // On = lime dye, Off = gray dye (I9 7.8; red is reserved for danger).
+        ItemStack item = icon(viewer, state ? "state/on" : "state/off", name, lore);
         return MenuButton.of(item, click -> {
             change.accept(!state);
             click.menu().refresh();
@@ -939,27 +867,42 @@ public final class MenuService implements Listener {
         }
         ClickType type = event.getClick();
         boolean plain = type == ClickType.LEFT || type == ClickType.RIGHT
-                || type == ClickType.SHIFT_LEFT || type == ClickType.SHIFT_RIGHT;
+                || type == ClickType.SHIFT_LEFT || type == ClickType.SHIFT_RIGHT || type == ClickType.MIDDLE;
         if (!plain) {
-            // Number keys, offhand swap, double-click, drop, middle/creative: blocked; resync the client (Bedrock).
+            // Number keys, offhand swap, double-click, drop, creative drop: blocked; resync the client (Bedrock).
             Bukkit.getScheduler().runTask(plugin, player::updateInventory);
             return;
         }
         if (event.getClickedInventory() != top) {
+            if (type == ClickType.MIDDLE) {
+                Bukkit.getScheduler().runTask(plugin, player::updateInventory);
+            }
             return;
         }
         int slot = event.getRawSlot();
         MenuButton button = menu.button(slot);
         if (button == null || !button.clickable() || open.get(player.getUniqueId()) != menu) {
+            if (type == ClickType.MIDDLE) {
+                Bukkit.getScheduler().runTask(plugin, player::updateInventory); // creative middle click: no cloned cursor item
+            }
+            return;
+        }
+        ClickRoute route = ClickRoute.of(type, messages.isBedrock(player), button.onRight() != null, button.onShift() != null,
+                button.onMiddle() != null);
+        if (route == ClickRoute.IGNORED) {
+            // A creative middle click would otherwise leave a cloned cursor item; ignored clicks keep the debounce free.
+            Bukkit.getScheduler().runTask(plugin, player::updateInventory);
             return;
         }
         if (!debounce.tryClick(player.getUniqueId(), System.currentTimeMillis())) {
             return;
         }
-        ClickRoute route = ClickRoute.of(type, messages.isBedrock(player), button.onRight() != null, button.onShift() != null);
         Consumer<MenuClick> handler = button.handler(route);
         if (handler == null) {
             return;
+        }
+        if (route == ClickRoute.MIDDLE) {
+            Bukkit.getScheduler().runTask(plugin, player::updateInventory);
         }
         sounds.playUi(player, "click");
         try {
