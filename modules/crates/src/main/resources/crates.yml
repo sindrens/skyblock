@@ -2,7 +2,7 @@
 # Written to plugins/PhoenixSkyblock/crates.yml on first start; crates that are new in the jar are added to an existing
 # file, rewards of an existing crate never (your tables and odds stay as you edited them). Reload: /skyblock reload crates
 #
-# Per crate (plain keys): rarity (color), icon (vanilla block now; the pack retextures it later), order in /crates,
+# Per crate (plain keys): rarity (color), icon (a vanilla block), order in /crates,
 #   pity (opens without a top-band reward before the next one is forced into it; 0 = off; ~2.5x the average gap),
 #   hidden (not shown in /crates, e.g. Conqueror until KOTH), fallback-crystals (crystal value of rewards that are not
 #   live yet, x crystal-growth^(tier-1)).
