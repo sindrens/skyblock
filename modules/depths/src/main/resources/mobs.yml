@@ -6,7 +6,8 @@
 # combat table (tier 1 $104 ... tier 10 $14.7k with sell.yml -> custom-items.depths-combat); crystals per kill = the mine's
 # crystals per block of the same tier x the "= mine drops" factor. Combat XP = the skills table (zombie 5 ... ravager 1200).
 # Health is sized for ~2.5 s per kill with that tier's Forge sword; damage grows per tier (tiers 1-3 are safe for new
-# players). Mini-bosses are placeholders until Phase 8: 15x health, 20x XP/crystals, 15x drops, glowing, a boss bar.
+# players). Mini-bosses: 15x health, 20x XP/crystals, 15x drops, glowing, a boss bar, and (M8.2) two abilities each plus an
+# enrage phase below 30% health; they stay in a ring around their spawn spot (depths.yml -> combat.mini-boss.*).
 
 # Combat drop items: custom items like the mine/forest drops (sell.yml keys custom:<id>, Forge materials). Names:
 # messages/depths.yml -> drop-items.names.<id>. Materials are picked so they can't be placed as blocks.
@@ -46,39 +47,42 @@ drop-items:
 #                         Regular mobs below depths.yml combat.abilities.min-tier (4) never use abilities.
 # Ambient mobs (mine/forest) only need a type: they are harmless, per player, and give nothing.
 mobs:
+  # M8.2 mini-bosses (the glowing ones): two attacks each from their theme plus enrage below 30% health (faster, harder
+  # hits). Every attack warns 1 s first. Tiers 1-3 are gentle (weaker hits, longer cooldowns). Remove an entry from a
+  # mini-boss's abilities to drop that attack; depths.yml -> combat.mini-boss.abilities: false turns them all off.
   # Tier 1 Graveyard
   grave_walker:     {type: zombie, health: 20, damage: 2, xp: 5, vanilla-xp: 5, crystal-chance: 0.26, drops: [{item: depths_rotten_flesh, min: 3, max: 5}]}
-  grave_warden:     {type: zombie, health: 300, damage: 4, scale: 1.6, xp: 100, vanilla-xp: 50, crystal-chance: 5.2, glowing: true, name-visible: true, drops: [{item: depths_rotten_flesh, min: 50, max: 70}]}
+  grave_warden:     {type: zombie, health: 300, damage: 4, scale: 1.6, xp: 100, vanilla-xp: 50, crystal-chance: 5.2, glowing: true, name-visible: true, drops: [{item: depths_rotten_flesh, min: 50, max: 70}], abilities: [{id: slam, cooldown: 10, radius: 3.5, damage: 1.0, knockback: 0.8}, {id: summon, cooldown: 25, count: 2, max-alive: 2}, {id: enrage, below: 0.3, damage-bonus: 0.25, speed-bonus: 0.15}]}
   # Tier 2 Bone Crypt
   crypt_skeleton:   {type: skeleton, health: 22, damage: 2.5, xp: 10, vanilla-xp: 5, crystal-chance: 0.42, drops: [{item: depths_bone, min: 3, max: 5}]}
-  crypt_archer:     {type: skeleton, health: 330, damage: 5, scale: 1.4, xp: 200, vanilla-xp: 50, crystal-chance: 8.4, glowing: true, name-visible: true, drops: [{item: depths_bone, min: 50, max: 70}]}
+  crypt_archer:     {type: skeleton, health: 330, damage: 5, scale: 1.4, xp: 200, vanilla-xp: 50, crystal-chance: 8.4, glowing: true, name-visible: true, drops: [{item: depths_bone, min: 50, max: 70}], abilities: [{id: volley, cooldown: 10, count: 4, spread: 35}, {id: teleport, cooldown: 14, range: 12}, {id: enrage, below: 0.3, damage-bonus: 0.25, speed-bonus: 0.15}]}
   # Tier 3 Spider Den
   den_spider:       {type: spider, health: 24, damage: 3, xp: 22, vanilla-xp: 5, crystal-chance: 0.61, drops: [{item: depths_spider_eye, min: 3, max: 5}]}
   den_cave_spider:  {type: cave_spider, health: 18, damage: 2.5, xp: 22, vanilla-xp: 5, crystal-chance: 0.61, drops: [{item: depths_spider_eye, min: 3, max: 5}]}
-  broodmother:      {type: spider, health: 360, damage: 6, scale: 2.0, xp: 440, vanilla-xp: 50, crystal-chance: 12.2, glowing: true, name-visible: true, drops: [{item: depths_spider_eye, min: 50, max: 70}]}
+  broodmother:      {type: spider, health: 360, damage: 6, scale: 2.0, xp: 440, vanilla-xp: 50, crystal-chance: 12.2, glowing: true, name-visible: true, drops: [{item: depths_spider_eye, min: 50, max: 70}], abilities: [{id: summon, cooldown: 22, count: 2, max-alive: 3}, {id: curse, cooldown: 12, radius: 5, seconds: 3, effect: slowness}, {id: enrage, below: 0.3, damage-bonus: 0.25, speed-bonus: 0.15}]}
   # Tier 4 Slime Bog
   bog_slime:        {type: slime, size: 2, health: 26, damage: 4, xp: 40, vanilla-xp: 5, crystal-chance: 0.98, drops: [{item: depths_slime_ball, min: 3, max: 5}]}
-  king_slime:       {type: slime, size: 4, health: 390, damage: 7, scale: 1.5, xp: 800, vanilla-xp: 50, crystal-chance: 19.6, glowing: true, name-visible: true, drops: [{item: depths_slime_ball, min: 50, max: 70}]}
+  king_slime:       {type: slime, size: 4, health: 390, damage: 7, scale: 1.5, xp: 800, vanilla-xp: 50, crystal-chance: 19.6, glowing: true, name-visible: true, drops: [{item: depths_slime_ball, min: 50, max: 70}], abilities: [{id: slam, cooldown: 9, radius: 4, damage: 1.5}, {id: leap, cooldown: 12, range: 14, radius: 3, damage: 1.2}, {id: enrage, below: 0.3}]}
   # Tier 5 Sunken Ruins
   ruin_drowned:     {type: drowned, health: 28, damage: 5, xp: 72, vanilla-xp: 5, crystal-chance: 1.4, drops: [{item: depths_prismarine, min: 3, max: 5}]}
-  tide_caller:      {type: drowned, health: 420, damage: 8, scale: 1.5, xp: 1440, vanilla-xp: 50, crystal-chance: 28, glowing: true, name-visible: true, drops: [{item: depths_prismarine, min: 50, max: 70}]}
+  tide_caller:      {type: drowned, health: 420, damage: 8, scale: 1.5, xp: 1440, vanilla-xp: 50, crystal-chance: 28, glowing: true, name-visible: true, drops: [{item: depths_prismarine, min: 50, max: 70}], abilities: [{id: pull, cooldown: 14, radius: 8, strength: 1.0}, {id: volley, cooldown: 10, count: 5, spread: 40}, {id: enrage, below: 0.3}]}
   # Tier 6 Witch Hollow
   hollow_witch:     {type: witch, health: 30, damage: 6, xp: 135, vanilla-xp: 5, crystal-chance: 2.0, drops: [{item: depths_glowstone, min: 3, max: 5}]}
-  coven_elder:      {type: witch, health: 450, damage: 9, scale: 1.4, xp: 2700, vanilla-xp: 50, crystal-chance: 40, glowing: true, name-visible: true, drops: [{item: depths_glowstone, min: 50, max: 70}]}
+  coven_elder:      {type: witch, health: 450, damage: 9, scale: 1.4, xp: 2700, vanilla-xp: 50, crystal-chance: 40, glowing: true, name-visible: true, drops: [{item: depths_glowstone, min: 50, max: 70}], abilities: [{id: curse, cooldown: 12, radius: 5, seconds: 4, effect: weakness}, {id: teleport, cooldown: 12, range: 14}, {id: enrage, below: 0.3}]}
   # Tier 7 Pillager Outpost
   outpost_pillager: {type: pillager, health: 32, damage: 7, xp: 250, vanilla-xp: 5, crystal-chance: 3.1, drops: [{item: depths_raider_scrap, min: 3, max: 5}]}
   outpost_vindicator: {type: vindicator, health: 34, damage: 7, xp: 250, vanilla-xp: 5, crystal-chance: 3.1, drops: [{item: depths_raider_scrap, min: 3, max: 5}]}
-  raid_captain:     {type: vindicator, health: 500, damage: 11, scale: 1.4, xp: 5000, vanilla-xp: 50, crystal-chance: 62, glowing: true, name-visible: true, drops: [{item: depths_raider_scrap, min: 50, max: 70}]}
+  raid_captain:     {type: vindicator, health: 500, damage: 11, scale: 1.4, xp: 5000, vanilla-xp: 50, crystal-chance: 62, glowing: true, name-visible: true, drops: [{item: depths_raider_scrap, min: 50, max: 70}], abilities: [{id: charge, cooldown: 11, length: 8, damage: 1.5}, {id: summon, cooldown: 22, count: 2, max-alive: 3}, {id: enrage, below: 0.3}]}
   # Tier 8 Blaze Forge
   forge_blaze:      {type: blaze, health: 34, damage: 8, xp: 420, vanilla-xp: 10, crystal-chance: 4.4, drops: [{item: depths_blaze_rod, min: 3, max: 5}]}
-  forge_lord:       {type: blaze, health: 510, damage: 12, scale: 1.8, xp: 8400, vanilla-xp: 50, crystal-chance: 88, glowing: true, name-visible: true, drops: [{item: depths_blaze_rod, min: 50, max: 70}]}
+  forge_lord:       {type: blaze, health: 510, damage: 12, scale: 1.8, xp: 8400, vanilla-xp: 50, crystal-chance: 88, glowing: true, name-visible: true, drops: [{item: depths_blaze_rod, min: 50, max: 70}], abilities: [{id: volley, cooldown: 9, count: 6, spread: 50}, {id: ring, cooldown: 14, radius: 3.5, seconds: 3, damage: 0.5, kind: fire}, {id: enrage, below: 0.3}]}
   # Tier 9 Wither Keep
   keep_wither_skeleton: {type: wither_skeleton, health: 36, damage: 9, xp: 700, vanilla-xp: 5, crystal-chance: 6.4, drops: [{item: depths_wither_ash, min: 3, max: 5}]}
-  bone_king:        {type: wither_skeleton, health: 540, damage: 13, scale: 1.5, xp: 14000, vanilla-xp: 50, crystal-chance: 128, glowing: true, name-visible: true, drops: [{item: depths_wither_ash, min: 50, max: 70}]}
+  bone_king:        {type: wither_skeleton, health: 540, damage: 13, scale: 1.5, xp: 14000, vanilla-xp: 50, crystal-chance: 128, glowing: true, name-visible: true, drops: [{item: depths_wither_ash, min: 50, max: 70}], abilities: [{id: curse, cooldown: 12, radius: 5, seconds: 3, effect: wither}, {id: shield, cooldown: 18, seconds: 4, reduction: 0.7}, {id: enrage, below: 0.3}]}
   # Tier 10 Warlord's Citadel
   citadel_ravager:  {type: ravager, health: 40, damage: 10, xp: 1200, vanilla-xp: 20, crystal-chance: 9.9, drops: [{item: depths_warlord_sigil, min: 3, max: 5}]}
   citadel_evoker:   {type: evoker, health: 40, damage: 10, xp: 1200, vanilla-xp: 10, crystal-chance: 9.9, drops: [{item: depths_warlord_sigil, min: 3, max: 5}]}
-  warlord:          {type: ravager, health: 600, damage: 15, scale: 1.3, xp: 24000, vanilla-xp: 50, crystal-chance: 198, glowing: true, name-visible: true, drops: [{item: depths_warlord_sigil, min: 50, max: 70}]}
+  warlord:          {type: ravager, health: 600, damage: 15, scale: 1.3, xp: 24000, vanilla-xp: 50, crystal-chance: 198, glowing: true, name-visible: true, drops: [{item: depths_warlord_sigil, min: 50, max: 70}], abilities: [{id: charge, cooldown: 10, length: 8, damage: 1.8}, {id: slam, cooldown: 9, radius: 5, damage: 1.6, knockback: 1.2}, {id: enrage, below: 0.3}]}
 
   # M8.1 examples, NOT live (commented out, nothing spawns them). To try one: remove the "#~ " and add the id to a zone
   # in combat-zones below (tier 4 or higher, or as a mini-boss). Names go in messages/depths.yml -> mobs.<id>.
@@ -168,3 +172,6 @@ ambient:
     9:  {mobs: {ambient_bat: 1}}
     10: {mobs: {ambient_strider: 1}}
     11: {mobs: {ambient_strider: 1}}
+
+# One-time upgrades this file already had (the plugin adds them; leave this line as it is).
+applied-upgrades: [m8-2-mini-boss-abilities]

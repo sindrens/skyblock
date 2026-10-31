@@ -172,14 +172,57 @@ class MobCatalogTest {
         assertEquals(12, problems.size(), String.join("\n", problems));
     }
 
-    /** M8.1: the live mobs use none of the new stats, so the update changes no live balance. */
+    /** M8.1: regular mobs use none of the new stats (no live balance change); M8.2: mini-bosses only add abilities. */
     @Test
     void shippedLiveMobsHaveNoNewStats() throws Exception {
         MobCatalog c = shippedCatalog(new ArrayList<>());
+        Set<String> bosses = new java.util.HashSet<>();
+        c.combat().values().forEach(z -> bosses.add(z.miniBoss()));
         for (MobDef m : c.mobs().values()) {
-            assertSame(MobStats.NONE, m.stats(), m.id());
+            if (bosses.contains(m.id())) {
+                MobStats s = m.stats();
+                assertEquals(new MobStats(0, -1, 0, 0, s.abilities(), null, 0), s, m.id() + ": abilities only");
+            } else {
+                assertSame(MobStats.NONE, m.stats(), m.id());
+            }
         }
         assertTrue(c.dropTables().isEmpty(), "no shared drop table is live");
+    }
+
+    /** M8.2: every mini-boss ships two attacks from its theme plus enrage below 30%; plan pairs are kept. */
+    @Test
+    void miniBossesHaveTwoAttacksAndEnrage() throws Exception {
+        MobCatalog c = shippedCatalog(new ArrayList<>());
+        Map<String, List<AbilityId>> plan = Map.of(
+                "broodmother", List.of(AbilityId.SUMMON, AbilityId.CURSE),
+                "forge_lord", List.of(AbilityId.VOLLEY, AbilityId.RING),
+                "warlord", List.of(AbilityId.CHARGE, AbilityId.SLAM));
+        for (ZoneSpawns z : c.combat().values()) {
+            MobDef boss = c.mob(z.miniBoss());
+            List<AbilityId> ids = boss.stats().abilities().stream().map(AbilitySpec::id).toList();
+            assertEquals(3, ids.size(), boss.id() + " " + ids);
+            assertEquals(AbilityId.ENRAGE, ids.get(2), boss.id() + ": enrage last");
+            assertTrue(ids.subList(0, 2).stream().noneMatch(a -> a == AbilityId.ENRAGE), boss.id());
+            AbilitySpec enrage = c.resolve(boss.stats().ability(AbilityId.ENRAGE));
+            assertEquals(0.3, enrage.num("below"), 1e-9, boss.id() + ": enrage below 30%");
+            assertEquals(0.3, CombatZones.enrageBelow(boss.stats().abilities().stream().map(c::resolve).toList()), 1e-9);
+            if (plan.containsKey(boss.id())) {
+                assertEquals(plan.get(boss.id()), ids.subList(0, 2), boss.id() + " follows the plan");
+            }
+            // Gentle tiers 1-3: no ability hits harder than the boss's own 1x per hit, and enrage adds at most +25%.
+            if (z.tier() <= 3) {
+                for (AbilitySpec a : boss.stats().abilities()) {
+                    AbilitySpec r = c.resolve(a);
+                    if (a.id().param("damage") != null) {
+                        assertTrue(r.num("damage") <= 1.0, boss.id() + " " + a.id().id());
+                    }
+                }
+                assertTrue(enrage.num("damage-bonus") <= 0.25, boss.id());
+            }
+        }
+        assertEquals("fire", c.resolve(c.mob("forge_lord").stats().ability(AbilityId.RING)).text("kind"));
+        assertEquals("slowness", c.resolve(c.mob("broodmother").stats().ability(AbilityId.CURSE)).text("effect"));
+        assertTrue(Double.isNaN(CombatZones.enrageBelow(List.of())), "no enrage = no phase");
     }
 
     /** M8.1: the shipped ability-defaults repeat the code defaults (so an old mobs.yml without them behaves the same). */

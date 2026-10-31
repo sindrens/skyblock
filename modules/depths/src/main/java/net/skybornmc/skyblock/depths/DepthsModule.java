@@ -240,6 +240,7 @@ public final class DepthsModule implements SkyblockModule {
         java.util.function.Consumer<String> warn = problem -> core.plugin().getLogger().warning("depths.yml → " + problem);
         java.util.function.Consumer<String> warnMobs = problem -> core.plugin().getLogger().warning(MobSections.FILE + " → " + problem);
         org.bukkit.configuration.file.YamlConfiguration yaml = DropSections.load(file, warn);
+        upgradeMiniBosses(new File(core.plugin().getDataFolder(), MobSections.FILE));
         org.bukkit.configuration.file.YamlConfiguration mobs = MobSections.load(new File(core.plugin().getDataFolder(), MobSections.FILE), warnMobs);
         dropItems.load(java.util.Arrays.asList(yaml.getConfigurationSection(DropSections.ITEMS),
                 mobs.getConfigurationSection(MobSections.ITEMS)), warn);
@@ -248,6 +249,42 @@ public final class DepthsModule implements SkyblockModule {
         MobCatalog catalog = MobCatalog.parse(mobs, dropItems.ids(), net.skybornmc.skyblock.depths.combat.MobFactory::spawnableMob, warnMobs);
         combat.catalog(catalog);
         ambient.catalog(catalog);
+    }
+
+    /**
+     * M8.2: gives the mini-bosses of a live {@code mobs.yml} their abilities once, only on lines the owner never changed
+     * ({@link net.skybornmc.skyblock.depths.combat.MiniBossUpgrade}). Logged and audited per mini-boss; a failure only
+     * logs (the file stays as it was and the upgrade is tried again on the next start).
+     */
+    private void upgradeMiniBosses(File file) {
+        String bundled;
+        try (java.io.InputStream in = getClass().getClassLoader().getResourceAsStream(MobSections.FILE)) {
+            bundled = in == null ? null : new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (java.io.IOException e) {
+            bundled = null;
+        }
+        net.skybornmc.skyblock.depths.combat.MiniBossUpgrade.Result result;
+        try {
+            result = net.skybornmc.skyblock.depths.combat.MiniBossUpgrade.upgrade(file.toPath(), bundled);
+        } catch (java.io.IOException | RuntimeException e) {
+            core.plugin().getLogger().warning(MobSections.FILE + " → M8.2 mini-boss upgrade failed, file unchanged (tried again next start): " + e);
+            return;
+        }
+        if (result == null) {
+            return;
+        }
+        java.util.logging.Logger log = core.plugin().getLogger();
+        for (String id : result.upgraded()) {
+            log.info(MobSections.FILE + " → M8.2: mini-boss " + id + " got its abilities (two attacks + enrage).");
+            core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.CONFIG, "migrate",
+                    net.skybornmc.skyblock.common.audit.Actor.system("depths-m8-2"), MobSections.FILE + ":mobs." + id, null, null,
+                    java.util.Map.of("upgrade", net.skybornmc.skyblock.depths.combat.MiniBossUpgrade.ID, "change", "abilities added"));
+        }
+        result.skipped().forEach((id, why) -> log.info(MobSections.FILE + " → M8.2: mini-boss " + id + " left as it is (" + why
+                + "); add abilities to it yourself if you want them."));
+        if (!result.upgraded().isEmpty()) {
+            log.info(MobSections.FILE + " → the old file is kept as " + net.skybornmc.skyblock.depths.combat.MiniBossUpgrade.BACKUP + ".");
+        }
     }
 
     /**

@@ -311,6 +311,35 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "combat.mini-boss.kill-sound", desc = "Sound (sounds.yml) for rewarded players when a mini-boss dies (empty = none).")
     public String miniBossKillSound = "money";
 
+    // ------------------------------------------------------------------ mini-bosses for real (M8.2)
+
+    @Setting(path = "combat.mini-boss.abilities", desc = "M8.2: mini-bosses use their abilities from mobs.yml (two attacks + enrage below 30%). Off = they fight like before (no attacks, no enrage), the rest stays.")
+    public boolean miniBossAbilities = true;
+
+    @Setting(path = "combat.mini-boss.leash-radius", desc = "M8.2: a mini-boss stays in a ring of this many blocks around its spawn spot. Pulled out, it walks back and heals (0 = no ring).", min = 0.0, max = 64.0)
+    public double miniBossLeashRadius = 11.0;
+
+    @Setting(path = "combat.mini-boss.leash-height", desc = "M8.2: blocks above or below its spawn spot that still count as inside its ring.", min = 1.0, max = 64.0)
+    public double miniBossLeashHeight = 6.0;
+
+    @Setting(path = "combat.mini-boss.leash-heal-percent", desc = "M8.2: percent of its max health a mini-boss heals per second while it walks back to its ring.", min = 0.0, max = 100.0)
+    public double miniBossLeashHealPercent = 5.0;
+
+    @Setting(path = "combat.mini-boss.leash-teleport-seconds", desc = "M8.2: a mini-boss still outside its ring after this many seconds (stuck) is put back on its spawn spot (0 = never).", min = 0, max = 300)
+    public int miniBossLeashTeleportSeconds = 10;
+
+    @Setting(path = "combat.mini-boss.leash-check-ticks", desc = "M8.2: ticks between leash checks of the live mini-bosses (one shared task, at most one mini-boss per zone).", min = 2, max = 40)
+    public int miniBossLeashCheckTicks = 10;
+
+    @Setting(path = "combat.mini-boss.leash-walk-speed", desc = "M8.2: walking speed toward its ring (1 = its normal speed).", min = 0.5, max = 3.0)
+    public double miniBossLeashWalkSpeed = 1.3;
+
+    @Setting(path = "combat.mini-boss.spawn-title", desc = "M8.2: players in the zone see a short title when a mini-boss appears (with the chat line).")
+    public boolean miniBossSpawnTitle = true;
+
+    @Setting(path = "combat.mini-boss.enraged-bar-color", desc = "M8.2: boss bar color once a mini-boss is enraged (red, purple, pink, yellow, blue, green, white).")
+    public String miniBossEnragedBarColor = "purple";
+
     // ------------------------------------------------------------------ mob abilities and elites (M8.1)
 
     @Setting(path = "combat.abilities.enabled", desc = "M8.1: mobs with abilities in mobs.yml use them. Off = abilities are ignored and mobs fight as before.")

@@ -209,6 +209,20 @@ public final class MobAbilities {
         }
     }
 
+    /** M8.2: no new ability starts before {@code untilTick} (a mini-boss walking back to its ring). */
+    void hold(UUID id, long untilTick) {
+        MobState m = mobs.get(id);
+        if (m != null) {
+            m.clock.busyUntil(untilTick);
+        }
+    }
+
+    /** M8.2: true while one of the mob's abilities is winding up or running (a charge or leap may carry it away). */
+    boolean busy(UUID id) {
+        MobState m = mobs.get(id);
+        return m != null && m.clock.busy(Bukkit.getCurrentTick());
+    }
+
     // ------------------------------------------------------------------ combat hooks
 
     /** Damage multiplier of a mob's normal hits (enrage). */

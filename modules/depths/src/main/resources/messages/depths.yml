@@ -317,6 +317,18 @@ combat:
     spawn: "<prefix><c:error><sym:sword></c:error> <c:text>Mini-boss <name> <c:text>appeared in <c:value><zone></c:value><c:text>!"
     killed: "<prefix><c:success><sym:check></c:success> <name> <c:text>was defeated by <c:value><player></c:value><c:text>."
     reward: "<prefix><c:success><sym:star></c:success> <c:text>You helped defeat <name><c:text>. Rewards are in your satchel."
+    # M8.2: title for players in the zone when a mini-boss appears (title max 20 characters, subtitle max 36: Bedrock).
+    spawn-title:
+      title: "<c:error><sym:sword></c:error> <c:value>Mini-boss!"
+      subtitle: "<name> <c:text>appeared"
+      fade-in: 5
+      stay: 40
+      fade-out: 10
+    # M8.2: boss bar name once it is enraged (below 30% health). <bar> = the normal bar name.
+    bar-enraged: "<bar> <c:error>[Enraged]</c:error>"
+    # M8.2: action bar for players near it when it was pulled out of its ring and walks back (it heals on the way when a
+    # player pulled it out).
+    leash: "<c:warning><sym:arrow></c:warning> <name> <c:text>returns to its ring."
   # M8.1 elites (mobs.yml elite-chance): custom name around the mob's name (always visible).
   elite:
     name: "<rarity:legendary><sym:star></rarity:legendary> <name>"

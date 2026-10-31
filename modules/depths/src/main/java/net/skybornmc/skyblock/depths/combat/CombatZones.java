@@ -93,7 +93,8 @@ public final class CombatZones implements Listener {
     public static final String XP_SOURCE = "depths_mob";
 
     /** One live combat mob. */
-    record Tracked(LivingEntity entity, MobDef def, String zoneId, int tier, boolean boss, BossFight fight, boolean elite) {
+    record Tracked(LivingEntity entity, MobDef def, String zoneId, int tier, boolean boss, BossFight fight, boolean elite,
+                   MiniBossPhases phases) {
     }
 
     /** Runtime state of one combat zone. */
@@ -104,6 +105,11 @@ public final class CombatZones implements Listener {
         int clockMinutes = -1;
         UUID boss;
         BossBar bar;
+        /** M8.2: the live mini-boss's ring (around its spawn spot), {@code null} without one. */
+        MiniBossLeash leash;
+        /** M8.2: last leash check that found the mini-boss busy with its own ability; heal only if a player pulled it. */
+        long bossBusyTick = -1_000_000L;
+        boolean leashHeal;
         final Set<UUID> barViewers = new HashSet<>();
         long emptySince;
         int players;
@@ -125,6 +131,8 @@ public final class CombatZones implements Listener {
     private volatile MobCatalog catalog = MobCatalog.EMPTY;
     private Predicate<UUID> otherOwned = id -> false;
     private Scheduler.Task task;
+    /** M8.2: one shared task for the leash checks of the live mini-bosses. */
+    private Scheduler.Task leashTask;
     /** QUICK1 (P-10): standing heights per arena column, so spawn spots don't rescan columns every cycle. */
     private final SpawnColumns columns = new SpawnColumns();
     /** QUICK1: parsed mob names (message parsing once per mob kind, not per spawn); cleared on start/reload. */
@@ -163,6 +171,11 @@ public final class CombatZones implements Listener {
         names.clear();
         long ticks = Math.max(10, config.combatCycleTicks);
         task = core.scheduler().repeat("depths-combat", ticks, ticks, this::cycle);
+        if (leashTask != null) {
+            leashTask.cancel();
+        }
+        long leashTicks = Math.max(2, config.miniBossLeashCheckTicks);
+        leashTask = core.scheduler().repeat("depths-miniboss-leash", leashTicks, leashTicks, this::leashCheck);
         abilities.start();
         // A reload keeps the live mobs: they get their abilities again from the (maybe changed) catalog.
         EliteRules rules = eliteRules();
@@ -183,6 +196,10 @@ public final class CombatZones implements Listener {
         if (task != null) {
             task.cancel();
             task = null;
+        }
+        if (leashTask != null) {
+            leashTask.cancel();
+            leashTask = null;
         }
         abilities.stop();
         clearAll();
@@ -344,7 +361,8 @@ public final class CombatZones implements Listener {
                 continue;
             }
             if (inSafe || l.getWorld() != world || !zone.region().contains(l.getX(), l.getY(), l.getZ())) {
-                Location back = spot(world, zone, List.of(), rng);
+                // M8.2: a mini-boss goes back to its own ring, not to a random spot.
+                Location back = id.equals(state.boss) && state.leash != null ? home(world, state.leash) : spot(world, zone, List.of(), rng);
                 if (back != null) {
                     t.entity().teleportAsync(back);
                 } else {
@@ -374,11 +392,15 @@ public final class CombatZones implements Listener {
         if (e == null) {
             return null;
         }
+        List<AbilitySpec> own = abilitiesOf(def, zone.tier(), boss, elite, rules);
         tracked.put(e.getUniqueId(), new Tracked(e, def, zone.id(), zone.tier(), boss, boss ? new BossFight(maxHealth(e)) : null,
-                elite));
-        abilities.track(e, def, zone.id(), abilitiesOf(def, zone.tier(), boss, elite, rules));
+                elite, boss ? new MiniBossPhases(enrageBelow(own)) : null));
+        abilities.track(e, def, zone.id(), own);
         state.mobs.add(e.getUniqueId());
         if (boss) {
+            state.leash = config.miniBossLeashRadius > 0
+                    ? new MiniBossLeash(at.getX(), at.getY(), at.getZ(), config.miniBossLeashRadius, config.miniBossLeashHeight)
+                    : null;
             e.addScoreboardTag(net.skybornmc.skyblock.common.combat.BossMobs.TAG); // E2: Giant Slayer / Executioner see bosses
             state.boss = e.getUniqueId();
             state.clock.spawned();
@@ -429,7 +451,7 @@ public final class CombatZones implements Listener {
      * (tiers 1-3 stay safe); elites add their extra ability; unset values come from {@code ability-defaults}.
      */
     private List<AbilitySpec> abilitiesOf(MobDef def, int tier, boolean boss, boolean elite, EliteRules rules) {
-        if (!config.abilitiesEnabled || (!boss && tier < config.abilitiesMinTier)) {
+        if (!config.abilitiesEnabled || (!boss && tier < config.abilitiesMinTier) || (boss && !config.miniBossAbilities)) {
             return List.of();
         }
         List<AbilitySpec> own = rules.abilities(def.stats().abilities(), elite);
@@ -442,6 +464,16 @@ public final class CombatZones implements Listener {
             out.add(cat.resolve(a));
         }
         return out;
+    }
+
+    /** M8.2: the health share where a mini-boss enrages (its resolved {@code enrage} ability), NaN without one. */
+    static double enrageBelow(List<AbilitySpec> abilities) {
+        for (AbilitySpec a : abilities) {
+            if (a.id() == AbilityId.ENRAGE) {
+                return a.num("below");
+            }
+        }
+        return Double.NaN;
     }
 
     /** M8.1 summon: one regular mob of the zone near a spot, inside the zone and the caps; never an elite or boss. */
@@ -552,6 +584,9 @@ public final class CombatZones implements Listener {
         Component shown = name == null ? Component.text(t.def().id()) : name;
         for (Player p : players) {
             msg.send(p, "combat.mini-boss.spawn", Msg.c("name", shown), Msg.p("zone", zone.name()));
+            if (config.miniBossSpawnTitle) {
+                msg.title(p, "combat.mini-boss.spawn-title", Msg.c("name", shown)); // M8.2
+            }
             eventSound(p, config.miniBossSpawnSound); // F1: a boss announcement, follows "Event sounds" in /settings
         }
         if (config.miniBossBar) {
@@ -565,9 +600,14 @@ public final class CombatZones implements Listener {
         Component shown = name == null ? Component.text(t.def().id()) : name;
         double max = maxHealth(t.entity());
         int extra = t.fight() == null ? 0 : (int) Math.round((t.fight().scale() - 1.0) * 100.0);
-        return msg.component(null, extra > 0 ? "combat.mini-boss.bar-health-scaled" : "combat.mini-boss.bar-health",
+        Component bar = msg.component(null, extra > 0 ? "combat.mini-boss.bar-health-scaled" : "combat.mini-boss.bar-health",
                 Msg.c("name", shown), Msg.number("health", (long) Math.ceil(Math.max(0, health))),
                 Msg.number("max", (long) Math.ceil(max)), Msg.number("extra", extra));
+        return enraged(t) ? msg.component(null, "combat.mini-boss.bar-enraged", Msg.c("bar", bar)) : bar;
+    }
+
+    private static boolean enraged(Tracked t) {
+        return t.phases() != null && t.phases().enraged();
     }
 
     /** Updates the bar's fill and name after the boss's health changed (hit or scaling). */
@@ -578,6 +618,107 @@ public final class CombatZones implements Listener {
         double max = maxHealth(t.entity());
         state.bar.progress((float) Math.max(0, Math.min(1, health / max)));
         state.bar.name(barName(t, health));
+        if (enraged(t)) {
+            state.bar.color(enragedColor());
+        }
+    }
+
+    /** M8.2: {@code combat.mini-boss.enraged-bar-color} (purple when unknown). */
+    private BossBar.Color enragedColor() {
+        String raw = config.miniBossEnragedBarColor == null ? "" : config.miniBossEnragedBarColor.trim().toLowerCase(java.util.Locale.ROOT);
+        BossBar.Color c = BossBar.Color.NAMES.value(raw);
+        return c == null ? BossBar.Color.PURPLE : c;
+    }
+
+    // ------------------------------------------------------------------ M8.2 leash (the mini-boss's ring)
+
+    /**
+     * One shared run for every live mini-boss (at most one per zone): inside its ring nothing happens; pulled out it drops
+     * its target, walks home, heals and starts no ability; stuck outside too long it is put back home. Players near it get
+     * one action bar line when it turns back, so it is never a mystery why it walks away.
+     */
+    void leashCheck() {
+        if (!config.combatEnabled || states.isEmpty()) {
+            return;
+        }
+        long t0 = System.nanoTime();
+        long now = System.currentTimeMillis();
+        long tick = Bukkit.getCurrentTick();
+        int interval = Math.max(2, config.miniBossLeashCheckTicks);
+        for (ZoneState state : states.values()) {
+            MiniBossLeash leash = state.leash;
+            Tracked t = state.boss == null || leash == null ? null : tracked.get(state.boss);
+            if (t == null || !t.entity().isValid() || t.entity().isDead()) {
+                continue;
+            }
+            LivingEntity e = t.entity();
+            if (!leash.returning() && abilities.busy(e.getUniqueId())) {
+                state.bossBusyTick = tick;
+                continue; // its own charge or leap is still running: checked once it lands
+            }
+            Location l = e.getLocation();
+            boolean wasReturning = leash.returning();
+            switch (leash.check(l.getX(), l.getY(), l.getZ(), now, config.miniBossLeashTeleportSeconds * 1000L)) {
+                case INSIDE -> {
+                    // fights as usual
+                }
+                case RETURN -> {
+                    if (!wasReturning) {
+                        // Out by its own leap/charge/teleport: it walks back without healing (no free heal from its moves).
+                        state.leashHeal = tick - state.bossBusyTick > interval * 2L;
+                        leashLine(t);
+                    }
+                    walkHome(state, t, leash, interval, state.leashHeal);
+                    abilities.hold(e.getUniqueId(), tick + interval + 1);
+                }
+                case TELEPORT -> {
+                    if (e instanceof Mob mob) {
+                        mob.setTarget(null);
+                    }
+                    e.teleportAsync(home(l.getWorld(), leash));
+                }
+            }
+        }
+        core.scheduler().timer().record("depths-miniboss-leash", System.nanoTime() - t0);
+    }
+
+    private void walkHome(ZoneState state, Tracked t, MiniBossLeash leash, int interval, boolean heal) {
+        LivingEntity e = t.entity();
+        if (e instanceof Mob mob) {
+            mob.setTarget(null);
+            mob.getPathfinder().moveTo(home(e.getWorld(), leash), config.miniBossLeashWalkSpeed);
+        }
+        if (!heal) {
+            return;
+        }
+        double max = maxHealth(e);
+        double add = MiniBossLeash.heal(e.getHealth(), max, config.miniBossLeashHealPercent, interval);
+        if (add > 0) {
+            e.setHealth(Math.min(max, e.getHealth() + add));
+            updateBar(state, t, e.getHealth());
+        }
+    }
+
+    /** Action bar for players of the zone near the mini-boss when it turns back to its ring. */
+    private void leashLine(Tracked t) {
+        Location at = t.entity().getLocation();
+        double max = (double) config.abilitiesEffectRange * config.abilitiesEffectRange;
+        Component name = nameOrId(t.def());
+        for (Player p : present.getOrDefault(t.zoneId(), List.of())) {
+            if (p.isOnline() && p.getWorld() == at.getWorld() && p.getLocation().distanceSquared(at) <= max) {
+                msg.actionBar(p, "combat.mini-boss.leash", Msg.c("name", name));
+            }
+        }
+    }
+
+    /** True while this mini-boss walks back to its ring. */
+    private boolean returning(Tracked t) {
+        ZoneState state = states.get(t.zoneId());
+        return state != null && state.leash != null && t.entity().getUniqueId().equals(state.boss) && state.leash.returning();
+    }
+
+    private static Location home(World world, MiniBossLeash leash) {
+        return new Location(world, leash.homeX(), leash.homeY(), leash.homeZ());
     }
 
     // ------------------------------------------------------------------ R3-10 scaling and eligibility
@@ -671,6 +812,9 @@ public final class CombatZones implements Listener {
 
     private void bossGone(ZoneState state) {
         state.boss = null;
+        state.leash = null;
+        state.bossBusyTick = -1_000_000L;
+        state.leashHeal = false;
         hideBar(state);
         if (state.clock != null) {
             state.clock.gone(System.currentTimeMillis(), Math.max(0, state.clockMinutes) * 60_000L);
@@ -863,7 +1007,12 @@ public final class CombatZones implements Listener {
         Tracked t = tracked.get(event.getEntity().getUniqueId());
         if (t != null) {
             LivingEntity mob = t.entity();
-            abilities.afterHit(mob.getUniqueId(), mob.getHealth() - event.getFinalDamage(), maxHealth(mob));
+            double after = mob.getHealth() - event.getFinalDamage();
+            abilities.afterHit(mob.getUniqueId(), after, maxHealth(mob));
+            // M8.2: the mini-boss's enrage phase (same rule as the enrage ability): boss bar name and color change.
+            if (t.boss() && t.phases() != null && t.phases().update(after, maxHealth(mob)) != null) {
+                updateBar(states.get(t.zoneId()), t, Math.max(0, after));
+            }
         }
     }
 
@@ -884,8 +1033,14 @@ public final class CombatZones implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onTarget(EntityTargetLivingEntityEvent event) {
-        if (event.getTarget() != null && !(event.getTarget() instanceof Player) && tracked.containsKey(event.getEntity().getUniqueId())) {
+        Tracked t = event.getTarget() == null ? null : tracked.get(event.getEntity().getUniqueId());
+        if (t == null) {
+            return;
+        }
+        if (!(event.getTarget() instanceof Player)) {
             event.setCancelled(true);
+        } else if (t.boss() && returning(t)) {
+            event.setCancelled(true); // M8.2: walking back to its ring, it picks no new target
         }
     }
 
