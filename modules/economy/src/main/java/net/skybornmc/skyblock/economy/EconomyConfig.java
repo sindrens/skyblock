@@ -177,7 +177,8 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "send-gate.earned-reasons", desc = "Ledger reasons that count as earned money for F1 (income only: "
             + "money from other players, staff, notes, refunds and the start balance never counts).", level = Setting.Level.OWNER)
     public List<String> sendGateEarnedReasons = List.of("sell", "afk_pool", "interest", "crate_reward", "daily_reward",
-            "playtime_reward", "tutorial_reward", "tutorial_optional", "depths_drop", "pillar_milestone", "island_task");
+            "playtime_reward", "tutorial_reward", "tutorial_optional", "depths_drop", "pillar_milestone", "island_task",
+            "quest_reward");
 
     @Setting(path = "notes.item.material", desc = "Material of the money note item (a resource-pack model can replace the "
             + "look later).", restart = true)
