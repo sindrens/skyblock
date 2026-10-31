@@ -126,9 +126,9 @@ hub:
 # ------------------------------------------------------------------ results
 results:
   info:
-    - "<c:text>Newest first. <c:value>Hover</c:value> an entry for details."
-    - "<c:text>Click: teleport there (if it has a place)."
-    - "<c:text>Right-click: full details in chat."
+    - "<c:text>Newest first. Click an entry for its"
+    - "<c:text>details, Teleport and Punish."
+    - "<c:text>Java shortcut: right-click prints it in chat."
   summary:
     name: "<c:flame><sym:star></c:flame> <c:value>Search"
     lore:
@@ -266,6 +266,25 @@ entry:
   click-chat: "<bold><c:action>» CLICK</c:action></bold> <c:text>full details in chat"
   # Phase P 13.11: a chat line opens the punish menu (/p) with this line (and the lines before it) as evidence.
   click-punish: "<bold><c:action>» CLICK</c:action></bold> <c:text>to punish with this line as evidence"
+  # GUI-4c: a click on a result opens the entry screen.
+  click-open: "<bold><c:action>» CLICK</c:action></bold> <c:text>for details and actions"
+
+# GUI-4c: one log entry (plain click on a result). <id> entry id, <world> <x> <y> <z>, <player> who wrote the line.
+entry-menu:
+  crumb: "Entry #<id>"
+  teleport:
+    name: "<c:info>Teleport there"
+    lore: ["<c:text><world> <x>, <y>, <z>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to teleport"]
+  punish:
+    name: "<c:error>Punish <player>"
+    lore: ["<c:text>Opens /p with this chat line", "<c:text>(and the lines before it) as evidence.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to punish"]
+  chat:
+    name: "<c:value>Show in chat"
+    lore: ["<c:text>One line with the full details", "<c:text>(hover it on Java).", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
+  read:
+    name: "<c:value>Read the details"
+    lore: ["<c:text>Every detail of this entry", "<c:text>in a popup.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to read"]
+  popup-back: "Back"
 
 hover:
   header: "<c:flame><category></c:flame> <c:muted><sym:dot> <utc>"

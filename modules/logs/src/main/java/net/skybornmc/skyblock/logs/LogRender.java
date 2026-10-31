@@ -147,6 +147,11 @@ final class LogRender {
     // ------------------------------------------------------------------------------------------------ menu item
 
     ItemStack item(Player viewer, AuditEntry e, long now) {
+        return item(viewer, e, now, true);
+    }
+
+    /** {@code inList}: the results list (a click opens the entry screen); false = the entry screen itself (no click line). */
+    ItemStack item(Player viewer, AuditEntry e, long now, boolean inList) {
         TagResolver[] p = placeholders(e, now);
         Component name = text(viewer, "entry.name", p);
         List<Component> lore = new ArrayList<>();
@@ -174,11 +179,9 @@ final class LogRender {
         }
         lore.add(Component.empty());
         lore.add(text(viewer, "entry.meta", p));
-        boolean punish = LogPunish.punishable(e) && LogPunish.allowed(viewer);
-        boolean teleport = !punish && e.hasLocation() && module.canTeleport(viewer);
-        lore.add(text(viewer, punish ? "entry.click-punish" : teleport ? "entry.click-teleport" : "entry.click-chat"));
-        if (teleport || punish) {
-            lore.add(text(viewer, "entry.right-click-chat"));
+        if (inList) {
+            // GUI-4c: one plain click opens the entry (details + Teleport / Punish / Show in chat), Bedrock too.
+            lore.add(text(viewer, "entry.click-open"));
         }
         return module.core.menus().item(icon(e.category()), name, lore);
     }
@@ -187,6 +190,11 @@ final class LogRender {
 
     /** The hover card of an entry: header, who, amount, place and pretty-printed details. */
     Component hover(CommandSender viewer, AuditEntry e, long now) {
+        return Component.join(JoinConfiguration.newlines(), hoverLines(viewer, e, now));
+    }
+
+    /** The hover card as lines (also the Bedrock details popup of the entry screen, GUI-4c). */
+    List<Component> hoverLines(CommandSender viewer, AuditEntry e, long now) {
         TagResolver[] p = placeholders(e, now);
         List<Component> lines = new ArrayList<>();
         lines.add(text(viewer, "hover.header", with(p, Msg.c("category", category(viewer, e.category())))));
@@ -206,7 +214,7 @@ final class LogRender {
             }
         }
         lines.add(text(viewer, "entry.meta", p));
-        return Component.join(JoinConfiguration.newlines(), lines);
+        return lines;
     }
 
     /** One readable line with the hover card; coordinates are clickable for staff who may teleport. */

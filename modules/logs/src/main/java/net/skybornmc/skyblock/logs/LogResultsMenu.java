@@ -46,7 +46,9 @@ final class LogResultsMenu extends Menu {
 
     @Override
     public Component title() {
-        return service.title(viewer, module.render.text(viewer, "title.logs"), module.render.subject(viewer, filter));
+        // GUI-4c: the page like every paged menu (UI_STYLE §5).
+        Component suffix = pages() > 1 ? service.text(viewer, "title.page", Msg.p("page", page + 1), Msg.p("pages", pages())) : null;
+        return service.title(viewer, List.of(module.render.text(viewer, "title.logs"), module.render.subject(viewer, filter)), suffix);
     }
 
     @Override
@@ -119,31 +121,13 @@ final class LogResultsMenu extends Menu {
         long now = System.currentTimeMillis();
         for (int i = 0; i < rows.size() && i < PagedMenu.CONTENT_SLOTS.length; i++) {
             AuditEntry entry = rows.get(i);
-            // GUI-1: a plain click (left or right, Bedrock tap) acts; right-click "full details in chat" is a marked Java shortcut.
-            set(PagedMenu.CONTENT_SLOTS[i], MenuButton.of(module.render.item(viewer, entry, now), click -> {
-                // spec 13.11: a chat line opens the punish menu with that line as evidence (plain click: Bedrock too)
-                if (LogPunish.punishable(entry) && LogPunish.allowed(viewer)) {
-                    viewer.closeInventory();
-                    module.punishFrom(viewer, entry);
-                    return;
-                }
-                if (entry.hasLocation() && module.canTeleport(viewer)) {
-                    World world = Bukkit.getWorld(entry.world());
-                    if (world == null) {
-                        module.msg.send(viewer, "errors.world-unloaded", Msg.p("world", entry.world()));
-                        module.sound(viewer, "error");
-                        return;
-                    }
-                    viewer.closeInventory();
-                    module.teleport(viewer, new Location(world, entry.x() + 0.5, entry.y(), entry.z() + 0.5));
-                } else {
-                    viewer.sendMessage(module.render.chatLine(viewer, entry, System.currentTimeMillis()));
-                    module.sound(viewer, "click");
-                }
-            }).withRight(click -> {
-                viewer.sendMessage(module.render.chatLine(viewer, entry, System.currentTimeMillis()));
-                module.sound(viewer, "click");
-            }));
+            // GUI-4c: a plain click (left or right, Bedrock tap) opens the entry: full details and the actions behind a
+            // second, named click. Right-click still prints the line in chat (Java shortcut, in the ? guide).
+            set(PagedMenu.CONTENT_SLOTS[i], MenuButton.of(module.render.item(viewer, entry, now), click -> openChild(new LogEntryMenu(module, entry)))
+                    .withRight(click -> {
+                        viewer.sendMessage(module.render.chatLine(viewer, entry, System.currentTimeMillis()));
+                        module.sound(viewer, "click");
+                    }));
         }
         if (page > 0) {
             set(Menu.SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",
@@ -159,7 +143,7 @@ final class LogResultsMenu extends Menu {
         page = Math.max(0, Math.min(pages() - 1, page + delta));
         rows = null;
         service.sound(viewer, "page");
-        refresh();
+        redraw();
     }
 
     private void load() {
@@ -185,7 +169,7 @@ final class LogResultsMenu extends Menu {
                         failed = false;
                     }
                     if (isOpen()) {
-                        refresh();
+                        redraw(); // the title's page count follows the total
                     }
                 }));
     }
