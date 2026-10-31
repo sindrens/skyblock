@@ -14,6 +14,8 @@ public final class DepthsPerms {
 
     /** {@code /depths generate}: build the placeholder layout. */
     public static final String GENERATE = "skyblock.depths.generate";
+    /** {@code /depths palette}: DV2-SPIKE tier palette status and lower-tier toggle. */
+    public static final String PALETTE = "skyblock.depths.palette";
     /** {@code /depths tp}: staff teleport to a zone. */
     public static final String TP = "skyblock.depths.tp";
 

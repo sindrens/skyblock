@@ -186,6 +186,13 @@ public final class TierGates implements Listener {
 
     // ------------------------------------------------------------------ public API
 
+    /** DV2-SPIKE: also run on every periodic tier check of a player (the palette refreshes active tiers there). */
+    private java.util.function.BiConsumer<Player, SkillService> afterCheck = (p, s) -> { };
+
+    public void afterCheck(java.util.function.BiConsumer<Player, SkillService> hook) {
+        this.afterCheck = Objects.requireNonNull(hook, "hook");
+    }
+
     /** Lets a staff member stay in {@code zoneId} although it is locked for them (until they enter another zone). */
     public void grantPass(Player player, String zoneId) {
         state(player).pass = zoneId;
@@ -284,6 +291,7 @@ public final class TierGates implements Listener {
                 }
             }
         }
+        afterCheck.accept(player, skills);
         if (!inDepths(player)) {
             return;
         }

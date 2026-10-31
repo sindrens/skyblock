@@ -23,6 +23,7 @@ final class DepthsXpListener implements Listener {
     /** After every other listener: a cancelled break (tier locked, satchel full) gives no XP. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreak(ResourceBreakEvent event) {
-        manager.onResourceBreak(event.getPlayer(), event.getBlockType().getKey().getKey());
+        // DV2-SPIKE: XP of the block the player saw (a palette tier), not the real slot block.
+        manager.onResourceBreak(event.getPlayer(), event.getShownType().getKey().getKey());
     }
 }

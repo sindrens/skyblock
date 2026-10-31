@@ -41,6 +41,30 @@ public final class BreakMath {
         return toolSpeed / hardness / (canHarvest ? 30f : 100f);
     }
 
+    /**
+     * DV2-SPIKE hardness fix: the client times a break from the block it <b>sees</b> (a palette tier), the server only
+     * knows the real block. Turns Paper's per-tick progress on the real block ({@code realSpeed}, which already holds
+     * Efficiency, Haste, Mining Fatigue, water and airborne penalties) into the progress on the shown block by swapping
+     * the block-dependent parts of the vanilla formula: tool speed, hardness and the harvest divisor (30 / 100).
+     *
+     * <p>When the real block is instant or unbreakable the effects can't be factored out; the plain formula for the
+     * shown block is returned instead.</p>
+     */
+    public static float scaledSpeed(float realSpeed, float realHardness, float realToolSpeed, boolean realHarvest,
+                                    float shownHardness, float shownToolSpeed, boolean shownHarvest) {
+        if (shownHardness < 0f) {
+            return 0f;
+        }
+        if (shownHardness == 0f) {
+            return 1f;
+        }
+        if (!(realHardness > 0f) || !(realToolSpeed > 0f) || !(realSpeed > 0f)) {
+            return progressPerTick(shownHardness, Math.max(shownToolSpeed, 0f), shownHarvest);
+        }
+        double effects = realSpeed * realHardness * (realHarvest ? 30.0 : 100.0) / realToolSpeed;
+        return (float) (effects * shownToolSpeed / shownHardness / (shownHarvest ? 30.0 : 100.0));
+    }
+
     /** Ticks needed to break: 0 = instant, {@link #UNBREAKABLE} = never. */
     public static int expectedTicks(float progressPerTick) {
         if (!(progressPerTick > 0f)) {

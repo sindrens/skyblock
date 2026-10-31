@@ -67,6 +67,7 @@ public final class DepthsDrops implements Listener {
     /** The event of the last HIGH check and its table entry, so MONITOR does not look the zone up again. */
     private ResourceBreakEvent lastEvent;
     private Zone lastZone;
+    private int lastTier;
     private DropTable.TierDrops lastDrops;
 
     public DepthsDrops(Core core, DepthsConfig config, ModuleMessages msg, ZoneService zones, SatchelManager satchel, DropItems items) {
@@ -125,17 +126,20 @@ public final class DepthsDrops implements Listener {
 
     private Lookup lookup(ResourceBreakEvent event) {
         if (event == lastEvent) {
-            return lastZone == null ? null : new Lookup(lastZone, lastDrops);
+            return lastZone == null ? null : new Lookup(lastZone, lastTier, lastDrops);
         }
         Zone zone = zones.zoneAt(event.getLocation());
-        DropTable.TierDrops drops = zone == null ? null : table.get(zone.aspect().id(), zone.tier());
+        // DV2-SPIKE: the shown tier's table (palette zones), else the zone's own tier.
+        int tier = zone == null ? 0 : net.skybornmc.skyblock.depths.engine.PaletteMath.rewardTier(event.getTier(), zone.tier());
+        DropTable.TierDrops drops = zone == null ? null : table.get(zone.aspect().id(), tier);
         lastEvent = event;
         lastZone = drops == null ? null : zone;
+        lastTier = tier;
         lastDrops = drops;
-        return drops == null ? null : new Lookup(zone, drops);
+        return drops == null ? null : new Lookup(zone, tier, drops);
     }
 
-    private record Lookup(Zone zone, DropTable.TierDrops drops) {
+    private record Lookup(Zone zone, int tier, DropTable.TierDrops drops) {
     }
 
     /**
@@ -192,7 +196,7 @@ public final class DepthsDrops implements Listener {
         long crystalsFound = roll.crystals();
         Map<String, Integer> extra = roll.rare();
         if (DepthsDropEvent.getHandlerList().getRegisteredListeners().length > 0) {
-            DepthsDropEvent hook = new DepthsDropEvent(player, event.getBlock(), tool, found.zone().aspect().id(), found.zone().tier(),
+            DepthsDropEvent hook = new DepthsDropEvent(player, event.getBlock(), tool, found.zone().aspect().id(), found.tier(),
                     found.drops().item(), amount, crystalsFound, extra, found.drops().crystalsPerBlock());
             Bukkit.getPluginManager().callEvent(hook);
             amount = hook.getItems();
@@ -215,7 +219,7 @@ public final class DepthsDrops implements Listener {
                 core.sounds().play(player, config.dropsRareSound);
             }
         }
-        fragment(player, found.zone().aspect().id(), found.zone().tier(), rareBonus);
+        fragment(player, found.zone().aspect().id(), found.tier(), rareBonus);
     }
 
     /**

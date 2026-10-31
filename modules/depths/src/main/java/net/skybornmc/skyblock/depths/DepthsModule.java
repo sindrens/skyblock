@@ -72,6 +72,7 @@ public final class DepthsModule implements SkyblockModule {
     private ForestGuard forest;
     private CombatZones combat;
     private AmbientMobs ambient;
+    private net.skybornmc.skyblock.depths.tiers.TierPalettes palettes;
 
     public DepthsModule(Core core) {
         this.core = core;
@@ -97,6 +98,7 @@ public final class DepthsModule implements SkyblockModule {
         core.plugin().getServer().getPluginManager().registerEvents(engine, core.plugin());
 
         zones = new ZoneManager(core, config, engine);
+        engine.regionTier(id -> zones.tierOfRegion(id));
         loadZones();
         publishFlagRegions();
         core.services().register(ID, ZoneService.class, zones);
@@ -154,6 +156,11 @@ public final class DepthsModule implements SkyblockModule {
         core.plugin().getServer().getPluginManager().registerEvents(gates, core.plugin());
         gates.start();
         zoneCommands.beforeZoneTeleport(gates::grantPass);
+        // DV2-SPIKE: tier palette on the pilot zone (palette.enabled, off by default).
+        palettes = new net.skybornmc.skyblock.depths.tiers.TierPalettes(core, config, zones, engine, msg);
+        core.plugin().getServer().getPluginManager().registerEvents(palettes, core.plugin());
+        gates.afterCheck(palettes::onCheck);
+        palettes.reload();
         teleports = new net.skybornmc.skyblock.depths.tiers.DepthsTeleports(core, config, zones, gates);
         teleports.register();
         // M4.4 satchel + M4.9 drops: drop items and tables from depths.yml, satchel per profile, crystal batches.
@@ -166,6 +173,7 @@ public final class DepthsModule implements SkyblockModule {
         net.skybornmc.skyblock.depths.combat.MobFactory factory = net.skybornmc.skyblock.depths.combat.MobFactory.create(core.plugin());
         combat = new CombatZones(core, config, msg, zones, satchel, drops, factory);
         ambient = new AmbientMobs(core, config, msg, zones, factory);
+        ambient.tierOf(palettes::tierFor);
         combat.otherOwned(ambient::owns);
         loadDrops();
         satchel.start();
@@ -185,6 +193,8 @@ public final class DepthsModule implements SkyblockModule {
         Arg<Player> target = Args.onlinePlayer("player");
         Arg<String> generateTarget = Args.oneOf("zone", zoneCommands::generateTargets);
         Arg<String> tpTarget = Args.oneOf("zone", zones::teleportIds);
+        Arg<String> paletteTier = Args.oneOf("tier", palettes::tierChoices);
+        Arg<Player> paletteTarget = Args.onlinePlayer("player");
         core.commands().register(CommandSpec.command("depths")
                 .description("The Depths staff tools").category("Staff").permission(DepthsPerms.COMMAND)
                 .sub(CommandSpec.sub("debug")
@@ -203,6 +213,14 @@ public final class DepthsModule implements SkyblockModule {
                         .confirmIf(15, ctx -> ZoneCommands.ALL.equalsIgnoreCase(ctx.getOr(generateTarget, ZoneCommands.ALL)))
                         .example("depths generate mine_t01")
                         .executes(ctx -> zoneCommands.generate(ctx.sender(), ctx.getOr(generateTarget, ZoneCommands.ALL))))
+                .sub(CommandSpec.sub("palette")
+                        .description("Tier palette spike: status, or show a player a lower open tier (auto = by level)")
+                        .permission(DepthsPerms.PALETTE).optional(paletteTier).optional(paletteTarget)
+                        .example("depths palette 1 Steve")
+                        .executes(ctx -> {
+                            Player shown = ctx.getOr(paletteTarget, ctx.sender() instanceof Player p ? p : null);
+                            palettes.command(ctx.sender(), ctx.getOr(paletteTier, null), shown);
+                        }))
                 .sub(CommandSpec.sub("tp")
                         .description("Teleport to The Gate, a tier zone or the boss arena (ignores locks)")
                         .permission(DepthsPerms.TP).playerOnly().arg(tpTarget).example("depths tp mine_t01")
@@ -288,6 +306,7 @@ public final class DepthsModule implements SkyblockModule {
         loadZones();
         publishFlagRegions();
         gates.reload();
+        palettes.reload();
         loadDrops();
         satchel.reload();
         drops.start();
@@ -324,6 +343,10 @@ public final class DepthsModule implements SkyblockModule {
         }
         if (dropItems != null) {
             dropItems.unregister();
+        }
+        if (palettes != null) {
+            HandlerList.unregisterAll(palettes);
+            palettes.stop();
         }
         if (gates != null) {
             HandlerList.unregisterAll(gates);

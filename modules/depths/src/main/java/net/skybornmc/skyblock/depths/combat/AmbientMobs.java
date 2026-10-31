@@ -100,6 +100,13 @@ public final class AmbientMobs implements Listener {
         return list == null ? 0 : list.size();
     }
 
+    /** DV2-SPIKE: the tier whose ambient mobs a player gets in a zone (their palette tier in the pilot zone). */
+    private java.util.function.ToIntBiFunction<Player, Zone> tierOf = (player, zone) -> zone.tier();
+
+    public void tierOf(java.util.function.ToIntBiFunction<Player, Zone> tierOf) {
+        this.tierOf = java.util.Objects.requireNonNull(tierOf, "tierOf");
+    }
+
     void cycle() {
         if (!config.ambientEnabled || config.ambientPerPlayer <= 0) {
             if (!byEntity.isEmpty()) {
@@ -117,7 +124,7 @@ public final class AmbientMobs implements Listener {
                 seen.add(player.getUniqueId());
                 Zone zone = player.getGameMode() == GameMode.SPECTATOR ? null : zones.zoneAt(player.getLocation());
                 AmbientSpawns spawns = zone == null || zone.aspect() == Aspect.COMBAT ? null
-                        : cat.ambient(zone.aspect().id(), zone.tier());
+                        : cat.ambient(zone.aspect().id(), tierOf.applyAsInt(player, zone));
                 List<UUID> mine = byPlayer.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>(4));
                 Location at = player.getLocation();
                 for (Iterator<UUID> it = mine.iterator(); it.hasNext(); ) {

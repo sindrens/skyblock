@@ -26,3 +26,6 @@ skyblock.depths.bypass:
 skyblock.depths.satchel:
   description: "Open the Depths satchel (from /dungeon): see your drops, sell them, take them out, buy upgrades."
   default: true
+skyblock.depths.palette:
+  description: "Use /depths palette (DV2-SPIKE tier palette status; show a player a lower open tier)."
+  default: op
