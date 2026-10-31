@@ -190,9 +190,11 @@ final class Deliveries {
         if (row.price() <= 0 || currency.isEmpty() || economy == null) {
             return;
         }
-        economy.execute(Transaction.deposit(AccountRef.player(row.profile()), currency.get(), row.price(), TxReason.BLACK_MARKET_REFUND)
-                .actor(Actor.system(BlackMarketModule.ID)).reference("bm:" + row.offerId()).idempotencyKey("bm_refund:" + row.id())
-                .detail("buy", row.id().toString())).whenCompleteAsync((result, error) -> {
+        // Credits come back as the halves the payment took (ledger key bm:<buy id>); never as more bought credits (C1).
+        net.skybornmc.skyblock.common.economy.CreditSpend.refund(economy,
+                Transaction.deposit(AccountRef.player(row.profile()), currency.get(), row.price(), TxReason.BLACK_MARKET_REFUND)
+                        .actor(Actor.system(BlackMarketModule.ID)).reference("bm:" + row.offerId()).idempotencyKey("bm_refund:" + row.id())
+                        .detail("buy", row.id().toString()), "bm:" + row.id()).whenCompleteAsync((result, error) -> {
             if (error != null || result == null || !(result.ok() || result.status() == net.skybornmc.skyblock.common.economy.TxResult.Status.DUPLICATE)) {
                 m.core.plugin().getLogger().warning("Black Market: the refund of buy " + row.id() + " failed; it stays 'failed' for staff");
                 return;

@@ -67,7 +67,7 @@ class WardrobeOpsTest {
             if (!guard.holds(c)) {
                 throw new Refused(TxResult.Status.DUPLICATE);
             }
-            UUID who = tx.currency() == Currency.GEMS ? player : tx.from().owner();
+            UUID who = tx.currency() == Currency.CREDITS_EARNED ? player : tx.from().owner();
             String cur = tx.currency().key();
             long balance = Sql.queryOne(c, "SELECT balance FROM test_balance WHERE owner = ? AND cur = ? FOR UPDATE", rs -> rs.getLong(1), who, cur)
                     .orElse(0L);

@@ -90,13 +90,14 @@ final class MoneyNotes implements Listener {
         this.notes = notes;
     }
 
-    /** R3-40: the purge of cashed notes (async, batched; at start and then every 6 hours). */
+    /** R3-40: the purge of cashed notes (async, batched; notes.purge-start-seconds after start, then every purge-every-hours). */
     private net.skybornmc.skyblock.common.util.Scheduler.Task purgeTask;
 
     void enable() {
         registerItem();
         module.core.plugin().getServer().getPluginManager().registerEvents(this, module.core.plugin());
-        purgeTask = module.core.scheduler().asyncRepeat(20L * 120, 20L * 60 * 60 * 6, this::purgeRedeemed);
+        purgeTask = module.core.scheduler().asyncRepeat(20L * module.config.notePurgeStartSeconds,
+                20L * 60 * 60 * module.config.notePurgeEveryHours, this::purgeRedeemed);
     }
 
     /** Deletes cashed notes older than notes.purge-redeemed-days (off the main thread, in batches). */
@@ -261,11 +262,14 @@ final class MoneyNotes implements Listener {
                 .executes(ctx -> withdraw(ctx.player(), ctx.get(amount), ctx.getOr(currency, Currency.MONEY)));
     }
 
-    /** {@code /eco note <player> <amount> <reason>}: staff make a note without taking money. */
-    CommandSpec ecoNoteCommand(String[] reasons) {
+    /**
+     * {@code /eco note <player> <amount> <reason>}: staff make a note without taking money. {@code reasons}: the tab hints
+     * of the reason (messages/economy.yml, read live).
+     */
+    CommandSpec ecoNoteCommand(java.util.function.Supplier<List<String>> reasons) {
         Arg<Player> target = Args.onlinePlayer("player");
         Arg<Long> amount = Args.amount("amount");
-        Arg<String> reason = Args.text("reason", reasons);
+        Arg<String> reason = Arg.greedy("reason", (sender, raw) -> raw.strip(), Suggest.of(reasons));
         return CommandSpec.sub("note")
                 .description("Give an online player a money note (no money is taken)")
                 .arg(target).arg(amount).arg(reason)

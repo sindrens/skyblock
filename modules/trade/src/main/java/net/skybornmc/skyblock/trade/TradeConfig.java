@@ -59,7 +59,7 @@ public final class TradeConfig extends ModuleConfig {
     // ------------------------------------------------------------------ money
 
     @Setting(path = "money.currencies", desc = "Currencies that can be offered (also need economy.yml tradeable). Crystals "
-            + "are never tradeable (CR3); gems only if economy.yml allows it.", level = Setting.Level.OWNER)
+            + "and earned credits are never tradeable (CR3, C1); bought credits only if economy.yml tradeable.credits allows it.", level = Setting.Level.OWNER)
     public List<String> currencies = List.of("money", "shards");
 
     // Owner answers 131/203 (round 1): no new-account playtime limit for money offers (old key money.new-account-minutes

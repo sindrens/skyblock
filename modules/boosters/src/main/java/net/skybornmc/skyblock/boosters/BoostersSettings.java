@@ -83,16 +83,16 @@ public final class BoostersSettings extends ModuleConfig {
             + "in chat (RW2).")
     public boolean thanksEnabled = true;
 
-    @Setting(path = "thanks.gems", desc = "Gems one thanks gives the starter (RW2: 1, once per booster per player).", min = 0, max = 100,
-            level = Setting.Level.OWNER)
-    public int thanksGems = 1;
+    @Setting(path = "thanks.credits", desc = "Earned credits one thanks gives the starter (RW2: 1, once per booster per player; "
+            + "earned credits can't be traded, C1).", min = 0, max = 100, level = Setting.Level.OWNER)
+    public int thanksCredits = 1;
 
-    @Setting(path = "thanks.max-gems-per-booster", desc = "Most thanks gems one global booster pays its starter (0 = no limit). "
-            + "Thanks after that are still shown, without a gem.", min = 0, max = 10_000, level = Setting.Level.OWNER)
-    public int thanksMaxGems = 100;
+    @Setting(path = "thanks.max-credits-per-booster", desc = "Most thanks credits one global booster pays its starter (0 = no "
+            + "limit). Thanks after that are still shown, without a credit.", min = 0, max = 10_000, level = Setting.Level.OWNER)
+    public int thanksMaxCredits = 100;
 
-    @Setting(path = "thanks.same-ip-pays", desc = "A thanks from a player on the starter's IP address pays a gem too (off = no gem: "
-            + "alts can't farm gems for their main).", level = Setting.Level.OWNER)
+    @Setting(path = "thanks.same-ip-pays", desc = "A thanks from a player on the starter's IP address pays a credit too (off = no "
+            + "credit: alts can't farm credits for their main).", level = Setting.Level.OWNER)
     public boolean thanksSameIp = false;
 
     @Setting(path = "thanks.grace-seconds", desc = "Seconds after a global booster ends during which it can still be thanked.",
@@ -131,6 +131,18 @@ public final class BoostersSettings extends ModuleConfig {
 
     @Setting(path = "sounds.global", desc = "Sound (sounds.yml key) everyone hears when a global booster starts.")
     public String globalSound = "unlock";
+
+    /** Version 2 (card C1): thanks pay credits (earned) instead of gems; the gem keys are moved. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
+        return java.util.Map.of(2, java.util.Map.of("thanks.gems", "thanks.credits",
+                "thanks.max-gems-per-booster", "thanks.max-credits-per-booster"));
+    }
 
     @Override
     public String fileName() {

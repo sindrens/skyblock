@@ -98,14 +98,14 @@ class DailyRulesTest {
 
     @Test
     void streakGemsEverySevenDays() {
-        assertEquals(0, DailyRules.streakGems(6, 7, 10));
-        assertEquals(10, DailyRules.streakGems(7, 7, 10));
-        assertEquals(0, DailyRules.streakGems(8, 7, 10));
-        assertEquals(10, DailyRules.streakGems(14, 7, 10));
-        assertEquals(0, DailyRules.streakGems(7, 0, 10));
-        assertEquals(1, DailyRules.untilGems(6, 7));
-        assertEquals(7, DailyRules.untilGems(7, 7));
-        assertEquals(7, DailyRules.untilGems(0, 7));
+        assertEquals(0, DailyRules.streakCredits(6, 7, 10));
+        assertEquals(10, DailyRules.streakCredits(7, 7, 10));
+        assertEquals(0, DailyRules.streakCredits(8, 7, 10));
+        assertEquals(10, DailyRules.streakCredits(14, 7, 10));
+        assertEquals(0, DailyRules.streakCredits(7, 0, 10));
+        assertEquals(1, DailyRules.untilCredits(6, 7));
+        assertEquals(7, DailyRules.untilCredits(7, 7));
+        assertEquals(7, DailyRules.untilCredits(0, 7));
     }
 
     @Test

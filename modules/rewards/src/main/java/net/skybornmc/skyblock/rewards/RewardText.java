@@ -85,7 +85,7 @@ final class RewardText {
         return switch (l.kind()) {
             case MONEY -> m.msg.component(p, "reward.money", Msg.p("amount", format(m, Currency.MONEY, l.value())));
             case CRYSTALS -> m.msg.component(p, "reward.crystals", Msg.p("amount", format(m, Currency.CRYSTALS, l.value())));
-            case GEMS -> m.msg.component(p, "reward.gems", Msg.p("amount", format(m, Currency.GEMS, l.value())));
+            case CREDITS -> m.msg.component(p, "reward.credits", Msg.p("amount", format(m, Currency.CREDITS_EARNED, l.value())));
             case BOOK -> m.msg.component(p, "reward.book-named", Msg.p("name", pretty(l.ref())));
             default -> name(m, p, l.kind(), l.ref(), l.value(), l.minutes(), l.kind() == RewardSpec.Kind.BOOSTER ? l.value() : 0);
         };
@@ -101,7 +101,7 @@ final class RewardText {
         return switch (kind) {
             case MONEY -> m.msg.component(p, "reward-names.money");
             case CRYSTALS -> m.msg.component(p, "reward-names.crystals");
-            case GEMS -> m.msg.component(p, "reward-names.gems");
+            case CREDITS -> m.msg.component(p, "reward-names.credits");
             case KEY -> m.msg.component(p, "reward.key", Msg.number("amount", amount), Msg.p("crate", crateName(m, ref)));
             case FUEL -> m.msg.component(p, "reward.fuel", Msg.p("time", time(amount)));
             case BOOSTER -> m.msg.component(p, "reward.booster", Msg.p("type", boosterName(m, ref)), Msg.number("percent", percent),
@@ -119,7 +119,7 @@ final class RewardText {
                     Msg.p("amount", format(m, Currency.MONEY, RewardTables.money(spec.amount(), ctx.tier(), ctx.refPerMinute()))));
             case CRYSTALS -> m.msg.component(p, "reward.crystals",
                     Msg.p("amount", format(m, Currency.CRYSTALS, RewardTables.crystals(spec.amount(), ctx.tier(), ctx.growth()))));
-            case GEMS -> m.msg.component(p, "reward.gems", Msg.p("amount", format(m, Currency.GEMS, spec.amount())));
+            case CREDITS -> m.msg.component(p, "reward.credits", Msg.p("amount", format(m, Currency.CREDITS_EARNED, spec.amount())));
             case BOOSTER -> name(m, p, spec.kind(), spec.ref(), 1, spec.minutes(), spec.amount());
             case BOOK -> name(m, p, spec.kind(), spec.ref(), 1, 0, 0);
             default -> name(m, p, spec.kind(), spec.ref(), spec.amount(), spec.minutes(), 0);

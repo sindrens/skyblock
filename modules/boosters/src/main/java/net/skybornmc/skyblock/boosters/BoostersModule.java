@@ -59,7 +59,7 @@ import java.util.logging.Level;
  *   <li><b>Banked time</b> (the AFK pool's sell booster, moved here) starts by itself when the type is free and you are
  *       not in the AFK pool.</li>
  *   <li><b>Global boosters</b> (Phoenix/Eclipse crates, later the store): everyone online gets the bonus; one per type
- *       runs, the rest queue. Boss bar countdown; {@code /thanks} or "thanks" in chat gives the starter 1 gem, once per
+ *       runs, the rest queue. Boss bar countdown; {@code /thanks} or "thanks" in chat gives the starter 1 earned credit, once per
  *       booster per player.</li>
  *   <li>Every booster is a {@link net.skybornmc.skyblock.common.bonus.BonusSource}: the family caps and the +300% sell
  *       cap always apply (O11).</li>
@@ -191,7 +191,7 @@ public final class BoostersModule implements SkyblockModule, Listener {
                 .example("boosters")
                 .executes(ctx -> openMenu(ctx.player())));
         core.commands().register(CommandSpec.command("thanks")
-                .description("Thank the players whose global boosters run (they get a gem)")
+                .description("Thank the players whose global boosters run (they get a credit)")
                 .category("Rewards")
                 .permission(PERM_THANKS)
                 .playerOnly()

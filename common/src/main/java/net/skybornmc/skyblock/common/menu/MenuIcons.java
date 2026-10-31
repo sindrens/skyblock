@@ -80,13 +80,13 @@ public final class MenuIcons {
         return "currency/" + name;
     }
 
-    /** The currency icon for a currency key ({@code gems} is the old name of credits); null for an unknown key. */
+    /** The currency icon for a currency key ({@code gems} is the old name of credits; {@code credits_earned} is a credits half); null for an unknown key. */
     public static String currencyOf(String key) {
         return switch (clean(key)) {
             case "money" -> currency("money");
             case "crystals" -> currency("crystals");
             case "shards" -> currency("shards");
-            case "gems", "credits" -> currency("credits");
+            case "gems", "credits", "credits_earned" -> currency("credits");
             default -> null;
         };
     }

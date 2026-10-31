@@ -303,7 +303,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.production.ProductionModule(core));
         // Last: reads skills, islands, wardrobe, tools, economy and cosmetics services (all optional).
         modules.register(new net.skybornmc.skyblock.achievements.AchievementsModule(core));
-        // Boosters (PHASE-10 M10.2): needs economy (thanks gems); publishes BoosterService and a BonusService source. Before the
+        // Boosters (PHASE-10 M10.2): needs economy (thanks credits); publishes BoosterService and a BonusService source. Before the
         // AFK pool, which banks its sell boosters through BoosterService and holds them while a player is in the pool.
         modules.register(new net.skybornmc.skyblock.boosters.BoostersModule(core));
         // AFK pool (O10, RW3): reads economy, islands, skills, profiles, builds and boosters services (all optional).
@@ -329,7 +329,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // Battle pass (PHASE-10 M10.8): publishes PassXp (quests, votes, calendar, playtime) and PassRewards (/menu Rewards);
         // needs economy for money/crystals; keys through CrateKeys, boosters, cosmetics, box, skills, profiles (optional).
         modules.register(new net.skybornmc.skyblock.pass.PassModule(core));
-        // Black Market (PHASE-10 M10.11, /blackmarket): needs economy (shards, gems for the Island Charter); hands out through
+        // Black Market (PHASE-10 M10.11, /blackmarket): needs economy (shards, credits for the Island Charter); hands out through
         // crates (keys), wardrobe (set tokens), enchants (books, scrolls), stacking (spawners), cosmetics (tag), islands
         // (charter sizes) and box (overflow), all optional. Answers the Black Market NPC's click.
         modules.register(new net.skybornmc.skyblock.blackmarket.BlackMarketModule(core));

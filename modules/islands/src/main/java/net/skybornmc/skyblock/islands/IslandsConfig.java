@@ -20,12 +20,12 @@ public final class IslandsConfig extends ModuleConfig {
     public int startChunks = 3;
 
     @Setting(path = "size.max-chunks", desc = "Largest border width in chunks any island can ever have (odd; 15 = 240x240): the cap "
-            + "of the paid sizes above size.normal-max-chunks (gems or black market, owner answers 157/167/171) and of /isadmin setsize.",
+            + "of the paid sizes above size.normal-max-chunks (credits or black market, owner answers 157/167/171) and of /isadmin setsize.",
             min = 1, max = 31, level = Setting.Level.OWNER)
     public int maxChunks = 15;
 
     @Setting(path = "size.normal-max-chunks", desc = "Largest border width the normal Island Size upgrades reach (odd; owner answer "
-            + "157: 3x3 up to 9x9). Bigger sizes only with gems or from the black market (hook for Phase 5 upgrades).", min = 1,
+            + "157: 3x3 up to 9x9). Bigger sizes only with credits or from the black market (hook for Phase 5 upgrades).", min = 1,
             max = 31, level = Setting.Level.OWNER)
     public int normalMaxChunks = 9;
 

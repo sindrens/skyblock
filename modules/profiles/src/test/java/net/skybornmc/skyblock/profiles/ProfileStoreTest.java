@@ -179,13 +179,13 @@ class ProfileStoreTest {
     @Test
     void slotUnlocksAndSeasonReset() {
         tx(c -> store.loadOrCreate(c, oldPlayer, 1_000));
-        assertTrue((boolean) tx(c -> store.addUnlock(c, oldPlayer, 2, SlotSource.GEMS, 1, 2_000)));
-        assertFalse((boolean) tx(c -> store.addUnlock(c, oldPlayer, 2, SlotSource.GEMS, 1, 2_000)), "a slot is bought once");
+        assertTrue((boolean) tx(c -> store.addUnlock(c, oldPlayer, 2, SlotSource.CREDITS, 1, 2_000)));
+        assertFalse((boolean) tx(c -> store.addUnlock(c, oldPlayer, 2, SlotSource.CREDITS, 1, 2_000)), "a slot is bought once");
         assertTrue((boolean) tx(c -> store.addUnlock(c, oldPlayer, 3, SlotSource.GRANT, 1, 2_000)));
         assertEquals(1, (int) tx(c -> store.seasonReset(c)));
         List<SlotRules.Unlock> left = tx(c -> store.unlocks(c, oldPlayer));
         assertEquals(1, left.size());
-        assertEquals(SlotSource.GEMS, left.getFirst().source());
+        assertEquals(SlotSource.CREDITS, left.getFirst().source());
         assertEquals(2, left.getFirst().slot());
     }
 

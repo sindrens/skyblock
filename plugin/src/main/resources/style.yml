@@ -44,9 +44,8 @@ colors:
 currencies:
   money: "#4DFF88 green"
   crystals: "#33E0FF aqua"      # island crystals (replaced tokens): aqua crystal look
-  gems: "#2EFFC0 dark_green"    # emerald green, clearly different from crystals
   shards: "#FF6B8A red"
-  credits: "#FF8C1A gold"
+  credits: "#FF8C1A gold"       # card C1 (bought + earned; the old <cur:gems> and <cur:credits_earned> fall back to this)
 
 rarity:
   common: "#F2F2F2 white"
@@ -76,7 +75,7 @@ gradients:
 symbols:
   money: "$"
   crystals: "◆"
-  gems: "✦"
+  credits: "✦"                  # card C1 (pack glyph U+E204 in I7); <sym:gems> and <sym:credits_earned> fall back to this
   shards: "✧"
   sparkle: "✦"
   arrow: "»"

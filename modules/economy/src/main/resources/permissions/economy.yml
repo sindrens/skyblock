@@ -53,3 +53,9 @@ skyblock.staff.economy.flagged:
 skyblock.staff.economy.anomalies:
   description: Get economy anomaly alerts in chat (fast earning, big or repeated transfers, many notes cashed, sell spikes, balance jumps, inflation) with [Open] and [Punish]
   default: op
+skyblock.credit.bal:
+  description: See your credits with the bought/earned split, or another player's total (/credit, /credit bal [player]; card C1)
+  default: true
+skyblock.economy.credits.grant:
+  description: Create or set BOUGHT credits by hand (/eco give|set|reset <player> credits, ledger reason admin_buy). Owner only (C1-R1-18); admins get an explicit false in server/permissions/economy.txt. Earned credits (credits_earned) stay with skyblock.admin.economy.
+  default: op

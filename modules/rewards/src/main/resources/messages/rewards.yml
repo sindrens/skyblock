@@ -17,7 +17,7 @@ daily:
   changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your calendar just changed. Open <c:action>/daily</c:action> <c:text>and try again."
   claimed: "<prefix><c:success><sym:check></c:success> <c:text>Day <c:value><day></c:value> <c:text>claimed! Streak: <c:value><streak></c:value> <c:text>days."
   streak-lost: "<prefix><c:muted><sym:time></c:muted> <c:text>You missed a day, so your <c:value><lost></c:value><c:text>-day streak started over. Your calendar day stays."
-  streak-gems: "<prefix><c:flame><sym:star></c:flame> <c:text>Streak of <c:value><streak></c:value> <c:text>days: <cur:gems>+<gems></cur:gems><c:text>!"
+  streak-credits: "<prefix><c:flame><sym:star></c:flame> <c:text>Streak of <c:value><streak></c:value> <c:text>days: <cur:credits>+<credits> credits</cur:credits><c:text>!"
 
 # /menu Rewards button (GUI-2): one click claims everything ready, then this one line. <rewards> is a full component
 # (the rewards joined with the separator). Playtime rewards pay out by themselves, so only the daily reward is claimed.
@@ -68,7 +68,7 @@ reward:
   for-now: "<reward> <c:muted>(paid as <amount>)"
   money: "<cur:money><amount>"
   crystals: "<cur:crystals><amount>"
-  gems: "<cur:gems><amount>"
+  credits: "<cur:credits><amount>"
   key: "<c:value><amount>x <crate> Key"
   fuel: "<c:value>Island Fuel <time>"
   booster: "<c:value><type> Booster +<percent>%</c:value> <c:muted>(<time>)"
@@ -82,7 +82,7 @@ reward:
 reward-names:
   money: "<cur:money>Money"
   crystals: "<cur:crystals>Crystals"
-  gems: "<cur:gems>Gems"
+  credits: "<cur:credits>Credits"
 
 rarities:
   common: "Common"
@@ -181,10 +181,10 @@ menu:
     lore:
       - "<c:text>Claim every day to keep it."
       - "<c:text>Best: <c:value><best></c:value> <c:muted><sym:dot></c:muted> <c:text>Claims: <c:value><total>"
-    gems:
+    credits:
       - ""
-      - "<c:text>Every <every> days: <cur:gems><gems>"
-      - "<c:text>Next gems in <c:value><left></c:value> <c:text>claims"
+      - "<c:text>Every <every> days: <cur:credits><credits>"
+      - "<c:text>Next credits in <c:value><left></c:value> <c:text>claims"
     title: "<c:locked><sym:bullet></c:locked> <c:text><days> days:</c:text> <title>"
     title-owned: "<c:success><sym:check></c:success> <c:text><days> days:</c:text> <title>"
     footer:
@@ -245,7 +245,7 @@ menu:
     title: "Vote"
     info:
       - "<c:text>Vote on every site once a day"
-      - "<c:text>for keys and gems. Votes pay"
+      - "<c:text>for keys and credits. Votes pay"
       - "<c:text>the profile you are on; when you"
       - "<c:text>are offline they wait for you."
     summary:

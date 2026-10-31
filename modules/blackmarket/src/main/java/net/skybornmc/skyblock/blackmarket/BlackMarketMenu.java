@@ -22,8 +22,8 @@ import java.util.OptionalLong;
  * Row 0  frame · 4 "Restocks in 4h 12m" · frame
  * Row 1  13 the headline ("Stock 18/25")
  * Row 2  the rare offers · Row 3 the common offers
- * Row 4  fixed row: Island Charter (shards, gems) and the Disenchant Scroll
- * Row 5  46 your shards and gems · standard navigation
+ * Row 4  fixed row: Island Charter (shards, credits) and the Disenchant Scroll
+ * Row 5  46 your shards and credits · standard navigation
  * </pre>
  * Every action is one tap and a confirm screen with the price on its middle item (Bedrock). Updates every second.
  */
@@ -147,10 +147,10 @@ final class BlackMarketMenu extends Menu {
             Purchases.CharterView view = m.purchases().charter(viewer);
             stacks.add(charterItem(view, Currency.SHARDS));
             actions.add(p -> charterClicked(p, Currency.SHARDS));
-            boolean gems = m.charterSteps().stream().anyMatch(s -> s.gems() > 0);
-            if (gems) {
-                stacks.add(charterItem(view, Currency.GEMS));
-                actions.add(p -> charterClicked(p, Currency.GEMS));
+            boolean credits = m.charterSteps().stream().anyMatch(s -> s.credits() > 0);
+            if (credits) {
+                stacks.add(charterItem(view, Currency.CREDITS));
+                actions.add(p -> charterClicked(p, Currency.CREDITS));
             }
         }
         for (OfferCatalog.Offer o : m.catalog().of(OfferCatalog.Slot.FIXED)) {
@@ -171,10 +171,11 @@ final class BlackMarketMenu extends Menu {
 
     private ItemStack wallet() {
         OptionalLong shards = m.economy().map(e -> e.cached(viewer.getUniqueId(), Currency.SHARDS)).orElse(OptionalLong.empty());
-        OptionalLong gems = m.economy().map(e -> e.cached(viewer.getUniqueId(), Currency.GEMS)).orElse(OptionalLong.empty());
+        OptionalLong credits = m.economy().map(e -> net.skybornmc.skyblock.common.economy.CreditView.cachedShown(e, viewer.getUniqueId(),
+                Currency.CREDITS)).orElse(OptionalLong.empty());
         return service.item(Material.AMETHYST_SHARD, viewer, BlackMarketModule.ID, "menu.wallet",
                 Msg.p("shards", shards.isPresent() ? m.price(Currency.SHARDS, shards.getAsLong()) : "..."),
-                Msg.p("gems", gems.isPresent() ? m.price(Currency.GEMS, gems.getAsLong()) : "..."));
+                Msg.p("credits", credits.isPresent() ? m.price(Currency.CREDITS, credits.getAsLong()) : "..."));
     }
 
     private ItemStack offerItem(OfferCatalog.Offer o) {
@@ -236,7 +237,7 @@ final class BlackMarketMenu extends Menu {
                 Msg.p("size", Purchases.sizeText(m.settings.fromSize))));
         Component name = service.text(viewer, BlackMarketModule.ID, size > 0 ? "charter.item-name" : "charter.item-name-plain",
                 Msg.p("size", Purchases.sizeText(size)), Msg.c("currency", service.text(viewer, BlackMarketModule.ID, "currency." + currency.key())));
-        return service.item(currency == Currency.GEMS ? Material.EMERALD : Material.MAP, name, lore);
+        return service.item(currency.isCredits() ? Material.EMERALD : Material.MAP, name, lore);
     }
 
     // ================================================================== clicks
@@ -267,7 +268,7 @@ final class BlackMarketMenu extends Menu {
             return;
         }
         Purchases.Plan pl = plan.get();
-        ItemStack shown = service.item(currency == Currency.GEMS ? Material.EMERALD : Material.MAP,
+        ItemStack shown = service.item(currency.isCredits() ? Material.EMERALD : Material.MAP,
                 service.text(player, BlackMarketModule.ID, "charter.name", Msg.p("size", Purchases.sizeText(pl.charterSize()))), List.of());
         openChild(new ConfirmMenu(v -> service.text(v, BlackMarketModule.ID, "confirm.charter-crumb"), shown,
                 v -> service.lines(v, BlackMarketModule.ID, "confirm.charter", Msg.p("size", Purchases.sizeText(pl.charterSize())),
@@ -277,7 +278,8 @@ final class BlackMarketMenu extends Menu {
     }
 
     private String balance(Player v, Currency currency) {
-        OptionalLong b = m.economy().map(e -> e.cached(v.getUniqueId(), currency)).orElse(OptionalLong.empty());
+        OptionalLong b = m.economy().map(e -> net.skybornmc.skyblock.common.economy.CreditView.cachedShown(e, v.getUniqueId(), currency))
+                .orElse(OptionalLong.empty());
         return b.isPresent() ? m.price(currency, b.getAsLong()) : "...";
     }
 

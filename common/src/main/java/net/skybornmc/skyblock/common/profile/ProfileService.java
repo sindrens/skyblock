@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * <h2>Keys</h2>
  * <ul>
- *   <li><b>Player UUID</b> (account): rank, gems, titles/tags, cosmetics, nickname, punishments, island join limits,
+ *   <li><b>Player UUID</b> (account): rank, credits, titles/tags, cosmetics, nickname, punishments, island join limits,
  *       likes/ratings, audit identity.</li>
  *   <li><b>Profile key</b> ({@link #profileKey}): money, crystals, shards, skills, Depths unlocks, island membership and
  *       homes, auction listings and collection bin, money notes, settings, playtime, inventory/ender chest/XP.
@@ -114,8 +114,8 @@ public interface ProfileService {
     boolean blockOwnTransfer(AuditCategory category, String path, UUID fromKey, UUID toKey, Actor actor);
 
     /**
-     * Owner decision P8, for the season reset (Phase 10): drops every stored slot unlock that was not bought with gems
-     * (gem-bought slots are kept; rank slots are live permissions anyway). Audited. Completes with the number removed.
+     * Owner decision P8, for the season reset (Phase 10): drops every stored slot unlock that was not bought with credits
+     * (credit-bought slots are kept; rank slots are live permissions anyway). Audited. Completes with the number removed.
      */
     CompletableFuture<Integer> seasonResetSlots(Actor actor);
 

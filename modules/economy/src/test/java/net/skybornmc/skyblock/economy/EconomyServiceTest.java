@@ -67,7 +67,7 @@ class EconomyServiceTest {
         service.loadPlayer(steve, "Steve").join();
         assertEquals(1_000L, service.balance(AccountRef.player(steve), Currency.MONEY).join());
         assertEquals(1_000L, service.cached(steve, Currency.MONEY).getAsLong());
-        assertEquals(0L, service.cached(steve, Currency.GEMS).getAsLong());
+        assertEquals(0L, service.cached(steve, Currency.CREDITS_EARNED).getAsLong());
 
         season.set(2);
         service.loadPlayer(steve, "Steve").join();

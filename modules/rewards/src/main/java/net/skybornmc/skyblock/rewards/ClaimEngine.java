@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * The atomic part of a claim (no Bukkit, tested on H2). <b>One</b> database transaction checks and moves the calendar
- * (or the playtime milestones), writes the claim row, pays money, crystals and gems through the ledger (idempotency key
+ * (or the playtime milestones), writes the claim row, pays money, crystals and earned credits through the ledger (idempotency key
  * per claim and currency) and writes the hand-outs as {@code pending} grant rows. All of it commits or none of it does,
  * so a claim can never pay twice; hand-outs happen after the commit ({@link Grants}).
  */
@@ -82,12 +82,12 @@ final class ClaimEngine {
     }
 
     /**
-     * Ledger deposits, one per currency above 0, to the profile ({@code AccountRef.player(profile)}; gems move to the
+     * Ledger deposits, one per currency above 0, to the profile ({@code AccountRef.player(profile)}; credits move to the
      * owner automatically). Idempotency key {@code <key>:<currency>}: the same claim can never be paid twice.
      */
     static List<Transaction> transactions(Payout payout, UUID profile, String reason, String key, Actor actor, Map<String, Object> details) {
         List<Transaction> out = new ArrayList<>();
-        for (Currency currency : List.of(Currency.MONEY, Currency.CRYSTALS, Currency.GEMS, Currency.SHARDS)) {
+        for (Currency currency : List.of(Currency.MONEY, Currency.CRYSTALS, Currency.CREDITS_EARNED, Currency.SHARDS)) {
             long total = payout.total(currency);
             if (total <= 0) {
                 continue;

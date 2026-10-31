@@ -92,8 +92,8 @@ public final class BlackMarketSettings extends ModuleConfig {
             + "157: 9 = 9x9; match islands.yml size.normal-max-chunks).", min = 3, max = 31, level = Setting.Level.OWNER)
     public int fromSize = 9;
 
-    @Setting(path = "charter.steps", desc = "Sizes sold here: '<size>: <shards> [gems]' (P10-38: 11x11 150 shards / 250 gems, 13x13 "
-            + "300 / 500, 15x15 450 / 750; REVIEW3 F6: gems too). 0 = not sold for that currency. Never above islands.yml "
+    @Setting(path = "charter.steps", desc = "Sizes sold here: '<size>: <shards> [credits]' (P10-38: 11x11 150 shards / 250 credits, 13x13 "
+            + "300 / 500, 15x15 450 / 750; REVIEW3 F6: credits too, earned first, then bought). 0 = not sold for that currency. Never above islands.yml "
             + "size.max-chunks.", level = Setting.Level.OWNER)
     public List<String> charterSteps = List.of("11: 150 250", "13: 300 500", "15: 450 750");
 

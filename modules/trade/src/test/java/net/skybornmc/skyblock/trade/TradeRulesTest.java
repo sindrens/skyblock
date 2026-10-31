@@ -28,8 +28,8 @@ class TradeRulesTest {
     @Test
     void gemsFollowTheEconomyRule() {
         List<String> all = List.of("money", "gems", "shards");
-        assertFalse(TradeRules.currencyAllowed(Currency.GEMS, false, all)); // decided: gems not tradeable
-        assertTrue(TradeRules.currencyAllowed(Currency.GEMS, true, all));
+        assertFalse(TradeRules.currencyAllowed(Currency.CREDITS_EARNED, false, all)); // decided: gems not tradeable
+        assertTrue(TradeRules.currencyAllowed(Currency.CREDITS_EARNED, true, all));
         assertFalse(TradeRules.currencyAllowed(Currency.MONEY, false, all));
         assertFalse(TradeRules.currencyAllowed(Currency.SHARDS, true, List.of("money")));
         assertFalse(TradeRules.currencyAllowed(null, true, all));

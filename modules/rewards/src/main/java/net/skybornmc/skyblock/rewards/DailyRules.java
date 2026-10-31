@@ -100,13 +100,13 @@ final class DailyRules {
         return s.lastClaimDate() >= today - 1 ? s.streak() : 0;
     }
 
-    /** Gems for reaching {@code streak}: {@code gems} every {@code every} days (§9.2: 10 every 7). */
-    static long streakGems(int streak, int every, long gems) {
-        return every > 0 && gems > 0 && streak > 0 && streak % every == 0 ? gems : 0;
+    /** Earned credits for reaching {@code streak}: {@code credits} every {@code every} days (§9.2: 10 every 7). */
+    static long streakCredits(int streak, int every, long credits) {
+        return every > 0 && credits > 0 && streak > 0 && streak % every == 0 ? credits : 0;
     }
 
-    /** Claims until the next streak gems, counted from the live streak (1..every; 0 when gems are off). */
-    static int untilGems(int liveStreak, int every) {
+    /** Claims until the next streak credits, counted from the live streak (1..every; 0 when they are off). */
+    static int untilCredits(int liveStreak, int every) {
         if (every <= 0) {
             return 0;
         }

@@ -53,7 +53,7 @@ import java.util.logging.Level;
 
 /**
  * The {@link ProfileService}: active profile per online player, the profile key → owner map, switching (save current
- * state → load target state → teleport), create/rename/icon/delete, gem-bought slots and per-profile playtime.
+ * state → load target state → teleport), create/rename/icon/delete, credit-bought slots and per-profile playtime.
  *
  * <h2>Where a profile's state lives</h2>
  * The <b>active</b> profile's inventory/ender chest/XP live in the normal player file (as before profiles). Inactive
@@ -384,7 +384,10 @@ final class ProfileServiceImpl implements ProfileService, Listener {
         return s == null ? Optional.empty() : SlotRules.source(slot, s.unlocks, n -> player.hasPermission(SlotRules.rankPermission(n)));
     }
 
-    /** Buys a slot with gems (atomic: the gem payment has an idempotency key per player and slot, so it is paid once). */
+    /**
+     * Buys a slot with credits (earned first, then bought; C1). Atomic: the payment has an idempotency key per player and
+     * slot, so it is paid once.
+     */
     void buySlot(Player player, int slot, Runnable after) {
         Session s = sessions.get(player.getUniqueId());
         if (s == null) {
@@ -408,14 +411,14 @@ final class ProfileServiceImpl implements ProfileService, Listener {
             return;
         }
         UUID owner = player.getUniqueId();
-        Transaction tx = Transaction.withdraw(AccountRef.player(owner), Currency.GEMS, price, "profile_slot")
+        Transaction tx = Transaction.withdraw(AccountRef.player(owner), Currency.CREDITS, price, "profile_slot")
                 .actor(Actor.player(player)).reference("profile_slot:" + slot)
                 .idempotencyKey("profile_slot:" + owner + ":" + slot).detail("slot", slot).detail("target_name", player.getName());
-        eco.get().execute(tx).thenCompose(result -> {
+        net.skybornmc.skyblock.common.economy.CreditSpend.execute(eco.get(), tx, null).thenCompose(result -> {
             if (result.status() == TxResult.Status.SUCCESS || result.status() == TxResult.Status.DUPLICATE) {
                 // DUPLICATE = paid earlier but the unlock was not saved (crash): give the slot now, never charge twice.
                 return core.database().transaction(c -> {
-                    store.addUnlock(c, owner, slot, SlotSource.GEMS, 0, System.currentTimeMillis());
+                    store.addUnlock(c, owner, slot, SlotSource.CREDITS, 0, System.currentTimeMillis());
                     return store.unlocks(c, owner);
                 }).thenApply(unlocks -> new Object[]{result, unlocks});
             }
@@ -436,7 +439,7 @@ final class ProfileServiceImpl implements ProfileService, Listener {
                     live.unlocks = List.copyOf(unlocks);
                 }
                 core.audit().logPlayer(AuditCategory.AUTH, "profile_slot_unlock", Actor.player(player), owner, player.getName(), price,
-                        player.getLocation(), Map.of("slot", slot, "source", SlotSource.GEMS.key(), "status", result.status().name()));
+                        player.getLocation(), Map.of("slot", slot, "source", SlotSource.CREDITS.key(), "status", result.status().name()));
                 if (player.isOnline()) {
                     module.msg.send(player, "slots.bought", Msg.number("slot", slot), Msg.p("price", Format.number(price)));
                     core.sounds().play(player, "unlock");
@@ -448,7 +451,7 @@ final class ProfileServiceImpl implements ProfileService, Listener {
                 return;
             }
             if (result.status() == TxResult.Status.INSUFFICIENT_FUNDS) {
-                long have = eco.get().cached(owner, Currency.GEMS).orElse(0);
+                long have = net.skybornmc.skyblock.common.economy.CreditView.cachedShown(eco.get(), owner, Currency.CREDITS).orElse(0);
                 module.fail(player, "slots.not-enough", Msg.p("price", Format.number(price)), Msg.p("have", Format.number(have)));
             } else {
                 module.fail(player, "error");
@@ -456,7 +459,7 @@ final class ProfileServiceImpl implements ProfileService, Listener {
         }, main);
     }
 
-    /** Owner decision P8 (for the season reset, Phase 10): drops every stored slot unlock that was not bought with gems. */
+    /** Owner decision P8 (for the season reset, Phase 10): drops every stored slot unlock that was not bought with credits. */
     @Override
     public CompletableFuture<Integer> seasonResetSlots(Actor actor) {
         return core.database().transaction(store::seasonReset).thenApply(removed -> {

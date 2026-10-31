@@ -6,7 +6,7 @@ import java.util.Optional;
 
 /**
  * The checks {@code /pay} makes before touching the database (owner decisions 2026-10-29: muted players can pay,
- * frozen players can't, offline targets are fine, gems are not tradeable). Owner answer 131 (round 1) removed the
+ * frozen players can't, offline targets are fine). Credits are never sent with /pay (C1-R1-26: {@code /credit pay}). Owner answer 131 (round 1) removed the
  * new-account playtime limit. Pure logic, unit-tested.
  */
 final class PayRules {
@@ -15,6 +15,8 @@ final class PayRules {
     enum Problem {
         FROZEN("frozen"),
         SELF("self"),
+        /** Credits move only with {@code /credit pay} (C1-R1-26). */
+        CREDITS("use-credit-pay"),
         NOT_TRADEABLE("not-tradeable"),
         BELOW_MINIMUM("below-minimum");
 
@@ -40,6 +42,9 @@ final class PayRules {
         }
         if (payerName.equalsIgnoreCase(targetName)) {
             return Optional.of(Problem.SELF);
+        }
+        if (currency.isCredits()) {
+            return Optional.of(Problem.CREDITS);
         }
         if (!config.tradeable(currency)) {
             return Optional.of(Problem.NOT_TRADEABLE);

@@ -56,9 +56,9 @@ class SetRegistryTest {
         for (String id : List.of("deepforge", "cropwarden", "dreadguard")) {
             assertSource(r, id, SetDef.SourceType.CRYSTALS, 25_000);
         }
-        assertSource(r, "lorekeeper", SetDef.SourceType.GEMS, 400);
-        assertSource(r, "thornward", SetDef.SourceType.GEMS, 900);
-        assertSource(r, "stormkeel", SetDef.SourceType.GEMS, 900);
+        assertSource(r, "lorekeeper", SetDef.SourceType.CREDITS, 400);
+        assertSource(r, "thornward", SetDef.SourceType.CREDITS, 900);
+        assertSource(r, "stormkeel", SetDef.SourceType.CREDITS, 900);
         for (String id : List.of("voidforged", "conqueror", "phoenix")) {
             SetDef d = r.get(id).orElseThrow();
             assertEquals(SetDef.SourceType.CRATE, d.source().type());
@@ -67,12 +67,12 @@ class SetRegistryTest {
         }
         // No power is gem-only: every gem set is also in a crate.
         for (SetDef d : r.all()) {
-            if (d.source().type() == SetDef.SourceType.GEMS) {
+            if (d.source().type() == SetDef.SourceType.CREDITS) {
                 assertFalse(d.source().crates().isEmpty(), d.id() + " must also drop from a crate");
                 assertTrue(d.tier() <= 3, "gem sets are never the top tier");
             }
         }
-        assertEquals(Currency.GEMS, r.get("lorekeeper").orElseThrow().source().type().currency());
+        assertEquals(Currency.CREDITS_EARNED, r.get("lorekeeper").orElseThrow().source().type().currency());
     }
 
     private static void assertSource(SetRegistry r, String id, SetDef.SourceType type, long price) {

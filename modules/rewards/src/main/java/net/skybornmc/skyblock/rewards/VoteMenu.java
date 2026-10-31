@@ -133,8 +133,8 @@ final class VoteMenu extends Menu {
             parts.add(m.msg.component(viewer, "reward.key", Msg.number("amount", s.keys),
                     Msg.p("crate", RewardText.crateName(m, s.keyCrate.strip().toLowerCase(java.util.Locale.ROOT)))));
         }
-        if (s.gems > 0) {
-            parts.add(m.msg.component(viewer, "reward.gems", Msg.p("amount", RewardText.format(m, Currency.GEMS, s.gems))));
+        if (s.credits > 0) {
+            parts.add(m.msg.component(viewer, "reward.credits", Msg.p("amount", RewardText.format(m, Currency.CREDITS_EARNED, s.credits))));
         }
         if (s.passXp > 0 && m.core.services().has(net.skybornmc.skyblock.common.pass.PassXp.class)) {
             parts.add(m.msg.component(viewer, "reward.pass-xp", Msg.number("amount", s.passXp)));

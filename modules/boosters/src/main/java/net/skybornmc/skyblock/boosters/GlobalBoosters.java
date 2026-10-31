@@ -34,7 +34,7 @@ import java.util.logging.Level;
 /**
  * Global boosters (main thread): everyone online gets the bonus, one runs per type and the rest wait in a queue. A boss
  * bar counts down for everyone (unless hidden in /settings). {@code /thanks} or saying thanks in chat gives the starter
- * {@code thanks.gems} gems, once per booster per player (RW2). Time left counts down while the server runs and is saved
+ * {@code thanks.credits} earned credits, once per booster per player (RW2). Time left counts down while the server runs and is saved
  * every {@code global.save-seconds}; every database step runs in order on one chain.
  */
 final class GlobalBoosters {
@@ -535,10 +535,10 @@ final class GlobalBoosters {
             Player starter = Bukkit.getPlayer(e.starter);
             String starterIp = starter != null ? ip(starter) : starterIps.get(e.id);
             boolean sameIp = myIp != null && myIp.equals(starterIp);
-            boolean gem = m.settings.thanksGems > 0 && (!sameIp || m.settings.thanksSameIp);
+            boolean credit = m.settings.thanksCredits > 0 && (!sameIp || m.settings.thanksSameIp);
             long id = e.id;
-            int maxGems = m.settings.thanksMaxGems;
-            m.core.database().transaction(c -> BoosterStore.thank(c, id, thanker, gem, maxGems, now)).whenCompleteAsync((state, error) -> {
+            int maxGems = m.settings.thanksMaxCredits;
+            m.core.database().transaction(c -> BoosterStore.thank(c, id, thanker, credit, maxGems, now)).whenCompleteAsync((state, error) -> {
                 if (error != null) {
                     e.thanked.remove(thanker);
                     m.core.plugin().getLogger().log(Level.WARNING, "Boosters: could not store a thanks", Database.cause(error));
@@ -556,18 +556,18 @@ final class GlobalBoosters {
                 d.put("id", id);
                 d.put("type", e.type.id());
                 d.put("starter", e.starter.toString());
-                d.put("gem", pays);
+                d.put("credit", pays);
                 d.put("same_ip", sameIp);
-                m.audit("thanks", Actor.player(thanker, thankerName), e.starter, e.starterName, pays ? (long) m.settings.thanksGems : 0L, d);
+                m.audit("thanks", Actor.player(thanker, thankerName), e.starter, e.starterName, pays ? (long) m.settings.thanksCredits : 0L, d);
                 Player online = Bukkit.getPlayer(thanker);
                 if (online != null) {
-                    m.msg.send(online, pays ? "thanks.sent" : "thanks.sent-no-gem", Msg.p("name", e.starterName),
-                            Msg.p("type", m.typeName(e.type)), Msg.number("gems", m.settings.thanksGems));
+                    m.msg.send(online, pays ? "thanks.sent" : "thanks.sent-no-credit", Msg.p("name", e.starterName),
+                            Msg.p("type", m.typeName(e.type)), Msg.number("credits", m.settings.thanksCredits));
                 }
                 Player st = Bukkit.getPlayer(e.starter);
                 if (st != null) {
-                    m.msg.actionBar(st, pays ? "thanks.received" : "thanks.received-no-gem", Msg.p("name", thankerName),
-                            Msg.number("gems", m.settings.thanksGems));
+                    m.msg.actionBar(st, pays ? "thanks.received" : "thanks.received-no-credit", Msg.p("name", thankerName),
+                            Msg.number("credits", m.settings.thanksCredits));
                 }
                 if (pays) {
                     pay(id, thanker, e.starterProfile);
@@ -576,13 +576,14 @@ final class GlobalBoosters {
         }
     }
 
-    /** Pays one thanks gem (idempotent key, so a retry after a crash never pays twice), then marks it paid. */
+    /** Pays one thanks credit (earned; idempotent key, so a retry after a crash never pays twice), then marks it paid. */
     private void pay(long globalId, UUID thanker, UUID starterProfile) {
         Optional<EconomyService> eco = m.core.services().optional(EconomyService.class);
-        if (eco.isEmpty() || m.settings.thanksGems <= 0) {
+        if (eco.isEmpty() || m.settings.thanksCredits <= 0) {
             return; // stays pending, paid at a later start
         }
-        Transaction tx = Transaction.deposit(AccountRef.player(starterProfile), Currency.GEMS, m.settings.thanksGems, TxReason.BOOSTER_THANKS)
+        Transaction tx = Transaction.deposit(AccountRef.player(starterProfile), Currency.CREDITS_EARNED, m.settings.thanksCredits,
+                        TxReason.BOOSTER_THANKS)
                 .actor(Actor.system(BoostersModule.ID))
                 .reference("booster_global:" + globalId)
                 .idempotencyKey("booster_thanks:" + globalId + ":" + thanker)
@@ -591,7 +592,7 @@ final class GlobalBoosters {
             if (r.status() == TxResult.Status.SUCCESS || r.status() == TxResult.Status.DUPLICATE) {
                 m.core.database().run(c -> BoosterStore.markPaid(c, globalId, thanker)).exceptionally(err -> null);
             } else {
-                m.core.plugin().getLogger().warning("Boosters: a thanks gem for global booster " + globalId + " was not paid (" + r.status()
+                m.core.plugin().getLogger().warning("Boosters: a thanks credit for global booster " + globalId + " was not paid (" + r.status()
                         + "); tried again at the next start.");
             }
         });

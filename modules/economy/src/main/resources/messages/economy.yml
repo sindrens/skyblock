@@ -2,17 +2,20 @@
 # Amount placeholders (<amount>, <balance>, <min>) are already colored with their currency (see format.*).
 # Reload: /skyblock reload economy
 
-# How amounts look. <value> = 12,500 below 100k, 1.2M above; <exact> = every digit.
+# How amounts look. <value> = 12,500 below economy.yml display.exact-below (100k), 1.2M above; credits always every digit.
+# <exact> = every digit. Credits: "credits" is the total or the bought part, "credits_earned" the earned part (card C1).
 format:
   money: "<hover:show_text:'<c:text><exact>'><cur:money><sym:money><value></cur:money></hover>"
   crystals: "<hover:show_text:'<c:text><exact>'><cur:crystals><sym:crystals> <value></cur:crystals></hover>"
-  gems: "<hover:show_text:'<c:text><exact>'><cur:gems><sym:gems> <value></cur:gems></hover>"
+  credits: "<hover:show_text:'<c:text><exact>'><cur:credits><sym:credits> <value></cur:credits></hover>"
+  credits_earned: "<hover:show_text:'<c:text><exact>'><cur:credits><sym:credits> <value></cur:credits></hover>"
   shards: "<hover:show_text:'<c:text><exact>'><cur:shards><sym:shards> <value></cur:shards></hover>"
 
 names:
   money: "<cur:money>Money</cur:money>"
   crystals: "<cur:crystals>Crystals</cur:crystals>"
-  gems: "<cur:gems>Gems</cur:gems>"
+  credits: "<cur:credits>Credits</cur:credits>"
+  credits_earned: "<cur:credits>Earned credits</cur:credits>"
   shards: "<cur:shards>Shards</cur:shards>"
 
 # Shown by the balance placeholders (scoreboard) for a moment after joining.
@@ -49,11 +52,16 @@ pay:
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay your own profiles."
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay while frozen. Wait for staff."
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be paid to players."
+  # Card C1: credits never move with /pay.
+  use-credit-pay: "<prefix><c:error><sym:cross></c:error> <c:text>Credits aren't sent with /pay. Bought credits will be sent with <c:value>/credit pay</c:value> <c:muted>(coming soon)</c:muted><c:text>. See yours: <c:value>/credit bal</c:value>."
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest payment is <min><c:text>."
   # Owner F1: <required> to earn first, <earned> so far, <missing> still to earn (income only, not money from players).
   send-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Earn <required> <c:text>yourself before you send money away. Earn <missing> <c:text>more (selling, rewards). <c:muted>Island members can always be paid."
 
 eco:
+  # Card C1 (C1-R1-18): only the owner creates or sets bought credits by hand. <action> = give/set/reset.
+  credits-owner-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the owner can <action> bought credits. Use <c:value>credits_earned</c:value> <c:text>for event prizes and compensation."
+  credits-skipped: "<prefix><c:muted>Bought credits were left as they are (owner only)."
   done-give: "<prefix><c:success><sym:check></c:success> <c:text>Gave <amount> <c:text>to <c:value><player></c:value>. <c:muted>Now </c:muted><balance> <c:muted>(<reason>)"
   done-take: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>from <c:value><player></c:value>. <c:muted>Now </c:muted><balance> <c:muted>(<reason>)"
   done-set: "<prefix><c:success><sym:check></c:success> <c:text>Set <c:value><player></c:value><c:text>'s <currency> <c:text>to <balance><c:text>. <c:muted>(<reason>)"
@@ -116,6 +124,31 @@ eco:
       - "<c:text>No: deny it, nothing changes."
 
 # Money notes (M3.2). <amount>, <balance>, <min>, <max> are colored amounts; <id> = first 8 characters of the note id.
+# Card C1: /credit bal. <total> = bought + earned, <bought> can be sent later with /credit pay, <earned> never moves.
+credit:
+  bal:
+    self:
+      - "<prefix><c:text>Your credits: <total>"
+      - " <c:muted><sym:bullet></c:muted> <c:text>Bought: <bought> <c:muted>(can be traded)"
+      - " <c:muted><sym:bullet></c:muted> <c:text>Earned: <earned> <c:muted>(votes, streaks, thanks; stay yours)"
+      - " <c:muted>Earned credits are spent first."
+    other: "<prefix><c:value><player></c:value><c:text>'s credits: <total>"
+
+# Tab completion hints (C1-R3-03). Staff can type any reason; these are only suggestions.
+tab-hints:
+  eco-reasons:
+    - "Compensation for a bug"
+    - "Event prize"
+    - "Refund"
+    - "Dupe removal"
+    - "Testing"
+  note-reasons:
+    - "Event prize"
+    - "Compensation for a bug"
+    - "Giveaway"
+    - "Refund"
+    - "Testing"
+
 note:
   # The note item (lore follows UI_STYLE §4; {placeholders} are filled by the plugin, max ~36 visible characters per line).
   item:

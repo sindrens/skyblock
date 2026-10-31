@@ -175,8 +175,8 @@ final class DailyService {
         int tier = m.tier(p);
         Payout.Context ctx = m.context(tier, profile);
         Payout payout = new Payout().add(calendar.get(c.day() - 1), ctx);
-        long gems = DailyRules.streakGems(c.streakAfter(), m.settings.gemEvery, m.settings.gems);
-        payout.gems(gems);
+        long credits = DailyRules.streakCredits(c.streakAfter(), m.settings.creditsEvery, m.settings.credits);
+        payout.credits(credits);
         String title = m.streakTitles().get(c.streakAfter());
         if (title != null && m.cosmetics().isPresent()) {
             payout.title(title);
@@ -229,7 +229,7 @@ final class DailyService {
         d.put("tier", tier);
         d.put("money", payout.total(Currency.MONEY));
         d.put("crystals", payout.total(Currency.CRYSTALS));
-        d.put("gems", payout.total(Currency.GEMS));
+        d.put("credits", payout.total(Currency.CREDITS_EARNED));
         d.put("rewards", RewardText.summary(payout));
         d.put("key", key);
         d.put("via", quiet ? "menu-rewards" : "daily");
@@ -243,10 +243,11 @@ final class DailyService {
             if (c.streakBroken() && c.after().lostStreak() > 1) {
                 m.msg.send(p, "daily.streak-lost", Msg.number("lost", c.after().lostStreak()));
             }
-            long gems = payout.total(Currency.GEMS);
-            if (!quiet && gems > 0 && DailyRules.streakGems(c.streakAfter(), m.settings.gemEvery, m.settings.gems) > 0) {
-                m.msg.send(p, "daily.streak-gems", Msg.number("streak", c.streakAfter()),
-                        Msg.p("gems", m.economy().map(e -> e.format(Currency.GEMS, m.settings.gems)).orElse(String.valueOf(m.settings.gems))));
+            long credits = payout.total(Currency.CREDITS_EARNED);
+            if (!quiet && credits > 0 && DailyRules.streakCredits(c.streakAfter(), m.settings.creditsEvery, m.settings.credits) > 0) {
+                m.msg.send(p, "daily.streak-credits", Msg.number("streak", c.streakAfter()),
+                        Msg.p("credits", m.economy().map(e -> e.format(Currency.CREDITS_EARNED, m.settings.credits))
+                                .orElse(String.valueOf(m.settings.credits))));
             }
             m.sound(p, "success");
         }

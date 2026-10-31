@@ -366,13 +366,13 @@ final class WardrobeStore {
     }
 
     /** False if the account already has this Sigil. */
-    boolean insertSigil(Connection c, UUID player, String setId, long gems, UUID profile, long now) throws SQLException {
+    boolean insertSigil(Connection c, UUID player, String setId, long credits, UUID profile, long now) throws SQLException {
         if (hasSigil(c, player, setId)) {
             return false;
         }
         try {
-            Sql.update(c, "INSERT INTO wardrobe_sigils (player_uuid, set_id, gems, bought_at, bought_profile) VALUES (?, ?, ?, ?, ?)",
-                    player, setId, gems, now, profile);
+            Sql.update(c, "INSERT INTO wardrobe_sigils (player_uuid, set_id, credits, bought_at, bought_profile) VALUES (?, ?, ?, ?, ?)",
+                    player, setId, credits, now, profile);
             return true;
         } catch (SQLException ex) {
             if (duplicate(ex)) {

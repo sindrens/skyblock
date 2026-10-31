@@ -362,7 +362,7 @@ topics:
         lines:
           - "<c:text>Open <c:value>/wardrobe</c:value><c:text> to see every set."
           - "<c:text>Buy a set once with money,"
-          - "<c:text>crystals or gems. It stays in"
+          - "<c:text>crystals or credits. It stays in"
           - "<c:text>your wardrobe on this profile."
       - title: "<c:value>Wearing"
         lines:
@@ -375,9 +375,9 @@ topics:
           - "<c:text>Worn pieces stay on: take them"
           - "<c:text>off in /wardrobe. You never lose"
           - "<c:text>a set, not even when you die."
-      - title: "<c:value>Gem sets and tokens"
+      - title: "<c:value>Credit sets and tokens"
         lines:
-          - "<c:text>A gem set is a Sigil: claim it"
+          - "<c:text>A credit set is a Sigil: claim it"
           - "<c:text>free on each profile once a"
           - "<c:text>season. Crate sets come as"
           - "<c:text>tokens: use one to redeem it."
@@ -724,7 +724,7 @@ topics:
       - title: "<c:value>Voting"
         lines:
           - "<c:value>/vote</c:value> <c:text>helps new players find us"
-          - "<c:text>and gives you keys and gems."
+          - "<c:text>and gives you keys and credits."
           - "<c:text>More:</c:text> <c:value>/help vote</c:value>"
       - title: "<c:value>Store & website"
         lines:
@@ -850,7 +850,7 @@ topics:
           - "<c:text>A profile is one island and everything"
           - "<c:text>on it: money, crystals, shards, items,"
           - "<c:text>ender chest, XP, skills and settings."
-          - "<c:text>Gems, rank, titles and cosmetics are shared."
+          - "<c:text>Credits, rank, titles and cosmetics are shared."
       - title: "<c:value>Switching"
         lines:
           - "<c:text>Open <c:value>/profiles</c:value>, pick a profile, click Switch."
@@ -858,8 +858,8 @@ topics:
           - "<c:text>profile's are loaded. Not in combat or frozen."
       - title: "<c:value>Slots"
         lines:
-          - "<c:text>Slot 1 is free. Slot 2: <c:value>500 gems</c:value> or Knight+."
-          - "<c:text>Slot 3: <c:value>1,500 gems</c:value> or Warlord+."
+          - "<c:text>Slot 1 is free. Slot 2: <c:value>500 credits</c:value> or Knight+."
+          - "<c:text>Slot 3: <c:value>1,500 credits</c:value> or Warlord+."
           - "<c:text>Bought slots stay, also after a season reset."
       - title: "<c:value>No sharing"
         lines:
@@ -1040,7 +1040,7 @@ topics:
           - "<c:text>change it) and <c:value>/is like Steve</c:value> <c:text>once a day."
   money:
     icon: gold_ingot
-    aliases: [economy, balance, bal, pay, baltop, transactions, currencies]
+    aliases: [economy, balance, bal, pay, baltop, transactions, currencies, credits, credit]
     name: "<c:flame>Money & currencies"
     summary: ["<c:text>Your balances, paying players", "<c:text>and your money history."]
     take-me-there: "transactions"
@@ -1048,10 +1048,16 @@ topics:
     pages:
       - title: "<c:value>Four currencies"
         lines:
-          - "<cur:money>Money</cur:money> <c:text>for almost everything,"
-          - "<cur:crystals>Crystals</cur:crystals> <c:text>for your island, <cur:gems>Gems</cur:gems>"
-          - "<c:text>for premium items and <cur:shards>Shards</cur:shards> <c:text>for"
+          - "<cur:money>Money</cur:money> <c:text>for everyday buying and selling,"
+          - "<cur:crystals>Crystals</cur:crystals> <c:text>for Depths power, <cur:credits>Credits</cur:credits>"
+          - "<c:text>for the credit shop and <cur:shards>Shards</cur:shards> <c:text>for"
           - "<c:text>the Black Market. See them: <c:value>/bal</c:value>"
+      - title: "<c:value>Credits"
+        lines:
+          - "<c:text>Bought in the store, or earned with"
+          - "<c:text>votes, streaks and thanks. Earned ones"
+          - "<c:text>are spent first and stay yours."
+          - "<c:text>See both: <c:value>/credit bal</c:value>"
       - title: "<c:value>Paying players"
         lines:
           - "<c:value>/pay Steve 1.5k</c:value> <c:text>works even when"
@@ -1061,7 +1067,7 @@ topics:
       - title: "<c:value>What can be paid"
         lines:
           - "<c:text>Money and shards can be paid."
-          - "<c:text>Gems and crystals stay with you."
+          - "<c:text>Credits and crystals stay with you."
           - "<c:text>Payments can't be undone, so check"
           - "<c:text>the name before you confirm."
       - title: "<c:value>Your history"
@@ -1331,7 +1337,7 @@ topics:
         lines:
           - "<c:text>Grow your island past 9x9, one"
           - "<c:text>step at a time, with shards or"
-          - "<c:text>gems. It lasts this season only:"
+          - "<c:text>credits. It lasts this season only:"
           - "<c:text>islands are wiped at the reset."
 
   crates:
@@ -1386,7 +1392,7 @@ topics:
           - "<c:text>The calendar only moves when you"
           - "<c:text>claim, so you never lose a day."
           - "<c:text>Your streak starts over, though."
-          - "<c:text>Every 7 streak days: 10 gems."
+          - "<c:text>Every 7 streak days: 10 credits."
       - title: "<c:value>Playtime"
         lines:
           - "<c:text>Every hour of active play gives"
@@ -1404,7 +1410,7 @@ topics:
     icon: paper
     aliases: [voting, votes, vote-party, voteparty, vote-streak]
     name: "<c:flame>Voting"
-    summary: ["<c:text>Vote every day for keys,", "<c:text>gems and the vote party."]
+    summary: ["<c:text>Vote every day for keys,", "<c:text>credits and the vote party."]
     take-me-there: "vote"
     commands: [Rewards]
     pages:
@@ -1413,7 +1419,7 @@ topics:
           - "<c:value>/vote</c:value> <c:text>or the Voting NPC in the"
           - "<c:text>Tavern: click a site to get its link."
           - "<c:text>Each site gives a reward once every"
-          - "<c:text>24 hours: a key, gems and pass XP."
+          - "<c:text>24 hours: a key, credits and pass XP."
       - title: "<c:value>Offline?"
         lines:
           - "<c:text>Votes wait for you and are paid"
@@ -1457,7 +1463,7 @@ topics:
         lines:
           - "<c:text>A global booster helps everyone"
           - "<c:text>online. Say thanks or type"
-          - "<c:value>/thanks</c:value><c:text>: the starter gets a gem"
+          - "<c:value>/thanks</c:value><c:text>: the starter gets a credit"
           - "<c:text>(once per booster from each player)."
       - title: "<c:value>Good to know"
         lines:

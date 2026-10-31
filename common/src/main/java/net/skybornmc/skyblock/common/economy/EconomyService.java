@@ -8,7 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * The economy (M3.1) for every module: balances in four currencies for players and islands, changed only through
+ * The economy (M3.1) for every module: balances in the {@link Currency} ledgers for players and islands, changed only through
  * <b>atomic database transactions</b> with a ledger row for every change. Published by the economy module:
  * {@code core.services().optional(EconomyService.class)}. No Vault.
  *
@@ -19,8 +19,9 @@ import java.util.concurrent.CompletableFuture;
  *       reference) and an audit row (category {@code economy}, action = reason).</li>
  *   <li>Use an idempotency key for anything that could be retried or replayed (auction purchase, note redeem, trade).</li>
  *   <li>Futures complete off the main thread; hop back with {@code thenAcceptAsync(…, mainThread)} to touch players.</li>
- *   <li><b>Profiles (PROF):</b> money, crystals and shards belong to a profile, gems to the player. A player account
- *       ({@link AccountRef#player}) holds a <b>profile key</b> ({@code ProfileService#profileKey}); gem changes are moved
+ *   <li><b>Profiles (PROF):</b> money, crystals and shards belong to a profile, credits (both ledger halves) to the player.
+ *       A player account ({@link AccountRef#player}) holds a <b>profile key</b> ({@code ProfileService#profileKey}); credit
+ *       changes are moved
  *       to the profile's player automatically, so always pass the profile key. Anything paid out later (auction sales,
  *       refunds) stores and pays the profile key it belongs to, never the player's currently active profile.</li>
  * </ul>
@@ -68,16 +69,34 @@ public interface EconomyService {
     /** The balance in the database (authoritative). Accounts that never had a change hold 0. */
     CompletableFuture<Long> balance(AccountRef account, Currency currency);
 
-    /** All four balances in the database. */
+    /** Every currency's balance in the database (credits of the profile's player, the rest of the profile). */
     CompletableFuture<Map<Currency, Long>> balances(AccountRef account);
 
     /**
-     * The cached balance of an online player, by <b>player UUID</b> (gems of the player, the rest of the active profile),
-     * for display: scoreboard, menus. Kept consistent with the database results
+     * The cached balance of an online player, by <b>player UUID</b> (credits of the player, the rest of the active profile),
+     * for display: scoreboard, menus. For credits this is one ledger half; show the total with
+     * {@link CreditView#cachedShown}. Kept consistent with the database results
      * of every transaction. Empty while not loaded. Never use it to decide whether a purchase is allowed: just run the
      * transaction, it fails safely with INSUFFICIENT_FUNDS.
      */
     OptionalLong cached(UUID player, Currency currency);
+
+    /**
+     * A player's credits (both ledger halves) from the database; {@code profileOrPlayer} may be a profile key or the
+     * player UUID (credits always belong to the player).
+     */
+    default CompletableFuture<CreditView> credits(UUID profileOrPlayer) {
+        return balances(AccountRef.player(profileOrPlayer)).thenApply(CreditView::of);
+    }
+
+    /**
+     * What a credit spend took, per ledger half, found by the spend's idempotency key ({@link CreditSpend}: the key and
+     * {@code key:2}); empty when none was found. Used by {@link CreditSpend#refund}. Implementations without ledger
+     * access return an empty map (a refund then comes back as earned credits).
+     */
+    default CompletableFuture<Map<Currency, Long>> creditLegs(String spendKey) {
+        return CompletableFuture.completedFuture(Map.of());
+    }
 
     /** Whether players may {@code /pay} and trade this currency ({@code economy.yml}). */
     boolean tradeable(Currency currency);

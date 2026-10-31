@@ -22,7 +22,7 @@ public final class RewardsSettings extends ModuleConfig {
     public String zone = "Europe/Oslo";
 
     @Setting(path = "calendar.days", desc = "The calendar, one line per day: '<day>: <reward>'. Rewards: money <minutes of income "
-            + "at your tier> | crystals <pouch base> | gems <n> | key <crate> [n] | fuel <minutes> | booster <sell|skill_xp|tool_xp|"
+            + "at your tier> | crystals <pouch base> | credits <n> (earned credits; old word gems) | key <crate> [n] | fuel <minutes> | booster <sell|skill_xp|tool_xp|"
             + "crystals> <percent> <minutes> | book <rarity> [level] | scroll [n] | tome. End a line with 'fallback <crystals>' for "
             + "the crystal base paid when that system is not there yet. After the last day it starts at day 1 again (P10-17).",
             level = Setting.Level.OWNER)
@@ -78,20 +78,21 @@ public final class RewardsSettings extends ModuleConfig {
 
     // ------------------------------------------------------------------ streak
 
-    @Setting(path = "streak.gem-every", desc = "Every this many streak days pays the streak gems (§9.2: every 7 days). 0 = off.",
+    @Setting(path = "streak.credits-every", desc = "Every this many streak days pays the streak credits (earned; §9.2: every 7 "
+            + "days). 0 = off.",
             min = 0, max = 365, level = Setting.Level.OWNER)
-    public int gemEvery = 7;
+    public int creditsEvery = 7;
 
-    @Setting(path = "streak.gems", desc = "Gems paid every 'gem-every' streak days (§9.2: 10).", min = 0, max = 1_000,
+    @Setting(path = "streak.credits", desc = "Earned credits paid every 'credits-every' streak days (§9.2: 10).", min = 0, max = 1_000,
             level = Setting.Level.OWNER)
-    public long gems = 10;
+    public long credits = 10;
 
     @Setting(path = "streak.titles", desc = "Streak titles, '<streak days>: <title id>' (titles are account-wide). Display names: "
             + "messages/rewards.yml -> titles.<id>.", level = Setting.Level.OWNER)
     public List<String> streakTitles = List.of("30: devoted", "100: unbroken");
 
-    @Setting(path = "streak.save-enabled", desc = "Show the 'Save streak' button (100 store credits within 2 days, R5). Stays hidden "
-            + "until the store exists (Phase 11) even when on.", level = Setting.Level.OWNER)
+    @Setting(path = "streak.save-enabled", desc = "Show the 'Save streak' button (save a broken streak for 100 credits within 2 days, R5). "
+            + "Stays hidden until the credit shop exists (Phase 11) even when on.", level = Setting.Level.OWNER)
     public boolean saveEnabled = false;
 
     // ------------------------------------------------------------------ playtime
@@ -173,6 +174,17 @@ public final class RewardsSettings extends ModuleConfig {
 
     @Setting(path = "npc.daily-role", desc = "NPC role whose click opens /daily (sneak-click keeps the help text).")
     public String npcRole = "daily";
+
+    /** Version 2 (card C1): gems were renamed credits (earned credits); the gem keys are moved. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
+        return java.util.Map.of(2, java.util.Map.of("streak.gem-every", "streak.credits-every", "streak.gems", "streak.credits"));
+    }
 
     @Override
     public String fileName() {

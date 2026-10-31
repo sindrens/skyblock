@@ -279,9 +279,9 @@ final class ProfileStore {
         return true;
     }
 
-    /** Owner decision P8: a season reset keeps gem-bought slots only. Returns the number of removed unlocks. */
+    /** Owner decision P8: a season reset keeps credit-bought slots only. Returns the number of removed unlocks. */
     int seasonReset(Connection c) throws SQLException {
-        return Sql.update(c, "DELETE FROM profile_slots WHERE source <> ?", SlotSource.GEMS.key());
+        return Sql.update(c, "DELETE FROM profile_slots WHERE source <> ?", SlotSource.CREDITS.key());
     }
 
     // ------------------------------------------------------------------ helpers

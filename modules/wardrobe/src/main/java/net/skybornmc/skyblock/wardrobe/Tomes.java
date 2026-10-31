@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Wardrobe Tomes (WARDROBE §3.1, WD13): unique, database-backed consumables (crates, quests, events, staff; never sold
- * for gems). Used on a set in its set screen: +2,500 set XP (greater: +10,000), never past level 40. The database
+ * for credits). Used on a set in its set screen: +2,500 set XP (greater: +10,000), never past level 40. The database
  * decides first while the inventory is locked; the item is taken after the commit. A tome item whose row is used up is a
  * copy and is taken (staff told). Every change is audited.
  */

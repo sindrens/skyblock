@@ -61,7 +61,7 @@ import java.util.logging.Level;
  * Rewards (PHASE-10-REWARDS.md M10.6 daily + playtime, M10.5 voting).
  * <ul>
  *   <li><b>Daily calendar</b> per profile (owner 128): {@code /daily}, the Daily Rewards NPC. One claim per day (reset
- *       00:00 Europe/Oslo); the calendar moves only on a claim; streak gems every 7 days, titles at 30 and 100.</li>
+ *       00:00 Europe/Oslo); the calendar moves only on a claim; streak credits every 7 days, titles at 30 and 100.</li>
  *   <li><b>Playtime</b> per profile (R6): active time only (not AFK, not in the AFK pool); hourly Crystal Pouch S (+ pass
  *       XP once the pass exists), a bound Cinder key every 10 hours, titles at 50/100/250/500 hours.</li>
  *   <li>Every claim is one transaction with an idempotency key ({@link ClaimEngine}); keys, items, fuel and titles are

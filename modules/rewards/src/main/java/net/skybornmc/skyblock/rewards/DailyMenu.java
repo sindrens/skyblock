@@ -257,10 +257,10 @@ final class DailyMenu extends Menu {
     private ItemStack streakItem(DailyRules.State state, int streak) {
         List<Component> lore = new ArrayList<>(service.lines(viewer, RewardsModule.ID, "menu.streak.lore", Msg.number("streak", streak),
                 Msg.number("best", state.best()), Msg.number("total", state.total())));
-        if (m.settings.gemEvery > 0 && m.settings.gems > 0) {
-            lore.addAll(service.lines(viewer, RewardsModule.ID, "menu.streak.gems", Msg.number("every", m.settings.gemEvery),
-                    Msg.p("gems", RewardText.format(m, net.skybornmc.skyblock.common.economy.Currency.GEMS, m.settings.gems)),
-                    Msg.number("left", DailyRules.untilGems(streak, m.settings.gemEvery))));
+        if (m.settings.creditsEvery > 0 && m.settings.credits > 0) {
+            lore.addAll(service.lines(viewer, RewardsModule.ID, "menu.streak.credits", Msg.number("every", m.settings.creditsEvery),
+                    Msg.p("credits", RewardText.format(m, net.skybornmc.skyblock.common.economy.Currency.CREDITS_EARNED, m.settings.credits)),
+                    Msg.number("left", DailyRules.untilCredits(streak, m.settings.creditsEvery))));
         }
         for (Map.Entry<Integer, String> t : m.streakTitles().entrySet()) {
             boolean owned = m.cosmetics().map(c -> c.owns(viewer.getUniqueId(), net.skybornmc.skyblock.common.cosmetics.Cosmetics.Kind.TITLE,
@@ -280,7 +280,7 @@ final class DailyMenu extends Menu {
         return switch (spec.kind()) {
             case MONEY -> Material.GOLD_NUGGET;
             case CRYSTALS -> Material.PRISMARINE_CRYSTALS;
-            case GEMS -> Material.EMERALD;
+            case CREDITS -> Material.EMERALD;
             case KEY -> Material.TRIPWIRE_HOOK;
             case FUEL -> Material.COAL;
             case BOOSTER -> switch (spec.ref()) {

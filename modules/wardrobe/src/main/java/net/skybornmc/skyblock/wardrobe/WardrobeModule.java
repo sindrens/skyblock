@@ -32,7 +32,7 @@ import java.util.logging.Level;
 
 /**
  * The wardrobe, W1 (docs/plans/WARDROBE.md): the 16 sets ({@code sets.yml}), per-profile wardrobe entries shown as
- * locked real armor, the Wardrobe Chest (escrow), buying with money/crystals/gems (account Sigils + one claim per profile
+ * locked real armor, the Wardrobe Chest (escrow), buying with money/crystals/credits (account Sigils + one claim per profile
  * per season), Set Tokens, {@code /wardrobe} (alias {@code /sets}), set bonuses through the {@link BonusService} and the
  * staff view in {@code /inspect}. W2: set levels 0-50 with set XP from the boosted activity, Wardrobe Tomes, merging two
  * max-level sets, warzone normalization. W3: {@code /loadout} presets (armor, pet hook, hotbar tools) applied atomically
@@ -96,7 +96,7 @@ public final class WardrobeModule implements SkyblockModule {
         items.register();
         ops = new WardrobeOps(core.database(), store, (tx, guard) -> {
             EconomyService eco = core.services().optional(EconomyService.class).orElse(null);
-            return eco == null ? CompletableFuture.completedFuture(TxResult.of(TxResult.Status.ERROR)) : eco.executeGuarded(tx, guard);
+            return eco == null ? CompletableFuture.completedFuture(TxResult.of(TxResult.Status.ERROR)) : net.skybornmc.skyblock.common.economy.CreditSpend.execute(eco, tx, guard); // credits: earned first, then bought (C1)
         }, System::currentTimeMillis, core.plugin().getLogger());
         loadoutOps = new LoadoutOps(core.database(), store, loadoutStore, System::currentTimeMillis, core.plugin().getLogger());
         loadouts = new Loadouts(this);

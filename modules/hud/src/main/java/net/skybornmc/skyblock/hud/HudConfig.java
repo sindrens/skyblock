@@ -26,8 +26,8 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "values.crystals", desc = "Placeholder key for the formatted island crystals balance.")
     public String crystalsKey = "crystals_formatted";
 
-    @Setting(path = "values.gems", desc = "Placeholder key for the formatted gem balance.")
-    public String gemsKey = "gems_formatted";
+    @Setting(path = "values.credits", desc = "Placeholder key for the formatted credits (bought + earned, always exact; C1).")
+    public String creditsKey = "credits_formatted";
 
     @Setting(path = "values.island-level", desc = "Placeholder key for the island level.")
     public String islandLevelKey = "island_level";
@@ -73,15 +73,24 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "places.warzone.layout", desc = "Layout in the warzone.")
     public String warzoneLayout = "warzone";
 
-    /** Version 2: tokens were replaced by island crystals (owner decision O8). */
+    /**
+     * Version 2: tokens were replaced by island crystals (owner decision O8).
+     * Version 3 (card C1): gems were renamed credits ({@code values.gems} → {@code values.credits}).
+     */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
-        return java.util.Map.of(2, java.util.Map.of("values.tokens", "values.crystals"));
+        return java.util.Map.of(2, java.util.Map.of("values.tokens", "values.crystals"),
+                3, java.util.Map.of("values.gems", "values.credits"));
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(3, java.util.Map.of("values.credits", ValueChange.of("gems_formatted", "credits_formatted")));
     }
 
     @Override

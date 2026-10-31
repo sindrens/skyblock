@@ -101,7 +101,7 @@ record SetDef(String id, boolean enabled, String enabledFrom, String name, Strin
 
     /** Where the set comes from (WD4). */
     enum SourceType {
-        MONEY(Currency.MONEY), CRYSTALS(Currency.CRYSTALS), GEMS(Currency.GEMS), CRATE(null);
+        MONEY(Currency.MONEY), CRYSTALS(Currency.CRYSTALS), CREDITS(Currency.CREDITS), CRATE(null);
 
         private final Currency currency;
 
@@ -121,6 +121,9 @@ record SetDef(String id, boolean enabled, String enabledFrom, String name, Strin
         static Optional<SourceType> byKey(String key) {
             if (key == null) {
                 return Optional.empty();
+            }
+            if (key.trim().equalsIgnoreCase(Currency.LEGACY_GEMS_KEY)) {
+                return Optional.of(CREDITS); // sets.yml written before gems were renamed credits (C1-R1-03)
             }
             for (SourceType t : values()) {
                 if (t.key().equalsIgnoreCase(key.trim())) {

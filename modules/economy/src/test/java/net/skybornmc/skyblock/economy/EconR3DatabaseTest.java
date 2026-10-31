@@ -124,7 +124,7 @@ class EconR3DatabaseTest {
         assertEquals(10_000, before.missing());
         assertTrue(gate.check(steve, mate, Currency.MONEY).join().allowed(), "island member: always");
         assertFalse(gate.check(steve, null, Currency.SHARDS).join().allowed(), "notes to anyone: no island exception");
-        assertTrue(gate.check(steve, alex, Currency.GEMS).join().allowed(), "gems are not covered");
+        assertTrue(gate.check(steve, alex, Currency.CREDITS_EARNED).join().allowed(), "gems are not covered");
 
         give(steve, Currency.MONEY, 6_000, TxReason.SELL);
         assertTrue(economy.execute(Transaction.deposit(AccountRef.bank(steve), Currency.MONEY, 1_000, TxReason.INTEREST)).join().ok());

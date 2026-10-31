@@ -22,7 +22,7 @@ import java.util.Optional;
 
 /**
  * {@code /profiles}: one big button per slot (11, 13, 15) so it works with taps on Bedrock. A profile opens its own
- * screen (switch, rename, icon, delete); an empty unlocked slot creates a profile; a locked slot can be bought with gems.
+ * screen (switch, rename, icon, delete); an empty unlocked slot creates a profile; a locked slot can be bought with credits.
  */
 final class ProfilesMenu extends Menu {
 

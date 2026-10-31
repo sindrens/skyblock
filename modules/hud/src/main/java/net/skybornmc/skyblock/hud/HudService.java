@@ -296,9 +296,10 @@ public final class HudService implements Listener {
     }
 
     /**
-     * Built-in values: name, rank, money, crystals, gems, island, island_here, objective, online. "-" when a feature
+     * Built-in values: name, rank, money, crystals, credits, island, island_here, objective, online. "-" when a feature
      * isn't there yet. Values are computed only when the layout uses them (online counts every player, so it is only
-     * worked out on boards that show it). {@code <tokens>} is a deprecated alias of {@code <crystals>}.
+     * worked out on boards that show it). {@code <tokens>} is a deprecated alias of {@code <crystals>}, {@code <gems>} of
+     * {@code <credits>} (C1-R1-03).
      */
     private TagResolver values(Player player, Choice choice) {
         var ranks = core.ranks();
@@ -309,7 +310,8 @@ public final class HudService implements Listener {
                 lazy("money", () -> value(player, config.moneyKey, "values.money")),
                 lazy("crystals", () -> value(player, config.crystalsKey, "values.crystals")),
                 lazy("tokens", () -> value(player, config.crystalsKey, "values.crystals")),
-                lazy("gems", () -> value(player, config.gemsKey, "values.gems")),
+                lazy("credits", () -> value(player, config.creditsKey, "values.credits")),
+                lazy("gems", () -> value(player, config.creditsKey, "values.credits")),
                 lazy("island", () -> island(player)),
                 lazy("island_here", () -> choice.islandHere() == null || choice.islandHere().isBlank() ? dash(player)
                         : core.messages().component(player, MODULE, "values.island-here", Msg.p("value", choice.islandHere()))),

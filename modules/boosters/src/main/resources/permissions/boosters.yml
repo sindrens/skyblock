@@ -5,5 +5,5 @@ skyblock.boosters.use:
   description: Start booster items and open /boosters (running, banked, owned and global boosters)
   default: true
 skyblock.boosters.thanks:
-  description: Thank global boosters with /thanks or by saying thanks in chat (1 gem to the starter, RW2)
+  description: Thank global boosters with /thanks or by saying thanks in chat (1 earned credit to the starter, RW2)
   default: true

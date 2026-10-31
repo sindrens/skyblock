@@ -50,7 +50,7 @@ import java.util.concurrent.Executor;
  * <ul>
  *   <li><b>Rotation</b> (P10-35): 1 headline, 3 rare, 4 common offers picked by weight at the restock times (00:00 and
  *       12:00 Europe/Oslo), stored once per rotation; a chat line announces the headline.</li>
- *   <li><b>Fixed row</b>: the Island Charter (next size above 9x9, shards or gems: P10-38, REVIEW3 F6) and the Disenchant
+ *   <li><b>Fixed row</b>: the Island Charter (next size above 9x9, shards or credits: P10-38, REVIEW3 F6) and the Disenchant
  *       Scroll.</li>
  *   <li><b>Limits</b> (P10-37): per account per rotation (Phoenix Regalia per season, Eclipse key per month); the headline
  *       has a server-wide stock of 25.</li>

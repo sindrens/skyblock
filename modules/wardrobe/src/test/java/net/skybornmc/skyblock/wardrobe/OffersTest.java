@@ -92,7 +92,7 @@ class OffersTest {
     void gemSetsAndSigils() {
         Offers.Offer gems = offer("lorekeeper", false, false, false, true, true);
         assertEquals(Offers.Kind.BUY, gems.kind());
-        assertEquals(Currency.GEMS, gems.currency());
+        assertEquals(Currency.CREDITS_EARNED, gems.currency());
         assertEquals(400, gems.price());
         assertEquals(Offers.Kind.CLAIM, offer("lorekeeper", false, true, false, false, true).kind(), "a Sigil skips the gate (met when bought)");
         assertEquals(Offers.Kind.CLAIMED, offer("lorekeeper", false, true, true, true, true).kind());

@@ -11,7 +11,7 @@ import java.util.function.Consumer;
  * <pre>
  *   money &lt;minutes&gt;                     minutes of reference income at your tier (ECONOMY_BALANCE §1.2)
  *   crystals &lt;base&gt;                     Crystal Pouch: base x growth^(tier-1)
- *   gems &lt;amount&gt;
+ *   credits &lt;amount&gt;   (earned credits; the old word gems still works)
  *   key &lt;crate&gt; [amount]                bound crate keys (CrateKeys)
  *   fuel &lt;minutes&gt;                      Island Fuel for your island
  *   booster &lt;type&gt; &lt;percent&gt; &lt;minutes&gt;  a bound personal booster item (BoosterService)
@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  * settings' default fallback is used.
  *
  * @param ref      crate id, booster type or book rarity (empty otherwise)
- * @param amount   minutes (money, fuel), base (crystals), amount (gems, key, scroll), percent (booster), level (book)
+ * @param amount   minutes (money, fuel), base (crystals), amount (credits, key, scroll), percent (booster), level (book)
  * @param minutes  booster length in minutes (0 otherwise)
  * @param fallback crystal base when the reward can't be given; -1 = the default
  */
@@ -34,7 +34,8 @@ record RewardSpec(Kind kind, String ref, long amount, int minutes, long fallback
     enum Kind {
         MONEY("money", true),
         CRYSTALS("crystals", true),
-        GEMS("gems", true),
+        /** Earned credits (C1; config word {@code credits}, old word {@code gems}). */
+        CREDITS("credits", true),
         KEY("key", false),
         FUEL("fuel", false),
         BOOSTER("booster", false),
@@ -60,6 +61,9 @@ record RewardSpec(Kind kind, String ref, long amount, int minutes, long fallback
 
         static Optional<Kind> byKey(String raw) {
             String k = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
+            if (k.equals("gems")) {
+                return Optional.of(CREDITS); // reward lines written before gems were renamed credits (C1-R1-03)
+            }
             for (Kind kind : values()) {
                 if (kind.key.equals(k)) {
                     return Optional.of(kind);
@@ -107,7 +111,7 @@ record RewardSpec(Kind kind, String ref, long amount, int minutes, long fallback
         List<String> args = words.subList(1, words.size());
         try {
             RewardSpec spec = switch (kind.get()) {
-                case MONEY, CRYSTALS, GEMS, FUEL -> new RewardSpec(kind.get(), "", positive(one(args, line), line), 0, fallback);
+                case MONEY, CRYSTALS, CREDITS, FUEL -> new RewardSpec(kind.get(), "", positive(one(args, line), line), 0, fallback);
                 case KEY -> {
                     if (args.isEmpty() || args.size() > 2 || !args.getFirst().matches("[a-z0-9_-]{1,32}")) {
                         throw new IllegalArgumentException("'" + line + "': write 'key <crate> [amount]'");

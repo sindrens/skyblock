@@ -105,7 +105,7 @@ public final class WatchConfig extends ModuleConfig {
             + "rows (first start, after a downtime) the sums are filled but old hours make no alerts.", min = 1, max = 168)
     public int alertMaxAgeHours = 2;
 
-    @Setting(path = "alerts.currencies", desc = "Currencies the profile alerts look at (money, crystals, gems, shards).",
+    @Setting(path = "alerts.currencies", desc = "Currencies the profile alerts look at (money, crystals, credits, credits_earned, shards).",
             level = Setting.Level.OWNER)
     public List<String> alertCurrencies = List.of("money", "crystals", "shards");
 
@@ -141,8 +141,12 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "rules.earn-rate.min.crystals", desc = "Never alert below this many crystals earned in one hour.", min = 0)
     public long earnMinCrystals = 50_000;
 
-    @Setting(path = "rules.earn-rate.min.gems", desc = "Never alert below this many gems earned in one hour.", min = 0)
-    public long earnMinGems = 1_000;
+    @Setting(path = "rules.earn-rate.min.credits", desc = "Never alert below this many bought credits gained in one hour.", min = 0)
+    public long earnMinCredits = 1_000;
+
+    @Setting(path = "rules.earn-rate.min.credits_earned", desc = "Never alert below this many earned credits gained in one hour "
+            + "(votes, thanks, streak, pass).", min = 0)
+    public long earnMinCreditsEarned = 1_000;
 
     @Setting(path = "rules.earn-rate.min.shards", desc = "Never alert below this many shards earned in one hour.", min = 0)
     public long earnMinShards = 5_000;
@@ -163,8 +167,12 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "rules.big-transfer.min.crystals", desc = "Never alert below this many crystals.", min = 1)
     public long bigMinCrystals = 500_000;
 
-    @Setting(path = "rules.big-transfer.min.gems", desc = "Never alert below this many gems.", min = 1)
-    public long bigMinGems = 10_000;
+    @Setting(path = "rules.big-transfer.min.credits", desc = "Never alert below this many bought credits.", min = 1)
+    public long bigMinCredits = 10_000;
+
+    @Setting(path = "rules.big-transfer.min.credits_earned", desc = "Never alert below this many earned credits created at once.",
+            min = 1)
+    public long bigMinCreditsEarned = 10_000;
 
     @Setting(path = "rules.big-transfer.min.shards", desc = "Never alert below this many shards.", min = 1)
     public long bigMinShards = 50_000;
@@ -186,8 +194,8 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "rules.staff-transfer.min.crystals", desc = "Never alert below this many crystals.", min = 1)
     public long staffMinCrystals = 100_000;
 
-    @Setting(path = "rules.staff-transfer.min.gems", desc = "Never alert below this many gems.", min = 1)
-    public long staffMinGems = 1_000;
+    @Setting(path = "rules.staff-transfer.min.credits", desc = "Never alert below this many bought credits.", min = 1)
+    public long staffMinCredits = 1_000;
 
     @Setting(path = "rules.staff-transfer.min.shards", desc = "Never alert below this many shards.", min = 1)
     public long staffMinShards = 10_000;
@@ -270,10 +278,19 @@ public final class WatchConfig extends ModuleConfig {
     /**
      * Version 2 (owner answer 591): the profile-reset and bank-restore reasons join the untouched default ignore list.
      * Version 3 (GUI-4c): the top earners and biggest lists page (52/53), so an untouched 28 becomes 84 (3 pages).
+     * Version 4 (card C1): gems were renamed credits; old gems are earned credits.
      */
     @Override
     public int version() {
-        return 3;
+        return 4;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
+        return java.util.Map.of(4, java.util.Map.of(
+                "rules.earn-rate.min.gems", "rules.earn-rate.min.credits_earned",
+                "rules.big-transfer.min.gems", "rules.big-transfer.min.credits",
+                "rules.staff-transfer.min.gems", "rules.staff-transfer.min.credits"));
     }
 
     @Override
@@ -298,7 +315,8 @@ public final class WatchConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> earnMinMoney;
             case CRYSTALS -> earnMinCrystals;
-            case GEMS -> earnMinGems;
+            case CREDITS -> earnMinCredits;
+            case CREDITS_EARNED -> earnMinCreditsEarned;
             case SHARDS -> earnMinShards;
         };
     }
@@ -308,7 +326,8 @@ public final class WatchConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> bigMinMoney;
             case CRYSTALS -> bigMinCrystals;
-            case GEMS -> bigMinGems;
+            case CREDITS -> bigMinCredits;
+            case CREDITS_EARNED -> bigMinCreditsEarned;
             case SHARDS -> bigMinShards;
         };
     }
@@ -318,7 +337,7 @@ public final class WatchConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> staffMinMoney;
             case CRYSTALS -> staffMinCrystals;
-            case GEMS -> staffMinGems;
+            case CREDITS, CREDITS_EARNED -> staffMinCredits; // earned credits never move between players
             case SHARDS -> staffMinShards;
         };
     }

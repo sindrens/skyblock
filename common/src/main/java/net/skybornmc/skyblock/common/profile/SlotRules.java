@@ -11,9 +11,9 @@ import java.util.function.IntPredicate;
  *
  * <ul>
  *   <li>Slot 1 is free for everyone.</li>
- *   <li>Slot 2: 500 gems or rank Knight+ ({@code skyblock.profiles.slots.2}); slot 3: 1,500 gems or Warlord+
+ *   <li>Slot 2: 500 credits or rank Knight+ ({@code skyblock.profiles.slots.2}); slot 3: 1,500 credits or Warlord+
  *       ({@code skyblock.profiles.slots.3}). Prices are config values; the slots are independent of each other.</li>
- *   <li>A season reset keeps gem-bought slots and drops every other stored unlock; rank slots are live permissions.</li>
+ *   <li>A season reset keeps credit-bought slots and drops every other stored unlock; rank slots are live permissions.</li>
  * </ul>
  */
 public final class SlotRules {
@@ -43,7 +43,7 @@ public final class SlotRules {
      * How a slot is unlocked right now, or empty if it is locked. Stored unlocks win over the rank (a bought slot stays
      * when the rank is lost).
      *
-     * @param stored  the account's stored unlocks (gems, grants)
+     * @param stored  the account's stored unlocks (credits, grants)
      * @param rankHas whether the player has the rank permission of a slot (live)
      */
     public static Optional<SlotSource> source(int slot, Collection<Unlock> stored, IntPredicate rankHas) {
@@ -65,7 +65,7 @@ public final class SlotRules {
         return source(slot, stored, rankHas).isPresent();
     }
 
-    /** Why a slot can't be bought with gems, or empty if it can. */
+    /** Why a slot can't be bought with credits, or empty if it can. */
     public enum BuyProblem { INVALID_SLOT, FREE_SLOT, ALREADY_UNLOCKED, NOT_FOR_SALE }
 
     /**
@@ -88,11 +88,11 @@ public final class SlotRules {
         return Optional.empty();
     }
 
-    /** Owner decision P8: at a season reset only gem-bought slots are kept. */
+    /** Owner decision P8: at a season reset only credit-bought slots are kept. */
     public static List<Unlock> afterSeasonReset(Collection<Unlock> stored) {
         List<Unlock> kept = new ArrayList<>();
         for (Unlock u : stored) {
-            if (u.source() == SlotSource.GEMS) {
+            if (u.source() == SlotSource.CREDITS) {
                 kept.add(u);
             }
         }

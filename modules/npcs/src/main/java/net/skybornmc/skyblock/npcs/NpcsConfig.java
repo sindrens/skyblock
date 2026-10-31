@@ -172,7 +172,7 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "leaderboards.size", desc = "Players listed per board.", min = 3, max = 15)
     public int size = 10;
 
-    @Setting(path = "leaderboards.sources", desc = "Leaderboard id -> data, as 'id: money' (or crystals, shards, gems), 'id: skill <mining|foraging|combat|farming|fishing>', 'id: island <stat> [all_time|this_week|last_week|today] [all|solo|team]', 'id: island_level [all|solo|team]', 'id: island_value [all|solo|team]', 'id: island_gain this_week [all|solo|team|cycle]', 'id: pillar_gain this_week [all|solo|team|cycle]' (weekly boards; cycle switches Solo/Team) or 'id: none' (shows Coming soon).")
+    @Setting(path = "leaderboards.sources", desc = "Leaderboard id -> data, as 'id: money' (or shards, credits; crystals are never on a public list, C1-R1-28), 'id: skill <mining|foraging|combat|farming|fishing>', 'id: island <stat> [all_time|this_week|last_week|today] [all|solo|team]', 'id: island_level [all|solo|team]', 'id: island_value [all|solo|team]', 'id: island_gain this_week [all|solo|team|cycle]', 'id: pillar_gain this_week [all|solo|team|cycle]' (weekly boards; cycle switches Solo/Team) or 'id: none' (shows Coming soon).")
     public List<String> sources = List.of(
             "island_top_solo: island_level solo",
             "island_top_team: island_level team",

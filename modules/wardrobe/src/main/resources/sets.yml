@@ -8,7 +8,7 @@
 # enabled-from: a feature that must exist first (conquest, fishing); listed in wardrobe.yml → features.available.
 # look.base: leather, chainmail, iron, gold, diamond, netherite. dye: #RRGGBB (leather only).
 #   trim-pattern / trim-material: vanilla ids. upgraded-trim-material: used from set level 10 (W2).
-# source.type: money, crystals, gems (account Sigil + one claim per profile per season), crate (Set Tokens only).
+# source.type: money, crystals, credits (earned first, then bought; account Sigil + one claim per profile per season), crate (Set Tokens only).
 #   price: whole units. crates: where tokens can come from (for the crates plan; shown as "Also from").
 # gate: any one part is enough. wing: any|mining|foraging|combat|farming|fishing + tier (Depths tier in that wing),
 #   any-skill: any skill at this level, skill + skill-level: one skill at a level.
@@ -101,7 +101,7 @@ sets:
     activity: skills
     tier: 2
     look: {base: leather, dye: "#E8DCC0", trim-pattern: host, trim-material: amethyst, upgraded-trim-material: diamond}
-    source: {type: gems, price: 400, crates: [blaze]}
+    source: {type: credits, price: 400, crates: [blaze]}
     gate: {wing: any, tier: 5, any-skill: 25}
     bonuses:
       two:
@@ -127,7 +127,7 @@ sets:
     activity: foraging
     tier: 3
     look: {base: leather, dye: "#4A3221", trim-pattern: ward, trim-material: emerald, upgraded-trim-material: diamond}
-    source: {type: gems, price: 900, crates: [inferno]}
+    source: {type: credits, price: 900, crates: [inferno]}
     gate: {wing: foraging, tier: 6}
     bonuses:
       two:
@@ -167,7 +167,7 @@ sets:
     tier: 3
     enabled-from: fishing
     look: {base: chainmail, trim-pattern: tide, trim-material: diamond, upgraded-trim-material: netherite}
-    source: {type: gems, price: 900, crates: [inferno]}
+    source: {type: credits, price: 900, crates: [inferno]}
     gate: {skill: fishing, skill-level: 40}
     bonuses:
       two:

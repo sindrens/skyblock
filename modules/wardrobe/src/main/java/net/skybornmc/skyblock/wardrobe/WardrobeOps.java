@@ -31,6 +31,9 @@ import java.util.logging.Logger;
  */
 final class WardrobeOps {
 
+    /** Origin of a set claimed for free from the account's credit Sigil (was 'gems_claim'; wardrobe migration V004). */
+    static final String ORIGIN_CLAIM = "credits_claim";
+
     /** Pays together with extra SQL (the economy's guarded transaction). */
     @FunctionalInterface
     interface Payer {
@@ -39,11 +42,11 @@ final class WardrobeOps {
 
     enum Status {
         OK,
-        /** Not enough money/crystals/gems. Nothing changed. */
+        /** Not enough money/crystals/credits. Nothing changed. */
         NOT_ENOUGH,
         /** The profile already owns this set. Nothing changed. */
         OWNED,
-        /** The account has no Sigil for this gem set (claim). Nothing changed. */
+        /** The account has no Sigil for this credit set (claim). Nothing changed. */
         NO_SIGIL,
         /** This profile already claimed the set this season. Nothing changed. */
         CLAIMED,
@@ -128,7 +131,8 @@ final class WardrobeOps {
     // ------------------------------------------------------------------ buying
 
     /**
-     * Buys a set (money, crystals or gems). Gem purchases also write the account's Sigil and this profile's claim for the
+     * Buys a set (money, crystals or credits; credits are spent earned first, then bought, C1). Credit purchases also write
+     * the account's Sigil and this profile's claim for the
      * season (WD5). Idempotency key {@code wardrobe_buy:<entry id>}: a retried request can never charge twice, and a
      * second purchase of an owned set rolls back before anything is paid.
      */
@@ -144,7 +148,7 @@ final class WardrobeOps {
         Why why = new Why();
         TxGuard guard = c -> {
             why.status = null;
-            if (currency == Currency.GEMS) {
+            if (currency == Currency.CREDITS) {
                 if (!store.insertSigil(c, who.player(), def.id(), price, who.profile(), now)) {
                     why.status = Status.HAS_SIGIL;
                     return false;
@@ -175,10 +179,10 @@ final class WardrobeOps {
         }));
     }
 
-    /** Claims a gem set on this profile for free (the account owns its Sigil; once per profile per season). */
+    /** Claims a credit set on this profile for free (the account owns its Sigil; once per profile per season). */
     CompletableFuture<Result> claim(Who who, String setId, int season) {
         long now = clock.getAsLong();
-        WardrobeStore.Entry entry = WardrobeStore.Entry.fresh(who.profile(), setId, "gems_claim", null, now);
+        WardrobeStore.Entry entry = WardrobeStore.Entry.fresh(who.profile(), setId, ORIGIN_CLAIM, null, now);
         return plain("claim " + setId, c -> {
             if (!store.hasSigil(c, who.player(), setId)) {
                 throw new Refused(Status.NO_SIGIL);

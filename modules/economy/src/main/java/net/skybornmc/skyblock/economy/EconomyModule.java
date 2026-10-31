@@ -56,6 +56,7 @@ import java.util.concurrent.Executor;
  * Selling (M3.4): {@code /sell}, dynamic prices and {@code SellService} (package {@code sell}).
  * Banks (M3.3): {@code /bank}, personal and island banks with interest and {@code BankService} (package {@code bank}).
  * Economy dashboard + anomaly alerts (M3.8): {@code /eco admin [alert]} (package {@code admin}).
+ * Credits (card C1): {@code /credit bal}; bought and earned ledgers, {@link net.skybornmc.skyblock.common.economy.CreditSpend}.
  * Settings: {@code economy.yml}; texts: {@code messages/economy.yml}; data: {@code db/economy}.
  */
 public final class EconomyModule implements SkyblockModule, Listener {
@@ -65,8 +66,6 @@ public final class EconomyModule implements SkyblockModule, Listener {
     static final String PERM_BALANCE = "skyblock.economy.balance";
     static final String PERM_BALANCE_OTHERS = "skyblock.economy.balance.others";
     static final String PERM_BALTOP = "skyblock.economy.baltop";
-    /** How often the background task checks whether a /baltop list is older than refresh-seconds (5 s). */
-    private static final long BALTOP_CHECK_TICKS = 100L;
     static final String PERM_PAY = "skyblock.economy.pay";
     static final String PERM_TRANSACTIONS = "skyblock.economy.transactions";
     /** {@code /eco give|take|set|reset|note}: admins and the owner (owner decision #47). */
@@ -75,13 +74,13 @@ public final class EconomyModule implements SkyblockModule, Listener {
     /** Owner R3-6: allow /eco changes above the limit (owner and admin; never your own request). */
     static final String PERM_APPROVE = "skyblock.admin.economy.approve";
     static final String PERM_APPROVE_OWN = "skyblock.admin.economy.approve-own";
-
-    /** Tab hints for the reason of {@code /eco note}. */
-    private static final List<String> NOTE_REASONS = List.of("Event prize", "Compensation for a bug", "Giveaway", "Refund",
-            "Testing");
-
-    private static final List<String> STAFF_REASONS = List.of("Compensation for a bug", "Event prize", "Refund", "Dupe removal",
-            "Testing");
+    /** {@code /credit bal [player]}: everyone (card C1). */
+    static final String PERM_CREDIT_BAL = "skyblock.credit.bal";
+    /**
+     * Creating or setting <b>bought</b> credits by hand ({@code /eco give|set|reset credits}, reason {@code admin_buy}): the
+     * owner only (C1-R1-18; explicit false for admins in server/permissions/economy.txt).
+     */
+    static final String PERM_CREDITS_GRANT = "skyblock.economy.credits.grant";
 
     final Core core;
     final ModuleMessages msg;
@@ -98,6 +97,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private Scheduler.Task approvalTask;
     private Executor main;
     private Scheduler.Task baltopTask;
+    private EconomyStore store;
 
     public EconomyModule(Core core) {
         this.core = core;
@@ -115,8 +115,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         core.configs().load(config);
         main = new MainThread(core.plugin());
         // Season id: 0 until the season service exists (Phase 10); the ledger and start-balance keys already carry it.
-        EconomyStore store = new EconomyStore(core.database(), () -> 0, System::currentTimeMillis);
+        store = new EconomyStore(core.database(), () -> 0, System::currentTimeMillis);
         store.owners(key -> profiles().ownerOf(key));
+        applyConfig();
         service = new EconomyServiceImpl(store, new BalanceCache(), core.audit(), () -> config,
                 uuid -> core.players().get(uuid).map(PlayerData::name).orElse(null),
                 currency -> core.style().symbol(currency.key()), () -> 0, core.plugin().getLogger(), this::profiles);
@@ -148,25 +149,41 @@ public final class EconomyModule implements SkyblockModule, Listener {
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
         }
-        baltop.refreshIfOlder(0, config.baltopSize);
+        baltop.refreshIfOlder(0, config.baltopSize, publicCurrencies());
         // R3-6: waiting /eco changes are dropped after eco.pending-minutes (memory only, every 10 s).
         approvalTask = core.scheduler().repeat("economy:eco-pending", 200L, 200L, this::expireApprovals);
         // Checks every 5 s (a timestamp compare); a list is only read again once it is older than refresh-seconds.
         // SMALL2: off the main thread ('economy:baltop' was logged at 5.3 ms): it only compares times and hands queries to
         // the database executor (one per currency), Baltop is thread-safe and nothing here touches the world.
-        baltopTask = core.scheduler().asyncRepeat(BALTOP_CHECK_TICKS, BALTOP_CHECK_TICKS,
+        baltopTask = core.scheduler().asyncRepeat(config.baltopCheckTicks, config.baltopCheckTicks,
                 () -> {
                     try {
-                        baltop.refreshIfOlder(baltopMaxAge(), config.baltopSize);
+                        baltop.refreshIfOlder(baltopMaxAge(), config.baltopSize, publicCurrencies());
                     } catch (RuntimeException e) {
                         core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Baltop refresh could not start; trying again in 5 s", e);
                     }
                 });
     }
 
+    /** Values other classes read statically or per call (C1-R3-03): gems alias end, exact display, retries, spend tries. */
+    private void applyConfig() {
+        Currency.legacyGemsAliasUntil(config.legacyGemsAliasUntilMillis());
+        Amounts.exactBelow(config.displayExactBelow);
+        net.skybornmc.skyblock.common.economy.CreditSpend.attempts(config.creditSpendAttempts);
+        if (store != null) {
+            store.retries(config.dbRetryAttempts, config.dbRetryStepMs, config.dbRetryJitterMs);
+        }
+    }
+
+    /** The currencies with a public /baltop list (baltop.currencies; never crystals or the earned-credits half). */
+    List<Currency> publicCurrencies() {
+        return Currency.listedValues().stream().filter(config::baltopPublic).toList();
+    }
+
     @Override
     public void reload() {
         core.configs().load(config);
+        applyConfig();
         core.messages().load(ID);
         if (sell != null) {
             sell.reload();
@@ -206,7 +223,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
         return service;
     }
 
-    /** Island profiles (PROF): money, crystals and shards are per profile; gems per player. */
+    /** Island profiles (PROF): money, crystals and shards are per profile; credits per player. */
     public ProfileService profiles() {
         return ProfileService.of(core.services());
     }
@@ -252,7 +269,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     /**
      * Opens a profile's full ledger (the players' own {@code /transactions} view) for staff, as a child of {@code from}
-     * (M3.8 dashboard: top earners, alert evidence). Gem rows come from the profile's player.
+     * (M3.8 dashboard: top earners, alert evidence). Credit rows come from the profile's player.
      */
     public void openHistory(net.skybornmc.skyblock.common.menu.Menu from, UUID profileKey) {
         from.openChild(new TransactionsMenu(this, AccountRef.player(profileKey), AccountRef.player(profiles().ownerOf(profileKey))));
@@ -284,7 +301,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
     }
 
-    /** A deleted profile's money, crystals, shards and personal bank are gone with it (owner P9); gems stay on the player. */
+    /** A deleted profile's money, crystals, shards and personal bank are gone with it (owner P9); credits stay on the player. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfileDeleted(ProfileDeletedEvent event) {
         if (sendGate != null) {
@@ -303,8 +320,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
         AccountRef account = AccountRef.player(event.profile().id());
         for (Currency currency : Currency.values()) {
-            if (currency == Currency.GEMS) {
-                continue;
+            if (currency.accountWide()) {
+                continue; // credits belong to the player and are never lost (C1-R1-12b)
             }
             service.balance(account, currency).thenAccept(balance -> {
                 if (balance > 0) {
@@ -334,7 +351,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private void registerPlaceholders() {
         core.placeholders().registerText(ID, "balance", p -> raw(p, Currency.MONEY));
         core.placeholders().registerText(ID, "balance_formatted", p -> formatted(p, Currency.MONEY));
-        for (Currency currency : List.of(Currency.CRYSTALS, Currency.GEMS, Currency.SHARDS)) {
+        // Credits: the total of bought and earned (C1-R1-08), always exact (C1-R2-22).
+        for (Currency currency : List.of(Currency.CRYSTALS, Currency.CREDITS, Currency.SHARDS)) {
             core.placeholders().registerText(ID, currency.key(), p -> raw(p, currency));
             core.placeholders().registerText(ID, currency.key() + "_formatted", p -> formatted(p, currency));
             // GUI-4 (owner U4): empty while the balance is 0, so a scoreboard "if:crystals_owned|" line only shows once you have some.
@@ -343,13 +361,22 @@ public final class EconomyModule implements SkyblockModule, Listener {
         // Deprecated aliases: tokens were replaced by crystals (O8); old formats keep showing the crystals balance.
         core.placeholders().registerText(ID, Currency.LEGACY_TOKENS_KEY, p -> raw(p, Currency.CRYSTALS));
         core.placeholders().registerText(ID, Currency.LEGACY_TOKENS_KEY + "_formatted", p -> formatted(p, Currency.CRYSTALS));
+        // Deprecated aliases (C1-R1-03): gems were renamed credits; old scoreboard layouts show the credits total.
+        core.placeholders().registerText(ID, Currency.LEGACY_GEMS_KEY, p -> raw(p, Currency.CREDITS));
+        core.placeholders().registerText(ID, Currency.LEGACY_GEMS_KEY + "_formatted", p -> formatted(p, Currency.CREDITS));
+        core.placeholders().registerText(ID, Currency.LEGACY_GEMS_KEY + "_owned", p -> owned(p, Currency.CREDITS));
+    }
+
+    /** The balance a player sees (credits: the total of both halves), or empty while not loaded. */
+    private OptionalLong shown(Player p, Currency currency) {
+        return net.skybornmc.skyblock.common.economy.CreditView.cachedShown(service, p.getUniqueId(), currency);
     }
 
     private String raw(Player p, Currency currency) {
         if (p == null) {
             return "";
         }
-        var value = service.cached(p.getUniqueId(), currency);
+        var value = shown(p, currency);
         return value.isPresent() ? String.valueOf(value.getAsLong()) : "";
     }
 
@@ -357,28 +384,33 @@ public final class EconomyModule implements SkyblockModule, Listener {
         if (p == null) {
             return "";
         }
-        var value = service.cached(p.getUniqueId(), currency);
-        return ownedText(value.isPresent() ? value.getAsLong() : null);
+        var value = shown(p, currency);
+        return ownedText(currency, value.isPresent() ? value.getAsLong() : null);
     }
 
     /** The {@code <currency>_owned} placeholder: the plain amount, or empty for no balance (0 or not loaded). Pure. */
     static String ownedText(Long balance) {
-        return balance == null || balance <= 0 ? "" : Amounts.plain(balance);
+        return ownedText(Currency.MONEY, balance);
+    }
+
+    /** {@link #ownedText(Long)} in a currency's number style (credits always exact). Pure. */
+    static String ownedText(Currency currency, Long balance) {
+        return balance == null || balance <= 0 ? "" : Amounts.plain(currency, balance);
     }
 
     private String formatted(Player p, Currency currency) {
         if (p == null) {
             return "";
         }
-        var value = service.cached(p.getUniqueId(), currency);
-        return value.isPresent() ? Amounts.plain(value.getAsLong()) : core.messages().raw(ID, "placeholder.loading");
+        var value = shown(p, currency);
+        return value.isPresent() ? Amounts.plain(currency, value.getAsLong()) : core.messages().raw(ID, "placeholder.loading");
     }
 
     // ================================================================== text helpers
 
     /** An amount in its currency's color and symbol ({@code format.<currency>}). */
     public Component amount(CommandSender viewer, Currency currency, long value) {
-        return msg.component(viewer, "format." + currency.key(), Msg.p("value", Amounts.plain(value)),
+        return msg.component(viewer, "format." + currency.key(), Msg.p("value", Amounts.plain(currency, value)),
                 Msg.p("exact", Format.number(value)));
     }
 
@@ -454,7 +486,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 .example("bal Steve")
                 .executes(ctx -> balance(ctx.sender(), ctx.getOr(balTarget, null))));
 
-        Arg<Currency> topCurrency = Args.choice("currency", Currency.class);
+        Arg<Currency> topCurrency = currencyArg("currency", this::publicCurrencies);
         core.commands().register(CommandSpec.command("baltop")
                 .description("The richest players")
                 .category("Economy")
@@ -466,6 +498,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
         Arg<String> payTarget = Args.offlinePlayer("player");
         Arg<Long> payAmount = Args.amount("amount");
+        // Credits parse (so /pay can explain /credit pay) but are never suggested: /pay never sends credits (C1-R1-26).
         Arg<Currency> payCurrency = Arg.word("currency", (sender, raw) -> Currency.byKey(raw).orElseThrow(() ->
                         CommandFailure.of("invalid-choice", Msg.p("input", raw), Msg.p("choices", String.join(", ", tradeableKeys())))),
                 Suggest.of(this::tradeableKeys));
@@ -502,15 +535,38 @@ public final class EconomyModule implements SkyblockModule, Listener {
         core.commands().register(notes.withdrawCommand());
 
         registerEco();
+        registerCredit();
     }
 
+    /** Currencies /pay suggests: tradeable and never credits (they move with /credit pay, C1-R1-26). */
     private List<String> tradeableKeys() {
-        return Arrays.stream(Currency.values()).filter(config::tradeable).map(Currency::key).toList();
+        return Arrays.stream(Currency.values()).filter(c -> !c.isCredits() && config.tradeable(c)).map(Currency::key).toList();
+    }
+
+    /**
+     * A currency typed by its key ({@code money}, {@code credits_earned}; the old {@code gems} while its alias lasts),
+     * limited to {@code allowed}, with tab completion of those keys.
+     */
+    private Arg<Currency> currencyArg(String name, java.util.function.Supplier<List<Currency>> allowed) {
+        java.util.function.Supplier<List<String>> keys = () -> allowed.get().stream().map(Currency::key).toList();
+        return Arg.word(name, (sender, raw) -> Currency.byKey(raw).filter(c -> allowed.get().contains(c)).orElseThrow(() ->
+                CommandFailure.of("invalid-choice", Msg.p("input", raw), Msg.p("choices", String.join(", ", keys.get())))),
+                Suggest.of(keys));
+    }
+
+    /** Tab hints from messages/economy.yml (a list; C1-R3-03), or {@code fallback} when the key is missing. */
+    List<String> hints(String key, String fallback) {
+        String raw = core.messages().raw(ID, key);
+        if (raw == null || raw.isBlank()) {
+            return List.of(fallback);
+        }
+        List<String> out = Arrays.stream(raw.split("<newline>")).map(String::strip).filter(t -> !t.isEmpty()).toList();
+        return out.isEmpty() ? List.of(fallback) : out;
     }
 
     private void registerEco() {
         Arg<String> player = Args.offlinePlayer("player");
-        Arg<Currency> currency = Args.choice("currency", Currency.class);
+        Arg<Currency> currency = currencyArg("currency", () -> List.of(Currency.values()));
         Arg<Long> amount = Args.amount("amount");
         Arg<Long> setAmount = Arg.word("amount", (sender, raw) -> {
             if (raw.trim().equals("0")) {
@@ -522,17 +578,19 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 throw CommandFailure.of("invalid-amount", Msg.p("input", raw));
             }
         }, Suggest.hint("amount"));
-        Arg<String> resetCurrency = Args.oneOf("currency", () -> {
-            List<String> values = new ArrayList<>(Arrays.stream(Currency.values()).map(Currency::key).toList());
-            values.add("all");
-            return values;
-        });
-        String[] reasons = STAFF_REASONS.toArray(String[]::new);
-        Arg<String> reasonGive = Args.text("reason", reasons);
-        Arg<String> reasonTake = Args.text("reason", reasons);
-        Arg<String> reasonSet = Args.text("reason", reasons);
-        Arg<String> reasonReset = Args.text("reason", reasons);
-        String[] noteReasons = NOTE_REASONS.toArray(String[]::new);
+        Arg<String> resetCurrency = Arg.word("currency", (sender, raw) -> {
+            if (raw.equalsIgnoreCase("all") || Currency.byKey(raw).isPresent()) {
+                return raw;
+            }
+            throw CommandFailure.of("invalid-choice", Msg.p("input", raw), Msg.p("choices", String.join(", ", resetKeys())));
+        }, Suggest.of(this::resetKeys));
+        // C1-R3-03: the English tab hints live in messages/economy.yml (tab-hints.*), read live.
+        java.util.function.Supplier<List<String>> reasons = () -> hints("tab-hints.eco-reasons", "Testing");
+        Arg<String> reasonGive = reasonArg(reasons);
+        Arg<String> reasonTake = reasonArg(reasons);
+        Arg<String> reasonSet = reasonArg(reasons);
+        Arg<String> reasonReset = reasonArg(reasons);
+        java.util.function.Supplier<List<String>> noteReasons = () -> hints("tab-hints.note-reasons", "Event prize");
         Arg<Integer> pendingId = Arg.word("id", (sender, raw) -> {
             try {
                 return Integer.parseInt(raw.trim().startsWith("#") ? raw.trim().substring(1) : raw.trim());
@@ -577,7 +635,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                         .example("eco reset Steve all Testing")
                         .executes(ctx -> {
                             String which = ctx.get(resetCurrency);
-                            List<Currency> list = which.equalsIgnoreCase("all") ? List.of(Currency.values())
+                            List<Currency> list = which.equalsIgnoreCase("all") ? resetAll(ctx.sender())
                                     : List.of(Currency.byKey(which).orElseThrow());
                             eco(ctx.sender(), EcoAction.RESET, ctx.get(player), list, 0, ctx.get(reasonReset));
                         }))
@@ -594,6 +652,82 @@ public final class EconomyModule implements SkyblockModule, Listener {
                         .arg(pendingId)
                         .example("eco deny 3")
                         .executes(ctx -> decide(ctx.sender(), ctx.get(pendingId), false))));
+    }
+
+    private static Arg<String> reasonArg(java.util.function.Supplier<List<String>> hints) {
+        return Arg.greedy("reason", (sender, raw) -> raw.strip(), Suggest.of(hints));
+    }
+
+    private List<String> resetKeys() {
+        List<String> values = new ArrayList<>(Arrays.stream(Currency.values()).map(Currency::key).toList());
+        values.add("all");
+        return values;
+    }
+
+    /**
+     * What {@code /eco reset <player> all} resets: every currency, except bought credits for staff without
+     * {@link #PERM_CREDITS_GRANT} (they are told). Credits start at 0, so a reset of credits empties them.
+     */
+    private List<Currency> resetAll(CommandSender sender) {
+        if (sender.hasPermission(PERM_CREDITS_GRANT)) {
+            return List.of(Currency.values());
+        }
+        msg.send(sender, "eco.credits-skipped");
+        return Arrays.stream(Currency.values()).filter(c -> c != Currency.CREDITS).toList();
+    }
+
+    /**
+     * C1-R1-18: creating or setting bought credits by hand is the owner's ({@link #PERM_CREDITS_GRANT}); taking them away
+     * stays with /eco (nothing is created). True when {@code sender} may run {@code action} on {@code currency}.
+     */
+    static boolean mayChange(EcoAction action, Currency currency, boolean hasGrant) {
+        return currency != Currency.CREDITS || action == EcoAction.TAKE || hasGrant;
+    }
+
+    // ================================================================== /credit (card C1)
+
+    private void registerCredit() {
+        Arg<String> target = Args.offlinePlayer("player");
+        core.commands().register(CommandSpec.command("credit")
+                .description("Your credits: bought and earned (store, votes, streaks, thanks)")
+                .category("Economy")
+                .permission(PERM_CREDIT_BAL)
+                .aliases("credits")
+                .executes(ctx -> creditBalance(ctx.sender(), null))
+                .sub(CommandSpec.sub("bal")
+                        .description("See your credits (bought and earned) or another player's total")
+                        .permission(PERM_CREDIT_BAL)
+                        .optional(target)
+                        .example("credit bal Steve")
+                        .executes(ctx -> creditBalance(ctx.sender(), ctx.getOr(target, null)))));
+    }
+
+    /**
+     * {@code /credit bal [player]}: your own credits with the split (bought, earned); another player's total only
+     * (C1-R1-08: everyone sees the total, only the owner sees the split).
+     */
+    private void creditBalance(CommandSender sender, String name) {
+        if (name == null || (sender instanceof Player p && name.equalsIgnoreCase(p.getName()))) {
+            if (!(sender instanceof Player p)) {
+                throw CommandFailure.of("players-only");
+            }
+            then(sender, service.credits(p.getUniqueId()), view -> {
+                service.refreshCached(p.getUniqueId(), Map.of(Currency.CREDITS, view.bought(), Currency.CREDITS_EARNED, view.earned()));
+                msg.send(sender, "credit.bal.self", exactAmountTag("total", sender, Currency.CREDITS, view.total()),
+                        exactAmountTag("bought", sender, Currency.CREDITS, view.bought()),
+                        exactAmountTag("earned", sender, Currency.CREDITS_EARNED, view.earned()));
+            });
+            return;
+        }
+        then(sender, resolve(name), found -> {
+            if (found.isEmpty()) {
+                msg.send(sender, "unknown-player", Msg.p("player", name));
+                sound(sender, "error");
+                return;
+            }
+            then(sender, service.credits(found.get().uuid()), view -> msg.send(sender, "credit.bal.other",
+                    Msg.p("player", found.get().name()), exactAmountTag("total", sender, Currency.CREDITS, view.total())));
+        });
     }
 
     // ================================================================== /bal
@@ -623,10 +757,12 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
     }
 
+    /** One line per currency players see; credits as their total (C1-R1-13, C1-R1-08). */
     private void sendBalances(CommandSender sender, String other, Map<Currency, Long> balances) {
         msg.send(sender, other == null ? "bal.header-self" : "bal.header-other", Msg.p("player", other == null ? "" : other));
-        for (Currency currency : Currency.values()) {
-            long value = balances.getOrDefault(currency, 0L);
+        for (Currency currency : Currency.listedValues()) {
+            long value = currency == Currency.CREDITS ? net.skybornmc.skyblock.common.economy.CreditView.of(balances).total()
+                    : balances.getOrDefault(currency, 0L);
             msg.send(sender, "bal.line", Msg.c("currency", currencyName(sender, currency)), amountTag("amount", sender, currency, value),
                     Msg.p("exact", Format.number(value)));
         }
@@ -663,11 +799,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
         Baltop.Snapshot top = cached;
         OptionalLong mine = OptionalLong.empty();
         if (sender instanceof Player p) {
-            mine = service.cached(p.getUniqueId(), currency);
+            mine = shown(p, currency);
             // P7: the list shows each player's best profile; the live balance only replaces it when it is higher.
             long listed = cached.entries().stream().filter(e -> e.player().equals(p.getUniqueId()))
                     .mapToLong(EconomyStore.TopEntry::balance).findFirst().orElse(-1L);
-            if (mine.isPresent() && (currency == Currency.GEMS || mine.getAsLong() > listed)) {
+            if (mine.isPresent() && (currency.accountWide() || mine.getAsLong() > listed)) {
                 top = cached.withLive(p.getUniqueId(), p.getName(), mine.getAsLong(), config.baltopSize);
             }
         }
@@ -781,6 +917,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
      * one waits for an owner/admin's Allow. The console is trusted and never waits.
      */
     private void eco(CommandSender sender, EcoAction action, String name, List<Currency> currencies, long amount, String note) {
+        for (Currency currency : currencies) {
+            if (!mayChange(action, currency, sender.hasPermission(PERM_CREDITS_GRANT))) {
+                throw fail("eco.credits-owner-only", Msg.p("action", action.key()));
+            }
+        }
         then(sender, resolve(name), found -> {
             if (found.isEmpty()) {
                 msg.send(sender, "unknown-player", Msg.p("player", name));
@@ -937,6 +1078,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
             return;
         }
         EcoApprovals.Pending p = found.get();
+        if (allow && !mayChange(p.action(), p.currency(), sender.hasPermission(PERM_CREDITS_GRANT))) {
+            msg.send(sender, "eco.credits-owner-only", Msg.p("action", p.action().key()));
+            sound(sender, "error");
+            return;
+        }
         if (!allow) {
             if (approvals.take(id, now).isEmpty()) {
                 msg.send(sender, "eco.approve.unknown", Msg.number("id", id));
@@ -1029,8 +1175,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
     }
 
     /**
-     * Applies one change. {@code key}: the player's profile (money, crystals, shards); gems go to the player account
-     * automatically. {@code actor}/{@code staffName}: who asked for it; {@code approvedBy}: who allowed it (R3-6), or null.
+     * Applies one change. {@code key}: the player's profile (money, crystals, shards); credits go to the player account
+     * automatically. Bought credits are created with reason {@code admin_buy} (C1-R2-02), earned ones with {@code admin_give}. {@code actor}/{@code staffName}: who asked for it; {@code approvedBy}: who allowed it (R3-6), or null.
      */
     private void ecoOne(CommandSender sender, Actor actor, String staffName, EcoAction action, Found target, UUID profileKey,
                         Currency currency, long amount, String note, String approvedBy) {
@@ -1043,7 +1189,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
             details.put("approved_by", approvedBy);
         }
         Transaction base = switch (action) {
-            case GIVE -> Transaction.deposit(account, currency, amount, TxReason.ADMIN_GIVE);
+            case GIVE -> Transaction.deposit(account, currency, amount,
+                    currency == Currency.CREDITS ? TxReason.ADMIN_BUY : TxReason.ADMIN_GIVE);
             case TAKE -> Transaction.withdraw(account, currency, amount, TxReason.ADMIN_TAKE);
             default -> null;
         };
@@ -1055,8 +1202,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
             }
             future = service.execute(tx);
         } else {
-            future = service.set(account, currency, amount, action == EcoAction.SET ? TxReason.ADMIN_SET : TxReason.ADMIN_RESET, actor,
-                    details);
+            String setReason = currency == Currency.CREDITS && action == EcoAction.SET ? TxReason.ADMIN_BUY
+                    : action == EcoAction.SET ? TxReason.ADMIN_SET : TxReason.ADMIN_RESET;
+            future = service.set(account, currency, amount, setReason, actor, details);
         }
         String key = action.key();
         then(sender, future, result -> {

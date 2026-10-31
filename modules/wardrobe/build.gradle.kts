@@ -1,5 +1,5 @@
 // Wardrobe module (Phase W, docs/plans/WARDROBE.md): the 16 sets (sets.yml), per-profile wardrobe entries with locked
-// real armor, the Wardrobe Chest (escrow), buying with money/crystals/gems (Sigils), Set Tokens, /wardrobe, set bonuses.
+// real armor, the Wardrobe Chest (escrow), buying with money/crystals/credits (Sigils), Set Tokens, /wardrobe, set bonuses.
 // Publishes WardrobeService (common/wardrobe).
 dependencies {
     implementation(project(":common"))

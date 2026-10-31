@@ -10,7 +10,7 @@ import java.util.UUID;
  * @param id            the profile key every per-profile table stores (money, skills, island membership …). The first
  *                      profile of an account uses the player's own UUID, so all data from before profiles already
  *                      belongs to profile 1 (migration-safe); later profiles get a random UUID.
- * @param owner         the player (account) UUID: rank, gems, cosmetics, punishments and the audit identity live here
+ * @param owner         the player (account) UUID: rank, credits, cosmetics, punishments and the audit identity live here
  * @param slot          1 to {@link SlotRules#MAX_SLOTS}
  * @param name          the player's own name for it, {@code null} = default name ("Profile 2") from the messages
  * @param icon          material key of the menu icon, {@code null} = the slot's default icon

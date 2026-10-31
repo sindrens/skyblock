@@ -46,7 +46,7 @@ final class Payout {
     /**
      * One line of the claim message.
      *
-     * @param value    resolved amount: money/crystals/gems paid, keys, fuel minutes, booster percent, items
+     * @param value    resolved amount: money/crystals/credits paid, keys, fuel minutes, booster percent, items
      * @param fallback true when crystals were paid instead of {@code kind}
      */
     record Line(RewardSpec.Kind kind, String ref, long value, int minutes, boolean fallback) {
@@ -81,7 +81,7 @@ final class Payout {
         switch (spec.kind()) {
             case MONEY -> money(RewardTables.money(spec.amount(), ctx.tier(), ctx.refPerMinute()), spec);
             case CRYSTALS -> currency(Currency.CRYSTALS, RewardTables.crystals(spec.amount(), ctx.tier(), ctx.growth()), spec, false);
-            case GEMS -> currency(Currency.GEMS, spec.amount(), spec, false);
+            case CREDITS -> currency(Currency.CREDITS_EARNED, spec.amount(), spec, false); // rewards pay earned credits (C1)
             case KEY -> grantOrFallback(spec, ctx, new Grant(KEY, spec.ref(), spec.amount()), spec.amount());
             case FUEL -> grantOrFallback(spec, ctx, new Grant(FUEL, "", spec.amount()), spec.amount());
             case BOOSTER -> grantOrFallback(spec, ctx, new Grant(BOOSTER, spec.ref() + ":" + spec.amount() + ":" + spec.minutes(), 1),
@@ -102,10 +102,10 @@ final class Payout {
         return this;
     }
 
-    /** Adds gems (streak reward). */
-    Payout gems(long amount) {
+    /** Adds earned credits (streak and vote reward; C1: rewards never create bought credits). */
+    Payout credits(long amount) {
         if (amount > 0) {
-            currency(Currency.GEMS, amount, new RewardSpec(RewardSpec.Kind.GEMS, "", amount, 0, -1), false);
+            currency(Currency.CREDITS_EARNED, amount, new RewardSpec(RewardSpec.Kind.CREDITS, "", amount, 0, -1), false);
         }
         return this;
     }

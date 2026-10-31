@@ -43,6 +43,21 @@ public final class Style {
     /** Removed currency key (tokens were replaced by island crystals); resolved as {@link #CRYSTALS} if not defined. */
     static final String LEGACY_TOKENS = "tokens";
     static final String CRYSTALS = "crystals";
+    /** Renamed currency key (gems became credits, C1-R1-03) and the earned half of credits: both resolve as {@link #CREDITS}. */
+    static final String LEGACY_GEMS = "gems";
+    static final String CREDITS_EARNED = "credits_earned";
+    static final String CREDITS = "credits";
+
+    /** The name an undefined color/symbol falls back to: tokens → crystals, gems and credits_earned → credits; else null. */
+    static String fallbackName(String name) {
+        if (LEGACY_TOKENS.equals(name)) {
+            return CRYSTALS;
+        }
+        if (LEGACY_GEMS.equals(name) || CREDITS_EARNED.equals(name)) {
+            return CREDITS;
+        }
+        return null;
+    }
 
     private volatile Map<String, String> symbols = Map.of();
     private volatile Map<String, List<Color>> gradients = Map.of();
@@ -164,8 +179,8 @@ public final class Style {
             builder.tag(section, (args, ctx) -> {
                 String name = args.popOr("missing color name").value();
                 Color c = map.get(name);
-                if (c == null && LEGACY_TOKENS.equals(name)) {
-                    c = map.get(CRYSTALS); // tokens were replaced by crystals: old message files keep working
+                if (c == null && fallbackName(name) != null) {
+                    c = map.get(fallbackName(name)); // old message files (tokens, gems) keep working
                 }
                 if (c == null) {
                     return Tag.styling(NamedTextColor.WHITE);
@@ -268,11 +283,14 @@ public final class Style {
         return symbol(symbols, name);
     }
 
-    /** A symbol; the removed {@code tokens} falls back to {@code crystals} (owner decision O8) so old texts keep working. */
+    /**
+     * A symbol; the removed {@code tokens} falls back to {@code crystals} (owner decision O8), {@code gems} and
+     * {@code credits_earned} to {@code credits} (C1), so old texts keep working.
+     */
     private static String symbol(Map<String, String> syms, String name) {
         String value = syms.get(name);
-        if (value == null && LEGACY_TOKENS.equals(name)) {
-            value = syms.get(CRYSTALS);
+        if (value == null && fallbackName(name) != null) {
+            value = syms.get(fallbackName(name));
         }
         return value == null ? "?" : value;
     }

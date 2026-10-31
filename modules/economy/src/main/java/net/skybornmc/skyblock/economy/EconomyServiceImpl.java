@@ -31,10 +31,10 @@ import java.util.logging.Logger;
  * {@link EconomyService} on top of {@link EconomyStore}: keeps the display cache consistent with database results and
  * writes an audit row (category {@code economy}, action = reason) for every change.
  *
- * <p><b>Profiles (PROF):</b> money, crystals and shards belong to a profile, gems to the player (owner decision P2/PR2).
- * A player account ref holds a profile key; for {@link Currency#GEMS} it is mapped to the player UUID here, so callers
- * can always pass the profile key. The display cache keeps one entry per account id (player UUID for gems, the active
- * profile key for the rest).</p>
+ * <p><b>Profiles (PROF):</b> money, crystals and shards belong to a profile, credits (both ledger halves) to the player
+ * (owner decision P2/PR2, C1-R1-01). A player account ref holds a profile key; for {@link Currency#accountWide()} currencies
+ * it is mapped to the player UUID here, so callers can always pass the profile key. The display cache keeps one entry per
+ * account id (player UUID for credits, the active profile key for the rest).</p>
  */
 final class EconomyServiceImpl implements EconomyService {
 
@@ -138,9 +138,9 @@ final class EconomyServiceImpl implements EconomyService {
 
     // ------------------------------------------------------------------------------------------------ profiles
 
-    /** Gems live on the player (account); every other currency on the account as given (a profile key). */
+    /** Credits live on the player (account); every other currency on the account as given (a profile key). */
     AccountRef normalize(AccountRef ref, Currency currency) {
-        if (ref == null || !ref.isPlayer() || currency != Currency.GEMS) {
+        if (ref == null || !ref.isPlayer() || !currency.accountWide()) {
             return ref;
         }
         UUID owner = profiles().ownerOf(ref.owner());
@@ -157,9 +157,9 @@ final class EconomyServiceImpl implements EconomyService {
                 tx.details());
     }
 
-    /** The cache entry that holds {@code currency} for an online player (player UUID for gems, else the active profile). */
+    /** The cache entry that holds {@code currency} for an online player (player UUID for credits, else the active profile). */
     private UUID cacheKey(UUID player, Currency currency) {
-        return currency == Currency.GEMS ? profiles().ownerOf(player) : profiles().profileKey(player);
+        return currency.accountWide() ? profiles().ownerOf(player) : profiles().profileKey(player);
     }
 
     // ------------------------------------------------------------------------------------------------ transactions
@@ -313,10 +313,10 @@ final class EconomyServiceImpl implements EconomyService {
     // ------------------------------------------------------------------------------------------------ players
 
     /**
-     * On join: gives the active profile its season starting balances and loads the balances into the display cache: gems
+     * On join: gives the active profile its season starting balances and loads the balances into the display cache: credits
      * from the player account, the rest from the active profile. Owner answers 121/121b (round 1): every profile gets the
      * start money (once per season and profile, by idempotency key on the profile key; profile 1's key is the player UUID,
-     * so old grants still count). Gems are account-wide and keep one start balance per player.
+     * so old grants still count). Credits are account-wide and keep one start balance per player.
      */
     CompletableFuture<Void> loadPlayer(UUID player, String name) {
         UUID key = profiles().profileKey(player);
@@ -345,12 +345,12 @@ final class EconomyServiceImpl implements EconomyService {
         return CompletableFuture.allOf(starts.toArray(CompletableFuture[]::new));
     }
 
-    /** Whose start balance a currency is: gems per player (account-wide), everything else per profile. Pure. */
+    /** Whose start balance a currency is: credits per player (account-wide), everything else per profile. Pure. */
     static UUID startOwner(Currency currency, UUID player, UUID profileKey) {
-        return currency == Currency.GEMS ? player : profileKey;
+        return currency.accountWide() ? player : profileKey;
     }
 
-    /** Loads {@code key}'s balances (and the player's gems) into the cache. */
+    /** Loads {@code key}'s balances (and the player's credits) into the cache. */
     private CompletableFuture<Void> loadKey(UUID player, UUID key) {
         CompletableFuture<Void> own = store.balances(AccountRef.player(player)).thenAccept(b -> cache.load(player, b));
         if (key.equals(player)) {
@@ -398,21 +398,30 @@ final class EconomyServiceImpl implements EconomyService {
         return store.balance(normalize(account, currency), currency);
     }
 
-    /** A profile's balances: money, crystals and shards of the profile, gems of its player. */
+    /** A profile's balances: money, crystals and shards of the profile, both credit halves of its player. */
     @Override
     public CompletableFuture<Map<Currency, Long>> balances(AccountRef account) {
-        AccountRef gems = normalize(account, Currency.GEMS);
-        if (gems == account) {
+        AccountRef owner = normalize(account, Currency.CREDITS);
+        if (owner == account) {
             return store.balances(account);
         }
-        return store.balances(account).thenCombine(store.balance(gems, Currency.GEMS), (all, g) -> {
+        return store.balances(account).thenCombine(store.balances(owner), (all, player) -> {
             Map<Currency, Long> out = new EnumMap<>(all);
-            out.put(Currency.GEMS, g);
+            for (Currency c : Currency.values()) {
+                if (c.accountWide()) {
+                    out.put(c, player.getOrDefault(c, 0L));
+                }
+            }
             return out;
         });
     }
 
-    /** For an online player: gems from the player account, everything else from the active profile. */
+    @Override
+    public CompletableFuture<Map<Currency, Long>> creditLegs(String spendKey) {
+        return store.creditLegs(spendKey);
+    }
+
+    /** For an online player: credits from the player account, everything else from the active profile. */
     @Override
     public OptionalLong cached(UUID player, Currency currency) {
         return cache.get(cacheKey(player, currency), currency);
@@ -436,8 +445,8 @@ final class EconomyServiceImpl implements EconomyService {
     /** Leaderboard holograms (npcs module): the /baltop query (best live profile per player, P7). */
     @Override
     public CompletableFuture<List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(Currency currency, int limit) {
-        if (currency == null || limit <= 0) {
-            return CompletableFuture.completedFuture(List.of());
+        if (currency == null || limit <= 0 || !config.get().baltopPublic(currency)) {
+            return CompletableFuture.completedFuture(List.of()); // crystals are never on a public list (C1-R1-28)
         }
         return store.topBest(currency, limit, profiles.get()).thenApply(rows -> rows.stream()
                 .map(r -> new net.skybornmc.skyblock.common.leaderboard.TopLine(r.player(), r.name(), r.balance()))

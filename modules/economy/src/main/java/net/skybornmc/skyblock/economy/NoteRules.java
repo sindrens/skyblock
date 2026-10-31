@@ -27,9 +27,12 @@ final class NoteRules {
     private NoteRules() {
     }
 
-    /** Whether notes can be made in this currency: listed in {@code notes.currencies} and tradeable. */
+    /**
+     * Whether notes can be made in this currency: listed in {@code notes.currencies} and tradeable. Credits never become
+     * notes (C1-R1-26, hard rule in code).
+     */
     static boolean allowed(EconomyConfig config, Currency currency) {
-        if (!config.tradeable(currency)) {
+        if (currency == null || currency.isCredits() || !config.tradeable(currency)) {
             return false;
         }
         for (String key : config.noteCurrencies) {

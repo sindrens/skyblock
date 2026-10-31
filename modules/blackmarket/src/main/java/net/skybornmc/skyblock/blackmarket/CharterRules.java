@@ -8,12 +8,12 @@ import java.util.function.Consumer;
 
 /**
  * Island Charter (PHASE-10 M10.11 fixed row, PHASE-5 M5.6, owner 157/171, N2-2, P5-14, REVIEW3 F6): island sizes above the
- * normal 9x9 sold one step at a time, for shards (and gems where a gem price is set). Pure, unit-tested.
+ * normal 9x9 sold one step at a time, for shards (and credits where a credit price is set). Pure, unit-tested.
  */
 final class CharterRules {
 
     /** One size step: border width in chunks and its prices (0 = not sold for that currency). */
-    record Step(int size, long shards, long gems) {
+    record Step(int size, long shards, long credits) {
     }
 
     /** Why there is no step to buy right now (or {@link #READY}). */
@@ -34,29 +34,29 @@ final class CharterRules {
     private CharterRules() {
     }
 
-    /** Parses {@code ["11: 150 250", ...]} ({@code <size>: <shards> [gems]}); sizes must be odd and above {@code fromSize}. */
+    /** Parses {@code ["11: 150 250", ...]} ({@code <size>: <shards> [credits]}); sizes must be odd and above {@code fromSize}. */
     static List<Step> parseSteps(List<String> raw, int fromSize, Consumer<String> problems) {
         List<Step> out = new ArrayList<>();
         for (String line : raw == null ? List.<String>of() : raw) {
             try {
                 int colon = line.indexOf(':');
                 if (colon <= 0) {
-                    throw new IllegalArgumentException("needs '<size>: <shards> [gems]'");
+                    throw new IllegalArgumentException("needs '<size>: <shards> [credits]'");
                 }
                 int size = Integer.parseInt(line.substring(0, colon).trim());
                 String[] prices = line.substring(colon + 1).trim().split("\\s+");
                 long shards = Long.parseLong(prices[0]);
-                long gems = prices.length > 1 ? Long.parseLong(prices[1]) : 0;
+                long credits = prices.length > 1 ? Long.parseLong(prices[1]) : 0;
                 if (size % 2 == 0 || size <= fromSize) {
                     throw new IllegalArgumentException("the size must be odd and bigger than " + fromSize);
                 }
-                if (shards < 0 || gems < 0) {
+                if (shards < 0 || credits < 0) {
                     throw new IllegalArgumentException("prices can't be negative");
                 }
                 if (out.stream().anyMatch(s -> s.size() == size)) {
                     throw new IllegalArgumentException("size " + size + " is listed twice");
                 }
-                out.add(new Step(size, shards, gems));
+                out.add(new Step(size, shards, credits));
             } catch (RuntimeException e) {
                 problems.accept("blackmarket.yml charter.steps: '" + line + "' skipped: "
                         + (e instanceof IllegalArgumentException && !(e instanceof NumberFormatException) ? e.getMessage() : "not a number"));

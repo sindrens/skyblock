@@ -37,12 +37,12 @@ import java.util.logging.Level;
  * Votes at runtime (PHASE-10 M10.5): a vote from the receiver is stored first ({@code vote_log}, keyed by its vote id so
  * a repeated packet is stored once), then paid to the voter's <b>active profile</b> (129) when they are online, or at
  * their next join. One payment = one transaction ({@link ClaimEngine}): the row moves queued → paid, the 24-hour rule is
- * checked again inside, the streak and the party counter move, gems go through the ledger (idempotency key per vote)
+ * checked again inside, the streak and the party counter move, earned credits go through the ledger (idempotency key per vote)
  * and keys / pass XP are written as pending grants. One payment at a time per account.
  */
 final class VoteService {
 
-    /** Ledger reason of vote gems and fallback crystals (a source on the economy dashboard). */
+    /** Ledger reason of vote credits and fallback crystals (a source on the economy dashboard). */
     static final String REASON = "vote_reward";
     /** Source id for the /menu Rewards button: unpaid votes are waiting. */
     static final String READY = "vote";
@@ -302,7 +302,7 @@ final class VoteService {
         VotesSettings s = m.votesSettings;
         int tier = m.tier(p);
         Payout.Context ctx = m.context(tier, profile);
-        Payout vote = new Payout().keys(crate(s.keyCrate), s.keys, s.keyFallback, ctx).gems(s.gems);
+        Payout vote = new Payout().keys(crate(s.keyCrate), s.keys, s.keyFallback, ctx).credits(s.credits);
         if (s.passXp > 0 && m.core.services().has(PassXp.class)) {
             vote.passXp(s.passXp);
         }
@@ -347,7 +347,7 @@ final class VoteService {
             d.put("profile", profile.toString());
             d.put("tier", tier);
             d.put("rewards", RewardText.summary(vote));
-            d.put("gems", vote.total(Currency.GEMS));
+            d.put("credits", vote.total(Currency.CREDITS_EARNED));
             d.put("streak", after.days());
             streakCrate.ifPresent(cr -> d.put("streak_reward", RewardText.summary(streak)));
             d.put("waited_ms", Math.max(0, now - row.receivedAt()));
