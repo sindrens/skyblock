@@ -11,3 +11,11 @@ dependencies {
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
 }
+
+// Icon pack v2 (I7, GUI-P1-PACK D2): the one catalogue resourcepack/icons.json is bundled as icons/icons.json, so the
+// runtime (IconCatalog), the unit tests and tools/build_icons.py all read the same file.
+tasks.processResources {
+    from(rootProject.layout.projectDirectory.file("resourcepack/icons.json")) {
+        into("icons")
+    }
+}

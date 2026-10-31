@@ -88,6 +88,9 @@ public final class MenuService implements Listener {
             .character(LegacyComponentSerializer.SECTION_CHAR).hexColors().useUnusualXRepeatedCharacterHexFormat().build();
     private final MenuHeads heads;
     private final Offers offers;
+    /** The pack service lookup (set by the plugin once the service registry exists); returns null without a pack. */
+    private volatile Supplier<net.skybornmc.skyblock.common.pack.PackService> packs = () -> null;
+    private final net.skybornmc.skyblock.common.icon.Icons icons;
     private BukkitTask ticker;
 
     private record Prompt(Consumer<String> onInput, Runnable onCancel, int maxLength, BukkitTask timeout) {
@@ -104,6 +107,10 @@ public final class MenuService implements Listener {
         this.menuItemKey = new NamespacedKey(plugin, BUTTON_KEY);
         this.debounce = new Debounce(config.clickDebounceMs);
         this.heads = new MenuHeads(plugin.getLogger());
+        this.icons = new net.skybornmc.skyblock.common.icon.Icons(
+                () -> net.skybornmc.skyblock.common.icon.IconCatalog.bundled(MenuService.class.getClassLoader(),
+                        problem -> plugin.getLogger().warning("icons/icons.json: " + problem)),
+                () -> packs.get(), plugin.getLogger());
         reload();
         this.offers = new Offers(this);
     }
@@ -164,6 +171,9 @@ public final class MenuService implements Listener {
         configs.load(config);
         messages.load(MODULE);
         debounce.interval(config.clickDebounceMs);
+        if (icons != null) {
+            icons.reload();
+        }
         framePanes = null;
         heads.load("back", config.headBack);
         heads.load("previous", config.headPrevious);
@@ -179,6 +189,19 @@ public final class MenuService implements Listener {
 
     public MenuConfig config() {
         return config;
+    }
+
+    /** Menu icons (I7 pack v2): base item for everyone, our own picture for viewers with the pack loaded. */
+    public net.skybornmc.skyblock.common.icon.Icons icons() {
+        return icons;
+    }
+
+    /**
+     * Where the pack service comes from ({@code services.optional(PackService.class).orElse(null)}); called once by the
+     * plugin after the service registry exists. Without it nobody gets pack models.
+     */
+    public void packs(Supplier<net.skybornmc.skyblock.common.pack.PackService> packs) {
+        this.packs = packs == null ? () -> null : packs;
     }
 
     // ------------------------------------------------------------------ opening
@@ -374,6 +397,16 @@ public final class MenuService implements Listener {
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE);
         });
         return item;
+    }
+
+    /** The icon {@code key} for {@code viewer} (base item; plus our model when the viewer has the pack loaded). */
+    public ItemStack icon(Player viewer, String key) {
+        return icons.item(viewer, key);
+    }
+
+    /** The icon {@code key} named and described like {@link #item(Material, Component, List)} (no italics, flags hidden). */
+    public ItemStack icon(Player viewer, String key, Component name, List<Component> lore) {
+        return item(icons.item(viewer, key), name, lore);
     }
 
     /**

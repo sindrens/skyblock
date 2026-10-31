@@ -138,6 +138,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         DupeDetector dupes = new DupeDetector(this, itemsConfig, messages.of("items"));
 
         ServiceRegistry services = new ServiceRegistry(getLogger());                                  // M0.9
+        // I7 pack v2: menu icons get our model only for viewers whose PackService status is LOADED (no service = none).
+        menus.packs(() -> services.optional(net.skybornmc.skyblock.common.pack.PackService.class).orElse(null));
         // ENCHANTS §8.1: bonus families + caps for every module; the sell cap is always the economy's (+300%, #46).
         services.register("core", net.skybornmc.skyblock.common.bonus.BonusService.class,
                 new net.skybornmc.skyblock.common.bonus.DefaultBonusService(() -> services
