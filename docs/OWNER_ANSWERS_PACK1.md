@@ -1,5 +1,7 @@
 # Owner answers: pack round 2 (31 Oct 2026)
 
+> **Superseded by feature card I7 v3 (31 Oct 2026): pack v1 was removed** (pure vanilla; old pack in the git tag `pack-v1-final`). The pack decisions below are history. **The gems → credits rename task here is still valid** (C1 build).
+
 The owner's message after seeing the GUI art v1, in plain points. The art on branch `pack/gui-art-v1` already follows it (see `docs/plans/RESOURCE_PACK_GUI.md` §1).
 
 The round-2 questions were on the page "Phoenix Pack Round 2" (B1–B4 rank badges, C1–C2 credits, K1–K2 crates and keys, I1 icons). The answers are below.

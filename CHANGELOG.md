@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+### Removed
+- **Resource pack v1 removed (pure vanilla, card I7 phase 0):** no prompt, no download, no kick, no web server on TCP 25580; ranks are plain coloured `[Name]` text (colours in `chat.yml ranks.looks`, the 16 values copied exactly from the old `pack-ids.yml`; Immortal keeps its three-colour gradient and the Rank colour picker; Bedrock keeps its legacy codes); crate models and lid swing (`crates-settings.yml displays.*`, `lid.*`, `approach.pack-sound`, removed from live files on load), crate key `custom_model_data`, menu backgrounds and icon models (`PackTitles`, `MenuIcons`, `MenuModels`, the hub/travel `model` field), badge fonts and the *Reduced motion*, *Simple rank badges* and *Bigger rank text* settings, pack sounds (`sounds.yml pack-sound`), `/pack` and `skyblock.pack.*`, the `pack` module, `tools/build_pack.py` and `resourcepack/` removed. `Badges`/`BadgeService`/`BadgeGradients`/`BadgeSettings`/`BadgeOptions` moved to `common.rank`, `PrivateUse` to `common.text` (behaviour unchanged). Tag `pack-v1-final` keeps the old pack.
 ### Added
 - **Logs permissions declared:** every `skyblock.staff.logs.category.<category>` node (one per audit category, 22) is now declared in `modules/logs/.../permissions/logs.yml` (default op, as before); `skyblock.staff.logs.category.*` lists them all as children. `PermissionFilesTest` no longer exempts the prefix; `LogsPermissionsTest` fails when an audit category has no node.
 - **Economy watch (card C1-R1-10):** `rules.big-transfer.min.credits` default 10,000 → 1,000 (one bought-credit transfer of 1,000+ alerts staff). `economy-watch.yml` v5 moves an untouched 10,000 to 1,000; edited values stay. `rules.staff-transfer.min.credits` was already 1,000.

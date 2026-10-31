@@ -1,5 +1,7 @@
 # Resource pack art: menus, rank badges and crates
 
+> **Superseded by feature card I7 v3 (31 Oct 2026): pack v1 was removed.** The server runs pure vanilla (no prompt, no download, no pack module). The old pack, its art and generators are kept in the git tag `pack-v1-final`. This file is history only.
+
 **Status:** art v3, 31 Oct 2026 (v1 + the owner's rounds 2 and 3: rank badges as a font, new currency icons, simpler icons, custom crate chests and keys). It is ready for the developer: RP1 → RP3 in `RESOURCE_PACK.md`, queue item GUI-6. All owner answers so far are in §1.
 - This branch adds **art and docs only**. No plugin code changes.
 - Generated from `main` at a3966f7 (update110), with the owner's answers from 31 Oct.

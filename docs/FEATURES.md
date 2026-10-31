@@ -29,7 +29,7 @@ Owner principles you must respect:
 4. The tutorial unlocks the game.
 5. Everything reachable from menus; Bedrock players never need long commands.
 6. English only.
-7. Red phoenix look; a forced resource pack skins GUIs later.
+7. Red phoenix look; pure vanilla now (pack v1 removed 31 Oct 2026, I7 phase 0); a forced pack v2 (asked after joining) repaints item icons later.
 8. Mojang's commercial usage guidelines: nothing sold may give a competitive gameplay advantage.
 9. Performance first: 300 players on one server; no per-tick scans.
 
@@ -193,7 +193,7 @@ If nothing useful is left, answer exactly: No more useful ideas.
 | I4 | PvE, bosses, pets | Custom mobs, world bosses, pets | 📝 (Phase 8) | — |
 | I5 | Seasons | 3-month resets, prizes, what carries over | 💡 | — |
 | I6 | Store and Discord | Tebex, credits (was gems), Discord linking | 💡 | — |
-| I7 | Resource pack | Forced pack, GUIs, icons, sounds | 📝 | — |
+| I7 | Resource pack | Pack v1 removed (phase 0, pure vanilla, tag `pack-v1-final`); v2 vanilla+: forced after joining, item icons only, planned (phase 1) | 📝 | — |
 | I8 | Launch prep | Balance pass, load test, checklist | 💡 | — |
 
 **Total:** 102 features. Order the cards are written in: D2 Spawners (example below) → C1 Currencies → F1 Progression track → F2 Ranks and perks → E1 Depths v2 → the rest, by area.

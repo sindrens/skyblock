@@ -104,5 +104,5 @@ Module column is what refresh.py shows in INDEX.md. Paths: `modules/<m>/`, `comm
 | I4 | PvE, bosses and pets | common/pet (verify) |
 | I5 | Seasons | not built (docs/planning/PHASE-12-SEASONS.md) |
 | I6 | Store and Discord | perks, common/discord (docs/planning/PHASE-11-STORE-DISCORD.md) |
-| I7 | Resource pack | pack (+ common/pack; docs/plans/RESOURCE_PACK*.md) |
+| I7 | Resource pack | none: the `pack` module and `common/pack` are gone (I7 phase 0, tag `pack-v1-final`) until phase 1; rank looks in `common/rank` + chat `ranks.looks` |
 | I8 | Launch prep | not built (docs/planning/PHASE-13-LAUNCH.md) |

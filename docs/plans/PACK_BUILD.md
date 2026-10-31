@@ -1,5 +1,7 @@
 # Pack build v1: plan (RP1–RP6, RP8, GUI-6)
 
+> **Superseded by feature card I7 v3 (31 Oct 2026): pack v1 was removed.** The server runs pure vanilla (no prompt, no download, no pack module). The old pack, its art and generators are kept in the git tag `pack-v1-final`. This file is history only.
+
 Source prompt: `docs/plans/PACK_BUILD_PROMPT.md`. Art: `docs/plans/RESOURCE_PACK_GUI.md`. Planned with Sonnet 5.5 subagents (code map), checked and decided 31 Oct 2026.
 
 ## Owner decisions for this build

@@ -1,5 +1,7 @@
 # Menu GUI (`/menu`)
 
+> **Note (31 Oct 2026):** resource pack v1 was removed (pure vanilla, I7 phase 0). Anything here about pack backgrounds, pack icons or custom fonts is superseded; see feature cards I7 (resource pack v2, vanilla+) and I9 (GUI redesign).
+
 **Status:** needs owner input
 
 You said: "change menu gui". This file shows the menu today, its problems, and three options.

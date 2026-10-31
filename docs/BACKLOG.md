@@ -32,7 +32,7 @@ One place that points to every list of unbuilt work, ideas and questions. Nothin
 - **Credits (card C1), planned:** `/credit pay <player> <amount>` (bought credits only, confirm on every pay, receipt, no cooldown, no send gate; `/pay` already points to it as "coming soon") must be planned and built → QUEUE `CREDIT-PAY`. Then `/credit history|shop|trail|hold`, `/storegrant`, `/eco chargeback|revert`, entitlements and island perks → QUEUE `CREDIT-REST`. Wave 1a (rename, ledgers, `/credit bal`, credits in `/trade`) is built on `q/wave1b`.
 - **Phase 11 Store, ranks, Discord:** credits (were gems), 5 ranks and perks (owner: some ranks get island fly; plan ranks with the owner), Discord. → RANKS, PLAN11.
 - **Phase 12 Seasons** and **Phase 13 Balance and launch prep.** → PLAN12, PLAN13.
-- **Resource pack:** forced pack with a prompt before joining; the owner draws the art from the art brief. → RP1 waits for art.
+- **Resource pack:** pack v1 was removed (I7 phase 0, 31 Oct 2026, pure vanilla). Pack v2 (I7 phase 1): forced, asked after joining, item icons only; gets its own build spec when the owner has drawn the first 9 icons.
 - **Starter chest:** custom contents for this server (proposal to the owner). → STARTER.
 - **Island storage** (needed for STORE2).
 - **/settings:** tips stays "Coming soon" until that feature exists ("players in The Depths" became the Show players choice in VIS ✅).

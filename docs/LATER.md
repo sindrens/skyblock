@@ -3,7 +3,7 @@
 Things decided but deliberately postponed. Check this list when planning each phase.
 - Discord integration: account linking, punishment webhook, appeals step 2, store/event announcements, Discord local time display.
 - Hub/lobby for the SkybornMC network (other gamemodes).
-- Resource pack: custom border textures, custom items/models, crate and donor visuals, font glyphs (phoenix logo), custom sounds.
+- Resource pack: pack v1 was removed (I7 phase 0, 31 Oct 2026). Later (I7 phase 1): repainted item icons, maybe one chest background; no custom fonts.
 - Ranks and store (Tebex/Buycraft): rank perks (AH slots, vaults, cosmetics, progress boost), "gg" after purchases, streak-save for 100 credits.
 - Website stats / web map.
 - Discord bot appeals for banned players (Phase P 13.10 step 2).

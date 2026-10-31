@@ -40,7 +40,7 @@ The V2 update made every color brighter so it reads on the light chest backgroun
 | `brand_bright` | `#FF5A4D` | red `§c` | Gradient highlight only |
 | `ember` | `#FF8C1A` | gold `§6` | Secondary accent: separators `»`, small labels |
 | `flame` | `#FFD21A` | yellow `§e` | Highlights, filled progress/level dots, "new"/"ready" badges |
-| `charcoal` | `#2B2B2B` | black `§0` | Dark backgrounds (resource-pack panels) |
+| `charcoal` | `#2B2B2B` | black `§0` | Dark backgrounds |
 | `parchment` | `#E8DCC0` | white `§f` | Highlighted body text |
 | `text` | `#E0E0E0` | gray `§7` | Normal body text, lore labels |
 | `muted` | `#A0A0A0` | dark_gray `§8` | Hints, subtitles, "each", asides |
@@ -466,5 +466,5 @@ All sounds are configurable and can be muted in `/settings`.
 | SkybornMC logo | **Owner's logo (2026-10-29):** `branding/skybornmc-logo-source.png` (transparent, cropped) + 128/512/1024 PNG. A chunky 3D **icy marble S** (frost white → ice blue, deep navy extrusion) on a scalloped steel-blue plate with silver spikes, white sparkles, sitting on a puffy white cloud. Colors: frost `#E4EBF0`, ice `#9FC6E8`, blue `#6CA1D6`, steel `#49649E`, navy `#192F66`, cloud `#FBFCFF`. Old red concept in `branding/old/` |
 | Server icon | `server/server-icon.png`, **64×64 PNG**: the SkybornMC S logo (deployed with the server configs) |
 | MOTD | Animated hex gradients from the `motd` module (`motd.yml`): 4 designs (coming soon, the phoenix rises, season live, double XP), rotation, auto-centering, hover info. Once the network has a proxy, the same module/config moves there |
-| Resource pack glyph | The phoenix as a font glyph (for chat prefix, scoreboard title, tab). Needs a Geyser mapping so Bedrock shows it too; until then, fall back to `✦` |
+| Phoenix symbol | `✦` in chat prefix, scoreboard title and tab (no font glyph: resource pack v1 was removed, I7 phase 0; no custom fonts) |
 | Particles | Brand particles: `flame`, `small_flame`, `lava` drips, `dust` in brand red. Used at spawn, crates, level-ups |

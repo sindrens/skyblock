@@ -1,5 +1,7 @@
 # Phoenix GUI design: one system for every menu
 
+> **Note (31 Oct 2026):** resource pack v1 was removed (pure vanilla, I7 phase 0). Anything here about pack backgrounds, pack icons or custom fonts is superseded; see feature cards I7 (resource pack v2, vanilla+) and I9 (GUI redesign).
+
 **Status:** draft v1 for the owner (31 Oct 2026). **Nothing here is built yet.** The owner reviews it first; then the developer implements it in the order of §9.
 
 **Inputs:**

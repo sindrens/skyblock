@@ -19,7 +19,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | GUI-3 ✅ | Shop v2 (docs/design/SHOP_DESIGN.md): 9 tabs, buy page (1/16/64/fill/type), catalog migration ~253 items, undo + big-buy rule (F14, toggle) | GUI-1 | shop | ⬜ |
 | GUI-4 ✅ | Per-menu fixes from docs/design/MENU_FIXES.md, module by module (staff/moderation last) | GUI-1 | many | ⬜ |
 | GUI-5 ✅ | Bedrock popups instead of clickable chat (TPA, island invites, store/vote/Discord links, [Tutorial]) | GUI-1 | essentials, islands, social, tutorial | ⬜ |
-| GUI-6 | Pack art on the final slots (RP1–RP3) | GUI-4, art | resource pack | ⬜ |
+| GUI-6 | Pack art on the final slots (RP1–RP3). **Superseded** by I7 v3 / I9 (pack v1 removed 31 Oct 2026, pure vanilla) | GUI-4, art | resource pack | ⛔ superseded |
 
 ## REVIEW3 + owner feedback 30 Oct (top priority; answers in docs/OWNER_ANSWERS_REVIEW3.md, details in docs/review/REVIEW3_DEVELOPER_BRIEF.md)
 | # | Item | Depends on | Lane | Status |
@@ -58,8 +58,8 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M7-5 ⏸ | Phase 7 M7.5 chunk collectors + auto-sell chests (tier 1-5, behind production switches) | M7-3 | production | ⏸ paused by owner 31 Oct (WIP on branch q/M7-5, not merged; resume with the same task) |
 | M8-2 ✅ | Phase 8 M8.2 mini-bosses for real (abilities from M8.1) | M8-1 | depths | ✅ |
 | PERF12 | Seen after update119 with a player online: depths-satchel 9.3 ms, sell-set-xp 9.8 ms, chat:tab worst 19.3 ms (3 slow runs/min), wardrobe-reconcile 5.5 ms | — | depths, economy/wardrobe, chat | ⬜ |
-| PACK1 ✅ | Resource pack v1 (owner's pack session): q/pack-build → pack-module → pack-menus → pack-badges → pack-crates merged; plugin hosts the pack on TCP 25580, variant safe; plan docs/plans/PACK_BUILD.md; test docs/PACK_TEST_CHECKLIST.md | — | pack, menus, chat, crates | ✅ |
-| PACK2 | Bedrock icon and sound mappings for Geyser (next pack item) | PACK1 | pack | ⬜ |
+| PACK1 ✅ | **Superseded: removed again in I7 phase 0 (31 Oct 2026, tag `pack-v1-final`).** Resource pack v1 (owner's pack session): q/pack-build → pack-module → pack-menus → pack-badges → pack-crates merged; plugin hosts the pack on TCP 25580, variant safe; plan docs/plans/PACK_BUILD.md; test docs/PACK_TEST_CHECKLIST.md | — | pack, menus, chat, crates | ✅ |
+| PACK2 | Bedrock icon and sound mappings for Geyser (next pack item). **Superseded** by I7 v3 (pack v1 removed; Bedrock plays without a pack) | PACK1 | pack | ⛔ superseded |
 | ECON-R3 ✅ | R3-5b crystals hard non-transferable + shard notes; R3-6 /eco up to $1T applies + flagged, above waits for owner/admin Allow in the alert; R3-39 /eco not on self or same IP; R3-16/40 notes soft limit 20/min + purge cashed notes after 90 d; R3-41 bank: fee only (free-minutes 0, no interest forfeit); R3-25 AFK-pool minutes don't count for the interest activity rule; R3-38 trade value hints; R3-28 auto 24 h trade block on detected unique-item dupes; F1 money send needs $10k self-earned except to own island members | REV3-FIX | economy, trade, moderation, bank | ⬜ |
 | ISL-R3 ✅ | VIS follow-up: VisitManager canSee → Visibility.knows (/is visit by name, visitor notice, tab lists); R3-30 two-step disband (use GUI-1 confirm standard) with real amounts; R3-33 top rated needs 5 IPs + Bayesian average; R3-26 40 mob stacks per chunk total; F10 freed member slot locked 48 h before a new invite (clear message); R3-17 groundwork for shared homes (Homestead in M5.5) | M5-4, GUI-1 | islands, stacking | ⬜ |
 | STAFF-R3 ✅ | R3-9a /report attaches last 10 DMs (180 d); R3-31 report reasons Scamming/Threats/Griefing; R3-32 /msg through link/IP/phone filter + DMs to players before tutorial end only from staff or people they messaged; F15 creative in /s for owner/admin on islands with auto-bypass, block log, staff-tagged items | REV3-FIX | staff, moderation, social, essentials, islands protection | ⬜ |
@@ -99,7 +99,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | PLAN-ENCH | Plan doc: full custom enchant list (levels, effects, how each is obtained: mob kills, mining, chopping, dungeons, crates, /enchanter, crystals), synergy with tools/sets/stacking kills | — | docs/plans/ENCHANTS.md | ✅ docs/plans/ENCHANTS.md |
 | PLAN-SETS | Plan doc: `/wardrobe` (was /sets) + `/loadout` presets swapping armor + pet in one action; (gem/crate/currency sets priced by strength, set levels 0→50 with multipliers, merging two sets resets level) | — | docs/plans/SETS.md | ✅ docs/plans/WARDROBE.md |
 | STORE2 | Island storage: mastery delivery tasks take items from storage; daily take-out limit per role; staff-only recall of items taken by kicked members | islands storage built | modules/islands | ⬜ |
-| PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser) | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ✅ docs/plans/RESOURCE_PACK.md |
+| PLAN-RP | Plan doc: resource pack (items, borders, crates, menus, font icons, sounds; Java + Geyser). **Superseded** by I7 v3 (31 Oct 2026) | PLAN-ENCH | docs/plans/RESOURCE_PACK.md | ✅ docs/plans/RESOURCE_PACK.md (superseded) |
 | FREERANK | `/freerank`: lowest rank, cosmetic color, small perks, pick 1 of 3 tags, forever (after 30 min playtime) | — | modules/perks or cosmetics | ✅ (in R2A) |
 | BUILDS | Owner 2026-10-30: paste all finished builds (server/builds: spawn base + forge quarter + market square, Depths gate + mine T1/T2 + forest T1 + graveyard T1, starter island) on the test server with FAWE (backup first) and wire their metadata (spawn point, portals, holograms, NPC spots, zones, regions); starter island = /is schematic | — | modules/worlds (+ islands/depths/essentials hooks) | ✅ pasted + applied on the test server (backup ~/backups/pre-builds-*.tgz) |
 | SELL2 | `/sell` becomes a chest you put items into + Sell button (items saved while inside, crash-safe), Sell inventory button; quick-buy `/shop` grid with Bedrock amount screen; Sell button in `/shop` | DESIGN approved | modules/economy (sell), modules/shop | ✅ |
@@ -140,7 +140,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | STARTER | Custom starter chest designed for this server (proposal to owner) | owner answer 158 | islands | ⬜ |
 | ISLAND-LEVEL | Plan: dynamic island level from many sources, not only block value | owner answer 168 | plan | ⬜ |
 | RANKS | Plan ranks, titles, achievements (PLANRANKS: 7 themed donor ranks, free-rank rename, season ranks, perks, titles/tags catalog, personal + island achievements) | owner answers 243, 355, 375, 386-390, 398 | docs/plans | ✅ plan written, 46 questions on the page |
-| RP1 | Forced resource pack (prompt before joining) once the owner's art arrives (docs/plans/RESOURCE_PACK_ART_BRIEF.md) | owner answers 33, 77 | pack | ⬜ waits for art |
+| RP1 | Forced resource pack (prompt before joining) once the owner's art arrives (docs/plans/RESOURCE_PACK_ART_BRIEF.md). **Superseded** by I7 v3: v1 shipped and was removed (I7 phase 0); phase 1 (forced after joining, item icons) gets its own build spec | owner answers 33, 77 | pack | ⛔ superseded |
 | DESIGN | Owner 2026-10-30: sketches for GUIs, chat, /shop (quick-buy grid), lores, prices, /sell chest GUI (put items in + click sell; sell also in satchel and shop), /forge etc.; vanilla now + resource-pack version later; owner reviews before implementation | — | docs/design + artifact | 🔄 main session |
 | AFK | AFK pool (fuel + money + keys, better loot over time, max 8 h/day) | economy, islands fuel | new module | ✅ |
 

@@ -1,5 +1,7 @@
 # Prompt for the main session: finish the Phoenix resource pack
 
+> **Superseded by feature card I7 v3 (31 Oct 2026): pack v1 was removed.** The server runs pure vanilla (no prompt, no download, no pack module). The old pack, its art and generators are kept in the git tag `pack-v1-final`. This file is history only.
+
 The art is done and documented. This prompt covers building the real pack and wiring it into the plugin.
 
 ## Read first

@@ -1,5 +1,7 @@
 # Resource Pack Plan (PLAN-RP)
 
+> **Superseded by feature card I7 v3 (31 Oct 2026): pack v1 was removed.** The server runs pure vanilla (no prompt, no download, no pack module). The old pack, its art and generators are kept in the git tag `pack-v1-final`. This file is history only.
+
 > **Status:** plan, 2026-10-30 (updated the same day with the owner's pack decisions). Comes **after** the vanilla UI (STYLE2, SELL2 and the crates module first).
 > **Owner decisions 2026-10-30:** the Java pack is **forced** (players accept it before they join, behind a professional prompt; RP-D1 decided); custom textures on crates, GUIs, sets/wardrobe and tools; size is not critical but keep it optimised; the owner draws the art himself (RP-D7 decided); the style is not fixed yet. The full art list he works through is `docs/plans/RESOURCE_PACK_ART_BRIEF.md`.
 > **Every choice here is a default** the owner can change. Defaults that matter have an id (`RP-D1` …) so the owner can answer "RP-D4: no" (register in §17).
