@@ -16,6 +16,8 @@
 # show:       false hides the button everywhere (also on the test server). Use this instead of deleting a button:
 #             deleted buttons come back from the defaults on the next start.
 # permission: optional; players without it see the button locked.
+# model:      optional pack icon id (e.g. menu/icon/home) that pack viewers see instead of the item; without it the button's id
+#             decides (hub, you and travel entries have built-in icons). Entries with no icon keep the item for everyone.
 # One button per action: a second button that does the same thing is skipped (with a warning).
 hub:
   you:       {slot: 4,  action: you,      icon: player_head}

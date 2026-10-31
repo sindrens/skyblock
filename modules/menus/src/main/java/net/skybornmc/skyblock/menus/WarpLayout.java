@@ -36,7 +36,7 @@ public record WarpLayout(List<Warp> warps) {
     /**
      * @param reason teleport reason id (warmup and cooldown of {@code teleport.yml}): {@code spawn} or {@code dungeon}
      */
-    public record Warp(String id, int slot, String icon, Target target, String reason, String permission) {
+    public record Warp(String id, int slot, String icon, Target target, String reason, String permission, String model) {
     }
 
     public static final String DEFAULT_REASON = "spawn";
@@ -92,7 +92,8 @@ public record WarpLayout(List<Warp> warps) {
                 problem.accept(where + ".reason: '" + reason + "' is not spawn or dungeon (using spawn)");
                 reason = DEFAULT_REASON;
             }
-            out.add(new Warp(id, slot, icon, target, reason, e.getString("permission")));
+            out.add(new Warp(id, slot, icon, target, reason, e.getString("permission"),
+                    MenuModels.resolve(sectionName, id, e.getString("model"))));
         }
         return new WarpLayout(List.copyOf(out));
     }

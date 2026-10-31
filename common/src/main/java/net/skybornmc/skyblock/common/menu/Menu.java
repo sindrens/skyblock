@@ -138,7 +138,7 @@ public abstract class Menu implements InventoryHolder {
             inventory.setItem(slot, null);
             return;
         }
-        ItemStack item = service.mark(button.item());
+        ItemStack item = service.mark(service.render(viewer, button.item()));
         buttons.put(slot, button.withItem(item));
         inventory.setItem(slot, item);
     }

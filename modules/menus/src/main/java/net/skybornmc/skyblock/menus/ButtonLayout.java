@@ -52,9 +52,10 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
      *                   without it registered, the feature counts as not built
      * @param show       false hides the button everywhere (also on the test server)
      * @param permission optional: players without it see the button locked
+     * @param model      pack icon id ({@code menu/icon/home}) pack viewers see instead of {@code icon}; null = none
      */
     public record Button(String id, int slot, String group, String icon, String action, String command, String service,
-                         boolean show, String permission) {
+                         boolean show, String permission, String model) {
 
         /** First word of the command (the label that must exist), or empty. */
         public String label() {
@@ -182,7 +183,7 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
                 }
             }
             Button button = new Button(id, slot, group, icon, action, command, e.getString("service"), e.getBoolean("show", true),
-                    e.getString("permission"));
+                    e.getString("permission"), MenuModels.resolve(sectionName, id, e.getString("model")));
             String other = actions.putIfAbsent(button.actionKey(), id);
             if (other != null) {
                 problem.accept(where + ": does the same as '" + other + "' (skipped; one button per action)");

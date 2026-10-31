@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.shop;
 
+import net.skybornmc.skyblock.common.menu.MenuIcons;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
@@ -125,9 +126,14 @@ final class BuyMenu extends Menu {
             set(SLOT_TYPE, buyButton("typed", typed, balance, fits, now, "buy.typed"));
         } else {
             typed = 0;
-            set(SLOT_TYPE, service.item(Material.NAME_TAG, viewer, ShopModule.ID, "buy.type",
-                    Msg.number("max", module.settings.maxAmount)), click -> askAmount(click.player()));
+            set(SLOT_TYPE, MenuIcons.tag(service.item(Material.NAME_TAG, viewer, ShopModule.ID, "buy.type",
+                    Msg.number("max", module.settings.maxAmount)), MenuIcons.TYPE_AMOUNT), click -> askAmount(click.player()));
         }
+    }
+
+    /** The plate art exists for Buy 1, 16 and 64; other amounts (8 on 16-stackers) keep the vanilla item. */
+    static String quickIcon(long amount) {
+        return amount == 1 ? MenuIcons.BUY_1 : amount == 16 ? MenuIcons.BUY_16 : amount == 64 ? MenuIcons.BUY_64 : null;
     }
 
     private List<Component> itemLore(long balance, long fits, int maxStack) {
@@ -163,6 +169,9 @@ final class BuyMenu extends Menu {
         }
         ItemStack stack = service.item(new ItemStack(material), service.text(viewer, ShopModule.ID, textKey + ".name",
                 Msg.number("amount", amount), module.money("total", total)), lore);
+        if (material == Material.LIME_CONCRETE) { // the green plates only; grey (can't buy) and orange (armed) stay as they are
+            MenuIcons.tag(stack, "fill".equals(key) ? MenuIcons.FILL : quickIcon(amount));
+        }
         stack.setAmount((int) Math.max(1, Math.min(64, amount)));
         if (armed) {
             stack.editMeta(meta -> meta.setEnchantmentGlintOverride(true));

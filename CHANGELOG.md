@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Added
+- Pack menus (GUI-6 / RP3): pack viewers get the menu background glyph and parchment title, PAPER icon models (custom_model_data) on buttons, hub/You/Travel/island features, shop tabs and currencies, and blank frame panes; no-pack and Bedrock menus are unchanged. `MenuIcons`, `PackTitles`, `PackMenusTest`.
 - Repository, design and process docs, CI.
 - Gradle multi-module skeleton (common, plugin, modules) for Paper 1.21.11 / Java 21.
 - Module system with dependency ordering and failure isolation.

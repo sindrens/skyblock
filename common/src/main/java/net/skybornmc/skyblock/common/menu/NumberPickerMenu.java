@@ -105,16 +105,18 @@ public final class NumberPickerMenu extends Menu {
         }
         for (int i = 0; i < Math.min(3, steps.length); i++) {
             long step = steps[i];
-            set(MINUS_SLOTS[i], stepItem(Material.RED_DYE, "number.minus", step), click -> change(-step));
-            set(PLUS_SLOTS[i], stepItem(Material.LIME_DYE, "number.plus", step), click -> change(step));
+            set(MINUS_SLOTS[i], stepItem(Material.RED_DYE, "number.minus", step, MenuIcons.minus(i)), click -> change(-step));
+            set(PLUS_SLOTS[i], stepItem(Material.LIME_DYE, "number.plus", step, MenuIcons.plus(i)), click -> change(step));
         }
         set(22, service.item(Material.SUNFLOWER, viewer, "number.value", Msg.p("value", Format.number(value)),
                 Msg.p("compact", Format.compact(value)), Msg.p("min", Format.number(min)), Msg.p("max", Format.number(max))));
-        set(30, service.item(Material.BUCKET, viewer, "number.set-min", Msg.p("min", Format.number(min))), click -> setTo(min));
-        set(31, service.item(Material.NAME_TAG, viewer, "number.custom"), click -> askCustom(click.player()));
-        set(32, service.item(Material.WATER_BUCKET, viewer, "number.set-max", Msg.p("max", Format.number(max))), click -> setTo(max));
+        set(30, MenuIcons.tag(service.item(Material.BUCKET, viewer, "number.set-min", Msg.p("min", Format.number(min))), MenuIcons.SET_MIN), click -> setTo(min));
+        set(31, MenuIcons.tag(service.item(Material.NAME_TAG, viewer, "number.custom"), MenuIcons.TYPE_AMOUNT), click -> askCustom(click.player()));
+        set(32, MenuIcons.tag(service.item(Material.WATER_BUCKET, viewer, "number.set-max", Msg.p("max", Format.number(max))), MenuIcons.SET_MAX), click -> setTo(max));
         ItemStack confirm = service.item(Material.LIME_CONCRETE, viewer, "number.confirm", Msg.p("value", Format.number(value)));
-        ItemStack confirmSide = service.item(Material.LIME_STAINED_GLASS_PANE, viewer, "number.confirm", Msg.p("value", Format.number(value)));
+        MenuIcons.tag(confirm, MenuIcons.CONFIRM);
+        ItemStack confirmSide = MenuIcons.tag(service.item(Material.LIME_STAINED_GLASS_PANE, viewer, "number.confirm", Msg.p("value", Format.number(value))),
+                MenuIcons.CONFIRM_SIDE);
         for (int slot = 39; slot <= 41; slot++) {
             set(slot, slot == 40 ? confirm : confirmSide, click -> {
                 click.player().closeInventory();
@@ -133,10 +135,10 @@ public final class NumberPickerMenu extends Menu {
         refresh();
     }
 
-    private ItemStack stepItem(Material material, String key, long step) {
+    private ItemStack stepItem(Material material, String key, long step, String icon) {
         ItemStack item = service.item(material, viewer, key, Msg.p("step", Format.number(step)));
         item.setAmount((int) Math.max(1, Math.min(64, step)));
-        return item;
+        return MenuIcons.tag(item, icon);
     }
 
     private void change(long delta) {

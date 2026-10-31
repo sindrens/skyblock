@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.rewards;
 
+import net.skybornmc.skyblock.common.menu.MenuIcons;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.text.Msg;
@@ -222,8 +223,8 @@ final class DailyMenu extends Menu {
             hourly.addAll(service.lines(viewer, RewardsModule.ID, net.skybornmc.skyblock.common.pass.PassXp.of(m.core.services()).isPresent()
                     ? "menu.playtime.hourly.pass" : "menu.playtime.hourly.pass-soon", Msg.number("xp", m.settings.hourlyPassXp)));
         }
-        set(SLOT_HOURLY, service.item(Material.PRISMARINE_CRYSTALS, service.text(viewer, RewardsModule.ID, "menu.playtime.hourly.name"),
-                hourly));
+        set(SLOT_HOURLY, MenuIcons.tag(service.item(Material.PRISMARINE_CRYSTALS, service.text(viewer, RewardsModule.ID, "menu.playtime.hourly.name"),
+                hourly), MenuIcons.currency("crystals")));
 
         if (m.settings.keyEveryHours > 0) {
             String crate = RewardText.crateName(m, m.settings.keyCrate.trim().toLowerCase(java.util.Locale.ROOT));

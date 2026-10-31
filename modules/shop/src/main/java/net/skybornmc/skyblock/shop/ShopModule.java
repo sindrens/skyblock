@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.shop;
 
+import net.skybornmc.skyblock.common.menu.MenuIcons;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
@@ -1021,12 +1022,22 @@ public final class ShopModule implements SkyblockModule, Listener {
         lore.addAll(core.menus().lines(viewer, "tab." + (selected ? "selected" : "action")));
         ItemStack item = core.menus().item(new ItemStack(icon == null ? Material.CHEST : icon),
                 msg.component(viewer, "tab-name", Msg.c("name", tabName(viewer, c))), lore);
+        MenuIcons.tag(item, tabIcon(c.id()));
         if (selected) {
             item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
             return MenuButton.display(item);
         }
         return MenuButton.of(item, onClick);
     }
+
+    /** Pack icon of a shop tab ({@code stone-earth} is the Stone & Earth tab); null for a tab without art. */
+    static String tabIcon(String categoryId) {
+        String id = "stone-earth".equals(categoryId) ? "stone" : categoryId;
+        return TAB_ICONS.contains(id) ? MenuIcons.tab(id) : null;
+    }
+
+    private static final java.util.Set<String> TAB_ICONS = java.util.Set.of("essentials", "farming", "wood", "stone", "special",
+            "colors", "decoration", "redstone", "spawners");
 
     Component tabName(Player viewer, ShopCatalog.Category c) {
         String key = "categories." + c.id() + ".name";
@@ -1054,8 +1065,8 @@ public final class ShopModule implements SkyblockModule, Listener {
 
     /** The shop's own bottom-bar buttons: 46 balance, 47 Undo last buy (when on), 51 Sell. */
     void decorateBar(Menu menu, Player viewer, java.util.function.BiConsumer<Integer, MenuButton> set) {
-        set.accept(ShopMenu.SLOT_BALANCE, MenuButton.display(core.menus().item(Material.EMERALD, viewer, ID, "menu.balance",
-                money("balance", balance(viewer)))));
+        set.accept(ShopMenu.SLOT_BALANCE, MenuButton.display(MenuIcons.tag(core.menus().item(Material.EMERALD, viewer, ID, "menu.balance",
+                money("balance", balance(viewer))), MenuIcons.currency("money"))));
         undoButton(viewer).ifPresent(b -> set.accept(ShopMenu.SLOT_UNDO, b));
         sellButton(viewer).ifPresent(button -> set.accept(ShopMenu.SLOT_SELL,
                 MenuButton.of(button, click -> openSell(click.player(), menu))));
@@ -1080,6 +1091,7 @@ public final class ShopModule implements SkyblockModule, Listener {
                 Msg.number("amount", o.quantity()), Msg.c("item", displayName(o.itemId())), money("price", o.total()),
                 Msg.number("seconds", seconds));
         plate.setAmount(Math.max(1, Math.min(64, seconds)));
+        MenuIcons.tag(plate, MenuIcons.UNDO);
         return Optional.of(MenuButton.of(plate, click -> undoLast(click.player(), () -> {
             Menu open = core.menus().openMenu(click.player());
             if (open == click.menu()) {

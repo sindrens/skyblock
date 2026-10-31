@@ -120,12 +120,12 @@ public final class PickListMenu<T> extends Menu {
         }
         if (rows() == 6) {
             if (pages.hasPrevious(page)) {
-                set(SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",
-                        Msg.p("page", page), Msg.p("pages", pages.pages())), click -> turn(-1));
+                set(SLOT_PREVIOUS, MenuIcons.tag(service.navItem("previous", Material.ARROW, viewer, "frame.previous",
+                        Msg.p("page", page), Msg.p("pages", pages.pages())), MenuIcons.PREVIOUS), click -> turn(-1));
             }
             if (pages.hasNext(page)) {
-                set(SLOT_NEXT, service.navItem("next", Material.ARROW, viewer, "frame.next",
-                        Msg.p("page", page + 2), Msg.p("pages", pages.pages())), click -> turn(1));
+                set(SLOT_NEXT, MenuIcons.tag(service.navItem("next", Material.ARROW, viewer, "frame.next",
+                        Msg.p("page", page + 2), Msg.p("pages", pages.pages())), MenuIcons.NEXT), click -> turn(1));
             }
         }
     }
