@@ -343,6 +343,33 @@ mobs:
   citadel_evoker: "<c:muted>Citadel Evoker"
   warlord: "<c:value>Warlord"
 
+# Depths v2 tier palette spike (DV2-SPIKE, depths.yml palette.*). <name> = the tier's resource ("Iron"), <tier> = wing tier.
+palette:
+  # The unlock moment: a level-up opens the next tier while you stand in the pilot zone (blocks swap with a wave).
+  unlocked-mine:
+    title: "<c:value><name> unlocked!"
+    subtitle: "<c:text>The ore around you changed"
+    fade-in: 5
+    stay: 50
+    fade-out: 15
+  unlocked-forest:
+    title: "<c:value><name> unlocked!"
+    subtitle: "<c:text>The trees around you changed"
+    fade-in: 5
+    stay: 50
+    fade-out: 15
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The tier palette is off. Set <c:value>palette.enabled: true</c:value> in depths.yml and reload depths."
+  set: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>now sees <c:value><name></c:value> <c:muted>(Tier <tier>, <mode>)"
+  mode-auto: "<c:muted>auto by level"
+  mode-picked: "<c:muted>picked, max = highest open"
+  info:
+    header: "<prefix><c:text>Tier palette <c:muted>(spike)"
+    zone: " <c:ember><sym:bullet></c:ember> <c:text>Zone <c:value><zone></c:value> <c:muted><sym:dot> <regions> field(s) <sym:dot> slots are <block>"
+    tiers: " <c:ember><sym:bullet></c:ember> <c:text>Tiers <c:muted>(level)</c:muted><c:text>: <c:value><tiers>"
+    player: " <c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:text>sees <c:value><name></c:value> <c:muted>(Tier <tier> of <max>, <mode><c:muted>, level <level>)"
+    swaps: " <c:ember><sym:bullet></c:ember> <c:text>Swaps <c:value><swaps></c:value> <c:muted><sym:dot> last <blocks> blocks in <ms> ms <sym:dot> worst <max> ms <sym:dot> last throttled one took <ticks> more ticks (<total> ms)"
+    index: " <c:ember><sym:bullet></c:ember> <c:text>Slot index <c:value><chunks></c:value> <c:text>chunks <c:muted>(<scans> scans) <sym:dot> <running> swaps running"
+
 # Placeholders (scoreboard, tab): <ph:depths_zone>, <ph:depths_tier>, <ph:satchel_used>, <ph:satchel_max> (<value> <percent>)
 placeholders:
   none: "<c:muted>-"
