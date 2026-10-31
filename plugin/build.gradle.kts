@@ -44,7 +44,6 @@ dependencies {
     implementation(project(":modules:pass"))
     implementation(project(":modules:blackmarket"))
     implementation(project(":modules:production"))
-    implementation(project(":modules:pack"))
 }
 
 tasks {
