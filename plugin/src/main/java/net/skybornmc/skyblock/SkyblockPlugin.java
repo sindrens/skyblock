@@ -509,8 +509,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
             core.configs().load(auditConfig);
             core.configs().load(teleportConfig);
             core.configs().load(visibilityConfig);
-            visibility.schedule();
-            visibility.refreshAll();
+            visibility.reload();
             loadStyle(core.style(), core.sounds());
             core.messages().load("core");
             core.messages().load("items");

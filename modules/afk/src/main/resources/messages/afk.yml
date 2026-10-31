@@ -12,6 +12,13 @@ capped: "<prefix><c:warning><sym:time></c:warning> <c:text>You reached today's A
 # Once when another account on the same connection is already earning.
 ip-blocked: "<prefix><c:warning><sym:cross></c:warning> <c:text>Another account on your connection is already earning in the AFK pool. Only one account per connection can earn at a time."
 
+# Not earning in the pool (owner R3-35: no idle kick). "soon" once when earning stops (<seconds> = idle.send-home-seconds),
+# "sent" when the player is sent to their island, "sent-spawn" when they have no island.
+home:
+  soon: "<prefix><c:warning><sym:time></c:warning> <c:text>You're not earning here right now. Back to your island in <c:value><seconds>s</c:value><c:text>."
+  sent: "<prefix><c:text>You weren't earning in the AFK pool, so you're back on your island."
+  sent-spawn: "<prefix><c:text>You weren't earning in the AFK pool, so you're back at spawn."
+
 # Rewards. <money>, <fuel> minutes of island fuel, <percent> reward size of the session
 reward:
   with-fuel: "<prefix><c:success><sym:check></c:success> <c:text>AFK reward: <c:money>+<money></c:money> <c:text>and <c:value><fuel> min</c:value> <c:text>of island fuel <c:muted>(<percent>%)"

@@ -91,8 +91,15 @@ public final class CoreVisibilityService implements VisibilityService, Listener 
         refreshAll();
     }
 
-    /** (Re)starts the position check (after a reload of visibility.yml). */
-    public void schedule() {
+    /** After {@code /skyblock reload core}: the setting's default, the position check and everything applied again. */
+    public void reload() {
+        registerSetting();
+        schedule();
+        refreshAll();
+    }
+
+    /** (Re)starts the position check. */
+    private void schedule() {
         zoneTask.cancel();
         long every = Math.max(5, config.get().regionCheckTicks);
         zoneTask = scheduler.repeat("visibility-zones", every, every, this::checkZones);
@@ -106,9 +113,10 @@ public final class CoreVisibilityService implements VisibilityService, Listener 
             return;
         }
         try {
-            if (s.toggle(SETTING).filter(SettingToggle::isChoice).isEmpty()) {
-                s.register(SettingToggle.choice("core", SETTING, SettingCategory.DISPLAY, Material.SPYGLASS, ShowMode.ids(),
-                        config.get().defaultMode.id(), null, "navigation", "settings.toggles." + SETTING));
+            // Registered again on every reload (same owner replaces it), so a changed setting.default applies without a restart.
+            s.register(SettingToggle.choice("core", SETTING, SettingCategory.DISPLAY, Material.SPYGLASS, ShowMode.ids(),
+                    config.get().defaultMode.id(), null, "navigation", "settings.toggles." + SETTING));
+            if (settings != s) {
                 s.onChoiceChange(SETTING, (player, value) -> refreshAsViewer(player, false));
             }
             settings = s;

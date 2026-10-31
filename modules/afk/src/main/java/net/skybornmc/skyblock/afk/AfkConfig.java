@@ -42,6 +42,21 @@ public final class AfkConfig extends ModuleConfig {
     @Setting(path = "pool.max-z", desc = "Box corner 2, z.")
     public int maxZ = 0;
 
+    @Setting(path = "pool.hide-players", desc = "Players inside the pool can't see each other (owner R3-36). Staff that is not vanished stays visible.")
+    public boolean hidePlayers = true;
+
+    // ------------------------------------------------------------------ not earning (owner R3-35: no idle kick)
+
+    @Setting(path = "idle.send-home", desc = "A player in the pool who is not earning (daily limit reached, or paused because another account "
+            + "on their connection earns) is sent to their island after the time below (owner R3-35). Nobody is ever kicked for being idle.")
+    public boolean sendHome = true;
+
+    @Setting(path = "idle.send-home-seconds", desc = "Seconds of not earning in the pool before the player is sent to their island.", min = 10, max = 3600)
+    public int sendHomeSeconds = 60;
+
+    @Setting(path = "idle.fallback-world", desc = "Players without an island are sent to this world's spawn instead.")
+    public String fallbackWorld = "spawn";
+
     // ------------------------------------------------------------------ time
 
     @Setting(path = "time.check-seconds", desc = "How often players in the pool are checked, credited and shown the action bar.", min = 1, max = 10)
@@ -66,6 +81,19 @@ public final class AfkConfig extends ModuleConfig {
 
     @Setting(path = "anti-abuse.ip-daily-cap-minutes", desc = "Most minutes credited per IP address per day, all accounts together (stops alts taking turns). 0 = off. Kept in memory: a restart resets it.", min = 0, max = 1440, level = Setting.Level.OWNER)
     public int ipDailyCapMinutes = 480;
+
+    @Setting(path = "anti-abuse.family-groups", desc = "Staff family whitelist (owner R3-3): accounts that may earn together on one connection. "
+            + "One entry per family: 'name: uuid, uuid, ...' (the name is only a label). Each member also gets their own per-connection daily limit. "
+            + "An account outside the family on the same connection still waits its turn.", level = Setting.Level.OWNER)
+    public List<String> familyGroups = List.of();
+
+    @Setting(path = "anti-abuse.bedrock-ip-check", desc = "Warn in the console when Bedrock players seem to share the proxy's IP (Floodgate not passing "
+            + "real IPs): then every Bedrock player would count as one connection. See docs/commands/afk.md, Bedrock IPs.")
+    public boolean bedrockIpCheck = true;
+
+    @Setting(path = "anti-abuse.bedrock-shared-ip-players", desc = "Bedrock players online on the same IP that trigger the warning above "
+            + "(a loopback address always does).", min = 2, max = 50)
+    public int bedrockSharedIpPlayers = 3;
 
     // ------------------------------------------------------------------ money
 

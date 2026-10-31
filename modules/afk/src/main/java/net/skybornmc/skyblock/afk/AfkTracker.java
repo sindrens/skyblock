@@ -18,8 +18,14 @@ import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.skills.SkillType;
+import net.skybornmc.skyblock.common.teleport.TeleportOptions;
+import net.skybornmc.skyblock.common.teleport.TeleportReason;
+import net.skybornmc.skyblock.common.teleport.TeleportService;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Scheduler;
+import net.skybornmc.skyblock.common.visibility.VisibilityService;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -69,6 +75,8 @@ final class AfkTracker implements Listener {
     private volatile Optional<PoolArea> area = Optional.empty();
     private volatile ZoneId zone = ZoneId.of("Europe/Oslo");
     private String lastAreaLog = "";
+    /** Bedrock IPs already warned about (once per IP per run). */
+    private final Set<String> bedrockWarned = new java.util.HashSet<>();
 
     AfkTracker(AfkModule module) {
         this.m = module;
@@ -81,6 +89,11 @@ final class AfkTracker implements Listener {
         schedule();
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
+        }
+        if (Bukkit.getPluginManager().isPluginEnabled("floodgate") || Bukkit.getPluginManager().isPluginEnabled("Geyser-Spigot")) {
+            core.plugin().getLogger().info("AFK pool: Geyser/Floodgate found; Bedrock players' IPs are checked as they join "
+                    + "(one earning account per connection needs their real IP, see docs/commands/afk.md).");
+            checkBedrockIps();
         }
     }
 
@@ -162,6 +175,30 @@ final class AfkTracker implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         load(event.getPlayer());
+        if (core.bedrock().isBedrock(event.getPlayer().getUniqueId())) {
+            checkBedrockIps();
+        }
+    }
+
+    /**
+     * R3-3 / brief §3.9: warns once per IP when Bedrock players seem to share the proxy's IP (Floodgate not passing their
+     * real IP). Then the one-account-per-connection rule would pause all but one Bedrock player.
+     */
+    private void checkBedrockIps() {
+        if (!m.config().bedrockIpCheck) {
+            return;
+        }
+        Map<UUID, String> ips = new java.util.HashMap<>();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (core.bedrock().isBedrock(p.getUniqueId())) {
+                ips.put(p.getUniqueId(), ip(p));
+            }
+        }
+        BedrockIpCheck.check(ips, m.config().bedrockSharedIpPlayers).filter(f -> bedrockWarned.add(f.ip())).ifPresent(f ->
+                core.plugin().getLogger().warning("AFK pool: " + f.players() + " Bedrock player(s) connect from " + f.ip()
+                        + (f.loopback() ? " (a loopback address)" : "") + ". That looks like Geyser's or a proxy's address, not the players' own: "
+                        + "the one-earning-account-per-connection rule (and other per-IP rules) would treat them as one connection. "
+                        + "Check Floodgate/Geyser IP forwarding (docs/commands/afk.md, Bedrock IPs)."));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -232,6 +269,7 @@ final class AfkTracker implements Listener {
             if (!in) {
                 if (a.inside) {
                     leave(p, a);
+                    visibility(p);
                 }
                 continue;
             }
@@ -240,7 +278,9 @@ final class AfkTracker implements Listener {
                 a.enteredAt = now;
                 a.lastCheck = now;
                 a.sessionMillis = 0;
+                a.idleSince = 0;
                 m.msg().send(p, "entered", Msg.p("minutes", m.config().rewardMinutes));
+                visibility(p);
             }
             if (!a.loaded) {
                 states.put(p, AfkState.LOADING);
@@ -259,7 +299,7 @@ final class AfkTracker implements Listener {
                 continue;
             }
             String ip = ip(p);
-            if (gate.remaining(ip, today, rules.ipDailyCapMillis()) <= 0) {
+            if (gate.remaining(capKey(p, ip), today, rules.ipDailyCapMillis()) <= 0) {
                 states.put(p, AfkState.IP_CAPPED);
                 a.lastCheck = now;
                 continue;
@@ -267,7 +307,8 @@ final class AfkTracker implements Listener {
             candidates.add(new IpGate.Candidate(p.getUniqueId(), ip, a.enteredAt));
             candidatePlayers.put(p.getUniqueId(), p);
         }
-        Set<UUID> blocked = cfg.onePerIp ? gate.update(candidates) : Set.of();
+        FamilyGroups families = m.families();
+        Set<UUID> blocked = cfg.onePerIp ? gate.update(candidates, families::of) : Set.of();
         for (IpGate.Candidate c : candidates) {
             Player p = candidatePlayers.get(c.player());
             AfkAccount a = accounts.get(c.player());
@@ -277,8 +318,9 @@ final class AfkTracker implements Listener {
                 states.put(p, AfkState.IP_BLOCKED);
                 continue;
             }
-            AfkLedger.Result r = AfkLedger.credit(a, today, dt, gate.remaining(c.ip(), today, rules.ipDailyCapMillis()), rules);
-            gate.add(c.ip(), today, r.credited());
+            String capKey = capKey(p, c.ip());
+            AfkLedger.Result r = AfkLedger.credit(a, today, dt, gate.remaining(capKey, today, rules.ipDailyCapMillis()), rules);
+            gate.add(capKey, today, r.credited());
             for (AfkLedger.Reward reward : r.rewards()) {
                 grantReward(p, a, reward, rules, now);
             }
@@ -290,8 +332,73 @@ final class AfkTracker implements Listener {
             states.put(p, r.reachedCap() || AfkLedger.capped(a, today, rules) ? AfkState.CAPPED : AfkState.EARNING);
         }
         for (Map.Entry<Player, AfkState> e : states.entrySet()) {
-            show(e.getKey(), accounts.get(e.getKey().getUniqueId()), e.getValue(), today, now, rules);
+            AfkAccount a = accounts.get(e.getKey().getUniqueId());
+            show(e.getKey(), a, e.getValue(), today, now, rules);
+            idle(e.getKey(), a, e.getValue(), now);
         }
+    }
+
+    /** The per-IP daily cap key (family members each get their own, owner R3-3). */
+    private String capKey(Player p, String ip) {
+        return IpGate.capKey(ip, p.getUniqueId(), m.families().of(p.getUniqueId()) != null);
+    }
+
+    /** R3-36: re-applies who sees whom after {@code p} entered or left the pool. */
+    private void visibility(Player p) {
+        if (m.config().hidePlayers) {
+            VisibilityService.of(core.services()).ifPresent(v -> v.refresh(p));
+        }
+    }
+
+    /** True while {@code p} stands in the pool (the visibility rule asks this; main thread). */
+    boolean inside(Player p) {
+        AfkAccount a = accounts.get(p.getUniqueId());
+        return a != null && a.inside;
+    }
+
+    /** R3-35: no idle kick; a player who is not earning is told once and sent to their island after the delay. */
+    private void idle(Player p, AfkAccount a, AfkState state, long now) {
+        if (a == null) {
+            return;
+        }
+        AfkConfig cfg = m.config();
+        IdleHome.Step step = IdleHome.step(cfg.sendHome, state, a.idleSince, now, cfg.sendHomeSeconds * 1000L);
+        a.idleSince = step.since();
+        switch (step.action()) {
+            case WARN -> m.msg().send(p, "home.soon", Msg.p("seconds", cfg.sendHomeSeconds));
+            case SEND -> sendHome(p, a);
+            case NONE -> {
+            }
+        }
+    }
+
+    private void sendHome(Player p, AfkAccount a) {
+        a.sentHome = true;
+        Location from = p.getLocation();
+        AfkState why = a.shown;
+        boolean island = core.services().optional(IslandService.class).map(s -> s.teleportHome(p)).orElse(false);
+        core.audit().logPlayer(AuditCategory.WORLD, "afk_sent_home", Actor.system("afk"), p.getUniqueId(), p.getName(), null, from,
+                Map.of("to", island ? "island" : m.config().fallbackWorld, "state", why.name().toLowerCase(java.util.Locale.ROOT),
+                        "after_seconds", m.config().sendHomeSeconds));
+        if (island) {
+            m.msg().send(p, "home.sent");
+            return;
+        }
+        World world = Bukkit.getWorld(m.config().fallbackWorld);
+        if (world == null) {
+            a.sentHome = false;
+            core.plugin().getLogger().warning("AFK pool: could not send " + p.getName() + " away (no island and idle.fallback-world '"
+                    + m.config().fallbackWorld + "' is not loaded).");
+            return;
+        }
+        Location spawn = world.getSpawnLocation();
+        Optional<TeleportService> teleports = core.services().optional(TeleportService.class);
+        if (teleports.isPresent()) {
+            teleports.get().now(p, spawn, TeleportReason.SPAWN, TeleportOptions.none());
+        } else {
+            p.teleportAsync(spawn);
+        }
+        m.msg().send(p, "home.sent-spawn");
     }
 
     private void show(Player p, AfkAccount a, AfkState state, int today, long now, AfkRules rules) {
@@ -333,7 +440,14 @@ final class AfkTracker implements Listener {
         a.inside = false;
         a.sessionMillis = 0;
         a.shown = AfkState.OUTSIDE;
-        if (a.loaded) {
+        a.idleSince = 0;
+        boolean quiet = a.sentHome; // R3-35: the "sent home" line already said it
+        a.sentHome = false;
+        if (a.loaded && quiet) {
+            if (a.dirty) {
+                save(a);
+            }
+        } else if (a.loaded) {
             m.msg().send(p, "left", Msg.p("today", AfkText.hoursMinutes(AfkLedger.creditedToday(a, AfkLedger.dayKey(System.currentTimeMillis(), zone)))),
                     Msg.p("cap", AfkText.hoursMinutes(m.rules().dailyCapMillis())));
             if (a.dirty) {

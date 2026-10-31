@@ -36,6 +36,10 @@ final class AfkAccount {
     boolean loaded;
     /** Known undelivered grants (keys, fuel) of this account; delivery is tried when true. */
     boolean pendingGrants;
+    /** Owner R3-35: when not-earning in the pool started (0 = earning or outside), see {@link IdleHome}. */
+    long idleSince;
+    /** True while being sent home for not earning, so leaving the pool doesn't send a second chat line. */
+    boolean sentHome;
 
     CompletableFuture<?> chain = CompletableFuture.completedFuture(null);
 
