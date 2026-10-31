@@ -79,7 +79,6 @@ public final class PackModule implements SkyblockModule, Listener, PackService {
         ids = PackIds.load(core.plugin().getClass().getClassLoader());
         apply();
         core.services().register(ID, PackService.class, this);
-        core.sounds().setPackViewers(this::hasPack);
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         registerCommands();
     }
@@ -95,7 +94,6 @@ public final class PackModule implements SkyblockModule, Listener, PackService {
     @Override
     public void disable() {
         HandlerList.unregisterAll(this);
-        core.sounds().setPackViewers(null);
         stopHost();
         statuses.clear();
         active = null;
