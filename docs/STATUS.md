@@ -67,7 +67,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - ECON-R3 economy decisions
 - GUI-1 menu framework
-- VIS visibility service + AFK pool rules
+- DEPTHS-R3 mini-boss scaling, fragments, combat XP
 - NOTE: a separate owner-started agent works on docs/planning/*.md; do not overwrite those files, merge carefully.
 
 ## Parked / broken
