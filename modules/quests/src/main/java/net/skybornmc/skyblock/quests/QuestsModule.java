@@ -359,7 +359,13 @@ public final class QuestsModule implements SkyblockModule, Listener {
                 depths ? unlockedTiers(player, SkillType.COMBAT) : 0,
                 core.services().optional(SellService.class).isPresent(), tool,
                 core.services().optional(EnchantService.class).isPresent(), islands,
-                playtimeMinutes(player) >= settings.likeMinPlaytimeMinutes);
+                playtimeMinutes(player) >= settings.likeMinPlaytimeMinutes, farming(player));
+    }
+
+    /** PHASE-7 M7.3: harvest quests while island farming is on and the player has an island to farm on. */
+    private boolean farming(Player player) {
+        return core.services().has(net.skybornmc.skyblock.common.production.FarmingService.class)
+                && islands().map(i -> i.islandOf(player.getUniqueId()).isPresent()).orElse(false);
     }
 
     private boolean gate(Player player, String gate) {

@@ -48,10 +48,11 @@ public final class QuestsSettings extends ModuleConfig {
     public String dailyBonusCrate = "cinder";
 
     @Setting(path = "daily.pool", desc = "Daily quest pool, one '<type> [target]' per line. Types: mine, chop, kill (Depths, target from "
-            + "the play rate at your tier), sell (money, from your income), tool_levels, forge, enchant, visit, like (these need a "
+            + "the play rate at your tier), sell (money, from your income), tool_levels, forge, enchant, visit, like, harvest (ripe crops "
+            + "on your own island, while island farming is on; these need a "
             + "number). Only types you have unlocked are offered; a set never has a type twice or two of visit/like.",
             level = Setting.Level.OWNER)
-    public List<String> dailyPool = List.of("mine", "chop", "kill", "sell", "tool_levels 1", "visit 3", "like 1");
+    public List<String> dailyPool = List.of("mine", "chop", "kill", "sell", "tool_levels 1", "visit 3", "like 1", "harvest 300");
 
     // ------------------------------------------------------------------ weekly
 
@@ -79,7 +80,8 @@ public final class QuestsSettings extends ModuleConfig {
     public String weeklyBonusCrate = "blaze";
 
     @Setting(path = "weekly.pool", desc = "Weekly quest pool, same format as daily.pool.", level = Setting.Level.OWNER)
-    public List<String> weeklyPool = List.of("mine", "chop", "kill", "sell", "tool_levels 3", "forge 1", "enchant 1", "visit 10", "like 3");
+    public List<String> weeklyPool = List.of("mine", "chop", "kill", "sell", "tool_levels 3", "forge 1", "enchant 1", "visit 10", "like 3",
+            "harvest 1500");
 
     // ------------------------------------------------------------------ island missions
 
@@ -103,9 +105,9 @@ public final class QuestsSettings extends ModuleConfig {
             + "Stops a 1-block share from paying a full reward.", min = 0, max = 50, level = Setting.Level.OWNER)
     public double helperMinPercent = 5;
 
-    @Setting(path = "island.pool", desc = "Island mission pool, same format as daily.pool (only mine, chop, kill and sell make sense "
-            + "for a whole island).", level = Setting.Level.OWNER)
-    public List<String> islandPool = List.of("mine", "chop", "kill", "sell");
+    @Setting(path = "island.pool", desc = "Island mission pool, same format as daily.pool (only mine, chop, kill, sell and harvest make "
+            + "sense for a whole island).", level = Setting.Level.OWNER)
+    public List<String> islandPool = List.of("mine", "chop", "kill", "sell", "harvest 3000");
 
     // ------------------------------------------------------------------ sizing
 

@@ -159,7 +159,25 @@ final class SkillManager implements SkillService, Listener {
 
     @Override
     public boolean available(SkillType skill) {
-        return available.contains(skill);
+        return available.contains(skill) || (skill == SkillType.FARMING && farmingLive());
+    }
+
+    /** PHASE-7 M7.3: Farming opens while the production module publishes its farming service ({@code crops.yml → enabled}). */
+    private boolean farmingLive() {
+        return core.services().has(net.skybornmc.skyblock.common.production.FarmingService.class);
+    }
+
+    /**
+     * The next unlock level above {@code level} ({@code skills.yml → unlocks}); Farming without its own list uses the crop tiers
+     * of the farming service (Farming 5 = carrots and potatoes …). -1 = none.
+     */
+    int nextUnlock(SkillType skill, int level) {
+        int next = tables.nextUnlock(skill, level);
+        if (next > 0 || skill != SkillType.FARMING) {
+            return next;
+        }
+        return net.skybornmc.skyblock.common.production.FarmingService.of(core.services())
+                .map(f -> SkillTables.nextAbove(f.tierLevels(), level)).orElse(-1);
     }
 
     @Override
@@ -424,7 +442,7 @@ final class SkillManager implements SkillService, Listener {
         }
         if (config.levelUpChat) {
             msg.send(player, "level-up.chat", Msg.c("skill", name), Msg.p("level", change.to()), Msg.p("from", change.from()));
-            int next = tables.nextUnlock(change.skill(), change.to());
+            int next = nextUnlock(change.skill(), change.to());
             if (next > 0 && next <= curve.maxLevel()) {
                 msg.send(player, "level-up.next-unlock", Msg.c("unlock", unlockText(player, change.skill(), next)),
                         Msg.p("level", next));

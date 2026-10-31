@@ -18,7 +18,7 @@ skill:
   farming:
     name: "<pillar:farming>Farming"
     description: ["<c:text>Grow and harvest crops on", "<c:text>your island."]
-    how: []
+    how: [" <pillar:farming><sym:bullet> <c:text>Harvest ripe crops with a hoe", " <pillar:farming><sym:bullet> <c:text>On your own island", " <pillar:farming><sym:bullet> <c:text>Better crops give more XP", " <pillar:farming><sym:bullet> <c:text>Bone-mealed crops give no XP"]
   fishing:
     name: "<pillar:fishing>Fishing"
     description: ["<c:text>Catch fish and treasure."]
@@ -76,6 +76,18 @@ unlock:
     46: "<c:value>Combat Tier VIII</c:value> <c:muted>·</c:muted> <c:text>Blaze Forge"
     55: "<c:value>Combat Tier IX</c:value> <c:muted>·</c:muted> <c:text>Wither Keep"
     66: "<c:value>Combat Tier X</c:value> <c:muted>·</c:muted> <c:text>Warlord's Citadel"
+  # Crop tiers (crops.yml in the production module): planting opens at these Farming levels.
+  farming:
+    5: "<c:value>Crop Tier II</c:value> <c:muted>·</c:muted> <c:text>Carrots, Potatoes"
+    10: "<c:value>Crop Tier III</c:value> <c:muted>·</c:muted> <c:text>Beetroot"
+    15: "<c:value>Crop Tier IV</c:value> <c:muted>·</c:muted> <c:text>Sugar Cane"
+    20: "<c:value>Crop Tier V</c:value> <c:muted>·</c:muted> <c:text>Melons, Pumpkins"
+    25: "<c:value>Crop Tier VI</c:value> <c:muted>·</c:muted> <c:text>Cocoa"
+    30: "<c:value>Crop Tier VII</c:value> <c:muted>·</c:muted> <c:text>Cactus"
+    35: "<c:value>Crop Tier VIII</c:value> <c:muted>·</c:muted> <c:text>Sweet Berries"
+    42: "<c:value>Crop Tier IX</c:value> <c:muted>·</c:muted> <c:text>Nether Wart"
+    50: "<c:value>Crop Tier X</c:value> <c:muted>·</c:muted> <c:text>Torchflowers"
+    58: "<c:value>Crop Tier XI</c:value> <c:muted>·</c:muted> <c:text>Pitcher Plants"
 
 # Menu /skills [player]
 menu:

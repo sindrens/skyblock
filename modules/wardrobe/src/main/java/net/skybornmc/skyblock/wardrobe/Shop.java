@@ -50,7 +50,22 @@ final class Shop {
     }
 
     Offers.GateStatus gate(Player player, SetDef def) {
-        return Offers.gate(def.gate(), skills(player), module.config()::tiers);
+        return Offers.gate(def.gate(), skills(player), this::tiers);
+    }
+
+    /**
+     * Skill levels per tier of a wing ({@code wardrobe.yml → tiers}). Farming reads the crop tiers of the production module
+     * while island farming is on (PHASE-7 M7.3), so Cropwarden opens at crop tier 6 without a second list to keep in sync.
+     */
+    private java.util.List<Integer> tiers(String wing) {
+        if ("farming".equals(wing)) {
+            java.util.List<Integer> crops = net.skybornmc.skyblock.common.production.FarmingService.of(module.core.services())
+                    .map(net.skybornmc.skyblock.common.production.FarmingService::tierLevels).orElse(java.util.List.of());
+            if (!crops.isEmpty()) {
+                return crops;
+            }
+        }
+        return module.config().tiers(wing);
     }
 
     /** What this player can do with a set right now. */

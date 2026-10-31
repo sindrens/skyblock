@@ -35,9 +35,10 @@ final class QuestPool {
      * @param enchants      the enchants module runs
      * @param islands       the islands module runs and the tutorial opened island visits for this player
      * @param likesAllowed  the player has played long enough to like islands
+     * @param farming       island farming is on (PHASE-7 M7.3) and the player has an island
      */
     record Unlocks(boolean depths, int mineTiers, int forestTiers, int combatTiers, boolean sell, boolean tool, boolean enchants,
-                   boolean islands, boolean likesAllowed) {
+                   boolean islands, boolean likesAllowed, boolean farming) {
     }
 
     private QuestPool() {
@@ -54,6 +55,7 @@ final class QuestPool {
             case ENCHANT -> u.enchants() && u.tool();
             case VISIT -> u.islands();
             case LIKE -> u.islands() && u.likesAllowed();
+            case HARVEST -> u.farming();
         };
     }
 

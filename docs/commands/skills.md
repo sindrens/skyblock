@@ -1,6 +1,6 @@
 # Skills module (`modules/skills`): M4.5
 
-Skill XP and levels (Mining, Foraging, Combat; Farming and Fishing locked until Phase 7). Settings, level curve and XP tables: `skills.yml`; texts: `messages/skills.yml`; data: table `skills`.
+Skill XP and levels (Mining, Foraging, Combat; **Farming** while island farming is on, `crops.yml → enabled` in the production module, PHASE-7 M7.3: XP for ripe crops harvested with a hoe on your own island, next unlock = the next crop tier; Fishing hidden until it exists). Settings, level curve and XP tables: `skills.yml`; texts: `messages/skills.yml`; data: table `skills`.
 
 | Command | Description | Permission | Status |
 |---|---|---|---|

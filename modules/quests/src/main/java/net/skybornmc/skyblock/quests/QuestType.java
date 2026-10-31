@@ -27,7 +27,9 @@ enum QuestType {
     /** Visit other players' islands (first visit of the day per island). */
     VISIT("visit", null, true),
     /** Like islands. */
-    LIKE("like", null, true);
+    LIKE("like", null, true),
+    /** Harvest ripe crops on your own island (PHASE-7 M7.3; offered while island farming is on). */
+    HARVEST("harvest", null, false);
 
     private final String id;
     private final SkillType wing;

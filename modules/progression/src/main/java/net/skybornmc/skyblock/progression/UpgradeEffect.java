@@ -41,9 +41,9 @@ enum UpgradeEffect {
     SPAWNER_RATE("spawner-rate", true),
     /** +% spawner drops: no hook in the stacking module yet. */
     MOB_LOOT("mob-loot", false),
-    /** +% crop growth on the island: no island crop growth hook yet. */
+    /** +% crop growth on the island (Phase 7 M7.3): live while farming is on ({@link FarmingFeature}). */
     CROP_GROWTH("crop-growth", false),
-    /** +% double-crop chance: no hook yet. */
+    /** +% chance of extra crops per ripe harvest (Phase 7 M7.3): live while farming is on ({@link FarmingFeature}). */
     HARVEST_YIELD("harvest-yield", false),
     /** Generator level (Phase 7 M7.2): live while custom generators are on ({@link GeneratorFeature}). */
     GENERATOR("generator", false),
@@ -65,7 +65,8 @@ enum UpgradeEffect {
 
     /** True when the feature behind it exists (otherwise "Coming soon", never bought). */
     boolean live() {
-        return live || (this == FUEL_TANK && IslandFuelFeature.on()) || (this == GENERATOR && GeneratorFeature.on());
+        return live || (this == FUEL_TANK && IslandFuelFeature.on()) || (this == GENERATOR && GeneratorFeature.on())
+                || ((this == CROP_GROWTH || this == HARVEST_YIELD) && FarmingFeature.on());
     }
 
     /** Effects stored by the islands module (raised through its setters, never lowered). */

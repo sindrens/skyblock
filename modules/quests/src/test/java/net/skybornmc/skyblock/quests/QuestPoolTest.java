@@ -15,8 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Pool lines, live-content filtering and how a set is picked. */
 class QuestPoolTest {
 
-    private static final QuestPool.Unlocks NOTHING = new QuestPool.Unlocks(false, 0, 0, 0, false, false, false, false, false);
-    private static final QuestPool.Unlocks EVERYTHING = new QuestPool.Unlocks(true, 5, 4, 3, true, true, true, true, true);
+    private static final QuestPool.Unlocks NOTHING = new QuestPool.Unlocks(false, 0, 0, 0, false, false, false, false, false, false);
+    private static final QuestPool.Unlocks EVERYTHING = new QuestPool.Unlocks(true, 5, 4, 3, true, true, true, true, true, true);
 
     private static List<QuestPool.Entry> pool(String... lines) {
         List<String> problems = new ArrayList<>();
@@ -63,19 +63,31 @@ class QuestPoolTest {
         assertEquals(pool, QuestPool.eligible(pool, EVERYTHING));
 
         // A new player: the tutorial has not opened the Depths or island visits yet, no tool, can sell.
-        QuestPool.Unlocks fresh = new QuestPool.Unlocks(false, 1, 1, 1, true, false, true, false, false);
+        QuestPool.Unlocks fresh = new QuestPool.Unlocks(false, 1, 1, 1, true, false, true, false, false, false);
         assertEquals(List.of(QuestType.SELL), QuestPool.eligible(pool, fresh).stream().map(QuestPool.Entry::type).toList());
 
         // The Depths are open but the combat wing has no open tier: no kill quests.
-        QuestPool.Unlocks noCombat = new QuestPool.Unlocks(true, 2, 1, 0, true, true, true, true, false);
+        QuestPool.Unlocks noCombat = new QuestPool.Unlocks(true, 2, 1, 0, true, true, true, true, false, false);
         List<QuestType> types = QuestPool.eligible(pool, noCombat).stream().map(QuestPool.Entry::type).toList();
         assertTrue(types.containsAll(List.of(QuestType.MINE, QuestType.CHOP, QuestType.VISIT, QuestType.ENCHANT)));
         assertFalse(types.contains(QuestType.KILL));
         assertFalse(types.contains(QuestType.LIKE), "likes need an hour of playtime first");
 
         // Enchant quests need a tool to enchant.
-        QuestPool.Unlocks noTool = new QuestPool.Unlocks(true, 2, 1, 1, true, false, true, true, true);
+        QuestPool.Unlocks noTool = new QuestPool.Unlocks(true, 2, 1, 1, true, false, true, true, true, false);
         assertFalse(QuestPool.eligible(pool, noTool).stream().anyMatch(e -> e.type() == QuestType.ENCHANT));
+    }
+
+    @Test
+    void harvestQuestsOnlyWhileFarmingIsOn() {
+        List<QuestPool.Entry> pool = pool("sell", "harvest 300");
+        QuestPool.Unlocks off = new QuestPool.Unlocks(true, 2, 1, 1, true, true, true, true, true, false);
+        QuestPool.Unlocks on = new QuestPool.Unlocks(true, 2, 1, 1, true, true, true, true, true, true);
+        assertEquals(List.of(QuestType.SELL), QuestPool.eligible(pool, off).stream().map(QuestPool.Entry::type).toList());
+        assertEquals(List.of(QuestType.SELL, QuestType.HARVEST), QuestPool.eligible(pool, on).stream().map(QuestPool.Entry::type).toList());
+        assertTrue(QuestPool.parse("harvest").isEmpty(), "harvest needs a number");
+        assertEquals(new QuestPool.Entry(QuestType.HARVEST, 300), QuestPool.parse("harvest 300").orElseThrow());
+        assertFalse(QuestType.HARVEST.social());
     }
 
     @Test
