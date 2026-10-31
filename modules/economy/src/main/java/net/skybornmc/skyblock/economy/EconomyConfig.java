@@ -29,7 +29,8 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "tradeable.money", desc = "Players can /pay and trade money.", level = Setting.Level.OWNER)
     public boolean tradeableMoney = true;
 
-    @Setting(path = "tradeable.crystals", desc = "Players can /pay and trade island crystals (owner decision CR3: no).",
+    @Setting(path = "tradeable.crystals", desc = "Players can /pay and trade island crystals (owner decision CR3: no). "
+            + "R3-5b: crystals are never transferable, whatever this says (hard rule in code).",
             level = Setting.Level.OWNER)
     public boolean tradeableCrystals = false;
 
@@ -95,8 +96,8 @@ public final class EconomyConfig extends ModuleConfig {
     // ------------------------------------------------------------------ money notes (M3.2: /withdraw, /eco note)
 
     @Setting(path = "notes.currencies", desc = "Currencies players can /withdraw as a note (must also be tradeable). Owner "
-            + "decision: money only.", level = Setting.Level.OWNER)
-    public List<String> noteCurrencies = List.of("money");
+            + "R3-5b: money and shards (crystals never).", level = Setting.Level.OWNER)
+    public List<String> noteCurrencies = List.of("money", "shards");
 
     @Setting(path = "notes.min.money", desc = "Smallest money note.", min = 1, level = Setting.Level.OWNER)
     public long noteMinMoney = 100;
@@ -125,9 +126,58 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "notes.max.shards", desc = "Largest shards note.", min = 1, level = Setting.Level.OWNER)
     public long noteMaxShards = 1_000_000_000L;
 
-    @Setting(path = "notes.withdraw-cooldown-seconds", desc = "Seconds between two /withdraw of the same player. 0 = none.",
-            min = 0, max = 3600)
-    public int noteWithdrawCooldownSeconds = 10;
+    @Setting(path = "notes.max-per-minute", desc = "Owner R3-40: most notes one player can make in any 60 seconds (a soft "
+            + "limit instead of a cooldown). 0 = no limit.", min = 0, max = 1_000)
+    public int noteMaxPerMinute = 20;
+
+    @Setting(path = "notes.purge-redeemed-days", desc = "Owner R3-40: cashed notes are deleted from the database this many "
+            + "days after they were cashed (the ledger and audit log keep the money history). 0 = keep forever.", min = 0,
+            max = 3_650, level = Setting.Level.OWNER)
+    public int notePurgeDays = 90;
+
+    @Setting(path = "notes.purge-batch", desc = "Cashed notes deleted per database round (the purge runs off the main thread, "
+            + "once at start and then every few hours).", min = 50, max = 10_000)
+    public int notePurgeBatch = 500;
+
+    // ------------------------------------------------------------------ /eco safety (owner R3-6, R3-39)
+
+    @Setting(path = "eco.approve-above.money", desc = "Owner R3-6: an /eco change of more money than this waits until an owner or "
+            + "admin clicks Allow (smaller changes apply at once and are flagged). 0 = never wait.", min = 0,
+            level = Setting.Level.OWNER)
+    public long ecoApproveMoney = 1_000_000_000_000L;
+
+    @Setting(path = "eco.approve-above.crystals", desc = "Same for crystals. 0 = never wait.", min = 0, level = Setting.Level.OWNER)
+    public long ecoApproveCrystals = 1_000_000_000L;
+
+    @Setting(path = "eco.approve-above.gems", desc = "Same for gems. 0 = never wait.", min = 0, level = Setting.Level.OWNER)
+    public long ecoApproveGems = 1_000_000L;
+
+    @Setting(path = "eco.approve-above.shards", desc = "Same for shards. 0 = never wait.", min = 0, level = Setting.Level.OWNER)
+    public long ecoApproveShards = 1_000_000_000L;
+
+    @Setting(path = "eco.pending-minutes", desc = "Owner R3-6: a waiting /eco change is dropped after this many minutes "
+            + "without an Allow.", min = 1, max = 120, level = Setting.Level.OWNER)
+    public int ecoPendingMinutes = 10;
+
+    @Setting(path = "eco.block-same-ip", desc = "Owner R3-39: /eco can't change your own account or an account that ever "
+            + "joined from one of your addresses (alt/IP history of the social module).", level = Setting.Level.OWNER)
+    public boolean ecoBlockSameIp = true;
+
+    // ------------------------------------------------------------------ sending money (owner F1)
+
+    @Setting(path = "send-gate.required", desc = "Owner F1: a profile can send money away (/pay, notes, /trade) only after it "
+            + "earned this much itself. Sending to members of its own island is always allowed. 0 = off.", min = 0,
+            level = Setting.Level.OWNER)
+    public long sendGateRequired = 10_000;
+
+    @Setting(path = "send-gate.currencies", desc = "Currencies the F1 rule covers when sent (the earned amount is always "
+            + "counted in money).", level = Setting.Level.OWNER)
+    public List<String> sendGateCurrencies = List.of("money", "shards");
+
+    @Setting(path = "send-gate.earned-reasons", desc = "Ledger reasons that count as earned money for F1 (income only: "
+            + "money from other players, staff, notes, refunds and the start balance never counts).", level = Setting.Level.OWNER)
+    public List<String> sendGateEarnedReasons = List.of("sell", "afk_pool", "interest", "crate_reward", "daily_reward",
+            "playtime_reward", "tutorial_reward", "tutorial_optional", "depths_drop", "pillar_milestone", "island_task");
 
     @Setting(path = "notes.item.material", desc = "Material of the money note item (a resource-pack model can replace the "
             + "look later).", restart = true)
@@ -311,7 +361,8 @@ public final class EconomyConfig extends ModuleConfig {
     public java.util.Map<String, String> removedKeys() {
         return java.util.Map.of(
                 "pay.new-account-minutes", "owner answer 131: no new-account limit for /pay (R3-16)",
-                "notes.new-account-minutes", "owner answer 131: no new-account limit for /withdraw (R3-16)");
+                "notes.new-account-minutes", "owner answer 131: no new-account limit for /withdraw (R3-16)",
+                "notes.withdraw-cooldown-seconds", "owner R3-40: replaced by notes.max-per-minute (20 notes a minute)");
     }
 
     @Override
@@ -344,7 +395,11 @@ public final class EconomyConfig extends ModuleConfig {
         };
     }
 
+    /** R3-5b: a non-transferable currency (crystals) is never tradeable, whatever the file says. */
     boolean tradeable(Currency currency) {
+        if (!currency.transferable()) {
+            return false;
+        }
         return switch (currency) {
             case MONEY -> tradeableMoney;
             case CRYSTALS -> tradeableCrystals;
@@ -381,6 +436,26 @@ public final class EconomyConfig extends ModuleConfig {
             }
         }
         return null;
+    }
+
+    /** The /eco amount above which a change waits for an Allow (0 = never). */
+    long ecoApproveAbove(Currency currency) {
+        return switch (currency) {
+            case MONEY -> ecoApproveMoney;
+            case CRYSTALS -> ecoApproveCrystals;
+            case GEMS -> ecoApproveGems;
+            case SHARDS -> ecoApproveShards;
+        };
+    }
+
+    /** True if F1 covers sending this currency. */
+    boolean sendGated(Currency currency) {
+        for (String key : sendGateCurrencies) {
+            if (key != null && Currency.byKey(key).orElse(null) == currency) {
+                return true;
+            }
+        }
+        return false;
     }
 
     long noteMin(Currency currency) {

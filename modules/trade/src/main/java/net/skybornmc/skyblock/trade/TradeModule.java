@@ -57,6 +57,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -669,6 +670,42 @@ public final class TradeModule implements SkyblockModule, Listener {
         if (problem.isPresent()) {
             send(p, "money." + problem.get().key(), amountTag("balance", currency, balance), amountTag("amount", currency, amount));
             sound(p, "error");
+            return;
+        }
+        if (amount <= side.money(currency)) {
+            applyMoney(p, s, currency, amount); // lowering an offer is always allowed
+            return;
+        }
+        // Owner F1: money can leave a profile only after it earned send-gate.required itself, unless the partner is a member
+        // of the island it is on.
+        Optional<net.skybornmc.skyblock.common.economy.SendGate> gate = net.skybornmc.skyblock.common.economy.SendGate.of(core.services());
+        if (gate.isEmpty()) {
+            applyMoney(p, s, currency, amount);
+            return;
+        }
+        UUID partner = s.other(p.getUniqueId()).profile;
+        gate.get().check(side.profile, partner, currency).whenCompleteAsync((check, error) -> {
+            if (!p.isOnline() || sessions.get(p.getUniqueId()) != s) {
+                return;
+            }
+            if (error != null || check == null) {
+                core.plugin().getLogger().log(Level.WARNING, "Trade: the send check for " + p.getName() + " failed", error);
+                send(p, "error");
+                sound(p, "error");
+                return;
+            }
+            if (!check.allowed()) {
+                send(p, "money.send-gate", amountTag("required", Currency.MONEY, check.required()),
+                        amountTag("earned", Currency.MONEY, check.earned()), amountTag("missing", Currency.MONEY, check.missing()));
+                sound(p, "error");
+                return;
+            }
+            applyMoney(p, s, currency, amount);
+        }, main);
+    }
+
+    private void applyMoney(Player p, TradeSession s, Currency currency, long amount) {
+        if (!s.editable()) {
             return;
         }
         if (s.setMoney(p.getUniqueId(), currency, amount)) {
@@ -1316,6 +1353,69 @@ public final class TradeModule implements SkyblockModule, Listener {
         } catch (RuntimeException e) {
             core.plugin().getLogger().log(Level.WARNING, "Trade: could not save " + p.getName() + "'s player data", e);
         }
+    }
+
+    /** Owner R3-38: the auction median part of the value hints. */
+    private TradeValues values;
+
+    TradeValues values() {
+        if (values == null) {
+            values = new TradeValues(core.database(), System::currentTimeMillis, id -> profiles().ownerOf(id));
+        }
+        return values;
+    }
+
+    /**
+     * Owner R3-38: what an offered stack is worth, as lore lines: the server sell price, the /shop price and the auction
+     * median (only with enough independent sales). Neither server price = "Value unknown". Main thread.
+     */
+    List<net.kyori.adventure.text.Component> valueLines(Player viewer, ItemStack item, TradeSession session) {
+        if (!config.valueHints || item == null || item.isEmpty()) {
+            return List.of();
+        }
+        int amount = item.getAmount();
+        List<net.kyori.adventure.text.Component> lines = new ArrayList<>(core.menus().lines(viewer, ID, "value.header"));
+        boolean known = false;
+        Optional<net.skybornmc.skyblock.common.sell.SellService> sell = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class);
+        if (sell.isPresent() && sell.get().sellable(item)) {
+            Optional<net.skybornmc.skyblock.common.sell.SellPrice> price = sell.get().price(item);
+            if (price.isPresent()) {
+                long total = (long) Math.floor(price.get().unit() * amount);
+                lines.addAll(core.menus().lines(viewer, ID, "value.sell", amountTag("total", Currency.MONEY, total)));
+                known = true;
+            }
+        }
+        Optional<String> customId = net.skybornmc.skyblock.common.item.ItemRegistry.idOf(item);
+        if (customId.isEmpty()) {
+            OptionalLong shop = core.services().optional(net.skybornmc.skyblock.common.shop.ShopPrices.class)
+                    .map(s -> s.buyPrice(item.getType().getKey().getKey())).orElse(OptionalLong.empty());
+            if (shop.isPresent() && shop.getAsLong() > 0) {
+                lines.addAll(core.menus().lines(viewer, ID, "value.shop",
+                        amountTag("total", Currency.MONEY, saturatedTimes(shop.getAsLong(), amount))));
+                known = true;
+            }
+        }
+        if (!known) {
+            lines.addAll(core.menus().lines(viewer, ID, "value.unknown"));
+        }
+        String key = customId.orElse(item.getType().getKey().getKey());
+        TradeValues.Median median = values().cached(key, config.valueCacheMinutes * 60_000L);
+        if (median == null) {
+            values().load(key, config, () -> main.execute(() -> {
+                if (!session.ended()) {
+                    refreshMenus(session);
+                }
+            }));
+        } else if (median.price().isPresent()) {
+            lines.addAll(core.menus().lines(viewer, ID, "value.ah",
+                    amountTag("total", Currency.MONEY, saturatedTimes(median.price().getAsLong(), amount))));
+        }
+        return lines;
+    }
+
+    private static long saturatedTimes(long a, long b) {
+        long r = a * b;
+        return (a != 0 && (r / a != b || r < 0)) ? Long.MAX_VALUE : r;
     }
 
     EconomyService economy() {

@@ -36,7 +36,8 @@ public final class BankConfig extends ModuleConfig {
 
     @Setting(path = "interest.activity-minutes", desc = "Only accounts played at least this many minutes in the last "
             + "interest.activity-days days earn interest (owner #38: 2 h in 7 days). Island banks: one member must have played "
-            + "that long. 0 = no activity rule.", min = 0, max = 10_080, level = Setting.Level.OWNER)
+            + "that long. Owner R3-25: minutes in the AFK pool don't count. 0 = no activity rule.", min = 0, max = 10_080,
+            level = Setting.Level.OWNER)
     public int activityMinutes = 120;
 
     @Setting(path = "interest.activity-days", desc = "Days the activity rule looks back (owner #38: 7).", min = 1, max = 60,
@@ -68,8 +69,8 @@ public final class BankConfig extends ModuleConfig {
     public long withdrawMin = 100;
 
     @Setting(path = "withdraw.fee-percent", desc = "Withdrawal fee in percent of the amount taken out, before island "
-            + "masteries (owner E4 + #169: 2%). Personal and island bank. The fee leaves the economy. A withdrawal with a fee "
-            + "also forfeits the interest of the current period.", min = 0, max = 50, level = Setting.Level.OWNER)
+            + "masteries (owner E4 + #169: 2%). Personal and island bank. The fee leaves the economy. Owner R3-41: this fee is "
+            + "the only withdrawal rule (no lost interest).", min = 0, max = 50, level = Setting.Level.OWNER)
     public double withdrawFeePercent = 2.0;
 
     @Setting(path = "withdraw.mastery-fee-percent", desc = "Withdrawal fee in percent at island bank-fee mastery level 1, "
@@ -78,10 +79,10 @@ public final class BankConfig extends ModuleConfig {
             + "island. A step above the one before is lowered to it.", level = Setting.Level.OWNER)
     public List<String> masteryFeePercent = List.of("1.5", "1.0", "0.5");
 
-    @Setting(path = "withdraw.free-minutes", desc = "Minutes right after each interest payout in which withdrawals are free "
-            + "(no fee, the period's interest is not forfeited; the lowest-balance rule still applies). 0 = always a fee.",
+    @Setting(path = "withdraw.free-minutes", desc = "Minutes right after each interest payout in which withdrawals cost no fee "
+            + "(the lowest-balance rule still applies). Owner R3-41: 0 = always the fee (the menu then says nothing about it).",
             min = 0, max = 1_440, level = Setting.Level.OWNER)
-    public int withdrawFreeMinutes = 10;
+    public int withdrawFreeMinutes = 0;
 
     // ------------------------------------------------------------------ tiers and levels
 

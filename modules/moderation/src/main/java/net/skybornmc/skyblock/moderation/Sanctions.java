@@ -416,9 +416,12 @@ final class Sanctions implements SanctionService {
         if (listings.isEmpty()) {
             return;
         }
-        listings.get().cancelListings(s.target(), s.reason(), Actor.player(staff)).thenAcceptAsync(count -> {
+        listings.get().cancelListings(s.target(), s.reason(), staff == null ? Actor.system("dupe-detector") : Actor.player(staff))
+                .thenAcceptAsync(count -> {
             if (count > 0) {
-                msg.send(staff, "sanctions.listings-cancelled", Msg.number("count", count), Msg.p("player", s.targetName()));
+                if (staff != null) {
+                    msg.send(staff, "sanctions.listings-cancelled", Msg.number("count", count), Msg.p("player", s.targetName()));
+                }
                 audit(staff, "sanction_listings_cancelled", s, Map.of("count", count));
             }
         }, main);
@@ -851,6 +854,59 @@ final class Sanctions implements SanctionService {
             suggestions.suggest(player, s.dupeReason(), text(null, "sanctions.dupe-source"), details, true,
                     Actor.system("dupe-detector")).exceptionally(e -> null);
         }
+    }
+
+    /**
+     * Owner R3-28: a system-detected dupe of a unique item gives every holder (own inventory, ender chest or cursor; not a
+     * player only looking into a container) an automatic trade block of {@code length} that ends by itself. A holder who
+     * already has an active trade block keeps it. Staff are told (with a click to open {@code /p}) and decide after: lift
+     * it, or add a freeze. Audited ({@code sanction_trade}, issued by the system). Main thread.
+     */
+    void autoTradeBlock(net.skybornmc.skyblock.common.item.DupeReport report, Duration length) {
+        if (report == null || length == null || !available(Sanction.Kind.TRADE)) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        String item = report.itemId() == null ? "?" : report.itemId();
+        String reason = text(null, "sanctions.dupe-block.reason", Msg.p("item", item));
+        for (UUID holder : java.util.Set.copyOf(report.holderIds())) {
+            Player online = Bukkit.getPlayer(holder);
+            String name = online != null ? online.getName()
+                    : core.players().get(holder).map(net.skybornmc.skyblock.common.player.PlayerData::name).orElse(holder.toString());
+            Sanction draft = dupeDraft(holder, name, reason, now, length);
+            store.block(draft, now).thenAcceptAsync(r -> {
+                if (!r.ok()) {
+                    return; // already trade-blocked: that block stays
+                }
+                Sanction s = r.created();
+                remember(s);
+                Map<String, Object> extra = new LinkedHashMap<>();
+                extra.put("reason_id", "dupe");
+                extra.put("item_id", item);
+                extra.put("item_uuid", String.valueOf(report.itemUuid()));
+                extra.put("copies", report.holders().size());
+                extra.put("automatic", true);
+                audit(null, "sanction_trade", s, extra);
+                notifyStaff(null, "sanctions.dupe-block.notify", parts(null, s), Msg.p("item", item),
+                        Msg.number("copies", report.holders().size()));
+                Player now2 = Bukkit.getPlayer(s.target());
+                if (now2 != null) {
+                    msg.send(now2, "sanctions.dupe-block.you", parts(now2, s));
+                    core.sounds().play(now2, "error");
+                }
+                cancelListings(null, s);
+            }, main).exceptionally(e -> {
+                core.plugin().getLogger().log(Level.SEVERE, "Moderation: automatic dupe trade block for " + name + " failed",
+                        Database.cause(e));
+                return null;
+            });
+        }
+    }
+
+    /** The automatic R3-28 trade block of one holder (issued by the system, ends after {@code length}). Pure. */
+    static Sanction dupeDraft(UUID target, String targetName, String reason, long now, Duration length) {
+        return new Sanction(0, Sanction.Kind.TRADE, target, targetName, null, null, "System", reason, now,
+                SanctionRules.expires(length, now), null, null, null, Sanction.State.ACTIVE, null, null, null, null);
     }
 
     /** All active blocks (for tests and diagnostics). */

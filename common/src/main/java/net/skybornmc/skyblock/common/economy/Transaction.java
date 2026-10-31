@@ -79,6 +79,9 @@ public record Transaction(AccountRef from, AccountRef to, Currency currency, lon
         if (from != null && from.equals(to)) {
             return "from and to are the same account";
         }
+        if (from != null && to != null && !currency.transferable()) {
+            return currency.key() + " can never move between accounts (R3-5b)";
+        }
         if (!TxReason.isValid(reason)) {
             return "reason must match [a-z0-9_]{1,32}";
         }

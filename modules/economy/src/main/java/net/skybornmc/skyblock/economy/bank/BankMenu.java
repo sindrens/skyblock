@@ -274,7 +274,7 @@ final class BankMenu extends Menu {
         });
     }
 
-    /** Shows what the withdrawal costs (fee after masteries, forfeited interest) before anything moves. */
+    /** Shows what the withdrawal costs (fee after masteries) before anything moves. */
     private void confirmWithdraw(Player player, UUID key, BankFeature.Account a, long value, BankOps.Limit limit) {
         int level = bank.feeMasteryLevel(key, a.ref());
         double feePercent = bank.fees().percent(level);
@@ -306,8 +306,6 @@ final class BankMenu extends Menu {
         String status;
         if (!a.terms().earning()) {
             status = a.ref().isIsland() ? "bank.menu.interest.paused-island" : "bank.menu.interest.paused";
-        } else if (a.forfeited()) {
-            status = "bank.menu.interest.forfeited";
         } else if (a.balance() >= a.terms().capacity()) {
             status = "bank.menu.interest.full";
         } else if (a.balance() <= 0) {

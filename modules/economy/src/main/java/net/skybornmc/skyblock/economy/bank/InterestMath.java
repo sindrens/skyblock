@@ -13,8 +13,8 @@ import java.math.RoundingMode;
  *       to the new numbering without paying any stretch of time twice.</li>
  *   <li>Interest of a period is paid on the <b>lowest balance during that period</b> (deposits during the period don't
  *       count until the next one), capped per payout and never above the bank's free room.</li>
- *   <li>A withdrawal with a fee forfeits the period it happens in; withdrawals in the free minutes right after a payout
- *       only lower the lowest balance.</li>
+ *   <li>Owner R3-41: withdrawals only lower the lowest balance; the fee is the only cost (the old "a fee forfeits the
+ *       period's interest" flag is still stored but ignored).</li>
  * </ul>
  */
 final class InterestMath {
@@ -94,7 +94,7 @@ final class InterestMath {
      */
     static long basis(State state, long period, long balance) {
         if (state.cycle() == period) {
-            return state.forfeited() ? 0 : Math.max(0, state.minBalance());
+            return Math.max(0, state.minBalance()); // R3-41: a withdrawal fee no longer costs the period's interest
         }
         if (state.cycle() < period) {
             return Math.max(0, balance);

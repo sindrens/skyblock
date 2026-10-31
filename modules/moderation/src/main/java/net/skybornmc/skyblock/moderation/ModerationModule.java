@@ -285,6 +285,10 @@ public final class ModerationModule implements SkyblockModule, Listener {
             dupeHooked = true; // the detector has no removeHandler: hook once, gated by `enabled`
             core.dupes().addHandler(report -> {
                 if (enabled) {
+                    // R3-28: holders get an automatic trade block that ends by itself; staff decide after
+                    if (config.dupeTradeBlock) {
+                        sanctions.autoTradeBlock(report, java.time.Duration.ofHours(config.dupeTradeBlockHours));
+                    }
                     sanctions.onDupe(report, apiSuggestions);
                 }
             });

@@ -50,6 +50,8 @@ pay:
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay while frozen. Wait for staff."
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be paid to players."
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest payment is <min><c:text>."
+  # Owner F1: <required> to earn first, <earned> so far, <missing> still to earn (income only, not money from players).
+  send-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Earn <required> <c:text>yourself before you send money away. Earn <missing> <c:text>more (selling, rewards). <c:muted>Island members can always be paid."
 
 eco:
   done-give: "<prefix><c:success><sym:check></c:success> <c:text>Gave <amount> <c:text>to <c:value><player></c:value>. <c:muted>Now </c:muted><balance> <c:muted>(<reason>)"
@@ -63,6 +65,50 @@ eco:
   insufficient: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>only has <balance><c:text>. Use <c:value>/eco set</c:value> for an exact balance."
   overflow: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't hold that much. Nothing changed."
   notify: "<prefix><c:text>Staff changed your <currency><c:text>. <c:muted>Now </c:muted><balance> <c:muted>(see /transactions)"
+  # Owner R3-39: staff play on a separate account, so /eco never touches your own or a same-address account.
+  target:
+    self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't change your own balance. Ask another admin."
+    same-ip: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>shares an address with you, so you can't change their balance. Ask another admin."
+    alert-self: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>tried to change their own balance <c:muted>(refused)"
+    alert-same-ip: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>tried to change <c:value><player></c:value><c:text>, who shares their address <c:muted>(refused)"
+  # Owner R3-6: changes above the limit ($1T) wait for an Allow. <id>, <staff>, <player>, <action>, <amount>, <change>, <currency>, <reason>, <left>.
+  approve:
+    waiting: "<prefix><c:warning><sym:time></c:warning> <c:text>That is more than the limit, so it waits for another owner or admin to allow it <c:muted>(#<id>, <left>)<c:text>. Nothing changed yet."
+    alert: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>wants to <action> <amount> <c:text>for <c:value><player></c:value> <c:muted>(<reason>)</c:muted> <click:run_command:'/eco allow <id>'><hover:show_text:'<c:text>Runs /eco allow <id>'><c:success>[Allow]</c:success></hover></click> <click:run_command:'/eco deny <id>'><hover:show_text:'<c:text>Runs /eco deny <id>'><c:error>[Deny]</c:error></hover></click> <c:muted>#<id>, ends in <left>"
+    alert-info: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>wants to <action> <amount> <c:text>for <c:value><player></c:value> <c:muted>(<reason>) <sym:dot> waits for an owner or admin, #<id>"
+    nobody-online: "<prefix><c:muted>No other owner or admin is online. It ends in <left> if nobody allows it."
+    unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No waiting change <c:value>#<id></c:value><c:text>. It was decided already or ran out."
+    no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Only an owner or admin can decide this."
+    own-request: "<prefix><c:error><sym:cross></c:error> <c:text>You asked for this one, so another owner or admin must allow it."
+    denied: "<prefix><c:success><sym:check></c:success> <c:text>Denied <c:value>#<id></c:value><c:text>: nothing changed for <c:value><player></c:value><c:text>."
+    denied-you: "<prefix><c:error><sym:cross></c:error> <c:value><by></c:value> <c:text>denied your change <c:value>#<id></c:value><c:text>. Nothing changed."
+    allowed-you: "<prefix><c:success><sym:check></c:success> <c:value><by></c:value> <c:text>allowed your change <c:value>#<id></c:value><c:text>. It is done."
+    allowed-alert: "<c:muted>[Economy]</c:muted> <c:muted>allowed by</c:muted> <c:value><by></c:value>"
+    expired: "<prefix><c:error><sym:cross></c:error> <c:text>Nobody allowed your change <c:value>#<id></c:value> <c:text>for <c:value><player></c:value> <c:text>in time. Nothing changed."
+  pending-menu:
+    title: "Waiting changes"
+    info:
+      - "<c:text>/eco changes above the limit."
+      - "<c:text>Tap one: Yes allows it, No denies it."
+      - "<c:text>You can't decide your own."
+    empty:
+      name: "<c:muted>Nothing waiting"
+      lore:
+        - "<c:text>No /eco change waits for an Allow."
+    entry:
+      name: "<c:value>#<id> <c:muted><sym:dot></c:muted> <c:text><action> <amount>"
+      lore:
+        - "<c:text>Player: <c:value><player>"
+        - "<c:text>Asked by: <c:value><staff>"
+        - "<c:text>Change: <change>"
+        - "<c:text>Reason: <c:value><reason>"
+        - "<c:muted>Ends in <left>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to allow or deny"
+    confirm-crumb: "Allow?"
+    confirm:
+      - "<c:text>Yes: allow and apply it now."
+      - "<c:text>No: deny it, nothing changes."
 
 # Money notes (M3.2). <amount>, <balance>, <min>, <max> are colored amounts; <id> = first 8 characters of the note id.
 note:
@@ -82,11 +128,13 @@ note:
   withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Made a note of <amount><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(#<id>) <sym:dot> right-click it to cash it."
   insufficient: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have <amount><c:text>. <c:muted>Balance: </c:muted><balance>"
   inventory-full: "<prefix><c:error><sym:cross></c:error> <c:text>Inventory full. Free a slot and try again. Nothing was taken."
-  cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Make another note in <c:value><time></c:value>."
+  rate-limit: "<prefix><c:error><sym:cross></c:error> <c:text>You made <c:value><max></c:value> <c:text>notes in the last minute. Make the next one in <c:value><time></c:value>."
+  send-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Earn <required> <c:text>yourself before you make notes. Earn <missing> <c:text>more (selling, rewards). <c:muted>Paying island members with /pay always works."
+  not-transferable: "<prefix><c:error><sym:cross></c:error> <c:text>Crystals can't change hands, so only its maker can cash this note. You got it back."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your last note is still being made. Wait a moment."
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't make notes while frozen. Wait for staff."
   frozen-redeem: "<prefix><c:error><sym:cross></c:error> <c:text>You can't cash notes while frozen. Wait for staff."
-  currency-not-allowed: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be made into notes. Money can: <c:value>/withdraw 50k</c:value>"
+  currency-not-allowed: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be made into notes. Money and shards can: <c:value>/withdraw 50k</c:value>"
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest note is <min><c:text>."
   above-maximum: "<prefix><c:error><sym:cross></c:error> <c:text>The largest note is <max><c:text>. Make several instead."
   redeemed: "<prefix><c:success><sym:check></c:success> <c:text>Cashed a note of <amount> <c:muted>(signed by <c:value><signer></c:value>)<c:text>. <c:muted>Balance: </c:muted><balance>"
@@ -382,9 +430,6 @@ bank:
       - "<c:text>Take out: <amount>"
       - "<c:text>Fee (<percent>%): <fee>"
       - "<c:text>You get: <net>"
-      - "<c:warning>This period's interest is lost."
-      - "<c:muted>Free in the first minutes after"
-      - "<c:muted>each payout."
     free:
       - "<c:text>Take out: <amount>"
       - "<c:success>No fee right now"
@@ -443,10 +488,6 @@ bank:
         - "<bold><c:header>| Withdraw</c:header></bold>"
         - "<c:bar>| </c:bar><c:text>Up to: </c:text><max>"
         - "<c:bar>| </c:bar><c:text>Fee: </c:text><c:value><fee>%</c:value><discount>"
-        - "<c:bar>| </c:bar><c:text>Free: </c:text><c:value><free></c:value> <c:muted>after each payout"
-        - ""
-        - "<c:muted>A fee also costs this"
-        - "<c:muted>period's interest."
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
     withdraw-free:
@@ -543,9 +584,6 @@ bank:
       full:
         - "<c:warning>The bank is full: interest"
         - "<c:warning>needs room."
-      forfeited:
-        - "<c:warning>No interest this period:"
-        - "<c:warning>you withdrew with a fee."
       paused:
         - "<c:warning>Paused: play <need> in <days> days"
         - "<c:muted>to earn interest (<have> so far)."
@@ -787,6 +825,13 @@ watch:
       lore:
         - "<c:text>Unusual earning, transfers,"
         - "<c:text>notes, sell spikes, balance jumps."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+    pending:
+      name: "<c:value>Waiting /eco changes <c:muted>(<count>)"
+      lore:
+        - "<c:text>Changes above the limit wait"
+        - "<c:text>for an owner or admin to allow."
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     currency:

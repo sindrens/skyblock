@@ -15,12 +15,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class NoteRulesTest {
 
     @Test
-    void moneyOnlyByDefault() {
+    void moneyAndShardsByDefault() {
         EconomyConfig config = new EconomyConfig();
         assertTrue(NoteRules.allowed(config, Currency.MONEY));
-        assertFalse(NoteRules.allowed(config, Currency.SHARDS));
+        assertTrue(NoteRules.allowed(config, Currency.SHARDS), "R3-5b: shard notes on");
         assertFalse(NoteRules.allowed(config, Currency.GEMS));
-        assertEquals(Optional.of(NoteRules.Problem.NOT_ALLOWED), NoteRules.withdraw(config, 500, Currency.SHARDS, false));
+        assertFalse(NoteRules.allowed(config, Currency.CRYSTALS));
+        assertEquals(Optional.of(NoteRules.Problem.NOT_ALLOWED), NoteRules.withdraw(config, 500, Currency.GEMS, false));
+    }
+
+    @Test
+    void crystalsAreNeverTradeableEvenWhenTheConfigSaysSo() {
+        EconomyConfig config = new EconomyConfig();
+        config.tradeableCrystals = true;
+        config.noteCurrencies = List.of("money", "crystals");
+        assertFalse(config.tradeable(Currency.CRYSTALS), "R3-5b: hard rule in code");
+        assertFalse(NoteRules.allowed(config, Currency.CRYSTALS));
+        assertEquals(Optional.of(PayRules.Problem.NOT_TRADEABLE), PayRules.check(config, "a", "b", 10, Currency.CRYSTALS, false));
     }
 
     @Test

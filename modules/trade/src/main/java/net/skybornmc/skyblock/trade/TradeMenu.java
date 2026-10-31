@@ -161,13 +161,18 @@ final class TradeMenu extends Menu {
             module.core.plugin().getLogger().log(Level.WARNING, "Trade: offered item " + o + " is unreadable", e);
             return service.item(Material.BARRIER, viewer, TradeModule.ID, "menu.unreadable");
         }
-        if (mine && session.editable()) {
+        List<Component> value = module.valueLines(viewer, item, session); // R3-38 value hints
+        boolean takeBack = mine && session.editable();
+        if (takeBack || !value.isEmpty()) {
             List<Component> lore = new ArrayList<>();
             List<Component> existing = item.lore();
             if (existing != null) {
                 lore.addAll(existing);
             }
-            lore.addAll(service.lines(viewer, TradeModule.ID, "menu.take-back"));
+            lore.addAll(value);
+            if (takeBack) {
+                lore.addAll(service.lines(viewer, TradeModule.ID, "menu.take-back"));
+            }
             item.lore(lore);
         }
         return item;
