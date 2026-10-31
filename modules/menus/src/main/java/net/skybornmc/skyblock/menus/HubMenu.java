@@ -85,7 +85,7 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         ItemStack filler = nav.core.menus().filler(border());
         for (int slot = 9; slot < 45; slot++) {
             if (slot % 9 != 0 && slot % 9 != 8) {

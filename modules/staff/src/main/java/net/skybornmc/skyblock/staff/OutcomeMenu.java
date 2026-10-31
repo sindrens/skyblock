@@ -39,7 +39,7 @@ final class OutcomeMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Report.Outcome[] outcomes = Report.Outcome.values();
         for (int i = 0; i < outcomes.length && i < SLOTS.length; i++) {
             Report.Outcome outcome = outcomes[i];

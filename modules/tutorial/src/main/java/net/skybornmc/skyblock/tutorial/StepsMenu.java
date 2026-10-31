@@ -54,7 +54,7 @@ final class StepsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Progress p = module.engine().progress(player);
         TutorialFlow flow = module.engine().flow();
         List<String> steps = flow.steps();

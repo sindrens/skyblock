@@ -51,7 +51,7 @@ final class ReportMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(13, ReportsMenu.item(service, viewer, report, reports));
         if (dmCount >= 0) {
             set(22, service.item(dmCount > 0 ? Material.WRITABLE_BOOK : Material.BOOK, viewer, StaffFeature.MODULE,

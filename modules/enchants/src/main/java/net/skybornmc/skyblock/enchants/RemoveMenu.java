@@ -59,7 +59,7 @@ final class RemoveMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Optional<ToolPerk> perk = module.ops().tool(viewer, toolId).flatMap(h -> h.info().perk(enchant));
         if (perk.isEmpty()) {
             set(SLOT_INFO, service.item(Material.BARRIER, viewer, EnchantsModule.ID, "menu.tool-gone"));

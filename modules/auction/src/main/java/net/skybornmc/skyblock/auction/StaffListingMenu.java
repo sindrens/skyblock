@@ -56,7 +56,7 @@ final class StaffListingMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_ITEM, AuctionMenu.listingItem(module, viewer, listing, "staff.entry"));
         set(SLOT_BUY, service.item(Material.LIME_CONCRETE, viewer, AuctionModule.ID, "staff.buy",
                 module.moneyTag("price", viewer, listing.price())), click -> openChild(AuctionMenu.buyConfirm(module, viewer, listing)));

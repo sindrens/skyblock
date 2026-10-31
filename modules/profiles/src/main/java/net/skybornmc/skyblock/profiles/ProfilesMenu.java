@@ -57,7 +57,7 @@ final class ProfilesMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         ProfileServiceImpl profiles = module.service();
         Optional<ProfileServiceImpl.Session> session = profiles.session(viewer.getUniqueId());
         if (session.isEmpty()) {

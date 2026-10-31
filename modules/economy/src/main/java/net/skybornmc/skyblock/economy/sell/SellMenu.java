@@ -126,7 +126,7 @@ final class SellMenu extends Menu {
             feature.core.plugin().getLogger().severe("Sell chest of " + viewer.getName() + " was rebuilt; this must not happen");
         }
         built = true;
-        frame();
+        navBar();
         for (int slot = 0; slot < FREE_SLOTS; slot++) {
             set(slot, (MenuButton) null); // free space: no frame, no button
         }

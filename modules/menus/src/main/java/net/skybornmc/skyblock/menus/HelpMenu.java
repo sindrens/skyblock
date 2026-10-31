@@ -48,7 +48,7 @@ final class HelpMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Set<Integer> used = new HashSet<>();
         List<HelpBook.Category> pending = new ArrayList<>();
         for (HelpBook.Category category : nav.help.categories()) {

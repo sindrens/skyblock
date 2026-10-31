@@ -48,7 +48,7 @@ final class StaffMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(4, nav.item(Material.SHIELD, nav.text(viewer, "staff.header.name"), nav.lines(viewer, "staff.header.lore")));
         for (HubLayout.Entry entry : nav.staff.entries()) {
             Component name = nav.text(viewer, "staff.entries." + entry.id() + ".name");

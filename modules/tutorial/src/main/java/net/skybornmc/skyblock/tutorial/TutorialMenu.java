@@ -67,7 +67,7 @@ final class TutorialMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Progress p = module.engine().progress(player);
         if (p == null) {
             set(22, service.item(Material.CLOCK, viewer, TutorialModule.ID, "menu.loading"));

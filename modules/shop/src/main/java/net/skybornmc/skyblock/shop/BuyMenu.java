@@ -92,7 +92,7 @@ final class BuyMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         for (ShopCatalog.Category c : module.catalog().categories()) {
             set(c.slot(), module.tabButton(viewer, c, c.id().equals(tabId), click -> toTab(click.player(), c.id())));
         }

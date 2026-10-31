@@ -100,7 +100,7 @@ final class WarpEditMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         TagResolver[] p = {
                 Msg.p("warp", warp.name()),
                 Msg.p("category", warps.categoryName(warp.category())),

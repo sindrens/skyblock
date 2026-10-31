@@ -99,7 +99,7 @@ final class QuestsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         tab(SLOT_TAB_DAILY, QuestKind.DAILY, Material.SUNFLOWER);
         tab(SLOT_TAB_WEEKLY, QuestKind.WEEKLY, Material.CLOCK);
         tab(SLOT_TAB_ISLAND, QuestKind.ISLAND, Material.GRASS_BLOCK);

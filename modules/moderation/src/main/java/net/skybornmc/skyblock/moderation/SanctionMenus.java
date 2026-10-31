@@ -91,7 +91,7 @@ final class SanctionMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             Sanctions s = module.sanctions();
             set(SLOT_HEAD, service.item(PunishMenus.head(target), service.text(viewer, MODULE, "sanctions.menu.head.name",
                     Msg.p("player", target.name())), service.lines(viewer, MODULE, "sanctions.menu.head.lore",
@@ -277,7 +277,7 @@ final class SanctionMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             for (int i = 0; i < choices.size() && i < CHOICE_SLOTS.length; i++) {
                 Choice c = choices.get(i);
                 set(CHOICE_SLOTS[i], service.item(c.icon(), viewer, MODULE, c.key(), c.parts(), Msg.p("player", target.name()),
@@ -292,7 +292,7 @@ final class SanctionMenus {
             }
             if (parent() == null) {
                 // Opened without a parent (by command): Back (the frame's slot 18) returns to the /p screen.
-                set(SLOT_SMALL_BACK, service.navItem("back", Material.ARROW, viewer, "frame.back"),
+                set(SLOT_SMALL_BACK, service.backItem(viewer),
                         click -> reopen(module, viewer, target));
             }
         }
@@ -365,7 +365,7 @@ final class SanctionMenus {
                 module.messages().send(viewer, "sanctions.confiscate-offline", Msg.p("player", target.name()));
                 return;
             }
-            frame();
+            navBar();
             tab(TAB_HOTBAR, ConfiscateLayout.View.HOTBAR, Material.IRON_CHESTPLATE);
             tab(TAB_BACKPACK, ConfiscateLayout.View.BACKPACK, Material.CHEST);
             tab(TAB_ENDER, ConfiscateLayout.View.ENDER, Material.ENDER_CHEST);

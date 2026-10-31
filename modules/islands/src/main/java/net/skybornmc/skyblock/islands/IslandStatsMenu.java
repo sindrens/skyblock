@@ -114,7 +114,7 @@ final class IslandStatsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_HEADER, MenuButton.display(header()));
         for (int i = 0; i < ORDER.size(); i++) {
             MenuButton button = category(ORDER.get(i));

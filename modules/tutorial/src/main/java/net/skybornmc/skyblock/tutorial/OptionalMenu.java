@@ -54,7 +54,7 @@ final class OptionalMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Progress p = module.engine().progress(player);
         OptionalSteps optional = module.optional();
         List<OptionalStep> steps = optional.visible();

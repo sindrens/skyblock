@@ -63,7 +63,7 @@ final class NoteActionsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Note note = notes.note(island, noteId);
         if (note == null || islands.byId(island.id()) != island) {
             set(13, service.item(Material.BARRIER, viewer, IslandsModule.ID, "notes.actions.gone"));

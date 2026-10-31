@@ -130,7 +130,7 @@ final class SpawnerMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         SpawnerManager manager = module.spawners();
         shown = current();
         TagResolver[] p = placeholders(shown);

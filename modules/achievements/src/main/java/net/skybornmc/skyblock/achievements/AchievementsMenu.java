@@ -101,7 +101,7 @@ final class AchievementsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         tabs();
         switch (tab) {
             case PERSONAL -> personal();

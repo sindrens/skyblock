@@ -77,7 +77,7 @@ final class StaffCratesMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         boolean many = target.keys().size() > 1;
         set(SLOT_PROFILE, service.item(Material.ARMOR_STAND, viewer, CratesModule.ID, many ? "admin.menu.profile-switch" : "admin.menu.profile",
                 Msg.p("profile", target.profileName()), Msg.number("profiles", target.keys().size()), Msg.p("player", target.name())),

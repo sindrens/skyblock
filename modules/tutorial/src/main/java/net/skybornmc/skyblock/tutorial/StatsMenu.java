@@ -75,7 +75,7 @@ final class StatsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         if (!viewer.hasPermission(PERM_STATS)) {
             return;
         }

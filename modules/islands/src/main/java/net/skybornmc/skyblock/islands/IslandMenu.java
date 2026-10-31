@@ -104,7 +104,7 @@ final class IslandMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Role role = role();
         if (role == null) {
             return;

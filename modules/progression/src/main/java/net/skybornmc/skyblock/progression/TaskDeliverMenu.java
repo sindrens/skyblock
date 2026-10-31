@@ -85,7 +85,7 @@ final class TaskDeliverMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         TaskDef def = menus.tasks().catalog().get(taskId).orElse(null);
         if (def == null) {
             return;

@@ -84,7 +84,7 @@ final class LogsHubMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_SUMMARY, service.item(Material.KNOWLEDGE_BOOK, module.render.text(viewer, "hub.summary.name"),
                 service.lines(viewer, LogsModule.ID, "hub.summary.lore",
                         Msg.c("subject", module.render.subject(viewer, filter)),

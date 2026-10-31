@@ -136,7 +136,7 @@ final class SlotMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Optional<EnchantOps.HeldTool> held = module.ops().tool(viewer, toolId);
         if (held.isEmpty()) {
             set(SLOT_TOOL, service.item(Material.BARRIER, viewer, EnchantsModule.ID, "menu.tool-gone"));

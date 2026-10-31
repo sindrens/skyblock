@@ -66,7 +66,7 @@ final class BankTierMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         BankTiers tiers = bank.tiers();
         for (BankTiers.PersonalTier t : tiers.personal()) {
             int index = t.tier() - 1;

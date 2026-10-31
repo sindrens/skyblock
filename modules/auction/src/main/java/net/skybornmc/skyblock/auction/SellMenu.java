@@ -52,7 +52,7 @@ final class SellMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_ITEM, ItemCodec.display(expected));
         List<String> durations = Pricing.durations(module.config);
         int shown = Math.min(durations.size(), SLOT_CANCEL - FIRST_DURATION);

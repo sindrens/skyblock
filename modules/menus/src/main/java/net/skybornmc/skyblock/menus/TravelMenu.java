@@ -61,7 +61,7 @@ final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         int shown = 0;
         for (WarpLayout.Warp warp : nav.travel.warps()) {
             if (!available(warp)) {

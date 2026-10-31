@@ -60,7 +60,7 @@ final class HelpTopicMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_HEADER, nav.item(topic.icon(), nav.parse(viewer, topic.name()), nav.parse(viewer, topic.summary())));
 
         List<HelpBook.Page> pages = topic.pages();

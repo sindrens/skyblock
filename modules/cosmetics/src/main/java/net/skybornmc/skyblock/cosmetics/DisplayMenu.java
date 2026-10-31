@@ -73,7 +73,7 @@ final class DisplayMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Optional<ModuleConfig> chat = module.preview().chatConfig();
         if (chat.isEmpty()) {
             set(22, service.item(Material.BARRIER, module.text(viewer, "display.no-chat.name"), module.lines(viewer, "display.no-chat.lore")));

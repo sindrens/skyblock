@@ -71,7 +71,7 @@ final class MemberActionsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         String name = islands.name(target);
         Role viewerRole = island.roleOrNull(islands.key(viewer));
         Role role = island.roleOrNull(target);

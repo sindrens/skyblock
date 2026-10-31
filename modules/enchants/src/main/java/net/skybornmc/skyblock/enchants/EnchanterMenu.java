@@ -71,7 +71,7 @@ final class EnchanterMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         int tools = module.ops().tools(viewer).size();
         long books = module.ops().books(viewer).stream().filter(b -> !b.book().scroll()).count();
         set(SLOT_APPLY, service.item(Material.ENCHANTED_BOOK, viewer, EnchantsModule.ID, "menu.main.apply", Msg.p("books", books)),

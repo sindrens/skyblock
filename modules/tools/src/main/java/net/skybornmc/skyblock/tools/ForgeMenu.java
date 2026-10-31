@@ -79,7 +79,7 @@ final class ForgeMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         if (!module.forgeOpen(kind)) {
             kind = module.forgeKind(kind); // farming was switched off while the menu was open
         }

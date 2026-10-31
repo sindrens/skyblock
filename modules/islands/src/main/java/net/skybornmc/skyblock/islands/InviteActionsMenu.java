@@ -56,7 +56,7 @@ final class InviteActionsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         TagResolver[] p = p();
         set(SLOT_INFO_ITEM, service.item(Material.GRASS_BLOCK, viewer, IslandsModule.ID, "invites.actions.info", p));
         set(SLOT_ACCEPT, service.item(Material.LIME_CONCRETE, viewer, IslandsModule.ID, "invites.actions.accept", p), click -> {

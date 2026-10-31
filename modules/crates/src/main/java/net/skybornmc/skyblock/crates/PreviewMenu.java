@@ -69,7 +69,7 @@ final class PreviewMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         CrateCatalog.Crate crate = m.catalog().crate(crateId).orElse(null);
         if (crate == null || crate.hidden()) {
             set(22, service.item(Material.COBWEB, viewer, CratesModule.ID, "preview.gone"));

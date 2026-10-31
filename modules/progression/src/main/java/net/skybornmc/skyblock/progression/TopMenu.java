@@ -96,7 +96,7 @@ final class TopMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_LEVEL, simpleTab(IslandTop.Kind.LEVEL, Material.NETHER_STAR, "top-menu.tab.level"));
         set(SLOT_WEEKLY, weeklyTab());
         set(SLOT_VALUE, simpleTab(IslandTop.Kind.VALUE, Material.DIAMOND_BLOCK, "top-menu.tab.value"));

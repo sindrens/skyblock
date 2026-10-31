@@ -60,7 +60,7 @@ final class LogEntryMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         long now = System.currentTimeMillis();
         set(SLOT_ENTRY, module.render.item(viewer, entry, now, false));
         if (entry.hasLocation() && module.canTeleport(viewer)) {

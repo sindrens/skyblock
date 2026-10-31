@@ -118,7 +118,7 @@ final class DailyMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_TAB_CALENDAR, service.tab(viewer, new ItemStack(Material.SUNFLOWER),
                 service.text(viewer, RewardsModule.ID, playtime ? "menu.tabs.calendar" : "menu.tabs.calendar-open"),
                 service.lines(viewer, RewardsModule.ID, "menu.tabs.calendar-lore"), !playtime, () -> {

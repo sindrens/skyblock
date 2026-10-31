@@ -100,7 +100,7 @@ final class BlackMarketMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         long left = m.rotation().untilRestock(System.currentTimeMillis());
         set(SLOT_CLOCK, service.item(Material.CLOCK, viewer, BlackMarketModule.ID, "menu.clock",
                 Msg.p("time", Format.duration(Duration.ofMillis(left)))));

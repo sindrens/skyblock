@@ -53,7 +53,7 @@ final class SettingsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         java.util.Map<SettingCategory, List<SettingToggle>> visible = new java.util.EnumMap<>(SettingCategory.class);
         java.util.Map<SettingCategory, Integer> counts = new java.util.EnumMap<>(SettingCategory.class);
         for (SettingCategory category : SettingCategory.values()) {

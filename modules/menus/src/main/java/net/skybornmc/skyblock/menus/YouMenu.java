@@ -52,7 +52,7 @@ final class YouMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_HEAD, nav.head(viewer, "you.head"));
         Set<String> services = buttons.services();
         for (ButtonLayout.Button button : nav.you.buttons()) {

@@ -81,7 +81,7 @@ final class VoteMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         VoteService votes = m.votes();
         UUID account = viewer.getUniqueId();
         long now = System.currentTimeMillis();

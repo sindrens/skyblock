@@ -70,7 +70,7 @@ final class DungeonMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         for (Aspect aspect : Aspect.values()) {
             set(TAB_SLOTS[aspect.ordinal()], tabItem(aspect), click -> {
                 if (tab != aspect) {

@@ -65,7 +65,7 @@ final class InspectMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         UUID id = profile.uuid();
         Player online = Bukkit.getPlayer(id);
         String name = profile.name();

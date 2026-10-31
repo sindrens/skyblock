@@ -71,7 +71,7 @@ final class BoostersMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_SUMMARY, service.item(Material.NETHER_STAR, viewer, BoostersModule.ID, "menu.summary"));
         PersonalBoosters.State state = m.personal().state(viewer);
         BoosterType[] types = BoosterType.values();

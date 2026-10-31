@@ -98,7 +98,7 @@ final class SkillsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         SkillManager manager = module.manager();
         SkillCurve curve = manager.curve();
         int totalLevels = 0;

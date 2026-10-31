@@ -55,8 +55,8 @@ class TradeWindowTest {
     @Test
     void cancelIsNotOnTheBackSlot() {
         assertEquals(53, TradeMenu.SLOT_CANCEL);
-        assertFalse(TradeMenu.SLOT_CANCEL == Menu.SLOT_BACK || TradeMenu.SLOT_CANCEL == Menu.SLOT_INFO
-                || TradeMenu.SLOT_CANCEL == Menu.SLOT_CLOSE || TradeMenu.SLOT_CANCEL == Menu.SLOT_MAIN_MENU);
+        assertFalse(TradeMenu.SLOT_CANCEL == Menu.SLOT_BACK || TradeMenu.SLOT_CANCEL == Menu.SLOT_CLOSE
+                || TradeMenu.SLOT_CANCEL == Menu.SLOT_PREVIOUS || TradeMenu.SLOT_CANCEL == Menu.SLOT_NEXT);
     }
 
     @Test

@@ -64,7 +64,7 @@ final class UpgradeMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Optional<EnchantOps.HeldTool> held = module.ops().tool(viewer, toolId);
         Optional<EnchantDef> found = module.registry().get(enchant);
         Optional<ToolPerk> perk = held.flatMap(h -> h.info().perk(enchant));

@@ -34,7 +34,7 @@ final class WhereNextMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         button(11, Material.GRASS_BLOCK, "island");
         button(13, Material.IRON_PICKAXE, "mine");
         button(15, Material.KNOWLEDGE_BOOK, "help");

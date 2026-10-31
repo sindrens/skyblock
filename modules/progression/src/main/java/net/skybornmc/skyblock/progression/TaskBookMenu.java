@@ -79,7 +79,7 @@ final class TaskBookMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         TaskCatalog catalog = menus.tasks().catalog();
         TaskProgress state = menus.tasks().state();
         TagResolver[] head = {Msg.number("done", state.doneCount(islandId)), Msg.number("total", catalog.size())};

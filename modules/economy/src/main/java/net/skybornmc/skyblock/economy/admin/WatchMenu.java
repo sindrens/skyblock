@@ -45,7 +45,7 @@ abstract class WatchMenu extends Menu {
 
     @Override
     protected final void build() {
-        frame();
+        navBar();
         content();
     }
 
@@ -81,13 +81,11 @@ abstract class WatchMenu extends Menu {
     /** The standard Previous (52) / Next (53) buttons for {@code page} of {@code pages}; {@code turn} gets -1 or +1. */
     void pager(int page, int pages, java.util.function.IntConsumer turn) {
         if (page > 0) {
-            set(SLOT_PREVIOUS, service.navItem("previous", org.bukkit.Material.ARROW, viewer, "frame.previous",
-                    net.skybornmc.skyblock.common.text.Msg.p("page", page), net.skybornmc.skyblock.common.text.Msg.p("pages", pages)),
+            set(SLOT_PREVIOUS, service.pageItem(viewer, false, page, pages),
                     click -> turn.accept(-1));
         }
         if (page + 1 < pages) {
-            set(SLOT_NEXT, service.navItem("next", org.bukkit.Material.ARROW, viewer, "frame.next",
-                    net.skybornmc.skyblock.common.text.Msg.p("page", page + 2), net.skybornmc.skyblock.common.text.Msg.p("pages", pages)),
+            set(SLOT_NEXT, service.pageItem(viewer, true, page + 2, pages),
                     click -> turn.accept(1));
         }
     }

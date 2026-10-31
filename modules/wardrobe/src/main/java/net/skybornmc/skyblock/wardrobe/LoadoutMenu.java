@@ -79,7 +79,7 @@ final class LoadoutMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Session s = module.equipment().sessionOrNull(viewer.getUniqueId());
         if (s == null || !s.loaded) {
             return;

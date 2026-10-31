@@ -64,7 +64,7 @@ final class PortalChoiceMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         int shown = 1 + invites.size();
         set(PickListLayout.slot(0, shown), service.item(Material.GRASS_BLOCK, viewer, IslandsModule.ID, "portal-choice.create"), click -> {
             if (used) {

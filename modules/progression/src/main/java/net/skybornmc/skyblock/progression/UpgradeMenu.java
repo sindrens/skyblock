@@ -112,7 +112,7 @@ final class UpgradeMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         if (bank < 0 && !fetching) {
             fetchBank();
         }

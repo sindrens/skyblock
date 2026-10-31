@@ -70,7 +70,7 @@ final class EditorEntryMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Optional<Cosmetic> found = current();
         if (found.isEmpty()) {
             set(22, service.item(Material.COBWEB, module.text(viewer, "editor.gone.name"), module.lines(viewer, "editor.gone.lore")));

@@ -112,7 +112,7 @@ final class BankMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         ItemStack divider = service.filler(Material.BLACK_STAINED_GLASS_PANE);
         for (int slot : DIVIDER) {
             set(slot, divider);

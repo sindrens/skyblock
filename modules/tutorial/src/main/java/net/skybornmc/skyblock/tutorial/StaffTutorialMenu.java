@@ -63,7 +63,7 @@ final class StaffTutorialMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         setAsync(13, module.engine().lookup(player).thenApply(found -> MenuButton.display(status(found))));
         if (viewer.hasPermission(StatsMenu.PERM_STATS)) {
             set(31, service.item(Material.SPYGLASS, viewer, TutorialModule.ID, "staff.menu.stats"),

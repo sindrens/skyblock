@@ -95,7 +95,7 @@ final class PassMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         if (!m.settings.enabled) {
             set(SLOT_STATE, service.item(Material.GRAY_DYE, viewer, PassModule.ID, "menu.disabled"));
             return;
@@ -145,12 +145,10 @@ final class PassMenu extends Menu {
             set(SLOT_CLAIM_ALL, service.item(Material.GRAY_DYE, viewer, PassModule.ID, "menu.claim-all.none"));
         }
         if (page > 0) {
-            set(SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous", Msg.p("page", page),
-                    Msg.p("pages", pages)), click -> turn(-1));
+            set(SLOT_PREVIOUS, service.pageItem(viewer, false, page, pages), click -> turn(-1));
         }
         if (page < pages - 1) {
-            set(SLOT_NEXT, service.navItem("next", Material.ARROW, viewer, "frame.next", Msg.p("page", page + 2),
-                    Msg.p("pages", pages)), click -> turn(1));
+            set(SLOT_NEXT, service.pageItem(viewer, true, page + 2, pages), click -> turn(1));
         }
     }
 

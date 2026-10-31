@@ -62,7 +62,7 @@ final class SatchelItemMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         long amount = satchel.amount(viewer, id);
         set(SLOT_ITEM, display(satchel, service, viewer, id, amount, null));
         if (amount <= 0) {
