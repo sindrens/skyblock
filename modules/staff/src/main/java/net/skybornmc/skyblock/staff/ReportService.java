@@ -345,15 +345,33 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
     // ------------------------------------------------------------------ /reports
 
     void openList(Player staff, Report.Status status) {
-        store.reports(status, config.closedShown).thenAcceptAsync(list ->
-                core.menus().open(staff, new ReportsMenu(this, status, list, null)), main);
+        loadList(status).thenAcceptAsync(list -> core.menus().open(staff, new ReportsMenu(this, status, list, null)), main);
+    }
+
+    /** One tab of /reports (off the main thread); closed reports: the last {@link #closedShown()}. */
+    CompletableFuture<List<Report>> loadList(Report.Status status) {
+        return store.reports(status, config.closedShown);
+    }
+
+    /** All reports about one player (off the main thread), up to 200. */
+    CompletableFuture<List<Report>> loadAbout(String name) {
+        return core.players().offline(name).thenCompose(s -> s.isEmpty()
+                ? CompletableFuture.completedFuture(List.<Report>of())
+                : store.reportsAbout(s.get().uuid(), 200));
+    }
+
+    /** How many closed reports the Closed tab shows ({@code staff.yml → closed-shown}). */
+    int closedShown() {
+        return config.closedShown;
+    }
+
+    /** Runs {@code action} on the main thread. */
+    void onMain(Runnable action) {
+        main.execute(action);
     }
 
     private void openAbout(Player staff, String name) {
-        core.players().offline(name).thenCompose(s -> s.isEmpty()
-                        ? CompletableFuture.completedFuture(List.<Report>of())
-                        : store.reportsAbout(s.get().uuid(), 200))
-                .thenAcceptAsync(list -> core.menus().open(staff, new ReportsMenu(this, null, list, name)), main);
+        loadAbout(name).thenAcceptAsync(list -> core.menus().open(staff, new ReportsMenu(this, null, list, name)), main);
     }
 
     void openReport(Player staff, long id, Runnable afterChange) {
@@ -373,7 +391,15 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
     }
 
     void claim(Player staff, long id, boolean claim) {
+        claim(staff, id, claim, null);
+    }
+
+    /** Claims or unclaims; {@code after} (main thread, may be null) runs once the change is stored or refused (GUI-4c). */
+    void claim(Player staff, long id, boolean claim, Runnable after) {
         store.claim(id, claim ? staff.getUniqueId() : null, staff.getName()).thenAcceptAsync(changed -> {
+            if (after != null) {
+                after.run();
+            }
             if (!changed) {
                 msg.send(staff, "reports.not-changed", Msg.p("id", id));
                 return;

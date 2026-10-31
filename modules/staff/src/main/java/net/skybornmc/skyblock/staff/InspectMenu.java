@@ -99,7 +99,7 @@ final class InspectMenu extends Menu {
         setAsync(22, s.store().targetCounts(id).thenApply(c -> MenuButton.of(
                 service.item(Material.WRITABLE_BOOK, viewer, StaffFeature.MODULE, "menu.inspect.reports",
                         Msg.p("open", c[0]), Msg.p("total", c[1]), Msg.p("player", name)),
-                click -> s.reports().dispatchFor(click.player(), "reports player " + name))));
+                click -> service.navigate(click.player(), this, () -> s.reports().dispatchFor(click.player(), "reports player " + name)))));
 
         if (online != null) {
             button(28, Material.CHEST, "menu.inspect.inventory", "invsee " + name, name);
@@ -141,15 +141,25 @@ final class InspectMenu extends Menu {
                 .filter(st -> viewer.hasPermission("skyblock.spawner.restore"))
                 .ifPresent(st -> set(42, service.item(Material.SPAWNER, viewer, StaffFeature.MODULE, "menu.inspect.frozen-spawners",
                         Msg.p("player", name)), click -> st.openFrozenSpawners(click.player(), id, name, this)));
-        button(33, Material.BREEZE_ROD, "menu.inspect.punish", "p " + name, name);
-        button(34, Material.CLOCK, "menu.inspect.logs", "logs player " + name, name);
+        menuButton(33, Material.BREEZE_ROD, "menu.inspect.punish", "p " + name, name);
+        menuButton(34, Material.CLOCK, "menu.inspect.logs", "logs player " + name, name);
     }
 
+    /** A tool that is not a menu (inventory views): closes this screen and runs the command. */
     private void button(int slot, Material icon, String key, String command, String name) {
         set(slot, service.item(icon, viewer, StaffFeature.MODULE, key, Msg.p("player", name)), click -> {
             click.player().closeInventory();
             s.reports().dispatchFor(click.player(), command);
         });
+    }
+
+    /**
+     * GUI-4c: a tool that opens a menu (/p, /logs, /reports) keeps this screen as its Back target
+     * ({@code MenuService#navigate}), so staff return here instead of typing /inspect again.
+     */
+    private void menuButton(int slot, Material icon, String key, String command, String name) {
+        set(slot, service.item(icon, viewer, StaffFeature.MODULE, key, Msg.p("player", name)),
+                click -> service.navigate(click.player(), this, () -> s.reports().dispatchFor(click.player(), command)));
     }
 
     /** Opens the inspect menu for a name (online or offline). */

@@ -12,17 +12,25 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
-/** {@code /reports}: open / claimed / closed tabs (bottom row), or all reports about one player. */
+/**
+ * {@code /reports}: open / claimed / closed tabs, or all reports about one player.
+ *
+ * <p>GUI-4c: the tabs sit in row 0 (3, 4, 5; GUI_DESIGN §1.5) and switch in place (the list loads, then the same window
+ * redraws, so Back keeps working); Refresh (51) reloads the shown list in place, and so does coming back after a
+ * report changed.</p>
+ */
 final class ReportsMenu extends PagedMenu<Report> {
 
-    private static final int TAB_OPEN = 46;
-    private static final int TAB_CLAIMED = 47;
-    private static final int TAB_CLOSED = 51;
+    static final int TAB_OPEN = 3;
+    static final int TAB_CLAIMED = 4;
+    static final int TAB_CLOSED = 5;
+    static final int SLOT_REFRESH = 51;
 
     private final ReportService reports;
-    private final Report.Status status;
-    private final List<Report> list;
+    private Report.Status status;
+    private List<Report> list;
     private final String about;
+    private boolean loading;
 
     /**
      * @param status shown tab, or {@code null} when listing reports about one player ({@code about})
@@ -76,6 +84,7 @@ final class ReportsMenu extends PagedMenu<Report> {
 
     @Override
     protected void decorate() {
+        set(SLOT_REFRESH, service.item(Material.CLOCK, viewer, StaffFeature.MODULE, "menu.reports.refresh"), click -> reload(click.player()));
         if (about != null) {
             return;
         }
@@ -85,22 +94,72 @@ final class ReportsMenu extends PagedMenu<Report> {
     }
 
     private void tab(int slot, Report.Status tab, Material icon) {
-        String key = "menu.reports.tab." + tab.db() + (tab == status ? "-selected" : "");
-        ItemStack item = service.item(icon, viewer, StaffFeature.MODULE, key);
-        if (tab == status) {
-            item.editMeta(m -> m.setEnchantmentGlintOverride(true));
-        }
-        set(slot, item, click -> {
-            if (tab != status) {
-                reports.openList(click.player(), tab);
-            }
-        });
+        String key = "menu.reports.tab." + tab.db();
+        set(slot, service.tab(viewer, new ItemStack(icon), service.text(viewer, StaffFeature.MODULE, key + ".name"),
+                service.lines(viewer, StaffFeature.MODULE, key + ".desc", Msg.p("max", reports.closedShown())), tab == status,
+                () -> show(viewer, tab)));
     }
 
-    private void reload(Player staff) {
-        if (about == null) {
-            reports.openList(staff, status);
+    /** Loads {@code tab}'s list and redraws this window in place (no new menu, Back stays). */
+    private void show(Player staff, Report.Status tab) {
+        if (loading) {
+            return;
         }
+        loading = true;
+        reports.loadList(tab).whenComplete((loaded, error) -> reports.onMain(() -> {
+            loading = false;
+            if (error != null) {
+                service.sound(staff, "error");
+                return;
+            }
+            status = tab;
+            list = loaded;
+            page(0);
+            if (isOpen()) {
+                redraw();
+            }
+        }));
+    }
+
+    /** Refresh / back after a change: the shown list again, in place when this screen is open. */
+    private void reload(Player staff) {
+        if (about != null) {
+            reports.loadAbout(about).whenComplete((loaded, error) -> reports.onMain(() -> {
+                if (error == null) {
+                    list = loaded;
+                }
+                if (isOpen()) {
+                    redraw();
+                } else {
+                    service.open(staff, this);
+                }
+            }));
+            return;
+        }
+        if (isOpen()) {
+            loadingSame(staff, status);
+        } else {
+            reports.loadList(status).whenComplete((loaded, error) -> reports.onMain(() -> {
+                if (error == null) {
+                    list = loaded;
+                }
+                service.open(staff, this);
+            }));
+        }
+    }
+
+    private void loadingSame(Player staff, Report.Status shown) {
+        reports.loadList(shown).whenComplete((loaded, error) -> reports.onMain(() -> {
+            status = shown;
+            if (error == null) {
+                list = loaded;
+            } else {
+                service.sound(staff, "error");
+            }
+            if (isOpen()) {
+                redraw();
+            }
+        }));
     }
 
     /** The list/detail item of one report (shared with {@link ReportMenu}). */

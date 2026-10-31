@@ -69,11 +69,11 @@ final class ReportMenu extends Menu {
         if (!closed) {
             if (report.status() == Report.Status.CLAIMED && mine) {
                 set(29, service.item(Material.ORANGE_DYE, viewer, StaffFeature.MODULE, "menu.report-view.unclaim"),
-                        click -> act(() -> reports.claim(click.player(), report.id(), false)));
+                        click -> claim(click.player(), false));
             } else {
                 set(29, service.item(Material.LIME_DYE, viewer, StaffFeature.MODULE, "menu.report-view.claim",
                                 Msg.p("claimer", report.claimedByName() == null ? "-" : report.claimedByName())),
-                        click -> act(() -> reports.claim(click.player(), report.id(), true)));
+                        click -> claim(click.player(), true));
             }
         }
         set(30, service.item(target != null ? Material.ENDER_PEARL : Material.GRAY_DYE, viewer, StaffFeature.MODULE,
@@ -85,23 +85,24 @@ final class ReportMenu extends Menu {
                     }
                 });
         set(31, service.item(Material.SPYGLASS, viewer, StaffFeature.MODULE, "menu.report-view.inspect", Msg.p("player", report.targetName())),
-                click -> {
-                    click.player().closeInventory();
-                    reports.dispatchFor(click.player(), "inspect " + report.targetName());
-                });
+                click -> service.navigate(click.player(), this, () -> reports.dispatchFor(click.player(), "inspect " + report.targetName())));
         set(32, service.item(Material.BREEZE_ROD, viewer, StaffFeature.MODULE, "menu.report-view.punish", Msg.p("player", report.targetName())),
-                click -> {
-                    click.player().closeInventory();
-                    reports.dispatchFor(click.player(), "p " + report.targetName());
-                });
+                click -> service.navigate(click.player(), this, () -> reports.dispatchFor(click.player(), "p " + report.targetName())));
         if (!closed) {
             set(33, service.item(Material.RED_CONCRETE, viewer, StaffFeature.MODULE, "menu.report-view.close"),
                     click -> openChild(new OutcomeMenu(reports, report, afterChange)));
         }
     }
 
-    private void act(Runnable action) {
-        viewer.closeInventory();
-        action.run();
+    /**
+     * GUI-4c: Claim / Unclaim refresh this screen in place with the new state (was: close + chat line only). Inspect and
+     * Punish keep this report as their Back target.
+     */
+    private void claim(Player staff, boolean claim) {
+        reports.claim(staff, report.id(), claim, () -> {
+            if (isOpen()) {
+                reports.openReport(staff, report.id(), afterChange);
+            }
+        });
     }
 }
