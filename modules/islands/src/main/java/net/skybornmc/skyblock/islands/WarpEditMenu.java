@@ -13,18 +13,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Editing one warp (M2.4, leader and mods): 13 the warp; 29 teleport, 30 icon (picker), 31 public/private, 32 category
- * (each click = the next one), 33 delete (confirm). One plain click each (Bedrock-safe). Closes itself when the warp or
- * the viewer's right to manage it is gone.
+ * Editing one warp (M2.4, leader and mods): 13 the warp; 29 teleport, 30 rename (GUI-4b: chat, or a form popup on
+ * Bedrock), 31 icon (picker), 32 public/private, 33 category (pick list), 40 delete (confirm; alone in the danger slot like
+ * Leave in /is). One plain click each (Bedrock-safe). Closes itself when the warp or the viewer's right to manage it is gone.
  */
 final class WarpEditMenu extends Menu {
 
     static final int SLOT_WARP = 13;
     static final int SLOT_TELEPORT = 29;
-    static final int SLOT_ICON = 30;
-    static final int SLOT_PUBLIC = 31;
-    static final int SLOT_CATEGORY = 32;
-    static final int SLOT_DELETE = 33;
+    static final int SLOT_RENAME = 30;
+    static final int SLOT_ICON = 31;
+    static final int SLOT_PUBLIC = 32;
+    static final int SLOT_CATEGORY = 33;
+    static final int SLOT_DELETE = 40;
 
     private final IslandsModule module;
     private final IslandManager islands;
@@ -113,6 +114,12 @@ final class WarpEditMenu extends Menu {
             viewer.closeInventory();
             warps.teleport(viewer, island, warp);
         });
+        set(SLOT_RENAME, service.item(Material.OAK_SIGN, viewer, IslandsModule.ID, warp.sign() != null ? "warps.edit.rename-sign" : "warps.edit.rename", p),
+                click -> {
+                    if (valid()) {
+                        warps.promptRename(viewer, island, warp, () -> service.open(viewer, this));
+                    }
+                });
         set(SLOT_ICON, service.item(warps.icon(warp), viewer, IslandsModule.ID, "warps.edit.icon", p),
                 click -> openChild(new IconPickerMenu(module, islands, warps, island, warp)));
         set(SLOT_PUBLIC, service.item(warp.isPublic() ? Material.LIME_DYE : Material.GRAY_DYE, viewer, IslandsModule.ID,

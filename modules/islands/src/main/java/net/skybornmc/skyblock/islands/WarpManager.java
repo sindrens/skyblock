@@ -374,6 +374,74 @@ final class WarpManager implements Listener {
         });
     }
 
+    /**
+     * Asks for a new name (GUI-4b: chat, or a form popup with the on-screen keyboard on Bedrock), then renames the warp.
+     * {@code reopen} runs afterwards in every case (the menu closed for the typing).
+     */
+    void promptRename(Player player, Island island, IslandWarp warp, Runnable reopen) {
+        if (!canEdit(player, island, warp)) {
+            return;
+        }
+        core.menus().input(player, IslandsModule.ID, "warp.rename-prompt", config().warpNameMaxLength, warp.name(),
+                typed -> rename(player, island, warp, typed, reopen), reopen, Msg.p("warp", warp.name()));
+    }
+
+    /** Renames a warp (atomic, audited); a sign warp's sign shows the new name. {@code done} always runs. */
+    void rename(Player player, Island island, IslandWarp warp, String name, Runnable done) {
+        if (!canEdit(player, island, warp) || !validName(player, name) || name.equals(warp.name())) {
+            done.run();
+            return;
+        }
+        IslandWarp other = warp(island.id(), name);
+        if (other != null && other != warp) {
+            islands.fail(player, "warp.rename-taken", Msg.p("warp", name));
+            done.run();
+            return;
+        }
+        if (!begin(player)) {
+            done.run();
+            return;
+        }
+        String before = warp.name();
+        store.renameWarp(island.id(), warp.id(), name).whenCompleteAsync((result, error) -> {
+            end(player);
+            if (error != null) {
+                islands.databaseError(player, "warp rename", error);
+            } else if (result == VisitStore.RenameResult.TAKEN) {
+                islands.fail(player, "warp.rename-taken", Msg.p("warp", name));
+            } else if (result == VisitStore.RenameResult.GONE) {
+                islands.fail(player, "warp.gone");
+            } else {
+                warp.name(name);
+                renameSign(player, island, warp);
+                audit(player, island, warp, "island_warp_rename", before, name);
+                msg.send(player, "warp.renamed", Msg.p("old", before), Msg.p("warp", name));
+                core.sounds().play(player, "success");
+            }
+            if (player.isOnline()) {
+                done.run();
+            }
+        }, main);
+    }
+
+    /** Writes the new name on a sign warp's sign (loads the chunk without blocking if needed). */
+    private void renameSign(Player player, Island island, IslandWarp warp) {
+        IslandWarp.SignPos pos = warp.sign();
+        World world = pos == null ? null : Bukkit.getWorld(island.world());
+        if (world == null) {
+            return;
+        }
+        Component line = module.text(player, "warp.sign.line-2", Msg.p("warp", warp.name()));
+        world.getChunkAtAsync(pos.x() >> 4, pos.z() >> 4).thenAccept(chunk -> {
+            if (warp.sign() == null || !warp.sign().equals(pos)
+                    || !(world.getBlockAt(pos.x(), pos.y(), pos.z()).getState() instanceof org.bukkit.block.Sign sign)) {
+                return;
+            }
+            sign.getSide(org.bukkit.block.sign.Side.FRONT).line(1, line);
+            sign.update(true, false);
+        });
+    }
+
     private void audit(Player player, Island island, IslandWarp warp, String action, String before, String after) {
         core.audit().log(AuditCategory.ISLAND, action, Actor.player(player), island.id().toString(), islands.displayName(island), null, null,
                 Map.of("warp", warp.name(), "old", before, "new", after));

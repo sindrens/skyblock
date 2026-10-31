@@ -113,6 +113,14 @@ final class VisitStore {
         return db.async(c -> Sql.update(c, "UPDATE island_warps SET category = ? WHERE id = ?", category.key(), warpId) == 1);
     }
 
+    /** Result of renaming a warp (GUI-4b). */
+    enum RenameResult { RENAMED, TAKEN, GONE }
+
+    /** Renames a warp atomically (island row locked, the name unique per island). */
+    CompletableFuture<RenameResult> renameWarp(UUID islandId, long warpId, String name) {
+        return duplicateAs(db.transaction(c -> renameWarp(c, islandId, warpId, name)), RenameResult.TAKEN);
+    }
+
     /** Records a visitor for today; true if it is their first visit to this island today. */
     CompletableFuture<Boolean> recordVisit(UUID islandId, UUID visitor, int day, int seasonId) {
         return duplicateAs(db.async(c -> recordVisit(c, islandId, visitor, day, seasonId)), false);
@@ -269,6 +277,19 @@ final class VisitStore {
                 islandId, name, key, cat.key(), icon, true, at.x(), at.y(), at.z(), at.yaw(), at.pitch(),
                 sign == null ? null : sign.x(), sign == null ? null : sign.y(), sign == null ? null : sign.z(), 0, by, now);
         return new WarpResult.Created(new IslandWarp(id, islandId, name, cat, icon, true, at, sign, 0, by, now));
+    }
+
+    static RenameResult renameWarp(Connection c, UUID islandId, long warpId, String name) throws SQLException {
+        if (lockIsland(c, islandId).isEmpty()) {
+            return RenameResult.GONE;
+        }
+        String key = WarpRules.key(name);
+        if (Sql.queryOne(c, "SELECT 1 FROM island_warps WHERE island_id = ? AND name_key = ? AND id <> ?", rs -> 1, islandId, key, warpId)
+                .isPresent()) {
+            return RenameResult.TAKEN;
+        }
+        return Sql.update(c, "UPDATE island_warps SET name = ?, name_key = ? WHERE id = ? AND island_id = ?", name, key, warpId, islandId) == 1
+                ? RenameResult.RENAMED : RenameResult.GONE;
     }
 
     static boolean deleteWarp(Connection c, long warpId) throws SQLException {

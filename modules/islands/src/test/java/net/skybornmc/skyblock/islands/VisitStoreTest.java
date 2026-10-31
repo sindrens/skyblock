@@ -163,6 +163,25 @@ class VisitStoreTest {
     }
 
     @Test
+    void gui4bRenameKeepsTheWarpAndRefusesATakenName() {
+        UUID id = island(UUID.randomUUID());
+        IslandWarp shop = assertInstanceOf(VisitStore.WarpResult.Created.class, warp(id, "shop", WarpCategory.SHOPS, null)).warp();
+        IslandWarp farm = assertInstanceOf(VisitStore.WarpResult.Created.class, warp(id, "farm", WarpCategory.FARMS, null)).warp();
+        VisitStore store = new VisitStore(db);
+        assertEquals(VisitStore.RenameResult.TAKEN, store.renameWarp(id, shop.id(), "FARM").join(), "names are unique per island, any case");
+        assertEquals(VisitStore.RenameResult.RENAMED, store.renameWarp(id, shop.id(), "Market").join());
+        assertEquals(VisitStore.RenameResult.RENAMED, store.renameWarp(id, farm.id(), "Farm").join(), "only the case changes");
+        IslandWarp loaded = db.blocking(VisitStore::loadWarps).stream().filter(w -> w.id() == shop.id()).findFirst().orElseThrow();
+        assertEquals("Market", loaded.name());
+        assertEquals("market", loaded.key());
+        assertEquals(WarpCategory.SHOPS, loaded.category(), "everything else stays");
+        assertInstanceOf(VisitStore.WarpResult.Created.class, warp(id, "shop", WarpCategory.SHOPS, null), "the old name is free again");
+        assertEquals(VisitStore.RenameResult.GONE, store.renameWarp(UUID.randomUUID(), shop.id(), "x").join(), "wrong island");
+        assertTrue(store.deleteWarp(farm.id()).join());
+        assertEquals(VisitStore.RenameResult.GONE, store.renameWarp(id, farm.id(), "gone").join(), "deleted warp");
+    }
+
+    @Test
     void warpVisitsCountOncePerVisitorPerDay() {
         UUID id = island(UUID.randomUUID());
         IslandWarp warp = assertInstanceOf(VisitStore.WarpResult.Created.class, warp(id, "shop", null, null)).warp();

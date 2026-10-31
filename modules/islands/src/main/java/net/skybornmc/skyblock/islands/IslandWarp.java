@@ -14,7 +14,7 @@ final class IslandWarp {
 
     private final long id;
     private final UUID islandId;
-    private final String name;
+    private String name;
     private WarpCategory category;
     private String icon;
     private boolean isPublic;
@@ -49,6 +49,11 @@ final class IslandWarp {
 
     String name() {
         return name;
+    }
+
+    /** A rename (GUI-4b), applied after the database saved it. */
+    void name(String name) {
+        this.name = name;
     }
 
     String key() {

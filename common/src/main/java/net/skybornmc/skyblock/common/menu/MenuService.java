@@ -75,6 +75,10 @@ public final class MenuService implements Listener {
     private final Debounce debounce;
     private final Map<UUID, Menu> open = new ConcurrentHashMap<>();
     private final Map<UUID, Prompt> prompts = new ConcurrentHashMap<>();
+    /** Players with a Bedrock text form open ({@link #input}); counts as a prompt for popups. */
+    private final java.util.Set<UUID> forms = ConcurrentHashMap.newKeySet();
+    private BedrockForms bedrockForms = BedrockForms.NONE;
+    private static final LegacyComponentSerializer FORM_TEXT = LegacyComponentSerializer.legacySection();
     /** The menu a chat prompt or a command was started from: the Back target of a menu that opens a moment later. */
     private final Map<UUID, Origin> origins = new ConcurrentHashMap<>();
     /** Menu classes already warned about a button on a standard slot (logged once per class). */
@@ -128,6 +132,7 @@ public final class MenuService implements Listener {
 
     /** Registers the listener and the live-update task. */
     public void enable() {
+        bedrockForms = BedrockForms.detect(plugin.getLogger());
         Bukkit.getPluginManager().registerEvents(this, plugin);
         Bukkit.getPluginManager().registerEvents(offers, plugin);
         ticker = Bukkit.getScheduler().runTaskTimer(plugin, this::tickAll, 1L, 1L);
@@ -687,7 +692,95 @@ public final class MenuService implements Listener {
     }
 
     public boolean hasPrompt(Player player) {
-        return prompts.containsKey(player.getUniqueId());
+        return prompts.containsKey(player.getUniqueId()) || forms.contains(player.getUniqueId());
+    }
+
+    /**
+     * Asks for a line of text (GUI-4b, GUI_DESIGN §5): Bedrock players get a form popup with a text field and the
+     * on-screen keyboard (Floodgate; {@code menus.yml → bedrock-forms.enabled}), everyone else the chat prompt
+     * {@link #prompt}. Form texts: {@code <key>-form.title} and {@code <key>-form.label} in {@code module}; chat text:
+     * {@code <key>}. {@code onInput} runs on the main thread with the cleaned text ({@link TypedText}: no colour codes,
+     * trimmed, 1..{@code maxLength}); an empty answer or closing the form runs {@code onCancel}.
+     *
+     * @param current text already in the form field ({@code null} = empty); the chat prompt shows it via placeholders
+     */
+    public void input(Player player, String module, String key, int maxLength, String current, Consumer<String> onInput,
+                      Runnable onCancel, TagResolver... placeholders) {
+        if (TypedText.useForm(config.bedrockForms, messages.isBedrock(player), bedrockForms != BedrockForms.NONE)
+                && sendForm(player, module, key, maxLength, current, onInput, onCancel, placeholders)) {
+            return;
+        }
+        prompt(player, module, key, maxLength, typed -> {
+            TypedText.Result result = TypedText.clean(typed, maxLength);
+            if (result.check() == TypedText.Check.OK) {
+                onInput.accept(result.text());
+            } else {
+                messages.send(player, MODULE, "prompt.cancelled");
+                onCancel.run();
+            }
+        }, onCancel, placeholders);
+    }
+
+    private boolean sendForm(Player player, String module, String key, int maxLength, String current, Consumer<String> onInput,
+                             Runnable onCancel, TagResolver... placeholders) {
+        UUID id = player.getUniqueId();
+        TagResolver[] all = new TagResolver[placeholders.length + 1];
+        System.arraycopy(placeholders, 0, all, 0, placeholders.length);
+        all[placeholders.length] = Msg.p("max", maxLength);
+        String title = FORM_TEXT.serialize(text(player, module, key + "-form.title", all));
+        String label = FORM_TEXT.serialize(text(player, module, key + "-form.label", all));
+        Menu menu = open.get(id);
+        if (menu != null) {
+            // Like the chat prompt: the menu the answer reopens keeps this one as its Back target.
+            origins.put(id, new Origin(menu, System.currentTimeMillis() + (config.promptTimeoutSeconds + 5) * 1000L));
+        }
+        forms.add(id);
+        boolean sent = bedrockForms.send(id, title, label, current == null ? "" : current,
+                typed -> Bukkit.getScheduler().runTask(plugin, () -> formAnswer(player, module, key, maxLength, typed, onInput, onCancel, placeholders)),
+                () -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (forms.remove(id) && player.isOnline()) {
+                        onCancel.run();
+                    }
+                }));
+        if (!sent) {
+            forms.remove(id);
+            return false;
+        }
+        if (menu != null) {
+            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+        }
+        sounds.playUi(player, "notify");
+        return true;
+    }
+
+    private void formAnswer(Player player, String module, String key, int maxLength, String typed, Consumer<String> onInput,
+                            Runnable onCancel, TagResolver... placeholders) {
+        if (!forms.remove(player.getUniqueId()) || !player.isOnline()) {
+            return;
+        }
+        TypedText.Result result = TypedText.clean(typed, maxLength);
+        switch (result.check()) {
+            case EMPTY -> {
+                messages.send(player, MODULE, "prompt.cancelled");
+                onCancel.run();
+            }
+            case TOO_LONG -> {
+                messages.send(player, MODULE, "prompt.too-long", Msg.p("max", maxLength));
+                sounds.playUi(player, "error");
+                // Ask again with the text kept, so the player only has to shorten it.
+                if (!sendForm(player, module, key, maxLength, result.text(), onInput, onCancel, placeholders)) {
+                    onCancel.run();
+                }
+            }
+            case OK -> {
+                try {
+                    onInput.accept(result.text());
+                } catch (RuntimeException e) {
+                    plugin.getLogger().log(Level.SEVERE, "Form answer handler failed", e);
+                    messages.send(player, MODULE, "error");
+                }
+            }
+        }
     }
 
     private void cancelPrompt(Player player, boolean runCancel) {
@@ -835,6 +928,7 @@ public final class MenuService implements Listener {
             menu.detach();
         }
         cancelPrompt(player, false);
+        forms.remove(player.getUniqueId());
         origins.remove(player.getUniqueId());
         debounce.forget(player.getUniqueId());
     }
