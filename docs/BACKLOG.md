@@ -29,7 +29,8 @@ One place that points to every list of unbuilt work, ideas and questions. Nothin
 - **Phase 8 PvE:** custom mobs, world and summon bosses, pets, fishing. → PLAN8.
 - **Phase 9 Conquest and events:** KOTH, envoys, PvP zones, duels, event engine. → PLAN9.
 - **Phase 10 Rewards and retention:** crates and keys (AFK pool keys are saved until then), voting, daily rewards (per profile, owner), quests, battle pass, collection log, Black Market (also sells island size above 9x9), tutorial. → PLAN10.
-- **Phase 11 Store, ranks, Discord:** gems/credits, 5 ranks and perks (owner: some ranks get island fly; plan ranks with the owner), Discord. → RANKS, PLAN11.
+- **Credits (card C1), planned:** `/credit pay <player> <amount>` (bought credits only, confirm on every pay, receipt, no cooldown, no send gate; `/pay` already points to it as "coming soon") must be planned and built → QUEUE `CREDIT-PAY`. Then `/credit history|shop|trail|hold`, `/storegrant`, `/eco chargeback|revert`, entitlements and island perks → QUEUE `CREDIT-REST`. Wave 1a (rename, ledgers, `/credit bal`, credits in `/trade`) is built on `q/wave1b`.
+- **Phase 11 Store, ranks, Discord:** credits (were gems), 5 ranks and perks (owner: some ranks get island fly; plan ranks with the owner), Discord. → RANKS, PLAN11.
 - **Phase 12 Seasons** and **Phase 13 Balance and launch prep.** → PLAN12, PLAN13.
 - **Resource pack:** forced pack with a prompt before joining; the owner draws the art from the art brief. → RP1 waits for art.
 - **Starter chest:** custom contents for this server (proposal to the owner). → STARTER.

@@ -3,6 +3,13 @@
 Rules: max 3 agents at once; an item starts when its dependencies are merged and its lane does not overlap a running agent. Merge each finished agent immediately (build `-x test` + `compileTestJava` on its branch first), update STATUS.md + this file, release, start the next item.
 Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 
+## Card C1 credits (feature review, build specs in feature-overview/build-specs/)
+| # | Item | Depends on | Lane | Status |
+|---|---|---|---|---|
+| WAVE1A | Gems → credits rename, `credits` / `credits_earned` ledgers, per-module migrations, `CreditSpend` (one locked transaction), `/credit bal`, `/menu` → You → Credits, bought credits in `/trade`, owner-only `skyblock.economy.credits.grant`, C1-R3-03 config moves (branch `q/wave1b`) | — | economy, common/economy, trade, menus, blackmarket, wardrobe, profiles, rewards, boosters, hud | 🔄 (built on q/wave1b, waiting for merge + release) |
+| CREDIT-PAY | **Planned, not built:** `/credit pay <player> <amount>` (C1-R2-04): bought credits only, confirm screen on every pay (ConfirmMenu / Bedrock form), self-pay refused, frozen/trade-blocked sender refused, frozen receiver follows `freezeReceive`, no cooldown, no send gate (F4), receiver gets a [Receipt] click; tab completion; alerts per C1-R1-10 / C1-R2-05. `/pay` already says "coming soon". Needs its own build spec | WAVE1A | economy | ⬜ planned |
+| CREDIT-REST | **Planned, not built:** `/credit history`, `/credit shop` (+ `/creditshop`, `/store shop`), `/credit trail`, `/credit hold`, `/storegrant`, `/eco chargeback`, `/eco revert`, entitlements, island perks (card C1) | CREDIT-PAY, I7 for the shop look | economy, new credit shop | ⬜ planned |
+
 ## GUI round 1 (design session 31 Oct; files in docs/design/, decisions page https://claude.ai/artifact/Jk4hUDpho4iWzH9kzHFsHp db answers/gui1)
 | # | Item | Depends on | Lane | Status |
 |---|---|---|---|---|

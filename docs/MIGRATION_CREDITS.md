@@ -37,7 +37,9 @@ After the release no row may say `gems` in any of these columns.
 | blackmarket | `db/blackmarket/V002__gems_to_credits.sql` | `black_market_buys.pay_currency` | `gems` → `credits` ("paid with credits"; a refund looks up the ledger halves, so old buys come back as earned) |
 | profiles | `db/profiles/V002__gems_to_credits.sql` | `profile_slots.source` | `gems` → `credits` (still kept at a season reset) |
 | wardrobe | `db/wardrobe/V004__gems_to_credits.sql` | `wardrobe_sets.origin` | `gems` → `credits`, `gems_claim` → `credits_claim` |
-| wardrobe | `db/wardrobe/V005__sigils_credits_column.{mariadb,h2}.sql` | `wardrobe_sigils.gems` | column renamed `credits` (values unchanged) |
+| wardrobe | `db/wardrobe/V005__sigils_credits_column.{mariadb,h2}.sql` | `wardrobe_sigils.gems` | column renamed `credits` (values unchanged). MariaDB: `CHANGE COLUMN IF EXISTS gems credits BIGINT NOT NULL`; H2: `ALTER COLUMN IF EXISTS gems RENAME TO credits` (checked once with a throwaway H2 2.5.252 in-memory run, MODE=MySQL: value and NOT NULL kept, second run a no-op) |
+
+**Old idempotency keys are not rewritten.** Payments made before the rename keep keys like `vote:<id>:gems`, `<claim>:gems`, `start:<season>:gems:<player>`. The economy's key check (`EconomyStore.keyUsed`) also looks for the pre-rename twin of every key that contains `credits_earned`, so such a payment can never be made again under the new key. The claim flows are also guarded by their own rows in the same transaction (daily: claim row primary key; vote: `queued` → `paid`; boosters: key has no currency; auction/shop/crates/trade: no gem keys ever).
 
 Checked and **not** changed: `booster_thanks.gem_state` (a paid/unpaid flag, not a currency; the column keeps its name), rewards (no currency column; vote and daily payments are ledger rows, their idempotency keys now end in `:credits_earned` instead of `:gems`), trade (no currency column), hud (no table). Already applied migrations were not edited (`rewards V001` and `wardrobe V003` still say "store credits" in comments; changing them would change their checksums).
 
@@ -52,8 +54,10 @@ Every statement only touches rows that still have the old value, so a second run
 | `daily.yml` (v2) | `streak.gem-every`, `streak.gems` | `streak.credits-every`, `streak.credits` |
 | `votes.yml` (v2) | `rewards.gems` | `rewards.credits` |
 | `hud.yml` (v3) | `values.gems: gems_formatted` | `values.credits: credits_formatted` |
+| `trade.yml` (v2) | `money.currencies: [money, shards]` (untouched) | `[money, shards, credits]` (bought credits in `/trade`) |
+| `economy-watch.yml` (v4) | `alerts.currencies: [money, crystals, shards]` (untouched) | `[money, crystals, credits, shards]` |
 
-New `economy.yml` keys: `legacy-gems-alias-until`, `credits.spend-attempts`, `baltop.currencies`, `baltop.check-ticks`, `display.exact-below`, `notes.purge-start-seconds`, `notes.purge-every-hours`, `database.retry.*`, `eco.approve-above.credits`, `tradeable.credits` (default off).
+New `economy.yml` keys: `legacy-gems-alias-until`, `baltop.currencies`, `baltop.check-ticks`, `display.exact-below`, `notes.purge-start-seconds`, `notes.purge-every-hours`, `database.retry.*`, `eco.approve-above.credits`, `tradeable.credits` (default **true**: bought credits can be traded in `/trade`, owner).
 
 ## Aliases (temporary)
 - The word `gems` in commands and configs (`/eco give Steve gems 5`, a reward line `gems 3`, a set `type: gems`) means **earned credits** until `economy.yml → legacy-gems-alias-until` (default **2027-01-29**, 90 days after the rename). After that date the currency key `gems` is unknown. Reward lines and set sources keep accepting the word.
