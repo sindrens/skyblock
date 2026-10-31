@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/currency_credits",
+     "type": "minecraft:model"
+    },
+    "when": "currency/credits"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_store",
+     "type": "minecraft:model"
+    },
+    "when": "feature/store"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/diamond",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

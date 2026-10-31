@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/shop_essentials",
+     "type": "minecraft:model"
+    },
+    "when": "shop/essentials"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:block/crafting_table",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

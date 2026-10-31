@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/currency_shards",
+     "type": "minecraft:model"
+    },
+    "when": "currency/shards"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/prismarine_shard",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

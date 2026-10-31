@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/shop_redstone",
+     "type": "minecraft:model"
+    },
+    "when": "shop/redstone"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/redstone",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

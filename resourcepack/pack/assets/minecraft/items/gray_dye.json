@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/state_locked",
+     "type": "minecraft:model"
+    },
+    "when": "state/locked"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/state_off",
+     "type": "minecraft:model"
+    },
+    "when": "state/off"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/gray_dye",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

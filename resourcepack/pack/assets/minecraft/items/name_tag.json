@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_titles",
+     "type": "minecraft:model"
+    },
+    "when": "feature/titles"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/name_tag",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -1,0 +1,30 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_visit",
+     "type": "minecraft:model"
+    },
+    "when": "island/visit"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/filled_map",
+   "tints": [
+    {
+     "type": "minecraft:constant",
+     "value": -1
+    },
+    {
+     "default": 4603950,
+     "type": "minecraft:map_color"
+    }
+   ],
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/state_on",
+     "type": "minecraft:model"
+    },
+    "when": "state/on"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/lime_dye",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

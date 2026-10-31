@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_island",
+     "type": "minecraft:model"
+    },
+    "when": "feature/island"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:block/grass_block",
+   "tints": [
+    {
+     "downfall": 1.0,
+     "temperature": 0.5,
+     "type": "minecraft:grass"
+    }
+   ],
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

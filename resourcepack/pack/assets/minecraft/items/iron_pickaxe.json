@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_depths",
+     "type": "minecraft:model"
+    },
+    "when": "feature/depths"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/iron_pickaxe",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

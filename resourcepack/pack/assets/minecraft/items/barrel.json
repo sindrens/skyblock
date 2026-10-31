@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_bank",
+     "type": "minecraft:model"
+    },
+    "when": "feature/bank"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:block/barrel",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

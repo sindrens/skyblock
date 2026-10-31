@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/state_cancel",
+     "type": "minecraft:model"
+    },
+    "when": "state/cancel"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:block/red_concrete",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

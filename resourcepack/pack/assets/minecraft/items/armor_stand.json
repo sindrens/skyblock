@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_profiles",
+     "type": "minecraft:model"
+    },
+    "when": "feature/profiles"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/armor_stand",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

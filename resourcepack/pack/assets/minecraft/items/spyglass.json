@@ -1,0 +1,37 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_search",
+     "type": "minecraft:model"
+    },
+    "when": "nav/search"
+   }
+  ],
+  "fallback": {
+   "cases": [
+    {
+     "model": {
+      "model": "minecraft:item/spyglass",
+      "type": "minecraft:model"
+     },
+     "when": [
+      "gui",
+      "ground",
+      "fixed"
+     ]
+    }
+   ],
+   "fallback": {
+    "model": "minecraft:item/spyglass_in_hand",
+    "type": "minecraft:model"
+   },
+   "property": "minecraft:display_context",
+   "type": "minecraft:select"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -1,0 +1,34 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_staff",
+     "type": "minecraft:model"
+    },
+    "when": "feature/staff"
+   }
+  ],
+  "fallback": {
+   "on_false": {
+    "base": "minecraft:item/shield",
+    "model": {
+     "type": "minecraft:shield"
+    },
+    "type": "minecraft:special"
+   },
+   "on_true": {
+    "base": "minecraft:item/shield_blocking",
+    "model": {
+     "type": "minecraft:shield"
+    },
+    "type": "minecraft:special"
+   },
+   "property": "minecraft:using_item",
+   "type": "minecraft:condition"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

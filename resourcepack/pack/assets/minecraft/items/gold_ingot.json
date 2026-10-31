@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/currency_money",
+     "type": "minecraft:model"
+    },
+    "when": "currency/money"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_stats",
+     "type": "minecraft:model"
+    },
+    "when": "island/stats"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/gold_ingot",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

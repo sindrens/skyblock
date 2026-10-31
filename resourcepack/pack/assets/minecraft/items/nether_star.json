@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/menu",
+     "type": "minecraft:model"
+    },
+    "when": "menu"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/nether_star",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

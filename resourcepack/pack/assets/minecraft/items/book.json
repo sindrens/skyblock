@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_help",
+     "type": "minecraft:model"
+    },
+    "when": "nav/help"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/book",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

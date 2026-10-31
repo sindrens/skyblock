@@ -1,0 +1,34 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_invites",
+     "type": "minecraft:model"
+    },
+    "when": "island/invites"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_next",
+     "type": "minecraft:model"
+    },
+    "when": "nav/next"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_prev",
+     "type": "minecraft:model"
+    },
+    "when": "nav/prev"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/paper",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

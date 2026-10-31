@@ -53,3 +53,4 @@ server/plugins/**
 server/plugins/PhoenixSkyblock/data/
 server/plugins/PhoenixSkyblock/database.yml
 __pycache__/
+tools/icons_lib/.cache/

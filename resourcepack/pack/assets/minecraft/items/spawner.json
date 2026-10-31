@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/shop_spawners",
+     "type": "minecraft:model"
+    },
+    "when": "shop/spawners"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:block/spawner",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

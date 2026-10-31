@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_danger",
+     "type": "minecraft:model"
+    },
+    "when": "nav/danger"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:block/tnt",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

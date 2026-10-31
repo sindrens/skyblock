@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_settings",
+     "type": "minecraft:model"
+    },
+    "when": "feature/settings"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_permissions",
+     "type": "minecraft:model"
+    },
+    "when": "island/permissions"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/comparator",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

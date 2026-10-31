@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/shop_decoration",
+     "type": "minecraft:model"
+    },
+    "when": "shop/decoration"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/lantern",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

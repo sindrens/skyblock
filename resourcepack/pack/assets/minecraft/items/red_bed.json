@@ -1,0 +1,24 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_home",
+     "type": "minecraft:model"
+    },
+    "when": "feature/home"
+   }
+  ],
+  "fallback": {
+   "base": "minecraft:item/red_bed",
+   "model": {
+    "texture": "minecraft:red",
+    "type": "minecraft:bed"
+   },
+   "type": "minecraft:special"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}
