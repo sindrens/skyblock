@@ -27,6 +27,9 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "mobs.max-stacks-per-chunk", desc = "Most stacks of the same mob type in one chunk (owner SK1: 8). More spawns join a stack in the chunk or are cancelled.", min = 1, max = 64, level = Setting.Level.OWNER)
     public int mobMaxStacksPerChunk = 8;
 
+    @Setting(path = "mobs.max-stacks-per-chunk-total", desc = "Most mob stacks of all types together in one chunk (owner R3-26: 40), on top of the per-type limit above. More spawns join a stack in the chunk or are cancelled.", min = 1, max = 1024, level = Setting.Level.OWNER)
+    public int mobMaxStacksPerChunkTotal = 40;
+
     @Setting(path = "mobs.spawn-reasons", desc = "Spawn reasons that stack (Paper SpawnReason names). Plugin spawns (CUSTOM, COMMAND) never stack.")
     public List<String> mobSpawnReasons = List.of("NATURAL", "SPAWNER", "SPAWNER_EGG", "DISPENSE_EGG", "EGG", "BREEDING",
             "VILLAGE_DEFENSE", "BUILD_IRONGOLEM", "BUILD_SNOWMAN", "SLIME_SPLIT", "DEFAULT");

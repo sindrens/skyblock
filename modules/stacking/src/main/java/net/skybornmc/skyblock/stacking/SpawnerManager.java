@@ -122,6 +122,20 @@ final class SpawnerManager implements Listener {
         return Optional.ofNullable(spawners.get(Pos.of(block)));
     }
 
+    /** R3-30: spawners stacked on blocks that belong to {@code island} (in memory; one pass over the loaded spawners). */
+    long onIsland(UUID island) {
+        long sum = 0;
+        if (island == null) {
+            return 0;
+        }
+        for (Spawner sp : spawners.values()) {
+            if (!sp.removed && island.equals(sp.island)) {
+                sum += sp.amount;
+            }
+        }
+        return sum;
+    }
+
     int count(Block block) {
         Spawner sp = spawners.get(Pos.of(block));
         return sp == null ? 0 : sp.amount;

@@ -152,6 +152,82 @@ class MemberStoreTest {
         assertInstanceOf(MemberStore.InviteResult.Full.class, invite(id, leader, UUID.randomUUID()));
     }
 
+    private void remove(UUID island, UUID member, String reason, long lockUntil) {
+        assertTrue(db.blockingTransaction(c -> MemberStore.removeMember(c, island, member, member, reason, 1, now, lockUntil)).isPresent());
+    }
+
+    @Test
+    void freedSlotStaysLockedUntilTheLockRunsOut() {
+        // Owner F10: 4 slots, leader + 3 members; one leaves -> that slot is locked 48 h.
+        UUID leader = UUID.randomUUID();
+        UUID id = island(leader);
+        UUID leaver = UUID.randomUUID();
+        join(id, leader, leaver);
+        join(id, leader, UUID.randomUUID());
+        join(id, leader, UUID.randomUUID());
+        long until = SlotLocks.until(now, 48);
+        remove(id, leaver, MemberStore.LEFT_LEAVE, until);
+
+        MemberStore.InviteResult.SlotLocked locked = assertInstanceOf(MemberStore.InviteResult.SlotLocked.class,
+                invite(id, leader, UUID.randomUUID()));
+        assertEquals(4, locked.slots());
+        assertEquals(until, locked.opensAt());
+        assertEquals(Map.of(id, List.of(until)), db.blocking(c -> MemberStore.loadSlotLocks(c, now)));
+
+        now = until - 1;
+        assertInstanceOf(MemberStore.InviteResult.SlotLocked.class, invite(id, leader, UUID.randomUUID()), "one ms before: still locked");
+        now = until;
+        join(id, leader, UUID.randomUUID()); // the lock ran out: the slot is free again
+        assertEquals(Map.of(), db.blocking(c -> MemberStore.loadSlotLocks(c, now)));
+    }
+
+    @Test
+    void slotLockOnlyCountsAgainstFreeSlots() {
+        // 4 slots, leader + 1 member; a member leaves (lock): 1 member + 1 lock still leaves 2 free slots.
+        UUID leader = UUID.randomUUID();
+        UUID id = island(leader);
+        UUID leaver = UUID.randomUUID();
+        join(id, leader, leaver);
+        join(id, leader, UUID.randomUUID());
+        remove(id, leaver, MemberStore.LEFT_KICK, SlotLocks.until(now, 48));
+        join(id, leader, UUID.randomUUID());
+        assertInstanceOf(MemberStore.InviteResult.SlotLocked.class, invite(id, leader, UUID.randomUUID()), "3 members + 1 lock = 4");
+    }
+
+    @Test
+    void staffRemovalDoesNotLockTheSlot() {
+        UUID leader = UUID.randomUUID();
+        UUID id = island(leader);
+        UUID removed = UUID.randomUUID();
+        join(id, leader, removed);
+        join(id, leader, UUID.randomUUID());
+        join(id, leader, UUID.randomUUID());
+        remove(id, removed, MemberStore.LEFT_REMOVED, 0L);
+        join(id, leader, UUID.randomUUID()); // free at once
+        assertEquals(Map.of(), db.blocking(c -> MemberStore.loadSlotLocks(c, now)));
+    }
+
+    @Test
+    void acceptIsBlockedByALockToo() {
+        // An invite sent while a slot was free can't be accepted into a slot that was locked meanwhile.
+        UUID leader = UUID.randomUUID();
+        UUID id = island(leader);
+        UUID leaver = UUID.randomUUID();
+        join(id, leader, leaver);
+        join(id, leader, UUID.randomUUID());
+        UUID first = UUID.randomUUID();
+        UUID late = UUID.randomUUID();
+        assertInstanceOf(MemberStore.InviteResult.Created.class, invite(id, leader, first));
+        assertInstanceOf(MemberStore.InviteResult.Created.class, invite(id, leader, late));
+        assertInstanceOf(MemberStore.AcceptResult.Joined.class, accept(id, first)); // full: 4/4
+        long until = SlotLocks.until(now, 48);
+        remove(id, leaver, MemberStore.LEFT_LEAVE, until);
+        assertEquals(until, assertInstanceOf(MemberStore.AcceptResult.SlotLocked.class, accept(id, late)).opensAt());
+        // Staff can still add someone (locks only limit invites).
+        assertInstanceOf(MemberStore.AddResult.Added.class,
+                db.blockingTransaction(c -> MemberStore.addMember(c, id, UUID.randomUUID(), leader, now, LIMITS)));
+    }
+
     @Test
     void inviteSentBeforeTheIslandFilledUpCantOverfillIt() {
         UUID leader = UUID.randomUUID();

@@ -253,7 +253,19 @@ final class MobStacker implements Listener {
         return n;
     }
 
-    /** Any compatible stack with room in the chunk of {@code at} (when the chunk has its 8 stacks). */
+    /**
+     * New stacks that may still appear in the chunk of {@code at}: at most {@code mobs.max-stacks-per-chunk} of the type
+     * (owner SK1) and {@code mobs.max-stacks-per-chunk-total} of all types together (owner R3-26). The total is the cached
+     * chunk list size (O(1)); the per-type count walks that one chunk's list, which the caps keep short.
+     */
+    private int freeNewStacks(Location at, EntityType type, LivingEntity except) {
+        StackingConfig config = module.config();
+        int total = index.chunkTotal(at.getWorld().getUID(), at.getBlockX() >> 4, at.getBlockZ() >> 4, except);
+        return StackMath.freeNewStacks(stacksInChunk(at, type, except), total, config.mobMaxStacksPerChunk,
+                config.mobMaxStacksPerChunkTotal);
+    }
+
+    /** Any compatible stack with room in the chunk of {@code at} (when the chunk has no room for a new stack). */
     private LivingEntity chunkTarget(LivingEntity joining, Location at, int amount) {
         int max = module.config().mobMaxStack;
         for (LivingEntity e : index.chunk(at.getWorld().getUID(), at.getBlockX() >> 4, at.getBlockZ() >> 4)) {
@@ -278,10 +290,10 @@ final class MobStacker implements Listener {
             Location at = event.getLocation();
             int amount = count(entity);
             LivingEntity target = target(entity, at, module.config().mobMergeRadius, amount);
-            if (target == null && stacksInChunk(at, entity.getType(), entity) >= module.config().mobMaxStacksPerChunk) {
+            if (target == null && freeNewStacks(at, entity.getType(), entity) <= 0) {
                 target = chunkTarget(entity, at, amount);
                 if (target == null) {
-                    event.setCancelled(true); // owner SK1: the chunk is full of this mob
+                    event.setCancelled(true); // owner SK1 / R3-26: the chunk is full of this mob, or of mobs in total
                     return;
                 }
             }
@@ -357,7 +369,7 @@ final class MobStacker implements Listener {
         for (int i = 0; i < existing.length; i++) {
             existing[i] = count(stacks.get(i));
         }
-        int freeStacks = Math.max(0, config.mobMaxStacksPerChunk - stacksInChunk(spawner, type, null));
+        int freeStacks = freeNewStacks(spawner, type, null);
         StackMath.Distribution plan = StackMath.distribute(amount, existing, config.mobMaxStack, freeStacks);
         for (int i = 0; i < existing.length; i++) {
             if (plan.added()[i] > 0) {

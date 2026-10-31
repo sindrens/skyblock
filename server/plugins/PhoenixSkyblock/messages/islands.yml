@@ -379,6 +379,9 @@ invite:
   already-member: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is already on your island."
   has-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already has an island. They must leave it first."
   full: "<prefix><c:error><sym:cross></c:error> <c:text>Your island is full (<c:value><slots></c:value> members). Buy more slots: <click:run_command:'/is upgrade'><c:action>[Upgrades]</c:action></click>"
+  # Owner F10: a member left or was kicked recently, so that slot stays locked (members.slot-lock-hours) before a new invite.
+  # <time> = until the next slot opens (31h 12m), <hours> = the lock length.
+  slot-locked: "<prefix><c:error><sym:cross></c:error> <c:text>A slot opens again in <c:value><time></c:value> — a member left recently. <c:muted>(slots stay locked <hours>h after a leave or kick)"
   too-many: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has <c:value><max></c:value> open invites. Wait until some are answered or expire."
   target-blocked: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't join islands at the moment."
   target-season-limit: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already joined <c:value><max></c:value> islands this season, the max."
@@ -422,6 +425,8 @@ accept:
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>One of your other profiles is (or was) on this island. Profiles can't share one."
   expired: "<prefix><c:error><sym:cross></c:error> <c:text>That invite expired. Ask for a new one."
   full: "<prefix><c:error><sym:cross></c:error> <c:text>That island is full (<c:value><slots></c:value> members)."
+  # Owner F10: the free slot of that island is locked after a recent leave or kick. <time> <hours>
+  slot-locked: "<prefix><c:error><sym:cross></c:error> <c:text>That island's free slot opens again in <c:value><time></c:value> — a member left recently."
   blocked: "<prefix><c:error><sym:cross></c:error> <c:text>You can't join islands at the moment."
   season-limit: "<prefix><c:error><sym:cross></c:error> <c:text>You already joined <c:value><max></c:value> islands this season, the max."
   joined: "<prefix><c:success><sym:check></c:success> <c:text>You joined <c:value><island></c:value>! <click:run_command:'/is home'><hover:show_text:'<c:text>Go to the island'><c:action>[Go there]</c:action></hover></click> <click:run_command:'/is members'><hover:show_text:'<c:text>See the members'><c:action>[Members]</c:action></hover></click>"
@@ -577,6 +582,11 @@ members:
       - "<c:text>Type: <c:value>Team island"
       - "<c:text>Members: <c:value><members>/<slots></c:value> <c:muted>(up to <max-slots> with upgrades)"
       - "<c:text>Coop: <c:value><coops>/<max-coops>"
+    # Owner F10: shown while slots are locked after a leave or kick. <locked> <time> = until the first one opens, <hours>
+    locked:
+      - "<c:text>Locked slots: <c:warning><locked></c:warning> <c:muted>(next opens in <time>)"
+      - "<c:muted>A slot stays locked <hours>h after"
+      - "<c:muted>a member leaves or is kicked."
   entry:
     name: "<c:value><player></c:value> <c:muted>· <role>"
     name-leader: "<c:flame><sym:star></c:flame> <c:value><player></c:value> <c:muted>· <role>"
@@ -604,6 +614,11 @@ members:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
     lore-full:
       - "<c:error>Your island is full (<members>/<slots>)."
+    # Owner F10: room by members, but the free slots are locked. <locked> <time> <members> <slots>
+    lore-locked:
+      - "<c:text>Members: <c:value><members>/<slots>"
+      - "<c:warning>A slot opens again in <time>."
+      - "<c:muted>A member left recently."
   invites:
     name: "<c:flame><bold>Invites"
     lore:
@@ -786,11 +801,25 @@ disband:
     name: "<c:error><bold>Disband <island>"
     lore:
       - "<c:text>Deletes your island for good."
+  # Owner R3-30: the real amounts you lose, on both confirm screens. <bank> <money> <items> <spawners> <level>.
+  # money and items only show while islands.yml lifecycle.profile-reset.on-disband is on (the profile is reset).
+  loss:
+    top:
+      - "<c:bar>| </c:bar><c:error><bold>You lose"
+    bank:
+      - "<c:bar>| </c:bar><c:text>Island bank: <c:error><bank>"
+    money:
+      - "<c:bar>| </c:bar><c:text>Your money: <c:error><money>"
+    items:
+      - "<c:bar>| </c:bar><c:text>Items (inventory + ender chest): <c:error><items>"
+    spawners:
+      - "<c:bar>| </c:bar><c:text>Spawners: <c:error><spawners>"
+    level:
+      - "<c:bar>| </c:bar><c:text>Island level: <c:error><level>"
+    unknown: "unknown"
   details:
-    - "<c:error>Your island and everything on it is"
-    - "<c:error>deleted forever, its bank money too."
-    - "<c:error>This profile is reset: its money,"
-    - "<c:error>inventory and ender chest are taken."
+    - ""
+    - "<c:error>Your island is deleted forever."
     - "<c:text>You can create a new island right away."
   cancelled: "<prefix><c:text>Your island stays. Nothing changed."
   done-now: "<prefix><c:success><sym:check></c:success> <c:value><island></c:value> <c:text>was disbanded. <click:run_command:'/is'><hover:show_text:'<c:text>Create a new island'><c:action>[Create one]</c:action></hover></click>"
@@ -1307,6 +1336,8 @@ browser:
     lore:
       - "<c:text>Visit an island and rate it"
       - "<c:text>with <c:value>/is rate <player> <stars>"
+      - "<c:muted>Islands show here once enough"
+      - "<c:muted>different players rated them."
   gone:
     name: "<c:muted>Island removed"
   tab-click:
@@ -1336,9 +1367,11 @@ browser:
     rating:
       crumb: "Top rated"
       name: "<c:flame>Top rated"
+      # Owner R3-33: <ips> = different players (addresses) needed, <min> = ratings needed.
       lore:
-        - "<c:text>Average stars this season."
-        - "<c:muted>Needs at least <min> ratings."
+        - "<c:text>Best stars this season, fairly"
+        - "<c:text>weighted: more ratings count more."
+        - "<c:muted>Needs ratings from <ips> different players."
     likes:
       crumb: "Most liked"
       name: "<c:flame>Most liked"

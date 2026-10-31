@@ -94,6 +94,10 @@ final class MemberManager {
     void load() {
         invites.clear();
         store.loadInvitesBlocking(System.currentTimeMillis()).forEach(invites::put);
+        java.util.Map<UUID, List<Long>> locks = store.loadSlotLocksBlocking(System.currentTimeMillis());
+        for (Island island : List.copyOf(islands.islands())) {
+            island.slotLocks(locks.getOrDefault(island.id(), List.of())); // owner F10
+        }
         for (Island island : List.copyOf(islands.islands())) {
             if (!island.coops().isEmpty() && !managerOnline(island, null)) {
                 clearCoops(island, "no-manager-online", Actor.system("islands"));
@@ -177,6 +181,9 @@ final class MemberManager {
             return;
         }
         long now = System.currentTimeMillis();
+        if (slotLocked(player, island, now)) {
+            return;
+        }
         if (invites.get(island.id(), islands.key(target), now).isEmpty()
                 && invites.pendingFrom(island.id(), now) >= config().maxPendingInvites) {
             islands.fail(player, "invite.too-many", Msg.p("max", config().maxPendingInvites));
@@ -214,6 +221,7 @@ final class MemberManager {
                 case MemberStore.InviteResult.HasIsland ignored -> islands.fail(player, "invite.has-island", Msg.p("player", targetName));
                 case MemberStore.InviteResult.Full full -> islands.fail(player, "invite.full", Msg.p("slots", full.slots()));
                 case MemberStore.InviteResult.Limited limited -> limitedForInviter(player, targetName, limited.check());
+                case MemberStore.InviteResult.SlotLocked locked -> slotLockedFail(player, "invite.slot-locked", locked.opensAt());
                 case MemberStore.InviteResult.OwnProfile ignored -> islands.fail(player, "invite.own-profile", Msg.p("player", targetName));
             }
         }, main);
@@ -245,6 +253,25 @@ final class MemberManager {
                     Msg.p("members", island.memberCount()), Msg.p("slots", islands.slots(island)));
             core.sounds().play(target, "notify");
         }
+    }
+
+    /**
+     * Owner F10: true (and tells {@code player}) when the island has room by members but every free slot is locked after
+     * a recent leave or kick. From the cache; the invite and accept transactions check the database again.
+     */
+    boolean slotLocked(Player player, Island island, long now) {
+        List<Long> locks = island.slotLocks(now);
+        int slots = islands.slots(island);
+        if (!SlotLocks.blockedByLocks(slots, island.memberCount(), locks.size())) {
+            return false;
+        }
+        slotLockedFail(player, "invite.slot-locked", SlotLocks.opensAt(locks, slots, island.memberCount(), now).orElse(now));
+        return true;
+    }
+
+    private void slotLockedFail(Player player, String key, long opensAt) {
+        islands.fail(player, key, Msg.p("time", SlotLocks.remaining(opensAt - System.currentTimeMillis())),
+                Msg.p("hours", config().slotLockHours));
     }
 
     /** A player name for use inside a click command argument (pre-processed; quotes and tags stripped). */
@@ -324,6 +351,7 @@ final class MemberManager {
                 case MemberStore.AcceptResult.HasIsland ignored -> islands.fail(player, "accept.has-island");
                 case MemberStore.AcceptResult.Full full -> islands.fail(player, "accept.full", Msg.p("slots", full.slots()));
                 case MemberStore.AcceptResult.Limited limited -> limitedForTarget(player, limited.check());
+                case MemberStore.AcceptResult.SlotLocked locked -> slotLockedFail(player, "accept.slot-locked", locked.opensAt());
                 case MemberStore.AcceptResult.OwnProfile ignored -> {
                     core.audit().logPlayer(AuditCategory.ISLAND, ProfileService.AUDIT_BLOCKED, Actor.player(player),
                             player.getUniqueId(), player.getName(), null, null,
@@ -553,7 +581,16 @@ final class MemberManager {
         if (initiator != null && !begin(initiator)) {
             return CompletableFuture.completedFuture(false);
         }
-        return store.removeMember(island.id(), target, islands.person(target), reason, config().seasonId).handleAsync((role, error) -> {
+        int lockHours = config().slotLockHours;
+        int inactiveDays = config().slotLockInactiveDays;
+        int seasonId = config().seasonId;
+        UUID person = islands.person(target);
+        return lastSeen(target, reason, lockHours).thenCompose(seen -> {
+            long now = System.currentTimeMillis();
+            long lockUntil = SlotLocks.locks(reason, seen, now, inactiveDays, lockHours) ? SlotLocks.until(now, lockHours) : 0L;
+            return store.removeMember(island.id(), target, person, reason, seasonId, lockUntil)
+                    .thenApply(role -> new Removal(role, lockUntil, seen));
+        }).handleAsync((removal, error) -> {
             if (initiator != null) {
                 end(initiator);
             }
@@ -565,18 +602,43 @@ final class MemberManager {
                 }
                 return false;
             }
+            Optional<Role> role = removal.role();
             if (role.isEmpty()) {
                 if (initiator != null) {
                     islands.fail(initiator, "member.not-found", Msg.p("player", islands.name(target)));
                 }
                 return false;
             }
-            removed(island, target, role.get(), reason, note, actor, initiator);
+            if (removal.lockUntil() > 0) {
+                island.addSlotLock(removal.lockUntil()); // owner F10: saved with the removal
+            }
+            removed(island, target, role.get(), reason, note, actor, initiator, removal);
             return true;
         }, main);
     }
 
-    private void removed(Island island, UUID target, Role oldRole, String reason, String note, Actor actor, Player initiator) {
+    /** A saved removal: the old role (empty = was no member), the slot lock end (0 = none) and the last-seen time used. */
+    private record Removal(Optional<Role> role, long lockUntil, long lastSeen) {
+    }
+
+    /**
+     * Owner F10: when the removed member was last online ({@link Long#MAX_VALUE} while online, {@link SlotLocks#UNKNOWN}
+     * if not known). Only a kick needs it (the 21-day inactivity exemption); everything else completes at once.
+     */
+    private CompletableFuture<Long> lastSeen(UUID target, String reason, int lockHours) {
+        if (lockHours <= 0 || !MemberStore.LEFT_KICK.equals(reason)) {
+            return CompletableFuture.completedFuture(SlotLocks.UNKNOWN);
+        }
+        if (islands.online(target) != null) {
+            return CompletableFuture.completedFuture(Long.MAX_VALUE);
+        }
+        return core.players().offline(islands.person(target))
+                .thenApply(snapshot -> snapshot.map(net.skybornmc.skyblock.common.player.PlayerData.Snapshot::lastSeen).orElse(SlotLocks.UNKNOWN))
+                .exceptionally(error -> SlotLocks.UNKNOWN);
+    }
+
+    private void removed(Island island, UUID target, Role oldRole, String reason, String note, Actor actor, Player initiator,
+                         Removal removal) {
         String targetName = islands.name(target);
         if (islands.byId(island.id()) == island) {
             islands.cacheLeave(island, target);
@@ -590,6 +652,11 @@ final class MemberManager {
         details.put("reason", reason);
         if (note != null && !note.isBlank()) {
             details.put("note", note);
+        }
+        details.put("slot_locked_until", removal.lockUntil()); // owner F10: 0 = the slot is free at once
+        if (removal.lockUntil() == 0 && MemberStore.LEFT_KICK.equals(reason) && removal.lastSeen() != SlotLocks.UNKNOWN
+                && removal.lastSeen() != Long.MAX_VALUE) {
+            details.put("last_seen", removal.lastSeen()); // why a kick did not lock (inactive member)
         }
         core.audit().log(AuditCategory.ISLAND, leave ? "island_leave" : "island_kick", actor, island.id().toString(), name, null, null, details);
         KickBackups backups = module.kickBackups();

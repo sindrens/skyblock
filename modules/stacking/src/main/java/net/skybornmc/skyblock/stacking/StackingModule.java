@@ -318,6 +318,12 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     }
 
     @Override
+    public long spawnersOnIsland(java.util.UUID islandId) {
+        SpawnerManager s = spawners;
+        return s == null ? 0 : s.onIsland(islandId);
+    }
+
+    @Override
     public java.util.OptionalInt spawnerTier(String type) {
         SpawnerTiers t = tiers;
         if (t == null || type == null) {

@@ -46,6 +46,10 @@ final class MemberStore {
         record Limited(JoinRules.Check check) implements InviteResult {
         }
 
+        /** Owner F10: the island has room by members, but every free slot is locked after a recent leave/kick. */
+        record SlotLocked(int slots, long opensAt) implements InviteResult {
+        }
+
         /** Owner P3: another profile of this player is or was on the island. */
         record OwnProfile() implements InviteResult {
         }
@@ -69,6 +73,10 @@ final class MemberStore {
         }
 
         record Limited(JoinRules.Check check) implements AcceptResult {
+        }
+
+        /** Owner F10: every free slot is locked after a recent leave/kick. */
+        record SlotLocked(int slots, long opensAt) implements AcceptResult {
         }
 
         /** Owner P3: another profile of this player is or was on the island. */
@@ -140,10 +148,21 @@ final class MemberStore {
         return db.async(c -> Sql.update(c, "DELETE FROM island_invites WHERE expires_at <= ?", now));
     }
 
-    /** Removes a stored member (never the leader); returns their old role, or empty if they weren't a member. */
-    CompletableFuture<Optional<Role>> removeMember(UUID islandId, UUID uuid, UUID player, String reason, int seasonId) {
+    /**
+     * Removes a stored member (never the leader); returns their old role, or empty if they weren't a member.
+     * {@code lockUntil} &gt; 0 also locks the freed slot until then (owner F10), in the same transaction.
+     */
+    CompletableFuture<Optional<Role>> removeMember(UUID islandId, UUID uuid, UUID player, String reason, int seasonId, long lockUntil) {
         long now = System.currentTimeMillis();
-        return db.transaction(c -> removeMember(c, islandId, uuid, player, reason, seasonId, now));
+        return db.transaction(c -> removeMember(c, islandId, uuid, player, reason, seasonId, now, lockUntil));
+    }
+
+    /** Running slot locks of every island (end times), blocking: enable only. Old rows are deleted on the way. */
+    Map<UUID, List<Long>> loadSlotLocksBlocking(long now) {
+        return db.blocking(c -> {
+            Sql.update(c, "DELETE FROM island_slot_locks WHERE until_at <= ?", now);
+            return loadSlotLocks(c, now);
+        });
     }
 
     /**
@@ -204,6 +223,21 @@ final class MemberStore {
 
     CompletableFuture<JoinRules.History> history(UUID uuid, int seasonId) {
         return db.async(c -> history(c, uuid, seasonId));
+    }
+
+    static Map<UUID, List<Long>> loadSlotLocks(Connection c, long now) throws SQLException {
+        Map<UUID, List<Long>> out = new java.util.HashMap<>();
+        Sql.query(c, "SELECT island_id, until_at FROM island_slot_locks WHERE until_at > ?", rs -> {
+            out.computeIfAbsent(Sql.uuid(rs, "island_id"), k -> new java.util.ArrayList<>()).add(rs.getLong("until_at"));
+            return null;
+        }, now);
+        return out;
+    }
+
+    /** End times of the slot locks of one island still running at {@code now} (owner F10). */
+    static List<Long> slotLocks(Connection c, UUID islandId, long now) throws SQLException {
+        return Sql.query(c, "SELECT until_at FROM island_slot_locks WHERE island_id = ? AND until_at > ?",
+                rs -> rs.getLong("until_at"), islandId, now);
     }
 
     /** Pending (not expired) invites, blocking: enable only. */
@@ -312,8 +346,13 @@ final class MemberStore {
             return new InviteResult.OwnProfile();
         }
         int slots = MemberRules.slots(island.get().memberSlots(), limits.startSlots(), limits.maxSlots());
-        if (memberCount(c, islandId) >= slots) {
+        int members = memberCount(c, islandId);
+        if (members >= slots) {
             return new InviteResult.Full(slots);
+        }
+        List<Long> locks = slotLocks(c, islandId, now);
+        if (SlotLocks.blockedByLocks(slots, members, locks.size())) {
+            return new InviteResult.SlotLocked(slots, SlotLocks.opensAt(locks, slots, members, now).orElse(now));
         }
         JoinRules.Check check = joinCheck(c, targetPlayer, now, limits);
         if (!(check instanceof JoinRules.Check.Ok)) {
@@ -350,8 +389,13 @@ final class MemberStore {
             return new AcceptResult.OwnProfile();
         }
         int slots = MemberRules.slots(island.get().memberSlots(), limits.startSlots(), limits.maxSlots());
-        if (memberCount(c, islandId) >= slots) {
+        int members = memberCount(c, islandId);
+        if (members >= slots) {
             return new AcceptResult.Full(slots);
+        }
+        List<Long> locks = slotLocks(c, islandId, now);
+        if (SlotLocks.blockedByLocks(slots, members, locks.size())) {
+            return new AcceptResult.SlotLocked(slots, SlotLocks.opensAt(locks, slots, members, now).orElse(now));
         }
         JoinRules.Check check = joinCheck(c, targetPlayer, now, limits);
         if (!(check instanceof JoinRules.Check.Ok)) {
@@ -412,12 +456,20 @@ final class MemberStore {
     }
 
     static Optional<Role> removeMember(Connection c, UUID islandId, UUID uuid, String reason, int seasonId, long now) throws SQLException {
-        return removeMember(c, islandId, uuid, uuid, reason, seasonId, now);
+        return removeMember(c, islandId, uuid, uuid, reason, seasonId, now, 0L);
     }
 
-    /** @param uuid the member's profile key; {@code player} their player (join history rows are per player) */
     static Optional<Role> removeMember(Connection c, UUID islandId, UUID uuid, UUID player, String reason, int seasonId, long now)
             throws SQLException {
+        return removeMember(c, islandId, uuid, player, reason, seasonId, now, 0L);
+    }
+
+    /**
+     * @param uuid      the member's profile key; {@code player} their player (join history rows are per player)
+     * @param lockUntil &gt; {@code now}: the freed slot stays locked until then (owner F10); 0 = no lock
+     */
+    static Optional<Role> removeMember(Connection c, UUID islandId, UUID uuid, UUID player, String reason, int seasonId, long now,
+                                       long lockUntil) throws SQLException {
         Optional<Role> role = Sql.queryOne(c, "SELECT role FROM island_members WHERE island_id = ? AND uuid = ?",
                 rs -> IslandStore.role(rs.getString("role")), islandId, uuid);
         if (role.isEmpty() || role.get() == Role.LEADER) {
@@ -431,6 +483,10 @@ final class MemberStore {
             // (counted = false: never a join, and since ISL2 a leave never starts the join cooldown).
             Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, left_at, left_reason, counted, profile_id) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", player, islandId, seasonId, now, now, reason, false, uuid);
+        }
+        if (lockUntil > now) {
+            Sql.update(c, "INSERT INTO island_slot_locks (island_id, member_uuid, left_reason, created_at, until_at) VALUES (?, ?, ?, ?, ?)",
+                    islandId, uuid, truncate(reason, 16), now, lockUntil);
         }
         return role;
     }

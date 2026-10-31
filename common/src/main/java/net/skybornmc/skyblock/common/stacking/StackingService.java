@@ -58,6 +58,14 @@ public interface StackingService {
         return java.util.OptionalInt.empty();
     }
 
+    /**
+     * Stacked spawners placed on an island (sum of every block's stack), from memory; 0 when unknown or not supported.
+     * The disband confirm shows what is lost (owner R3-30). Main thread.
+     */
+    default long spawnersOnIsland(java.util.UUID islandId) {
+        return 0;
+    }
+
     /** True if the entity came from a stacked spawner (no AI, vanilla loot only). */
     boolean fromStackedSpawner(Entity entity);
 

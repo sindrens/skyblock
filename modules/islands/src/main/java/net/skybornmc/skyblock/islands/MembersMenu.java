@@ -114,18 +114,34 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
     @Override
     protected void decorate() {
         int slots = islands.slots(island);
+        long now = System.currentTimeMillis();
+        List<Long> locks = island.slotLocks(now);
+        // Owner F10: locked slots (a member left or was kicked recently) and when the next one opens.
+        String opens = locks.isEmpty() ? "" : SlotLocks.remaining(locks.stream().mapToLong(Long::longValue).min().orElse(now) - now);
+        TagResolver[] lockTags = {Msg.p("locked", locks.size()), Msg.p("time", opens), Msg.p("hours", module.config().slotLockHours)};
+        List<Component> summary = new ArrayList<>(lines(island.team() ? "members.summary.lore-team" : "members.summary.lore-solo",
+                Msg.p("members", island.memberCount()), Msg.p("slots", slots), Msg.p("coops", island.coops().size()),
+                Msg.p("max-coops", module.config().maxCoops), Msg.p("max-slots", module.config().maxSlots)));
+        if (!locks.isEmpty()) {
+            summary.addAll(lines("members.summary.locked", lockTags));
+        }
         set(SLOT_SUMMARY, service.item(new ItemStack(Material.GRASS_BLOCK), text("members.summary.name", Msg.p("island", islands.displayName(island))),
-                lines(island.team() ? "members.summary.lore-team" : "members.summary.lore-solo",
-                        Msg.p("members", island.memberCount()), Msg.p("slots", slots), Msg.p("coops", island.coops().size()),
-                        Msg.p("max-coops", module.config().maxCoops), Msg.p("max-slots", module.config().maxSlots))));
+                summary));
         MemberManager members = islands.memberManager();
         if (MemberRules.canInvite(viewerRole())) {
             boolean full = island.memberCount() >= slots;
-            set(SLOT_INVITE, service.item(new ItemStack(full ? Material.GRAY_DYE : Material.WRITABLE_BOOK),
-                    text("members.invite.name"), lines(full ? "members.invite.lore-full" : "members.invite.lore",
-                            Msg.p("members", island.memberCount()), Msg.p("slots", slots))), click -> {
+            boolean locked = !full && SlotLocks.blockedByLocks(slots, island.memberCount(), locks.size());
+            String lore = full ? "members.invite.lore-full" : locked ? "members.invite.lore-locked" : "members.invite.lore";
+            TagResolver[] tags = {Msg.p("members", island.memberCount()), Msg.p("slots", slots), Msg.p("locked", locks.size()),
+                    Msg.p("time", SlotLocks.opensAt(locks, slots, island.memberCount(), now).stream()
+                            .mapToObj(at -> SlotLocks.remaining(at - now)).findFirst().orElse(opens))};
+            set(SLOT_INVITE, service.item(new ItemStack(full || locked ? Material.GRAY_DYE : Material.WRITABLE_BOOK),
+                    text("members.invite.name"), lines(lore, tags)), click -> {
                 if (island.memberCount() >= islands.slots(island)) {
                     islands.fail(viewer, "invite.full", Msg.p("slots", islands.slots(island)));
+                    return;
+                }
+                if (members.slotLocked(viewer, island, System.currentTimeMillis())) {
                     return;
                 }
                 openChild(new PlayerPickerMenu(v -> text("members.invite.crumb"),

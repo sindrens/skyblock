@@ -13,6 +13,7 @@ import net.skybornmc.skyblock.common.settings.SettingToggle;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Scheduler;
+import net.skybornmc.skyblock.common.visibility.Visibility;
 import net.skybornmc.skyblock.common.teleport.TeleportOptions;
 import net.skybornmc.skyblock.common.teleport.TeleportReason;
 import net.skybornmc.skyblock.common.teleport.TeleportService;
@@ -672,7 +673,7 @@ final class VisitManager implements Listener {
             return;
         }
         Player target = Bukkit.getPlayerExact(targetName);
-        if (target != null && !player.canSee(target)) {
+        if (target != null && !Visibility.knows(player, target)) {
             target = null;
         }
         boolean present = target != null && slotIsland(target.getLocation()) == island;
@@ -1180,7 +1181,7 @@ final class VisitManager implements Listener {
         TagResolver who = Msg.p("player", visitor.getName());
         for (UUID member : List.copyOf(island.members().keySet())) {
             Player online = islands.online(member);
-            if (online == null || !online.canSee(visitor) || (settings != null && !settings.get(online, setting))) {
+            if (online == null || !Visibility.knows(online, visitor) || (settings != null && !settings.get(online, setting))) {
                 continue;
             }
             msg.send(online, key, who);
@@ -1241,12 +1242,12 @@ final class VisitManager implements Listener {
         busy.remove(player.getUniqueId());
     }
 
-    /** Tab completion of /is visit, rate, like, warp: visible online players with an island, then island owners. */
+    /** Tab completion of /is visit, rate, like, warp: known (not vanished) online players with an island, then island owners. */
     List<String> islandNames(CommandSender sender) {
         return safely(() -> {
             List<String> names = new ArrayList<>();
             for (Player online : Bukkit.getOnlinePlayers()) {
-                if ((!(sender instanceof Player viewer) || viewer.canSee(online)) && islands.islandOfPlayer(islands.key(online)).isPresent()) {
+                if (Visibility.knows(sender, online) && islands.islandOfPlayer(islands.key(online)).isPresent()) {
                     names.add(online.getName());
                 }
             }
@@ -1268,7 +1269,7 @@ final class VisitManager implements Listener {
             return List.of();
         }
         return safely(() -> islands.islandOfPlayer(islands.key(player))
-                .map(island -> visitorsOn(island).stream().filter(player::canSee).map(Player::getName).toList()).orElse(List.of()));
+                .map(island -> visitorsOn(island).stream().filter(visitor -> Visibility.knows(player, visitor)).map(Player::getName).toList()).orElse(List.of()));
     }
 
     /** Tab completion of /is ban: visible online players who are not on the sender's island and not banned yet. */
@@ -1284,7 +1285,7 @@ final class VisitManager implements Listener {
             Island island = own.get();
             List<String> names = new ArrayList<>();
             for (Player online : Bukkit.getOnlinePlayers()) {
-                if (!online.equals(player) && player.canSee(online) && island.roleOrNull(islands.key(online)) == null
+                if (!online.equals(player) && Visibility.knows(player, online) && island.roleOrNull(islands.key(online)) == null
                         && !isBanned(island.id(), online.getUniqueId())) {
                     names.add(online.getName());
                 }
