@@ -17,7 +17,9 @@ import net.skybornmc.skyblock.common.tools.ToolService;
 import net.skybornmc.skyblock.common.tutorial.TutorialService.State;
 import org.bukkit.Location;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Barrel;
 import org.bukkit.block.Chest;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,6 +32,8 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerInputEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -37,9 +41,12 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -96,14 +103,24 @@ final class TutorialListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onDeath(PlayerDeathEvent event) {
-        module.cameras().stop(event.getPlayer());
+        module.cameras().died(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onRespawn(PlayerRespawnEvent event) {
+        Player player = event.getPlayer();
+        core.scheduler().later("tutorial-camera-respawn", 1, () -> {
+            if (player.isOnline()) {
+                module.cameras().respawned(player);
+            }
+        });
     }
 
     /** Sneak = skip (Bedrock cut-and-fade; Java spectators also send it). */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSneak(PlayerToggleSneakEvent event) {
         if (event.isSneaking() && module.cameras().running(event.getPlayer().getUniqueId())) {
-            module.cameras().skip(event.getPlayer());
+            module.cameras().sneak(event.getPlayer());
         }
     }
 
@@ -121,11 +138,27 @@ final class TutorialListener implements Listener {
         }
     }
 
-    /** Cut-and-fade players hover frozen (looking around is fine). */
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    /** Cut-and-fade: walking or flying away from the shot skips the camera (TUT-FIX: never a frozen player). */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
-        if (event.hasChangedPosition() && module.cameras().frozen(event.getPlayer())) {
-            event.setCancelled(true);
+        if (event.hasChangedPosition() && module.cameras().running(event.getPlayer().getUniqueId())) {
+            module.cameras().moved(event.getPlayer(), event.getTo());
+        }
+    }
+
+    /** TUT-FIX: any move key, jump or sneak during a camera skips it (also while spectating, where moves send nothing). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInput(PlayerInputEvent event) {
+        if (module.cameras().running(event.getPlayer().getUniqueId())) {
+            module.cameras().input(event.getPlayer(), event.getInput());
+        }
+    }
+
+    /** TUT-FIX: a teleport by anything else during a camera ends it at that destination. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTeleport(PlayerTeleportEvent event) {
+        if (module.cameras().running(event.getPlayer().getUniqueId())) {
+            module.cameras().teleported(event.getPlayer(), event);
         }
     }
 
@@ -183,13 +216,22 @@ final class TutorialListener implements Listener {
 
     // ------------------------------------------------------------------ 3 chest (or the Starter pack for team joiners)
 
+    /**
+     * TUT-FIX: the remembered starter chest of the player's current island counts; without one (the old point belonged
+     * to an older island, a barrel, no chest found at paste) any chest, barrel or shulker box on the own island counts.
+     * Only while the chest step is not done yet (an early open counts too, TQ21).
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOpen(InventoryOpenEvent event) {
-        if (!(event.getPlayer() instanceof Player player) || running(player) == null) {
+        if (!(event.getPlayer() instanceof Player player)) {
             return;
         }
         Progress p = running(player);
-        if (p.isDone(Steps.CHEST) || !isStarterChest(player, p, event.getInventory().getHolder(false))) {
+        if (p == null || p.isDone(Steps.CHEST)) {
+            return;
+        }
+        List<ChestRules.Spot> blocks = blocks(event.getInventory().getHolder(false));
+        if (blocks.isEmpty() || !ChestRules.counts(blocks, known(player, p), ownIsland(player, blocks.getFirst()))) {
             return;
         }
         p.chestOpened = true;
@@ -202,66 +244,104 @@ final class TutorialListener implements Listener {
             return;
         }
         Progress p = running(player);
-        if (p != null && p.chestOpened && !p.isDone(Steps.CHEST)) {
-            core.scheduler().later("tutorial-chest-check", 1, () -> checkChest(player));
-        }
-    }
-
-    void checkChest(Player player) {
-        Progress p = running(player);
         if (p == null || !p.chestOpened || p.isDone(Steps.CHEST)) {
             return;
         }
-        if (hasTool(player)) {
+        boolean container = !blocks(event.getInventory().getHolder(false)).isEmpty();
+        boolean left = !container || containsTool(event.getInventory().getContents());
+        core.scheduler().later("tutorial-chest-check", 1, () -> {
+            checkChest(player, left);
+            Progress now = running(player);
+            if (now != null && !now.isDone(Steps.CHEST) && Steps.CHEST.equals(now.step) && player.isOnline()) {
+                module.msg().actionBar(player, "steps.chest.take-tool");
+            }
+        });
+    }
+
+    /** The chest re-check after the starter tools arrived (the container may still hold them). */
+    void checkChest(Player player) {
+        checkChest(player, true);
+    }
+
+    private void checkChest(Player player, boolean containerHasTool) {
+        Progress p = running(player);
+        if (p == null || p.isDone(Steps.CHEST)) {
+            return;
+        }
+        if (ChestRules.done(p.chestOpened, needTool() != null, hasTool(player), containerHasTool)) {
             engine().signal(player, Steps.CHEST);
         }
     }
 
-    private boolean isStarterChest(Player player, Progress p, InventoryHolder holder) {
-        Location loc = switch (holder) {
-            case Chest chest -> chest.getLocation();
-            case DoubleChest dc -> dc.getLocation();
-            case null, default -> null;
-        };
-        if (loc == null) {
+    /** True when the remembered starter chest of this island is loaded and no longer a storage block. */
+    private boolean chestGone(Player player, Progress p) {
+        Optional<Location> at = module.targets().chest(player, p);
+        if (at.isEmpty() || !at.get().isChunkLoaded()) {
             return false;
         }
-        Optional<Location> known = module.targets().chest(p);
-        if (known.isPresent()) {
-            Location k = known.get();
-            if (holder instanceof DoubleChest dc) {
-                return near(dc.getLeftSide(), k) || near(dc.getRightSide(), k);
+        BlockState state = at.get().getBlock().getState(false);
+        return !(state instanceof Chest || state instanceof Barrel || state instanceof ShulkerBox);
+    }
+
+    /** The blocks of a container holder (both halves of a double chest); empty for menus and entity inventories. */
+    private static List<ChestRules.Spot> blocks(InventoryHolder holder) {
+        return switch (holder) {
+            case DoubleChest dc -> {
+                List<ChestRules.Spot> out = new ArrayList<>(2);
+                for (InventoryHolder side : new InventoryHolder[]{dc.getLeftSide(false), dc.getRightSide(false)}) {
+                    if (side instanceof BlockState state) {
+                        out.add(spot(state.getLocation()));
+                    }
+                }
+                yield out;
             }
-            return k.getWorld().equals(loc.getWorld()) && k.getBlockX() == loc.getBlockX() && k.getBlockY() == loc.getBlockY()
-                    && k.getBlockZ() == loc.getBlockZ();
-        }
-        // Unknown chest point: any chest on the player's own island counts (only members open containers there).
+            case Chest box -> List.of(spot(box.getLocation()));
+            case Barrel box -> List.of(spot(box.getLocation()));
+            case ShulkerBox box -> List.of(spot(box.getLocation()));
+            case null, default -> List.of();
+        };
+    }
+
+    private static ChestRules.Spot spot(Location l) {
+        return new ChestRules.Spot(l.getWorld().getName(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
+    }
+
+    private ChestRules.Spot known(Player player, Progress p) {
+        return module.targets().chest(player, p).map(TutorialListener::spot).orElse(null);
+    }
+
+    /** True/false on an island the player is (not) a member of; {@code null} without the islands module. */
+    private Boolean ownIsland(Player player, ChestRules.Spot spot) {
         Optional<IslandService> islands = core.services().optional(IslandService.class);
-        UUID key = ProfileService.of(core.services()).profileKey(player);
-        return islands.map(i -> i.islandAt(loc).map(info -> i.isMember(info.id(), key)).orElse(false)).orElse(true);
-    }
-
-    private static boolean near(InventoryHolder side, Location k) {
-        if (!(side instanceof BlockState state)) {
-            return false;
+        org.bukkit.World w = org.bukkit.Bukkit.getWorld(spot.world());
+        if (islands.isEmpty() || w == null) {
+            return islands.isEmpty() ? null : false;
         }
-        Location l = state.getLocation();
-        return l.getWorld().equals(k.getWorld()) && l.getBlockX() == k.getBlockX() && l.getBlockY() == k.getBlockY() && l.getBlockZ() == k.getBlockZ();
+        UUID key = ProfileService.of(core.services()).profileKey(player);
+        Location loc = new Location(w, spot.x(), spot.y(), spot.z());
+        return islands.get().islandAt(loc).map(info -> islands.get().isMember(info.id(), key)).orElse(false);
     }
 
-    /** {@code steps.chest.need-tool} in the inventory (a starter tool of that kind; any tool of it without the tools module). */
-    boolean hasTool(Player player) {
+    /** The tool kind the chest step needs, or {@code null} when opening is enough. */
+    private String needTool() {
         String need = module.config().chestTool == null ? "" : module.config().chestTool.strip().toLowerCase(Locale.ROOT);
-        if (need.isEmpty()) {
-            return true;
+        return need.isEmpty() ? null : need;
+    }
+
+    /** True if these items hold the needed tool kind. */
+    boolean containsTool(ItemStack[] items) {
+        String need = needTool();
+        if (need == null) {
+            return false;
         }
         Optional<ToolService> tools = core.services().optional(ToolService.class);
-        for (ItemStack stack : player.getInventory().getContents()) {
+        ToolKind kind = ToolKind.byId(need).orElse(null);
+        for (ItemStack stack : items) {
             if (stack == null || stack.isEmpty()) {
                 continue;
             }
             if (tools.isPresent()) {
-                if (tools.get().read(stack).map(t -> t.kind() == ToolKind.byId(need).orElse(null)).orElse(false)) {
+                if (kind != null && tools.get().read(stack).map(t -> t.kind() == kind).orElse(false)) {
                     return true;
                 }
             } else if (stack.getType().getKey().getKey().endsWith("_" + need) || stack.getType().getKey().getKey().equals(need)) {
@@ -269,6 +349,11 @@ final class TutorialListener implements Listener {
             }
         }
         return false;
+    }
+
+    /** {@code steps.chest.need-tool} in the inventory (a starter tool of that kind; any tool of it without the tools module). */
+    boolean hasTool(Player player) {
+        return needTool() == null || containsTool(player.getInventory().getContents());
     }
 
     /** §6.1: a new player who joins a team gets the Starter pack; the chest step is done with it. */
@@ -332,6 +417,20 @@ final class TutorialListener implements Listener {
     void tick(Player player, Progress p) {
         if (Steps.DEPTHS.equals(p.step)) {
             checkZone(player);
+        } else if (Steps.CHEST.equals(p.step)) {
+            // TUT-FIX, once a second: the tool taken some other way (shift-click, a hopper) still finishes the step, and a
+            // starter chest that is gone (broken, its items picked up) no longer blocks it.
+            long now = System.currentTimeMillis();
+            if (now - p.lastChestCheck < 1000) {
+                return;
+            }
+            p.lastChestCheck = now;
+            if (!p.chestOpened && chestGone(player, p)) {
+                p.chestOpened = true;
+                checkChest(player, false);
+            } else if (p.chestOpened) {
+                checkChest(player, true);
+            }
         }
     }
 

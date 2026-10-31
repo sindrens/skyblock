@@ -61,7 +61,7 @@ final class Targets {
         TutorialConfig c = module.config();
         return switch (p.step) {
             case Steps.PORTAL -> resolve(c.portalTarget, null);
-            case Steps.CHEST -> chest(p).map(l -> l.clone().add(0.5, 1.0, 0.5)).or(() -> home(player));
+            case Steps.CHEST -> chest(player, p).map(l -> l.clone().add(0.5, 1.0, 0.5)).or(() -> home(player));
             case Steps.CROP -> home(player);
             case Steps.DEPTHS -> depthsSpawn();
             case Steps.FORGE -> resolve(c.forgeTarget, c.forgeRole);
@@ -70,12 +70,22 @@ final class Targets {
         };
     }
 
-    /** The starter chest block of the account's first island, if known and its world is loaded. */
-    Optional<Location> chest(Progress p) {
+    /**
+     * The remembered starter chest block, if known, its world is loaded and it stands on an island the player is a member
+     * of now (TUT-FIX: a point from an older island led the guides to the wrong place and was never "opened").
+     */
+    Optional<Location> chest(Player player, Progress p) {
         if (p.chest == null) {
             return Optional.empty();
         }
-        return TargetSpec.parse(p.chest).flatMap(this::point).map(l -> new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ()));
+        Optional<Location> at = TargetSpec.parse(p.chest).flatMap(this::point)
+                .map(l -> new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ()));
+        Optional<IslandService> islands = core.services().optional(IslandService.class);
+        if (at.isEmpty() || islands.isEmpty()) {
+            return at;
+        }
+        java.util.UUID key = ProfileService.of(core.services()).profileKey(player);
+        return at.filter(l -> islands.get().islandAt(l).map(info -> islands.get().isMember(info.id(), key)).orElse(false));
     }
 
     Optional<Location> home(Player player) {

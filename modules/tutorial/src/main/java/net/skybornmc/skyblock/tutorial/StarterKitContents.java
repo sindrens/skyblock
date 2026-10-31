@@ -130,12 +130,14 @@ final class StarterKitContents implements StarterContents {
         int y = chest.getY();
         int z = chest.getZ();
         Progress p = module.engine().progress(owner);
-        if (p != null && p.chest == null) {
+        // TUT-FIX: while the tutorial has not finished, the newest island's chest is the one the chest step points at (a
+        // staff reset or a new island used to keep the old island's point, so the real chest was never detected).
+        // After the finish the first island's chest is kept (another profile's island changes nothing).
+        if (p != null && (p.chest == null || !p.state.complete())) {
             p.chest = world + ":" + x + "," + y + "," + z;
         }
         core.database().run(c -> {
-            // Only the first island's chest: a later island (another profile) keeps the first one.
-            if (module.store().load(c, owner).map(pr -> pr.chest == null).orElse(false)) {
+            if (module.store().load(c, owner).map(pr -> pr.chest == null || !pr.state.complete()).orElse(false)) {
                 module.store().setChest(c, owner, world, x, y, z);
             }
         }).exceptionally(e -> {
@@ -160,7 +162,7 @@ final class StarterKitContents implements StarterContents {
             module.engine().signal(player, Steps.CHEST);
             return;
         }
-        Optional<Location> chest = module.targets().chest(p);
+        Optional<Location> chest = module.targets().chest(player, p);
         boolean usable = chest.isPresent() && chest.get().getBlock().getState() instanceof Container box && !box.getInventory().isEmpty();
         if (usable) {
             return;

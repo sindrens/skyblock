@@ -225,7 +225,19 @@ public final class TutorialConfig extends ModuleConfig {
     public int cameraFadeTicks = 10;
 
     @Setting(path = "cameras.start-delay-ticks", desc = "Wait between moving the player to the first shot and following the camera (ticks; lets the client load the camera).", min = 1, max = 20)
-    public int cameraStartDelayTicks = 3;
+    public int cameraStartDelayTicks = 6;
+
+    @Setting(path = "cameras.bedrock-cuts", desc = "Bedrock: true = cut-and-fade (the player hovers at each shot); false = titles only, nothing about the player changes (safe default).")
+    public boolean cameraBedrockCuts = false;
+
+    @Setting(path = "cameras.input-grace-ticks", desc = "A move key or jump skips a camera once it ran this long (ticks; a key held from before does not skip at once). Sneak always skips.", min = 0, max = 40)
+    public int cameraInputGraceTicks = 10;
+
+    @Setting(path = "cameras.move-skip-blocks", desc = "Cut-and-fade: moving this far from where the camera holds you skips it (blocks).", min = 0.3, max = 5)
+    public double cameraMoveSkipBlocks = 1.0;
+
+    @Setting(path = "cameras.watchdog-seconds", desc = "A camera still running this long after its own length is ended and the player is given back (seconds).", min = 2, max = 60)
+    public int cameraWatchdogSeconds = 5;
 
     @Setting(path = "cameras.island-wait-seconds", desc = "The arrival step waits this long for the player to stand on their island before it plays the island camera; then it finishes with a title.", min = 1, max = 60)
     public int cameraIslandWaitSeconds = 10;
@@ -235,16 +247,15 @@ public final class TutorialConfig extends ModuleConfig {
 
     @Setting(path = "cameras.spawn", desc = "Spawn flyover before step 1 (first join). Lines: '<from> [to] look=<point> ticks=<n> [text=<key>]'; points 'world:x,y,z', '@home:dx,dy,dz', '@zone:dx,dy,dz', '@self:dx,dy,dz'. Texts: messages cameras.spawn.<key>.")
     public List<String> cameraSpawn = List.of(
-            "spawn:0.5,107,8 spawn:0.5,111,-22 look=spawn:0.5,103,-50 ticks=40 text=one",
-            "spawn:0.5,111,-22 spawn:0.5,113,-62 look=spawn:0.5,104,-97 ticks=40 text=two",
-            "spawn:0.5,113,-62 spawn:5.5,108,-84 look=spawn:0.5,104,-97 ticks=40 text=three");
+            // TUT-FIX: two short shots over the roofs (the old line flew through the statue and the keep); every shot is
+            // also checked against the world before it plays.
+            "spawn:0.5,121,12 spawn:0.5,124,4 look=spawn:0.5,115,-23 ticks=50 text=one",
+            "spawn:0.5,178,-70 spawn:0.5,150,-80 look=spawn:0.5,104,-96 ticks=50 text=three");
 
     @Setting(path = "cameras.island", desc = "Island camera at the arrival step (orbit around your island home, same line format).")
     public List<String> cameraIsland = List.of(
-            "@home:12,7,0 @home:0,7,12 look=@home:0,1,0 ticks=30 text=one",
-            "@home:0,7,12 @home:-12,7,0 look=@home:0,1,0 ticks=30",
-            "@home:-12,7,0 @home:0,7,-12 look=@home:0,1,0 ticks=30 text=two",
-            "@home:0,7,-12 @home:6,4,-4 look=@home:0,1,0 ticks=30");
+            "@home:16,10,0 @home:0,10,16 look=@home:0,1,0 ticks=50 text=one",
+            "@home:0,10,16 @home:-12,10,8 look=@home:0,1,0 ticks=50 text=two");
 
     @Setting(path = "cameras.depths", desc = "Depths camera when you reach Mine Tier 1 (around the zone spawn of steps.depths.zone, same line format).")
     public List<String> cameraDepths = List.of(
@@ -350,13 +361,34 @@ public final class TutorialConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
-    /** v2 (GUI-BUGS): the menu step completes when /menu opens (it used to need the island menu); an owner-edited list is kept. */
+    /** Old camera lines (v1/v2) that v3 replaces while the owner has not edited them. */
+    static final List<String> OLD_SPAWN = List.of(
+            "spawn:0.5,107,8 spawn:0.5,111,-22 look=spawn:0.5,103,-50 ticks=40 text=one",
+            "spawn:0.5,111,-22 spawn:0.5,113,-62 look=spawn:0.5,104,-97 ticks=40 text=two",
+            "spawn:0.5,113,-62 spawn:5.5,108,-84 look=spawn:0.5,104,-97 ticks=40 text=three");
+    static final List<String> OLD_ISLAND = List.of(
+            "@home:12,7,0 @home:0,7,12 look=@home:0,1,0 ticks=30 text=one",
+            "@home:0,7,12 @home:-12,7,0 look=@home:0,1,0 ticks=30",
+            "@home:-12,7,0 @home:0,7,-12 look=@home:0,1,0 ticks=30 text=two",
+            "@home:0,7,-12 @home:6,4,-4 look=@home:0,1,0 ticks=30");
+
+    /**
+     * v2 (GUI-BUGS): the menu step completes when /menu opens (it used to need the island menu). v3 (TUT-FIX): shorter
+     * camera lines that stay out of the spawn builds and the island, a longer camera start delay. Owner-edited values are
+     * kept.
+     */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of("steps.menu.menu-ids", ValueChange.of(List.of("island"), List.of("hub"))));
+        TutorialConfig d = new TutorialConfig(); // code defaults, never the loaded values
+        return java.util.Map.of(
+                2, java.util.Map.of("steps.menu.menu-ids", ValueChange.of(List.of("island"), List.of("hub"))),
+                3, java.util.Map.of(
+                        "cameras.spawn", ValueChange.of(OLD_SPAWN, d.cameraSpawn),
+                        "cameras.island", ValueChange.of(OLD_ISLAND, d.cameraIsland),
+                        "cameras.start-delay-ticks", ValueChange.of(3, d.cameraStartDelayTicks)));
     }
 
     @Override
