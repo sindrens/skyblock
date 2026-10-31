@@ -68,10 +68,19 @@ final class StaffPowerRules {
      * @param creativeWorlds    {@code staff-powers.creative-worlds}
      */
     static Creative creative(boolean enforced, boolean mayUseCreative, String world, Collection<String> creativeWorlds) {
+        return creative(enforced, mayUseCreative, world, creativeWorlds, false);
+    }
+
+    /**
+     * Same, plus F15: {@code islandCreative} = the player is in staff mode, has {@code skyblock.staff.island-creative}
+     * (owner, admin) and stands in the islands world, so creative is allowed there too.
+     */
+    static Creative creative(boolean enforced, boolean mayUseCreative, String world, Collection<String> creativeWorlds,
+                             boolean islandCreative) {
         if (!mayUseCreative) {
             return Creative.NOT_ALLOWED;
         }
-        if (enforced && !creativeWorld(world, creativeWorlds)) {
+        if (enforced && !creativeWorld(world, creativeWorlds) && !islandCreative) {
             return Creative.WRONG_PLACE;
         }
         return Creative.OK;

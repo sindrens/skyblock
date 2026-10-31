@@ -60,6 +60,9 @@ reports:
   - Toxicity
   - Spam
   - Advertising
+  - Scamming
+  - Threats
+  - Griefing
   - Exploiting
   - Inappropriate build
   - Inappropriate name
@@ -67,4 +70,4 @@ reports:
   # How many recently closed reports /reports shows.
   # Allowed: 10 to 500
   closed-shown: 100
-config-version: 1
+config-version: 2

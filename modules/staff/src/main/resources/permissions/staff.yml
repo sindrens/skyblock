@@ -21,3 +21,6 @@ skyblock.player.report:
   default: true
 skyblock.report.bypass-cooldown:
   description: No cooldown between reports
+skyblock.staff.island-creative:
+  description: "F15: in staff mode (/s) island bypass turns on by itself and creative works on islands (blocks logged, items staff-tagged)"
+  default: false

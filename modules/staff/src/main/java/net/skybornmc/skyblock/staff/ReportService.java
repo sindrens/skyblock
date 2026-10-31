@@ -231,6 +231,7 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
                         core.audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "report",
                                 net.skybornmc.skyblock.common.audit.Actor.player(reporter), target, targetName, id,
                                 reporter.getLocation(), Map.of("reason", reason, "details", cleanDetails, "report_id", id));
+                        attachDms(reporter, target, targetName, id);
                         loadActive();
                     }, main)
                     .exceptionally(e -> {
@@ -239,6 +240,105 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
                         return null;
                     });
         }, main);
+    }
+
+    // ------------------------------------------------------------------ DM evidence (STAFF-R3, R3-9a)
+
+    /** Runs blocking work (the audit flush) off the main thread. */
+    private java.util.concurrent.Executor background() {
+        return r -> Bukkit.getScheduler().runTaskAsynchronously(core.plugin(), r);
+    }
+
+    /**
+     * Copies the last {@code reports.dm-evidence.count} DMs between the reporter and the reported player from the audit
+     * log (category {@code dm}) into the report. The audit queue is written first, so messages sent just before the
+     * report are included. All async; the reporter is told when DMs were attached (they are kept 180 days).
+     */
+    private void attachDms(Player reporter, UUID target, String targetName, long reportId) {
+        int count = config.dmEvidenceCount;
+        if (count <= 0) {
+            return;
+        }
+        UUID reporterId = reporter.getUniqueId();
+        String reporterName = reporter.getName();
+        CompletableFuture.runAsync(() -> core.audit().flush(), background())
+                .thenCompose(v -> core.audit().query(DmEvidence.query(reporterId, target, count)))
+                .thenCompose(rows -> {
+                    List<DmEvidence.Line> lines = DmEvidence.lines(rows, reporterId, target, count);
+                    return store.saveEvidence(reportId, lines, System.currentTimeMillis());
+                })
+                .thenAcceptAsync(saved -> {
+                    if (saved <= 0) {
+                        return;
+                    }
+                    core.audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "report_dm_evidence",
+                            net.skybornmc.skyblock.common.audit.Actor.player(reporterId, reporterName), target, targetName,
+                            (long) saved, null, Map.of("report_id", reportId, "messages", saved,
+                                    "keep_days", config.dmEvidenceKeepDays));
+                    if (reporter.isOnline()) {
+                        msg.send(reporter, "report.dms-attached", Msg.number("count", saved), Msg.p("player", targetName),
+                                Msg.number("days", config.dmEvidenceKeepDays));
+                    }
+                }, main)
+                .exceptionally(e -> {
+                    core.plugin().getLogger().warning("Could not attach DMs to report #" + reportId + ": " + e.getMessage());
+                    return null;
+                });
+    }
+
+    /** Number of DMs attached to a report (for the report menu). */
+    CompletableFuture<Integer> evidenceCount(long reportId) {
+        return store.evidenceCount(reportId);
+    }
+
+    /**
+     * Shows the DMs attached to a report in chat (Bedrock-safe: plain lines). Only staff who may read DMs; every view is
+     * audited, like reading DMs in {@code /logs}.
+     */
+    void showEvidence(Player staff, Report report) {
+        if (!staff.hasPermission(StaffPerms.DM_EVIDENCE)) {
+            msg.send(staff, "reports.dms.no-permission");
+            core.sounds().play(staff, "error");
+            return;
+        }
+        store.evidence(report.id()).thenAcceptAsync(lines -> {
+            if (!staff.isOnline()) {
+                return;
+            }
+            if (lines.isEmpty()) {
+                msg.send(staff, "reports.dms.none", Msg.p("id", report.id()));
+                return;
+            }
+            msg.send(staff, "reports.dms.header", Msg.p("id", report.id()), Msg.p("reporter", report.reporterName()),
+                    Msg.p("player", report.targetName()), Msg.number("count", lines.size()));
+            java.time.format.DateTimeFormatter time = java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm",
+                    java.util.Locale.ENGLISH).withZone(Format.zone());
+            for (DmEvidence.Line line : lines) {
+                msg.send(staff, line.ignored() ? "reports.dms.line-ignored" : "reports.dms.line",
+                        Msg.p("time", time.format(java.time.Instant.ofEpochMilli(line.sentAt()))),
+                        Msg.p("sender", line.senderName()), Msg.p("recipient", line.recipientName()), Msg.p("message", line.body()));
+            }
+            audit("report_dm_view", staff, report.target(), report.targetName(),
+                    Map.of("report_id", report.id(), "messages", lines.size()));
+        }, main).exceptionally(e -> {
+            core.plugin().getLogger().warning("Could not load the DMs of report #" + report.id() + ": " + e.getMessage());
+            return null;
+        });
+    }
+
+    /** Deletes report DMs older than {@code reports.dm-evidence.keep-days} (background job; audited when rows go). */
+    void purgeEvidence() {
+        long cutoff = DmEvidence.cutoff(System.currentTimeMillis(), config.dmEvidenceKeepDays);
+        store.purgeEvidence(cutoff).thenAccept(removed -> {
+            if (removed > 0) {
+                core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "report_dm_purge",
+                        net.skybornmc.skyblock.common.audit.Actor.system("reports"), null, null, (long) removed, null,
+                        Map.of("removed", removed, "keep_days", config.dmEvidenceKeepDays, "cutoff", cutoff));
+            }
+        }).exceptionally(e -> {
+            core.plugin().getLogger().warning("Could not delete old report DMs: " + e.getMessage());
+            return null;
+        });
     }
 
     // ------------------------------------------------------------------ /reports
@@ -261,7 +361,13 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
                 msg.send(staff, "reports.not-found", Msg.p("id", id));
                 return;
             }
-            core.menus().open(staff, new ReportMenu(this, r.get(), afterChange));
+            Report report = r.get();
+            if (!staff.hasPermission(StaffPerms.DM_EVIDENCE)) {
+                core.menus().open(staff, new ReportMenu(this, report, afterChange, -1));
+                return;
+            }
+            store.evidenceCount(id).exceptionally(e -> 0).thenAcceptAsync(count ->
+                    core.menus().open(staff, new ReportMenu(this, report, afterChange, count)), main);
         }, main);
     }
 

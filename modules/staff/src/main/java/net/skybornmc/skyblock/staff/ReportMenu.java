@@ -13,11 +13,14 @@ final class ReportMenu extends Menu {
     private final ReportService reports;
     private final Report report;
     private final Runnable afterChange;
+    /** DMs attached to the report (R3-9a); -1 = the viewer may not read DMs, so no button. */
+    private final int dmCount;
 
-    ReportMenu(ReportService reports, Report report, Runnable afterChange) {
+    ReportMenu(ReportService reports, Report report, Runnable afterChange, int dmCount) {
         this.reports = reports;
         this.report = report;
         this.afterChange = afterChange;
+        this.dmCount = dmCount;
     }
 
     @Override
@@ -50,6 +53,16 @@ final class ReportMenu extends Menu {
     protected void build() {
         frame();
         set(13, ReportsMenu.item(service, viewer, report, reports));
+        if (dmCount >= 0) {
+            set(22, service.item(dmCount > 0 ? Material.WRITABLE_BOOK : Material.BOOK, viewer, StaffFeature.MODULE,
+                    dmCount > 0 ? "menu.report-view.dms" : "menu.report-view.no-dms", Msg.p("count", dmCount),
+                    Msg.p("reporter", report.reporterName()), Msg.p("player", report.targetName())), click -> {
+                if (dmCount > 0) {
+                    click.player().closeInventory();
+                    reports.showEvidence(click.player(), report);
+                }
+            });
+        }
         boolean closed = report.status() == Report.Status.CLOSED;
         boolean mine = viewer.getUniqueId().equals(report.claimedBy());
         Player target = Bukkit.getPlayer(report.target());

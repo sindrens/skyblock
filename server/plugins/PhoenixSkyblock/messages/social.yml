@@ -15,6 +15,12 @@ dm:
   slow-down: "<prefix><c:error><sym:cross></c:error> <c:text>Too fast. Try again in <c:value><time></c:value>."
   no-reply: "<prefix><c:error><sym:cross></c:error> <c:text>Nobody to reply to. Use <c:value>/msg <player> <message></c:value>."
   reply-offline: "<prefix><c:error><sym:cross></c:error> <c:text>That player is offline now."
+  # R3-32: an account still in the tutorial only gets DMs from staff and players it messaged first. Says nothing about why.
+  not-yet: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't get private messages from you yet."
+  # R3-32 / answer 305: private messages use the chat filter's link, IP and phone checks (never the swear list).
+  blocked-link: "<prefix><c:error><sym:cross></c:error> <c:text>Links aren't allowed in private messages."
+  blocked-ip: "<prefix><c:error><sym:cross></c:error> <c:text>Server addresses aren't allowed in private messages."
+  blocked-phone: "<prefix><c:error><sym:cross></c:error> <c:text>Phone numbers aren't allowed in private messages."
 
 spy:
   line: "<c:muted>[Spy]</c:muted> <c:text><sender> <c:muted><sym:arrow></c:muted> <target>:</c:text> <c:parchment><message>"
@@ -108,5 +114,6 @@ rules:
   - " <c:muted>8.</c:muted> <c:text>No alt accounts to dodge punishments or farm rewards."
   - " <c:muted>9.</c:muted> <c:text>No macros or AFK farming outside the AFK pool."
   - " <c:muted>Chat, private messages and commands are logged for 30 days and staff can read them.</c:muted> <click:open_url:'https://skybornmc.net/privacy'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u>Privacy</u></c:sky_ice></hover></click>"
+  - " <c:muted>Private messages attached to a /report are kept 180 days as evidence."
   - " <c:text>Full rules: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
   - ""

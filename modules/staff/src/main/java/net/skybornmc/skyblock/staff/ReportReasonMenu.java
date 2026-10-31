@@ -16,8 +16,20 @@ import java.util.UUID;
 final class ReportReasonMenu extends Menu {
 
     private static final int[] SLOTS = {20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 38, 39, 40, 41, 42};
-    private static final Material[] ICONS = {Material.DIAMOND_SWORD, Material.DIAMOND_ORE, Material.TNT, Material.PAPER,
-            Material.OAK_SIGN, Material.REDSTONE, Material.BRICKS, Material.NAME_TAG, Material.WRITABLE_BOOK};
+    /** Icons of the default reasons by name (lower case); a reason the owner added gets {@link #FALLBACK}. */
+    private static final java.util.Map<String, Material> ICONS = java.util.Map.ofEntries(
+            java.util.Map.entry("hacking", Material.DIAMOND_SWORD), java.util.Map.entry("x-ray", Material.DIAMOND_ORE),
+            java.util.Map.entry("toxicity", Material.TNT), java.util.Map.entry("spam", Material.PAPER),
+            java.util.Map.entry("advertising", Material.OAK_SIGN), java.util.Map.entry("scamming", Material.GOLD_INGOT),
+            java.util.Map.entry("threats", Material.SKELETON_SKULL), java.util.Map.entry("griefing", Material.FLINT_AND_STEEL),
+            java.util.Map.entry("exploiting", Material.REDSTONE), java.util.Map.entry("inappropriate build", Material.BRICKS),
+            java.util.Map.entry("inappropriate name", Material.NAME_TAG));
+    private static final Material FALLBACK = Material.PAPER;
+
+    /** The icon of a reason. Package-private for tests. */
+    static Material icon(String reason) {
+        return reason == null ? FALLBACK : ICONS.getOrDefault(reason.strip().toLowerCase(java.util.Locale.ROOT), FALLBACK);
+    }
 
     private final ReportService reports;
     private final UUID target;
@@ -68,7 +80,7 @@ final class ReportReasonMenu extends Menu {
         for (int i = 0; i < reasons.size() && i < SLOTS.length; i++) {
             String reason = reasons.get(i);
             boolean other = i == reasons.size() - 1;
-            Material icon = other ? Material.WRITABLE_BOOK : ICONS[Math.min(i, ICONS.length - 2)];
+            Material icon = other ? Material.WRITABLE_BOOK : icon(reason);
             String key = other ? "menu.report.other" : "menu.report.reason";
             set(SLOTS[i], service.item(icon, viewer, StaffFeature.MODULE, key, Msg.p("reason", reason), Msg.p("player", targetName)),
                     click -> {

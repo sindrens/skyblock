@@ -250,6 +250,32 @@ final class IslandProtection implements Listener {
         module.core().sounds().play(player, on ? "unlock" : "click");
     }
 
+    /**
+     * F15: staff mode switches the bypass for owner/admin (on when entering {@code /s}, off when leaving, logged with
+     * reason {@code staff_mode}).
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onStaffMode(net.skybornmc.skyblock.common.staff.StaffModeEvent event) {
+        Player player = event.getPlayer();
+        StaffModeBypass.Change change = StaffModeBypass.decide(event.entered(),
+                player.hasPermission(net.skybornmc.skyblock.common.staff.StaffModeEvent.ISLAND_CREATIVE_PERMISSION),
+                player.hasPermission(IslandsModule.PERM_BYPASS), bypassing.contains(player.getUniqueId()));
+        if (change == StaffModeBypass.Change.NONE) {
+            return;
+        }
+        boolean on = change == StaffModeBypass.Change.TURN_ON;
+        if (on) {
+            bypassing.add(player.getUniqueId());
+        } else {
+            bypassing.remove(player.getUniqueId());
+        }
+        module.core().audit().log(AuditCategory.STAFF, on ? "island_bypass_on" : "island_bypass_off", Actor.player(player),
+                null, null, player.getLocation(), Map.of("reason", "staff_mode"));
+        if (player.isOnline()) {
+            module.msg().send(player, on ? "bypass.staff-mode-on" : "bypass.staff-mode-off");
+        }
+    }
+
     // ------------------------------------------------------------------ blocks
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)

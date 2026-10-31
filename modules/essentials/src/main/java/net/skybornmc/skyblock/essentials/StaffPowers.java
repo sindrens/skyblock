@@ -270,7 +270,26 @@ final class StaffPowers implements Listener {
 
     StaffPowerRules.Creative creative(Player player) {
         return StaffPowerRules.creative(config.staffPowersEnabled, player.hasPermission(Perms.gamemode(GameMode.CREATIVE)),
-                player.getWorld().getName(), config.creativeWorlds);
+                player.getWorld().getName(), config.creativeWorlds, islandCreative(player));
+    }
+
+    /** Staff mode only (not build mode), from the staff module's {@code staff_mode} placeholder. */
+    private boolean inStaffMode(Player player) {
+        return core.placeholders().has("staff_mode")
+                && core.placeholders().text(player, "staff_mode").map("true"::equalsIgnoreCase).orElse(false);
+    }
+
+    /**
+     * F15: owner/admin in staff mode ({@code skyblock.staff.island-creative}) standing in the islands world may use
+     * creative there; leaving staff mode or the islands world ends it.
+     */
+    boolean islandCreative(Player player) {
+        if (!player.hasPermission(net.skybornmc.skyblock.common.staff.StaffModeEvent.ISLAND_CREATIVE_PERMISSION)
+                || !inStaffMode(player)) {
+            return false;
+        }
+        return core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class)
+                .map(islands -> islands.isIslandWorld(player.getWorld())).orElse(false);
     }
 
     /** Placeholders of the creative texts: the worlds where creative works. */
@@ -446,7 +465,8 @@ final class StaffPowers implements Listener {
 
     /**
      * A staff item placed in survival is remembered in the chunk (so mining it gives staff items back); placing a normal
-     * item clears an old mark. Creative placements are builds in protected areas and are not tracked.
+     * item clears an old mark. Creative placements in the creative worlds are builds in protected areas and are not
+     * tracked; F15 creative placements on islands are (a player mining a staff build gets staff items, not free blocks).
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event) {
@@ -456,7 +476,9 @@ final class StaffPowers implements Listener {
         Block block = event.getBlockPlaced();
         PersistentDataContainer pdc = block.getChunk().getPersistentDataContainer();
         NamespacedKey key = blockKey(block);
-        if (StaffItems.isMarked(event.getItemInHand()) && event.getPlayer().getGameMode() != GameMode.CREATIVE) {
+        Player placer = event.getPlayer();
+        if (StaffItems.isMarked(event.getItemInHand())
+                && (placer.getGameMode() != GameMode.CREATIVE || islandCreative(placer))) {
             pdc.set(key, PersistentDataType.BYTE, (byte) 1);
         } else if (pdc.has(key)) {
             pdc.remove(key);

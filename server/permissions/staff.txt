@@ -12,3 +12,6 @@ lp group helper permission set skyblock.staff.freeze true
 lp group helper permission set skyblock.staff.mode true
 lp group helper permission set skyblock.report.bypass-cooldown true
 lp group admin permission set skyblock.staff.freeze.exempt true
+
+# --- STAFF-R3 / F15: creative on islands in staff mode (owner and admin; owner inherits admin) ---
+lp group admin permission set skyblock.staff.island-creative true

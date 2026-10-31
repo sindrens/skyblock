@@ -104,6 +104,8 @@ report:
   closed-no-evidence: "<prefix><c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: checked, <c:value>no evidence</c:value> found. Thanks anyway!"
   closed-invalid: "<prefix><c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: closed, <c:value>no rule broken</c:value>."
   closed-duplicate: "<prefix><c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: already handled in another report. Thanks!"
+  # R3-9a: told to the reporter when their last DMs with the player were attached (<count>, <player>, <days>).
+  dms-attached: "<prefix><c:muted>Your last <count> private messages with <player> were added as evidence (kept <days> days, only staff see them)."
 
 # --- Reports (staff) ---
 reports:
@@ -121,6 +123,13 @@ reports:
   invalid-suggested: "<prefix><c:warning><sym:cross></c:warning> <c:text>That is too many: staff got a suggestion for <c:value><player></c:value> <c:muted>(#<sid>, false reports)</c:muted><c:text>."
   invalid-refreshed: "<prefix><c:text>The waiting false-report suggestion for <c:value><player></c:value> <c:text>was updated <c:muted>(#<sid>)</c:muted><c:text>."
   invalid-capped: "<prefix><c:muted><player> already got a false-report suggestion this week (at most one per week)."
+  # R3-9a: the DMs attached to a report, shown in chat to staff who may read DMs (mods and up). Every view is logged.
+  dms:
+    no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Only moderators and up can read private messages."
+    none: "<prefix><c:text>Report <c:value>#<id></c:value> has no private messages attached."
+    header: "<prefix><c:text>Private messages of report <c:value>#<id></c:value> <c:muted>(<reporter> and <player>, last <count>):"
+    line: " <c:muted><time></c:muted> <c:value><sender></c:value> <c:muted><sym:arrow></c:muted> <c:value><recipient></c:value><c:muted>:</c:muted> <c:parchment><message>"
+    line-ignored: " <c:muted><time></c:muted> <c:value><sender></c:value> <c:muted><sym:arrow></c:muted> <c:value><recipient></c:value> <c:muted>(ignored, not delivered):</c:muted> <c:parchment><message>"
   ordinal:
     st: "st"
     nd: "nd"
@@ -240,6 +249,12 @@ menu:
     close:
       name: "<c:brand_bright><bold>Close report</bold></c:brand_bright>"
       lore: ["<c:text>Choose the outcome.", "<c:muted>The reporter is told the result.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
+    dms:
+      name: "<c:info><bold>Private messages</bold></c:info> <c:muted><sym:dot> <count>"
+      lore: ["<c:text>Last DMs between <c:value><reporter></c:value>", "<c:text>and <c:value><player></c:value>, attached by the report.", "<c:muted>Kept 180 days. Viewing is logged.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to read in chat"]
+    no-dms:
+      name: "<c:muted><bold>Private messages</bold></c:muted> <c:muted><sym:dot> 0"
+      lore: ["<c:text>No DMs between <reporter>", "<c:text>and <player> were attached."]
 
   outcome:
     title: "Close #<id>"

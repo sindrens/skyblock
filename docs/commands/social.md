@@ -2,7 +2,7 @@
 
 | Command | What it does | Permission | Status |
 |---|---|---|---|
-| `/msg <player> <message>` (`/w`, `/tell`, `/whisper`, `/m`, `/pm`) | Private message; click a name to reply; rate-limited; logged (30 days) | `skyblock.social.msg` | ✅ |
+| `/msg <player> <message>` (`/w`, `/tell`, `/whisper`, `/m`, `/pm`) | Private message; click a name to reply; rate-limited; logged (30 days). Links, IP addresses and phone numbers are refused (chat filter, not the swear list; `dm.contact-filter`); an account still in the tutorial only gets DMs from staff and players it messaged first (`dm.new-player-protection`) | `skyblock.social.msg` | ✅ |
 | `/r <message>` (`/reply`) | Reply to your last private message | `skyblock.social.msg` | ✅ |
 | `/ignore <player>` / `/ignore list` | Ignore a player: no private messages, `/tpa`/`/tpahere`, trade requests or island invites from them (they get the same answer as "requests off"); `/settings → Hide ignored chat` (on by default) also hides their public chat for you only. Staff can't be ignored (owner answers 316/317) | `skyblock.social.ignore` | ✅ |
 | `/unignore <player>` | Stop ignoring | `skyblock.social.ignore` | ✅ |

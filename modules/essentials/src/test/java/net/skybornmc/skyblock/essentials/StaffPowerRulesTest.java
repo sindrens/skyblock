@@ -83,4 +83,14 @@ class StaffPowerRulesTest {
         assertEquals(Check.NEED_MODE, StaffPowerRules.power(Power.FLY, true, false, false, true, false));
         assertEquals(Check.OK, StaffPowerRules.power(Power.FLY, true, false, true, true, true));
     }
+
+    @Test
+    void islandCreativeInStaffModeOpensTheIslandsWorldOnly() {
+        // F15: islandCreative = staff mode + skyblock.staff.island-creative + standing in the islands world
+        assertEquals(Creative.OK, StaffPowerRules.creative(true, true, "islands", WORLDS, true));
+        assertEquals(Creative.WRONG_PLACE, StaffPowerRules.creative(true, true, "islands", WORLDS, false), "outside staff mode");
+        assertEquals(Creative.NOT_ALLOWED, StaffPowerRules.creative(true, false, "islands", WORLDS, true),
+                "still needs the creative game mode permission");
+        assertEquals(Creative.OK, StaffPowerRules.creative(true, true, "spawn", WORLDS, false), "creative worlds unchanged");
+    }
 }
