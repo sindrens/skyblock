@@ -27,6 +27,7 @@ lp group ember meta removeprefix 1
 lp group ember meta addprefix 1 "&7[&6Ember&7] "
 
 # --- Rank colors (hex) for our chat/tab/nametags; prefixes below stay classic colors for Bedrock and other plugins ---
+# Rank display colours are set in chat.yml ranks.looks; the color meta here is only the fallback for a group missing there.
 lp group default meta set color "#C9C9C9"
 lp group builder meta set color "#FFD23F"
 lp group helper meta set color "#63B8FF"

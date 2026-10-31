@@ -43,6 +43,13 @@ public final class ChatConfig extends ModuleConfig {
 
     // ---------------------------------------------------------------- rank badges
 
+    @Setting(path = "ranks.looks", desc = "How each rank looks as [Name] text in chat, tab, nametags, /list and the sidebar. "
+            + "One line per LuckPerms group: group=#RRGGBB|&code. Three colours (#A,#B,#C) draw a gradient (Immortal). "
+            + "The Bedrock part is the legacy colour code; '>' splits the name into equal parts (&e&l>&6&l>&c&l). The "
+            + "'default' line is the look of every group without a line. Values copied from the retired pack v1 "
+            + "(pack-ids.yml badges.ranks, I7 phase 0); LuckPerms 'color' meta is only a fallback for missing groups.")
+    public List<String> rankLooks = net.skybornmc.skyblock.common.rank.RankLooks.DEFAULTS;
+
     @Setting(path = "badges.immortal-gradients", desc = "Approved rank colours Immortal players can pick in /settings. One per "
             + "line: id=#RRGGBB,#RRGGBB,#RRGGBB (2-5 colours, left to right). The first one is the default. Keep them dark "
             + "Phoenix style and away from the staff colours (yellow, light red, light blue, light green, orange).")

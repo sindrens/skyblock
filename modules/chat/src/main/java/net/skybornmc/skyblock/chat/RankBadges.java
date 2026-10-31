@@ -11,6 +11,7 @@ import net.skybornmc.skyblock.common.pack.BadgeSettings;
 import net.skybornmc.skyblock.common.pack.Badges;
 import net.skybornmc.skyblock.common.pack.PackIds;
 import net.skybornmc.skyblock.common.pack.PackService;
+import net.skybornmc.skyblock.common.rank.RankLooks;
 import net.skybornmc.skyblock.common.settings.PlayerSettings;
 import org.bukkit.entity.Player;
 
@@ -33,6 +34,7 @@ final class RankBadges implements BadgeService {
     private final Supplier<ChatConfig> config;
     private final Map<String, Component> cache = new ConcurrentHashMap<>();
     private volatile Map<String, List<TextColor>> gradients = Map.of();
+    private volatile RankLooks looks = RankLooks.defaults();
 
     RankBadges(Core core, Supplier<ChatConfig> config) {
         this.core = core;
@@ -43,6 +45,7 @@ final class RankBadges implements BadgeService {
     /** Re-reads the approved gradients (chat.yml) and drops cached badges. */
     void reload() {
         gradients = BadgeGradients.parse(config.get().immortalGradients);
+        looks = RankLooks.parse(config.get().rankLooks, problem -> core.plugin().getLogger().warning("chat.yml " + problem));
         cache.clear();
     }
 
@@ -140,6 +143,11 @@ final class RankBadges implements BadgeService {
     @Override
     public List<String> gradientIds() {
         return List.copyOf(gradients.keySet());
+    }
+
+    /** The rank looks from chat.yml {@code ranks.looks}. */
+    RankLooks looks() {
+        return looks;
     }
 
     /** The rank colour used by the rank provider; null while badges are off (the provider's own color applies). */
