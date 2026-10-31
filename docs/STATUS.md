@@ -68,6 +68,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 - GUI-3 shop v2
 - STAFF-R3 staff decisions
 - PERF7 tab list, tutorial guides, level on join
+- NOTE: a separate owner-started agent works on docs/planning/*.md and docs/design/; do not overwrite those files, merge carefully.
 
 ## Parked / broken
 (none)
