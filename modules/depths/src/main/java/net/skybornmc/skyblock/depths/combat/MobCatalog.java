@@ -1,5 +1,8 @@
 package net.skybornmc.skyblock.depths.combat;
 
+import net.skybornmc.skyblock.common.mob.AbilitySpec;
+import net.skybornmc.skyblock.common.mob.MobCatalogParser;
+import net.skybornmc.skyblock.common.mob.MobDef;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
@@ -13,7 +16,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * The Depths mob catalog (M4.8) from {@code mobs.yml}: mob definitions ({@code mobs}), combat spawning per tier
+ * The Depths mob catalog (M4.8) from {@code mobs.yml}: mob definitions ({@code mobs}, read by the shared
+ * {@link MobCatalogParser} since M8.1 together with {@code drop-tables} and {@code ability-defaults}), combat spawning per tier
  * ({@code combat-zones}) and the per-player ambient mobs of mine and forest tiers ({@code ambient}). Immutable; broken
  * entries are reported and skipped, the rest still load. The file holds no plain settings (those are in
  * {@code depths.yml → combat.*, ambient.*}), so every key in these sections is a catalog entry.
@@ -26,14 +30,16 @@ public final class MobCatalog {
     /** Wings with ambient mobs. */
     public static final Set<String> AMBIENT_WINGS = Set.of("mine", "forest");
 
-    public static final MobCatalog EMPTY = new MobCatalog(Map.of(), Map.of(), Map.of());
+    public static final MobCatalog EMPTY = new MobCatalog(MobCatalogParser.Result.EMPTY, Map.of(), Map.of());
 
+    private final MobCatalogParser.Result shared;
     private final Map<String, MobDef> mobs;
     private final Map<Integer, ZoneSpawns> combat;
     private final Map<String, Map<Integer, AmbientSpawns>> ambient;
 
-    private MobCatalog(Map<String, MobDef> mobs, Map<Integer, ZoneSpawns> combat, Map<String, Map<Integer, AmbientSpawns>> ambient) {
-        this.mobs = Collections.unmodifiableMap(new LinkedHashMap<>(mobs));
+    private MobCatalog(MobCatalogParser.Result shared, Map<Integer, ZoneSpawns> combat, Map<String, Map<Integer, AmbientSpawns>> ambient) {
+        this.shared = shared;
+        this.mobs = shared.mobs();
         this.combat = Collections.unmodifiableMap(new LinkedHashMap<>(combat));
         Map<String, Map<Integer, AmbientSpawns>> a = new LinkedHashMap<>();
         ambient.forEach((k, v) -> a.put(k, Collections.unmodifiableMap(new LinkedHashMap<>(v))));
@@ -46,6 +52,16 @@ public final class MobCatalog {
 
     public Map<String, MobDef> mobs() {
         return mobs;
+    }
+
+    /** M8.1: shared drop tables ({@code drop-tables}), already merged into each mob's drops. */
+    public Map<String, java.util.List<MobDef.Drop>> dropTables() {
+        return shared.dropTables();
+    }
+
+    /** M8.1: a mob's ability with unset values from {@code ability-defaults} (then the code defaults). */
+    public AbilitySpec resolve(AbilitySpec spec) {
+        return shared.resolve(spec);
     }
 
     /** Spawning of a combat tier, or {@code null} (that zone stays empty). */
@@ -78,73 +94,11 @@ public final class MobCatalog {
         if (root == null) {
             return EMPTY;
         }
-        Map<String, MobDef> mobs = parseMobs(root.getConfigurationSection(MOBS), items, mobTypes, problem);
+        MobCatalogParser.Result shared = MobCatalogParser.parse(root, items, mobTypes, problem);
+        Map<String, MobDef> mobs = shared.mobs();
         Map<Integer, ZoneSpawns> combat = parseCombat(root.getConfigurationSection(COMBAT), mobs, problem);
         Map<String, Map<Integer, AmbientSpawns>> ambient = parseAmbient(root.getConfigurationSection(AMBIENT), mobs, problem);
-        return new MobCatalog(mobs, combat, ambient);
-    }
-
-    static Map<String, MobDef> parseMobs(ConfigurationSection section, Set<String> items, Predicate<String> mobTypes,
-                                         Consumer<String> problem) {
-        Map<String, MobDef> out = new LinkedHashMap<>();
-        if (section == null) {
-            return out;
-        }
-        for (String key : section.getKeys(false)) {
-            String id = key.trim().toLowerCase(Locale.ROOT);
-            String where = MOBS + "." + key;
-            ConfigurationSection s = section.getConfigurationSection(key);
-            if (s == null || !id.matches("[a-z0-9_]+")) {
-                problem.accept(where + ": must be a section {type, health, ...} with an id of a-z, 0-9 and _, skipped");
-                continue;
-            }
-            String type = s.getString("type", "").trim().toLowerCase(Locale.ROOT).replace("minecraft:", "");
-            if (!mobTypes.test(type)) {
-                problem.accept(where + ".type: '" + type + "' is not a mob type that can be spawned, skipped");
-                continue;
-            }
-            double health = range(s, "health", 0, 0, 1_000_000, where, problem);
-            double damage = range(s, "damage", 0, 0, 10_000, where, problem);
-            double speed = range(s, "speed", 0, 0, 2, where, problem);
-            double scale = range(s, "scale", 1, 0.1, 8, where, problem);
-            int size = (int) range(s, "size", 0, 0, 16, where, problem);
-            double xp = range(s, "xp", 0, 0, 1_000_000, where, problem);
-            int vanillaXp = (int) range(s, "vanilla-xp", 0, 0, 10_000, where, problem);
-            double crystalChance = range(s, "crystal-chance", 0, 0, 1000, where, problem);
-            int crystalAmount = (int) range(s, "crystal-amount", 1, 1, 1_000_000, where, problem);
-            List<MobDef.Drop> drops = new ArrayList<>();
-            List<Map<?, ?>> raw = s.getMapList("drops");
-            for (int i = 0; i < raw.size(); i++) {
-                MobDef.Drop drop = drop(raw.get(i), items, where + ".drops[" + i + "]", problem);
-                if (drop != null) {
-                    drops.add(drop);
-                }
-            }
-            out.put(id, new MobDef(id, type, health, damage, speed, scale, size, xp, vanillaXp, crystalChance, crystalAmount,
-                    drops, s.getBoolean("glowing", false), s.getBoolean("name-visible", false)));
-        }
-        return out;
-    }
-
-    private static MobDef.Drop drop(Map<?, ?> map, Set<String> items, String where, Consumer<String> problem) {
-        Object itemRaw = map.get("item");
-        String item = itemRaw == null ? "" : itemRaw.toString().trim().toLowerCase(Locale.ROOT);
-        if (!items.contains(item)) {
-            problem.accept(where + ".item: '" + item + "' is not a drop item (drop-items), skipped");
-            return null;
-        }
-        int min = intOf(map.get("min"), map.get("amount") == null ? 1 : intOf(map.get("amount"), 1));
-        int max = intOf(map.get("max"), min);
-        double chance = doubleOf(map.get("chance"), 1.0);
-        if (min < 0 || max < min || max > 1000) {
-            problem.accept(where + ": min/max must be 0-1000 with max >= min, skipped");
-            return null;
-        }
-        if (!(chance >= 0 && chance <= 1)) {
-            problem.accept(where + ".chance: must be 0-1, skipped");
-            return null;
-        }
-        return chance > 0 && max > 0 ? new MobDef.Drop(item, min, max, chance) : null;
+        return new MobCatalog(shared, combat, ambient);
     }
 
     static Map<Integer, ZoneSpawns> parseCombat(ConfigurationSection section, Map<String, MobDef> mobs, Consumer<String> problem) {
@@ -253,40 +207,6 @@ public final class MobCatalog {
 
     private static double range(ConfigurationSection s, String key, double def, double min, double max, String where,
                                 Consumer<String> problem) {
-        if (!s.contains(key)) {
-            return def;
-        }
-        double v = s.getDouble(key, def);
-        if (Double.isNaN(v) || v < min || v > max) {
-            problem.accept(where + "." + key + ": must be " + fmt(min) + "-" + fmt(max) + ", using " + fmt(def));
-            return def;
-        }
-        return v;
-    }
-
-    private static String fmt(double v) {
-        return v == Math.floor(v) ? Long.toString((long) v) : Double.toString(v);
-    }
-
-    private static int intOf(Object o, int def) {
-        if (o instanceof Number n) {
-            return n.intValue();
-        }
-        try {
-            return o == null ? def : Integer.parseInt(o.toString().trim());
-        } catch (NumberFormatException e) {
-            return -1;
-        }
-    }
-
-    private static double doubleOf(Object o, double def) {
-        if (o instanceof Number n) {
-            return n.doubleValue();
-        }
-        try {
-            return o == null ? def : Double.parseDouble(o.toString().trim());
-        } catch (NumberFormatException e) {
-            return Double.NaN;
-        }
+        return MobCatalogParser.range(s, key, def, min, max, where, problem);
     }
 }

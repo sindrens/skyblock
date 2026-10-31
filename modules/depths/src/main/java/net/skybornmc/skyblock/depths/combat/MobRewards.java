@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.depths.combat;
 
+import net.skybornmc.skyblock.common.mob.MobDef;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.random.RandomGenerator;
@@ -26,6 +27,16 @@ public final class MobRewards {
      */
     public static Roll roll(MobDef mob, double dropMultiplier, double crystalMultiplier, double maxDropMultiplier,
                             RandomGenerator rng) {
+        return roll(mob, dropMultiplier, crystalMultiplier, maxDropMultiplier, 1.0, rng);
+    }
+
+    /**
+     * @param lootFactor M8.1 elite factor on drops and crystals ({@link net.skybornmc.skyblock.common.mob.EliteRules#lootFactor};
+     *                   1.0 = none, exactly the old roll); applied after the looting cap
+     */
+    public static Roll roll(MobDef mob, double dropMultiplier, double crystalMultiplier, double maxDropMultiplier,
+                            double lootFactor, RandomGenerator rng) {
+        double loot = Double.isNaN(lootFactor) || lootFactor < 0 ? 1.0 : lootFactor;
         Map<String, Integer> items = new LinkedHashMap<>();
         double mult = Math.max(1.0, Math.min(Double.isNaN(dropMultiplier) ? 1.0 : dropMultiplier, Math.max(1.0, maxDropMultiplier)));
         for (MobDef.Drop d : mob.drops()) {
@@ -33,12 +44,12 @@ public final class MobRewards {
                 continue;
             }
             int base = d.max() > d.min() ? d.min() + rng.nextInt(d.max() - d.min() + 1) : d.min();
-            int amount = expected(base * mult, rng);
+            int amount = expected(base * mult * loot, rng);
             if (amount > 0) {
                 items.merge(d.item(), amount, Integer::sum);
             }
         }
-        long hits = expected(mob.crystalChance() * Math.max(0.0, crystalMultiplier), rng);
+        long hits = expected(mob.crystalChance() * Math.max(0.0, crystalMultiplier) * loot, rng);
         return new Roll(items, hits * mob.crystalAmount(), mob.xp());
     }
 

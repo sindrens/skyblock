@@ -32,6 +32,18 @@ drop-items:
 #   drops:          list of {item, min, max, chance}; looting/fortune bonuses multiply the amounts (max depths.yml ->
 #                   combat.max-drop-multiplier). Drops go into the satchel (full satchel = the items are lost, warning shown)
 #   glowing, name-visible: outline and always-visible name (mini-bosses)
+# M8.1 optional stats (leave them out and the mob stays exactly as before):
+#   armor:                damage reduction against player hits in percent (0-60, more is cut to 60)
+#   knockback-resistance: 0-1 (missing = vanilla), attack-cooldown: least ticks between two melee hits (0 = vanilla)
+#   follow-range:         blocks it notices players from (0 = vanilla)
+#   drop-table:           id of a shared table in drop-tables below; its rolls come first, inline drops are added
+#   elite-chance:         chance to spawn as an elite (0-1; only from depths.yml combat.elite.min-tier, never mini-bosses):
+#                         star before the name, combat.elite.* health / drops / XP, one extra ability. Normal kills of
+#                         that mob drop a little less so the money per kill stays the same (combat.elite.budget-neutral)
+#   abilities:            list of {id, cooldown (seconds), chance (0-1 per try), settings...}; unset values come from
+#                         ability-defaults below. Ids: slam, leap, charge, volley, pull, summon, shield, ring, curse,
+#                         teleport, enrage. Every ability warns 1 s before it hits (red ring of blocks, sound, action bar).
+#                         Regular mobs below depths.yml combat.abilities.min-tier (4) never use abilities.
 # Ambient mobs (mine/forest) only need a type: they are harmless, per player, and give nothing.
 mobs:
   # Tier 1 Graveyard
@@ -68,6 +80,11 @@ mobs:
   citadel_evoker:   {type: evoker, health: 40, damage: 10, xp: 1200, vanilla-xp: 10, crystal-chance: 9.9, drops: [{item: depths_warlord_sigil, min: 3, max: 5}]}
   warlord:          {type: ravager, health: 600, damage: 15, scale: 1.3, xp: 24000, vanilla-xp: 50, crystal-chance: 198, glowing: true, name-visible: true, drops: [{item: depths_warlord_sigil, min: 50, max: 70}]}
 
+  # M8.1 examples, NOT live (commented out, nothing spawns them). To try one: remove the "#~ " and add the id to a zone
+  # in combat-zones below (tier 4 or higher, or as a mini-boss). Names go in messages/depths.yml -> mobs.<id>.
+  #~ bog_brute:      {type: slime, size: 3, health: 60, damage: 5, armor: 20, knockback-resistance: 0.5, attack-cooldown: 20, xp: 40, vanilla-xp: 5, crystal-chance: 0.98, elite-chance: 0.02, drop-table: bog_common, abilities: [{id: slam, cooldown: 8, chance: 0.6, radius: 4, damage: 1.5}]}
+  #~ forge_warden:   {type: blaze, health: 520, damage: 12, scale: 1.8, follow-range: 24, xp: 8400, vanilla-xp: 50, crystal-chance: 88, glowing: true, name-visible: true, drops: [{item: depths_blaze_rod, min: 50, max: 70}], abilities: [{id: volley, cooldown: 10, count: 5, spread: 40}, {id: ring, cooldown: 14, kind: fire, radius: 3, seconds: 3}, {id: enrage, below: 0.3}]}
+
   # Ambient mobs of the mine (WORLD.md 4.2) and forest.
   ambient_bat:              {type: bat}
   ambient_silverfish:       {type: silverfish}
@@ -87,6 +104,27 @@ mobs:
   ambient_frog:             {type: frog}
   ambient_bee:              {type: bee}
   ambient_strider:          {type: strider}
+
+# M8.1 shared drop tables (a list): a mob uses one with drop-table: <id>. Same rolls as drops: {item, min, max, chance}.
+# None is used yet (the live mobs keep their inline drops). Example, NOT live:
+#~ drop-tables:
+#~   - id: bog_common
+#~     drops: [{item: depths_slime_ball, min: 3, max: 5}]
+
+# M8.1 ability tuning: the default cooldown (seconds), chance per try and settings of each ability. A mob's own
+# abilities entry overrides any of these. damage = times the mob's own damage per hit. Ranges are checked at load.
+ability-defaults:
+  slam:     {cooldown: 8,  chance: 0.6, radius: 4, damage: 1.5, knockback: 1.0}
+  leap:     {cooldown: 10, chance: 0.5, range: 12, radius: 2.5, damage: 1.2}
+  charge:   {cooldown: 10, chance: 0.5, length: 8, width: 1.5, damage: 1.5, speed: 1.6}
+  volley:   {cooldown: 8,  chance: 0.6, count: 5, spread: 40, speed: 1.6}
+  pull:     {cooldown: 12, chance: 0.5, radius: 8, strength: 1.0}
+  summon:   {cooldown: 20, chance: 0.5, count: 2, max-alive: 3}
+  shield:   {cooldown: 15, chance: 0.4, seconds: 4, reduction: 0.8}
+  ring:     {cooldown: 12, chance: 0.5, radius: 3, seconds: 3, damage: 0.5, kind: fire}
+  curse:    {cooldown: 10, chance: 0.5, radius: 5, seconds: 3, level: 1, effect: slowness}
+  teleport: {cooldown: 10, chance: 0.4, range: 12, distance: 2}
+  enrage:   {chance: 1.0, below: 0.3, damage-bonus: 0.5, speed-bonus: 0.25, attack-factor: 0.6}
 
 # Combat spawning per tier: mobs {id: weight}; alive = base + per-player x players in the zone, at most max (also
 # depths.yml -> combat.max-total-mobs for all zones together). Nothing spawns while the zone is empty; its mobs go after

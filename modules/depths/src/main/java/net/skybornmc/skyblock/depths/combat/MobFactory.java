@@ -1,5 +1,7 @@
 package net.skybornmc.skyblock.depths.combat;
 
+import net.skybornmc.skyblock.common.mob.MobDef;
+import net.skybornmc.skyblock.common.mob.MobStats;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.stacking.StackingService;
@@ -70,13 +72,25 @@ public final class MobFactory {
      * @param viewer the only player who sees it (ambient), {@code null} = everyone (combat)
      */
     LivingEntity spawn(Location at, MobDef def, Component name, Player viewer, boolean silent) {
+        return spawn(at, def, name, viewer, silent, 1.0, false);
+    }
+
+    /**
+     * Spawns a mob with an M8.1 health multiplier (elites) and optionally an always-visible name.
+     *
+     * @param healthMultiplier max health factor (1 = as configured; only used when the mob sets a health)
+     * @param forceNameVisible name tag always shown, whatever {@code name-visible} says (elites)
+     */
+    LivingEntity spawn(Location at, MobDef def, Component name, Player viewer, boolean silent, double healthMultiplier,
+                       boolean forceNameVisible) {
         World world = at.getWorld();
         EntityType type = Registry.ENTITY_TYPE.get(NamespacedKey.minecraft(def.type()));
         if (world == null || type == null || type.getEntityClass() == null || !Mob.class.isAssignableFrom(type.getEntityClass())) {
             return null;
         }
         boolean ambient = viewer != null;
-        Entity spawned = world.spawn(at, type.getEntityClass(), true, e -> configure(e, def, name, ambient, silent));
+        Entity spawned = world.spawn(at, type.getEntityClass(), true, e -> configure(e, def, name, ambient, silent,
+                healthMultiplier, forceNameVisible));
         if (!(spawned instanceof LivingEntity living) || !spawned.isValid()) {
             if (spawned != null && spawned.isValid()) {
                 spawned.remove();
@@ -89,7 +103,8 @@ public final class MobFactory {
         return living;
     }
 
-    private void configure(Entity e, MobDef def, Component name, boolean ambient, boolean silent) {
+    private void configure(Entity e, MobDef def, Component name, boolean ambient, boolean silent, double healthMultiplier,
+                           boolean forceNameVisible) {
         if (ambient) {
             e.setVisibleByDefault(false);
         }
@@ -129,12 +144,22 @@ public final class MobFactory {
         base(mob, Attribute.SCALE, def.scale() != 1.0 ? def.scale() : 0);
         base(mob, Attribute.MOVEMENT_SPEED, def.speed());
         base(mob, Attribute.ATTACK_DAMAGE, def.damage());
-        if (def.health() > 0 && base(mob, Attribute.MAX_HEALTH, def.health())) {
-            mob.setHealth(def.health());
+        double health = def.health() * (healthMultiplier > 0 ? healthMultiplier : 1.0);
+        if (health > 0 && base(mob, Attribute.MAX_HEALTH, health)) {
+            mob.setHealth(health);
         }
+        // M8.1 optional stats: only touched when mobs.yml sets them (unset = vanilla, as before).
+        MobStats stats = def.stats();
+        if (!stats.vanillaKnockback()) {
+            AttributeInstance kb = mob.getAttribute(Attribute.KNOCKBACK_RESISTANCE);
+            if (kb != null) {
+                kb.setBaseValue(stats.knockbackResistance());
+            }
+        }
+        base(mob, Attribute.FOLLOW_RANGE, stats.followRange());
         if (name != null) {
             mob.customName(name);
-            mob.setCustomNameVisible(def.nameVisible());
+            mob.setCustomNameVisible(def.nameVisible() || forceNameVisible);
         }
         mob.setGlowing(def.glowing());
     }

@@ -1,5 +1,9 @@
 package net.skybornmc.skyblock.depths.combat;
 
+import net.skybornmc.skyblock.common.mob.AbilityId;
+import net.skybornmc.skyblock.common.mob.AbilitySpec;
+import net.skybornmc.skyblock.common.mob.MobDef;
+import net.skybornmc.skyblock.common.mob.MobStats;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +20,7 @@ import java.util.function.Predicate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MobCatalogTest {
@@ -165,5 +170,61 @@ class MobCatalogTest {
         // nope, flesh min>max, wrong_type, Bad-Id!, weird.health, weird.speed, ghost (1), ghost (2) + empty zone 2,
         // nobody, zero, ambient.combat
         assertEquals(12, problems.size(), String.join("\n", problems));
+    }
+
+    /** M8.1: the live mobs use none of the new stats, so the update changes no live balance. */
+    @Test
+    void shippedLiveMobsHaveNoNewStats() throws Exception {
+        MobCatalog c = shippedCatalog(new ArrayList<>());
+        for (MobDef m : c.mobs().values()) {
+            assertSame(MobStats.NONE, m.stats(), m.id());
+        }
+        assertTrue(c.dropTables().isEmpty(), "no shared drop table is live");
+    }
+
+    /** M8.1: the shipped ability-defaults repeat the code defaults (so an old mobs.yml without them behaves the same). */
+    @Test
+    void shippedAbilityDefaultsMatchTheCode() throws Exception {
+        MobCatalog c = shippedCatalog(new ArrayList<>());
+        for (AbilityId id : AbilityId.values()) {
+            AbilitySpec file = c.resolve(AbilitySpec.of(id));
+            AbilitySpec code = AbilitySpec.of(id);
+            assertEquals(code.cooldownTicks(), file.cooldownTicks(), id.id());
+            assertEquals(code.rollChance(), file.rollChance(), 1e-9, id.id());
+            for (AbilityId.Param p : id.params().values()) {
+                if (p.text()) {
+                    assertEquals(code.text(p.key()), file.text(p.key()), id.id() + "." + p.key());
+                } else {
+                    assertEquals(code.num(p.key()), file.num(p.key()), 1e-9, id.id() + "." + p.key());
+                    assertTrue(file.numbers().containsKey(p.key()), "the file lists " + id.id() + "." + p.key());
+                }
+            }
+        }
+    }
+
+    /** M8.1: the commented examples ("#~ ") are valid once uncommented. */
+    @Test
+    void commentedExamplesParseCleanly() throws Exception {
+        String text;
+        try (var in = MobCatalogTest.class.getClassLoader().getResourceAsStream(MobSections.FILE)) {
+            text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        assertTrue(text.contains("#~ "), "the examples are still in the file");
+        YamlConfiguration y = new YamlConfiguration();
+        y.loadFromString(text.replace("#~ ", ""));
+        List<String> problems = new ArrayList<>();
+        MobCatalog c = MobCatalog.parse(y, y.getConfigurationSection(MobSections.ITEMS).getKeys(false), TYPES, problems::add);
+        assertTrue(problems.isEmpty(), problems.toString());
+        MobDef brute = c.mob("bog_brute");
+        assertEquals("bog_common", brute.stats().dropTable());
+        assertEquals(20, brute.stats().armor());
+        assertEquals(0.02, brute.stats().eliteChance());
+        assertEquals(AbilityId.SLAM, brute.stats().abilities().getFirst().id());
+        MobDef warden = c.mob("forge_warden");
+        assertEquals(3, warden.stats().abilities().size());
+        assertEquals("fire", c.resolve(warden.stats().ability(AbilityId.RING)).text("kind"));
+        for (ZoneSpawns z : c.combat().values()) {
+            assertTrue(!z.mobs().containsKey("bog_brute") && !"forge_warden".equals(z.miniBoss()), "examples are not spawned");
+        }
     }
 }

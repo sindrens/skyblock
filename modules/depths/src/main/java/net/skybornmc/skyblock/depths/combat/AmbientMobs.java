@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.depths.combat;
 
+import net.skybornmc.skyblock.common.mob.MobDef;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
