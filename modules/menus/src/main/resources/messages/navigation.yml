@@ -62,6 +62,7 @@ hub:
     sources:
       daily: "daily reward"
       vote: "vote"
+      pass: "battle pass"
   buttons:
     home:
       name: "<c:success><bold>Home"

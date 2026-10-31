@@ -34,7 +34,7 @@ import java.util.logging.Level;
  *       {@code pending} and is tried again later (every {@code delivery.retry-seconds} and at the next start).</li>
  *   <li>Items go to the inventory when the player is online on that profile (the rest to {@code /box}, then the player
  *       file is saved), otherwise straight into that profile's box. Calendar items are bound to the profile.</li>
- *   <li>Rows still {@code sending} at start were interrupted by a crash: titles (idempotent) are granted again, everything
+ *   <li>Rows still {@code sending} at start were interrupted by a crash: titles and pass XP (idempotent) are sent again, everything
  *       else is moved to {@code review} for staff ({@code grant_review} in /logs). Lost, never doubled.</li>
  * </ul>
  */
@@ -105,7 +105,8 @@ final class Grants {
             List<RewardStore.GrantRow> sending = RewardStore.grants(c, RewardStore.SENDING, 10_000);
             List<RewardStore.GrantRow> reviewed = new ArrayList<>();
             for (RewardStore.GrantRow row : sending) {
-                String to = Payout.TITLE.equals(row.kind()) ? RewardStore.PENDING : RewardStore.REVIEW;
+                // Titles and pass XP (idempotency key per row) are safe to send again; everything else is checked by staff.
+                String to = Payout.TITLE.equals(row.kind()) || Payout.PASS_XP.equals(row.kind()) ? RewardStore.PENDING : RewardStore.REVIEW;
                 if (RewardStore.move(c, row.id(), RewardStore.SENDING, to, now) && to.equals(RewardStore.REVIEW)) {
                     reviewed.add(row);
                 }
@@ -240,7 +241,7 @@ final class Grants {
                 if (pass.isEmpty()) {
                     yield CompletableFuture.completedFuture(Result.RETRY);
                 }
-                yield pass.get().addXp(row.profile(), (int) Math.min(Integer.MAX_VALUE, row.amount()), reason(row))
+                yield pass.get().addXp(row.profile(), (int) Math.min(Integer.MAX_VALUE, row.amount()), reason(row), "rewards:" + row.id())
                         .thenApply(ok -> Boolean.TRUE.equals(ok) ? Result.DELIVERED : Result.RETRY);
             }
             case Payout.FUEL -> {

@@ -1,0 +1,12 @@
+# Permissions of the battle pass module (PHASE-10 M10.8). Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/pass.txt. Commands: docs/commands/pass.md.
+skyblock.pass.use:
+  description: Open /pass, earn pass XP and claim free (and, with premium, premium) tiers
+  default: true
+skyblock.pass.premium:
+  description: Has the Premium Pass (cosmetics-only track) this season; the store sets it in Phase 11. A pass_premium row from /pass admin premium counts too
+  default: false
+skyblock.pass.admin:
+  description: Staff tools /pass admin view|xp|reset|premium (P10-41; every use is logged)
+  default: op

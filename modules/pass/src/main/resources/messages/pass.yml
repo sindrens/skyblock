@@ -1,0 +1,165 @@
+# Battle pass (PHASE-10 M10.8): /pass, pass XP, free and premium tracks. MiniMessage + style tags (style.yml).
+# Reload: /skyblock reload pass
+# Placeholders are plain text unless noted: <level>, <xp>, <step>/<need> (XP inside the current level), <left> (XP still
+# needed), <count>, <days>, <crate> (crate name), <amount> (already formatted), <season>. <bar> is MiniMessage (10 dots).
+# <name> is a full component (the title or tag as it looks).
+
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was lost, so just try again."
+busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, your last claim is still saving."
+disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The battle pass is turned off right now."
+loading: "<prefix><c:error><sym:cross></c:error> <c:text>Your battle pass is still loading. Try again in a moment."
+changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your pass just changed. Have a look and try again."
+
+# Pass level-up (chat line + sound). <ready> = tiers ready to claim now.
+level-up:
+  line: "<prefix><c:flame><sym:star></c:flame> <c:text>Battle pass level <c:value><level></c:value><c:text>! Claim your rewards in</c:text> <c:action>/pass</c:action> <c:muted>(<ready> ready)"
+  overflow: "<prefix><c:flame><sym:star></c:flame> <c:text>Bonus reward unlocked! Claim it in</c:text> <c:action>/pass</c:action> <c:muted>(<ready> ready)"
+
+premium:
+  unlocked: "<prefix><c:flame><sym:star></c:flame> <c:text>Your <c:value>Premium Pass</c:value> <c:text>is unlocked for this season. Claim its cosmetics in</c:text> <c:action>/pass</c:action><c:text>."
+
+# After a claim: a header, then one line per reward kind.
+claim:
+  header: "<prefix><c:success><sym:check></c:success> <c:text>Claimed <c:value><count></c:value> <c:text>pass reward(s):"
+
+# One reward (menu lore and chat).
+reward:
+  money: "  <c:muted>+</c:muted> <cur:money><amount>"
+  crystals: "  <c:muted>+</c:muted> <cur:crystals><amount>"
+  key: "  <c:muted>+</c:muted> <c:value><amount> <crate> Key</c:value> <c:muted>(tradeable)"
+  key-bound: "  <c:muted>+</c:muted> <c:value><amount> <crate> Key</c:value> <c:muted>(bound)"
+  boosters: "  <c:muted>+</c:muted> <c:value><amount> booster(s)</c:value> <c:muted>(in your inventory or /box)"
+  booster: "  <c:muted>+</c:muted> <c:value><type> booster +<percent>%</c:value> <c:muted>(<minutes> min)"
+  title: "  <c:muted>+</c:muted> <c:text>Title</c:text> <name>"
+  tag: "  <c:muted>+</c:muted> <c:text>Tag</c:text> <name>"
+
+crates:
+  ember: "Ember"
+  cinder: "Cinder"
+  blaze: "Blaze"
+  inferno: "Inferno"
+  phoenix: "Phoenix"
+  eclipse: "Eclipse"
+
+boosters:
+  sell: "Sell"
+  skill_xp: "Skill XP"
+  tool_xp: "Tool XP"
+  crystals: "Crystal"
+
+# Names of the pass titles (added to tags-titles.yml once if missing; staff edits there stay).
+titles:
+  pass_climber: "<c:ember>Season Climber"
+  pass_champion: "<gradient:legendary>Season Champion</gradient>"
+  pass_spark: "<c:flame>Spark"
+  pass_kindled: "<c:ember>Kindled"
+  pass_ashwalker: "<c:muted>Ashwalker"
+  pass_cinderborn: "<c:ember>Cinderborn"
+  pass_flamecaller: "<gradient:flame>Flamecaller</gradient>"
+  pass_smokeweaver: "<c:text>Smokeweaver"
+  pass_emberheart: "<c:ember>Emberheart"
+  pass_firebrand: "<c:brand>Firebrand"
+  pass_pyrekeeper: "<gradient:flame>Pyrekeeper</gradient>"
+  pass_blazeborn: "<gradient:phoenix>Blazeborn</gradient>"
+  pass_heatwave: "<c:warning>Heatwave"
+  pass_wildfire: "<c:brand>Wildfire"
+  pass_sunforged: "<c:flame>Sunforged"
+  pass_flameheart: "<gradient:flame>Flameheart</gradient>"
+  pass_infernal: "<gradient:phoenix>Infernal</gradient>"
+  pass_starfire: "<gradient:legendary>Starfire</gradient>"
+  pass_ashen_crown: "<gradient:legendary>Ashen Crown</gradient>"
+  pass_everflame: "<gradient:phoenix>Everflame</gradient>"
+  pass_risen: "<gradient:phoenix>Risen</gradient>"
+  pass_ascendant: "<gradient:mythic>Phoenix Ascendant</gradient>"
+
+# XP bar in the menu: 10 dots, done ones in the first look.
+bar:
+  filled: "<c:flame>●</c:flame>"
+  empty: "<c:locked>●</c:locked>"
+
+menu:
+  title: "Battle Pass"
+  info:
+    - "<c:text>Earn pass XP from quests, votes,"
+    - "<c:text>daily rewards and playing."
+    - "<c:text>Every level has a free reward."
+    - "<c:text>Premium adds cosmetics only."
+    - "<c:text>Each profile has its own level."
+  disabled:
+    name: "<c:muted>The battle pass is turned off"
+    lore: ["<c:text>Staff turned it off for now."]
+  summary:
+    name: "<c:flame><sym:star></c:flame> <c:value>Level <level>/<max>"
+    lore:
+      - "<c:bar>| </c:bar><bar> <c:value><step>/<need> XP"
+      - "<c:bar>| </c:bar><c:text>Total: <c:value><xp> XP"
+      - "<c:bar>| </c:bar><c:text>Season: <c:value><season>"
+    days: ["<c:bar>| </c:bar><c:text>Ends in <c:value><days> day(s)"]
+    catch-up: ["<c:bar>| </c:bar><c:success>Catch-up: +<percent>% pass XP"]
+    premium-on: ["", "<c:flame><sym:star></c:flame> <c:value>Premium Pass unlocked"]
+    premium-off: ["", "<c:muted>Free pass <sym:dot> Premium adds cosmetics"]
+  free-label:
+    name: "<c:flame><bold>Free rewards"
+    lore: ["<c:text>A reward every level.", "<c:text>Keys every 5 levels."]
+  premium-label:
+    unlocked:
+      name: "<c:flame><bold>Premium · Unlocked"
+      lore: ["<c:text>Cosmetics every 5 levels.", "<c:text>Given once per account."]
+    locked:
+      name: "<c:muted><bold>Premium · Locked"
+      lore: ["<c:text>Cosmetics every 5 levels:", "<c:text>titles and tags, no items", "<c:text>or money. Coming to the store."]
+  claim-all:
+    name: "<c:success><bold>Claim all · <count> ready"
+    lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to claim <c:value><count></c:value> <c:text>reward(s)", "<c:muted>(at most <max> at once)"]
+    none:
+      name: "<c:muted>Nothing to claim"
+      lore: ["<c:text>Earn pass XP to reach", "<c:text>the next level."]
+  level:
+    reached:
+      name: "<c:success><sym:check> Level <level> · Reached"
+      lore: []
+    current:
+      name: "<c:flame>Level <level> · <step>/<need> XP"
+      lore: ["<c:bar>| </c:bar><bar>", "<c:bar>| </c:bar><c:text><left> XP to go"]
+    later:
+      name: "<c:muted>Level <level> · <left> XP to go"
+      lore: []
+    overflow-reached:
+      name: "<c:success><sym:check> Bonus <level> · Reached"
+      lore: []
+    overflow-current:
+      name: "<c:flame>Bonus <level> · <step>/<need> XP"
+      lore: ["<c:bar>| </c:bar><bar>", "<c:bar>| </c:bar><c:text><left> XP to go"]
+    overflow-later:
+      name: "<c:muted>Bonus <level> · <left> XP to go"
+      lore: []
+  tier:
+    rewards: ["<bold><c:header>| Rewards"]
+    name:
+      claim: "<c:success>Level <level> · Click to claim"
+      claimed: "<c:muted><sym:check> Level <level> · Claimed"
+      locked: "<c:text>Level <level> · Locked"
+      premium: "<c:text>Level <level> · Premium"
+      unavailable: "<c:muted>Level <level> · Coming soon"
+    overflow-name:
+      claim: "<c:success>Bonus <level> · Click to claim"
+      claimed: "<c:muted><sym:check> Bonus <level> · Claimed"
+      locked: "<c:text>Bonus <level> · Locked"
+      premium: "<c:text>Bonus <level> · Premium"
+      unavailable: "<c:muted>Bonus <level> · Coming soon"
+    state:
+      claim: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+      claimed: ["<c:success><sym:check></c:success> <c:text>Claimed"]
+      locked: ["<c:text>Reach this level first:", "<c:value><left></c:value> <c:text>more pass XP."]
+      premium: ["<c:text>Needs the <c:value>Premium Pass</c:value><c:text>."]
+      unavailable: ["<c:text>This reward is not ready yet.", "<c:text>It waits here for you."]
+
+# /pass admin (staff, P10-41).
+admin:
+  loading: "<prefix><c:error><sym:cross></c:error> <c:text>The pass of <c:value><player></c:value> <c:text>is loading. Try again in a moment."
+  view: "<c:header><bold>| Pass of <player></bold> <c:muted>(profile <profile>, season <season>)</c:muted><newline><c:bar>|</c:bar> <c:text>Level <c:value><level></c:value> <c:muted><sym:dot></c:muted> <c:value><xp></c:value> <c:text>XP <c:muted><sym:dot></c:muted> <c:text>free claimed <c:value><free></c:value> <c:muted><sym:dot></c:muted> <c:text>premium <c:value><premium></c:value> <c:muted>(<premium-claimed> claimed)</c:muted> <c:muted><sym:dot></c:muted> <c:text>ready <c:value><ready>"
+  xp-range: "<prefix><c:error><sym:cross></c:error> <c:text>Give between 1 and <c:value><max></c:value> <c:text>XP at once."
+  xp-given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><xp></c:value> <c:text>pass XP to <c:value><player></c:value><c:text>."
+  reset: "<prefix><c:success><sym:check></c:success> <c:text>Pass XP of <c:value><player></c:value> <c:text>is 0 now. Claimed tiers stay claimed."
+  premium-on: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>has the Premium Pass for season <c:value><season></c:value><c:text>."
+  premium-off: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>no longer has the Premium Pass for season <c:value><season></c:value><c:text> (the permission still counts)."

@@ -22,7 +22,8 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/bank` | Personal + island bank | `skyblock.bank` | ⬜ |
 | `/sell` (built: [economy](economy.md)), `/shop` (built: [shop](shop.md)), `/ah` (built: [auction](auction.md)) | Selling and trading | see module files | ✅ |
 | `/wardrobe` (replaces `/sets`), `/loadout [name]` (`/skills` built: [skills](skills.md), `/enchanter` built: [enchants](enchants.md)) | Progression (plans: `docs/plans/WARDROBE.md`, `docs/plans/ENCHANTS.md`) | `skyblock.wardrobe`, `skyblock.loadout` … | ⬜ |
-| `/vote`, `/pass`, `/blackmarket`, `/collection` | Rewards | … | ⬜ |
+| `/vote`, `/blackmarket`, `/collection` | Rewards | … | ⬜ |
+| `/pass` | Rewards: built in M10.8, see [pass.md](pass.md) | `skyblock.pass.use` | ✅ |
 | `/quests` | Rewards: built in M10.7, see [quests.md](quests.md) | `skyblock.quests.use` | ✅ |
 | `/daily` | Rewards: built in M10.6, see [rewards.md](rewards.md) | `skyblock.rewards.daily` | ✅ |
 | `/crates` | Rewards: built in M10.1, see [crates.md](crates.md) | `skyblock.crates.use` | ✅ |

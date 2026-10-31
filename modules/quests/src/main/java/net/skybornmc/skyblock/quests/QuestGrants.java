@@ -17,8 +17,8 @@ import java.util.logging.Level;
  * Hand-outs after a committed payout (all-done keys through {@link CrateKeys}, pass XP through {@link PassXp}), from
  * {@code quest_grants} rows: {@code pending} → {@code sending} (one atomic update, never handed out twice) →
  * {@code delivered}. A missing module leaves the row pending (tried again every {@code delivery.retry-seconds} and at the
- * next start); a row a crash left in {@code sending} goes to {@code review} for staff ({@code grant_review} in /logs).
- * Lost, never doubled.
+ * next start); a key row a crash left in {@code sending} goes to {@code review} for staff ({@code grant_review} in /logs),
+ * a pass XP row is sent again (idempotency key per row). Lost, never doubled.
  */
 final class QuestGrants {
 
@@ -70,7 +70,10 @@ final class QuestGrants {
         return m.core.database().async(c -> {
             List<QuestStore.GrantRow> moved = new ArrayList<>();
             for (QuestStore.GrantRow row : QuestStore.grants(c, QuestStore.SENDING, 10_000)) {
-                if (QuestStore.move(c, row.id(), QuestStore.SENDING, QuestStore.REVIEW, now)) {
+                // Pass XP carries an idempotency key per row (PassXp), so it is simply sent again; keys go to staff review.
+                if (QuestStore.PASS_XP.equals(row.kind())) {
+                    QuestStore.move(c, row.id(), QuestStore.SENDING, QuestStore.PENDING, now);
+                } else if (QuestStore.move(c, row.id(), QuestStore.SENDING, QuestStore.REVIEW, now)) {
                     moved.add(row);
                 }
             }
@@ -135,7 +138,7 @@ final class QuestGrants {
                 if (pass.isEmpty() || row.amount() <= 0 || row.amount() > Integer.MAX_VALUE) {
                     return CompletableFuture.completedFuture(false);
                 }
-                return pass.get().addXp(row.profile(), (int) row.amount(), "quest_" + row.ref());
+                return pass.get().addXp(row.profile(), (int) row.amount(), "quest_" + row.ref(), "quests:" + row.id());
             }
         } catch (RuntimeException e) {
             m.core.plugin().getLogger().log(Level.WARNING, "Quests: hand-out " + row.id() + " failed", e);

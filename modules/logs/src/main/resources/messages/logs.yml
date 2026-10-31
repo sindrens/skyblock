@@ -206,6 +206,7 @@ category-menu:
     boosters: ["<c:text>Boosters started, banked, global, thanks."]
     rewards: ["<c:text>Daily claims, streaks, playtime rewards."]
     quests: ["<c:text>Quests rolled, swapped and done, island missions."]
+    pass: ["<c:text>Battle pass XP, tier claims, premium."]
 
 categories:
   all: "All you can see"
@@ -228,6 +229,7 @@ categories:
   boosters: "Boosters"
   rewards: "Rewards"
   quests: "Quests"
+  pass: "Battle pass"
 
 ranges:
   all: "All time"

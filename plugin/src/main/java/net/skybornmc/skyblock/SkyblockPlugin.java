@@ -316,6 +316,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // Quests (PHASE-10 M10.7): needs economy; keys through CrateKeys, pass XP through PassXp; reads depths (events),
         // islands, skills, tools, enchants, sell, tutorial and profiles services (all optional).
         modules.register(new net.skybornmc.skyblock.quests.QuestsModule(core));
+        // Battle pass (PHASE-10 M10.8): publishes PassXp (quests, votes, calendar, playtime) and PassRewards (/menu Rewards);
+        // needs economy for money/crystals; keys through CrateKeys, boosters, cosmetics, box, skills, profiles (optional).
+        modules.register(new net.skybornmc.skyblock.pass.PassModule(core));
     }
 
     public ModuleRegistry modules() {

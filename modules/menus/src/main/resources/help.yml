@@ -62,7 +62,7 @@ categories:
     slot: 22
     name: "<c:flame><bold>Rewards"
     lore: ["<c:text>Crates, quests, voting", "<c:text>and daily rewards."]
-    topics: [crates, boosters, daily, quests, vote]
+    topics: [crates, boosters, daily, quests, vote, pass]
   community:
     icon: bell
     status: active
@@ -1391,6 +1391,39 @@ topics:
           - "<c:text>one daily quest a day for free"
           - "<c:text>(click it). Each profile has its"
           - "<c:text>own quests."
+
+  pass:
+    icon: experience_bottle
+    aliases: [battle-pass, battlepass, season-pass, pass-xp, premium-pass]
+    name: "<c:flame>Battle Pass"
+    summary: ["<c:text>Level up all season for", "<c:text>a reward at every level."]
+    take-me-there: "pass"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>Pass XP"
+        lines:
+          - "<c:text>Quests, votes, daily rewards and"
+          - "<c:text>active playtime give pass XP."
+          - "<c:text>Every 800 XP is a new level, up"
+          - "<c:text>to level 100."
+      - title: "<c:value>Free rewards"
+        lines:
+          - "<c:value>/pass</c:value> <c:text>shows every level. Each one"
+          - "<c:text>has a reward; every 5 levels a"
+          - "<c:text>key. Click a level to claim it, or"
+          - "<c:text>use Claim all."
+      - title: "<c:value>Premium"
+        lines:
+          - "<c:text>The Premium Pass adds titles and"
+          - "<c:text>tags only: no keys, items or"
+          - "<c:text>money. Premium cosmetics come"
+          - "<c:text>once per account."
+      - title: "<c:value>Good to know"
+        lines:
+          - "<c:text>Each profile has its own level."
+          - "<c:text>Joined late? You get extra XP"
+          - "<c:text>while far behind. After level 100"
+          - "<c:text>bonus rewards keep coming."
 
   box:
     icon: chest_minecart

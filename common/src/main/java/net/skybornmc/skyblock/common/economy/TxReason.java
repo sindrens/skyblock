@@ -61,6 +61,9 @@ public final class TxReason {
     /** Money and crystals from daily/weekly quests and island missions (PHASE-10 M10.7); new currency. */
     public static final String QUEST_REWARD = "quest_reward";
 
+    /** Money and crystals from battle pass tiers (PHASE-10 M10.8); new currency. */
+    public static final String PASS_REWARD = "pass_reward";
+
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 
     private TxReason() {

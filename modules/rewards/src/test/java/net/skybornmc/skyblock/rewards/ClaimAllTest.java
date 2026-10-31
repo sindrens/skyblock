@@ -86,4 +86,20 @@ class ClaimAllTest {
         assertEquals(RewardsService.Outcome.FAILED, failed.outcome());
         assertEquals(Component.empty(), failed.line());
     }
+
+    @Test
+    void passTiersJoinTheSummary() {
+        RewardsService.ClaimSummary nothing = RewardsService.ClaimSummary.nothingReady();
+        assertEquals(nothing, RewardsServiceImpl.withPass(nothing, 0, () -> Component.text("x")), "no tiers: unchanged");
+        RewardsService.ClaimSummary passOnly = RewardsServiceImpl.withPass(nothing, 3, () -> Component.text("pass"));
+        assertEquals(RewardsService.Outcome.CLAIMED, passOnly.outcome());
+        assertEquals(List.of(net.skybornmc.skyblock.common.pass.PassRewards.SOURCE), passOnly.claimed());
+        RewardsService.ClaimSummary daily = new RewardsService.ClaimSummary(RewardsService.Outcome.CLAIMED, List.of(RewardsService.DAILY),
+                Component.text("day"));
+        RewardsService.ClaimSummary both = RewardsServiceImpl.withPass(daily, 1, () -> Component.text("pass"));
+        assertEquals(List.of(RewardsService.DAILY, net.skybornmc.skyblock.common.pass.PassRewards.SOURCE), both.claimed());
+        assertEquals(RewardsService.Outcome.FAILED, RewardsServiceImpl.withPass(nothing, -1, () -> Component.text("x")).outcome(),
+                "a failed pass claim is not 'nothing ready' (that would open /daily over the error)");
+        assertEquals(daily, RewardsServiceImpl.withPass(daily, -1, () -> Component.text("x")), "the daily claim still counts");
+    }
 }
