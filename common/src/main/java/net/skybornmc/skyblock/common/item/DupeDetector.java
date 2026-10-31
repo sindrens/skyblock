@@ -49,8 +49,16 @@ public final class DupeDetector implements Listener {
 
     public static final String PERM_NOTIFY = "skyblock.staff.notify";
 
-    /** One copy of a unique item somewhere. {@code inventory == null} means the player's cursor. */
-    record Copy(UUID itemUuid, String itemId, String source, String where, UUID player, Inventory inventory, int slot) {
+    /**
+     * One copy of a unique item somewhere. {@code inventory == null} means the player's cursor. {@code own}: in the
+     * player's own inventory, ender chest or cursor (false for an open container they only look into).
+     */
+    record Copy(UUID itemUuid, String itemId, String source, String where, UUID player, Inventory inventory, int slot,
+                boolean own) {
+
+        Copy(UUID itemUuid, String itemId, String source, String where, UUID player, Inventory inventory, int slot) {
+            this(itemUuid, itemId, source, where, player, inventory, slot, true);
+        }
     }
 
     private final JavaPlugin plugin;
@@ -235,14 +243,14 @@ public final class DupeDetector implements Listener {
     private List<Copy> collectPlayer(Player player, Set<Inventory> seen) {
         List<Copy> copies = new ArrayList<>();
         String name = player.getName();
-        collect(player.getInventory(), name, "inventory", player.getUniqueId(), seen, copies);
-        collect(player.getEnderChest(), name, "ender chest", player.getUniqueId(), seen, copies);
+        collect(player.getInventory(), name, "inventory", player.getUniqueId(), seen, copies, true);
+        collect(player.getEnderChest(), name, "ender chest", player.getUniqueId(), seen, copies, true);
         Inventory top = player.getOpenInventory().getTopInventory();
         // Plugin menus only show copies for display (players can't take them), so they are never scanned.
         if (top.getType() != InventoryType.CRAFTING && top.getType() != InventoryType.PLAYER
                 && !(top.getHolder(false) instanceof net.skybornmc.skyblock.common.menu.Menu)) {
             collect(top, name, "open " + top.getType().name().toLowerCase(java.util.Locale.ROOT).replace('_', ' '),
-                    player.getUniqueId(), seen, copies);
+                    player.getUniqueId(), seen, copies, false);
         }
         ItemStack cursor = player.getItemOnCursor();
         if (uniqueId(cursor) != null) {
@@ -254,7 +262,8 @@ public final class DupeDetector implements Listener {
         return copies.isEmpty() ? List.of() : copies;
     }
 
-    private void collect(Inventory inventory, String owner, String what, UUID player, Set<Inventory> seen, List<Copy> out) {
+    private void collect(Inventory inventory, String owner, String what, UUID player, Set<Inventory> seen, List<Copy> out,
+                         boolean own) {
         if (!seen.add(inventory)) {
             return; // the same container viewed by two players is one container
         }
@@ -266,7 +275,8 @@ public final class DupeDetector implements Listener {
             }
             Copy copy = copyOf(stack, owner + " " + what + " slot " + slot, player, inventory, slot);
             if (copy != null) {
-                out.add(copy);
+                out.add(own ? copy : new Copy(copy.itemUuid(), copy.itemId(), copy.source(), copy.where(), copy.player(),
+                        copy.inventory(), copy.slot(), false));
             }
         }
     }
@@ -345,6 +355,11 @@ public final class DupeDetector implements Listener {
         return byUuid;
     }
 
+    /** The players with a copy in their own inventory, ender chest or cursor (R3-28), first seen first. Pure. */
+    static List<UUID> holderIds(List<Copy> copies) {
+        return List.copyOf(new LinkedHashSet<>(copies.stream().filter(Copy::own).map(Copy::player).toList()));
+    }
+
     private void handle(UUID uuid, List<Copy> list, long now) {
         for (Copy copy : list) {
             flag(copy, now);
@@ -357,7 +372,7 @@ public final class DupeDetector implements Listener {
         Copy first = list.getFirst();
         DupeReport report = new DupeReport(uuid, first.itemId(), first.source(),
                 list.stream().map(Copy::where).toList(),
-                List.copyOf(new LinkedHashSet<>(list.stream().map(Copy::player).toList())), now);
+                List.copyOf(new LinkedHashSet<>(list.stream().map(Copy::player).toList())), now, holderIds(list));
         for (DupeReport.Handler handler : handlers) {
             try {
                 handler.onDupe(report);

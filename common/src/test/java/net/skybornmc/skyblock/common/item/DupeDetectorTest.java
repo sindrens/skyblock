@@ -48,4 +48,16 @@ class DupeDetectorTest {
         assertEquals(List.of("s", "a", "t"), real.stream().map(DupeDetector.Copy::where).toList());
         assertEquals(Set.of(sam, alex, third), Set.copyOf(real.stream().map(DupeDetector.Copy::player).toList()));
     }
+
+    @Test
+    void onlyPlayersWithTheirOwnCopyAreHolders() {
+        UUID viewer = UUID.randomUUID();
+        DupeDetector.Copy own = cursor(alex, "alex inventory");
+        DupeDetector.Copy looking = new DupeDetector.Copy(item, "x", "s", "viewer open chest", viewer, null, 3, false);
+        DupeDetector.Copy second = cursor(sam, "sam ender chest");
+        assertEquals(List.of(alex, sam), DupeDetector.holderIds(List.of(own, looking, second)),
+                "R3-28: a player only looking into a chest is not trade-blocked");
+        DupeReport report = new DupeReport(item, "x", "s", List.of("a"), List.of(alex, viewer), 1L);
+        assertEquals(List.of(alex, viewer), report.holderIds(), "old constructor: every player is a holder");
+    }
 }

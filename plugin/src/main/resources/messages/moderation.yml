@@ -1535,6 +1535,11 @@ sanctions:
   # Dupe detector link: a suggestion (never applied by itself). <item> = item id, <copies> = copies found.
   dupe-source: "Dupe detector"
   dupe-details: "<item> found <copies> times (also freeze balance: /p, Sanctions)"
+  # Owner R3-28: automatic trade block for every holder of a copied unique item; ends by itself. <item>, <copies> + the sanction tags.
+  dupe-block:
+    reason: "Copied item found (<item>)"
+    notify: "<c:muted>[Staff]</c:muted> <c:error>Dupe:</c:error> <c:value><player></c:value> <c:text>holds a copied <c:value><item></c:value> <c:muted>(<copies> copies)</c:muted><c:text>. Trading blocked until <c:value><until></c:value> <c:muted>(#<sid>)</c:muted> <click:run_command:'/p <player>'><hover:show_text:'<c:text>Opens /p <player>: lift it or freeze the balance'><c:action>[Decide]</c:action></hover></click>"
+    you: "<prefix><c:error><sym:cross></c:error> <c:text>A copied item was found on you, so /pay, notes, the auction house and /trade are blocked until <c:value><until></c:value><c:text>. Staff will check it."
   # /history (chat).
   history:
     header: "<prefix><c:text>Sanctions of <c:value><player></c:value> <c:muted>(<total>)"

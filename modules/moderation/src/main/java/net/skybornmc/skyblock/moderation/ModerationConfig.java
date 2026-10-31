@@ -44,6 +44,15 @@ public final class ModerationConfig extends ModuleConfig {
     @Setting(path = "appeal-wait.cheating-categories", desc = "punishments.yml categories that count as cheating for the longer wait.")
     public List<String> appealWaitCheatingCategories = List.of("cheating");
 
+    @Setting(path = "dupe-trade-block.enabled", desc = "Owner R3-28: when the system finds a copied unique item, every player "
+            + "holding a copy gets an automatic trade block (/pay, notes, auction, /trade) that ends by itself. Staff are told "
+            + "and can lift it or add a freeze (/p <player>, Sanctions).")
+    public boolean dupeTradeBlock = true;
+
+    @Setting(path = "dupe-trade-block.hours", desc = "Owner R3-28: how long the automatic trade block lasts (hours).", min = 1,
+            max = 720)
+    public int dupeTradeBlockHours = 24;
+
     @Setting(path = "history.page-size", desc = "Punishments per page in /history (chat).", min = 3, max = 20)
     public int historyPageSize = 8;
 
