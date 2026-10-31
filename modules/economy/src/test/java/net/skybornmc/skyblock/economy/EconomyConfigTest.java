@@ -35,7 +35,7 @@ class EconomyConfigTest {
     @Test
     void everyOldTokensKeyMovesToAnExistingCrystalsSetting() {
         EconomyConfig config = new EconomyConfig();
-        assertEquals(3, config.version());
+        assertEquals(4, config.version());
         Set<String> paths = settingPaths();
         var renames = config.migrations().get(2);
         assertEquals(6, renames.size());

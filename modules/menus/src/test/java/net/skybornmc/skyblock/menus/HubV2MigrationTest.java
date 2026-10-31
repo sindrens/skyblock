@@ -67,7 +67,7 @@ class HubV2MigrationTest {
 
         List<String> problems = new ArrayList<>();
         assertEquals(15, ButtonLayout.hub(yaml, HubButtonsTest.ITEMS, problems::add).buttons().size());
-        assertEquals(8, ButtonLayout.you(yaml, HubButtonsTest.ITEMS, problems::add).buttons().size(), "6 + Quests (M10.7) + Collection (M10.10)");
+        assertEquals(9, ButtonLayout.you(yaml, HubButtonsTest.ITEMS, problems::add).buttons().size(), "6 + Quests (M10.7) + Collection (M10.10) + Credits (C1)");
         assertEquals(7, WarpLayout.parse(yaml, HubButtonsTest.ITEMS, problems::add).warps().size());
         assertEquals(List.of(), problems);
 

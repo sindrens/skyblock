@@ -72,7 +72,7 @@ class SetRegistryTest {
                 assertTrue(d.tier() <= 3, "gem sets are never the top tier");
             }
         }
-        assertEquals(Currency.CREDITS_EARNED, r.get("lorekeeper").orElseThrow().source().type().currency());
+        assertEquals(Currency.CREDITS, r.get("lorekeeper").orElseThrow().source().type().currency());
     }
 
     private static void assertSource(SetRegistry r, String id, SetDef.SourceType type, long price) {
