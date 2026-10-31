@@ -72,7 +72,11 @@ class VotifierServerTest {
     }
 
     private static String readAll(InputStream in) throws IOException {
-        return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        try {
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (java.net.SocketException reset) {
+            return ""; // the server closes with unread data: a reset is the same as a clean close
+        }
     }
 
     private void await(int votes, int rejects) throws InterruptedException {
