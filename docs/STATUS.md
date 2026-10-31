@@ -67,6 +67,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - PERF11 periodic slow ops
 - M7-1 Island Fuel
+- GUI-4c last menu leftovers + /top screen
 - NOTE: a separate owner-started agent works on docs/planning/*.md and docs/design/; do not overwrite those files, merge carefully.
 
 ## Parked / broken
