@@ -129,7 +129,8 @@ final class WarpBrowserMenu extends PagedMenu<IslandWarp> {
                 set(SLOT_OWN, service.item(new ItemStack(Material.OAK_SIGN), text("warps.how.name"), how),
                         click -> service.input(viewer, IslandsModule.ID, "warp.new-prompt", module.config().warpNameMaxLength, null,
                                 typed -> warps.setWarp(viewer, typed, null), () -> service.open(viewer, this),
-                                Msg.p("count", warps.warps(here.id()).size()), Msg.p("slots", warps.slots(here))));
+                                Msg.p("count", warps.warps(here.id()).size()), Msg.p("slots", warps.slots(here)),
+                                Msg.p("max", module.config().warpNameMaxLength)));
             }
         }
     }

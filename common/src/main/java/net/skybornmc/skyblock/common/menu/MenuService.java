@@ -700,7 +700,8 @@ public final class MenuService implements Listener {
      * on-screen keyboard (Floodgate; {@code menus.yml → bedrock-forms.enabled}), everyone else the chat prompt
      * {@link #prompt}. Form texts: {@code <key>-form.title} and {@code <key>-form.label} in {@code module}; chat text:
      * {@code <key>}. {@code onInput} runs on the main thread with the cleaned text ({@link TypedText}: no colour codes,
-     * trimmed, 1..{@code maxLength}); an empty answer or closing the form runs {@code onCancel}.
+     * trimmed, 1..{@code maxLength}); an empty answer or closing the form runs {@code onCancel}. Both texts get the
+     * same {@code placeholders} (pass {@code <max>} yourself when the text shows it).
      *
      * @param current text already in the form field ({@code null} = empty); the chat prompt shows it via placeholders
      */
@@ -724,11 +725,8 @@ public final class MenuService implements Listener {
     private boolean sendForm(Player player, String module, String key, int maxLength, String current, Consumer<String> onInput,
                              Runnable onCancel, TagResolver... placeholders) {
         UUID id = player.getUniqueId();
-        TagResolver[] all = new TagResolver[placeholders.length + 1];
-        System.arraycopy(placeholders, 0, all, 0, placeholders.length);
-        all[placeholders.length] = Msg.p("max", maxLength);
-        String title = FORM_TEXT.serialize(text(player, module, key + "-form.title", all));
-        String label = FORM_TEXT.serialize(text(player, module, key + "-form.label", all));
+        String title = FORM_TEXT.serialize(text(player, module, key + "-form.title", placeholders));
+        String label = FORM_TEXT.serialize(text(player, module, key + "-form.label", placeholders));
         Menu menu = open.get(id);
         if (menu != null) {
             // Like the chat prompt: the menu the answer reopens keeps this one as its Back target.

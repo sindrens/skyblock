@@ -383,7 +383,8 @@ final class WarpManager implements Listener {
             return;
         }
         core.menus().input(player, IslandsModule.ID, "warp.rename-prompt", config().warpNameMaxLength, warp.name(),
-                typed -> rename(player, island, warp, typed, reopen), reopen, Msg.p("warp", warp.name()));
+                typed -> rename(player, island, warp, typed, reopen), reopen, Msg.p("warp", warp.name()),
+                Msg.p("max", config().warpNameMaxLength));
     }
 
     /** Renames a warp (atomic, audited); a sign warp's sign shows the new name. {@code done} always runs. */

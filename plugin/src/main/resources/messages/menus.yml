@@ -175,6 +175,25 @@ players:
     name: "<c:text>No other players online"
     lore: ["<c:muted>Try again when your friends are on."]
   offline: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>just left."
+  # Search (GUI-4b): shown when the list is longer than one page.
+  search:
+    name: "<c:value>Search"
+    lore: ["<c:text>Find a player by part", "<c:text>of their name.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to search"]
+  search-on:
+    name: "<c:value>Search: <search>"
+    lore: ["<c:text>Only names with this text.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to search again"]
+  search-clear:
+    name: "<c:value>Show everyone"
+    lore: ["<c:text>Clear the search.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show all"]
+  empty-search:
+    name: "<c:text>Nobody found"
+    lore: ["<c:muted>No online name has that text."]
+  # Chat prompt: <max>, <cancel>, <seconds>
+  search-prompt: "<prefix><c:text>Type part of a name. <c:muted>(max <max>, <cancel> to stop, <seconds>s)"
+  # Bedrock form popup. <max>
+  search-prompt-form:
+    title: "Find a player"
+    label: "<c:text>Part of the name:"
 
 prompt:
   cancelled: "<prefix><c:text>Cancelled. Nothing changed."
