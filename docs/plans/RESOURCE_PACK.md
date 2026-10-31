@@ -237,7 +237,7 @@ Counts are today's catalogs. New entries in a catalog need a texture or they fal
 |---|---|
 | U+E200–E20F | currencies and brand: `E200` money coin, `E201` crystal, `E202` gem, `E203` shard, `E204` credits, `E205` phoenix logo (small, chat prefix), `E206` phoenix logo (wide, scoreboard/tab title), `E207` SkybornMC "S" logo |
 | U+E210–E21F | status marks: check, cross, warning, info, lock, star, hourglass (only if they look better than the safe symbols; default: keep the Unicode symbols, RP-D13) |
-| U+E220–E23F | rank badges: `E220` Ashborn (free), `E221` Hatchling, `E222` Fledgling, `E223` Firewing, `E224` Flamecrest, `E225` Sunfeather, `E226` Pyrelord, `E227` Immortal, `E228` Torchbearer, `E229` Flameheart, `E22A` Firecrown; `E230` Helper, `E231` Mod, `E232` Admin, `E233` Owner, `E234` Builder (art: RESOURCE_PACK_GUI.md §6) |
+| U+E220–E23F | **retired** (31 Oct): rank badges are a font now (`phoenix:badge`, `badge_shine`, `badge_solid`), so names stay editable in LuckPerms. See RESOURCE_PACK_GUI.md §6.2 |
 | U+E240–E24F | rarity tags for lore footers: common, uncommon, rare, epic, legendary, mythic, special |
 | U+E250–E25F | pillars/skills: mining, foraging, farming, combat, conquest, fishing |
 | U+E260–E27F | island roles (leader, admin, mod, member, coop), chat channel tags (island, staff) |

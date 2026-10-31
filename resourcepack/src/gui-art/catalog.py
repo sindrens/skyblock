@@ -95,15 +95,12 @@ TABS = [
 
 CURRENCIES = [  # id, name, material today. Gems are renamed credits (owner 31 Oct): nothing is called gems any more.
     ('money', 'Money (everyday buying and selling)', 'sunflower'), ('crystals', 'Crystals (island upgrades, island menu)', 'prismarine_crystals'),
-    ('shards', 'Shards (upgrading tools, armour and such)', 'per menu'), ('credits', 'Credits, was gems (bought with real money on Buycraft)', 'emerald (was the gems icon)')]
+    ('shards', 'Shards (upgrading tools, armour and such)', 'per menu'), ('credits', 'Credits, was gems: a ticket (bought with real money on Buycraft, spent in /store)', 'emerald (was the gems icon)')]
 
 GLYPHS = [  # id, codepoint, what
     ('money', 'E200', 'Money in text'), ('crystals', 'E201', 'Crystals in text'), ('shards', 'E203', 'Shards in text'),
     ('credits', 'E204', 'Credits in text (was gems; U+E202 is retired)'), ('logo_small', 'E205', 'Phoenix flame (chat prefix)'),
-    ('rank_ashborn', 'E220', 'Free rank'), ('rank_hatchling', 'E221', 'Bought 1'), ('rank_fledgling', 'E222', 'Bought 2'), ('rank_firewing', 'E223', 'Bought 3'),
-    ('rank_flamecrest', 'E224', 'Bought 4'), ('rank_sunfeather', 'E225', 'Bought 5'), ('rank_pyrelord', 'E226', 'Bought 6'), ('rank_immortal', 'E227', 'Bought 7'),
-    ('rank_torchbearer', 'E228', 'Won (season)'), ('rank_flameheart', 'E229', 'Won (season)'), ('rank_firecrown', 'E22A', 'Won (season)'),
-    ('rank_helper', 'E230', 'Staff'), ('rank_mod', 'E231', 'Staff'), ('rank_admin', 'E232', 'Staff'), ('rank_owner', 'E233', 'Staff'), ('rank_builder', 'E234', 'Staff')]
+]
 
 # backgrounds: file, codepoint, rows, replaces (old art-brief ids), what
 BACKGROUNDS = [

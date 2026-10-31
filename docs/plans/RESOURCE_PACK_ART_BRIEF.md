@@ -2,7 +2,7 @@
 
 > **31 Oct 2026: the GUI part is done.** Menu backgrounds (§B), menu buttons (§C), feature icons (§D), the currency icons and glyphs (§J) and the rank badges and small logo (§N) are drawn: v1, generated cartoon art in `resourcepack/`. The ids and where each one shows are in **`docs/plans/RESOURCE_PACK_GUI.md`**. This brief stays the to-do list for everything else (tools, books, sets, keys, crates, notes, spawners, Depths drops, rarity tags, HUD, sounds, pack icons).
 
-> **31 Oct 2026, round 2 (owner):** the only custom in-game items are **the crate chests at /warp crates**, one per crate by rarity (done: `resourcepack/`, RESOURCE_PACK_GUI.md §7). §E tools, §F books, §G sets, §K notes, §L Depths drops and §M spawners are **dropped**: those items keep the vanilla look. Crate keys in crate colours are waiting for the owner (question K2). Gems are renamed credits (§J).
+> **31 Oct 2026, round 2 (owner):** the only custom in-game items are **the crate chests at /warp crates**, one per crate by rarity (done: `resourcepack/`, RESOURCE_PACK_GUI.md §7). §E tools, §F books, §G sets, §K notes, §L Depths drops and §M spawners are **dropped**: those items keep the vanilla look. Crate chests and matching keys are done (RESOURCE_PACK_GUI.md §7). Gems are renamed credits (§J).
 
 > **For:** the owner, who draws every texture himself. **Status:** 2026-10-30, written from the built modules (tool tiers, `sets.yml`, crates, Depths drops, menus) and `RESOURCE_PACK.md` (ids, glyph sizes, milestones).
 > **Owner decisions (30 Oct):** the Java pack is **forced** (accept before joining, professional prompt); custom textures on crates, GUIs, sets/wardrobe and tools; size is not critical but optimise; the owner makes the art; the style is not fixed yet (§0.3).
@@ -536,7 +536,7 @@ Item models `phoenix:spawner/<tier>` (tiers 1–5, `stacking.yml`). Placed spawn
 | M05 | `item/spawner/5.png` | Spawner item, tier 5 (golem, shulker, evoker…) | 16×16 | Inventory, shop, crates, spawner menu | P2 | Spawner cage with a phoenix red + flame frame; mob type stays in the name. |
 
 ## N. Rank badges and logo glyphs
-> **Done (v1):** N01–N17 (full names; colours follow the GUI sketches, owner check in RESOURCE_PACK_GUI.md §6). Still open: N18 `logo_wide`, N19 SkybornMC S.
+> **Replaced (31 Oct, round 3):** rank badges are a font (`phoenix:badge`), so the name comes from LuckPerms and can be renamed; style and colours per group in RESOURCE_PACK_GUI.md §6.2. N17 small logo is done. Still open: N18 `logo_wide`, N19 SkybornMC S.
 
 
 Font `phoenix:icons`, shared with Bedrock. Rank names and colours come from the ranks plan (`docs/plans/RANKS_TITLES_ACHIEVEMENTS.md` §A, owner answers RK1/RK2 and 390: free rank **Ashborn**, donor ranks **Hatchling → Fledgling → Firewing → Flamecrest → Sunfeather → Pyrelord → Immortal**, won ranks Torchbearer, Flameheart, Firecrown). The old proposal names (Squire, Knight, Paladin, Warlord, Monarch) and the Ember badge are gone. Ids N01–N11 match the ranks plan's colour table; codepoints run U+E220–U+E22A.

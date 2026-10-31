@@ -1,6 +1,6 @@
-# Resource pack GUI art v1: what is in the pack and how to wire it
+# Resource pack art: menus, rank badges and crates
 
-**Status:** art v2, 31 Oct 2026 (v1 + the owner's second round: new rank badges, new currency icons, simpler icons, crate chests). It is ready for the developer: RP1 → RP3 in `RESOURCE_PACK.md`, queue item GUI-6. Open questions from round 2 are listed in §1.
+**Status:** art v3, 31 Oct 2026 (v1 + the owner's rounds 2 and 3: rank badges as a font, new currency icons, simpler icons, custom crate chests and keys). It is ready for the developer: RP1 → RP3 in `RESOURCE_PACK.md`, queue item GUI-6. All owner answers so far are in §1.
 - This branch adds **art and docs only**. No plugin code changes.
 - Generated from `main` at a3966f7 (update110), with the owner's answers from 31 Oct.
 - Everything here is original pixel art, drawn as code. Nothing is copied or traced from Mojang.
@@ -8,8 +8,9 @@
 **In short:**
 - **{{NBG}} menu backgrounds** (key screens + one frame set per area of the game).
 - **{{NICONS}} icons:** {{NBUTTONS}} menu buttons, {{NFEATURES}} feature icons, 9 shop tabs, 4 currencies.
-- **{{NGLYPHS}} font glyphs:** currencies, logo and full-name rank badges.
-- **7 crate chests** for /warp crates (3D models, one per crate, look set by rarity).
+- **{{NGLYPHS}} font glyphs:** currencies and the phoenix logo.
+- **7 crate chests and 7 matching keys** for /warp crates (3D models, one per crate, look set by rarity).
+- **Rank badges as a font** (3 fonts), so rank names stay editable in LuckPerms.
 - Total: {{SIZE}}.
 - **Every menu on `main` has a background:** {{NCOV}} menu classes, listed in §9.
 - **Vanilla items keep their vanilla textures.** Only our own buttons, feature icons and custom items get art.
@@ -27,12 +28,15 @@ resourcepack/
     item/menu/tab/<id>.png                   ← shop tab icons      → phoenix:menu/tab/<id>
     item/currency/<id>.png                   ← currency icons      → phoenix:currency/<id>
     font/icons/<id>.png                      ← glyphs (font phoenix:icons)
-    item/crate/block/<crate>.png             ← crate chest textures (64×64)
+    item/crate/block/<crate>.png             ← crate chest textures (128×128)
+    item/crate/key/<crate>.png               ← crate keys (16×16)
+    font/badge/*.png                         ← rank badge fonts
   java/assets/phoenix/models/item/crate/block/<crate>.json   ← crate chest 3D models
+  java/assets/phoenix/font/badge*.json       ← the three badge fonts
   src/preview/                               ← contact sheets: look here first
     screens.png        12 menus in context (backgrounds + icons, 3x)
     backgrounds.png    all 31 backgrounds
-    buttons.png  features.png  tabs_currencies.png  glyphs.png  crates.png
+    buttons.png  features.png  tabs_currencies.png  glyphs.png  badges.png  crates.png  crate_keys.png
   src/gui-art/                               ← the source: edit here, then regenerate (§13)
     core.js            palette ramps, cartoon shading, outline
     set_buttons.js  set_features.js  set_tabs.js  set_glyphs.js   ← the art (letter maps)
@@ -41,7 +45,8 @@ resourcepack/
     coverage.py        every menu class → background → coverage.json
     export_pack.js     writes the PNGs and the preview sheets
     build_docs.py      writes the tables in this file
-  src/crate-art/crates.js                    ← the crate chests (models, textures, preview)
+  src/crate-art/crates.js                    ← the crate chests and keys (models, textures, 3D preview)
+  src/badge-font/badges.py                   ← the rank badge fonts (+ ranks.json: look per LuckPerms group)
 ```
 **Related docs:**
 - `docs/design/GUI_DESIGN.md`: the layout rules these backgrounds follow.
@@ -58,17 +63,22 @@ resourcepack/
 | Paint the player-inventory half too | **Yes.** Otherwise a dark top sits on a grey bottom. This **changes RP-D16** ("No, top half only"). | 31 Oct |
 | Frame line colour per area of the game | **Yes** (§4.1) | 31 Oct |
 | Backgrounds | **Key screens + area frames: 31 files**, instead of 52 per-menu backgrounds | 31 Oct |
-| Rank badges | **Full names.** The target is ≤ 44 px; TORCHBEARER needs 45 px (§6). | 31 Oct |
 | Icon style | **Cartoony, with more personality, suited to the server.** Above all, easy to understand and relevant. | 31 Oct |
 | Vanilla items | **Keep vanilla textures.** Only custom things get art. | 31 Oct |
 | Staff badge colours | **Owner yellow, slightly orange · Admin light red · Mod light blue · Helper light green · Builder orange** | 31 Oct, round 2 |
-| Rank badges | **Better design for all; the better the rank, the more unique; an "enchanted" effect** (§6) | 31 Oct, round 2 |
-| Currency icons | **Money stays. Crystals must look like a crystal, shards like a shard, the gem like a gem.** | 31 Oct, round 2 |
-| Gems | **Renamed credits. Nothing is called gems any more** (`docs/OWNER_ANSWERS_PACK1.md`) | 31 Oct, round 2 |
-| Icons | **Simpler and easier to read: it must not look "too much done"** (§3) | 31 Oct, round 2 |
+| Rank badges | **Better design for all; the better the rank, the more unique; an "enchanted" effect** (§6.2) | 31 Oct, round 2 |
+| Rank style | **"Phoenix #3" looked best** (read as concept *3. Phoenix Flame* in `branding/concepts`): dark core, glowing letters, flame spikes | 31 Oct, round 3 |
+| Rank names | **Must be changeable in LuckPerms without breaking anything** → badges are a font, the name comes from LuckPerms (§6.2) | 31 Oct, round 3 |
+| Rank colours | **Not so similar; the right rank colours** (§6.2) | 31 Oct, round 3 |
+| Shimmer | **B3 yes:** moving shine on Java (pack text shader), still sparkles on Bedrock. **B4 yes:** Pyrelord, Immortal, Flameheart, Firecrown | 31 Oct, round 3 |
+| Currency icons | **Money stays. Crystals must look like a crystal, shards like a shard.** Credits: **the ticket** (C1: "I liked the other credits symbol") | 31 Oct, rounds 2–3 |
+| Gems | **Renamed credits. Nothing is called gems any more.** Credits are spent **in /store only** (C2); /shop stays money (`docs/OWNER_ANSWERS_PACK1.md`) | 31 Oct, rounds 2–3 |
+| Icons | **Simpler and easier to read: it must not look "too much done"** (§3). I1: the simpler set is approved | 31 Oct, rounds 2–3 |
 | In-game items | **Only a custom crate chest per crate at /warp crates, by tier rarity** (§7). Everything else vanilla. | 31 Oct, round 2 |
+| Crate chests | **Fully custom models**; the owner's pictures were inspiration only (K1) | 31 Oct, round 3 |
+| Crate keys | **Must match their crate** (K2) | 31 Oct, round 3 |
 
-**Waiting for the owner (round 2 page, "Phoenix Pack Round 2"):** B1 badge shapes, B2 bought-rank colours, B3 how the shimmer works, B4 which ranks shimmer, C1 credits gem colour, C2 where credits are spent, K1 crate chest look, K2 crate keys in crate colours, I1 the simpler icons. The art here already uses the recommended answers; a "No" is a small change in the source.
+**Round 2 page answered** (B3 R, B4 R, C1 other: the ticket, C2 R, K1 other: fully custom, K2 other: keys match the crates, I1 R). B1 and B2 were replaced by the round-3 rank feedback above.
 
 ---
 
@@ -192,97 +202,146 @@ The colours follow the `/menu` groups. Money is gold, Power is violet and More i
 {{CURRENCIES}}
 
 - **Gems are renamed credits** (owner, 31 Oct). The old `currency/gems` icon and glyph U+E202 are gone; credits use U+E204.
-- **Credits are an ember-orange cut gem.** That is the colour credits already have in text (`style.yml credits: #FF8C1A`), and it can't be mixed up with the cyan crystals or the pink shards (owner check C1).
-- **Crystals** are a crystal cluster (one tall faceted prism and two small ones). **Shards** are a broken, jagged piece. Each currency has its own shape: coin, cluster, broken piece, cut gem.
+- **Credits are an ember-orange ticket with a white star** (owner C1 picked it over the gem). Ember is the colour credits already have in text (`style.yml credits: #FF8C1A`).
+- **Crystals** are a crystal cluster (one tall faceted prism and two small ones). **Shards** are a broken, jagged piece.
+- **Every currency has its own shape:** coin, crystal cluster, broken shard, ticket. Nothing can be mixed up, even without colour.
 
 ---
 
-## 6. Font glyphs (font `phoenix:icons`, 9 px tall, ascent 7)
+## 6. Font glyphs and rank badges
+
+### 6.1 Glyphs (font `phoenix:icons`, 9 px tall, ascent 7)
 {{GLYPHS}}
 
-- **Rank badges v2 (round 2): the shape tells the group, the colour tells the rank.**
+- The old baked-in rank badge glyphs (U+E220–U+E234) are **retired**. Rank badges are a font now (§6.2).
+- `RESOURCE_PACK.md` §7.2 still lists old rank codepoints; it should point here.
 
-  | Group | Shape | Ranks |
-  |---|---|---|
-  | Free | grey outline, dark inside | Ashborn |
-  | Bought | round pill; **pointed ends from Sunfeather up**; gold top and bottom edge on Firewing and Flamecrest | Hatchling sand · Fledgling ember · Firewing crimson · Flamecrest magenta · Sunfeather gold · Pyrelord dark ember with gold letters · Immortal phoenix gradient |
-  | Won (season) | **ribbon ends** (notched) + gold edge | Torchbearer teal · Flameheart violet · Firecrown gold |
-  | Staff | **square plate** in the owner's colours | Owner yellow-orange `#FFC21A` · Admin light red `#FF6B6B` · Mod light blue `#6CC4FF` · Helper light green `#7CEB8A` · Builder orange `#FF9A3D` |
+### 6.2 Rank badges: a font, so names stay editable in LuckPerms
+![badges](../../resourcepack/src/preview/badges.png)
 
-  - Colour alone collides with 16 ranks (Builder vs Fledgling, Owner vs Sunfeather/Firecrown, Admin vs Firewing). The shapes fix that, also for colour-blind players.
-  - **TORCHBEARER is 45 px wide.** That is the longest name, one pixel over the 44 px target. Every other badge is ≤ 44 px.
-- **The enchanted shimmer** (recommended, owner check B3/B4):
-  - **Who:** Pyrelord, Immortal, Flameheart and Firecrown. Rare stays special, and chat stays calm.
-  - **Java:** a shine sweeps across the badge every ~2.6 s, done by the pack's text shader (`rendertype_text`). The badge glyph is sent in a reserved trigger colour, and the shader adds the moving band only for that colour (the same trick Oraxen's text effects use, supported from 1.21.4). No packets, no lag.
-  - **Bedrock, old clients, or a player pack that overrides text shaders:** the still version, with two sparkles baked into the badge frame.
-  - **Cost:** one shader file in a pack overlay per client version range; check it on each new Minecraft version (RP2 test list).
-- **The colour table in `RANKS_TITLES_ACHIEVEMENTS.md` §A** should follow these colours once the owner answers B1/B2.
-- **Codepoints** follow the art brief §J and §N. `RESOURCE_PACK.md` §7.2 still lists the old rank names (Squire, Knight and so on) and needs fixing.
+**What the owner asked for (round 3):**
+- the "Phoenix #3" look (dark core, glowing letters, flame spikes);
+- rank names that can be changed in LuckPerms without breaking anything;
+- colours that are clearly different.
+
+**How it works:**
+1. **The name comes from LuckPerms:** the group's display name (`lp group hatchling setdisplayname "Hatchling"`).
+   - Rename it any time (`… setdisplayname "Baby Phoenix"`). The badge shows the new name within a second, because `LuckPermsRanks` already refreshes on every change.
+2. **The look comes from the group id, never from the name.** One config entry per group sets the font, the end caps, the colour, the cap colour, the shine and the Bedrock colour.
+   - The data is in `resourcepack/src/badge-font/ranks.json`; move it into `style.yml` as `badges:`.
+   - A group with no entry gets the plain Ashborn look, so nothing ever breaks.
+3. **The plugin draws the name in a badge font.** Each letter picture carries its own piece of the plate, so any name becomes a badge.
+   - The plugin adds the two end caps and a −1 px space (U+F801) between letters, because Minecraft leaves a 1 px gap after every bitmap glyph.
+   - Example, Hatchling: `<font:phoenix:badge><#FF9A4D>`, then U+E002 (left cap), then `H`, U+F801, `A`, U+F801 … `G`, then U+E003 (right cap), then `</font>`.
+   - Turn the text shadow off for the badge (`<shadow:#00000000>`, clients 1.21.4+).
+4. **The text colour tints the badge.** Minecraft multiplies glyph pixels by the text colour, so one font serves every colour.
+   - A gradient (Immortal) is a normal MiniMessage `<gradient>`: each letter gets its own colour.
+5. **Characters:** A–Z, 0–9, space and `+ - ! ' .`.
+   - Lower case is drawn as the same capitals.
+   - The plugin leaves any other character out.
+   - Long names make longer badges. Keep names to about 12 letters for chat.
+
+**Fonts** (`assets/phoenix/font/` + `textures/font/badge/`):
+
+| Font | Look | For |
+|---|---|---|
+| `phoenix:badge` | dark core, rim and letters glow in the rank colour (Phoenix Flame) | players |
+| `phoenix:badge_shine` | the same pictures at alpha 254 | ranks with the moving shine |
+| `phoenix:badge_solid` | light plate in the rank colour, dark letters, square ends | staff |
+
+**End caps** (private chars, left/right):
+
+| Cap | Chars | Ranks |
+|---|---|---|
+| `plain` | E000/E001 | Ashborn |
+| `ember` (one flame tip) | E002/E003 | Hatchling, Fledgling |
+| `wing` (two feathers) | E004/E005 | Firewing, Flamecrest |
+| `sun` (three rays) | E006/E007 | Sunfeather, Pyrelord |
+| `phoenix` (five rays) | E008/E009 | Immortal |
+| `ribbon` (notched, an award) | E00A/E00B | won ranks |
+| `square` | E00E/E00F | staff |
+
+The flames grow with the tier, so a better rank is visibly more special.
+
+**Colours: every player rank has its own hue.** Staff are solid plates, so a staff colour never looks like a player colour.
+
+| Group | Family | Colour | Shine | Bedrock |
+|---|---|---|---|---|
+| default (Ashborn) | free | ash grey `#B5ABA4` | – | `&7` |
+| hatchling | bought | ember orange `#FF9A4D` | – | `&6` |
+| fledgling | bought | lime `#9BE84A` | – | `&a` |
+| firewing | bought | sky blue `#4FB4FF` | – | `&9` |
+| flamecrest | bought | violet `#B06BFF` | – | `&5` |
+| sunfeather | bought | gold `#FFD21A` | – | `&e` |
+| pyrelord | bought | crimson `#FF3B4A` | yes | `&c` |
+| immortal | bought | phoenix gradient `#FFE27A → #FF8C1A → #FF2D3F`, gold caps | yes | `&e&l` → `&6&l` → `&c&l` |
+| torchbearer | won | teal `#2EE6D0` | – | `&3` |
+| flameheart | won | pink `#FF5FD2` | yes | `&d` |
+| firecrown | won | white letters, gold caps | yes | `&f&l` |
+| owner | staff | yellow, slightly orange `#FFC21A` | – | `&e&l` |
+| admin | staff | light red `#FF6B6B` | – | `&c&l` |
+| mod | staff | light blue `#6CC4FF` | – | `&9&l` |
+| helper | staff | light green `#7CEB8A` | – | `&a&l` |
+| builder | staff | orange `#FF9A3D` | – | `&6&l` |
+
+**The moving shine** (B3/B4, yes):
+- The pack's text shader (`rendertype_text`) adds a moving light band to glyph pixels whose alpha is 254. Only `phoenix:badge_shine` has those pixels, so no other text can trigger it.
+- No packets and no lag; it runs on the client.
+- The same idea as Oraxen's text effects, which work from 1.21.4.
+- **Bedrock, older clients, or a player pack that replaces the text shader:** the badge just shows still.
+- **Cost:** one shader file per client version range, in a pack overlay. Check it on each new Minecraft version (RP2 test list).
+
+**Bedrock and no-pack viewers** get `[Name]` as plain text in the Bedrock colour from the table. Bedrock has only the 16 legacy colours, so staff are bold to stay apart.
+
+**Follow-ups:**
+- The colour table in `RANKS_TITLES_ACHIEVEMENTS.md` §A should follow these colours.
+- The player name colour in chat and tab should use the same colour.
 
 ---
 
 ## 7. Crate chests at /warp crates (the only custom in-game items)
-The owner wants one custom crate chest per crate at the crate yard, its look set by the crate's rarity, "and that's it" for in-game items.
+The owner wants a custom crate chest per crate at the crate yard, its look set by the crate's rarity, "and that's it" for in-game items.
+- **Round 3:** the chests are fully custom models. His two pictures were inspiration only.
+- **The keys must match their crates.**
 
 ![crates](../../resourcepack/src/preview/crates.png)
+![keys](../../resourcepack/src/preview/crate_keys.png)
 
-| Crate | Rarity (crates.yml) | Bands and lock | Extra detail |
+**One family, so players see "a crate" from far away.** Every chest has:
+- a wooden body and lid;
+- metal corner posts that stick out;
+- a belt in the rarity colour across the lid seam;
+- metal bars along the lid's top edges;
+- a lock in front.
+
+Each tier then adds one thing you can see from a distance:
+
+| Crate | Rarity (crates.yml) | Body | What makes it stand out |
 |---|---|---|---|
-| Ember | common | white-grey | plain oak chest |
-| Cinder | uncommon | green | – |
-| Blaze | rare | blue | dark wood, gem on the lid |
-| Inferno | epic | purple | glowing seam under the lid |
-| Phoenix | legendary | gold | phoenix-red paint, flame on the lid |
-| Eclipse | mythic | pink | black with stars, eclipse ring on the lid |
-| Conqueror | special (hidden until KOTH) | red | dark iron, crossed swords |
+| Ember | common | oak | plain: iron frame, white belt |
+| Cinder | uncommon | mossy green wood | vines hanging over the front and sides, green crystal on top |
+| Blaze | rare | blue wood | gold belt, arched lid, gold feet, blue crystal on top |
+| Inferno | epic | purple wood | heavy dark frame, glowing purple seam, side handles, purple crystal |
+| Phoenix | legendary | phoenix red | gold frame and feet, arched lid, **wings on both sides, a flame on top**, glowing gold seam |
+| Eclipse | mythic | black with stars | pink belt and glow, arched lid, **eclipse ring on top** |
+| Conqueror | special (hidden until KOTH) | dark iron | red belt and glow, **iron spikes with red tips**, red skull lock |
 
-- **One chest shape for all,** so players see "a crate" from far away. The rarity colours are the same ones players see on rewards.
-- **Files:** `models/item/crate/block/<crate>.json` (body, lid and latch; `parent: block/block`, so it also renders as an icon in menus) and `textures/item/crate/block/<crate>.png` (64×64). Model string `phoenix:crate/block/<crate>` (RESOURCE_PACK §5.2). Source: `resourcepack/src/crate-art/crates.js`.
-- **How they show (plugin, crates M10.3):**
-  - Keep the real chest block on each pedestal (build points `crates`), so Bedrock and no-pack players see a normal chest, and the clicks keep working (`PhysicalCrates`).
-  - Pack players also get an `ItemDisplay` with the crate model at scale ~1.02, which hides the vanilla chest. An alternative is a per-player block change to air for pack players, which avoids any overlap.
-  - Above it, a text display with the crate name in its rarity colour (all players).
-- **Later (RP8):** lid-open frames `_open_0..5` for the opening animation and a roll background. Crate keys in their crate colours are proposed (owner check K2).
+**Keys** (`textures/item/crate/key/<crate>.png`, model `phoenix:crate/key/<crate>` on the key's tripwire hook, RESOURCE_PACK §5.2):
+- A ring bow in the crate's colour with the crate's crystal in it, a metal shaft and a chunky bit.
+- Plus the crate's one detail: vines (Cinder), purple spark (Inferno), flame (Phoenix), stars (Eclipse), red spikes (Conqueror). So a key looks like a piece of its chest.
 
-## 8. Wiring it (for the developer: RP1 → RP3, queue GUI-6)
-1. **ids.yml:** add every id from `src/gui-art/ids_gui.json`:
-   - models, each with its **carrier materials** (the "Carrier today" columns above);
-   - glyphs with codepoints;
-   - backgrounds with codepoint and rows.
+**Files:**
+- `models/item/crate/block/<crate>.json`: 18–30 elements. It uses `parent: block/block`, so it also renders as a 3D icon in menus (crate preview, /crates).
+- `textures/item/crate/block/<crate>.png`: 128×128.
+- The source is `resourcepack/src/crate-art/crates.js`. It writes the models, textures, keys and a 3D preview, rendered with three.js using the same faces and UVs as the game.
 
-   List only the carrier/model pairs that are used, so Geyser gets a short mapping list.
-2. **build_pack.py:**
-   - Write `assets/phoenix/models/item/<path>.json` (`item/generated`, layer0 `phoenix:item/<path>`).
-   - Write one vanilla override per carrier, `assets/minecraft/items/<carrier>.json`: a select on the `custom_model_data` string, with the vanilla model as the fallback.
-   - Write fonts `phoenix:menu`, `phoenix:icons` and `phoenix:space`.
-3. **common/menu (MenuService):** put the model strings on every standard button:
-   - back, previous/next, info, close, main_menu / help;
-   - confirm/cancel plates;
-   - toggles;
-   - loading / error / empty / locked;
-   - picker plates, min / type / max.
+**How they show in game (plugin, crates M10.3):**
+- Keep the real chest block on each pedestal (build points `crates`). Bedrock and no-pack players see a normal chest, and the clicks keep working (`PhysicalCrates`).
+- Pack players also get an `ItemDisplay` with the crate model, scale about 1.05, facing the walkway, which covers the vanilla chest. A per-player block change to air for pack players avoids any overlap, if needed.
+- The front is the model's south side (+z); rotate the display so it faces the path.
+- Above the chest, a text display shows the crate name in its rarity colour, for all players.
 
-   Frame fillers get `menu/blank` and a hidden tooltip.
-4. **menu.yml:** add `model:` to each hub, You and Travel entry (for example `home: {…, model: menu/icon/home}`), so the config stays the one source.
-5. **Backgrounds:**
-   - `Menu.background()` defaults to `frame_<area>_<rows>`, with the area taken from the module (§4.1, list in §9).
-   - These menus override it: hub, island, shop, shop_buy, sell_chest, number_picker, confirm and top.
-   - Menus with a tab row in row 0 use the `_tabs` variant.
-   - Title = `[space −8][background glyph][space −177][space +8]`, then the title text in parchment, for pack viewers only.
-6. **/menu group marks (slots 9, 18, 27, 36):** the coloured panes become `menu/blank`. The background paints the marks.
-7. **States:**
-   - Rewards with something to claim → `menu/icon/rewards_ready` + count.
-   - Selected tab → glint + "✔ You are here".
-   - Island visitors locked → `menu/icon/visitors_locked`.
-   - Island chat on → glint.
-8. **Bedrock (RP5):** Geyser custom item mappings v2 for the same carrier/model pairs. No backgrounds, no title colour.
-9. **Tests:**
-   - Every model string the code uses exists in `pack-ids.yml`.
-   - Every `Menu` subclass resolves to a background that exists. The test fails when a new menu is added without one.
-10. **Test pass (the owner's S2 rule):** one Java checklist and one Bedrock checklist.
-    - Screens: hub, You, Travel, /is, shop + buy page, /sell, amount picker, confirm, Top, one staff screen.
-    - GUI scale 2, 3 and 4.
-    - English and one long language.
+**Later (RP8):** lid-open frames for the opening animation (the lid is already a separate part), and a roll background.
 
 ---
 
@@ -333,7 +392,7 @@ How the list was made:
 
 ## 12. Still missing (later batches, not GUI v1)
 - **Icons for hidden or unbuilt features:** quests, pets, events, black market, collection, loadout, satchel, sigil, cosmetics editor. Draw each one when its feature ships.
-- **Crates:** preview and roll backgrounds (art brief B32–B40), lid-open frames, and keys if the owner says yes (K2). The crate chests themselves are done (§7).
+- **Crates:** preview and roll backgrounds (art brief B32–B40) and lid-open frames. The crate chests and keys are done (§7).
 - **Item families (§E–§M): dropped.** The owner decided (31 Oct, round 2) that the only custom in-game items are the crate chests; tools, books, sets, tokens, money notes, spawners and Depths drops keep the vanilla look.
 - **More glyphs:** rarity tags (§O), pillar and role glyphs (§P, §Q), status glyphs (the default stays Unicode, RP-D13), and `logo_wide` for the scoreboard title.
 - **HUD and boss bars** (§R), **sounds** (§T), and **pack.png / Bedrock pack_icon** (from `branding/`).
@@ -346,7 +405,8 @@ You need Node with Playwright (Chromium) and Python 3. Run these from the repo r
 python3 resourcepack/src/gui-art/catalog.py resourcepack/src/gui-art/ids_gui.json
 python3 resourcepack/src/gui-art/coverage.py resourcepack/src/gui-art/menus_main.txt resourcepack/src/gui-art/ids_gui.json resourcepack/src/gui-art/coverage.json
 node resourcepack/src/gui-art/export_pack.js            # PNGs + preview sheets
-node resourcepack/src/crate-art/crates.js               # crate chest models, textures, preview
+node resourcepack/src/crate-art/crates.js               # crate chests + keys (needs three.js: THREE_JS=path/to/three.min.js)
+python3 resourcepack/src/badge-font/badges.py           # rank badge fonts + badges.png
 python3 resourcepack/src/gui-art/build_docs.py          # tables in this file
 ```
 - **Change an icon:** edit its letter map in `set_*.js`. `.` is transparent. Letters map to the palette ramps in `core.js`, and the outline and shading are automatic.
