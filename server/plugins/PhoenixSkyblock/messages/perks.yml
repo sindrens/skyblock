@@ -52,13 +52,29 @@ realname:
 trash:
   title: "Trash"
   info:
-    name: "<c:value><bold>Trash</bold>"
+    name: "<c:info><bold>?</bold></c:info> <c:value>What is this?"
     lore:
       - "<c:text>Put items you don't need in"
-      - "<c:text>the slots above."
+      - "<c:text>the slots above, then click"
+      - "<c:text>Destroy. Closing gives them back."
+  destroy:
+    name: "<c:error>Destroy items"
+    lore:
+      - "<c:text>Destroys what's in the slots"
+      - "<c:text>above. You confirm first."
       - ""
-      - "<c:error>Anything left inside is gone"
-      - "<c:error>for good when you close this."
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to destroy"
+  confirm:
+    crumb: "Destroy <amount> items?"
+    shown:
+      name: "<c:error><amount> item(s)"
+      lore: []
+    details:
+      - "<c:text>Destroy <c:value><amount></c:value> <c:text>item(s) of <c:value><kinds></c:value> <c:text>kind(s)."
+      - "<c:warning>They're gone for good."
+    custom: ["<c:warning>Includes <c:value><amount></c:value> <c:warning>custom item(s)."]
+  nothing: "<prefix><c:error><sym:cross></c:error> <c:text>The trash is empty. Put items in the slots above first."
+  returned: "<prefix><c:text>Nothing was destroyed: <c:value><amount></c:value> <c:text>item(s) are back in your inventory."
   destroyed: "<prefix><c:success><sym:check></c:success> <c:text>Destroyed <c:value><amount></c:value> item(s)."
   destroyed-custom: "<prefix><c:warning><sym:cross></c:warning> <c:text>This included <c:value><amount></c:value> custom item(s)."
 
@@ -97,3 +113,7 @@ freerank:
     tag:
       name: "<tag>"
       lore: ["<c:text>Free with your rank.", "<c:text>Yours forever.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
+  # Confirm before the permanent pick (details on the middle item, GUI_DESIGN §4).
+  confirm:
+    crumb: "Pick this tag?"
+    details: ["<c:text>Give you <tag> <c:text>for good.", "<c:warning>You can't change this pick later."]

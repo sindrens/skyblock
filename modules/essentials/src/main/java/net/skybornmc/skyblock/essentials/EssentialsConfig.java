@@ -35,6 +35,10 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "join.teleport-to-spawn", desc = "Teleport every player to spawn when they join (until islands exist).")
     public boolean joinTeleportToSpawn = true;
 
+    @Setting(path = "join.privacy-delay-seconds", desc = "Seconds after the first join before the privacy line (chat and commands "
+            + "are logged) is sent, so it is not on the first screen next to the welcome.", min = 1, max = 600)
+    public int privacyDelaySeconds = 45;
+
     @Setting(path = "join.first-join-broadcast", desc = "Announce new players to everyone with their join number.")
     public boolean firstJoinBroadcast = true;
 

@@ -139,7 +139,7 @@ outcome:
     lore: ["<c:text>Checked, but nothing was found.", "", "<c:muted>Tells <reporter>: no evidence.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
   invalid:
     name: "<c:error><bold>Invalid</bold></c:error>"
-    lore: ["<c:text>No rule was broken.", "", "<c:muted>Tells <reporter>: closed, no rule broken.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
+    lore: ["<c:text>No rule was broken.", "<c:warning>Counts as a false report", "<c:warning>against <reporter>.", "", "<c:muted>Tells <reporter>: closed, no rule broken.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
   duplicate:
     name: "<c:muted><bold>Duplicate</bold></c:muted>"
     lore: ["<c:text>Already handled in another report.", "", "<c:muted>Tells <reporter>: duplicate.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]

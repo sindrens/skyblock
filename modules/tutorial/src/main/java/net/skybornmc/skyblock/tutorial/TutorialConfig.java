@@ -48,8 +48,9 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "steps.crop.blocks", desc = "Crop blocks that count (block ids).")
     public List<String> cropBlocks = List.of("wheat");
 
-    @Setting(path = "steps.menu.menu-ids", desc = "Menus whose opening completes the menu step (island = the island menu, from /menu or /is).")
-    public List<String> menuIds = List.of("island");
+    @Setting(path = "steps.menu.menu-ids", desc = "Menus whose opening completes the menu step (hub = /menu, the Nether Star; "
+            + "UX review: the step teaches /menu, then points at The Depths).")
+    public List<String> menuIds = List.of("hub");
 
     @Setting(path = "steps.depths.zone", desc = "Depths zone the 'go to the Depths' step waits for.")
     public String depthsZone = "mine_t01";
@@ -343,6 +344,17 @@ public final class TutorialConfig extends ModuleConfig {
 
     @Setting(path = "analytics.max-rows", desc = "Most events read for one stats view (protects the database).", min = 1000, max = 2_000_000)
     public int statsMaxRows = 250_000;
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** v2 (GUI-BUGS): the menu step completes when /menu opens (it used to need the island menu); an owner-edited list is kept. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("steps.menu.menu-ids", ValueChange.of(List.of("island"), List.of("hub"))));
+    }
 
     @Override
     public String fileName() {

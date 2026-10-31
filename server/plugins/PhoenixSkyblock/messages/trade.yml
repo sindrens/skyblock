@@ -93,8 +93,8 @@ cancel:
     you: "<prefix><c:text>You cancelled the trade. Your items are back."
     other: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>cancelled the trade. Your items are back."
   closed:
-    you: "<prefix><c:text>You closed the trade. Your items are back."
-    other: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>closed the trade. Your items are back."
+    you: "<prefix><c:text>You stayed away from the trade window too long. The trade ended; your items are back."
+    other: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>stayed away from the trade too long. Your items are back."
   quit: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended: <c:value><player></c:value> <c:text>left. Your items are back."
   damage: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended because of combat. Your items are back."
   teleport: "<prefix><c:error><sym:cross></c:error> <c:text>The trade ended because of a teleport. Your items are back."
@@ -107,6 +107,11 @@ cancel:
   error: "<prefix><c:error><sym:cross></c:error> <c:text>The trade failed and was cancelled. Nothing was swapped; your items are back."
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>Your profiles can't trade with each other."
 
+# Closing the trade window never cancels the trade (owner U7); trade.yml session.away-seconds ends it.
+away:
+  you: "<prefix><c:text>The trade is still open. Type <c:value>/trade</c:value> <c:text>to go back. It ends in <c:value><seconds>s</c:value> <c:text>if you don't."
+  other: "<prefix><c:value><player></c:value> <c:text>closed the trade window. The trade stays open for <c:value><seconds>s</c:value><c:text>."
+
 delivery:
   received: "<prefix><c:success><sym:check></c:success> <c:value><count></c:value> <c:text>trade item(s) put in your inventory."
   full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Inventory full: <c:value><count></c:value> <c:text>trade item(s) are waiting. Make room and they come in a moment."
@@ -117,7 +122,8 @@ menu:
     - "<c:text>Tap items in your inventory to offer"
     - "<c:text>them. Both confirm, then a short"
     - "<c:text>countdown. Any change resets it."
-    - "<c:text>Closing this window cancels the trade."
+    - "<c:text>Closing keeps the trade open:"
+    - "<c:value>/trade</c:value> <c:text>brings you back."
   you:
     name: "<c:value>You <c:muted>(<player>)"
     lore:

@@ -11,7 +11,6 @@ import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -20,10 +19,11 @@ import java.util.UUID;
 
 /**
  * {@code /is top} (PHASE-5 M5.2): the island boards, Level and Value tabs, Solo/Team toggle (separate boards), places
- * 1-28 and your own island's place. Weekly gain and per-pillar boards come with M5.7 (gray "Coming soon" tabs). Boards
- * are ranked every {@code top.refresh-seconds} from memory. One plain click each (Bedrock-safe).
+ * 1-28 and your own island's place. Weekly gain and per-pillar boards come with M5.7; until then their tabs are hidden
+ * (GUI_DESIGN §3: coming soon = hidden). Boards are ranked every {@code top.refresh-seconds} from memory. One plain click
+ * each (Bedrock-safe).
  * <pre>
- *  R O ✦ ◇ ⌚ ⛏ ⚑ O R      2 Level, 3 Value, 4 Weekly (soon), 5 Pillars (soon), 6 Solo/Team
+ *  R O B ✦ ◇ ⚑ B O R      3 Level, 4 Value, 5 Solo/Team
  *  B 1 2 3 4 5 6 7 B      places 1-28 (10-16, 19-25, 28-34, 37-43)
  *  B . . . . . . . B
  *  B . . . . . . . B
@@ -33,11 +33,9 @@ import java.util.UUID;
  */
 final class TopMenu extends Menu {
 
-    static final int SLOT_LEVEL = 2;
-    static final int SLOT_VALUE = 3;
-    static final int SLOT_WEEKLY = 4;
-    static final int SLOT_PILLARS = 5;
-    static final int SLOT_BOARD = 6;
+    static final int SLOT_LEVEL = 3;
+    static final int SLOT_VALUE = 4;
+    static final int SLOT_BOARD = 5;
     static final int SLOT_YOU = 47;
     static final List<Integer> PLACES = List.of(10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34,
             37, 38, 39, 40, 41, 42, 43);
@@ -95,10 +93,7 @@ final class TopMenu extends Menu {
         frame();
         set(SLOT_LEVEL, tab(IslandTop.Kind.LEVEL, Material.NETHER_STAR, "top-menu.tab.level"));
         set(SLOT_VALUE, tab(IslandTop.Kind.VALUE, Material.DIAMOND_BLOCK, "top-menu.tab.value"));
-        set(SLOT_WEEKLY, MenuButton.display(service.item(new ItemStack(Material.CLOCK), text("top-menu.tab.weekly.name"),
-                lines("top-menu.tab.weekly.lore"))));
-        set(SLOT_PILLARS, MenuButton.display(hideAttributes(service.item(new ItemStack(Material.IRON_PICKAXE),
-                text("top-menu.tab.pillars.name"), lines("top-menu.tab.pillars.lore")))));
+        // Weekly gain and Pillars boards (M5.7) stay hidden until they work (UX review §5).
         boolean solo = board == IslandTop.Board.SOLO;
         set(SLOT_BOARD, MenuButton.of(service.item(new ItemStack(solo ? Material.PLAYER_HEAD : Material.SHIELD),
                 text(solo ? "top-menu.board.solo-name" : "top-menu.board.team-name"), lines(solo ? "top-menu.board.solo-lore" : "top-menu.board.team-lore")),
@@ -178,11 +173,6 @@ final class TopMenu extends Menu {
         UUID account = ProfileService.of(menus.core().services()).ownerOf(ownerKey);
         String name = account == null ? null : Bukkit.getOfflinePlayer(account).getName();
         return name == null ? "?" : name;
-    }
-
-    private static ItemStack hideAttributes(ItemStack item) {
-        item.editMeta(meta -> meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES));
-        return item;
     }
 
     private Component text(String key, TagResolver... placeholders) {

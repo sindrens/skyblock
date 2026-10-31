@@ -18,7 +18,7 @@ import java.util.UUID;
  * {@code /is upgrade} (PHASE-5 M5.4 mockup): tabs on top, the upgrades of the tab, the island bank and the island level.
  * One plain click each (Bedrock-safe, no right or shift clicks). Refreshes while open (task progress, bank balance).
  * <pre>
- *  R O ⚒ $ ⛏ ▼ ✦ O R      2-6 tabs: Island, Economy, Depths, Production, Masteries (M5.5, coming soon)
+ *  R O ⚒ $ ⛏ ▼ B O R      2-5 tabs: Island, Economy, Depths, Production (Masteries, M5.5, stays hidden until built)
  *  B u u u u u u u B      10-16 upgrades of the tab
  *  B u u u u u u u B      19-25
  *  B . . . . . . . B
@@ -29,7 +29,6 @@ import java.util.UUID;
 final class UpgradeMenu extends Menu {
 
     static final int[] TAB_SLOTS = {2, 3, 4, 5};
-    static final int SLOT_MASTERIES = 6;
     static final int[] UPGRADE_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
     static final int SLOT_BANK = 38;
     static final int SLOT_LEVEL = 40;
@@ -121,8 +120,6 @@ final class UpgradeMenu extends Menu {
         for (int i = 0; i < tabs.length && i < TAB_SLOTS.length; i++) {
             set(TAB_SLOTS[i], tabButton(tabs[i]));
         }
-        set(SLOT_MASTERIES, MenuButton.display(service.item(new ItemStack(Material.NETHER_STAR), text("upgrades.tab.masteries.name"),
-                lines("upgrades.tab.masteries.lore"))));
         List<UpgradeCatalog.Def> defs = menus.upgrades().catalog().tab(tab);
         for (int i = 0; i < defs.size() && i < UPGRADE_SLOTS.length; i++) {
             UpgradeCatalog.Def def = defs.get(i);

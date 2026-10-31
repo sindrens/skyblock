@@ -160,11 +160,6 @@ menu:
     action:
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to start it"
-  # Confirm before a booster item is used up (details on the middle item, GUI_DESIGN §4).
-  confirm:
-    crumb: "Start this booster?"
-    personal: ["<c:text>Use up this booster item.", "<c:text>You get <c:value>+<percent>% <type></c:value> <c:text>for <c:value><time></c:value><c:text>."]
-    global: ["<c:text>Use up this booster item.", "<c:text>Everyone online gets <c:value>+<percent>% <type></c:value><c:text>.", "<c:text>It runs <c:value><time></c:value> <c:text>(or queues after others)."]
     more:
       name: "<c:muted>And <more> more"
       lore: ["<c:text>Start these from your inventory."]
@@ -173,3 +168,8 @@ menu:
       lore:
         - "<c:text>Boosters come from crates, the"
         - "<c:text>daily calendar and quests."
+  # Confirm before a booster item is used up: the details go on the middle item (GUI design 4).
+  confirm:
+    crumb: "Start this booster?"
+    personal: ["<c:text>Use up this booster item.", "<c:text>You get <c:value>+<percent>% <type></c:value> <c:text>for <c:value><time></c:value><c:text>."]
+    global: ["<c:text>Use up this booster item.", "<c:text>Everyone online gets <c:value>+<percent>% <type></c:value><c:text>.", "<c:text>It runs <c:value><time></c:value> <c:text>(or queues after others)."]

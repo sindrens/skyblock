@@ -43,6 +43,14 @@ public interface TutorialService {
         return player != null && state(player.getUniqueId()).orElse(null) == State.ACTIVE;
     }
 
+    /**
+     * True when the tutorial gives this joining player the welcome (one title + one chat block with one next step, owner
+     * U2), so the join flow must not show its own first-join title and chat block on top of it.
+     */
+    default boolean welcomes(Player player) {
+        return false;
+    }
+
     /** Starts the tutorial at its first step (nothing happens when it is running or complete). */
     void start(Player player);
 

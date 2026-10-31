@@ -21,7 +21,9 @@ npc-names:
   mine_foreman: "Foreman"
   help: "Info Clerk"
 
-# ------------------------------------------------------------------ roles: name + help (sneak-click, or click for help roles)
+# ------------------------------------------------------------------ roles: name + help
+# Action NPCs: one plain click runs the action and, the first time each session, prints this help (npcs.yml npcs.help-once).
+# Help-only NPCs show it on every click; sneak-click always shows it.
 roles:
   guide:
     name: "Guide"
@@ -81,26 +83,27 @@ roles:
   crates:
     name: "Crate Keeper"
     help:
-      - "<c:text>Crates open soon. Keys come from"
-      - "<c:text>voting, quests and events."
+      - "<c:text>Open crates with your keys: <c:value>/crates"
+      - "<c:text>Keys come from the daily calendar and playtime."
   black_market:
     name: "Black Market"
     help:
-      - "<c:text>A shady trader who visits now and then."
-      - "<c:text>Opens soon."
+      - "<c:text>A shady trader. Not open yet."
   quests:
     name: "Quest Master"
     help:
-      - "<c:text>Quests open soon."
+      - "<c:text>There are no quests yet."
+      - "<c:text>For now, try the daily calendar: <c:value>/daily"
   daily:
     name: "Daily Rewards"
     help:
-      - "<c:text>Daily rewards open soon."
+      - "<c:text>Claim one reward every day: <c:value>/daily"
+      - "<c:text>Missing a day never sends you back."
   vote:
     name: "Voting"
     help:
-      - "<c:text>Vote for the server to earn keys."
-      - "<c:text>Voting opens soon."
+      - "<c:text>Voting isn't here yet."
+      - "<c:text>Keys come from the daily calendar: <c:value>/daily"
 
 # ------------------------------------------------------------------ help dialog
 help:
@@ -142,8 +145,8 @@ holograms:
     - "<c:muted>Coming soon"
   key_board:
     - "<c:flame><bold>Crate Keys"
-    - "<c:text>Get keys from voting,"
-    - "<c:text>quests and events."
+    - "<c:text>Get keys from the daily"
+    - "<c:text>calendar and playtime."
   blueprint_wall:
     - "<c:flame><bold>Blueprints"
     - "<c:text>Find blueprints in the Depths"
@@ -198,7 +201,7 @@ hologram-help:
   spawn_map:
     - "<c:text>Back to spawn any time: <c:value>/spawn"
   key_board:
-    - "<c:text>Crates open soon. Keys you earn are saved."
+    - "<c:text>Open crates with your keys: <c:value>/crates"
   blueprint_wall:
     - "<c:text>Blueprints drop in the Depths."
     - "<c:text>Craft them at the Blacksmith: <c:value>/forge"
