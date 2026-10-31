@@ -88,3 +88,22 @@ generator:
     emberite:
       name: "Emberite"
       description: "The rarest island ore, from a level 10 generator. Sell it with /sell."
+
+# Island farming (M7.3, crops.yml). <crop> crop name, <level> Farming level needed, <have> your Farming level.
+farming:
+  locked: "<prefix><c:error><sym:cross></c:error> <pillar:farming>Farming <level></pillar:farming> <c:text>needed to plant <c:value><crop></c:value><c:text>: <c:value><have>/<level></c:value><c:text>."
+  # Crop names of crops.yml (planting message).
+  crops:
+    wheat: "Wheat"
+    carrot: "Carrots"
+    potato: "Potatoes"
+    beetroot: "Beetroot"
+    sugar_cane: "Sugar Cane"
+    melon: "Melons"
+    pumpkin: "Pumpkins"
+    cocoa: "Cocoa"
+    cactus: "Cactus"
+    sweet_berries: "Sweet Berries"
+    nether_wart: "Nether Wart"
+    torchflower: "Torchflowers"
+    pitcher_plant: "Pitcher Plants"
