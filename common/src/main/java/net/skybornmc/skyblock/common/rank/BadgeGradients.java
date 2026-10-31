@@ -1,4 +1,4 @@
-package net.skybornmc.skyblock.common.pack;
+package net.skybornmc.skyblock.common.rank;
 
 import net.kyori.adventure.text.format.TextColor;
 

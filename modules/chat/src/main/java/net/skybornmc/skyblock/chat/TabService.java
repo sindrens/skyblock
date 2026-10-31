@@ -5,7 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
-import net.skybornmc.skyblock.common.pack.BadgeOptions;
+import net.skybornmc.skyblock.common.rank.BadgeOptions;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.text.TextMemo;
@@ -93,7 +93,7 @@ final class TabService implements Listener {
     private final ArrayDeque<UUID> checkOrder = new ArrayDeque<>();
     /**
      * Rank badges per viewer: every player has their own sidebar scoreboard (HUD), so the team prefix, which carries the
-     * nametag badge, is drawn per board for the board owner's pack/settings. A board that is shared (or the main one)
+     * nametag badge, is drawn per board for the board owner's client (Java or Bedrock). A board that is shared (or the main one)
      * gets the plain text form. The tab list name itself is one value for everybody (the client ignores team prefixes
      * when a list name is set), so it always shows the plain {@code [Name]} text.
      */
@@ -270,13 +270,10 @@ final class TabService implements Listener {
     }
 
     /**
-     * The badge variant of a player's own board (pack loaded, Bedrock, reduced motion / simple / bigger text). When it
+     * The badge variant of a player's own board (Java or Bedrock). When it
      * changed, every team on that board is applied again (queued, budgeted). A few cheap reads per check.
      */
     private void checkVariant(Player p, Scoreboard board) {
-        if (!display.badgesOn()) {
-            return;
-        }
         BadgeOptions options;
         if (board == Bukkit.getScoreboardManager().getMainScoreboard()) {
             options = BadgeOptions.PLAIN;
@@ -395,11 +392,8 @@ final class TabService implements Listener {
         if (old != null && old.key().equals(key)) {
             return;
         }
-        ChatConfig c = config.get();
-        Audience none = Audience.empty();
-        // With badges the prefix is drawn per board in apply(); this is the text prefix for servers without the pack.
-        Entry entry = new Entry(key, teamName(rank.weight(), p.getName()),
-                c.nametagPrefix && !display.badgesOn() ? display.rankPrefix(none, rank.prefix()) : Component.empty(),
+        // The rank badge is drawn per board in apply().
+        Entry entry = new Entry(key, teamName(rank.weight(), p.getName()), Component.empty(),
                 display.afkSuffix(p), Display.teamColor(rank), rank);
         entries.put(id, entry);
         p.playerListName(display.tabEntry(p, rank));
@@ -438,7 +432,7 @@ final class TabService implements Listener {
             team = board.registerNewTeam(entry.team());
         }
         Component prefix = entry.prefix();
-        if (display.badgesOn() && config.get().nametagPrefix && entry.rank() != null) {
+        if (config.get().nametagPrefix && entry.rank() != null) {
             prefix = display.rankFor(Audience.empty(), entry.rank(), variants.getOrDefault(board, BadgeOptions.PLAIN));
         }
         if (!Objects.equals(team.prefix(), prefix)) {

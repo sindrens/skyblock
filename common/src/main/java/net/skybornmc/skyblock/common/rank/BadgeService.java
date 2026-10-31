@@ -1,4 +1,4 @@
-package net.skybornmc.skyblock.common.pack;
+package net.skybornmc.skyblock.common.rank;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -10,17 +10,13 @@ import java.util.Optional;
 
 /**
  * Rank badges for every surface (chat, hover, nametag, scoreboard, previews), published by the chat module:
- * {@code core.services().optional(BadgeService.class)}. Without it (no pack module) callers keep today's text from the
- * rank provider. One place decides the badge and the rank colour, so a rank looks the same everywhere.
+ * {@code core.services().optional(BadgeService.class)}. Without it (chat module off) callers keep today's text from the
+ * rank provider. One place decides the badge and the rank colour, so a rank looks the same everywhere. The looks come
+ * from chat.yml {@code ranks.looks} ({@link RankLooks}).
  */
 public interface BadgeService {
 
-    /** True when the pack module is present, so badges are drawn from {@code pack-ids.yml}. */
-    boolean enabled();
-
-    PackIds ids();
-
-    /** How {@code viewer} sees badges (pack loaded, Bedrock, the three /settings switches). Any thread. */
+    /** How {@code viewer} sees badges (Java or Bedrock). Any thread. */
     BadgeOptions options(Audience viewer);
 
     /** The badge of {@code player} for {@code viewer}, no trailing space. Reads the rank provider (any thread). */
@@ -35,7 +31,7 @@ public interface BadgeService {
     /** The id of the wearer's chosen gradient ("" unless the group may choose). Part of the rank fingerprint. */
     String gradientChoice(String group, Player player);
 
-    /** The rank colour of a player: the one colour behind the badge. Empty when badges are off. */
+    /** The rank colour of a player: the one colour behind the badge. */
     Optional<TextColor> color(Player player);
 
     /** Ids of the approved gradients, default first. */

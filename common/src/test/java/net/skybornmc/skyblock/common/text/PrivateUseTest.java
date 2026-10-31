@@ -1,4 +1,4 @@
-package net.skybornmc.skyblock.common.pack;
+package net.skybornmc.skyblock.common.text;
 
 import org.junit.jupiter.api.Test;
 

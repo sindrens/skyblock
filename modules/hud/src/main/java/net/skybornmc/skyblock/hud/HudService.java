@@ -319,10 +319,9 @@ public final class HudService implements Listener {
                 lazy("online", () -> Component.text(online(player))));
     }
 
-    /** The rank badge for this player's own sidebar (pack font, simple or Bedrock text), or the plain colored rank name. */
+    /** The rank badge for this player's own sidebar ([Name] text, Java or Bedrock form), or the plain colored rank name. */
     private Component rankComponent(Player player, net.kyori.adventure.text.format.TextColor color) {
-        return core.services().optional(net.skybornmc.skyblock.common.pack.BadgeService.class)
-                .filter(net.skybornmc.skyblock.common.pack.BadgeService::enabled)
+        return core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class)
                 .map(b -> b.badge(player, player))
                 .orElseGet(() -> Component.text(core.ranks().groupDisplayName(player), color));
     }

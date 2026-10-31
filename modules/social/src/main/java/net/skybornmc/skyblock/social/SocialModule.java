@@ -415,7 +415,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
     // ================================================================== private messages
 
     private void sendDm(CommandSender sender, CommandSender target, String typed) {
-        String text = net.skybornmc.skyblock.common.pack.PrivateUse.strip(typed); // must-have 5: no pack glyphs from players
+        String text = net.skybornmc.skyblock.common.text.PrivateUse.strip(typed); // must-have 5: no pack glyphs from players
         if (target.equals(sender)) {
             throw fail("dm.self");
         }
@@ -808,8 +808,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
                         + e.player().getName() + "'><" + color + ">" + e.player().getName() + "</" + color + "></hover></click>"
                         + afkTag);
             }
-            var badge = core.services().optional(net.skybornmc.skyblock.common.pack.BadgeService.class)
-                    .filter(net.skybornmc.skyblock.common.pack.BadgeService::enabled);
+            var badge = core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class);
             msg.send(sender, "list.group", badge.isPresent() ? Msg.c("rank", badge.get().badge(first.player(), sender))
                             : Msg.mm("rank", "<" + color + ">" + escape(first.display()) + "</" + color + ">"),
                     Msg.number("count", entries.size()), Msg.mm("players", String.join("<c:muted>, </c:muted>", names)));

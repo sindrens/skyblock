@@ -5,7 +5,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
-import net.skybornmc.skyblock.common.pack.PrivateUse;
+import net.skybornmc.skyblock.common.text.PrivateUse;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

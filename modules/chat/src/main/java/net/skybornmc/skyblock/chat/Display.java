@@ -7,8 +7,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.Core;
-import net.skybornmc.skyblock.common.pack.BadgeOptions;
-import net.skybornmc.skyblock.common.text.LegacyColors;
+import net.skybornmc.skyblock.common.rank.BadgeOptions;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.text.TextMemo;
 import org.bukkit.entity.Player;
@@ -37,13 +36,6 @@ final class Display {
         this.badges = badges;
     }
 
-    /** True when rank badges are drawn (the pack module is present); otherwise the LuckPerms prefix text is used. */
-    boolean badgesOn() {
-        return badges.enabled();
-    }
-
-    /** Parsed legacy prefixes ({@code "&c&lADMIN &c"} → Component); a handful of ranks, so this stays tiny. */
-    private final java.util.Map<String, Component> legacyPrefixes = new java.util.concurrent.ConcurrentHashMap<>();
     /**
      * Parsed fixed parts (PERF7): MiniMessage rank prefixes and the AFK marker. They only depend on the text and
      * Java/Bedrock, so they are parsed once per messages generation instead of on every tab rebuild and chat line.
@@ -77,51 +69,25 @@ final class Display {
                 core.ranks().groupDisplayName(player), badges.gradientChoice(group, player));
     }
 
-    /**
-     * The rank in front of a name for this viewer: the badge (pack font, simple or Bedrock text, from their /settings)
-     * plus a space, or the LuckPerms prefix when badges are off. Empty when the player has no rank text.
-     */
+    /** The rank in front of a name for this viewer: the badge ({@code [Name]} text, Java or Bedrock form) plus a space. */
     Component rank(Audience viewer, Player player) {
-        if (badges.enabled()) {
-            return badges.badge(player, viewer).append(Component.space());
-        }
-        return rankPrefix(viewer, core.ranks().prefix(player));
+        return badges.badge(player, viewer).append(Component.space());
     }
 
-    /** How a viewer sees badges (their pack and /settings); the plain form when badges are off. */
+    /** How a viewer sees badges (Java or Bedrock). */
     BadgeOptions viewerOptions(Audience viewer) {
         return badges.options(viewer).viewerOnly();
     }
 
-    /** The nametag rank for a team of {@code viewerOptions} from a snapshot (badge + space), or the text prefix. */
+    /** The nametag rank for a team of {@code viewerOptions} from a snapshot (badge + space). */
     Component rankFor(Audience viewer, RankView rank, BadgeOptions viewerOptions) {
-        if (badges.enabled()) {
-            List<TextColor> gradient = rank.gradient().isEmpty() ? List.of() : badges.gradientById(rank.gradient());
-            return badges.badge(rank.group(), rank.groupName(), viewerOptions.withGradient(gradient)).append(Component.space());
-        }
-        return rankPrefix(viewer, rank.prefix());
+        List<TextColor> gradient = rank.gradient().isEmpty() ? List.of() : badges.gradientById(rank.gradient());
+        return badges.badge(rank.group(), rank.groupName(), viewerOptions.withGradient(gradient)).append(Component.space());
     }
 
     /** The shared (viewer independent) rank for the tab list: plain {@code [Name]} text in the rank colour. */
     private Component tabRank(Audience viewer, RankView rank) {
-        if (badges.enabled()) {
-            return rankFor(viewer, rank, BadgeOptions.PLAIN);
-        }
-        return rankPrefix(viewer, rank.prefix());
-    }
-
-    /** {@link #rank(Audience, Player)} from an already-read prefix. */
-    Component rankPrefix(Audience viewer, String prefix) {
-        if (prefix == null || prefix.isBlank()) {
-            return Component.empty();
-        }
-        if (LegacyColors.hasCodes(prefix) || prefix.indexOf('<') < 0) {
-            if (legacyPrefixes.size() > 256) {
-                legacyPrefixes.clear();
-            }
-            return legacyPrefixes.computeIfAbsent(prefix, LegacyColors::toComponent);
-        }
-        return fixed(viewer, prefix);
+        return rankFor(viewer, rank, BadgeOptions.PLAIN);
     }
 
     /** {@code text} parsed for {@code viewer}, cached per messages generation unless it has player placeholders. */
@@ -161,7 +127,6 @@ final class Display {
 
     /** Forgets cached prefix components (reload / LuckPerms prefix edits). */
     void clearCache() {
-        legacyPrefixes.clear();
         parsed.clear();
     }
 

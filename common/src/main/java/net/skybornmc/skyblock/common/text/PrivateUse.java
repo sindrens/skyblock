@@ -1,4 +1,4 @@
-package net.skybornmc.skyblock.common.pack;
+package net.skybornmc.skyblock.common.text;
 
 /**
  * Player text must never carry private-use characters (U+E000–U+F8FF): the pack draws rank badges, currency glyphs,

@@ -8,7 +8,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.skybornmc.skyblock.common.pack.PrivateUse;
+import net.skybornmc.skyblock.common.text.PrivateUse;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
@@ -19,9 +19,10 @@ import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandService;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
-import net.skybornmc.skyblock.common.pack.BadgeOptions;
-import net.skybornmc.skyblock.common.pack.BadgeService;
-import net.skybornmc.skyblock.common.pack.BadgeSettings;
+import net.skybornmc.skyblock.common.rank.BadgeOptions;
+import net.skybornmc.skyblock.common.rank.BadgeService;
+import net.skybornmc.skyblock.common.rank.BadgeSettings;
+import net.skybornmc.skyblock.common.rank.Badges;
 import net.skybornmc.skyblock.common.placeholder.Placeholder;
 import net.skybornmc.skyblock.common.settings.PlayerSettings;
 import net.skybornmc.skyblock.common.settings.SettingCategory;
@@ -124,7 +125,7 @@ public final class ChatModule implements SkyblockModule, Listener {
     public void enable() {
         loadConfig();
         badges.reload();
-        // Rank badges (pack module present): one service, and one source for the rank color on every surface.
+        // Rank badges (chat.yml ranks.looks): one service, and one source for the rank color on every surface.
         core.services().register(ID, BadgeService.class, badges);
         core.ranks().colorSource(badges::colorOrNull);
         var pm = core.plugin().getServer().getPluginManager();
@@ -158,7 +159,7 @@ public final class ChatModule implements SkyblockModule, Listener {
                 "navigation", "settings.toggles." + SETTING_COLORS, false));
         service.register(new SettingToggle(ID, SETTING_TIMESTAMPS, SettingCategory.CHAT, Material.CLOCK, false, null,
                 "navigation", "settings.toggles." + SETTING_TIMESTAMPS, false));
-        // Rank badges (DISPLAY): reduced motion, simple badges, bigger text, and the Immortal colour picker.
+        // Rank badges (DISPLAY): the Immortal colour picker.
         BadgeSettings.toggles(ID, badges.gradientIds()).forEach(service::register);
         settings = service;
     }
@@ -232,45 +233,22 @@ public final class ChatModule implements SkyblockModule, Listener {
 
     // ================================================================== commands
 
-    /** Group ids for {@code /rank preview}: the pack's badge styles plus every group LuckPerms has loaded. */
+    /** Group ids for {@code /rank preview}: every group in chat.yml {@code ranks.looks} plus every LuckPerms group. */
     private List<String> previewGroups() {
-        java.util.Set<String> ids = new java.util.TreeSet<>();
-        net.skybornmc.skyblock.common.pack.PackIds pack = badges.ids();
-        if (pack != null) {
-            ids.addAll(pack.badges().keySet());
-        }
+        java.util.Set<String> ids = new java.util.TreeSet<>(badges.looks().groups());
         ids.addAll(core.ranks().groupIds());
         return List.copyOf(ids);
     }
 
-    /**
-     * {@code /rank preview <group> [name]}: the badge as players see it, in every form, then the Bedrock line. The pack
-     * forms only go to a sender who has the pack (Java without it, and Bedrock, would see boxes or controller icons).
-     */
+    /** {@code /rank preview <group> [name]}: the badge as players see it: simple (with gradient), Java and Bedrock. */
     private void rankPreview(CommandSender sender, String group, String name) {
-        net.skybornmc.skyblock.common.pack.PackIds pack = badges.ids();
-        if (pack == null) {
-            msg.send(sender, "rank-preview.unavailable");
-            return;
-        }
         String shown = name == null || name.isBlank() ? core.ranks().groupDisplayName(group) : name;
-        boolean hasPack = badges.options(sender).pack();
+        List<net.kyori.adventure.text.format.TextColor> gradient = Badges.CHOICE_GROUP.equals(group) && !badges.gradientIds().isEmpty()
+                ? badges.gradientById(badges.gradientIds().getFirst()) : List.of();
         msg.send(sender, "rank-preview.header", Msg.p("group", group), Msg.p("name", shown));
-        if (hasPack) {
-            var base = new BadgeOptions(true, false, false, false, false, java.util.List.of());
-            msg.send(sender, "rank-preview.shine", Msg.c("badge", badges.badge(group, shown, base)));
-            msg.send(sender, "rank-preview.still", Msg.c("badge", badges.badge(group, shown,
-                    new BadgeOptions(true, false, true, false, false, java.util.List.of()))));
-            msg.send(sender, "rank-preview.large", Msg.c("badge", badges.badge(group, shown,
-                    new BadgeOptions(true, false, false, false, true, java.util.List.of()))));
-        } else {
-            msg.send(sender, "rank-preview.no-pack");
-        }
-        msg.send(sender, "rank-preview.simple", Msg.c("badge", badges.badge(group, shown,
-                new BadgeOptions(true, false, false, true, false, java.util.List.of()))));
+        msg.send(sender, "rank-preview.simple", Msg.c("badge", badges.badge(group, shown, BadgeOptions.PLAIN.withGradient(gradient))));
         msg.send(sender, "rank-preview.java", Msg.c("badge", badges.badge(group, shown, BadgeOptions.PLAIN)));
-        msg.send(sender, "rank-preview.bedrock", Msg.c("badge", badges.badge(group, shown,
-                new BadgeOptions(false, true, false, false, false, java.util.List.of()))));
+        msg.send(sender, "rank-preview.bedrock", Msg.c("badge", badges.badge(group, shown, BadgeOptions.BEDROCK)));
     }
 
     private void registerCommands() {
@@ -281,7 +259,7 @@ public final class ChatModule implements SkyblockModule, Listener {
                 .category("Staff")
                 .permission(PERM_RANK_PREVIEW)
                 .sub(CommandSpec.sub("preview")
-                        .description("Preview a rank badge exactly as players see it (pack, still, simple, Bedrock)")
+                        .description("Preview a rank badge exactly as players see it (simple, Java, Bedrock)")
                         .arg(previewGroup)
                         .optional(previewName)
                         .example("rank preview immortal Phoenix King")
@@ -635,9 +613,8 @@ public final class ChatModule implements SkyblockModule, Listener {
         }
         Map<String, Shared> shared = new java.util.concurrent.ConcurrentHashMap<>(4);
         event.renderer((player, sourceDisplayName, message, viewer) -> {
-            // One variant per kind of viewer (Java/Bedrock, pack, badge settings), see BadgeService#options.
-            String variant = badges.enabled() ? badges.options(viewer).key()
-                    : String.valueOf(viewer instanceof Player v && core.bedrock().isBedrock(v.getUniqueId()));
+            // One variant per kind of viewer (Java/Bedrock), see BadgeService#options.
+            String variant = badges.options(viewer).key();
             Shared parts = shared.computeIfAbsent(variant, b -> new Shared(display.name(player)
                     .hoverEvent(HoverEvent.showText(hover(viewer, player)))
                     .clickEvent(ClickEvent.suggestCommand("/msg " + player.getName() + " ")), display.rank(viewer, player)));

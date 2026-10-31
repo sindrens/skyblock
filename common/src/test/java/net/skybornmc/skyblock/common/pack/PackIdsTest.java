@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.common.pack;
 
 import org.junit.jupiter.api.BeforeAll;
+import net.skybornmc.skyblock.common.text.PrivateUse;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileReader;

@@ -1,4 +1,4 @@
-package net.skybornmc.skyblock.common.pack;
+package net.skybornmc.skyblock.common.rank;
 
 import net.kyori.adventure.text.format.TextColor;
 import net.skybornmc.skyblock.common.settings.SettingCategory;
@@ -13,15 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class BadgeSettingsTest {
 
     @Test
-    void switchesAreOffByDefaultInTheDisplayCategory() {
+    void onlyTheRankColourPickerIsRegistered() {
         List<SettingToggle> t = BadgeSettings.toggles("chat", List.of("phoenix", "ember"));
-        for (String id : new String[]{BadgeSettings.REDUCED_MOTION, BadgeSettings.SIMPLE_BADGES, BadgeSettings.LARGE_BADGES}) {
-            SettingToggle s = t.stream().filter(x -> x.id().equals(id)).findFirst().orElseThrow();
-            assertFalse(s.defaultValue(), id);
-            assertFalse(s.isChoice(), id);
-            assertNull(s.permission(), id);
-            assertEquals(SettingCategory.DISPLAY, s.category(), id);
-            assertEquals("settings.toggles." + id, s.textKey());
+        assertEquals(List.of(BadgeSettings.RANK_COLOR), t.stream().map(SettingToggle::id).toList());
+        for (String retired : new String[]{"reduced-motion", "simple-badges", "large-badges"}) {
+            assertTrue(t.stream().noneMatch(x -> x.id().equals(retired)), retired);
         }
     }
 
@@ -38,7 +34,7 @@ class BadgeSettingsTest {
 
     @Test
     void noGradientsMeansNoPicker() {
-        assertEquals(3, BadgeSettings.toggles("chat", List.of()).size());
+        assertTrue(BadgeSettings.toggles("chat", List.of()).isEmpty());
     }
 
     @Test
