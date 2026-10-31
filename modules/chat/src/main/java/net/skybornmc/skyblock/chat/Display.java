@@ -9,6 +9,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.text.LegacyColors;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.text.TextMemo;
 import org.bukkit.entity.Player;
 
 import java.util.function.Supplier;
@@ -34,6 +35,12 @@ final class Display {
 
     /** Parsed legacy prefixes ({@code "&c&lADMIN &c"} → Component); a handful of ranks, so this stays tiny. */
     private final java.util.Map<String, Component> legacyPrefixes = new java.util.concurrent.ConcurrentHashMap<>();
+    /**
+     * Parsed fixed parts (PERF7): MiniMessage rank prefixes and the AFK marker. They only depend on the text and
+     * Java/Bedrock, so they are parsed once per messages generation instead of on every tab rebuild and chat line.
+     * Texts with player placeholders ({@code <ph:...>}) are parsed every time.
+     */
+    private final TextMemo<Component> parsed = new TextMemo<>(256);
 
     /**
      * Snapshot of the rank parts that change how a player looks (PERF4). The tab list reads LuckPerms off the main
@@ -67,7 +74,16 @@ final class Display {
             }
             return legacyPrefixes.computeIfAbsent(prefix, LegacyColors::toComponent);
         }
-        return core.messages().parse(viewer, prefix);
+        return fixed(viewer, prefix);
+    }
+
+    /** {@code text} parsed for {@code viewer}, cached per messages generation unless it has player placeholders. */
+    private Component fixed(Audience viewer, String text) {
+        if (text.contains("<ph:")) {
+            return core.messages().parse(viewer, text);
+        }
+        String key = core.messages().isBedrock(viewer) + "|" + text;
+        return parsed.get(core.messages().generation(), key, k -> core.messages().parse(viewer, text));
     }
 
     /**
@@ -98,6 +114,7 @@ final class Display {
     /** Forgets cached prefix components (reload / LuckPerms prefix edits). */
     void clearCache() {
         legacyPrefixes.clear();
+        parsed.clear();
     }
 
     /** The rank's name color: hex {@code color} meta, else the prefix color, else gray. */
@@ -161,7 +178,7 @@ final class Display {
                 Msg.c("name", name(player, rank.color())),
                 Msg.c("title", part(viewer, c.tabTitlePart, hook(player, "title"))),
                 Msg.c("tag", part(viewer, c.tabTagPart, hook(player, "tag"))),
-                Msg.c("afk", afk(player) ? core.messages().parse(viewer, c.afkPart) : Component.empty()));
+                Msg.c("afk", afk(player) ? fixed(viewer, c.afkPart) : Component.empty()));
     }
 
     /** Nearest classic color of the rank color (nametag name color supports only these). */
@@ -175,7 +192,7 @@ final class Display {
     }
 
     Component afkSuffix(Player player) {
-        return afk(player) ? core.messages().parse(Audience.empty(), config.get().afkPart) : Component.empty();
+        return afk(player) ? fixed(Audience.empty(), config.get().afkPart) : Component.empty();
     }
 
     /** Chat-line placeholders for one viewer. */

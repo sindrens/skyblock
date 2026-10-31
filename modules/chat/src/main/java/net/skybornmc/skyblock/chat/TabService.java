@@ -7,6 +7,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.text.TextMemo;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -52,8 +53,11 @@ import java.util.function.Supplier;
  *       The HUD gives every player their own sidebar scoreboard, so teams are mirrored onto every board. A new board
  *       gets all teams once (queued); a changed player is applied to each board once (queued). Unchanged teams are
  *       never touched, and team setters only run when the value differs.</li>
- *   <li><b>Header/footer:</b> built once per (platform, online count, season) and shared; only resent when the
- *       component a viewer would get differs from what they have.</li>
+ *   <li><b>Header/footer (PERF7):</b> each viewer's header/footer is described by a short text key (platform,
+ *       visible online count, max players, season, and for staff the TPS tier/value and ping, plus the messages
+ *       generation). When the key equals what the viewer already has, nothing is built or sent. Otherwise the parts
+ *       come from a shared {@link TextMemo}: viewers with the same key share one built component, so it is parsed
+ *       once per tick (and usually once per change) for everybody.</li>
  *   <li>Events (join, quit, LuckPerms rank change) only mark players dirty; no work happens inside the event.</li>
  * </ul>
  */
@@ -84,8 +88,10 @@ final class TabService implements Listener {
     private final Set<Scoreboard> boards = Collections.newSetFromMap(new WeakHashMap<>());
     private final Map<UUID, Scoreboard> boardOf = new HashMap<>();
     private final ArrayDeque<UUID> checkOrder = new ArrayDeque<>();
-    private final Map<UUID, Component[]> sentHeaderFooter = new HashMap<>();
-    private final Map<String, Component> headerCache = new HashMap<>();
+    /** The header/footer key each viewer was last sent (PERF7: compared instead of building components every check). */
+    private final Map<UUID, String> sentHeaderFooter = new HashMap<>();
+    /** Built header, footer and staff footer parts by key, shared by every viewer with the same key. */
+    private final TextMemo<Component> headerCache = new TextMemo<>(256);
     private Scheduler.Task task;
     private volatile boolean running;
     private List<Player> vanishedCache = List.of();
@@ -195,7 +201,19 @@ final class TabService implements Listener {
             check(p, online);
         }
         flushRankBatch();
-        // 2. Dirty players: rebuild their entry and queue one job per board.
+        // 2. Dirty players: rebuild their entry and queue one job per board. Timed on its own (PERF7) so the log names
+        //    the part that is slow: chat:tab-check (fingerprint), chat:tab-header, chat:tab-rebuild or chat:tab-teams.
+        if (!dirty.isEmpty()) {
+            core.scheduler().timer().time("chat:tab-rebuild", () -> rebuildDirty(deadline));
+        }
+        flushRankBatch();
+        // 3. Team jobs with the remaining budget.
+        if (!jobs.isEmpty() && System.nanoTime() < deadline) {
+            core.scheduler().timer().time("chat:tab-teams", () -> runJobs(deadline));
+        }
+    }
+
+    private void rebuildDirty(long deadline) {
         Iterator<UUID> it = dirty.iterator();
         while (it.hasNext() && System.nanoTime() < deadline) {
             UUID id = it.next();
@@ -205,8 +223,9 @@ final class TabService implements Listener {
                 rebuild(p);
             }
         }
-        flushRankBatch();
-        // 3. Team jobs with the remaining budget.
+    }
+
+    private void runJobs(long deadline) {
         Iterator<Map.Entry<JobKey, Runnable>> jobIt = jobs.entrySet().iterator();
         while (jobIt.hasNext() && System.nanoTime() < deadline) {
             Runnable job = jobIt.next().getValue();
@@ -224,10 +243,14 @@ final class TabService implements Listener {
         }
         Display.RankView rank = rankViews.get(id);
         Entry entry = entries.get(id);
-        if (rank != null && (entry == null || !entry.key().equals(display.key(p, rank)))) {
-            dirty.add(id);
+        if (rank != null) {
+            boolean changed = core.scheduler().timer().time("chat:tab-check",
+                    () -> entry == null || !entry.key().equals(display.key(p, rank)));
+            if (changed) {
+                dirty.add(id);
+            }
         }
-        sendHeaderFooter(p, online, vanishedCache);
+        core.scheduler().timer().time("chat:tab-header", () -> sendHeaderFooter(p, online, vanishedCache));
         requestRank(p);
     }
 
@@ -410,31 +433,68 @@ final class TabService implements Listener {
             }
         }
         boolean bedrock = core.bedrock().isBedrock(viewer.getUniqueId());
-        String season = config.get().season;
+        ChatConfig c = config.get();
+        String season = c.season;
         if (core.placeholders().has("season_display")) {
             season = core.placeholders().text(viewer, "season_display").orElse(season);
         }
-        String seasonText = season;
-        int visibleCount = visible;
-        if (headerCache.size() > 128) {
-            headerCache.clear();
-        }
-        Component header = headerCache.computeIfAbsent("h" + bedrock + ':' + visible + ':' + season,
-                k -> msg.component(viewer, "tab.header", Msg.number("online", visibleCount),
-                        Msg.number("max", Bukkit.getMaxPlayers()), Msg.p("season", seasonText)));
-        Component footer = headerCache.computeIfAbsent("f" + bedrock, k -> msg.component(viewer, "tab.footer"));
+        String staffKey = "";
+        String tpsTier = null;
+        String tpsValue = null;
+        int ping = 0;
         if (viewer.hasPermission(ChatModule.PERM_TAB_STAFF)) {
             double tps = Math.min(20.0, Bukkit.getTPS()[0]);
-            Component tpsText = msg.component(viewer, "tab.tps." + tpsTier(tps, config.get().tpsGood, config.get().tpsOk),
-                    Msg.p("value", String.format(Locale.ROOT, "%.1f", tps)));
-            TagResolver[] staff = {Msg.number("ping", viewer.getPing()), Msg.c("tps", tpsText)};
-            footer = footer.append(Component.newline()).append(msg.component(viewer, "tab.footer-staff", staff));
+            tpsTier = tpsTier(tps, c.tpsGood, c.tpsOk);
+            tpsValue = String.format(Locale.ROOT, "%.1f", tps);
+            ping = viewer.getPing();
+            staffKey = staffKey(tpsTier, tpsValue, ping);
         }
-        Component[] last = sentHeaderFooter.get(viewer.getUniqueId());
-        if (last == null || !last[0].equals(header) || !last[1].equals(footer)) {
-            viewer.sendPlayerListHeaderAndFooter(header, footer);
-            sentHeaderFooter.put(viewer.getUniqueId(), new Component[]{header, footer});
+        long generation = core.messages().generation();
+        String headerKey = headerKey(bedrock, visible, Bukkit.getMaxPlayers(), season);
+        String footerKey = footerKey(bedrock, staffKey);
+        String sent = sentKey(generation, headerKey, footerKey);
+        if (sent.equals(sentHeaderFooter.get(viewer.getUniqueId()))) {
+            return; // the viewer already shows exactly this: nothing to build, nothing to send
         }
+        int visibleCount = visible;
+        int max = Bukkit.getMaxPlayers();
+        String seasonText = season;
+        Component header = headerCache.get(generation, headerKey, k -> msg.component(viewer, "tab.header",
+                Msg.number("online", visibleCount), Msg.number("max", max), Msg.p("season", seasonText)));
+        Component base = headerCache.get(generation, footerKey(bedrock, ""), k -> msg.component(viewer, "tab.footer"));
+        Component footer = base;
+        if (!staffKey.isEmpty()) {
+            String tier = tpsTier;
+            String value = tpsValue;
+            int pingValue = ping;
+            footer = headerCache.get(generation, footerKey, k -> {
+                Component tpsText = msg.component(viewer, "tab.tps." + tier, Msg.p("value", value));
+                TagResolver[] staff = {Msg.number("ping", pingValue), Msg.c("tps", tpsText)};
+                return base.append(Component.newline()).append(msg.component(viewer, "tab.footer-staff", staff));
+            });
+        }
+        viewer.sendPlayerListHeaderAndFooter(header, footer);
+        sentHeaderFooter.put(viewer.getUniqueId(), sent);
+    }
+
+    /** Key of a header: every input of {@code tab.header} (platform, visible online, max players, season). Pure. */
+    static String headerKey(boolean bedrock, int visible, int max, String season) {
+        return "h|" + bedrock + '|' + visible + '|' + max + '|' + season;
+    }
+
+    /** Key of a footer: platform plus, for staff, {@link #staffKey} (empty for everybody else). Pure. */
+    static String footerKey(boolean bedrock, String staffKey) {
+        return "f|" + bedrock + '|' + staffKey;
+    }
+
+    /** Key of the staff line: TPS tier and shown value, ping. Pure. */
+    static String staffKey(String tpsTier, String tpsValue, int ping) {
+        return tpsTier + '|' + tpsValue + '|' + ping;
+    }
+
+    /** What a viewer was sent: both keys and the messages generation (a texts reload resends). Pure. */
+    static String sentKey(long generation, String headerKey, String footerKey) {
+        return generation + "\u0000" + headerKey + '\u0000' + footerKey;
     }
 
     // ------------------------------------------------------------------ events (mark only, no work)

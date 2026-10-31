@@ -12,6 +12,7 @@ import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.text.LegacyColors;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.text.TextMemo;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -73,6 +74,7 @@ public final class CosmeticsService implements Cosmetics, Listener {
     void tagStyle(String format, boolean stripBrackets) {
         this.tagFormat = format == null ? "" : format;
         this.tagStripBrackets = stripBrackets;
+        rendered.clear();
     }
 
     /** The cosmetic's display as raw MiniMessage, tags wrapped in the tag format (for item lore built from text). */
@@ -287,13 +289,29 @@ public final class CosmeticsService implements Cosmetics, Listener {
         return true;
     }
 
+    /**
+     * Rendered titles/tags (PERF7). The {@code title}/{@code tag} placeholders are read by the tab list for every player
+     * every {@code tab.update-ticks} (and by chat, menus, the HUD); each read parsed MiniMessage once or twice (the
+     * display, then the tag format around it). The render only depends on the texts and Java/Bedrock, so it is cached
+     * per messages generation; displays with player placeholders ({@code <ph:...>}) are parsed every time, as before.
+     */
+    private final TextMemo<Component> rendered = new TextMemo<>(512);
+
     /** How a title/tag looks: {@code &} codes or MiniMessage with style tags. */
     Component display(Audience viewer, Cosmetic cosmetic) {
         String raw = innerRaw(cosmetic);
+        String format = cosmetic.kind() == Kind.TAG ? tagFormat : "";
+        if (raw == null || raw.contains("<ph:") || format.contains("<ph:")) {
+            return render(viewer, cosmetic, raw, format);
+        }
+        String key = cosmetic.kind().name() + '\u0000' + core.messages().isBedrock(viewer) + '\u0000' + raw + '\u0000' + format;
+        return rendered.get(core.messages().generation(), key, k -> render(viewer, cosmetic, raw, format));
+    }
+
+    private Component render(Audience viewer, Cosmetic cosmetic, String raw, String format) {
         Component inner = LegacyColors.hasCodes(raw) && raw.indexOf('<') < 0
                 ? LegacyColors.toComponent(raw)
                 : core.messages().parse(viewer, raw);
-        String format = tagFormat;
         if (cosmetic.kind() != Kind.TAG || format.isBlank() || !format.contains(TagStyle.PLACEHOLDER)) {
             return inner;
         }

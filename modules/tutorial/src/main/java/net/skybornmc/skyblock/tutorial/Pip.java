@@ -30,6 +30,8 @@ final class Pip {
         Parrot parrot;
         double[] pos;
         long lineUntil;
+        /** No spawn before this time: the last one was refused (PERF7: it used to retry on every guide run). */
+        long retryAt;
     }
 
     private final TutorialModule module;
@@ -67,8 +69,13 @@ final class Pip {
         float yaw = perched || Math.abs(dx) + Math.abs(dz) < 0.2 ? CameraPath.yaw(at.getX() - next[0], at.getZ() - next[2]) : CameraPath.yaw(dx, dz);
         Location loc = new Location(at.getWorld(), next[0], next[1], next[2], yaw, 0);
         if (c.parrot == null) {
+            long now = System.currentTimeMillis();
+            if (now < c.retryAt) {
+                return;
+            }
             c.parrot = spawn(player, loc);
             if (c.parrot == null) {
+                c.retryAt = now + module.config().spawnRetryMillis;
                 return;
             }
         } else {
@@ -107,7 +114,7 @@ final class Pip {
             p.getPersistentDataContainer().set(tag, PersistentDataType.STRING, player.getUniqueId().toString());
         });
         if (!parrot.isValid()) {
-            return null; // spawn refused here; tried again on the next update
+            return null; // spawn refused here; tried again after guide.spawn-retry-millis
         }
         player.showEntity(core.plugin(), parrot);
         return parrot;

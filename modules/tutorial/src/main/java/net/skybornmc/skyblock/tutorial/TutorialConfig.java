@@ -119,6 +119,9 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "guide.particle-ticks", desc = "How often particles are drawn (ticks).", min = 2, max = 40)
     public int particleTicks = 10;
 
+    @Setting(path = "guide.spawn-retry-millis", desc = "When Pip or a guide hologram could not be spawned (refused here), wait this long before trying again (ms).", min = 100, max = 60000)
+    public int spawnRetryMillis = 1000;
+
     @Setting(path = "guide.trail.spacing", desc = "Blocks between two trail flames.", min = 1, max = 8)
     public double trailSpacing = 2.0;
 
