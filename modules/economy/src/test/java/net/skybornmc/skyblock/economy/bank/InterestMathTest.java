@@ -88,12 +88,12 @@ class InterestMathTest {
         assertEquals(1_000, InterestMath.basis(afterDeposit, 5, 10_000));
         // Period 6: nothing moved since, so the whole balance counts.
         assertEquals(10_000, InterestMath.basis(afterDeposit, 6, 10_000));
-        // A free withdrawal lowers the lowest balance; one with a fee forfeits the period.
+        // A withdrawal lowers the lowest balance. Owner R3-41: the fee is the only rule, an old forfeit flag is ignored.
         InterestMath.State freeOut = InterestMath.afterChange(afterDeposit, 5, 10_000, -9_500, false);
         assertEquals(500, InterestMath.basis(freeOut, 5, 500));
         InterestMath.State feeOut = InterestMath.afterChange(afterDeposit, 5, 10_000, -100, true);
-        assertEquals(0, InterestMath.basis(feeOut, 5, 9_900));
-        assertEquals(9_900, InterestMath.basis(feeOut, 6, 9_900), "the next period earns again");
+        assertEquals(1_000, InterestMath.basis(feeOut, 5, 9_900), "R3-41: a fee no longer costs the period's interest");
+        assertEquals(9_900, InterestMath.basis(feeOut, 6, 9_900));
     }
 
     @Test
@@ -138,7 +138,8 @@ class InterestMathTest {
         assertTrue(c.forfeited());
         assertEquals(2, c.tier());
         assertTrue(InterestMath.settledUpTo(c, 11), "deposits and withdrawals work right away in period 11");
-        assertEquals(0, InterestMath.basis(c, 10, 9_000), "period 10 is never paid again");
+        // Period 10 is settled (settledCycle 10), so the sweep never pays it again; the old forfeit flag is ignored (R3-41).
+        assertEquals(5_000, InterestMath.basis(c, 10, 9_000));
 
         // Aligned: settled up to exactly 24 h (old period 7): the 8 h period 3 (24-32 h) is still open and paid in full,
         // on the lowest balance tracked since 24 h.

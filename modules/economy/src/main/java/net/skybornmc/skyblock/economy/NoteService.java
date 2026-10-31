@@ -12,6 +12,8 @@ import net.skybornmc.skyblock.common.economy.TxResult;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -57,6 +59,8 @@ final class NoteService {
         OVERFLOW,
         /** Redeem: the note was made by another profile of the same player (owner P4). Nothing changed. */
         OWN_PROFILE,
+        /** Redeem: the note's currency can never change hands (crystals, R3-5b) and this is not its maker. Nothing changed. */
+        NOT_TRANSFERABLE,
         /** Database error or invalid input. Nothing changed. */
         ERROR
     }
@@ -183,6 +187,10 @@ final class NoteService {
                     && ownProfile.blocked(note.createdBy(), player, Actor.player(actor, playerName))) {
                 return CompletableFuture.completedFuture(Result.of(Outcome.OWN_PROFILE, note));
             }
+            // R3-5b: crystals never change hands, also not through an old crystal note: only its own profile may cash it.
+            if (!transferable(note, player)) {
+                return CompletableFuture.completedFuture(Result.of(Outcome.NOT_TRANSFERABLE, note));
+            }
             long now = clock.getAsLong();
             Transaction tx = Transaction.deposit(AccountRef.player(player), note.currency(), note.amount(), TxReason.NOTE_REDEEM)
                     .actor(Actor.player(actor, playerName))
@@ -204,6 +212,36 @@ final class NoteService {
             log.log(Level.SEVERE, "Money notes: redeeming note " + id + " for " + playerName + " failed", Database.cause(e));
             return Result.of(Outcome.ERROR, null);
         });
+    }
+
+    /** R3-5b: true unless the note holds a non-transferable currency and {@code redeemer} is not the profile that made it. */
+    static boolean transferable(MoneyNote note, UUID redeemer) {
+        return note.currency().transferable() || (note.createdBy() != null && note.createdBy().equals(redeemer));
+    }
+
+    // ------------------------------------------------------------------------------------------------ purge (R3-40)
+
+    /**
+     * Deletes cashed notes cashed before {@code before}, at most {@code batch} rows per database round, until none are
+     * left. Blocking: call off the main thread. The ledger and the audit log keep the money history.
+     */
+    int purgeRedeemed(long before, int batch) {
+        int removed = 0;
+        int size = Math.max(1, batch);
+        while (true) {
+            List<UUID> ids = db.blocking(c -> Sql.query(c, "SELECT id FROM money_notes WHERE status = ? AND redeemed_at < ? "
+                    + "ORDER BY redeemed_at LIMIT " + size, rs -> Sql.uuid(rs, "id"), MoneyNote.Status.REDEEMED.key(), before));
+            if (ids.isEmpty()) {
+                return removed;
+            }
+            List<Object[]> keys = new ArrayList<>(ids.size());
+            ids.forEach(id -> keys.add(new Object[]{id, MoneyNote.Status.REDEEMED.key()}));
+            db.blockingTransaction(c -> Sql.batch(c, "DELETE FROM money_notes WHERE id = ? AND status = ?", keys));
+            removed += ids.size();
+            if (ids.size() < size) {
+                return removed;
+            }
+        }
     }
 
     private static MoneyNote redeemed(MoneyNote n, UUID by, String name, long at) {

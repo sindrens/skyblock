@@ -205,18 +205,29 @@ class BankOpsTest {
     }
 
     @Test
-    void aWithdrawalWithAFeeForfeitsThePeriodButAFreeOneDoesNot() {
+    void theFeeIsTheOnlyWithdrawalRule() {
+        // Owner R3-41: no free minutes by default and a withdrawal with a fee keeps the period's interest.
+        assertEquals(0, config.withdrawFreeMinutes, "R3-41: free-minutes 0");
         AccountRef bank = AccountRef.bank(steve);
         ops.deposit(steve, bank, 50_000, personal(), actor).join();
         at(6, 60);
         BankOps.Outcome withFee = ops.withdraw(steve, bank, 1_000, personal(), null, fee(), actor).join();
         assertEquals(20, withFee.fee());
-        at(7, 5); // in the free minutes
-        assertEquals(0, ops.settle(bank, personal()).join().paid(), "period 6 forfeited");
-        BankOps.Outcome free = ops.withdraw(steve, bank, 9_000, personal(), null, fee(), actor).join();
-        assertEquals(0, free.fee(), "free right after a payout");
+        at(7, 5); // right after the payout: still the fee
+        assertEquals(294, ops.settle(bank, personal()).join().paid(), "period 6 pays on the lowest balance 49,000");
+        BankOps.Outcome next = ops.withdraw(steve, bank, 9_000, personal(), null, fee(), actor).join();
+        assertEquals(180, next.fee(), "no free window after a payout");
         at(8, 1);
-        assertEquals(240, ops.settle(bank, personal()).join().paid(), "period 7 pays on the lowest balance 40,000");
+        assertEquals(241, ops.settle(bank, personal()).join().paid(), "period 7 pays on the lowest balance 40,294");
+    }
+
+    @Test
+    void freeMinutesStillWorkWhenTheOwnerSetsThem() {
+        config.withdrawFreeMinutes = 10;
+        AccountRef bank = AccountRef.bank(steve);
+        ops.deposit(steve, bank, 50_000, personal(), actor).join();
+        at(7, 5);
+        assertEquals(0, ops.withdraw(steve, bank, 1_000, personal(), null, fee(), actor).join().fee(), "free right after a payout");
     }
 
     @Test
@@ -283,7 +294,7 @@ class BankOpsTest {
         assertEquals(4, ledgerRows("bank_fee"));
         assertEquals(50, ops.feeNow(10_000, 0.5), "outside the free minutes the fee applies");
         at(7, 2);
-        assertEquals(0, ops.feeNow(10_000, 2.0), "free minutes after the 8 h payout");
+        assertEquals(200, ops.feeNow(10_000, 2.0), "R3-41: no free minutes after the payout");
     }
 
     @Test

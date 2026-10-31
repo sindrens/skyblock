@@ -300,7 +300,8 @@ final class BankOps {
 
     /**
      * Takes {@code amount} out of {@code bank}: the purse gets {@code amount - fee}, the fee leaves the economy, both in one
-     * atomic batch. A withdrawal with a fee forfeits the period's interest. {@code limit}: island daily limit or null.
+     * atomic batch (owner R3-41: the fee is the only rule, the period's interest is kept). {@code limit}: island daily
+     * limit or null.
      * {@code feePercent}: the fee after island masteries ({@link WithdrawFee}, decided on the main thread).
      */
     CompletableFuture<Outcome> withdraw(UUID purseKey, AccountRef bank, long amount, Terms terms, Limit limit, double feePercent,
@@ -353,7 +354,7 @@ final class BankOps {
                 flag.status = Status.LIMIT;
                 return false;
             }
-            store.saveCycle(c, bank, InterestMath.afterChange(locked.get(), period, before, -amount, fee > 0));
+            store.saveCycle(c, bank, InterestMath.afterChange(locked.get(), period, before, -amount, false));
             return true;
         }).thenApply((BatchResult r) -> {
             if (r.ok()) {

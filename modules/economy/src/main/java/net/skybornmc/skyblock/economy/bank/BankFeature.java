@@ -101,6 +101,8 @@ public final class BankFeature implements Listener, BankService {
         convertPeriods(store, 1);
         long flush = config.activityFlushMinutes * 1_200L;
         tasks.add(core.scheduler().repeat("bank:activity", flush, flush, this::countActivity));
+        // R3-25: every minute a player stands in the AFK pool is taken out of the activity count.
+        tasks.add(core.scheduler().repeat("bank:afk-pool", POOL_SAMPLE_TICKS, POOL_SAMPLE_TICKS, this::skipPoolMinutes));
         long sweep = config.sweepMinutes * 1_200L;
         tasks.add(core.scheduler().asyncRepeat(200L, sweep, this::sweep));
         // Housekeeping once a day: old activity days and withdraw counters are never read again.
@@ -225,6 +227,32 @@ public final class BankFeature implements Listener, BankService {
     }
 
     // ================================================================== activity rule
+
+    /** How often the AFK pool is sampled for the activity rule (R3-25): once a minute. */
+    static final long POOL_SAMPLE_TICKS = 1_200L;
+    static final long POOL_SAMPLE_MS = 60_000L;
+
+    /**
+     * Owner R3-25: minutes in the AFK pool region don't count toward the interest activity rule (other idle time does).
+     * Main thread, once a minute: for each player in the pool the start of their uncounted time moves one minute forward.
+     */
+    private void skipPoolMinutes() {
+        Optional<net.skybornmc.skyblock.common.afk.AfkPool> pool = net.skybornmc.skyblock.common.afk.AfkPool.of(core.services());
+        if (pool.isEmpty()) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (pool.get().inPool(p)) {
+                counted.computeIfPresent(p.getUniqueId(), (id, since) -> skipPool(since, now, POOL_SAMPLE_MS));
+            }
+        }
+    }
+
+    /** The new start of a player's uncounted time after {@code skip} millis in the AFK pool: never after now. Pure. */
+    static long skipPool(long since, long now, long skip) {
+        return Math.min(now, since + Math.max(0, skip));
+    }
 
     /** Main thread: adds the whole minutes each online player played since the last count to their active profile. */
     private void countActivity() {

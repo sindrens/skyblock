@@ -33,6 +33,7 @@ final class DashboardMenu extends WatchMenu {
     static final int SLOT_REASONS = 22;
     static final int SLOT_TOP = 23;
     static final int SLOT_BIGGEST = 24;
+    static final int SLOT_PENDING = 29;
     static final int SLOT_ALERTS = 30;
     static final int SLOT_CURRENCY = 31;
     static final int SLOT_REFRESH = 32;
@@ -101,6 +102,12 @@ final class DashboardMenu extends WatchMenu {
                 click -> openChild(new TransactionListMenu(watch, currency, List.of(), null)));
         set(SLOT_ALERTS, service.item(data.openAlerts() > 0 ? Material.BELL : Material.FEATHER, viewer, EconomyModule.ID,
                 "watch.menu.alerts", Msg.p("open", Format.number(data.openAlerts()))), click -> openChild(new AlertsMenu(watch)));
+        if (EconomyModule.canApprove(viewer)) {
+            // R3-6: waiting /eco changes above the limit (the Bedrock way to Allow; Java can also click the chat alert)
+            int waiting = watch.module.pendingCount();
+            set(SLOT_PENDING, service.item(waiting > 0 ? Material.WRITABLE_BOOK : Material.BOOK, viewer, EconomyModule.ID,
+                    "watch.menu.pending", Msg.p("count", Format.number(waiting))), click -> watch.module.openPending(viewer, this));
+        }
     }
 
     private Component currencyName() {

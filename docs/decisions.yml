@@ -59,10 +59,18 @@ decisions:
     # migrated by AuditConfig version 2 (ValueChange), not here
 
   - id: "R3-40"
-    answer: "Money notes: soft limit 20 notes a minute instead of a 10 s cooldown; purge cashed notes after 90 days"
+    answer: "Money notes: soft limit 20 notes a minute instead of a 10 s cooldown (notes.withdraw-cooldown-seconds removed)"
     module: economy
-    check: false
-    note: "Not config-backed yet: built by queue item ECON-R3; add file/path/value here when it lands"
+    file: economy.yml
+    path: notes.max-per-minute
+    value: 20
+
+  - id: "R3-40b"
+    answer: "Cashed money_notes rows are purged 90 days after they were cashed (async, batched)"
+    module: economy
+    file: economy.yml
+    path: notes.purge-redeemed-days
+    value: 90
 
   - id: "F12"
     answer: "Hoppers move 64 items every 8 ticks"
@@ -70,3 +78,61 @@ decisions:
     file: spigot.yml
     check: false
     note: "Documentation only, spigot.yml/paper configs are not plugin configs: world-settings.default.hopper-amount 64, ticks-per.hopper-transfer 8, ticks-per.hopper-check 8; Paper hopper.cooldown-when-full true"
+
+  - id: "R3-5b"
+    answer: "Crystals can never be transferred (hard rule in code); shard notes on"
+    module: economy
+    file: economy.yml
+    path: notes.currencies
+    value: [money, shards]
+    migrate-from: [money]
+
+  - id: "R3-6"
+    answer: "/eco changes up to $1T apply at once and are flagged; bigger ones wait for an owner/admin Allow (10 min)"
+    module: economy
+    file: economy.yml
+    path: eco.approve-above.money
+    value: 1000000000000
+
+  - id: "R3-6b"
+    answer: "A waiting /eco change is dropped after 10 minutes"
+    module: economy
+    file: economy.yml
+    path: eco.pending-minutes
+    value: 10
+
+  - id: "R3-39"
+    answer: "/eco can't target your own account or an account sharing your IP"
+    module: economy
+    file: economy.yml
+    path: eco.block-same-ip
+    value: true
+
+  - id: "R3-41"
+    answer: "Bank: the 2% withdrawal fee is the only rule; no free minutes, no lost interest"
+    module: economy
+    file: bank.yml
+    path: withdraw.free-minutes
+    value: 0
+    migrate-from: 10
+
+  - id: "R3-28"
+    answer: "A system-detected dupe of a unique item trade-blocks the holders for 24 h automatically (ends by itself)"
+    module: moderation
+    file: moderation.yml
+    path: dupe-trade-block.hours
+    value: 24
+
+  - id: "R3-38"
+    answer: "Trade value hints: AH median only with 5+ different sellers and buyers, same-IP pairs ignored"
+    module: trade
+    file: trade.yml
+    path: value-hints.ah-min-sellers
+    value: 5
+
+  - id: "F1"
+    answer: "A profile can send money (/pay, notes, trade) only after it earned $10k itself, except to members of its island"
+    module: economy
+    file: economy.yml
+    path: send-gate.required
+    value: 10000

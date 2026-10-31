@@ -18,7 +18,6 @@ import net.skybornmc.skyblock.common.item.ItemType;
 import net.skybornmc.skyblock.common.item.LoreBuilder;
 import net.skybornmc.skyblock.common.item.Rarity;
 import net.skybornmc.skyblock.common.text.Msg;
-import net.skybornmc.skyblock.common.util.Cooldowns;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -77,12 +76,12 @@ final class MoneyNotes implements Listener {
     static final NamespacedKey CURRENCY = ItemKeys.key("note_currency");
     static final NamespacedKey SIGNER = ItemKeys.key("note_signer");
 
-    private static final String COOLDOWN = "withdraw";
     private static final String P = "note.";
 
     private final EconomyModule module;
     private final NoteService notes;
-    private final Cooldowns cooldowns = new Cooldowns();
+    /** R3-40: at most notes.max-per-minute notes per player in any 60 s. */
+    private final NoteRate rate = new NoteRate();
     /** Players with a withdraw or redeem in flight: one at a time, so spam-clicking never queues extra work. */
     private final Set<UUID> busy = ConcurrentHashMap.newKeySet();
 
@@ -91,12 +90,45 @@ final class MoneyNotes implements Listener {
         this.notes = notes;
     }
 
+    /** R3-40: the purge of cashed notes (async, batched; at start and then every 6 hours). */
+    private net.skybornmc.skyblock.common.util.Scheduler.Task purgeTask;
+
     void enable() {
         registerItem();
         module.core.plugin().getServer().getPluginManager().registerEvents(this, module.core.plugin());
+        purgeTask = module.core.scheduler().asyncRepeat(20L * 120, 20L * 60 * 60 * 6, this::purgeRedeemed);
+    }
+
+    /** Deletes cashed notes older than notes.purge-redeemed-days (off the main thread, in batches). */
+    private void purgeRedeemed() {
+        int days = module.config.notePurgeDays;
+        if (days <= 0) {
+            return;
+        }
+        long before = System.currentTimeMillis() - days * 86_400_000L;
+        try {
+            int removed = notes.purgeRedeemed(before, module.config.notePurgeBatch);
+            if (removed > 0) {
+                module.core.plugin().getLogger().info("Money notes: removed " + removed + " note(s) cashed more than " + days
+                        + " days ago (R3-40)");
+                module.core.audit().log(AuditCategory.ECONOMY, "note_purge", Actor.system("economy"), null, null, (long) removed,
+                        null, Map.of("days", days));
+            }
+        } catch (RuntimeException e) {
+            module.core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Money notes: purging cashed notes failed; "
+                    + "trying again later", e);
+        }
+    }
+
+    @org.bukkit.event.EventHandler
+    public void onQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        rate.forget(event.getPlayer().getUniqueId());
     }
 
     void disable() {
+        if (purgeTask != null) {
+            purgeTask.cancel();
+        }
         HandlerList.unregisterAll(this);
         module.core.items().unregister(ITEM_ID);
     }
@@ -264,18 +296,40 @@ final class MoneyNotes implements Listener {
         if (player.getInventory().firstEmpty() < 0) {
             throw fail("inventory-full");
         }
-        Duration left = cooldowns.remaining(uuid, COOLDOWN);
-        if (!left.isZero() && !player.hasPermission(PERM_COOLDOWN_BYPASS)) {
-            throw fail("cooldown", Msg.p("time", Format.duration(left)));
+        long wait = player.hasPermission(PERM_COOLDOWN_BYPASS) ? 0
+                : rate.tryTake(uuid, module.config.noteMaxPerMinute, System.currentTimeMillis());
+        if (wait > 0) {
+            throw fail("rate-limit", Msg.number("max", module.config.noteMaxPerMinute),
+                    Msg.p("time", Format.duration(Duration.ofMillis(Math.max(1_000, wait)))));
         }
         if (!busy.add(uuid)) {
+            rate.giveBack(uuid);
             throw fail("busy");
         }
-        cooldowns.set(uuid, COOLDOWN, Duration.ofSeconds(module.config.noteWithdrawCooldownSeconds));
-        UUID id = UUID.randomUUID();
-        String name = player.getName();
         // The note belongs to the profile the money comes from (PROF): created_by = the active profile key.
         UUID key = module.profiles().profileKey(uuid);
+        // Owner F1: a note can go to anyone, so the profile must have earned send-gate.required itself first.
+        module.sendGate().check(key, null, currency).whenCompleteAsync((check, error) -> {
+            if (error != null || check == null || !check.allowed()) {
+                busy.remove(uuid);
+                rate.giveBack(uuid);
+                if (player.isOnline()) {
+                    if (check != null && !check.allowed()) {
+                        module.tellSendGate(player, check, "note.send-gate");
+                    } else {
+                        module.msg.send(player, "error");
+                        module.core.sounds().play(player, "error");
+                    }
+                }
+                return;
+            }
+            makeNote(player, uuid, key, amount, currency);
+        }, module.mainThread());
+    }
+
+    private void makeNote(Player player, UUID uuid, UUID key, long amount, Currency currency) {
+        UUID id = UUID.randomUUID();
+        String name = player.getName();
         module.then(player, notes.withdraw(id, key, uuid, name, currency, amount).whenComplete((r, e) -> busy.remove(uuid)), result -> {
             switch (result.outcome()) {
                 case SUCCESS -> {
@@ -293,14 +347,14 @@ final class MoneyNotes implements Listener {
                     module.core.sounds().play(online, "success");
                 }
                 case INSUFFICIENT_FUNDS -> {
-                    cooldowns.clear(uuid, COOLDOWN);
+                    rate.giveBack(uuid);
                     long have = module.service().cached(uuid, currency).orElse(0);
                     module.msg.send(player, P + "insufficient", module.exactAmountTag("amount", player, currency, amount),
                             module.amountTag("balance", player, currency, have));
                     module.core.sounds().play(player, "error");
                 }
                 default -> {
-                    cooldowns.clear(uuid, COOLDOWN);
+                    rate.giveBack(uuid);
                     module.msg.send(player, "error");
                     module.core.sounds().play(player, "error");
                 }
@@ -323,6 +377,20 @@ final class MoneyNotes implements Listener {
         if (target.getInventory().firstEmpty() < 0) {
             throw fail("admin-inventory-full", Msg.p("player", target.getName()));
         }
+        // R3-39: never a note for your own account or one that shares an address with yours.
+        module.then(sender, module.targetProblem(sender, target.getUniqueId()), problem -> {
+            if (problem != null) {
+                module.msg.send(sender, "eco.target." + problem.key, Msg.p("player", target.getName()));
+                if (sender instanceof Player p) {
+                    module.core.sounds().play(p, "error");
+                }
+                return;
+            }
+            makeAdminNote(sender, target, amount, reason);
+        });
+    }
+
+    private void makeAdminNote(CommandSender sender, Player target, long amount, String reason) {
         Actor staff = Actor.of(sender);
         UUID targetId = target.getUniqueId();
         String targetName = target.getName();
@@ -424,6 +492,7 @@ final class MoneyNotes implements Listener {
                 case ALREADY_REDEEMED, UNKNOWN, VOID -> confiscate(Bukkit.getPlayer(uuid), uuid, name, where, id.get(), result, taken);
                 case OVERFLOW -> giveBack(uuid, name, taken, id.get(), "overflow");
                 case OWN_PROFILE -> giveBack(uuid, name, taken, id.get(), "own-profile");
+                case NOT_TRANSFERABLE -> giveBack(uuid, name, taken, id.get(), "not-transferable");
                 default -> giveBack(uuid, name, taken, id.get(), "error");
             }
         }, module.mainThread());
@@ -456,6 +525,7 @@ final class MoneyNotes implements Listener {
         module.msg.send(online, switch (why) {
             case "overflow" -> P + "overflow";
             case "own-profile" -> P + "own-profile";
+            case "not-transferable" -> P + "not-transferable";
             default -> "error";
         });
         module.core.sounds().play(online, "error");

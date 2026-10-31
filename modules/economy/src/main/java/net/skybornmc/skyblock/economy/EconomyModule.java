@@ -72,6 +72,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
     /** {@code /eco give|take|set|reset|note}: admins and the owner (owner decision #47). */
     static final String PERM_ECO = "skyblock.admin.economy";
     static final String PERM_ALERTS = "skyblock.staff.economy.alerts";
+    /** Owner R3-6: allow /eco changes above the limit (owner and admin; never your own request). */
+    static final String PERM_APPROVE = "skyblock.admin.economy.approve";
 
     /** Tab hints for the reason of {@code /eco note}. */
     private static final List<String> NOTE_REASONS = List.of("Event prize", "Compensation for a bug", "Giveaway", "Refund",
@@ -89,6 +91,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private net.skybornmc.skyblock.economy.bank.BankFeature bank;
     private net.skybornmc.skyblock.economy.admin.EconomyWatch watch;
     private Baltop baltop;
+    private SendGateImpl sendGate;
+    private final EcoApprovals approvals = new EcoApprovals();
+    private EcoTargets ecoTargets;
+    private Scheduler.Task approvalTask;
     private Executor main;
     private Scheduler.Task baltopTask;
 
@@ -119,6 +125,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
         // the entry checks of /pay, /withdraw, the bank, the shop, the auction house and trades
         service.sanctions(() -> core.services().optional(net.skybornmc.skyblock.common.moderation.SanctionService.class).orElse(null));
         core.services().register(ID, EconomyService.class, service);
+        // Owner F1: money can be sent away only after the profile earned send-gate.required itself (island members excepted).
+        sendGate = new SendGateImpl(core.database(), () -> config, this::sameIsland, System::currentTimeMillis);
+        core.services().register(ID, net.skybornmc.skyblock.common.economy.SendGate.class, sendGate);
+        ecoTargets = new EcoTargets(core.database());
         notes = new MoneyNotes(this, new NoteService(core.database(), service, System::currentTimeMillis, core.plugin().getLogger(),
                 (createdBy, redeemer, actor) -> profiles().blockOwnTransfer(AuditCategory.ECONOMY, "note_redeem", createdBy, redeemer, actor)));
         notes.enable();
@@ -138,6 +148,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
             load(p);
         }
         baltop.refreshIfOlder(0, config.baltopSize);
+        // R3-6: waiting /eco changes are dropped after eco.pending-minutes (memory only, every 10 s).
+        approvalTask = core.scheduler().repeat("economy:eco-pending", 200L, 200L, this::expireApprovals);
         // Checks every 5 s (a timestamp compare); a list is only read again once it is older than refresh-seconds.
         // SMALL2: off the main thread ('economy:baltop' was logged at 5.3 ms): it only compares times and hands queries to
         // the database executor (one per currency), Baltop is thread-safe and nothing here touches the world.
@@ -171,6 +183,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         if (baltopTask != null) {
             baltopTask.cancel();
         }
+        if (approvalTask != null) {
+            approvalTask.cancel();
+        }
         if (notes != null) {
             notes.disable();
         }
@@ -202,6 +217,36 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     public Executor mainThread() {
         return main;
+    }
+
+    /** Owner F1: the send gate (also published as {@link net.skybornmc.skyblock.common.economy.SendGate}). */
+    net.skybornmc.skyblock.common.economy.SendGate sendGate() {
+        return sendGate;
+    }
+
+    EcoApprovals approvals() {
+        return approvals;
+    }
+
+    /** True if both profiles are stored members (any role, coop excluded) of the same island. Main thread. */
+    private boolean sameIsland(UUID fromProfile, UUID toProfile) {
+        return core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class).map(is -> {
+            Optional<net.skybornmc.skyblock.common.island.IslandService.IslandInfo> mine = is.islandOfProfile(fromProfile);
+            if (mine.isEmpty()) {
+                return false;
+            }
+            return is.islandOfProfile(toProfile).map(other -> other.id().equals(mine.get().id())).orElse(false)
+                    && is.role(mine.get().id(), toProfile).map(r -> r != net.skybornmc.skyblock.common.island.IslandService.Role.COOP)
+                    .orElse(false);
+        }).orElse(false);
+    }
+
+    /** Tells a player the F1 rule blocked a send: how much more they must earn. {@code key}: pay.send-gate / note.send-gate. */
+    void tellSendGate(Player player, net.skybornmc.skyblock.common.economy.SendGate.Check check, String key) {
+        msg.send(player, key, exactAmountTag("required", player, Currency.MONEY, check.required()),
+                exactAmountTag("earned", player, Currency.MONEY, check.earned()),
+                exactAmountTag("missing", player, Currency.MONEY, check.missing()));
+        sound(player, "error");
     }
 
     /**
@@ -241,6 +286,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
     /** A deleted profile's money, crystals, shards and personal bank are gone with it (owner P9); gems stay on the player. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfileDeleted(ProfileDeletedEvent event) {
+        if (sendGate != null) {
+            sendGate.forget(event.profile().id());
+        }
         AccountRef bankAccount = AccountRef.bank(event.profile().id());
         service.balance(bankAccount, Currency.MONEY).thenAccept(balance -> {
             if (balance > 0) {
@@ -469,6 +517,13 @@ public final class EconomyModule implements SkyblockModule, Listener {
         Arg<String> reasonSet = Args.text("reason", reasons);
         Arg<String> reasonReset = Args.text("reason", reasons);
         String[] noteReasons = NOTE_REASONS.toArray(String[]::new);
+        Arg<Integer> pendingId = Arg.word("id", (sender, raw) -> {
+            try {
+                return Integer.parseInt(raw.trim().startsWith("#") ? raw.trim().substring(1) : raw.trim());
+            } catch (NumberFormatException e) {
+                throw new CommandFailure(ID, "eco.approve.unknown", Msg.p("id", raw));
+            }
+        }, Suggest.of(() -> approvals.ids(System.currentTimeMillis())));
 
         // /eco needs the dashboard node (admins get it as a child of skyblock.admin.economy); every balance-changing
         // sub-command needs skyblock.admin.economy itself (owner decision #47), /eco admin only the dashboard node (M3.8).
@@ -510,7 +565,19 @@ public final class EconomyModule implements SkyblockModule, Listener {
                                     : List.of(Currency.byKey(which).orElseThrow());
                             eco(ctx.sender(), EcoAction.RESET, ctx.get(player), list, 0, ctx.get(reasonReset));
                         }))
-                .sub(notes.ecoNoteCommand(noteReasons).permission(PERM_ECO)));
+                .sub(notes.ecoNoteCommand(noteReasons).permission(PERM_ECO))
+                .sub(CommandSpec.sub("allow")
+                        .description("Allow a waiting /eco change above the limit (owner/admin, not your own)")
+                        .permission(PERM_APPROVE)
+                        .arg(pendingId)
+                        .example("eco allow 3")
+                        .executes(ctx -> decide(ctx.sender(), ctx.get(pendingId), true)))
+                .sub(CommandSpec.sub("deny")
+                        .description("Deny a waiting /eco change above the limit")
+                        .permission(PERM_APPROVE)
+                        .arg(pendingId)
+                        .example("eco deny 3")
+                        .executes(ctx -> decide(ctx.sender(), ctx.get(pendingId), false))));
     }
 
     // ================================================================== /bal
@@ -647,9 +714,16 @@ public final class EconomyModule implements SkyblockModule, Listener {
                     sound(payer, "error");
                     return;
                 }
-                Transaction tx = Transaction.transfer(AccountRef.player(from), AccountRef.player(to), currency,
-                        amount, TxReason.PAY).actor(Actor.player(payer)).detail("target_name", target.name());
-                then(payer, service.execute(tx), result -> payResult(payer, target, amount, currency, result));
+                // Owner F1: only after this profile earned send-gate.required itself, unless the receiver is on its island.
+                then(payer, sendGate.check(from, to, currency), check -> {
+                    if (!check.allowed()) {
+                        tellSendGate(payer, check, "pay.send-gate");
+                        return;
+                    }
+                    Transaction tx = Transaction.transfer(AccountRef.player(from), AccountRef.player(to), currency,
+                            amount, TxReason.PAY).actor(Actor.player(payer)).detail("target_name", target.name());
+                    then(payer, service.execute(tx), result -> payResult(payer, target, amount, currency, result));
+                });
             });
         });
     }
@@ -685,8 +759,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     // ================================================================== /eco
 
-    private enum EcoAction { GIVE, TAKE, SET, RESET }
-
+    /**
+     * {@code /eco give|take|set|reset}. R3-39: never your own account or one that shares an address with yours. R3-6:
+     * a change up to {@code eco.approve-above} applies at once (flagged: staff alert, audit, Discord when set up); a bigger
+     * one waits for an owner/admin's Allow. The console is trusted and never waits.
+     */
     private void eco(CommandSender sender, EcoAction action, String name, List<Currency> currencies, long amount, String note) {
         then(sender, resolve(name), found -> {
             if (found.isEmpty()) {
@@ -695,30 +772,264 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 return;
             }
             Found target = found.get();
-            then(sender, accountKey(target.uuid()), key -> {
-                for (Currency currency : currencies) {
-                    ecoOne(sender, action, target, key, currency, amount, note);
+            then(sender, targetProblem(sender, target.uuid()), problem -> {
+                if (problem != null) {
+                    refuseTarget(sender, target, problem, action, currencies, amount, note);
+                    return;
                 }
+                then(sender, accountKey(target.uuid()), key -> {
+                    for (Currency currency : currencies) {
+                        ecoChecked(sender, action, target, key, currency, amount, note);
+                    }
+                });
             });
         });
     }
 
-    /** {@code key}: the player's active profile (money, crystals, shards); gems go to the player account automatically. */
-    private void ecoOne(CommandSender sender, EcoAction action, Found target, UUID profileKey, Currency currency, long amount,
-                        String note) {
+    /** R3-39: why {@code sender} may not change {@code target} (null = fine; the console is never refused). */
+    CompletableFuture<EcoTargets.Problem> targetProblem(CommandSender sender, UUID target) {
+        if (!(sender instanceof Player staff)) {
+            return CompletableFuture.completedFuture(null);
+        }
+        Player online = Bukkit.getPlayer(target);
+        EcoTargets.Problem quick = EcoTargets.quick(staff.getUniqueId(), target, ip(staff), online == null ? null : ip(online));
+        if (quick == EcoTargets.Problem.SELF || (quick != null && config.ecoBlockSameIp)) {
+            return CompletableFuture.completedFuture(quick);
+        }
+        if (!config.ecoBlockSameIp) {
+            return CompletableFuture.completedFuture(null);
+        }
+        return ecoTargets.sharedAddress(staff.getUniqueId(), target).thenApply(shared -> shared ? EcoTargets.Problem.SAME_IP : null);
+    }
+
+    private static String ip(Player p) {
+        java.net.InetSocketAddress address = p.getAddress();
+        return address == null || address.getAddress() == null ? null : address.getAddress().getHostAddress();
+    }
+
+    private void refuseTarget(CommandSender sender, Found target, EcoTargets.Problem problem, EcoAction action,
+                              List<Currency> currencies, long amount, String note) {
+        msg.send(sender, "eco.target." + problem.key, Msg.p("player", target.name()));
+        sound(sender, "error");
+        Map<String, Object> details = new java.util.LinkedHashMap<>();
+        details.put("problem", problem.key);
+        details.put("action", action.key());
+        details.put("currencies", currencies.stream().map(Currency::key).toList());
+        details.put("amount", amount);
+        details.put("note", note);
+        core.audit().log(AuditCategory.ECONOMY, "eco_refused", Actor.of(sender), target.uuid().toString(), target.name(), amount,
+                sender instanceof Player p ? p.getLocation() : null, details);
+        String key = "eco.target.alert-" + problem.key;
+        for (Player staff : Bukkit.getOnlinePlayers()) {
+            if (!staff.equals(sender) && staff.hasPermission(PERM_ALERTS)) {
+                msg.send(staff, key, Msg.p("staff", sender.getName()), Msg.p("player", target.name()));
+            }
+        }
+    }
+
+    /** One currency: applies at once (flagged) or, above the limit, waits for an Allow. */
+    private void ecoChecked(CommandSender sender, EcoAction action, Found target, UUID profileKey, Currency currency, long amount,
+                            String note) {
+        long value = action == EcoAction.RESET ? config.start(currency) : amount;
+        long limit = config.ecoApproveAbove(currency);
+        if (!(sender instanceof Player staff) || limit <= 0) {
+            ecoOne(sender, Actor.of(sender), sender.getName(), action, target, profileKey, currency, value, note, null);
+            return;
+        }
+        CompletableFuture<Long> balance = action == EcoAction.SET || action == EcoAction.RESET
+                ? service.balance(AccountRef.player(profileKey), currency) : CompletableFuture.completedFuture(0L);
+        then(sender, balance, now -> {
+            long change = EcoApprovals.change(action, value, now);
+            if (!EcoApprovals.needsApproval(change, limit)) {
+                ecoOne(sender, Actor.of(sender), sender.getName(), action, target, profileKey, currency, value, note, null);
+                return;
+            }
+            EcoApprovals.Pending p = approvals.add(staff.getUniqueId(), staff.getName(), action, target.uuid(), target.name(),
+                    profileKey, currency, value, change, note, System.currentTimeMillis(), config.ecoPendingMinutes * 60_000L);
+            Map<String, Object> details = pendingDetails(p);
+            core.audit().log(AuditCategory.ECONOMY, "eco_pending", Actor.player(staff), target.uuid().toString(), target.name(),
+                    change, staff.getLocation(), details);
+            msg.send(sender, "eco.approve.waiting", pendingTags(sender, p));
+            sound(sender, "notify");
+            int told = 0;
+            for (Player other : Bukkit.getOnlinePlayers()) {
+                if (other.equals(sender)) {
+                    continue;
+                }
+                if (other.hasPermission(PERM_APPROVE)) {
+                    msg.send(other, "eco.approve.alert", pendingTags(other, p));
+                    core.sounds().play(other, "notify");
+                    told++;
+                } else if (other.hasPermission(PERM_ALERTS)) {
+                    msg.send(other, "eco.approve.alert-info", pendingTags(other, p));
+                }
+            }
+            msg.send(Bukkit.getConsoleSender(), "eco.approve.alert-info", pendingTags(Bukkit.getConsoleSender(), p));
+            if (told == 0) {
+                msg.send(sender, "eco.approve.nobody-online", pendingTags(sender, p));
+            }
+            discord("eco_pending", p.staffName(), p.targetName(), p.currency(), p.change(), p.note(), null);
+        });
+    }
+
+    private Map<String, Object> pendingDetails(EcoApprovals.Pending p) {
+        Map<String, Object> details = new java.util.LinkedHashMap<>();
+        details.put("id", p.id());
+        details.put("action", p.action().key());
+        details.put("currency", p.currency().key());
+        details.put("amount", p.amount());
+        details.put("change", p.change());
+        details.put("note", p.note());
+        details.put("profile", p.profileKey().toString());
+        details.put("requested_by", p.staffName());
+        return details;
+    }
+
+    private TagResolver[] pendingTags(CommandSender viewer, EcoApprovals.Pending p) {
+        long left = Math.max(0, p.expires() - System.currentTimeMillis());
+        return new TagResolver[]{Msg.number("id", p.id()), Msg.p("staff", p.staffName()), Msg.p("player", p.targetName()),
+                Msg.p("action", p.action().key()), exactAmountTag("amount", viewer, p.currency(), p.amount()),
+                exactAmountTag("change", viewer, p.currency(), p.change()), Msg.c("currency", currencyName(viewer, p.currency())),
+                Msg.p("reason", p.note()), Msg.p("left", Format.duration(Duration.ofMillis(left)))};
+    }
+
+    /**
+     * {@code /eco allow|deny <id>} and the pending menu: an owner/admin (not the requester) decides a waiting change. The
+     * first decision wins; the target checks (R3-39) run again for the approver.
+     */
+    void decide(CommandSender sender, int id, boolean allow) {
+        long now = System.currentTimeMillis();
+        Optional<EcoApprovals.Pending> found = approvals.get(id, now);
+        UUID approver = sender instanceof Player p ? p.getUniqueId() : null;
+        Optional<EcoApprovals.Problem> problem = EcoApprovals.canDecide(found.orElse(null), approver, sender.hasPermission(PERM_APPROVE));
+        if (problem.isPresent()) {
+            msg.send(sender, "eco.approve." + problem.get().key, Msg.number("id", id));
+            sound(sender, "error");
+            return;
+        }
+        EcoApprovals.Pending p = found.get();
+        if (!allow) {
+            if (approvals.take(id, now).isEmpty()) {
+                msg.send(sender, "eco.approve.unknown", Msg.number("id", id));
+                return;
+            }
+            Map<String, Object> details = pendingDetails(p);
+            details.put("decided_by", sender.getName());
+            core.audit().log(AuditCategory.ECONOMY, "eco_denied", Actor.of(sender), p.target().toString(), p.targetName(), p.change(),
+                    null, details);
+            msg.send(sender, "eco.approve.denied", pendingTags(sender, p));
+            Player requester = Bukkit.getPlayer(p.staff());
+            if (requester != null) {
+                msg.send(requester, "eco.approve.denied-you", Msg.number("id", p.id()), Msg.p("by", sender.getName()));
+            }
+            sound(sender, "success");
+            return;
+        }
+        then(sender, targetProblem(sender, p.target()), targetProblem -> {
+            if (targetProblem != null) {
+                msg.send(sender, "eco.target." + targetProblem.key, Msg.p("player", p.targetName()));
+                sound(sender, "error");
+                return;
+            }
+            if (approvals.take(id, System.currentTimeMillis()).isEmpty()) {
+                msg.send(sender, "eco.approve.unknown", Msg.number("id", id));
+                sound(sender, "error");
+                return;
+            }
+            Map<String, Object> details = pendingDetails(p);
+            details.put("decided_by", sender.getName());
+            core.audit().log(AuditCategory.ECONOMY, "eco_allowed", Actor.of(sender), p.target().toString(), p.targetName(), p.change(),
+                    null, details);
+            ecoOne(sender, Actor.player(p.staff(), p.staffName()), p.staffName(), p.action(), new Found(p.target(), p.targetName()),
+                    p.profileKey(), p.currency(), p.amount(), p.note(), sender.getName());
+            Player requester = Bukkit.getPlayer(p.staff());
+            if (requester != null && !requester.equals(sender)) {
+                msg.send(requester, "eco.approve.allowed-you", Msg.number("id", p.id()), Msg.p("by", sender.getName()));
+            }
+        });
+    }
+
+    /** Drops waiting changes older than eco.pending-minutes and tells the requester. Main thread. */
+    private void expireApprovals() {
+        for (EcoApprovals.Pending p : approvals.expire(System.currentTimeMillis())) {
+            core.audit().log(AuditCategory.ECONOMY, "eco_expired", Actor.system("economy"), p.target().toString(), p.targetName(),
+                    p.change(), null, pendingDetails(p));
+            Player requester = Bukkit.getPlayer(p.staff());
+            if (requester != null) {
+                msg.send(requester, "eco.approve.expired", Msg.number("id", p.id()), Msg.p("player", p.targetName()));
+            }
+        }
+    }
+
+    /** Opens the waiting changes (Bedrock path of R3-6). */
+    public void openPending(Player player, net.skybornmc.skyblock.common.menu.Menu from) {
+        if (from == null) {
+            core.menus().open(player, new PendingEcoMenu(this));
+        } else {
+            from.openChild(new PendingEcoMenu(this));
+        }
+    }
+
+    /** How many changes wait for an Allow (dashboard button). */
+    public int pendingCount() {
+        return approvals.list(System.currentTimeMillis()).size();
+    }
+
+    /** True if the player may allow waiting changes. */
+    public static boolean canApprove(Player player) {
+        return player.hasPermission(PERM_APPROVE);
+    }
+
+    /** R3-6: the Discord hook (channel "economy"; off until a webhook is set up, then every flagged change is posted). */
+    private void discord(String what, String staff, String target, Currency currency, long amount, String note, String approvedBy) {
+        core.services().optional(net.skybornmc.skyblock.common.discord.DiscordSink.class).ifPresent(d -> {
+            if (!d.enabled("economy")) {
+                return;
+            }
+            List<net.skybornmc.skyblock.common.discord.DiscordSink.Field> fields = new ArrayList<>();
+            fields.add(new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Staff", staff, true));
+            fields.add(new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Player", target, true));
+            fields.add(new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Amount", service.format(currency, amount), true));
+            fields.add(new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Reason", note, false));
+            if (approvedBy != null) {
+                fields.add(new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Allowed by", approvedBy, true));
+            }
+            d.post("economy", new net.skybornmc.skyblock.common.discord.DiscordSink.Embed(what, 0xFFC21A, fields, "Phoenix Skyblock",
+                    System.currentTimeMillis()));
+        });
+    }
+
+    /**
+     * Applies one change. {@code key}: the player's profile (money, crystals, shards); gems go to the player account
+     * automatically. {@code actor}/{@code staffName}: who asked for it; {@code approvedBy}: who allowed it (R3-6), or null.
+     */
+    private void ecoOne(CommandSender sender, Actor actor, String staffName, EcoAction action, Found target, UUID profileKey,
+                        Currency currency, long amount, String note, String approvedBy) {
         AccountRef account = AccountRef.player(profileKey);
-        Actor actor = Actor.of(sender);
         String reference = note.length() > 64 ? note.substring(0, 64) : note;
-        Map<String, Object> details = Map.of("note", note, "target_name", target.name());
-        CompletableFuture<TxResult> future = switch (action) {
-            case GIVE -> service.execute(Transaction.deposit(account, currency, amount, TxReason.ADMIN_GIVE)
-                    .actor(actor).reference(reference).detail("note", note).detail("target_name", target.name()));
-            case TAKE -> service.execute(Transaction.withdraw(account, currency, amount, TxReason.ADMIN_TAKE)
-                    .actor(actor).reference(reference).detail("note", note).detail("target_name", target.name()));
-            case SET -> service.set(account, currency, amount, TxReason.ADMIN_SET, actor, details);
-            case RESET -> service.set(account, currency, config.start(currency), TxReason.ADMIN_RESET, actor, details);
+        Map<String, Object> details = new java.util.LinkedHashMap<>();
+        details.put("note", note);
+        details.put("target_name", target.name());
+        if (approvedBy != null) {
+            details.put("approved_by", approvedBy);
+        }
+        Transaction base = switch (action) {
+            case GIVE -> Transaction.deposit(account, currency, amount, TxReason.ADMIN_GIVE);
+            case TAKE -> Transaction.withdraw(account, currency, amount, TxReason.ADMIN_TAKE);
+            default -> null;
         };
-        String key = action.name().toLowerCase(Locale.ROOT);
+        CompletableFuture<TxResult> future;
+        if (base != null) {
+            Transaction tx = base.actor(actor).reference(reference);
+            for (Map.Entry<String, Object> e : details.entrySet()) {
+                tx = tx.detail(e.getKey(), e.getValue());
+            }
+            future = service.execute(tx);
+        } else {
+            future = service.set(account, currency, amount, action == EcoAction.SET ? TxReason.ADMIN_SET : TxReason.ADMIN_RESET, actor,
+                    details);
+        }
+        String key = action.key();
         then(sender, future, result -> {
             if (!result.ok()) {
                 if (result.status() == TxResult.Status.INSUFFICIENT_FUNDS) {
@@ -734,17 +1045,27 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 return;
             }
             long now = result.toBalance() != null ? result.toBalance() : result.fromBalance() != null ? result.fromBalance() : 0;
-            long shown = action == EcoAction.RESET ? config.start(currency) : amount;
-            TagResolver[] p = {Msg.p("player", target.name()), Msg.p("staff", sender.getName()), Msg.p("action", key),
-                    amountTag("amount", sender, currency, shown), amountTag("balance", sender, currency, now),
+            // R3-6: every applied change is flagged: its own audit row (searchable as /logs eco_flagged), staff alert, Discord.
+            Map<String, Object> flag = new java.util.LinkedHashMap<>(details);
+            flag.put("action", key);
+            flag.put("currency", currency.key());
+            flag.put("ledger_id", result.ledgerId());
+            flag.put("requested_by", staffName);
+            core.audit().log(AuditCategory.ECONOMY, "eco_flagged", actor, target.uuid().toString(), target.name(), amount, null, flag);
+            discord("eco_" + key, staffName, target.name(), currency, amount, note, approvedBy);
+            TagResolver[] p = {Msg.p("player", target.name()), Msg.p("staff", staffName), Msg.p("action", key),
+                    amountTag("amount", sender, currency, amount), amountTag("balance", sender, currency, now),
                     Msg.c("currency", currencyName(sender, currency)), Msg.p("reason", note)};
             msg.send(sender, "eco.done-" + key, p);
             sound(sender, "success");
             for (Player staff : Bukkit.getOnlinePlayers()) {
                 if (!staff.equals(sender) && staff.hasPermission(PERM_ALERTS)) {
-                    msg.send(staff, "eco.alert-" + key, Msg.p("player", target.name()), Msg.p("staff", sender.getName()),
-                            amountTag("amount", staff, currency, shown), amountTag("balance", staff, currency, now),
+                    msg.send(staff, "eco.alert-" + key, Msg.p("player", target.name()), Msg.p("staff", staffName),
+                            amountTag("amount", staff, currency, amount), amountTag("balance", staff, currency, now),
                             Msg.c("currency", currencyName(staff, currency)), Msg.p("reason", note));
+                    if (approvedBy != null) {
+                        msg.send(staff, "eco.approve.allowed-alert", Msg.p("by", approvedBy));
+                    }
                 }
             }
             if (!(sender instanceof org.bukkit.command.ConsoleCommandSender)) {
