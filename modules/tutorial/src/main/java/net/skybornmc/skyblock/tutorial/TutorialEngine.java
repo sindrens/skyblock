@@ -110,11 +110,22 @@ final class TutorialEngine implements TutorialService, TutorialGate {
     }
 
     private void joined(Player player, Progress p) {
-        long now = System.currentTimeMillis();
-        p.lastActivity = now;
+        p.lastActivity = System.currentTimeMillis();
         if (!module.config().enabled) {
             return;
         }
+        // I7 pack v2: the start (title, chat, spawn camera) and the resume wait until the icon pack prompt is answered
+        // (at most pack.yml join.wait-seconds), so the prompt never sits over the cinematic. The locks are already on.
+        UUID id = player.getUniqueId();
+        net.skybornmc.skyblock.common.pack.PackWait.run(core.services(), player, () -> {
+            if (player.isOnline() && online.get(id) == p) {
+                joinedNow(player, p);
+            }
+        });
+    }
+
+    private void joinedNow(Player player, Progress p) {
+        long now = System.currentTimeMillis();
         if (p.state == State.NEW) {
             if (player.hasPermission(PERM_BYPASS)) {
                 msg().send(player, "start.staff-offer"); // TQ28: offered, never forced on staff

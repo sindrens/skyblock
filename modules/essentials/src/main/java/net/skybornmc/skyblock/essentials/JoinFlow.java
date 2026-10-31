@@ -5,6 +5,7 @@ import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.db.Sql;
 import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
+import net.skybornmc.skyblock.common.pack.PackWait;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Bukkit;
@@ -86,16 +87,19 @@ final class JoinFlow implements Listener {
                 ? msg.component(player, "join.message", Msg.c("player", name(player)), Msg.p("rank", core.ranks().groupDisplayName(player)))
                 : null);
         if (config.welcomeBackTitle) {
-            Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
+            // I7 pack v2: the title waits for the icon pack answer (at most pack.yml join.wait-seconds).
+            Bukkit.getScheduler().runTaskLater(core.plugin(), () -> PackWait.run(core.services(), player, () -> {
                 if (player.isOnline()) {
                     msg.title(player, "join.welcome-back", Msg.p("player", player.getName()));
                 }
-            }, 10L);
+            }), 10L);
         }
     }
 
     private void firstJoin(Player player) {
-        Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
+        // I7 pack v2: the welcome waits for the icon pack answer (at most pack.yml join.wait-seconds), so the prompt
+        // never sits over it.
+        Bukkit.getScheduler().runTaskLater(core.plugin(), () -> PackWait.run(core.services(), player, () -> {
             if (!player.isOnline()) {
                 return;
             }
@@ -107,7 +111,7 @@ final class JoinFlow implements Listener {
                 msg.title(player, "join.first-title", Msg.p("player", player.getName()));
                 msg.send(player, "join.first-welcome", Msg.p("player", player.getName()));
             }
-        }, 20L);
+        }), 20L);
         // The privacy line comes a little later, not on the first screen (owner answers 319/532 keep it on the first join).
         Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
             if (player.isOnline()) {
