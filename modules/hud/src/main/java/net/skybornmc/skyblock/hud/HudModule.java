@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.hud;
 
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.hud.BoardTimers;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.settings.PlayerSettings;
 import net.skybornmc.skyblock.common.settings.SettingCategory;
@@ -17,6 +18,8 @@ public final class HudModule implements SkyblockModule {
     private final Core core;
     private final HudConfig config = new HudConfig();
     private HudService hud;
+    /** The scoreboard timer seam (G7-R1-01); created once, kept across reloads and off/on so providers survive. */
+    private BoardTimerRegistry timers;
     /** The settings change listener can't be removed, so it is added once and always talks to the current service. */
     private boolean listening;
 
@@ -33,7 +36,11 @@ public final class HudModule implements SkyblockModule {
     public void enable() {
         core.configs().load(config);
         core.messages(id());
-        hud = new HudService(core, config);
+        if (timers == null) {
+            timers = new BoardTimerRegistry(core.plugin().getLogger()::warning);
+        }
+        core.services().register(id(), BoardTimers.class, timers);
+        hud = new HudService(core, config, timers);
         core.services().register(id(), HudService.class, hud);
         core.plugin().getServer().getPluginManager().registerEvents(hud, core.plugin());
         hud.start();

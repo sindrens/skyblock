@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.hud;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.hud.BoardTimers;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.tag.Tag;
@@ -61,6 +62,7 @@ public final class HudService implements Listener {
 
     private final Core core;
     private final HudConfig config;
+    private final BoardTimers timers;
     private final Map<UUID, Sidebar> sidebars = new ConcurrentHashMap<>();
     private final List<LayoutRule> rules = new CopyOnWriteArrayList<>();
     /** Players whose board switches on the next tick (teleport, respawn). */
@@ -72,9 +74,10 @@ public final class HudService implements Listener {
     private BukkitTask task;
     private long tick;
 
-    HudService(Core core, HudConfig config) {
+    HudService(Core core, HudConfig config, BoardTimers timers) {
         this.core = core;
         this.config = config;
+        this.timers = timers;
         reloaded();
     }
 
