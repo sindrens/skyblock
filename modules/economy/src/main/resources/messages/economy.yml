@@ -312,6 +312,7 @@ sell:
     ores: "Ores"
     crops: "Crops"
     mob-loot: "Mob loot"
+    island-ores: "Island ores"
     depths-mine: "Depths ores"
     depths-forest: "Depths logs"
     depths-combat: "Depths combat drops"

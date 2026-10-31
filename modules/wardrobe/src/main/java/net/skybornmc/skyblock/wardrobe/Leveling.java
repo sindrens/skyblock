@@ -343,7 +343,10 @@ final class Leveling implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onForm(BlockFormEvent event) {
         Block b = event.getBlock();
-        if (module.config().islandWorld(b.getWorld().getName()) && generatorBlocks.contains(event.getNewState().getType())) {
+        Material formed = event.getNewState().getType();
+        // PHASE-7 M7.2: a custom generator may have turned the cobblestone into an ore before this listener runs.
+        if (module.config().islandWorld(b.getWorld().getName()) && (generatorBlocks.contains(formed)
+                || net.skybornmc.skyblock.common.production.GeneratorOutput.contains(formed))) {
             generated.add(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ());
         }
     }

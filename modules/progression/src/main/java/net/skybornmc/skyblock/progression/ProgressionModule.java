@@ -104,6 +104,8 @@ public final class ProgressionModule implements SkyblockModule {
         core.services().register(ID, ProgressionService.class, facade);
         // PHASE-7 M7.1: the Fuel Tank upgrade and the Fuel Efficiency mastery are live while Island Fuel is on.
         IslandFuelFeature.source(() -> core.services().has(net.skybornmc.skyblock.common.production.ProductionService.class));
+        // PHASE-7 M7.2: the Generator upgrade is live while custom generators are on.
+        GeneratorFeature.source(() -> core.services().has(net.skybornmc.skyblock.common.production.GeneratorService.class));
         // M5.3 task engine: the challenge book (opened from /is level), shared island counters, deliveries.
         tasks = new TaskManager(core, tasksConfig, msg, pillars, levels, config.seasonId);
         TaskMenus taskMenus = new TaskMenus(tasks);
@@ -164,6 +166,7 @@ public final class ProgressionModule implements SkyblockModule {
     @Override
     public void disable() {
         IslandFuelFeature.source(null);
+        GeneratorFeature.source(null);
         if (pillars == null) {
             return;
         }

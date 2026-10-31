@@ -61,6 +61,7 @@ public final class EnchantsModule implements SkyblockModule {
     private ProcBar procBar;
     private SpeedBursts bursts;
     private BookDrops drops;
+    private IslandBooks islandBooks;
     private SwordEffects swords;
     private ArmorEffects armor;
     private Object depthsHooks;
@@ -139,6 +140,8 @@ public final class EnchantsModule implements SkyblockModule {
         drops.start();
         swords = new SwordEffects(this, procBar, effectsPerf);
         Bukkit.getPluginManager().registerEvents(drops, core.plugin());
+        islandBooks = new IslandBooks(this, drops);
+        Bukkit.getPluginManager().registerEvents(islandBooks, core.plugin());
         Bukkit.getPluginManager().registerEvents(swords, core.plugin());
         armor = new ArmorEffects(this);
         Bukkit.getPluginManager().registerEvents(armor, core.plugin());
@@ -196,6 +199,10 @@ public final class EnchantsModule implements SkyblockModule {
         if (armor != null) {
             HandlerList.unregisterAll(armor);
             armor.stop();
+        }
+        if (islandBooks != null) {
+            HandlerList.unregisterAll(islandBooks);
+            islandBooks = null;
         }
         if (drops != null) {
             HandlerList.unregisterAll(drops);

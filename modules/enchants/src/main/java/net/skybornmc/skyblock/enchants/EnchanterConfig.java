@@ -227,6 +227,11 @@ final class EnchanterConfig extends ModuleConfig {
     @Setting(path = "drops.mini-boss-band-bonus", desc = "Mini-boss books use the rarity odds this many bands above the tier (band D stays D).", min = 0, max = 5, level = Setting.Level.OWNER)
     public int dropMiniBossBands = 1;
 
+    @Setting(path = "drops.island-generator-percent", desc = "Island generator ores (PHASE-7 M7.2): one generator-made ore counts as this "
+            + "percent of a Depths ore action of its tier for Mining books (ENCHANTS 3.1: 25%). Custom pickaxe only; 0 = no island books.",
+            min = 0, max = 100, level = Setting.Level.OWNER)
+    public double dropIslandGeneratorPercent = 25;
+
     @Setting(path = "drops.save-seconds", desc = "Pity and first-find counters are saved this often (and on quit / profile switch).", min = 5, max = 600)
     public int dropSaveSeconds = 30;
 
