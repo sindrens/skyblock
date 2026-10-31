@@ -864,7 +864,7 @@ public final class MenuService implements Listener {
             return;
         }
         event.setCancelled(true);
-        String text = PlainTextComponentSerializer.plainText().serialize(event.message()).trim();
+        String text = net.skybornmc.skyblock.common.pack.PrivateUse.strip(PlainTextComponentSerializer.plainText().serialize(event.message())).trim();
         Bukkit.getScheduler().runTask(plugin, () -> {
             Prompt p = prompts.get(player.getUniqueId());
             if (p == null) {

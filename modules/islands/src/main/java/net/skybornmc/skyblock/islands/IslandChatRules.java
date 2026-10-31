@@ -101,7 +101,7 @@ final class IslandChatRules {
 
     /** A one-shot message is cut to {@code max} characters (vanilla chat allows 256). */
     static String limit(String text, int max) {
-        String t = text == null ? "" : text.strip();
+        String t = text == null ? "" : net.skybornmc.skyblock.common.pack.PrivateUse.strip(text).strip();
         return t.length() <= max ? t : t.substring(0, max);
     }
 

@@ -130,4 +130,9 @@ class NoteRulesTest {
         NoteRules.BookDiff shorter = NoteRules.diff(List.of(a, b), List.of("one", "two"), List.of("one"));
         assertTrue(shorter.isEmpty(), "missing pages are not deletes either");
     }
+
+    @Test
+    void cleanDropsPrivateUseGlyphs() {
+        assertEquals("fake badge", NoteRules.clean("fake \uE301badge\uF801"));
+    }
 }
