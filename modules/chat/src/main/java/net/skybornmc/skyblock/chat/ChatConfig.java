@@ -168,8 +168,8 @@ public final class ChatConfig extends ModuleConfig {
     public String header() {
         return """
                 Phoenix Skyblock chat, tab list and nametags.
-                Formats are MiniMessage with style tags (<c:brand>, <grad:phoenix> ...). Rank prefixes come from LuckPerms
-                (& codes like Essentials), name colors from the rank's 'color' meta. Texts: messages/chat.yml.
+                Formats are MiniMessage with style tags (<c:brand>, <grad:phoenix> ...). Ranks show as [Name] (LuckPerms display
+                name) in the colours of ranks.looks; name colors follow the same look. Texts: messages/chat.yml.
                 Reload: /skyblock reload chat""";
     }
 
