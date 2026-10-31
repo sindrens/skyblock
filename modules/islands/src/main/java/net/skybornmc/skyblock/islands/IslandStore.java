@@ -303,6 +303,7 @@ public final class IslandStore {
         Sql.update(c, "DELETE FROM island_role_perms WHERE island_id = ?", islandId);
         VisitStore.deleteIsland(c, islandId); // M2.4: warps and bans end with the island
         Sql.update(c, "DELETE FROM island_settings WHERE island_id = ?", islandId); // ISL2
+        IslandHomeStore.deleteIsland(c, islandId); // M5.5 Homestead shared homes
         IslandChatStore.deleteIsland(c, islandId); // M2.5
         IslandNoteStore.deleteIsland(c, islandId, by, now); // NOTES: soft, staff can still read them (N7)
         // used -> clearing (SlotState); the island id stays until the clearer frees the slot.

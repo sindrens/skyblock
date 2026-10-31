@@ -73,6 +73,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private BorderProtection borderProtection;
     private IslandLifecycle lifecycle;
     private VisitManager visits;
+    private IslandHomes homes;
     private WarpManager warps;
     private RolePermissions rolePermissions = RolePermissions.none();
     private volatile PermPresets permPresets = PermPresets.none();
@@ -140,6 +141,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
         chat.loadConfig();
         chat.load();
         hub = new IslandHub(this, manager);
+        homes = new IslandHomes(this, manager, new IslandHomeStore(core.database()));
+        homes.load();
         visits.onPresence(environment::apply);
         manager.onFlagChange((island, flag) -> {
             if (flag == IslandFlag.WEATHER || flag == IslandFlag.TIME) {
@@ -157,6 +160,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Bukkit.getPluginManager().registerEvents(environment, core.plugin());
         Bukkit.getPluginManager().registerEvents(fly, core.plugin());
         Bukkit.getPluginManager().registerEvents(autoPickup, core.plugin());
+        Bukkit.getPluginManager().registerEvents(homes, core.plugin());
         environment.start();
         fly.start();
         // /settings (menus) and the TeleportService (essentials) may enable after us: hook them one tick later.
@@ -295,6 +299,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
             fly.stop();
             fly.revokeAll();
             HandlerList.unregisterAll(fly);
+        }
+        if (homes != null) {
+            HandlerList.unregisterAll(homes);
         }
         HandlerList.unregisterAll(this);
     }
@@ -443,6 +450,25 @@ public final class IslandsModule implements SkyblockModule, Listener {
         progression.get().openUpgradeMenu(player, null);
     }
 
+    /** {@code /is sethome [name]}: the island home without a name, a shared named home with one (M5.5 Homestead). */
+    private void setHome(Player player, String name) {
+        if (name == null || name.isBlank()) {
+            manager.setHome(player);
+        } else {
+            homes.set(player, name);
+        }
+    }
+
+    /** {@code /is masteries} (PHASE-5 M5.5): the upgrade menu on its Masteries tab (progression module). */
+    private void openMasteries(Player player) {
+        var progression = progression();
+        if (progression.isEmpty() || !progression.get().masteriesAvailable()) {
+            msg().send(player, "masteries.unavailable");
+            return;
+        }
+        progression.get().openMasteryMenu(player, null);
+    }
+
     /** /is level and /is top live in the progression module; without it the player is told. */
     private void openProgression(Player player, boolean top) {
         var progression = progression();
@@ -518,13 +544,19 @@ public final class IslandsModule implements SkyblockModule, Listener {
         // M2.5
         Arg<String> chatText = Args.text("message", "on my way", "need help at the farm");
         Arg<String> infoIsland = Args.word("player", Suggest.bySender(visits::islandNames));
+        // M5.5 Homestead (P5-21): shared island homes
+        Arg<String> homeName = Args.word("name", Suggest.bySender(homes::ownNames));
+        Arg<String> newHomeName = Args.word("name", Suggest.bySender(homes::setNames));
+        Arg<String> oldHomeName = Args.word("name", Suggest.bySender(homes::ownNames));
+        Arg<String> aliasHomeName = Args.word("name", Suggest.bySender(homes::ownNames));
+        Arg<String> aliasNewHomeName = Args.word("name", Suggest.bySender(homes::setNames));
         core.commands().register(CommandSpec.command("is")
                 .description("Your island: create it, or open the island menu").category("Island")
                 .permission(PERM_USE).playerOnly().aliases("island")
                 .executes(ctx -> manager.openOrCreate(ctx.player()))
-                .sub(CommandSpec.sub("home").description("Teleport to your island home").permission(PERM_USE)
-                        .playerOnly().cooldown(Duration.ofSeconds(3)).example("is home")
-                        .executes(ctx -> manager.teleportHome(ctx.player())))
+                .sub(CommandSpec.sub("home").description("Teleport to your island home, or to a shared island home by name").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(3)).optional(homeName).example("is home farm")
+                        .executes(ctx -> homes.go(ctx.player(), ctx.getOr(homeName, null))))
                 .sub(CommandSpec.sub("settings").description("Island settings: spawning, fire, explosions, weather, time and more")
                         .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(setting).optional(settingValue)
                         .example("is settings weather rain")
@@ -552,6 +584,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("upgrade").description("Island upgrades: size, members, bank, sell bonus and more (island bank)")
                         .permission(PERM_UPGRADE).playerOnly().cooldown(Duration.ofSeconds(1)).example("is upgrade")
                         .executes(ctx -> openUpgrades(ctx.player())))
+                // PHASE-5 M5.5: island masteries + Ascension (the Masteries tab of /is upgrade; same node).
+                .sub(CommandSpec.sub("masteries").description("Island masteries: Wings, Treasury, Homestead and more (island bank)")
+                        .permission(PERM_UPGRADE).playerOnly().cooldown(Duration.ofSeconds(1)).example("is masteries")
+                        .executes(ctx -> openMasteries(ctx.player())))
                 .sub(CommandSpec.sub("invites").description("Invites you received and invites your island sent").permission(PERM_USE)
                         .playerOnly().example("is invites")
                         .executes(ctx -> members.openInvites(ctx.player())))
@@ -594,9 +630,12 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("disband").description("Delete your island for good (leader, no other members; confirm)")
                         .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(3)).example("is disband")
                         .executes(ctx -> lifecycle.disband(ctx.player())))
-                .sub(CommandSpec.sub("sethome").description("Set your island home where you stand (leader/mod)").permission(PERM_USE).playerOnly()
-                        .cooldown(Duration.ofSeconds(3)).example("is sethome")
-                        .executes(ctx -> manager.setHome(ctx.player())))
+                .sub(CommandSpec.sub("sethome").description("Set the island home where you stand, or a shared home by name (Homes permission)")
+                        .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(3)).optional(newHomeName).example("is sethome farm")
+                        .executes(ctx -> setHome(ctx.player(), ctx.getOr(newHomeName, null))))
+                .sub(CommandSpec.sub("delhome").description("Delete a shared island home (Homes permission)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).arg(oldHomeName).example("is delhome farm")
+                        .executes(ctx -> homes.delete(ctx.player(), ctx.get(oldHomeName))))
                 .sub(CommandSpec.sub("visit").description("Visit a player's island, or browse islands without a name").permission(PERM_USE)
                         .playerOnly().cooldown(Duration.ofSeconds(3)).optional(visited).example("is visit Steve")
                         .executes(ctx -> visits.visit(ctx.player(), ctx.getOr(visited, null))))
@@ -636,13 +675,13 @@ public final class IslandsModule implements SkyblockModule, Listener {
                         .executes(ctx -> protection.toggleBypass(ctx.player()))));
         // Owner answer 347: players type /home and /sethome for their island (staff homes moved to /shome).
         core.commands().register(CommandSpec.command("home")
-                .description("Teleport to your island home (same as /is home)").category("Island").permission(PERM_USE)
-                .playerOnly().cooldown(Duration.ofSeconds(3))
-                .executes(ctx -> manager.teleportHome(ctx.player())));
+                .description("Teleport to your island home, or a shared island home by name (same as /is home)").category("Island")
+                .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(3)).optional(aliasHomeName)
+                .executes(ctx -> homes.go(ctx.player(), ctx.getOr(aliasHomeName, null))));
         core.commands().register(CommandSpec.command("sethome")
-                .description("Set your island home where you stand (same as /is sethome; leader/mod)").category("Island")
-                .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(3))
-                .executes(ctx -> manager.setHome(ctx.player())));
+                .description("Set the island home where you stand, or a shared home by name (same as /is sethome)").category("Island")
+                .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(3)).optional(aliasNewHomeName)
+                .executes(ctx -> setHome(ctx.player(), ctx.getOr(aliasNewHomeName, null))));
     }
 
     // ------------------------------------------------------------------ island profiles (PROF)

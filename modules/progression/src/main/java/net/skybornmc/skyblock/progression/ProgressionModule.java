@@ -32,7 +32,9 @@ import java.util.UUID;
  * placeholders {@code island_tasks_done}/{@code island_tasks_total} and the {@code /settings} toggle {@code task-notices}. M5.4:
  * island upgrades ({@link UpgradeManager}, {@code upgrades.yml}, {@code upgrades-settings.yml}), {@code /is upgrade} (sub-command
  * of the islands module, menus here), placeholders {@code island_upgrades_bought}, {@code island_upgrades_ready},
- * {@code island_upgrade_<id>}. Texts in {@code messages/progression.yml}.
+ * {@code island_upgrade_<id>}. M5.5: masteries and Ascension ({@link MasteryManager}, {@code masteries.yml},
+ * {@code masteries-settings.yml}), {@code /is masteries} (the Masteries tab of {@code /is upgrade}), placeholders
+ * {@code island_masteries_bought}, {@code island_ascension}, {@code island_mastery_<id>}. Texts in {@code messages/progression.yml}.
  */
 public final class ProgressionModule implements SkyblockModule {
 
@@ -44,6 +46,7 @@ public final class ProgressionModule implements SkyblockModule {
     private final BlockValuesConfig blockValues = new BlockValuesConfig();
     private final TasksConfig tasksConfig = new TasksConfig();
     private final UpgradesConfig upgradesConfig = new UpgradesConfig();
+    private final MasteriesConfig masteriesConfig = new MasteriesConfig();
     private PillarManager pillars;
     private IslandSourcesListener sources;
     private BlockWorth blocks;
@@ -52,6 +55,7 @@ public final class ProgressionModule implements SkyblockModule {
     private TaskSources taskSources;
     private DepthsTaskListener depthsTasks;
     private UpgradeManager upgrades;
+    private MasteryManager masteries;
 
     public ProgressionModule(Core core) {
         this.core = core;
@@ -69,6 +73,7 @@ public final class ProgressionModule implements SkyblockModule {
         core.configs().load(blockValues);
         core.configs().load(tasksConfig);
         core.configs().load(upgradesConfig);
+        core.configs().load(masteriesConfig);
         ModuleMessages msg = core.messages(ID);
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         pillars = new PillarManager(core, config, msg);
@@ -107,6 +112,11 @@ public final class ProgressionModule implements SkyblockModule {
         menus.upgrades(upgradeMenus);
         facade.upgrades(upgrades, upgradeMenus);
         Bukkit.getPluginManager().registerEvents(upgrades, core.plugin());
+        // M5.5 masteries + Ascension: /is masteries (sub-command of the islands module) = the Masteries tab of /is upgrade.
+        masteries = new MasteryManager(core, masteriesConfig, upgradesConfig, msg, levels, pillars, tasks, upgrades, config.seasonId);
+        upgradeMenus.masteryMenus(new MasteryMenus(masteries, upgradeMenus));
+        facade.masteries(masteries);
+        Bukkit.getPluginManager().registerEvents(masteries, core.plugin());
         registerPlaceholders();
         registerSetting();
         pillars.start();
@@ -114,7 +124,9 @@ public final class ProgressionModule implements SkyblockModule {
         levels.start();
         tasks.start();
         upgrades.start();
+        masteries.start();
         upgrades.registerPlaceholders(ID, this::islandOf);
+        masteries.registerPlaceholders(ID, this::islandOf);
         // Shop and sell prices may be published by modules enabled after this one: values again once everything is up.
         core.scheduler().later("progression-block-values", 1L, blocks::rebuildValues);
     }
@@ -126,6 +138,7 @@ public final class ProgressionModule implements SkyblockModule {
         core.configs().load(blockValues);
         core.configs().load(tasksConfig);
         core.configs().load(upgradesConfig);
+        core.configs().load(masteriesConfig);
         core.messages().load(ID);
         pillars.applyConfig();
         sources.configure();
@@ -134,6 +147,7 @@ public final class ProgressionModule implements SkyblockModule {
         tasks.applyConfig();
         taskSources.configure();
         upgrades.applyConfig();
+        masteries.applyConfig();
     }
 
     @Override
@@ -142,6 +156,10 @@ public final class ProgressionModule implements SkyblockModule {
             return;
         }
         HandlerList.unregisterAll(pillars);
+        if (masteries != null) {
+            HandlerList.unregisterAll(masteries);
+            masteries.shutdown();
+        }
         if (upgrades != null) {
             HandlerList.unregisterAll(upgrades);
             upgrades.shutdown();

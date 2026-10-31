@@ -20,5 +20,5 @@ skyblock.progression.tasks:
   description: Open the challenge book from /is level (M5.3) - island tasks, shared progress, hand in items (members only)
   default: true
 skyblock.progression.upgrade:
-  description: Use /is upgrade and the Upgrades buttons (M5.4) - island upgrades; buying also needs the island permission Upgrades (leader always, admin by default)
+  description: Use /is upgrade, /is masteries and the Upgrades buttons (M5.4/M5.5) - island upgrades and masteries; buying also needs the island permission Upgrades (leader always, admin by default)
   default: true

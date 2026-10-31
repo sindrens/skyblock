@@ -361,4 +361,16 @@ public interface IslandService {
     /** Masteries module hook for {@link #bankFeeMasteryLevel} ({@code null} = level 0 everywhere). Main thread. */
     default void bankFeeMasteryProvider(java.util.function.ToIntFunction<UUID> provider) {
     }
+
+    /**
+     * Shared island homes (Homestead mastery, owner P5-21 / R3-17): how many named homes ({@code /is sethome <name>}) the
+     * island may have on top of its island home. 0 until a provider is set ({@link #extraIslandHomesProvider}). Main thread.
+     */
+    default int extraIslandHomes(UUID islandId) {
+        return 0;
+    }
+
+    /** Masteries module hook for {@link #extraIslandHomes} ({@code null} = none). Main thread. */
+    default void extraIslandHomesProvider(java.util.function.ToIntFunction<UUID> provider) {
+    }
 }

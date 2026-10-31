@@ -22,6 +22,7 @@ final class ProgressionFacade implements ProgressionService {
     private final LevelMenus menus;
     private UpgradeManager upgrades;
     private UpgradeMenus upgradeMenus;
+    private MasteryManager masteries;
 
     ProgressionFacade(PillarManager pillars, LevelManager levels, LevelMenus menus) {
         this.pillars = pillars;
@@ -33,6 +34,11 @@ final class ProgressionFacade implements ProgressionService {
     void upgrades(UpgradeManager upgrades, UpgradeMenus menus) {
         this.upgrades = upgrades;
         this.upgradeMenus = menus;
+    }
+
+    /** M5.5: the masteries, set once they exist. */
+    void masteries(MasteryManager masteries) {
+        this.masteries = masteries;
     }
 
     // ------------------------------------------------------------------ pillars (M5.1)
@@ -193,5 +199,24 @@ final class ProgressionFacade implements ProgressionService {
     @Override
     public int upgradeLevel(UUID islandId, String upgradeId) {
         return upgrades == null ? 0 : upgrades.level(islandId, upgradeId);
+    }
+
+    // ------------------------------------------------------------------ island masteries (M5.5)
+
+    @Override
+    public boolean masteriesAvailable() {
+        return masteries != null && masteries.available();
+    }
+
+    @Override
+    public void openMasteryMenu(Player player, Menu parent) {
+        if (upgradeMenus != null) {
+            upgradeMenus.openMasteries(player, parent);
+        }
+    }
+
+    @Override
+    public int masteryRank(UUID islandId, String masteryId) {
+        return masteries == null ? 0 : masteries.rank(islandId, masteryId);
     }
 }

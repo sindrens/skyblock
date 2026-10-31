@@ -26,6 +26,7 @@ final class UpgradeMenus {
 
     private final UpgradeManager upgrades;
     private final TaskMenus taskMenus;
+    private MasteryMenus masteryMenus;
 
     UpgradeMenus(UpgradeManager upgrades, TaskMenus taskMenus) {
         this.upgrades = upgrades;
@@ -40,12 +41,34 @@ final class UpgradeMenus {
         return taskMenus;
     }
 
+    /** M5.5: the Masteries tab, set once masteries exist (null before). */
+    MasteryMenus masteryMenus() {
+        return masteryMenus;
+    }
+
+    void masteryMenus(MasteryMenus masteryMenus) {
+        this.masteryMenus = masteryMenus;
+    }
+
     Optional<IslandService.IslandInfo> islandOf(Player player) {
         return upgrades.islands().flatMap(s -> s.islandOf(player.getUniqueId()));
     }
 
     /** {@code /is upgrade}, the island menu's Upgrades button and the Upgrades source in {@code /is level}. */
     void open(Player player, Menu parent) {
+        open(player, parent, UpgradeTab.ISLAND);
+    }
+
+    /** {@code /is masteries} (M5.5): the same menu on the Masteries tab (DESIGN §3.5). */
+    void openMasteries(Player player, Menu parent) {
+        if (masteryMenus == null || !masteryMenus.masteries().available()) {
+            upgrades.msg().send(player, "masteries.unavailable");
+            return;
+        }
+        open(player, parent, UpgradeTab.MASTERIES);
+    }
+
+    void open(Player player, Menu parent, UpgradeTab tab) {
         if (!player.hasPermission(UpgradeManager.PERM_UPGRADE)) {
             upgrades.msg().send(player, "upgrades.no-permission");
             return;
@@ -59,7 +82,7 @@ final class UpgradeMenus {
             upgrades.msg().send(player, "upgrades.no-island");
             return;
         }
-        upgrades.core().menus().open(player, new UpgradeMenu(this, island.get().id(), UpgradeTab.ISLAND).parent(parent));
+        upgrades.core().menus().open(player, new UpgradeMenu(this, island.get().id(), tab).parent(parent));
     }
 
     // ------------------------------------------------------------------ item signatures (PERF6)

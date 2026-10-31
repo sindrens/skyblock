@@ -490,7 +490,7 @@ topics:
 
   island-upgrades:
     icon: anvil
-    aliases: [upgrades, upgrade, is-upgrade]
+    aliases: [upgrades, upgrade, is-upgrade, masteries, mastery]
     name: "<c:flame>Island upgrades"
     summary: ["<c:text>Bigger island, more members,", "<c:text>bank, sell bonus. See /is upgrade."]
     take-me-there: "is upgrade"
@@ -513,6 +513,12 @@ topics:
           - "<c:text>members + leader, warps, bank,"
           - "<c:text>sell bonus, Depths drops, spawners."
           - "<c:text>Every level adds island level points."
+      - title: "<c:value>Masteries"
+        lines:
+          - "<c:text>The <c:value>Masteries</c:value> tab (/is masteries):"
+          - "<c:text>Wings (island fly), Treasury (lower"
+          - "<c:text>bank fee), Homestead (more island"
+          - "<c:text>homes), Warrior, crystals and more."
 
   island-level:
     icon: nether_star

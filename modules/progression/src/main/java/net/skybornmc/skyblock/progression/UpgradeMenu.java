@@ -18,8 +18,8 @@ import java.util.UUID;
  * {@code /is upgrade} (PHASE-5 M5.4 mockup): tabs on top, the upgrades of the tab, the island bank and the island level.
  * One plain click each (Bedrock-safe, no right or shift clicks). Refreshes while open (task progress, bank balance).
  * <pre>
- *  R O ⚒ $ ⛏ ▼ B O R      2-5 tabs: Island, Economy, Depths, Production (Masteries, M5.5, stays hidden until built)
- *  B u u u u u u u B      10-16 upgrades of the tab
+ *  R O ⚒ $ ⛏ ▼ ✦ O R      2-6 tabs: Island, Economy, Depths, Production, Masteries (M5.5, shown while masteries are open)
+ *  B u u u u u u u B      10-16 upgrades of the tab (Masteries tab: the shown masteries, then Ascension)
  *  B u u u u u u u B      19-25
  *  B . . . . . . . B
  *  B . $ . ✦ . 📖 . B      38 island bank, 40 island level, 42 challenge book
@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 final class UpgradeMenu extends Menu {
 
-    static final int[] TAB_SLOTS = {2, 3, 4, 5};
+    static final int[] TAB_SLOTS = {2, 3, 4, 5, 6};
     static final int[] UPGRADE_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
     static final int SLOT_BANK = 38;
     static final int SLOT_LEVEL = 40;
@@ -118,8 +118,45 @@ final class UpgradeMenu extends Menu {
         }
         UpgradeTab[] tabs = UpgradeTab.values();
         for (int i = 0; i < tabs.length && i < TAB_SLOTS.length; i++) {
+            if (tabs[i] == UpgradeTab.MASTERIES && !mastersOpen()) {
+                continue; // GUI-2: hidden while masteries are off
+            }
             set(TAB_SLOTS[i], tabButton(tabs[i]));
         }
+        if (tab == UpgradeTab.MASTERIES && mastersOpen()) {
+            buildMasteries();
+        } else {
+            buildUpgrades();
+        }
+        set(SLOT_BANK, MenuButton.display(bankItem()));
+        set(SLOT_LEVEL, levelButton());
+        set(SLOT_BOOK, bookButton());
+    }
+
+    private boolean mastersOpen() {
+        MasteryMenus m = menus.masteryMenus();
+        return m != null && m.masteries().available();
+    }
+
+    /** M5.5: the shown masteries (hidden ones are left out, GUI-2), then Ascension. */
+    private void buildMasteries() {
+        MasteryMenus m = menus.masteryMenus();
+        List<MasteryCatalog.Def> defs = m.masteries().catalog().shown();
+        int slot = 0;
+        for (; slot < defs.size() && slot < UPGRADE_SLOTS.length; slot++) {
+            MasteryCatalog.Def def = defs.get(slot);
+            ItemStack item = memo.get(UPGRADE_SLOTS[slot], m.masterySignature(viewer, islandId, def, bank, true),
+                    () -> service.mark(m.masteryItem(service, viewer, islandId, def, bank, true)));
+            set(UPGRADE_SLOTS[slot], MenuButton.of(item, click -> openChild(new MasteryDetailMenu(m, islandId, def.id(), bank))));
+        }
+        if (m.masteries().config().ascensionEnabled && slot < UPGRADE_SLOTS.length) {
+            ItemStack item = memo.get(UPGRADE_SLOTS[slot], m.ascensionSignature(viewer, islandId, bank, true),
+                    () -> service.mark(m.ascensionItem(service, viewer, islandId, bank, true)));
+            set(UPGRADE_SLOTS[slot], MenuButton.of(item, click -> openChild(new MasteryDetailMenu(m, islandId, MasteryRules.ASCENSION_ID, bank))));
+        }
+    }
+
+    private void buildUpgrades() {
         List<UpgradeCatalog.Def> defs = menus.upgrades().catalog().tab(tab);
         for (int i = 0; i < defs.size() && i < UPGRADE_SLOTS.length; i++) {
             UpgradeCatalog.Def def = defs.get(i);
@@ -131,9 +168,6 @@ final class UpgradeMenu extends Menu {
                 set(UPGRADE_SLOTS[i], MenuButton.of(item, click -> openChild(new UpgradeDetailMenu(menus, islandId, def.id(), bank))));
             }
         }
-        set(SLOT_BANK, MenuButton.display(bankItem()));
-        set(SLOT_LEVEL, levelButton());
-        set(SLOT_BOOK, bookButton());
     }
 
     private MenuButton tabButton(UpgradeTab t) {
@@ -145,7 +179,7 @@ final class UpgradeMenu extends Menu {
                 meta.setEnchantmentGlintOverride(true);
             }
         });
-        int size = menus.upgrades().catalog().tab(t).size();
+        int size = t == UpgradeTab.MASTERIES ? masteryCount() : menus.upgrades().catalog().tab(t).size();
         ItemStack item = memo.get("tab:" + t.id(), UpgradeMenus.signature(menus.textsKey(), selected, size), () -> {
             TagResolver count = Msg.p("count", size);
             return service.mark(service.item(icon, text(selected ? "upgrades.tab.name-selected" : "upgrades.tab.name",
@@ -166,7 +200,13 @@ final class UpgradeMenu extends Menu {
             case ECONOMY -> Material.GOLD_INGOT;
             case DEPTHS -> Material.IRON_PICKAXE;
             case PRODUCTION -> Material.HOPPER;
+            case MASTERIES -> Material.NETHER_STAR;
         };
+    }
+
+    private int masteryCount() {
+        MasteryMenus m = menus.masteryMenus();
+        return m == null ? 0 : m.masteries().catalog().shown().size() + (m.masteries().config().ascensionEnabled ? 1 : 0);
     }
 
     private ItemStack bankItem() {
@@ -184,7 +224,7 @@ final class UpgradeMenu extends Menu {
         LevelManager levels = menus.upgrades().levels();
         int level = levels.level(islandId);
         int percent = PillarManager.percent(levels.progress(islandId));
-        String points = LevelMenu.whole(menus.upgrades().points(islandId));
+        String points = LevelMenu.whole(menus.upgrades().levelPoints(islandId));
         ItemStack item = memo.get("level", UpgradeMenus.signature(menus.textsKey(), level, percent, points), () -> {
             TagResolver[] p = {Msg.p("level", level), Msg.p("next", level + 1), Msg.p("percent", percent), Msg.p("points", points)};
             return service.mark(service.item(new ItemStack(Material.PAPER), text("upgrades.menu.level.name", p), lines("upgrades.menu.level.lore", p)));

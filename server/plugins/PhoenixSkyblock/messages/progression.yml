@@ -559,9 +559,7 @@ upgrades:
     production:
       crumb: "Production"
     masteries:
-      name: "<c:muted>Masteries"
-      lore:
-        - "<c:muted>Coming soon"
+      crumb: "Masteries"
   # The upgrade item. <upgrade> name, <level> next level (roman), <current> <max>, <now> <next> effects,
   # <cost> next level's price, <tier> its task tier, <island-level> its island level gate
   item:
@@ -666,3 +664,107 @@ upgrades:
   # The last task of a level was done. <upgrade> <level> <cost>
   ready:
     chat: "<c:flame><sym:star></c:flame> <c:value><upgrade> <level></c:value> <c:text>is ready to buy (<c:success><cost></c:success><c:text>). <click:run_command:'/is upgrade'><hover:show_text:'<c:text>Open the upgrades'><c:action>[Upgrades]</c:action></hover></click>"
+
+# PHASE-5 M5.5: island masteries and Ascension (/is masteries = the Masteries tab of /is upgrade). Many lines reuse the
+# upgrades texts above (level, now, next, tasks, cost, states, buy, confirm).
+masteries:
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Island masteries aren't available right now. Try again later."
+  # Mastery names (missing ids are shown from the id, e.g. "Deep Pockets").
+  name:
+    timber: "Timber"
+    swift_hands: "Swift Hands"
+    warrior: "Warrior"
+    deep_pockets: "Deep Pockets"
+    crystal_rush: "Crystal Rush"
+    lucky_strike: "Lucky Strike"
+    fuel_efficiency: "Fuel Efficiency"
+    beast_tamer: "Beast Tamer"
+    angler: "Angler"
+    homestead: "Homestead"
+    wings: "Wings"
+    treasury: "Treasury"
+    market_contacts: "Market Contacts"
+  # What a rank gives. <value> the rank's value, <fee> (treasury) the bank fee in percent from bank.yml
+  effect:
+    timber: "+<value>% logs"
+    swift-hands: "+<value>% break speed"
+    warrior: "+<value>% damage to mobs"
+    deep-pockets: "+<value>% satchel size"
+    crystal-rush: "+<value>% crystals"
+    lucky-strike: "+<value>% rare finds"
+    fuel-efficiency: "Fuel lasts +<value>%"
+    beast-tamer: "+<value>% animal drops"
+    angler: "+<value>% fishing loot"
+    homestead: "<value> shared island homes more"
+    wings: "Island fly for everyone"
+    treasury: "Bank fee <fee>%"
+    market-contacts: "+<value>% sell prices"
+  menu:
+    crumb: "Masteries"
+  # Extra lines of the mastery item. <requires> upgrades to max first, <pillar> <pillar-level>
+  item:
+    requires:
+      - "<c:bar>|</c:bar> <c:text>Needs <c:value><requires></c:value> <c:text>maxed"
+    pillar-level:
+      - "<c:bar>|</c:bar> <c:text>Needs <pillar> <c:text>pillar <c:value><pillar-level>"
+    click:
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see more"
+  # State lines only masteries have (the rest are the upgrades' lines). <pillar> <pillar-level> <requires>
+  state:
+    pillar-level:
+      - "<c:warning>Raise the <pillar> <c:warning>pillar"
+      - "<c:warning>to level <pillar-level> first."
+    needs-maxed:
+      - "<c:warning>Max <requires> first."
+    needs-all:
+      - "<c:warning>Max every upgrade and"
+      - "<c:warning>mastery first."
+  detail:
+    info:
+      - "<c:text>The tasks of the next rank"
+      - "<c:text>and every rank of this mastery."
+      - "<c:text>Hand-in tasks: click them."
+    rank:
+      # <level> <effect> <cost> <tier> <island-level> <pillar> <pillar-level>
+      name-bought: "<c:success><sym:check> Rank <level>"
+      name-next: "<c:warning>Rank <level> <c:muted>(next)"
+      name-later: "<c:muted>Rank <level>"
+      lore:
+        - "<c:text><effect>"
+        - "<c:bar>|</c:bar> <c:text>Cost: <c:value><cost>"
+  # Ascension: endless levels once everything is maxed (owner P5-24). <level> next level, <current> bought,
+  # <cost> next price, <points> island level points per level
+  ascension:
+    name: "Ascension"
+    name-maxed: "<c:value>Ascension <c:muted>(max)"
+    effect: "+<points> island level points"
+    lore:
+      - "<c:bar>|</c:bar> <c:text>Levels: <c:value><current>"
+      - "<c:bar>|</c:bar> <c:text>Each: <c:success>+<points> island level points"
+      - "<c:muted>Endless, a bit more each time."
+    info:
+      - "<c:text>When every upgrade and mastery"
+      - "<c:text>is maxed, keep growing your"
+      - "<c:text>island level with Ascension."
+  confirm:
+    crumb: "Buy mastery"
+  buy:
+    # <mastery> <rank> <cost> <bank> (island bank after)
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Bought <c:value><mastery> <rank></c:value> for <c:success><cost></c:success>. <c:muted>Island bank: <bank>"
+    already: "<prefix><c:error><sym:cross></c:error> <c:text>Your island already has <c:value><mastery> <rank></c:value>."
+    maxed: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><mastery></c:value> is fully upgraded."
+    coming-soon: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><mastery></c:value> is coming soon."
+    tasks: "<prefix><c:error><sym:cross></c:error> <c:text>Finish the tasks of <c:value><mastery></c:value> first."
+    island-level: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><mastery></c:value> needs island level <c:value><level></c:value>."
+    # <pillar> <level>
+    pillar-level: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><mastery></c:value> needs the <pillar> <c:text>pillar at level <c:value><level></c:value>."
+    # <upgrade> the upgrades to max first
+    needs-maxed: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><mastery></c:value> opens when <c:value><upgrade></c:value> is maxed."
+    needs-all: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><mastery></c:value> opens when every upgrade and mastery is maxed."
+  # To online members. <mastery> <rank> <effect> <player> buyer
+  bought:
+    chat: "<c:flame><sym:star></c:flame> <c:value><player></c:value> <c:text>bought <c:value><mastery> <rank></c:value><c:text>: <c:success><effect></c:success> <click:run_command:'/is masteries'><hover:show_text:'<c:text>Open the masteries'><c:action>[Masteries]</c:action></hover></click>"
+    action-bar: "<c:success><sym:check></c:success> <c:text>Island mastery: <c:value><mastery> <rank>"
+  # Every requirement of a rank is met. <mastery> <rank> <cost>
+  ready:
+    chat: "<c:flame><sym:star></c:flame> <c:value><mastery> <rank></c:value> <c:text>is ready to buy (<c:success><cost></c:success><c:text>). <click:run_command:'/is masteries'><hover:show_text:'<c:text>Open the masteries'><c:action>[Masteries]</c:action></hover></click>"

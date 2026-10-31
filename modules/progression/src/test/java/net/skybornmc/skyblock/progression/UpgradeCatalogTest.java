@@ -59,7 +59,7 @@ class UpgradeCatalogTest {
         }
         for (UpgradeTab tab : UpgradeTab.values()) {
             assertTrue(c.tab(tab).size() <= UpgradeMenu.UPGRADE_SLOTS.length, tab + " fits the menu");
-            assertFalse(c.tab(tab).isEmpty(), tab + " has upgrades");
+            assertEquals(tab == UpgradeTab.MASTERIES, c.tab(tab).isEmpty(), tab + " has upgrades (the Masteries tab never does)");
         }
         assertTrue(c.tab(UpgradeTab.DEPTHS).stream().noneMatch(UpgradeCatalog.Def::buyable),
                 "Depths upgrades wait until the drop roll and skill XP read the player's bonus families");

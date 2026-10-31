@@ -180,6 +180,8 @@ reasons:
   island_kick_restore: "Restored by staff (kick backup)"
   island_profile_reset: "Profile reset (island disbanded or reset)"
   island_bank_restore: "Island bank restored by staff"
+  island_upgrade: "Island upgrade"
+  island_mastery: "Island mastery"
   note: "Money notes"
   note_withdraw: "Money note made"
   note_redeem: "Money note cashed"
