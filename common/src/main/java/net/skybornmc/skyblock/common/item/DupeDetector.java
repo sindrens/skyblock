@@ -360,6 +360,30 @@ public final class DupeDetector implements Listener {
         return List.copyOf(new LinkedHashSet<>(copies.stream().filter(Copy::own).map(Copy::player).toList()));
     }
 
+    /**
+     * Reports a copy that a module proved by itself (M10.4: a key item whose unique id was already used up in the
+     * database). Goes through the same handlers as a scan hit (console + staff alert, audit {@code item/dupe}, R3-28
+     * trade block), with the same per-item alert cooldown, and asks for a scan of everybody for other copies. Main thread.
+     */
+    public void report(DupeReport report) {
+        if (report == null) {
+            return;
+        }
+        long now = report.time();
+        Long last = lastAlert.get(report.itemUuid());
+        if (last == null || now - last >= config.dupeAlertCooldownMinutes * 60_000L) {
+            lastAlert.put(report.itemUuid(), now);
+            for (DupeReport.Handler handler : handlers) {
+                try {
+                    handler.onDupe(report);
+                } catch (RuntimeException e) {
+                    plugin.getLogger().log(Level.SEVERE, "Dupe handler failed", e);
+                }
+            }
+        }
+        requestScan();
+    }
+
     private void handle(UUID uuid, List<Copy> list, long now) {
         for (Copy copy : list) {
             flag(copy, now);

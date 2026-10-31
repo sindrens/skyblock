@@ -257,6 +257,33 @@ preview:
   no-keys:
     name: "<c:locked>No keys"
     lore: ["<c:text>You have no <key><c:text>.", "<c:muted>Vote, do quests, AFK in the pool", "<c:muted>or claim daily rewards."]
+  # M10.4 key items: <key> = key name, <tradeable> = tradeable keys, <max> = most per withdraw.
+  withdraw-one:
+    name: "<c:value>Withdraw 1 key"
+    lore:
+      - "<c:text>Turns 1 tradeable <key><c:text> into an item"
+      - "<c:text>you can trade or sell on <c:value>/ah</c:value><c:text>."
+      - "<c:text>Tradeable: <c:value><tradeable>"
+      - ""
+      - "<c:muted>USE the item to put the key back."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to withdraw 1"
+  withdraw-amount:
+    name: "<c:value>Withdraw an amount"
+    lore:
+      - "<c:text>Choose how many tradeable keys"
+      - "<c:text>become items (up to <c:value><max></c:value><c:text>)."
+      - "<c:muted>What doesn't fit goes to /box."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
+  withdraw-none:
+    name: "<c:locked>No tradeable keys"
+    lore:
+      - "<c:text>Only tradeable keys can become"
+      - "<c:text>items (quests, pass, events, fragments)."
+      - "<c:muted>Keys from votes, the AFK pool and"
+      - "<c:muted>daily rewards stay on this profile."
+  withdraw-title: "Withdraw <key>"
   line: "<reward> <c:muted>(x<count>)</c:muted> <c:muted>|</c:muted> <c:value><chance>%"
   line-top: "<c:flame><sym:star></c:flame> <reward> <c:muted>(x<count>)</c:muted> <c:muted>|</c:muted> <c:value><chance>%"
   coming-soon:
@@ -436,3 +463,29 @@ settings:
       - "<c:text>Skip the crate spin and the"
       - "<c:text>build-up at the crate yard:"
       - "<c:text>see your reward at once."
+
+# ------------------------------------------------------------------ M10.4 key items
+# <key> = key name, <amount> = number of key items, <box> = how many went to /box.
+key-items:
+  withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Withdrew <c:value><amount>x</c:value> <key><c:text>. USE one to put it back on your keys."
+  withdrawn-box: "<prefix><c:success><sym:check></c:success> <c:text>Withdrew <c:value><amount>x</c:value> <key><c:text> (<c:value><box></c:value> <c:text>in <c:value>/box</c:value><c:text>). USE one to put it back on your keys."
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>You have no tradeable <key><c:text>. Keys from votes, the AFK pool and daily rewards stay on this profile."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>Wait a moment, your last key item is still being handled."
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Withdrawing keys is turned off right now."
+  refunded: "<prefix><c:muted><sym:time></c:muted> <c:text>Your profile changed before the key items were made: <c:value><amount>x</c:value> <key><c:text> went back to the profile they came from."
+  redeemed: "<prefix><c:success><sym:check></c:success> <key><c:text> is back on this profile. Open it with <click:run_command:'/crates'><c:value>/crates</c:value></click><c:text>."
+  other-profile: "<prefix><c:error><sym:cross></c:error> <c:text>You withdrew this key on your other profile. Put it back there, or trade it to another player."
+  unknown-crate: "<prefix><c:error><sym:cross></c:error> <c:text>This key's crate doesn't exist any more. Keep the item and ask staff."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work. Your key item is back (inventory or /box). Try again."
+  copy: "<prefix><c:error><sym:cross></c:error> <c:text>This key item was already used, so it is a copy. It was taken and staff were told."
+  # The key item itself. {crate} = crate name, {player} = who withdrew it, {id} = short item id.
+  item:
+    name-unknown: "<rarity:rare>Crate Key"
+    subtitle: "<c:muted>Crate Key <sym:dot> Tradeable"
+    description: "Use it to put the key back on your keys. Can be traded."
+    info-title: "Information"
+    crate: "<c:text>Opens: {crate}"
+    withdrawn-by: "<c:text>Withdrawn by: <c:value>{player}"
+    id: "<c:muted>ID {id}"
+    action-input: "USE"
+    action-text: "to put it on your keys"
