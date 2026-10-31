@@ -16,8 +16,7 @@
 # show:       false hides the button everywhere (also on the test server). Use this instead of deleting a button:
 #             deleted buttons come back from the defaults on the next start.
 # permission: optional; players without it see the button locked.
-# model:      optional pack icon id (e.g. menu/icon/home) that pack viewers see instead of the item; without it the button's id
-#             decides (hub, you and travel entries have built-in icons). Entries with no icon keep the item for everyone.
+# model:      no longer used (resource pack v1 was removed); every button shows its vanilla icon item.
 # One button per action: a second button that does the same thing is skipped (with a warning).
 hub:
   you:       {slot: 4,  action: you,      icon: player_head}
@@ -59,7 +58,7 @@ you:
   quests:       {slot: 16, icon: writable_book,     command: "quests",       service: QuestService}
   collection:   {slot: 24, icon: bookshelf,         command: "collection",   service: CollectionLog}
   # Card C1 (owner, wave 1b): your credits, bought and earned (/credit bal). Same icon as credits everywhere (emerald).
-  credits:      {slot: 20, icon: emerald,           command: "credit bal",   service: EconomyService, model: "currency/credits"}
+  credits:      {slot: 20, icon: emerald,           command: "credit bal",   service: EconomyService}
 
 # /menu → Travel (GUI_DESIGN §7.3; replaces the UX3 warps menu). 3 rows, slots 10-16. One click teleports with the /spawn
 # warmup (reason: dungeon = the /dungeon warmup); locked places explain why (e.g. Depths tiers). A place that does not

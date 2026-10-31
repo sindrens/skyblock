@@ -1,6 +1,5 @@
 package net.skybornmc.skyblock.economy;
 
-import net.skybornmc.skyblock.common.menu.MenuIcons;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.command.Durations;
@@ -182,8 +181,8 @@ final class TransactionsMenu extends Menu {
             lore.addAll(service.lines(viewer, EconomyModule.ID, "menu.entry.reference", p));
         }
         lore.addAll(service.lines(viewer, EconomyModule.ID, "menu.entry.footer", p));
-        return MenuIcons.tag(service.item(module.config.icon(e.currency(), Material.GOLD_NUGGET), service.text(viewer, EconomyModule.ID, key + ".name", p),
-                lore), MenuIcons.currencyOf(e.currency().key()));
+        return service.item(module.config.icon(e.currency(), Material.GOLD_NUGGET), service.text(viewer, EconomyModule.ID, key + ".name", p),
+                lore);
     }
 
     /** {@code reasons.<key>} from the messages file; unknown reasons show with spaces instead of underscores. */
@@ -217,7 +216,7 @@ final class TransactionsMenu extends Menu {
         options.add(new PickListMenu.Option<>(null, new ItemStack(Material.SUNFLOWER), service.text(viewer, EconomyModule.ID, "menu.any"),
                 List.of(), filter.currency() == null));
         for (Currency c : Currency.listedValues()) { // "Credits" filters both halves (EconomyStore#historyNow)
-            options.add(new PickListMenu.Option<>(c, MenuIcons.tag(new ItemStack(module.config.icon(c, Material.GOLD_NUGGET)), MenuIcons.currencyOf(c.key())), module.currencyName(viewer, c),
+            options.add(new PickListMenu.Option<>(c, new ItemStack(module.config.icon(c, Material.GOLD_NUGGET)), module.currencyName(viewer, c),
                     List.of(), c == filter.currency()));
         }
         pick("menu.filter-currency.crumb", options, c -> filter = filter.withCurrency(c));

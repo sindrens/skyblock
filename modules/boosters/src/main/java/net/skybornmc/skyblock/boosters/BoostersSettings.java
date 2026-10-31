@@ -108,8 +108,8 @@ public final class BoostersSettings extends ModuleConfig {
 
     // ------------------------------------------------------------------ items
 
-    @Setting(path = "items.materials", desc = "Vanilla item of each personal booster type ('type:material'; the resource pack "
-            + "retextures them later). Pick items that do nothing on right-click.", restart = true)
+    @Setting(path = "items.materials", desc = "Vanilla item of each personal booster type ('type:material'). "
+            + "Pick items that do nothing on right-click.", restart = true)
     public List<String> materials = List.of("sell:gold_ingot", "skill_xp:lapis_lazuli", "tool_xp:echo_shard", "crystals:prismarine_crystals");
 
     @Setting(path = "items.global-material", desc = "Vanilla item of global boosters (all types).", restart = true)

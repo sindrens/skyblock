@@ -1,7 +1,6 @@
 package net.skybornmc.skyblock.menus;
 
 import net.kyori.adventure.text.Component;
-import net.skybornmc.skyblock.common.menu.MenuIcons;
 import net.skybornmc.skyblock.common.rewards.RewardsService;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
@@ -108,8 +107,8 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
         for (Map.Entry<String, String> group : nav.hub.groups().entrySet()) {
             int mark = ButtonLayout.markSlot(visibleByGroup.getOrDefault(group.getKey(), List.of()));
             if (mark >= 0) {
-                set(mark, Nav.icon(nav.item(Nav.material(group.getValue(), Material.GRAY_STAINED_GLASS_PANE), nav.textOr(viewer, "hub.groups." + group.getKey() + ".name", "hub.fallback-name",
-                        group.getKey()), nav.lines(viewer, "hub.groups." + group.getKey() + ".lore")), MenuIcons.BLANK));
+                set(mark, nav.item(Nav.material(group.getValue(), Material.GRAY_STAINED_GLASS_PANE), nav.textOr(viewer, "hub.groups." + group.getKey() + ".name", "hub.fallback-name",
+                        group.getKey()), nav.lines(viewer, "hub.groups." + group.getKey() + ".lore")));
             }
         }
     }
@@ -127,7 +126,7 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
         }
         if (!button.allowed(viewer)) {
             lore.addAll(nav.lines(viewer, "hub.locked"));
-            set(button.slot(), Nav.icon(nav.item(Nav.material(button.icon(), Material.BOOK), name, lore), button.model()));
+            set(button.slot(), nav.item(Nav.material(button.icon(), Material.BOOK), name, lore));
             return;
         }
         if (ButtonLayout.REWARDS.equals(button.action())) {
@@ -135,7 +134,7 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
             return;
         }
         lore.addAll(nav.lines(viewer, "hub.action"));
-        set(button.slot(), Nav.icon(nav.item(Nav.material(button.icon(), Material.BOOK), name, lore), button.model()), click -> open(click.player(), button));
+        set(button.slot(), nav.item(Nav.material(button.icon(), Material.BOOK), name, lore), click -> open(click.player(), button));
     }
 
     private void open(Player player, ButtonLayout.Button button) {
@@ -166,7 +165,7 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
         ItemStack item;
         if (ready.isEmpty()) {
             lore.addAll(nav.lines(viewer, "hub.rewards.none"));
-            item = Nav.icon(nav.item(Nav.material(button.icon(), Material.BOOK), nav.textOr(viewer, "hub.buttons." + button.id() + ".name", "hub.fallback-name", button.id()), lore), button.model());
+            item = nav.item(Nav.material(button.icon(), Material.BOOK), nav.textOr(viewer, "hub.buttons." + button.id() + ".name", "hub.fallback-name", button.id()), lore);
         } else {
             List<String> names = new ArrayList<>();
             for (String id : ready) {
@@ -174,9 +173,8 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
                 names.add(raw == null ? id : raw);
             }
             lore.addAll(nav.lines(viewer, "hub.rewards.ready", Msg.number("count", ready.size()), Msg.p("list", String.join(", ", names))));
-            // The ready state lives on the item (RESOURCE_PACK_GUI §2): open-chest icon, count and glint.
-            item = Nav.icon(nav.item(Nav.material(button.icon(), Material.BOOK), nav.text(viewer, "hub.rewards.ready-name", Msg.number("count", ready.size())), lore),
-                    MenuIcons.feature("rewards_ready"));
+            // The ready state lives on the item: count and glint.
+            item = nav.item(Nav.material(button.icon(), Material.BOOK), nav.text(viewer, "hub.rewards.ready-name", Msg.number("count", ready.size())), lore);
             item.setAmount(Math.max(1, Math.min(64, ready.size())));
             item.editMeta(meta -> meta.setEnchantmentGlintOverride(true)); // gold glow: only for real rewards
         }

@@ -369,7 +369,7 @@ public final class ChatModule implements SkyblockModule, Listener {
     public void onChatCheck(AsyncChatEvent event) {
         Player player = event.getPlayer();
         UUID id = player.getUniqueId();
-        // Must-have 5: private-use characters are the pack's glyphs (badges, icons); players can't type them.
+        // Must-have 5: players can't type private-use characters (they could fake icons; Bedrock shows controller glyphs).
         String raw = PrivateUse.strip(PlainTextComponentSerializer.plainText().serialize(event.message()));
 
         if (staffChatToggled.contains(id) && player.hasPermission(PERM_STAFF_CHAT)) {

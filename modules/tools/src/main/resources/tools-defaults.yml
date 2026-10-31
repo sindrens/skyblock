@@ -97,8 +97,8 @@ blueprints:
   windcutter_axe: {kind: axe,     tier: 3, ability: swift,      rarity: rare, drop: {wing: forest, min-tier: 2, chance: 0.0000667}, money: 50000,  materials: {depths_birch_log: 320}}
   vampire_blade:  {kind: sword,   tier: 5, ability: lifesteal,  rarity: epic, drop: {wing: combat, min-tier: 4, chance: 0.000667},  money: 250000, materials: {depths_slime_ball: 160}}
 
-# Skins: cosmetic looks (collection kept across seasons). kinds: tool types it fits. model: Java item model
-# (resource pack, e.g. phoenix:skin/frostbite_pickaxe; {kind} is replaced with the tool type); empty = name only.
+# Skins: cosmetic looks (collection kept across seasons). kinds: tool types it fits. model: Java item model key
+# (e.g. minecraft:golden_pickaxe; {kind} is replaced with the tool type); empty = name only.
 skins:
   phoenix_flame: {kinds: [pickaxe, axe, sword, hoe, rod], rarity: legendary, model: ""}
   frostbite:     {kinds: [pickaxe, axe, sword, hoe, rod], rarity: epic,      model: ""}

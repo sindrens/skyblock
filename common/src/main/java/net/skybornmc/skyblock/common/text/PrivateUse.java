@@ -1,8 +1,8 @@
 package net.skybornmc.skyblock.common.text;
 
 /**
- * Player text must never carry private-use characters (U+E000–U+F8FF): the pack draws rank badges, currency glyphs,
- * menu backgrounds and spaces with them, so a typed one could fake a badge or break a layout (must-have 5).
+ * Player text must never carry private-use characters (U+E000–U+F8FF): resource packs draw icons and glyphs with them
+ * and Bedrock shows them as controller icons, so a typed one could fake an icon or break a layout (must-have 5).
  */
 public final class PrivateUse {
 

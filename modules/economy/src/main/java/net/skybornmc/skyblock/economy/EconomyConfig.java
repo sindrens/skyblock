@@ -229,8 +229,8 @@ public final class EconomyConfig extends ModuleConfig {
             "playtime_reward", "tutorial_reward", "tutorial_optional", "depths_drop", "pillar_milestone", "island_task",
             "quest_reward", "pass_reward");
 
-    @Setting(path = "notes.item.material", desc = "Material of the money note item (a resource-pack model can replace the "
-            + "look later).", restart = true)
+    @Setting(path = "notes.item.material", desc = "Material of the money note item (a vanilla item; "
+            + "pick one that does nothing on right-click).", restart = true)
     public String noteMaterial = "PAPER";
 
     @Setting(path = "notes.item.rarity", desc = "Rarity shown in the note's footer: common, uncommon, rare, epic, legendary, "
