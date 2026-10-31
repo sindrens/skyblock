@@ -32,7 +32,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | M5-7 ✅ | Phase 5 M5.7 leaderboards (solo, team, weekly, per pillar; Hall of Heroes boards) | M5-5 | progression, npcs boards via service | ✅ |
 | M10-5 ✅ | Phase 10 M10.5 voting (/vote menu, Votifier receiver v1+v2, vote streak, vote party, offline queue, Bedrock names) | M10-6 | rewards | ✅ |
 | M10-7 ✅ | Phase 10 M10.7 quests (/quests, daily/weekly/island missions, Quest Master NPC) | M10-6 | modules/quests | ✅ |
-| M10-10 🔄 | Phase 10 M10.10 collection log (/collection) | M10-7 | modules/collection | 🔄 |
+| M10-10 ✅ | Phase 10 M10.10 collection log (/collection) | M10-7 | modules/collection | ✅ |
 | PERF10 🔄 | Startup after update114: crates:yard-start 32.6 ms (M10-3 pedestal setup), npcs:apply 11.8 ms (still, after PERF9), boosters:tick 9.2 ms; all one-time at start | M10-10 | crates, npcs, boosters | ⬜ |
 | M10-8 🔄 | Phase 10 M10.8 battle pass (/pass, free track now, premium cosmetic-only hook for the store; R3-44 no premium reroll) | M10-7 | modules/pass | 🔄 |
 | ECON-R3 ✅ | R3-5b crystals hard non-transferable + shard notes; R3-6 /eco up to $1T applies + flagged, above waits for owner/admin Allow in the alert; R3-39 /eco not on self or same IP; R3-16/40 notes soft limit 20/min + purge cashed notes after 90 d; R3-41 bank: fee only (free-minutes 0, no interest forfeit); R3-25 AFK-pool minutes don't count for the interest activity rule; R3-38 trade value hints; R3-28 auto 24 h trade block on detected unique-item dupes; F1 money send needs $10k self-earned except to own island members | REV3-FIX | economy, trade, moderation, bank | ⬜ |

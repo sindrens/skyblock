@@ -96,7 +96,10 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
     /** Hub slots: the 28 inner slots of the 6-row menu plus 4 (your head). */
     static final Set<Integer> HUB_SLOTS = hubSlots();
     /** 3-row menus (You, Travel): the middle row, 10-16. */
-    static final Set<Integer> SMALL_SLOTS = Set.of(10, 11, 12, 13, 14, 15, 16, 20, 24);
+    static final Set<Integer> SMALL_SLOTS = Set.of(10, 11, 12, 13, 14, 15, 16);
+
+    /** The You menu: the middle row plus 20 and 24 on the bottom row (Back 18 / Close 22 stay free). */
+    static final Set<Integer> YOU_SLOTS = Set.of(10, 11, 12, 13, 14, 15, 16, 20, 24);
 
     /** True if {@code id} is an item (server only: needs the item registry). */
     static boolean isItem(String id) {
@@ -120,7 +123,7 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
     }
 
     static ButtonLayout you(YamlConfiguration yaml, Predicate<String> items, Consumer<String> problem) {
-        return parse(yaml, "you", SMALL_SLOTS, Map.of(), items, problem);
+        return parse(yaml, "you", YOU_SLOTS, Map.of(), items, problem);
     }
 
     static ButtonLayout parse(YamlConfiguration yaml, String sectionName, Set<Integer> slots, Map<String, String> groups,
