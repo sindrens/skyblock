@@ -414,7 +414,8 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
 
     // ================================================================== private messages
 
-    private void sendDm(CommandSender sender, CommandSender target, String text) {
+    private void sendDm(CommandSender sender, CommandSender target, String typed) {
+        String text = net.skybornmc.skyblock.common.pack.PrivateUse.strip(typed); // must-have 5: no pack glyphs from players
         if (target.equals(sender)) {
             throw fail("dm.self");
         }

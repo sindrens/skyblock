@@ -1,0 +1,7 @@
+# LuckPerms grants for the pack module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/pack/src/main/resources/permissions/pack.yml. One console command per line; # = comment.
+
+# Helpers can check why a player has no badges or menu art.
+lp group helper permission set skyblock.pack.status true
+# Admins switch the variant (safe/shine) and resend the pack.
+lp group admin permission set skyblock.pack.reload true

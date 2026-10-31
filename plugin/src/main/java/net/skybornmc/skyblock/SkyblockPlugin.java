@@ -266,6 +266,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         worlds = new WorldsModule(core);
         modules.register(worlds);
         modules.register(new MotdModule(core));
+        // Resource pack (RP1-RP3): sent in the configuration phase; publishes PackService for the menu/badge/sound renderers.
+        modules.register(new net.skybornmc.skyblock.pack.PackModule(core));
         modules.register(new ModerationModule(core));
         // Profiles early: other modules read the active profile key in their own join handlers.
         modules.register(new net.skybornmc.skyblock.profiles.ProfilesModule(core));

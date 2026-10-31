@@ -123,4 +123,9 @@ class IslandChatRulesTest {
         assertTrue(inner.containsAll(colorSlots));
         assertEquals(Set.copyOf(IslandChatRules.COLOR_ROLES), ChatColorsMenu.SLOTS.keySet());
     }
+
+    @Test
+    void limitDropsPrivateUseGlyphs() {
+        assertEquals("hi", IslandChatRules.limit(" h\uE301i\uF801 ", 256));
+    }
 }

@@ -8,6 +8,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.skybornmc.skyblock.common.pack.PrivateUse;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
@@ -126,7 +127,7 @@ public final class ChatModule implements SkyblockModule, Listener {
         registerCommands();
         // The same content filter for text written outside the chat (island notes, owner N8).
         core.services().register(ID, net.skybornmc.skyblock.common.text.TextFilter.class, (author, text) -> {
-            ChatFilter.Result result = ChatFilter.check(text, config.rules(), author != null && author.hasPermission(PERM_LINKS));
+            ChatFilter.Result result = ChatFilter.check(PrivateUse.strip(text), config.rules(), author != null && author.hasPermission(PERM_LINKS));
             return new net.skybornmc.skyblock.common.text.TextFilter.Result(result.text(), result.blocked());
         });
         // M2.5: one-shot messages to a channel (island chat) with the same checks as chat.
@@ -319,7 +320,8 @@ public final class ChatModule implements SkyblockModule, Listener {
     public void onChatCheck(AsyncChatEvent event) {
         Player player = event.getPlayer();
         UUID id = player.getUniqueId();
-        String raw = PlainTextComponentSerializer.plainText().serialize(event.message());
+        // Must-have 5: private-use characters are the pack's glyphs (badges, icons); players can't type them.
+        String raw = PrivateUse.strip(PlainTextComponentSerializer.plainText().serialize(event.message()));
 
         if (staffChatToggled.contains(id) && player.hasPermission(PERM_STAFF_CHAT)) {
             event.setCancelled(true);
@@ -414,7 +416,7 @@ public final class ChatModule implements SkyblockModule, Listener {
 
     /** {@link ChatChannels}: a one-shot channel message (e.g. {@code /is chat <text>}), main thread. */
     private boolean sendToChannel(Player player, ChatChannel channel, String text) {
-        String raw = text == null ? "" : text.strip();
+        String raw = text == null ? "" : PrivateUse.strip(text).strip();
         if (raw.isEmpty()) {
             return false;
         }

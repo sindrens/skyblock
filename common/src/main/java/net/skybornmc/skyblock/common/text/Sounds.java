@@ -30,10 +30,24 @@ public final class Sounds {
     /** Which group a played sound belongs to. */
     public enum Group { NORMAL, UI, EVENT }
 
+    /** sounds.yml section whose entries replace the same-named sound for viewers with the resource pack. */
+    public static final String PACK_PREFIX = "pack-sound.";
+
     private static final Predicate<Player> EVERYONE = p -> true;
 
     private final Logger log;
+    /**
+     * Built-in pack sounds (RP6) used when sounds.yml has no {@code pack-sound.*} entries yet (a live file written before
+     * the pack existed keeps working): the pack's own short, soft UI sounds replace the vanilla ones for pack viewers only.
+     */
+    private static final Map<String, Sound> DEFAULT_PACK = Map.of(
+            "click", Sound.sound(Key.key("phoenix:ui.click"), Sound.Source.MASTER, 0.4f, 1f),
+            "success", Sound.sound(Key.key("phoenix:ui.success"), Sound.Source.MASTER, 0.6f, 1f),
+            "error", Sound.sound(Key.key("phoenix:ui.error"), Sound.Source.MASTER, 0.8f, 1f));
+
     private volatile Map<String, Sound> sounds = Map.of();
+    private volatile Map<String, Sound> packSounds = DEFAULT_PACK;
+    private volatile Predicate<Player> hasPack = p -> false;
     private final Set<String> reportedMissing = ConcurrentHashMap.newKeySet();
     private volatile Set<String> uiKeys = Set.of();
     private volatile Predicate<Player> wantsUi = EVERYONE;
@@ -53,6 +67,7 @@ public final class Sounds {
             return problems;
         }
         Map<String, Sound> map = new LinkedHashMap<>();
+        Map<String, Sound> pack = new LinkedHashMap<>(DEFAULT_PACK);
         ConfigurationSection root = yaml;
         for (String key : root.getKeys(true)) {
             if (root.isConfigurationSection(key)) {
@@ -66,13 +81,19 @@ public final class Sounds {
                 if (volume < 0 || volume > 10 || pitch < 0.5f || pitch > 2f) {
                     throw new NumberFormatException("volume 0-10, pitch 0.5-2");
                 }
-                map.put(key, Sound.sound(id, Sound.Source.MASTER, volume, pitch));
+                Sound parsed = Sound.sound(id, Sound.Source.MASTER, volume, pitch);
+                if (key.startsWith(PACK_PREFIX)) {
+                    pack.put(key.substring(PACK_PREFIX.length()), parsed); // pack-sound.<key>: only for pack viewers
+                } else {
+                    map.put(key, parsed);
+                }
             } catch (InvalidKeyException | NumberFormatException e) {
                 problems.add("sounds.yml → " + key + ": '" + root.getString(key) + "' must be 'minecraft:sound.id volume pitch' ("
                         + e.getMessage() + ")");
             }
         }
         sounds = Map.copyOf(map);
+        packSounds = Map.copyOf(pack);
         reportedMissing.clear();
         return problems;
     }
@@ -99,6 +120,25 @@ public final class Sounds {
     public void setUiFilter(Set<String> keys, Predicate<Player> wants) {
         this.uiKeys = keys == null ? Set.of() : Set.copyOf(keys);
         this.wantsUi = wants == null ? EVERYONE : wants;
+    }
+
+    /** Who has the resource pack loaded (the pack module installs it); {@code null} = nobody. */
+    public void setPackViewers(Predicate<Player> hasPack) {
+        this.hasPack = hasPack == null ? p -> false : hasPack;
+    }
+
+    /**
+     * The sound to play: the {@code pack-sound.<key>} entry for a viewer with the pack, otherwise the normal one. Pure,
+     * for tests; a missing pack entry falls back to the normal sound, a missing normal sound stays missing.
+     */
+    public static Sound pick(Map<String, Sound> normal, Map<String, Sound> pack, String key, boolean viewerHasPack) {
+        if (viewerHasPack) {
+            Sound s = pack.get(key);
+            if (s != null) {
+                return s;
+            }
+        }
+        return normal.get(key);
     }
 
     /** Who hears event sounds. {@code null} resets to "everyone". */
@@ -135,7 +175,13 @@ public final class Sounds {
                 log.fine("Sound filter failed: " + e.getMessage()); // a broken filter never silences the server
             }
         }
-        Sound sound = sounds.get(key);
+        boolean packViewer = false;
+        try {
+            packViewer = hasPack.test(player);
+        } catch (RuntimeException e) {
+            log.fine("Pack viewer check failed: " + e.getMessage());
+        }
+        Sound sound = pick(sounds, packSounds, key, packViewer);
         if (sound == null) {
             if (reportedMissing.add(key)) {
                 log.warning("Missing sound '" + key + "' in sounds.yml");

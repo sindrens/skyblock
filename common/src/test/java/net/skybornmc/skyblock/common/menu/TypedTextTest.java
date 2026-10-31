@@ -44,4 +44,11 @@ class TypedTextTest {
         assertEquals("[Staff] <name>", TypedText.clean("&c[Staff] §e<name>", 40).text(), "player texts still lose them");
         assertEquals(TypedText.Check.EMPTY, TypedText.clean("   ", 10, true).check());
     }
+
+    @Test
+    void privateUseGlyphsAreStripped() {
+        TypedText.Result r = TypedText.clean("Hi\uE301 there\uF801", 20);
+        org.junit.jupiter.api.Assertions.assertEquals("Hi there", r.text());
+        org.junit.jupiter.api.Assertions.assertEquals(TypedText.Check.EMPTY, TypedText.clean("\uE000\uE001", 20).check());
+    }
 }

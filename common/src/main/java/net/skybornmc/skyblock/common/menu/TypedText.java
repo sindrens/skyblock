@@ -34,7 +34,7 @@ public final class TypedText {
      * {@link #clean(String, int)}.
      */
     public static Result clean(String raw, int maxLength, boolean keepCodes) {
-        String input = raw == null ? "" : raw;
+        String input = raw == null ? "" : net.skybornmc.skyblock.common.pack.PrivateUse.strip(raw); // pack glyphs can't be typed
         String text = keepCodes ? input.replace('§', '&') : CODES.matcher(input).replaceAll("").strip();
         if (text.isBlank()) {
             return new Result(text, Check.EMPTY);

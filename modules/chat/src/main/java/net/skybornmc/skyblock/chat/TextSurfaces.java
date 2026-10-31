@@ -5,6 +5,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
+import net.skybornmc.skyblock.common.pack.PrivateUse;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -40,10 +41,20 @@ final class TextSurfaces implements Listener {
         this.config = config;
     }
 
-    /** Pure: the filtered lines, or {@code null} when one of them is blocked. */
-    static List<String> filterLines(List<String> lines, ChatFilter.Rules rules, boolean linkBypass) {
+    /** Pure: the lines without private-use characters (pack glyphs: nobody can fake a badge on a sign, book or item name). */
+    static List<String> stripLines(List<String> lines) {
         List<String> out = new ArrayList<>(lines.size());
         for (String line : lines) {
+            out.add(PrivateUse.strip(line));
+        }
+        return out;
+    }
+
+    /** Pure: the filtered lines (private-use characters removed first), or {@code null} when one of them is blocked. */
+    static List<String> filterLines(List<String> lines, ChatFilter.Rules rules, boolean linkBypass) {
+        List<String> out = new ArrayList<>(lines.size());
+        for (String raw : lines) {
+            String line = PrivateUse.strip(raw);
             if (line == null || line.isBlank()) {
                 out.add(line);
                 continue;
@@ -81,14 +92,11 @@ final class TextSurfaces implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onSign(SignChangeEvent event) {
         Player player = event.getPlayer();
-        if (exempt(player)) {
-            return;
-        }
         List<String> lines = new ArrayList<>();
         for (Component line : event.lines()) {
             lines.add(line == null ? "" : PLAIN.serialize(line));
         }
-        List<String> filtered = filterLines(lines, config.get().rules(), links(player));
+        List<String> filtered = exempt(player) ? stripLines(lines) : filterLines(lines, config.get().rules(), links(player));
         if (filtered == null) {
             event.setCancelled(true);
             refused(player, "sign", String.join(" | ", lines));
@@ -104,9 +112,6 @@ final class TextSurfaces implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBook(PlayerEditBookEvent event) {
         Player player = event.getPlayer();
-        if (exempt(player)) {
-            return;
-        }
         BookMeta meta = event.getNewBookMeta();
         List<String> pages = new ArrayList<>();
         for (Component page : meta.pages()) {
@@ -117,7 +122,7 @@ final class TextSurfaces implements Listener {
         if (title != null) {
             all.add(title);
         }
-        List<String> filtered = filterLines(all, config.get().rules(), links(player));
+        List<String> filtered = exempt(player) ? stripLines(all) : filterLines(all, config.get().rules(), links(player));
         if (filtered == null) {
             event.setCancelled(true);
             refused(player, "book", title == null ? "" : title);
@@ -139,7 +144,7 @@ final class TextSurfaces implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onAnvil(PrepareAnvilEvent event) {
-        if (!(event.getView().getPlayer() instanceof Player player) || exempt(player)) {
+        if (!(event.getView().getPlayer() instanceof Player player)) {
             return;
         }
         String rename = event.getView().getRenameText();
@@ -147,7 +152,7 @@ final class TextSurfaces implements Listener {
         if (rename == null || rename.isBlank() || result == null || result.isEmpty()) {
             return;
         }
-        List<String> filtered = filterLines(List.of(rename), config.get().rules(), links(player));
+        List<String> filtered = exempt(player) ? stripLines(List.of(rename)) : filterLines(List.of(rename), config.get().rules(), links(player));
         if (filtered == null) {
             event.setResult(null);
             return;

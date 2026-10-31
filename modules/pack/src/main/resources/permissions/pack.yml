@@ -1,0 +1,9 @@
+# Permissions of the pack module. Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/pack.txt. Commands: docs/commands/pack.md.
+skyblock.pack.reload:
+  description: Reload pack.yml and resend the resource pack (/pack reload)
+  default: op
+skyblock.pack.status:
+  description: See a player's resource pack status (/pack status)
+  default: op

@@ -60,4 +60,10 @@ class StarterWordsTest {
         assertNull(TextSurfaces.filterLines(java.util.List.of("join myserver.com"), rules, false), "links too");
         assertEquals("BIG **** sign", TextSurfaces.starOnly("BIG fuck sign", "big **** sign"));
     }
+
+    @Test
+    void surfacesDropPrivateUseGlyphs() {
+        assertEquals(java.util.List.of("SHOP", "ok"), TextSurfaces.filterLines(java.util.List.of("S\uE301HOP", "o\uF801k"), rules, false));
+        assertEquals(java.util.Arrays.asList("a", null, ""), TextSurfaces.stripLines(java.util.Arrays.asList("\uE000a", null, "\uE001")));
+    }
 }
