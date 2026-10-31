@@ -71,11 +71,34 @@ public final class NpcsConfig extends ModuleConfig {
             "auction: command ah",
             "dungeon: command dungeon",
             "foreman: help dungeon",
+            "crates: command crates",
+            "black_market: help",
+            "quests: help",
+            "daily: command daily",
+            "vote: help");
+
+    /** {@code npcs.actions} up to v2: crates and daily were help-only ("opens soon"). */
+    static final List<String> ACTIONS_V2 = List.of(
+            "guide: help menu",
+            "info: help help",
+            "forge: command forge",
+            "enchanter: command enchanter",
+            "wardrobe: command wardrobe",
+            "bank: command bank",
+            "shop: command shop",
+            "sell: command sell",
+            "auction: command ah",
+            "dungeon: command dungeon",
+            "foreman: help dungeon",
             "crates: help",
             "black_market: help",
             "quests: help",
             "daily: help",
             "vote: help");
+
+    @Setting(path = "npcs.help-once", desc = "A plain click on an NPC with an action runs it and, the first time each session, also "
+            + "prints the NPC's short help in chat (owner U5: one click talks; no sneak-click needed). Off: help only on sneak-click.")
+    public boolean helpOnce = true;
 
     @Setting(path = "npcs.skins", desc = "NPC id or role -> Minecraft name whose skin the mannequin wears, as 'id: name' lines. Empty = default skins (no skin lookups).")
     public List<String> skins = List.of();
@@ -181,13 +204,17 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
-    /** v2 (PHASE-5 M5.2): the island top boards show island levels; an owner-edited list is kept. */
+    /**
+     * v2 (PHASE-5 M5.2): the island top boards show island levels. v3 (GUI-BUGS): the Crate Keeper and Daily Rewards NPCs
+     * open /crates and /daily (they exist now). An owner-edited list is kept.
+     */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V1, sources())));
+        return java.util.Map.of(2, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V1, sources())),
+                3, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V2, new NpcsConfig().roleActions)));
     }
 
     private static List<String> sources() {

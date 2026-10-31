@@ -1,13 +1,22 @@
 # Join tutorial (docs/plans/TUTORIAL.md). MiniMessage + style tags (style.yml). Bedrock-safe symbols only.
 # Titles max ~20 characters, subtitles max ~36 (Bedrock). Reload: /skyblock reload tutorial
 
+# U2 one welcome: for a new player this title and this chat block are the whole welcome (the join flow adds nothing).
+# <player> = the player's name. One next step only.
 start:
   title:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
-    subtitle: "<c:text>Your island is waiting"
+    subtitle: "<c:text>Welcome, <c:value><player></c:value>"
     fade-in: 20
     stay: 60
-  chat: "<prefix><c:text>Welcome! Follow the flames to the <c:value>Island portal</c:value>. <c:muted>(/tutorial for help)"
+  chat:
+    - ""
+    - "  <grad:phoenix><bold>Welcome to Phoenix Skyblock!</bold></grad>"
+    - "  <c:text>Your island in the sky is waiting."
+    - ""
+    - "  <c:ember><sym:arrow></c:ember> <c:text>Next: follow the flames to the <c:value>Island portal</c:value><c:text>."
+    - "  <c:muted>Stuck? /tutorial</c:muted>"
+    - ""
   staff-offer: "<prefix><c:text>Staff have no tutorial locks. Test the tutorial any time: <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click>"
 
 resume:
@@ -68,13 +77,13 @@ steps:
     lore: ["<c:text>Till dirt with your hoe, then", "<c:text>plant the seeds on your island."]
   menu:
     name: "The menu"
-    objective: "Open /menu, click Island"
+    objective: "Open the menu"
     hint: "<c:text>Click the <c:value>Nether Star</c:value> in your hotbar"
     title:
       title: "<c:brand>The menu"
       subtitle: "<c:text>Click the Nether Star"
     done: "<c:success><sym:check></c:success> <c:text>The Depths unlocked. Open <c:value>/menu</c:value> <sym:arrow> The Depths"
-    lore: ["<c:text>Everything is in <c:value>/menu</c:value>.", "<c:text>Open it and click <c:value>Island</c:value>."]
+    lore: ["<c:text>Everything is in <c:value>/menu</c:value>.", "<c:text>Open it: The Depths is next."]
   depths:
     name: "To the Depths"
     objective: "Go to Mine Tier 1"
@@ -108,8 +117,8 @@ steps:
     name: "Help"
     objective: "Talk to the Guide"
     target: "Depths Guide"
-    hint: "<c:text>Click any NPC for help"
-    lore: ["<c:text>Click the Depths Guide.", "<c:text>Every NPC helps you."]
+    hint: "<c:text>Click the Depths Guide once"
+    lore: ["<c:text>Click the Depths Guide once.", "<c:text>Every NPC explains itself."]
   bank:
     name: "Bank"
     objective: "Deposit money in /bank"
@@ -413,7 +422,7 @@ pip:
     portal: "Your island is past the gate. Follow me!"
     arrive: "Look! This island is all yours."
     chest: "Everything you need to start is in here."
-    crop: "Right-click dirt with your hoe, then plant."
+    crop: "Use your hoe on dirt, then plant."
     menu: "The star in your hotbar opens everything."
     depths: "Open the menu, then The Depths."
     mine: "Break the ore. It grows back for you only."

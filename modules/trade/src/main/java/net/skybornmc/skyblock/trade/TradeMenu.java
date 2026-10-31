@@ -25,8 +25,11 @@ import java.util.logging.Level;
  *  B  y  y  y  |  t  t  t  B          their items: 14-16, 23-25, 32-34, 41-43
  *  B  y  y  y  |  t  t  t  B          divider: 13, 22, 31, 40
  *  B  y  y  y  |  t  t  t  B
- *  [cancel] [your money] [confirm] ?  X  H [their ready] [their money] R
+ *  [back] [your money] [confirm] ?  X  [main menu] [their ready] [their money] [cancel]
  * </pre>
+ * The framework's bottom bar stays as it is (45 Back, 48 ?, 49 Close, 50 Main menu): none of them cancel the trade, it
+ * stays open while the window is closed ({@code session.away-seconds}, {@code /trade} goes back). Only Cancel trade (53,
+ * in the corner, away from Confirm) ends it.
  */
 final class TradeMenu extends Menu {
 
@@ -36,7 +39,7 @@ final class TradeMenu extends Menu {
     static final int SLOT_ME = 2;
     static final int SLOT_STATUS = 4;
     static final int SLOT_THEM = 6;
-    static final int SLOT_CANCEL = 45;
+    static final int SLOT_CANCEL = 53;
     static final int SLOT_MY_MONEY = 46;
     static final int SLOT_MY_READY = 47;
     static final int SLOT_THEIR_READY = 51;

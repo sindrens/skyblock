@@ -68,4 +68,26 @@ class RoleRulesTest {
         assertEquals(RoleRules.Decision.RUN, RoleRules.decide(run, true, false), "sneak-for-help off");
         assertEquals(RoleRules.Decision.HELP, RoleRules.decide(help, false, true));
     }
+
+    @Test
+    void onePlainClickTalksAndExplainsOncePerSession() {
+        RoleRules.Action run = new RoleRules.Action("dungeon", RoleRules.Type.COMMAND, "dungeon");
+        RoleRules.Action help = new RoleRules.Action("quests", RoleRules.Type.HELP, "");
+        assertEquals(RoleRules.Decision.RUN_WITH_HELP, RoleRules.decide(run, false, true, false), "first click: action + help");
+        assertEquals(RoleRules.Decision.RUN, RoleRules.decide(run, false, true, true), "help already seen: action only");
+        assertEquals(RoleRules.Decision.HELP, RoleRules.decide(run, true, true, true), "sneak-click still shows the help");
+        assertEquals(RoleRules.Decision.HELP, RoleRules.decide(help, false, true, false));
+    }
+
+    @Test
+    void cratesAndDailyNpcsOpenTheirScreensNow() {
+        RoleRules rules = RoleRules.parse(new NpcsConfig().npcRoles, new NpcsConfig().roleActions);
+        assertEquals("crates", rules.actionOf("crates").command());
+        assertEquals(RoleRules.Type.COMMAND, rules.actionOf("crates").type());
+        assertEquals("daily", rules.actionOf("daily").command());
+        assertEquals(RoleRules.Type.HELP, rules.actionOf("quests").type(), "quests are not built yet");
+        var change = new NpcsConfig().valueChanges().get(3).get("npcs.actions");
+        assertTrue(change.matches(new java.util.ArrayList<>(NpcsConfig.ACTIONS_V2)), "an untouched live list is upgraded");
+        assertEquals(new NpcsConfig().roleActions, change.to());
+    }
 }

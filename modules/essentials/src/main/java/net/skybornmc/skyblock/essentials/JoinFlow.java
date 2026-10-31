@@ -99,10 +99,21 @@ final class JoinFlow implements Listener {
             if (!player.isOnline()) {
                 return;
             }
-            msg.title(player, "join.first-title", Msg.p("player", player.getName()));
             core.sounds().play(player, "unlock");
-            msg.send(player, "join.first-welcome", Msg.p("player", player.getName()));
+            // U2 one welcome: the tutorial's title + chat block are the welcome when it runs; only otherwise ours.
+            boolean tutorial = core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
+                    .map(t -> t.welcomes(player)).orElse(false);
+            if (!tutorial) {
+                msg.title(player, "join.first-title", Msg.p("player", player.getName()));
+                msg.send(player, "join.first-welcome", Msg.p("player", player.getName()));
+            }
         }, 20L);
+        // The privacy line comes a little later, not on the first screen (owner answers 319/532 keep it on the first join).
+        Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
+            if (player.isOnline()) {
+                msg.send(player, "join.privacy");
+            }
+        }, Math.max(1L, config.privacyDelaySeconds * 20L));
         if (!config.firstJoinBroadcast) {
             return;
         }

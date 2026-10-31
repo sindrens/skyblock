@@ -52,8 +52,7 @@ final class TransactionListMenu extends WatchMenu {
     }
 
     @Override
-    protected void build() {
-        frame();
+    protected void content() {
         if (rows == null) {
             showLoading();
             if (!failed) {
@@ -68,7 +67,7 @@ final class TransactionListMenu extends WatchMenu {
             return;
         }
         if (rows.isEmpty()) {
-            set(PagedMenu.SLOT_EMPTY, service.item(Material.COBWEB, viewer, EconomyModule.ID, "watch.tx.empty"));
+            set(PagedMenu.SLOT_EMPTY, service.emptyItem(viewer, EconomyModule.ID, "watch.tx.empty"));
         }
         long now = System.currentTimeMillis();
         for (int i = 0; i < rows.size() && i < PagedMenu.CONTENT_SLOTS.length; i++) {

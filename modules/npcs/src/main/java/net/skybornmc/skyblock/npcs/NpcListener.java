@@ -15,11 +15,18 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * Clicks on NPCs and holograms, and protection: our entities never take damage, burn, trade or get targeted.
  * Right-click (and, with {@code npcs.left-click-acts}, a hit, because Bedrock touch players tap = hit) runs the NPC's
- * action or shows its help; sneak-click shows the help of action NPCs. Holograms with a click box show their help.
+ * action or shows its help; the first plain click on an action NPC each session also prints its short help (owner U5:
+ * one click talks, {@code npcs.help-once}); sneak-click shows the help of action NPCs. Holograms with a click box show
+ * their help.
  * One click per player per {@code npcs.click-cooldown-ms} (spam guard). Paper 26.x fires only
  * {@code PlayerInteractAtEntityEvent} for a right-click (see {@link ClickGate}), so every main-hand interact acts.
  */
@@ -27,6 +34,8 @@ final class NpcListener implements Listener {
 
     private final NpcsModule module;
     private final ClickGate gate = new ClickGate();
+    /** Roles whose help each player already saw this session (cleared on quit). */
+    private final Map<UUID, Set<String>> helpSeen = new ConcurrentHashMap<>();
 
     NpcListener(NpcsModule module) {
         this.module = module;
@@ -81,6 +90,7 @@ final class NpcListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         gate.forget(event.getPlayer().getUniqueId());
+        helpSeen.remove(event.getPlayer().getUniqueId());
     }
 
     private Placed find(Entity entity) {
@@ -98,17 +108,35 @@ final class NpcListener implements Listener {
         }
         Spots.Npc npc = placed.npc;
         RoleRules.Action action = module.roles().actionOf(npc.role());
-        RoleRules.Decision decision = RoleRules.decide(action, player.isSneaking(), module.config().sneakForHelp);
-        NpcClickEvent call = new NpcClickEvent(player, npc.id(), npc.role(), decision == RoleRules.Decision.HELP);
+        Set<String> seen = helpSeen.computeIfAbsent(player.getUniqueId(), k -> ConcurrentHashMap.newKeySet());
+        boolean askedHelp = player.isSneaking() && module.config().sneakForHelp;
+        boolean firstTime = module.config().helpOnce && !seen.contains(npc.role()) && module.help().hasNpcHelp(npc);
+        RoleRules.Decision decision = RoleRules.decide(action, player.isSneaking(), module.config().sneakForHelp, !firstTime);
+        // help = the player asked for the help text (sneak-click), as NpcClickEvent documents: a plain click on a help-only
+        // role is still a plain click, so the Guide (/tutorial) and Daily Rewards (/daily) hooks answer it.
+        NpcClickEvent call = new NpcClickEvent(player, npc.id(), npc.role(), askedHelp);
         Bukkit.getPluginManager().callEvent(call);
         if (call.isCancelled()) {
+            // Another module answered the click (it opened its own screen): still explain the NPC once (owner U5).
+            if (firstTime && !askedHelp) {
+                seen.add(npc.role());
+                module.help().printNpc(player, npc);
+            }
             return;
         }
-        if (decision == RoleRules.Decision.RUN) {
-            module.core().sounds().play(player, "click");
-            player.performCommand(action.command());
-        } else {
-            module.help().showNpc(player, npc, action);
+        switch (decision) {
+            case RUN, RUN_WITH_HELP -> {
+                module.core().sounds().play(player, "click");
+                if (decision == RoleRules.Decision.RUN_WITH_HELP) {
+                    seen.add(npc.role());
+                    module.help().printNpc(player, npc);
+                }
+                player.performCommand(action.command());
+            }
+            case HELP -> {
+                seen.add(npc.role());
+                module.help().showNpc(player, npc, action);
+            }
         }
     }
 }

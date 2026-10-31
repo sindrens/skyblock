@@ -211,6 +211,8 @@ join:
     fade-in: 5
     stay: 40
     fade-out: 10
+  # Shown only when the tutorial does not welcome the player (tutorial off, staff): the tutorial's start title and chat are
+  # the one welcome otherwise (owner U2).
   first-welcome:
     - ""
     - "  <grad:phoenix><bold>Welcome to Phoenix Skyblock!</bold></grad>"
@@ -220,9 +222,9 @@ join:
     - "  <c:muted><sym:bullet></c:muted> <click:run_command:'/help'><hover:show_text:'<c:text>Open the help'><c:action>/help</c:action></hover></click> <c:text>how it all works"
     - "  <c:muted><sym:bullet></c:muted> <click:run_command:'/discord'><hover:show_text:'<c:text>Join our Discord'><c:action>/discord</c:action></hover></click> <c:text>news and support"
     - ""
-    # Owner answers 319/532: one line that chat, private messages and commands are logged, with the privacy link.
-    - "  <c:muted>Chat, private messages and commands are logged for 30 days and staff can read them.</c:muted> <click:open_url:'https://skybornmc.net/privacy'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u>Privacy</u></c:sky_ice></hover></click>"
-    - ""
+  # Owner answers 319/532: one line that chat, private messages and commands are logged, with the privacy link. Sent on the
+  # first join after essentials.yml join.privacy-delay-seconds, so it is not on the first screen (UX review §3).
+  privacy: "<prefix><c:muted>Chat, private messages and commands are logged for 30 days and staff can read them.</c:muted> <click:open_url:'https://skybornmc.net/privacy'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u>Privacy</u></c:sky_ice></hover></click>"
 
 menu-item:
   name: "<grad:phoenix><bold>Menu</bold></grad> <c:muted><sym:dot> Right-click"

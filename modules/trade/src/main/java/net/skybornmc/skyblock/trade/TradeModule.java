@@ -1120,6 +1120,18 @@ public final class TradeModule implements SkyblockModule, Listener {
                 cancel(s, "distance", Actor.system("trade"), false);
                 continue;
             }
+            for (Player p : List.of(pa, pb)) {
+                if (watching(p)) {
+                    s.back(p.getUniqueId());
+                } else {
+                    markAway(p, s, now);
+                }
+            }
+            TradeSession.Side away = s.awayTooLong(now, config.awaySeconds * 1000L);
+            if (away != null && s.state() != TradeSession.State.COUNTDOWN) {
+                cancel(s, "closed", Actor.player(away.player, away.name), false);
+                continue;
+            }
             if (now - s.createdAt > config.maxMinutes * 60_000L) {
                 cancel(s, "timeout", Actor.system("trade"), false);
                 continue;
@@ -1175,16 +1187,33 @@ public final class TradeModule implements SkyblockModule, Listener {
         if (s == null) {
             return;
         }
-        // One tick later: a new trade view (money picker, page) or a chat prompt for an amount is not a close.
+        // One tick later: a new trade view (money picker, help opened from the trade) or a chat prompt for an amount is
+        // not a close. A real close keeps the trade open (owner U7): /trade goes back, away-seconds ends it.
         core.scheduler().later("trade:close", 1, () -> {
-            if (sessions.get(p.getUniqueId()) != s || !p.isOnline() || s.state() == TradeSession.State.COMPLETING) {
+            if (sessions.get(p.getUniqueId()) != s || !p.isOnline() || s.ended()) {
                 return;
             }
-            if (isTradeView(core.menus().openMenu(p)) || core.menus().hasPrompt(p)) {
-                return;
+            if (!watching(p)) {
+                markAway(p, s, now());
             }
-            cancel(s, "closed", Actor.player(p), false);
         });
+    }
+
+    /** True while the player has the trade window, a screen opened from it, or an amount prompt open. */
+    private boolean watching(Player p) {
+        return isTradeView(core.menus().openMenu(p)) || core.menus().hasPrompt(p);
+    }
+
+    /** The player closed the trade window: the trade stays open; both are told how to go back and for how long. */
+    private void markAway(Player p, TradeSession s, long now) {
+        if (!s.away(p.getUniqueId(), now) || s.state() == TradeSession.State.COMPLETING) {
+            return;
+        }
+        send(p, "away.you", Msg.p("seconds", config.awaySeconds));
+        Player other = Bukkit.getPlayer(s.other(p.getUniqueId()).player);
+        if (other != null) {
+            send(other, "away.other", Msg.p("player", p.getName()), Msg.p("seconds", config.awaySeconds));
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

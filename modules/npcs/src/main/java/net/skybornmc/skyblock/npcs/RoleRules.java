@@ -26,8 +26,8 @@ final class RoleRules {
         }
     }
 
-    /** What to do for one click. */
-    enum Decision { RUN, HELP }
+    /** What to do for one click: run the action, run it and print the short help once, or show the help. */
+    enum Decision { RUN, RUN_WITH_HELP, HELP }
 
     private static final Pattern ID = Pattern.compile("[a-z0-9_-]+");
     /** Commands: a name and plain arguments, no slash, no colon (namespaced commands) and no control characters. */
@@ -104,8 +104,17 @@ final class RoleRules {
 
     /** Run the command, or show help (help-only roles, or sneak-click when {@code sneakForHelp}). */
     static Decision decide(Action action, boolean sneaking, boolean sneakForHelp) {
+        return decide(action, sneaking, sneakForHelp, true);
+    }
+
+    /**
+     * Owner U5 (one plain click talks): an action NPC runs its command and, when {@code helpSeen} is false (first click on
+     * this role this session), also prints its short help. Help-only roles and sneak-click (with {@code sneakForHelp})
+     * show the help. Pure, unit-tested.
+     */
+    static Decision decide(Action action, boolean sneaking, boolean sneakForHelp, boolean helpSeen) {
         if (action.type() == Type.COMMAND && !(sneaking && sneakForHelp)) {
-            return Decision.RUN;
+            return helpSeen ? Decision.RUN : Decision.RUN_WITH_HELP;
         }
         return Decision.HELP;
     }

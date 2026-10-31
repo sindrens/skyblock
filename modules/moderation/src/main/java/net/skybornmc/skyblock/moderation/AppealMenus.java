@@ -376,7 +376,6 @@ final class AppealMenus {
                 }
                 service.prompt(viewer, MODULE, "appeal.deny-prompt", 200, this::deny, () -> { }, parts);
             });
-            set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
         }
 
         private void deny(String text) {

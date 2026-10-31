@@ -224,6 +224,16 @@ final class TutorialEngine implements TutorialService, TutorialGate {
         return p == null ? Optional.empty() : Optional.of(p.state);
     }
 
+    /** U2 one welcome: a new player the tutorial will start for (or already started) gets the tutorial's welcome only. */
+    @Override
+    public boolean welcomes(Player player) {
+        if (!module.config().enabled || player.hasPermission(PERM_BYPASS)) {
+            return false;
+        }
+        Progress p = online.get(player.getUniqueId());
+        return p == null || p.state == State.NEW || p.state == State.ACTIVE;
+    }
+
     @Override
     public Optional<String> currentStep(UUID player) {
         Progress p = online.get(player);
@@ -243,10 +253,12 @@ final class TutorialEngine implements TutorialService, TutorialGate {
         save(p);
         event(player, p, "start");
         audit(player, "tutorial_start", Map.of("step", String.valueOf(p.step)));
-        msg().title(player, "start.title");
-        msg().send(player, "start.chat");
+        // U2 one welcome: this title and this chat block are the whole welcome (the join flow stays quiet); the first
+        // step's own title would replace this one at once, so it is not announced here.
+        msg().title(player, "start.title", Msg.p("player", player.getName()));
+        msg().send(player, "start.chat", Msg.p("player", player.getName()));
         module.guides().show(player, p);
-        enterStep(player, p, true);
+        enterStep(player, p, false);
         // Join flyover (TUTORIAL §5 "Join"): spawn → statue → keep → Gatehouse portals, only before step 1 is done.
         if (Steps.PORTAL.equals(p.step)) {
             core.scheduler().later("tutorial-spawn-camera", 20, () -> {

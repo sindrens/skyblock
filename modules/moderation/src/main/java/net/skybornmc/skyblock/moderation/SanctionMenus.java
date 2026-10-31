@@ -289,13 +289,11 @@ final class SanctionMenus {
                     c.pick().run();
                 });
             }
-            set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> {
-                if (parent() != null) {
-                    back();
-                } else {
-                    reopen(module, viewer, target);
-                }
-            });
+            if (parent() == null) {
+                // Opened without a parent (by command): Back (the frame's slot 18) returns to the /p screen.
+                set(SLOT_SMALL_BACK, service.navItem("back", Material.ARROW, viewer, "frame.back"),
+                        click -> reopen(module, viewer, target));
+            }
         }
     }
 

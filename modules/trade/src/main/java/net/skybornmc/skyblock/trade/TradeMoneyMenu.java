@@ -12,7 +12,8 @@ import java.util.List;
 
 /**
  * Pick which currency to offer (only shown when more than one can be traded, e.g. money and shards), then the amount in
- * the standard number picker (taps or a typed amount like 1.5k). 3 rows, taps only (Bedrock).
+ * the standard number picker (taps or a typed amount like 1.5k). 3 rows, taps only (Bedrock). Back (18) and Close (22)
+ * come from the frame; neither cancels the trade.
  */
 final class TradeMoneyMenu extends Menu {
 
@@ -59,7 +60,6 @@ final class TradeMoneyMenu extends Menu {
                     module.amountTag("offer", c, me.money(c)), module.amountTag("balance", c, balance)),
                     click -> openChild(picker(module, session, click.player(), c)));
         }
-        set(18, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
     }
 
     /** The amount picker for one currency: 0 to the balance. */

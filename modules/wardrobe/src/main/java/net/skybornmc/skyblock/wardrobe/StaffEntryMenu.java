@@ -54,7 +54,7 @@ final class StaffEntryMenu extends Menu {
                 module.core.messages().parse(viewer, module.text().entryColored(module.registry(), entry)),
                 m.lines(viewer, "menu.staff.entry-head", Msg.p("level", entry.level()))));
         int max = module.config().maxLevel;
-        List<Integer> levels = List.of(0, 1, Math.min(10, max), Math.min(25, max), Math.min(40, max), Math.max(0, max - 1), max);
+        List<Integer> levels = levelChoices(max);
         int slot = 10;
         for (int level : levels) {
             int target = level;
@@ -69,5 +69,18 @@ final class StaffEntryMenu extends Menu {
                 v -> m.lines(v, "confirm.remove.details", Msg.p("set", name), Msg.p("player", staffMenu.targetName)),
                 p -> module.staff().remove(p, staffMenu, entry), p -> {
         })));
+    }
+
+    /**
+     * The "Set to Lv n" buttons: 0, 1, 10, 25, 40, max-1 and max, each once and in order (max 40 used to show
+     * "Set to Lv 40" twice, out of order). Pure, unit-tested.
+     */
+    static List<Integer> levelChoices(int max) {
+        int top = Math.max(0, max);
+        java.util.TreeSet<Integer> out = new java.util.TreeSet<>();
+        for (int level : new int[]{0, 1, 10, 25, 40, top - 1, top}) {
+            out.add(Math.max(0, Math.min(top, level)));
+        }
+        return List.copyOf(out);
     }
 }

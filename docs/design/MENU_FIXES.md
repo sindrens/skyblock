@@ -12,6 +12,10 @@
 - Most of the [§1.x] tags are fixed at once by the framework change (GUI_DESIGN §9 step 1).
 
 ## GUI-1 handoff (framework done; left for GUI-4 because the menu is in another lane or needs a per-menu decision)
+**GUI-BUGS (31 Oct) did:** TransactionsMenu Refresh (now 6), moderation 3-row double Back, trade Cancel (now 53) and the
+money picker's own Back, WatchMenu (its `build()` now always draws the frame; the subclasses already did), hand-made
+loading/error/empty items in economy/bank and moderation NotifyMenu, the DailyMenu tabs (one menu, in place) and the
+permanent ban `twoStep()`. Still open for GUI-4: achievements tabs, locked looks, held-item "Right-click" wording, shop.
 The framework (`common/menu`) now gives every menu the bottom bar, Back via the navigation stack, the 3-row Back 18 / Close 22, in-place tabs and pages, the two-step confirm and the shared state items. These menus still need a hand edit:
 - **economy `TransactionsMenu`:** Refresh sits on 52, the Previous page slot; on page 2+ Previous covers it. Move Refresh to the top row or merge it into a filter.
 - **moderation 3-row screens** (`SanctionMenus` ~292, `AppealMenus` ~379, `PunishMenus` ~773/1079/1252/1312): they put their own Back on 22, which covers the new Close (Back shows twice, at 18 and 22). Remove their own Back; the frame adds Back 18 and Close 22.

@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.perks;
 
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.cosmetics.Cosmetics;
+import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
@@ -10,7 +11,8 @@ import java.util.List;
 
 /**
  * The {@code /freerank} tag picker: 3 rows, one big button per tag (slots 11, 13, 15) so it works with taps on Bedrock.
- * Closing it without picking is fine: {@code /freerank} opens it again until a tag is chosen.
+ * Closing it without picking is fine: {@code /freerank} opens it again until a tag is chosen. The pick is permanent, so a
+ * click first shows a confirm with the tag on the middle item (GUI_DESIGN §4).
  */
 final class FreeRankMenu extends Menu {
 
@@ -47,7 +49,15 @@ final class FreeRankMenu extends Menu {
             String tag = choices.get(i);
             Component shown = cosmetics == null ? Component.text(tag) : cosmetics.display(viewer, Cosmetics.Kind.TAG, tag);
             set(SLOTS[i], service.item(Material.NAME_TAG, viewer, PerksModule.ID, "freerank.menu.tag", Msg.c("tag", shown)),
-                    click -> freeRank.pick(click.player(), tag));
+                    click -> openChild(confirm(tag, shown)));
         }
+    }
+
+    /** "Pick this tag?": the tag on the middle item, "yours forever, can't be changed" as the details. */
+    private ConfirmMenu confirm(String tag, Component shown) {
+        return new ConfirmMenu(v -> service.text(v, PerksModule.ID, "freerank.confirm.crumb"),
+                service.item(Material.NAME_TAG, shown, List.of()),
+                v -> service.lines(v, PerksModule.ID, "freerank.confirm.details", Msg.c("tag", shown)),
+                player -> freeRank.pick(player, tag), player -> { });
     }
 }

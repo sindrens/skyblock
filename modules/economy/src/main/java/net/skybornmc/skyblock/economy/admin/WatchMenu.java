@@ -14,7 +14,8 @@ import java.util.function.Consumer;
 /**
  * Base of the economy dashboard menus (M3.8): six rows, texts in {@code messages/economy.yml}, and one guarded async load at
  * a time (a result that arrives after the viewer turned the page or closed the menu is dropped). Plain chest menus with
- * normal items only, so they work the same on Bedrock (Geyser).
+ * normal items only, so they work the same on Bedrock (Geyser). {@link #build()} always draws the framework frame first
+ * (bottom bar 45 Back, 48 ?, 49 Close, 50 Main menu, pages 52/53), so no dashboard screen can ship without it.
  */
 abstract class WatchMenu extends Menu {
 
@@ -42,6 +43,15 @@ abstract class WatchMenu extends Menu {
         return "money";
     }
 
+    @Override
+    protected final void build() {
+        frame();
+        content();
+    }
+
+    /** The screen's own content, drawn over the frame. */
+    protected abstract void content();
+
     /** {@code ▸ Economy » <crumb>} */
     Component titleWith(String crumbKey, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver... tags) {
         Component base = service.text(viewer, EconomyModule.ID, "watch.menu.title");
@@ -59,8 +69,8 @@ abstract class WatchMenu extends Menu {
 
     /** Shows the loading (or error) item in the middle. */
     void showLoading() {
-        set(PagedMenu.SLOT_EMPTY, failed ? service.item(Material.RED_STAINED_GLASS, viewer, "error-item")
-                : service.item(Material.CLOCK, viewer, "loading"));
+        set(PagedMenu.SLOT_EMPTY, failed ? service.errorItem(viewer, null)
+                : service.loadingItem(viewer));
     }
 
     /**

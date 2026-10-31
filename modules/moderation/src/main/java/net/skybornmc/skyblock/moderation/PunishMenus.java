@@ -347,6 +347,7 @@ final class PunishMenus {
             for (int slot = 0; slot < rows() * 9; slot++) {
                 set(slot, filler);
             }
+            frame(); // GUI-BUGS: the framework bar (45 Back, 48 ?, 49 Close, 50 Main menu) like every other menu
             ItemStack divider = service.filler(l.divider());
             for (int slot : l.dividerSlots()) {
                 set(slot, divider);
@@ -381,8 +382,21 @@ final class PunishMenus {
             for (PunishConfig.WarnButton w : l.warns()) {
                 set(w.slot(), warnButton(w));
             }
+            java.util.Set<Integer> taken = new java.util.HashSet<>(l.reasonSlots().values());
+            taken.add(l.summarySlot());
+            taken.add(l.warnCounterSlot());
+            taken.addAll(l.dividerSlots());
+            l.warns().forEach(w -> taken.add(w.slot()));
+            l.buttons().values().forEach(b -> taken.add(b.slot()));
             for (PunishConfig.Button b : l.buttons().values()) {
-                set(b.slot(), button(b, l));
+                if ("close".equals(b.id())) {
+                    continue; // the framework's Close (49) replaces it
+                }
+                int slot = frameSafeSlot(b.slot(), taken);
+                if (slot >= 0) {
+                    taken.add(slot);
+                    set(slot, button(b, l));
+                }
             }
         }
 
@@ -559,11 +573,14 @@ final class PunishMenus {
             return PunishMenus.verdictLines(service, module, viewer, v);
         }
 
-        /** Applies at once (owner decision), or through the confirm menu when {@code menu.confirm: true}. */
+        /**
+         * Applies at once (owner decision), or through the confirm menu when {@code menu.confirm: true}. Bans always
+         * confirm with the details on the middle item, a permanent ban in two steps (GUI_DESIGN §4, GUI-BUGS).
+         */
         private java.util.function.Consumer<MenuClick> guardedConfirm(ItemStack shown, String reason, Templates.Step step,
                                                                      int previous,
                                                                      java.util.function.Supplier<CompletableFuture<?>> action) {
-            if (!layout().confirm()) {
+            if (!needsConfirm(layout().confirm(), step)) {
                 return guarded(action);
             }
             return click -> {
@@ -571,7 +588,7 @@ final class PunishMenus {
                     viewer.closeInventory();
                     return;
                 }
-                openChild(new ConfirmMenu(
+                openChild(confirmFor(step, new ConfirmMenu(
                         p -> service.text(p, MODULE, "menu.confirm.title", Msg.p("player", target.name())),
                         shown,
                         p -> service.lines(p, MODULE, "menu.confirm.details", Msg.p("player", target.name()),
@@ -583,7 +600,7 @@ final class PunishMenus {
                                         () -> module.openPunishMenu(p, target.name(), target.evidence())));
                             }
                         },
-                        p -> { }));
+                        p -> { })));
             };
         }
 
@@ -698,6 +715,41 @@ final class PunishMenus {
     }
 
     /**
+     * True when a click must show the confirm first: always for a ban (GUI_DESIGN §4: a ban is never one tap), otherwise
+     * as {@code menu.confirm} says (owner decision: warns, mutes and kicks apply at once). Pure, unit-tested.
+     */
+    static boolean needsConfirm(boolean configConfirm, Templates.Step step) {
+        return configConfirm || (step != null && step.type() == Punishment.Type.BAN);
+    }
+
+    /** A permanent ban can't be undone by waiting: it asks twice (the second screen swaps the buttons). Pure, unit-tested. */
+    static boolean twoStep(Templates.Step step) {
+        return step != null && step.type() == Punishment.Type.BAN && step.duration() == null;
+    }
+
+    /** {@code confirm} in two steps for a permanent ban. */
+    static ConfirmMenu confirmFor(Templates.Step step, ConfirmMenu confirm) {
+        return twoStep(step) ? confirm.twoStep() : confirm;
+    }
+
+    /**
+     * Where a configured bottom-row button goes now that the framework bar owns 45 Back, 48 ?, 49 Close and 50 Main menu:
+     * its own slot when that is free of the bar, else the first free top-row slot next to the head (old configs keep
+     * working). -1 = no room. Pure, unit-tested.
+     */
+    static int frameSafeSlot(int slot, java.util.Set<Integer> taken) {
+        if (!net.skybornmc.skyblock.common.menu.MenuLayout.standard(6, slot) || slot == Menu.SLOT_PREVIOUS || slot == Menu.SLOT_NEXT) {
+            return slot;
+        }
+        for (int top : new int[]{3, 5, 2, 6, 1, 7}) {
+            if (!taken.contains(top)) {
+                return top;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * BLOCKED for good (display only). A duplicate block stays clickable: "click again within 5s to apply anyway"
      * (spec 12.2); the second click is confirmed by the service. A REQUEST (spec 13.4) is clickable: it sends the request.
      */
@@ -770,7 +822,6 @@ final class PunishMenus {
             set(13, service.item(Material.PAPER, viewer, MODULE, "suggest.menu.info", parts));
             set(11, service.item(Material.LIME_CONCRETE, viewer, MODULE, "suggest.menu.apply", parts), click -> handle(true));
             set(15, service.item(Material.RED_CONCRETE, viewer, MODULE, "suggest.menu.dismiss", parts), click -> handle(false));
-            set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
         }
 
         private void handle(boolean apply) {
@@ -967,7 +1018,7 @@ final class PunishMenus {
                     silent && viewer.hasPermission(ModerationModule.PERM_SILENT), false)
                     .whenComplete((r, e) -> Bukkit.getScheduler().runTask(service.plugin(),
                             () -> module.openPunishMenu(viewer, target.name(), target.evidence())));
-            if (!module.templates().config().menu().confirm()) {
+            if (!needsConfirm(module.templates().config().menu().confirm(), step)) {
                 return MenuButton.of(item, click -> {
                     if (!used && viewer.hasPermission(ModerationModule.PERM_GUI)) {
                         used = true;
@@ -975,7 +1026,7 @@ final class PunishMenus {
                     }
                 });
             }
-            return MenuButton.of(item, click -> openChild(new ConfirmMenu(
+            return MenuButton.of(item, click -> openChild(confirmFor(step, new ConfirmMenu(
                     p -> service.text(p, MODULE, "menu.confirm.title", Msg.p("player", target.name())),
                     item,
                     p -> service.lines(p, MODULE, "menu.confirm.details", Msg.p("player", target.name()),
@@ -986,7 +1037,7 @@ final class PunishMenus {
                             apply.run();
                         }
                     },
-                    p -> { })));
+                    p -> { }))));
         }
     }
 
@@ -1076,7 +1127,6 @@ final class PunishMenus {
                             }
                         }));
             }
-            set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
         }
     }
 
@@ -1249,7 +1299,6 @@ final class PunishMenus {
                 }
                 openChild(new DenyMenu(module, request, target));
             });
-            set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
         }
     }
 
@@ -1308,13 +1357,6 @@ final class PunishMenus {
                     used = true;
                     module.service().deny(viewer, request.id(), text).whenComplete((r, e) -> after());
                 }, () -> { }, parts);
-            });
-            set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> {
-                if (parent() != null) {
-                    back();
-                } else {
-                    viewer.closeInventory();
-                }
             });
         }
 
