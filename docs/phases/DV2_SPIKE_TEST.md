@@ -45,5 +45,3 @@ Built in DV2-SPIKE (behind `depths.yml → palette.enabled`, off by default). Ru
   - the order of level-up listeners, in case another plugin's handler runs first.
 - WorldEdit/FAWE edits inside the field are not picked up by the slot index until `/skyblock reload depths`.
 - Ambient mobs already spawned keep their old tier until they despawn.
-
-## 
