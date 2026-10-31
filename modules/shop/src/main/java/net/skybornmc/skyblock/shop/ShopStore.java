@@ -26,6 +26,8 @@ final class ShopStore {
      * refund or deliver by hand.
      */
     static final String REVIEW = "review";
+    /** F14: given back with "Undo last buy" (items taken back, full price refunded once). Only from {@code delivered}. */
+    static final String REFUNDED = "refunded";
 
     /** One purchase. */
     record Purchase(UUID id, int seasonId, UUID player, UUID profile, String playerName, String itemId, String category,

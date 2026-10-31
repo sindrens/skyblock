@@ -1,5 +1,5 @@
-# Builder shop (M3.5): /shop [category]. MiniMessage + style tags (style.yml).
-# Amount placeholders (<price>, <total>, <balance>, <stack>) are plain text like $1,500; they are colored here.
+# Builder shop (Shop v2, GUI-3): /shop [tab]. MiniMessage + style tags (style.yml).
+# Amount placeholders (<price>, <total>, <balance>, <after>) are plain text like $1,500; they are colored here.
 # Item names (<item>) are the translated vanilla names (Java and Bedrock).
 # Reload: /skyblock reload shop
 
@@ -8,7 +8,7 @@ loading: "<prefix><c:error><sym:cross></c:error> <c:text>The shop is still loadi
 frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't shop while frozen."
 staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't shop in staff mode."
 switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
-unknown-category: "<prefix><c:error><sym:cross></c:error> <c:text>No shop category <c:value><input></c:value><c:text>. Try: <c:value><categories>"
+unknown-category: "<prefix><c:error><sym:cross></c:error> <c:text>No shop tab <c:value><input></c:value><c:text>. Try: <c:value><categories>"
 
 skills:
   mining: "Mining"
@@ -17,57 +17,64 @@ skills:
   farming: "Farming"
   fishing: "Fishing"
 
-# Category names and descriptions (ids from shop.yml).
+# The name of a shop spawner (<mob> = the translated mob name).
+spawner-name: "<mob> Spawner"
+
+# Tabs (row 0 of every shop page; ids from shop.yml).
+tab-name: "<c:flame><name>"
 categories:
-  building-blocks:
-    name: "Building blocks"
-    lore: ["<c:text>Dirt, sand, quartz, prismarine", "<c:text>and other basic blocks."]
+  essentials:
+    name: "Essentials"
+    lore: ["<c:text>Workstations, chests, buckets,", "<c:text>tools and food."]
+  farming:
+    name: "Farming"
+    lore: ["<c:text>Seeds, saplings, plants", "<c:text>and bone meal."]
   wood:
     name: "Wood"
-    lore: ["<c:text>Logs, planks and stripped", "<c:text>logs of every tree."]
-  stone-bricks:
-    name: "Stone & bricks"
-    lore: ["<c:text>Stone, deepslate, tuff,", "<c:text>bricks and nether bricks."]
-  glass-colors:
-    name: "Glass & colors"
-    lore: ["<c:text>Glass, concrete, terracotta,", "<c:text>wool and dyes in every color."]
+    lore: ["<c:text>Logs and planks", "<c:text>of every tree."]
+  stone-earth:
+    name: "Stone & Earth"
+    lore: ["<c:text>Dirt, sand, stone, deepslate", "<c:text>and bricks."]
+  special:
+    name: "Special Blocks"
+    lore: ["<c:text>Nether, End, quartz, prismarine,", "<c:text>ice and obsidian."]
+  colors:
+    name: "Colors"
+    lore: ["<c:text>Concrete, stained glass and", "<c:text>terracotta in every colour."]
   decoration:
     name: "Decoration"
-    lore: ["<c:text>Lights, flowers, carpets,", "<c:text>frames and furniture."]
+    lore: ["<c:text>Lights, frames, furniture", "<c:text>and a few plants."]
   redstone:
     name: "Redstone"
     lore: ["<c:text>Pistons, hoppers, rails", "<c:text>and everything that ticks."]
-  farming:
-    name: "Farming"
-    lore: ["<c:text>Seeds, saplings and plants", "<c:text>to start your farms."]
-  utility:
-    name: "Utility"
-    lore: ["<c:text>Workstations, storage,", "<c:text>buckets and beds."]
+  spawners:
+    name: "Spawners"
+    lore: ["<c:text>Tier 1 and 2 spawners", "<c:text>for your island."]
 
 menu:
   title: "Shop"
   info:
-    - "<c:text>Buy blocks and items for your island."
-    - "<c:text>Pick a category, then click an"
-    - "<c:text>item to buy it. Sell with the gold"
-    - "<c:text>ingot or <c:value>/sell</c:value><c:text>."
-  summary:
-    name: "<c:flame><sym:star></c:flame> <c:value>Builder shop"
+    - "<c:text>Pick a tab at the top, then click"
+    - "<c:text>an item to choose how many."
+    - "<c:text>Shift-click buys one stack at once."
+    - "<c:text>Sell with the gold nugget or <c:value>/sell</c:value><c:text>."
+  info-bedrock:
+    - "<c:text>Pick a tab at the top, then tap"
+    - "<c:text>an item to choose how many."
+    - "<c:text>Sell with the gold nugget or <c:value>/sell</c:value><c:text>."
+  balance:
+    name: "<c:flame><sym:star></c:flame> <c:value>Your balance"
     lore:
-      - "<c:text>Your balance: <cur:money><balance></cur:money>"
+      - "<cur:money><balance></cur:money>"
       - ""
       - "<c:muted>Items go straight to your inventory."
-      - "<c:muted>Keep some room free."
-  category:
-    name: "<c:flame><name>"
-    lore:
-      - ""
-      - "<c:muted><items> items"
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to browse"
   empty:
-    name: "<c:muted>The shop is empty"
-    lore: ["<c:text>Staff haven't added items yet."]
-  # The Sell button (slot 51 of /shop and every category): opens the sell chest.
+    name: "<c:muted>Nothing here right now"
+    lore: ["<c:text>Try another tab."]
+  spawners-off:
+    name: "<c:muted>No spawners right now"
+    lore: ["<c:text>Spawners are not sold", "<c:text>at the moment."]
+  # The Sell button (slot 51 of every shop page): opens the sell chest.
   sell:
     name: "<c:value><bold>Sell items"
     lore:
@@ -76,78 +83,70 @@ menu:
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
 
-category:
-  info:
-    - "<c:text>Left-click buys 1, right-click buys"
-    - "<c:text>a stack, shift-click picks an amount."
-    - "<c:text>Only what fits is bought and paid."
-  info-bedrock:
-    - "<c:text>Tap an item to choose how many."
-    - "<c:text>Only what fits is bought and paid."
-  empty:
-    name: "<c:muted>Nothing here right now"
-    lore: ["<c:text>Try another category."]
-  entry:
-    name: "<c:value><bold><item>"
-    locked: "<c:error><sym:cross> Locked"
-    requires: "<c:text>Needs <c:value><skill> <level></c:value><c:text>."
-    unavailable:
-      - "<c:error><sym:cross> Not for sale right now"
-      - "<c:muted>Staff are fixing its price."
+entry:
+  name: "<c:value><bold><item>"
+  locked: "<c:error><sym:cross> Locked"
+  requires: "<c:text>Needs <c:value><skill> <level></c:value><c:text>."
+  unavailable:
+    - "<c:error><sym:cross> Not for sale right now"
+    - "<c:muted>Staff are fixing it."
 
-# Quick-buy lore (SELL2). These are LoreBuilder labels: plain text, no tags ({amount} is filled in). The formats
-# (| Buy Price, | Sell Price, | Information, » ACTION) are in messages/items.yml (lore.*).
-quick:
+# Grid and buy page lore. These are LoreBuilder labels: plain text, no tags ({amount}, {percent}, {hours} are filled in).
+# The formats (| Buy Price, | Sell Price, | Information, » ACTION) are in messages/items.yml (lore.*).
+lore:
   info-title: "Information"
   stack: "Stack of {amount}"
   afford: "You can afford"
-  action:
-    left-input: "LEFT-CLICK"
-    left: "buy {amount}"
-    right-input: "RIGHT-CLICK"
-    right: "buy {amount}"
-    shift-input: "SHIFT-CLICK"
-    shift: "pick amount"
-    tap-input: "TAP"
-    tap: "to choose"
+  next-works: "Next works at"
+  percent: "{percent}%"
+  payback: "Pays back in"
+  hours: "about {hours} h"
+  never: "never"
+  action-input: "CLICK"
+  action: "to choose an amount"
 
-# The amount screen (shift-click on Java, tap on Bedrock).
-amount:
-  title: "Buy <item>"
+# The buy page (a click on an item).
+buy:
   info:
-    - "<c:text>Pick how many with - and +, or type"
-    - "<c:text>an amount. If not all of it fits, you"
-    - "<c:text>get (and pay for) what fits."
-  minus:
-    name: "<c:error>-<step>"
-    lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to remove <step>"]
-  plus:
-    name: "<c:success>+<step>"
-    lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to add <step>"]
+    - "<c:text>Pick an amount. If not all of it"
+    - "<c:text>fits, you get and pay for what fits."
+    - "<c:text>Buys over half your money need"
+    - "<c:text>a second click."
+  info-bedrock:
+    - "<c:text>Tap an amount. If not all of it"
+    - "<c:text>fits, you get and pay for what fits."
+    - "<c:text>Buys over half your money need"
+    - "<c:text>a second tap."
   item:
     name: "<c:value><bold><item>"
-    lore:
-      - "<bold><c:buy>| Buy Price: </c:buy><cur:money><price></cur:money></bold> <c:muted>each"
+    room:
       - ""
-      - "<bold><c:header>| Information</c:header></bold>"
-      - "<c:bar>| </c:bar><c:text>Buying: </c:text><c:value><amount>"
-      - "<c:bar>| </c:bar><c:text>Total: </c:text><cur:money><total></cur:money>"
-      - "<c:bar>| </c:bar><c:text>Room for: </c:text><c:value><fits>"
-      - "<c:bar>| </c:bar><c:text>You can afford: </c:text><c:value><afford>"
+      - "<c:text>Room for: <c:value><fits>"
+      - "<c:text>Balance: <cur:money><balance></cur:money>"
+    no-stack: ["<c:muted>Doesn't stack: one at a time."]
+  quick:
+    name: "<c:success><bold>Buy <amount>"
+  fill:
+    name: "<c:success><bold>Fill inventory"
+  typed:
+    name: "<c:warning><bold>Buy <amount>"
+  fill-none:
+    no-room:
+      name: "<c:muted>Fill inventory"
+      lore: ["<c:error><sym:cross> Your inventory is full."]
+    too-expensive:
+      name: "<c:muted>Fill inventory"
+      lore: ["<c:error><sym:cross> You can't afford one."]
   type:
     name: "<c:value>Type an amount"
     lore:
-      - "<c:text>Type any amount in chat"
+      - "<c:text>Choose any amount"
       - "<c:text>(1 to <c:value><max></c:value><c:text>, 1.5k works)."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type"
-  cancel:
-    name: "<c:error><bold>Cancel"
-    lore: ["<c:text>Back to the items."]
-  buy:
-    name: "<c:success><bold>Buy <amount> for <cur:money><total></cur:money>"
+  button:
     lore:
-      - "<c:muted><amount> x <price>"
+      - "<c:text><amount> x <cur:money><price></cur:money> <c:text>= <cur:money><total></cur:money>"
       - ""
     ok: "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
     partial:
@@ -159,24 +158,16 @@ amount:
     too-expensive:
       - "<c:error><sym:cross> You can't afford this."
       - "<c:muted>Balance: <balance>"
+    # F14: the first click on a buy over half your money arms the button (orange).
+    armed:
+      - "<c:warning><sym:cross> That is <percent>% of your money"
+      - "<c:text>Balance after: <cur:money><after></cur:money>"
+      - "<bold><c:action>» CLICK AGAIN</c:action></bold> <c:text>to buy"
+  picker-title: "Buy <item>"
   ask: "<prefix><c:text>Type how many to buy (1 to <c:value><max></c:value><c:text>) or <c:value><cancel></c:value><c:text>. <c:muted>(<seconds>s)"
   invalid: "<prefix><c:error><sym:cross></c:error> <c:text>That's not an amount from 1 to <c:value><max></c:value><c:text>."
-
-confirm:
-  crumb: "Confirm purchase"
-  shown: "<c:success>Buy <amount>x <c:value><item>"
-  shown-lore: ["<c:text>Total: <cur:money><total></cur:money>"]
-  lines:
-    - "<c:text>This will:"
-    - "<c:text>Buy <c:value><amount>x <item></c:value>"
-    - "<c:text>for <cur:money><total></cur:money><c:text>."
-    - "<c:muted>Balance: <balance>"
-    - ""
-    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm"
-
-buy:
-  # Action bar after every purchase (SELL2); the chat lines below only from feedback.chat-from (shop-settings.yml).
-  bought-bar: "<c:success><sym:check></c:success> <c:value>+<amount> <item></c:value> <c:error>-<price>"
+  # Action bar after every purchase; the chat lines below only from feedback.chat-from (shop-settings.yml).
+  bought-bar: "<c:success><sym:check></c:success> <c:value>+<amount> <item></c:value> <c:error>-<price></c:error> <c:muted>· <balance> left"
   partial-bar: "<c:warning><sym:check></c:warning> <c:text>Bought <c:value><amount></c:value> of <c:value><requested></c:value>: no more room <c:error>-<price>"
   bought: "<prefix><c:success><sym:check></c:success> <c:text>Bought <c:value><amount>x <item></c:value> <c:text>for <cur:money><price></cur:money><c:text>. Balance: <cur:money><balance></cur:money>"
   partial: "<prefix><c:warning><sym:check></c:warning> <c:text>Bought <c:value><amount></c:value> of <c:value><requested>x <item></c:value><c:text>: no more room. Paid only <cur:money><price></cur:money><c:text>."
@@ -191,3 +182,38 @@ buy:
   unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>That item isn't for sale right now."
   locked: "<prefix><c:error><sym:cross></c:error> <c:text>You need <c:value><skill> <level></c:value> <c:text>to buy that."
   locked-click: "<prefix><c:error><sym:cross></c:error> <c:text>That item is locked. Its lore says what you need."
+
+# F14 big buys on a Java shift-click (the grid item can't turn orange, so the action bar says it).
+big:
+  armed-bar: "<c:warning><sym:cross></c:warning> <c:text>That is <c:value><percent>%</c:value> of your money (<after> left). <c:action>Shift-click again</c:action> <c:text>to buy."
+
+# F14 Undo last buy (slot 47 of every shop page).
+undo:
+  idle:
+    name: "<c:muted>Undo last buy"
+    lore: ["<c:text>Nothing to undo."]
+  ready:
+    name: "<c:value><bold>Undo last buy"
+    lore:
+      - "<c:text><amount>x <item>"
+      - "<c:text>Paid: <cur:money><price></cur:money>"
+      - "<c:text>Time left: <c:value><seconds>s"
+      - "<c:muted>All of it must still be"
+      - "<c:muted>in your inventory."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to get <cur:money><price></cur:money> <c:text>back"
+  done-bar: "<c:success><sym:check></c:success> <c:text>Undone: <c:value>-<amount> <item></c:value> <c:success>+<price>"
+  nothing: "<prefix><c:error><sym:cross></c:error> <c:text>There's nothing to undo (it only works for <seconds> seconds)."
+  "off": "<prefix><c:error><sym:cross></c:error> <c:text>Undo is off. Turn it on in <c:value>/settings</c:value><c:text>."
+  other-profile: "<prefix><c:error><sym:cross></c:error> <c:text>That buy was on another profile, so it can't be undone."
+  missing: "<prefix><c:error><sym:cross></c:error> <c:text>Undo needs all <c:value><amount>x <item></c:value> <c:text>back in your inventory."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Undo didn't go through, so your items are back. Nothing was lost."
+
+# /settings toggles (F14).
+settings:
+  shop-undo:
+    name: "<c:value>Shop: Undo last buy"
+    lore: ["<c:text>Get your money back for a few", "<c:text>seconds while the items are still", "<c:text>in your inventory."]
+  shop-big-buy:
+    name: "<c:value>Shop: confirm big buys"
+    lore: ["<c:text>Buys over half your money", "<c:text>need a second click."]

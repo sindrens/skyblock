@@ -323,7 +323,7 @@ sell:
       - "<c:text>(click, shift-click or drag), then"
       - "<c:text>press Sell. Closing gives them back."
     sell-inventory:
-      name: "<c:value><bold>Sell inventory"
+      name: "<c:value><bold>Add my inventory"
       lore:
         - "<c:text>Moves every sellable item from"
         - "<c:text>your inventory into the chest."
@@ -367,7 +367,7 @@ sell:
       name: "<c:muted>Nothing to sell"
       lore:
         - "<c:text>Put items into the chest first,"
-        - "<c:text>or press <c:value>Sell inventory</c:value><c:text>."
+        - "<c:text>or press <c:value>Add my inventory</c:value><c:text>."
     busy:
       name: "<c:value><sym:time> Selling..."
       lore:

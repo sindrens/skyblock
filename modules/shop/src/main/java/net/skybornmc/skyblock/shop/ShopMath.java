@@ -117,4 +117,69 @@ public final class ShopMath {
         }
         return new BuyPlan((int) amount, amount > 0 && amount < want);
     }
+
+    // ------------------------------------------------------------------ Shop v2 buy page (GUI-3)
+
+    /**
+     * The quick amounts of the buy page by stack size (SHOP_DESIGN §4): {@code [1, 16, 64]} for items that stack to 64,
+     * {@code [1, 8, 16]} for 16-stackers ("Buy 16" buys 8 there), only {@code [1]} for items that don't stack (buckets,
+     * beds, tools).
+     */
+    public static int[] quickAmounts(int maxStack) {
+        if (maxStack <= 1) {
+            return new int[]{1};
+        }
+        int middle = maxStack >= 64 ? maxStack / 4 : Math.max(1, maxStack / 2);
+        return middle <= 1 || middle >= maxStack ? new int[]{1, maxStack} : new int[]{1, middle, maxStack};
+    }
+
+    /**
+     * "Fill inventory": as many as fit in the inventory and the balance pays for, at most {@code configMax}. 0 = nothing
+     * (no room, no money or a broken price).
+     */
+    public static long fillAmount(long price, long balance, long fits, long configMax) {
+        if (price < 1) {
+            return 0;
+        }
+        return Math.max(0, Math.min(Math.min(fits, configMax), affordable(price, balance)));
+    }
+
+    /**
+     * F14 big buys: true when {@code total} is more than {@code percent}% of {@code balance} (then a second click is
+     * needed). A buy the balance can't pay is not "big" (it fails with "not enough money" instead).
+     */
+    public static boolean bigBuy(long total, long balance, int percent) {
+        if (total < 1 || balance < 1 || total > balance || percent >= 100) {
+            return false;
+        }
+        if (percent <= 0) {
+            return true;
+        }
+        // total / balance > percent / 100, without overflow
+        return java.math.BigInteger.valueOf(total).multiply(java.math.BigInteger.valueOf(100))
+                .compareTo(java.math.BigInteger.valueOf(balance).multiply(java.math.BigInteger.valueOf(percent))) > 0;
+    }
+
+    /** Whole percent of the balance a buy takes ("That is 74% of your money"), 0-100. */
+    public static int percentOf(long total, long balance) {
+        if (total <= 0 || balance <= 0) {
+            return 0;
+        }
+        if (total >= balance) {
+            return 100;
+        }
+        return (int) java.math.BigInteger.valueOf(total).multiply(java.math.BigInteger.valueOf(100))
+                .divide(java.math.BigInteger.valueOf(balance)).longValue();
+    }
+
+    /**
+     * Hours a spawner needs to earn back its price ({@code incomePerHour} at full output, scaled by how well the next one
+     * works, owner F2). Empty when it never pays back (0% output or no income).
+     */
+    public static OptionalDouble paybackHours(long price, long incomePerHour, int outputPercent) {
+        if (price < 1 || incomePerHour < 1 || outputPercent < 1) {
+            return OptionalDouble.empty();
+        }
+        return OptionalDouble.of(price / (incomePerHour * (outputPercent / 100.0)));
+    }
 }

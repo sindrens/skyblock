@@ -12,6 +12,8 @@ public final class TxReason {
     public static final String PAY = "pay";
     public static final String SELL = "sell";
     public static final String SHOP_BUY = "shop_buy";
+    /** "Undo last buy" in /shop (F14): the full price of a purchase given back once, within 15 s, items returned. */
+    public static final String SHOP_UNDO = "shop_undo";
     public static final String AH_BUY = "ah_buy";
     public static final String AH_SALE = "ah_sale";
     public static final String AH_FEE = "ah_fee";

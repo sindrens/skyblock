@@ -487,18 +487,20 @@ In Phase 5 each production upgrade gets its own price list from the same curve: 
 Each spawner in a stack adds `mobs-per-spawner` mobs every 10–40 s (`stacking.yml`). Mobs from spawners have vanilla loot (~1.5 sellable items per mob) worth the island price of a Depths tier (tier 1 spawner = product of tier 1, tier 2 = tier 3, …, tier 5 = tier 9).
 
 <!-- BEGIN table:spawners -->
-| Spawner tier | Types (stacking.yml) | Source | Model: in reach at Depths tier | Loot per mob | One spawner, 1 mob/spawn (recommended) | One spawner, config today (4 mobs/spawn) | Price: first of this tier | 10th | 25th |
+| Spawner tier | Types (stacking.yml) | Source | Model: in reach at Depths tier | Loot per mob | One spawner, 1 mob/spawn (recommended) | One spawner, config today (1 mobs/spawn) | Price: first of this tier | 10th | 25th |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | pig, cow, chicken, sheep, rabbit | shop | 1 | $15 | $1.9k/h | $7.8k/h | $117k | $275.9k | $1.2M |
-| 2 | zombie, skeleton, spider, slime … | shop + The Depths | 3 | $27 | $3.5k/h | $14.2k/h | $213k | $502.2k | $2.1M |
-| 3 | creeper, witch, drowned, husk … | The Depths + crates | 5 | $50 | $6.5k/h | $25.8k/h | $387k | $912.5k | $3.8M |
-| 4 | blaze, enderman, guardian, piglin … | crates | 7 | $91 | $11.8k/h | $47.1k/h | $706k | $1.7M | $7M |
-| 5 | iron golem, wither skeleton, shulker … | crates + Black Market | 9 | $270 | $35k/h | $139.8k/h | $2.1M | $4.9M | $20.7M |
+| 1 | pig, cow, chicken, sheep, rabbit | shop | 1 | $15 | $1.9k/h | $1.9k/h | $117k | $275.9k | $1.2M |
+| 2 | zombie, skeleton, spider, slime … | shop + The Depths | 3 | $27 | $3.5k/h | $3.5k/h | $213k | $502.2k | $2.1M |
+| 3 | creeper, witch, drowned, husk … | The Depths + crates | 5 | $50 | $6.5k/h | $6.5k/h | $387k | $912.5k | $3.8M |
+| 4 | blaze, enderman, guardian, piglin … | crates | 7 | $91 | $11.8k/h | $11.8k/h | $706k | $1.7M | $7M |
+| 5 | iron golem, wither skeleton, shulker … | crates + Black Market | 9 | $270 | $35k/h | $35k/h | $2.1M | $4.9M | $20.7M |
 <!-- END table:spawners -->
 
 Why this matters:
 - **Grinders make the kill rate unlimited.** Fall and lava kill a whole stack (S5), so a spawner farm with a drop kills everything it spawns. Spawner income is therefore *spawn rate × spawners owned*, nothing else.
 - **With today's config (4 mobs per spawn)** one tier 1 spawner earns ~$7.8k per production hour, more than a whole tier-1 island. Spawners would make ~69% of a regular player's income and money supply would double (§7.3). **Suggested: `spawners.mobs-per-spawner: 1`** (§14).
+- **Owner F2 (31 Oct) replaces the rising price:** the shop sells spawners at a **fixed price** (tier 1 $117k, tier 2 $213k, Shop v2 Spawners tab, GUI-3) and each extra spawner of a type will **work less well** (diminishing output). The shop lore already shows "Next works at X%" and the payback time from that hook (`StackingService#nextSpawnerOutputPercent`), but the curve itself is F2 and not built yet, so every spawner works at 100% until then: the "does not rise per owned spawner" row in §7.3 is the risk meanwhile (test server only; `shop-settings.yml spawners.enabled: false` empties the tab). The model below still uses the +10% growth until F2 has numbers.
+- **Shop v2 prices (GUI-3, owner S4/S6/S7):** hopper $120 → $2,500, bone meal $6 → $30, ender chest removed, new basics (flint and steel $40, fishing rod $150, shears $60, bread $15, baked potato $15). Shop spend in the model is a share of income (4%, §1.2), so these don't move any table.
 - **The shop price must rise per spawner owned.** A spawner bought at a fixed price pays back in days and then earns forever, so players buy more with the money spawners make: money grows like compound interest (season sink ratio 73%, money supply ×6, §7.3). The model uses: price of the next spawner = base × 1.10^(spawners of that tier the island already owns), base = 60 production hours of that spawner's own output.
 - **Spawners are also found** (Depths drops, crates): the model gives 1 spawner of the best tier in reach per 10 played hours.
 - **The Slaughter keep-up table (ENCHANTS §7.3)** assumed ~0.1 mobs/s per spawner; at 1 mob per spawn it is ~0.04 mobs/s, so one player keeps up with 2.5× more spawners. E3 re-checks it.
@@ -778,7 +780,7 @@ Every sink is a gameplay cost (tools, sets, spawners, upgrades, outposts, master
 | Scenario | Sink ratio, season | Lowest 7-day sink ratio, days 60-90 | Money supply day 90 | Interest share (grinder) | Island total share (regular) | Spawner share (regular) | Grinder earned by month 2 |
 |---|---|---|---|---|---|---|---|
 | Baseline (this sheet) | 82% | 74% | $2.1T | 1.4% | 33% | 18% | $41.6B |
-| Spawners at today's config (4 mobs per spawn) | 71% | 70% | $5T | 2.6% | 75% | 69% | $59.9B |
+| Spawners at today's config (1 mobs per spawn) | 82% | 74% | $2.1T | 1.4% | 33% | 18% | $41.6B |
 | Shop spawner price does not rise per owned spawner | 59% | 40% | $15.6T | 3.5% | 83% | 81% | $117.8B |
 | No mastery (no endless sink) | 32% | 5% | $7.9T | 4.6% | 33% | 18% | $41.6B |
 | Boosters always on (personal + global) | 78% | 78% | $3.7T | 2.2% | 42% | 25% | $61.7B |
@@ -1261,7 +1263,7 @@ Read from the Java config classes and `tools-defaults.yml` on every run, compare
 | `wardrobe.yml` | `merge.fee-per-step` | 5,000 | 5,000 | ok | WD23 |
 | `wardrobe.yml` | `xp.actions.depths-ore` | 1 | 1 | ok | WD10 |
 | `wardrobe.yml` | `xp.actions.sell-item` | 1 | 1 | ok | WD10 |
-| `stacking.yml` | `spawners.mobs-per-spawner` | 4 | 1 | **CHANGE** | 4 makes one spawner earn 4x the model |
+| `stacking.yml` | `spawners.mobs-per-spawner` | 1 | 1 | ok | 1 makes one spawner earn 1x the model |
 | `tools.yml` | `tiers.pickaxe[2].money` | 15,000 | 15,000 | ok | Forge §5.1 |
 | `tools.yml` | `tiers.pickaxe[3].money` | 35,200 | 35,200 | ok | Forge §5.1 |
 | `tools.yml` | `tiers.pickaxe[4].money` | 82,800 | 82,800 | ok | Forge §5.1 |
@@ -1295,7 +1297,6 @@ Existing keys first, then keys for systems that are not built yet.
 <!-- BEGIN table:config_changes -->
 | File | Key | Today | Suggested | Why |
 |---|---|---|---|---|
-| `stacking.yml` | `spawners.mobs-per-spawner` | 4 | 1 | 4 makes one spawner earn 4x the model |
 | `enchanter.yml` | `drops.mining.one-in` (band D) / `drops.mining.pity` (band D) | 5,000 / 12,500 | 6,500 / 16,250 | watch, not applied: with Vein Rend II-III a regular gets 1.35-1.9 books/h at tiers 10-12 (target 1-1.4); the plan counts area blocks at yield on purpose (open question) |
 | `shop.yml` (M3.5, new) | `spawners.price-growth-per-owned` | not built | 1.1 | price of a shop spawner rises 10% per spawner of that tier the island owns; without it spawners compound (§4.3) |
 | `shop.yml` (M3.5, new) | `spawners.price.tier-1..2` | not built | $117k / $213k | first spawner of that tier |

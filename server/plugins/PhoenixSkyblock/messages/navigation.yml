@@ -262,7 +262,7 @@ settings:
       lore: ["<c:text>Ask again before you drop a", "<c:text>tool, book, note or spawner."]
     sell-skip-hotbar:
       name: "<c:value>Sell all skips hotbar"
-      lore: ["<c:text>/sell all and Sell inventory", "<c:text>leave your hotbar alone."]
+      lore: ["<c:text>/sell all and Add my inventory", "<c:text>leave your hotbar alone."]
   changed-on: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is <c:value>on</c:value>."
   changed-off: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is <c:value>off</c:value>."
   unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No setting <c:value><setting></c:value>. Press Tab to see them all."

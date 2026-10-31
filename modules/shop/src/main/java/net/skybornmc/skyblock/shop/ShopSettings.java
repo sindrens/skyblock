@@ -3,22 +3,9 @@ package net.skybornmc.skyblock.shop;
 import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 
-import java.util.List;
 
 /** Typed settings of the builder shop ({@code shop-settings.yml}). The items and prices live in {@code shop.yml}. */
 public final class ShopSettings extends ModuleConfig {
-
-    @Setting(path = "quick-buy.left-amount", desc = "Items a left-click buys in the quick-buy grid (Java). SELL2 default: 1.",
-            min = 1, max = 2_304)
-    public int leftAmount = 1;
-
-    @Setting(path = "quick-buy.right-amount", desc = "Items a right-click buys in the quick-buy grid (Java). SELL2 default: "
-            + "64 (a stack).", min = 1, max = 2_304)
-    public int rightAmount = 64;
-
-    @Setting(path = "quick-buy.start-amount", desc = "The amount the amount screen starts at (shift-click on Java, tap on "
-            + "Bedrock).", min = 1, max = 2_304)
-    public int startAmount = 1;
 
     @Setting(path = "feedback.chat-from", desc = "Purchases costing at least this much also post a chat line; cheaper ones "
             + "only show the action bar line (SELL2 default: 100,000).", min = 0)
@@ -31,9 +18,41 @@ public final class ShopSettings extends ModuleConfig {
             + "2304 = 36 full stacks.", min = 1, max = 100_000)
     public int maxAmount = 2_304;
 
-    @Setting(path = "buy.picker-steps", desc = "Step buttons of the amount screen (smallest first, up to 3): -64 -16 -1 / "
-            + "+1 +16 +64 by default.")
-    public List<String> pickerSteps = List.of("1", "16", "64");
+    @Setting(path = "undo.seconds", desc = "F14: how long Undo last buy gives the full price back (while every item "
+            + "is still in the inventory). Players can turn undo off in /settings.", min = 1, max = 120)
+    public int undoSeconds = 15;
+
+    @Setting(path = "big-buy.percent", desc = "F14: a buy costing more than this percent of the player's money needs a "
+            + "second click (the button turns orange). Players can turn it off in /settings. 100 = never.", min = 1, max = 100)
+    public int bigBuyPercent = 50;
+
+    @Setting(path = "big-buy.arm-seconds", desc = "F14: how long an orange (armed) buy button waits for the second click.",
+            min = 1, max = 30)
+    public int bigBuyArmSeconds = 5;
+
+    @Setting(path = "spawners.enabled", desc = "Owner S5: sell spawners in the Spawners tab. Off hides the tab's items "
+            + "(the tab says so).", level = Setting.Level.OWNER)
+    public boolean spawnersEnabled = true;
+
+    @Setting(path = "spawners.max-tier", desc = "Owner S5: highest spawner tier (stacking.yml spawners.tier-N) the shop "
+            + "may sell; higher tiers in shop.yml show as not for sale.", min = 1, max = 5, level = Setting.Level.OWNER)
+    public int spawnerMaxTier = 2;
+
+    @Setting(path = "spawners.income-per-hour.tier-1", desc = "Money one tier 1 spawner earns per hour at full output "
+            + "(ECONOMY_BALANCE §4.3, 1 mob per spawn); only for the payback time in the lore.", min = 1)
+    public long incomeTier1 = 1_900;
+
+    @Setting(path = "spawners.income-per-hour.tier-2", desc = "Money one tier 2 spawner earns per hour at full output.", min = 1)
+    public long incomeTier2 = 3_500;
+
+    @Setting(path = "spawners.income-per-hour.tier-3", desc = "Money one tier 3 spawner earns per hour at full output.", min = 1)
+    public long incomeTier3 = 6_500;
+
+    @Setting(path = "spawners.income-per-hour.tier-4", desc = "Money one tier 4 spawner earns per hour at full output.", min = 1)
+    public long incomeTier4 = 11_800;
+
+    @Setting(path = "spawners.income-per-hour.tier-5", desc = "Money one tier 5 spawner earns per hour at full output.", min = 1)
+    public long incomeTier5 = 35_000;
 
     @Setting(path = "buy.save-player-data", desc = "Save the player's data right after the items are handed over, so a "
             + "crash can't roll the inventory back to before a paid purchase.")
@@ -51,7 +70,12 @@ public final class ShopSettings extends ModuleConfig {
     /** REVIEW3 §3.6: the buy confirm screen is gone (SELL2 quick-buy); its threshold key is deleted on load. */
     @Override
     public java.util.Map<String, String> removedKeys() {
-        return java.util.Map.of("buy.confirm-above", "the buy confirm screen was removed (quick-buy, R3-29/F14 plan the replacement)");
+        return java.util.Map.of(
+                "buy.confirm-above", "the buy confirm screen was removed (quick-buy, R3-29/F14 plan the replacement)",
+                "quick-buy.left-amount", "Shop v2: a click opens the buy page (Buy 1/16/64, Fill inventory, Type an amount)",
+                "quick-buy.right-amount", "Shop v2: a click opens the buy page; Java shift-click buys one stack",
+                "quick-buy.start-amount", "Shop v2: the amount screen became the buy page",
+                "buy.picker-steps", "Shop v2: the buy page has fixed Buy 1/16/64 buttons");
     }
 
     @Override
@@ -65,22 +89,15 @@ public final class ShopSettings extends ModuleConfig {
                 + "Reload: /skyblock reload shop";
     }
 
-    /** The picker steps as the number picker wants them (at least one; positive). */
-    public long[] steps() {
-        long[] out = numbers(pickerSteps).stream().filter(s -> s >= 1).limit(3).mapToLong(Integer::longValue).toArray();
-        return out.length == 0 ? new long[]{1, 16, 64} : out;
-    }
-
-    /** Whole numbers from a config list; anything else is ignored. */
-    static List<Integer> numbers(List<String> raw) {
-        java.util.ArrayList<Integer> out = new java.util.ArrayList<>();
-        for (String s : raw == null ? List.<String>of() : raw) {
-            try {
-                out.add(Integer.parseInt(s.trim()));
-            } catch (NumberFormatException | NullPointerException ignored) {
-                // not a number: skipped
-            }
-        }
-        return out;
+    /** Income per hour of one spawner of {@code tier} (1-5) at full output; 0 for an unknown tier. */
+    public long incomePerHour(int tier) {
+        return switch (tier) {
+            case 1 -> incomeTier1;
+            case 2 -> incomeTier2;
+            case 3 -> incomeTier3;
+            case 4 -> incomeTier4;
+            case 5 -> incomeTier5;
+            default -> 0;
+        };
     }
 }

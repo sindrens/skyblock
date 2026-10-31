@@ -1033,22 +1033,30 @@ topics:
     icon: emerald
     aliases: [builder-shop, buy, blocks, store-blocks]
     name: "<c:flame>Builder shop"
-    summary: ["<c:text>Buy blocks, decoration and", "<c:text>seeds for your island."]
+    summary: ["<c:text>Buy blocks, decoration, seeds", "<c:text>and spawners for your island."]
     take-me-there: "shop"
     commands: [Economy]
     pages:
       - title: "<c:value>Buying"
         lines:
-          - "<c:value>/shop</c:value> <c:text>shows the categories. In one:"
-          - "<c:text>left-click buys 1, right-click 64,"
-          - "<c:text>shift-click picks an amount; on"
-          - "<c:text>Bedrock, tap an item to pick one."
+          - "<c:value>/shop</c:value> <c:text>has 9 tabs at the top. Click"
+          - "<c:text>an item, then Buy 1, 16, 64, Fill"
+          - "<c:text>inventory or Type an amount."
+          - "<c:text>Java: shift-click buys a stack."
       - title: "<c:value>Room and money"
         lines:
           - "<c:text>Items go into your inventory. If not"
           - "<c:text>all fit, you pay only for what fits."
-          - "<c:text>Big buys ask you to confirm first."
-          - "<c:value>/shop wood</c:value> <c:text>opens a category."
+          - "<c:text>Buys over half your money need a"
+          - "<c:text>second click. <c:value>/shop wood</c:value> <c:text>opens a tab."
+      - title: "<c:value>Undo last buy"
+        lines:
+          - "<c:text>Bought the wrong thing? Click Undo"
+          - "<c:text>(bottom bar) within 15 seconds to"
+          - "<c:text>get all your money back, while the"
+          - "<c:text>items are still in your inventory."
+          - "<c:text>Both helpers can be turned off in"
+          - "<c:value>/settings</c:value><c:text>."
       - title: "<c:value>Why some prices are high"
         lines:
           - "<c:text>Crops and redstone also sell with"
@@ -1068,7 +1076,7 @@ topics:
         lines:
           - "<c:value>/sell</c:value> <c:text>opens the sell chest. Put"
           - "<c:text>items in (click, shift-click, drag)"
-          - "<c:text>or press <c:value>Sell inventory</c:value><c:text>, then <c:value>Sell</c:value><c:text>."
+          - "<c:text>or press <c:value>Add my inventory</c:value><c:text>, then <c:value>Sell</c:value><c:text>."
           - "<c:text>Closing it gives everything back."
       - title: "<c:value>Quick selling"
         lines:
