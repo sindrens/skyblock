@@ -275,7 +275,7 @@ The balance sheet gives **events, quests and crates together 0.3 × Depths incom
 
 ## M10.3 Physical crates and animations (vanilla now)
 - The crates spawn on the crate yard pedestals from build points (`crates: common … monthly`). Real vanilla blocks (overview table), so Bedrock sees them too.
-- Hologram above each crate: name in its rarity color, `Right-Click: Open`, `Left-Click: View Rewards` (UI_STYLE §6.4b). The key board hologram lists how to get keys and the top-band odds of every crate.
+- Hologram above each crate: name in its rarity color, `Click: Open`, `Sneak-click: View rewards` (UI_STYLE §6.4b, UX3: a plain click opens, texts never say right-click). Without a key a click shows the rewards and how to get keys. The key board hologram lists how to get keys and the top-band odds of every crate.
 - **GUI animation** (B40 spinner): items scroll through slots 10–16 and slow down onto slot 13, ~3 s, soft tick sound. Click to skip. `/settings → Fast crate opening` skips it always.
 - **In-world animation** when opened at a pedestal: rarity particles, the reward floats up above the crate with its name for 3 s (everyone nearby sees it), firework for ★.
 - **Win message:** ★ rewards from Inferno and higher go to global chat (one line, hover shows the item). Everything else only to the opener.

@@ -351,3 +351,88 @@ fragments:
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work. Your fragments are back (inventory or /box). Try again."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>Wait a moment, your last combine is still running."
   disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Combining key fragments is turned off right now."
+
+# ------------------------------------------------------------------ M10.3 physical crates and animations
+# Clicking a crate block at the crate yard without a key (the rewards open too). <key> = key name.
+physical:
+  no-keys: "<prefix><c:error><sym:cross></c:error> <c:text>You have no <key><c:text>. Get keys: <c:value>/vote</c:value><c:text>, <c:value>/daily</c:value><c:text>, playtime and the AFK pool."
+
+# Hologram above each crate block (V2, UI_STYLE 6.4b). <crate> = crate name in its rarity color.
+hologram:
+  lines:
+    - "<bold><crate>"
+    - "<bold><c:action>Click: </c:action></bold><c:text>Open"
+    - "<bold><c:action>Sneak-click: </c:action></bold><c:text>View rewards"
+  coming-soon:
+    - "<bold><crate>"
+    - "<c:locked>Coming soon"
+
+# The crate yard key board (build hologram key_board, placed by the npcs module). how: one line each.
+# odds-line: <crate> = crate name, <top> = chance of a top reward (star) in percent.
+key-board:
+  title: "<c:flame><bold>Crate Keys"
+  how:
+    - "<c:text>Vote <c:value>/vote</c:value> <c:muted><sym:dot></c:muted> <c:text>Daily <c:value>/daily"
+    - "<c:text>Playtime, AFK pool and quests"
+  odds-header: "<c:muted>Chance of a <c:flame><sym:star></c:flame><c:muted> top reward:"
+  odds-line: "<crate> <c:value><top>%"
+  footer: "<c:text>Open anywhere: <c:value>/crates"
+
+# B40 spinner (Open 1 in the menus). <reward> = what you won.
+spinner:
+  info:
+    - "<c:text>Your reward is already decided"
+    - "<c:text>and saved; this is only the show."
+    - "<c:text>Click the row to skip. Turn it off:"
+    - "<c:value>/settings</c:value> <c:muted><sym:dot></c:muted> <c:text>Fast crate opening"
+  marker:
+    name: "<c:flame><sym:star></c:flame> <c:value>Rolling..."
+    lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to skip"]
+  won:
+    name: "<c:success><sym:check></c:success> <c:text>You won <reward>"
+    lore: ["<c:muted>It is in your inventory, /box or balance."]
+  won-top:
+    name: "<c:flame><sym:star></c:flame> <c:text>Top reward: <reward>"
+    lore: ["<c:muted>It is in your inventory, /box or balance."]
+  fallback-lore:
+    - "<c:muted>Not live yet: you got <cur:crystals><amount></cur:crystals><c:muted>."
+
+# In-world show at a pedestal. title: to the opener (Bedrock may not show the floating reward).
+# label: above the floating reward for everyone nearby; <player> = the opener.
+world:
+  title:
+    title: "<reward>"
+    subtitle: "<crate>"
+    fade-in: 5
+    stay: 40
+    fade-out: 15
+  title-top:
+    title: "<c:flame><sym:star></c:flame> <reward>"
+    subtitle: "<c:text>Top reward from the <crate>"
+    fade-in: 5
+    stay: 50
+    fade-out: 15
+  label:
+    - "<reward>"
+    - "<c:muted><player>"
+  label-top:
+    - "<c:flame><sym:star></c:flame> <reward>"
+    - "<c:muted><player>"
+
+# Global chat line for a top reward of the big crates (crates-settings.yml -> broadcast.crates). Java: hover the reward
+# to see the item. <player>, <crate>, <reward>, <more> = other top rewards of the same bulk open.
+broadcast:
+  top: "<prefix><c:flame><sym:star></c:flame> <c:value><player></c:value> <c:text>won <reward> <c:text>from the <crate><c:text>!"
+  top-many: "<prefix><c:flame><sym:star></c:flame> <c:value><player></c:value> <c:text>won <reward> <c:text>and <c:value><more></c:value> <c:text>more top rewards from the <crate><c:text>!"
+  hover:
+    - "<c:text>From the <crate>"
+    - "<c:muted>Chance: <chance>%"
+
+# /settings switch (Gameplay).
+settings:
+  fast-crate-opening:
+    name: "Fast crate opening"
+    lore:
+      - "<c:text>Skip the crate spin and the"
+      - "<c:text>build-up at the crate yard:"
+      - "<c:text>see your reward at once."

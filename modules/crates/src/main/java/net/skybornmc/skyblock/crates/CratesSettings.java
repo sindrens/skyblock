@@ -89,18 +89,109 @@ public final class CratesSettings extends ModuleConfig {
             level = Setting.Level.OWNER)
     public int seasonId = 1;
 
-    @Setting(path = "physical.enabled", desc = "Clicking the crate blocks on the crate yard pedestals (build points "
-            + "'crates'): right-click opens 1, left-click shows the rewards.")
+    @Setting(path = "physical.enabled", desc = "Crate blocks on the crate yard pedestals (build points 'crates', M10.3): "
+            + "the crate is placed as a real vanilla block with a hologram above it. Click opens 1 (with the in-world "
+            + "animation), sneak-click shows the rewards; no key = the rewards + how to get keys.")
     public boolean physicalEnabled = true;
 
     @Setting(path = "physical.points", desc = "Crate yard build point id -> crate id ('point:crate'). The yard has 6 "
-            + "pedestals (no Conqueror pedestal yet).")
+            + "pedestals; Conqueror stays /crates-only until the builder adds a 7th pedestal: then add its line here, "
+            + "e.g. 'conqueror:conqueror'.")
     public List<String> physicalPoints = List.of("common:ember", "uncommon:cinder", "rare:blaze", "epic:inferno",
             "legendary:phoenix", "monthly:eclipse");
 
-    @Setting(path = "physical.y-offsets", desc = "Blocks above a crate build point that count as the crate (0 = the point "
-            + "itself, 1 = the block on top of the pedestal).")
+    @Setting(path = "physical.y-offsets", desc = "Blocks above a crate build point that count as the crate when clicked "
+            + "(0 = the point itself, where the crate block is placed; 1 = the block on top of it).")
     public List<String> physicalOffsets = List.of("0", "1");
+
+    @Setting(path = "physical.blocks", desc = "Vanilla block of each crate on its pedestal ('crate:block data', RX11). A "
+            + "crate without a line uses its crates.yml icon. The resource pack retextures them later.")
+    public List<String> physicalBlocks = List.of("ember:barrel[facing=up]", "cinder:chest[facing=west]",
+            "blaze:copper_chest[facing=west]", "inferno:ender_chest[facing=west]", "phoenix:vault[facing=west]",
+            "eclipse:vault[facing=west,ominous=true]", "conqueror:trial_spawner[ominous=true]");
+
+    @Setting(path = "physical.replace", desc = "Blocks the crate block may replace on a pedestal. Anything else there is "
+            + "left alone and reported once in the log (never breaks a build).")
+    public List<String> physicalReplace = List.of("air", "cave_air", "void_air", "light", "barrel", "chest", "trapped_chest",
+            "copper_chest", "ender_chest", "vault", "trial_spawner");
+
+    @Setting(path = "physical.click-cooldown-ms", desc = "Clicks on a crate block within this time after the last one are "
+            + "ignored (holding the mouse button sends many clicks).", min = 0, max = 5_000)
+    public int clickCooldownMs = 400;
+
+    @Setting(path = "hologram.enabled", desc = "Hologram above each crate block: its name in its rarity color and how to "
+            + "open it.")
+    public boolean hologramEnabled = true;
+
+    @Setting(path = "hologram.height", desc = "Height of the hologram's bottom above the top of the crate block (blocks).",
+            min = 0, max = 3)
+    public double hologramHeight = 0.35;
+
+    @Setting(path = "hologram.view-range", desc = "How far the crate holograms and the reward float are visible "
+            + "(1.0 = 64 blocks).", min = 0.1, max = 4.0)
+    public double hologramViewRange = 0.5;
+
+    @Setting(path = "hologram.background-alpha", desc = "Darkness of the hologram background (0 = none, 255 = black).",
+            min = 0, max = 255)
+    public int hologramBackgroundAlpha = 64;
+
+    @Setting(path = "key-board.enabled", desc = "Write the crate yard key board (build hologram 'key_board'): how to get "
+            + "keys and the top-reward chance of every crate (the npcs module places it).")
+    public boolean keyBoardEnabled = true;
+
+    @Setting(path = "key-board.hologram", desc = "Build hologram id of the key board.")
+    public String keyBoardHologram = "key_board";
+
+    @Setting(path = "spinner.enabled", desc = "B40 spinner for 'Open 1' in the menus: rewards scroll through slots 10-16 and "
+            + "slow down onto slot 13. The reward is decided and saved before it starts; click to skip.")
+    public boolean spinnerEnabled = true;
+
+    @Setting(path = "spinner.duration-ticks", desc = "Length of the spin (20 ticks = 1 s; plan: ~3 s).", min = 10, max = 200)
+    public int spinnerTicks = 60;
+
+    @Setting(path = "spinner.frames", desc = "Steps of the spin on Java (each step moves the row by one slot).", min = 5,
+            max = 60)
+    public int spinnerFrames = 26;
+
+    @Setting(path = "spinner.bedrock-frames", desc = "Steps of the spin on Bedrock (menu updates; PHASE-10: at most 20 "
+            + "including the final screen, so this is capped at " + (SpinnerMath.BEDROCK_MAX_UPDATES - 1) + ").", min = 3,
+            max = SpinnerMath.BEDROCK_MAX_UPDATES - 1)
+    public int spinnerBedrockFrames = 14;
+
+    @Setting(path = "spinner.tick-sound", desc = "Soft tick each step: 'namespace:sound volume pitch' or a sounds.yml key.")
+    public String spinnerTickSound = "minecraft:block.note_block.hat 0.35 1.6";
+
+    @Setting(path = "animation.fast-setting-default", desc = "Default of the /settings switch 'Fast crate opening' (on = "
+            + "no spin and no build-up, the result at once).")
+    public boolean fastDefault = false;
+
+    @Setting(path = "animation.build-ticks", desc = "In-world build-up at a pedestal before the reward shows (rarity "
+            + "particles around the crate).", min = 0, max = 100)
+    public int buildTicks = 30;
+
+    @Setting(path = "animation.float-ticks", desc = "How long the reward floats above the crate with its name (plan: 3 s).",
+            min = 20, max = 200)
+    public int floatTicks = 60;
+
+    @Setting(path = "animation.float-rise", desc = "How high the reward rises above the crate (blocks).", min = 0.2, max = 3)
+    public double floatRise = 0.9;
+
+    @Setting(path = "animation.particles", desc = "Rarity particles per step of the build-up (0 = none).", min = 0, max = 20)
+    public int particlesPerStep = 4;
+
+    @Setting(path = "animation.burst-particles", desc = "Particles of the burst when the reward appears.", min = 0, max = 60)
+    public int burstParticles = 24;
+
+    @Setting(path = "animation.firework-top", desc = "A firework above the crate when a top-band reward is won.")
+    public boolean fireworkTop = true;
+
+    @Setting(path = "animation.title", desc = "Also show the result as a title to the opener at a pedestal (Bedrock "
+            + "may not show the floating reward).")
+    public boolean titleAtPedestal = true;
+
+    @Setting(path = "broadcast.crates", desc = "Crates whose top-band wins are told in global chat (RX12: Inferno and "
+            + "higher). All other wins only go to the opener.", level = Setting.Level.OWNER)
+    public List<String> broadcastCrates = List.of("inferno", "phoenix", "eclipse", "conqueror");
 
     @Setting(path = "delivery.join-delay-ticks", desc = "Ticks after joining before the key summary is refreshed (the "
             + "profile module loads the active profile first).", min = 1, max = 1_200)

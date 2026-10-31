@@ -9,6 +9,7 @@ import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.builds.BuildPoints;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
+import net.skybornmc.skyblock.common.npc.HologramTexts;
 import net.skybornmc.skyblock.common.npc.NpcDirectory;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
@@ -58,6 +59,15 @@ public final class NpcsModule implements SkyblockModule {
     private Leaderboards boards;
     private NpcListener listener;
     private HelpDialog help;
+    /**
+     * M10-3: live hologram texts other modules write ({@link HologramTexts}), by hologram id. Kept across a disable/enable
+     * of this module so the owners' texts survive it; an owner clears its own texts when it disables.
+     */
+    private final Map<String, LiveText> liveTexts = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** One live text: who set it and its lines. */
+    private record LiveText(String owner, List<Component> lines) {
+    }
 
     public NpcsModule(Core core) {
         this.core = core;
@@ -84,6 +94,7 @@ public final class NpcsModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(placer, core.plugin());
         Bukkit.getPluginManager().registerEvents(listener, core.plugin());
         core.services().register(ID, NpcDirectory.class, new Directory());
+        core.services().register(ID, HologramTexts.class, new Texts());
         loader = new LatestLoad<>(r -> core.scheduler().async(r), r -> core.scheduler().main("npcs:apply", r));
         // One tick later: worlds are loaded and services of modules enabled after this one exist.
         core.scheduler().later("npcs:start", 1, this::place);
@@ -163,6 +174,9 @@ public final class NpcsModule implements SkyblockModule {
 
     /** Same test as {@link #hologramContent} returning non-null, without building the text (any thread). */
     private boolean hasHologramText(Spots.Text t) {
+        if (liveTexts.containsKey(t.id())) {
+            return true;
+        }
         String raw = raw("holograms." + t.id());
         return (raw != null && !raw.isBlank()) || !t.fallbackText().isBlank();
     }
@@ -264,6 +278,11 @@ public final class NpcsModule implements SkyblockModule {
 
     /** A hologram's text: {@code holograms.<id>}, else the metadata's text; {@code null} = nothing to show. */
     TextContent hologramContent(Spots.Text t) {
+        LiveText live = liveTexts.get(t.id());
+        if (live != null) {
+            return new TextContent(Component.join(net.kyori.adventure.text.JoinConfiguration.newlines(), live.lines()),
+                    live.lines().size());
+        }
         String raw = raw("holograms." + t.id());
         if (raw != null && !raw.isBlank()) {
             return new TextContent(text("holograms." + t.id()), Layout.lineCount(raw));
@@ -429,6 +448,44 @@ public final class NpcsModule implements SkyblockModule {
             msg.send(sender, "admin.respawned", Msg.number("total", spots.total()));
             core.audit().log(AuditCategory.CONFIG, "npcs_respawn", Actor.of(sender), ID, (long) spots.total(), null, null);
         });
+    }
+
+    // ------------------------------------------------------------------ HologramTexts (M10-3)
+
+    /** Live hologram texts of other modules (the crate yard's key board). Main thread. */
+    private final class Texts implements HologramTexts {
+
+        @Override
+        public void set(String owner, String hologramId, List<Component> lines) {
+            if (lines == null || lines.isEmpty()) {
+                clear(owner, hologramId);
+                return;
+            }
+            liveTexts.put(hologramId, new LiveText(owner, List.copyOf(lines)));
+            changed(hologramId);
+        }
+
+        @Override
+        public void clear(String owner, String hologramId) {
+            LiveText live = liveTexts.get(hologramId);
+            if (live != null && live.owner().equals(owner)) {
+                liveTexts.remove(hologramId);
+                changed(hologramId);
+            }
+        }
+
+        @Override
+        public void clearAll(String owner) {
+            List<String> ids = liveTexts.entrySet().stream().filter(e -> e.getValue().owner().equals(owner)).map(Map.Entry::getKey)
+                    .toList();
+            ids.forEach(id -> clear(owner, id));
+        }
+
+        private void changed(String hologramId) {
+            if (placer != null) {
+                placer.respawnHolograms(hologramId);
+            }
+        }
     }
 
     // ------------------------------------------------------------------ NpcDirectory
