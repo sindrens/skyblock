@@ -48,6 +48,23 @@ public final class CratesSettings extends ModuleConfig {
     public List<String> tradeableSources = List.of("quest", "quest_daily", "quest_weekly", "pass", "event", "weekly_top",
             "fragment", "koth");
 
+    @Setting(path = "fragments.enabled", desc = "R3-18: the Key Fragments button in /crates turns fragments (Depths tier 11+ "
+            + "drops) into keys.")
+    public boolean fragmentsEnabled = true;
+
+    @Setting(path = "fragments.per-key", desc = "R3-18: fragments for one key (owner: 3).", min = 1, max = 64,
+            level = Setting.Level.OWNER)
+    public int fragmentsPerKey = 3;
+
+    @Setting(path = "fragments.crate", desc = "R3-18: crate whose key the fragments make (owner: phoenix).", level = Setting.Level.OWNER)
+    public String fragmentsCrate = "phoenix";
+
+    @Setting(path = "fragments.item", desc = "Custom item id of a fragment (the Depths drop item).")
+    public String fragmentsItem = "depths_key_fragment";
+
+    @Setting(path = "fragments.max-keys-per-click", desc = "Most keys one 'Combine all' click makes.", min = 1, max = 1_000)
+    public int fragmentsMaxKeysPerClick = 64;
+
     @Setting(path = "tier.stage-skills", desc = "Skills whose highest level decides the opener's tier for money and crystal "
             + "pouches (the same rule the AFK pool uses).")
     public List<String> stageSkills = List.of("mining", "foraging", "combat");

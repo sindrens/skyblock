@@ -84,6 +84,9 @@ public final class EnchantsModule implements SkyblockModule {
     @Override
     public void enable() throws Exception {
         loadConfig();
+        // Texts that changed meaning (DEPTHS-R3): upgraded on the live server unless the owner edited them.
+        core.messages().retire(ID, java.util.Map.of("enchant.soul_reaper.effect",
+                "+{xp}% XP and +{skill}% Combat XP from stacked kills."));
         msg = core.messages(ID);
         text = new EnchantText(core.messages(), ID);
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
@@ -262,6 +265,10 @@ public final class EnchantsModule implements SkyblockModule {
                     changed = true;
                 }
             }
+            if (upgradeSoulReaper(yaml, bundled)) {
+                core.plugin().getLogger().info("Enchants: Soul Reaper now gives sword XP instead of Combat XP (R3-24); enchants.yml updated.");
+                changed = true;
+            }
         }
         if (changed) {
             try {
@@ -284,6 +291,25 @@ public final class EnchantsModule implements SkyblockModule {
         EnchantRegistry loaded = EnchantRegistry.load(yaml, w -> core.plugin().getLogger().warning(w));
         core.plugin().getLogger().info("Enchants: " + loaded.size() + " enchant(s) loaded.");
         return loaded;
+    }
+
+    /**
+     * R3-24 one-time upgrade of a live {@code enchants.yml}: Soul Reaper's old Combat XP values ({@code values.skill},
+     * family {@code skill_xp}) become the new sword XP values ({@code values.tool}, family {@code tool_xp}) from the jar.
+     * Runs only while the old {@code skill} values are there and {@code tool} is missing, so it happens once and an owner's
+     * own {@code tool} numbers are never touched. Pure; unit-tested.
+     */
+    static boolean upgradeSoulReaper(YamlConfiguration live, YamlConfiguration bundled) {
+        String base = EnchantRegistry.ROOT + "." + StackEnchants.SOUL_REAPER;
+        if (!live.contains(base + ".values.skill") || live.contains(base + ".values.tool") || !bundled.contains(base + ".values.tool")) {
+            return false;
+        }
+        live.set(base + ".values.tool", bundled.get(base + ".values.tool"));
+        live.set(base + ".values.skill", null);
+        if ("skill_xp".equalsIgnoreCase(live.getString(base + ".family", ""))) {
+            live.set(base + ".family", bundled.getString(base + ".family", "tool_xp"));
+        }
+        return true;
     }
 
     private YamlConfiguration bundled() {

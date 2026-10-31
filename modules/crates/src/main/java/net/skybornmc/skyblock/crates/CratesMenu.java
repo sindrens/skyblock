@@ -19,6 +19,8 @@ import java.util.UUID;
 final class CratesMenu extends Menu {
 
     static final int SLOT_SUMMARY = 4;
+    /** R3-18: key fragments → Phoenix keys. */
+    static final int SLOT_FRAGMENTS = 40;
     static final int[] CRATE_SLOTS = {19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
 
     private final CratesModule m;
@@ -82,6 +84,29 @@ final class CratesMenu extends Menu {
         if (crates.isEmpty()) {
             setEmpty(CratesModule.ID, "menu.empty");
         }
+        if (m.fragments().enabled()) {
+            set(SLOT_FRAGMENTS, fragmentsItem(), click -> {
+                int want = click.isShift() || click.isRight() ? m.settings.fragmentsMaxKeysPerClick : 1;
+                m.fragments().exchange(click.player(), want, r -> {
+                    if (isOpen()) {
+                        refresh();
+                    }
+                });
+            });
+        }
+    }
+
+    /** R3-18 tile: how many fragments the viewer carries and how to combine them (Bedrock: one tap = one key). */
+    private org.bukkit.inventory.ItemStack fragmentsItem() {
+        int have = m.fragments().count(viewer);
+        int per = m.settings.fragmentsPerKey;
+        List<Component> lore = new ArrayList<>(service.lines(viewer, CratesModule.ID, "menu.fragments.lore",
+                Msg.number("have", have), Msg.number("need", per), Msg.mm("key", m.keyMini(m.settings.fragmentsCrate))));
+        String actions = have < per ? "menu.fragments.actions-none" : m.bedrock(viewer) ? "menu.fragments.actions-bedrock"
+                : "menu.fragments.actions";
+        lore.addAll(service.lines(viewer, CratesModule.ID, actions, Msg.number("keys", FragmentExchange.keysFor(have, per,
+                m.settings.fragmentsMaxKeysPerClick)), Msg.number("need", per)));
+        return service.item(Material.TRIPWIRE_HOOK, service.text(viewer, CratesModule.ID, "menu.fragments.name"), lore);
     }
 
     private org.bukkit.inventory.ItemStack summary(CratesModule.ProfileView view) {

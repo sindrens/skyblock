@@ -290,7 +290,7 @@ The harvester hoe (Forge) harvests 3×3 / 5×5 / 7×7 by its level and auto-repl
 | Id | Name | Rarity | Max | Effect per level | Slot | From |
 |---|---|---|---|---|---|---|
 | `slaughter` | Slaughter | Rare | X | A killing hit on a stack kills 2 / 3 / 4 / 6 / 8 / 12 / 16 / 24 / 32 / 48 mobs | 1 | Combat T2, Island stacks |
-| `soul_reaper` | Soul Reaper | Uncommon | V | +10% vanilla XP (+10 … +50%) and +6% Combat skill XP (+6 … +30%) from stacked kills [skill XP] | 1 | Combat T1, Island stacks |
+| `soul_reaper` | Soul Reaper | Uncommon | V | +10% vanilla XP (+10 … +50%) and +10% sword XP (+10 … +50%) from stacked kills [tool XP]. **R3-24:** Combat XP comes only from Depths combat zones, so the old "+6 … +30% Combat skill XP" became sword XP (tool XP family, capped once with Tempering at +100%; also the dying mob of a stacked hit). No XP of any skill outside the Depths | 1 | Combat T1, Island stacks |
 | `bloodlust` | Bloodlust | Rare | V | Each killing stack hit within 2 s of the last adds +10% to the Slaughter count (min +1 mob), up to +10 / 20 / 30 / 40 / 50%; resets after 2 s | 1 | Combat T3, Island stacks |
 | `reapers_sweep` | Reaper's Sweep | Epic | III | A killing stack hit also kills 25 / 50 / 75% of the Slaughter count (min 1) from up to 2 / 4 / 6 other stacks within 4 blocks | 1 | Combat T5 |
 

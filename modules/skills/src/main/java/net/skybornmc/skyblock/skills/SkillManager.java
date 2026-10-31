@@ -170,6 +170,9 @@ final class SkillManager implements SkillService, Listener {
         if (player == null || skill == null || !available(skill) || !(amount > 0) || Double.isInfinite(amount)) {
             return 0;
         }
+        if (!CombatXpRule.allowed(skill, source, config.combatOnlyInDepths, config.combatDepthsSources)) {
+            return 0; // R3-24: Combat XP only from Depths combat zones
+        }
         PlayerSkills p = online.get(player.getUniqueId());
         if (p == null) {
             return 0; // NPCs and players whose join is not processed yet
@@ -303,8 +306,8 @@ final class SkillManager implements SkillService, Listener {
             return;
         }
         Player killer = entity.getKiller();
-        if (killer == null || entity.getScoreboardTags().contains(NO_XP_TAG)) {
-            return;
+        if (killer == null || config.combatOnlyInDepths || entity.getScoreboardTags().contains(NO_XP_TAG)) {
+            return; // R3-24: with only-in-depths, the depths module pays Combat XP for its zones itself
         }
         // Stacked spawners (stacking module) spawn their mobs themselves, so ask its service as well.
         if (!config.spawnerMobsGiveXp && (entity.fromMobSpawner() || core.services().optional(StackingService.class)
@@ -325,7 +328,7 @@ final class SkillManager implements SkillService, Listener {
     public void onStackKill(StackKillEvent event) {
         Player killer = event.killer();
         LivingEntity entity = event.entity();
-        if (killer == null || event.extraKills() <= 0 || entity.getScoreboardTags().contains(NO_XP_TAG)) {
+        if (killer == null || config.combatOnlyInDepths || event.extraKills() <= 0 || entity.getScoreboardTags().contains(NO_XP_TAG)) {
             return;
         }
         if (!config.spawnerMobsGiveXp && (event.spawnerMob() || entity.fromMobSpawner())) {

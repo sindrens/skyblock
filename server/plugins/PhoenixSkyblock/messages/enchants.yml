@@ -516,7 +516,7 @@ enchant:
     effect: "A killing hit on a stack kills {count} mobs."
   soul_reaper:
     name: "Soul Reaper"
-    effect: "+{xp}% XP and +{skill}% Combat XP from stacked kills."
+    effect: "+{xp}% XP and +{tool}% sword XP from stacked kills."
   bloodlust:
     name: "Bloodlust"
     effect: "Fast stack kills add up to +{percent}% to Slaughter."

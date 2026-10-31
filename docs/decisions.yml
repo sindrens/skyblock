@@ -136,3 +136,65 @@ decisions:
     file: economy.yml
     path: send-gate.required
     value: 10000
+  - id: "R3-10a"
+    answer: "Mini-boss health +25% per extra eligible player"
+    module: depths
+    file: depths.yml
+    path: combat.mini-boss.health-per-extra-player
+    value: 25.0
+
+  - id: "R3-10b"
+    answer: "Mini-boss scaling counts up to 10 extra players"
+    module: depths
+    file: depths.yml
+    path: combat.mini-boss.max-extra-players
+    value: 10
+
+  - id: "R3-10c"
+    answer: "Mini-boss rewards: at least 10% of the damage (every eligible player gets the full reward)"
+    module: depths
+    file: depths.yml
+    path: combat.mini-boss.min-damage-share
+    value: 0.1
+
+  - id: "R3-10d"
+    answer: "Mini-boss rewards and scaling: hit within the last 90 s"
+    module: depths
+    file: depths.yml
+    path: combat.mini-boss.recent-hit-seconds
+    value: 90
+
+  - id: "R3-10e"
+    answer: "Mini-boss rewards and scaling: max 3 accounts per IP"
+    module: depths
+    file: depths.yml
+    path: combat.mini-boss.max-accounts-per-ip
+    value: 3
+
+  - id: "R3-18a"
+    answer: "3 key fragments make 1 Phoenix key (in /crates)"
+    module: crates
+    file: crates-settings.yml
+    path: fragments.per-key
+    value: 3
+
+  - id: "R3-18b"
+    answer: "Fragments make Phoenix keys"
+    module: crates
+    file: crates-settings.yml
+    path: fragments.crate
+    value: "phoenix"
+
+  - id: "R3-18c"
+    answer: "Fragments drop from mine and forest tiers 11+ (drop chance: open question, default 1 in 18,000 per block)"
+    module: depths
+    file: depths.yml
+    path: fragments.min-tier
+    value: 11
+
+  - id: "R3-24"
+    answer: "Combat XP only from kills inside Depths combat zones (Soul Reaper's Combat XP effect became sword XP)"
+    module: skills
+    file: skills.yml
+    path: combat.only-in-depths
+    value: true

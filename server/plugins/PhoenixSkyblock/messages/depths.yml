@@ -249,7 +249,7 @@ drop-items:
   description: "Sell it from your satchel or use it at the Forge."
   descriptions:
     depths_geode: "A rare find. Its use arrives in a later update."
-    depths_key_fragment: "A rare find. Its use arrives in a later update."
+    depths_key_fragment: "A rare find from tier 11+. 3 make a Phoenix key in /crates. Tradeable."
   names:
     depths_coal: "Coal"
     depths_copper: "Copper"

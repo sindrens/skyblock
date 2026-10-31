@@ -48,6 +48,8 @@ public final class Messages {
     private final Set<String> reportedMissing = ConcurrentHashMap.newKeySet();
     private final Map<String, List<String>> problems = new ConcurrentHashMap<>();
     private final java.util.concurrent.atomic.AtomicInteger loads = new java.util.concurrent.atomic.AtomicInteger();
+    /** Old bundled texts per module and key that are upgraded on load ({@link #retire}). */
+    private final Map<String, Map<String, String>> retired = new ConcurrentHashMap<>();
 
     public Messages(JavaPlugin plugin, Style style) {
         this.plugin = plugin;
@@ -99,6 +101,9 @@ public final class Messages {
             if (yaml.options().getHeader().isEmpty()) {
                 yaml.options().setHeader(bundled.options().getHeader());
             }
+            if (applyRetired(yaml, bundled, retired.getOrDefault(module, Map.of()))) {
+                changed = true;
+            }
         }
         Map<String, String> map = new LinkedHashMap<>();
         for (String key : yaml.getKeys(true)) {
@@ -129,6 +134,45 @@ public final class Messages {
         found.forEach(log::warning);
         problems.put(module, List.copyOf(found));
         return found;
+    }
+
+    /**
+     * Registers old bundled texts of a module ({@code key → old text}; a multi-line list as its lines joined with
+     * {@code \n}). On every load a live text that still equals its
+     * old text word for word (so the owner never edited it) is replaced by the new bundled text and saved; an edited
+     * text is kept. Call before {@link #load} (e.g. when a feature changed and the old text became wrong).
+     */
+    public void retire(String module, Map<String, String> oldTexts) {
+        if (module != null && oldTexts != null && !oldTexts.isEmpty()) {
+            retired.merge(module, Map.copyOf(oldTexts), (a, b) -> {
+                Map<String, String> m = new LinkedHashMap<>(a);
+                m.putAll(b);
+                return Map.copyOf(m);
+            });
+        }
+    }
+
+    /** Pure part of {@link #retire}: upgrades unedited old texts in {@code yaml}. True when something changed. */
+    static boolean applyRetired(YamlConfiguration yaml, YamlConfiguration bundled, Map<String, String> oldTexts) {
+        boolean changed = false;
+        for (Map.Entry<String, String> e : oldTexts.entrySet()) {
+            String key = e.getKey();
+            String live = flat(yaml, key);
+            String next = flat(bundled, key);
+            if (live != null && live.equals(e.getValue()) && next != null && !next.equals(live)) {
+                yaml.set(key, bundled.get(key));
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /** A text or a multi-line list as one string (list lines joined with a newline), or null. */
+    private static String flat(YamlConfiguration yaml, String key) {
+        if (yaml.isList(key)) {
+            return String.join("\n", yaml.getStringList(key));
+        }
+        return yaml.isString(key) ? yaml.getString(key) : null;
     }
 
     /** Reloads every module loaded so far. */

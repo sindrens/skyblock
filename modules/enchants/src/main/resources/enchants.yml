@@ -301,8 +301,9 @@ enchants:
     tools: [sword]
     pools: [combat, stacks]
     min-tier: 1
-    family: skill_xp
-    values: {xp: [10, 20, 30, 40, 50], skill: [6, 12, 18, 24, 30]}
+    # R3-24: Combat XP only comes from the Depths, so the second effect is sword XP on stacked kills (tool_xp family).
+    family: tool_xp
+    values: {xp: [10, 20, 30, 40, 50], tool: [10, 20, 30, 40, 50]}
   bloodlust:
     rarity: rare
     max-level: 5
