@@ -114,9 +114,11 @@ class IslandChatRulesTest {
         }
         Set<Integer> seen = new java.util.HashSet<>();
         for (int slot : IslandMenu.CONTENT) {
-            assertTrue(inner.contains(slot), "slot " + slot + " is on the frame");
+            // I9: the danger tile sits in the top right corner (slot 8), every other button in the inner grid.
+            assertTrue(inner.contains(slot) || slot == IslandMenu.SLOT_DANGER, "slot " + slot + " is outside the content area");
             assertTrue(seen.add(slot), "slot " + slot + " used twice");
         }
+        assertEquals(8, IslandMenu.SLOT_DANGER);
         assertFalse(seen.contains(IslandMenu.SLOT_ISLAND));
         Set<Integer> colorSlots = new java.util.HashSet<>(ChatColorsMenu.SLOTS.values());
         assertEquals(IslandChatRules.COLOR_ROLES.size(), colorSlots.size());

@@ -325,20 +325,22 @@ menu:
       - "<c:text>the island bank."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  # I9 section 5: the red danger tile (TNT, top right corner, slot 8). Two grey lines say what is lost; the click asks
+  # first (disband: two steps).
   disband:
-    name: "<c:error><bold>Disband island"
+    name: "<area:danger><bold>Disband island"
     lore:
-      - "<c:text>Delete your island for good."
-      - "<c:muted>Only when nobody else is on it."
+      - "<c:text>Your island, its blocks and items"
+      - "<c:text>and the island bank are deleted."
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to disband"
+      - "<bold><c:error>» CLICK</c:error></bold> <c:text>to disband"
   leave:
-    name: "<c:error><bold>Leave island"
+    name: "<area:danger><bold>Leave island"
     lore:
-      - "<c:text>Leave this island."
-      - "<c:muted>You confirm first."
+      - "<c:text>You lose access to this island"
+      - "<c:text>and its warps, bank and chat."
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to leave"
+      - "<bold><c:error>» CLICK</c:error></bold> <c:text>to leave"
 
 # ---------------------------------------------------------------- M2.5 island chat (/is chat)
 chat:

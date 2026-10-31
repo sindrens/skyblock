@@ -381,9 +381,16 @@ public final class EconomyConfig extends ModuleConfig {
             + "putting items into the sell chest by hand still sell them).")
     public boolean sellSkipHotbarDefault = true;
 
-    @Setting(desc = "Icon per currency in menus: currency:MATERIAL.")
-    public List<String> icons = List.of("money:GOLD_INGOT", "crystals:PRISMARINE_CRYSTALS", "credits:EMERALD",
+    /** The icon list before I9 (GUI-P2 7.2); an untouched live list moves to the new one (version 5). */
+    static final List<String> OLD_ICONS = List.of("money:GOLD_INGOT", "crystals:PRISMARINE_CRYSTALS", "credits:EMERALD",
             "credits_earned:EMERALD", "shards:PRISMARINE_SHARD");
+    /** I9 section 9: money gold ingot, crystals amethyst shard, shards prismarine shard, credits diamond. */
+    static final List<String> NEW_ICONS = List.of("money:GOLD_INGOT", "crystals:AMETHYST_SHARD", "shards:PRISMARINE_SHARD",
+            "credits:DIAMOND", "credits_earned:DIAMOND");
+
+    @Setting(desc = "Base item per currency in menus: currency:MATERIAL (I9 section 9). Java players with the icon pack see "
+            + "our own currency icon on these exact items (currency/<id>); another item shows plain.")
+    public List<String> icons = NEW_ICONS;
 
     /**
      * Version 2: tokens were replaced by island crystals (owner decision O8); old keys are moved on load.
@@ -392,10 +399,17 @@ public final class EconomyConfig extends ModuleConfig {
      * are ignored.
      * Version 4 (card C1): gems were renamed credits; old gems are earned credits ({@code start.gems} →
      * {@code start.credits_earned}, the /pay and /eco gem keys → credits). Gem notes never existed and are removed.
+     * Version 5 (I9 section 9, GUI-P2): currency base items crystals = amethyst shard, credits = diamond (an untouched
+     * {@code icons} list is replaced; an edited one stays).
      */
     @Override
     public int version() {
-        return 4;
+        return 5;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(5, java.util.Map.of("icons", ValueChange.of(OLD_ICONS, NEW_ICONS)));
     }
 
     @Override
@@ -512,6 +526,20 @@ public final class EconomyConfig extends ModuleConfig {
         }
         org.bukkit.Material m = org.bukkit.Material.matchMaterial(name);
         return m == null || !m.isItem() ? fallback : m;
+    }
+
+    /**
+     * The menu item of a currency for {@code viewer} (I7/I9): the configured base item; when it is the catalogue base of
+     * {@code currency/<id>} (earned credits use {@code currency/credits}), viewers with the pack loaded see our icon.
+     */
+    org.bukkit.inventory.ItemStack iconItem(net.skybornmc.skyblock.common.menu.MenuService menus, org.bukkit.entity.Player viewer,
+                                            Currency currency, org.bukkit.Material fallback) {
+        org.bukkit.Material base = icon(currency, fallback);
+        String key = "currency/" + (currency == Currency.CREDITS_EARNED ? "credits" : currency.name().toLowerCase(java.util.Locale.ROOT));
+        if (menus.icons().has(key) && menus.icons().base(key) == base) {
+            return menus.icon(viewer, key);
+        }
+        return new org.bukkit.inventory.ItemStack(base);
     }
 
     /** The material name configured for a currency in {@code icons}, or null. An old {@code tokens:} entry = crystals. */
