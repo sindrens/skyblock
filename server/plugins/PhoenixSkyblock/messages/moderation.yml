@@ -1418,6 +1418,24 @@ lockdown:
         - "<c:muted>less than <playtime> played, or first"
         - "<c:muted>join less than <age> ago."
         - "<c:muted>Staff and ranked players never."
+    # GUI-4c: the "?" and the confirms. <length> default length, <playtime>/<age> what counts as new.
+    info:
+      - "<c:text>Keeps new accounts out during a raid."
+      - "<c:text>Click a lockdown, then confirm."
+      - "<c:muted>Other lengths: /lockdown chat|join <time>"
+    confirm:
+      start-chat:
+        crumb: "Start chat lockdown?"
+        details: ["<c:text>New players can't chat, /msg,", "<c:text>write signs or books.", "<c:text>Length: <c:value><length>"]
+      start-join:
+        crumb: "Start join lockdown?"
+        details: ["<c:text>Accounts that never joined", "<c:text>before can't join.", "<c:text>Length: <c:value><length>"]
+      end-chat:
+        crumb: "End chat lockdown?"
+        details: ["<c:text>New players can chat again."]
+      end-join:
+        crumb: "End join lockdown?"
+        details: ["<c:text>New accounts can join again."]
     status-on:
       name: "<c:warning>Lockdown active"
       lore:
@@ -1677,6 +1695,13 @@ sanctions:
     show-inventory:
       name: "<c:value>Show inventory"
       lore: []
+    # GUI-4c: the confirm after the reason. <item>, <player>, <reason>, <where> (inventory / ender chest).
+    confirm:
+      crumb: "Confiscate item?"
+      details:
+        - "<c:text>Takes <c:value><item></c:value> <c:text>from <c:value><player></c:value>"
+        - "<c:text>(<where><c:text>)."
+        - "<c:text>Reason: <c:value><reason>"
 
 # ---------------------------------------------------------------- P8 (spec 14.2 rule numbers, 14.6 training, 14.9 alerts)
 

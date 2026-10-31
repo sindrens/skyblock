@@ -8,7 +8,8 @@
 # icon:       item id (docs/UI_STYLE.md §5.5: the same icon everywhere for the same feature)
 # action:     command (default: runs `command` as the player) or a built-in screen:
 #             you (the You menu), travel (the Travel menu), rewards (claims everything ready; with nothing ready it
-#             runs `command`), settings, help (Help & guides is already on slot 50, so don't add it twice)
+#             runs `command`), settings, help (Help & guides is already on slot 50, so don't add it twice),
+#             top (the Top screen: solo/team islands, this week, richest players, top skills; /is top is one click away)
 # service:    the service the feature provides (e.g. SellService). Owner G2: a feature that is not built (service
 #             missing, module off, command missing) is HIDDEN. Test server: navigation.yml → hub.show-unbuilt: true
 #             shows them in the "Coming soon" look.
@@ -35,7 +36,7 @@ hub:
   wardrobe:  {slot: 34, group: power, icon: leather_chestplate, command: "wardrobe",  service: WardrobeService}
   # More (ember)
   rewards:   {slot: 39, group: more,  icon: chest,              action: rewards, command: "daily", service: RewardsService}
-  top:       {slot: 41, group: more,  icon: golden_helmet,      command: "is top",    service: IslandService}
+  top:       {slot: 41, group: more,  icon: golden_helmet,      action: top,          service: IslandService}
 
 # The four hub groups, in order: the pane that marks each group's row. Texts: hub.groups.<id>.
 hub-groups:

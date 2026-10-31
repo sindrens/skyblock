@@ -82,7 +82,7 @@ final class EditorEntryMenu extends Menu {
 
         set(SLOT_DISPLAY, service.item(Material.OAK_SIGN, module.text(viewer, "editor.display.name"),
                 module.lines(viewer, "editor.display.lore", Msg.p("raw", c.display()), Msg.c("shown", module.service().display(viewer, c)))),
-                click -> service.prompt(viewer, CosmeticsModule.ID, "editor.prompt-display", 200,
+                click -> service.input(viewer, CosmeticsModule.ID, "editor.prompt-display", 200, c.display(), true,
                         input -> saveAndReopen(c.withDisplay(input.strip()), "display"), () -> service.open(viewer, this)));
 
         Component rarity = module.text(viewer, "rarity." + c.rarity().name().toLowerCase(Locale.ROOT));
@@ -92,7 +92,7 @@ final class EditorEntryMenu extends Menu {
         set(SLOT_SOURCE, service.item(Material.WRITABLE_BOOK, module.text(viewer, "editor.source-item.name"),
                 module.lines(viewer, "editor.source-item.lore", Msg.c("source",
                         c.source().isBlank() ? module.text(viewer, "editor.none") : module.core().messages().parse(viewer, c.source())))),
-                click -> service.prompt(viewer, CosmeticsModule.ID, "editor.prompt-source", 200,
+                click -> service.input(viewer, CosmeticsModule.ID, "editor.prompt-source", 200, c.source(), true,
                         input -> saveAndReopen(c.withSource(input.strip().equalsIgnoreCase("none") ? "" : input.strip()), "source"),
                         () -> service.open(viewer, this)));
 

@@ -100,6 +100,24 @@ staff:
       - "<c:text>collection bin. Logged with this reason."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"
+  # GUI-4c: one Remove button, then a pick list of every reason, then a confirm. <count> reasons, <seller>, <reason>.
+  remove-button:
+    name: "<c:error>Remove listing"
+    lore:
+      - "<c:text>Pick a reason (<c:value><count></c:value><c:text>), then confirm."
+      - "<c:text>The item goes back to <c:value><seller></c:value><c:text>'s"
+      - "<c:text>collection bin."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a reason"
+  reason:
+    crumb: "Reason"
+    name: "<c:value><reason>"
+  confirm:
+    crumb: "Remove listing?"
+    details:
+      - "<c:text>Back to <c:value><seller></c:value><c:text>'s collection bin."
+      - "<c:text>Reason: <c:value><reason>"
+      - "<c:text>The seller gets a message."
   removed: "<prefix><c:success><sym:check></c:success> <c:text>Removed <c:value><seller></c:value><c:text>'s listing of <c:value><item></c:value><c:text>. It's in their collection bin."
   removed-seller: "<prefix><c:text>Staff removed your listing of <c:value><item></c:value><c:text>. It's in your collection bin (<c:value>/ah</c:value>)."
 
@@ -154,6 +172,10 @@ notify:
 
 search:
   ask: "<prefix><c:text>Type an item name, or a seller's exact name. <c:muted>(<cancel> to stop, <seconds>s)"
+  # GUI-4c: the Bedrock popup (on-screen keyboard). <max> letters at most.
+  ask-form:
+    title: "Search the Auction House"
+    label: "<c:text>An item name, or a seller's exact name (max <max> letters):"
 
 categories:
   all: "<c:value>Everything"

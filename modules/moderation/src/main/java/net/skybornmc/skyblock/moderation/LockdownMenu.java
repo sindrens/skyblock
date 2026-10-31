@@ -5,12 +5,16 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
  * {@code /lockdown} (spec 13.9), Bedrock-safe: 3 rows, plain clicks only. Left: chat lockdown, middle: status, right: join
  * lockdown. A click starts the lockdown with its default length, or ends it when it is running. Other lengths:
  * {@code /lockdown chat <time>}. Live: the time left updates every second.
+ *
+ * <p>GUI-4c (GUI_DESIGN §4): starting and ending go through a confirm with what happens on the middle item; the "?"
+ * explains the screen.</p>
  */
 final class LockdownMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
@@ -45,6 +49,11 @@ final class LockdownMenu extends net.skybornmc.skyblock.common.menu.Menu {
     }
 
     @Override
+    public String infoKey() {
+        return "lockdown.menu.info";
+    }
+
+    @Override
     public int tickInterval() {
         return 20;
     }
@@ -73,10 +82,13 @@ final class LockdownMenu extends net.skybornmc.skyblock.common.menu.Menu {
         if (live.isPresent()) {
             TagResolver parts = lockdown.parts(viewer, live.get(), now);
             set(slot, service.item(Material.RED_CONCRETE, viewer, PunishMenus.MODULE, base + "-on", parts), click -> {
-                if (viewer.hasPermission(LockdownService.PERM_LOCKDOWN)) {
-                    lockdown.end(viewer, kind);
+                if (!viewer.hasPermission(LockdownService.PERM_LOCKDOWN)) {
+                    return;
                 }
-                refresh();
+                openChild(confirm(kind, false, Material.RED_CONCRETE, p -> {
+                    lockdown.end(p, kind);
+                    service.open(p, this);
+                }));
             });
             return;
         }
@@ -84,13 +96,28 @@ final class LockdownMenu extends net.skybornmc.skyblock.common.menu.Menu {
         set(slot, service.item(kind == Lockdown.Kind.CHAT ? Material.WRITABLE_BOOK : Material.OAK_DOOR, viewer,
                 PunishMenus.MODULE, base + "-off", Msg.p("length", PunishConfig.text(s.defaultFor(kind))),
                 Msg.p("max", PunishConfig.text(s.maxFor(kind)))), click -> {
-            if (viewer.hasPermission(LockdownService.PERM_LOCKDOWN)) {
-                String problem = lockdown.begin(viewer, kind, null);
-                if (problem != null) {
-                    lockdown.tellProblem(viewer, kind, problem);
-                }
+            if (!viewer.hasPermission(LockdownService.PERM_LOCKDOWN)) {
+                return;
             }
-            refresh();
+            openChild(confirm(kind, true, kind == Lockdown.Kind.CHAT ? Material.WRITABLE_BOOK : Material.OAK_DOOR, p -> {
+                String problem = lockdown.begin(p, kind, null);
+                if (problem != null) {
+                    lockdown.tellProblem(p, kind, problem);
+                }
+                service.open(p, this);
+            }));
         });
+    }
+
+    /** "Start chat lockdown?" / "End join lockdown?" with who is affected and the length on the middle item. */
+    private net.skybornmc.skyblock.common.menu.ConfirmMenu confirm(Lockdown.Kind kind, boolean start, Material icon,
+                                                                   net.skybornmc.skyblock.common.menu.ConfirmMenu.Action action) {
+        String key = "lockdown.menu.confirm." + (start ? "start-" : "end-") + kind.id();
+        Lockdown.Settings s = lockdown.settings();
+        TagResolver[] p = {Msg.p("length", PunishConfig.text(s.defaultFor(kind))),
+                Msg.p("playtime", PunishConfig.text(s.newPlayerPlaytime())), Msg.p("age", PunishConfig.text(s.newPlayerAge()))};
+        return new net.skybornmc.skyblock.common.menu.ConfirmMenu(v -> service.text(v, PunishMenus.MODULE, key + ".crumb"),
+                service.item(new org.bukkit.inventory.ItemStack(icon), service.text(viewer, PunishMenus.MODULE, key + ".crumb"), List.of()),
+                v -> service.lines(v, PunishMenus.MODULE, key + ".details", p), action, v -> { });
     }
 }

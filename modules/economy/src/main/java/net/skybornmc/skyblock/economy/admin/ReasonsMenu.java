@@ -40,6 +40,8 @@ final class ReasonsMenu extends WatchMenu {
     private Sort sort;
     private DashboardData data;
     private int page;
+    /** Pages of the last drawn list, for the title (GUI-4c). */
+    private int shownPages = 1;
 
     ReasonsMenu(EconomyWatch watch, Currency currency, DashboardData.Range range, Sort sort) {
         super(watch);
@@ -50,7 +52,7 @@ final class ReasonsMenu extends WatchMenu {
 
     @Override
     public Component title() {
-        return titleWith("watch.reasons-menu.title");
+        return pagedTitle(service.text(viewer, EconomyModule.ID, "watch.reasons-menu.title"), page, shownPages);
     }
 
     @Override
@@ -113,21 +115,15 @@ final class ReasonsMenu extends WatchMenu {
             set(PagedMenu.SLOT_EMPTY, service.emptyItem(viewer, EconomyModule.ID, "watch.reasons-menu.empty"));
         }
         int size = PagedMenu.CONTENT_SLOTS.length;
-        int pages = Math.max(1, (list.size() + size - 1) / size);
+        int pages = pages(list.size());
         page = Math.min(page, pages - 1);
+        shownPages = pages;
         for (int i = 0; i < size && page * size + i < list.size(); i++) {
             FlowSummary.ReasonTotals r = list.get(page * size + i);
             set(PagedMenu.CONTENT_SLOTS[i], entry(r), click -> openChild(new TransactionListMenu(watch, currency, members(r),
                     watch.reasonLabel(viewer, r.key(), r.group()))));
         }
-        if (page > 0) {
-            set(Menu.SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",
-                    Msg.p("page", page), Msg.p("pages", pages)), click -> turn(-1));
-        }
-        if (page + 1 < pages) {
-            set(Menu.SLOT_NEXT, service.navItem("next", Material.ARROW, viewer, "frame.next",
-                    Msg.p("page", page + 2), Msg.p("pages", pages)), click -> turn(1));
-        }
+        pager(page, pages, this::turn);
     }
 
     /** The ledger reasons behind an entry (a group's members, or the reason itself). */
@@ -147,7 +143,7 @@ final class ReasonsMenu extends WatchMenu {
     private void turn(int delta) {
         page = Math.max(0, page + delta);
         service.sound(viewer, "page");
-        refresh();
+        redraw();
     }
 
     private ItemStack entry(FlowSummary.ReasonTotals r) {

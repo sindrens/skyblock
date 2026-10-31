@@ -56,7 +56,8 @@ final class EditorListMenu extends PagedMenu<Cosmetic> {
 
     /** Create: ask for the id, then the display text. */
     private void createStep1() {
-        module.core().menus().prompt(viewer, CosmeticsModule.ID, "editor.prompt-id", 64, input -> {
+        // GUI-4c: Bedrock popups with the on-screen keyboard (MenuService.input), chat on Java.
+        module.core().menus().input(viewer, CosmeticsModule.ID, "editor.prompt-id", 64, null, input -> {
             String id = input.strip().toLowerCase(Locale.ROOT);
             if (!Cosmetic.validId(id)) {
                 module.msg().send(viewer, "editor.invalid-id");
@@ -68,7 +69,7 @@ final class EditorListMenu extends PagedMenu<Cosmetic> {
                 module.core().menus().open(viewer, this);
                 return;
             }
-            module.core().menus().prompt(viewer, CosmeticsModule.ID, "editor.prompt-display", 200, display -> {
+            module.core().menus().input(viewer, CosmeticsModule.ID, "editor.prompt-display", 200, null, true, display -> {
                 Cosmetic created = new Cosmetic(kind, id, display.strip(), Rarity.COMMON, "", false, true);
                 if (module.save(viewer, created, "create")) {
                     openChild(new EditorEntryMenu(module, kind, id));

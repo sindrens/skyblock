@@ -93,6 +93,12 @@ public final class LogsModule implements SkyblockModule {
     @Override
     public void enable() {
         core.configs().load(config);
+        // GUI-4c: a click opens the entry screen now (no more "Hover" / "Right-click: full details"); unedited text upgraded.
+        core.messages().retire(ID, java.util.Map.of("results.info", String.join("\n",
+                "<c:text>Newest first. <c:value>Hover</c:value> an entry for details.",
+                "<c:text>Click: teleport there (if it has a place).",
+                "<c:text>Right-click: full details in chat.")));
+        core.messages().load(ID);
         main = new MainThread(core.plugin());
         // Phase P 13.11: one entry by id for /p <player> --evidence <id> (moderation), with this module's visibility rules
         core.services().register(ID, net.skybornmc.skyblock.common.audit.LogLookup.class,

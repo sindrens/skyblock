@@ -61,6 +61,37 @@ abstract class WatchMenu extends Menu {
         return service.title(viewer, List.of(base, service.text(viewer, EconomyModule.ID, crumbKey, tags)), null);
     }
 
+    /**
+     * {@code ▸ Economy » <crumb> (page/pages)} (GUI-4c: every paged dashboard screen shows its page like PagedMenu).
+     * {@code pages} ≤ 1 shows no page.
+     */
+    Component pagedTitle(Component crumb, int page, int pages) {
+        Component base = service.text(viewer, EconomyModule.ID, "watch.menu.title");
+        Component suffix = pages > 1 ? service.text(viewer, "title.page", net.skybornmc.skyblock.common.text.Msg.p("page", page + 1),
+                net.skybornmc.skyblock.common.text.Msg.p("pages", pages)) : null;
+        return service.title(viewer, crumb == null ? List.of(base) : List.of(base, crumb), suffix);
+    }
+
+    /** Pages of {@code size} entries on the 28 content slots (at least 1). Pure. */
+    static int pages(long size) {
+        int per = PagedMenu.CONTENT_SLOTS.length;
+        return size <= 0 ? 1 : (int) Math.min(Integer.MAX_VALUE, (size + per - 1) / per);
+    }
+
+    /** The standard Previous (52) / Next (53) buttons for {@code page} of {@code pages}; {@code turn} gets -1 or +1. */
+    void pager(int page, int pages, java.util.function.IntConsumer turn) {
+        if (page > 0) {
+            set(SLOT_PREVIOUS, service.navItem("previous", org.bukkit.Material.ARROW, viewer, "frame.previous",
+                    net.skybornmc.skyblock.common.text.Msg.p("page", page), net.skybornmc.skyblock.common.text.Msg.p("pages", pages)),
+                    click -> turn.accept(-1));
+        }
+        if (page + 1 < pages) {
+            set(SLOT_NEXT, service.navItem("next", org.bukkit.Material.ARROW, viewer, "frame.next",
+                    net.skybornmc.skyblock.common.text.Msg.p("page", page + 2), net.skybornmc.skyblock.common.text.Msg.p("pages", pages)),
+                    click -> turn.accept(1));
+        }
+    }
+
     /** Drops what was loaded and loads again on the next build. */
     void invalidate() {
         generation++;
@@ -97,7 +128,7 @@ abstract class WatchMenu extends Menu {
                 apply.accept(value);
             }
             if (isOpen()) {
-                refresh();
+                redraw(); // GUI-4c: in place, and the title's page count follows the loaded list
             }
         }));
     }

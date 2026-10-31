@@ -67,17 +67,33 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
   Merge 33, Trail 40, nothing on 31 once owned, Wear all / Take all off no longer look like dye toggles.
 - Player picker: Search (47) and Show everyone (46) when the list is longer than one page.
 
-**Left (next GUI round; staff screens last):**
+**Done in GUI-4c (31 Oct):**
+- `/top` screen (§7.6) behind the hub Top button (`menu.yml` action `top`, no new command: `/top` is the staff teleport):
+  tabs Solo islands, Team islands, This week, Richest players, Top skills; podium 21-23, #4-#10 on 28-34, click an
+  island to visit, Full island boards (51) opens `/is top`.
+- Help topics on Bedrock: a click on a page opens a Floodgate text popup (Next page / Back); page titles stay the item
+  names (`MenuService.showText`, `BedrockForms.sendText`).
+- `/settings` in fewer rows: one tab per group (row 0, in place), the group's switches below, no second page; every
+  switch name says On/Off (common `MenuService.toggle`).
+- Economy admin paging: Top earners and Biggest page by 28 (84 rows by default), Reasons and Alerts show (page/pages).
+- Island portal shows every invite (pick-list layout) and has a ? guide.
+- AH staff remove: one Remove button → pick list of every reason → confirm (no more 5-reason limit).
+- `/logs` results: a plain click opens the entry (details, Teleport, Punish, Show in chat, Bedrock details popup); page
+  in the title.
+- Staff/moderation: Inspect keeps Back for `/p`, `/logs` and `/reports`; reports tabs in the top row switch in place,
+  Refresh (51), Claim/Unclaim refresh the report; confirms for lockdown start/end and confiscate.
+- Typing on `MenuService.input` (Bedrock popups): AH search, `/admin` text values and list entries, tags editor
+  (id, display, source), display formats (`keepCodes` keeps `&` codes).
+- M10.14: the Black Market NPC help no longer says "Not open yet"; every NPC role text checked against what is built
+  (test).
+
+**Left (next GUI round):**
 - Shop and `/sell` ("Add my inventory", Sell on 53): GUI-3 lane. Chat-link flows (TPA, invites, store/vote/Discord,
   help command suggestions): GUI-5.
-- Bigger reworks: `/top` screen (§7.6), help topics written in lore (Bedrock), Settings split into fewer rows,
-  economy admin paging, portal choice > 3 invites, AH staff remove reasons > 5, `/logs` right-click details.
-- Owner decisions (OPEN_QUESTIONS GUI-4b): a loadout apply confirm (LD5 says one click), Warps/Visit overlap in `/is`,
-  offline/recent players in the player picker.
-- Other typing flows can move to `MenuService.input` (AH search, `/admin` text values, cosmetics editor, display
-  formats, logs subjects); each needs its `<key>-form.title/label` texts.
-- Staff/moderation screens: inspect Back for command-opened tools, reports tabs/refresh, `/p` button count, lockdown
-  and confiscate confirms (GUI-BUGS added the ban confirms).
+- Owner decisions (OPEN_QUESTIONS GUI-4b/GUI-4c): `/p` button count (layout is the owner's punishment spec), a loadout
+  apply confirm (LD5 says one click), Warps/Visit overlap in `/is`, offline/recent players in the player picker.
+- Not on the GUI-4c list, still open per menu below: logs subjects typing (`/logs` Any player/Staff/Item/Island prompts),
+  confiscate screen without the frame, `/inspect` freeze confirm and row shape, report reason confirm.
 
 ## achievements (5 menus)
 
@@ -161,8 +177,8 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** Auction House > click a listing as staff
 - **Rules to apply:** §1.2 add Back 18 / Close 22 · §4 confirm rule
 - **Notes:**
-  - Remove buttons act on one click with no confirm (the item is only returned to the seller's bin).
-  - 3-row dialog has no Back/Close; slots 12-16 are the removal reasons from auction.yml, so a sixth reason would be dropped without notice.
+  - ✅ GUI-4c (Remove → reason pick list → confirm). Remove buttons act on one click with no confirm (the item is only returned to the seller's bin).
+  - ✅ GUI-4c (every reason; frame Back/Close). 3-row dialog has no Back/Close; slots 12-16 are the removal reasons from auction.yml, so a sixth reason would be dropped without notice.
 
 ## boosters (1 menus)
 
@@ -424,25 +440,25 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rows:** 6
 - **Opens from:** Dashboard > Every reason / Sources / Sinks (staff)
 - **Notes:**
-  - Own paging code: the title shows no (page/pages) like other paged menus.
+  - ✅ GUI-4c (page in the title). Own paging code: the title shows no (page/pages) like other paged menus.
 
 ### `economy.admin_top`: Economy » Top earners
 - **Rows:** 6
 - **Opens from:** Dashboard > Top earners (staff)
 - **Notes:**
-  - Shows at most 28 profiles, no paging.
+  - ✅ GUI-4c (pages of 28, 84 by default). Shows at most 28 profiles, no paging.
 
 ### `economy.admin_transactions`: Economy » Biggest
 - **Rows:** 6
 - **Opens from:** Dashboard > Biggest transactions, Reasons > a reason, or a profile history (staff)
 - **Notes:**
-  - Shows at most 28 rows with no paging.
+  - ✅ GUI-4c (pages of 28, 84 by default). Shows at most 28 rows with no paging.
 
 ### `economy.admin_alerts`: Economy » Alerts
 - **Rows:** 6
 - **Opens from:** Dashboard > Alerts, /eco admin <n> (staff)
 - **Notes:**
-  - Own paging code: the title shows no (page/pages).
+  - ✅ GUI-4c (page in the title). Own paging code: the title shows no (page/pages).
 
 ### `economy.admin_alert`: Economy » Alert #<id>
 - **Rows:** 6
@@ -722,9 +738,9 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** Walking into the island portal with pending invites (no island yet)
 - **Rules to apply:** §1.2 add Back 18 / Close 22
 - **Notes:**
-  - Shows at most 3 invites; the rest are silently hidden
-  - No Close/Back/Help and no 'decline all': the only exit is Esc
-  - A new player who has just landed at the portal sees an unexplained choice with no tutorial hint
+  - ✅ GUI-4c (every invite). Shows at most 3 invites; the rest are silently hidden
+  - ✅ GUI-4c (frame Back/Close and a ? guide; Esc still does nothing). No Close/Back/Help and no 'decline all': the only exit is Esc
+  - ✅ GUI-4c (? explains the choice). A new player who has just landed at the portal sees an unexplained choice with no tutorial hint
 
 ### `islands.slots`: Island grid
 - **Rows:** 6
@@ -874,12 +890,12 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** Hub > SEARCH; /logs player|pay|trade|chat|commands|staff|island|item <...>
 - **Rules to apply:** §5 make it one plain click · §4 confirm rule
 - **Notes:**
-  - Right-click is the only way to read the full details of an entry that also has a left-click action (punish or teleport); touch players on Bedrock can't right-click.
-  - Left-click on an entry teleports the staff member instantly, or closes the menu and opens /p with the chat line as evidence, with no confirm; easy mis-click on a dense list of 28 look-alike entries.
+  - ✅ GUI-4c (a plain click opens the entry screen). Right-click is the only way to read the full details of an entry that also has a left-click action (punish or teleport); touch players on Bedrock can't right-click.
+  - ✅ GUI-4c (Teleport/Punish are named buttons on the entry screen). Left-click on an entry teleports the staff member instantly, or closes the menu and opens /p with the chat line as evidence, with no confirm; easy mis-click on a dense list of 28 look-alike entries.
   - Four non-standard feature buttons at 46, 47, 51, 52 (UI_STYLE reserves 45-53 for Back/Info/Close/Help/Next); Show in chat at 47 sits next to Change search and is easy to mix up.
   - Previous page replaces Back at slot 45 on page 2+, so to leave the results you must use Change search or Close.
-  - The Info tooltip says left-click teleports but does not mention the new left-click-to-punish on chat lines, and the 'Right-click' hint is only shown in item lore when a left action exists.
-  - Not a PagedMenu: the title has no (n/m) page indicator as UI_STYLE §5 asks (page is only in the summary book), and the title carries the subject, which can be a long island id or UUID.
+  - ✅ GUI-4c (? text rewritten). The Info tooltip says left-click teleports but does not mention the new left-click-to-punish on chat lines, and the 'Right-click' hint is only shown in item lore when a left action exists.
+  - ✅ GUI-4c (page in the title). Not a PagedMenu: the title has no (n/m) page indicator as UI_STYLE §5 asks (page is only in the summary book), and the title carries the subject, which can be a long island id or UUID.
 
 ## menus (11 menus)
 
@@ -902,10 +918,10 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** /settings, slot 4 head and slot 40 in /menu, /help topics
 - **Rules to apply:** §1.1/§1.2 never a dead end · §3 hide until built
 - **Notes:**
-  - About 31 switches across 8 rows and 2 pages: too many for one list, and nothing is searchable
+  - ✅ GUI-4c (one tab per group, no second page). About 31 switches across 8 rows and 2 pages: too many for one list, and nothing is searchable
   - Page 2 lists Display (Scoreboard, Menu item, Tips, Particles, Players in The Depths, Skill XP bar, Booster bar, Wardrobe trail), Sounds (Menu sounds, Event sounds) and Gameplay (Island auto-pickup, Drop guard, Sell all skips hotbar); its category labels sit at 10/19/28/37 like page 1 but only the first of a multi-row category is labelled
-  - SettingsMenu does its own paging (not PagedMenu), so the title never shows the page '(1/2)' that every other paged menu shows (UI_STYLE 5.1); players do not know a second page exists until they see Next
-  - State is shown only by dye colour (red vs lime) and by the lore line 'Status: On/Off'; the dye colours are a hard distinction for colour-blind players, and there is no on/off wording in the item name
+  - ✅ GUI-4c (no paging any more). SettingsMenu does its own paging (not PagedMenu), so the title never shows the page '(1/2)' that every other paged menu shows (UI_STYLE 5.1); players do not know a second page exists until they see Next
+  - ✅ GUI-4c (On/Off in the name). State is shown only by dye colour (red vs lime) and by the lore line 'Status: On/Off'; the dye colours are a hard distinction for colour-blind players, and there is no on/off wording in the item name
   - Name colours are inconsistent: most names are flame-yellow, some entries are white or have no colour tag
   - ✅ GUI-4 (unbuilt switches hidden). 'Players in The Depths' is a permanent Coming-soon placeholder inside the list
   - 'Particles' and 'Wardrobe trail' (Set trail) overlap in meaning
@@ -939,7 +955,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rows:** 6
 - **Opens from:** Topic in /help (and 'About this menu' of other menus)
 - **Notes:**
-  - The guide itself lives in the lore of non-clickable items: the instructions say 'Hover the pages', and hover is not available on Bedrock touch/controller
+  - ✅ GUI-4c (Bedrock: click a page for a text popup). The guide itself lives in the lore of non-clickable items: the instructions say 'Hover the pages', and hover is not available on Bedrock touch/controller
   - ✅ GUI-4 (14 pages in two rows + test). Pages beyond MAX_PAGES (7) are silently cut; long topics lose content
   - 'Show in chat' prints click events ([Take me there]) that Bedrock players cannot click; 'Take me there' in the menu does the same without chat
   - Back goes to the category, not to the menu from which 'About this menu' was opened
@@ -1103,7 +1119,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rules to apply:** §4 confirm rule
 - **Notes:**
   - Does not call frame(): no border, no Info/Help, and the items sit in the first 41 slots so the layout is the player's inventory flipped, not the standard content grid.
-  - Confiscation happens with one reason click and no confirm; the stack is taken from a live inventory that changes every second.
+  - ✅ GUI-4c (confirm after the reason; the stack is checked again). Confiscation happens with one reason click and no confirm; the stack is taken from a live inventory that changes every second.
 
 ### `moderation.appeals-queue`: Appeals
 - **Rows:** 6
@@ -1163,9 +1179,9 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** /lockdown (no argument)
 - **Rules to apply:** §1.2 add Back 18 / Close 22 · §4 confirm rule
 - **Notes:**
-  - Starting a join lockdown (keeps new players out) is one click with no confirm, and the 'active' button is red concrete that ends it with one click as well.
+  - ✅ GUI-4c (confirm for start and end). Starting a join lockdown (keeps new players out) is one click with no confirm, and the 'active' button is red concrete that ends it with one click as well.
   - Only the default lengths (10m chat, 5m join) can be chosen here; any other length needs the /lockdown command typed.
-  - A 3-row menu with no Close and no Back, and the Info button (infoKey) is not shown on 3 rows.
+  - ✅ GUI-1/GUI-4c (frame Back/Close; ? text added). A 3-row menu with no Close and no Back, and the Info button (infoKey) is not shown on 3 rows.
 
 ### `moderation.notify`: Staff alerts
 - **Rows:** 4
@@ -1404,7 +1420,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** /inspect <player>; right-click a player with the Inspect tool (blaze rod) in staff mode
 - **Rules to apply:** §1.1 add Back at 45 · §4 confirm rule · §1.1/§1.2 never a dead end
 - **Notes:**
-  - Back is inconsistent: Wardrobe, Item box and Tutorial open with Inspect as the parent (Back returns here), but Inventory, Ender chest, Teleport, Punish, Logs and Reports close the menu and run a command, so the staff member has to type /inspect again to return; Inspect itself has no Back.
+  - ✅ GUI-4c (Punish, Logs and Reports keep Inspect as Back; inventory views still close). Back is inconsistent: Wardrobe, Item box and Tutorial open with Inspect as the parent (Back returns here), but Inventory, Ender chest, Teleport, Punish, Logs and Reports close the menu and run a command, so the staff member has to type /inspect again to return; Inspect itself has no Back.
   - Freeze is a one-click toggle with no confirm, sitting two slots from Teleport and next to Punish (33).
   - Slot 29 is Ender chest for online players and a grey 'Offline' item for offline ones, and the whole row 28-32 changes shape (Inventory, Teleport, Freeze disappear), so the muscle-memory positions move.
   - Feature buttons are scattered with gaps (22, 28-34, 40, 41) and the permission-gated ones appear and disappear (31, 40, 41) so the layout differs per rank.
@@ -1414,9 +1430,9 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** /reports (and /reports open|claimed|closed); /reports player <name>; Inspect > Reports; staff-mode Reports tool
 - **Rules to apply:** §1.1 add Back at 45 · §1.1/§1.2 never a dead end
 - **Notes:**
-  - The Open/Claimed/Closed tabs are at 46, 47 and 51 in the nav row, next to Info (48) and Help (50), not in the standard nav slots, and not in the top row.
-  - No Back on the first page (it is opened by a command), and a clicked report replaces the list without a parent, so after Claim, Teleport, Inspect or Punish the staff member has to type /reports again to get the list back.
-  - Closed shows only the last 100 reports (closed-shown in staff.yml) and the screen never says so; an older report can only be found through /reports player <name> (up to 200).
+  - ✅ GUI-4c (tabs on 3-5, in place). The Open/Claimed/Closed tabs are at 46, 47 and 51 in the nav row, next to Info (48) and Help (50), not in the standard nav slots, and not in the top row.
+  - ✅ GUI-4c (tabs and Refresh stay in the same window; a report's Back returns to the list). No Back on the first page (it is opened by a command), and a clicked report replaces the list without a parent, so after Claim, Teleport, Inspect or Punish the staff member has to type /reports again to get the list back.
+  - ✅ GUI-4c (the Closed tab says so). Closed shows only the last 100 reports (closed-shown in staff.yml) and the screen never says so; an older report can only be found through /reports player <name> (up to 200).
 
 ### `staff.report`: Reports » #<id>
 - **Rows:** 6
@@ -1424,7 +1440,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rules to apply:** §1.1 add Back at 45 · §1.1/§1.2 never a dead end · §3 hide until built
 - **Notes:**
   - No Back to the reports list (the menu is opened without a parent), and Claim, Unclaim, Teleport, Inspect and Punish all close the menu, so the staff member loses their place in the list.
-  - Claim and Unclaim give feedback only in chat and close the menu; the screen is not refreshed to show the new state.
+  - ✅ GUI-4c (refreshes in place). Claim and Unclaim give feedback only in chat and close the menu; the screen is not refreshed to show the new state.
   - 'Close report' is a red concrete block (red is reserved for corner accents and errors in UI_STYLE) in the same row as Punish, and is the only way to finish a report.
   - Teleport on an offline player shows a grey 'Offline' item that looks like a button but does nothing.
 

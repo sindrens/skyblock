@@ -98,9 +98,16 @@ public final class NpcsModule implements SkyblockModule {
         return Set.of("worlds");
     }
 
+    /** Old bundled NPC texts that became wrong (upgraded on start when the owner never edited them). */
+    static final java.util.Map<String, String> RETIRED_TEXTS = java.util.Map.of(
+            "roles.black_market.help", "<c:text>A shady trader. Not open yet.");
+
     @Override
     public void enable() {
         core.configs().load(config);
+        // GUI-4c (M10.14): the Black Market is open now (M10.11); its old "Not open yet" help is upgraded unless edited.
+        core.messages().retire(ID, RETIRED_TEXTS);
+        core.messages().load(ID);
         msg = core.messages(ID);
         placer = new Placer(this);
         boards = new Leaderboards(this);

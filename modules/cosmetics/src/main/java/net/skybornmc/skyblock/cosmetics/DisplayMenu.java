@@ -124,7 +124,9 @@ final class DisplayMenu extends Menu {
     }
 
     private void edit(ModuleConfig chat, Field field, String current, String defaultValue) {
-        service.prompt(viewer, CosmeticsModule.ID, "display.prompt", 300, input -> {
+        // GUI-4c: a Bedrock popup with the current format in the field (MenuService.input), chat on Java; & codes and
+        // trailing spaces kept.
+        service.input(viewer, CosmeticsModule.ID, "display.prompt", 300, current, true, input -> {
             String value = input.strip().equalsIgnoreCase("default") ? defaultValue
                     : input.strip().equalsIgnoreCase("empty") ? "" : input;
             Map<String, String> override = Map.of(field.path(), value);

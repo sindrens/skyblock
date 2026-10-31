@@ -650,7 +650,9 @@ public final class MenuService implements Listener {
         List<Component> lore = new ArrayList<>(lines(viewer, module, key + ".lore"));
         lore.addAll(lines(viewer, state ? "toggle.on" : "toggle.off"));
         lore.addAll(lines(viewer, "toggle.action"));
-        ItemStack item = item(state ? Material.LIME_DYE : Material.RED_DYE, text(viewer, module, key + ".name"), lore);
+        // GUI-4c: the state is in the name too ("Chat colors ✔ On"), not only in the dye colour and the lore.
+        Component name = text(viewer, state ? "toggle.name-on" : "toggle.name-off", Msg.c("name", text(viewer, module, key + ".name")));
+        ItemStack item = item(state ? Material.LIME_DYE : Material.RED_DYE, name, lore);
         return MenuButton.of(item, click -> {
             change.accept(!state);
             click.menu().refresh();
@@ -707,12 +709,21 @@ public final class MenuService implements Listener {
      */
     public void input(Player player, String module, String key, int maxLength, String current, Consumer<String> onInput,
                       Runnable onCancel, TagResolver... placeholders) {
+        input(player, module, key, maxLength, current, false, onInput, onCancel, placeholders);
+    }
+
+    /**
+     * Same as {@link #input(Player, String, String, int, String, Consumer, Runnable, TagResolver...)}; {@code keepCodes}
+     * keeps {@code &} colour codes in the answer (staff texts: display formats, tag displays, config values; GUI-4c).
+     */
+    public void input(Player player, String module, String key, int maxLength, String current, boolean keepCodes,
+                      Consumer<String> onInput, Runnable onCancel, TagResolver... placeholders) {
         if (TypedText.useForm(config.bedrockForms, messages.isBedrock(player), bedrockForms != BedrockForms.NONE)
-                && sendForm(player, module, key, maxLength, current, onInput, onCancel, placeholders)) {
+                && sendForm(player, module, key, maxLength, keepCodes, current, onInput, onCancel, placeholders)) {
             return;
         }
         prompt(player, module, key, maxLength, typed -> {
-            TypedText.Result result = TypedText.clean(typed, maxLength);
+            TypedText.Result result = TypedText.clean(typed, maxLength, keepCodes);
             if (result.check() == TypedText.Check.OK) {
                 onInput.accept(result.text());
             } else {
@@ -722,8 +733,62 @@ public final class MenuService implements Listener {
         }, onCancel, placeholders);
     }
 
-    private boolean sendForm(Player player, String module, String key, int maxLength, String current, Consumer<String> onInput,
-                             Runnable onCancel, TagResolver... placeholders) {
+    /**
+     * True when {@code player} gets Bedrock popups ({@link #input} forms, {@link #showText}): a Bedrock player with
+     * Floodgate's form API and {@code menus.yml → bedrock-forms.enabled}.
+     */
+    public boolean usesForms(Player player) {
+        return TypedText.useForm(config.bedrockForms, messages.isBedrock(player), bedrockForms != BedrockForms.NONE);
+    }
+
+    /**
+     * A read-only text popup for Bedrock players (GUI-4c, GUI_DESIGN §0.6 "no information only in hover text"): the
+     * title, the text lines and one button per label. Closes the open menu first (Bedrock can't show a popup over a
+     * chest). {@code onButton} (index of the button) or {@code onClosed} then runs on the main thread, e.g. to reopen
+     * the menu. Returns false (nothing happens) for Java players or when the popup could not be sent.
+     */
+    public boolean showText(Player player, Component title, List<Component> lines, List<Component> buttons,
+                            java.util.function.IntConsumer onButton, Runnable onClosed) {
+        if (!usesForms(player)) {
+            return false;
+        }
+        UUID id = player.getUniqueId();
+        StringBuilder content = new StringBuilder();
+        for (Component line : lines) {
+            if (!content.isEmpty()) {
+                content.append('\n');
+            }
+            content.append(FORM_TEXT.serialize(line));
+        }
+        List<String> labels = new ArrayList<>();
+        for (Component button : buttons) {
+            labels.add(FORM_TEXT.serialize(button));
+        }
+        forms.add(id);
+        boolean sent = bedrockForms.sendText(id, FORM_TEXT.serialize(title), content.toString(), labels,
+                index -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (forms.remove(id) && player.isOnline()) {
+                        onButton.accept(index);
+                    }
+                }),
+                () -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (forms.remove(id) && player.isOnline()) {
+                        onClosed.run();
+                    }
+                }));
+        if (!sent) {
+            forms.remove(id);
+            return false;
+        }
+        if (open.containsKey(id)) {
+            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+        }
+        sounds.playUi(player, "page");
+        return true;
+    }
+
+    private boolean sendForm(Player player, String module, String key, int maxLength, boolean keepCodes, String current,
+                             Consumer<String> onInput, Runnable onCancel, TagResolver... placeholders) {
         UUID id = player.getUniqueId();
         String title = FORM_TEXT.serialize(text(player, module, key + "-form.title", placeholders));
         String label = FORM_TEXT.serialize(text(player, module, key + "-form.label", placeholders));
@@ -734,7 +799,8 @@ public final class MenuService implements Listener {
         }
         forms.add(id);
         boolean sent = bedrockForms.send(id, title, label, current == null ? "" : current,
-                typed -> Bukkit.getScheduler().runTask(plugin, () -> formAnswer(player, module, key, maxLength, typed, onInput, onCancel, placeholders)),
+                typed -> Bukkit.getScheduler().runTask(plugin, () -> formAnswer(player, module, key, maxLength, keepCodes, typed, onInput, onCancel,
+                        placeholders)),
                 () -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (forms.remove(id) && player.isOnline()) {
                         onCancel.run();
@@ -751,12 +817,12 @@ public final class MenuService implements Listener {
         return true;
     }
 
-    private void formAnswer(Player player, String module, String key, int maxLength, String typed, Consumer<String> onInput,
-                            Runnable onCancel, TagResolver... placeholders) {
+    private void formAnswer(Player player, String module, String key, int maxLength, boolean keepCodes, String typed,
+                            Consumer<String> onInput, Runnable onCancel, TagResolver... placeholders) {
         if (!forms.remove(player.getUniqueId()) || !player.isOnline()) {
             return;
         }
-        TypedText.Result result = TypedText.clean(typed, maxLength);
+        TypedText.Result result = TypedText.clean(typed, maxLength, keepCodes);
         switch (result.check()) {
             case EMPTY -> {
                 messages.send(player, MODULE, "prompt.cancelled");
@@ -766,7 +832,7 @@ public final class MenuService implements Listener {
                 messages.send(player, MODULE, "prompt.too-long", Msg.p("max", maxLength));
                 sounds.playUi(player, "error");
                 // Ask again with the text kept, so the player only has to shorten it.
-                if (!sendForm(player, module, key, maxLength, result.text(), onInput, onCancel, placeholders)) {
+                if (!sendForm(player, module, key, maxLength, keepCodes, result.text(), onInput, onCancel, placeholders)) {
                     onCancel.run();
                 }
             }

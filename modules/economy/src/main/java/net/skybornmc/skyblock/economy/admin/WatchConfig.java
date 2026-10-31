@@ -252,11 +252,11 @@ public final class WatchConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ dashboard
 
-    @Setting(path = "dashboard.top-size", desc = "Profiles in the top earners list.", min = 5, max = 28)
-    public int topSize = 28;
+    @Setting(path = "dashboard.top-size", desc = "Profiles in the top earners list (28 per page).", min = 5, max = 280)
+    public int topSize = 84;
 
-    @Setting(path = "dashboard.big-size", desc = "Transactions in the biggest transactions list.", min = 5, max = 28)
-    public int bigSize = 28;
+    @Setting(path = "dashboard.big-size", desc = "Transactions in the biggest transactions list (28 per page).", min = 5, max = 280)
+    public int bigSize = 84;
 
     @Setting(path = "dashboard.cache-seconds", desc = "Seconds the dashboard numbers are reused before they are read again.",
             min = 0, max = 600)
@@ -267,10 +267,13 @@ public final class WatchConfig extends ModuleConfig {
         return "economy-watch.yml";
     }
 
-    /** Version 2 (owner answer 591): the profile-reset and bank-restore reasons join the untouched default ignore list. */
+    /**
+     * Version 2 (owner answer 591): the profile-reset and bank-restore reasons join the untouched default ignore list.
+     * Version 3 (GUI-4c): the top earners and biggest lists page (52/53), so an untouched 28 becomes 84 (3 pages).
+     */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
@@ -278,7 +281,8 @@ public final class WatchConfig extends ModuleConfig {
         return java.util.Map.of(2, java.util.Map.of("earnings.ignore-reasons", ValueChange.of(
                 List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance", "admin_give", "admin_take", "admin_set",
                         "admin_reset", "sanction_remove", "sanction_restore", "profile_delete", "island_kick_restore"),
-                ignoreReasons)));
+                ignoreReasons)),
+                3, java.util.Map.of("dashboard.top-size", ValueChange.of(28, 84), "dashboard.big-size", ValueChange.of(28, 84)));
     }
 
     @Override

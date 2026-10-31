@@ -31,6 +31,7 @@ final class TransactionListMenu extends WatchMenu {
     private final Component label;
     private List<LedgerRow> rows;
     private Map<UUID, String> names = Map.of();
+    private int page;
 
     TransactionListMenu(EconomyWatch watch, Currency currency, List<String> reasons, Component label) {
         super(watch);
@@ -41,9 +42,8 @@ final class TransactionListMenu extends WatchMenu {
 
     @Override
     public Component title() {
-        Component base = service.text(viewer, EconomyModule.ID, "watch.menu.title");
         Component crumb = label != null ? label : service.text(viewer, EconomyModule.ID, "watch.tx.title");
-        return service.title(viewer, List.of(base, crumb), null);
+        return pagedTitle(crumb, page, rows == null ? 1 : pages(rows.size()));
     }
 
     @Override
@@ -57,7 +57,7 @@ final class TransactionListMenu extends WatchMenu {
             showLoading();
             if (!failed) {
                 long now = System.currentTimeMillis();
-                int limit = Math.min(PagedMenu.CONTENT_SLOTS.length, watch.config.bigSize);
+                int limit = watch.config.bigSize; // GUI-4c: more than one page (52/53)
                 load(watch.store().async(c -> WatchStore.biggest(c, currency, now - WINDOW_MS, now + 1, reasons, limit))
                         .thenCompose(list -> watch.names(EconomyWatch.accountKeys(list)).thenApply(n -> {
                             names = n;
@@ -70,12 +70,20 @@ final class TransactionListMenu extends WatchMenu {
             set(PagedMenu.SLOT_EMPTY, service.emptyItem(viewer, EconomyModule.ID, "watch.tx.empty"));
         }
         long now = System.currentTimeMillis();
-        for (int i = 0; i < rows.size() && i < PagedMenu.CONTENT_SLOTS.length; i++) {
+        int pages = pages(rows.size());
+        page = Math.max(0, Math.min(page, pages - 1));
+        int from = page * PagedMenu.CONTENT_SLOTS.length;
+        for (int i = from; i < rows.size() && i - from < PagedMenu.CONTENT_SLOTS.length; i++) {
             LedgerRow row = rows.get(i);
             UUID player = mainPlayer(row);
-            set(PagedMenu.CONTENT_SLOTS[i], entry(watch, viewer, row, names, now, player != null ? names.get(player) : null),
+            set(PagedMenu.CONTENT_SLOTS[i - from], entry(watch, viewer, row, names, now, player != null ? names.get(player) : null),
                     player == null ? null : click -> watch.history(this, player));
         }
+        pager(page, pages, delta -> {
+            page += delta;
+            service.sound(viewer, "page");
+            redraw();
+        });
     }
 
     /** The player account of a row to open the history of: the receiver if a player, else the payer. */

@@ -31,6 +31,10 @@ public final class MenusConfig extends ModuleConfig {
             + "in the 'Coming soon' look. Off (live server, owner G2): those buttons are hidden.")
     public boolean hubShowUnbuilt = false;
 
+    @Setting(path = "top.cache-seconds", desc = "/menu → Top: seconds the Richest players and Top skills boards are reused "
+            + "before they are read from the database again (island boards refresh on their own).", min = 5, max = 600)
+    public int topCacheSeconds = 30;
+
     @Setting(path = "settings.ui-sound-keys", desc = "Sounds (sounds.yml keys) that count as menu sounds wherever they play; "
             + "players who turn 'Menu sounds' off in /settings don't hear them. Every sound a menu plays is muted too.")
     public List<String> uiSoundKeys = List.of("click", "menu-open", "menu-close", "page");

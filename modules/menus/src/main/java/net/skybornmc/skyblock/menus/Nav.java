@@ -33,6 +33,10 @@ public final class Nav {
     volatile HelpBook help = HelpBook.empty();
     /** Test server: show unbuilt hub/You buttons in the "Coming soon" look ({@code navigation.yml → hub.show-unbuilt}). */
     volatile boolean showUnbuilt;
+    /** {@code /menu → Top} (GUI-4c): seconds a loaded player board (richest, top skills) is reused. */
+    volatile int topCacheSeconds = 30;
+    /** The loaded player boards of {@code /menu → Top}, shared by every viewer. */
+    final TopCache<List<net.skybornmc.skyblock.common.leaderboard.TopLine>> tops = new TopCache<>(System::currentTimeMillis);
 
     Nav(Core core, SettingsRegistry settings) {
         this.core = core;

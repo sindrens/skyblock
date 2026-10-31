@@ -59,6 +59,8 @@ public final class MenusModule implements SkyblockModule {
     @Override
     public void enable() {
         core.configs().load(config);
+        core.messages().retire(Nav.TEXTS, RetiredTexts.all());
+        core.messages().load(Nav.TEXTS);
         loadFiles();
         core.services().register(ID, PlayerSettings.class, settings);
         registerBuiltinSettings();
@@ -103,6 +105,8 @@ public final class MenusModule implements SkyblockModule {
 
     private void loadFiles() {
         nav.showUnbuilt = config.hubShowUnbuilt;
+        nav.topCacheSeconds = config.topCacheSeconds;
+        nav.tops.clear();
         YamlConfiguration hub = YamlFiles.load(core.plugin(), "menu.yml", this::problem);
         if (hub != null) {
             migrateHub(hub);

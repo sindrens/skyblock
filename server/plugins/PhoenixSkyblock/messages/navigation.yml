@@ -105,9 +105,104 @@ hub:
       lore: ["<c:text>Daily rewards and playtime."]
     top:
       name: "<c:ember><bold>Top"
-      lore: ["<c:text>The best islands:", "<c:text>level and value."]
+      lore: ["<c:text>Best islands, richest", "<c:text>players and top skills."]
 
 # /menu → You (GUI-2): your head (display only), profiles, titles, achievements, settings, store, rules.
+# /menu → Top (GUI_DESIGN §7.6, GUI-4c): tabs, a podium for #1-#3 and #4-#10 below. The key fact is in the item name.
+# <place> place, <name> island or player, <value> what the board ranks by, <leader> island leader, <skill> skill name.
+top:
+  title: "Top"
+  info:
+    - "<c:text>The best islands and players."
+    - "<c:text>Pick a board at the top."
+    - "<c:text>Click an island to visit it."
+  none:
+    name: "<c:muted>No boards yet"
+    lore: ["<c:text>Boards appear here once", "<c:text>the features are built."]
+  empty:
+    name: "<c:muted>No islands ranked yet"
+    lore: ["<c:text>Grow your island to be the first."]
+  empty-week:
+    name: "<c:muted>Nobody gained this week yet"
+    lore: ["<c:text>Level up your island to lead."]
+  empty-players:
+    name: "<c:muted>Nobody ranked yet"
+    lore: ["<c:text>Check back in a minute."]
+  tabs:
+    solo:
+      name: "<c:success><bold>Solo islands"
+      lore: ["<c:text>Islands with one player,", "<c:text>by island level."]
+    team:
+      name: "<c:sky_blue><bold>Team islands"
+      lore: ["<c:text>Islands with a team,", "<c:text>by island level."]
+    week:
+      name: "<c:ember><bold>This week"
+      lore: ["<c:text>Most level points earned", "<c:text>since Monday."]
+    money:
+      name: "<cur:money><bold>Richest players"
+      lore: ["<c:text>Most money on one profile."]
+    skills:
+      name: "<c:enchant><bold>Top skills"
+      lore: ["<c:text>Highest level in one skill."]
+  skills:
+    mining: "Mining"
+    foraging: "Foraging"
+    combat: "Combat"
+    farming: "Farming"
+    fishing: "Fishing"
+  entry:
+    level:
+      name: "<c:value>#<place></c:value> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>Lv <value>"
+      name-1: "<c:top1><bold>#1</bold> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>Lv <value>"
+      name-2: "<c:top2><bold>#2</bold> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>Lv <value>"
+      name-3: "<c:top3><bold>#3</bold> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>Lv <value>"
+    week:
+      name: "<c:value>#<place></c:value> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>+<value>"
+      name-1: "<c:top1><bold>#1</bold> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>+<value>"
+      name-2: "<c:top2><bold>#2</bold> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>+<value>"
+      name-3: "<c:top3><bold>#3</bold> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>+<value>"
+    money:
+      name: "<c:value>#<place></c:value> <c:text><name> <c:muted><sym:dot></c:muted> <cur:money><value>"
+      name-1: "<c:top1><bold>#1</bold> <c:text><name> <c:muted><sym:dot></c:muted> <cur:money><value>"
+      name-2: "<c:top2><bold>#2</bold> <c:text><name> <c:muted><sym:dot></c:muted> <cur:money><value>"
+      name-3: "<c:top3><bold>#3</bold> <c:text><name> <c:muted><sym:dot></c:muted> <cur:money><value>"
+    skill:
+      name: "<c:value>#<place></c:value> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>Lv <value>"
+      name-1: "<c:top1><bold>#1</bold> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>Lv <value>"
+      name-2: "<c:top2><bold>#2</bold> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>Lv <value>"
+      name-3: "<c:top3><bold>#3</bold> <c:text><name> <c:muted><sym:dot></c:muted> <c:value>Lv <value>"
+    island-lore:
+      - "<c:bar>| </c:bar><c:text>Leader: <c:value><leader>"
+      - "<c:bar>| </c:bar><c:text>Island level: <c:value><level>"
+    money-lore: []
+    skill-lore:
+      - "<c:bar>| </c:bar><c:text>Skill: <c:value><skill>"
+      - "<c:bar>| </c:bar><c:text>XP: <c:value><xp>"
+    yours: ["", "<c:success><sym:check></c:success> <c:text>Your island"]
+    you: ["", "<c:success><sym:check></c:success> <c:text>That's you"]
+    visit: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to visit"]
+  you:
+    # <place> your place (0 = not ranked), <board> the board's name
+    name: "<c:flame><bold>You"
+    ranked: ["<c:text>You are <c:value>#<place></c:value> <c:text>on", "<board><c:text>."]
+    unranked: ["<c:text>Your island is not on", "<board> <c:text>yet."]
+    not-top: ["<c:text>You are not in the top 10", "<c:text>of <board> <c:text>yet."]
+    no-island: ["<c:text>Get an island with <c:value>/is", "<c:text>to join the island boards."]
+  full:
+    name: "<c:info><bold>Full island boards"
+    lore: ["<c:text>28 places, island value", "<c:text>and the pillar boards."]
+    action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+  skill:
+    # <skill> the skill shown
+    name: "<c:enchant><bold>Skill: <c:value><skill>"
+    crumb: "Skill"
+    lore: ["<c:text>Which skill the board shows."]
+    action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a skill"]
+  week-left:
+    # <left> time until the week starts again
+    name: "<c:ember><bold>New week in <c:value><left>"
+    lore: ["<c:text>The weekly board starts again", "<c:text>every Monday at 00:00."]
+
 you:
   title: "You"
   info:
@@ -187,8 +282,11 @@ travel:
 settings:
   title: "Settings"
   info:
-    - "<c:text>Click a switch to turn it on or off."
+    - "<c:text>Pick a group at the top, then"
+    - "<c:text>click a switch to turn it on or off."
     - "<c:text>Changes are saved right away."
+  # GUI-4c: the tab line under each group's description. <count> switches in the group.
+  tab-count: "<c:muted><count> settings"
   categories:
     chat:
       name: "<c:ember><bold>Chat"
@@ -289,7 +387,8 @@ help:
     - "<c:text>Pick a category to read the guides."
     - "<c:text>Tip: /help <topic> opens one directly."
   topic-info:
-    - "<c:text>Hover the pages to read them."
+    - "<c:text>Each page is one item. Click a"
+    - "<c:text>page to read it in a popup."
     - "<c:text>Take me there brings you to the feature."
   commands-info:
     - "<c:text>Every command you can use."
@@ -303,6 +402,12 @@ help:
     lore: ["<c:muted>Guides are added as features open."]
   page-name: "<c:ember><page>.</c:ember> <title>"
   page-footer: ["<c:muted>Page <page> of <pages>"]
+  # GUI-4c: Bedrock players read a page in a popup (no hover on touch screens). <title> topic, <page>/<pages>.
+  page-read: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to read"]
+  page-popup:
+    title: "<title> <c:muted>(<page>/<pages>)"
+    next: "Next page"
+    back: "Back to the guide"
   no-pages:
     name: "<c:text>Nothing written yet"
     lore: ["<c:muted>This guide is still being written."]
@@ -429,6 +534,10 @@ admin:
     action-list: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit the list"]
     action-edit: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   prompt: "<prefix><c:text>Type a new value for <c:value><path></c:value> <c:muted>(now <value>)</c:muted><c:text>. <c:value>default</c:value> resets it. <c:muted>(<cancel> to cancel, <seconds>s)"
+  # GUI-4c: the Bedrock popup of the prompt above. <path>, <max>.
+  prompt-form:
+    title: "Change a setting"
+    label: "<c:text>New value for <path> (default resets it, max <max>):"
   saved: "<prefix><c:success><sym:check></c:success> <c:value><file></c:value> <c:text><c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to <c:value><new></c:value><c:text>. Live now."
   saved-restart: "<prefix><c:success><sym:check></c:success> <c:value><file></c:value> <c:text><c:muted>»</c:muted> <c:value><path></c:value><c:text>: <c:muted><old></c:muted> <c:text>to <c:value><new></c:value><c:text>. Applies after a restart."
   failed: "<prefix><c:error><sym:cross></c:error> <c:value><path></c:value> <c:text>wasn't changed: <reason>"
@@ -445,6 +554,9 @@ admin:
       name: "<c:success>+ Add"
       lore: ["<c:text>Add an entry by typing it.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to add"]
     prompt: "<prefix><c:text>Type the entry to add to <c:value><path></c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
+    prompt-form:
+      title: "Add an entry"
+      label: "<c:text>Entry to add to <path> (max <max>):"
     empty:
       name: "<c:text>The list is empty"
       lore: ["<c:muted>Use + to add the first entry."]

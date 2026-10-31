@@ -65,13 +65,20 @@ final class HelpTopicMenu extends Menu {
 
         List<HelpBook.Page> pages = topic.pages();
         int count = Math.min(MAX_PAGES, pages.size());
+        boolean popups = service.usesForms(viewer);
         for (int i = 0; i < count; i++) {
             HelpBook.Page page = pages.get(i);
             List<Component> lore = new ArrayList<>(nav.parse(viewer, page.lines()));
             lore.add(Component.empty());
             lore.addAll(nav.lines(viewer, "help.page-footer", Msg.number("page", i + 1), Msg.number("pages", pages.size())));
+            if (popups) {
+                lore.addAll(nav.lines(viewer, "help.page-read"));
+            }
+            // The key fact (the page title) is in the name; Bedrock players read the whole page in a popup (GUI-4c).
+            int index = i;
             set(net.skybornmc.skyblock.common.menu.PickListLayout.slot(i, count), nav.item(i == 0 ? Material.BOOK : Material.PAPER,
-                    nav.text(viewer, "help.page-name", Msg.c("title", nav.parse(viewer, page.title())), Msg.number("page", i + 1)), lore));
+                    nav.text(viewer, "help.page-name", Msg.c("title", nav.parse(viewer, page.title())), Msg.number("page", i + 1)), lore),
+                    popups ? click -> readPage(index) : null);
         }
         if (pages.isEmpty()) {
             set(13, nav.item(Material.COBWEB, nav.text(viewer, "help.no-pages.name"), nav.lines(viewer, "help.no-pages.lore")));
@@ -99,6 +106,38 @@ final class HelpTopicMenu extends Menu {
             set(SLOT_COMMANDS, nav.item(Material.COMMAND_BLOCK, nav.text(viewer, "help.commands-button.name"),
                     nav.lines(viewer, "help.commands-button.lore", Msg.number("count", available))),
                     click -> openChild(new HelpCommandsMenu(nav, topic.commandCategories(), nav.crumb(viewer, topic.name()))));
+        }
+    }
+
+    /**
+     * Shows page {@code index} in a Bedrock popup (GUI_DESIGN §5: no information only in hover text). Next page walks on
+     * through the topic; Back or closing the popup reopens this guide.
+     */
+    void readPage(int index) {
+        List<HelpBook.Page> pages = topic.pages();
+        int count = Math.min(MAX_PAGES, pages.size());
+        if (index < 0 || index >= count) {
+            service.open(viewer, this);
+            return;
+        }
+        HelpBook.Page page = pages.get(index);
+        boolean hasNext = HelpPages.hasNext(index, count);
+        List<Component> buttons = new ArrayList<>();
+        if (hasNext) {
+            buttons.add(nav.text(viewer, "help.page-popup.next"));
+        }
+        buttons.add(nav.text(viewer, "help.page-popup.back"));
+        Component title = nav.text(viewer, "help.page-popup.title", Msg.c("title", nav.parse(viewer, page.title())),
+                Msg.number("page", index + 1), Msg.number("pages", count));
+        boolean shown = service.showText(viewer, title, nav.parse(viewer, page.lines()), buttons, pressed -> {
+            if (HelpPages.pressedNext(pressed, hasNext)) {
+                readPage(index + 1);
+            } else {
+                service.open(viewer, this);
+            }
+        }, () -> service.open(viewer, this));
+        if (!shown && !isOpen()) {
+            service.open(viewer, this);
         }
     }
 }

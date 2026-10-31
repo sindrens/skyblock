@@ -186,20 +186,28 @@ menu:
     empty:
       name: "<c:success><bold>Nothing here</bold></c:success>"
       lore: ["<c:text>No reports in this list."]
+    # GUI-4c: reload the shown list in place.
+    refresh:
+      name: "<c:value>Refresh"
+      lore: ["<c:text>Load the newest reports.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to refresh"]
     tab:
+      # GUI-4c: tabs in the top row; .desc is the tab's description (<max> closed reports shown).
       open:
+        desc: ["<c:text>Reports nobody has claimed yet."]
         name: "Open"
         lore: ["<c:text>Reports nobody has claimed yet.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
       open-selected:
         name: "<c:value><bold>Open</bold></c:value>"
         lore: ["<c:success>Showing open reports."]
       claimed:
+        desc: ["<c:text>Reports a staff member is handling."]
         name: "Claimed"
         lore: ["<c:text>Reports a staff member is handling.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
       claimed-selected:
         name: "<c:value><bold>Claimed</bold></c:value>"
         lore: ["<c:success>Showing claimed reports."]
       closed:
+        desc: ["<c:text>The last <c:value><max></c:value> <c:text>closed reports.", "<c:muted>Older: /reports player Steve"]
         name: "Closed"
         lore: ["<c:text>Recently closed reports.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
       closed-selected:

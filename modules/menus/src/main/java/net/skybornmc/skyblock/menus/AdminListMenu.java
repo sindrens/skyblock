@@ -61,12 +61,12 @@ final class AdminListMenu extends PagedMenu<String> {
     @Override
     protected void decorate() {
         set(SLOT_ADD, nav.item(Material.LIME_DYE, nav.text(viewer, "admin.list.add.name"), nav.lines(viewer, "admin.list.add.lore")),
-                click -> service.prompt(viewer, Nav.TEXTS, "admin.list.prompt", 300, input -> {
+                click -> service.input(viewer, Nav.TEXTS, "admin.list.prompt", 300, null, true, input -> {
                     List<String> list = current();
                     list.add(input.strip());
                     save(list);
                     service.open(viewer, this);
-                }, () -> service.open(viewer, this), Msg.p("path", path)));
+                }, () -> service.open(viewer, this), Msg.p("path", path), Msg.p("max", 300)));
     }
 
     private void save(List<String> list) {
