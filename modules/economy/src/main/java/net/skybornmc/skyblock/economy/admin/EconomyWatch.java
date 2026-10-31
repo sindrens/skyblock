@@ -63,6 +63,8 @@ public final class EconomyWatch {
 
     private static final long WARN_EVERY_MS = 600_000L;
     private static final int RECENT_IDS = 20;
+    /** PERF11: the alert hand-off to the main thread (the only main-thread part of a run). */
+    static final String ALERTS_TASK = "economy:watch-alerts";
 
     final EconomyModule module;
     final Core core;
@@ -72,7 +74,7 @@ public final class EconomyWatch {
     private AnomalyDetector detector;
     private WatchJob job;
     private Scheduler.Task task;
-    private volatile long lastWarning;
+    private final WatchTrigger trigger = new WatchTrigger(WARN_EVERY_MS);
     private final List<String> recentIds = new CopyOnWriteArrayList<>();
     private final Map<Currency, DashboardData> cache = new EnumMap<>(Currency.class);
     /** Player UUIDs of staff accounts seen online since the start (owner answer 334). */
@@ -94,7 +96,9 @@ public final class EconomyWatch {
         job = new WatchJob(store, detector, () -> config, System::currentTimeMillis, Format::zone,
                 () -> profiles()::ownerOf);
         long period = Math.max(10, config.intervalSeconds) * 20L;
-        task = core.scheduler().repeat("economy:watch", 400L, period, this::tick);
+        // PERF11: the trigger runs off the main thread (it only starts the database run); the main thread gets a task
+        // (economy:watch-alerts) only when a run found alerts.
+        task = core.scheduler().asyncRepeat(400L, period, this::tick);
         refreshRecentIds();
     }
 
@@ -150,36 +154,59 @@ public final class EconomyWatch {
         return job;
     }
 
-    /** Main thread: starts a background run if the watch is on. */
+    /** Any thread (PERF11: an async repeat): starts a background run if the watch is on and no run is going. */
     private void tick() {
-        if (!config.enabled || job == null || job.busy()) {
+        if (!WatchTrigger.shouldStart(config.enabled, job)) {
             return;
         }
         runJob().exceptionally(e -> null);
     }
 
-    /** Starts a run and delivers its alerts on the main thread. */
+    /**
+     * Starts a run (or joins the running one). Alerts are delivered on the main thread ({@value #ALERTS_TASK}); the
+     * returned future completes after that delivery, or right away from the database thread when there was nothing to
+     * deliver. Callers that touch the server hop to the main thread themselves ({@link #then}).
+     */
     CompletableFuture<WatchJob.Result> runJob() {
-        return job.run().whenCompleteAsync((result, error) -> {
+        CompletableFuture<WatchJob.Result> out = new CompletableFuture<>();
+        job.run().whenComplete((result, error) -> {
             if (error != null) {
-                long now = System.currentTimeMillis();
-                if (now - lastWarning > WARN_EVERY_MS) {
-                    lastWarning = now;
+                if (trigger.warnDue(System.currentTimeMillis())) {
                     core.plugin().getLogger().log(Level.WARNING, "Economy watch: a background run failed (retried every "
                             + config.intervalSeconds + " s)", error);
                 }
+                out.completeExceptionally(error);
                 return;
             }
-            if (!result.alerts().isEmpty()) {
-                synchronized (cache) {
-                    cache.clear();
-                }
-                for (WatchAlert alert : result.alerts()) {
-                    deliver(alert, result.names());
-                }
-                refreshRecentIds();
+            if (!WatchTrigger.needsMain(result)) {
+                out.complete(result);
+                return;
             }
-        }, module.mainThread());
+            try {
+                core.scheduler().main(ALERTS_TASK, () -> {
+                    try {
+                        deliverAll(result);
+                        out.complete(result);
+                    } catch (RuntimeException e) {
+                        out.completeExceptionally(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                out.complete(result); // the plugin is stopping: nobody left to tell (the alerts are stored)
+            }
+        });
+        return out;
+    }
+
+    /** Main thread: the alerts of one run, then the dashboard cache and the alert id suggestions. */
+    private void deliverAll(WatchJob.Result result) {
+        synchronized (cache) {
+            cache.clear();
+        }
+        for (WatchAlert alert : result.alerts()) {
+            deliver(alert, result.names());
+        }
+        refreshRecentIds();
     }
 
     private void refreshRecentIds() {

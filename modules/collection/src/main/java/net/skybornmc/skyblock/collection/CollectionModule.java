@@ -76,6 +76,8 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
     private final List<Scheduler.Task> tasks = new ArrayList<>();
 
     private volatile Catalog catalog = Catalog.EMPTY;
+    /** PERF11: the periodic catalog refresh is built and compared off the main thread. */
+    private final CatalogRefresh refresh = new CatalogRefresh();
     private volatile List<Integer> percents = List.of(Milestones.FULL);
     private volatile Milestones.Rewards rewards;
 
@@ -122,7 +124,8 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
         tasks.add(core.scheduler().repeat("collection:grants", 200L, retry, grants::retry));
         // Crate rewards come from the crates module's catalog: build the page again once every module is up, then every few
         // minutes so a crates.yml reload shows up without reloading this module (only a changed catalog is logged).
-        tasks.add(core.scheduler().repeat("collection:catalog", 100L, CATALOG_REFRESH_TICKS, this::rebuildCatalog));
+        // PERF11: built and compared off the main thread; the main thread (collection:catalog) only applies a change.
+        tasks.add(core.scheduler().asyncRepeat(100L, CATALOG_REFRESH_TICKS, this::refreshCatalogAsync));
     }
 
     @Override
@@ -142,6 +145,7 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
         }
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
+        refresh.invalidate();
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (core.menus().openMenu(p) instanceof CollectionMenu) {
                 p.closeInventory();
@@ -160,20 +164,34 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
         percents = Milestones.percents(settings.percents, problems::add);
         rewards = Milestones.Rewards.of(settings);
         catalog = buildCatalog(problems);
+        refresh.shown(catalog);
         for (String p : problems) {
             core.plugin().getLogger().warning("Collection: " + p);
         }
         core.plugin().getLogger().info("Collection: " + catalog.total() + " entries on " + catalog.visible().size() + " pages.");
     }
 
-    private void rebuildCatalog() {
+    /**
+     * Bukkit async pool (PERF11): builds the catalog from collection.yml and the crates module's catalog (both read-only
+     * snapshots) and compares it with the shown one; only a change goes to the main thread.
+     */
+    private void refreshCatalogAsync() {
+        int version = refresh.version();
         List<String> problems = new ArrayList<>();
-        Catalog fresh = buildCatalog(problems);
-        if (signature(fresh).equals(signature(catalog))) {
+        CatalogRefresh.Result changed = refresh.compare(buildCatalog(problems), problems, version);
+        if (changed != null) {
+            core.scheduler().main("collection:catalog", () -> applyCatalog(changed));
+        }
+    }
+
+    /** Main thread: shows a changed catalog (dropped when a reload rebuilt it meanwhile) and checks milestones again. */
+    private void applyCatalog(CatalogRefresh.Result changed) {
+        if (!refresh.accept(changed)) {
             return;
         }
+        Catalog fresh = changed.catalog();
         catalog = fresh;
-        for (String p : problems) {
+        for (String p : changed.problems()) {
             core.plugin().getLogger().warning("Collection: " + p);
         }
         core.plugin().getLogger().info("Collection: " + fresh.total() + " entries on " + fresh.visible().size() + " pages.");
@@ -183,17 +201,6 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
                 recorder.checkMilestones(log);
             }
         }
-    }
-
-    /** Page ids and entry ids in order: two catalogs with the same signature show the same log. */
-    private static String signature(Catalog c) {
-        StringBuilder sb = new StringBuilder();
-        for (Catalog.Page p : c.pages()) {
-            sb.append(p.id()).append('[');
-            p.entries().forEach(e -> sb.append(e.id()).append(e.nameMini()).append(','));
-            sb.append(']');
-        }
-        return sb.toString();
     }
 
     private Catalog buildCatalog(List<String> problems) {

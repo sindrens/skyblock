@@ -23,7 +23,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,6 +62,10 @@ public final class CoreVisibilityService implements VisibilityService, Listener 
     /** viewer → players this service has hidden from them. */
     private final Map<UUID, Set<UUID>> applied = new HashMap<>();
     private final Map<UUID, Zone> zones = new HashMap<>();
+    /** PERF11: cached region lookups and the block each player stood on at their last position check. */
+    private final ZoneTracker tracker = new ZoneTracker();
+    /** PERF11: reused for every position read (main thread only), so a check allocates no Location. */
+    private final Location scratch = new Location(null, 0, 0, 0);
     private final List<Owned<Rule>> rules = new CopyOnWriteArrayList<>();
     private final List<Owned<BiPredicate<Player, Player>>> relations = new CopyOnWriteArrayList<>();
     private Scheduler.Task zoneTask = Scheduler.Task.NONE;
@@ -143,6 +146,7 @@ public final class CoreVisibilityService implements VisibilityService, Listener 
         applied.clear();
         vanished.clear();
         zones.clear();
+        tracker.clear();
         Visibility.use(null);
     }
 
@@ -330,49 +334,50 @@ public final class CoreVisibilityService implements VisibilityService, Listener 
         if (z == null || !z.world().equals(p.getWorld().getName())) {
             z = computeZone(p, settingRegions());
             zones.put(p.getUniqueId(), z);
+            tracker.forget(p.getUniqueId()); // computed outside the position check: the next check computes it again
         }
         return z;
     }
 
+    /** The configured regions (looked up again only when the builds or the ids changed, PERF11). */
     private List<BuildRegion> settingRegions() {
-        List<String> ids = config.get().settingRegions;
-        if (ids == null || ids.isEmpty()) {
-            return List.of();
-        }
-        BuildPoints builds = services.optional(BuildPoints.class).orElse(null);
-        if (builds == null) {
-            return List.of();
-        }
-        List<BuildRegion> out = new ArrayList<>(ids.size());
-        for (String id : ids) {
-            if (id != null && !id.isBlank()) {
-                builds.region("regions", id.trim()).ifPresent(out::add);
-            }
-        }
-        return out;
+        return tracker.regions(services.optional(BuildPoints.class).orElse(null), config.get().settingRegions);
     }
 
     private Zone computeZone(Player p, List<BuildRegion> regions) {
-        Location at = p.getLocation();
+        Location at = p.getLocation(scratch);
         String world = at.getWorld() == null ? "" : at.getWorld().getName();
-        if (config.get().settingWorlds.contains(world)) {
-            return new Zone(world, true);
-        }
-        for (BuildRegion r : regions) {
-            if (r.world().equals(world) && r.box().contains(at.getX(), at.getY(), at.getZ())) {
-                return new Zone(world, true);
-            }
-        }
-        return new Zone(world, false);
+        at.setWorld(null); // no reference to a world kept between checks
+        return new Zone(world, ZoneTracker.inSettingZone(world, at.getBlockX(), at.getBlockY(), at.getBlockZ(),
+                config.get().settingWorlds, regions));
     }
 
-    /** Every {@code region-check-ticks}: one box test per player and place; only a change re-applies. */
+    /**
+     * Every {@code region-check-ticks}: only players on another block or in another world than at their last check (or
+     * when the places changed) get a box test; only a changed zone re-applies (PERF11: no Location or zone allocated for
+     * a player who did not move, no region lookup while the builds stay the same).
+     */
     private void checkZones() {
         List<BuildRegion> regions = settingRegions();
+        List<String> worlds = config.get().settingWorlds;
         for (Player p : Bukkit.getOnlinePlayers()) {
-            Zone now = computeZone(p, regions);
-            Zone before = zones.put(p.getUniqueId(), now);
-            if (!now.equals(before) && before != null) {
+            UUID id = p.getUniqueId();
+            Location at = p.getLocation(scratch);
+            String world = at.getWorld() == null ? "" : at.getWorld().getName();
+            at.setWorld(null);
+            int x = at.getBlockX();
+            int y = at.getBlockY();
+            int z = at.getBlockZ();
+            Zone before = zones.get(id);
+            if (!tracker.moved(id, world, x, y, z, regions, worlds) && before != null) {
+                continue; // same block, world and places as at the last check: same zone
+            }
+            boolean inside = ZoneTracker.inSettingZone(world, x, y, z, worlds, regions);
+            if (before != null && before.inSettingZone() == inside && before.world().equals(world)) {
+                continue;
+            }
+            zones.put(id, new Zone(world, inside));
+            if (before != null) {
                 refresh(p);
             }
         }
@@ -394,6 +399,7 @@ public final class CoreVisibilityService implements VisibilityService, Listener 
         UUID id = event.getPlayer().getUniqueId();
         applied.remove(id); // a new Player object (with no hides) is made on rejoin
         zones.remove(id);
+        tracker.forget(id);
         vanished.remove(id); // the essentials module vanishes them again on rejoin when their setting says so
     }
 

@@ -47,4 +47,23 @@ class BuildPointsStoreTest {
         assertEquals(8, store.points("npcs").size());
         assertEquals(Set.of("spawn_forge_quarter_v1", "spawn_market_square_v1"), store.builds());
     }
+
+    /** PERF11: every change moves the revision, so readers (the visibility zones) can cache region lookups. */
+    @Test
+    void revisionMovesOnEveryChange(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) {
+        BuildPointsStore store = new BuildPointsStore();
+        long start = store.revision();
+        assertTrue(start >= 0, "tracked");
+        store.put(BuildPointsStore.fromMeta(RealBuilds.meta("spawn_market_square_v1"), "t", "me"));
+        long afterPut = store.revision();
+        assertTrue(afterPut > start);
+        assertEquals(afterPut, store.revision(), "reads do not move it");
+        store.region("regions", "market_square_plot");
+        assertEquals(afterPut, store.revision());
+        store.put(BuildPointsStore.fromMeta(RealBuilds.meta("spawn_market_square_v1"), "t2", "me"));
+        assertTrue(store.revision() > afterPut, "applying the same build again counts as a change");
+        long beforeLoad = store.revision();
+        store.load(dir.resolve("missing.yml").toFile(), p -> { });
+        assertTrue(store.revision() > beforeLoad, "a (re)load counts as a change");
+    }
 }

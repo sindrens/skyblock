@@ -591,6 +591,11 @@ final class BlockWorth implements Listener {
         ledger.forget(island);
     }
 
+    /** PERF11: puts rows prepared off the main thread back (same result as {@link #restore}). */
+    void adopt(BlockWorthLedger.Restored restored) {
+        ledger.adopt(restored);
+    }
+
     /** Applies stored rows (load at start). */
     void restore(List<LevelStore.WorthRow> rows) {
         for (LevelStore.WorthRow r : rows) {

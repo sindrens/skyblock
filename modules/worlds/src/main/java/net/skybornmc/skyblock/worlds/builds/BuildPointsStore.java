@@ -46,6 +46,19 @@ public final class BuildPointsStore implements BuildPoints {
             coordinates as the builder wrote them. Edit the build's .yml in <server>/builds and apply again instead.""";
 
     private volatile Map<String, Applied> builds = Map.of();
+    /** PERF11: goes up on every change of {@link #builds}, so readers can cache lookups ({@link BuildPoints#revision}). */
+    private final java.util.concurrent.atomic.AtomicLong revision = new java.util.concurrent.atomic.AtomicLong();
+
+    /** Replaces the snapshot; the new revision is published after it, so a reader that sees it also sees the snapshot. */
+    private void set(Map<String, Applied> next) {
+        builds = next;
+        revision.incrementAndGet();
+    }
+
+    @Override
+    public long revision() {
+        return revision.get();
+    }
 
     public Map<String, Applied> all() {
         return builds;
@@ -55,7 +68,7 @@ public final class BuildPointsStore implements BuildPoints {
     public synchronized void put(Applied applied) {
         Map<String, Applied> copy = new TreeMap<>(builds);
         copy.put(applied.build(), applied);
-        builds = Collections.unmodifiableMap(copy);
+        set(Collections.unmodifiableMap(copy));
     }
 
     public static Applied fromMeta(BuildMeta meta, String appliedAt, String appliedBy) {
@@ -122,7 +135,7 @@ public final class BuildPointsStore implements BuildPoints {
 
     public void load(File file, Consumer<String> problem) {
         if (!file.isFile()) {
-            builds = Map.of();
+            set(Map.of());
             return;
         }
         YamlConfiguration yaml = new YamlConfiguration();
@@ -131,10 +144,10 @@ public final class BuildPointsStore implements BuildPoints {
         } catch (IOException | InvalidConfigurationException e) {
             problem.accept(file.getName() + ": not valid YAML, no build points loaded. "
                     + String.valueOf(e.getMessage()).lines().findFirst().orElse(""));
-            builds = Map.of();
+            set(Map.of());
             return;
         }
-        builds = Collections.unmodifiableMap(read(yaml, problem));
+        set(Collections.unmodifiableMap(read(yaml, problem)));
     }
 
     public void save(File file) throws IOException {

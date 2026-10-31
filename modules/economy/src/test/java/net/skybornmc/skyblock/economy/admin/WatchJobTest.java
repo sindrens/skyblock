@@ -94,6 +94,36 @@ class WatchJobTest {
                 rs -> WatchStore.sum(rs, 1), reason, flow.key()).orElse(0L));
     }
 
+    /** PERF11: the periodic trigger starts runs from Bukkit's async pool; concurrent starts share one run. */
+    @Test
+    void runsStartedFromManyThreadsShareOneRunAndCountOnce() throws Exception {
+        sale(0, A, 100);
+        sale(0, B, 50);
+        java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(4);
+        try {
+            List<java.util.concurrent.Future<java.util.concurrent.CompletableFuture<WatchJob.Result>>> started = new java.util.ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                started.add(pool.submit(() -> WatchTrigger.shouldStart(true, job) || job.busy() ? job.run() : null));
+            }
+            int rows = 0;
+            java.util.Set<java.util.concurrent.CompletableFuture<WatchJob.Result>> runs =
+                    java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+            for (var f : started) {
+                var run = f.get(10, java.util.concurrent.TimeUnit.SECONDS);
+                if (run != null) {
+                    runs.add(run);
+                }
+            }
+            for (var run : runs) {
+                rows += run.get(10, java.util.concurrent.TimeUnit.SECONDS).rows();
+            }
+            assertEquals(2, rows, "every row counted once, however many threads started a run");
+        } finally {
+            pool.shutdown();
+        }
+        assertEquals(150, flow("sell", Flow.CREATED));
+    }
+
     @Test
     void everyRowIsCountedExactlyOnce() {
         sale(0, A, 100);

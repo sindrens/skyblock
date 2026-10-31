@@ -32,4 +32,12 @@ public interface BuildPoints {
 
     /** Ids of the applied builds. */
     Set<String> builds();
+
+    /**
+     * PERF11: a number that changes whenever any entry changes (a build applied again, the file reloaded), so callers
+     * may cache what they looked up while it stays the same. Negative = not tracked: look up every time.
+     */
+    default long revision() {
+        return -1;
+    }
 }

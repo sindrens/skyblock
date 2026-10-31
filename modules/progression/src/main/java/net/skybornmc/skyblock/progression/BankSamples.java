@@ -38,6 +38,11 @@ final class BankSamples {
         samples.put(at, Math.max(0, balance));
     }
 
+    /** PERF11: puts every sample of {@code stored} back (same result as {@link #restore} for each of them, in any order). */
+    void restoreAll(BankSamples stored) {
+        samples.putAll(stored.samples);
+    }
+
     /** The lowest balance in {@code [now - window, now]} including the balance at the window start; empty if not observed that long. */
     OptionalLong lowest(long now, long windowMillis) {
         long start = now - windowMillis;
