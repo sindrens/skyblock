@@ -49,6 +49,7 @@ public final class PickListMenu<T> extends Menu {
     private final Consumer<T> onPick;
     private final String module;
     private final String infoKey;
+    private java.util.function.Function<T, Menu> next;
     private int page;
 
     /**
@@ -67,6 +68,15 @@ public final class PickListMenu<T> extends Menu {
         this.onPick = onPick;
         this.module = module;
         this.infoKey = infoKey;
+    }
+
+    /**
+     * Instead of going back, a pick opens the menu {@code next} returns (GUI-4b, e.g. "Edit a loadout" → the loadout's
+     * screen); its Back goes to the menu that opened this list. {@code null} from {@code next} = go back as usual.
+     */
+    public PickListMenu<T> thenOpen(java.util.function.Function<T, Menu> next) {
+        this.next = next;
+        return this;
     }
 
     @Override
@@ -133,6 +143,15 @@ public final class PickListMenu<T> extends Menu {
             item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
         }
         return MenuButton.of(item, click -> {
+            Menu then = next == null ? null : next.apply(option.value());
+            if (then != null) {
+                if (parent() != null) {
+                    parent().openChild(then);
+                } else {
+                    service.open(viewer, then);
+                }
+                return;
+            }
             if (!option.selected()) {
                 onPick.accept(option.value());
             }

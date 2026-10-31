@@ -572,7 +572,8 @@ final class Loadouts {
 
     /** Asks for a new name in chat (the menu closes), then renames. */
     void promptRename(Player player, Loadout l, Runnable reopen) {
-        module.core.menus().prompt(player, WardrobeModule.ID, "loadout.rename-prompt", module.config().loadoutNameMax + 8,
+        // GUI-4b: Bedrock players type in a form popup (on-screen keyboard, old name filled in), Java players in chat.
+        module.core.menus().input(player, WardrobeModule.ID, "loadout.rename-prompt", module.config().loadoutNameMax + 8, l.name(),
                 input -> rename(player, l, input, reopen), reopen, Msg.p("max", module.config().loadoutNameMax), Msg.p("name", l.name()));
     }
 

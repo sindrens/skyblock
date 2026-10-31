@@ -18,17 +18,23 @@ import java.util.UUID;
 /**
  * Set detail (WARDROBE §6.2), for a set or for a merged entry:
  * <pre>
- *  4      the set
+ *  4      the set (status, also "owned")
  *  10-13  Helm · Cuirass · Greaves · Boots (click to wear / take off)    15 Wear all · 16 Take all off
  *  20     bonuses (2 / 4 pieces)   22 set level (bar, multiplier, next, earns from)   24 enchants (E5)
- *  29     Use a Wardrobe Tome      31 Buy / Claim / owned / locked / crate     33 Redeem token (when you carry one)
- *  38     Merge (max level)        42 Trail on/off (trail level)
+ *  29     Use a Wardrobe Tome      31 Get it: Redeem token / Buy / Claim, or how to get it   33 Merge (max level)
+ *  40     Trail on/off (trail level)
  * </pre>
+ * GUI-4b (MENU_FIXES wardrobe.set): one row per group (pieces, info, actions), the one way to get the set always on 31
+ * (Redeem moved there from 33, nothing there once owned), Merge next to the Tome, one-shot Wear all / Take all off no
+ * longer look like dye toggles, and Redeem asks first like Buy (it uses up the token).
  * Click-only (Bedrock-safe); every action that costs something goes through the 3-row confirm.
  */
 final class SetMenu extends Menu {
 
     private static final int[] PIECE_SLOTS = {10, 11, 12, 13};
+    static final int SLOT_ACTION = 31;
+    static final int SLOT_MERGE = 33;
+    static final int SLOT_TRAIL = 40;
 
     private final WardrobeModule module;
     private final SetDef def;
@@ -145,12 +151,12 @@ final class SetMenu extends Menu {
             });
         }
         if (entry.isPresent()) {
-            set(15, service.item(Material.LIME_DYE, viewer, WardrobeModule.ID, "menu.set.wear-all"),
+            set(15, service.item(Material.ARMOR_STAND, viewer, WardrobeModule.ID, "menu.set.wear-all"),
                     click -> module.equipment().wear(viewer, entry.get(), Arrays.asList(ArmorPiece.values())));
             List<ArmorPiece> mineWorn = s.equipped.values().stream().filter(q -> q.entryId().equals(entry.get().entryId()))
                     .map(WardrobeStore.Equipped::piece).toList();
             if (!mineWorn.isEmpty()) {
-                set(16, service.item(Material.RED_DYE, viewer, WardrobeModule.ID, "menu.set.take-off-all"),
+                set(16, service.item(Material.HOPPER, viewer, WardrobeModule.ID, "menu.set.take-off-all"),
                         click -> module.equipment().takeOff(viewer, mineWorn));
             }
         }
@@ -173,17 +179,10 @@ final class SetMenu extends Menu {
 
         // Actions
         if (!merged) {
-            action(offer);
-            int tokenSlot = Shop.tokenSlot(viewer.getInventory(), def.id());
-            if (tokenSlot >= 0 && entry.isEmpty()) {
-                set(33, service.item(Material.ARMOR_STAND, viewer, WardrobeModule.ID, "menu.set.redeem"), click -> {
-                    int now = Shop.tokenSlot(viewer.getInventory(), def.id());
-                    if (now < 0) {
-                        module.fail(viewer, "token-gone");
-                        return;
-                    }
-                    module.shop().redeem(viewer, now);
-                });
+            if (entry.isEmpty() && Shop.tokenSlot(viewer.getInventory(), def.id()) >= 0) {
+                redeem();
+            } else {
+                action(offer);
             }
         }
         entry.ifPresent(e -> {
@@ -233,7 +232,25 @@ final class SetMenu extends Menu {
         });
     }
 
-    /** 38: Merge (owned plain set; clickable only at the max level of a tier I-III set). */
+    /** 31 when you carry a token for this set: Redeem, after a confirm (the token is used up). */
+    private void redeem() {
+        WardrobeMenus m = module.menus();
+        set(SLOT_ACTION, service.item(Material.NAME_TAG, viewer, WardrobeModule.ID, "menu.set.redeem"), click -> openChild(new ConfirmMenu(
+                v -> m.text(v, "confirm.redeem.crumb"),
+                service.item(module.items().icon(def, ArmorPiece.CHEST), module.core.messages().parse(viewer, WardrobeText.colored(def)), List.of()),
+                v -> m.lines(v, "confirm.redeem.details", Msg.p("set", def.name())),
+                p -> {
+                    int now = Shop.tokenSlot(p.getInventory(), def.id());
+                    if (now < 0) {
+                        module.fail(p, "token-gone");
+                        return;
+                    }
+                    module.shop().redeem(p, now);
+                }, p -> {
+                })));
+    }
+
+    /** 33: Merge (owned plain set; clickable only at the max level of a tier I-III set). */
     private void merge(WardrobeStore.Entry e) {
         if (e.isMerged() || !module.merging().enabled()) {
             return;
@@ -241,20 +258,20 @@ final class SetMenu extends Menu {
         WardrobeMenus m = module.menus();
         Optional<MergeRules.Refusal> why = module.merging().canStart(e);
         if (why.isPresent()) {
-            set(38, service.item(Material.GRAY_DYE, viewer, WardrobeModule.ID, "menu.set.merge-locked",
+            set(SLOT_MERGE, service.item(Material.GRAY_DYE, viewer, WardrobeModule.ID, "menu.set.merge-locked",
                     Msg.mm("why", module.text().raw("merge.why." + why.get().key())), Msg.p("level", module.config().maxLevel)));
             return;
         }
-        set(38, service.item(Material.ANVIL, viewer, WardrobeModule.ID, "menu.set.merge"), click -> openChild(new MergePickMenu(module, e)));
+        set(SLOT_MERGE, service.item(Material.ANVIL, viewer, WardrobeModule.ID, "menu.set.merge"), click -> openChild(new MergePickMenu(module, e)));
     }
 
-    /** 42: trail toggle (from the trail level). */
+    /** 40: trail toggle (from the trail level). */
     private void trail(WardrobeStore.Entry e) {
         if (!module.config().levelsEnabled || e.level() < module.config().trailLevel) {
             return;
         }
         boolean on = module.leveling().trailOn(viewer);
-        set(42, service.item(on ? Material.BLAZE_POWDER : Material.GUNPOWDER, viewer, WardrobeModule.ID,
+        set(SLOT_TRAIL, service.item(on ? Material.BLAZE_POWDER : Material.GUNPOWDER, viewer, WardrobeModule.ID,
                 on ? "menu.set.trail-on" : "menu.set.trail-off"), click -> {
             module.leveling().toggleTrail(viewer);
             refresh();
@@ -267,7 +284,7 @@ final class SetMenu extends Menu {
         switch (offer.kind()) {
             case BUY -> {
                 String price = module.shop().price(offer.currency(), offer.price());
-                set(31, service.item(Material.EMERALD, viewer, WardrobeModule.ID, "menu.set.buy", Msg.p("price", price)), click -> {
+                set(SLOT_ACTION, service.item(Material.EMERALD, viewer, WardrobeModule.ID, "menu.set.buy", Msg.p("price", price)), click -> {
                     Menu confirm = new ConfirmMenu(v -> m.text(v, "confirm.buy.crumb"),
                             service.item(module.items().icon(def, ArmorPiece.CHEST), module.core.messages().parse(v(), WardrobeText.colored(def)), List.of()),
                             v -> m.lines(v, "confirm.buy.details", Msg.p("set", def.name()), Msg.p("price", price)),
@@ -276,9 +293,12 @@ final class SetMenu extends Menu {
                     openChild(confirm);
                 });
             }
-            case CLAIM -> set(31, service.item(Material.EMERALD, viewer, WardrobeModule.ID, "menu.set.claim"),
+            case CLAIM -> set(SLOT_ACTION, service.item(Material.EMERALD, viewer, WardrobeModule.ID, "menu.set.claim"),
                     click -> module.shop().claim(viewer, def));
-            default -> set(31, service.item(icon(offer.kind()), module.menus().text(viewer, "menu.set.state.name"),
+            // Owned: the status is on the set item (4), so nothing here looks like a button that does nothing.
+            case OWNED -> {
+            }
+            default -> set(SLOT_ACTION, service.item(icon(offer.kind()), module.menus().text(viewer, "menu.set.state.name"),
                     module.menus().status(viewer, def, offer, s)));
         }
     }
@@ -289,7 +309,6 @@ final class SetMenu extends Menu {
 
     private static Material icon(Offers.Kind kind) {
         return switch (kind) {
-            case OWNED -> Material.LIME_DYE;
             case CRATE_ONLY -> Material.TRIPWIRE_HOOK;
             default -> Material.GRAY_DYE;
         };
