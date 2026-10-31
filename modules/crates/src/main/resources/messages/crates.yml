@@ -391,7 +391,7 @@ physical:
 hologram:
   lines:
     - "<bold><crate>"
-    - "<bold><c:action>Click: </c:action></bold><c:text>Open"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     - "<bold><c:action>Sneak-click: </c:action></bold><c:text>View rewards"
   coming-soon:
     - "<bold><crate>"

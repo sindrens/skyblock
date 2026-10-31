@@ -1,5 +1,7 @@
 package net.skybornmc.skyblock.crates;
 
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.box.BoxSource;
 import net.skybornmc.skyblock.common.box.ItemBox;
@@ -172,12 +174,21 @@ final class KeyItems implements Listener {
     }
 
     private ItemStack create(UUID id, String crate, String withdrawnBy, long now) {
-        return m.core.items().create(ITEM_ID, 1, "withdraw:" + withdrawnBy, pdc -> {
+        ItemStack key = m.core.items().create(ITEM_ID, 1, "withdraw:" + withdrawnBy, pdc -> {
             pdc.set(ItemKeys.UUID, PersistentDataType.STRING, id.toString()); // row id = unique item id
             pdc.set(ItemKeys.CREATED, PersistentDataType.LONG, now);
             pdc.set(CRATE, PersistentDataType.STRING, crate);
             pdc.set(WITHDRAWN_BY, PersistentDataType.STRING, withdrawnBy);
         });
+        // The pack draws the matching key (crate/key/<crate> on tripwire_hook); without the pack it stays the vanilla
+        // item, so this is safe for every viewer and never sets item_model (PACK_BUILD must-have 4).
+        key.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addString(keyModel(crate)).build());
+        return key;
+    }
+
+    /** The pack model id of a crate's key. Pure. */
+    static String keyModel(String crate) {
+        return "crate/key/" + crate.toLowerCase(Locale.ROOT);
     }
 
     // ================================================================== withdraw

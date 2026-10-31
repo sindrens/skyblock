@@ -25,7 +25,7 @@ final class CrateCatalog {
     static final String FILE = "crates.yml";
     static final String ROOT = "crates";
     private static final Pattern ID = Pattern.compile("[a-z0-9_]{1,32}");
-    private static final List<String> RARITIES = List.of("common", "uncommon", "rare", "epic", "legendary", "mythic", "special");
+    static final List<String> RARITIES = List.of("common", "uncommon", "rare", "epic", "legendary", "mythic", "special");
     /** Booster types of booster rewards (common BoosterType ids). */
     static final List<String> BOOSTER_TYPES = java.util.Arrays.stream(net.skybornmc.skyblock.common.booster.BoosterType.values())
             .map(net.skybornmc.skyblock.common.booster.BoosterType::id).toList();
