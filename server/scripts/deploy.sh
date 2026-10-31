@@ -24,7 +24,9 @@ mkdir -p "$STAGE/server/plugins"; cp "$ROOT/$JAR" "$STAGE/server/plugins/"
 git -C "$ROOT" ls-files server > "$LIST"
 
 echo "== Deploying $(basename "$JAR") + configs to $TARGET"
-tar -czf - -C "$ROOT" -T "$LIST" -C "$STAGE" "server/plugins/$(basename "$JAR")" 2>/dev/null \
+# Stage the tracked files next to the jar first: bsdtar (macOS) resolves -T entries against the LAST -C, which shipped only the jar.
+(cd "$ROOT" && tar -cf - -T "$LIST") | tar -xf - -C "$STAGE"
+tar -czf - -C "$STAGE" server \
   | "${SSH[@]}" "$TARGET" 'set -e; cd /opt/skyblock && rm -f server/plugins/PhoenixSkyblock-*.jar && tar -xzf - 2>/dev/null \
       && find server -name "._*" -type f -delete && chmod +x server/start.sh server/scripts/*.sh && cd server && ./scripts/fetch.sh && ./scripts/apply-secrets.sh \
       && ./scripts/restart-and-apply.sh'
