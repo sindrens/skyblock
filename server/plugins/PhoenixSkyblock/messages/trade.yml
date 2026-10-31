@@ -48,12 +48,12 @@ rules:
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>Your profiles can't trade with each other."
 
 start:
-  started: "<prefix><c:success><sym:check></c:success> <c:text>Trading with <c:value><player></c:value><c:text>. Tap items in your inventory to offer them."
+  started: "<prefix><c:success><sym:check></c:success> <c:text>Trading with <c:value><player></c:value><c:text>. Click items in your inventory to offer them."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>The trade couldn't start. Try again."
 
 # Why an item can't be offered.
 items:
-  no-item: "<prefix><c:error><sym:cross></c:error> <c:text>Tap an item in your inventory."
+  no-item: "<prefix><c:error><sym:cross></c:error> <c:text>Click an item in your inventory."
   dupe-flagged: "<prefix><c:error><sym:cross></c:error> <c:text>This item is flagged as a possible dupe. Ask staff."
   staff-item: "<prefix><c:error><sym:cross></c:error> <c:text>Items made by staff can't be traded."
   bound-item: "<prefix><c:error><sym:cross></c:error> <c:text>Bound loot stays on your profile and can't be traded."
@@ -119,7 +119,7 @@ delivery:
 menu:
   title: "Trade » <player>"
   info:
-    - "<c:text>Tap items in your inventory to offer"
+    - "<c:text>Click items in your inventory to offer"
     - "<c:text>them. Both confirm, then a short"
     - "<c:text>countdown. Any change resets it."
     - "<c:text>Closing keeps the trade open:"
@@ -207,7 +207,7 @@ menu:
   empty-mine:
     name: "<c:muted>Empty slot"
     lore:
-      - "<c:text>Tap an item in your inventory"
+      - "<c:text>Click an item in your inventory"
       - "<c:text>to offer it."
   empty-locked:
     name: "<c:muted>Empty slot"

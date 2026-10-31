@@ -76,7 +76,7 @@ item:
   description: "Adds this tag to your account. Extra copies can be traded or sold."
   preview: "<c:text>Tag: {tag}"
   rarity: "<c:text>Tag rarity: {rarity}"
-  action-input: "Right-click"
+  action-input: "USE"
   action-text: "to redeem"
 
 redeem:
@@ -104,7 +104,7 @@ staff:
   automatic-title: "<prefix><c:error><sym:cross></c:error> <c:text>The title <c:value><id></c:value> <c:text>is earned automatically. Staff can't give or take it."
   automatic-tag: "<prefix><c:error><sym:cross></c:error> <c:text>The tag <c:value><id></c:value> <c:text>is earned automatically. Staff can't give or take it."
   items-given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><player></c:value> <c:value><amount></c:value> <c:text>tag item(s): <c:value><tag></c:value>."
-  items-received: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><amount></c:value> <c:text>tag item(s): <c:value><tag></c:value>. Right-click to redeem."
+  items-received: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><amount></c:value> <c:text>tag item(s): <c:value><tag></c:value>. Use one to redeem it."
   console-needs-player: "<prefix><c:error><sym:cross></c:error> <c:text>Add a player: <c:value>/tags item phoenix 1 Steve</c:value>"
   unknown-player: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
   error: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work: <reason>"

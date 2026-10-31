@@ -15,7 +15,7 @@ import java.util.List;
  * {@code /wardrobe} (WARDROBE §6.1): every set, owned or not, grouped by activity (owned first in each group).
  * <pre>
  *  content: the 16 sets (lock, price or "Lv · ×" and pieces worn)
- *  46 filter (one click cycles) · 47 worn now · 51 Wardrobe Chest · top row 4 loadouts (/loadout)
+ *  46 filter (opens a pick list, GUI-4/G9) · 47 worn now · 51 Wardrobe Chest · top row 4 loadouts (/loadout)
  * </pre>
  */
 final class WardrobeMenu extends PagedMenu<WardrobeMenu.Row> {
@@ -127,14 +127,25 @@ final class WardrobeMenu extends PagedMenu<WardrobeMenu.Row> {
                 click -> openChild(new SetMenu(module, row.def(), e.entryId())));
     }
 
+    /** A small list of the filters; one click picks (GUI-4/G9: no forward-only cycling). */
+    private void pickFilter() {
+        List<net.skybornmc.skyblock.common.menu.PickListMenu.Option<Integer>> options = new ArrayList<>();
+        for (int i = 0; i < FILTERS.size(); i++) {
+            options.add(new net.skybornmc.skyblock.common.menu.PickListMenu.Option<>(i, new org.bukkit.inventory.ItemStack(Material.HOPPER),
+                    service.text(viewer, WardrobeModule.ID, "menu.main.filter.pick",
+                            Msg.p("filter", module.text().plain("filter." + FILTERS.get(i)))), List.of(), i == filter));
+        }
+        openChild(new net.skybornmc.skyblock.common.menu.PickListMenu<>(List.of(module.menus().text(viewer, "menu.title"),
+                service.text(viewer, WardrobeModule.ID, "menu.main.filter.crumb")), options, i -> {
+            filter = i;
+            page(0);
+        }));
+    }
+
     @Override
     protected void decorate() {
         set(46, service.item(Material.HOPPER, viewer, WardrobeModule.ID, "menu.main.filter",
-                Msg.p("filter", module.text().plain("filter." + FILTERS.get(filter)))), click -> {
-            filter = (filter + 1) % FILTERS.size();
-            page(0);
-            service.open(viewer, this);
-        });
+                Msg.p("filter", module.text().plain("filter." + FILTERS.get(filter)))), click -> pickFilter());
         List<Component> worn = new ArrayList<>(module.menus().lines(viewer, "menu.main.worn.lore"));
         worn.addAll(module.menus().wornLines(viewer));
         set(47, service.item(Material.ARMOR_STAND, module.menus().text(viewer, "menu.main.worn.name"), worn));

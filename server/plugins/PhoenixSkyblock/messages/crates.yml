@@ -161,7 +161,7 @@ open:
   single: "<prefix><c:success><sym:check></c:success> <crate><c:text>: <reward>"
   single-top: "<prefix><c:flame><sym:star></c:flame> <crate><c:text>: you won <reward><c:text>!"
   fallback-note: "<c:muted>Not live yet, so you got its crystal value: <cur:crystals><amount></cur:crystals><c:muted>."
-  pity-fired: "<c:muted>Your pity counter guaranteed a top reward."
+  pity-fired: "<c:muted>Your luck meter was full: a top reward for sure."
   summary-header: "<prefix><c:success><sym:check></c:success> <c:text>You opened <c:value><count></c:value> <crate><c:text>s:"
   summary-line: " <c:muted><sym:bullet></c:muted> <reward> <c:muted>x<times>"
   summary-line-top: " <c:flame><sym:star></c:flame> <reward> <c:muted>x<times>"
@@ -178,13 +178,14 @@ menu:
     - "<c:text>Open crates with your keys."
     - "<c:text>Click a crate to see every"
     - "<c:text>reward and its chance. Opening uses"
-    - "<c:text>bound keys first."
+    - "<c:text>untradeable keys first."
+    - "<c:muted>Java: right-click opens 1, shift-click more."
   loading:
     name: "<c:muted>Loading your keys..."
     lore: []
   empty:
     name: "<c:muted>No crates yet"
-    lore: ["<c:text>Crates open soon."]
+    lore: ["<c:text>No crate is set up right now."]
   summary:
     name: "<c:flame><sym:star></c:flame> <c:value>Your keys"
     lore:
@@ -195,14 +196,13 @@ menu:
   crate:
     lore:
       - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
-      - "<c:text>Pity: <c:value><pity>/<max></c:value> <c:muted><sym:dot> top rewards <top>%"
+      - "<c:text>Luck meter: <c:value><pity>/<max></c:value> <c:muted><sym:dot> top rewards <top>%"
       - ""
     lore-no-pity:
       - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
       - ""
     actions:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see rewards and open"
-      - "<c:muted>Shortcuts: right-click opens 1, shift-click opens <bulk>"
     actions-bedrock:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see rewards and open"
     coming-soon:
@@ -218,33 +218,33 @@ menu:
       - "<c:muted>Depths tier 11+. Tradeable."
       - ""
     actions:
-      - "<bold><c:action>» LEFT-CLICK</c:action></bold> <c:text>combine <need> into 1 key"
-      - "<bold><c:action>» SHIFT-CLICK</c:action></bold> <c:text>combine all (<keys> keys)"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to combine <need> into 1 key"
+      - "<c:muted>Java: shift-click combines all (<keys> keys)"
     actions-bedrock:
-      - "<bold><c:action>» TAP</c:action></bold> <c:text>combine <need> into 1 key"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to combine <need> into 1 key"
     actions-none:
       - "<c:locked>You need <need> fragments in your inventory."
 
 preview:
   info:
     - "<c:text>Every reward with its chance."
-    - "<c:flame><sym:star></c:flame> <c:text>marks the top rewards: the pity"
-    - "<c:text>counter guarantees one after a"
-    - "<c:text>streak of bad luck."
+    - "<c:flame><sym:star></c:flame> <c:text>marks the top rewards. When your"
+    - "<c:text>luck meter is full, the next open"
+    - "<c:text>gives one for sure."
   gone:
     name: "<c:muted>This crate is not available"
     lore: []
   status:
     - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
-    - "<c:text>Pity: <c:value><pity>/<max></c:value> <c:muted><sym:dot> top rewards <top>%"
+    - "<c:text>Luck meter: <c:value><pity>/<max></c:value> <c:muted><sym:dot> top rewards <top>%"
     - ""
-    - "<c:muted>Bound keys are used first. Loot"
-    - "<c:muted>from a bound key is bound too."
+    - "<c:muted>Untradeable keys are used first."
+    - "<c:muted>What they give can't be traded."
   status-no-pity:
     - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
     - ""
-    - "<c:muted>Bound keys are used first. Loot"
-    - "<c:muted>from a bound key is bound too."
+    - "<c:muted>Untradeable keys are used first."
+    - "<c:muted>What they give can't be traded."
   open-one:
     name: "<c:success>Open 1"
     lore: ["<c:text>Uses 1 <key><c:text>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
@@ -281,7 +281,7 @@ result:
   summary:
     - "<c:text>Opened: <c:value><count></c:value>"
     - "<c:text>Top rewards: <c:value><top>"
-    - "<c:text>Pity now: <c:value><pity>/<max>"
+    - "<c:text>Luck meter now: <c:value><pity>/<max>"
   line: ["<c:text>Won <c:value><times></c:value><c:text>x"]
   line-top: ["<c:flame><sym:star></c:flame> <c:text>Top reward, won <c:value><times></c:value><c:text>x"]
   more:

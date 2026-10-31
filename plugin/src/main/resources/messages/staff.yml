@@ -15,37 +15,37 @@ mode:
   check-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't check your saved inventory. Rejoin to use /s; tell an admin if it repeats."
 
 tool:
-  need-target: "<c:error><sym:cross></c:error> <c:text>Look at a player (or right-click one)."
+  need-target: "<c:error><sym:cross></c:error> <c:text>Look at a player (or use the tool on one)."
   inspect:
-    name: "<c:info><bold>Inspect</bold></c:info> <c:muted><sym:dot> Right-click a player"
-    lore: ["<c:text>Profile, inventory, reports and logs.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>a player"]
+    name: "<c:info><bold>Inspect</bold></c:info> <c:muted><sym:dot> Use on a player"
+    lore: ["<c:text>Profile, inventory, reports and logs.", "", "<bold><c:action>» USE</c:action></bold> <c:text>on a player"]
   freeze:
-    name: "<c:sky_ice><bold>Freeze</bold></c:sky_ice> <c:muted><sym:dot> Right-click a player"
-    lore: ["<c:text>Freeze or unfreeze for a check.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>a player"]
+    name: "<c:sky_ice><bold>Freeze</bold></c:sky_ice> <c:muted><sym:dot> Use on a player"
+    lore: ["<c:text>Freeze or unfreeze for a check.", "", "<bold><c:action>» USE</c:action></bold> <c:text>on a player"]
   random-tp:
-    name: "<c:flame><bold>Random player</bold></c:flame> <c:muted><sym:dot> Right-click"
-    lore: ["<c:text>Teleport to a random player", "<c:text>(other staff are skipped).", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold>"]
+    name: "<c:flame><bold>Random player</bold></c:flame> <c:muted><sym:dot> Use"
+    lore: ["<c:text>Teleport to a random player", "<c:text>(other staff are skipped).", "", "<bold><c:action>» USE</c:action></bold>"]
     none: "<c:muted>No players to teleport to.</c:muted>"
     done: "<c:text>Teleported to <c:value><player></c:value>"
   logs:
-    name: "<c:ember><bold>Logs here</bold></c:ember> <c:muted><sym:dot> Right-click"
-    lore: ["<c:text>Recent actions around you.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold>"]
+    name: "<c:ember><bold>Logs here</bold></c:ember> <c:muted><sym:dot> Use"
+    lore: ["<c:text>Recent actions around you.", "", "<bold><c:action>» USE</c:action></bold>"]
   vanish:
     "on":
-      name: "<c:success><bold>Vanished</bold></c:success> <c:muted><sym:dot> Right-click"
-      lore: ["<c:text>Players can't see you.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>to show yourself"]
+      name: "<c:success><bold>Vanished</bold></c:success> <c:muted><sym:dot> Use"
+      lore: ["<c:text>Players can't see you.", "", "<bold><c:action>» USE</c:action></bold> <c:text>to show yourself"]
     "off":
-      name: "<c:muted><bold>Visible</bold></c:muted> <c:muted><sym:dot> Right-click"
-      lore: ["<c:warning>Players can see you!", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>to vanish"]
+      name: "<c:muted><bold>Visible</bold></c:muted> <c:muted><sym:dot> Use"
+      lore: ["<c:warning>Players can see you!", "", "<bold><c:action>» USE</c:action></bold> <c:text>to vanish"]
   punish:
-    name: "<c:error><bold>Punish</bold></c:error> <c:muted><sym:dot> Right-click a player"
-    lore: ["<c:text>Opens the punishment menu.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>a player"]
+    name: "<c:error><bold>Punish</bold></c:error> <c:muted><sym:dot> Use on a player"
+    lore: ["<c:text>Opens the punishment menu.", "", "<bold><c:action>» USE</c:action></bold> <c:text>on a player"]
   reports:
-    name: "<c:parchment><bold>Reports</bold></c:parchment> <c:muted><sym:dot> Right-click"
-    lore: ["<c:text>Open player reports.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold>"]
+    name: "<c:parchment><bold>Reports</bold></c:parchment> <c:muted><sym:dot> Use"
+    lore: ["<c:text>Open player reports.", "", "<bold><c:action>» USE</c:action></bold>"]
   exit:
     name: "<c:brand_bright><bold>Leave staff mode</bold></c:brand_bright>"
-    lore: ["<c:text>Gives your own inventory back.", "", "<bold><c:action>» RIGHT-CLICK</c:action></bold>"]
+    lore: ["<c:text>Gives your own inventory back.", "", "<bold><c:action>» USE</c:action></bold>"]
 
 # --- Freeze ---
 freeze:

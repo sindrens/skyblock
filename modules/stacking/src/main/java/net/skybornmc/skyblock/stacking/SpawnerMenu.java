@@ -130,8 +130,8 @@ final class SpawnerMenu extends Menu {
                 click -> act(() -> manager.add(viewer, spawner, 1)));
         set(SLOT_ADD_ALL, service.item(Material.EMERALD, viewer, StackingModule.ID, "menu.add-all", p),
                 click -> act(() -> manager.add(viewer, spawner, Integer.MAX_VALUE)));
-        set(SLOT_UPGRADES, service.item(Material.EXPERIENCE_BOTTLE, viewer, StackingModule.ID, "menu.upgrades", p),
-                click -> module.msg().send(viewer, "menu.upgrades-soon"));
+        // GUI-4: display only (limit and speed); the upgrade path isn't built, so no click and no promise.
+        set(SLOT_UPGRADES, service.item(Material.EXPERIENCE_BOTTLE, viewer, StackingModule.ID, "menu.upgrades", p));
         set(SLOT_TAKE_ONE, service.item(Material.RED_DYE, viewer, StackingModule.ID, "menu.take-one", p),
                 click -> act(() -> manager.remove(viewer, spawner, 1, "menu")));
         set(SLOT_TAKE_ALL, service.item(Material.HOPPER, viewer, StackingModule.ID, "menu.take-all", p),

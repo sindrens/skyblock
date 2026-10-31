@@ -117,7 +117,10 @@ final class IslandStatsMenu extends Menu {
         frame();
         set(SLOT_HEADER, MenuButton.display(header()));
         for (int i = 0; i < ORDER.size(); i++) {
-            set(SLOTS.get(i), category(ORDER.get(i)));
+            MenuButton button = category(ORDER.get(i));
+            if (button != null) { // GUI-4: categories of parts that aren't open yet are hidden
+                set(SLOTS.get(i), button);
+            }
         }
         UUID me = stats.islands().key(viewer);
         if (!staff && island.members().containsKey(me)) {
@@ -140,7 +143,7 @@ final class IslandStatsMenu extends Menu {
         String name = stats.name(stat);
         ItemStack icon = new ItemStack(stats.icon(stat));
         if (!stats.shown(stat, snapshot)) {
-            return MenuButton.display(service.item(icon, text("stats.item.soon-name", Msg.p("category", name)), lines("stats.item.soon-lore")));
+            return null;
         }
         Totals t = snapshot.totals(stat);
         TagResolver[] p = {

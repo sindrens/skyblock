@@ -96,7 +96,6 @@ menu:
     empty: "<c:muted>●</c:muted>"
   skill:
     name: "<skill> <c:value>Lv <level>"
-    locked-name: "<skill> <c:muted><sym:dot> Coming soon"
     subtitle: "<c:muted>Skill <sym:dot> Lv <level>/<max>"
     progress: "<c:text>Lv <level> <bar> <c:value><percent>%"
     xp: "<c:value><into></c:value><c:muted>/<step> XP to level <next>"
@@ -108,9 +107,6 @@ menu:
       - " <c:text>at level <c:value><level></c:value> <c:muted>(<missing> to go)"
     all-unlocked: "<c:success><sym:check> Everything unlocked"
     how-header: "<c:muted>How to earn XP"
-    coming-soon:
-      - "<c:error><sym:cross> Locked"
-      - "<c:text>Coming in a later update."
 
 # /settings toggle (Display)
 settings:

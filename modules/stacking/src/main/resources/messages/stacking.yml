@@ -64,8 +64,8 @@ spawner:
     tier: "<c:text>Tier <c:value>{tier}"
     action-place-input: "Place"
     action-place: "on your island"
-    action-menu-input: "Sneak-right-click"
-    action-menu: "the block to manage it"
+    action-menu-input: "USE"
+    action-menu: "the block with an empty hand to manage it"
 
 # /spawner give (staff). <player> <amount> <mob> <tier>
 give:
@@ -135,11 +135,7 @@ menu:
     crumb: "Take all spawners?"
     details: ["<c:text>Put all <c:value><count></c:value> <c:text>spawners in your", "<c:text>inventory. The block disappears."]
   upgrades:
-    name: "<c:ember>Upgrades"
+    name: "<c:ember>Limit <max> <sym:dot> Speed x<multiplier>"
     lore:
       - "<c:text>Limit <c:value><max></c:value> <c:muted>(up to <absolute-max>)"
       - "<c:text>Speed <c:value>x<multiplier>"
-      - ""
-      - "<c:text>Island masteries raise both:"
-      - "<c:text>Spawner Stack Limit, Spawner Rate."
-  upgrades-soon: "<prefix><c:text>Island masteries are coming soon."

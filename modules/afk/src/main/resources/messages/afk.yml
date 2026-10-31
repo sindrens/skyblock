@@ -10,7 +10,7 @@ left: "<prefix><c:text>You left the AFK pool. Today: <c:value><today></c:value><
 # Once when the daily limit is reached. <cap> limit, <reset> time until midnight
 capped: "<prefix><c:warning><sym:time></c:warning> <c:text>You reached today's AFK limit of <c:value><cap></c:value>. It resets in <c:value><reset></c:value>."
 # Once when another account on the same connection is already earning.
-ip-blocked: "<prefix><c:warning><sym:cross></c:warning> <c:text>Another account on your connection is already earning in the AFK pool. Only one account per connection can earn at a time."
+ip-blocked: "<prefix><c:warning><sym:cross></c:warning> <c:text>Another account on your connection already earns in the AFK pool. Only one can at a time."
 
 # Not earning in the pool (owner R3-35: no idle kick). "soon" once when earning stops (<seconds> = idle.send-home-seconds),
 # "sent" when the player is sent to their island, "sent-spawn" when they have no island.

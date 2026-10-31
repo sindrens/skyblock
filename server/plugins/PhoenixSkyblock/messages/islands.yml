@@ -145,7 +145,6 @@ menu:
   info:
     - "<c:text>Everything about your island."
     - "<c:text>Click a button to open it."
-    - "<c:muted>Gray buttons come later."
   island:
     name: "<c:flame><bold><island>"
     lore:
@@ -1818,8 +1817,8 @@ notes:
     page: "<black><text><newline><newline><dark_gray><author>, <date>"
     page-done: "<dark_green>✔ <black><text><newline><newline><dark_gray><author>, <date>"
     page-empty: "<dark_gray>No notes yet."
-    given: "<prefix><c:success><sym:check></c:success> <c:text>The notes book is in your inventory. Right-click it, then close it to save. <c:muted>(<seconds>s)"
-    given-read: "<prefix><c:success><sym:check></c:success> <c:text>The notes book is in your inventory. Right-click it to read. <c:muted>(<seconds>s)"
+    given: "<prefix><c:success><sym:check></c:success> <c:text>The notes book is in your inventory. Use it, then close it to save. <c:muted>(<seconds>s)"
+    given-read: "<prefix><c:success><sym:check></c:success> <c:text>The notes book is in your inventory. Use it to read. <c:muted>(<seconds>s)"
     full: "<prefix><c:error><sym:cross></c:error> <c:text>Your inventory is full. Make room for the book."
     no-drop: "<prefix><c:error><sym:cross></c:error> <c:text>The notes book can't leave your inventory."
     taken: "<prefix><c:text>The notes book was taken back."
@@ -1901,11 +1900,6 @@ stats:
       none: "<c:muted>Nothing yet"
     island-wide: "<c:muted>Counts for the whole island."
     click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to see each member's part"
-    soon-name: "<c:muted><category>"
-    soon-lore:
-      - "<c:muted>-"
-      - "<c:muted>Coming soon: counts once this"
-      - "<c:muted>part of the game is here."
   you:
     name: "<c:flame><bold>Your part"
     lore:

@@ -31,7 +31,6 @@ final class ForgeMenu extends Menu {
     static final int[] TIER_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
     static final int SLOT_STARTER = 47;
     static final int SLOT_BLUEPRINTS = 51;
-    static final int SLOT_LATER = 31;
     static final Map<ToolKind, Material> ICONS = Map.of(ToolKind.PICKAXE, Material.IRON_PICKAXE, ToolKind.AXE, Material.IRON_AXE,
             ToolKind.SWORD, Material.IRON_SWORD, ToolKind.HOE, Material.IRON_HOE, ToolKind.ROD, Material.FISHING_ROD);
 
@@ -101,9 +100,6 @@ final class ForgeMenu extends Menu {
         for (int i = 0; i < tiers.size() && i < TIER_SLOTS.length; i++) {
             ToolCatalog.TierDef def = tiers.get(i);
             set(TIER_SLOTS[i], tierItem(def), click -> clicked(def));
-        }
-        if (tiers.size() <= 1) {
-            set(SLOT_LATER, service.item(Material.CLOCK, viewer, ToolsModule.ID, "forge.menu.more-later"));
         }
         set(SLOT_STARTER, service.item(Material.CHEST, viewer, ToolsModule.ID, "forge.menu.starter",
                 Msg.p("hours", module.config().starterCooldownHours)), click -> {

@@ -236,10 +236,9 @@ final class AuctionMenu extends PagedMenu<Listing> {
         return service.text(viewer, AuctionModule.ID, c == null ? "categories.all" : "categories." + c.key());
     }
 
-    /** A filter button: {@code <key>.name} with the current value (the key fact in the name), {@code <key>.lore}, "CLICK to choose". */
+    /** A filter button: {@code <key>.name} with the current value (the key fact in the name) and {@code <key>.lore}. */
     private ItemStack filterButton(Material icon, String key, Component value) {
         List<Component> lore = new ArrayList<>(service.lines(viewer, AuctionModule.ID, key + ".lore"));
-        lore.addAll(service.lines(viewer, net.skybornmc.skyblock.common.menu.MenuService.MODULE, "pick.open"));
         return service.item(icon, service.text(viewer, AuctionModule.ID, key + ".name", Msg.c("value", value)), lore);
     }
 

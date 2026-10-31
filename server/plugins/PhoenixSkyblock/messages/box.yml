@@ -12,7 +12,7 @@ error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Not
 # Cap (box.yml cap.*). Items are still kept above the cap. <count>, <max>
 cap:
   warn: "<prefix><c:warning><sym:time></c:warning> <c:text>Your /box is almost full (<c:value><count></c:value><c:muted>/<max></c:muted>). Take items out soon; the oldest are shown first."
-  full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your /box is full (<c:value><count></c:value><c:muted>/<max></c:muted>). Nothing is lost and new items are still kept, but please take some out; the oldest are shown first."
+  full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your /box is full (<c:value><count></c:value><c:muted>/<max></c:muted>). Nothing is lost, but please take some out."
   # SECFIX1 F-09: the hard safety cap (cap.hard-max-entries). The action was refused, nothing was taken or lost.
   hard: "<prefix><c:error><sym:cross></c:error> <c:text>Your /box is too full (<c:value><count></c:value><c:muted>/<max></c:muted>). Take items out with <click:run_command:'/box'><c:value>/box</c:value></click> first; nothing was taken."
 

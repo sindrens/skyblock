@@ -226,15 +226,6 @@ join:
   # first join after essentials.yml join.privacy-delay-seconds, so it is not on the first screen (UX review §3).
   privacy: "<prefix><c:muted>Chat, private messages and commands are logged for 30 days and staff can read them.</c:muted> <click:open_url:'https://skybornmc.net/privacy'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u>Privacy</u></c:sky_ice></hover></click>"
 
-menu-item:
-  name: "<grad:phoenix><bold>Menu</bold></grad> <c:muted><sym:dot> Right-click"
-  lore:
-    - "<c:text>Everything on the server:"
-    - "<c:text>island, Depths, shop, settings."
-    - ""
-    - "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>to open"
-  coming-soon: "<prefix><c:text>The main menu is coming soon."
-
 build:
   "on": "<prefix><c:success><sym:check></c:success> <c:text>Build mode <c:value>on</c:value>. You can edit protected worlds. <c:muted>/build to stop."
   "off": "<prefix><c:success><sym:check></c:success> <c:text>Build mode <c:value>off</c:value>."

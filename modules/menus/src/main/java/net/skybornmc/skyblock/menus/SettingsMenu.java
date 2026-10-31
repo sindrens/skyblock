@@ -59,7 +59,8 @@ final class SettingsMenu extends Menu {
         java.util.Map<SettingCategory, List<SettingToggle>> visible = new java.util.EnumMap<>(SettingCategory.class);
         java.util.Map<SettingCategory, Integer> counts = new java.util.EnumMap<>(SettingCategory.class);
         for (SettingCategory category : SettingCategory.values()) {
-            List<SettingToggle> toggles = nav.settings.visible(viewer, category);
+            // GUI-4 (GUI_DESIGN §3): switches of features that aren't built yet are hidden, not grey.
+            List<SettingToggle> toggles = nav.settings.visible(viewer, category).stream().filter(t -> !t.comingSoon()).toList();
             visible.put(category, toggles);
             counts.put(category, toggles.size());
         }
@@ -117,7 +118,7 @@ final class SettingsMenu extends Menu {
 
     /**
      * VIS: a multiple-choice setting is one button (the setting's icon) listing every choice with the current one marked;
-     * a click moves to the next choice. One click, no typing, so it works the same on Bedrock.
+     * a click opens a small pick list (GUI-4/G9), one click picks. No typing, so it works the same on Bedrock.
      */
     private void setChoice(int slot, SettingToggle toggle) {
         String current = nav.settings.choice(viewer, toggle.id());
@@ -129,12 +130,17 @@ final class SettingsMenu extends Menu {
         }
         lore.addAll(nav.lines(viewer, "settings.choice-action"));
         set(slot, nav.item(toggle.icon(), service.text(viewer, toggle.textModule(), toggle.textKey() + ".name"), lore), click -> {
-            if (nav.settings.setChoice(viewer, toggle.id(), toggle.nextChoice(current))) {
-                nav.core.sounds().play(viewer, "click");
-            } else {
-                nav.core.sounds().play(viewer, "error");
+            List<net.skybornmc.skyblock.common.menu.PickListMenu.Option<String>> options = new java.util.ArrayList<>();
+            for (String choice : toggle.choices()) {
+                options.add(new net.skybornmc.skyblock.common.menu.PickListMenu.Option<>(choice, new org.bukkit.inventory.ItemStack(toggle.icon()),
+                        service.text(viewer, toggle.textModule(), toggle.textKey() + ".choices." + choice), List.of(), choice.equals(current)));
             }
-            refresh();
+            openChild(new net.skybornmc.skyblock.common.menu.PickListMenu<>(List.of(nav.text(viewer, "settings.title"),
+                    service.text(viewer, toggle.textModule(), toggle.textKey() + ".name")), options, choice -> {
+                if (!nav.settings.setChoice(viewer, toggle.id(), choice)) {
+                    nav.core.sounds().play(viewer, "error");
+                }
+            }));
         });
     }
 

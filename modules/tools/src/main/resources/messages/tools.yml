@@ -163,8 +163,8 @@ item:
     pickaxe: "Mine ore. Levels up as you use it."
     axe: "Chop logs. Levels up as you use it."
     sword: "Fight mobs. Levels up as you use it."
-    hoe: "Harvest crops. Farming comes later."
-    rod: "Catch fish. Fishing comes later."
+    hoe: "Harvest crops."
+    rod: "Catch fish."
   max-level: "<c:text>Lv <c:value>{level}</c:value> <c:flame>MAX"
   prestige: "<c:flame><sym:star> Prestige {count}"
   info-title: "Information"
@@ -180,7 +180,7 @@ item:
     speed: "Speed"
     fortune: "Fortune"
     damage: "Damage"
-  action-input: "Shift + Right-click"
+  action-input: "SNEAK + USE"
   action-text: "to open the tool menu"
 
 blueprint-item:
@@ -224,8 +224,8 @@ tool-menu:
       pickaxe: ["<c:muted>XP: ore in The Depths (islands 25%)"]
       axe: ["<c:muted>XP: logs in The Depths (islands 25%)"]
       sword: ["<c:muted>XP: kills, most in Combat zones"]
-      hoe: ["<c:muted>XP: farming comes later"]
-      rod: ["<c:muted>XP: fishing comes later"]
+      hoe: ["<c:muted>Gives no skill XP yet"]
+      rod: ["<c:muted>Gives no skill XP yet"]
   stats:
     name: "<c:value>Stats"
     tier: "<c:text>Tier <c:value><tier></c:value> <c:muted>(<tier-name><c:muted>)"
@@ -242,7 +242,7 @@ tool-menu:
       lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Enchants come with the Enchanter."]
     prestige-empty:
       name: "<c:flame><sym:star> Prestige slot"
-      lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Fits Mythic enchants later."]
+      lore: ["<c:muted><sym:bullet> Empty slot", "<c:text>Fits a Mythic enchant."]
     locked:
       name: "<c:muted>Perk slot <slot>"
       lore: ["<c:error><sym:cross> <c:text>Unlocks at Lv <level>", "<c:muted>Now Lv <have>"]
@@ -313,9 +313,6 @@ forge:
     tab-selected: "<c:flame><sym:bullet> <kind>"
     tab-lore: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
     tab-selected-lore: ["<c:muted>Showing now"]
-    more-later:
-      name: "<c:muted>More tiers later"
-      lore: ["<c:text>Farming and fishing tiers", "<c:text>come in a later update."]
     starter:
       name: "<c:value>Starter kit"
       lore: ["<c:text>A free pickaxe, axe, hoe,", "<c:text>sword and rod. Only the ones", "<c:text>you don't have. Every <hours> h.", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
