@@ -131,6 +131,6 @@ final class PreviewMenu extends Menu {
             } else {
                 refresh();
             }
-        });
+        }, CrateShow.Source.menu(this));
     }
 }

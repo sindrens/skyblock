@@ -139,6 +139,6 @@ final class CratesMenu extends Menu {
             } else {
                 refresh();
             }
-        });
+        }, CrateShow.Source.menu(this));
     }
 }

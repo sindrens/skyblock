@@ -73,6 +73,14 @@ final class CrateOpener {
      * with the plan when something was opened (null otherwise), e.g. to show the summary screen or refresh a menu.
      */
     void open(Player player, CrateCatalog.Crate crate, int requested, Consumer<OpenPlan.Plan> done) {
+        open(player, crate, requested, done, CrateShow.Source.none());
+    }
+
+    /**
+     * Same, with where it was started (M10.3): a single open from a menu plays the spinner, at a pedestal the in-world
+     * show. The show starts only after the open is committed (keys taken, reward saved and handed out).
+     */
+    void open(Player player, CrateCatalog.Crate crate, int requested, Consumer<OpenPlan.Plan> done, CrateShow.Source source) {
         Optional<String> problem = m.problem(player);
         if (problem.isEmpty() && crate.hidden()) {
             problem = Optional.of("coming-soon");
@@ -87,7 +95,7 @@ final class CrateOpener {
             return;
         }
         UUID uuid = player.getUniqueId();
-        if (!busy.add(uuid)) {
+        if (m.show().animating(uuid) || !busy.add(uuid)) {
             m.fail(player, "busy");
             finish(done, null);
             return;
@@ -95,11 +103,11 @@ final class CrateOpener {
         UUID profile = m.profiles().profileKey(player);
         OpenPlan.Context context = context(player, crate, profile);
         attempt(uuid, player.getName(), profile, crate, Math.max(1, requested), context, m.settings.retries, Actor.player(player),
-                done);
+                done, source == null ? CrateShow.Source.none() : source);
     }
 
     private void attempt(UUID player, String name, UUID profile, CrateCatalog.Crate crate, int requested, OpenPlan.Context ctx,
-                         int retriesLeft, Actor actor, Consumer<OpenPlan.Plan> done) {
+                         int retriesLeft, Actor actor, Consumer<OpenPlan.Plan> done, CrateShow.Source source) {
         int season = m.season();
         m.core.database().async(c -> CrateStore.state(c, profile, crate.id())).thenCompose(state -> {
             CrateMath.KeyUse use = CrateMath.keys(state.keys().bound(), state.keys().tradeable(), requested, m.settings.maxPerClick);
@@ -112,7 +120,7 @@ final class CrateOpener {
                     .thenApply(status -> new Outcome(status, plan, false));
         }).whenCompleteAsync((out, error) -> {
             if (error == null && out != null && out.status() == OpenEngine.Status.CHANGED && retriesLeft > 0) {
-                attempt(player, name, profile, crate, requested, ctx, retriesLeft - 1, actor, done);
+                attempt(player, name, profile, crate, requested, ctx, retriesLeft - 1, actor, done, source);
                 return;
             }
             busy.remove(player);
@@ -135,7 +143,7 @@ final class CrateOpener {
             }
             switch (out.status()) {
                 case OK -> {
-                    opened(out.plan(), player, name, profile, actor, online);
+                    opened(out.plan(), player, name, profile, actor, online, source);
                     finish(done, out.plan());
                 }
                 case CHANGED -> {
@@ -260,12 +268,21 @@ final class CrateOpener {
 
     // ================================================================== after the commit (main thread)
 
-    private void opened(OpenPlan.Plan plan, UUID player, String name, UUID profile, Actor actor, Player online) {
+    private void opened(OpenPlan.Plan plan, UUID player, String name, UUID profile, Actor actor, Player online,
+                        CrateShow.Source source) {
         audit(plan, player, name, profile, actor);
         m.changed(profile);
         handOut(plan, player, name, profile, actor);
-        if (online != null) {
-            feedback(online, plan);
+        // M10.3: the show only starts now. The reward is decided, saved and handed out above; the spinner / in-world show
+        // is cosmetic, and leaving or closing the menu mid-show changes nothing.
+        try {
+            m.show().present(online, name, plan, source);
+        } catch (RuntimeException e) {
+            m.core.plugin().getLogger().log(Level.WARNING, "Crates: the open animation of " + name + " failed (the reward is given)", e);
+            if (online != null) {
+                m.show().ended(online.getUniqueId());
+                feedback(online, plan);
+            }
         }
     }
 
@@ -506,7 +523,8 @@ final class CrateOpener {
 
     // ================================================================== feedback
 
-    private void feedback(Player player, OpenPlan.Plan plan) {
+    /** The result message and sound of an open (at the reveal of its show). */
+    void feedback(Player player, OpenPlan.Plan plan) {
         boolean top = plan.topCount() > 0;
         m.core.sounds().play(player, top ? m.settings.topSound : m.settings.openSound);
         if (plan.grants().size() == 1) {

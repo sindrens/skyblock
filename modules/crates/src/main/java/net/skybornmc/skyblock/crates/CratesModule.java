@@ -23,6 +23,9 @@ import net.skybornmc.skyblock.common.profile.ProfileDeletedEvent;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchEvent;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent;
+import net.skybornmc.skyblock.common.settings.PlayerSettings;
+import net.skybornmc.skyblock.common.settings.SettingCategory;
+import net.skybornmc.skyblock.common.settings.SettingToggle;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.skills.SkillType;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
@@ -62,8 +65,9 @@ import java.util.logging.Level;
  * reward and its real chance (V2 lore {@code ★ Name (xN) | chance%}), right-click = open 1, shift-click = open 10
  * (Bedrock: the buttons in the preview). Opens are atomic ({@link OpenEngine}); item rewards go to the inventory and the
  * rest to {@code /box}. Publishes {@link CrateKeys}, so the AFK pool hands over its pending keys as soon as this runs.
- * Animations, physical crate blocks and win broadcasts come in M10.3; clicking a crate block at the crate yard already
- * opens / previews (cheap: build points {@code crates}).
+ * M10.3: the crates stand on the crate yard pedestals ({@link CrateYard}), "Open 1" plays the B40 spinner
+ * ({@link SpinnerMenu}) or, at a pedestal, the in-world show; top wins of the big crates go to global chat
+ * ({@link CrateShow}). Every show starts after the open is committed.
  */
 public final class CratesModule implements SkyblockModule, Listener {
 
@@ -80,6 +84,8 @@ public final class CratesModule implements SkyblockModule, Listener {
     private Executor main;
     private CrateOpener opener;
     private PhysicalCrates physical;
+    private CrateShow show;
+    private CrateYard yard;
     private CrateKeysService keysService;
     private Fragments fragments;
     /** Keys and pity per profile for the menus (loaded on demand, refreshed after every change). */
@@ -125,6 +131,8 @@ public final class CratesModule implements SkyblockModule, Listener {
         catalog = loadCatalog();
         opener = new CrateOpener(this);
         physical = new PhysicalCrates(this);
+        show = new CrateShow(this);
+        yard = new CrateYard(this);
         keysService = new CrateKeysService(this);
         fragments = new Fragments(this);
         // Published right away (keys only need the database): the AFK pool hands over its pending keys on its first check.
@@ -132,6 +140,14 @@ public final class CratesModule implements SkyblockModule, Listener {
         registerCommand();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         Bukkit.getPluginManager().registerEvents(physical, core.plugin());
+        Bukkit.getPluginManager().registerEvents(yard, core.plugin());
+        registerSetting();
+        // M10.3: one tick later, like the npcs module: worlds and the applied build points are there by then.
+        core.scheduler().later("crates:yard-start", 1, () -> {
+            if (yard != null) {
+                yard.start();
+            }
+        });
         core.database().async(c -> CrateStore.recover(c, System.currentTimeMillis())).whenCompleteAsync((lists, error) -> {
             if (error != null) {
                 core.plugin().getLogger().log(Level.SEVERE, "Crates: startup recovery failed; waiting rewards are checked at the next start",
@@ -149,6 +165,9 @@ public final class CratesModule implements SkyblockModule, Listener {
         core.messages().load(ID);
         loadRules();
         catalog = loadCatalog();
+        if (yard != null) {
+            yard.start();
+        }
     }
 
     @Override
@@ -157,6 +176,15 @@ public final class CratesModule implements SkyblockModule, Listener {
         if (physical != null) {
             HandlerList.unregisterAll(physical);
         }
+        if (yard != null) {
+            HandlerList.unregisterAll(yard);
+            yard.stop();
+            yard = null;
+        }
+        if (show != null) {
+            show.clear();
+        }
+        core.services().optional(PlayerSettings.class).ifPresent(s -> s.unregisterAll(ID));
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (isCratesMenu(core.menus().openMenu(p))) {
                 p.closeInventory();
@@ -260,6 +288,22 @@ public final class CratesModule implements SkyblockModule, Listener {
 
     CrateKeysService keys() {
         return keysService;
+    }
+
+    /** M10.3: how a finished open is shown (spinner, in-world show, result at once). */
+    CrateShow show() {
+        return show;
+    }
+
+    /** M10.3: the crate yard (pedestal blocks, holograms, in-world show); null while disabled. */
+    CrateYard yard() {
+        return yard;
+    }
+
+    /** M10.3: the /settings switch "Fast crate opening" (skips the spinner and the build-up). */
+    private void registerSetting() {
+        core.services().optional(PlayerSettings.class).ifPresent(s -> s.register(new SettingToggle(ID, CrateShow.SETTING_FAST,
+                SettingCategory.GAMEPLAY, Material.CLOCK, settings.fastDefault, null, ID, "settings.fast-crate-opening", false)));
     }
 
     /** R3-18: fragments → Phoenix keys. */
@@ -536,6 +580,9 @@ public final class CratesModule implements SkyblockModule, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         views.remove(profiles().profileKey(event.getPlayer()));
+        if (physical != null) {
+            physical.forget(event.getPlayer().getUniqueId());
+        }
     }
 
     /** The inventory is about to be swapped: close crate menus first. */
@@ -569,7 +616,8 @@ public final class CratesModule implements SkyblockModule, Listener {
     }
 
     static boolean isCratesMenu(Menu menu) {
-        if (menu instanceof CratesMenu || menu instanceof PreviewMenu || menu instanceof ResultMenu || menu instanceof StaffCratesMenu) {
+        if (menu instanceof CratesMenu || menu instanceof PreviewMenu || menu instanceof ResultMenu || menu instanceof StaffCratesMenu
+                || menu instanceof SpinnerMenu) {
             return true;
         }
         return menu != null && menu.parent() != null && isCratesMenu(menu.parent());

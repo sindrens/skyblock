@@ -411,7 +411,7 @@ Event and timer countdowns (KOTH, envoys, world boss HP, boosters). Color = even
 
 ### 6.4b Holograms (V2)
 Shared formats in `messages/items.yml → hologram.*` for every module that spawns one (crates, leaderboards):
-title bold in its rarity color, `Right-Click: Open` / `Left-Click: View Rewards` in bold action color, leaderboard places
+title bold in its rarity color, `Click: Open` / `Sneak-click: View rewards` in bold action color (UX3: holograms and blocks that react to both buttons say "Click"; crates M10.3), leaderboard places
 `#1` / `#2` / `#3` bold in `top1` / `top2` / `top3`, other places muted. `/baltop` uses the same place colors.
 
 ### 6.5 Titles (screen)

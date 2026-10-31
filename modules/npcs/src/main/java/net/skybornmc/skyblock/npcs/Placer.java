@@ -327,6 +327,25 @@ final class Placer implements Listener {
         return byKey.values();
     }
 
+    /**
+     * M10-3: spawns the holograms with this builder id again (their text changed, e.g. a live text from
+     * {@link net.skybornmc.skyblock.common.npc.HologramTexts}); only those whose chunk is loaded, over the next ticks.
+     */
+    void respawnHolograms(String pointId) {
+        boolean queued = false;
+        for (Placed p : byKey.values()) {
+            if (p.kind == Placed.Kind.HOLOGRAM && p.pointId().equals(pointId)) {
+                p.remove();
+                if (loaded(p) != null) {
+                    queued |= queue.add(p);
+                }
+            }
+        }
+        if (queued) {
+            drainLater();
+        }
+    }
+
     /** Respawns the text of one set (after a leaderboard refresh); does nothing while unloaded. */
     void setText(Placed p, Component text) {
         if (p.label != null && p.label.isValid()) {
