@@ -97,7 +97,7 @@ settings:
 
 # /rank preview <group> [name] (staff). <badge> is the badge exactly as that kind of player sees it.
 rank-preview:
-  off: "<prefix><c:error><sym:cross></c:error> <c:text>Rank badges are off: the pack module isn't loaded."
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Rank badges are off: the pack module isn't loaded."
   header: "<prefix><c:text>Rank badge <c:value><group></c:value> <c:muted>(name: <name>)"
   shine: " <c:muted>Pack (shine)</c:muted>  <badge>"
   still: " <c:muted>Pack (still)</c:muted>  <badge>"

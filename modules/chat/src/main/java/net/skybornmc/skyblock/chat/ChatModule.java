@@ -249,7 +249,7 @@ public final class ChatModule implements SkyblockModule, Listener {
     private void rankPreview(CommandSender sender, String group, String name) {
         net.skybornmc.skyblock.common.pack.PackIds pack = badges.ids();
         if (pack == null) {
-            msg.send(sender, "rank-preview.off");
+            msg.send(sender, "rank-preview.unavailable");
             return;
         }
         String shown = name == null || name.isBlank() ? core.ranks().groupDisplayName(group) : name;
