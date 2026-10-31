@@ -5,6 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.pack.BadgeOptions;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.text.TextMemo;
@@ -69,7 +70,8 @@ final class TabService implements Listener {
     static final long BUDGET_NANOS = 400_000L;
 
     /** What a player looks like right now (rebuilt only when {@link Display#key} changes). */
-    private record Entry(String key, String team, Component prefix, Component suffix, NamedTextColor color) {
+    private record Entry(String key, String team, Component prefix, Component suffix, NamedTextColor color,
+                         Display.RankView rank) {
     }
 
     /** One unit of team work: apply (or remove) one player's team on one scoreboard. */
@@ -80,6 +82,7 @@ final class TabService implements Listener {
     private final Display display;
     private final Supplier<ChatConfig> config;
     private final ModuleMessages msg;
+    private final RankBadges badges;
 
     private final Map<UUID, Entry> entries = new HashMap<>();
     private final Map<UUID, String> playerNames = new HashMap<>();
@@ -88,6 +91,14 @@ final class TabService implements Listener {
     private final Set<Scoreboard> boards = Collections.newSetFromMap(new WeakHashMap<>());
     private final Map<UUID, Scoreboard> boardOf = new HashMap<>();
     private final ArrayDeque<UUID> checkOrder = new ArrayDeque<>();
+    /**
+     * Rank badges per viewer: every player has their own sidebar scoreboard (HUD), so the team prefix, which carries the
+     * nametag badge, is drawn per board for the board owner's pack/settings. A board that is shared (or the main one)
+     * gets the plain text form. The tab list name itself is one value for everybody (the client ignores team prefixes
+     * when a list name is set), so it always shows the plain {@code [Name]} text.
+     */
+    private final Map<Scoreboard, BadgeOptions> variants = new WeakHashMap<>();
+    private final Map<Scoreboard, UUID> boardOwner = new WeakHashMap<>();
     /** The header/footer key each viewer was last sent (PERF7: compared instead of building components every check). */
     private final Map<UUID, String> sentHeaderFooter = new HashMap<>();
     /** Built header, footer and staff footer parts by key, shared by every viewer with the same key. */
@@ -108,11 +119,12 @@ final class TabService implements Listener {
     /** Players to read asynchronously at the end of this tick. */
     private final List<Player> rankBatch = new ArrayList<>();
 
-    TabService(Core core, Display display, Supplier<ChatConfig> config, ModuleMessages msg) {
+    TabService(Core core, Display display, Supplier<ChatConfig> config, ModuleMessages msg, RankBadges badges) {
         this.core = core;
         this.display = display;
         this.config = config;
         this.msg = msg;
+        this.badges = badges;
     }
 
     void start() {
@@ -133,7 +145,7 @@ final class TabService implements Listener {
         headerCache.clear();
         sentHeaderFooter.clear();
         for (Player p : Bukkit.getOnlinePlayers()) {
-            entries.computeIfPresent(p.getUniqueId(), (id, e) -> new Entry("", e.team(), e.prefix(), e.suffix(), e.color()));
+            entries.computeIfPresent(p.getUniqueId(), (id, e) -> new Entry("", e.team(), e.prefix(), e.suffix(), e.color(), e.rank()));
             dirty.add(p.getUniqueId());
         }
     }
@@ -161,6 +173,8 @@ final class TabService implements Listener {
         jobs.clear();
         boards.clear();
         boardOf.clear();
+        variants.clear();
+        boardOwner.clear();
         checkOrder.clear();
         sentHeaderFooter.clear();
         headerCache.clear();
@@ -238,6 +252,7 @@ final class TabService implements Listener {
     private void check(Player p, int online) {
         UUID id = p.getUniqueId();
         Scoreboard board = p.getScoreboard();
+        checkVariant(p, board);
         if (boardOf.put(id, board) != board) {
             adoptBoard(board);
         }
@@ -252,6 +267,32 @@ final class TabService implements Listener {
         }
         core.scheduler().timer().time("chat:tab-header", () -> sendHeaderFooter(p, online, vanishedCache));
         requestRank(p);
+    }
+
+    /**
+     * The badge variant of a player's own board (pack loaded, Bedrock, reduced motion / simple / bigger text). When it
+     * changed, every team on that board is applied again (queued, budgeted). A few cheap reads per check.
+     */
+    private void checkVariant(Player p, Scoreboard board) {
+        if (!display.badgesOn()) {
+            return;
+        }
+        BadgeOptions options;
+        if (board == Bukkit.getScoreboardManager().getMainScoreboard()) {
+            options = BadgeOptions.PLAIN;
+        } else {
+            UUID owner = boardOwner.putIfAbsent(board, p.getUniqueId());
+            if (owner != null && !owner.equals(p.getUniqueId())) {
+                return; // shared board: keeps the plain form
+            }
+            options = display.viewerOptions(p);
+        }
+        BadgeOptions old = variants.put(board, options);
+        if (old != null && !old.equals(options)) {
+            for (UUID other : entries.keySet()) {
+                queueApply(other, board, null);
+            }
+        }
     }
 
     // ------------------------------------------------------------------ rank snapshots (off the main thread)
@@ -356,9 +397,10 @@ final class TabService implements Listener {
         }
         ChatConfig c = config.get();
         Audience none = Audience.empty();
+        // With badges the prefix is drawn per board in apply(); this is the text prefix for servers without the pack.
         Entry entry = new Entry(key, teamName(rank.weight(), p.getName()),
-                c.nametagPrefix ? display.rankPrefix(none, rank.prefix()) : Component.empty(), display.afkSuffix(p),
-                Display.teamColor(rank));
+                c.nametagPrefix && !display.badgesOn() ? display.rankPrefix(none, rank.prefix()) : Component.empty(),
+                display.afkSuffix(p), Display.teamColor(rank), rank);
         entries.put(id, entry);
         p.playerListName(display.tabEntry(p, rank));
         String staleTeam = old != null && !old.team().equals(entry.team()) ? old.team() : null;
@@ -395,8 +437,12 @@ final class TabService implements Listener {
         if (team == null) {
             team = board.registerNewTeam(entry.team());
         }
-        if (!Objects.equals(team.prefix(), entry.prefix())) {
-            team.prefix(entry.prefix());
+        Component prefix = entry.prefix();
+        if (display.badgesOn() && config.get().nametagPrefix && entry.rank() != null) {
+            prefix = display.rankFor(Audience.empty(), entry.rank(), variants.getOrDefault(board, BadgeOptions.PLAIN));
+        }
+        if (!Objects.equals(team.prefix(), prefix)) {
+            team.prefix(prefix);
         }
         if (!Objects.equals(team.suffix(), entry.suffix())) {
             team.suffix(entry.suffix());
@@ -516,7 +562,7 @@ final class TabService implements Listener {
     /** Something about {@code player} changed (nick, settings): re-check on the next tick. */
     void markDirty(UUID player) {
         if (running) {
-            entries.computeIfPresent(player, (id, e) -> new Entry("", e.team(), e.prefix(), e.suffix(), e.color()));
+            entries.computeIfPresent(player, (id, e) -> new Entry("", e.team(), e.prefix(), e.suffix(), e.color(), e.rank()));
             dirty.add(player);
         }
     }
@@ -538,6 +584,7 @@ final class TabService implements Listener {
         rankViews.remove(id);
         rankForced.remove(id);
         sentHeaderFooter.remove(id);
+        boardOwner.entrySet().removeIf(e -> id.equals(e.getValue()));
         Scoreboard own = boardOf.remove(id);
         if (own != null && own != Bukkit.getScoreboardManager().getMainScoreboard() && !boardOf.containsValue(own)) {
             boards.remove(own);

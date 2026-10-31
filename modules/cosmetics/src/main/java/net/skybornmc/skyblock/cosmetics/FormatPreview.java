@@ -77,6 +77,11 @@ final class FormatPreview {
     }
 
     private Component rank(Player player) {
+        var badges = core.services().optional(net.skybornmc.skyblock.common.pack.BadgeService.class)
+                .filter(net.skybornmc.skyblock.common.pack.BadgeService::enabled);
+        if (badges.isPresent()) {
+            return badges.get().badge(player, player).append(Component.space());
+        }
         String prefix = core.ranks().prefix(player);
         if (prefix == null || prefix.isBlank()) {
             return Component.empty();

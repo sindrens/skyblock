@@ -28,3 +28,9 @@ skyblock.staff.chat.manage:
 skyblock.staff.tab:
   description: See TPS and ping in the tab footer
   default: op
+skyblock.rank.preview:
+  description: Preview rank badges as players see them (/rank preview)
+  default: op
+skyblock.chat.rankcolor:
+  description: Choose the colours of your own rank badge in /settings (Immortal)
+  default: false

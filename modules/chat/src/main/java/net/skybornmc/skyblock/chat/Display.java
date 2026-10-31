@@ -7,11 +7,13 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.pack.BadgeOptions;
 import net.skybornmc.skyblock.common.text.LegacyColors;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.text.TextMemo;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -27,10 +29,17 @@ final class Display {
 
     private final Core core;
     private final Supplier<ChatConfig> config;
+    private final RankBadges badges;
 
-    Display(Core core, Supplier<ChatConfig> config) {
+    Display(Core core, Supplier<ChatConfig> config, RankBadges badges) {
         this.core = core;
         this.config = config;
+        this.badges = badges;
+    }
+
+    /** True when rank badges are drawn (the pack module is present); otherwise the LuckPerms prefix text is used. */
+    boolean badgesOn() {
+        return badges.enabled();
     }
 
     /** Parsed legacy prefixes ({@code "&c&lADMIN &c"} → Component); a handful of ranks, so this stays tiny. */
@@ -46,21 +55,59 @@ final class Display {
      * Snapshot of the rank parts that change how a player looks (PERF4). The tab list reads LuckPerms off the main
      * thread into this record and only compares/uses the snapshot on the main thread.
      */
-    record RankView(String prefix, TextColor color, int weight) {
+    record RankView(String prefix, TextColor color, int weight, String group, String groupName, String gradient) {
         RankView {
             prefix = prefix == null ? "" : prefix;
             color = color == null ? DEFAULT_NAME : color;
+            group = group == null ? "default" : group;
+            groupName = groupName == null ? "" : groupName;
+            gradient = gradient == null ? "" : gradient;
+        }
+
+        /** A view without badge data (rank provider text only). */
+        RankView(String prefix, TextColor color, int weight) {
+            this(prefix, color, weight, "default", "", "");
         }
     }
 
     /** Reads the rank parts from the rank provider (LuckPerms). Thread-safe; the tab list calls it asynchronously. */
     RankView rankView(Player player) {
-        return new RankView(core.ranks().prefix(player), color(player), core.ranks().weight(player));
+        String group = core.ranks().primaryGroup(player);
+        return new RankView(core.ranks().prefix(player), color(player), core.ranks().weight(player), group,
+                core.ranks().groupDisplayName(player), badges.gradientChoice(group, player));
     }
 
-    /** LuckPerms prefix ({@code &} codes like Essentials, or MiniMessage), empty if the rank has none. */
+    /**
+     * The rank in front of a name for this viewer: the badge (pack font, simple or Bedrock text, from their /settings)
+     * plus a space, or the LuckPerms prefix when badges are off. Empty when the player has no rank text.
+     */
     Component rank(Audience viewer, Player player) {
+        if (badges.enabled()) {
+            return badges.badge(player, viewer).append(Component.space());
+        }
         return rankPrefix(viewer, core.ranks().prefix(player));
+    }
+
+    /** How a viewer sees badges (their pack and /settings); the plain form when badges are off. */
+    BadgeOptions viewerOptions(Audience viewer) {
+        return badges.options(viewer).viewerOnly();
+    }
+
+    /** The nametag rank for a team of {@code viewerOptions} from a snapshot (badge + space), or the text prefix. */
+    Component rankFor(Audience viewer, RankView rank, BadgeOptions viewerOptions) {
+        if (badges.enabled()) {
+            List<TextColor> gradient = rank.gradient().isEmpty() ? List.of() : badges.gradientById(rank.gradient());
+            return badges.badge(rank.group(), rank.groupName(), viewerOptions.withGradient(gradient)).append(Component.space());
+        }
+        return rankPrefix(viewer, rank.prefix());
+    }
+
+    /** The shared (viewer independent) rank for the tab list: plain {@code [Name]} text in the rank colour. */
+    private Component tabRank(Audience viewer, RankView rank) {
+        if (badges.enabled()) {
+            return rankFor(viewer, rank, BadgeOptions.PLAIN);
+        }
+        return rankPrefix(viewer, rank.prefix());
     }
 
     /** {@link #rank(Audience, Player)} from an already-read prefix. */
@@ -104,7 +151,8 @@ final class Display {
     /** The fingerprint itself (pure, unit-tested). */
     static String key(RankView rank, String nick, boolean afk, String title, String tag) {
         return rank.prefix() + '\u0000' + rank.color().value() + '\u0000' + rank.weight() + '\u0000' + nick + '\u0000'
-                + afk + '\u0000' + title + '\u0000' + tag;
+                + afk + '\u0000' + title + '\u0000' + tag + '\u0000' + rank.group() + '\u0000' + rank.groupName()
+                + '\u0000' + rank.gradient();
     }
 
     private String hookText(Player player, String key) {
@@ -174,7 +222,7 @@ final class Display {
         ChatConfig c = config.get();
         Audience viewer = Audience.empty();
         return core.messages().parse(viewer, c.tabFormat,
-                Msg.c("rank", rankPrefix(viewer, rank.prefix())),
+                Msg.c("rank", tabRank(viewer, rank)),
                 Msg.c("name", name(player, rank.color())),
                 Msg.c("title", part(viewer, c.tabTitlePart, hook(player, "title"))),
                 Msg.c("tag", part(viewer, c.tabTagPart, hook(player, "tag"))),
@@ -196,12 +244,12 @@ final class Display {
     }
 
     /** Chat-line placeholders for one viewer. */
-    TagResolver chatParts(Audience viewer, Player player, Component name, Component message) {
+    TagResolver chatParts(Audience viewer, Player player, Component name, Component rank, Component message) {
         ChatConfig c = config.get();
         return TagResolver.resolver(
                 Msg.c("title", part(viewer, c.titlePart, hook(player, "title"))),
                 Msg.c("tag", part(viewer, c.tagPart, hook(player, "tag"))),
-                Msg.c("rank", rank(viewer, player)),
+                Msg.c("rank", rank),
                 Msg.c("name", name),
                 Msg.c("message", message));
     }

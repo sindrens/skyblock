@@ -41,6 +41,18 @@ public final class ChatConfig extends ModuleConfig {
     @Setting(path = "format.nametag", desc = "Show the rank prefix above heads (scoreboard teams).")
     public boolean nametagPrefix = true;
 
+    // ---------------------------------------------------------------- rank badges
+
+    @Setting(path = "badges.immortal-gradients", desc = "Approved rank colours Immortal players can pick in /settings. One per "
+            + "line: id=#RRGGBB,#RRGGBB,#RRGGBB (2-5 colours, left to right). The first one is the default. Keep them dark "
+            + "Phoenix style and away from the staff colours (yellow, light red, light blue, light green, orange).")
+    public List<String> immortalGradients = List.of(
+            "phoenix=#FFE27A,#FF8C1A,#FF2D3F",
+            "ember=#FFB347,#FF6A1A,#C2300F",
+            "dusk=#FFB36B,#E0457B,#6B2FA8",
+            "frost=#A8DFFF,#4F7CFF,#2B2FA8",
+            "void=#C9A0FF,#7B3FE4,#3A1C8F");
+
     // ---------------------------------------------------------------- protection
 
     @Setting(path = "protection.rate-limit.messages", desc = "Chat messages allowed per window.", min = 1, max = 50)
