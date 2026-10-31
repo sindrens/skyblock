@@ -69,7 +69,7 @@ public final class BoostersSettings extends ModuleConfig {
     public boolean bossBar = true;
 
     @Setting(path = "global.boss-bar-color", desc = "Boss bar color: pink, blue, red, green, yellow, purple or white.")
-    public String bossBarColor = "yellow";
+    public String bossBarColor = "blue";
 
     @Setting(path = "global.save-seconds", desc = "How often the time left of running global boosters is saved.", min = 5, max = 300)
     public int globalSaveSeconds = 30;
@@ -132,10 +132,19 @@ public final class BoostersSettings extends ModuleConfig {
     @Setting(path = "sounds.global", desc = "Sound (sounds.yml key) everyone hears when a global booster starts.")
     public String globalSound = "unlock";
 
-    /** Version 2 (card C1): thanks pay credits (earned) instead of gems; the gem keys are moved. */
+    /**
+     * Version 2 (card C1): thanks pay credits (earned) instead of gems; the gem keys are moved.
+     * Version 3 (GUI-P19): the global boss bar moves from yellow to blue, because the tutorial bar is yellow now
+     * (an owner-edited colour is kept).
+     */
     @Override
     public int version() {
-        return 2;
+        return 3;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(3, java.util.Map.of("global.boss-bar-color", ValueChange.of("yellow", "blue")));
     }
 
     @Override

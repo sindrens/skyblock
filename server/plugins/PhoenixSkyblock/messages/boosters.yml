@@ -21,6 +21,11 @@ types:
   tool_xp: "Tool XP"
   crystals: "Crystals"
 
+# Scoreboard timer row (G7-R1-01): the label of the soonest-ending booster, plain (the board colours it and adds the
+# time: "Booster: +50% Sell 37m"). <percent> a number, <type> a type name above.
+scoreboard:
+  timer: "Booster: +<percent>% <type>"
+
 # Booster items. Name and lore use {type}, {percent} and {time} (filled in by the item, plain text).
 item:
   personal:
