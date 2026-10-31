@@ -180,7 +180,8 @@ topics:
     pages:
       - title: "<c:value>Changing a setting"
         lines:
-          - "<c:text>Open <c:value>/settings</c:value> and click a switch:"
+          - "<c:text>Open <c:value>/settings</c:value>, pick a group at"
+          - "<c:text>the top, then click a switch:"
           - "<c:success>✔ green</c:success> <c:text>is on,</c:text> <c:error>✘ red</c:error> <c:text>is off."
           - "<c:text>Changes apply right away and are saved."
       - title: "<c:value>From chat"
@@ -557,6 +558,8 @@ topics:
           - "<c:text>and by value. Solo and team islands"
           - "<c:text>have their own boards, also in the"
           - "<c:text>Hall of Heroes. One island per player."
+          - "<c:value>Top</c:value> <c:text>in /menu also shows this week,"
+          - "<c:text>the richest players and top skills."
 
   rules:
     icon: lectern
