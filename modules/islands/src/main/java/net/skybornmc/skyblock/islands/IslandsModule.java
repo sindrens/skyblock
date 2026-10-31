@@ -511,6 +511,24 @@ public final class IslandsModule implements SkyblockModule, Listener {
         // Position on the island's own board (solo or team); empty while unranked, so the scoreboard shows no "#".
         core.placeholders().registerText(ID, "island_rank", p -> p == null ? "" : manager.islandOfPlayer(manager.key(p))
                 .flatMap(i -> progression().map(pr -> pr.islandRank(i.id()))).filter(r -> r > 0).map(String::valueOf).orElse(""));
+        // G7-R1-01: owner of the island whose slot the player stands in (the visiting board's "Owner:" row); empty when
+        // there is none or the name is not loaded yet, so the row hides. Map reads only.
+        core.placeholders().registerText(ID, "island_here_owner", p -> {
+            if (p == null || !manager.isIslandWorld(p.getWorld())) {
+                return "";
+            }
+            org.bukkit.Location at = p.getLocation();
+            return ownerText(manager.islandInSlotAt(at.getBlockX(), at.getBlockZ()));
+        });
+    }
+
+    /** Pure: the plain owner name of an island for {@code island_here_owner}; empty for no island or no loaded name. */
+    static String ownerText(Island island) {
+        if (island == null) {
+            return "";
+        }
+        String name = island.ownerName();
+        return name == null || name.isBlank() ? "" : name;
     }
 
     private void registerCommands() {
