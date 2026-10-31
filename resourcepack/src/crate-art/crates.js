@@ -204,14 +204,20 @@ function key(c) { // matches its crate: ring bow in the crate's trim colour with
     return out;
   }, { data: data.map(d => ({ c: d.c, T: d.T, faces: d.faces, model: d.model, key: d.key })), TS });
   const save = (f, buf) => { fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, buf); };
-  const A = `${ROOT}/resourcepack/java/assets/phoenix`;
+  const A = `${ROOT}/resourcepack/java/assets/phoenix`; const hinge = {};
   data.forEach(({ c, model }) => {
     save(`${A}/textures/item/crate/block/${c.id}.png`, Buffer.from(res.tex[c.id].split(',')[1], 'base64'));
     save(`${A}/models/item/crate/block/${c.id}.json`, JSON.stringify(model, null, 1) + '\n');
+    // RP8 lid animation: the same model split in two (same coordinates); the plugin swings the lid display on its back hinge
+    const LID = new Set(['lid', 'arch', 'postlid', 'lidbar', 'gembase', 'gem', 'flame', 'ring', 'spike', 'spiketip']);
+    for (const [part, keep] of [['body', e => !LID.has(e.name)], ['lid', e => LID.has(e.name)]])
+      save(`${A}/models/item/crate/block/${c.id}_${part}.json`, JSON.stringify({ ...model, elements: model.elements.filter(keep) }, null, 1) + '\n');
+    hinge[c.id] = { y: (c.feet ? 1 : 0) + 8, z: 2 }; // model units (1/16 block): lid pivots on its back (north) edge
     save(`${A}/textures/item/crate/key/${c.id}.png`, Buffer.from(res.key[c.id].split(',')[1], 'base64'));
   });
   save(`${ROOT}/resourcepack/src/preview/crates.png`, Buffer.from(res.preview.split(',')[1], 'base64'));
   save(`${ROOT}/resourcepack/src/preview/crate_keys.png`, Buffer.from(res.keys.split(',')[1], 'base64'));
+  save(`${ROOT}/resourcepack/src/crate-art/hinges.json`, JSON.stringify(hinge, null, 1) + '\n');
   console.log('crates', data.length, logs.slice(0, 5));
   await b.close();
 })();
