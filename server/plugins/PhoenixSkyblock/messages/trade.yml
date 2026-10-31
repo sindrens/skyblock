@@ -21,6 +21,11 @@ currency:
 request:
   sent: "<prefix><c:success><sym:check></c:success> <c:text>Trade request sent to <c:value><player></c:value><c:text>. It expires in <seconds>s."
   received: "<prefix><c:value><player></c:value> <c:text>wants to trade. <click:run_command:'/trade accept'><hover:show_text:'<c:text>Accept the trade'><c:success>[Accept]</c:success></hover></click> <click:run_command:'/trade deny'><hover:show_text:'<c:text>Deny the trade'><c:error>[Deny]</c:error></hover></click> <c:muted>or type /trade accept"
+  # GUI-5: the Bedrock popup (Bedrock can't click chat). <player>, <seconds>, <left>.
+  popup:
+    title: "Trade request"
+    name: "<c:value><player></c:value> <c:text>wants to trade"
+    lore: ["<c:text>Accept to open the trade window.", "<c:text>Nothing moves until you both confirm.", "", "<c:muted>Expires in <left>"]
   hint-accept: "<prefix><c:value><player></c:value> <c:text>asked you to trade: <c:value>/trade accept</c:value>"
   already: "<prefix><c:error><sym:cross></c:error> <c:text>You already asked <c:value><player></c:value><c:text>. Wait for an answer."
   denied: "<prefix><c:text>You denied <c:value><player></c:value><c:text>'s trade request."

@@ -22,6 +22,15 @@ tpa:
   received-here:
     - "<prefix><c:value><player></c:value> <c:text>wants <c:value>you</c:value> to teleport to them."
     - "  <click:run_command:'/tpaccept <player>'><hover:show_text:'<c:text>Accept: you teleport to <player>'><c:action>[Accept]</c:action></hover></click>  <click:run_command:'/tpdeny <player>'><hover:show_text:'<c:text>Deny the request'><c:action>[Deny]</c:action></hover></click>  <c:muted>Expires in <seconds>s"
+  # GUI-5: the Bedrock popup (Bedrock can't click chat). <player>, <seconds>, <left>.
+  popup:
+    title: "Teleport request"
+    name: "<c:value><player></c:value> <c:text>wants to come to you"
+    lore: ["<c:text>Accept, and <player> teleports", "<c:text>to where you are.", "", "<c:muted>Expires in <left>"]
+  popup-here:
+    title: "Teleport request"
+    name: "<c:value><player></c:value> <c:text>wants you there"
+    lore: ["<c:text>Accept, and you teleport", "<c:text>to <player>.", "", "<c:muted>Expires in <left>"]
   self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't send a request to yourself."
   already-sent: "<prefix><c:error><sym:cross></c:error> <c:text>You already asked <c:value><player></c:value>. Wait, or use <c:value>/tpcancel</c:value>."
   target-full: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has too many requests. Try again soon."

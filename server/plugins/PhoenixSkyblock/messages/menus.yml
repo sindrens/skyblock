@@ -101,6 +101,33 @@ confirm:
       name: "<c:success><sym:check> Yes, do it"
       lore: ["<c:text>The buttons swapped sides.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to confirm for good"]
 
+# GUI-5: the Bedrock popup of a chat offer (TPA, invites, trades, links, staff alerts). Button texts get <command>
+# (with the slash) and the offer's own placeholders; <left> = time until it expires.
+offer:
+  expired: "<prefix><c:error><sym:cross></c:error> <c:text>That request expired or was already answered."
+  expired-item:
+    name: "<c:error><sym:cross> Expired"
+    lore: ["<c:text>This request ended, so there", "<c:text>is nothing to answer now."]
+  button:
+    accept:
+      name: "<c:success><sym:check> Accept"
+      lore: ["<c:muted>Runs <command>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to accept"]
+    decline:
+      name: "<c:error><sym:cross> Decline"
+      lore: ["<c:muted>Runs <command>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to decline"]
+    allow:
+      name: "<c:success><sym:check> Allow"
+      lore: ["<c:muted>Runs <command>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to allow"]
+    deny:
+      name: "<c:error><sym:cross> Deny"
+      lore: ["<c:muted>Runs <command>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to deny"]
+    teleport:
+      name: "<c:value>Teleport"
+      lore: ["<c:muted>Runs <command>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go there"]
+    run:
+      name: "<c:success><command>"
+      lore: ["<c:muted>Runs <command>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to run it"]
+
 number:
   crumb: "Choose an amount"
   info:

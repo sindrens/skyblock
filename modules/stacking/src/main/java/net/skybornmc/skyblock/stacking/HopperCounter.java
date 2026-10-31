@@ -215,7 +215,15 @@ final class HopperCounter implements Listener {
                 continue;
             }
             boolean bedrock = module.core().bedrock().isBedrock(staff.getUniqueId());
-            module.msg().send(staff, bedrock ? "hoppers.alert-bedrock" : "hoppers.alert", tags);
+            // GUI-5: Bedrock staff can't click [Teleport]: they read the coordinates and also get a popup that runs it.
+            module.core().menus().offers().offer(staff, net.skybornmc.skyblock.common.menu.Offer.builder(module.msg().module(), "hoppers.popup")
+                    .id("hoppers:alert")
+                    .icon(org.bukkit.Material.HOPPER)
+                    .placeholders(tags)
+                    .button(net.skybornmc.skyblock.common.menu.Offer.Button.teleport("tppos " + at.getBlockX() + " " + (at.getBlockY() + 1)
+                            + " " + at.getBlockZ() + " " + at.getWorld().getName()))
+                    .chat(viewer -> module.msg().send(viewer, bedrock ? "hoppers.alert-bedrock" : "hoppers.alert", tags))
+                    .build());
         }
         module.core().plugin().getLogger().info("Stacking: chunk " + (at.getBlockX() >> 4) + "," + (at.getBlockZ() >> 4) + " in "
                 + at.getWorld().getName() + " has " + count + " hoppers (alert above " + c.hopperAlertAbove + "), island "

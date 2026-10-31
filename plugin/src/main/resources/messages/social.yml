@@ -100,6 +100,17 @@ links:
   store: "<prefix><c:text>Ranks, keys and more: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
   vote: "<prefix><c:text>Vote daily for rewards: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
   website: "<prefix><c:text>Our website: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
+  # GUI-5: Bedrock can't open chat links, so it also gets a popup with the address. <link> = the address.
+  plain: "<prefix><c:text>Type this in your browser: <c:value><link>"
+  popup:
+    titles:
+      discord: "Discord"
+      store: "Store"
+      vote: "Vote"
+      website: "Website"
+      rules: "Rules"
+    name: "<c:sky_ice><link>"
+    lore: ["<c:text>Links can't open from here.", "<c:text>Type this address in your browser.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to get it in chat"]
 
 rules:
   - ""

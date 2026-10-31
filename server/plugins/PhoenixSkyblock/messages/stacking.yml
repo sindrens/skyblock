@@ -38,6 +38,11 @@ limit:
 hoppers:
   alert: "<c:warning>[Hoppers]</c:warning> <c:value><count></c:value> <c:text>hoppers in one chunk <c:muted>(alert above <threshold>)</c:muted> <c:text>on <c:value><island></c:value> <c:text>of <c:value><owner></c:value> <c:muted><sym:dot> <world> <x> <y> <z></c:muted> <click:run_command:'/tppos <x> <y> <z> <world>'><hover:show_text:'<c:text>Runs /tppos <x> <y> <z> <world>'><c:action>[Teleport]</c:action></hover></click>"
   alert-bedrock: "<c:warning>[Hoppers]</c:warning> <c:value><count></c:value> <c:text>hoppers in one chunk <c:muted>(alert above <threshold>)</c:muted> <c:text>on <c:value><island></c:value> <c:text>of <c:value><owner></c:value><c:text>. Go there: <c:value>/tppos <x> <y> <z> <world>"
+  # GUI-5: the Bedrock popup (Bedrock can't click chat). Same placeholders as the alert.
+  popup:
+    title: "Hopper alert"
+    name: "<c:warning><count> hoppers</c:warning> <c:text>in one chunk"
+    lore: ["<c:text>On <c:value><island></c:value> <c:text>of <c:value><owner>", "<c:muted><world> <x> <y> <z>", "<c:muted>Alert above <threshold>"]
   no-island: "no island"
   no-owner: "unknown"
 

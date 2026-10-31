@@ -64,6 +64,22 @@ public final class MenuConfig extends ModuleConfig {
     @Setting(desc = "Close open menus when the player teleports.")
     public boolean closeOnTeleport = true;
 
+    @Setting(path = "bedrock-popups.enabled", desc = "Bedrock players can't click chat: they also get a small popup menu for "
+            + "requests and links (TPA, island invites, trades, /discord, staff alerts). false = chat only.")
+    public boolean bedrockPopups = true;
+
+    @Setting(path = "bedrock-popups.queue-max", desc = "Most popups waiting per player while another menu is open (the oldest is dropped).",
+            min = 1, max = 20)
+    public int bedrockPopupQueueMax = 5;
+
+    @Setting(path = "bedrock-popups.max-age-seconds", desc = "A waiting popup older than this is dropped (the chat line stays).",
+            min = 10, max = 3600)
+    public int bedrockPopupMaxAgeSeconds = 300;
+
+    @Setting(path = "bedrock-popups.retry-ticks", desc = "Ticks between checks while a popup waits for a chat prompt to end (20 = 1 s).",
+            min = 5, max = 200)
+    public int bedrockPopupRetryTicks = 40;
+
     @Override
     public String fileName() {
         return "menus.yml";

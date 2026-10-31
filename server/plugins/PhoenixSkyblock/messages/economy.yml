@@ -75,6 +75,11 @@ eco:
   approve:
     waiting: "<prefix><c:warning><sym:time></c:warning> <c:text>That is more than the limit, so it waits for another owner or admin to allow it <c:muted>(#<id>, <left>)<c:text>. Nothing changed yet."
     alert: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>wants to <action> <amount> <c:text>for <c:value><player></c:value> <c:muted>(<reason>)</c:muted> <click:run_command:'/eco allow <id>'><hover:show_text:'<c:text>Runs /eco allow <id>'><c:success>[Allow]</c:success></hover></click> <click:run_command:'/eco deny <id>'><hover:show_text:'<c:text>Runs /eco deny <id>'><c:error>[Deny]</c:error></hover></click> <c:muted>#<id>, ends in <left>"
+    # GUI-5: the Bedrock popup of the alert (Bedrock can't click chat). Same placeholders, plus <left>.
+    popup:
+      title: "Economy change #<id>"
+      name: "<c:value><staff></c:value> <c:text>wants to <action> <amount>"
+      lore: ["<c:text>For <c:value><player></c:value>", "<c:muted><reason>", "", "<c:muted>Ends in <left>"]
     alert-info: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>wants to <action> <amount> <c:text>for <c:value><player></c:value> <c:muted>(<reason>) <sym:dot> waits for an owner or admin, #<id>"
     nobody-online: "<prefix><c:muted>No other owner or admin is online. It ends in <left> if nobody allows it."
     unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No waiting change <c:value>#<id></c:value><c:text>. It was decided already or ran out."

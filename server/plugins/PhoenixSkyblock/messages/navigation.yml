@@ -320,6 +320,11 @@ help:
     lore: ["<c:muted>You don't have any commands in this list."]
   coming-soon: "<prefix><c:value><name></c:value> <c:text>help comes with the feature, soon."
   unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No help topic <c:value><topic></c:value>. Here are all categories."
+  # GUI-5: the Bedrock popup after picking a command in /help (Bedrock can't click chat). <usage>, <description>.
+  popup:
+    title: "Help » Command"
+    name: "<c:value><usage>"
+    lore: ["<c:text><description>"]
   chat:
     header: "<prefix><c:text>Help <c:muted>(click a category):"
     category: " <c:muted><sym:bullet></c:muted> <click:run_command:'/help <id>'><hover:show_text:'<lore>'><name></hover></click>"

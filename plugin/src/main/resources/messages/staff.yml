@@ -99,6 +99,17 @@ report:
     - "<c:muted>[Report #<id>]</c:muted> <c:value><reporter></c:value> <c:text>reported <c:value><player></c:value> <c:text>for <c:warning><reason></c:warning> <c:muted>(<open> open, <total> total)"
     - "  <c:muted><details></c:muted>"
     - "  <click:run_command:'/tp <player>'><hover:show_text:'<c:text>Teleport to <player>'><c:action>[Teleport]</c:action></hover></click> <click:run_command:'/inspect <player>'><hover:show_text:'<c:text>Inspect <player>'><c:action>[Inspect]</c:action></hover></click> <click:run_command:'/reports claim <id>'><hover:show_text:'<c:text>Claim this report'><c:action>[Claim]</c:action></hover></click>"
+  # GUI-5: the Bedrock popup of the staff alert (Bedrock can't click chat). <id>, <player>, <reporter>, <reason>.
+  popup:
+    title: "Report #<id>"
+    name: "<c:value><reporter></c:value> <c:text>reported <c:value><player></c:value>"
+    lore: ["<c:text>Reason: <c:warning><reason>", "", "<c:muted>Details: /reports"]
+    inspect:
+      name: "<c:value>Inspect"
+      lore: ["<c:muted>Runs <command>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to inspect <player>"]
+    claim:
+      name: "<c:value>Claim"
+      lore: ["<c:muted>Runs <command>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to take this report"]
   closed-punished: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: <c:value>action taken</c:value>. Thank you!"
   closed-warned: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: <c:value>player warned</c:value>. Thank you!"
   closed-no-evidence: "<prefix><c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value>: checked, <c:value>no evidence</c:value> found. Thanks anyway!"

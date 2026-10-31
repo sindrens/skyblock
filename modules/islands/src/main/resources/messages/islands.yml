@@ -391,6 +391,11 @@ invite:
   sent: "<prefix><c:success><sym:check></c:success> <c:text>Invite sent to <c:value><player></c:value>. <c:muted>(expires in <time>)"
   now-team: "<prefix><c:warning><sym:star></c:warning> <c:text>Your island is now a <c:value>Team Island</c:value>. <c:muted>It's on the team leaderboard from now on."
   received: "<prefix><c:value><player></c:value> <c:text>invited you to <c:value><island></c:value>. <c:muted>(<members>/<slots> members)</c:muted><newline><click:run_command:'/is accept <from>'><hover:show_text:'<c:text>Join <island>'><c:action>[Accept]</c:action></hover></click> <click:run_command:'/is deny <from>'><hover:show_text:'<c:text>Decline the invite'><c:action>[Deny]</c:action></hover></click> <c:muted>(expires in <time>)"
+  # GUI-5: the Bedrock popup (Bedrock can't click chat). <player>, <island>, <members>, <slots>, <left>.
+  popup:
+    title: "Island invite"
+    name: "<c:value><player></c:value> <c:text>invited you"
+    lore: ["<c:text>Join <c:value><island></c:value><c:text>.", "<c:muted><members>/<slots> members", "", "<c:muted>Expires in <left>"]
   expired-inviter: "<prefix><c:muted>Your island invite to <player> expired."
   expired-target: "<prefix><c:muted>Your invite to <island> expired."
   solo:

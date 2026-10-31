@@ -6,6 +6,7 @@ import net.skybornmc.skyblock.common.command.Arg;
 import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.command.Suggest;
+import net.skybornmc.skyblock.common.menu.Offer;
 import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.teleport.TeleportOptions;
 import net.skybornmc.skyblock.common.teleport.TeleportReason;
@@ -16,6 +17,7 @@ import net.skybornmc.skyblock.common.util.Cooldowns;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -219,7 +221,21 @@ final class TeleportCommands extends CommandGroup implements Listener {
         TagResolver[] p = {Msg.p("player", sender.getName()), Msg.p("seconds", config.tpaTimeoutSeconds)};
         msg.send(sender, type == TpaRequests.Type.HERE ? "tpa.sent-here" : "tpa.sent",
                 Msg.p("player", target.getName()), Msg.p("seconds", config.tpaTimeoutSeconds));
-        msg.send(target, type == TpaRequests.Type.HERE ? "tpa.received-here" : "tpa.received", p);
+        boolean here = type == TpaRequests.Type.HERE;
+        UUID from = sender.getUniqueId();
+        UUID to = target.getUniqueId();
+        String name = sender.getName();
+        // GUI-5: Java clicks [Accept]/[Deny] in chat; Bedrock also gets a popup with the same two choices.
+        core.menus().offers().offer(target, Offer.builder(msg.module(), here ? "tpa.popup-here" : "tpa.popup")
+                .id("tpa:" + from)
+                .icon(Material.ENDER_PEARL)
+                .placeholders(p)
+                .expiresAt(System.currentTimeMillis() + config.tpaTimeoutSeconds * 1000L)
+                .validWhile(() -> requests.find(to, from).filter(r -> r.type() == type).isPresent())
+                .button(Offer.Button.accept("tpaccept " + name))
+                .button(Offer.Button.deny("tpdeny " + name))
+                .chat(viewer -> msg.send(viewer, here ? "tpa.received-here" : "tpa.received", p))
+                .build());
         core.sounds().play(target, "notify");
     }
 
