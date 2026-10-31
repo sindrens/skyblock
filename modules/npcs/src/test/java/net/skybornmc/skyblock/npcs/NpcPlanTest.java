@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.npcs;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 
@@ -70,6 +71,70 @@ class NpcPlanTest {
         assertFalse(plan.pointsAvailable());
         assertEquals(0, plan.spots().total());
         assertEquals(1, plan.sources().size());
+    }
+
+    /** PERF9: texts built with the plan; a failing text is left to the spawn. */
+    private static final NpcPlan.Texts TEXTS = new NpcPlan.Texts() {
+        @Override
+        public NpcsModule.TextContent hologram(Spots.Text t) {
+            if (t.id().equals("broken")) {
+                throw new IllegalStateException("bad MiniMessage");
+            }
+            return t.id().equals("silent") ? null : new NpcsModule.TextContent(Component.text("text " + t.id()), 2);
+        }
+
+        @Override
+        public Component label(RoleRules roles, Spots.Npc npc) {
+            return Component.text(npc.id() + " (" + roles.actionOf(npc.role()).type() + ")");
+        }
+    };
+
+    private static SpotsTest.FakePoints mixedPoints() {
+        return new SpotsTest.FakePoints(List.of(
+                SpotsTest.point("spawn_market_square_v1", "npcs", "bank", 0, 99, 81, 180, Map.of()),
+                SpotsTest.point("spawn_base_v1", "holograms", "info_board", 10, 103, -11, 0, Map.of("facing", "south")),
+                SpotsTest.point("spawn_base_v1", "holograms", "silent", 20, 103, -11, 0, Map.of()),
+                SpotsTest.point("spawn_base_v1", "holograms", "broken", 30, 103, -11, 0, Map.of()),
+                SpotsTest.point("spawn_hall_of_heroes_v1", "leaderboards", "mining", -61, 108, -62, 0, Map.of("facing", "south"))));
+    }
+
+    @Test
+    void buildsTheTrackedSetsAndTextsOffTheMainThread() {
+        NpcPlan plan = NpcPlan.compute(inputs(List.of(), List.of()), mixedPoints(), NpcPlanTest::item, t -> true, TEXTS);
+        assertEquals(List.of("npc:bank", "hologram:info_board", "hologram:silent", "hologram:broken", "board:mining"),
+                plan.index().order().stream().map(Placed::key).toList());
+        assertEquals(Component.text("text info_board"), plan.hologramTexts().get("info_board").text());
+        assertEquals(2, plan.hologramTexts().get("info_board").lines());
+        assertFalse(plan.hologramTexts().containsKey("silent"), "no text: built (and skipped) at spawn as before");
+        assertFalse(plan.hologramTexts().containsKey("broken"), "a failing text does not break the plan");
+        assertTrue(plan.labels().containsKey("bank"));
+        assertTrue(plan.labels().get("bank").toString().contains("bank ("), "built with the plan's role rules");
+    }
+
+    @Test
+    void disabledKindsAreNeitherTrackedNorBuilt() {
+        NpcsConfig c = new NpcsConfig();
+        NpcPlan.Inputs in = new NpcPlan.Inputs(c.npcRoles, c.roleActions, List.of(), List.of(), c.hologramSkip, List.of(),
+                false, true, false);
+        NpcPlan plan = NpcPlan.compute(in, mixedPoints(), NpcPlanTest::item, t -> true, TEXTS);
+        assertEquals(List.of("hologram:info_board", "hologram:silent", "hologram:broken"),
+                plan.index().order().stream().map(Placed::key).toList());
+        assertTrue(plan.labels().isEmpty());
+        assertEquals(1, plan.spots().npcs().size(), "the points are still parsed (staff list, NPC directory)");
+    }
+
+    @Test
+    void logLinesArePrefixedProblemsThenTheSummary() {
+        NpcPlan plan = NpcPlan.compute(inputs(List.of("bank: not_an_item"), List.of()), mixedPoints(), NpcPlanTest::item,
+                t -> true, TEXTS);
+        List<String> lines = plan.logLines();
+        assertEquals(plan.problems().size() + 1, lines.size());
+        assertTrue(lines.getFirst().startsWith("[npcs] npcs.yml -> npcs.held-items"), lines.toString());
+        assertEquals("[npcs] 1 NPCs, 3 holograms, 1 leaderboards from the builds; spawning those in loaded chunks over the next ticks",
+                lines.getLast());
+        NpcPlan none = NpcPlan.compute(inputs(List.of(), List.of()), null, NpcPlanTest::item, t -> true);
+        assertEquals(List.of("[npcs] 0 NPCs, 0 holograms, 0 leaderboards from the builds (worlds module's build points not available)"),
+                none.logLines());
     }
 
     @Test

@@ -30,10 +30,8 @@ import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,8 +53,10 @@ final class Placer implements Listener {
     private final NpcsModule module;
     private final NamespacedKey kindKey;
     private final NamespacedKey idKey;
-    private final Map<String, Placed> byKey = new LinkedHashMap<>();
-    private final Map<String, Map<Long, List<Placed>>> byChunk = new HashMap<>();
+    /** PERF9: the tracked sets of the current placement, built off the main thread and swapped in by {@link #start}. */
+    private PlacementIndex current = PlacementIndex.empty();
+    private Map<String, Placed> byKey = current.byKey();
+    private Map<String, Map<Long, List<Placed>>> byChunk = current.byChunk();
     private net.skybornmc.skyblock.common.util.Scheduler.Task lookTask;
     /** PERF3: sets waiting to be spawned, a few per tick ({@code spawning.per-tick} / {@code spawning.budget-ms}). */
     private final SpawnQueue<Placed> queue = new SpawnQueue<>();
@@ -98,10 +98,16 @@ final class Placer implements Listener {
     // ------------------------------------------------------------------ lifecycle
 
     /**
-     * Removes every placed set and left-over, then queues {@code spots} in the loaded chunks; they are spawned over the
-     * next ticks (PERF3: spawning them all in this tick took over a second on update101). Never loads a chunk.
+     * Removes every placed set and left-over, then queues the sets of {@code index}; those in loaded chunks are spawned
+     * over the next ticks (PERF3: spawning them all in this tick took over a second on update101). Never loads a chunk.
+     * PERF9: O(1) on the main thread: the index was built off the main thread ({@link NpcPlan}), the old sets go to the
+     * removal queue and the new ones to the spawn queue as one batch each; the loaded-chunk check of every point runs in
+     * the spawn ticks (within {@code spawning.budget-ms}) instead of here.
+     *
+     * @param index the tracked sets of this placement (from a plan, used once)
+     * @param look  true when NPCs turn their heads (enabled, and there are NPCs)
      */
-    void start(Spots spots) {
+    void start(PlacementIndex index, boolean look) {
         boolean reload = !byKey.isEmpty() || !retiring.isEmpty();
         var timer = module.core().scheduler().timer();
         timer.time("npcs:apply-retire", this::retire);
@@ -112,26 +118,11 @@ final class Placer implements Listener {
             purgePending = true;
         }
         NpcsConfig c = module.config();
-        timer.time("npcs:apply-track", () -> {
-            if (c.npcsEnabled) {
-                spots.npcs().forEach(n -> track(new Placed(Placed.Kind.NPC, n, null)));
-            }
-            if (c.hologramsEnabled) {
-                spots.holograms().forEach(t -> track(new Placed(Placed.Kind.HOLOGRAM, null, t)));
-            }
-            if (c.leaderboardsEnabled) {
-                spots.boards().forEach(t -> track(new Placed(Placed.Kind.BOARD, null, t)));
-            }
-        });
-        timer.time("npcs:apply-queue", () -> {
-            for (Placed p : byKey.values()) {
-                if (loaded(p) != null) {
-                    queue.add(p);
-                }
-            }
-        });
+        timer.time("npcs:apply-track", () -> install(index));
+        // Every set of the placement in one batch; spawnIfWanted skips those whose chunk is not loaded.
+        timer.time("npcs:apply-queue", () -> queue.addAll(index.order()));
         drainLater();
-        if (c.npcsEnabled && c.lookAtPlayers && !spots.npcs().isEmpty()) {
+        if (look) {
             lookTask = module.core().scheduler().repeat("npcs:look", c.lookTicks, c.lookTicks, this::look);
         }
     }
@@ -157,24 +148,27 @@ final class Placer implements Listener {
             spawnTask = null;
         }
         queue.clear();
-        for (Placed p : byKey.values()) {
-            if (p.body != null || p.label != null || p.click != null) {
-                retiring.add(p);
-            }
-        }
-        byKey.clear();
-        byChunk.clear();
+        // PERF9: the whole old placement as one batch; sets without entities are skipped while draining.
+        retiring.addAll(current.order());
+        install(PlacementIndex.empty());
     }
 
-    /** Removes one retired set (always counts as work, so the removal budget applies). */
-    private static boolean removeSet(Placed p) {
+    private void install(PlacementIndex index) {
+        current = index;
+        byKey = index.byKey();
+        byChunk = index.byChunk();
+    }
+
+    /**
+     * Removes one retired set; true (work, counts against {@code spawning.removals-per-tick}) when it had entities,
+     * false (skipped) when it was never spawned.
+     */
+    static boolean removeSet(Placed p) {
+        if (p.body == null && p.label == null && p.click == null) {
+            return false;
+        }
         p.remove();
         return true;
-    }
-
-    private void track(Placed p) {
-        byKey.put(p.key(), p);
-        byChunk.computeIfAbsent(p.world, w -> new HashMap<>()).computeIfAbsent(p.chunkKey(), k -> new ArrayList<>()).add(p);
     }
 
     /** Removes tagged entities from loaded chunks (left from an earlier enable). */
@@ -229,7 +223,7 @@ final class Placer implements Listener {
 
     // ------------------------------------------------------------------ spawn queue (PERF3)
 
-    /** Number of sets waiting to be spawned. */
+    /** Number of sets waiting to be spawned or checked (PERF9: includes sets in unloaded chunks until checked). */
     int waiting() {
         return queue.size();
     }
