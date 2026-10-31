@@ -65,7 +65,6 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- GUI-5 Bedrock popups instead of clickable chat
 - TUT-FIX tutorial camera/chest/escape bugs
 - GUI-4 per-menu fixes (no shop, no chat-link flows)
 - NOTE: a separate owner-started agent works on docs/planning/*.md and docs/design/; do not overwrite those files, merge carefully.

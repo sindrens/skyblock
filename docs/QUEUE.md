@@ -11,7 +11,7 @@ Status: ⬜ todo · 🔄 running · ✅ merged · ⏸ parked
 | GUI-2 ✅ | /menu hub 15 buttons in 4 groups + You menu + Travel menu (replaces UX3 Warps), Back-to-hub from every screen opened from the hub | GUI-1 | menus | ⬜ |
 | GUI-3 ✅ | Shop v2 (docs/design/SHOP_DESIGN.md): 9 tabs, buy page (1/16/64/fill/type), catalog migration ~253 items, undo + big-buy rule (F14, toggle) | GUI-1 | shop | ⬜ |
 | GUI-4 🔄 | Per-menu fixes from docs/design/MENU_FIXES.md, module by module (staff/moderation last) | GUI-1 | many | ⬜ |
-| GUI-5 🔄 | Bedrock popups instead of clickable chat (TPA, island invites, store/vote/Discord links, [Tutorial]) | GUI-1 | essentials, islands, social, tutorial | ⬜ |
+| GUI-5 ✅ | Bedrock popups instead of clickable chat (TPA, island invites, store/vote/Discord links, [Tutorial]) | GUI-1 | essentials, islands, social, tutorial | ⬜ |
 | GUI-6 | Pack art on the final slots (RP1–RP3) | GUI-4, art | resource pack | ⬜ |
 
 ## REVIEW3 + owner feedback 30 Oct (top priority; answers in docs/OWNER_ANSWERS_REVIEW3.md, details in docs/review/REVIEW3_DEVELOPER_BRIEF.md)
