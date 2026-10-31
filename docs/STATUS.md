@@ -66,7 +66,8 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - TUT-FIX tutorial camera/chest/escape bugs
-- GUI-4 per-menu fixes (no shop, no chat-link flows)
+- M5-5 masteries
+- M10-3 physical crates
 - NOTE: a separate owner-started agent works on docs/planning/*.md and docs/design/; do not overwrite those files, merge carefully.
 
 ## Parked / broken
