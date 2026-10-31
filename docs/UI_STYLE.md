@@ -310,6 +310,8 @@ Typing is the last option (GUI_DESIGN §5); when a feature needs free text (a no
 - Close the GUI on teleport or on long actions.
 
 ### 5.5 Feature icon map (same icon everywhere for the same feature)
+Icons come from `resourcepack/icons.json` (I7 pack v2): one vanilla base item per key, shown to everyone; Java players with the pack loaded see our own picture on that base item (`MenuService#icon(viewer, key, ...)`). Never use a pack-only `item_model`.
+
 | Feature | Icon |
 |---|---|
 | Island | Grass block |

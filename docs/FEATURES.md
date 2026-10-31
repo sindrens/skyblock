@@ -193,7 +193,7 @@ If nothing useful is left, answer exactly: No more useful ideas.
 | I4 | PvE, bosses, pets | Custom mobs, world bosses, pets | 📝 (Phase 8) | — |
 | I5 | Seasons | 3-month resets, prizes, what carries over | 💡 | — |
 | I6 | Store and Discord | Tebex, credits (was gems), Discord linking | 💡 | — |
-| I7 | Resource pack | Pack v1 removed (phase 0, pure vanilla, tag `pack-v1-final`); v2 vanilla+: forced after joining, item icons only, planned (phase 1) | 📝 | — |
+| I7 | Resource pack | Pack v1 removed (phase 0, tag `pack-v1-final`); **v2 phase 1 built**: 75-icon catalogue (`resourcepack/icons.json`, generator placeholders), forced prompt after joining with a friendly kick, built-in host on TCP 25580 with a fail-open self-check, `/pack status\|reload` | 🔨 | — |
 | I8 | Launch prep | Balance pass, load test, checklist | 💡 | — |
 
 **Total:** 102 features. Order the cards are written in: D2 Spawners (example below) → C1 Currencies → F1 Progression track → F2 Ranks and perks → E1 Depths v2 → the rest, by area.
