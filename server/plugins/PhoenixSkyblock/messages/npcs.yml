@@ -88,7 +88,8 @@ roles:
   black_market:
     name: "Black Market"
     help:
-      - "<c:text>A shady trader. Not open yet."
+      - "<c:text>Rare goods. The stock changes at every restock."
+      - "<c:text>Open it any time: <c:value>/blackmarket"
   quests:
     name: "Quest Master"
     help:

@@ -137,4 +137,33 @@ class MessagesTest {
         assertEquals(List.of(), missing);
         assertTrue(checked >= 60, "the build metadata was read (" + checked + " points)");
     }
+
+    /**
+     * GUI-4c (M10.14): every NPC role's help matches what exists now: no role says it is not open, coming soon or
+     * not here yet (Black Market, Quests, Voting, Crates and Daily all exist), and the retired old texts really differ
+     * from the bundled ones (else the upgrade would loop).
+     */
+    @Test
+    void roleHelpTextsMatchTheBuiltFeatures() throws Exception {
+        YamlConfiguration yml = yml();
+        List<String> stale = new ArrayList<>();
+        var roles = yml.getConfigurationSection("roles");
+        assertNotNull(roles);
+        for (String role : roles.getKeys(false)) {
+            String help = String.join("\n", yml.getStringList("roles." + role + ".help")).toLowerCase(java.util.Locale.ROOT);
+            for (String phrase : List.of("not open yet", "coming soon", "isn't here yet", "opens soon", "not here yet")) {
+                if (help.contains(phrase)) {
+                    stale.add(role + ": " + phrase);
+                }
+            }
+        }
+        assertTrue(stale.isEmpty(), "NPC help still promises unbuilt features: " + stale);
+        for (Map.Entry<String, String> old : NpcsModule.RETIRED_TEXTS.entrySet()) {
+            String bundled = yml.isList(old.getKey()) ? String.join("\n", yml.getStringList(old.getKey())) : yml.getString(old.getKey());
+            assertNotNull(bundled, old.getKey());
+            assertTrue(!bundled.equals(old.getValue()), old.getKey() + " was retired but the bundled text is the same");
+        }
+        assertTrue(String.join(" ", yml.getStringList("roles.black_market.help")).contains("/blackmarket"),
+                "the Black Market NPC points to /blackmarket");
+    }
 }
