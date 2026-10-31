@@ -21,7 +21,8 @@ No arguments, so there is nothing to tab-complete. No staff commands yet (a `/bo
 
 **Global boosters** (Phoenix/Eclipse crates, later the store)
 - Everyone online gets the bonus. One per type runs; more wait in a **queue** (max `global.max-queue`, 5, per type; more are refused and the item kept). Time left counts down while the server runs and survives restarts.
-- A **boss bar** shows type, strength, time left, the starter and `/thanks` to everyone (`/settings → Global booster bar` hides it). Start, queue and end are announced (`global.announce`).
+- A **boss bar** (blue by default, `global.boss-bar-color`; the tutorial bar is yellow, events red) shows type, strength, time left, the starter and `/thanks` to everyone (`/settings → Global booster bar` hides it). Start, queue and end are announced (`global.announce`) as one chat line tagged `[Booster]` (steel sky, `style.yml tag.booster`).
+- **Scoreboard timer:** the soonest-ending running booster (personal on the active profile, or global) is the sidebar's timer row: `Booster: +50% Sell 37m` (`messages/boosters.yml scoreboard.timer`, via `BoardTimers`).
 - Global booster items are bound by default (`global.always-bound`).
 - **Thanks (RW2):** 1 earned credit per player per booster, never for your own booster, no credit from the starter's IP address (`thanks.same-ip-pays: false`), at most `thanks.max-credits-per-booster` (100) credits per booster. Paid through the economy ledger (reason `booster_thanks`, idempotency key `booster_thanks:<id>:<player>`); a crash before the payment is retried at the next start, never paid twice.
 
