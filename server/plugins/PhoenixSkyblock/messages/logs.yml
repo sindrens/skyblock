@@ -41,8 +41,7 @@ hub:
   any:
     name: "<c:flame>Any player"
     lore:
-      - "<c:text>Online or offline: type the name"
-      - "<c:text>in chat."
+      - "<c:text>Online or offline: type the name."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type a name"
   staff:
@@ -52,6 +51,8 @@ hub:
       - "<c:text>For accountability."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to type a name"
+    # QOL3: shown (locked) to ranks without the staff-member search, so the row keeps its shape.
+    locked: "<c:muted>Only admins can search by staff member."
   near:
     name: "<c:flame>Near me"
     lore:
@@ -312,12 +313,25 @@ chat:
   next-off: "<c:muted>[Next <sym:arrow>]"
   footer: " <previous> <c:muted>Page <c:value><page></c:value>/<c:value><pages></c:value></c:muted> <next>"
 
-# ------------------------------------------------------------------ prompts (typed in chat)
+# ------------------------------------------------------------------ typed values (QOL3: MenuService.input)
+# Java: the chat line (<cancel>, <seconds>, <max>). Bedrock: the <key>-form popup (title + label, <max>).
 prompt:
   player: "<prefix><c:text>Type the <c:value>player name</c:value> in chat. <c:muted>(<cancel> to cancel, <seconds>s)"
+  player-form:
+    title: "Logs: player"
+    label: "<c:text>Player name, online or offline (Bedrock names start with a dot):"
   staff: "<prefix><c:text>Type the <c:value>staff member's name</c:value> in chat. <c:muted>(<cancel> to cancel, <seconds>s)"
+  staff-form:
+    title: "Logs: staff member"
+    label: "<c:text>Name of the staff member:"
   item: "<prefix><c:text>Type the <c:value>item id</c:value> (UUID) in chat. <c:muted>(<cancel> to cancel, <seconds>s)"
+  item-form:
+    title: "Logs: item"
+    label: "<c:text>Item id (<max> characters, like 2f1c0b6e-...-000000000000):"
   island: "<prefix><c:text>Type the <c:value>owner's name</c:value> or the <c:value>island id</c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
+  island-form:
+    title: "Logs: island"
+    label: "<c:text>Owner's name or island id:"
 
 # ------------------------------------------------------------------ results of actions
 teleported: "<prefix><c:success><sym:check></c:success> <c:text>Teleported to <c:value><world> <x>, <y>, <z></c:value>."

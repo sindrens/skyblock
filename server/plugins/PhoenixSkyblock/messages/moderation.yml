@@ -1689,12 +1689,39 @@ sanctions:
     title-ender: "Confiscate: ender chest"
     click:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to confiscate <item>"
-    show-ender:
-      name: "<c:value>Show ender chest"
-      lore: []
-    show-inventory:
-      name: "<c:value>Show inventory"
-      lore: []
+    # QOL3: standard frame, tabs in the top row, every place on a fixed slot. <n> = slot number.
+    info:
+      - "<c:text>The player's items, live (every second)."
+      - "<c:text>Pick a tab at the top, click a stack,"
+      - "<c:text>pick a reason, then confirm."
+      - "<c:muted>The stack is checked again on confirm."
+    tab:
+      hotbar:
+        name: "<c:value>Hotbar & armor"
+        lore:
+          - "<c:text>Hotbar on the first rows, armor"
+          - "<c:text>and off hand on the bottom row."
+      backpack:
+        name: "<c:value>Backpack"
+        lore:
+          - "<c:text>The 27 slots above the hotbar."
+      ender:
+        name: "<c:value>Ender chest"
+        lore:
+          - "<c:text>The player's ender chest."
+    place:
+      hotbar: "<c:muted>Hotbar slot <n>"
+      backpack: "<c:muted>Backpack slot <n>"
+      ender: "<c:muted>Ender chest slot <n>"
+      helmet: "<c:muted>Helmet"
+      chestplate: "<c:muted>Chestplate"
+      leggings: "<c:muted>Leggings"
+      boots: "<c:muted>Boots"
+      off-hand: "<c:muted>Off hand"
+    empty:
+      name: "<c:value>Nothing here"
+      lore:
+        - "<c:text>This part is empty. Try another tab."
     # GUI-4c: the confirm after the reason. <item>, <player>, <reason>, <where> (inventory / ender chest).
     confirm:
       crumb: "Confiscate item?"

@@ -148,10 +148,43 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
                 }
                 core.menus().open(reporter, new ReportReasonMenu(this, uuid.get(), targetName));
             } else {
+                // QOL3: a typed reason is confirmed too (same screen as the reason picker), so the reporter sees how
+                // the reason was read before the report goes out.
+                if (precheckFails(reporter, uuid.get())) {
+                    return;
+                }
                 String[] parsed = ReportRules.parse(text, config.reportReasons);
-                submit(reporter, uuid.get(), targetName, parsed[0], parsed[1]);
+                core.menus().open(reporter, confirmMenu(reporter, uuid.get(), targetName, parsed[0], parsed[1]));
             }
         }, main);
+    }
+
+    /**
+     * QOL3 (GUI_DESIGN §4): "Report Steve?" with the target's head, the reason and the typed details on the middle item;
+     * Confirm sends ({@link #submit}, which checks every rule again), Cancel goes back to the reason picker (or closes).
+     */
+    net.skybornmc.skyblock.common.menu.ConfirmMenu confirmMenu(Player reporter, UUID target, String targetName, String reason, String details) {
+        String cleanDetails = ReportRules.clean(details == null ? "" : details, config.reportDetailsMaxLength);
+        org.bukkit.inventory.ItemStack head = new org.bukkit.inventory.ItemStack(org.bukkit.Material.PLAYER_HEAD);
+        if (head.getItemMeta() instanceof org.bukkit.inventory.meta.SkullMeta meta) {
+            meta.setOwningPlayer(Bukkit.getOfflinePlayer(target));
+            head.setItemMeta(meta);
+        }
+        return new net.skybornmc.skyblock.common.menu.ConfirmMenu(
+                v -> core.menus().text(v, StaffFeature.MODULE, "menu.report.confirm.crumb", Msg.p("player", targetName)),
+                core.menus().item(head, core.menus().text(reporter, StaffFeature.MODULE, "menu.report.confirm.shown",
+                        Msg.p("player", targetName)), java.util.List.of()),
+                v -> {
+                    java.util.List<net.kyori.adventure.text.Component> lines = new java.util.ArrayList<>(core.menus().lines(v,
+                            StaffFeature.MODULE, "menu.report.confirm.details", Msg.p("player", targetName), Msg.p("reason", reason)));
+                    if (!cleanDetails.isEmpty()) {
+                        lines.addAll(core.menus().lines(v, StaffFeature.MODULE, "menu.report.confirm.details-text",
+                                Msg.p("details", cleanDetails)));
+                    }
+                    lines.addAll(core.menus().lines(v, StaffFeature.MODULE, "menu.report.confirm.warning"));
+                    return lines;
+                },
+                p -> submit(p, target, targetName, reason, cleanDetails), p -> { });
     }
 
     /** Sync checks (self, cooldown, playtime) before showing the reason picker. Returns true (and tells why) if refused. */

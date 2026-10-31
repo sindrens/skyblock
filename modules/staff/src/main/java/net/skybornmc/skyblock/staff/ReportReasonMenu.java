@@ -12,7 +12,10 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.util.List;
 import java.util.UUID;
 
-/** {@code /report <player>}: pick a reason; the last reason ("Other") asks for a short text in chat. */
+/**
+ * {@code /report <player>}: pick a reason; the last reason ("Other") asks for a short text (Bedrock popup or chat).
+ * Every reason then opens the confirm screen (QOL3) before the report is sent.
+ */
 final class ReportReasonMenu extends Menu {
 
     private static final int[] SLOTS = {20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 38, 39, 40, 41, 42};
@@ -86,14 +89,21 @@ final class ReportReasonMenu extends Menu {
                     click -> {
                         Player p = click.player();
                         if (other) {
-                            service.prompt(p, StaffFeature.MODULE, "report.prompt", reports.detailsMax(),
-                                    text -> reports.submit(p, target, targetName, reason, text),
-                                    () -> { }, Msg.p("player", targetName));
+                            // QOL3: MenuService.input (Bedrock: a text popup with the keyboard; Java: the chat line).
+                            service.input(p, StaffFeature.MODULE, "report.prompt", reports.detailsMax(), null,
+                                    text -> openChildFor(p, reports.confirmMenu(p, target, targetName, reason, text)),
+                                    () -> service.open(p, this), Msg.p("player", targetName), Msg.p("max", reports.detailsMax()));
                         } else {
-                            p.closeInventory();
-                            reports.submit(p, target, targetName, reason, "");
+                            // QOL3: confirm first (reason + target on the middle item); a mis-tap no longer costs a report.
+                            openChild(reports.confirmMenu(p, target, targetName, reason, ""));
                         }
                     });
         }
+    }
+
+    /** Opens {@code menu} after a typed answer, with this picker as its Back target. */
+    private void openChildFor(Player player, Menu menu) {
+        menu.parent(this);
+        service.open(player, menu);
     }
 }

@@ -80,6 +80,7 @@ freeze:
 # --- Inspect ---
 inspect:
   unknown: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has never joined. Check the spelling."
+  went-offline: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>went offline. Nothing changed."
 
 # --- Reports (players) ---
 report:
@@ -95,6 +96,10 @@ report:
   blocked-perm: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use /report anymore <c:muted>(too many false reports)</c:muted><c:text>."
   sent: "<prefix><c:success><sym:check></c:success> <c:text>Report <c:value>#<id></c:value> on <c:value><player></c:value> sent. <c:muted>Thanks! You'll hear the result."
   prompt: "<prefix><c:text>Type what <c:value><player></c:value> did, in one line. <c:muted>(<cancel> to cancel, <seconds>s)"
+  # QOL3: the same question as a Bedrock popup. <player>, <max>.
+  prompt-form:
+    title: "Report <player>"
+    label: "<c:text>What did <player> do? One line, max <max> characters."
   staff-alert:
     - "<c:muted>[Report #<id>]</c:muted> <c:value><reporter></c:value> <c:text>reported <c:value><player></c:value> <c:text>for <c:warning><reason></c:warning> <c:muted>(<open> open, <total> total)"
     - "  <c:muted><details></c:muted>"
@@ -174,10 +179,22 @@ menu:
       lore: ["<c:text>You are reporting this player."]
     reason:
       name: "<c:warning><bold><reason></bold></c:warning>"
-      lore: ["<c:text>Report <c:value><player></c:value> for <reason>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to send"]
+      lore: ["<c:text>Report <c:value><player></c:value> for <reason>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to check and send"]
     other:
       name: "<c:warning><bold><reason></bold></c:warning>"
-      lore: ["<c:text>Something else? Describe it", "<c:text>in one line in chat.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to type"]
+      lore: ["<c:text>Something else? Describe it", "<c:text>in one line.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to type"]
+    # QOL3: confirm before a report is sent. <player>, <reason>, <details> (only when typed).
+    confirm:
+      crumb: "Report <player>?"
+      shown: "<c:value><bold>Report <player></bold></c:value>"
+      details:
+        - "<c:ember>Player</c:ember> <c:value><player>"
+        - "<c:ember>Reason</c:ember> <c:value><reason>"
+      details-text:
+        - "<c:ember>Details</c:ember> <c:text><details>"
+      warning:
+        - "<c:muted>Staff get it right away."
+        - "<c:muted>False reports can be punished."
 
   reports:
     title: "Reports"
@@ -310,9 +327,35 @@ menu:
     unfreeze:
       name: "<c:sky_ice><bold>Unfreeze</bold></c:sky_ice>"
       lore: ["<c:warning><player> is frozen.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to unfreeze"]
-    offline:
-      name: "<c:muted><bold>Offline</bold></c:muted>"
-      lore: ["<c:text>Inventory, teleport and freeze", "<c:text>need <player> to be online."]
+    # QOL3: confirm before Freeze / Unfreeze. <player>, <location> (world x y z when the button was clicked).
+    freeze-confirm:
+      crumb: "Freeze <player>?"
+      shown:
+        name: "<c:sky_ice><bold>Freeze <player></bold></c:sky_ice>"
+        lore: []
+      details:
+        - "<c:text><player> can't move, break, use"
+        - "<c:text>commands or anything else until"
+        - "<c:text>you unfreeze them. Chat still works."
+        - "<c:ember>Where</c:ember> <c:value><location>"
+        - "<c:muted>Logging out counts as refusing the check."
+    unfreeze-confirm:
+      crumb: "Unfreeze <player>?"
+      shown:
+        name: "<c:sky_ice><bold>Unfreeze <player></bold></c:sky_ice>"
+        lore: []
+      details:
+        - "<c:text><player> can move and play again."
+        - "<c:ember>Where</c:ember> <c:value><location>"
+    # QOL3: tools that can't be used now stay on their slot as a locked item (plain name + reason).
+    locked:
+      offline: "<c:muted><player> is offline."
+      no-access: "<c:muted>Your rank can't use this."
+      inventory: "Inventory"
+      enderchest: "Ender chest"
+      teleport: "Teleport"
+      freeze: "Freeze"
+      wardrobe: "Wardrobe"
     punish:
       name: "<c:error><bold>Punish</bold></c:error>"
       lore: ["<c:text>Open the punishment menu.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to punish"]

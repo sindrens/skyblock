@@ -119,7 +119,7 @@ final class SanctionMenus {
                     module.core().sounds().play(viewer, "error");
                     return;
                 }
-                openChild(new ConfiscateMenu(module, target, Sanctions.Source.INVENTORY));
+                openChild(new ConfiscateMenu(module, target, ConfiscateLayout.View.HOTBAR));
             });
             List<Sanction> list = target.sanctions();
             for (int i = 0; i < list.size() && i < RECENT.length; i++) {
@@ -301,19 +301,24 @@ final class SanctionMenus {
     // ================================================================== confiscate
 
     /**
-     * The online target's inventory (slots 0-40: hotbar, main, armor, off hand) or ender chest (0-26), refreshed every
-     * second. Click a stack, then a reason. Row 6: Back, switch inventory / ender chest, Close.
+     * The online target's stacks, refreshed every second. QOL3: the standard frame (Back 45, ? 48, Close 49, Main menu
+     * 50) with three tabs in row 0 (Hotbar &amp; armor, Backpack, Ender chest; {@link ConfiscateLayout}), so every
+     * place keeps a fixed slot. Click a stack, then a reason, then confirm.
      */
     static final class ConfiscateMenu extends Menu {
 
+        private static final int TAB_HOTBAR = 3;
+        private static final int TAB_BACKPACK = 4;
+        private static final int TAB_ENDER = 5;
+
         private final ModerationModule module;
         private final PunishMenus.Target target;
-        private final Sanctions.Source source;
+        private ConfiscateLayout.View view;
 
-        ConfiscateMenu(ModerationModule module, PunishMenus.Target target, Sanctions.Source source) {
+        ConfiscateMenu(ModerationModule module, PunishMenus.Target target, ConfiscateLayout.View view) {
             this.module = module;
             this.target = target;
-            this.source = source;
+            this.view = view;
         }
 
         @Override
@@ -324,12 +329,22 @@ final class SanctionMenus {
         @Override
         public Component title() {
             return service.title(viewer, Component.text(target.name()), service.text(viewer, MODULE,
-                    "sanctions.confiscate-menu.title-" + source.id()));
+                    "sanctions.confiscate-menu.title-" + view.source().id()));
         }
 
         @Override
         public String messageModule() {
             return MODULE;
+        }
+
+        @Override
+        public String infoKey() {
+            return "sanctions.confiscate-menu.info";
+        }
+
+        @Override
+        public String helpTopic() {
+            return "staff";
         }
 
         @Override
@@ -350,42 +365,55 @@ final class SanctionMenus {
                 module.messages().send(viewer, "sanctions.confiscate-offline", Msg.p("player", target.name()));
                 return;
             }
+            frame();
+            tab(TAB_HOTBAR, ConfiscateLayout.View.HOTBAR, Material.IRON_CHESTPLATE);
+            tab(TAB_BACKPACK, ConfiscateLayout.View.BACKPACK, Material.CHEST);
+            tab(TAB_ENDER, ConfiscateLayout.View.ENDER, Material.ENDER_CHEST);
+            Sanctions.Source source = view.source();
             Inventory inv = Sanctions.inventory(online, source);
-            int size = source == Sanctions.Source.ENDER ? inv.getSize() : 41;
-            for (int slot = 0; slot < size && slot < 45; slot++) {
-                ItemStack stack = inv.getItem(slot);
+            int[] map = ConfiscateLayout.slots(view, online.getEnderChest().getSize());
+            boolean any = false;
+            for (int menuSlot = 0; menuSlot < map.length; menuSlot++) {
+                int at = map[menuSlot];
+                if (at < 0 || at >= inv.getSize()) {
+                    continue;
+                }
+                ItemStack stack = inv.getItem(at);
                 if (stack == null || stack.getType().isAir()) {
                     continue;
                 }
+                any = true;
                 ItemStack expected = stack.clone();
+                ConfiscateLayout.Place place = ConfiscateLayout.place(view, at);
                 List<Component> lore = new ArrayList<>();
                 if (stack.hasItemMeta() && stack.getItemMeta().lore() != null) {
                     lore.addAll(stack.getItemMeta().lore());
                 }
                 lore.add(Component.empty());
+                lore.add(service.text(viewer, MODULE, "sanctions.confiscate-menu.place." + place.key(), Msg.p("n", place.number())));
                 lore.addAll(service.lines(viewer, MODULE, "sanctions.confiscate-menu.click", Msg.p("item", Sanctions.describe(stack))));
                 ItemStack shown = stack.clone();
                 shown.editMeta(meta -> meta.lore(lore));
-                int at = slot;
-                set(slot, shown, click -> openChild(new ChoiceMenu(module, target, Sanction.Kind.ITEM,
-                        reasonChoices(module, viewer, id -> confirm(at, expected, id)))));
+                set(menuSlot, shown, click -> openChild(new ChoiceMenu(module, target, Sanction.Kind.ITEM,
+                        reasonChoices(module, viewer, id -> confirm(source, at, expected, id)))));
             }
-            set(Menu.SLOT_BACK, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
-            Sanctions.Source other = source == Sanctions.Source.ENDER ? Sanctions.Source.INVENTORY : Sanctions.Source.ENDER;
-            set(47, service.item(other == Sanctions.Source.ENDER ? Material.ENDER_CHEST : Material.CHEST, viewer, MODULE,
-                    "sanctions.confiscate-menu.show-" + other.id()), click -> {
-                Menu next = new ConfiscateMenu(module, target, other);
-                next.parent(parent());
-                module.core().menus().open(viewer, next);
-            });
-            set(Menu.SLOT_CLOSE, service.item(Material.BARRIER, viewer, "frame.close"), click -> viewer.closeInventory());
+            if (!any) {
+                setEmpty(MODULE, "sanctions.confiscate-menu.empty");
+            }
+        }
+
+        /** A tab in row 0; switching redraws this window in place (same Back, cursor stays). */
+        private void tab(int slot, ConfiscateLayout.View tab, Material icon) {
+            String key = "sanctions.confiscate-menu.tab." + tab.id();
+            set(slot, service.tab(viewer, new ItemStack(icon), service.text(viewer, MODULE, key + ".name"),
+                    service.lines(viewer, MODULE, key + ".lore"), tab == view, () -> view = tab));
         }
 
         /**
          * GUI-4c (GUI_DESIGN §4): "Confiscate <item>?" with the player, the place and the reason on the middle item. The
          * stack is checked again on confirm ({@code expected}), so a stack that changed meanwhile is not taken.
          */
-        private void confirm(int at, ItemStack expected, String reason) {
+        private void confirm(Sanctions.Source source, int at, ItemStack expected, String reason) {
             ConfirmMenu confirm = new ConfirmMenu(v -> service.text(v, MODULE, "sanctions.confiscate-menu.confirm.crumb"), expected.clone(),
                     v -> service.lines(v, MODULE, "sanctions.confiscate-menu.confirm.details", Msg.p("item", Sanctions.describe(expected)),
                             Msg.p("player", target.name()), Msg.p("reason", module.sanctions().reasonText(v, reason)),
