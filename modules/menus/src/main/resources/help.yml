@@ -62,7 +62,7 @@ categories:
     slot: 22
     name: "<c:flame><bold>Rewards"
     lore: ["<c:text>Crates, quests, voting", "<c:text>and daily rewards."]
-    topics: [crates, boosters, daily]
+    topics: [crates, boosters, daily, quests]
   community:
     icon: bell
     status: active
@@ -1324,6 +1324,39 @@ topics:
           - "<c:text>is left and what waits. AFK pool"
           - "<c:text>boosters start when you leave it."
           - "<c:text>All bonuses stay inside the caps."
+
+  quests:
+    icon: writable_book
+    aliases: [quest, daily-quests, weekly-quests, missions, island-missions, quest-master]
+    name: "<c:flame>Quests"
+    summary: ["<c:text>Daily, weekly and island", "<c:text>goals that pay by themselves."]
+    take-me-there: "quests"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>Daily quests"
+        lines:
+          - "<c:value>/quests</c:value> <c:text>or the Quest Master in the"
+          - "<c:text>Tavern: 3 quests a day, sized to"
+          - "<c:text>your tier. New ones at 00:00 Oslo"
+          - "<c:text>time. All 3 done: a Cinder key."
+      - title: "<c:value>Weekly quests"
+        lines:
+          - "<c:text>5 bigger quests every Monday."
+          - "<c:text>Each pays more. All 5 done gives"
+          - "<c:text>a Blaze key. Keys from quests"
+          - "<c:text>can be traded."
+      - title: "<c:value>Island missions"
+        lines:
+          - "<c:text>3 missions a week for your island."
+          - "<c:text>Every member's work counts. All"
+          - "<c:text>who helped get crystals. Coop"
+          - "<c:text>players don't count."
+      - title: "<c:value>Good to know"
+        lines:
+          - "<c:text>Rewards pay by themselves. Swap"
+          - "<c:text>one daily quest a day for free"
+          - "<c:text>(click it). Each profile has its"
+          - "<c:text>own quests."
 
   box:
     icon: chest_minecart

@@ -929,6 +929,9 @@ final class VisitManager implements Listener {
                     return;
                 }
                 updateStats(island.id(), Showcase.Stats::withLike);
+                // PHASE-10 M10.7: "Like an island" quests (and later the pass) count it.
+                org.bukkit.Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.quest.GameActionEvent(player,
+                        net.skybornmc.skyblock.common.quest.GameActionEvent.LIKE_ISLAND, 1));
                 core.audit().log(AuditCategory.ISLAND, "island_like", Actor.player(player), island.id().toString(),
                         islands.displayName(island), null, null, Map.of("day", day, "season", season));
                 msg.send(player, "like.done", Msg.p("island", islands.displayName(island)));
@@ -1179,6 +1182,12 @@ final class VisitManager implements Listener {
             if (first) {
                 updateStats(island.id(), Showcase.Stats::withVisit);
                 visitHooks.forEach(hook -> hook.accept(island));
+                Player online = org.bukkit.Bukkit.getPlayer(visitor);
+                if (online != null) {
+                    // PHASE-10 M10.7: "Visit islands" quests count the first visit of the day to each island.
+                    org.bukkit.Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.quest.GameActionEvent(online,
+                            net.skybornmc.skyblock.common.quest.GameActionEvent.VISIT_ISLAND, 1));
+                }
                 core.audit().log(AuditCategory.ISLAND, "island_visit", Actor.player(visitor, visitorName), island.id().toString(),
                         islands.displayName(island), null, null, Map.of("day", day));
             }

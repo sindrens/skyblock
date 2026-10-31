@@ -50,6 +50,10 @@ import java.util.logging.Level;
  */
 final class EnchantOps implements Listener {
 
+    /** Operations that add or raise an enchant (counted by quests through GameActionEvent.ENCHANT). */
+    private static final java.util.Set<String> QUEST_ACTIONS = java.util.Set.of("apply", "upgrade", "combine_tool", "armor_apply",
+            "armor_upgrade", "armor_combine");
+
     /** A custom tool in the player's inventory. */
     record HeldTool(int slot, ItemStack stack, ToolInfo info) {
     }
@@ -779,6 +783,11 @@ final class EnchantOps implements Listener {
         }
         module.core.audit().logPlayer(AuditCategory.ITEM, "enchant_" + plan.action(), Actor.player(player), player.getUniqueId(),
                 player.getName(), plan.cost() > 0 ? plan.cost() : plan.refund(), player.getLocation(), details);
+        if (QUEST_ACTIONS.contains(plan.action())) {
+            // PHASE-10 M10.7: "Add or raise an enchant" quests (and later the pass) count it.
+            org.bukkit.Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.quest.GameActionEvent(player,
+                    net.skybornmc.skyblock.common.quest.GameActionEvent.ENCHANT, 1));
+        }
         for (OpPlan.Book b : plan.mint()) {
             module.core.audit().logPlayer(AuditCategory.ITEM, "book_created", Actor.player(player), player.getUniqueId(), player.getName(),
                     null, null, Map.of("book", b.id().toString(), "kind", b.scroll() ? "scroll" : "book",

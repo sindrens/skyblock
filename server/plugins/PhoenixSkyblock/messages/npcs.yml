@@ -92,8 +92,8 @@ roles:
   quests:
     name: "Quest Master"
     help:
-      - "<c:text>There are no quests yet."
-      - "<c:text>For now, try the daily calendar: <c:value>/daily"
+      - "<c:text>Daily, weekly and island quests: <c:value>/quests"
+      - "<c:text>Finish all your dailies for a key."
   daily:
     name: "Daily Rewards"
     help:
@@ -166,7 +166,8 @@ holograms:
     - "<c:value>/ah"
   quest_board:
     - "<c:flame><bold>Quests"
-    - "<c:muted>Coming soon"
+    - "<c:text>Daily, weekly and island quests"
+    - "<c:value>/quests"
   vote_party:
     - "<c:flame><bold>Vote Party"
     - "<c:muted>Coming soon"

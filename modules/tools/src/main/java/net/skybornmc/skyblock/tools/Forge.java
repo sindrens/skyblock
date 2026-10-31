@@ -298,6 +298,9 @@ final class Forge {
         String name = module.items().displayName(upgraded, stack);
         module.msg().send(player, "forge.done", Msg.mm("tool", name), Msg.p("level", upgraded.level()));
         sound(player, module.config().soundForge);
+        // PHASE-10 M10.7: quests (and later the pass) count a forge upgrade.
+        Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.quest.GameActionEvent(player,
+                net.skybornmc.skyblock.common.quest.GameActionEvent.FORGE, 1));
         module.core.audit().log(AuditCategory.ITEM, "tool_forge", Actor.player(player), toolId.toString(), player.getName(),
                 def.recipe().money(), player.getLocation(), Map.of("kind", def.kind().id(), "from_tier", tool.tier(), "to_tier", def.tier(),
                         "level", upgraded.level(), "materials", def.recipe().materials().toString()));

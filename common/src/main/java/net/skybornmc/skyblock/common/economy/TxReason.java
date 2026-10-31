@@ -58,6 +58,9 @@ public final class TxReason {
     /** Crystals from active playtime (PHASE-10 M10.6, R6); new currency. */
     public static final String PLAYTIME_REWARD = "playtime_reward";
 
+    /** Money and crystals from daily/weekly quests and island missions (PHASE-10 M10.7); new currency. */
+    public static final String QUEST_REWARD = "quest_reward";
+
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 
     private TxReason() {
