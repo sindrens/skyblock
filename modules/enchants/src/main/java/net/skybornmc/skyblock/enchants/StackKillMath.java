@@ -126,12 +126,6 @@ final class StackKillMath {
         return Math.max(0, Math.min(100, capped));
     }
 
-    /** Skill XP multiplier for a stacked kill: Soul Reaper adds to the skill XP family, then the cap applies once. */
-    static double soulReaperMultiplier(double familyTotal, double soulReaper, double cap) {
-        double s = Double.isFinite(soulReaper) ? Math.max(0, soulReaper) : 0;
-        return BonusMath.multiplier(familyTotal + s, cap);
-    }
-
     // ------------------------------------------------------------------ island stack books (EN15)
 
     /**

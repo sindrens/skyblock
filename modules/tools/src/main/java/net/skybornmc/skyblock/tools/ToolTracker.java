@@ -163,6 +163,14 @@ final class ToolTracker implements ToolService {
 
     /** {@link #gain(Player, double, String)} for a batch: the stat grows by {@code statAmount} (stacked kills, E3). */
     void gain(Player player, double baseXp, String stat, long statAmount) {
+        gain(player, baseXp, stat, statAmount, 0);
+    }
+
+    /**
+     * {@link #gain(Player, double, String, long)} with an extra tool XP family percent for this gain only (Soul Reaper on
+     * stacked kills, R3-24). It joins the family total before the family cap, so the cap still applies once.
+     */
+    void gain(Player player, double baseXp, String stat, long statAmount, double extraFamilyPercent) {
         PlayerInventory inv = player.getInventory();
         int slot = inv.getHeldItemSlot();
         ItemStack stack = inv.getItem(slot);
@@ -177,10 +185,15 @@ final class ToolTracker implements ToolService {
         }
         // Tool XP family (Tempering and later boosters), capped once in the BonusService (ENCHANTS §8.1).
         ToolData forBonus = data;
+        double extra = Double.isFinite(extraFamilyPercent) ? Math.max(0, extraFamilyPercent) : 0;
         xp *= module.core.services().optional(net.skybornmc.skyblock.common.bonus.BonusService.class)
-                .map(b -> b.multiplier(net.skybornmc.skyblock.common.bonus.BonusFamily.TOOL_XP,
-                        new net.skybornmc.skyblock.common.bonus.BonusContext(player, stack, forBonus.info(slotLevels()), forBonus.kind().skill().id())))
-                .orElse(1.0);
+                .map(b -> {
+                    var ctx = new net.skybornmc.skyblock.common.bonus.BonusContext(player, stack, forBonus.info(slotLevels()), forBonus.kind().skill().id());
+                    var family = net.skybornmc.skyblock.common.bonus.BonusFamily.TOOL_XP;
+                    return extra > 0 ? net.skybornmc.skyblock.common.bonus.BonusMath.multiplier(b.total(family, ctx) + extra, b.cap(family))
+                            : b.multiplier(family, ctx);
+                })
+                .orElse(1.0 + extra / 100.0);
         ToolProgress.Gain gain = ToolProgress.addXp(data, xp, module.curve());
         ToolData next = stat == null ? gain.tool() : gain.tool().addStat(stat, statAmount);
         ToolItems.writeProgress(stack, next);

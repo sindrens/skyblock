@@ -88,7 +88,7 @@ public final class CombatZones implements Listener {
     public static final String XP_SOURCE = "depths_mob";
 
     /** One live combat mob. */
-    record Tracked(LivingEntity entity, MobDef def, String zoneId, int tier, boolean boss, DamageShares shares) {
+    record Tracked(LivingEntity entity, MobDef def, String zoneId, int tier, boolean boss, BossFight fight) {
     }
 
     /** Runtime state of one combat zone. */
@@ -255,6 +255,7 @@ public final class CombatZones implements Listener {
                 }
                 spawn(state, zone, def, at, false);
             }
+            rescale(state, now);
             if (spawns.hasMiniBoss() && state.clock.due(now, true)) {
                 MobDef boss = cat.mob(spawns.miniBoss());
                 Location at = boss == null ? null : spot(world, zone, players, rng);
@@ -321,7 +322,7 @@ public final class CombatZones implements Listener {
         if (e == null) {
             return null;
         }
-        tracked.put(e.getUniqueId(), new Tracked(e, def, zone.id(), zone.tier(), boss, boss ? new DamageShares() : null));
+        tracked.put(e.getUniqueId(), new Tracked(e, def, zone.id(), zone.tier(), boss, boss ? new BossFight(maxHealth(e)) : null));
         state.mobs.add(e.getUniqueId());
         if (boss) {
             e.addScoreboardTag(net.skybornmc.skyblock.common.combat.BossMobs.TAG); // E2: Giant Slayer / Executioner see bosses
@@ -403,9 +404,81 @@ public final class CombatZones implements Listener {
             eventSound(p, config.miniBossSpawnSound); // F1: a boss announcement, follows "Event sounds" in /settings
         }
         if (config.miniBossBar) {
-            state.bar = BossBar.bossBar(msg.component(null, "combat.mini-boss.bar", Msg.c("name", shown)), 1f,
-                    BossBar.Color.RED, BossBar.Overlay.NOTCHED_10);
+            state.bar = BossBar.bossBar(barName(t, t.entity().getHealth()), 1f, BossBar.Color.RED, BossBar.Overlay.NOTCHED_10);
         }
+    }
+
+    /** R3-10: the boss bar name with the scaled health ({@code combat.mini-boss.bar-health}). */
+    private Component barName(Tracked t, double health) {
+        Component name = name(t.def(), false);
+        Component shown = name == null ? Component.text(t.def().id()) : name;
+        double max = maxHealth(t.entity());
+        int extra = t.fight() == null ? 0 : (int) Math.round((t.fight().scale() - 1.0) * 100.0);
+        return msg.component(null, extra > 0 ? "combat.mini-boss.bar-health-scaled" : "combat.mini-boss.bar-health",
+                Msg.c("name", shown), Msg.number("health", (long) Math.ceil(Math.max(0, health))),
+                Msg.number("max", (long) Math.ceil(max)), Msg.number("extra", extra));
+    }
+
+    /** Updates the bar's fill and name after the boss's health changed (hit or scaling). */
+    private void updateBar(ZoneState state, Tracked t, double health) {
+        if (state == null || state.bar == null) {
+            return;
+        }
+        double max = maxHealth(t.entity());
+        state.bar.progress((float) Math.max(0, Math.min(1, health / max)));
+        state.bar.name(barName(t, health));
+    }
+
+    // ------------------------------------------------------------------ R3-10 scaling and eligibility
+
+    /** Re-applies the mini-boss's health scale from the fighters that are active now (once per cycle). */
+    private void rescale(ZoneState state, long now) {
+        Tracked t = state.boss == null ? null : tracked.get(state.boss);
+        if (t == null || t.fight() == null || !t.entity().isValid() || t.entity().isDead()) {
+            return;
+        }
+        BossFight fight = t.fight();
+        int fighters = fight.active(now, config.miniBossRecentHitSeconds * 1000L, config.miniBossMaxPerIp, this::afkProfile).size();
+        double scale = BossFight.scale(fighters, config.miniBossHealthPerExtra, config.miniBossMaxExtra);
+        if (Math.abs(scale - fight.scale()) < 1e-9) {
+            return;
+        }
+        AttributeInstance attr = t.entity().getAttribute(Attribute.MAX_HEALTH);
+        if (attr == null) {
+            return;
+        }
+        double oldMax = attr.getValue();
+        double health = t.entity().getHealth();
+        attr.setBaseValue(fight.baseHealth() * scale);
+        double newMax = attr.getValue();
+        double next = BossFight.rescaled(health, oldMax, newMax);
+        t.entity().setHealth(next);
+        fight.scale(scale);
+        updateBar(state, t, next);
+    }
+
+    /** R3-10 "not AFK": /afk (social module) or standing in the AFK pool. Offline profiles count as AFK. */
+    private boolean afkProfile(UUID profile) {
+        Optional<Player> player = ProfileService.of(core.services()).onlinePlayer(profile);
+        return player.isEmpty() || afk(player.get());
+    }
+
+    private boolean afk(Player player) {
+        if (net.skybornmc.skyblock.common.afk.AfkPool.of(core.services()).map(p -> p.inPool(player)).orElse(false)) {
+            return true;
+        }
+        return core.placeholders().has("afk")
+                && core.placeholders().text(player, "afk").map("true"::equalsIgnoreCase).orElse(false);
+    }
+
+    private static String ip(Player player) {
+        java.net.InetSocketAddress address = player.getAddress();
+        return address == null || address.getAddress() == null ? null : address.getAddress().getHostAddress();
+    }
+
+    /** R3-24: Combat XP only for kills inside a Depths combat zone (the mob's spot when it died). */
+    static boolean paysCombatXp(Aspect aspectAtDeath) {
+        return aspectAtDeath == Aspect.COMBAT;
     }
 
     private void syncBar(ZoneState state, List<Player> players) {
@@ -494,11 +567,14 @@ public final class CombatZones implements Listener {
             return;
         }
         ProfileService profiles = ProfileService.of(core.services());
-        UUID killerKey = killer == null ? null : profiles.profileKey(killer);
         double max = maxHealth(entity);
         Set<UUID> paid = new HashSet<>();
-        for (UUID profile : t.shares().eligible(killerKey, max, config.miniBossMinDamageShare)) {
-            Optional<Player> p = profile.equals(killerKey) ? Optional.of(killer) : profiles.onlinePlayer(profile);
+        // R3-10: everyone eligible (10% of the damage, hit in the last 90 s, not AFK, max 3 per IP) gets the full reward,
+        // exactly once (claim() hands the list out a single time).
+        List<UUID> winners = t.fight().claim(System.currentTimeMillis(), max, config.miniBossMinDamageShare,
+                config.miniBossRecentHitSeconds * 1000L, config.miniBossMaxPerIp, this::afkProfile);
+        for (UUID profile : winners) {
+            Optional<Player> p = profiles.onlinePlayer(profile);
             if (p.isEmpty() || !paid.add(p.get().getUniqueId())) {
                 continue;
             }
@@ -548,7 +624,8 @@ public final class CombatZones implements Listener {
             }
         });
         drops.credit(player, crystals);
-        if (xp > 0) {
+        Zone at = zones.zoneAt(entity.getLocation());
+        if (xp > 0 && paysCombatXp(at == null ? null : at.aspect())) {
             double gain = xp;
             core.services().optional(SkillService.class).ifPresent(s -> s.addXp(player, SkillType.COMBAT, gain, XP_SOURCE));
         }
@@ -606,13 +683,9 @@ public final class CombatZones implements Listener {
         LivingEntity boss = t.entity();
         double dealt = Math.min(event.getFinalDamage(), boss.getHealth());
         if (attacker(event.getDamager()) instanceof Player player) {
-            t.shares().add(ProfileService.of(core.services()).profileKey(player), dealt);
+            t.fight().hit(ProfileService.of(core.services()).profileKey(player), ip(player), dealt, System.currentTimeMillis());
         }
-        ZoneState state = states.get(t.zoneId());
-        if (state != null && state.bar != null) {
-            float left = (float) Math.max(0, Math.min(1, (boss.getHealth() - dealt) / maxHealth(boss)));
-            state.bar.progress(left);
-        }
+        updateBar(states.get(t.zoneId()), t, Math.max(0, boss.getHealth() - dealt));
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

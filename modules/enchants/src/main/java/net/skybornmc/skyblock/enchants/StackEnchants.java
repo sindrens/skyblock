@@ -8,7 +8,6 @@ import net.skybornmc.skyblock.common.bonus.BonusService;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.item.LoreBuilder;
 import net.skybornmc.skyblock.common.profile.ProfileService;
-import net.skybornmc.skyblock.common.skills.SkillType;
 import net.skybornmc.skyblock.common.stacking.StackKillBonus;
 import net.skybornmc.skyblock.common.stacking.StackKillEvent;
 import net.skybornmc.skyblock.common.stacking.StackKillProvider;
@@ -19,7 +18,6 @@ import net.skybornmc.skyblock.common.tools.ToolKind;
 import net.skybornmc.skyblock.common.tools.ToolPerk;
 import net.skybornmc.skyblock.common.tools.ToolService;
 import net.skybornmc.skyblock.common.util.Format;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Enemy;
 import org.bukkit.entity.LivingEntity;
@@ -36,7 +34,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -44,8 +41,8 @@ import java.util.logging.Level;
 
 /**
  * Stacked-mob enchants, E3 (ENCHANTS §6.6, §7): Slaughter (+ Bloodlust) as the {@link StackKillProvider} kill count,
- * Plunder and Soul Reaper as per-mob batch bonuses inside their family caps, Reaper's Sweep and Phoenix Wrath through the
- * stacking module's batch kill API, Soul Reaper's skill XP share, and island stack book drops (1 in N per mob, daily cap
+ * Plunder and Soul Reaper as per-mob batch bonuses inside their family caps (Soul Reaper: vanilla XP and sword XP, R3-24),
+ * Reaper's Sweep and Phoenix Wrath through the stacking module's batch kill API, and island stack book drops (1 in N per mob, daily cap
  * per profile, one atomic database transaction per book).
  *
  * <p>Island permissions: the hit itself already passed island protection (hurt-monsters / animals role permission).
@@ -71,7 +68,6 @@ final class StackEnchants implements StackKillProvider, Listener {
     private final StackPerf perf;
     private final Map<UUID, StackKillMath.Streak> streaks = new HashMap<>();
     private final Map<UUID, Integer> wrathHits = new HashMap<>();
-    private final Map<UUID, Integer> stackKillTick = new HashMap<>();
     private final Map<UUID, Long> lastProcMessage = new HashMap<>();
 
     StackEnchants(EnchantsModule module) {
@@ -125,13 +121,15 @@ final class StackEnchants implements StackKillProvider, Listener {
                         bonus.cap(BonusFamily.EXTRA_DROPS));
             }
             double xp = soul > 0 ? value(SOUL_REAPER, "xp", soul) : 0;
-            return new StackKillBonus(loot, xp);
+            // R3-24: Soul Reaper's second effect is sword XP (tool XP family, capped by the tools module), no skill XP.
+            double toolXp = soul > 0 ? value(SOUL_REAPER, "tool", soul) : 0;
+            return new StackKillBonus(loot, xp, toolXp);
         } finally {
             perf.end(start);
         }
     }
 
-    // ================================================================== after a batch (sweep, books, Soul Reaper marker)
+    // ================================================================== after a batch (sweep, books)
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onStackKill(StackKillEvent event) {
@@ -141,8 +139,6 @@ final class StackEnchants implements StackKillProvider, Listener {
         }
         long start = perf.start();
         try {
-            UUID key = profileKey(killer);
-            stackKillTick.put(key, Bukkit.getCurrentTick());
             ToolInfo tool = tool(event.weapon());
             if (tool == null || tool.kind() != ToolKind.SWORD) {
                 return;
@@ -245,25 +241,6 @@ final class StackEnchants implements StackKillProvider, Listener {
         if (total > 0) {
             proc(player, "stack.wrath", WRATH, level, total);
         }
-    }
-
-    // ================================================================== Soul Reaper skill XP (called by EnchantsListener)
-
-    /**
-     * Soul Reaper's skill XP share for this gain, or 0: Combat XP from a stacked kill (paid through the stack kill event, or
-     * the normal kill XP of a mob that died in a stack batch this tick) with Soul Reaper on the held sword.
-     */
-    double soulReaperSkillPercent(Player player, ItemStack held, SkillType skill, String source) {
-        if (skill != SkillType.COMBAT) {
-            return 0;
-        }
-        boolean stacked = StackKillEvent.SKILL_XP_SOURCE.equals(source)
-                || Objects.equals(stackKillTick.get(profileKey(player)), Bukkit.getCurrentTick());
-        if (!stacked) {
-            return 0;
-        }
-        int soul = enchants(held).getOrDefault(SOUL_REAPER, 0);
-        return soul > 0 ? value(SOUL_REAPER, "skill", soul) : 0;
     }
 
     // ================================================================== island stack books (EN15)
@@ -420,7 +397,6 @@ final class StackEnchants implements StackKillProvider, Listener {
         UUID key = profileKey(player);
         streaks.remove(key);
         wrathHits.remove(key);
-        stackKillTick.remove(key);
         lastProcMessage.remove(player.getUniqueId());
     }
 }

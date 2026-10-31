@@ -29,8 +29,8 @@ drop-items:
   depths_pale_oak_log:  {material: pale_oak_log,    rarity: rare}
   depths_crimson_stem:  {material: crimson_stem,    rarity: epic}
   depths_warped_stem:   {material: warped_stem,     rarity: epic}
-  # Rare finds: placeholders for later phases (geodes, crate key fragments). Chance 0 in every tier until those
-  # systems exist; they can't be sold (not in sell.yml).
+  # Rare finds: geodes are a placeholder for a later phase (chance 0). Key fragments (R3-18) drop by their own settings
+  # (depths.yml -> fragments.*, not the rare tables below). Neither can be sold (not in sell.yml).
   depths_geode:         {material: amethyst_cluster, rarity: epic}
   depths_key_fragment:  {material: tripwire_hook,    rarity: legendary}
 
@@ -52,8 +52,8 @@ drops:
     8:  {item: depths_emerald,   crystal-chance: 0.314}
     9:  {item: depths_amethyst,  crystal-chance: 0.408, rare: {depths_geode: 0.0}}
     10: {item: depths_quartz,    crystal-chance: 0.530, rare: {depths_geode: 0.0}}
-    11: {item: depths_netherite, crystal-chance: 0.689, rare: {depths_geode: 0.0, depths_key_fragment: 0.0}}
-    12: {item: depths_voidstone, crystal-chance: 0.896, rare: {depths_geode: 0.0, depths_key_fragment: 0.0}}
+    11: {item: depths_netherite, crystal-chance: 0.689, rare: {depths_geode: 0.0}}
+    12: {item: depths_voidstone, crystal-chance: 0.896, rare: {depths_geode: 0.0}}
   forest:
     1:  {item: depths_oak_log,      crystal-chance: 0.050}
     2:  {item: depths_birch_log,    crystal-chance: 0.065}
@@ -65,7 +65,7 @@ drops:
     8:  {item: depths_cherry_log,   crystal-chance: 0.314}
     9:  {item: depths_pale_oak_log, crystal-chance: 0.408}
     10: {item: depths_crimson_stem, crystal-chance: 0.530}
-    11: {item: depths_warped_stem,  crystal-chance: 0.689, rare: {depths_key_fragment: 0.0}}
+    11: {item: depths_warped_stem,  crystal-chance: 0.689}
 
 # Tree templates per forest tier (M4.7), used by /depths generate for the placeholder forest fields. Logs are the
 # per-player resource blocks (10 s respawn); leaves are decoration and can't be broken.

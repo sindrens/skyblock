@@ -209,6 +209,22 @@ menu:
     coming-soon:
       - "<c:locked>Coming soon"
       - "<c:muted>Keys come from KOTH captures."
+  # R3-18: key fragments -> keys. lore: <have> <need> <key>; actions: <keys> <need>
+  fragments:
+    name: "<rarity:legendary>Key Fragments"
+    lore:
+      - "<c:text>You carry: <c:value><have></c:value> <c:muted>fragments"
+      - "<c:text><need> fragments make 1 <key><c:text>."
+      - "<c:muted>Found while mining and chopping in"
+      - "<c:muted>Depths tier 11+. Tradeable."
+      - ""
+    actions:
+      - "<bold><c:action>» LEFT-CLICK</c:action></bold> <c:text>combine <need> into 1 key"
+      - "<bold><c:action>» SHIFT-CLICK</c:action></bold> <c:text>combine all (<keys> keys)"
+    actions-bedrock:
+      - "<bold><c:action>» TAP</c:action></bold> <c:text>combine <need> into 1 key"
+    actions-none:
+      - "<c:locked>You need <need> fragments in your inventory."
 
 preview:
   info:
@@ -328,3 +344,11 @@ admin:
       - "<c:text>Tradeable keys: <c:value><tradeable>"
       - ""
       - "<c:muted><profile>"
+
+# R3-18: key fragments -> keys (the Key Fragments button in /crates).
+fragments:
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Combined <c:value><fragments></c:value> <c:text>fragments into <c:value><keys>x</c:value> <key><c:text>."
+  not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>You have <c:value><have></c:value> <c:text>fragments in your inventory; <c:value><need></c:value> <c:text>make a key."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work. Your fragments are back (inventory or /box). Try again."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>Wait a moment, your last combine is still running."
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Combining key fragments is turned off right now."

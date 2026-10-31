@@ -40,12 +40,7 @@ final class EnchantsListener implements Listener {
         }
         ItemStack held = event.getPlayer().getInventory().getItemInMainHand();
         BonusContext context = BonusContext.of(event.getPlayer(), held, event.getSkill().id());
-        // Soul Reaper (E3): its share joins the family only for stacked kills; the cap still applies once.
-        double soul = module.stacks() == null ? 0
-                : module.stacks().soulReaperSkillPercent(event.getPlayer(), held, event.getSkill(), event.getSource());
-        double multiplier = soul > 0
-                ? StackKillMath.soulReaperMultiplier(bonus.total(BonusFamily.SKILL_XP, context), soul, bonus.cap(BonusFamily.SKILL_XP))
-                : bonus.multiplier(BonusFamily.SKILL_XP, context);
+        double multiplier = bonus.multiplier(BonusFamily.SKILL_XP, context);
         if (multiplier != 1.0) {
             event.setAmount(event.getAmount() * multiplier);
         }

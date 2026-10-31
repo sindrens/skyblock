@@ -86,6 +86,9 @@ public final class DepthsModule implements SkyblockModule {
     public void enable() throws Exception {
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         core.configs().load(config);
+        // Texts that changed meaning (DEPTHS-R3): upgraded on the live server unless the owner edited them.
+        core.messages().retire(ID, java.util.Map.of("drop-items.descriptions.depths_key_fragment",
+                "A rare find. Its use arrives in a later update."));
         msg = core.messages(ID);
         engine = new DepthsEngine(core, config, msg);
         engine.configRegions(loadRegions());

@@ -56,19 +56,19 @@ class MobRewardsTest {
 
     @Test
     void damageSharesPickWhoFought() {
+        // R3-10 (BossFight replaced DamageShares): the killer needs the 10% share like everyone else.
         UUID killer = UUID.randomUUID();
         UUID helper = UUID.randomUUID();
         UUID tourist = UUID.randomUUID();
-        DamageShares s = new DamageShares();
-        s.add(helper, 120);
-        s.add(tourist, 10);
-        s.add(killer, 5);
-        s.add(tourist, -50);
-        s.add(null, 99);
+        BossFight s = new BossFight(300);
+        s.hit(helper, "1", 120, 0);
+        s.hit(tourist, "2", 10, 0);
+        s.hit(killer, "3", 5, 0);
+        s.hit(tourist, "2", -50, 0);
+        s.hit(null, "4", 99, 0);
         assertEquals(135, s.total(), 1e-9);
-        List<UUID> paid = s.eligible(killer, 300, 0.1);
-        assertEquals(List.of(killer, helper), paid, "killer first, tourist below 10% of 300");
-        assertFalse(s.eligible(null, 300, 0.1).contains(tourist));
-        assertTrue(s.eligible(null, 300, 0.0).contains(tourist), "0 = everyone who hit it");
+        assertEquals(List.of(helper), s.eligible(0, 300, 0.1, 90_000, 3, id -> false), "killer and tourist below 10% of 300");
+        assertFalse(s.eligible(0, 300, 0.1, 90_000, 3, id -> false).contains(tourist));
+        assertTrue(s.eligible(0, 300, 0.0, 90_000, 3, id -> false).contains(tourist), "0 = everyone who hit it");
     }
 }

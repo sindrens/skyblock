@@ -62,6 +62,11 @@ public final class SkillsModule implements SkyblockModule {
     @Override
     public void enable() throws Exception {
         core.configs().load(config);
+        // R3-24 changed the Combat "how" lines: upgraded on the live server unless the owner edited them.
+        core.messages().retire(ID, java.util.Map.of("skill.combat.how", String.join("\n",
+                " <pillar:combat><sym:bullet> <c:text>Kill monsters yourself",
+                " <pillar:combat><sym:bullet> <c:text>Stronger mobs give more XP",
+                " <pillar:combat><sym:bullet> <c:text>Spawner mobs give no XP")));
         msg = core.messages(ID);
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         manager = new SkillManager(core, config, msg);

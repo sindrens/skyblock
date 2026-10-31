@@ -49,6 +49,8 @@ final class ToolsListener implements Listener {
     }
 
     private final ToolsModule module;
+    /** R3-24 Soul Reaper: sword XP percent of a stacked hit, for the dying mob's own kill XP in the same tick. */
+    private final java.util.Map<java.util.UUID, long[]> soulTick = new java.util.HashMap<>();
 
     ToolsListener(ToolsModule module) {
         this.module = module;
@@ -226,7 +228,7 @@ final class ToolsListener implements Listener {
                 xp = module.config().tierXp(1) * module.config().killMultiplier * module.config().islandFactor;
             }
             if (xp > 0) {
-                module.tracker().gain(killer, xp, ToolData.STAT_KILLS);
+                module.tracker().gain(killer, xp, ToolData.STAT_KILLS, 1, combatTier > 0 ? 0 : soulPercentNow(killer));
             }
         }
         if (combatTier > 0) {
@@ -241,7 +243,18 @@ final class ToolsListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onStackKill(StackKillEvent event) {
         Player killer = event.killer();
-        if (killer == null || event.extraKills() <= 0) {
+        if (killer == null) {
+            return;
+        }
+        double soul = soulPercent(killer, event.weapon(), event.entity());
+        if (event.cause() == StackKillEvent.Cause.HIT) {
+            if (soul > 0) {
+                soulTick.put(killer.getUniqueId(), new long[]{org.bukkit.Bukkit.getCurrentTick(), Double.doubleToLongBits(soul)});
+            } else {
+                soulTick.remove(killer.getUniqueId());
+            }
+        }
+        if (event.extraKills() <= 0) {
             return;
         }
         // Stacked spawners spawn mobs themselves (fromMobSpawner() is false), so the event's flag counts too.
@@ -258,8 +271,31 @@ final class ToolsListener implements Listener {
         }
         double xp = module.config().tierXp(1) * module.config().killMultiplier * module.config().islandFactor * event.extraKills();
         if (xp > 0) {
-            module.tracker().gain(killer, xp, ToolData.STAT_KILLS, event.extraKills());
+            module.tracker().gain(killer, xp, ToolData.STAT_KILLS, event.extraKills(), soul);
         }
+    }
+
+    /** Soul Reaper's sword XP percent of the weapon (R3-24), 0 without the enchants module. */
+    private double soulPercent(Player killer, ItemStack weapon, LivingEntity victim) {
+        var provider = module.core.services().optional(net.skybornmc.skyblock.common.stacking.StackKillProvider.class).orElse(null);
+        if (provider == null) {
+            return 0;
+        }
+        try {
+            var bonus = provider.bonus(killer, weapon, victim);
+            return bonus == null ? 0 : bonus.toolXpPercent();
+        } catch (RuntimeException e) {
+            return 0;
+        }
+    }
+
+    /** The Soul Reaper percent of a stacked hit by this player in this tick (the dying mob's kill XP), else 0. */
+    private double soulPercentNow(Player killer) {
+        long[] t = soulTick.get(killer.getUniqueId());
+        if (t == null || t[0] != org.bukkit.Bukkit.getCurrentTick()) {
+            return 0;
+        }
+        return Double.longBitsToDouble(t[1]);
     }
 
     // ------------------------------------------------------------------ join and quit
@@ -278,6 +314,7 @@ final class ToolsListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
+        soulTick.remove(event.getPlayer().getUniqueId());
         module.tracker().renderAll(event.getPlayer());
         module.tracker().flushAsync();
     }

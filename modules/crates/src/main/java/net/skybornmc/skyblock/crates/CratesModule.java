@@ -81,6 +81,7 @@ public final class CratesModule implements SkyblockModule, Listener {
     private CrateOpener opener;
     private PhysicalCrates physical;
     private CrateKeysService keysService;
+    private Fragments fragments;
     /** Keys and pity per profile for the menus (loaded on demand, refreshed after every change). */
     private final Map<UUID, ProfileView> views = new ConcurrentHashMap<>();
 
@@ -125,6 +126,7 @@ public final class CratesModule implements SkyblockModule, Listener {
         opener = new CrateOpener(this);
         physical = new PhysicalCrates(this);
         keysService = new CrateKeysService(this);
+        fragments = new Fragments(this);
         // Published right away (keys only need the database): the AFK pool hands over its pending keys on its first check.
         core.services().register(ID, CrateKeys.class, keysService);
         registerCommand();
@@ -258,6 +260,11 @@ public final class CratesModule implements SkyblockModule, Listener {
 
     CrateKeysService keys() {
         return keysService;
+    }
+
+    /** R3-18: fragments → Phoenix keys. */
+    Fragments fragments() {
+        return fragments;
     }
 
     // ================================================================== command

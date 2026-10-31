@@ -153,13 +153,14 @@ class StackKillMathTest {
     }
 
     @Test
-    void soulReaperJoinsTheSkillXpFamilyAndItsCap() {
-        assertEquals(1.30, StackKillMath.soulReaperMultiplier(0, 30, 300), 1e-9);
-        assertEquals(1.55, StackKillMath.soulReaperMultiplier(25, 30, 300), 1e-9, "Scholar's Insight + Soul Reaper");
-        assertEquals(4.0, StackKillMath.soulReaperMultiplier(290, 30, 300), 1e-9, "capped at +300%");
+    void soulReaperGivesSwordXpNotSkillXp() {
+        // R3-24: no Combat XP outside the Depths, so Soul Reaper's second effect is sword (tool) XP on stacked kills.
         EnchantDef soul = Fixtures.def("soul_reaper");
-        assertEquals(30.0, soul.value("skill", 5));
+        assertEquals(50.0, soul.value("tool", 5));
+        assertEquals(10.0, soul.value("tool", 1));
         assertEquals(50.0, soul.value("xp", 5));
+        assertFalse(soul.values().containsKey("skill"), "the old Combat XP effect is gone");
+        assertEquals(net.skybornmc.skyblock.common.bonus.BonusFamily.TOOL_XP, soul.family());
         assertEquals(0, soul.passiveValue(5), "Soul Reaper is not a passive bonus (only stacked kills)");
         assertEquals(0, Fixtures.def("plunder").passiveValue(4), "Plunder is not a passive bonus");
     }

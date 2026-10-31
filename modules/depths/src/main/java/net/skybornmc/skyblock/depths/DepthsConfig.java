@@ -177,6 +177,23 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "drops.rare-sound", desc = "Sound (sounds.yml) when a rare drop is found (empty = none).")
     public String dropsRareSound = "unlock";
 
+    // ------------------------------------------------------------------ key fragments (REVIEW3 R3-18)
+
+    @Setting(path = "fragments.enabled", desc = "R3-18: mine and forest blocks of the high tiers can drop a key fragment (3 make a Phoenix key in /crates).")
+    public boolean fragmentsEnabled = true;
+
+    @Setting(path = "fragments.item", desc = "Drop item id of the fragment (drop-items in this file). It skips the satchel: inventory first, then /box.")
+    public String fragmentsItem = "depths_key_fragment";
+
+    @Setting(path = "fragments.min-tier", desc = "R3-18: lowest mine/forest tier that drops fragments.", min = 1, max = 99)
+    public int fragmentsMinTier = 11;
+
+    @Setting(path = "fragments.wings", desc = "Wings that drop fragments (mine, forest).")
+    public List<String> fragmentsWings = List.of("mine", "forest");
+
+    @Setting(path = "fragments.one-in", desc = "R3-18: chance per block/log is 1 in this many (rare-find bonuses like Treasure Hunter raise it). 18,000 = about 1 fragment per 3.3 h at tier 11-12 (~5,500-5,800 blocks/h, ECONOMY_BALANCE 3.3), so a key takes about 10 h (open question).", min = 1, max = 100_000_000)
+    public int fragmentsOneIn = 18_000;
+
     @Setting(path = "crystals.batch-seconds", desc = "Seconds between crystal payouts: crystals found are added up per player and paid in one ledger row (reason depths_drop).", min = 1, max = 60)
     public int crystalsBatchSeconds = 3;
 
@@ -232,8 +249,20 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "combat.block-other-spawns", desc = "In the Depths world, mobs only appear when this plugin (or a command / spawn egg) spawns them: no natural spawns, reinforcements, vexes, jockeys or slime splits.")
     public boolean combatBlockOtherSpawns = true;
 
-    @Setting(path = "combat.mini-boss.min-damage-share", desc = "Share of a mini-boss's health a player must deal to get its rewards (the killer always gets them).", min = 0.0, max = 1.0)
+    @Setting(path = "combat.mini-boss.min-damage-share", desc = "R3-10: share of the damage a player must deal to get the full rewards (the killer too). Every eligible player gets the full reward, once.", min = 0.0, max = 1.0)
     public double miniBossMinDamageShare = 0.1;
+
+    @Setting(path = "combat.mini-boss.recent-hit-seconds", desc = "R3-10: a player must have hit the mini-boss within this many seconds to get rewards and to count for its health scaling (0 = no limit).", min = 0, max = 3600)
+    public int miniBossRecentHitSeconds = 90;
+
+    @Setting(path = "combat.mini-boss.max-accounts-per-ip", desc = "R3-10: most accounts from one IP address that get rewards and count for scaling (most damage first; 0 = no limit).", min = 0, max = 100)
+    public int miniBossMaxPerIp = 3;
+
+    @Setting(path = "combat.mini-boss.health-per-extra-player", desc = "R3-10: extra mini-boss health in percent for each extra active fighter (hit recently, not AFK). The boss bar shows the scaled health.", min = 0.0, max = 500.0)
+    public double miniBossHealthPerExtra = 25.0;
+
+    @Setting(path = "combat.mini-boss.max-extra-players", desc = "R3-10: most extra fighters that raise the mini-boss's health (10 = up to +250% with 25% each).", min = 0, max = 100)
+    public int miniBossMaxExtra = 10;
 
     @Setting(path = "combat.mini-boss.boss-bar", desc = "Show a boss bar with the mini-boss's health to players in its zone.")
     public boolean miniBossBar = true;

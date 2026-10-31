@@ -14,7 +14,7 @@ skill:
   combat:
     name: "<pillar:combat>Combat"
     description: ["<c:text>Defeat monsters in the", "<c:text>Combat zones."]
-    how: [" <pillar:combat><sym:bullet> <c:text>Kill monsters yourself", " <pillar:combat><sym:bullet> <c:text>Stronger mobs give more XP", " <pillar:combat><sym:bullet> <c:text>Spawner mobs give no XP"]
+    how: [" <pillar:combat><sym:bullet> <c:text>Kill monsters yourself", " <pillar:combat><sym:bullet> <c:text>Stronger mobs give more XP", " <pillar:combat><sym:bullet> <c:text>Only in Depths combat zones"]
   farming:
     name: "<pillar:farming>Farming"
     description: ["<c:text>Grow and harvest crops on", "<c:text>your island."]

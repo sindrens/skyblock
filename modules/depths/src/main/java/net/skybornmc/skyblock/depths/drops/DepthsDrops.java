@@ -215,6 +215,41 @@ public final class DepthsDrops implements Listener {
                 core.sounds().play(player, config.dropsRareSound);
             }
         }
+        fragment(player, found.zone().aspect().id(), found.zone().tier(), rareBonus);
+    }
+
+    /**
+     * R3-18: a key fragment from a high mine/forest tier. It skips the satchel (it is no resource to sell): inventory
+     * first, then /box. Plain stackable custom item, tradeable; 3 make a Phoenix key in /crates.
+     */
+    private void fragment(Player player, String wing, int tier, double rareBonus) {
+        if (!config.fragmentsEnabled) {
+            return;
+        }
+        double chance = FragmentDrops.chance(wing, tier, config.fragmentsWings, config.fragmentsMinTier, config.fragmentsOneIn, rareBonus);
+        if (!FragmentDrops.drops(chance, ThreadLocalRandom.current())) {
+            return;
+        }
+        String item = config.fragmentsItem;
+        if (item == null || core.items().get(item).isEmpty()) {
+            return;
+        }
+        long left = toInventory(player, item, 1);
+        if (left > 0) {
+            overflow.add(satchel.profileKey(player), item, left);
+        }
+        java.util.Map<String, Object> details = new java.util.LinkedHashMap<>();
+        details.put("item", item);
+        details.put("wing", wing);
+        details.put("tier", tier);
+        core.audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.ITEM, "depths_fragment_drop",
+                net.skybornmc.skyblock.common.audit.Actor.player(player), player.getUniqueId(), player.getName(), 1L, null, details);
+        DropItems.Def def = items.def(item);
+        msg.send(player, left > 0 ? "drops.fragment-box" : "drops.fragment",
+                Msg.mm("item", def == null ? item : items.name(def)));
+        if (config.dropsRareSound != null && !config.dropsRareSound.isBlank()) {
+            core.sounds().play(player, config.dropsRareSound);
+        }
     }
 
     // ------------------------------------------------------------------ R3-22 drop chain: satchel → inventory → /box
