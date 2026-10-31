@@ -1112,37 +1112,50 @@ topics:
   shop:
     icon: emerald
     aliases: [builder-shop, buy, blocks, store-blocks]
-    name: "<c:flame>Builder shop"
-    summary: ["<c:text>Buy blocks, decoration, seeds", "<c:text>and spawners for your island."]
+    name: "<c:flame>Shop"
+    summary: ["<c:text>Buy and sell blocks, decoration,", "<c:text>seeds and spawners."]
     take-me-there: "shop"
     commands: [Economy]
     pages:
-      - title: "<c:value>Buying"
+      - title: "<c:value>Categories"
         lines:
-          - "<c:value>/shop</c:value> <c:text>has 9 tabs at the top. Click"
-          - "<c:text>an item, then Buy 1, 16, 64, Fill"
-          - "<c:text>inventory or Type an amount."
-          - "<c:text>Java: shift-click buys a stack."
+          - "<c:value>/shop</c:value> <c:text>shows 9 categories. Pick"
+          - "<c:text>one to see its items."
+          - "<c:value>/shop wood</c:value> <c:text>opens one directly."
+          - "<c:text>Back returns to the categories."
+      - title: "<c:value>Clicks on an item"
+        lines:
+          - "<c:text>Left click: buy (1, 16, 64, fill"
+          - "<c:text>your inventory or type an amount)."
+          - "<c:text>Right click: sell that item."
+          - "<c:text>Middle click or Shift + Right-click:"
+          - "<c:text>sell every one you carry."
+          - "<c:text>Shift + Left-click: buy a stack."
+      - title: "<c:value>On a phone"
+        lines:
+          - "<c:text>Tap an item to buy. The Sell button"
+          - "<c:text>in the buy menu opens selling, with"
+          - "<c:text>Sell 1, 16, 64 and Sell all."
+          - "<c:text>Type an amount uses tap buttons."
       - title: "<c:value>Room and money"
         lines:
           - "<c:text>Items go into your inventory. If not"
           - "<c:text>all fit, you pay only for what fits."
           - "<c:text>Buys over half your money need a"
-          - "<c:text>second click. <c:value>/shop wood</c:value> <c:text>opens a tab."
+          - "<c:text>second click. Sales pay like /sell."
       - title: "<c:value>Undo last buy"
         lines:
           - "<c:text>Bought the wrong thing? Click Undo"
-          - "<c:text>(bottom bar) within 15 seconds to"
+          - "<c:text>(the clock) within 15 seconds to"
           - "<c:text>get all your money back, while the"
           - "<c:text>items are still in your inventory."
-          - "<c:text>Both helpers can be turned off in"
-          - "<c:value>/settings</c:value><c:text>."
+          - "<c:text>Sales can't be undone."
       - title: "<c:value>Why some prices are high"
         lines:
-          - "<c:text>Crops and redstone also sell with"
-          - "<c:value>/sell</c:value><c:text>, so the shop asks more for"
-          - "<c:text>them. Buy one, grow the rest. The shop"
-          - "<c:text>never buys items back: use /sell."
+          - "<c:text>Crops and redstone also sell, so"
+          - "<c:text>the shop asks more for them. Buy"
+          - "<c:text>one, grow the rest. A red Not"
+          - "<c:text>sellable means nobody buys it back."
 
   sell:
     icon: gold_nugget

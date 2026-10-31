@@ -1,5 +1,7 @@
 # /shop v2: the right items, one layout, easy buying
 
+> **Built differently since GUI-P3 (I9 v2 section 12, Nov 2026):** `/shop` opens a category menu, the grid has no tab row, left click = buy GUI, right click = sell GUI, middle click / Shift + Right-click = sell all, and sales go through `SellService`. Where this file differs, `docs/commands/shop.md` and card I9 win.
+
 **Status:** draft v1 for the owner (31 Oct 2026). Nothing is built yet.
 **Sources:**
 - `modules/shop` (ShopModule, ShopMenu, CategoryMenu, BuyAmountMenu, QuickBuy, ShopCatalog);

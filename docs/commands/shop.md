@@ -1,26 +1,43 @@
 # Builder shop (`modules/shop`)
 
-Buy building blocks, decoration, redstone, seeds, basics and tier 1-2 spawners for money (PHASE-3 M3.5, **Shop v2** GUI-3, design `docs/design/SHOP_DESIGN.md`). A real money sink: the shop never buys anything back (the **Sell** button, slot 51 of every shop page, opens the `/sell` chest). Items and prices: `shop.yml` (**draft: the owner approves the prices before launch**); settings: `shop-settings.yml`; texts: `messages/shop.yml`. Reload: `/skyblock reload shop`.
+Buy building blocks, decoration, redstone, seeds, basics and tier 1-2 spawners for money, and sell back what the sell table buys (PHASE-3 M3.5, **Shop v2** GUI-3, **GUI-P3**: category menu, buy GUI and sell GUI, I9 section 12; design `docs/design/SHOP_DESIGN.md`). Every sale uses the `/sell` rules (`SellService`: dynamic price, Hot Item, sell bonus and cap, one ledger transaction, items back or to `/box` on failure); the shop never prices a sale itself. Items and prices: `shop.yml` (**draft: the owner approves the prices before launch**); settings: `shop-settings.yml`; texts: `messages/shop.yml`. Reload: `/skyblock reload shop`.
 
 | Command | What it does | Permission | Status |
 |---|---|---|---|
-| `/shop [tab]` | Opens the shop on your last tab (Essentials the first time). With a tab (`essentials`, `farming`, `wood`, `stone-earth`, `special`, `colors`, `decoration`, `redstone`, `spawners`, tab-completed) it opens that tab; the old category names (`utility`, `glass-colors`, `building-blocks`, `stone-bricks`) still find their new tab. Also in `/menu` and `/help shop` | `skyblock.shop.use` (everyone) | ✅ |
+| `/shop [category]` | Without a category: the **category menu**. With one (`essentials`, `farming`, `wood`, `stone-earth`, `special`, `colors`, `decoration`, `redstone`, `spawners`, tab-completed) that category's item grid, with Back to the category menu; the old names (`utility`, `glass-colors`, `building-blocks`, `stone-bricks`) still find their category. Also in `/menu` (Shop) and `/help shop` | `skyblock.shop.use` (everyone) | ✅ |
 
-## Pages (6 rows, works on Bedrock)
+## Pages (vanilla chest menus, work on Bedrock)
 ```
- 0 Essentials | 1 Farming | 2 Wood | 3 Stone & Earth | 4 Special | 5 Colors | 6 Decoration | 7 Redstone | 8 Spawners
- rows 1-4: 28 items per page (Colors has 2 pages)
- 45 Back | 46 Balance | 47 Undo last buy | 48 ? | 49 Close | 50 Main menu | 51 Sell | 52 ‹ Prev | 53 Next ›
+ Category menu (4 rows):  4 balance · 9 11 13 15 17 / 19 21 23 25 the nine categories (centred, shop.yml order)
+                          27 Back · 28 Sell chest · 29 Undo · 31 Close                  (8 or fewer categories: 3 rows)
+ Item grid (6 rows):      4 balance · 10-16, 19-25, 28-34, 37-43 items (left to right, 28 per page; Colors has 2 pages)
+                          45 Back · 46 Sell chest · 47 Undo · 49 Close · 52/53 pages (paper, count = target page)
+ Buy GUI (3 rows):        4 item · row 1 centred: Buy 1 · Buy 16 · Buy 64 · Fill inventory · Type an amount
+                          18 Back · 19 Sell · 20 Undo · 22 Close              (non-stackables: Buy 1 · Type, 12 14)
+ Sell GUI (3 rows):       4 item · row 1 centred: Sell 1 · Sell 16 · Sell 64 · Sell all · Type an amount
+                          18 Back · 19 Buy · 22 Close                         (non-stackables: Sell 1 · Sell all · Type)
 ```
-- **Tabs on every page**, no category screen. A tab click switches in place (same window, title `Shop » <Tab>`). The current tab glints and says "✔ You are here".
-- **Click an item** (Java and Bedrock alike) → the **buy page** (same tabs and bottom bar, title `Shop » <Item>`): the item at 13 (price each, stack price, "You can afford", room for), **Buy 1** (20), **Buy 16** (22; 8 for items that stack to 16), **Buy 64** (24; one stack), **Fill inventory** (30: as many as fit and you can afford) and **Type an amount** (32: chat on Java, `1.5k` works; the tap number picker on Bedrock). Items that don't stack (buckets, beds, tools) show only Buy 1 and Type an amount. The page stays open and refreshes after a buy. A tab click on the buy page goes back to that tab.
-- **Java shortcut:** shift-click on a grid item buys one stack at once (only in the ? guide, never in lore).
-- **Grid lore:** `| Buy Price` each, `| Sell Price` each (when `/sell` buys it), `| Information` with *Stack of 64* and *You can afford*, then `» CLICK to choose an amount`. Spawners also show **Next works at X%** (owner F2 hook; 100% until the diminishing-output curve is built) and **Pays back in about N h** (`spawners.income-per-hour.tier-N`).
+- No tab row any more and no remembered tab: `/shop` always starts at the categories; Back on a grid returns there.
+- **Click map on a grid tile:**
+
+| Input | Result |
+|---|---|
+| Left click (Bedrock tap) | the buy GUI (locked or unavailable items explain why) |
+| Right click | the sell GUI (only when sellable; otherwise just the error sound) |
+| Middle click (creative clients) / **Shift + Right-click** (survival) | sells every one of that item you carry (storage and hotbar, never armor or offhand) |
+| Shift + Left-click | buys one stack (a big buy arms first: second shift-click) |
+| Number keys, drop, double click, offhand | ignored (the client is resynced) |
+
+  Bedrock reaches selling through the **Sell** button of the buy GUI and **Sell all** on the sell GUI; nothing needs right or middle click.
+- **Tooltips (I9):** `| Buy Price: $8 each · Left-click` (bold green), `| Sell Price: $2 each · Right-click` (bold red) or a red `Not sellable` (no sell price, spawners), a live note when the sell price moved (`Falling: -4% from base price`, `Rising: +6% ...`, `Hot item today: +25%`; only from `sell.note-min-percent`), spawners keep their `| Information` (next works at, payback), the muted Java hints `Middle-click or Shift + Right-click: sell all` and `Shift + Left-click: buy a stack`, then `» CLICK to buy`. Bedrock sees no click words and no hints. Sell prices under $1 show two decimals (`$0.40`).
+- **Buy GUI:** the item tile (prices, stack price, you can afford, room for, balance); lime buttons (our confirm icon) that can buy, grey ones that can't, orange while armed (big buy). Type an amount: chat on Java (`1.5k` works), the tap number picker on Bedrock. **Sell** (19) switches to the sell GUI of the same item without stacking Back.
+- **Sell GUI:** the item tile (`| Sell Price`, the live note, `| You carry`, `| You get` for all you carry, `incl. your +B% sell bonus`). Each button says what you get; carrying fewer than the button sells what you carry. Grey buttons (none carried, not sellable, under $1) only play the error sound. Type an amount: chat on Java, the tap picker (1 to what you carry) on Bedrock. **Buy** (19) switches back. The economy prints the sale line (`✔ Sold 16x Coal for $32` in the action bar; a chat line with hover breakdown from `sell.big-sale-chat-from`).
+- **Sell chest** (46 on the grid, 28 on the category menu): opens the `/sell` chest for many item kinds at once.
 - **Feedback:** every buy shows `✔ +64 Torch -$256 · $1,199,744 left` in the action bar with a soft click (`feedback.sound`); a chat line only from `feedback.chat-from` ($100,000).
 
 ## F14: big buys and Undo (both on by default, switchable per player in `/settings` → Gameplay)
 - **Second click for big buys** (`shop-big-buy`): a buy costing more than `big-buy.percent` (50%) of your money turns its button **orange** with a sound: "That is 74% of your money · Balance after: $3,284 · » CLICK AGAIN to buy". It disarms after `big-buy.arm-seconds` (5 s) or on any other click. A typed big amount shows armed on the Type button; a big Java shift-click says it in the action bar and needs a second shift-click.
-- **Undo last buy** (`shop-undo`, slot 47): a gold plate whose count is the seconds left (`undo.seconds`, 15). Its lore names the item, the price and the time left. One click gives the **full price back, once**, only while **every** bought item is still in your inventory (a spawner until it is placed). Grey "Nothing to undo" otherwise. Only the last buy can be undone; quitting or switching profile ends it.
+- **Undo last buy** (`shop-undo`, 47 on the grid, 20 on the buy GUI, 29 on the category menu): a clock (our undo icon) whose count is the seconds left (`undo.seconds`, 15). Its lore names the item, the price and the time left. One click gives the **full price back, once**, only while **every** bought item is still in your inventory (a spawner until it is placed). A gray dye "Nothing to undo" otherwise. Sales have no undo (C4). Only the last buy can be undone; quitting or switching profile ends it.
 
 ## Catalog (SHOP_DESIGN §2, ~253 items)
 Essentials 26 · Farming 27 · Wood 24 · Stone & Earth 28 · Special Blocks 28 · Colors 53 (2 pages) · Decoration 28 · Redstone 28 · Spawners 11.
@@ -33,10 +50,13 @@ Essentials 26 · Farming 27 · Wood 24 · Stone & Earth 28 · Special Blocks 28 
 - Money comes from the **active profile's** account. One ledger transaction per purchase (reason `shop_buy`, idempotency key `shop_buy:<purchase id>`, details: item, quantity, unit price, category, profile), visible in `/transactions` and `/logs`. The purchase row is written in the same database transaction.
 - **Full inventory:** free space is counted first; if not all of it fits, only what fits is bought and charged (`Bought 40 of 64: no more room`); no room at all = nothing bought, nothing paid. Items go into the hotbar/main inventory only. If the inventory fills up while the payment runs, the rest goes to `/box` (never dropped).
 - Not while frozen, in staff mode or during a profile switch. One purchase (or undo) at a time per player.
+- **Selling from the shop (GUI-P3):** the items are taken out on the main thread first (escrow; lowest slots first, the last stack partly), then one ledger transaction (reason `sell`, key `sell:<sale id>`, sale source `shop`) pays the active profile and writes the `sell_sales` row; anything not sold (or everything on a failure) goes back to the inventory, then `/box`. Guards: the menu click debounce, one shop sale in flight per player with `sell.min-gap-ms` (400) between sales, the economy's own one-sale-at-a-time lock, and the escrow itself (a second click finds nothing carried). Frozen balance blocks selling like buying.
 - **Buy > sell:** an item is only for sale if its price is above the most it (or what it turns back into, `contains:`) could ever bring with `/sell` at the current settings (×7.5 by default). Items that break the rule show "Not for sale right now" and are named in the console on start/reload. A build test (`BuySellInvariantTest`) checks the bundled `shop.yml` against `sell.yml`.
 - Optional per item: `requires: { farming: 10 }` (skill level needed), `enabled: false`.
 
-**Audit:** the economy writes one `shop_buy` row per purchase and one `shop_undo` row per refund (category `economy`). Category `item`: `shop_pending` / `shop_deliver` (handed over later), `shop_review` (crash mid hand-over), `shop_undo` (items taken back, refund paid) and `shop_undo_failed` (refund refused, items given back). Category `config`: `shop_catalog_migrate`.
+**Settings (GUI-P3):** `sell.min-gap-ms` (400, 100..5000) between two shop sales of one player; `sell.note-min-percent` (2, 0..100) for the live price note.
+
+**Audit:** a shop sale is the economy's normal `sell` row (ledger reason `sell`, key `sell:<sale id>`, details with `source: shop` and every item); the economy writes one `shop_buy` row per purchase and one `shop_undo` row per refund (category `economy`). Category `item`: `shop_pending` / `shop_deliver` (handed over later), `shop_review` (crash mid hand-over), `shop_undo` (items taken back, refund paid) and `shop_undo_failed` (refund refused, items given back). Category `config`: `shop_catalog_migrate`.
 
 ## Safety (for developers)
 - `shop_purchases` row states: `delivering` (written by the payment's guard) → `delivered`; `delivering` → `pending` if the player is gone/switched profile/in staff mode; `pending` → `delivering` is a conditional update (claimed exactly once on join, profile switch), then handed over. On startup rows still `delivering` (crash) become `review` (SECFIX1 F-12) for staff.
