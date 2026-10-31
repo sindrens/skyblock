@@ -17,6 +17,15 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "scoreboard.max-lines", desc = "Maximum lines (Bedrock shows at most 15).", min = 1, max = 15)
     public int maxLines = 15;
 
+    @Setting(path = "scoreboard.section-rows", desc = "Most rows under each bold '| Header' section (G7: 3). Later rows of a full section are dropped, first in the layout win.", min = 1, max = 8)
+    public int sectionRows = 3;
+
+    @Setting(path = "scoreboard.blank-under-title-max-lines", desc = "The <soft-blank> line under the title shows only while the other lines are at most this many (8 = boards with 5 rows or fewer).", min = 0, max = 15)
+    public int blankUnderTitleMaxLines = 8;
+
+    @Setting(path = "scoreboard.progress-length", desc = "Dots in the progress line (<progress:key>).", min = 5, max = 20)
+    public int progressLength = 10;
+
     @Setting(path = "scoreboard.disabled-worlds", desc = "Worlds without a sidebar.")
     public List<String> disabledWorlds = List.of();
 

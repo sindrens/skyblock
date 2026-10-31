@@ -13,21 +13,68 @@ import java.util.function.Predicate;
  * (a section header over conditional lines, owner answer 275). Hidden lines take no
  * space, so the board never shows a label without a value. Parsed once per message text and cached by the service,
  * so a refresh does not split strings again.</p>
+ *
+ * <p>Board rules (G7-R1-01, {@link #visible(Predicate, Rules)}): every line has a {@link Kind} worked out once at parse
+ * time. A section is a {@link Kind#HEADER} line ({@code <bold><c:header>...}) followed by {@link Kind#ROW} lines
+ * ({@code <c:bar>...}); rows past {@link Rules#sectionRows} are dropped (first in layout order win), a header with no
+ * row under it is dropped, and the {@code <soft-blank>} line only shows while the board is short.</p>
  */
-record LayoutLines(String source, List<Line> lines) {
+record LayoutLines(String source, List<Line> lines, boolean usesTimer) {
 
     static final String IF = "if:";
+    /** A blank line that only shows while the board is short ({@link Rules#softBlankMaxLines}); never parsed. */
+    static final String SOFT_BLANK = "<soft-blank>";
+    static final String HEADER_START = "<bold><c:header>";
+    static final String ROW_START = "<c:bar>";
+    /** The built-in condition key that is true while the player has a running timer ({@code BoardTimers}). */
+    static final String TIMER_KEY = "board_timer";
+
+    /** What a line is, for the board rules. */
+    enum Kind { BLANK, SOFT_BLANK, HEADER, ROW, OTHER }
 
     /** One line: {@code condition} is a placeholder key (or keys joined by commas) or null (always shown); {@code text} is MiniMessage. */
-    record Line(String condition, String text) {
+    record Line(String condition, String text, Kind kind) {
+
+        Line(String condition, String text) {
+            this(condition, text, kindOf(text));
+        }
 
         boolean blank() {
-            return text.isEmpty();
+            return kind == Kind.BLANK || kind == Kind.SOFT_BLANK;
         }
+    }
+
+    /**
+     * Board limits: {@code maxLines} in total (title not counted), {@code sectionRows} rows per header, and the soft
+     * blank line shows only while the other visible lines are at most {@code softBlankMaxLines}.
+     */
+    record Rules(int maxLines, int sectionRows, int softBlankMaxLines) {
     }
 
     LayoutLines {
         lines = List.copyOf(lines);
+    }
+
+    LayoutLines(String source, List<Line> lines) {
+        this(source, lines, lines.stream().anyMatch(l -> l.text().contains("<timer>") || l.text().contains(TIMER_KEY)
+                || (l.condition() != null && l.condition().contains(TIMER_KEY))));
+    }
+
+    static Kind kindOf(String text) {
+        if (text.isEmpty()) {
+            return Kind.BLANK;
+        }
+        if (text.equals(SOFT_BLANK)) {
+            return Kind.SOFT_BLANK;
+        }
+        String t = text.stripLeading();
+        if (t.startsWith(HEADER_START)) {
+            return Kind.HEADER;
+        }
+        if (t.startsWith(ROW_START)) {
+            return Kind.ROW;
+        }
+        return Kind.OTHER;
     }
 
     /** Parses the raw message (list items joined with {@code <newline>} by the messages loader); null = no lines. */
@@ -63,7 +110,7 @@ record LayoutLines(String source, List<Line> lines) {
 
     /**
      * The lines to show: conditions checked with {@code shown} (placeholder key → has a value), at most {@code max}
-     * lines (hidden lines don't count).
+     * lines (hidden lines don't count). No section rules (kept for custom callers and the old tests).
      */
     List<Line> visible(Predicate<String> shown, int max) {
         List<Line> out = new ArrayList<>(Math.min(lines.size(), Math.max(0, max)));
@@ -71,11 +118,56 @@ record LayoutLines(String source, List<Line> lines) {
             if (out.size() >= max) {
                 break;
             }
-            if (line.condition() == null || anyShown(line.condition(), shown)) {
+            if (line.condition() == null || line.kind() == Kind.SOFT_BLANK || anyShown(line.condition(), shown)) {
                 out.add(line);
             }
         }
         return out;
+    }
+
+    /** The lines to show under the board rules (G7-R1-01); see the class comment. */
+    List<Line> visible(Predicate<String> shown, Rules rules) {
+        // 1 + 2: conditions, then the row cap per section (a non-row line ends the section).
+        List<Line> kept = new ArrayList<>(lines.size());
+        int rows = 0;
+        boolean inSection = false;
+        for (Line line : lines) {
+            if (line.kind() != Kind.SOFT_BLANK && line.condition() != null && !anyShown(line.condition(), shown)) {
+                continue;
+            }
+            switch (line.kind()) {
+                case HEADER -> {
+                    inSection = true;
+                    rows = 0;
+                }
+                case ROW -> {
+                    if (inSection && ++rows > rules.sectionRows()) {
+                        continue;
+                    }
+                }
+                default -> inSection = false;
+            }
+            kept.add(line);
+        }
+        // 3: a header without a row right under it goes; 4: count the lines that are not soft blanks.
+        List<Line> out = new ArrayList<>(kept.size());
+        int others = 0;
+        for (int i = 0; i < kept.size(); i++) {
+            Line line = kept.get(i);
+            if (line.kind() == Kind.HEADER && (i + 1 >= kept.size() || kept.get(i + 1).kind() != Kind.ROW)) {
+                continue;
+            }
+            if (line.kind() != Kind.SOFT_BLANK) {
+                others++;
+            }
+            out.add(line);
+        }
+        if (others > rules.softBlankMaxLines()) {
+            out.removeIf(l -> l.kind() == Kind.SOFT_BLANK);
+        }
+        // 5: the total cap.
+        int max = Math.max(0, rules.maxLines());
+        return out.size() > max ? new ArrayList<>(out.subList(0, max)) : out;
     }
 
     /** True if any key of a condition ({@code a} or {@code a,b,...}) has a value. */
