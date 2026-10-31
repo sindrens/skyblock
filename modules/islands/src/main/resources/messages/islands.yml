@@ -439,6 +439,11 @@ invite:
 # TUTORIAL TQ19: the island portal with pending invites (members.portal-invite-choice).
 portal-choice:
   title: "Your island"
+  # GUI-4c: the "?" of the portal choice (new players land here with invites waiting).
+  info:
+    - "<c:text>You have island invites."
+    - "<c:text>Start your own island, or"
+    - "<c:text>join one of the islands below."
   create:
     name: "<c:flame><bold>Create my own island</bold>"
     lore: ["<c:text>A new solo island, just for you.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to create"]
