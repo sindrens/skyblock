@@ -452,8 +452,8 @@ world:
 # Global chat line for a top reward of the big crates (crates-settings.yml -> broadcast.crates). Java: hover the reward
 # to see the item. <player>, <crate>, <reward>, <more> = other top rewards of the same bulk open.
 broadcast:
-  top: "<prefix><c:flame><sym:star></c:flame> <c:value><player></c:value> <c:text>won <reward> <c:text>from the <crate><c:text>!"
-  top-many: "<prefix><c:flame><sym:star></c:flame> <c:value><player></c:value> <c:text>won <reward> <c:text>and <c:value><more></c:value> <c:text>more top rewards from the <crate><c:text>!"
+  top: "<tag:crate><bold>[Crate]</bold></tag> <c:value><player></c:value> <c:text>won <reward> <c:text>from the <crate><c:text>!"
+  top-many: "<tag:crate><bold>[Crate]</bold></tag> <c:value><player></c:value> <c:text>won <reward> <c:text>and <c:value><more></c:value> <c:text>more top rewards from the <crate><c:text>!"
   hover:
     - "<c:text>From the <crate>"
     - "<c:muted>Chance: <chance>%"
