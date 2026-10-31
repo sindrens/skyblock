@@ -21,6 +21,7 @@ lp creategroup ember
 lp group ember setweight 1
 lp group ember parent add default
 lp group ember setdisplayname Ember
+lp group default setdisplayname Ashborn
 lp group ember meta set color "#E0A070"
 lp group ember meta removeprefix 1
 lp group ember meta addprefix 1 "&7[&6Ember&7] "

@@ -13,3 +13,10 @@ teleport: "minecraft:entity.enderman.teleport 0.5 1.2"
 money: "minecraft:block.amethyst_block.chime 0.8 1.5"
 notify: "minecraft:block.note_block.chime 0.6 1.6"
 enchant: "minecraft:block.enchantment_table.use 0.7 1.0"
+
+# Resource pack sounds (RP6): played instead of the same-named sound above, only for players who loaded the Phoenix pack.
+# Everyone else keeps the vanilla sound. A key missing here has no pack variant. Built-in defaults match these lines.
+pack-sound:
+  click: "phoenix:ui.click 0.4 1.0"
+  success: "phoenix:ui.success 0.6 1.0"
+  error: "phoenix:ui.error 0.8 1.0"
