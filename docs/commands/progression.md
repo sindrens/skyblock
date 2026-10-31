@@ -1,4 +1,4 @@
-# Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades, M5.5 masteries
+# Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades, M5.5 masteries, M5.7 leaderboards
 
 Island pillars (PHASE-5 M5.1): Mining, Foraging, Farming, Combat, and Conquest (hidden until KOTH/events feed it,
 `pillars.yml → conquest.enabled`). Dynamic island level (M5.2). Settings: `pillars.yml`, `progression.yml`,
@@ -14,7 +14,7 @@ of this module and need its permission nodes.
 | Challenge Book (button in `/is level`) | The island task list (M5.3, O6): chapters per task tier, every task with its shared progress and rewards, hand-in screen for deliver tasks (from the inventory; from the island storage once STORE2 exists). No new command. | `skyblock.progression.tasks` (everyone; hand-ins members only) | ✅ built |
 | `/is upgrade` | Island upgrades menu (M5.4): tabs Island, Economy, Depths, Production, Masteries (M5.5); every upgrade with its level, now/next effect, the next level's tasks and price; click for the detail menu (tasks, hand-ins, all levels, Buy → confirm). Paid from the island bank only. Also the island menu's Upgrades button and the Upgrades source in `/is level`. | `skyblock.progression.upgrade` (everyone); buying: island permission `upgrades` (leader always, admin by default) | ✅ built |
 | `/is masteries` | Masteries (M5.5): the `/is upgrade` menu on its Masteries tab: the shown masteries (unbuilt ones hidden, GUI-2) and Ascension; click for the detail menu (requirements, tasks, hand-ins, ranks, Buy → confirm with the details on the middle item). Paid from the island bank only. | `skyblock.progression.upgrade` (everyone); buying: island permission `upgrades` | ✅ built |
-| `/is top` | Island leaderboards: Level and Value tabs, Solo/Team toggle, places 1-28, your island; Weekly gain and Pillars tabs come with M5.7 | `skyblock.progression.top` (everyone) | ✅ built (owner P5-25) |
+| `/is top` | Island leaderboards (M5.7): tabs Level, Weekly gain (pick: points or pillar levels gained since Monday 00:00 Oslo), Value, Pillars (pick a pillar), Solo/Team pick list, places 1-28, your island (place and value; "Restarts in" on weekly boards). Also the GUI-2 hub's Top button. | `skyblock.progression.top` (everyone); `skyblock.progression.top.hidden` (helper+, default false): your islands are not ranked | ✅ built (owner P5-25) |
 | `/isadmin progression <player>` | Staff view/edit (M5.10) | `skyblock.progression.admin.view` (mod), `.admin.edit` (admin) | ⬜ planned (owner P5-31) |
 
 ## How pillar XP works
@@ -215,3 +215,30 @@ Permission definitions: `modules/progression/src/main/resources/permissions/prog
 - **Data:** `island_masteries` (island_id, season_id, mastery_id, mastery_rank, bought_by, bought_at; Ascension is the row
   `ascension`). The plan's separate `island_ascension` table was not needed.
 
+## How the leaderboards work (M5.7)
+- **Boards** (each Solo, Team and All; one island per leader account, owner P5-29; staff islands hidden, owner 576):
+  Level (level, then points, then who reached it first), Value (block worth), Weekly gain (earned level points gained
+  this week: pillars, upgrades, masteries, achievements, collections; owner P5-26), Weekly pillar gain (pillar levels
+  gained this week), and one board per shown pillar (level, then XP). Every order ends with the island id, so ties always
+  come out the same way.
+- **Caching:** every `progression.yml → top.refresh-seconds` (300) the main thread only copies the numbers it owns;
+  sorting, leader names (player data reads) and the boards are made off the main thread and published as one snapshot.
+  `/is top`, the `island_rank` placeholder and the Hall of Heroes read that snapshot.
+- **Weeks:** Monday 00:00 to Monday 00:00 in `top.time-zone` (Europe/Oslo, DST-safe). At a week's start every island's
+  earned points and summed pillar levels are stored (`leaderboard_week_base`); islands created later count from 0. When a
+  week ends, the top `top.week-places` (10) of each weekly board (`weekly_gain_solo|team`, `weekly_pillars_solo|team`) go
+  to `leaderboard_weekly` together with the next week's base in one transaction (audit `island/leaderboard_week`), then
+  `IslandWeeklyTopEvent` fires. A server that was down over Monday closes the old week at its first ranking with the
+  values it has then. The first start of M5.7 starts the current week from the values at that moment.
+- **Weekly rewards:** not paid yet (owner question PG27). `IslandWeeklyTopEvent` (common) is the hook; `rewarded` stays 0.
+- **Hidden (staff) islands:** `skyblock.progression.top.hidden` (helper and up) is checked on join and on rank changes and
+  stored in `leaderboard_hidden`, so offline staff stay hidden (audit `island/leaderboard_hidden|leaderboard_shown`).
+- **Hall of Heroes** (`npcs.yml → leaderboards.sources`, migrated once at v4 if untouched): `weekly_island_gain: island_gain
+  this_week cycle`, `weekly_pillar_gain: pillar_gain this_week cycle`; `cycle` switches Solo/Team every
+  `top.hall-cycle-seconds` (10, owner PG28 default), each row tagged Solo/Team. Other forms: `island_gain|pillar_gain
+  [this_week] [all|solo|team]`. Island value stays out of the Hall (PG30 default).
+- **For other modules:** `ProgressionService#islandTop(kind, board, limit)` (kinds LEVEL, VALUE, WEEKLY_GAIN,
+  WEEKLY_PILLARS), `pillarTop(pillar, board, limit)`, `boardCycleSeconds()`; `IslandTop.Entry#value()` is what the
+  board ranks by, `leader()` the leader's name.
+- **Not in M5.7:** the season-end snapshot (`leaderboard_season`, needs a season-end trigger) and the V2 CSV export (part
+  of `/isadmin progression`, M5.10).

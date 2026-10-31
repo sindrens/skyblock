@@ -237,6 +237,8 @@ Targets: casual end of season ~40, regular end ~70, grinder solo end ~105, activ
 **Config:** `leaderboards.yml` (refresh seconds, places, weekly rewards per place, cycle seconds, hidden groups).
 **Permissions:** `skyblock.progression.top` (everyone: `/is top`).
 
+**Built (M5-7, 31 Oct):** `TopBoards` (snapshot of the numbers on the main thread, ranking/names/boards off it, every `top.refresh-seconds`), `TopBoard` (all orders, deterministic ties, hidden staff islands), `WeekWindow` (Monday 00:00 Europe/Oslo, DST-safe), `WeeklyStore` + `V006__leaderboards.sql` (`leaderboard_week_base` instead of per-island weekly columns: weekly gain = now − base; `leaderboard_weekly` with `score` instead of `value`; `leaderboard_hidden`), `/is top` with tabs Level / Weekly gain / Value / Pillars and Solo/Team as pick lists, `IslandWeeklyTopEvent` as the weekly rewards hook (PG27 open, nothing paid), NPCHOLO sources `island_gain` / `pillar_gain` (`this_week`, `all|solo|team|cycle`; npcs.yml v4 switches the two weekly Hall boards to `cycle`). Staff islands: permission `skyblock.progression.top.hidden` (helper+). Not built: season-end snapshot (no season-end trigger yet) and the CSV export (M5.10). Open points: `docs/OPEN_QUESTIONS.md` (M5-7). Details: `docs/commands/progression.md`.
+
 ## M5.8 Island achievements, help and menus (wiring)
 - Island achievements from `plans/RANKS_TITLES_ACHIEVEMENTS.md` §C4 (AC3) get their metrics from this phase: island level (Rising Island), mastery levels (Mastery Path), bank deposits (Full Vault), spawners (Spawner Nest). Their points feed source 3 of the island level.
 - Island menu: the gray "Upgrades" button becomes active; the header shows level and progress.

@@ -14,8 +14,11 @@ skyblock.progression.recalculate:
   description: Use the Recalculate button in /is level (M5.2) - full block worth rescan, island members only, 10 min cooldown per island
   default: true
 skyblock.progression.top:
-  description: Use /is top (M5.2) - island leaderboards by level and value, solo and team
+  description: Use /is top (M5.2/M5.7) - island leaderboards by level, weekly gain, value and pillar, solo and team
   default: true
+skyblock.progression.top.hidden:
+  description: Your islands never show on the island leaderboards or the Hall of Heroes boards (M5.7, staff islands are hidden like /baltop, owner 576); remembered while offline
+  default: false
 skyblock.progression.tasks:
   description: Open the challenge book from /is level (M5.3) - island tasks, shared progress, hand in items (members only)
   default: true

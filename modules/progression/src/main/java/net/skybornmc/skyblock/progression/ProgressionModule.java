@@ -34,7 +34,9 @@ import java.util.UUID;
  * of the islands module, menus here), placeholders {@code island_upgrades_bought}, {@code island_upgrades_ready},
  * {@code island_upgrade_<id>}. M5.5: masteries and Ascension ({@link MasteryManager}, {@code masteries.yml},
  * {@code masteries-settings.yml}), {@code /is masteries} (the Masteries tab of {@code /is upgrade}), placeholders
- * {@code island_masteries_bought}, {@code island_ascension}, {@code island_mastery_<id>}. Texts in {@code messages/progression.yml}.
+ * {@code island_masteries_bought}, {@code island_ascension}, {@code island_mastery_<id>}. M5.7: leaderboards
+ * ({@link TopBoards}: level, value, weekly island gain, weekly pillar gain, per pillar; solo/team), {@code /is top} tabs and
+ * the Hall of Heroes board sources {@code island_gain} / {@code pillar_gain}. Texts in {@code messages/progression.yml}.
  */
 public final class ProgressionModule implements SkyblockModule {
 
@@ -51,6 +53,7 @@ public final class ProgressionModule implements SkyblockModule {
     private IslandSourcesListener sources;
     private BlockWorth blocks;
     private LevelManager levels;
+    private TopBoards boards;
     private TaskManager tasks;
     private TaskSources taskSources;
     private DepthsTaskListener depthsTasks;
@@ -93,6 +96,10 @@ public final class ProgressionModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(blocks, core.plugin());
         Bukkit.getPluginManager().registerEvents(levels, core.plugin());
         LevelMenus menus = new LevelMenus(core, msg, levels, pillars);
+        // M5.7 leaderboards: ranked off the main thread every top.refresh-seconds, weekly boards from Monday 00:00 Oslo.
+        boards = new TopBoards(core, levelConfig, levels, pillars, new WeeklyStore(), config.seasonId);
+        Bukkit.getPluginManager().registerEvents(boards, core.plugin());
+        menus.boards(boards);
         ProgressionFacade facade = new ProgressionFacade(pillars, levels, menus);
         core.services().register(ID, ProgressionService.class, facade);
         // M5.3 task engine: the challenge book (opened from /is level), shared island counters, deliveries.
@@ -121,6 +128,7 @@ public final class ProgressionModule implements SkyblockModule {
         registerSetting();
         pillars.start();
         blocks.start();
+        boards.start();
         levels.start();
         tasks.start();
         upgrades.start();
@@ -144,6 +152,7 @@ public final class ProgressionModule implements SkyblockModule {
         sources.configure();
         blocks.applyConfig();
         levels.applyConfig();
+        boards.applyConfig();
         tasks.applyConfig();
         taskSources.configure();
         upgrades.applyConfig();
@@ -176,6 +185,10 @@ public final class ProgressionModule implements SkyblockModule {
         }
         if (sources != null) {
             HandlerList.unregisterAll(sources);
+        }
+        if (boards != null) {
+            HandlerList.unregisterAll(boards);
+            boards.shutdown();
         }
         if (levels != null) {
             HandlerList.unregisterAll(levels);

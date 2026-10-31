@@ -41,7 +41,14 @@ final class Leaderboards {
     /** Rows per source key; missing = not read yet. */
     private final Map<String, List<Row>> rows = new ConcurrentHashMap<>();
     private final Set<String> inFlight = ConcurrentHashMap.newKeySet();
+    /**
+     * PHASE-5 M5.7: Solo and Team rows of the weekly boards that switch between the two ({@code cycle}), by source key:
+     * index 0 = Solo, 1 = Team. The 1-second main-thread check only swaps ready lists (no reads, no formatting).
+     */
+    private final Map<String, List<List<Row>>> cycles = new ConcurrentHashMap<>();
+    private final Map<String, net.skybornmc.skyblock.common.progression.IslandTop.Board> shown = new ConcurrentHashMap<>();
     private Scheduler.Task task;
+    private Scheduler.Task cycleTask;
 
     Leaderboards(NpcsModule module) {
         this.module = module;
@@ -54,6 +61,7 @@ final class Leaderboards {
         long period = module.config().refreshMinutes * 60L * 20L;
         // First read shortly after start (services of later modules are registered by then).
         task = module.core().scheduler().asyncRepeat(40, period, this::refresh);
+        cycleTask = module.core().scheduler().repeat("npcs:board-cycle", 20, 20, this::cycle);
     }
 
     void stop() {
@@ -61,6 +69,35 @@ final class Leaderboards {
             task.cancel();
             task = null;
         }
+        if (cycleTask != null) {
+            cycleTask.cancel();
+            cycleTask = null;
+        }
+        cycles.clear();
+        shown.clear();
+    }
+
+    /**
+     * Main thread, every second: boards set to {@code cycle} show Solo or Team by the clock
+     * ({@link net.skybornmc.skyblock.common.progression.IslandTop#cycleBoard}); only a switch re-sets their text.
+     */
+    private void cycle() {
+        if (cycles.isEmpty()) {
+            return;
+        }
+        int seconds = module.core().services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
+                .map(net.skybornmc.skyblock.common.progression.ProgressionService::boardCycleSeconds).orElse(10);
+        var board = net.skybornmc.skyblock.common.progression.IslandTop.cycleBoard(System.currentTimeMillis(), seconds);
+        for (Map.Entry<String, List<List<Row>>> e : cycles.entrySet()) {
+            if (shown.put(e.getKey(), board) != board) {
+                rows.put(e.getKey(), e.getValue().get(cycleIndex(board)));
+                module.boardUpdated(e.getKey());
+            }
+        }
+    }
+
+    static int cycleIndex(net.skybornmc.skyblock.common.progression.IslandTop.Board board) {
+        return board == net.skybornmc.skyblock.common.progression.IslandTop.Board.TEAM ? 1 : 0;
     }
 
     /** The source of a board id (unknown ids show "Coming soon"). */
@@ -122,6 +159,11 @@ final class Leaderboards {
             case BoardSource.IslandLevel l -> CompletableFuture.completedFuture(services
                     .optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
                     .map(pr -> levels(pr.islandTop(l.kind(), l.board(), size), l.kind())).orElse(List.of()));
+            // PHASE-5 M5.7 weekly boards: also cached in memory by the progression module. A cycling board keeps both lists
+            // and returns the one the clock shows now; cycle() switches them.
+            case BoardSource.IslandWeekly w -> CompletableFuture.completedFuture(services
+                    .optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
+                    .map(pr -> weekly(pr, w, size)).orElse(List.of()));
             case BoardSource.Island i -> services.optional(IslandStatsService.class)
                     .map(st -> st.top(i.stat(), i.period(), i.board(), size)
                             .thenCompose(list -> scheduler.supplyMain("npcs:board-island", () -> islands(list, i.stat()))))
@@ -148,6 +190,35 @@ final class Leaderboards {
             Component value = kind == net.skybornmc.skyblock.common.progression.IslandTop.Kind.LEVEL
                     ? module.text("leaderboard.value.island-level", Msg.number("level", e.level()))
                     : module.text("leaderboard.value.island-value", Msg.p("amount", Format.money(Math.round(e.blockWorth()))));
+            out.add(new Row(displayName(e.name(), module.plain("leaderboard.unknown-island")), value));
+        }
+        return out;
+    }
+
+    private List<Row> weekly(net.skybornmc.skyblock.common.progression.ProgressionService pr, BoardSource.IslandWeekly w, int size) {
+        if (!w.cycle()) {
+            return gains(pr.islandTop(w.kind(), w.board(), size), w.kind(), null);
+        }
+        var solo = net.skybornmc.skyblock.common.progression.IslandTop.Board.SOLO;
+        var team = net.skybornmc.skyblock.common.progression.IslandTop.Board.TEAM;
+        List<List<Row>> both = List.of(gains(pr.islandTop(w.kind(), solo, size), w.kind(), "leaderboard.value.cycle-solo"),
+                gains(pr.islandTop(w.kind(), team, size), w.kind(), "leaderboard.value.cycle-team"));
+        cycles.put(w.key(), both);
+        var now = net.skybornmc.skyblock.common.progression.IslandTop.cycleBoard(System.currentTimeMillis(), pr.boardCycleSeconds());
+        return both.get(cycleIndex(now));
+    }
+
+    /** Weekly rows: "+12 pts" / "+3 lv", with the Solo/Team tag on a cycling board ({@code tagKey}, null = none). */
+    private List<Row> gains(List<net.skybornmc.skyblock.common.progression.IslandTop.Entry> list,
+                            net.skybornmc.skyblock.common.progression.IslandTop.Kind kind, String tagKey) {
+        List<Row> out = new ArrayList<>(list.size());
+        for (var e : list) {
+            Component value = kind == net.skybornmc.skyblock.common.progression.IslandTop.Kind.WEEKLY_PILLARS
+                    ? module.text("leaderboard.value.pillar-gain", Msg.number("levels", Math.round(e.value())))
+                    : module.text("leaderboard.value.island-gain", Msg.number("points", Math.round(e.value())));
+            if (tagKey != null) {
+                value = module.text(tagKey, Msg.c("value", value));
+            }
             out.add(new Row(displayName(e.name(), module.plain("leaderboard.unknown-island")), value));
         }
         return out;

@@ -128,7 +128,7 @@ final class LevelMenu extends Menu {
         LevelManager levels = menus.levels();
         int level = s == null ? 0 : s.level;
         int percent = PillarManager.percent(s == null ? 0 : s.progress(levels.divisor()));
-        int place = levels.place(islandId);
+        int place = menus.boards().place(islandId);
         boolean team = menus.core().services().optional(IslandService.class).flatMap(i -> i.island(islandId))
                 .map(IslandService.IslandInfo::team).orElse(false);
         TagResolver[] p = {Msg.p("level", level), Msg.p("next", level + 1), Msg.p("percent", percent),

@@ -12,7 +12,6 @@ import net.skybornmc.skyblock.common.island.IslandRemovedEvent;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.progression.IslandLevelUpEvent;
-import net.skybornmc.skyblock.common.progression.IslandTop;
 import net.skybornmc.skyblock.common.progression.LevelSource;
 import net.skybornmc.skyblock.common.progression.PillarLevelUpEvent;
 import net.skybornmc.skyblock.common.skills.SkillLevelUpEvent;
@@ -32,7 +31,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -123,8 +121,8 @@ final class LevelManager implements Listener {
     private final Set<UUID> activeToday = new HashSet<>();
     private final LevelDebounce debounce = new LevelDebounce();
     private final Map<LevelSource, ToDoubleFunction<UUID>> providers = new ConcurrentHashMap<>();
-    private volatile Map<IslandTop.Kind, Map<IslandTop.Board, List<IslandTop.Entry>>> boards = Map.of();
-    private volatile Map<UUID, Integer> places = Map.of();
+    /** Runs on the main thread once the stored levels are loaded (M5.7: the boards rank right away). */
+    private Runnable onLoaded = () -> { };
     private LevelMath.Weights weights;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
     /** Finished calculations waiting to be applied on the main thread (PERF7; filled from any thread). */
@@ -174,8 +172,6 @@ final class LevelManager implements Listener {
         tasks.add(core.scheduler().repeat("progression-level-apply", 1L, 1L, this::drainApplies));
         long refresh = Math.max(1, config.refreshMinutes) * 60L * 20L;
         tasks.add(core.scheduler().repeat("progression-level-refresh", refresh, refresh, this::refreshOnline));
-        long top = Math.max(10, config.topRefreshSeconds) * 20L;
-        tasks.add(core.scheduler().repeat("progression-top", 100L, top, this::rebuildBoards));
         tasks.add(core.scheduler().repeat("progression-nightly", 20L * 60, 20L * 60, this::nightly));
     }
 
@@ -230,7 +226,7 @@ final class LevelManager implements Listener {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 joined(p);
             }
-            rebuildBoards();
+            onLoaded.run();
         }));
     }
 
@@ -628,48 +624,27 @@ final class LevelManager implements Listener {
         return name == null ? "?" : name;
     }
 
-    // ------------------------------------------------------------------ boards
+    // ------------------------------------------------------------------ boards (M5.7: ranked by TopBoards)
 
-    void rebuildBoards() {
-        IslandService islands = islands();
-        if (!ready || islands == null) {
-            return;
-        }
-        ProfileService profiles = ProfileService.of(core.services());
-        List<TopBoard.Candidate> candidates = new ArrayList<>(states.size());
+    /** One calculated island's numbers for the boards. */
+    record Snap(UUID island, int level, double total, long reachedAt, double earned, double blockWorth) {
+    }
+
+    /** The numbers of every calculated island, for {@link TopBoards} (main thread; ranking happens off it). */
+    List<Snap> snapshot() {
+        List<Snap> out = new ArrayList<>(states.size());
         for (Map.Entry<UUID, State> e : states.entrySet()) {
             State s = e.getValue();
-            if (!s.calculated) {
-                continue;
+            if (s.calculated) {
+                out.add(new Snap(e.getKey(), s.level, s.total, s.reachedAt, s.earned, blocks.ledger().worth(e.getKey())));
             }
-            IslandService.IslandInfo info = islands.island(e.getKey()).orElse(null);
-            if (info == null) {
-                continue;
-            }
-            UUID account = info.owner() == null ? null : profiles.ownerOf(info.owner());
-            candidates.add(new TopBoard.Candidate(info.id(), info.owner(), account, displayName(info.id()), info.team(), s.level,
-                    s.total, s.reachedAt, blocks.ledger().worth(info.id())));
         }
-        Map<IslandTop.Kind, Map<IslandTop.Board, List<IslandTop.Entry>>> next = new EnumMap<>(IslandTop.Kind.class);
-        for (IslandTop.Kind kind : IslandTop.Kind.values()) {
-            Map<IslandTop.Board, List<IslandTop.Entry>> byBoard = new EnumMap<>(IslandTop.Board.class);
-            for (IslandTop.Board board : IslandTop.Board.values()) {
-                byBoard.put(board, List.copyOf(TopBoard.rank(candidates, kind, board)));
-            }
-            next.put(kind, Collections.unmodifiableMap(byBoard));
-        }
-        boards = Collections.unmodifiableMap(next);
-        places = Map.copyOf(TopBoard.ownPlaces(next.get(IslandTop.Kind.LEVEL).get(IslandTop.Board.SOLO),
-                next.get(IslandTop.Kind.LEVEL).get(IslandTop.Board.TEAM)));
+        return out;
     }
 
-    List<IslandTop.Entry> top(IslandTop.Kind kind, IslandTop.Board board, int limit) {
-        List<IslandTop.Entry> list = boards.getOrDefault(kind, Map.of()).getOrDefault(board, List.of());
-        return limit <= 0 || list.size() <= limit ? list : list.subList(0, limit);
-    }
-
-    int place(UUID islandId) {
-        return islandId == null ? 0 : places.getOrDefault(islandId, 0);
+    /** Sets what runs once the stored levels are loaded (main thread). */
+    void onLoaded(Runnable action) {
+        this.onLoaded = action == null ? () -> { } : action;
     }
 
     // ------------------------------------------------------------------ rescans

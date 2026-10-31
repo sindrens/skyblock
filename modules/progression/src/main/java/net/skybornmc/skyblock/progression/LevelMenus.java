@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Opens {@code /is level} and {@code /is top} (PHASE-5 M5.2) and handles the Recalculate button. */
+/** Opens {@code /is level} and {@code /is top} (PHASE-5 M5.2, M5.7) and handles the Recalculate button. */
 final class LevelMenus {
 
     static final String PERM_LEVEL = "skyblock.progression.level";
@@ -21,6 +21,7 @@ final class LevelMenus {
     private final ModuleMessages msg;
     private final LevelManager levels;
     private final PillarManager pillars;
+    private TopBoards boards;
     private TaskMenus tasks;
     private UpgradeMenus upgrades;
 
@@ -45,6 +46,15 @@ final class LevelMenus {
 
     PillarManager pillars() {
         return pillars;
+    }
+
+    /** The island boards (M5.7). */
+    void boards(TopBoards boards) {
+        this.boards = boards;
+    }
+
+    TopBoards boards() {
+        return boards;
     }
 
     /** The challenge book (M5.3), opened from the book button. */
