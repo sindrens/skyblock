@@ -209,6 +209,7 @@ category-menu:
     collection: ["<c:text>Collection log finds, milestones, rewards."]
     pass: ["<c:text>Battle pass XP, tier claims, premium."]
     blackmarket: ["<c:text>Black Market buys, hand-outs, refunds."]
+    production: ["<c:text>Island Fuel added, islands asleep."]
 
 categories:
   all: "All you can see"
@@ -234,6 +235,7 @@ categories:
   collection: "Collection"
   pass: "Battle pass"
   blackmarket: "Black Market"
+  production: "Production"
 
 ranges:
   all: "All time"

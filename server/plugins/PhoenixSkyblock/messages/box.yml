@@ -58,6 +58,7 @@ sources:
   depths: "<c:value>The Depths (satchel full)"
   spawner-restore: "<c:value>Staff (frozen spawners restored)"
   black-market: "<c:value>Black Market"
+  production: "<c:value>Island Fuel"
   other: "<c:value>Other"
 
 menu:
