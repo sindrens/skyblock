@@ -14,7 +14,8 @@ public final class PackConfig extends ModuleConfig {
     @Setting(desc = "A Java player who declines the pack (or whose download fails) is kicked with a friendly text. false = offer only, never kick.")
     public boolean required = true;
 
-    @Setting(desc = "Full download URL of the zip when it is hosted elsewhere (its content must equal the bundled pack; the health check verifies it). Empty = this server hosts it.")
+    @Setting(desc = "Full download URL of the zip when it is hosted elsewhere (its content must equal the bundled pack; the health check verifies it). "
+            + "<file> is replaced by the current file name (phoenix-icons-<hash>.zip). Empty = this server hosts it.")
     public String url = "";
 
     @Setting(path = "host.bind", desc = "Address the built-in pack web server listens on. Empty = all addresses.", restart = true)
@@ -28,7 +29,7 @@ public final class PackConfig extends ModuleConfig {
     public String hostPublicHost = "play.skybornmc.net";
 
     @Setting(path = "host.check-url", desc = "URL the self-check downloads. Empty = the URL players use. Set http://127.0.0.1:25580/<file> "
-            + "if the server cannot reach its own public address (hairpin NAT).")
+            + "if the server cannot reach its own public address (hairpin NAT); <file> is replaced by the current file name.")
     public String hostCheckUrl = "";
 
     @Setting(path = "host.check-seconds", desc = "Seconds between two self-checks of the pack host.", min = 10, max = 600)

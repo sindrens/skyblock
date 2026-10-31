@@ -235,9 +235,10 @@ public final class PackModule implements SkyblockModule, Listener, PackService {
                 }
             });
             boolean selfHost = config.url == null || config.url.isBlank();
-            URI uri = PackUrls.url(config.url, config.hostPublicHost, config.hostPort, file);
+            // "<file>" in url / host.check-url = the current file name (it changes with every new pack hash).
+            URI uri = PackUrls.url(withFile(config.url, file), config.hostPublicHost, config.hostPort, file);
             URI checkUri = config.hostCheckUrl == null || config.hostCheckUrl.isBlank()
-                    ? uri : PackUrls.url(config.hostCheckUrl, config.hostPublicHost, config.hostPort, file);
+                    ? uri : PackUrls.url(withFile(config.hostCheckUrl, file), config.hostPublicHost, config.hostPort, file);
             if (selfHost) {
                 if (host != null && !host.matches(config.hostBind, config.hostPort)) {
                     stopHost();
@@ -269,6 +270,10 @@ public final class PackModule implements SkyblockModule, Listener, PackService {
             health.reset();
             core.plugin().getLogger().severe("Pack: not offered (nobody is kicked, icons show their base items): " + e.getMessage());
         }
+    }
+
+    private static String withFile(String url, String file) {
+        return url == null ? "" : url.replace("<file>", file).replace("{file}", file);
     }
 
     private void stopHost() {
