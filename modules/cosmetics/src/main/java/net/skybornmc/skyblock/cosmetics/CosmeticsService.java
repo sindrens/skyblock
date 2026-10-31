@@ -156,6 +156,20 @@ public final class CosmeticsService implements Cosmetics, Listener {
         return true;
     }
 
+    @Override
+    public boolean defineTag(String id, String display, net.skybornmc.skyblock.common.item.Rarity rarity, String source) {
+        if (!Cosmetic.validId(id) || registry.get(Kind.TAG, id).isPresent()) {
+            return false;
+        }
+        registry.putLater(new Cosmetic(Kind.TAG, id, display, rarity == null ? net.skybornmc.skyblock.common.item.Rarity.COMMON : rarity,
+                source, false, true), r -> core.scheduler().async(r),
+                e -> core.plugin().getLogger().log(Level.WARNING, "Could not write new tags (latest: '" + id + "') to "
+                        + CosmeticRegistry.FILE + "; they stay active until the next restart", e));
+        core.audit().log(AuditCategory.CONFIG, "tag_define", Actor.system("cosmetics"), id, null, null, null,
+                Map.of("display", String.valueOf(display), "source", String.valueOf(source)));
+        return true;
+    }
+
     /** {@link #grant} with the actor for the audit log (staff command, item redeem). */
     CompletableFuture<Boolean> grant(UUID player, Kind kind, String id, String reason, Actor actor) {
         return grant(player, kind, id, reason, actor, true);

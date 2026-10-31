@@ -22,6 +22,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [achievements](commands/achievements.md) | Achievements (`modules/achievements`) |
 | [afk](commands/afk.md) | AFK pool (`modules/afk`) |
 | [auction](commands/auction.md) | Auction house (`modules/auction`) |
+| [blackmarket](commands/blackmarket.md) | Black Market (`modules/blackmarket`) |
 | [boosters](commands/boosters.md) | Boosters (`modules/boosters`) |
 | [box](commands/box.md) | Item mailbox (`modules/box`) |
 | [chat](commands/chat.md) | Chat, tab list, nametags (`modules/chat`) |

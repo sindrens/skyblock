@@ -61,6 +61,12 @@ public final class TxReason {
     /** Money and crystals from daily/weekly quests and island missions (PHASE-10 M10.7); new currency. */
     public static final String QUEST_REWARD = "quest_reward";
 
+    /** Shards (or gems for an Island Charter) paid at the Black Market (PHASE-10 M10.11); a sink. */
+    public static final String BLACK_MARKET = "black_market";
+
+    /** A Black Market price given back because the bought item could not be handed out (PHASE-10 M10.11). */
+    public static final String BLACK_MARKET_REFUND = "black_market_refund";
+
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 
     private TxReason() {

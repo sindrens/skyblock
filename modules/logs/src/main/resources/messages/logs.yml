@@ -207,6 +207,7 @@ category-menu:
     rewards: ["<c:text>Daily claims, streaks, playtime rewards."]
     quests: ["<c:text>Quests rolled, swapped and done, island missions."]
     collection: ["<c:text>Collection log finds, milestones, rewards."]
+    blackmarket: ["<c:text>Black Market buys, hand-outs, refunds."]
 
 categories:
   all: "All you can see"
@@ -230,6 +231,7 @@ categories:
   rewards: "Rewards"
   quests: "Quests"
   collection: "Collection"
+  blackmarket: "Black Market"
 
 ranges:
   all: "All time"

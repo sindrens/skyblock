@@ -35,6 +35,8 @@ public final class BoxSource {
     public static final String DEPTHS = "depths";
     /** R3-13b: frozen stacked spawners a staff member gave back (inspect menu). */
     public static final String SPAWNER_RESTORE = "spawner-restore";
+    /** Items bought at the Black Market (PHASE-10 M10.11). */
+    public static final String BLACK_MARKET = "black-market";
     /** An item given back into the box after a take failed (keeps its original source when known). */
     public static final String RETURNED = "returned";
 
