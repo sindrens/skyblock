@@ -24,8 +24,19 @@ public final class TypedText {
 
     /** Removes colour codes and outer spaces, then checks {@code 1..maxLength} characters. */
     public static Result clean(String raw, int maxLength) {
-        String text = raw == null ? "" : CODES.matcher(raw).replaceAll("").strip();
-        if (text.isEmpty()) {
+        return clean(raw, maxLength, false);
+    }
+
+    /**
+     * {@code keepCodes} (GUI-4c: staff texts such as display formats, tag displays and config values, where {@code &}
+     * colour codes are wanted): the text is kept exactly as typed (codes and outer spaces: a format may end with a space),
+     * only a {@code §} becomes {@code &} (the formats use {@code &}); an all-blank text is still empty. Otherwise as
+     * {@link #clean(String, int)}.
+     */
+    public static Result clean(String raw, int maxLength, boolean keepCodes) {
+        String input = raw == null ? "" : raw;
+        String text = keepCodes ? input.replace('§', '&') : CODES.matcher(input).replaceAll("").strip();
+        if (text.isBlank()) {
             return new Result(text, Check.EMPTY);
         }
         if (text.length() > Math.max(1, maxLength)) {

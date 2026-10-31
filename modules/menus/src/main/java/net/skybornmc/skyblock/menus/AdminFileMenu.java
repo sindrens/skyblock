@@ -145,10 +145,11 @@ final class AdminFileMenu extends PagedMenu<SettingInfo> {
             openChild(new AdminListMenu(nav, config, info.path()));
         } else {
             String current = ConfigManager.display(info.value());
-            service.prompt(viewer, Nav.TEXTS, "admin.prompt", 500, input -> {
+            // GUI-4c: a Bedrock popup with the value already in the field (MenuService.input), chat on Java; & codes kept.
+            service.input(viewer, Nav.TEXTS, "admin.prompt", 500, current, true, input -> {
                 apply(info.path(), input.equalsIgnoreCase("default") ? ConfigManager.display(info.defaultValue()) : input);
                 service.open(viewer, this);
-            }, () -> service.open(viewer, this), Msg.p("path", info.path()), Msg.p("value", shorten(current)));
+            }, () -> service.open(viewer, this), Msg.p("path", info.path()), Msg.p("value", shorten(current)), Msg.p("max", 500));
         }
     }
 

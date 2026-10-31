@@ -35,4 +35,13 @@ class TypedTextTest {
         assertFalse(TypedText.useForm(true, false, true), "Java: chat");
         assertFalse(TypedText.useForm(true, true, false), "no Floodgate: chat");
     }
+
+    @Test
+    void staffTextsKeepTheirColourCodes() {
+        TypedText.Result kept = TypedText.clean("&c[Staff] §e<name> ", 40, true);
+        assertEquals(TypedText.Check.OK, kept.check());
+        assertEquals("&c[Staff] &e<name> ", kept.text(), "& codes stay, § becomes &, a format's trailing space stays");
+        assertEquals("[Staff] <name>", TypedText.clean("&c[Staff] §e<name>", 40).text(), "player texts still lose them");
+        assertEquals(TypedText.Check.EMPTY, TypedText.clean("   ", 10, true).check());
+    }
 }

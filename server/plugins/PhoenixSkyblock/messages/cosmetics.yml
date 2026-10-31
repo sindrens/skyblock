@@ -130,6 +130,16 @@ editor:
   prompt-id: "<prefix><c:text>Type an id (a-z, 0-9, _), like <c:value>night_owl</c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
   prompt-display: "<prefix><c:text>Type how it looks (MiniMessage or & codes), like <c:value>&c[Fire]</c:value>. <c:muted>(<cancel> to cancel, <seconds>s)"
   prompt-source: "<prefix><c:text>Type how players get it (or <c:value>none</c:value>). <c:muted>(<cancel> to cancel, <seconds>s)"
+  # GUI-4c: the Bedrock popups (on-screen keyboard) of the three prompts above.
+  prompt-id-form:
+    title: "New id"
+    label: "<c:text>An id (a-z, 0-9, _), like night_owl:"
+  prompt-display-form:
+    title: "How it looks"
+    label: "<c:text>MiniMessage or & codes, like &c[Fire]:"
+  prompt-source-form:
+    title: "How players get it"
+    label: "<c:text>A short text, or none:"
   invalid-id: "<prefix><c:error><sym:cross></c:error> <c:text>Ids use only a-z, 0-9 and _ (max 64)."
   exists: "<prefix><c:error><sym:cross></c:error> <c:value><id></c:value> <c:text>already exists."
   empty:
@@ -220,6 +230,10 @@ display:
     name: "<c:value>Preview (you)"
     afk-label: "<c:muted>AFK marker:"
   prompt: "<prefix><c:text>Type the new <c:value><field></c:value>. <c:value>default</c:value> resets, <c:value>empty</c:value> clears. <c:muted>(<cancel> to cancel, <seconds>s)"
+  # GUI-4c: the Bedrock popup of the prompt above. <field> the format's path.
+  prompt-form:
+    title: "Display format"
+    label: "<c:text>New <field> (default resets, empty clears):"
   confirm-crumb: "Save display"
   confirm-details: ["<c:text>Old: <c:muted><old>", "<c:text>New: <c:value><new>", "<c:text>The head shows the preview."]
   saved: "<prefix><c:success><sym:check></c:success> <c:text>Saved <c:value><field></c:value>. Live for everyone."

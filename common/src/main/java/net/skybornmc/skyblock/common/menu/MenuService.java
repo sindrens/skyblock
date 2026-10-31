@@ -709,12 +709,21 @@ public final class MenuService implements Listener {
      */
     public void input(Player player, String module, String key, int maxLength, String current, Consumer<String> onInput,
                       Runnable onCancel, TagResolver... placeholders) {
+        input(player, module, key, maxLength, current, false, onInput, onCancel, placeholders);
+    }
+
+    /**
+     * Same as {@link #input(Player, String, String, int, String, Consumer, Runnable, TagResolver...)}; {@code keepCodes}
+     * keeps {@code &} colour codes in the answer (staff texts: display formats, tag displays, config values; GUI-4c).
+     */
+    public void input(Player player, String module, String key, int maxLength, String current, boolean keepCodes,
+                      Consumer<String> onInput, Runnable onCancel, TagResolver... placeholders) {
         if (TypedText.useForm(config.bedrockForms, messages.isBedrock(player), bedrockForms != BedrockForms.NONE)
-                && sendForm(player, module, key, maxLength, current, onInput, onCancel, placeholders)) {
+                && sendForm(player, module, key, maxLength, keepCodes, current, onInput, onCancel, placeholders)) {
             return;
         }
         prompt(player, module, key, maxLength, typed -> {
-            TypedText.Result result = TypedText.clean(typed, maxLength);
+            TypedText.Result result = TypedText.clean(typed, maxLength, keepCodes);
             if (result.check() == TypedText.Check.OK) {
                 onInput.accept(result.text());
             } else {
@@ -778,8 +787,8 @@ public final class MenuService implements Listener {
         return true;
     }
 
-    private boolean sendForm(Player player, String module, String key, int maxLength, String current, Consumer<String> onInput,
-                             Runnable onCancel, TagResolver... placeholders) {
+    private boolean sendForm(Player player, String module, String key, int maxLength, boolean keepCodes, String current,
+                             Consumer<String> onInput, Runnable onCancel, TagResolver... placeholders) {
         UUID id = player.getUniqueId();
         String title = FORM_TEXT.serialize(text(player, module, key + "-form.title", placeholders));
         String label = FORM_TEXT.serialize(text(player, module, key + "-form.label", placeholders));
@@ -790,7 +799,8 @@ public final class MenuService implements Listener {
         }
         forms.add(id);
         boolean sent = bedrockForms.send(id, title, label, current == null ? "" : current,
-                typed -> Bukkit.getScheduler().runTask(plugin, () -> formAnswer(player, module, key, maxLength, typed, onInput, onCancel, placeholders)),
+                typed -> Bukkit.getScheduler().runTask(plugin, () -> formAnswer(player, module, key, maxLength, keepCodes, typed, onInput, onCancel,
+                        placeholders)),
                 () -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (forms.remove(id) && player.isOnline()) {
                         onCancel.run();
@@ -807,12 +817,12 @@ public final class MenuService implements Listener {
         return true;
     }
 
-    private void formAnswer(Player player, String module, String key, int maxLength, String typed, Consumer<String> onInput,
-                            Runnable onCancel, TagResolver... placeholders) {
+    private void formAnswer(Player player, String module, String key, int maxLength, boolean keepCodes, String typed,
+                            Consumer<String> onInput, Runnable onCancel, TagResolver... placeholders) {
         if (!forms.remove(player.getUniqueId()) || !player.isOnline()) {
             return;
         }
-        TypedText.Result result = TypedText.clean(typed, maxLength);
+        TypedText.Result result = TypedText.clean(typed, maxLength, keepCodes);
         switch (result.check()) {
             case EMPTY -> {
                 messages.send(player, MODULE, "prompt.cancelled");
@@ -822,7 +832,7 @@ public final class MenuService implements Listener {
                 messages.send(player, MODULE, "prompt.too-long", Msg.p("max", maxLength));
                 sounds.playUi(player, "error");
                 // Ask again with the text kept, so the player only has to shorten it.
-                if (!sendForm(player, module, key, maxLength, result.text(), onInput, onCancel, placeholders)) {
+                if (!sendForm(player, module, key, maxLength, keepCodes, result.text(), onInput, onCancel, placeholders)) {
                     onCancel.run();
                 }
             }
