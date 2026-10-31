@@ -152,7 +152,7 @@ screen for players and need `/isadmin … confirm` (30 s) from the console. Ever
 
 | Command | Description | Permission | Status |
 |---|---|---|---|
-| `/isadmin info <island>` | Owner, type, season, slot + grid + center, size, members with roles and join dates, coop players, created, home, id; clickable Teleport / Slots / Size | `skyblock.island.admin.info` (helper) | ✅ |
+| `/isadmin info <island>` | Owner, type, season, slot + grid + center, size, members with roles and join dates, coop players, created, home, id, hoppers in the busiest loaded chunk (F13, warning above `stacking.yml → hoppers.alert-above`); clickable Teleport / Slots / Size | `skyblock.island.admin.info` (helper) | ✅ |
 | `/isadmin tp <island>` | Teleport to the island home (center if not built yet) | `skyblock.island.admin.tp` (helper) | ✅ |
 | `/isadmin delete <island>` | Remove the island for good (confirm); members told, slot cleared and reused; no creation cooldown for the owner | `skyblock.island.admin.delete` (admin) | ✅ |
 | `/isadmin setsize <island> <size>` | Border width in chunks (odd, 1 to `size.max-chunks`); shown at once | `skyblock.island.admin.setsize` (admin) | ✅ |

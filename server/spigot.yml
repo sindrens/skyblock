@@ -143,7 +143,7 @@ world-settings:
     ticks-per:
       hopper-transfer: 8
       hopper-check: 8
-    hopper-amount: 1
+    hopper-amount: 64
     hopper-can-load-chunks: false
     dragon-death-sound-radius: 0
     seed-village: 10387312

@@ -77,7 +77,7 @@ decisions:
     module: server
     file: spigot.yml
     check: false
-    note: "Documentation only, spigot.yml/paper configs are not plugin configs: world-settings.default.hopper-amount 64, ticks-per.hopper-transfer 8, ticks-per.hopper-check 8; Paper hopper.cooldown-when-full true"
+    note: "Not a plugin config: set in the tracked server/spigot.yml (world-settings.default.hopper-amount 64, ticks-per.hopper-transfer 8, ticks-per.hopper-check 8) and server/config/paper-world-defaults.yml (hopper.cooldown-when-full true, disable-move-event false); update-vps.sh rsyncs server/ to the live server. Checked by stacking HopperTransferTest"
 
   - id: "R3-5b"
     answer: "Crystals can never be transferred (hard rule in code); shard notes on"
@@ -198,3 +198,10 @@ decisions:
     file: skills.yml
     path: combat.only-in-depths
     value: true
+
+  - id: "F13"
+    answer: "Hoppers counted per chunk (cached, no tick scans); staff alert above 64 in one chunk, no hard cap"
+    module: stacking
+    file: stacking.yml
+    path: hoppers.alert-above
+    value: 64

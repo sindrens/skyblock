@@ -48,6 +48,8 @@ When Paper updates and adds new options, keep their defaults unless there's a re
 | `tick-inactive-villagers` | false | Villagers are laggy; trading still works |
 | `entity-tracking-range` | lowered | Less network traffic; players still visible at 96 blocks |
 | `hopper-check` | 8 | Hoppers check less often (big win with many hoppers) |
+| `hopper-transfer` | 8 | One move every 8 ticks (vanilla speed); moving every tick would add work, not save it (F12) |
+| `hopper-amount` | 64 | F12 (owner 30 Oct): a hopper moves a whole stack per move, so 64 items every 8 ticks (~160 items/s, 64x vanilla) with 64x fewer move operations. Side effect: vanilla item sorters (one item per move) no longer work; collectors and storage do the sorting |
 | `max-tnt-per-tick` | 50 | Lag protection |
 | `send-namespaced` | false | Hides `plugin:command` entries from tab completion |
 | `log-villager-deaths` | false | Log spam |
@@ -95,6 +97,8 @@ spark is built into Paper. Use `/spark profiler` and `/spark tps`.
 | `tick-rates.behavior.villager.acquirepoi` | 60 | Villagers look for job sites/beds every 3 s instead of every tick (QUICK1; trading unaffected) |
 | `tick-rates.sensor.villager.nearestbedsensor` / `villagerbabiessensor` | 80 / 40 | Fewer villager brain scans (QUICK1) |
 | `hopper.ignore-occluding-blocks` | true | Performance |
+| `hopper.cooldown-when-full` (paper-world-defaults) | true | A hopper whose target is full waits a full cooldown instead of retrying every tick (F12) |
+| `hopper.disable-move-event` (paper-world-defaults) | false | Keep false: other plugins may listen to `InventoryMoveItemEvent`. Our plugin registers no listener for it (MenuService QUICK1, ItemStacker uses `InventoryPickupItemEvent`), so Paper skips building the event for hopper moves anyway (F12) |
 | `misc.redstone-implementation` | ALTERNATE_CURRENT | Much faster redstone, same behavior for normal builds |
 | `tick-rates.behavior.villager.validatenearbypoi` | 60 | Villager performance |
 | `tick-rates.sensor.villager.secondarypoisensor` | 80 | Villager performance |

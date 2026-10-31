@@ -366,6 +366,12 @@ final class IslandAdmin {
                         Msg.p("date", module.config().dateFormatter().format(Instant.ofEpochMilli(island.joinedAt(entry.uuid())))));
             }
         }
+        var bounds = island.bounds();
+        core.services().optional(net.skybornmc.skyblock.common.stacking.StackingService.class)
+                .flatMap(s -> s.busiestHopperChunk(bounds.world(), bounds.minX(), bounds.minZ(), bounds.maxX(), bounds.maxZ()))
+                .ifPresent(h -> msg.send(sender, h.count() > h.threshold() ? "admin.info.hoppers-over" : "admin.info.hoppers",
+                        Msg.p("count", h.count()), Msg.p("threshold", h.threshold()), Msg.p("chunk-x", h.chunkX()),
+                        Msg.p("chunk-z", h.chunkZ())));
         if (island.browserHidden()) {
             msg.send(sender, "admin.info.hidden", Msg.p("note", island.browserHiddenNote() == null ? "-" : island.browserHiddenNote()));
         }

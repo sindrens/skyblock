@@ -38,7 +38,8 @@ import java.util.Set;
 /**
  * Stacking (owner decisions 2026-10-30, Stacking S1–S28 and SK1–SK10): stacked mobs ({@link MobStacker}), dropped items
  * ({@link ItemStacker}) and spawner blocks ({@link SpawnerManager}) in the worlds of {@code stacking.yml → worlds},
- * island entity limits ({@link EntityLimits}) and crops that grow in the dark ({@link CropGrowth}). Stacking can't be
+ * island entity limits ({@link EntityLimits}), crops that grow in the dark ({@link CropGrowth}) and the per-chunk hopper
+ * counter with staff alerts ({@link HopperCounter}, owner F13). Stacking can't be
  * turned off (owner S11). Publishes {@link StackingService}; reads {@link IslandService} upgrade hooks and the optional
  * {@code StackKillProvider} (weapon multi-kills and per-mob bonuses), offers the batch kill API
  * ({@link StackingService#killFromStack}, fires {@code StackKillEvent}). Command: {@code /spawner give} (staff).
@@ -63,6 +64,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     private SpawnerItems spawnerItems;
     private EntityLimits limits;
     private CropGrowth crops;
+    private HopperCounter hoppers;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
 
     public StackingModule(Core core) {
@@ -86,10 +88,11 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         spawnerItems = new SpawnerItems(this);
         limits = new EntityLimits(this);
         crops = new CropGrowth(this);
+        hoppers = new HopperCounter(this);
         applyConfig();
         spawnerItems.register();
         spawners.load();
-        for (Listener listener : List.of(this, mobs, items, spawners, limits, crops)) {
+        for (Listener listener : List.of(this, mobs, items, spawners, limits, crops, hoppers)) {
             Bukkit.getPluginManager().registerEvents(listener, core.plugin());
         }
         indexLoaded();
@@ -106,13 +109,14 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         core.configs().load(config);
         core.messages().load(ID);
         applyConfig();
+        hoppers.loadAll(); // the counter may have been switched on, or the worlds changed
     }
 
     @Override
     public void disable() {
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
-        for (Listener listener : List.of(this, mobs, items, spawners, limits, crops)) {
+        for (Listener listener : java.util.Arrays.asList(this, mobs, items, spawners, limits, crops, hoppers)) {
             if (listener != null) {
                 HandlerList.unregisterAll(listener);
             }
@@ -125,6 +129,9 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         }
         if (limits != null) {
             limits.clear();
+        }
+        if (hoppers != null) {
+            hoppers.clear();
         }
         if (spawnerItems != null) {
             spawnerItems.unregister();
@@ -162,6 +169,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
                 }
             }
         }
+        hoppers.loadAll();
     }
 
     private void added(Entity entity) {
@@ -263,6 +271,10 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         return spawnerItems;
     }
 
+    HopperCounter hoppers() {
+        return hoppers;
+    }
+
     // ------------------------------------------------------------------ StackingService
 
     @Override
@@ -282,6 +294,22 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     @Override
     public long itemCount(Item item) {
         return item.isValid() ? ItemStacker.count(item) : 0;
+    }
+
+    @Override
+    public int hopperCount(org.bukkit.Location location) {
+        HopperCounter h = hoppers;
+        return h == null || location == null ? 0 : h.count(location);
+    }
+
+    @Override
+    public java.util.Optional<HopperHotspot> busiestHopperChunk(String world, int minX, int minZ, int maxX, int maxZ) {
+        HopperCounter h = hoppers;
+        if (h == null || world == null) {
+            return java.util.Optional.empty();
+        }
+        return h.busiest(world, minX, minZ, maxX, maxZ)
+                .map(s -> new HopperHotspot(s.chunkX(), s.chunkZ(), s.count(), config.hopperAlertAbove));
     }
 
     @Override

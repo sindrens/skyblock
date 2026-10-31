@@ -32,6 +32,15 @@ limit:
     villagers: "villagers"
     displays: "displays"
 
+# Hopper counter (owner F13): staff alert when one chunk has more hoppers than hoppers.alert-above (no hard cap).
+# Permission skyblock.stacking.hopper-alerts. <count> <threshold> <island> <owner> <world> <x> <y> <z> <chunk-x> <chunk-z>
+# Java gets a clickable [Teleport] (/tppos); Bedrock can't click chat, so it sees the coordinates and the command.
+hoppers:
+  alert: "<c:warning>[Hoppers]</c:warning> <c:value><count></c:value> <c:text>hoppers in one chunk <c:muted>(alert above <threshold>)</c:muted> <c:text>on <c:value><island></c:value> <c:text>of <c:value><owner></c:value> <c:muted><sym:dot> <world> <x> <y> <z></c:muted> <click:run_command:'/tppos <x> <y> <z> <world>'><hover:show_text:'<c:text>Runs /tppos <x> <y> <z> <world>'><c:action>[Teleport]</c:action></hover></click>"
+  alert-bedrock: "<c:warning>[Hoppers]</c:warning> <c:value><count></c:value> <c:text>hoppers in one chunk <c:muted>(alert above <threshold>)</c:muted> <c:text>on <c:value><island></c:value> <c:text>of <c:value><owner></c:value><c:text>. Go there: <c:value>/tppos <x> <y> <z> <world>"
+  no-island: "no island"
+  no-owner: "unknown"
+
 # Spawner blocks. <mob> <amount> <count> <left> <max>
 spawner:
   placed: "<prefix><c:success><sym:check></c:success> <c:value><mob></c:value> <c:text>spawner placed. Add more of the same kind (max <c:value><max></c:value>)."

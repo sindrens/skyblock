@@ -30,6 +30,27 @@ public interface StackingService {
     int spawnerCount(Block block);
 
     /**
+     * The loaded chunk with the most hoppers (owner F13).
+     *
+     * @param threshold staff are alerted above this many hoppers in one chunk ({@code stacking.yml → hoppers.alert-above})
+     */
+    record HopperHotspot(int chunkX, int chunkZ, int count, int threshold) {
+    }
+
+    /** Hoppers in the loaded chunk at {@code location} (cached count, owner F13); 0 outside the stacking worlds. */
+    default int hopperCount(Location location) {
+        return 0;
+    }
+
+    /**
+     * The loaded chunk with the most hoppers inside a block rectangle (both corners inclusive), e.g. an island's bounds
+     * for {@code /isadmin info}; empty when no loaded chunk there has a hopper. Cached counts, no scan.
+     */
+    default java.util.Optional<HopperHotspot> busiestHopperChunk(String world, int minX, int minZ, int maxX, int maxZ) {
+        return java.util.Optional.empty();
+    }
+
+    /**
      * Spawner tier (1-5, {@code stacking.yml → spawners.tier-N}) of a mob type id ({@code zombie}); empty for types that
      * can't be spawners. The island level values spawners by tier (PHASE-5 M5.2). Any thread.
      */

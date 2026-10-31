@@ -63,6 +63,41 @@ final class StackMath {
         return new Distribution(added, fresh, left);
     }
 
+    // ------------------------------------------------------------------ hoppers and inventories (S17, F12)
+
+    /**
+     * The stacks {@code amount} items fill at {@code maxStack} per stack: 64 cobblestone → [64], 130 → [64, 64, 2],
+     * 40 ender pearls → [16, 16, 8]. Empty for 0 or less. A max below 1 counts as 1.
+     */
+    static int[] stackSizes(long amount, int maxStack) {
+        if (amount <= 0) {
+            return new int[0];
+        }
+        int max = Math.max(1, maxStack);
+        long parts = (amount + max - 1) / max;
+        if (parts > Integer.MAX_VALUE - 8) {
+            throw new IllegalArgumentException("too many stacks: " + amount + " / " + max);
+        }
+        int[] sizes = new int[(int) parts];
+        long left = amount;
+        for (int i = 0; i < sizes.length; i++) {
+            int n = (int) Math.min(left, max);
+            sizes[i] = n;
+            left -= n;
+        }
+        return sizes;
+    }
+
+    /**
+     * Items a hopper (or any container) is offered from a stacked item entity of {@code count}: at most
+     * {@code perTransfer} (owner S17: 64) and at most what the container could hold when empty ({@code slots} ×
+     * {@code maxStack}), so a hopper is never handed more stacks than it has slots.
+     */
+    static long hopperOffer(long count, int perTransfer, int maxStack, int slots) {
+        long capacity = (long) Math.max(0, slots) * Math.max(1, maxStack);
+        return Math.max(0, Math.min(count, Math.min(Math.max(0, perTransfer), capacity)));
+    }
+
     // ------------------------------------------------------------------ kills
 
     /**
