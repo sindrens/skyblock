@@ -22,6 +22,7 @@ debug:
   flags: " <c:ember><sym:bullet></c:ember> <c:text>Fast-break flags for <player>: <c:value><window></c:value> <c:muted>in window <sym:dot> <total> this session <sym:dot> <all> on the server"
   combat: " <c:ember><sym:bullet></c:ember> <c:text>Combat mobs: <c:value><alive></c:value> <c:muted>of max <max> <sym:dot> <zones> active zones"
   combat-zone: " <c:ember><sym:bullet></c:ember> <c:text>This zone (<zone>): <c:value><alive></c:value> <c:text>alive, target <c:value><target></c:value> <c:muted><sym:dot> <players> players <sym:dot> mini-boss: <boss>"
+  abilities: " <c:ember><sym:bullet></c:ember> <c:text>Mob abilities: <c:value><mobs></c:value> <c:text>mobs <sym:dot> <c:value><active></c:value><c:muted>/<max> effects running"
   region-flags: " <c:ember><sym:bullet></c:ember> <c:text>Region flags at feet: <c:value><regions></c:value> <c:muted><sym:dot> denied: <denied> <sym:dot> bypass: <bypass>"
   region-flags-off: " <c:ember><sym:bullet></c:ember> <c:muted>Region flags: the worlds module isn't running"
   "yes": "yes"
@@ -316,6 +317,25 @@ combat:
     spawn: "<prefix><c:error><sym:sword></c:error> <c:text>Mini-boss <name> <c:text>appeared in <c:value><zone></c:value><c:text>!"
     killed: "<prefix><c:success><sym:check></c:success> <name> <c:text>was defeated by <c:value><player></c:value><c:text>."
     reward: "<prefix><c:success><sym:star></c:success> <c:text>You helped defeat <name><c:text>. Rewards are in your satchel."
+  # M8.1 elites (mobs.yml elite-chance): custom name around the mob's name (always visible).
+  elite:
+    name: "<rarity:legendary><sym:star></rarity:legendary> <name>"
+  # M8.1 ability warnings: action bar for players near the mob, 1 s before the ability hits (with the red ring of
+  # blocks and the warning sound). <name> = the mob's name. Keep them short (phones, Bedrock).
+  ability:
+    slam: "<c:error><sym:arrow></c:error> <name> <c:text>slams! <c:value>Leave the ring!"
+    leap: "<c:error><sym:arrow></c:error> <name> <c:text>leaps! <c:value>Leave the ring!"
+    charge: "<c:error><sym:arrow></c:error> <name> <c:text>charges! <c:value>Leave the red lane!"
+    volley: "<c:error><sym:arrow></c:error> <name> <c:text>takes aim! <c:value>Take cover!"
+    pull: "<c:error><sym:arrow></c:error> <name> <c:text>pulls! <c:value>Leave the ring!"
+    summon: "<c:error><sym:arrow></c:error> <name> <c:text>calls for help!"
+    shield: "<c:error><sym:arrow></c:error> <name> <c:text>raises a shield!"
+    ring: "<c:error><sym:arrow></c:error> <name> <c:text>sets the ground alight! <c:value>Leave the ring!"
+    curse: "<c:error><sym:arrow></c:error> <name> <c:text>casts a curse! <c:value>Leave the ring!"
+    teleport: "<c:error><sym:arrow></c:error> <name> <c:text>blinks to the red mark! <c:value>Watch your back!"
+    enrage: "<c:error><sym:arrow></c:error> <name> <c:text>is enraged!"
+    # Name tag while the shield is up (takes much less damage).
+    shield-name: "<name> <c:info>[Shield]</c:info>"
 
 # Mob names (mobs.yml ids). Missing = the vanilla name. Ambient mobs keep their vanilla name.
 mobs:
