@@ -65,6 +65,22 @@ public final class CratesSettings extends ModuleConfig {
     @Setting(path = "fragments.max-keys-per-click", desc = "Most keys one 'Combine all' click makes.", min = 1, max = 1_000)
     public int fragmentsMaxKeysPerClick = 64;
 
+    @Setting(path = "key-items.enabled", desc = "M10.4: tradeable keys can be withdrawn in a crate's preview as key items "
+            + "(unique, dupe-checked, tradeable on /trade and the AH). USE a key item to put it back on your active profile. "
+            + "Bound keys can never be withdrawn. Off = no withdraw buttons; key items already out can still be used.")
+    public boolean keyItemsEnabled = true;
+
+    @Setting(path = "key-items.material", desc = "Vanilla item of a key item (the resource pack can retexture it later). Read at server start.",
+            restart = true)
+    public String keyItemMaterial = "TRIPWIRE_HOOK";
+
+    @Setting(path = "key-items.glint", desc = "Key items shine (enchantment glint). Read at server start.", restart = true)
+    public boolean keyItemGlint = true;
+
+    @Setting(path = "key-items.max-per-withdraw", desc = "Most key items one withdraw makes ('Withdraw an amount'; overflow "
+            + "goes to /box).", min = 1, max = 256)
+    public int keyItemMaxPerWithdraw = 64;
+
     @Setting(path = "tier.stage-skills", desc = "Skills whose highest level decides the opener's tier for money and crystal "
             + "pouches (the same rule the AFK pool uses).")
     public List<String> stageSkills = List.of("mining", "foraging", "combat");

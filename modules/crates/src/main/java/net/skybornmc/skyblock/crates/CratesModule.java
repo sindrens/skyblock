@@ -67,7 +67,8 @@ import java.util.logging.Level;
  * rest to {@code /box}. Publishes {@link CrateKeys}, so the AFK pool hands over its pending keys as soon as this runs.
  * M10.3: the crates stand on the crate yard pedestals ({@link CrateYard}), "Open 1" plays the B40 spinner
  * ({@link SpinnerMenu}) or, at a pedestal, the in-world show; top wins of the big crates go to global chat
- * ({@link CrateShow}). Every show starts after the open is committed.
+ * ({@link CrateShow}). Every show starts after the open is committed. M10.4: tradeable keys can be withdrawn as key items
+ * and USEd to put them back ({@link KeyItems}).
  */
 public final class CratesModule implements SkyblockModule, Listener {
 
@@ -88,6 +89,7 @@ public final class CratesModule implements SkyblockModule, Listener {
     private CrateYard yard;
     private CrateKeysService keysService;
     private Fragments fragments;
+    private KeyItems keyItems;
     /** Keys and pity per profile for the menus (loaded on demand, refreshed after every change). */
     private final Map<UUID, ProfileView> views = new ConcurrentHashMap<>();
 
@@ -135,6 +137,8 @@ public final class CratesModule implements SkyblockModule, Listener {
         yard = new CrateYard(this);
         keysService = new CrateKeysService(this);
         fragments = new Fragments(this);
+        keyItems = new KeyItems(this);
+        keyItems.enable();
         // Published right away (keys only need the database): the AFK pool hands over its pending keys on its first check.
         core.services().register(ID, CrateKeys.class, keysService);
         registerCommand();
@@ -173,6 +177,9 @@ public final class CratesModule implements SkyblockModule, Listener {
     @Override
     public void disable() {
         HandlerList.unregisterAll(this);
+        if (keyItems != null) {
+            keyItems.disable();
+        }
         if (physical != null) {
             HandlerList.unregisterAll(physical);
         }
@@ -304,6 +311,11 @@ public final class CratesModule implements SkyblockModule, Listener {
     private void registerSetting() {
         core.services().optional(PlayerSettings.class).ifPresent(s -> s.register(new SettingToggle(ID, CrateShow.SETTING_FAST,
                 SettingCategory.GAMEPLAY, Material.CLOCK, settings.fastDefault, null, ID, "settings.fast-crate-opening", false)));
+    }
+
+    /** M10.4: withdraw tradeable keys as key items, USE them to put them back. */
+    KeyItems keyItems() {
+        return keyItems;
     }
 
     /** R3-18: fragments → Phoenix keys. */
