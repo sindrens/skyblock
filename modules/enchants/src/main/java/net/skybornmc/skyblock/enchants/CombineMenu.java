@@ -57,7 +57,7 @@ final class CombineMenu extends PagedMenu<CombineMenu.Group> {
     @Override
     protected void decorate() {
         set(4, service.item(Material.EXPERIENCE_BOTTLE, viewer, EnchantsModule.ID, "menu.combine.hint"),
-                click -> openChild(new ToolPickMenu(module, SlotMenu.Mode.UPGRADE)));
+                click -> ToolPickMenu.open(this, module, SlotMenu.Mode.UPGRADE));
     }
 
     @Override

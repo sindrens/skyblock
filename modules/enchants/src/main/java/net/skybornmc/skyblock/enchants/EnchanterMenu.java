@@ -75,9 +75,9 @@ final class EnchanterMenu extends Menu {
         int tools = module.ops().tools(viewer).size();
         long books = module.ops().books(viewer).stream().filter(b -> !b.book().scroll()).count();
         set(SLOT_APPLY, service.item(Material.ENCHANTED_BOOK, viewer, EnchantsModule.ID, "menu.main.apply", Msg.p("books", books)),
-                click -> openChild(new ToolPickMenu(module, SlotMenu.Mode.APPLY)));
+                click -> ToolPickMenu.open(this, module, SlotMenu.Mode.APPLY));
         set(SLOT_UPGRADE, service.item(Material.EXPERIENCE_BOTTLE, viewer, EnchantsModule.ID, "menu.main.upgrade", Msg.p("tools", tools)),
-                click -> openChild(new ToolPickMenu(module, SlotMenu.Mode.UPGRADE)));
+                click -> ToolPickMenu.open(this, module, SlotMenu.Mode.UPGRADE));
         int sets = module.wardrobe() == null ? 0 : module.wardrobe().entries(viewer).size();
         set(SLOT_ARMOR, service.item(Material.DIAMOND_CHESTPLATE, viewer, EnchantsModule.ID,
                 module.wardrobe() == null ? "menu.main.armor-off" : "menu.main.armor", Msg.p("sets", sets)),
@@ -91,7 +91,7 @@ final class EnchanterMenu extends Menu {
         set(SLOT_COMBINE, service.item(Material.ANVIL, viewer, EnchantsModule.ID, "menu.main.combine", Msg.p("books", books)),
                 click -> openChild(new CombineMenu(module)));
         set(SLOT_REMOVE, service.item(Material.GRINDSTONE, viewer, EnchantsModule.ID, "menu.main.remove"),
-                click -> openChild(new ToolPickMenu(module, SlotMenu.Mode.REMOVE)));
+                click -> ToolPickMenu.open(this, module, SlotMenu.Mode.REMOVE));
         set(SLOT_SHOP, service.item(Material.AMETHYST_SHARD, viewer, EnchantsModule.ID, "menu.main.shop"),
                 click -> module.menus().openShop(viewer, this));
         set(SLOT_GUIDE, service.item(Material.KNOWLEDGE_BOOK, viewer, EnchantsModule.ID, "menu.main.guide"),

@@ -44,6 +44,58 @@ final class SlotMenu extends Menu {
         this.toolId = toolId;
     }
 
+    /**
+     * GUI-4b (UX_REVIEW §2, target 5 clicks): the only slot this mode can use on a tool, so the slot screen can be
+     * skipped: the one empty slot for Apply, the one filled slot for Upgrade and Remove. Empty when there are none or
+     * several. {@code states} are slots 1..n in order. Pure.
+     */
+    static java.util.OptionalInt onlyChoice(List<EnchantRules.SlotState> states, Mode mode) {
+        EnchantRules.SlotState wanted = mode == Mode.APPLY ? EnchantRules.SlotState.EMPTY : EnchantRules.SlotState.FILLED;
+        int found = -1;
+        for (int i = 0; i < states.size(); i++) {
+            if (states.get(i) == wanted) {
+                if (found >= 0) {
+                    return java.util.OptionalInt.empty();
+                }
+                found = i + 1;
+            }
+        }
+        return found < 0 ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(found);
+    }
+
+    /** The slot states of a tool, slots 1..5. */
+    static List<EnchantRules.SlotState> states(EnchantsModule module, ToolInfo tool) {
+        List<EnchantRules.SlotState> states = new ArrayList<>();
+        for (int slot = 1; slot <= PERK_SLOTS.length; slot++) {
+            states.add(module.rules().slotState(tool, slot));
+        }
+        return states;
+    }
+
+    /**
+     * The screen after picking a tool: the book list / upgrade / remove screen straight away when only one slot fits the
+     * mode (GUI-4b), otherwise this slot screen.
+     */
+    static Menu next(EnchantsModule module, Mode mode, ToolInfo tool) {
+        java.util.OptionalInt only = onlyChoice(states(module, tool), mode);
+        if (only.isPresent()) {
+            int slot = only.getAsInt();
+            if (mode == Mode.APPLY) {
+                return new BookPickMenu(module, tool.id(), slot);
+            }
+            Optional<ToolPerk> perk = EnchantRules.perkAt(tool, slot);
+            if (perk.isPresent()) {
+                if (mode == Mode.REMOVE) {
+                    return new RemoveMenu(module, tool.id(), perk.get().id());
+                }
+                if (module.registry().get(perk.get().id()).isPresent()) {
+                    return new UpgradeMenu(module, tool.id(), perk.get().id());
+                }
+            }
+        }
+        return new SlotMenu(module, mode, tool.id());
+    }
+
     @Override
     public int rows() {
         return 6;
