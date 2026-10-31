@@ -77,10 +77,19 @@ public final class ShopCatalog {
     }
 
     /** A tab: id, icon item id, tab slot (0-8), kind, items in file order (disabled ones included). */
+    /**
+     * @param icon vanilla item id (the plain icon for owner-added categories without a catalogue icon)
+     * @param slot parsed from shop.yml but no longer used for layout (GUI-P3: the category menu is centred in file order)
+     */
     public record Category(String id, String icon, int slot, Kind kind, List<Item> items) {
 
         public Category {
             items = List.copyOf(items);
+        }
+
+        /** The icon catalogue key of this category ({@code shop/stone_earth}); I7 pack v2. */
+        public String iconKey() {
+            return "shop/" + id.replace('-', '_');
         }
 
         public List<Item> enabledItems() {

@@ -62,6 +62,14 @@ public final class ShopSettings extends ModuleConfig {
             + "it is red with \"Poor deal\".", min = 1, level = Setting.Level.OWNER)
     public long paybackOkHours = 300;
 
+    @Setting(path = "sell.min-gap-ms", desc = "GUI-P3: minimum milliseconds between two shop sales of one player (sell GUI, "
+            + "middle click, Shift + Right-click): stops click spam. One sale is in flight at a time anyway.", min = 100, max = 5_000)
+    public int sellMinGapMs = 400;
+
+    @Setting(path = "sell.note-min-percent", desc = "GUI-P3: the live price note on a shop tile (Falling / Rising) shows only "
+            + "when the sell price is at least this many percent away from its base price.", min = 0, max = 100)
+    public int noteMinPercent = 2;
+
     @Setting(path = "buy.save-player-data", desc = "Save the player's data right after the items are handed over, so a "
             + "crash can't roll the inventory back to before a paid purchase.")
     public boolean savePlayerData = true;
