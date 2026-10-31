@@ -120,7 +120,7 @@ final class IslandMenu extends Menu {
                 click -> openChild(new MembersMenu(module, islands, island))));
         set(SLOT_PERMISSIONS, MenuButton.of(service.item(new ItemStack(Material.COMPARATOR), text("menu.permissions.name"),
                 lines(MemberRules.canEditPerms(role, PermRole.MEMBER) ? "menu.permissions.lore-edit" : "menu.permissions.lore-view")),
-                click -> openChild(new PermissionsMenu(module, islands, island))));
+                click -> openChild(new PermPresetsMenu(module, islands, island))));
         WarpManager warps = module.warps();
         set(SLOT_WARPS, MenuButton.of(service.item(new ItemStack(Material.ENDER_PEARL), text("menu.warps.name"), lines("menu.warps.lore",
                 Msg.p("warps", warps.warps(island.id()).size()), Msg.p("slots", warps.slots(island)))),

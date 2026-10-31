@@ -92,7 +92,8 @@ dungeon:
     click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
   tier:
     name: "<c:value>Tier <tier> <c:muted><sym:dot></c:muted> <c:text><name>"
-    locked-name: "<c:muted>Tier <tier> <sym:dot> <name>"
+    # GUI-4: the key fact (what unlocks it) in the name, so Bedrock players read it without the lore.
+    locked-name: "<c:locked><sym:cross> Tier <tier></c:locked> <c:muted><sym:dot></c:muted> <c:text>Needs <skill> <required>"
     subtitle: "<c:muted><wing> <c:muted><sym:dot> Tier <tier>"
     resource: "<c:text>Resource: <c:value><resource>"
     requirement-met: "<c:text>Needs <skill> <c:value><required></c:value> <c:success><sym:check>"
@@ -259,7 +260,7 @@ drop-items:
   subtitle: "<c:muted>Depths material"
   description: "Sell it from your satchel or use it at the Forge."
   descriptions:
-    depths_geode: "A rare find. Its use arrives in a later update."
+    depths_geode: "A rare stone from deep in the mines."
     depths_key_fragment: "A rare find from tier 11+. 3 make a Phoenix key in /crates. Tradeable."
   names:
     depths_coal: "Coal"

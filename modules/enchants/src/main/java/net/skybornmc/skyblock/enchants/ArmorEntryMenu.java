@@ -53,7 +53,11 @@ final class ArmorEntryMenu extends Menu {
 
     @Override
     public Component title() {
-        return service.title(viewer, module.menus().text(viewer, "menu.title"), module.menus().text(viewer, "menu.mode.armor"));
+        // GUI-4: "Armor » <set>", so it differs from the set list before it.
+        WardrobeService w = module.wardrobe();
+        Optional<SetEntryView> entry = w == null ? Optional.empty() : w.entry(viewer, entryId);
+        return service.title(viewer, module.menus().text(viewer, "menu.mode.armor"),
+                entry.<Component>map(e -> Component.text(e.name())).orElse(module.menus().text(viewer, "menu.title")));
     }
 
     @Override

@@ -64,7 +64,7 @@ final class StaffEntryMenu extends Menu {
                     p -> module.staff().setLevel(p, staffMenu, entry, target), p -> {
             })));
         }
-        set(26, service.item(Material.BARRIER, viewer, WardrobeModule.ID, "menu.staff.remove"), click -> openChild(new ConfirmMenu(
+        set(26, service.item(Material.LAVA_BUCKET, viewer, WardrobeModule.ID, "menu.staff.remove"), click -> openChild(new ConfirmMenu(
                 v -> m.text(v, "confirm.remove.crumb"), null,
                 v -> m.lines(v, "confirm.remove.details", Msg.p("set", name), Msg.p("player", staffMenu.targetName)),
                 p -> module.staff().remove(p, staffMenu, entry), p -> {

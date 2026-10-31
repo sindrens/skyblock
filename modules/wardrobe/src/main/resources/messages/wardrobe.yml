@@ -35,7 +35,7 @@ arrives: "<prefix><c:error><sym:cross></c:error> <c:text><c:value><set></c:value
 locked: "<prefix><c:error><sym:cross></c:error> <c:text>Needs <requirement><c:text>."
 token-gone: "<prefix><c:error><sym:cross></c:error> <c:text>Token not found. Put it in your inventory."
 token-copy: "<prefix><c:error><sym:cross></c:error> <c:text>That token was a copy. It was taken and staff were told."
-token-received: "<prefix><c:success><sym:check></c:success> <c:text>You got a <c:value><set></c:value> token. Right-click it to redeem."
+token-received: "<prefix><c:success><sym:check></c:success> <c:text>You got a <c:value><set></c:value> token. Use it to redeem."
 redeemed: "<prefix><c:success><sym:check></c:success> <c:text><c:value><set></c:value> is in your wardrobe now."
 staff-token-copy: "<c:error><bold>DUPE</bold></c:error> <c:value><player></c:value> <c:text>used a copied Set Token <c:muted>(<id>)</c:muted><c:text>. Taken."
 staff-copy-alert: "<c:error><bold>DUPE</bold></c:error> <c:value><player></c:value> <c:text>had a copied set piece in <c:value><where></c:value><c:text>. Deleted."
@@ -281,7 +281,7 @@ token:
   subtitle: "<c:muted>Set Token · Tier {tier}"
   description: "Adds this set to your wardrobe. Tradeable until redeemed."
   tradeable: "<c:muted>Trade it or sell it on /ah."
-  action-input: "Right-click"
+  action-input: "USE"
   action-text: "to redeem"
 
 tome:
@@ -306,7 +306,9 @@ menu:
       lore: ["<c:text>Try another filter."]
     filter:
       name: "<c:value>Filter: <filter>"
-      lore: ["<c:text>Show only some sets.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
+      lore: ["<c:text>Show only some sets.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
+      crumb: "Filter"
+      pick: "<c:value><filter>"
     worn:
       name: "<c:value>Worn now"
       lore: ["<c:text>Your active set bonuses.", ""]

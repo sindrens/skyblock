@@ -151,36 +151,17 @@ final class LogsHubMenu extends Menu {
                         Msg.c("categories", module.render.categories(viewer, filter)))), click ->
                 openChild(new LogCategoryMenu(module, filter)));
 
-        // Time range (cycles)
+        // Time range (GUI-4/G9: a pick list, one click picks)
         set(SLOT_TIME, service.item(Material.CLOCK, module.render.text(viewer, "hub.time.name"),
                 service.lines(viewer, LogsModule.ID, "hub.time.lore",
                         Msg.c("range", module.render.range(viewer, filter.range)),
-                        Msg.p("options", String.join(", ", module.config.ranges)))), click -> {
-            filter.range = next(module.config.ranges.stream().map(module::parseRange).toList(), filter.range);
-            service.sound(viewer, "click");
-            refresh();
-        });
+                        Msg.p("options", String.join(", ", module.config.ranges)))), click -> pickRange());
 
         // Radius (near only)
         if (filter.subject == LogFilter.Subject.NEAR) {
             set(SLOT_RADIUS, service.item(Material.SPYGLASS, module.render.text(viewer, "hub.radius.name"),
                     service.lines(viewer, LogsModule.ID, "hub.radius.lore", Msg.p("radius", filter.radius),
-                            Msg.p("options", String.join(", ", module.config.nearRadii)))), click -> {
-                List<Integer> radii = new ArrayList<>();
-                for (String r : module.config.nearRadii) {
-                    try {
-                        radii.add(Math.min(module.config.nearMaxRadius, Integer.parseInt(r.trim())));
-                    } catch (NumberFormatException ignored) {
-                        // skip bad entries
-                    }
-                }
-                if (!radii.isEmpty()) {
-                    int index = radii.indexOf(filter.radius);
-                    filter.radius = radii.get((index + 1) % radii.size());
-                }
-                service.sound(viewer, "click");
-                refresh();
-            });
+                            Msg.p("options", String.join(", ", module.config.nearRadii)))), click -> pickRadius());
         }
 
         set(SLOT_RESET, service.item(Material.STRUCTURE_VOID, viewer, LogsModule.ID, "hub.reset"), click -> {
@@ -244,6 +225,41 @@ final class LogsHubMenu extends Menu {
         island.target = id;
         island.range = filter.range;
         filter = island;
+    }
+
+    private void pickRange() {
+        List<net.skybornmc.skyblock.common.menu.PickListMenu.Option<Duration>> options = new ArrayList<>();
+        Duration now = filter.range == null ? Duration.ZERO : filter.range;
+        for (String text : module.config.ranges) {
+            Duration range = module.parseRange(text);
+            Duration value = range == null ? Duration.ZERO : range;
+            if (options.stream().anyMatch(o -> o.value().equals(value))) {
+                continue;
+            }
+            options.add(new net.skybornmc.skyblock.common.menu.PickListMenu.Option<>(value, new org.bukkit.inventory.ItemStack(Material.CLOCK),
+                    module.render.range(viewer, value), List.of(), value.equals(now)));
+        }
+        openChild(new net.skybornmc.skyblock.common.menu.PickListMenu<>(List.of(module.render.text(viewer, "title.logs"),
+                module.render.text(viewer, "hub.time.name")), options, value -> filter.range = value));
+    }
+
+    private void pickRadius() {
+        List<net.skybornmc.skyblock.common.menu.PickListMenu.Option<Integer>> options = new ArrayList<>();
+        for (String r : module.config.nearRadii) {
+            int radius;
+            try {
+                radius = Math.min(module.config.nearMaxRadius, Integer.parseInt(r.trim()));
+            } catch (NumberFormatException ignored) {
+                continue; // skip bad entries
+            }
+            if (options.stream().anyMatch(o -> o.value() == radius)) {
+                continue;
+            }
+            options.add(new net.skybornmc.skyblock.common.menu.PickListMenu.Option<>(radius, new org.bukkit.inventory.ItemStack(Material.SPYGLASS),
+                    service.text(viewer, LogsModule.ID, "hub.radius.value", Msg.p("radius", radius)), List.of(), radius == filter.radius));
+        }
+        openChild(new net.skybornmc.skyblock.common.menu.PickListMenu<>(List.of(module.render.text(viewer, "title.logs"),
+                module.render.text(viewer, "hub.radius.name")), options, value -> filter.radius = value));
     }
 
     /** The value after {@code current} in {@code options} (first when not found). */

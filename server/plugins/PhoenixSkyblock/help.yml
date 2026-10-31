@@ -40,7 +40,7 @@ categories:
     status: active
     slot: 15
     name: "<c:flame><bold>Progression"
-    lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and masteries."]
+    lore: ["<c:text>Island levels, upgrades,", "<c:text>skills and achievements."]
     topics: [island-level, island-upgrades, skills, pillars, achievements]
   gear:
     icon: smithing_table
@@ -192,13 +192,8 @@ topics:
         lines:
           - "<c:text>Pick who you see in The Depths and"
           - "<c:text>the AFK pool: everyone, friends +"
-          - "<c:text>island, or nobody. Click to switch."
+          - "<c:text>island, or nobody. Click to choose."
           - "<c:text>Staff always shows."
-      - title: "<c:value>Coming soon"
-        lines:
-          - "<c:text>Gray switches belong to features that"
-          - "<c:text>aren't open yet. They unlock by"
-          - "<c:text>themselves when the feature arrives."
 
   depths:
     icon: iron_pickaxe
@@ -311,7 +306,7 @@ topics:
           - "<c:text>look and stay with you forever."
       - title: "<c:value>Tips"
         lines:
-          - "<c:text>Shift + right-click a tool (or"
+          - "<c:text>Sneak and use a tool (or type"
           - "<c:value>/tool</c:value><c:text>) for its menu. Custom tools"
           - "<c:text>stay with you when you die."
 
@@ -384,7 +379,7 @@ topics:
           - "<c:text>A gem set is a Sigil: claim it"
           - "<c:text>free on each profile once a"
           - "<c:text>season. Crate sets come as"
-          - "<c:text>tokens: right-click to redeem."
+          - "<c:text>tokens: use one to redeem it."
       - title: "<c:value>Wardrobe Chest"
         lines:
           - "<c:text>Keep tools, enchant books and"
@@ -440,9 +435,9 @@ topics:
     pages:
       - title: "<c:value>What skills are"
         lines:
-          - "<c:text>You have five skills. <pillar:mining>Mining</pillar:mining><c:text>,"
-          - "<pillar:foraging>Foraging</pillar:foraging> <c:text>and <pillar:combat>Combat</pillar:combat> <c:text>are open now;"
-          - "<pillar:farming>Farming</pillar:farming> <c:text>and <pillar:fishing>Fishing</pillar:fishing> <c:text>come later."
+          - "<c:text>Your skills are <pillar:mining>Mining</pillar:mining><c:text>,"
+          - "<pillar:foraging>Foraging</pillar:foraging> <c:text>and <pillar:combat>Combat</pillar:combat><c:text>."
+          - "<c:text>Each skill grows as you play."
           - "<c:text>Skills are yours alone and reset each season."
       - title: "<c:value>Earning XP"
         lines:
@@ -455,7 +450,6 @@ topics:
           - "<c:text>Each level needs a bit more XP."
           - "<c:text>Levels open new Depths tiers: see"
           - "<c:text>'Next unlock' in <c:value>/skills</c:value>."
-          - "<c:text>Perks for skills arrive later."
       - title: "<c:value>Tips"
         lines:
           - "<c:text>Look at a friend's skills:"
@@ -669,7 +663,7 @@ topics:
           - "<c:text>Click an NPC to open what it"
           - "<c:text>does: the Banker opens the bank, the"
           - "<c:text>Blacksmith the Forge."
-          - "<c:text>Sneak + click: a short help."
+          - "<c:text>Help NPCs explain on every click."
       - title: "<c:value>Help NPCs"
         lines:
           - "<c:text>NPCs that say <c:muted>Click for help</c:muted>"
@@ -789,7 +783,7 @@ topics:
       - title: "<c:value>Tags"
         lines:
           - "<c:text>Tags come from crates and the store"
-          - "<c:text>as a tag item. Right-click it to add"
+          - "<c:text>as a tag item. Use it to add"
           - "<c:text>the tag to your account."
       - title: "<c:value>Extra copies"
         lines:
@@ -887,7 +881,8 @@ topics:
         lines:
           - "<c:text>Leader > Admin > Mod > Member. Admins help"
           - "<c:text>run the island. See open invites with"
-          - "<c:value>/is invites</c:value><c:text>.</c:text>"
+          - "<c:value>/is invites</c:value><c:text>. Permissions: pick</c:text>"
+          - "<c:text>Strict, Normal or Open in one click.</c:text>"
       - title: "<c:value>Flying"
         lines:
           - "<c:text>With island fly, double-tap jump on an"
@@ -921,14 +916,14 @@ topics:
           - "<c:text>after about 10 minutes."
       - title: "<c:value>Spawners"
         lines:
-          - "<c:text>Place a spawner, then right-click it with"
-          - "<c:text>more of the same kind to stack them."
-          - "<c:text>Sneak-right-click opens its menu. Each"
+          - "<c:text>Place a spawner, then use more of the"
+          - "<c:text>same kind on it to stack them."
+          - "<c:text>Use it with an empty hand for its menu. Each"
           - "<c:text>spawner in the stack adds full speed."
       - title: "<c:value>Breaking and limits"
         lines:
-          - "<c:text>Breaking takes one spawner; sneak-break"
-          - "<c:text>takes all. No silk touch needed. A"
+          - "<c:text>Breaking takes one spawner; break it while"
+          - "<c:text>sneaking for all. No silk touch needed. A"
           - "<c:text>spawner runs while you are within 16"
           - "<c:text>blocks, and light is not needed."
   visiting:
@@ -1017,11 +1012,9 @@ topics:
           - "<c:text>to earn it. Each payout has a cap."
       - title: "<c:value>Taking money out"
         lines:
-          - "<c:text>A withdrawal costs a 2% fee and that"
-          - "<c:text>period's interest, except in the first"
-          - "<c:text>minutes after a payout. Island masteries"
-          - "<c:text>lower the fee step by step. You always"
-          - "<c:text>see the fee before you confirm."
+          - "<c:text>A withdrawal costs a small fee (2%)."
+          - "<c:text>You always see the fee before you"
+          - "<c:text>confirm."
       - title: "<c:value>Tiers and roles"
         lines:
           - "<c:text>Buy bank tiers to hold more. On the"
@@ -1084,7 +1077,7 @@ topics:
           - "<c:value>/sell all</c:value> <c:text>sells everything in your"
           - "<c:text>inventory that can be sold. Armor and"
           - "<c:text>your offhand are never touched."
-      - title: "<c:value>Live prices"
+      - title: "<c:value>Prices change"
         lines:
           - "<c:text>Every sale lowers a price a little and"
           - "<c:text>it climbs back over time. Items nobody"
@@ -1112,7 +1105,7 @@ topics:
           - "<c:text>when your inventory is full."
       - title: "<c:value>Cashing a note"
         lines:
-          - "<c:text>Hold the note and <c:value>right-click</c:value><c:text>."
+          - "<c:text>Hold the note and <c:value>use</c:value> <c:text>it."
           - "<c:text>The money goes straight to your"
           - "<c:text>balance. Anyone holding the note can"
           - "<c:text>cash it, so keep it safe."
@@ -1177,13 +1170,13 @@ topics:
           - "<c:text>in the same world."
       - title: "<c:value>Offering"
         lines:
-          - "<c:text>Tap items in your own inventory to"
-          - "<c:text>offer them. Tap the gold ingot to add"
-          - "<c:text>money. Tap your offered item to take"
+          - "<c:text>Click items in your own inventory to"
+          - "<c:text>offer them. Click the gold ingot to add"
+          - "<c:text>money. Click your offered item to take"
           - "<c:text>it back."
       - title: "<c:value>Confirming"
         lines:
-          - "<c:text>Both tap <c:value>Confirm</c:value><c:text>. After a short"
+          - "<c:text>Both click <c:value>Confirm</c:value><c:text>. After a short"
           - "<c:text>countdown the trade happens. Any"
           - "<c:text>change resets both confirmations, so"
           - "<c:text>check the other side first."
@@ -1239,20 +1232,20 @@ topics:
         lines:
           - "<c:text>Keys come from voting, quests, the"
           - "<c:text>AFK pool and daily rewards. They"
-          - "<c:text>belong to your profile. Bound keys"
-          - "<c:text>(and their loot) never trade."
+          - "<c:text>belong to your profile. Untradeable"
+          - "<c:text>keys (and what they give) never trade."
       - title: "<c:value>Opening"
         lines:
-          - "<c:value>/crates</c:value> <c:text>opens anywhere. Left-click"
-          - "<c:text>a crate to see every reward and its"
-          - "<c:text>chance, right-click to open 1, or"
-          - "<c:text>use Open 10 and Open all."
-      - title: "<c:value>Pity"
+          - "<c:value>/crates</c:value> <c:text>opens anywhere. Click a"
+          - "<c:text>crate to see every reward and its"
+          - "<c:text>chance, then Open 1, Open 10 or Open all."
+          - "<c:muted>Java: right-click a crate opens 1."
+      - title: "<c:value>Luck meter"
         lines:
           - "<c:text>Top rewards are marked with a star."
-          - "<c:text>After a streak without one, the"
-          - "<c:text>next open is guaranteed to give"
-          - "<c:text>one. The preview shows your count."
+          - "<c:text>Each open without one fills your luck"
+          - "<c:text>meter. When it is full, the next open"
+          - "<c:text>gives one for sure."
       - title: "<c:value>Good to know"
         lines:
           - "<c:text>Money and crystal pouches grow with"
@@ -1343,7 +1336,7 @@ topics:
       - title: "<c:value>Taking items"
         lines:
           - "<c:value>/box</c:value> <c:text>opens it, oldest first."
-          - "<c:text>Tap a stack to take it, or tap"
+          - "<c:text>Click a stack to take it, or click"
           - "<c:value>Take all that fit</c:value><c:text>. Each item says"
           - "<c:text>where it came from and when."
       - title: "<c:value>Good to know"

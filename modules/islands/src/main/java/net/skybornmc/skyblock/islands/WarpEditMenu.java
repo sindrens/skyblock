@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -77,6 +78,21 @@ final class WarpEditMenu extends Menu {
         }
     }
 
+    /** A small list of the categories; one click picks (GUI-4/G9: no forward-only cycling). */
+    private void pickCategory() {
+        List<PickListMenu.Option<WarpCategory>> options = new ArrayList<>();
+        for (WarpCategory category : WarpCategory.values()) {
+            Material icon = Material.matchMaterial(module.config().categoryIcon(category));
+            options.add(new PickListMenu.Option<>(category, new ItemStack(icon == null || !icon.isItem() ? Material.NAME_TAG : icon),
+                    text("warps.edit.category-pick", Msg.p("category", warps.categoryName(category))), List.of(), category == warp.category()));
+        }
+        openChild(new PickListMenu<>(List.of(text("warps.crumb"), text("warps.edit.category-crumb")), options, category -> {
+            if (valid()) {
+                warps.setCategory(viewer, island, warp, category, this::refresh);
+            }
+        }));
+    }
+
     private boolean valid() {
         return islands.byId(island.id()) == island && warps.warps(island.id()).contains(warp) && warps.canManage(viewer, island);
     }
@@ -106,9 +122,9 @@ final class WarpEditMenu extends Menu {
             }
         });
         set(SLOT_CATEGORY, service.item(Material.NAME_TAG, viewer, IslandsModule.ID, "warps.edit.category",
-                Msg.p("category", warps.categoryName(warp.category())), Msg.p("next", warps.categoryName(warp.category().next()))), click -> {
+                Msg.p("category", warps.categoryName(warp.category()))), click -> {
             if (valid()) {
-                warps.cycleCategory(viewer, island, warp, this::refresh);
+                pickCategory();
             }
         });
         set(SLOT_DELETE, service.item(Material.LAVA_BUCKET, viewer, IslandsModule.ID, "warps.edit.delete", p), click -> {

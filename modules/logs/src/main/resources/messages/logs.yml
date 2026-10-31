@@ -92,14 +92,15 @@ hub:
       - "<c:text>Now: <c:value><range>"
       - "<c:muted>Options: <options>"
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next range"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
   radius:
     name: "<c:value>Radius"
     lore:
       - "<c:text>Now: <c:value><radius> blocks"
       - "<c:muted>Options: <options>"
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next radius"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
+    value: "<c:value><radius> blocks"
   reset:
     name: "<c:error>Reset"
     lore:

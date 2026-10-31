@@ -81,7 +81,7 @@ class AuctionMessagesTest {
         }
         for (String k : List.of("browse.category", "browse.sort")) {
             keys.add(k + ".name");
-            keys.add(k + ".lore-top");
+            keys.add(k + ".crumb");
             keys.add(k + ".lore");
         }
         List<String> missing = keys.stream().filter(k -> !yml.contains(k)).toList();

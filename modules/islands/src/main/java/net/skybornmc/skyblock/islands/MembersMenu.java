@@ -165,7 +165,7 @@ final class MembersMenu extends PagedMenu<MembersMenu.Entry> {
         }
         set(SLOT_PERMISSIONS, service.item(new ItemStack(Material.COMPARATOR), text("members.permissions.name"),
                 lines(MemberRules.canEditPerms(viewerRole(), PermRole.MEMBER) ? "members.permissions.lore-edit" : "members.permissions.lore-view")),
-                click -> openChild(new PermissionsMenu(module, islands, island)));
+                click -> openChild(new PermPresetsMenu(module, islands, island)));
     }
 
     @Override

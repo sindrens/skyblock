@@ -256,12 +256,13 @@ top-menu:
       lore:
         - "<c:muted>Coming soon"
   board:
-    solo-name: "<c:value>Solo islands"
+    # GUI-4: the name says what you see now AND where a click goes (it read like the opposite before).
+    solo-name: "<c:value>Showing: Solo islands <c:muted><sym:dot></c:muted> <c:text>switch to Team"
     solo-lore:
       - "<c:text>Islands with one player."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>for team islands"
-    team-name: "<c:value>Team islands"
+    team-name: "<c:value>Showing: Team islands <c:muted><sym:dot></c:muted> <c:text>switch to Solo"
     team-lore:
       - "<c:text>Islands with members."
       - ""

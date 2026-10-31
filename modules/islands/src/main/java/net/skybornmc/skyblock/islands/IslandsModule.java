@@ -75,6 +75,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private VisitManager visits;
     private WarpManager warps;
     private RolePermissions rolePermissions = RolePermissions.none();
+    private volatile PermPresets permPresets = PermPresets.none();
     private FlagDefaults flagDefaults = FlagDefaults.owner();
     private KickBackups kickBackups;
     private IslandSettingsManager islandSettings;
@@ -298,6 +299,11 @@ public final class IslandsModule implements SkyblockModule, Listener {
         HandlerList.unregisterAll(this);
     }
 
+    /** Island permission presets (GUI-4, U8), reloaded with the config. */
+    PermPresets permPresets() {
+        return permPresets;
+    }
+
     private void loadConfig() {
         upgradeConfigFile();
         core.configs().load(config);
@@ -311,6 +317,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
         RolePermissions.Result perms = config.rolePermissions();
         perms.problems().forEach(problem -> core.plugin().getLogger().warning("islands.yml: " + problem));
         rolePermissions = perms.permissions();
+        PermPresets.Result presets = config.permPresets();
+        presets.problems().forEach(problem -> core.plugin().getLogger().warning("islands.yml: " + problem));
+        permPresets = presets.presets();
         FlagDefaults.Result flags = config.flagDefaults();
         flags.problems().forEach(problem -> core.plugin().getLogger().warning("islands.yml: " + problem));
         flagDefaults = flags.defaults();

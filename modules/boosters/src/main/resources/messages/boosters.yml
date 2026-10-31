@@ -11,7 +11,7 @@ switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profi
 no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use boosters."
 invalid: "<prefix><c:error><sym:cross></c:error> <c:text>This booster item is broken. Ask staff to look at it."
 moved: "<prefix><c:error><sym:cross></c:error> <c:text>That booster item is not in your inventory anymore."
-not-yours: "<prefix><c:error><sym:cross></c:error> <c:text>This booster is bound to another profile. Only that profile can start it."
+not-yours: "<prefix><c:error><sym:cross></c:error> <c:text>This booster belongs to another profile. Only that profile can start it."
 already-used: "<prefix><c:error><sym:cross></c:error> <c:text>This booster item was already used, so it was removed. Staff can see it in the logs."
 
 # Booster type names.
@@ -25,20 +25,20 @@ types:
 item:
   personal:
     name: "{type} Booster +{percent}%"
-    description: "Right-click to start. The same type adds time."
+    description: "Use it to start. The same type adds time."
     lore:
       - "<c:text>Bonus: <c:value>+{percent}% {type}"
       - "<c:text>Time: <c:value>{time}"
       - "<c:muted>Counts only while you play."
   global:
     name: "Global {type} Booster +{percent}%"
-    description: "Right-click to start it for everyone online."
+    description: "Use it to start it for everyone online."
     lore:
       - "<c:text>Bonus: <c:value>+{percent}% {type}</c:value> <c:text>for everyone"
       - "<c:text>Time: <c:value>{time}"
       - "<c:muted>Players can thank you for gems."
-  bound: "<c:muted>Bound to the profile that earned it."
-  action-input: "Right-click"
+  bound: "<c:muted>Can't be traded: only this profile can use it."
+  action-input: "USE"
   action-text: "to start"
 
 personal:
@@ -82,10 +82,10 @@ settings:
 menu:
   title: "Boosters"
   info:
-    - "<c:text>Top row: your boosters. Bottom"
-    - "<c:text>rows: global boosters and the"
-    - "<c:text>booster items you carry. Click"
-    - "<c:text>an item to start it."
+    - "<c:text>Row 2: your own boosters."
+    - "<c:text>Row 4: global boosters for everyone."
+    - "<c:text>Row 5: booster items you carry."
+    - "<c:text>Click an item to start it."
   loading:
     name: "<c:muted>Loading your boosters..."
     lore: []

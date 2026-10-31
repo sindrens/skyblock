@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -14,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code /is settings} (ISL2, UI_STYLE §5): one button per island setting, one plain click changes it (toggles flip,
- * weather and time move to the next value; Bedrock-safe, no right/shift clicks).
+ * {@code /is settings} (ISL2, UI_STYLE §5): one button per island setting, one plain click changes it (toggles flip;
+ * weather and time open a small pick list, GUI-4/G9; Bedrock-safe, no right/shift clicks). The value is in the item name.
  * <pre>
  *  R B B B ⓘ B B B R      4 summary (who can change)
  *  B ☠ 🐄 🔥 💣 🍃 🌾 ⬇ B   10-16 mob spawning, animal spawning, fire spread, explosions, leaf decay, trampling, pickup
@@ -138,15 +139,14 @@ final class SettingsMenu extends Menu {
         }
         lore.addAll(lines(value.equals(defaultValue) ? "flags.state.default" : "flags.state.changed", p));
         lore.add(Component.empty());
-        String next = flag.next(value);
         if (editable) {
-            lore.addAll(lines(flag.toggle() ? (IslandFlag.ON.equals(value) ? "flags.click.off" : "flags.click.on") : "flags.click.next",
-                    Msg.p("next", settings.valueName(next))));
+            lore.addAll(lines(flag.toggle() ? (IslandFlag.ON.equals(value) ? "flags.click.off" : "flags.click.on") : "flags.click.choose"));
         } else {
             lore.addAll(lines("flags.click.locked"));
         }
         ItemStack icon = new ItemStack(icon(flag, value));
-        ItemStack item = service.item(icon, text(flag.toggle() && IslandFlag.ON.equals(value) ? "flags.name-on" : "flags.name",
+        String nameKey = !flag.toggle() ? "flags.name" : IslandFlag.ON.equals(value) ? "flags.name-on" : "flags.name-off";
+        ItemStack item = service.item(icon, text(nameKey,
                 Msg.p("setting", settings.name(flag)), Msg.p("value", settings.valueName(value))), lore);
         if (!editable) {
             return MenuButton.display(item);
@@ -155,16 +155,36 @@ final class SettingsMenu extends Menu {
             if (pending) {
                 return;
             }
-            pending = true;
-            boolean started = settings.change(viewer, island, flag, flag.next(islands.flag(island, flag)), () -> {
-                pending = false;
-                refresh();
-            });
-            if (!started) {
-                pending = false;
-                refresh();
+            if (flag.toggle()) {
+                change(flag, flag.next(islands.flag(island, flag)));
+            } else {
+                pick(flag);
             }
         });
+    }
+
+    /** Weather and time: a small list of every value, one click picks (G9: no forward-only cycling). */
+    private void pick(IslandFlag flag) {
+        String current = islands.flag(island, flag);
+        List<PickListMenu.Option<String>> options = new ArrayList<>();
+        for (String choice : flag.choices()) {
+            options.add(new PickListMenu.Option<>(choice, new ItemStack(icon(flag, choice)),
+                    text("flags.pick.value", Msg.p("value", settings.valueName(choice))), List.of(), choice.equals(current)));
+        }
+        openChild(new PickListMenu<>(List.of(text("flags.crumb"), text("flags.pick.crumb", Msg.p("setting", settings.name(flag)))),
+                options, value -> change(flag, value)));
+    }
+
+    private void change(IslandFlag flag, String value) {
+        pending = true;
+        boolean started = settings.change(viewer, island, flag, value, () -> {
+            pending = false;
+            refresh();
+        });
+        if (!started) {
+            pending = false;
+            refresh();
+        }
     }
 
     /** The icon of a setting; weather shows its current value. */
@@ -173,6 +193,14 @@ final class SettingsMenu extends Menu {
             return switch (value) {
                 case "rain" -> Material.WATER_BUCKET;
                 case "storm" -> Material.TRIDENT;
+                default -> Material.SUNFLOWER;
+            };
+        }
+        if (flag == IslandFlag.TIME) {
+            return switch (value) {
+                case "night" -> Material.BLACK_BED;
+                case "sunset" -> Material.ORANGE_BED;
+                case "real" -> Material.CLOCK;
                 default -> Material.SUNFLOWER;
             };
         }

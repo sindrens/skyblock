@@ -94,7 +94,7 @@ eco:
     title: "Waiting changes"
     info:
       - "<c:text>/eco changes above the limit."
-      - "<c:text>Tap one: Yes allows it, No denies it."
+      - "<c:text>Click one: Yes allows it, No denies it."
       - "<c:text>You can't decide your own."
     empty:
       name: "<c:muted>Nothing waiting"
@@ -122,13 +122,13 @@ note:
     name: "<cur:{currency}>{amount} Note"
     name-unknown: "<cur:money>Money Note"
     subtitle: "<c:muted>Note <sym:dot> Tradeable"
-    description: "Right-click to add it to your balance. Can be traded."
+    description: "Use it to add it to your balance. Can be traded."
     info-title: "Information"
     amount: "<c:text>Amount: </c:text><cur:{currency}>{amount}"
     signed-by: "<c:text>Signed by: </c:text><c:value>{signer}"
     date: "<c:text>Date: </c:text><c:value>{date}"
     id: "<c:text>Note id: </c:text><c:muted>#{id}"
-    action-input: "Right-click"
+    action-input: "USE"
     action-text: "to redeem"
   withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Made a note of <amount><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(#<id>) <sym:dot> right-click it to cash it."
   insufficient: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have <amount><c:text>. <c:muted>Balance: </c:muted><balance>"
@@ -153,7 +153,7 @@ note:
     void: "was cancelled before it was handed out."
   dupe-alert: "<c:error><bold>NOTE</bold></c:error> <c:value><player></c:value> <c:text>tried to cash note <c:muted>#<id></c:muted> (<amount><c:text>): it <why> <c:muted>Cashed by <by> <ago> ago. Copy taken (see /logs)."
   admin-done: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><player></c:value> <c:text>a note of <amount><c:text>. <c:muted>(#<id>, <reason>)"
-  admin-received: "<prefix><c:success><sym:check></c:success> <c:text>Staff gave you a note of <amount><c:text>. Right-click it to cash it."
+  admin-received: "<prefix><c:success><sym:check></c:success> <c:text>Staff gave you a note of <amount><c:text>. Use it to cash it."
   admin-alert: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>gave <c:value><player></c:value> <c:text>a note of <amount> <c:muted>(<reason>) <sym:dot> #<id>"
   admin-inventory-full: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value><c:text>'s inventory is full. Ask them to free a slot. Nothing was made."
   admin-target-left: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>left before the note was ready. Nothing was given."
@@ -207,23 +207,26 @@ menu:
   any-time: "<c:value>All time"
   last: "<c:value>Last <time>"
   filter-currency:
+    crumb: "Currency"
     name: "<c:value>Currency: <value>"
     lore:
       - "<c:text>Show one currency or all."
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
   filter-reason:
+    crumb: "Type"
     name: "<c:value>Type: <value>"
     lore:
       - "<c:text>Payments, selling, shop, auctions ..."
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
   filter-time:
+    crumb: "Time"
     name: "<c:value>Time: <value>"
     lore:
       - "<c:text>How far back to look."
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
   refresh:
     name: "<c:value>Refresh"
     lore:
@@ -401,11 +404,12 @@ bank:
   below-min: "<prefix><c:error><sym:cross></c:error> <c:text>Too small. The smallest deposit is <deposit><c:text>, the smallest withdrawal <withdraw><c:text>."
   deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in your bank. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
   withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank, no fee. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
-  withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank <c:muted>(fee </c:muted><fee> <c:muted>at <percent>%, this period's interest is lost)</c:muted><c:text>. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+  # GUI-4 (UX review 6): short, and R3-41 (the fee is the only cost, the interest is kept). <percent> and <balance> still work.
+  withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank <c:muted>(fee </c:muted><fee><c:muted>)</c:muted><c:text>. <c:muted>Bank: </c:muted><bank>"
   island:
     deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in the island bank. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
     withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank, no fee. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
-    withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank <c:muted>(fee </c:muted><fee> <c:muted>at <percent>%, this period's interest is lost)</c:muted><c:text>. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+    withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank <c:muted>(fee </c:muted><fee><c:muted>)</c:muted><c:text>. <c:muted>Island bank: </c:muted><bank>"
     notify-deposit: "<prefix><c:value><player></c:value> <c:text>put <amount> <c:text>in the island bank."
     notify-withdraw: "<prefix><c:value><player></c:value> <c:text>took <amount> <c:text>out of the island bank."
     no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Your island role can't do that. The Leader sets it in <c:value>/is permissions</c:value>."
@@ -445,7 +449,6 @@ bank:
       - "<c:text>Left: your own bank (this profile)."
       - "<c:text>Right: your island's shared bank."
       - "<c:text>Both earn interest every 8 hours."
-      - "<c:text>Island masteries lower the fee."
     personal:
       name: "<c:flame><sym:star></c:flame> <c:value>Personal bank"
       lore:

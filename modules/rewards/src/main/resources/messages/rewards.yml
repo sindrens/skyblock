@@ -31,8 +31,8 @@ playtime:
 # One reward. <reward> is a full component.
 reward:
   line: "  <c:muted>+</c:muted> <reward>"
-  fallback-line: "  <c:muted>+</c:muted> <cur:crystals><amount></cur:crystals> <c:muted>(instead of <reward><c:muted>, not live yet)"
-  for-now: "<reward> <c:muted>(pays <amount> for now)"
+  fallback-line: "  <c:muted>+</c:muted> <cur:crystals><amount></cur:crystals> <c:muted>(paid instead of <reward><c:muted>)"
+  for-now: "<reward> <c:muted>(paid as <amount>)"
   money: "<cur:money><amount>"
   crystals: "<cur:crystals><amount>"
   gems: "<cur:gems><amount>"

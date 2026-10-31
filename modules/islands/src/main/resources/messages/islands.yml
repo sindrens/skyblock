@@ -145,7 +145,6 @@ menu:
   info:
     - "<c:text>Everything about your island."
     - "<c:text>Click a button to open it."
-    - "<c:muted>Gray buttons come later."
   island:
     name: "<c:flame><bold><island>"
     lore:
@@ -340,7 +339,7 @@ chat:
     summary:
       name: "<c:flame><bold>Island chat colors"
       lore-edit:
-        - "<c:text>Click a role for the next color."
+        - "<c:text>Click a role to pick its color."
         - "<c:muted><count> colors to pick from."
       lore-view:
         - "<c:text>You can look, not change."
@@ -350,7 +349,7 @@ chat:
       lore:
         - "<c:text>Color: <c:value><color>"
       click:
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for <next>"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
       locked:
         - "<c:muted>Only the Leader can change it."
     changed: "<prefix><c:success><sym:check></c:success> <c:text>Chat color changed: <role>"
@@ -729,6 +728,63 @@ perms:
     - "<c:text>The <c:value>Leader</c:value> can always do everything."
     - "<c:muted>Admins change Mod and lower, Mods Member and lower."
   no-longer: "<prefix><c:error><sym:cross></c:error> <c:text>You can't change that permission anymore."
+  # GUI-4 (owner U8): three presets first, the full table behind Advanced.
+  presets:
+    info:
+      - "<c:text>Pick how much your island trusts others."
+      - "<c:text>Strict, Normal or Open, one click."
+      - "<c:muted>Advanced shows every single permission."
+    summary:
+      name: "<c:flame><bold>Now: <preset>"
+      lore-edit:
+        - "<c:text>Click a preset to use it."
+        - "<c:muted>The Leader can always do everything."
+      lore-view:
+        - "<c:text>You can look, not change."
+        - "<c:muted>Ask your Leader, an Admin or a Mod."
+    name: "<c:value><preset>"
+    name-active: "<c:success><sym:check> <preset>"
+    custom: "Custom"
+    active: ["<c:flame><sym:check> In use now"]
+    click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to use it"]
+    locked: ["<c:muted>Only the Leader, an Admin or a Mod can change this."]
+    strict:
+      word: "Strict"
+      lore:
+        - "<c:text>Only trusted roles touch your stuff."
+        - "<c:text>Members can't open chests."
+        - "<c:text>Coop players can't break blocks."
+        - "<c:text>Visitors only walk and look."
+    normal:
+      word: "Normal"
+      lore:
+        - "<c:text>The server's standard setup."
+        - "<c:text>Members build and use chests."
+        - "<c:text>Visitors walk and look."
+    open:
+      word: "Open"
+      lore:
+        - "<c:text>For friendly islands and shops."
+        - "<c:text>Members can use spawners."
+        - "<c:text>Visitors can use doors, pick up"
+        - "<c:text>items and trade with villagers."
+    advanced:
+      name: "<c:value>Advanced"
+      crumb: "Advanced"
+      lore:
+        - "<c:text>Every permission for every role,"
+        - "<c:text>one by one."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+    confirm:
+      crumb: "Use <preset>?"
+      shown: "<c:warning>Use the <preset> preset"
+      details:
+        - "<c:text>Replace your own permission changes"
+        - "<c:text>(<c:value><cells></c:value> <c:text>settings change)."
+    already: "<prefix><c:error><sym:cross></c:error> <c:text>Your island already uses <c:value><preset></c:value>."
+    applied: "<prefix><c:success><sym:check></c:success> <c:text>Permissions set to <c:value><preset></c:value>."
+    not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>Only the Leader, an Admin or a Mod can change permissions."
   word:
     allowed: "allowed"
     denied: "denied"
@@ -1304,7 +1360,9 @@ warps:
       lore:
         - "<c:text>Where it shows in the browser."
         - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for <next>"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
+    category-crumb: "Category"
+    category-pick: "<c:value><category>"
     delete:
       name: "<c:error>Delete"
       lore:
@@ -1488,8 +1546,14 @@ flags:
     lore-view:
       - "<c:text>You can look, not change."
       - "<c:muted>Ask your Leader or an Admin."
-  name: "<c:value><setting>"
-  name-on: "<c:success><setting>"
+  # The value is in the name (Bedrock reads names first).
+  name: "<c:value><setting>: <c:flame><value>"
+  name-on: "<c:success><sym:check> <setting>: on"
+  name-off: "<c:value><setting>: <c:error><sym:cross> off"
+  # Weather and time open a small pick list.
+  pick:
+    crumb: "<setting>"
+    value: "<c:value><value>"
   state:
     "on":
       - "<c:success><sym:check> On"
@@ -1506,8 +1570,8 @@ flags:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to turn on"
     "off":
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to turn off"
-    next:
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for <next>"
+    choose:
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
     locked:
       - "<c:muted>You can't change this."
   value:
@@ -1758,8 +1822,8 @@ notes:
     page: "<black><text><newline><newline><dark_gray><author>, <date>"
     page-done: "<dark_green>✔ <black><text><newline><newline><dark_gray><author>, <date>"
     page-empty: "<dark_gray>No notes yet."
-    given: "<prefix><c:success><sym:check></c:success> <c:text>The notes book is in your inventory. Right-click it, then close it to save. <c:muted>(<seconds>s)"
-    given-read: "<prefix><c:success><sym:check></c:success> <c:text>The notes book is in your inventory. Right-click it to read. <c:muted>(<seconds>s)"
+    given: "<prefix><c:success><sym:check></c:success> <c:text>The notes book is in your inventory. Use it, then close it to save. <c:muted>(<seconds>s)"
+    given-read: "<prefix><c:success><sym:check></c:success> <c:text>The notes book is in your inventory. Use it to read. <c:muted>(<seconds>s)"
     full: "<prefix><c:error><sym:cross></c:error> <c:text>Your inventory is full. Make room for the book."
     no-drop: "<prefix><c:error><sym:cross></c:error> <c:text>The notes book can't leave your inventory."
     taken: "<prefix><c:text>The notes book was taken back."
@@ -1841,11 +1905,6 @@ stats:
       none: "<c:muted>Nothing yet"
     island-wide: "<c:muted>Counts for the whole island."
     click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to see each member's part"
-    soon-name: "<c:muted><category>"
-    soon-lore:
-      - "<c:muted>-"
-      - "<c:muted>Coming soon: counts once this"
-      - "<c:muted>part of the game is here."
   you:
     name: "<c:flame><bold>Your part"
     lore:

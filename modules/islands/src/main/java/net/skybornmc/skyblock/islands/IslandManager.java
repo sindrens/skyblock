@@ -277,6 +277,37 @@ final class IslandManager implements IslandService {
         });
     }
 
+    /**
+     * Applies a permission preset (GUI-4, U8): every changed cell saved in one transaction, then cached and logged once
+     * ({@code island_perm_preset} with the preset and the number of cells). The leader column never changes.
+     *
+     * @return the number of cells changed, or -1 if the island is gone or saving failed
+     */
+    CompletableFuture<Integer> applyPermPreset(UUID islandId, PermPresets.Preset preset, List<PermPresets.Change> changes, Actor actor) {
+        Island island = byId.get(islandId);
+        if (island == null) {
+            return CompletableFuture.completedFuture(-1);
+        }
+        if (changes.isEmpty()) {
+            return CompletableFuture.completedFuture(0);
+        }
+        return store.savePerms(islandId, changes).thenApplyAsync(ignored -> {
+            if (byId.get(islandId) != island) {
+                return -1;
+            }
+            for (PermPresets.Change change : changes) {
+                island.perms().set(change.role(), change.perm(), change.override());
+            }
+            core.audit().log(AuditCategory.ISLAND, "island_perm_preset", actor, island.id().toString(), displayName(island), null, null,
+                    Map.of("preset", preset.key(), "cells", String.valueOf(changes.size())));
+            return changes.size();
+        }, main).exceptionally(error -> {
+            core.plugin().getLogger().log(Level.SEVERE, "Islands: saving permission preset " + preset.key() + " of " + islandId + " failed",
+                    Database.cause(error));
+            return -1;
+        });
+    }
+
     // ------------------------------------------------------------------ island settings (ISL2)
 
     FlagDefaults flagDefaults() {

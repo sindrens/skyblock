@@ -337,6 +337,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
         for (Currency currency : List.of(Currency.CRYSTALS, Currency.GEMS, Currency.SHARDS)) {
             core.placeholders().registerText(ID, currency.key(), p -> raw(p, currency));
             core.placeholders().registerText(ID, currency.key() + "_formatted", p -> formatted(p, currency));
+            // GUI-4 (owner U4): empty while the balance is 0, so a scoreboard "if:crystals_owned|" line only shows once you have some.
+            core.placeholders().registerText(ID, currency.key() + "_owned", p -> owned(p, currency));
         }
         // Deprecated aliases: tokens were replaced by crystals (O8); old formats keep showing the crystals balance.
         core.placeholders().registerText(ID, Currency.LEGACY_TOKENS_KEY, p -> raw(p, Currency.CRYSTALS));
@@ -349,6 +351,19 @@ public final class EconomyModule implements SkyblockModule, Listener {
         }
         var value = service.cached(p.getUniqueId(), currency);
         return value.isPresent() ? String.valueOf(value.getAsLong()) : "";
+    }
+
+    private String owned(Player p, Currency currency) {
+        if (p == null) {
+            return "";
+        }
+        var value = service.cached(p.getUniqueId(), currency);
+        return ownedText(value.isPresent() ? value.getAsLong() : null);
+    }
+
+    /** The {@code <currency>_owned} placeholder: the plain amount, or empty for no balance (0 or not loaded). Pure. */
+    static String ownedText(Long balance) {
+        return balance == null || balance <= 0 ? "" : Amounts.plain(balance);
     }
 
     private String formatted(Player p, Currency currency) {

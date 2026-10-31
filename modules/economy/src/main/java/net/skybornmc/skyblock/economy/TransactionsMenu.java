@@ -7,10 +7,12 @@ import net.skybornmc.skyblock.common.economy.AccountRef;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -21,8 +23,8 @@ import java.util.Locale;
 
 /**
  * {@code /transactions}: the player's own ledger, newest first, one database page at a time (a loading item shows while
- * it is fetched). Filters in the bottom row cycle on any click (Bedrock-safe: no right/shift clicks needed):
- * currency, reason group and time range.
+ * it is fetched). Filters in the bottom row each open a small pick list (GUI-4/G9, one click picks): currency, reason
+ * group and time range.
  */
 final class TransactionsMenu extends Menu {
 
@@ -99,9 +101,9 @@ final class TransactionsMenu extends Menu {
     protected void build() {
         frame();
         set(SLOT_SUMMARY, summary());
-        set(SLOT_CURRENCY, filterItem(Material.SUNFLOWER, "menu.filter-currency", currencyLabel()), click -> cycleCurrency());
-        set(SLOT_REASON, filterItem(Material.NAME_TAG, "menu.filter-reason", reasonLabel()), click -> cycleReason());
-        set(SLOT_TIME, filterItem(Material.CLOCK, "menu.filter-time", rangeLabel()), click -> cycleRange());
+        set(SLOT_CURRENCY, filterItem(Material.SUNFLOWER, "menu.filter-currency", currencyLabel()), click -> pickCurrency());
+        set(SLOT_REASON, filterItem(Material.NAME_TAG, "menu.filter-reason", reasonLabel()), click -> pickReason());
+        set(SLOT_TIME, filterItem(Material.CLOCK, "menu.filter-time", rangeLabel()), click -> pickRange());
         set(SLOT_REFRESH, service.item(Material.SPYGLASS, viewer, EconomyModule.ID, "menu.refresh"), click -> reload());
 
         if (rows == null) {
@@ -209,31 +211,58 @@ final class TransactionsMenu extends Menu {
 
     // ------------------------------------------------------------------------------------------------ filters
 
-    private void cycleCurrency() {
-        Currency current = filter.currency();
-        Currency next = current == null ? Currency.values()[0]
-                : current.ordinal() + 1 < Currency.values().length ? Currency.values()[current.ordinal() + 1] : null;
-        filter = filter.withCurrency(next);
-        reload();
-    }
-
-    private void cycleReason() {
-        List<String> reasons = module.config.transactionReasons;
-        String current = filter.reason();
-        int index = current == null ? -1 : reasons.indexOf(current);
-        String next = index + 1 < reasons.size() ? reasons.get(index + 1) : null;
-        filter = filter.withReason(next == null || next.isBlank() ? null : next.toLowerCase(Locale.ROOT));
-        reload();
-    }
-
-    private void cycleRange() {
-        List<String> ranges = module.config.transactionRanges;
-        if (ranges.isEmpty()) {
-            return;
+    private void pickCurrency() {
+        List<PickListMenu.Option<Currency>> options = new ArrayList<>();
+        options.add(new PickListMenu.Option<>(null, new ItemStack(Material.SUNFLOWER), service.text(viewer, EconomyModule.ID, "menu.any"),
+                List.of(), filter.currency() == null));
+        for (Currency c : Currency.values()) {
+            options.add(new PickListMenu.Option<>(c, new ItemStack(module.config.icon(c, Material.GOLD_NUGGET)), module.currencyName(viewer, c),
+                    List.of(), c == filter.currency()));
         }
-        rangeIndex = (rangeIndex + 1) % ranges.size();
-        filter = filter.withSince(parseRange(ranges.get(rangeIndex)));
-        reload();
+        pick("menu.filter-currency.crumb", options, c -> filter = filter.withCurrency(c));
+    }
+
+    private void pickReason() {
+        List<PickListMenu.Option<String>> options = new ArrayList<>();
+        options.add(new PickListMenu.Option<>(null, new ItemStack(Material.NAME_TAG), service.text(viewer, EconomyModule.ID, "menu.any"),
+                List.of(), filter.reason() == null));
+        for (String raw : module.config.transactionReasons) {
+            if (raw == null || raw.isBlank()) {
+                continue;
+            }
+            String reason = raw.toLowerCase(Locale.ROOT);
+            options.add(new PickListMenu.Option<>(reason, new ItemStack(Material.PAPER), reasonName(reason), List.of(),
+                    reason.equals(filter.reason())));
+        }
+        pick("menu.filter-reason.crumb", options, r -> filter = filter.withReason(r));
+    }
+
+    private void pickRange() {
+        List<String> ranges = module.config.transactionRanges;
+        List<PickListMenu.Option<Integer>> options = new ArrayList<>();
+        for (int i = 0; i < ranges.size(); i++) {
+            Duration since = parseRange(ranges.get(i));
+            Component name = since == null ? service.text(viewer, EconomyModule.ID, "menu.any-time")
+                    : service.text(viewer, EconomyModule.ID, "menu.last", Msg.p("time", Format.duration(since)));
+            options.add(new PickListMenu.Option<>(i, new ItemStack(Material.CLOCK), name, List.of(), i == rangeIndex));
+        }
+        pick("menu.filter-time.crumb", options, i -> {
+            rangeIndex = i;
+            filter = filter.withSince(parseRange(ranges.get(i)));
+        });
+    }
+
+    /** Opens a pick list (GUI-4/G9); the picked filter reloads the list from page 1. */
+    private <T> void pick(String crumbKey, List<PickListMenu.Option<T>> options, java.util.function.Consumer<T> apply) {
+        openChild(new PickListMenu<>(List.of(service.text(viewer, EconomyModule.ID, "menu.title"),
+                service.text(viewer, EconomyModule.ID, crumbKey)), options, value -> {
+            apply.accept(value);
+            page = 0;
+            rows = null;
+            total = -1;
+            failed = false;
+            generation++;
+        }));
     }
 
     /** {@code all} (or anything invalid) = no limit. */

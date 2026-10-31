@@ -108,7 +108,9 @@ final class SkillsMenu extends Menu {
         }
         set(SLOT_HEAD, head(totalLevels));
         for (SkillType skill : SkillType.values()) {
-            set(SLOTS[skill.ordinal()], manager.available(skill) ? skillItem(skill, curve) : lockedItem(skill));
+            if (manager.available(skill)) { // GUI-4 (GUI_DESIGN §3): skills that aren't open yet are hidden, not grey
+                set(SLOTS[skill.ordinal()], skillItem(skill, curve));
+            }
         }
     }
 
@@ -159,14 +161,6 @@ final class SkillsMenu extends Menu {
             item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
         }
         return item;
-    }
-
-    private ItemStack lockedItem(SkillType skill) {
-        List<Component> lore = new ArrayList<>(lines("skill." + skill.id() + ".description"));
-        lore.add(Component.empty());
-        lore.addAll(lines("menu.skill.coming-soon"));
-        return service.item(new ItemStack(ICONS.get(skill)),
-                text("menu.skill.locked-name", Msg.c("skill", module.manager().skillName(viewer, skill))), lore);
     }
 
     private Component text(String key, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver... placeholders) {

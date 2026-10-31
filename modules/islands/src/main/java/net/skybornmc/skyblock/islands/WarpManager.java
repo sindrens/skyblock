@@ -361,12 +361,12 @@ final class WarpManager implements Listener {
         });
     }
 
-    void cycleCategory(Player player, Island island, IslandWarp warp, Runnable done) {
-        if (!canEdit(player, island, warp)) {
+    /** Sets a warp's category (the edit menu's pick list, GUI-4/G9). */
+    void setCategory(Player player, Island island, IslandWarp warp, WarpCategory next, Runnable done) {
+        if (!canEdit(player, island, warp) || warp.category() == next) {
             return;
         }
         WarpCategory before = warp.category();
-        WarpCategory next = before.next();
         edit(player, store.setWarpCategory(warp.id(), next), () -> {
             warp.category(next);
             audit(player, island, warp, "island_warp_category", before.key(), next.key());

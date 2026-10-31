@@ -269,7 +269,7 @@ settings:
   changed-choice: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is now <c:value><choice></c:value>."
   choice-selected: "<c:success><sym:check></c:success> <c:value><choice>"
   choice-other: "<c:muted><sym:bullet> <choice>"
-  choice-action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
+  choice-action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
   choice-values: "<prefix><c:error><sym:cross></c:error> <c:text>Pick one: <c:value><choices></c:value>."
   on-off: "<prefix><c:error><sym:cross></c:error> <c:text>Use on, off or toggle."
   not-yet: "<prefix><c:error><sym:cross></c:error> <c:value><setting></c:value> <c:text>comes with its feature, soon."

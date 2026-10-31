@@ -22,7 +22,7 @@ items:
   no-item: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell."
   dupe-flagged: "<prefix><c:error><sym:cross></c:error> <c:text>This item is flagged as a possible dupe. Ask staff."
   staff-item: "<prefix><c:error><sym:cross></c:error> <c:text>Items made by staff can't be listed."
-  bound-item: "<prefix><c:error><sym:cross></c:error> <c:text>Bound loot stays on your profile and can't be listed."
+  bound-item: "<prefix><c:error><sym:cross></c:error> <c:text>This item can't be traded, so it can't be listed."
   starter: "<prefix><c:error><sym:cross></c:error> <c:text>Starter kit items can't be sold here. You can still trade them."
   note: "<prefix><c:error><sym:cross></c:error> <c:text>Money notes can't be sold here."
   blocked: "<prefix><c:error><sym:cross></c:error> <c:text>This item can't be sold here."
@@ -234,20 +234,15 @@ browse:
       - "<c:text>Load the newest listings."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to refresh"
+  # Filters open a small pick list (one click picks).
   category:
     name: "<c:value>Category: <value>"
-    lore-top:
-      - ""
-    lore:
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next one"
+    crumb: "Category"
+    lore: ["<c:text>Show one kind of item.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
   sort:
     name: "<c:value>Sort: <value>"
-    lore-top:
-      - ""
-    lore:
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
+    crumb: "Sort"
+    lore: ["<c:text>Change the order of the list.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
   search:
     name: "<c:value>Search"
     lore:
@@ -267,8 +262,6 @@ browse:
       - "<c:text>Show all items again."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to clear"
-  list-selected: "<c:flame><sym:bullet></c:flame> <name>"
-  list-other: "<c:muted>  <name>"
   entry:
     lore:
       - ""

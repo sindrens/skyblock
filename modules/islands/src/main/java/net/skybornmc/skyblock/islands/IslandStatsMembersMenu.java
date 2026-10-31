@@ -82,7 +82,8 @@ final class IslandStatsMembersMenu extends Menu {
         List<ContributionShares.Share> shares = ContributionShares.of(allTime);
         Map<UUID, Integer> weekShares = ContributionShares.percents(week);
         if (shares.isEmpty()) {
-            set(22, MenuButton.display(service.item(new ItemStack(Material.BARRIER), text("stats.members.empty-name"),
+            // GUI-4: the shared empty look (cobweb), not a barrier that reads like an error.
+            set(22, MenuButton.display(service.item(new ItemStack(Material.COBWEB), text("stats.members.empty-name"),
                     lines("stats.members.empty-lore"))));
             return;
         }

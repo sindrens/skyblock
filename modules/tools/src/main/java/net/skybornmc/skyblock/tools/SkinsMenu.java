@@ -74,7 +74,7 @@ final class SkinsMenu extends PagedMenu<ToolCatalog.SkinDef> {
     @Override
     protected void decorate() {
         tool().filter(t -> t.skin() != null).ifPresent(t -> set(SLOT_REMOVE,
-                service.item(Material.BARRIER, viewer, ToolsModule.ID, "skins.menu.remove", Msg.mm("skin", module.items().skinName(t.skin()))),
+                service.item(Material.BUCKET, viewer, ToolsModule.ID, "skins.menu.remove", Msg.mm("skin", module.items().skinName(t.skin()))),
                 click -> {
                     module.applySkin(viewer, toolId, null);
                     service.open(viewer, this);

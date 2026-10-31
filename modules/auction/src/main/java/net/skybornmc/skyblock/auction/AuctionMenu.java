@@ -6,6 +6,7 @@ import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Material;
@@ -21,8 +22,7 @@ import java.util.UUID;
 
 /**
  * {@code /ah}: active listings in the 28 content slots. Top row: sell held item, my listings, summary, collection bin,
- * refresh. Bottom row: category and sort (cycle on click; right-click goes back on Java), search (chat prompt) and
- * clear search. Every action works with a plain tap (Bedrock).
+ * refresh. Bottom row: category and sort (each opens a pick list), search (chat prompt); clear search in the top row. Every action works with a plain tap (Bedrock).
  */
 final class AuctionMenu extends PagedMenu<Listing> {
 
@@ -157,12 +157,10 @@ final class AuctionMenu extends PagedMenu<Listing> {
         set(SLOT_REFRESH, service.item(cfg.icon("refresh", Material.SPYGLASS), viewer, AuctionModule.ID, "browse.refresh"),
                 click -> module.engine().refreshCache().thenRun(() -> module.core.scheduler().main("auction:refresh", this::refresh)));
 
-        // GUI-1: a click (left or right, Bedrock tap) moves forward; right-click back is a marked Java shortcut.
-        set(SLOT_CATEGORY, MenuButton.of(cycler(cfg.icon(category == null ? "all" : category.key(), Material.CHEST), "browse.category",
-                categoryName(category), categoryLines()), click -> changeCategory(1)).withRight(click -> changeCategory(-1)));
-        set(SLOT_SORT, MenuButton.of(cycler(cfg.icon("sort", Material.HOPPER), "browse.sort",
-                service.text(viewer, AuctionModule.ID, "sort." + sort.key()), sortLines()), click -> changeSort(1))
-                .withRight(click -> changeSort(-1)));
+        // GUI-4 (G9): each filter opens a small pick list; one click picks (no forward-only cycling).
+        set(SLOT_CATEGORY, filterButton(categoryIcon(category), "browse.category", categoryName(category)), click -> pickCategory());
+        set(SLOT_SORT, filterButton(cfg.icon("sort", Material.HOPPER), "browse.sort",
+                service.text(viewer, AuctionModule.ID, "sort." + sort.key())), click -> pickSort());
         set(SLOT_SEARCH, service.item(cfg.icon("search", Material.OAK_SIGN), viewer, AuctionModule.ID,
                 search == null ? "browse.search" : "browse.search-active", Msg.p("search", search == null ? "" : search)),
                 click -> askSearch());
@@ -201,57 +199,47 @@ final class AuctionMenu extends PagedMenu<Listing> {
         return (int) module.engine().activeListings().stream().filter(l -> l.seller().equals(me)).count();
     }
 
-    private void cycleCategory(int delta) {
-        Category[] all = Category.values();
-        int index = category == null ? -1 : category.ordinal(); // -1 = all
-        index = Math.floorMod(index + 1 + delta, all.length + 1) - 1;
-        category = index < 0 ? null : all[index];
+    private void pickCategory() {
+        List<PickListMenu.Option<Category>> options = new ArrayList<>();
+        options.add(new PickListMenu.Option<>(null, new ItemStack(categoryIcon(null)), categoryName(null), List.of(), category == null));
+        for (Category c : Category.values()) {
+            options.add(new PickListMenu.Option<>(c, new ItemStack(categoryIcon(c)), categoryName(c), List.of(), c == category));
+        }
+        openChild(new PickListMenu<>(List.of(service.text(viewer, AuctionModule.ID, "browse.title"),
+                service.text(viewer, AuctionModule.ID, "browse.category.crumb")), options, picked -> {
+            category = picked;
+            page(0);
+        }));
     }
 
-    private void changeCategory(int step) {
-        cycleCategory(step);
-        page(0);
-        redraw();
+    private void pickSort() {
+        List<PickListMenu.Option<Sort>> options = new ArrayList<>();
+        Material icon = module.config.icon("sort", Material.HOPPER);
+        for (Sort s : Sort.values()) {
+            options.add(new PickListMenu.Option<>(s, new ItemStack(icon), service.text(viewer, AuctionModule.ID, "sort." + s.key()),
+                    List.of(), s == sort));
+        }
+        openChild(new PickListMenu<>(List.of(service.text(viewer, AuctionModule.ID, "browse.title"),
+                service.text(viewer, AuctionModule.ID, "browse.sort.crumb")), options, picked -> {
+            sort = picked;
+            page(0);
+        }));
     }
 
-    private void changeSort(int step) {
-        Sort[] all = Sort.values();
-        sort = all[Math.floorMod(sort.ordinal() + step, all.length)];
-        page(0);
-        refresh();
+    /** The category icon from {@code menu.icons}; an entry missing from an older live config falls back to the code default. */
+    private Material categoryIcon(Category c) {
+        String key = c == null ? "all" : c.key();
+        return module.config.icon(key, new AuctionConfig().icon(key, Material.CHEST));
     }
 
     private Component categoryName(Category c) {
         return service.text(viewer, AuctionModule.ID, c == null ? "categories.all" : "categories." + c.key());
     }
 
-    /** A filter button: {@code <key>.name} with the current value, {@code <key>.lore-top}, one line per choice, {@code <key>.lore}. */
-    private ItemStack cycler(Material icon, String key, Component value, List<Component> choices) {
-        List<Component> lore = new ArrayList<>(service.lines(viewer, AuctionModule.ID, key + ".lore-top"));
-        lore.addAll(choices);
-        lore.addAll(service.lines(viewer, AuctionModule.ID, key + ".lore"));
+    /** A filter button: {@code <key>.name} with the current value (the key fact in the name) and {@code <key>.lore}. */
+    private ItemStack filterButton(Material icon, String key, Component value) {
+        List<Component> lore = new ArrayList<>(service.lines(viewer, AuctionModule.ID, key + ".lore"));
         return service.item(icon, service.text(viewer, AuctionModule.ID, key + ".name", Msg.c("value", value)), lore);
-    }
-
-    private List<Component> categoryLines() {
-        List<Component> out = new ArrayList<>();
-        List<Category> all = new ArrayList<>();
-        all.add(null);
-        all.addAll(List.of(Category.values()));
-        for (Category c : all) {
-            String key = c == category ? "browse.list-selected" : "browse.list-other";
-            out.add(service.text(viewer, AuctionModule.ID, key, Msg.c("name", categoryName(c))));
-        }
-        return out;
-    }
-
-    private List<Component> sortLines() {
-        List<Component> out = new ArrayList<>();
-        for (Sort s : Sort.values()) {
-            String key = s == sort ? "browse.list-selected" : "browse.list-other";
-            out.add(service.text(viewer, AuctionModule.ID, key, Msg.c("name", service.text(viewer, AuctionModule.ID, "sort." + s.key()))));
-        }
-        return out;
     }
 
     private void askSearch() {

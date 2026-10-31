@@ -89,7 +89,7 @@ menu:
     lore: ["<c:muted>Your progress is on its way."]
   empty:
     name: "<c:text>Nothing here yet"
-    lore: ["<c:muted>New achievements come later."]
+    lore: ["<c:muted>Play on and they show up here."]
   bar:
     filled: "<c:flame>●</c:flame>"
     empty: "<c:locked>●</c:locked>"
