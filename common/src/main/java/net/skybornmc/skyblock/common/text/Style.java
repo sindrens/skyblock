@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
  * The palette, symbols, gradients and prefix from {@code style.yml} (docs/UI_STYLE.md), exposed as MiniMessage tags:
  * <ul>
  *   <li>{@code <c:brand>}, {@code <rarity:epic>}, {@code <pillar:mining>}, {@code <cur:money>}: colors</li>
+ *   <li>{@code <tag:crate>}: an event tag colour for chat lines ({@code tag:} section, G1-R1-01)</li>
  *   <li>{@code <sym:money>}: a symbol</li>
  *   <li>{@code <grad:phoenix>text</grad>}: a named gradient ({@code {phase}} not supported here)</li>
  *   <li>{@code <prefix>}: the standard chat prefix</li>
@@ -36,7 +37,7 @@ public final class Style {
     public record Color(String name, TextColor hex, NamedTextColor legacy) {
     }
 
-    static final List<String> COLOR_SECTIONS = List.of("c", "rarity", "pillar", "cur");
+    static final List<String> COLOR_SECTIONS = List.of("c", "rarity", "pillar", "cur", "tag");
     private static final Pattern GRAD_OPEN = Pattern.compile("<grad:([a-z0-9_-]+)>");
 
     private volatile Map<String, Map<String, Color>> colors = Map.of();
