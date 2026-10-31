@@ -89,8 +89,8 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.max-interval-seconds", desc = "Longest time between two spawns of one spawner block (vanilla 40).", min = 1, max = 3600, level = Setting.Level.OWNER)
     public int spawnerMaxIntervalSeconds = 40;
 
-    @Setting(path = "spawners.mobs-per-spawner", desc = "Mobs each stacked spawner adds per spawn (vanilla up to 4). Output = this x stack x Spawner Rate mastery (owner S23).", min = 0.01, max = 100, level = Setting.Level.OWNER)
-    public double mobsPerSpawner = 4.0;
+    @Setting(path = "spawners.mobs-per-spawner", desc = "Mobs each stacked spawner adds per spawn (owner answer 641: 1; vanilla up to 4). Output = this x stack x Spawner Rate mastery (owner S23).", min = 0.01, max = 100, level = Setting.Level.OWNER)
+    public double mobsPerSpawner = 1.0;
 
     @Setting(path = "spawners.activation-range", desc = "A spawner runs while a player is this close (owner S24: 16 blocks), or while the island has fuel and nobody is online.", min = 1, max = 128)
     public int activationRange = 16;
@@ -100,6 +100,9 @@ public final class StackingConfig extends ModuleConfig {
 
     @Setting(path = "spawners.due-per-tick", desc = "Most spawner blocks handled in one tick (the rest wait a tick; keeps lag spikes away).", min = 1, max = 10_000)
     public int spawnerDuePerTick = 100;
+
+    @Setting(path = "spawners.frozen-menu-limit", desc = "R3-13b: most frozen spawners shown in a player's staff restore menu (/inspect → Frozen spawners), oldest first.", min = 10, max = 2_000)
+    public int frozenMenuLimit = 200;
 
     @Setting(path = "spawners.tier-1", desc = "Tier 1 spawner types (owner SK3, shop).", level = Setting.Level.OWNER)
     public List<String> tier1 = List.of("pig", "cow", "chicken", "sheep", "rabbit");

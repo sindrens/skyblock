@@ -48,6 +48,12 @@ public final class ShopSettings extends ModuleConfig {
             + "endless money if a price is too low.", level = Setting.Level.OWNER)
     public boolean checkSellPrices = true;
 
+    /** REVIEW3 §3.6: the buy confirm screen is gone (SELL2 quick-buy); its threshold key is deleted on load. */
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        return java.util.Map.of("buy.confirm-above", "the buy confirm screen was removed (quick-buy, R3-29/F14 plan the replacement)");
+    }
+
     @Override
     public String fileName() {
         return "shop-settings.yml";

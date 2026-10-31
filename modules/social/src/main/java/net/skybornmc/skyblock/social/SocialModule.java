@@ -438,7 +438,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         if (blocked) {
             details.put("blocked", "ignored");
         }
-        core.audit().log(AuditCategory.CHAT, "dm", Actor.of(sender),
+        core.audit().log(AuditCategory.DM, "dm", Actor.of(sender),
                 target instanceof Player t ? t.getUniqueId().toString() : "CONSOLE", target.getName(), null, loc(sender), details);
     }
 

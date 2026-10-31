@@ -87,6 +87,24 @@ public final class MenuService implements Listener {
         reload();
     }
 
+    private net.skybornmc.skyblock.common.util.SlowOperationTimer timer;
+
+    /** Task names per menu class for the slow-operation log ({@code menu-tick:UpgradeMenu}). */
+    private static final ClassValue<String> TICK_NAMES = new ClassValue<>() {
+        @Override
+        protected String computeValue(Class<?> type) {
+            return "menu-tick:" + type.getSimpleName();
+        }
+    };
+
+    /**
+     * PERF6: times each open menu's live update by its class name, so a menu that rebuilds itself expensively on every
+     * refresh shows up in the slow-operation log (it used to run untimed). Set before {@link #enable()}.
+     */
+    public void timer(net.skybornmc.skyblock.common.util.SlowOperationTimer timer) {
+        this.timer = timer;
+    }
+
     /** Registers the listener and the live-update task. */
     public void enable() {
         Bukkit.getPluginManager().registerEvents(this, plugin);
@@ -286,8 +304,11 @@ public final class MenuService implements Listener {
         return item;
     }
 
-    /** Marks an item as a menu item (copy); marked items are deleted if they ever end up outside a menu. */
-    ItemStack mark(ItemStack item) {
+    /**
+     * Marks an item as a menu item; marked items are deleted if they ever end up outside a menu. Returns the marked copy of {@code item} ({@code item} itself when it is marked already). Public for menus that cache
+     * their built items (PERF6): a cached, marked item is put into the inventory without another copy.
+     */
+    public ItemStack mark(ItemStack item) {
         if (item == null || item.getType().isAir()) {
             return item;
         }
@@ -633,7 +654,11 @@ public final class MenuService implements Listener {
     private void tickAll() {
         for (Menu menu : open.values()) {
             try {
-                menu.tickInternal();
+                if (timer == null) {
+                    menu.tickInternal();
+                } else {
+                    timer.time(TICK_NAMES.get(menu.getClass()), menu::tickInternal);
+                }
             } catch (RuntimeException e) {
                 plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " tick failed", e);
             }

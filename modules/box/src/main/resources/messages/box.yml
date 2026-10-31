@@ -55,6 +55,8 @@ sources:
   rewards: "<c:value>Daily rewards"
   returned: "<c:value>Returned"
   tutorial: "<c:value>Tutorial"
+  depths: "<c:value>The Depths (satchel full)"
+  spawner-restore: "<c:value>Staff (frozen spawners restored)"
   other: "<c:value>Other"
 
 menu:

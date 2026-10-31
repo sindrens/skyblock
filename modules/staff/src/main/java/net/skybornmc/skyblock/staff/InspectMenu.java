@@ -136,6 +136,11 @@ final class InspectMenu extends Menu {
                 .filter(t -> viewer.hasPermission("skyblock.tutorial.admin.status"))
                 .ifPresent(t -> set(41, service.item(Material.WRITTEN_BOOK, viewer, StaffFeature.MODULE, "menu.inspect.tutorial",
                         Msg.p("player", name)), click -> t.openStaffView(click.player(), id, name, this)));
+        // R3-13b: frozen stacked spawners (block lost) of this player; admins restore them to the player's /box.
+        s.core().services().optional(net.skybornmc.skyblock.common.stacking.StackingService.class)
+                .filter(st -> viewer.hasPermission("skyblock.spawner.restore"))
+                .ifPresent(st -> set(42, service.item(Material.SPAWNER, viewer, StaffFeature.MODULE, "menu.inspect.frozen-spawners",
+                        Msg.p("player", name)), click -> st.openFrozenSpawners(click.player(), id, name, this)));
         button(33, Material.BREEZE_ROD, "menu.inspect.punish", "p " + name, name);
         button(34, Material.CLOCK, "menu.inspect.logs", "logs player " + name, name);
     }

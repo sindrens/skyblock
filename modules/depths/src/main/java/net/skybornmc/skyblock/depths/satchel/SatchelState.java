@@ -25,6 +25,8 @@ final class SatchelState {
     private final Map<String, Long> amounts = new HashMap<>();
     private final Map<String, Long> pending = new HashMap<>();
     private final Map<String, Long> gained = new LinkedHashMap<>();
+    /** R3-22: drops that went past a full satchel (inventory, then /box), for the same batched audit row. */
+    private final Map<String, Long> overflow = new LinkedHashMap<>();
     private long gainedCrystals;
     private long used;
     private boolean loaded;
@@ -38,6 +40,8 @@ final class SatchelState {
     boolean busy;
     /** Last "satchel full" warning (ms). */
     long lastFullWarning;
+    /** Last "/box full, mining stopped" warning (ms). */
+    long lastBoxWarning;
     /** Player name for audit rows. */
     String ownerName = "?";
     UUID owner;
@@ -98,6 +102,20 @@ final class SatchelState {
         used += n;
         pending.merge(item, n, Long::sum);
         pending.values().removeIf(v -> v == 0);
+    }
+
+    /** R3-22: drops that did not go into the (full) satchel but to the inventory or /box; audit only. */
+    void addOverflow(String item, long n) {
+        if (n > 0) {
+            overflow.merge(item, n, Long::sum);
+        }
+    }
+
+    /** Overflow drops since the last audit row, cleared here. */
+    Map<String, Long> takeOverflow() {
+        Map<String, Long> out = new LinkedHashMap<>(overflow);
+        overflow.clear();
+        return out;
     }
 
     void addCrystals(long n) {
@@ -211,7 +229,7 @@ final class SatchelState {
 
     /** True if the audit accumulator holds something. */
     boolean hasGains() {
-        return !gained.isEmpty() || gainedCrystals > 0;
+        return !gained.isEmpty() || !overflow.isEmpty() || gainedCrystals > 0;
     }
 
     /** Items and crystals gained since the last audit row, cleared here. */

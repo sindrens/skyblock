@@ -52,6 +52,42 @@ final class LogText {
 
     /** A copy of {@code details} with IP-like values replaced by {@link #HIDDEN} (recursively), unless allowed. */
     @SuppressWarnings("unchecked")
+    /** The command label of a logged command line ({@code "/Skyblock:MSG bob hi"} → {@code "msg"}); empty for none. */
+    static String commandLabel(Object line) {
+        if (line == null) {
+            return "";
+        }
+        String text = String.valueOf(line).trim();
+        if (text.startsWith("/")) {
+            text = text.substring(1);
+        }
+        int space = text.indexOf(' ');
+        String label = (space < 0 ? text : text.substring(0, space)).toLowerCase(Locale.ROOT);
+        int colon = label.indexOf(':');
+        return colon < 0 ? label : label.substring(colon + 1);
+    }
+
+    /**
+     * R3-9b / owner answer 318: a command row of a private-message command ({@code /msg bob hi}) shows only the label
+     * ({@code /msg (hidden)}) to staff who can't read DMs (the DM itself is in the dm category). Other rows are returned
+     * unchanged.
+     */
+    static net.skybornmc.skyblock.common.audit.AuditEntry hideDm(net.skybornmc.skyblock.common.audit.AuditEntry e,
+                                                                  java.util.Collection<String> dmCommands) {
+        if (e == null || e.category() != net.skybornmc.skyblock.common.audit.AuditCategory.COMMAND) {
+            return e;
+        }
+        Object line = e.details().get("line");
+        String label = commandLabel(line);
+        if (label.isEmpty() || dmCommands.stream().noneMatch(c -> c.equalsIgnoreCase(label))) {
+            return e;
+        }
+        Map<String, Object> details = new LinkedHashMap<>(e.details());
+        details.put("line", "/" + label + " " + HIDDEN);
+        return new net.skybornmc.skyblock.common.audit.AuditEntry(e.id(), e.time(), e.season(), e.server(), e.category(), e.action(),
+                e.actor(), e.target(), e.targetName(), e.amount(), e.world(), e.x(), e.y(), e.z(), details);
+    }
+
     static Map<String, Object> redact(Map<String, Object> details, boolean allowIp) {
         if (allowIp || details == null || details.isEmpty()) {
             return details == null ? Map.of() : details;

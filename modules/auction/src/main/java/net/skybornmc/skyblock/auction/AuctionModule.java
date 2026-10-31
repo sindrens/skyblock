@@ -611,13 +611,15 @@ public final class AuctionModule implements SkyblockModule, Listener {
             if (online(uuid) == null) {
                 return;
             }
-            engine.store().takeNotices(uuid).thenCombine(engine.store().collectionCount(uuid), (notices, bin) -> {
+            // PERF6: only the online check runs on the main thread; the two reads (and their first-run class loading
+            // and lambda linking after a restart) start off it. The notices still show on the main thread.
+            core.scheduler().async(() -> engine.store().takeNotices(uuid).thenCombine(engine.store().collectionCount(uuid), (notices, bin) -> {
                 main.execute(() -> joinNotices(uuid, notices, bin));
                 return null;
             }).exceptionally(e -> {
                 core.plugin().getLogger().log(Level.WARNING, "Auction: join notices failed", Database.cause(e));
                 return null;
-            });
+            }));
         });
     }
 

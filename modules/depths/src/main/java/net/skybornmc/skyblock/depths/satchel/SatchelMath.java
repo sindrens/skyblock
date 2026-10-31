@@ -62,6 +62,11 @@ public final class SatchelMath {
         return used >= capacity;
     }
 
+    /** R3-22: true when a throttled warning may show again ({@code intervalMs} since the last one; 0 = always). */
+    public static boolean warnDue(long lastMs, long nowMs, long intervalMs) {
+        return intervalMs <= 0 || nowMs - lastMs >= intervalMs;
+    }
+
     /** Free space (never negative). */
     public static long free(long used, long capacity) {
         return Math.max(0, capacity - used);

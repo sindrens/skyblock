@@ -125,8 +125,8 @@ public final class AfkConfig extends ModuleConfig {
     @Setting(path = "keys.enabled", desc = "Give crate keys when the daily total reaches the milestones below.")
     public boolean keysEnabled = true;
 
-    @Setting(path = "keys.milestones", desc = "'minutes:crate:amount' per day (owner RW3: 1 h, 3 h, 6 h, 8 h). Kept for later while crates do not exist yet.", level = Setting.Level.OWNER)
-    public List<String> keyMilestones = List.of("60:ember:1", "180:ember:1", "360:cinder:1", "480:blaze:1");
+    @Setting(path = "keys.milestones", desc = "'minutes:crate:amount' per day (owner RW3: 1 h, 3 h, 6 h, 8 h; R3-15: AFK never gives Blaze keys, the 8 h milestone is a Cinder key).", level = Setting.Level.OWNER)
+    public List<String> keyMilestones = List.of("60:ember:1", "180:ember:1", "360:cinder:1", "480:cinder:1");
 
     // ------------------------------------------------------------------ personal sell booster
 

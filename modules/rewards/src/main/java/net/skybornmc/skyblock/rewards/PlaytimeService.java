@@ -8,6 +8,7 @@ import net.skybornmc.skyblock.common.economy.Transaction;
 import net.skybornmc.skyblock.common.economy.TxReason;
 import net.skybornmc.skyblock.common.pass.PassXp;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.util.Stagger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -53,11 +54,27 @@ final class PlaytimeService {
 
     // ================================================================== counting (main thread)
 
+    private long tickNo;
+
+    /**
+     * Runs every server tick (PERF6): each player is counted once per {@code playtime.tick-seconds} in their own tick
+     * slot ({@link Stagger}), adding {@code tick-seconds} as before, instead of everybody in one tick (one placeholder,
+     * permission and skill read set per player: a spike every 20 s with many players online).
+     */
     void tick() {
-        long now = System.currentTimeMillis();
+        long tick = ++tickNo;
+        int period = Math.max(1, m.settings.tickSeconds * 20);
+        long now = 0;
         long idle = m.settings.idleMinutes * 60_000L;
-        Optional<AfkPool> pool = AfkPool.of(m.core.services());
+        Optional<AfkPool> pool = null;
         for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!Stagger.due(p.getUniqueId(), tick, period)) {
+                continue;
+            }
+            if (pool == null) {
+                now = System.currentTimeMillis();
+                pool = AfkPool.of(m.core.services());
+            }
             Status s = statusNow(p, now, idle, pool);
             status.put(p.getUniqueId(), s);
             if (s != Status.COUNTING) {

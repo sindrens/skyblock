@@ -93,6 +93,8 @@ final class UpgradeManager implements Listener {
     private final Set<String> inFlight = new HashSet<>();
     private final Set<String> raiseWarned = new HashSet<>();
     private final Map<UUID, Integer> readyCache = new ConcurrentHashMap<>();
+    /** PERF6: last island bank balance read, so an upgrade menu opens with it instead of "..." (refreshed while open). */
+    private final Map<UUID, Long> knownBank = new ConcurrentHashMap<>();
     private volatile UpgradeCatalog catalog = UpgradeCatalog.empty();
     private final IslandUpgradeEffects effects = new Effects();
     private UpgradeMenus menus;
@@ -344,7 +346,38 @@ final class UpgradeManager implements Listener {
         if (economy == null) {
             return CompletableFuture.completedFuture(-1L);
         }
-        return economy.balance(AccountRef.island(islandId), Currency.MONEY).exceptionally(e -> -1L);
+        return economy.balance(AccountRef.island(islandId), Currency.MONEY).exceptionally(e -> -1L).thenApply(v -> {
+            if (v != null && v >= 0) {
+                knownBank.put(islandId, v);
+            } else {
+                knownBank.remove(islandId);
+            }
+            return v;
+        });
+    }
+
+    /**
+     * The island bank balance last read by {@link #bankBalance} (any thread), or -1 when unknown. Only for display: a
+     * purchase always pays through the economy, which checks the real balance.
+     */
+    long knownBank(UUID islandId) {
+        return islandId == null ? -1 : knownBank.getOrDefault(islandId, -1L);
+    }
+
+    /**
+     * Everything except the catalog and the messages that the effect text of {@code def} at {@code level} depends on
+     * (PERF6 menu item signatures): the bank amounts of bank.yml for the bank upgrades, the island's stored value at
+     * level 0, else nothing (the value comes from the catalog).
+     */
+    Object effectInputs(UpgradeCatalog.Def def, int level, UUID islandId) {
+        UpgradeEffect effect = def.effect();
+        if (effect == UpgradeEffect.BANK_CAPACITY || effect == UpgradeEffect.BANK_INTEREST) {
+            int bankLevel = UpgradeRules.bankLevel(def, level);
+            BankService bank = core.services().optional(BankService.class).orElse(null);
+            boolean capacity = effect == UpgradeEffect.BANK_CAPACITY;
+            return bank == null ? -1L : capacity ? bank.islandCapacity(bankLevel) : bank.islandPayoutCap(bankLevel);
+        }
+        return level <= 0 ? storedNow(effect, islandId) : 0;
     }
 
     // ------------------------------------------------------------------ effect texts
@@ -480,6 +513,7 @@ final class UpgradeManager implements Listener {
         }
         result.whenComplete((r, error) -> core.scheduler().main("progression-upgrade-buy", () -> {
             inFlight.remove(flight);
+            knownBank.remove(islandId); // the balance changed (or may have): menus read it again
             TxResult.Status s = error != null || r == null ? TxResult.Status.ERROR : r.status();
             Outcome outcome = switch (s) {
                 case SUCCESS -> Outcome.BOUGHT;
@@ -706,6 +740,7 @@ final class UpgradeManager implements Listener {
     public void onIslandRemoved(IslandRemovedEvent event) {
         bought.remove(event.islandId());
         readyCache.remove(event.islandId());
+        knownBank.remove(event.islandId());
     }
 
     /** "Ready to buy" line in island chat when the last task of an upgrade's next level was done. */

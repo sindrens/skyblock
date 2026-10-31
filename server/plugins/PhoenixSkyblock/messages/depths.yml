@@ -128,7 +128,8 @@ dungeon:
 # Satchel (M4.4): virtual storage per profile for Depths drops.
 satchel:
   # Action bar while mining. <used> <max>
-  full: "<c:error><sym:cross></c:error> <c:text>Satchel full <c:value><used>/<max></c:value> <c:muted><sym:dot> sell in /dungeon, Satchel"
+  full-overflow: "<c:error><sym:cross></c:error> <c:text>Satchel full <c:value><used>/<max></c:value> <c:muted><sym:dot> drops go to your inventory, then /box"
+  box-full: "<c:error><sym:cross></c:error> <c:text>Satchel and /box full <c:value>(<max>)</c:value> <c:muted><sym:dot> empty /box or sell in /dungeon to mine again"
   loading: "<c:muted>Your satchel is loading..."
   not-loaded: "<prefix><c:error><sym:cross></c:error> <c:text>Your satchel is still loading. Try again in a moment."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>Wait a moment, your last satchel action is still running."

@@ -541,13 +541,12 @@ public final class CombatZones implements Listener {
             crystals = hook.getCrystals();
             xp = hook.getXp();
         }
-        if (config.satchelEnabled && !items.isEmpty() && satchel.accepts(player)) {
-            items.forEach((id, n) -> {
-                if (n != null && n > 0) {
-                    satchel.add(player, id, n);
-                }
-            });
-        }
+        // R3-22: satchel → inventory → /box (combat drops were lost on a full satchel before).
+        items.forEach((id, n) -> {
+            if (n != null && n > 0) {
+                drops.deliver(player, id, n, true);
+            }
+        });
         drops.credit(player, crystals);
         if (xp > 0) {
             double gain = xp;

@@ -148,7 +148,12 @@ final class TutorialEngine implements TutorialService, TutorialGate {
                 if (module.cameras().running(player.getUniqueId())) {
                     return; // a camera runs (it gives the position back itself)
                 }
-                module.targets().takeMeThere(player, p, false);
+                // PERF6: timed on its own (nested inside tutorial-rejoin), so the log tells the teleport request (guards of
+                // every module, danger zones, chunk future; the island home check when its chunk is loaded) apart from the
+                // rest of the rejoin.
+                core.scheduler().timer().time("tutorial-rejoin-teleport", () -> {
+                    module.targets().takeMeThere(player, p, false);
+                });
             });
         }
         enterStep(player, p, false);

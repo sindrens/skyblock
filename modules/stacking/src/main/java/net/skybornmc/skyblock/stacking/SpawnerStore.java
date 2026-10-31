@@ -109,4 +109,69 @@ final class SpawnerStore {
                         rs.getString("entity_type"), rs.getInt("amount"), Sql.uuid(rs, "island_id"), Sql.uuid(rs, "placed_by"),
                         rs.getLong("placed_at")), rs.getString("reason"), rs.getString("state"), rs.getLong("frozen_at")), FROZEN);
     }
+
+    static final String RESTORED = "restored";
+    /** R3-13a: frozen rows of an island that was disbanded or reset on purpose. */
+    static final String CLEARED = "cleared";
+
+    private static final String FROZEN_COLUMNS = "SELECT id, world, x, y, z, entity_type, amount, island_id, placed_by, placed_at, "
+            + "reason, state, frozen_at FROM stacking_spawners_frozen";
+
+    private static Frozen frozenRow(java.sql.ResultSet rs) throws SQLException {
+        return new Frozen(rs.getLong("id"), new Row(rs.getString("world"), rs.getInt("x"), rs.getInt("y"), rs.getInt("z"),
+                rs.getString("entity_type"), rs.getInt("amount"), Sql.uuid(rs, "island_id"), Sql.uuid(rs, "placed_by"),
+                rs.getLong("placed_at")), rs.getString("reason"), rs.getString("state"), rs.getLong("frozen_at"));
+    }
+
+    /** R3-13b: frozen spawners a player placed, still waiting for staff, oldest first. */
+    List<Frozen> frozenPlacedBy(Connection c, UUID player, int limit) throws SQLException {
+        return Sql.query(c, FROZEN_COLUMNS + " WHERE placed_by = ? AND state = ? ORDER BY id LIMIT " + Math.max(1, limit),
+                SpawnerStore::frozenRow, player, FROZEN);
+    }
+
+    /** One frozen row by id (any state). */
+    java.util.Optional<Frozen> frozenById(Connection c, long id) throws SQLException {
+        return Sql.queryOne(c, FROZEN_COLUMNS + " WHERE id = ?", SpawnerStore::frozenRow, id);
+    }
+
+    /**
+     * R3-13b: marks a frozen row restored, exactly once (conditional on state {@code frozen}). Returns the row when this
+     * call restored it, empty when it was restored, cleared or dismissed already (a double click can't give twice).
+     */
+    java.util.Optional<Frozen> restore(Connection c, long id) throws SQLException {
+        java.util.Optional<Frozen> row = frozenById(c, id);
+        if (row.isEmpty() || !FROZEN.equals(row.get().state())) {
+            return java.util.Optional.empty();
+        }
+        if (Sql.update(c, "UPDATE stacking_spawners_frozen SET state = ? WHERE id = ? AND state = ?", RESTORED, id, FROZEN) != 1) {
+            return java.util.Optional.empty();
+        }
+        Frozen f = row.get();
+        return java.util.Optional.of(new Frozen(f.id(), f.row(), f.reason(), RESTORED, f.frozenAt()));
+    }
+
+    /** What {@link #clearIsland} removed. */
+    record Cleared(List<Row> rows, int frozenRows) {
+
+        int spawners() {
+            return rows.stream().mapToInt(Row::amount).sum();
+        }
+    }
+
+    /**
+     * R3-13a: the island was disbanded or reset on purpose, so its spawners are cleared, not frozen for staff: every
+     * {@code stacking_spawners} row of the island is deleted and its waiting frozen rows become {@code cleared}. Pass a
+     * transaction connection. Returns the deleted rows (for the audit row).
+     */
+    Cleared clearIsland(Connection c, UUID island) throws SQLException {
+        if (island == null) {
+            return new Cleared(List.of(), 0);
+        }
+        List<Row> rows = Sql.query(c, SELECT_ALL + " WHERE island_id = ?", rs -> new Row(rs.getString("world"), rs.getInt("x"),
+                rs.getInt("y"), rs.getInt("z"), rs.getString("entity_type"), rs.getInt("amount"), Sql.uuid(rs, "island_id"),
+                Sql.uuid(rs, "placed_by"), rs.getLong("placed_at")), island);
+        Sql.update(c, "DELETE FROM stacking_spawners WHERE island_id = ?", island);
+        int frozen = Sql.update(c, "UPDATE stacking_spawners_frozen SET state = ? WHERE island_id = ? AND state = ?", CLEARED, island, FROZEN);
+        return new Cleared(rows, frozen);
+    }
 }

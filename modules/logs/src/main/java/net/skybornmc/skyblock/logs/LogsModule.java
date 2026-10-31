@@ -139,6 +139,20 @@ public final class LogsModule implements SkyblockModule {
         return out;
     }
 
+    /** R3-9b: whether {@code sender} may read private messages (the dm category; console: yes). */
+    boolean canSeeDms(CommandSender sender) {
+        return !(sender instanceof Player) || sender.hasPermission(PERM_CATEGORY + AuditCategory.DM.key());
+    }
+
+    /** Hides DM command lines for staff who can't read DMs (see {@link LogText#hideDm}). */
+    List<AuditEntry> privacy(CommandSender viewer, List<AuditEntry> rows) {
+        if (canSeeDms(viewer)) {
+            return rows;
+        }
+        List<String> dm = config.dmCommands;
+        return rows.stream().map(e -> LogText.hideDm(e, dm)).toList();
+    }
+
     boolean canSeeIps(CommandSender sender) {
         return !(sender instanceof Player) || sender.hasPermission(PERM_IP);
     }
@@ -498,7 +512,7 @@ public final class LogsModule implements SkyblockModule {
         if (query == null) {
             return CompletableFuture.completedFuture(new Page(List.of(), 0));
         }
-        CompletableFuture<List<AuditEntry>> rows = core.audit().query(query.copyPage(page, size));
+        CompletableFuture<List<AuditEntry>> rows = core.audit().query(query.copyPage(page, size)).thenApply(list -> privacy(viewer, list));
         CompletableFuture<Long> total = core.audit().count(query);
         return rows.thenCombine(total, Page::new);
     }
@@ -554,7 +568,8 @@ public final class LogsModule implements SkyblockModule {
         File file = new File(folder, "logs-" + who.replaceAll("[^A-Za-z0-9_.-]", "_") + "-" + FILE_TIME.format(LocalDateTime.now()) + ".csv");
         int max = config.exportMaxRows;
         msg.send(sender, "export.started");
-        CompletableFuture.supplyAsync(() -> writeCsv(query, file, max, ips)).whenCompleteAsync((rows, error) -> {
+        boolean dms = canSeeDms(sender);
+        CompletableFuture.supplyAsync(() -> writeCsv(query, file, max, ips, dms)).whenCompleteAsync((rows, error) -> {
             if (error != null) {
                 core.plugin().getLogger().warning("Log export failed: " + error.getMessage());
                 msg.send(sender, "export.failed", Msg.p("reason", String.valueOf(error.getMessage())));
@@ -572,7 +587,7 @@ public final class LogsModule implements SkyblockModule {
     }
 
     /** Writes the CSV (blocking; runs off the main thread). */
-    private int writeCsv(AuditQuery query, File file, int max, boolean ips) {
+    private int writeCsv(AuditQuery query, File file, int max, boolean ips, boolean dms) {
         file.getParentFile().mkdirs();
         int pageSize = core.audit().maxQueryRows();
         int rows = 0;
@@ -581,7 +596,8 @@ public final class LogsModule implements SkyblockModule {
             w.newLine();
             for (int page = 0; rows < max; page++) {
                 List<AuditEntry> chunk = core.audit().query(query.copyPage(page, pageSize)).join();
-                for (AuditEntry e : chunk) {
+                for (AuditEntry row : chunk) {
+                    AuditEntry e = dms ? row : LogText.hideDm(row, config.dmCommands);
                     if (rows >= max) {
                         break;
                     }

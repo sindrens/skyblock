@@ -43,11 +43,15 @@ public final class LogsConfig extends ModuleConfig {
     @Setting(path = "lore.width", desc = "Characters per lore/hover line before it is shortened or wrapped.", min = 20, max = 80)
     public int loreWidth = 42;
 
+    @Setting(path = "privacy.dm-commands", desc = "R3-9b / owner answer 318: private-message commands. Staff without the dm "
+            + "category (helpers) see these command lines as '/msg (hidden)'; the messages themselves are in the dm category.")
+    public List<String> dmCommands = List.of("msg", "tell", "w", "whisper", "m", "pm", "r", "reply", "mail", "message", "t");
+
     @Setting(desc = "Menu icon per category: category:MATERIAL.")
     public List<String> icons = List.of(
             "economy:GOLD_INGOT", "trade:EMERALD", "auction:GOLDEN_HORSE_ARMOR", "island:GRASS_BLOCK",
             "punishment:IRON_BARS", "staff:NETHER_STAR", "config:COMPARATOR", "command:COMMAND_BLOCK",
-            "chat:OAK_SIGN", "item:CHEST", "auth:OAK_DOOR", "world:FILLED_MAP");
+            "chat:OAK_SIGN", "dm:WRITABLE_BOOK", "item:CHEST", "auth:OAK_DOOR", "world:FILLED_MAP");
 
     @Override
     public String fileName() {

@@ -128,4 +128,59 @@ class SpawnerStoreTest {
         assertTrue(db.blocking(c -> store.freeze(c, "islands", 9, 70, -5, "block_gone", 5L)).isEmpty());
         assertTrue(db.blocking(c -> store.frozen(c, 10)).isEmpty());
     }
+
+    // ------------------------------------------------------------------ R3-13a: disband/reset clears; R3-13b: staff restore
+
+    @Test
+    void disbandOrResetClearsTheIslandsSpawnersInsteadOfFreezing() {
+        UUID other = UUID.randomUUID();
+        db.blocking(c -> store.insert(c, row(1, "zombie", 8), 1L));
+        db.blocking(c -> store.insert(c, row(2, "pig", 3), 1L));
+        db.blocking(c -> store.insert(c, row(3, "cow", 2), 1L));
+        db.blocking(c -> store.freeze(c, "islands", 3, 70, -5, "block_gone", 2L)); // already frozen before the disband
+        db.blocking(c -> store.insert(c, new SpawnerStore.Row("islands", 9, 70, -5, "pig", 5, other, player, 1L), 1L));
+        SpawnerStore.Cleared cleared = db.blocking(c -> store.clearIsland(c, island));
+        assertEquals(2, cleared.rows().size());
+        assertEquals(11, cleared.spawners());
+        assertEquals(1, cleared.frozenRows(), "a waiting frozen row of the island is cleared too");
+        List<SpawnerStore.Row> left = db.blocking(store::loadAll);
+        assertEquals(1, left.size(), "other islands keep their spawners");
+        assertEquals(other, left.getFirst().island());
+        assertTrue(db.blocking(c -> store.frozen(c, 10)).isEmpty(), "nothing waits for staff");
+        assertTrue(db.blocking(c -> store.freeze(c, "islands", 1, 70, -5, "block_gone", 5L)).isEmpty(),
+                "a spawn tick after the clear can't freeze a cleared spawner");
+        assertTrue(db.blocking(c -> store.restore(c, 1L)).isEmpty(), "a cleared row can't be restored");
+    }
+
+    @Test
+    void onlyDisbandAndResetClear() {
+        assertTrue(SpawnerManager.clearsSpawners(net.skybornmc.skyblock.common.island.IslandRemovedEvent.DISBAND));
+        assertTrue(SpawnerManager.clearsSpawners(net.skybornmc.skyblock.common.island.IslandRemovedEvent.RESET));
+        assertFalse(SpawnerManager.clearsSpawners(net.skybornmc.skyblock.common.island.IslandRemovedEvent.DELETE),
+                "a staff delete keeps them (frozen when the block is gone), like the island bank");
+        assertFalse(SpawnerManager.clearsSpawners(null));
+    }
+
+    @Test
+    void clearingANullIslandDoesNothing() {
+        db.blocking(c -> store.insert(c, new SpawnerStore.Row("islands", 2, 70, -5, "pig", 1, null, null, 5L), 2L));
+        assertEquals(0, db.blocking(c -> store.clearIsland(c, null)).rows().size());
+        assertEquals(1, db.blocking(store::loadAll).size());
+    }
+
+    @Test
+    void aFrozenSpawnerIsRestoredExactlyOnce() {
+        db.blocking(c -> store.insert(c, row(1, "zombie", 70), 1L));
+        long id = db.blocking(c -> store.freeze(c, "islands", 1, 70, -5, "block_gone", 5L)).orElseThrow().id();
+        List<SpawnerStore.Frozen> mine = db.blocking(c -> store.frozenPlacedBy(c, player, 10));
+        assertEquals(1, mine.size());
+        assertTrue(db.blocking(c -> store.frozenPlacedBy(c, UUID.randomUUID(), 10)).isEmpty());
+        java.util.Optional<SpawnerStore.Frozen> first = db.blocking(c -> store.restore(c, id));
+        assertTrue(first.isPresent());
+        assertEquals(70, first.get().row().amount());
+        assertEquals(SpawnerStore.RESTORED, first.get().state());
+        assertTrue(db.blocking(c -> store.restore(c, id)).isEmpty(), "a double click can't give the spawners twice");
+        assertTrue(db.blocking(c -> store.frozenPlacedBy(c, player, 10)).isEmpty(), "restored rows leave the staff list");
+        assertTrue(db.blocking(c -> store.restore(c, 999L)).isEmpty());
+    }
 }

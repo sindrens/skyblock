@@ -1,12 +1,16 @@
 # LuckPerms grants for the logs module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
 # Node definitions: modules/logs/src/main/resources/permissions/logs.yml. One console command per line; # = comment.
 
-# Staff log viewer (/logs, M1.10): helper = chat/commands/joins, mod = + economy/trade/auction/island/item/punishment/world
-# and teleport, admin = + staff actions, export; owner = everything incl. config (owner has *).
+# Staff log viewer (/logs, M1.10): helper = chat/commands/joins, mod = + private messages (dm)/economy/trade/auction/island/
+# item/punishment/world and teleport, admin = + staff actions, export; owner = everything incl. config (owner has *).
+# R3-9b / owner answer 318: helpers never read DMs (category dm; DM command lines show as "/msg (hidden)" to them).
+# Older installs: helpers must not keep a dm grant (removed below in case one was set by hand).
+lp group helper permission unset skyblock.staff.logs.category.dm
 lp group helper permission set skyblock.staff.logs true
 lp group helper permission set skyblock.staff.logs.category.chat true
 lp group helper permission set skyblock.staff.logs.category.command true
 lp group helper permission set skyblock.staff.logs.category.auth true
+lp group mod permission set skyblock.staff.logs.category.dm true
 lp group mod permission set skyblock.staff.logs.category.economy true
 lp group mod permission set skyblock.staff.logs.category.trade true
 lp group mod permission set skyblock.staff.logs.category.auction true

@@ -47,6 +47,8 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
 
     static final String ID = "stacking";
     static final String PERM_GIVE = "skyblock.spawner.give";
+    /** R3-13b: restore frozen spawners from /inspect. */
+    static final String PERM_RESTORE = "skyblock.spawner.restore";
 
     private final Core core;
     private final StackingConfig config = new StackingConfig();
@@ -262,6 +264,15 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     }
 
     // ------------------------------------------------------------------ StackingService
+
+    @Override
+    public void openFrozenSpawners(Player staff, java.util.UUID player, String name, net.skybornmc.skyblock.common.menu.Menu back) {
+        if (!staff.hasPermission(PERM_RESTORE)) {
+            msg.send(staff, "frozen.no-permission");
+            return;
+        }
+        FrozenSpawnerMenu.open(this, staff, player, name, back);
+    }
 
     @Override
     public int mobCount(Entity entity) {

@@ -73,7 +73,7 @@ Donors use a bracket prefix in normal case; staff keep **bold caps** (`MOD`, `AD
 | Flameheart (won) | `&c[Flameheart]` | `#FF5A3C` | N10 |
 | Firecrown (won) | `&6&l[Firecrown]` | gradient `#FFB000 → #FF3D2E` | N11 |
 
-The art brief (N02–N06) must grow to N01–N11 once the names are final.
+The art brief §N lists N01–N11 with these names and colours (updated by REV3-FIX).
 
 ## A2. Staff ranks (owner 390, 391)
 

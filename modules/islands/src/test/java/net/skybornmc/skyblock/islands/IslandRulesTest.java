@@ -27,7 +27,7 @@ class IslandRulesTest {
         assertEquals(9, config.maxSlots);
         assertEquals(9, config.normalMaxSize(), "owner answer 157: normal upgrades reach 9x9");
         assertEquals(15, config.maxSize(), "bigger only with gems or the black market");
-        assertTrue(config.upgradesIslandBankOnly, "owner answer 169");
+        assertTrue(config.removedKeys().containsKey("upgrades.island-bank-only"), "owner answer 169: always the island bank, no switch");
         config.normalMaxChunks = 21;
         assertEquals(15, config.normalMaxSize(), "never above the absolute cap");
 

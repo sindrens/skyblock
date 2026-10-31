@@ -99,6 +99,12 @@ public final class EssentialsConfig extends ModuleConfig {
 
 
 
+    /** Dead-key rule (REVIEW3 §6): the menu item moved to menus.yml (menu-item.*); the old essentials keys are deleted on load. */
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        return java.util.Map.of("menu-item", "the menu item is configured in menus.yml (menu-item.*) now");
+    }
+
     @Override
     public String fileName() {
         return "essentials.yml";

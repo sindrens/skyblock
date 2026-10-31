@@ -31,6 +31,10 @@ public final class BoxSource {
     public static final String REWARDS = "rewards";
     /** Starter chest contents, Starter pack and finish rewards of the join tutorial. */
     public static final String TUTORIAL = "tutorial";
+    /** R3-22: Depths drops (mining and combat) past a full satchel and a full inventory. */
+    public static final String DEPTHS = "depths";
+    /** R3-13b: frozen stacked spawners a staff member gave back (inspect menu). */
+    public static final String SPAWNER_RESTORE = "spawner-restore";
     /** An item given back into the box after a take failed (keeps its original source when known). */
     public static final String RETURNED = "returned";
 
