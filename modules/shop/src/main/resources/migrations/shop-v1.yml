@@ -1,0 +1,406 @@
+# FROZEN SNAPSHOT: the bundled shop.yml defaults of config-version 1 (8 categories, 332 items), before GUI-3 / Shop v2.
+# Never edit. The one-time catalog migration (ShopCatalogMigration) compares the live shop.yml with these defaults:
+# a live price that still equals its old default is moved to the new default; any other (owner-edited) price is kept.
+# =====================================================================================================================
+#  BUILDER SHOP PRICES (M3.5)  -  DRAFT: THE OWNER APPROVES THESE PRICES BEFORE LAUNCH (docs/ECONOMY_BALANCE.md §12).
+# =====================================================================================================================
+# What /shop sells and for how much (money, whole units, price per ONE item). The shop is a money sink: nothing here can
+# be sold back in the shop (selling is /sell).
+#
+# Format:
+#   categories.<category>.icon: <item id>            icon in the /shop menu (names/descriptions: messages/shop.yml)
+#   categories.<category>.slot: <10-43>              where the category sits in /shop (inner slots; missing = next free)
+#   categories.<category>.items.<item id>: <price>   a vanilla item id and its price per item
+#   ...items.<item id>: { price: 260, enabled: false }                 keep the price but stop selling it
+#   ...items.<item id>: { price: 2400, contains: { redstone: 9 } }     what the item turns back into (crafting, breaking)
+#   ...items.<item id>: { price: 120, requires: { farming: 10 } }      skill level needed to buy it (farming, mining ...)
+# Item order in the menu = order in this file. Items that are not real item ids are skipped with a console warning.
+#
+# THE ONE RULE (checked by a build test and again live, against the current /sell prices):
+#   price > the most the item (and everything in "contains") can ever sell for with /sell
+#         = sell.yml base x dynamic ceiling (150%) x Hot Item (+25%) x (1 + sell bonus cap 300%) = base x 7.5 by default.
+#   Otherwise buying here and selling with /sell would print money. An item that breaks this rule is NOT sold (the
+#   console and staff get a warning) until its price is raised.
+#   That is why carrots, sugar cane, cactus, cocoa, sweet berries and redstone cost more than you might expect, and why
+#   glowstone, sea lanterns, hay bales, slime blocks, storage blocks (coal/iron/lapis ...), cobwebs, pumpkins, melons,
+#   nether wart, torchflower seeds and pitcher pods are not listed (they break into or grow 1:1 into sellable items).
+#
+# Default prices: the shop takes ~4% of what players earn (docs/ECONOMY_BALANCE.md §1.2 "Shop spend"); a stack of a
+# common block costs about 3-8 minutes of first-hour income. New entries in a plugin update are added to this file
+# automatically; to remove an item set enabled: false (a deleted entry comes back on the next update).
+# Reload: /skyblock reload shop
+config-version: 1
+
+categories:
+  # Natural and basic blocks.
+  building-blocks:
+    icon: bricks
+    slot: 20
+    items:
+      dirt: 4
+      coarse_dirt: 4
+      rooted_dirt: 6
+      grass_block: 8
+      podzol: 8
+      mycelium: 10
+      moss_block: 8
+      mud: 5
+      packed_mud: 6
+      mud_bricks: 8
+      sand: 4
+      red_sand: 5
+      gravel: 4
+      clay: 12
+      sandstone: 6
+      cut_sandstone: 8
+      smooth_sandstone: 8
+      red_sandstone: 8
+      smooth_red_sandstone: 10
+      snow_block: 5
+      ice: 8
+      packed_ice: 12
+      blue_ice: 30
+      obsidian: 60
+      crying_obsidian: 80
+      netherrack: 3
+      soul_sand: 8
+      soul_soil: 8
+      end_stone: 10
+      purpur_block: 15
+      quartz_block: 20
+      smooth_quartz: 22
+      quartz_bricks: 22
+      quartz_pillar: 22
+      prismarine: 20
+      prismarine_bricks: 24
+      dark_prismarine: 28
+      amethyst_block: 30
+      copper_block: 40
+      cut_copper: 12
+  # Logs, planks and stripped logs (a log crafts into 4 planks).
+  wood:
+    icon: oak_log
+    slot: 21
+    items:
+      oak_log: 8
+      spruce_log: 8
+      birch_log: 8
+      jungle_log: 8
+      acacia_log: 8
+      dark_oak_log: 8
+      mangrove_log: 8
+      cherry_log: 8
+      pale_oak_log: 8
+      crimson_stem: 8
+      warped_stem: 8
+      bamboo_block: 8
+      oak_planks: 2
+      spruce_planks: 2
+      birch_planks: 2
+      jungle_planks: 2
+      acacia_planks: 2
+      dark_oak_planks: 2
+      mangrove_planks: 2
+      cherry_planks: 2
+      pale_oak_planks: 2
+      crimson_planks: 2
+      warped_planks: 2
+      bamboo_planks: 2
+      stripped_oak_log: 9
+      stripped_spruce_log: 9
+      stripped_birch_log: 9
+      stripped_jungle_log: 9
+      stripped_acacia_log: 9
+      stripped_dark_oak_log: 9
+      stripped_mangrove_log: 9
+      stripped_cherry_log: 9
+      stripped_pale_oak_log: 9
+  # Stone and bricks. Stone and cobblestone break into cobblestone, which /sell buys: keep them above 7.5x its sell price.
+  stone-bricks:
+    icon: stone_bricks
+    slot: 22
+    items:
+      cobblestone: 8
+      stone: { price: 8, contains: { cobblestone: 1 } }
+      smooth_stone: 9
+      stone_bricks: 9
+      mossy_stone_bricks: 10
+      cracked_stone_bricks: 10
+      chiseled_stone_bricks: 10
+      mossy_cobblestone: 9
+      andesite: 5
+      polished_andesite: 6
+      diorite: 5
+      polished_diorite: 6
+      granite: 5
+      polished_granite: 6
+      cobbled_deepslate: 5
+      deepslate: 6
+      polished_deepslate: 7
+      deepslate_bricks: 8
+      deepslate_tiles: 8
+      tuff: 5
+      polished_tuff: 6
+      tuff_bricks: 8
+      calcite: 6
+      dripstone_block: 8
+      bricks: 12
+      blackstone: 6
+      polished_blackstone: 7
+      polished_blackstone_bricks: 8
+      basalt: 6
+      smooth_basalt: 7
+      nether_bricks: 10
+      red_nether_bricks: 12
+      end_stone_bricks: 12
+  # Glass, concrete, terracotta, wool and dyes in every color.
+  glass-colors:
+    icon: light_blue_stained_glass
+    slot: 23
+    items:
+      glass: 5
+      glass_pane: 2
+      tinted_glass: 30
+      white_stained_glass: 6
+      orange_stained_glass: 6
+      magenta_stained_glass: 6
+      light_blue_stained_glass: 6
+      yellow_stained_glass: 6
+      lime_stained_glass: 6
+      pink_stained_glass: 6
+      gray_stained_glass: 6
+      light_gray_stained_glass: 6
+      cyan_stained_glass: 6
+      purple_stained_glass: 6
+      blue_stained_glass: 6
+      brown_stained_glass: 6
+      green_stained_glass: 6
+      red_stained_glass: 6
+      black_stained_glass: 6
+      white_concrete: 6
+      orange_concrete: 6
+      magenta_concrete: 6
+      light_blue_concrete: 6
+      yellow_concrete: 6
+      lime_concrete: 6
+      pink_concrete: 6
+      gray_concrete: 6
+      light_gray_concrete: 6
+      cyan_concrete: 6
+      purple_concrete: 6
+      blue_concrete: 6
+      brown_concrete: 6
+      green_concrete: 6
+      red_concrete: 6
+      black_concrete: 6
+      terracotta: 5
+      white_terracotta: 6
+      orange_terracotta: 6
+      magenta_terracotta: 6
+      light_blue_terracotta: 6
+      yellow_terracotta: 6
+      lime_terracotta: 6
+      pink_terracotta: 6
+      gray_terracotta: 6
+      light_gray_terracotta: 6
+      cyan_terracotta: 6
+      purple_terracotta: 6
+      blue_terracotta: 6
+      brown_terracotta: 6
+      green_terracotta: 6
+      red_terracotta: 6
+      black_terracotta: 6
+      white_wool: 6
+      orange_wool: 6
+      magenta_wool: 6
+      light_blue_wool: 6
+      yellow_wool: 6
+      lime_wool: 6
+      pink_wool: 6
+      gray_wool: 6
+      light_gray_wool: 6
+      cyan_wool: 6
+      purple_wool: 6
+      blue_wool: 6
+      brown_wool: 6
+      green_wool: 6
+      red_wool: 6
+      black_wool: 6
+      white_dye: 4
+      orange_dye: 4
+      magenta_dye: 4
+      light_blue_dye: 4
+      yellow_dye: 4
+      lime_dye: 4
+      pink_dye: 4
+      gray_dye: 4
+      light_gray_dye: 4
+      cyan_dye: 4
+      purple_dye: 4
+      blue_dye: 4
+      brown_dye: 4
+      green_dye: 4
+      red_dye: 4
+      black_dye: 4
+  # Lights, furniture, flowers and carpets.
+  decoration:
+    icon: flower_pot
+    slot: 24
+    items:
+      torch: 4
+      soul_torch: 5
+      lantern: 40
+      soul_lantern: 45
+      end_rod: 30
+      candle: 15
+      shroomlight: 30
+      ochre_froglight: 40
+      verdant_froglight: 40
+      pearlescent_froglight: 40
+      campfire: 30
+      flower_pot: 10
+      decorated_pot: 20
+      bookshelf: 60
+      chiseled_bookshelf: 70
+      painting: 20
+      item_frame: 25
+      glow_item_frame: 40
+      armor_stand: 40
+      white_banner: 25
+      iron_bars: 10
+      white_carpet: 3
+      orange_carpet: 3
+      magenta_carpet: 3
+      light_blue_carpet: 3
+      yellow_carpet: 3
+      lime_carpet: 3
+      pink_carpet: 3
+      gray_carpet: 3
+      light_gray_carpet: 3
+      cyan_carpet: 3
+      purple_carpet: 3
+      blue_carpet: 3
+      brown_carpet: 3
+      green_carpet: 3
+      red_carpet: 3
+      black_carpet: 3
+      moss_carpet: 4
+      dandelion: 8
+      poppy: 8
+      blue_orchid: 10
+      allium: 10
+      azure_bluet: 10
+      red_tulip: 10
+      orange_tulip: 10
+      white_tulip: 10
+      pink_tulip: 10
+      oxeye_daisy: 10
+      cornflower: 10
+      lily_of_the_valley: 10
+      sunflower: 15
+      lilac: 15
+      rose_bush: 15
+      peony: 15
+      short_grass: 4
+      fern: 4
+      dead_bush: 4
+      azalea: 20
+      flowering_azalea: 25
+      spore_blossom: 40
+  # Redstone dust is also an island generator drop and sells with /sell, so it costs more than 7.5x its sell price.
+  redstone:
+    icon: redstone
+    slot: 30
+    items:
+      redstone: 260
+      redstone_block: { price: 2400, contains: { redstone: 9 } }
+      redstone_torch: 30
+      repeater: 40
+      comparator: 60
+      piston: 50
+      sticky_piston: 70
+      observer: 60
+      hopper: 120
+      dropper: 30
+      dispenser: 40
+      crafter: 80
+      lever: 5
+      stone_button: 3
+      oak_button: 3
+      stone_pressure_plate: 5
+      light_weighted_pressure_plate: 40
+      heavy_weighted_pressure_plate: 30
+      tripwire_hook: 15
+      daylight_detector: 40
+      target: 30
+      redstone_lamp: 60
+      note_block: 20
+      rail: 8
+      powered_rail: 60
+      detector_rail: 30
+      activator_rail: 30
+      minecart: 60
+  # Seeds and plants. Crops that are their own seed (carrot, potato, sugar cane ...) sell with /sell, so they cost more than 7.5x their sell price; buy one and grow more. Farming tier unlocks come later (requires: { farming: <level> }).
+  farming:
+    icon: wheat_seeds
+    slot: 31
+    items:
+      wheat_seeds: 10
+      beetroot_seeds: 15
+      melon_seeds: 40
+      pumpkin_seeds: 40
+      carrot: 120
+      potato: 120
+      sugar_cane: 200
+      cocoa_beans: 350
+      cactus: 475
+      sweet_berries: 650
+      oak_sapling: 25
+      spruce_sapling: 25
+      birch_sapling: 25
+      jungle_sapling: 30
+      acacia_sapling: 30
+      dark_oak_sapling: 30
+      mangrove_propagule: 35
+      cherry_sapling: 35
+      pale_oak_sapling: 35
+      bamboo: 10
+      kelp: 8
+      sea_pickle: 10
+      lily_pad: 10
+      brown_mushroom: 10
+      red_mushroom: 10
+      vine: 5
+      glow_berries: 15
+      bone_meal: 6
+  # Workstations, storage and tools for your island.
+  utility:
+    icon: crafting_table
+    slot: 32
+    items:
+      crafting_table: 5
+      chest: 10
+      trapped_chest: 15
+      barrel: 10
+      furnace: 10
+      smoker: 20
+      blast_furnace: 40
+      composter: 10
+      ladder: 3
+      scaffolding: 5
+      white_bed: 30
+      bucket: 50
+      water_bucket: 60
+      lava_bucket: 200
+      cauldron: 60
+      grindstone: 30
+      smithing_table: 30
+      stonecutter: 30
+      loom: 20
+      cartography_table: 25
+      fletching_table: 20
+      lectern: 50
+      anvil: 400
+      brewing_stand: 300
+      enchanting_table: 1500
+      ender_chest: 1500

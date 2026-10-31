@@ -6,6 +6,7 @@ import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.economy.Transaction;
 import net.skybornmc.skyblock.common.economy.TxReason;
+import net.skybornmc.skyblock.common.economy.TxResult;
 
 import java.util.OptionalLong;
 import java.util.UUID;
@@ -93,4 +94,34 @@ final class ShopEngine {
                 });
     }
 
+    /** The refund of an undone purchase (F14): the full price back to the profile that paid, once. */
+    static Transaction undoTransaction(UndoLedger.Offer o, String playerName, Actor actor) {
+        return Transaction.deposit(AccountRef.player(o.profile()), Currency.MONEY, o.total(), TxReason.SHOP_UNDO)
+                .actor(actor)
+                .reference("shop:" + o.purchase())
+                .idempotencyKey("shop_undo:" + o.purchase())
+                .detail("target_name", playerName)
+                .detail("purchase", o.purchase().toString())
+                .detail("item", o.itemId())
+                .detail("quantity", o.quantity())
+                .detail("profile", o.profile().toString());
+    }
+
+    /**
+     * Refunds an undone purchase: one ledger deposit together with {@code delivered → refunded} on its row, so it can
+     * only ever happen once (a second try is {@code DUPLICATE}, nothing paid). The caller has already taken the items
+     * back and gives them back if this does not succeed. Never completes exceptionally.
+     */
+    CompletableFuture<TxResult.Status> undo(UndoLedger.Offer o, String playerName, Actor actor) {
+        long now = clock.getAsLong();
+        EconomyService eco;
+        try {
+            eco = economy.get();
+        } catch (RuntimeException e) {
+            return CompletableFuture.completedFuture(TxResult.Status.ERROR);
+        }
+        return eco.executeGuarded(undoTransaction(o, playerName, actor),
+                        c -> ShopStore.move(c, o.purchase(), ShopStore.DELIVERED, ShopStore.REFUNDED, now))
+                .handle((tx, error) -> error != null || tx == null ? TxResult.Status.ERROR : tx.status());
+    }
 }

@@ -184,7 +184,7 @@ final class DashboardMenu extends WatchMenu {
         FlowSummary.ReasonTotals auction = week.reason("auction");
         long ahVolume = auction == null ? 0 : auction.transitOut();
         long ahTax = (auction == null ? 0 : auction.removed()) + removedOf(week, TxReason.AH_FEE);
-        long shop = removedOf(week, TxReason.SHOP_BUY);
+        long shop = Math.max(0, removedOf(week, TxReason.SHOP_BUY) - createdOf(week, TxReason.SHOP_UNDO)); // F14 undo gives it back
         String velocity = Double.isNaN(FlowSummary.velocity(week.totals().moved(), data.supplyNow())) ? watch.raw("watch.percent-none")
                 : String.format(java.util.Locale.ROOT, "%.2fx", FlowSummary.velocity(week.totals().moved(), data.supplyNow()));
         return service.item(Material.HOPPER, viewer, EconomyModule.ID, "watch.menu.highlights",

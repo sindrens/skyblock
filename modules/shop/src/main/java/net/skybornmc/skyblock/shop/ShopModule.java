@@ -15,6 +15,14 @@ import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.economy.TxResult;
+import net.skybornmc.skyblock.common.menu.MenuButton;
+import net.skybornmc.skyblock.common.menu.MenuClick;
+import net.skybornmc.skyblock.common.settings.PlayerSettings;
+import net.skybornmc.skyblock.common.settings.SettingCategory;
+import net.skybornmc.skyblock.common.settings.SettingToggle;
+import net.skybornmc.skyblock.common.stacking.StackingService;
+import org.bukkit.event.player.PlayerQuitEvent;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchEvent;
@@ -59,17 +67,22 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 
 /**
- * The builder shop (M3.5, quick-buy grid SELL2): {@code /shop [category]} opens categories → a quick-buy grid (Java:
- * left-click 1, right-click 64, shift-click the amount screen; Bedrock: a tap opens the amount screen). Prices come from
- * {@code shop.yml}; a real money sink (no selling back here: the Sell button opens the {@code /sell} chest).
+ * The builder shop (M3.5, Shop v2 GUI-3, docs/design/SHOP_DESIGN.md): {@code /shop [tab]} opens one tabbed page (9 tabs in
+ * the top row, no category screen). A click on an item opens its buy page (Buy 1/16/64, Fill inventory, Type an amount);
+ * Java shift-click buys a stack. Prices come from {@code shop.yml}; a real money sink (no selling back here: the Sell
+ * button opens the {@code /sell} chest). F14: "Undo last buy" for 15 s and a second click for buys over half your money,
+ * both switchable in {@code /settings}.
  *
  * <p><b>Purchase safety.</b> Free inventory space is counted before paying: when not all of it fits, only what fits is
  * bought and charged ("Bought 40 of 64: no more room"); no room at all = refused, nothing paid. The payment
  * is one ledger transaction from the player's <b>profile</b> account that writes the purchase row in the same database
  * transaction. Items are handed out only after it succeeded, then the row is marked delivered. If the player left or
  * switched profile meanwhile, the purchase waits ({@code pending}) and is handed over on the next join / switch back;
- * rows a crash left half-way are handed over again on startup. Items that no longer fit (the inventory filled up while
- * the payment ran) drop at the player's feet.</p>
+ * rows a crash left half-way go to staff review on startup. Items that no longer fit go to {@code /box}.</p>
+ *
+ * <p><b>Undo.</b> The items are taken back first (all of them, from the inventory, main thread), then the refund runs as
+ * one ledger deposit together with {@code delivered → refunded} on the purchase row, so it pays exactly once; if the
+ * refund fails, the items are given back (inventory, then {@code /box}). Can lose a refund, never dupe money.</p>
  *
  * <p><b>Buy &gt; sell.</b> An item is never sold for less than it (or what it turns back into) could ever bring with
  * {@code /sell} at today's settings ({@link SellService#maxUnitPrice}); such items show as not for sale and the console
@@ -80,6 +93,10 @@ public final class ShopModule implements SkyblockModule, Listener {
     static final String ID = "shop";
     static final String PERM_USE = "skyblock.shop.use";
     static final String CATALOG_FILE = "shop.yml";
+    static final String V1_DEFAULTS = "migrations/shop-v1.yml";
+    /** /settings toggle ids (F14). */
+    static final String SETTING_UNDO = "shop-undo";
+    static final String SETTING_BIG_BUY = "shop-big-buy";
 
     final Core core;
     final ModuleMessages msg;
@@ -93,6 +110,10 @@ public final class ShopModule implements SkyblockModule, Listener {
     private final Set<UUID> buying = ConcurrentHashMap.newKeySet();
     /** Profiles whose waiting purchases are being handed over right now. */
     private final Set<UUID> delivering = ConcurrentHashMap.newKeySet();
+    /** F14: the last purchase each player can still undo. */
+    final UndoLedger undo = new UndoLedger();
+    /** The tab /shop opens next (the last one used; Essentials the first time). */
+    private final Map<UUID, String> lastTab = new ConcurrentHashMap<>();
 
     public ShopModule(Core core) {
         this.core = core;
@@ -130,9 +151,10 @@ public final class ShopModule implements SkyblockModule, Listener {
             if (id.startsWith("minecraft:")) {
                 id = id.substring("minecraft:".length());
             }
-            return catalog.item(id).map(i -> java.util.OptionalLong.of(i.price())).orElse(java.util.OptionalLong.empty());
+            return catalog.worth(id);
         });
         registerCommand();
+        registerSettings();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         store.recover(System.currentTimeMillis()).whenComplete((stuck, e) -> {
             if (e != null) {
@@ -172,6 +194,28 @@ public final class ShopModule implements SkyblockModule, Listener {
         ready = false;
         buying.clear();
         delivering.clear();
+        undo.clearAll();
+        core.services().optional(PlayerSettings.class).ifPresent(s -> s.unregisterAll(ID));
+    }
+
+    /** F14: both shop safety helpers can be turned off per player in /settings (default on). */
+    private void registerSettings() {
+        core.services().optional(PlayerSettings.class).ifPresent(s -> {
+            s.register(new SettingToggle(ID, SETTING_UNDO, SettingCategory.GAMEPLAY, Material.CLOCK, true, null, ID,
+                    "settings." + SETTING_UNDO, false));
+            s.register(new SettingToggle(ID, SETTING_BIG_BUY, SettingCategory.GAMEPLAY, Material.ORANGE_CONCRETE, true, null, ID,
+                    "settings." + SETTING_BIG_BUY, false));
+            s.onChange(SETTING_UNDO, (player, on) -> {
+                if (!on) {
+                    undo.clear(player.getUniqueId());
+                }
+            });
+        });
+    }
+
+    /** A /settings toggle of this module for this player (default on when the settings service is missing). */
+    boolean setting(Player player, String id) {
+        return core.services().optional(PlayerSettings.class).map(s -> s.get(player, id)).orElse(true);
     }
 
     // ================================================================== catalog
@@ -181,13 +225,16 @@ public final class ShopModule implements SkyblockModule, Listener {
     }
 
     /**
-     * Reads {@code shop.yml}; a missing file is written from the bundled one, and items that are new in the bundled file
-     * are added to an existing file (switch an item off with {@code enabled: false} instead of deleting it).
+     * Reads {@code shop.yml}; a missing file is written from the bundled one. A version-1 file is migrated once to Shop v2
+     * ({@link ShopCatalogMigration}: backup {@code shop.yml.before-v2}, every change in the console, in
+     * {@code shop-migration-v2.log} and in the audit log). Items that are new in the bundled file are added to an existing
+     * file (switch an item off with {@code enabled: false} instead of deleting it).
      */
     private ShopCatalog loadCatalog() {
         File file = new File(core.plugin().getDataFolder(), CATALOG_FILE);
-        YamlConfiguration bundled = bundled();
+        YamlConfiguration bundled = bundled(CATALOG_FILE);
         Predicate<String> material = ShopModule::isItem;
+        Predicate<String> spawner = this::isSpawnerType;
         Consumer<String> warn = w -> core.plugin().getLogger().warning(w);
         YamlConfiguration yaml = new YamlConfiguration();
         try {
@@ -196,7 +243,7 @@ public final class ShopModule implements SkyblockModule, Listener {
             }
         } catch (IOException | InvalidConfigurationException e) {
             warn.accept("shop.yml is not valid YAML, using the bundled prices. " + String.valueOf(e.getMessage()).lines().findFirst().orElse(""));
-            return ShopCatalog.load(bundled, material, warn);
+            return ShopCatalog.load(bundled, material, spawner, warn);
         }
         try {
             if (!file.exists()) {
@@ -207,18 +254,45 @@ public final class ShopModule implements SkyblockModule, Listener {
                     }
                 }
                 yaml = bundled;
-            } else if (addMissing(yaml, bundled)) {
-                yaml.save(file);
+            } else {
+                Optional<ShopCatalogMigration.Result> migrated = ShopCatalogMigration.migrate(yaml, bundled, bundled(V1_DEFAULTS));
+                if (migrated.isPresent()) {
+                    yaml = migrated.get().yaml();
+                    writeMigration(file, yaml, migrated.get().changes());
+                }
+                if (addMissing(yaml, bundled)) {
+                    yaml.save(file);
+                }
             }
         } catch (IOException e) {
             core.plugin().getLogger().log(Level.WARNING, "Could not write shop.yml", e);
         }
-        ShopCatalog loaded = ShopCatalog.load(yaml, material, warn);
-        core.plugin().getLogger().info("Shop: " + loaded.categories().size() + " categories, " + loaded.size() + " item(s).");
+        ShopCatalog loaded = ShopCatalog.load(yaml, material, spawner, warn);
+        core.plugin().getLogger().info("Shop: " + loaded.categories().size() + " tabs, " + loaded.size() + " item(s).");
         return loaded;
     }
 
-    /** Adds bundled categories/items the file does not have yet (an item moved to another category is not added again). */
+    /** Saves a migrated shop.yml: backup first, then the file, the change log and one audit row. */
+    private void writeMigration(File file, YamlConfiguration yaml, List<String> changes) throws IOException {
+        File backup = new File(file.getParentFile(), CATALOG_FILE + ".before-v2");
+        if (!backup.exists()) {
+            java.nio.file.Files.copy(file.toPath(), backup.toPath());
+        }
+        yaml.save(file);
+        java.nio.file.Files.write(new File(file.getParentFile(), "shop-migration-v2.log").toPath(), changes, StandardCharsets.UTF_8);
+        core.plugin().getLogger().info("Shop: shop.yml moved to Shop v2 (9 tabs). Backup: " + backup.getName() + ". Changes:");
+        changes.forEach(c -> core.plugin().getLogger().info("Shop migration: " + c));
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("version", ShopCatalogMigration.VERSION);
+        details.put("changes", changes.size());
+        details.put("log", changes.size() > 150 ? new ArrayList<>(changes.subList(0, 150)) : changes);
+        core.audit().log(AuditCategory.CONFIG, "shop_catalog_migrate", Actor.system(ID), details);
+    }
+
+    /**
+     * Adds bundled tabs/items the file does not have yet (an item moved to another tab, or parked under
+     * {@code worth-only}, is not added again).
+     */
     static boolean addMissing(YamlConfiguration yaml, YamlConfiguration bundled) {
         var root = bundled.getConfigurationSection(ShopCatalog.ROOT);
         if (root == null) {
@@ -228,7 +302,7 @@ public final class ShopModule implements SkyblockModule, Listener {
         for (String category : root.getKeys(false)) {
             String base = ShopCatalog.ROOT + "." + category;
             if (!yaml.contains(base)) {
-                // A new category: its settings, then its items one by one (items the owner moved elsewhere stay there).
+                // A new tab: its settings, then its items one by one (items the owner moved elsewhere stay there).
                 var section = root.getConfigurationSection(category);
                 if (section != null) {
                     for (String key : section.getKeys(false)) {
@@ -244,7 +318,8 @@ public final class ShopModule implements SkyblockModule, Listener {
                 continue;
             }
             for (String id : items.getKeys(false)) {
-                if (!yaml.contains(base + ".items." + id) && !listedElsewhere(yaml, id)) {
+                if (!yaml.contains(base + ".items." + id) && !listedElsewhere(yaml, id)
+                        && !yaml.contains(ShopCatalog.WORTH_ONLY + "." + id)) {
                     yaml.set(base + ".items." + id, items.get(id));
                     changed = true;
                 }
@@ -266,16 +341,25 @@ public final class ShopModule implements SkyblockModule, Listener {
         return false;
     }
 
-    private YamlConfiguration bundled() {
+    private YamlConfiguration bundled(String resource) {
         YamlConfiguration yaml = new YamlConfiguration();
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(CATALOG_FILE)) {
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(resource)) {
             if (in != null) {
                 yaml.load(new InputStreamReader(in, StandardCharsets.UTF_8));
             }
         } catch (IOException | InvalidConfigurationException e) {
-            core.plugin().getLogger().log(Level.SEVERE, "shop.yml in the jar is broken", e);
+            core.plugin().getLogger().log(Level.SEVERE, resource + " in the jar is broken", e);
         }
         return yaml;
+    }
+
+    /** A mob type the stacking module sells as a spawner (any tier; the shop's own max tier is checked when buying). */
+    private boolean isSpawnerType(String type) {
+        return stacking().map(st -> st.spawnerTier(type).isPresent()).orElse(false);
+    }
+
+    Optional<StackingService> stacking() {
+        return core.services().optional(StackingService.class);
     }
 
     static boolean isItem(String id) {
@@ -284,7 +368,7 @@ public final class ShopModule implements SkyblockModule, Listener {
     }
 
     static Material material(ShopCatalog.Item item) {
-        return Material.matchMaterial(item.id());
+        return ShopMenu.material(item);
     }
 
     // ================================================================== buy > sell
@@ -346,11 +430,11 @@ public final class ShopModule implements SkyblockModule, Listener {
     // ================================================================== command
 
     private void registerCommand() {
-        Arg<ShopCatalog.Category> category = Arg.word("category", (sender, raw) -> catalog.category(raw)
+        Arg<ShopCatalog.Category> category = Arg.word("tab", (sender, raw) -> tabOf(raw)
                 .orElseThrow(() -> new CommandFailure(ID, "unknown-category", Msg.p("input", raw),
                         Msg.p("categories", String.join(", ", categoryIds())))), Suggest.of(this::categoryIds));
         core.commands().register(CommandSpec.command("shop")
-                .description("Buy building blocks, decoration and more")
+                .description("Buy building blocks, decoration, spawners and more")
                 .category("Economy")
                 .permission(PERM_USE)
                 .playerOnly()
@@ -359,22 +443,37 @@ public final class ShopModule implements SkyblockModule, Listener {
                 .executes(ctx -> open(ctx.player(), ctx.getOr(category, null))));
     }
 
+    /** A tab by id; the old v1 category ids ({@code utility}, {@code glass-colors} ...) still find their new tab. */
+    Optional<ShopCatalog.Category> tabOf(String raw) {
+        Optional<ShopCatalog.Category> direct = catalog.category(raw);
+        if (direct.isPresent() || raw == null) {
+            return direct;
+        }
+        String mapped = ShopCatalogMigration.TAB_OF_OLD_CATEGORY.get(raw.toLowerCase(Locale.ROOT));
+        return mapped == null ? Optional.empty() : catalog.category(mapped);
+    }
+
     List<String> categoryIds() {
         return catalog.categories().stream().map(ShopCatalog.Category::id).toList();
     }
 
+    /** Opens the shop on {@code category}, or on the player's last tab (Essentials, the first tab, the first time). */
     void open(Player player, ShopCatalog.Category category) {
         Optional<String> problem = problem(player);
         if (problem.isPresent()) {
             throw new CommandFailure(ID, problem.get());
         }
-        ShopMenu home = new ShopMenu(this);
-        if (category == null) {
-            core.menus().open(player, home);
-        } else {
-            CategoryMenu menu = new CategoryMenu(this, category);
-            menu.parent(home); // Back goes to the categories
-            core.menus().open(player, menu);
+        String tab = category != null ? category.id() : lastTab.get(player.getUniqueId());
+        if (tab == null || catalog.category(tab).isEmpty()) {
+            tab = catalog.categories().isEmpty() ? "" : catalog.categories().getFirst().id();
+        }
+        rememberTab(player, tab);
+        core.menus().open(player, new ShopMenu(this, tab));
+    }
+
+    void rememberTab(Player player, String tab) {
+        if (player != null && tab != null && !tab.isEmpty()) {
+            lastTab.put(player.getUniqueId(), tab);
         }
     }
 
@@ -395,6 +494,132 @@ public final class ShopModule implements SkyblockModule, Listener {
         return Optional.empty();
     }
 
+    // ================================================================== what an item is
+
+    /** The stack a purchase of {@code item} hands out, amount 1 (a spawner item from the stacking module); empty if impossible. */
+    Optional<ItemStack> template(ShopCatalog.Item item) {
+        return template(item.id());
+    }
+
+    /** {@link #template(ShopCatalog.Item)} by item id (also for purchase rows of items no longer in the catalog). */
+    Optional<ItemStack> template(String itemId) {
+        if (itemId != null && itemId.startsWith(ShopCatalog.SPAWNER_PREFIX)) {
+            String mob = itemId.substring(ShopCatalog.SPAWNER_PREFIX.length());
+            return stacking().flatMap(st -> st.createSpawner(mob, 1, "shop"));
+        }
+        Material m = itemId == null ? null : Material.matchMaterial(itemId);
+        return m == null || !m.isItem() || m.isAir() ? Optional.empty() : Optional.of(new ItemStack(m));
+    }
+
+    /** The shop icon of an item (spawners show the real spawner item with its rarity). */
+    ItemStack icon(ShopCatalog.Item item) {
+        return template(item).map(ItemStack::clone).orElseGet(() -> {
+            Material m = material(item);
+            return new ItemStack(m == null ? Material.BARRIER : m);
+        });
+    }
+
+    int maxStack(ShopCatalog.Item item) {
+        return template(item).map(ItemStack::getMaxStackSize).orElse(64);
+    }
+
+    long fits(Player player, ShopCatalog.Item item) {
+        return template(item).map(t -> InventorySpace.fits(player.getInventory(), t)).orElse(0L);
+    }
+
+    /** The translated name ("Oak Log", "Pig Spawner"). */
+    Component displayName(Player viewer, ShopCatalog.Item item) {
+        if (item.spawner()) {
+            return msg.component(viewer, "spawner-name", Msg.c("mob", Component.translatable("entity.minecraft." + item.mob())));
+        }
+        Material m = material(item);
+        return m == null ? Component.text(item.id()) : itemName(m);
+    }
+
+    private Component displayName(String itemId) {
+        if (itemId != null && itemId.startsWith(ShopCatalog.SPAWNER_PREFIX)) {
+            return msg.component(net.kyori.adventure.audience.Audience.empty(), "spawner-name", Msg.c("mob",
+                    Component.translatable("entity.minecraft." + itemId.substring(ShopCatalog.SPAWNER_PREFIX.length()))));
+        }
+        Material m = itemId == null ? null : Material.matchMaterial(itemId);
+        return m == null ? Component.text(String.valueOf(itemId)) : itemName(m);
+    }
+
+    /** Spawner tier of a shop spawner (stacking.yml), 0 if unknown. */
+    int spawnerTier(ShopCatalog.Item item) {
+        return item.spawner() ? stacking().flatMap(st -> {
+            java.util.OptionalInt t = st.spawnerTier(item.mob());
+            return t.isPresent() ? Optional.of(t.getAsInt()) : Optional.empty();
+        }).orElse(0) : 0;
+    }
+
+    /** Owner F2 hook: how well the next spawner of this type works for the player (100 until the curve exists). */
+    int nextOutputPercent(Player viewer, ShopCatalog.Item item) {
+        int p = stacking().map(st -> st.nextSpawnerOutputPercent(viewer, item.mob())).orElse(100);
+        return Math.max(0, Math.min(100, p));
+    }
+
+    long incomePerHour(ShopCatalog.Item item) {
+        return settings.incomePerHour(spawnerTier(item));
+    }
+
+    /**
+     * {@code open}, {@code locked} (adds the requirement lines to {@code lore}) or {@code unavailable} (price at or below
+     * the /sell value, a spawner above the shop's tier or without the stacking module). Main thread.
+     */
+    String state(Player viewer, ShopCatalog.Item item, List<Component> lore) {
+        if (!priceSafe(item) || template(item).isEmpty()) {
+            return "unavailable";
+        }
+        if (item.spawner()) {
+            int tier = spawnerTier(item);
+            if (!settings.spawnersEnabled || tier < 1 || tier > settings.spawnerMaxTier) {
+                return "unavailable";
+            }
+        }
+        Optional<Map.Entry<String, Integer>> missing = missingRequirement(viewer, item);
+        if (missing.isPresent()) {
+            lore.addAll(core.menus().lines(viewer, ID, "entry.requires",
+                    Msg.c("skill", skillName(viewer, missing.get().getKey())), Msg.number("level", missing.get().getValue())));
+            return "locked";
+        }
+        return "open";
+    }
+
+    /** True (and the player told why) if the item can't be bought by this player right now. */
+    boolean refuse(Player player, ShopCatalog.Item shown) {
+        ShopCatalog.Item item = catalog.item(shown.id()).orElse(null);
+        if (item == null || !item.enabled()) {
+            fail(player, "buy.gone");
+            return true;
+        }
+        String now = state(player, item, new ArrayList<>());
+        if (!"open".equals(now)) {
+            fail(player, "unavailable".equals(now) ? "buy.unavailable" : "buy.locked-click");
+            return true;
+        }
+        return false;
+    }
+
+    /** What {@code amount} of the item would cost right now with what fits (for the big-buy check). */
+    long plannedTotal(Player player, ShopCatalog.Item item, long amount) {
+        ShopMath.BuyPlan plan = ShopMath.plan(amount, fits(player, item), settings.maxAmount);
+        return ShopMath.total(item.price(), Math.max(1, plan.amount())).orElse(Long.MAX_VALUE);
+    }
+
+    /** F14: the buy needs a second click (over big-buy.percent of the player's money, and the player didn't turn it off). */
+    boolean needsSecondClick(Player player, long total) {
+        return setting(player, SETTING_BIG_BUY) && ShopMath.bigBuy(total, balance(player), settings.bigBuyPercent);
+    }
+
+    /** The armed notice of a Java shift-click big buy (the grid item can't turn orange, so the action bar says it). */
+    void armedNotice(Player player, ShopCatalog.Item item, long total) {
+        long balance = balance(player);
+        msg.actionBar(player, "big.armed-bar", Msg.number("percent", ShopMath.percentOf(total, balance)),
+                money("after", Math.max(0, balance - total)), Msg.c("item", displayName(player, item)));
+        core.sounds().play(player, "notify");
+    }
+
     // ================================================================== buying
 
     /**
@@ -411,18 +636,11 @@ public final class ShopModule implements SkyblockModule, Listener {
             problem = Optional.of("buy.gone");
         } else if (problem.isEmpty() && item.price() != shown.price()) {
             problem = Optional.of("buy.price-changed");
-        } else if (problem.isEmpty() && !priceSafe(item)) {
-            problem = Optional.of("buy.unavailable");
+        } else if (problem.isEmpty() && !"open".equals(state(player, item, new ArrayList<>()))) {
+            problem = Optional.of(missingRequirement(player, item).isPresent() ? "buy.locked-click" : "buy.unavailable");
         }
         if (problem.isPresent()) {
             fail(player, problem.get());
-            done(after);
-            return;
-        }
-        Optional<Map.Entry<String, Integer>> missing = missingRequirement(player, item);
-        if (missing.isPresent()) {
-            fail(player, "buy.locked", Msg.c("skill", skillName(player, missing.get().getKey())),
-                    Msg.number("level", missing.get().getValue()));
             done(after);
             return;
         }
@@ -431,8 +649,13 @@ public final class ShopModule implements SkyblockModule, Listener {
             done(after);
             return;
         }
-        Material material = material(item);
-        long fits = InventorySpace.fits(player.getInventory(), new ItemStack(material));
+        ItemStack template = template(item).orElse(null);
+        if (template == null) {
+            fail(player, "buy.unavailable");
+            done(after);
+            return;
+        }
+        long fits = InventorySpace.fits(player.getInventory(), template);
         ShopMath.BuyPlan plan = ShopMath.plan(quantity, fits, settings.maxAmount);
         if (plan.amount() < 1) {
             fail(player, "buy.no-room", Msg.number("fits", 0), Msg.number("amount", quantity));
@@ -488,6 +711,21 @@ public final class ShopModule implements SkyblockModule, Listener {
         }
     }
 
+    /** The stacks a purchase hands out (vanilla items or spawner items), or empty if the item can't be made right now. */
+    private Optional<List<ItemStack>> stacks(String itemId, int quantity) {
+        Optional<ItemStack> template = template(itemId);
+        if (template.isEmpty()) {
+            return Optional.empty();
+        }
+        List<ItemStack> out = new ArrayList<>();
+        for (int amount : ShopMath.stacks(quantity, template.get().getMaxStackSize())) {
+            ItemStack stack = template.get().clone();
+            stack.setAmount(amount);
+            out.add(stack);
+        }
+        return Optional.of(out);
+    }
+
     /**
      * Hands a paid purchase (state {@code delivering}) to its profile's player, or parks it as {@code pending} if they
      * are not there (left, switched profile, staff mode). Main thread.
@@ -506,21 +744,17 @@ public final class ShopModule implements SkyblockModule, Listener {
             });
             return;
         }
-        Material material = Material.matchMaterial(p.itemId());
-        if (material == null) {
-            core.plugin().getLogger().severe("Shop: purchase " + p.id() + " is for unknown item '" + p.itemId() + "'; it stays "
-                    + "waiting for staff (refund " + p.totalPrice() + " to " + p.playerName() + " or fix the item id).");
+        Optional<List<ItemStack>> stacks = stacks(p.itemId(), p.quantity());
+        if (stacks.isEmpty()) {
+            core.plugin().getLogger().severe("Shop: purchase " + p.id() + " is for '" + p.itemId() + "', which can't be made "
+                    + "right now (unknown item, or the stacking module is off for spawners); it stays waiting (refund "
+                    + p.totalPrice() + " to " + p.playerName() + " or fix it, then it is handed over on the next join).");
             store.move(p.id(), ShopStore.DELIVERING, ShopStore.PENDING, System.currentTimeMillis());
             return;
         }
-        int maxStack = new ItemStack(material).getMaxStackSize();
-        java.util.List<ItemStack> stacks = new java.util.ArrayList<>();
-        for (int amount : ShopMath.stacks(p.quantity(), maxStack)) {
-            stacks.add(new ItemStack(material, amount));
-        }
         // Owner answer 7: never dropped. If the inventory filled up meanwhile, the rest goes to /box.
         // The box tells the player.
-        net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), player, net.skybornmc.skyblock.common.box.BoxSource.SHOP, stacks);
+        net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), player, net.skybornmc.skyblock.common.box.BoxSource.SHOP, stacks.get());
         if (settings.savePlayerData) {
             try {
                 player.saveData();
@@ -528,18 +762,28 @@ public final class ShopModule implements SkyblockModule, Listener {
                 core.plugin().getLogger().log(Level.WARNING, "Shop: could not save " + player.getName() + "'s data after a purchase", e);
             }
         }
-        store.move(p.id(), ShopStore.DELIVERING, ShopStore.DELIVERED, System.currentTimeMillis()).exceptionally(e -> {
-            core.plugin().getLogger().log(Level.SEVERE, "Shop: purchase " + p.id() + " was handed over but could not be marked "
-                    + "delivered; check it in /logs before handing it over again", Database.cause(e));
-            return false;
-        });
-        Component name = itemName(material);
+        UUID uuid = player.getUniqueId();
+        store.move(p.id(), ShopStore.DELIVERING, ShopStore.DELIVERED, System.currentTimeMillis()).whenCompleteAsync((moved, e) -> {
+            if (e != null) {
+                core.plugin().getLogger().log(Level.SEVERE, "Shop: purchase " + p.id() + " was handed over but could not be marked "
+                        + "delivered; check it in /logs before handing it over again", Database.cause(e));
+                return;
+            }
+            // F14: only a purchase handed over right now, and only once the row says delivered (the refund guard needs it).
+            Player online = Bukkit.getPlayer(uuid);
+            if (!late && Boolean.TRUE.equals(moved) && online != null && setting(online, SETTING_UNDO)) {
+                undo.offer(uuid, new UndoLedger.Offer(p.id(), p.profile(), p.itemId(), p.quantity(), p.totalPrice(),
+                        System.currentTimeMillis() + settings.undoSeconds * 1000L));
+                refreshUndo(online);
+            }
+        }, main);
+        Component name = displayName(p.itemId());
         if (late) {
             core.audit().logPlayer(AuditCategory.ITEM, "shop_deliver", Actor.system("shop"), p.player(), p.playerName(),
                     p.totalPrice(), player.getLocation(), details(p));
             msg.send(player, "buy.delivered-late", Msg.number("amount", p.quantity()), Msg.c("item", name));
         } else {
-            // SELL2 feedback: the action bar always ("✔ +64 Oak Log -$512"), a chat line only for big purchases.
+            // Action bar always ("✔ +64 Torch −$256 · $1,199,744 left"), a chat line only for big purchases.
             boolean partial = requested > p.quantity();
             TagResolver[] tags = {Msg.number("amount", p.quantity()), Msg.number("requested", requested), Msg.c("item", name),
                     money("price", p.totalPrice()),
@@ -601,18 +845,137 @@ public final class ShopModule implements SkyblockModule, Listener {
         store.move(p.id(), ShopStore.PENDING, ShopStore.DELIVERING, System.currentTimeMillis()).whenCompleteAsync((claimed, e) -> {
             if (e == null && Boolean.TRUE.equals(claimed)) {
                 Player player = receiver(profile);
-                Material material = Material.matchMaterial(p.itemId());
-                if (player != null && material != null
-                        && InventorySpace.fits(player.getInventory(), new ItemStack(material)) < p.quantity()) {
+                ItemStack template = template(p.itemId()).orElse(null);
+                if (player != null && template != null
+                        && InventorySpace.fits(player.getInventory(), template) < p.quantity()) {
                     // No room yet: it keeps waiting (handed over on the next join or profile switch).
                     store.move(p.id(), ShopStore.DELIVERING, ShopStore.PENDING, System.currentTimeMillis());
-                    msg.send(player, "buy.waiting-no-room", Msg.number("amount", p.quantity()), Msg.c("item", itemName(material)));
+                    msg.send(player, "buy.waiting-no-room", Msg.number("amount", p.quantity()), Msg.c("item", displayName(p.itemId())));
                 } else {
                     hand(p, true, null, p.quantity());
                 }
             }
             claimNext(profile, left);
         }, main);
+    }
+
+    // ================================================================== undo last buy (F14)
+
+    /**
+     * "Undo last buy": takes every bought item back out of the inventory, then refunds the full price once (ledger
+     * deposit + {@code delivered → refunded} in one database transaction). If the refund fails the items come back.
+     * {@code after} runs on the main thread when done. Main thread.
+     */
+    void undoLast(Player player, Runnable after) {
+        UUID uuid = player.getUniqueId();
+        long now = System.currentTimeMillis();
+        if (!setting(player, SETTING_UNDO)) {
+            fail(player, "undo.off");
+            done(after);
+            return;
+        }
+        Optional<UndoLedger.Offer> offer = undo.peek(uuid, now);
+        if (offer.isEmpty()) {
+            fail(player, "undo.nothing", Msg.number("seconds", settings.undoSeconds));
+            done(after);
+            return;
+        }
+        UndoLedger.Offer o = offer.get();
+        Optional<String> problem = problem(player);
+        if (problem.isPresent()) {
+            fail(player, problem.get());
+            done(after);
+            return;
+        }
+        if (!o.profile().equals(profiles().profileKey(player))) {
+            undo.clear(uuid);
+            fail(player, "undo.other-profile");
+            done(after);
+            return;
+        }
+        ItemStack template = template(o.itemId()).orElse(null);
+        if (template == null || InventorySpace.count(player.getInventory(), template) < o.quantity()) {
+            fail(player, "undo.missing", Msg.number("amount", o.quantity()), Msg.c("item", displayName(o.itemId())));
+            done(after);
+            return;
+        }
+        if (!buying.add(uuid)) {
+            fail(player, "buy.busy");
+            done(after);
+            return;
+        }
+        if (!undo.claim(uuid, o.purchase(), now)) {
+            buying.remove(uuid);
+            fail(player, "undo.nothing", Msg.number("seconds", settings.undoSeconds));
+            done(after);
+            return;
+        }
+        if (!InventorySpace.take(player.getInventory(), template, o.quantity())) {
+            buying.remove(uuid);
+            fail(player, "undo.missing", Msg.number("amount", o.quantity()), Msg.c("item", displayName(o.itemId())));
+            done(after);
+            return;
+        }
+        String name = player.getName();
+        engine.undo(o, name, Actor.player(player)).whenCompleteAsync((status, error) -> {
+            buying.remove(uuid);
+            Player online = Bukkit.getPlayer(uuid);
+            Map<String, Object> d = new LinkedHashMap<>();
+            d.put("purchase", o.purchase().toString());
+            d.put("item", o.itemId());
+            d.put("quantity", o.quantity());
+            d.put("profile", o.profile().toString());
+            if (error == null && status == TxResult.Status.SUCCESS) {
+                core.audit().logPlayer(AuditCategory.ITEM, "shop_undo", Actor.system(ID), uuid, name, o.total(),
+                        online == null ? null : online.getLocation(), d);
+                if (online != null) {
+                    msg.actionBar(online, "undo.done-bar", Msg.number("amount", o.quantity()),
+                            Msg.c("item", displayName(o.itemId())), money("price", o.total()));
+                    core.sounds().play(online, "money");
+                }
+            } else {
+                // Nothing was refunded: the items go back (inventory, then /box; offline = box), never lost silently.
+                d.put("status", String.valueOf(status));
+                core.audit().logPlayer(AuditCategory.ITEM, "shop_undo_failed", Actor.system(ID), uuid, name, o.total(), null, d);
+                core.plugin().getLogger().warning("Shop: undo of purchase " + o.purchase() + " for " + name + " failed (" + status
+                        + "); the items were given back.");
+                giveBack(uuid, o.profile(), template, o.quantity());
+                if (online != null) {
+                    fail(online, "undo.failed");
+                }
+            }
+            done(after);
+        }, main);
+    }
+
+    /** Gives undo items back after a failed refund: online on that profile = inventory then /box; otherwise that profile's /box. */
+    private void giveBack(UUID uuid, UUID profile, ItemStack template, int quantity) {
+        List<ItemStack> stacks = new ArrayList<>();
+        for (int amount : ShopMath.stacks(quantity, template.getMaxStackSize())) {
+            ItemStack stack = template.clone();
+            stack.setAmount(amount);
+            stacks.add(stack);
+        }
+        Player online = Bukkit.getPlayer(uuid);
+        if (online != null && profile.equals(profiles().profileKey(online))) {
+            net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), online, net.skybornmc.skyblock.common.box.BoxSource.SHOP, stacks);
+            return;
+        }
+        Optional<net.skybornmc.skyblock.common.box.ItemBox> box = net.skybornmc.skyblock.common.box.ItemBox.of(core.services());
+        if (box.isPresent()) {
+            box.get().deliver(profile, stacks, net.skybornmc.skyblock.common.box.BoxSource.SHOP, Actor.system(ID));
+        } else {
+            core.plugin().getLogger().severe("Shop: could not give back " + quantity + " " + template.getType() + " to " + uuid
+                    + " after a failed undo (no box module); give them by hand.");
+        }
+    }
+
+    /** Repaints the Undo button of an open shop page (after a buy the offer starts counting). */
+    private void refreshUndo(Player player) {
+        Menu open = core.menus().openMenu(player);
+        if (open instanceof ShopMenu || open instanceof BuyMenu) {
+            open.refresh();
+        }
     }
 
     // ================================================================== events
@@ -623,9 +986,15 @@ public final class ShopModule implements SkyblockModule, Listener {
         core.scheduler().later("shop:deliver", settings.joinDelayTicks, () -> deliverPending(player));
     }
 
-    /** The inventory is about to be swapped: close the shop first. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onQuit(PlayerQuitEvent event) {
+        undo.clear(event.getPlayer().getUniqueId());
+    }
+
+    /** The inventory is about to be swapped: close the shop first (an undo offer can't follow to another profile). */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onProfileSwitch(ProfileSwitchEvent event) {
+        undo.clear(event.getPlayer().getUniqueId());
         if (isShopMenu(core.menus().openMenu(event.getPlayer()))) {
             event.getPlayer().closeInventory();
         }
@@ -637,10 +1006,86 @@ public final class ShopModule implements SkyblockModule, Listener {
     }
 
     static boolean isShopMenu(Menu menu) {
-        if (menu instanceof ShopMenu || menu instanceof CategoryMenu || menu instanceof BuyAmountMenu) {
+        if (menu instanceof ShopMenu || menu instanceof BuyMenu) {
             return true;
         }
         return menu != null && menu.parent() != null && isShopMenu(menu.parent());
+    }
+
+    // ================================================================== menu parts
+
+    /** A tab of row 0: gold glint and "✔ You are here" when selected (no click), otherwise one click switches. */
+    MenuButton tabButton(Player viewer, ShopCatalog.Category c, boolean selected, Consumer<MenuClick> onClick) {
+        Material icon = Material.matchMaterial(c.icon());
+        List<Component> lore = new ArrayList<>(tabDescription(viewer, c));
+        lore.addAll(core.menus().lines(viewer, "tab." + (selected ? "selected" : "action")));
+        ItemStack item = core.menus().item(new ItemStack(icon == null ? Material.CHEST : icon),
+                msg.component(viewer, "tab-name", Msg.c("name", tabName(viewer, c))), lore);
+        if (selected) {
+            item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
+            return MenuButton.display(item);
+        }
+        return MenuButton.of(item, onClick);
+    }
+
+    Component tabName(Player viewer, ShopCatalog.Category c) {
+        String key = "categories." + c.id() + ".name";
+        return msg.has(key) ? core.menus().text(viewer, ID, key) : Component.text(words(c.id()));
+    }
+
+    private List<Component> tabDescription(Player viewer, ShopCatalog.Category c) {
+        String key = "categories." + c.id() + ".lore";
+        return msg.has(key) ? core.menus().lines(viewer, ID, key) : List.of();
+    }
+
+    static String words(String id) {
+        StringBuilder out = new StringBuilder();
+        for (String part : id.split("[-_]")) {
+            if (part.isEmpty()) {
+                continue;
+            }
+            if (!out.isEmpty()) {
+                out.append(' ');
+            }
+            out.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return out.toString();
+    }
+
+    /** The shop's own bottom-bar buttons: 46 balance, 47 Undo last buy (when on), 51 Sell. */
+    void decorateBar(Menu menu, Player viewer, java.util.function.BiConsumer<Integer, MenuButton> set) {
+        set.accept(ShopMenu.SLOT_BALANCE, MenuButton.display(core.menus().item(Material.EMERALD, viewer, ID, "menu.balance",
+                money("balance", balance(viewer)))));
+        undoButton(viewer).ifPresent(b -> set.accept(ShopMenu.SLOT_UNDO, b));
+        sellButton(viewer).ifPresent(button -> set.accept(ShopMenu.SLOT_SELL,
+                MenuButton.of(button, click -> openSell(click.player(), menu))));
+    }
+
+    /**
+     * Undo last buy (47): a gold plate whose count is the seconds left, or a grey "Nothing to undo" plate. Empty when the
+     * player turned undo off in /settings.
+     */
+    Optional<MenuButton> undoButton(Player viewer) {
+        if (viewer == null || !setting(viewer, SETTING_UNDO)) {
+            return Optional.empty();
+        }
+        long now = System.currentTimeMillis();
+        Optional<UndoLedger.Offer> offer = undo.peek(viewer.getUniqueId(), now);
+        if (offer.isEmpty()) {
+            return Optional.of(MenuButton.display(core.menus().item(Material.HEAVY_WEIGHTED_PRESSURE_PLATE, viewer, ID, "undo.idle")));
+        }
+        UndoLedger.Offer o = offer.get();
+        int seconds = o.secondsLeft(now);
+        ItemStack plate = core.menus().item(Material.LIGHT_WEIGHTED_PRESSURE_PLATE, viewer, ID, "undo.ready",
+                Msg.number("amount", o.quantity()), Msg.c("item", displayName(o.itemId())), money("price", o.total()),
+                Msg.number("seconds", seconds));
+        plate.setAmount(Math.max(1, Math.min(64, seconds)));
+        return Optional.of(MenuButton.of(plate, click -> undoLast(click.player(), () -> {
+            Menu open = core.menus().openMenu(click.player());
+            if (open == click.menu()) {
+                open.refresh();
+            }
+        })));
     }
 
     // ================================================================== helpers
@@ -673,27 +1118,17 @@ public final class ShopModule implements SkyblockModule, Listener {
         return raw == null ? key : raw;
     }
 
-    /** Bedrock player (Floodgate): taps only, so the quick-buy grid opens the amount screen. */
+    /** Bedrock player (Floodgate): the ? guide leaves out the Java shift-click shortcut; Type an amount uses the picker. */
     boolean bedrock(Player player) {
         return player != null && core.bedrock().isBedrock(player.getUniqueId());
     }
 
-    // ================================================================== quick buy (SELL2)
-
-    /**
-     * Buys now. Owner answer 8 (FIXES1): quick-buys never ask to confirm, whatever the price (the old
-     * {@code buy.confirm-above} screen is gone). {@code after}: refresh.
-     */
-    void attempt(Menu from, Player player, ShopCatalog.Item item, int amount, Runnable after) {
-        buy(player, item, amount, after);
-    }
-
-    /** The Sell button of the shop menus (opens the sell chest), if selling exists. */
+    /** The Sell button of the shop pages (opens the sell chest), if selling exists. Gold nugget until pack art exists. */
     Optional<ItemStack> sellButton(Player viewer) {
         if (core.services().optional(SellService.class).isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(core.menus().item(Material.GOLD_INGOT, viewer, ID, "menu.sell"));
+        return Optional.of(core.menus().item(Material.GOLD_NUGGET, viewer, ID, "menu.sell"));
     }
 
     void openSell(Player player, Menu from) {

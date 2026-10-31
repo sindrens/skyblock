@@ -66,10 +66,21 @@ class ShopMessagesTest {
             keys.add("categories." + c.id() + ".lore");
         }
         for (String state : List.of("locked", "unavailable", "requires")) {
-            keys.add("category.entry." + state);
+            keys.add("entry." + state);
         }
-        for (String state : List.of("ok", "partial", "no-room", "too-expensive")) {
-            keys.add("amount.buy." + state);
+        for (String state : List.of("ok", "partial", "no-room", "too-expensive", "armed")) {
+            keys.add("buy.button." + state);
+        }
+        for (String why : List.of("no-room", "too-expensive")) {
+            keys.add("buy.fill-none." + why + ".name");
+        }
+        for (String setting : List.of(ShopModule.SETTING_UNDO, ShopModule.SETTING_BIG_BUY)) {
+            keys.add("settings." + setting + ".name");
+            keys.add("settings." + setting + ".lore");
+        }
+        for (String key : List.of("buy.quick.name", "buy.fill.name", "buy.typed.name", "undo.idle.name", "undo.ready.name",
+                "menu.spawners-off.name", "menu.empty.name")) {
+            keys.add(key);
         }
         for (String skill : List.of("mining", "foraging", "combat", "farming", "fishing")) {
             keys.add("skills." + skill);

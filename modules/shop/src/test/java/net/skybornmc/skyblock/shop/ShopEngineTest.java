@@ -7,6 +7,7 @@ import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.Transaction;
 import net.skybornmc.skyblock.common.economy.TxReason;
+import net.skybornmc.skyblock.common.economy.TxResult;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -137,6 +138,37 @@ class ShopEngineTest {
                 "only the purchase that surely was not handed over still waits");
         assertFalse(store.move(first, ShopStore.PENDING, ShopStore.DELIVERING, clock.get()).join(), "a review row can't be claimed");
         assertTrue(store.recover(clock.get()).join().isEmpty(), "a second start changes nothing");
+    }
+
+    /** F14: an undo refunds the full price to the paying profile once; a second try pays nothing. */
+    @Test
+    void undoRefundsExactlyOnce() {
+        ShopEngine.Result r = buy(logs, 64);
+        UUID id = r.purchase().id();
+        assertTrue(store.move(id, ShopStore.DELIVERING, ShopStore.DELIVERED, clock.get()).join());
+        UndoLedger.Offer offer = new UndoLedger.Offer(id, profile, "oak_log", 64, 512, clock.get() + 15_000);
+        assertEquals(TxResult.Status.SUCCESS, engine.undo(offer, "Steve", Actor.player(player, "Steve")).join());
+        assertEquals(1_000, economy.get(profile, Currency.MONEY), "the full price came back");
+        assertEquals(ShopStore.REFUNDED, db.blocking(c -> ShopStore.get(c, id)).state());
+        Transaction tx = economy.done.getLast();
+        assertEquals(TxReason.SHOP_UNDO, tx.reason());
+        assertEquals("shop_undo:" + id, tx.idempotencyKey());
+        assertEquals(profile, tx.to().owner());
+        assertTrue(engine.undo(offer, "Steve", Actor.player(player, "Steve")).join() != TxResult.Status.SUCCESS,
+                "a second refund of the same purchase is refused");
+        assertEquals(1_000, economy.get(profile, Currency.MONEY), "and pays nothing");
+    }
+
+    /** F14: only a delivered purchase can be refunded (not one waiting or under staff review). */
+    @Test
+    void undoNeedsADeliveredPurchase() {
+        ShopEngine.Result r = buy(logs, 10);
+        UUID id = r.purchase().id();
+        store.move(id, ShopStore.DELIVERING, ShopStore.PENDING, clock.get()).join();
+        UndoLedger.Offer offer = new UndoLedger.Offer(id, profile, "oak_log", 10, 80, clock.get() + 15_000);
+        assertEquals(TxResult.Status.DUPLICATE, engine.undo(offer, "Steve", Actor.player(player, "Steve")).join());
+        assertEquals(920, economy.get(profile, Currency.MONEY), "nothing refunded");
+        assertEquals(ShopStore.PENDING, db.blocking(c -> ShopStore.get(c, id)).state());
     }
 
     private static int count(java.sql.Connection c) throws java.sql.SQLException {

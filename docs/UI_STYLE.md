@@ -200,7 +200,7 @@ Progress: 23 / 50                          ← quests/achievements
 ★ Inferno Key (x2) | 12.5%                 ← crate rewards: name in its rarity color, chance in white
 [+] $5,000                                 ← quest rewards: bold green [+]
 
-» RIGHT-CLICK buy 64                       ← bold action color, verb UPPER CASE, always last before the footer
+» CLICK to choose an amount               ← bold action color, verb UPPER CASE, always last before the footer
 
 RARE TOOL                                  ← footer: bold rarity color
 ```
