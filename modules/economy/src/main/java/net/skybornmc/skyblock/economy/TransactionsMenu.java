@@ -30,7 +30,8 @@ final class TransactionsMenu extends Menu {
     static final int SLOT_CURRENCY = 46;
     static final int SLOT_REASON = 47;
     static final int SLOT_TIME = 51;
-    static final int SLOT_REFRESH = 52;
+    /** Top row, right of the summary: 52 is Previous page (GUI-1 handoff). */
+    static final int SLOT_REFRESH = 6;
 
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
             .withZone(net.skybornmc.skyblock.common.util.Format.zone());
@@ -104,16 +105,14 @@ final class TransactionsMenu extends Menu {
         set(SLOT_REFRESH, service.item(Material.SPYGLASS, viewer, EconomyModule.ID, "menu.refresh"), click -> reload());
 
         if (rows == null) {
-            set(PagedMenu.SLOT_EMPTY, failed
-                    ? service.item(Material.RED_STAINED_GLASS, viewer, "error-item")
-                    : service.item(Material.CLOCK, viewer, "loading"));
+            set(PagedMenu.SLOT_EMPTY, failed ? service.errorItem(viewer, this::reload) : service.loadingItem(viewer));
             if (!failed) {
                 load();
             }
             return;
         }
         if (rows.isEmpty()) {
-            set(PagedMenu.SLOT_EMPTY, service.item(Material.COBWEB, viewer, EconomyModule.ID, "menu.empty"));
+            set(PagedMenu.SLOT_EMPTY, service.emptyItem(viewer, EconomyModule.ID, "menu.empty"));
         }
         long now = System.currentTimeMillis();
         for (int i = 0; i < rows.size() && i < PagedMenu.CONTENT_SLOTS.length; i++) {

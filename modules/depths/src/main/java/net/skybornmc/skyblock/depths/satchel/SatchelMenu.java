@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.depths.satchel;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
 import net.skybornmc.skyblock.common.sell.SellPrice;
@@ -20,7 +21,8 @@ import java.util.Optional;
  * The satchel menu (M4.4, UI_STYLE §5): the header shows used/capacity and the total value, the content lists every item
  * with its amount and value (click → sell it or take it out), Sell all and Upgrade sit in the bottom row, and (SELL2)
  * a Sell chest button (46) opens the {@code /sell} chest for inventory items (all selling goes through SellService).
- * Single left clicks only (Bedrock). Refreshes live while open.
+ * Single left clicks only (Bedrock). Refreshes live while open. Sell all and Upgrade (up to millions) ask first, with
+ * the amount on the middle item of the confirm (GUI_DESIGN §4).
  */
 final class SatchelMenu extends PagedMenu<String> {
 
@@ -102,7 +104,8 @@ final class SatchelMenu extends PagedMenu<String> {
         set(SLOT_SELL_ALL, service.item(new ItemStack(Material.GOLD_INGOT), text("satchel.menu.sell-all.name", tags),
                 lines(worth > 0 ? "satchel.menu.sell-all.lore" : "satchel.menu.sell-all.empty", tags)), click -> {
             if (worth(click) > 0) {
-                satchel.sellAll(click.player());
+                openChild(confirm("satchel.menu.confirm.sell-all", new ItemStack(Material.GOLD_INGOT),
+                        text("satchel.menu.sell-all.name", tags), tags, satchel::sellAll));
             } else {
                 service.sound(click.player(), "error");
             }
@@ -123,8 +126,18 @@ final class SatchelMenu extends PagedMenu<String> {
             TagResolver[] up = {Msg.p("level", level), Msg.p("next", level + 1), Msg.p("levels", satchel.upgradeCount()),
                     Msg.number("capacity", next.capacity()), Msg.p("price", satchel.money(next.price()))};
             set(SLOT_UPGRADE, service.item(new ItemStack(Material.ANVIL), text("satchel.menu.upgrade.name", up),
-                    lines("satchel.menu.upgrade.lore", up)), click -> satchel.buyUpgrade(click.player()));
+                    lines("satchel.menu.upgrade.lore", up)), click -> openChild(confirm("satchel.menu.confirm.upgrade",
+                    new ItemStack(Material.ANVIL), text("satchel.menu.upgrade.name", up), up, satchel::buyUpgrade)));
         }
+    }
+
+    /** A confirm for a costly action: {@code <key>.crumb} as the title, {@code <key>.details} on the middle item. */
+    private ConfirmMenu confirm(String key, ItemStack icon, Component name, TagResolver[] tags, ConfirmMenu.Action action) {
+        return new ConfirmMenu(v -> service.text(v, MODULE, key + ".crumb", tags), service.item(icon, name, List.of()),
+                v -> service.lines(v, MODULE, key + ".details", tags), player -> {
+                    action.run(player);
+                    service.open(player, this);
+                }, player -> { });
     }
 
     private long worth(net.skybornmc.skyblock.common.menu.MenuClick click) {

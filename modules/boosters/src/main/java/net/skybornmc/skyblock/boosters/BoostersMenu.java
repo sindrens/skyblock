@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.boosters;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.booster.BoosterType;
 import net.skybornmc.skyblock.common.item.ItemRegistry;
+import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
@@ -16,8 +17,8 @@ import java.util.UUID;
 
 /**
  * {@code /boosters}: your personal boosters per type (running, time left, banked), the global boosters per type (who
- * started it, time left, the queue; click to thank) and the booster items in your inventory (click to start). Updates
- * every second. Bedrock: every action is a plain tap.
+ * started it, time left, the queue; click to thank) and the booster items in your inventory (click, then confirm, to
+ * start: a mis-tap must never waste a booster, GUI_DESIGN §4). Updates every second. Bedrock: every action is a plain tap.
  */
 final class BoostersMenu extends Menu {
 
@@ -86,7 +87,9 @@ final class BoostersMenu extends Menu {
                 continue;
             }
             UUID itemUuid = spec.get().itemUuid();
-            set(OWNED_SLOTS[i], ownedItem(owned.get(i), spec.get()), click -> start(click.player(), itemUuid));
+            BoosterItems.Spec s = spec.get();
+            ItemStack stack = owned.get(i);
+            set(OWNED_SLOTS[i], ownedItem(stack, s), click -> openChild(confirmStart(stack, s, itemUuid)));
         }
         if (owned.size() > OWNED_SLOTS.length) {
             set(OWNED_SLOTS[OWNED_SLOTS.length - 1], service.item(Material.CHEST, viewer, BoostersModule.ID, "menu.owned.more",
@@ -163,6 +166,21 @@ final class BoostersMenu extends Menu {
         lore.addAll(service.lines(viewer, BoostersModule.ID, "menu.owned.action"));
         return service.item(stack.getType(), service.text(viewer, BoostersModule.ID, key + ".name", Msg.p("type", m.typeName(spec.type())),
                 Msg.number("percent", spec.percent())), lore);
+    }
+
+    /** "Start this booster?": the booster on the middle item, what it gives and for how long as the details. */
+    private ConfirmMenu confirmStart(ItemStack stack, BoosterItems.Spec spec, UUID itemUuid) {
+        String key = spec.global() ? "menu.owned.global" : "menu.owned.personal";
+        ItemStack shown = service.item(stack.getType(), service.text(viewer, BoostersModule.ID, key + ".name",
+                Msg.p("type", m.typeName(spec.type())), Msg.number("percent", spec.percent())), List.of());
+        return new ConfirmMenu(v -> service.text(v, BoostersModule.ID, "menu.confirm.crumb"), shown,
+                v -> service.lines(v, BoostersModule.ID, spec.global() ? "menu.confirm.global" : "menu.confirm.personal",
+                        Msg.p("type", m.typeName(spec.type())), Msg.number("percent", spec.percent()),
+                        Msg.p("time", BoosterRules.time(spec.millis()))),
+                player -> {
+                    start(player, itemUuid);
+                    service.open(player, this);
+                }, player -> { });
     }
 
     private void start(Player player, UUID itemUuid) {

@@ -61,6 +61,8 @@ final class TradeSession {
         private final EnumMap<Currency, Long> money = new EnumMap<>(Currency.class);
         private boolean ready;
         private int inFlight;
+        /** When this player closed the trade window (0 = they have it open). */
+        private long awaySince;
 
         Side(UUID player, UUID profile, String name) {
             this.player = Objects.requireNonNull(player, "player");
@@ -91,6 +93,11 @@ final class TradeSession {
         /** Items offered plus items still on their way into the escrow. */
         int slotsUsed() {
             return items.size() + inFlight;
+        }
+
+        /** True while this player has the trade window closed (the trade stays open, U7 trade safety). */
+        boolean away() {
+            return awaySince != 0;
         }
 
         boolean offersNothing() {
@@ -174,6 +181,44 @@ final class TradeSession {
         }
         long left = countdownEndsAt - now;
         return left <= 0 ? 0 : (int) ((left + 999) / 1000);
+    }
+
+    // ------------------------------------------------------------------ the trade window (owner U7: trade safety)
+
+    /**
+     * The player closed the trade window (Close, Esc, the main menu, a help page they closed). The trade stays open:
+     * they can come back with {@code /trade}. Readiness stays as it is, because any change by the other side clears both
+     * confirmations anyway, so nothing can be swapped that the away player did not see.
+     *
+     * @return true if they just stepped away (false if they already were)
+     */
+    boolean away(UUID player, long now) {
+        Side s = side(player);
+        if (s.awaySince != 0) {
+            return false;
+        }
+        s.awaySince = Math.max(1, now);
+        return true;
+    }
+
+    /** The player has the trade window (or a screen opened from it) open again. True if they were away. */
+    boolean back(UUID player) {
+        Side s = side(player);
+        if (s.awaySince == 0) {
+            return false;
+        }
+        s.awaySince = 0;
+        return true;
+    }
+
+    /** The side that has had the window closed for longer than {@code awayMillis} (the trade then ends), or null. */
+    Side awayTooLong(long now, long awayMillis) {
+        for (Side s : List.of(a, b)) {
+            if (s.awaySince != 0 && now - s.awaySince > awayMillis) {
+                return s;
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------ changes

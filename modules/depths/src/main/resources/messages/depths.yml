@@ -199,6 +199,14 @@ satchel:
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to upgrade"
       name-max: "<c:flame>Upgrades <c:success><sym:check>"
       max: ["<c:text>All <c:value><levels></c:value> upgrades bought."]
+    # Confirms (details on the middle item, GUI_DESIGN §4). Same placeholders as sell-all / upgrade.
+    confirm:
+      sell-all:
+        crumb: "Sell everything?"
+        details: ["<c:text>Sell every item in your satchel", "<c:text>for about <cur:money><worth></cur:money> <c:muted>(+<bonus>% bonus)<c:text>."]
+      upgrade:
+        crumb: "Buy upgrade <next>?"
+        details: ["<c:text>Pay <cur:money><price></cur:money><c:text>.", "<c:text>Your satchel holds <c:value><capacity></c:value> <c:text>more."]
     # <item> <amount> <price> <worth> <trend>
     entry:
       name: "<item>"

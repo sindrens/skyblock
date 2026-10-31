@@ -50,8 +50,7 @@ final class AlertMenu extends WatchMenu {
     }
 
     @Override
-    protected void build() {
-        frame();
+    protected void content() {
         long now = System.currentTimeMillis();
         set(SLOT_SUMMARY, service.item(AlertsMenu.icon(alert), viewer, EconomyModule.ID, "watch.alert-menu.summary",
                 Msg.c("severity", watch.severity(viewer, alert)), Msg.c("rule", watch.ruleName(viewer, alert)),
@@ -85,15 +84,15 @@ final class AlertMenu extends WatchMenu {
                     click -> change(WatchAlert.State.OPEN));
         }
         if (rows == null) {
-            set(EVIDENCE_SLOTS[3], failed ? service.item(Material.RED_STAINED_GLASS, viewer, "error-item")
-                    : service.item(Material.CLOCK, viewer, "loading"));
+            set(EVIDENCE_SLOTS[3], failed ? service.errorItem(viewer, null)
+                    : service.loadingItem(viewer));
             if (!failed) {
                 load(evidence(), list -> rows = list);
             }
             return;
         }
         if (rows.isEmpty()) {
-            set(EVIDENCE_SLOTS[3], service.item(Material.COBWEB, viewer, EconomyModule.ID, "watch.alert-menu.no-evidence"));
+            set(EVIDENCE_SLOTS[3], service.emptyItem(viewer, EconomyModule.ID, "watch.alert-menu.no-evidence"));
         }
         for (int i = 0; i < rows.size() && i < EVIDENCE_SLOTS.length; i++) {
             LedgerRow row = rows.get(i);

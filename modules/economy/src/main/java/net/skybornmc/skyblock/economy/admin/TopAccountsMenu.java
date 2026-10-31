@@ -41,8 +41,7 @@ final class TopAccountsMenu extends WatchMenu {
     }
 
     @Override
-    protected void build() {
-        frame();
+    protected void content() {
         set(SLOT_RANGE, service.item(Material.CLOCK, viewer, EconomyModule.ID, "watch.top-menu.range",
                 Msg.c("range", service.text(viewer, EconomyModule.ID, week ? "watch.range.week" : "watch.range.day"))), click -> {
             click();
@@ -66,7 +65,7 @@ final class TopAccountsMenu extends WatchMenu {
             return;
         }
         if (rows.isEmpty()) {
-            set(PagedMenu.SLOT_EMPTY, service.item(Material.COBWEB, viewer, EconomyModule.ID, "watch.top-menu.empty"));
+            set(PagedMenu.SLOT_EMPTY, service.emptyItem(viewer, EconomyModule.ID, "watch.top-menu.empty"));
         }
         for (int i = 0; i < rows.size() && i < PagedMenu.CONTENT_SLOTS.length; i++) {
             WatchStore.TopAccount a = rows.get(i);

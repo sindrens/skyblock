@@ -60,8 +60,7 @@ final class DashboardMenu extends WatchMenu {
     }
 
     @Override
-    protected void build() {
-        frame();
+    protected void content() {
         set(SLOT_CURRENCY, service.item(Material.SUNFLOWER, viewer, EconomyModule.ID, "watch.menu.currency",
                 Msg.c("currency", currencyName())), click -> {
             click();

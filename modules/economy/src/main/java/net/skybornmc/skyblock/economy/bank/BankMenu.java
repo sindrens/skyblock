@@ -119,12 +119,12 @@ final class BankMenu extends Menu {
         }
         if (personal == null) {
             if (failed) {
-                set(SLOT_PERSONAL, service.item(Material.RED_STAINED_GLASS, viewer, "error-item"));
-                set(SLOT_ISLAND, service.item(Material.RED_STAINED_GLASS, viewer, "error-item"));
+                set(SLOT_PERSONAL, service.errorItem(viewer, null));
+                set(SLOT_ISLAND, service.errorItem(viewer, null));
                 return;
             }
-            set(SLOT_PERSONAL, service.item(Material.CLOCK, viewer, "loading"));
-            set(SLOT_ISLAND, service.item(Material.CLOCK, viewer, "loading"));
+            set(SLOT_PERSONAL, service.loadingItem(viewer));
+            set(SLOT_ISLAND, service.loadingItem(viewer));
             load();
             return;
         }

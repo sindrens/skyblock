@@ -45,8 +45,7 @@ final class AlertsMenu extends WatchMenu {
     }
 
     @Override
-    protected void build() {
-        frame();
+    protected void content() {
         set(SLOT_FILTER, service.item(Material.HOPPER, viewer, EconomyModule.ID, "watch.alerts-menu.filter",
                 Msg.c("filter", service.text(viewer, EconomyModule.ID, "watch.alerts-menu.filters." + (all ? "all" : "open")))),
                 click -> {

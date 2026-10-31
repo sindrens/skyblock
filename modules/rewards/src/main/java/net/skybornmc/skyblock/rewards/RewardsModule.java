@@ -147,7 +147,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (core.menus().openMenu(p) instanceof DailyMenu || core.menus().openMenu(p) instanceof PlaytimeMenu) {
+            if (core.menus().openMenu(p) instanceof DailyMenu) {
                 p.closeInventory();
             }
         }
@@ -218,7 +218,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
     }
 
     void openPlaytime(Player player) {
-        core.menus().open(player, new PlaytimeMenu(this));
+        core.menus().open(player, new DailyMenu(this, true));
     }
 
     // ================================================================== accessors
@@ -382,8 +382,6 @@ public final class RewardsModule implements SkyblockModule, Listener {
         Player p = receiver(profile);
         if (p != null) {
             if (core.menus().openMenu(p) instanceof DailyMenu menu) {
-                menu.refresh();
-            } else if (core.menus().openMenu(p) instanceof PlaytimeMenu menu) {
                 menu.refresh();
             }
         }

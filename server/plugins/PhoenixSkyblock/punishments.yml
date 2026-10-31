@@ -154,7 +154,7 @@ categories:
 # Slots 0-53 (row 1 = 0-8, row 2 = 9-17, ...). Left side = columns 0-3, right side = columns 5-8, middle = column 4.
 # A reason that is not placed here is still reachable through "More reasons". No two things may share a slot.
 menu:
-  confirm: false                    # owner decision: no "are you sure?" click (true = confirm menu before applying)
+  confirm: false                    # owner decision: no "are you sure?" click for warns, mutes, kicks (true = always confirm). Bans always confirm; a permanent ban asks twice (GUI_DESIGN §4).
   keep-open: true                   # stay open and refresh after applying
   filler: GRAY_STAINED_GLASS_PANE
   divider: RED_STAINED_GLASS_PANE
@@ -163,13 +163,13 @@ menu:
   warn-counter-slot: 31
   warn-counter-icon: YELLOW_CONCRETE
   unavailable-icon: GRAY_DYE        # buttons of later milestones ("Not available yet")
-  buttons:                          # bottom row
-    sanctions: { slot: 45, icon: GOLD_INGOT }      # P7: freeze balance, block trading, remove money, confiscate
+  # The framework bar owns 45 Back, 48 ?, 49 Close and 50 Main menu (GUI-BUGS); a button put there moves to the top row.
+  buttons:
+    history: { slot: 3, icon: WRITABLE_BOOK }      # top row, left of the head
+    more-reasons: { slot: 5, icon: BOOKSHELF }     # top row, right of the head
+    sanctions: { slot: 6, icon: GOLD_INGOT }       # P7: freeze balance, block trading, remove money, confiscate
     kick: { slot: 46, icon: LEATHER_BOOTS }
     bulk: { slot: 47, icon: CHEST_MINECART }       # P5: punish several players for one reason
-    history: { slot: 48, icon: WRITABLE_BOOK }
-    close: { slot: 49, icon: BARRIER }
-    more-reasons: { slot: 50, icon: BOOKSHELF }
     silent: { slot: 51, icon: GRAY_DYE }           # owner answer 500: no public ban/mute line (the menu's -s)
     dry-run: { slot: 52, icon: GRAY_DYE }          # P8
 

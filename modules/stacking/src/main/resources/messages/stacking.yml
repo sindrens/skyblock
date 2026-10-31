@@ -121,6 +121,10 @@ menu:
   take-all:
     name: "<c:error>Take all"
     lore: ["<c:text>Takes all <c:value><count></c:value> <c:text>spawners.", "<c:text>The block disappears.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to take"]
+  # Confirm before Take all removes the block (details on the middle item, GUI_DESIGN §4).
+  take-all-confirm:
+    crumb: "Take all spawners?"
+    details: ["<c:text>Put all <c:value><count></c:value> <c:text>spawners in your", "<c:text>inventory. The block disappears."]
   upgrades:
     name: "<c:ember>Upgrades"
     lore:

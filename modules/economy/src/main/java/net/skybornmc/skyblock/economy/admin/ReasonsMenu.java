@@ -75,8 +75,7 @@ final class ReasonsMenu extends WatchMenu {
     }
 
     @Override
-    protected void build() {
-        frame();
+    protected void content() {
         set(SLOT_RANGE, service.item(Material.CLOCK, viewer, EconomyModule.ID, "watch.reasons-menu.range",
                 Msg.c("range", service.text(viewer, EconomyModule.ID, "watch.range." + range.key()))), click -> {
             click();
@@ -100,7 +99,7 @@ final class ReasonsMenu extends WatchMenu {
         }
         List<FlowSummary.ReasonTotals> list = sorted();
         if (list.isEmpty()) {
-            set(PagedMenu.SLOT_EMPTY, service.item(Material.COBWEB, viewer, EconomyModule.ID, "watch.reasons-menu.empty"));
+            set(PagedMenu.SLOT_EMPTY, service.emptyItem(viewer, EconomyModule.ID, "watch.reasons-menu.empty"));
         }
         int size = PagedMenu.CONTENT_SLOTS.length;
         int pages = Math.max(1, (list.size() + size - 1) / size);

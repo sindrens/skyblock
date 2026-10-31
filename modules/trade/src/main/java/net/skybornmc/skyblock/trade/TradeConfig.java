@@ -39,6 +39,10 @@ public final class TradeConfig extends ModuleConfig {
     @Setting(path = "session.max-minutes", desc = "An open trade is cancelled after this many minutes.", min = 1, max = 120)
     public int maxMinutes = 10;
 
+    @Setting(path = "session.away-seconds", desc = "Closing the trade window keeps the trade open (owner U7: Close, ? and the "
+            + "main menu never cancel it); /trade goes back. The trade ends if a player stays away this long.", min = 10, max = 600)
+    public int awaySeconds = 60;
+
     @Setting(path = "session.max-items", desc = "Item stacks each player can offer (the window has room for 12).", min = 1, max = 12)
     public int maxItems = 12;
 

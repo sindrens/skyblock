@@ -81,15 +81,15 @@ final class BankHistoryMenu extends Menu {
     protected void build() {
         frame();
         if (rows == null) {
-            set(PagedMenu.SLOT_EMPTY, failed ? service.item(Material.RED_STAINED_GLASS, viewer, "error-item")
-                    : service.item(Material.CLOCK, viewer, "loading"));
+            set(PagedMenu.SLOT_EMPTY, failed ? service.errorItem(viewer, null)
+                    : service.loadingItem(viewer));
             if (!failed) {
                 load();
             }
             return;
         }
         if (rows.isEmpty()) {
-            set(PagedMenu.SLOT_EMPTY, service.item(Material.COBWEB, viewer, EconomyModule.ID, "bank.history.empty"));
+            set(PagedMenu.SLOT_EMPTY, service.emptyItem(viewer, EconomyModule.ID, "bank.history.empty"));
         }
         long now = System.currentTimeMillis();
         for (int i = 0; i < rows.size() && i < PagedMenu.CONTENT_SLOTS.length; i++) {
