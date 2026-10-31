@@ -16,11 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** UX3: the /menu → Warps list (menu.yml → warps), its targets, texts and the one-time Warps button switch. */
-class WarpLayoutTest {
+/** GUI-2: the /menu → Travel places (menu.yml → travel, was the UX3 warps list), their targets and texts. */
+class TravelLayoutTest {
 
     private static YamlConfiguration resource(String name) throws Exception {
-        try (var in = WarpLayoutTest.class.getClassLoader().getResourceAsStream(name)) {
+        try (var in = TravelLayoutTest.class.getClassLoader().getResourceAsStream(name)) {
             assertNotNull(in, name);
             YamlConfiguration yaml = new YamlConfiguration();
             yaml.load(new InputStreamReader(in, StandardCharsets.UTF_8));
@@ -51,54 +51,54 @@ class WarpLayoutTest {
 
     @Test
     void reasonsMapToTeleportReasons() {
-        assertEquals("spawn", WarpsMenu.reason("spawn").id());
-        assertEquals("dungeon", WarpsMenu.reason("dungeon").id());
-        assertEquals("spawn", WarpsMenu.reason("nonsense").id(), "fallback: the /spawn warmup");
+        assertEquals("spawn", TravelMenu.reason("spawn").id());
+        assertEquals("dungeon", TravelMenu.reason("dungeon").id());
+        assertEquals("spawn", TravelMenu.reason("nonsense").id(), "fallback: the /spawn warmup");
     }
 
-    /** Every bundled warp has a valid target, a free inner slot and its texts; the hub button opens it. */
+    /** Every bundled place has a valid target, a slot of the 3-row menu and its texts (GUI_DESIGN §7.3: 7 places). */
     @Test
-    void bundledWarpsAreComplete() throws Exception {
+    void bundledPlacesAreComplete() throws Exception {
         YamlConfiguration menu = resource("menu.yml");
         YamlConfiguration texts = resource("messages/navigation.yml");
-        ConfigurationSection warps = menu.getConfigurationSection("warps");
-        assertNotNull(warps);
+        ConfigurationSection travel = menu.getConfigurationSection("travel");
+        assertNotNull(travel);
         Set<Integer> slots = new HashSet<>();
-        for (String id : warps.getKeys(false)) {
-            ConfigurationSection e = warps.getConfigurationSection(id);
+        for (String id : travel.getKeys(false)) {
+            ConfigurationSection e = travel.getConfigurationSection(id);
             assertNotNull(e, id);
             int slot = e.getInt("slot", -1);
-            assertFalse(HubLayout.RESERVED.contains(slot), id + " slot " + slot);
-            assertTrue(slot > 0 && slot < 54 && slots.add(slot), id + " slot " + slot);
+            assertTrue(ButtonLayout.SMALL_SLOTS.contains(slot) && slots.add(slot), id + " slot " + slot);
             assertNotNull(WarpLayout.target(e.getString("target")), id + " target");
             assertTrue(WarpLayout.REASONS.contains(e.getString("reason", WarpLayout.DEFAULT_REASON)), id + " reason");
-            assertTrue(texts.isString("warps.entries." + id + ".name"), id + " name");
-            assertTrue(texts.isList("warps.entries." + id + ".lore"), id + " lore");
+            assertTrue(texts.isString("travel.places." + id + ".name"), id + " name");
+            assertTrue(texts.isList("travel.places." + id + ".lore"), id + " lore");
         }
-        assertTrue(slots.size() >= 6, "spawn, market, crates, forge, tavern, hall, depths, player warps");
-        assertInstanceOf(WarpLayout.Command.class, WarpLayout.target(warps.getString("spawn.target")));
-        assertEquals(HubWarpsMigration.WARPS, menu.getString("entries.warps.command"));
-        assertEquals("active", menu.getString("entries.warps.status"), "warps is a built-in screen, not a server command");
-        for (String key : new String[]{"warps.title", "warps.action", "warps.fallback-name", "warps.gone", "warps.empty.name"}) {
+        assertEquals(java.util.List.of("spawn", "my-island", "depths-gate", "crate-yard", "market", "forge-quarter", "visit-islands"),
+                java.util.List.copyOf(travel.getKeys(false)));
+        java.util.List<String> problems = new java.util.ArrayList<>();
+        assertEquals(7, WarpLayout.parse(menu, HubButtonsTest.ITEMS, problems::add).warps().size());
+        assertEquals(java.util.List.of(), problems);
+        assertInstanceOf(WarpLayout.Command.class, WarpLayout.target(travel.getString("spawn.target")));
+        assertEquals("dungeon", travel.getString("depths-gate.reason"));
+        for (String key : new String[]{"travel.title", "travel.action", "travel.fallback-name", "travel.gone", "travel.empty.name"}) {
             assertTrue(texts.contains(key), key);
         }
     }
 
     @Test
-    void oldWarpsButtonIsSwitchedOnce() {
-        YamlConfiguration old = new YamlConfiguration();
-        old.set("entries.warps.slot", 28);
-        old.set("entries.warps.command", "is warp");
-        old.set("entries.warps.status", "auto");
-        assertTrue(HubWarpsMigration.apply(old));
-        assertEquals("warps", old.getString("entries.warps.command"));
-        assertEquals("active", old.getString("entries.warps.status"));
-        assertFalse(HubWarpsMigration.apply(old), "only once");
-
-        YamlConfiguration owner = new YamlConfiguration();
-        owner.set("entries.warps.command", "warp list");
-        assertFalse(HubWarpsMigration.apply(owner), "an owner-chosen command stays");
-        assertEquals("warp list", owner.getString("entries.warps.command"));
-        assertFalse(HubWarpsMigration.apply(new YamlConfiguration()));
+    void placesOutsideTheMiddleRowAreSkipped() {
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("travel.a.slot", 20); // a 6-row slot: not in a 3-row menu
+        yaml.set("travel.a.target", "command spawn");
+        yaml.set("travel.b.slot", 10);
+        yaml.set("travel.b.target", "command spawn");
+        yaml.set("travel.c.slot", 10);
+        yaml.set("travel.c.target", "command spawn");
+        java.util.List<String> problems = new java.util.ArrayList<>();
+        WarpLayout layout = WarpLayout.parse(yaml, HubButtonsTest.ITEMS, problems::add);
+        assertEquals(1, layout.warps().size());
+        assertEquals("b", layout.warps().getFirst().id());
+        assertEquals(2, problems.size(), "outside the row + slot used twice");
     }
 }

@@ -130,24 +130,25 @@ topics:
           - "<c:text>in hotbar slot 9."
           - "<c:text>Don't want the star? Turn it off in"
           - "<c:value>/settings</c:value> <c:muted>»</c:muted> <c:text>Display."
-      - title: "<c:value>Coming soon"
+      - title: "<c:value>Four groups"
         lines:
-          - "<c:text>Features that aren't open yet are shown"
-          - "<c:text>in gray with <c:muted>Coming soon</c:muted>."
-          - "<c:text>They keep their place, so the menu"
-          - "<c:text>never moves around on you."
+          - "<c:success>Play</c:success><c:text>, <c:flame>Money</c:flame><c:text>, <c:enchant>Power</c:enchant> <c:text>and <c:ember>More</c:ember><c:text>."
+          - "<c:text>Click your head for profiles, titles,"
+          - "<c:text>settings, the store and the rules."
+          - "<c:flame>Rewards</c:flame> <c:text>glows when something is ready:"
+          - "<c:text>one click claims it all."
       - title: "<c:value>Moving around menus"
         lines:
           - "<c:ember>«</c:ember> <c:text>Back (bottom left) returns to the"
           - "<c:text>previous screen. <c:error>✘</c:error> <c:text>closes the menu."
           - "<c:info>?</c:info> <c:text>explains the screen, the book opens help."
           - "<c:text>Items can never be taken out of a menu."
-      - title: "<c:value>Warps"
+      - title: "<c:value>Travel"
         lines:
-          - "<c:text>The <c:flame>Warps</c:flame> <c:text>button takes you to spawn,"
-          - "<c:text>the market, the crates, the Depths and"
-          - "<c:text>more in one click. Player warps are"
-          - "<c:text>in there too."
+          - "<c:text>The <c:success>Travel</c:success> <c:text>button takes you to spawn,"
+          - "<c:text>your island, the Depths Gate, the crates,"
+          - "<c:text>the market and the Forge in one click,"
+          - "<c:text>or lets you visit other islands."
 
   help:
     icon: knowledge_book

@@ -1,6 +1,5 @@
 package net.skybornmc.skyblock.menus;
 
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -12,9 +11,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * The {@code /menu → Warps} list from {@code menu.yml → warps} (UX3): server places with an icon and a target. Texts are
- * in {@code messages/navigation.yml → warps.entries.<id>}. Pure parsing; where a target leads is resolved when the menu
- * opens ({@link WarpsMenu}), and entries whose place does not exist on this server are hidden.
+ * The {@code /menu → Travel} places from {@code menu.yml → travel} (GUI-2, was the UX3 warps list): server places with an
+ * icon and a target. Texts are in {@code messages/navigation.yml → travel.places.<id>}. Pure parsing; where a target
+ * leads is resolved when the menu opens ({@link TravelMenu}), and places that do not exist on this server are hidden.
  */
 public record WarpLayout(List<Warp> warps) {
 
@@ -37,29 +36,39 @@ public record WarpLayout(List<Warp> warps) {
     /**
      * @param reason teleport reason id (warmup and cooldown of {@code teleport.yml}): {@code spawn} or {@code dungeon}
      */
-    public record Warp(String id, int slot, Material icon, Target target, String reason, String permission) {
+    public record Warp(String id, int slot, String icon, Target target, String reason, String permission) {
     }
 
     public static final String DEFAULT_REASON = "spawn";
     static final Set<String> REASONS = Set.of("spawn", "dungeon");
 
+    /** The Travel menu: {@code menu.yml → travel}, slots 10-16 of the 3-row menu. */
     static WarpLayout parse(YamlConfiguration yaml, Consumer<String> problem) {
+        return parse(yaml, ButtonLayout::isItem, problem);
+    }
+
+    static WarpLayout parse(YamlConfiguration yaml, java.util.function.Predicate<String> items, Consumer<String> problem) {
+        return parse(yaml, "travel", ButtonLayout.SMALL_SLOTS, items, problem);
+    }
+
+    static WarpLayout parse(YamlConfiguration yaml, String sectionName, Set<Integer> slots, java.util.function.Predicate<String> items,
+                            Consumer<String> problem) {
         List<Warp> out = new ArrayList<>();
         Set<Integer> used = new HashSet<>();
-        ConfigurationSection section = yaml.getConfigurationSection("warps");
+        ConfigurationSection section = yaml.getConfigurationSection(sectionName);
         if (section == null) {
             return new WarpLayout(List.of());
         }
         for (String id : section.getKeys(false)) {
             ConfigurationSection e = section.getConfigurationSection(id);
-            String where = "menu.yml → warps." + id;
+            String where = "menu.yml → " + sectionName + "." + id;
             if (e == null) {
                 problem.accept(where + ": needs slot, icon and target (skipped)");
                 continue;
             }
             int slot = e.getInt("slot", -1);
-            if (slot < 0 || slot >= 54 || HubLayout.RESERVED.contains(slot)) {
-                problem.accept(where + ".slot: " + slot + " is not an inner slot of the menu (skipped)");
+            if (!slots.contains(slot)) {
+                problem.accept(where + ".slot: " + slot + " is not a free slot of the menu (skipped)");
                 continue;
             }
             if (!used.add(slot)) {
@@ -73,11 +82,10 @@ public record WarpLayout(List<Warp> warps) {
                 used.remove(slot);
                 continue;
             }
-            String iconName = e.getString("icon", "ender_pearl");
-            Material icon = Material.matchMaterial(iconName);
-            if (icon == null || !icon.isItem()) {
-                problem.accept(where + ".icon: unknown item '" + iconName + "' (using ender pearl)");
-                icon = Material.ENDER_PEARL;
+            String icon = e.getString("icon", "ender_pearl").strip().toLowerCase(Locale.ROOT);
+            if (!items.test(icon)) {
+                problem.accept(where + ".icon: unknown item '" + icon + "' (using ender pearl)");
+                icon = "ender_pearl";
             }
             String reason = e.getString("reason", DEFAULT_REASON).toLowerCase(Locale.ROOT);
             if (!REASONS.contains(reason)) {

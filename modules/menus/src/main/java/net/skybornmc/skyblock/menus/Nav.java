@@ -26,10 +26,13 @@ public final class Nav {
     final Core core;
     final ModuleMessages msg;
     final SettingsRegistry settings;
-    volatile HubLayout hub = new HubLayout(List.of());
+    volatile ButtonLayout hub = new ButtonLayout(List.of(), java.util.Map.of());
+    volatile ButtonLayout you = new ButtonLayout(List.of(), java.util.Map.of());
     volatile HubLayout staff = new HubLayout(List.of());
-    volatile WarpLayout warps = new WarpLayout(List.of());
+    volatile WarpLayout travel = new WarpLayout(List.of());
     volatile HelpBook help = HelpBook.empty();
+    /** Test server: show unbuilt hub/You buttons in the "Coming soon" look ({@code navigation.yml → hub.show-unbuilt}). */
+    volatile boolean showUnbuilt;
 
     Nav(Core core, SettingsRegistry settings) {
         this.core = core;
@@ -74,6 +77,46 @@ public final class Nav {
 
     ItemStack item(Material icon, Component name, List<Component> lore) {
         return core.menus().item(icon, name, lore);
+    }
+
+    /** The item of a parsed icon id ({@link ButtonLayout}, {@link WarpLayout}); {@code fallback} if it is not an item. */
+    static Material material(String id, Material fallback) {
+        Material m = Material.matchMaterial(id == null ? "" : id);
+        return m == null || !m.isItem() ? fallback : m;
+    }
+
+    /** Text of {@code key}, or {@code fallback-key} with the prettified {@code id} when an owner-added button has no texts yet. */
+    Component textOr(Player viewer, String key, String fallbackKey, String id) {
+        if (core.messages().raw(TEXTS, key) == null) {
+            return text(viewer, fallbackKey, pre("name", TravelMenu.pretty(id)));
+        }
+        return text(viewer, key);
+    }
+
+    /**
+     * Your head (GUI_DESIGN §7.1): name, rank, money, crystals and playtime. {@code key} = the message section
+     * ({@code hub.head} with a click line, {@code you.head} without).
+     */
+    ItemStack head(Player viewer, String key) {
+        var economy = core.services().optional(net.skybornmc.skyblock.common.economy.EconomyService.class);
+        String money = economy.flatMap(e -> {
+            var v = e.cached(viewer.getUniqueId(), net.skybornmc.skyblock.common.economy.Currency.MONEY);
+            return v.isPresent() ? java.util.Optional.of(e.format(net.skybornmc.skyblock.common.economy.Currency.MONEY, v.getAsLong()))
+                    : java.util.Optional.empty();
+        }).orElse("-");
+        String crystals = economy.flatMap(e -> {
+            var v = e.cached(viewer.getUniqueId(), net.skybornmc.skyblock.common.economy.Currency.CRYSTALS);
+            return v.isPresent() ? java.util.Optional.of(e.format(net.skybornmc.skyblock.common.economy.Currency.CRYSTALS, v.getAsLong()))
+                    : java.util.Optional.empty();
+        }).orElse("-");
+        long playtime = core.players().get(viewer.getUniqueId()).map(d -> d.playtimeMillis()).orElse(0L);
+        ItemStack head = item(Material.PLAYER_HEAD, text(viewer, key + ".name"), lines(viewer, key + ".lore",
+                net.skybornmc.skyblock.common.text.Msg.p("money", money),
+                net.skybornmc.skyblock.common.text.Msg.p("crystals", crystals),
+                net.skybornmc.skyblock.common.text.Msg.p("playtime",
+                        net.skybornmc.skyblock.common.util.Format.duration(java.time.Duration.ofMillis(playtime)))));
+        head.editMeta(org.bukkit.inventory.meta.SkullMeta.class, meta -> meta.setOwningPlayer(viewer));
+        return head;
     }
 
     /** The locked "Coming soon" look: real icon, gray name with the suffix, the description, then a locked line. */

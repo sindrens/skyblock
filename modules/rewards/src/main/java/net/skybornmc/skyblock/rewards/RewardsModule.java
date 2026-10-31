@@ -116,6 +116,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
         core.services().optional(PlayerSettings.class).ifPresent(s -> s.register(new SettingToggle(ID, SETTING_REMINDER,
                 SettingCategory.CHAT, Material.CLOCK, true, PERM_DAILY, ID, "settings.daily-reminder", false)));
         registerCommands();
+        core.services().register(ID, net.skybornmc.skyblock.common.rewards.RewardsService.class, new RewardsServiceImpl(this));
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         Bukkit.getPluginManager().registerEvents(activity, core.plugin());
         for (Player p : Bukkit.getOnlinePlayers()) {

@@ -27,6 +27,10 @@ public final class MenusConfig extends ModuleConfig {
             + "title when the menu opened over the open inventory).", min = 1, max = 20)
     public int menuItemInventoryDelayTicks = 3;
 
+    @Setting(path = "hub.show-unbuilt", desc = "Test server: show /menu and You buttons of features that are not built yet "
+            + "in the 'Coming soon' look. Off (live server, owner G2): those buttons are hidden.")
+    public boolean hubShowUnbuilt = false;
+
     @Setting(path = "settings.ui-sound-keys", desc = "Sounds (sounds.yml keys) that count as menu sounds wherever they play; "
             + "players who turn 'Menu sounds' off in /settings don't hear them. Every sound a menu plays is muted too.")
     public List<String> uiSoundKeys = List.of("click", "menu-open", "menu-close", "page");

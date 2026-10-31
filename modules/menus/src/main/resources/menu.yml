@@ -1,48 +1,76 @@
-# /menu hub layout. Texts (names/descriptions) are in messages/navigation.yml → hub.entries.<id>.
-# slot: inner slots of the 6-row menu (rows 2-5, columns 2-8: 10-16, 19-25, 28-34, 37-43). Slot 4 is your profile.
-# icon: item id (docs/UI_STYLE.md §5.5 icon map: the same icon everywhere for the same feature).
-# command: what a click runs (without /). Built-in screens: settings, help, warps (the warps menu below).
-# status: auto        = clickable when the command exists on the server, otherwise "Coming soon" (default)
-#         coming-soon = always locked (use when the command name is taken by something else for now)
-#         active      = always clickable
-# permission: optional; players without it see the entry but can't open it.
-# Reload: /skyblock reload menus
+# Phoenix Skyblock menus: the /menu hub, You and Travel (GUI-2), and the /staff hub.
+# Texts (names and descriptions) are in messages/navigation.yml. Reload: /skyblock reload menus
 
-entries:
-  # Row 2: island and economy
-  island:       {slot: 10, icon: grass_block,      command: "is",          status: auto}
-  depths:       {slot: 11, icon: iron_pickaxe,     command: "dungeon",     status: auto}
-  shop:         {slot: 12, icon: emerald,          command: "shop",        status: auto}          # builder shop (M3.5)
-  sell:         {slot: 13, icon: gold_nugget,      command: "sell",        status: auto}
-  bank:         {slot: 14, icon: barrel,           command: "bank",        status: auto}
-  auction:      {slot: 15, icon: gold_block,       command: "ah",          status: auto}
-  black-market: {slot: 16, icon: wither_rose,      command: "blackmarket", status: auto}
-  # Row 3: progression and rewards
-  skills:       {slot: 19, icon: experience_bottle, command: "skills",     status: auto}
-  sets:         {slot: 20, icon: leather_chestplate, command: "wardrobe",  status: auto}   # /wardrobe (W1; /sets is its alias)
-  enchanter:    {slot: 21, icon: enchanting_table, command: "enchanter",   status: auto}
-  quests:       {slot: 22, icon: writable_book,    command: "quests",      status: auto}
-  crates:       {slot: 23, icon: tripwire_hook,    command: "crates",      status: auto}
-  events:       {slot: 24, icon: clock,            command: "events",      status: auto}
-  pets:         {slot: 25, icon: bone,             command: "pets",        status: auto}
-  # Row 4: world, collection and community
-  warps:        {slot: 28, icon: ender_pearl,      command: "warps",       status: active} # warps menu below (UX3; player warps inside)
-  collection:   {slot: 29, icon: bookshelf,        command: "collection",  status: auto}
-  leaderboards: {slot: 30, icon: golden_helmet,    command: "leaderboards", status: auto}
-  titles:       {slot: 31, icon: name_tag,         command: "tags",        status: auto}
-  store:        {slot: 32, icon: diamond,          command: "store",       status: auto}
-  vote:         {slot: 33, icon: paper,            command: "vote",        status: auto}
-  discord:      {slot: 34, icon: bell,             command: "discord",     status: auto}
-  # Row 5: getting around
-  forge:        {slot: 37, icon: smithing_table,   command: "forge",       status: auto}
-  profiles:     {slot: 43, icon: armor_stand,      command: "profiles",    status: auto}
-  spawn:        {slot: 38, icon: compass,          command: "spawn",       status: auto}
-  rules:        {slot: 39, icon: lectern,          command: "rules",       status: auto}
-  settings:     {slot: 40, icon: comparator,       command: "settings",    status: active}
-  help:         {slot: 41, icon: knowledge_book,   command: "help",        status: active}
-  website:      {slot: 42, icon: filled_map,       command: "website",     status: auto}
+# /menu: the clean hub (GUI_DESIGN §7.1, owner G1). Your head on 4, then 4 groups with space between them.
+# Texts: messages/navigation.yml → hub.buttons.<id>.
+# slot:       4 (your head) or an inner slot of the 6-row menu (10-16, 19-25, 28-34, 37-43)
+# group:      one of hub-groups below (its colored mark goes on the left edge of the row)
+# icon:       item id (docs/UI_STYLE.md §5.5: the same icon everywhere for the same feature)
+# action:     command (default: runs `command` as the player) or a built-in screen:
+#             you (the You menu), travel (the Travel menu), rewards (claims everything ready; with nothing ready it
+#             runs `command`), settings, help (Help & guides is already on slot 50, so don't add it twice)
+# service:    the service the feature provides (e.g. SellService). Owner G2: a feature that is not built (service
+#             missing, module off, command missing) is HIDDEN. Test server: navigation.yml → hub.show-unbuilt: true
+#             shows them in the "Coming soon" look.
+# show:       false hides the button everywhere (also on the test server). Use this instead of deleting a button:
+#             deleted buttons come back from the defaults on the next start.
+# permission: optional; players without it see the button locked.
+# One button per action: a second button that does the same thing is skipped (with a warning).
+hub:
+  you:       {slot: 4,  action: you,      icon: player_head}
+  # Play (green)
+  home:      {slot: 10, group: play,  icon: red_bed,            command: "is home",   service: IslandService}
+  island:    {slot: 12, group: play,  icon: grass_block,        command: "is",        service: IslandService}
+  depths:    {slot: 14, group: play,  icon: iron_pickaxe,       command: "dungeon",   service: Depths}
+  travel:    {slot: 16, group: play,  icon: ender_pearl,        action: travel}
+  # Money (gold)
+  sell:      {slot: 19, group: money, icon: gold_nugget,        command: "sell",      service: SellService}
+  shop:      {slot: 21, group: money, icon: emerald,            command: "shop",      service: ShopPrices}
+  bank:      {slot: 23, group: money, icon: barrel,             command: "bank",      service: BankService}
+  auction:   {slot: 25, group: money, icon: gold_block,         command: "ah"}
+  # Power (violet)
+  forge:     {slot: 28, group: power, icon: smithing_table,     command: "forge",     service: ToolService}
+  skills:    {slot: 30, group: power, icon: experience_bottle,  command: "skills",    service: SkillService}
+  enchanter: {slot: 32, group: power, icon: enchanting_table,   command: "enchanter", service: EnchantService}
+  wardrobe:  {slot: 34, group: power, icon: leather_chestplate, command: "wardrobe",  service: WardrobeService}
+  # More (ember)
+  rewards:   {slot: 39, group: more,  icon: chest,              action: rewards, command: "daily", service: RewardsService}
+  top:       {slot: 41, group: more,  icon: golden_helmet,      command: "is top",    service: IslandService}
 
-# /staff hub (staff only). Same rules as above; texts in messages/navigation.yml → staff.entries.<id>.
+# The four hub groups, in order: the pane that marks each group's row. Texts: hub.groups.<id>.
+hub-groups:
+  play:  {mark: lime_stained_glass_pane}
+  money: {mark: yellow_stained_glass_pane}
+  power: {mark: purple_stained_glass_pane}
+  more:  {mark: orange_stained_glass_pane}
+
+# /menu → You (GUI_DESIGN §7.2, owner G6: the store lives here). 3 rows, slots 10-16. Same keys as the hub (no group).
+# Texts: messages/navigation.yml → you.buttons.<id>.
+you:
+  profiles:     {slot: 10, icon: armor_stand,       command: "profiles",     service: ProfileService}
+  titles:       {slot: 11, icon: name_tag,          command: "tags",         service: Cosmetics}
+  achievements: {slot: 12, icon: totem_of_undying,  command: "achievements", service: AchievementService}
+  settings:     {slot: 13, icon: comparator,        action: settings}
+  store:        {slot: 14, icon: diamond,           command: "store"}
+  rules:        {slot: 15, icon: lectern,           command: "rules"}
+
+# /menu → Travel (GUI_DESIGN §7.3; replaces the UX3 warps menu). 3 rows, slots 10-16. One click teleports with the /spawn
+# warmup (reason: dungeon = the /dungeon warmup); locked places explain why (e.g. Depths tiers). A place that does not
+# exist on this server is hidden (build not applied, world not loaded, command missing).
+# Texts: messages/navigation.yml → travel.places.<id> (name, lore, optional action). permission: optional.
+# target: "command <cmd>"                              runs a command as the player (e.g. spawn, is home)
+#         "point <category> <id>"                      a spot of the applied builds (build-points.yml), e.g. road entries
+#         "location <world> <x> <y> <z> [yaw] [pitch]" a fixed position (feet)
+travel:
+  spawn:         {slot: 10, icon: campfire,       target: "command spawn"}
+  my-island:     {slot: 11, icon: grass_block,    target: "command is home"}
+  depths-gate:   {slot: 12, icon: iron_pickaxe,   target: "location depths 7.5 100 14.5 165 0", reason: dungeon}
+  crate-yard:    {slot: 13, icon: tripwire_hook,  target: "location spawn 46.5 100 -35.5 -90 0"}
+  market:        {slot: 14, icon: emerald,        target: "location spawn 0.5 99 33.5 0 0"}
+  forge-quarter: {slot: 15, icon: smithing_table, target: "point entries forge_road"}
+  visit-islands: {slot: 16, icon: compass,        target: "command is visit"}
+
+# /staff hub (staff only). Rules: slot (inner slot), icon, command, status (auto | coming-soon | active), optional permission; texts in messages/navigation.yml → staff.entries.<id>.
 staff-entries:
   display:      {slot: 20, icon: painting,         command: "display",     status: auto, permission: "skyblock.admin.display"}
   admin:        {slot: 21, icon: comparator,       command: "admin",       status: auto, permission: "skyblock.admin.config"}
@@ -57,22 +85,3 @@ staff-entries:
   islands:      {slot: 34, icon: filled_map,       command: "isadmin slots",    status: auto, permission: "skyblock.island.admin.slots"}
   npcs:         {slot: 25, icon: armor_stand,      command: "skyblock npcs",    status: auto, permission: "skyblock.admin.npcs"}
   tutorial:     {slot: 40, icon: spyglass,         command: "tutorial admin stats", status: auto, permission: "skyblock.tutorial.stats"}
-
-# /menu → Warps (UX3): server places. One click teleports with the /spawn warmup (reason: dungeon = the /dungeon warmup);
-# locked places explain why (e.g. Depths tiers). Texts: messages/navigation.yml → warps.entries.<id> (name, lore, optional
-# action). An entry whose place does not exist on this server is hidden (build not applied, world not loaded, command
-# missing). permission: optional, like the hub.
-# target: "command <cmd>"                              runs a command as the player (e.g. spawn, is warp)
-#         "point <category> <id>"                      a spot of the applied builds (build-points.yml), e.g. road entries
-#         "location <world> <x> <y> <z> [yaw] [pitch]" a fixed position (feet)
-# Slots: inner slots of the 6-row menu (10-16, 19-25, 28-34, 37-43). Reload: /skyblock reload menus
-# More places later, e.g. the AFK pool once its build region exists: {slot: 34, icon: clock, target: "location ..."}
-warps:
-  spawn:          {slot: 20, icon: compass,        target: "command spawn"}
-  market:         {slot: 21, icon: emerald,        target: "location spawn 0.5 99 33.5 0 0"}
-  crate-yard:     {slot: 22, icon: tripwire_hook,  target: "location spawn 46.5 100 -35.5 -90 0"}
-  forge:          {slot: 23, icon: smithing_table, target: "point entries forge_road"}
-  tavern:         {slot: 24, icon: honey_bottle,   target: "point entries tavern_road"}
-  hall-of-heroes: {slot: 30, icon: golden_helmet,  target: "point entries hall_road"}
-  depths:         {slot: 31, icon: iron_pickaxe,   target: "location depths 7.5 100 14.5 165 0", reason: dungeon}
-  island-warps:   {slot: 32, icon: grass_block,    target: "command is warp"}
