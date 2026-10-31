@@ -36,6 +36,8 @@ final class Progress {
     final Map<String, Integer> stuck = new HashMap<>();
     /** The starter chest was opened during this session (chest step). */
     boolean chestOpened;
+    /** Last guide-tick chest re-check (once a second, TUT-FIX). */
+    long lastChestCheck;
     /** Last time the player did anything that counts (idle reminder). */
     long lastActivity;
     boolean idleReminded;

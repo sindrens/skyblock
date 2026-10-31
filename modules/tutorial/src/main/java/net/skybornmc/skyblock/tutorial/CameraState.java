@@ -46,6 +46,11 @@ record CameraState(GameMode mode, String world, double x, double y, double z, fl
         void resetFall();
     }
 
+    /** The same state, given back at another place (a teleport by another plugin during the camera wins). */
+    CameraState at(String world, double x, double y, double z, float yaw, float pitch) {
+        return new CameraState(mode, world, x, y, z, yaw, pitch, allowFlight, flying, walkSpeed, flySpeed, invulnerable);
+    }
+
     String encode() {
         return String.join(";", VERSION, mode.name(), URLEncoder.encode(world, StandardCharsets.UTF_8), num(x), num(y), num(z),
                 num(yaw), num(pitch), bool(allowFlight), bool(flying), num(walkSpeed), num(flySpeed), bool(invulnerable));

@@ -89,6 +89,7 @@ public final class TutorialModule implements SkyblockModule {
         cameras.cleanStray();
         pip.cleanStray();
         guides.start();
+        cameras.start();
         optional.start();
         stats.startPurge();
         // Players already online (reload): load them quietly. The reward title is added to cosmetics when missing.

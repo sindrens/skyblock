@@ -667,6 +667,13 @@ final class TutorialEngine implements TutorialService, TutorialGate {
                 out.complete(false);
                 return;
             }
+            // TUT-FIX: a camera running for this player ends first (no callback: an island camera ending after a reset
+            // must not count the arrival step again); staff changes work mid-camera.
+            Player inCamera = Bukkit.getPlayer(player);
+            if (inCamera != null) {
+                module.replays().stop(inCamera);
+                module.cameras().stop(inCamera);
+            }
             if (!edit.test(p)) {
                 out.complete(false);
                 return;

@@ -66,6 +66,7 @@ steps:
     target: "Starter Chest"
     hint: "<c:text>Open your starter chest"
     opened: "<c:text>Take everything. The book explains it all."
+    take-tool: "<c:text>Take the <c:value>pickaxe</c:value> from the chest"
     done: "<c:success><sym:check></c:success> <c:text>Starter items taken"
     lore: ["<c:text>Tools, seeds, food and the", "<c:text>Phoenix Field Guide."]
   crop:
@@ -367,7 +368,7 @@ book:
 
 # ---------------------------------------------------------------- TU3 cameras (Sneak = skip). One title per shot text.
 cameras:
-  skip-hint: "<c:muted>Sneak to skip"
+  skip-hint: "<c:muted>Move, jump or sneak to skip"
   spawn:
     one:
       title: "<grad:phoenix><bold>PHOENIX</bold></grad>"
