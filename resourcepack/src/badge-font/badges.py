@@ -38,6 +38,57 @@ LETTERS = {
     '!': ['1', '1', '1', '0', '1'], "'": ['1', '1', '0', '0', '0'], '.': ['0', '0', '0', '0', '1'], ' ': ['0'],
 }
 
+
+# 5x7 letters for the "bigger rank text" setting (original pixel letters, not Minecraft's font)
+LARGE_SRC = """
+A .###. #...# #...# ##### #...# #...# #...#
+B ####. #...# #...# ####. #...# #...# ####.
+C .###. #...# #.... #.... #.... #...# .###.
+D ####. #...# #...# #...# #...# #...# ####.
+E ##### #.... #.... ####. #.... #.... #####
+F ##### #.... #.... ####. #.... #.... #....
+G .###. #...# #.... #.### #...# #...# .####
+H #...# #...# #...# ##### #...# #...# #...#
+I ### .#. .#. .#. .#. .#. ###
+J ..### ...#. ...#. ...#. #..#. #..#. .##..
+K #...# #..#. #.#.. ##... #.#.. #..#. #...#
+L #.... #.... #.... #.... #.... #.... #####
+M #...# ##.## #.#.# #.#.# #...# #...# #...#
+N #...# ##..# #.#.# #..## #...# #...# #...#
+O .###. #...# #...# #...# #...# #...# .###.
+P ####. #...# #...# ####. #.... #.... #....
+Q .###. #...# #...# #...# #.#.# #..#. .##.#
+R ####. #...# #...# ####. #.#.. #..#. #...#
+S .#### #.... #.... .###. ....# ....# ####.
+T ##### ..#.. ..#.. ..#.. ..#.. ..#.. ..#..
+U #...# #...# #...# #...# #...# #...# .###.
+V #...# #...# #...# #...# #...# .#.#. ..#..
+W #...# #...# #...# #.#.# #.#.# ##.## #...#
+X #...# #...# .#.#. ..#.. .#.#. #...# #...#
+Y #...# #...# .#.#. ..#.. ..#.. ..#.. ..#..
+Z ##### ....# ...#. ..#.. .#... #.... #####
+0 .###. #..## #.#.# #.#.# ##..# #...# .###.
+1 .#. ##. .#. .#. .#. .#. ###
+2 .###. #...# ....# ...#. ..#.. .#... #####
+3 ####. ....# ....# .###. ....# ....# ####.
+4 ...#. ..##. .#.#. #..#. ##### ...#. ...#.
+5 ##### #.... ####. ....# ....# #...# .###.
+6 .###. #.... #.... ####. #...# #...# .###.
+7 ##### ....# ...#. ..#.. .#... .#... .#...
+8 .###. #...# #...# .###. #...# #...# .###.
+9 .###. #...# #...# .#### ....# ....# .###.
++ ..... ..#.. ..#.. ##### ..#.. ..#.. .....
+- ..... ..... ..... ##### ..... ..... .....
+! # # # # # . #
+' # # . . . . .
+. . . . . . . #
+"""
+LARGE = {}
+for line in LARGE_SRC.strip().splitlines():
+    k, *rows = line.split(' ')
+    LARGE[k] = [r.replace('#', '1').replace('.', '0') for r in rows]
+LARGE[' '] = ['00'] * 7
+
 # grey levels: Minecraft multiplies them by the text colour, so 255 = the rank colour itself
 DARK = {'rimT': (168, 168, 168, 255), 'rimB': (104, 104, 104, 255), 'plate': (30, 25, 25, 255), 'glow': (58, 46, 46, 255), 'hi': (255, 255, 255, 255), 'lo': (214, 214, 214, 255),
         'F': (255, 255, 255, 255), 'f': (190, 190, 190, 255)}
@@ -57,8 +108,8 @@ CAP_CHARS = {'plain': (0xE000, 0xE001), 'ember': (0xE002, 0xE003), 'wing': (0xE0
              'phoenix': (0xE008, 0xE009), 'ribbon': (0xE00A, 0xE00B), 'square': (0xE00E, 0xE00F)}
 NEG1 = 0xF801  # -1 px advance, between every two badge glyphs
 
-def letter_glyph(ch, style):
-    m = LETTERS[ch]; lw = len(m[0]); w = lw + 1  # one plate column after each letter
+def letter_glyph(ch, style, large=False):
+    m = (LARGE if large else LETTERS)[ch]; lw = len(m[0]); w = lw + 1  # one plate column after each letter
     img = Image.new('RGBA', (w, 9), (0, 0, 0, 0))
     for x in range(w):
         if style == 'solid':
@@ -66,10 +117,10 @@ def letter_glyph(ch, style):
             for y in range(1, 8): img.putpixel((x, y), SOLID['top'] if y == 1 else SOLID['shade'] if y == 7 else SOLID['base'])
         else:
             img.putpixel((x, 0), DARK['rimT']); img.putpixel((x, 8), DARK['rimB'])
-            for y in range(1, 8): img.putpixel((x, y), DARK['glow'] if y in (1, 7) else DARK['plate'])
+            for y in range(1, 8): img.putpixel((x, y), DARK['glow'] if y in (1, 7) and not large else DARK['plate'])
     for j, row in enumerate(m):
         for i, b in enumerate(row):
-            if b == '1': img.putpixel((i, 2 + j), SOLID['ink'] if style == 'solid' else (DARK['hi'] if j < 3 else DARK['lo']))
+            if b == '1': img.putpixel((i, (1 if large else 2) + j), SOLID['ink'] if style == 'solid' else (DARK['hi'] if j < (4 if large else 3) else DARK['lo']))
     return img
 
 def cap_glyph(kind, style, right=False):
@@ -82,10 +133,10 @@ def cap_glyph(kind, style, right=False):
             if ch in pal: img.putpixel(((w - 1 - x) if right else x, y), pal[ch])
     return img
 
-def build(style, alpha=255):
+def build(style, alpha=255, large=False):
     """Return {char: Image} for one font."""
     gl = {}
-    for ch in LETTERS: gl[ch] = letter_glyph(ch, style)
+    for ch in LETTERS: gl[ch] = letter_glyph(ch, style, large)
     for kind, (l, r) in CAP_CHARS.items():
         if style == 'solid' and kind != 'square': continue
         if style != 'solid' and kind == 'square': continue
@@ -220,7 +271,8 @@ def sheet(fonts):
     return img
 
 if __name__ == '__main__':
-    fonts = {'badge': build('dark'), 'badge_shine': build('dark', alpha=254), 'badge_solid': build('solid')}
+    fonts = {'badge': build('dark'), 'badge_shine': build('dark', alpha=254), 'badge_solid': build('solid'),
+             'badge_large': build('dark', large=True), 'badge_large_shine': build('dark', alpha=254, large=True), 'badge_large_solid': build('solid', large=True)}
     for n, gl in fonts.items(): write_font(n, gl)
     json.dump([{'group': r[0], 'family': r[2], 'font': 'phoenix:' + r[3], 'cap': r[4], 'color': r[5], 'cap_color': r[6], 'shine': r[7], 'bedrock': BEDROCK[r[0]],
                 'caps': [chr(CAP_CHARS[r[4]][0]), chr(CAP_CHARS[r[4]][1])]} for r in RANKS],

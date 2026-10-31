@@ -1,0 +1,32 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/badge/badge_large_solid.png",
+   "ascent": 7,
+   "height": 9,
+   "chars": [
+    "ABCDEFGHIJKLMNOP",
+    "QRSTUVWXYZ012345",
+    "6789+-!'. \ue00e\ue00f\u0000\u0000\u0000\u0000"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/badge/badge_large_solid.png",
+   "ascent": 7,
+   "height": 9,
+   "chars": [
+    "abcdefghijklmnop",
+    "qrstuvwxyz\u0000\u0000\u0000\u0000\u0000\u0000",
+    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+   ]
+  },
+  {
+   "type": "space",
+   "advances": {
+    "\uf801": -1
+   }
+  }
+ ]
+}
