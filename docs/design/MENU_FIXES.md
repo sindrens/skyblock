@@ -51,15 +51,31 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - Achievements tabs redraw in place (title follows), shared loading item; playtime milestones in reading order;
   boosters ? text; no barrier icon on non-Close buttons.
 
+**Done in GUI-4b (31 Oct):**
+- Pick lists instead of the last cyclers: staff box and staff crates profile switch, eco admin currency, eco Reasons
+  period + sort, cosmetics editor rarity, tutorial stats period + players, island grid filter, `/admin` enum settings.
+- Members bottom row: the standard bar plus Invites (46) and Invite (47); the Settings, Notes and Permissions
+  shortcuts are gone (they are on `/is`). The `/is` menu itself stays as built (GUI_DESIGN §7.5).
+- Bedrock typing: `MenuService.input` (common) opens a Floodgate form with the on-screen keyboard for Bedrock players
+  and the chat prompt for Java (`menus.yml → bedrock-forms.enabled`). Used by island notes (add, change text), warp
+  rename (new), "Adding warps" (sets a warp where you stand), loadout rename and the player picker search.
+- Enchanter: the slot screen is skipped when only one slot fits the mode, and the tool list when you carry one tool;
+  the book list shows the tool and slot on 4.
+- Loadouts: presets in two plain rows, one "Edit a loadout" button with a pick list instead of an Edit book under
+  each preset, lore previews the contents (one click still applies, owner LD5), pet placeholder hidden.
+- Wardrobe set screen: one row per group, the one way to get the set on 31 (Redeem moved there, with a confirm),
+  Merge 33, Trail 40, nothing on 31 once owned, Wear all / Take all off no longer look like dye toggles.
+- Player picker: Search (47) and Show everyone (46) when the list is longer than one page.
+
 **Left (next GUI round; staff screens last):**
-- Staff cyclers still cycle (few values): staff box / staff crates profile switch, eco admin currency, eco Reasons
-  range/sort, cosmetics editor rarity, tutorial stats period/client, island grid filter, `/admin` enum settings.
 - Shop and `/sell` ("Add my inventory", Sell on 53): GUI-3 lane. Chat-link flows (TPA, invites, store/vote/Discord,
   help command suggestions): GUI-5.
-- Bigger reworks: `/top` screen (§7.6), `/is` duplicate shortcuts and Members bottom row, notes/warps typing on
-  Bedrock (rename, add), enchanter flow shortening (skip slot screen), loadouts layout + confirm, wardrobe set screen
-  layout, player picker search/offline, help topics written in lore (Bedrock), Settings split into fewer rows,
+- Bigger reworks: `/top` screen (§7.6), help topics written in lore (Bedrock), Settings split into fewer rows,
   economy admin paging, portal choice > 3 invites, AH staff remove reasons > 5, `/logs` right-click details.
+- Owner decisions (OPEN_QUESTIONS GUI-4b): a loadout apply confirm (LD5 says one click), Warps/Visit overlap in `/is`,
+  offline/recent players in the player picker.
+- Other typing flows can move to `MenuService.input` (AH search, `/admin` text values, cosmetics editor, display
+  formats, logs subjects); each needs its `<key>-form.title/label` texts.
 - Staff/moderation screens: inspect Back for command-opened tools, reports tabs/refresh, `/p` button count, lockdown
   and confiscate confirms (GUI-BUGS added the ban confirms).
 
@@ -170,7 +186,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** /box <player> (admin)
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
-  - Profile switch (5) only cycles forward; with many profiles it takes several clicks to reach one.
+  - ✅ GUI-4b (pick list). Profile switch (5) only cycles forward; with many profiles it takes several clicks to reach one.
 
 ### `box.staff_clear_confirm`: Box of <player> » Clear box
 - **Rows:** 3
@@ -219,7 +235,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** Any action that needs a player (trade, island invite, visit, ...)
 - **Notes:**
   - Online players only: nobody can be chosen who is offline (no search, no recent players)
-  - No search or filter; with 100+ players it is up to 4 pages of heads sorted by name
+  - ✅ GUI-4b (Search 47 / Show everyone 46 when longer than a page). No search or filter; with 100+ players it is up to 4 pages of heads sorted by name
   - Heads show only the name; no island/rank hint to tell similar names apart
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
 
@@ -242,7 +258,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** Editor list > a title or tag (staff)
 - **Rules to apply:** §5 pick menu instead of a cycler · §1.4 title max 2 parts
 - **Notes:**
-  - Rarity (21) steps forward through seven rarities one click at a time and has no reverse.
+  - ✅ GUI-4b (pick list; rarity in the name). Rarity (21) steps forward through seven rarities one click at a time and has no reverse.
 
 ### `cosmetics.editor_delete_confirm`: Titles & Tags » Edit titles » <id> » Delete
 - **Rows:** 3
@@ -300,7 +316,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** /crates admin view <player> (staff)
 - **Rules to apply:** §1.1 add Back at 45 · §5 pick menu instead of a cycler
 - **Notes:**
-  - Profile switch (4) only cycles forward.
+  - ✅ GUI-4b (pick list). Profile switch (4) only cycles forward.
 
 ## depths (3 menus)
 
@@ -402,7 +418,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rules to apply:** §1.1 add Back at 45 · §5 pick menu instead of a cycler
 - **Notes:**
   - 15 tiles with long lore in one screen; seven are read-only and look the same as the eight clickable ones (only the lore says CLICK).
-  - Currency (31) cycles forward only.
+  - ✅ GUI-4b (pick list). Currency (31) cycles forward only.
 
 ### `economy.admin_reasons`: Economy » Reasons
 - **Rows:** 6
@@ -444,7 +460,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Notes:**
   - Five different flows (Apply, Upgrade, Combine, Remove, Armor) sit in one row, and the Combine screen itself sends players back to Upgrade for 'book onto a tool', so the split is not obvious.
   - Enchant guide uses KNOWLEDGE_BOOK, the same icon as the Help button in the nav row (slot 50); easy to confuse.
-  - Every flow has 3-4 screens (tool, slot, book, confirm), so a single enchant takes about 5 clicks; the same Enchanter title is reused on the tool picker and the slot picker, so the player cannot tell which step they are on.
+  - ✅ GUI-4b (slot screen skipped when one slot fits, tool list skipped with one tool). Every flow has 3-4 screens (tool, slot, book, confirm), so a single enchant takes about 5 clicks; the same Enchanter title is reused on the tool picker and the slot picker, so the player cannot tell which step they are on.
   - Armor button stays visible but dead when the wardrobe module is off (gray name, error sound only).
 
 ### `enchants.tool-pick`: Enchanter » Apply a book / Upgrade / Remove
@@ -468,7 +484,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** Enchanter > Apply a book > tool > empty slot
 - **Notes:**
   - Books that do not fit are still shown as buttons that beep; with many books, the fitting ones are only grouped by sort order.
-  - Title crumb 'Apply a book' repeats, and 'Slot 3' is the only context; the tool being enchanted is not named anywhere in this menu.
+  - ✅ GUI-4b (the tool and slot on 4). Title crumb 'Apply a book' repeats, and 'Slot 3' is the only context; the tool being enchanted is not named anywhere in this menu.
 
 ### `enchants.upgrade`: Upgrade » <enchant name>
 - **Rows:** 6
@@ -549,15 +565,15 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
   - Visitors lock/unlock is one click with no confirm and teleports visitors out
   - Island chat (20) is a toggle that looks like a normal button (no on/off state in the name; the icon changes between OAK_SIGN and GLOW_ITEM_FRAME only)
   - Bank and Upgrades are muted placeholders when their module is off, but sit between live buttons
-  - Duplicate shortcuts: Members screen also has Permissions, Settings, Notes and Invites; same destination from two places
+  - ✅ GUI-4b (Members lost Permissions, Settings, Notes; Invites stays there, /is stays as built per §7.5). Duplicate shortcuts: Members screen also has Permissions, Settings, Notes and Invites; same destination from two places
 
 ### `islands.members`: Island » Members
 - **Rows:** 6
 - **Opens from:** Members in /is menu
 - **Notes:**
-  - The bottom row is full (45-53 all used) with non-standard slots 46, 47, 51, 52 (UI_STYLE: only 45/48/49/50/53); Notes sits at the top at slot 6
+  - ✅ GUI-4b (bar + 46 Invites + 47 Invite). The bottom row is full (45-53 all used) with non-standard slots 46, 47, 51, 52 (UI_STYLE: only 45/48/49/50/53); Notes sits at the top at slot 6
   - Coop players cannot be added from the GUI (command only); 'Invite a player' lists online players without an island only
-  - Five shortcut buttons (Notes, Invites, Invite, Permissions, Settings) duplicate the island menu and crowd the member list
+  - ✅ GUI-4b. Five shortcut buttons (Notes, Invites, Invite, Permissions, Settings) duplicate the island menu and crowd the member list
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
 
 ### `islands.member-actions`: Members » <player>
@@ -633,7 +649,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rows:** 6
 - **Opens from:** Warps in /menu hub (/is warp), Visit, Island menu
 - **Notes:**
-  - New warps can only be made with /is setwarp or a sign; the menu only explains it
+  - ✅ GUI-4b ("Adding warps" sets one where you stand; Bedrock form). New warps can only be made with /is setwarp or a sign; the menu only explains it
   - In own-island mode a click edits (leader/admin/mod) instead of teleporting; the same item does two different things depending on the viewer and the mode
   - Two non-standard bottom slots (47 Islands, 51 Your warps) next to the standard ones
   - The Visit <-> Warps child chain grows the back-stack
@@ -644,7 +660,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** Click a warp in your own warps
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
-  - No rename: a warp's name can only be changed by deleting and re-creating it
+  - ✅ GUI-4b (Rename on 30; Delete moved to 40). No rename: a warp's name can only be changed by deleting and re-creating it
   - ✅ GUI-4 (pick list). Category cycles through all categories one click at a time
   - Public/Private reads as a plain button: the wording 'Public' / 'Private' is the state, not the action
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
@@ -661,7 +677,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rows:** 6
 - **Opens from:** Island notes in /is menu, islands.members
 - **Notes:**
-  - Adding or editing text needs chat typing (or a temporary written book), which is hard on Bedrock touch
+  - ✅ GUI-4b (Bedrock form popup). Adding or editing text needs chat typing (or a temporary written book), which is hard on Bedrock touch
   - Non-standard bottom row: 46 Open as book, 47 Add a note, 51 Clear done notes, 52 Deleted notes
   - Clicking a note opens another menu for done/edit/pin/delete; no quick tick from the list
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
@@ -672,7 +688,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rules to apply:** §1.1/§1.2 never a dead end
 - **Notes:**
   - Plain ARROW 'Back' at 22, no Close/Info/Help; inconsistent with framed 6-row menus
-  - Change text needs chat typing
+  - ✅ GUI-4b (Bedrock form popup, old text filled in). Change text needs chat typing
   - Unpin (15) and Pin (14) are two slots for one idea
 
 ### `islands.notes-deleted`: Notes » Deleted
@@ -716,7 +732,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
   - Hundreds of slots paged 28 at a time with no search or jump-to-slot
-  - Filter cycles one state per click
+  - ✅ GUI-4b (pick list with counts). Filter cycles one state per click
   - Non-standard bottom slots 47 and 51
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
 
@@ -965,7 +981,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
   - Up to 124 settings (5 pages) with no search or sub-grouping
   - Booleans flip immediately, with no confirm, even for risky settings
   - Text and decimal edits need typing in chat (slow on Bedrock); resetting to default is only possible by typing 'default' in that prompt
-  - Enum settings cycle one value per click (no list of choices)
+  - ✅ GUI-4b (pick list). Enum settings cycle one value per click (no list of choices)
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
 
 ### `menus.admin-list`: Admin » <file> » <setting>
@@ -1549,7 +1565,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
   - Dense, numbers only in tooltips: 11 step cards + header + 2 summary cards + 3 controls in one screen, all read through lore
-  - Period and client filters cycle one value per click
+  - ✅ GUI-4b (pick lists). Period and client filters cycle one value per click
   - Step cards are display-only; no drill-down for where players drop off
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
 
@@ -1586,10 +1602,10 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** Wardrobe > click a set; Enchanter armor tab links back here
 - **Rules to apply:** §4 confirm rule
 - **Notes:**
-  - About 14 buttons in a layout that is not on the content grid (4 pieces on 10-13, actions at 15/16, 20/22/24, 29/31/33, 38/42); several only appear in some states, so slots jump between sets.
-  - Claim (free Sigil set) and Redeem token run at once with no confirm, while Buy asks for one.
-  - Buy, Claim, owned, crate-only and locked all share slot 31 and look the same shape, so players have to read the lore to tell 'press to buy' from 'info'.
-  - Wear all (LIME_DYE) and Take all off (RED_DYE) use dye like toggles, but are one-shot buttons; same dye is used for 'owned' in slot 31.
+  - ✅ GUI-4b (rows: pieces · info · 29 Tome / 31 Get it / 33 Merge · 40 Trail). About 14 buttons in a layout that is not on the content grid (4 pieces on 10-13, actions at 15/16, 20/22/24, 29/31/33, 38/42); several only appear in some states, so slots jump between sets.
+  - ✅ GUI-4b (Redeem asks first; Claim is free so no confirm, OPEN_QUESTIONS GUI-4b c). Claim (free Sigil set) and Redeem token run at once with no confirm, while Buy asks for one.
+  - ✅ GUI-4b (owned shows nothing on 31, the status is on 4; locked/crate keep their own icons, no CLICK line). Buy, Claim, owned, crate-only and locked all share slot 31 and look the same shape, so players have to read the lore to tell 'press to buy' from 'info'.
+  - ✅ GUI-4b (armor stand / hopper). Wear all (LIME_DYE) and Take all off (RED_DYE) use dye like toggles, but are one-shot buttons; same dye is used for 'owned' in slot 31.
 
 ### `wardrobe.chest`: Wardrobe » Chest
 - **Rows:** 6
@@ -1620,17 +1636,17 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** /loadout; Wardrobe > Loadouts (52)
 - **Rules to apply:** §4 confirm rule · §3 hide until built
 - **Notes:**
-  - Up to 16 loadout buttons (8 presets + 8 Edit books) in a checkerboard of 10/12/14/16 and 19/21/23/25 that is not the standard content grid.
-  - Clicking a loadout swaps armor and hotbar tools immediately, and the old tools go to the chest, with no confirm and no preview of what changes.
-  - Edit is a separate WRITABLE_BOOK button under every preset, so the preset icon and Edit book must be told apart by position.
-  - Empty places are lime glass panes that save the current gear on one click, with no confirm.
-  - Pet button (47) is a placeholder 'Coming soon' item that does nothing.
+  - ✅ GUI-4b (8 presets on 10-16 / 19-25, one Edit a loadout button with a pick list). Up to 16 loadout buttons (8 presets + 8 Edit books) in a checkerboard of 10/12/14/16 and 19/21/23/25 that is not the standard content grid.
+  - ✅ GUI-4b (preview in the lore; one click stays, owner LD5; confirm = OPEN_QUESTIONS GUI-4b b). Clicking a loadout swaps armor and hotbar tools immediately, and the old tools go to the chest, with no confirm and no preview of what changes.
+  - ✅ GUI-4b. Edit is a separate WRITABLE_BOOK button under every preset, so the preset icon and Edit book must be told apart by position.
+  - ✅ GUI-4b (no confirm by GUI_DESIGN §4: nothing is replaced). Empty places are lime glass panes that save the current gear on one click, with no confirm.
+  - ✅ GUI-4b (hidden until pets exist). Pet button (47) is a placeholder 'Coming soon' item that does nothing.
 
 ### `wardrobe.loadout-edit`: Loadouts » <loadout name>
 - **Rows:** 6
 - **Opens from:** Loadouts > Edit button under a loadout
 - **Notes:**
-  - Rename closes the menu and needs typing in chat (one word, max length), which is slow on touch.
+  - ✅ GUI-4b (Bedrock form popup, old name filled in). Rename closes the menu and needs typing in chat (one word, max length), which is slow on touch.
 
 ### `wardrobe.loadout-icon`: Loadouts » Icon
 - **Rows:** 6

@@ -281,6 +281,12 @@ Bedrock can't click chat. Anything answered with a chat click (TPA, island invit
 - Links: the address is the item name; a click sends it once in plain chat (Bedrock can't open links).
 - Shared button texts: `messages/menus.yml → offer.button.*`. Turn popups off: `menus.yml → bedrock-popups.enabled: false`.
 
+### 5.2.0b Typing text (GUI-4b)
+Typing is the last option (GUI_DESIGN §5); when a feature needs free text (a note, a warp or loadout name, a search), use **`core.menus().input(player, module, key, max, current, onText, onCancel, placeholders)`**, never `prompt` directly:
+- **Java:** the chat prompt with the text `<key>` (it gets `<cancel>` and `<seconds>`).
+- **Bedrock:** a Floodgate form popup with one text field and the on-screen keyboard, the current text filled in; texts `<key>-form.title` and `<key>-form.label`. Falls back to chat without Floodgate. Turn off: `menus.yml → bedrock-forms.enabled: false`.
+- The answer arrives cleaned (no colour codes, trimmed, 1..max; `TypedText`); empty or closed runs `onCancel`. Pass `<max>` yourself when a text shows it.
+
 ### 5.2.1 Number picker (6-row)
 ```
  R  O  B  B  B  B  B  O  R
