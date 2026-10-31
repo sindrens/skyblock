@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.npcs;
 
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
+import net.skybornmc.skyblock.common.util.SpawnQueue;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
@@ -71,6 +72,9 @@ final class Placer implements Listener {
      * this placement spawns), not inside {@code npcs:apply}.
      */
     private boolean purgePending;
+    /** PERF10: the task bodies, made once (not linked for the first time inside {@code npcs:apply}). */
+    private final Runnable lookBody = this::look;
+    private final Runnable drainBody = this::drain;
 
     /** What one spawn tick does (PERF8). */
     enum Step { PURGE, RETIRE, SPAWN, DONE }
@@ -110,7 +114,11 @@ final class Placer implements Listener {
     void start(PlacementIndex index, boolean look) {
         boolean reload = !byKey.isEmpty() || !retiring.isEmpty();
         var timer = module.core().scheduler().timer();
-        timer.time("npcs:apply-retire", this::retire);
+        // PERF10: timed by hand (no lambdas to link for the first time in the apply tick); same names as before.
+        long t0 = System.nanoTime();
+        retire();
+        long t1 = System.nanoTime();
+        timer.record("npcs:apply-retire", t1 - t0);
         if (!reload) {
             // First placement of this enable: left-overs of a crash or an earlier enable. On a reload every entity of
             // ours is tracked (byKey, then retiring), so the walk over every world's entities is skipped.
@@ -118,12 +126,15 @@ final class Placer implements Listener {
             purgePending = true;
         }
         NpcsConfig c = module.config();
-        timer.time("npcs:apply-track", () -> install(index));
+        install(index);
+        long t2 = System.nanoTime();
+        timer.record("npcs:apply-track", t2 - t1);
         // Every set of the placement in one batch; spawnIfWanted skips those whose chunk is not loaded.
-        timer.time("npcs:apply-queue", () -> queue.addAll(index.order()));
+        queue.addAll(index.order());
+        timer.record("npcs:apply-queue", System.nanoTime() - t2);
         drainLater();
         if (look) {
-            lookTask = module.core().scheduler().repeat("npcs:look", c.lookTicks, c.lookTicks, this::look);
+            lookTask = module.core().scheduler().repeat("npcs:look", c.lookTicks, c.lookTicks, lookBody);
         }
     }
 
@@ -231,7 +242,7 @@ final class Placer implements Listener {
     /** Starts the per-tick spawn task (from the next tick) unless it runs or nothing waits. */
     private void drainLater() {
         if (spawnTask == null && (purgePending || !queue.isEmpty() || !retiring.isEmpty())) {
-            spawnTask = module.core().scheduler().repeat("npcs:spawn", 1, 1, this::drain);
+            spawnTask = module.core().scheduler().repeat("npcs:spawn", 1, 1, drainBody);
         }
     }
 

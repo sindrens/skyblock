@@ -1,4 +1,4 @@
-package net.skybornmc.skyblock.npcs;
+package net.skybornmc.skyblock.common.util;
 
 import org.junit.jupiter.api.Test;
 

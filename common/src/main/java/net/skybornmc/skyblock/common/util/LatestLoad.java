@@ -1,4 +1,4 @@
-package net.skybornmc.skyblock.npcs;
+package net.skybornmc.skyblock.common.util;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -9,17 +9,18 @@ import java.util.function.Supplier;
 /**
  * PERF3: computes a value off the main thread and applies it on the main thread. Only the newest load is applied: a
  * load started later (or {@link #cancel()}, on disable) makes the older result stale, and a stale result is dropped
- * instead of applied. Pure (both executors are injected), unit-tested.
+ * instead of applied. Pure (both executors are injected), unit-tested. PERF10: moved from the npcs module to common
+ * (the crate yard plans its pedestals with it too).
  *
  * @param <T> the computed value
  */
-final class LatestLoad<T> {
+public final class LatestLoad<T> {
 
     private final Executor background;
     private final Executor main;
     private final AtomicLong generation = new AtomicLong();
 
-    LatestLoad(Executor background, Executor main) {
+    public LatestLoad(Executor background, Executor main) {
         this.background = background;
         this.main = main;
     }
@@ -30,7 +31,7 @@ final class LatestLoad<T> {
      * @return completes on the main executor with {@code true} once applied, {@code false} when the result was stale,
      *         or exceptionally when computing or applying failed
      */
-    CompletableFuture<Boolean> load(Supplier<T> compute, Consumer<T> apply) {
+    public CompletableFuture<Boolean> load(Supplier<T> compute, Consumer<T> apply) {
         long gen = generation.incrementAndGet();
         CompletableFuture<Boolean> done = new CompletableFuture<>();
         try {
@@ -66,7 +67,7 @@ final class LatestLoad<T> {
     }
 
     /** Makes every load still in flight stale. */
-    void cancel() {
+    public void cancel() {
         generation.incrementAndGet();
     }
 }

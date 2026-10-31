@@ -2,10 +2,13 @@ package net.skybornmc.skyblock.crates;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.skybornmc.skyblock.common.builds.BuildPoint;
 import net.skybornmc.skyblock.common.builds.BuildPoints;
 import net.skybornmc.skyblock.common.npc.HologramTexts;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.util.LatestLoad;
 import net.skybornmc.skyblock.common.util.Scheduler;
+import net.skybornmc.skyblock.common.util.SpawnQueue;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
@@ -43,13 +46,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The crate yard (M10.3): the crate blocks on the pedestals (real vanilla blocks, so Bedrock sees them), a hologram
  * above each, the key board text, and the in-world show of an open at a pedestal (rarity particles, the reward floating
  * up with its name, a firework for top rewards). Everything is placed lazily when a pedestal's chunk is loaded (never
  * loads a chunk, PERF3) and the entities are never saved: they are removed when the chunk unloads and on disable.
- * Main thread.
+ * Main thread. PERF10: the pedestals, block data and texts are planned off the main thread ({@link YardPlan}); the
+ * main thread swaps the plan in ({@code crates:yard-apply}) and sets up the pedestals a few per tick
+ * ({@code crates:yard-place}, {@code physical.place-per-tick} / {@code physical.place-budget-ms}).
  */
 final class CrateYard implements Listener {
 
@@ -61,13 +68,31 @@ final class CrateYard implements Listener {
     private final CratesModule m;
     private final NamespacedKey crateKey;
     private List<Pedestals.Pedestal> pedestals = List.of();
-    private final Map<String, Map<Long, List<Pedestals.Pedestal>>> byChunk = new HashMap<>();
-    private final Map<String, Map<Long, Pedestals.Pedestal>> byBlock = new HashMap<>();
+    /** PERF10: the applied plan (the lookups below are its maps). */
+    private YardPlan plan = YardPlan.empty();
+    private Map<String, Map<Long, List<Pedestals.Pedestal>>> byChunk = Map.of();
+    private Map<String, Map<Long, Pedestals.Pedestal>> byBlock = Map.of();
     private final Map<String, TextDisplay> holograms = new HashMap<>();
     private final Map<String, Show> shows = new HashMap<>();
     private final Set<String> warned = new HashSet<>();
     private Map<String, String> blocks = Map.of();
     private List<Integer> offsets = List.of(0);
+    /** PERF10: plans off the main thread; only the newest plan is applied. */
+    private final LatestLoad<Planned> loader;
+    /** PERF10: the loader's steps and the place task body, made once (nothing to link for the first time in a tick). */
+    private final java.util.function.Supplier<Planned> planner = this::computePlan;
+    private final java.util.function.Consumer<Planned> applier = this::apply;
+    private final java.util.function.BiConsumer<Boolean, Throwable> failed = this::failed;
+    private final Runnable drainBody = this::drain;
+
+    /** A plan plus the task that writes its log lines (made on the async thread). */
+    private record Planned(YardPlan plan, Runnable log) {
+    }
+    /** PERF10: pedestals waiting to be set up (crate block + hologram), a few per tick. */
+    private final SpawnQueue<Pedestals.Pedestal> queue = new SpawnQueue<>();
+    private Scheduler.Task placeTask;
+    /** PERF10: the left-over walk runs in the first place tick of a plan, alone in that tick. */
+    private boolean purgePending;
 
     /** The running show of one pedestal. */
     private final class Show {
@@ -95,50 +120,97 @@ final class CrateYard implements Listener {
     CrateYard(CratesModule module) {
         this.m = module;
         this.crateKey = new NamespacedKey(module.core.plugin(), "crate_yard");
+        this.loader = new LatestLoad<>(r -> module.core.scheduler().async(r),
+                r -> module.core.scheduler().main("crates:yard-apply", r));
     }
 
     // ================================================================== lifecycle
 
-    /** (Re)reads the pedestals and places crates and holograms in the loaded chunks (from the next tick on). */
+    /**
+     * (Re)reads the pedestals and places crates and holograms in the loaded chunks (over the next ticks). PERF10: this
+     * only starts the plan ({@link YardPlan}: settings, build points, block data and texts are read on an async thread).
+     * The current pedestals stay until the plan is applied ({@code crates:yard-apply}), which does what the old one-tick
+     * start did (remove the old entities, swap the lookups, log, key board) and queues the pedestals.
+     */
     void start() {
-        stop();
-        blocks = PhysicalCrates.mapping(m.settings.physicalBlocks);
-        offsets = PhysicalCrates.offsets(m.settings.physicalOffsets);
-        Optional<BuildPoints> points = m.core.services().optional(BuildPoints.class);
-        List<Pedestals.Pedestal> planned = List.of();
-        if (points.isPresent()) {
-            Pedestals.Result result = Pedestals.plan(points.get().points(Pedestals.CATEGORY),
-                    PhysicalCrates.mapping(m.settings.physicalPoints), id -> m.catalog().crate(id).isPresent());
-            result.problems().forEach(p -> m.core.plugin().getLogger().warning(p));
-            planned = result.pedestals();
+        loader.load(planner, applier).whenComplete(failed);
+    }
+
+    private void failed(Boolean applied, Throwable error) {
+        if (error != null) {
+            m.core.plugin().getLogger().log(Level.WARNING, "Crates: could not set up the crate yard", error);
         }
-        pedestals = planned;
-        for (Pedestals.Pedestal p : planned) {
-            byChunk.computeIfAbsent(p.world(), w -> new HashMap<>()).computeIfAbsent(p.chunkKey(), k -> new ArrayList<>()).add(p);
-            byBlock.computeIfAbsent(p.world(), w -> new HashMap<>()).put(p.blockKey(), p);
-        }
-        if (planned.isEmpty()) {
-            m.core.plugin().getLogger().info("Crates: no crate yard pedestals in the applied builds (crates open from /crates only).");
-        } else {
-            m.core.plugin().getLogger().info("Crates: " + planned.size() + " crates on the crate yard pedestals.");
-        }
-        purgeLeftovers();
-        m.core.scheduler().later("crates:yard-place", 1, () -> {
-            for (Pedestals.Pedestal p : pedestals) {
-                place(p);
+    }
+
+    /** Async thread: the plan (config fields, the service registry, messages and the catalog are safe to read here). */
+    private Planned computePlan() {
+        YardPlan.Inputs in = YardPlan.Inputs.of(m.settings, m.catalog());
+        List<BuildPoint> points = m.core.services().optional(BuildPoints.class).map(b -> b.points(Pedestals.CATEGORY)).orElse(null);
+        long generation = m.core.messages().generation();
+        boolean cache = !m.core.messages().usesPlayerPlaceholders(CratesModule.ID);
+        YardPlan plan = YardPlan.compute(in, points, Bukkit::createBlockData, new YardPlan.Texts() {
+            @Override
+            public Component hologram(CrateCatalog.Crate crate) {
+                return hologramText(crate);
             }
+
+            @Override
+            public List<Component> keyBoard(CrateCatalog catalog) {
+                return keyBoardLines(catalog);
+            }
+        }, generation, cache);
+        List<String> problems = plan.problems();
+        String summary = plan.summary();
+        Logger log = m.core.plugin().getLogger();
+        return new Planned(plan, () -> {
+            problems.forEach(log::warning);
+            log.info(summary);
         });
-        pushKeyBoard();
+    }
+
+    /**
+     * Main thread: takes over a plan, removes the old entities and queues every pedestal. No lambda is created here (the
+     * log task comes with the plan), so nothing is linked for the first time in this tick.
+     */
+    private void apply(Planned planned) {
+        YardPlan next = planned.plan();
+        clear();
+        plan = next;
+        blocks = next.blocks();
+        offsets = next.offsets();
+        pedestals = next.pedestals();
+        byChunk = next.byChunk();
+        byBlock = next.byBlock();
+        m.core.scheduler().async(planned.log());
+        purgePending = true;
+        queue.addAll(next.pedestals());
+        drainLater();
+        long start = System.nanoTime();
+        pushKeyBoard(next);
+        m.core.scheduler().timer().record("crates:yard-keyboard", System.nanoTime() - start);
+    }
+
+    /** Removes every entity of the crate yard and forgets the pedestals; a plan still being built is dropped (disable). */
+    void stop() {
+        loader.cancel();
+        clear();
     }
 
     /** Removes every entity of the crate yard and forgets the pedestals (the crate blocks stay: they are the build). */
-    void stop() {
+    private void clear() {
+        if (placeTask != null) {
+            placeTask.cancel();
+            placeTask = null;
+        }
+        queue.clear();
+        purgePending = false;
         new ArrayList<>(shows.values()).forEach(Show::stop);
         shows.clear();
         holograms.values().forEach(Entity::remove);
         holograms.clear();
-        byChunk.clear();
-        byBlock.clear();
+        plan = YardPlan.empty();
+        byChunk = Map.of();
+        byBlock = Map.of();
         pedestals = List.of();
         m.core.services().optional(HologramTexts.class).ifPresent(t -> t.clearAll(CratesModule.ID));
     }
@@ -173,14 +245,49 @@ final class CrateYard implements Listener {
         return w.getChunkAt(p.chunkX(), p.chunkZ()).isEntitiesLoaded() ? w : null;
     }
 
-    /** Puts the crate block and the hologram of a pedestal (only while its chunk is loaded). */
-    private void place(Pedestals.Pedestal p) {
+    /** Starts the per-tick place task (from the next tick) unless it runs or nothing waits. */
+    private void drainLater() {
+        if (placeTask == null && (purgePending || !queue.isEmpty())) {
+            placeTask = m.core.scheduler().repeat("crates:yard-place", 1, 1, drainBody);
+        }
+    }
+
+    /** One place tick: the left-over walk alone, else pedestals within the budget; stops when nothing is left. */
+    private void drain() {
+        if (purgePending) {
+            purgePending = false;
+            long start = System.nanoTime();
+            purgeLeftovers();
+            m.core.scheduler().timer().record("crates:yard-purge", System.nanoTime() - start);
+        } else {
+            queue.drain(m.settings.placePerTick, m.settings.placeBudgetMs * 1_000_000L, System::nanoTime, this::placeIfWanted);
+        }
+        if (!purgePending && queue.isEmpty() && placeTask != null) {
+            placeTask.cancel();
+            placeTask = null;
+        }
+    }
+
+    /** Sets up a queued pedestal if it still belongs to the applied plan and its chunk is loaded; true when it did. */
+    private boolean placeIfWanted(Pedestals.Pedestal p) {
+        Map<Long, Pedestals.Pedestal> world = byBlock.get(p.world());
+        return world != null && world.get(p.blockKey()) == p && place(p);
+    }
+
+    /** Puts the crate block and the hologram of a pedestal (only while its chunk is loaded); true when it did. */
+    private boolean place(Pedestals.Pedestal p) {
         World w = loaded(p);
         if (w == null || !m.settings.physicalEnabled) {
-            return;
+            return false;
         }
         placeBlock(w, p);
         placeHologram(w, p);
+        return true;
+    }
+
+    /** The plan's look of a crate while the plan was built from the catalog in use, else null (computed here then). */
+    private YardPlan.Look look(String crateId) {
+        return plan.inputs().catalog() == m.catalog() ? plan.looks().get(crateId) : null;
     }
 
     private void placeBlock(World w, Pedestals.Pedestal p) {
@@ -188,11 +295,18 @@ final class CrateYard implements Listener {
         if (crate.isEmpty()) {
             return;
         }
-        String spec = Pedestals.blockData(p.crateId(), blocks, crate.get().icon());
-        BlockData data;
-        try {
-            data = Bukkit.createBlockData(spec);
-        } catch (IllegalArgumentException e) {
+        YardPlan.Look look = look(p.crateId());
+        String spec = look != null ? look.spec() : Pedestals.blockData(p.crateId(), blocks, crate.get().icon());
+        BlockData data = look != null ? look.data() : null;
+        boolean invalid = look != null && look.invalid();
+        if (data == null && !invalid) {
+            try {
+                data = Bukkit.createBlockData(spec);
+            } catch (IllegalArgumentException e) {
+                invalid = true;
+            }
+        }
+        if (invalid) {
             warnOnce("data:" + p.crateId(), "crates-settings.yml → physical.blocks: '" + spec + "' (crate " + p.crateId()
                     + ") is not a block; the crate block was not placed");
             return;
@@ -211,6 +325,12 @@ final class CrateYard implements Listener {
         block.setBlockData(data, false);
     }
 
+    /** The hologram text above a crate (message parsing only, any thread). */
+    private Component hologramText(CrateCatalog.Crate crate) {
+        String key = crate.hidden() ? "hologram.coming-soon" : "hologram.lines";
+        return m.msg.component(Audience.empty(), key, Msg.mm("crate", m.crateMini(crate)));
+    }
+
     private void placeHologram(World w, Pedestals.Pedestal p) {
         TextDisplay old = holograms.remove(p.crateId());
         if (old != null) {
@@ -224,8 +344,11 @@ final class CrateYard implements Listener {
             return;
         }
         Location at = new Location(w, p.x() + 0.5, p.y() + 1 + m.settings.hologramHeight, p.z() + 0.5);
-        String key = crate.get().hidden() ? "hologram.coming-soon" : "hologram.lines";
-        Component text = m.msg.component(Audience.empty(), key, Msg.mm("crate", m.crateMini(crate.get())));
+        YardPlan.Look look = look(p.crateId());
+        // PERF10: the plan's text while no messages were reloaded since it was built (and no player placeholders).
+        Component planned = look != null && plan.cacheTexts() && plan.generation() == m.core.messages().generation()
+                ? look.hologram() : null;
+        Component text = planned != null ? planned : hologramText(crate.get());
         TextDisplay display = w.spawn(at, TextDisplay.class, d -> {
             d.text(text);
             d.setBillboard(Display.Billboard.CENTER);
@@ -295,8 +418,9 @@ final class CrateYard implements Listener {
         }
         List<Pedestals.Pedestal> here = here(event.getWorld(), event.getChunk());
         if (!here.isEmpty()) {
-            // Next tick, outside the chunk-load event, and only if the chunk is still there.
-            m.core.scheduler().later("crates:yard-place", 1, () -> here.forEach(this::place));
+            // Next tick, outside the chunk-load event, and only if the chunk is still there (PERF10: through the queue).
+            here.forEach(queue::add);
+            drainLater();
         }
     }
 
@@ -344,17 +468,26 @@ final class CrateYard implements Listener {
 
     // ================================================================== key board
 
-    /** Writes the key board (how to get keys + the top-reward chance of every crate) through the npcs module. */
-    void pushKeyBoard() {
+    /**
+     * Writes the key board (how to get keys + the top-reward chance of every crate) through the npcs module. PERF10: the
+     * id and lines come from the plan (built off the main thread); they are built here only when messages were reloaded
+     * since the plan was made.
+     */
+    private void pushKeyBoard(YardPlan p) {
         Optional<HologramTexts> texts = m.core.services().optional(HologramTexts.class);
         if (texts.isEmpty()) {
             return;
         }
-        String id = m.settings.keyBoardHologram;
-        if (!m.settings.keyBoardEnabled || id == null || id.isBlank()) {
+        if (p.keyBoardId() == null) {
             texts.get().clearAll(CratesModule.ID);
             return;
         }
+        boolean current = p.cacheTexts() && p.generation() == m.core.messages().generation() && p.keyBoard() != null;
+        texts.get().set(CratesModule.ID, p.keyBoardId(), current ? p.keyBoard() : keyBoardLines(m.catalog()));
+    }
+
+    /** The key board lines (message parsing only, any thread). */
+    private List<Component> keyBoardLines(CrateCatalog catalog) {
         List<Component> lines = new ArrayList<>();
         Audience none = Audience.empty();
         lines.add(m.msg.component(none, "key-board.title"));
@@ -362,14 +495,14 @@ final class CrateYard implements Listener {
             lines.add(m.msg.component(none, "text", Msg.mm("text", raw)));
         }
         lines.add(m.msg.component(none, "key-board.odds-header"));
-        for (CrateCatalog.Crate crate : m.catalog().visible()) {
+        for (CrateCatalog.Crate crate : catalog.visible()) {
             if (crate.hasTop()) {
                 lines.add(m.msg.component(none, "key-board.odds-line", Msg.mm("crate", m.crateMini(crate)),
                         Msg.p("top", CrateMath.percent(crate.topPercent()))));
             }
         }
         lines.add(m.msg.component(none, "key-board.footer"));
-        texts.get().set(CratesModule.ID, id.trim(), lines);
+        return lines;
     }
 
     /** The lines of a list message (lists are stored joined with {@code <newline>}). */
