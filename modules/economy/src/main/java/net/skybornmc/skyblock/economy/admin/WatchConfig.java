@@ -167,8 +167,9 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "rules.big-transfer.min.crystals", desc = "Never alert below this many crystals.", min = 1)
     public long bigMinCrystals = 500_000;
 
-    @Setting(path = "rules.big-transfer.min.credits", desc = "Never alert below this many bought credits.", min = 1)
-    public long bigMinCredits = 10_000;
+    @Setting(path = "rules.big-transfer.min.credits", desc = "Never alert below this many bought credits (card C1-R1-10: "
+            + "1,000 for one transfer).", min = 1)
+    public long bigMinCredits = 1_000;
 
     @Setting(path = "rules.big-transfer.min.credits_earned", desc = "Never alert below this many earned credits created at once.",
             min = 1)
@@ -279,10 +280,11 @@ public final class WatchConfig extends ModuleConfig {
      * Version 2 (owner answer 591): the profile-reset and bank-restore reasons join the untouched default ignore list.
      * Version 3 (GUI-4c): the top earners and biggest lists page (52/53), so an untouched 28 becomes 84 (3 pages).
      * Version 4 (card C1): gems were renamed credits; old gems are earned credits.
+     * Version 5 (card C1-R1-10): an untouched big-transfer credits minimum of 10,000 becomes 1,000.
      */
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -302,7 +304,9 @@ public final class WatchConfig extends ModuleConfig {
                 3, java.util.Map.of("dashboard.top-size", ValueChange.of(28, 84), "dashboard.big-size", ValueChange.of(28, 84)),
                 // Card C1: bought credits can be traded now, so the profile alerts watch them too (untouched lists only).
                 4, java.util.Map.of("alerts.currencies", ValueChange.of(List.of("money", "crystals", "shards"),
-                        List.of("money", "crystals", "credits", "shards"))));
+                        List.of("money", "crystals", "credits", "shards"))),
+                // Card C1-R1-10: alert on one credit transfer from 1,000 (owner-edited values stay).
+                5, java.util.Map.of("rules.big-transfer.min.credits", ValueChange.of(10_000L, 1_000L)));
     }
 
     @Override
