@@ -132,24 +132,27 @@ steps:
 
 # Boss bar compass. <target> name, <distance> metres, <objective>, <number>/<total>. Bedrock-safe arrows only.
 compass:
-  ahead: "<c:ember><sym:arrow></c:ember> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m</c:text> <c:ember>«"
-  left: "<c:ember>« «</c:ember> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m"
-  right: "<c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m</c:text> <c:ember><sym:arrow> <sym:arrow>"
-  behind: "<c:text>Turn around <c:muted><sym:dot></c:muted> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m"
-  here: "<c:ember><sym:arrow></c:ember> <c:value><target></c:value> <c:ember>«"
+  ahead: "<head> <c:ember><sym:arrow></c:ember> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m</c:text> <c:ember>«"
+  left: "<head> <c:ember>« «</c:ember> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m"
+  right: "<head> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m</c:text> <c:ember><sym:arrow> <sym:arrow>"
+  behind: "<head> <c:value>Turn around <c:muted><sym:dot></c:muted> <c:value><target></c:value> <c:muted><sym:dot></c:muted> <c:text><distance>m"
+  here: "<head> <c:ember><sym:arrow></c:ember> <c:value><target></c:value> <c:ember>«"
 
+# Boss bar (A3-R1-02): yellow (tutorial.yml guide.bossbar-color), "Tutorial 3/11 · instruction"; the fill is always
+# the steps done out of the total. <head> is bar.head (<number> = this step, <total> = steps in the flow).
 bar:
-  count: "<c:value><objective></c:value> <c:muted><sym:dot></c:muted> <c:value><count></c:value><c:muted> / <needed>"
-  plain: "<c:text>Tutorial <c:value><number></c:value><c:muted>/<total></c:muted> <c:muted><sym:dot></c:muted> <c:value><objective>"
-  away-island: "<c:text>Go back <c:muted><sym:dot></c:muted> <c:value>/is home"
-  away-depths: "<c:text>Go back <c:muted><sym:dot></c:muted> <c:value>/menu</c:value> <c:ember><sym:arrow></c:ember> <c:text>The Depths"
+  head: "<bold><c:ember>Tutorial <number>/<total></c:ember></bold> <c:muted><sym:dot></c:muted>"
+  count: "<head> <c:value><objective></c:value> <c:muted><sym:dot></c:muted> <c:value><count></c:value><c:muted> / <needed>"
+  plain: "<head> <c:value><objective>"
+  away-island: "<head> <c:value>Go back <c:muted><sym:dot></c:muted> <c:value>/is home"
+  away-depths: "<head> <c:value>Go back <c:muted><sym:dot></c:muted> <c:value>/menu</c:value> <c:ember><sym:arrow></c:ember> <c:value>The Depths"
 
-# Holograms over targets (only you see them).
+# Holograms over targets (only you see them): bold flame title, one short muted action line (A5-R1-01).
 hologram:
-  portal: "<c:flame><bold>Your Island</bold></c:flame><newline><c:text><sym:arrow> Walk in «"
-  chest: "<c:flame><bold>Starter Chest</bold></c:flame><newline><c:text><sym:arrow> Open me «"
-  forge: "<c:flame><bold>Forge</bold></c:flame><newline><c:text>Better tools"
-  help: "<c:flame><bold>Depths Guide</bold></c:flame><newline><c:text>Click me"
+  portal: "<c:flame><bold>Your Island</bold></c:flame><newline><c:muted>Walk in"
+  chest: "<c:flame><bold>Starter Chest</bold></c:flame><newline><c:muted>Open me"
+  forge: "<c:flame><bold>Forge</bold></c:flame><newline><c:muted>Click me"
+  help: "<c:flame><bold>Depths Guide</bold></c:flame><newline><c:muted>Click me"
 
 idle:
   title:

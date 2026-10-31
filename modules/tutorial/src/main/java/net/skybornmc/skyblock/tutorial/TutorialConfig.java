@@ -104,8 +104,30 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "guide.bossbar", desc = "Show the boss bar compass.")
     public boolean bossbar = true;
 
-    @Setting(path = "guide.bossbar-color", desc = "Boss bar color: pink, blue, red, green, yellow, purple, white.")
-    public String bossbarColor = "red";
+    @Setting(path = "guide.bossbar-color", desc = "Boss bar color: pink, blue, red, green, yellow, purple, white. Yellow by default; red stays for event and boss bars (A3-R1-02).")
+    public String bossbarColor = "yellow";
+
+    @Setting(path = "guide.bossbar-overlay", desc = "Boss bar style: progress (smooth), notched-6, notched-10, notched-12 or notched-20. Bedrock may ignore the notches.")
+    public Overlay bossbarOverlay = Overlay.PROGRESS;
+
+    /** The vanilla boss bar overlays (A3-R1-02). Written {@code progress}, {@code notched-6} ...; {@code notched_6} is read too. */
+    public enum Overlay {
+        PROGRESS(net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS),
+        NOTCHED_6(net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_6),
+        NOTCHED_10(net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_10),
+        NOTCHED_12(net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_12),
+        NOTCHED_20(net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_20);
+
+        private final net.kyori.adventure.bossbar.BossBar.Overlay adventure;
+
+        Overlay(net.kyori.adventure.bossbar.BossBar.Overlay adventure) {
+            this.adventure = adventure;
+        }
+
+        net.kyori.adventure.bossbar.BossBar.Overlay adventure() {
+            return adventure;
+        }
+    }
 
     @Setting(path = "guide.compass.ahead-degrees", desc = "Within this angle the target counts as straight ahead.", min = 5, max = 90)
     public int aheadDegrees = 30;
@@ -361,7 +383,7 @@ public final class TutorialConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     /** Old camera lines (v1/v2) that v3 replaces while the owner has not edited them. */
@@ -377,8 +399,8 @@ public final class TutorialConfig extends ModuleConfig {
 
     /**
      * v2 (GUI-BUGS): the menu step completes when /menu opens (it used to need the island menu). v3 (TUT-FIX): shorter
-     * camera lines that stay out of the spawn builds and the island, a longer camera start delay. Owner-edited values are
-     * kept.
+     * camera lines that stay out of the spawn builds and the island, a longer camera start delay. v4 (A3-R1-02): the
+     * boss bar moves from red to yellow. Owner-edited values are kept.
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
@@ -388,7 +410,8 @@ public final class TutorialConfig extends ModuleConfig {
                 3, java.util.Map.of(
                         "cameras.spawn", ValueChange.of(OLD_SPAWN, d.cameraSpawn),
                         "cameras.island", ValueChange.of(OLD_ISLAND, d.cameraIsland),
-                        "cameras.start-delay-ticks", ValueChange.of(3, d.cameraStartDelayTicks)));
+                        "cameras.start-delay-ticks", ValueChange.of(3, d.cameraStartDelayTicks)),
+                4, java.util.Map.of("guide.bossbar-color", ValueChange.of("red", "yellow")));
     }
 
     @Override

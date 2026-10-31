@@ -47,11 +47,11 @@ import java.util.UUID;
  */
 final class Guides {
 
-    private static final float BAR_STEP_MIN = 0.05f;
-
     /** Per-player guide state. */
     private static final class View {
         BossBar bar;
+        /** The bar is hidden while a camera shot plays (same object, shown again on the next draw). */
+        boolean barHidden;
         Entity hologram;
         String hologramFor;
         List<Location> markers = new ArrayList<>();
@@ -143,6 +143,11 @@ final class Guides {
             }
             if (module.cameras().running(player.getUniqueId())) {
                 p.lastActivity = now; // watching a camera is not idle
+                View v = e.getValue();
+                if (v.bar != null && !v.barHidden) {
+                    player.hideBossBar(v.bar); // A3-R1-02: no bar over a camera shot; shown again on the next tick after it
+                    v.barHidden = true;
+                }
                 continue;
             }
             Optional<Location> target = draw(player, p, e.getValue(), particles);
@@ -171,7 +176,7 @@ final class Guides {
             return Optional.empty();
         }
         Optional<Location> target = module.targets().target(player, p);
-        if (module.config().bossbar) {
+        if (module.config().bossbar && !module.cameras().running(player.getUniqueId())) {
             core.scheduler().timer().time("tutorial-guides-bar", () -> bar(player, p, v, target));
         }
         long now = System.currentTimeMillis();
@@ -212,24 +217,28 @@ final class Guides {
 
     // ------------------------------------------------------------------ boss bar compass
 
+    /**
+     * A3-R1-02: one yellow bar, {@code Tutorial 3/11 · instruction}; the fill is always steps done out of the total
+     * ({@link TutorialBar}), so it only changes when a step is done (the distance never moves it).
+     */
     private void bar(Player player, Progress p, View v, Optional<Location> target) {
         String step = p.step;
         TutorialFlow flow = module.engine().flow();
         Component text;
-        float progress;
         int needed = needed(step);
         int number = flow.number(step);
         int total = flow.size();
+        float progress = TutorialBar.fill(p.doneSet(), flow);
         // The texts are parsed only when one of their inputs changed (PERF7); base is built lazily inside the builds.
         String head = step + '|' + number + '|' + total + '|';
         java.util.function.Supplier<TagResolver[]> base = () -> new TagResolver[]{
                 Msg.c("objective", module.msg().component(player, "steps." + step + ".objective")),
-                Msg.number("number", number), Msg.number("total", total)};
+                Msg.number("number", number), Msg.number("total", total),
+                Msg.c("head", module.msg().component(player, "bar.head", Msg.number("number", number), Msg.number("total", total)))};
         if (needed > 0) {
             int have = p.count(step);
             text = text(player, "bar.count|" + head + have + '|' + needed, () -> module.msg().component(player, "bar.count",
                     concat(base.get(), Msg.number("count", have), Msg.number("needed", needed))));
-            progress = Math.max(BAR_STEP_MIN, Math.min(1f, have / (float) needed));
         } else if (target.isPresent() && sameWorld(player, target.get())) {
             Location to = target.get();
             Location at = player.getLocation();
@@ -244,22 +253,25 @@ final class Guides {
                         ? module.msg().component(player, "steps." + step + ".target") : module.engine().stepName(player, step);
                 return module.msg().component(player, key, concat(base.get(), Msg.c("target", name), Msg.number("distance", distance)));
             });
-            progress = Compass.distanceProgress(dist, 100);
         } else if (!module.targets().atPlace(player, step)) {
             String key = Targets.place(step) == Targets.Place.ISLAND ? "bar.away-island" : "bar.away-depths";
             text = text(player, key + '|' + head, () -> module.msg().component(player, key, base.get()));
-            progress = Math.max(BAR_STEP_MIN, flow.index(step) / (float) Math.max(1, flow.size()));
         } else {
             text = text(player, "bar.plain|" + head, () -> module.msg().component(player, "bar.plain", base.get()));
-            progress = Math.max(BAR_STEP_MIN, flow.index(step) / (float) Math.max(1, flow.size()));
         }
         if (v.bar == null) {
-            v.bar = BossBar.bossBar(text, progress, color(), BossBar.Overlay.PROGRESS);
+            v.bar = BossBar.bossBar(text, progress, color(), overlay());
             player.showBossBar(v.bar);
+            v.barHidden = false;
         } else {
             v.bar.name(text);
             v.bar.progress(progress);
             v.bar.color(color());
+            v.bar.overlay(overlay());
+            if (v.barHidden) {
+                player.showBossBar(v.bar);
+                v.barHidden = false;
+            }
         }
     }
 
@@ -267,8 +279,13 @@ final class Guides {
         try {
             return BossBar.Color.valueOf(module.config().bossbarColor.strip().toUpperCase(Locale.ROOT));
         } catch (RuntimeException e) {
-            return BossBar.Color.RED;
+            return BossBar.Color.YELLOW;
         }
+    }
+
+    /** {@code guide.bossbar-overlay} as the Adventure overlay (A3-R1-02). */
+    private BossBar.Overlay overlay() {
+        return module.config().bossbarOverlay.adventure();
     }
 
     private int needed(String step) {

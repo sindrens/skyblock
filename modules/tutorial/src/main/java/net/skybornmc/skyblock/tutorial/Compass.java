@@ -45,13 +45,4 @@ final class Compass {
         }
         return d;
     }
-
-    /** Boss bar fill for a distance: 1.0 at the target, falling to 0.05 at {@code start} blocks or more. */
-    static float distanceProgress(double distance, double start) {
-        if (start <= 0) {
-            return 1f;
-        }
-        double p = 1.0 - Math.min(1.0, Math.max(0.0, distance / start));
-        return (float) Math.max(0.05, p);
-    }
 }
