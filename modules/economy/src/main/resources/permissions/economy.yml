@@ -30,6 +30,9 @@ skyblock.admin.economy:
   default: op
   children:
     skyblock.staff.economy.dashboard: true
+skyblock.admin.economy.approve-own:
+  description: Allow your own waiting /eco change over the limit (owner, R3-6)
+  default: op
 skyblock.admin.economy.approve:
   description: Allow or deny a waiting /eco change above the limit (owner R3-6, $1T for money) with the chat buttons, /eco allow|deny or the pending list in /eco admin; never your own request
   default: op

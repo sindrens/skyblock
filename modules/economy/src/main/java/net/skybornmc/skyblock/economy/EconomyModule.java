@@ -74,6 +74,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     static final String PERM_ALERTS = "skyblock.staff.economy.alerts";
     /** Owner R3-6: allow /eco changes above the limit (owner and admin; never your own request). */
     static final String PERM_APPROVE = "skyblock.admin.economy.approve";
+    static final String PERM_APPROVE_OWN = "skyblock.admin.economy.approve-own";
 
     /** Tab hints for the reason of {@code /eco note}. */
     private static final List<String> NOTE_REASONS = List.of("Event prize", "Compensation for a bug", "Giveaway", "Refund",
@@ -901,7 +902,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
         long now = System.currentTimeMillis();
         Optional<EcoApprovals.Pending> found = approvals.get(id, now);
         UUID approver = sender instanceof Player p ? p.getUniqueId() : null;
-        Optional<EcoApprovals.Problem> problem = EcoApprovals.canDecide(found.orElse(null), approver, sender.hasPermission(PERM_APPROVE));
+        Optional<EcoApprovals.Problem> problem = EcoApprovals.canDecide(found.orElse(null), approver, sender.hasPermission(PERM_APPROVE),
+                sender.hasPermission(PERM_APPROVE_OWN));
         if (problem.isPresent()) {
             msg.send(sender, "eco.approve." + problem.get().key, Msg.number("id", id));
             sound(sender, "error");

@@ -64,10 +64,14 @@ final class EcoApprovals {
     }
 
     /**
-     * Who may decide: an approver (owner/admin permission) who did not ask for it. The console ({@code approver == null})
-     * may always decide.
+     * Who may decide: an approver (owner/admin permission) who did not ask for it, or anyone with the approve-own permission
+     * (the owner: "click in the alert to allow", R3-6). The console ({@code approver == null}) may always decide.
      */
     static Optional<Problem> canDecide(Pending p, UUID approver, boolean hasPermission) {
+        return canDecide(p, approver, hasPermission, false);
+    }
+
+    static Optional<Problem> canDecide(Pending p, UUID approver, boolean hasPermission, boolean mayApproveOwn) {
         if (p == null) {
             return Optional.of(Problem.UNKNOWN);
         }
@@ -77,7 +81,7 @@ final class EcoApprovals {
         if (!hasPermission) {
             return Optional.of(Problem.NO_PERMISSION);
         }
-        if (approver.equals(p.staff())) {
+        if (approver.equals(p.staff()) && !mayApproveOwn) {
             return Optional.of(Problem.OWN_REQUEST);
         }
         return Optional.empty();

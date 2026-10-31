@@ -80,6 +80,7 @@ class EconR3RulesTest {
         EcoApprovals.Pending p = approvals.add(admin, "Admin", EcoAction.GIVE, player, "Steve", player, Currency.MONEY,
                 2_000_000_000_000L, 2_000_000_000_000L, "Event prize", 0, 600_000);
         assertEquals(Optional.of(EcoApprovals.Problem.OWN_REQUEST), EcoApprovals.canDecide(p, admin, true));
+        assertEquals(Optional.empty(), EcoApprovals.canDecide(p, admin, true, true), "the owner may allow their own change");
         assertEquals(Optional.of(EcoApprovals.Problem.NO_PERMISSION), EcoApprovals.canDecide(p, UUID.randomUUID(), false));
         assertEquals(Optional.empty(), EcoApprovals.canDecide(p, owner, true));
         assertEquals(Optional.empty(), EcoApprovals.canDecide(p, null, false), "the console may decide");
