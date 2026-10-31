@@ -11,3 +11,10 @@ lp group helper permission set skyblock.chat.format true
 lp group mod permission set skyblock.chat.bypass true
 lp group mod permission set skyblock.chat.links true
 lp group admin permission set skyblock.chat.hex true
+
+# --- Rank badges ---
+# /rank preview for staff (mod, admin and owner inherit helper).
+lp group helper permission set skyblock.rank.preview true
+lp group builder permission set skyblock.rank.preview true
+# Immortal picks the colours of its badge in /settings (approved gradients only, chat.yml → badges.immortal-gradients).
+lp group immortal permission set skyblock.chat.rankcolor true

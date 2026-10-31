@@ -808,7 +808,10 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
                         + e.player().getName() + "'><" + color + ">" + e.player().getName() + "</" + color + "></hover></click>"
                         + afkTag);
             }
-            msg.send(sender, "list.group", Msg.mm("rank", "<" + color + ">" + escape(first.display()) + "</" + color + ">"),
+            var badge = core.services().optional(net.skybornmc.skyblock.common.pack.BadgeService.class)
+                    .filter(net.skybornmc.skyblock.common.pack.BadgeService::enabled);
+            msg.send(sender, "list.group", badge.isPresent() ? Msg.c("rank", badge.get().badge(first.player(), sender))
+                            : Msg.mm("rank", "<" + color + ">" + escape(first.display()) + "</" + color + ">"),
                     Msg.number("count", entries.size()), Msg.mm("players", String.join("<c:muted>, </c:muted>", names)));
         });
     }

@@ -25,6 +25,16 @@ public interface RankProvider {
     /** Group display name ({@code lp group mod setdisplayname Mod}), falling back to the capitalized group id. */
     String groupDisplayName(Player player);
 
+    /** Ids of every rank group the provider knows (tab completion for {@code /rank preview}); empty without a rank plugin. */
+    default java.util.Collection<String> groupIds() {
+        return java.util.List.of();
+    }
+
+    /** Display name of a group by id, or the capitalized id when it has none (or there is no rank plugin). */
+    default String groupDisplayName(String groupId) {
+        return groupId == null || groupId.isEmpty() ? "" : Character.toUpperCase(groupId.charAt(0)) + groupId.substring(1);
+    }
+
     /** Prefix as stored in LuckPerms (legacy {@code &} codes or MiniMessage), empty if none. */
     String prefix(Player player);
 
@@ -34,6 +44,14 @@ public interface RankProvider {
     int weight(Player player);
 
     TextColor rankColor(Player player);
+
+    /**
+     * One source of truth for the rank color (rank badges): when set, {@link #rankColor} asks {@code source} first and
+     * only falls back to the provider's own color meta when it returns null. {@code null} removes it. Must be cheap and
+     * thread-safe (the tab list reads colors off the main thread).
+     */
+    default void colorSource(java.util.function.Function<Player, TextColor> source) {
+    }
 
     /** Raw meta value of the player (inherited from groups), or null. */
     String meta(Player player, String key);
@@ -74,6 +92,13 @@ public interface RankProvider {
 
     /** No rank plugin: everyone is default. */
     RankProvider NONE = new RankProvider() {
+        private volatile java.util.function.Function<Player, TextColor> colorSource;
+
+        @Override
+        public void colorSource(java.util.function.Function<Player, TextColor> source) {
+            this.colorSource = source;
+        }
+
         @Override
         public String primaryGroup(Player player) {
             return "default";
@@ -101,7 +126,9 @@ public interface RankProvider {
 
         @Override
         public TextColor rankColor(Player player) {
-            return NamedTextColor.WHITE;
+            var source = colorSource;
+            TextColor styled = source == null || player == null ? null : source.apply(player);
+            return styled != null ? styled : NamedTextColor.WHITE;
         }
 
         @Override

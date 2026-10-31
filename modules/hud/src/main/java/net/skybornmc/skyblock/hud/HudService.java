@@ -305,7 +305,7 @@ public final class HudService implements Listener {
         var color = ranks.rankColor(player);
         return TagResolver.resolver(
                 Msg.c("name", Component.text(player.getName(), color)),
-                Msg.c("rank", Component.text(ranks.groupDisplayName(player), color)),
+                Msg.c("rank", rankComponent(player, color)),
                 lazy("money", () -> value(player, config.moneyKey, "values.money")),
                 lazy("crystals", () -> value(player, config.crystalsKey, "values.crystals")),
                 lazy("tokens", () -> value(player, config.crystalsKey, "values.crystals")),
@@ -315,6 +315,14 @@ public final class HudService implements Listener {
                         : core.messages().component(player, MODULE, "values.island-here", Msg.p("value", choice.islandHere()))),
                 lazy("objective", () -> objective(player)),
                 lazy("online", () -> Component.text(online(player))));
+    }
+
+    /** The rank badge for this player's own sidebar (pack font, simple or Bedrock text), or the plain colored rank name. */
+    private Component rankComponent(Player player, net.kyori.adventure.text.format.TextColor color) {
+        return core.services().optional(net.skybornmc.skyblock.common.pack.BadgeService.class)
+                .filter(net.skybornmc.skyblock.common.pack.BadgeService::enabled)
+                .map(b -> b.badge(player, player))
+                .orElseGet(() -> Component.text(core.ranks().groupDisplayName(player), color));
     }
 
     /** A tag whose value is only computed if the line uses it. */

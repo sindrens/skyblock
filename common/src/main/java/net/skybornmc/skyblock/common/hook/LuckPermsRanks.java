@@ -51,6 +51,7 @@ final class LuckPermsRanks implements RankProvider {
     private final PlayerAdapter<Player> adapter;
     private final List<Consumer<UUID>> listeners = new CopyOnWriteArrayList<>();
     private final RankChangeDebouncer debouncer;
+    private volatile java.util.function.Function<Player, TextColor> colorSource;
     private EventSubscription<UserDataRecalculateEvent> subscription;
     private EventSubscription<NodeMutateEvent> mutateSubscription;
 
@@ -162,6 +163,18 @@ final class LuckPermsRanks implements RankProvider {
     }
 
     @Override
+    public java.util.Collection<String> groupIds() {
+        return lp.getGroupManager().getLoadedGroups().stream().map(Group::getName).sorted().toList();
+    }
+
+    @Override
+    public String groupDisplayName(String groupId) {
+        Group group = groupId == null ? null : lp.getGroupManager().getGroup(groupId);
+        String display = group == null ? null : group.getDisplayName();
+        return display == null || display.isBlank() ? RankProvider.super.groupDisplayName(groupId) : display;
+    }
+
+    @Override
     public String prefix(Player player) {
         String cached = metaData(player).getPrefix();
         User user = lp.getUserManager().getUser(player.getUniqueId());
@@ -218,7 +231,17 @@ final class LuckPermsRanks implements RankProvider {
     }
 
     @Override
+    public void colorSource(java.util.function.Function<Player, TextColor> source) {
+        this.colorSource = source;
+    }
+
+    @Override
     public TextColor rankColor(Player player) {
+        var source = colorSource;
+        TextColor styled = source == null ? null : source.apply(player);
+        if (styled != null) {
+            return styled;
+        }
         TextColor color = RankProvider.parseColor(colorMeta(player));
         if (color == null) {
             color = RankProvider.firstLegacyColor(prefix(player));

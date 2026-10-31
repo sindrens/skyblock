@@ -72,3 +72,37 @@ tab:
     good: "<c:success><value>"
     ok: "<c:warning><value>"
     bad: "<c:error><value>"
+
+# /settings → Display: rank badges. Name, lore and (for the picker) one label per choice.
+settings:
+  toggles:
+    reduced-motion:
+      name: "<c:value>Reduced motion"
+      lore: ["<c:text>Turns the moving shine on", "<c:text>rank badges off. They stay still."]
+    simple-badges:
+      name: "<c:value>Simple rank badges"
+      lore: ["<c:text>Ranks show as plain coloured", "<c:text>[Name] text instead of badges."]
+    large-badges:
+      name: "<c:value>Bigger rank text"
+      lore: ["<c:text>Taller letters on rank badges.", "<c:muted>Needs the resource pack."]
+    rank-color:
+      name: "<c:value>Rank colour"
+      lore: ["<c:text>The colours of your Immortal", "<c:text>badge. Only approved looks."]
+      choices:
+        phoenix: "Phoenix"
+        ember: "Ember"
+        dusk: "Dusk"
+        frost: "Frost"
+        void: "Void"
+
+# /rank preview <group> [name] (staff). <badge> is the badge exactly as that kind of player sees it.
+rank-preview:
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Rank badges are off: the pack module isn't loaded."
+  header: "<prefix><c:text>Rank badge <c:value><group></c:value> <c:muted>(name: <name>)"
+  shine: " <c:muted>Pack (shine)</c:muted>  <badge>"
+  still: " <c:muted>Pack (still)</c:muted>  <badge>"
+  large: " <c:muted>Pack (bigger)</c:muted>  <badge>"
+  simple: " <c:muted>Simple</c:muted>  <badge>"
+  java: " <c:muted>Java, no pack</c:muted>  <badge>"
+  bedrock: " <c:muted>Bedrock</c:muted>  <badge>"
+  no-pack: " <c:muted>You don't have the pack loaded, so the pack forms are hidden.</c:muted>"
