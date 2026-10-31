@@ -36,7 +36,7 @@ public final class Style {
     public record Color(String name, TextColor hex, NamedTextColor legacy) {
     }
 
-    static final List<String> COLOR_SECTIONS = List.of("c", "rarity", "pillar", "cur");
+    static final List<String> COLOR_SECTIONS = List.of("c", "rarity", "pillar", "cur", "area");
     private static final Pattern GRAD_OPEN = Pattern.compile("<grad:([a-z0-9_-]+)>");
 
     private volatile Map<String, Map<String, Color>> colors = Map.of();

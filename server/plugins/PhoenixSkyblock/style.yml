@@ -1,5 +1,5 @@
 # Phoenix Skyblock style (docs/UI_STYLE.md). Used by every message, menu, item and HUD.
-# In messages: <c:brand>text</c:brand>, <rarity:epic>, <pillar:mining>, <cur:money>, <sym:money>, <grad:phoenix>text</grad>, <prefix>
+# In messages: <c:brand>text</c:brand>, <rarity:epic>, <pillar:mining>, <cur:money>, <area:home>, <sym:money>, <grad:phoenix>text</grad>, <prefix>
 # Each color: "<hex> <legacy fallback for Bedrock>". Legacy names: black dark_blue dark_green dark_aqua dark_red
 # dark_purple gold gray dark_gray blue green aqua red light_purple yellow white
 # Reload: /skyblock reload core
@@ -63,6 +63,19 @@ pillar:
   combat: "#FF4D4D red"
   conquest: "#FF9A3D gold"
   fishing: "#3DD8FF aqua"
+
+# Menu meaning colours (I9 section 8): <area:money>Shop</area:money>. Names in menus take the colour of what they do.
+area:
+  money: "#4DFF88 green"      # Shop, Sell, Bank, Auction House, prices
+  reward: "#FFD21A yellow"    # Rewards, Daily, Crates, ready counts
+  move: "#FF8C1A gold"        # Travel, Back and page arrows, timers, Events
+  depths: "#5AB4E5 aqua"      # The Depths, info, crystals
+  skills: "#B36BFF dark_purple"  # Skills, Enchanter, Wardrobe, Forge, Collection
+  people: "#3DA5FF blue"      # Friends, Members, Parties, Visit
+  home: "#7CFF4D green"       # Home, Island
+  danger: "#FF3B3B red"       # delete, reset, disband, leave only
+  neutral: "#FFFFFF white"    # Settings, Help, Rules, Profiles
+  locked: "#5E5E66 dark_gray" # locked entries
 
 # Gradients: color names from 'colors' or hex values. Bedrock shows the first color only.
 gradients:
