@@ -43,6 +43,8 @@ final class GlobalBoosters {
     private final GlobalQueue queue = new GlobalQueue();
     private final List<GlobalQueue.Entry> recent = new ArrayList<>();
     private final Map<Long, BossBar> bars = new HashMap<>();
+    /** What each shown bar's text was built from (PERF6). */
+    private final Map<Long, BarText> barTexts = new HashMap<>();
     private final Map<Long, String> starterIps = new HashMap<>();
     private CompletableFuture<?> chain = CompletableFuture.completedFuture(null);
     private volatile boolean ready;
@@ -215,6 +217,15 @@ final class GlobalBoosters {
         }
     }
 
+    /** Every input of {@link #barName} (PERF6: the bar text is parsed again only when one of them changes). */
+    record BarText(BoosterType type, int percent, String time, String name, int queued, long messages) {
+    }
+
+    private BarText barText(GlobalQueue.Entry e) {
+        return new BarText(e.type, e.percent, BoosterRules.time(e.remaining), e.starterName, queue.queued(e.type).size(),
+                m.core.messages().generation());
+    }
+
     private Component barName(GlobalQueue.Entry e) {
         return m.msg.component(Audience.empty(), "global.bar", Msg.p("type", m.typeName(e.type)), Msg.number("percent", e.percent),
                 Msg.p("time", BoosterRules.time(e.remaining)), Msg.p("name", e.starterName),
@@ -253,7 +264,11 @@ final class GlobalBoosters {
                 added = true;
                 continue;
             }
-            bar.name(barName(e));
+            BarText text = barText(e);
+            if (!text.equals(barTexts.get(e.id))) { // PERF6: parse the bar text only when what it shows changed
+                barTexts.put(e.id, text);
+                bar.name(barName(e));
+            }
             bar.progress(BoosterRules.progress(e.remaining, e.duration));
         }
         if (added) {
@@ -262,6 +277,7 @@ final class GlobalBoosters {
     }
 
     private void hideBar(long id) {
+        barTexts.remove(id);
         BossBar bar = bars.remove(id);
         if (bar != null) {
             for (Player p : Bukkit.getOnlinePlayers()) {

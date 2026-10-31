@@ -31,6 +31,7 @@ import net.skybornmc.skyblock.common.placeholder.PlaceholderRegistry;
 import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.player.PlayerService;
 import net.skybornmc.skyblock.common.service.ServiceRegistry;
+import net.skybornmc.skyblock.common.util.ClassPreloader;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import net.skybornmc.skyblock.common.util.SlowOperationTimer;
 import net.skybornmc.skyblock.common.config.ConfigManager;
@@ -163,6 +164,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         services.register("core", net.skybornmc.skyblock.common.teleport.TeleportService.class, teleports);
         getServer().getPluginManager().registerEvents(teleports, this);
         players.start();
+        menus.timer(scheduler.timer());
         menus.enable();
         dupes.start();
 
@@ -184,6 +186,25 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
             getLogger().warning("Config/message problems found; the previous or default values are active. See the errors above.");
         }
         getLogger().info("Phoenix Skyblock enabled with " + modules.states().size() + " module(s).");
+        preloadClasses(coreConfig);
+    }
+
+    /** PERF6: loads every plugin class off the main thread once the server runs (see {@link ClassPreloader}). */
+    private void preloadClasses(CoreConfig coreConfig) {
+        if (!coreConfig.preloadClasses) {
+            return;
+        }
+        java.io.File jar = getFile();
+        ClassLoader loader = getClassLoader();
+        getServer().getScheduler().runTaskLaterAsynchronously(this, () -> {
+            try {
+                ClassPreloader.Result r = ClassPreloader.preload(jar, loader, "net/skybornmc/skyblock/");
+                getLogger().info("Preloaded " + r.loaded() + " plugin classes in " + r.millis() + " ms"
+                        + (r.skipped() > 0 ? " (" + r.skipped() + " skipped: optional plugin missing)" : "") + ".");
+            } catch (java.io.IOException | RuntimeException e) {
+                getLogger().warning("Class preload failed (harmless, classes load on first use): " + e);
+            }
+        }, Math.max(0, coreConfig.preloadDelayTicks));
     }
 
     @Override

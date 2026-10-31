@@ -38,13 +38,17 @@ final class UpgradeMenu extends Menu {
     private final UpgradeMenus menus;
     private final UUID islandId;
     private UpgradeTab tab;
-    private long bank = -1;
+    private long bank;
     private boolean fetching;
+    /** PERF6: built items per slot, reused while their inputs are unchanged (refreshes rebuild only what changed). */
+    private final ItemMemo<ItemStack> memo = new ItemMemo<>();
 
     UpgradeMenu(UpgradeMenus menus, UUID islandId, UpgradeTab tab) {
         this.menus = menus;
         this.islandId = islandId;
         this.tab = tab;
+        // PERF6: open with the balance read last (refreshed right away); the arriving value then usually changes nothing.
+        this.bank = menus.upgrades().knownBank(islandId);
     }
 
     @Override
@@ -122,7 +126,8 @@ final class UpgradeMenu extends Menu {
         List<UpgradeCatalog.Def> defs = menus.upgrades().catalog().tab(tab);
         for (int i = 0; i < defs.size() && i < UPGRADE_SLOTS.length; i++) {
             UpgradeCatalog.Def def = defs.get(i);
-            ItemStack item = menus.upgradeItem(service, viewer, islandId, def, bank, def.buyable());
+            ItemStack item = memo.get(UPGRADE_SLOTS[i], menus.upgradeSignature(viewer, islandId, def, bank, def.buyable()),
+                    () -> service.mark(menus.upgradeItem(service, viewer, islandId, def, bank, def.buyable())));
             if (!def.buyable()) {
                 set(UPGRADE_SLOTS[i], MenuButton.display(item));
             } else {
@@ -143,9 +148,12 @@ final class UpgradeMenu extends Menu {
                 meta.setEnchantmentGlintOverride(true);
             }
         });
-        TagResolver count = Msg.p("count", menus.upgrades().catalog().tab(t).size());
-        ItemStack item = service.item(icon, text(selected ? "upgrades.tab.name-selected" : "upgrades.tab.name",
-                Msg.c("tab", text("upgrades.tab." + t.id() + ".crumb"))), lines(selected ? "upgrades.tab.lore-selected" : "upgrades.tab.lore", count));
+        int size = menus.upgrades().catalog().tab(t).size();
+        ItemStack item = memo.get("tab:" + t.id(), UpgradeMenus.signature(menus.textsKey(), selected, size), () -> {
+            TagResolver count = Msg.p("count", size);
+            return service.mark(service.item(icon, text(selected ? "upgrades.tab.name-selected" : "upgrades.tab.name",
+                    Msg.c("tab", text("upgrades.tab." + t.id() + ".crumb"))), lines(selected ? "upgrades.tab.lore-selected" : "upgrades.tab.lore", count)));
+        });
         if (selected) {
             return MenuButton.display(item);
         }
@@ -165,6 +173,11 @@ final class UpgradeMenu extends Menu {
     }
 
     private ItemStack bankItem() {
+        long shown = bank;
+        return memo.get("bank", UpgradeMenus.signature(menus.textsKey(), shown), () -> service.mark(buildBankItem()));
+    }
+
+    private ItemStack buildBankItem() {
         String key = bank < 0 ? "upgrades.menu.bank.lore-loading" : "upgrades.menu.bank.lore";
         return service.item(new ItemStack(Material.ENCHANTED_BOOK), text("upgrades.menu.bank.name", Msg.p("bank", bank < 0 ? "..." : Format.money(bank))),
                 lines(key, Msg.p("bank", bank < 0 ? "..." : Format.money(bank))));
@@ -174,9 +187,11 @@ final class UpgradeMenu extends Menu {
         LevelManager levels = menus.upgrades().levels();
         int level = levels.level(islandId);
         int percent = PillarManager.percent(levels.progress(islandId));
-        TagResolver[] p = {Msg.p("level", level), Msg.p("next", level + 1), Msg.p("percent", percent),
-                Msg.p("points", LevelMenu.whole(menus.upgrades().points(islandId)))};
-        ItemStack item = service.item(new ItemStack(Material.PAPER), text("upgrades.menu.level.name", p), lines("upgrades.menu.level.lore", p));
+        String points = LevelMenu.whole(menus.upgrades().points(islandId));
+        ItemStack item = memo.get("level", UpgradeMenus.signature(menus.textsKey(), level, percent, points), () -> {
+            TagResolver[] p = {Msg.p("level", level), Msg.p("next", level + 1), Msg.p("percent", percent), Msg.p("points", points)};
+            return service.mark(service.item(new ItemStack(Material.PAPER), text("upgrades.menu.level.name", p), lines("upgrades.menu.level.lore", p)));
+        });
         return MenuButton.of(item, click -> menus.upgrades().core().services()
                 .optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
                 .ifPresent(s -> s.openLevelMenu(viewer, this)));
@@ -187,8 +202,12 @@ final class UpgradeMenu extends Menu {
         if (book == null || !book.tasks().config().enabled || !viewer.hasPermission(TaskManager.PERM_TASKS)) {
             return MenuButton.display(service.item(new ItemStack(Material.BOOK), text("level-menu.tasks.name"), lines("level-menu.tasks.lore-locked")));
         }
-        TagResolver[] p = {Msg.number("done", book.tasks().completedCount(islandId)), Msg.number("total", book.tasks().catalog().size())};
-        ItemStack item = service.item(new ItemStack(Material.WRITABLE_BOOK), text("level-menu.tasks.name"), lines("level-menu.tasks.lore", p));
+        int done = book.tasks().completedCount(islandId);
+        int total = book.tasks().catalog().size();
+        ItemStack item = memo.get("book", UpgradeMenus.signature(menus.textsKey(), done, total), () -> {
+            TagResolver[] p = {Msg.number("done", done), Msg.number("total", total)};
+            return service.mark(service.item(new ItemStack(Material.WRITABLE_BOOK), text("level-menu.tasks.name"), lines("level-menu.tasks.lore", p)));
+        });
         return MenuButton.of(item, click -> book.openBook(viewer, this));
     }
 

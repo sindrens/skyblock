@@ -47,6 +47,7 @@ public final class Messages {
     private final Map<String, Map<String, String>> texts = new ConcurrentHashMap<>();
     private final Set<String> reportedMissing = ConcurrentHashMap.newKeySet();
     private final Map<String, List<String>> problems = new ConcurrentHashMap<>();
+    private final java.util.concurrent.atomic.AtomicInteger loads = new java.util.concurrent.atomic.AtomicInteger();
 
     public Messages(JavaPlugin plugin, Style style) {
         this.plugin = plugin;
@@ -115,6 +116,7 @@ public final class Messages {
             }
         });
         texts.put(module, Map.copyOf(map));
+        loads.incrementAndGet();
         reportedMissing.removeIf(k -> k.startsWith(module + ":"));
         if (changed) {
             try {
@@ -163,6 +165,31 @@ public final class Messages {
             log.severe("Bundled messages/" + module + ".yml is broken: " + e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Changes whenever any messages file or style.yml is (re)loaded (PERF6): menus that cache built items keep them only
+     * while this value stays the same, so a {@code /skyblock reload} shows new texts at the next refresh.
+     */
+    public long generation() {
+        return ((long) loads.get() << 32) | (style.version() & 0xFFFFFFFFL);
+    }
+
+    /**
+     * True if any text of {@code module} uses a player placeholder ({@code <ph:...>}), whose value can change without
+     * the inputs a menu knows about; such texts are never cached.
+     */
+    public boolean usesPlayerPlaceholders(String module) {
+        Map<String, String> map = texts.get(module);
+        if (map == null) {
+            return false;
+        }
+        for (String text : map.values()) {
+            if (text.contains("<ph:")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The raw MiniMessage text, or {@code null} if the key does not exist. */

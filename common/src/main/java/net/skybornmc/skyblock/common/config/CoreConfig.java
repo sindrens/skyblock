@@ -12,6 +12,15 @@ public final class CoreConfig extends ModuleConfig {
             min = 1, max = 1000)
     public int slowOperationMs = 5;
 
+    @Setting(path = "performance.preload-classes", desc = "Load the plugin's classes on a background thread after start, so the "
+            + "first join, teleport or menu after a restart doesn't read them from the jar on the main thread (PERF6). "
+            + "Read at server start.")
+    public boolean preloadClasses = true;
+
+    @Setting(path = "performance.preload-delay-ticks", desc = "Ticks after the server finished starting before the class "
+            + "preload begins. Read at server start.", min = 0, max = 1200)
+    public int preloadDelayTicks = 20;
+
     @Setting(desc = "Show config problems to staff with skyblock.admin.reload when they join.")
     public boolean notifyStaffOfConfigProblems = true;
 

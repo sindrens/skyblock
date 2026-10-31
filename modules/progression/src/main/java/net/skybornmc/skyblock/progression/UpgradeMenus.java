@@ -62,6 +62,56 @@ final class UpgradeMenus {
         upgrades.core().menus().open(player, new UpgradeMenu(this, island.get().id(), UpgradeTab.ISLAND).parent(parent));
     }
 
+    // ------------------------------------------------------------------ item signatures (PERF6)
+
+    private long phGeneration = Long.MIN_VALUE;
+    private boolean phTexts;
+
+    /**
+     * The part of every item signature that covers texts: the messages/style generation. {@code null} (never cache)
+     * while a progression text uses a player placeholder, whose value can change without any input we know.
+     */
+    Object textsKey() {
+        long generation = upgrades.core().messages().generation();
+        if (generation != phGeneration) {
+            phTexts = upgrades.core().messages().usesPlayerPlaceholders(ProgressionModule.ID);
+            phGeneration = generation;
+        }
+        return phTexts ? null : generation;
+    }
+
+    /** Signature from parts; null when any part is null (not cacheable). */
+    static List<Object> signature(Object... parts) {
+        for (Object part : parts) {
+            if (part == null) {
+                return null;
+            }
+        }
+        return java.util.Arrays.asList(parts);
+    }
+
+    /**
+     * Every input of {@link #upgradeItem}: the definition, bought level, state (which already covers the bank, island
+     * level, tasks and the viewer's right to buy), both effect texts' inputs and each next-level task's progress.
+     */
+    List<Object> upgradeSignature(Player viewer, UUID islandId, UpgradeCatalog.Def def, long bank, boolean clickHint) {
+        Object texts = textsKey();
+        if (texts == null) {
+            return null;
+        }
+        int current = upgrades.level(islandId, def.id());
+        List<Object> tasks = new ArrayList<>();
+        if (def.level(current + 1) != null) {
+            for (TaskCatalog.TaskDef task : upgrades.tasks().catalog().byUnlock(def.unlockKey(current + 1))) {
+                tasks.add(task);
+                tasks.add(upgrades.tasks().completed(islandId, task.id()));
+                tasks.add(upgrades.tasks().progressOf(islandId, task));
+            }
+        }
+        return signature(texts, def, current, upgrades.status(viewer, islandId, def, bank), clickHint,
+                upgrades.effectInputs(def, current, islandId), upgrades.effectInputs(def, current + 1, islandId), tasks);
+    }
+
     // ------------------------------------------------------------------ shared items
 
     /**
