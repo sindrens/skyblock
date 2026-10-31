@@ -83,6 +83,16 @@ public final class SkillTables {
         return -1;
     }
 
+    /** The first level in an ascending list above {@code level}, or -1 if none is left. */
+    static int nextAbove(List<Integer> levels, int level) {
+        for (int unlock : levels) {
+            if (unlock > level) {
+                return unlock;
+            }
+        }
+        return -1;
+    }
+
     public List<Integer> unlocks(SkillType skill) {
         return unlocks.getOrDefault(skill, List.of());
     }
@@ -183,7 +193,7 @@ public final class SkillTables {
         }
         yaml.setComments(XP, List.of(
                 "XP per action: mining/foraging = per resource block broken in The Depths (block id),",
-                "combat = per kill by a player (entity id). Farming and fishing come in Phase 7."));
+                "combat = per kill by a player (entity id). Farming XP per crop lives in crops.yml (production), fishing comes later."));
     }
 
     private static void writeUnlockDefaults(YamlConfiguration yaml) {

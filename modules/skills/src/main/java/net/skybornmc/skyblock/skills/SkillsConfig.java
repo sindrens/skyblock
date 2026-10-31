@@ -36,7 +36,7 @@ public final class SkillsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ skills
 
-    @Setting(path = "available", desc = "Skills that give XP now. The others show as 'Coming soon' in /skills (farming and fishing come in Phase 7).")
+    @Setting(path = "available", desc = "Skills that give XP now; the others are hidden in /skills. Farming also opens by itself while island farming is on (crops.yml → enabled, PHASE-7 M7.3).")
     public List<String> available = List.of("mining", "foraging", "combat");
 
     @Setting(path = "combat.spawner-mobs-give-xp", desc = "Mobs from spawners give Combat XP when killed (off: no XP farms from island spawners).")
@@ -84,7 +84,7 @@ public final class SkillsConfig extends ModuleConfig {
     @Override
     public String header() {
         return """
-                Skills (M4.5): XP and levels for Mining, Foraging and Combat (Farming, Fishing in Phase 7). Perks come in Phase 6.
+                Skills (M4.5): XP and levels for Mining, Foraging and Combat; Farming while island farming is on (crops.yml). Perks come in Phase 6.
                 xp:      XP per action (block id / log id / entity id) per skill.
                 unlocks: levels with an unlock per skill; the text is in messages/skills.yml → unlock.<skill>.<level>.
                 Texts are in messages/skills.yml. Reload: /skyblock reload skills""";

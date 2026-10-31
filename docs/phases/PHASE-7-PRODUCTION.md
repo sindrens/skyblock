@@ -117,6 +117,7 @@ The fuel tank decides whether the island works while nobody is active on it.
 - **Skills:** `skills.yml → available` adds `farming`; `/skills` drops "Coming soon" for Farming. Farming tier unlocks follow the same level curve as Mining (§3.4).
 - **Wardrobe:** Tiller's Smock already works; Cropwarden Robes become buyable once crop tier 6 is reachable. Farming achievements (F3) switch on.
 - **Event for E6:** `IslandCropHarvestEvent` (player, tool, crop tier, blocks, area harvest, replanted, bone-mealed) and a growth-stage API (Green Thumb, Golden crop).
+- **Built (M7-3, 31 Oct):** `modules/production` farming behind `crops.yml → enabled: false` (crop tiers, planting gates, hoe-only Farming XP for members on their own island, grown/bone-meal memory, growth multiplier on every natural growth step, Harvest Yield copies, `FarmingService`, `IslandCropHarvestEvent`, `GameActionEvent.HARVEST_CROP`); Farming in `/skills`, Crop Growth / Harvest Yield live and harvest quests while it is on. Details: `docs/commands/production.md`; open points: `OPEN_QUESTIONS.md` M7-3. Area harvest / replant fields and the growth-stage API come with M7.4 / E6.
 
 ## M7.4 Harvester hoe and rod tiers (Forge)
 - **Hoes:** 11 tiers, one per crop tier (basic stone hoe = tier 1, then copper, iron, gold, diamond, netherite and 5 custom names). Forged with money `F(t)` and `M(t)` crops of the tier before (`ECONOMY_BALANCE.md` §1.2), gated by Farming level. Upgrading keeps level, perks and stats (M4.2 rule).

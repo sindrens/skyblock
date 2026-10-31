@@ -167,7 +167,7 @@ Permission definitions: `modules/progression/src/main/resources/permissions/prog
   Spawner Rate (+12% per level). BonusService source `upgrades` for members (never coop/visitors): Sell Multiplier
   (+5%/level, SELL family under the +300% cap); the same source already answers Mine Fortune (EXTRA_DROPS `mining`),
   Lumberjack (EXTRA_DROPS `foraging`) and XP Boost (SKILL_XP). **Coming soon** (shown gray, not buyable until their
-  feature reads them): Island Vault, Mob Loot, Crop Growth, Harvest Yield, Generator, Fuel Tank (live while Island Fuel is on, M7.1), and Mine Fortune /
+  feature reads them): Island Vault, Mob Loot, Crop Growth and Harvest Yield (live while farming is on, M7.3), Generator (live while custom generators are on, M7.2), Fuel Tank (live while Island Fuel is on, M7.1), and Mine Fortune /
   Lumberjack / XP Boost (the Depths roll and skill gains don't ask the player's bonus families yet, OPEN_QUESTIONS M5-4).
 - **Island level:** `LevelSource.UPGRADES` = 0.5 / 1 / 1.5 points per bought level by task tier 1-3 / 4-6 / 7+ (P5-17,
   `upgrades-settings.yml → level-points`).

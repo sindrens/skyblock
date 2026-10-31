@@ -152,6 +152,7 @@ final class QuestsMenu extends Menu {
             case ENCHANT -> Material.ENCHANTED_BOOK;
             case VISIT -> Material.COMPASS;
             case LIKE -> Material.POPPY;
+            case HARVEST -> Material.WHEAT;
         };
     }
 

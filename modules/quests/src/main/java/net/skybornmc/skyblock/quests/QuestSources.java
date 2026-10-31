@@ -17,7 +17,9 @@ import java.util.Locale;
  *       ({@code rules.excluded-sell-sources});</li>
  *   <li>tool levels: the tools module fires a level-up only for XP the player earned with the tool;</li>
  *   <li>forge, enchant, visit, like: {@link GameActionEvent} after the owning module saved it (a visit counts once per island
- *       per day, own islands never).</li>
+ *       per day, own islands never);</li>
+ *   <li>harvest: {@link GameActionEvent#HARVEST_CROP} from the production module, ripe crops on the own island only (members,
+ *       never bone-mealed or placed blocks).</li>
  * </ul>
  * Depths blocks and kills come from {@link DepthsQuestListener}.
  */
@@ -51,6 +53,7 @@ final class QuestSources implements Listener {
             case GameActionEvent.ENCHANT -> QuestType.ENCHANT;
             case GameActionEvent.VISIT_ISLAND -> QuestType.VISIT;
             case GameActionEvent.LIKE_ISLAND -> QuestType.LIKE;
+            case GameActionEvent.HARVEST_CROP -> QuestType.HARVEST;
             default -> null;
         };
         if (type != null) {

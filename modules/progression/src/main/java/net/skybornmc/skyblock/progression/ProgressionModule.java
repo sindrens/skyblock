@@ -106,6 +106,8 @@ public final class ProgressionModule implements SkyblockModule {
         IslandFuelFeature.source(() -> core.services().has(net.skybornmc.skyblock.common.production.ProductionService.class));
         // PHASE-7 M7.2: the Generator upgrade is live while custom generators are on.
         GeneratorFeature.source(() -> core.services().has(net.skybornmc.skyblock.common.production.GeneratorService.class));
+        // PHASE-7 M7.3: the Crop Growth and Harvest Yield upgrades are live while farming is on.
+        FarmingFeature.source(() -> core.services().has(net.skybornmc.skyblock.common.production.FarmingService.class));
         // M5.3 task engine: the challenge book (opened from /is level), shared island counters, deliveries.
         tasks = new TaskManager(core, tasksConfig, msg, pillars, levels, config.seasonId);
         TaskMenus taskMenus = new TaskMenus(tasks);
@@ -167,6 +169,7 @@ public final class ProgressionModule implements SkyblockModule {
     public void disable() {
         IslandFuelFeature.source(null);
         GeneratorFeature.source(null);
+        FarmingFeature.source(null);
         if (pillars == null) {
             return;
         }

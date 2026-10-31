@@ -17,7 +17,8 @@ import java.util.UUID;
 
 /**
  * {@code /skills [player]} (UI_STYLE §5): a head with the summary on top, then one item per skill (level, progress bar
- * with ● segments, XP in the level, total XP, next unlock, how to earn XP). Farming and Fishing show "Coming soon".
+ * with ● segments, XP in the level, total XP, next unlock, how to earn XP). Skills that aren't open (Fishing; Farming while
+ * farming is off) are hidden.
  * Live for online targets (refreshes every 2 s), a snapshot for offline ones.
  */
 final class SkillsMenu extends Menu {
@@ -144,7 +145,7 @@ final class SkillsMenu extends Menu {
                     Msg.p("step", XpFormat.xp(curve.step(level))), Msg.p("next", level + 1)));
         }
         lore.addAll(lines("menu.skill.total", Msg.p("total", XpFormat.xp(xp))));
-        int next = manager.tables().nextUnlock(skill, level);
+        int next = manager.nextUnlock(skill, level);
         lore.add(Component.empty());
         if (next > 0 && next <= curve.maxLevel()) {
             lore.addAll(lines("menu.skill.next-unlock", Msg.c("unlock", manager.unlockText(viewer, skill, next)),

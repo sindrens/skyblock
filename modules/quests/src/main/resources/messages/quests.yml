@@ -45,6 +45,10 @@ quest:
     name: "<c:value>Like <target> islands"
     name-one: "<c:value>Like an island"
     short: "Like islands"
+  harvest:
+    name: "<c:value>Harvest <target> ripe crops"
+    name-one: "<c:value>Harvest a ripe crop"
+    short: "Harvest crops"
 
 # Progress dots in the menu: 10 dots, done ones in the first look.
 bar:
