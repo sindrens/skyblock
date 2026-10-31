@@ -31,7 +31,7 @@ final class AlertsMenu extends WatchMenu {
 
     @Override
     public Component title() {
-        return titleWith("watch.alerts-menu.title");
+        return pagedTitle(service.text(viewer, EconomyModule.ID, "watch.alerts-menu.title"), page, pages());
     }
 
     @Override
@@ -40,8 +40,7 @@ final class AlertsMenu extends WatchMenu {
     }
 
     private int pages() {
-        int size = PagedMenu.CONTENT_SLOTS.length;
-        return data == null || data.total() <= 0 ? 1 : (int) ((data.total() + size - 1) / size);
+        return data == null ? 1 : pages(data.total());
     }
 
     @Override
@@ -85,14 +84,7 @@ final class AlertsMenu extends WatchMenu {
                 openChild(new AlertMenu(watch, alert));
             });
         }
-        if (page > 0) {
-            set(Menu.SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",
-                    Msg.p("page", page), Msg.p("pages", pages())), click -> turn(-1));
-        }
-        if (page + 1 < pages()) {
-            set(Menu.SLOT_NEXT, service.navItem("next", Material.ARROW, viewer, "frame.next",
-                    Msg.p("page", page + 2), Msg.p("pages", pages())), click -> turn(1));
-        }
+        pager(page, pages(), this::turn);
     }
 
     private void turn(int delta) {
