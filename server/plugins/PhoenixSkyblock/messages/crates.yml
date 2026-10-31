@@ -358,7 +358,10 @@ admin:
       lore:
         - "<c:text>The profile shown."
         - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next profile"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a profile"
+    # Pick list of the profiles. <profile>
+    profile-pick: "<c:value><profile>"
+    profile-crumb: "Profile"
     crate:
       - "<c:text>Bound keys: <c:value><bound>"
       - "<c:text>Tradeable keys: <c:value><tradeable>"

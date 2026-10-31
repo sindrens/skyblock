@@ -845,11 +845,12 @@ watch:
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     currency:
+      crumb: "Currency"
       name: "<c:value>Currency: <currency>"
       lore:
         - "<c:text>Show another currency."
         - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
     refresh:
       name: "<c:value>Refresh"
       lore:
@@ -880,17 +881,19 @@ watch:
       - "<c:muted>Key: <key>"
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the biggest of 24 hours"
     range:
+      crumb: "Period"
       name: "<c:value>Period: <range>"
       lore:
         - "<c:text>Today, 7 days or 14 days."
         - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
     sort:
+      crumb: "Sort"
       name: "<c:value>Sort: <sort>"
       lore:
         - "<c:text>By volume, created or removed."
         - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
     sorts:
       volume: "Volume"
       created: "Created"

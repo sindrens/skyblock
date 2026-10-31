@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.crates;
 
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 
@@ -9,7 +10,7 @@ import java.util.List;
 
 /**
  * {@code /crates admin view <player>} for staff in game (P10-41): the keys (bound and tradeable) and pity of one profile
- * per crate, read-only. The head button in the top middle switches to the player's next profile (the same picker as
+ * per crate, read-only. The head button in the top middle opens a pick list of the player's profiles (the same picker as
  * the staff box view); it starts on the active profile. Bedrock-safe: plain taps only. Data is read fresh from the
  * database for every profile shown and never cached.
  */
@@ -82,12 +83,24 @@ final class StaffCratesMenu extends Menu {
                 Msg.p("profile", target.profileName()), Msg.number("profiles", target.keys().size()), Msg.p("player", target.name())),
                 click -> {
                     if (target.keys().size() > 1) {
-                        target = target.next();
-                        load();
-                        refresh();
+                        pickProfile();
                     }
                 });
         content();
+    }
+
+    /** A pick list of the player's profiles (GUI-4b/G9: no forward-only cycling); the pick loads that profile. */
+    private void pickProfile() {
+        List<PickListMenu.Option<Integer>> options = new java.util.ArrayList<>();
+        for (int i = 0; i < target.keys().size(); i++) {
+            options.add(PickListMenu.Option.of(i, Material.ARMOR_STAND, service.text(viewer, CratesModule.ID, "admin.menu.profile-pick",
+                    Msg.p("profile", target.profileNames().get(i))), i == target.index()));
+        }
+        openChild(new PickListMenu<>(List.of(service.text(viewer, CratesModule.ID, "admin.menu.title", Msg.p("player", target.name())),
+                service.text(viewer, CratesModule.ID, "admin.menu.profile-crumb")), options, i -> {
+            target = target.at(i);
+            load();
+        }));
     }
 
     /** The crate slots, or the loading / failed item. */

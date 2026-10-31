@@ -46,11 +46,9 @@ class SlotStateTest {
     }
 
     @Test
-    void slotsMenuFilterCyclesAndCounts() {
-        assertEquals(SlotState.USED, SlotsMenu.nextFilter(null));
-        assertEquals(SlotState.CLEARING, SlotsMenu.nextFilter(SlotState.USED));
-        assertEquals(SlotState.FREE, SlotsMenu.nextFilter(SlotState.CLEARING));
-        assertEquals(null, SlotsMenu.nextFilter(SlotState.FREE));
+    void slotsMenuFilterChoicesAndCounts() {
+        assertEquals(java.util.Arrays.asList(null, SlotState.USED, SlotState.CLEARING, SlotState.FREE), SlotsMenu.filterChoices(),
+                "all first, then every state once (pick list, GUI-4b)");
         var rows = java.util.List.of(
                 new IslandStore.SlotRow(0, 0, 0, "used", null, 1),
                 new IslandStore.SlotRow(1, 1, 0, "clearing", null, 1),

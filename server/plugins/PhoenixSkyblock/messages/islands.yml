@@ -1116,7 +1116,10 @@ admin:
       lore:
         - "<c:text>All, used, clearing or free."
         - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
+      # Pick list entry. <filter>, <count> slots
+      pick: "<c:value><filter> <c:muted>(<count>)"
+      crumb: "Show"
     reload:
       name: "<c:flame><bold>Reload"
       lore:

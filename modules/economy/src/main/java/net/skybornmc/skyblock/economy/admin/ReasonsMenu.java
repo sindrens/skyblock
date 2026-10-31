@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import net.skybornmc.skyblock.economy.EconomyModule;
@@ -32,9 +33,6 @@ final class ReasonsMenu extends WatchMenu {
             return name().toLowerCase(java.util.Locale.ROOT);
         }
 
-        Sort next() {
-            return values()[(ordinal() + 1) % values().length];
-        }
     }
 
     private final Currency currency;
@@ -60,6 +58,15 @@ final class ReasonsMenu extends WatchMenu {
         return "watch.reasons-menu.info";
     }
 
+    /** Opens a pick list (GUI-4b/G9: no forward-only cycling); the pick shows page 1 again. */
+    private <T> void pick(String crumbKey, List<PickListMenu.Option<T>> options, java.util.function.Consumer<T> apply) {
+        openChild(new PickListMenu<>(List.of(service.text(viewer, EconomyModule.ID, "watch.reasons-menu.title"),
+                service.text(viewer, EconomyModule.ID, crumbKey)), options, value -> {
+            apply.accept(value);
+            page = 0;
+        }));
+    }
+
     private List<FlowSummary.ReasonTotals> sorted() {
         List<FlowSummary.ReasonTotals> list = new ArrayList<>(data.period(range).reasons());
         Comparator<FlowSummary.ReasonTotals> order = switch (sort) {
@@ -79,16 +86,20 @@ final class ReasonsMenu extends WatchMenu {
         set(SLOT_RANGE, service.item(Material.CLOCK, viewer, EconomyModule.ID, "watch.reasons-menu.range",
                 Msg.c("range", service.text(viewer, EconomyModule.ID, "watch.range." + range.key()))), click -> {
             click();
-            range = range.next();
-            page = 0;
-            refresh();
+            List<PickListMenu.Option<DashboardData.Range>> options = new ArrayList<>();
+            for (DashboardData.Range r : DashboardData.Range.values()) {
+                options.add(PickListMenu.Option.of(r, Material.CLOCK, service.text(viewer, EconomyModule.ID, "watch.range." + r.key()), r == range));
+            }
+            pick("watch.reasons-menu.range.crumb", options, r -> range = r);
         });
         set(SLOT_SORT, service.item(Material.HOPPER, viewer, EconomyModule.ID, "watch.reasons-menu.sort",
                 Msg.c("sort", service.text(viewer, EconomyModule.ID, "watch.reasons-menu.sorts." + sort.key()))), click -> {
             click();
-            sort = sort.next();
-            page = 0;
-            refresh();
+            List<PickListMenu.Option<Sort>> options = new ArrayList<>();
+            for (Sort s : Sort.values()) {
+                options.add(PickListMenu.Option.of(s, Material.HOPPER, service.text(viewer, EconomyModule.ID, "watch.reasons-menu.sorts." + s.key()), s == sort));
+            }
+            pick("watch.reasons-menu.sort.crumb", options, s -> sort = s);
         });
         if (data == null) {
             showLoading();

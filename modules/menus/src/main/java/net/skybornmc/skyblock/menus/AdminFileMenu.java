@@ -9,6 +9,7 @@ import net.skybornmc.skyblock.common.config.SettingInfo;
 import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.menu.NumberPickerMenu;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,7 +20,7 @@ import java.util.Objects;
 
 /**
  * One config file in {@code /admin}: every setting with its description, value, default and range. Booleans switch,
- * enums cycle, whole numbers use the number picker, text and decimals use chat input, lists open a list editor.
+ * enums open a pick list, whole numbers use the number picker, text and decimals use chat input, lists open a list editor.
  * Every change goes through {@link ConfigEdits}: validated, saved, logged, applied live (or flagged "needs restart").
  */
 final class AdminFileMenu extends PagedMenu<SettingInfo> {
@@ -119,15 +120,16 @@ final class AdminFileMenu extends PagedMenu<SettingInfo> {
             apply(info.path(), !Boolean.TRUE.equals(info.value()));
             refresh();
         } else if (t.isEnum()) {
-            Object[] constants = t.getEnumConstants();
-            int next = 0;
-            for (int i = 0; i < constants.length; i++) {
-                if (constants[i].equals(info.value())) {
-                    next = (i + 1) % constants.length;
-                }
+            // GUI-4b/G9: a pick list of the choices instead of stepping forward one value per click.
+            List<PickListMenu.Option<String>> options = new ArrayList<>();
+            String current = ConfigManager.display(info.value());
+            for (Object constant : t.getEnumConstants()) {
+                String name = ConfigManager.display(constant);
+                options.add(PickListMenu.Option.of(name, Material.REPEATER, nav.text(viewer, "admin.setting.choice", Msg.p("value", name)),
+                        name.equals(current)));
             }
-            apply(info.path(), ConfigManager.display(constants[next]));
-            refresh();
+            openChild(new PickListMenu<>(List.of(Component.text(config.fileName()), Component.text(info.path())), options,
+                    value -> apply(info.path(), value)));
         } else if (t == int.class || t == Integer.class || t == long.class || t == Long.class) {
             long max = t == int.class || t == Integer.class ? Integer.MAX_VALUE : Long.MAX_VALUE;
             long min = t == int.class || t == Integer.class ? Integer.MIN_VALUE : Long.MIN_VALUE;

@@ -5,15 +5,17 @@ import net.skybornmc.skyblock.common.cosmetics.Cosmetics;
 import net.skybornmc.skyblock.common.item.Rarity;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Staff: edit one title/tag. Display text and "how to get it" via chat input, rarity cycles on click, secret and
+ * Staff: edit one title/tag. Display text and "how to get it" via chat input, rarity from a pick list, secret and
  * season flags toggle, tags can be handed out as a tag item, and delete asks to confirm. Every change is saved and logged.
  */
 final class EditorEntryMenu extends Menu {
@@ -83,12 +85,9 @@ final class EditorEntryMenu extends Menu {
                 click -> service.prompt(viewer, CosmeticsModule.ID, "editor.prompt-display", 200,
                         input -> saveAndReopen(c.withDisplay(input.strip()), "display"), () -> service.open(viewer, this)));
 
-        Rarity next = Rarity.values()[(c.rarity().ordinal() + 1) % Rarity.values().length];
-        set(SLOT_RARITY, service.item(Material.AMETHYST_SHARD, module.text(viewer, "editor.rarity.name"),
-                module.lines(viewer, "editor.rarity.lore",
-                        Msg.c("rarity", module.text(viewer, "rarity." + c.rarity().name().toLowerCase(Locale.ROOT))),
-                        Msg.c("next", module.text(viewer, "rarity." + next.name().toLowerCase(Locale.ROOT))))),
-                click -> saveAndReopen(c.withRarity(next), "rarity"));
+        Component rarity = module.text(viewer, "rarity." + c.rarity().name().toLowerCase(Locale.ROOT));
+        set(SLOT_RARITY, service.item(Material.AMETHYST_SHARD, module.text(viewer, "editor.rarity.name", Msg.c("rarity", rarity)),
+                module.lines(viewer, "editor.rarity.lore", Msg.c("rarity", rarity))), click -> pickRarity(c));
 
         set(SLOT_SOURCE, service.item(Material.WRITABLE_BOOK, module.text(viewer, "editor.source-item.name"),
                 module.lines(viewer, "editor.source-item.lore", Msg.c("source",
@@ -119,6 +118,17 @@ final class EditorEntryMenu extends Menu {
                     back();
                 },
                 p -> { })));
+    }
+
+    /** A pick list of the rarities (GUI-4b/G9: no forward-only cycling); the pick is saved and logged. */
+    private void pickRarity(Cosmetic c) {
+        List<PickListMenu.Option<Rarity>> options = new ArrayList<>();
+        for (Rarity r : Rarity.values()) {
+            options.add(PickListMenu.Option.of(r, Material.AMETHYST_SHARD, module.text(viewer, "rarity." + r.name().toLowerCase(Locale.ROOT)),
+                    r == c.rarity()));
+        }
+        openChild(new PickListMenu<>(List.of(Component.text(id), module.text(viewer, "editor.rarity.crumb")), options,
+                r -> module.save(viewer, c.withRarity(r), "rarity")));
     }
 
     private void saveAndReopen(Cosmetic updated, String field) {

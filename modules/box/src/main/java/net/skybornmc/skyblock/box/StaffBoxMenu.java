@@ -6,11 +6,13 @@ import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -38,6 +40,11 @@ final class StaffBoxMenu extends PagedMenu<BoxEntry> {
 
         Target next() {
             return new Target(player, name, keys, profileNames, (index + 1) % keys.size());
+        }
+
+        /** The same player showing profile {@code i} (clamped to the known profiles). */
+        Target at(int i) {
+            return new Target(player, name, keys, profileNames, Math.floorMod(i, keys.size()));
         }
     }
 
@@ -120,11 +127,24 @@ final class StaffBoxMenu extends PagedMenu<BoxEntry> {
         set(SLOT_PROFILE, service.item(Material.ARMOR_STAND, viewer, BoxModule.ID, target.keys().size() > 1 ? "staff.profile-switch" : "staff.profile",
                 Msg.p("profile", target.profileName()), Msg.number("profiles", target.keys().size())), click -> {
             if (target.keys().size() > 1) {
-                target = target.next();
-                page(0);
-                reload();
+                pickProfile();
             }
         });
+    }
+
+    /** A pick list of the player's profiles (GUI-4b/G9: no forward-only cycling); the pick reloads the box. */
+    private void pickProfile() {
+        List<PickListMenu.Option<Integer>> options = new ArrayList<>();
+        for (int i = 0; i < target.keys().size(); i++) {
+            options.add(PickListMenu.Option.of(i, Material.ARMOR_STAND, service.text(viewer, BoxModule.ID, "staff.profile-pick",
+                    Msg.p("profile", target.profileNames().get(i))), i == target.index()));
+        }
+        openChild(new PickListMenu<>(List.of(service.text(viewer, BoxModule.ID, "staff.title", Msg.p("player", target.name())),
+                service.text(viewer, BoxModule.ID, "staff.profile-crumb")), options, i -> {
+            target = target.at(i);
+            page(0);
+            reload();
+        }));
     }
 
     @Override

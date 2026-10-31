@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.TxReason;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import net.skybornmc.skyblock.economy.EconomyModule;
@@ -64,10 +65,7 @@ final class DashboardMenu extends WatchMenu {
         set(SLOT_CURRENCY, service.item(Material.SUNFLOWER, viewer, EconomyModule.ID, "watch.menu.currency",
                 Msg.c("currency", currencyName())), click -> {
             click();
-            currency = Currency.values()[(currency.ordinal() + 1) % Currency.values().length];
-            data = null;
-            invalidate();
-            refresh();
+            pickCurrency();
         });
         set(SLOT_REFRESH, service.item(Material.SPYGLASS, viewer, EconomyModule.ID, "watch.menu.refresh",
                 Msg.p("ago", watch.job().lastRun() == 0 ? "-" : Format.duration(Duration.ofMillis(
@@ -107,6 +105,20 @@ final class DashboardMenu extends WatchMenu {
             set(SLOT_PENDING, service.item(waiting > 0 ? Material.WRITABLE_BOOK : Material.BOOK, viewer, EconomyModule.ID,
                     "watch.menu.pending", Msg.p("count", Format.number(waiting))), click -> watch.module.openPending(viewer, this));
         }
+    }
+
+    /** A pick list of the currencies (GUI-4b/G9: no forward-only cycling); the pick reloads the dashboard. */
+    private void pickCurrency() {
+        List<PickListMenu.Option<Currency>> options = new ArrayList<>();
+        for (Currency c : Currency.values()) {
+            options.add(PickListMenu.Option.of(c, Material.SUNFLOWER, service.text(viewer, EconomyModule.ID, "names." + c.key()), c == currency));
+        }
+        openChild(new PickListMenu<>(List.of(service.text(viewer, EconomyModule.ID, "watch.menu.title"),
+                service.text(viewer, EconomyModule.ID, "watch.menu.currency.crumb")), options, c -> {
+            currency = c;
+            data = null;
+            invalidate();
+        }));
     }
 
     private Component currencyName() {

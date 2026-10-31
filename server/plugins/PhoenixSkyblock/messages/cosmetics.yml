@@ -143,8 +143,9 @@ editor:
     name: "<c:value>Look"
     lore: ["<c:text>Shown as: <shown>", "<c:muted>Text: <raw>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   rarity:
-    name: "<c:value>Rarity"
-    lore: ["<c:text>Now: <rarity>", "<c:text>Next: <next>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
+    name: "<c:value>Rarity: <rarity>"
+    lore: ["<c:text>How rare it looks in /tags.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
+    crumb: "Rarity"
   source-item:
     name: "<c:value>How to get it"
     lore: ["<c:text><source>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]

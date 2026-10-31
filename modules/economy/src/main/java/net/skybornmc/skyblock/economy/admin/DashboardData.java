@@ -65,9 +65,5 @@ public record DashboardData(Currency currency, long takenAt, long supplyNow, lon
         public String key() {
             return name().toLowerCase(java.util.Locale.ROOT);
         }
-
-        public Range next() {
-            return values()[(ordinal() + 1) % values().length];
-        }
     }
 }

@@ -133,7 +133,10 @@ staff:
     lore:
       - "<c:text>The profile shown."
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next profile"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a profile"
+  # Pick list of the profiles. <profile>
+  profile-pick: "<c:value><profile>"
+  profile-crumb: "Profile"
   unreadable:
     name: "<c:error>Unreadable entry #<id>"
     lore:
