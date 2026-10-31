@@ -117,9 +117,10 @@ public interface StackingService {
     }
 
     /**
-     * Owner F2 hook (diminishing spawner output, not built yet): how well the <b>next</b> spawner of {@code type} this player
-     * places on their island would work, in percent of a full spawner (the shop's Spawners tab shows "Next works at X%"
-     * and the payback time from it). 100 until the F2 curve exists. Main thread.
+     * Owner F2 (diminishing spawner output per island and tier, {@code stacking.yml → spawners.efficiency}): how well the
+     * <b>next</b> spawner of {@code type} this player places on their island would work, in percent of a full spawner (the
+     * shop's Spawners tab shows "Next works at X%" and the payback time from it). 100 without an island or stacking module.
+     * Main thread.
      */
     default int nextSpawnerOutputPercent(Player player, String type) {
         return 100;

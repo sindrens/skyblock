@@ -141,6 +141,20 @@ class ShopV2Test {
     }
 
     @Test
+    void spawnerPaybackColors() {
+        ShopSettings s = new ShopSettings();
+        assertEquals(100, s.paybackGoodHours);
+        assertEquals(300, s.paybackOkHours);
+        // tier 1 at 100%: 117,000 / 1,900 = 62 h (green); at 35%: 176 h (yellow); at 10%: 616 h (red, Poor deal)
+        assertEquals(ShopMath.Payback.GOOD, ShopMath.payback(ShopMath.paybackHours(117_000, 1_900, 100), 100, 300));
+        assertEquals(ShopMath.Payback.OK, ShopMath.payback(ShopMath.paybackHours(117_000, 1_900, 35), 100, 300));
+        assertEquals(ShopMath.Payback.POOR, ShopMath.payback(ShopMath.paybackHours(117_000, 1_900, 10), 100, 300));
+        assertEquals(ShopMath.Payback.GOOD, ShopMath.payback(java.util.OptionalDouble.of(100), 100, 300), "100 h is still green");
+        assertEquals(ShopMath.Payback.OK, ShopMath.payback(java.util.OptionalDouble.of(300), 100, 300));
+        assertEquals(ShopMath.Payback.POOR, ShopMath.payback(java.util.OptionalDouble.empty(), 100, 300), "never pays back");
+    }
+
+    @Test
     void settingsHaveIncomeForEveryTier() {
         ShopSettings s = new ShopSettings();
         assertEquals(1_900, s.incomePerHour(1));

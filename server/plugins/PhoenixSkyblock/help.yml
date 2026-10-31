@@ -958,8 +958,13 @@ topics:
         lines:
           - "<c:text>Place a spawner, then use more of the"
           - "<c:text>same kind on it to stack them."
-          - "<c:text>Use it with an empty hand for its menu. Each"
-          - "<c:text>spawner in the stack adds full speed."
+          - "<c:text>Use it with an empty hand for its menu."
+      - title: "<c:value>More spawners, less each"
+        lines:
+          - "<c:text>Per island and tier, spawners 1-16 work"
+          - "<c:text>at 100%, 17-32 at 60%, 33-64 at 35%,"
+          - "<c:text>65-128 at 20%, then 10%. The menu and"
+          - "<c:text>the shop show what the next one adds."
       - title: "<c:value>Breaking and limits"
         lines:
           - "<c:text>Breaking takes one spawner; break it while"

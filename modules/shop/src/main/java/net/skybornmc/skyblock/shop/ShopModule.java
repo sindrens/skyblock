@@ -553,7 +553,7 @@ public final class ShopModule implements SkyblockModule, Listener {
         }).orElse(0) : 0;
     }
 
-    /** Owner F2 hook: how well the next spawner of this type works for the player (100 until the curve exists). */
+    /** Owner F2 hook: how well the next spawner of this type works on the player's island (stacking.yml spawners.efficiency). */
     int nextOutputPercent(Player viewer, ShopCatalog.Item item) {
         int p = stacking().map(st -> st.nextSpawnerOutputPercent(viewer, item.mob())).orElse(100);
         return Math.max(0, Math.min(100, p));

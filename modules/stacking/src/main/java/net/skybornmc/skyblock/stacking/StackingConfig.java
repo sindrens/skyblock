@@ -122,6 +122,9 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.tier-5", desc = "Tier 5 spawner types (owner SK7, crates + Black Market). Villager, warden, wither, ender dragon, elder guardian and allay are never allowed (SK8).", level = Setting.Level.OWNER)
     public List<String> tier5 = List.of("iron_golem", "wither_skeleton", "shulker", "evoker", "ravager", "breeze");
 
+    @Setting(path = "spawners.efficiency", desc = "Owner F2: diminishing output per island and tier. All spawners of one tier on an island are counted (every block, outposts later); the k-th one works at the percent of its band. Format from-to:percent, the last band open (129+:10). Bands start at 1 without gaps. Empty list = every spawner at 100%. A broken list falls back to these defaults.", level = Setting.Level.OWNER)
+    public List<String> spawnerEfficiency = List.of("1-16:100", "17-32:60", "33-64:35", "65-128:20", "129+:10");
+
     @Setting(path = "spawners.rare-drops", desc = "Strong drops from spawner mobs get this chance per mob instead of the vanilla one (owner SK10: very rare). Format mob:item:chance, chance 0-1.", level = Setting.Level.OWNER)
     public List<String> rareDrops = List.of("evoker:totem_of_undying:0.02", "shulker:shulker_shell:0.05");
 

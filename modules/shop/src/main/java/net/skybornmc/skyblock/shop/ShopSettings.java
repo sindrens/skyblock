@@ -54,6 +54,14 @@ public final class ShopSettings extends ModuleConfig {
     @Setting(path = "spawners.income-per-hour.tier-5", desc = "Money one tier 5 spawner earns per hour at full output.", min = 1)
     public long incomeTier5 = 35_000;
 
+    @Setting(path = "spawners.payback-good-hours", desc = "Owner F2: a spawner that pays back within this many hours "
+            + "shows its payback time in green.", min = 1, level = Setting.Level.OWNER)
+    public long paybackGoodHours = 100;
+
+    @Setting(path = "spawners.payback-ok-hours", desc = "Owner F2: up to this many hours the payback is yellow; above "
+            + "it is red with \"Poor deal\".", min = 1, level = Setting.Level.OWNER)
+    public long paybackOkHours = 300;
+
     @Setting(path = "buy.save-player-data", desc = "Save the player's data right after the items are handed over, so a "
             + "crash can't roll the inventory back to before a paid purchase.")
     public boolean savePlayerData = true;
