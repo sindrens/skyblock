@@ -39,7 +39,7 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/fly` | Fly on own island (perk) | `skyblock.fly` | ⬜ |
 | `/trash`, `/afk`, `/rules`, `/discord`, `/store`, `/halloffame` | Utility | … | ⬜ |
 | `/tags` | Choose an owned cosmetic tag shown in chat/tab | `skyblock.tags` | ⬜ |
-| `/is fuel` | Island Fuel status (offline production) | `skyblock.island.fuel` | ⬜ |
+| `/is fuel` | Island Fuel status: replaced by the fuel gauge in the island menu (M7.1) and the planned `/is production` (PD34, see `production.md`) | `skyblock.production.menu` | ⏸ |
 
 ## Staff
 

@@ -299,6 +299,11 @@ final class UpgradeManager implements Listener {
         return of(islandId).getOrDefault(upgradeId, 0);
     }
 
+    /** The value of an effect on the island (highest bought level among its upgrades; 0 = none or not loaded). */
+    double effectValue(UUID islandId, UpgradeEffect effect) {
+        return ready ? UpgradeRules.value(catalog, of(islandId), effect) : 0;
+    }
+
     /** Total bought levels of the island (placeholder {@code island_upgrades_bought}). */
     int totalLevels(UUID islandId) {
         int sum = 0;

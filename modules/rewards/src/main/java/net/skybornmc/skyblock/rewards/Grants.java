@@ -8,9 +8,8 @@ import net.skybornmc.skyblock.common.box.ItemBox;
 import net.skybornmc.skyblock.common.cosmetics.Cosmetics;
 import net.skybornmc.skyblock.common.crate.CrateKeys;
 import net.skybornmc.skyblock.common.db.Database;
-import net.skybornmc.skyblock.common.economy.TxReason;
 import net.skybornmc.skyblock.common.enchant.EnchantService;
-import net.skybornmc.skyblock.common.island.IslandService;
+import net.skybornmc.skyblock.common.production.ProductionService;
 import net.skybornmc.skyblock.common.item.BoundItems;
 import net.skybornmc.skyblock.common.pass.PassXp;
 import net.skybornmc.skyblock.common.player.PlayerSaves;
@@ -22,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
@@ -244,17 +242,7 @@ final class Grants {
                 yield pass.get().addXp(row.profile(), (int) Math.min(Integer.MAX_VALUE, row.amount()), reason(row), "rewards:" + row.id())
                         .thenApply(ok -> Boolean.TRUE.equals(ok) ? Result.DELIVERED : Result.RETRY);
             }
-            case Payout.FUEL -> {
-                Optional<IslandService> islands = m.islands();
-                Optional<UUID> island = islands.flatMap(i -> i.islandOfProfile(row.profile())).map(IslandService.IslandInfo::id);
-                if (island.isEmpty()) {
-                    yield CompletableFuture.completedFuture(Result.RETRY); // no island right now: waits for one
-                }
-                String txReason = "playtime".equals(row.source()) ? TxReason.PLAYTIME_REWARD : TxReason.DAILY_REWARD;
-                yield islands.get().addIslandFuel(island.get(), row.amount(), txReason, actor)
-                        .thenApply(ok -> Boolean.TRUE.equals(ok) ? Result.DELIVERED : Result.FAILED);
-            }
-            case Payout.BOOK, Payout.SCROLL, Payout.BOOSTER -> createItems(row, amount, origin)
+            case Payout.BOOK, Payout.SCROLL, Payout.BOOSTER, Payout.FUEL -> createItems(row, amount, origin)
                     .thenComposeAsync(items -> items.isEmpty() ? CompletableFuture.completedFuture(Result.FAILED)
                             : deliverItems(row, items, actor), m.main());
             default -> CompletableFuture.completedFuture(Result.FAILED);
@@ -304,6 +292,12 @@ final class Grants {
                     b.createPersonal(type.get(), percent.intValue(), minutes.intValue(), row.profile(), origin).ifPresent(out::add);
                 }
                 return CompletableFuture.completedFuture(out);
+            }
+            case Payout.FUEL -> {
+                // PHASE-7 M7.1: fuel minutes become bound Fuel Cells (1 / 3 / 6 h), used on the island later.
+                Optional<ProductionService> production = ProductionService.of(m.core.services());
+                return CompletableFuture.completedFuture(production.map(p -> p.createFuelCells(row.profile(), row.amount(), origin))
+                        .orElse(List.of()));
             }
             default -> {
                 return CompletableFuture.completedFuture(List.of());

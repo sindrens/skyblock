@@ -72,6 +72,8 @@ final class IslandManager implements IslandService {
     private volatile java.util.function.ToIntFunction<UUID> islandHomesProvider;
     /** PHASE-5 M5.4: live upgrade effects (progression module; null = no upgrades). */
     private volatile net.skybornmc.skyblock.common.island.IslandUpgradeEffects upgradeEffects;
+    /** PHASE-7 M7.1: Island Fuel (production module; null = Island Fuel is off). */
+    private volatile net.skybornmc.skyblock.common.production.FuelProvider fuelProvider;
     /** The islands world once seen (identity check in hot paths), cleared when another world object shows up. */
     private World islandWorld;
     /** Players whose island is being created or rebuilt right now (one at a time per player). */
@@ -817,6 +819,35 @@ final class IslandManager implements IslandService {
     @Override
     public void extraIslandHomesProvider(java.util.function.ToIntFunction<UUID> provider) {
         this.islandHomesProvider = provider;
+    }
+
+    // ------------------------------------------------------------------ Island Fuel (PHASE-7 M7.1, production module)
+
+    @Override
+    public void fuelProvider(net.skybornmc.skyblock.common.production.FuelProvider provider) {
+        this.fuelProvider = provider;
+    }
+
+    @Override
+    public boolean hasIslandFuel(UUID islandId) {
+        var p = fuelProvider;
+        return p != null && islandId != null && byId.containsKey(islandId) && p.hasFuel(islandId);
+    }
+
+    @Override
+    public boolean islandProductionPaused(UUID islandId) {
+        var p = fuelProvider;
+        return p != null && islandId != null && byId.containsKey(islandId) && p.paused(islandId);
+    }
+
+    @Override
+    public java.util.concurrent.CompletableFuture<Boolean> addIslandFuel(UUID islandId, long minutes, String reason,
+                                                                         net.skybornmc.skyblock.common.audit.Actor actor) {
+        var p = fuelProvider;
+        if (p == null || islandId == null || !byId.containsKey(islandId) || minutes <= 0) {
+            return java.util.concurrent.CompletableFuture.completedFuture(false);
+        }
+        return p.addFuel(islandId, minutes, reason, actor);
     }
 
     // ------------------------------------------------------------------ upgrade hooks (PHASE-5 M5.4, progression module)

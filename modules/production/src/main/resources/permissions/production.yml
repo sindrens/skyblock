@@ -1,0 +1,9 @@
+# Permissions of the production module (PHASE-7). Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/production.txt. Commands: docs/commands/production.md.
+skyblock.production.menu:
+  description: See the Island Fuel gauge in the island menu (state, fuel, tank, burn rate)
+  default: true
+skyblock.production.cells:
+  description: Use Fuel Cells on your own island (adds Island Fuel)
+  default: true

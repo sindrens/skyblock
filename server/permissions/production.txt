@@ -1,0 +1,6 @@
+# LuckPerms grants for the production module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/production/src/main/resources/permissions/production.yml. One console command per line; # = comment.
+# skyblock.production.menu (fuel gauge) and skyblock.production.cells (Fuel Cells) default to true, so players need no grant.
+# No staff commands yet (/isadmin fuel and /isadmin production wait for the owner's OK, PD35).
+# Every fuel grant, Fuel Cell and island falling asleep in /logs (category production).
+lp group mod permission set skyblock.staff.logs.category.production true

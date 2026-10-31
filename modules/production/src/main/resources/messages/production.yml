@@ -1,0 +1,74 @@
+# Island production (PHASE-7). M7.1 Island Fuel: states, gauge, Fuel Cells. MiniMessage + style tags (style.yml).
+# Reload: /skyblock reload production
+# Placeholders are plain text: <time>, <fuel>, <tank>, <room>, <ago> (like 7h 20m), <level> (a number), <burn> (like 0.83).
+
+# State names (gauge, scoreboard).
+state:
+  active: "<c:success>Active"
+  fueled: "<c:ember>Fueled"
+  asleep: "<c:error>Asleep"
+
+# <ph:island_fuel> on the scoreboard: "Active", the fuel left (7h 20m) or "Asleep". Suggested line: "| Fuel: <ph:island_fuel>"
+placeholder:
+  active: "Active"
+  asleep: "Asleep"
+
+fuel:
+  asleep-now: "<prefix><c:error><sym:time></c:error> <c:text>Your island ran out of fuel and fell asleep. Play on it or use a <c:value>Fuel Cell</c:value> <c:text>there to wake it."
+  asleep-join: "<prefix><c:error><sym:time></c:error> <c:text>Your island ran out of fuel <c:value><time></c:value> <c:text>ago. Play on it or use a <c:value>Fuel Cell</c:value> <c:text>there to wake it."
+
+# The fuel gauge in the island menu (display only). Shown as: lore, then the state block, then how.
+gauge:
+  name: "<c:flame><bold>Island Fuel"
+  lore:
+    - "<c:muted>Production <sym:dot> Tank level <level>"
+    - ""
+    - "<c:text>Keeps your island working when"
+    - "<c:text>no member is playing on it."
+    - ""
+    - "<bold><c:header>| Status</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>State: </c:text><state>"
+    - "<c:bar>| </c:bar><c:text>Fuel: </c:text><c:value><fuel> / <tank>"
+    - "<c:bar>| </c:bar><c:text>Burn: </c:text><c:value><burn>x"
+  state-active:
+    - "<c:muted>You are playing here: +1 min per min."
+  state-fueled:
+    - "<c:muted>Nobody plays here: fuel burns."
+  state-asleep:
+    - "<c:error>Out of fuel <ago> ago: spawners"
+    - "<c:error>and crops are paused."
+  state-never:
+    - "<c:error>No fuel yet: spawners and crops"
+    - "<c:error>are paused while nobody plays."
+  how:
+    - ""
+    - "<bold><c:header>| How to get fuel</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>Play on your island: +1 min/min"
+    - "<c:bar>| </c:bar><c:text>AFK pool, Fuel Cells"
+
+# Fuel Cells. Item name and lore use {time} (filled in by the item, plain text).
+cell:
+  item:
+    name: "Fuel Cell ({time})"
+    description: "Adds Island Fuel. Use it on your island."
+    lore:
+      - "<c:text>Fuel: <c:value>{time}"
+      - "<c:muted>Only works if it fits in your tank."
+    bound: "<c:muted>Can't be traded: only this profile can use it."
+    action-input: "USE"
+    action-text: "on your island"
+  added: "<prefix><c:success><sym:check></c:success> <c:text>Added <c:value><time></c:value> <c:text>of fuel. Tank: <c:value><fuel> / <tank></c:value><c:text>."
+  no-room: "<prefix><c:error><sym:cross></c:error> <c:text>This cell holds <c:value><time></c:value><c:text>, your tank has room for <c:value><room></c:value><c:text>. Keep it for later."
+  not-on-island: "<prefix><c:error><sym:cross></c:error> <c:text>Stand on your own island to use a Fuel Cell."
+  not-yours: "<prefix><c:error><sym:cross></c:error> <c:text>This Fuel Cell belongs to another profile. Only that profile can use it."
+  already-used: "<prefix><c:error><sym:cross></c:error> <c:text>This Fuel Cell was already used, so it was removed. Staff can see it in the logs."
+  invalid: "<prefix><c:error><sym:cross></c:error> <c:text>This Fuel Cell is broken. Ask staff to look at it."
+  moved: "<prefix><c:error><sym:cross></c:error> <c:text>That Fuel Cell is not in your inventory anymore."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Your Fuel Cell is back in your inventory or /box."
+  loading: "<prefix><c:error><sym:cross></c:error> <c:text>Island Fuel is still loading. Try again in a moment."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>Fuel is being added to your island right now. One moment."
+  turned-off: "<prefix><c:error><sym:cross></c:error> <c:text>Island Fuel is turned off right now. Keep the cell."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use Fuel Cells."
+  frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use Fuel Cells while frozen."
+  staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't use Fuel Cells in staff mode."
+  switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."

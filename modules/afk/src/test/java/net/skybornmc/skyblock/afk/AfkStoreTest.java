@@ -127,6 +127,29 @@ class AfkStoreTest {
     }
 
     @Test
+    void bankedFuelIsDeliveredOnceWhenIslandFuelStarts() {
+        UUID player = UUID.randomUUID();
+        UUID profile = UUID.randomUUID();
+        String island = UUID.randomUUID().toString();
+        db.blockingTransaction(c -> {
+            store.addGrant(c, player, profile, AfkStore.KIND_FUEL, island, 15, 1L);
+            store.addGrant(c, player, profile, AfkStore.KIND_FUEL, island, 15, 2L);
+            return null;
+        });
+        List<AfkStore.Grant> open = db.blocking(c -> store.openGrants(c, player));
+        assertEquals(1, open.size(), "banked fuel for one island is one grant");
+        AfkStore.Grant fuel = open.getFirst();
+        assertEquals(30, fuel.amount());
+        // Island Fuel switched on: the join delivery and the switch-on delivery race for the same grant; one wins.
+        FuelSwitch sw = new FuelSwitch();
+        assertTrue(sw.turnedOn(true));
+        assertTrue(bool(c -> store.claim(c, fuel.id(), 3L)));
+        assertFalse(bool(c -> store.claim(c, fuel.id(), 4L)), "never delivered twice");
+        assertFalse(sw.turnedOn(true), "the switch-on delivery runs once");
+        assertTrue(db.blocking(c -> store.openGrants(c, player)).isEmpty());
+    }
+
+    @Test
     void legacyBoostersAreReadAndDeleted() {
         UUID profile = UUID.randomUUID();
         db.blockingTransaction(c -> net.skybornmc.skyblock.common.db.Sql.update(c,

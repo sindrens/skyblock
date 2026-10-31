@@ -167,7 +167,7 @@ Permission definitions: `modules/progression/src/main/resources/permissions/prog
   Spawner Rate (+12% per level). BonusService source `upgrades` for members (never coop/visitors): Sell Multiplier
   (+5%/level, SELL family under the +300% cap); the same source already answers Mine Fortune (EXTRA_DROPS `mining`),
   Lumberjack (EXTRA_DROPS `foraging`) and XP Boost (SKILL_XP). **Coming soon** (shown gray, not buyable until their
-  feature reads them): Island Vault, Mob Loot, Crop Growth, Harvest Yield, Generator, Fuel Tank, and Mine Fortune /
+  feature reads them): Island Vault, Mob Loot, Crop Growth, Harvest Yield, Generator, Fuel Tank (live while Island Fuel is on, M7.1), and Mine Fortune /
   Lumberjack / XP Boost (the Depths roll and skill gains don't ask the player's bonus families yet, OPEN_QUESTIONS M5-4).
 - **Island level:** `LevelSource.UPGRADES` = 0.5 / 1 / 1.5 points per bought level by task tier 1-3 / 4-6 / 7+ (P5-17,
   `upgrades-settings.yml → level-points`).
@@ -189,7 +189,7 @@ Permission definitions: `modules/progression/src/main/resources/permissions/prog
   level 15/30/45/60/80), Homestead (+1 shared island home per rank, island level 20/40), Wings (island fly for everyone on
   the island, level 20, ~$60k, P5-20), Treasury (bank fee 2% → 1.5% → 1.0% → 0.5%, level 15/35/60, P5-19), Market
   Contacts (+2% sell per level, 20 levels, opens when Sell Multiplier is maxed). **Hidden** until their feature reads them
-  (GUI-2): Timber, Swift Hands (the Depths roll and break speed read the tool only), Fuel Efficiency (Phase 7), Beast
+  (GUI-2): Timber, Swift Hands (the Depths roll and break speed read the tool only), Fuel Efficiency (shown while Island Fuel is on, M7.1), Beast
   Tamer (no breeding hook), Angler (no fishing).
 - **Gating:** a rank needs its pillar level or island level, every task listing `mastery.<id>.<rank>` (challenge book;
   locked while the task engine loads) and, for Market Contacts, Sell Multiplier maxed. Ranks are bought in order.

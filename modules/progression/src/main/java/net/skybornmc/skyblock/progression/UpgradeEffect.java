@@ -47,7 +47,7 @@ enum UpgradeEffect {
     HARVEST_YIELD("harvest-yield", false),
     /** Generator ore tier (Phase 7). */
     GENERATOR("generator", false),
-    /** Island Fuel tank size (Phase 7). */
+    /** Island Fuel tank size (Phase 7): live while Island Fuel is on ({@link IslandFuelFeature}). */
     FUEL_TANK("fuel-tank", false);
 
     private final String id;
@@ -65,7 +65,7 @@ enum UpgradeEffect {
 
     /** True when the feature behind it exists (otherwise "Coming soon", never bought). */
     boolean live() {
-        return live;
+        return live || (this == FUEL_TANK && IslandFuelFeature.on());
     }
 
     /** Effects stored by the islands module (raised through its setters, never lowered). */

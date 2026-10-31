@@ -67,6 +67,8 @@ final class AfkTracker implements Listener {
     private final AfkModule m;
     private final Core core;
     private final Map<UUID, AfkAccount> accounts = new ConcurrentHashMap<>();
+    /** PHASE-7 M7.1: delivers banked fuel to online players once when Island Fuel switches on. */
+    private final FuelSwitch fuelSwitch = new FuelSwitch();
     /** Write queues of accounts that quit; a quick rejoin loads only after the quit save finished (main thread). */
     private final Map<UUID, CompletableFuture<?>> tails = new ConcurrentHashMap<>();
     private final IpGate gate = new IpGate();
@@ -690,9 +692,13 @@ final class AfkTracker implements Listener {
     private void saveTick() {
         refreshArea();
         gate.prune(AfkLedger.dayKey(System.currentTimeMillis(), zone));
+        boolean fuelOn = fuelSwitch.turnedOn(m.fuelSupported());
         for (AfkAccount a : accounts.values()) {
             if (a.loaded && a.dirty) {
                 save(a);
+            }
+            if (fuelOn && a.loaded) {
+                deliver(a); // Island Fuel just switched on: banked fuel arrives now (each grant is claimed once)
             }
         }
     }

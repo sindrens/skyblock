@@ -37,6 +37,8 @@ public final class BoxSource {
     public static final String SPAWNER_RESTORE = "spawner-restore";
     /** Items bought at the Black Market (PHASE-10 M10.11). */
     public static final String BLACK_MARKET = "black-market";
+    /** Fuel Cells given back after a refused or failed use (PHASE-7 M7.1). */
+    public static final String PRODUCTION = "production";
     /** An item given back into the box after a take failed (keeps its original source when known). */
     public static final String RETURNED = "returned";
 
