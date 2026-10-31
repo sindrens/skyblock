@@ -8,3 +8,6 @@ skyblock.spawner.give:
 skyblock.spawner.restore:
   description: R3-13b restore frozen stacked spawners to the placer's /box (/inspect → Frozen spawners, audited)
   default: op
+skyblock.stacking.hopper-alerts:
+  description: F13 chat alert when one chunk has more hoppers than stacking.yml hoppers.alert-above (island, owner, location, clickable teleport on Java)
+  default: op

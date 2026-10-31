@@ -24,8 +24,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -261,7 +259,10 @@ final class ItemStacker implements Listener {
         }
     }
 
-    /** Hoppers take up to {@code items.hopper-per-transfer} at once (owner S17). */
+    /**
+     * Hoppers take up to {@code items.hopper-per-transfer} at once (owner S17), never more than the hopper could hold
+     * (F12: a 64-stack is one part and one {@code addItem}; unstackables are capped at the 5 slots, no 64 clones).
+     */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onHopper(InventoryPickupItemEvent event) {
         Item item = event.getItem();
@@ -272,8 +273,10 @@ final class ItemStacker implements Listener {
         long start = module.perf().start();
         try {
             long count = count(item);
-            long offered = Math.min(count, module.config().hopperPerTransfer);
-            long taken = offered - leftover(event.getInventory(), item.getItemStack(), offered);
+            ItemStack prototype = item.getItemStack();
+            long offered = StackMath.hopperOffer(count, module.config().hopperPerTransfer, prototype.getMaxStackSize(),
+                    event.getInventory().getSize());
+            long taken = offered - leftover(event.getInventory(), prototype, offered);
             if (taken > 0) {
                 setCount(item, count - taken, false);
             }
@@ -297,17 +300,16 @@ final class ItemStacker implements Listener {
 
     /** Adds {@code amount} of {@code prototype} to {@code inventory}; returns what did not fit. */
     static long leftover(Inventory inventory, ItemStack prototype, long amount) {
-        int max = Math.max(1, prototype.getMaxStackSize());
-        List<ItemStack> parts = new ArrayList<>();
-        long left = amount;
-        while (left > 0) {
-            ItemStack part = prototype.clone();
-            int n = (int) Math.min(left, max);
-            part.setAmount(n);
-            parts.add(part);
-            left -= n;
+        int[] sizes = StackMath.stackSizes(amount, prototype.getMaxStackSize());
+        if (sizes.length == 0) {
+            return 0;
         }
-        Map<Integer, ItemStack> rest = inventory.addItem(parts.toArray(ItemStack[]::new));
+        ItemStack[] parts = new ItemStack[sizes.length];
+        for (int i = 0; i < sizes.length; i++) {
+            parts[i] = prototype.clone();
+            parts[i].setAmount(sizes[i]);
+        }
+        Map<Integer, ItemStack> rest = inventory.addItem(parts);
         long notAdded = 0;
         for (ItemStack r : rest.values()) {
             notAdded += r.getAmount();

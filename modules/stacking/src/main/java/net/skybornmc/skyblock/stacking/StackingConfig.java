@@ -142,6 +142,23 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "limits.displays", desc = "Display/hologram entities per island (owner SK2: 30).", min = 0, max = 100_000, level = Setting.Level.OWNER)
     public int limitDisplays = 30;
 
+    // ------------------------------------------------------------------ hopper counter (owner F13)
+
+    @Setting(path = "hoppers.counter-enabled", desc = "Count hoppers per loaded chunk in the stacking worlds (owner F13). Counted once when a chunk loads, then kept up to date by place/break/explode events; never scanned per tick.")
+    public boolean hopperCounterEnabled = true;
+
+    @Setting(path = "hoppers.alert-above", desc = "Staff get an alert when one chunk has more hoppers than this (owner F13: 64). There is no hard cap.", min = 1, max = 100_000, level = Setting.Level.OWNER)
+    public int hopperAlertAbove = 64;
+
+    @Setting(path = "hoppers.alert-step", desc = "Alert again for every this many hoppers more in the same chunk (64 above 64: at 65, 129, 193...). 0 = only the first time.", min = 0, max = 100_000)
+    public int hopperAlertStep = 64;
+
+    @Setting(path = "hoppers.alert-cooldown-minutes", desc = "The same chunk does not alert again at the same level within this time (placing and breaking one hopper does not spam).", min = 1, max = 10_080)
+    public int hopperAlertCooldownMinutes = 30;
+
+    @Setting(path = "hoppers.alerts-per-minute", desc = "Most hopper alerts for all chunks together per minute.", min = 1, max = 600)
+    public int hopperAlertsPerMinute = 5;
+
     // ------------------------------------------------------------------ crops (owner S25)
 
     @Setting(path = "crops.enabled", desc = "Crops on islands also grow in the dark (owner S25).")

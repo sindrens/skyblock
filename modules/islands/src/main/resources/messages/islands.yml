@@ -819,6 +819,9 @@ admin:
       - "<c:muted>Id: <id>"
     member: " <c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:muted>· <role> · joined <date>"
     coop: " <c:ember><sym:bullet></c:ember> <c:value><player></c:value> <c:muted>· <role>"
+    # F13: the loaded chunk of the island with the most hoppers (only shown when one has hoppers). <count> <threshold> <chunk-x> <chunk-z>
+    hoppers: "<c:text>Hoppers: <c:value><count></c:value> <c:muted>in the busiest loaded chunk (<chunk-x>, <chunk-z>) · alert above <threshold>"
+    hoppers-over: "<c:warning>Hoppers: <count></c:warning> <c:muted>in loaded chunk <chunk-x>, <chunk-z> · above the alert level <threshold>"
     # Owner answer 293: shown when staff hid the island from the visit browser. <note>
     hidden: "<c:warning>Hidden from the visit browser</c:warning> <c:muted>· note: <note>"
     actions: "<click:run_command:'/isadmin tp <owner>'><hover:show_text:'<c:text>Teleport to this island'><c:action>[Teleport]</c:action></hover></click> <click:run_command:'/isadmin slots'><hover:show_text:'<c:text>Open the slot grid'><c:action>[Slots]</c:action></hover></click> <click:suggest_command:'/isadmin setsize <owner> '><hover:show_text:'<c:text>Change the border size'><c:action>[Size]</c:action></hover></click>"

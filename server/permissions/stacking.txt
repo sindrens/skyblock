@@ -6,3 +6,5 @@
 lp group admin permission set skyblock.spawner.give true
 # R3-13b: restore frozen stacked spawners to the placer's /box from /inspect (same level as /spawner give).
 lp group admin permission set skyblock.spawner.restore true
+# F13: hopper alerts (a chunk with more than hoppers.alert-above hoppers). Mods and up (admin and owner inherit mod); mods also have /tppos for the [Teleport] link.
+lp group mod permission set skyblock.stacking.hopper-alerts true
