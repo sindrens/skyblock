@@ -241,6 +241,9 @@ drops:
   crystals: "<cur:crystals><sym:crystals> +<amount></cur:crystals> <c:text>crystals"
   # Chat line for a rare find. <item> <amount>
   rare: "<prefix><c:success><sym:star></c:success> <c:text>Rare find: <c:value><amount>x</c:value> <item><c:text>! It's in your satchel."
+  # R3-18: a key fragment (skips the satchel). <item>
+  fragment: "<prefix><c:success><sym:star></c:success> <c:text>Rare find: <item><c:text>! 3 make a Phoenix key in <c:value>/crates</c:value><c:text>."
+  fragment-box: "<prefix><c:success><sym:star></c:success> <c:text>Rare find: <item><c:text>! Your inventory is full, it's in <c:value>/box</c:value><c:text>."
 
 # Drop items (M4.9): names, lore. {rarity} and {name} are filled by the plugin.
 drop-items:
@@ -297,6 +300,10 @@ combat:
     # Custom name of a mini-boss (around its mobs.<id> name).
     name: "<c:error><sym:star></c:error> <name> <c:error><sym:star></c:error>"
     bar: "<name>"
+    # R3-10: boss bar name with the health. <name> <health> <max>; the -scaled one also has <extra> (health % added for
+    # extra fighters).
+    bar-health: "<name> <c:error><sym:heart></c:error> <c:value><health>/<max></c:value>"
+    bar-health-scaled: "<name> <c:error><sym:heart></c:error> <c:value><health>/<max></c:value> <c:muted>(+<extra>% for the group)</c:muted>"
     spawn: "<prefix><c:error><sym:sword></c:error> <c:text>Mini-boss <name> <c:text>appeared in <c:value><zone></c:value><c:text>!"
     killed: "<prefix><c:success><sym:check></c:success> <name> <c:text>was defeated by <c:value><player></c:value><c:text>."
     reward: "<prefix><c:success><sym:star></c:success> <c:text>You helped defeat <name><c:text>. Rewards are in your satchel."
