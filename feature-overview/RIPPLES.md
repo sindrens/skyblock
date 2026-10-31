@@ -5,3 +5,114 @@ When an accepted decision changes another card, add a line here. Tick it when th
 Format: `- [ ] <ledger id> from <ID> to <ID>: what must change there`
 
 <!-- ripples start below -->
+- [x] C1-R1-03 from C1 to B17: slot prices and "gems" wording become credits; which credit type pays slots (held)
+- [ ] C1-R1-03 from C1 to E13: wardrobe gem sets become credit sets
+- [ ] C1-R1-03 from C1 to C13: island charter credit prices (held with item 20)
+- [ ] C1-R1-03 from C1 to F6: votes pay credits; "all vote sites, each once a day"
+- [ ] C1-R1-03 from C1 to F7: streak pays credits
+- [ ] C1-R1-03 from C1 to F9: battle pass credits; premium pass priced in credits
+- [ ] C1-R1-03 from C1 to F11: thanks pays credits (cap 100 vs planned 20 still open)
+- [ ] C1-R1-03 from C1 to I6: whole card says gems; rename, one paid currency, /storegrant, purchase history, Tebex package commands
+- [ ] C1-R1-03 from C1 to I5: kept list says gems
+- [ ] C1-R1-07 from C1 to C6: gate AH buying
+- [ ] C1-R1-07 from C1 to C7: re-check gate at the trade swap
+- [ ] C1-R1-06 from C1 to C10: alt-funnel flags and new alert currencies (C1-R1-10)
+- [ ] C1-R1-09 from C1 to H4: freeze blocks all sending
+- [x] C1-R1-11 from C1 to B17: profile delete backup and balance restore
+- [ ] C1-R1-11 from C1 to B10: disband and reset must back up balances too
+- [ ] C1-R1-12 from C1 to I5: season id, archive into old-season files, credits kept
+- [ ] C1-R1-13 from C1 to G7: scoreboard per location
+- [ ] C1-R1-13 from C1 to I7: simple symbols and GUI art redone
+- [ ] C1-R1-14 from C1 to C13: confirm on credit spends
+- [ ] C1-R1-17 from C1 to I6: console-only store grant with idempotency
+- [ ] C1-R1-21 from C1 to H7: principle "what is not allowed is not possible"
+- [ ] C1-R1-22 from C1 to H5: rollback needs the block/container log
+- [ ] C1-R1-22 from C1 to B10: island rollback vs disband and reset backups
+- [ ] C1-R1-23 from C1 to F5: rewards overhaul
+- [ ] C1-R1-25 from C1 to C5: shop and price overhaul
+- [ ] C1-R1-25 from C1 to C4: sell prices overhaul
+- [ ] C1-R1-25 from C1 to C14: economy curve and balance after full plan
+- [ ] C1-R1-25 from C1 to E1: each Depths world gives different rewards
+- [ ] C1-R1-28 from C1 to C2: /baltop lists and /credit commands
+- [ ] C1-R1-04b from C1 to F2: rank price minus credit value of the current rank, rank bought with credits
+- [ ] C1-R1-04b from C1 to F4: tags, trails, chat colours sold for credits
+- [ ] C1-R1-08 from C1 to C2: credits public in /baltop, /credit bal <player> total only; decisions 574/575 superseded
+- [ ] C1-R1-29 from C1 to H5: credit trail menu for staff
+- [ ] C1-R1-29 from C1 to H6: credit trail in the admin panel
+- [ ] C1-R1-30 from C1 to I6: credit shop card, /credit shop, /creditshop, /store shop, /store and /buy website
+- [ ] C1-R1-30 from C1 to G9: credit shop reachable from /menu
+- [ ] C1-R1-38 from C1 to B14: credits never pay upgrade levels; timed +1 perks shown in /is upgrade
+- [ ] C1-R1-38 from C1 to B15: island size also buyable with credits
+- [ ] C1-R1-38 from C1 to D2: spawner stack limit perk for credits
+- [ ] C1-R1-31 from C1 to F11: boosters for credits (if confirmed)
+- [ ] C1-R1-32 from C1 to B15: island size for shards and credits, other island perks for credits
+- [ ] C1-R1-32 from C1 to F2: remove "gameplay perks never sold" (R3-7/F7) where credits are involved
+- [ ] C1-R1-33 from C1 to B4: Contribution menu who made what, simple
+- [ ] C1-R1-35 from C1 to H2: chargeback ban rule
+- [ ] C1-R1-37 from C1 to F7: streak credits with several profiles
+- [ ] C1-R2-02 from C1 to F6: votes pay credits_earned
+- [ ] C1-R2-02 from C1 to F7: streak pays credits_earned
+- [ ] C1-R2-02 from C1 to F11: thanks pays credits_earned
+- [ ] C1-R2-02 from C1 to I6: credits only through /storegrant; gems alias refused for grants
+- [ ] C1-R2-02 from C1 to C2: baltop credits total, cached sum
+- [ ] C1-R2-03 from C1 to I5: credit rows never pruned at rollover
+- [ ] C1-R2-06 from C1 to E13: credit sets in warzone (open)
+- [ ] C1-R2-09 from C1 to F4: unclaimed items cannot be dropped
+- [ ] C1-R2-09 from C1 to E13: same
+- [ ] C1-R2-09 from C1 to C9: unclaimed items allowed in /box
+- [ ] C1-R2-11 from C1 to D2: perk +1 on spawner rate
+- [ ] C1-R2-11 from C1 to D6: perk +1 on generator, crop growth
+- [ ] C1-R2-13 from C1 to B3: perks stay after kick
+- [ ] C1-R2-14 from C1 to B15: size by shards or credits, whoever pays first
+- [ ] C1-R2-15 from C1 to F2: rank credit price ladder
+- [ ] C1-R2-16 from C1 to F9: pass buyable with credits, pays back at most 50%
+- [ ] C1-R2-18 from C1 to H4: freeze keyed to the player for credits
+- [ ] C1-R2-21 from C1 to B13: redo pillars and level calculation
+- [ ] C1-R2-21 from C1 to B16: redo /is top calculation
+- [ ] C1-R2-23 from C1 to G4: message overhaul
+- [ ] C1-R2-23 from C1 to A5: hologram style
+- [ ] C1-R2-23 from C1 to B6: /warp displays
+- [ ] C1-R2-24 from C1 to C5: shop and sell block list limited to 1.21.5 blocks
+- [ ] C1-R2-24 from C1 to F5: crate pedestal copper_chest looks like a chest on old clients
+- [ ] C1-R2-26 from C1 to B14: perk applies to the island of the buyer's current profile, shop names it
+- [ ] C1-R2-27 from C1 to F5: crates can give rank vouchers and perks
+- [ ] C1-R2-27 from C1 to C12: sell chests sold for credits
+- [ ] C1-R2-27 from C1 to D7: chunk collectors sold for credits
+- [ ] C1-R2-28 from C1 to I6: credit packages and USD prices
+- [ ] C1-R2-29 from C1 to C12: sell chests paid with earned credits arrive bound
+- [ ] C1-R2-29 from C1 to D7: chunk collectors same
+- [ ] C1-R2-30 from C1 to F2: rank prices in credits (top 13,500), EUR list retired
+- [ ] A3-R0-01 from A3 to C4: selling is practised in the tutorial
+- [ ] A3-R0-02 from A3 to A2: trail from current position to the portal
+- [ ] A3-R0-03 from A3 to A5: arrow holograms
+- [ ] C1-R2-31 from C1 to B14: all upgrade and mastery prices redone in the overhaul
+- [ ] C1-R2-31 from C1 to C5: /shop prices redone in the overhaul
+- [ ] B14-R0-01 from B14 to I7: mastery tree needs simple node art and a readable layout
+- [ ] C1-R3-01 from C1 to E13: credit sets looks only in warzone, duels, boss arenas
+- [ ] C1-R3-01 from C1 to E11: tool skins with Depths-only abilities
+- [ ] C1-R3-03 from C1 to C2: hard-coded values moved to config
+- [x] A3-R1-01 from A3 to B17: invite acceptance for a fresh island and friend-join path
+- [ ] A3-R1-01 from A3 to A4: starter kit given to the player, chest is a bonus
+- [ ] A3-R1-01 from A3 to B3: friend-join and invite flow
+- [ ] C1-R3-05 from C1 to B14: island menu Perks tab (timer, buyer)
+- [ ] C1-R3-05 from C1 to I6: docs/OWNER_PRINCIPLES.md principle 10, docs/OPEN_QUESTIONS.md ECON-R3(b), ECONOMY_BALANCE 9.2 still say gems (fix with the build, not edited during review)
+- [ ] B17-R1-01 from B17 to I1: keep inventory everywhere, warzone becomes the PvP loadout area (check)
+- [ ] B17-R1-01 from B17 to I2: duels keep inventory always (already), align with PvP loadout
+- [ ] B17-R1-01 from B17 to I3: envoy and KOTH in the PvP area, players bring nothing
+- [ ] B17-R1-01 from B17 to E14: loadouts card vs PvP loadout
+- [ ] B17-R1-04 from B17 to A4: full chest on every new island, tools bound
+- [ ] B17-R1-04 from B17 to E10: better lores for all tools; starter tools bound
+- [ ] B17-R1-21 from B17 to E10: starter tools upgradeable bad to very good
+- [ ] B17-R1-21 from B17 to E12: custom enchants on starter tools
+- [ ] B17-R1-03 from B17 to B3: fresh island accepts an invite (touched_at); reverses 254 and 133
+- [ ] B17-R1-03 from B17 to A2: same
+- [ ] B17-R1-05 from B17 to A3: joiner gets missing tools and relevant items, tutorial or not
+- [ ] B17-R1-06 from B17 to A3: join someone after the tutorial; no join-a-friend at spawn
+- [ ] B17-R1-07 from B17 to B10: soft delete and restore, disband and profile reset
+- [ ] B17-R1-07 from B17 to C9: box items vs soft delete
+- [ ] B17-R1-09 from B17 to I9: profiles GUI overhaul
+- [ ] B17-R1-10 from B17 to B13: island name chosen at a level, unlocks
+- [ ] B17-R1-12 from B17 to H4: staff profile picker
+- [ ] B17-R1-15 from B17 to F2: which ranks include slot 2 and 3
+- [ ] B17-R1-20 from B17 to F7: credits_earned once per account per day
+- [ ] B17-R1-20 from B17 to F9: same for the pass

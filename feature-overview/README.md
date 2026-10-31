@@ -8,7 +8,9 @@ Phase: **feature review. No coding.** Every feature card in `features/` is revie
 - Skills: `feature-review`, `card-writing`, `conflict-check`.
 - `opencode.json`: bash allowed; asks before git commit/push/merge/reset/rebase/clean, gh, deploy/release/vps scripts, ssh/scp/rsync, tmux, rm; `./gradlew runServer` denied.
 
-## The loop (one feature)
+**New since 31 Oct: read `WORKFLOW.md` (one session per card, developer decides technical things, owner decides game feel), `OWNER_PROFILE.md` (how the owner thinks) and `TIERS.md` (tiers, clusters, order). The 20-suggestion loop below is now only used when the owner asks for ideas.**
+
+## The loop (one feature, old style)
 1. `/feature <ID>`: the card, its linked cards (GRAPH.md) and the real code are read. **Disagreements card vs docs vs code** come first (`disagreements/<ID>.md`).
 2. **20 suggestions per round**, numbered, tagged `[Bug] [Security/Dupe] [Logic/UX] [Synergy] [QoL] [Performance] [Economy]`, each with change (numbers), why, risk, size S/M/L.
 3. Owner answers: `yes 1 4 7, no 2 (reason)`. Unmentioned items stay undecided. `more` = 20 new ideas, no repeats of accepted or rejected ones.
@@ -19,13 +21,14 @@ Phase: **feature review. No coding.** Every feature card in `features/` is revie
 ## Files
 | File | Purpose |
 |---|---|
+| `WORKFLOW.md` / `OWNER_PROFILE.md` / `TIERS.md` | Efficient process, owner profile, tiers and order |
 | `INDEX.md` | Dashboard of all 102 cards (generated) |
 | `ORDER.md` | Review order, biggest and most connected first (generated; the fixed head of the list is in `refresh.py`) |
 | `GRAPH.md` | Card links from each card's Connections section (generated) |
 | `CODE-MAP.md` | Card -> module/package; a starting point the reader verifies |
 | `GLOSSARY.md` | Stale terms in the cards (gems -> credits ...) |
 | `LEDGER.md` | One line per decision, never deleted |
-| `RIPPLES.md` | Knock-on edits other cards need; `/lock` refuses while open |
+| `RIPPLES.md` | Knock-on edits other cards need; `/lock X` refuses while a ripple points TO X is open |
 | `disagreements/<ID>.md` | Card vs docs vs code, per feature |
 | `rounds/<ID>/round-N.md` | The 20 suggestions and the owner's answers |
 | `build-specs/<ID>.md` | Exact build instructions for the coder, written after Locked |

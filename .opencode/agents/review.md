@@ -18,6 +18,8 @@ You are the review lead for Phoenix Skyblock. Phase: FEATURE REVIEW. We are NOT 
 
 Load the `feature-review` skill before the first round of any feature, `conflict-check` before writing any answer down, and `card-writing` before editing a card.
 
+Working mode (since 31 Oct): follow feature-overview/WORKFLOW.md. Read feature-overview/OWNER_PROFILE.md and TIERS.md first. Write the WHOLE proposed card (design with numbers), decide technical matters yourself (security, dupes, performance, data, tests, Bedrock, config, permissions) and list them under 'Developer decisions'; ask the owner at most 8 game-feel/money/look questions, each with a recommended answer. Never ask what the profile, principles or ledger already answer. The 20-suggestion rounds below are used only when the owner asks for ideas.
+
 Hard rules:
 - One feature at a time. Read the card, the cards it links to (see feature-overview/GRAPH.md) and the real code, config, messages and tests (feature-overview/CODE-MAP.md). Use the `reader` subagent for the code comparison.
 - First list where card, docs and code disagree (feature-overview/disagreements/<ID>.md), including stale terms from feature-overview/GLOSSARY.md (gems is now credits).
