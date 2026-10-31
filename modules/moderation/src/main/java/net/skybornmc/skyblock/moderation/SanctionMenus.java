@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.moderation;
 
 import net.kyori.adventure.text.Component;
+import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.menu.NumberPickerMenu;
@@ -367,16 +368,7 @@ final class SanctionMenus {
                 shown.editMeta(meta -> meta.lore(lore));
                 int at = slot;
                 set(slot, shown, click -> openChild(new ChoiceMenu(module, target, Sanction.Kind.ITEM,
-                        reasonChoices(module, viewer, id -> {
-                            Player now = Bukkit.getPlayer(target.uuid());
-                            if (now == null) {
-                                module.messages().send(viewer, "sanctions.confiscate-offline", Msg.p("player", target.name()));
-                                return;
-                            }
-                            module.sanctions().confiscate(viewer, now, source, at, expected, id)
-                                    .whenComplete((r, e) -> Bukkit.getScheduler().runTask(service.plugin(),
-                                            () -> reopen(module, viewer, target)));
-                        }))));
+                        reasonChoices(module, viewer, id -> confirm(at, expected, id)))));
             }
             set(Menu.SLOT_BACK, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
             Sanctions.Source other = source == Sanctions.Source.ENDER ? Sanctions.Source.INVENTORY : Sanctions.Source.ENDER;
@@ -387,6 +379,28 @@ final class SanctionMenus {
                 module.core().menus().open(viewer, next);
             });
             set(Menu.SLOT_CLOSE, service.item(Material.BARRIER, viewer, "frame.close"), click -> viewer.closeInventory());
+        }
+
+        /**
+         * GUI-4c (GUI_DESIGN §4): "Confiscate <item>?" with the player, the place and the reason on the middle item. The
+         * stack is checked again on confirm ({@code expected}), so a stack that changed meanwhile is not taken.
+         */
+        private void confirm(int at, ItemStack expected, String reason) {
+            ConfirmMenu confirm = new ConfirmMenu(v -> service.text(v, MODULE, "sanctions.confiscate-menu.confirm.crumb"), expected.clone(),
+                    v -> service.lines(v, MODULE, "sanctions.confiscate-menu.confirm.details", Msg.p("item", Sanctions.describe(expected)),
+                            Msg.p("player", target.name()), Msg.p("reason", module.sanctions().reasonText(v, reason)),
+                            Msg.c("where", service.text(v, MODULE, "sanctions.confiscate-menu.title-" + source.id()))),
+                    p -> {
+                        Player now = Bukkit.getPlayer(target.uuid());
+                        if (now == null) {
+                            module.messages().send(p, "sanctions.confiscate-offline", Msg.p("player", target.name()));
+                            return;
+                        }
+                        module.sanctions().confiscate(p, now, source, at, expected, reason)
+                                .whenComplete((r, e) -> Bukkit.getScheduler().runTask(service.plugin(), () -> reopen(module, p, target)));
+                    }, p -> { });
+            confirm.parent(this);
+            module.core().menus().open(viewer, confirm);
         }
     }
 }
