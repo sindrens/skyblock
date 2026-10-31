@@ -45,6 +45,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.ToDoubleFunction;
@@ -125,6 +127,8 @@ final class LevelManager implements Listener {
     private volatile Map<UUID, Integer> places = Map.of();
     private LevelMath.Weights weights;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
+    /** Finished calculations waiting to be applied on the main thread (PERF7; filled from any thread). */
+    private final Queue<Runnable> applies = new ConcurrentLinkedQueue<>();
     private Scheduler.Task loadRetry;
     private long lastNightlyDay = Long.MIN_VALUE;
     private boolean ready;
@@ -167,6 +171,7 @@ final class LevelManager implements Listener {
 
     private void startTasks() {
         tasks.add(core.scheduler().repeat("progression-level", 2L, 2L, this::tick));
+        tasks.add(core.scheduler().repeat("progression-level-apply", 1L, 1L, this::drainApplies));
         long refresh = Math.max(1, config.refreshMinutes) * 60L * 20L;
         tasks.add(core.scheduler().repeat("progression-level-refresh", refresh, refresh, this::refreshOnline));
         long top = Math.max(10, config.topRefreshSeconds) * 20L;
@@ -182,7 +187,9 @@ final class LevelManager implements Listener {
     private void load() {
         long now = System.currentTimeMillis();
         long window = windowMillis();
+        LevelMath.Weights w = weights;
         core.database().async(c -> {
+            warmUp(w, zone);
             List<LevelStore.LevelRow> levels = store.loadLevels(c, season);
             List<LevelStore.WorthRow> worth = store.loadWorth(c, season);
             List<LevelStore.BankRow> bank = new ArrayList<>(store.loadLatestBefore(c, season, now - window, 0));
@@ -227,6 +234,22 @@ final class LevelManager implements Listener {
         }));
     }
 
+    /**
+     * PERF7: runs the pure parts of a level calculation once off the main thread at load, so the first real calculation
+     * (usually right after the first join) does not pay their first-run cost on the main thread: class initialisation of
+     * the level math and its EnumMaps, lambda linking, and the time-zone rules read by the daily history row
+     * ({@code LocalDate.now(zone)}). Nothing is stored; a failure only means no warm-up.
+     */
+    static void warmUp(LevelMath.Weights w, ZoneId zone) {
+        try {
+            LevelMath.calculate(new LevelMath.Inputs(1, 1, 1, 1, List.of(1, 2), 1, 1, 1), w);
+            LevelRules.sum(LevelRules.skillTotals(List.of(new EnumMap<>(Map.of(SkillType.values()[0], 1)))));
+            LocalDate.now(zone).toEpochDay();
+        } catch (RuntimeException e) {
+            // only a warm-up
+        }
+    }
+
     void shutdown() {
         closed = true;
         stopTasks();
@@ -261,7 +284,7 @@ final class LevelManager implements Listener {
 
     /**
      * Starts the due recalculations: at most {@code recalc.per-tick}, and (PERF5) only while this tick is within
-     * {@code recalc.budget-ms} (a calculation whose inputs are all cached applies at once, inside this tick); the rest
+     * {@code recalc.budget-ms}; the rest
      * stay due and start in the next ticks.
      */
     private void tick() {
@@ -287,6 +310,40 @@ final class LevelManager implements Listener {
                 compute(island);
             }
         }
+    }
+
+    /**
+     * Applies finished calculations (PERF7): at least one per tick, more only while the tick is within
+     * {@code recalc.budget-ms} (the same budget the starts use), so a burst after a start is spread over ticks.
+     */
+    private void drainApplies() {
+        if (!applies.isEmpty()) {
+            drain(applies, System::nanoTime, Math.max(1, config.budgetMs) * 1_000_000L,
+                    e -> core.plugin().getLogger().log(Level.WARNING, "Progression: applying an island level failed", e));
+        }
+    }
+
+    /**
+     * Runs queued work: always the first item, then more while less than {@code budgetNanos} passed since the start. A
+     * failing item is reported and the next one still runs. Returns how many ran. Pure, unit-tested.
+     */
+    static int drain(Queue<Runnable> queue, java.util.function.LongSupplier clock, long budgetNanos,
+                     java.util.function.Consumer<RuntimeException> onError) {
+        long start = clock.getAsLong();
+        int ran = 0;
+        while (ran == 0 || clock.getAsLong() - start < budgetNanos) {
+            Runnable work = queue.poll();
+            if (work == null) {
+                break;
+            }
+            ran++;
+            try {
+                work.run();
+            } catch (RuntimeException e) {
+                onError.accept(e);
+            }
+        }
+        return ran;
     }
 
     private void refreshOnline() {
@@ -351,7 +408,9 @@ final class LevelManager implements Listener {
         List<CompletableFuture<?>> all = new ArrayList<>(xp);
         all.add(bank);
         CompletableFuture.allOf(all.toArray(CompletableFuture[]::new)).orTimeout(COMPUTE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                .whenComplete((v, error) -> core.scheduler().ensureMain("progression-level-apply", () -> {
+                // PERF7: queued for the progression-level-apply task, also when every input was already cached (then the
+                // futures are complete and the apply used to run inline, inside the progression-level tick that started it).
+                .whenComplete((v, error) -> applies.add(() -> {
                     computing.remove(islandId);
                     if (closed) {
                         return;
@@ -388,7 +447,8 @@ final class LevelManager implements Listener {
             return 0;
         }
         try {
-            double v = f.applyAsDouble(islandId);
+            // Timed on its own (PERF7): these come from other modules (upgrades, achievements, collections).
+            double v = core.scheduler().timer().time("progression-level-source:" + source.id(), () -> f.applyAsDouble(islandId));
             return Double.isFinite(v) && v > 0 ? v : 0;
         } catch (RuntimeException e) {
             core.plugin().getLogger().log(Level.WARNING, "Progression: level source '" + source.id() + "' failed", e);

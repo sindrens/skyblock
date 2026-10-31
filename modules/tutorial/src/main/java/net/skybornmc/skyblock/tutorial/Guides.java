@@ -7,6 +7,7 @@ import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.text.TextMemo;
 import net.skybornmc.skyblock.common.tutorial.TutorialService.State;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import org.bukkit.Bukkit;
@@ -36,6 +37,13 @@ import java.util.UUID;
  * action bar hint, flame trail and flame column (per-player particles), dust markers on farm spots and ore, and a
  * hologram over the target that only this player sees (text display, or a name-tag armor stand for Bedrock viewers,
  * TQ32). One repeating task for every tutorial player. Main thread.
+ *
+ * <p>PERF7: the boss bar, action bar hint and hologram texts are parsed once per distinct value (shared
+ * {@link TextMemo}, keyed by every input and the messages generation) instead of on every run (every
+ * {@code guide.update-ticks}); the marker scans walk the box nearest first and stop when they have enough markers
+ * ({@link MarkerScan#order}, cached per island home / standing spot); a scan never loads a chunk; a refused Pip or
+ * hologram spawn is retried after {@code guide.spawn-retry-millis} instead of on every run. The parts are timed on their own
+ * ({@code tutorial-guides-bar}, {@code -markers}, {@code -hologram}, {@code -pip}) so the log names the slow one.</p>
  */
 final class Guides {
 
@@ -50,12 +58,19 @@ final class Guides {
         String markersFor;
         long lastMarkerScan;
         long lastHint;
+        /** Nearest-first scan order of the last marker centre (island home or standing spot) and its key. */
+        MarkerScan.OrderKey orderKey;
+        List<MarkerScan.Hit> order = List.of();
+        /** No hologram spawn before this time (the last one was refused). */
+        long hologramRetryAt;
     }
 
     private final TutorialModule module;
     private final Core core;
     private final NamespacedKey tag;
     private final Map<UUID, View> views = new HashMap<>();
+    /** Parsed bar / hint / hologram texts by every input (PERF7); the compass distance makes a few hundred at most. */
+    private final TextMemo<Component> texts = new TextMemo<>(512);
     private Scheduler.Task task;
     private long ticks;
 
@@ -131,7 +146,7 @@ final class Guides {
                 continue;
             }
             Optional<Location> target = draw(player, p, e.getValue(), particles);
-            module.pip().update(player, target);
+            core.scheduler().timer().time("tutorial-guides-pip", () -> module.pip().update(player, target));
             module.listener().tick(player, p);
             idle(player, p, now);
         }
@@ -157,19 +172,43 @@ final class Guides {
         }
         Optional<Location> target = module.targets().target(player, p);
         if (module.config().bossbar) {
-            bar(player, p, v, target);
+            core.scheduler().timer().time("tutorial-guides-bar", () -> bar(player, p, v, target));
         }
         long now = System.currentTimeMillis();
         if (now - v.lastHint >= 2000 && module.msg().has("steps." + step + ".hint")) {
             v.lastHint = now;
-            module.msg().actionBar(player, "steps." + step + ".hint", counts(p, step));
+            int have = p.count(step);
+            int needed = needed(step);
+            player.sendActionBar(text(player, "hint|" + step + '|' + have + '|' + needed,
+                    () -> module.msg().component(player, "steps." + step + ".hint", counts(p, step))));
         }
-        hologram(player, p, v, target);
+        core.scheduler().timer().time("tutorial-guides-hologram", () -> hologram(player, p, v, target));
         if (particles) {
             particles(player, p, v, target);
         }
         return target;
     }
+
+    /**
+     * A tutorial text built by {@code build}, cached under {@code key} (which must hold every input of the text besides
+     * the viewer's platform and the messages generation, both added here). Never cached while any tutorial text uses a
+     * player placeholder ({@code <ph:...>}), whose value could change without the key changing.
+     */
+    private Component text(Player viewer, String key, java.util.function.Supplier<Component> build) {
+        long generation = core.messages().generation();
+        if (generation != placeholderGeneration) {
+            placeholderTexts = core.messages().usesPlayerPlaceholders(TutorialModule.ID); // a walk over every text: once per reload
+            placeholderGeneration = generation;
+        }
+        if (placeholderTexts) {
+            return build.get();
+        }
+        String full = module.engine().bedrock(viewer) + "|" + key;
+        return texts.get(generation, full, k -> build.get());
+    }
+
+    private long placeholderGeneration = Long.MIN_VALUE;
+    private boolean placeholderTexts;
 
     // ------------------------------------------------------------------ boss bar compass
 
@@ -179,11 +218,17 @@ final class Guides {
         Component text;
         float progress;
         int needed = needed(step);
-        TagResolver[] base = {Msg.c("objective", module.msg().component(player, "steps." + step + ".objective")),
-                Msg.number("number", flow.number(step)), Msg.number("total", flow.size())};
+        int number = flow.number(step);
+        int total = flow.size();
+        // The texts are parsed only when one of their inputs changed (PERF7); base is built lazily inside the builds.
+        String head = step + '|' + number + '|' + total + '|';
+        java.util.function.Supplier<TagResolver[]> base = () -> new TagResolver[]{
+                Msg.c("objective", module.msg().component(player, "steps." + step + ".objective")),
+                Msg.number("number", number), Msg.number("total", total)};
         if (needed > 0) {
             int have = p.count(step);
-            text = module.msg().component(player, "bar.count", concat(base, Msg.number("count", have), Msg.number("needed", needed)));
+            text = text(player, "bar.count|" + head + have + '|' + needed, () -> module.msg().component(player, "bar.count",
+                    concat(base.get(), Msg.number("count", have), Msg.number("needed", needed))));
             progress = Math.max(BAR_STEP_MIN, Math.min(1f, have / (float) needed));
         } else if (target.isPresent() && sameWorld(player, target.get())) {
             Location to = target.get();
@@ -192,16 +237,20 @@ final class Guides {
             double dz = to.getZ() - at.getZ();
             double dist = Math.sqrt(dx * dx + dz * dz);
             Compass.Direction dir = Compass.direction(at.getYaw(), dx, dz, module.config().aheadDegrees, module.config().behindDegrees, 2.5);
-            Component name = module.msg().has("steps." + step + ".target")
-                    ? module.msg().component(player, "steps." + step + ".target") : module.engine().stepName(player, step);
-            text = module.msg().component(player, "compass." + dir.name().toLowerCase(Locale.ROOT),
-                    concat(base, Msg.c("target", name), Msg.number("distance", Math.round(dist))));
+            String key = "compass." + dir.name().toLowerCase(Locale.ROOT);
+            long distance = Math.round(dist);
+            text = text(player, key + '|' + head + distance, () -> {
+                Component name = module.msg().has("steps." + step + ".target")
+                        ? module.msg().component(player, "steps." + step + ".target") : module.engine().stepName(player, step);
+                return module.msg().component(player, key, concat(base.get(), Msg.c("target", name), Msg.number("distance", distance)));
+            });
             progress = Compass.distanceProgress(dist, 100);
         } else if (!module.targets().atPlace(player, step)) {
-            text = module.msg().component(player, Targets.place(step) == Targets.Place.ISLAND ? "bar.away-island" : "bar.away-depths", base);
+            String key = Targets.place(step) == Targets.Place.ISLAND ? "bar.away-island" : "bar.away-depths";
+            text = text(player, key + '|' + head, () -> module.msg().component(player, key, base.get()));
             progress = Math.max(BAR_STEP_MIN, flow.index(step) / (float) Math.max(1, flow.size()));
         } else {
-            text = module.msg().component(player, "bar.plain", base);
+            text = text(player, "bar.plain|" + head, () -> module.msg().component(player, "bar.plain", base.get()));
             progress = Math.max(BAR_STEP_MIN, flow.index(step) / (float) Math.max(1, flow.size()));
         }
         if (v.bar == null) {
@@ -257,7 +306,8 @@ final class Guides {
         if (step.equals(Steps.CROP) || step.equals(Steps.MINE)) {
             long now = System.currentTimeMillis();
             if (!step.equals(v.markersFor) || now - v.lastMarkerScan > 2000) {
-                v.markers = step.equals(Steps.CROP) ? farmSpots(player) : ores(player);
+                v.markers = core.scheduler().timer().time("tutorial-guides-markers",
+                        () -> step.equals(Steps.CROP) ? farmSpots(player, v) : ores(player, v));
                 v.markersFor = step;
                 v.lastMarkerScan = now;
             }
@@ -351,8 +401,11 @@ final class Guides {
         }
     }
 
-    /** Up to 3 dirt/grass/farmland blocks with air above near the island home (first-crop step). */
-    private List<Location> farmSpots(Player player) {
+    /**
+     * Up to 3 dirt/grass/farmland blocks with air above near the island home (first-crop step). PERF7: walks the box
+     * nearest first (order cached per home) and stops at {@code crop-count}; same spots as the old full scan + sort.
+     */
+    private List<Location> farmSpots(Player player, View v) {
         List<Location> out = new ArrayList<>();
         Optional<Location> home = module.targets().home(player);
         if (home.isEmpty() || !sameWorld(player, home.get())) {
@@ -360,67 +413,74 @@ final class Guides {
         }
         Location h = home.get();
         int r = module.config().cropRadius;
+        World world = h.getWorld();
+        if (!loaded(world, h.getBlockX(), h.getBlockZ(), r)) {
+            return out; // never load chunks for markers: the home is out of sight anyway
+        }
         Optional<IslandService> islands = core.services().optional(IslandService.class);
         UUID key = ProfileService.of(core.services()).profileKey(player);
-        World world = h.getWorld();
-        List<MarkerScan.Hit> found = new ArrayList<>();
-        for (int dx = -r; dx <= r; dx++) {
-            for (int dz = -r; dz <= r; dz++) {
-                for (int dy = -3; dy <= 2; dy++) {
-                    int x = h.getBlockX() + dx;
-                    int y = h.getBlockY() + dy;
-                    int z = h.getBlockZ() + dz;
-                    Material m = world.getType(x, y, z);
-                    if ((m == Material.GRASS_BLOCK || m == Material.DIRT || m == Material.FARMLAND)
-                            && world.getType(x, y + 1, z).isAir()) {
-                        found.add(MarkerScan.Hit.of(x, y, z, h.getX(), h.getY(), h.getZ()));
-                    }
-                }
+        List<MarkerScan.Hit> order = order(v, new MarkerScan.OrderKey(world.getName(), h.getBlockX(), h.getBlockY(), h.getBlockZ(),
+                h.getX(), h.getY(), h.getZ(), r, -3, 2, MarkerScan.Loop.X_Z_Y));
+        for (MarkerScan.Hit hit : MarkerScan.firstMatches(order, hit -> {
+            Material m = world.getType(hit.x(), hit.y(), hit.z());
+            if ((m != Material.GRASS_BLOCK && m != Material.DIRT && m != Material.FARMLAND)
+                    || !world.getType(hit.x(), hit.y() + 1, hit.z()).isAir()) {
+                return false;
             }
-        }
-        for (MarkerScan.Hit hit : MarkerScan.nearestFirst(found)) {
             Location loc = new Location(world, hit.x(), hit.y(), hit.z());
-            if (islands.isPresent() && islands.get().islandAt(loc).map(i -> !i.owner().equals(key)
-                    && !islands.get().isMember(i.id(), key)).orElse(true)) {
-                continue;
-            }
-            out.add(loc);
-            if (out.size() >= module.config().cropCount) {
-                break;
-            }
+            return islands.isEmpty() || !islands.get().islandAt(loc).map(i -> !i.owner().equals(key)
+                    && !islands.get().isMember(i.id(), key)).orElse(true);
+        }, module.config().cropCount)) {
+            out.add(new Location(world, hit.x(), hit.y(), hit.z()));
         }
         return out;
     }
 
-    /** The nearest blocks matching {@code guide.markers.mine-blocks} around the player (mine step). */
-    private List<Location> ores(Player player) {
+    /**
+     * The nearest blocks matching {@code guide.markers.mine-blocks} around the player (mine step). PERF7: nearest first
+     * (order cached while the player stands on the same spot, which is how people mine), stops at {@code mine-count}.
+     */
+    private List<Location> ores(Player player, View v) {
         List<Location> out = new ArrayList<>();
         Location at = player.getLocation();
         int r = module.config().mineRadius;
         World world = at.getWorld();
+        if (!loaded(world, at.getBlockX(), at.getBlockZ(), r)) {
+            return out;
+        }
         MarkerScan.Matcher matcher = mineMatcher();
         Map<Material, Boolean> seen = new java.util.EnumMap<>(Material.class);
-        List<MarkerScan.Hit> found = new ArrayList<>();
-        for (int dx = -r; dx <= r; dx++) {
-            for (int dy = -r; dy <= r; dy++) {
-                for (int dz = -r; dz <= r; dz++) {
-                    int x = at.getBlockX() + dx;
-                    int y = at.getBlockY() + dy;
-                    int z = at.getBlockZ() + dz;
-                    Material m = world.getType(x, y, z);
-                    if (seen.computeIfAbsent(m, k -> matcher.matches(k.getKey().getKey()))) {
-                        found.add(MarkerScan.Hit.of(x, y, z, at.getX(), at.getY(), at.getZ()));
-                    }
+        List<MarkerScan.Hit> order = order(v, new MarkerScan.OrderKey(world.getName(), at.getBlockX(), at.getBlockY(), at.getBlockZ(),
+                at.getX(), at.getY(), at.getZ(), r, -r, r, MarkerScan.Loop.X_Y_Z));
+        for (MarkerScan.Hit hit : MarkerScan.firstMatches(order, hit -> seen.computeIfAbsent(world.getType(hit.x(), hit.y(), hit.z()),
+                k -> matcher.matches(k.getKey().getKey())), module.config().mineMarkers)) {
+            out.add(new Location(world, hit.x(), hit.y() - 1, hit.z()));
+        }
+        return out;
+    }
+
+    /** The view's cached nearest-first order for {@code key}, recomputed when the centre or box changed. */
+    private static List<MarkerScan.Hit> order(View v, MarkerScan.OrderKey key) {
+        if (!key.equals(v.orderKey)) {
+            v.order = MarkerScan.order(key.bx(), key.by(), key.bz(), key.cx(), key.cy(), key.cz(), key.r(), key.dyMin(), key.dyMax(),
+                    key.loop());
+            v.orderKey = key;
+        }
+        return v.order;
+    }
+
+    /** True when every chunk of the box {@code (x, z) ± r} is loaded (a block read would load it on the main thread). */
+    private static boolean loaded(World world, int x, int z, int r) {
+        int[] xs = MarkerScan.chunkSpan(x, r);
+        int[] zs = MarkerScan.chunkSpan(z, r);
+        for (int cx = xs[0]; cx <= xs[1]; cx++) {
+            for (int cz = zs[0]; cz <= zs[1]; cz++) {
+                if (!world.isChunkLoaded(cx, cz)) {
+                    return false;
                 }
             }
         }
-        for (MarkerScan.Hit hit : MarkerScan.nearestFirst(found)) {
-            out.add(new Location(world, hit.x(), hit.y() - 1, hit.z()));
-            if (out.size() >= module.config().mineMarkers) {
-                break;
-            }
-        }
-        return out;
+        return true;
     }
 
     private List<String> mineSource;
@@ -454,7 +514,11 @@ final class Guides {
             return;
         }
         removeHologram(v);
-        Component text = module.msg().component(player, key);
+        long now = System.currentTimeMillis();
+        if (now < v.hologramRetryAt) {
+            return; // the last spawn was refused: try again a little later, not on every run
+        }
+        Component text = text(player, key, () -> module.msg().component(player, key));
         boolean armorStand = module.engine().bedrock(player) && "armor-stand".equalsIgnoreCase(module.config().hologramsBedrock.strip());
         Entity e;
         if (armorStand) {
@@ -481,6 +545,10 @@ final class Guides {
                 d.setSeeThrough(true);
                 d.getPersistentDataContainer().set(tag, PersistentDataType.STRING, player.getUniqueId().toString());
             });
+        }
+        if (!e.isValid()) {
+            v.hologramRetryAt = now + module.config().spawnRetryMillis; // spawn refused here (e.g. by another plugin)
+            return;
         }
         player.showEntity(core.plugin(), e);
         v.hologram = e;

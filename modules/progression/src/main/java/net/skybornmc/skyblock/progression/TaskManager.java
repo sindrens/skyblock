@@ -454,7 +454,8 @@ final class TaskManager implements TaskService, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onIslandLevel(IslandLevelUpEvent event) {
         if (event.rose()) {
-            check(event.islandId());
+            // PERF7: next tick, like pillar and skill level-ups, so the check never runs inside the level apply.
+            core.scheduler().later("progression-task-level", 1L, () -> check(event.islandId()));
         }
     }
 
