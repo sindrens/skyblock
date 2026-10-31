@@ -59,8 +59,9 @@ public final class TradeConfig extends ModuleConfig {
     // ------------------------------------------------------------------ money
 
     @Setting(path = "money.currencies", desc = "Currencies that can be offered (also need economy.yml tradeable). Crystals "
-            + "and earned credits are never tradeable (CR3, C1); bought credits only if economy.yml tradeable.credits allows it.", level = Setting.Level.OWNER)
-    public List<String> currencies = List.of("money", "shards");
+            + "and earned credits are never tradeable (CR3, C1-R2-02, hard rule in code); 'credits' = bought credits only (owner, "
+            + "C1 wave 1b), also needs economy.yml tradeable.credits.", level = Setting.Level.OWNER)
+    public List<String> currencies = List.of("money", "shards", "credits");
 
     // Owner answers 131/203 (round 1): no new-account playtime limit for money offers (old key money.new-account-minutes
     // is ignored). The join tutorial locks /trade until it is finished (TutorialGate in TradeModule#request/#accept).
@@ -163,6 +164,18 @@ public final class TradeConfig extends ModuleConfig {
             }
         }
         return fallback;
+    }
+
+    /** Version 2 (card C1, owner): bought credits can be offered in a trade; an untouched currency list gets them. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("money.currencies",
+                ValueChange.of(List.of("money", "shards"), List.of("money", "shards", "credits"))));
     }
 
     @Override

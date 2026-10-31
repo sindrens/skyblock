@@ -15,7 +15,8 @@ picker:
 currency:
   money: "Money"
   crystals: "Crystals"
-  credits: "Credits"
+  # Card C1: only bought credits can be traded; earned credits never show up here.
+  credits: "Bought credits"
   credits_earned: "Earned credits"
   shards: "Shards"
 

@@ -677,7 +677,11 @@ public final class TradeModule implements SkyblockModule, Listener {
         if (s == null || !s.editable()) {
             return;
         }
+        if (!currency.transferable()) {
+            return; // crystals and earned credits can never be offered (hard rule; they are never listed either)
+        }
         TradeSession.Side side = s.side(p.getUniqueId());
+        // For credits this is the BOUGHT half only: earned credits are never tradeable (C1-R2-02).
         long balance = economy().cached(p.getUniqueId(), currency).orElse(0L);
         Optional<TradeRules.MoneyProblem> problem = TradeRules.money(currencies().contains(currency), amount, side.money(currency),
                 balance);
