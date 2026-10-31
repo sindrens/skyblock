@@ -43,9 +43,29 @@ final class PlayerDepletion {
 
     Visibility visibility = Visibility.EVERYONE;
 
+    /** DV2-SPIKE: active tier per palette id (missing = 1, the real block). */
+    final it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<String> paletteTiers = new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>(2);
+    /** DV2-SPIKE: slot blocks of a running tier swap still to send (throttled), or {@code null}. */
+    SwapQueue swap;
+    String swapPalette;
+
     PlayerDepletion(Player player, int handle) {
         this.player = player;
         this.handle = handle;
+        paletteTiers.defaultReturnValue(1);
+    }
+
+    /** True if any palette shows this player something other than the real block. */
+    boolean anyPaletteTier() {
+        if (paletteTiers.isEmpty()) {
+            return false;
+        }
+        for (int t : paletteTiers.values()) {
+            if (PaletteMath.needsPackets(t)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     int nextToken() {

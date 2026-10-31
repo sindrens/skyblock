@@ -72,6 +72,15 @@ public final class ZoneManager implements ZoneService {
     private RegionIndex<ZoneBounds> index = RegionIndex.empty();
     private List<String> problems = List.of();
 
+    /** DV2-SPIKE: engine region id ({@code <zone>_<field>}) → that zone's tier. */
+    private volatile java.util.Map<String, Integer> regionTiers = java.util.Map.of();
+
+    /** DV2-SPIKE: wing tier of the zone a field region belongs to (0 = not a zone field). */
+    public int tierOfRegion(String regionId) {
+        Integer tier = regionTiers.get(regionId);
+        return tier == null ? 0 : tier;
+    }
+
     public ZoneManager(Core core, DepthsConfig config, Depths engine) {
         this.core = core;
         this.config = config;
@@ -115,6 +124,13 @@ public final class ZoneManager implements ZoneService {
     /** Registers every field as an engine region {@code <zone>_<field>} (replaces the previous ones). */
     private void registerFields() {
         engine.unregisterAll(SOURCE);
+        java.util.Map<String, Integer> tiers = new java.util.HashMap<>();
+        for (Zone zone : set.zones()) {
+            for (Field field : zone.fields()) {
+                tiers.put(zone.regionId(field), zone.tier());
+            }
+        }
+        regionTiers = java.util.Map.copyOf(tiers);
         if (!config.registerZoneFields) {
             log.info("Depths zones: " + set.zones().size() + " zones loaded, fields not registered (zones.register-fields: false)");
             return;

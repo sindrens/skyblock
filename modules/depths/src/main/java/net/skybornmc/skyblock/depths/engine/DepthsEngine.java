@@ -19,6 +19,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
@@ -83,6 +84,21 @@ public final class DepthsEngine implements Depths, Listener {
     private Scheduler.Task tickTask = Scheduler.Task.NONE;
     private BiPredicate<Player, Player> sameIsland = (a, b) -> false;
 
+    // DV2-SPIKE tier palettes.
+    private List<TierPalette> palettes = List.of();
+    private final Map<String, TierPalette> paletteById = new HashMap<>();
+    private final Map<String, TierPalette> paletteByRegion = new HashMap<>();
+    private final Map<String, SlotIndex> slotIndexes = new HashMap<>();
+    private final Map<String, DepthsRegion> regionsById = new HashMap<>();
+    private final List<PlayerDepletion> swapping = new ArrayList<>();
+    private java.util.function.ToIntFunction<String> regionTier = id -> 0;
+    private long swaps;
+    private int lastSwapBlocks;
+    private double lastSwapMillis;
+    private double maxSwapMillis;
+    private int lastDrainTicks;
+    private double lastDrainTotalMillis;
+
     // Statistics for /depths debug.
     private long breaks;
     private double avgBreakNanos;
@@ -107,6 +123,7 @@ public final class DepthsEngine implements Depths, Listener {
     public void stop() {
         tickTask.cancel();
         tickTask = Scheduler.Task.NONE;
+        palettes(List.of());
         restoreAll();
         players.clear();
         byHandle.clear();
@@ -137,6 +154,21 @@ public final class DepthsEngine implements Depths, Listener {
         List<DepthsRegion> all = new ArrayList<>(configRegions);
         all.addAll(codeRegions.values());
         index = RegionIndex.of(all);
+        regionsById.clear();
+        for (DepthsRegion r : index.regions()) {
+            regionsById.putIfAbsent(r.id(), r);
+        }
+        rebuildSlotIndexes();
+    }
+
+    private void rebuildSlotIndexes() {
+        slotIndexes.clear();
+        for (String id : paletteByRegion.keySet()) {
+            DepthsRegion r = regionsById.get(id);
+            if (r != null) {
+                slotIndexes.put(id, new SlotIndex(r));
+            }
+        }
     }
 
     // ------------------------------------------------------------------ tick
@@ -145,6 +177,9 @@ public final class DepthsEngine implements Depths, Listener {
         wheel.advance(expireSink);
         if (!pendingKeys.isEmpty()) {
             flushPending();
+        }
+        if (!swapping.isEmpty()) {
+            drainSwaps();
         }
     }
 
@@ -171,6 +206,8 @@ public final class DepthsEngine implements Depths, Listener {
             PlayerDepletion.Depleted d = state.depleted.get(key);
             if (d != null) {
                 send(state, key, d.shown());
+            } else {
+                sendPalette(state, key);
             }
         }
         pendingKeys.clear();
@@ -189,7 +226,22 @@ public final class DepthsEngine implements Depths, Listener {
         if (!world.getName().equals(state.world) || !player.isChunkSent(BlockKeys.chunkOf(key))) {
             return; // the next chunk send shows the real block anyway
         }
-        send(state, key, world.getBlockData(BlockKeys.x(key), BlockKeys.y(key), BlockKeys.z(key)));
+        TierPalette.Tier tier = paletteTierAt(state, world, key);
+        send(state, key, tier != null ? tier.shown() : world.getBlockData(BlockKeys.x(key), BlockKeys.y(key), BlockKeys.z(key)));
+    }
+
+    /** DV2-SPIKE: re-sends the palette block of a slot (a cancelled break or a click made the server send the real one). */
+    private void sendPalette(PlayerDepletion state, long key) {
+        Player player = state.player;
+        World world = player.getWorld();
+        TierPalette.Tier tier = paletteTierAt(state, world, key);
+        if (tier == null || !player.isChunkSent(BlockKeys.chunkOf(key))) {
+            return;
+        }
+        scratch.setWorld(world);
+        scratch.set(BlockKeys.x(key), BlockKeys.y(key), BlockKeys.z(key));
+        player.sendBlockChange(scratch, tier.shown());
+        scratch.setWorld(null);
     }
 
     private void send(PlayerDepletion state, long key, BlockData data) {
@@ -315,7 +367,8 @@ public final class DepthsEngine implements Depths, Listener {
                 int x = BlockKeys.x(key);
                 int y = BlockKeys.y(key);
                 int z = BlockKeys.z(key);
-                changes.put(Position.block(x, y, z), world.getBlockData(x, y, z));
+                TierPalette.Tier tier = paletteTierAt(state, world, key);
+                changes.put(Position.block(x, y, z), tier != null ? tier.shown() : world.getBlockData(x, y, z));
             }
         }
         if (!changes.isEmpty() && player.isOnline()) {
@@ -364,19 +417,30 @@ public final class DepthsEngine implements Depths, Listener {
             queueResend(state, key);
             return;
         }
-        if (config.fastBreakEnabled && checkFastBreak(state, player, block, world, key, resource)) {
+        // DV2-SPIKE: in a palette zone the player broke the block of their active tier (rewards, look, respawn, timing).
+        TierPalette.Tier slot = slotTier(state, region, resource.block());
+        ResourceBlock shown = slot != null ? slot.resource() : resource;
+        BlockData shownData = slot != null && !slot.shown().getMaterial().equals(resource.block()) ? slot.shown() : null;
+        if (config.fastBreakEnabled && checkFastBreak(state, player, block, world, key, shown, shownData)) {
             state.clearDamage();
+            if (shownData != null) {
+                queueResend(state, key);
+            }
             return;
         }
         state.clearDamage();
         ItemStack tool = player.getInventory().getItemInMainHand();
-        ResourceBreakEvent custom = new ResourceBreakEvent(player, block, region, resource, tool);
+        int tier = slot != null ? slot.wingTier() : regionTier.applyAsInt(region.id());
+        ResourceBreakEvent custom = new ResourceBreakEvent(player, block, region, resource, tool, shown.block(), tier,
+                shown.respawnTicks());
         long beforeEvent = System.nanoTime();
         custom.callEvent();
         long eventNanos = System.nanoTime() - beforeEvent;
         if (!custom.isCancelled()) {
-            depleteInternal(state, world, key, resource, region.id(), custom.getRespawnTicks());
+            depleteInternal(state, world, key, shown, region.id(), custom.getRespawnTicks());
             queueResend(state, key);
+        } else if (shownData != null) {
+            queueResend(state, key); // the server re-sends the real (tier 1) block: show the tier block again
         }
         record(System.nanoTime() - start - eventNanos);
     }
@@ -415,7 +479,8 @@ public final class DepthsEngine implements Depths, Listener {
         state.damageKey = key;
         state.damageWorld = world;
         state.damageStartNanos = System.nanoTime();
-        state.damageSpeed = block.getBreakSpeed(player);
+        TierPalette.Tier slot = slotTier(state, region, block.getType());
+        state.damageSpeed = breakSpeed(player, block, slot == null ? null : slot.shown());
         state.damageInstant = event.getInstaBreak();
     }
 
@@ -430,14 +495,31 @@ public final class DepthsEngine implements Depths, Listener {
         }
     }
 
+    /**
+     * DV2-SPIKE hardness fix: Paper's break speed on the real block, scaled to the block the player sees ({@code shown},
+     * {@code null} = the real block). Coal, copper and iron ore share hardness 3 but copper and iron need a stone
+     * pickaxe, so a wooden pickaxe breaks the shown copper 3.3x slower than the real coal: the check uses the slower one.
+     */
+    private static float breakSpeed(Player player, Block block, BlockData shown) {
+        float real = block.getBreakSpeed(player);
+        if (shown == null || shown.getMaterial() == block.getType()) {
+            return real;
+        }
+        ItemStack tool = player.getInventory().getItemInMainHand();
+        BlockData realData = block.getBlockData();
+        return BreakMath.scaledSpeed(real, block.getType().getHardness(), realData.getDestroySpeed(tool, true),
+                realData.isPreferredTool(tool), shown.getMaterial().getHardness(), shown.getDestroySpeed(tool, true),
+                shown.isPreferredTool(tool));
+    }
+
     /** True (and flagged) if this break was faster than possible. */
     private boolean checkFastBreak(PlayerDepletion state, Player player, Block block, String world, long key,
-                                   ResourceBlock resource) {
+                                   ResourceBlock resource, BlockData shown) {
         boolean started = state.damageMatches(world, key);
         if (started && state.damageInstant) {
             return false;
         }
-        float speedNow = block.getBreakSpeed(player);
+        float speedNow = breakSpeed(player, block, shown);
         float speed = started ? Math.max(speedNow, state.damageSpeed) : speedNow;
         int expectedTicks = BreakMath.expectedTicks(speed);
         long actualMillis = started ? (System.nanoTime() - state.damageStartNanos) / 1_000_000L : 0L;
@@ -509,12 +591,40 @@ public final class DepthsEngine implements Depths, Listener {
 
     private void resendIfDepleted(Player player, Block block) {
         PlayerDepletion state = players.get(player.getUniqueId());
-        if (state == null || state.depleted.isEmpty()) {
+        if (state == null) {
             return;
         }
         long key = BlockKeys.block(block.getX(), block.getY(), block.getZ());
         if (state.isDepleted(block.getWorld().getName(), key)) {
             queueResend(state, key);
+        } else if (state.anyPaletteTier() && !paletteByRegion.isEmpty()) {
+            DepthsRegion region = index.at(block.getWorld().getName(), block.getX(), block.getY(), block.getZ());
+            TierPalette.Tier slot = region == null ? null : slotTier(state, region, block.getType());
+            if (slot != null && PaletteMath.needsPackets(state.paletteTiers.getInt(paletteByRegion.get(region.id()).id()))) {
+                queueResend(state, key);
+            }
+        }
+    }
+
+    /** DV2-SPIKE: a builder really changed a block in a palette region: that chunk's slots are scanned again. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBuilderBreak(BlockBreakEvent event) {
+        invalidateSlots(event.getBlock());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBuilderPlace(BlockPlaceEvent event) {
+        invalidateSlots(event.getBlockPlaced());
+    }
+
+    private void invalidateSlots(Block block) {
+        if (slotIndexes.isEmpty()) {
+            return;
+        }
+        DepthsRegion region = index.at(block.getWorld().getName(), block.getX(), block.getY(), block.getZ());
+        SlotIndex slots = region == null ? null : slotIndexes.get(region.id());
+        if (slots != null) {
+            slots.invalidate(block.getX() >> 4, block.getZ() >> 4);
         }
     }
 
@@ -525,15 +635,23 @@ public final class DepthsEngine implements Depths, Listener {
             return;
         }
         PlayerDepletion state = players.get(event.getPlayer().getUniqueId());
-        if (state == null || state.depleted.isEmpty()) {
+        if (state == null) {
             return;
         }
         Chunk chunk = event.getChunk();
-        if (!chunk.getWorld().getName().equals(state.world)) {
+        boolean palette = state.anyPaletteTier() && !slotIndexes.isEmpty();
+        boolean depleted = !state.depleted.isEmpty() && chunk.getWorld().getName().equals(state.world);
+        if (!palette && !depleted) {
             return;
         }
         long chunkKey = BlockKeys.chunk(chunk.getX(), chunk.getZ());
-        Map<Position, BlockData> changes = null;
+        Map<Position, BlockData> changes = palette ? paletteChanges(state, chunk) : null;
+        if (!depleted) {
+            if (changes != null) {
+                event.getPlayer().sendMultiBlockChange(changes);
+            }
+            return;
+        }
         ObjectIterator<Long2ObjectMap.Entry<PlayerDepletion.Depleted>> it = state.depleted.long2ObjectEntrySet().fastIterator();
         while (it.hasNext()) {
             Long2ObjectMap.Entry<PlayerDepletion.Depleted> e = it.next();
@@ -548,6 +666,34 @@ public final class DepthsEngine implements Depths, Listener {
         if (changes != null) {
             event.getPlayer().sendMultiBlockChange(changes);
         }
+    }
+
+    /** DV2-SPIKE: the palette blocks of a just-sent chunk for a player at a higher tier ({@code null} = none). */
+    private Map<Position, BlockData> paletteChanges(PlayerDepletion state, Chunk chunk) {
+        Map<Position, BlockData> changes = null;
+        World world = chunk.getWorld();
+        String worldName = world.getName();
+        for (TierPalette palette : palettes) {
+            int tier = state.paletteTiers.getInt(palette.id());
+            if (!PaletteMath.needsPackets(tier)) {
+                continue;
+            }
+            BlockData shown = palette.tier(tier).shown();
+            for (String regionId : palette.regionIds()) {
+                DepthsRegion region = regionsById.get(regionId);
+                SlotIndex slots = slotIndexes.get(regionId);
+                if (region == null || slots == null || !region.world().equals(worldName) || !slots.covers(chunk.getX(), chunk.getZ())) {
+                    continue;
+                }
+                for (long key : slots.slots(chunk.getX(), chunk.getZ(), probe(world, palette.base()))) {
+                    if (changes == null) {
+                        changes = new HashMap<>();
+                    }
+                    changes.put(Position.block(BlockKeys.x(key), BlockKeys.y(key), BlockKeys.z(key)), shown);
+                }
+            }
+        }
+        return changes;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -576,6 +722,7 @@ public final class DepthsEngine implements Depths, Listener {
             state.depleted.clear(); // the client dropped those chunks; timers find nothing and do nothing
             state.world = null;
             state.clearDamage();
+            state.swap = null; // palette blocks come back with the chunk sends (the tier is kept)
         }
         unpark(player, player.getWorld().getName());
     }
@@ -657,8 +804,10 @@ public final class DepthsEngine implements Depths, Listener {
         if (state.isDepleted(world, key)) {
             return false;
         }
-        depleteInternal(state, world, key, resource, region.id(), Math.max(1, respawnTicks));
-        send(state, key, resource.depleted());
+        TierPalette.Tier slot = slotTier(state, region, resource.block());
+        ResourceBlock shown = slot != null ? slot.resource() : resource;
+        depleteInternal(state, world, key, shown, region.id(), Math.max(1, respawnTicks));
+        send(state, key, shown.depleted());
         return true;
     }
 
@@ -697,6 +846,284 @@ public final class DepthsEngine implements Depths, Listener {
             case ISLAND -> sameIsland.test(viewer, other);
             case NONE -> false;
         };
+    }
+
+    // ------------------------------------------------------------------ DV2-SPIKE tier palettes
+
+    /** Wing tier of the zone holding a region (ResourceBreakEvent#getTier outside palettes; 0 = none). */
+    public void regionTier(java.util.function.ToIntFunction<String> regionTier) {
+        this.regionTier = java.util.Objects.requireNonNull(regionTier, "regionTier");
+    }
+
+    /**
+     * Replaces the tier palettes. Every player at a higher tier first gets the real blocks back (at once, no throttle);
+     * the caller then sets the tiers again with {@link #paletteTier}.
+     */
+    public void palettes(List<TierPalette> list) {
+        for (PlayerDepletion state : new ArrayList<>(players.values())) {
+            for (String id : new ArrayList<>(state.paletteTiers.keySet())) {
+                TierPalette old = paletteById.get(id);
+                if (old != null) {
+                    swap(state, old, 1, false);
+                }
+            }
+            state.paletteTiers.clear();
+            state.swap = null;
+        }
+        swapping.clear();
+        palettes = List.copyOf(list);
+        paletteById.clear();
+        paletteByRegion.clear();
+        for (TierPalette palette : palettes) {
+            paletteById.put(palette.id(), palette);
+            for (String regionId : palette.regionIds()) {
+                paletteByRegion.putIfAbsent(regionId, palette);
+            }
+        }
+        rebuildSlotIndexes();
+    }
+
+    public List<TierPalette> palettes() {
+        return palettes;
+    }
+
+    /** The player's active tier in a palette (1 = the real block). */
+    public int paletteTier(Player player, String paletteId) {
+        PlayerDepletion state = players.get(player.getUniqueId());
+        return state == null ? 1 : state.paletteTiers.getInt(paletteId);
+    }
+
+    /**
+     * Sets the player's active tier in a palette and swaps every slot block in the chunks their client has, nearest
+     * first, in about one tick (Bedrock: {@code palette.bedrock-blocks-per-tick} per tick). Returns {@code null} when
+     * nothing changed or the palette is unknown.
+     */
+    public SwapResult paletteTier(Player player, String paletteId, int tier) {
+        TierPalette palette = paletteById.get(paletteId);
+        if (palette == null) {
+            return null;
+        }
+        return swap(state(player), palette, tier, true);
+    }
+
+    /**
+     * One swap. {@code keys} are the swapped slots nearest first with their squared distances {@code dist2} (for the
+     * unlock particle wave); {@code sentNow} went out at once, the rest is queued.
+     */
+    public record SwapResult(String palette, int oldTier, int newTier, int blocks, int sentNow, int perTick,
+                             boolean bedrock, long nanos, long[] keys, int[] dist2) {
+    }
+
+    private SwapResult swap(PlayerDepletion state, TierPalette palette, int tier, boolean throttle) {
+        int target = Math.max(1, Math.min(tier, palette.size()));
+        int old = state.paletteTiers.getInt(palette.id());
+        if (old == target) {
+            return null;
+        }
+        long start = System.nanoTime();
+        if (target == 1) {
+            state.paletteTiers.removeInt(palette.id());
+        } else {
+            state.paletteTiers.put(palette.id(), target);
+        }
+        relookDepleted(state, palette, target);
+        Player player = state.player;
+        World world = player.getWorld();
+        LongArrayList found = new LongArrayList();
+        for (String regionId : palette.regionIds()) {
+            DepthsRegion region = regionsById.get(regionId);
+            SlotIndex slots = slotIndexes.get(regionId);
+            if (region == null || slots == null || !region.world().equals(world.getName())) {
+                continue;
+            }
+            SlotIndex.Probe probe = probe(world, palette.base());
+            for (long chunkKey : slots.chunkKeys()) {
+                int cx = (int) chunkKey;
+                int cz = (int) (chunkKey >> 32);
+                if (player.isChunkSent(chunkKey) && world.isChunkLoaded(cx, cz)) {
+                    found.addElements(found.size(), slots.slots(cx, cz, probe));
+                }
+            }
+        }
+        long[] keys = found.toLongArray();
+        int[] dist2 = sortNearest(keys, player.getLocation());
+        boolean bedrock = core.bedrock().isBedrock(player.getUniqueId());
+        int perTick = throttle ? PaletteMath.perTick(bedrock, config.paletteBedrockBlocksPerTick, config.paletteJavaBlocksPerTick)
+                : Integer.MAX_VALUE;
+        int now = Math.min(perTick, keys.length);
+        sendSlots(state, palette, keys, 0, now);
+        if (now < keys.length) {
+            state.swap = new SwapQueue(keys, now, start);
+            state.swapPalette = palette.id();
+            if (!swapping.contains(state)) {
+                swapping.add(state);
+            }
+        } else if (palette.id().equals(state.swapPalette)) {
+            state.swap = null; // a newer swap replaces a running one
+        }
+        long nanos = System.nanoTime() - start;
+        core.scheduler().timer().record("depths-palette-swap", nanos);
+        swaps++;
+        lastSwapBlocks = keys.length;
+        lastSwapMillis = nanos / 1e6;
+        maxSwapMillis = Math.max(maxSwapMillis, lastSwapMillis);
+        if (config.paletteLogSwaps) {
+            core.plugin().getLogger().info(String.format(Locale.ROOT,
+                    "Depths palette swap (timer depths-palette-swap): %s %s tier %d -> %d, %d blocks (%d now%s)%s in %.2f ms",
+                    player.getName(), palette.id(), old, target, keys.length, now,
+                    now < keys.length ? ", " + (keys.length - now) + " queued at " + perTick + "/tick" : "",
+                    bedrock ? ", Bedrock" : "", nanos / 1e6));
+        }
+        return new SwapResult(palette.id(), old, target, keys.length, now, perTick, bedrock, nanos, keys, dist2);
+    }
+
+    /** Sorts {@code keys} nearest to {@code at} first; returns the squared distances in the same order. */
+    static int[] sortNearest(long[] keys, Location at) {
+        return PaletteMath.sortNearest(keys, at.getBlockX(), at.getBlockY(), at.getBlockZ());
+    }
+
+    /** Sends slots {@code from..to} of {@code keys} as the player should see them now (one multi-block change). */
+    private void sendSlots(PlayerDepletion state, TierPalette palette, long[] keys, int from, int to) {
+        if (from >= to) {
+            return;
+        }
+        Player player = state.player;
+        World world = player.getWorld();
+        int tier = state.paletteTiers.getInt(palette.id());
+        BlockData shown = PaletteMath.needsPackets(tier) ? palette.tier(tier).shown() : null;
+        boolean depletedHere = !state.depleted.isEmpty() && world.getName().equals(state.world);
+        Map<Position, BlockData> changes = new HashMap<>(Math.max(16, (to - from) * 2));
+        for (int i = from; i < to; i++) {
+            long key = keys[i];
+            if (!player.isChunkSent(BlockKeys.chunkOf(key))) {
+                continue;
+            }
+            int x = BlockKeys.x(key);
+            int y = BlockKeys.y(key);
+            int z = BlockKeys.z(key);
+            PlayerDepletion.Depleted d = depletedHere ? state.depleted.get(key) : null;
+            changes.put(Position.block(x, y, z), d != null ? d.shown() : shown != null ? shown : world.getBlockData(x, y, z));
+        }
+        if (!changes.isEmpty()) {
+            player.sendMultiBlockChange(changes);
+        }
+    }
+
+    /** Throttled swaps: each player gets their per-tick share. */
+    private void drainSwaps() {
+        long start = System.nanoTime();
+        for (java.util.Iterator<PlayerDepletion> it = swapping.iterator(); it.hasNext(); ) {
+            PlayerDepletion state = it.next();
+            SwapQueue queue = state.swap;
+            TierPalette palette = state.swapPalette == null ? null : paletteById.get(state.swapPalette);
+            if (queue == null || palette == null || byHandle.get(state.handle) != state || !state.player.isOnline()) {
+                state.swap = null;
+                it.remove();
+                continue;
+            }
+            boolean bedrock = core.bedrock().isBedrock(state.player.getUniqueId());
+            int per = PaletteMath.perTick(bedrock, config.paletteBedrockBlocksPerTick, config.paletteJavaBlocksPerTick);
+            LongArrayList batch = new LongArrayList(Math.min(per, queue.remaining()));
+            queue.drain(per, batch::add);
+            sendSlots(state, palette, batch.elements(), 0, batch.size());
+            if (queue.done()) {
+                state.swap = null;
+                it.remove();
+                lastDrainTicks = queue.ticks();
+                lastDrainTotalMillis = (System.nanoTime() - queue.startedNanos()) / 1e6;
+                if (config.paletteLogSwaps) {
+                    core.plugin().getLogger().info(String.format(Locale.ROOT,
+                            "Depths palette swap done (timer depths-palette-drain): %s %s, %d blocks, %d extra ticks, %.0f ms since start",
+                            state.player.getName(), palette.id(), queue.total(), queue.ticks(), lastDrainTotalMillis));
+                }
+            }
+        }
+        core.scheduler().timer().record("depths-palette-drain", System.nanoTime() - start);
+    }
+
+    /** Depleted slots of a palette take the new tier's depleted look (timers unchanged). */
+    private void relookDepleted(PlayerDepletion state, TierPalette palette, int tier) {
+        if (state.depleted.isEmpty() || state.world == null) {
+            return;
+        }
+        World world = Bukkit.getWorld(state.world);
+        if (world == null) {
+            return;
+        }
+        BlockData look = palette.tier(tier).resource().depleted();
+        LongArrayList keys = new LongArrayList();
+        ObjectIterator<Long2ObjectMap.Entry<PlayerDepletion.Depleted>> it = state.depleted.long2ObjectEntrySet().fastIterator();
+        while (it.hasNext()) {
+            Long2ObjectMap.Entry<PlayerDepletion.Depleted> e = it.next();
+            if (palette.regionIds().contains(e.getValue().regionId())) {
+                keys.add(e.getLongKey());
+            }
+        }
+        for (int i = 0; i < keys.size(); i++) {
+            long key = keys.getLong(i);
+            int x = BlockKeys.x(key);
+            int z = BlockKeys.z(key);
+            if (!world.isChunkLoaded(x >> 4, z >> 4) || world.getType(x, BlockKeys.y(key), z) != palette.base()) {
+                continue;
+            }
+            PlayerDepletion.Depleted d = state.depleted.get(key);
+            state.depleted.put(key, new PlayerDepletion.Depleted(d.token(), look, d.regionId(), d.endsAt()));
+        }
+    }
+
+    /** The palette tier of a slot for this player ({@code null}: no palette here or not a slot block). Tier 1 included. */
+    private TierPalette.Tier slotTier(PlayerDepletion state, DepthsRegion region, Material type) {
+        if (paletteByRegion.isEmpty() || region == null) {
+            return null;
+        }
+        TierPalette palette = paletteByRegion.get(region.id());
+        if (palette == null || type != palette.base()) {
+            return null;
+        }
+        return palette.tier(state.paletteTiers.getInt(palette.id()));
+    }
+
+    /** The palette tier shown at {@code key} when it differs from the real block, else {@code null}. */
+    private TierPalette.Tier paletteTierAt(PlayerDepletion state, World world, long key) {
+        if (paletteByRegion.isEmpty() || !state.anyPaletteTier()) {
+            return null;
+        }
+        int x = BlockKeys.x(key);
+        int y = BlockKeys.y(key);
+        int z = BlockKeys.z(key);
+        DepthsRegion region = index.at(world.getName(), x, y, z);
+        TierPalette palette = region == null ? null : paletteByRegion.get(region.id());
+        if (palette == null) {
+            return null;
+        }
+        int tier = state.paletteTiers.getInt(palette.id());
+        SlotIndex slots = slotIndexes.get(region.id());
+        if (!PaletteMath.needsPackets(tier) || slots == null || !world.isChunkLoaded(x >> 4, z >> 4)
+                || !slots.contains(key, probe(world, palette.base()))) {
+            return null;
+        }
+        return palette.tier(tier);
+    }
+
+    /** Slot test for loaded chunks only (callers check). */
+    private static SlotIndex.Probe probe(World world, Material base) {
+        return (x, y, z) -> world.getType(x, y, z) == base;
+    }
+
+    /** Numbers for {@code /depths palette}. */
+    public record PaletteStats(int palettes, long swaps, int lastBlocks, double lastMillis, double maxMillis,
+                               int lastDrainTicks, double lastDrainTotalMillis, int swapping, int indexedChunks, int scans) {
+    }
+
+    public PaletteStats paletteStats() {
+        int indexed = 0;
+        int scans = 0;
+        for (SlotIndex slots : slotIndexes.values()) {
+            indexed += slots.indexed();
+            scans += slots.scans();
+        }
+        return new PaletteStats(palettes.size(), swaps, lastSwapBlocks, lastSwapMillis, maxSwapMillis, lastDrainTicks,
+                lastDrainTotalMillis, swapping.size(), indexed, scans);
     }
 
     // ------------------------------------------------------------------ debug

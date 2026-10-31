@@ -25,16 +25,31 @@ public final class ResourceBreakEvent extends PlayerEvent implements Cancellable
     private final DepthsRegion region;
     private final ResourceBlock resource;
     private final ItemStack tool;
+    private final Material shownType;
+    private final int tier;
     private int respawnTicks;
     private boolean cancelled;
 
     public ResourceBreakEvent(Player player, Block block, DepthsRegion region, ResourceBlock resource, ItemStack tool) {
+        this(player, block, region, resource, tool, resource.block(), 0, resource.respawnTicks());
+    }
+
+    /**
+     * DV2-SPIKE: a break of a slot the player sees as {@code shownType} at wing tier {@code tier}.
+     *
+     * @param tier         wing tier whose rewards apply (palette tier, else the region's zone tier; 0 = not a tier zone)
+     * @param respawnTicks how long the shown block stays depleted (the shown tier's respawn time)
+     */
+    public ResourceBreakEvent(Player player, Block block, DepthsRegion region, ResourceBlock resource, ItemStack tool,
+                              Material shownType, int tier, int respawnTicks) {
         super(player);
         this.block = block;
         this.region = region;
         this.resource = resource;
         this.tool = tool;
-        this.respawnTicks = resource.respawnTicks();
+        this.shownType = shownType == null ? resource.block() : shownType;
+        this.tier = Math.max(0, tier);
+        this.respawnTicks = Math.max(1, respawnTicks);
     }
 
     /** The real block (unchanged in the world). */
@@ -42,9 +57,25 @@ public final class ResourceBreakEvent extends PlayerEvent implements Cancellable
         return block;
     }
 
-    /** The real block's material. */
+    /** The real block's material. Rewards read {@link #getShownType()}. */
     public Material getBlockType() {
         return resource.block();
+    }
+
+    /**
+     * DV2-SPIKE: the block this player saw and broke. Equals {@link #getBlockType()} outside tier palettes; in a palette
+     * zone it is the block of the player's active tier (copper ore on a real coal slot). Skill XP and task counts read it.
+     */
+    public Material getShownType() {
+        return shownType;
+    }
+
+    /**
+     * DV2-SPIKE: the wing tier whose rewards apply (drop table, tool XP, blueprints, quests, ambient mobs): the player's
+     * active palette tier in a palette zone, otherwise the tier of the zone holding the region. 0 = not a tier zone.
+     */
+    public int getTier() {
+        return tier;
     }
 
     public Location getLocation() {

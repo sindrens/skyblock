@@ -44,13 +44,14 @@ final class DepthsHooks implements Listener, ToolsListener.Depths {
             return;
         }
         Player player = event.getPlayer();
+        int tier = net.skybornmc.skyblock.depths.engine.PaletteMath.rewardTier(event.getTier(), zone.tier()); // DV2-SPIKE: the shown palette tier
         ToolKind needed = zone.aspect() == Aspect.MINE ? ToolKind.PICKAXE : zone.aspect() == Aspect.FOREST ? ToolKind.AXE : null;
         if (needed != null) {
             ToolItems.read(event.getTool()).filter(d -> d.kind() == needed).ifPresent(d ->
-                    module.tracker().gain(player, module.config().tierXp(zone.tier()),
+                    module.tracker().gain(player, module.config().tierXp(tier),
                             needed == ToolKind.AXE ? ToolData.STAT_LOGS : ToolData.STAT_BLOCKS));
         }
-        module.drops().roll(player, zone.aspect().id(), zone.tier(), event.getLocation());
+        module.drops().roll(player, zone.aspect().id(), tier, event.getLocation());
     }
 
     @Override

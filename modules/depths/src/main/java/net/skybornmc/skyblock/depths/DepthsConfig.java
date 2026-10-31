@@ -91,6 +91,44 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "tiers.unlock-sound", desc = "Sound (sounds.yml) with the chat line when a level-up unlocks a tier (empty = none).")
     public String unlockSound = "unlock";
 
+    // ------------------------------------------------------------------ Depths v2 tier palette (DV2-SPIKE)
+
+    @Setting(path = "palette.enabled", desc = "DV2-SPIKE: the slot blocks of palette.zone show each player the block of their active tier (coal / copper / iron) with that tier's rewards. Off = the zone works as before. Spike only: staff turn it on to test.")
+    public boolean paletteEnabled = false;
+
+    @Setting(path = "palette.zone", desc = "DV2-SPIKE: the pilot zone (zones.yml id) whose ore/log fields become palette slots. Its field block must be tier 1's block.")
+    public String paletteZone = "mine_t01";
+
+    @Setting(path = "palette.tiers", desc = "DV2-SPIKE: the zones whose tiers the pilot zone shows, tier 1 first (zones.yml ids, same wing, mine or forest only). Each gives its field block, depleted look, respawn time, required-level and drop table tier.")
+    public List<String> paletteTiers = List.of("mine_t01", "mine_t02", "mine_t03");
+
+    @Setting(path = "palette.bedrock-blocks-per-tick", desc = "DV2-SPIKE: most slot blocks a Bedrock player gets per tick during a tier swap (Geyser sends one packet per block). 0 = no limit.", min = 0, max = 100000)
+    public int paletteBedrockBlocksPerTick = 300;
+
+    @Setting(path = "palette.java-blocks-per-tick", desc = "DV2-SPIKE: most slot blocks a Java player gets per tick during a tier swap. 0 = no limit (one multi-block change); set 300 to test the Bedrock throttle with Java.", min = 0, max = 100000)
+    public int paletteJavaBlocksPerTick = 0;
+
+    @Setting(path = "palette.log-swaps", desc = "DV2-SPIKE: write every tier swap to the console (player, tiers, block count, how many were queued, milliseconds; timers depths-palette-swap and depths-palette-drain).")
+    public boolean paletteLogSwaps = true;
+
+    @Setting(path = "palette.unlock-sound", desc = "DV2-SPIKE: sound (sounds.yml) with the 'Iron unlocked!' title (empty = none).")
+    public String paletteUnlockSound = "unlock";
+
+    @Setting(path = "palette.wave-particle", desc = "DV2-SPIKE: particle of the unlock wave over the swapped blocks (Bukkit particle name, empty = no wave).")
+    public String paletteWaveParticle = "end_rod";
+
+    @Setting(path = "palette.wave-speed", desc = "DV2-SPIKE: blocks the unlock wave travels per tick.", min = 0.5, max = 16.0)
+    public double paletteWaveSpeed = 2.0;
+
+    @Setting(path = "palette.wave-radius", desc = "DV2-SPIKE: how far (blocks) the unlock wave travels from the player.", min = 1, max = 128)
+    public int paletteWaveRadius = 24;
+
+    @Setting(path = "palette.wave-max-particles-per-tick", desc = "DV2-SPIKE: most wave particles per tick (keeps Bedrock smooth).", min = 1, max = 1000)
+    public int paletteWaveMaxPerTick = 60;
+
+    @Setting(path = "palette.effects-only-in-zone", desc = "DV2-SPIKE: the unlock title, sound and wave play only while the player stands in the pilot zone (elsewhere the tier still changes, quietly).")
+    public boolean paletteEffectsOnlyInZone = true;
+
     // ------------------------------------------------------------------ /dungeon (M4.6)
 
     // Warmup and cancel rules of /dungeon moved to teleport.yml (F4: dungeon.*, cancel.*).

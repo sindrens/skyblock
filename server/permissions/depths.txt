@@ -12,3 +12,5 @@ lp group admin permission set skyblock.depths.generate true
 lp group builder permission set skyblock.depths.bypass true
 lp group admin permission set skyblock.depths.bypass true
 # M4.4 satchel: everyone can open it (plugin default: true), nothing to grant.
+# DV2-SPIKE: /depths palette (tier palette spike status + lower-tier toggle) for helpers and up.
+lp group helper permission set skyblock.depths.palette true

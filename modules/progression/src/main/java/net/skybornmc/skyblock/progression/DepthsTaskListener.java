@@ -27,7 +27,7 @@ final class DepthsTaskListener implements Listener {
     /** After every other listener: a cancelled break (tier locked, satchel full) counts nothing. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreak(ResourceBreakEvent event) {
-        Material type = event.getBlockType();
+        Material type = event.getShownType(); // DV2-SPIKE: the block the player saw (palette tier)
         TaskType kind = Tag.LOGS.isTagged(type) ? TaskType.CHOP : TaskType.MINE;
         String object = type.getKey().getKey();
         if (!tasks.enabled() || !tasks.tracks(kind, object)) {

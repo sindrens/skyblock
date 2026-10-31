@@ -26,11 +26,11 @@ final class DepthsQuestListener implements Listener {
     /** After every other listener: a cancelled break (tier locked, satchel full) counts nothing. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreak(ResourceBreakEvent event) {
-        int tier = QuestMath.tierOf(event.getRegion().id());
+        int tier = event.getTier() > 0 ? event.getTier() : QuestMath.tierOf(event.getRegion().id()); // DV2-SPIKE: shown tier
         if (tier <= 0) {
             return;
         }
-        QuestType type = Tag.LOGS.isTagged(event.getBlockType()) ? QuestType.CHOP : QuestType.MINE;
+        QuestType type = Tag.LOGS.isTagged(event.getShownType()) ? QuestType.CHOP : QuestType.MINE;
         m.engine().count(event.getPlayer(), type, tier, 1);
     }
 

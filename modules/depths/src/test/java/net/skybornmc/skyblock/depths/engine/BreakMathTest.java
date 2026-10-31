@@ -56,4 +56,29 @@ class BreakMathTest {
         assertFalse(BreakMath.tooFast(0, 1, 0.7, 100));       // one tick
         assertTrue(BreakMath.tooFast(1_000_000, BreakMath.UNBREAKABLE, 0.7, 100));
     }
+
+    @Test
+    void shownBlockHardnessScalesTheCheck() {
+        // Real coal ore (hardness 3) with a wooden pickaxe (2, harvests): 2/3/30 per tick = 45 ticks.
+        float coal = BreakMath.progressPerTick(3f, 2f, true);
+        assertEquals(45, BreakMath.expectedTicks(coal));
+        // Shown iron ore: same hardness, but wood can't harvest it: /100 instead of /30 -> 150 ticks, like the client.
+        float iron = BreakMath.scaledSpeed(coal, 3f, 2f, true, 3f, 2f, false);
+        assertEquals(150, BreakMath.expectedTicks(iron));
+        // Shown deepslate iron (4.5) with a stone pickaxe (4, harvests): 4/4.5/30 -> 34 ticks.
+        float stoneOnCoal = BreakMath.progressPerTick(3f, 4f, true);
+        assertEquals(34, BreakMath.expectedTicks(BreakMath.scaledSpeed(stoneOnCoal, 3f, 4f, true, 4.5f, 4f, true)));
+        // Same block shown as real: unchanged (Haste etc. stay in the factor).
+        float hasted = coal * 1.4f;
+        assertEquals(hasted, BreakMath.scaledSpeed(hasted, 3f, 2f, true, 3f, 2f, true), 1e-6);
+    }
+
+    @Test
+    void scaledSpeedEdgeCases() {
+        assertEquals(1f, BreakMath.scaledSpeed(0.05f, 3f, 2f, true, 0f, 1f, true)); // shown instant
+        assertEquals(0f, BreakMath.scaledSpeed(0.05f, 3f, 2f, true, -1f, 1f, true)); // shown unbreakable
+        // Real block instant: effects can't be factored out, plain formula for the shown block.
+        assertEquals(BreakMath.progressPerTick(3f, 6f, true), BreakMath.scaledSpeed(1f, 0f, 1f, true, 3f, 6f, true), 1e-6);
+        assertEquals(BreakMath.progressPerTick(3f, 6f, true), BreakMath.scaledSpeed(0f, 3f, 6f, true, 3f, 6f, true), 1e-6);
+    }
 }
