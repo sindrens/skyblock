@@ -10,10 +10,10 @@
 #   warzone       the warzone (placeholder until the warzone is built)
 #   default       everywhere else; a layout named after a world is used in that world
 #   A module can still pick a layout itself (events later). A missing layout falls back to the next one.
-# Built-in values: <name> (rank color), <rank>, <money>, <crystals>, <gems>, <island>, <island_here> (name of the
+# Built-in values: <name> (rank color), <rank>, <money>, <crystals>, <credits>, <island>, <island_here> (name of the
 #   island you stand on), <objective>, <online>.
 # GUI-4 (owner U4): the "| You" header (was "Profile", which is also the island profile), a "Next:" line while the
-#   tutorial runs (if:objective), and Crystals/Gems only while you have some (if:crystals_owned / if:gems_owned).
+#   tutorial runs (if:objective), and Crystals/Credits only while you have some (if:crystals_owned / if:credits_owned).
 #   Any placeholder works too: <ph:playtime>, <ph:ping>, <ph:depths_zone>, <ph:skill_mining_level> ...
 # An empty line "" is a blank separator.
 # A line starting with "if:<placeholder>|" only shows while that placeholder has a value (not empty, not "-"):
@@ -36,7 +36,7 @@ scoreboard:
       - "if:objective| <c:bar>|</c:bar> <objective>"
       - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - "if:gems_owned| <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
+      - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
       # GUI-4: no blank line here (max 10 lines with the Next line); the bold "| Island" header separates.
       - "if:island_level| <bold><c:header>| Island</c:header></bold>"
       - "if:island_level| <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
@@ -54,7 +54,7 @@ scoreboard:
       - "if:objective| <c:bar>|</c:bar> <objective>"
       - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - "if:gems_owned| <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
+      - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
       # Blank separator, except while standing in the AFK pool: then the AFK line (messages/afk.yml -> scoreboard.line).
       # GUI-4: the island level sits under "| You" here (max 10 lines with the Next line).
       - "if:island_level| <c:bar>|</c:bar> <c:text>Island:</c:text> <island>"
@@ -62,7 +62,7 @@ scoreboard:
       - " <c:sky_ice>play.skybornmc.net"
 
   # Your own island: island first, the newest open note (only when there is one and the
-  # "Next note on scoreboard" setting is on), then money, crystals and gems (owner: gems on the scoreboard).
+  # "Next note on scoreboard" setting is on), then money, crystals and credits (owner: credits on the scoreboard; the total, C1).
   island:
     title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
     lines:
@@ -75,7 +75,7 @@ scoreboard:
       - "if:objective| <c:bar>|</c:bar> <objective>"
       - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - "if:gems_owned| <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
+      - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # Someone else's island: whose island you are on.
@@ -90,7 +90,7 @@ scoreboard:
       - "if:objective| <c:bar>|</c:bar> <objective>"
       - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - "if:gems_owned| <c:bar>|</c:bar> <c:text>Gems:</c:text> <gems>"
+      - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # The Depths, Mine wing and causeways: where you are and how far your mining is.
@@ -168,7 +168,7 @@ values:
   dash: "<c:muted>-"   # "—" would need a Bedrock test first (style.yml bedrock-safe-symbols)
   money: "<cur:money><sym:money><value>"
   crystals: "<cur:crystals><sym:crystals> <value>"
-  gems: "<cur:gems><sym:gems> <value>"
+  credits: "<cur:credits><sym:credits> <value>"
   island: "<c:value>Lv <level></c:value> <c:muted>#<position>"
   island-no-rank: "<c:value>Lv <level>"
   island-here: "<c:value><value>"

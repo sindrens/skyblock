@@ -36,7 +36,7 @@ item:
     lore:
       - "<c:text>Bonus: <c:value>+{percent}% {type}</c:value> <c:text>for everyone"
       - "<c:text>Time: <c:value>{time}"
-      - "<c:muted>Players can thank you for gems."
+      - "<c:muted>Players can thank you for credits."
   bound: "<c:muted>Can't be traded: only this profile can use it."
   action-input: "USE"
   action-text: "to start"
@@ -53,7 +53,7 @@ personal:
 global:
   disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Global boosters are turned off right now. Keep the item."
   queue-full: "<prefix><c:error><sym:cross></c:error> <c:text>There are already <c:value><max></c:value> <c:text>global <type> boosters waiting. Try again later."
-  started-own: "<prefix><c:success><sym:sparkle></c:success> <c:text>Your <c:value>global +<percent>% <type> booster</c:value> <c:text>runs for everyone for <c:value><time></c:value><c:text>. Thanks give you gems!"
+  started-own: "<prefix><c:success><sym:sparkle></c:success> <c:text>Your <c:value>global +<percent>% <type> booster</c:value> <c:text>runs for everyone for <c:value><time></c:value><c:text>. Thanks give you credits!"
   started: "<prefix><c:flame><sym:star></c:flame> <c:value><name></c:value> <c:text>started a <c:value>global +<percent>% <type> booster</c:value> <c:text>for <time>! Say <c:action>thanks</c:action> <c:text>or type <c:action>/thanks</c:action><c:text>."
   started-queued: "<prefix><c:flame><sym:star></c:flame> <c:text>The next <c:value>global +<percent>% <type> booster</c:value> <c:text>from <c:value><name></c:value> <c:text>runs now for <time>! Say <c:action>thanks</c:action><c:text>."
   queued: "<prefix><c:success><sym:check></c:success> <c:text>Your global +<percent>% <type> booster is in line (number <c:value><position></c:value><c:text>). It starts in about <c:value><wait></c:value><c:text>."
@@ -67,10 +67,10 @@ thanks:
   none: "<prefix><c:error><sym:cross></c:error> <c:text>No global booster is running right now."
   own: "<prefix><c:error><sym:cross></c:error> <c:text>That is your own booster. Others thank you for it."
   already: "<prefix><c:muted><sym:check></c:muted> <c:text>You already thanked every running global booster."
-  sent: "<prefix><c:success><sym:check></c:success> <c:text>You thanked <c:value><name></c:value> <c:text>for the global <type> booster. They got <cur:gems><gems> gem</cur:gems><c:text>."
-  sent-no-gem: "<prefix><c:success><sym:check></c:success> <c:text>You thanked <c:value><name></c:value> <c:text>for the global <type> booster."
-  received: "<c:value><name></c:value> <c:text>thanked you! <cur:gems>+<gems> gem"
-  received-no-gem: "<c:value><name></c:value> <c:text>thanked you!"
+  sent: "<prefix><c:success><sym:check></c:success> <c:text>You thanked <c:value><name></c:value> <c:text>for the global <type> booster. They got <cur:credits><credits> credit</cur:credits><c:text>."
+  sent-no-credit: "<prefix><c:success><sym:check></c:success> <c:text>You thanked <c:value><name></c:value> <c:text>for the global <type> booster."
+  received: "<c:value><name></c:value> <c:text>thanked you! <cur:credits>+<credits> credit"
+  received-no-credit: "<c:value><name></c:value> <c:text>thanked you!"
 
 settings:
   booster-bar:
@@ -139,7 +139,7 @@ menu:
     thank:
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to thank <name>"
-      - "<c:muted>(they get <gems> gem)"
+      - "<c:muted>(they get <credits> credit)"
     thanked:
       - ""
       - "<c:success><sym:check></c:success> <c:text>You thanked <name>."

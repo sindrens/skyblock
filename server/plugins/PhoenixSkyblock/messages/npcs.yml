@@ -103,7 +103,7 @@ roles:
   vote:
     name: "Voting"
     help:
-      - "<c:text>Vote for us every day for keys and gems: <c:value>/vote"
+      - "<c:text>Vote for us every day for keys and credits: <c:value>/vote"
       - "<c:text>Votes fill the vote party on the board."
 
 # ------------------------------------------------------------------ help dialog

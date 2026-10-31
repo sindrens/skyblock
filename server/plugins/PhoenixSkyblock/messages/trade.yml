@@ -15,7 +15,8 @@ picker:
 currency:
   money: "Money"
   crystals: "Crystals"
-  gems: "Gems"
+  credits: "Credits"
+  credits_earned: "Earned credits"
   shards: "Shards"
 
 request:

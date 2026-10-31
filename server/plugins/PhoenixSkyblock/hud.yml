@@ -19,8 +19,8 @@ values:
   money: balance_formatted
   # Placeholder key for the formatted island crystals balance.
   crystals: crystals_formatted
-  # Placeholder key for the formatted gem balance.
-  gems: gems_formatted
+  # Placeholder key for the formatted credits (bought + earned, always exact; C1).
+  credits: credits_formatted
   # Placeholder key for the island level.
   island-level: island_level
   # Placeholder key for the island's leaderboard position.
@@ -61,4 +61,4 @@ places:
     - warzone
     # Layout in the warzone.
     layout: warzone
-config-version: 2
+config-version: 3

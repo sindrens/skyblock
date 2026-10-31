@@ -45,14 +45,14 @@ menu:
       - "<c:muted>Slot <slot>"
       - "<c:text>A fresh start: new island,"
       - "<c:text>empty inventory, start money."
-      - "<c:text>Gems, rank and titles are shared."
+      - "<c:text>Credits, rank and titles are shared."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to create"
   # Locked slot that can be bought. <slot> <price> <rank>
   locked:
     name: "<c:muted>Locked slot <slot>"
     lore:
-      - "<c:text>Unlock with <c:value><price> gems</c:value>"
+      - "<c:text>Unlock with <c:value><price> credits</c:value>"
       - "<c:text>or rank <rank><c:text>+."
       - "<c:muted>Bought slots are kept forever."
       - ""
@@ -154,7 +154,7 @@ delete:
     - "<c:error>items, money, crystals, shards, skills,"
     - "<c:error>auction listings and their items."
     - "<c:error>This can't be undone."
-    - "<c:text>Gems, rank and titles stay."
+    - "<c:text>Credits, rank and titles stay."
   gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
   active: "<prefix><c:error><sym:cross> You are playing on it. Switch to another profile first."
   refused: "<prefix><c:error><sym:cross> This profile can't be deleted right now."
@@ -166,14 +166,14 @@ slots:
   not-for-sale: "<prefix><c:error><sym:cross> That slot can't be bought. It comes with a rank."
   invalid: "<prefix><c:error><sym:cross> That slot can't be bought."
   unavailable: "<prefix><c:error><sym:cross> Slots can't be bought right now. Try again later."
-  not-enough: "<prefix><c:error><sym:cross> You need <c:value><price> gems</c:value>. You have <c:value><have></c:value>."
-  bought: "<prefix><c:success><sym:check> <c:text>Slot <c:value><slot></c:value> unlocked for <c:value><price> gems</c:value>. Create a profile in it!"
+  not-enough: "<prefix><c:error><sym:cross> You need <c:value><price> credits</c:value>. You have <c:value><have></c:value>."
+  bought: "<prefix><c:success><sym:check> <c:text>Slot <c:value><slot></c:value> unlocked for <c:value><price> credits</c:value>. Create a profile in it!"
   confirm:
     crumb: "Buy slot"
     shown:
       name: "<c:value>Profile slot <slot>"
-      lore: ["<c:text>Costs <c:value><price> gems</c:value>."]
+      lore: ["<c:text>Costs <c:value><price> credits</c:value>."]
     details:
       - "<c:text>Unlocks profile slot <c:value><slot></c:value> for"
-      - "<c:value><price> gems</c:value><c:text>. Yours forever,"
+      - "<c:value><price> credits</c:value><c:text>. Yours forever,"
       - "<c:text>also after a season reset."

@@ -18,7 +18,7 @@ buy:
   changed: "<prefix><c:error><sym:cross></c:error> <c:text>That offer changed. Nothing was paid, please look again."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, your last buy is still saving."
   no-shards: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:shards><price></cur:shards><c:text>. Shards come from bosses, events and deep Depths tiers."
-  no-gems: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:gems><price></cur:gems><c:text>."
+  no-credits: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:credits><price></cur:credits><c:text>. <c:muted>Earned credits are spent first. See yours: /credit bal"
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was paid, so just try again."
   done: "<prefix><c:success><sym:check></c:success> <c:text>You bought <offer> <c:text>for <c:value><price></c:value><c:text>. <c:muted>(left: <balance>)"
 
@@ -47,7 +47,7 @@ charter:
 
 currency:
   shards: "<cur:shards>shards"
-  gems: "<cur:gems>gems"
+  credits: "<cur:credits>credits"
 
 # The Black Market tag (added to tags-titles.yml once; edit it there afterwards).
 tag:
@@ -73,7 +73,7 @@ menu:
   wallet:
     name: "<c:value>Your shards: <cur:shards><shards>"
     lore:
-      - "<c:text>Gems: <cur:gems><gems>"
+      - "<c:text>Credits: <cur:credits><credits>"
       - "<c:text>Shards come from bosses, events"
       - "<c:text>and deep Depths tiers."
   disabled:

@@ -1,6 +1,7 @@
 # LuckPerms grants for the economy module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
 # Node definitions: modules/economy/src/main/resources/permissions/economy.yml. One console command per line; # = comment.
-# Player nodes (/bal, /baltop, /pay, /transactions, /withdraw, /sell, /bank) default to true, so they need no grants.
+# Player nodes (/bal, /baltop, /pay, /transactions, /withdraw, /sell, /bank, /credit bal) default to true, so they need no
+# grants.
 # Island bank rights are island role permissions (/is permissions: bank-deposit, bank-withdraw, bank-history), not nodes.
 # Dupe alerts for copied money notes use skyblock.staff.notify (granted in base.txt with the other staff alerts).
 
@@ -10,6 +11,11 @@ lp group helper permission set skyblock.staff.economy.alerts true
 # staff-alerted. The old owner node stays granted so nothing changes for the owner if inheritance is ever removed.
 lp group admin permission set skyblock.admin.economy true
 lp group owner permission set skyblock.owner.economy true
+# Card C1 (C1-R1-18): only the owner creates bought credits by hand (/eco give|set|reset ... credits). Admins get an
+# explicit false (they still give earned credits, credits_earned). The owner inherits admin, so the owner's own true is
+# needed: an inherited exact false would beat the owner's '*' wildcard in LuckPerms.
+lp group admin permission set skyblock.economy.credits.grant false
+lp group owner permission set skyblock.economy.credits.grant true
 # Owner R3-6: /eco changes above the limit ($1T money) wait until another owner or admin clicks Allow (owner inherits admin).
 lp group admin permission set skyblock.admin.economy.approve true
 # M3.8 economy dashboard (/eco admin) and anomaly alerts: moderators and up (admin and owner inherit mod; admins also get
