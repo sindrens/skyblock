@@ -78,7 +78,7 @@ final class OfferMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         TagResolver[] tags = tags();
         boolean expired = offer.expired(System.currentTimeMillis());
         shownExpired = expired;

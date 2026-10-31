@@ -15,18 +15,24 @@ import java.util.function.Function;
  * shortcuts, a "type a value" chat prompt (accepts 1.5k / 2M) and Confirm. Works with taps only (Bedrock).
  *
  * <pre>
- *  R O B B B B B O R
- *  B · · · · · · · B
- *  B −100 −10 −1 [value] +1 +10 +100 B      19-21 / 22 / 23-25
- *  B · · Min [type] Max · · B               30 / 31 / 32
- *  B · · ✔ [CONFIRM] ✔ · · B                39-41
- *  ← O B ?  ✘  M B O R                      45 Back, 48 ?, 49 Close, 50 Main menu
+ *  . . . . [value] . . . .                     4 value
+ *  . −100 −10 −1 [CONFIRM] +1 +10 +100 .       10-12 / 13 Confirm (lime concrete) / 14-16
+ *  . . Min . [type] . Max . .                  20 / 22 / 24
+ *  ← . . . ✕ . . . .                           27 Back, 31 Close
  * </pre>
+ * 4 rows, empty slots stay empty (I9). Fewer than 3 step sizes leave their slots empty.
  */
 public final class NumberPickerMenu extends Menu {
 
-    private static final int[] MINUS_SLOTS = {21, 20, 19};
-    private static final int[] PLUS_SLOTS = {23, 24, 25};
+    /** Step buttons, smallest step first (nearest to Confirm). */
+    static final int[] MINUS_SLOTS = {12, 11, 10};
+    static final int[] PLUS_SLOTS = {14, 15, 16};
+    static final int SLOT_VALUE = 4;
+    static final int SLOT_CONFIRM = 13;
+    static final int SLOT_MIN = 20;
+    static final int SLOT_CUSTOM = 22;
+    static final int SLOT_MAX = 24;
+    static final int ROWS = 4;
 
     private final Function<Player, Component> title;
     private final long min;
@@ -80,7 +86,7 @@ public final class NumberPickerMenu extends Menu {
 
     @Override
     public int rows() {
-        return 6;
+        return ROWS;
     }
 
     @Override
@@ -89,39 +95,26 @@ public final class NumberPickerMenu extends Menu {
     }
 
     @Override
-    public String infoKey() {
-        return "number.info";
-    }
-
-    @Override
     protected void build() {
-        frame();
-        ItemStack inner = service.innerFiller();
-        for (int slot = 10; slot <= 43; slot++) {
-            int col = slot % 9;
-            if (col != 0 && col != 8) {
-                set(slot, inner);
-            }
-        }
+        navBar();
         for (int i = 0; i < Math.min(3, steps.length); i++) {
             long step = steps[i];
             set(MINUS_SLOTS[i], stepItem(Material.RED_DYE, "number.minus", step), click -> change(-step));
             set(PLUS_SLOTS[i], stepItem(Material.LIME_DYE, "number.plus", step), click -> change(step));
         }
-        set(22, service.item(Material.SUNFLOWER, viewer, "number.value", Msg.p("value", Format.number(value)),
+        set(SLOT_VALUE, service.item(Material.SUNFLOWER, viewer, "number.value", Msg.p("value", Format.number(value)),
                 Msg.p("compact", Format.compact(value)), Msg.p("min", Format.number(min)), Msg.p("max", Format.number(max))));
-        set(30, service.item(Material.BUCKET, viewer, "number.set-min", Msg.p("min", Format.number(min))), click -> setTo(min));
-        set(31, service.item(Material.NAME_TAG, viewer, "number.custom"), click -> askCustom(click.player()));
-        set(32, service.item(Material.WATER_BUCKET, viewer, "number.set-max", Msg.p("max", Format.number(max))), click -> setTo(max));
-        ItemStack confirm = service.item(Material.LIME_CONCRETE, viewer, "number.confirm", Msg.p("value", Format.number(value)));
-        ItemStack confirmSide = service.item(Material.LIME_STAINED_GLASS_PANE, viewer, "number.confirm", Msg.p("value", Format.number(value)));
-        for (int slot = 39; slot <= 41; slot++) {
-            set(slot, slot == 40 ? confirm : confirmSide, click -> {
-                click.player().closeInventory();
-                service.sound(click.player(), "success");
-                onConfirm.accept(click.player(), value);
-            });
-        }
+        set(SLOT_MIN, service.item(Material.BUCKET, viewer, "number.set-min", Msg.p("min", Format.number(min))), click -> setTo(min));
+        set(SLOT_CUSTOM, service.item(Material.NAME_TAG, viewer, "number.custom"), click -> askCustom(click.player()));
+        set(SLOT_MAX, service.item(Material.WATER_BUCKET, viewer, "number.set-max", Msg.p("max", Format.number(max))), click -> setTo(max));
+        ItemStack confirm = service.icon(viewer, "state/confirm",
+                service.text(viewer, "number.confirm.name", Msg.p("value", Format.number(value))),
+                service.lines(viewer, "number.confirm.lore", Msg.p("value", Format.number(value))));
+        set(SLOT_CONFIRM, confirm, click -> {
+            click.player().closeInventory();
+            service.sound(click.player(), "success");
+            onConfirm.accept(click.player(), value);
+        });
     }
 
     private void setTo(long target) {

@@ -29,6 +29,10 @@ lore:
   reward: "<rarity:{rarity}>★ {name}</rarity:{rarity}> <c:muted>(x{amount})</c:muted> <c:bar>|</c:bar> <c:value>{chance}%"
   quest-reward: "<c:success><bold>[+]</bold></c:success> <c:text>{reward}"
   action: "<bold><c:action>» {input}</c:action></bold> <c:text>{text}"
+  # Danger tiles (I9 section 5): red action line.
+  action-danger: "<bold><c:error>» {input}</c:error></bold> <c:text>{text}"
+  # Muted hint just above the action line (Java-only hints are added for Java viewers only).
+  hint: "<c:muted>{text}"
   level: "<c:text>Lv <c:value>{level}</c:value> {bar} <c:value>{percent}%"
   level-bar: "<c:flame>{filled}</c:flame><c:locked>{empty}</c:locked>"
   level-bar-filled: "●"

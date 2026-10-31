@@ -12,11 +12,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * 3-row confirmation (GUI_DESIGN §4, §7.7). Big click targets so it works with taps on Bedrock:
+ * 3-row confirmation (I9 section 5). No panes; empty slots stay empty:
  * <pre>
- *  R O B B B B B O R
- *  B ✔ ✔ ✔ ◆ ✘ ✘ ✘ B     10-12 Confirm (lime, 11 = concrete), 13 = what you lose, 14-16 Cancel (red, 15 = concrete)
- *  ← O B B ✘ B B O R     18 Back, 22 Close
+ *  . . . . . . . . .
+ *  . . ✔ . ◆ . ✘ . .     11 Confirm (lime concrete, state/confirm), 13 = what happens, 15 Cancel (red concrete, state/cancel)
+ *  ← . . . ✕ . . . .     18 Back, 22 Close
  * </pre>
  * The details (what happens, what it costs) go on the middle item, so Bedrock players read them before tapping.
  * One-shot: a confirm can never run twice. {@link #twoStep()} adds a second check with the sides swapped, for things
@@ -83,7 +83,7 @@ public final class ConfirmMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         boolean second = flow.swapped();
         set(ConfirmFlow.DETAILS_SLOT, detailsItem(second));
 
@@ -105,8 +105,7 @@ public final class ConfirmMenu extends Menu {
             }
         };
         for (int slot : flow.confirmSlots()) {
-            Material material = ConfirmFlow.bigButton(slot) ? Material.LIME_CONCRETE : Material.LIME_STAINED_GLASS_PANE;
-            set(slot, service.item(material, yesName, yesLore), confirm);
+            set(slot, service.icon(viewer, "state/confirm", yesName, yesLore), confirm);
         }
 
         Consumer<MenuClick> cancel = click -> {
@@ -119,8 +118,7 @@ public final class ConfirmMenu extends Menu {
             }
         };
         for (int slot : flow.cancelSlots()) {
-            Material material = ConfirmFlow.bigButton(slot) ? Material.RED_CONCRETE : Material.RED_STAINED_GLASS_PANE;
-            set(slot, service.item(material, viewer, "confirm.no"), cancel);
+            set(slot, service.icon(viewer, "state/cancel", service.text(viewer, "confirm.no.name"), service.lines(viewer, "confirm.no.lore")), cancel);
         }
     }
 

@@ -60,6 +60,7 @@ public final class LoreBuilder {
     private int perkSlotsTotal = -1;
     private final List<String> progress = new ArrayList<>();
     private final List<String> rewards = new ArrayList<>();
+    private final List<String> hints = new ArrayList<>();
     private final List<String> actions = new ArrayList<>();
     private String footer = "";
 
@@ -325,6 +326,26 @@ public final class LoreBuilder {
         return this;
     }
 
+    /**
+     * The red action line of a danger tile (I9 section 5): {@code » CLICK to disband} in the error colour. Renders
+     * where {@link #action} does.
+     */
+    public LoreBuilder dangerAction(String input, String text) {
+        actions.add(fill(label("lore.action-danger"), Map.of(
+                "input", escape(input == null ? "" : input.toUpperCase(Locale.ROOT)),
+                "text", escape(text))));
+        return this;
+    }
+
+    /**
+     * A muted hint line just above the action lines (I9 section 6), e.g. {@code Right-click: sell}. Java-only hints
+     * are added only for Java viewers by the caller ({@code MenuService#javaLines}).
+     */
+    public LoreBuilder hint(String plainText) {
+        hints.add(fill(label("lore.hint"), Map.of("text", escape(plainText))));
+        return this;
+    }
+
     /** Footer {@code RARE TOOL}; none for {@link ItemType#MENU}. */
     public LoreBuilder footer(Rarity rarity, ItemType type) {
         if (!type.hasFooter()) {
@@ -378,7 +399,9 @@ public final class LoreBuilder {
             s.addAll(rewards);
             parts.add(s);
         }
-        parts.add(actions);
+        List<String> actionPart = new ArrayList<>(hints);
+        actionPart.addAll(actions);
+        parts.add(actionPart);
         if (!footer.isBlank()) {
             parts.add(List.of(footer));
         }

@@ -2,15 +2,16 @@ package net.skybornmc.skyblock.common.menu;
 
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.text.Msg;
-import org.bukkit.Material;
 
 import java.util.List;
 
 /**
- * A 6-row menu listing entries in the 28 inner slots (rows 2-5 inside the frame).
+ * A 6-row menu listing entries in the 7x4 grid (slots 10-16, 19-25, 28-34, 37-43), filled left to right; a half
+ * empty last row stays left aligned (lists are not centred, I9 section 2). Empty slots stay empty.
  * <ul>
- *   <li>The standard bottom bar ({@link MenuLayout}): 45 Back on every page (if there is somewhere to go back to),
- *       52 Previous page, 53 Next page (only when there is one). Free action slots for {@link #decorate()}: 46, 47, 51.</li>
+ *   <li>The standard bottom row ({@link MenuLayout}): 45 Back on every page (if there is somewhere to go back to),
+ *       49 Close, 52 Previous page, 53 Next page (paper, count = target page; only when there is more than one page).
+ *       Free action slots for {@link #decorate()}: 46, 47.</li>
  *   <li>The title shows the page when there is more than one: {@code ▸ Island » Warps (2/5)}.</li>
  *   <li>An empty list shows one "nothing here" item in the middle (slot 22).</li>
  *   <li>Turning a page updates the open window in place (no flicker).</li>
@@ -18,7 +19,7 @@ import java.util.List;
  */
 public abstract class PagedMenu<T> extends Menu {
 
-    /** The 28 content slots inside the frame. */
+    /** The 28 content slots (the 7x4 list grid). */
     public static final int[] CONTENT_SLOTS = {
             10, 11, 12, 13, 14, 15, 16,
             19, 20, 21, 22, 23, 24, 25,
@@ -39,7 +40,7 @@ public abstract class PagedMenu<T> extends Menu {
     /** Breadcrumbs of the title, e.g. {@code [Island, Warps]} (see {@link MenuService#title}). */
     protected abstract List<Component> titleCrumbs();
 
-    /** Extra items (e.g. header buttons in the top row), placed after the frame and before the entries. */
+    /** Extra items (e.g. header buttons in the top row), placed after the bottom row and before the entries. */
     protected void decorate() {
     }
 
@@ -65,9 +66,9 @@ public abstract class PagedMenu<T> extends Menu {
 
     @Override
     protected final void build() {
-        frame();
+        navBar();
         decorate();
-        MenuButton atPrevious = button(SLOT_PREVIOUS); // frame panes are display-only; a clickable one came from decorate()
+        MenuButton atPrevious = button(SLOT_PREVIOUS); // a clickable item here came from decorate()
         boolean customPrevious = atPrevious != null && atPrevious.clickable();
         List<T> list = entries();
         Pagination pages = new Pagination(list.size(), CONTENT_SLOTS.length);
@@ -85,12 +86,10 @@ public abstract class PagedMenu<T> extends Menu {
             if (customPrevious) {
                 service.warnStandardSlot(this, SLOT_PREVIOUS);
             }
-            set(SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",
-                    Msg.p("page", shown - 1), Msg.p("pages", total)), click -> turn(-1));
+            set(SLOT_PREVIOUS, service.pageItem(viewer, false, shown - 1, total), click -> turn(-1));
         }
         if (pages.hasNext(page)) {
-            set(SLOT_NEXT, service.navItem("next", Material.ARROW, viewer, "frame.next",
-                    Msg.p("page", shown + 1), Msg.p("pages", total)), click -> turn(1));
+            set(SLOT_NEXT, service.pageItem(viewer, true, shown + 1, total), click -> turn(1));
         }
     }
 
