@@ -280,6 +280,8 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.perks.PerksModule(core));
         modules.register(new net.skybornmc.skyblock.chat.ChatModule(core));
         modules.register(new net.skybornmc.skyblock.menus.MenusModule(core));
+        // Icon pack v2 (I7): status, prompt after join, host; publishes PackService for MenuService#icon (no dependencies).
+        modules.register(new net.skybornmc.skyblock.pack.PackModule(core));
         modules.register(new net.skybornmc.skyblock.logs.LogsModule(core));
         modules.register(new net.skybornmc.skyblock.cosmetics.CosmeticsModule(core));
         modules.register(new net.skybornmc.skyblock.depths.DepthsModule(core));

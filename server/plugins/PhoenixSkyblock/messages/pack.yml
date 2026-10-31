@@ -1,0 +1,29 @@
+# Icon pack (I7 v3, pack v2 phase 1): kick screens, staff alerts and /pack output.
+# MiniMessage + style tags (style.yml). English only, Bedrock-safe symbols. Reload: /pack reload
+kick:
+  # Declined the prompt while the pack is required. Shown on the disconnect screen.
+  declined: "<c:warning><bold>Phoenix Skyblock needs its icon pack</bold></c:warning><newline><newline><c:text>The pack only repaints menu icons. It is tiny (about 100 KB) and downloads once.<newline><newline><c:text>To turn it on:<newline><c:value>Multiplayer > Phoenix Skyblock > Edit > Server Resource Packs: Enabled</c:value><newline><newline><c:text>Then join again."
+  # The download or loading failed, or no answer came within timeout-seconds.
+  failed: "<c:warning><bold>The icon pack didn't load</bold></c:warning><newline><newline><c:text>Your game couldn't download the pack, so we stopped you here instead of letting you play with broken icons.<newline><newline><c:text>Join again to retry. If it keeps happening, check that <c:value>Server Resource Packs</c:value> is <c:value>Enabled</c:value> for this server and that your connection is stable."
+alert:
+  # To players with skyblock.pack.alerts (also the console and the audit log). <reason>: timeout, HTTP <code>, wrong file, no answer yet.
+  host-down: "<prefix><c:error><sym:cross></c:error> <c:text>The icon pack host can't be reached (<c:value><reason></c:value><c:text>). The pack is not required until it is back, so nobody is kicked and new players join without icons."
+  host-up: "<prefix><c:success><sym:check></c:success> <c:text>The icon pack host is back. The pack is required again."
+reload:
+  # To online players who were offered the pack again after /pack reload.
+  notice: "<prefix><c:text>The icon pack was updated. Accept the download to see the new icons."
+command:
+  reloaded: "<prefix><c:success><sym:check></c:success> <c:text>Pack reloaded and offered again to <c:value><count></c:value> online player(s)."
+  status-one: "<prefix><c:value><player></c:value><c:text>: <c:value><status></c:value> <c:muted>(<info>)"
+  status-all: "<prefix><c:text>Pack: <c:value><loaded></c:value> loaded, <c:value><pending></c:value> loading, <c:value><bedrock></c:value> Bedrock, <c:value><other></c:value> other. Host: <c:value><health></c:value><c:text>."
+status:
+  loaded: "<c:muted>pack loaded, sees our icons"
+  pending: "<c:muted>not answered yet or still downloading"
+  declined: "<c:muted>declined the pack"
+  failed: "<c:muted>download or loading failed"
+  bedrock: "<c:muted>Bedrock player, plain items"
+  disabled: "<c:muted>the pack is turned off in pack.yml"
+  skipped: "<c:muted>not sent (host down or a late offer)"
+health:
+  up: "up"
+  down: "down"
