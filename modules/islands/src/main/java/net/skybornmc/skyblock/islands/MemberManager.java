@@ -248,9 +248,22 @@ final class MemberManager {
         notifyMembers(island, islands.key(player), "notify.invited", Msg.p("player", player.getName()), Msg.p("target", targetName));
         Player target = islands.online(targetId);
         if (target != null) {
-            msg.send(target, "invite.received", Msg.p("player", player.getName()), command("from", player.getName()),
+            TagResolver[] tags = {Msg.p("player", player.getName()), command("from", player.getName()),
                     Msg.p("island", name), Msg.p("time", time),
-                    Msg.p("members", island.memberCount()), Msg.p("slots", islands.slots(island)));
+                    Msg.p("members", island.memberCount()), Msg.p("slots", islands.slots(island))};
+            UUID islandId = island.id();
+            String from = player.getName();
+            // GUI-5: Java clicks [Accept]/[Deny] in chat; Bedrock also gets a popup with the same choices.
+            core.menus().offers().offer(target, net.skybornmc.skyblock.common.menu.Offer.builder(msg.module(), "invite.popup")
+                    .id("island-invite:" + islandId)
+                    .icon(org.bukkit.Material.GRASS_BLOCK)
+                    .placeholders(tags)
+                    .expiresAt(created.invite().expiresAt())
+                    .validWhile(() -> invites.get(islandId, targetId, System.currentTimeMillis()).isPresent())
+                    .button(net.skybornmc.skyblock.common.menu.Offer.Button.accept("is accept " + from))
+                    .button(net.skybornmc.skyblock.common.menu.Offer.Button.decline("is deny " + from))
+                    .chat(viewer -> msg.send(viewer, "invite.received", tags))
+                    .build());
             core.sounds().play(target, "notify");
         }
     }

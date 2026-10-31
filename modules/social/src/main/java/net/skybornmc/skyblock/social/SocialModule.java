@@ -325,7 +325,27 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
                 .description("Read the server rules")
                 .category("Info")
                 .permission(PERM_LINKS)
-                .executes(ctx -> msg.send(ctx.sender(), "rules", pre("url", config.websiteUrl))));
+                .executes(ctx -> sendLink(ctx.sender(), "rules", "rules", config.websiteUrl)));
+    }
+
+    /**
+     * GUI-5: the link line (clickable on Java). Bedrock can't open chat links, so Bedrock players also get a popup with
+     * the address in the item name; a click sends it once more as plain text.
+     */
+    private void sendLink(org.bukkit.command.CommandSender sender, String name, String key, String url) {
+        if (!(sender instanceof Player player)) {
+            msg.send(sender, key, pre("url", url));
+            return;
+        }
+        TagResolver[] tags = {pre("url", url), Msg.p("link", url)};
+        core.menus().offers().offer(player, net.skybornmc.skyblock.common.menu.Offer.builder(msg.module(), "links.popup")
+                .id("link:" + name)
+                .title("links.popup.titles." + name)
+                .icon(org.bukkit.Material.BOOK)
+                .placeholders(tags)
+                .onInfoClick(p -> msg.send(p, "links.plain", Msg.p("link", url)))
+                .chat(p -> msg.send(p, key, tags))
+                .build());
     }
 
     private void link(String name, String description, java.util.function.Supplier<String> url, String... aliases) {
@@ -334,7 +354,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
                 .category("Info")
                 .permission(PERM_LINKS)
                 .aliases(aliases)
-                .executes(ctx -> msg.send(ctx.sender(), "links." + name, pre("url", url.get()))));
+                .executes(ctx -> sendLink(ctx.sender(), name, "links." + name, url.get())));
     }
 
     /** An online player the sender can see (vanished staff count as offline for players without vanish.see). */

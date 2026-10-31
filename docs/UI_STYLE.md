@@ -269,6 +269,18 @@ Built by the menu framework (`common/menu`, `frame()`), so every menu looks the 
 
 Required for: anything irreversible, anything above a money threshold, solo→team, disband, prestige, merges, leaving islands, buying with gems.
 
+### 5.2.0 Bedrock popups for chat offers (3-row, GUI-5)
+Bedrock can't click chat. Anything answered with a chat click (TPA, island invites, trades, /discord /store /vote /website /rules, /help command picks, tutorial "I'm stuck", staff alerts) goes through **one API**: `core.menus().offers().offer(player, Offer...)`. Everyone gets the chat line; Bedrock players also get a popup:
+```
+ R  O  B  B  i  B  B  O  R      4 = what this is (name + lore from <key>.name/.lore); with no buttons it sits on 13
+ B  .  ✔  .  ✘  .  ✘  .  B      buttons: 1 → 13, 2 → 11 + 15, 3 → 11 + 13 + 15 (max 3); a button runs its command
+ ←  O  B  B  ✘  B  B  O  R      18 Back · 22 Close
+```
+- Never opens over another window or a chat prompt: it waits and opens when that closes (one at a time, the same id replaces an older one, max `menus.yml → bedrock-popups.queue-max`, dropped after `max-age-seconds`).
+- When the request expires or is answered meanwhile, the buttons give way to "✘ Expired"; `<left>` counts down in every text.
+- Links: the address is the item name; a click sends it once in plain chat (Bedrock can't open links).
+- Shared button texts: `messages/menus.yml → offer.button.*`. Turn popups off: `menus.yml → bedrock-popups.enabled: false`.
+
 ### 5.2.1 Number picker (6-row)
 ```
  R  O  B  B  B  B  B  O  R

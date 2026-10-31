@@ -226,6 +226,7 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
                         for (Player staff : Bukkit.getOnlinePlayers()) {
                             if (staff.hasPermission(StaffPerms.REPORTS)) {
                                 core.sounds().play(staff, "notify");
+                                bedrockAlert(staff, id, targetName, reporter.getName(), reason);
                             }
                         }
                         core.audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.STAFF, "report",
@@ -560,5 +561,27 @@ final class ReportService extends StaffFeature implements Listener, net.skybornm
 
     static String ago(long millis) {
         return Format.duration(Duration.ofMillis(Math.max(0, System.currentTimeMillis() - millis)));
+    }
+
+    /**
+     * GUI-5: Bedrock staff can't click [Teleport] [Inspect] [Claim] in the alert, so they also get a popup with the
+     * same three buttons (Java: nothing extra, the chat alert was sent already).
+     */
+    private void bedrockAlert(Player staff, long id, String targetName, String reporterName, String reason) {
+        var offers = core.menus().offers();
+        if (!offers.popups(staff)) {
+            return;
+        }
+        String module = msg.module();
+        offers.offer(staff, net.skybornmc.skyblock.common.menu.Offer.builder(module, "report.popup")
+                .id("report:" + id)
+                .icon(org.bukkit.Material.WRITABLE_BOOK)
+                .placeholders(Msg.p("id", id), Msg.p("player", targetName), Msg.p("reporter", reporterName), Msg.p("reason", reason))
+                .button(net.skybornmc.skyblock.common.menu.Offer.Button.teleport("tp " + targetName))
+                .button(net.skybornmc.skyblock.common.menu.Offer.Button.custom(org.bukkit.Material.SPYGLASS, module,
+                        "report.popup.inspect", "inspect " + targetName))
+                .button(net.skybornmc.skyblock.common.menu.Offer.Button.custom(org.bukkit.Material.NAME_TAG, module,
+                        "report.popup.claim", "reports claim " + id))
+                .build());
     }
 }

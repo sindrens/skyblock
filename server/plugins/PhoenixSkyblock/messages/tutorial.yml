@@ -178,6 +178,11 @@ stuck:
     subtitle: "<step>"
   shown: "<prefix><c:text>Your step: <c:value><step></c:value>. <hint> <c:muted>(Take me there is in /tutorial)"
   can-skip: "<prefix><c:text>Still stuck? You can skip this step in <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click><c:text>."
+  # GUI-5: the Bedrock popup of can-skip (Bedrock can't click chat).
+  popup:
+    title: "Tutorial"
+    name: "<c:text>Still stuck?"
+    lore: ["<c:text>You can skip this step", "<c:text>in the tutorial menu."]
   not-skippable: "<prefix><c:error><sym:cross></c:error> <c:text>This step can't be skipped. Press <c:value>Take me there</c:value> in /tutorial."
 
 take-me-there:

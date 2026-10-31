@@ -858,7 +858,19 @@ public final class EconomyModule implements SkyblockModule, Listener {
                     continue;
                 }
                 if (other.hasPermission(PERM_APPROVE)) {
-                    msg.send(other, "eco.approve.alert", pendingTags(other, p));
+                    TagResolver[] tags = pendingTags(other, p);
+                    int id = p.id();
+                    // GUI-5: Java clicks [Allow]/[Deny] in chat; Bedrock staff also get a popup with the same choices.
+                    core.menus().offers().offer(other, net.skybornmc.skyblock.common.menu.Offer.builder(msg.module(), "eco.approve.popup")
+                            .id("eco-approve:" + id)
+                            .icon(org.bukkit.Material.GOLD_INGOT)
+                            .placeholders(tags)
+                            .expiresAt(p.expires())
+                            .validWhile(() -> approvals.get(id, System.currentTimeMillis()).isPresent())
+                            .button(net.skybornmc.skyblock.common.menu.Offer.Button.allow("eco allow " + id))
+                            .button(net.skybornmc.skyblock.common.menu.Offer.Button.deny("eco deny " + id))
+                            .chat(viewer -> msg.send(viewer, "eco.approve.alert", tags))
+                            .build());
                     core.sounds().play(other, "notify");
                     told++;
                 } else if (other.hasPermission(PERM_ALERTS)) {

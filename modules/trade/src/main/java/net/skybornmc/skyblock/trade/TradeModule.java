@@ -341,7 +341,21 @@ public final class TradeModule implements SkyblockModule, Listener {
         }
         requests.send(sender.getUniqueId(), target.getUniqueId(), now, config.requestTimeoutSeconds * 1000L);
         send(sender, "request.sent", Msg.p("player", target.getName()), Msg.p("seconds", config.requestTimeoutSeconds));
-        send(target, "request.received", Msg.p("player", sender.getName()), Msg.p("seconds", config.requestTimeoutSeconds));
+        TagResolver[] tags = {Msg.p("player", sender.getName()), Msg.p("seconds", config.requestTimeoutSeconds)};
+        UUID from = sender.getUniqueId();
+        UUID to = target.getUniqueId();
+        String name = sender.getName();
+        // GUI-5: Java clicks [Accept]/[Deny] in chat; Bedrock also gets a popup with the same choices.
+        core.menus().offers().offer(target, net.skybornmc.skyblock.common.menu.Offer.builder(ID, "request.popup")
+                .id("trade:" + from)
+                .icon(Material.EMERALD)
+                .placeholders(tags)
+                .expiresAt(System.currentTimeMillis() + config.requestTimeoutSeconds * 1000L)
+                .validWhile(() -> requests.has(from, to, now()))
+                .button(net.skybornmc.skyblock.common.menu.Offer.Button.accept("trade accept " + name))
+                .button(net.skybornmc.skyblock.common.menu.Offer.Button.decline("trade deny " + name))
+                .chat(viewer -> send(viewer, "request.received", tags))
+                .build());
         sound(sender, "click");
         sound(target, "notify");
     }

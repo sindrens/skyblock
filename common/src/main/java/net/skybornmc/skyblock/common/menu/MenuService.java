@@ -82,6 +82,7 @@ public final class MenuService implements Listener {
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.builder()
             .character(LegacyComponentSerializer.SECTION_CHAR).hexColors().useUnusualXRepeatedCharacterHexFormat().build();
     private final MenuHeads heads;
+    private final Offers offers;
     private BukkitTask ticker;
 
     private record Prompt(Consumer<String> onInput, Runnable onCancel, int maxLength, BukkitTask timeout) {
@@ -99,6 +100,12 @@ public final class MenuService implements Listener {
         this.debounce = new Debounce(config.clickDebounceMs);
         this.heads = new MenuHeads(plugin.getLogger());
         reload();
+        this.offers = new Offers(this);
+    }
+
+    /** GUI-5: chat offers that Bedrock players also get as a popup (TPA, invites, links, staff alerts). */
+    public Offers offers() {
+        return offers;
     }
 
     private net.skybornmc.skyblock.common.util.SlowOperationTimer timer;
@@ -122,6 +129,7 @@ public final class MenuService implements Listener {
     /** Registers the listener and the live-update task. */
     public void enable() {
         Bukkit.getPluginManager().registerEvents(this, plugin);
+        Bukkit.getPluginManager().registerEvents(offers, plugin);
         ticker = Bukkit.getScheduler().runTaskTimer(plugin, this::tickAll, 1L, 1L);
     }
 
@@ -140,7 +148,9 @@ public final class MenuService implements Listener {
         origins.clear();
         prompts.values().forEach(p -> p.timeout().cancel());
         prompts.clear();
+        offers.clear();
         HandlerList.unregisterAll(this);
+        HandlerList.unregisterAll(offers);
     }
 
     /** Reloads {@code menus.yml} and {@code messages/menus.yml}. */
@@ -152,6 +162,9 @@ public final class MenuService implements Listener {
         heads.load("back", config.headBack);
         heads.load("previous", config.headPrevious);
         heads.load("next", config.headNext);
+        if (offers != null) {
+            offers.reload();
+        }
     }
 
     public JavaPlugin plugin() {

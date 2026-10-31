@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.menus;
 
 import net.skybornmc.skyblock.common.command.HelpEntry;
+import net.skybornmc.skyblock.common.menu.Offer;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -83,7 +84,22 @@ final class HelpChat {
 
     /** After clicking a command in the menu: one clickable line that puts it in the chat box. */
     static void suggest(Nav nav, Player player, HelpEntry entry) {
-        nav.msg.send(player, "help.chat.suggest", Msg.p("usage", entry.usage()), Nav.pre("command", "/" + entry.path() + " "),
-                Msg.p("description", entry.description()));
+        // GUI-5: Bedrock can't click the line to put it in chat. A command that needs nothing more gets a popup with a
+        // button that runs it; one that needs arguments keeps the line (it shows the usage to type).
+        Offer.Builder offer = Offer.builder(Nav.TEXTS, "help.popup")
+                .id("help:suggest")
+                .icon(org.bukkit.Material.PAPER)
+                .placeholders(Msg.p("usage", entry.usage()), Msg.p("description", entry.description()))
+                .chat(p -> nav.msg.send(p, "help.chat.suggest", Msg.p("usage", entry.usage()),
+                        Nav.pre("command", "/" + entry.path() + " "), Msg.p("description", entry.description())));
+        if (runsAlone(entry.usage())) {
+            offer.button(Offer.Button.run(entry.path()));
+        }
+        nav.core.menus().offers().offer(player, offer.build());
+    }
+
+    /** True if the usage needs no argument ({@code /spawn}, {@code /is home [name]}), so a button can run it. Pure, tested. */
+    static boolean runsAlone(String usage) {
+        return usage != null && !usage.isBlank() && usage.indexOf('<') < 0;
     }
 }

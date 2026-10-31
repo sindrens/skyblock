@@ -573,7 +573,13 @@ final class TutorialEngine implements TutorialService, TutorialGate {
                 Msg.c("step", stepName(player, step)));
         msg().send(player, "stuck.shown", Msg.c("step", stepName(player, step)), Msg.c("hint", hint(player, step)));
         if (canSkip) {
-            msg().send(player, "stuck.can-skip");
+            // GUI-5: Java clicks [Tutorial] in chat; Bedrock also gets a popup whose button opens /tutorial.
+            core.menus().offers().offer(player, net.skybornmc.skyblock.common.menu.Offer.builder(msg().module(), "stuck.popup")
+                    .id("tutorial:can-skip")
+                    .icon(org.bukkit.Material.COMPASS)
+                    .button(net.skybornmc.skyblock.common.menu.Offer.Button.run("tutorial"))
+                    .chat(viewer -> msg().send(viewer, "stuck.can-skip"))
+                    .build());
         }
         module.guides().refresh(player, p);
     }
