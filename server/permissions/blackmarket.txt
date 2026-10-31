@@ -1,0 +1,11 @@
+# LuckPerms grants for the blackmarket module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/blackmarket/src/main/resources/permissions/blackmarket.yml. One console command per line; # = comment.
+# skyblock.blackmarket.use (/blackmarket) defaults to true, so players need no grant.
+
+# --- Staff (owner approved P10-41: admins edit, mods view) ---
+# /blackmarket admin view <player>: mods and up (admin inherits mod).
+lp group mod permission set skyblock.blackmarket.view true
+# /blackmarket admin reroll | give: admin only, every change audited (reroll / staff_give). The owner group inherits admin.
+lp group admin permission set skyblock.blackmarket.admin true
+# Every buy, hand-out, refund and review in /logs (category blackmarket).
+lp group mod permission set skyblock.staff.logs.category.blackmarket true

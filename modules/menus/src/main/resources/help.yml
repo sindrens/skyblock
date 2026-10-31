@@ -62,7 +62,7 @@ categories:
     slot: 22
     name: "<c:flame><bold>Rewards"
     lore: ["<c:text>Crates, quests, voting", "<c:text>and daily rewards."]
-    topics: [crates, boosters, daily, quests, vote, pass]
+    topics: [crates, boosters, daily, quests, vote, pass, blackmarket]
   community:
     icon: bell
     status: active
@@ -1259,6 +1259,39 @@ topics:
           - "<c:text>flies with you. Sneak to skip a"
           - "<c:text>camera. Later, optional steps in"
           - "<c:text>/tutorial pay a few crystals each."
+
+  blackmarket:
+    icon: amethyst_shard
+    aliases: [black-market, bm, shards-shop, island-charter, charter]
+    name: "<c:flame>Black Market"
+    summary: ["<c:text>Rare things for shards.", "<c:text>The stock changes twice a day."]
+    take-me-there: "blackmarket"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>What it is"
+        lines:
+          - "<c:value>/blackmarket</c:value> <c:text>or the trader in the"
+          - "<c:text>Market Square alley. Pay with"
+          - "<c:text>shards from bosses, events and"
+          - "<c:text>the deepest Depths tiers."
+      - title: "<c:value>The stock"
+        lines:
+          - "<c:text>New offers at 00:00 and 12:00:"
+          - "<c:text>one headline, rare and common"
+          - "<c:text>items. The headline has a stock"
+          - "<c:text>shared by everyone, so be quick!"
+      - title: "<c:value>Limits"
+        lines:
+          - "<c:text>Each offer shows how many you"
+          - "<c:text>may buy per restock (some per"
+          - "<c:text>month or season). Bought items"
+          - "<c:text>are bound to your profile."
+      - title: "<c:value>Island Charter"
+        lines:
+          - "<c:text>Grow your island past 9x9, one"
+          - "<c:text>step at a time, with shards or"
+          - "<c:text>gems. It lasts this season only:"
+          - "<c:text>islands are wiped at the reset."
 
   crates:
     icon: tripwire_hook

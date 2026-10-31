@@ -208,6 +208,7 @@ category-menu:
     quests: ["<c:text>Quests rolled, swapped and done, island missions."]
     collection: ["<c:text>Collection log finds, milestones, rewards."]
     pass: ["<c:text>Battle pass XP, tier claims, premium."]
+    blackmarket: ["<c:text>Black Market buys, hand-outs, refunds."]
 
 categories:
   all: "All you can see"
@@ -232,6 +233,7 @@ categories:
   quests: "Quests"
   collection: "Collection"
   pass: "Battle pass"
+  blackmarket: "Black Market"
 
 ranges:
   all: "All time"

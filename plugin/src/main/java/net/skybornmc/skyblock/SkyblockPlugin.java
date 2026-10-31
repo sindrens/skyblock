@@ -322,6 +322,10 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // Battle pass (PHASE-10 M10.8): publishes PassXp (quests, votes, calendar, playtime) and PassRewards (/menu Rewards);
         // needs economy for money/crystals; keys through CrateKeys, boosters, cosmetics, box, skills, profiles (optional).
         modules.register(new net.skybornmc.skyblock.pass.PassModule(core));
+        // Black Market (PHASE-10 M10.11, /blackmarket): needs economy (shards, gems for the Island Charter); hands out through
+        // crates (keys), wardrobe (set tokens), enchants (books, scrolls), stacking (spawners), cosmetics (tag), islands
+        // (charter sizes) and box (overflow), all optional. Answers the Black Market NPC's click.
+        modules.register(new net.skybornmc.skyblock.blackmarket.BlackMarketModule(core));
     }
 
     public ModuleRegistry modules() {

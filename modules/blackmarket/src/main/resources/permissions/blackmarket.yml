@@ -1,0 +1,12 @@
+# Permissions of the blackmarket module (PHASE-10 M10.11). Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/blackmarket.txt. Commands: docs/commands/blackmarket.md.
+skyblock.blackmarket.use:
+  description: Open the Black Market and buy its offers (/blackmarket, the Black Market NPC)
+  default: true
+skyblock.blackmarket.view:
+  description: Staff view of a player's Black Market buys (/blackmarket admin view; owner approved P10-41, mods view)
+  default: op
+skyblock.blackmarket.admin:
+  description: Staff Black Market tools /blackmarket admin reroll|give (owner approved P10-41; admin only, audited)
+  default: op

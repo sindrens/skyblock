@@ -1,0 +1,175 @@
+# Black Market (PHASE-10 M10.11): /blackmarket, rotations, buys, the Island Charter. MiniMessage + style tags (style.yml).
+# Reload: /skyblock reload blackmarket
+# Placeholders are plain text unless noted: <price>, <balance>, <time>, <size>, <amount>, <left>, <total>, <bought>, <limit>.
+# <offer>, <period> and <currency> are full components.
+
+text: "<text>"
+disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The Black Market is closed right now."
+
+rotation:
+  announce: "<prefix><c:flame><sym:star></c:flame> <c:text>The Black Market restocked! Headline: <offer> <c:muted>(<price>)</c:muted><c:text>. <c:action>/blackmarket"
+
+buy:
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>That offer can't be bought right now."
+  rotated: "<prefix><c:error><sym:cross></c:error> <c:text>The stock just changed. Have a look at the new offers."
+  sold-out: "<prefix><c:error><sym:cross></c:error> <c:text>Sold out! Come back after the next restock."
+  owned: "<prefix><c:error><sym:cross></c:error> <c:text>You already own that."
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>You bought as many as you can for now."
+  changed: "<prefix><c:error><sym:cross></c:error> <c:text>That offer changed. Nothing was paid, please look again."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, your last buy is still saving."
+  no-shards: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:shards><price></cur:shards><c:text>. Shards come from bosses, events and deep Depths tiers."
+  no-gems: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:gems><price></cur:gems><c:text>."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was paid, so just try again."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>You bought <offer> <c:text>for <c:value><price></c:value><c:text>. <c:muted>(left: <balance>)"
+
+delivery:
+  inventory: "<prefix><c:success><sym:check></c:success> <c:text>It's in your inventory."
+  box: "<prefix><c:success><sym:check></c:success> <c:text>Your inventory was full, so it went to</c:text> <c:action>/box</c:action><c:text>."
+  refunded: "<prefix><c:error><sym:cross></c:error> <c:text>Your Black Market buy could not be handed out, so you got <c:value><price></c:value> <c:text>back."
+
+charter:
+  name: "<c:flame>Island Charter <size>"
+  item-name: "<c:flame>Island Charter <size> <c:muted>(<currency><c:muted>)"
+  item-name-plain: "<c:flame>Island Charter <c:muted>(<currency><c:muted>)"
+  lore:
+    - "<c:text>Grows your island border one"
+    - "<c:text>step past the normal maximum."
+    - "<c:warning>Lasts this season only: islands"
+    - "<c:warning>are wiped at the season reset."
+  now: "<c:bar>| </c:bar><c:text>Your island: <c:value><size>"
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You need an island first:</c:text> <c:action>/is</c:action>"
+  needs-normal: "<prefix><c:error><sym:cross></c:error> <c:text>Grow your island to <c:value><size></c:value> <c:text>with</c:text> <c:action>/is upgrade</c:action> <c:text>first."
+  maxed: "<prefix><c:error><sym:cross></c:error> <c:text>Your island is already as big as it gets."
+  no-step: "<prefix><c:error><sym:cross></c:error> <c:text>There is no charter for your island's size."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Only members who may buy island upgrades can buy a charter."
+  taken: "<prefix><c:error><sym:cross></c:error> <c:text>Someone on your island already bought this size. It is on its way."
+  grown: "<prefix><c:success><sym:check></c:success> <c:text>Island Charter: <c:value><island></c:value> <c:text>is now <c:value><size></c:value><c:text>!"
+
+currency:
+  shards: "<cur:shards>shards"
+  gems: "<cur:gems>gems"
+
+# The Black Market tag (added to tags-titles.yml once; edit it there afterwards).
+tag:
+  display: "<grad:mythic>Black Market</grad>"
+  source: "Buy it at the Black Market."
+
+periods:
+  rotation: "this restock"
+  day: "today"
+  month: "this month"
+  season: "this season"
+
+menu:
+  title: "Black Market"
+  info:
+    - "<c:text>Rare things for shards. The stock"
+    - "<c:text>changes at every restock. Limits"
+    - "<c:text>count per account; the headline"
+    - "<c:text>has a stock shared by everyone."
+  clock:
+    name: "<c:flame>Restocks in <c:value><time>"
+    lore: ["<c:text>New offers twice a day."]
+  wallet:
+    name: "<c:value>Your shards: <cur:shards><shards>"
+    lore:
+      - "<c:text>Gems: <cur:gems><gems>"
+      - "<c:text>Shards come from bosses, events"
+      - "<c:text>and deep Depths tiers."
+  disabled:
+    name: "<c:muted>The Black Market is closed"
+    lore: ["<c:text>Staff closed it for now."]
+  empty:
+    name: "<c:muted>Nothing for sale right now"
+    lore: ["<c:text>Come back after the next restock."]
+  offer:
+    name: "<offer>"
+    headline-name: "<c:flame><sym:star></c:flame> <offer>"
+    price: "<c:bar>| </c:bar><c:text>Price: <cur:shards><price>"
+    amount: "<c:bar>| </c:bar><c:text>You get: <c:value><amount>x"
+    stock: "<c:bar>| </c:bar><c:text>Stock: <c:value><left>/<total></c:value> <c:muted>(shared)"
+    limit: "<c:bar>| </c:bar><c:text>Bought: <c:value><bought>/<limit></c:value> <period>"
+    bound: "<c:muted>Bound to your profile."
+    account-wide: "<c:muted>Yours on every profile."
+    click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"]
+  state:
+    disabled: "<c:locked><sym:cross> Closed right now"
+    unavailable: "<c:locked><sym:cross> Not for sale right now"
+    rotated: "<c:locked><sym:cross> The stock just changed"
+    sold-out: "<c:error><sym:cross> Sold out"
+    owned: "<c:success><sym:check> You own it"
+    limit: "<c:locked><sym:cross> Limit reached"
+    no-island: "<c:locked><sym:cross> You need an island"
+    needs-normal: "<c:locked><sym:cross> Reach <size> with /is upgrade first"
+    maxed: "<c:success><sym:check> Your island is at its biggest"
+    no-step: "<c:locked><sym:cross> No charter for this size"
+    no-permission: "<c:locked><sym:cross> Needs the upgrade permission"
+
+confirm:
+  crumb: "Buy this?"
+  offer:
+    - "<c:text>You get: <c:value><amount>x</c:value> <offer>"
+    - "<c:text>Price: <cur:shards><price>"
+    - "<c:text>You have: <c:value><balance>"
+  bound: ["<c:muted>Bound to your profile (no trading)."]
+  charter-crumb: "Grow your island?"
+  charter:
+    - "<c:text>Your island grows to <c:value><size></c:value><c:text>."
+    - "<c:text>Price: <c:value><price>"
+    - "<c:text>You have: <c:value><balance>"
+    - "<c:warning>Only for this season: islands"
+    - "<c:warning>are wiped at the season reset."
+
+admin:
+  unknown-offer: "<prefix><c:error><sym:cross></c:error> <c:text>No offer <c:value><input></c:value><c:text>. Offers: <c:value><offers>"
+  unknown-player: "<prefix><c:error><sym:cross></c:error> <c:text>No player called <c:value><player></c:value><c:text>."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work. Nothing was changed; see the console."
+  rerolled: "<prefix><c:success><sym:check></c:success> <c:text>New stock (<c:value><count></c:value> <c:text>offers): <c:value><offers>"
+  given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <offer> <c:text>to <c:value><player></c:value><c:text>."
+  view-none: "<prefix><c:text><c:value><player></c:value> <c:text>never bought anything at the Black Market."
+  view-header: "<prefix><c:text>Last <c:value><count></c:value> <c:text>Black Market buys of <c:value><player></c:value><c:text>:"
+  view-line: "<c:muted><time></c:muted> <c:value><offer></c:value> <c:muted>(<reward> x<amount>)</c:muted> <c:text><price> <c:muted><state>"
+
+# Offer names and extra lore (offers.<id>.name / .lore). An offer without a name shows its id.
+offers:
+  scroll:
+    name: "<rarity:rare>Disenchant Scroll"
+    lore: ["<c:text>Takes one enchant off a tool", "<c:text>and gives it back as a book."]
+  regalia:
+    name: "<rarity:mythic>Phoenix Regalia Set Token"
+    lore: ["<c:text>The phoenix armor set.", "<c:text>One per account per season."]
+  voidforged:
+    name: "<rarity:legendary>Voidforged Plate Set Token"
+    lore: ["<c:text>A gathering armor set."]
+  mythic_book:
+    name: "<rarity:mythic>Mythic Enchant Book"
+    lore: ["<c:text>A random mythic enchant.", "<c:text>Only from Eclipse, bosses and here."]
+  coinmaster:
+    name: "<rarity:epic>Coinmaster Silks Set Token"
+    lore: ["<c:text>A selling armor set."]
+  chunk_collector:
+    name: "<rarity:epic>Chunk Collector (tier 3)"
+  autosell_chest:
+    name: "<rarity:epic>Auto-sell Chest (tier 4)"
+  eclipse_key:
+    name: "<rarity:legendary>Eclipse Key"
+    lore: ["<c:text>One per account per month."]
+  legendary_book:
+    name: "<rarity:legendary>Legendary Enchant Book"
+    lore: ["<c:text>A random legendary enchant."]
+  phoenix_key:
+    name: "<rarity:legendary>Phoenix Key"
+  spawner_t5:
+    name: "<rarity:legendary>Tier 5 Spawner"
+    lore: ["<c:text>A random tier 5 mob."]
+  blueprint:
+    name: "<rarity:rare>Blueprint"
+  bm_tag:
+    name: "<rarity:legendary>Black Market Tag"
+    lore: ["<c:text>A tag sold only here."]
+  elytra:
+    name: "<rarity:epic>Elytra"
+  sell_wand:
+    name: "<rarity:rare>Sell Wand"
+  wardrobe_tome:
+    name: "<rarity:rare>Greater Wardrobe Tome"

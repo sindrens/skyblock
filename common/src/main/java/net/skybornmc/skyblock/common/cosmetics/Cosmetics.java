@@ -51,6 +51,16 @@ public interface Cosmetics {
     }
 
     /**
+     * Adds a tag to {@code tags-titles.yml} when no tag with this id exists yet (the Black Market brings its own tag,
+     * PHASE-10 M10.11). An existing tag is never changed, so staff edits stay. Main thread.
+     *
+     * @return true if it was added
+     */
+    default boolean defineTag(String id, String display, net.skybornmc.skyblock.common.item.Rarity rarity, String source) {
+        return false;
+    }
+
+    /**
      * Marks a title or tag as automatic: only the module that owns it grants and takes it (e.g. moderation's
      * {@code honorable} clean-streak title, spec 14.11). Staff {@code /titles give|take} refuse it. Idempotent; main thread.
      */

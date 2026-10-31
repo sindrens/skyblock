@@ -39,7 +39,9 @@ public enum AuditCategory {
     /** Collection log (PHASE-10 M10.10): first finds, page milestones, their reward hand-outs and reviews. */
     COLLECTION,
     /** Battle pass (PHASE-10 M10.8): pass XP, tier claims, reward hand-outs, premium grants, staff tools. */
-    PASS;
+    PASS,
+    /** Black Market (PHASE-10 M10.11): rotations, buys, their hand-outs, refunds and reviews, staff gives and rerolls. */
+    BLACKMARKET;
 
     /** Key stored in the database, e.g. {@code "economy"}. */
     public String key() {
