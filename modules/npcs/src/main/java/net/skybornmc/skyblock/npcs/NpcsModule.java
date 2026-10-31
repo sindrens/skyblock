@@ -343,11 +343,17 @@ public final class NpcsModule implements SkyblockModule {
         return built != null ? built : npcLabel(roles, npc);
     }
 
-    /** The name text above an NPC with these role rules (any thread: message parsing only). */
+    /**
+     * The name text above an NPC with these role rules (any thread: message parsing only). A5-R1-01: {@code [ Banker ]},
+     * then the command it runs ({@code /bank}, only when the role has one and {@code npcs.command-line} is on), then
+     * {@code Click me} or {@code Click for help}.
+     */
     private Component npcLabel(RoleRules roles, Spots.Npc npc) {
         RoleRules.Action action = roles.actionOf(npc.role());
         Component hint = text(action.type() == RoleRules.Type.COMMAND ? "npc.hint-action" : "npc.hint-help");
-        return text("npc.label", Msg.mm("name", npcNameRaw(npc.id(), npc.role())), Msg.c("hint", hint));
+        Component command = config.commandLine && action.hasCommand()
+                ? text("npc.command", Msg.p("command", action.command())).append(Component.newline()) : Component.empty();
+        return text("npc.label", Msg.mm("name", npcNameRaw(npc.id(), npc.role())), Msg.c("command", command), Msg.c("hint", hint));
     }
 
     /**
@@ -368,7 +374,10 @@ public final class NpcsModule implements SkyblockModule {
     private TextContent staticHologramContent(Spots.Text t) {
         String raw = raw("holograms." + t.id());
         if (raw != null && !raw.isBlank()) {
-            return new TextContent(text("holograms." + t.id()), Layout.lineCount(raw));
+            // A5-R1-01: holograms you can click (they get a click box) end with a muted "Click me".
+            boolean clickable = config.clickable && core.messages().has(ID, "hologram-help." + t.id());
+            return new TextContent(ClickHint.append(text("holograms." + t.id()), text("hologram-click"), clickable),
+                    ClickHint.lines(Layout.lineCount(raw), clickable));
         }
         if (!t.fallbackText().isBlank()) {
             return new TextContent(text("hologram-fallback", Msg.p("text", Layout.bedrockSafe(t.fallbackText()))), 1);

@@ -5,10 +5,15 @@
 # Reload (respawns everything): /skyblock reload npcs
 
 # ------------------------------------------------------------------ NPC name text (above the NPC)
+# A5-R1-01: "[ Banker ]" bold flame, then the command it runs in white (npc.command, only when the role runs one and
+# npcs.yml npcs.command-line is on), then "Click me" muted. One action word: Click.
 npc:
-  # <name> NPC name (npc-names.<id>, else roles.<role>.name), <hint> one of the hints below
-  label: "<c:flame><bold><name></bold><newline><hint>"
-  hint-action: "<c:muted>Click"
+  # <name> NPC name (npc-names.<id>, else roles.<role>.name), <command> npc.command plus a line break (or nothing),
+  # <hint> one of the hints below
+  label: "<c:flame><bold>[ <name> ]</bold></c:flame><newline><command><hint>"
+  # <command> the command without the slash
+  command: "<c:value>/<command>"
+  hint-action: "<c:muted>Click me"
   hint-help: "<c:muted>Click for help"
 
 # Names per NPC id (when it differs from the role name).
@@ -159,8 +164,8 @@ holograms:
     - "<c:text>All rules: <c:value>/rules"
   spawn_map:
     - "<c:flame><bold>Spawn"
-    - "<c:text>N <c:muted>·</c:muted> <c:text>Gatehouse  <c:text>S <c:muted>·</c:muted> <c:text>Market"
-    - "<c:text>E <c:muted>·</c:muted> <c:text>Forge, Crates  <c:text>W <c:muted>·</c:muted> <c:text>Tavern, Heroes"
+    - "<c:text>N <c:muted>·</c:muted> <c:text>Gatehouse <c:text>S <c:muted>·</c:muted> <c:text>Market"
+    - "<c:text>E <c:muted>·</c:muted> <c:text>Forge, Crates <c:text>W <c:muted>·</c:muted> <c:text>Tavern, Heroes"
   ah_board:
     - "<c:flame><bold>Auction House"
     - "<c:text>Buy and sell with players"
@@ -183,6 +188,10 @@ holograms:
 
 # Format of a build's own text (ids without a text above). <text> the builder's text, never parsed.
 hologram-fallback: "<c:flame><bold><text>"
+
+# Last line of every hologram you can click (it has a hologram-help text below), A5-R1-01. Boards, portals and signs
+# without a click never get it.
+hologram-click: "<c:muted>Click me"
 
 # Help shown when a hologram is clicked (gets an invisible click box). Title: hologram-names.<id>, else the id.
 hologram-names:

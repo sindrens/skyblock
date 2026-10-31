@@ -23,6 +23,9 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "npcs.body", desc = "NPC body: mannequin (player-shaped, Paper 26.3) or villager (no AI). Use villager if Bedrock players can't see mannequins.")
     public Body body = Body.MANNEQUIN;
 
+    @Setting(path = "npcs.command-line", desc = "Show the command an NPC runs under its name ([ Banker ] / /bank / Click me, A5-R1-01).")
+    public boolean commandLine = true;
+
     @Setting(path = "npcs.name-height", desc = "Height of the name text above the NPC's feet (blocks).", min = 1.0, max = 4.0)
     public double nameHeight = 2.05;
 
