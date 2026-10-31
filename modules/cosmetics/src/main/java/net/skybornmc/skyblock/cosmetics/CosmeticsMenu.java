@@ -115,7 +115,7 @@ final class CosmeticsMenu extends PagedMenu<Cosmetic> {
         set(SLOT_PREVIEW, head);
 
         service.equipped(viewer.getUniqueId(), kind).ifPresent(current -> set(SLOT_UNEQUIP,
-                service().item(Material.BARRIER, module.text(viewer, "menu.unequip-" + tab() + ".name"),
+                service().item(Material.BUCKET, module.text(viewer, "menu.unequip-" + tab() + ".name"),
                         module.lines(viewer, "menu.unequip-" + tab() + ".lore", Msg.c("display", service.display(viewer, current)))),
                 click -> {
                     service.equip(viewer.getUniqueId(), kind, null);

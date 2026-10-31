@@ -82,10 +82,10 @@ settings:
 menu:
   title: "Boosters"
   info:
-    - "<c:text>Top row: your boosters. Bottom"
-    - "<c:text>rows: global boosters and the"
-    - "<c:text>booster items you carry. Click"
-    - "<c:text>an item to start it."
+    - "<c:text>Row 2: your own boosters."
+    - "<c:text>Row 4: global boosters for everyone."
+    - "<c:text>Row 5: booster items you carry."
+    - "<c:text>Click an item to start it."
   loading:
     name: "<c:muted>Loading your boosters..."
     lore: []

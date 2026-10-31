@@ -124,7 +124,7 @@ final class AchievementsMenu extends Menu {
                 if (tab != t) {
                     tab = t;
                     module.core().sounds().play(viewer, "click");
-                    refresh();
+                    redraw(); // GUI-4: in place, and the title follows the tab
                 }
             });
         }
@@ -135,7 +135,7 @@ final class AchievementsMenu extends Menu {
     private void personal() {
         Optional<ProfileProgress> progress = module.tracker().progress(viewer.getUniqueId()).filter(ProfileProgress::loaded);
         if (progress.isEmpty()) {
-            set(SLOT_LOADING, service.item(Material.CLOCK, viewer, AchievementsModule.ID, "menu.loading"));
+            setLoading(SLOT_LOADING); // GUI-4: the one shared loading look
             return;
         }
         ProfileProgress p = progress.get();
@@ -238,7 +238,7 @@ final class AchievementsMenu extends Menu {
             return;
         }
         if (!islands.loaded()) {
-            set(SLOT_LOADING, this.service.item(Material.CLOCK, viewer, AchievementsModule.ID, "menu.loading"));
+            setLoading(SLOT_LOADING);
             return;
         }
         UUID islandId = info.get().id();

@@ -235,6 +235,8 @@ final class DailyMenu extends Menu {
 
         int i = 0;
         long hours = seconds / PlaytimeRules.HOUR;
+        // GUI-4: milestones in reading order on row 4, centred (was 28, 30, 32, 34, then 29, 31, 33).
+        int shownTitles = Math.min(TITLE_SLOTS.length, m.playtimeTitles().size());
         for (Map.Entry<Integer, String> t : m.playtimeTitles().entrySet()) {
             if (i >= TITLE_SLOTS.length) {
                 break;
@@ -247,7 +249,7 @@ final class DailyMenu extends Menu {
                     : service.item(Material.GRAY_DYE, service.text(viewer, RewardsModule.ID, "menu.playtime.title-locked.name", Msg.c("title", title)),
                     service.lines(viewer, RewardsModule.ID, "menu.playtime.title-locked.lore", Msg.number("hours", t.getKey()),
                             Msg.number("left", Math.max(0, t.getKey() - hours))));
-            set(TITLE_SLOTS[i++], item);
+            set(net.skybornmc.skyblock.common.menu.PickListLayout.slot(i++, shownTitles) + 18, item);
         }
     }
 

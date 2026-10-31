@@ -92,7 +92,8 @@ dungeon:
     click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
   tier:
     name: "<c:value>Tier <tier> <c:muted><sym:dot></c:muted> <c:text><name>"
-    locked-name: "<c:muted>Tier <tier> <sym:dot> <name>"
+    # GUI-4: the key fact (what unlocks it) in the name, so Bedrock players read it without the lore.
+    locked-name: "<c:locked><sym:cross> Tier <tier></c:locked> <c:muted><sym:dot></c:muted> <c:text>Needs <skill> <required>"
     subtitle: "<c:muted><wing> <c:muted><sym:dot> Tier <tier>"
     resource: "<c:text>Resource: <c:value><resource>"
     requirement-met: "<c:text>Needs <skill> <c:value><required></c:value> <c:success><sym:check>"

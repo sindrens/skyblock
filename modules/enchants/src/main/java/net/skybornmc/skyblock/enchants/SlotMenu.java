@@ -51,7 +51,10 @@ final class SlotMenu extends Menu {
 
     @Override
     public Component title() {
-        return service.title(viewer, module.menus().text(viewer, "menu.title"), module.menus().text(viewer, "menu.mode." + mode.key()));
+        // GUI-4: "Apply a book » <tool>", so this step reads differently from the tool picker before it.
+        Component tool = module.ops().tool(viewer, toolId).map(h -> h.stack().effectiveName())
+                .orElse(module.menus().text(viewer, "menu.title"));
+        return service.title(viewer, module.menus().text(viewer, "menu.mode." + mode.key()), tool);
     }
 
     @Override
