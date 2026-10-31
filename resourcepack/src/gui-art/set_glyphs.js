@@ -13,44 +13,34 @@
     '..YddYY..',
     '...YYY...',
     '.........']);
-  G('crystals', { C: 'cyan' }, [
+  G('crystals', { L: 'cyan.0', C: 'cyan.1', D: 'cyan.2' }, [ // crystal cluster: one tall prism, one small
     '.........',
-    '....C....',
-    '...CwC...',
-    '...CCC...',
-    '...CCC...',
-    '...CCC...',
-    '....C....',
-    '.........',
-    '.........']);
-  G('gems', { T: 'teal' }, [
-    '.........',
-    '..TTTTT..',
-    '.TwTTTTT.',
-    '.TTTTTTT.',
-    '..TTTTT..',
-    '...TTT...',
-    '....T....',
+    '.....L...',
+    '....LCD..',
+    '....LCD..',
+    '.L..LCD..',
+    'LCD.LCD..',
+    'LCDLLCDD.',
     '.........',
     '.........']);
-  G('shards', { P: 'pink' }, [
+  G('shards', { L: 'pink.0', P: 'pink.1', D: 'pink.2' }, [ // broken shard with a jagged bottom
     '.........',
-    '......P..',
-    '.....PP..',
-    '....PwP..',
-    '...PPP...',
-    '..PPP....',
-    '..PP.....',
+    '......L..',
+    '.....LPD.',
+    '....LLPD.',
+    '...LLPD..',
+    '..LLPPD..',
+    '..L.P.D..',
     '.........',
     '.........']);
-  G('credits', { E: 'ember', W: '#FFFFFF' }, [
+  G('credits', { L: 'ember.0', M: 'ember.1', D: 'ember.2', w: '#FFFFFF' }, [ // cut gem: credits (was gems)
     '.........',
-    '.........',
-    '.EEEEEEE.',
-    '.EEEWEEE.',
-    '..EWWWE..',
-    '.EEEWEEE.',
-    '.EEEEEEE.',
+    '..LLMMD..',
+    '.LwLMMDD.',
+    '.MMMMMMM.',
+    '..LLMDD..',
+    '...LMD...',
+    '....M....',
     '.........',
     '.........']);
   G('logo_small', { R: 'red.1', E: 'ember.1', Y: 'gold.1', W: '#FFF6C0' }, [ // phoenix flame
@@ -76,38 +66,62 @@
   const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
   const lum = h => { const [r, g, b] = hex(h).map(v => v / 255); return .2126 * r + .7152 * g + .0722 * b; };
   const mix = (a, b, t) => { const A = hex(a), B = hex(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
-  function badge(label, colour, kind) {
-    const tw = textW(label), w = tw + 2, h = 9; const px = new Array(w * h).fill(null);
-    const set = (x, y, c) => { if (x >= 0 && y >= 0 && x < w && y < h) px[y * w + x] = c; };
-    const fillAt = x => { // fill colour per column
-      if (kind === 'grad') { const t = x / (w - 1); return t < .5 ? mix('#FF3D2E', '#FFB000', t * 2) : mix('#FFB000', '#FFF2A8', (t - .5) * 2); }
-      if (kind === 'gold') return mix('#FFB000', '#FFE27A', Math.abs(x / (w - 1) - .5) * 2);
-      if (kind === 'staff') return '#1A1E24';
-      if (kind === 'owner') return '#B3132A';
-      if (kind === 'outline') return '#2A2426';
-      return colour;
+  const ramp = (stops, t) => { const n = stops.length - 1, i = Math.min(n - 1, Math.floor(t * n)); return mix(stops[i], stops[i + 1], t * n - i); };
+  // Badge v2. One shape per family, so the family reads before the colour:
+  //   free = outline · bought = round pill, pointed ends from Sunfeather up · won = ribbon (notched) ends · staff = square plate.
+  // spec: fill (hex or stops), ink, cap, frame (border colour or null = darker fill), edge ('gold' = gold top/bottom), shine, enchant
+  const CAP = { // filled rows per end column (outer first) and how many columns the cap takes before the text
+    round: { cols: [[1, 7]], pad: 0 }, point: { cols: [[3, 5], [1, 7]], pad: 0 },
+    ribbon: { cols: [[0, 2, 6, 8]], pad: 0 }, square: { cols: [[0, 8]], pad: 1 },
+  };
+  function badge(label, sp) {
+    const cap = CAP[sp.cap], capW = cap.cols.length, tw = textW(label);
+    const w = tw + 2 * (capW + cap.pad), h = 9; const px = new Array(w * h).fill(null);
+    const inMask = (x, y) => {
+      if (x < 0 || y < 0 || x >= w || y >= h) return false;
+      const k = x < capW ? x : (x >= w - capW ? w - 1 - x : -1);
+      if (k < 0) return sp.cap === 'square' || sp.cap === 'ribbon' ? true : y >= 0 && y <= 8;
+      const r = cap.cols[capW - 1 - k] || cap.cols[0]; const rr = cap.cols[k];
+      if (rr.length === 4) return (y >= rr[0] && y <= rr[1]) || (y >= rr[2] && y <= rr[3]);
+      return y >= rr[0] && y <= rr[1];
     };
+    const fillAt = x => Array.isArray(sp.fill) ? ramp(sp.fill, x / (w - 1)) : sp.fill;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const corner = (x === 0 || x === w - 1) && (y === 0 || y === h - 1); if (corner) continue;
+      if (!inMask(x, y)) continue;
+      const border = !inMask(x - 1, y) || !inMask(x + 1, y) || !inMask(x, y - 1) || !inMask(x, y + 1);
       let c = fillAt(x);
-      if (y === 1 && kind !== 'staff' && kind !== 'outline' && kind !== 'owner') c = mix(c, '#FFFFFF', .35);         // top shine
-      if (y === h - 2 && kind !== 'staff' && kind !== 'outline' && kind !== 'owner') c = mix(c, '#000000', .18);      // bottom shade
-      if (y === 0 || y === h - 1) c = mix(fillAt(x), '#000000', .45); // top and bottom edge
-      set(x, y, c);
+      if (border) c = sp.frame || mix(fillAt(x), '#000000', .45);
+      else { if (sp.shine !== false && !inMask(x, y - 2)) c = mix(c, '#FFFFFF', .3); else if (!inMask(x, y + 2)) c = mix(c, '#000000', .14); }
+      if (sp.edge === 'gold' && border && (y === 0 || y === h - 1)) c = y === 0 ? '#FFD21A' : '#C48F0B';
+      px[y * w + x] = c;
     }
-    if (kind === 'outline' || kind === 'staff') for (let x = 1; x < w - 1; x++) { set(x, 0, colour); set(x, h - 1, colour); }
-    if (kind === 'won' || kind === 'gold' || kind === 'owner') for (let x = 1; x < w - 1; x++) { set(x, 0, '#FFD21A'); set(x, h - 1, '#C48F0B'); }
-    const ink = kind === 'owner' ? '#FFD21A' : (kind === 'staff' || kind === 'outline') ? colour : (lum(kind === 'grad' || kind === 'gold' ? '#FFB000' : colour) > .42 ? '#2B1210' : '#FFFFFF');
-    let x = 1;
-    for (const ch of label) { const m = F[ch]; m.forEach((row, j) => [...row].forEach((b, i) => { if (b === '1') set(x + i, 2 + j, ink); })); x += m[0].length + 1; }
-    return { w, h, px };
+    const ink = sp.ink || (lum(Array.isArray(sp.fill) ? sp.fill[1] : sp.fill) > .42 ? '#2B1210' : '#FFFFFF');
+    let x = capW + cap.pad;
+    for (const ch of label) { const m = F[ch]; m.forEach((row, j) => [...row].forEach((b, i) => { if (b === '1') px[(2 + j) * w + x + i] = ink; })); x += m[0].length + 1; }
+    if (sp.enchant) { // still version of the glint (Bedrock / no shader): two sparkles on the frame, never on the text
+      px[0 * w + (w - capW - 3)] = '#FFFFFF'; px[0 * w + (w - capW - 4)] = '#F3E6FF';
+      px[(h - 1) * w + (capW + 2)] = '#E8D4FF';
+    }
+    return { w, h, px, enchant: !!sp.enchant };
   }
-  const RANKS = [
-    ['ashborn', 'ASHBORN', '#B5ABA4', 'outline'], ['hatchling', 'HATCHLING', '#FFB37A', 'fill'], ['fledgling', 'FLEDGLING', '#FF8C1A', 'fill'],
-    ['firewing', 'FIREWING', '#FF5A4D', 'fill'], ['flamecrest', 'FLAMECREST', '#FFB414', 'fill'], ['sunfeather', 'SUNFEATHER', '#FFF1C4', 'fill'],
-    ['pyrelord', 'PYRELORD', '#FF2D3F', 'fill'], ['immortal', 'IMMORTAL', null, 'grad'],
-    ['torchbearer', 'TORCHBEARER', '#2EC4B6', 'won'], ['flameheart', 'FLAMEHEART', '#B36BFF', 'won'], ['firecrown', 'FIRECROWN', null, 'gold'],
-    ['builder', 'BUILDER', '#4DFF6A', 'staff'], ['helper', 'HELPER', '#33E0FF', 'staff'], ['mod', 'MOD', '#3DA5FF', 'staff'], ['admin', 'ADMIN', '#FF3B3B', 'staff'], ['owner', 'OWNER', '#D1202F', 'owner']];
-  RANKS.forEach(([id, label, col, kind]) => def('glyph/rank_' + id, () => badge(label, col, kind)));
+  const D = '#2B1210';
+  const RANKS = [ // id, label, family, spec
+    ['ashborn', 'ASHBORN', 'free', { fill: '#2A2426', frame: '#9E948E', ink: '#C9C0BA', cap: 'round', shine: false }],
+    ['hatchling', 'HATCHLING', 'bought', { fill: '#F2D3A8', cap: 'round' }],
+    ['fledgling', 'FLEDGLING', 'bought', { fill: '#FF8C1A', cap: 'round' }],
+    ['firewing', 'FIREWING', 'bought', { fill: '#E8323F', cap: 'round', edge: 'gold' }],
+    ['flamecrest', 'FLAMECREST', 'bought', { fill: '#D93C93', cap: 'round', edge: 'gold' }],
+    ['sunfeather', 'SUNFEATHER', 'bought', { fill: ['#FFE873', '#FFD21A', '#FFE873'], frame: '#B87A0A', ink: D, cap: 'point' }],
+    ['pyrelord', 'PYRELORD', 'bought', { fill: ['#3A0A10', '#5E1218', '#3A0A10'], frame: '#FFD21A', ink: '#FFD21A', cap: 'point', enchant: true }],
+    ['immortal', 'IMMORTAL', 'bought', { fill: ['#FF3D2E', '#FFB000', '#FFF2A8'], frame: '#FFD21A', ink: D, cap: 'point', enchant: true }],
+    ['torchbearer', 'TORCHBEARER', 'won', { fill: '#2EC4B6', ink: D, cap: 'ribbon', edge: 'gold' }],
+    ['flameheart', 'FLAMEHEART', 'won', { fill: '#A55BF0', ink: '#FFFFFF', cap: 'ribbon', edge: 'gold', enchant: true }],
+    ['firecrown', 'FIRECROWN', 'won', { fill: ['#FFB000', '#FFE27A', '#FFB000'], ink: D, cap: 'ribbon', edge: 'gold', frame: '#B87A0A', enchant: true }],
+    ['owner', 'OWNER', 'staff', { fill: '#FFC21A', ink: D, cap: 'square' }],
+    ['admin', 'ADMIN', 'staff', { fill: '#FF6B6B', ink: D, cap: 'square' }],
+    ['mod', 'MOD', 'staff', { fill: '#6CC4FF', ink: D, cap: 'square' }],
+    ['helper', 'HELPER', 'staff', { fill: '#7CEB8A', ink: D, cap: 'square' }],
+    ['builder', 'BUILDER', 'staff', { fill: '#FF9A3D', ink: D, cap: 'square' }]];
+  RANKS.forEach(([id, label, fam, sp]) => def('glyph/rank_' + id, () => badge(label, sp)));
   ART.RANKS = RANKS; ART.badgeText = textW;
 })();

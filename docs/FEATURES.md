@@ -86,14 +86,14 @@ If nothing useful is left, answer exactly: No more useful ideas.
 | B12 | Island storage / vault | Shared storage with take-out limits | 💡 | — |
 | B13 | Island level and pillars | Level from many sources, not only blocks | 📝 (Phase 5) | — |
 | B14 | Upgrades and masteries | /is upgrade, mastery tasks (Homestead, Treasury…) | 📝 (Phase 5) | — |
-| B15 | Island size | 3×3 → 9×9 by upgrades; bigger with shards or gems | 📝 | — |
+| B15 | Island size | 3×3 → 9×9 by upgrades; bigger with shards or credits | 📝 | — |
 | B16 | /is top and leaderboards | Solo/team, weekly gain, per pillar | 📝 (Phase 5) | — |
 | B17 | Profiles | Up to 3 profiles (islands) per account | ✅ | — |
 
 ## C. Money and trading
 | # | Feature | What it is | Status | Card |
 |---|---|---|---|---|
-| C1 | Currencies | Money, crystals (island only), gems (bought = tradeable, earned = bound), shards | 🟡 | — |
+| C1 | Currencies | Money (everyday), crystals (island upgrades, island menu), shards (upgrading tools, armour and such), **credits** (was gems: bought with real money on Buycraft). **Gems are renamed credits; nothing is called gems any more** (owner 31 Oct, docs/OWNER_ANSWERS_PACK1.md) | 🟡 | — |
 | C2 | Pay, balance, baltop | /pay, /bal, /baltop, /transactions, $10k earned rule (F1) | ✅ | — |
 | C3 | Money notes | /withdraw notes, 20 a minute, purge | ✅ | — |
 | C4 | Selling | /sell chest, dynamic prices, sell cap 300% | ✅ | — |
@@ -192,7 +192,7 @@ If nothing useful is left, answer exactly: No more useful ideas.
 | I3 | Events | KOTH, envoys, event engine | 💡 | — |
 | I4 | PvE, bosses, pets | Custom mobs, world bosses, pets | 📝 (Phase 8) | — |
 | I5 | Seasons | 3-month resets, prizes, what carries over | 💡 | — |
-| I6 | Store and Discord | Tebex, gems, Discord linking | 💡 | — |
+| I6 | Store and Discord | Tebex, credits (was gems), Discord linking | 💡 | — |
 | I7 | Resource pack | Forced pack, GUIs, icons, sounds | 📝 | — |
 | I8 | Launch prep | Balance pass, load test, checklist | 💡 | — |
 

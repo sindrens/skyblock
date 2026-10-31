@@ -98,7 +98,7 @@
   ],
   [
    "empty",
-   "Nothing here yet: faint cobweb with a tiny spider",
+   "Nothing here yet: faint cobweb",
    "slot 22 / 13",
    "COBWEB"
   ],
@@ -110,43 +110,43 @@
   ],
   [
    "maxed",
-   "Maxed / done: gold star with a check",
+   "Maxed / done: gold star",
    "upgrades and levels at max",
    "per menu (today usually the feature item + \"MAX\" lore)"
   ],
   [
    "minus_small",
-   "Amount down, small step (red plate, 1 pip)",
+   "Amount down, small step (red plate, one \u2212)",
    "picker 21",
    "RED_DYE (NumberPickerMenu)"
   ],
   [
    "minus_mid",
-   "Amount down, middle step (2 pips)",
+   "Amount down, middle step (\u2212 \u2212)",
    "picker 20",
    "RED_DYE"
   ],
   [
    "minus_big",
-   "Amount down, big step (3 pips)",
+   "Amount down, big step (\u2212 \u2212 \u2212)",
    "picker 19",
    "RED_DYE"
   ],
   [
    "plus_small",
-   "Amount up, small step (green plate, 1 pip)",
+   "Amount up, small step (green plate, one +)",
    "picker 23",
    "LIME_DYE (NumberPickerMenu)"
   ],
   [
    "plus_mid",
-   "Amount up, middle step (2 pips)",
+   "Amount up, middle step (+ +)",
    "picker 24",
    "LIME_DYE"
   ],
   [
    "plus_big",
-   "Amount up, big step (3 pips)",
+   "Amount up, big step (+ + +)",
    "picker 25",
    "LIME_DYE"
   ],
@@ -539,28 +539,23 @@
  "currencies": [
   [
    "money",
-   "Money",
+   "Money (everyday buying and selling)",
    "sunflower"
   ],
   [
    "crystals",
-   "Island crystals",
+   "Crystals (island upgrades, island menu)",
    "prismarine_crystals"
   ],
   [
-   "gems",
-   "Gems",
-   "emerald"
-  ],
-  [
    "shards",
-   "Shards (Black Market)",
+   "Shards (upgrading tools, armour and such)",
    "per menu"
   ],
   [
    "credits",
-   "Store credits",
-   "per menu"
+   "Credits, was gems (bought with real money on Buycraft)",
+   "emerald (was the gems icon)"
   ]
  ],
  "glyphs": [
@@ -575,11 +570,6 @@
    "Crystals in text"
   ],
   [
-   "gems",
-   "E202",
-   "Gems in text"
-  ],
-  [
    "shards",
    "E203",
    "Shards in text"
@@ -587,7 +577,7 @@
   [
    "credits",
    "E204",
-   "Store credits in text"
+   "Credits in text (was gems; U+E202 is retired)"
   ],
   [
    "logo_small",

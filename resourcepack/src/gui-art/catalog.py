@@ -19,15 +19,15 @@ BUTTONS = [  # id, what, where (slots), material today (code)
     ('toggle_off', 'Setting off: grey switch, knob left, ring', 'same', 'RED_DYE (MenuService toggle)'),
     ('loading', 'Loading: hourglass with gold sand', 'slot 22 / 13 while loading', 'CLOCK'),
     ('error', "Couldn't load: red warning triangle, click retries", 'slot 22 / 13', 'RED_STAINED_GLASS'),
-    ('empty', 'Nothing here yet: faint cobweb with a tiny spider', 'slot 22 / 13', 'COBWEB'),
+    ('empty', 'Nothing here yet: faint cobweb', 'slot 22 / 13', 'COBWEB'),
     ('locked', 'Locked: grey padlock', 'anywhere', 'GRAY_DYE (MenuService locked)'),
-    ('maxed', 'Maxed / done: gold star with a check', 'upgrades and levels at max', 'per menu (today usually the feature item + "MAX" lore)'),
-    ('minus_small', 'Amount down, small step (red plate, 1 pip)', 'picker 21', 'RED_DYE (NumberPickerMenu)'),
-    ('minus_mid', 'Amount down, middle step (2 pips)', 'picker 20', 'RED_DYE'),
-    ('minus_big', 'Amount down, big step (3 pips)', 'picker 19', 'RED_DYE'),
-    ('plus_small', 'Amount up, small step (green plate, 1 pip)', 'picker 23', 'LIME_DYE (NumberPickerMenu)'),
-    ('plus_mid', 'Amount up, middle step (2 pips)', 'picker 24', 'LIME_DYE'),
-    ('plus_big', 'Amount up, big step (3 pips)', 'picker 25', 'LIME_DYE'),
+    ('maxed', 'Maxed / done: gold star', 'upgrades and levels at max', 'per menu (today usually the feature item + "MAX" lore)'),
+    ('minus_small', 'Amount down, small step (red plate, one −)', 'picker 21', 'RED_DYE (NumberPickerMenu)'),
+    ('minus_mid', 'Amount down, middle step (− −)', 'picker 20', 'RED_DYE'),
+    ('minus_big', 'Amount down, big step (− − −)', 'picker 19', 'RED_DYE'),
+    ('plus_small', 'Amount up, small step (green plate, one +)', 'picker 23', 'LIME_DYE (NumberPickerMenu)'),
+    ('plus_mid', 'Amount up, middle step (+ +)', 'picker 24', 'LIME_DYE'),
+    ('plus_big', 'Amount up, big step (+ + +)', 'picker 25', 'LIME_DYE'),
     ('set_min', 'Set the minimum (arrow down to a bar)', 'picker 30', 'BUCKET'),
     ('set_max', 'Set the maximum (arrow up to a bar)', 'picker 32', 'WATER_BUCKET'),
     ('type_amount', 'Type an amount (slip with 123 and a pencil)', 'picker 31 · shop buy page 32', 'NAME_TAG'),
@@ -93,13 +93,13 @@ TABS = [
     ('essentials', 'Essentials', 0), ('farming', 'Farming', 1), ('wood', 'Wood', 2), ('stone', 'Stone & Earth', 3), ('special', 'Special Blocks', 4),
     ('colors', 'Colors', 5), ('decoration', 'Decoration', 6), ('redstone', 'Redstone', 7), ('spawners', 'Spawners', 8)]
 
-CURRENCIES = [  # id, name, material today
-    ('money', 'Money', 'sunflower'), ('crystals', 'Island crystals', 'prismarine_crystals'), ('gems', 'Gems', 'emerald'),
-    ('shards', 'Shards (Black Market)', 'per menu'), ('credits', 'Store credits', 'per menu')]
+CURRENCIES = [  # id, name, material today. Gems are renamed credits (owner 31 Oct): nothing is called gems any more.
+    ('money', 'Money (everyday buying and selling)', 'sunflower'), ('crystals', 'Crystals (island upgrades, island menu)', 'prismarine_crystals'),
+    ('shards', 'Shards (upgrading tools, armour and such)', 'per menu'), ('credits', 'Credits, was gems (bought with real money on Buycraft)', 'emerald (was the gems icon)')]
 
 GLYPHS = [  # id, codepoint, what
-    ('money', 'E200', 'Money in text'), ('crystals', 'E201', 'Crystals in text'), ('gems', 'E202', 'Gems in text'), ('shards', 'E203', 'Shards in text'),
-    ('credits', 'E204', 'Store credits in text'), ('logo_small', 'E205', 'Phoenix flame (chat prefix)'),
+    ('money', 'E200', 'Money in text'), ('crystals', 'E201', 'Crystals in text'), ('shards', 'E203', 'Shards in text'),
+    ('credits', 'E204', 'Credits in text (was gems; U+E202 is retired)'), ('logo_small', 'E205', 'Phoenix flame (chat prefix)'),
     ('rank_ashborn', 'E220', 'Free rank'), ('rank_hatchling', 'E221', 'Bought 1'), ('rank_fledgling', 'E222', 'Bought 2'), ('rank_firewing', 'E223', 'Bought 3'),
     ('rank_flamecrest', 'E224', 'Bought 4'), ('rank_sunfeather', 'E225', 'Bought 5'), ('rank_pyrelord', 'E226', 'Bought 6'), ('rank_immortal', 'E227', 'Bought 7'),
     ('rank_torchbearer', 'E228', 'Won (season)'), ('rank_flameheart', 'E229', 'Won (season)'), ('rank_firecrown', 'E22A', 'Won (season)'),

@@ -2,6 +2,8 @@
 
 > **31 Oct 2026: the GUI part is done.** Menu backgrounds (§B), menu buttons (§C), feature icons (§D), the currency icons and glyphs (§J) and the rank badges and small logo (§N) are drawn: v1, generated cartoon art in `resourcepack/`. The ids and where each one shows are in **`docs/plans/RESOURCE_PACK_GUI.md`**. This brief stays the to-do list for everything else (tools, books, sets, keys, crates, notes, spawners, Depths drops, rarity tags, HUD, sounds, pack icons).
 
+> **31 Oct 2026, round 2 (owner):** the only custom in-game items are **the crate chests at /warp crates**, one per crate by rarity (done: `resourcepack/`, RESOURCE_PACK_GUI.md §7). §E tools, §F books, §G sets, §K notes, §L Depths drops and §M spawners are **dropped**: those items keep the vanilla look. Crate keys in crate colours are waiting for the owner (question K2). Gems are renamed credits (§J).
+
 > **For:** the owner, who draws every texture himself. **Status:** 2026-10-30, written from the built modules (tool tiers, `sets.yml`, crates, Depths drops, menus) and `RESOURCE_PACK.md` (ids, glyph sizes, milestones).
 > **Owner decisions (30 Oct):** the Java pack is **forced** (accept before joining, professional prompt); custom textures on crates, GUIs, sets/wardrobe and tools; size is not critical but optimise; the owner makes the art; the style is not fixed yet (§0.3).
 > Work top to bottom through the P1 items first. Each line has an id (`B07`) you can tick off or mention ("B07 done").

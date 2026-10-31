@@ -214,7 +214,7 @@
     '.RRRRRRRssRRRRR.',
     '.RRRRRRRRRRRRRR.',
     '................']);
-  R('menu/empty', { L: '#A3A3AD', S: '#34343C', r: '#FF2D3F' }, [ // faint cobweb with a tiny spider: "nothing here yet"
+  R('menu/empty', { L: '#A3A3AD' }, [ // faint cobweb: "nothing here yet"
     '................',
     '.L.....L.....L..',
     '..L...LLL...L...',
@@ -225,10 +225,10 @@
     'LLLLLLLLLLLLLLL.',
     '.L...L.L.L...L..',
     '..L..LLLLL..L...',
-    '...L.L.L.L.SSS..',
-    '...LLL.L.LSSSSS.',
-    '..L...LLL..SrS..',
-    '.L.....L....S...',
+    '...L.L.L.L.L....',
+    '...LLL.L.LLL....',
+    '..L...LLL...L...',
+    '.L.....L.....L..',
     '................',
     '................'], { outline: false });
   R('menu/locked', { I: 'iron', L: 'ash', k: '#1A1416' }, [
@@ -248,35 +248,37 @@
     '...LLLLLLLLLL...',
     '................',
     '................']);
-  R('menu/maxed', { Y: 'gold', W: '#FFFFFF', s: 'gold.2' }, [
+  R('menu/maxed', { Y: 'gold', W: '#FFFFFF' }, [ // gold star: maxed / done
     '................',
     '.......Y........',
     '......YYY.......',
-    '......YYY.......',
+    '......YWY.......',
     '.....YYYYY......',
-    '.YYYYYYYYYYYYY..',
-    '..YYYYYYYYYYW...',
-    '...YYYYYYYWWs...',
-    '....YWYYYWWs....',
-    '....YWWYWWsY....',
-    '...YYYWWWsYYY...',
-    '...YYYYWsYYYY...',
-    '..YYYY.s..YYYY..',
-    '..YYY.....YYYY..',
+    '.YYYYYWYYYYYYY..',
+    '..YYYYYYYYYYY...',
+    '...YYYYYYYYY....',
+    '....YYYYYYY.....',
+    '....YYYYYYY.....',
+    '...YYYYYYYYY....',
+    '...YYYY.YYYY....',
+    '..YYY.....YYY...',
     '..YY.......YY...',
+    '................',
     '................']);
-
-  // ---- amount plates: one sign, 1 / 2 / 3 pips = small / mid / big step ----
-  const SIGN = { '+': ['..WW..', '..WW..', 'WWWWWW', 'WWWWWW', '..WW..', '..WW..'], '-': ['......', '......', 'WWWWWW', 'WWWWWW', '......', '......'] };
+  // ---- amount plates: + / ++ / +++ (and - / -- / ---) = small / mid / big step; the exact number is in the item name ----
+  const SIGNS = {
+    '+': { 1: ['..WW..', '..WW..', 'WWWWWW', 'WWWWWW', '..WW..', '..WW..'], 2: ['..W..', '..W..', 'WWWWW', '..W..', '..W..'], 3: ['.W.', 'WWW', '.W.'] },
+    '-': { 1: ['......', '......', 'WWWWWW', 'WWWWWW', '......', '......'], 2: ['.....', '.....', 'WWWWW', '.....', '.....'], 3: ['...', 'WWW', '...'] },
+  };
   const amount = (sign, n) => {
-    const g = fromRows(PLATE); stamp(g, SIGN[sign], 5, 3);
-    const w = n * 3 - 1; let x = 8 - Math.ceil(w / 2);
-    for (let i = 0; i < n; i++) { fillRect(g, x, 11, 2, 2, 'p'); x += 3; }
+    const g = fromRows(PLATE); const m = SIGNS[sign][n], sw = m[0].length, gap = n === 3 ? 1 : 2;
+    const total = n * sw + (n - 1) * gap; let x = Math.floor((16 - total) / 2); const y = Math.floor((16 - m.length) / 2);
+    for (let i = 0; i < n; i++) { stamp(g, m, x, y); x += sw + gap; }
     return g;
   };
   [['small', 1], ['mid', 2], ['big', 3]].forEach(([k, n]) => {
-    def('menu/minus_' + k, () => paint(amount('-', n), { A: 'red', W: '#FFFFFF', p: '#FFFFFF' }));
-    def('menu/plus_' + k, () => paint(amount('+', n), { A: 'green', W: '#FFFFFF', p: '#FFFFFF' }));
+    def('menu/minus_' + k, () => paint(amount('-', n), { A: 'red', W: '#FFFFFF' }));
+    def('menu/plus_' + k, () => paint(amount('+', n), { A: 'green', W: '#FFFFFF' }));
   });
   R('menu/set_min', { Y: 'gold', B: 'ember' }, [
     '................',
@@ -403,19 +405,20 @@
     for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) { fillRect(g, 2 + i * 4, 2 + j * 4, 4, 4, 'k'); fillRect(g, 3 + i * 4, 3 + j * 4, 3, 3, 'G'); }
     return paint(g, { D: 'dark', k: '#140F0F', G: 'lime' });
   });
-  def('menu/undo', () => { // gold plate with a hook arrow back (count = seconds left)
+  def('menu/undo', () => { // gold plate with a white "go back" arrow (count = seconds left)
     const g = fromRows(DISC);
     stamp(g, [
-      '...W.......',
-      '..WW.......',
-      '.WWWWWWWW..',
-      'WWWWWWWWWW.',
-      '.WWW....WWW',
-      '..WW.....WW',
-      '...W.....WW',
-      '....WWWWWWW',
-      '....WWWWWW.'], 2, 3);
-    return paint(g, { A: 'gold', W: '#7A3A0C' });
+      '..W.......',
+      '.WW.......',
+      'WWWWWWWW..',
+      'WWWWWWWWW.',
+      '.WW....WWW',
+      '..W.....WW',
+      '........WW',
+      '.......WWW',
+      '..WWWWWWW.',
+      '..WWWWWW..'], 3, 3);
+    return paint(g, { A: 'gold', W: '#6E2E08' });
   });
   R('menu/search', { I: 'gold', G: 'glass', H: 'red' }, [
     '................',

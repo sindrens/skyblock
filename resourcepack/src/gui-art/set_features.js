@@ -21,7 +21,7 @@
     '..GGGGGGGGGGGG..',
     '................',
     '................']);
-  R('island', { T: 'leaf', n: 'darkwood', G: 'grass', D: 'dirt', S: 'stone', b: 'cyan' }, [ // floating island with a tree
+  R('island', { T: 'leaf', n: 'darkwood', G: 'grass', D: 'dirt', S: 'stone' }, [ // floating island with a tree
     '....TTTTT.......',
     '...TTwTTTT......',
     '..TTTTTTTTT.....',
@@ -30,29 +30,29 @@
     '......nn........',
     '.GGGGGGnGGGGGGG.',
     'GGGGGGGGGGGGGGGG',
-    'GDDDDDDDDDDDDDDb',
-    '.DDDDDDDDDDDDDDb',
-    '..SSSSSSSSSSSS.b',
-    '..SSSSSSSSSSS..b',
+    'GDDDDDDDDDDDDDDG',
+    '.DDDDDDDDDDDDDD.',
+    '..SSSSSSSSSSSS..',
+    '..SSSSSSSSSSS...',
     '...SSSSSSSSS....',
     '....SSSSSSS.....',
     '.....SSS.SS.....',
     '......S.........']);
-  R('depths', { I: 'iron', n: 'wood', C: 'cyan' }, [ // pickaxe over a glowing crystal: mine crystals in the Depths
+  R('depths', { I: 'iron', n: 'wood' }, [ // a big pickaxe: go mining in the Depths
     '................',
-    '....IIIIII......',
-    '..IIIIIIIIII....',
-    '.III.....IIII...',
-    '.II.......IIn...',
-    '.I.......nIII...',
-    '........nn.II...',
-    '.......nn...I...',
-    '......nn........',
-    '.....nn.....C...',
-    '....nn.....CCC..',
-    '...nn....C.CwC..',
-    '..nn....CCCCCC..',
-    '.......CCCCCCCC.',
+    '...IIIIIIII.....',
+    '.IIIIIIIIIIII...',
+    'IIII.....IIIII..',
+    'III.......IIIn..',
+    'II.......nnIII..',
+    'I.......nn..II..',
+    '.......nn....I..',
+    '......nn.....I..',
+    '.....nn.........',
+    '....nn..........',
+    '...nn...........',
+    '..nn............',
+    '.nn.............',
     '................',
     '................']);
   R('travel', { P: 'darkwood', A: 'red', B: 'gold', G: 'grass' }, [ // signpost: every place one click away
@@ -107,8 +107,8 @@
     '.AA.WW.AA.WW.AA.',
     '..P..........P..',
     '..P..........P..',
-    '..P.EE..a.yy.P..',
-    '..P.EE.aa.yy.P..',
+    '..P..........P..',
+    '..P..........P..',
     '.BBBBBBBBBBBBBB.',
     '.BBBBBBBBBBBBBB.',
     '.BBBBBBBBBBBBBB.',
@@ -152,11 +152,11 @@
     '................']);
 
   // ---------------- POWER ----------------
-  R('forge', { A: 'steel', E: 'ember', F: 'gold', r: 'red' }, [ // anvil with a glowing hot ingot
+  R('forge', { A: 'steel', E: 'ember', F: 'gold' }, [ // anvil with a glowing hot ingot
     '................',
-    '.....F...F......',
-    '....FrF.FrF.....',
-    '.....F...F......',
+    '................',
+    '.........F......',
+    '....F...........',
     '.....EEEEEE.....',
     '.AAAAAAAAAAAAA..',
     'AAAAAAAAAAAAAA..',
@@ -187,11 +187,11 @@
     '................',
     '................']);
   R('enchanter', { B: 'violet', P: 'parch', p: 'parch.2', l: 'violet.1', s: 'gold' }, [ // open spell book with sparkles
-    '...s.......s....',
-    '..sss.....sss...',
-    '...s...s...s....',
-    '......sss.......',
-    '.PPPP..s...PPPP.',
+    '................',
+    '..s.............',
+    '.sss........s...',
+    '..s........sss..',
+    '.PPPP.......s...',
     'PPPPPPP..PPPPPPP',
     'PlllPPPppPPlllPP',
     'PPPPPPPppPPPPPPP',
@@ -240,9 +240,9 @@
     '................',
     '................']);
   R('rewards_ready', { W: 'wood', Y: 'gold', d: 'darkwood.2', c: 'gold', s: '#FFF6C0' }, [ // open chest full of gold, sparkling
-    's......s.......s',
-    '.s....sss.....s.',
-    '.......s........',
+    '...........s....',
+    '..s.......sss...',
+    '.sss.......s....',
     '..WWWWWWWWWWWW..',
     '.WYWWWWWWWWWWYW.',
     '.WWWWWWWWWWWWWW.',
@@ -450,19 +450,19 @@
     '......YYY.......',
     '................',
     '................']);
-  R('warps', { S: 'stone', V: 'violet', P: 'pink.0' }, [ // portal: island warps
+  R('warps', { S: 'stone', V: 'violet', P: 'violet.0' }, [ // portal: island warps
     '................',
     '.....SSSSSS.....',
     '....SSSSSSSS....',
     '...SSVVVVVVSS...',
-    '...SVVVVVVVVS...',
-    '..SSVVPPPVVVSS..',
-    '..SVVPVVVPVVVS..',
-    '..SVVPVPVVPVVS..',
-    '..SVVPVVPPVVVS..',
-    '..SVVVPVVVVVVS..',
-    '..SVVVVPPPPVVS..',
-    '..SVVVVVVVVVVS..',
+    '...SVVPPPPVVS...',
+    '..SSVPVVVVPVSS..',
+    '..SVPVVVVVVPVS..',
+    '..SVPVVVVVVPVS..',
+    '..SVPVVVVVVPVS..',
+    '..SVPVVVVVVPVS..',
+    '..SVVPVVVVPVVS..',
+    '..SVVVPPPPVVVS..',
     '..SVVVVVVVVVVS..',
     '.SSSSSSSSSSSSSS.',
     '................',
@@ -487,7 +487,7 @@
   def('menu/icon/visitors', () => paint(fromRows(GATE), { P: 'darkwood', W: 'wood' }));
   def('menu/icon/visitors_locked', () => { const g = fromRows(GATE); stamp(g, ['.oooo.', '.o..o.', 'LLLLLL', 'LLkkLL', 'LLLkLL', 'LLLLLL'], 5, 6);
     return paint(g, { P: 'darkwood', W: 'wood', L: 'gold', k: '#2B1210' }); });
-  def('menu/icon/island_settings', () => cog('iron', 'grass'));
+  def('menu/icon/island_settings', () => cog('leaf', null));
   R('invites', { P: 'parch', d: 'parch.2', R: 'red' }, [ // envelope with a phoenix seal
     '................',
     '................',
@@ -590,10 +590,10 @@
     '..PP.PP..PP.PP..',
     '................',
     '................']);
-  R('upgrades', { G: 'green', s: 'gold' }, [ // big green up arrow
-    '.............s..',
-    '.......G....sss.',
-    '......GGG....s..',
+  R('upgrades', { G: 'green' }, [ // big green up arrow
+    '................',
+    '.......G........',
+    '......GGG.......',
     '.....GGGGG......',
     '....GGGGGGG.....',
     '...GGGGwGGGG....',
