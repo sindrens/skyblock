@@ -4,6 +4,7 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.config.ConfigManager;
 import net.skybornmc.skyblock.common.text.Messages;
@@ -27,6 +28,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -47,9 +49,12 @@ import java.util.logging.Level;
  * <ul>
  *   <li>every click/drag/move touching a menu is cancelled, so nothing can leave or enter it (shift, number keys,
  *       offhand swap, double-click collect, drop, creative middle-click, hoppers);</li>
- *   <li>only plain left/right (and shift) clicks on a button run its action, at most one per {@code click-debounce-ms};</li>
+ *   <li>only plain left/right (and shift) clicks on a button run its action, at most one per {@code click-debounce-ms};
+ *       both mouse buttons run the plain action unless the button marks a Java-only shortcut ({@link ClickRoute});</li>
  *   <li>all menu items carry a marker; a marked item found outside a menu is deleted (defence in depth);</li>
- *   <li>live updates for menus with a tick interval; chat prompts for text/number input (Bedrock-friendly).</li>
+ *   <li>live updates for menus with a tick interval; chat prompts for text/number input (Bedrock-friendly);</li>
+ *   <li>navigation (GUI_DESIGN §0.3): Back returns to the menu that opened this one ({@link Navigation}); re-opening the
+ *       open menu updates the window in place (tabs, pages: no flicker).</li>
  * </ul>
  */
 public final class MenuService implements Listener {
@@ -70,10 +75,19 @@ public final class MenuService implements Listener {
     private final Debounce debounce;
     private final Map<UUID, Menu> open = new ConcurrentHashMap<>();
     private final Map<UUID, Prompt> prompts = new ConcurrentHashMap<>();
+    /** The menu a chat prompt or a command was started from: the Back target of a menu that opens a moment later. */
+    private final Map<UUID, Origin> origins = new ConcurrentHashMap<>();
+    /** Menu classes already warned about a button on a standard slot (logged once per class). */
+    private final java.util.Set<String> slotWarnings = ConcurrentHashMap.newKeySet();
+    private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.builder()
+            .character(LegacyComponentSerializer.SECTION_CHAR).hexColors().useUnusualXRepeatedCharacterHexFormat().build();
     private final MenuHeads heads;
     private BukkitTask ticker;
 
     private record Prompt(Consumer<String> onInput, Runnable onCancel, int maxLength, BukkitTask timeout) {
+    }
+
+    private record Origin(Menu menu, long until) {
     }
 
     public MenuService(JavaPlugin plugin, ConfigManager configs, Messages messages, Sounds sounds) {
@@ -123,6 +137,7 @@ public final class MenuService implements Listener {
             }
         }
         open.clear();
+        origins.clear();
         prompts.values().forEach(p -> p.timeout().cancel());
         prompts.clear();
         HandlerList.unregisterAll(this);
@@ -156,16 +171,30 @@ public final class MenuService implements Listener {
             return;
         }
         cancelPrompt(player, false);
-        Menu previous = open.remove(player.getUniqueId());
+        UUID id = player.getUniqueId();
+        Menu current = open.get(id);
+        if (current == menu && redrawInPlace(player, menu)) {
+            return;
+        }
+        Origin origin = origins.remove(id);
+        Menu from = origin != null && origin.until() >= System.currentTimeMillis() ? origin.menu() : null;
+        Menu parent = Navigation.resolve(menu, menu.parent(), current, from, menu.isMainMenu(), Menu::parent, Navigation::sameClass);
+        if (parent != menu.parent()) {
+            menu.parent(parent);
+        }
+        Navigation.trim(menu, config.navigationMaxDepth, Menu::parent, Menu::parent);
+        Menu previous = open.remove(id);
         if (previous != null && previous != menu) {
-            previous.detach(); // re-opening the same menu (e.g. page turn with a new title) is not a close
+            previous.detach(); // re-opening the same menu (e.g. after a prompt) is not a close
         }
         int rows = Math.max(1, Math.min(6, menu.rows()));
         // The holder must exist before the inventory; the title needs the viewer for Bedrock colors.
         menu.viewer = player;
         menu.service = this;
-        Inventory inventory = Bukkit.createInventory(menu, rows * 9, menu.title());
+        Component title = menu.title();
+        Inventory inventory = Bukkit.createInventory(menu, rows * 9, title);
         menu.attach(this, player, inventory);
+        menu.shownTitle = title;
         try {
             menu.build();
         } catch (RuntimeException e) {
@@ -188,9 +217,91 @@ public final class MenuService implements Listener {
         }
     }
 
+    /**
+     * Re-opening the open menu: rebuild it in the same window and update the title in place when it changed (tabs,
+     * pages, filters), so the window does not close and reopen (no flicker, no cursor jump). Returns false when a full
+     * reopen is needed (window not open any more, or the title changed and in-place titles are off or failed).
+     */
+    private boolean redrawInPlace(Player player, Menu menu) {
+        InventoryView view = player.getOpenInventory();
+        Inventory top = view.getTopInventory();
+        if (!menu.isOpen() || top.getHolder(false) != menu || !top.equals(menu.getInventory())
+                || top.getSize() != Math.max(1, Math.min(6, menu.rows())) * 9) {
+            return false;
+        }
+        Component title = menu.title();
+        boolean retitle = !title.equals(menu.shownTitle);
+        if (retitle && !config.titleUpdateInPlace) {
+            return false;
+        }
+        try {
+            menu.refresh();
+        } catch (RuntimeException e) {
+            plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " failed to build", e);
+            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+            messages.send(player, MODULE, "error");
+            sounds.playUi(player, "error");
+            return true;
+        }
+        if (retitle) {
+            try {
+                setTitle(view, title);
+                menu.shownTitle = title;
+            } catch (RuntimeException e) {
+                plugin.getLogger().log(Level.FINE, "In-place title update failed; reopening " + menu.getClass().getSimpleName(), e);
+                return false;
+            }
+        }
+        sounds.playUi(player, "page");
+        return true;
+    }
+
+    /**
+     * Paper has no Component setter for an open window's title; the legacy one (deprecated since 1.21.1, not for removal)
+     * re-sends the window title without closing it. Hex colors survive the legacy format. Failures fall back to a reopen.
+     */
+    @SuppressWarnings("deprecation")
+    private static void setTitle(InventoryView view, Component title) {
+        view.setTitle(LEGACY.serialize(title));
+    }
+
     /** The menu {@code player} has open, or {@code null}. */
     public Menu openMenu(Player player) {
         return open.get(player.getUniqueId());
+    }
+
+    /**
+     * Runs {@code action} (usually a command, e.g. from /menu) while {@code from} stays open, so a menu the action opens
+     * gets {@code from} as its Back target. A menu that opens a moment later (after loading data) still gets it for
+     * {@code navigation.origin-seconds}. If nothing opened, {@code from} is closed so the player sees the chat output.
+     */
+    public void navigate(Player player, Menu from, Runnable action) {
+        UUID id = player.getUniqueId();
+        origins.put(id, new Origin(from, System.currentTimeMillis() + config.navigationOriginSeconds * 1000L));
+        try {
+            action.run();
+        } finally {
+            if (open.get(id) == from) {
+                player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+            }
+        }
+    }
+
+    /** Closes the open menu and forgets where it came from (the Close button). */
+    public void close(Player player) {
+        origins.remove(player.getUniqueId());
+        player.closeInventory();
+    }
+
+    /** Opens the main menu (/menu) as a new navigation stack: the Main menu button. */
+    public void openMainMenu(Player player) {
+        origins.remove(player.getUniqueId());
+        String command = config.mainMenuCommand == null ? "" : config.mainMenuCommand.strip();
+        Menu before = open.get(player.getUniqueId());
+        player.performCommand(command.startsWith("/") ? command.substring(1) : command);
+        if (before != null && open.get(player.getUniqueId()) == before) {
+            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+        }
     }
 
     // ------------------------------------------------------------------ items and text
@@ -284,7 +395,7 @@ public final class MenuService implements Listener {
             plainCrumbs = crumbs.stream().map(plain::serialize).toList();
         }
         int max = config.titleMaxLength;
-        int first = MenuTitles.firstKept(plainCrumbs, fixed, plain.serialize(separator).length(), max);
+        int first = MenuTitles.first(plainCrumbs, config.titleMaxParts, fixed, plain.serialize(separator).length(), max);
         Component joined = Component.empty();
         for (int i = first; i < crumbs.size(); i++) {
             Component crumb = crumbs.get(i);
@@ -328,12 +439,62 @@ public final class MenuService implements Listener {
         return meta.getPersistentDataContainer().has(menuItemKey, PersistentDataType.BYTE);
     }
 
-    MenuButton loadingItem(Player viewer) {
+    // ------------------------------------------------------------------ states (GUI_DESIGN §3: one look each, everywhere)
+
+    /** "⌛ Loading..." (clock), display only. */
+    public MenuButton loadingItem(Player viewer) {
         return MenuButton.display(item(Material.CLOCK, viewer, "loading"));
     }
 
-    MenuButton errorItem(Player viewer) {
-        return MenuButton.display(item(Material.RED_STAINED_GLASS, viewer, "error-item"));
+    /** "✘ Couldn't load this" (red glass). With {@code retry} a click tries again; {@code null} = display only. */
+    public MenuButton errorItem(Player viewer, Runnable retry) {
+        if (retry == null) {
+            return MenuButton.display(item(Material.RED_STAINED_GLASS, viewer, "error-item"));
+        }
+        return MenuButton.of(item(Material.RED_STAINED_GLASS, viewer, "error-retry"), click -> retry.run());
+    }
+
+    /** "Nothing here yet" (cobweb) with the framework texts. Put it in {@link MenuLayout#empty}. */
+    public MenuButton emptyItem(Player viewer) {
+        return emptyItem(viewer, MODULE, "empty");
+    }
+
+    /** "Nothing here yet" (cobweb) with a menu's own texts: {@code <key>.name} (the key fact) and {@code <key>.lore} (one hint). */
+    public MenuButton emptyItem(Player viewer, String module, String key) {
+        return MenuButton.display(item(Material.COBWEB, viewer, module, key));
+    }
+
+    /**
+     * The locked look: gray, {@code ✘ Name}, then how to unlock (e.g. {@code Mining 15 ▸ 9/15}) in the lore. A click
+     * shows the unlock hint in the action bar with the error sound (Bedrock players read it there too).
+     */
+    public MenuButton locked(Player viewer, Component name, Component howToUnlock) {
+        List<Component> lore = new ArrayList<>();
+        lore.add(howToUnlock);
+        lore.addAll(lines(viewer, "state.locked.lore"));
+        ItemStack item = item(Material.GRAY_DYE, text(viewer, "state.locked.name", Msg.c("name", name)), lore);
+        return MenuButton.of(item, click -> {
+            messages.actionBar(click.player(), MODULE, "state.locked.actionbar", Msg.c("hint", howToUnlock));
+            sounds.playUi(click.player(), "error");
+        });
+    }
+
+    /**
+     * A tab (row 0, GUI_DESIGN §1.5). The selected tab glints and says "✔ You are here" (no click); any other tab runs
+     * {@code onSelect} and then redraws the menu in place (same window, the cursor stays).
+     */
+    public MenuButton tab(Player viewer, ItemStack icon, Component name, List<Component> description, boolean selected, Runnable onSelect) {
+        List<Component> lore = new ArrayList<>(description);
+        lore.addAll(lines(viewer, selected ? "tab.selected" : "tab.action"));
+        ItemStack item = item(icon, name, lore);
+        if (selected) {
+            item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
+            return MenuButton.display(item);
+        }
+        return MenuButton.of(item, click -> {
+            onSelect.run();
+            click.menu().redraw();
+        });
     }
 
     /** Filler for empty slots inside small menus (confirm, number picker). */
@@ -386,33 +547,56 @@ public final class MenuService implements Listener {
                 }
             }
         }
-        if (rows != 6) {
-            return;
-        }
         Player viewer = menu.viewer();
         ItemStack[] fixed = menu.frameButtons();
-        if (menu.parent() != null) {
+        int back = MenuLayout.back(rows);
+        if (back != MenuLayout.NONE && menu.parent() != null) {
             if (fixed[0] == null) {
                 fixed[0] = mark(navItem("back", Material.ARROW, viewer, "frame.back"));
             }
-            menu.setMarked(Menu.SLOT_BACK, fixed[0], click -> click.menu().back());
+            menu.setMarked(back, fixed[0], click -> click.menu().back());
         }
-        if (menu.infoKey() != null) {
+        int info = MenuLayout.info(rows);
+        if (info != MenuLayout.NONE && menu.infoKey() != null) {
             if (fixed[1] == null) {
                 List<Component> lore = new ArrayList<>(lines(viewer, menu.messageModule(), menu.infoKey()));
                 lore.addAll(lines(viewer, "frame.info.footer"));
                 fixed[1] = mark(item(Material.BOOK, text(viewer, "frame.info.name"), lore));
             }
-            menu.setMarked(Menu.SLOT_INFO, fixed[1], click -> runHelp(click.player(), menu.helpTopic()));
+            menu.setMarked(info, fixed[1], click -> runHelp(click.player(), click.menu(), menu.helpTopic()));
         }
-        if (fixed[2] == null) {
-            fixed[2] = mark(item(Material.BARRIER, viewer, "frame.close"));
+        int close = MenuLayout.close(rows);
+        if (close != MenuLayout.NONE) {
+            if (fixed[2] == null) {
+                fixed[2] = mark(item(Material.BARRIER, viewer, "frame.close"));
+            }
+            menu.setMarked(close, fixed[2], click -> close(click.player()));
         }
-        menu.setMarked(Menu.SLOT_CLOSE, fixed[2], click -> click.player().closeInventory());
-        if (fixed[3] == null) {
-            fixed[3] = mark(item(Material.KNOWLEDGE_BOOK, viewer, "frame.help"));
+        int main = MenuLayout.mainMenu(rows);
+        if (main != MenuLayout.NONE) {
+            if (menu.isMainMenu()) {
+                if (fixed[3] == null) {
+                    fixed[3] = mark(item(Material.KNOWLEDGE_BOOK, viewer, "frame.help"));
+                }
+                menu.setMarked(main, fixed[3], click -> runHelp(click.player(), click.menu(), null));
+            } else {
+                if (fixed[3] == null) {
+                    fixed[3] = mark(item(Material.NETHER_STAR, viewer, "frame.main-menu"));
+                }
+                menu.setMarked(main, fixed[3], click -> openMainMenu(click.player()));
+            }
         }
-        menu.setMarked(Menu.SLOT_HELP, fixed[3], click -> runHelp(click.player(), null));
+    }
+
+    /**
+     * Logs once per menu class when a menu puts its own button on a standard slot (e.g. a filter on 52, where Previous
+     * page goes): the standard button wins on pages where it shows. Called by {@link PagedMenu}.
+     */
+    void warnStandardSlot(Menu menu, int slot) {
+        if (slotWarnings.add(menu.getClass().getName() + "#" + slot)) {
+            plugin.getLogger().warning("Menu " + menu.getClass().getSimpleName() + " uses slot " + slot
+                    + ", a standard bottom-bar slot (GUI_DESIGN §1.1); move its button to 46, 47 or 51.");
+        }
     }
 
     /** What a slot of the standard frame shows (docs/UI_STYLE.md §5.1). */
@@ -435,9 +619,9 @@ public final class MenuService implements Listener {
         return FrameRole.INNER;
     }
 
-    private void runHelp(Player player, String topic) {
-        player.closeInventory();
-        player.performCommand(topic == null ? "help" : "help " + topic);
+    /** Opens a help topic (or the help home) with {@code from} as its Back target. */
+    private void runHelp(Player player, Menu from, String topic) {
+        navigate(player, from, () -> player.performCommand(topic == null ? "help" : "help " + topic));
     }
 
     /**
@@ -466,10 +650,12 @@ public final class MenuService implements Listener {
                        TagResolver... placeholders) {
         cancelPrompt(player, false);
         Menu current = open.get(player.getUniqueId());
+        int seconds = config.promptTimeoutSeconds;
         if (current != null) {
+            // A menu the answer opens gets this one as its Back target (the prompt closes the window meanwhile).
+            origins.put(player.getUniqueId(), new Origin(current, System.currentTimeMillis() + (seconds + 5) * 1000L));
             player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         }
-        int seconds = config.promptTimeoutSeconds;
         BukkitTask timeout = Bukkit.getScheduler().runTaskLater(plugin, () -> {
             Prompt p = prompts.remove(player.getUniqueId());
             if (p != null) {
@@ -566,9 +752,14 @@ public final class MenuService implements Listener {
         if (!debounce.tryClick(player.getUniqueId(), System.currentTimeMillis())) {
             return;
         }
+        ClickRoute route = ClickRoute.of(type, messages.isBedrock(player), button.onRight() != null, button.onShift() != null);
+        Consumer<MenuClick> handler = button.handler(route);
+        if (handler == null) {
+            return;
+        }
         sounds.playUi(player, "click");
         try {
-            button.onClick().accept(new MenuClick(player, menu, slot, type));
+            handler.accept(new MenuClick(player, menu, slot, type));
         } catch (RuntimeException e) {
             plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " click on slot " + slot + " failed", e);
             messages.send(player, MODULE, "error");
@@ -595,6 +786,7 @@ public final class MenuService implements Listener {
         if (menu.getInventory() == event.getInventory() && open.remove(player.getUniqueId(), menu)) {
             menu.detach();
             if (event.getReason() == InventoryCloseEvent.Reason.PLAYER) {
+                origins.remove(player.getUniqueId()); // the player closed it: the navigation stack ends here
                 sounds.playUi(player, "menu-close");
             }
         }
@@ -604,6 +796,7 @@ public final class MenuService implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent event) {
         if (config.closeOnTeleport && open.containsKey(event.getPlayer().getUniqueId())) {
+            origins.remove(event.getPlayer().getUniqueId()); // a teleport ends the navigation stack (e.g. /menu → Home)
             event.getPlayer().closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         }
     }
@@ -629,6 +822,7 @@ public final class MenuService implements Listener {
             menu.detach();
         }
         cancelPrompt(player, false);
+        origins.remove(player.getUniqueId());
         debounce.forget(player.getUniqueId());
     }
 

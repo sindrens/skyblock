@@ -258,9 +258,14 @@ public final class MenusModule implements SkyblockModule {
         }
     }
 
-    /** Opens a help screen with the help categories as its parent, so Back leads there. */
+    /**
+     * Opens a help screen. From a menu (its "?" button) Back returns to that menu (GUI-1); typed in chat, Back leads to
+     * the help categories.
+     */
     private void openUnderHelp(Player player, Menu menu) {
-        menu.parent(new HelpMenu(nav));
+        if (core.menus().openMenu(player) == null) {
+            menu.parent(new HelpMenu(nav));
+        }
         core.menus().open(player, menu);
     }
 

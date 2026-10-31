@@ -3,7 +3,7 @@ package net.skybornmc.skyblock.common.menu;
 import java.util.List;
 
 /**
- * Length rules for chest titles ({@code ▸ Island » Upgrades (2/5)}): Bedrock cuts long titles, so when the plain text is
+ * Part and length rules for chest titles ({@code ▸ Island » Upgrades (2/5)}): Bedrock cuts long titles, so when the plain text is
  * longer than the limit the leading breadcrumbs are dropped first, then the last crumb is shortened with "..".
  */
 final class MenuTitles {
@@ -25,6 +25,16 @@ final class MenuTitles {
             }
         }
         return Math.max(0, crumbs.size() - 1);
+    }
+
+    /**
+     * The title rule {@code Feature » Screen} (GUI_DESIGN §1.4): at most {@code maxParts} crumbs (the last ones: the
+     * item or player name stays), then the length rule of {@link #firstKept}.
+     */
+    static int first(List<String> crumbs, int maxParts, int fixed, int separator, int max) {
+        int byParts = Math.max(0, crumbs.size() - Math.max(1, maxParts));
+        int byLength = firstKept(crumbs.subList(byParts, crumbs.size()), fixed, separator, max);
+        return byParts + byLength;
     }
 
     static int length(List<String> crumbs, int first, int fixed, int separator) {

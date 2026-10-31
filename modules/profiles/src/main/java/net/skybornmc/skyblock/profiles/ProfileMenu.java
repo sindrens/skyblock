@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * One profile: switch (10), rename (12), the profile (13), icon (14), delete (16), back (22). Big targets for Bedrock.
+ * One profile: switch (10), rename (12), the profile (13), icon (14), delete (16); Back 18, Close 22. Big targets for Bedrock.
  * Delete asks twice: a confirm screen, then the profile's name typed in chat.
  */
 final class ProfileMenu extends Menu {
@@ -54,7 +54,6 @@ final class ProfileMenu extends Menu {
     @Override
     protected void build() {
         frame();
-        set(22, service.navItem("back", Material.ARROW, viewer, "frame.back"), click -> back());
         Optional<Profile> found = profile();
         if (found.isEmpty()) {
             set(13, service.item(Material.BARRIER, viewer, ProfilesModule.ID, "menu.gone"));
@@ -94,15 +93,10 @@ final class ProfileMenu extends Menu {
 
     private void confirmDelete(Profile p, String name) {
         ItemStack shown = service.item(Material.TNT, viewer, ProfilesModule.ID, "delete.shown", Msg.p("profile", name));
+        // GUI-1: a profile delete can't be undone, so the confirm asks twice (second screen swaps the buttons).
         openChild(new ConfirmMenu(v -> module.msg.component(v, "delete.crumb"), shown,
                 v -> service.lines(v, ProfilesModule.ID, "delete.details", Msg.p("profile", name)),
-                player -> service.prompt(player, ProfilesModule.ID, "delete.type", 40, input -> {
-                    if (!input.trim().equalsIgnoreCase(name)) {
-                        module.fail(player, "delete.wrong-name", Msg.p("profile", name));
-                        return;
-                    }
-                    module.service().delete(player, p.id());
-                }, () -> { }, Msg.p("profile", name)),
-                player -> { }));
+                player -> module.service().delete(player, p.id()),
+                player -> { }).twoStep());
     }
 }

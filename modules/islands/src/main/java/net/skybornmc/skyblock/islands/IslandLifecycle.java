@@ -117,7 +117,7 @@ final class IslandLifecycle {
                 core.menus().item(Material.TNT, player, IslandsModule.ID, "disband.shown", Msg.p("island", name)),
                 viewer -> module.lines(viewer, "disband.details", Msg.p("island", name)),
                 viewer -> confirmed(viewer, island),
-                viewer -> msg.send(viewer, "disband.cancelled")));
+                viewer -> msg.send(viewer, "disband.cancelled")).twoStep()); // GUI-1: can't be undone, so asks twice
     }
 
     /**

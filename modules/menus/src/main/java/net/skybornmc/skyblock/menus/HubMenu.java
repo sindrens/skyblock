@@ -54,6 +54,12 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
         return "menu";
     }
 
+    /** The bottom of every navigation stack: no Back here, and slot 50 is Help & guides. */
+    @Override
+    public boolean isMainMenu() {
+        return true;
+    }
+
     @Override
     protected void build() {
         frame();
@@ -78,15 +84,13 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
     }
 
     private void open(Player player, HubLayout.Entry entry) {
-        // Built-in screens open as children (Back returns to the hub); everything else runs its command.
+        // Built-in screens open as children; everything else runs its command while the hub is still open, so the
+        // screen it opens gets Back to the hub (GUI-1). If the command opens nothing, the hub closes (chat output).
         switch (entry.command().strip().toLowerCase(Locale.ROOT)) {
             case "settings" -> openChild(new SettingsMenu(nav));
             case "help" -> openChild(new HelpMenu(nav));
             case HubWarpsMigration.WARPS -> openChild(new WarpsMenu(nav));
-            default -> {
-                player.closeInventory();
-                player.performCommand(entry.command().strip());
-            }
+            default -> service.navigate(player, this, () -> player.performCommand(entry.command().strip()));
         }
     }
 

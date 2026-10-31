@@ -29,7 +29,7 @@ final class CosmeticsMenu extends PagedMenu<Cosmetic> {
     static final int SLOT_UNEQUIP = 47;
     static final int SLOT_EDIT = 51;
     /** F3: link to the achievements menu (titles are earned there); only when the achievements module runs. */
-    static final int SLOT_ACHIEVEMENTS = 52;
+    static final int SLOT_ACHIEVEMENTS = 46; // GUI-1: 52 is Previous page now
 
     private final CosmeticsModule module;
     private Cosmetics.Kind kind;
@@ -134,7 +134,7 @@ final class CosmeticsMenu extends PagedMenu<Cosmetic> {
         }
         wasLoaded = service.loaded(viewer.getUniqueId());
         if (!wasLoaded) {
-            set(SLOT_EMPTY, service().item(Material.CLOCK, viewer, "loading"));
+            setLoading(SLOT_EMPTY);
         }
     }
 

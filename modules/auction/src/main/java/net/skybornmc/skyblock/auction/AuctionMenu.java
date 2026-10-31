@@ -34,7 +34,7 @@ final class AuctionMenu extends PagedMenu<Listing> {
     static final int SLOT_CATEGORY = 46;
     static final int SLOT_SORT = 47;
     static final int SLOT_SEARCH = 51;
-    static final int SLOT_CLEAR = 52;
+    static final int SLOT_CLEAR = 7; // GUI-1: 52 is Previous page now; next to Refresh in the top row
 
     /** Sort orders, cycled in this order. */
     enum Sort {
@@ -157,19 +157,12 @@ final class AuctionMenu extends PagedMenu<Listing> {
         set(SLOT_REFRESH, service.item(cfg.icon("refresh", Material.SPYGLASS), viewer, AuctionModule.ID, "browse.refresh"),
                 click -> module.engine().refreshCache().thenRun(() -> module.core.scheduler().main("auction:refresh", this::refresh)));
 
-        set(SLOT_CATEGORY, cycler(cfg.icon(category == null ? "all" : category.key(), Material.CHEST), "browse.category",
-                categoryName(category), categoryLines()), click -> {
-            cycleCategory(click.isRight() ? -1 : 1);
-            page(0);
-            service.open(viewer, this);
-        });
-        set(SLOT_SORT, cycler(cfg.icon("sort", Material.HOPPER), "browse.sort",
-                service.text(viewer, AuctionModule.ID, "sort." + sort.key()), sortLines()), click -> {
-            Sort[] all = Sort.values();
-            sort = all[Math.floorMod(sort.ordinal() + (click.isRight() ? -1 : 1), all.length)];
-            page(0);
-            refresh();
-        });
+        // GUI-1: a click (left or right, Bedrock tap) moves forward; right-click back is a marked Java shortcut.
+        set(SLOT_CATEGORY, MenuButton.of(cycler(cfg.icon(category == null ? "all" : category.key(), Material.CHEST), "browse.category",
+                categoryName(category), categoryLines()), click -> changeCategory(1)).withRight(click -> changeCategory(-1)));
+        set(SLOT_SORT, MenuButton.of(cycler(cfg.icon("sort", Material.HOPPER), "browse.sort",
+                service.text(viewer, AuctionModule.ID, "sort." + sort.key()), sortLines()), click -> changeSort(1))
+                .withRight(click -> changeSort(-1)));
         set(SLOT_SEARCH, service.item(cfg.icon("search", Material.OAK_SIGN), viewer, AuctionModule.ID,
                 search == null ? "browse.search" : "browse.search-active", Msg.p("search", search == null ? "" : search)),
                 click -> askSearch());
@@ -213,6 +206,19 @@ final class AuctionMenu extends PagedMenu<Listing> {
         int index = category == null ? -1 : category.ordinal(); // -1 = all
         index = Math.floorMod(index + 1 + delta, all.length + 1) - 1;
         category = index < 0 ? null : all[index];
+    }
+
+    private void changeCategory(int step) {
+        cycleCategory(step);
+        page(0);
+        redraw();
+    }
+
+    private void changeSort(int step) {
+        Sort[] all = Sort.values();
+        sort = all[Math.floorMod(sort.ordinal() + step, all.length)];
+        page(0);
+        refresh();
     }
 
     private Component categoryName(Category c) {

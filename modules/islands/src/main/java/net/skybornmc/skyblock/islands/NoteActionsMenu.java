@@ -14,7 +14,7 @@ import java.util.UUID;
  * <pre>
  *  R O B B B B B O R
  *  B ✎ . ✔ ✏ ⚑ ⚐ ✘ B     10 the note, 12 done / open again, 13 change text, 14 pin here / move pin, 15 unpin, 16 delete
- *  R O B B ← B B O R     22 back
+ *  ← O B B ✘ B B O R     18 Back, 22 Close (framework)
  * </pre>
  * Only the buttons the viewer may use are shown; every action re-checks the rights when it runs.
  */
@@ -26,7 +26,6 @@ final class NoteActionsMenu extends Menu {
     static final int SLOT_PIN = 14;
     static final int SLOT_UNPIN = 15;
     static final int SLOT_DELETE = 16;
-    static final int SLOT_BACK_SMALL = 22;
 
     private final IslandsModule module;
     private final IslandManager islands;
@@ -66,7 +65,6 @@ final class NoteActionsMenu extends Menu {
     protected void build() {
         frame();
         Note note = notes.note(island, noteId);
-        set(SLOT_BACK_SMALL, service.item(Material.ARROW, viewer, IslandsModule.ID, "notes.actions.back"), click -> back());
         if (note == null || islands.byId(island.id()) != island) {
             set(13, service.item(Material.BARRIER, viewer, IslandsModule.ID, "notes.actions.gone"));
             return;

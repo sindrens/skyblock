@@ -18,7 +18,7 @@ import java.util.UUID;
  * <pre>
  *  R O B B B B B O R
  *  B ☺ . ▲ ▼ ★ . ✘ B     10 head, 12 promote, 13 demote, 14 transfer, 16 kick / uncoop / leave (self)
- *  R O B B ← B B O R     22 back
+ *  ← O B B ✘ B B O R     18 Back, 22 Close (framework)
  * </pre>
  * Only the buttons the viewer may use are shown; every action re-checks the rules when it runs.
  */
@@ -29,7 +29,6 @@ final class MemberActionsMenu extends Menu {
     static final int SLOT_DEMOTE = 13;
     static final int SLOT_TRANSFER = 14;
     static final int SLOT_REMOVE = 16;
-    static final int SLOT_BACK_SMALL = 22;
 
     private final IslandsModule module;
     private final IslandManager islands;
@@ -120,7 +119,6 @@ final class MemberActionsMenu extends Menu {
                         click -> members.kick(viewer, name, this));
             }
         }
-        set(SLOT_BACK_SMALL, service.item(Material.ARROW, viewer, IslandsModule.ID, "actions.back"), click -> back());
     }
 
     private Component text(String key, TagResolver... placeholders) {

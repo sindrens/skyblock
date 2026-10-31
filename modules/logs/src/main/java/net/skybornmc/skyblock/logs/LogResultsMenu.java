@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.logs;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.audit.AuditEntry;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Bukkit;
@@ -23,7 +24,7 @@ final class LogResultsMenu extends Menu {
     static final int SLOT_FILTERS = 46;
     static final int SLOT_CHAT = 47;
     static final int SLOT_REFRESH = 51;
-    static final int SLOT_EXPORT = 52;
+    static final int SLOT_EXPORT = 6; // GUI-1: 52 is Previous page now
 
     private final LogsModule module;
     private final LogFilter filter;
@@ -101,28 +102,32 @@ final class LogResultsMenu extends Menu {
         }
 
         if (rows == null) {
-            set(PagedMenu.SLOT_EMPTY, failed
-                    ? service.item(Material.RED_STAINED_GLASS, viewer, "error-item")
-                    : service.item(Material.CLOCK, viewer, "loading"));
-            if (!failed) {
+            if (failed) {
+                setError(PagedMenu.SLOT_EMPTY, () -> {
+                    failed = false;
+                    refresh();
+                });
+            } else {
+                setLoading(PagedMenu.SLOT_EMPTY);
                 load();
             }
             return;
         }
         if (rows.isEmpty()) {
-            set(PagedMenu.SLOT_EMPTY, service.item(Material.COBWEB, viewer, LogsModule.ID, "results.empty"));
+            setEmpty(LogsModule.ID, "results.empty");
         }
         long now = System.currentTimeMillis();
         for (int i = 0; i < rows.size() && i < PagedMenu.CONTENT_SLOTS.length; i++) {
             AuditEntry entry = rows.get(i);
-            set(PagedMenu.CONTENT_SLOTS[i], module.render.item(viewer, entry, now), click -> {
+            // GUI-1: a plain click (left or right, Bedrock tap) acts; right-click "full details in chat" is a marked Java shortcut.
+            set(PagedMenu.CONTENT_SLOTS[i], MenuButton.of(module.render.item(viewer, entry, now), click -> {
                 // spec 13.11: a chat line opens the punish menu with that line as evidence (plain click: Bedrock too)
-                if (click.isLeft() && LogPunish.punishable(entry) && LogPunish.allowed(viewer)) {
+                if (LogPunish.punishable(entry) && LogPunish.allowed(viewer)) {
                     viewer.closeInventory();
                     module.punishFrom(viewer, entry);
                     return;
                 }
-                if (click.isLeft() && entry.hasLocation() && module.canTeleport(viewer)) {
+                if (entry.hasLocation() && module.canTeleport(viewer)) {
                     World world = Bukkit.getWorld(entry.world());
                     if (world == null) {
                         module.msg.send(viewer, "errors.world-unloaded", Msg.p("world", entry.world()));
@@ -135,7 +140,10 @@ final class LogResultsMenu extends Menu {
                     viewer.sendMessage(module.render.chatLine(viewer, entry, System.currentTimeMillis()));
                     module.sound(viewer, "click");
                 }
-            });
+            }).withRight(click -> {
+                viewer.sendMessage(module.render.chatLine(viewer, entry, System.currentTimeMillis()));
+                module.sound(viewer, "click");
+            }));
         }
         if (page > 0) {
             set(Menu.SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",

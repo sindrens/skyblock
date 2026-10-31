@@ -176,7 +176,7 @@ menu:
   title: "Crates"
   info:
     - "<c:text>Open crates with your keys."
-    - "<c:text>Left-click a crate to see every"
+    - "<c:text>Click a crate to see every"
     - "<c:text>reward and its chance. Opening uses"
     - "<c:text>bound keys first."
   loading:
@@ -201,11 +201,10 @@ menu:
       - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
       - ""
     actions:
-      - "<bold><c:action>» LEFT-CLICK</c:action></bold> <c:text>see rewards"
-      - "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>open 1"
-      - "<bold><c:action>» SHIFT-CLICK</c:action></bold> <c:text>open <bulk>"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see rewards and open"
+      - "<c:muted>Shortcuts: right-click opens 1, shift-click opens <bulk>"
     actions-bedrock:
-      - "<bold><c:action>» TAP</c:action></bold> <c:text>see rewards and open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see rewards and open"
     coming-soon:
       - "<c:locked>Coming soon"
       - "<c:muted>Keys come from KOTH captures."

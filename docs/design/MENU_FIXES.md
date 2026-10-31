@@ -11,6 +11,19 @@
   - **[§5]** plain click / Bedrock.
 - Most of the [§1.x] tags are fixed at once by the framework change (GUI_DESIGN §9 step 1).
 
+## GUI-1 handoff (framework done; left for GUI-4 because the menu is in another lane or needs a per-menu decision)
+The framework (`common/menu`) now gives every menu the bottom bar, Back via the navigation stack, the 3-row Back 18 / Close 22, in-place tabs and pages, the two-step confirm and the shared state items. These menus still need a hand edit:
+- **economy `TransactionsMenu`:** Refresh sits on 52, the Previous page slot; on page 2+ Previous covers it. Move Refresh to the top row or merge it into a filter.
+- **moderation 3-row screens** (`SanctionMenus` ~292, `AppealMenus` ~379, `PunishMenus` ~773/1079/1252/1312): they put their own Back on 22, which covers the new Close (Back shows twice, at 18 and 22). Remove their own Back; the frame adds Back 18 and Close 22.
+- **trade `TradeMenu`:** its Cancel on 45 replaces Back (GUI-BUGS: Back instead of Cancel at 45). `TradeMoneyMenu` sets its own Back on 18 (same slot as the frame's, harmless; can go).
+- **economy `WatchMenu`:** the only menu without `frame()` (no bar at all).
+- **Hand-made state items** in economy/bank/moderation (clock "loading", red glass "error-item", cobweb): switch to `service.loadingItem / errorItem(viewer, retry) / emptyItem` and `Menu.setLoading / setError / setEmpty`.
+- **Tabs that open a new copy of the menu** (e.g. rewards `DailyMenu`, achievements tabs): they still close and reopen. Keep the tab in a field of one menu and call `redraw()` (or use `service.tab(...)`), so the tab changes in place.
+- **Locked looks** differ per menu (gray dye, barrier, "Coming soon" lines): use `service.locked(viewer, name, howToUnlock)`.
+- **Held items** still say "Right-click" (boosters, tag items, set tokens, tools, the menu item, crate key lore in `items.yml`): GUI_DESIGN §5 wants "» USE to ...".
+- **Shop** `CategoryMenu` quick-buy click types are GUI-3 (shop v2).
+- **moderation permanent ban** (GUI-BUGS adds its confirm): build it with `new ConfirmMenu(...).twoStep()` like disband and profile delete.
+
 ## achievements (5 menus)
 
 ### `achievements.personal`: Achievements
