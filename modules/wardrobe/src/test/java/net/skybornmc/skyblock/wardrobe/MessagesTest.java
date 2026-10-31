@@ -101,7 +101,7 @@ class MessagesTest {
             check(yml, "loadout.skip." + r.key, missing);
         }
         for (String k : List.of("loading", "busy", "frozen", "in-combat", "cooldown", "loadout.blocked-world", "menu.loadout.pet",
-                "menu.loadout.pet-soon", "menu.loadout.apply", "menu.loadout.apply-locked", "menu.loadout.preset.click",
+                "menu.loadout.edit-crumb", "confirm.redeem.crumb", "confirm.redeem.details", "menu.loadout.apply", "menu.loadout.apply-locked", "menu.loadout.preset.click",
                 "menu.loadout.preset.locked", "menu.loadout.line.pet", "menu.loadout.line.pet-keep", "menu.loadout.line.tool",
                 "menu.loadout.line.tool-missing", "menu.loadout.line.set", "menu.loadout.line.gone", "menu.loadout.info",
                 "menu.loadout.edit-info", "menu.loadout.icon-info", "menu.loadout.icon-empty", "confirm.loadout-save.crumb",

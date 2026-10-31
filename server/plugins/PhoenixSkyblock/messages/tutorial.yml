@@ -563,10 +563,13 @@ stats:
     line: "<c:value><step></c:value> <c:muted><sym:dot></c:muted> <c:value><done>"
   period:
     name: "<c:flame><bold>Period: <days> days"
-    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch 7 / 30"]
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
+  period-pick: "<c:value><days> days"
+  period-crumb: "Period"
   client:
     name: "<c:flame><bold>Players: <client>"
-    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>for All / Java / Bedrock"]
+    lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
+  client-crumb: "Players"
   clients:
     all: "All"
     java: "Java"

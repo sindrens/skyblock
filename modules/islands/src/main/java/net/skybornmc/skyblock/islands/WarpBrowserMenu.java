@@ -118,9 +118,20 @@ final class WarpBrowserMenu extends PagedMenu<IslandWarp> {
                     lines("warps.own.lore", Msg.p("count", warps.warps(mine.id()).size()), Msg.p("slots", warps.slots(mine)))),
                     click -> openChild(new WarpBrowserMenu(module, islands, visits, warps, mine)));
         } else if (island != null && own.isPresent()) {
-            set(SLOT_OWN, service.item(new ItemStack(Material.OAK_SIGN), text("warps.how.name"),
-                    lines("warps.how.lore", Msg.p("count", warps.warps(island.id()).size()), Msg.p("slots", warps.slots(island)),
-                            Msg.p("tag", module.config().warpSignTag))));
+            List<Component> how = new ArrayList<>(lines("warps.how.lore", Msg.p("count", warps.warps(island.id()).size()),
+                    Msg.p("slots", warps.slots(island)), Msg.p("tag", module.config().warpSignTag)));
+            if (!warps.canManage(viewer, island)) {
+                set(SLOT_OWN, service.item(new ItemStack(Material.OAK_SIGN), text("warps.how.name"), how));
+            } else {
+                // GUI-4b: set a warp here without typing a command (a form popup with the keyboard on Bedrock).
+                how.addAll(lines("warps.how.click"));
+                Island here = island;
+                set(SLOT_OWN, service.item(new ItemStack(Material.OAK_SIGN), text("warps.how.name"), how),
+                        click -> service.input(viewer, IslandsModule.ID, "warp.new-prompt", module.config().warpNameMaxLength, null,
+                                typed -> warps.setWarp(viewer, typed, null), () -> service.open(viewer, this),
+                                Msg.p("count", warps.warps(here.id()).size()), Msg.p("slots", warps.slots(here)),
+                                Msg.p("max", module.config().warpNameMaxLength)));
+            }
         }
     }
 

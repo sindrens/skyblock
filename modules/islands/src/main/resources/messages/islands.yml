@@ -582,12 +582,6 @@ notify:
 
 members:
   crumb: "Members"
-  notes:
-    name: "<c:flame><bold>Island notes"
-    lore:
-      - "<c:text>Your island's shared to-do list."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   info:
     - "<c:text>Everyone on your island and their role."
     - "<c:text>Click a head for actions."
@@ -654,24 +648,6 @@ members:
       - "<c:text>your island sent. Open: <c:value><count>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
-  settings:
-    name: "<c:flame><bold>Island settings"
-    lore:
-      - "<c:text>Spawning, fire, explosions,"
-      - "<c:text>weather, time and more."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
-  permissions:
-    name: "<c:flame><bold>Permissions"
-    lore-edit:
-      - "<c:text>What each role may do on your island."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit"
-    lore-view:
-      - "<c:text>What each role may do on your island."
-      - "<c:muted>Only the Leader, Admins and Mods can change it."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"
 
 actions:
   crumb: "<player>"
@@ -1116,7 +1092,10 @@ admin:
       lore:
         - "<c:text>All, used, clearing or free."
         - ""
-        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"
+      # Pick list entry. <filter>, <count> slots
+      pick: "<c:value><filter> <c:muted>(<count>)"
+      crumb: "Show"
     reload:
       name: "<c:flame><bold>Reload"
       lore:
@@ -1255,6 +1234,20 @@ warp:
   private: "<prefix><c:error><sym:cross></c:error> <c:text>Warp <c:value><warp></c:value> is for the island's members only."
   gone: "<prefix><c:error><sym:cross></c:error> <c:text>That warp doesn't exist anymore."
   icon-set: "<prefix><c:success><sym:check></c:success> <c:text>New icon for <c:value><warp></c:value>."
+  # Rename from the warp edit menu (GUI-4b). Chat prompt: <warp>, <max>, <cancel>, <seconds>
+  rename-prompt: "<prefix><c:text>Type the new name for <c:value><warp></c:value>. <c:muted>(letters, numbers, _ and -, max <max>, <cancel> to stop, <seconds>s)"
+  # Bedrock form popup: title and the text above the field. <warp>, <max>
+  rename-prompt-form:
+    title: "Rename warp"
+    label: "<c:text>New name for <warp> (letters, numbers, _ and -, max <max>):"
+  # "Adding warps" button in your own warps (GUI-4b): a new warp where you stand. Chat: <max>, <cancel>, <seconds>
+  new-prompt: "<prefix><c:text>Type a name for a warp where you stand. <c:muted>(letters, numbers, _ and -, max <max>, <cancel> to stop, <seconds>s)"
+  # Bedrock form popup. <max>, <count>/<slots> warps
+  new-prompt-form:
+    title: "New warp"
+    label: "<c:text>Name of the warp where you stand (letters, numbers, _ and -, max <max>). Warps: <count>/<slots>"
+  renamed: "<prefix><c:success><sym:check></c:success> <c:text>Warp <c:value><old></c:value> is now called <c:value><warp></c:value>."
+  rename-taken: "<prefix><c:error><sym:cross></c:error> <c:text>Your island already has a warp <c:value><warp></c:value>. Pick another name."
   now-public: "<prefix><c:success><sym:check></c:success> <c:text>Warp <c:value><warp></c:value> is public: everyone can use it."
   now-private: "<prefix><c:success><sym:check></c:success> <c:text>Warp <c:value><warp></c:value> is private: members only."
   sign-created: "<prefix><c:success><sym:check></c:success> <c:text>Sign warp <c:value><warp></c:value> set. Break the sign to delete it. <c:muted>(<category>, <count>/<slots>)"
@@ -1326,6 +1319,10 @@ warps:
       - "<c:value>/is setwarp <name> [category]"
       - "<c:text>or place a sign with <c:value><tag></c:value>"
       - "<c:text>on line 1 and the name on line 2."
+    # Leader, Admins and Mods only (GUI-4b).
+    click:
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to set one where you stand"
   entry:
     name: "<c:value><warp>"
     lore:
@@ -1358,6 +1355,19 @@ warps:
       name: "<c:flame>Teleport"
       lore:
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to go there"
+    rename:
+      name: "<c:flame>Rename"
+      lore:
+        - "<c:text>Give <c:value><warp></c:value> a new name."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to rename"
+    rename-sign:
+      name: "<c:flame>Rename"
+      lore:
+        - "<c:text>Give <c:value><warp></c:value> a new name."
+        - "<c:text>The sign shows the new name too."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to rename"
     icon:
       name: "<c:flame>Icon"
       lore:
@@ -1827,6 +1837,13 @@ notes:
   prompt:
     add: "<prefix><c:text>Type your note in chat. <c:muted>(max <max> characters, <cancel> to stop, <seconds>s)"
     edit: "<prefix><c:text>Type the new text. <c:muted>(max <max>, <cancel> to stop, <seconds>s)</c:muted><newline><c:muted>Now: <text>"
+    # Bedrock form popup (GUI-4b): title and the text above the field. <max>
+    add-form:
+      title: "Island notes"
+      label: "<c:text>Your new note (max <max> characters):"
+    edit-form:
+      title: "Island notes"
+      label: "<c:text>Change the note (max <max> characters):"
   hologram: "<bold><c:value><text></c:value></bold><newline><c:muted><author>"
   book:
     name: "<c:flame><bold>Island notes</bold> <c:muted>(temporary)"

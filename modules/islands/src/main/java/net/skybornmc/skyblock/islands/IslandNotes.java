@@ -446,7 +446,7 @@ final class IslandNotes implements Listener {
         return text;
     }
 
-    /** Asks for a new note in chat, then reopens the menu. */
+    /** Asks for a new note (chat, or a form popup on Bedrock), then reopens the menu. */
     void promptAdd(Player player, Island island, Menu back) {
         Rights rights = rights(player, island);
         if (!rights.canAdd()) {
@@ -457,7 +457,8 @@ final class IslandNotes implements Listener {
             islands.fail(player, "notes.limit", Msg.p("max", config().notesMax));
             return;
         }
-        core.menus().prompt(player, IslandsModule.ID, "notes.prompt.add", config().notesMaxLength, typed -> {
+        // GUI-4b: Bedrock players type in a form popup (on-screen keyboard), Java players in chat.
+        core.menus().input(player, IslandsModule.ID, "notes.prompt.add", config().notesMaxLength, null, typed -> {
             String text = acceptText(player, typed);
             if (text == null) {
                 reopen(player, island, back);
@@ -467,13 +468,13 @@ final class IslandNotes implements Listener {
         }, () -> reopen(player, island, back), Msg.p("max", config().notesMaxLength));
     }
 
-    /** Asks for the new text of a note in chat, then reopens the menu. */
+    /** Asks for the new text of a note (chat, or a form popup on Bedrock with the old text filled in), then reopens the menu. */
     void promptEdit(Player player, Island island, Note note, Menu back) {
         if (!rights(player, island).canChange(isAuthor(player, note))) {
             islands.fail(player, "notes.no-change");
             return;
         }
-        core.menus().prompt(player, IslandsModule.ID, "notes.prompt.edit", config().notesMaxLength, typed -> {
+        core.menus().input(player, IslandsModule.ID, "notes.prompt.edit", config().notesMaxLength, note.text(), typed -> {
             String text = acceptText(player, typed);
             if (text == null) {
                 reopen(player, island, back);

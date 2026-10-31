@@ -423,7 +423,9 @@ admin:
     owner: ["<c:warning>Owner only"]
     locked: ["", "<c:error><sym:cross></c:error> <c:text>Only the owner can change this."]
     action-toggle: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
-    action-cycle: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next choice"]
+    action-cycle: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
+    # Pick list entry of an enum setting. <value>
+    choice: "<c:value><value>"
     action-list: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit the list"]
     action-edit: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   prompt: "<prefix><c:text>Type a new value for <c:value><path></c:value> <c:muted>(now <value>)</c:muted><c:text>. <c:value>default</c:value> resets it. <c:muted>(<cancel> to cancel, <seconds>s)"

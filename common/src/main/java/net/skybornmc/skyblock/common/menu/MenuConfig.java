@@ -80,6 +80,10 @@ public final class MenuConfig extends ModuleConfig {
             min = 5, max = 200)
     public int bedrockPopupRetryTicks = 40;
 
+    @Setting(path = "bedrock-forms.enabled", desc = "Bedrock players type text (island notes, warp names) in a form popup with "
+            + "their on-screen keyboard instead of the chat (needs Floodgate). false = chat for everyone.")
+    public boolean bedrockForms = true;
+
     @Override
     public String fileName() {
         return "menus.yml";

@@ -101,6 +101,10 @@ loadout:
   deleted: "<prefix><c:success><sym:check></c:success> <c:text>Deleted <c:value><name></c:value><c:text>. Your sets and tools stay yours."
   no-slot: "<prefix><c:error><sym:cross></c:error> <c:text>No free loadout place. Ranks and the store add more."
   rename-prompt: "<prefix><c:text>Type a new name for <c:value><name></c:value> <c:text>(max <max>, letters, digits, - and _). Type <c:value><cancel></c:value> <c:text>to stop."
+  # Bedrock form popup (GUI-4b). <name>, <max>
+  rename-prompt-form:
+    title: "Rename loadout"
+    label: "<c:text>New name for <name> (max <max>, letters, digits, - and _):"
   name:
     empty: "<prefix><c:error><sym:cross></c:error> <c:text>Type a name."
     too-long: "<prefix><c:error><sym:cross></c:error> <c:text>Names are at most <c:value><max></c:value> <c:text>characters."
@@ -417,8 +421,9 @@ menu:
     title: "Loadouts"
     info: ["<c:text>Click a loadout to swap your", "<c:text>sets and hotbar tools. Old", "<c:text>tools go to the chest."]
     edit:
-      name: "<c:value>Edit <name>"
-      lore: ["<c:text>Save, rename, icon, delete.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit"]
+      name: "<c:value>Edit a loadout"
+      lore: ["<c:text>Save, rename, icon, delete.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick one"]
+    edit-crumb: "Edit"
     empty:
       name: "<c:muted>Empty loadout <n>"
       lore: ["<c:text>Saves the sets you wear and", "<c:text>the tools in your hotbar.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to save your gear"]
@@ -431,15 +436,11 @@ menu:
     pet:
       name: "<c:value>Pet"
       lore: ["<c:text>Loadouts save your active", "<c:text>pet and call it back."]
-    pet-soon:
-      name: "<c:muted>Pet <dark_gray>(Coming soon)"
-      lore: ["<c:text>Pets are coming. Loadouts", "<c:text>will save your pet too."]
     wardrobe:
       name: "<c:value>Wardrobe"
       lore: ["<c:text>All sets and the chest.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     preset:
       name: "<c:value><name>"
-      lore: ["<c:text>Set pieces: <c:value><pieces>", "<c:text>Tools: <c:value><tools>"]
       missing: ["<c:error><sym:cross> <count> missing"]
       click: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to use"]
       locked: ["<c:error><sym:cross> Locked: rank or store"]
@@ -459,7 +460,7 @@ menu:
       lore: ["<c:text>Replace it with the sets you", "<c:text>wear and your hotbar tools.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to save"]
     rename:
       name: "<c:value>Rename"
-      lore: ["<c:text>Type a new name in chat.", "<c:muted>Max <max>, one word.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to rename"]
+      lore: ["<c:text>Give it a new name.", "<c:muted>Max <max>, one word.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to rename"]
     icon:
       name: "<c:value>Icon"
       lore: ["<c:text>Pick the item shown for", "<c:text>this loadout.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
@@ -565,6 +566,9 @@ confirm:
   buy:
     crumb: "Buy set"
     details: ["<c:text>Add <c:value><set></c:value>", "<c:text>Cost: <c:value><price>", "<c:text>No refunds."]
+  redeem:
+    crumb: "Redeem token"
+    details: ["<c:text>Add <c:value><set></c:value>", "<c:text>Uses up the token", "<c:text>you carry."]
   tome:
     crumb: "Use tome"
     details: ["<c:text>Use a tome on <c:value><set>", "<c:text>+<c:value><xp></c:value> set XP", "<c:text>Then: <c:value>Lv <level>"]

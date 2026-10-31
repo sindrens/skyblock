@@ -218,6 +218,11 @@ menu:
       apply: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a slot"]
       upgrade: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick an enchant"]
       remove: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick an enchant"]
+    # Only one slot fits, so the slot screen is skipped (GUI-4b).
+    click-direct:
+      apply: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a book"]
+      upgrade: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to upgrade its enchant"]
+      remove: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to remove its enchant"]
   slots:
     info:
       apply: ["<c:text>Pick a free slot for the book.", "<c:text>Slots open at Lv 5, 15, 30, 45.", "<c:text>Slot 5 opens with prestige."]
@@ -300,6 +305,8 @@ menu:
   books:
     info: ["<c:text>Books that fit are at the top.", "<c:text>The others say why not."]
     crumb: "Slot <slot>"
+    # Lines under the tool on the summary slot (GUI-4b). <slot>
+    tool: ["", "<c:text>The book goes into <c:value>slot <slot></c:value>."]
     empty:
       name: "<c:muted>No enchant books"
       lore: ["<c:text>Find books in The Depths or", "<c:text>roll one in the Book shop."]

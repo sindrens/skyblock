@@ -54,6 +54,13 @@ final class BookPickMenu extends PagedMenu<EnchantOps.HeldBook> {
         return List.of(module.menus().text(viewer, "menu.mode.apply"), module.menus().text(viewer, "menu.books.crumb", Msg.p("slot", slot)));
     }
 
+    /** GUI-4b: the tool being enchanted on the summary slot (the slot screen may have been skipped). */
+    @Override
+    protected void decorate() {
+        module.ops().tool(viewer, toolId).ifPresent(held -> set(4, EnchantMenus.withExtraLore(EnchantMenus.toolCopy(held.stack()),
+                module.menus().lines(viewer, "menu.books.tool", Msg.p("slot", slot)))));
+    }
+
     private Optional<ToolInfo> tool() {
         return module.ops().tool(viewer, toolId).map(EnchantOps.HeldTool::info);
     }

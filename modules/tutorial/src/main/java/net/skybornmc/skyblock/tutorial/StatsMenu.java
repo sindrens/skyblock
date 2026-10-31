@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.tutorial;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Material;
@@ -87,29 +88,37 @@ final class StatsMenu extends Menu {
         }
         setAsync(29, result.thenApply(r -> MenuButton.display(cameras(r))));
         setAsync(33, result.thenApply(r -> MenuButton.display(optional(r))));
-        set(39, service.item(Material.CLOCK, viewer, TutorialModule.ID, "stats.period", Msg.number("days", days)), click -> {
-            days = PERIODS[(indexOf(days) + 1) % PERIODS.length];
-            refresh();
-        });
+        set(39, service.item(Material.CLOCK, viewer, TutorialModule.ID, "stats.period", Msg.number("days", days)), click -> pickPeriod());
         set(40, service.item(Material.SPYGLASS, viewer, TutorialModule.ID, "stats.client",
-                Msg.c("client", service.text(viewer, TutorialModule.ID, "stats.clients." + client.name().toLowerCase(java.util.Locale.ROOT)))),
-                click -> {
-                    client = FunnelStats.Client.values()[(client.ordinal() + 1) % FunnelStats.Client.values().length];
-                    refresh();
-                });
+                Msg.c("client", clientName(client))), click -> pickClient());
         set(41, service.item(Material.SUNFLOWER, viewer, TutorialModule.ID, "stats.refresh"), click -> {
             module.stats().clear();
             refresh();
         });
     }
 
-    private static int indexOf(int days) {
-        for (int i = 0; i < PERIODS.length; i++) {
-            if (PERIODS[i] == days) {
-                return i;
-            }
+    /** Pick lists instead of cyclers (GUI-4b/G9). */
+    private void pickPeriod() {
+        List<PickListMenu.Option<Integer>> options = new ArrayList<>();
+        for (int period : PERIODS) {
+            options.add(PickListMenu.Option.of(period, Material.CLOCK,
+                    service.text(viewer, TutorialModule.ID, "stats.period-pick", Msg.number("days", period)), period == days));
         }
-        return 0;
+        openChild(new PickListMenu<>(List.of(service.text(viewer, TutorialModule.ID, "stats.title"),
+                service.text(viewer, TutorialModule.ID, "stats.period-crumb")), options, period -> days = period));
+    }
+
+    private void pickClient() {
+        List<PickListMenu.Option<FunnelStats.Client>> options = new ArrayList<>();
+        for (FunnelStats.Client c : FunnelStats.Client.values()) {
+            options.add(PickListMenu.Option.of(c, Material.SPYGLASS, clientName(c), c == client));
+        }
+        openChild(new PickListMenu<>(List.of(service.text(viewer, TutorialModule.ID, "stats.title"),
+                service.text(viewer, TutorialModule.ID, "stats.client-crumb")), options, c -> client = c));
+    }
+
+    private Component clientName(FunnelStats.Client c) {
+        return service.text(viewer, TutorialModule.ID, "stats.clients." + c.name().toLowerCase(java.util.Locale.ROOT));
     }
 
     private ItemStack summary(FunnelStats.Result r) {

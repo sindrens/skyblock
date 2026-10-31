@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.wardrobe;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.item.ItemRegistry;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.wardrobe.ArmorPiece;
 import org.bukkit.Material;
@@ -18,17 +19,25 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * {@code /loadout} (WARDROBE §7.5, LD5): up to 8 presets. Click a preset to apply it (the fast path); the Edit button
- * under it opens Save current · Rename · Icon · Delete. Empty places save the current gear; places above the player's
- * slots show how to get more. Click-only, Bedrock-safe.
+ * {@code /loadout} (WARDROBE §7.5, LD5): up to 8 presets. Click a preset to apply it (the fast path, owner LD5); its
+ * lore previews what it puts on. "Edit a loadout" (47) opens a pick list of the presets, then Save current · Rename ·
+ * Icon · Delete. Empty places save the current gear; places above the player's slots show how to get more.
+ * Click-only, Bedrock-safe.
  * <pre>
- *  presets 1-4: 10 12 14 16 (edit 19 21 23 25)   presets 5-8: 28 30 32 34 (edit 37 39 41 43)
- *  46 slots · 47 pet · 51 wardrobe
+ *  4 loadouts used / slots
+ *  presets 1-4: 10 12 14 16      presets 5-8: 19 21 23 25
+ *  46 pet (only once pets exist) · 47 edit a loadout · 51 wardrobe
  * </pre>
+ * GUI-4b (MENU_FIXES wardrobe.loadouts): the Edit book under every preset is gone (one button and a pick list instead),
+ * so the presets sit in two plain rows; the "Coming soon" pet item is hidden until pets exist.
  */
 final class LoadoutMenu extends Menu {
 
-    static final int[] PRESET_SLOTS = {10, 12, 14, 16, 28, 30, 32, 34};
+    static final int[] PRESET_SLOTS = {10, 12, 14, 16, 19, 21, 23, 25};
+    static final int SLOT_SUMMARY = 4;
+    static final int SLOT_PET = 46;
+    static final int SLOT_EDIT = 47;
+    static final int SLOT_WARDROBE = 51;
 
     private final WardrobeModule module;
     /** Item ids in the Wardrobe Chest when the menu opened (missing tools show in red). */
@@ -91,8 +100,6 @@ final class LoadoutMenu extends Menu {
                         module.fail(viewer, "loadout.locked");
                     }
                 });
-                set(slot + 9, service.item(Material.WRITABLE_BOOK, viewer, WardrobeModule.ID, "menu.loadout.edit", Msg.p("name", l.name())),
-                        click -> openChild(new LoadoutEditMenu(module, l.id(), chest)));
             } else if (i < slots) {
                 set(slot, service.item(Material.LIME_STAINED_GLASS_PANE, viewer, WardrobeModule.ID, "menu.loadout.empty",
                         Msg.p("n", i + 1)), click -> module.loadouts().saveNew(viewer, index));
@@ -100,20 +107,38 @@ final class LoadoutMenu extends Menu {
                 set(slot, service.item(Material.GRAY_DYE, viewer, WardrobeModule.ID, "menu.loadout.locked-slot", Msg.p("n", i + 1)));
             }
         }
-        set(46, service.item(Material.BOOK, viewer, WardrobeModule.ID, "menu.loadout.slots", Msg.p("used", Math.min(slots, s.loadouts.size())),
+        set(SLOT_SUMMARY, service.item(Material.BOOK, viewer, WardrobeModule.ID, "menu.loadout.slots", Msg.p("used", Math.min(slots, s.loadouts.size())),
                 Msg.p("slots", slots), Msg.p("max", module.config().loadoutMaxSlots)));
-        boolean pets = module.loadouts().pets().available();
-        set(47, service.item(Material.BONE, viewer, WardrobeModule.ID, pets ? "menu.loadout.pet" : "menu.loadout.pet-soon"));
+        if (module.loadouts().pets().available()) {
+            set(SLOT_PET, service.item(Material.BONE, viewer, WardrobeModule.ID, "menu.loadout.pet"));
+        }
+        if (!s.loadouts.isEmpty()) {
+            set(SLOT_EDIT, service.item(Material.WRITABLE_BOOK, viewer, WardrobeModule.ID, "menu.loadout.edit"), click -> pickToEdit(s));
+        }
         if (!(parent() instanceof WardrobeMenu)) {
-            set(51, service.item(Material.LEATHER_CHESTPLATE, viewer, WardrobeModule.ID, "menu.loadout.wardrobe"),
+            set(SLOT_WARDROBE, service.item(Material.LEATHER_CHESTPLATE, viewer, WardrobeModule.ID, "menu.loadout.wardrobe"),
                     click -> module.menus().openMain(viewer));
         }
     }
 
+    /** "Edit a loadout": a pick list of the presets; a pick opens that preset's screen (Back comes here). */
+    private void pickToEdit(Session s) {
+        List<PickListMenu.Option<UUID>> options = new ArrayList<>();
+        int max = Math.min(PRESET_SLOTS.length, module.config().loadoutMaxSlots);
+        for (int i = 0; i < max; i++) {
+            s.loadoutAt(i).ifPresent(l -> options.add(new PickListMenu.Option<>(l.id(),
+                    new ItemStack(icon(l.icon(), module.config().loadoutDefaultIcon)),
+                    module.menus().text(viewer, "menu.loadout.preset.name", Msg.p("name", l.name())), List.of(), false)));
+        }
+        openChild(new PickListMenu<UUID>(List.of(module.menus().text(viewer, "menu.loadout.title"),
+                module.menus().text(viewer, "menu.loadout.edit-crumb")), options, id -> {
+        }).thenOpen(id -> new LoadoutEditMenu(module, id, chest)));
+    }
+
     /** A preset's button: its icon, contents and (in red) what is missing. */
     ItemStack presetItem(Player viewer, Session s, Loadout l, boolean usable) {
-        List<Component> lore = new ArrayList<>(module.menus().lines(viewer, "menu.loadout.preset.lore", Msg.p("pieces", l.entries().size()),
-                Msg.p("tools", l.hotbar().size())));
+        // GUI-4b: a preview of what the click puts on (one click applies, owner LD5).
+        List<Component> lore = new ArrayList<>(contents(module, viewer, s, l, chest));
         int missing = missing(viewer, s, l, chest);
         if (missing > 0) {
             lore.addAll(module.menus().lines(viewer, "menu.loadout.preset.missing", Msg.p("count", missing)));
@@ -178,8 +203,11 @@ final class LoadoutMenu extends Menu {
                         : m.text(viewer, "menu.loadout.line.gone", Msg.p("part", part)));
             }
         }
-        out.add(m.text(viewer, module.loadouts().pets().available() && l.petId() != null ? "menu.loadout.line.pet" : "menu.loadout.line.pet-keep",
-                Msg.p("pet", l.petId() == null ? "" : clip(l.petId()))));
+        if (module.loadouts().pets().available()) {
+            // Hidden until pets exist (GUI_DESIGN §3).
+            out.add(m.text(viewer, l.petId() != null ? "menu.loadout.line.pet" : "menu.loadout.line.pet-keep",
+                    Msg.p("pet", l.petId() == null ? "" : clip(l.petId()))));
+        }
         if (l.hotbar().isEmpty()) {
             out.add(m.text(viewer, "menu.loadout.line.no-tools"));
         }

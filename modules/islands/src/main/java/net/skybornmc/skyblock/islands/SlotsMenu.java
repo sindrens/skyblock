@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -54,16 +55,14 @@ final class SlotsMenu extends PagedMenu<IslandStore.SlotRow> {
         return out;
     }
 
-    /** all → used → clearing → free → all. Pure. */
-    static SlotState nextFilter(SlotState filter) {
-        if (filter == null) {
-            return SlotState.USED;
-        }
-        return switch (filter) {
-            case USED -> SlotState.CLEARING;
-            case CLEARING -> SlotState.FREE;
-            case FREE -> null;
-        };
+    /** The filter choices in pick-list order: all (null), used, clearing, free. Pure. */
+    static List<SlotState> filterChoices() {
+        List<SlotState> choices = new ArrayList<>();
+        choices.add(null);
+        choices.add(SlotState.USED);
+        choices.add(SlotState.CLEARING);
+        choices.add(SlotState.FREE);
+        return choices;
     }
 
     @Override
@@ -104,13 +103,25 @@ final class SlotsMenu extends PagedMenu<IslandStore.SlotRow> {
                         Msg.p("clearing", counts.get(SlotState.CLEARING)), Msg.p("free", counts.get(SlotState.FREE)), Msg.p("queue", islands.module().lifecycle().clearer().pending()))));
         String shown = filter == null ? module.raw("admin.slots.filter.all") : module.raw("admin.state." + filter.key());
         set(SLOT_FILTER, service.item(new ItemStack(Material.HOPPER), text("admin.slots.filter.name", Msg.p("filter", shown)),
-                lines("admin.slots.filter.lore")), click -> {
-            filter = nextFilter(filter);
-            page(0);
-            service.open(viewer, this);
-        });
+                lines("admin.slots.filter.lore")), click -> pickFilter());
         set(SLOT_RELOAD, service.item(new ItemStack(Material.CLOCK), text("admin.slots.reload.name"), lines("admin.slots.reload.lore")),
                 click -> admin.openSlots(viewer, filter));
+    }
+
+    /** A pick list of the states (GUI-4b/G9: no forward-only cycling). */
+    private void pickFilter() {
+        Map<SlotState, Integer> counts = counts(rows);
+        List<PickListMenu.Option<SlotState>> options = new ArrayList<>();
+        for (SlotState state : filterChoices()) {
+            String name = state == null ? module.raw("admin.slots.filter.all") : module.raw("admin.state." + state.key());
+            int count = state == null ? rows.size() : counts.getOrDefault(state, 0);
+            options.add(PickListMenu.Option.of(state, Material.HOPPER, text("admin.slots.filter.pick", Msg.p("filter", name),
+                    Msg.p("count", count)), state == filter));
+        }
+        openChild(new PickListMenu<>(List.of(text("admin.slots.crumb"), text("admin.slots.filter.crumb")), options, state -> {
+            filter = state;
+            page(0);
+        }));
     }
 
     @Override
