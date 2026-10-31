@@ -8,35 +8,38 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** QUICK1: /settings never hides a switch (overflow continues on the next row, rows continue on the next page). */
+/** GUI-4c: /settings shows one category at a time (tabs in row 0) instead of 8 rows over 2 pages. */
 class SettingsRowsTest {
 
     @Test
-    void everyCategoryGetsARowAndOverflowContinues() {
+    void onlyCategoriesWithSwitchesGetATab() {
         Map<SettingCategory, Integer> counts = new EnumMap<>(SettingCategory.class);
         counts.put(SettingCategory.CHAT, 7);
         counts.put(SettingCategory.SOCIAL, 13);
         counts.put(SettingCategory.DISPLAY, 6);
         counts.put(SettingCategory.SOUNDS, 0);
         counts.put(SettingCategory.GAMEPLAY, 3);
-        List<SettingsMenu.Row> rows = SettingsMenu.rows(counts, 6);
-        assertEquals(List.of(
-                new SettingsMenu.Row(SettingCategory.CHAT, 0, 6),
-                new SettingsMenu.Row(SettingCategory.CHAT, 6, 7),
-                new SettingsMenu.Row(SettingCategory.SOCIAL, 0, 6),
-                new SettingsMenu.Row(SettingCategory.SOCIAL, 6, 12),
-                new SettingsMenu.Row(SettingCategory.SOCIAL, 12, 13),
-                new SettingsMenu.Row(SettingCategory.DISPLAY, 0, 6),
-                new SettingsMenu.Row(SettingCategory.SOUNDS, 0, 0),
-                new SettingsMenu.Row(SettingCategory.GAMEPLAY, 0, 3)), rows);
-        int shown = rows.stream().mapToInt(r -> r.to() - r.from()).sum();
-        assertEquals(7 + 13 + 6 + 3, shown, "every switch has a slot");
+        assertEquals(List.of(SettingCategory.CHAT, SettingCategory.SOCIAL, SettingCategory.DISPLAY, SettingCategory.GAMEPLAY),
+                SettingsMenu.tabs(counts));
+        assertTrue(SettingsMenu.tabs(Map.of()).isEmpty());
     }
 
     @Test
-    void missingCategoriesStillShowAnEmptyRow() {
-        List<SettingsMenu.Row> rows = SettingsMenu.rows(Map.of(), 6);
-        assertEquals(SettingCategory.values().length, rows.size());
+    void theSelectedTabStaysWhileItHasSwitches() {
+        List<SettingCategory> tabs = List.of(SettingCategory.CHAT, SettingCategory.DISPLAY);
+        assertEquals(SettingCategory.CHAT, SettingsMenu.pick(tabs, null), "the first tab on open");
+        assertEquals(SettingCategory.DISPLAY, SettingsMenu.pick(tabs, SettingCategory.DISPLAY));
+        assertEquals(SettingCategory.CHAT, SettingsMenu.pick(tabs, SettingCategory.SOUNDS), "a tab that lost its switches falls back");
+    }
+
+    @Test
+    void fiveTabsFitTheTopRow() {
+        int[] slots = TopLayout.tabSlots(SettingCategory.values().length);
+        assertEquals(SettingCategory.values().length, slots.length);
+        for (int slot : slots) {
+            assertTrue(slot >= 1 && slot <= 7, "tabs stay inside the frame corners");
+        }
     }
 }

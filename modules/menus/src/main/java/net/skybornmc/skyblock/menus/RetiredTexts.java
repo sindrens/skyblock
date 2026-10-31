@@ -16,6 +16,7 @@ final class RetiredTexts {
                 // GUI-4c: the hub Top button opens the Top screen (islands, this week, richest players, top skills).
                 "hub.buttons.top.lore", "<c:text>The best islands:\n<c:text>level and value.",
                 // GUI-4c: Bedrock players read help pages in a popup, there is no hover on touch screens.
+                "settings.info", "<c:text>Click a switch to turn it on or off.\n<c:text>Changes are saved right away.",
                 "help.topic-info", "<c:text>Hover the pages to read them.\n<c:text>Take me there brings you to the feature.");
     }
 }

@@ -282,8 +282,11 @@ travel:
 settings:
   title: "Settings"
   info:
-    - "<c:text>Click a switch to turn it on or off."
+    - "<c:text>Pick a group at the top, then"
+    - "<c:text>click a switch to turn it on or off."
     - "<c:text>Changes are saved right away."
+  # GUI-4c: the tab line under each group's description. <count> switches in the group.
+  tab-count: "<c:muted><count> settings"
   categories:
     chat:
       name: "<c:ember><bold>Chat"
@@ -384,7 +387,8 @@ help:
     - "<c:text>Pick a category to read the guides."
     - "<c:text>Tip: /help <topic> opens one directly."
   topic-info:
-    - "<c:text>Hover the pages to read them."
+    - "<c:text>Each page is one item. Click a"
+    - "<c:text>page to read it in a popup."
     - "<c:text>Take me there brings you to the feature."
   commands-info:
     - "<c:text>Every command you can use."
@@ -398,6 +402,12 @@ help:
     lore: ["<c:muted>Guides are added as features open."]
   page-name: "<c:ember><page>.</c:ember> <title>"
   page-footer: ["<c:muted>Page <page> of <pages>"]
+  # GUI-4c: Bedrock players read a page in a popup (no hover on touch screens). <title> topic, <page>/<pages>.
+  page-read: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to read"]
+  page-popup:
+    title: "<title> <c:muted>(<page>/<pages>)"
+    next: "Next page"
+    back: "Back to the guide"
   no-pages:
     name: "<c:text>Nothing written yet"
     lore: ["<c:muted>This guide is still being written."]

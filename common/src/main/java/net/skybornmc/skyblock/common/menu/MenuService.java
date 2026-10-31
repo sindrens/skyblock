@@ -650,7 +650,9 @@ public final class MenuService implements Listener {
         List<Component> lore = new ArrayList<>(lines(viewer, module, key + ".lore"));
         lore.addAll(lines(viewer, state ? "toggle.on" : "toggle.off"));
         lore.addAll(lines(viewer, "toggle.action"));
-        ItemStack item = item(state ? Material.LIME_DYE : Material.RED_DYE, text(viewer, module, key + ".name"), lore);
+        // GUI-4c: the state is in the name too ("Chat colors ✔ On"), not only in the dye colour and the lore.
+        Component name = text(viewer, state ? "toggle.name-on" : "toggle.name-off", Msg.c("name", text(viewer, module, key + ".name")));
+        ItemStack item = item(state ? Material.LIME_DYE : Material.RED_DYE, name, lore);
         return MenuButton.of(item, click -> {
             change.accept(!state);
             click.menu().refresh();

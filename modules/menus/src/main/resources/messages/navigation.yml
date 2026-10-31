@@ -282,8 +282,11 @@ travel:
 settings:
   title: "Settings"
   info:
-    - "<c:text>Click a switch to turn it on or off."
+    - "<c:text>Pick a group at the top, then"
+    - "<c:text>click a switch to turn it on or off."
     - "<c:text>Changes are saved right away."
+  # GUI-4c: the tab line under each group's description. <count> switches in the group.
+  tab-count: "<c:muted><count> settings"
   categories:
     chat:
       name: "<c:ember><bold>Chat"

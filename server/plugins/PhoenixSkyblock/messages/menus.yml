@@ -83,6 +83,9 @@ pick:
   open: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
 
 toggle:
+  # GUI-4c: the switch name says the state (Bedrock reads names). <name> the switch's own name.
+  name-on: "<name> <c:success><sym:check> On"
+  name-off: "<name> <c:error><sym:cross> Off"
   "on": ["", "<c:text>Status: <c:success><sym:check> On"]
   "off": ["", "<c:text>Status: <c:error><sym:cross> Off"]
   action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
