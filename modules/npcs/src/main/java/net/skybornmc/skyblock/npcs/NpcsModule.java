@@ -13,6 +13,7 @@ import net.skybornmc.skyblock.common.npc.HologramTexts;
 import net.skybornmc.skyblock.common.npc.NpcDirectory;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.util.LatestLoad;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -58,11 +59,18 @@ public final class NpcsModule implements SkyblockModule {
     private volatile Map<String, TextContent> hologramTexts = Map.of();
     private volatile Map<String, Component> labels = Map.of();
     /** PERF9: made once in enable() so npcs:start only hands work to the loader (no lambda bootstrap in that tick). */
-    private java.util.function.Supplier<NpcPlan> planner;
-    private java.util.function.Consumer<NpcPlan> applier;
+    private java.util.function.Supplier<Planned> planner;
+    private java.util.function.Consumer<Planned> applier;
     private java.util.function.BiConsumer<Boolean, Throwable> placeFailed;
     private Placer placer;
-    private LatestLoad<NpcPlan> loader;
+    private LatestLoad<Planned> loader;
+
+    /**
+     * PERF10: a plan plus the task that writes its log lines, made on the loader thread (so the apply tick doesn't link
+     * that lambda for the first time in this JVM).
+     */
+    private record Planned(NpcPlan plan, Runnable log) {
+    }
     private Leaderboards boards;
     private NpcListener listener;
     private HelpDialog help;
@@ -159,10 +167,10 @@ public final class NpcsModule implements SkyblockModule {
      * hologram and name texts). Thread-safe reads only: config fields (replaced whole on reload), the service registry,
      * messages.
      */
-    private NpcPlan computePlan() {
+    private Planned computePlan() {
         NpcPlan.Inputs inputs = NpcPlan.Inputs.of(config);
         BuildPoints points = core.services().optional(BuildPoints.class).orElse(null);
-        return NpcPlan.compute(inputs, points, NpcsModule::heldMaterial, this::hasHologramText, new NpcPlan.Texts() {
+        NpcPlan plan = NpcPlan.compute(inputs, points, NpcsModule::heldMaterial, this::hasHologramText, new NpcPlan.Texts() {
             @Override
             public TextContent hologram(Spots.Text t) {
                 return staticHologramContent(t);
@@ -173,13 +181,32 @@ public final class NpcsModule implements SkyblockModule {
                 return npcLabel(rules, npc);
             }
         });
+        // PERF9: the lines were built with the plan; writing them to the console happens off the main thread.
+        List<String> lines = plan.logLines();
+        int problems = plan.problems().size();
+        Runnable log = () -> {
+            var logger = core.plugin().getLogger();
+            for (int i = 0; i < lines.size(); i++) {
+                if (i < problems) {
+                    logger.warning(lines.get(i));
+                } else {
+                    logger.info(lines.get(i));
+                }
+            }
+        };
+        return new Planned(plan, log);
     }
 
-    /** Main thread: takes over a parsed plan and (re)places everything. */
-    private void apply(NpcPlan plan) {
+    /**
+     * Main thread: takes over a parsed plan and (re)places everything. PERF10: no lambda or method reference is created
+     * in this tick any more (each one linked for the first time in this JVM costs the main thread a hidden class spin):
+     * the parts are timed by hand, the log task comes with the plan, and the task bodies are fields made at enable.
+     */
+    private void apply(Planned planned) {
         if (placer == null) {
             return;
         }
+        NpcPlan plan = planned.plan();
         roles = plan.roles();
         skins = plan.skins();
         held = plan.held();
@@ -189,22 +216,15 @@ public final class NpcsModule implements SkyblockModule {
         // PERF8: every part of the apply is timed on its own (nested inside npcs:apply): npcs:apply-boards, and inside
         // npcs:apply-place: npcs:apply-retire, npcs:apply-track, npcs:apply-queue. The left-over walk is npcs:purge (now in
         // the first npcs:spawn tick).
-        core.scheduler().timer().time("npcs:apply-boards", () -> boards.start(plan.sources()));
+        var timer = core.scheduler().timer();
+        long start = System.nanoTime();
+        boards.start(plan.sources());
+        long boardsDone = System.nanoTime();
+        timer.record("npcs:apply-boards", boardsDone - start);
         boolean look = config.npcsEnabled && config.lookAtPlayers && !plan.spots().npcs().isEmpty();
-        core.scheduler().timer().time("npcs:apply-place", () -> placer.start(plan.index(), look));
-        // PERF9: the lines were built with the plan; writing them to the console happens off the main thread.
-        List<String> lines = plan.logLines();
-        int problems = plan.problems().size();
-        core.scheduler().async(() -> {
-            var log = core.plugin().getLogger();
-            for (int i = 0; i < lines.size(); i++) {
-                if (i < problems) {
-                    log.warning(lines.get(i));
-                } else {
-                    log.info(lines.get(i));
-                }
-            }
-        });
+        placer.start(plan.index(), look);
+        timer.record("npcs:apply-place", System.nanoTime() - boardsDone);
+        core.scheduler().async(planned.log());
     }
 
     /** A held-item name to an item, null when it is not one (thread-safe: enum and frozen registry lookups). */

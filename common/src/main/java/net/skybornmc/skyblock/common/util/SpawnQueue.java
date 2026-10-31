@@ -1,4 +1,4 @@
-package net.skybornmc.skyblock.npcs;
+package net.skybornmc.skyblock.common.util;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -13,11 +13,12 @@ import java.util.function.Predicate;
  * hologram and leaderboard in the loaded chunks took over a second in one tick on update101). An item is queued at most
  * once at a time. PERF9: a whole placement is handed over as one batch ({@link #addAll}) in O(1); its items are taken
  * from it lazily while draining (after the items queued one by one), so queueing every point costs nothing in the apply
- * tick. Pure, unit-tested. Main thread.
+ * tick. Pure, unit-tested. Main thread. PERF10: moved from the npcs module to common (the crate yard places its
+ * pedestals through it too).
  *
  * @param <T> the queued item
  */
-final class SpawnQueue<T> {
+public final class SpawnQueue<T> {
 
     private final ArrayDeque<T> queue = new ArrayDeque<>();
     private final Set<T> queued = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -27,7 +28,7 @@ final class SpawnQueue<T> {
     private int batchRemaining;
 
     /** Queues an item; false when it is already waiting. */
-    boolean add(T item) {
+    public boolean add(T item) {
         if (!queued.add(item)) {
             return false;
         }
@@ -40,22 +41,22 @@ final class SpawnQueue<T> {
      * An item of a batch is not deduplicated against single adds; the handler must skip items that need no work (the
      * spawn handler skips sets that are already spawned, the removal handler sets without entities).
      */
-    void addAll(List<T> batch) {
+    public void addAll(List<T> batch) {
         if (!batch.isEmpty()) {
             batches.add(batch);
             batchRemaining += batch.size();
         }
     }
 
-    boolean isEmpty() {
+    public boolean isEmpty() {
         return queue.isEmpty() && batchRemaining == 0;
     }
 
-    int size() {
+    public int size() {
         return queue.size() + batchRemaining;
     }
 
-    void clear() {
+    public void clear() {
         queue.clear();
         queued.clear();
         batches.clear();
@@ -99,7 +100,7 @@ final class SpawnQueue<T> {
      *
      * @return the number of items with work
      */
-    int drain(int max, long budgetNanos, LongSupplier clock, Predicate<T> handle) {
+    public int drain(int max, long budgetNanos, LongSupplier clock, Predicate<T> handle) {
         long start = clock.getAsLong();
         long before = start;
         int done = 0;

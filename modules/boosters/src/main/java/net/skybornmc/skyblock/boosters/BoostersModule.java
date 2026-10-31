@@ -83,6 +83,9 @@ public final class BoostersModule implements SkyblockModule, Listener {
     private BoosterServiceImpl service;
     private Executor main;
     private Scheduler.Task task;
+    /** PERF10: the two halves of the tick, made once (not linked for the first time inside the first boosters:tick). */
+    private final Runnable tickPersonal;
+    private final Runnable tickGlobal;
     private Map<BoosterType, Material> materials = Map.of();
     private Material globalMaterial = Material.NETHER_STAR;
 
@@ -92,6 +95,8 @@ public final class BoostersModule implements SkyblockModule, Listener {
         this.items = new BoosterItems(this);
         this.personal = new PersonalBoosters(this);
         this.global = new GlobalBoosters(this);
+        this.tickPersonal = personal::tick;
+        this.tickGlobal = global::tick;
     }
 
     @Override
@@ -123,8 +128,8 @@ public final class BoostersModule implements SkyblockModule, Listener {
         global.load();
         // PERF8: each half is timed on its own (nested inside boosters:tick), so the log names the slow one.
         task = core.scheduler().repeat("boosters:tick", 20L, 20L, () -> {
-            core.scheduler().timer().time("boosters:tick-personal", personal::tick);
-            core.scheduler().timer().time("boosters:tick-global", global::tick);
+            core.scheduler().timer().time("boosters:tick-personal", tickPersonal);
+            core.scheduler().timer().time("boosters:tick-global", tickGlobal);
         });
     }
 

@@ -50,6 +50,10 @@ final class Leaderboards {
     private Scheduler.Task task;
     private Scheduler.Task cycleTask;
 
+    /** PERF10: the task bodies, made once (not linked for the first time inside {@code npcs:apply}). */
+    private final Runnable refreshTask = this::refresh;
+    private final Runnable cycleBody = this::cycle;
+
     Leaderboards(NpcsModule module) {
         this.module = module;
     }
@@ -60,8 +64,8 @@ final class Leaderboards {
         sources = parsed;
         long period = module.config().refreshMinutes * 60L * 20L;
         // First read shortly after start (services of later modules are registered by then).
-        task = module.core().scheduler().asyncRepeat(40, period, this::refresh);
-        cycleTask = module.core().scheduler().repeat("npcs:board-cycle", 20, 20, this::cycle);
+        task = module.core().scheduler().asyncRepeat(40, period, refreshTask);
+        cycleTask = module.core().scheduler().repeat("npcs:board-cycle", 20, 20, cycleBody);
     }
 
     void stop() {

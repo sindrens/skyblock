@@ -51,9 +51,40 @@ final class GlobalBoosters {
     private boolean busy;
     private long lastTick;
     private long lastSave;
+    /** PERF10: made once (not linked for the first time inside the first boosters:tick). */
+    private final Runnable updateBarsBody = this::updateBars;
 
     GlobalBoosters(BoostersModule module) {
         this.m = module;
+    }
+
+    /**
+     * PERF10: runs the pure code of a tick once on the calling (database) thread: the queue (its stream filters), the
+     * time text (string concatenations), progress, the save rule and the bar text record's equals/hashCode. Each of these
+     * call sites links once per JVM (lambda classes, string concat and record method handles); before, that happened on
+     * the main thread inside the first {@code boosters:tick} after a start. Touches no state of the module.
+     *
+     * @return a value derived from the results (so the work can't be optimized away; tests check it is stable)
+     */
+    static long warmUp() {
+        GlobalQueue q = new GlobalQueue();
+        UUID nobody = new UUID(0L, 0L);
+        BoosterType type = BoosterType.values()[0];
+        q.add(new GlobalQueue.Entry(2, type, 10, 2_000, 2_000, nobody, nobody, "", false));
+        q.add(new GlobalQueue.Entry(1, type, 10, 2_000, 1_000, nobody, nobody, "", true));
+        long sum = q.promote().size();
+        GlobalQueue.Tick t = q.tick(1_500, 1L);
+        sum += t.ended().size() + t.started().size() + (t.changed() ? 1 : 0);
+        sum += q.active().size() + q.queued(type).size() + q.percent(type) + q.all().size();
+        sum += q.active(type).isPresent() ? 1 : 0;
+        String time = BoosterRules.time(120 * BoosterRules.MINUTE) + BoosterRules.time(90_000) + BoosterRules.time(5_000);
+        sum += time.length();
+        sum += (long) (BoosterRules.progress(1, 2) * 10);
+        sum += BoosterRules.saveDue(false, 0, 1, 1) ? 1 : 0;
+        BarText a = new BarText(type, 10, "1s", "", 0, 0L);
+        BarText b = new BarText(type, 10, "1s", "", 0, 0L);
+        sum += a.equals(b) && a.hashCode() == b.hashCode() ? 1 : 0;
+        return sum;
     }
 
     GlobalQueue queue() {
@@ -85,6 +116,11 @@ final class GlobalBoosters {
 
     void load() {
         chain(() -> m.core.database().async(c -> {
+            try {
+                warmUp(); // PERF10: off the main thread, before the first tick
+            } catch (RuntimeException e) {
+                // only a warm-up: the tick works the same without it
+            }
             List<BoosterStore.GlobalRow> rows = BoosterStore.globals(c);
             Map<Long, java.util.Set<UUID>> thanked = new HashMap<>();
             for (BoosterStore.GlobalRow r : rows) {
@@ -157,12 +193,17 @@ final class GlobalBoosters {
             announceStart(e, false);
         }
         long grace = m.settings.thanksGraceSeconds * BoosterRules.SECOND;
-        recent.removeIf(e -> now - e.endedAt > grace);
+        // PERF10: a plain loop (no lambda linked for the first time in the first tick); same removals.
+        for (java.util.Iterator<GlobalQueue.Entry> it = recent.iterator(); it.hasNext(); ) {
+            if (now - it.next().endedAt > grace) {
+                it.remove();
+            }
+        }
         if (BoosterRules.saveDue(first, lastSave, now, m.settings.globalSaveSeconds * BoosterRules.SECOND)) {
             lastSave = now;
             save();
         }
-        m.core.scheduler().timer().time("boosters:tick-bars", this::updateBars);
+        m.core.scheduler().timer().time("boosters:tick-bars", updateBarsBody);
     }
 
     private void persistStart(GlobalQueue.Entry e) {

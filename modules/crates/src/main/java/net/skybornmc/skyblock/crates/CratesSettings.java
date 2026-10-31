@@ -135,6 +135,14 @@ public final class CratesSettings extends ModuleConfig {
             + "ignored (holding the mouse button sends many clicks).", min = 0, max = 5_000)
     public int clickCooldownMs = 400;
 
+    @Setting(path = "physical.place-per-tick", desc = "PERF10: most crate pedestals (crate block + hologram) set up per tick "
+            + "after a start, reload or chunk load (at least one per tick).", min = 1, max = 64)
+    public int placePerTick = 2;
+
+    @Setting(path = "physical.place-budget-ms", desc = "PERF10: stop setting up crate pedestals for the current tick after this "
+            + "many milliseconds (at least one per tick).", min = 1, max = 50)
+    public int placeBudgetMs = 2;
+
     @Setting(path = "hologram.enabled", desc = "Hologram above each crate block: its name in its rarity color and how to "
             + "open it.")
     public boolean hologramEnabled = true;
