@@ -1,0 +1,230 @@
+[
+ {
+  "group": "default",
+  "family": "free",
+  "font": "phoenix:badge",
+  "cap": "plain",
+  "color": "#B5ABA4",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&7",
+  "caps": [
+   "\ue000",
+   "\ue001"
+  ]
+ },
+ {
+  "group": "hatchling",
+  "family": "bought",
+  "font": "phoenix:badge",
+  "cap": "ember",
+  "color": "#FF9A4D",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&6",
+  "caps": [
+   "\ue002",
+   "\ue003"
+  ]
+ },
+ {
+  "group": "fledgling",
+  "family": "bought",
+  "font": "phoenix:badge",
+  "cap": "ember",
+  "color": "#9BE84A",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&a",
+  "caps": [
+   "\ue002",
+   "\ue003"
+  ]
+ },
+ {
+  "group": "firewing",
+  "family": "bought",
+  "font": "phoenix:badge",
+  "cap": "wing",
+  "color": "#4FB4FF",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&9",
+  "caps": [
+   "\ue004",
+   "\ue005"
+  ]
+ },
+ {
+  "group": "flamecrest",
+  "family": "bought",
+  "font": "phoenix:badge",
+  "cap": "wing",
+  "color": "#B06BFF",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&5",
+  "caps": [
+   "\ue004",
+   "\ue005"
+  ]
+ },
+ {
+  "group": "sunfeather",
+  "family": "bought",
+  "font": "phoenix:badge",
+  "cap": "sun",
+  "color": "#FFD21A",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&e",
+  "caps": [
+   "\ue006",
+   "\ue007"
+  ]
+ },
+ {
+  "group": "pyrelord",
+  "family": "bought",
+  "font": "phoenix:badge_shine",
+  "cap": "sun",
+  "color": "#FF3B4A",
+  "cap_color": null,
+  "shine": true,
+  "bedrock": "&c",
+  "caps": [
+   "\ue006",
+   "\ue007"
+  ]
+ },
+ {
+  "group": "immortal",
+  "family": "bought",
+  "font": "phoenix:badge_shine",
+  "cap": "phoenix",
+  "color": [
+   "#FFE27A",
+   "#FF8C1A",
+   "#FF2D3F"
+  ],
+  "cap_color": "#FFD21A",
+  "shine": true,
+  "bedrock": "&e&l>&6&l>&c&l",
+  "caps": [
+   "\ue008",
+   "\ue009"
+  ]
+ },
+ {
+  "group": "torchbearer",
+  "family": "won",
+  "font": "phoenix:badge",
+  "cap": "ribbon",
+  "color": "#2EE6D0",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&3",
+  "caps": [
+   "\ue00a",
+   "\ue00b"
+  ]
+ },
+ {
+  "group": "flameheart",
+  "family": "won",
+  "font": "phoenix:badge_shine",
+  "cap": "ribbon",
+  "color": "#FF5FD2",
+  "cap_color": null,
+  "shine": true,
+  "bedrock": "&d",
+  "caps": [
+   "\ue00a",
+   "\ue00b"
+  ]
+ },
+ {
+  "group": "firecrown",
+  "family": "won",
+  "font": "phoenix:badge_shine",
+  "cap": "ribbon",
+  "color": "#FFFFFF",
+  "cap_color": "#FFD21A",
+  "shine": true,
+  "bedrock": "&f&l",
+  "caps": [
+   "\ue00a",
+   "\ue00b"
+  ]
+ },
+ {
+  "group": "owner",
+  "family": "staff",
+  "font": "phoenix:badge_solid",
+  "cap": "square",
+  "color": "#FFC21A",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&e&l",
+  "caps": [
+   "\ue00e",
+   "\ue00f"
+  ]
+ },
+ {
+  "group": "admin",
+  "family": "staff",
+  "font": "phoenix:badge_solid",
+  "cap": "square",
+  "color": "#FF6B6B",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&c&l",
+  "caps": [
+   "\ue00e",
+   "\ue00f"
+  ]
+ },
+ {
+  "group": "mod",
+  "family": "staff",
+  "font": "phoenix:badge_solid",
+  "cap": "square",
+  "color": "#6CC4FF",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&9&l",
+  "caps": [
+   "\ue00e",
+   "\ue00f"
+  ]
+ },
+ {
+  "group": "helper",
+  "family": "staff",
+  "font": "phoenix:badge_solid",
+  "cap": "square",
+  "color": "#7CEB8A",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&a&l",
+  "caps": [
+   "\ue00e",
+   "\ue00f"
+  ]
+ },
+ {
+  "group": "builder",
+  "family": "staff",
+  "font": "phoenix:badge_solid",
+  "cap": "square",
+  "color": "#FF9A3D",
+  "cap_color": null,
+  "shine": false,
+  "bedrock": "&6&l",
+  "caps": [
+   "\ue00e",
+   "\ue00f"
+  ]
+ }
+]

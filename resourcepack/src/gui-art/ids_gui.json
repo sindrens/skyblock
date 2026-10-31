@@ -1,0 +1,807 @@
+{
+ "buttons": [
+  [
+   "blank",
+   "Invisible frame pane (the background art shows through)",
+   "every frame slot; hub group marks 9/18/27/36",
+   "BLACK/RED/ORANGE/GRAY_STAINED_GLASS_PANE (MenuService frame panes), LIME/YELLOW/PURPLE/ORANGE panes (menu.yml hub-groups)"
+  ],
+  [
+   "back",
+   "Back to the screen you came from (return arrow)",
+   "45 \u00b7 18 (3 rows) \u00b7 27 (4 rows)",
+   "ARROW (MenuService navItem \"back\")"
+  ],
+  [
+   "previous",
+   "Previous page",
+   "52",
+   "ARROW (PagedMenu)"
+  ],
+  [
+   "next",
+   "Next page",
+   "53",
+   "ARROW (PagedMenu)"
+  ],
+  [
+   "close",
+   "Close (red round button, white cross)",
+   "49 \u00b7 22 \u00b7 31",
+   "BARRIER"
+  ],
+  [
+   "info",
+   "\"?\" What is this screen",
+   "48 \u00b7 30 (4 rows)",
+   "BOOK (frame.info)"
+  ],
+  [
+   "help",
+   "Help & guides (red guide book with a gold ?)",
+   "50 on /menu only",
+   "KNOWLEDGE_BOOK (frame.help)"
+  ],
+  [
+   "main_menu",
+   "Main menu: 4 tiles in the 4 hub group colours",
+   "50 \u00b7 32 (4 rows)",
+   "NETHER_STAR (frame.main-menu)"
+  ],
+  [
+   "confirm",
+   "Big confirm: green plate with a check",
+   "confirm 11 \u00b7 picker 40",
+   "LIME_STAINED_GLASS_PANE (ConfirmMenu) \u00b7 LIME_CONCRETE (NumberPickerMenu)"
+  ],
+  [
+   "confirm_side",
+   "Confirm side plates (no symbol)",
+   "confirm 10, 12 \u00b7 picker 39, 41",
+   "LIME_STAINED_GLASS_PANE"
+  ],
+  [
+   "cancel",
+   "Big cancel: red plate with a cross",
+   "confirm 15",
+   "RED_STAINED_GLASS_PANE"
+  ],
+  [
+   "cancel_side",
+   "Cancel side plates (no symbol)",
+   "confirm 14, 16",
+   "RED_STAINED_GLASS_PANE"
+  ],
+  [
+   "toggle_on",
+   "Setting on: green switch, knob right, check",
+   "/settings, /is settings, permissions",
+   "LIME_DYE (MenuService toggle)"
+  ],
+  [
+   "toggle_off",
+   "Setting off: grey switch, knob left, ring",
+   "same",
+   "RED_DYE (MenuService toggle)"
+  ],
+  [
+   "loading",
+   "Loading: hourglass with gold sand",
+   "slot 22 / 13 while loading",
+   "CLOCK"
+  ],
+  [
+   "error",
+   "Couldn't load: red warning triangle, click retries",
+   "slot 22 / 13",
+   "RED_STAINED_GLASS"
+  ],
+  [
+   "empty",
+   "Nothing here yet: faint cobweb",
+   "slot 22 / 13",
+   "COBWEB"
+  ],
+  [
+   "locked",
+   "Locked: grey padlock",
+   "anywhere",
+   "GRAY_DYE (MenuService locked)"
+  ],
+  [
+   "maxed",
+   "Maxed / done: gold star",
+   "upgrades and levels at max",
+   "per menu (today usually the feature item + \"MAX\" lore)"
+  ],
+  [
+   "minus_small",
+   "Amount down, small step (red plate, one \u2212)",
+   "picker 21",
+   "RED_DYE (NumberPickerMenu)"
+  ],
+  [
+   "minus_mid",
+   "Amount down, middle step (\u2212 \u2212)",
+   "picker 20",
+   "RED_DYE"
+  ],
+  [
+   "minus_big",
+   "Amount down, big step (\u2212 \u2212 \u2212)",
+   "picker 19",
+   "RED_DYE"
+  ],
+  [
+   "plus_small",
+   "Amount up, small step (green plate, one +)",
+   "picker 23",
+   "LIME_DYE (NumberPickerMenu)"
+  ],
+  [
+   "plus_mid",
+   "Amount up, middle step (+ +)",
+   "picker 24",
+   "LIME_DYE"
+  ],
+  [
+   "plus_big",
+   "Amount up, big step (+ + +)",
+   "picker 25",
+   "LIME_DYE"
+  ],
+  [
+   "set_min",
+   "Set the minimum (arrow down to a bar)",
+   "picker 30",
+   "BUCKET"
+  ],
+  [
+   "set_max",
+   "Set the maximum (arrow up to a bar)",
+   "picker 32",
+   "WATER_BUCKET"
+  ],
+  [
+   "type_amount",
+   "Type an amount (slip with 123 and a pencil)",
+   "picker 31 \u00b7 shop buy page 32",
+   "NAME_TAG"
+  ],
+  [
+   "sell",
+   "Sell (coins with a green +)",
+   "sell chest 52-53 \u00b7 satchel item 12",
+   "GOLD_INGOT / per menu"
+  ],
+  [
+   "sell_all",
+   "Sell everything (coin pile with a green +)",
+   "satchel 47",
+   "per menu"
+  ],
+  [
+   "add_inventory",
+   "Add my inventory (green arrow into an open chest)",
+   "sell chest 46",
+   "per menu (\"Sell inventory\" today)"
+  ],
+  [
+   "take_all",
+   "Take everything (ember arrow out of an open chest)",
+   "satchel item 16 \u00b7 AH collection bin",
+   "per menu"
+  ],
+  [
+   "buy",
+   "Buy (shopping bag with a coin)",
+   "enchanter shop, wardrobe store",
+   "per menu"
+  ],
+  [
+   "buy_1",
+   "Buy 1 (green plate \"1\")",
+   "shop buy page 20",
+   "new (GUI-3)"
+  ],
+  [
+   "buy_16",
+   "Buy 16 (green plate \"16\")",
+   "shop buy page 22",
+   "new (GUI-3)"
+  ],
+  [
+   "buy_64",
+   "Buy 64 (green plate \"64\")",
+   "shop buy page 24",
+   "new (GUI-3)"
+  ],
+  [
+   "fill",
+   "Fill inventory (every slot filled green)",
+   "shop buy page 30",
+   "new (GUI-3)"
+  ],
+  [
+   "undo",
+   "Undo last buy (gold plate, hook arrow; count = seconds left)",
+   "shop 47",
+   "new (GUI-3)"
+  ],
+  [
+   "search",
+   "Search (magnifier)",
+   "AH, long lists",
+   "per menu"
+  ],
+  [
+   "filter",
+   "Filter (funnel)",
+   "AH, wardrobe, lists",
+   "per menu"
+  ],
+  [
+   "sort",
+   "Sort (bars + arrow)",
+   "AH, lists",
+   "per menu"
+  ]
+ ],
+ "features": [
+  [
+   "home",
+   "Home (go to your island)",
+   "/menu 10 \u00b7 Travel 11 \"My Island\" \u00b7 /is 10",
+   "red_bed \u00b7 grass_block (Travel) \u00b7 RED_BED (IslandMenu)"
+  ],
+  [
+   "island",
+   "Island menu /is",
+   "/menu 12 \u00b7 /is 4 (summary)",
+   "grass_block"
+  ],
+  [
+   "depths",
+   "The Depths /dungeon",
+   "/menu 14 \u00b7 Travel 12 \"Depths Gate\"",
+   "iron_pickaxe"
+  ],
+  [
+   "travel",
+   "Travel menu",
+   "/menu 16",
+   "ender_pearl"
+  ],
+  [
+   "sell",
+   "Sell /sell",
+   "/menu 19",
+   "gold_nugget"
+  ],
+  [
+   "shop",
+   "Shop /shop",
+   "/menu 21 \u00b7 Travel 14 \"Market\"",
+   "emerald"
+  ],
+  [
+   "bank",
+   "Bank /bank",
+   "/menu 23",
+   "barrel"
+  ],
+  [
+   "auction",
+   "Auction House /ah",
+   "/menu 25",
+   "gold_block"
+  ],
+  [
+   "forge",
+   "Forge /forge",
+   "/menu 28 \u00b7 Travel 15 \"Forge Quarter\"",
+   "smithing_table"
+  ],
+  [
+   "skills",
+   "Skills /skills",
+   "/menu 30",
+   "experience_bottle"
+  ],
+  [
+   "enchanter",
+   "Enchanter /enchanter",
+   "/menu 32",
+   "enchanting_table"
+  ],
+  [
+   "wardrobe",
+   "Wardrobe /wardrobe",
+   "/menu 34",
+   "leather_chestplate"
+  ],
+  [
+   "rewards",
+   "Rewards (nothing to claim)",
+   "/menu 39",
+   "chest"
+  ],
+  [
+   "rewards_ready",
+   "Rewards ready (open chest, gold, sparkles) + gold well + count",
+   "/menu 39 when something can be claimed",
+   "chest"
+  ],
+  [
+   "top",
+   "Top (leaderboards)",
+   "/menu 41 \u00b7 /top",
+   "golden_helmet"
+  ],
+  [
+   "calendar",
+   "This week (weekly boards and events)",
+   "/top tab 13",
+   "new (Top screen)"
+  ],
+  [
+   "profiles",
+   "Profiles",
+   "You 10",
+   "armor_stand"
+  ],
+  [
+   "titles",
+   "Titles & Tags",
+   "You 11",
+   "name_tag"
+  ],
+  [
+   "achievements",
+   "Achievements",
+   "You 12",
+   "totem_of_undying"
+  ],
+  [
+   "settings",
+   "Settings",
+   "You 13",
+   "comparator"
+  ],
+  [
+   "store",
+   "Store (calm, no glow)",
+   "You 14",
+   "diamond"
+  ],
+  [
+   "rules",
+   "Rules & links",
+   "You 15",
+   "lectern"
+  ],
+  [
+   "spawn",
+   "Spawn (the phoenix town)",
+   "Travel 10",
+   "campfire"
+  ],
+  [
+   "crates",
+   "Crate Yard / crates",
+   "Travel 13",
+   "tripwire_hook"
+  ],
+  [
+   "visit",
+   "Visit islands",
+   "Travel 16 \u00b7 /is 22",
+   "compass \u00b7 FILLED_MAP (IslandMenu)"
+  ],
+  [
+   "members",
+   "Island members",
+   "/is 11",
+   "PLAYER_HEAD (needs a carrier for pack users, RP-D11)"
+  ],
+  [
+   "permissions",
+   "Island permissions",
+   "/is 12",
+   "COMPARATOR"
+  ],
+  [
+   "warps",
+   "Island warps",
+   "/is 13",
+   "ENDER_PEARL"
+  ],
+  [
+   "visitors",
+   "Visitors allowed",
+   "/is 14",
+   "OAK_FENCE_GATE"
+  ],
+  [
+   "visitors_locked",
+   "Visitors locked out",
+   "/is 14 (locked)",
+   "IRON_BARS"
+  ],
+  [
+   "island_settings",
+   "Island settings",
+   "/is 15",
+   "REPEATER"
+  ],
+  [
+   "invites",
+   "Invites",
+   "/is 16",
+   "PAPER"
+  ],
+  [
+   "notes",
+   "Island notes",
+   "/is 19",
+   "WRITABLE_BOOK (BOOK when locked: use menu/locked)"
+  ],
+  [
+   "island_chat",
+   "Island chat on/off",
+   "/is 20",
+   "OAK_SIGN \u00b7 GLOW_ITEM_FRAME (on)"
+  ],
+  [
+   "chat_colors",
+   "Island chat colours",
+   "/is 21",
+   "ORANGE_DYE"
+  ],
+  [
+   "island_stats",
+   "Island stats",
+   "/is 23",
+   "GOLD_INGOT"
+  ],
+  [
+   "island_bank",
+   "Island bank",
+   "/is 24",
+   "ENDER_CHEST"
+  ],
+  [
+   "upgrades",
+   "Island upgrades",
+   "/is 25",
+   "ANVIL"
+  ],
+  [
+   "leave",
+   "Leave island (red well)",
+   "/is 40 (member)",
+   "IRON_DOOR"
+  ],
+  [
+   "disband",
+   "Disband island (red well, two-step confirm)",
+   "/is 40 (leader)",
+   "TNT"
+  ]
+ ],
+ "tabs": [
+  [
+   "essentials",
+   "Essentials",
+   0
+  ],
+  [
+   "farming",
+   "Farming",
+   1
+  ],
+  [
+   "wood",
+   "Wood",
+   2
+  ],
+  [
+   "stone",
+   "Stone & Earth",
+   3
+  ],
+  [
+   "special",
+   "Special Blocks",
+   4
+  ],
+  [
+   "colors",
+   "Colors",
+   5
+  ],
+  [
+   "decoration",
+   "Decoration",
+   6
+  ],
+  [
+   "redstone",
+   "Redstone",
+   7
+  ],
+  [
+   "spawners",
+   "Spawners",
+   8
+  ]
+ ],
+ "currencies": [
+  [
+   "money",
+   "Money (everyday buying and selling)",
+   "sunflower"
+  ],
+  [
+   "crystals",
+   "Crystals (island upgrades, island menu)",
+   "prismarine_crystals"
+  ],
+  [
+   "shards",
+   "Shards (upgrading tools, armour and such)",
+   "per menu"
+  ],
+  [
+   "credits",
+   "Credits, was gems: a ticket (bought with real money on Buycraft, spent in /store)",
+   "emerald (was the gems icon)"
+  ]
+ ],
+ "glyphs": [
+  [
+   "money",
+   "E200",
+   "Money in text"
+  ],
+  [
+   "crystals",
+   "E201",
+   "Crystals in text"
+  ],
+  [
+   "shards",
+   "E203",
+   "Shards in text"
+  ],
+  [
+   "credits",
+   "E204",
+   "Credits in text (was gems; U+E202 is retired)"
+  ],
+  [
+   "logo_small",
+   "E205",
+   "Phoenix flame (chat prefix)"
+  ]
+ ],
+ "backgrounds": [
+  [
+   "hub",
+   "E307",
+   6,
+   "B08",
+   "/menu: 15 buttons in 4 groups, phoenix wings around your head, group marks in 9/18/27/36"
+  ],
+  [
+   "island",
+   "E30A",
+   6,
+   "B11",
+   "/is: clouds and an island in the top band, Leave/Disband in a red well at 40"
+  ],
+  [
+   "shop",
+   "E310",
+   6,
+   "B17, B18",
+   "/shop: 9 tabs in row 0, 28 items, bottom bar (the category screen is gone)"
+  ],
+  [
+   "shop_buy",
+   "E311",
+   6,
+   "B19",
+   "Shop buy page: item 13, Buy 1/16/64 (20/22/24), Fill 30, Type 32, tabs stay on top"
+  ],
+  [
+   "sell_chest",
+   "E312",
+   6,
+   "B20",
+   "/sell: 4 input rows in a crate, divider, Add my inventory 46, total 47, Sell 52-53"
+  ],
+  [
+   "number_picker",
+   "E302",
+   6,
+   "B03",
+   "Any amount screen: red 19-21, value 22, green 23-25, Min/Type/Max 30-32, confirm 39-41"
+  ],
+  [
+   "confirm",
+   "E303",
+   3,
+   "B04",
+   "Every confirm: yes 10-12 (green), details 13, no 14-16 (red), Back 18, Close 22"
+  ],
+  [
+   "top",
+   "E30D",
+   6,
+   "B14",
+   "/top: tabs 11-15, gold/silver/bronze podium 22/21/23, #4-#10 at 28-34"
+  ],
+  [
+   "frame_core_6",
+   "E300",
+   6,
+   "B01, B09, B10",
+   "Core area (ember line): help, settings, tutorial, generic lists"
+  ],
+  [
+   "frame_core_6_tabs",
+   "E308",
+   6,
+   "-",
+   "Core area with a tab row (slots 1-7 of row 0)"
+  ],
+  [
+   "frame_core_4",
+   "E304",
+   4,
+   "B05",
+   "4-row core frame"
+  ],
+  [
+   "frame_core_3",
+   "E301",
+   3,
+   "B02",
+   "Small core frame: You, Travel, NPC help, small choices"
+  ],
+  [
+   "frame_island_6",
+   "E30B",
+   6,
+   "B12, B13",
+   "Island area (green line): island sub-menus, upgrades, spawners"
+  ],
+  [
+   "frame_island_6_tabs",
+   "E30C",
+   6,
+   "-",
+   "Island area with tabs: Visit islands, Upgrades"
+  ],
+  [
+   "frame_island_3",
+   "E319",
+   3,
+   "-",
+   "Small island frame: member / invite / note actions"
+  ],
+  [
+   "frame_economy_6",
+   "E30E",
+   6,
+   "B15, B16",
+   "Money area (gold line): bank, AH lists, trade"
+  ],
+  [
+   "frame_economy_6_tabs",
+   "E30F",
+   6,
+   "-",
+   "Money area with tabs: Auction House browse"
+  ],
+  [
+   "frame_economy_3",
+   "E31A",
+   3,
+   "B41",
+   "Small money frame: AH sell, trade money"
+  ],
+  [
+   "frame_depths_6",
+   "E313",
+   6,
+   "B21, B42",
+   "Depths area (steel-blue line): satchel"
+  ],
+  [
+   "frame_depths_6_tabs",
+   "E315",
+   6,
+   "-",
+   "Depths with wing tabs: /dungeon"
+  ],
+  [
+   "frame_depths_3",
+   "E314",
+   3,
+   "B22",
+   "Small Depths frame: satchel item"
+  ],
+  [
+   "frame_progress_6",
+   "E316",
+   6,
+   "B23-B31, B43, B45, B47",
+   "Power area (violet line): enchanter, wardrobe, loadouts, skills, tools"
+  ],
+  [
+   "frame_progress_6_tabs",
+   "E317",
+   6,
+   "-",
+   "Power area with tabs: Forge, Achievements, Enchant guide, Cosmetics"
+  ],
+  [
+   "frame_progress_3",
+   "E318",
+   3,
+   "-",
+   "Small Power frame: wardrobe merge look"
+  ],
+  [
+   "frame_rewards_6",
+   "E31B",
+   6,
+   "B32-B39",
+   "Rewards area (red line, gold corners): crates, previews, boosters"
+  ],
+  [
+   "frame_rewards_6_tabs",
+   "E31C",
+   6,
+   "-",
+   "Rewards with tabs: /daily"
+  ],
+  [
+   "frame_rewards_3",
+   "E31D",
+   3,
+   "B50",
+   "Small rewards frame: free rank"
+  ],
+  [
+   "frame_staff_6",
+   "E305",
+   6,
+   "B06, B51",
+   "Staff area (cold steel, no flames): moderation, logs, admin"
+  ],
+  [
+   "frame_staff_6_tabs",
+   "E31E",
+   6,
+   "-",
+   "Staff with tabs: reports (Open / Claimed / Closed)"
+  ],
+  [
+   "frame_staff_4",
+   "E309",
+   4,
+   "-",
+   "4-row staff frame: notify"
+  ],
+  [
+   "frame_staff_3",
+   "E306",
+   3,
+   "B07, B52",
+   "Small staff frame: ack, outcome, punish steps"
+  ]
+ ]
+}

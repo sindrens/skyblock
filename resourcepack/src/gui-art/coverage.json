@@ -1,0 +1,1094 @@
+[
+ {
+  "module": "achievements",
+  "class": "AchievementsMenu",
+  "rows": 6,
+  "bg": "frame_progress_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "achievements",
+  "class": "CategoryMenu",
+  "rows": 6,
+  "bg": "frame_progress_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "achievements",
+  "class": "IslandCategoryMenu",
+  "rows": 6,
+  "bg": "frame_progress_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "auction",
+  "class": "AuctionMenu",
+  "rows": 6,
+  "bg": "frame_economy_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "auction",
+  "class": "CollectionMenu",
+  "rows": 6,
+  "bg": "frame_economy_6",
+  "note": ""
+ },
+ {
+  "module": "auction",
+  "class": "MyListingsMenu",
+  "rows": 6,
+  "bg": "frame_economy_6",
+  "note": ""
+ },
+ {
+  "module": "auction",
+  "class": "SellMenu",
+  "rows": 3,
+  "bg": "frame_economy_3",
+  "note": ""
+ },
+ {
+  "module": "auction",
+  "class": "StaffListingMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": ""
+ },
+ {
+  "module": "boosters",
+  "class": "BoostersMenu",
+  "rows": 6,
+  "bg": "frame_rewards_6",
+  "note": ""
+ },
+ {
+  "module": "box",
+  "class": "BoxMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "box",
+  "class": "StaffBoxMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "common",
+  "class": "ConfirmMenu",
+  "rows": 3,
+  "bg": "confirm",
+  "note": ""
+ },
+ {
+  "module": "common",
+  "class": "NumberPickerMenu",
+  "rows": 6,
+  "bg": "number_picker",
+  "note": ""
+ },
+ {
+  "module": "common",
+  "class": "PlayerPickerMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "cosmetics",
+  "class": "CosmeticsMenu",
+  "rows": 6,
+  "bg": "frame_progress_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "cosmetics",
+  "class": "DisplayMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "cosmetics",
+  "class": "EditorEntryMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "cosmetics",
+  "class": "EditorListMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "crates",
+  "class": "CratesMenu",
+  "rows": 6,
+  "bg": "frame_rewards_6",
+  "note": ""
+ },
+ {
+  "module": "crates",
+  "class": "PreviewMenu",
+  "rows": 6,
+  "bg": "frame_rewards_6",
+  "note": ""
+ },
+ {
+  "module": "crates",
+  "class": "ResultMenu",
+  "rows": 6,
+  "bg": "frame_rewards_6",
+  "note": ""
+ },
+ {
+  "module": "crates",
+  "class": "StaffCratesMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "depths",
+  "class": "DungeonMenu",
+  "rows": 6,
+  "bg": "frame_depths_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "depths",
+  "class": "SatchelItemMenu",
+  "rows": 3,
+  "bg": "frame_depths_3",
+  "note": ""
+ },
+ {
+  "module": "depths",
+  "class": "SatchelMenu",
+  "rows": 6,
+  "bg": "frame_depths_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "AlertMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "AlertsMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "BankHistoryMenu",
+  "rows": 6,
+  "bg": "frame_economy_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "BankMenu",
+  "rows": 6,
+  "bg": "frame_economy_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "BankTierMenu",
+  "rows": 6,
+  "bg": "frame_economy_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "DashboardMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "PendingEcoMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "ReasonsMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "SellMenu",
+  "rows": 6,
+  "bg": "sell_chest",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "TopAccountsMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "TransactionListMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "economy",
+  "class": "TransactionsMenu",
+  "rows": 6,
+  "bg": "frame_economy_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "ArmorBookPickMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "ArmorEnchantMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "ArmorEntriesMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "ArmorEntryMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "BookPickMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "CombineMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "EnchanterMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "GuideMenu",
+  "rows": 6,
+  "bg": "frame_progress_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "RemoveMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "ShopMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "SlotMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "ToolPickMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "enchants",
+  "class": "UpgradeMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "ChatColorsMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "DeletedNotesMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "IconPickerMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "InviteActionsMenu",
+  "rows": 3,
+  "bg": "frame_island_3",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "InvitesMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "IslandMenu",
+  "rows": 6,
+  "bg": "island",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "IslandStatsMembersMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "IslandStatsMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "KickBackupsMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "MemberActionsMenu",
+  "rows": 3,
+  "bg": "frame_island_3",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "MembersMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "NoteActionsMenu",
+  "rows": 3,
+  "bg": "frame_island_3",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "NotesMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "PermissionsMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "PortalChoiceMenu",
+  "rows": 3,
+  "bg": "frame_island_3",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "SettingsMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "SlotsMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "VisitMenu",
+  "rows": 6,
+  "bg": "frame_island_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "WarpBrowserMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "islands",
+  "class": "WarpEditMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "logs",
+  "class": "LogCategoryMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "logs",
+  "class": "LogResultsMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "logs",
+  "class": "LogsHubMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "AdminFileMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "AdminListMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "AdminMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "HelpCategoryMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "HelpCommandsMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "HelpMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "HelpTopicMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "HubMenu",
+  "rows": 6,
+  "bg": "hub",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "SettingsMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "StaffMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "menus",
+  "class": "TravelMenu",
+  "rows": 3,
+  "bg": "frame_core_3",
+  "note": "Travel"
+ },
+ {
+  "module": "menus",
+  "class": "YouMenu",
+  "rows": 3,
+  "bg": "frame_core_3",
+  "note": "You"
+ },
+ {
+  "module": "moderation",
+  "class": "AckMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": ""
+ },
+ {
+  "module": "moderation",
+  "class": "AppealMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in AppealMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "DenyMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": "in AppealMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "QueueMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in AppealMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "PickMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in BulkMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "ReasonMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in BulkMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "ResultMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": "in BulkMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "LockdownMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": ""
+ },
+ {
+  "module": "moderation",
+  "class": "NotifyMenu",
+  "rows": 4,
+  "bg": "frame_staff_4",
+  "note": "4 rows"
+ },
+ {
+  "module": "moderation",
+  "class": "PunishMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in PunishMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "CategoryMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in PunishMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "DenyMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": "in PunishMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "EntryMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": "in PunishMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "HistoryMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in PunishMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "RequestMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": "in PunishMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "SuggestionMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": "in PunishMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "TemplateMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in PunishMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "WatchlistMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in PunishMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "ReportMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "moderation",
+  "class": "SanctionsMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in SanctionMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "ChoiceMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": "in SanctionMenus.java"
+ },
+ {
+  "module": "moderation",
+  "class": "ConfiscateMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "in SanctionMenus.java"
+ },
+ {
+  "module": "npcs",
+  "class": "HelpMenu",
+  "rows": 3,
+  "bg": "frame_core_3",
+  "note": ""
+ },
+ {
+  "module": "npcs",
+  "class": "NpcListMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "perks",
+  "class": "FreeRankMenu",
+  "rows": 3,
+  "bg": "frame_rewards_3",
+  "note": ""
+ },
+ {
+  "module": "profiles",
+  "class": "IconMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "profiles",
+  "class": "ProfileMenu",
+  "rows": 3,
+  "bg": "frame_core_3",
+  "note": ""
+ },
+ {
+  "module": "profiles",
+  "class": "ProfilesMenu",
+  "rows": 3,
+  "bg": "frame_core_3",
+  "note": ""
+ },
+ {
+  "module": "progression",
+  "class": "LevelMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "progression",
+  "class": "TaskBookMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "progression",
+  "class": "TaskDeliverMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "progression",
+  "class": "TaskTierMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "progression",
+  "class": "TopMenu",
+  "rows": 6,
+  "bg": "top",
+  "note": ""
+ },
+ {
+  "module": "progression",
+  "class": "UpgradeDetailMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "progression",
+  "class": "UpgradeMenu",
+  "rows": 6,
+  "bg": "frame_island_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "rewards",
+  "class": "DailyMenu",
+  "rows": 6,
+  "bg": "frame_rewards_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "shop",
+  "class": "BuyAmountMenu",
+  "rows": 6,
+  "bg": "shop_buy",
+  "note": "becomes the buy page (GUI-3)"
+ },
+ {
+  "module": "shop",
+  "class": "CategoryMenu",
+  "rows": 6,
+  "bg": "shop",
+  "note": "merged into the tabbed ShopMenu (GUI-3)"
+ },
+ {
+  "module": "shop",
+  "class": "ShopMenu",
+  "rows": 6,
+  "bg": "shop",
+  "note": ""
+ },
+ {
+  "module": "skills",
+  "class": "SkillsMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "stacking",
+  "class": "FrozenSpawnerMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "stacking",
+  "class": "SpawnerMenu",
+  "rows": 6,
+  "bg": "frame_island_6",
+  "note": ""
+ },
+ {
+  "module": "staff",
+  "class": "InspectMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "staff",
+  "class": "OutcomeMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": ""
+ },
+ {
+  "module": "staff",
+  "class": "ReportMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "staff",
+  "class": "ReportReasonMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "staff",
+  "class": "ReportsMenu",
+  "rows": 6,
+  "bg": "frame_staff_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "tools",
+  "class": "BlueprintMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "tools",
+  "class": "ForgeMenu",
+  "rows": 6,
+  "bg": "frame_progress_6_tabs",
+  "note": ""
+ },
+ {
+  "module": "tools",
+  "class": "SkinsMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "tools",
+  "class": "ToolMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "trade",
+  "class": "TradeMenu",
+  "rows": 6,
+  "bg": "frame_economy_6",
+  "note": "both players see the same frame"
+ },
+ {
+  "module": "trade",
+  "class": "TradeMoneyMenu",
+  "rows": 3,
+  "bg": "frame_economy_3",
+  "note": ""
+ },
+ {
+  "module": "tutorial",
+  "class": "OptionalMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "tutorial",
+  "class": "StaffTutorialMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "tutorial",
+  "class": "StatsMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": "staff stats"
+ },
+ {
+  "module": "tutorial",
+  "class": "StepsMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "tutorial",
+  "class": "TutorialMenu",
+  "rows": 6,
+  "bg": "frame_core_6",
+  "note": ""
+ },
+ {
+  "module": "tutorial",
+  "class": "WhereNextMenu",
+  "rows": 3,
+  "bg": "frame_core_3",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "ChestMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "LoadoutEditMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "LoadoutIconMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "LoadoutMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "MergeLookMenu",
+  "rows": 3,
+  "bg": "frame_progress_3",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "MergePickMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "SetMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "StaffEntryMenu",
+  "rows": 3,
+  "bg": "frame_staff_3",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "StaffMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "StaffPickMenu",
+  "rows": 6,
+  "bg": "frame_staff_6",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "StorePickMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ },
+ {
+  "module": "wardrobe",
+  "class": "WardrobeMenu",
+  "rows": 6,
+  "bg": "frame_progress_6",
+  "note": ""
+ }
+]
