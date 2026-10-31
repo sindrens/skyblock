@@ -54,10 +54,28 @@ home:
 
 sethome:
   done: "<prefix><c:success><sym:check></c:success> <c:text>Island home set here."
-  not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>Only the Leader, Admins and Mods can move the home."
+  not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>You can't move the island home. Ask your leader for the <c:value>Homes</c:value> permission."
   outside: "<prefix><c:error><sym:cross></c:error> <c:text>Stand inside your island's border to set the home."
   height: "<prefix><c:error><sym:cross></c:error> <c:text>The home must be between <c:value>Y <min></c:value> and <c:value>Y <max></c:value>."
   unsafe: "<prefix><c:error><sym:cross></c:error> <c:text>Not safe here. Stand on solid ground with room above, away from water and lava."
+
+# PHASE-5 M5.5 Homestead (owner P5-21): shared island homes. The island home is /is home; each Homestead mastery rank
+# allows one named home more. <home> name, <homes> the island's named homes, <used>/<total> homes with the island home,
+# <max> named homes allowed.
+homes:
+  arrived: "<c:ember><sym:bullet></c:ember> <c:text>Island home <c:value><home>"
+  set: "<prefix><c:success><sym:check></c:success> <c:text>Island home <c:value><home></c:value> set here. <c:muted>(<used>/<total> homes)"
+  moved: "<prefix><c:success><sym:check></c:success> <c:text>Island home <c:value><home></c:value> moved here."
+  deleted: "<prefix><c:success><sym:check></c:success> <c:text>Island home <c:value><home></c:value> deleted."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No island home called <c:value><home></c:value>. Homes: <c:value><homes>"
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>No island home called <c:value><home></c:value>. Your island has only its main home: <c:value>/is home"
+  bad-name: "<prefix><c:error><sym:cross></c:error> <c:text>Home names use 1-16 letters, numbers or _ (for example <c:value>farm</c:value>)."
+  not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>You can't set or delete island homes. Ask your leader for the <c:value>Homes</c:value> permission."
+  need-homestead: "<prefix><c:error><sym:cross></c:error> <c:text>More island homes come with the <c:value>Homestead</c:value> mastery. <click:run_command:'/is masteries'><hover:show_text:'<c:text>Open the masteries'><c:action>[Masteries]</c:action></hover></click>"
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has all <c:value><total></c:value> homes. Move one with its name, delete one with <c:value>/is delhome</c:value>, or get the next <c:value>Homestead</c:value> rank."
+  loading: "<prefix><c:error><sym:cross></c:error> <c:text>Island homes are still loading. Try again in a moment."
+  # Suggested in tab completion for a new home.
+  suggest-name: "farm"
 
 # Protection (action bar, at most one message per protection.message-cooldown-ms). <action> = one of the actions below.
 protection:
@@ -93,6 +111,7 @@ protection:
     bank-withdraw: "take money out of the island bank"
     bank-history: "see the island bank history"
     upgrades: "buy island upgrades with the island bank"
+    homes: "set and delete the island homes"
 
 bypass:
   "on": "<prefix><c:warning><sym:cross></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>(logged, /is bypass to stop)"
@@ -119,6 +138,8 @@ placeholder:
 level:
   unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Island levels aren't available right now. Try again later."
 # /is upgrade without the progression module (PHASE-5 M5.4)
+masteries:
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Island masteries aren't available right now. Try again later."
 upgrade:
   unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Island upgrades aren't available right now. Try again later."
 
@@ -849,6 +870,7 @@ perms:
     bank-withdraw: "Bank withdraw"
     bank-history: "Bank history"
     upgrades: "Upgrades"
+    homes: "Homes"
 
 # ---------------------------------------------------------------- M2.7 lifecycle (/is disband) and staff tools (/isadmin)
 # Owner answer 591: told to every member whose profile was reset by a disband or an island reset.

@@ -160,6 +160,10 @@ public final class IslandsConfig extends ModuleConfig {
             + "(PHASE-5 M5.4, owner 170 / P5-10; roles: admin, mod, member). The leader always can; everyone can view and hand in.")
     public List<String> upgradesRoles = List.of("admin");
 
+    @Setting(path = "permissions.role-defaults.homes", desc = "Roles that may set the island home and set or delete the shared named homes "
+            + "(/is sethome [name], /is delhome; PHASE-5 M5.5 Homestead, P5-21; roles: admin, mod, member). The leader always can; every member can use them.")
+    public List<String> homesRoles = List.of("admin", "mod");
+
     // GUI-4 (owner U8): permission presets. Strict = defaults minus these keys, Open = defaults plus these keys, Normal = defaults.
     @Setting(path = "permissions.presets.strict.admin", desc = "Strict preset: permissions taken away from island admins (keys as in "
             + "permissions.defaults; empty = same as the default).")
@@ -626,6 +630,7 @@ public final class IslandsConfig extends ModuleConfig {
         perPermission.put(IslandPerm.BANK_WITHDRAW, bankWithdrawRoles);
         perPermission.put(IslandPerm.BANK_HISTORY, bankHistoryRoles);
         perPermission.put(IslandPerm.UPGRADES, upgradesRoles);
+        perPermission.put(IslandPerm.HOMES, homesRoles);
         return RolePermissions.parse(defaultsAdmin, defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor, perPermission);
     }
 

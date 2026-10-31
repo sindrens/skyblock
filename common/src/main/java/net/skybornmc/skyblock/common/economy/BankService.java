@@ -51,4 +51,13 @@ public interface BankService {
     default int interestPeriodHours() {
         return 0;
     }
+
+    /**
+     * The bank withdrawal fee in percent at a bank-fee mastery level (BANK2, owner #169; the Treasury mastery's rank):
+     * level 0 = {@code withdraw.fee-percent}, then one step of {@code withdraw.mastery-fee-percent} per level. -1 if
+     * unknown. Any thread.
+     */
+    default double withdrawFeePercent(int masteryLevel) {
+        return -1;
+    }
 }

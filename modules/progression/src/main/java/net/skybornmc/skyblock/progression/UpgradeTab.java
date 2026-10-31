@@ -3,12 +3,13 @@ package net.skybornmc.skyblock.progression;
 import java.util.Locale;
 import java.util.Optional;
 
-/** Tabs of {@code /is upgrade} (PHASE-5 M5.4 mockup); the Masteries tab comes with M5.5. */
+/** Tabs of {@code /is upgrade} (PHASE-5 M5.4 mockup); MASTERIES (M5.5) shows the masteries and Ascension, never upgrades. */
 enum UpgradeTab {
     ISLAND,
     ECONOMY,
     DEPTHS,
-    PRODUCTION;
+    PRODUCTION,
+    MASTERIES;
 
     String id() {
         return name().toLowerCase(Locale.ROOT);

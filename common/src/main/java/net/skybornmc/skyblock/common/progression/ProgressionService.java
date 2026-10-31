@@ -162,4 +162,20 @@ public interface ProgressionService {
     default int upgradeLevel(UUID islandId, String upgradeId) {
         return 0;
     }
+
+    // ------------------------------------------------------------------ island masteries (M5.5)
+
+    /** True when island masteries can be opened ({@code /is masteries}, the Masteries tab of {@code /is upgrade}). */
+    default boolean masteriesAvailable() {
+        return false;
+    }
+
+    /** Opens {@code /is masteries} (the upgrade menu on its Masteries tab) for {@code player}'s own island. Main thread. */
+    default void openMasteryMenu(org.bukkit.entity.Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
+    }
+
+    /** The bought rank of a mastery ({@code masteries.yml} id, e.g. {@code wings}) on the island; 0 = none. */
+    default int masteryRank(UUID islandId, String masteryId) {
+        return 0;
+    }
 }

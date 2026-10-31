@@ -1,0 +1,368 @@
+# Island masteries (Phase 5, M5.5): /is masteries and the Masteries tab of /is upgrade.
+# Edit here, then: /skyblock reload progression. Settings (Ascension too): masteries-settings.yml.
+# Texts: messages/progression.yml.
+#
+# A rank needs its pillar level or island level, every task that lists its key mastery.<id>.<rank> (tasks.yml) and
+# money from the ISLAND BANK only (owner 169). Rank and payment are saved in one database transaction. Only members
+# with the island permission "Upgrades" buy (leader always; admin on by default).
+# Every key inside 'masteries' is one mastery (no other settings belong in this file). New masteries from an update are
+# added automatically: turn one off with "enabled: false" instead of deleting it.
+# Masteries whose feature does not exist yet are hidden and can't be bought (GUI-2 hide-unbuilt rule): timber and
+# swift-hands (the Depths roll and break speed read only the tool), fuel-efficiency (Phase 7), beast-tamer (no
+# breeding hook), angler (no fishing yet). Their prices and tasks stay here for later.
+#
+# masteries.<id>:
+#   icon:      item id; order: position in the tab (lower first)
+#   effect:    what the value does (fixed per mastery): timber, swift-hands, warrior (+% PvE damage, never in PvP),
+#              deep-pockets (+% satchel size), crystal-rush (+% crystals), lucky-strike (+% rare finds),
+#              fuel-efficiency, beast-tamer, angler, homestead (extra shared island homes), wings (island fly for
+#              everyone on the island), treasury (bank fee step: 2% -> 1.5% -> 1.0% -> 0.5%),
+#              market-contacts (+% sell prices, inside the +300% sell cap)
+#   pillar:    pillar whose level the ranks need (mining, foraging, farming, combat), or leave out
+#   requires-maxed: upgrade ids that must be fully upgraded first (Market Contacts: sell_multiplier)
+#   enabled:   false = not shown, not bought (bought ranks keep working)
+#   ranks:     one entry per rank, in order:
+#     tier:         price tier (island level points: upgrades-settings.yml -> level-points)
+#     cost:         money from the island bank
+#     value:        the effect at this rank (not added up)
+#     pillar-level: level of the pillar above needed (optional, 0 = none)
+#     island-level: island level needed (optional, 0 = none)
+#
+# Prices: tools/gen_masteries_catalog.py from the balance model (ECONOMY_BALANCE.md 5.2, 5.4, 5.5); tuned in M5.9.
+
+masteries:
+  timber:
+    icon: "golden_axe"
+    order: 1
+    effect: timber
+    pillar: foraging
+    enabled: true
+    ranks:
+      - tier: 2
+        cost: 5260
+        value: 4
+        pillar-level: 10
+      - tier: 4
+        cost: 35900
+        value: 8
+        pillar-level: 20
+      - tier: 7
+        cost: 643000
+        value: 12
+        pillar-level: 35
+      - tier: 10
+        cost: 30500000
+        value: 16
+        pillar-level: 50
+      - tier: 12
+        cost: 554000000
+        value: 20
+        pillar-level: 60
+  swift_hands:
+    icon: "golden_pickaxe"
+    order: 2
+    effect: swift-hands
+    pillar: mining
+    enabled: true
+    ranks:
+      - tier: 2
+        cost: 5260
+        value: 4
+        pillar-level: 10
+      - tier: 4
+        cost: 35900
+        value: 8
+        pillar-level: 20
+      - tier: 7
+        cost: 643000
+        value: 12
+        pillar-level: 35
+      - tier: 10
+        cost: 30500000
+        value: 16
+        pillar-level: 50
+      - tier: 12
+        cost: 554000000
+        value: 20
+        pillar-level: 60
+  warrior:
+    icon: "iron_sword"
+    order: 3
+    effect: warrior
+    pillar: combat
+    enabled: true
+    ranks:
+      - tier: 2
+        cost: 5260
+        value: 4
+        pillar-level: 10
+      - tier: 4
+        cost: 35900
+        value: 8
+        pillar-level: 20
+      - tier: 7
+        cost: 643000
+        value: 12
+        pillar-level: 35
+      - tier: 10
+        cost: 30500000
+        value: 16
+        pillar-level: 50
+      - tier: 12
+        cost: 554000000
+        value: 20
+        pillar-level: 60
+  deep_pockets:
+    icon: "bundle"
+    order: 4
+    effect: deep-pockets
+    pillar: mining
+    enabled: true
+    ranks:
+      - tier: 1
+        cost: 1680
+        value: 10
+        pillar-level: 5
+      - tier: 3
+        cost: 11500
+        value: 20
+        pillar-level: 15
+      - tier: 6
+        cost: 205000
+        value: 30
+        pillar-level: 30
+      - tier: 9
+        cost: 5970000
+        value: 40
+        pillar-level: 45
+      - tier: 12
+        cost: 462000000
+        value: 50
+        pillar-level: 60
+  crystal_rush:
+    icon: "amethyst_shard"
+    order: 5
+    effect: crystal-rush
+    enabled: true
+    ranks:
+      - tier: 2
+        cost: 6130
+        value: 3
+        island-level: 10
+      - tier: 4
+        cost: 41900
+        value: 6
+        island-level: 20
+      - tier: 7
+        cost: 750000
+        value: 9
+        island-level: 35
+      - tier: 10
+        cost: 35600000
+        value: 12
+        island-level: 50
+      - tier: 12
+        cost: 647000000
+        value: 15
+        island-level: 70
+  lucky_strike:
+    icon: "rabbit_foot"
+    order: 6
+    effect: lucky-strike
+    enabled: true
+    ranks:
+      - tier: 3
+        cost: 16000
+        value: 4
+        island-level: 15
+      - tier: 5
+        cost: 110000
+        value: 8
+        island-level: 30
+      - tier: 8
+        cost: 1960000
+        value: 12
+        island-level: 45
+      - tier: 10
+        cost: 35600000
+        value: 16
+        island-level: 60
+      - tier: 12
+        cost: 647000000
+        value: 20
+        island-level: 80
+  fuel_efficiency:
+    icon: "blaze_powder"
+    order: 7
+    effect: fuel-efficiency
+    pillar: farming
+    enabled: true
+    ranks:
+      - tier: 5
+        cost: 62700
+        value: 10
+        pillar-level: 25
+      - tier: 9
+        cost: 4770000
+        value: 20
+        pillar-level: 45
+      - tier: 12
+        cost: 369000000
+        value: 30
+        pillar-level: 60
+  beast_tamer:
+    icon: "lead"
+    order: 8
+    effect: beast-tamer
+    pillar: farming
+    enabled: true
+    ranks:
+      - tier: 2
+        cost: 3500
+        value: 5
+        pillar-level: 10
+      - tier: 5
+        cost: 62700
+        value: 10
+        pillar-level: 25
+      - tier: 8
+        cost: 1120000
+        value: 15
+        pillar-level: 40
+      - tier: 12
+        cost: 369000000
+        value: 20
+        pillar-level: 60
+  angler:
+    icon: "fishing_rod"
+    order: 9
+    effect: angler
+    pillar: farming
+    enabled: true
+    ranks:
+      - tier: 3
+        cost: 9160
+        value: 5
+        pillar-level: 15
+      - tier: 6
+        cost: 164000
+        value: 10
+        pillar-level: 30
+      - tier: 9
+        cost: 4770000
+        value: 15
+        pillar-level: 45
+      - tier: 12
+        cost: 369000000
+        value: 20
+        pillar-level: 60
+  homestead:
+    icon: "red_bed"
+    order: 10
+    effect: homestead
+    enabled: true
+    ranks:
+      - tier: 4
+        cost: 30000
+        value: 1
+        island-level: 20
+      - tier: 8
+        cost: 1400000
+        value: 2
+        island-level: 40
+  wings:
+    icon: "elytra"
+    order: 11
+    effect: wings
+    enabled: true
+    ranks:
+      - tier: 4
+        cost: 59900
+        value: 1
+        island-level: 20
+  treasury:
+    icon: "gold_block"
+    order: 12
+    effect: treasury
+    enabled: true
+    ranks:
+      - tier: 3
+        cost: 22900
+        value: 1
+        island-level: 15
+      - tier: 7
+        cost: 1070000
+        value: 2
+        island-level: 35
+      - tier: 12
+        cost: 924000000
+        value: 3
+        island-level: 60
+  market_contacts:
+    icon: "emerald_block"
+    order: 13
+    effect: market-contacts
+    requires-maxed:
+      - sell_multiplier
+    enabled: true
+    ranks:
+      - tier: 12
+        cost: 686000000
+        value: 2
+      - tier: 12
+        cost: 769000000
+        value: 4
+      - tier: 12
+        cost: 861000000
+        value: 6
+      - tier: 12
+        cost: 964000000
+        value: 8
+      - tier: 12
+        cost: 1080000000
+        value: 10
+      - tier: 12
+        cost: 1210000000
+        value: 12
+      - tier: 12
+        cost: 1350000000
+        value: 14
+      - tier: 12
+        cost: 1520000000
+        value: 16
+      - tier: 12
+        cost: 1700000000
+        value: 18
+      - tier: 12
+        cost: 1900000000
+        value: 20
+      - tier: 12
+        cost: 2130000000
+        value: 22
+      - tier: 12
+        cost: 2390000000
+        value: 24
+      - tier: 12
+        cost: 2670000000
+        value: 26
+      - tier: 12
+        cost: 2990000000
+        value: 28
+      - tier: 12
+        cost: 3350000000
+        value: 30
+      - tier: 12
+        cost: 3760000000
+        value: 32
+      - tier: 12
+        cost: 4210000000
+        value: 34
+      - tier: 12
+        cost: 4710000000
+        value: 36
+      - tier: 12
+        cost: 5280000000
+        value: 38
+      - tier: 12
+        cost: 5910000000
+        value: 40

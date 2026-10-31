@@ -134,7 +134,7 @@ final class UpgradeCatalog {
             errors.add("not a section");
             return null;
         }
-        UpgradeTab tab = UpgradeTab.byId(s.getString("tab")).orElse(null);
+        UpgradeTab tab = UpgradeTab.byId(s.getString("tab")).filter(t -> t != UpgradeTab.MASTERIES).orElse(null);
         if (tab == null) {
             errors.add("unknown tab '" + s.getString("tab") + "' (island, economy, depths, production)");
         }

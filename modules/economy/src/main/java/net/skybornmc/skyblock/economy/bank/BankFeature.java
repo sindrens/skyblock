@@ -561,6 +561,12 @@ public final class BankFeature implements Listener, BankService {
         return config.periodHours;
     }
 
+    @Override
+    public double withdrawFeePercent(int masteryLevel) {
+        WithdrawFee f = fees;
+        return f == null ? -1 : f.percent(masteryLevel);
+    }
+
     // ================================================================== actions (main thread)
 
     /** Checks done before every action: still the same profile, not switching, not frozen, not busy. */

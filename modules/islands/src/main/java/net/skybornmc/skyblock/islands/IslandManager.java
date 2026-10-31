@@ -68,6 +68,8 @@ final class IslandManager implements IslandService {
     private java.util.function.ToIntBiFunction<UUID, UUID> extraHomesProvider;
     /** BANK2: bank-fee mastery level per island (masteries module later; null = level 0). */
     private java.util.function.ToIntFunction<UUID> bankFeeMasteryProvider;
+    /** M5.5 Homestead (P5-21): named shared homes per island on top of the island home (null = none). */
+    private volatile java.util.function.ToIntFunction<UUID> islandHomesProvider;
     /** PHASE-5 M5.4: live upgrade effects (progression module; null = no upgrades). */
     private volatile net.skybornmc.skyblock.common.island.IslandUpgradeEffects upgradeEffects;
     /** The islands world once seen (identity check in hot paths), cleared when another world object shows up. */
@@ -806,6 +808,17 @@ final class IslandManager implements IslandService {
         this.bankFeeMasteryProvider = provider;
     }
 
+    @Override
+    public int extraIslandHomes(UUID islandId) {
+        java.util.function.ToIntFunction<UUID> provider = islandHomesProvider;
+        return provider == null || islandId == null || !byId.containsKey(islandId) ? 0 : Math.max(0, provider.applyAsInt(islandId));
+    }
+
+    @Override
+    public void extraIslandHomesProvider(java.util.function.ToIntFunction<UUID> provider) {
+        this.islandHomesProvider = provider;
+    }
+
     // ------------------------------------------------------------------ upgrade hooks (PHASE-5 M5.4, progression module)
 
     @Override
@@ -1129,22 +1142,15 @@ final class IslandManager implements IslandService {
             return;
         }
         Island island = own.get();
-        // M2.3: Leader + Mod move the home.
-        if (!MemberRules.canSetHome(island.roleOrNull(key(player)))) {
+        // M2.3: Leader + Mod move the home; M5.5: the island permission "homes" (default Admin + Mod, leader always).
+        if (!roleAllows(island, key(player), IslandPerm.HOMES)) {
             fail(player, "sethome.not-allowed");
             return;
         }
         Location at = player.getLocation();
-        if (!island.bounds().contains(at)) {
-            fail(player, "sethome.outside");
-            return;
-        }
-        if (at.getY() < config.minBuildY || at.getY() > config.maxBuildY) {
-            fail(player, "sethome.height", Msg.p("min", config.minBuildY), Msg.p("max", config.maxBuildY));
-            return;
-        }
-        if (!SafeSpots.isSafe(at)) {
-            fail(player, "sethome.unsafe");
+        String problem = homeSpotProblem(island, at);
+        if (problem != null) {
+            fail(player, problem, Msg.p("min", config.minBuildY), Msg.p("max", config.maxBuildY));
             return;
         }
         Island.Home before = island.home().orElse(null);
@@ -1160,6 +1166,20 @@ final class IslandManager implements IslandService {
             msg.send(player, "sethome.done");
             core.sounds().play(player, "success");
         }, main);
+    }
+
+    /** Why {@code at} can't be a home of the island (message key), or null: inside the border, build height, safe spot. */
+    String homeSpotProblem(Island island, Location at) {
+        if (!island.bounds().contains(at)) {
+            return "sethome.outside";
+        }
+        if (at.getY() < config.minBuildY || at.getY() > config.maxBuildY) {
+            return "sethome.height";
+        }
+        if (!SafeSpots.isSafe(at)) {
+            return "sethome.unsafe";
+        }
+        return null;
     }
 
     private static String format(Island.Home home) {

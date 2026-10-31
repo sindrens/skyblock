@@ -54,7 +54,9 @@ public enum IslandPerm {
     /** M3.3: see the island bank history (Island, Bank, History). Stored members only, default Admin + Mod. */
     BANK_HISTORY("bank-history", true, true),
     /** PHASE-5 M5.4 (owner 170): buy island upgrades with the island bank. Stored members only, default Admin (P5-10). */
-    UPGRADES("upgrades", true, true);
+    UPGRADES("upgrades", true, true),
+    /** PHASE-5 M5.5 (P5-21): set the island home and set/delete the shared named homes (Homestead). Default Admin + Mod. */
+    HOMES("homes", true, true);
 
     private static final IslandPerm[] VALUES = values();
 

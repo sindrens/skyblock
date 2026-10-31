@@ -1,4 +1,4 @@
-# Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades
+# Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades, M5.5 masteries
 
 Island pillars (PHASE-5 M5.1): Mining, Foraging, Farming, Combat, and Conquest (hidden until KOTH/events feed it,
 `pillars.yml → conquest.enabled`). Dynamic island level (M5.2). Settings: `pillars.yml`, `progression.yml`,
@@ -12,8 +12,8 @@ of this module and need its permission nodes.
 |---|---|---|---|
 | `/is level` | Island level menu: level, progress, board place, points per source (cap, how to raise it), Recalculate button (members, 10 min per island), the pillar row (M5.2). Also from the island menu's island item. | `skyblock.progression.level` (everyone); button: `skyblock.progression.recalculate` (everyone, members only) | ✅ built (owner P5-25) |
 | Challenge Book (button in `/is level`) | The island task list (M5.3, O6): chapters per task tier, every task with its shared progress and rewards, hand-in screen for deliver tasks (from the inventory; from the island storage once STORE2 exists). No new command. | `skyblock.progression.tasks` (everyone; hand-ins members only) | ✅ built |
-| `/is upgrade` | Island upgrades menu (M5.4): tabs Island, Economy, Depths, Production (Masteries tab: M5.5); every upgrade with its level, now/next effect, the next level's tasks and price; click for the detail menu (tasks, hand-ins, all levels, Buy → confirm). Paid from the island bank only. Also the island menu's Upgrades button and the Upgrades source in `/is level`. | `skyblock.progression.upgrade` (everyone); buying: island permission `upgrades` (leader always, admin by default) | ✅ built |
-| `/is masteries` | Masteries (M5.5), same menu on its own tab | `skyblock.progression.upgrade` (everyone) | ⬜ planned |
+| `/is upgrade` | Island upgrades menu (M5.4): tabs Island, Economy, Depths, Production, Masteries (M5.5); every upgrade with its level, now/next effect, the next level's tasks and price; click for the detail menu (tasks, hand-ins, all levels, Buy → confirm). Paid from the island bank only. Also the island menu's Upgrades button and the Upgrades source in `/is level`. | `skyblock.progression.upgrade` (everyone); buying: island permission `upgrades` (leader always, admin by default) | ✅ built |
+| `/is masteries` | Masteries (M5.5): the `/is upgrade` menu on its Masteries tab: the shown masteries (unbuilt ones hidden, GUI-2) and Ascension; click for the detail menu (requirements, tasks, hand-ins, ranks, Buy → confirm with the details on the middle item). Paid from the island bank only. | `skyblock.progression.upgrade` (everyone); buying: island permission `upgrades` | ✅ built |
 | `/is top` | Island leaderboards: Level and Value tabs, Solo/Team toggle, places 1-28, your island; Weekly gain and Pillars tabs come with M5.7 | `skyblock.progression.top` (everyone) | ✅ built (owner P5-25) |
 | `/isadmin progression <player>` | Staff view/edit (M5.10) | `skyblock.progression.admin.view` (mod), `.admin.edit` (admin) | ⬜ planned (owner P5-31) |
 
@@ -177,3 +177,41 @@ Permission definitions: `modules/progression/src/main/resources/permissions/prog
   are done), `island_upgrade_<id>` (level of one upgrade).
 - **Data:** `island_upgrades` (island_id, season_id, upgrade_id, upgrade_level, bought_by, bought_at). Size, member slots
   and warp slots also stay in the islands table.
+
+## How island masteries work (M5.5)
+- **Catalog:** `masteries.yml` (one section `masteries`, every key a mastery: `icon`, `order`, `effect`, optional `pillar`,
+  optional `requires-maxed` (upgrade ids), `enabled`, `ranks` with `tier`, `cost`, `value`, optional `pillar-level`,
+  `island-level`). Defaults from `tools/gen_masteries_catalog.py` (rank price `W × 0.067 × 1.49^(n−1) × REF(n)`, pillar
+  gate `5 × price tier`; Market Contacts on the endless curve `4 h × REF(12) × 1.12^(k−1)`). Settings (Ascension too):
+  `masteries-settings.yml`.
+- **Shown (live):** Warrior (+4% PvE damage per rank, max +20%, Combat pillar), Deep Pockets (+10% satchel per rank, max
+  +50%, Mining pillar), Crystal Rush (+3% crystals, island level 10/20/35/50/70), Lucky Strike (+4% rare finds, island
+  level 15/30/45/60/80), Homestead (+1 shared island home per rank, island level 20/40), Wings (island fly for everyone on
+  the island, level 20, ~$60k, P5-20), Treasury (bank fee 2% → 1.5% → 1.0% → 0.5%, level 15/35/60, P5-19), Market
+  Contacts (+2% sell per level, 20 levels, opens when Sell Multiplier is maxed). **Hidden** until their feature reads them
+  (GUI-2): Timber, Swift Hands (the Depths roll and break speed read the tool only), Fuel Efficiency (Phase 7), Beast
+  Tamer (no breeding hook), Angler (no fishing).
+- **Gating:** a rank needs its pillar level or island level, every task listing `mastery.<id>.<rank>` (challenge book;
+  locked while the task engine loads) and, for Market Contacts, Sell Multiplier maxed. Ranks are bought in order.
+- **Ascension** (P5-24): when every shown upgrade and mastery is maxed, endless levels; level `a` costs
+  `ascension.base-cost × growth^(start-level + a − 2)` (686M × 1.12^(20 + a − 1): Ascension 1 ≈ $6.62B, the endless curve
+  after the 20 Market Contacts levels), +1.5 island level points each (`ascension.level-points`), optional
+  `ascension.max-levels` (0 = endless).
+- **Who buys / payment:** exactly like upgrades: island permission `upgrades`; island bank only, one economy transaction
+  (ledger reason `island_mastery`, no fee) with the `island_masteries` row as its guard (`EconomyService#executeGuarded`);
+  idempotency key `mastery:<season>:<island>:<id>:<rank>` (Ascension: id `ascension`, rank = level); a second click while
+  one runs is refused in memory. Audit `island/mastery_buy` (island, mastery, rank, cost, buyer, bank after).
+- **Effects:** BonusService source `masteries` for members only (never coop/visitors): Warrior → MOB_DAMAGE (the enchants
+  module applies it to hits on mobs only; PvE damage never reaches PvP), Crystal Rush → CRYSTALS, Lucky Strike →
+  RARE_FINDS, Market Contacts → SELL (inside the +300% sell cap); every family cap holds. Treasury →
+  `IslandService#bankFeeMasteryProvider` (the fee numbers stay in `bank.yml → withdraw.mastery-fee-percent`), Wings →
+  `#wingsProvider` (visitors only with the visitor-fly setting, owner 186), Homestead → `#extraIslandHomesProvider`
+  (islands module: `/is home|sethome|delhome <name>`), Deep Pockets → `SatchelService#capacityBonus("deep_pockets")`.
+- **Island level:** in `LevelSource.UPGRADES` (upgrades + masteries): ranks by price tier like upgrades
+  (`upgrades-settings.yml → level-points`, P5-17), Ascension 1.5 per level.
+- **Notices:** buyer chat line; online members get a chat line ([Masteries] button), action bar and the `notify.sound`;
+  when the last task of a rank is done and everything else is met, "… is ready to buy".
+- **Placeholders:** `island_masteries_bought` (ranks without Ascension), `island_ascension`, `island_mastery_<id>`.
+- **Data:** `island_masteries` (island_id, season_id, mastery_id, mastery_rank, bought_by, bought_at; Ascension is the row
+  `ascension`). The plan's separate `island_ascension` table was not needed.
+

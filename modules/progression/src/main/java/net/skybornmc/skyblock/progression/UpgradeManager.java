@@ -96,6 +96,8 @@ final class UpgradeManager implements Listener {
     /** PERF6: last island bank balance read, so an upgrade menu opens with it instead of "..." (refreshed while open). */
     private final Map<UUID, Long> knownBank = new ConcurrentHashMap<>();
     private volatile UpgradeCatalog catalog = UpgradeCatalog.empty();
+    /** M5.5: the masteries' island level points, added to this source (LevelSource.UPGRADES = upgrades + masteries). */
+    private volatile java.util.function.ToDoubleFunction<UUID> extraPoints;
     private final IslandUpgradeEffects effects = new Effects();
     private UpgradeMenus menus;
     private boolean ready;
@@ -193,7 +195,7 @@ final class UpgradeManager implements Listener {
     private void hook() {
         islands().ifPresent(s -> s.upgradeEffects(effects));
         core.services().optional(BonusService.class).ifPresent(b -> b.register(BONUS_SOURCE, this::bonus));
-        levels.provider(LevelSource.UPGRADES, this::points);
+        levels.provider(LevelSource.UPGRADES, this::levelPoints);
         hooked = true;
     }
 
@@ -308,6 +310,25 @@ final class UpgradeManager implements Listener {
 
     double points(UUID islandId) {
         return UpgradeRules.points(catalog, of(islandId), config.points());
+    }
+
+    /** Island level points of {@link LevelSource#UPGRADES}: upgrades plus the masteries' part (M5.5). Any thread. */
+    double levelPoints(UUID islandId) {
+        java.util.function.ToDoubleFunction<UUID> extra = extraPoints;
+        return points(islandId) + (extra == null ? 0 : Math.max(0, extra.applyAsDouble(islandId)));
+    }
+
+    /** M5.5: sets (or with null removes) the masteries' level points; every known island is recalculated. */
+    void extraPoints(java.util.function.ToDoubleFunction<UUID> provider) {
+        this.extraPoints = provider;
+        if (ready && !closed) {
+            bought.keySet().forEach(levels::request);
+        }
+    }
+
+    /** The island bank balance changed (a mastery was paid): menus read it again. */
+    void forgetBank(UUID islandId) {
+        knownBank.remove(islandId);
     }
 
     boolean tasksDone(UUID islandId, UpgradeCatalog.Def def) {
