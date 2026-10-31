@@ -92,8 +92,10 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
   help command suggestions): GUI-5.
 - Owner decisions (OPEN_QUESTIONS GUI-4b/GUI-4c): `/p` button count (layout is the owner's punishment spec), a loadout
   apply confirm (LD5 says one click), Warps/Visit overlap in `/is`, offline/recent players in the player picker.
-- Not on the GUI-4c list, still open per menu below: logs subjects typing (`/logs` Any player/Staff/Item/Island prompts),
-  confiscate screen without the frame, `/inspect` freeze confirm and row shape, report reason confirm.
+- ✅ QOL3 (31 Oct): logs subjects typing (`/logs` Any player/Staff/Item/Island on `MenuService.input`, Staff member a
+  locked item for ranks without it), confiscate screen in the standard frame (tabs Hotbar & armor / Backpack / Ender
+  chest, fixed slots), `/inspect` Freeze/Unfreeze confirm and one row shape (locked items when offline or no access),
+  `/report` confirm (typed reasons too; Other on `MenuService.input`).
 
 ## achievements (5 menus)
 
@@ -876,8 +878,8 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Notes:**
   - ✅ GUI-4 (pick lists). Time range and Radius are cycle-on-click buttons: to go from 1d to 7d you may click through every option, and there is no way to step backwards.
   - Category picker is single-choice only (one category or all), although the filter itself can hold several.
-  - Who-picking is spread over 7 buttons, 4 of which close the menu and need typing in chat (Any player, Staff member, Item, Island); typing on Bedrock is slow.
-  - Staff member button (slot 12) simply disappears for non-staff viewers, leaving a gap in the row of subjects.
+  - ✅ QOL3 (Bedrock popup via MenuService.input). Who-picking is spread over 7 buttons, 4 of which close the menu and need typing in chat (Any player, Staff member, Item, Island); typing on Bedrock is slow.
+  - ✅ QOL3 (locked item). Staff member button (slot 12) simply disappears for non-staff viewers, leaving a gap in the row of subjects.
 
 ### `logs.category`: Logs » Category
 - **Rows:** 6
@@ -1118,7 +1120,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** Sanctions > Confiscate item (target must be online)
 - **Rules to apply:** §4 confirm rule
 - **Notes:**
-  - Does not call frame(): no border, no Info/Help, and the items sit in the first 41 slots so the layout is the player's inventory flipped, not the standard content grid.
+  - ✅ QOL3 (frame + tabs, fixed slots). Does not call frame(): no border, no Info/Help, and the items sit in the first 41 slots so the layout is the player's inventory flipped, not the standard content grid.
   - ✅ GUI-4c (confirm after the reason; the stack is checked again). Confiscation happens with one reason click and no confirm; the stack is taken from a live inventory that changes every second.
 
 ### `moderation.appeals-queue`: Appeals
@@ -1421,8 +1423,8 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Rules to apply:** §1.1 add Back at 45 · §4 confirm rule · §1.1/§1.2 never a dead end
 - **Notes:**
   - ✅ GUI-4c (Punish, Logs and Reports keep Inspect as Back; inventory views still close). Back is inconsistent: Wardrobe, Item box and Tutorial open with Inspect as the parent (Back returns here), but Inventory, Ender chest, Teleport, Punish, Logs and Reports close the menu and run a command, so the staff member has to type /inspect again to return; Inspect itself has no Back.
-  - Freeze is a one-click toggle with no confirm, sitting two slots from Teleport and next to Punish (33).
-  - Slot 29 is Ender chest for online players and a grey 'Offline' item for offline ones, and the whole row 28-32 changes shape (Inventory, Teleport, Freeze disappear), so the muscle-memory positions move.
+  - ✅ QOL3 (confirm for Freeze and Unfreeze). Freeze is a one-click toggle with no confirm, sitting two slots from Teleport and next to Punish (33).
+  - ✅ QOL3 (locked items keep every slot). Slot 29 is Ender chest for online players and a grey 'Offline' item for offline ones, and the whole row 28-32 changes shape (Inventory, Teleport, Freeze disappear), so the muscle-memory positions move.
   - Feature buttons are scattered with gaps (22, 28-34, 40, 41) and the permission-gated ones appear and disappear (31, 40, 41) so the layout differs per rank.
 
 ### `staff.reports`: Reports » Open | Claimed | Closed | About <player>
@@ -1459,7 +1461,7 @@ children), **? opens help with Back to the menu** (no more "Back from help goes 
 - **Opens from:** /report <player> (without a reason)
 - **Rules to apply:** §1.1 add Back at 45 · §4 confirm rule
 - **Notes:**
-  - A single click on a reason sends the report with no confirm, and a reporter has a 60 second cooldown and at most 3 open reports, so a mis-tap wastes one.
+  - ✅ QOL3 (confirm with reason + target on 13). A single click on a reason sends the report with no confirm, and a reporter has a 60 second cooldown and at most 3 open reports, so a mis-tap wastes one.
   - The reason list comes from staff.yml (up to 15 slots); the first 8 reasons get fixed icons and any extra reason reuses the name-tag icon.
 
 ## tools (4 menus)

@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 
 /**
  * The essentials toggles in {@code /settings} (F1): {@code join-messages} (see other players' join/leave lines) and
- * {@code tpa-requests} (receive {@code /tpa} and {@code /tpahere}); QUICK1: {@code drop-guard} ({@link DropGuard}). Texts are the shared ones in
+ * {@code tpa-requests} (receive {@code /tpa} and {@code /tpahere}); QUICK1: {@code drop-guard} ({@link DropGuard}); QOL3: {@code auto-refill} ({@link AutoRefill}). Texts are the shared ones in
  * {@code messages/navigation.yml → settings.toggles.<id>}. Values are read on every use, so a change applies at once.
  */
 final class EssentialsSettings {
@@ -23,6 +23,8 @@ final class EssentialsSettings {
     static final String TPA_REQUESTS = "tpa-requests";
     /** QUICK1: ask again before dropping a custom/unique item ({@link DropGuard}). */
     static final String DROP_GUARD = "drop-guard";
+    /** QOL3: the next stack moves into the hotbar slot when its last block is placed ({@link AutoRefill}). */
+    static final String AUTO_REFILL = "auto-refill";
 
     private final Core core;
     private volatile PlayerSettings service;
@@ -44,6 +46,8 @@ final class EssentialsSettings {
                     "navigation", "settings.toggles." + TPA_REQUESTS, false));
             s.register(new SettingToggle(EssentialsModule.ID, DROP_GUARD, SettingCategory.GAMEPLAY, Material.SHIELD, true, null,
                     "navigation", "settings.toggles." + DROP_GUARD, false));
+            s.register(new SettingToggle(EssentialsModule.ID, AUTO_REFILL, SettingCategory.GAMEPLAY, Material.BRICKS, true, null,
+                    "navigation", "settings.toggles." + AUTO_REFILL, false));
             service = s;
         } catch (RuntimeException e) {
             core.plugin().getLogger().warning("Essentials: could not register the /settings toggles: " + e.getMessage());

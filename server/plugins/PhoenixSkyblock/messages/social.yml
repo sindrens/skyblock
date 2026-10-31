@@ -21,6 +21,8 @@ dm:
   blocked-link: "<prefix><c:error><sym:cross></c:error> <c:text>Links aren't allowed in private messages."
   blocked-ip: "<prefix><c:error><sym:cross></c:error> <c:text>Server addresses aren't allowed in private messages."
   blocked-phone: "<prefix><c:error><sym:cross></c:error> <c:text>Phone numbers aren't allowed in private messages."
+  # QOL3: after a message to an AFK player (once a minute per pair). <player>, <time> = how long they have been idle.
+  target-afk: "<prefix><c:muted><sym:dot></c:muted> <c:value><player></c:value> <c:text>is AFK <c:muted>(<time>)</c:muted><c:text>, so the answer may take a while."
 
 spy:
   line: "<c:muted>[Spy]</c:muted> <c:text><sender> <c:muted><sym:arrow></c:muted> <target>:</c:text> <c:parchment><message>"

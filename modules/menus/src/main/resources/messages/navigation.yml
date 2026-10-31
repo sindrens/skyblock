@@ -365,6 +365,9 @@ settings:
     drop-guard:
       name: "<c:value>Drop guard"
       lore: ["<c:text>Ask again before you drop a", "<c:text>tool, book, note or spawner."]
+    auto-refill:
+      name: "<c:value>Auto-refill blocks"
+      lore: ["<c:text>When you place the last block", "<c:text>of a stack, the next stack moves in."]
     sell-skip-hotbar:
       name: "<c:value>Sell all skips hotbar"
       lore: ["<c:text>/sell all and Add my inventory", "<c:text>leave your hotbar alone."]

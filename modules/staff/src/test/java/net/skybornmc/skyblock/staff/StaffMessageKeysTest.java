@@ -105,6 +105,12 @@ class StaffMessageKeysTest {
                 }
             }
         }
+        // QOL3: locked tools on the Inspect row (InspectMenu#lockedTool)
+        for (String tool : List.of("inventory", "enderchest", "teleport", "freeze", "wardrobe")) {
+            if (!yaml.isString("menu.inspect.locked." + tool)) {
+                missing.add("menu.inspect.locked." + tool);
+            }
+        }
         for (Report.Outcome outcome : Report.Outcome.values()) {
             for (String key : List.of("outcome." + outcome.key(), "report.closed-" + outcome.key())) {
                 if (!present(key)) {

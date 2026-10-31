@@ -22,7 +22,8 @@ import java.util.UUID;
  *  row 3  Category · Time range · Radius (near only)
  *  row 4  Reset · SEARCH · Export (admin)
  * </pre>
- * Everything works with plain clicks (Bedrock-safe); names and ids are typed in chat.
+ * Everything works with plain clicks (Bedrock-safe); names and ids are typed with {@code MenuService#input} (QOL3: a text
+ * popup with the on-screen keyboard on Bedrock, the chat prompt on Java).
  */
 final class LogsHubMenu extends Menu {
 
@@ -40,6 +41,10 @@ final class LogsHubMenu extends Menu {
     static final int SLOT_RESET = 29;
     static final int SLOT_SEARCH = 31;
     static final int SLOT_EXPORT = 33;
+    /** Longest typed values: player names (Bedrock names have a prefix), item ids (UUID), island owner name or id. */
+    static final int NAME_MAX = 32;
+    static final int ITEM_ID_MAX = 36;
+    static final int ISLAND_MAX = 64;
 
     private final LogsModule module;
     private LogFilter filter;
@@ -96,6 +101,10 @@ final class LogsHubMenu extends Menu {
         if (viewer.hasPermission(LogsModule.PERM_STAFF)) {
             subject(SLOT_STAFF, Material.NETHER_STAR, "hub.staff", filter.subject == LogFilter.Subject.ACTOR, () ->
                     askName("prompt.staff", true));
+        } else {
+            // QOL3: a locked item instead of a gap, so the subject row keeps its shape for every rank.
+            set(SLOT_STAFF, service.locked(viewer, module.render.text(viewer, "hub.staff.name"),
+                    module.render.text(viewer, "hub.staff.locked")));
         }
         subject(SLOT_NEAR, Material.COMPASS, "hub.near", filter.subject == LogFilter.Subject.NEAR, () -> {
             int radius = filter.subject == LogFilter.Subject.NEAR ? filter.radius : module.config.nearDefaultRadius;
@@ -111,18 +120,19 @@ final class LogsHubMenu extends Menu {
                 refresh();
                 return;
             }
-            service.prompt(viewer, LogsModule.ID, "prompt.item", 36, input -> {
-                try {
-                    useItem(UUID.fromString(input));
-                } catch (IllegalArgumentException e) {
+            service.input(viewer, LogsModule.ID, "prompt.item", ITEM_ID_MAX + 4, null, input -> {
+                Optional<UUID> uuid = itemId(input);
+                if (uuid.isPresent()) {
+                    useItem(uuid.get());
+                } else {
                     module.msg.send(viewer, "errors.not-uuid", Msg.p("input", input));
                     module.sound(viewer, "error");
                 }
                 service.open(viewer, this);
-            }, () -> service.open(viewer, this));
+            }, () -> service.open(viewer, this), Msg.p("max", ITEM_ID_MAX));
         });
         subject(SLOT_ISLAND, Material.GRASS_BLOCK, "hub.island", filter.subject == LogFilter.Subject.ISLAND, () ->
-                service.prompt(viewer, LogsModule.ID, "prompt.island", 64, input -> {
+                service.input(viewer, LogsModule.ID, "prompt.island", ISLAND_MAX, null, input -> {
                     String known = net.skybornmc.skyblock.common.command.OfflineNames.names().stream()
                             .filter(n -> n.equalsIgnoreCase(input)).findFirst().orElse(null);
                     if (known == null) {
@@ -134,7 +144,7 @@ final class LogsHubMenu extends Menu {
                         setIsland(uuid, name, null);
                         service.open(viewer, this);
                     });
-                }, () -> service.open(viewer, this)));
+                }, () -> service.open(viewer, this), Msg.p("max", ISLAND_MAX)));
         subject(SLOT_ALL, Material.BOOKSHELF, "hub.all", filter.subject == LogFilter.Subject.ALL, () -> {
             LogFilter all = new LogFilter();
             all.categories.addAll(filter.categories);
@@ -199,14 +209,33 @@ final class LogsHubMenu extends Menu {
     }
 
     private void askName(String promptKey, boolean asActor) {
-        service.prompt(viewer, LogsModule.ID, promptKey, 32, input -> module.withPlayer(viewer, input, (uuid, name) -> {
+        service.input(viewer, LogsModule.ID, promptKey, NAME_MAX, null, input -> module.withPlayer(viewer, input, (uuid, name) -> {
             Duration range = filter.range;
             LogFilter next = asActor ? new LogFilter().actor(uuid, name) : new LogFilter().player(uuid, name);
             next.categories.addAll(filter.categories);
             next.range = range;
             filter = next;
             service.open(viewer, this);
-        }), () -> service.open(viewer, this));
+        }), () -> service.open(viewer, this), Msg.p("max", NAME_MAX));
+    }
+
+    /**
+     * A typed item id: a UUID, with or without spaces (phone keyboards add them) and in any case. Package-private for
+     * tests.
+     */
+    static Optional<UUID> itemId(String input) {
+        if (input == null) {
+            return Optional.empty();
+        }
+        String clean = input.replace(" ", "").strip();
+        if (clean.length() != ITEM_ID_MAX) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(UUID.fromString(clean));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 
     private void useItem(UUID uuid) {

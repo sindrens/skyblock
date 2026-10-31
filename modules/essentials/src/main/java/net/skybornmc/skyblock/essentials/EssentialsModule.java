@@ -30,6 +30,8 @@ public final class EssentialsModule implements SkyblockModule {
     private SpawnProtection protection;
     private EssentialsSettings settings;
     private DropGuard dropGuard;
+    private AutoRefill autoRefill;
+    private CommandHints commandHints;
     private StaffPowers powers;
 
     public EssentialsModule(Core core) {
@@ -55,6 +57,8 @@ public final class EssentialsModule implements SkyblockModule {
         powers = new StaffPowers(core, config, msg, protection::buildModeOn);
         staff = new StaffCommands(core, config, msg, powers);
         dropGuard = new DropGuard(core, config, msg, settings);
+        autoRefill = new AutoRefill(core, config, settings);
+        commandHints = new CommandHints(core, config, msg);
 
         for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection)) {
             group.register();
@@ -71,7 +75,7 @@ public final class EssentialsModule implements SkyblockModule {
     }
 
     private List<Listener> listeners() {
-        return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard);
+        return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard, autoRefill, commandHints);
     }
 
     @Override

@@ -417,7 +417,9 @@ class P7LogicTest {
                     "sanctions.menu.title", "sanctions.menu.head.name", "sanctions.menu.entry.name", "sanctions.menu.entry-lift.name",
                     "sanctions.menu.entry-restore.name", "sanctions.menu.length.name", "sanctions.menu.reason.name",
                     "sanctions.money.picker", "sanctions.confiscate-menu.title-inventory", "sanctions.confiscate-menu.title-ender",
-                    "sanctions.confiscate-menu.show-ender.name", "sanctions.confiscate-menu.show-inventory.name",
+                    "sanctions.confiscate-menu.tab.hotbar.name", "sanctions.confiscate-menu.tab.backpack.name",
+                    "sanctions.confiscate-menu.tab.ender.name", "sanctions.confiscate-menu.empty.name",
+                    "sanctions.confiscate-menu.place.hotbar", "sanctions.confiscate-menu.place.off-hand",
                     "punish.buttons.sanctions-ready.name", "punish.buttons.sanctions-locked.name", "reasons.coop-griefing",
                     "sanctions.lift-reason", "sanctions.restore-reason", "sanctions.restore-word"));
             for (String s : List.of("freeze", "trade", "money", "confiscated", "lifted", "ended", "money-restored", "item-restored")) {

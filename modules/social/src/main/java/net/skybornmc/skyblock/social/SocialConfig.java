@@ -15,6 +15,10 @@ public final class SocialConfig extends ModuleConfig {
     @Setting(path = "dm.rate-limit.seconds", desc = "Length of the private message rate-limit window (seconds).", min = 1, max = 300)
     public int dmRateSeconds = 5;
 
+    @Setting(path = "dm.afk-notice-seconds", desc = "QOL3: a private message to an AFK player tells the sender they are AFK "
+            + "(and for how long), at most once per this many seconds per pair. 0 = never tell.", min = 0, max = 3600)
+    public int dmAfkNoticeSeconds = 60;
+
     @Setting(path = "dm.contact-filter", desc = "R3-32: refuse links, IP addresses and phone numbers in private messages (the "
             + "same check as chat, chat.yml rules; the swear list is never used for private messages, answer 305).")
     public boolean dmContactFilter = true;

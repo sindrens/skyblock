@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.staff;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
 import net.skybornmc.skyblock.common.player.PlayerData;
@@ -101,6 +102,10 @@ final class InspectMenu extends Menu {
                         Msg.p("open", c[0]), Msg.p("total", c[1]), Msg.p("player", name)),
                 click -> service.navigate(click.player(), this, () -> s.reports().dispatchFor(click.player(), "reports player " + name)))));
 
+        // QOL3: the tool row 28-34 keeps one shape for online and offline players and for every rank: a tool that
+        // can't be used now is a locked item on its own slot (with the reason), never a gap or a moved button.
+        Component offline = service.text(viewer, StaffFeature.MODULE, "menu.inspect.locked.offline", Msg.p("player", name));
+        Component noAccess = service.text(viewer, StaffFeature.MODULE, "menu.inspect.locked.no-access");
         if (online != null) {
             button(28, Material.CHEST, "menu.inspect.inventory", "invsee " + name, name);
             button(29, Material.ENDER_CHEST, "menu.inspect.enderchest", "ecsee " + name, name);
@@ -109,23 +114,31 @@ final class InspectMenu extends Menu {
                         click.player().closeInventory();
                         s.reports().dispatchFor(click.player(), "tp " + name);
                     });
+        } else {
+            lockedTool(28, "inventory", offline);
+            lockedTool(29, "enderchest", offline);
+            lockedTool(30, "teleport", offline);
+        }
+        if (online == null) {
+            lockedTool(32, "freeze", offline);
+        } else if (!viewer.hasPermission(StaffPerms.FREEZE)) {
+            lockedTool(32, "freeze", noAccess);
+        } else {
             boolean frozen = s.freeze().isFrozen(online);
             set(32, service.item(frozen ? Material.BLUE_ICE : Material.PACKED_ICE, viewer, StaffFeature.MODULE,
-                    frozen ? "menu.inspect.unfreeze" : "menu.inspect.freeze", Msg.p("player", name)), click -> {
-                Player target = Bukkit.getPlayer(id);
-                if (target != null && click.player().hasPermission(StaffPerms.FREEZE)) {
-                    s.freeze().toggle(click.player(), target);
-                    refresh();
-                }
-            });
-        } else {
-            set(29, service.item(Material.GRAY_DYE, viewer, StaffFeature.MODULE, "menu.inspect.offline", Msg.p("player", name)));
+                    frozen ? "menu.inspect.unfreeze" : "menu.inspect.freeze", Msg.p("player", name)),
+                    click -> confirmFreeze(click.player(), id, name, frozen));
         }
         // Wardrobe (WD25): sets, chest; admins give/remove sets and tokens. Shown when the wardrobe module runs.
         s.core().services().optional(net.skybornmc.skyblock.common.wardrobe.WardrobeService.class)
-                .filter(w -> viewer.hasPermission("skyblock.wardrobe.staff"))
-                .ifPresent(w -> set(31, service.item(Material.LEATHER_CHESTPLATE, viewer, StaffFeature.MODULE, "menu.inspect.wardrobe",
-                        Msg.p("player", name)), click -> w.openStaffView(click.player(), id, name, this)));
+                .ifPresent(w -> {
+                    if (viewer.hasPermission("skyblock.wardrobe.staff")) {
+                        set(31, service.item(Material.LEATHER_CHESTPLATE, viewer, StaffFeature.MODULE, "menu.inspect.wardrobe",
+                                Msg.p("player", name)), click -> w.openStaffView(click.player(), id, name, this));
+                    } else {
+                        lockedTool(31, "wardrobe", noAccess);
+                    }
+                });
         // Item box (owner answer 7): admins view, remove and clear what waits in the player's /box (audited).
         s.core().services().optional(net.skybornmc.skyblock.common.box.ItemBox.class)
                 .filter(b -> viewer.hasPermission("skyblock.box.admin"))
@@ -143,6 +156,41 @@ final class InspectMenu extends Menu {
                         Msg.p("player", name)), click -> st.openFrozenSpawners(click.player(), id, name, this)));
         menuButton(33, Material.BREEZE_ROD, "menu.inspect.punish", "p " + name, name);
         menuButton(34, Material.CLOCK, "menu.inspect.logs", "logs player " + name, name);
+    }
+
+    /** QOL3: a tool that can't be used now, on its own slot ({@code menu.inspect.locked.<tool>} = its plain name). */
+    private void lockedTool(int slot, String tool, Component why) {
+        set(slot, service.locked(viewer, service.text(viewer, StaffFeature.MODULE, "menu.inspect.locked." + tool), why));
+    }
+
+    /**
+     * QOL3 (GUI_DESIGN §4): Freeze and Unfreeze ask first, with the player, the place and what happens on the middle
+     * item. The state is checked again on confirm, so a freeze someone else changed meanwhile is not flipped back.
+     */
+    private void confirmFreeze(Player staff, UUID id, String name, boolean frozen) {
+        Player target = Bukkit.getPlayer(id);
+        if (target == null) {
+            refresh();
+            return;
+        }
+        String crumb = frozen ? "menu.inspect.unfreeze-confirm.crumb" : "menu.inspect.freeze-confirm.crumb";
+        String shownKey = frozen ? "menu.inspect.unfreeze-confirm.shown" : "menu.inspect.freeze-confirm.shown";
+        String details = frozen ? "menu.inspect.unfreeze-confirm.details" : "menu.inspect.freeze-confirm.details";
+        String where = target.getWorld().getName() + " " + target.getLocation().getBlockX() + " "
+                + target.getLocation().getBlockY() + " " + target.getLocation().getBlockZ();
+        ItemStack shown = service.item(frozen ? Material.BLUE_ICE : Material.PACKED_ICE, viewer, StaffFeature.MODULE,
+                shownKey, Msg.p("player", name));
+        openChild(new ConfirmMenu(v -> service.text(v, StaffFeature.MODULE, crumb, Msg.p("player", name)), shown,
+                v -> service.lines(v, StaffFeature.MODULE, details, Msg.p("player", name), Msg.p("location", where)),
+                p -> {
+                    Player now = Bukkit.getPlayer(id);
+                    if (now == null) {
+                        s.messages().send(p, "inspect.went-offline", Msg.p("player", name));
+                    } else if (s.freeze().isFrozen(now) == frozen && p.hasPermission(StaffPerms.FREEZE)) {
+                        s.freeze().toggle(p, now);
+                    }
+                    s.core().menus().open(p, this); // back to Inspect, rebuilt with the new state
+                }, p -> { }));
     }
 
     /** A tool that is not a menu (inventory views): closes this screen and runs the command. */

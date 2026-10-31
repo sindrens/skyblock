@@ -98,6 +98,22 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "drop-guard.confirm-seconds", desc = "Seconds in which dropping the same item again throws it.", min = 1, max = 30)
     public int dropGuardConfirmSeconds = 3;
 
+    // ------------------------------------------------------------------ QOL3 auto-refill (QoL #12)
+
+    @Setting(path = "auto-refill.enabled", desc = "When the last block of a hotbar or off-hand stack is placed, the next stack "
+            + "of the same plain block moves in from the inventory. Players can turn it off in /settings.")
+    public boolean autoRefillEnabled = true;
+
+    // ------------------------------------------------------------------ QOL3 "Did you mean" (QoL #9a)
+
+    @Setting(path = "command-hints.enabled", desc = "A mistyped command suggests the closest command the player may use "
+            + "(\"Did you mean /home?\"). Off = the vanilla unknown-command line.")
+    public boolean commandHintsEnabled = true;
+
+    @Setting(path = "command-hints.max-distance", desc = "How many typos (missing, extra, changed or swapped letters) a "
+            + "suggestion may be away from what was typed. Short words get at most one less than their length.", min = 1, max = 3)
+    public int commandHintsMaxDistance = 2;
+
     // ------------------------------------------------------------------ M1.1 menu item
 
 

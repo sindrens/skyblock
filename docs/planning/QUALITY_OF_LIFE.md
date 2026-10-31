@@ -327,3 +327,31 @@ Fields: `q` question, `s` suggested answer, `why` one-line reason, `p` 1 = impor
   {"q": "QOL31: Before QOL15 and QOL3 are built, test on your Bedrock device whether tapping the [Accept] text in chat works (TEST_GUIDE tpa test 8). Does it work?", "s": "No", "why": "If it does not, chat-click features need a menu path; I assume it does not.", "p": 1}
 ]
 ```
+
+---
+
+# QOL3 status (31 Oct 2026)
+
+Built the quick wins from §4 that are small, safe, need no new command and no owner decision, preferring what players feel every session. Every new behaviour has a switch (setting or config). Defaults and the questions they raise are in `docs/OPEN_QUESTIONS.md` → QOL3.
+
+**Built**
+| # | What | Where | Switch |
+|---|---|---|---|
+| 12 | **Auto-refill blocks**: placing the last block of a hotbar or off-hand stack moves the next plain stack of the same block in from the backpack (slots 9-35), one tick later, in one step (no dupe window); never custom/unique items or spawners, never creative | essentials `AutoRefill` | `/settings` → Gameplay → Auto-refill blocks (default on); `essentials.yml → auto-refill.enabled` |
+| 9a | **"Did you mean"**: an unknown command suggests the closest command the player may run (max 2 typos, swaps count as 1, short words 1); Java can click it into the chat box, Bedrock reads it; no match = "Unknown command /x. See /help." | essentials `CommandHints` (Paper `UnknownCommandEvent`, checked on the 26.3 API) | `essentials.yml → command-hints.enabled / max-distance` |
+| 22 (AFK part) | **AFK notice on private messages**: "Steve is AFK (12m), so the answer may take a while", once a minute per pair, only for delivered messages | social | `social.yml → dm.afk-notice-seconds` (0 = off) |
+
+**Skipped, and why**
+| # | Why not now |
+|---|---|
+| 2b Keep list, 4 sell undo, 3 / 11 inbox and combined join line | Medium size and touch the economy and several join paths; batch A/B in §4 |
+| 8 / 10 Shop search | `docs/design/SHOP_DESIGN.md` §5 reverses answer 718 ("Not at launch") |
+| 16 Staff red x on chat lines | Staff-only and adds a component to every chat line (chat render cost P-05); `/logs` already punishes from a line (P5 13.11) |
+| 19 Recent row in `/menu`, 29 Quick chat | Need hub slots; the hub's 15 buttons are fixed by GUI_DESIGN §7.1 and the art brief (owner design) |
+| 20 Recent tab in the visit browser | Needs a new per-profile table and a browser tab (S-M); not a quick win |
+| 22 Do Not Disturb switch | One switch over 7 systems (msg, tpa, trade, invites, mentions, sounds, titles) in 5 modules; asked in OPEN_QUESTIONS QOL3 (e) |
+| 9a name table from other servers | Needs the owner to say where `/kit`, `/homes`, `/pv`, `/warps` should lead |
+| 5, 7, 13, 30 | Marked as needing the owner (`/warp`, `/back` for players, AH market data, quick-stack) |
+| 1 (mobs), 10b, 23, 25, 17, 28 and the rest | Medium or large (M/L) or wait for Box 2.0 / Phase 7 |
+
+The menu leftovers in the same item (MENU_FIXES "Left" after GUI-4c: `/logs` typing on `MenuService.input`, confiscate frame, `/inspect` freeze confirm and row shape, `/report` confirm) are marked ✅ QOL3 in `docs/design/MENU_FIXES.md`.

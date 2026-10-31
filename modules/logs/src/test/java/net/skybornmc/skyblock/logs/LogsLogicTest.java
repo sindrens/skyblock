@@ -120,4 +120,15 @@ class LogsLogicTest {
         assertEquals(Duration.ofHours(1), LogsHubMenu.next(options, Duration.ZERO));
         assertEquals(Duration.ofHours(1), LogsHubMenu.next(options, Duration.ofDays(3)));
     }
+
+    @Test
+    void typedItemIdsAcceptPhoneSpacesAndCase() {
+        UUID id = UUID.fromString("2f1c0b6e-1111-4222-8333-000000000000");
+        assertEquals(id, LogsHubMenu.itemId("2f1c0b6e-1111-4222-8333-000000000000").orElseThrow());
+        assertEquals(id, LogsHubMenu.itemId(" 2F1C0B6E-1111-4222-8333-000000000000 ").orElseThrow());
+        assertEquals(id, LogsHubMenu.itemId("2f1c0b6e-1111-4222-8333- 000000000000").orElseThrow());
+        assertTrue(LogsHubMenu.itemId("1-2-3-4-5").isEmpty(), "UUID.fromString accepts this, a typed id must not");
+        assertTrue(LogsHubMenu.itemId("not an id").isEmpty());
+        assertTrue(LogsHubMenu.itemId(null).isEmpty());
+    }
 }
