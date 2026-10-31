@@ -67,11 +67,13 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 
 /**
- * The builder shop (M3.5, Shop v2 GUI-3, docs/design/SHOP_DESIGN.md): {@code /shop [tab]} opens one tabbed page (9 tabs in
- * the top row, no category screen). A click on an item opens its buy page (Buy 1/16/64, Fill inventory, Type an amount);
- * Java shift-click buys a stack. Prices come from {@code shop.yml}; a real money sink (no selling back here: the Sell
- * button opens the {@code /sell} chest). F14: "Undo last buy" for 15 s and a second click for buys over half your money,
- * both switchable in {@code /settings}.
+ * The builder shop (M3.5, Shop v2, GUI-P3 / I9 section 12): {@code /shop} opens the category menu (centred icons),
+ * {@code /shop <category>} the item grid of one category. On a tile: left click (Bedrock tap) = buy GUI, right click =
+ * sell GUI, middle click or Shift + Right-click = sell every one of that item you carry, Shift + Left = buy a stack.
+ * Bedrock reaches selling through the Sell button of the buy GUI and Sell all on the sell GUI. Prices come from
+ * {@code shop.yml}; every sale goes through {@link SellService} (the /sell rules, one ledger transaction, items back or to
+ * /box on failure). F14: "Undo last buy" for 15 s and a second click for buys over half your money, both switchable in
+ * {@code /settings}.
  *
  * <p><b>Purchase safety.</b> Free inventory space is counted before paying: when not all of it fits, only what fits is
  * bought and charged ("Bought 40 of 64: no more room"); no room at all = refused, nothing paid. The payment
@@ -112,8 +114,8 @@ public final class ShopModule implements SkyblockModule, Listener {
     private final Set<UUID> delivering = ConcurrentHashMap.newKeySet();
     /** F14: the last purchase each player can still undo. */
     final UndoLedger undo = new UndoLedger();
-    /** The tab /shop opens next (the last one used; Essentials the first time). */
-    private final Map<UUID, String> lastTab = new ConcurrentHashMap<>();
+    /** GUI-P3: one shop sale in flight per player and a minimum gap between sales (click spam). Main thread. */
+    private final ShopSellGuard sellGuard = new ShopSellGuard();
 
     public ShopModule(Core core) {
         this.core = core;
@@ -195,6 +197,7 @@ public final class ShopModule implements SkyblockModule, Listener {
         buying.clear();
         delivering.clear();
         undo.clearAll();
+        sellGuard.clear();
         core.services().optional(PlayerSettings.class).ifPresent(s -> s.unregisterAll(ID));
     }
 
@@ -378,12 +381,6 @@ public final class ShopModule implements SkyblockModule, Listener {
         return core.services().optional(SellService.class).map(s -> s.maxUnitPrice(itemId)).orElse(OptionalDouble.empty());
     }
 
-    /** Today's /sell price of one shop item (before sell bonuses), rounded to whole money; empty if /sell doesn't buy it. */
-    java.util.OptionalLong sellPrice(ShopCatalog.Item item) {
-        return core.services().optional(SellService.class).flatMap(s -> s.price(item.id()))
-                .map(p -> java.util.OptionalLong.of(Math.max(0, Math.round(p.unit())))).orElse(java.util.OptionalLong.empty());
-    }
-
     /** True if this item may be sold now: its price is above anything /sell could pay for it (or the check is off). */
     boolean priceSafe(ShopCatalog.Item item) {
         return !settings.checkSellPrices || !ShopMath.undercutsSell(item, this::maxSell);
@@ -430,11 +427,11 @@ public final class ShopModule implements SkyblockModule, Listener {
     // ================================================================== command
 
     private void registerCommand() {
-        Arg<ShopCatalog.Category> category = Arg.word("tab", (sender, raw) -> tabOf(raw)
+        Arg<ShopCatalog.Category> category = Arg.word("category", (sender, raw) -> tabOf(raw)
                 .orElseThrow(() -> new CommandFailure(ID, "unknown-category", Msg.p("input", raw),
                         Msg.p("categories", String.join(", ", categoryIds())))), Suggest.of(this::categoryIds));
         core.commands().register(CommandSpec.command("shop")
-                .description("Buy building blocks, decoration, spawners and more")
+                .description("Buy and sell blocks, decoration, spawners and more")
                 .category("Economy")
                 .permission(PERM_USE)
                 .playerOnly()
@@ -457,24 +454,28 @@ public final class ShopModule implements SkyblockModule, Listener {
         return catalog.categories().stream().map(ShopCatalog.Category::id).toList();
     }
 
-    /** Opens the shop on {@code category}, or on the player's last tab (Essentials, the first tab, the first time). */
+    /**
+     * {@code /shop}: the category menu (its Back target is the menu the player came from, e.g. the hub);
+     * {@code /shop <category>}: that category's grid with the category menu as its Back target (D1: no remembered tab).
+     */
     void open(Player player, ShopCatalog.Category category) {
         Optional<String> problem = problem(player);
         if (problem.isPresent()) {
             throw new CommandFailure(ID, problem.get());
         }
-        String tab = category != null ? category.id() : lastTab.get(player.getUniqueId());
-        if (tab == null || catalog.category(tab).isEmpty()) {
-            tab = catalog.categories().isEmpty() ? "" : catalog.categories().getFirst().id();
+        if (category == null) {
+            core.menus().open(player, new ShopCategoryMenu(this));
+            return;
         }
-        rememberTab(player, tab);
-        core.menus().open(player, new ShopMenu(this, tab));
+        ShopMenu grid = new ShopMenu(this, category.id());
+        grid.parent(new ShopCategoryMenu(this)); // a code-set parent wins (Navigation): Back goes to the categories
+        core.menus().open(player, grid);
     }
 
-    void rememberTab(Player player, String tab) {
-        if (player != null && tab != null && !tab.isEmpty()) {
-            lastTab.put(player.getUniqueId(), tab);
-        }
+    /** Opens {@code next} instead of {@code from} with the same Back target (buy GUI and sell GUI swap without piling up Back). */
+    void switchTo(Menu from, Menu next) {
+        next.parent(from.parent());
+        core.menus().open(from.viewer(), next);
     }
 
     /** Why this player can't use the shop right now (message key), or empty. Main thread. */
@@ -973,7 +974,7 @@ public final class ShopModule implements SkyblockModule, Listener {
     /** Repaints the Undo button of an open shop page (after a buy the offer starts counting). */
     private void refreshUndo(Player player) {
         Menu open = core.menus().openMenu(player);
-        if (open instanceof ShopMenu || open instanceof BuyMenu) {
+        if (open instanceof ShopMenu || open instanceof BuyMenu || open instanceof ShopCategoryMenu) {
             open.refresh();
         }
     }
@@ -989,6 +990,7 @@ public final class ShopModule implements SkyblockModule, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         undo.clear(event.getPlayer().getUniqueId());
+        sellGuard.forget(event.getPlayer().getUniqueId());
     }
 
     /** The inventory is about to be swapped: close the shop first (an undo offer can't follow to another profile). */
@@ -1006,7 +1008,7 @@ public final class ShopModule implements SkyblockModule, Listener {
     }
 
     static boolean isShopMenu(Menu menu) {
-        if (menu instanceof ShopMenu || menu instanceof BuyMenu) {
+        if (menu instanceof ShopMenu || menu instanceof BuyMenu || menu instanceof ShopCategoryMenu || menu instanceof SellItemMenu) {
             return true;
         }
         return menu != null && menu.parent() != null && isShopMenu(menu.parent());
@@ -1014,29 +1016,40 @@ public final class ShopModule implements SkyblockModule, Listener {
 
     // ================================================================== menu parts
 
-    /** A tab of row 0: gold glint and "✔ You are here" when selected (no click), otherwise one click switches. */
-    MenuButton tabButton(Player viewer, ShopCatalog.Category c, boolean selected, Consumer<MenuClick> onClick) {
-        Material icon = Material.matchMaterial(c.icon());
-        List<Component> lore = new ArrayList<>(tabDescription(viewer, c));
-        lore.addAll(core.menus().lines(viewer, "tab." + (selected ? "selected" : "action")));
-        ItemStack item = core.menus().item(new ItemStack(icon == null ? Material.CHEST : icon),
-                msg.component(viewer, "tab-name", Msg.c("name", tabName(viewer, c))), lore);
-        if (selected) {
-            item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
-            return MenuButton.display(item);
+    /** A category's tile icon: its catalogue icon ({@code shop/<id>}), or the vanilla {@code icon} item for owner-added categories. */
+    ItemStack categoryIcon(Player viewer, ShopCatalog.Category c, Component name, List<Component> lore) {
+        if (core.menus().icons().has(c.iconKey())) {
+            return core.menus().icon(viewer, c.iconKey(), name, lore);
         }
-        return MenuButton.of(item, onClick);
+        Material icon = Material.matchMaterial(c.icon() == null ? "" : c.icon());
+        return core.menus().item(new ItemStack(icon == null || !icon.isItem() ? Material.CHEST : icon), name, lore);
     }
 
-
-    Component tabName(Player viewer, ShopCatalog.Category c) {
+    Component categoryName(Player viewer, ShopCatalog.Category c) {
         String key = "categories." + c.id() + ".name";
         return msg.has(key) ? core.menus().text(viewer, ID, key) : Component.text(words(c.id()));
     }
 
-    private List<Component> tabDescription(Player viewer, ShopCatalog.Category c) {
+    List<Component> categoryLore(Player viewer, ShopCatalog.Category c) {
         String key = "categories." + c.id() + ".lore";
         return msg.has(key) ? core.menus().lines(viewer, ID, key) : List.of();
+    }
+
+    /** A category name as a plain title crumb (titles stay grey, I9 section 10). */
+    Component categoryCrumb(Player viewer, ShopCatalog.Category c) {
+        return Component.text(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
+                .serialize(categoryName(viewer, c)));
+    }
+
+    /** The summary tile (slot 4): your balance, our money icon. */
+    MenuButton balanceTile(Player viewer) {
+        return MenuButton.display(core.menus().icon(viewer, "currency/money", core.menus().text(viewer, ID, "menu.balance.name"),
+                core.menus().lines(viewer, ID, "menu.balance.lore", money("balance", balance(viewer)))));
+    }
+
+    /** The sell chest button (46 on the grid, 28/19 on the category menu), when selling exists. */
+    Optional<MenuButton> sellChestButton(Player viewer, Menu from) {
+        return sellButton(viewer).map(item -> MenuButton.of(item, click -> openSell(click.player(), from)));
     }
 
     static String words(String id) {
@@ -1053,18 +1066,9 @@ public final class ShopModule implements SkyblockModule, Listener {
         return out.toString();
     }
 
-    /** The shop's own bottom-bar buttons: 46 balance, 47 Undo last buy (when on), 51 Sell. */
-    void decorateBar(Menu menu, Player viewer, java.util.function.BiConsumer<Integer, MenuButton> set) {
-        set.accept(ShopMenu.SLOT_BALANCE, MenuButton.display(core.menus().item(Material.EMERALD, viewer, ID, "menu.balance",
-                money("balance", balance(viewer)))));
-        undoButton(viewer).ifPresent(b -> set.accept(ShopMenu.SLOT_UNDO, b));
-        sellButton(viewer).ifPresent(button -> set.accept(ShopMenu.SLOT_SELL,
-                MenuButton.of(button, click -> openSell(click.player(), menu))));
-    }
-
     /**
-     * Undo last buy (47): a gold plate whose count is the seconds left, or a grey "Nothing to undo" plate. Empty when the
-     * player turned undo off in /settings.
+     * Undo last buy: a clock ({@code state/undo}) whose count is the seconds left, or a gray dye ({@code state/off})
+     * "Nothing to undo". Empty when the player turned undo off in /settings.
      */
     Optional<MenuButton> undoButton(Player viewer) {
         if (viewer == null || !setting(viewer, SETTING_UNDO)) {
@@ -1073,13 +1077,15 @@ public final class ShopModule implements SkyblockModule, Listener {
         long now = System.currentTimeMillis();
         Optional<UndoLedger.Offer> offer = undo.peek(viewer.getUniqueId(), now);
         if (offer.isEmpty()) {
-            return Optional.of(MenuButton.display(core.menus().item(Material.HEAVY_WEIGHTED_PRESSURE_PLATE, viewer, ID, "undo.idle")));
+            return Optional.of(MenuButton.display(core.menus().icon(viewer, "state/off", core.menus().text(viewer, ID, "undo.idle.name"),
+                    core.menus().lines(viewer, ID, "undo.idle.lore"))));
         }
         UndoLedger.Offer o = offer.get();
         int seconds = o.secondsLeft(now);
-        ItemStack plate = core.menus().item(Material.LIGHT_WEIGHTED_PRESSURE_PLATE, viewer, ID, "undo.ready",
-                Msg.number("amount", o.quantity()), Msg.c("item", displayName(o.itemId())), money("price", o.total()),
-                Msg.number("seconds", seconds));
+        TagResolver[] tags = {Msg.number("amount", o.quantity()), Msg.c("item", displayName(o.itemId())), money("price", o.total()),
+                Msg.number("seconds", seconds)};
+        ItemStack plate = core.menus().icon(viewer, "state/undo", core.menus().text(viewer, ID, "undo.ready.name", tags),
+                core.menus().lines(viewer, ID, "undo.ready.lore", tags));
         plate.setAmount(Math.max(1, Math.min(64, seconds)));
         return Optional.of(MenuButton.of(plate, click -> undoLast(click.player(), () -> {
             Menu open = core.menus().openMenu(click.player());
@@ -1124,12 +1130,87 @@ public final class ShopModule implements SkyblockModule, Listener {
         return player != null && core.bedrock().isBedrock(player.getUniqueId());
     }
 
-    /** The Sell button of the shop pages (opens the sell chest), if selling exists. Gold nugget. */
+    /** The sell chest button item ({@code shop/sell}, gold nugget), if selling exists. */
     Optional<ItemStack> sellButton(Player viewer) {
         if (core.services().optional(SellService.class).isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(core.menus().item(Material.GOLD_NUGGET, viewer, ID, "menu.sell"));
+        return Optional.of(core.menus().icon(viewer, "shop/sell", core.menus().text(viewer, ID, "menu.sell.name"),
+                core.menus().lines(viewer, ID, "menu.sell.lore")));
+    }
+
+    // ================================================================== selling (GUI-P3)
+
+    Optional<SellService> sellService() {
+        return core.services().optional(SellService.class);
+    }
+
+    /**
+     * Whether {@code item} can be sold now, its live price and (with {@code withCarried}) how many the player carries.
+     * Spawners are never sellable here. Main thread.
+     */
+    SellInfo sellInfo(Player player, ShopCatalog.Item item, boolean withCarried) {
+        Optional<SellService> sell = sellService();
+        if (sell.isEmpty() || item.spawner()) {
+            return SellInfo.NONE;
+        }
+        Optional<ItemStack> template = template(item);
+        if (template.isEmpty() || !sell.get().sellable(template.get())) {
+            return SellInfo.NONE;
+        }
+        long carried = withCarried && player != null ? sell.get().carried(player, template.get()) : 0;
+        return new SellInfo(true, sell.get().price(item.id()), carried);
+    }
+
+    /** Middle click / Shift + Right-click on a tile: sells every one of that item the player carries. Main thread. */
+    void sellAll(Player player, ShopCatalog.Item item, Runnable after) {
+        sellAmount(player, item, 0, after);
+    }
+
+    /**
+     * The only code in the shop that sells (GUI-P3 5.8): checks, the click-spam guard, then {@link SellService#sellItem}
+     * with source {@code shop} (the /sell escrow, one ledger transaction {@code sell:<sale id>}, give-back to the
+     * inventory then /box). The economy prints the sale line and plays the money sound. {@code amount} 0 = all.
+     */
+    void sellAmount(Player player, ShopCatalog.Item item, int amount, Runnable after) {
+        Optional<String> problem = problem(player);
+        if (problem.isPresent()) {
+            fail(player, problem.get());
+            done(after);
+            return;
+        }
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player,
+                net.skybornmc.skyblock.common.moderation.SanctionService.Use.SHOP)) {
+            done(after);
+            return; // frozen balance blocks selling like buying
+        }
+        SellInfo info = sellInfo(player, item, true);
+        Optional<SellService> sell = sellService();
+        Optional<ItemStack> template = template(item);
+        if (!info.sellable() || sell.isEmpty() || template.isEmpty()) {
+            core.sounds().play(player, "error"); // the tile already says Not sellable
+            done(after);
+            return;
+        }
+        if (info.carried() <= 0) {
+            msg.actionBar(player, "sell.none-carried", Msg.c("item", displayName(player, item)));
+            core.sounds().play(player, "error");
+            done(after);
+            return;
+        }
+        UUID uuid = player.getUniqueId();
+        if (!sellGuard.tryStart(uuid, System.currentTimeMillis(), settings.sellMinGapMs)) {
+            return; // click spam: one sale at a time, with a short gap
+        }
+        sell.get().sellItem(player, template.get(), Math.max(0, amount), "shop", result -> {
+            sellGuard.finish(uuid, System.currentTimeMillis());
+            done(after);
+        });
+    }
+
+    /** True while a shop sale of this player is on its way (the sell GUI skips its live refresh). */
+    boolean selling(Player player) {
+        return player != null && sellGuard.inFlight(player.getUniqueId());
     }
 
     void openSell(Player player, Menu from) {
