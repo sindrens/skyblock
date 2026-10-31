@@ -165,11 +165,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 });
     }
 
-    /** Values other classes read statically or per call (C1-R3-03): gems alias end, exact display, retries, spend tries. */
+    /** Values other classes read statically or per call (C1-R3-03): gems alias end, exact display, retries. */
     private void applyConfig() {
         Currency.legacyGemsAliasUntil(config.legacyGemsAliasUntilMillis());
         Amounts.exactBelow(config.displayExactBelow);
-        net.skybornmc.skyblock.common.economy.CreditSpend.attempts(config.creditSpendAttempts);
         if (store != null) {
             store.retries(config.dbRetryAttempts, config.dbRetryStepMs, config.dbRetryJitterMs);
         }

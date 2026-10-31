@@ -7,19 +7,18 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Spending credits (card C1, C1-R1-34 / C1-R2-02): <b>earned credits first, bought credits last</b> (bought ones stay
- * tradeable longer). One spend is <b>one</b> database transaction ({@link EconomyService#executeBatch}, with the caller's
- * {@link TxGuard}) with one ledger row per ledger half that pays (at most two).
+ * tradeable longer).
  *
- * <p><b>Races.</b> The split is planned from a fresh database read; the batch then debits each half with
- * {@code balance >= amount} in SQL, so no half can ever go below 0 and nothing is spent twice. If another spend of the same
- * player got there first, the batch fails with INSUFFICIENT_FUNDS, rolls back as a whole (guard included) and the split is
- * planned again from the new balances, up to {@link #attempts()} times. A credit that arrives between the read and the
- * batch only means the split took a little more from one half than "earned first" strictly needs; never more than the
- * price, never below 0.</p>
+ * <p><b>One transaction, locked balances.</b> {@link #execute} hands a credit spend to
+ * {@link EconomyService#spendCredits}: inside one database transaction (with the caller's {@link TxGuard}) the player's
+ * two credit rows are locked ({@code SELECT ... FOR UPDATE}), the split is computed from those locked, current balances
+ * ({@link #plan}) and each half is debited with a conditional {@code UPDATE ... WHERE balance >= ?} and its own ledger
+ * row. Credits arriving at the same moment wait for the lock, so the split is always exactly "earned first"; no half can
+ * go below 0 and nothing is spent twice.</p>
  *
- * <p><b>Replays.</b> The first leg always carries the caller's idempotency key unchanged and the second {@code key:2}.
- * Whatever the balances are by then, a replay hits the first key and is refused as DUPLICATE: one purchase is never charged
- * twice. Keys must therefore be at most 94 characters.</p>
+ * <p><b>Replays.</b> The first leg carries the caller's idempotency key unchanged and the second {@code key:2}. A known
+ * key is refused as DUPLICATE before anything runs: one purchase is never charged twice. Keys must be at most 94
+ * characters.</p>
  *
  * <p><b>Refunds</b> ({@link #refund}) give back exactly the halves the ledger shows for the spend's key; when that can't be
  * proven, everything comes back as earned credits, so a refund can never create tradeable credits.</p>
@@ -29,19 +28,7 @@ public final class CreditSpend {
     /** Suffix of the second leg's idempotency key. */
     public static final String SECOND_LEG = ":2";
 
-    /** How often a spend is planned again after losing a race; set by the economy module ({@code credits.spend-attempts}). */
-    private static volatile int attempts = 4;
-
     private CreditSpend() {
-    }
-
-    /** Sets how often a spend is planned again after losing a race (at least 1). */
-    public static void attempts(int value) {
-        attempts = Math.max(1, value);
-    }
-
-    public static int attempts() {
-        return attempts;
     }
 
     /** How a price is split over the two ledger halves. */
@@ -99,11 +86,11 @@ public final class CreditSpend {
     }
 
     /**
-     * Runs a payment. A withdraw in {@link Currency#CREDITS} is a <b>credit spend</b>: split earned-first into up to two
-     * legs in one database transaction together with {@code guard}; the result's {@code fromBalance} is the player's credit
-     * total after the spend and {@code ledgerId} the first leg's row. Every other transaction (any other currency, or not a
-     * plain withdraw) runs unchanged, so a call site can use this for every price currency. INSUFFICIENT_FUNDS means both
-     * halves together hold less than the price.
+     * Runs a payment. A withdraw in {@link Currency#CREDITS} is a <b>credit spend</b> ({@link EconomyService#spendCredits}):
+     * earned first, then bought, one database transaction together with {@code guard}; the result's {@code fromBalance} is
+     * the player's credit total after the spend and {@code ledgerId} the first leg's row. Every other transaction (any
+     * other currency, or not a plain withdraw) runs unchanged, so a call site can use this for every price currency.
+     * INSUFFICIENT_FUNDS means both halves together hold less than the price.
      *
      * @param guard extra SQL committed or rolled back with the payment (may run more than once), or null
      */
@@ -114,43 +101,7 @@ public final class CreditSpend {
         if (template.amount() <= 0 || !keyFits(template)) {
             return CompletableFuture.completedFuture(TxResult.of(TxResult.Status.INVALID));
         }
-        return attempt(economy, template, guard, 1);
-    }
-
-    private static CompletableFuture<TxResult> attempt(EconomyService economy, Transaction template, TxGuard guard, int attempt) {
-        return economy.balances(template.from()).thenCompose(balances -> {
-            CreditView have = CreditView.of(balances);
-            Split split = plan(have.earned(), have.bought(), template.amount());
-            if (split == null) {
-                return CompletableFuture.completedFuture(TxResult.of(TxResult.Status.INSUFFICIENT_FUNDS));
-            }
-            return economy.executeBatch(legs(template, split), guard).thenCompose(batch -> {
-                if (batch.ok()) {
-                    return CompletableFuture.completedFuture(merged(batch.results(), split, have));
-                }
-                if (batch.status() == TxResult.Status.INSUFFICIENT_FUNDS && attempt < attempts) {
-                    return attempt(economy, template, guard, attempt + 1); // lost a race: plan again from fresh balances
-                }
-                return CompletableFuture.completedFuture(TxResult.of(batch.status()));
-            });
-        }).exceptionally(error -> TxResult.of(TxResult.Status.ERROR));
-    }
-
-    /** One result for the whole spend: the first leg's ledger row and the credit total left. Pure. */
-    static TxResult merged(List<TxResult> results, Split split, CreditView before) {
-        long earnedLeft = before.earned() - split.earned();
-        long boughtLeft = before.bought() - split.bought();
-        int i = 0;
-        if (split.earned() > 0 && i < results.size()) {
-            Long after = results.get(i++).fromBalance();
-            earnedLeft = after == null ? earnedLeft : after;
-        }
-        if (split.bought() > 0 && i < results.size()) {
-            Long after = results.get(i).fromBalance();
-            boughtLeft = after == null ? boughtLeft : after;
-        }
-        long ledger = results.isEmpty() ? 0 : results.getFirst().ledgerId();
-        return new TxResult(TxResult.Status.SUCCESS, ledger, new CreditView(boughtLeft, earnedLeft).total(), null);
+        return economy.spendCredits(template, guard);
     }
 
     /**

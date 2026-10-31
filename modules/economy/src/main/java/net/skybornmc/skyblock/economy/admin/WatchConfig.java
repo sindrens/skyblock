@@ -107,7 +107,7 @@ public final class WatchConfig extends ModuleConfig {
 
     @Setting(path = "alerts.currencies", desc = "Currencies the profile alerts look at (money, crystals, credits, credits_earned, shards).",
             level = Setting.Level.OWNER)
-    public List<String> alertCurrencies = List.of("money", "crystals", "shards");
+    public List<String> alertCurrencies = List.of("money", "crystals", "credits", "shards");
 
     @Setting(path = "alerts.suggest-reason", desc = "Reason id of punishments.yml used when staff press 'Suggest punishment' "
             + "on an alert (a suggestion never applies by itself).")
@@ -299,7 +299,10 @@ public final class WatchConfig extends ModuleConfig {
                 List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance", "admin_give", "admin_take", "admin_set",
                         "admin_reset", "sanction_remove", "sanction_restore", "profile_delete", "island_kick_restore"),
                 ignoreReasons)),
-                3, java.util.Map.of("dashboard.top-size", ValueChange.of(28, 84), "dashboard.big-size", ValueChange.of(28, 84)));
+                3, java.util.Map.of("dashboard.top-size", ValueChange.of(28, 84), "dashboard.big-size", ValueChange.of(28, 84)),
+                // Card C1: bought credits can be traded now, so the profile alerts watch them too (untouched lists only).
+                4, java.util.Map.of("alerts.currencies", ValueChange.of(List.of("money", "crystals", "shards"),
+                        List.of("money", "crystals", "credits", "shards"))));
     }
 
     @Override

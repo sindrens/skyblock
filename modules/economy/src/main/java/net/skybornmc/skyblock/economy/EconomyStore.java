@@ -368,8 +368,104 @@ final class EconomyStore {
         }
     }
 
-    private static boolean keyUsed(Connection c, String key) throws SQLException {
-        return Sql.queryOne(c, "SELECT id FROM eco_ledger WHERE idem_key = ?", rs -> rs.getLong(1), key).isPresent();
+    /**
+     * True if {@code key} (or its pre-rename twin, see {@link #legacyKey}) is already in the ledger. The twin check means a
+     * payment written before the gems → credits rename (its key ended in {@code :gems}, e.g. {@code vote:<id>:gems},
+     * {@code <claim>:gems}, {@code start:<season>:gems:<player>}) can never be paid again under the new key
+     * {@code ...:credits_earned} after the deploy. The ledger keys themselves are never rewritten.
+     */
+    static boolean keyUsed(Connection c, String key) throws SQLException {
+        if (Sql.queryOne(c, "SELECT id FROM eco_ledger WHERE idem_key = ?", rs -> rs.getLong(1), key).isPresent()) {
+            return true;
+        }
+        String legacy = legacyKey(key);
+        return legacy != null
+                && Sql.queryOne(c, "SELECT id FROM eco_ledger WHERE idem_key = ?", rs -> rs.getLong(1), legacy).isPresent();
+    }
+
+    /** The key a payment had before gems were renamed (card C1): {@code credits_earned} → {@code gems}; null if none. Pure. */
+    static String legacyKey(String key) {
+        if (key == null || !key.contains(Currency.CREDITS_EARNED.key())) {
+            return null;
+        }
+        return key.replace(Currency.CREDITS_EARNED.key(), Currency.LEGACY_GEMS_KEY);
+    }
+
+    // ------------------------------------------------------------------------------------------------ credit spends
+
+    /** One ledger half a credit spend took: the amount, its ledger row and the half's balance after. */
+    record CreditLeg(Currency currency, long amount, long ledgerId, long balanceAfter) {
+    }
+
+    /** Result of {@link #spendCredits}: the overall result ({@code fromBalance} = credit total left) and the legs written. */
+    record CreditOutcome(TxResult result, List<CreditLeg> legs) {
+        static CreditOutcome of(TxResult.Status status) {
+            return new CreditOutcome(TxResult.of(status), List.of());
+        }
+    }
+
+    /**
+     * A credit spend (card C1) in <b>one</b> database transaction: the guard runs, both credit rows of the player are
+     * locked ({@code SELECT ... FOR UPDATE}, in the global lock order: account, then currency, as in {@link #runBatch}),
+     * the earned-first split is computed from those locked, current balances, each half is debited with a conditional
+     * {@code UPDATE ... WHERE balance >= ?} and gets its ledger row. The first leg keeps {@code template}'s idempotency key,
+     * the second {@code key:2}; a known key (or its pre-rename twin) is refused as DUPLICATE before anything runs, and the
+     * unique ledger key refuses a concurrent replay. {@code template}: a withdraw in {@link Currency#CREDITS} from the
+     * player account (already normalized).
+     */
+    CompletableFuture<CreditOutcome> spendCredits(Transaction template, Guard guard) {
+        return db.async(c -> withRetry(() -> runCreditSpend(c, template, guard)));
+    }
+
+    CreditOutcome runCreditSpend(Connection c, Transaction t, Guard guard) throws SQLException {
+        if (t.problem() != null || t.currency() != Currency.CREDITS || t.from() == null || t.to() != null) {
+            return CreditOutcome.of(TxResult.Status.INVALID);
+        }
+        String key = t.idempotencyKey();
+        String second = key == null ? null : key + net.skybornmc.skyblock.common.economy.CreditSpend.SECOND_LEG;
+        if (second != null && second.length() > 96) {
+            return CreditOutcome.of(TxResult.Status.INVALID);
+        }
+        if (key != null && (keyUsed(c, key) || keyUsed(c, second))) {
+            return CreditOutcome.of(TxResult.Status.DUPLICATE);
+        }
+        AccountRef account = t.from();
+        // Row order = Row#compareTo (same account, currency ordinal): CREDITS before CREDITS_EARNED, like every batch.
+        ensureAccount(c, account, Currency.CREDITS);
+        ensureAccount(c, account, Currency.CREDITS_EARNED);
+        List<CreditLeg> legs = new ArrayList<>(2);
+        TxResult result = inTransaction(c, () -> {
+            legs.clear();
+            if (guard != null && !guard.holds(c)) {
+                throw new Abort(TxResult.of(TxResult.Status.DUPLICATE));
+            }
+            long bought = lock(c, account, Currency.CREDITS);
+            long earned = lock(c, account, Currency.CREDITS_EARNED);
+            net.skybornmc.skyblock.common.economy.CreditSpend.Split split =
+                    net.skybornmc.skyblock.common.economy.CreditSpend.plan(earned, bought, t.amount());
+            if (split == null) {
+                throw new Abort(TxResult.of(TxResult.Status.INSUFFICIENT_FUNDS));
+            }
+            long now = clock.getAsLong();
+            boolean first = true;
+            for (Currency currency : List.of(Currency.CREDITS_EARNED, Currency.CREDITS)) {
+                long part = currency == Currency.CREDITS_EARNED ? split.earned() : split.bought();
+                if (part <= 0) {
+                    continue;
+                }
+                if (Sql.update(c, DEBIT, part, now, account.type().key(), account.owner(), currency.key(), part) == 0) {
+                    throw new Abort(TxResult.of(TxResult.Status.INSUFFICIENT_FUNDS));
+                }
+                long after = read(c, account, currency);
+                long id = ledger(c, now, currency, account, null, part, after, null, t.reason(), t.reference(),
+                        first ? key : second, t.actor());
+                legs.add(new CreditLeg(currency, part, id, after));
+                first = false;
+            }
+            long left = (earned - split.earned()) + (bought - split.bought());
+            return new TxResult(TxResult.Status.SUCCESS, legs.getFirst().ledgerId(), left, null);
+        });
+        return new CreditOutcome(result, result.ok() ? List.copyOf(legs) : List.of());
     }
 
     /** Creates the account row (balance 0) if it does not exist yet. Autocommit, outside the transaction. */

@@ -82,6 +82,17 @@ public interface EconomyService {
     OptionalLong cached(UUID player, Currency currency);
 
     /**
+     * A credit spend (card C1): {@code template} is a withdraw in {@link Currency#CREDITS}; inside <b>one</b> database
+     * transaction (with {@code guard}) both credit rows are locked, the earned-first split is computed from the locked,
+     * current balances and each half is debited with its own ledger row ({@code key}, {@code key:2}). Result:
+     * {@code fromBalance} = the credit total left. Use {@link CreditSpend#execute}. Implementations without it refuse with
+     * ERROR and never charge.
+     */
+    default CompletableFuture<TxResult> spendCredits(Transaction template, TxGuard guard) {
+        return CompletableFuture.completedFuture(TxResult.of(TxResult.Status.ERROR));
+    }
+
+    /**
      * A player's credits (both ledger halves) from the database; {@code profileOrPlayer} may be a profile key or the
      * player UUID (credits always belong to the player).
      */

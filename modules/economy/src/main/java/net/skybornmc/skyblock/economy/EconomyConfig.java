@@ -36,10 +36,10 @@ public final class EconomyConfig extends ModuleConfig {
             level = Setting.Level.OWNER)
     public boolean tradeableCrystals = false;
 
-    @Setting(path = "tradeable.credits", desc = "Bought credits can be traded (/trade money offers). They are never sent with "
-            + "/pay (that will be /credit pay). Earned credits are never tradeable, whatever this says (hard rule in code, "
-            + "C1-R2-02).", level = Setting.Level.OWNER)
-    public boolean tradeableCredits = false;
+    @Setting(path = "tradeable.credits", desc = "Bought credits can be offered in /trade (owner, C1 wave 1b; also listed in "
+            + "trade.yml money.currencies). They are never sent with /pay (that will be /credit pay) and never become notes. "
+            + "Earned credits are never tradeable, whatever this says (hard rule in code, C1-R2-02).", level = Setting.Level.OWNER)
+    public boolean tradeableCredits = true;
 
     @Setting(path = "tradeable.shards", desc = "Players can /pay and trade shards (owner decision: yes).", level = Setting.Level.OWNER)
     public boolean tradeableShards = true;
@@ -106,11 +106,6 @@ public final class EconomyConfig extends ModuleConfig {
             + "works in commands and configs and means earned credits (C1-R1-03: 90 days after the rename). Store grants never "
             + "accept it.", level = Setting.Level.OWNER)
     public String legacyGemsAliasUntil = "2027-01-29";
-
-    @Setting(path = "credits.spend-attempts", desc = "How often a credit spend is planned again when another spend of the same "
-            + "player changed the balance first (each try is one database transaction; nothing is ever charged twice).",
-            min = 1, max = 10)
-    public int creditSpendAttempts = 4;
 
     // ------------------------------------------------------------------ database retries (C1-R3-03)
 
@@ -428,7 +423,8 @@ public final class EconomyConfig extends ModuleConfig {
                 "notes.withdraw-cooldown-seconds", "owner R3-40: replaced by notes.max-per-minute (20 notes a minute)",
                 "tradeable.gems", "card C1: gems became credits; earned credits are never tradeable (tradeable.credits = bought)",
                 "notes.min.gems", "card C1: credits never become notes",
-                "notes.max.gems", "card C1: credits never become notes");
+                "notes.max.gems", "card C1: credits never become notes",
+                "credits.spend-attempts", "card C1 wave 1b: a credit spend locks both rows in one transaction, no re-planning");
     }
 
     @Override

@@ -205,6 +205,44 @@ final class EconomyServiceImpl implements EconomyService {
         });
     }
 
+    /**
+     * A credit spend (card C1): one database transaction that locks both credit rows, splits earned first from the locked
+     * balances and debits each half ({@link EconomyStore#spendCredits}). Sanctions are checked for both halves first;
+     * cache and audit are updated per leg on success.
+     */
+    @Override
+    public CompletableFuture<TxResult> spendCredits(Transaction original, net.skybornmc.skyblock.common.economy.TxGuard guard) {
+        Transaction tx = normalize(original);
+        String problem = tx.problem();
+        if (problem != null || tx.currency() != Currency.CREDITS || tx.from() == null || tx.to() != null) {
+            log.warning("Economy: refused invalid credit spend (" + (problem == null ? "not a credits withdraw" : problem) + "): " + tx);
+            return CompletableFuture.completedFuture(TxResult.of(TxResult.Status.INVALID));
+        }
+        Transaction earnedLeg = new Transaction(tx.from(), null, Currency.CREDITS_EARNED, tx.amount(), tx.reason(), tx.reference(),
+                tx.idempotencyKey(), tx.actor(), tx.details());
+        if (sanctioned(tx) || sanctioned(earnedLeg)) {
+            return CompletableFuture.completedFuture(TxResult.of(TxResult.Status.INVALID));
+        }
+        CompletableFuture<EconomyStore.CreditOutcome> future;
+        try {
+            future = store.spendCredits(tx, guard == null ? null : guard::holds);
+        } catch (RuntimeException e) {
+            future = CompletableFuture.failedFuture(e);
+        }
+        return future.handle((outcome, error) -> {
+            if (error != null) {
+                log.log(Level.SEVERE, "Economy: credit spend failed and was rolled back: " + tx, Database.cause(error));
+                return TxResult.of(TxResult.Status.ERROR);
+            }
+            for (EconomyStore.CreditLeg leg : outcome.legs()) {
+                applyToCache(tx.from(), leg.currency(), leg.balanceAfter(), leg.ledgerId());
+                audit(tx.reason(), tx.actor(), tx.from(), null, leg.currency(), leg.amount(),
+                        new TxResult(TxResult.Status.SUCCESS, leg.ledgerId(), leg.balanceAfter(), null), tx.reference(), tx.details());
+            }
+            return outcome.result();
+        });
+    }
+
     /** All transactions (and the guard) in one database transaction; cache and audit are updated per leg on success. */
     @Override
     public CompletableFuture<net.skybornmc.skyblock.common.economy.BatchResult> executeBatch(List<Transaction> transactions,
