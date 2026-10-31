@@ -291,8 +291,14 @@ final class SpawnerManager implements Listener {
         }
     }
 
-    /** Owner S24: a player within the activation range, or island fuel while no member is online. */
+    /**
+     * Owner S24: a player within the activation range, or island fuel while no member is online. PHASE-7 M7.1: an Asleep
+     * island (empty tank, no active member, fuel gate on) runs no spawner at all, not even next to a player.
+     */
     private boolean active(Spawner sp, World world) {
+        if (sp.island != null && module.islands().map(i -> i.islandProductionPaused(sp.island)).orElse(false)) {
+            return false;
+        }
         Location center = sp.pos.center(world);
         if (!world.getNearbyPlayers(center, module.config().activationRange, p -> p.getGameMode() != GameMode.SPECTATOR).isEmpty()) {
             return true;

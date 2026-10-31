@@ -14,6 +14,7 @@ import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.enchant.EnchantService;
 import net.skybornmc.skyblock.common.island.IslandService;
+import net.skybornmc.skyblock.common.production.ProductionService;
 import net.skybornmc.skyblock.common.item.Rarity;
 import net.skybornmc.skyblock.common.menu.Offer;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
@@ -436,7 +437,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
         Optional<CrateKeys> keys = core.services().optional(CrateKeys.class);
         Optional<BoosterService> boosters = BoosterService.of(core.services());
         Optional<EnchantService> enchants = core.services().optional(EnchantService.class);
-        boolean fuel = fuelSupported() && islands().flatMap(i -> i.islandOfProfile(profile)).isPresent();
+        boolean fuel = fuelSupported(); // Fuel Cells: kept until used on an island, so no island is needed now
         Map<String, List<String>> books = new HashMap<>();
         enchants.ifPresent(e -> {
             for (String id : e.ids()) {
@@ -463,16 +464,13 @@ public final class RewardsModule implements SkyblockModule, Listener {
         return core.services().optional(IslandService.class);
     }
 
-    /** True when the islands module really implements Island Fuel (not the "no fuel yet" default), like crates. */
+    /**
+     * True while Island Fuel exists (PHASE-7 M7.1: the production module publishes {@link ProductionService} only while
+     * {@code production.yml → fuel.enabled} is on). Fuel rewards are then handed out as bound Fuel Cells; before that
+     * they pay their crystal fallback.
+     */
     boolean fuelSupported() {
-        return islands().map(s -> {
-            try {
-                return s.getClass().getMethod("addIslandFuel", UUID.class, long.class, String.class, Actor.class)
-                        .getDeclaringClass() != IslandService.class;
-            } catch (NoSuchMethodException e) {
-                return false;
-            }
-        }).orElse(false);
+        return core.services().has(ProductionService.class);
     }
 
     boolean wantsReminder(Player p) {

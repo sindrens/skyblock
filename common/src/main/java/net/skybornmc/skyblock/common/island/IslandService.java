@@ -153,20 +153,37 @@ public interface IslandService {
     }
 
     /**
-     * Island Fuel hook: true while the island has fuel. Spawners then also run while no member is online (otherwise
-     * only with a player within the activation range). False until Island Fuel exists.
+     * Island Fuel hook (PHASE-7 M7.1): true while the island is Active or Fueled. Spawners then also run while no member
+     * is online (otherwise only with a player within the activation range). False while Island Fuel is off (no
+     * {@link #fuelProvider} set). To know whether Island Fuel exists, ask for a registered
+     * {@code net.skybornmc.skyblock.common.production.ProductionService}, not this method.
      */
     default boolean hasIslandFuel(UUID islandId) {
         return false;
     }
 
     /**
-     * Island Fuel hook (AFK pool rewards, later the island shop): adds {@code minutes} of fuel to the island's tank
-     * (saved, logged, clamped to the tank size by the implementation). Completes with false while Island Fuel does not
-     * exist yet or the island is unknown; callers that must not lose the fuel keep it and try again later.
+     * Island Fuel hook (PHASE-7 M7.1): true while the island is Asleep (empty tank, no active member) and the fuel gate
+     * pauses production: spawners stop and crops don't grow. Always false while Island Fuel is off.
+     */
+    default boolean islandProductionPaused(UUID islandId) {
+        return false;
+    }
+
+    /**
+     * Island Fuel hook (AFK pool rewards, staff): adds {@code minutes} of fuel to the island's tank (saved, logged, capped
+     * at the tank size; a full tank refuses). Completes with false while Island Fuel is off, the island is unknown or the
+     * tank is full; callers that must not lose the fuel keep it and try again later.
      */
     default CompletableFuture<Boolean> addIslandFuel(UUID islandId, long minutes, String reason, Actor actor) {
         return CompletableFuture.completedFuture(false);
+    }
+
+    /**
+     * The production module's Island Fuel ({@code null} = off): {@link #hasIslandFuel}, {@link #islandProductionPaused}
+     * and {@link #addIslandFuel} delegate to it. Main thread.
+     */
+    default void fuelProvider(net.skybornmc.skyblock.common.production.FuelProvider provider) {
     }
 
     /**

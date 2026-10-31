@@ -20,7 +20,7 @@ categories:
     slot: 12
     name: "<c:flame><bold>Islands"
     lore: ["<c:text>Your own island in the sky:", "<c:text>build, grow and team up."]
-    topics: [island, profiles, spawners]
+    topics: [island, profiles, spawners, island-fuel]
   depths:
     icon: iron_pickaxe
     status: active
@@ -928,6 +928,39 @@ topics:
           - "<c:text>With island fly, double-tap jump on an"
           - "<c:text>island to fly. It stops at the border and"
           - "<c:text>you land without damage.</c:text>"
+  island-fuel:
+    icon: blaze_powder
+    aliases: [fuel, fuel-cell, fuel-cells, island-asleep, asleep]
+    name: "<c:flame>Island Fuel"
+    summary: ["<c:text>Keeps your island working", "<c:text>while nobody plays on it."]
+    take-me-there: "is"
+    commands: []
+    pages:
+      - title: "<c:value>Earning fuel"
+        lines:
+          - "<c:text>Play on your own island: every minute"
+          - "<c:text>you do something there adds one minute"
+          - "<c:text>of fuel. Standing still or AFK does"
+          - "<c:text>not count."
+      - title: "<c:value>Burning fuel"
+        lines:
+          - "<c:text>When nobody plays on it, your island"
+          - "<c:text>burns fuel and keeps working. With an"
+          - "<c:text>empty tank it falls <c:error>asleep</c:error><c:text>: spawners"
+          - "<c:text>stop and crops stop growing."
+      - title: "<c:value>Fuel Cells"
+        lines:
+          - "<c:text>Fuel Cells come from the daily calendar"
+          - "<c:text>and crates. Stand on your island and"
+          - "<c:text>use one to add its fuel. They belong"
+          - "<c:text>to your profile and can't be traded."
+      - title: "<c:value>Good to know"
+        lines:
+          - "<c:text>The gauge in your island menu shows"
+          - "<c:text>the fuel left. The Fuel Tank upgrade"
+          - "<c:text>holds more, Fuel Efficiency burns less."
+          - "<c:text>The AFK pool also gives fuel."
+
   spawners:
     icon: spawner
     aliases: [spawner, stacking, stacks, stacked]

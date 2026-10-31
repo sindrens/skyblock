@@ -27,7 +27,7 @@ enum MasteryEffect {
     CRYSTAL_RUSH("crystal-rush", true, BonusFamily.CRYSTALS, null),
     /** MA7 +% rare finds (RARE_FINDS: key fragments, blueprints in the Depths roll). */
     LUCKY_STRIKE("lucky-strike", true, BonusFamily.RARE_FINDS, null),
-    /** MA8 island fuel lasts longer (Phase 7). */
+    /** MA8 island fuel lasts longer (Phase 7): live while Island Fuel is on ({@link IslandFuelFeature}). */
     FUEL_EFFICIENCY("fuel-efficiency", false, null, null),
     /** MA9 faster breeding, more animal drops: no breeding hook yet. */
     BEAST_TAMER("beast-tamer", false, null, null),
@@ -61,7 +61,7 @@ enum MasteryEffect {
 
     /** True when the feature behind it exists (otherwise hidden, never bought). */
     boolean live() {
-        return live;
+        return live || (this == FUEL_EFFICIENCY && IslandFuelFeature.on());
     }
 
     /** The bonus family this effect adds to, or null (hook effects). */

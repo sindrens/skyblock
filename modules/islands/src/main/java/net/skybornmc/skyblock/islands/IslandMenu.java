@@ -21,7 +21,7 @@ import java.util.List;
  *  R O B B 🌱 B B O R      4 island info (name, role, leader, members, size, warps, level, created, open/locked)
  *  B 🛏 👤 ⚙ ✈ 🚪 🔁 📄 B   10 home, 11 members, 12 permissions, 13 warps, 14 visitors (lock), 15 settings, 16 invites
  *  B 📖 💬 🎨 🗺 ★ ▣ ⚒ B   19 notes, 20 island chat, 21 chat colors, 22 visit islands, 23 stats, 24 bank, 25 upgrades*
- *  B . . . . . . . B
+ *  B ⛽ . . . . . . B      28 Island Fuel gauge (only while Island Fuel is on, PHASE-7 M7.1)
  *  B . . . 💣 . . . B      40 disband (leader) / leave (everyone else)
  *  ← O B ? ✘ H B O R      45 back, 48 info, 49 close, 50 help        * = coming soon (gray)
  * </pre>
@@ -43,10 +43,11 @@ final class IslandMenu extends Menu {
     static final int SLOT_STATS = 23;
     static final int SLOT_BANK = 24;
     static final int SLOT_UPGRADES = 25;
+    static final int SLOT_FUEL = 28;
     static final int SLOT_LEAVE = 40;
     /** Every content slot, for the layout test (no slot used twice, all inside the frame). */
     static final List<Integer> CONTENT = List.of(SLOT_HOME, SLOT_MEMBERS, SLOT_PERMISSIONS, SLOT_WARPS, SLOT_VISITORS, SLOT_SETTINGS,
-            SLOT_INVITES, SLOT_NOTES, SLOT_CHAT, SLOT_CHAT_COLORS, SLOT_VISIT, SLOT_STATS, SLOT_BANK, SLOT_UPGRADES, SLOT_LEAVE);
+            SLOT_INVITES, SLOT_NOTES, SLOT_CHAT, SLOT_CHAT_COLORS, SLOT_VISIT, SLOT_STATS, SLOT_BANK, SLOT_UPGRADES, SLOT_FUEL, SLOT_LEAVE);
 
     private final IslandsModule module;
     private final IslandManager islands;
@@ -150,6 +151,7 @@ final class IslandMenu extends Menu {
         set(SLOT_STATS, stats());
         set(SLOT_BANK, bank());
         set(SLOT_UPGRADES, upgrades());
+        fuel();
         if (role == Role.LEADER) {
             set(SLOT_LEAVE, button(Material.TNT, "menu.disband", click -> {
                 viewer.closeInventory();
@@ -234,6 +236,13 @@ final class IslandMenu extends Menu {
             return comingSoon(Material.ANVIL, "menu.upgrades");
         }
         return button(Material.ANVIL, "menu.upgrades-open", click -> progression.get().openUpgradeMenu(viewer, this));
+    }
+
+    /** PHASE-7 M7.1: the production module's Island Fuel gauge (display only; nothing while Island Fuel is off). */
+    private void fuel() {
+        net.skybornmc.skyblock.common.production.ProductionService.of(module.core().services())
+                .flatMap(p -> p.fuelGauge(viewer, island.id()))
+                .ifPresent(item -> set(SLOT_FUEL, MenuButton.display(item)));
     }
 
     private MenuButton notes() {

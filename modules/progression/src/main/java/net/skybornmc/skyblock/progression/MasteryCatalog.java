@@ -67,7 +67,8 @@ final class MasteryCatalog {
     }
 
     private final Map<String, Def> byId;
-    private final List<Def> shown;
+    /** Every mastery by order; {@link #shown()} filters it on each call (MA8 turns live when Island Fuel switches on). */
+    private final List<Def> ordered;
 
     MasteryCatalog(List<Def> defs) {
         Map<String, Def> ids = new LinkedHashMap<>();
@@ -75,8 +76,7 @@ final class MasteryCatalog {
             ids.put(d.id(), d);
         }
         this.byId = Map.copyOf(ids);
-        this.shown = ids.values().stream().filter(Def::buyable)
-                .sorted(Comparator.comparingInt(Def::order).thenComparing(Def::id)).toList();
+        this.ordered = ids.values().stream().sorted(Comparator.comparingInt(Def::order).thenComparing(Def::id)).toList();
     }
 
     static MasteryCatalog empty() {
@@ -94,7 +94,7 @@ final class MasteryCatalog {
 
     /** The masteries shown in the menu (switched on and live), by order. Hidden ones are left out (GUI-2). */
     List<Def> shown() {
-        return shown;
+        return ordered.stream().filter(Def::buyable).toList();
     }
 
     int size() {

@@ -211,6 +211,11 @@ final class ProgressionFacade implements ProgressionService {
         return upgrades == null ? 0 : upgrades.level(islandId, upgradeId);
     }
 
+    @Override
+    public double upgradeEffectValue(UUID islandId, String effectId) {
+        return upgrades == null ? 0 : UpgradeEffect.byId(effectId).map(e -> upgrades.effectValue(islandId, e)).orElse(0.0);
+    }
+
     // ------------------------------------------------------------------ island masteries (M5.5)
 
     @Override
@@ -228,5 +233,10 @@ final class ProgressionFacade implements ProgressionService {
     @Override
     public int masteryRank(UUID islandId, String masteryId) {
         return masteries == null ? 0 : masteries.rank(islandId, masteryId);
+    }
+
+    @Override
+    public double masteryEffectValue(UUID islandId, String effectId) {
+        return masteries == null ? 0 : MasteryEffect.byId(effectId).map(e -> masteries.effectValue(islandId, e)).orElse(0.0);
     }
 }

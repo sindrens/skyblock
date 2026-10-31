@@ -589,6 +589,11 @@ final class MasteryManager implements Listener {
         return ready && MasteryRules.value(catalog, of(islandId), MasteryEffect.WINGS) > 0;
     }
 
+    /** The value of an effect on the island (highest bought rank among its masteries; 0 = none or not loaded). */
+    double effectValue(UUID islandId, MasteryEffect effect) {
+        return ready ? MasteryRules.value(catalog, of(islandId), effect) : 0;
+    }
+
     int treasuryLevel(UUID islandId) {
         return ready ? MasteryRules.whole(catalog, of(islandId), MasteryEffect.TREASURY) : 0;
     }

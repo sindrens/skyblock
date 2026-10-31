@@ -142,6 +142,8 @@ final class EnchanterConfig extends ModuleConfig {
     public double capHealth = 10;
     @Setting(path = "caps.crop-growth", desc = "Cap of the crop growth family in percent (WARDROBE §2.5: Cropwarden Robes, growth upgrades, events).", min = 0, max = 100_000, level = Setting.Level.OWNER)
     public double capCropGrowth = 100;
+    @Setting(path = "caps.fuel-efficiency", desc = "Cap of the Island Fuel efficiency family in percent (PHASE-7 M7.1: Fuel Efficiency mastery + island achievements; fuel lasts at most this much longer).", min = 0, max = 1_000, level = Setting.Level.OWNER)
+    public double capFuelEfficiency = 40;
     @Setting(path = "caps.conquest", desc = "Cap of each conquest stat in percent (envoy luck, capture speed, Conquest XP, warzone death-loss reduction).", min = 0, max = 100_000, level = Setting.Level.OWNER)
     public double capConquest = 60;
 
@@ -355,6 +357,7 @@ final class EnchanterConfig extends ModuleConfig {
         out.put(BonusFamily.DAMAGE_REDUCTION, capDamageReduction);
         out.put(BonusFamily.HEALTH, capHealth);
         out.put(BonusFamily.CROP_GROWTH, capCropGrowth);
+        out.put(BonusFamily.FUEL_EFFICIENCY, capFuelEfficiency);
         out.put(BonusFamily.CONQUEST, capConquest);
         return out;
     }

@@ -176,6 +176,14 @@ public interface ProgressionService {
         return 0;
     }
 
+    /**
+     * The value of an upgrade effect on the island ({@code upgrades.yml → effect}, e.g. {@code fuel-tank}): the value at
+     * the bought level, highest among the upgrades with that effect; 0 = none bought (PHASE-7 reads the Fuel Tank tier).
+     */
+    default double upgradeEffectValue(UUID islandId, String effectId) {
+        return 0;
+    }
+
     // ------------------------------------------------------------------ island masteries (M5.5)
 
     /** True when island masteries can be opened ({@code /is masteries}, the Masteries tab of {@code /is upgrade}). */
@@ -189,6 +197,14 @@ public interface ProgressionService {
 
     /** The bought rank of a mastery ({@code masteries.yml} id, e.g. {@code wings}) on the island; 0 = none. */
     default int masteryRank(UUID islandId, String masteryId) {
+        return 0;
+    }
+
+    /**
+     * The value of a mastery effect on the island ({@code masteries.yml → effect}, e.g. {@code fuel-efficiency} = "fuel
+     * lasts +N%"): the value at the bought rank, highest among the masteries with that effect; 0 = none bought.
+     */
+    default double masteryEffectValue(UUID islandId, String effectId) {
         return 0;
     }
 }

@@ -11,10 +11,9 @@ import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.economy.BatchResult;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.EconomyService;
-import net.skybornmc.skyblock.common.economy.TxReason;
 import net.skybornmc.skyblock.common.economy.TxResult;
 import net.skybornmc.skyblock.common.enchant.EnchantService;
-import net.skybornmc.skyblock.common.island.IslandService;
+import net.skybornmc.skyblock.common.production.ProductionService;
 import net.skybornmc.skyblock.common.item.BoundItems;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.player.PlayerSaves;
@@ -226,7 +225,7 @@ final class CrateOpener {
             }
         });
         boolean wardrobe = m.core.services().has(WardrobeService.class);
-        boolean fuel = fuelSupported() && islands().flatMap(i -> i.islandOfProfile(profile)).isPresent();
+        boolean fuel = fuelSupported(); // Fuel Cells (PHASE-7 M7.1): kept until used on an island
         Optional<BoosterService> boosters = BoosterService.of(m.core.services());
         return new OpenPlan.Context(tier, m.refPerMinute(), m.settings.crystalGrowth, owned::contains,
                 r -> switch (r.type()) {
@@ -250,20 +249,13 @@ final class CrateOpener {
         return mat != null && mat.isItem() && !mat.isAir();
     }
 
-    private Optional<IslandService> islands() {
-        return m.core.services().optional(IslandService.class);
-    }
-
-    /** True when the islands module really implements Island Fuel (not the "no fuel yet" default), like the AFK pool. */
+    /**
+     * True while Island Fuel exists (PHASE-7 M7.1: the production module publishes {@link ProductionService} only while
+     * {@code production.yml → fuel.enabled} is on). Fuel rewards are then bound Fuel Cells; before that they roll as
+     * coming-soon (their fallback).
+     */
     private boolean fuelSupported() {
-        return islands().map(s -> {
-            try {
-                return s.getClass().getMethod("addIslandFuel", UUID.class, long.class, String.class, Actor.class)
-                        .getDeclaringClass() != IslandService.class;
-            } catch (NoSuchMethodException e) {
-                return false;
-            }
-        }).orElse(false);
+        return m.core.services().has(ProductionService.class);
     }
 
     // ================================================================== after the commit (main thread)
@@ -338,7 +330,6 @@ final class CrateOpener {
             RewardType type = RewardType.byKey(g.kind()).orElse(RewardType.COMING_SOON);
             switch (type) {
                 case TAG, TITLE -> grantCosmetic(g.openId(), plan.crate().id(), type, g.ref(), player, name, origin);
-                case FUEL -> grantFuel(g, profile, player, name, actor);
                 default -> createItems(g, type, origin, player, profile, actor).whenCompleteAsync((items, error) -> {
                     if (error != null || items == null || items.isEmpty()) {
                         failed(g.openId(), plan.crate().id(), g.kind(), g.ref(), player, name, error);
@@ -415,6 +406,11 @@ final class CrateOpener {
                     }
                     yield CompletableFuture.completedFuture(boosterItems);
                 }
+                case FUEL -> {
+                    // PHASE-7 M7.1: fuel minutes become Fuel Cells (1 / 3 / 6 h), always bound to the profile (PD4).
+                    ProductionService p = ProductionService.of(m.core.services()).orElseThrow();
+                    yield CompletableFuture.completedFuture(p.createFuelCells(profile, g.amount(), origin));
+                }
                 default -> CompletableFuture.completedFuture(List.of());
             };
         } catch (RuntimeException e) {
@@ -481,21 +477,6 @@ final class CrateOpener {
                 failed(openId, crate, type.key(), id, player, name, e);
             } else {
                 mark(openId, CrateStore.DELIVERED);
-            }
-        });
-    }
-
-    private void grantFuel(OpenPlan.Grant g, UUID profile, UUID player, String name, Actor actor) {
-        Optional<UUID> island = islands().flatMap(i -> i.islandOfProfile(profile)).map(IslandService.IslandInfo::id);
-        if (island.isEmpty()) {
-            failed(g.openId(), "", g.kind(), g.ref(), player, name, null);
-            return;
-        }
-        islands().get().addIslandFuel(island.get(), g.amount(), TxReason.CRATE_REWARD, actor).whenComplete((ok, e) -> {
-            if (e != null || !Boolean.TRUE.equals(ok)) {
-                failed(g.openId(), "", g.kind(), g.ref(), player, name, e);
-            } else {
-                mark(g.openId(), CrateStore.DELIVERED);
             }
         });
     }

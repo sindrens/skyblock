@@ -9,6 +9,7 @@ import net.skybornmc.skyblock.common.booster.BoosterService;
 import net.skybornmc.skyblock.common.booster.BoosterType;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.island.IslandService;
+import net.skybornmc.skyblock.common.production.ProductionService;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.placeholder.Placeholder;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
@@ -163,16 +164,12 @@ public final class AfkModule implements SkyblockModule {
         fuelSupported = detectFuel();
     }
 
-    /** True when the islands module really implements Island Fuel (not just the default "no fuel yet" hook). */
+    /**
+     * True while Island Fuel exists (PHASE-7 M7.1): the production module publishes {@link ProductionService} only while
+     * {@code production.yml → fuel.enabled} is on. Banked fuel grants wait until then.
+     */
     private boolean detectFuel() {
-        return core.services().optional(IslandService.class).map(s -> {
-            try {
-                return s.getClass().getMethod("addIslandFuel", UUID.class, long.class, String.class, Actor.class)
-                        .getDeclaringClass() != IslandService.class;
-            } catch (NoSuchMethodException e) {
-                return false;
-            }
-        }).orElse(false);
+        return core.services().has(ProductionService.class) && core.services().has(IslandService.class);
     }
 
     // ------------------------------------------------------------------ shared helpers
@@ -202,10 +199,9 @@ public final class AfkModule implements SkyblockModule {
         return msg;
     }
 
+    /** Live check (Island Fuel can be switched on and off with a reload of the production module). */
     boolean fuelSupported() {
-        if (!fuelSupported) {
-            fuelSupported = detectFuel();
-        }
+        fuelSupported = detectFuel();
         return fuelSupported;
     }
 

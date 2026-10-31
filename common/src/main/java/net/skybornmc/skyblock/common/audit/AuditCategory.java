@@ -41,7 +41,9 @@ public enum AuditCategory {
     /** Battle pass (PHASE-10 M10.8): pass XP, tier claims, reward hand-outs, premium grants, staff tools. */
     PASS,
     /** Black Market (PHASE-10 M10.11): rotations, buys, their hand-outs, refunds and reviews, staff gives and rerolls. */
-    BLACKMARKET;
+    BLACKMARKET,
+    /** Island production (PHASE-7): Island Fuel added (AFK pool, Fuel Cells, staff), islands falling asleep. */
+    PRODUCTION;
 
     /** Key stored in the database, e.g. {@code "economy"}. */
     public String key() {
