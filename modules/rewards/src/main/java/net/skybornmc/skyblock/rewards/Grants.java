@@ -202,8 +202,12 @@ final class Grants {
         return d;
     }
 
-    private static String reason(RewardStore.GrantRow row) {
-        return "playtime".equals(row.source()) ? "playtime" : "daily";
+    /** The key/pass XP reason: the grant source for playtime and votes (crates binds vote, vote_streak, vote_party keys). */
+    static String reason(RewardStore.GrantRow row) {
+        return switch (row.source()) {
+            case "playtime", "vote", "vote_streak", "vote_party" -> row.source();
+            default -> "daily";
+        };
     }
 
     // ================================================================== hand-outs (main thread)

@@ -319,7 +319,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
 
         link("discord", "Get the Discord invite", () -> config.discordUrl);
         link("store", "Open the store", () -> config.storeUrl, "buy");
-        link("vote", "Vote for rewards", () -> config.voteUrl);
+        // /vote moved to the rewards module (M10.5): the vote menu with every site, the streak and the vote party.
         link("website", "Open the website", () -> config.websiteUrl, "web");
         commands.register(CommandSpec.command("rules")
                 .description("Read the server rules")

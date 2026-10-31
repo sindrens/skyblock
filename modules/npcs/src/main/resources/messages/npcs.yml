@@ -102,8 +102,8 @@ roles:
   vote:
     name: "Voting"
     help:
-      - "<c:text>Voting isn't here yet."
-      - "<c:text>Keys come from the daily calendar: <c:value>/daily"
+      - "<c:text>Vote for us every day for keys and gems: <c:value>/vote"
+      - "<c:text>Votes fill the vote party on the board."
 
 # ------------------------------------------------------------------ help dialog
 help:
@@ -169,7 +169,7 @@ holograms:
     - "<c:muted>Coming soon"
   vote_party:
     - "<c:flame><bold>Vote Party"
-    - "<c:muted>Coming soon"
+    - "<c:text>Vote every day: <c:value>/vote"
   showcase_store_discord:
     - "<c:flame><bold>Join us"
     - "<c:text>Discord: <c:value>/discord"
@@ -191,6 +191,7 @@ hologram-names:
   blueprint_wall: "Blueprints"
   dungeon_board: "The Depths"
   ah_board: "Auction House"
+  vote_party: "Vote Party"
 hologram-help:
   info_board:
     - "<c:text>Start with <c:value>/menu</c:value><c:text>: every feature is there."
@@ -210,6 +211,9 @@ hologram-help:
     - "<c:text>Pick a tier: <c:value>/dungeon"
   ah_board:
     - "<c:text>List an item: hold it and type <c:value>/ah sell"
+  vote_party:
+    - "<c:text>Every vote fills the bar. When it is full, everyone"
+    - "<c:text>online who voted today gets a key: <c:value>/vote"
   mining:
     - "<c:text>Top players by Mining XP. Updates every few minutes."
   foraging:

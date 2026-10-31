@@ -24,6 +24,37 @@ daily:
 claim-all:
   claimed: "<prefix><c:success><sym:check></c:success> <c:text>Day <c:value><day></c:value> <c:text>claimed: <rewards><c:muted> (playtime pays by itself)"
   separator: "<c:muted>, "
+  # Votes that waited for you (offline or unknown name) and were paid by the Rewards button. <votes> = how many.
+  votes: "<c:success><sym:check></c:success> <c:text>Votes paid: <c:value><votes>"
+
+# ------------------------------------------------------------------ voting (M10.5)
+# <site> = the vote site's name, <rewards> = full component (the rewards joined), <time> like 5h 12m.
+vote:
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Voting is turned off right now."
+  console: "<prefix><c:text>Vote page: <c:value><url>"
+  thanks: "<prefix><c:success><sym:check></c:success> <c:text>Thanks for voting on <c:value><site></c:value><c:text>! <rewards>"
+  streak-reward: "<prefix><c:flame><sym:star></c:flame> <c:text>Vote streak <c:value><streak></c:value> <c:text>days: <rewards>"
+  duplicate: "<prefix><c:muted><sym:time></c:muted> <c:text>You already got a reward from <c:value><site></c:value> <c:text>recently. Next one in <c:value><time></c:value><c:text>."
+  limited: "<prefix><c:error><sym:cross></c:error> <c:text>No reward: <c:value><max></c:value> <c:text>accounts already voted from your address today."
+  # The link of a site or of the vote page (clickable on Java). <url> = the address, <site> = the name.
+  link: "<prefix><c:text>Vote on <c:value><site></c:value><c:text>: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
+  plain: "<prefix><c:text>Type this in your browser: <c:value><link>"
+  # GUI-5: Bedrock can't open chat links, so it also gets this popup with the address. <link> = the address.
+  popup:
+    title: "Vote: <site>"
+    name: "<c:sky_ice><link>"
+    lore: ["<c:text>Links can't open from here.", "<c:text>Type this address in your browser.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to get it in chat"]
+  party:
+    started: "<prefix><c:flame><bold>VOTE PARTY!</bold></c:flame> <c:text><size> votes reached: <c:value><players></c:value> <c:text>players who voted today get a <c:value><crate> Key</c:value><c:text>!"
+    reward: "<prefix><c:success><sym:check></c:success> <c:text>Vote party reward: <rewards>"
+    missed: "<prefix><c:muted><sym:time></c:muted> <c:text>Vote today to join the next party: <c:action>/vote"
+  # The Tavern vote board (hologram). <count>, <size>, <left> numbers; <full>/<empty> = bar cells.
+  board:
+    title: "<c:flame><bold>Vote Party"
+    progress: "<c:value><count></c:value> <c:muted>/</c:muted> <c:text><size> votes"
+    bar: "<c:success><full></c:success><c:muted><empty>"
+    bar-cell: "|"
+    footer: "<c:text>Full = a <c:value><crate> Key</c:value> <c:text>for voters online. <c:action>/vote"
 
 playtime:
   reward: "<prefix><c:success><sym:time></c:success> <c:text>Playtime reward: <c:value><hours></c:value> <c:text>active hours on this profile."
@@ -208,3 +239,69 @@ menu:
       lore:
         - "<c:locked><sym:cross></c:locked> <c:text>Unlocks at <c:value><hours></c:value> <c:text>hours"
         - "<c:muted><left> hours to go"
+  vote:
+    title: "Vote"
+    info:
+      - "<c:text>Vote on every site once a day"
+      - "<c:text>for keys and gems. Votes pay"
+      - "<c:text>the profile you are on; when you"
+      - "<c:text>are offline they wait for you."
+    summary:
+      name: "<c:flame><sym:star></c:flame> <c:value>Vote for us"
+      lore:
+        - "<c:text>Today: <c:value><done></c:value><c:muted>/</c:muted><c:text><sites> sites"
+        - "<c:text>Streak: <c:value><streak></c:value> <c:text>days"
+        - "<c:text>Rewards go to: <c:value><profile>"
+        - "<c:muted>Waiting votes: <waiting>"
+        - ""
+        - "<c:muted>New day at 00:00 (Oslo time)."
+    site:
+      open:
+        name: "<c:error><sym:cross></c:error> <c:value><site>"
+        lore:
+          - "<c:text>Not voted yet."
+          - "<c:text>Reward: <reward>"
+          - ""
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>to get the link"
+        lore-bedrock:
+          - "<c:text>Not voted yet."
+          - "<c:text>Reward: <reward>"
+          - ""
+          - "<bold><c:action>» TAP</c:action></bold> <c:text>to see the address"
+      done:
+        name: "<c:success><sym:check></c:success> <c:muted><site>"
+        lore:
+          - "<c:success>Voted!</c:success>"
+          - "<c:text>Next reward in <c:value><time>"
+          - "<c:muted>Reward: <reward>"
+    page:
+      label: "Vote page"
+      name: "<c:value>All vote sites"
+      lore:
+        - "<c:text>Our vote page links every site:"
+        - "<c:sky_ice><url>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to get the link"
+    streak:
+      name: "<c:ember><sym:star></c:ember> <c:value>Vote streak: <streak> days"
+      lore:
+        - "<c:text>Vote at least once every day."
+        - "<c:text>Best: <c:value><best></c:value> <c:text>days"
+      today-yes: "<c:success><sym:check></c:success> <c:text>You voted today"
+      today-no: "<c:warning><sym:time></c:warning> <c:text>Not voted today yet"
+      next: "<c:text>Next: <c:value><crate> Key</c:value> <c:text>in <c:value><left></c:value> <c:text>days"
+      reward: "<c:locked><sym:bullet></c:locked> <c:text>Day <day>: <crate> Key"
+      reward-reached: "<c:success><sym:check></c:success> <c:text>Day <day>: <crate> Key"
+      footer:
+        - ""
+        - "<c:muted>A missed day starts it over."
+        - "<c:muted>After day 30 it repeats."
+    party:
+      name: "<c:flame><bold>Vote Party"
+      lore:
+        - "<c:text>Every vote counts: <c:value><count></c:value><c:muted>/</c:muted><c:text><size>"
+        - "<c:text>When it is full, everyone online"
+        - "<c:text>who voted today gets a <c:value><crate> Key</c:value><c:text>."
+        - "<c:muted>Parties so far: <parties>"
+      you-in: "<c:success><sym:check></c:success> <c:text>You are in (you voted today)"
+      you-out: "<c:warning><sym:time></c:warning> <c:text>Vote today to join"
