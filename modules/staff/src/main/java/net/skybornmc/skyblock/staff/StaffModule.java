@@ -27,6 +27,8 @@ public final class StaffModule implements SkyblockModule {
     private FreezeService freeze;
     private ReportService reports;
     private StaffMode mode;
+    private IslandCreativeLog creativeLog;
+    private net.skybornmc.skyblock.common.util.Scheduler.Task evidencePurge;
 
     private ProfileSwitchGuard profileGuard;
 
@@ -49,6 +51,7 @@ public final class StaffModule implements SkyblockModule {
         reports = new ReportService(core, config, msg, store);
         Services services = new Services(core, msg, store, freeze, reports);
         mode = new StaffMode(core, config, msg, store, freeze, reports, services);
+        creativeLog = new IslandCreativeLog(core, config, mode::inStaffMode);
 
         freeze.register();
         freeze.load();
@@ -73,13 +76,17 @@ public final class StaffModule implements SkyblockModule {
         }
         freeze.start();
         reports.start();
+        creativeLog.start();
+        // R3-9a: report DMs are kept reports.dm-evidence.keep-days, then deleted in the background.
+        long purgePeriod = Math.max(1, config.dmEvidencePurgeHours) * 72_000L;
+        evidencePurge = core.scheduler().asyncRepeat(1_200L, purgePeriod, reports::purgeEvidence);
     }
 
     private List<Listener> listeners() {
         if (profileGuard == null) {
             profileGuard = new ProfileSwitchGuard(freeze, mode, core.messages(id()));
         }
-        return List.of(freeze, reports, mode, profileGuard);
+        return List.of(freeze, reports, mode, profileGuard, creativeLog);
     }
 
     @Override
@@ -93,7 +100,12 @@ public final class StaffModule implements SkyblockModule {
         if (mode == null) {
             return;
         }
+        if (evidencePurge != null) {
+            evidencePurge.cancel();
+            evidencePurge = null;
+        }
         mode.shutdown();
+        creativeLog.stop();
         freeze.stop();
         for (Listener listener : listeners()) {
             HandlerList.unregisterAll(listener);

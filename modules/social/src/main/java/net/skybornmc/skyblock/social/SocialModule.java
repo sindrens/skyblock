@@ -96,6 +96,8 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
     private final RateLimiter dmLimiter = new RateLimiter();
     private final Map<UUID, UUID> lastPartner = new ConcurrentHashMap<>();
     private final Map<UUID, Set<UUID>> ignores = new ConcurrentHashMap<>();
+    /** R3-32: who each account still in the tutorial messaged first (they may answer). */
+    private final NewPlayerDms newPlayerDms = new NewPlayerDms();
     private SocialStore store;
     private Executor main;
     private Scheduler.Task afkTask;
@@ -121,6 +123,9 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
     public void enable() throws Exception {
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         core.configs().load(config);
+        // STAFF-R3: the /rules privacy lines got the report-DM line; an unedited live list is upgraded.
+        core.messages().retire(ID, RetiredTexts.all());
+        core.messages().load(ID);
         store = new SocialStore(core.database());
         main = new MainThread(core.plugin());
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
@@ -398,8 +403,31 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
                 && !setting(t.getUniqueId(), SETTING_PMS, true)) {
             throw fail("dm.disabled", Msg.p("player", t.getName()));
         }
+        // R3-32: an account still in the tutorial only gets DMs from staff and players it messaged first. The sender is
+        // not told why (no hint that the player is new).
+        if (target instanceof Player t && !newPlayerDms.allows(config.dmNewPlayerProtection, inTutorial(t),
+                !(sender instanceof Player) || sender.hasPermission(PERM_UNIGNORABLE), t.getUniqueId(), idOf(sender))) {
+            throw fail("dm.not-yet", Msg.p("player", t.getName()));
+        }
         if (text.length() > config.dmMaxLength) {
             throw fail("dm.too-long", Msg.number("max", config.dmMaxLength));
+        }
+        // R3-32 / answer 305: links, IP addresses and phone numbers are refused like in chat; the swear list is not used.
+        if (config.dmContactFilter && sender instanceof Player author) {
+            Optional<net.skybornmc.skyblock.common.text.TextFilter> filter =
+                    core.services().optional(net.skybornmc.skyblock.common.text.TextFilter.class);
+            if (filter.isPresent()) {
+                net.skybornmc.skyblock.common.text.TextFilter.Result result = filter.get().checkContact(author, text);
+                if (result.isBlocked()) {
+                    Map<String, Object> details = new LinkedHashMap<>();
+                    details.put("message", text);
+                    details.put("reason", result.blocked());
+                    core.audit().log(AuditCategory.DM, "dm_blocked", Actor.of(sender),
+                            target instanceof Player t ? t.getUniqueId().toString() : "CONSOLE", target.getName(), null,
+                            loc(sender), details);
+                    throw fail("dm.blocked-" + result.blocked());
+                }
+            }
         }
         if (sender instanceof Player p && !p.hasPermission("skyblock.cooldown.bypass")) {
             long wait = dmLimiter.tryAcquire(p.getUniqueId(), System.currentTimeMillis(), config.dmRateMessages,
@@ -419,6 +447,9 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
                 core.sounds().play(t, "notify");
             }
             lastPartner.put(idOf(target), idOf(sender));
+            if (sender instanceof Player self && target instanceof Player t && inTutorial(self)) {
+                newPlayerDms.messaged(self.getUniqueId(), t.getUniqueId());
+            }
         }
         lastPartner.put(idOf(sender), idOf(target));
 
@@ -440,6 +471,16 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         }
         core.audit().log(AuditCategory.DM, "dm", Actor.of(sender),
                 target instanceof Player t ? t.getUniqueId().toString() : "CONSOLE", target.getName(), null, loc(sender), details);
+    }
+
+    /**
+     * R3-32: true while the account has not finished the tutorial (common TutorialService). Unknown (no tutorial module,
+     * state not loaded) counts as finished, so old players are never cut off.
+     */
+    private boolean inTutorial(Player player) {
+        return core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
+                .flatMap(t -> t.state(player.getUniqueId()))
+                .map(state -> !state.complete()).orElse(false);
     }
 
     private void reply(CommandSender sender, String text) {
@@ -675,6 +716,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         ignores.remove(id);
         dmLimiter.forget(id);
         lastPartner.remove(id);
+        newPlayerDms.forget(id);
     }
 
     // ================================================================== info commands

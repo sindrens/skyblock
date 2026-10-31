@@ -24,4 +24,24 @@ public interface TextFilter {
 
     /** Checks {@code text} written by {@code author} (their link bypass permission applies). Main thread or async. */
     Result check(Player author, String text);
+
+    /** The contact reasons of {@link #checkContact}: links, IP addresses, phone numbers. */
+    java.util.Set<String> CONTACT_REASONS = java.util.Set.of("link", "ip", "phone");
+
+    /**
+     * R3-32 / owner answer 305: only the contact checks (links, IP addresses, phone numbers), never the word list or the
+     * caps rule; the text itself is never changed. Used for private messages. The chat filter checks contact details
+     * before words, so a message with both is still refused for the contact detail.
+     */
+    default Result checkContact(Player author, String text) {
+        return contactOnly(check(author, text), text);
+    }
+
+    /** Pure part of {@link #checkContact}: keeps a contact refusal, drops everything else (and any text change). */
+    static Result contactOnly(Result full, String original) {
+        if (full != null && full.isBlocked() && CONTACT_REASONS.contains(full.blocked())) {
+            return new Result(original, full.blocked());
+        }
+        return new Result(original, null);
+    }
 }

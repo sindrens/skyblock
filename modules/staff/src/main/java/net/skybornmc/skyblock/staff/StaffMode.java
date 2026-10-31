@@ -5,6 +5,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.flight.FlightGrants;
+import net.skybornmc.skyblock.common.staff.StaffModeEvent;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Bukkit;
@@ -24,6 +25,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -173,6 +175,8 @@ final class StaffMode extends StaffFeature implements Listener {
         core.sounds().play(player, "unlock");
         notifyStaff(StaffPerms.NOTIFY, player, "mode.staff-on", Msg.p("staff", player.getName()));
         audit("staff_mode_on", player, null, null, Map.of());
+        // F15: islands turns the protection bypass on for owner/admin (and off again on exit).
+        Bukkit.getPluginManager().callEvent(new StaffModeEvent(player, true));
     }
 
     /** Leaves staff mode and gives everything back. */
@@ -180,6 +184,11 @@ final class StaffMode extends StaffFeature implements Listener {
         Session session = sessions.remove(player.getUniqueId());
         if (session == null) {
             return;
+        }
+        // F15: creative from staff mode on an island ends with staff mode. Survival first, so a saved creative mode is
+        // checked again by the creative gate (essentials) instead of creative simply staying on.
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            player.setGameMode(GameMode.SURVIVAL);
         }
         restore(player, session.contents(), session.gameMode(), session.allowFlight(), session.flying());
         if (config.modeNightVision) {
@@ -198,6 +207,7 @@ final class StaffMode extends StaffFeature implements Listener {
             notifyStaff(StaffPerms.NOTIFY, player, "mode.staff-off", Msg.p("staff", player.getName()));
         }
         audit("staff_mode_off", player, null, null, Map.of());
+        Bukkit.getPluginManager().callEvent(new StaffModeEvent(player, false));
     }
 
     private void restore(Player player, byte[] contents, GameMode gameMode, boolean allowFlight, boolean flying) {
@@ -437,12 +447,26 @@ final class StaffMode extends StaffFeature implements Listener {
         if (event.getHotbarButton() >= 0) {
             tool |= isTool(p.getInventory().getItem(event.getHotbarButton()));
         }
-        if (tool || inStaffMode(p) && event.getClickedInventory() == p.getInventory()) {
+        if (tool || inStaffMode(p) && event.getClickedInventory() == p.getInventory() && !islandCreative(p, event)) {
             event.setCancelled(true);
             if (!inStaffMode(p)) {
                 Bukkit.getScheduler().runTask(core.plugin(), () -> purge(p));
             }
         }
+    }
+
+    /**
+     * F15: owner/admin in creative during staff mode use the creative inventory freely (the kit stays protected by the
+     * tool checks above). Everything taken there gets the staff-item tag (essentials, {@code tag-staff-items}) and is
+     * cleared with the rest of the staff inventory when staff mode ends.
+     */
+    static boolean islandCreativeClick(boolean creativeEvent, boolean creativeMode, boolean permitted) {
+        return creativeEvent && creativeMode && permitted;
+    }
+
+    private static boolean islandCreative(Player p, InventoryClickEvent event) {
+        return islandCreativeClick(event instanceof InventoryCreativeEvent, p.getGameMode() == GameMode.CREATIVE,
+                p.hasPermission(StaffPerms.ISLAND_CREATIVE));
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

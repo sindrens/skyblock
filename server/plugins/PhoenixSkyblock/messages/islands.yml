@@ -97,6 +97,9 @@ protection:
 bypass:
   "on": "<prefix><c:warning><sym:cross></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>(logged, /is bypass to stop)"
   "off": "<prefix><c:success><sym:check></c:success> <c:text>Island bypass <c:value>off</c:value>."
+  # F15: staff mode turns the bypass on for owner/admin and off again when they leave /s.
+  staff-mode-on: "<prefix><c:warning><sym:cross></c:warning> <c:text>Island bypass <c:value>on</c:value> with staff mode. You can use <c:value>/gm c</c:value> on islands. <c:muted>(blocks logged)"
+  staff-mode-off: "<prefix><c:success><sym:check></c:success> <c:text>Island bypass <c:value>off</c:value> with staff mode."
 
 void:
   rescued: "<c:ember><sym:bullet></c:ember> <c:text>Caught you! Back on solid ground."

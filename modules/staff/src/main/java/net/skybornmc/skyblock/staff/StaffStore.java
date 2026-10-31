@@ -218,6 +218,44 @@ final class StaffStore {
                 + "AND (until_ms IS NULL OR until_ms > ?)", rs -> Sql.nullableLong(rs, "until_ms"), Sql.toBytes(player), now));
     }
 
+    // ------------------------------------------------------------------ DM evidence (STAFF-R3, R3-9a)
+
+    /** Stores the DMs attached to report {@code reportId} in one transaction. */
+    CompletableFuture<Integer> saveEvidence(long reportId, List<DmEvidence.Line> lines, long storedAt) {
+        if (lines.isEmpty()) {
+            return CompletableFuture.completedFuture(0);
+        }
+        return db.transaction(c -> {
+            List<Object[]> rows = new java.util.ArrayList<>(lines.size());
+            for (DmEvidence.Line l : lines) {
+                rows.add(new Object[]{reportId, storedAt, l.sentAt(), l.sender() == null ? null : Sql.toBytes(l.sender()),
+                        DmEvidence.cut(l.senderName(), DmEvidence.MAX_NAME), DmEvidence.cut(l.recipientName(), DmEvidence.MAX_NAME),
+                        DmEvidence.cut(l.body(), DmEvidence.MAX_BODY), l.ignored()});
+            }
+            Sql.batch(c, "INSERT INTO report_dm_evidence (report_id, stored_at, sent_at, sender_uuid, sender_name, recipient_name, "
+                    + "body, was_ignored) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", rows);
+            return rows.size();
+        });
+    }
+
+    /** The DMs attached to a report, oldest first. */
+    CompletableFuture<List<DmEvidence.Line>> evidence(long reportId) {
+        return db.async(c -> Sql.query(c, "SELECT sent_at, sender_uuid, sender_name, recipient_name, body, was_ignored "
+                        + "FROM report_dm_evidence WHERE report_id = ? ORDER BY sent_at ASC, id ASC",
+                rs -> new DmEvidence.Line(rs.getLong("sent_at"), Sql.uuid(rs, "sender_uuid"), rs.getString("sender_name"),
+                        rs.getString("recipient_name"), rs.getString("body"), rs.getBoolean("was_ignored")), reportId));
+    }
+
+    CompletableFuture<Integer> evidenceCount(long reportId) {
+        return db.async(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM report_dm_evidence WHERE report_id = ?", rs -> rs.getInt(1),
+                reportId).orElse(0));
+    }
+
+    /** Deletes evidence stored before {@code cutoff}; completes with the number of rows removed. */
+    CompletableFuture<Integer> purgeEvidence(long cutoff) {
+        return db.async(c -> Sql.update(c, "DELETE FROM report_dm_evidence WHERE stored_at < ?", cutoff));
+    }
+
     private static Report map(ResultSet rs) throws SQLException {
         return new Report(rs.getLong("id"), rs.getLong("created_at"), Sql.uuid(rs, "reporter"), rs.getString("reporter_name"),
                 Sql.uuid(rs, "target"), rs.getString("target_name"), rs.getString("reason"), rs.getString("details"),

@@ -240,3 +240,55 @@ decisions:
     file: islands.yml
     path: members.slot-lock-inactive-days
     value: 21
+
+  - id: "R3-31a"
+    answer: "/report reason Scamming (open question 542)"
+    module: staff
+    file: staff.yml
+    path: reports.reasons
+    item: "Scamming"
+    # migrated by StaffConfig version 2 (ValueChange of the whole unedited list), not here
+
+  - id: "R3-31b"
+    answer: "/report reason Threats (open question 542)"
+    module: staff
+    file: staff.yml
+    path: reports.reasons
+    item: "Threats"
+    # migrated by StaffConfig version 2, not here
+
+  - id: "R3-31c"
+    answer: "/report reason Griefing (open question 542)"
+    module: staff
+    file: staff.yml
+    path: reports.reasons
+    item: "Griefing"
+    # migrated by StaffConfig version 2, not here
+
+  - id: "R3-9a"
+    answer: "/report attaches the last 10 DMs between reporter and reported player; kept 180 days"
+    module: staff
+    file: staff.yml
+    path: reports.dm-evidence.keep-days
+    value: 180
+
+  - id: "R3-9a-count"
+    answer: "/report attaches the last 10 DMs between reporter and reported player"
+    module: staff
+    file: staff.yml
+    path: reports.dm-evidence.count
+    value: 10
+
+  - id: "R3-32a"
+    answer: "/msg and /r go through the link/IP/phone filter (not the swear list, answer 305)"
+    module: social
+    file: social.yml
+    path: dm.contact-filter
+    value: true
+
+  - id: "R3-32b"
+    answer: "Until an account finishes the tutorial, only staff and players it messaged first can DM it"
+    module: social
+    file: social.yml
+    path: dm.new-player-protection
+    value: true

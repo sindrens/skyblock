@@ -81,9 +81,17 @@ public final class StaffConfig extends ModuleConfig {
     @Setting(path = "reports.details-max-length", desc = "Maximum length of the free-text details.", min = 10, max = 255)
     public int reportDetailsMaxLength = 120;
 
-    @Setting(path = "reports.reasons", desc = "Report reasons shown in the picker (the last one asks for free text).")
-    public List<String> reportReasons = List.of("Hacking", "X-ray", "Toxicity", "Spam", "Advertising", "Exploiting",
+    /** The reasons before R3-31 (config version 1): an unedited live list is upgraded to {@link #REASONS_V2}. */
+    static final List<String> REASONS_V1 = List.of("Hacking", "X-ray", "Toxicity", "Spam", "Advertising", "Exploiting",
             "Inappropriate build", "Inappropriate name", "Other");
+
+    /** R3-31 (owner, open question 542): Scamming, Threats and Griefing added before Other. */
+    static final List<String> REASONS_V2 = List.of("Hacking", "X-ray", "Toxicity", "Spam", "Advertising", "Scamming", "Threats",
+            "Griefing", "Exploiting", "Inappropriate build", "Inappropriate name", "Other");
+
+    @Setting(path = "reports.reasons", desc = "Report reasons shown in the picker (the last one asks for free text). At most 15; "
+            + "each at most 32 characters.")
+    public List<String> reportReasons = REASONS_V2;
 
     @Setting(path = "reports.closed-shown", desc = "How many recently closed reports /reports shows.", min = 10, max = 500)
     public int closedShown = 100;
@@ -91,6 +99,48 @@ public final class StaffConfig extends ModuleConfig {
     @Setting(path = "reports.invalid-window-days", desc = "Days of invalid reports counted in the staff message when the "
             + "moderation module is not running (with it, punishments.yml extras.false-reports.window is used).", min = 1, max = 365)
     public int invalidWindowDays = 30;
+
+    @Setting(path = "reports.dm-evidence.count", desc = "R3-9a: how many of the last private messages between the reporter and "
+            + "the reported player a report keeps as evidence (only staff who may read DMs see them). 0 = none.", min = 0, max = 50)
+    public int dmEvidenceCount = 10;
+
+    @Setting(path = "reports.dm-evidence.keep-days", desc = "R3-9a: days the DMs attached to a report are kept (also said on the "
+            + "privacy line of /rules), then deleted.", min = 1, max = 3650)
+    public int dmEvidenceKeepDays = 180;
+
+    @Setting(path = "reports.dm-evidence.purge-hours", desc = "How often old report DMs are deleted (hours, in the background).",
+            min = 1, max = 168)
+    public int dmEvidencePurgeHours = 6;
+
+    // ------------------------------------------------------------------ staff creative on islands (F15)
+
+    @Setting(path = "island-creative.log-flush-seconds", desc = "F15: blocks placed and broken in creative on islands (staff mode) "
+            + "are collected and written to the audit log this often, one row per staff member, island and action.", min = 1, max = 60)
+    public int creativeLogFlushSeconds = 5;
+
+    @Setting(path = "island-creative.log-max-blocks-per-row", desc = "F15: most blocks in one audit row of the creative block log "
+            + "(more start a new row).", min = 1, max = 500)
+    public int creativeLogMaxBlocks = 100;
+
+    /** Version 2 (R3-31): the new report reasons reach a live file that still has the old default list. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of(settingPath("reportReasons"), ValueChange.of(REASONS_V1, REASONS_V2)));
+    }
+
+    /** The {@link Setting#path} of a field, so a migration never repeats (and mistypes) a path. */
+    static String settingPath(String field) {
+        try {
+            return StaffConfig.class.getField(field).getAnnotation(Setting.class).path();
+        } catch (NoSuchFieldException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
     @Override
     public String fileName() {
