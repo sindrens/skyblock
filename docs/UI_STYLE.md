@@ -233,41 +233,61 @@ Rules:
 
 ## 5. GUIs
 
-### 5.1 Layout standard (6-row chest = 54 slots)
-Built by the menu framework (`common/menu`, `frame()`), so every menu looks the same automatically.
+### 5.1 Layout standard (I9 v2: compact, no frame, empty slots stay empty)
+Built by the menu framework (`common/menu`, `navBar()`), so every menu behaves the same automatically. Sizes are **3, 4 or 6 rows** (5 rows only in old menus until their pass). **No border, no filler panes**: empty slots stay empty (a pane may only mark a state, e.g. the red error glass).
 ```
- R  O  B  B  B  B  B  O  R      R = red pane (corner accent)   O = orange pane (ember glow)
- B  .  .  .  .  .  .  .  B      B = black pane (border)         . = content (28 slots: 10-16, 19-25, 28-34, 37-43)
- B  .  .  .  .  .  .  .  B
- B  .  .  .  .  .  .  .  B
- B  .  .  .  .  .  .  .  B
- ←  a  a  ?  ✘  M  a  <  >      45 Back · 46/47/51 screen actions · 48 ? · 49 Close · 50 Main menu · 52/53 pages
+ .  .  .  .  S  .  .  .  D      S = optional summary tile (4: your head, balance, "what is this")   D = danger corner (8)
+ .  x  x  x  x  x  x  x  .      x = list grid (28 slots: 10-16, 19-25, 28-34, 37-43), filled left to right
+ .  x  x  x  x  x  x  x  .
+ .  x  x  x  x  x  x  x  .
+ .  x  x  x  x  x  x  x  .
+ ←  a  a  .  ✕  .  s  <  >      45 Back · 46/47 screen actions · 49 Close · 51 Search (auction house only) · 52/53 pages
 ```
-- **Why this frame:** full red rows (the old look) were loud and fought with red error items and the content. A dark border makes items pop; red only on the corners with an orange "glow" next to them is the phoenix accent, like embers at the edges. Content slots stay empty (no filler), so the list reads cleanly. All panes have no tooltip at all.
-- **Fixed slots everywhere (GUI-1, docs/design/GUI_DESIGN.md §1.1, `MenuLayout`):** 45 = Back on every page (when there is somewhere to go back to); 48 = **?** "What is this?" (book: the screen's short guide in the lore, a click opens its help topic and Back returns here); 49 = Close (barrier); 50 = Main menu (nether star, opens /menu; on /menu itself: Help & guides); 52 = Previous page, 53 = Next page (only when there is one). Free for screen actions: 46, 47, 51. A paged menu that puts its own button on 52 is logged at startup of that menu.
-- **4 and 5 rows:** the same bar on the last row (4 rows: 27 Back, 30 ?, 31 Close, 32 Main menu, 34/35 pages). **3 rows:** 18 Back, 22 Close.
+| Rows | Back | Actions | Close | Search | Previous | Next | Danger |
+|---|---|---|---|---|---|---|---|
+| 6 | 45 | 46, 47 | 49 | 51 (AH only) | 52 | 53 | 8 |
+| 4 | 27 | 28, 29 | 31 | - | 34 | 35 | 8 |
+| 3 | 18 | 19, 20 | 22 | - | - | - | 8 |
+- **Minimal bottom row (I9 §4):** Back (arrow, only when there is somewhere to go back to; never replaced by Previous page), Close (barrier, white name: red is danger only), Previous/Next page (paper, the stack count is the target page, only when there is more than one page). **There is no `?` button and no Main menu button** (the hotbar Nether Star opens the hub from anywhere); slots 48 and 50 are free. The `/menu` hub alone has Help on 50 (book). `MenuLayout` holds the table; a paged menu that puts its own button on a standard slot is logged.
+- **Centred small menus (`Centered`, I9 §2):** 1 button = column 4; 2 = 3 5; 3 = 2 4 6; 4 = 1 3 5 7; 5 = 0 2 4 6 8 (6-9 keep a gap in the middle). Up to 8 buttons fit row 1 of a 3-row menu; 9 to 14 use rows 1-2 of a 4-row menu (row 1 gets the bigger half: nine = 5 + 4). Groups with different meanings get an empty column or row between them. Lists use the 7x4 grid and are not centred (a half-empty last row stays left aligned).
 - **Back (navigation stack):** Back returns to the menu that opened this one. A menu opened from another menu (also through a command, e.g. /menu → /is, or after a chat prompt) gets it as its Back target automatically; /menu is the bottom of the stack; closing the menu ends the stack (`common/menu/Navigation`).
-- **In place:** tabs, page turns and refreshes rebuild the same window and update the title in place (no close/reopen flicker, the cursor stays). `menus.yml → title.update-in-place: false` falls back to reopening when the title changes.
-- **Clicks:** left and right click both run a button's action (a Bedrock tap too). Right-click and shift-click only do something else on buttons that mark a Java-only shortcut (`MenuButton.withRight/withShift`); the plain click must still do the main thing.
-- **Navigation heads:** Back/Previous/Next are textured player heads (Mojang's official `MHF_ArrowLeft` / `MHF_ArrowRight` by default, or any minecraft-heads.com texture value in `menus.yml → heads.*`); loaded once in the background, with a plain arrow until ready or if the lookup fails. Bedrock shows a player head with the same name.
-- **Title format:** `▸ Island » Upgrades (2/5)`: red `▸` marker, crumbs in title gray `#3F3F3F` (readable on the light chest background), separator and page in `#8B8B8B`. Built with `service.title(viewer, crumbs…)`. Rule `Feature » Screen`: at most **2 parts** (`title.max-parts`, the item or player name stays last) and max **32 characters** (`menus.yml → title.max-length`): leading crumbs are dropped first, then the last one is shortened with `..`. An empty title shows the fallback title (`messages/menus.yml → title.fallback`).
-- **Page indicator:** in the title (`(2/5)`, only when there is more than one page) and in the lore of Previous/Next ("Go to page 3 of 5").
-- **Button lore:** name = color word + white value; lore = description lines (`<c:text>`), an empty line, then the action line `» CLICK to …` (bold action color, verb upper case). No italics anywhere.
-- **States (one look each, shared builders in `MenuService`):** Loading = clock "⌛ Loading..." (`loadingItem`, `Menu.setLoading`); Error = red stained glass "✘ Couldn't load this" (`errorItem`, with a retry click when given); Empty list = cobweb in slot 22 (13 on small menus) "Nothing here yet" + one hint (`emptyItem`, `Menu.setEmpty`); Locked = gray dye "✘ Name" + how to unlock, a click shows it in the action bar (`locked`); Tab = selected glints with "✔ You are here", others "» CLICK to view" (`tab`); Toggle = lime dye "✔ Enabled" / red dye "✘ Disabled" + "▸ Click to switch".
-- Smaller GUIs (3-row) for simple choices and confirmations: same frame, inner slots filled with gray panes, Back 18 and Close 22.
+- **In place:** tabs, page turns and refreshes rebuild the same window and update the title in place (no close/reopen flicker, the cursor stays). `menus.yml → title.update-in-place: false` falls back to reopening when the title changes. A menu whose row count changes (the You menu when an entry appears) is reopened.
+- **Clicks (`ClickRoute`):** left and right click both run a button's action (a Bedrock tap too). Java-only shortcuts on buttons that declare them: right-click (`withRight`), shift-click (`withShift`), **middle click and Shift + Right-click** (`withMiddle`; a survival client sends no middle click, so Shift + Right-click does the same). Every other click (number keys, drop, double-click, offhand, a middle click on a button without a middle action) is ignored and the client is resynced (no cloned item in creative). The plain click always does the main thing.
+- **Icons (I7/I9):** every button is a real vanilla item (`MenuService#icon(viewer, key, name, lore)`, keys in `resourcepack/icons.json`); Java players with the pack loaded see our own picture on it. Back/Previous/Next are the arrow and paper items, not heads. Heads stay only for people.
+- **Title format:** `▸ Island » Upgrades (2/5)`: red `▸` marker, crumbs in title gray `#3F3F3F` (readable on the light chest background), separator and page in `#8B8B8B`. Built with `service.title(viewer, crumbs…)`. Rule `Feature » Screen`: at most **2 parts** (`title.max-parts`, the item or player name stays last) and max **32 characters** (`menus.yml → title.max-length`): leading crumbs are dropped first, then the last one is shortened with `..`. An empty title shows the fallback title (`messages/menus.yml → title.fallback`). Vanilla font only.
+- **Page indicator:** in the title (`(2/5)`, only when there is more than one page), as the count on the paper and in the lore of Previous/Next ("Go to page 3 of 5").
+- **States (one look each, shared builders in `MenuService`, icons from the catalogue):** Loading = clock "⌛ Loading..." (`loadingItem`, `state/loading`); Error = red stained glass "✘ Couldn't load this" (`errorItem`, with a retry click when given); Empty list = cobweb in slot 22 (13 on small menus) "Nothing here yet" + one hint (`emptyItem`, `state/empty`); Locked = gray dye "✘ Name" + how to unlock, a click shows it in the action bar (`locked`, `state/locked`); Tab = selected glints with "✔ You are here"; Toggle = **lime dye "✔ On" / gray dye "✘ Off"** (`state/on` / `state/off`; red is reserved for danger).
+
+### 5.1.1 Tooltip template (I9 §6, one builder: `LoreBuilder`)
+```
+Island Upgrades                 name: bold, colour = area meaning (<area:...>, below), no italics, no [brackets]
+Make your island better.        ONE grey sentence (text colour, 32-36 characters)
+
+| Level: 3 / 9                  optional sections (at most 2): bold red | Header, dark red bar, grey label, white value
+
+Right-click: sell               optional muted hint, Java viewers only (MenuService#javaLines, LoreBuilder#hint)
+» CLICK to open                 bold action yellow, verb UPPER CASE, always the last line
+```
+- At most **6 lines** per button and **36 visible characters** per line; only Bedrock-safe symbols (§2.1).
+- **Area colours** (`style.yml → area`, `<area:money>`): money (green: Shop, Sell, Bank, Auction House, prices), reward (flame: Rewards, Daily, Crates, ready counts), move (ember: Travel, Back, pages, timers, Events), depths (steel sky: The Depths, info, crystals), skills (violet: Skills, Enchanter, Wardrobe, Forge, Collection), people (blue: Friends, Members, Visit), home (lime: Home, Island), danger (red: delete, reset, disband, leave only), neutral (white: Settings, Help, Rules, Profiles), locked (gray). No module writes a hex value in a menu text. The `/menu` hub names take their row colour (G9).
+
+### 5.1.2 Danger rule (I9 §5)
+- Delete island, delete profile, reset, disband, leave, permanent ban, destroy items: **one tile each**, TNT with our red danger icon (`MenuService#dangerItem`, `nav/danger`), red name (`<area:danger>`), two grey lines saying exactly what is lost, red `» CLICK to ...` line (`lore.action-danger`, `LoreBuilder#dangerAction`).
+- In a corner away from Back, the page arrows and the main action: **slot 8** (`MenuLayout.danger`). Never in the centre. TNT is used for nothing else; Close stays the barrier.
+- The click opens the `ConfirmMenu`; things that cannot be undone use `twoStep()`.
 
 ### 5.2 Confirmation dialog (3-row)
 ```
- R  O  B  B  B  B  B  O  R
- B  ✔  ✔  ✔  ◆  ✘  ✘  ✘  B      10-12 Confirm (11 lime concrete, 10/12 lime panes: one big target)
- ←  O  B  B  ✘  B  B  O  R      13 what is confirmed + what you lose · 14-16 Cancel (15 red concrete) · 18 Back · 22 Close
+ .  .  .  .  .  .  .  .  .
+ .  .  ✔  .  ◆  .  ✘  .  .      11 Confirm (lime concrete, state/confirm) · 13 what is confirmed + what you lose · 15 Cancel (red concrete, state/cancel)
+ ←  .  .  .  ✕  .  .  .  .      18 Back · 22 Close
 ```
-- The middle item (13) carries the details: its name is the key fact, the lore says "This will:" + exactly what happens and what it costs (GUI-1: no longer on the green button, so Bedrock players read it before tapping). Confirm: "Read the middle item first". Cancel: "Nothing will change."
+- No panes. The middle item (13) carries the details: its name is the key fact, the lore says "This will:" + exactly what happens and what it costs (Bedrock players read it before tapping). Confirm: "Read the middle item first". Cancel: "Nothing will change."
 - One-shot: a confirm can never run twice. Cancel returns to the parent menu.
-- **Two-step** (`ConfirmMenu.twoStep()`) for things that can't be undone (disband, delete profile, permanent ban): the first Confirm shows a second check in the same window with the sides swapped (Cancel left, "Yes, do it" right) and "Last check: this can't be undone"; the title shows `(1/2)` / `(2/2)`.
-- Title: `▸ Disband island` (or the default `▸ Are you sure?`).
+- **Two-step** (`ConfirmMenu.twoStep()`) for things that can't be undone (disband, delete profile, permanent ban): the first Confirm shows a second check in the same window with the sides swapped (Cancel left on 11, "Yes, do it" right on 15) and "Last check: this can't be undone"; the title shows `(1/2)` / `(2/2)`.
+- Title: `▸ Disband island` (or the default `▸ Are you sure?`). The tiles are single slots (one constant in `ConfirmFlow` if they must be wider).
 
-Required for: anything irreversible, anything above a money threshold, solo→team, disband, prestige, merges, leaving islands, buying with gems.
+Required for: anything irreversible, anything above a money threshold, solo→team, disband, prestige, merges, leaving islands, buying with credits.
 
 ### 5.2.0 Bedrock popups for chat offers (3-row, GUI-5)
 Bedrock can't click chat. Anything answered with a chat click (TPA, island invites, trades, /discord /store /vote /website /rules, /help command picks, tutorial "I'm stuck", staff alerts) goes through **one API**: `core.menus().offers().offer(player, Offer...)`. Everyone gets the chat line; Bedrock players also get a popup:
@@ -287,19 +307,18 @@ Typing is the last option (GUI_DESIGN §5); when a feature needs free text (a no
 - **Bedrock:** a Floodgate form popup with one text field and the on-screen keyboard, the current text filled in; texts `<key>-form.title` and `<key>-form.label`. Falls back to chat without Floodgate. Turn off: `menus.yml → bedrock-forms.enabled: false`.
 - The answer arrives cleaned (no colour codes, trimmed, 1..max; `TypedText`); empty or closed runs `onCancel`. Pass `<max>` yourself when a text shows it.
 
-### 5.2.1 Number picker (6-row)
+### 5.2.1 Number picker (4-row)
 ```
- R  O  B  B  B  B  B  O  R
- B  ·  ·  ·  ·  ·  ·  ·  B      · = gray pane
- B −100 −10 −1  $  +1 +10 +100 B   19-21 red dye (stack size = step), 22 sunflower = value (exact + compact, min/max)
- B  ·  · Min  ✎  Max ·  ·  B     30 bucket = set minimum, 31 name tag = type an amount in chat (1.5k/2M), 32 water bucket = set maximum
- B  ·  ·  ✔ [✔]  ✔  ·  ·  B     39-41 Confirm (40 lime concrete)
- ←  O  B  ?  ✘  M  B  O  R
+ .   .   .   .   $   .   .   .   .       4 sunflower = value (exact + compact, min/max)
+ . −100 −10 −1  [✔] +1 +10 +100  .       10-12 red dye (stack size = step) · 13 Confirm (lime concrete, name shows the value) · 14-16 lime dye
+ .   .  Min  .   ✎   .  Max  .   .       20 bucket = minimum · 22 name tag = type an amount (1.5k/2M) · 24 water bucket = maximum
+ ←   .   .   .   ✕   .   .   .   .       27 Back · 31 Close
 ```
+Fewer than three step sizes leave their slots empty. Bedrock uses the same picker for "Type an amount".
 
-### 5.3 Help on every screen
-- **? item (slot 48, "What is this?"):** what this screen does, in 2–4 lines, plus "Click for the full guide". Opens `/help <topic>` for that screen; Back in the help returns to the screen.
-- Every clickable item's lore ends with the action lines (§4.1).
+### 5.3 Help
+- **No `?` button on every screen** (I9 rule 7): help is in the world (NPCs, holograms), on the hub's Help button (slot 50) and in `/help <topic>`. Lore stays short.
+- Every clickable item's lore ends with the action line (§4.1, §5.1.1).
 - First time a player opens a feature GUI: a one-time tip in chat with a link to its help topic (togglable in `/settings`).
 
 ### 5.4 Behavior
@@ -310,31 +329,44 @@ Typing is the last option (GUI_DESIGN §5); when a feature needs free text (a no
 - Close the GUI on teleport or on long actions.
 
 ### 5.5 Feature icon map (same icon everywhere for the same feature)
-Icons come from `resourcepack/icons.json` (I7 pack v2): one vanilla base item per key, shown to everyone; Java players with the pack loaded see our own picture on that base item (`MenuService#icon(viewer, key, ...)`). Never use a pack-only `item_model`.
+Icons come from `resourcepack/icons.json` (I7 pack v2): one vanilla base item per key, shown to everyone; Java players with the pack loaded see our own picture on that base item (`MenuService#icon(viewer, key, ...)`). Never use a pack-only `item_model`. Two buttons on one screen never share a base item (documented exception: You → Store and Credits are both diamond, I9 §9).
 
-| Feature | Icon |
-|---|---|
-| Island | Grass block |
-| Island upgrades | Anvil |
-| Island stats / top | Gold ingot / golden helmet |
-| The Depths `/dungeon` | Iron pickaxe → shows mode icons inside |
-| Shop | Emerald |
-| Sell | Gold nugget |
-| Auction house | Gold block |
-| Bank | Barrel (personal) / Ender chest (island) |
-| Crates | Tripwire hook |
-| Quests | Writable book |
-| Skills | Experience bottle |
-| Sets | Leather chestplate (dyed Phoenix Red) |
-| Enchanter | Enchanting table |
-| Pets | Bone / spawn egg |
-| Events | Clock |
-| Black Market | Wither rose |
-| Settings | Comparator |
-| Help | Knowledge book |
-| Warps | Ender pearl |
-| Collection log | Bookshelf |
-| Titles / cosmetics | Name tag / armor stand |
+| Feature | Base item | Icon key |
+|---|---|---|
+| Home | Red bed | `feature/home` |
+| Island | Grass block | `feature/island` |
+| The Depths `/dungeon` | Iron pickaxe | `feature/depths` |
+| Travel | Ender pearl | `feature/travel` |
+| Shop | Emerald | `feature/shop` |
+| Sell | Gold nugget | `feature/sell` |
+| Bank | Barrel (personal) / Ender chest (island) | `feature/bank` / `island/bank` |
+| Auction House | Gold block | `feature/auction` |
+| Forge | Smithing table | `feature/forge` |
+| Skills | Experience bottle | `feature/skills` |
+| Enchanter | Enchanting table | `feature/enchanter` |
+| Wardrobe | Leather chestplate | `feature/wardrobe` |
+| Rewards | Chest | `feature/rewards` |
+| Top | Golden helmet | `feature/top` |
+| Profiles | Armor stand | `feature/profiles` |
+| Titles | Name tag | `feature/titles` |
+| Achievements | Totem of undying | `feature/achievements` |
+| Settings | Comparator | `feature/settings` |
+| Store | Diamond | `feature/store` |
+| Rules | Lectern | `feature/rules` |
+| Quests | Writable book | `feature/quests` |
+| Collection | Bookshelf | `feature/collection` |
+| Staff (hub tile) | Shield | `feature/staff` |
+| Help (hub) | Book | `nav/help` |
+| Search (auction house only) | Spyglass | `nav/search` |
+| Danger | TNT | `nav/danger` |
+| Back / Close / Previous / Next | Arrow / Barrier / Paper / Paper | `nav/back` / `nav/close` / `nav/prev` / `nav/next` |
+| Island upgrades / stats / warps | Anvil / Gold ingot / Ender pearl | `island/upgrades` / `island/stats` / `island/warps` |
+| Crates | Tripwire hook | `travel/crate_yard` |
+| Events | Clock | (later) |
+| Black Market | Wither rose | (later) |
+| Pets | Bone / spawn egg | (later) |
+
+**Currencies (I9 §9):** money = gold ingot (`currency/money`), crystals = amethyst shard (`currency/crystals`), shards = prismarine shard (`currency/shards`), credits = diamond (`currency/credits`, earned credits too); `economy.yml → icons`.
 
 ---
 
