@@ -722,6 +722,60 @@ public final class MenuService implements Listener {
         }, onCancel, placeholders);
     }
 
+    /**
+     * True when {@code player} gets Bedrock popups ({@link #input} forms, {@link #showText}): a Bedrock player with
+     * Floodgate's form API and {@code menus.yml → bedrock-forms.enabled}.
+     */
+    public boolean usesForms(Player player) {
+        return TypedText.useForm(config.bedrockForms, messages.isBedrock(player), bedrockForms != BedrockForms.NONE);
+    }
+
+    /**
+     * A read-only text popup for Bedrock players (GUI-4c, GUI_DESIGN §0.6 "no information only in hover text"): the
+     * title, the text lines and one button per label. Closes the open menu first (Bedrock can't show a popup over a
+     * chest). {@code onButton} (index of the button) or {@code onClosed} then runs on the main thread, e.g. to reopen
+     * the menu. Returns false (nothing happens) for Java players or when the popup could not be sent.
+     */
+    public boolean showText(Player player, Component title, List<Component> lines, List<Component> buttons,
+                            java.util.function.IntConsumer onButton, Runnable onClosed) {
+        if (!usesForms(player)) {
+            return false;
+        }
+        UUID id = player.getUniqueId();
+        StringBuilder content = new StringBuilder();
+        for (Component line : lines) {
+            if (!content.isEmpty()) {
+                content.append('\n');
+            }
+            content.append(FORM_TEXT.serialize(line));
+        }
+        List<String> labels = new ArrayList<>();
+        for (Component button : buttons) {
+            labels.add(FORM_TEXT.serialize(button));
+        }
+        forms.add(id);
+        boolean sent = bedrockForms.sendText(id, FORM_TEXT.serialize(title), content.toString(), labels,
+                index -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (forms.remove(id) && player.isOnline()) {
+                        onButton.accept(index);
+                    }
+                }),
+                () -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (forms.remove(id) && player.isOnline()) {
+                        onClosed.run();
+                    }
+                }));
+        if (!sent) {
+            forms.remove(id);
+            return false;
+        }
+        if (open.containsKey(id)) {
+            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+        }
+        sounds.playUi(player, "page");
+        return true;
+    }
+
     private boolean sendForm(Player player, String module, String key, int maxLength, String current, Consumer<String> onInput,
                              Runnable onCancel, TagResolver... placeholders) {
         UUID id = player.getUniqueId();

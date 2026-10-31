@@ -59,6 +59,8 @@ public final class MenusModule implements SkyblockModule {
     @Override
     public void enable() {
         core.configs().load(config);
+        core.messages().retire(Nav.TEXTS, RetiredTexts.all());
+        core.messages().load(Nav.TEXTS);
         loadFiles();
         core.services().register(ID, PlayerSettings.class, settings);
         registerBuiltinSettings();
