@@ -1,5 +1,8 @@
 # The Depths v2: shared zones, tier layers, layered mobs
 
+> **Owner decision 31 Oct (chat):** combat zones use **simple tier areas** (one area per tier inside each zone, everyone sees the same mobs). The per-player tier palette is only for the **mine and wood** zones. Layered mobs (§3.2) are dropped. See docs/OWNER_ANSWERS_GUI1.md.
+
+
 **Status:** plan v1 for the owner, 30 Oct 2026. Nothing is built yet.
 **Decided by the owner:**
 - **D1:** 5 zones per line plus boss areas, with tier palettes.
