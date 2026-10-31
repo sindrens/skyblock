@@ -937,7 +937,7 @@ Enchant level costs follow 10 steps × a rarity factor (ENCHANTS §5):
 - Crystal income is ~20% below what ENCHANTS §12 and WARDROBE §2.4 assumed for an "active" (4 h/day) player, because the regular plays 3 h/day. Deepforge (◆25,000) lands around day 15 for a regular and day 5 for a grinder; the price can stay.
 - **TUNE:** Deepforge's 4-piece bonus (+16% → +32% crystals) and Vein Rend's area blocks (crystals at 50% yield) now raise crystal income: +25–68% for regular and grinder from month 1 (§9.6). The enchant demand also follows the real costs of the build (§9.10), so the shares above are the built rules, not a stand-in.
 
-### 9.2 Gems (premium, not tradeable, decided)
+### 9.2 Credits (were "gems"; card C1: bought credits are tradeable, earned credits never)
 <!-- BEGIN table:gems -->
 | Gem source | Gems | Typical | Type |
 |---|---|---|---|
@@ -947,7 +947,9 @@ Enchant level costs follow 10 steps × a rarity factor (ENCHANTS §5):
 | Store credit | set in Tebex | - | paid |
 <!-- END table:gems -->
 
-Gem uses: cosmetics, tool skins, extra `/pv` vaults, nickname colours, gem sets (tier II–III, also in crates), profile slots. **Gems never buy money, upgrade levels, task progress, crystals, set XP or crate keys.** There is no gem→money exchange, so gems can't cause inflation.
+> **Card C1 (31 Oct 2026, built in wave 1a):** gems are renamed **credits** and split into two ledgers: `credits` (bought in the store, tradeable with `/credit pay`) and `credits_earned` (the sources in the table above, never tradeable). Every old gem became an earned credit. Spending takes earned credits first. The table keeps its old generated labels until `tools/economy_model.py` is updated; read "gem" as "earned credit".
+
+Credit uses: cosmetics, tool skins, extra `/pv` vaults, nickname colours, credit sets (tier II–III, also in crates), profile slots, and (C1-R1-32/38) island perks and boosters inside their caps. **Credits never directly grant money, upgrade levels, task progress, crystals, set XP or crate keys (C1-R2-06).** There is no credit→money exchange.
 
 ### 9.3 Shards (tradeable, decided; earning is an open question)
 | Source (proposal, `OPEN_QUESTIONS.md` #1) | Shards |

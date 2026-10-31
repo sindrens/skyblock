@@ -40,7 +40,7 @@ Help: `/help npcs`. No new player command: everything is a click (right or left;
 
 ## Leaderboards
 - `leaderboards` points show the top `leaderboards.size` (10) with V2 colors: #1 `top1`, #2 `top2`, #3 `top3`, then `place`; empty places are padded so a board never changes height. Title `leaderboard.titles.<id>`, footer "Updates every 5 min".
-- Data (`leaderboards.sources`, `id: source`): `money` / `crystals` / `shards` / `gems` (`EconomyService#top`, the `/baltop` query: best live profile per player), `skill <type>` (`SkillService#top`, level shown, ranked by XP), `island <stat> [period] [board]` (`IslandStatsService#top`), `none` (Coming soon). Defaults: the five skills on their boards; island top solo/team, weekly gains and boss damage are Coming soon until island value (Phase 5) exists; `baltop`/`money` points show money.
+- Data (`leaderboards.sources`, `id: source`): `money` / `shards` / `credits` (`EconomyService#top`; crystals are never public and show an empty board, C1-R1-28; the old `gems` = credits, the `/baltop` query: best live profile per player), `skill <type>` (`SkillService#top`, level shown, ranked by XP), `island <stat> [period] [board]` (`IslandStatsService#top`), `none` (Coming soon). Defaults: the five skills on their boards; island top solo/team, weekly gains and boss damage are Coming soon until island value (Phase 5) exists; `baltop`/`money` points show money.
 - Refreshed every `leaderboards.refresh-minutes` (5): one database read per distinct source, off the main thread; texts are set on the main thread.
 
 ## For other modules

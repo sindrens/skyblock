@@ -5,7 +5,7 @@ Boosters (PHASE-10-REWARDS.md **M10.2**, owner R3, R4, RW2, O11, RX39). Settings
 | Command | What it does | Permission | Status |
 |---|---|---|---|
 | `/boosters` (alias `/booster`) | Opens the boosters menu: your personal booster of each type (running, time left, banked time), the global booster of each type (who started it, time left, thanks so far, the queue) and the booster items in your inventory (click to start). Updates every second. Also in `/help boosters` | `skyblock.boosters.use` (everyone) | ✅ |
-| `/thanks` (alias `/thank`) | Thanks every running (or just ended, `thanks.grace-seconds`) global booster you have not thanked yet: its starter gets `thanks.gems` (1) gem, once per booster per player (RW2). Saying a thanks phrase in chat (`thanks`, `ty`, `thx` ...) does the same, quietly | `skyblock.boosters.thanks` (everyone) | ✅ |
+| `/thanks` (alias `/thank`) | Thanks every running (or just ended, `thanks.grace-seconds`) global booster you have not thanked yet: its starter gets `thanks.credits` (1) earned credit, once per booster per player (RW2). Saying a thanks phrase in chat (`thanks`, `ty`, `thx` ...) does the same, quietly | `skyblock.boosters.thanks` (everyone) | ✅ |
 
 No arguments, so there is nothing to tab-complete. No staff commands yet (a `/boosters admin give` would need the owner's OK; see OPEN_QUESTIONS).
 
@@ -23,14 +23,14 @@ No arguments, so there is nothing to tab-complete. No staff commands yet (a `/bo
 - Everyone online gets the bonus. One per type runs; more wait in a **queue** (max `global.max-queue`, 5, per type; more are refused and the item kept). Time left counts down while the server runs and survives restarts.
 - A **boss bar** shows type, strength, time left, the starter and `/thanks` to everyone (`/settings → Global booster bar` hides it). Start, queue and end are announced (`global.announce`).
 - Global booster items are bound by default (`global.always-bound`).
-- **Thanks (RW2):** 1 gem per player per booster, never for your own booster, no gem from the starter's IP address (`thanks.same-ip-pays: false`), at most `thanks.max-gems-per-booster` (100) gems per booster. Paid through the economy ledger (reason `booster_thanks`, idempotency key `booster_thanks:<id>:<player>`); a crash before the payment is retried at the next start, never paid twice.
+- **Thanks (RW2):** 1 earned credit per player per booster, never for your own booster, no credit from the starter's IP address (`thanks.same-ip-pays: false`), at most `thanks.max-credits-per-booster` (100) credits per booster. Paid through the economy ledger (reason `booster_thanks`, idempotency key `booster_thanks:<id>:<player>`); a crash before the payment is retried at the next start, never paid twice.
 
 **Safety**
 - Starting an item: the item leaves the inventory, then **one transaction** subtracts the unsaved used time, marks the item's unique id used (`booster_used_items`) and adds the time. A refusal or error gives the item back (inventory, else `/box`). Because the id is stored, a copy or a crash-rolled-back inventory can never start the same item twice (it is removed with a message and logged as `reuse_refused`). After the start the player file is saved (`items.save-player-data`).
 - Used time is saved every `personal.save-seconds` (30 s) as a **relative** subtraction, so it can never undo time added meanwhile; every database step of a profile runs in order. A crash loses at most that much counting, in the player's favour.
 
-**Audit** (category `boosters`, `/logs`): `personal_start` (type, minutes, item, outcome started/extended, time left), `personal_end`, `bank_add` (source, added, banked), `bank_start`, `global_start`, `global_queue`, `global_end` (thanks count), `thanks` (gem yes/no, same IP), `reuse_refused`, `profile_reset`. The economy writes `booster_thanks` ledger rows.
+**Audit** (category `boosters`, `/logs`): `personal_start` (type, minutes, item, outcome started/extended, time left), `personal_end`, `bank_add` (source, added, banked), `bank_start`, `global_start`, `global_queue`, `global_end` (thanks count), `thanks` (credit yes/no, same IP), `reuse_refused`, `profile_reset`. The economy writes `booster_thanks` ledger rows.
 
 **For other modules:** `BoosterService` (common): `createPersonal` / `createGlobal` (crates use them for booster rewards), `bank(connection, …)` + `banked(…)` (the AFK pool), `hold(owner, predicate)` (banked time waits while it is true: the AFK pool while inside), `valid(…)`.
 
-**Tables:** `booster_active (profile_key, booster_type, bonus_percent, remaining_ms)`, `booster_bank (profile_key, booster_type, bonus_percent, banked_ms, bank_source)`, `booster_used_items (item_uuid)`, `booster_global (global_id, booster_type, bonus_percent, duration_ms, remaining_ms, starter_*, global_state)`, `booster_thanks (global_id, thanker_uuid, gem_state)`.
+**Tables:** `booster_active (profile_key, booster_type, bonus_percent, remaining_ms)`, `booster_bank (profile_key, booster_type, bonus_percent, banked_ms, bank_source)`, `booster_used_items (item_uuid)`, `booster_global (global_id, booster_type, bonus_percent, duration_ms, remaining_ms, starter_*, global_state)`, `booster_thanks (global_id, thanker_uuid, gem_state)` (`gem_state` = whether the thanks credit is paid; the column kept its old name).

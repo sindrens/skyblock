@@ -53,7 +53,7 @@ load). Owner F10: a leave or kick locks the freed member slot for `members.slot-
 `island_slot_locks`, V016); staff removals (`/isadmin kick`, punishments, deleted profiles) and kicks of members offline
 `members.slot-lock-inactive-days` (21) days don't lock; `/is members` shows locked slots; staff `/isadmin addmember`
 ignores locks, start size 3x3 chunks (48x48). Normal Island Size upgrades reach
-`size.normal-max-chunks` (9x9, owner answer 157); bigger sizes up to `size.max-chunks` (15) only with gems or from the
+`size.normal-max-chunks` (9x9, owner answer 157); bigger sizes up to `size.max-chunks` (15) only with credits or from the
 black market (hook for Phase 5; `/isadmin setsize` can set up to `size.max-chunks`). Upgrades are paid from the island
 bank only (`upgrades.island-bank-only`, owner answer 169; `/is upgrade`, PHASE-5 M5.4, raises size, member slots and
 warp slots through `IslandService#setSize`, `#setMemberSlots` and `#setWarpSlots`, logged `island_size`,
