@@ -79,6 +79,11 @@ public final class Nav {
         return core.menus().lines(viewer, TEXTS, key, placeholders);
     }
 
+    /** Tags {@code item} with a pack icon id (null = vanilla for everyone); pack viewers get it swapped when it is set. */
+    static ItemStack icon(ItemStack item, String model) {
+        return net.skybornmc.skyblock.common.menu.MenuIcons.tag(item, model);
+    }
+
     ItemStack item(Material icon, Component name, List<Component> lore) {
         return core.menus().item(icon, name, lore);
     }

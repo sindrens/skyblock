@@ -166,8 +166,8 @@ class HubButtonsTest {
 
     @Test
     void groupMarksSitOnTheLeftEdgeOfTheRow() {
-        ButtonLayout.Button a = new ButtonLayout.Button("a", 21, "money", "stone", "command", "x", null, true, null);
-        ButtonLayout.Button b = new ButtonLayout.Button("b", 25, "money", "stone", "command", "y", null, true, null);
+        ButtonLayout.Button a = new ButtonLayout.Button("a", 21, "money", "stone", "command", "x", null, true, null, null);
+        ButtonLayout.Button b = new ButtonLayout.Button("b", 25, "money", "stone", "command", "y", null, true, null, null);
         assertEquals(18, ButtonLayout.markSlot(List.of(b, a)));
         assertEquals(-1, ButtonLayout.markSlot(List.of()), "all hidden: no mark");
     }

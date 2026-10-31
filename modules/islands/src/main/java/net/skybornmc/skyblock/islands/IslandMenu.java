@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.islands;
 
+import net.skybornmc.skyblock.common.menu.MenuIcons;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.island.IslandService.Role;
@@ -110,55 +111,55 @@ final class IslandMenu extends Menu {
             return;
         }
         set(SLOT_ISLAND, islandButton(role));
-        set(SLOT_HOME, button(Material.RED_BED, "menu.home", click -> {
+        set(SLOT_HOME, button(Material.RED_BED, "menu.home", MenuIcons.feature("home"), click -> {
             viewer.closeInventory();
             islands.teleportHome(viewer);
         }));
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         head.editMeta(SkullMeta.class, meta -> meta.setOwningPlayer(Bukkit.getOfflinePlayer(islands.person(island.owner()))));
-        set(SLOT_MEMBERS, MenuButton.of(service.item(head, text("menu.members.name"), lines("menu.members.lore",
-                Msg.p("members", island.memberCount()), Msg.p("slots", islands.slots(island)), Msg.p("coops", island.coops().size()))),
+        set(SLOT_MEMBERS, MenuButton.of(ic(service.item(head, text("menu.members.name"), lines("menu.members.lore",
+                Msg.p("members", island.memberCount()), Msg.p("slots", islands.slots(island)), Msg.p("coops", island.coops().size()))), MenuIcons.feature("members")),
                 click -> openChild(new MembersMenu(module, islands, island))));
-        set(SLOT_PERMISSIONS, MenuButton.of(service.item(new ItemStack(Material.COMPARATOR), text("menu.permissions.name"),
-                lines(MemberRules.canEditPerms(role, PermRole.MEMBER) ? "menu.permissions.lore-edit" : "menu.permissions.lore-view")),
+        set(SLOT_PERMISSIONS, MenuButton.of(ic(service.item(new ItemStack(Material.COMPARATOR), text("menu.permissions.name"),
+                lines(MemberRules.canEditPerms(role, PermRole.MEMBER) ? "menu.permissions.lore-edit" : "menu.permissions.lore-view")), MenuIcons.feature("permissions")),
                 click -> openChild(new PermPresetsMenu(module, islands, island))));
         WarpManager warps = module.warps();
-        set(SLOT_WARPS, MenuButton.of(service.item(new ItemStack(Material.ENDER_PEARL), text("menu.warps.name"), lines("menu.warps.lore",
-                Msg.p("warps", warps.warps(island.id()).size()), Msg.p("slots", warps.slots(island)))),
+        set(SLOT_WARPS, MenuButton.of(ic(service.item(new ItemStack(Material.ENDER_PEARL), text("menu.warps.name"), lines("menu.warps.lore",
+                Msg.p("warps", warps.warps(island.id()).size()), Msg.p("slots", warps.slots(island)))), MenuIcons.feature("warps")),
                 click -> openChild(new WarpBrowserMenu(module, islands, module.visits(), warps, island))));
         set(SLOT_VISITORS, visitors(role));
-        set(SLOT_SETTINGS, MenuButton.of(service.item(new ItemStack(Material.REPEATER), text("menu.settings.name"),
-                lines(module.islandSettings().canChange(island, viewer) ? "menu.settings.lore-edit" : "menu.settings.lore-view")),
+        set(SLOT_SETTINGS, MenuButton.of(ic(service.item(new ItemStack(Material.REPEATER), text("menu.settings.name"),
+                lines(module.islandSettings().canChange(island, viewer) ? "menu.settings.lore-edit" : "menu.settings.lore-view")), MenuIcons.feature("island_settings")),
                 click -> module.islandSettings().openFor(viewer, island, this)));
         MemberManager members = islands.memberManager();
         long now = System.currentTimeMillis();
         int pending = members.invites().pendingFrom(island.id(), now) + members.invites().of(islands.key(viewer), now).size();
-        set(SLOT_INVITES, MenuButton.of(service.item(new ItemStack(Material.PAPER), text("menu.invites.name"),
-                lines("menu.invites.lore", Msg.p("count", pending))), click -> openChild(new InvitesMenu(module, islands, members))));
+        set(SLOT_INVITES, MenuButton.of(ic(service.item(new ItemStack(Material.PAPER), text("menu.invites.name"),
+                lines("menu.invites.lore", Msg.p("count", pending))), MenuIcons.feature("invites")), click -> openChild(new InvitesMenu(module, islands, members))));
         set(SLOT_NOTES, notes());
         IslandChat chat = module.chat();
         boolean on = chat.isToggled(viewer);
-        set(SLOT_CHAT, MenuButton.of(service.item(new ItemStack(on ? Material.GLOW_ITEM_FRAME : Material.OAK_SIGN),
-                text(on ? "menu.chat.name-on" : "menu.chat.name-off"), lines(on ? "menu.chat.lore-on" : "menu.chat.lore-off")), click -> {
+        set(SLOT_CHAT, MenuButton.of(ic(service.item(new ItemStack(on ? Material.GLOW_ITEM_FRAME : Material.OAK_SIGN),
+                text(on ? "menu.chat.name-on" : "menu.chat.name-off"), lines(on ? "menu.chat.lore-on" : "menu.chat.lore-off")), MenuIcons.feature("island_chat")), click -> {
                     chat.toggle(viewer);
                     refresh();
                 }));
-        set(SLOT_CHAT_COLORS, MenuButton.of(service.item(new ItemStack(Material.ORANGE_DYE), text("menu.chat-colors.name"),
-                lines(IslandChatRules.canPickColors(role) ? "menu.chat-colors.lore-edit" : "menu.chat-colors.lore-view")),
+        set(SLOT_CHAT_COLORS, MenuButton.of(ic(service.item(new ItemStack(Material.ORANGE_DYE), text("menu.chat-colors.name"),
+                lines(IslandChatRules.canPickColors(role) ? "menu.chat-colors.lore-edit" : "menu.chat-colors.lore-view")), MenuIcons.feature("chat_colors")),
                 click -> openChild(new ChatColorsMenu(module, islands, chat, island))));
-        set(SLOT_VISIT, button(Material.FILLED_MAP, "menu.visit",
+        set(SLOT_VISIT, button(Material.FILLED_MAP, "menu.visit", MenuIcons.feature("visit"),
                 click -> openChild(new VisitMenu(module, islands, module.visits(), warps, Showcase.Sort.DISCOVER))));
         set(SLOT_STATS, stats());
         set(SLOT_BANK, bank());
         set(SLOT_UPGRADES, upgrades());
         fuel();
         if (role == Role.LEADER) {
-            set(SLOT_LEAVE, button(Material.TNT, "menu.disband", click -> {
+            set(SLOT_LEAVE, button(Material.TNT, "menu.disband", MenuIcons.feature("disband"), click -> {
                 viewer.closeInventory();
                 module.lifecycle().disband(viewer);
             }));
         } else {
-            set(SLOT_LEAVE, button(Material.IRON_DOOR, "menu.leave", click -> members.leave(viewer, this)));
+            set(SLOT_LEAVE, button(Material.IRON_DOOR, "menu.leave", MenuIcons.feature("leave"), click -> members.leave(viewer, this)));
         }
     }
 
@@ -192,7 +193,7 @@ final class IslandMenu extends Menu {
             lore.add(Component.empty());
             lore.addAll(lines("menu.island.click-level"));
         }
-        return service.item(new ItemStack(Material.GRASS_BLOCK), text("menu.island.name", p), lore);
+        return ic(service.item(new ItemStack(Material.GRASS_BLOCK), text("menu.island.name", p), lore), MenuIcons.feature("island"));
     }
 
     /** Visitors: open/locked, who is here, bans; leader/admin/mod click to lock or unlock. */
@@ -204,7 +205,8 @@ final class IslandMenu extends Menu {
         List<Component> lore = new java.util.ArrayList<>(lines(locked ? "menu.visitors.lore-locked" : "menu.visitors.lore-open", p));
         lore.add(Component.empty());
         lore.addAll(lines(manage ? (locked ? "menu.visitors.click-unlock" : "menu.visitors.click-lock") : "menu.visitors.click-view"));
-        ItemStack item = service.item(new ItemStack(locked ? Material.IRON_BARS : Material.OAK_FENCE_GATE), text("menu.visitors.name"), lore);
+        ItemStack item = ic(service.item(new ItemStack(locked ? Material.IRON_BARS : Material.OAK_FENCE_GATE), text("menu.visitors.name"), lore),
+                locked ? MenuIcons.feature("visitors_locked") : MenuIcons.feature("visitors"));
         if (!manage) {
             return MenuButton.display(item);
         }
@@ -217,7 +219,7 @@ final class IslandMenu extends Menu {
         if (stats == null) {
             return comingSoon(Material.GOLD_INGOT, "menu.stats-off");
         }
-        return button(Material.GOLD_INGOT, "menu.stats", click -> stats.open(viewer, island, this, false));
+        return button(Material.GOLD_INGOT, "menu.stats", MenuIcons.feature("island_stats"), click -> stats.open(viewer, island, this, false));
     }
 
     /** M3.3: opens the bank menu of the economy module (personal and island bank side by side). */
@@ -226,7 +228,7 @@ final class IslandMenu extends Menu {
         if (bank.isEmpty()) {
             return comingSoon(Material.ENDER_CHEST, "menu.bank-off");
         }
-        return button(Material.ENDER_CHEST, "menu.bank", click -> bank.get().openIslandBank(viewer, this));
+        return button(Material.ENDER_CHEST, "menu.bank", MenuIcons.feature("island_bank"), click -> bank.get().openIslandBank(viewer, this));
     }
 
     /** PHASE-5 M5.4: /is upgrade of the progression module; "Coming soon" without it. */
@@ -235,7 +237,7 @@ final class IslandMenu extends Menu {
         if (progression.isEmpty() || !progression.get().upgradesAvailable() || !viewer.hasPermission(IslandsModule.PERM_UPGRADE)) {
             return comingSoon(Material.ANVIL, "menu.upgrades");
         }
-        return button(Material.ANVIL, "menu.upgrades-open", click -> progression.get().openUpgradeMenu(viewer, this));
+        return button(Material.ANVIL, "menu.upgrades-open", MenuIcons.feature("upgrades"), click -> progression.get().openUpgradeMenu(viewer, this));
     }
 
     /** PHASE-7 M7.1: the production module's Island Fuel gauge (display only; nothing while Island Fuel is off). */
@@ -248,14 +250,19 @@ final class IslandMenu extends Menu {
     private MenuButton notes() {
         IslandNotes notes = module.notes();
         if (notes == null || !notes.rights(viewer, island).canView()) {
-            return MenuButton.display(service.item(new ItemStack(Material.BOOK), text("menu.notes.name"), lines("menu.notes.lore-locked")));
+            return MenuButton.display(MenuIcons.tag(service.item(new ItemStack(Material.BOOK), text("menu.notes.name"), lines("menu.notes.lore-locked")), MenuIcons.LOCKED));
         }
-        return MenuButton.of(service.item(new ItemStack(Material.WRITABLE_BOOK), text("menu.notes.name"), lines("menu.notes.lore")),
+        return MenuButton.of(ic(service.item(new ItemStack(Material.WRITABLE_BOOK), text("menu.notes.name"), lines("menu.notes.lore")), MenuIcons.feature("notes")),
                 click -> notes.open(viewer, island, this));
     }
 
-    private MenuButton button(Material icon, String key, java.util.function.Consumer<net.skybornmc.skyblock.common.menu.MenuClick> onClick) {
-        return MenuButton.of(service.item(new ItemStack(icon), text(key + ".name"), lines(key + ".lore")), onClick);
+    /** A feature icon (pack art {@code menu/icon/<name>}) on a vanilla item. */
+    private static ItemStack ic(ItemStack item, String id) {
+        return MenuIcons.tag(item, id);
+    }
+
+    private MenuButton button(Material icon, String key, String model, java.util.function.Consumer<net.skybornmc.skyblock.common.menu.MenuClick> onClick) {
+        return MenuButton.of(ic(service.item(new ItemStack(icon), text(key + ".name"), lines(key + ".lore")), model), onClick);
     }
 
     private MenuButton comingSoon(Material icon, String key) {

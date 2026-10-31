@@ -7,6 +7,8 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.config.ConfigManager;
+import net.skybornmc.skyblock.common.pack.PackIds;
+import net.skybornmc.skyblock.common.pack.PackService;
 import net.skybornmc.skyblock.common.text.Messages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.text.Sounds;
@@ -42,6 +44,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 /**
@@ -88,6 +91,8 @@ public final class MenuService implements Listener {
     private final MenuHeads heads;
     private final Offers offers;
     private BukkitTask ticker;
+    /** The pack service (pack module), looked up per call; null result = nobody has the pack. */
+    private volatile Supplier<PackService> packs = () -> null;
 
     private record Prompt(Consumer<String> onInput, Runnable onCancel, int maxLength, BukkitTask timeout) {
     }
@@ -164,12 +169,46 @@ public final class MenuService implements Listener {
         messages.load(MODULE);
         debounce.interval(config.clickDebounceMs);
         framePanes = null;
+        framePanesPack = null;
         heads.load("back", config.headBack);
         heads.load("previous", config.headPrevious);
         heads.load("next", config.headNext);
         if (offers != null) {
             offers.reload();
         }
+    }
+
+    /** Where to find the pack service (set once by the plugin; the pack module may be absent). */
+    public void packs(Supplier<PackService> packs) {
+        this.packs = packs == null ? () -> null : packs;
+    }
+
+    /** True when {@code viewer} should get pack content (backgrounds, icon models). */
+    public boolean hasPack(Player viewer) {
+        PackService service = packs.get();
+        return service != null && service.hasPack(viewer);
+    }
+
+    /**
+     * The per-viewer render step: for pack viewers an item tagged with {@link MenuIcons#tag} becomes its pack form
+     * (PAPER + custom model data, or a blank pane); everyone else gets the item unchanged.
+     */
+    public ItemStack render(Player viewer, ItemStack item) {
+        if (item == null || !hasPack(viewer)) {
+            return item;
+        }
+        return MenuIcons.render(item);
+    }
+
+    /** The chest title as {@code viewer} sees it: pack viewers get the background glyph prefix and parchment text. */
+    Component viewTitle(Player viewer, Menu menu, Component title) {
+        PackService service = packs.get();
+        if (service == null || !service.hasPack(viewer)) {
+            return title;
+        }
+        PackIds ids = service.ids();
+        int rows = Math.max(1, Math.min(6, menu.rows()));
+        return PackTitles.background(ids, menu.getClass(), rows).map(bg -> PackTitles.build(ids, bg, title)).orElse(title);
     }
 
     public JavaPlugin plugin() {
@@ -209,7 +248,7 @@ public final class MenuService implements Listener {
         // The holder must exist before the inventory; the title needs the viewer for Bedrock colors.
         menu.viewer = player;
         menu.service = this;
-        Component title = menu.title();
+        Component title = viewTitle(player, menu, menu.title());
         Inventory inventory = Bukkit.createInventory(menu, rows * 9, title);
         menu.attach(this, player, inventory);
         menu.shownTitle = title;
@@ -247,9 +286,10 @@ public final class MenuService implements Listener {
                 || top.getSize() != Math.max(1, Math.min(6, menu.rows())) * 9) {
             return false;
         }
-        Component title = menu.title();
+        Component title = viewTitle(player, menu, menu.title());
         boolean retitle = !title.equals(menu.shownTitle);
-        if (retitle && !config.titleUpdateInPlace) {
+        // The legacy in-place title setter cannot carry fonts, so pack viewers reopen when the title text changes.
+        if (retitle && (!config.titleUpdateInPlace || hasPack(player))) {
             return false;
         }
         try {
@@ -430,7 +470,7 @@ public final class MenuService implements Listener {
     public ItemStack filler(Material material) {
         ItemStack item = new ItemStack(material);
         item.editMeta(meta -> meta.setHideTooltip(true));
-        return item;
+        return MenuIcons.isPane(material) ? MenuIcons.tag(item, MenuIcons.BLANK) : item;
     }
 
     /**
@@ -461,15 +501,15 @@ public final class MenuService implements Listener {
 
     /** "⌛ Loading..." (clock), display only. */
     public MenuButton loadingItem(Player viewer) {
-        return MenuButton.display(item(Material.CLOCK, viewer, "loading"));
+        return MenuButton.display(MenuIcons.tag(item(Material.CLOCK, viewer, "loading"), MenuIcons.LOADING));
     }
 
     /** "✘ Couldn't load this" (red glass). With {@code retry} a click tries again; {@code null} = display only. */
     public MenuButton errorItem(Player viewer, Runnable retry) {
         if (retry == null) {
-            return MenuButton.display(item(Material.RED_STAINED_GLASS, viewer, "error-item"));
+            return MenuButton.display(MenuIcons.tag(item(Material.RED_STAINED_GLASS, viewer, "error-item"), MenuIcons.ERROR));
         }
-        return MenuButton.of(item(Material.RED_STAINED_GLASS, viewer, "error-retry"), click -> retry.run());
+        return MenuButton.of(MenuIcons.tag(item(Material.RED_STAINED_GLASS, viewer, "error-retry"), MenuIcons.ERROR), click -> retry.run());
     }
 
     /** "Nothing here yet" (cobweb) with the framework texts. Put it in {@link MenuLayout#empty}. */
@@ -479,7 +519,7 @@ public final class MenuService implements Listener {
 
     /** "Nothing here yet" (cobweb) with a menu's own texts: {@code <key>.name} (the key fact) and {@code <key>.lore} (one hint). */
     public MenuButton emptyItem(Player viewer, String module, String key) {
-        return MenuButton.display(item(Material.COBWEB, viewer, module, key));
+        return MenuButton.display(MenuIcons.tag(item(Material.COBWEB, viewer, module, key), MenuIcons.EMPTY));
     }
 
     /**
@@ -490,7 +530,7 @@ public final class MenuService implements Listener {
         List<Component> lore = new ArrayList<>();
         lore.add(howToUnlock);
         lore.addAll(lines(viewer, "state.locked.lore"));
-        ItemStack item = item(Material.GRAY_DYE, text(viewer, "state.locked.name", Msg.c("name", name)), lore);
+        ItemStack item = MenuIcons.tag(item(Material.GRAY_DYE, text(viewer, "state.locked.name", Msg.c("name", name)), lore), MenuIcons.LOCKED);
         return MenuButton.of(item, click -> {
             messages.actionBar(click.player(), MODULE, "state.locked.actionbar", Msg.c("hint", howToUnlock));
             sounds.playUi(click.player(), "error");
@@ -532,8 +572,22 @@ public final class MenuService implements Listener {
 
     /** The marked frame panes (border, accent, glow, inner), built once per reload instead of on every redraw. */
     private volatile ItemStack[] framePanes;
+    /** The same panes in their pack form (blank model, hidden tooltip), built once per reload. */
+    private volatile ItemStack[] framePanesPack;
 
-    private ItemStack[] framePanes() {
+    private ItemStack[] framePanes(Player viewer) {
+        if (hasPack(viewer)) {
+            ItemStack[] packed = framePanesPack;
+            if (packed == null) {
+                ItemStack[] plain = framePanes(null);
+                packed = new ItemStack[plain.length];
+                for (int i = 0; i < plain.length; i++) {
+                    packed[i] = mark(MenuIcons.render(plain[i]));
+                }
+                framePanesPack = packed;
+            }
+            return packed;
+        }
         ItemStack[] panes = framePanes;
         if (panes == null) {
             panes = new ItemStack[]{
@@ -552,7 +606,8 @@ public final class MenuService implements Listener {
      */
     void applyFrame(Menu menu) {
         int rows = menu.rows();
-        ItemStack[] panes = framePanes();
+        Player viewer = menu.viewer();
+        ItemStack[] panes = framePanes(viewer);
         for (int slot = 0; slot < rows * 9; slot++) {
             switch (frameRole(slot, rows)) {
                 case ACCENT -> menu.setMarked(slot, panes[1], null);
@@ -565,12 +620,11 @@ public final class MenuService implements Listener {
                 }
             }
         }
-        Player viewer = menu.viewer();
         ItemStack[] fixed = menu.frameButtons();
         int back = MenuLayout.back(rows);
         if (back != MenuLayout.NONE && menu.parent() != null) {
             if (fixed[0] == null) {
-                fixed[0] = mark(navItem("back", Material.ARROW, viewer, "frame.back"));
+                fixed[0] = mark(render(viewer, MenuIcons.tag(navItem("back", Material.ARROW, viewer, "frame.back"), MenuIcons.BACK)));
             }
             menu.setMarked(back, fixed[0], click -> click.menu().back());
         }
@@ -579,14 +633,14 @@ public final class MenuService implements Listener {
             if (fixed[1] == null) {
                 List<Component> lore = new ArrayList<>(lines(viewer, menu.messageModule(), menu.infoKey()));
                 lore.addAll(lines(viewer, "frame.info.footer"));
-                fixed[1] = mark(item(Material.BOOK, text(viewer, "frame.info.name"), lore));
+                fixed[1] = mark(render(viewer, MenuIcons.tag(item(Material.BOOK, text(viewer, "frame.info.name"), lore), MenuIcons.INFO)));
             }
             menu.setMarked(info, fixed[1], click -> runHelp(click.player(), click.menu(), menu.helpTopic()));
         }
         int close = MenuLayout.close(rows);
         if (close != MenuLayout.NONE) {
             if (fixed[2] == null) {
-                fixed[2] = mark(item(Material.BARRIER, viewer, "frame.close"));
+                fixed[2] = mark(render(viewer, MenuIcons.tag(item(Material.BARRIER, viewer, "frame.close"), MenuIcons.CLOSE)));
             }
             menu.setMarked(close, fixed[2], click -> close(click.player()));
         }
@@ -594,12 +648,12 @@ public final class MenuService implements Listener {
         if (main != MenuLayout.NONE) {
             if (menu.isMainMenu()) {
                 if (fixed[3] == null) {
-                    fixed[3] = mark(item(Material.KNOWLEDGE_BOOK, viewer, "frame.help"));
+                    fixed[3] = mark(render(viewer, MenuIcons.tag(item(Material.KNOWLEDGE_BOOK, viewer, "frame.help"), MenuIcons.HELP)));
                 }
                 menu.setMarked(main, fixed[3], click -> runHelp(click.player(), click.menu(), null));
             } else {
                 if (fixed[3] == null) {
-                    fixed[3] = mark(item(Material.NETHER_STAR, viewer, "frame.main-menu"));
+                    fixed[3] = mark(render(viewer, MenuIcons.tag(item(Material.NETHER_STAR, viewer, "frame.main-menu"), MenuIcons.MAIN_MENU)));
                 }
                 menu.setMarked(main, fixed[3], click -> openMainMenu(click.player()));
             }
@@ -652,7 +706,8 @@ public final class MenuService implements Listener {
         lore.addAll(lines(viewer, "toggle.action"));
         // GUI-4c: the state is in the name too ("Chat colors ✔ On"), not only in the dye colour and the lore.
         Component name = text(viewer, state ? "toggle.name-on" : "toggle.name-off", Msg.c("name", text(viewer, module, key + ".name")));
-        ItemStack item = item(state ? Material.LIME_DYE : Material.RED_DYE, name, lore);
+        ItemStack item = MenuIcons.tag(item(state ? Material.LIME_DYE : Material.RED_DYE, name, lore),
+                state ? MenuIcons.TOGGLE_ON : MenuIcons.TOGGLE_OFF);
         return MenuButton.of(item, click -> {
             change.accept(!state);
             click.menu().refresh();

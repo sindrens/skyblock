@@ -106,7 +106,8 @@ public final class ConfirmMenu extends Menu {
         };
         for (int slot : flow.confirmSlots()) {
             Material material = ConfirmFlow.bigButton(slot) ? Material.LIME_CONCRETE : Material.LIME_STAINED_GLASS_PANE;
-            set(slot, service.item(material, yesName, yesLore), confirm);
+            set(slot, MenuIcons.tag(service.item(material, yesName, yesLore),
+                    ConfirmFlow.bigButton(slot) ? MenuIcons.CONFIRM : MenuIcons.CONFIRM_SIDE), confirm);
         }
 
         Consumer<MenuClick> cancel = click -> {
@@ -120,7 +121,8 @@ public final class ConfirmMenu extends Menu {
         };
         for (int slot : flow.cancelSlots()) {
             Material material = ConfirmFlow.bigButton(slot) ? Material.RED_CONCRETE : Material.RED_STAINED_GLASS_PANE;
-            set(slot, service.item(material, viewer, "confirm.no"), cancel);
+            set(slot, MenuIcons.tag(service.item(material, viewer, "confirm.no"),
+                    ConfirmFlow.bigButton(slot) ? MenuIcons.CANCEL : MenuIcons.CANCEL_SIDE), cancel);
         }
     }
 

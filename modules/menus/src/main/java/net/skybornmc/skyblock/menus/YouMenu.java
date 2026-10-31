@@ -66,10 +66,10 @@ final class YouMenu extends net.skybornmc.skyblock.common.menu.Menu {
                 set(button.slot(), nav.comingSoon(viewer, Nav.material(button.icon(), Material.BOOK), name, lore));
             } else if (!button.allowed(viewer)) {
                 lore.addAll(nav.lines(viewer, "hub.locked"));
-                set(button.slot(), nav.item(Nav.material(button.icon(), Material.BOOK), name, lore));
+                set(button.slot(), Nav.icon(nav.item(Nav.material(button.icon(), Material.BOOK), name, lore), button.model()));
             } else {
                 lore.addAll(nav.lines(viewer, "hub.action"));
-                set(button.slot(), nav.item(Nav.material(button.icon(), Material.BOOK), name, lore), click -> open(click.player(), button));
+                set(button.slot(), Nav.icon(nav.item(Nav.material(button.icon(), Material.BOOK), name, lore), button.model()), click -> open(click.player(), button));
             }
         }
     }

@@ -85,12 +85,12 @@ public abstract class PagedMenu<T> extends Menu {
             if (customPrevious) {
                 service.warnStandardSlot(this, SLOT_PREVIOUS);
             }
-            set(SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",
-                    Msg.p("page", shown - 1), Msg.p("pages", total)), click -> turn(-1));
+            set(SLOT_PREVIOUS, MenuIcons.tag(service.navItem("previous", Material.ARROW, viewer, "frame.previous",
+                    Msg.p("page", shown - 1), Msg.p("pages", total)), MenuIcons.PREVIOUS), click -> turn(-1));
         }
         if (pages.hasNext(page)) {
-            set(SLOT_NEXT, service.navItem("next", Material.ARROW, viewer, "frame.next",
-                    Msg.p("page", shown + 1), Msg.p("pages", total)), click -> turn(1));
+            set(SLOT_NEXT, MenuIcons.tag(service.navItem("next", Material.ARROW, viewer, "frame.next",
+                    Msg.p("page", shown + 1), Msg.p("pages", total)), MenuIcons.NEXT), click -> turn(1));
         }
     }
 

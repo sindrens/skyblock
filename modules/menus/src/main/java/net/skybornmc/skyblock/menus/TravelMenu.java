@@ -72,13 +72,13 @@ final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
             List<Component> lore = new ArrayList<>(nav.lines(viewer, "travel.places." + warp.id() + ".lore"));
             if (warp.permission() != null && !warp.permission().isBlank() && !viewer.hasPermission(warp.permission())) {
                 lore.addAll(nav.lines(viewer, "hub.locked"));
-                set(warp.slot(), nav.item(Nav.material(warp.icon(), Material.ENDER_PEARL), name, lore));
+                set(warp.slot(), Nav.icon(nav.item(Nav.material(warp.icon(), Material.ENDER_PEARL), name, lore), warp.model()));
                 continue;
             }
             String actionKey = nav.core.messages().raw(Nav.TEXTS, "travel.places." + warp.id() + ".action") != null
                     ? "travel.places." + warp.id() + ".action" : "travel.action";
             lore.addAll(nav.lines(viewer, actionKey));
-            set(warp.slot(), nav.item(Nav.material(warp.icon(), Material.ENDER_PEARL), name, lore), click -> go(click.player(), warp, name));
+            set(warp.slot(), Nav.icon(nav.item(Nav.material(warp.icon(), Material.ENDER_PEARL), name, lore), warp.model()), click -> go(click.player(), warp, name));
         }
         if (shown == 0) {
             setEmpty(Nav.TEXTS, "travel.empty");

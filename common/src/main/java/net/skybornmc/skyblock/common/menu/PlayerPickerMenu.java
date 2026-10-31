@@ -88,9 +88,9 @@ public final class PlayerPickerMenu extends PagedMenu<Player> {
         if (search == null && candidates().size() <= CONTENT_SLOTS.length) {
             return;
         }
-        set(SLOT_SEARCH, search == null
+        set(SLOT_SEARCH, MenuIcons.tag(search == null
                 ? service.item(Material.SPYGLASS, viewer, "players.search")
-                : service.item(Material.SPYGLASS, viewer, "players.search-on", Msg.p("search", search)), click -> askSearch());
+                : service.item(Material.SPYGLASS, viewer, "players.search-on", Msg.p("search", search)), MenuIcons.SEARCH), click -> askSearch());
         if (search != null) {
             set(SLOT_CLEAR, service.item(Material.HOPPER, viewer, "players.search-clear"), click -> {
                 search = null;
