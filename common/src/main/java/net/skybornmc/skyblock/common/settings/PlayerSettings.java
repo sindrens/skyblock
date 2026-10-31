@@ -49,4 +49,22 @@ public interface PlayerSettings {
 
     /** Called on the main thread after a player's value changed: {@code (player, newValue)}. */
     void onChange(String id, BiConsumer<Player, Boolean> listener);
+
+    // ------------------------------------------------------------------ multiple-choice settings (VIS)
+
+    /**
+     * The player's choice of a multiple-choice setting ({@link SettingToggle#isChoice}), or its default (also for offline
+     * players). Empty string for unknown ids and on/off switches. Never touches the database.
+     */
+    String choice(UUID player, String id);
+
+    default String choice(Player player, String id) {
+        return choice(player.getUniqueId(), id);
+    }
+
+    /** Changes a choice (online players only, must be one of the setting's choices), fires listeners, writes the audit log. */
+    boolean setChoice(Player player, String id, String value);
+
+    /** Called on the main thread after a player's choice changed: {@code (player, newChoice)}. */
+    void onChoiceChange(String id, BiConsumer<Player, String> listener);
 }

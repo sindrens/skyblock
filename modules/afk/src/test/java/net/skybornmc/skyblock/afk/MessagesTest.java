@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /** Every message key the code uses exists, the file parses, and only Bedrock-safe symbols are used. */
 class MessagesTest {
 
-    private static final Pattern KEY = Pattern.compile("\"(entered|left|capped|ip-blocked|(?:reward|key|booster|action-bar|scoreboard)(?:\\.[a-z][a-z-]*)+)\"");
+    private static final Pattern KEY = Pattern.compile("\"(entered|left|capped|ip-blocked|(?:reward|key|booster|action-bar|scoreboard|home)(?:\\.[a-z][a-z-]*)+)\"");
     private static final String SAFE = "✦✧◆●▸▶★✔✘⚔⛏❤⌛»«│·•";
 
     private static String text() throws Exception {

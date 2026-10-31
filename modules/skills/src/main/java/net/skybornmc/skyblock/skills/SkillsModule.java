@@ -221,7 +221,7 @@ public final class SkillsModule implements SkyblockModule {
             throw new CommandFailure(ID, "others-no-permission");
         }
         Player online = Bukkit.getPlayerExact(name);
-        if (online != null && viewer.canSee(online)) {
+        if (online != null && net.skybornmc.skyblock.common.visibility.Visibility.knows(viewer, online)) {
             core.menus().open(viewer, new SkillsMenu(this, online.getUniqueId(), online.getName(), null));
             return;
         }

@@ -20,7 +20,7 @@ Settings in `essentials.yml`, texts in `messages/essentials.yml`. Every staff ac
 | `/heal [player]` · `/feed [player]` | Heal (only while in staff mode or `/build` mode, owner answer 333) / feed | `skyblock.staff.heal` · `skyblock.staff.feed` (+ `.others`) | ✅ |
 | `/clear [player]` | Clear inventory (confirm for others, contents logged; alias `/ci`) | `skyblock.staff.clear` (+ `.others`) | ✅ |
 | `/invsee <player>` · `/ecsee <player>` | View inventory / ender chest; edit with `.edit` (every changed slot logged) | `skyblock.staff.invsee` · `skyblock.staff.ecsee` (+ `.edit`) | ✅ |
-| `/vanish [player]` | Invisible to players, silent join/quit, stays on after rejoin (alias `/v`) | `skyblock.staff.vanish` (+ `.others`, `.see`) | ✅ |
+| `/vanish [player]` | Invisible to players, silent join/quit, stays on after rejoin (alias `/v`). Hiding goes through the core visibility service (VIS, see [core](core.md)) | `skyblock.staff.vanish` (+ `.others`, `.see`) | ✅ |
 | `/i <item> [amount]` · `/give <player> <item> [amount]` | Vanilla items (custom items have their own commands); always staff items (hidden tag, owner answer 332) | `skyblock.staff.give` | ✅ |
 | `/time <day/noon/night/midnight/ticks> [world]` | Set time | `skyblock.staff.time` | ✅ |
 | `/weather <clear/rain/thunder> [world]` | Set weather | `skyblock.staff.weather` | ✅ |

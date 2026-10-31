@@ -34,7 +34,8 @@ One place that points to every list of unbuilt work, ideas and questions. Nothin
 - **Resource pack:** forced pack with a prompt before joining; the owner draws the art from the art brief. → RP1 waits for art.
 - **Starter chest:** custom contents for this server (proposal to the owner). → STARTER.
 - **Island storage** (needed for STORE2).
-- **/settings:** tips and "players in The Depths" stay "Coming soon" until those features exist.
+- **/settings:** tips stays "Coming soon" until that feature exists ("players in The Depths" became the Show players choice in VIS ✅).
+- **VIS follow-ups (visibility service, other lanes):** (1) `modules/islands` `VisitManager` still uses `Player#canSee` for "does this player exist" (`/is visit <player>`, the visitor notice, two tab-completion lists): switch to `Visibility.knows(...)` so a player hidden by the AFK pool or Show players can still be visited by name (islands lane was busy). (2) `modules/depths` `AmbientMobs` / `MobFactory` per-player entities (`setVisibleByDefault(false)` + `showEntity`) can move onto the visibility service later (D4; depths lane). (3) The Depths v2 tier palette (D1) and lower-tier choice (D2) don't exist yet; Show players already applies in the whole `depths` world.
 
 ## Rules for agents
 - Pick from QUEUE.md; max 3 agents at once; one lane each; merge and release as each finishes.

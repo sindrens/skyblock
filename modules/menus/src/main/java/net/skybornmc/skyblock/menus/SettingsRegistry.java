@@ -26,6 +26,7 @@ public final class SettingsRegistry implements PlayerSettings {
     private final Core core;
     private final Map<String, SettingToggle> toggles = new LinkedHashMap<>();
     private final Map<String, List<BiConsumer<Player, Boolean>>> listeners = new LinkedHashMap<>();
+    private final Map<String, List<BiConsumer<Player, String>>> choiceListeners = new LinkedHashMap<>();
 
     public SettingsRegistry(Core core) {
         this.core = core;
@@ -81,7 +82,7 @@ public final class SettingsRegistry implements PlayerSettings {
     public boolean set(Player player, String id, boolean value) {
         Optional<SettingToggle> toggle = toggle(id);
         Optional<PlayerData> data = core.players().get(player.getUniqueId());
-        if (toggle.isEmpty() || toggle.get().comingSoon() || data.isEmpty()
+        if (toggle.isEmpty() || toggle.get().comingSoon() || toggle.get().isChoice() || data.isEmpty()
                 || (toggle.get().permission() != null && !player.hasPermission(toggle.get().permission()))) {
             return false;
         }
@@ -110,6 +111,60 @@ public final class SettingsRegistry implements PlayerSettings {
     @Override
     public synchronized void onChange(String id, BiConsumer<Player, Boolean> listener) {
         listeners.computeIfAbsent(id, k -> new CopyOnWriteArrayList<>()).add(listener);
+    }
+
+    @Override
+    public String choice(UUID player, String id) {
+        Optional<SettingToggle> toggle = toggle(id);
+        if (toggle.isEmpty() || !toggle.get().isChoice()) {
+            return "";
+        }
+        SettingToggle t = toggle.get();
+        return core.players().get(player)
+                .map(data -> parseChoice(data.setting(t.storageKey(), null), t))
+                .orElse(t.defaultChoice());
+    }
+
+    @Override
+    public boolean setChoice(Player player, String id, String value) {
+        Optional<SettingToggle> toggle = toggle(id);
+        Optional<PlayerData> data = core.players().get(player.getUniqueId());
+        if (toggle.isEmpty() || toggle.get().comingSoon() || !toggle.get().isChoice() || data.isEmpty()
+                || !toggle.get().choices().contains(value)
+                || (toggle.get().permission() != null && !player.hasPermission(toggle.get().permission()))) {
+            return false;
+        }
+        SettingToggle t = toggle.get();
+        String old = choice(player.getUniqueId(), id);
+        if (old.equals(value)) {
+            return true;
+        }
+        // Like on/off switches: only a difference from the default is stored.
+        data.get().setSetting(t.storageKey(), value.equals(t.defaultChoice()) ? null : value);
+        core.audit().logPlayer(AuditCategory.COMMAND, "setting_change", Actor.player(player), player.getUniqueId(),
+                player.getName(), null, null, Map.of("setting", id, "value", value, "old", old));
+        List<BiConsumer<Player, String>> list;
+        synchronized (this) {
+            list = List.copyOf(choiceListeners.getOrDefault(id, List.of()));
+        }
+        for (BiConsumer<Player, String> listener : list) {
+            try {
+                listener.accept(player, value);
+            } catch (RuntimeException e) {
+                core.plugin().getLogger().log(Level.WARNING, "Setting listener for '" + id + "' failed", e);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public synchronized void onChoiceChange(String id, BiConsumer<Player, String> listener) {
+        choiceListeners.computeIfAbsent(id, k -> new CopyOnWriteArrayList<>()).add(listener);
+    }
+
+    /** A stored choice, or the default when nothing (or something no longer valid) is stored. */
+    static String parseChoice(String stored, SettingToggle toggle) {
+        return stored != null && toggle.choices().contains(stored) ? stored : toggle.defaultChoice();
     }
 
     static boolean parse(String stored, boolean fallback) {

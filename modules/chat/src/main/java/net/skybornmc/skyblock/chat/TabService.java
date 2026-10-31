@@ -405,7 +405,7 @@ final class TabService implements Listener {
     private void sendHeaderFooter(Player viewer, int online, List<Player> vanished) {
         int visible = online;
         for (Player v : vanished) {
-            if (!v.equals(viewer) && !viewer.canSee(v)) {
+            if (!v.equals(viewer) && !net.skybornmc.skyblock.common.visibility.Visibility.knows(viewer, v)) {
                 visible--;
             }
         }

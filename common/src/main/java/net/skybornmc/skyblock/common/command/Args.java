@@ -28,7 +28,7 @@ public final class Args {
     public static Arg<Player> onlinePlayer(String name) {
         return Arg.word(name, (sender, raw) -> {
             Player target = Bukkit.getPlayerExact(raw);
-            if (target == null || (sender instanceof Player viewer && !viewer.canSee(target))) {
+            if (target == null || !net.skybornmc.skyblock.common.visibility.Visibility.knows(sender, target)) {
                 throw CommandFailure.of("player-offline", Msg.p("input", raw));
             }
             return target;
@@ -160,7 +160,8 @@ public final class Args {
     private static List<String> visibleNames(CommandSender sender) {
         List<String> names = new ArrayList<>();
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!(sender instanceof Player viewer) || viewer.canSee(p)) {
+            // VIS: vanish decides who exists; players hidden by the AFK pool or Show players can still be named.
+            if (net.skybornmc.skyblock.common.visibility.Visibility.knows(sender, p)) {
                 names.add(p.getName());
             }
         }

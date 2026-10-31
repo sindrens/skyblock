@@ -26,6 +26,15 @@ final class IpGate {
 
     /** Picks the holder of every IP and returns the candidates that are paused because another account holds their IP. */
     Set<UUID> update(List<Candidate> candidates) {
+        return update(candidates, p -> null);
+    }
+
+    /**
+     * Like {@link #update(List)} with the staff family whitelist (owner R3-3): accounts of the holder's family earn
+     * together with the holder; everyone else on that IP still waits. A family member who holds the IP lets their family
+     * in, a stranger who holds it does not (so at most one family, or one account, earns per IP).
+     */
+    Set<UUID> update(List<Candidate> candidates, java.util.function.Function<UUID, String> family) {
         Map<String, List<Candidate>> byIp = new HashMap<>();
         for (Candidate c : candidates) {
             byIp.computeIfAbsent(c.ip(), k -> new java.util.ArrayList<>()).add(c);
@@ -41,13 +50,22 @@ final class IpGate {
                         .orElseThrow().player();
                 holders.put(e.getKey(), holder);
             }
+            String holderFamily = family.apply(holder);
             for (Candidate c : group) {
-                if (!c.player().equals(holder)) {
+                if (!c.player().equals(holder) && (holderFamily == null || !holderFamily.equals(family.apply(c.player())))) {
                     blocked.add(c.player());
                 }
             }
         }
         return blocked;
+    }
+
+    /**
+     * The key of the per-IP daily cap: the IP, or for a family member the IP plus the account (owner R3-3: each family
+     * member gets their own per-connection limit; their own account cap still applies).
+     */
+    static String capKey(String ip, UUID player, boolean familyMember) {
+        return familyMember ? ip + "#" + player : ip;
     }
 
     /** The account earning for this IP, or null. */

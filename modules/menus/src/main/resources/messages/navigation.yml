@@ -222,9 +222,13 @@ settings:
     particles:
       name: "<c:value>Particles"
       lore: ["<c:text>Cosmetic particles of", "<c:text>other players."]
-    depths-visibility:
-      name: "<c:value>Players in The Depths"
-      lore: ["<c:text>See other players while", "<c:text>mining in The Depths."]
+    show-players:
+      name: "<c:value>Show players"
+      lore: ["<c:text>Who you see in The Depths", "<c:text>and the AFK pool. Staff always", "<c:text>shows."]
+      choices:
+        everyone: "Everyone"
+        friends: "Friends + island"
+        nobody: "Nobody"
     ui-sounds:
       name: "<c:value>Menu sounds"
       lore: ["<c:text>Clicks and confirmations", "<c:text>in menus."]
@@ -243,6 +247,12 @@ settings:
   changed-on: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is <c:value>on</c:value>."
   changed-off: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is <c:value>off</c:value>."
   unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No setting <c:value><setting></c:value>. Press Tab to see them all."
+  changed-choice: "<prefix><c:success><sym:check></c:success> <c:text><setting> <c:text>is now <c:value><choice></c:value>."
+  choice-selected: "<c:success><sym:check></c:success> <c:value><choice>"
+  choice-other: "<c:muted><sym:bullet> <choice>"
+  choice-action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
+  choice-values: "<prefix><c:error><sym:cross></c:error> <c:text>Pick one: <c:value><choices></c:value>."
+  on-off: "<prefix><c:error><sym:cross></c:error> <c:text>Use on, off or toggle."
   not-yet: "<prefix><c:error><sym:cross></c:error> <c:value><setting></c:value> <c:text>comes with its feature, soon."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't change that setting. Try again soon."
 

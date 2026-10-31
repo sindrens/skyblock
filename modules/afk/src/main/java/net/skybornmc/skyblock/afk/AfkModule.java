@@ -13,6 +13,7 @@ import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.placeholder.Placeholder;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.visibility.VisibilityService;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 
@@ -42,6 +43,7 @@ public final class AfkModule implements SkyblockModule {
     private final AfkConfig config = new AfkConfig();
     private final AfkStore store = new AfkStore();
     private volatile AfkRules rules;
+    private volatile FamilyGroups families = FamilyGroups.NONE;
     private ModuleMessages msg;
     private AfkTracker tracker;
     private volatile boolean fuelSupported;
@@ -71,6 +73,10 @@ public final class AfkModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(tracker, core.plugin());
         // M10.6: playtime rewards count only active time outside the pool.
         core.services().register(ID, AfkPool.class, holder::holdsBoosters);
+        // R3-36: players inside the pool are hidden from each other (the core's visibility service applies it; the tracker
+        // calls refresh when someone enters or leaves).
+        VisibilityService.of(core.services()).ifPresent(v -> v.addRule(ID, "pool",
+                (viewer, target) -> config.hidePlayers && holder.inside(viewer) && holder.inside(target)));
         core.placeholders().register(ID, "afk_pool", Placeholder.text(p -> tracker.poolLine(p)));
         core.placeholders().register(ID, "afk_today", Placeholder.text(p -> tracker.todayText(p)));
         core.placeholders().register(ID, "afk_line", p -> {
@@ -86,11 +92,15 @@ public final class AfkModule implements SkyblockModule {
 
     @Override
     public void reload() {
+        boolean hideBefore = config.hidePlayers;
         core.configs().load(config);
         core.messages().load(ID);
         loadRules();
         if (tracker != null) {
             tracker.schedule();
+        }
+        if (hideBefore != config.hidePlayers) {
+            VisibilityService.of(core.services()).ifPresent(VisibilityService::refreshAll);
         }
     }
 
@@ -100,6 +110,7 @@ public final class AfkModule implements SkyblockModule {
             return;
         }
         HandlerList.unregisterAll(tracker);
+        VisibilityService.of(core.services()).ifPresent(v -> v.removeAll(ID));
         tracker.shutdown();
         BoosterService.of(core.services()).ifPresent(b -> b.release(ID));
         core.placeholders().unregisterAll(ID);
@@ -146,6 +157,9 @@ public final class AfkModule implements SkyblockModule {
         AfkRules parsed = AfkRules.from(config);
         parsed.problems().forEach(core.plugin().getLogger()::warning);
         rules = parsed;
+        FamilyGroups f = FamilyGroups.parse(config.familyGroups);
+        f.problems().forEach(core.plugin().getLogger()::warning);
+        families = f;
         fuelSupported = detectFuel();
     }
 
@@ -173,6 +187,11 @@ public final class AfkModule implements SkyblockModule {
 
     AfkRules rules() {
         return rules;
+    }
+
+    /** Owner R3-3 staff family whitelist. */
+    FamilyGroups families() {
+        return families;
     }
 
     AfkStore store() {

@@ -359,7 +359,7 @@ public final class HudService implements Listener {
     private static int online(Player viewer) {
         int count = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (viewer.canSee(p)) {
+            if (net.skybornmc.skyblock.common.visibility.Visibility.knows(viewer, p)) { // vanish only (VIS)
                 count++;
             }
         }

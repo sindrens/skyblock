@@ -187,6 +187,12 @@ topics:
           - "<c:value>/settings <setting> on|off</c:value>"
           - "<c:text>Press Tab after <c:value>/settings</c:value> to see"
           - "<c:text>every setting you can change."
+      - title: "<c:value>Show players"
+        lines:
+          - "<c:text>Pick who you see in The Depths and"
+          - "<c:text>the AFK pool: everyone, friends +"
+          - "<c:text>island, or nobody. Click to switch."
+          - "<c:text>Staff always shows."
       - title: "<c:value>Coming soon"
         lines:
           - "<c:text>Gray switches belong to features that"
@@ -642,6 +648,13 @@ topics:
           - "<c:text>at 1 h, 3 h, 6 h and 8 h a day; the"
           - "<c:text>longer you stay, the bigger the reward."
           - "<c:text>Max 8 h a day, one account per connection."
+      - title: "<c:value>In the pool"
+        lines:
+          - "<c:text>Players inside can't see each other."
+          - "<c:text>Nobody is kicked for standing still,"
+          - "<c:text>but when you stop earning (limit"
+          - "<c:text>reached or paused) you go back to"
+          - "<c:text>your island after a minute."
 
   npcs:
     icon: armor_stand
