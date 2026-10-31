@@ -93,6 +93,8 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
     private final ModuleMessages msg;
     private final SocialConfig config = new SocialConfig();
     private final AfkTracker afk = new AfkTracker();
+    /** QOL3: "sender>target" → until when the AFK notice is not repeated. Cleared for a player when they quit. */
+    private final Map<String, Long> afkNotices = new java.util.concurrent.ConcurrentHashMap<>();
     private final RateLimiter dmLimiter = new RateLimiter();
     private final Map<UUID, UUID> lastPartner = new ConcurrentHashMap<>();
     private final Map<UUID, Set<UUID>> ignores = new ConcurrentHashMap<>();
@@ -469,6 +471,9 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
                 core.sounds().play(t, "notify");
             }
             lastPartner.put(idOf(target), idOf(sender));
+            if (target instanceof Player t) {
+                tellIfAfk(sender, t);
+            }
             if (sender instanceof Player self && target instanceof Player t && inTutorial(self)) {
                 newPlayerDms.messaged(self.getUniqueId(), t.getUniqueId());
             }
@@ -493,6 +498,26 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         }
         core.audit().log(AuditCategory.DM, "dm", Actor.of(sender),
                 target instanceof Player t ? t.getUniqueId().toString() : "CONSOLE", target.getName(), null, loc(sender), details);
+    }
+
+    /**
+     * QOL3 (QoL #22, AFK part): the sender learns why there is no answer ("Steve is AFK (12m)"). Only for delivered
+     * messages (an ignored sender learns nothing), at most once per {@code dm.afk-notice-seconds} per pair.
+     */
+    private void tellIfAfk(CommandSender sender, Player target) {
+        long now = System.currentTimeMillis();
+        long idle = afk.afkFor(target.getUniqueId(), now);
+        if (idle < 0 || config.dmAfkNoticeSeconds <= 0) {
+            return;
+        }
+        String pair = idOf(sender) + ">" + target.getUniqueId();
+        Long until = afkNotices.get(pair);
+        if (until != null && now < until) {
+            return;
+        }
+        afkNotices.put(pair, now + config.dmAfkNoticeSeconds * 1000L);
+        msg.send(sender, "dm.target-afk", Msg.p("player", target.getName()),
+                Msg.p("time", Format.duration(Duration.ofMillis(Math.max(60_000L, idle)))));
     }
 
     /**
@@ -749,6 +774,8 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         dmLimiter.forget(id);
         lastPartner.remove(id);
         newPlayerDms.forget(id);
+        String key = id.toString();
+        afkNotices.keySet().removeIf(pair -> pair.startsWith(key) || pair.endsWith(key));
     }
 
     // ================================================================== info commands

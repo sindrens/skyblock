@@ -33,6 +33,18 @@ final class AfkTracker {
         return afk.contains(uuid);
     }
 
+    /**
+     * QOL3: how long an AFK player has been idle (since their last activity), or -1 when not AFK. Shown to people who
+     * message them ("Steve is AFK (12m)").
+     */
+    long afkFor(UUID uuid, long now) {
+        if (!afk.contains(uuid)) {
+            return -1;
+        }
+        Long at = lastActive.get(uuid);
+        return at == null ? 0 : Math.max(0, now - at);
+    }
+
     /** Players inactive for at least {@code idleMillis} who are not AFK yet. Any thread. */
     Set<UUID> dueForAuto(long now, long idleMillis) {
         Set<UUID> due = new java.util.HashSet<>();

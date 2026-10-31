@@ -69,4 +69,19 @@ class SocialLogicTest {
         afk.remove(b);
         assertFalse(afk.stillDue(b, 900_000, 300_000), "left the server");
     }
+
+    @Test
+    void afkForCountsIdleTimeOnlyWhileAfk() {
+        AfkTracker afk = new AfkTracker();
+        java.util.UUID id = java.util.UUID.randomUUID();
+        afk.active(id, 1_000);
+        org.junit.jupiter.api.Assertions.assertEquals(-1, afk.afkFor(id, 5_000), "not AFK");
+        afk.set(id, true, 400_000); // auto-AFK found them later: idle since the last activity
+        org.junit.jupiter.api.Assertions.assertEquals(719_000, afk.afkFor(id, 720_000));
+        afk.active(id, 800_000);
+        org.junit.jupiter.api.Assertions.assertEquals(-1, afk.afkFor(id, 900_000), "back from AFK");
+        java.util.UUID unknown = java.util.UUID.randomUUID();
+        afk.set(unknown, true, 10);
+        org.junit.jupiter.api.Assertions.assertEquals(0, afk.afkFor(unknown, 10), "no activity seen yet");
+    }
 }
