@@ -10,7 +10,7 @@ The art is done and documented. This prompt covers building the real pack and wi
 - **Branch `pack/gui-art-v1`** holds the art. Merge it first: it is art and docs only, and it merges cleanly into main.
 
 ## Rules
-- **Plan first.** Write `docs/plans/PACK_BUILD.md` before any code:
+- **Plan first, with Sonnet 5.5.** Use Sonnet 5.5 subagents to read the code and docs and draft the plan, then check it yourself. Write `docs/plans/PACK_BUILD.md` before any code:
   - the queue items (RP1–RP6 / GUI-6);
   - the order, the files each one touches, and the tests;
   - open questions.
