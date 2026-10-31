@@ -207,6 +207,7 @@ category-menu:
     rewards: ["<c:text>Daily claims, streaks, playtime rewards."]
     quests: ["<c:text>Quests rolled, swapped and done, island missions."]
     collection: ["<c:text>Collection log finds, milestones, rewards."]
+    pass: ["<c:text>Battle pass XP, tier claims, premium."]
 
 categories:
   all: "All you can see"
@@ -230,6 +231,7 @@ categories:
   rewards: "Rewards"
   quests: "Quests"
   collection: "Collection"
+  pass: "Battle pass"
 
 ranges:
   all: "All time"

@@ -319,6 +319,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // Collection log (PHASE-10 M10.10, /collection): after crates (its Crates page reads CrateKeys) and progression (the
         // "Collections" island level source). Hooks Depths drop/kill events; reads cosmetics, islands, wardrobe (optional).
         modules.register(new net.skybornmc.skyblock.collection.CollectionModule(core));
+        // Battle pass (PHASE-10 M10.8): publishes PassXp (quests, votes, calendar, playtime) and PassRewards (/menu Rewards);
+        // needs economy for money/crystals; keys through CrateKeys, boosters, cosmetics, box, skills, profiles (optional).
+        modules.register(new net.skybornmc.skyblock.pass.PassModule(core));
     }
 
     public ModuleRegistry modules() {

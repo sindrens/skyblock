@@ -41,6 +41,7 @@ dependencies {
     implementation(project(":modules:rewards"))
     implementation(project(":modules:quests"))
     implementation(project(":modules:collection"))
+    implementation(project(":modules:pass"))
 }
 
 tasks {

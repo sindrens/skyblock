@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.rewards;
 
 import net.kyori.adventure.text.Component;
+import net.skybornmc.skyblock.common.pass.PassRewards;
 import net.skybornmc.skyblock.common.rewards.RewardsService;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.entity.Player;
@@ -18,7 +19,8 @@ import java.util.function.Supplier;
  * through the normal crash-safe daily claim ({@link DailyService#claim(Player, boolean)}: one transaction with an
  * idempotency key) and its summary line says that playtime pays by itself. Votes are paid when they arrive; only votes
  * that waited for an offline player and are still unpaid count as ready, and claiming pays them through the normal vote
- * payment.
+ * payment. Battle pass tiers (M10.8) that are ready count as one source ({@link PassRewards#SOURCE}); claiming runs the pass
+ * module's own claim (one transaction, its own chat lines) and the summary only counts the tiers.
  */
 final class RewardsServiceImpl implements RewardsService {
 
@@ -33,12 +35,15 @@ final class RewardsServiceImpl implements RewardsService {
         boolean daily = dailyReady(m.settings.calendarEnabled, player.hasPermission(RewardsModule.PERM_DAILY),
                 m.daily().state(m.profiles().profileKey(player)), m.daily().today());
         boolean votes = m.votesSettings.enabled && player.hasPermission(RewardsModule.PERM_VOTE) && m.votes().queued(player.getUniqueId()) > 0;
-        List<String> out = new ArrayList<>(2);
+        List<String> out = new ArrayList<>(3);
         if (daily) {
             out.add(DAILY);
         }
         if (votes) {
             out.add(VoteService.READY);
+        }
+        if (PassRewards.of(m.core.services()).map(p -> p.claimable(player) > 0).orElse(false)) {
+            out.add(PassRewards.SOURCE);
         }
         return out;
     }
@@ -48,23 +53,44 @@ final class RewardsServiceImpl implements RewardsService {
         List<String> ready = ready(player);
         CompletableFuture<ClaimSummary> daily = claimAll(ready, () -> m.daily().claim(player, true), r -> m.msg.component(player,
                 "claim-all.claimed", Msg.number("day", r.day()), Msg.number("streak", r.streak()), Msg.c("rewards", r.inline())));
-        if (!ready.contains(VoteService.READY)) {
-            return daily;
-        }
-        // Waiting votes pay themselves with their own chat lines (one per vote); the summary only counts them.
-        return daily.thenCombine(m.votes().payQueued(player), (summary, paid) -> withVotes(summary, paid,
+        CompletableFuture<ClaimSummary> withVotes = !ready.contains(VoteService.READY) ? daily
+                // Waiting votes pay themselves with their own chat lines (one per vote); the summary only counts them.
+                : daily.thenCombine(m.votes().payQueued(player), (summary, paid) -> withVotes(summary, paid,
                 () -> m.msg.component(player, "claim-all.votes", Msg.number("votes", paid))));
+        Optional<PassRewards> pass = PassRewards.of(m.core.services());
+        if (!ready.contains(PassRewards.SOURCE) || pass.isEmpty()) {
+            return withVotes;
+        }
+        // Pass tiers are claimed in the pass module's own transaction, which also writes its own chat lines.
+        return withVotes.thenComposeAsync(summary -> pass.get().claimAll(player, true).thenApply(tiers -> withPass(summary, tiers,
+                () -> m.msg.component(player, "claim-all.pass", Msg.number("count", tiers)))), m.main());
+    }
+
+    /**
+     * Adds claimed pass tiers to a summary (pure, unit-tested): {@code tiers > 0} adds the source and the line; a failed pass
+     * claim ({@code tiers < 0}) turns "nothing ready" into "failed" (the pass already told the player why).
+     */
+    static ClaimSummary withPass(ClaimSummary before, int tiers, Supplier<Component> passLine) {
+        if (tiers < 0) {
+            return before.outcome() == Outcome.NOTHING_READY ? ClaimSummary.failed() : before;
+        }
+        return withExtra(before, tiers, PassRewards.SOURCE, passLine);
     }
 
     /** Adds paid waiting votes to a daily summary (pure, unit-tested). */
     static ClaimSummary withVotes(ClaimSummary daily, int paidVotes, Supplier<Component> votesLine) {
-        if (paidVotes <= 0) {
-            return daily;
+        return withExtra(daily, paidVotes, VoteService.READY, votesLine);
+    }
+
+    /** Adds {@code count} claimed rewards of another source to a summary ({@code count <= 0} = unchanged). */
+    static ClaimSummary withExtra(ClaimSummary before, int count, String source, Supplier<Component> extraLine) {
+        if (count <= 0) {
+            return before;
         }
-        List<String> claimed = new ArrayList<>(daily.claimed());
-        claimed.add(VoteService.READY);
-        Component line = daily.outcome() == Outcome.CLAIMED
-                ? daily.line().append(Component.space()).append(votesLine.get()) : votesLine.get();
+        List<String> claimed = new ArrayList<>(before.claimed());
+        claimed.add(source);
+        Component line = before.outcome() == Outcome.CLAIMED
+                ? before.line().append(Component.space()).append(extraLine.get()) : extraLine.get();
         return new ClaimSummary(Outcome.CLAIMED, claimed, line);
     }
 

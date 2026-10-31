@@ -37,7 +37,9 @@ public enum AuditCategory {
     /** Quests (PHASE-10 M10.7): quests rolled, swapped and finished, island missions, reward hand-outs, staff resets. */
     QUESTS,
     /** Collection log (PHASE-10 M10.10): first finds, page milestones, their reward hand-outs and reviews. */
-    COLLECTION;
+    COLLECTION,
+    /** Battle pass (PHASE-10 M10.8): pass XP, tier claims, reward hand-outs, premium grants, staff tools. */
+    PASS;
 
     /** Key stored in the database, e.g. {@code "economy"}. */
     public String key() {

@@ -26,6 +26,8 @@ claim-all:
   separator: "<c:muted>, "
   # Votes that waited for you (offline or unknown name) and were paid by the Rewards button. <votes> = how many.
   votes: "<c:success><sym:check></c:success> <c:text>Votes paid: <c:value><votes>"
+  # Battle pass tiers claimed by the Rewards button (the pass writes its own reward lines). <count> = how many.
+  pass: "<c:success><sym:check></c:success> <c:text>Pass rewards: <c:value><count>"
 
 # ------------------------------------------------------------------ voting (M10.5)
 # <site> = the vote site's name, <rewards> = full component (the rewards joined), <time> like 5h 12m.

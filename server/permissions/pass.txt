@@ -1,0 +1,7 @@
+# LuckPerms grants for the battle pass module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# Node definitions: modules/pass/src/main/resources/permissions/pass.yml. One console command per line; # = comment.
+# skyblock.pass.use (/pass, pass XP, claims) defaults to true, so players need no grant.
+# skyblock.pass.premium is NOT granted to any rank (RK26: not even the top donor rank). The store (Phase 11) or staff
+# (/pass admin premium <player> on) give it; for a quick test: lp user <name> permission set skyblock.pass.premium true
+# Staff see XP, claims, hand-outs and premium changes in /logs (category pass: skyblock.staff.logs.category.pass, mod in logs.txt).
+lp group admin permission set skyblock.pass.admin true

@@ -39,6 +39,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [moderation](commands/moderation.md) | Punishments (`modules/moderation`, M1.8; replace vanilla `/ban /kick /pardon`) |
 | [motd](commands/motd.md) | MOTD (`modules/motd`) |
 | [npcs](commands/npcs.md) | NPCs and holograms (`modules/npcs`) |
+| [pass](commands/pass.md) | Battle pass (`modules/pass`) |
 | [perks](commands/perks.md) | Perks module (`modules/perks`) |
 | [profiles](commands/profiles.md) | Profiles module (`modules/profiles`): PROF |
 | [progression](commands/progression.md) | Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades, M5.5 masteries, M5.7 leaderboards |
