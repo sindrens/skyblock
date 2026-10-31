@@ -69,5 +69,6 @@ class EconomyConfigTest {
         config.icons = List.of("tokens:AMETHYST_SHARD");
         assertEquals("AMETHYST_SHARD", config.iconName(Currency.CRYSTALS));
         assertNull(config.iconName(Currency.CREDITS_EARNED));
+        assertEquals("EMERALD", new EconomyConfig().iconName(Currency.CREDITS_EARNED));
     }
 }

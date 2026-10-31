@@ -104,7 +104,7 @@ class ProfileEconomyTest {
         assertEquals(1_000, bal(steve, Currency.MONEY));
         assertEquals(0, bal(steve, Currency.CRYSTALS));
         assertEquals(7, bal(steve2, Currency.CRYSTALS));
-        long rowsOnKey2Gems = db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM eco_accounts WHERE owner_id = ? AND currency = 'gems'",
+        long rowsOnKey2Gems = db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM eco_accounts WHERE owner_id = ? AND currency = 'credits_earned'",
                 rs -> rs.getLong(1), steve2)).orElse(0L);
         assertEquals(0, rowsOnKey2Gems, "no gem account ever exists on a profile key");
 

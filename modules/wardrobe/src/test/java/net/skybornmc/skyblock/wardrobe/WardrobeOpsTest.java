@@ -57,7 +57,7 @@ class WardrobeOpsTest {
         }
     }
 
-    /** Balance table + guarded payment in one transaction, like EconomyService#executeGuarded (gems go to the owner). */
+    /** Balance table + guarded payment in one transaction, like EconomyService#executeGuarded (credits go to the owner). */
     private synchronized CompletableFuture<TxResult> pay(Transaction tx, TxGuard guard) {
         String key = tx.idempotencyKey();
         if (key != null && usedKeys.contains(key)) {
@@ -67,7 +67,7 @@ class WardrobeOpsTest {
             if (!guard.holds(c)) {
                 throw new Refused(TxResult.Status.DUPLICATE);
             }
-            UUID who = tx.currency() == Currency.CREDITS_EARNED ? player : tx.from().owner();
+            UUID who = tx.currency().isCredits() ? player : tx.from().owner();
             String cur = tx.currency().key();
             long balance = Sql.queryOne(c, "SELECT balance FROM test_balance WHERE owner = ? AND cur = ? FOR UPDATE", rs -> rs.getLong(1), who, cur)
                     .orElse(0L);
@@ -100,7 +100,7 @@ class WardrobeOpsTest {
                 Sql.update(c, "INSERT INTO test_balance (owner, cur, balance) VALUES (?, ?, ?)", p, "money", 50_000L);
                 Sql.update(c, "INSERT INTO test_balance (owner, cur, balance) VALUES (?, ?, ?)", p, "crystals", 30_000L);
             }
-            Sql.update(c, "INSERT INTO test_balance (owner, cur, balance) VALUES (?, ?, ?)", player, "gems", 1_000L);
+            Sql.update(c, "INSERT INTO test_balance (owner, cur, balance) VALUES (?, ?, ?)", player, "credits", 1_000L);
             return null;
         });
         ops = new WardrobeOps(db, store, this::pay, System::currentTimeMillis, Logger.getLogger("wardrobe-test"));
@@ -176,21 +176,21 @@ class WardrobeOpsTest {
     // ------------------------------------------------------------------ gems, Sigils, claims (WD5)
 
     @Test
-    void gemPurchaseBuysASigilAndEachProfileClaimsOncePerSeason() {
+    void creditPurchaseBuysASigilAndEachProfileClaimsOncePerSeason() {
         WardrobeOps.Result r = ops.buy(who1, Fixtures.def("lorekeeper"), 0).join();
         assertEquals(WardrobeOps.Status.OK, r.status());
-        assertEquals(600, balance(player, "gems"));
+        assertEquals(600, balance(player, "credits"));
         assertEquals(Set.of("lorekeeper"), db.blocking(c -> store.sigils(c, player)));
         assertEquals(Set.of("lorekeeper"), db.blocking(c -> store.claims(c, profile1, 0)), "the buying profile used its claim");
 
         assertEquals(WardrobeOps.Status.HAS_SIGIL, ops.buy(who2, Fixtures.def("lorekeeper"), 0).join().status(), "never pay twice");
-        assertEquals(600, balance(player, "gems"));
+        assertEquals(600, balance(player, "credits"));
 
         assertEquals(WardrobeOps.Status.OK, ops.claim(who2, "lorekeeper", 0).join().status());
         assertEquals(WardrobeOps.Status.CLAIMED, ops.claim(who2, "lorekeeper", 0).join().status());
         assertEquals(WardrobeOps.Status.CLAIMED, ops.claim(who1, "lorekeeper", 0).join().status());
         assertEquals(1, entries(profile2).size());
-        assertEquals("gems_claim", entries(profile2).getFirst().origin());
+        assertEquals("credits_claim", entries(profile2).getFirst().origin());
         assertEquals(WardrobeOps.Status.OWNED, ops.claim(who1, "lorekeeper", 1).join().status(), "next season: still owned");
         assertTrue(db.blocking(c -> store.claims(c, profile1, 1)).isEmpty(), "the claim rolled back with it");
     }

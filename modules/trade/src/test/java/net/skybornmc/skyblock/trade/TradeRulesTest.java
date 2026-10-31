@@ -26,10 +26,12 @@ class TradeRulesTest {
     }
 
     @Test
-    void gemsFollowTheEconomyRule() {
-        List<String> all = List.of("money", "gems", "shards");
-        assertFalse(TradeRules.currencyAllowed(Currency.CREDITS_EARNED, false, all)); // decided: gems not tradeable
-        assertTrue(TradeRules.currencyAllowed(Currency.CREDITS_EARNED, true, all));
+    void boughtCreditsFollowTheEconomyRuleEarnedNever() {
+        List<String> all = List.of("money", "credits", "credits_earned", "gems", "shards");
+        assertFalse(TradeRules.currencyAllowed(Currency.CREDITS_EARNED, true, all), "earned credits never (C1-R2-02)");
+        assertFalse(TradeRules.currencyAllowed(Currency.CREDITS_EARNED, false, all));
+        assertTrue(TradeRules.currencyAllowed(Currency.CREDITS, true, all), "bought credits when economy.yml allows them");
+        assertFalse(TradeRules.currencyAllowed(Currency.CREDITS, false, all));
         assertFalse(TradeRules.currencyAllowed(Currency.MONEY, false, all));
         assertFalse(TradeRules.currencyAllowed(Currency.SHARDS, true, List.of("money")));
         assertFalse(TradeRules.currencyAllowed(null, true, all));

@@ -65,7 +65,7 @@ class RewardsMessagesTest {
         YamlConfiguration yml = yml();
         List<String> keys = new ArrayList<>(List.of("error", "busy", "frozen", "staff-mode", "switching", "no-permission", "box-full",
                 "daily.claimed", "daily.already", "daily.changed", "daily.reminder", "daily.disabled", "daily.streak-lost",
-                "daily.streak-gems", "playtime.reward", "reward.line", "reward.fallback-line", "reward.for-now", "reward.title",
+                "daily.streak-credits", "playtime.reward", "reward.line", "reward.fallback-line", "reward.for-now", "reward.title",
                 "reward.pass-xp", "reward.book-named", "settings.daily-reminder.name"));
         for (PlaytimeService.Status s : PlaytimeService.Status.values()) {
             keys.add("menu.playtime.status." + s.name().toLowerCase(java.util.Locale.ROOT));

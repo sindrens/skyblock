@@ -11,8 +11,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CurrencyTest {
 
     @Test
-    void currenciesAreMoneyCrystalsGemsShards() {
-        assertEquals(List.of("money", "crystals", "gems", "shards"), Arrays.stream(Currency.values()).map(Currency::key).toList());
+    void currenciesAreMoneyCrystalsCreditsShards() {
+        assertEquals(List.of("money", "crystals", "credits", "credits_earned", "shards"),
+                Arrays.stream(Currency.values()).map(Currency::key).toList());
+        assertEquals(List.of(Currency.MONEY, Currency.CRYSTALS, Currency.CREDITS, Currency.SHARDS), Currency.listedValues());
+    }
+
+    @Test
+    void oldGemsKeyMeansEarnedCreditsUntilTheAliasEnds() {
+        try {
+            Currency.aliasClock(() -> 1_000L);
+            Currency.legacyGemsAliasUntil(2_000L);
+            assertEquals(Optional.of(Currency.CREDITS_EARNED), Currency.byKey("gems"));
+            assertEquals(Optional.empty(), Currency.byCanonicalKey("gems"), "store grants never accept the alias");
+            Currency.legacyGemsAliasUntil(1_000L);
+            assertEquals(Optional.empty(), Currency.byKey("gems"));
+        } finally {
+            Currency.aliasClock(null);
+            Currency.legacyGemsAliasUntil(Long.MAX_VALUE);
+        }
     }
 
     @Test

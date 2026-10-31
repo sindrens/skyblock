@@ -49,7 +49,10 @@ class EconomyLogicTest {
         EconomyConfig c = new EconomyConfig();
         assertTrue(PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, false).isEmpty());
         assertTrue(PayRules.check(c, "Alex", "Steve", 5, Currency.SHARDS, false).isEmpty());
-        assertEquals(PayRules.Problem.NOT_TRADEABLE, PayRules.check(c, "Alex", "Steve", 5, Currency.CREDITS_EARNED, false).orElseThrow());
+        assertEquals(PayRules.Problem.CREDITS, PayRules.check(c, "Alex", "Steve", 5, Currency.CREDITS_EARNED, false).orElseThrow());
+        assertEquals(PayRules.Problem.CREDITS, PayRules.check(c, "Alex", "Steve", 5, Currency.CREDITS, false).orElseThrow(),
+                "credits never move with /pay (C1: /credit pay)");
+        assertEquals(PayRules.Problem.NOT_TRADEABLE, PayRules.check(c, "Alex", "Steve", 5, Currency.CRYSTALS, false).orElseThrow());
         assertEquals(PayRules.Problem.SELF, PayRules.check(c, "Alex", "alex", 1_500, Currency.MONEY, false).orElseThrow());
         assertEquals(PayRules.Problem.FROZEN, PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, true).orElseThrow());
         assertEquals(PayRules.Problem.BELOW_MINIMUM, PayRules.check(c, "Alex", "Steve", 9, Currency.MONEY, false).orElseThrow());
@@ -72,6 +75,8 @@ class EconomyLogicTest {
         assertTrue(c.tradeable(Currency.MONEY));
         assertTrue(c.tradeable(Currency.SHARDS));
         assertFalse(c.tradeable(Currency.CREDITS_EARNED));
+        assertTrue(c.tradeable(Currency.CREDITS), "owner: bought credits can be traded");
+        assertEquals(0, c.start(Currency.CREDITS), "bought credits never have a start balance");
         assertEquals(1_000_000, c.payConfirmAbove(Currency.MONEY));
         assertEquals(30, c.baltopRefreshSeconds);
     }

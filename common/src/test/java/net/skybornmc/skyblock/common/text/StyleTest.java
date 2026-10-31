@@ -94,7 +94,7 @@ class StyleTest {
                 java.util.Map.entry("c.sell", "#ff5a5a red"), java.util.Map.entry("c.top1", "#ffd21a yellow"),
                 java.util.Map.entry("c.top2", "#e6e6e6 white"), java.util.Map.entry("c.top3", "#ff9a3d gold"),
                 java.util.Map.entry("cur.money", "#4dff88 green"), java.util.Map.entry("cur.crystals", "#33e0ff aqua"),
-                java.util.Map.entry("cur.gems", "#2effc0 dark_green"), java.util.Map.entry("cur.shards", "#ff6b8a red"),
+                java.util.Map.entry("cur.shards", "#ff6b8a red"),
                 java.util.Map.entry("cur.credits", "#ff8c1a gold"),
                 java.util.Map.entry("rarity.common", "#f2f2f2 white"), java.util.Map.entry("rarity.uncommon", "#4dff6a green"),
                 java.util.Map.entry("rarity.rare", "#3da5ff blue"), java.util.Map.entry("rarity.epic", "#c05cff dark_purple"),
