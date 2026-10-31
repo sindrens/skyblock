@@ -881,7 +881,8 @@ topics:
         lines:
           - "<c:text>Leader > Admin > Mod > Member. Admins help"
           - "<c:text>run the island. See open invites with"
-          - "<c:value>/is invites</c:value><c:text>.</c:text>"
+          - "<c:value>/is invites</c:value><c:text>. Permissions: pick</c:text>"
+          - "<c:text>Strict, Normal or Open in one click.</c:text>"
       - title: "<c:value>Flying"
         lines:
           - "<c:text>With island fly, double-tap jump on an"

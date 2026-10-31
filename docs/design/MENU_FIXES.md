@@ -28,6 +28,41 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Shop** `CategoryMenu` quick-buy click types are GUI-3 (shop v2).
 - **moderation permanent ban** (GUI-BUGS adds its confirm): build it with `new ConfirmMenu(...).twoStep()` like disband and profile delete.
 
+## GUI-4 status (31 Oct)
+Notes marked **✅** below are done (by the framework in GUI-1, by GUI-BUGS/GUI-2, or by GUI-4). Framework-wide notes that
+GUI-1 fixed for every menu at once and are not repeated per menu: **§1.1/§1.2 bottom bar** (45 Back / 48 ? / 49 Close /
+50 Main menu, 3-row Back 18 / Close 22, so no 3-row dead ends), **Back via the navigation stack** (from the hub and
+children), **? opens help with Back to the menu** (no more "Back from help goes to the Help root"), **title rule**
+(max 2 parts, `Feature » Screen`), **confirm details on the middle item 13**, **in-place tabs and pages**.
+
+**Done in GUI-4:**
+- Pick lists instead of cyclers (G9, `common/menu/PickListMenu`): AH category + sort, island weather + time, island chat
+  colours, warp category, wardrobe filter, `/transactions` filters, `/settings` multiple-choice settings, `/logs` time
+  range + radius.
+- Island permissions (U8): Strict / Normal / Open presets, the matrix behind Advanced (atomic save, audited).
+- Scoreboard (U4): "| You" header, Next: line during the tutorial, Crystals/Gems only once you have some.
+- Glossary (U6): Pity → Luck meter, bound → can't be traded, masteries out of player text.
+- Hidden instead of grey: locked skills, Forge "More tiers later", island stats placeholders, unbuilt `/settings`
+  switches, spawner Upgrades no longer clickable (no promise).
+- Wording: held items "» USE", trade/help "Click", no "later update" texts; long messages shortened (box full, AFK
+  ip-blocked, bank withdraw fee: also no more "interest is lost", R3-41).
+- Key facts in names: island settings values, Depths locked tier requirement, island top board.
+- Titles: enchant slot screen `<mode> » <tool>`, armor set screen `Armor » <set>`, island permissions `Permissions » Advanced`.
+- Achievements tabs redraw in place (title follows), shared loading item; playtime milestones in reading order;
+  boosters ? text; no barrier icon on non-Close buttons.
+
+**Left (next GUI round; staff screens last):**
+- Staff cyclers still cycle (few values): staff box / staff crates profile switch, eco admin currency, eco Reasons
+  range/sort, cosmetics editor rarity, tutorial stats period/client, island grid filter, `/admin` enum settings.
+- Shop and `/sell` ("Add my inventory", Sell on 53): GUI-3 lane. Chat-link flows (TPA, invites, store/vote/Discord,
+  help command suggestions): GUI-5.
+- Bigger reworks: `/top` screen (§7.6), `/is` duplicate shortcuts and Members bottom row, notes/warps typing on
+  Bedrock (rename, add), enchanter flow shortening (skip slot screen), loadouts layout + confirm, wardrobe set screen
+  layout, player picker search/offline, help topics written in lore (Bedrock), Settings split into fewer rows,
+  economy admin paging, portal choice > 3 invites, AH staff remove reasons > 5, `/logs` right-click details.
+- Staff/moderation screens: inspect Back for command-opened tools, reports tabs/refresh, `/p` button count, lockdown
+  and confiscate confirms (GUI-BUGS added the ban confirms).
+
 ## achievements (5 menus)
 
 ### `achievements.personal`: Achievements
@@ -35,7 +70,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /achievements; /tags > Achievements
 - **Rules to apply:** §1.1 add Back at 45
 - **Notes:**
-  - Tabs sit at 3-5 here while other tabbed menus (rewards, cosmetics, progression top) use 2 and 6 or 2-6, so the tab row is not in a fixed place.
+  - ✅ GUI-4 (tabs redraw in place with the title; position kept). Tabs sit at 3-5 here while other tabbed menus (rewards, cosmetics, progression top) use 2 and 6 or 2-6, so the tab row is not in a fixed place.
   - The six categories are laid out 5 + 1 (20-24 and 31) with the boosts only readable inside the head's lore.
 
 ### `achievements.island`: Achievements
@@ -70,9 +105,9 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /ah, /auction, /auctionhouse
 - **Rules to apply:** §5 make it one plain click
 - **Notes:**
-  - Category (46, 9 values) and Sort (47, 4 values) advance one value per left-click; going back needs right-click, which Bedrock touch players cannot do, so the category just before the current one takes 8 taps.
+  - ✅ GUI-4 (pick lists). Category (46, 9 values) and Sort (47, 4 values) advance one value per left-click; going back needs right-click, which Bedrock touch players cannot do, so the category just before the current one takes 8 taps.
   - Header buttons sit in slots 2-6 above the list while the filters are at 46/47/51/52 on the bottom row: related controls are split, and Refresh at 6 is far from the list.
-  - The live auction.yml icon list has no enchant_books entry (the code default has ENCHANTED_BOOK), so that category shows the plain chest icon.
+  - ✅ GUI-4 (falls back to the code default icon). The live auction.yml icon list has no enchant_books entry (the code default has ENCHANTED_BOOK), so that category shows the plain chest icon.
   - Search requires typing in chat; the window closes while you type.
 
 ### `auction.my_listings`: Auction House » My listings
@@ -120,8 +155,8 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /boosters, /booster
 - **Rules to apply:** §1.1 add Back at 45 · §4 confirm rule
 - **Notes:**
-  - Info text (48) says 'Top row: your boosters. Bottom rows: global boosters and the items you carry' but personal sits in row 1, row 2 is empty, global in row 3 and owned items in row 4.
-  - Clicking an owned booster item starts it and uses it up at once with no confirm; a mis-tap wastes a valuable (global) booster.
+  - ✅ GUI-4. Info text (48) says 'Top row: your boosters. Bottom rows: global boosters and the items you carry' but personal sits in row 1, row 2 is empty, global in row 3 and owned items in row 4.
+  - ✅ GUI-BUGS (confirm). Clicking an owned booster item starts it and uses it up at once with no confirm; a mis-tap wastes a valuable (global) booster.
 
 ## box (4 menus)
 
@@ -233,7 +268,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** Right-click a tag item
 - **Rules to apply:** §1.2 add Back 18 / Close 22 · §5 make it one plain click
 - **Notes:**
-  - Opened by right-clicking the tag item; the item lore says 'Right-click to redeem', which does not describe the Bedrock action (use item).
+  - ✅ GUI-4 (lore says USE). Opened by right-clicking the tag item; the item lore says 'Right-click to redeem', which does not describe the Bedrock action (use item).
 
 ## crates (4 menus)
 
@@ -242,8 +277,8 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /crates
 - **Rules to apply:** §1.1 add Back at 45 · §5 make it one plain click
 - **Notes:**
-  - Opening a crate straight from this menu needs right-click (open 1) or shift-click (open bulk) on Java; Bedrock must go through the preview screen first.
-  - Lore lists three click actions per crate on Java and one on Bedrock, so the same button is explained differently by platform.
+  - ✅ GUI-4 (plain click opens the preview; the Java shortcut is only in ?). Opening a crate straight from this menu needs right-click (open 1) or shift-click (open bulk) on Java; Bedrock must go through the preview screen first.
+  - ✅ GUI-4 (one action line). Lore lists three click actions per crate on Java and one on Bedrock, so the same button is explained differently by platform.
 
 ### `crates.preview`: Crates » <crate>
 - **Rows:** 6
@@ -276,14 +311,14 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Notes:**
   - The three wing tabs replace the top border panes (slots 3-5) and the Satchel button sits in the nav row at slot 47 right next to Info (48); both deviate from the plain frame of UI_STYLE §5.1 (the code calls it the PHASE-4 mockup).
   - Tier layout changes with the tier count per wing (12 / 11 / 10 tiers give three different shapes), so the same tier number is in a different slot on each tab.
-  - Locked tiers all look the same (gray dye) and clicking one only shows an action-bar line; the resource and the level needed are only in the lore.
+  - ✅ GUI-4 (requirement in the name). Locked tiers all look the same (gray dye) and clicking one only shows an action-bar line; the resource and the level needed are only in the lore.
 
 ### `depths.satchel`: Satchel
 - **Rows:** 6
 - **Opens from:** /dungeon > Satchel button (47)
 - **Rules to apply:** §4 confirm rule
 - **Notes:**
-  - Sell all and Upgrade (up to $6,400,000) are one-click with no confirmation, against UI_STYLE §5.2 ('anything above a money threshold').
+  - ✅ GUI-BUGS (confirm). Sell all and Upgrade (up to $6,400,000) are one-click with no confirmation, against UI_STYLE §5.2 ('anything above a money threshold').
   - Feature buttons use non-standard bottom-row slots 46, 47, 51, so Sell chest (46), Sell all (47) and Info (48) sit shoulder to shoulder and are easy to mix up.
   - Two different ways to sell (Sell all, Sell chest) plus per-item Sell inside the item menu; the Sell chest only handles inventory items, which is not obvious from the name.
 
@@ -313,8 +348,8 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /transactions, /txs
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
-  - Type filter (47) steps through every ledger reason one click at a time, forward only (no reverse, no list); reaching a reason can take 10+ clicks.
-  - Slot 52 Refresh sits next to the filters although the list also reloads on a filter change.
+  - ✅ GUI-4 (pick lists for currency, type and time). Type filter (47) steps through every ledger reason one click at a time, forward only (no reverse, no list); reaching a reason can take 10+ clicks.
+  - ✅ GUI-BUGS (Refresh moved to 6). Slot 52 Refresh sits next to the filters although the list also reloads on a filter change.
 
 ### `economy.bank`: Bank
 - **Rows:** 6
@@ -340,7 +375,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** Withdraw number picker > Confirm
 - **Rules to apply:** §1.2 add Back 18 / Close 22 · §4 confirm rule · §1.4 title max 2 parts
 - **Notes:**
-  - The fee and 'this period's interest is lost' warning are only in the lore of the Confirm buttons; the centre item shows just 'You get: <net>'.
+  - ✅ GUI-1 (details on 13) + R3-41/GUI-4 (no interest loss text). The fee and 'this period's interest is lost' warning are only in the lore of the Confirm buttons; the centre item shows just 'You get: <net>'.
 
 ### `economy.bank_tiers`: Bank » Tiers
 - **Rows:** 6
@@ -416,7 +451,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rows:** 6
 - **Opens from:** Enchanter > Apply a book / Upgrade / Remove
 - **Notes:**
-  - Same title as the next screen (SlotMenu) and as the three modes' other steps; only the last crumb tells Apply / Upgrade / Remove.
+  - ✅ GUI-4 (slot screen is `<mode> » <tool>`). Same title as the next screen (SlotMenu) and as the three modes' other steps; only the last crumb tells Apply / Upgrade / Remove.
   - Empty state tells players to get a tool at /forge but gives no button to go there.
 
 ### `enchants.slots`: Enchanter » Apply a book / Upgrade / Remove
@@ -425,7 +460,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rules to apply:** §3 hide until built
 - **Notes:**
   - All five slots look clickable in every mode, but only the ones that fit the mode work (e.g. Apply: filled slots just beep); the mode is visible only in the last title crumb.
-  - Same title as the tool picker before it, so the two steps are indistinguishable from the title.
+  - ✅ GUI-4. Same title as the tool picker before it, so the two steps are indistinguishable from the title.
   - Covered slots (2-slot enchants) are purple panes labeled 'Slot N'; clicking does nothing.
 
 ### `enchants.books`: Apply a book » Slot <n>
@@ -477,13 +512,13 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rows:** 6
 - **Opens from:** Enchanter > Armor
 - **Notes:**
-  - Title is exactly the same ('Enchanter » Armor') as the next screen (ArmorEntryMenu), which does not name the set.
+  - ✅ GUI-4 (set screen `Armor » <set>`). Title is exactly the same ('Enchanter » Armor') as the next screen (ArmorEntryMenu), which does not name the set.
 
 ### `enchants.armor-entry`: Enchanter » Armor
 - **Rows:** 6
 - **Opens from:** Enchanter > Armor > a set; also from the wardrobe set screen
 - **Notes:**
-  - The title does not name the set (identical to the set list), and the only place that does is the ARMOR_STAND icon in slot 16.
+  - ✅ GUI-4. The title does not name the set (identical to the set list), and the only place that does is the ARMOR_STAND icon in slot 16.
   - Dormant enchants (set level too low) show as a plain book with a yellow warning; they look like normal enchants at a glance.
   - Layout is not on the content grid: piece icons in column 2, slots across, set info in column 8 (about 15 buttons and 4 decorative items).
 
@@ -539,8 +574,8 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** Permissions in /is menu, islands.members
 - **Rules to apply:** §4 confirm rule · §1.4 title max 2 parts
 - **Notes:**
-  - About 115 cells over 6 pages with only 4 permissions per page; the owner needs 20+ clicks and 5 page turns to review a role
-  - No presets, no 'copy from role', no 'reset to default'
+  - ✅ GUI-4 (presets first, matrix behind Advanced). About 115 cells over 6 pages with only 4 permissions per page; the owner needs 20+ clicks and 5 page turns to review a role
+  - ✅ GUI-4 (Strict / Normal / Open; Normal = reset to default). No presets, no 'copy from role', no 'reset to default'
   - Editable (concrete) and locked (glass) cells differ only in material; the legend is lore only
   - A flip is saved immediately with no confirm even for risky rights (Break, Containers, Bank withdraw, Spawners)
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
@@ -569,7 +604,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** Settings in /is menu, islands.members
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
-  - Weather has 3 values and Time has 5; both cycle one step per click, so reaching the wanted value can take 4 clicks
+  - ✅ GUI-4 (pick lists; value in the name). Weather has 3 values and Time has 5; both cycle one step per click, so reaching the wanted value can take 4 clicks
   - On/off is shown only by the name colour and a lore line while the icon stays the same (only Weather changes its icon); /settings uses red/lime dye: two different toggle looks in the game
   - Visitor alerts duplicates the personal 'Visitor arrivals' in menus.settings
   - Slot 22 is left empty between Visitor fly (21) and Weather (23) to group the pickers, which breaks the 10-16 row logic of the first row
@@ -580,7 +615,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** Chat colors in /is menu
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
-  - Each role cycles one colour per click through an 8-colour palette (up to 7 clicks, each an asynchronous save); no list of colours to pick from
+  - ✅ GUI-4 (pick list of the palette). Each role cycles one colour per click through an 8-colour palette (up to 7 clicks, each an asynchronous save); no list of colours to pick from
   - The roles sit at 19/21/23/25 (odd spacing) while the rest of the screen is empty; the screen is mostly empty space
   - No preview of how a chat line will look
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
@@ -610,7 +645,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
   - No rename: a warp's name can only be changed by deleting and re-creating it
-  - Category cycles through all categories one click at a time
+  - ✅ GUI-4 (pick list). Category cycles through all categories one click at a time
   - Public/Private reads as a plain button: the wording 'Public' / 'Private' is the state, not the action
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
 
@@ -653,7 +688,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** Island stats in /is menu
 - **Rules to apply:** §3 hide until built
 - **Notes:**
-  - Several categories are 'Coming soon' placeholders on the same grid, in muted colour that looks similar to the live ones
+  - ✅ GUI-4 (hidden). Several categories are 'Coming soon' placeholders on the same grid, in muted colour that looks similar to the live ones
   - Clickable and read-only items look the same
   - 'Your part' (40) is a head with the same look as other info items but is actually a drill-down
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
@@ -663,7 +698,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** A stat in islands.stats
 - **Notes:**
   - Players beyond the shown heads collapse into one '+N more' paper with no way to see them
-  - Empty state 'Nothing yet' with a BARRIER icon (looks like an error)
+  - ✅ GUI-4 (cobweb). Empty state 'Nothing yet' with a BARRIER icon (looks like an error)
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
 
 ### `islands.portal-choice`: Island portal
@@ -807,7 +842,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /logs (aliases /log, /auditlog) with no arguments; /logs <sub> shortcuts skip it
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
-  - Time range and Radius are cycle-on-click buttons: to go from 1d to 7d you may click through every option, and there is no way to step backwards.
+  - ✅ GUI-4 (pick lists). Time range and Radius are cycle-on-click buttons: to go from 1d to 7d you may click through every option, and there is no way to step backwards.
   - Category picker is single-choice only (one category or all), although the filter itself can hold several.
   - Who-picking is spread over 7 buttons, 4 of which close the menu and need typing in chat (Any player, Staff member, Item, Island); typing on Bedrock is slow.
   - Staff member button (slot 12) simply disappears for non-staff viewers, leaving a gap in the row of subjects.
@@ -838,13 +873,13 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rules to apply:** §5 make it one plain click · §1.1/§1.2 never a dead end · §3 hide until built
 - **Notes:**
   - 28 destination buttons + head + 3 nav = more than 30 targets on one screen; far above the ~20 limit
-  - 6 of the 28 entries are 'Coming soon' placeholders (Black Market, Quests, Events, Pets, Collection, Leaderboards) taking prime slots
+  - ✅ GUI-2 (15-button hub). 6 of the 28 entries are 'Coming soon' placeholders (Black Market, Quests, Events, Pets, Collection, Leaderboards) taking prime slots
   - Placeholders keep their colourful icon (only the name turns grey) although the info text promises grey icons, so they look clickable
   - Settings opens from two places (head at slot 4 and slot 40) and Help from two places (slot 41 and frame slot 50); the head's purpose is unlabeled
   - Store, Vote, Discord and Website only print a clickable link in chat; Bedrock cannot click chat links so these four dead-end on Bedrock
   - Profiles sits alone at slot 43, apart from the other 'getting around' entries (37-42), and there is no Tutorial entry although /tutorial exists
   - Each click closes the menu, so every command-opened screen starts without a parent: no Back to /menu anywhere in the game (see islands.island, profiles.profiles, tutorial.tutorial)
-  - Hotbar item is opened with a Right-click, which is a hold-to-use on Bedrock touch; /menu is the fallback
+  - ✅ GUI-2/GUI-4 (item says Click; dead essentials copy removed). Hotbar item is opened with a Right-click, which is a hold-to-use on Bedrock touch; /menu is the fallback
 
 ### `menus.settings`: Settings
 - **Rows:** 6
@@ -856,7 +891,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
   - SettingsMenu does its own paging (not PagedMenu), so the title never shows the page '(1/2)' that every other paged menu shows (UI_STYLE 5.1); players do not know a second page exists until they see Next
   - State is shown only by dye colour (red vs lime) and by the lore line 'Status: On/Off'; the dye colours are a hard distinction for colour-blind players, and there is no on/off wording in the item name
   - Name colours are inconsistent: most names are flame-yellow, some entries are white or have no colour tag
-  - 'Players in The Depths' is a permanent Coming-soon placeholder inside the list
+  - ✅ GUI-4 (unbuilt switches hidden). 'Players in The Depths' is a permanent Coming-soon placeholder inside the list
   - 'Particles' and 'Wardrobe trail' (Set trail) overlap in meaning
   - The Chat category mixes unrelated things: island pillar and task notices, the daily reminder, and the staff-only Island chat spy
   - Social category holds island visitor/note alerts that belong with island settings (islands.settings has Visitor alerts too)
@@ -889,7 +924,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** Topic in /help (and 'About this menu' of other menus)
 - **Notes:**
   - The guide itself lives in the lore of non-clickable items: the instructions say 'Hover the pages', and hover is not available on Bedrock touch/controller
-  - Pages beyond MAX_PAGES (7) are silently cut; long topics lose content
+  - ✅ GUI-4 (14 pages in two rows + test). Pages beyond MAX_PAGES (7) are silently cut; long topics lose content
   - 'Show in chat' prints click events ([Take me there]) that Bedrock players cannot click; 'Take me there' in the menu does the same without chat
   - Back goes to the category, not to the menu from which 'About this menu' was opened
   - Slots 48 'About this menu' and 50 'Help & guides' both close this menu and open /help; Back from help returns to the Help root, not to this menu (player loses their place)
@@ -1162,7 +1197,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /freerank (after the playtime requirement)
 - **Rules to apply:** §1.2 add Back 18 / Close 22 · §4 confirm rule
 - **Notes:**
-  - A single tap picks the tag for good ('Yours forever') with no confirm.
+  - ✅ GUI-BUGS (confirm). A single tap picks the tag for good ('Yours forever') with no confirm.
   - 3-row dialog has no Back/Close/Help; only Esc closes it.
 
 ### `perks.trash`: Trash
@@ -1170,7 +1205,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /trash, /disposal (admin and owner only)
 - **Rules to apply:** §4 confirm rule · §1.1/§1.2 never a dead end
 - **Notes:**
-  - Items are destroyed on any close (Esc, walking away, server stop) with no confirm and no undo; the only warning is the lore on the lava bucket.
+  - ✅ GUI-BUGS (confirm + Close). Items are destroyed on any close (Esc, walking away, server stop) with no confirm and no undo; the only warning is the lore on the lava bucket.
   - No Close, Back or Help button (not the standard 6-row frame); the only way out is Esc.
 
 ## profiles (5 menus)
@@ -1227,7 +1262,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /is upgrade; Upgrades source button of /is level
 - **Rules to apply:** §3 hide until built
 - **Notes:**
-  - Masteries (6) sits in the tab row as a muted 'Coming soon' item that looks like a tab but does nothing; /is masteries does not exist yet either.
+  - ✅ GUI-BUGS (hidden). Masteries (6) sits in the tab row as a muted 'Coming soon' item that looks like a tab but does nothing; /is masteries does not exist yet either.
   - Each upgrade item carries a very long lore (level, now, next, task list, island level gate, cost, state); the same data is repeated in the detail screen.
 
 ### `progression.upgrade_detail`: Island » Upgrades » <upgrade>
@@ -1256,8 +1291,8 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /is top
 - **Rules to apply:** §3 hide until built
 - **Notes:**
-  - Two of the four ranking tabs (Weekly gain, Pillars) are 'Coming soon' placeholders in the tab row.
-  - Slot 6 is named after the board you are on ('Solo islands') but a tap switches to the other one ('CLICK for team islands'), so the name reads like the opposite of the action.
+  - ✅ GUI-BUGS (hidden). Two of the four ranking tabs (Weekly gain, Pillars) are 'Coming soon' placeholders in the tab row.
+  - ✅ GUI-4 ('Showing: Solo islands · switch to Team'). Slot 6 is named after the board you are on ('Solo islands') but a tap switches to the other one ('CLICK for team islands'), so the name reads like the opposite of the action.
   - No paging: only the top 28 islands are reachable.
 
 ### `progression.task_book`: Island » Level » Challenge Book
@@ -1287,7 +1322,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /daily
 - **Rules to apply:** §1.1 add Back at 45
 - **Notes:**
-  - The 30 day tiles fill slots 9-35 and 39-41, overwriting the frame's border columns (9, 17, 18, 26, 27, 35); the frame is broken and day order wraps across the border, unlike the 7-wide grid used elsewhere.
+  - ✅ GUI-BUGS (28-day window inside the frame). The 30 day tiles fill slots 9-35 and 39-41, overwriting the frame's border columns (9, 17, 18, 26, 27, 35); the frame is broken and day order wraps across the border, unlike the 7-wide grid used elsewhere.
   - 30 day tiles plus streak, summary and two tabs: 34 items on one screen (more than ~20).
   - Only today's tile is clickable; claimed, tomorrow and later days look like the same kind of tile, with the action only in the lore.
 
@@ -1296,7 +1331,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /daily > Playtime tab
 - **Rules to apply:** §1.1 add Back at 45
 - **Notes:**
-  - Titles fill 28, 30, 32, 34 and then 29, 31, 33, so milestones are not in reading order once there are more than four.
+  - ✅ GUI-4 (reading order, centred). Titles fill 28, 30, 32, 34 and then 29, 31, 33, so milestones are not in reading order once there are more than four.
 
 ## shop (3 menus)
 
@@ -1332,7 +1367,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Notes:**
   - All six items are read-only (no action line, nothing happens on click) yet each skill is a 14+ line lore wall: description, progress, XP, total, next unlock, how to earn XP.
   - Shows only the next unlock per skill; there is no list of all unlocks and no button to /dungeon, although the info text says leveling opens Depths tiers.
-  - Farming and Fishing take two of the five skill slots as 'Coming soon' placeholders that look like skills but do nothing.
+  - ✅ GUI-4 (hidden). Farming and Fishing take two of the five skill slots as 'Coming soon' placeholders that look like skills but do nothing.
 
 ## stacking (1 menus)
 
@@ -1341,8 +1376,8 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** Right-click a stacked spawner with an empty hand, or sneak + right-click it
 - **Rules to apply:** §1.1 add Back at 45 · §5 make it one plain click · §4 confirm rule · §3 hide until built
 - **Notes:**
-  - Take all removes the spawner block for good (the whole stack goes to the inventory) with one click and no confirm, right next to the harmless Take 1.
-  - Upgrades (31) has no action line and no real action: a click prints 'coming soon' in chat; it sits between the Add and Take rows as if it were part of them.
+  - ✅ GUI-BUGS (confirm). Take all removes the spawner block for good (the whole stack goes to the inventory) with one click and no confirm, right next to the harmless Take 1.
+  - ✅ GUI-4 (display only: limit and speed in the name, no promise). Upgrades (31) has no action line and no real action: a click prints 'coming soon' in chat; it sits between the Add and Take rows as if it were part of them.
   - Add 1 / Add all use lime dye and Take 1 uses red dye, the same pair that UI_STYLE §5 reserves for the Enabled / Disabled toggle state.
   - Only reachable by right-clicking the block with an empty hand or while sneaking (no command), which is awkward for Bedrock touch players.
 
@@ -1383,7 +1418,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rules to apply:** §1.2 add Back 18 / Close 22 · §4 confirm rule
 - **Notes:**
   - A click closes the report and messages the reporter at once, with no confirm.
-  - Invalid is the only outcome with a consequence for the reporter (it counts as a false report and can suggest a punishment), but its lore says only 'No rule was broken' and the item is a barrier, which looks like a Close button.
+  - ✅ GUI-BUGS (lore says so). Invalid is the only outcome with a consequence for the reporter (it counts as a false report and can suggest a punishment), but its lore says only 'No rule was broken' and the item is a barrier, which looks like a Close button.
   - Punished and Warned only record the outcome; nothing checks that a punishment was actually given, so the staff member must have used /p first.
   - 3-row menu with no Back, no Close and no Info (nav is only set on 6 rows), although it is opened as a child of the report.
 
@@ -1403,7 +1438,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rules to apply:** §1.1 add Back at 45
 - **Notes:**
   - Five tool tabs replace the top border panes (slots 2-6) and Starter kit/Blueprints use non-standard slots 47 and 51; deviates from UI_STYLE §5.1.
-  - Hoes and Rods tabs hold a single tier plus 'More tiers later', so two of the five tabs are almost empty for now.
+  - ✅ GUI-4 (the 'More tiers later' tile is gone). Hoes and Rods tabs hold a single tier plus 'More tiers later', so two of the five tabs are almost empty for now.
   - Clicking Tier 1 of a tool you do not own silently claims the whole starter kit and closes the menu, which is not what the button name suggests.
   - A locked tier only gets a red mark in the name; which of tool, skill, materials or money is missing is buried in 8+ lore lines, and clicking it answers with a chat line.
 
@@ -1429,7 +1464,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rows:** 6
 - **Opens from:** Tool menu > Skin button (40)
 - **Notes:**
-  - Remove skin is a barrier item in the top border row (slot 4), the same icon as Close at 49, so the two are easily confused.
+  - ✅ GUI-4 (bucket icon). Remove skin is a barrier item in the top border row (slot 4), the same icon as Close at 49, so the two are easily confused.
   - Not-owned skins show the same gray dye for every skin and no preview of the skin, so players cannot tell what they would be buying or earning.
 
 ## trade (4 menus)
@@ -1438,9 +1473,9 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rows:** 6
 - **Opens from:** /trade <player> (after they accept)
 - **Notes:**
-  - Info (48), Help (50) and Close (49) all close the window and so CANCEL the trade for both players (items go back); a stray tap on the standard nav ends the trade.
+  - ✅ GUI-BUGS. Info (48), Help (50) and Close (49) all close the window and so CANCEL the trade for both players (items go back); a stray tap on the standard nav ends the trade.
   - Items are offered by clicking items in your own inventory (the bottom half), not in this menu; only the 'Empty slot' lore and Info explain it.
-  - Slot 45 is Cancel trade (a destructive button) where every other menu has Back; UI_STYLE 5.1 reserves 45 for Back/Previous.
+  - ✅ GUI-BUGS (Cancel on 53). Slot 45 is Cancel trade (a destructive button) where every other menu has Back; UI_STYLE 5.1 reserves 45 for Back/Previous.
 
 ### `trade.money`: Trade » Money offer
 - **Rows:** 3
@@ -1543,7 +1578,7 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Opens from:** /wardrobe (alias /sets); Loadouts > Wardrobe button
 - **Rules to apply:** §5 pick menu instead of a cycler
 - **Notes:**
-  - The Filter button (46) cycles through 9 values one click at a time and cannot go back; getting from 'All' to 'Other' takes 8 clicks.
+  - ✅ GUI-4 (pick list). The Filter button (46) cycles through 9 values one click at a time and cannot go back; getting from 'All' to 'Other' takes 8 clicks.
   - Two buttons use the same ARMOR_STAND icon (Worn now at 47, Loadouts at 52) and the Chest and Loadouts live in non-standard slots 46, 47, 51, 52 next to Info/Help.
 
 ### `wardrobe.set`: Wardrobe » <set name>
@@ -1615,8 +1650,8 @@ The framework (`common/menu`) now gives every menu the bottom bar, Back via the 
 - **Rules to apply:** §1.1/§1.2 never a dead end
 - **Notes:**
   - Dead end: 3-row menu with no Back or Close; the staff member can only press Esc.
-  - With the live max level of 40 the level list becomes 0, 1, 10, 25, 40, 39, 40, so 'Set to Lv 40' appears twice (slots 14 and 16) and out of order.
-  - Remove set is a barrier item in the bottom border row of a 3-row frame (slot 22), the same icon as Close elsewhere.
+  - ✅ GUI-BUGS. With the live max level of 40 the level list becomes 0, 1, 10, 25, 40, 39, 40, so 'Set to Lv 40' appears twice (slots 14 and 16) and out of order.
+  - ✅ GUI-4 (lava bucket). Remove set is a barrier item in the bottom border row of a 3-row frame (slot 22), the same icon as Close elsewhere.
 
 ### `wardrobe.staff-pick`: Wardrobe of <player> » Give set / Give token
 - **Rows:** 6

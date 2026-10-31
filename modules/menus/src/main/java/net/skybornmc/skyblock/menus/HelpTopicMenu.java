@@ -18,8 +18,8 @@ final class HelpTopicMenu extends Menu {
     static final int SLOT_CHAT = 29;
     static final int SLOT_TAKE_ME_THERE = 31;
     static final int SLOT_COMMANDS = 33;
-    /** Up to 7 pages in row 2 (10-16), centered. */
-    static final int MAX_PAGES = 7;
+    /** GUI-4: up to 14 pages in rows 2-3 (10-16, 19-25), a short last row centred (was 7; longer topics were cut). */
+    static final int MAX_PAGES = 14;
 
     private final Nav nav;
     private final HelpBook.Topic topic;
@@ -65,13 +65,12 @@ final class HelpTopicMenu extends Menu {
 
         List<HelpBook.Page> pages = topic.pages();
         int count = Math.min(MAX_PAGES, pages.size());
-        int first = 13 - count / 2; // centered in 10..16
         for (int i = 0; i < count; i++) {
             HelpBook.Page page = pages.get(i);
             List<Component> lore = new ArrayList<>(nav.parse(viewer, page.lines()));
             lore.add(Component.empty());
             lore.addAll(nav.lines(viewer, "help.page-footer", Msg.number("page", i + 1), Msg.number("pages", pages.size())));
-            set(first + i, nav.item(i == 0 ? Material.BOOK : Material.PAPER,
+            set(net.skybornmc.skyblock.common.menu.PickListLayout.slot(i, count), nav.item(i == 0 ? Material.BOOK : Material.PAPER,
                     nav.text(viewer, "help.page-name", Msg.c("title", nav.parse(viewer, page.title())), Msg.number("page", i + 1)), lore));
         }
         if (pages.isEmpty()) {
