@@ -5,6 +5,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.island.IslandService.Role;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
+import net.skybornmc.skyblock.common.menu.PickListMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -14,8 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Island chat role colors (M2.5, owner I11): one wool per role in its current color. The leader clicks a role to move it
- * to the next color of {@code chat.palette} (one plain click, Bedrock-safe); everyone else sees them read-only.
+ * Island chat role colors (M2.5, owner I11): one wool per role in its current color. The leader clicks a role and picks
+ * its color from a small list of {@code chat.palette} (GUI-4/G9, one plain click, Bedrock-safe); everyone else sees them
+ * read-only.
  * <pre>
  *  R O B B ⓘ B B O R      4 summary
  *  B L . A . M . E B      19 leader, 21 admin, 23 mod, 25 member
@@ -96,11 +98,9 @@ final class ChatColorsMenu extends Menu {
 
     private MenuButton button(Role role, boolean editable) {
         String current = chat.colorName(island, role);
-        String next = IslandChatRules.next(chat.palette(), current);
         TagResolver[] p = {
                 Msg.c("role", Component.text(module.raw("role." + MemberStore.key(role)), chat.color(island, role))),
-                Msg.p("color", colorName(current)),
-                Msg.p("next", colorName(next))};
+                Msg.p("color", colorName(current))};
         List<Component> lore = new ArrayList<>(lines("chat.colors.role.lore", p));
         lore.add(Component.empty());
         lore.addAll(lines(editable && !chat.palette().isEmpty() ? "chat.colors.role.click" : "chat.colors.role.locked", p));
@@ -113,12 +113,29 @@ final class ChatColorsMenu extends Menu {
             if (pending) {
                 return;
             }
-            pending = true;
-            chat.cycleColor(viewer, island, role, () -> {
-                pending = false;
-                refresh();
-            });
+            pick(role, current);
         });
+    }
+
+    /** One wool per palette color in its own color; one click sets it (G9: no forward-only cycling). */
+    private void pick(Role role, String current) {
+        List<PickListMenu.Option<String>> options = new ArrayList<>();
+        for (String color : chat.palette()) {
+            Material wool = Material.matchMaterial(IslandChatRules.wool(color));
+            net.kyori.adventure.text.format.TextColor tint = IslandChatRules.parse(color);
+            options.add(new PickListMenu.Option<>(color, new ItemStack(wool == null ? Material.WHITE_WOOL : wool),
+                    Component.text(colorName(color), tint == null ? net.kyori.adventure.text.format.NamedTextColor.WHITE : tint)
+                            .decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false),
+                    List.of(), color.equals(current)));
+        }
+        openChild(new PickListMenu<>(List.of(text("chat.colors.crumb"), Component.text(module.raw("role." + MemberStore.key(role)))),
+                options, color -> {
+                    pending = true;
+                    chat.setColor(viewer, island, role, color, () -> {
+                        pending = false;
+                        refresh();
+                    });
+                }));
     }
 
     /** A palette color for people: "light purple", or the hex code. */

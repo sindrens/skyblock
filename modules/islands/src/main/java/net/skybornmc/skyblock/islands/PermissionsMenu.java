@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The island permission matrix (M2.3, ISL2 layout, UI_STYLE §5). Columns = roles (Admin, Mod, Member, Coop, Visitor),
+ * The island permission matrix (M2.3, ISL2 layout, UI_STYLE §5), behind "Advanced" in {@link PermPresetsMenu} (GUI-4, U8). Columns = roles (Admin, Mod, Member, Coop, Visitor),
  * rows = actions, 4 per page:
  * <pre>
  *  R . [Ad][Mo][Me][Co][Vi] . R     row 0: the roles (headers)
@@ -107,7 +107,7 @@ final class PermissionsMenu extends Menu {
     @Override
     public Component title() {
         Component suffix = pages() > 1 ? service.text(viewer, "title.page", Msg.p("page", page + 1), Msg.p("pages", pages())) : null;
-        return service.title(viewer, List.of(text("menu.crumb"), text("perms.crumb")), suffix);
+        return service.title(viewer, List.of(text("perms.crumb"), text("perms.presets.advanced.crumb")), suffix);
     }
 
     @Override

@@ -160,6 +160,38 @@ public final class IslandsConfig extends ModuleConfig {
             + "(PHASE-5 M5.4, owner 170 / P5-10; roles: admin, mod, member). The leader always can; everyone can view and hand in.")
     public List<String> upgradesRoles = List.of("admin");
 
+    // GUI-4 (owner U8): permission presets. Strict = defaults minus these keys, Open = defaults plus these keys, Normal = defaults.
+    @Setting(path = "permissions.presets.strict.admin", desc = "Strict preset: permissions taken away from island admins (keys as in "
+            + "permissions.defaults; empty = same as the default).")
+    public List<String> strictAdmin = List.of();
+
+    @Setting(path = "permissions.presets.strict.mod", desc = "Strict preset: permissions taken away from island mods.")
+    public List<String> strictMod = List.of("fire", "spawners");
+
+    @Setting(path = "permissions.presets.strict.member", desc = "Strict preset: permissions taken away from island members.")
+    public List<String> strictMember = List.of("containers", "fire", "villagers", "redstone", "armor-stands");
+
+    @Setting(path = "permissions.presets.strict.coop", desc = "Strict preset: permissions taken away from coop players.")
+    public List<String> strictCoop = List.of("break", "containers", "fire", "villagers", "redstone", "armor-stands", "vehicles");
+
+    @Setting(path = "permissions.presets.strict.visitor", desc = "Strict preset: permissions taken away from visitors.")
+    public List<String> strictVisitor = List.of("hurt-monsters", "pickup", "interact");
+
+    @Setting(path = "permissions.presets.open.admin", desc = "Open preset: permissions added for island admins (empty = same as the default).")
+    public List<String> openAdmin = List.of();
+
+    @Setting(path = "permissions.presets.open.mod", desc = "Open preset: permissions added for island mods.")
+    public List<String> openMod = List.of("bank-withdraw");
+
+    @Setting(path = "permissions.presets.open.member", desc = "Open preset: permissions added for island members.")
+    public List<String> openMember = List.of("spawners", "bank-history");
+
+    @Setting(path = "permissions.presets.open.coop", desc = "Open preset: permissions added for coop players.")
+    public List<String> openCoop = List.of("fire", "spawners");
+
+    @Setting(path = "permissions.presets.open.visitor", desc = "Open preset: permissions added for visitors.")
+    public List<String> openVisitor = List.of("interact", "pickup", "animals", "villagers", "ender-pearls");
+
     // ------------------------------------------------------------------ NOTES (/is notes, owner N1-N9)
 
     @Setting(path = "notes.max-notes", desc = "Most notes an island can have, open and done together (owner N6: 50). Deleted notes "
@@ -563,6 +595,23 @@ public final class IslandsConfig extends ModuleConfig {
     /** Warp slot limits for {@link VisitStore#saveWarp}. */
     VisitStore.WarpLimits warpLimits() {
         return new VisitStore.WarpLimits(Math.min(warpStartSlots, warpMaxSlots), warpMaxSlots);
+    }
+
+    /** The permission presets parsed from {@code permissions.presets.*} (GUI-4, U8). */
+    public PermPresets.Result permPresets() {
+        java.util.Map<PermRole, List<String>> strict = new java.util.EnumMap<>(PermRole.class);
+        strict.put(PermRole.ADMIN, strictAdmin);
+        strict.put(PermRole.MOD, strictMod);
+        strict.put(PermRole.MEMBER, strictMember);
+        strict.put(PermRole.COOP, strictCoop);
+        strict.put(PermRole.VISITOR, strictVisitor);
+        java.util.Map<PermRole, List<String>> open = new java.util.EnumMap<>(PermRole.class);
+        open.put(PermRole.ADMIN, openAdmin);
+        open.put(PermRole.MOD, openMod);
+        open.put(PermRole.MEMBER, openMember);
+        open.put(PermRole.COOP, openCoop);
+        open.put(PermRole.VISITOR, openVisitor);
+        return PermPresets.parse(strict, open);
     }
 
     /** The role defaults parsed from {@code permissions.defaults.*} (problems = unknown keys). */

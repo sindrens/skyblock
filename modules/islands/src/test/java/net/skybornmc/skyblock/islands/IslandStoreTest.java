@@ -162,6 +162,25 @@ class IslandStoreTest {
     }
 
     @Test
+    void presetSavesEveryCellInOneTransaction() {
+        Island island = ((IslandStore.CreateResult.Created) create(UUID.randomUUID(), 1000L)).island();
+        db.blocking(c -> {
+            IslandStore.savePerm(c, island.id(), PermRole.COOP, IslandPerm.FIRE, true, 1L);
+            return null;
+        });
+        new IslandStore(db).savePerms(island.id(), java.util.List.of(
+                new PermPresets.Change(PermRole.VISITOR, IslandPerm.INTERACT, true),
+                new PermPresets.Change(PermRole.MEMBER, IslandPerm.CONTAINERS, false),
+                new PermPresets.Change(PermRole.COOP, IslandPerm.FIRE, null))).join();
+        Island back = db.blocking(c -> IslandStore.loadAll(c, "islands")).getFirst();
+        assertEquals(Boolean.TRUE, back.perms().override(PermRole.VISITOR, IslandPerm.INTERACT));
+        assertEquals(Boolean.FALSE, back.perms().override(PermRole.MEMBER, IslandPerm.CONTAINERS));
+        assertNull(back.perms().override(PermRole.COOP, IslandPerm.FIRE));
+        int rows = db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM island_role_perms", rs -> rs.getInt(1)).orElse(0));
+        assertEquals(2, rows);
+    }
+
+    @Test
     void unknownRolesFallBackToMember() {
         assertEquals(Role.MOD, IslandStore.role("mod"));
         assertEquals(Role.MEMBER, IslandStore.role("weird"));

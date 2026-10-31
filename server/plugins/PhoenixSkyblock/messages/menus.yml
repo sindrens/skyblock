@@ -74,6 +74,14 @@ tab:
   selected: ["", "<c:flame><sym:check> You are here"]
   action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"]
 
+# Pick lists (GUI_DESIGN section 5, G9): a small list instead of a button that cycles one way. One click picks.
+pick:
+  info: ["<c:text>Pick one. The menu you came from", "<c:text>shows the new choice right away."]
+  selected: ["", "<c:flame><sym:check> Selected"]
+  action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
+  # Under the current value on the button that opens a pick list.
+  open: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
+
 toggle:
   "on": ["", "<c:text>Status: <c:success><sym:check> On"]
   "off": ["", "<c:text>Status: <c:error><sym:cross> Off"]

@@ -114,6 +114,28 @@ public final class IslandStore {
     }
 
     /**
+     * Saves many role permission overrides of one island in one transaction (GUI-4 presets): either every cell is
+     * written or none ({@code null} override = back to the default: the row is removed).
+     */
+    public CompletableFuture<Void> savePerms(UUID islandId, List<PermPresets.Change> changes) {
+        List<PermPresets.Change> copy = List.copyOf(changes);
+        return db.run(c -> {
+            long now = System.currentTimeMillis();
+            inTransaction(c, () -> {
+                for (PermPresets.Change change : copy) {
+                    Sql.update(c, "DELETE FROM island_role_perms WHERE island_id = ? AND role = ? AND perm = ?",
+                            islandId, change.role().key(), change.perm().key());
+                    if (change.override() != null) {
+                        Sql.update(c, "INSERT INTO island_role_perms (island_id, role, perm, allowed, updated_at) VALUES (?, ?, ?, ?, ?)",
+                                islandId, change.role().key(), change.perm().key(), change.override(), now);
+                    }
+                }
+                return null;
+            });
+        });
+    }
+
+    /**
      * Removes an island in one transaction (M2.7): marks it deleted (the row stays with its season for history), ends
      * every membership (join history: left_reason {@code disband}), removes coop players, invites and permission
      * overrides, and puts the slot in state {@code clearing}. {@code expectedOwner} (nullable) must still be the leader.

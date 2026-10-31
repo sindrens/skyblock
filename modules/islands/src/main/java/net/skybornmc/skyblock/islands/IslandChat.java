@@ -257,8 +257,8 @@ final class IslandChat implements ChatChannel {
         return IslandChatRules.effective(own == null ? null : own.get(role), palette, module.config().chatColor(role));
     }
 
-    /** Leader only: moves {@code role} to the next palette color (saved atomically, logged, members told). */
-    void cycleColor(Player player, Island island, Role role, Runnable done) {
+    /** Leader only: sets {@code role} to the palette color {@code target} (saved atomically, logged; GUI-4 pick list). */
+    void setColor(Player player, Island island, Role role, String target, Runnable done) {
         UUID key = islands.key(player);
         if (!IslandChatRules.canPickColors(island.roleOrNull(key))) {
             islands.fail(player, "chat.colors.leader-only");
@@ -275,7 +275,12 @@ final class IslandChat implements ChatChannel {
             return;
         }
         String from = colorName(island, role);
-        String next = IslandChatRules.next(palette, from);
+        String next = IslandChatRules.normalize(target);
+        if (!palette.contains(next) || next.equals(from)) {
+            busy.remove(player.getUniqueId());
+            done.run();
+            return;
+        }
         String stored = next.equals(IslandChatRules.normalize(module.config().chatColor(role))) ? null : next;
         store.save(island.id(), key, role, stored).whenCompleteAsync((result, error) -> {
             busy.remove(player.getUniqueId());

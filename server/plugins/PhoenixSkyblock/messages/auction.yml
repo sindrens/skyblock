@@ -234,20 +234,15 @@ browse:
       - "<c:text>Load the newest listings."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to refresh"
+  # Filters open a small pick list (one click picks). The button adds "» CLICK to choose".
   category:
     name: "<c:value>Category: <value>"
-    lore-top:
-      - ""
-    lore:
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the next one"
+    crumb: "Category"
+    lore: ["<c:text>Show one kind of item."]
   sort:
     name: "<c:value>Sort: <value>"
-    lore-top:
-      - ""
-    lore:
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
+    crumb: "Sort"
+    lore: ["<c:text>Change the order of the list."]
   search:
     name: "<c:value>Search"
     lore:
@@ -267,8 +262,6 @@ browse:
       - "<c:text>Show all items again."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to clear"
-  list-selected: "<c:flame><sym:bullet></c:flame> <name>"
-  list-other: "<c:muted>  <name>"
   entry:
     lore:
       - ""
