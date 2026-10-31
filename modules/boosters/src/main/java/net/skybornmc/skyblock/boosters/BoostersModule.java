@@ -121,9 +121,10 @@ public final class BoostersModule implements SkyblockModule, Listener {
             personal.joined(p);
         }
         global.load();
+        // PERF8: each half is timed on its own (nested inside boosters:tick), so the log names the slow one.
         task = core.scheduler().repeat("boosters:tick", 20L, 20L, () -> {
-            personal.tick();
-            global.tick();
+            core.scheduler().timer().time("boosters:tick-personal", personal::tick);
+            core.scheduler().timer().time("boosters:tick-global", global::tick);
         });
     }
 

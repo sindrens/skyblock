@@ -33,7 +33,7 @@ final class AfkTracker {
         return afk.contains(uuid);
     }
 
-    /** Players inactive for at least {@code idleMillis} who are not AFK yet. */
+    /** Players inactive for at least {@code idleMillis} who are not AFK yet. Any thread. */
     Set<UUID> dueForAuto(long now, long idleMillis) {
         Set<UUID> due = new java.util.HashSet<>();
         lastActive.forEach((uuid, at) -> {
@@ -41,7 +41,16 @@ final class AfkTracker {
                 due.add(uuid);
             }
         });
-        return due;
+        return due.isEmpty() ? Set.of() : due;
+    }
+
+    /**
+     * PERF8: the same test as {@link #dueForAuto} for one player, repeated on the main thread for the players a scan
+     * found (activity in between keeps them active). A player who left (no entry) is not due.
+     */
+    boolean stillDue(UUID uuid, long now, long idleMillis) {
+        Long at = lastActive.get(uuid);
+        return at != null && !afk.contains(uuid) && now - at >= idleMillis;
     }
 
     void remove(UUID uuid) {

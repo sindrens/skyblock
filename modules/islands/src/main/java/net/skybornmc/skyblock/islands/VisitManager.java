@@ -363,24 +363,41 @@ final class VisitManager implements Listener {
             bannedTask.cancel();
         }
         long period = Math.max(20L, config().bannedLeaderRefreshSeconds * 20L);
-        bannedTask = core.scheduler().repeat("islands:banned-leaders", 40L, period, this::refreshBans);
+        // PERF8: the read starts off the main thread (like the browser stats); only the result is applied on it
+        // (islands:banned-leaders-apply). The service lookup and the database call cost nothing on the main thread.
+        bannedTask = core.scheduler().asyncRepeat(40L, period, this::refreshBans);
     }
 
+    /** Any thread: reads the ban list; the result lands on the main thread. */
     private void refreshBans() {
-        core.services().optional(net.skybornmc.skyblock.common.moderation.BanStatus.class).ifPresentOrElse(status ->
-                status.bannedAccounts().whenCompleteAsync((set, error) -> {
-                    if (error != null) {
-                        core.plugin().getLogger().warning("Islands: could not read the ban list: " + Database.cause(error));
-                        return;
-                    }
-                    Set<UUID> before = bannedPlayers;
-                    bannedPlayers = Set.copyOf(set);
-                    for (UUID id : set) {
-                        if (!before.contains(id)) {
-                            closeIslandsOf(id);
-                        }
-                    }
-                }, main), () -> bannedPlayers = Set.of());
+        Optional<net.skybornmc.skyblock.common.moderation.BanStatus> status =
+                core.services().optional(net.skybornmc.skyblock.common.moderation.BanStatus.class);
+        if (status.isEmpty()) {
+            if (!bannedPlayers.isEmpty()) {
+                applyLater(Set.of());
+            }
+            return;
+        }
+        status.get().bannedAccounts().whenComplete((set, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().warning("Islands: could not read the ban list: " + Database.cause(error));
+                return;
+            }
+            applyLater(Set.copyOf(set));
+        });
+    }
+
+    private void applyLater(Set<UUID> next) {
+        if (core.plugin().isEnabled()) {
+            core.scheduler().ensureMain("islands:banned-leaders-apply", () -> applyBans(next));
+        }
+    }
+
+    /** Main thread: takes over a read ban list and closes the islands of every newly banned leader. */
+    private void applyBans(Set<UUID> next) {
+        Set<UUID> before = bannedPlayers;
+        bannedPlayers = next;
+        closeIslandsOf(BanSweep.newlyBanned(before, next));
     }
 
     /** A new ban closes the banned leader's islands to visitors at once and sends their visitors to spawn. */
@@ -389,29 +406,31 @@ final class VisitManager implements Listener {
         Set<UUID> next = new HashSet<>(bannedPlayers);
         if (next.add(event.getPlayer())) {
             bannedPlayers = Set.copyOf(next);
-            closeIslandsOf(event.getPlayer());
+            closeIslandsOf(Set.of(event.getPlayer()));
         }
     }
 
-    private void closeIslandsOf(UUID player) {
-        if (!config().closeBannedLeaderIslands) {
+    /** Closes the islands of these (newly banned) leaders: one pass over the islands for all of them (PERF8). */
+    private void closeIslandsOf(Set<UUID> players) {
+        if (players.isEmpty() || !config().closeBannedLeaderIslands) {
             return;
         }
-        for (Island island : List.copyOf(islands.islands())) {
-            if (island.owner() == null || !player.equals(islands.profiles().ownerOf(island.owner()))) {
-                continue;
-            }
-            int sent = 0;
-            for (Player visitor : visitorsOn(island)) {
-                if (access(visitor, island) == VisitRules.Access.CLOSED) {
-                    msg.send(visitor, "visit.closed-sent-off", Msg.p("island", islands.displayName(island)));
-                    islands.sendOff(visitor, island);
-                    sent++;
+        Map<UUID, List<Island>> owned = BanSweep.byLeader(List.copyOf(islands.islands()),
+                island -> island.owner() == null ? null : islands.profiles().ownerOf(island.owner()), players);
+        owned.forEach((player, list) -> {
+            for (Island island : list) {
+                int sent = 0;
+                for (Player visitor : visitorsOn(island)) {
+                    if (access(visitor, island) == VisitRules.Access.CLOSED) {
+                        msg.send(visitor, "visit.closed-sent-off", Msg.p("island", islands.displayName(island)));
+                        islands.sendOff(visitor, island);
+                        sent++;
+                    }
                 }
+                core.audit().log(AuditCategory.ISLAND, "island_closed_banned_leader", Actor.system("islands"), island.id().toString(),
+                        islands.displayName(island), null, null, Map.of("leader", player.toString(), "visitors_sent", sent));
             }
-            core.audit().log(AuditCategory.ISLAND, "island_closed_banned_leader", Actor.system("islands"), island.id().toString(),
-                    islands.displayName(island), null, null, Map.of("leader", player.toString(), "visitors_sent", sent));
-        }
+        });
     }
 
     /** The island whose slot contains {@code at}, or null. */

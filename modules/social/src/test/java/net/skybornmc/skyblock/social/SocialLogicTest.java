@@ -54,4 +54,19 @@ class SocialLogicTest {
         // Doesn't throw and builds a resolver; unsafe characters are removed before parsing.
         assertTrue(SocialModule.pre("player", "Ste've<b>").has("player"));
     }
+
+    @Test
+    void stillDueRepeatsTheScanForOnePlayer() {
+        AfkTracker afk = new AfkTracker();
+        assertTrue(afk.dueForAuto(0, 300_000).isEmpty(), "nobody tracked");
+        afk.active(a, 0);
+        assertTrue(afk.dueForAuto(300_000, 300_000).contains(a));
+        assertTrue(afk.stillDue(a, 300_000, 300_000));
+        afk.active(a, 300_100);
+        assertFalse(afk.stillDue(a, 300_200, 300_000), "PERF8: activity between the async scan and the main tick keeps them active");
+        afk.set(a, true, 0);
+        assertFalse(afk.stillDue(a, 900_000, 300_000), "already AFK");
+        afk.remove(b);
+        assertFalse(afk.stillDue(b, 900_000, 300_000), "left the server");
+    }
 }

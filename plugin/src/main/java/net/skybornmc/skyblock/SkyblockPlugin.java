@@ -120,6 +120,11 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        // PERF8: the class preload runs while the modules enable, so it is done before the first tick (it used to start at
+        // tick 20, the same tick as boosters:tick, and overlapped every module's first start-up runs).
+        if (coreConfig.preloadClasses && coreConfig.preloadAtEnable) {
+            startClassPreload();
+        }
         configs.load(auditConfig);                                                                    // M0.8
         AuditLog audit = new AuditLog(database, auditConfig, getDataFolder(), getLogger());
         audit.start();
@@ -200,12 +205,29 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
 
     /** PERF6: loads every plugin class off the main thread once the server runs (see {@link ClassPreloader}). */
     private void preloadClasses(CoreConfig coreConfig) {
-        if (!coreConfig.preloadClasses) {
-            return;
+        if (!coreConfig.preloadClasses || coreConfig.preloadAtEnable) {
+            return; // PERF8: already started while enabling (startClassPreload)
         }
+        getServer().getScheduler().runTaskLaterAsynchronously(this, classPreload(), Math.max(0, coreConfig.preloadDelayTicks));
+    }
+
+    /**
+     * PERF8: starts the class preload on its own low-priority daemon thread right away. Bukkit's async tasks only start
+     * once the server ticks, so a scheduler task can't run during start-up. Loading never initializes a class (no
+     * static initializer runs), the plugin class loader is parallel capable, and every plugin's class loader exists
+     * before any plugin enables, so this is the same work as the PERF6 preload, only finished before the first tick.
+     */
+    private void startClassPreload() {
+        Thread thread = new Thread(classPreload(), "PhoenixSkyblock-ClassPreload");
+        thread.setDaemon(true);
+        thread.setPriority(Thread.MIN_PRIORITY);
+        thread.start();
+    }
+
+    private Runnable classPreload() {
         java.io.File jar = getFile();
         ClassLoader loader = getClassLoader();
-        getServer().getScheduler().runTaskLaterAsynchronously(this, () -> {
+        return () -> {
             try {
                 ClassPreloader.Result r = ClassPreloader.preload(jar, loader, "net/skybornmc/skyblock/");
                 getLogger().info("Preloaded " + r.loaded() + " plugin classes in " + r.millis() + " ms"
@@ -213,7 +235,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
             } catch (java.io.IOException | RuntimeException e) {
                 getLogger().warning("Class preload failed (harmless, classes load on first use): " + e);
             }
-        }, Math.max(0, coreConfig.preloadDelayTicks));
+        };
     }
 
     @Override

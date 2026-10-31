@@ -66,6 +66,28 @@ final class Placer implements Listener {
      */
     private final SpawnQueue<Placed> retiring = new SpawnQueue<>();
     private net.skybornmc.skyblock.common.util.Scheduler.Task spawnTask;
+    /**
+     * PERF8: the left-over walk of the first placement of an enable runs in the first spawn tick (before anything of
+     * this placement spawns), not inside {@code npcs:apply}.
+     */
+    private boolean purgePending;
+
+    /** What one spawn tick does (PERF8). */
+    enum Step { PURGE, RETIRE, SPAWN, DONE }
+
+    /**
+     * The work of one spawn tick: the left-over walk first (alone in its tick), then removing the previous placement,
+     * then spawning; DONE when nothing is left (the task stops). Pure.
+     */
+    static Step step(boolean purgePending, boolean retiringEmpty, boolean queueEmpty) {
+        if (purgePending) {
+            return Step.PURGE;
+        }
+        if (!retiringEmpty) {
+            return Step.RETIRE;
+        }
+        return queueEmpty ? Step.DONE : Step.SPAWN;
+    }
 
     Placer(NpcsModule module) {
         this.module = module;
@@ -81,29 +103,33 @@ final class Placer implements Listener {
      */
     void start(Spots spots) {
         boolean reload = !byKey.isEmpty() || !retiring.isEmpty();
-        retire();
+        var timer = module.core().scheduler().timer();
+        timer.time("npcs:apply-retire", this::retire);
         if (!reload) {
             // First placement of this enable: left-overs of a crash or an earlier enable. On a reload every entity of
             // ours is tracked (byKey, then retiring), so the walk over every world's entities is skipped.
-            long purgeStart = System.nanoTime();
-            purgeLeftovers();
-            module.core().scheduler().timer().record("npcs:purge", System.nanoTime() - purgeStart);
+            // PERF8: the walk runs in the first spawn tick (npcs:purge), before anything of this placement spawns.
+            purgePending = true;
         }
         NpcsConfig c = module.config();
-        if (c.npcsEnabled) {
-            spots.npcs().forEach(n -> track(new Placed(Placed.Kind.NPC, n, null)));
-        }
-        if (c.hologramsEnabled) {
-            spots.holograms().forEach(t -> track(new Placed(Placed.Kind.HOLOGRAM, null, t)));
-        }
-        if (c.leaderboardsEnabled) {
-            spots.boards().forEach(t -> track(new Placed(Placed.Kind.BOARD, null, t)));
-        }
-        for (Placed p : byKey.values()) {
-            if (loaded(p) != null) {
-                queue.add(p);
+        timer.time("npcs:apply-track", () -> {
+            if (c.npcsEnabled) {
+                spots.npcs().forEach(n -> track(new Placed(Placed.Kind.NPC, n, null)));
             }
-        }
+            if (c.hologramsEnabled) {
+                spots.holograms().forEach(t -> track(new Placed(Placed.Kind.HOLOGRAM, null, t)));
+            }
+            if (c.leaderboardsEnabled) {
+                spots.boards().forEach(t -> track(new Placed(Placed.Kind.BOARD, null, t)));
+            }
+        });
+        timer.time("npcs:apply-queue", () -> {
+            for (Placed p : byKey.values()) {
+                if (loaded(p) != null) {
+                    queue.add(p);
+                }
+            }
+        });
         drainLater();
         if (c.npcsEnabled && c.lookAtPlayers && !spots.npcs().isEmpty()) {
             lookTask = module.core().scheduler().repeat("npcs:look", c.lookTicks, c.lookTicks, this::look);
@@ -210,7 +236,7 @@ final class Placer implements Listener {
 
     /** Starts the per-tick spawn task (from the next tick) unless it runs or nothing waits. */
     private void drainLater() {
-        if (spawnTask == null && (!queue.isEmpty() || !retiring.isEmpty())) {
+        if (spawnTask == null && (purgePending || !queue.isEmpty() || !retiring.isEmpty())) {
             spawnTask = module.core().scheduler().repeat("npcs:spawn", 1, 1, this::drain);
         }
     }
@@ -218,13 +244,19 @@ final class Placer implements Listener {
     /** One tick of spawning; stops the task when the queue is empty. */
     private void drain() {
         NpcsConfig c = module.config();
-        if (!retiring.isEmpty()) {
+        switch (step(purgePending, retiring.isEmpty(), queue.isEmpty())) {
+            case PURGE -> {
+                purgePending = false;
+                long purgeStart = System.nanoTime();
+                purgeLeftovers();
+                module.core().scheduler().timer().record("npcs:purge", System.nanoTime() - purgeStart);
+            }
             // PERF5: the previous placement goes first; new sets spawn once it is gone.
-            retiring.drain(c.removalsPerTick, c.spawnBudgetMs * 1_000_000L, System::nanoTime, Placer::removeSet);
-        } else {
-            queue.drain(c.spawnsPerTick, c.spawnBudgetMs * 1_000_000L, System::nanoTime, this::spawnIfWanted);
+            case RETIRE -> retiring.drain(c.removalsPerTick, c.spawnBudgetMs * 1_000_000L, System::nanoTime, Placer::removeSet);
+            case SPAWN -> queue.drain(c.spawnsPerTick, c.spawnBudgetMs * 1_000_000L, System::nanoTime, this::spawnIfWanted);
+            case DONE -> { }
         }
-        if (queue.isEmpty() && retiring.isEmpty() && spawnTask != null) {
+        if (step(purgePending, retiring.isEmpty(), queue.isEmpty()) == Step.DONE && spawnTask != null) {
             spawnTask.cancel();
             spawnTask = null;
         }

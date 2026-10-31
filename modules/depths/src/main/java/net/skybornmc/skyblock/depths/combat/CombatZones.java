@@ -205,6 +205,12 @@ public final class CombatZones implements Listener {
             return;
         }
         long now = System.currentTimeMillis();
+        // PERF8: each part is measured over the whole cycle and recorded under its own name (nested inside depths-combat),
+        // so a slow cycle names the part: -players (who stands where), -prune (mob checks), -spawn, -bars.
+        long partStart = System.nanoTime();
+        long pruneNanos = 0;
+        long spawnNanos = 0;
+        long barNanos = 0;
         Map<String, List<Player>> present = new HashMap<>();
         for (Player p : world.getPlayers()) {
             if (p.getGameMode() == org.bukkit.GameMode.SPECTATOR) {
@@ -215,6 +221,7 @@ public final class CombatZones implements Listener {
                 present.computeIfAbsent(zone.id(), k -> new ArrayList<>(4)).add(p);
             }
         }
+        core.scheduler().timer().record("depths-combat-players", System.nanoTime() - partStart);
         Set<String> live = new HashSet<>();
         RandomGenerator rng = ThreadLocalRandom.current();
         MobCatalog cat = catalog;
@@ -230,7 +237,9 @@ public final class CombatZones implements Listener {
                 state.clock = new MiniBossClock(now, spawns.miniBossMinutes() * 60_000L);
                 state.clockMinutes = spawns.miniBossMinutes();
             }
+            long t0 = System.nanoTime();
             prune(state, zone, world, rng, flags);
+            pruneNanos += System.nanoTime() - t0;
             List<Player> players = present.getOrDefault(zone.id(), List.of());
             state.players = players.size();
             if (players.isEmpty()) {
@@ -240,10 +249,13 @@ public final class CombatZones implements Listener {
                 if (SpawnMath.despawnDue(state.emptySince, now, config.combatDespawnAfterSeconds * 1000L)) {
                     clear(state);
                 }
+                long t1 = System.nanoTime();
                 syncBar(state, players);
+                barNanos += System.nanoTime() - t1;
                 continue;
             }
             state.emptySince = 0;
+            long t2 = System.nanoTime();
             int regular = state.mobs.size() - (state.boss == null ? 0 : 1);
             int room = config.combatMaxTotalMobs - tracked.size();
             int count = SpawnMath.toSpawn(SpawnMath.target(spawns, players.size()), regular, config.combatSpawnsPerCycle, room);
@@ -263,8 +275,14 @@ public final class CombatZones implements Listener {
                     announce(state, zone, players);
                 }
             }
+            long t3 = System.nanoTime();
+            spawnNanos += t3 - t2;
             syncBar(state, players);
+            barNanos += System.nanoTime() - t3;
         }
+        core.scheduler().timer().record("depths-combat-prune", pruneNanos);
+        core.scheduler().timer().record("depths-combat-spawn", spawnNanos);
+        core.scheduler().timer().record("depths-combat-bars", barNanos);
         // Zones removed from zones.yml / mobs.yml on a reload lose their mobs.
         for (Iterator<Map.Entry<String, ZoneState>> it = states.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<String, ZoneState> e = it.next();

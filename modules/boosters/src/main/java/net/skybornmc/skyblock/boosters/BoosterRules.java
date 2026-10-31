@@ -145,6 +145,15 @@ final class BoosterRules {
         return sec + "s";
     }
 
+    /**
+     * PERF8: whether the global boosters' time left is saved in this tick. Never in the first tick after the load: no time
+     * has passed yet, so it would only write back what was just read (that write used to land in the first
+     * {@code boosters:tick} after every start). After that every {@code periodMillis}, counted from the first tick.
+     */
+    static boolean saveDue(boolean firstTick, long lastSave, long now, long periodMillis) {
+        return !firstTick && now - lastSave >= periodMillis;
+    }
+
     /** Boss bar progress 0..1 (time left / full length). */
     static float progress(long remaining, long duration) {
         if (duration <= 0) {
