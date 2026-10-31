@@ -1,5 +1,10 @@
 package net.skybornmc.skyblock.depths.combat;
 
+import net.skybornmc.skyblock.common.mob.AbilityId;
+import net.skybornmc.skyblock.common.mob.AbilitySpec;
+import net.skybornmc.skyblock.common.mob.EliteRules;
+import net.skybornmc.skyblock.common.mob.MobCombatMath;
+import net.skybornmc.skyblock.common.mob.MobDef;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.Core;
@@ -88,7 +93,7 @@ public final class CombatZones implements Listener {
     public static final String XP_SOURCE = "depths_mob";
 
     /** One live combat mob. */
-    record Tracked(LivingEntity entity, MobDef def, String zoneId, int tier, boolean boss, BossFight fight) {
+    record Tracked(LivingEntity entity, MobDef def, String zoneId, int tier, boolean boss, BossFight fight, boolean elite) {
     }
 
     /** Runtime state of one combat zone. */
@@ -124,6 +129,10 @@ public final class CombatZones implements Listener {
     private final SpawnColumns columns = new SpawnColumns();
     /** QUICK1: parsed mob names (message parsing once per mob kind, not per spawn); cleared on start/reload. */
     private final Map<String, Component> names = new HashMap<>();
+    /** M8.1: players per combat zone from the last cycle (abilities only look here, never at the whole world). */
+    private Map<String, List<Player>> present = Map.of();
+    /** M8.1: mob abilities (one shared scheduler). */
+    private final MobAbilities abilities;
 
     public CombatZones(Core core, DepthsConfig config, ModuleMessages msg, ZoneService zones, SatchelManager satchel,
                        DepthsDrops drops, MobFactory factory) {
@@ -134,6 +143,7 @@ public final class CombatZones implements Listener {
         this.satchel = satchel;
         this.drops = drops;
         this.factory = factory;
+        this.abilities = new MobAbilities(core, config, msg, new AbilityZones());
     }
 
     public void catalog(MobCatalog catalog) {
@@ -153,6 +163,15 @@ public final class CombatZones implements Listener {
         names.clear();
         long ticks = Math.max(10, config.combatCycleTicks);
         task = core.scheduler().repeat("depths-combat", ticks, ticks, this::cycle);
+        abilities.start();
+        // A reload keeps the live mobs: they get their abilities again from the (maybe changed) catalog.
+        EliteRules rules = eliteRules();
+        for (Tracked t : tracked.values()) {
+            if (t.entity().isValid()) {
+                MobDef def = catalog.mob(t.def().id()) != null ? catalog.mob(t.def().id()) : t.def();
+                abilities.track(t.entity(), def, t.zoneId(), abilitiesOf(def, t.tier(), t.boss(), t.elite(), rules));
+            }
+        }
         World world = Bukkit.getWorld(zones.world());
         if (world != null) {
             removeOrphans(world.getEntities());
@@ -165,6 +184,7 @@ public final class CombatZones implements Listener {
             task.cancel();
             task = null;
         }
+        abilities.stop();
         clearAll();
     }
 
@@ -174,6 +194,8 @@ public final class CombatZones implements Listener {
             clear(state);
         }
         states.clear();
+        abilities.reset();
+        present = Map.of();
         for (Tracked t : tracked.values()) {
             if (t.entity().isValid()) {
                 t.entity().remove();
@@ -221,6 +243,7 @@ public final class CombatZones implements Listener {
                 present.computeIfAbsent(zone.id(), k -> new ArrayList<>(4)).add(p);
             }
         }
+        this.present = present;
         core.scheduler().timer().record("depths-combat-players", System.nanoTime() - partStart);
         Set<String> live = new HashSet<>();
         RandomGenerator rng = ThreadLocalRandom.current();
@@ -301,6 +324,7 @@ public final class CombatZones implements Listener {
             if (t == null || !t.entity().isValid() || t.entity().isDead()) {
                 it.remove();
                 tracked.remove(id);
+                abilities.untrack(id);
                 if (id.equals(state.boss)) {
                     bossGone(state);
                 }
@@ -326,6 +350,7 @@ public final class CombatZones implements Listener {
                 } else {
                     it.remove();
                     tracked.remove(id);
+                    abilities.untrack(id);
                     t.entity().remove();
                     if (id.equals(state.boss)) {
                         bossGone(state);
@@ -336,11 +361,22 @@ public final class CombatZones implements Listener {
     }
 
     private LivingEntity spawn(ZoneState state, Zone zone, MobDef def, Location at, boolean boss) {
-        LivingEntity e = factory.spawn(at, def, name(def, boss), null, false);
+        return spawn(state, zone, def, at, boss, true);
+    }
+
+    /**
+     * @param mayBeElite false for summoned adds (they never roll elites)
+     */
+    private LivingEntity spawn(ZoneState state, Zone zone, MobDef def, Location at, boolean boss, boolean mayBeElite) {
+        EliteRules rules = eliteRules();
+        boolean elite = mayBeElite && rules.roll(def.stats().eliteChance(), zone.tier(), boss, ThreadLocalRandom.current());
+        LivingEntity e = factory.spawn(at, def, name(def, boss, elite), null, false, elite ? rules.healthMultiplier() : 1.0, elite);
         if (e == null) {
             return null;
         }
-        tracked.put(e.getUniqueId(), new Tracked(e, def, zone.id(), zone.tier(), boss, boss ? new BossFight(maxHealth(e)) : null));
+        tracked.put(e.getUniqueId(), new Tracked(e, def, zone.id(), zone.tier(), boss, boss ? new BossFight(maxHealth(e)) : null,
+                elite));
+        abilities.track(e, def, zone.id(), abilitiesOf(def, zone.tier(), boss, elite, rules));
         state.mobs.add(e.getUniqueId());
         if (boss) {
             e.addScoreboardTag(net.skybornmc.skyblock.common.combat.BossMobs.TAG); // E2: Giant Slayer / Executioner see bosses
@@ -359,6 +395,103 @@ public final class CombatZones implements Listener {
             Component name = msg.component(null, key);
             return boss ? msg.component(null, "combat.mini-boss.name", Msg.c("name", name)) : name;
         });
+    }
+
+    /** M8.1: elites get the star before their name (the vanilla name when the mob has none in the messages). */
+    private Component name(MobDef def, boolean boss, boolean elite) {
+        if (!elite) {
+            return name(def, boss);
+        }
+        return names.computeIfAbsent("elite:" + def.id(), k -> {
+            Component base = name(def, false);
+            Component shown = base != null ? base : Component.translatable("entity.minecraft." + def.type());
+            return msg.component(null, "combat.elite.name", Msg.c("name", shown));
+        });
+    }
+
+    // ------------------------------------------------------------------ M8.1 elites and abilities
+
+    /** The elite rules from depths.yml (cheap; read per spawn so a reload applies at once). */
+    EliteRules eliteRules() {
+        List<AbilityId> extra = new ArrayList<>();
+        for (String id : config.eliteExtraAbilities) {
+            AbilityId a = AbilityId.of(id);
+            if (a != null) {
+                extra.add(a);
+            }
+        }
+        return new EliteRules(config.eliteHealthMultiplier, config.eliteDamageMultiplier, config.eliteDropMultiplier,
+                config.eliteXpMultiplier, config.eliteMinTier, config.eliteBudgetNeutral, extra);
+    }
+
+    /**
+     * The abilities a new mob uses: none while abilities are off; regular mobs only from {@code abilities.min-tier}
+     * (tiers 1-3 stay safe); elites add their extra ability; unset values come from {@code ability-defaults}.
+     */
+    private List<AbilitySpec> abilitiesOf(MobDef def, int tier, boolean boss, boolean elite, EliteRules rules) {
+        if (!config.abilitiesEnabled || (!boss && tier < config.abilitiesMinTier)) {
+            return List.of();
+        }
+        List<AbilitySpec> own = rules.abilities(def.stats().abilities(), elite);
+        if (own.isEmpty()) {
+            return own;
+        }
+        MobCatalog cat = catalog;
+        List<AbilitySpec> out = new ArrayList<>(own.size());
+        for (AbilitySpec a : own) {
+            out.add(cat.resolve(a));
+        }
+        return out;
+    }
+
+    /** M8.1 summon: one regular mob of the zone near a spot, inside the zone and the caps; never an elite or boss. */
+    private LivingEntity spawnAdd(String zoneId, Location near) {
+        ZoneState state = states.get(zoneId);
+        Zone zone = zones.zone(zoneId).orElse(null);
+        ZoneSpawns spawns = zone == null ? null : catalog.combat(zone.tier());
+        if (state == null || spawns == null || near.getWorld() == null || tracked.size() >= config.combatMaxTotalMobs
+                || state.mobs.size() >= spawns.max()) {
+            return null;
+        }
+        RandomGenerator rng = ThreadLocalRandom.current();
+        MobDef def = catalog.mob(SpawnMath.pick(spawns.mobs(), rng));
+        if (def == null) {
+            return null;
+        }
+        World world = near.getWorld();
+        for (int attempt = 0; attempt < config.combatSpawnAttempts; attempt++) {
+            int x = near.getBlockX() + rng.nextInt(7) - 3;
+            int z = near.getBlockZ() + rng.nextInt(7) - 3;
+            if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+                continue;
+            }
+            int y = standY(world, x, z, near.getBlockY() + 2, near.getBlockY() - 3);
+            if (y == Integer.MIN_VALUE || !zone.region().contains(x + 0.5, y, z + 0.5)) {
+                continue;
+            }
+            return spawn(state, zone, def, new Location(world, x + 0.5, y, z + 0.5, rng.nextFloat() * 360f, 0f), false, false);
+        }
+        return null;
+    }
+
+    /** What the abilities see of the zones. */
+    private final class AbilityZones implements MobAbilities.Zones {
+        @Override
+        public List<Player> players(String zoneId) {
+            return present.getOrDefault(zoneId, List.of());
+        }
+
+        @Override
+        public boolean inside(String zoneId, Location at) {
+            Zone zone = zones.zone(zoneId).orElse(null);
+            return zone != null && at.getWorld() != null && at.getWorld().getName().equals(zones.world())
+                    && zone.region().contains(at.getX(), at.getY(), at.getZ());
+        }
+
+        @Override
+        public LivingEntity spawnAdd(String zoneId, Location near) {
+            return CombatZones.this.spawnAdd(zoneId, near);
+        }
     }
 
     /** A free spot in the zone's arena (or the whole zone): solid floor, two free blocks, loaded chunk, away from players. */
@@ -547,6 +680,7 @@ public final class CombatZones implements Listener {
     /** Removes every mob of a zone (empty zone, reload, disable). */
     private void clear(ZoneState state) {
         for (UUID id : state.mobs) {
+            abilities.untrack(id);
             Tracked t = tracked.remove(id);
             if (t != null && t.entity().isValid()) {
                 t.entity().remove();
@@ -568,6 +702,7 @@ public final class CombatZones implements Listener {
         if (t == null) {
             return;
         }
+        abilities.untrack(entity.getUniqueId());
         event.getDrops().clear();
         event.setDroppedExp(0);
         ZoneState state = states.get(t.zoneId());
@@ -623,11 +758,14 @@ public final class CombatZones implements Listener {
         double fortune = core.services().optional(ToolService.class).map(s -> s.dropMultiplier(tool))
                 .orElseGet(() -> bonus == null ? 1.0 : bonus.multiplier(BonusFamily.EXTRA_DROPS, ctx));
         double crystalBonus = bonus == null ? 1.0 : bonus.multiplier(BonusFamily.CRYSTALS, ctx);
-        MobRewards.Roll roll = MobRewards.roll(t.def(), fortune, crystalBonus, config.combatMaxDropMultiplier,
+        // M8.1 elites: more loot on an elite, a little less on normal kills of that mob (budget-neutral); 1.0 otherwise.
+        EliteRules rules = eliteRules();
+        double loot = rules.lootFactor(t.def().stats().eliteChance(), t.tier(), t.boss(), t.elite());
+        MobRewards.Roll roll = MobRewards.roll(t.def(), fortune, crystalBonus, config.combatMaxDropMultiplier, loot,
                 ThreadLocalRandom.current());
         Map<String, Integer> items = roll.items();
         long crystals = roll.crystals();
-        double xp = roll.xp();
+        double xp = t.elite() ? roll.xp() * rules.xpMultiplier() : roll.xp();
         if (DepthsMobKillEvent.getHandlerList().getRegisteredListeners().length > 0) {
             DepthsMobKillEvent hook = new DepthsMobKillEvent(player, entity, t.def().id(), t.tier(), boss, items, crystals, xp);
             Bukkit.getPluginManager().callEvent(hook);
@@ -686,8 +824,46 @@ public final class CombatZones implements Listener {
             event.setCancelled(true);
             return;
         }
+        if (abilities.applying()) {
+            return; // M8.1: an ability set its own damage (player.damage with the mob as source)
+        }
+        if (event.getDamager() == from && !abilities.meleeAllowed(from.getUniqueId())) {
+            event.setCancelled(true); // M8.1 attack-cooldown: too soon after its last melee hit
+            return;
+        }
+        double mult = abilities.damageMultiplier(from.getUniqueId()) * (t.elite() ? config.eliteDamageMultiplier : 1.0);
         if (t.def().damage() > 0) {
-            event.setDamage(t.def().damage());
+            event.setDamage(t.def().damage() * mult);
+        } else if (mult != 1.0) {
+            event.setDamage(event.getDamage() * mult);
+        }
+    }
+
+    /**
+     * M8.1 armor and shield: a player's hit on a combat mob is reduced by the mob's armor % (max 60) and, while its
+     * shield is up, by the shield. Only player → mob hits; player versus player damage is never touched here.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onMobHurt(EntityDamageByEntityEvent event) {
+        Tracked t = tracked.get(event.getEntity().getUniqueId());
+        if (t == null || !(attacker(event.getDamager()) instanceof Player)) {
+            return;
+        }
+        UUID id = t.entity().getUniqueId();
+        double armor = t.def().stats().armor();
+        boolean shield = abilities.shielded(id);
+        if (armor > 0 || shield) {
+            event.setDamage(MobCombatMath.playerHitOnMob(event.getDamage(), armor, shield, abilities.shieldReduction(id)));
+        }
+    }
+
+    /** M8.1 enrage: checked after every hit on a mob that has it. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMobHurtAfter(EntityDamageByEntityEvent event) {
+        Tracked t = tracked.get(event.getEntity().getUniqueId());
+        if (t != null) {
+            LivingEntity mob = t.entity();
+            abilities.afterHit(mob.getUniqueId(), mob.getHealth() - event.getFinalDamage(), maxHealth(mob));
         }
     }
 
@@ -808,6 +984,8 @@ public final class CombatZones implements Listener {
     public void debug(org.bukkit.command.CommandSender viewer, Player target) {
         msg.send(viewer, "debug.combat", Msg.p("alive", tracked.size()), Msg.p("max", config.combatMaxTotalMobs),
                 Msg.p("zones", states.size()));
+        msg.send(viewer, "debug.abilities", Msg.p("mobs", abilities.mobCount()), Msg.p("active", abilities.activeEffects()),
+                Msg.p("max", config.abilitiesMaxActive));
         Zone zone = zones.zoneAt(target.getLocation());
         ZoneState state = zone == null ? null : states.get(zone.id());
         if (zone == null || zone.aspect() != Aspect.COMBAT || state == null) {

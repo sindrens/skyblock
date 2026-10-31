@@ -1,10 +1,12 @@
-package net.skybornmc.skyblock.depths.combat;
+package net.skybornmc.skyblock.common.mob;
 
 import java.util.List;
 import java.util.Objects;
 
 /**
- * One custom Depths mob from {@code mobs.yml → mobs.<id>} (M4.8). Names are in {@code messages/depths.yml → mobs.<id>}.
+ * One custom mob from a mob catalog ({@code mobs.yml → mobs.<id>}, M4.8; M8.1 moved it to {@code common/mob} so Depths
+ * combat, bosses, summon bosses and sea creatures share one format). Names live in the owning module's messages
+ * ({@code messages/depths.yml → mobs.<id>}).
  *
  * @param id            unique id ({@code a-z 0-9 _})
  * @param type          vanilla entity type id ({@code zombie}, {@code slime} ...)
@@ -17,16 +19,18 @@ import java.util.Objects;
  * @param vanillaXp     vanilla experience per kill, given straight to the killer
  * @param crystalChance chance per kill of a crystal hit (above 1 = several hits)
  * @param crystalAmount crystals per hit
- * @param drops         satchel drops
+ * @param drops         satchel drops (a shared {@code drop-table}'s rolls first, then the inline {@code drops})
  * @param glowing       glowing outline (mini-bosses)
  * @param nameVisible   name tag always shown (otherwise only when looked at)
+ * @param stats         M8.1 optional stats (armor, knockback resistance, attack cooldown, follow range, abilities,
+ *                      drop table id, elite chance); {@link MobStats#NONE} = everything as before
  */
 public record MobDef(String id, String type, double health, double damage, double speed, double scale, int size, double xp,
                      int vanillaXp, double crystalChance, int crystalAmount, List<Drop> drops, boolean glowing,
-                     boolean nameVisible) {
+                     boolean nameVisible, MobStats stats) {
 
     /**
-     * One satchel drop of a mob.
+     * One drop roll of a mob or a shared drop table.
      *
      * @param item   drop item id (depths.yml / mobs.yml drop-items)
      * @param min    least per kill when it drops
@@ -45,6 +49,15 @@ public record MobDef(String id, String type, double health, double damage, doubl
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(type, "type");
         drops = List.copyOf(drops);
+        stats = stats == null ? MobStats.NONE : stats;
+    }
+
+    /** A mob without the M8.1 stats (everything as in M4.8). */
+    public MobDef(String id, String type, double health, double damage, double speed, double scale, int size, double xp,
+                  int vanillaXp, double crystalChance, int crystalAmount, List<Drop> drops, boolean glowing,
+                  boolean nameVisible) {
+        this(id, type, health, damage, speed, scale, size, xp, vanillaXp, crystalChance, crystalAmount, drops, glowing,
+                nameVisible, MobStats.NONE);
     }
 
     /** Average crystals per kill before bonuses. */

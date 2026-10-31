@@ -311,6 +311,83 @@ public final class DepthsConfig extends ModuleConfig {
     @Setting(path = "combat.mini-boss.kill-sound", desc = "Sound (sounds.yml) for rewarded players when a mini-boss dies (empty = none).")
     public String miniBossKillSound = "money";
 
+    // ------------------------------------------------------------------ mob abilities and elites (M8.1)
+
+    @Setting(path = "combat.abilities.enabled", desc = "M8.1: mobs with abilities in mobs.yml use them. Off = abilities are ignored and mobs fight as before.")
+    public boolean abilitiesEnabled = true;
+
+    @Setting(path = "combat.abilities.min-tier", desc = "M8.1: lowest combat tier whose regular mobs use their abilities (WORLD 4.4: tiers 1-3 stay safe for new players). Mini-bosses always use theirs.", min = 1, max = 99)
+    public int abilitiesMinTier = 4;
+
+    @Setting(path = "combat.abilities.tick-ticks", desc = "M8.1: ticks between runs of the one shared ability scheduler (cooldown checks, telegraphs, hits).", min = 1, max = 20)
+    public int abilitiesTickTicks = 2;
+
+    @Setting(path = "combat.abilities.telegraph-ticks", desc = "M8.1: warning time before an ability hits (ring, sound, action bar). Never below 20 ticks (1 s) so a careful player can always dodge.", min = 20, max = 100)
+    public int abilitiesTelegraphTicks = 20;
+
+    @Setting(path = "combat.abilities.first-delay-ticks", desc = "M8.1: no ability starts earlier than this after a mob spawns (or its cooldown, if shorter).", min = 0, max = 1200)
+    public int abilitiesFirstDelayTicks = 60;
+
+    @Setting(path = "combat.abilities.retry-ticks", desc = "M8.1: after a failed chance roll an ability waits this long before it is rolled again.", min = 1, max = 200)
+    public int abilitiesRetryTicks = 20;
+
+    @Setting(path = "combat.abilities.active-range", desc = "M8.1: abilities only start while a player of the mob's zone is within this many blocks.", min = 4, max = 64)
+    public int abilitiesActiveRange = 24;
+
+    @Setting(path = "combat.abilities.effect-range", desc = "M8.1: players of the zone within this many blocks see the warning ring and get the warning line.", min = 8, max = 64)
+    public int abilitiesEffectRange = 32;
+
+    @Setting(path = "combat.abilities.max-active", desc = "M8.1: most ability effects running at once on the whole server (performance cap); mobs wait while it is full.", min = 1, max = 200)
+    public int abilitiesMaxActive = 16;
+
+    @Setting(path = "combat.abilities.max-ring-blocks", desc = "M8.1: most fake blocks one warning ring or lane shows.", min = 8, max = 512)
+    public int abilitiesMaxRingBlocks = 128;
+
+    @Setting(path = "combat.abilities.telegraph-block", desc = "M8.1: block of the warning ring/lane, shown only as a fake block for 1 s (Java and Bedrock).")
+    public String abilitiesTelegraphBlock = "red_concrete";
+
+    @Setting(path = "combat.abilities.fire-block", desc = "M8.1: fake block of a burning ring (ability ring, kind fire) while it burns.")
+    public String abilitiesFireBlock = "magma_block";
+
+    @Setting(path = "combat.abilities.soul-block", desc = "M8.1: fake block of a soul ring (ability ring, kind soul) while it burns.")
+    public String abilitiesSoulBlock = "soul_soil";
+
+    @Setting(path = "combat.abilities.telegraph-sound", desc = "M8.1: sound (sounds.yml) with every warning (empty = none). Not muted by 'Event sounds': it is a danger warning.")
+    public String abilitiesTelegraphSound = "warning";
+
+    @Setting(path = "combat.abilities.telegraph-particle", desc = "M8.1: extra particle over the warning ring (Bukkit particle name, empty = none). The fake blocks are the real warning.")
+    public String abilitiesTelegraphParticle = "flame";
+
+    @Setting(path = "combat.abilities.fire-ticks", desc = "M8.1: ticks a player burns after a pulse of a fire ring.", min = 0, max = 200)
+    public int abilitiesFireTicks = 40;
+
+    @Setting(path = "combat.abilities.leap-land-ticks", desc = "M8.1: ticks between a leap's jump and the landing hit in the marked spot.", min = 5, max = 40)
+    public int abilitiesLeapLandTicks = 15;
+
+    @Setting(path = "combat.abilities.arrow-life-ticks", desc = "M8.1: ticks a volley arrow stays on the ground before it disappears (it can never be picked up).", min = 1, max = 1200)
+    public int abilitiesArrowLifeTicks = 60;
+
+    @Setting(path = "combat.elite.health-multiplier", desc = "M8.1: max health of an elite (mobs.yml elite-chance above 0; 2 = twice).", min = 1.0, max = 20.0)
+    public double eliteHealthMultiplier = 2.0;
+
+    @Setting(path = "combat.elite.damage-multiplier", desc = "M8.1: damage per hit of an elite (1 = same as the normal mob).", min = 0.1, max = 10.0)
+    public double eliteDamageMultiplier = 1.0;
+
+    @Setting(path = "combat.elite.drop-multiplier", desc = "M8.1: drops and crystals of an elite kill (3 = three times).", min = 1.0, max = 20.0)
+    public double eliteDropMultiplier = 3.0;
+
+    @Setting(path = "combat.elite.xp-multiplier", desc = "M8.1: Combat XP of an elite kill (2 = twice, it takes twice as long).", min = 0.1, max = 20.0)
+    public double eliteXpMultiplier = 2.0;
+
+    @Setting(path = "combat.elite.min-tier", desc = "M8.1: lowest combat tier where elites can spawn (plan: tier 4+). Mini-bosses are never elites.", min = 1, max = 99)
+    public int eliteMinTier = 4;
+
+    @Setting(path = "combat.elite.budget-neutral", desc = "M8.1: normal kills of a mob that can be elite drop a little less, so the average money per kill (elites included) stays the same (plan: elites add excitement, not income).")
+    public boolean eliteBudgetNeutral = true;
+
+    @Setting(path = "combat.elite.extra-abilities", desc = "M8.1: an elite gets the first of these abilities it doesn't have yet (slam, leap, charge, volley, pull, summon, shield, ring, curse, teleport, enrage). Empty = no extra ability.")
+    public List<String> eliteExtraAbilities = List.of("enrage", "shield", "slam");
+
     // ------------------------------------------------------------------ ambient mobs (M4.8, REVIEW B6)
 
     @Setting(path = "ambient.enabled", desc = "Harmless per-player ambient mobs in mine and forest zones (only you see yours).")
