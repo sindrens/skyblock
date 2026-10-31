@@ -62,7 +62,7 @@ categories:
     slot: 22
     name: "<c:flame><bold>Rewards"
     lore: ["<c:text>Crates, quests, voting", "<c:text>and daily rewards."]
-    topics: [crates, boosters, daily, quests]
+    topics: [crates, boosters, daily, quests, vote]
   community:
     icon: bell
     status: active
@@ -709,7 +709,7 @@ topics:
 
   links:
     icon: bell
-    aliases: [discord, store, vote, website]
+    aliases: [discord, store, website]
     name: "<c:flame>Discord, store & voting"
     summary: ["<c:text>Our community outside the game."]
     take-me-there: "discord"
@@ -721,7 +721,8 @@ topics:
       - title: "<c:value>Voting"
         lines:
           - "<c:value>/vote</c:value> <c:text>helps new players find us"
-          - "<c:text>and gives you rewards."
+          - "<c:text>and gives you keys and gems."
+          - "<c:text>More:</c:text> <c:value>/help vote</c:value>"
       - title: "<c:value>Store & website"
         lines:
           - "<c:value>/store</c:value> <c:text>for ranks and cosmetics,"
@@ -1291,6 +1292,39 @@ topics:
           - "<c:text>streak and playtime. Keys and items"
           - "<c:text>are bound. Items that don't fit"
           - "<c:text>go to your</c:text> <c:value>/box</c:value><c:text>."
+
+  vote:
+    icon: paper
+    aliases: [voting, votes, vote-party, voteparty, vote-streak]
+    name: "<c:flame>Voting"
+    summary: ["<c:text>Vote every day for keys,", "<c:text>gems and the vote party."]
+    take-me-there: "vote"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>How to vote"
+        lines:
+          - "<c:value>/vote</c:value> <c:text>or the Voting NPC in the"
+          - "<c:text>Tavern: click a site to get its link."
+          - "<c:text>Each site gives a reward once every"
+          - "<c:text>24 hours: a key, gems and pass XP."
+      - title: "<c:value>Offline?"
+        lines:
+          - "<c:text>Votes wait for you and are paid"
+          - "<c:text>when you join, to the profile you"
+          - "<c:text>are on. Bedrock: vote with your"
+          - "<c:text>name, with or without the dot."
+      - title: "<c:value>Vote streak"
+        lines:
+          - "<c:text>Vote at least once every day:"
+          - "<c:text>day 7 Cinder, 14 Blaze, 21 Cinder,"
+          - "<c:text>30 Inferno key, then it repeats."
+          - "<c:text>A missed day starts it over."
+      - title: "<c:value>Vote party"
+        lines:
+          - "<c:text>Every vote fills the party bar."
+          - "<c:text>When it is full, everyone online who"
+          - "<c:text>voted today and is not AFK gets a"
+          - "<c:text>Blaze key. Progress: Tavern board."
 
   boosters:
     icon: nether_star

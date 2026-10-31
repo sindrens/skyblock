@@ -43,11 +43,12 @@ class RewardsMessagesTest {
         Path src = Path.of("src/main/java/net/skybornmc/skyblock/rewards");
         Set<String> missing = new TreeSet<>();
         try (Stream<Path> files = Files.list(src)) {
-            for (Path file : files.filter(f -> f.toString().endsWith(".java") && !f.endsWith("RewardsSettings.java")).toList()) {
+            for (Path file : files.filter(f -> f.toString().endsWith(".java") && !f.endsWith("RewardsSettings.java") && !f.endsWith("VotesSettings.java")).toList()) {
                 Matcher m = LITERAL.matcher(Files.readString(file));
                 while (m.find()) {
                     String key = m.group(1);
-                    if (key.startsWith("skyblock.") || key.endsWith(".yml") || key.startsWith("daily.yml")) {
+                    // roles.* = npcs.yml keys of the old Voting NPC text that is upgraded once (retire).
+                    if (key.startsWith("skyblock.") || key.endsWith(".yml") || key.startsWith("daily.yml") || key.startsWith("roles.")) {
                         continue;
                     }
                     if (!has(yml, key)) {

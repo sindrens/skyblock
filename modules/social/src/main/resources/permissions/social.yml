@@ -23,7 +23,7 @@ skyblock.social.seen:
   description: See when a player was last online (/seen)
   default: true
 skyblock.social.links:
-  description: Link commands (/discord, /store, /vote, /website, /rules)
+  description: Link commands (/discord, /store, /website, /rules)
   default: true
 skyblock.staff.socialspy:
   description: See all private messages (/socialspy)

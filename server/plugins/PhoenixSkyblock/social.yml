@@ -26,8 +26,6 @@ links:
   discord: https://discord.skybornmc.net
   # Link used by /store.
   store: https://store.skybornmc.net
-  # Link used by /vote.
-  vote: https://skybornmc.net/vote
   # Link used by /website.
   website: https://skybornmc.net
 config-version: 1

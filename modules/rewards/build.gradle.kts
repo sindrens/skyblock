@@ -1,5 +1,6 @@
-// Rewards (PHASE-10 M10.6 now, M10.5 voting later): the 30-day daily calendar per profile (/daily, streak gems and
-// titles), active playtime rewards per profile (hourly crystals, 10-hour Cinder key, titles). Claims are one database
+// Rewards (PHASE-10 M10.6 + M10.5): the 30-day daily calendar per profile (/daily, streak gems and titles), active
+// playtime rewards per profile (hourly crystals, 10-hour Cinder key, titles), voting (/vote, own Votifier receiver v1+v2,
+// vote streak, vote party). Claims are one database
 // transaction with an idempotency key; items and keys are handed out after the commit from pending grant rows.
 dependencies {
     implementation(project(":common"))

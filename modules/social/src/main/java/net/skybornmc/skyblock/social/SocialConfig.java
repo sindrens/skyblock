@@ -42,11 +42,13 @@ public final class SocialConfig extends ModuleConfig {
     @Setting(path = "links.store", desc = "Link used by /store.")
     public String storeUrl = "https://store.skybornmc.net";
 
-    @Setting(path = "links.vote", desc = "Link used by /vote.")
-    public String voteUrl = "https://skybornmc.net/vote";
-
     @Setting(path = "links.website", desc = "Link used by /website.")
     public String websiteUrl = "https://skybornmc.net";
+
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        return java.util.Map.of("links.vote", "M10.5: /vote is the vote menu of the rewards module (votes.yml -> votes.page-url)");
+    }
 
     @Override
     public String fileName() {

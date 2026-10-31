@@ -15,6 +15,7 @@ import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.enchant.EnchantService;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.item.Rarity;
+import net.skybornmc.skyblock.common.menu.Offer;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.npc.NpcClickEvent;
 import net.skybornmc.skyblock.common.profile.ProfileDeletedEvent;
@@ -26,6 +27,9 @@ import net.skybornmc.skyblock.common.settings.SettingToggle;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.skills.SkillType;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
+import net.skybornmc.skyblock.common.text.Msg;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.util.Format;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import org.bukkit.Bukkit;
@@ -53,7 +57,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 
 /**
- * Rewards (PHASE-10-REWARDS.md M10.6; voting M10.5 joins this module later).
+ * Rewards (PHASE-10-REWARDS.md M10.6 daily + playtime, M10.5 voting).
  * <ul>
  *   <li><b>Daily calendar</b> per profile (owner 128): {@code /daily}, the Daily Rewards NPC. One claim per day (reset
  *       00:00 Europe/Oslo); the calendar moves only on a claim; streak gems every 7 days, titles at 30 and 100.</li>
@@ -62,6 +66,9 @@ import java.util.logging.Level;
  *   <li>Every claim is one transaction with an idempotency key ({@link ClaimEngine}); keys, items, fuel and titles are
  *       handed out after the commit ({@link Grants}): items that don't fit go to {@code /box}; a crash can lose a
  *       hand-out (staff review) but never double it.</li>
+ *   <li><b>Voting</b> (M10.5): {@code /vote} menu and the Voting NPC, our own Votifier receiver ({@link VoteReceiver}, off
+ *       the main thread, off until the owner registers), one reward per site per account per 24 h paid to the active
+ *       profile ({@link VoteService}), offline queue, Bedrock names, vote streak and the vote party ({@code votes.yml}).</li>
  * </ul>
  */
 public final class RewardsModule implements SkyblockModule, Listener {
@@ -69,6 +76,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
     static final String ID = "rewards";
     static final String PERM_DAILY = "skyblock.rewards.daily";
     static final String PERM_PLAYTIME = "skyblock.rewards.playtime";
+    static final String PERM_VOTE = "skyblock.rewards.vote";
     static final String SETTING_REMINDER = "daily-reminder";
 
     /** Title rarities in threshold order (lowest first); the last one repeats. */
@@ -77,10 +85,13 @@ public final class RewardsModule implements SkyblockModule, Listener {
     final Core core;
     final ModuleMessages msg;
     final RewardsSettings settings = new RewardsSettings();
+    final VotesSettings votesSettings = new VotesSettings();
     private final Grants grants;
     private final DailyService daily;
     private final PlaytimeService playtime;
     private final ActivityTracker activity;
+    private final VoteService votes;
+    private final VoteReceiver receiver;
     private Executor main;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
 
@@ -99,6 +110,8 @@ public final class RewardsModule implements SkyblockModule, Listener {
         this.daily = new DailyService(this);
         this.activity = new ActivityTracker();
         this.playtime = new PlaytimeService(this, activity);
+        this.votes = new VoteService(this);
+        this.receiver = new VoteReceiver(this);
     }
 
     @Override
@@ -110,7 +123,9 @@ public final class RewardsModule implements SkyblockModule, Listener {
     public void enable() throws Exception {
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         core.configs().load(settings);
+        core.configs().load(votesSettings);
         main = new MainThread(core.plugin());
+        retireNpcTexts();
         parse();
         defineTitles();
         core.services().optional(PlayerSettings.class).ifPresent(s -> s.register(new SettingToggle(ID, SETTING_REMINDER,
@@ -131,14 +146,24 @@ public final class RewardsModule implements SkyblockModule, Listener {
         // The first run also recovers hand-outs a crash interrupted (after every module, crates included, is up).
         tasks.add(core.scheduler().repeat("rewards:grants", 200L, retry, grants::retry));
         grants.recoverLater();
+        // M10.5 voting: party counter, caches of online players, the receiver (off the main thread), periodic clean-up and
+        // retries, and the Tavern vote board.
+        votes.enable();
+        receiver.apply();
+        tasks.add(core.scheduler().repeat("rewards:votes", 1_200L, 1_200L, votes::periodic));
+        long board = 20L * votesSettings.hologramSeconds;
+        tasks.add(core.scheduler().repeat("rewards:vote-board", 100L, board, votes::pushBoard));
     }
 
     @Override
     public void reload() {
         core.configs().load(settings);
+        core.configs().load(votesSettings);
         core.messages().load(ID);
         parse();
         defineTitles();
+        receiver.apply();
+        votes.markBoard();
     }
 
     @Override
@@ -147,8 +172,10 @@ public final class RewardsModule implements SkyblockModule, Listener {
         HandlerList.unregisterAll(activity);
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
+        receiver.stop();
+        votes.disable();
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (core.menus().openMenu(p) instanceof DailyMenu) {
+            if (core.menus().openMenu(p) instanceof DailyMenu || core.menus().openMenu(p) instanceof VoteMenu) {
                 p.closeInventory();
             }
         }
@@ -174,6 +201,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
             z = Format.DEFAULT_ZONE;
         }
         zone = z;
+        votes.parse(problems);
         for (String p : problems) {
             core.plugin().getLogger().warning("Rewards: " + p);
         }
@@ -211,6 +239,61 @@ public final class RewardsModule implements SkyblockModule, Listener {
                     }
                     openDaily(ctx.player());
                 }));
+        // M10.5 (RX42): /vote is the vote menu now (moved from the social module's link command). No arguments.
+        core.commands().register(CommandSpec.command("vote")
+                .description("Vote for the server: links to every vote site, your vote streak and the vote party")
+                .category("Rewards")
+                .permission(PERM_VOTE)
+                .example("vote")
+                .executes(ctx -> {
+                    if (!votesSettings.enabled) {
+                        throw new CommandFailure(ID, "vote.disabled");
+                    }
+                    if (ctx.sender() instanceof Player p) {
+                        openVote(p);
+                    } else {
+                        msg.send(ctx.sender(), "vote.console", Msg.p("url", votesSettings.pageUrl));
+                    }
+                }));
+    }
+
+    void openVote(Player player) {
+        votes.load(player);
+        core.menus().open(player, new VoteMenu(this));
+    }
+
+    /**
+     * A vote link: a clickable chat line (Java) and, on Bedrock, a popup with the address (GUI-5); a click in the popup
+     * sends the address once more as plain text.
+     */
+    void sendLink(Player p, String name, String url, String kind) {
+        TagResolver[] tags = {pre("url", url), Msg.p("link", url), Msg.p("site", name)};
+        core.menus().offers().offer(p, Offer.builder(ID, "vote.popup")
+                .id("vote-link:" + kind + ":" + name)
+                .icon(Material.PAPER)
+                .placeholders(tags)
+                .onInfoClick(x -> msg.send(x, "vote.plain", Msg.p("link", url)))
+                .chat(x -> msg.send(x, "vote.link", tags))
+                .build());
+    }
+
+    /**
+     * A placeholder replaced before parsing, so it also works inside a click tag (links from our own config only).
+     * Quotes, tag brackets and backslashes are stripped.
+     */
+    static TagResolver pre(String name, Object value) {
+        String safe = String.valueOf(value).replace("'", "").replace("<", "").replace(">", "").replace("\\", "");
+        return TagResolver.resolver(name, Tag.preProcessParsed(safe));
+    }
+
+    /** The NPC texts that said voting is not built yet are upgraded once (an owner-edited text is kept). */
+    private void retireNpcTexts() {
+        core.messages().retire("npcs", Map.of(
+                "roles.vote.help", "<c:text>Voting isn't here yet.\n<c:text>Keys come from the daily calendar: <c:value>/daily",
+                "holograms.vote_party", "<c:flame><bold>Vote Party\n<c:muted>Coming soon"));
+        if (core.messages().modules().contains("npcs")) {
+            core.messages().load("npcs");
+        }
     }
 
     void openDaily(Player player) {
@@ -238,6 +321,23 @@ public final class RewardsModule implements SkyblockModule, Listener {
 
     PlaytimeService playtime() {
         return playtime;
+    }
+
+    VoteService votes() {
+        return votes;
+    }
+
+    VoteReceiver receiver() {
+        return receiver;
+    }
+
+    /** AFK for the vote party: marked AFK, in the AFK pool, or no own action for playtime.idle-minutes. */
+    boolean afk(Player p) {
+        if (flag(p, "afk") || net.skybornmc.skyblock.common.afk.AfkPool.of(core.services()).map(a -> a.inPool(p)).orElse(false)) {
+            return true;
+        }
+        long last = activity.lastAction(p.getUniqueId());
+        return last <= 0 || System.currentTimeMillis() - last > settings.idleMinutes * 60_000L;
     }
 
     List<RewardSpec> calendar() {
@@ -397,6 +497,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
         core.scheduler().later("rewards:join", Math.max(1, settings.reminderDelayTicks), () -> {
             if (p.isOnline()) {
                 daily.joined(p);
+                votes.joined(p);
             }
         });
     }
@@ -406,6 +507,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
         Player p = event.getPlayer();
         playtime.quit(p);
         daily.quit(p);
+        votes.quit(p);
         activity.forget(p.getUniqueId());
     }
 
@@ -431,11 +533,22 @@ public final class RewardsModule implements SkyblockModule, Listener {
         });
     }
 
-    /** The Daily Rewards NPC opens /daily (sneak-click keeps its help text). */
+    /** The Daily Rewards NPC opens /daily and the Voting NPC opens /vote (sneak-click keeps their help text). */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onNpc(NpcClickEvent event) {
-        if (event.help() || event.role() == null || !settings.calendarEnabled
-                || !event.role().equalsIgnoreCase(settings.npcRole.strip())) {
+        if (event.help() || event.role() == null) {
+            return;
+        }
+        if (votesSettings.enabled && event.role().equalsIgnoreCase(votesSettings.npcRole.strip())) {
+            Player p = event.getPlayer();
+            if (p.hasPermission(PERM_VOTE)) {
+                event.setCancelled(true);
+                sound(p, "click");
+                openVote(p);
+            }
+            return;
+        }
+        if (!settings.calendarEnabled || !event.role().equalsIgnoreCase(settings.npcRole.strip())) {
             return;
         }
         Player p = event.getPlayer();
