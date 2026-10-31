@@ -159,6 +159,112 @@ public final class CratesSettings extends ModuleConfig {
             min = 0, max = 255)
     public int hologramBackgroundAlpha = 64;
 
+    @Setting(path = "displays.enabled", desc = "Resource pack viewers see each crate as a custom model (a body and a lid that "
+            + "swings open) on the pedestal; everyone else, and Bedrock, keeps the vanilla block. Needs the pack module.")
+    public boolean displaysEnabled = true;
+
+    @Setting(path = "displays.scale", desc = "Size of the crate model (1.0 = one block; a little more hides the block behind it).",
+            min = 0.5, max = 2.0)
+    public double displayScale = 1.05;
+
+    @Setting(path = "displays.y-offset", desc = "Lift of the model above the pedestal block's floor (blocks), so it does not "
+            + "flicker against the floor.", min = -0.5, max = 1.0)
+    public double displayYOffset = 0.02;
+
+    @Setting(path = "displays.view-range", desc = "How far the crate models are visible (1.0 = 64 blocks).", min = 0.1, max = 4.0)
+    public double displayViewRange = 0.8;
+
+    @Setting(path = "displays.default-facing", desc = "Side the crate front faces (north, east, south or west) when the crate's "
+            + "block has no horizontal facing and displays.facings has no line for it. Point it at the walkway.")
+    public String displayDefaultFacing = "west";
+
+    @Setting(path = "displays.facings", desc = "Side the front of a crate faces ('crate:north|east|south|west'). A crate "
+            + "without a line faces like its physical.blocks block, else displays.default-facing.")
+    public List<String> displayFacings = List.of();
+
+    @Setting(path = "displays.hide-vanilla-block", desc = "Pack viewers get the crate's block replaced by an invisible one "
+            + "(displays.hide-block-as) on their screen, in case the vanilla chest shows through the model. Clicks still work. "
+            + "Off by default.")
+    public boolean displayHideBlock = false;
+
+    @Setting(path = "displays.hide-block-as", desc = "Block pack viewers see instead of the crate block when "
+            + "displays.hide-vanilla-block is on (BARRIER is invisible and clickable).")
+    public String displayHideBlockAs = "BARRIER";
+
+    @Setting(path = "displays.brightness", desc = "Light level (0-15) the models are drawn with; -1 = the world's light.",
+            min = -1, max = 15)
+    public int displayBrightness = -1;
+
+    @Setting(path = "lid.angle", desc = "How far the lid swings open (degrees).", min = 20, max = 150)
+    public double lidAngle = 100;
+
+    @Setting(path = "lid.open-ticks", desc = "Ticks the lid takes to swing open.", min = 2, max = 40)
+    public int lidOpenTicks = 8;
+
+    @Setting(path = "lid.close-ticks", desc = "Ticks the lid takes to close again.", min = 2, max = 40)
+    public int lidCloseTicks = 10;
+
+    @Setting(path = "lid.steps", desc = "Key frames of a swing (more = a truer arc, a few more packets).", min = 1, max = 10)
+    public int lidSteps = 4;
+
+    @Setting(path = "lid.overshoot", desc = "How far the lid swings past open and settles back (0 = none, 1.7 = about 10%).",
+            min = 0, max = 4)
+    public double lidOvershoot = 1.2;
+
+    @Setting(path = "lid.shake-degrees", desc = "The crate shakes by this much before the lid opens (0 = no shake).", min = 0,
+            max = 15)
+    public double lidShakeDegrees = 2.5;
+
+    @Setting(path = "lid.shake-ticks", desc = "Ticks of the shake before the lid opens.", min = 3, max = 20)
+    public int lidShakeTicks = 6;
+
+    @Setting(path = "lid.open-sound", desc = "Sound when the lid opens ('namespace:sound volume pitch'; empty = none).")
+    public String lidOpenSound = "minecraft:block.chest.open 0.6 0.9";
+
+    @Setting(path = "lid.close-sound", desc = "Sound when the lid closes ('namespace:sound volume pitch'; empty = none).")
+    public String lidCloseSound = "minecraft:block.chest.close 0.5 0.9";
+
+    @Setting(path = "ambient.enabled", desc = "One light task for the whole yard: rarity particles above the rarer crates and the "
+            + "approach chime, only while a player is near. Also keeps the crate models in step with the pack status.")
+    public boolean ambientEnabled = true;
+
+    @Setting(path = "ambient.interval-ticks", desc = "Ticks between two ambient checks.", min = 5, max = 100)
+    public int ambientInterval = 15;
+
+    @Setting(path = "ambient.min-rarity", desc = "Rarest-or-above rarity that gets particles (common, uncommon, rare, epic, "
+            + "legendary, mythic, special). Epic is Inferno.")
+    public String ambientMinRarity = "epic";
+
+    @Setting(path = "ambient.particle-range", desc = "Particles only appear while a player is within this many blocks.",
+            min = 4, max = 48)
+    public double ambientParticleRange = 16;
+
+    @Setting(path = "ambient.particles", desc = "Dust particles per crate per check (0 = none).", min = 0, max = 10)
+    public int ambientParticles = 2;
+
+    @Setting(path = "ambient.particle-size", desc = "Size of the dust particles.", min = 0.3, max = 2)
+    public double ambientParticleSize = 0.9;
+
+    @Setting(path = "approach.enabled", desc = "A quiet chime for a player who walks up to a crate.")
+    public boolean approachEnabled = true;
+
+    @Setting(path = "approach.range", desc = "Blocks from a crate that count as coming close.", min = 1, max = 24)
+    public double approachRange = 6;
+
+    @Setting(path = "approach.reset-range", desc = "The player must go farther than this (blocks) before the chime can play "
+            + "again for that crate.", min = 2, max = 32)
+    public double approachResetRange = 8;
+
+    @Setting(path = "approach.cooldown-seconds", desc = "Least seconds between two chimes of one crate for one player.", min = 0,
+            max = 3_600)
+    public int approachCooldownSeconds = 30;
+
+    @Setting(path = "approach.pack-sound", desc = "Chime for pack viewers ('namespace:sound volume pitch').")
+    public String approachPackSound = "phoenix:crate.chime 0.35 1.0";
+
+    @Setting(path = "approach.fallback-sound", desc = "Chime for everyone else (no pack, Bedrock).")
+    public String approachFallbackSound = "minecraft:block.amethyst_block.chime 0.35 1.3";
+
     @Setting(path = "key-board.enabled", desc = "Write the crate yard key board (build hologram 'key_board'): how to get "
             + "keys and the top-reward chance of every crate (the npcs module places it).")
     public boolean keyBoardEnabled = true;

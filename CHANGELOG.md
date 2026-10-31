@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Added
+- **Crate yard, pack polish:** pack viewers see each crate as a custom model (body + lid item displays, scale 1.05, facing the walkway) shown per viewer only; the lid shakes and swings open on its hinge with display interpolation when a crate is opened and closes after the reward floats away; Inferno and rarer crates get subtle rarity dust while a player is within 16 blocks; a quiet approach chime (pack sound `phoenix:crate.chime`, vanilla fallback) once per approach with a cooldown; hologram line "» CLICK to open". No-pack and Bedrock players keep the vanilla crate block. Config: `displays.*`, `lid.*`, `ambient.*`, `approach.*` in `crates-settings.yml`.
 - Repository, design and process docs, CI.
 - Gradle multi-module skeleton (common, plugin, modules) for Paper 1.21.11 / Java 21.
 - Module system with dependency ordering and failure isolation.
