@@ -66,7 +66,7 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
 - M10-8 battle pass
-- PERF10 startup one-offs
+- SPAWN-F2 spawner diminishing output
 - M10-11 Black Market
 - NOTE: a separate owner-started agent works on docs/planning/*.md and docs/design/; do not overwrite those files, merge carefully.
 
