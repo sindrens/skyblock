@@ -28,6 +28,10 @@ class IslandRulesTest {
         assertEquals(9, config.normalMaxSize(), "owner answer 157: normal upgrades reach 9x9");
         assertEquals(15, config.maxSize(), "bigger only with gems or the black market");
         assertTrue(config.removedKeys().containsKey("upgrades.island-bank-only"), "owner answer 169: always the island bank, no switch");
+        assertTrue(config.removedKeys().containsKey("members.join-cooldown-hours"), "principle 1: no cooldowns on joining (REV3-FIX a)");
+        assertEquals(48, config.slotLockHours, "owner F10");
+        assertEquals(21, config.slotLockInactiveDays, "brief 4.2");
+        assertEquals(5, config.browserTopRatedMinIps, "owner R3-33");
         config.normalMaxChunks = 21;
         assertEquals(15, config.normalMaxSize(), "never above the absolute cap");
 

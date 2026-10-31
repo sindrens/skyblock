@@ -369,8 +369,10 @@ final class VisitStore {
             visits.put(Sql.uuid(rs, "island_id"), new int[]{rs.getInt(2)});
             return null;
         }, fromDay);
-        Sql.query(c, "SELECT island_id, COUNT(*), SUM(stars) FROM island_ratings WHERE season_id = ? GROUP BY island_id", rs -> {
-            ratings.put(Sql.uuid(rs, "island_id"), new long[]{rs.getInt(2), rs.getLong(3)});
+        // Owner R3-33: COUNT(DISTINCT ip_hash) = ratings from different addresses (NULL = rated before V013, not counted).
+        Sql.query(c, "SELECT island_id, COUNT(*), SUM(stars), COUNT(DISTINCT ip_hash) FROM island_ratings WHERE season_id = ? "
+                + "GROUP BY island_id", rs -> {
+            ratings.put(Sql.uuid(rs, "island_id"), new long[]{rs.getInt(2), rs.getLong(3), rs.getInt(4)});
             return null;
         }, seasonId);
         Sql.query(c, "SELECT island_id, COUNT(*) FROM island_likes WHERE season_id = ? GROUP BY island_id", rs -> {
@@ -383,9 +385,9 @@ final class VisitStore {
         Map<UUID, Showcase.Stats> out = new HashMap<>();
         for (UUID id : ids) {
             int v = visits.containsKey(id) ? visits.get(id)[0] : 0;
-            long[] r = ratings.getOrDefault(id, new long[]{0, 0});
+            long[] r = ratings.getOrDefault(id, new long[]{0, 0, 0});
             int l = likes.containsKey(id) ? likes.get(id)[0] : 0;
-            out.put(id, new Showcase.Stats(v, r[1], (int) r[0], l));
+            out.put(id, new Showcase.Stats(v, r[1], (int) r[0], l, (int) r[2]));
         }
         return out;
     }

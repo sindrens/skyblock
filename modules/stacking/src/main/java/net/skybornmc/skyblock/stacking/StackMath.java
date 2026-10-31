@@ -14,6 +14,15 @@ final class StackMath {
 
     // ------------------------------------------------------------------ merging
 
+    /**
+     * R3-26: how many NEW stacks may still appear in a chunk that already holds {@code sameType} stacks of the spawning
+     * type and {@code total} stacks of every type: the per-type limit (owner SK1: 8) and the chunk total (owner R3-26: 40)
+     * both apply. Never negative.
+     */
+    static int freeNewStacks(int sameType, int total, int perTypeMax, int totalMax) {
+        return Math.max(0, Math.min(perTypeMax - sameType, totalMax - total));
+    }
+
     /** Free room in a stack of {@code current} under {@code max}. */
     static int room(long current, int max) {
         return (int) Math.max(0, Math.min(Integer.MAX_VALUE, max - current));

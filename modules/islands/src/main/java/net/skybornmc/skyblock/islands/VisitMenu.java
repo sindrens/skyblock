@@ -47,9 +47,15 @@ final class VisitMenu extends PagedMenu<Showcase.Entry> {
             cached = sort == Showcase.Sort.DISCOVER
                     ? Showcase.discover(all, visits::playtimeSeconds, module.config().browserDiscoverPlaytimeWeight,
                     java.util.concurrent.ThreadLocalRandom.current())
-                    : Showcase.sort(all, sort, module.config().browserMinRatings);
+                    : Showcase.sort(all, sort, topRated());
         }
         return cached;
+    }
+
+    /** Owner R3-33: Top rated needs ratings from enough different addresses and ranks by a smoothed average. */
+    private Showcase.TopRated topRated() {
+        IslandsConfig config = module.config();
+        return new Showcase.TopRated(config.browserMinRatings, config.browserTopRatedMinIps, config.browserTopRatedPriorWeight);
     }
 
     @Override
@@ -84,7 +90,8 @@ final class VisitMenu extends PagedMenu<Showcase.Entry> {
             Showcase.Sort tab = sorts[i];
             boolean selected = tab == sort;
             List<Component> lore = new ArrayList<>(lines("browser.sort." + tab.key() + ".lore",
-                    Msg.p("days", module.config().browserVisitsDays), Msg.p("min", module.config().browserMinRatings)));
+                    Msg.p("days", module.config().browserVisitsDays), Msg.p("min", module.config().browserMinRatings),
+                    Msg.p("ips", module.config().browserTopRatedMinIps)));
             lore.add(Component.empty());
             lore.addAll(lines(selected ? "browser.tab-selected" : "browser.tab-click"));
             ItemStack item = service.item(new ItemStack(tabIcon(tab)), text("browser.sort." + tab.key() + ".name"), lore);

@@ -38,6 +38,8 @@ public final class Island {
     private final Map<UUID, UUID> invitedBy = new HashMap<>();
     /** Coop players (temporary trust, never stored members, REVIEW A4). */
     private final Set<UUID> coops = new LinkedHashSet<>();
+    /** Owner F10: end times (epoch millis) of the member slot locks; expired ones are dropped lazily. Main thread. */
+    private final java.util.List<Long> slotLocks = new java.util.ArrayList<>();
     /** Member Slots of this island ({@code null} = members.start-slots). */
     private Integer memberSlots;
     private final IslandPerms perms = new IslandPerms();
@@ -251,6 +253,23 @@ public final class Island {
             invitedBy.put(uuid, inviter);
         }
         coops.remove(uuid);
+    }
+
+    /** Owner F10: the running member slot locks (end times, epoch millis); expired ones are removed on the way. */
+    java.util.List<Long> slotLocks(long now) {
+        slotLocks.removeIf(until -> until <= now);
+        return java.util.List.copyOf(slotLocks);
+    }
+
+    /** Adds a member slot lock that runs until {@code until} (after a leave or kick was saved). */
+    void addSlotLock(long until) {
+        slotLocks.add(until);
+    }
+
+    /** Replaces the slot locks (loaded from the database). */
+    void slotLocks(java.util.Collection<Long> untils) {
+        slotLocks.clear();
+        slotLocks.addAll(untils);
     }
 
     void removeMember(UUID uuid) {

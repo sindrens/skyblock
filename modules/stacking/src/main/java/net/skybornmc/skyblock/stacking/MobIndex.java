@@ -113,6 +113,30 @@ final class MobIndex {
         return list == null ? List.of() : list;
     }
 
+    /**
+     * R3-26: indexed mobs (each one is a stack, a single mob is a stack of 1) in one chunk, without {@code except} when it
+     * is filed there. O(1): the size of the chunk list that the add/remove events keep up to date (no entity scan).
+     */
+    int chunkTotal(UUID world, int chunkX, int chunkZ, LivingEntity except) {
+        Map<Long, List<LivingEntity>> chunks = worlds.get(world);
+        if (chunks == null) {
+            return 0;
+        }
+        long chunk = key(chunkX, chunkZ);
+        List<LivingEntity> list = chunks.get(chunk);
+        if (list == null) {
+            return 0;
+        }
+        int n = list.size();
+        if (except != null) {
+            Entry entry = byEntity.get(except.getUniqueId());
+            if (entry != null && entry.chunk() == chunk && entry.world().equals(world)) {
+                n--;
+            }
+        }
+        return Math.max(0, n);
+    }
+
     /** The next moving mob for the merge task, or null when there are none. Invalid entries are dropped on the way. */
     LivingEntity nextMoving() {
         while (!moving.isEmpty()) {

@@ -35,7 +35,7 @@ decisions:
     migrate-from: "480:blaze:1"
 
   - id: "N2-1"
-    answer: "Unlimited island joins per season (0 = unlimited). join-cooldown-hours (24 live) is read by no code: open question"
+    answer: "Unlimited island joins per season (0 = unlimited). join-cooldown-hours was read by no code and is removed on load (principle 1, ISL-R3)"
     module: islands
     file: islands.yml
     path: members.max-joins-per-season
@@ -205,3 +205,38 @@ decisions:
     file: stacking.yml
     path: hoppers.alert-above
     value: 64
+
+  - id: "R3-26"
+    answer: "At most 40 mob stacks per chunk of all types together, on top of 8 per type"
+    module: stacking
+    file: stacking.yml
+    path: mobs.max-stacks-per-chunk-total
+    value: 40
+
+  - id: "R3-33a"
+    answer: "Top rated lists an island only with ratings from at least 5 different IPs"
+    module: islands
+    file: islands.yml
+    path: browser.top-rated-min-ips
+    value: 5
+
+  - id: "R3-33b"
+    answer: "Top rated ranks by a smoothed (Bayesian) average: 5 virtual ratings at the server-wide mean (weight = open question)"
+    module: islands
+    file: islands.yml
+    path: browser.top-rated-prior-weight
+    value: 5.0
+
+  - id: "F10a"
+    answer: "After a member leaves or is kicked, that member slot stays locked 48 h before the island can invite into it"
+    module: islands
+    file: islands.yml
+    path: members.slot-lock-hours
+    value: 48
+
+  - id: "F10b"
+    answer: "Kicking a member inactive 21+ days frees the slot at once (brief 4.2); staff removals never lock"
+    module: islands
+    file: islands.yml
+    path: members.slot-lock-inactive-days
+    value: 21

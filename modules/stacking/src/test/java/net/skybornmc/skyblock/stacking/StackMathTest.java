@@ -24,6 +24,29 @@ class StackMathTest {
     }
 
     @Test
+    void chunkTotalCapLimitsNewStacksOnTopOfThePerTypeCap() {
+        // R3-26: 8 per type and 40 of all types together in one chunk.
+        assertEquals(8, StackMath.freeNewStacks(0, 0, 8, 40), "empty chunk: the per-type cap");
+        assertEquals(3, StackMath.freeNewStacks(5, 20, 8, 40), "per-type cap is the tighter one");
+        assertEquals(2, StackMath.freeNewStacks(0, 38, 8, 40), "chunk total is the tighter one");
+        assertEquals(0, StackMath.freeNewStacks(0, 40, 8, 40), "chunk full of other types: no new stack of a fresh type");
+        assertEquals(0, StackMath.freeNewStacks(8, 10, 8, 40), "type full");
+        assertEquals(0, StackMath.freeNewStacks(3, 55, 8, 40), "over the total (e.g. after lowering it): never negative");
+        // Five types with 8 stacks each fill the chunk exactly: the 6th type gets nothing.
+        int total = 0;
+        for (int type = 0; type < 5; type++) {
+            int free = StackMath.freeNewStacks(0, total, 8, 40);
+            assertEquals(8, free);
+            total += free;
+        }
+        assertEquals(0, StackMath.freeNewStacks(0, total, 8, 40));
+        // The spawner path hands this to distribute(): mobs beyond the free stacks are not spawned.
+        StackMath.Distribution d = StackMath.distribute(5000, new int[0], 1024, StackMath.freeNewStacks(0, 38, 8, 40));
+        assertEquals(2, d.newStacks().length);
+        assertEquals(2048, d.placed());
+    }
+
+    @Test
     void distributeFillsExistingStacksFirst() {
         StackMath.Distribution d = StackMath.distribute(100, new int[]{1000, 1020}, 1024, 8);
         assertArrayEquals(new int[]{24, 4}, d.added());

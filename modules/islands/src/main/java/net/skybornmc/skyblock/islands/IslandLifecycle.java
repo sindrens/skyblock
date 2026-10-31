@@ -11,12 +11,16 @@ import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.island.IslandService.Bounds;
 import net.skybornmc.skyblock.common.island.IslandService.Role;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
+import net.skybornmc.skyblock.common.progression.ProgressionService;
+import net.skybornmc.skyblock.common.stacking.StackingService;
+import net.skybornmc.skyblock.common.util.Format;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,7 +97,9 @@ final class IslandLifecycle {
 
     /**
      * {@code /is disband}: leader only, and only while nobody else is on the island (owner answer 141: promote or hand the
-     * island to someone first); one confirm screen with a confirm button (owner answer 261, no typed word).
+     * island to someone first); confirm buttons, no typed word (owner answer 261), asked twice (GUI-1). Owner R3-30: the
+     * middle item shows the real amounts that are lost (island bank, and with a profile reset the profile's money and
+     * items, plus spawners and the island level), read before the menu opens.
      */
     void disband(Player player) {
         Optional<Island> own = islands.islandOfPlayer(islands.key(player));
@@ -111,13 +117,69 @@ final class IslandLifecycle {
             islands.fail(player, "disband.busy");
             return;
         }
-        String name = islands.displayName(island);
-        core.menus().open(player, new ConfirmMenu(
-                viewer -> module.text(viewer, "disband.crumb"),
-                core.menus().item(Material.TNT, player, IslandsModule.ID, "disband.shown", Msg.p("island", name)),
-                viewer -> module.lines(viewer, "disband.details", Msg.p("island", name)),
-                viewer -> confirmed(viewer, island),
-                viewer -> msg.send(viewer, "disband.cancelled")).twoStep()); // GUI-1: can't be undone, so asks twice
+        boolean reset = config().resetsProfiles(IslandStore.REASON_DISBAND);
+        UUID key = islands.key(player);
+        Optional<EconomyService> economy = core.services().optional(EconomyService.class);
+        CompletableFuture<Long> bank = economy.isEmpty() ? CompletableFuture.completedFuture(null)
+                : economy.get().balance(AccountRef.island(island.id()), Currency.MONEY).handle((v, e) -> e == null ? v : null);
+        CompletableFuture<Long> money = economy.isEmpty() || !reset ? CompletableFuture.completedFuture(null)
+                : economy.get().balance(AccountRef.player(key), Currency.MONEY).handle((v, e) -> e == null ? v : null);
+        bank.thenCombine(money, (b, m) -> new Long[]{b, m}).whenCompleteAsync((amounts, error) -> {
+            if (!player.isOnline() || islands.byId(island.id()) != island) {
+                return;
+            }
+            Long bankAmount = amounts == null ? null : amounts[0];
+            Long moneyAmount = amounts == null ? null : amounts[1];
+            String name = islands.displayName(island);
+            core.menus().open(player, new ConfirmMenu(
+                    viewer -> module.text(viewer, "disband.crumb"),
+                    core.menus().item(Material.TNT, player, IslandsModule.ID, "disband.shown", Msg.p("island", name)),
+                    viewer -> lossLines(viewer, island, name, reset, bankAmount, moneyAmount),
+                    viewer -> confirmed(viewer, island),
+                    viewer -> msg.send(viewer, "disband.cancelled")).twoStep()); // GUI-1: can't be undone, so asks twice
+        }, main);
+    }
+
+    /**
+     * Owner R3-30: what a disband takes, with the real amounts (shown on both confirm screens): island bank, the profile's
+     * money and items (inventory + ender chest, only when {@code profile-reset.on-disband} is on), stacked spawners on the
+     * island and the island level. Lines for services that are not there are left out; an amount that could not be read
+     * shows as unknown.
+     */
+    private List<net.kyori.adventure.text.Component> lossLines(Player viewer, Island island, String name, boolean reset,
+                                                                Long bank, Long money) {
+        List<net.kyori.adventure.text.Component> lines = new ArrayList<>(module.lines(viewer, "disband.loss.top"));
+        lines.addAll(module.lines(viewer, "disband.loss.bank", Msg.p("bank", amount(bank))));
+        if (reset) {
+            lines.addAll(module.lines(viewer, "disband.loss.money", Msg.p("money", amount(money))));
+            lines.addAll(module.lines(viewer, "disband.loss.items", Msg.p("items", Format.number(itemCount(viewer)))));
+        }
+        core.services().optional(StackingService.class).ifPresent(stacking -> lines.addAll(module.lines(viewer, "disband.loss.spawners",
+                Msg.p("spawners", Format.number(stacking.spawnersOnIsland(island.id()))))));
+        core.services().optional(ProgressionService.class).ifPresent(progression -> lines.addAll(module.lines(viewer,
+                "disband.loss.level", Msg.p("level", Format.number(progression.islandLevel(island.id()))))));
+        lines.addAll(module.lines(viewer, "disband.details", Msg.p("island", name)));
+        return lines;
+    }
+
+    /** A money amount for the disband screen ("unknown" when it could not be read). */
+    private String amount(Long value) {
+        if (value == null) {
+            return module.raw("disband.loss.unknown");
+        }
+        return core.services().optional(EconomyService.class).map(e -> e.format(Currency.MONEY, value)).orElse(Format.money(value));
+    }
+
+    /** Items in the player's inventory (armor and offhand included) and ender chest: what a profile reset takes. */
+    private static long itemCount(Player player) {
+        long n = 0;
+        for (ItemStack stack : player.getInventory().getContents()) {
+            n += stack == null || stack.getType().isAir() ? 0 : stack.getAmount();
+        }
+        for (ItemStack stack : player.getEnderChest().getContents()) {
+            n += stack == null || stack.getType().isAir() ? 0 : stack.getAmount();
+        }
+        return n;
     }
 
     /**

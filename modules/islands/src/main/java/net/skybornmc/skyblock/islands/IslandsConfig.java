@@ -214,8 +214,17 @@ public final class IslandsConfig extends ModuleConfig {
             + "(owner N2-1: 0 = unlimited; REVIEW A5 had 3).", min = 0, max = 100, level = Setting.Level.OWNER)
     public int maxJoinsPerSeason = 0;
 
-    // Owner answers 121/161/258/259 (round 1): no join cooldown at all (old key members.join-cooldown-hours is ignored);
-    // the per-season join count above stays.
+    // Owner answers 121/161/258/259 (round 1) and principle 1 (REVIEW3): no cooldown on joining at all; the old key
+    // members.join-cooldown-hours is deleted on load (removedKeys). The island side is the F10 slot lock below.
+
+    @Setting(path = "members.slot-lock-hours", desc = "Owner F10: after a member leaves or is kicked, that member slot stays "
+            + "locked this many hours before the island can invite someone into it (0 = off). Staff removals never lock.",
+            min = 0, max = 720, level = Setting.Level.OWNER)
+    public int slotLockHours = 48;
+
+    @Setting(path = "members.slot-lock-inactive-days", desc = "Owner F10 / brief 4.2: kicking a member who was not online for "
+            + "this many days frees the slot at once (no lock). 0 = every kick locks.", min = 0, max = 365, level = Setting.Level.OWNER)
+    public int slotLockInactiveDays = 21;
 
     @Setting(path = "members.portal-invite-choice", desc = "TUTORIAL TQ19: a player without an island who has pending invites gets a choice at the island portal (create my own / join that island) instead of an island right away.")
     public boolean portalInviteChoice = true;
@@ -373,6 +382,16 @@ public final class IslandsConfig extends ModuleConfig {
     @Setting(path = "browser.min-ratings", desc = "Islands need at least this many ratings to show under \"Top rated\".", min = 1,
             max = 100)
     public int browserMinRatings = 3;
+
+    @Setting(path = "browser.top-rated-min-ips", desc = "Owner R3-33: islands need ratings from at least this many different "
+            + "addresses (IPs) to show under \"Top rated\" (one address can't push an island up with alt accounts).", min = 1,
+            max = 100, level = Setting.Level.OWNER)
+    public int browserTopRatedMinIps = 5;
+
+    @Setting(path = "browser.top-rated-prior-weight", desc = "Owner R3-33: \"Top rated\" ranks by a smoothed (Bayesian) average: "
+            + "every island counts as if it also had this many ratings at the server-wide average, so 5 stars from 5 players "
+            + "don't beat 4.8 stars from 100. 0 = plain average.", min = 0, max = 1000, level = Setting.Level.OWNER)
+    public double browserTopRatedPriorWeight = 5.0;
 
     @Setting(path = "browser.discover-playtime-weight", desc = "Owner answer 290: the Discover tab lists every island in random "
             + "order; islands with more playtime are more likely near the top (weight 1 + this x ln(1 + hours); 0 = plain random).",
@@ -663,13 +682,14 @@ public final class IslandsConfig extends ModuleConfig {
         return changed;
     }
 
-    /** REVIEW3 §3.6: keys no code reads any more, deleted on load (join-cooldown-hours stays for now: open question N2-1). */
+    /** REVIEW3 §3.6: keys no code reads any more, deleted on load (with a log line, ConfigManager#removeDeadKeys). */
     @Override
     public java.util.Map<String, String> removedKeys() {
         return java.util.Map.of(
                 "lifecycle.disband-prompt-length", "owner answer 261: /is disband confirms with a button, no typed word",
                 "homes", "owner answer 247: no personal member homes (shared homes come with P5-21)",
-                "upgrades.island-bank-only", "owner answer 169: upgrades always pay from the island bank (progression), no switch");
+                "upgrades.island-bank-only", "owner answer 169: upgrades always pay from the island bank (progression), no switch",
+                "members.join-cooldown-hours", "owner principle 1: no cooldowns on joining; the F10 48 h slot lock covers the island side");
     }
 
     @Override

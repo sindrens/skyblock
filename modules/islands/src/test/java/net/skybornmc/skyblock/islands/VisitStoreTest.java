@@ -176,6 +176,22 @@ class VisitStoreTest {
     }
 
     @Test
+    void statsCountRatingsFromDifferentAddresses() {
+        // Owner R3-33: three accounts on one address + two others = 3 addresses; ratings without an address don't count.
+        UUID id = island(UUID.randomUUID());
+        for (int i = 0; i < 3; i++) {
+            UUID alt = UUID.randomUUID();
+            db.blockingTransaction(c -> VisitStore.rate(c, id, alt, 1, 5, now, "home"));
+        }
+        db.blockingTransaction(c -> VisitStore.rate(c, id, UUID.randomUUID(), 1, 4, now, "school"));
+        db.blockingTransaction(c -> VisitStore.rate(c, id, UUID.randomUUID(), 1, 3, now, "work"));
+        db.blockingTransaction(c -> VisitStore.rate(c, id, UUID.randomUUID(), 1, 2, now)); // before V013: no address
+        Showcase.Stats s = db.blocking(c -> VisitStore.stats(c, 0, 1)).get(id);
+        assertEquals(6, s.ratingCount());
+        assertEquals(3, s.ratingIps());
+    }
+
+    @Test
     void uniqueVisitorsPerDayAndStats() {
         UUID id = island(UUID.randomUUID());
         UUID other = island(UUID.randomUUID());
