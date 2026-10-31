@@ -1,5 +1,9 @@
 # Resource Pack Art Brief (ARTBRIEF)
 
+> **31 Oct 2026: the GUI part is done.** Menu backgrounds (§B), menu buttons (§C), feature icons (§D), the currency icons and glyphs (§J) and the rank badges and small logo (§N) are drawn: v1, generated cartoon art in `resourcepack/`. The ids and where each one shows are in **`docs/plans/RESOURCE_PACK_GUI.md`**. This brief stays the to-do list for everything else (tools, books, sets, keys, crates, notes, spawners, Depths drops, rarity tags, HUD, sounds, pack icons).
+
+> **31 Oct 2026, round 2 (owner):** the only custom in-game items are **the crate chests at /warp crates**, one per crate by rarity (done: `resourcepack/`, RESOURCE_PACK_GUI.md §7). §E tools, §F books, §G sets, §K notes, §L Depths drops and §M spawners are **dropped**: those items keep the vanilla look. Crate chests and matching keys are done (RESOURCE_PACK_GUI.md §7). Gems are renamed credits (§J).
+
 > **For:** the owner, who draws every texture himself. **Status:** 2026-10-30, written from the built modules (tool tiers, `sets.yml`, crates, Depths drops, menus) and `RESOURCE_PACK.md` (ids, glyph sizes, milestones).
 > **Owner decisions (30 Oct):** the Java pack is **forced** (accept before joining, professional prompt); custom textures on crates, GUIs, sets/wardrobe and tools; size is not critical but optimise; the owner makes the art; the style is not fixed yet (§0.3).
 > Work top to bottom through the P1 items first. Each line has an id (`B07`) you can tick off or mention ("B07 done").
@@ -52,7 +56,9 @@
 - Bedrock: item icons, glyphs and sounds are converted automatically (2D only). Menu backgrounds, HUD bars, worn armor looks, tooltips and crate blocks are Java only, so you don't need a Bedrock version of anything.
 - Size budget (optimise, not critical): Java pack target ≤ 8 MB, Bedrock ≤ 5 MB. Flat colours compress best; avoid noise/dithering on big backgrounds.
 
-### 0.3 Style (not fixed yet)
+### 0.3 Style (decided 31 Oct: cartoon, see RESOURCE_PACK_GUI.md §3)
+> The owner chose cartoony icons with personality: 1 px warm dark outline (`#2B1210`), light top/left and dark bottom/right edges, one chunky object per icon, colour + shape for every state. New item art should match the GUI v1 art in `resourcepack/`.
+
 - **Identity: phoenix red/ember.** Red is the frame, ember orange and flame gold are the accents, charcoal and parchment are the base, rarity colours mark rarity. Palette (UI_STYLE §1):
 
 | Swatch | Hex | Use in art |
@@ -85,6 +91,8 @@ Two small images that show before anything else.
 | A02 | `bedrock/pack_icon.png` | Bedrock pack icon | 256×256 | Bedrock: Settings → Global Resources, download screen | P1 | Same art as `pack.png`, scaled up cleanly (redraw edges, no blurry upscale). |
 
 ## B. Menu backgrounds (GUI)
+> **Done (v1), replaced:** 31 backgrounds (key screens + area frames) instead of the 52 below. List, codepoints and the menu → background table: RESOURCE_PACK_GUI.md §4 and §8. The inventory half is painted too (RP-D16 changed).
+
 
 Java only (Bedrock keeps the vanilla panes). One PNG per menu, drawn at **1× pixel scale** on the full chest canvas **176 × (114 + rows × 18)**: 3 rows = 176×168, 4 rows = 176×186, 6 rows = 176×222. Paint only the top part (title band + chest rows, height 17 + rows × 18); leave the bottom ~97 px (player inventory) **fully transparent** (RP-D16). See the slot template right below the table. Codepoints are in font `phoenix:menu`.
 
@@ -152,6 +160,8 @@ Java only (Bedrock keeps the vanilla panes). One PNG per menu, drawn at **1× pi
 - Bitmap fonts allow max 256 px height; all our canvases are below that. Keep each file under ~20 KB (flat colours, no noise).
 
 ## C. Menu buttons
+> **Done (v1):** see RESOURCE_PACK_GUI.md §5.1 (final ids; `minus/plus_1/10/100` became `_small/_mid/_big`).
+
 
 Item models `phoenix:menu/<name>` on the button's current material. 16×16. They replace the vanilla buttons for pack users only.
 
@@ -193,6 +203,8 @@ Item models `phoenix:menu/<name>` on the button's current material. 16×16. They
 | C34 | `item/menu/sort.png` | Sort | 16×16 | AH, lists | P1 | Up/down arrows. |
 
 ## D. Feature icons
+> **Done (v1) for every feature that is live:** RESOURCE_PACK_GUI.md §5.2. Hidden features (quests, pets, events, black market, collection, loadout, satchel, sigil) get their icon when they ship.
+
 
 Item models `phoenix:menu/icon/<feature>`, 16×16, used on the buttons that open a feature (`/menu`, `/is`, help). Same icon everywhere for the same feature (UI_STYLE §5.5). Until drawn the vanilla item stays.
 
@@ -440,6 +452,8 @@ The lid animation (6 frames, `_open_0` … `_open_5`) is model work by the devel
 - Bedrock and pack-less players get the GUI roll (background B E31C) + sounds (T) only.
 
 ## J. Currencies (crystals, gems, shards, money, credits)
+> **Done (v1):** icons J01–J05 and glyphs J06–J10, see RESOURCE_PACK_GUI.md §5.4 and §6.
+
 
 Item icons for menus plus font glyphs for text. Glyphs are shared with Bedrock (sheet `glyph_E2.png`).
 
@@ -522,6 +536,8 @@ Item models `phoenix:spawner/<tier>` (tiers 1–5, `stacking.yml`). Placed spawn
 | M05 | `item/spawner/5.png` | Spawner item, tier 5 (golem, shulker, evoker…) | 16×16 | Inventory, shop, crates, spawner menu | P2 | Spawner cage with a phoenix red + flame frame; mob type stays in the name. |
 
 ## N. Rank badges and logo glyphs
+> **Replaced (31 Oct, round 3):** rank badges are a font (`phoenix:badge`), so the name comes from LuckPerms and can be renamed; style and colours per group in RESOURCE_PACK_GUI.md §6.2. N17 small logo is done. Still open: N18 `logo_wide`, N19 SkybornMC S.
+
 
 Font `phoenix:icons`, shared with Bedrock. Rank names and colours come from the ranks plan (`docs/plans/RANKS_TITLES_ACHIEVEMENTS.md` §A, owner answers RK1/RK2 and 390: free rank **Ashborn**, donor ranks **Hatchling → Fledgling → Firewing → Flamecrest → Sunfeather → Pyrelord → Immortal**, won ranks Torchbearer, Flameheart, Firecrown). The old proposal names (Squire, Knight, Paladin, Warlord, Monarch) and the Ember badge are gone. Ids N01–N11 match the ranks plan's colour table; codepoints run U+E220–U+E22A.
 
