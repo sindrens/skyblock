@@ -7,7 +7,7 @@ text: "<text>"
 disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The Black Market is closed right now."
 
 rotation:
-  announce: "<prefix><c:flame><sym:star></c:flame> <c:text>The Black Market restocked! Headline: <offer> <c:muted>(<price>)</c:muted><c:text>. <c:action>/blackmarket"
+  announce: "<tag:market><bold>[Market]</bold></tag> <c:text>The Black Market restocked! Headline: <offer> <c:muted>(<price>)</c:muted><c:text>. <c:action>/blackmarket"
 
 buy:
   unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>That offer can't be bought right now."

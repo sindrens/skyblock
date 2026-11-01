@@ -1,5 +1,5 @@
 # Phoenix Skyblock style (docs/UI_STYLE.md). Used by every message, menu, item and HUD.
-# In messages: <c:brand>text</c:brand>, <rarity:epic>, <pillar:mining>, <cur:money>, <area:home>, <sym:money>, <grad:phoenix>text</grad>, <prefix>
+# In messages: <c:brand>text</c:brand>, <rarity:epic>, <pillar:mining>, <cur:money>, <area:home>, <tag:crate>, <sym:money>, <grad:phoenix>text</grad>, <prefix>
 # Each color: "<hex> <legacy fallback for Bedrock>". Legacy names: black dark_blue dark_green dark_aqua dark_red
 # dark_purple gold gray dark_gray blue green aqua red light_purple yellow white
 # Reload: /skyblock reload core
@@ -40,12 +40,21 @@ colors:
   sky_blue: "#6CA1D6 blue"
   sky_steel: "#49649E dark_blue"
   sky_cloud: "#FBFCFF white"
+  steel: "#5AB4E5 aqua"            # steel sky (I9 section 8)
 
 currencies:
   money: "#4DFF88 green"
   crystals: "#33E0FF aqua"      # island crystals (replaced tokens): aqua crystal look
   shards: "#FF6B8A red"
   credits: "#FF8C1A gold"       # card C1 (bought + earned; the old <cur:gems> and <cur:credits_earned> fall back to this)
+
+# Event tags in chat: one colour each, never clickable (G1-R1-01). Written <tag:crate><bold>[Crate]</bold></tag>
+tag:
+  crate: "#FFD21A yellow"     # flame gold
+  store: "#FF2D3F red"        # brand red
+  market: "#4DFF88 green"     # money green
+  event: "#FF8C1A gold"       # ember orange
+  booster: "#5AB4E5 aqua"     # steel sky
 
 rarity:
   common: "#F2F2F2 white"

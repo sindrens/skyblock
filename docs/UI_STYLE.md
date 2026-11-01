@@ -166,6 +166,19 @@ Rules:
 ### 3.3 Announcements (server-wide)
 Blank line, a centered header with the brand gradient, 1–2 lines, a clickable action, blank line. Max one per 30 s from the auto-announcer.
 
+### 3.4 Event tags (G1-R1-01)
+Server event lines are one line that starts with a short bold tag in a fixed colour (`style.yml tag:`), then one space; the tag is never clickable and never inside `<click>`/`<hover>`. Direct replies to one player keep the `<prefix>`.
+
+| Tag | Colour (Bedrock) | Used by |
+|---|---|---|
+| `[Crate]` | flame gold `#FFD21A` (yellow) | top crate rewards (`crates.yml broadcast.top`, `top-many`) |
+| `[Store]` | brand red `#FF2D3F` (red) | store purchases (I6, later) |
+| `[Market]` | money green `#4DFF88` (green) | Black Market restock (`blackmarket.yml announce`); price news (C4, later) |
+| `[Event]` | ember orange `#FF8C1A` (gold) | KOTH, envoys, bosses (I1/I3, later) |
+| `[Booster]` | steel sky `#5AB4E5` (aqua) | global boosters started, queued, ended (`boosters.yml global.*`) |
+
+Written `<tag:crate><bold>[Crate]</bold></tag> <c:value><player></c:value> <c:text>won ...`. Example: **[Crate]** Pouched won Legendary Sword from the Phoenix Crate! Players cannot fake one: public chat always reads `[RANK] name » text`.
+
 ---
 
 ## 4. Items
@@ -372,52 +385,39 @@ Icons come from `resourcepack/icons.json` (I7 pack v2): one vanilla base item pe
 
 ## 6. HUD
 
-### 6.1 Scoreboard (right side, max 9 lines + title)
-V2 (STYLE2): the same `| Header` sections as lore.
+### 6.1 Scoreboard (right side, 10 lines at most counting title and footer; G7-R1-01)
+Two sections: `| You` first, then one section named after the place. Each section is a bold red `| Header` and at most 3 rows; one progress line and one timer line, each only while something fills or runs. Text and Bedrock-safe symbols only, no icons, no logo, no online count.
 ```
- PHOENIX SKYBLOCK          ← phoenix gradient (red → orange → gold), bold
- | Profile                 ← bold header color
- | Pouched · Mod           ← dark red bar, name + rank in the rank color
- | Money: $1.2M            ← label gray + colon, money green
- | Crystals: ◆ 4,250
- | Gems: ✦ 120
-
- | Island
+ PHOENIX SKYBLOCK          ← phoenix gradient, bold, the same on every board
+                           ← blank line, only while the board has 5 rows or fewer
+ | You                     ← bold header colour
+ | Money: $1.2M            ← dark red bar, label gray + colon, money green
+ | Crystals: ◆ 4,250       ← only while you have some
+ | Island                  ← the place section
  | Level: Lv 34 #12
+ | ●●●●●●●●●● 46%          ← progress: 4 dots flame, 6 dots the same ● in locked gray (never ○)
+ | Booster: +50% Sell 37m  ← timer: label gray, time ember; soonest-ending first
  play.skybornmc.net        ← footer, network ice blue
 ```
-**Per place (SB, owner Q6 "a different scoreboard per place, only relevant lines").** `hud.yml → places` picks the layout from where the player is; the layouts (title + lines) are in `messages/hud.yml → scoreboard.<layout>`:
+**Per place (SB + G7-R1-01).** `hud.yml → places` picks the layout; the texts are in `messages/hud.yml → scoreboard.<layout>`.
 
-| Place | Layout | Shows |
-|---|---|---|
-| Own island (and the island world outside any island) | `island` | name · rank, Island Lv, **Next: newest open note** (only when there is one and the "Next note on scoreboard" setting is on), money, crystals |
-| Someone else's island (coop counts as visiting) | `island-visit` | name · rank, **Visiting <island name>**, money, crystals |
-| The Depths, Mine wing and causeways | `depths` | zone, tier, Mining Lv (%), money |
-| The Gate (Depths hub) | `depths-gate` | zone, Mining / Foraging / Combat Lv (the skills that unlock the wings) |
-| Forest / Combat wing | `depths-forest` / `depths-combat` | zone, tier, Foraging / Combat Lv (%), money |
-| Spawn | `spawn` | same as default (change freely) |
-| Warzone (placeholder until it exists) | `warzone` | title WARZONE, Combat Lv, money |
-| Anywhere else | world-named layout, else `default` | |
+| Place | Layout | `\| You` rows | Place section (in order; the 3-row cap drops later rows) |
+|---|---|---|---|
+| Own island (and the island world outside any island) | `island` | Money, Crystals, Credits | `\| Island`: Level (`Lv 34 #12`), `Next:` (tutorial), progress to the next level, Note, timer |
+| Someone else's island (coop counts as visiting) | `island-visit` | Money, Crystals | `\| Visiting`: Island, Owner, timer |
+| Spawn | `spawn` | Money, Crystals, Credits | `\| Spawn`: `Next:`, AFK pool line, timer |
+| The Depths, Mine wing and causeways | `depths` | Money, Crystals | `\| <zone>`: Tier, Mining Lv, `Next:`, Mining progress |
+| Forest / Combat wing | `depths-forest` / `depths-combat` | Money, Crystals | same with Foraging / Combat |
+| The Gate (Depths hub) | `depths-gate` | Money, Crystals | `\| The Gate`: Mining, Foraging, Combat Lv |
+| Warzone (placeholder until it exists) | `warzone` | Money | `\| Warzone`: Combat Lv, Combat progress, timer |
+| Anywhere else | world-named layout, else `default` | Money, Crystals, Credits | `\| Island`: Level, `Next:`, progress, timer |
 
-```
- PHOENIX SKYBLOCK                THE DEPTHS
-
-  Pouched · Mod                   Pouched · Mod
-
-  Island  Lv 34 #12               Zone  Copper Caves
-  Next  Build the farm            Tier  Mine · Tier 2
-                                  Mining  Lv 12 (48%)
-  Money  $1.2M
-  Crystals  ◆ 4,250               Money  $1.2M
-  play.skybornmc.net              play.skybornmc.net
-```
-- A missing layout falls back: Depths variant → `depths`, `island-visit` → `island`, any place → world-named layout → `default`.
-- The board switches on the tick after a teleport or respawn and right away on a world change; walking onto another island or into another Depths zone switches on the next refresh (1 s). Only changed lines are sent, so switching never flickers.
-- Conditional lines: `"if:<placeholder>|<line>"` only shows while the placeholder has a value (not empty, not `-`); hidden lines take no space.
-- Built-in `<island_here>`: name of the island you stand on (visit board).
-- Section headers `<bold><c:header>| Name`, rows `<c:bar>|</c:bar> <c:text>Label:</c:text> value`, values white or their currency color, one leading space. Layouts that would pass 9 lines drop the blank line between sections.
-- No separator bars, no online count, no objective line (the objective returns with the tutorial/quests as its own layout).
-- Max 10 lines with the title, conditional lines included (`SidebarLinesTest` checks every bundled layout). Events add their own layout through `HudService#addLayout` (wins over places).
+- Crystals and Credits show only while you have some; a section with no row left (no island level yet) disappears with its header.
+- Board rules (automatic, `hud.yml scoreboard.*`): a header (`<bold><c:header>`) takes at most `section-rows` (3) rows (`<c:bar>`), the first in the layout win; an empty header disappears; `<soft-blank>` shows only while the other lines are at most `blank-under-title-max-lines` (8).
+- Built-ins: `<progress:key>` (placeholder as a percent → `progress-length` dots, rounded down), `<plain:key>` (plain text, takes the colour around it), `<timer>` (soonest `BoardTimers` timer: boosters now, events later), condition key `board_timer`; plus `<island>`, `<island_here>`, `<objective>`, `<money>`, `<crystals>`, `<credits>`.
+- Timer text: `45s`, `37m`, `2h 15m`, `3d 4h` (minutes round up, so it changes once a minute).
+- A missing layout falls back: Depths variant → `depths`, `island-visit` → `island`, any place → world-named layout → `default`. The board switches on the tick after a teleport or respawn and right away on a world change; only changed lines are sent.
+- `SidebarLinesTest` checks every bundled layout fits 9 lines under the title with every condition true. Events add their own layout through `HudService#addLayout` (wins over places).
 
 ### 6.2 Tab list
 ```
@@ -447,9 +447,20 @@ Skill XP gains (`+12 Mining XP (68%)`), tool mode changes, satchel full warnings
 - Modules only pass a destination name (plain, or a styled one from their messages file such as `dungeon.destination`); they never write their own warmup texts.
 
 ### 6.4 Boss bar
-Event and timer countdowns (KOTH, envoys, world boss HP, boosters). Color = event color.
+Event and timer countdowns (KOTH, envoys, world boss HP, boosters). One colour per meaning so two bars never look alike:
+- **Events and bosses: red** (KOTH, envoys, mini bosses).
+- **Tutorial: yellow** (A3-R1-02, `tutorial.yml guide.bossbar-color`, overlay `guide.bossbar-overlay`, default `progress`). Text `Tutorial 3/11` (bold ember) + muted `·` + the one instruction in white: `Tutorial 3/11 · Plant wheat · 2 / 3`, `Tutorial 5/11 · » Starter Chest · 24m «`, `Tutorial 6/11 · Go back · /is home`. The fill is always steps done out of the total, never distance; hidden while a camera shot plays.
+- **Global boosters: blue** (`boosters.yml global.boss-bar-color`, GUI-P19).
 
 ### 6.4b Holograms (V2)
+**NPC labels and holograms (A5-R1-01, `messages/npcs.yml`):**
+```
+[ Banker ]        bold flame, square brackets with inner spaces (npc.label)
+/bank             white, the command the NPC runs (npc.command; only when it runs one; npcs.command-line)
+Click me          muted (npc.hint-action); help-only NPCs: "Click for help" (npc.hint-help)
+```
+Holograms: a bold flame title (a short noun), then plain text lines (about 36 characters at most, one idea each), and a muted `Click me` (`hologram-click`) as the last line **only** on holograms you can click (they have a `hologram-help.<id>` text). Portals and signs have no click line; locked places add a muted `· Soon`. Commands sit inside a line in white (`Open the menu: /menu`). One action word: `Click`. Tutorial target holograms use the same pattern (`Starter Chest` / `Open me`).
+
 Shared formats in `messages/items.yml → hologram.*` for every module that spawns one (crates, leaderboards):
 title bold in its rarity color, `Click: Open` / `Sneak-click: View rewards` in bold action color (UX3: holograms and blocks that react to both buttons say "Click"; crates M10.3), leaderboard places
 `#1` / `#2` / `#3` bold in `top1` / `top2` / `top3`, other places muted. `/baltop` uses the same place colors.

@@ -609,6 +609,11 @@ final class GlobalBoosters {
         });
     }
 
+    /** The running global booster that ends first, or null (scoreboard timer, main thread). */
+    GlobalQueue.Entry soonestActive() {
+        return queue.soonestActive();
+    }
+
     /** Used by the menu: the active booster and its queue of a type. */
     Optional<GlobalQueue.Entry> active(BoosterType type) {
         return queue.active(type);

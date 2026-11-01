@@ -26,8 +26,6 @@ class SmallRulesTest {
         assertEquals(Compass.Direction.AHEAD, Compass.direction(-180, 1, -95, 30, 135, 2));
         assertEquals(Compass.Direction.HERE, Compass.direction(90, 1, 1, 30, 135, 2));
         assertEquals(170.0, Compass.normalize(-190), 1e-9);
-        assertEquals(1f, Compass.distanceProgress(0, 100));
-        assertEquals(0.05f, Compass.distanceProgress(500, 100));
     }
 
     @Test

@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.hud;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.hud.BoardTimers;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.tag.Tag;
@@ -61,6 +62,7 @@ public final class HudService implements Listener {
 
     private final Core core;
     private final HudConfig config;
+    private final BoardTimers timers;
     private final Map<UUID, Sidebar> sidebars = new ConcurrentHashMap<>();
     private final List<LayoutRule> rules = new CopyOnWriteArrayList<>();
     /** Players whose board switches on the next tick (teleport, respawn). */
@@ -72,9 +74,10 @@ public final class HudService implements Listener {
     private BukkitTask task;
     private long tick;
 
-    HudService(Core core, HudConfig config) {
+    HudService(Core core, HudConfig config, BoardTimers timers) {
         this.core = core;
         this.config = config;
+        this.timers = timers;
         reloaded();
     }
 
@@ -283,11 +286,15 @@ public final class HudService implements Listener {
     private void render(Player player, Sidebar sidebar) {
         Choice choice = choose(player);
         String layout = choice.layout();
-        TagResolver values = values(player, choice);
+        LayoutLines parsed = lines(layout);
+        // The timer is resolved once per refresh, and only on layouts that show it (BoardTimers contract).
+        Optional<BoardTimers.Timer> timer = parsed.usesTimer() ? timers.soonest(player) : Optional.empty();
+        TagResolver values = values(player, choice, timer);
         String title = core.messages().raw(MODULE, "scoreboard." + layout + ".title");
         sidebar.title(title == null ? Component.empty() : core.messages().parse(player, title, values));
-        List<LayoutLines.Line> visible = lines(layout).visible(
-                key -> LayoutLines.present(core.placeholders().text(player, key).orElse(null)), config.maxLines);
+        LayoutLines.Rules boardRules = new LayoutLines.Rules(config.maxLines, config.sectionRows, config.blankUnderTitleMaxLines);
+        List<LayoutLines.Line> visible = parsed.visible(key -> LayoutLines.TIMER_KEY.equals(key) ? timer.isPresent()
+                : LayoutLines.present(core.placeholders().text(player, key).orElse(null)), boardRules);
         List<Component> lines = new ArrayList<>(visible.size());
         for (LayoutLines.Line line : visible) {
             lines.add(line.blank() ? Component.empty() : core.messages().parse(player, line.text(), values));
@@ -300,8 +307,12 @@ public final class HudService implements Listener {
      * isn't there yet. Values are computed only when the layout uses them (online counts every player, so it is only
      * worked out on boards that show it). {@code <tokens>} is a deprecated alias of {@code <crystals>}, {@code <gems>} of
      * {@code <credits>} (C1-R1-03).
+     *
+     * <p>G7-R1-01 built-ins: {@code <progress:key>} (the placeholder as a percent, as dots), {@code <plain:key>} (the
+     * placeholder's plain text, never parsed, so it takes the colour around it) and {@code <timer>} (the soonest
+     * {@link BoardTimers} timer). All lazy.</p>
      */
-    private TagResolver values(Player player, Choice choice) {
+    private TagResolver values(Player player, Choice choice, Optional<BoardTimers.Timer> timer) {
         var ranks = core.ranks();
         var color = ranks.rankColor(player);
         return TagResolver.resolver(
@@ -316,7 +327,40 @@ public final class HudService implements Listener {
                 lazy("island_here", () -> choice.islandHere() == null || choice.islandHere().isBlank() ? dash(player)
                         : core.messages().component(player, MODULE, "values.island-here", Msg.p("value", choice.islandHere()))),
                 lazy("objective", () -> objective(player)),
-                lazy("online", () -> Component.text(online(player))));
+                lazy("online", () -> Component.text(online(player))),
+                TagResolver.resolver("progress", (args, ctx) -> Tag.selfClosingInserting(progress(player, args.popOr("progress needs a placeholder key").value()))),
+                TagResolver.resolver("plain", (args, ctx) -> Tag.selfClosingInserting(plainValue(text(player, args.popOr("plain needs a placeholder key").value()).orElse(null)))),
+                lazy("timer", () -> timer.map(t -> core.messages().component(player, MODULE, "values.timer",
+                        Msg.c("label", t.label()), Msg.p("time", TimerText.format(t.remainingMillis())))).orElse(Component.empty())));
+    }
+
+    /** The dots of a progress line: filled part, empty part and the percent. */
+    record ProgressParts(String filled, String empty, int percent) {
+    }
+
+    /** Pure: a placeholder value as progress dots, or empty when it is not a number ({@link ProgressBar}). */
+    static Optional<ProgressParts> progressParts(String value, int length, String filledDot, String emptyDot) {
+        java.util.OptionalInt percent = ProgressBar.percent(value);
+        if (percent.isEmpty()) {
+            return Optional.empty();
+        }
+        int filled = ProgressBar.filled(percent.getAsInt(), length);
+        return Optional.of(new ProgressParts(ProgressBar.repeat(filledDot, filled), ProgressBar.repeat(emptyDot, length - filled), percent.getAsInt()));
+    }
+
+    /** Pure: a placeholder's plain text as a text component (never parsed as MiniMessage); empty for no value. */
+    static Component plainValue(String value) {
+        return value == null || value.isBlank() ? Component.empty() : Component.text(value);
+    }
+
+    private Component progress(Player player, String key) {
+        String filledDot = core.messages().raw(MODULE, "values.progress-filled");
+        String emptyDot = core.messages().raw(MODULE, "values.progress-empty");
+        return progressParts(text(player, key).orElse(null), config.progressLength,
+                filledDot == null ? "●" : filledDot, emptyDot == null ? "●" : emptyDot)
+                .map(parts -> core.messages().component(player, MODULE, "values.progress", Msg.p("filled", parts.filled()),
+                        Msg.p("empty", parts.empty()), Msg.p("percent", String.valueOf(parts.percent()))))
+                .orElseGet(() -> dash(player));
     }
 
     /** The rank badge for this player's own sidebar ([Name] text, Java or Bedrock form), or the plain colored rank name. */
