@@ -195,8 +195,9 @@ class RolePermissionsTest {
         assertEquals(0, IslandPerm.notApplicable(PermRole.MEMBER));
         assertEquals(IslandPerm.SETTINGS.bit() | IslandPerm.NOTES_WRITE.bit() | IslandPerm.NOTES_MANAGE.bit()
                         | IslandPerm.BANK_DEPOSIT.bit() | IslandPerm.BANK_WITHDRAW.bit() | IslandPerm.BANK_HISTORY.bit()
-                        | IslandPerm.UPGRADES.bit() | IslandPerm.HOMES.bit(),
-                IslandPerm.notApplicable(PermRole.VISITOR), "management rights (NOTES: write, manage; bank) never reach visitors");
+                        | IslandPerm.UPGRADES.bit() | IslandPerm.HOMES.bit() | IslandPerm.SHARD_BLOCKS.bit(),
+                IslandPerm.notApplicable(PermRole.VISITOR),
+                "management rights (NOTES: write, manage; bank; shard blocks, ECON-SHARDS) never reach visitors");
         assertEquals(IslandPerm.notApplicable(PermRole.VISITOR), IslandPerm.notApplicable(PermRole.COOP),
                 "coop players never get bank rights either (REVIEW A4)");
     }
