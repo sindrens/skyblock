@@ -21,6 +21,7 @@ rules:
 items:
   no-item: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell."
   dupe-flagged: "<prefix><c:error><sym:cross></c:error> <c:text>This item is flagged as a possible dupe. Ask staff."
+  menu-item: "<prefix><c:error><sym:cross></c:error> <c:text>The menu item can't be listed. It opens <c:action>/menu</c:action><c:text>."
   staff-item: "<prefix><c:error><sym:cross></c:error> <c:text>Items made by staff can't be listed."
   bound-item: "<prefix><c:error><sym:cross></c:error> <c:text>This item can't be traded, so it can't be listed."
   starter: "<prefix><c:error><sym:cross></c:error> <c:text>Starter kit items can't be sold here. You can still trade them."
