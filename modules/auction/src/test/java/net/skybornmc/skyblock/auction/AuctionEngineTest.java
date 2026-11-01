@@ -316,6 +316,7 @@ class AuctionEngineTest {
         assertEquals(ListingRules.Problem.COOLDOWN, cooling.rejection().problem());
         config.listingCooldownSeconds = 0;
 
+        config.relistMaxSameItem = 3; // off by default since ECON-SELL-SHOP-AH C2; the owner may set it
         for (int i = 0; i < 3; i++) {
             engine.create(seller, "Seller", item("same"), 100, HOUR, 10, Actor.SYSTEM).join();
         }
