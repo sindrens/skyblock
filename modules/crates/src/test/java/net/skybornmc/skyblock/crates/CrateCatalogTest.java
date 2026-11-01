@@ -33,7 +33,9 @@ class CrateCatalogTest {
     @Test
     void topBandsAndPityMatchThePlanOverview() {
         CrateCatalog c = Fixtures.bundled();
-        double[][] expected = {{8, 30}, {9, 28}, {11, 23}, {14, 18}, {14, 18}, {8, 10}, {12, 20}};
+        // ECON-SHARDS / ECON-SPAWNERS: spawner_t5 (inferno 2, phoenix 6 top) and the conqueror shards row left; the shard
+        // block is a top reward in inferno 1, phoenix 2, eclipse 3, conqueror 2 (blaze 0.5 is a plain reward).
+        double[][] expected = {{8, 30}, {9, 28}, {11, 23}, {13, 18}, {10, 18}, {11, 10}, {14, 20}};
         List<CrateCatalog.Crate> crates = c.crates();
         for (int i = 0; i < crates.size(); i++) {
             assertEquals(expected[i][0], crates.get(i).topPercent(), 1e-9, crates.get(i).id() + " top band");

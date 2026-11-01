@@ -71,7 +71,7 @@ crates:
     pity: 23
     fallback-crystals: 100
     rewards:
-      - {id: money, type: money, chance: 18, minutes: 15}
+      - {id: money, type: money, chance: 17.5, minutes: 15}
       - {id: crystals, type: crystals, chance: 16, base: 100}
       - {id: book, type: enchant-book, chance: 15, pool: rare, level: 1}
       - {id: sell_booster, type: booster, chance: 8, booster: sell, percent: 50, minutes: 30, icon: gold_ingot}
@@ -95,7 +95,7 @@ crates:
     pity: 18
     fallback-crystals: 250
     rewards:
-      - {id: money, type: money, chance: 15, minutes: 30}
+      - {id: money, type: money, chance: 16, minutes: 30}
       - {id: crystals, type: crystals, chance: 14, base: 250}
       - {id: book, type: enchant-book, chance: 14, pool: epic, level: 1}
       - {id: sell_booster, type: booster, chance: 7, booster: sell, percent: 100, minutes: 30, icon: gold_ingot}
@@ -120,7 +120,7 @@ crates:
     pity: 18
     fallback-crystals: 600
     rewards:
-      - {id: book, type: enchant-book, chance: 14, pool: legendary, level: 1}
+      - {id: book, type: enchant-book, chance: 18, pool: legendary, level: 1}
       - {id: money, type: money, chance: 12, minutes: 60}
       - {id: crystals, type: crystals, chance: 12, base: 600}
       - {id: sell_booster, type: booster, chance: 6, booster: sell, percent: 100, minutes: 60, icon: gold_ingot}
@@ -145,7 +145,7 @@ crates:
     pity: 10
     fallback-crystals: 1000
     rewards:
-      - {id: book, type: enchant-book, chance: 14, pool: legendary, level: 1}
+      - {id: book, type: enchant-book, chance: 17, pool: legendary, level: 1}
       - {id: money, type: money, chance: 10, minutes: 90}
       - {id: crystals, type: crystals, chance: 10, base: 1000}
       - {id: month_skin, type: coming-soon, chance: 10, icon: netherite_upgrade_smithing_template}
@@ -169,7 +169,7 @@ crates:
     hidden: true
     fallback-crystals: 250
     rewards:
-      - {id: money, type: money, chance: 15, minutes: 30}
+      - {id: money, type: money, chance: 28, minutes: 30}
       - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 2, amount: 1, top: true, rarity: rare}
       - {id: combat_rare_book, type: enchant-book, chance: 15, pool: rare, level: 1}
       - {id: scroll, type: scroll, chance: 10, amount: 1}
