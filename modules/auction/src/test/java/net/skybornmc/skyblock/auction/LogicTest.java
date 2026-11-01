@@ -38,9 +38,11 @@ class LogicTest {
 
     @Test
     void durationsComeFromTheConfigList() {
-        assertEquals(List.of("12h", "24h", "48h"), Pricing.durations(config));
+        // ECON-SELL-SHOP-AH C2: 7d joined the defaults; at most 7 days are ever offered.
+        assertEquals(List.of("12h", "24h", "48h", "7d"), Pricing.durations(config));
         assertEquals("24h", Pricing.defaultDuration(config));
         assertEquals(Duration.ofHours(48), Pricing.offered(config, "48H"));
+        assertEquals(Duration.ofDays(7), Pricing.offered(config, "7d"));
         assertNull(Pricing.offered(config, "72h"));
         config.durations = List.of("nonsense", "30d", "6h");
         assertEquals(List.of("6h"), Pricing.durations(config));
@@ -56,6 +58,11 @@ class LogicTest {
 
     @Test
     void slotsCooldownAndRelistLimit() {
+        // ECON-SELL-SHOP-AH C2: both are 0 (off) by default now; the rules still work when the owner sets them.
+        assertEquals(0, config.listingCooldownSeconds);
+        assertEquals(0, config.relistMaxSameItem);
+        config.listingCooldownSeconds = 10;
+        config.relistMaxSameItem = 3;
         long now = 1_000_000;
         assertEquals(ListingRules.Problem.NO_SLOTS,
                 ListingRules.history(config, new ListingRules.Stats(5, 0, 0), 5, now).orElseThrow().problem());
