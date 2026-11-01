@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -44,6 +43,16 @@ class PeriodicStoreTest {
         db.close();
     }
 
+    private long week(UUID profile, String week) {
+        Long v = db.<Long>blocking(c -> RewardStore.weekSeconds(c, profile, week));
+        return v;
+    }
+
+    private boolean claimed(String source, UUID profile, String period) {
+        Boolean v = db.<Boolean>blocking(c -> RewardStore.periodClaimed(c, source, profile, period));
+        return v;
+    }
+
     @Test
     void weekSecondsAddUpPerProfileAndWeek() {
         db.blocking(c -> {
@@ -53,9 +62,9 @@ class PeriodicStoreTest {
             RewardStore.addWeekSeconds(c, profileB, "2026-W45", 0, 4);
             return null;
         });
-        assertEquals(4_000L, db.blocking(c -> RewardStore.weekSeconds(c, profileA, "2026-W45")));
-        assertEquals(50L, db.blocking(c -> RewardStore.weekSeconds(c, profileA, "2026-W46")));
-        assertEquals(0L, db.blocking(c -> RewardStore.weekSeconds(c, profileB, "2026-W45")), "never summed over profiles");
+        assertEquals(4_000L, week(profileA, "2026-W45"));
+        assertEquals(50L, week(profileA, "2026-W46"));
+        assertEquals(0L, week(profileB, "2026-W45"), "never summed over profiles");
     }
 
     @Test
@@ -64,10 +73,10 @@ class PeriodicStoreTest {
             RewardStore.insertPeriodClaim(c, "weekly", profileA, "2026-W45", player, "weekly:a:45", 1);
             return null;
         });
-        assertTrue(db.blocking(c -> RewardStore.periodClaimed(c, "weekly", profileA, "2026-W45")));
-        assertFalse(db.blocking(c -> RewardStore.periodClaimed(c, "weekly", profileB, "2026-W45")), "other profile");
-        assertFalse(db.blocking(c -> RewardStore.periodClaimed(c, "weekly", profileA, "2026-W46")), "next week");
-        assertFalse(db.blocking(c -> RewardStore.periodClaimed(c, "monthly", profileA, "2026-W45")), "other source");
+        assertTrue(claimed("weekly", profileA, "2026-W45"));
+        assertFalse(claimed("weekly", profileB, "2026-W45"), "other profile");
+        assertFalse(claimed("weekly", profileA, "2026-W46"), "next week");
+        assertFalse(claimed("monthly", profileA, "2026-W45"), "other source");
         assertThrows(RuntimeException.class, () -> db.blocking(c -> {
             RewardStore.insertPeriodClaim(c, "weekly", profileA, "2026-W45", player, "weekly:a:45:again", 2);
             return null;
@@ -75,14 +84,14 @@ class PeriodicStoreTest {
     }
 
     @Test
-    void deletingAProfileRemovesItsClaimsAndWeeks() throws SQLException {
+    void deletingAProfileRemovesItsClaimsAndWeeks() {
         db.blocking(c -> {
             RewardStore.insertPeriodClaim(c, "monthly", profileA, "2026-11", player, "monthly:a:11", 1);
             RewardStore.addWeekSeconds(c, profileA, "2026-W45", 10, 1);
             RewardStore.deleteProfile(c, profileA);
             return null;
         });
-        assertFalse(db.blocking(c -> RewardStore.periodClaimed(c, "monthly", profileA, "2026-11")));
-        assertEquals(0L, db.blocking(c -> RewardStore.weekSeconds(c, profileA, "2026-W45")));
+        assertFalse(claimed("monthly", profileA, "2026-11"));
+        assertEquals(0L, week(profileA, "2026-W45"));
     }
 }
